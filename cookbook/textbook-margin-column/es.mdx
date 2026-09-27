@@ -1,0 +1,90 @@
+---
+title: "Libro de texto con columna al margen"
+summary: "Columna y media con la columna exterior solo para flotantes: en ella se apilan figuras y glosas con span 'side', y captionSide lleva allí los demás pies."
+description: "El código de un capítulo de física en Postext con una columna en el margen exterior reservada a diagramas de rayos, glosas de términos clave y pies de figura."
+question: "¿Cómo reservo el margen exterior para figuras, pies y glosas sin que el texto entre nunca en él?"
+aliases: ["columna al margen", "columna marginal", "notas al margen", "glosas", "pies laterales", "pies al margen", "figuras al margen", "columna y media", "libro de texto de física", "manual escolar"]
+pageNotes: { "1": "El capítulo 4 se abre con el título Luz y lentes en la columna de texto y un gran 4 verde en el margen exterior, con los objetivos debajo y, a la altura del apartado 4.1, una glosa junto al párrafo que define el índice de refracción; en la parte baja de la columna de texto, un diagrama de una lupa al sol sobre fondo oscuro, con su pie al lado, en el margen.", "2": "En la página par la columna del margen queda a la izquierda: en ella se apilan un diagrama de la refracción, la glosa del ángulo límite y un diagrama de un bloque semicircular de vidrio, y la figura de la fibra óptica, en la parte baja de la columna de texto, lleva el pie en el margen.", "3": "Un panel oscuro en el que un haz blanco atraviesa un prisma y se abre en un espectro cruza las dos columnas en la cabeza de la página impar; en el margen, la glosa de la dispersión empieza justo bajo la frase que define el término, la de la distancia focal queda a la altura del apartado 4.3 y abajo va el pie de un diagrama de lentes sobre fondo claro.", "4": "La figura de la lente divergente encabeza la columna del margen de la última página; el panel de ideas clave empieza bajo el párrafo de cierre, a la altura del título «Preguntas», y acompaña a las preguntas; un colofón de una línea cierra el capítulo." }
+---
+
+## Lo que vas a componer
+
+El capítulo 4 de *Palanca y lente*, un manual de física en página de 210 × 275 mm. El texto ocupa una columna ancha y nunca entra en el margen exterior, un canal de 53 mm. El número del capítulo, un 4 verde, va en ese canal a la altura del título, y los objetivos, debajo. Los diagramas se apilan desde la cabeza del canal, y los términos clave van en glosas verde claro junto al pasaje que los define. Las figuras que se quedan en la columna de texto, sobre fondo oscuro o claro, llevan el pie en el margen, a la altura de su base. Solo el panel del prisma cruza las dos columnas. Los márgenes son simétricos, así que el canal queda siempre en el lado exterior de la página, a la derecha en las impares y a la izquierda en las pares.
+
+## Elaboración
+
+### 1 · Reserva el margen para los flotantes
+
+El código de este paso es [la respuesta corta](#la-respuesta-corta) de arriba. En una [disposición en columna y media](/es/docs/configuration#tipos-de-disposición), `sideColumnPercent: 30` da a la columna lateral el 30 % de los 176 mm de ancho de la caja (52,8 mm), y la columna de texto se queda con lo que sobra tras el medianil de 7 mm (116 mm, unos 75 caracteres de Merriweather de 9,3 pt). `sideColumnRole: 'floats'` cierra la columna lateral al texto, y `sideColumnSide: 'outer'` la pone en el lado exterior, que con márgenes simétricos cambia de una página a otra. Las figuras van a ella con `span: 'side'`. Un recuadro con `span="side"` en la valla sale del flujo y entra en el canal a la altura por la que va el texto, así que cada glosa empieza junto al bloque que sigue a su valla.
+
+### 2 · Deja que la cita coloque cada figura
+
+<Excerpt region="figures" />
+
+El primer `:ref` a una figura la numera y la sitúa donde indica su [colocación](/es/docs/document-format#colocación). Una figura con `span: 'side'` se apila desde la cabeza del canal de la página que la cita, aunque la cita quede más abajo, y pasa a la página siguiente si el resto del canal no le basta. Las figuras 4.2 y 4.3, citadas las dos en la <PageRef page={2}>página 88</PageRef>, bajan por el canal de esa página con la glosa del ángulo límite entre ellas. El prisma es un flotante `top` a todo el ancho citado en la página 88, y un flotante nunca queda por encima de su cita, así que abre la 89 sobre las dos columnas. Las figuras 4.1, 4.4 y 4.6 se quedan en la columna de texto y toman `captionSide` del `defaultPlacement` del tipo figura. Ocupan el hueco inferior de la columna, así que cada pie queda a la altura de la base de su figura; en el hueco superior se alinearía con su borde de arriba.
+
+### 3 · Abre el capítulo en el margen
+
+<Excerpt region="opener" />
+
+El título de primer nivel se queda en la columna de texto, donde una [ranura de diseño](/es/docs/configuration#span-y-diseño-avanzado) apila su texto, el filete y la entradilla; el antetítulo cuelga de la esquina superior derecha de la página y el número, del antetítulo, los dos con el ancho del canal. `minHeight` fija la altura de la apertura en nueve líneas de la rejilla (42,9 mm), que dan cabida a un título de una línea, el filete y una entradilla de cuatro, así que con una entradilla más corta el texto no sube. El antetítulo y el número de 104 pt acaban 40,6 mm por debajo del margen superior, dentro de esas nueve líneas, así que tampoco bajan el texto. El canal solo está a la derecha en las páginas impares, y por eso el título de primer nivel salta a página impar. El recuadro de objetivos va después del primer párrafo y no justo tras el título, y ninguna figura del margen se cita antes que él (lo explica «Errores frecuentes»).
+
+### 4 · Lleva los folios al lado del canal
+
+<Excerpt region="heads" />
+
+Cada elemento se ancla a la página física y se filtra por `parity`, así que el folio y la cabecera quedan en el mismo borde que el canal a los dos lados del pliego. `pages: 'body'` los aparta de la apertura, que lleva en su lugar un folio al pie del canal.
+
+### 5 · Empieza el libro en el capítulo 4
+
+<Excerpt region="build" />
+
+Estas páginas son el capítulo 4 de un libro más largo. La continuación deja el contador de capítulos en 3, así que `{chapterNumber}` imprime 4 y el `numberingTemplate: '{1}.{2}'` del segundo nivel numera los apartados del 4.1 al 4.3; las figuras van de la 4.1 a la 4.7. `## Preguntas {style="plain"}` toma una entrada de `headingStyles` con `numbered: false`, así que ese título no lleva número. Los folios empiezan en el 87 porque la primera página cae a la derecha, y a la derecha van los folios impares.
+
+### 6 · Nombra los colores una sola vez
+
+<Excerpt region="palette" />
+
+Cada color de la configuración enlaza con una entrada de la paleta y lleva además su hex, que `col()` copia del mismo objeto. Postext 1.4.1 pinta los elementos de diseño y el color de las remisiones con ese hex, no con la entrada de la paleta (lo explica «Errores frecuentes»). Para cambiar los colores del capítulo, edita `palette`: los diagramas leen el mismo objeto, así que su vidrio, sus rayos, sus paneles oscuros y su fondo claro cambian a la vez que números, antetítulos y glosas. `main-color` apunta al color de acento, así que los colores por defecto de los estilos de texto que la configuración no fija salen en verde y no en el azul del motor.
+
+## Variantes
+
+### Deja los pies debajo de las figuras
+
+Con los valores por defecto del tipo figura, los pies de las figuras 4.1, 4.4 y 4.6 ocupan líneas de la columna de texto, y el canal queda solo para diagramas y glosas.
+
+```diff
+-const resourceTypes = defaultResourceTypes(LANG).map((type) => (type.id !== 'figure' ? type
+-  : { ...type, defaultPlacement: { captionSide: true } })); // gotcha: resource-types-locale
++const resourceTypes = defaultResourceTypes(LANG); // gotcha: resource-types-locale
+```
+
+### Pon el canal a la derecha en todas las páginas
+
+Para un documento que se lee página a página en pantalla, desactiva los márgenes simétricos y pasa al borde derecho el folio y la cabecera de las pares; así los capítulos pueden abrirse en cualquier página.
+
+```diff
+-  sideColumnSide: 'outer', // right on a recto, left on a verso (the margins are mirrored)
++  sideColumnSide: 'right', // what 'outer' means anyway once the margins stop mirroring
+-    bottom: mm(BOTTOM), left: mm(INNER), right: mm(OUTER), mirror: true } }, // left: recto's inner
++    bottom: mm(BOTTOM), left: mm(INNER), right: mm(OUTER), mirror: false } },
+-      { level: 1, breakBefore: { enabled: true, parity: 'odd' }, marginBottom: pt(LEAD),
++      { level: 1, breakBefore: { enabled: true, parity: 'any' }, marginBottom: pt(LEAD),
+-const verso = { parity: 'even', edge: 'top-left' }; // x counts in from the left edge
++const verso = { parity: 'even', edge: 'top-right' };
+-  head({ id: 'verso-folio', ...verso, ...folio, x: OUTER }),
+-  head({ id: 'verso-title', ...verso, content: '{title}', x: OUTER + HEAD_GAP }),
++  head({ id: 'verso-folio', ...verso, ...folio, x: -OUTER }),
++  head({ id: 'verso-title', ...verso, content: '{title}', x: -(OUTER + HEAD_GAP) }),
+-  head({ id: 'drop-folio', ...recto, ...folio, pages: 'opener', edge: 'bottom-right', x: -OUTER,
++  head({ id: 'drop-folio', ...folio, pages: 'opener', edge: 'bottom-right', x: -OUTER,
+```
+
+### Abre el capítulo bajo una banda de color
+
+<RecipeLink slug="chapter-opener-bleed-band">Apertura de capítulo sobre banda a sangre</RecipeLink> lleva una banda de color a sangre por arriba de la página y pone sobre ella el título y un número de capítulo de 168 pt.
+
+## Errores frecuentes
+
+- Figuras y glosas se apilan en el canal en el orden en que el texto llega a ellas, nunca una al lado de otra. La glosa del ángulo límite va después del párrafo de la ley de Snell y antes del que cita la figura 4.3, así que en la <PageRef page={2}>página 88</PageRef> se apila entre las figuras 4.2 y 4.3, junto al párrafo que presenta el término. Con la valla después de esa cita, caería bajo la figura 4.3.
+- En la primera página de un capítulo, cita las figuras del margen solo después del recuadro de objetivos. Las figuras laterales se apilan desde la cabeza del canal sin dejar sitio al antetítulo ni al número anclados allí, así que una figura citada en el primer párrafo se pinta encima de ellos.

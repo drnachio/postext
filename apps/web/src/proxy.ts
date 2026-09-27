@@ -4,8 +4,10 @@ import { routing } from "./i18n/routing";
 
 const intl = createMiddleware(routing);
 
-/** Pages with a Markdown rendition (app/md/[locale]/[[...path]]/route.ts). */
-const MARKDOWN_PAGE = /^\/(en|es)(\/(docs(\/[a-z0-9-]+)?|license|privacy-policy|cookie-policy))?\/?$/;
+/** Pages with a Markdown rendition (app/md/[locale]/[[...path]]/route.ts);
+ *  a section's OG image is not one of its pages. */
+const MARKDOWN_PAGE =
+  /^\/(en|es)(\/(docs(\/(?!opengraph-image\/?$)[a-z0-9-]+)?|cookbook(\/(?!opengraph-image\/?$)[a-z0-9-]+)?|license|privacy-policy|cookie-policy))?\/?$/;
 
 /** Agents that ask for `text/markdown` get the page's Markdown rendition. */
 function wantsMarkdown(req: NextRequest): boolean {

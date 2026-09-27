@@ -1,0 +1,67 @@
+---
+title: "Even word spacing in narrow justified columns"
+summary: "Knuth–Plass breaking with word spaces held to 0.8–1.6 times normal, set beside a greedy control whose loose lines, lone lines and runts are marked from the VDT."
+description: "An A5 type journal set twice: Knuth–Plass inside 0.8–1.6 word spacing against first-fit breaking, with loose lines, lone lines and runts marked from the VDT."
+question: "How do I get even justification in narrow columns, with the right hyphenation for each language?"
+aliases: ["justification", "word spacing", "rivers", "loose lines", "Knuth-Plass", "greedy line breaking", "first fit", "widows", "orphans", "runts", "hyphenation", "hyphenation locale", "narrow columns", "copy-fitting", "justifiedSpaceRatio", "minWordSpacing", "maxWordSpacing"]
+pageNotes: { "1": "A graphite band holds the kicker Galley · No. 12 · Justification in highlighter yellow, the title The river problem in white and an italic standfirst, then a diagram: a row of white word boxes joined by short yellow springs whose last word runs past a dashed measure line, and the same row hyphenated with its springs stretched to the measure. Two justified columns of the essay start under the band.", "2": "Two full columns: the sections Greedy and total fit, Fences for the glue, Hyphens and Widows, orphans and runts, with the settings in force (minWordSpacing 0.8, maxWordSpacing 1.6; widowPenalty, orphanPenalty, slackWeight) set in mono beside a graphite rule.", "3": "The end of the essay in two level columns with the runt settings and the colophon, above a graphite bench test at the foot of the page: one paragraph set ragged, justified without hyphens (wide gaps) and justified with them, and a note in white." }
+---
+
+## What you'll build
+
+Issue 12 of *Galley*, a type lab's journal, set on A5 in two columns of about forty characters, where a justified line has only five or six word spaces to take up the slack. The opener draws the Knuth–Plass model on a graphite band: a line of word boxes whose yellow springs of glue stretch to fill the measure. The essay explains why narrow columns go loose and prints the settings behind each rule in mono between its paragraphs. At the foot of page 3 a bench test sets one paragraph ragged, justified without hyphens and justified with them. The pen also sets the issue with first-fit breaking and the widow and orphan guards off, and shows both page 2s side by side above the pages, as on this recipe's card, with loose lines washed in highlighter yellow and lone lines and runts tagged in the margin.
+
+## Method
+
+### 1 · Tighten the fences, keep the guards
+
+The code for this step is [the short answer](#the-short-answer) above. [Knuth–Plass](/en/docs/justification#knuth-plass-seeing-the-whole-paragraph), hyphenation, the widow, orphan and runt penalties and keep-with-next headings are on by default, so the published edition only narrows the [word-spacing bounds](/en/docs/justification#word-spacing-bounds) to 0.8 and 1.6 times a normal space (the defaults are 0.6 and 2). A line past the upper bound costs more than any hyphen or runt, so the breaker tries other breaks first; delete the two bounds and this essay sets two lines past 1.6. Hyphenation follows `locale` by exact code: `'es'`, `'fr'` and `'de'` get their own TeX patterns, while `'es-ES'` is hyphenated as American English with no warning.
+
+### 2 · Mark loose lines from the layout tree
+
+<Excerpt region="marks" />
+
+Only the Sandbox honours `debug.looseLineHighlight`, and `doc.warnings` never lists a loose line, so `marks()` reads the [VDT](/en/docs/justification#loose-line-debugging) itself. Every justified line carries `justifiedSpaceRatio`, a paragraph split between two columns comes back as one block per fragment, and a line past 3× has no ratio, because the engine [sets it ragged](/en/docs/justification#lines-the-breaker-cannot-fill) and flags it `line.ragged` instead. At forty characters the bounds alone do not keep every line under 1.6; while the essay was being copy-fitted, the marks showed which sentences to reword.
+
+### 3 · Lay the control beside the published page
+
+<Excerpt region="compare" />
+
+Both editions share one design, so every difference between the two page 2s comes from the line breaker and its guards. In English the greedy control leaves 47 of its 110 justified lines past 1.6 and 30 past 2, three of them past 3× and set ragged by the engine, while the Knuth–Plass edition keeps all 105 between 0.80 and 1.60. On page 2 the control also carries a paragraph's last line alone to the head of a column, which `avoidOrphans: false` allows, and ends another paragraph on a runt.
+
+### 4 · Give each setting a box of its own
+
+<Excerpt region="bench" />
+
+A box sets all the columns of a [`:::columns`](/en/docs/document-format#columns) group in one body style, so each slip is a nested box with a `body` of its own, and `breaks="3"` stacks the ragged and the unhyphenated slips in the first column. The ragged slip needs no `hyphenation: false`, because ragged text is never hyphenated. The bench floats to the foot of page 3 with `placement: 'bottom'`, and its bottom padding repeats the 4 mm frame because the last slip's `marginBottom` is dropped at the end of the box.
+
+### 5 · Draw the model into the opener
+
+<Excerpt region="opener" />
+
+The diagram is an [image element](/en/docs/configuration#image-elements) of the H1's design. As a figure it would be a page-wide `top` float, and a `top` float cited on page 1 opens page 2. The band is a box, and boxes count towards the height an opener reserves while images do not, so the text starts under the band without a `minHeight`, a line further down because of the H1's default `marginBottom`. The labels are design text laid on the drawing's own coordinates, since an SVG drawn as an image cannot use the page's web fonts.
+
+## Variations
+
+### Hyphenate a German text
+
+Patterns are looked up by exact code, so a German text needs `'de'`.
+
+```diff
+-const locale = t({ en: 'en-us', es: 'es' }); // config().locale; 'es-ES' would be English
++const locale = 'de'; // German patterns; 'de-DE' would hyphenate as English
+```
+
+### Mark only the worst lines
+
+Raise the threshold from 1.6 to 2 and the highlighter marks only the lines whose spaces have more than doubled.
+
+```diff
+-        if (line.justifiedSpaceRatio > FENCES.maxWordSpacing || line.ragged) {
++        if (line.justifiedSpaceRatio > 2 || line.ragged) {
+```
+
+## Pitfalls
+
+- A box left at the end of a column drops to the column's foot when the columns are balanced, away from the paragraph it belongs to. Fit the copy so the column is full, as the settings box under “Fences for the glue” needed.
+- In postext 1.4.1 a line inside a box is never set ragged, however far it stretches: the unhyphenated slip keeps lines past three times a normal space (one at six), which the body text would set ragged.

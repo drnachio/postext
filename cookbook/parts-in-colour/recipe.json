@@ -1,0 +1,73 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 19,
+  "status": "published",
+  "chapter": "structure",
+  "order": 30,
+  "level": 3,
+  "genres": ["manual"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["part-palettes", "part-dividers", "toc"],
+    "also": [
+      "color-palette", "emphasis-colours", "bleed-bands", "page-role-filters", "running-heads",
+      "opener-design", "heading-attributes", "heading-numbering", "heading-styles",
+      "unnumbered-headings", "title-line-breaks", "covers", "design-images", "resource-types",
+      "inline-embeds", "fixed-callouts", "page-breaks"
+    ]
+  },
+  "answers": ["Q38", "Q31", "Q37", "Q50"],
+  "gotchas": [
+    "verso-design-breakafter", "heading-number-placeholders", "parity-page1-recto",
+    "palette-skips-designs", "headings-drop-h1-break", "here-figure-no-space-after",
+    "box-paragraph-margins", "runt-tracking-unpainted", "hyphenation-locales", "fonts-first"
+  ],
+  "explainsWarnings": [],
+  "workarounds": [
+    { "followup": "EF-71", "package": "postext", "note": "col() writes each colour's hex beside its paletteId: the document palette never reaches design elements in 1.4.1, while a part's palette=\"band=…\" does, through the id" },
+    { "followup": "EF-05", "package": "postext", "note": "the species heading states breakBefore: { enabled: false }: the break is off today only because a headings object drops the documented H1 default, and a :::pagebreak, or the part's own break, starts each species on a body page" },
+    { "followup": "EF-09", "package": "postext", "note": "the species number is {number} from numberingTemplate '{1}'; {numberRoman} appears only in the part design, where it is filled" },
+    { "followup": "EF-93", "package": "postext", "note": "a :::space{lines=1} follows every ::resource plate: an inline figure gets a line of space above it, but below its caption only what the baseline grid leaves" },
+    { "followup": "EF-77", "package": "postext", "note": "the colophon inside the contents note takes its air from a 15 pt leading: paragraph-style margins are ignored inside a box" },
+    { "followup": "EF-14", "package": "postext", "note": "locale: t({ en: 'en-us', es: 'es' }): hyphenation loads its patterns by exact code only" },
+    { "followup": "EF-111", "package": "postext", "note": "bodyText.maxRuntTracking is 0: in 1.4.1 a runt fix may set a paragraph one line shorter with negative tracking (a block letterSpacing of -10‰), which the layout measures but the canvas and postext-pdf renderers paint only above 0, so its justified lines crush their word spaces and its last line runs past the measure and is clipped (Spanish p. 9, 'con alas cortas y redondeadas.'); word spacing alone still shortens runts, and the Spanish species texts were copy-fitted to one page each (gotcha runt-tracking-unpainted; the same bug magazine-cover-and-contents routes around)" }
+  ],
+  "related": [
+    "walking-guide-thumb-tabs",
+    "magazine-cover-and-contents",
+    "five-chapter-openers",
+    "front-matter-roman-to-arabic"
+  ],
+  "engine": { "postext": "1.4.1" },
+  "kit": ["core", "fonts", "viewer", "images"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": {
+    "hero": [2, 3],
+    "card": "spread",
+    "pages": "all",
+    "expect": { "pages": [10, 10], "nearEmptyPages": [1, 3, 4, 7, 8] }
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [],
+    "images": [
+      {
+        "what": {
+          "en": "The cover, the contents strip and the four plates, drawn in code",
+          "es": "La cubierta, la franja del índice y las cuatro láminas, dibujadas en código"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "fonts": [
+      { "family": "Alegreya", "license": "OFL-1.1" },
+      { "family": "Zilla Slab", "license": "OFL-1.1" },
+      { "family": "Barlow Condensed", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-25",
+  "updated": "2026-09-26"
+}

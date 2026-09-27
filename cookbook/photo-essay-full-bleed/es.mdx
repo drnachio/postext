@@ -1,0 +1,62 @@
+---
+title: "Ensayo fotográfico con láminas a sangre"
+summary: "Cada lámina es un estilo de título generado a partir de una lista y llena su página hasta el corte; la de la tormenta cruza el medianil en dos mitades."
+description: "Un fotolibro apaisado en Postext: seis láminas de una sierra como estilos de título generados a partir de una lista, una a doble página, y tres textos breves."
+question: "¿Cómo le doy a cada lámina de un ensayo fotográfico su propia página a sangre, y extiendo una a doble página?"
+aliases: ["fotolibro", "ensayo fotográfico", "foto a sangre", "lámina", "imagen a doble página", "doble página", "panorámica", "lista de láminas", "photobook", "full-bleed"]
+pageNotes: { "1": "La primera lámina: crestas superpuestas que se pierden en una bruma de alba color melocotón bajo un cielo azul oscuro; SIERRA en mayúsculas blancas y gruesas cruza el cielo, con el subtítulo debajo, y en la esquina inferior izquierda van el número I y la hora 08:12.", "2": "Una página de texto sobre papel color piedra claro: las horas en una monoespaciada pequeña color óxido, el título La subida en una palo seco ancha y negra, cuatro párrafos justificados en una columna de 100 mm junto al lomo y el folio al pie.", "3": "La lámina del mediodía: un circo de granito gris sobre una laguna, con laderas oscuras y bolos delante; el número II y 14:06 abajo a la izquierda.", "4": "La mitad izquierda de la lámina de la tormenta: un techo de nubes oscuras, una cortina de lluvia sobre las crestas y el número III con 16:40 abajo a la izquierda.", "5": "La mitad derecha de la lámina de la tormenta: un rayo sobre las crestas y, en el borde derecho, crestas lejanas teñidas de luz cálida donde asoma el sol.", "6": "El texto Once segundos y, debajo, la lámina IV: una panorámica estrecha del atardecer, con una cresta encendida de naranja bajo franjas de nube en un cielo violeta y el pie IV, Atardecer, 19:41.", "7": "La lámina de la noche: estrellas sobre crestas oscuras y dos ventanas encendidas en un refugio, con el número V y 22:10.", "8": "El texto Primera nieve, en cuatro párrafos.", "9": "La última lámina: el circo de la lámina del mediodía, blanco de nieve nueva, con el número VI y 08:31, y el colofón en dos líneas de letra pequeña abajo a la derecha." }
+---
+
+## Lo que vas a componer
+
+*Sierra*, un fotolibro apaisado de 280 × 210 mm: un día en una sierra de granito en seis láminas, desde la primera luz hasta la mañana siguiente a la primera nevada. Cada lámina llena su página hasta el corte y solo lleva un número pequeño y la hora en la esquina inferior izquierda; la primera lleva además el título, SIERRA en Syne de 72 pt, calado en blanco sobre el cielo del alba. La tormenta cruza el medianil de las páginas 4 y 5 como una sola imagen. Tres textos breves, en una columna de 100 mm junto al lomo, quedan cada uno enfrente de la lámina que lo sigue. El de la tormenta termina en una lámina más pequeña, la del atardecer, que flota bajo el texto y lleva su número en el pie. La última lámina repite la segunda: el mismo circo desde el mismo bolo, nevado.
+
+## Elaboración
+
+### 1 · Un estilo de título por lámina, generado a partir de una lista
+
+El código está en [la respuesta corta](#la-respuesta-corta), más arriba. Un estilo de título puede nombrar su propia imagen, así que cada lámina es un estilo que `plate()` genera a partir de una fila de `PLATES`, y el Markdown fija el orden del ensayo con una línea por lámina: `# Tormenta {style="tormenta" n="III" hora="16:40"}`. `span: 'page'` abre cada lámina en una página propia. Los márgenes a cero hacen la columna de la lámina tan alta como la página, y `minHeight` llena esa columna, de modo que lo que viene detrás de una lámina empieza en la página siguiente. Hacen falta los dos ajustes. Sin `minHeight`, la mitad derecha de la tormenta, que no dibuja ningún texto, conserva solo la línea de 7,6 mm de su propio título, y el texto siguiente empieza en esa página, encima de la imagen. Con los márgenes de las páginas de texto, la columna mide 158 mm, menos que los 210 mm de `minHeight`, así que postext 1.4.1 descarta la reserva entera y los tres textos se componen encima de las láminas que los preceden.
+
+Los dos estilos de la tormenta dibujan la misma imagen de 560 mm: en la página par empieza en el borde izquierdo, y en la impar, 280 mm más a la izquierda; cada página muestra su mitad y el canvas recorta el resto en el corte. `parity: 'even'` mantiene enfrentadas las dos mitades. Si quitas del Markdown la lámina del mediodía y no fijas la paridad, la mitad izquierda abre la página 3, impar, y la derecha queda al dorso, en la 4; con la paridad, la página 3 se queda en blanco y la tormenta sigue en las páginas 4 y 5.
+
+### 2 · El número y la hora salen de la línea del título
+
+<Excerpt region="caption" />
+
+El número y la hora son atributos del título, así que el contenido sigue en el Markdown y un solo diseño sirve para todas las láminas. Con `right-of`, la hora se coloca a la derecha del número y los bordes superiores de los dos quedan alineados. La línea base de un texto de diseño queda a 0,8 de su caja de línea por debajo del borde superior del elemento, y esa caja mide por defecto 1,2 veces el cuerpo; por eso `dropTo(13, 8)` baja la hora 0,8 × 1,2 × (13 − 8) pt y la hora de 8 pt se apoya en la línea base del número de 13 pt, a 193,4 mm del borde superior de la página. La hora empieza con un punto medio, como el pie de la lámina IV, porque la I de Syne es una barra lisa que, sola junto a la hora, parece un filete. La mitad derecha de la tormenta no lleva pie, y la lámina de la nieve compone el suyo en tinta porque su primer plano es blanco.
+
+### 3 · Un título y un colofón sobre las propias láminas
+
+<Excerpt region="cover" />
+
+La primera lámina es la portada. `{title}` y `{subtitle}` leen el frontmatter, y `extra` en `PLATES` añade los dos elementos al diseño de esa lámina, en el color de su pie. El colofón va en la última lámina de la misma manera, en tinta sobre la nieve: dos elementos de 7,5 pt, uno por línea, tomados de los atributos `colofon` y `tipos`, alineados a la derecha, el segundo en la línea base del número. Un solo elemento con ajuste de línea cortaría allí donde se le acabara el ancho; con un elemento por línea, el corte cae después de la licencia.
+
+### 4 · Los textos siguen a sus láminas sin salto
+
+<Excerpt region="texts" />
+
+La lámina que precede a un texto llena su página, así que el texto empieza en la siguiente sin salto propio. Una página cuyo primer bloque es un título con salto es una página de apertura, y `pages: 'body'` la deja sin folio. Sin salto, las páginas de texto conservan su folio; las láminas, abiertas por títulos con `span`, se quedan sin él. postext 1.4.1 ya quita el salto del nivel 1 en cuanto existe un objeto `headings`, así que hoy borrar `breakBefore: { enabled: false }` no cambia nada. Esa línea hará falta cuando una versión recupere el salto a página impar por defecto: entonces impedirá que los textos salten, y sus páginas seguirán siendo de cuerpo, con folio. `FOOT` pone el folio en la línea base de los números de las láminas, a 193,4 mm del borde superior, de modo que el folio de cada texto y el número de la lámina de enfrente quedan en la misma línea.
+
+### 5 · Declara todas las láminas y cita solo la que flota
+
+<Excerpt region="plates" />
+
+Un elemento de imagen dibuja un recurso declarado, así que las seis imágenes están en `resources`. Solo la lámina IV se cita con `:ref`, y por eso es la única que flota. Ocupa el primer hueco libre tras la cita, en la página de su texto, una línea por debajo del último párrafo. Un tipo numerado le pondría el pie *Lámina 1*, porque es el único recurso de su tipo que flota. `lamina` tiene en cambio un `numberingTemplate` vacío, y el propio pie empieza por IV. En la frase, la lámina se nombra con el `text` de `:ref`, porque un `:ref` sin `text` imprime solo la palabra *lámina*.
+
+## Variantes
+
+### Haz flotar las láminas frente a sus fichas
+
+Para láminas que flotan hasta la página impar, enfrente de la ficha de un catálogo, con el ancho de la figura calculado a partir de sus proporciones, consulta <RecipeLink slug="catalogue-facing-plates">Fichas de catálogo frente a sus láminas</RecipeLink>.
+
+### Abre un artículo sobre una foto a sangre
+
+Para una foto a sangre en la cabeza de un artículo, con el titular y la entradilla encima, consulta <RecipeLink slug="magazine-feature-opener">el reportaje de revista</RecipeLink>.
+
+## Errores frecuentes
+
+- No cites nunca una lámina que ya dibuja un diseño. Citada, flota además como figura: un `:ref` a la lámina del mediodía en el primer texto pone una segunda copia en la página 3, y la tormenta se retrasa dos páginas, tras una página en blanco.
+- La lámina del atardecer queda una línea por debajo de su texto, no al pie de la página. En la última página antes de una lámina, postext 1.4.1 sube hasta el texto el flotante que queda debajo de él, y `position: 'bottom'` no cambia nada ahí.
+- Cada texto está ajustado a una página en las dos ediciones. Si el primero pasa a la página 3, la lámina del mediodía se va a la 4 y la tormenta a las páginas 6 y 7, tras una página 5 en blanco.
+- La mitad derecha de la tormenta es un segundo título `# Tormenta`. La página no imprime ese título, pero un `:::toc` generado a partir de los títulos recoge la tormenta dos veces, en las páginas 4 y 5.
+- Las láminas terminan en el corte, que es el borde del canvas. Con `page.cutLines` activado, el canvas crece alrededor del corte, y la franja de sangrado de cada lámina sale del color del papel. Para imprenta, ancla las láminas a `'bleed'` y agrándalas lo que mida el sangrado por cada lado.

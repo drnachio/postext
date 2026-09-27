@@ -70,6 +70,15 @@ export function MobileMenu() {
               </li>
               <li>
                 <Link
+                  href="/cookbook"
+                  onClick={() => setOpen(false)}
+                  className="block font-sans text-lg font-medium text-foreground transition-colors hover:text-brand"
+                >
+                  {t("cookbook")}
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/sandbox"
                   onClick={() => setOpen(false)}
                   className="block font-sans text-lg font-medium text-foreground transition-colors hover:text-brand"

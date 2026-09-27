@@ -1,0 +1,67 @@
+---
+title: "Catálogo de venta por correo con imágenes en las celdas"
+summary: "Un catálogo de semillas cuya lista de precios, una tabla leída de un TSV, lleva un sobre dibujado en la celda de cada variedad y se parte entre dos páginas."
+description: "Catálogo de semillas de cuatro páginas compuesto con Postext. Su lista de precios, leída de un TSV, lleva un sobre dibujado en cada fila y se parte en dos."
+question: "¿Cómo pongo un dibujo en cada fila de una tabla de productos, con el nombre debajo?"
+aliases: ["catálogo de semillas", "catálogo de productos", "lista de precios", "venta por correo", "tabla de productos", "tabla con imágenes", "imágenes en una tabla", "miniaturas en una tabla", "hoja de pedido", "rowspan"]
+pageNotes: { "1": "La cubierta, sobre papel color ante y dentro de un marco verde: Brindlewood Seed Co. en mayúsculas verdes espaciadas, Spring Seeds en una egipcia roja, una banda amarilla con Catalog No. 12 · Spring 2027 y el dibujo de un girasol y una mata de tomates que salen de un campo arado. Debajo, la carta To Our Growers a dos columnas, con un chip rojo NEW y otro verde ORGANIC en el texto, firmada por Ada Brindle y Tom Okafor.", "2": "La lista de precios empieza bajo una banda roja con Vegetable Seeds y una fila de cabecera oscura. Hay cinco variedades, cada una con su sobre de semillas dibujado encima del nombre; Heirloom tomatoes ocupa una celda crema combinada de cuatro filas, las descripciones llevan chips NEW y ORGANIC y los precios por sobre y por onza van alineados a la derecha. Continued on the facing page cierra la página.", "3": "La banda vuelve como Vegetable Seeds (continued) sobre la fila de cabecera repetida: dos judías y dos calabazas, cada clase en una celda combinada a lo largo de sus filas, y una nota con las semillas que trae un sobre. Debajo, From Our Trial Garden a dos columnas igualadas.", "4": "La hoja de pedido: las señas de la casa en mayúsculas verdes, Order Sheet en la egipcia roja sobre un filete doble, una instrucción en cursiva, una tabla redondeada para la dirección del cliente y otra para el pedido, con once renglones en blanco y las filas de totales combinadas, la garantía en letra pequeña y el colofón." }
+---
+
+## Lo que vas a componer
+
+La lista de precios de primavera de Brindlewood Seed Co., una casa de semillas inventada, en un cuadernillo de cuatro páginas sobre papel color ante. En la cubierta, «Spring Seeds» va en Alfa Slab One sobre un girasol y una mata de tomates, y debajo, a dos columnas, la carta a los clientes. La lista ocupa las páginas 2 y 3. Cada variedad tiene su sobre dibujado en lo alto de la celda, con el nombre debajo, y las clases de hortaliza bajan por una primera columna de celdas combinadas. Los precios van a la derecha en una letra estrecha de rótulos, y unos chips rojos y verdes marcan las semillas nuevas y las ecológicas. La lista se corta después del pimiento para freír y sigue en la página de enfrente bajo la misma banda roja, con «(continued)» detrás del título. La contracubierta es la hoja de pedido: dos tablas de esquinas redondeadas con renglones en blanco para rellenar a mano.
+
+## Elaboración
+
+### 1 · Añade lo que el TSV no trae
+
+El código está en [la respuesta corta](#la-respuesta-corta), más arriba. El TSV solo trae palabras y precios. `setCellImage` coloca el sobre de cada variedad, un recurso con el nombre de la variedad como id, en lo alto de su celda y al 55 % del ancho interior, de modo que el nombre queda bajo un dibujo de 20,3 × 27,1 mm y cada fila crece hasta 36 mm. `mergeCells` extiende cada clase hacia abajo por la primera columna y marca con `hiddenBy` las celdas que tapa. Las celdas del cuerpo de una tabla comparten una sola letra, aquí Gelasio, así que cada precio es un chip sin fondo, sin borde y sin margen interior a los lados, en Cabin Condensed negrita a 1,12 em por sus cifras de caja alta.
+
+### 2 · Cita la lista y pártela entre las dos páginas
+
+<Excerpt region="split" />
+
+La carta de la página 1 cita la lista con `:ref{id="vegetables" text="the price list"}`, y `text` imprime esas palabras en lugar de un número. Una tabla citada flota al primer hueco libre después de la cita, que aquí es la cabeza de la página 2. La lista no cabe entera, así que el motor la corta entre filas después de Jimmy Nardello, nunca dentro de una clase combinada. En la página 3 se repiten la fila de cabecera y la banda del pie, ahora con el sufijo; el aviso va bajo la primera parte y la nota, bajo la última ([tablas más altas que la página](/es/docs/configuration#tablas-más-altas-que-la-página)). `parseTSV` no marca ninguna celda como cabecera, así que hay que poner `headerRowCount: 1` a mano para que la primera fila se pinte como cabecera y se repita en la página 3. El sufijo y el aviso van en cursiva con la letra del pie, y por eso la banda se compone en Gelasio y no en Cabin Condensed, que no tiene cursiva.
+
+### 3 · Un recurso para cada sobre
+
+<Excerpt region="pictures" />
+
+La imagen de una celda remite a un recurso por su id, así que cada sobre es un recurso SVG propio, y `loadSvg`, del kit, registra su dibujo con el `fileId` mediante `registerResourceImage`. Nadie cita los sobres, de modo que ninguno se numera ni se coloca fuera de su celda. Un SVG dibujado como imagen no puede usar las fuentes web de la página, así que los sobres no llevan rótulos y el nombre va como texto de la celda.
+
+### 4 · Un segundo estilo de tabla para la hoja de pedido
+
+<Excerpt region="forms" />
+
+Las dos tablas de la hoja de pedido usan el estilo con nombre `form`, con filetes en cuadrícula, 2,5 mm de radio en las esquinas del marco exterior y un fondo crema sobre el que escribir. La lista de precios conserva el `tableStyle` del documento ([estilos de tabla con nombre](/es/docs/configuration#estilos-de-tabla-con-nombre)). Una celda vacía no necesita ningún texto, porque su fila ocupa igualmente una línea, aquí de 7,3 mm. Cada total combina cuatro columnas en un solo rótulo alineado a la derecha. El estilo de título de la hoja de pedido pasa la página 4 a una sola columna, así que las dos tablas ocupan toda la medida, 157 mm.
+
+### 5 · Mantén la carta debajo del dibujo
+
+<Excerpt region="cover" />
+
+El dibujo de la cubierta es un elemento de imagen, y una imagen no suma nada a la altura que reserva una apertura. Sin `minHeight`, la carta empezaría a 55 mm del borde superior de la página, encima del girasol. `SINK` deja 10 mm de aire bajo el dibujo y redondea la distancia desde el margen superior a líneas enteras de 13 pt, 34 en total, así que las dos columnas de la carta arrancan en la rejilla base, a 177,9 mm del borde.
+
+## Variantes
+
+### Quédate solo con lo que cabe
+
+Con `overflow: 'clip'`, la lista se queda en las cinco variedades que caben en la página 2, con la nota debajo, y en la página 3 solo quedan las notas del campo de ensayo, en su primera columna.
+
+```diff
+-  overflow: 'split', continuedSuffix: '(continued)',
++  overflow: 'clip', continuedSuffix: '(continued)',
+```
+
+### Encoge los sobres
+
+Al 40 %, las filas bajan a 29 mm, pero las dos judías comparten una celda combinada y juntas necesitan 57 mm, más de los 44 mm que quedan en la página 2. Las notas del campo de ensayo suben a ese hueco, y la página 3 solo lleva el resto de la lista, con la página en blanco por debajo de los 157 mm.
+
+```diff
+-const PACKET = 0.55; // the packet drawing's share of its cell's inner width
++const PACKET = 0.4; // the packet drawing's share of its cell's inner width
+```
+
+## Errores frecuentes
+
+- Un recurso que nadie cita no se coloca nunca. Si quitas el `:ref` de la carta, el catálogo se queda sin lista de precios.
+- En columnas de 75 mm, Knuth–Plass puede dejar una línea justificada con los espacios más abiertos de lo que permite `maxWordSpacing`. La carta y las notas del campo de ensayo se reescribieron hasta que la línea más abierta estiró sus espacios 1,33 veces su ancho normal. Las notas ocupan además 14 líneas justas: con 13, el equilibrado de columnas de la página de cierre deja una línea de la rejilla base en blanco sobre From Our Trial Garden, y el título empieza una línea más abajo que el texto de la otra columna.

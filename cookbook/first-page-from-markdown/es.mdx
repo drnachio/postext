@@ -1,0 +1,87 @@
+---
+title: "De una cadena Markdown a una página diseñada"
+summary: "Una cadena Markdown con frontmatter se compone en páginas de revista a dos columnas y se pinta en canvas, con seis colores en lugar del azul por defecto."
+description: "El pen carga las fuentes antes de componer, crea una configuración nueva en cada composición, monta la apertura con el frontmatter y pinta en canvas."
+question: "¿Cómo paso una cadena Markdown a páginas diseñadas, sin el azul por defecto en títulos, negritas y viñetas?"
+aliases: ["primer documento", "primeros pasos", "hola mundo", "inicio rápido", "markdown a canvas", "aspecto por defecto", "reportaje de viajes"]
+pageNotes: { "1": "Una banda añil ocupa la parte alta de la página: una cuadrícula de salinas blancas cruzada por una senda punteada que sube por una duna de arena hasta un mojón en la cresta, bajo el título La ruta de la sal, la entradilla y la firma.", "2": "La página par siguiente: el folio y el título del reportaje como cabecera, dos columnas justificadas con ladillos en añil, una lista de guiones con las palabras iniciales en negrita, un signo de fin y el colofón bajo un filete." }
+---
+
+## Lo que vas a componer
+
+Las primeras páginas de un reportaje de viajes en una pequeña revista, *Cuaderno de campo*. La página 1 es una apertura en página impar: una banda añil que ocupa el 58 % superior, un dibujo de salinas y dunas, el título en Young Serif de 54 puntos y, debajo, dos columnas justificadas que arrancan con una frase en negrita. La página 2, a la vuelta, sigue bajo una cabecera en mayúsculas espaciadas y termina con un signo de fin y un colofón. Todo el diseño cabe en una función de configuración y una paleta de seis colores. El titular sale del título de primer nivel, y la entradilla, la autora y la fecha, del frontmatter del Markdown, así que el mismo pen compone cualquier artículo cuyo título quepa en dos líneas; solo el dibujo es propio de este.
+
+## Elaboración
+
+### 1 · Todas las fuentes, antes de la primera composición
+
+<Excerpt region="fonts" />
+
+Postext mide el texto con las fuentes que el navegador ya ha cargado y guarda las medidas en caché, así que una composición que se adelanta a las fuentes conserva sus cortes de línea equivocados. El kit carga estos archivos de Fontsource, los mismos que incrustaría un PDF. Después, `buildWithFonts` repasa las fuentes que usan las páginas. Si un bloque o un elemento de diseño está compuesto en una fuente que no se ha cargado, avisa en la consola, la carga y vuelve a componer; si Fontsource no tiene esa fuente, el pen se detiene con un error (consulta «Errores frecuentes»). Las negritas y cursivas de una fuente de texto se cargan sin aviso, y solo si la familia las incluye.
+
+### 2 · Nombra los colores y apunta a los nombres
+
+<Excerpt region="palette" />
+
+Cada color de la configuración es `col('id')`, un identificador de la paleta con su valor hexadecimal al lado. `bodyText.boldColor`, `italicColor`, `referenceColor` y `unorderedLists.color` apuntan a `ink`, y `headings.color`, al acento. Los valores por defecto del motor para títulos, negritas, cursivas y viñetas están enlazados a `main-color`, y esta paleta da a esa entrada el color del acento, de modo que cualquiera de ellos que no fijes sale añil y no azul. En Postext 1.4.1, los elementos de cabeceras, pies y aperturas, y también `referenceColor`, se pintan con el valor hexadecimal, no con el identificador; por eso los objetos de diseño son funciones que `config()` llama en cada composición, y `col()` copia cada vez el valor vigente de `palette`. El signo de fin es una muestra de color en línea que nombra `band`, así que también cambia con la paleta. La cabecera por defecto no lee la paleta y se queda azul hasta que la sustituyas (paso 5).
+
+### 3 · Un dibujo hecho con código
+
+<Excerpt region="art" />
+
+Las salinas, las dunas y el mojón son una cadena SVG construida con la misma paleta y un generador aleatorio con semilla: cada ejecución dibuja el mismo paisaje y la captura solo cambia cuando cambia el código. Se dibuja para un marco de `PAGE.width` × `BAND` milímetros y el recurso declara ese mismo marco, a 10 px por milímetro, de modo que el dibujo llena exactamente la banda y, si la banda crece, el dibujo crece con ella. La apertura lo muestra con un elemento de imagen que nombra el recurso por su identificador.
+
+### 4 · El frontmatter escribe la apertura
+
+<Excerpt region="opener" />
+
+El título de primer nivel abarca las dos columnas, y su apertura es una ranura de elementos: una caja añil a sangre, el dibujo y cuatro textos encadenados uno debajo de otro. Un título más largo empuja hacia abajo la entradilla y la firma en vez de montarse sobre ellas, pero a partir de la tercera línea la firma cae sobre las salinas claras. `{titleText}` es el texto del título; `{subtitle}`, `{author}` y `{publishDate}` salen del frontmatter. La `\\` del título corta la línea donde la pongas ([saltos de línea en los títulos](/es/docs/document-format#saltos-de-línea-en-los-títulos)). `minHeight` se cuenta desde el margen superior, así que la altura reservada acaba 5 mm por debajo de la banda.
+
+### 5 · Cabeceras en lugar del azul por defecto
+
+<Excerpt region="running-heads" />
+
+Si omites `header`, vuelve la cabecera por defecto del motor: Open Sans sobre un filete de lado a lado, en todas las páginas. Aquí cada folio se ancla a la página física y se filtra por paridad, así que siempre queda en el borde exterior. El texto que lo acompaña se ancla al folio, a `GAP` milímetros, con `right-of` o `left-of`, y un folio de tres o cuatro cifras lo desplaza en vez de chocar con él. `pages: 'body'` deja los cuatro elementos fuera de la apertura. El pie de página lleva un único folio, el de la apertura, y como `footer` está definido, las demás páginas pierden el folio centrado por defecto.
+
+### 6 · Compón con una configuración nueva y pinta
+
+<Excerpt region="build" />
+
+`config()` es una función porque el motor guarda en caché cada configuración resuelta según la identidad del objeto, así que un ajuste editado solo surte efecto si cada composición recibe un objeto nuevo. `showPages` coloca las páginas como irían en un libro encuadernado, con la página 1 sola a la derecha, y pinta cada una con `renderPageToCanvas`.
+
+## Variantes
+
+### Mira lo que sustituye la configuración
+
+Compón con una configuración vacía y el mismo Markdown sale en una página de 17 × 24 cm, en EB Garamond de 8 puntos, con títulos azules en Open Sans y una cabecera azul sobre un filete; el kit carga esas fuentes por ti, con un aviso en la consola.
+
+```diff
+-  () => buildDocument({ markdown, resources }, config()), markdown);
++  () => buildDocument({ markdown, resources }, {}), markdown);
+```
+
+### Cambia el color de toda la página
+
+Cambia el acento y la siguiente ejecución pinta con el nuevo color la banda, los folios, los ladillos y el signo de fin, porque `col()` copia el nuevo valor junto al identificador cada vez que se llama a `config()` y la función del paisaje lee `palette` cada vez que dibuja.
+
+```diff
+-  band: '#2b3a67', // the one accent (an indigo): the band, the folios, the subheads
++  band: '#3f5b3a', // the one accent (a pine green): the band, the folios, the subheads
+```
+
+### Pinta una página en tu propio canvas
+
+`renderPageToCanvas` da al canvas el tamaño de la página en píxeles a la resolución del documento (300 ppp por defecto) multiplicado por `scale`, así que `scale: 0.5` pinta a unos 150 ppp, y el CSS decide lo grande que se ve en pantalla.
+
+```diff
+-showPages(doc, {
+-  title: t({ en: 'From a Markdown string to a designed page',
+-    es: 'De una cadena Markdown a una página diseñada' }),
+-});
++const canvas = document.body.appendChild(document.createElement('canvas'));
++renderPageToCanvas(doc.pages[0], doc, canvas, { scale: 0.5 });
+```
+
+## Errores frecuentes
+
+- Young Serif tiene un solo peso. Los títulos van en negrita por defecto, así que aquí `headings.fontWeight: 400` es obligatorio: sin él, el kit busca una Young Serif negrita que Fontsource no tiene y el pen se detiene con un error.

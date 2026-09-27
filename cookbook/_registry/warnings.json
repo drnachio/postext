@@ -1,0 +1,1081 @@
+{
+  "$comment": "Every warning a Postext user can meet, keyed by kind. source: 'engine' = VDTDocument.warnings (doc.warnings), 'parse' = parseMarkdownWithIssues(md).issues, 'sandbox' = the Sandbox's Checks panel only (packages/postext-sandbox/src/warnings/types.ts; the Sandbox also shows the engine and parse kinds). The registry test fails when a Sandbox kind has no entry. Recipes list the kinds they explain in explainsWarnings; each gets a #warning-<kind> anchor in Pitfalls. Labels follow the Checks panel's own titles.",
+  "missingFont": {
+    "source": "sandbox",
+    "label": {
+      "en": "Missing font",
+      "es": "Fuente no cargada"
+    },
+    "cause": {
+      "en": "A family named in the config never loaded in the browser, so text was measured and drawn with a system fallback.",
+      "es": "Una familia que nombra la configuración no llegó a cargarse en el navegador, así que el texto se midió y se dibujó con una fuente de reserva del sistema."
+    },
+    "fix": {
+      "en": "Fix the family name (one family, no CSS stack) and load every face before the first build; in a pen, list it in FONTS.",
+      "es": "Corrige el nombre de la familia (una sola familia, sin pila CSS) y carga todas las fuentes antes de la primera composición; en un pen, añádela a FONTS."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Missing-font warnings",
+        "es": "Avisos de fuentes faltantes"
+      }
+    }
+  },
+  "missingFontFamily": {
+    "source": "sandbox",
+    "label": {
+      "en": "Unknown font family",
+      "es": "Familia de fuentes desconocida"
+    },
+    "cause": {
+      "en": "A fontFamily names something that is neither a Google Font nor a family declared in customFonts.",
+      "es": "Un fontFamily nombra algo que no es una fuente de Google ni una familia declarada en customFonts."
+    },
+    "fix": {
+      "en": "Correct the spelling, or declare the family in customFonts with its files.",
+      "es": "Corrige el nombre o declara la familia en customFonts con sus archivos."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Missing-font warnings",
+        "es": "Avisos de fuentes faltantes"
+      }
+    }
+  },
+  "missingFontVariant": {
+    "source": "sandbox",
+    "label": {
+      "en": "Missing font variant",
+      "es": "Variante de fuente ausente"
+    },
+    "cause": {
+      "en": "A custom family has no file for a weight and style the document uses, such as its italic or bold.",
+      "es": "A una familia propia le falta el archivo de un peso y estilo que usa el documento, como su cursiva o su negrita."
+    },
+    "fix": {
+      "en": "Upload or declare the missing variant, or stop using that weight or style.",
+      "es": "Sube o declara la variante que falta, o deja de usar ese peso o estilo."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Missing-font warnings",
+        "es": "Avisos de fuentes faltantes"
+      }
+    }
+  },
+  "duplicateFontVariant": {
+    "source": "sandbox",
+    "label": {
+      "en": "Duplicate font variant",
+      "es": "Variante de fuente duplicada"
+    },
+    "cause": {
+      "en": "Two files of a custom family claim the same weight and style; only one of them is used.",
+      "es": "Dos archivos de una familia propia ocupan el mismo peso y estilo; solo se usa uno."
+    },
+    "fix": {
+      "en": "Give each file its real weight and style, or remove the extra one.",
+      "es": "Asigna a cada archivo su peso y estilo reales, o elimina el sobrante."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Missing-font warnings",
+        "es": "Avisos de fuentes faltantes"
+      }
+    }
+  },
+  "looseLine": {
+    "source": "sandbox",
+    "label": {
+      "en": "Loose line",
+      "es": "Línea floja"
+    },
+    "cause": {
+      "en": "A justified line stretches its spaces beyond the threshold, usually because of a long word, a URL or a narrow measure.",
+      "es": "Una línea justificada estira sus espacios por encima del umbral, casi siempre por una palabra larga, una URL o una medida estrecha."
+    },
+    "fix": {
+      "en": "Turn on hyphenation in the right language, widen the measure, rephrase, or set the passage ragged.",
+      "es": "Activa la separación silábica en el idioma correcto, ensancha la medida, reformula o compón ese pasaje en bandera."
+    },
+    "docs": {
+      "slug": "justification",
+      "heading": {
+        "en": "Loose-Line Debugging",
+        "es": "Depuración de líneas flojas"
+      }
+    }
+  },
+  "headingHierarchy": {
+    "source": "sandbox",
+    "label": {
+      "en": "Heading hierarchy jump",
+      "es": "Salto en la jerarquía de títulos"
+    },
+    "cause": {
+      "en": "A heading skips a level, such as an H1 followed directly by an H3.",
+      "es": "Un título se salta un nivel, por ejemplo un H1 seguido directamente de un H3."
+    },
+    "fix": {
+      "en": "Use the next level down, or restyle the level you meant instead of skipping one.",
+      "es": "Usa el nivel inmediatamente inferior, o cambia el estilo del nivel que querías en lugar de saltártelo."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Warnings",
+        "es": "Avisos"
+      }
+    }
+  },
+  "consecutiveHeadings": {
+    "source": "sandbox",
+    "label": {
+      "en": "Consecutive headings",
+      "es": "Títulos consecutivos"
+    },
+    "cause": {
+      "en": "A heading follows another with no text between them (off by default).",
+      "es": "Un título sigue a otro sin texto entre ambos (desactivado por defecto)."
+    },
+    "fix": {
+      "en": "Add an introductory paragraph, or turn the check off where stacked headings are intended.",
+      "es": "Añade un párrafo introductorio, o desactiva la comprobación donde quieras dos títulos seguidos."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Warnings",
+        "es": "Avisos"
+      }
+    }
+  },
+  "listAfterHeading": {
+    "source": "sandbox",
+    "label": {
+      "en": "List after heading",
+      "es": "Lista tras título"
+    },
+    "cause": {
+      "en": "A list starts right after a heading, with no sentence to introduce it (off by default).",
+      "es": "Una lista empieza justo después de un título, sin una frase que la introduzca (desactivado por defecto)."
+    },
+    "fix": {
+      "en": "Introduce the list with a sentence ending in a colon, which also keeps it with the list.",
+      "es": "Introduce la lista con una frase que acabe en dos puntos, que además queda unida a la lista."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Warnings",
+        "es": "Avisos"
+      }
+    }
+  },
+  "invalidMath": {
+    "source": "sandbox",
+    "label": {
+      "en": "Invalid LaTeX",
+      "es": "LaTeX no válido"
+    },
+    "cause": {
+      "en": "MathJax could not parse a formula, so a red placeholder is printed instead.",
+      "es": "MathJax no pudo interpretar una fórmula, así que en su lugar se imprime un marcador rojo."
+    },
+    "fix": {
+      "en": "Fix the TeX, or escape a dollar sign that was not meant as maths with \\$.",
+      "es": "Corrige el TeX, o escribe \\$ donde el signo de dólar no abre una fórmula."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Mathematical formulas",
+        "es": "Fórmulas matemáticas"
+      }
+    }
+  },
+  "unclosedMath": {
+    "source": "parse",
+    "label": {
+      "en": "Unclosed math delimiter",
+      "es": "Delimitador matemático sin cerrar"
+    },
+    "cause": {
+      "en": "A $ opens inline maths that is never closed, usually because it belongs to a price.",
+      "es": "Un $ abre una fórmula en línea que nunca se cierra; suele ser el de un precio."
+    },
+    "fix": {
+      "en": "Write \\$ for a literal dollar, or close the formula on the same line.",
+      "es": "Escribe \\$ para un dólar literal, o cierra la fórmula en la misma línea."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Mathematical formulas",
+        "es": "Fórmulas matemáticas"
+      }
+    }
+  },
+  "unclosedMathBlock": {
+    "source": "parse",
+    "label": {
+      "en": "Unclosed display formula",
+      "es": "Fórmula destacada sin cerrar"
+    },
+    "cause": {
+      "en": "A $$ display formula has no closing $$, so the rest of the block is read as maths.",
+      "es": "Una fórmula destacada abierta con $$ no tiene su $$ de cierre, así que el resto del bloque se lee como matemáticas."
+    },
+    "fix": {
+      "en": "Close the formula with $$, on the same line or on a line of its own.",
+      "es": "Cierra la fórmula con $$, en la misma línea o en una línea aparte."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Mathematical formulas",
+        "es": "Fórmulas matemáticas"
+      }
+    }
+  },
+  "headerFooterUnknownPlaceholder": {
+    "source": "sandbox",
+    "label": {
+      "en": "Unknown placeholder",
+      "es": "Marcador desconocido"
+    },
+    "cause": {
+      "en": "A design text uses a {name} placeholder that does not exist, so it prints literally.",
+      "es": "Un texto de diseño usa un marcador {nombre} que no existe, así que se imprime tal cual."
+    },
+    "fix": {
+      "en": "Use a supported placeholder ({pageNumber}, {chapterTitle}, {title}, {attr.x}…), or write {{ and }} for literal braces.",
+      "es": "Usa un marcador admitido ({pageNumber}, {chapterTitle}, {title}, {attr.x}…), o escribe {{ y }} para llaves literales."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Text elements",
+        "es": "Elementos de texto"
+      }
+    }
+  },
+  "headerFooterMetadataMissing": {
+    "source": "sandbox",
+    "label": {
+      "en": "Placeholder metadata missing",
+      "es": "Falta el metadato del marcador"
+    },
+    "cause": {
+      "en": "A placeholder such as {author} or {title} has no value in the document's metadata, so it prints empty.",
+      "es": "Un marcador como {author} o {title} no tiene valor en los metadatos del documento, así que se imprime vacío."
+    },
+    "fix": {
+      "en": "Add the value to the frontmatter, quoted, or remove the placeholder.",
+      "es": "Añade el valor al frontmatter, entre comillas, o quita el marcador."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Text elements",
+        "es": "Elementos de texto"
+      }
+    }
+  },
+  "unknownDirective": {
+    "source": "engine",
+    "label": {
+      "en": "Unknown directive",
+      "es": "Directiva desconocida"
+    },
+    "cause": {
+      "en": "A :::name line is not one of Postext's directives or containers, so it prints as text.",
+      "es": "Una línea :::nombre no es ninguna de las directivas ni de los contenedores de Postext, así que se imprime como texto."
+    },
+    "fix": {
+      "en": "Check the spelling against the supported names (pagebreak, columnbreak, numbering, space, toc, callout, paragraphs, part, columns).",
+      "es": "Compara el nombre con los admitidos (pagebreak, columnbreak, numbering, space, toc, callout, paragraphs, part, columns)."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Directives",
+        "es": "Directivas"
+      }
+    }
+  },
+  "unclosedContainer": {
+    "source": "parse",
+    "label": {
+      "en": "Unclosed container",
+      "es": "Contenedor sin cerrar"
+    },
+    "cause": {
+      "en": "A ::: fence is never closed, so the container runs to the end of the document.",
+      "es": "Una valla ::: nunca se cierra, así que el contenedor llega hasta el final del documento."
+    },
+    "fix": {
+      "en": "Add a line holding a bare ::: where the container ends.",
+      "es": "Añade una línea con solo ::: donde termina el contenedor."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Containers",
+        "es": "Contenedores"
+      }
+    }
+  },
+  "unknownParagraphStyle": {
+    "source": "engine",
+    "label": {
+      "en": "Unknown paragraph style",
+      "es": "Estilo de párrafo desconocido"
+    },
+    "cause": {
+      "en": "A :::paragraphs container names a style id that paragraphStyles does not define, so its paragraphs are set as body text.",
+      "es": "Un contenedor :::paragraphs nombra un id de estilo que paragraphStyles no define, así que sus párrafos se componen como texto de cuerpo."
+    },
+    "fix": {
+      "en": "Define the style in paragraphStyles or correct the id in the fence.",
+      "es": "Define el estilo en paragraphStyles o corrige el id en la valla."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "The `:::paragraphs` container",
+        "es": "El contenedor `:::paragraphs`"
+      }
+    }
+  },
+  "unknownCalloutType": {
+    "source": "engine",
+    "label": {
+      "en": "Unknown callout type",
+      "es": "Tipo de recuadro desconocido"
+    },
+    "cause": {
+      "en": "A :::callout names a type that calloutStyles does not define, so it silently takes the first style.",
+      "es": "Un :::callout nombra un tipo que calloutStyles no define, así que toma sin avisar el primer estilo."
+    },
+    "fix": {
+      "en": "Define the style or correct the type attribute.",
+      "es": "Define el estilo o corrige el atributo type."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "The `:::callout` container",
+        "es": "El contenedor `:::callout`"
+      }
+    }
+  },
+  "unknownChipStyle": {
+    "source": "engine",
+    "label": {
+      "en": "Unknown chip style",
+      "es": "Estilo de chip desconocido"
+    },
+    "cause": {
+      "en": "A chip names a style that chipStyles does not define, so it takes the first style.",
+      "es": "Un chip nombra un estilo que chipStyles no define, así que toma el primer estilo."
+    },
+    "fix": {
+      "en": "Define the style in chipStyles or correct the style attribute.",
+      "es": "Define el estilo en chipStyles o corrige el atributo style."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Chip styles",
+        "es": "Estilos de chip"
+      }
+    }
+  },
+  "chipOverlap": {
+    "source": "sandbox",
+    "label": {
+      "en": "Chips touch the next line",
+      "es": "Los chips tocan la línea siguiente"
+    },
+    "cause": {
+      "en": "A chip style's box is taller than the line pitch, so chips on consecutive lines touch.",
+      "es": "La caja de un estilo de chip es más alta que el interlineado, así que los chips de líneas seguidas se tocan."
+    },
+    "fix": {
+      "en": "Reduce the chip's vertical padding, outline or size, or increase the leading.",
+      "es": "Reduce el relleno vertical, el contorno o el cuerpo del chip, o aumenta el interlineado."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Chip styles",
+        "es": "Estilos de chip"
+      }
+    }
+  },
+  "numberingInvalidFormat": {
+    "source": "sandbox",
+    "label": {
+      "en": "Invalid numbering format",
+      "es": "Formato de numeración no válido"
+    },
+    "cause": {
+      "en": "A :::numbering format is not one of decimal, lower-roman, upper-roman, lower-alpha or upper-alpha.",
+      "es": "El formato de un :::numbering no es ninguno de decimal, lower-roman, upper-roman, lower-alpha o upper-alpha."
+    },
+    "fix": {
+      "en": "Use one of the five page-number formats; lists and resources spell theirs differently.",
+      "es": "Usa uno de los cinco formatos de número de página; las listas y los recursos los escriben de otro modo."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "`:::numbering`",
+        "es": "`:::numbering`"
+      }
+    }
+  },
+  "numberingInvalidStartAt": {
+    "source": "sandbox",
+    "label": {
+      "en": "Invalid numbering start",
+      "es": "Inicio de numeración no válido"
+    },
+    "cause": {
+      "en": "A :::numbering startAt is not a whole number of 1 or more.",
+      "es": "El startAt de un :::numbering no es un número entero igual o mayor que 1."
+    },
+    "fix": {
+      "en": "Give startAt a whole number, such as startAt=1.",
+      "es": "Da a startAt un número entero, por ejemplo startAt=1."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "`:::numbering`",
+        "es": "`:::numbering`"
+      }
+    }
+  },
+  "pagebreakInvalidParity": {
+    "source": "sandbox",
+    "label": {
+      "en": "Invalid page-break parity",
+      "es": "Paridad de salto de página no válida"
+    },
+    "cause": {
+      "en": "A :::pagebreak parity is not odd, even, always-odd or always-even.",
+      "es": "La paridad de un :::pagebreak no es odd, even, always-odd ni always-even."
+    },
+    "fix": {
+      "en": "Use odd or even to pad only when needed, always-odd or always-even to force a separator blank.",
+      "es": "Usa odd o even para rellenar solo cuando haga falta, y always-odd o always-even para forzar una página en blanco de separación."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "`:::pagebreak`",
+        "es": "`:::pagebreak`"
+      }
+    }
+  },
+  "spaceInvalidLines": {
+    "source": "sandbox",
+    "label": {
+      "en": "Invalid space size",
+      "es": "Tamaño de espacio no válido"
+    },
+    "cause": {
+      "en": "A :::space lines value is not a number above 0 and at most 20, so one line is used instead.",
+      "es": "El valor lines de un :::space no es un número mayor que 0 y no mayor que 20, así que se usa una línea."
+    },
+    "fix": {
+      "en": "Give lines a number between 0 and 20; fractions such as lines=0.5 are allowed.",
+      "es": "Da a lines un número entre 0 y 20; se admiten fracciones como lines=0.5."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "`:::space`",
+        "es": "`:::space`"
+      }
+    }
+  },
+  "headingBreakInvalidParity": {
+    "source": "sandbox",
+    "label": {
+      "en": "Invalid heading break parity",
+      "es": "Paridad de salto de título no válida"
+    },
+    "cause": {
+      "en": "A heading level's breakBefore.parity is not a supported value.",
+      "es": "El breakBefore.parity de un nivel de título no es un valor admitido."
+    },
+    "fix": {
+      "en": "Use any, odd, even, always-odd or always-even.",
+      "es": "Usa any, odd, even, always-odd o always-even."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Break before",
+        "es": "Saltar antes"
+      }
+    }
+  },
+  "parityCascade": {
+    "source": "sandbox",
+    "label": {
+      "en": "Parity cascade",
+      "es": "Cascada de paridad"
+    },
+    "cause": {
+      "en": "Parity breaks stack up and produce more than two blank pages in a row.",
+      "es": "Los saltos con paridad se acumulan y producen más de dos páginas en blanco seguidas."
+    },
+    "fix": {
+      "en": "Review always-odd breaks and breakBefore parities; for short chapters, parity any usually avoids the blanks.",
+      "es": "Revisa los saltos always-odd y las paridades de breakBefore; en capítulos cortos, la paridad any suele evitar esas páginas en blanco."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Break before",
+        "es": "Saltar antes"
+      }
+    }
+  },
+  "alphaPdfOverflow": {
+    "source": "sandbox",
+    "label": {
+      "en": "Alphabetic page labels past Z",
+      "es": "Etiquetas alfabéticas más allá de la Z"
+    },
+    "cause": {
+      "en": "Alphabetic page numbering runs past 26 pages, so the PDF has to spell labels such as AA page by page.",
+      "es": "La numeración alfabética de páginas pasa de 26, así que el PDF debe escribir etiquetas como AA página a página."
+    },
+    "fix": {
+      "en": "Switch to roman or decimal numbering for long runs.",
+      "es": "Pasa a numeración romana o decimal en los tramos largos."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Numbering",
+        "es": "Numeración"
+      }
+    }
+  },
+  "calloutOverflow": {
+    "source": "engine",
+    "label": {
+      "en": "Callout overflows its column",
+      "es": "El recuadro desborda su columna"
+    },
+    "cause": {
+      "en": "A box that no cut can split (a figure, table or :::columns group taller than the column, or too high splitMinLines) was placed overflowing; the engine records it in doc.warnings and the Sandbox lists it.",
+      "es": "Una caja que ningún corte puede partir (una figura, una tabla o un grupo :::columns más alto que la columna, o un splitMinLines demasiado alto) se colocó desbordada; el motor lo anota en doc.warnings y el Sandbox lo muestra."
+    },
+    "fix": {
+      "en": "Shorten the box, let it split with keepTogether: false, lower splitMinLines, or give it another span.",
+      "es": "Acorta la caja, deja que se parta con keepTogether: false, baja splitMinLines o dale otro span."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "The `:::callout` container",
+        "es": "El contenedor `:::callout`"
+      }
+    }
+  },
+  "headingDesignCut": {
+    "source": "sandbox",
+    "label": {
+      "en": "Heading design cut off",
+      "es": "Diseño de título cortado"
+    },
+    "cause": {
+      "en": "A heading's design is taller than the page (or, for an in-column design, than its column), so the text of the design that lies past the foot is cut off.",
+      "es": "El diseño de un título es más alto que la página (o, si es un diseño de columna, que su columna), así que el texto del diseño que queda por debajo del pie se corta."
+    },
+    "fix": {
+      "en": "Shorten the design (smaller `minHeight`, a shorter lead or a smaller picture), or give the page more room with a larger trim or smaller margins.",
+      "es": "Acorta el diseño (un `minHeight` menor, una entradilla más corta o una imagen más pequeña), o da más espacio a la página con un formato mayor o márgenes más estrechos."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Span and advanced design",
+        "es": "Span y diseño avanzado"
+      }
+    }
+  },
+  "designCyclicAnchor": {
+    "source": "sandbox",
+    "label": {
+      "en": "Cyclic anchor reference",
+      "es": "Referencia de anclaje cíclica"
+    },
+    "cause": {
+      "en": "Design elements anchor to each other in a loop, so none of them can be placed.",
+      "es": "Los elementos de diseño se anclan unos a otros en bucle, así que ninguno puede colocarse."
+    },
+    "fix": {
+      "en": "Anchor one element of the chain to the container, the page or the bleed.",
+      "es": "Ancla un elemento de la cadena al contenedor, a la página o a la sangre."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Element placement",
+        "es": "Posicionamiento de elementos"
+      }
+    }
+  },
+  "designDanglingAnchor": {
+    "source": "sandbox",
+    "label": {
+      "en": "Dangling anchor reference",
+      "es": "Referencia de anclaje rota"
+    },
+    "cause": {
+      "en": "A design element anchors to an #id that no element in the slot has.",
+      "es": "Un elemento de diseño se ancla a un #id que no tiene ningún elemento de la ranura."
+    },
+    "fix": {
+      "en": "Correct the id, or add the element it refers to.",
+      "es": "Corrige el id o añade el elemento al que se refiere."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Element placement",
+        "es": "Posicionamiento de elementos"
+      }
+    }
+  },
+  "designTextClipAlwaysTruncates": {
+    "source": "sandbox",
+    "label": {
+      "en": "Text always truncated",
+      "es": "Texto siempre recortado"
+    },
+    "cause": {
+      "en": "A design text with overflow clip sits in a box too small for even one line, so it never shows whole.",
+      "es": "Un texto de diseño con overflow clip está en una caja demasiado pequeña incluso para una línea, así que nunca se ve entero."
+    },
+    "fix": {
+      "en": "Enlarge the box, or use overflow wrap or an ellipsis.",
+      "es": "Agranda la caja, o usa overflow wrap o puntos suspensivos."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Text elements",
+        "es": "Elementos de texto"
+      }
+    }
+  },
+  "headingSpanWithoutBreak": {
+    "source": "sandbox",
+    "label": {
+      "en": "Page-span heading without a break",
+      "es": "Título a todo el ancho sin salto"
+    },
+    "cause": {
+      "en": "A heading level has span page but no breakBefore, so the band is ignored; any headings object also drops the H1 default break.",
+      "es": "Un nivel de título tiene span page pero no breakBefore, así que la banda se ignora; además, cualquier objeto headings quita el salto por defecto del H1."
+    },
+    "fix": {
+      "en": "Restate breakBefore: { enabled: true, parity } on that level.",
+      "es": "Vuelve a declarar breakBefore: { enabled: true, parity } en ese nivel."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Span and advanced design",
+        "es": "Span y diseño avanzado"
+      }
+    }
+  },
+  "headingAdvancedWithoutTitleText": {
+    "source": "sandbox",
+    "label": {
+      "en": "Heading title not printed",
+      "es": "El texto del título no se imprime"
+    },
+    "cause": {
+      "en": "An advanced design has no element that prints {titleText}, so the heading's own words never appear.",
+      "es": "Un diseño avanzado no tiene ningún elemento que imprima {titleText}, así que el texto del propio título no aparece."
+    },
+    "fix": {
+      "en": "Add a text element with {titleText}, unless the heading is meant to be invisible.",
+      "es": "Añade un elemento de texto con {titleText}, salvo que el título deba ser invisible."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Span and advanced design",
+        "es": "Span y diseño avanzado"
+      }
+    }
+  },
+  "unknownResourceId": {
+    "source": "sandbox",
+    "label": {
+      "en": "Unknown resource",
+      "es": "Recurso desconocido"
+    },
+    "cause": {
+      "en": "A :ref or ::resource names an id no resource has; the reference prints \"?\" and nothing is placed.",
+      "es": "Un :ref o un ::resource nombra un id que no tiene ningún recurso; la referencia imprime «?» y no se coloca nada."
+    },
+    "fix": {
+      "en": "Correct the id (double quotes only) or add the resource.",
+      "es": "Corrige el id (solo con comillas dobles) o añade el recurso."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Inline reference (the primary form)",
+        "es": "Referencia en línea (la forma principal)"
+      }
+    }
+  },
+  "duplicateResourceId": {
+    "source": "sandbox",
+    "label": {
+      "en": "Duplicate resource id",
+      "es": "Id de recurso duplicado"
+    },
+    "cause": {
+      "en": "Several resources share one id, and only one of them resolves.",
+      "es": "Varios recursos comparten un mismo id y solo uno de ellos se resuelve."
+    },
+    "fix": {
+      "en": "Give every resource a unique id.",
+      "es": "Da a cada recurso un id único."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Inline reference (the primary form)",
+        "es": "Referencia en línea (la forma principal)"
+      }
+    }
+  },
+  "danglingTypeRef": {
+    "source": "sandbox",
+    "label": {
+      "en": "Unknown resource type",
+      "es": "Tipo de recurso desconocido"
+    },
+    "cause": {
+      "en": "A resource's typeId names a type that resourceTypes no longer defines, so a default type is used.",
+      "es": "El typeId de un recurso nombra un tipo que resourceTypes ya no define, así que se usa un tipo por defecto."
+    },
+    "fix": {
+      "en": "Define the type, or point the resource at an existing one.",
+      "es": "Define el tipo o haz que el recurso apunte a uno existente."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Resource types",
+        "es": "Tipos de recurso"
+      }
+    }
+  },
+  "bitmapTooSmall": {
+    "source": "sandbox",
+    "label": {
+      "en": "Low-resolution image",
+      "es": "Imagen de baja resolución"
+    },
+    "cause": {
+      "en": "A bitmap is drawn more than 1.5 times wider than its pixels, so it will look blurry in print.",
+      "es": "Un mapa de bits se dibuja más de 1,5 veces más ancho que sus píxeles, así que se verá borroso al imprimir."
+    },
+    "fix": {
+      "en": "Supply about 300 dpi at the printed size, and declare the bitmap's real width and height.",
+      "es": "Proporciona unos 300 ppp al tamaño de impresión y declara el ancho y el alto reales del mapa de bits."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Resources",
+        "es": "Recursos"
+      }
+    }
+  },
+  "storageUnavailable": {
+    "source": "sandbox",
+    "label": {
+      "en": "Storage unavailable",
+      "es": "Almacenamiento no disponible"
+    },
+    "cause": {
+      "en": "The browser blocks IndexedDB (private browsing, disabled storage), so uploaded pictures and fonts cannot be kept.",
+      "es": "El navegador bloquea IndexedDB (navegación privada, almacenamiento desactivado), así que las imágenes y fuentes subidas no se pueden guardar."
+    },
+    "fix": {
+      "en": "Open the Sandbox in a normal window, or export a .postext bundle before closing it.",
+      "es": "Abre el Sandbox en una ventana normal, o exporta un paquete .postext antes de cerrarlo."
+    },
+    "docs": {
+      "slug": "sandbox",
+      "heading": {
+        "en": "Persistence",
+        "es": "Persistencia"
+      }
+    }
+  },
+  "chapterFrontmatterIgnored": {
+    "source": "sandbox",
+    "label": {
+      "en": "Chapter frontmatter ignored",
+      "es": "Frontmatter del capítulo ignorado"
+    },
+    "cause": {
+      "en": "Only the first chapter's frontmatter counts; a later chapter starts with a frontmatter block that is dropped.",
+      "es": "Solo cuenta el frontmatter del primer capítulo; un capítulo posterior empieza con un bloque de frontmatter que se descarta."
+    },
+    "fix": {
+      "en": "Keep the book's metadata in chapter one, and use heading attributes for per-chapter values.",
+      "es": "Deja los metadatos del libro en el primer capítulo y usa atributos de título para los valores de cada capítulo."
+    },
+    "docs": {
+      "slug": "sandbox",
+      "heading": {
+        "en": "Books and chapters",
+        "es": "Libros y capítulos"
+      }
+    }
+  },
+  "malformedEmbed": {
+    "source": "engine",
+    "label": {
+      "en": "Malformed resource embed",
+      "es": "Inserción de recurso mal formada"
+    },
+    "cause": {
+      "en": "A `::name` line is not a well-formed embed on its own line (after a blank line, `::resource{id=\"…\"}` with the id as its only attribute), so it prints as text.",
+      "es": "Una línea `::nombre` no es una inserción bien formada en su propia línea (tras una línea en blanco, `::resource{id=\"…\"}` con el id como único atributo), así que se imprime como texto."
+    },
+    "fix": {
+      "en": "Put the embed alone on its line, after a blank line, with double quotes and no other attributes.",
+      "es": "Deja la inserción sola en su línea, tras una línea en blanco, con comillas dobles y sin más atributos."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Warnings in the document",
+        "es": "Avisos del documento"
+      }
+    }
+  },
+  "unknownHeadingStyle": {
+    "source": "engine",
+    "label": {
+      "en": "Unknown heading style",
+      "es": "Estilo de título desconocido"
+    },
+    "cause": {
+      "en": "A heading's `{style=\"…\"}` names no entry of `headingStyles`, so the heading keeps its level's settings.",
+      "es": "El `{style=\"…\"}` de un título no nombra ninguna entrada de `headingStyles`, así que el título conserva los ajustes de su nivel."
+    },
+    "fix": {
+      "en": "Fix the id or add the style to `headingStyles`.",
+      "es": "Corrige el id o añade el estilo a `headingStyles`."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Warnings in the document",
+        "es": "Avisos del documento"
+      }
+    }
+  },
+  "sideColumnPercentClamped": {
+    "source": "engine",
+    "label": {
+      "en": "Side column width clamped",
+      "es": "Ancho de la columna lateral ajustado"
+    },
+    "cause": {
+      "en": "A one-and-a-half layout's side column percentage would leave a column with no usable width, so the engine splits the width at another percentage.",
+      "es": "El porcentaje de la columna lateral de una maqueta de columna y media dejaría una columna sin ancho útil, así que el motor reparte el ancho con otro porcentaje."
+    },
+    "fix": {
+      "en": "Choose a `sideColumnPercent` inside the documented bounds, or widen the page or the gutter.",
+      "es": "Elige un `sideColumnPercent` dentro de los límites documentados, o amplía la página o el medianil."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Configuration warnings",
+        "es": "Avisos de configuración"
+      }
+    }
+  },
+  "unknownTableStyle": {
+    "source": "engine",
+    "label": {
+      "en": "Unknown table style",
+      "es": "Estilo de tabla desconocido"
+    },
+    "cause": {
+      "en": "A table resource's `styleId` names no entry of `tableStyles`, so the table uses the global `tableStyle`.",
+      "es": "El `styleId` de una tabla no nombra ninguna entrada de `tableStyles`, así que la tabla usa el `tableStyle` global."
+    },
+    "fix": {
+      "en": "Fix the id or add the named style to `tableStyles`.",
+      "es": "Corrige el id o añade el estilo con nombre a `tableStyles`."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Warnings in the document",
+        "es": "Avisos del documento"
+      }
+    }
+  },
+  "raggedTableGrid": {
+    "source": "engine",
+    "label": {
+      "en": "Irregular table grid",
+      "es": "Cuadrícula de tabla irregular"
+    },
+    "cause": {
+      "en": "A table's rows do not form a regular grid: merged cells overlap, or cells covered by a colSpan/rowSpan are missing instead of marked with `hiddenBy`, so later cells shift columns.",
+      "es": "Las filas de una tabla no forman una cuadrícula regular: hay celdas combinadas que se solapan, o faltan las celdas que cubre un colSpan/rowSpan en lugar de marcarse con `hiddenBy`, así que las celdas siguientes se desplazan de columna."
+    },
+    "fix": {
+      "en": "Keep every row the same length and mark covered cells with `hiddenBy` (or build merges with `mergeCells`).",
+      "es": "Mantén todas las filas con la misma longitud y marca las celdas cubiertas con `hiddenBy` (o crea las combinaciones con `mergeCells`)."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Warnings in the document",
+        "es": "Avisos del documento"
+      }
+    }
+  },
+  "missingImage": {
+    "source": "engine",
+    "label": {
+      "en": "Image not registered",
+      "es": "Imagen sin registrar"
+    },
+    "cause": {
+      "en": "A placed image (figure, cell picture, callout icon or design image) had no registered bitmap when the page was painted, so a grey placeholder was drawn.",
+      "es": "Una imagen colocada (figura, imagen de celda, icono de recuadro o imagen de diseño) no tenía un mapa de bits registrado al pintar la página, así que se dibujó un marcador gris."
+    },
+    "fix": {
+      "en": "Register every `fileId` before rendering (`registerResourceImage`, or `imageUrl`/`resourceBytes` for HTML and PDF).",
+      "es": "Registra cada `fileId` antes de renderizar (`registerResourceImage`, o `imageUrl`/`resourceBytes` para HTML y PDF)."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Warnings in the document",
+        "es": "Avisos del documento"
+      }
+    }
+  },
+  "fontFamilyStack": {
+    "source": "engine",
+    "label": {
+      "en": "Font stack in fontFamily",
+      "es": "Pila de fuentes en fontFamily"
+    },
+    "cause": {
+      "en": "A `fontFamily` holds a CSS stack (`'Lora, serif'`); the engine measures and draws with the first family only.",
+      "es": "Un `fontFamily` contiene una pila CSS (`'Lora, serif'`); el motor mide y dibuja solo con la primera familia."
+    },
+    "fix": {
+      "en": "Give a single family name and load its faces before the first build.",
+      "es": "Indica una sola familia y carga sus fuentes antes de la primera composición."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Configuration warnings",
+        "es": "Avisos de configuración"
+      }
+    }
+  },
+  "unknownNumberFormat": {
+    "source": "engine",
+    "label": {
+      "en": "Unknown number format",
+      "es": "Formato de numeración desconocido"
+    },
+    "cause": {
+      "en": "A list `numberFormat`, a page numbering `format` or a resource type's counter format is none of the accepted spellings, so it numbers in decimal.",
+      "es": "Un `numberFormat` de lista, un `format` de numeración de páginas o el formato de contador de un tipo de recurso no es ninguna de las grafías aceptadas, así que numera en decimal."
+    },
+    "fix": {
+      "en": "Use one of the documented format spellings (for example `decimal`/`arabic`, `lower-roman`, `upper-alpha`).",
+      "es": "Usa una de las grafías de formato documentadas (por ejemplo `decimal`/`arabic`, `lower-roman`, `upper-alpha`)."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Configuration warnings",
+        "es": "Avisos de configuración"
+      }
+    }
+  },
+  "unknownConfigKey": {
+    "source": "engine",
+    "label": {
+      "en": "Unknown setting",
+      "es": "Ajuste desconocido"
+    },
+    "cause": {
+      "en": "The heading settings, a heading style or a paragraph style carry a key the engine does not have, often a typo or a name borrowed from another tool, and the engine ignores it.",
+      "es": "Los ajustes de títulos, un estilo de título o un estilo de párrafo llevan una clave que el motor no tiene, muchas veces una errata o un nombre sacado de otra herramienta, y el motor la ignora."
+    },
+    "fix": {
+      "en": "Rename the key to the setting the warning suggests, or remove it.",
+      "es": "Cambia la clave por el ajuste que propone el aviso, o quítala."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Configuration warnings",
+        "es": "Avisos de configuración"
+      }
+    }
+  },
+  "unsupportedHyphenationLocale": {
+    "source": "engine",
+    "label": {
+      "en": "Hyphenation locale not bundled",
+      "es": "Idioma de separación silábica no incluido"
+    },
+    "cause": {
+      "en": "The hyphenation locale is not one of the bundled pattern sets (en-us, es, fr, de, it, pt, ca, nl) after normalising region tags, so English patterns were used.",
+      "es": "El idioma de separación silábica no es ninguno de los juegos de patrones incluidos (en-us, es, fr, de, it, pt, ca, nl) tras normalizar la región, así que se usaron los patrones del inglés."
+    },
+    "fix": {
+      "en": "Use a bundled locale, or turn hyphenation off for that text.",
+      "es": "Usa un idioma incluido o desactiva la separación silábica para ese texto."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Configuration warnings",
+        "es": "Avisos de configuración"
+      }
+    }
+  }
+}

@@ -1,0 +1,156 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 60,
+  "status": "published",
+  "chapter": "type",
+  "order": 80,
+  "level": 2,
+  "genres": [
+    "workbook"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "chips",
+      "cell-images"
+    ],
+    "also": [
+      "opener-design",
+      "heading-attributes",
+      "heading-styles",
+      "design-images",
+      "design-elements",
+      "design-anchoring",
+      "running-heads",
+      "table-styles",
+      "paragraph-styles",
+      "vertical-space",
+      "callout-styles",
+      "color-palette",
+      "resources",
+      "resource-types",
+      "inline-embeds",
+      "canvas-rendering"
+    ]
+  },
+  "answers": [
+    "Q51",
+    "Q69",
+    "Q23",
+    "Q80"
+  ],
+  "gotchas": [
+    "chip-overlap",
+    "svg-no-webfonts",
+    "space-dropped-box-top",
+    "opener-image-no-reserve",
+    "headings-drop-h1-break",
+    "palette-skips-designs",
+    "fonts-first",
+    "config-cache-identity"
+  ],
+  "explainsWarnings": [
+    "chipOverlap"
+  ],
+  "engine": {
+    "postext": "1.4.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "crop",
+    "focus": {
+      "page": 1,
+      "x": 0,
+      "y": 0,
+      "w": 1,
+      "h": 0.592
+    },
+    "expect": {
+      "pages": [
+        3,
+        3
+      ]
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Andika",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "DynaPuff",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Playpen Sans",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-09-26",
+  "updated": "2026-09-26",
+  "related": [
+    "worksheet-answer-boxes",
+    "exam-paper",
+    "code-listings-and-keycaps"
+  ],
+  "workarounds": [
+    {
+      "followup": "EF-113",
+      "package": "postext",
+      "note": "the band is a page-anchored design element of the H1, which a design kept in the column clips at the column's top edge (the top 18 mm of page 37 printed white); span 'page' paints it into the top margin, although the unit is set in one column"
+    },
+    {
+      "followup": "EF-90",
+      "package": "postext",
+      "note": "the band, the butterfly and the apple are images and reserve no height in the opener: without minHeight it ends 88.7 mm down, at the foot of the word manzana, and the first activity title starts at 99.3 mm, against the band's wave (its lowest point is at 101.9 mm); minHeight is 16 lines of the 15 pt grid (84.67 mm), which starts the title at 113.25 mm, on the grid"
+    },
+    {
+      "followup": "EF-05",
+      "package": "postext",
+      "note": "the H1 breakBefore (parity 'odd') is restated because any headings object drops it; each unit opens on a recto"
+    },
+    {
+      "followup": "EF-71",
+      "package": "postext",
+      "note": "the palette does not reach design-slot colours or bodyText.referenceColor; col() writes the hex beside every paletteId and referenceColor is restated in ink (the unit has no references, but without it the resolved colour is #295AA3)"
+    },
+    {
+      "followup": "EF-56",
+      "package": "postext",
+      "note": "the giant letter's design lineHeight is the multiple 1, never a Dimension"
+    },
+    {
+      "followup": "EF-04",
+      "package": "postext",
+      "note": "a :::space at the top of a box is dropped, so the colouring box opens with its prompt line and the key's chips, and its :::space comes after them, between the key and the colouring task (5.3 mm)"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+---
+title: "Dictionary with a moving thumb index"
+summary: "A loop makes one heading style per letter, and each style’s header prints that letter’s navy tab one step lower on the fore-edge, over a pale index."
+description: "Four pages of Smyth’s Sailor’s Word-Book in two columns, with navy headwords, four-line letter heads and a thumb tab that steps down with each letter."
+question: "How do I make a dictionary’s thumb tab step down the fore-edge from one letter to the next?"
+aliases: ["dictionary", "glossary", "reference book", "thumb index", "thumb tabs", "edge index", "bleed tabs", "headwords", "letter heads", "guide words"]
+pageNotes: { "1": "Page 1 opens the dictionary under a band: a fouled anchor, THE SAILOR’S WORD-BOOK in navy small capitals, the subtitle and byline of the 1867 title page, and a double rule. Below it come the editor’s note and a navy A four lines deep. Down the right edge runs the 22-tab index, A in navy.", "2": "Page 2, a verso: the A entries fill the first column and end in the second, where a navy B opens the next letter. On the left edge the navy tab reads B, one step below A, although the page begins in A.", "3": "Page 3: the B entries end at the foot of the first column and a navy C heads the second. On the right edge the tab for C stands out of the pale index, two steps below A.", "4": "Page 4: the last C entries fill both columns, which end level, and a three-line colophon closes the second." }
+---
+
+## What you'll build
+
+Four pages from a new edition of Admiral Smyth’s *Sailor’s Word-Book* (1867), letters A to C, on a 150 × 200 mm page. The entries run in two justified columns of 8 pt Alegreya divided by a hairline, each headword bold in navy and each turnover line hung 1 em. A letter opens inside its column, as a four-line navy initial over a brass rule, and the entries run on without a page break. Down the fore-edge every page prints the whole thumb index, 22 tabs in a pale tint. The current letter’s tab is navy, 3.2 mm wider than the others, and sits one step lower for each letter. The Spanish edition keeps Smyth’s English headwords and translates the entries.
+
+## Method
+
+### 1 · Give each letter a heading style with its own tab
+
+The code is [the short answer](#the-short-answer) above. `TABS` lists 22 tabs, with the rare letters sharing one (QR, UV, XYZ). Each tab is two body lines (7.34 mm) deep, so together they fill the 44 lines of the text block. The loop gives each letter a heading style whose `header` adds that letter’s navy tab, one step lower than the last, to the running heads and the pale index ([heading styles](/en/docs/configuration#heading-styles)). Every cell is written twice, once per `parity`, and anchored to the outer edge of the page rather than to the header’s own container. That container is the head margin, as wide as the text block and reaching from the trim down to the text, while the tabs have to reach the fore-edge and run down all 44 lines. A page takes the header of the last section that starts on it, so <PageRef page={2}>page 2</PageRef> begins in A and shows the tab for B.
+
+### 2 · Keep the running heads off the first page
+
+<Excerpt region="running-heads" />
+
+The heads are text elements anchored to the page and filtered by `parity` and `pages: 'body'` ([text elements](/en/docs/configuration#text-elements)). The title on page 1 spans both columns, which makes page 1 an opener. The heads skip it, and its folio comes from the footer, an element set to `pages: 'opener'` that prints 6 mm below the text block. On a recto `{chapterTitle}` prints the letter of the last level-1 heading on or before the page. Postext has no placeholder for a page’s first or last headword, so the recto head prints *Letter C* where a dictionary would print guide words.
+
+### 3 · Colour the headwords and nothing else
+
+<Excerpt region="entries" />
+
+Each entry is one paragraph of a `:::paragraphs{style="entry"}` block, its turnover lines hung 1 em ([paragraph styles](/en/docs/configuration#paragraph-styles)). The body’s `boldColor` keeps **Note.** on page 1 in ink, and the entry style’s `boldColor` prints the headwords in navy. A paragraph style has no `italicColor`, so the italic sub-entries keep the body’s ink.
+
+### 4 · Drop a four-line initial into the column
+
+<Excerpt region="letter-heads" />
+
+`LETTER`, 55.8 pt, is the size at which a capital of Alegreya SC 900 (0.652 em tall) stands on the fourth baseline and reaches the cap line of the first body line. The letter and the brass rule end inside the fifth line, and the heading block snaps down to the next grid line, so each head is five lines deep and the entries under it stay on the grid. On <PageRef page={3}>page 3</PageRef> the C at the head of the second column is level with the first four lines of the first column. Level 1 sets `breakBefore: { enabled: false }`, and the letter styles inherit it. In 1.4.1 any `headings` object already drops the level-1 page break; with the value written out, the letters keep running on if a later release brings that break back.
+
+### 5 · Lay the title across both columns
+
+<Excerpt region="title" />
+
+The title style spans the page with a band that holds the anchor, the name, a subtitle and a byline read from heading attributes, and a double rule ([span and advanced design](/en/docs/configuration#span-and-advanced-design)). The thin rule ends 45.1 mm below the top of the text block, so the band snaps to 13 grid lines, or 47.7 mm. Under a page-wide heading the column rule still starts at the top of the text block and would cross the title. A paper-coloured box covers the band down to the thin rule, and the column rule shows only below it. `{titleText}` joins the hidden heading’s wrapped lines with a space, and 1.4.1 wraps a page-wide heading at the column width. At the default H1 size the band printed *Word- Book*, so the title style sets the hidden heading at body size, which fits the name on one line of the 60 mm column.
+
+## Variations
+
+### Print only the current tab
+
+Printed thumb indexes usually show only the current letter’s tab; take `ladder` out of the header and the navy tab still steps down from A to C.
+
+```diff
+-  header: { elements: [...runningHeads, ...ladder,
++  header: { elements: [...runningHeads,
+```
+
+## Pitfalls
+
+- In postext 1.4.1 the column rule under a page-wide heading starts at the top of the text block even when the band is a whole number of grid lines deep, as this one is. A box in the page’s colour, painted under the other elements of the design, covers it.
+- A 60 mm column holds about 50 characters, and Smyth’s English cannot be reworded. In the capture, 18 of the 218 justified English lines (8 %) stretch their spaces past 1.7 times the normal width, against under 2 % in the Spanish, whose translation was fitted to the column. The English stood at 17 % before the five entries that set worst (*Aground*, *Aloft*, *Belay*, *Cockpit*, *Crow’s nest*) were swapped for others. Choose entries that set well, or widen the column.

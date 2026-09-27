@@ -1,0 +1,84 @@
+---
+title: "Trade paperback: sunk openers and recto chapters"
+summary: "The Awakening as a 140 × 216 mm trade paperback: a drawn cover and a colophon with no running heads, then chapters sunk on rectos under an italic numeral."
+description: "Kate Chopin’s The Awakening set with Postext: a drawn cover, a colophon verso, chapters sunk on rectos, a blank verso with no folio and camomile tailpieces."
+question: "How do I start every chapter on a right-hand page, sunk a third of the way down, as a trade paperback does?"
+aliases: ["trade paperback", "novel", "sunk opener", "chapter drop", "chapter opener", "recto", "right-hand page", "odd page", "blank verso", "blank page", "parity", "small caps lead", "first sentence in small capitals", "tailpiece", "fleuron", "printer’s flower", "ornament", "colophon", "copyright page", "cover", "section running heads", "Kate Chopin", "The Awakening"]
+pageNotes: { "1": "The cover: the gulf seen between the trunks of water-oaks, a lugger on the horizon and a white sunshade coming up the path through the camomile; below, the title in large italic and the author in small capitals.", "2": "The colophon, set small at the foot of the page, with no running head or folio.", "3": "Chapter I sunk on a recto: an italic I, a short rust-red hairline, the first sentence in two centred lines of small capitals, and the text from 81 mm down.", "6": "A blank verso with no running head or folio, left so that chapter II opens on a recto.", "7": "Chapter II opens like chapter I, with its first sentence broken after the semicolon." }
+---
+
+## What you'll build
+
+Eight pages of a 140 × 216 mm trade paperback hold the first two chapters of Kate Chopin’s *The Awakening* (1899). The cover, drawn in code, shows the gulf from the Lebrun cottages on Grand Isle: a lugger on the horizon between the water-oaks, and the white sunshade coming up through the camomile. The colophon sits at the foot of its verso. Each chapter opens on a recto with its text 81 mm down, under a 48 pt italic numeral, an 18 mm rust-red hairline and the chapter’s first sentence in small capitals, broken by sense into two centred lines. Chapter I ends on page 5 with a camomile tailpiece, so page 6 stays blank, with no running head or folio, and chapter II opens on page 7. The running heads carry the author on versos and the title in italic on rectos.
+
+## Method
+
+### 1 · The opener comes from the heading and its attribute
+
+The code is [the short answer](#the-short-answer) above. Chopin’s chapters have no titles, so each heading holds only its numeral (`# I`), which `{titleText}` prints. `{attr.lead}` prints the heading’s `lead` attribute, which holds the chapter’s first sentence; the Markdown paragraph under the heading starts with the sentence after it ([heading attributes](/en/docs/document-format#heading-attributes)). Design text cannot be justified, so the lead is centred, and the `\n` in each attribute breaks it by sense, after *cage* and after *bright;*. That `\n` breaks the line only when `paragraphIndent` is above zero; at 0 the lead prints the two characters. The lead’s box starts nine grid lines below the top of the text block, and a `minHeight` of 12 lines leaves one blank line under it; without `minHeight` the text starts right under the lead ([span and advanced design](/en/docs/configuration#span-and-advanced-design)). `marginBottom: pt(0)` replaces the level’s default half-em margin, which would push the text a line lower.
+
+`breakBefore` with parity `'odd'` sends every chapter to a recto. The config restates it because any `headings` object drops the level’s default break ([break before](/en/docs/configuration#break-before)). To force a recto where there is no heading, write `:::pagebreak{parity="odd"}` in the Markdown; in a layout of two or more columns, `:::columnbreak` moves the text to the next column instead ([`:::pagebreak`](/en/docs/document-format#pagebreak)).
+
+### 2 · A trade page of whole lines
+
+<Excerpt region="page" />
+
+The bottom margin is what the 216 mm trim leaves after the top margin and 35 lines of 14 pt, so every full page ends on the same line, as pages 3 and 4 do. With `mirror: true` the 20 mm inner margin falls on the spine side of rectos and versos alike ([mirrored margins](/en/docs/configuration#mirrored-margins)). The 104.5 mm measure holds about 69 characters of Crimson Pro at 10.5 pt. The body text keeps word spaces between 0.7 and 1.9 of normal; at the default minimum of 0.6, one line on these pages closes to 0.62. It also sets `maxRuntTracking: 0`. At the default, the paragraph that ends *nodding good-by to him.* is set a line shorter with negative tracking that the canvas does not paint, so its word spaces print crushed.
+
+### 3 · Running heads that skip openers and blank pages
+
+<Excerpt region="heads" />
+
+`parity: 'even'` puts the author in Cormorant SC small capitals on versos, and `'odd'` puts the title in italic on rectos; the folios stand at the outer edge of the text block. `pages: 'body'` keeps all four elements off the openers and off page 6, the blank verso the parity break adds. With `pages: 'all'` that page would print *6* and *Kate Chopin*. The openers get a drop folio instead, a footer element that `pages: 'opener'` limits to them ([text elements](/en/docs/configuration#text-elements)).
+
+### 4 · The cover is a section with no running heads
+
+<Excerpt region="cover" />
+
+The cover is a heading, `# The Awakening {style="cover"}`. Its style draws the art over the top 134 mm, the frontmatter’s title at 50 pt and the author in small capitals. The style also applies to the section the heading opens, pages 1 and 2, until chapter I. Its empty `header` and `footer` keep the drop folio off the cover and the running heads off the colophon. Its top margin puts the colophon on the last six grid lines of the text block, so the colophon’s last line is level with the last line of page 3 ([heading styles](/en/docs/configuration#heading-styles)). The style needs `span: 'page'` even in one column. A design kept in the column is clipped at the column’s top, here 165 mm down; without `span: 'page'` the art would not print and the title would lose its upper part.
+
+<PageShot page={2} crop="0,0.7,1,0.24" caption="Page 2: the colophon at the foot of the cover’s verso, with no running head or folio." />
+
+### 5 · A tailpiece closes each chapter
+
+<Excerpt region="tailpiece" />
+
+The ornament type has no caption prefix, so the camomile flower prints without a label, 17% of the measure wide, where `::resource{id="tailpiece-1"}` stands ([resource types](/en/docs/configuration#resource-types)). An inline embed keeps one grid line above it, and the `:::space` before it adds a second between the chapter’s last line and the flower ([`:::space`](/en/docs/document-format#space)). Both tailpieces draw the same file, `fleuron.svg`, under two ids, because a resource is placed only once.
+
+## Variations
+
+### Let chapter II follow on the next page
+
+With parity `'any'`, chapter II opens on page 6, a verso, and the book ends on page 7; the drop folio is centred on the text block, not the page, so on that verso it still stands under the middle of the text.
+
+```diff
+-const chapter = { level: 1, breakBefore: { enabled: true, parity: 'odd' },
++const chapter = { level: 1, breakBefore: { enabled: true, parity: 'any' },
+```
+
+### Mark a scene break inside a chapter
+
+Set between two `:::space` lines, the same flower marks a scene break, and the paragraph after it starts flush because `indentAfterHeading` is off. Placed after *seemed long to him.*, the flower falls at the foot of page 4; the second space no longer fits there and is dropped. The break adds four lines, which push chapter I’s tailpiece alone onto page 6, under a running head, so copy-fit the chapter again after you add one.
+
+```diff
+ const resources = [
++  svg('break-1', 'fleuron.svg', 40, 12, 'A scene break.'),
+```
+
+```md
+That was why the morning seemed long to him.
+
+:::space
+
+::resource{id="break-1"}
+
+:::space
+
+“You are burnt beyond recognition,” he added, …
+```
+
+## Pitfalls
+
+- With `'always-odd'` a blank separator page follows every section before any parity padding, so chapter I would move to page 5, after two blank pages, and the book would run to ten pages.
+- These pages are copy-fitted. With an outer margin of 16 mm instead of 15.5, page 7 splits *after-din-ner* at a second hyphen and ends a line short, page 8 ends a paragraph on the scrap *spondent.*, and the second tailpiece falls onto a ninth page. Check the foot of every page after you change the measure, the type size or the sink.
+- *Mr.* and *Mrs.* are tied to the name with a no-break space (U+00A0). In 1.4.1 it holds in plain paragraphs, but in a paragraph with italics it breaks like an ordinary space. The paragraph that ends *seemed long to him.* keeps an ordinary space, because tying the name there opens its first line to 2.2 times the normal word space.

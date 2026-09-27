@@ -1,0 +1,181 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 36,
+  "status": "published",
+  "chapter": "tables",
+  "order": 30,
+  "level": 3,
+  "genres": [
+    "catalogue"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "cell-images",
+      "table-split",
+      "table-model"
+    ],
+    "also": [
+      "table-styles",
+      "table-style",
+      "cell-fills",
+      "captions",
+      "chips",
+      "resource-types",
+      "resources",
+      "float-placement",
+      "citations",
+      "heading-styles",
+      "heading-attributes",
+      "opener-design",
+      "design-images",
+      "covers",
+      "running-heads",
+      "page-background",
+      "color-palette"
+    ]
+  },
+  "answers": [
+    "Q69",
+    "Q66",
+    "Q68",
+    "Q65"
+  ],
+  "gotchas": [
+    "here-table-no-split",
+    "merged-cells-hiddenby",
+    "opener-reserves-anchored",
+    "opener-image-no-reserve",
+    "svg-no-webfonts",
+    "palette-skips-designs",
+    "overflow-ellipsis-default",
+    "headings-drop-h1-break",
+    "config-cache-identity",
+    "fonts-first",
+    "cell-dollar-backslash"
+  ],
+  "workarounds": [
+    {
+      "followup": "EF-71",
+      "package": "postext",
+      "note": "col() writes the hex beside each paletteId: 1.4.1 paints the running heads, the cover and the heading designs from the hex (gotcha palette-skips-designs)"
+    },
+    {
+      "followup": "EF-05",
+      "package": "postext",
+      "note": "the H1 breakBefore is restated because a headings object drops it"
+    },
+    {
+      "followup": "EF-90",
+      "package": "postext",
+      "note": "the cover drawing is an image and reserves nothing; minHeight (SINK, 34 lines of 13 pt) holds the letter at 177.9 mm, where without it the letter starts 55 mm from the top, over the drawing"
+    },
+    {
+      "followup": "EF-18",
+      "package": "postext",
+      "note": "the cover's frame is drawn from the cover style's header (pages: 'opener'): as a design element it reached 242 mm down the page, more than the column holds, and the opener's whole reservation was dropped, setting the letter under the title"
+    },
+    {
+      "followup": "EF-34",
+      "package": "postext",
+      "note": "the Kind merges and the order sheet's totals go through mergeCells, which keeps the covered cells in the grid marked hiddenBy"
+    },
+    {
+      "followup": "EF-65",
+      "package": "postext",
+      "note": "in the 75 mm columns Knuth–Plass stretched the spaces of 13 of the 27 justified lines past maxWordSpacing (worst 2.13 times a normal space); the letter and the trial notes were reworded until the loosest line stretched them 1.33 times"
+    },
+    {
+      "followup": "EF-79",
+      "package": "postext",
+      "note": "with 13 lines of trial notes, closing-page balancing put a blank grid line above From Our Trial Garden (196.3 mm against 191.7 mm for column 2); the notes are fitted to 14 lines, so both columns open level under the list"
+    },
+    {
+      "followup": "EF-151",
+      "package": "postext",
+      "note": "table cells are not parsed for maths and do not unescape \\$: a cell written '\\$4.50' prints the backslash, so the prices and the postage line write $ bare (gotcha cell-dollar-backslash)"
+    }
+  ],
+  "related": [
+    "technical-datasheet",
+    "catalogue-facing-plates",
+    "worksheet-answer-boxes"
+  ],
+  "engine": {
+    "postext": "1.4.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en"
+    ]
+  },
+  "capture": {
+    "hero": [
+      2,
+      3
+    ],
+    "card": "crop",
+    "pages": "all",
+    "expect": {
+      "pages": [
+        4,
+        4
+      ]
+    },
+    "focus": {
+      "page": 2,
+      "x": 0.052,
+      "y": 0.083,
+      "w": 0.88,
+      "h": 0.5015
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [
+      {
+        "what": {
+          "en": "The cover's sunflower and tomatoes and the nine seed packets, drawn in code in the page's palette",
+          "es": "El girasol y los tomates de la cubierta y los nueve sobres de semillas, dibujados en código con la paleta de la página"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Gelasio",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Alfa Slab One",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Cabin Condensed",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-09-25",
+  "updated": "2026-09-26"
+}

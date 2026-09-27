@@ -1,0 +1,160 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 37,
+  "status": "published",
+  "chapter": "publications",
+  "order": 20,
+  "level": 3,
+  "genres": [
+    "report"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "column-balancing"
+    ],
+    "also": [
+      "span-boxes",
+      "callout-columns",
+      "floated-callouts",
+      "part-palettes",
+      "widows-orphans-runts",
+      "knuth-plass",
+      "float-placement",
+      "color-palette",
+      "callout-styles",
+      "table-model",
+      "table-styles",
+      "table-style",
+      "cell-fills",
+      "captions",
+      "resource-types",
+      "resources",
+      "covers"
+    ]
+  },
+  "answers": [
+    "Q19",
+    "Q59",
+    "Q57",
+    "Q65",
+    "Q38"
+  ],
+  "gaps": [],
+  "gotchas": [
+    "widow-orphan-names",
+    "merged-cells-hiddenby",
+    "svg-no-webfonts",
+    "palette-skips-designs",
+    "design-lineheight-multiple",
+    "headings-drop-h1-break",
+    "fonts-first"
+  ],
+  "explainsWarnings": [],
+  "related": [
+    "newspaper-front-page",
+    "baseline-grid-book-page",
+    "technical-datasheet",
+    "boxes-split-float-pin"
+  ],
+  "workarounds": [
+    {
+      "followup": "EF-05",
+      "package": "postext",
+      "note": "the H1 breakBefore is restated because any headings object drops it (gotcha headings-drop-h1-break); parity 'any', so each section opens on the next page with no blank"
+    },
+    {
+      "followup": "EF-71",
+      "package": "postext",
+      "note": "col() writes each colour's hex beside its paletteId, because 1.4.1 does not apply colorPalette to design elements or to bodyText.referenceColor (gotcha palette-skips-designs); the :::part palettes still recolour the opener strips and the running feet through the paletteId, and referenceColor is set in ink explicitly"
+    },
+    {
+      "followup": "EF-56",
+      "package": "postext",
+      "note": "design text lineHeight is a multiple of the size (0.9, 1.04, 1.3): a pt() value silently drops an opener's reserved height in 1.4.1 (gotcha design-lineheight-multiple)"
+    },
+    {
+      "followup": "EF-34",
+      "package": "postext",
+      "note": "the group heads of the income statement are merged with mergeCells, which writes the hiddenBy placeholder cells a colSpan needs (gotcha merged-cells-hiddenby)"
+    },
+    {
+      "followup": "EF-144",
+      "package": "postext",
+      "note": "the aside's space below is padding.bottom (3.5 mm), not marginBottom: 1.4.1 ignores calloutStyles[].marginBottom on a floated page-wide box, and the padding moves Table 1 and Chart 2 on p. 4 one grid line clear of its last line"
+    },
+    {
+      "followup": "EF-154",
+      "package": "postext",
+      "note": "gains end in a no-break space as wide as a bracket followed by a word joiner (U+2060): 1.4.1 trims trailing whitespace in table cells, U+00A0 included, and without the joiner the digits of gains would stand one bracket to the right of the losses'"
+    }
+  ],
+  "engine": {
+    "postext": "1.4.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "crop",
+    "focus": {
+      "page": 1,
+      "x": 0,
+      "y": 0.075,
+      "w": 1,
+      "h": 0.5625
+    },
+    "expect": {
+      "pages": [
+        5,
+        5
+      ]
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Brygada 1918",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Epilogue",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Spline Sans Mono",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Mrs Saint Delafield",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-09-25",
+  "updated": "2026-09-26"
+}

@@ -1,0 +1,67 @@
+---
+title: "A galley proof with every fault marked in red"
+summary: "A newspaper galley proofed twice, with every fault the engine reports or the pen finds itself marked in red on the page and linked to its Markdown."
+description: "A Postext proof desk for a news story: unclosed fences, calloutOverflow, unknown ids and loose lines are marked on the page, and a click selects the Markdown."
+question: "How do I find out what is wrong with my document and trace each fault on the page back to its Markdown?"
+aliases: ["galley proof", "proofreading", "debugging a document", "parse issues", "doc.warnings", "calloutOverflow", "unknown reference", "unknown directive", "loose lines", "source mapping", "click to source", "sourceStart", "word joiner", "escaping dollars"]
+pageNotes: { "1": "Page 1 of The Tideline, issue 41: a red-outlined PROOF · 2ND PASS stamp in the top right corner, a night drawing of the ferry Marram crossing a dark estuary under a full moon, the kicker Estuary · Transport, the headline The Night Ferry Returns in heavy black sans, an italic standfirst and a mono byline. Two justified paragraphs follow; the first cites map 1, a plan of the route set in the outer column. At the foot of the page the fact box The crossing in figures opens under a red rule.", "2": "Page 2: the fact box continues untitled under its red rule with the two-column timetable, then the story runs on in justified serif. The outer column holds a pull quote from Dana Whitcomb, a timeline of the two boats (1971, 2015, 2026) and, at its foot, the colophon." }
+---
+
+## What you'll build
+
+Issue 41 of *The Tideline*, a county weekly, leads with the return of the night ferry across the Sawyer, and the pen proofs the story twice. The first pass is the copy as filed, the corrected story with six slips put back, among them a stamp typed as a directive that does not exist and a fact box that never closes. Those six slips leave ten marks. As on the card, each fault is underlined in red on the line where it was set (a loose line is washed instead), and its number in the margin matches its entry in the list beside the pages. Clicking a line or an entry selects its Markdown. The pages below are the second pass. The checks find nothing in it, and a PROOF · 2ND PASS stamp is pinned in the top right corner.
+
+## Method
+
+### 1 · Read what the engine reports, then check the rest
+
+The code is [the short answer](#the-short-answer) above. `parseMarkdownWithIssues()` returns an issue for each `$`, `$$` or `:::` left open, and `doc.warnings` holds a `calloutOverflow` for each box that no cut could split; in 1.4.1 the engine reports nothing else. `doc.converged` and `doc.iterationCount` say whether the layout settled, and this story settles after one iteration with or without its faults. The Sandbox's Checks panel, described under [Sidebar panels](/en/docs/sandbox#sidebar-panels), also lists unknown ids, unknown directives and loose lines, but the Sandbox computes those itself, so `proof()` repeats the work. It compares `:ref` and `::resource` ids with the `resources` of the build, and fence names with `KNOWN_CONTAINERS` and `KNOWN_DIRECTIVES`. For this story it also flags a list block whose `startNumber` is a year and any formula, since the story has none, and it reads the set lines for spaces stretched past `maxWordSpacing`, lines set ragged and hyphens added inside an address.
+
+### 2 · Put the faults back into the corrected copy
+
+<Excerpt region="first-pass" />
+
+The pen keeps one Markdown file, the corrected story, and makes the first pass from it by undoing six fixes, so the two versions cannot drift apart and each mark has a known cause. The corrected copy is built last, and the pages below show that build. `\$` [escapes](/en/docs/document-format#authoring-conventions) the dollar sign of a price, so no formula opens. A word joiner (U+2060) before each year in the timeline on page 2 stops an entry such as *1971. The Tern…* from opening a list numbered from its year; the first pass takes out only the one before 1971. With the scheme `https://`, 1.4.1 sets a web address as an address, never hyphenated and broken only at its joints, as on page 1 before *.example*. Without it the address is an ordinary word, and the first pass hyphenates it as *night-ferry*.
+
+### 3 · Mark each fault where it was set
+
+<Excerpt region="marks" />
+
+Every line of the VDT carries `sourceStart` and `sourceEnd`, so a fault's source range leads to the line that printed it. A container fence prints no line of its own, and its mark goes on the first line that starts within `REACH` (80) characters after it. A `calloutOverflow` gets a bar under the foot of the column it names. One slip can leave several marks. The bare dollars turn `$2.50 on foot, $` into a formula, which prints nothing because this pen never loads the maths engine, and the third dollar opens a formula that never closes. Without that phrase, one line of the fares paragraph comes out with spaces 1.9 times their normal width. The two missing fences leave the box and its `:::columns` group open to the end of the story, and a columns group never splits, so the box runs 256 mm past its column. `proof()` calls a line loose when its `justifiedSpaceRatio` is above `maxWordSpacing` (1.6 here). A line whose spaces would pass 3× has no ratio to compare, because 1.4.1 [sets it ragged](/en/docs/justification#lines-the-breaker-cannot-fill) instead, so `proof()` checks `ragged` as well.
+
+### 4 · Select the Markdown behind a line
+
+<Excerpt region="source" />
+
+A click arrives in CSS pixels. `onPageClick()` scales it to page pixels, finds the line whose `bbox` contains it and selects that line's source range in the textarea; an entry in the list selects its fault's range the same way. `selectSource()` focuses the textarea without scrolling the page and sets its `scrollTop` from the height of the text before the selection. In 1.4.1 a justified line's `bbox` keeps the line's natural width, not the width it is painted at, so `linesOf()` extends it to the right edge of its block. Otherwise the wash would stop short of the margin, and a click near the right edge would select nothing.
+
+### 5 · Let the fact box split, pin the stamp
+
+<Excerpt region="boxes" />
+
+`keepTogether: false` lets the fact box start at the foot of page 1 and go on overleaf under its red rule, without its title. The box has no background and no rule at its foot, so on page 2 only white space separates the timetable from the story, and `marginBottom` is a full line of leading, 14 pt; with 4 pt the timetable would end 1.5 mm above the next paragraph. The stamp is `placement: 'fixed'`, out of the flow and pinned 8 mm below the top edge, and `width: 'auto'` shrinks it to its title, 42 mm wide instead of the main column's 110 mm.
+
+## Variations
+
+### Keep the fact box whole
+
+With the default `keepTogether`, the box moves to page 2 in one piece; page 1 ends 33 mm short and the story runs onto a third page.
+
+```diff
+-  { id: 'facts', keepTogether: false, backgroundEnabled: false, marginBottom: pt(LEAD),
++  { id: 'facts', backgroundEnabled: false, marginBottom: pt(LEAD),
+```
+
+### Stop a build that still has faults
+
+In a build script or a test, run `proof()` on the final copy and throw if it finds anything.
+
+```diff
+ const doc = await build(markdown); // last: the corrected galley, the pages below
++if (proof(markdown, doc).length) throw new Error('The second pass still has faults.');
+```
+
+## Pitfalls
+
+- Fit the copy so the fact box fills page 1 to its last line. In 1.4.1 a box that closes a column moves down when the columns are balanced: cut the last sentence of the first paragraph and the box's rule sits 6.4 mm under the fares paragraph instead of 2.4 mm.
+- Source offsets run late around web addresses and escapes. In 1.4.1 hyphenation inserts a zero-width space (U+200B) after the slashes of an address and `line.text` keeps it, so a line holding one ends a character late for each, and the next line starts as late: on page 1 the line ending *https://aldercounty* also selects the dot of *.example*. The range of a line that opens with an escaped character starts after the backslash, as on the page 1 line that opens with `$40`.

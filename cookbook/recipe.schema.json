@@ -1,0 +1,653 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://postext.dev/cookbook/recipe.schema.json",
+  "title": "Postext Cookbook recipe",
+  "description": "cookbook/<slug>/recipe.json. Generated from apps/web/src/lib/cookbook/validate.ts by `pnpm cookbook schema`; do not edit.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "number",
+    "status",
+    "chapter",
+    "order",
+    "level",
+    "genres",
+    "outputs",
+    "features",
+    "answers",
+    "engine",
+    "kit",
+    "sample",
+    "capture",
+    "credits",
+    "license",
+    "created",
+    "updated"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "number": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Permanent catalogue number (Nº); never reused."
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "published",
+        "retired"
+      ]
+    },
+    "replacedBy": {
+      "$ref": "#/definitions/slug",
+      "description": "Required when status is \"retired\"."
+    },
+    "formerSlugs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/slug"
+      },
+      "uniqueItems": true
+    },
+    "chapter": {
+      "enum": [
+        "page",
+        "type",
+        "headings",
+        "running-heads",
+        "structure",
+        "boxes",
+        "figures",
+        "tables",
+        "publications",
+        "output"
+      ]
+    },
+    "order": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Sparse order within the chapter (10, 20, …)."
+    },
+    "level": {
+      "enum": [
+        1,
+        2,
+        3
+      ]
+    },
+    "genres": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "novel",
+          "poetry",
+          "textbook",
+          "workbook",
+          "manual",
+          "paper",
+          "report",
+          "magazine",
+          "newsletter",
+          "catalogue",
+          "photobook",
+          "ephemera",
+          "any"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 3,
+      "uniqueItems": true
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "canvas",
+          "html",
+          "pdf",
+          "bundle",
+          "live"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 4,
+      "uniqueItems": true
+    },
+    "features": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "primary",
+        "also"
+      ],
+      "properties": {
+        "primary": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/id"
+          },
+          "uniqueItems": true,
+          "description": "What the recipe teaches (1–3).",
+          "minItems": 1,
+          "maxItems": 3
+        },
+        "also": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/id"
+          },
+          "uniqueItems": true,
+          "description": "Other notable features it uses (0–17).",
+          "maxItems": 17
+        }
+      }
+    },
+    "answers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/id"
+      },
+      "uniqueItems": true,
+      "description": "Question ids; answers[0] is the primary question.",
+      "minItems": 1
+    },
+    "gaps": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/id"
+      },
+      "uniqueItems": true,
+      "description": "Unsupported features this recipe works around."
+    },
+    "gotchas": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/id"
+      },
+      "uniqueItems": true,
+      "description": "Shared pitfalls (cookbook/_registry/gotchas.json)."
+    },
+    "explainsWarnings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/id"
+      },
+      "uniqueItems": true,
+      "description": "Warning kinds the recipe explains."
+    },
+    "related": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/slug"
+      },
+      "maxItems": 4,
+      "uniqueItems": true
+    },
+    "workarounds": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "package",
+          "note"
+        ],
+        "properties": {
+          "issue": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "followup": {
+            "type": "string",
+            "minLength": 1
+          },
+          "package": {
+            "enum": [
+              "postext",
+              "postext-pdf"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "postext"
+      ],
+      "properties": {
+        "postext": {
+          "$ref": "#/definitions/semver"
+        },
+        "postextPdf": {
+          "$ref": "#/definitions/semver"
+        },
+        "math": {
+          "type": "boolean"
+        },
+        "worker": {
+          "type": "boolean"
+        }
+      }
+    },
+    "kit": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "core",
+          "fonts",
+          "viewer",
+          "pdf",
+          "images"
+        ]
+      },
+      "minItems": 3,
+      "uniqueItems": true
+    },
+    "sample": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "locales"
+      ],
+      "properties": {
+        "locales": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "en",
+              "es"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true
+        }
+      }
+    },
+    "capture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hero",
+        "card"
+      ],
+      "properties": {
+        "hero": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/page"
+            },
+            {
+              "type": "array",
+              "items": [
+                {
+                  "$ref": "#/definitions/page"
+                },
+                {
+                  "$ref": "#/definitions/page"
+                }
+              ],
+              "minItems": 2,
+              "additionalItems": false
+            }
+          ]
+        },
+        "card": {
+          "enum": [
+            "spread",
+            "page",
+            "loupe",
+            "crop",
+            "screenshot"
+          ]
+        },
+        "focus": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "page",
+            "x",
+            "y",
+            "w",
+            "h"
+          ],
+          "properties": {
+            "page": {
+              "$ref": "#/definitions/page"
+            },
+            "x": {
+              "$ref": "#/definitions/fraction"
+            },
+            "y": {
+              "$ref": "#/definitions/fraction"
+            },
+            "w": {
+              "$ref": "#/definitions/fraction"
+            },
+            "h": {
+              "$ref": "#/definitions/fraction"
+            }
+          }
+        },
+        "pages": {
+          "anyOf": [
+            {
+              "const": "all"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/page"
+              },
+              "minItems": 1,
+              "maxItems": 12,
+              "uniqueItems": true
+            }
+          ]
+        },
+        "doc": {
+          "anyOf": [
+            {
+              "enum": [
+                "last",
+                "first"
+              ]
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            }
+          ]
+        },
+        "selector": {
+          "type": "string",
+          "minLength": 1
+        },
+        "viewport": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "width",
+            "height"
+          ],
+          "properties": {
+            "width": {
+              "type": "integer",
+              "minimum": 320,
+              "maximum": 2560
+            },
+            "height": {
+              "type": "integer",
+              "minimum": 240,
+              "maximum": 2560
+            }
+          }
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 300000
+        },
+        "expect": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "pages": {
+              "type": "array",
+              "items": [
+                {
+                  "$ref": "#/definitions/page"
+                },
+                {
+                  "$ref": "#/definitions/page"
+                }
+              ],
+              "minItems": 2,
+              "additionalItems": false
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/id"
+              },
+              "uniqueItems": true,
+              "description": "Engine warnings demonstrated on purpose."
+            },
+            "nearEmptyPages": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/page"
+              },
+              "uniqueItems": true
+            },
+            "console": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "defaultSkin": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "tables",
+                  "callouts",
+                  "lists",
+                  "headings"
+                ]
+              },
+              "uniqueItems": true
+            }
+          }
+        }
+      }
+    },
+    "downloads": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "pdf": {
+          "type": "boolean"
+        }
+      }
+    },
+    "credits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authors",
+        "text",
+        "images",
+        "fonts"
+      ],
+      "properties": {
+        "authors": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "github": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9-]+$"
+              },
+              "url": {
+                "$ref": "#/definitions/url"
+              }
+            }
+          }
+        },
+        "text": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/credit"
+          }
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/credit"
+          }
+        },
+        "fonts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "family",
+              "license"
+            ],
+            "properties": {
+              "family": {
+                "type": "string",
+                "minLength": 1
+              },
+              "license": {
+                "enum": [
+                  "OFL-1.1",
+                  "Apache-2.0"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "content"
+      ],
+      "properties": {
+        "code": {
+          "const": "MIT"
+        },
+        "content": {
+          "enum": [
+            "MIT",
+            "CC-BY-4.0"
+          ]
+        }
+      }
+    },
+    "created": {
+      "$ref": "#/definitions/date"
+    },
+    "updated": {
+      "$ref": "#/definitions/date"
+    }
+  },
+  "definitions": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "minLength": 3,
+      "maxLength": 48
+    },
+    "semver": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "url": {
+      "type": "string",
+      "pattern": "^https?://"
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "fraction": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "localized": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "en",
+        "es"
+      ],
+      "properties": {
+        "en": {
+          "type": "string",
+          "minLength": 1
+        },
+        "es": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "credit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "what",
+        "who",
+        "license"
+      ],
+      "properties": {
+        "what": {
+          "$ref": "#/definitions/localized"
+        },
+        "who": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "$ref": "#/definitions/url"
+        },
+        "license": {
+          "enum": [
+            "original",
+            "PD",
+            "CC0-1.0",
+            "CC-BY-4.0",
+            "CC-BY-SA-4.0",
+            "OFL-1.1",
+            "Apache-2.0",
+            "MIT",
+            "reproduction-authorised"
+          ]
+        },
+        "file": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$"
+        }
+      }
+    }
+  }
+}

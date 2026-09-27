@@ -1,0 +1,71 @@
+---
+title: "PDF listo para imprenta: sangrado, marcas de corte y CMYK"
+summary: "Un folleto de exposición con 3 mm de sangrado y marcas de corte, exportado a PDF CMYK con los mapas y el plano tomados de másteres de impresión."
+description: "Un folleto de exposición de cuatro páginas, compuesto en Postext con 3 mm de sangrado y marcas de corte, en un PDF CMYK con fuentes, marcadores y másteres."
+question: "¿Cómo exporto un PDF para imprenta con sangrado, marcas de corte, CMYK, marcadores y etiquetas de página?"
+aliases: ["PDF listo para imprenta", "sangrado", "sangre", "marcas de corte", "CMYK", "cuatricromía", "máster de impresión", "preimpresión", "folleto de exposición", "hoja de sala", "prueba en escala de grises", "uñero"]
+pageNotes: { "1": "La cubierta, con sus 3 mm de sangrado y las marcas de corte en las esquinas: un mar verde oscuro con islas en verdes escalonados, una ruta naranja discontinua con cuatro paradas que sale del corte hacia el sangrado, el título en Space Grotesk de 50 puntos y, al pie, las fechas y el lugar.", "2": "La primera página interior: la entradilla, las salas 1 y 2 con su antetítulo junto a una parada de la ruta y su ficha, y un uñero naranja con el folio 2 que sale por el borde izquierdo.", "3": "Las salas 3 y 4, que terminan a la misma altura que la página 2, y el uñero con el folio 3 en el borde derecho.", "4": "La contracubierta: la información práctica, el plano de la exposición (figura 1) con el itinerario naranja que sale del vestíbulo y recorre las salas 1 a 4, y una banda de relieve verde a sangre por tres lados con el lugar, las fechas y el colofón." }
+---
+
+## Lo que vas a componer
+
+La hoja de sala de *Cartografías imaginarias*, una exposición inventada de mapas de lugares imaginarios, tal como se manda a la imprenta. Cada página, de 170 × 227 mm, va en una hoja 22 mm mayor con el sangrado y las marcas de corte. En la cubierta, una ruta naranja cruza un archipiélago en verdes escalonados y sale del corte hacia el sangrado. Dentro, cuatro salas en Karla en bandera se abren bajo antetítulos con una parada de la ruta, y un uñero naranja lleva el folio en el corte exterior; la contracubierta pone el plano sobre una banda de relieve. El código exporta el PDF de imprenta, en CMYK con fuentes, marcadores y etiquetas de página, y una prueba en grises. En ese PDF, mapas y plano salen de másteres con tintas elegidas a mano; el texto, el uñero y las paradas pasan por la conversión simple.
+
+## Elaboración
+
+### 1 · Colores de pantalla elegidos por su plancha
+
+<Excerpt region="palette" />
+
+Con `colorSpace: 'cmyk'`, postext-pdf convierte cada color hexadecimal con una fórmula simple, sin perfil ICC: el negro es 1 menos el canal RGB de valor más alto, y el cian, el magenta y el amarillo salen cada uno de su propio canal y de ese negro. Por eso un gris neutro se imprime solo con la plancha del negro (`#161616` queda en K91) y un color con un canal al máximo se imprime sin negro: el naranja `#ff6626` queda en C0 M60 Y85 K0, igual en el uñero que en las paradas y la ruta. Cuando el verde es el canal más alto, el magenta sale a 0, y el verde del mar queda en C82 M0 Y25 K76, que en una prueba se ve azul petróleo. De ahí que los mapas y el plano salgan de másteres de impresión (paso 5) y que esa mezcla de tres tintas quede solo en el texto pequeño en verde y negrita de los antetítulos, la referencia a la figura y las etiquetas de los pies.
+
+### 2 · Un uñero que sobrevive a la guillotina
+
+<Excerpt region="tab" />
+
+La caja del uñero cuelga del marco del sangrado y mide `BLEED` más que el uñero ya cortado, así que un corte desviado un milímetro hacia fuera sigue dejando naranja en el borde; el folio, en cambio, cuelga del marco de la página, que es el formato cortado, y se centra en los 10 mm que quedan. `parity` elige las páginas en las que aparece cada elemento, y `edge` cambia con ella para ir al corte exterior; `pages: 'body'` deja el uñero y las cabeceras (`{title}` y `{subtitle}`, del frontmatter) fuera de las dos cubiertas, que cuentan como aperturas porque empiezan con un título que ocupa la página o salta a una nueva. Cualquier elemento de la cabecera o del pie de página se repite de la misma forma, así que una `image` con `parity` y `pages` pone una marca de agua o una imagen decorativa en todas las páginas; las ranuras se pintan encima del texto, y un fondo de color bajo el texto se fija en `page.backgroundColor`.
+
+### 3 · La ilustración hasta el sangrado, el texto dentro del corte
+
+<Excerpt region="covers" />
+
+`cutLines` añade a cada lado de la página el sangrado, la separación de la marca y la marca de 5 mm, que aquí suman 11 mm, y como la respuesta corta iguala la separación al sangrado, las marcas empiezan en el borde del sangrado y van hacia fuera, en la plancha del negro. Un elemento de imagen anclado al sangrado con `width: 'fill'` toma el ancho de ese marco y conserva su proporción: el mapa de la cubierta está dibujado a 176 × 233 mm, el formato más 3 mm por lado, así que llega hasta el borde del sangrado, donde empiezan las marcas, mientras el texto cuelga de la caja de texto, bien dentro del corte. La contracubierta es un estilo de título cuyo pie de página sustituye al del documento, con una banda del mismo generador anclada al pie del sangrado y un margen inferior que detiene el texto 8 mm por encima.
+
+### 4 · Títulos que se convierten en marcadores
+
+<Excerpt region="levels" />
+
+`renderToPdf` construye los marcadores a partir de los títulos, así que cada sala es un título de primer nivel que sigue al anterior sin salto de página, y `numberingTemplate` da al antetítulo su `{number}` y al marcador su prefijo: el PDF lista la cubierta, de «Sala 1 Una isla en ninguna parte» a «Sala 4 La isla del tesoro», y la información práctica. Un título con diseño oculta su propio texto, pero lo conserva para los marcadores y las etiquetas de accesibilidad; sin `fontFamily`, ese texto oculto va en Open Sans 700, una fuente que las páginas cargarían y el PDF incrustaría solo para él. Las etiquetas de página siguen `page.pageNumbering`, que aquí conserva su valor por defecto, decimal desde 1, de modo que la página 3 del visor es la que lleva un 3 en el uñero.
+
+### 5 · Másteres de impresión con tintas exactas
+
+<Excerpt region="master" />
+
+Cada dibujo se define una sola vez, como trazados. La región del arte los convierte en el SVG que pinta el lienzo, y esta región escribe los mismos trazados en un PDF CMYK de una página, con mezclas elegidas para que la prueba se parezca a la pantalla; así el mar va en C100 M45 Y80 K55 y no en el C82 M0 Y25 K76 de la conversión simple. Cada recurso nombra su máster en `svg.pdfFileId`, `pressPdf()` (en la respuesta corta) entrega los bytes del máster a `renderToPdf` con el identificador del SVG, y postext-pdf incrusta esa página tal cual, en vectores y con las tintas del máster. Lo hace con el plano, que es una figura, y con el mapa de la cubierta y la banda de la contracubierta, que son imágenes de diseño. La prueba en escala de grises recibe los SVG, porque un máster incrustado nunca se convierte y seguiría en color.
+
+## Variantes
+
+### Pide 5 mm de sangrado
+
+El arte, el uñero y la escala gráfica se miden desde `BLEED`, y las marcas de corte lo siguen gracias a `markOffset`, así que para una imprenta que pida 5 mm basta este cambio, y cada hoja pasa a medir 200 × 257 mm.
+
+```diff
+-const BLEED = 3; // mm of artwork past the trim: the cover, the tab and the back band reach it
++const BLEED = 5; // mm of artwork past the trim: the cover, the tab and the back band reach it
+```
+
+### Imprime el arte desde sus SVG
+
+Sin `pdfFileId`, el PDF de imprenta dibuja cada imagen desde su SVG, también en vectores pero con la conversión simple, y el mar sale en C82 M0 Y25 K76, un azul petróleo.
+
+```diff
+-  updatedAt: 0, ...extra, svg: { fileId: `${id}.svg`, pdfFileId: `${id}.pdf`,
++  updatedAt: 0, ...extra, svg: { fileId: `${id}.svg`,
+```
+
+## Errores frecuentes
+
+- postext-pdf 1.4.1 escribe cada página con una sola MediaBox, la hoja entera de 192 × 249 mm, sin TrimBox ni BleedBox, e imprime las marcas de corte solo en la plancha del negro. Indica a la imprenta el formato cortado, 170 × 227 mm, o añade las cajas con una herramienta de preimpresión si te pide PDF/X.
+- En 1.4.1, una marca de corte empieza a `markOffset` del corte, no del sangrado, así que con un sangrado mayor que la separación por defecto de 3 mm las marcas se imprimen sobre la ilustración. Mantén la separación igual al sangrado, como hace aquí `cutLines`.
+- `renderToPdf` 1.4.1 no lee `config.pdfGeneration`. `pressPdf()` le pasa el espacio de color como opción, y los marcadores y el etiquetado vienen activados por defecto.
+- Una vez generado, cada botón se convierte en un enlace «Open the PDF ↗» y otro de descarga, y solo los de descarga llevan el nombre de su archivo.

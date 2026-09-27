@@ -1,0 +1,62 @@
+---
+title: "Currículum de una página con barra lateral"
+summary: "Un currículum A4 cuya barra ciruela es un recuadro en la columna izquierda, solo para flotantes; unas cajas de la cabecera la prolongan por los márgenes."
+description: "Un currículum de una página a columna y media, con un recuadro ciruela que llena la columna lateral y cajas de la cabecera que llevan ese color a sangre."
+question: "¿Cómo compongo un currículum de una página con una columna lateral de color y las fechas a la derecha?"
+aliases: ["currículum", "currículum vítae", "CV", "hoja de vida", "barra lateral", "currículum a dos columnas", "fechas alineadas a la derecha", "habilidades en etiquetas", "resume"]
+pageNotes: { "1": "Un currículum A4. Una banda ciruela recorre el borde izquierdo de la hoja de arriba abajo; en lo alto, una pila de cinco libros encuadernados en tela albaricoque, blanca, frambuesa y lila queda a la altura de la línea base del nombre. Debajo, mayúsculas albaricoque encabezan las secciones, de texto blanco: Contacto; Habilidades y Herramientas, en píldoras redondeadas; Idiomas, Formación, Docencia y Fuera del trabajo. En la página blanca de la derecha, Irene Salcedo en letra con remates de gran cuerpo, DISEÑADORA EDITORIAL Y DIRECTORA DE ARTE en mayúsculas pequeñas de color frambuesa, un perfil de cinco líneas y después Experiencia, un título frambuesa en letra con remates seguido de un filete fino hasta el margen, tres puestos con el cargo a la izquierda, las fechas a la derecha en la misma línea y la empresa en cursiva debajo, una lista de Libros seleccionados y un colofón de una línea." }
+---
+
+## Lo que vas a componer
+
+El currículum de Irene Salcedo, diseñadora editorial ficticia afincada en Madrid, en una sola hoja A4. Una banda ciruela de 66 mm de ancho recorre el borde izquierdo de arriba abajo. En lo alto, una pila de libros encuadernados en tela, dibujada en código, queda a la altura de la línea base del nombre. Debajo van el contacto, las habilidades y herramientas en píldoras, los idiomas, la formación, la docencia y sus aficiones. El nombre, en Hedvig Letters Serif de 46 pt, encabeza una columna de texto de 118 mm con un perfil de cinco líneas, tres puestos y los libros que ha diseñado. Cada puesto lleva el cargo a la izquierda y las fechas a la derecha en la misma línea base, con la empresa en cursiva debajo. El primer título de la barra comparte línea base con la profesión, bajo el nombre.
+
+## Elaboración
+
+### 1 · Anida las secciones en un solo recuadro lateral
+
+<Excerpt region="sections" />
+
+Dentro de la columna, la banda es el recuadro de [la respuesta corta](#la-respuesta-corta). Se abre antes del nombre, y por eso `span="side"` lo coloca en la cabeza de la columna solo para flotantes. Las secciones van anidadas en él como recuadros sin fondo propio, de modo que el ciruela corre sin cortes de Contacto a Fuera del trabajo. Compuestas como recuadros laterales sueltos, quedan separadas por franjas de papel de 4,7 a 9,1 mm, aun con `marginBottom` a 0. Las píldoras miden unos 3,9 mm de alto. Habilidades y Herramientas usan un estilo propio, `chips`, cuyo interlineado de 16 pt deja 1,8 mm entre filas; con los 12,4 pt de las demás secciones, quedarían a medio milímetro unas de otras ([estilos de chip](/es/docs/configuration#estilos-de-chip)).
+
+### 2 · Pinta los márgenes alrededor de la columna
+
+<Excerpt region="margins" />
+
+Como la columna lateral queda dentro de los márgenes, el recuadro se detiene a 9 mm del borde izquierdo y a 18 mm del superior. Tres cajas de la cabecera llenan el margen superior sobre la columna, el izquierdo de arriba abajo y el inferior bajo la columna. Los elementos de la cabecera se pintan después del texto y encima de él; por eso la receta los deja en los márgenes, donde no hay texto. Además se repiten en todas las páginas, y una segunda página también llevaría la banda ([encabezados y pies](/es/docs/configuration#encabezados-y-pies)). Las cajas de arriba y de la izquierda montan 0,5 mm sobre el recuadro, y la del pie sube 1 mm por encima del pie de la columna, sobre el final del recuadro, para que no asome un hilo de papel en las juntas. El `:::space` que cierra el recuadro lo alarga hasta 278,0 mm, 0,8 mm por encima del pie de la columna, con 2,76 líneas en inglés y 1,76 en español.
+
+### 3 · Compón el nombre en la cabeza de la columna de texto
+
+<Excerpt region="name" />
+
+El H1 conserva el `span: 'column'` por defecto. Con `'page'` se compone como apertura sobre las dos columnas; al ir detrás del recuadro lateral, pasa a la página 2, y allí la columna lateral empieza debajo del nombre, a 45,9 mm. `breakBefore` está desactivado porque el recuadro lateral ya está en la página: con salto, el nombre y toda la columna de texto pasan a la página 2. El `marginBottom` del nivel, una línea de la rejilla, baja el perfil de 41,3 a 45,9 mm. El relleno superior del recuadro lateral es `ROLE_Y`, la altura del nombre más el aire que lo separa de la profesión, así que el primer título de la barra y la profesión comparten línea base, a 39,3 mm del borde superior.
+
+### 4 · Pon las fechas en la línea del cargo
+
+<Excerpt region="jobs" />
+
+Cada puesto es un H3 cuyos atributos llevan la empresa y las fechas: `### Directora de arte {org="Ediciones del Albardín, Madrid" dates="2021 – actualidad"}` ([atributos de encabezado](/es/docs/document-format#atributos-de-encabezado)). El cargo y las fechas se anclan a la cabeza del mismo contenedor, cada uno en una esquina, con el mismo cuerpo e interlineado, y por eso comparten línea base. El cargo tiene un ancho máximo de 84 mm y admite varias líneas: uno largo salta a la segunda antes de alcanzar las fechas, y la empresa baja con él. Cada título de sección ocupa, con el espacio de encima, tres líneas justas de la rejilla, y así todos los puestos empiezan 9 pt por debajo de una línea, vengan de un título de sección o de una lista.
+
+## Variantes
+
+### Cambia el color de la banda
+
+Cada color se escribe una sola vez, en `palette`, y de ahí lo toman las cajas de la banda, el recuadro lateral, los chips, la profesión, los títulos y el dibujo. Con estas tres líneas, la banda, el acento y los chips pasan a verde azulado.
+
+```diff
+-  band: '#3a2235', // the sidebar
++  band: '#1d3b3a', // the sidebar
+-  accent: '#8f3b62', // on paper: the role and the section heads (7.1:1)
++  accent: '#2b5f5b', // on paper: the role and the section heads (7.3:1)
+-  chip: '#744d6c', // on the band: the skill chips
++  chip: '#456d69', // on the band: the skill chips
+```
+
+### Lleva figuras a la misma columna
+
+El <RecipeLink slug="textbook-margin-column">libro de texto con columna al margen</RecipeLink> pone figuras, pies laterales y glosas en una columna solo para flotantes en el borde exterior de cada página.
+
+## Errores frecuentes
+
+- Ajusta el `:::space` a la página. En la edición española, 1,76 líneas terminan el recuadro 0,8 mm por encima del pie de la columna. Con 1,96 líneas pasa del pie en 0,1 mm y la barra entera se va a la página 2; con 1,66 se abre una franja de papel entre el recuadro y la caja del pie.
+- Una caja del diseño del nombre no sirve para pintar la banda. Si termina justo encima del pie de la columna, el título reserva 265 mm, más que los 260,8 mm de la columna, y el texto pasa a la página 2; si llega hasta el pie de la hoja, el título pierde la altura que reservaba y el perfil sube a 30,3 mm y se monta sobre la profesión.

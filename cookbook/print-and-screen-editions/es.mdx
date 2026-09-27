@@ -1,0 +1,73 @@
+---
+title: "Un solo original, ediciones impresa y de pantalla"
+summary: "Las dos ediciones salen de una configuración: htmlViewer.overrides guarda el diseño oscuro y applyHtmlViewerOverrides lo fusiona antes de componer el HTML."
+description: "Una sección de revista en Postext, compuesta como número impreso a dos columnas y como vista de lectura HTML oscura y adaptable, a partir de un solo Markdown."
+question: "¿Cómo muestro el mismo documento como vista de lectura HTML adaptable, con un diseño de pantalla más sencillo?"
+aliases: ["edición de pantalla", "vista de lectura", "edición web", "modo oscuro", "tema nocturno", "HTML adaptable", "redimensionar", "ResizeObserver", "Shadow DOM", "htmlViewer overrides"]
+pageNotes: { "1": "La portadilla de Apuntes del tiempo: un fondo azul lluvia con trazos de lluvia blancos en diagonal que dejan libre el texto, un gran número romano I, el título de la parte, Otoño, y al pie la lista de los tres apuntes.", "2": "El apunte Lluvia: una banda gris niebla con el antetítulo Otoño · Apunte 1, el título en Gloock y una entradilla en cursiva, dos columnas justificadas y un pluviómetro dibujado en sección en lo alto de la segunda columna.", "3": "El apunte Niebla: dos columnas equilibradas sobre un panorama que ocupa el pie de la página, con un valle cubierto de capas de niebla bajo un sol pálido; asoman la aguja de una iglesia y unos árboles, y en primer plano hay un ribazo con una cerca.", "4": "El apunte Viento: una rosa de los vientos encabeza la segunda columna, con sus pétalos azules más largos hacia el oeste y el suroeste, y el apunte termina con el colofón del número." }
+---
+
+## Lo que vas a componer
+
+*Apuntes del tiempo*, la sección de otoño de una pequeña revista, compuesta dos veces con el mismo Markdown. En papel es un número de 225 × 297 mm: una portadilla azul lluvia, tres apuntes que se abren bajo una banda gris niebla, dos columnas justificadas y dibujos de un pluviómetro, un valle con niebla y una rosa de los vientos. En pantalla es una sola columna en bandera, en Newsreader gris claro sobre fondo casi negro, con texto HTML que se puede seleccionar y copiar, sin portadilla, bandas ni folios. El panel se abre por el pluviómetro, reducido a la altura del panel y dibujado en colores de noche, junto a su página impresa. Más arriba está la apertura de Lluvia; si arrastras la esquina del panel, el texto se recompone al nuevo tamaño. El diseño de pantalla ocupa nueve claves de `htmlViewer.overrides`, en la misma configuración que el impreso.
+
+## Elaboración
+
+### 1 · Un juego de nombres de color, dos juegos de valores
+
+<Excerpt region="palette" />
+
+Cada color de la configuración remite a un identificador de la paleta; el hex que lleva al lado es solo el valor de día, de reserva. Por eso a la edición de pantalla le basta cambiar un array para pasar a los colores de noche. Los [ajustes de pantalla](/es/docs/configuration#visor-html) de [la respuesta corta](#la-respuesta-corta) se fusionan clave a clave, y los niveles de título por `level`; cualquier otro array, `colorPalette` incluido, se sustituye entero. `main-color` forma parte de la paleta, de modo que también cambian los valores por defecto del motor que dependen de él. En postext 1.4.1 la paleta nueva no llega a los elementos de diseño ni al color de las remisiones, y por eso `relink()` reescribe cada color enlazado con el valor que tiene en la paleta de la configuración fusionada.
+
+### 2 · Aperturas: banda en papel, solo palabras en pantalla
+
+<Excerpt region="opener" />
+
+Los elementos de antetítulo, título y entradilla se definen una vez y se copian en los dos diseños, así que las dos ediciones muestran los mismos atributos del título: `{attr.kicker}`, `{attr.lead}` y el `{partTitle}` de la parte. En papel, un título de primer nivel abre página y abarca las dos columnas, y su diseño cuelga una banda gris niebla desde el sangrado. `minHeight` reserva la altura de la banda por debajo del margen superior, más `AIR`, los 9 mm que separan la banda de la primera línea. Los títulos impresos van a 54 pt porque cada uno es una sola palabra corta y el único texto grande de su página. En pantalla, el mismo nivel pasa a ser un título en columna, sin banda ni aire. El ajuste se fusiona por `level`, así que todo lo que no repite se queda como en la edición impresa.
+
+### 3 · Una portadilla que solo existe en papel
+
+<Excerpt region="part" />
+
+En la edición impresa, `:::part` abre <PageRef page={1}>la portadilla azul lluvia</PageRef>: una caja a sangre por los cuatro lados, un elemento de imagen con trazos de lluvia que dejan libre el texto, el número y el título que da la valla, y la lista de apuntes en blanco. Los ajustes de pantalla ponen `parts.page: false`, así que no se abre ninguna página ni se compone la lista. La [parte](/es/docs/configuration#partes) sigue aplicando su número y su título a los apuntes que vienen detrás, y el antetítulo de pantalla dice «Otoño · Apunte 1», igual que el impreso.
+
+### 4 · Dibuja cada figura dos veces
+
+<Excerpt region="figures" />
+
+Cambiar la paleta no recolorea un SVG, así que cada dibujo se hace una vez por paleta. `figures(edition)` crea los mismos recursos para las dos ediciones, y cada uno apunta al archivo de su edición: `gauge-day.svg` en papel y `gauge-night.svg` en pantalla. Identificadores, pies, textos alternativos y colocación no cambian, de modo que cada `:ref` del Markdown lleva a la misma figura, con el mismo número, en las dos ediciones. En la de pantalla, el texto alternativo va en el `alt` de cada `<img>`, donde lo encuentra un lector de pantalla.
+
+### 5 · Aloja la edición de pantalla
+
+<Excerpt region="screen" />
+
+Cada página de pantalla es tan alta como el panel, así que `fitFiguresToPage` reduce el pluviómetro hasta que quepa en una página con su pie ([disposición](/es/docs/configuration#disposición)). A 96 ppp, la resolución de referencia de CSS, los milímetros y puntos heredados de la edición impresa se ven a su tamaño nominal ([integrar el visor HTML](/es/docs/configuration#integrar-el-visor-html)). La receta escribe las líneas con posición absoluta de `renderToHtml` dentro de un Shadow DOM, adonde no llegan los selectores de la página. El `all: initial` del envoltorio corta además las propiedades heredadas, como `letter-spacing`: el motor midió las líneas sin ellas, y con un valor heredado el texto se solaparía. Las páginas HTML son transparentes si nada las pinta, así que `page.backgroundColor` toma de la paleta el papel nocturno. El ResizeObserver espera 150 ms y solo recompone, con una `config()` nueva, cuando cambia el ancho o el alto del panel; después vuelve a desplazar el panel a la misma proporción de su altura, para que el lector siga por donde iba.
+
+## Variantes
+
+### Lee de día
+
+Quita la paleta nocturna y usa los valores de día para el panel y las figuras; la edición de pantalla tendrá entonces páginas blancas, texto en tinta oscura y los dibujos de día.
+
+```diff
+-  colorPalette: paletteOf(night), // arrays are replaced whole: the night values
+   parts: { page: false }, // no divider page; the part still names the notes after it
+@@
+-pane.style.background = night.paper; // the pane's own ground, beside the pages and the scrollbar
++pane.style.background = day.paper; // the pane's own ground, beside the pages and the scrollbar
+@@
+-  const screenDoc = buildDocument({ markdown, resources: figures('night') },
++  const screenDoc = buildDocument({ markdown, resources: figures('day') },
+```
+
+### Dale a la apertura impresa un número de capítulo sobre una banda de color
+
+Para una apertura impresa más rotunda, con una banda saturada y un número de capítulo grande, consulta <RecipeLink slug="chapter-opener-bleed-band">Apertura de capítulo sobre banda a sangre</RecipeLink>; los ajustes de pantalla no cambian.
+
+## Errores frecuentes
+
+- Revisa el final de cada apunte después de editar. Si el último párrafo de un apunte deja en una página nueva una cola de dos líneas (el control de viudas no las separa), postext 1.4.1 da a la columna de esa página la altura de una sola línea y el canvas recorta la segunda. Los dos textos de muestra están ajustados para que ningún apunte acabe así.
+- En texto en bandera, la 1.4.1 puede cerrar una línea con el «(» que precede a una remisión, y en un panel que el lector puede redimensionar, alguna anchura acabará dando ese corte. Estos apuntes citan las figuras dentro de la frase («la fig. 2 muestra»), nunca entre paréntesis.
+- Deja que un párrafo de pantalla empiece en la última línea de una página (`avoidWidows: false`). Con esa regla activa, la 1.4.1 puede meter entero un párrafo más alto que la página en el hueco que queda bajo una figura, y el párrafo se sale por el pie de la página; pasa, por ejemplo, con paneles de 240 × 420 o 280 × 450 px.
+- Mantén el panel en 400 px de alto como mínimo (el `min-height` de la receta). En un panel estrecho de menos de unos 350 px de alto, la apertura de pantalla es más alta que la caja de texto de la página; postext 1.4.1 le quita entonces toda la reserva y compone el primer párrafo encima del título.
+- Da tamaño al panel antes de componer. Un panel sin ancho, oculto o aplastado en una fila flex, daría una página de ancho cero; por eso `showScreen()` descarta un panel más estrecho o más bajo que `FOLDED`, 200 px.

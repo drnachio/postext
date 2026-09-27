@@ -1,0 +1,85 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 6,
+  "status": "published",
+  "chapter": "structure",
+  "order": 10,
+  "level": 3,
+  "genres": ["novel"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["roman-front-matter", "toc", "section-running-heads"],
+    "also": [
+      "covers", "page-breaks", "heading-styles", "unnumbered-headings",
+      "section-geometry", "design-images", "chapter-breaks", "paragraph-styles", "opener-design",
+      "heading-attributes", "frontmatter", "running-heads", "page-role-filters", "mirrored-margins",
+      "pdf-export", "pdf-outlines", "resources"
+    ]
+  },
+  "answers": ["Q36", "Q35", "Q37", "Q39", "Q44"],
+  "gotchas": [
+    "numbering-next-page", "style-inherits-break", "invisible-heading", "parity-page1-recto",
+    "numbering-vocabularies", "quote-frontmatter", "headings-drop-h1-break", "style-italic-colour",
+    "nbsp-breaks", "pdf-provider-all-styles", "opener-image-no-reserve", "section-last-wins"
+  ],
+  "explainsWarnings": ["parityCascade", "numberingInvalidFormat"],
+  "related": [
+    "parts-in-colour", "poetry-collection", "magazine-cover-and-contents",
+    "print-ready-pdf"
+  ],
+  "workarounds": [
+    { "followup": "EF-26", "package": "postext", "note": "the imprint page's heading holds a 0.1 pt box, and the dedication's an ornament, so neither prints its title" },
+    { "followup": "EF-05", "package": "postext", "note": "the H1 breakBefore is restated because a headings object drops it" },
+    { "followup": "EF-60", "package": "postext", "note": "the leaves and the front style restate breakBefore with parity 'any', or each would inherit level 1's odd break and a blank verso" },
+    { "followup": "EF-11", "package": "postext", "note": "every frontmatter value is quoted: the year prints on the title page through {publishDate}" },
+    { "followup": "EF-68", "package": "postext", "note": "the small-print style stays in ink, because a paragraph style's italic runs take bodyText.italicColor" },
+    { "followup": "EF-66", "package": "postext", "note": "the no-break spaces in the imprint (1 January 1818, eBook 41445, CC BY 4.0), the Preface (Dr. Darwin) and Letter I (St. Petersburgh) do not glue yet: the lines were checked so no pair splits; re-check after editing any of them" },
+    { "followup": "EF-90", "package": "postext", "note": "an opener's image elements never count towards the height the heading reserves (measureHeadingAdvancedDesignHeight lays the slot out without resources): Letter I's minHeight alone puts the first line under the drawing" },
+    { "followup": "EF-91", "package": "postext", "note": "a heading design that reaches below the text block's foot drops its whole reserved height, minHeight included (build.ts places the oversize heading at its text height): the cover's type ends above the foot" },
+    { "followup": "EF-20", "package": "postext-pdf", "note": "Fanwood Text has no bold and Cinzel no italic: the kit's provider snaps to the faces each family ships" }
+  ],
+  "engine": { "postext": "1.4.1", "postextPdf": "1.4.1" },
+  "kit": ["core", "fonts", "viewer", "pdf", "images"],
+  "sample": { "locales": ["en"] },
+  "capture": {
+    "hero": 1,
+    "card": "crop",
+    "focus": { "page": 1, "x": 0, "y": 0.075, "w": 1, "h": 0.685 },
+    "pages": [1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14],
+    "expect": { "pages": [14, 14], "nearEmptyPages": [3, 5, 6, 7, 8] }
+  },
+  "downloads": { "pdf": true },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": { "en": "Frankenstein; or, The Modern Prometheus (1818): the dedication, Letter I, a line of Letter IV (the frontispiece caption) and one of volume I, chapter VI (quoted in a code comment)", "es": "Frankenstein; or, The Modern Prometheus (1818): la dedicatoria, la Carta I, una frase de la Carta IV (el pie del frontispicio) y otra del volumen I, capítulo VI (citada en un comentario del código)" },
+        "who": "Mary Shelley",
+        "source": "https://www.gutenberg.org/ebooks/41445",
+        "license": "PD"
+      },
+      {
+        "what": { "en": "The unsigned Preface of the 1818 edition (by common attribution)", "es": "El prólogo sin firma de la edición de 1818 (según la atribución habitual)" },
+        "who": "Percy Bysshe Shelley",
+        "source": "https://www.gutenberg.org/ebooks/41445",
+        "license": "PD"
+      },
+      {
+        "what": { "en": "Paradise Lost (1667), book X, lines 743–745: the epigraph of the 1818 title leaves", "es": "Paradise Lost (1667), libro X, versos 743–745: el epígrafe de las primeras hojas de 1818" },
+        "who": "John Milton",
+        "source": "https://www.gutenberg.org/ebooks/26",
+        "license": "PD"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Fanwood Text", "license": "OFL-1.1" },
+      { "family": "Playfair Display SC", "license": "OFL-1.1" },
+      { "family": "Cinzel", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-25",
+  "updated": "2026-09-26"
+}

@@ -1,0 +1,76 @@
+---
+title: "Newspaper front page"
+summary: "A local weekly's front page and page 2 in two ruled columns, with page-wide headlines set as boxes and a four-column strip of briefs floated to the foot."
+description: "A newspaper front page in Postext, with the code: a blackletter nameplate, headlines in page-wide boxes, ruled columns and four columns of briefs at the foot."
+question: "Can I set a newspaper page with more than two columns, or wrap the text around its photo?"
+aliases: ["newspaper", "front page", "broadsheet", "tabloid", "nameplate", "masthead", "banner headline", "news in brief", "three columns", "four columns", "column rule", "local paper"]
+pageNotes: { "1": "The front page of The Elverdale Courier: the blackletter nameplate between a weather ear and a price ear, a thick and a thin rule over the dateline, the two-line banner Harrow Ridge turbines win the town’s vote, an italic deck, a photograph of wind turbines on a snowy ridge across both columns, the story in two justified columns parted by a hairline, and a tinted In brief strip of four columns at the foot, each brief opening on a red chip.", "2": "Page 2, headed by a red Town & Valley flag on a black bar: the Old Mill Bridge story with a drawing of the two-arch bridge between its banks and its new footing in red, a five-day forecast table at the head of the right column, a second headline across the page over the ward results story and a Letters column, and a table of how the five wards voted, with a red and grey bar in each row, across the foot." }
+---
+
+## What you'll build
+
+The front page and page 2 of *The Elverdale Courier*, an invented valley weekly, on a 246 × 328 mm sheet. A blackletter nameplate sits between a weather ear and a price ear, over a thick and a thin rule and the dateline. The lead story opens with a two-line banner in Libre Franklin Black at 56 pt across both columns, an italic deck and a photo band 222 mm wide, then runs in two justified columns parted by a hairline. At the foot, four briefs share a tinted strip, one to a column, each led by a red chip. Page 2 opens on a red section flag and holds the bridge story with a drawing made in code, a five-day forecast at the head of the right column, a second headline across the page, the letters and a table of the ward votes with a bar in every row.
+
+## Method
+
+### 1 · Newsprint, ink and one red
+
+<Excerpt region="palette" />
+
+The page is newsprint (#f8f5ee) and the type near-black ink (#111315). The one red, #a6192e, goes on the section flags, the kickers, the chips and the yes bars. Each colour carries its `paletteId` and its hex, because 1.4.1 paints design elements from the hex. `main-color` points at the ink, so the italics and every default the config leaves alone print in ink. `bodyText.boldColor` is set to the ink as well. The reference colour falls back to it and each box copies it for its bold text, and the palette recolours neither. Without it, the two references on page 2 and the bold lead-ins of the briefs print in the default blue, #295AA3.
+
+### 2 · The nameplate is the front page's H1
+
+<Excerpt region="nameplate" />
+
+`# The Elverdale Courier` takes the `front` heading style, which fills the masthead from the heading's text and seven of its attributes (`issue`, `area`, `outlook`, `temps`, `since`, `day` and `price`); the date comes from `publishDate` in the frontmatter. An empty box seven grid lines deep (31.1 mm) sets the height of the opener. The rules, the dateline and the name hang from its foot, so the opener ends on a grid line. Make the box 6.6 lines deep and 1.4.1 draws the column rule down through the name and the dateline.
+
+### 3 · A headline across both columns is a box
+
+<Excerpt region="banner" />
+
+A heading spans both columns only as an opener, and an opener starts a new page. Put `span: 'page'` on the ward story's H2 instead of its box and that story moves to a third page. A frameless box with `span="page"` can start mid-page. On <PageRef page={2}>page 2</PageRef> the columns are cut level above it and resume below. The box holds the H2 in one of three heading styles (56, 30 or 22 pt), the italic deck and, on the front page, the photograph. Its `marginBottom` of half a line starts the columns on the next grid line, 3.4 mm under the deck on page 2. At the default margin the gap is 7.8 mm and the letters run onto a third page.
+
+### 4 · More than two columns live inside a box
+
+The code for this step is [the short answer](#the-short-answer) above. A page's body takes two columns at most ([Layout types](/en/docs/configuration#layout-types)), so a newspaper's four or five columns go in a box, here a page-wide one holding a [`:::columns`](/en/docs/document-format#columns) group. `breaks` counts the group's blocks, one per brief, so briefs 2, 3 and 4 open columns 2, 3 and 4. Each column is 49 mm wide, with the page's 6 mm gutter between them.
+
+```markdown
+:::callout{type="briefs" span="page" placement="bottom" title="In brief"}
+:::columns{count=4 breaks="2,3,4"}
+:chip[TRANSPORT]{style="flag"} **Bus 44 back on Sundays.** The Elverdale to Kirkby bus …
+
+:chip[SCHOOLS]{style="flag"} **An orchard for Brook Lane.** Pupils at Brook Lane …
+…
+:::
+:::
+```
+
+`placement="bottom"` floats the box to the foot of <PageRef page={1}>page 1</PageRef>, where it takes 36.9 mm, and the story fills the 83 mm of columns above it. Nor does 1.4.1 wrap text round a picture. A float takes a whole band of its column or of the page, so the lead photo is a band across both columns inside the banner box, and the bridge drawing takes the full width of column 1. To set text beside a picture, use the same kind of box: in `:::columns{count=2 breaks="2"}` the `::resource` line opens the first column and the text the second.
+
+### 5 · Pictures inline, tables as floats
+
+<Excerpt region="floats" />
+
+The photograph is inline in the banner box because a page-wide `top` float never lands above the line that cites it; as a float, the photo would open page 2 (see Pitfalls). The bridge drawing is inline too, after the paragraph about the pier. The forecast floats to the head of a column and lands at the top of the right one. The ward table floats under both columns, where the column rule stops. On the last page it sits right under the balanced columns, so the copy above it was fitted to bring it down to the foot. Both resource types set `captionPrefix: ''`, and 1.4.1 prints a caption label only when the prefix has text, so no caption starts with "Figure 1".
+
+### 6 · An inside page opens on a section flag
+
+<Excerpt region="inside" />
+
+`# Town & Valley` is an H1 whose `breakBefore` has the parity `'any'`, so the section opens page 2 without a blank page before it. Its design is a red flag on a 3 pt bar, hung from an empty box two grid lines deep. The folio line is a header anchored 6 mm below the top edge of the page, with one version for even pages and one for odd. The front page's style empties the header, so no folio line prints above the nameplate.
+
+## Variations
+
+### Keep the briefs under the photograph
+
+Without `placement="bottom"` in `content.en.md`, the strip stays where its fence is, right under the photograph, and the lead story runs below it to the foot of the page.
+
+```diff
+-:::callout{type="briefs" span="page" placement="bottom" title="In brief"}
++:::callout{type="briefs" span="page" title="In brief"}
+```
+
+## Pitfalls
+
+- Give the photograph `placement: { position: 'top', span: 'page' }` and it moves off page 1 to stand alone on page 2. The story on page 1 then ends 92 mm above the briefs strip, and the section moves to page 3.

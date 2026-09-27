@@ -1,0 +1,391 @@
+{
+  "schemaVersion": 1,
+  "slug": "accessible-tagged-pdf",
+  "sourceHash": "30f14047d1f4c1acc791ee5b13ce6b2b3bb68682c68f92fe80e3f79f0673751a",
+  "engine": {
+    "postext": "1.4.1",
+    "postextPdf": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-26T21:41:08.005Z",
+  "variants": {
+    "es": {
+      "hash8": "4d7ac2a6",
+      "vdtHash": "55647460c653392f0d98d3848cb4f238bc4ece53",
+      "timings": {
+        "importMs": 577,
+        "fontsMs": 65,
+        "buildMs": 13,
+        "totalMs": 1338,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          297
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 8,
+        "mirror": false,
+        "body": {
+          "family": "Atkinson Hyperlegible Next",
+          "sizePt": 10.5,
+          "leadingPt": 15.5
+        },
+        "families": [
+          "Atkinson Hyperlegible Mono",
+          "Atkinson Hyperlegible Next",
+          "Public Sans"
+        ],
+        "pages": 4,
+        "ownLines": 179
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 37032,
+          "alt": "Página de apertura 1: Reciclar en el barrio."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 150908,
+          "alt": "Página de apertura 2: Índice."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 148700,
+          "alt": "Página de apertura 3: 1 Qué va en cada contenedor. Figura 1.1. Una isla del barrio: de izquierda a derecha, amarillo, azul, verde, marrón y gris. · Tabla 1.1. Los residuos que más dudas dan."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 123962,
+          "alt": "Página de apertura 4: 2 Lo que no va al contenedor. Tabla 2.1. Días y horas de recogida."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "accessible-tagged-pdf.pdf",
+        "bytes": 60224,
+        "pages": 4
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "defaultResourceTypes",
+          "parseTSV",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.paragraphSpacing",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].body",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].id",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].snapToGrid",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "captionStyle",
+          "captionStyle.fontSize",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].fontSize",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].id",
+          "headingStyles[].layout",
+          "headingStyles[].layout.layoutType",
+          "headingStyles[].lineHeight",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberingTemplate",
+          "headings.levels[].span",
+          "layout",
+          "layout.gutterWidth",
+          "locale",
+          "orderedLists",
+          "orderedLists.color",
+          "orderedLists.fontWeight",
+          "orderedLists.marginBottom",
+          "orderedLists.marginTop",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].spaceBetween",
+          "resourceTypes",
+          "tableStyle",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules",
+          "toc",
+          "toc.leader",
+          "toc.leader.gap",
+          "toc.levels",
+          "toc.levels[].fontFamily",
+          "toc.levels[].fontSize",
+          "toc.levels[].fontWeight",
+          "toc.levels[].indent",
+          "toc.levels[].level",
+          "toc.levels[].marginTop",
+          "toc.levels[].numberGap",
+          "toc.levels[].numberWidth",
+          "toc.pageNumber",
+          "toc.pageNumber.fontFamily",
+          "toc.pageNumber.fontWeight",
+          "toc.pageNumber.width",
+          "toc.unnumbered",
+          "toc.unnumbered.indent",
+          "unorderedLists",
+          "unorderedLists.color",
+          "unorderedLists.marginBottom",
+          "unorderedLists.marginTop"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "orderedLists",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle",
+          "toc",
+          "unorderedLists"
+        ],
+        "configLeaves": 252,
+        "designElements": 9,
+        "directives": [
+          ":::paragraphs",
+          ":::toc",
+          ":::callout",
+          ":::columnbreak",
+          "::resource"
+        ],
+        "inline": [
+          "{attrs}",
+          "\\\\",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 2,
+          "bitmap": 0,
+          "table": 2
+        },
+        "fonts": [
+          {
+            "family": "Atkinson Hyperlegible Mono",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Atkinson Hyperlegible Mono",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Atkinson Hyperlegible Next",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Atkinson Hyperlegible Next",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Atkinson Hyperlegible Next",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Public Sans",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Public Sans",
+            "weight": 800,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "citations",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "inline-embeds",
+          "localised-labels",
+          "off-grid-spacing",
+          "opener-band",
+          "opener-design",
+          "page-breaks",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "resources",
+          "section-geometry",
+          "section-running-heads",
+          "table-model",
+          "title-line-breaks",
+          "toc",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
+      }
+    }
+  }
+}

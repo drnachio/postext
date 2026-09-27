@@ -1,0 +1,53 @@
+/* The proof desk above the pages: the live page, and the four colourways as buttons.
+   Sizes are in container units, so the desk keeps its 4:3 shape at any width up to 1120 px. */
+#editions {
+  container-type: inline-size; max-width: 1120px; margin: 0 auto; background: #16181d;
+  color: #b9bcc4; font: 400 13px/1.4 "Plus Jakarta Sans", system-ui, sans-serif;
+}
+#editions .desk {
+  box-sizing: border-box; display: grid; aspect-ratio: 4 / 3; padding: 4cqw;
+  grid-template: 'page head' auto 'page ways' minmax(0, 1fr) / 67cqw minmax(0, 1fr);
+  gap: 2.6cqw 3.5cqw;
+}
+#editions header { grid-area: head; }
+#editions .kicker {
+  margin: 0 0 0.8cqw; font-size: max(10px, 1cqw); font-weight: 700; letter-spacing: .18em;
+  text-transform: uppercase; color: #8d9098;
+}
+#editions h2 { margin: 0; font: 800 2.2cqw/1.1 Syne, sans-serif; color: #f4f1ea; }
+#live {
+  grid-area: page; display: block; width: 67cqw; height: 67cqw; background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / .5), 0 2.4cqw 4.8cqw -1.8cqw rgb(0 0 0 / .85);
+}
+#editions .buttons {
+  grid-area: ways; display: grid; grid-template-rows: repeat(4, minmax(0, 1fr)); gap: 1.3cqw;
+}
+#editions button {
+  display: flex; align-items: center; gap: 1.6cqw; padding: 0; border: 0; background: none;
+  color: #f4f1ea; font: 700 1.7cqw/1.15 Syne, sans-serif; text-align: left; cursor: pointer;
+}
+#editions button canvas {
+  flex: none; width: 11cqw; height: 11cqw; background: #fff;
+  outline: 2px solid transparent; outline-offset: 0.45cqw; transition: outline-color .15s;
+}
+#editions button[aria-pressed="true"] canvas { outline-color: #f4f1ea; }
+#editions button:hover canvas, #editions button:focus-visible canvas { outline-color: #8d9098; }
+#editions button:focus-visible { outline: none; }
+#editions button i { display: flex; gap: 0.5cqw; margin-top: 0.8cqw; }
+#editions button b {
+  width: 1.4cqw; height: 1.4cqw; border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / .14);
+}
+@container (max-width: 640px) {
+  #editions .desk {
+    aspect-ratio: auto; padding: 24px 16px; gap: 18px;
+    grid-template: 'head' auto 'page' auto 'ways' auto / minmax(0, 1fr);
+  }
+  #editions h2 { font-size: 24px; }
+  #live { width: 100%; height: auto; aspect-ratio: 1; }
+  #editions .buttons { grid-template: auto / repeat(4, minmax(0, 1fr)); gap: 10px; }
+  #editions button { flex-direction: column; align-items: stretch; gap: 6px; font-size: 13px; }
+  #editions button canvas { width: 100%; height: auto; aspect-ratio: 1; }
+  #editions button i { gap: 4px; margin-top: 4px; }
+  #editions button b { width: 10px; height: 10px; }
+}

@@ -1,0 +1,73 @@
+---
+title: "Formato de guion cinematográfico"
+summary: "Guion de rodaje en Courier Prime 12 sobre papel carta, con las réplicas en recuadros sin marco del ancho del diálogo y las escenas numeradas en ambos márgenes."
+description: "Un guion en Courier de 12 sobre papel carta, compuesto con Postext: cada escena lleva su número en los dos márgenes y cada réplica es un recuadro sin marco."
+question: "¿Cómo compongo un guion con escenas numeradas y cada réplica en un bloque de 3,5 pulgadas bajo el nombre?"
+aliases: ["guion", "guion de cine", "guion de rodaje", "guion técnico", "encabezado de escena", "número de escena", "nombre del personaje", "bloque de diálogo", "acotación", "transición", "CORTE A", "Courier 12", "encuadernadores", "taladro de tres agujeros"]
+pageNotes: { "1": "Una cubierta de cartulina mostaza con tres agujeros de taladro: dos encuadernadores de latón ocupan el de arriba y el de abajo, y el del centro queda vacío. Una etiqueta blanca lleva OBJETOS PERDIDOS en mayúsculas de máquina de escribir y, debajo, guion de Maren Arrieta; más abajo, un sello rojo oscuro de doble filete dice GUION DE RODAJE, 14 OCT. 2026, y al pie va Medialuz Producciones en mayúsculas espaciadas.", "2": "El interior de la cubierta, del mismo color, con los tres agujeros en el borde derecho y las patas de latón de los encuadernadores en el de arriba y el de abajo. Un aviso mecanografiado dice que el guion es de Medialuz Producciones y pide a quien lo encuentre que lo devuelva; debajo, un sello rojo dice COPIA 07, y el colofón va al pie.", "3": "Página 1 del guion, sin número y con tres agujeros de taladro en el borde izquierdo: el título en mayúsculas sobre FUNDIDO DE ENTRADA: y las escenas 1 y 2, con su número en los dos márgenes junto al encabezado en negrita y mayúsculas. La acción ocupa toda la medida; siete réplicas de Teo y Dora van en un bloque más estrecho, cada una bajo el nombre del personaje, dos de ellas con una acotación.", "4": "Página 2, con el número 2. arriba a la derecha: Dora pide nombre y dirección, Teo rellena el impreso, una réplica encabezada DORA (CONT.), Teo contando qué lleva el bolsillo de la tapa, con un (luego) entre dos líneas, la escena 3 en el almacén y la escena 4 hasta el «Tóqueme algo.» de Dora y el «¿Aquí?» de Teo.", "5": "Página 3: Dora cuenta lo del señor que reclamó un arpa; luego Teo toca para ella con una cola a su espalda, la oficina se queda en silencio y ella sella el impreso: DEVUELTO; CORTE A: alineado a la derecha, la escena 5 ante el buzón de la estación y FUNDIDO A NEGRO. bajo la última línea de acción." }
+---
+
+## Lo que vas a componer
+
+La versión de rodaje de *Objetos perdidos*, un cortometraje inventado de tres páginas, encuadernada como los guiones de los estudios: cubierta de cartulina mostaza con dos encuadernadores de latón y etiqueta mecanografiada, el interior sellado con COPIA 07 y, detrás, el guion en Courier Prime de 12 sobre 12 en papel carta taladrado. Las medidas son las de los programas de guion: acción de 1,5 a 7,5 pulgadas; réplica de 2,5 a 6, bajo el nombre del personaje a 3,7; acotación desde 3,1, y CORTE A: y FUNDIDO A NEGRO. hasta el margen derecho. Cada escena lleva su número en los dos márgenes. La página 1 del guion no lleva número; las demás, arriba a la derecha y con punto. Cada réplica es un recuadro sin marco que un relleno superior de −2,4 pt ajusta a líneas enteras de 12 pt, y así acción y diálogo mantienen seis líneas por pulgada.
+
+## Elaboración
+
+### 1 · Ajusta un recuadro sin marco al bloque de diálogo
+
+El código está en [la respuesta corta](#la-respuesta-corta), más arriba. El relleno de un recuadro se mide desde la caja de texto, así que 1 pulgada a la izquierda y 1,5 a la derecha dejan el bloque de 3,5 pulgadas que empieza a 2,5 del borde de la hoja ([estilos de aviso](/es/docs/configuration#estilos-de-aviso)). El nombre del personaje es el título del recuadro y se escribe en la valla: `title="Dora (cont.)"`. `textTransform` lo pasa a mayúsculas, e `indent` lo lleva 1,2 pulgadas más allá del relleno, hasta 3,7. `gap` vale 0 porque, por defecto, entre el nombre y la réplica queda medio cuadratín, 6 pt. En la 1.4.1 el título de un recuadro se compone en una línea de 1,2 veces su cuerpo, 14,4 pt aquí, y `titleStyle` no tiene un interlineado propio que la cambie. El relleno superior de −2,4 pt descuenta esos 2,4 pt de más, así que la réplica ocupa un número entero de líneas de 12 pt y el nombre queda 0,48 pt por encima de su línea de la rejilla. Con el relleno a 0, cada nombre baja 1,92 pt, cada réplica aleja 2,4 pt más de la rejilla el texto que la sigue, y el encabezado de la escena 3, al volver a la rejilla, queda a 33,6 pt de su primera línea de acción en lugar de 24. Con `snapToGrid` desactivado, el margen inferior de una réplica y el superior de la siguiente se funden en una sola línea en blanco. Un recuadro se mantiene entero por defecto, de modo que una réplica que ya no cabe pasa a la página siguiente con su nombre.
+
+### 2 · Mide la página en pulgadas
+
+<Excerpt region="page" />
+
+Tamaño carta, con el margen izquierdo de 1,5 pulgadas por el que pasan los encuadernadores y una pulgada en los otros tres lados. Courier Prime es una letra monoespaciada: a 12 pt cada carácter mide una décima de pulgada, así que una línea de acción admite 60 caracteres y una de diálogo 35, y con un interlineado de 12 pt caben 54 líneas en la página. El texto va en bandera, alineado a la izquierda, y `paragraphSpacing` deja una línea en blanco entre párrafos. Postext 1.4.1 solo aplica la separación silábica al texto justificado, así que ninguna palabra se corta, como pide el formato.
+
+### 3 · Haz de las acotaciones y las transiciones estilos de párrafo
+
+<Excerpt region="styles" />
+
+Un contenedor `:::paragraphs{style="paren"}` dentro de una réplica sangra su primera línea 0,6 pulgadas desde el borde del diálogo, hasta 3,1 ([estilos de párrafo](/es/docs/configuration#estilos-de-párrafo)). Escribe cada acotación en una sola línea, porque el estilo solo sangra la primera. En el estilo del diálogo, `body.paragraphSpacing: false` deja fuera del recuadro la línea en blanco que separa los párrafos de acción, y `(luego)` queda justo debajo de la línea anterior. `CORTE A:` y `FUNDIDO A NEGRO.` van en contenedores `transition`, cuyo `textAlign: 'right'` los alinea con el final de las líneas de acción. Un contenedor devuelve el texto a la rejilla base después de su último párrafo; este guion no sale nunca de ella, así que el encabezado que sigue a `CORTE A:` conserva sus dos líneas en blanco.
+
+### 4 · Cuelga los números de escena en los dos márgenes
+
+<Excerpt region="slugline" />
+
+`numberingTemplate: '{2}'` cuenta los títulos de nivel 2, y `{number}` imprime esa cuenta en el diseño ([configuración por nivel](/es/docs/configuration#configuración-por-nivel)). Un título con diseño avanzado conserva su sitio en la columna y dibuja sus elementos en lugar de su texto ([span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)), y así los dos números pueden quedarse en los márgenes, junto al encabezado en negrita. Cada uno se ancla a la caja del propio título y sale de ella: 0,6 pulgadas a la izquierda y, a la derecha, un cuarto de pulgada más allá del final del texto, en una caja de media pulgada con el texto alineado a la izquierda, para que en un guion de más de nueve escenas los números de una y de dos cifras empiecen en el mismo sitio. El texto propio del título no se pinta, pero se mide, y por eso el nivel va a 12 pt: con los 15 pt por defecto, el encabezado de la escena 1 pasaría a dos líneas y reservaría la segunda. El equilibrado de columnas está desactivado: añade líneas en blanco para llenar las páginas cortas, y con él la página 1 del guion deja una línea en blanco de más sobre el encabezado de la escena 1.
+
+### 5 · Taladra y numera solo las páginas del guion
+
+<Excerpt region="furniture" />
+
+El estilo del título del guion lleva su propia cabecera (`header`), que sustituye a la del documento en las páginas de su sección, del título al final ([estilos de encabezado](/es/docs/configuration#estilos-de-encabezado)). La cabecera del documento está vacía, así que los agujeros y el número de página solo salen en el guion. El número se ancla a media pulgada del borde superior de la hoja, y `pages: 'body'` lo deja fuera de las páginas de apertura ([elementos de texto](/es/docs/configuration#elementos-de-texto)). El título del guion es de nivel 1 y abre página, así que la página 1 cuenta como página de apertura y no lleva número, como pide el formato. Las cubiertas también son títulos de nivel 1; `:::numbering{startAt=1}`, entre el interior de la cubierta y el título, da el número 1 a la página del título, y la siguiente lleva el 2. El estilo del título fija una línea de 12 pt; con los 18 pt propios del nivel 1, el título iría en una línea de 21,6 pt y bajaría FUNDIDO DE ENTRADA: 9,6 pt.
+
+## Variantes
+
+### Devuelve las réplicas a la rejilla
+
+Cada réplica conserva entonces su margen inferior y la siguiente le suma el superior, lo que deja dos líneas en blanco entre réplicas (tres antes de un encabezado de escena) y lleva el guion a una cuarta página.
+
+```diff
+-  snapToGrid: false,
+ };
+```
+
+### Escribe los encabezados de escena sin negrita
+
+A máquina, los encabezados de escena se escribían solo en mayúsculas; la negrita llegó con los programas de guion.
+
+```diff
+-  fontSize: pt(12), fontWeight: 700, lineHeight: 1, color: col('ink'), align: 'left',
++  fontSize: pt(12), fontWeight: 400, lineHeight: 1, color: col('ink'), align: 'left',
+```
+
+```diff
+-      fontWeight: 700, lineHeight: 1, color: col('ink'), align: 'left', overflow: 'wrap',
++      fontWeight: 400, lineHeight: 1, color: col('ink'), align: 'left', overflow: 'wrap',
+```
+
+## Errores frecuentes
+
+- Postext no imprime `(MÁS)` bajo una réplica que se parte entre dos páginas ni repite el nombre sobre el resto. Deja `keepTogether` con su valor por defecto para que cada réplica pase entera a la página siguiente.
+- Los programas de guion añaden `(CONT.)` al nombre automáticamente. Aquí va en el `title` de la valla, así que escríbelo tú donde un personaje sigue hablando después de una acción.
+- El relleno de −2,4 pt vale para un título del mismo cuerpo que el texto. Un título más grande o más pequeño va en otra línea, de 1,2 veces su propio cuerpo: vuelve a calcular el relleno como el interlineado menos esa línea.

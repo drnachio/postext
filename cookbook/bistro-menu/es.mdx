@@ -1,0 +1,73 @@
+---
+title: "Carta de bistró: precios alineados sin tabuladores"
+summary: "Una carta de bistró impresa por las dos caras, con los precios en tablas sin filetes y un filete de latón anclado a cada lado de los títulos de apartado."
+description: "Carta de otoño de un bistró parisino imaginario, compuesta con Postext en tablas sin filetes: platos y precios en el anverso, vinos por regiones en el dorso."
+question: "¿Cómo alineo a la derecha los precios de una carta, con fila de cabecera y celdas combinadas, sin tabuladores?"
+aliases: ["carta", "menú", "restaurante", "carta de vinos", "lista de precios", "tabuladores", "precios alineados a la derecha", "tabla sin bordes", "tabla sin filetes", "distintivos de dieta", "título entre filetes"]
+pageNotes: { "1": "El anverso de la carta, sobre cartulina crema: un toldo a rayas granate y paja colgado de una barra de latón, Les Tanneurs en Limelight granate y, debajo, Bistrot parisien depuis 1931 y Carte d’automne 2026. Tres títulos centrados, Entrées, Plats y Desserts, cada uno entre dos filetes de latón que llegan a los márgenes y sobre cuatro platos: el nombre francés en negrita y su guarnición, una línea en español en cursiva debajo y el precio en negrita pegado al margen derecho. Cuatro platos llevan un disco verde oscuro con una V y cinco una pastilla perfilada con SG. Al pie, dos líneas pequeñas y centradas: la clave de los distintivos y, debajo, el origen de la carne de vacuno y el aviso de que el servicio está incluido.", "2": "El dorso: dos copas, cuatro botellas y una jarra sobre un estante de latón, encima de La Cave. Una carta de vinos encabezada por Appellation · cépage, 12 cl y 75 cl, con las regiones Bulles, Blancs y Rouges centradas sobre la lista; el Saint-Émilion lleva una raya en la columna de la copa. Debajo, Le Comptoir, entre dos filetes de latón, con kir, pastís, cerveza de barril y café, y un colofón pequeño y centrado al pie." }
+---
+
+## Lo que vas a componer
+
+La carta de otoño de Les Tanneurs, un bistró parisino imaginario: una sola hoja de 230 × 310 mm impresa por las dos caras. En el anverso, un toldo a rayas cuelga sobre el nombre, compuesto en Limelight. Cada título de apartado va entre dos filetes de latón que llegan a los márgenes, y debajo vienen cuatro platos. Cada plato lleva el nombre francés en negrita con su guarnición, la traducción en cursiva debajo y el precio en negrita, pegado al margen derecho. Un disco verde oscuro con una V marca los platos vegetarianos, y una pastilla perfilada con SG, los que no llevan gluten. En el dorso, la carta de vinos va bajo un estante de botellas, con el precio de la copa y el de la botella en columnas encabezadas por 12 cl y 75 cl. Postext no tiene tabuladores, así que cada columna de precios pertenece a una tabla sin filetes ni pie.
+
+## Elaboración
+
+### 1 · Una tabla donde irían los tabuladores
+
+El código está en [la respuesta corta](#la-respuesta-corta), más arriba. Cada apartado es una tabla de dos columnas. El plato, un salto de línea y la traducción en cursiva comparten la primera celda, y el precio va alineado a la derecha en la segunda, sobre la primera línea base del plato, porque las dos celdas empiezan en lo alto de su fila. `columnWidths` recibe pesos, así que `[6, 1]` reserva para los precios 22,6 mm de los 158 mm de la medida. `rules: 'none'` y `headerBackgroundEnabled: false` quitan la cuadrícula y la fila de cabecera gris que pone el [estilo de tablas](/es/docs/configuration#estilo-de-tablas) por defecto. `cellPadding: pt(LEAD / 4)` hace que cada plato ocupe dos líneas y media del interlineado de 14,5 pt, de modo que un apartado de cuatro platos acaba en su décima línea de la rejilla base. Con el relleno por defecto, 0,375 em, cada apartado acaba 0,9 mm más abajo, cada título que viene detrás baja una línea y la carta pasa a cuatro páginas.
+
+### 2 · Un solo tipo de recurso, en su sitio y sin número
+
+<Excerpt region="type" />
+
+Los tipos de figura y tabla que trae el motor imprimen una línea de pie y hacen flotar cada recurso al primer hueco libre después de su primera referencia. El tipo `menu` no tiene prefijo de pie y sus piezas no llevan pie, así que bajo un apartado no se imprime nada. Con `captionPrefix: 'Menu'`, cada pieza lleva debajo una línea numerada, empezando por «Menu 1.» bajo el toldo, y la carta pasa a cuatro páginas. `defaultPlacement` coloca cada tabla y cada dibujo en su línea `::resource` ([inserción en bloque](/es/docs/document-format#inserción-en-bloque-opcional-colocación-en-línea-explícita)). Sin él, los tres títulos de apartado quedan uno tras otro en lo alto del anverso y las tablas flotan debajo, primero los postres. El toldo y las botellas son recursos SVG del mismo tipo, dibujados en código y registrados con la función `loadSvg` del kit.
+
+### 3 · Combina las filas de región
+
+<Excerpt region="wines" />
+
+En la 1.4.1, `parseTSV` no marca ninguna fila como cabecera, así que `wineList` fija `headerRowCount: 1` a mano. Appellation · cépage, 12 cl y 75 cl salen entonces sobre sus columnas en Josefin Sans, la letra de las celdas de cabecera. Una línea con un solo campo nombra una región. Su celda pasa a ser de cabecera, centrada, y `mergeCells` la extiende por las tres columnas y marca con `hiddenBy` las dos que cubre ([construir modelos de tabla](/es/docs/configuration#construir-modelos-de-tabla)). Centrado solo en la primera columna, BLANCS quedaría 22,6 mm a la izquierda del eje de la carta, sobre el que van La Cave y Le Comptoir. Una línea en blanco del TSV se convierte en una fila de celdas vacías, de línea y media de alto, que deja aire sobre Blancs y Rouges.
+
+### 4 · Cuelga un filete a cada lado del título de apartado
+
+<Excerpt region="heads" />
+
+Un título de apartado es un diseño dentro de la columna. El elemento `{titleText}` no tiene ancho, así que su caja mide lo que sus mayúsculas, y el ancla `'top'` lo centra en la columna. Cada filete cuelga de un borde del título con `'left-of'` o `'right-of'` y se estira hasta el borde de la columna ([posicionamiento de elementos](/es/docs/configuration#posicionamiento-de-elementos)), de modo que los filetes junto a PLATS miden 66,7 mm y los de LE COMPTOIR 56,2 mm, siempre a 4 mm de las letras. El `lineHeight` del título es un múltiplo, 0,96, que deja su caja en 14,4 pt, dentro de una línea de 14,5 pt de la rejilla. Con 1, la caja mide 15 pt, cada título ocupa dos líneas y la carta pasa a cuatro páginas.
+
+### 5 · Distintivos en chips, letra pequeña en estilos de párrafo
+
+<Excerpt region="badges" />
+
+Un chip dibuja una caja alrededor de un trozo de texto dentro de la línea ([estilos de chip](/es/docs/configuration#estilos-de-chip)), así que `:chip[V]{style="veg"}`, escrito tras la guarnición, pone el disco en la línea francesa del plato, igual en una celda de tabla que en un párrafo. Los estilos de chip llevan `bold: true` porque un chip toma el peso del texto que lo rodea, y tras la guarnición ese texto es de peso 400, que `FONTS` no carga para Josefin Sans. Las notas bajo los postres y el colofón del dorso son bloques `:::paragraphs` de 9 y 7,5 pt, y los dos estilos llevan un `marginTop` de una línea ([estilos de párrafo](/es/docs/configuration#estilos-de-párrafo)), porque una tabla colocada con `'here'` no deja espacio debajo. Sin ese margen, las notas empiezan en la línea que sigue a la traducción de los quesos, como si fueran parte del plato.
+
+### 6 · Centra la carta sobre un eje
+
+<Excerpt region="centred" />
+
+`headings.textAlign` y `bodyText.textAlign` llevan al eje de la carta todo lo que no es tabla. `lineHeight: pt(3 * LEAD)` da al nombre de 48 pt tres líneas de la rejilla. Sin él, el nombre toma el interlineado por defecto y ocupa cuatro líneas; la segunda línea de notas pasa entonces a una página propia y la carta llega a cuatro páginas. En la 1.4.1, cualquier objeto `headings` anula el salto del H1, y aun así el nivel 1 declara `breakBefore: { enabled: false }`, porque el nombre y La Cave van en la página del dibujo que tienen encima. Si recuperas el valor por defecto, `{ enabled: true, parity: 'always-odd' }`, cada dibujo se queda solo en su página y la carta llega a siete. La configuración no fija ningún `locale`, porque la 1.4.1 solo aplica la separación silábica al texto justificado y en esta carta no hay nada justificado.
+
+## Variantes
+
+### Fija la longitud de los filetes
+
+Un ancho fijo en lugar de `'fill'` deja cada filete en 20 mm, a 4 mm del título, así que junto a PLATS la pareja queda más cerca del centro que junto a LE COMPTOIR.
+
+```diff
+-    size: { width: 'fill' }, // to the column's edge
++    size: { width: mm(20) }, // 20 mm, wherever the title ends
+```
+
+### Raya las filas como un libro de cuentas
+
+`rules: 'horizontal'` traza un filete de latón de 0,5 pt encima y debajo de cada fila. Los filetes no ocupan sitio, así que las dos caras conservan su composición, y las filas en blanco sobre Blancs y Rouges llevan también su par de filetes.
+
+```diff
+-const tableStyle = { rules: 'none', cellPadding: pt(LEAD / 4), // a dish: 2½ lines of LEAD
++const tableStyle = { rules: 'horizontal', borderColor: col('brass'),
++  borderWidth: pt(0.5), cellPadding: pt(LEAD / 4),
+```
+
+## Errores frecuentes
+
+Da a cada elemento `rule` su `thickness`. En la 1.4.1 un filete sin grosor no se dibuja, aunque la referencia de configuración da 0,5 pt por defecto. Quita `thickness` de `rule()` y desaparecen los dos filetes de cada título de apartado.

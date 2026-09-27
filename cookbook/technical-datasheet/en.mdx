@@ -1,0 +1,75 @@
+---
+title: "Datasheet: tables from data, merged headers"
+summary: "Tables pasted as TSV, parsed with parseTSV and shaped with mergeCells, setAlignment and setCellBackground; a register map that splits across pages by itself."
+description: "A four-page sensor datasheet in Postext: a two-row merged table head, zebra fills, named table styles and a register map that splits across a page break."
+question: "How do I turn pasted data into a table with merged headers, column widths and per-cell alignment?"
+aliases: ["datasheet", "spec sheet", "electrical characteristics", "register map", "merged cells", "colspan", "rowspan", "zebra rows", "striped table", "TSV", "table from a spreadsheet", "repeated table header"]
+pageNotes: { "1": "The front page: a violet band with the part number, a lead and three key figures; below it the features and applications, the pinout drawing, its exposed pad dashed because it lies under the package, and the typical application circuit.", "2": "The electrical characteristics table spans the page under a caption that states the test conditions: a violet two-row head where “Value” covers Min, Typ and Max, parameter groups merged down a lilac first column, every other parameter tinted grey.", "3": "The pin table heads the first column; the register map, its addresses and reset values in the mono label face, fills the second and ends with “Continued on the next page”.", "4": "The register map carries on with its head repeated and “(continued)” in its caption, beside the order codes in a rounded frame; the package outline runs across the foot of the page." }
+---
+
+## What you'll build
+
+This is the four-page datasheet of the PX-7021, a temperature sensor from an imaginary maker, Pyxis Microdevices. Most of it is tables, with heads full of merged cells and a register map longer than a column. The front page opens on a violet band with the part number and three key figures. On page 2 one table spans the page. Its two-row head puts Value over Min, Typ and Max; the parameter groups are merged down the first column, and every other parameter is tinted grey. The register map breaks at the foot of page 3 and continues on page 4 with its head repeated, beside the order codes and above the package drawing. The tables are spreadsheet data pasted as TSV, because Postext does not parse Markdown tables.
+
+## Method
+
+### 1 · Paste the data, then shape the table
+
+The code is [the short answer](#the-short-answer) above. In postext 1.4.1 `parseTSV` leaves `headerRowCount` unset, so the two head rows are declared by hand; if the table split, both would repeat on every part. The `columnWidths` weights add up to 180, the width of the text block in millimetres, so each weight is its column's width on the page. `mergeCells` keeps every covered cell in place and marks it `hiddenBy`, so no column shifts. `setAlignment` works cell by cell and clears the vertical alignment when you leave it out, so most calls pass `'middle'` again. The grey alternates from one parameter to the next, which keeps both Accuracy rows on one fill; alternating by row would leave the second one white.
+
+### 2 · Every model becomes a resource
+
+<Excerpt region="resources" />
+
+Each table and drawing is a resource with a caption, and the tables add a note and a named style. Captions and notes take italics, subscripts and superscripts: the electrical table gives its test conditions with `*V*~DD~` in the caption and numbers its footnotes with `^1^` in the note. A float takes the first free slot after its first `:ref`. Table 1 is cited on page 1 and placed across the head of a page, so it opens page 2. The outline is placed across the foot of a page, and the other tables keep the default placement, a float one column wide. A table placed `here` never splits.
+
+### 3 · Let a long table split itself
+
+<Excerpt region="split" />
+
+The pin table and the register map both come out of `groupedTable`. A row with only its first cell filled is merged across the table and tinted violet as a group head. A TSV cell cannot hold a line break, so the data writes `\n` and the function turns it into one; a line that opens with `•` is then set as a list item. The short codes go in the `code` chip style, which has no fill, border or side padding and sets them in Fira Mono at 0.9 em. When a floated table does not fit the empty column it is offered, the engine cuts it between rows and sets the rest in the next free slot, under the repeated head, with `(continued)` after the caption. The `continuesMarker` line, “Continued on the next page”, goes under the first part, and the note waits for the last ([Tables taller than the page](/en/docs/configuration#tables-taller-than-the-page)).
+
+### 4 · One house style, a variant per table
+
+<Excerpt region="styles" />
+
+`tableStyle` holds what every table shares. Each entry in `tableStyles` sets only what its tables change, and a resource picks one with `table.styleId`. The electrical table swaps the grey hairlines for 1.4 pt white rules, which cut its fills apart and show where each merge ends. The order-code table gets a rounded outer frame and Fira Sans Condensed, so its four columns fit in one text column.
+
+### 5 · Labels that stay text in the PDF
+
+<Excerpt region="drawing" />
+
+An SVG reaches the canvas as an image, and an image cannot use the page's web fonts, so the labels of the pinout, the circuit and the package outline would fall back to a system face. The PDF takes the plain markup and sets each `<text>` as selectable text in the faces it embeds. For the canvas, each drawing is registered a second time with the Fira Mono file inside it, fetched once through the font loader of the kit's pdf block.
+
+### 6 · Opener, running head and footer
+
+<Excerpt region="furniture" />
+
+The part number is the first-level heading, and its design slot draws the opener: a violet box out to the bleed, the logo, and a kicker, a lead and three key figures read from the heading's attributes. Image elements work in running slots as well as in openers, so the footer starts with one that names the logo resource. The running head's elements carry `pages: 'body'`, so none of them prints on the front page.
+
+## Variations
+
+### Rule every row in grey
+
+Half-point rules in the palette's grey `rule` colour separate every row, filled or not; the white ones disappear where two unfilled rows meet.
+
+```diff
+-    { id: 'electrical', borderColor: col('paper'), borderWidth: pt(1.4), cellPadding: mm(1.1) },
++    { id: 'electrical', borderColor: col('rule'), borderWidth: pt(0.5), cellPadding: mm(1.1) },
+```
+
+### Set table captions on a bar
+
+The table type's caption style can paint a bar behind the caption, here in ink with the label in the hazard yellow.
+
+```diff
+-    ...(type.id === 'table' && { captionStyle: { position: 'above' } }) })),
++    ...(type.id === 'table' && { captionStyle: { position: 'above', backgroundEnabled: true,
++      background: col('ink'), color: col('paper'), labelColor: col('hazard') } }) })),
+```
+
+## Pitfalls
+
+- The first part of a split table leaves the foot of its column to text when three lines or more fit under it, and always does in a column that already holds a float. Start a long table where its column holds no other float, as the register map does, and fit its rows so the first part reaches the foot of the column.
+- Design text elements are centred by default. The lead has a fixed width, so it needs `align: 'left'` to line up under the part number.
+- On a chapter's closing page, postext 1.4.1 moves the page-wide floats set below the text up to one body line under it, so a `bottom` figure there sits under the last line of text instead of at the page foot. Page 4 is worded to fill its columns, and the outline is drawn 48.3 mm tall so that the text above it ends on a grid line. The outline then has no room to move up and ends level with the foot of the other pages.

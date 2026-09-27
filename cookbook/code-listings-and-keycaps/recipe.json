@@ -1,0 +1,65 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 48,
+  "status": "published",
+  "chapter": "boxes",
+  "order": 70,
+  "level": 2,
+  "genres": ["manual"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["callout-styles", "escapes", "chips"],
+    "also": [
+      "callout-label-tabs", "callout-columns", "span-boxes", "floated-callouts", "side-boxes",
+      "column-and-a-half", "side-column-floats", "emphasis-colours", "numbered-lists",
+      "opener-design", "heading-attributes", "running-heads", "page-role-filters",
+      "mirrored-margins", "color-palette", "paragraph-styles", "knuth-plass"
+    ]
+  },
+  "answers": ["Q47", "Q51", "Q54"],
+  "gaps": ["code-blocks", "syntax-highlighting"],
+  "gotchas": [
+    "dollar-math", "digit-period-list", "nbsp-breaks", "callout-columns", "side-box-starts-at-fence",
+    "palette-skips-designs", "headings-drop-h1-break", "hyphenation-locales",
+    "runt-tracking-unpainted", "design-lineheight-multiple", "fonts-first", "config-cache-identity"
+  ],
+  "related": [
+    "product-manual-warnings",
+    "textbook-box-family",
+    "worksheet-answer-boxes",
+    "boxes-split-float-pin"
+  ],
+  "workarounds": [
+    { "followup": "EF-05", "package": "postext", "note": "the H1 breakBefore is restated because a headings object drops it" },
+    { "followup": "EF-14", "package": "postext", "note": "locale is the exact bundled code ('en-us' | 'es'); a region-tagged code would hyphenate as American English" },
+    { "followup": "EF-71", "package": "postext", "note": "col() writes the hex beside every paletteId, because design elements (opener, running heads) and referenceColor ignore colorPalette; referenceColor is restated in ink" },
+    { "followup": "EF-130", "package": "postext", "note": "the listing and cheat-sheet styles set body.boldColor and body.italicColor themselves (amber and green): bold inside a box does not follow colorPalette" },
+    { "followup": "EF-111", "package": "postext", "note": "bodyText.maxRuntTracking: 0, since runt tracking is measured but never painted" },
+    { "followup": "EF-56", "package": "postext", "note": "the opener's title and lead give lineHeight as a multiple (1.04, 1.36); a Dimension would drop the opener's reserved height" },
+    { "followup": "EF-66", "package": "postext", "note": "every listing line stays shorter than the box (73 characters), so the no-break spaces that hold indents and output columns never meet a line break" },
+    { "followup": "EF-67", "package": "postext", "note": "the On a Mac note is fenced before its H2, not between the H2 and its first paragraph: a side box there gives that paragraph a first-line indent although indentAfterHeading is false" }
+  ],
+  "engine": { "postext": "1.4.1" },
+  "kit": ["core", "fonts", "viewer"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": {
+    "hero": [2, 3],
+    "card": "loupe",
+    "focus": { "page": 2, "x": 0.487, "y": 0.722, "w": 0.395, "h": 0.172 },
+    "expect": { "pages": [3, 3] }
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [],
+    "images": [],
+    "fonts": [
+      { "family": "Charis SIL", "license": "OFL-1.1" },
+      { "family": "Sora", "license": "OFL-1.1" },
+      { "family": "JetBrains Mono", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-26",
+  "updated": "2026-09-26"
+}

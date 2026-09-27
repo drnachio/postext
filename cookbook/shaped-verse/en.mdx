@@ -1,0 +1,64 @@
+---
+title: "Shaped verse: Herbert’s Easter Wings, centred line by line"
+summary: "George Herbert’s Easter Wings and The Altar set as centred body text, a paragraph to each line of verse, so the lengths of the lines draw the two figures."
+description: "A four-page keepsake set with Postext: two of Herbert’s shaped poems, each line of verse centred on its own under a plain heading, the gaps made with :::space."
+question: "How do I space a title page and the stanzas of a poem, when blank lines in the Markdown add no space?"
+aliases: ["shaped poem", "pattern poem", "concrete poetry", "centred verse", "centered text", "carmen figuratum", "George Herbert", "Easter Wings", "The Altar", "keepsake", "title page", "epigraph", "colophon", "tailpiece", "vertical space"]
+pageNotes: { "1": "The title page after the 1633 one: THE TEMPLE in violet capitals, the subtitle in italic, the author, the Psalm 29 epigraph under a small-capital label in the middle of the page, and at the foot a label and two lines on what the keepsake holds.", "2": "The Altar: two wide lines for the slab, two a little narrower, eight short lines for the pillar and four wider ones for the base, every line centred under the violet title.", "3": "Easter Wings: two stanzas, each narrowing from a long line to With thee and widening again, so the page shows two hourglasses one above the other.", "4": "The last page: Herbert’s motto in italic under a small-capital label, with a line from his printers; a note on the 1633 printing under a second label, level with the Psalm label of page 1; and a colophon of four centred lines, each shorter than the one above." }
+---
+
+## What you'll build
+
+A keepsake of four A5 pages, one A4 sheet folded once, holding two shaped poems from George Herbert’s *The Temple* in the spelling of the 1633 first edition. The title page follows the 1633 one, down to its Psalm 29 epigraph. Inside, *The Altar* faces *Easter Wings*. No line of either poem is indented or padded with spaces; each is centred, so the altar stands on a narrow pillar and each stanza of the wings narrows to two words and widens again. On the last page, under Herbert’s motto, a note tells how the 1633 printers set the wings sideways, and the colophon gets shorter line by line. Everything is set as body text or as one of three heading levels in the IM Fell types, with no named styles and no page designs. The Spanish edition sets a line-for-line version that keeps both shapes.
+
+## Method
+
+### 1 · A line of verse is a centred paragraph
+
+The code is [the short answer](#the-short-answer) above. Postext joins the lines of a Markdown paragraph into one, so every line of verse is a paragraph, with a blank line after it. `textAlign: 'center'` sets each line at its natural width on the axis of the measure, and since 1.4.1 hyphenates justified text only, no word is broken ([body text](/en/docs/configuration#body-text)). Each line is the first of its paragraph, so the default first-line indent of 1.5 em would push it 3.3 mm right of the titles’ axis; `firstLineIndent: pt(0)` keeps poems and titles on one axis.
+
+### 2 · The measure takes the longest line
+
+<Excerpt region="measure" />
+
+A line that does not fit turns over, and both halves are centred, so the outline gets a step that is not in Herbert’s figure. With a 75 mm measure, three lines of *The Altar* and two of *Easter Wings* turn over, and the keepsake runs to six pages. The widest line here, the first of *Easter Wings*, is 80.7 mm in English and 80.0 mm in Spanish, so the 110 mm measure of the A5 page takes every line whole.
+
+### 3 · Plain headings, centred
+
+<Excerpt region="titles" />
+
+No level has a design, only type settings, and `headings.textAlign` centres all three ([headings](/en/docs/configuration#headings)). Parity `'any'` opens each poem on the next page, recto or verso, so the altar on page 2 faces the wings on page 3. A `marginTop` cannot lower those titles, because 1.4.1 drops the space above a heading that opens a page. The line box of level 2, three lines deep, lowers each title about 5 mm instead, and both poems start on line 5 of the text block. Level 1 opens the document and needs no break here; its break is restated so that a second `#` title would still open on a recto. Level 3 sets the four labels of pages 1 and 4 in the small capitals of IM Fell English SC, at the body size.
+
+### 4 · The Markdown spaces and breaks the pages
+
+<Excerpt region="pages" />
+
+A blank line between paragraphs adds no space, so every gap on these pages comes from `:::space`: one line between the stanzas of *Easter Wings*, and on the title page five lines above the Psalm label and ten under the epigraph ([`:::space`](/en/docs/document-format#space)). With those counts the imprint on page 1 ends on the last line of the text block, and the labels over the Psalm and over the note both stand on line 13, 94 mm from the top of the page. `:::pagebreak` opens the last page ([`:::pagebreak`](/en/docs/document-format#pagebreak)). The colophon is also set a paragraph to each line, broken where a phrase ends, so its four lines taper to a tailpiece.
+
+## Variations
+
+### Open each poem on a right-hand page
+
+With parity `'odd'` *The Altar* and *Easter Wings* open on pages 3 and 5, both rectos, and the keepsake runs to six pages with pages 2 and 4 blank.
+
+```diff
+-      breakBefore: { enabled: true, parity: 'any' } },
++      breakBefore: { enabled: true, parity: 'odd' } },
+```
+
+### Set the verse flush left
+
+With `textAlign: 'left'` every line starts at the margin and the two poems keep only their right-hand outline; the rest of the body text, from the subtitle to the colophon, goes flush left too, and only the headings stay centred.
+
+```diff
+-  textAlign: 'center', // ragged on both sides; 1.4.1 hyphenates justified text only
++  textAlign: 'left', // ragged right; 1.4.1 hyphenates justified text only
+```
+
+## Pitfalls
+
+- A line of verse too long for the measure turns over, and both halves are centred on their own. Measure the widest line before you choose the type size and the margins. For verse set flush left, with turnovers that hang, see <RecipeLink slug="poetry-collection">Poems set line by line</RecipeLink>.
+- Leading spaces are trimmed from a paragraph, so you cannot pad a line into shape with spaces. The width of each line comes from its words alone, and a translation has to find lines about as wide as the original’s, as the Spanish edition does.
+- Centring keeps each line at its natural width, so the slab and the base of *The Altar* do not come out square: the third and fourth lines of the slab are narrower than the first two. Justifying cannot square them either, because 1.4.1 leaves the last line of a justified paragraph at its natural width and each of these lines is a paragraph of its own.
+- The title page and the last page are filled to the last line of the grid. One more line on the title page, from a longer epigraph, a line that turns over or a larger `:::space`, moves the label at its foot and the two lines under it onto a page of their own; one more line on the last page moves the colophon’s last line alone onto a fifth page. To add a line to either page, take one out of a `:::space` above it.
+- Postext does not set text sideways, as the 1633 printers set *Easter Wings*: only whole figures and tables rotate. Here the stanzas stand upright, and the note on page 4 says so.

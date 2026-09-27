@@ -1,0 +1,969 @@
+{
+  "schemaVersion": 1,
+  "slug": "parts-in-colour",
+  "sourceHash": "d17a95d63cf766dd0657bc4d95c0d3c0a186c63b4fc1a6fb44b09f29bf721f10",
+  "engine": {
+    "postext": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-26T21:15:46.661Z",
+  "variants": {
+    "en": {
+      "hash8": "e847887c",
+      "vdtHash": "773fca2ad65b493a25a109b418535fa44e28eb7f",
+      "timings": {
+        "importMs": 2081,
+        "fontsMs": 41,
+        "buildMs": 12,
+        "totalMs": 2881,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          150,
+          200
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Alegreya",
+          "sizePt": 10.5,
+          "leadingPt": 14.5
+        },
+        "families": [
+          "Alegreya",
+          "Barlow Condensed",
+          "Zilla Slab"
+        ],
+        "pages": 10,
+        "ownLines": 250
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1333,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 41906,
+          "alt": "Opening page 1: Birds of the Estuary."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1333,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 63444,
+          "alt": "Opening page 2: Contents."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "part",
+          "w": 1000,
+          "h": 1333,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 31342,
+          "alt": "Part title page 3: PART I The Mudflats."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "blank",
+          "w": 1000,
+          "h": 1333,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 4254,
+          "alt": "Blank page 4: I THE MUDFLATS."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 69008,
+          "alt": "Page 5: 1 Eurasian Curlew. Plate 1. Adult at low water. The female’s bill is the longer."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 70626,
+          "alt": "Page 6: 2 Common Redshank. Plate 2. Adult by a saltmarsh creek, on the red legs that give it its name."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "part",
+          "w": 1000,
+          "h": 1333,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 28548,
+          "alt": "Part title page 7: PART II The Reedbeds."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "blank",
+          "w": 1000,
+          "h": 1333,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 4190,
+          "alt": "Blank page 8: II THE REEDBEDS."
+        },
+        {
+          "n": 9,
+          "label": "9",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 77168,
+          "alt": "Page 9: 3 Bearded Reedling. Plate 3. Male on a reed stem. The female has a plain brown head."
+        },
+        {
+          "n": 10,
+          "label": "10",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p10.webp",
+          "strip": "p10.s.webp",
+          "bytes": 69104,
+          "alt": "Page 10: 4 Eurasian Reed Warbler. Plate 4. Singing from the reeds, one foot on each stem."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          9,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.maxRuntTracking",
+          "bodyText.maxWordSpacing",
+          "bodyText.minWordSpacing",
+          "bodyText.referenceColor",
+          "bodyText.runtMinCharacters",
+          "calloutStyles",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].id",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].placement",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "captionStyle",
+          "captionStyle.descriptionItalic",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].box",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headingStyles[].toc",
+          "headings",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].textAlign",
+          "parts",
+          "parts.bodyStyle",
+          "parts.bodyStyle.color",
+          "parts.bodyStyle.fontSize",
+          "parts.bodyStyle.numberColor",
+          "parts.bodyStyle.orderedLists",
+          "parts.bodyStyle.textAlign",
+          "parts.breakAfter",
+          "parts.breakAfter.parity",
+          "parts.design",
+          "parts.design.elements",
+          "parts.margins",
+          "parts.margins.top",
+          "parts.versoDesign",
+          "parts.versoDesign.elements",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].namePlural",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "toc",
+          "toc.leader",
+          "toc.leader.char",
+          "toc.levels",
+          "toc.levels[].fontFamily",
+          "toc.levels[].fontSize",
+          "toc.levels[].fontWeight",
+          "toc.levels[].level",
+          "toc.levels[].marginTop",
+          "toc.levels[].numberColor",
+          "toc.levels[].numberFontFamily",
+          "toc.levels[].numberFontWeight",
+          "toc.levels[].numberGap",
+          "toc.levels[].numberWidth",
+          "toc.pageNumber",
+          "toc.pageNumber.fontFamily",
+          "toc.pageNumber.fontSize",
+          "toc.pageNumber.fontWeight",
+          "toc.pageNumber.width",
+          "toc.parts",
+          "toc.parts.design",
+          "toc.parts.height",
+          "toc.parts.marginTop",
+          "toc.subtitle",
+          "toc.subtitle.attr",
+          "toc.subtitle.color",
+          "toc.subtitle.enabled",
+          "toc.subtitle.fontFamily",
+          "toc.subtitle.fontSize",
+          "unorderedLists",
+          "unorderedLists.bulletChar",
+          "unorderedLists.color",
+          "unorderedLists.marginBottom",
+          "unorderedLists.marginTop"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "parts",
+          "resourceTypes",
+          "toc",
+          "unorderedLists"
+        ],
+        "configLeaves": 532,
+        "designElements": 28,
+        "directives": [
+          ":::pagebreak",
+          ":::toc",
+          ":::callout",
+          ":::paragraphs",
+          ":::part",
+          "::resource",
+          ":::space"
+        ],
+        "inline": [
+          "{attrs}",
+          "\\\\"
+        ],
+        "resources": {
+          "svg": 6,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Alegreya",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Alegreya",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Alegreya",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Barlow Condensed",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Barlow Condensed",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Barlow Condensed",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Zilla Slab",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Zilla Slab",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "inline-embeds",
+          "opener-design",
+          "page-background",
+          "page-breaks",
+          "page-role-filters",
+          "paragraph-styles",
+          "part-dividers",
+          "part-palettes",
+          "resource-types",
+          "resources",
+          "title-line-breaks",
+          "toc",
+          "unnumbered-headings",
+          "vertical-space"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.3800000000000001
+        },
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "a838356c",
+      "vdtHash": "d67782165c0ddedbd50eecf9f133a4a4a43b36e9",
+      "timings": {
+        "importMs": 444,
+        "fontsMs": 47,
+        "buildMs": 13,
+        "totalMs": 1431,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          150,
+          200
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Alegreya",
+          "sizePt": 10.5,
+          "leadingPt": 14.5
+        },
+        "families": [
+          "Alegreya",
+          "Barlow Condensed",
+          "Zilla Slab"
+        ],
+        "pages": 10,
+        "ownLines": 250
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1333,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 41234,
+          "alt": "Página de apertura 1: Aves del estuario."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1333,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 62874,
+          "alt": "Página de apertura 2: Índice."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "part",
+          "w": 1000,
+          "h": 1333,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 31778,
+          "alt": "Portadilla de parte 3: PARTE I Los fangales."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "blank",
+          "w": 1000,
+          "h": 1333,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 4304,
+          "alt": "Página en blanco 4: I LOS FANGALES."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 71392,
+          "alt": "Página 5: 1 Zarapito real. Lámina 1. Adulto en bajamar. La hembra tiene el pico más largo."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 65182,
+          "alt": "Página 6: 2 Archibebe común. Lámina 2. Adulto junto a un caño de la marisma, sobre las patas rojas que lo delatan."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "part",
+          "w": 1000,
+          "h": 1333,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 27228,
+          "alt": "Portadilla de parte 7: PARTE II Los carrizales."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "blank",
+          "w": 1000,
+          "h": 1333,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 4368,
+          "alt": "Página en blanco 8: II LOS CARRIZALES."
+        },
+        {
+          "n": 9,
+          "label": "9",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 75496,
+          "alt": "Página 9: 3 Bigotudo. Lámina 3. Macho en un tallo de carrizo. La hembra tiene la cabeza parda."
+        },
+        {
+          "n": 10,
+          "label": "10",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p10.webp",
+          "strip": "p10.s.webp",
+          "bytes": 65800,
+          "alt": "Página 10: 4 Carricero común. Lámina 4. Cantando en el carrizal, con una pata en cada tallo."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          9,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.maxRuntTracking",
+          "bodyText.maxWordSpacing",
+          "bodyText.minWordSpacing",
+          "bodyText.referenceColor",
+          "bodyText.runtMinCharacters",
+          "calloutStyles",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].id",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].placement",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "captionStyle",
+          "captionStyle.descriptionItalic",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].box",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headingStyles[].toc",
+          "headings",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].textAlign",
+          "parts",
+          "parts.bodyStyle",
+          "parts.bodyStyle.color",
+          "parts.bodyStyle.fontSize",
+          "parts.bodyStyle.numberColor",
+          "parts.bodyStyle.orderedLists",
+          "parts.bodyStyle.textAlign",
+          "parts.breakAfter",
+          "parts.breakAfter.parity",
+          "parts.design",
+          "parts.design.elements",
+          "parts.margins",
+          "parts.margins.top",
+          "parts.versoDesign",
+          "parts.versoDesign.elements",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].namePlural",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "toc",
+          "toc.leader",
+          "toc.leader.char",
+          "toc.levels",
+          "toc.levels[].fontFamily",
+          "toc.levels[].fontSize",
+          "toc.levels[].fontWeight",
+          "toc.levels[].level",
+          "toc.levels[].marginTop",
+          "toc.levels[].numberColor",
+          "toc.levels[].numberFontFamily",
+          "toc.levels[].numberFontWeight",
+          "toc.levels[].numberGap",
+          "toc.levels[].numberWidth",
+          "toc.pageNumber",
+          "toc.pageNumber.fontFamily",
+          "toc.pageNumber.fontSize",
+          "toc.pageNumber.fontWeight",
+          "toc.pageNumber.width",
+          "toc.parts",
+          "toc.parts.design",
+          "toc.parts.height",
+          "toc.parts.marginTop",
+          "toc.subtitle",
+          "toc.subtitle.attr",
+          "toc.subtitle.color",
+          "toc.subtitle.enabled",
+          "toc.subtitle.fontFamily",
+          "toc.subtitle.fontSize",
+          "unorderedLists",
+          "unorderedLists.bulletChar",
+          "unorderedLists.color",
+          "unorderedLists.marginBottom",
+          "unorderedLists.marginTop"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "parts",
+          "resourceTypes",
+          "toc",
+          "unorderedLists"
+        ],
+        "configLeaves": 532,
+        "designElements": 28,
+        "directives": [
+          ":::pagebreak",
+          ":::toc",
+          ":::callout",
+          ":::paragraphs",
+          ":::part",
+          "::resource",
+          ":::space"
+        ],
+        "inline": [
+          "{attrs}",
+          "\\\\"
+        ],
+        "resources": {
+          "svg": 6,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Alegreya",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Alegreya",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Alegreya",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Barlow Condensed",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Barlow Condensed",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Barlow Condensed",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Zilla Slab",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Zilla Slab",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "inline-embeds",
+          "opener-design",
+          "page-background",
+          "page-breaks",
+          "page-role-filters",
+          "paragraph-styles",
+          "part-dividers",
+          "part-palettes",
+          "resource-types",
+          "resources",
+          "title-line-breaks",
+          "toc",
+          "unnumbered-headings",
+          "vertical-space"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.5
+        },
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
+      }
+    }
+  }
+}

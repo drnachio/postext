@@ -1,0 +1,67 @@
+---
+title: "Annual report with flush columns"
+summary: "An energy co-op's annual report in two justified columns that end on the same grid line, with a key-figures box across the page and a closing page cut level."
+description: "A five-page annual report set with Postext on a 50-line grid, where column balancing brings every column down to the last line and cuts the closing page level."
+question: "How do I make every column of a two-column report end on the last grid line, and a closing page end level?"
+aliases: ["vertical justification", "flush bottoms", "balanced columns", "columns end level", "key figures", "numbers panel", "income statement", "annual report", "memoria anual", "section colours", "floating box"]
+pageNotes: { "1": "The cover: a blue-black field with Tidewell Community Energy in white, 2025 in very large white figures, Annual report and accounts in yellow and the period in spaced mono capitals. Across the lower half a teal ribbon and a yellow ribbon swell and cross from January to December, labelled WIND and SUN, over a row of month initials, with two lines of small print at the foot.", "2": "The chair's letter under a sea-blue strip and the title The wind and the sun took turns. Its first paragraphs stop level in both columns above a blue-black box of three figures in yellow, 8.47 GWh, 2,316 and £84,000; the letter goes on under the box and ends on a script signature at the foot of the right column.", "3": "The operations report under a teal strip, two columns with teal crossheads, a short list of the three largest roofs, and a chart of paired teal and yellow bars for the twelve months across the foot of the page.", "4": "A note on how a kilowatt-hour is counted, in two columns under a teal rule across the head of the page; below it a table of output by site and a ring chart of the turbines' hours at the heads of the two columns, then the rest of the operations report to the foot.", "5": "The treasurer's report under a brick-red strip: two short columns that stop on the same line, and under them the income statement across the page, with a blue-black header row, italic group heads and bold subtotals on a pale tint." }
+---
+
+## What you'll build
+
+The 2025 annual report of Tidewell Community Energy, an invented co-operative with two wind turbines, a solar field and panels on 21 roofs. Five pages at 210 × 280 mm. On the cover, the year's wind and sun output runs as two ribbons under a 150 pt “2025”. The chair's letter, the operations report and the treasurer's accounts follow in two justified columns of Brygada 1918 on a grid of 50 lines. Full columns end on the grid's last line, and short ones end level with their neighbours. A box of three key figures crosses the chair's page with the letter cut level above it, and a note on metering floats to the head of page 4. On the closing page both columns stop on one line above the income statement. A palette attribute turns the operations pages teal and the finance page brick red.
+
+## Method
+
+### 1 · Keep every line on the grid and let the levers close the gaps
+
+The code is [the short answer](#the-short-answer) above. The text block is exactly 50 lines of 13.4 pt deep, and the bottom margin (21.6 mm) is derived from that depth. A crosshead takes one grid line above it and one for itself, so a column that ends short is short by whole lines, and whole lines are what <Feature id="column-balancing">column balancing</Feature> adds. On <PageRef page={3}>page 3</PageRef> the three-line hailstorm paragraph goes whole to page 4 under `avoidOrphans`, Postext's name for the rule that keeps a paragraph's last line from standing alone at the head of a column, and the right column ends two lines short. `maxLinesPerHeading: 1` gives one of those lines to the space above *The Saltings and the roofs* and leaves the other to the next lever, which adds it after the list of roofs. At the default of 4, both lines would go above the heading.
+
+### 2 · Cut the text level above a box that crosses the page
+
+<Excerpt region="figures" />
+
+A box with `span="page"` cuts a two-column page into bands. On <PageRef page={2}>page 2</PageRef> the chair's letter stops at eight lines in each column above the box and carries on in both columns under it. Inside the box, `:::columns{count=3 breaks="3,5"}` opens the second and third columns at the second and third numbers (the group's third and fifth blocks) instead of cutting the run where the columns level best. The `figure` paragraph style sets those numbers at 26 pt, and its `boldColor` prints them in yellow.
+
+### 3 · Float a box to the head of the next page
+
+<Excerpt region="aside" />
+
+In the Markdown the note on metering follows the first paragraph about Harrow Down, on page 3; `placement="top"` takes it out of the flow and sets it at the head of the next page. The report fills the rest of page 3, and <PageRef page={4}>page 4</PageRef> opens with the box across both columns. Under it, the site table and the ring chart, both `position: 'top'`, head one column each, a grid line lower than they would sit without the box's 3.5 mm of bottom padding.
+
+### 4 · Give each section its colour without a divider page
+
+<Excerpt region="palette" />
+
+With `parts: { page: false }` a fence such as `:::part{number="02" title="Operations" palette="band=#1c6e67"}` opens no page. It names the section for the opener strip and the running feet, and swaps `band` on every page until the next part. The strips, crossheads, bullets, caption labels and the aside's rule all take `band`, so the operations pages print in teal and the finance page in brick red, while the chair's letter keeps the base sea blue (<Feature id="part-palettes">colours per part</Feature>).
+
+### 5 · Build the tables from the data, and close the last page level
+
+<Excerpt region="data" />
+
+`statement()` turns `DATA.accounts` into the income statement row by row. A label that starts with `=` prints the running sum of each year in bold on the tint; costs are negative in the data, so *Operating surplus* comes out of that sum with no total typed by hand. A label with no figures, *Income* or *Operating costs*, becomes one italic cell across the table, merged with `mergeCells`, which also writes the placeholder cells a merge needs. On <PageRef page={5}>page 5</PageRef> the statement floats across the foot of the page, under the treasurer's report, which closes the document. Unbalanced, the columns would run to 12 lines on the left and 9 on the right; the trailing cut sets both at 11, and the heading lever adds the line the right column still lacks above *Cash and reserves*.
+
+## Variations
+
+### Let the headings take the whole gap
+
+Both free lines on page 3 then go above *The Saltings and the roofs*, and none after the list.
+
+```diff
+-const balancing = { maxLinesPerHeading: 1 }; // one line per heading; the next lever takes more
++const balancing = {}; // the default: up to 4 lines above each heading
+```
+
+### Switch the balancing off
+
+The right column of page 3 then ends two lines short. On page 5 the left column runs to 12 lines and the right to 9, and the statement starts a line lower.
+
+```diff
+-const balancing = { maxLinesPerHeading: 1 }; // one line per heading; the next lever takes more
++const balancing = { enabled: false };
+```
+
+## Pitfalls
+
+- When the columns of a closing page differ by one line they stay as they are, the left column a line longer, as a compositor would set them; the trailing cut acts only on a difference of two lines or more. To end the two together, lengthen or shorten the copy by a line.
+- Postext 1.4.1 trims trailing whitespace in table cells, the no-break space included. To line up positive figures with the costs in brackets, the pen ends each positive figure with a no-break space and a word joiner (U+2060).

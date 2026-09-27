@@ -1,0 +1,79 @@
+---
+title: "Two-column paper with numbered equations"
+summary: "A two-column physics paper whose inline formulas and seven numbered equations are set by MathJax from the ?bundle build, and stay vector in the PDF."
+description: "A physics paper whose title block is drawn by a heading style, with numbered MathJax equations, a table computed from its data and hanging-indent references."
+question: "How do I typeset a paper with inline and numbered display equations, and keep the maths vector in the PDF?"
+aliases: ["scientific paper", "journal article", "research article", "preprint", "equations", "numbered equations", "equation numbers", "LaTeX", "MathJax", "formulas", "tag", "abstract", "keywords", "bibliography", "two columns"]
+pageNotes: { "1": "A bottle-green band carries the masthead Measure, a stroboscopic image of a pendulum hung from the masthead rule, with one red bob at the end of its swing, and the title The period of a pendulum at large amplitudes; the byline, the received, accepted and published dates and the licence sit below it, then a tinted abstract with four keyword chips, and two columns with the first numbered equation.", "2": "Section 2, Theory, with equations 2 to 7 numbered at the right edge of their column and Figure 1, the pendulum and its symbols, at the head of the second column.", "3": "The end of the method, then Results, Discussion and the start of Conclusions: Figure 2 plots the period against the amplitude at the head of the second column, and Table 1 lists the measurements at the foot of the first.", "4": "Figure 3, the phase plane, runs across the head of the page; under it the end of the conclusions, the back matter and the references share the two columns, which start and end level." }
+---
+
+## What you'll build
+
+A research article from the September issue of *Measure*, a fictional open-access journal of experimental physics, set on A4 in two columns. At the top, a bottle-green band holds the masthead, a stroboscopic image of a swinging pendulum and the title. The byline, the dates and the licence sit on white below the band, and a tinted abstract with four keyword chips runs across both columns. Six numbered sections follow, with seven numbered equations and 46 inline formulas; MathJax sets those and the labels inside the figures. Table 1 and the dots of Figure 2 come from one array of measurements. On the last page the end of the conclusions, the back matter and the references share the two columns under Figure 3, and both columns end level. The PDF keeps every formula as vector outlines, with no maths font to embed.
+
+## Method
+
+### 1 · Load the bundled engine and number the equations
+
+The code is [the short answer](#the-short-answer) above. In 1.4.1 [maths](/en/docs/configuration#math) needs the `?bundle` build. Every symbol has to come from it, since `initMathEngine()` throws when it is loaded from the plain URL, and `await initMathEngine()` has to run before the first build, or every formula paints as a grey box with no warning. From then on `$…$` sets inline maths and `$$…$$` display maths, and `renderToPdf` writes each formula as vector paths. The same release draws a formula that carries a `\tag` 0 wide, so nothing prints. `numbered()` rewrites each tagged equation as three `\mathmakebox` boxes (3 em left empty, the formula centred, the number flush right in the last 3 em) that together come to 0.1 em less than the column. The widths are in MathJax's own em, which `MATH_EM` measures by rendering an empty 10 em box.
+
+### 2 · Draw the title block from a heading style
+
+<Excerpt region="title" />
+
+The article title is a level-1 heading (`#`), so it heads the PDF's outline, with the numbered sections under it. Its `article` [heading style](/en/docs/configuration#heading-styles) replaces the heading with a slot of design elements: a band that bleeds off the top, the masthead, the stroboscopic image, and the title, broken where the Markdown heading has its `\\`. The byline and two of the dates come from the heading's attributes, and the publication date from the frontmatter's `publishDate`. `minHeight` reserves 130 mm from the top margin to the foot of the byline, and the abstract starts below that.
+
+### 3 · Number the sections, not the title
+
+<Excerpt region="numbering" />
+
+Each level has its own template and type: `{2}` numbers the six sections 1 to 6 in 11.5 pt journal green, `{2}.{3}` the subsections of Theory 2.1 to 2.3 in 10 pt semibold ink, and `numbered: false` keeps the title and the back matter out of the count. Every head snaps the text under it back onto the 12.6 pt baseline grid, so the lines of the two columns stay level across the gutter. Figures and tables count through the whole article with `{n}`. The default `{h1}.{n}` would print the same numbers here, because the unnumbered title leaves `{h1}` empty and an empty counter drops with its dot, but `{n}` does not depend on that. The table type also moves its caption above the table, where journals set it.
+
+### 4 · Run the abstract across both columns
+
+<Excerpt region="abstract" />
+
+A `span: 'page'` box under the title block sets the abstract across the full measure, and the two columns start below it. Padding of 22 mm on each side keeps its lines near 90 characters. The keywords are [chips](/en/docs/configuration#chip-styles), which never break across lines, each named with `{style="keyword"}`. Their paragraph style, `keywords`, is set ragged, because a justified line of chips stretches the spaces between them into gaps.
+
+### 5 · Close on a bibliography with hanging indents
+
+<Excerpt region="references" />
+
+A `:::paragraphs` fence applies the `references` [paragraph style](/en/docs/configuration#paragraph-styles) to every entry, and its 5 mm `hangingIndent` keeps the number at the margin and starts every turnover line 5 mm in. Column balancing levels the last band of the article. On <PageRef page={4}>page 216</PageRef> the end of the conclusions, the back matter and the references share the two columns under Figure 3. The balancer can only add space, and a two-line reference cannot split, so the back matter was rewritten two lines shorter until both columns ended level.
+
+### 6 · Compute the table, label the figures in MathJax
+
+<Excerpt region="figures" />
+
+One array, `runs`, feeds Table 1 and the dots of Figure 2, and the table's predicted column is Eq. (6) evaluated at each amplitude. The text cites each resource with `:ref{id="…" style="full"}`, which prints “Figure 2” in bold ink and floats the resource into the first free slot after the citation. Captions and table cells take no maths in 1.4.1, so they use plain `~sub~` and `^sup^` markup (`*T*~0~`), and symbols in running text stay `$T_0$`. An SVG figure is drawn as an image and cannot use the page's web fonts, so `tex()` calls `renderMath` for each label and writes the outlines into the SVG as paths. The *θ*₀ of Figure 1 is the glyph the formulas use, and it stays vector in the PDF.
+
+## Variations
+
+### Number figures within sections
+
+Long papers count figures per section; this prints Figure 1.1 in the introduction and Table 4.1 in the results.
+
+```diff
+-  numberingTemplate: '{n}', resetOn: 'never',
++  numberingTemplate: '{h2}.{n}', resetOn: 'h2',
+```
+
+### Put the equation numbers on the left
+
+Swap the two outer boxes and the numbers move to the left edge of the column.
+
+```diff
+-  `$$\\mathmakebox[${NUMBER_EM}em]{}\\mathmakebox[${FORMULA_EM}em]{${body.trim()}}`
+-  + `\\mathmakebox[${NUMBER_EM}em][r]{(${n})}$$`);
++  `$$\\mathmakebox[${NUMBER_EM}em][l]{(${n})}\\mathmakebox[${FORMULA_EM}em]{${body.trim()}}`
++  + `\\mathmakebox[${NUMBER_EM}em]{}$$`);
+```
+
+## Pitfalls
+
+- A display formula does not keep with the line that introduces it. A lead-in such as “gives the period as” can end a column, or stand above a figure, with its equation in the next column. Fit the copy, and send figures to the head of a column (`position: 'top'`, as Figure 1 does) so they never land between the two.
+- The paragraph after a display formula is a new paragraph, and it is indented. Start it as a sentence of its own (“Here *L* is…”) rather than a LaTeX-style “where…”.
+- Plain `~0~` drops its figure a third of an em, below the descenders, and `^2^` after it follows the ₀ instead of standing over it. In running text write `$T_0$` and `$T_0^2$`, and keep the plain markup for captions and table cells, which take no maths.
+- On a closing page under a page-wide figure, the balancer may add a line above a heading that opens a column, so the two columns start a line apart, and `stretchAfterFloats: false` does not prevent it. Check the last page and fit the copy by a line.
+- In 1.4.1 an in-column heading takes no `letterSpacing`, so the back-matter headings are untracked capitals. Tracked capitals work in design text and callout titles, as in the kicker and the abstract's label.
+- Check that the label face carries ¹, ² and ±, and Greek if a caption needs it. Instrument Sans, tried first, has none of the three in its Fontsource files, and Schibsted Grotesk has no Greek, so the Figure 1 caption names the amplitude in words rather than *θ*₀.

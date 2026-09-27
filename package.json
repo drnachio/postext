@@ -7,7 +7,8 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "check-types": "turbo run check-types",
-    "publish-postext": "pnpm --filter postext publish --access public"
+    "publish-postext": "pnpm --filter postext publish --access public",
+    "cookbook": "pnpm --dir apps/web run cookbook"
   },
   "devDependencies": {
     "turbo": "2.10.12"

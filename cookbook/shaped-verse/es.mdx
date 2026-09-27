@@ -1,0 +1,64 @@
+---
+title: "Poemas con forma: Alas de Pascua, con cada verso centrado"
+summary: "Alas de Pascua y El altar, de George Herbert, compuestos en texto centrado, un párrafo por verso, para que la longitud de los versos dibuje las dos figuras."
+description: "Un cuadernillo de cuatro páginas compuesto con Postext: dos poemas con forma de Herbert, cada verso centrado bajo un título sencillo y los blancos con :::space."
+question: "¿Cómo espacio una portada y las estrofas de un poema, si las líneas en blanco del Markdown no añaden espacio?"
+aliases: ["caligrama", "poema visual", "poema figurado", "carmen figuratum", "verso centrado", "texto centrado", "George Herbert", "Alas de Pascua", "El altar", "cuadernillo", "portada", "epígrafe", "colofón", "cul-de-lampe", "espacio vertical"]
+pageNotes: { "1": "La portada, a la manera de la de 1633: EL TEMPLO en versales violetas, el subtítulo en cursiva, el autor, el epígrafe del salmo 29 bajo un rótulo en versalitas a media página y, al pie, un rótulo y dos líneas sobre lo que contiene el cuadernillo.", "2": "El altar: dos versos anchos para la losa, dos algo más estrechos, ocho cortos para el fuste y cuatro más anchos para la base, todos centrados bajo el título violeta.", "3": "Alas de Pascua: dos estrofas que se estrechan desde un verso largo hasta «junto a ti» y vuelven a ensancharse, de modo que la página muestra dos relojes de arena, uno sobre otro.", "4": "La última página: el lema de Herbert en cursiva bajo un rótulo en versalitas, con una frase de sus impresores; una nota sobre la impresión de 1633 bajo un segundo rótulo, a la altura del rótulo del salmo de la página 1, y un colofón de cinco líneas centradas, cada una más corta que la anterior." }
+---
+
+## Lo que vas a componer
+
+Un cuadernillo de cuatro páginas A5, un pliego A4 doblado por la mitad, que reúne en versión castellana dos poemas con forma de *The Temple*, de George Herbert. La portada imita la de 1633, epígrafe del salmo 29 incluido. Dentro, *El altar* queda frente a *Alas de Pascua*. Ningún verso lleva sangría ni espacios de relleno; cada uno va centrado, de modo que el altar se apoya en un fuste estrecho y cada estrofa de las alas adelgaza hasta «junto a ti» para abrirse de nuevo. En la última página, bajo el lema de Herbert, una nota cuenta que los impresores de 1633 pusieron las alas de lado, y el colofón se acorta línea a línea. Todo se compone con el texto de cuerpo y tres niveles de título en los tipos IM Fell, sin estilos con nombre ni diseños de página.
+
+## Elaboración
+
+### 1 · Cada verso es un párrafo centrado
+
+El código está en [la respuesta corta](#la-respuesta-corta), más arriba. Postext junta en un solo párrafo las líneas seguidas del Markdown, así que cada verso va en un párrafo propio, con una línea en blanco detrás. `textAlign: 'center'` centra cada verso, con su ancho natural, sobre el eje de la medida, y como la 1.4.1 solo aplica la separación silábica al texto justificado, ninguna palabra se parte ([texto de cuerpo](/es/docs/configuration#texto-de-cuerpo)). Cada verso abre su párrafo, así que la sangría de primera línea por defecto, de 1,5 em, lo desplazaría 3,3 mm a la derecha del eje de los títulos; con `firstLineIndent: pt(0)`, poemas y títulos comparten eje.
+
+### 2 · La medida admite el verso más largo
+
+<Excerpt region="measure" />
+
+Un verso que no cabe pasa a una segunda línea, y como las dos mitades se centran por separado, la silueta muestra un escalón que el original no tiene. Con una medida de 75 mm se parten un verso de *El altar* y otro de *Alas de Pascua*, y el cuadernillo pasa a seis páginas. El verso más ancho, el primero de las alas, mide 80,0 mm en castellano y 80,7 mm en inglés, así que en los 110 mm de medida de la página A5 caben todos enteros.
+
+### 3 · Títulos sencillos, centrados
+
+<Excerpt region="titles" />
+
+Ningún nivel lleva diseño, solo ajustes tipográficos, y `headings.textAlign` centra los tres ([encabezados](/es/docs/configuration#encabezados)). La paridad `'any'` abre cada poema en la página siguiente, sea par o impar, de modo que el altar de la página 2 queda frente a las alas de la 3. Un `marginTop` no bajaría esos títulos, porque la 1.4.1 descarta el espacio sobre un título que abre página. En su lugar, el interlineado del nivel 2, de tres líneas de la rejilla, deja cada título unos 5 mm más abajo, y los dos poemas empiezan en la línea 5 de la caja. El nivel 1 abre el documento y aquí no necesita salto, pero lo lleva igualmente para que un segundo título `#` abra en página impar. El nivel 3 compone los cuatro rótulos de las páginas 1 y 4 en las versalitas de IM Fell English SC, al cuerpo del texto.
+
+### 4 · El Markdown espacia y corta las páginas
+
+<Excerpt region="pages" />
+
+Una línea en blanco entre párrafos no añade espacio, así que cada blanco de estas páginas sale de `:::space`: una línea entre las estrofas de *Alas de Pascua* y, en la portada, cinco sobre el rótulo del salmo y diez bajo el epígrafe ([`:::space`](/es/docs/document-format#space)). Con esas cuentas, la última línea de la portada cae en la última línea de la caja, y los rótulos del salmo y de la nota quedan los dos en la línea 13, a 94 mm del borde superior. `:::pagebreak` abre la última página ([`:::pagebreak`](/es/docs/document-format#pagebreak)). El colofón también lleva un párrafo por línea; cada corte cae donde lo pide el sentido, y las cinco líneas se estrechan como un culo de lámpara.
+
+## Variantes
+
+### Abre cada poema en página impar
+
+Con la paridad `'odd'`, *El altar* y *Alas de Pascua* abren en las páginas 3 y 5, las dos impares, y el cuadernillo pasa a seis páginas, con la 2 y la 4 en blanco.
+
+```diff
+-      breakBefore: { enabled: true, parity: 'any' } },
++      breakBefore: { enabled: true, parity: 'odd' } },
+```
+
+### Compón los versos en bandera
+
+Con `textAlign: 'left'` cada verso arranca en el margen y los dos poemas conservan solo el contorno derecho; el resto del texto de cuerpo, del subtítulo al colofón, también pasa a la izquierda, y solo los títulos siguen centrados.
+
+```diff
+-  textAlign: 'center', // ragged on both sides; 1.4.1 hyphenates justified text only
++  textAlign: 'left', // ragged right; 1.4.1 hyphenates justified text only
+```
+
+## Errores frecuentes
+
+- Un verso más largo que la medida pasa a una segunda línea, y las dos mitades se centran por separado. Mide el verso más ancho antes de fijar el cuerpo y los márgenes. Para verso en bandera, con sangría francesa en los versos que no caben, consulta <RecipeLink slug="poetry-collection">Poemas compuestos verso a verso</RecipeLink>.
+- Un párrafo pierde los espacios iniciales, así que no puedes dar forma a un verso rellenándolo de espacios. El ancho de cada verso depende solo de sus palabras, y una traducción tiene que buscar versos de un ancho parecido al del original, como hace la edición castellana.
+- Al centrar, cada verso conserva su ancho natural, así que la losa y la base de *El altar* no quedan a escuadra: el tercer y el cuarto verso de la losa son más estrechos que los dos primeros. Justificar tampoco las iguala, porque la 1.4.1 deja la última línea de un párrafo justificado con su ancho natural, y cada uno de estos versos es un párrafo.
+- La portada y la última página llegan hasta la última línea de la rejilla. Una línea más en la portada, por un epígrafe más largo, un texto que ya no cabe en una línea o un `:::space` mayor, lleva el rótulo del pie y las dos líneas que lo siguen a una página propia; una línea más en la última página manda sola la última línea del colofón a una quinta página. Si añades una línea a cualquiera de las dos, quita otra de un `:::space` de encima.
+- Postext no compone texto de lado, como los impresores de 1633 compusieron *Easter Wings*: solo giran figuras y tablas enteras. Aquí las estrofas van derechas, y la nota de la página 4 lo dice.

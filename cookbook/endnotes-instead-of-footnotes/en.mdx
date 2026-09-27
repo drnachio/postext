@@ -1,0 +1,70 @@
+---
+title: "Endnotes in two columns instead of footnotes"
+summary: "A short preprocessor turns Markdown footnotes into raised numbers and a Notes section, which a heading style sets on a page of its own in two columns."
+description: "Faraday's first candle lecture set with six endnotes. Each [^1] marker prints as a raised figure, and the notes follow on a page of their own in two columns."
+question: "How do I turn [^1] footnotes into endnotes when Postext does not lay out notes?"
+aliases: ["footnotes", "endnotes", "notes section", "note markers", "superscript numbers", "[^1]", "GFM footnotes", "hanging indent", "critical edition", "editor's notes", "reader's edition"]
+pageNotes: { "1": "The opener of Lecture I: a field of soot across the top half of the page, with a lit candle standing on its lower edge, the kicker LECTURE I in orange and the title A Candle in cream. The text starts below it, its first note marker a small raised 1 in dark orange.", "4": "A dark panel heads the page: two candle flames, one under a glass shade and one in section with arrows of rising air, captioned Figure 1. Below it the lecture runs to its end, with the raised 6 in the first paragraph.", "5": "The Notes: a band of soot with a blown-out candle trailing smoke, then six notes in two columns of smaller type, each number in bold dark orange hanging in the indent, and a colophon; both columns end on the same line." }
+---
+
+## What you'll build
+
+Lecture I of Michael Faraday's *The Chemical History of a Candle*, set as a small reader's edition on a 156 × 234 mm page. The lecture opens on a field of soot with a lit candle standing on its lower edge, and the text runs in one justified column of Libre Bodoni. Where a book would put footnotes, small raised numbers in dark orange send the reader to the end of the lecture. The notes follow on a page of their own, under a band of soot with the candle snuffed out, in two ragged columns of 8.2 pt type with each bold number hanging in the indent. Three of the six are William Crookes's, from the 1908 impression of his 1861 edition; the other three are new and signed *Ed.* Both columns end on the same line, and the colophon closes the second.
+
+## Method
+
+### 1 · Turn footnotes into endnotes before the build
+
+The preprocessor is [the short answer](#the-short-answer) above. Postext 1.4.1 does not lay out notes: [what is not supported](/en/docs/document-format#what-is-not-supported) lists the `[^1]` marker, and the engine ignores `PostextContent.notes`, although the types accept it. A lone `[^1]` prints as typed, and two in one paragraph pair their carets as a superscript that raises all the text between them. So the pen rewrites the Markdown before it calls `buildDocument`. It numbers the markers in the order the text first cites them and sets all the definitions, in that order, where the first of them stands, under `## Notes`. Each note starts with `**1**`, since `1. ` would open a numbered list. A word joiner (U+2060) opens each marker; without it, the `**` of the marker after `*Royal George*` would meet the italic's closing asterisk as `***`, and the asterisks would print.
+
+### 2 · Keep bold for the markers
+
+<Excerpt region="markers" />
+
+The preprocessor writes each marker as `**^n^**`. The carets set the number at 58 % of the text size, raised a third of it ([inline formatting](/en/docs/document-format#inline-formatting)), and the bold gives it `bodyText.boldColor`, which is free because Faraday never uses bold. A 5.8 pt figure needs a contrast of 4.5:1 against the paper, and the flame reaches only 2.6:1, so the markers take the darker ember. The reference `[Fig. 1]` on <PageRef page={3}>page 17</PageRef> prints in the same colour, in roman, because `referenceColor` defaults to the bold colour and `referenceBold: false` drops the bold.
+
+### 3 · Set the notes smaller, with the number in the hang
+
+<Excerpt region="notes" />
+
+The notes are 8.2 pt on 10.7 pt, about four fifths of the text size. The pen measures the style's `hangingIndent` in Libre Bodoni once the fonts are loaded: a bold 5 and an en space come to 1.12 em, so the first word of each note lines up with its turnover lines ([paragraph styles](/en/docs/configuration#paragraph-styles)). With the number out in the hang, the notes need no space between them. They are set ragged because justification would stretch that en space, and a justified 55 mm column of 8.2 pt type runs loose. Tildes set subscripts the way carets set superscripts, as in `C~25~H~52~` in note 4 and `H~2~O` in note 5.
+
+### 4 · Give the notes a page in two columns
+
+<Excerpt region="section" />
+
+The heading `## Notes {style="notes" …}` opens a section whose pages take the style's layout and design. `parity: 'any'` starts it on the next page, odd or even, and `span: 'page'` runs the band across both columns, so it reaches the trim and the second column starts under it ([heading styles](/en/docs/configuration#heading-styles)). The band sets the reserve, but the first grid line clear of it lies only 3 mm under the soot, so `BAND_GAP` adds 5 mm to `minHeight` and the notes start a line lower. The hairline between the columns is declared on the document's `layout`, because 1.4.1 does not draw a heading style's `columnRule`. Column balancing is on by default and cuts the closing page so that both columns end on the same line ([column balancing](/en/docs/configuration#column-balancing)).
+
+### 5 · Open the lecture on a field of soot
+
+<Excerpt region="opener" />
+
+The field is a box anchored to the page, and the candle, an image element, stands on its lower edge. The first heading level sets `span: 'page'` although the lecture has one column: without it, 1.4.1 clips the design at the top of the column instead of painting it from the trim. The kicker, subtitle and byline come from the heading line, `# A Candle {kicker="Lecture I" subtitle="…" byline="…"}`, so Lecture II would need no new code. The field reaches below the heading, so it sets the reserve. The heading's default bottom margin of 0.5 em is added to it, and the text starts one grid line below the first line clear of the soot. The subtitle is 86 mm wide so that it breaks after a dash, since a no-break space does not hold in design text.
+
+### 6 · Use the flame on soot and the ember on paper
+
+<Excerpt region="palette" />
+
+The flame orange has a contrast of 6:1 on soot but only 2.6:1 on the paper. It colours the kickers on the dark bands and the drawings; everything small printed in orange on the paper (markers, note numbers, the figure's label) takes the darker ember, at 5.1:1. `main-color` points at the ember, so a default that the config does not restate follows the design instead of printing blue.
+
+<Note>A short aside can stay in the text between parentheses. Glosses the reader needs beside the line can go in a side column, as in <RecipeLink slug="textbook-margin-column">Textbook with a margin column</RecipeLink>.</Note>
+
+## Variations
+
+### Mark the notes in ink
+
+If the text uses bold for its own emphasis, print the markers in ink, since `boldColor` colours the markers and every bold word alike.
+
+```diff
+-const markers = { boldColor: col('ember'), // **^n^**: a superscript at 58 % of the text size
++const markers = { boldColor: col('ink'), // **^n^**: a superscript at 58 % of the text size
+```
+
+### Let the note columns run unlevelled
+
+Switch off the balancing of the closing page, and the first column fills to the foot before the second begins.
+
+```diff
+-  headings: { fontFamily: DISPLAY, color: col('ink'), levels: [
++  headings: { fontFamily: DISPLAY, color: col('ink'), balancing: { trailing: false }, levels: [
+```

@@ -1,0 +1,183 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 49,
+  "status": "published",
+  "chapter": "boxes",
+  "order": 80,
+  "level": 2,
+  "genres": [
+    "workbook"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "numbered-lists",
+      "chips",
+      "table-styles"
+    ],
+    "also": [
+      "table-model",
+      "resource-types",
+      "inline-embeds",
+      "cell-fills",
+      "captions",
+      "page-breaks",
+      "page-role-filters",
+      "running-heads",
+      "heading-styles",
+      "section-geometry",
+      "opener-design",
+      "heading-attributes",
+      "design-images",
+      "callout-styles",
+      "callout-columns",
+      "paragraph-styles",
+      "color-palette"
+    ]
+  },
+  "answers": [
+    "Q80",
+    "Q53",
+    "Q51",
+    "Q68",
+    "Q31"
+  ],
+  "gaps": [
+    "tab-stops"
+  ],
+  "gotchas": [
+    "numbering-vocabularies",
+    "cell-blank-line",
+    "here-table-no-split",
+    "ragged-runts",
+    "dollar-math",
+    "palette-skips-designs",
+    "svg-no-webfonts",
+    "config-cache-identity",
+    "hyphenation-locales",
+    "fonts-first"
+  ],
+  "explainsWarnings": [],
+  "related": [
+    "worksheet-answer-boxes",
+    "reading-primer-syllables",
+    "recipe-card",
+    "technical-datasheet"
+  ],
+  "workarounds": [
+    {
+      "followup": "EF-12",
+      "package": "postext",
+      "note": "lists name their formats in their own vocabulary: level 1 keeps the list default 'arabic' (a list given 'decimal' prints \"undefined\"), levels 2 and 3 are 'lower-alpha' and 'lower-roman'"
+    },
+    {
+      "followup": "EF-113",
+      "package": "postext",
+      "note": "the cover's heading style has span: 'page': a design kept in the column is clipped at the column's top, so without it the band starts at the 22 mm top margin and the session line is lost (checked on the capture)"
+    },
+    {
+      "followup": "EF-154",
+      "package": "postext",
+      "note": "a table-cell line that is empty or holds only U+00A0 is dropped, so the blank middle line of the MARK cell holds a U+2060 word joiner; that three-line cell sets the candidate row at 14.4 mm (10.8 mm with a no-break space, measured)"
+    },
+    {
+      "followup": "EF-64",
+      "package": "postext",
+      "note": "the canvas leaves hairline seams between filled table cells, so the tinted bubble grid strokes its grid rules in the tint (the seams show with rules: 'none', checked on the capture)"
+    },
+    {
+      "followup": "EF-147",
+      "package": "postext",
+      "note": "ragged text gets no runt control: the questions are worded so that no last line holds a single word (the English questions 3 and 10 first ended on a lone '1863?')"
+    },
+    {
+      "followup": "EF-71",
+      "package": "postext",
+      "note": "the palette does not reach design-slot colours or bodyText.referenceColor: col() writes the hex beside every paletteId, and referenceColor is restated in ink"
+    },
+    {
+      "followup": "EF-14",
+      "package": "postext",
+      "note": "locale is the exact bundled code ('en-us' | 'es')"
+    }
+  ],
+  "engine": {
+    "postext": "1.4.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "crop",
+    "focus": {
+      "page": 1,
+      "x": 0.035,
+      "y": 0,
+      "w": 0.93,
+      "h": 0.54
+    },
+    "expect": {
+      "pages": [
+        4,
+        4
+      ]
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "The Gettysburg Address (19 November 1863), text of the Bliss copy",
+          "es": "El discurso de Gettysburg (19 de noviembre de 1863), texto de la copia Bliss"
+        },
+        "who": "Abraham Lincoln",
+        "source": "https://en.wikisource.org/wiki/Gettysburg_Address_(Bliss_copy)",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The questions, the instructions and the Spanish translation of Source A",
+          "es": "Las preguntas, las instrucciones y la traducción al español de la fuente A"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      {
+        "family": "PT Serif",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Inter Tight",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-09-26",
+  "updated": "2026-09-26"
+}

@@ -1,0 +1,84 @@
+---
+title: "Novela en rústica: aperturas hundidas y capítulos en impar"
+summary: "The Awakening en rústica de 140 × 216 mm: cubierta dibujada, colofón sin cabeceras y cada capítulo hundido en página impar bajo un número romano en cursiva."
+description: "The Awakening, de Kate Chopin, compuesta con Postext: cubierta dibujada, colofón al dorso, capítulos hundidos en impar, una par en blanco sin folio y florones."
+question: "¿Cómo abro cada capítulo en página impar y a un tercio de la altura, como en una novela en rústica?"
+aliases: ["novela en rústica", "rústica", "novela", "apertura hundida", "apertura de capítulo", "página impar", "página derecha", "recto", "página en blanco", "verso en blanco", "paridad", "versalitas", "primera frase en versalitas", "florón", "viñeta de cierre", "adorno", "colofón", "página de créditos", "cubierta", "cabeceras por sección", "Kate Chopin", "El despertar"]
+pageNotes: { "1": "La cubierta: el golfo entre los troncos de los robles, un lugre en el horizonte y una sombrilla blanca que sube por el camino entre la manzanilla; debajo, el título en cursiva grande y el nombre de la autora en versalitas.", "2": "El colofón, en cuerpo pequeño al pie de la página, sin cabecera ni folio.", "3": "El capítulo I, hundido en una página impar: una I cursiva, un filete corto rojo óxido, la primera frase en dos líneas centradas de versalitas y el texto a 81 mm del borde superior.", "6": "Una página par en blanco, sin cabecera ni folio, para que el capítulo II empiece en impar.", "7": "El capítulo II se abre como el I, con la primera frase partida tras el punto y coma." }
+---
+
+## Lo que vas a componer
+
+Los dos primeros capítulos de *The Awakening* (1899), de Kate Chopin, ocupan ocho páginas de rústica de 140 × 216 mm. La cubierta, dibujada en código, muestra el golfo desde Grand Isle: un lugre en el horizonte entre los robles y la sombrilla blanca que sube entre la manzanilla. El colofón va al pie de su dorso. Cada capítulo empieza en página impar, con el texto a 81 mm del borde superior, bajo un número romano en cursiva de 48 pt, un filete rojo óxido de 18 mm y la primera frase en versalitas, partida en dos líneas centradas. El capítulo I acaba en la 5 con un florón de manzanilla, así que la 6 queda en blanco, sin cabecera ni folio, y el II empieza en la 7. Las cabeceras llevan el nombre de la autora en las pares y el título en cursiva en las impares.
+
+## Elaboración
+
+### 1 · La apertura sale del título y de su atributo
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Los capítulos de Chopin solo llevan número, así que el título de cada uno en Markdown es ese número (`# I`), y `{titleText}` lo imprime. `{attr.lead}` imprime el atributo `lead` del título, que contiene la primera frase del capítulo; el párrafo de Markdown que va debajo empieza por la frase siguiente ([atributos de encabezado](/es/docs/document-format#atributos-de-encabezado)). El texto de un diseño no se puede justificar, así que la primera frase va centrada, y el `\n` de cada atributo la corta por el sentido, tras *cage* y tras *bright;*. Ese `\n` solo corta la línea si `paragraphIndent` es mayor que cero; con 0 se imprimen tal cual los dos caracteres. La frase empieza nueve líneas de la rejilla por debajo del borde superior de la caja de texto, y un `minHeight` de 12 líneas deja una línea en blanco debajo; sin `minHeight`, el texto arranca pegado a la frase ([span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)). `marginBottom: pt(0)` sustituye el margen de medio cuerpo que el nivel trae por defecto y que bajaría el texto una línea.
+
+`breakBefore` con paridad `'odd'` lleva cada capítulo a una página impar. La configuración lo repite porque cualquier objeto `headings` anula el salto que el nivel trae por defecto ([saltar antes](/es/docs/configuration#saltar-antes)). Para forzar una página impar donde no hay título, escribe `:::pagebreak{parity="odd"}` en el Markdown; en una maquetación de dos o más columnas, `:::columnbreak` pasa el texto a la columna siguiente ([`:::pagebreak`](/es/docs/document-format#pagebreak)).
+
+### 2 · Una página de rústica con líneas enteras
+
+<Excerpt region="page" />
+
+El margen inferior es lo que queda de los 216 mm de alto tras el margen superior y 35 líneas de 14 pt, así que todas las páginas llenas acaban en la misma línea, como la 3 y la 4. Con `mirror: true`, el margen interior de 20 mm queda del lado del lomo tanto en las impares como en las pares ([márgenes simétricos](/es/docs/configuration#márgenes-simétricos-espejo)). La medida de 104,5 mm admite unos 69 caracteres de Crimson Pro de 10,5 pt. El texto base admite espacios entre palabras de 0,7 a 1,9 veces el normal; con el mínimo por defecto, 0,6, una línea de estas páginas se cierra hasta 0,62. También fija `maxRuntTracking: 0`. Con el valor por defecto, el párrafo que acaba en *nodding good-by to him.* se compone con una línea menos mediante un interletraje negativo que el lienzo no pinta, y sus espacios salen aplastados.
+
+### 3 · Cabeceras que se saltan las aperturas y las páginas en blanco
+
+<Excerpt region="heads" />
+
+`parity: 'even'` pone el nombre de la autora, en versalitas de Cormorant SC, en las páginas pares, y `'odd'`, el título en cursiva en las impares; los folios van en el borde exterior de la caja de texto. `pages: 'body'` aparta los cuatro elementos de las aperturas y de la página 6, la par en blanco que añade el salto con paridad. Con `pages: 'all'`, esa página imprimiría *6* y *Kate Chopin*. Las aperturas llevan en su lugar un folio al pie, un elemento del `footer` que `pages: 'opener'` reserva para ellas ([elementos de texto](/es/docs/configuration#elementos-de-texto)).
+
+### 4 · La cubierta es una sección sin cabeceras
+
+<Excerpt region="cover" />
+
+La cubierta es un título, `# The Awakening {style="cover"}`. Su estilo dibuja la ilustración en los 134 mm superiores, el título del frontmatter en 50 pt y el nombre de la autora en versalitas. El estilo rige además la sección que abre ese título, las páginas 1 y 2, hasta el capítulo I. Su `header` y su `footer` vacíos quitan el folio al pie de la cubierta y las cabeceras del colofón. Su margen superior coloca el colofón en las seis últimas líneas de la caja de texto, así que la última línea del colofón queda a la altura de la última de la página 3 ([estilos de encabezado](/es/docs/configuration#estilos-de-encabezado)). El estilo necesita `span: 'page'` aunque el libro tenga una sola columna. Un diseño que se queda en la columna se recorta en su borde superior, aquí a 165 mm; sin `span: 'page'`, la ilustración no se imprimiría y el título perdería la parte de arriba.
+
+<PageShot page={2} crop="0,0.7,1,0.24" caption="Página 2: el colofón al pie del dorso de la cubierta, sin cabecera ni folio." />
+
+### 5 · Un florón cierra cada capítulo
+
+<Excerpt region="tailpiece" />
+
+El tipo de adorno no tiene prefijo de pie, así que la flor de manzanilla se imprime sin rótulo, con un ancho del 17 % de la medida, en el lugar de `::resource{id="tailpiece-1"}` ([tipos de recurso](/es/docs/configuration#tipos-de-recurso)). Una inserción en línea deja una línea de la rejilla por encima, y el `:::space` que la precede añade otra entre la última línea del capítulo y la flor ([`:::space`](/es/docs/document-format#space)). Los dos florones usan el mismo archivo, `fleuron.svg`, con dos identificadores distintos, porque cada recurso se coloca una sola vez.
+
+## Variantes
+
+### Deja que el capítulo II siga en la página siguiente
+
+Con la paridad `'any'`, el capítulo II empieza en la página 6, que es par, y el libro termina en la 7; el folio al pie se centra en la caja de texto, no en la página, así que en esa par sigue quedando bajo el centro del texto.
+
+```diff
+-const chapter = { level: 1, breakBefore: { enabled: true, parity: 'odd' },
++const chapter = { level: 1, breakBefore: { enabled: true, parity: 'any' },
+```
+
+### Marca un cambio de escena dentro de un capítulo
+
+Entre dos líneas `:::space`, la misma flor marca un cambio de escena, y el párrafo siguiente empieza sin sangría porque `indentAfterHeading` está desactivado. Tras *seemed long to him.*, la flor cae al pie de la página 4; el segundo espacio ya no cabe allí y desaparece. El cambio añade cuatro líneas, que empujan el florón del capítulo I, solo, a la página 6, bajo una cabecera, así que tendrás que volver a ajustar el capítulo cuando añadas uno.
+
+```diff
+ const resources = [
++  svg('break-1', 'fleuron.svg', 40, 12, 'A scene break.'),
+```
+
+```md
+That was why the morning seemed long to him.
+
+:::space
+
+::resource{id="break-1"}
+
+:::space
+
+“You are burnt beyond recognition,” he added, …
+```
+
+## Errores frecuentes
+
+- Con `'always-odd'`, detrás de cada sección va una página separadora en blanco antes del relleno de paridad, así que el capítulo I pasaría a la página 5, tras dos páginas en blanco, y el libro llegaría a diez páginas.
+- Estas páginas están ajustadas a mano. Con un margen exterior de 16 mm en lugar de 15,5, la página 7 parte *after-din-ner* por un segundo guion y acaba una línea antes, la 8 cierra un párrafo con el fragmento *spondent.* y el segundo florón pasa a una novena página. Revisa el pie de todas las páginas cuando cambies la medida, el cuerpo o el hundimiento.
+- *Mr.* y *Mrs.* van unidos al nombre con un espacio de no separación (U+00A0). En 1.4.1 se mantiene en los párrafos sin cursivas ni negritas, pero en uno con cursivas se corta como un espacio normal. El párrafo que acaba en *seemed long to him.* lleva un espacio corriente, porque unir ahí el nombre abre su primera línea hasta 2,2 veces el espacio normal entre palabras.

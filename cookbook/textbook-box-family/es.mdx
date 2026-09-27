@@ -1,0 +1,84 @@
+---
+title: "Recuadros de libro de texto con código de colores"
+summary: "Seis tipos de recuadro en tres colores, que se distinguen por una franja con icono, un distintivo, una pestaña numerada, pictogramas o una marca lateral."
+description: "Un capítulo de biología compuesto con Postext: objetivos en franja magenta, un consejo junto a un filete verde, el RECUADRO 2.1 y una advertencia ámbar."
+question: "¿Cómo hago recuadros de objetivos, consejos y advertencias con icono, franja, esquinas redondeadas o pestaña?"
+aliases: ["recuadros de libro de texto", "objetivos de aprendizaje", "para recordar", "consejo de estudio", "recuadro de advertencia", "RECUADRO 2.1", "RECUADRO 2-1", "recuadro numerado", "etiqueta del recuadro", "distintivo de esquina", "insignia", "tira de iconos", "pictogramas de seguridad", "autoevaluación", "términos clave", "cuadro de advertencia"]
+pageNotes: { "1": "La apertura del capítulo 2, Células y membranas: una célula magenta con un borde de bicapa en cuentas, cortada por la esquina superior derecha de la página, con un 2 blanco en su interior. Bajo el primer párrafo, un recuadro de objetivos sobre una franja magenta con un icono de diana; en la columna derecha, un recuadro «Para recordar» junto a un filete verde fino rematado por un distintivo con una bombilla.", "2": "Un dibujo del mosaico fluido a todo el ancho y, debajo, el RECUADRO 2.1 sobre las dos columnas: una pestaña negra y un matraz en su esquina superior izquierda, un filete que va de ellos a la esquina opuesta, una figura de dos células que se fusionan a la izquierda y el texto a la derecha. Más abajo, en la columna izquierda, una advertencia con marco ámbar de esquinas redondeadas y un distintivo de alerta colgado de su esquina exterior.", "3": "Tres paneles de glóbulos rojos en disoluciones salinas en la cabeza de la página, una práctica con un recuadro de seguridad de tres pictogramas y pasos numerados en verde, y un recuadro rosa de autoevaluación flotado al pie, marcado por una casilla magenta con una marca de visto y un filete fino junto a su marco." }
+---
+
+## Lo que vas a componer
+
+El capítulo 2 de *Materia viva*, libro de biología de bachillerato en página de 210 × 280 mm, se abre bajo una célula que se sale por la esquina superior de la página, con el número del capítulo dentro. Siguen seis tipos de recuadro en tres colores, cada uno con un elemento gráfico propio, para que el alumno distinga un objetivo de una advertencia antes de leerlos. En magenta van los objetivos, sobre una franja con una diana, y la autoevaluación, con una casilla marcada fuera del marco. En verde, el «Para recordar», junto a un filete fino rematado por una bombilla, y la práctica, con tres pictogramas de seguridad. La advertencia es ámbar y lleva un distintivo de alerta en la esquina exterior. El RECUADRO 2.1 es lavanda, bajo una pestaña negra y un matraz. Las negritas toman el color del recuadro, magenta en el RECUADRO 2.1.
+
+## Elaboración
+
+### 1 · Dale un color a cada tipo de recuadro
+
+<Excerpt region="palette" />
+
+Seis tipos de recuadro se reparten tres tonos: magenta para los objetivos y la autoevaluación, verde para el «Para recordar» y la práctica, y ámbar para la advertencia. El RECUADRO 2.1 tiene fondo lavanda y usa el magenta en sus términos clave. Cada tono tiene un tinte claro para los fondos, y todos los ajustes de color enlazan con una entrada de la paleta, así que para cambiar un tono basta con editar un valor. Con un cuerpo tan pequeño, el texto necesita un contraste de 4,5:1. El magenta sobre el lavanda llega a 4,9:1, pero el ámbar sobre el fondo de la advertencia se queda en 2,2:1; por eso la advertencia reserva el ámbar para el marco y el distintivo, y compone el título y los términos clave en `warnInk`, un ámbar más oscuro que llega a 5,2:1.
+
+### 2 · Comparte todo lo demás
+
+<Excerpt region="base" />
+
+`box()` reúne los ajustes comunes a todos los recuadros: los márgenes, el relleno, la letra del título y del cuerpo, y el espaciado de las listas. Su argumento `hue` colorea el título, las viñetas y números y las negritas. `body.boldColor` pone en magenta el **modelo de mosaico fluido** de los objetivos y en ocre la **pared celular** de la advertencia; las negritas del texto corrido siguen en tinta ([tipografía dentro de un recuadro](/es/docs/configuration#tipografía-dentro-de-un-recuadro)). Si declaras `calloutStyles`, sustituyes el único estilo que trae el motor, un recuadro gris llamado `note`. Un recuadro cuyo `type` falta o está mal escrito toma el primer estilo, así que la lista empieza por los objetivos, que aparecen en todos los capítulos.
+
+### 3 · Franja, pestaña y distintivo
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. La franja de los objetivos mide 7,5 mm y su diana 5 mm, así que el icono queda dentro del color con aire a los dos lados. El `offset` de la pestaña es igual a su altura (`height`), de modo que la pestaña se apoya en el borde superior del recuadro, sin tocar el título. `'top-left'` es la esquina exterior de esta página par; el matraz va a continuación de la pestaña, y el filete recorre el borde superior desde el matraz hasta la esquina opuesta. `position: 'corner'` cuelga el distintivo de la advertencia con la mitad de su ancho fuera del borde, y `cornerSide: 'outer'` lo lleva al lado exterior, el izquierdo en esta página par. En ese lado el motor sangra el título para que no choque con el distintivo, salvo que el relleno ya cubra medio distintivo más el espacio del título; por eso la advertencia lleva `BADGE / 2 + GAP` de relleno a los dos lados, y el título queda alineado con el texto. Solo este recuadro lleva `borderRadius`. En uno con franja, la franja se pinta aparte, como una barra rectangular, y las esquinas de ese lado seguirían rectas ([estilos de aviso](/es/docs/configuration#estilos-de-aviso)).
+
+### 4 · Tres elementos gráficos más
+
+<Excerpt region="more" />
+
+La franja del «Para recordar» mide 2,5 pt, frente a los 6,4 mm de su distintivo, de modo que se ve como un filete fino con la bombilla encima de su extremo superior; un relleno izquierdo de medio distintivo más 2 mm aparta el texto de la bombilla. `icon.width` encaja la imagen en una caja ancha en vez de en un cuadrado, así que los tres pictogramas de seguridad, dibujados como una sola imagen de 24,5 mm, forman la columna de iconos del recuadro de seguridad, centrada respecto a su texto. La marca de la autoevaluación va fuera del marco, en este orden: marca, filete, hueco y caja. Su casilla cuadrada sobre un filete de 0,75 pt la distingue del «Para recordar», que lleva un distintivo redondo. La valla añade `span="page" placement="bottom"` para que la autoevaluación flote al pie de la <PageRef page={3}>página 29</PageRef>.
+
+### 5 · Los iconos también son recursos
+
+<Excerpt region="icons" />
+
+Todos los iconos, el matraz de la pestaña y la célula de la apertura son recursos SVG declarados junto al contenido y registrados por su identificador de archivo. Los estilos los nombran por su id de recurso y, como el texto no los cita, ninguno se convierte en una figura numerada. Glifos como ✓ o ☞ serían más cómodos de escribir, pero no están en los archivos latin de Fontsource que cargan las páginas: el lienzo los tomaría de una fuente del sistema y un PDF los perdería. Los dibujos tampoco llevan texto, porque un SVG pintado como imagen no puede usar las fuentes de la página; los colores se nombran en los pies.
+
+### 6 · Abre el capítulo con una célula
+
+<Excerpt region="opener" />
+
+La célula es un elemento de imagen anclado a la esquina superior derecha de la página y desplazado más allá de ella, de modo que asoma sobre todo su cuarto inferior izquierdo, con el número dentro. Ambos caben en los 66 mm que `minHeight` reserva para la apertura. El antetítulo y la entradilla salen de la línea del título, `# Células y \\ membranas {unit="La célula" lead="…"}`, y el `\\` parte el título solo en la apertura.
+
+## Variantes
+
+### Extiende un recuadro sobre las dos columnas
+
+`span="page"` en la valla extiende cualquier recuadro sobre las dos columnas; el RECUADRO 2.1 anida además un grupo `:::columns` para poner la figura junto al texto.
+
+```diff
+-:::callout{type="warning" title="¿Membrana o pared?"}
++:::callout{type="warning" title="¿Membrana o pared?" span="page"}
+```
+
+### Cuelga el distintivo del lado del lomo
+
+`'inner'` lleva el distintivo al lado del lomo, el izquierdo en la página impar y el derecho en la par; deja sitio en ese lado para la mitad que sobresale del recuadro.
+
+```diff
+-    icon: icon('caution', BADGE, { position: 'corner', cornerSide: 'outer' }) }),
++    icon: icon('caution', BADGE, { position: 'corner', cornerSide: 'inner' }) }),
+```
+
+### Pon la pestaña en la esquina derecha
+
+`'top-right'`, el valor por defecto, refleja toda la etiqueta: la pestaña pasa a la esquina derecha, el matraz a su izquierda y el filete llega desde la izquierda.
+
+```diff
+-      position: 'top-left', // this verso's outer corner, above the badge ('top-right' by default)
++      position: 'top-right',
+```
+
+## Errores frecuentes
+
+- La pestaña solo se imprime si la valla lleva el atributo `label="RECUADRO 2.1"` y el estilo tiene un objeto `label`. Un estilo sin él ignora el atributo.
+- Postext no numera los recuadros. La etiqueta es el texto literal de la valla, así que cada número, RECUADRO 2.1, RECUADRO 2.2, se escribe a mano.
+- Un distintivo de esquina sobresale la mitad de su ancho por el lado del recuadro, hacia el margen en el lado exterior de la página. En la otra columna de esa misma página sobresale hacia el medianil, así que deja los recuadros con distintivo en la columna exterior o dales sitio.
+- Un recuadro solo cambia el color de sus viñetas y números si su `lists.color` es distinto de `unorderedLists.color`. Si los dos son el mismo magenta, una lista numerada dentro del recuadro toma `orderedLists.color`; por eso este documento pone sus propias viñetas en tinta.

@@ -1,0 +1,188 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 42,
+  "status": "published",
+  "chapter": "page",
+  "order": 40,
+  "level": 2,
+  "genres": [
+    "newsletter"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "column-and-a-half",
+      "page-breaks",
+      "chips"
+    ],
+    "also": [
+      "callout-columns",
+      "heading-styles",
+      "float-placement",
+      "callout-styles",
+      "inline-embeds",
+      "column-rule",
+      "frontmatter",
+      "opener-design",
+      "heading-attributes",
+      "running-heads",
+      "page-role-filters",
+      "paragraph-styles",
+      "resource-types",
+      "credit-notes",
+      "color-palette",
+      "canvas-rendering",
+      "resources"
+    ]
+  },
+  "answers": [
+    "Q18",
+    "Q78",
+    "Q60",
+    "Q51"
+  ],
+  "gaps": [
+    "text-wrap"
+  ],
+  "gotchas": [
+    "split-paragraph-measure",
+    "callout-columns",
+    "quote-frontmatter",
+    "ragged-no-hyphenation",
+    "ragged-runts",
+    "nbsp-breaks",
+    "headings-drop-h1-break",
+    "palette-skips-designs",
+    "design-lineheight-multiple",
+    "svg-no-webfonts",
+    "fonts-first"
+  ],
+  "explainsWarnings": [],
+  "related": [
+    "textbook-margin-column",
+    "riso-zine-single-ink",
+    "figures-float-where-cited",
+    "worksheet-answer-boxes"
+  ],
+  "workarounds": [
+    {
+      "followup": "EF-157",
+      "package": "postext",
+      "note": "each column ends on a whole paragraph followed by a :::columnbreak, and the copy of both editions is fitted so no paragraph runs over from one column into the other: in 1.4.1 a paragraph is broken into lines once, at the width of the column it starts in, so a paragraph cut at the foot of the 113 mm column prints its 113 mm lines in the 57 mm column, clipped, and one cut at the foot of the narrow column keeps 57 mm lines in the next page's wide column (gotcha split-paragraph-measure)"
+    },
+    {
+      "followup": "EF-101",
+      "package": "postext",
+      "note": "the straw band of the masthead is drawn over the column rule, which 1.4.1 starts at the top of the text area (20 mm) on page 1, behind the page-span masthead, although the masthead reserves a whole number of grid lines (ten) and the narrow column starts at 67 mm: without the band's fill the rule runs through the name. The gotcha column-rule-through-opener (whole-line opener depth) does not cure it in this column-and-a-half layout, so the recipe explains it in an MDX Pitfalls line instead of citing that gotcha"
+    },
+    {
+      "followup": "EF-11",
+      "package": "postext",
+      "note": "every frontmatter value is quoted, so {publishDate} prints 'Spring 2026' in the issue tab and the running head (gotcha quote-frontmatter)"
+    },
+    {
+      "followup": "EF-21",
+      "package": "postext",
+      "note": "the text is ragged and so never hyphenated; nothing in the write-up claims hyphenation, and the rag in the 57 mm column is fitted by rewording (gotcha ragged-no-hyphenation)"
+    },
+    {
+      "followup": "EF-147",
+      "package": "postext",
+      "note": "ragged paragraphs get no runt control in 1.4.1, so the standfirst, the briefs, the notices and the box text were reworded in both editions until no paragraph ends on a lone short word (gotcha ragged-runts)"
+    },
+    {
+      "followup": "EF-66",
+      "package": "postext",
+      "note": "no no-break spaces: pairs such as 63 °C, 15 June, 30 centimetres, plot 52 and 30 de abril were reworded in each edition until they fall mid-line, since U+00A0 still breaks (gotcha nbsp-breaks)"
+    },
+    {
+      "followup": "EF-05",
+      "package": "postext",
+      "note": "the H1 breakBefore is restated because any headings object drops it (gotcha headings-drop-h1-break); the masthead is the first block, so it breaks nothing today"
+    },
+    {
+      "followup": "EF-71",
+      "package": "postext",
+      "note": "col() writes each colour's hex beside its paletteId, because 1.4.1 does not apply colorPalette to design elements (the band, the nameplate, the tab, the running head), and bodyText.referenceColor is restated in leaf because the palette does not reach it either: the pages carry no :ref, but a label added later would print the default blue (gotcha palette-skips-designs)"
+    },
+    {
+      "followup": "EF-56",
+      "package": "postext",
+      "note": "the nameplate's lineHeight is 0.9, a multiple of its 60 pt size: a pt() value would drop the masthead's reserved height (gotcha design-lineheight-multiple)"
+    }
+  ],
+  "engine": {
+    "postext": "1.4.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "crop",
+    "focus": {
+      "page": 1,
+      "x": 0,
+      "y": 0,
+      "w": 1,
+      "h": 0.552
+    },
+    "expect": {
+      "pages": [
+        2,
+        2
+      ]
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [
+      {
+        "what": {
+          "en": "The site plan, the temperature chart, the square-metre bed and the row of seedlings under the nameplate, drawn in code in the page's palette",
+          "es": "El plano de las parcelas, el gráfico de temperaturas, el bancal de un metro cuadrado y la hilera de plantones bajo la mancheta, dibujados con código en la paleta de la página"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Work Sans",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Titan One",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Courier Prime",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-09-26",
+  "updated": "2026-09-26"
+}

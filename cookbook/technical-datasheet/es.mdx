@@ -1,0 +1,75 @@
+---
+title: "Hoja técnica: tablas de datos con cabeceras combinadas"
+summary: "Tablas pegadas como TSV, leídas con parseTSV y ajustadas con mergeCells, setAlignment y setCellBackground; un mapa de registros que se parte solo."
+description: "La hoja técnica de un sensor en cuatro páginas: cabecera combinada de dos filas, filas alternas, estilos de tabla con nombre y una tabla que se parte sola."
+question: "¿Cómo paso datos pegados a una tabla con cabeceras combinadas, anchos de columna y alineación por celda?"
+aliases: ["hoja de datos", "ficha técnica", "características eléctricas", "mapa de registros", "celdas combinadas", "colspan", "rowspan", "filas alternas", "tabla a rayas", "TSV", "tabla desde una hoja de cálculo", "cabecera de tabla repetida"]
+pageNotes: { "1": "La portada: una banda violeta con la referencia, una entradilla y tres cifras clave; debajo, las prestaciones y las aplicaciones, el dibujo de las patillas, con la almohadilla expuesta en trazo discontinuo porque queda oculta bajo el encapsulado, y el circuito típico de aplicación.", "2": "La tabla de características eléctricas ocupa todo el ancho, con un pie encima que da las condiciones de medida: una cabecera violeta de dos filas donde «Value» abarca «Min», «Typ» y «Max», grupos de parámetros combinados en una primera columna lila y un parámetro de cada dos sobre fondo gris.", "3": "La tabla de patillas encabeza la primera columna; el mapa de registros, con las direcciones y los valores de reinicio en la letra monoespaciada de los rótulos, llena la segunda y termina con «Continued on the next page».", "4": "El mapa de registros sigue con la cabecera repetida y «(continued)» en su pie, que va encima, junto a los códigos de pedido en un marco redondeado; el dibujo del encapsulado cruza la página de lado a lado en la parte de abajo." }
+---
+
+## Lo que vas a componer
+
+La hoja técnica del PX-7021, un sensor de temperatura de un fabricante imaginario, Pyxis Microdevices, ocupa cuatro páginas. Casi todo son tablas, con cabeceras llenas de celdas combinadas y un mapa de registros que no cabe en una columna. La portada empieza con una banda violeta que lleva la referencia y tres cifras clave. En la página 2, una sola tabla ocupa todo el ancho. Su cabecera de dos filas pone «Value» sobre «Min», «Typ» y «Max», los grupos de parámetros se combinan en la primera columna y un parámetro de cada dos va sobre fondo gris. El mapa de registros se corta al pie de la página 3 y sigue en la 4 con la cabecera repetida, junto a los códigos de pedido y encima del dibujo del encapsulado. Las tablas son datos de una hoja de cálculo pegados como TSV, porque Postext no interpreta las tablas de Markdown.
+
+## Elaboración
+
+### 1 · Pega los datos y luego da forma a la tabla
+
+El código está en [la respuesta corta](#la-respuesta-corta), más arriba. En postext 1.4.1, `parseTSV` deja `headerRowCount` sin fijar, así que las dos filas de cabecera se declaran a mano; si la tabla se partiera, las dos se repetirían en cada parte. Los pesos de `columnWidths` suman 180, el ancho de la caja de texto en milímetros, de modo que cada peso es el ancho real de su columna en la página. `mergeCells` conserva cada celda cubierta y la marca con `hiddenBy`, y así ninguna columna se desplaza. `setAlignment` trabaja celda a celda y borra la alineación vertical si no se la pasas; por eso casi todas las llamadas vuelven a poner `'middle'`. El gris se alterna de parámetro en parámetro, así que las dos filas de «Accuracy» comparten fondo; alternando por filas, la segunda quedaría en blanco.
+
+### 2 · Cada modelo pasa a ser un recurso
+
+<Excerpt region="resources" />
+
+Cada tabla y cada dibujo es un recurso con su pie, y las tablas añaden una nota y un estilo con nombre. Los pies y las notas admiten cursiva, subíndices y superíndices: la tabla eléctrica da sus condiciones de medida con `*V*~DD~` en el pie, que en las tablas va encima, y numera sus notas con `^1^`. Un flotante ocupa el primer hueco libre después de su primer `:ref`. La tabla 1 se cita en la página 1 y va arriba, a todo el ancho, así que abre la página 2. El dibujo del encapsulado va abajo, también a todo el ancho, y las demás tablas se quedan con la colocación por defecto, un flotante del ancho de una columna. Colocada `here`, una tabla no se parte nunca.
+
+### 3 · Deja que una tabla larga se parta sola
+
+<Excerpt region="split" />
+
+La tabla de patillas y el mapa de registros salen de la misma función, `groupedTable`. Una fila que solo tiene texto en la primera celda se combina a todo el ancho y lleva el fondo lila de los títulos de grupo. Una celda de TSV no admite saltos de línea, así que los datos escriben `\n` y la función lo cambia por un salto de verdad; una línea que empieza por `•` se compone entonces como elemento de lista. Los códigos cortos van en el estilo de chip `code`, que no tiene fondo, borde ni relleno lateral y los compone en Fira Mono a 0,9 em. Si una tabla flotante no cabe en la columna vacía que se le ofrece, el motor la corta entre filas y pasa el resto al siguiente hueco libre, bajo la cabecera repetida y con `(continued)` detrás del pie. Debajo de la primera parte va el aviso de `continuesMarker`, «Continued on the next page», y la nota espera a la última ([tablas más altas que la página](/es/docs/configuration#tablas-más-altas-que-la-página)).
+
+### 4 · Un estilo de la casa y una variante por tabla
+
+<Excerpt region="styles" />
+
+`tableStyle` recoge lo que comparten todas las tablas. Cada entrada de `tableStyles` fija solo lo que cambia en las suyas, y un recurso elige una con `table.styleId`. La tabla eléctrica cambia los filetes grises por filetes blancos de 1,4 pt, que separan los fondos y marcan dónde acaba cada celda combinada. La de pedidos lleva un marco exterior redondeado y la Fira Sans Condensed, para que sus cuatro columnas quepan en una columna de texto.
+
+### 5 · Rótulos que siguen siendo texto en el PDF
+
+<Excerpt region="drawing" />
+
+Un SVG llega al canvas como imagen, y una imagen no puede usar las fuentes web de la página, así que los rótulos de las patillas, del circuito y del encapsulado saldrían con una fuente del sistema. El PDF recibe el marcado tal cual y compone cada `<text>` como texto seleccionable con las fuentes que incrusta. Para el canvas, cada dibujo se registra otra vez con el archivo de Fira Mono dentro, descargado una sola vez con el cargador de fuentes del bloque pdf del kit.
+
+### 6 · Apertura, cabecera y pie de página
+
+<Excerpt region="furniture" />
+
+La referencia es el título de primer nivel, y su apertura se dibuja con una ranura de elementos: una caja violeta hasta el sangrado, el logotipo, y un antetítulo, una entradilla y tres cifras clave que salen de los atributos del título. Un elemento de imagen sirve en la cabecera y en el pie de página igual que en una apertura, y el pie empieza con uno que apunta al recurso del logotipo. Los elementos de la cabecera llevan `pages: 'body'`, así que ninguno aparece en la portada.
+
+## Variantes
+
+### Separa todas las filas con filetes grises
+
+Con filetes de medio punto en el gris `rule` de la paleta, todas las filas quedan separadas, tengan fondo o no; los blancos desaparecen donde se tocan dos filas sin fondo.
+
+```diff
+-    { id: 'electrical', borderColor: col('paper'), borderWidth: pt(1.4), cellPadding: mm(1.1) },
++    { id: 'electrical', borderColor: col('rule'), borderWidth: pt(0.5), cellPadding: mm(1.1) },
+```
+
+### Pon los pies de tabla sobre una barra
+
+El estilo de pie del tipo tabla puede pintar una barra detrás del pie; aquí es del color del texto (`ink`), con el pie en blanco y la etiqueta en el amarillo de advertencia.
+
+```diff
+-    ...(type.id === 'table' && { captionStyle: { position: 'above' } }) })),
++    ...(type.id === 'table' && { captionStyle: { position: 'above', backgroundEnabled: true,
++      background: col('ink'), color: col('paper'), labelColor: col('hazard') } }) })),
+```
+
+## Errores frecuentes
+
+- La primera parte de una tabla partida deja el pie de su columna al texto cuando caben debajo tres líneas o más, y siempre lo hace en una columna que ya tiene un flotante. Haz que una tabla larga empiece en una columna sin otros flotantes, como el mapa de registros, y ajusta sus filas para que la primera parte llegue al pie de la columna.
+- Los elementos de texto de diseño van centrados por defecto. La entradilla tiene un ancho fijo, así que necesita `align: 'left'` para alinearse bajo la referencia.
+- En la última página de un capítulo, postext 1.4.1 sube los flotantes a todo el ancho que van bajo el texto y los deja a una línea de distancia, de modo que una figura `bottom` queda justo debajo de la última línea y no al pie de la página. La página 4 está redactada para llenar sus columnas, y el dibujo del encapsulado mide 48,3 mm de alto para que el texto de encima acabe en una línea de la rejilla base. Así al dibujo no le queda sitio para subir y acaba a la misma altura que el pie de las demás páginas.

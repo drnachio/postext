@@ -71,9 +71,11 @@ function wrapScrollableElements(source: string): string {
 interface MdxContentProps {
   source: string;
   skipTitle?: boolean;
+  /** Extra MDX components, merged over the docs map (the Cookbook's). */
+  components?: Parameters<typeof compileDocsMdx>[1];
 }
 
-export async function MdxContent({ source, skipTitle }: MdxContentProps) {
+export async function MdxContent({ source, skipTitle, components: extra }: MdxContentProps) {
   let cleaned = source.replace(
     /export\s+const\s+metadata\s*=\s*\{[\s\S]+?\};\s*/,
     ""
@@ -85,7 +87,7 @@ export async function MdxContent({ source, skipTitle }: MdxContentProps) {
 
   cleaned = wrapScrollableElements(cleaned);
 
-  const { content } = await compileDocsMdx(cleaned, components);
+  const { content } = await compileDocsMdx(cleaned, extra ? { ...components, ...extra } : components);
 
   return (
     <div className="docs-content prose prose-invert max-w-none">

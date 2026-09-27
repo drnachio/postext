@@ -1,0 +1,58 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 29,
+  "status": "published",
+  "chapter": "headings",
+  "order": 50,
+  "level": 2,
+  "genres": ["ephemera"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["design-anchoring"],
+    "also": [
+      "design-elements", "design-images", "opener-design", "opener-band", "bleed-bands",
+      "heading-styles", "section-running-heads", "heading-attributes", "title-line-breaks",
+      "color-palette", "paragraph-styles", "resources", "canvas-rendering"
+    ]
+  },
+  "answers": ["Q81", "Q79"],
+  "gotchas": [
+    "header-paints-over-text", "attr-values", "overflow-ellipsis-default",
+    "design-lineheight-multiple", "palette-skips-designs", "headings-drop-h1-break",
+    "config-cache-identity", "fonts-first"
+  ],
+  "explainsWarnings": ["designCyclicAnchor", "designDanglingAnchor"],
+  "related": [
+    "din-business-letter",
+    "certificate-single-page",
+    "magazine-cover-and-contents",
+    "chapter-opener-bleed-band"
+  ],
+  "workarounds": [
+    { "followup": "EF-05", "package": "postext", "note": "any headings object drops the H1 break, so levels[0].breakBefore is restated (parity 'any': each poster starts a new sheet)" },
+    { "followup": "EF-56", "package": "postext", "note": "every design text takes lineHeight as a multiple of its size, never pt(): a Dimension would silently drop the opener's reserved height (gotcha design-lineheight-multiple)" },
+    { "followup": "EF-71", "package": "postext", "note": "col() writes the hex beside the paletteId, because 1.4.1 paints design elements from the hex (gotcha palette-skips-designs)" }
+  ],
+  "engine": { "postext": "1.4.1" },
+  "kit": ["core", "fonts", "viewer", "images"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": {
+    "hero": [1, 2],
+    "card": "spread",
+    "expect": { "pages": [2, 2] }
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [],
+    "images": [],
+    "fonts": [
+      { "family": "Funnel Display", "license": "OFL-1.1" },
+      { "family": "Funnel Sans", "license": "OFL-1.1" },
+      { "family": "Martian Mono", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-25",
+  "updated": "2026-09-26"
+}

@@ -1,0 +1,818 @@
+{
+  "$comment": "Honest gaps: things users ask for that Postext does not do (yet). Each has search aliases in both languages (so 'footnotes' or 'notas al pie' finds the workaround recipes), an explanation that names the workaround, and a docs anchor, usually 'What is NOT supported'. A recipe that routes around one lists it in recipe.json gaps and gets the Workaround badge; a question can point at one through its gap field.",
+  "footnotes": {
+    "label": {
+      "en": "Footnotes",
+      "es": "Notas al pie"
+    },
+    "aliases": {
+      "en": [
+        "footnote",
+        "[^1]",
+        "notes at the foot of the page",
+        "note references"
+      ],
+      "es": [
+        "nota al pie",
+        "notas a pie de página",
+        "[^1]",
+        "llamadas de nota"
+      ]
+    },
+    "explanation": {
+      "en": "Footnote markers ([^1]) are not parsed and notes are never set at the foot of the page. The recipes use other devices: endnotes in a paragraph style with superscript markers, margin notes in a column-and-a-half layout, or short notes in parentheses.",
+      "es": "Las llamadas [^1] no se interpretan y las notas nunca se componen al pie de la página. Las recetas recurren a otras soluciones: notas finales en un estilo de párrafo con llamadas en superíndice, notas al margen en columna y media o notas breves entre paréntesis."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "What is NOT supported",
+        "es": "Qué NO se soporta"
+      }
+    }
+  },
+  "code-blocks": {
+    "label": {
+      "en": "Fenced code blocks",
+      "es": "Bloques de código"
+    },
+    "aliases": {
+      "en": [
+        "code block",
+        "```",
+        "code listing",
+        "preformatted text",
+        "monospace block"
+      ],
+      "es": [
+        "bloque de código",
+        "```",
+        "listado de código",
+        "texto preformateado",
+        "bloque monoespaciado"
+      ]
+    },
+    "explanation": {
+      "en": "Triple-backtick fences and indented code are set line by line as ordinary paragraphs. Set listings with a monospace paragraph style, hyphenation off and left aligned, inside :::paragraphs or a callout; inline code works.",
+      "es": "Las vallas de tres acentos graves y el código sangrado se componen línea a línea como párrafos normales. Compón los listados con un estilo de párrafo monoespaciado, sin separación silábica y alineado a la izquierda, dentro de :::paragraphs o de un recuadro; el código en línea sí funciona."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "What is NOT supported",
+        "es": "Qué NO se soporta"
+      }
+    }
+  },
+  "syntax-highlighting": {
+    "label": {
+      "en": "Syntax highlighting",
+      "es": "Resaltado de sintaxis"
+    },
+    "aliases": {
+      "en": [
+        "code colours",
+        "highlighted code",
+        "coloured code"
+      ],
+      "es": [
+        "colores de código",
+        "código resaltado",
+        "código en color"
+      ]
+    },
+    "explanation": {
+      "en": "There is no code colouring. A listing can use bold and italic runs whose colours the style sets, but keywords and strings are not detected.",
+      "es": "No hay coloreado de código. Un listado puede usar fragmentos en negrita y cursiva cuyos colores fija el estilo, pero las palabras clave y las cadenas no se detectan."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "What is NOT supported",
+        "es": "Qué NO se soporta"
+      }
+    }
+  },
+  "pipe-tables": {
+    "label": {
+      "en": "Pipe tables",
+      "es": "Tablas con barras"
+    },
+    "aliases": {
+      "en": [
+        "markdown table",
+        "| a | b |",
+        "GFM table"
+      ],
+      "es": [
+        "tabla de markdown",
+        "| a | b |",
+        "tabla GFM"
+      ]
+    },
+    "explanation": {
+      "en": "| a | b | prints literally. Tables are resources with a structured model; parseTSV turns pasted spreadsheet data into one and mergeCells joins cells.",
+      "es": "| a | b | se imprime tal cual. Las tablas son recursos con un modelo estructurado; parseTSV convierte en uno los datos pegados de una hoja de cálculo y mergeCells combina celdas."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "What is NOT supported",
+        "es": "Qué NO se soporta"
+      }
+    }
+  },
+  "inline-images": {
+    "label": {
+      "en": "Markdown images ![]()",
+      "es": "Imágenes de Markdown ![]()"
+    },
+    "aliases": {
+      "en": [
+        "![alt](src)",
+        "inline image",
+        "image in markdown",
+        "img tag"
+      ],
+      "es": [
+        "![alt](src)",
+        "imagen en línea",
+        "imagen en markdown",
+        "etiqueta img"
+      ]
+    },
+    "explanation": {
+      "en": "![alt](src) is stripped on purpose, because pictures are placed by the float engine, which works with the columns. Declare the picture as a resource and cite it with :ref or embed it with ::resource.",
+      "es": "![alt](src) se elimina a propósito, porque las imágenes las coloca el motor de flotantes, que trabaja por columnas. Declara la imagen como recurso y cítala con :ref o insértala con ::resource."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "What is NOT supported",
+        "es": "Qué NO se soporta"
+      }
+    }
+  },
+  "three-columns": {
+    "label": {
+      "en": "Three or more body columns",
+      "es": "Tres o más columnas de texto"
+    },
+    "aliases": {
+      "en": [
+        "three columns",
+        "3 columns",
+        "multi-column newspaper",
+        "four columns"
+      ],
+      "es": [
+        "tres columnas",
+        "3 columnas",
+        "periódico a varias columnas",
+        "cuatro columnas"
+      ]
+    },
+    "explanation": {
+      "en": "Body text runs in one column, two, or a column and a half. Three or more columns exist only inside a box: a :::columns group in a page-span callout.",
+      "es": "El texto va a una columna, a dos o en columna y media. Tres o más columnas solo existen dentro de un recuadro: un grupo :::columns en un recuadro a todo el ancho."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Layout types",
+        "es": "Tipos de disposición"
+      }
+    }
+  },
+  "text-wrap": {
+    "label": {
+      "en": "Text wrapping around pictures",
+      "es": "Texto alrededor de imágenes"
+    },
+    "aliases": {
+      "en": [
+        "text wrap",
+        "wrap around image",
+        "runaround",
+        "float left with text"
+      ],
+      "es": [
+        "contorneo",
+        "texto alrededor de la imagen",
+        "ajuste de texto",
+        "imagen flotante con texto al lado"
+      ]
+    },
+    "explanation": {
+      "en": "Floats take whole bands of a column or the page; text never flows beside a picture inside one column. Use a side column, a narrow float in a two-column page, or a page-span band.",
+      "es": "Los flotantes ocupan bandas enteras de una columna o de la página; el texto nunca rodea una imagen dentro de una misma columna. Usa una columna lateral, un flotante estrecho en una página a dos columnas o una banda a todo el ancho."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "What is NOT supported",
+        "es": "Qué NO se soporta"
+      }
+    }
+  },
+  "body-drop-cap": {
+    "label": {
+      "en": "Drop caps in body paragraphs",
+      "es": "Capitulares en párrafos de texto"
+    },
+    "aliases": {
+      "en": [
+        "drop cap",
+        "initial letter",
+        "versal"
+      ],
+      "es": [
+        "capitular",
+        "letra capital",
+        "inicial"
+      ]
+    },
+    "explanation": {
+      "en": "Drop caps exist only in design text elements. Put the lead paragraph in a heading attribute and draw it with a dropCap in the opener design.",
+      "es": "Las capitulares solo existen en los elementos de texto de diseño. Pon la entradilla en un atributo del título y dibújala con dropCap en el diseño de la apertura."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Text elements",
+        "es": "Elementos de texto"
+      }
+    }
+  },
+  "automatic-index": {
+    "label": {
+      "en": "Automatic index",
+      "es": "Índice alfabético automático"
+    },
+    "aliases": {
+      "en": [
+        "index",
+        "back-of-book index",
+        "keyword index",
+        "page references"
+      ],
+      "es": [
+        "índice alfabético",
+        "índice analítico",
+        "índice de materias",
+        "referencias de página"
+      ]
+    },
+    "explanation": {
+      "en": "There is no index generator. Write the index by hand in a two-column paragraph style; the table of contents, by contrast, comes from :::toc.",
+      "es": "No hay generador de índices alfabéticos. Escribe el índice a mano en un estilo de párrafo a dos columnas; el índice de contenidos, en cambio, lo genera :::toc."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "What is NOT supported",
+        "es": "Qué NO se soporta"
+      }
+    }
+  },
+  "tab-stops": {
+    "label": {
+      "en": "Tab stops",
+      "es": "Tabuladores"
+    },
+    "aliases": {
+      "en": [
+        "tabs",
+        "tab leaders",
+        "aligned columns of text"
+      ],
+      "es": [
+        "tabulaciones",
+        "tabulador con puntos",
+        "columnas de texto alineadas"
+      ]
+    },
+    "explanation": {
+      "en": "Tab characters are not typeset. Align values with a table resource; dot leaders exist only in the table of contents.",
+      "es": "Los caracteres de tabulación no se componen. Alinea los valores con una tabla como recurso; las líneas de puntos solo existen en el índice de contenidos."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "What is NOT supported",
+        "es": "Qué NO se soporta"
+      }
+    }
+  },
+  "heading-level-7": {
+    "label": {
+      "en": "More than six heading levels",
+      "es": "Más de seis niveles de título"
+    },
+    "aliases": {
+      "en": [
+        "H7",
+        "seventh heading level",
+        "deep outline"
+      ],
+      "es": [
+        "H7",
+        "séptimo nivel de título",
+        "esquema profundo"
+      ]
+    },
+    "explanation": {
+      "en": "Headings stop at H6. A seventh level can be an H6 whose text is wrapped in bold or italic, styled apart through the level-6 typography.",
+      "es": "Los títulos llegan hasta H6. Un séptimo nivel puede ser un H6 con el texto en negrita o cursiva, diferenciado con la tipografía del nivel 6."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "What is NOT supported",
+        "es": "Qué NO se soporta"
+      }
+    }
+  },
+  "server-side": {
+    "label": {
+      "en": "Server-side or Node layout",
+      "es": "Composición en servidor o Node"
+    },
+    "aliases": {
+      "en": [
+        "Node",
+        "server rendering",
+        "CLI",
+        "headless",
+        "SSR"
+      ],
+      "es": [
+        "Node",
+        "renderizado en servidor",
+        "línea de comandos",
+        "sin interfaz",
+        "SSR"
+      ]
+    },
+    "explanation": {
+      "en": "Layout measures text with the browser's canvas, so it runs in a browser or a Web Worker. For batch jobs, drive a headless browser; postext-pdf can read fonts from disk once the layout exists.",
+      "es": "La composición mide el texto con el canvas del navegador, así que se ejecuta en un navegador o en un Web Worker. Para trabajos por lotes, usa un navegador sin interfaz; postext-pdf puede leer las fuentes del disco una vez hecha la composición."
+    },
+    "docs": {
+      "slug": "architecture",
+      "heading": {
+        "en": "Non-Goals",
+        "es": "Fuera de alcance"
+      }
+    }
+  },
+  "float-shrink": {
+    "label": {
+      "en": "Shrinking over-tall floats",
+      "es": "Reducir flotantes demasiado altos"
+    },
+    "aliases": {
+      "en": [
+        "figure too tall",
+        "scale figure to fit",
+        "shrink plate"
+      ],
+      "es": [
+        "figura demasiado alta",
+        "escalar figura para que quepa",
+        "reducir lámina"
+      ]
+    },
+    "explanation": {
+      "en": "A float taller than its band is not shrunk (fitFiguresToPage acts only on figures taller than the page). Compute the width from the aspect ratio so the plate fits the page height.",
+      "es": "Un flotante más alto que su banda no se reduce (fitFiguresToPage solo actúa sobre figuras más altas que la página). Calcula el ancho a partir de la proporción para que la lámina quepa en el alto de la página."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Placement",
+        "es": "Colocación"
+      }
+    }
+  },
+  "math-in-captions": {
+    "label": {
+      "en": "Maths in captions, cells or attributes",
+      "es": "Matemáticas en pies, celdas o atributos"
+    },
+    "aliases": {
+      "en": [
+        "formula in caption",
+        "LaTeX in table",
+        "math in heading attribute"
+      ],
+      "es": [
+        "fórmula en el pie",
+        "LaTeX en una tabla",
+        "matemáticas en un atributo"
+      ]
+    },
+    "explanation": {
+      "en": "Formulas are set only in body text. In captions, table cells and heading attributes use ^superscripts^, ~subscripts~ and Unicode symbols.",
+      "es": "Las fórmulas solo se componen en el texto. En los pies, las celdas y los atributos de título usa ^superíndices^, ~subíndices~ y símbolos Unicode."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Mathematical formulas",
+        "es": "Fórmulas matemáticas"
+      }
+    }
+  },
+  "rotated-text": {
+    "label": {
+      "en": "Rotated or vertical text",
+      "es": "Texto girado o vertical"
+    },
+    "aliases": {
+      "en": [
+        "vertical text",
+        "rotated label",
+        "spine text",
+        "sideways heading"
+      ],
+      "es": [
+        "texto vertical",
+        "etiqueta girada",
+        "texto del lomo",
+        "título de lado"
+      ]
+    },
+    "explanation": {
+      "en": "Text elements are always horizontal; only whole floats rotate. Draw rotated labels inside an SVG resource, or rotate the whole table or figure onto its own page.",
+      "es": "Los elementos de texto son siempre horizontales; solo giran los flotantes enteros. Dibuja las etiquetas giradas dentro de un recurso SVG, o gira la tabla o la figura entera en una página propia."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "What is NOT supported",
+        "es": "Qué NO se soporta"
+      }
+    }
+  },
+  "running-head-marks": {
+    "label": {
+      "en": "First and last entry in running heads",
+      "es": "Primera y última entrada en la cabecera"
+    },
+    "aliases": {
+      "en": [
+        "dictionary running heads",
+        "guide words",
+        "marks"
+      ],
+      "es": [
+        "cabeceras de diccionario",
+        "palabras guía",
+        "reclamos"
+      ]
+    },
+    "explanation": {
+      "en": "There is no placeholder for the first or last entry on a page. A dictionary can show the current letter through a heading style's own running head.",
+      "es": "No hay marcador para la primera o la última entrada de una página. Un diccionario puede mostrar la letra en curso con la cabecera propia de un estilo de título."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Text elements",
+        "es": "Elementos de texto"
+      }
+    }
+  },
+  "markdown-links": {
+    "label": {
+      "en": "Clickable Markdown links",
+      "es": "Enlaces de Markdown activos"
+    },
+    "aliases": {
+      "en": [
+        "hyperlinks",
+        "clickable links",
+        "URL links",
+        "[text](url)"
+      ],
+      "es": [
+        "hipervínculos",
+        "enlaces pulsables",
+        "enlaces a URL",
+        "[texto](url)"
+      ]
+    },
+    "explanation": {
+      "en": "[text](url) prints its text and drops the URL in every output. Only :ref citations and contents rows are links; print the URL itself when the reader needs it.",
+      "es": "[texto](url) imprime el texto y descarta la URL en todas las salidas. Solo son enlaces las citas :ref y las filas del índice; imprime la propia URL cuando el lector la necesite."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "What is NOT supported",
+        "es": "Qué NO se soporta"
+      }
+    }
+  },
+  "rtl-cjk": {
+    "label": {
+      "en": "Right-to-left scripts and CJK line breaking",
+      "es": "Escrituras de derecha a izquierda y corte CJK"
+    },
+    "aliases": {
+      "en": [
+        "Arabic",
+        "Hebrew",
+        "Chinese",
+        "Japanese",
+        "RTL",
+        "bidi"
+      ],
+      "es": [
+        "árabe",
+        "hebreo",
+        "chino",
+        "japonés",
+        "RTL",
+        "bidireccional"
+      ]
+    },
+    "explanation": {
+      "en": "There is no bidirectional layout and no CJK line breaking; Postext sets left-to-right alphabetic scripts, with hyphenation in eight languages.",
+      "es": "No hay composición bidireccional ni corte de líneas CJK; Postext compone escrituras alfabéticas de izquierda a derecha, con separación silábica en ocho idiomas."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "What is NOT supported",
+        "es": "Qué NO se soporta"
+      }
+    }
+  },
+  "font-scaling": {
+    "label": {
+      "en": "Horizontal font scaling",
+      "es": "Escalado horizontal de fuentes"
+    },
+    "aliases": {
+      "en": [
+        "condensed type",
+        "horizontal scale",
+        "squeeze text"
+      ],
+      "es": [
+        "letra condensada",
+        "escala horizontal",
+        "estrechar el texto"
+      ]
+    },
+    "explanation": {
+      "en": "Glyphs cannot be stretched or squeezed. Choose a condensed family, or build a scaled copy of the font.",
+      "es": "Los glifos no se pueden estirar ni estrechar. Elige una familia condensada o crea una copia escalada de la fuente."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "What is NOT supported",
+        "es": "Qué NO se soporta"
+      }
+    }
+  },
+  "markdown-extras": {
+    "label": {
+      "en": "Setext headings, rules, strikethrough, autolinks",
+      "es": "Títulos setext, filetes, tachado, autoenlaces"
+    },
+    "aliases": {
+      "en": [
+        "horizontal rule",
+        "---",
+        "strikethrough",
+        "~~text~~",
+        "setext",
+        "autolink",
+        "reference links"
+      ],
+      "es": [
+        "filete horizontal",
+        "---",
+        "tachado",
+        "~~texto~~",
+        "setext",
+        "autoenlace",
+        "enlaces por referencia"
+      ]
+    },
+    "explanation": {
+      "en": "These Markdown forms print as text. Write ATX headings (#), mark a section break with :::space or a design rule, and write URLs as plain text.",
+      "es": "Estas formas de Markdown se imprimen como texto. Escribe títulos ATX (#), marca la separación entre secciones con :::space o con un filete de diseño, y escribe las URL como texto normal."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "What is NOT supported",
+        "es": "Qué NO se soporta"
+      }
+    }
+  },
+  "raw-html": {
+    "label": {
+      "en": "Raw HTML and MDX",
+      "es": "HTML y MDX en bruto"
+    },
+    "aliases": {
+      "en": [
+        "HTML tags",
+        "<br>",
+        "<span>",
+        "MDX components"
+      ],
+      "es": [
+        "etiquetas HTML",
+        "<br>",
+        "<span>",
+        "componentes MDX"
+      ]
+    },
+    "explanation": {
+      "en": "Tags are not interpreted, since Postext reads only Markdown and its own directives. Use heading attributes, chips, paragraph styles and callouts for what HTML would do.",
+      "es": "Las etiquetas no se interpretan, porque Postext solo lee Markdown y sus propias directivas. Usa atributos de título, chips, estilos de párrafo y recuadros para lo que harías con HTML."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "What is NOT supported",
+        "es": "Qué NO se soporta"
+      }
+    }
+  },
+  "ragged-hyphenation": {
+    "label": {
+      "en": "Hyphenation in ragged text",
+      "es": "Separación silábica en texto en bandera"
+    },
+    "aliases": {
+      "en": [
+        "hyphenate ragged right",
+        "hyphenation zone",
+        "left-aligned hyphenation"
+      ],
+      "es": [
+        "partir palabras en bandera",
+        "zona de separación",
+        "separación en texto alineado a la izquierda"
+      ]
+    },
+    "explanation": {
+      "en": "Only justified text is hyphenated; ragged-right text breaks between words. Justify the passage, or reword by hand the lines that end far short; the narrower the measure, the deeper the rag.",
+      "es": "Solo se separa por sílabas el texto justificado; el texto en bandera corta entre palabras. Justifica el pasaje o retoca a mano las líneas que quedan demasiado cortas; cuanto más estrecha es la medida, más profunda es la bandera."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Hyphenation",
+        "es": "Separación silábica"
+      }
+    }
+  },
+  "booktabs-rules": {
+    "label": {
+      "en": "Booktabs rules",
+      "es": "Filetes al estilo booktabs"
+    },
+    "aliases": {
+      "en": [
+        "booktabs",
+        "toprule midrule bottomrule",
+        "rule under the header only",
+        "three-rule table"
+      ],
+      "es": [
+        "booktabs",
+        "filete solo bajo la cabecera",
+        "tabla de tres filetes",
+        "filetes superior, intermedio e inferior"
+      ]
+    },
+    "explanation": {
+      "en": "Table rules come in four patterns: grid, horizontal (a rule between every pair of rows), outer and none. None of them draws only a top rule, a rule under the header and a bottom rule. Use 'horizontal' with hairlines in a light rule colour, and set the header apart by its face, weight and colour.",
+      "es": "Los filetes de tabla siguen cuatro patrones: rejilla, horizontal (un filete entre cada par de filas), exterior y ninguno. Ninguno dibuja solo un filete arriba, otro bajo la cabecera y otro al pie. Usa 'horizontal' con filetes finos en un color claro y distingue la cabecera por la fuente, el peso y el color."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Table style",
+        "es": "Estilo de tablas"
+      }
+    }
+  },
+  "pdf-x": {
+    "label": {
+      "en": "PDF/X, trim boxes and ICC profiles",
+      "es": "PDF/X, cajas de corte y perfiles ICC"
+    },
+    "aliases": {
+      "en": [
+        "PDF/X",
+        "TrimBox",
+        "BleedBox",
+        "ICC profile",
+        "output intent",
+        "colour management",
+        "registration colour"
+      ],
+      "es": [
+        "PDF/X",
+        "caja de corte",
+        "caja de sangrado",
+        "perfil ICC",
+        "gestión del color",
+        "color de registro"
+      ]
+    },
+    "explanation": {
+      "en": "postext-pdf writes each page as a single MediaBox, the sheet with its bleed and crop marks, with no TrimBox, BleedBox or output intent, and turns colours into CMYK with a plain formula, without an ICC profile. The crop marks show where to cut; a print master carries exact inks for a figure; a prepress tool adds the boxes and the profile when a printer asks for PDF/X.",
+      "es": "postext-pdf escribe cada página como una sola MediaBox, el pliego con su sangrado y sus marcas de corte, sin TrimBox, BleedBox ni perfil de salida, y pasa los colores a CMYK con una fórmula simple, sin perfil ICC. Las marcas de corte indican dónde cortar; un máster de impresión lleva las tintas exactas de una figura; una herramienta de preimpresión añade las cajas y el perfil cuando la imprenta pide PDF/X."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Print-ready PDFs",
+        "es": "PDFs listos para imprenta"
+      }
+    }
+  },
+  "hard-line-breaks": {
+    "label": {
+      "en": "Line breaks and leading spaces in a paragraph",
+      "es": "Saltos de línea y espacios iniciales en un párrafo"
+    },
+    "aliases": {
+      "en": [
+        "hard line break",
+        "manual line break",
+        "soft return",
+        "line breaks in verse",
+        "leading spaces",
+        "indented line of verse",
+        "poem indentation"
+      ],
+      "es": [
+        "salto de línea manual",
+        "salto de línea forzado",
+        "retorno suave",
+        "saltos de línea en verso",
+        "espacios iniciales",
+        "verso sangrado",
+        "sangría de un poema"
+      ]
+    },
+    "explanation": {
+      "en": "The lines of a Markdown paragraph are joined with a space and its leading spaces are trimmed, so a paragraph keeps neither a poem's line breaks nor its indents, and a paragraph style cannot pair a first-line indent with a hanging indent. Give every line a paragraph of its own in a :::paragraphs container, and write an indent as em spaces (U+2003) behind a word joiner (U+2060), which nothing trims.",
+      "es": "Las líneas de un párrafo de Markdown se unen con un espacio y sus espacios iniciales se recortan, así que un párrafo no conserva ni los saltos de línea de un poema ni sus sangrías, y un estilo de párrafo no admite a la vez sangría de primera línea y sangría francesa. Da a cada verso un párrafo propio en un contenedor :::paragraphs, y escribe una sangría como espacios eme (U+2003) tras un unidor de palabras (U+2060), que nada recorta."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Block constructs",
+        "es": "Construcciones de bloque"
+      }
+    }
+  },
+  "line-numbers": {
+    "label": {
+      "en": "Line numbers",
+      "es": "Numeración de líneas"
+    },
+    "aliases": {
+      "en": [
+        "line numbering",
+        "numbered lines",
+        "verse numbers",
+        "line numbers in the margin",
+        "every fifth line",
+        "critical edition"
+      ],
+      "es": [
+        "números de línea",
+        "numeración de versos",
+        "versos numerados",
+        "numeración al margen",
+        "cada cinco versos",
+        "edición crítica"
+      ]
+    },
+    "explanation": {
+      "en": "Postext does not count or number lines. For verse, give each line a paragraph of its own and count them with a short preprocessor that adds, after every fifth line, a side box holding the number, set in a side column reserved for floats.",
+      "es": "Postext no cuenta ni numera líneas. En verso, da a cada línea un párrafo propio y cuéntalas con un preprocesador breve que, tras cada quinto verso, añade un recuadro lateral con el número, compuesto en una columna lateral reservada a los flotantes."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "What is NOT supported",
+        "es": "Qué NO se soporta"
+      }
+    }
+  }
+}

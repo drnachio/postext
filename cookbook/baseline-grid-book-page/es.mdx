@@ -1,0 +1,75 @@
+---
+title: "Una página de libro sobre una rejilla base"
+summary: "Una página a dos columnas con márgenes en espejo y una caja de 44 interlineados justos, de modo que el texto cae en la misma rejilla a ambos lados del lomo."
+description: "Un ensayo sobre el canon de las proporciones de la página, compuesto en Postext con márgenes 2:3:4:6 en espejo y dos columnas de 44 líneas en una rejilla base."
+question: "¿Cómo compongo una página a dos columnas con cada línea sobre la misma rejilla en todo el pliego?"
+aliases: ["ritmo vertical", "alinear líneas entre columnas", "altura de la caja", "caja de texto", "canon de Van de Graaf", "márgenes 2:3:4:6", "listas fuera de la rejilla", "columnas a ras del pie"]
+pageNotes: { "1": "La apertura: el título en cursiva roja ocupa la primera columna y el dibujo del canon encabeza la segunda; bajo cada línea de texto corren las rayas rojo pálido de la rejilla.", "2": "Una página par con el margen exterior a la izquierda. La nota de taller, en cuerpo menor, cae entre las rayas de la rejilla; el título que la sigue queda media línea fuera y el texto que va debajo vuelve a ella.", "3": "Una página impar con el margen interior a la izquierda: el dibujo comparativo a todo el ancho encabeza la página y el ensayo termina bajo él en dos columnas niveladas; el colofón cierra la segunda." }
+---
+
+## Lo que vas a componer
+
+Las páginas 9 a 11 de *La página pautada*, un volumen sobre el oficio del libro, recogen entero «El canon secreto», un ensayo sobre las proporciones que los copistas medievales daban a sus páginas. Los márgenes siguen ese canon, 2:3:4:6 y en espejo, en un formato de 210 × 280 mm con dos columnas de Vollkorn. El texto de ambas columnas y de las dos páginas enfrentadas se asienta en una rejilla base dibujada en rojo pálido. El título, en Playfair Display, llena la primera columna de la apertura, y el dibujo del canon encabeza la segunda. Los títulos de sección quedan media línea fuera de la rejilla y el texto que los sigue vuelve a ella. Una nota de taller en cuerpo menor lleva un interlineado propio de 10 pt. En la página 11, el ensayo termina bajo una figura a todo el ancho en dos columnas de igual altura, y el colofón cierra la segunda.
+
+## Elaboración
+
+### 1 · Que los títulos salgan de la rejilla, pero nunca las listas
+
+<Excerpt region="flow" />
+
+El espacio que un título lleva encima se respeta tal cual, así que con línea y media el título queda entre dos rayas de la rejilla, y el texto que lo sigue se ajusta a la raya siguiente ([rejilla base](/es/docs/configuration#rejilla-base)). Antes del primer elemento de una lista no hay ese ajuste, y por eso la respuesta corta pone a cero los márgenes de las listas (valdría cualquier número entero de interlineados); con el 1,5 em por defecto, los tres elementos de la página 10 quedarían 1,3 pt por debajo de las líneas de la columna de al lado. Las dos líneas del título, de 46 pt, ocupan cuatro interlineados cada una, y su margen inferior uno más, así que el ensayo empieza en la línea 10.
+
+<PageShot page={2} crop="0.14,0.1373,0.795,0.3207" caption="Página 10: la lista de la segunda columna sigue la rejilla de los párrafos de al lado; la nota de taller cae entre las rayas, y el título que la sigue queda media línea fuera, con su texto de nuevo en la rejilla." />
+
+### 2 · Salir de la rejilla a propósito, y volver
+
+<Excerpt region="note" />
+
+La nota es un contenedor `:::paragraphs` en 7,8 sobre 10 pt, fuera de la rejilla. Tras su último párrafo, la posición se redondea hasta la raya siguiente, y el título que viene después queda donde quedaría tras un párrafo normal ([el contenedor `:::paragraphs`](/es/docs/configuration#el-contenedor-paragraphs)). El colofón usa el mismo contenedor en 7,5 sobre 10 pt: sus cuatro líneas suman 40 pt, 0,2 pt menos que tres interlineados, así que la última columna del ensayo termina a la altura de la de al lado.
+
+### 3 · Colocar las figuras donde la rejilla pueda absorberlas
+
+<Excerpt region="figures" />
+
+Un flotante nunca cae por encima del párrafo que lo cita ([colocación](/es/docs/document-format#colocación)). Aun así, el canon, citado en la primera columna, ocupa la cabeza de la segunda en la misma página 9; la comparación a todo el ancho, citada en la página 10, espera a la 11. Cada banda se redondea a interlineados enteros, de modo que el texto bajo un dibujo empieza en una raya de la rejilla, a la altura de la columna de al lado y de la página de enfrente. Mide el dibujo pensando en ese redondeo: con 61,8 mm, la banda del canon, pie incluido, ocupa 17 interlineados; con 62,5 mm ocuparía 18 y dejaría casi una línea en blanco bajo el pie.
+
+<PageShot page={3} crop="0.05,0.07,0.83,0.435" caption="Página 11: el texto bajo la figura a todo el ancho empieza en una raya de la rejilla, y el ensayo termina en dos columnas niveladas; el colofón cierra la segunda." />
+
+### 4 · Dejar que el equilibrado cuadre las columnas
+
+<Excerpt region="balance" />
+
+Toda columna llena de las páginas 9 y 10 termina en la línea 44, porque la caja mide exactamente 44 interlineados y el texto se ajustó a ella. Las reglas que mantienen cada título con su texto y evitan viudas, huérfanas y líneas cortas vienen activadas por defecto. Si una de ellas deja una columna con una línea de menos, el equilibrado pone el espacio que falta sobre un título anterior ([equilibrado de columnas](/es/docs/configuration#equilibrado-de-columnas)), donde se ve como un hueco; retoca el texto hasta que el equilibrado no tenga nada que rellenar. En la última página reparte las líneas que quedan para que las dos columnas terminen en la misma raya.
+
+### 5 · Márgenes en espejo, y folios desde la página 9
+
+<Excerpt region="heads" />
+
+La respuesta corta calcula el margen de pie: a los 280 mm del formato les resta los 24 mm del margen de cabeza y una caja de exactamente `LINES` interlineados (44 × 13,4 pt = 208 mm), y quedan 48 mm, las seis unidades que pide la progresión 2:3:4:6. Con `mirror: true`, los 16 mm de `left` son el margen interior, que cae a la izquierda en las páginas impares y a la derecha en las pares ([márgenes simétricos](/es/docs/configuration#márgenes-simétricos-espejo)), así que las cabeceras, ancladas a `OUTER` milímetros del borde de la página, terminan donde lo hace la caja, del lado del corte; `pages: 'body'` las quita de la apertura. `startAt: 9` imprime los folios 9 a 11, y `pageIndexOffset: 8` cuenta las ocho páginas anteriores, de modo que el espejo, la paridad de las cabeceras y `breakBefore: 'odd'` siguen al libro encuadernado. Con un desplazamiento de 7, la primera página contaría como par y el salto metería una página en blanco antes del ensayo.
+
+## Variantes
+
+### Ocultar la rejilla para imprenta
+
+`enabled` solo decide si se dibujan las rayas sobre las páginas ya compuestas; la composición sigue la rejilla de 13,4 pt en los dos casos, así que no se mueve ninguna línea.
+
+```diff
+-  baselineGrid: { enabled: true, color: col('grid') },
++  baselineGrid: { enabled: false },
+```
+
+### Ver lo que hace el equilibrado
+
+Sin equilibrado, las diez últimas líneas de la página 11 y el colofón van todos a la primera columna, y la segunda queda vacía.
+
+```diff
+-const balancing = { stretchAfterFloats: false };
++const balancing = { enabled: false };
+```
+
+## Errores frecuentes
+
+- Un nivel de título con `span: 'page'` y sin `advancedDesign` debería extender el título sobre las dos columnas, pero postext 1.4.1 lo mide con el ancho de una sola: «El canon secreto» se imprime en una línea a todo el ancho y reserva la altura de dos; el filete de columna atraviesa esa banda. Aquí el título se queda en la primera columna.
+- La regla de que un flotante `top` nunca cae en la página que lo cita vale para los flotantes a todo el ancho. Un flotante `top` de columna sí puede caer en la página que lo cita, en la cabeza de una columna posterior, como la figura 1.1 en la página 9.
+- El formato, los márgenes y el medianil van en unidades absolutas (mm, pt, cm, in). Un `em` no tiene ahí cuerpo con el que medirse, y la composición se detiene con «dimensionToPx: baseFontSizePx is required for unit "em"».
+- El espacio entre palabras de Vollkorn es estrecho, 0,2 em, así que en columnas de unos 50 caracteres algunas líneas justificadas quedan flojas o apretadas. El texto se ajustó línea a línea con el informe de líneas flojas de la captura; vuelve a comprobarlo si cambias el texto o la medida.

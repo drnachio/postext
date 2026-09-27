@@ -1,0 +1,51 @@
+---
+title: "Business letter to DIN 5008"
+summary: "A two-page German quotation on A4. The subject line is the H1, and its design pins the letterhead, the address and the information block at form B’s positions."
+description: "The code for a DIN 5008 business letter in Postext, with the address in the envelope window, an information block, fold marks, company data and Seite 2 von 2."
+question: "How do I pin a letter’s address and information block to the millimetre positions of DIN 5008?"
+aliases: ["business letter", "DIN 5008", "form B", "envelope window", "window envelope", "address field", "letterhead", "return address", "information block", "fold marks", "punch mark", "page 2 of 2", "signature", "quotation", "Geschäftsbrief"]
+pageNotes: { "1": "The first sheet of a German quotation from Fensterwerkstatt Tessin. A Berlin-blue band across the top holds a white drawing of a box window, the name Tessin with FENSTERWERKSTATT · BERLIN under it, and the workshop's three specialities on the right. Below the band, the return line and a four-line address sit inside four small corner angles, and the information block runs down the right with the date set apart. The bold subject names quotation 2026-117 for 24 box windows. The justified text is hyphenated by German rules (mundgebla-sene ends the fourth line of the first paragraph) and closes with a list of six services. Grey fold and punch marks sit on the left edge, and the company data run in three columns at the foot.", "2": "The second sheet has a thin blue strip at the top and, under it, a line with the firm's name, the reference and the date, with Seite 2 von 2 on the right. The text gives the price and the schedule and offers to bring a restored sash to the owners' meeting. Then come Mit freundlichen Grüßen, a signature in blue ballpoint, the name and role, and three enclosures under Anlagen. The fold and punch marks and the company data repeat from the first sheet." }
+---
+
+## What you'll build
+
+Fensterwerkstatt Tessin, an invented Berlin workshop that restores box windows, sends a quotation to the managing agents of a block of flats. It runs to two A4 sheets in German, laid out to form B of DIN 5008. A Berlin-blue band across the top carries the workshop’s logo and name. Under it, each part sits where the standard puts it: the return line and the address inside the 85 × 45 mm field that shows through the window of a DL envelope, the information block 125 mm from the left edge, the bold subject two blank lines under the field, and fold and punch marks at 105, 148.5 and 210 mm. The company data run in three columns at the foot of both sheets. The second sheet repeats the reference next to “Seite 2 von 2” and ends on a signature drawn in code.
+
+## Method
+
+### 1 · Pin the first page to the sheet in millimetres
+
+<Excerpt region="answer" highlight="1-4" />
+
+`at()` anchors an element by its top-left corner to `'page'`, the trim box ([element placement](/en/docs/configuration#element-placement)), so each `x` and `y` is a distance from the corner of the sheet and the figures of the standard go in unchanged: the address at 25 mm across and 62.7 mm down, the first label of the information block at 125 and 50. These elements form the design of the H1. The heading’s text is the subject (`{titleText}`) and its attributes hold the address and the references, so the config holds the stationery and the Markdown holds the letter. The subject, at 100.6 mm, is the lowest element, so the heading reserves the sheet down to the subject’s foot. `marginBottom` adds the two blank lines, and the salutation starts on the next grid line, at 117 mm.
+
+The address is one attribute with `\n` between its lines. In 1.4.1 a design text turns an attribute’s `\n` into a line break only when its `paragraphIndent` is above zero. The address sets 0.01 pt, an indent too small to see; at 0, the backslash and the n print in the address. Without `span: 'page'` the design stays in the text column and is clipped at the 27 mm top margin, which cuts off the logo and the name and leaves only the bottom 5 mm of the band.
+
+### 2 · Chain the information block from one pinned label
+
+<Excerpt region="info" />
+
+Only the first label is pinned to the sheet. Every other label is anchored `'below'` the one before it, and each value to its label with `'align-top'` and a 29 mm offset, so a row added to `INFO` needs no coordinates. Design text sets its baseline at 80% of the line box. The 7 pt label at `lineHeight: 12 / 7` and the 9 pt value at `12 / 9` both get a 12 pt line, so they share a baseline on every 4.23 mm row.
+
+### 3 · Draw the letterhead into the same design
+
+<Excerpt region="letterhead" />
+
+The band is a box pinned to the corner of the sheet. `width: 'fill'` stretches it from edge to edge, and its 32 mm depth takes it 5 mm past the 27 mm top margin. The logo is an image element that draws a resource 18 mm tall and takes its width from the drawing ([image elements](/en/docs/configuration#image-elements)). The name hangs `'right-of'` the logo, and the trade line `'below'` the name. Eight 3 mm rules draw an angle at each corner of the 85 × 45 mm address field, the part of the sheet the envelope window shows.
+
+### 4 · Put what every sheet shares in the header and footer
+
+<Excerpt region="furniture" />
+
+An element of the H1’s design pinned below the subject adds to the height the heading reserves. With the 210 mm fold mark in the design, the salutation drops to 222.8 mm and the letter runs to three pages. The header slot paints on every page and reserves no space, so the three marks go there ([headers and footers](/en/docs/configuration#headers--footers)). Page 1 opens with the H1, which makes it an `'opener'` page, so `pages: 'body'` limits the blue strip, the reference line and `Seite {pageNumber} von {totalPages}` to the sheets that follow. The reference line reads the H1’s attributes through `{attr.unser-zeichen}` and `{attr.datum}`.
+
+### 5 · Set the signature in the flow
+
+<Excerpt region="signature" />
+
+`::resource{id="signature"}` sets the drawing under “Mit freundlichen Grüßen”, and `width: 0.297` makes it 49 mm wide and 21.1 mm deep, just under four 15 pt lines. The text after a resource in the flow returns to the body’s grid. At `0.25` the drawing was 17.8 mm deep, and the 3.4 mm the grid added under it pushed the name away from the signature. The resource type has an empty `captionPrefix`, and 1.4.1 sets no caption when both the prefix and the caption are empty, so no label or number appears under the signature ([resource types](/en/docs/configuration#resource-types)). The logo is a resource of the same type, drawn only by the image element. No `:ref` or `::resource` names it, so it never enters the flow.
+
+## Pitfalls
+
+- The card on `\n` in attributes says that with `paragraphIndent` at 0 the text stays on one line. In 1.4.1 the address wraps at its 75 mm width, and the two characters `\n` print wherever a line should break.
+- `{totalPages}` counts the pages of the whole document, so with two letters in one Markdown file the second sheet of the first letter would read “Seite 2 von 4”. Build each letter on its own.

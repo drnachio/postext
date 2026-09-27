@@ -1,0 +1,80 @@
+---
+title: "Informe de laboratorio: fórmulas, subíndices y curva de pH"
+summary: "Un informe de química de cuatro páginas A4 que marca con ~ y ^ las fórmulas y unidades del texto y deja TeX para la reacción y las ecuaciones."
+description: "Un informe de química compuesto con Postext. Las fórmulas van en la letra del texto, y la tabla y la curva de valoración salen de las mismas lecturas."
+question: "¿Cómo escribo fórmulas químicas y unidades con subíndices y superíndices, y dejo TeX para las ecuaciones?"
+aliases: ["informe de laboratorio", "informe de prácticas", "química", "fórmula química", "subíndice", "superíndice", "unidades", "mhchem", "curva de valoración", "números colgados"]
+pageNotes: { "1": "Una banda rosa pálido lleva la línea del curso, el título con el número de la práctica, 4, colgado en el margen izquierdo y los datos de autoría, con sus rótulos colgados del mismo modo; a la derecha, una bureta dibujada gotea sobre un matraz de líquido rosa pálido, rosa intenso donde cae la gota. Bajo la banda, el resumen con un filete rosa a la izquierda, los apartados 1 y 2 con los números colgados, la reacción de neutralización y la ecuación del pH en la equivalencia.", "2": "La ecuación de Henderson-Hasselbalch, el apartado 3 con la lista de materiales y una nota de seguridad en un marco rosa fino, y el apartado 4 con los seis pasos numerados del procedimiento.", "3": "El apartado 5, Resultados: la tabla 1 con las lecturas de la bureta bajo una cabecera gris pizarra, las cifras alineadas a la derecha en una letra monoespaciada y los rótulos de la media y la desviación típica extendidos sobre tres columnas, el cálculo de la concentración del vinagre en una ecuación destacada, el subapartado 5.2 sobre la curva de pH y el comienzo de la discusión.", "4": "La figura 1, la curva de valoración: puntos rosas para las lecturas del pH-metro sobre la línea del modelo, el intervalo de viraje del indicador como una banda rosa, el punto de equivalencia rodeado y el pKa leído a la mitad del volumen de equivalencia; después, el final de la discusión, el apartado 7 con las conclusiones, tres referencias con sangría francesa y el colofón." }
+---
+
+## Lo que vas a componer
+
+En la práctica 4 de Química, tres alumnos de 2.º de Bachillerato valoran un vinagre de manzana con hidróxido de sodio para saber cuánto ácido acético contiene. Son cuatro páginas A4 impresas por una cara. Los números de sección cuelgan en un margen izquierdo de 55 mm, así que títulos y párrafos arrancan en el mismo borde. La bureta y la cabecera de la tabla van en gris pizarra, y el único color es el rosa de la fenolftaleína, pálido en la banda de la apertura y en el intervalo de viraje, intenso en los números de sección y las lecturas del pH-metro. Las fórmulas y unidades del texto van en su misma letra, con subíndices y superíndices; TeX compone la reacción y tres ecuaciones destacadas. La tabla 1 y la curva de la figura 1 salen de un único array de lecturas en el código.
+
+## Elaboración
+
+### 1 · Fórmulas como texto, TeX para las ecuaciones
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. [`~…~` y `^…^`](/es/docs/document-format#formato-en-línea) componen un tramo al 58 % del cuerpo en la letra del texto, así que `CH~3~COOH`, `OH^−^` (su signo menos es U+2212) y `cm^3^` conservan el peso y el color de la frase que los rodea. Las marcas sirven también en pies y celdas de tabla, donde no cabe TeX. La reacción, escrita con `\ce{…}` de mhchem, y las ecuaciones van en TeX entre `$$`. El [motor de fórmulas](/es/docs/configuration#arrancar-el-motor-de-fórmulas) solo viene en la versión `?bundle`, así que todos los símbolos se importan de ella. `math.fontSizeScale` se deja en 1: en la 1.4.1 la altura de la x de una fórmula es medio cuerpo y la de Inria Serif es de 0,495 em, así que las minúsculas de fórmula y texto quedan a la misma altura.
+
+### 2 · Números de sección colgados en el margen
+
+<Excerpt region="hanging" />
+
+El diseño de cada nivel de título es una ranura con dos elementos: el título, en el borde del texto, y el `{number}`, anclado a su izquierda (`left-of`) a 4 mm, en una caja de 33 mm alineada a la derecha. La caja necesita un ancho fijo. El ancho automático se limita al espacio que la columna deja a su izquierda, y como no deja ninguno, la caja se queda en 0 mm y los títulos crecen de una a tres líneas. El cuerpo y la interlínea del nivel solo cuentan para el flujo, donde cada título ocupa una línea de 15 pt. La letra la pone el diseño: los apartados, numerados `{2}`, en rosa a 13 pt, y los subapartados, `{2}.{3}`, en gris y al cuerpo del texto.
+
+### 3 · La apertura del informe sale del H1
+
+<Excerpt region="head" />
+
+El único H1 del informe lleva el [estilo de título](/es/docs/configuration#span-y-diseño-avanzado) `report`, que lo sustituye por una apertura dibujada: una banda rosa en lo alto de la página, la bureta, la línea del curso, el título con el número de la práctica colgado como un número de sección y los datos de autoría. Estos datos salen de los [atributos del título](/es/docs/document-format#atributos-de-encabezado) y del `publishDate` del frontmatter. La banda es una caja, y las cajas cuentan para la altura que reserva el título, así que el texto empezaría bajo su pie, a 104 mm del borde superior de la página, aun sin `minHeight`. `minHeight` fija una altura mínima que llega 8 mm por debajo de la banda; con el margen inferior del H1 y la rejilla de 15 pt quedan 15 mm de blanco sobre el resumen, en lugar de 4,7 mm.
+
+### 4 · Tabla y Figura en el idioma del informe
+
+<Excerpt region="labels" />
+
+[`defaultResourceTypes(LANG)`](/es/docs/configuration#tipos-de-recurso) da Tabla y Figura en la edición española; el `locale` por sí solo las dejaría en inglés. Su plantilla `{h1}.{n}` imprime aquí un 1 a secas, porque el H1 del informe no lleva número y un `{h1}` vacío desaparece con su punto. El pie de la tabla va encima, como es costumbre en los informes. El texto cita tabla y figura con `:ref{id="lecturas" style="full" case="lower"}`, que escribe «tabla 1» en minúscula, con la tinta y el peso del texto.
+
+### 5 · Una sola serie de lecturas para la tabla y la curva
+
+<Excerpt region="data" />
+
+Las cuatro parejas de lecturas de la bureta dan todas las celdas de la tabla 1, la media y la desviación típica, y el volumen medio fija el punto de equivalencia del modelo de pH que dibuja la figura 1. La primera fila es la cabecera (`headerRowCount: 1`), y `columnWidths` da a la columna de rótulos 1,8 partes del ancho. Cada celda lleva su propio `align`, y [`mergeCells`](/es/docs/configuration#construir-modelos-de-tabla) extiende los rótulos de la media y la desviación sobre las tres primeras columnas, alineados a la derecha junto a su valor. Las cifras van en Sometype Mono, así que las comas decimales quedan en columna. Las cabeceras son magnitudes sobre unidades, como `V~b~ gastado / cm^3^`, con las mismas marcas que el texto.
+
+### 6 · Referencias con sangría francesa
+
+<Excerpt region="references" />
+
+Un contenedor `:::paragraphs{style="references"}` aplica el [estilo de párrafo](/es/docs/configuration#estilos-de-párrafo) a cada referencia: 9 pt sobre 12,5 pt, en bandera, con 6 mm de sangría francesa y 4 pt entre entradas. En la 1.4.1 el texto en bandera no tiene separación silábica, así que un título largo como *Fundamentos de química analítica* solo se corta entre palabras. El colofón lleva un estilo propio, Inria Sans a 7,4 pt, con una línea de 15 pt de blanco encima.
+
+## Variantes
+
+### Tiñe la nota de seguridad en vez de enmarcarla
+
+Un fondo con el rosa del viraje sustituye al marco, y el recuadro sigue con un solo recurso gráfico.
+
+```diff
+   box('safety', t({ es: 'Seguridad', en: 'Safety' }), {
+-    border: { enabled: true, color: col('phenol'), width: pt(0.75) },
++    backgroundEnabled: true, background: col('blush'),
+```
+
+### Numera tablas y figuras por apartado
+
+Los resultados pasan a ser la tabla 5.1 y la figura 5.1, con la cuenta reiniciada en cada apartado.
+
+```diff
+-const resourceTypes = defaultResourceTypes(LANG).map((type) => (type.id === 'table'
+-  ? { ...type, captionStyle: { position: 'above' } } : type)); // a table's caption goes on top
++const resourceTypes = defaultResourceTypes(LANG).map((type) => ({ ...type,
++  numberingTemplate: '{h2}.{n}', resetOn: 'h2',
++  ...(type.id === 'table' && { captionStyle: { position: 'above' } }) }));
+```
+
+## Errores frecuentes
+
+- Una ecuación destacada no queda unida a la frase que la presenta, y una frase que acaba en «así que» puede cerrar una página con la ecuación ya en la siguiente. El texto de las dos ediciones está ajustado para que la ecuación de [OH⁻] cierre la página 1 bajo su frase.
+- Los glifos de TeX son los de MathJax, no los de Inria Serif, y una ecuación pesa algo menos que el texto que la rodea. Deja las fórmulas que van dentro de una frase como marcas `~` y `^`, y reserva TeX para las líneas que lo necesitan.
+- En la 1.4.1, un diseño de título que se queda en la columna se recorta por el borde superior de la columna. El estilo `report` lleva `span: 'page'` en este informe de una sola columna solo por eso: sin él, los 24 mm de arriba de la banda y de la bureta salen en blanco.
+- Los pies se componen en bandera, y en la 1.4.1 una línea en bandera puede partirse entre una palabra y su superíndice. Cuando ocupaba dos líneas, el pie de la tabla 1 de la edición inglesa se cortaba entre `mol·dm` y `−3`; ahora cabe en una línea en las dos ediciones. Revisa cada pie que lleve una unidad.
+- Las fuentes web no llegan a un SVG dibujado como imagen, así que las cifras de los ejes y sus rótulos en la curva son contornos de MathJax: `tex()` pide a `renderMath` los trazados de cada rótulo y los coloca en el SVG. En el PDF siguen siendo vectoriales y tienen los mismos glifos que las ecuaciones.

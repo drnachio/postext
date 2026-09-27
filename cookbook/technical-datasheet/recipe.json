@@ -1,0 +1,60 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 10,
+  "status": "published",
+  "chapter": "tables",
+  "order": 10,
+  "level": 3,
+  "genres": ["manual"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["table-model", "table-split"],
+    "also": [
+      "cell-fills", "table-styles", "table-style", "captions", "heading-attributes",
+      "super-subscripts", "chips", "resources", "float-placement", "opener-design", "opener-band",
+      "design-images", "running-heads", "heading-numbering", "callout-styles", "color-palette",
+      "pdf-export"
+    ]
+  },
+  "answers": ["Q65", "Q66", "Q68", "Q70", "Q10"],
+  "gaps": ["pipe-tables"],
+  "gotchas": [
+    "merged-cells-hiddenby", "no-zebra", "here-table-no-split", "svg-no-webfonts", "latin-subset",
+    "headings-drop-h1-break", "fonts-first", "nbsp-breaks", "palette-skips-designs",
+    "overflow-ellipsis-default", "config-cache-identity"
+  ],
+  "workarounds": [
+    { "followup": "EF-23", "package": "postext", "note": "zebra rows are filled cell by cell with setCellBackground" },
+    { "followup": "EF-34", "package": "postext", "note": "merges go through mergeCells, and headerRowCount is set by hand after parseTSV" },
+    { "followup": "EF-05", "package": "postext", "note": "the H1 page break is restated in headings.levels[0].breakBefore" },
+    { "followup": "EF-63", "package": "postext", "note": "the register map starts on a page without a page-wide float, and its rows are fitted so the first part runs to the foot of its column instead of keeping room for text" },
+    { "followup": "EF-66", "package": "postext", "note": "a no-break space still breaks the line, so the sample is worded to keep every value on the line of its unit" },
+    { "followup": "EF-71", "package": "postext", "note": "col() writes the hex beside each paletteId: 1.4.1 paints header, footer and opener element colours and bodyText.referenceColor from the hex (gotcha palette-skips-designs)" },
+    { "followup": "EF-94", "package": "postext", "note": "on a closing page 1.4.1 lifts a page-wide position 'bottom' float to one float gap under the text (build.ts hugClosingText), so page 4 is worded to fill its columns and the outline is drawn 48.3 mm tall: the text above it then ends on a grid line, and the float has no space to move up into" }
+  ],
+  "related": ["seed-catalogue", "product-manual-warnings", "journal-article-with-maths", "figures-float-where-cited"],
+  "engine": { "postext": "1.4.1", "postextPdf": "1.4.1" },
+  "kit": ["core", "fonts", "viewer", "pdf", "images"],
+  "sample": { "locales": ["en"] },
+  "capture": {
+    "hero": 2,
+    "card": "crop",
+    "focus": { "page": 2, "x": 0.4625, "y": 0.0964, "w": 0.4535, "h": 0.2633 },
+    "expect": { "pages": [4, 4] }
+  },
+  "downloads": { "pdf": true },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [],
+    "images": [],
+    "fonts": [
+      { "family": "Fira Sans", "license": "OFL-1.1" },
+      { "family": "Fira Sans Condensed", "license": "OFL-1.1" },
+      { "family": "Fira Mono", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-25",
+  "updated": "2026-09-25"
+}

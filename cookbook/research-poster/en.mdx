@@ -1,0 +1,67 @@
+---
+title: "Research poster on one big page"
+summary: "A 600 × 800 mm conference poster: a title band over one page-wide box with three columns of nested panels, a heat map keyed by swatches and −4.2 °C at 150 pt."
+description: "A research poster in Postext: a heading design for the title band, three columns of nested boxes in one page-span box, swatches, chips and an e-poster PNG."
+question: "How do I set three columns of panels across a two-column page, as on a conference poster?"
+aliases: ["conference poster", "academic poster", "scientific poster", "e-poster", "A1 poster", "three columns of panels", "poster grid"]
+pageNotes: { "1": "A green band across the top holds the meeting line, the title Street trees and sidewalk heat in heavy white letters, the authors with their affiliations, a P-47 tab and a round mark with a tree and an orange sun. Under a two-column summary, six panels form three columns, each under a coloured stripe: Introduction and Methods, with a plan of the street; Results under an orange stripe, with −4.2 °C in very large orange figures, a four-colour key, a heat map of 16 blocks by hour and a bar chart; Conclusions, Planting plan and References. A pale green strip along the foot holds the keywords in rounded frames." }
+---
+
+## What you'll build
+
+A conference poster for an invented study of street trees and sidewalk heat, set on one 600 × 800 mm page. A green band carries the meeting, the title in Bitter at 110 pt, the authors with their affiliation marks and the School of Geography's mark. Under a two-column summary, one frameless box crosses both body columns and holds a three-column grid of six panels, each a box of its own under a 6 pt stripe. The middle column opens with −4.2 °C in orange at 150 pt, then a heat map of the air by block and hour, keyed with colour swatches, and a bar chart of the paving. A tinted strip of keyword chips sits on the bottom margin. The same file sets a Spanish edition, and the pen offers the page as a 1,701 × 2,268 px PNG.
+
+## Method
+
+### 1 · Lay the sheet out at 72 dpi
+
+<Excerpt region="sheet" />
+
+At the default 300 dpi the poster breaks every line where it does at 72 dpi, but its page measures 7,087 × 9,449 px, or 268 MB of pixels once painted ([page size presets](/en/docs/configuration#page-size-presets)). At 72 dpi a point is a pixel. The viewer paints its thumbnails with `renderPageToCanvas` and a `scale`, and `renderPage` gives the 1,701 × 2,268 px PNG that a meeting's online gallery asks for ([rendering a page to a bitmap](/en/docs/configuration#rendering-a-page-to-a-bitmap)). The leading divides the 750 mm between the margins into 56 lines, so the keyword strip floated to the foot of the page ends on the bottom margin. At a round 38 pt only 55 lines fit, the last one 12.7 mm short of the margin; the keyword strip no longer fits under the panels and moves to a second page.
+
+### 2 · Draw the title band from the heading
+
+<Excerpt region="band" />
+
+The H1 carries the meeting, the poster number, the authors and the affiliations as attributes, and its design sets them over a page-anchored green box 158 mm deep ([span and advanced design](/en/docs/configuration#span-and-advanced-design)). The box ends 133 mm under the top margin. Without a `minHeight` the summary would start 0.9 mm under the green; a `minHeight` of eleven grid lines leaves 14 mm. Design text prints plain text, so the affiliation marks are the characters ¹ ² ³, the only superscript figures in the Latin-1 range.
+
+### 3 · Nest the panels in one box across the page
+
+<Excerpt region="answer" highlight="3-9,21" />
+
+A body runs in two columns at most, so the grid is a `:::columns{count=3}` group inside a callout, and `span="page"` sets that callout across both body columns, under the summary ([`:::columns`](/en/docs/document-format#columns)). Each panel is a callout nested in the group: it takes its own style, the column's 175 mm width and 18 mm of `marginTop` under the panel above it ([the `:::callout` container](/en/docs/configuration#the-callout-container)). `breaks="3,4"` sends the third panel, Results, to the head of the middle column and the fourth, Conclusions, to the head of the last. Without it the group balances and cuts at the panel nearest each third of the stack. With this copy the cuts fall at the same two panels; the attribute keeps them there when the copy changes.
+
+### 4 · Keep each figure in its panel
+
+<Excerpt region="figures" />
+
+A figure placed `'here'` stays in the panel where `::resource` sets it; with the default placement the three drawings leave their panels and the poster runs to a second page. `numberingTemplate: '{n}'` numbers them 1, 2, 3, where the default `{h1}.{n}` prints Figure 1.1 under a title that is an H1 ([resource types](/en/docs/configuration#resource-types)). The note under each caption says the data are synthetic.
+
+### 5 · Share the heat map's colours with its key
+
+<Excerpt region="palette" />
+
+The heat map's cells and the four `:swatch{color="…"}` runs of its key name the same palette entries, so a new value for `cool` repaints the map and the key together ([inline formatting](/en/docs/document-format#inline-formatting)). The key is a second `:::columns` group, two entries a column, inside the Results panel. Every colour also carries its hex, which is what 1.4.1 paints in the band's design.
+
+### 6 · Set the headline figure in a paragraph style
+
+<Excerpt region="type" />
+
+Paragraph styles apply inside boxes, nested ones included, so −4.2 °C is a `:::paragraphs{style="stat"}` block in Bitter at 150 pt inside the Results panel ([paragraph styles](/en/docs/configuration#paragraph-styles)). In 1.4.1 a paragraph style cannot set a weight, so the figure is written in bold and prints in Bitter 700. A second style gives the references a 9 mm hanging indent. The keyword strip is a tinted box with `placement="bottom"`, floated to the foot of the page under the grid.
+
+## Variations
+
+### Export the e-poster at 150 dpi
+
+A meeting that asks for a larger file gets a 3,543 × 4,724 px PNG with the same line breaks.
+
+```diff
+-  dpi: 72, backgroundColor: col('paper'),
++  dpi: 150, backgroundColor: col('paper'),
+```
+
+## Pitfalls
+
+- Rethink Sans draws a single figure in parentheses, such as the issue number in 11(3), as a circled figure on the canvas, so the references give the volume and the pages only.
+- In 1.4.1 a page-span box that ends the document moves to a new page unless two body lines of room are left under it. So the keyword strip is floated with `placement="bottom"`, which sets it on the bottom margin, in the 50 mm left under the grid.
+- In 1.4.1 a paragraph that follows a `:::paragraphs` group sits only the style's `spaceBetween` below it, 2.8 mm under the last reference here. A `:::space{lines=0.75}` before the acknowledgement opens 10.8 mm, near the 10.6 mm between the other paragraphs of a panel.

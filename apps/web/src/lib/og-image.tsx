@@ -23,13 +23,19 @@ const ART_WIDTH = 560;
 const ART_HEIGHT = Math.round((ART_WIDTH * ART_VIEWBOX.h) / ART_VIEWBOX.w);
 
 /** The hero's glows, blue from the top right and gilt from the bottom
- *  left: an SVG, since Satori's radial gradients end in hard edges. */
-const GLOWS = `data:image/svg+xml;utf8,${encodeURIComponent(
-  `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630"><defs>` +
-    `<radialGradient id="b"><stop offset="0" stop-color="${BLUE}" stop-opacity="0.34"/><stop offset="1" stop-color="${BLUE}" stop-opacity="0"/></radialGradient>` +
-    `<radialGradient id="g"><stop offset="0" stop-color="${GILT}" stop-opacity="0.13"/><stop offset="1" stop-color="${GILT}" stop-opacity="0"/></radialGradient>` +
-    `</defs><circle cx="1080" cy="40" r="520" fill="url(#b)"/><circle cx="60" cy="660" r="440" fill="url(#g)"/></svg>`,
-)}`;
+ *  left: an SVG, since Satori's radial gradients end in hard edges. With
+ *  `blue: false` only the gilt one, so a flat night picture on the right
+ *  meets a flat night ground. */
+function glows(blue: boolean) {
+  return `data:image/svg+xml;utf8,${encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630"><defs>` +
+      `<radialGradient id="b"><stop offset="0" stop-color="${BLUE}" stop-opacity="0.34"/><stop offset="1" stop-color="${BLUE}" stop-opacity="0"/></radialGradient>` +
+      `<radialGradient id="g"><stop offset="0" stop-color="${GILT}" stop-opacity="0.13"/><stop offset="1" stop-color="${GILT}" stop-opacity="0"/></radialGradient>` +
+      `</defs>${blue ? `<circle cx="1080" cy="40" r="520" fill="url(#b)"/>` : ""}<circle cx="60" cy="660" r="440" fill="url(#g)"/></svg>`,
+  )}`;
+}
+const GLOWS = glows(true);
+const GILT_GLOW = glows(false);
 
 let artSrc: string | undefined;
 function heroArtSrc() {
@@ -57,6 +63,7 @@ export async function generateOgImage({
   description,
   kicker = "Programmable typesetter · postext.dev",
   accent = GILT,
+  art,
 }: {
   /** May carry one `<em>…</em>` span, set in gilt italic like the hero's. */
   title: string;
@@ -64,6 +71,10 @@ export async function generateOgImage({
   kicker?: string;
   /** Kicker colour: gilt, or a docs part's colour. */
   accent?: string;
+  /** A picture for the right-hand side in place of the hero's spread (a
+   *  Cookbook recipe's `og.jpg` as a data URL, 580 × 622), placed at the
+   *  top of the card from x = 620. */
+  art?: { src: string; width: number; height: number };
 }) {
   const fonts = await loadOgFonts();
   const words = titleWords(title);
@@ -74,9 +85,14 @@ export async function generateOgImage({
     (
       <div style={{ width: "100%", height: "100%", display: "flex", position: "relative", backgroundColor: NIGHT }}>
         {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
-        <img src={GLOWS} width={1200} height={630} style={{ position: "absolute", left: 0, top: 0 }} />
-        {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
-        <img src={heroArtSrc()} width={ART_WIDTH} height={ART_HEIGHT} style={{ position: "absolute", left: 620, top: Math.round((630 - 8 - ART_HEIGHT) / 2) }} />
+        <img src={art ? GILT_GLOW : GLOWS} width={1200} height={630} style={{ position: "absolute", left: 0, top: 0 }} />
+        {art ? (
+          // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
+          <img src={art.src} width={art.width} height={art.height} style={{ position: "absolute", left: 620, top: 0 }} />
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
+          <img src={heroArtSrc()} width={ART_WIDTH} height={ART_HEIGHT} style={{ position: "absolute", left: 620, top: Math.round((630 - 8 - ART_HEIGHT) / 2) }} />
+        )}
 
         <div style={{ display: "flex", flexDirection: "column", padding: "56px 0 64px 72px", width: 600, height: "100%" }}>
           {/* The mark and the wordmark, as in the navbar */}

@@ -1,0 +1,402 @@
+{
+  "schemaVersion": 1,
+  "slug": "catalogue-facing-plates",
+  "sourceHash": "08ac46ac844095e47c4bb445c933919e5911f17ca64571a38c953fffbf64b4a9",
+  "engine": {
+    "postext": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-26T21:36:55.774Z",
+  "variants": {
+    "en": {
+      "hash8": "60f7e6f8",
+      "vdtHash": "8c0453181a2925dcc4b9c2285c882b9ae8fdbb93",
+      "timings": {
+        "importMs": 115,
+        "fontsMs": 53,
+        "buildMs": 12,
+        "totalMs": 844,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          230,
+          280
+        ],
+        "dpi": 150,
+        "layoutType": "oneAndHalf",
+        "gutterMm": 7,
+        "mirror": true,
+        "body": {
+          "family": "Ibarra Real Nova",
+          "sizePt": 11.5,
+          "leadingPt": 16
+        },
+        "families": [
+          "Ibarra Real Nova",
+          "Libre Bodoni",
+          "Sofia Sans Condensed"
+        ],
+        "pages": 8,
+        "ownLines": 250
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1217,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 115368,
+          "alt": "Opening page 1: Doré."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1217,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 87000,
+          "alt": "Opening page 2: 1 Don Quixote in His Library."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1217,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 240888,
+          "alt": "Page 3. Cat. 1. Don Quixote in His Library."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1217,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 80184,
+          "alt": "Opening page 4: 2 The Vigil of Arms."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "body",
+          "w": 1000,
+          "h": 1217,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 153800,
+          "alt": "Page 5. Cat. 2. The Vigil of Arms."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "opener",
+          "w": 1000,
+          "h": 1217,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 77516,
+          "alt": "Opening page 6: 3 The Adventure of the Windmills."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "body",
+          "w": 1000,
+          "h": 1217,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 269648,
+          "alt": "Page 7. Cat. 3. The Adventure of the Windmills."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "opener",
+          "w": 1000,
+          "h": 1217,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 60478,
+          "alt": "Opening page 8: Works in the Exhibition."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.maxRuntTracking",
+          "bodyText.maxWordSpacing",
+          "bodyText.minWordSpacing",
+          "bodyText.referenceBold",
+          "bodyText.referenceColor",
+          "captionStyle",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelColor",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "captionStyle.note.fontSize",
+          "captionStyle.note.gap",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "headings.levels[].numberingTemplate",
+          "headings.levels[].span",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "layout.sideColumnPercent",
+          "layout.sideColumnRole",
+          "layout.sideColumnSide",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].defaultPlacement",
+          "resourceTypes[].defaultPlacement.align",
+          "resourceTypes[].defaultPlacement.position",
+          "resourceTypes[].defaultPlacement.span",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyle",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules"
+        ],
+        "configSections": [
+          "bodyText",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle"
+        ],
+        "configLeaves": 408,
+        "designElements": 21,
+        "directives": [
+          "::resource",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          "\\\\",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 7,
+          "table": 1
+        },
+        "fonts": [
+          {
+            "family": "Ibarra Real Nova",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Ibarra Real Nova",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Bodoni",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Libre Bodoni",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Sofia Sans Condensed",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Sofia Sans Condensed",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Sofia Sans Condensed",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "citations",
+          "column-and-a-half",
+          "drop-caps",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "inline-embeds",
+          "opener-band",
+          "opener-design",
+          "page-background",
+          "paragraph-styles",
+          "resource-types",
+          "resources",
+          "section-running-heads",
+          "side-column-floats",
+          "title-line-breaks",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.46
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "the edition's images weigh 1.21 MB (warning at 0.9 MB for 8 pages)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
+      }
+    }
+  }
+}

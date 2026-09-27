@@ -1,0 +1,306 @@
+{
+  "schemaVersion": 1,
+  "slug": "web-worker-live-editor",
+  "sourceHash": "964425eab36fec3e55640e9b54397fa94d7f71119f6b7b8128d712e548c96248",
+  "engine": {
+    "postext": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-26T13:10:56.788Z",
+  "variants": {
+    "en": {
+      "hash8": "332a4158",
+      "vdtHash": "ff93f8eae4aafeafc11ef1f27bf1c7f5e98a76fe",
+      "timings": {
+        "importMs": 895,
+        "fontsMs": 565,
+        "buildMs": 101,
+        "totalMs": 2157,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          110,
+          147
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Baskervville",
+          "sizePt": 9.5,
+          "leadingPt": 13
+        },
+        "families": [
+          "Baskervville",
+          "Baskervville SC",
+          "Cinzel"
+        ],
+        "pages": 9,
+        "ownLines": 238
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1336,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 36164,
+          "alt": "Opening page 1: The Time Machine."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1336,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 93012,
+          "alt": "Opening page 2: I Introduction."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1336,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 118818,
+          "alt": "Page 3."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1336,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 142644,
+          "alt": "Page 4."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "body",
+          "w": 1000,
+          "h": 1336,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 141568,
+          "alt": "Page 5."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "screenshot"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "createLayoutWorker",
+          "createMeasurementCache",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.maxRuntTracking",
+          "bodyText.maxWordSpacing",
+          "bodyText.minWordSpacing",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.layoutType",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 223,
+        "designElements": 13,
+        "directives": [
+          ":::space",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 1,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Baskervville SC",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Baskervville",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Baskervville",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Cinzel",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "resources",
+          "section-running-heads",
+          "unnumbered-headings",
+          "vertical-space",
+          "worker"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 1,
+          "share": 0.0076,
+          "worst": 2.09
+        },
+        "findings": [
+          {
+            "check": "C3",
+            "severity": "info",
+            "detail": "a worker recipe: captured without request interception (hosts checked, network not cached)"
+          },
+          {
+            "check": "H6",
+            "severity": "info",
+            "detail": "the layout worker ran postext 1.4.2 (workers ignore the import map; pages painted with 1.4.1)"
+          }
+        ]
+      }
+    }
+  }
+}

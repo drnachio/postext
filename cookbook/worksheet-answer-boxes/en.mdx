@@ -1,0 +1,64 @@
+---
+title: "Worksheet with answer boxes and a word bank"
+summary: "A four-page science worksheet: white answer boxes in pale green cards, 2 mm under each question and off the grid, with word banks and blanks made of chips."
+description: "A primary science worksheet in Postext: answer boxes nested in activity cards and spaced in millimetres, off the grid, with chips for word banks and blanks."
+question: "How do I nest answer boxes inside activity cards with exact spacing, and add word banks and blanks?"
+aliases: ["worksheet", "activity sheet", "answer box", "writing space", "nested callout", "box inside a box", "word bank", "fill in the blanks", "cloze exercise", "matching exercise", "checklist", "I can statements", "self-assessment"]
+pageNotes: { "1": "A leaf-green band with a yellow UNIT 3 pill, the title Plants and their parts, the series line and white fields for the pupil's name and the date. On the right, a pea plant with white flowers grows in a white disc whose soil hangs below the band; six yellow dots number its flower, pod, peas, leaf, stem and roots. Under a three-line introduction, activity 1 in a green disc heads a pale green card with two questions, each over a white answer box that opens with a small grey Write here.", "2": "Activity 2: a white word bank of yellow chips and six numbered blanks in three columns. Activity 3: a second word bank and six sentences, each with an outlined blank, and a Did you know? note about tendrils.", "3": "Activity 4: inside its card, a rounded white table of six rows, each with a drawn food and its name on the left, a yellow chip naming a plant part on the right and a wide gap between them with a green dot at each end. Activity 5: a tall answer box to draw and label a plant.", "4": "Activity 6, a pea to sprout at home, with an I think box and an I saw box; How did I do?, headed by a star, lists three I can statements, each after an empty circle to colour; under the card, two lines of colophon." }
+---
+
+## What you'll build
+
+Worksheet 3A of *Seedlings Science*, an invented series for eight-year-olds, on four 200 × 260 mm pages printed on one side. A leaf-green band carries a yellow unit pill, the title and white fields for name and date; beside it, a pea plant in a white disc has its six parts numbered in yellow. Every activity is a numbered heading over a pale green card. The cards hold white answer boxes with a small grey prompt and room for several lines, word banks of yellow chips, outlined blanks inside sentences, a table of foods to match with plant parts and a checklist of circles to colour. Each answer box sits 2 mm under its question and 5 mm above what follows, and every card ends 9 mm above whatever comes next on its page. The text is set in Andika, which SIL designed for children learning to read.
+
+## Method
+
+### 1 · Take the headings off the grid as well
+
+<Excerpt region="grid" />
+
+In the short answer, each box's margins collapse with its neighbours' and the larger one wins. A word bank's 5 mm beat the 2 mm above the list under it, and the last answer box's 5 mm fall inside the card's 5 mm bottom padding instead of adding to it. Left on the grid, a level-2 heading reserves between 10.8 and 14.1 mm instead of its disc's 8.6 mm, because what follows it snaps back to the next 17 pt line; `headings.snapToGrid: false` keeps it at 8.6 mm. Setting `snapToGrid` on the nested styles changes nothing, because only the outer card can leave the grid ([nested boxes](/en/docs/configuration#the-callout-container)). Column balancing is off because it adds space above headings to fill out a page; on page 2 it would put 33 mm above activity 3 instead of 9.
+
+### 2 · Make every blank a chip
+
+<Excerpt region="chips" />
+
+A chip is an unbreakable box in the line, and its padding is painted beyond the line without making the line taller. A word bank is a row of chips in a nested `bank` box. The blanks, the dots to join and the circles to colour are chips too, each holding only a U+2060 word joiner, because in postext 1.4.1 a chip of spaces prints its markup ([inline chips](/en/docs/document-format#inline-chips)). `paddingX` sets the width: a blank is 34 mm wide in a sentence and 38 mm alone in a column, and a circle gets half its 1.25 em height on each side. In the checklist the circle stands where the bullet would be (`bulletChar: ''`). At 19.6 pt, a blank is taller than the 17 pt line, which is why each one has a list item to itself, 24 pt from the next. In 1.4.1 the Sandbox still shows the warning “Chips touch the next line” for `blank`, `wide` and `tick`, because it compares each chip with the 17 pt line pitch and leaves out the 7 pt between list items.
+
+### 3 · Number the activities with a heading design
+
+<Excerpt region="activity" />
+
+A level-2 heading with an `advancedDesign` keeps its place in the column, and the design is drawn instead of its text: a disc holding `{number}`, which prints the level's `numberingTemplate`, and `{titleText}` to its right ([span and advanced design](/en/docs/configuration#span-and-advanced-design)). The disc and the title are both 8.6 mm tall, and off the grid the heading reserves exactly that, so the design needs no `minHeight`. Because the numbers come from the level-2 counter, an activity inserted in the Markdown renumbers the ones after it. The self-check heading uses a style with `numbered: false`, which leaves it out of the count, and an SVG star sits where the disc would be.
+
+### 4 · Put the pictures in the table's cells
+
+<Excerpt region="tables" />
+
+`TableCell.image` draws a resource inside its cell, here at 76 % of the cell's width, and the row grows to fit it. `verticalAlign: 'middle'` centres the food's name, the dots and the chip on the picture. The widest column, 31 % of the table, stays empty for the pupil's line. The named style rounds the table's frame and clips the white body fill to it. Its grid rules are white as well: the canvas leaves a faint hairline between filled cells, and a white 1 pt rule on the white panel covers it ([named table styles](/en/docs/configuration#named-table-styles)). Its resource type has an empty `captionPrefix` and the table has no caption text, so no caption prints under it. `placement: { position: 'here' }` sets the table where its `::resource` line stands, inside the card.
+
+## Variations
+
+### Put the cards back on the grid
+
+With the default `snapToGrid: true`, whatever follows a card drops to the next 17 pt grid line, and the 9 mm under each card become 14.5 mm under activity 2, 13.2 mm under activity 4 and 11.2 mm under activity 6.
+
+```diff
+-  snapToGrid: false,
++  snapToGrid: true,
+```
+
+### Give an answer more room
+
+`:::space` counts in the answer box's own 17 pt lines, and each line added gives the pupil 6 mm more to write in.
+
+```diff
+ Write here
+-:::space{lines=4}
++:::space{lines=6}
+```
+
+## Pitfalls
+
+- In postext 1.4.1 a box cannot rule its own writing lines, because callout styles have no ruled background. The answer boxes stay blank and take their height from `:::space`, and the short fill-in lines are outlined chips.
+- A heading style with `numbered: false` still draws its level's design, with `{number}` left empty. Without a design of its own, the self-check would open with an empty green disc, so `review` copies the activity design and puts the star where the disc was.

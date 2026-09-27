@@ -5,6 +5,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { DocsSearchPalette, DocsSearchTrigger } from "@/components/docs/DocsSearchPalette";
 import { Logo } from "@/components/brand/Logo";
 import { MobileMenu } from "./MobileMenu";
+import { NavLink } from "./NavLink";
 
 const NAV_LINK =
   "rounded-md px-2 py-1 font-sans text-[0.8rem] font-medium text-slate transition-colors hover:text-foreground 2xl:text-sm 4xl:text-base";
@@ -24,18 +25,22 @@ export async function Navbar() {
         </Link>
         <div className="hidden items-center gap-1.5 md:flex 2xl:gap-3 4xl:gap-4">
           <DocsSearchTrigger variant="compact" className="mr-2" />
-          <Link href="/docs" className={NAV_LINK}>
+          <NavLink href="/docs" className={NAV_LINK}>
             {t("docs")}
-          </Link>
-          <Link href="/sandbox" className={NAV_LINK}>
-            {t("sandbox")}
-          </Link>
+          </NavLink>
+          {/* The Sandbox is the CTA on the right, so the text links name the
+              two reading sections. */}
+          <NavLink href="/cookbook" className={NAV_LINK}>
+            {t("cookbook")}
+          </NavLink>
+          {/* Below lg, GitHub lives in the footer and the mobile menu: the
+              row would overflow at 768 px with it. */}
           <a
             href="https://github.com/drnachio/postext"
             target="_blank"
             rel="noopener noreferrer"
             aria-label={t("githubAriaLabel")}
-            className={NAV_LINK}
+            className={`hidden lg:inline-flex ${NAV_LINK}`}
           >
             {t("github")}
           </a>
@@ -44,7 +49,7 @@ export async function Navbar() {
           <ThemeToggle />
           <Link
             href="/sandbox"
-            className="ml-2 rounded-md bg-brand px-3.5 py-1.5 font-sans text-[0.8rem] font-semibold text-brand-contrast shadow-[0_1px_0_rgba(0,0,0,0.2)] transition-colors hover:bg-brand-hover 2xl:text-sm 4xl:px-5 4xl:py-2 4xl:text-base"
+            className="ml-2 whitespace-nowrap rounded-md bg-brand px-3.5 py-1.5 font-sans text-[0.8rem] font-semibold text-brand-contrast shadow-[0_1px_0_rgba(0,0,0,0.2)] transition-colors hover:bg-brand-hover 2xl:text-sm 4xl:px-5 4xl:py-2 4xl:text-base"
           >
             {t("tryIt")}
           </Link>

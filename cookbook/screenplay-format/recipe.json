@@ -1,0 +1,54 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 61,
+  "status": "published",
+  "chapter": "type",
+  "order": 90,
+  "level": 2,
+  "genres": ["any"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["callout-styles", "off-grid-spacing", "paragraph-styles"],
+    "also": [
+      "heading-numbering", "heading-styles", "opener-design", "heading-attributes", "covers",
+      "page-role-filters", "running-heads", "section-running-heads", "design-elements", "page-size",
+      "units-and-dimensions", "body-typography", "paragraph-indents", "column-balancing",
+      "color-palette", "canvas-rendering"
+    ]
+  },
+  "answers": ["Q84"],
+  "gotchas": ["balancing-drops-last-box", "ragged-runts", "headings-drop-h1-break", "palette-skips-designs"],
+  "related": ["stage-play", "side-heads-hanging-numbers", "code-listings-and-keycaps", "poetry-collection"],
+  "workarounds": [
+    { "followup": "EF-05", "package": "postext", "note": "the H1 breakBefore is restated because a headings object drops it; each H1 (cover, inside cover, script title) opens a page" },
+    { "followup": "EF-71", "package": "postext", "note": "col() writes the hex beside every paletteId, because the cover's boxes and texts, the punched holes, the sluglines and the page number are design elements that ignore colorPalette; referenceColor is restated in ink, which main-color does not reach" },
+    { "followup": "EF-113", "package": "postext", "note": "the cover and inside-cover styles set span: 'page' in a single-column script, or their bleed-anchored card is clipped to the text block and stops an inch short of the top and the foot of the sheet" },
+    { "followup": "EF-105", "package": "postext", "note": "headings.balancing.enabled: false, or Toby's closing speech on script page 2 drops to the page foot in the English edition, and the Spanish edition adds a blank line above the first slugline" },
+    { "followup": "EF-147", "package": "postext", "note": "action and dialogue are ragged, which gets no runt check: every paragraph and speech was reworded by hand so that none ends on a lone word" },
+    { "followup": "EF-153", "package": "postext", "note": "the centred, tracked capitals of the stamps (SHOOTING DRAFT, the date, COPY 07) and of the company name sit left by half their tracking, so the caps() helper moves each text box right by that half" },
+    { "followup": "EF-182", "package": "postext", "note": "the dialogue style's top padding is −2.4 pt because a callout title always sits on a line 1.2 times its size (14.4 pt at 12 pt) and titleStyle has no lineHeight: the negative padding takes the difference back, so every speech is a whole number of 12-pt lines" }
+  ],
+  "engine": { "postext": "1.4.1" },
+  "kit": ["core", "fonts", "viewer"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": {
+    "hero": [2, 3],
+    "card": "crop",
+    "focus": { "page": 1, "x": 0, "y": 0.06, "w": 1, "h": 0.6 },
+    "expect": { "pages": [5, 5], "nearEmptyPages": [1, 2] }
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [],
+    "images": [],
+    "fonts": [
+      { "family": "Courier Prime", "license": "OFL-1.1" },
+      { "family": "Special Elite", "license": "Apache-2.0" },
+      { "family": "Oswald", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-26",
+  "updated": "2026-09-26"
+}

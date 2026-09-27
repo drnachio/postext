@@ -1,0 +1,79 @@
+---
+title: "Play script: cast list, speakers and stage directions"
+summary: "The opening of Wilde’s play as an acting edition. Names print in bold plum and directions in grey italic; the cast list is read from tab-separated lines."
+description: "An acting edition of The Importance of Being Earnest set with Postext: a plum playbill for the title page and the 1895 cast list facing the first act."
+question: "How do I set a play: speakers’ names, stage directions, act and scene headings and a cast list?"
+aliases: ["play", "drama", "acting edition", "play script", "stage play", "stage directions", "speaker names", "character names", "cast list", "dramatis personae", "hanging indent", "playbill", "title page", "fleuron", "carnation", "Oscar Wilde", "The Importance of Being Earnest"]
+pageNotes: { "1": "The title page: a plum sheet in a double gold frame whose rules cross at the corners. The subtitle runs in spaced gold capitals above the title, which takes four lines, fat-face capitals for “Importance” and “Earnest” and italic for “The” and “of Being”. Below it come a gold carnation between two scrolls, the author in spaced capitals and, at the foot, the theatre and the date of the first performance.", "2": "The persons of the play in a table under a plum band that names the original cast, the theatre and the date, with the actor who created each part on the right. Below it, the three scenes of the play and a colophon.", "3": "The first act starts with its title in plum capitals and a plum carnation. The scene is set in centred grey italic under a small-capital label; then the speeches begin, each with the speaker’s name in bold plum and its turnover lines hung.", "4": "Speeches with hung turnovers and three stage directions centred between them: Lane’s entrance and exit and Jack’s entrance.", "5": "The page ends on Algernon’s speech about divorces, which a stage direction in grey italic cuts in two." }
+---
+
+## What you'll build
+
+The opening of Oscar Wilde’s *The Importance of Being Earnest*, set as a five-page acting edition at 140 × 216 mm. The title page is a plum playbill in a double gold frame, with *Importance* and *Earnest* in fat-face capitals and a gold carnation under the title. Facing the first act, the cast list names the actor who created each part at the St James’s Theatre in 1895. Each speech opens with the speaker’s name in bold plum and hangs its turnover lines 5 mm, so an actor finds the next cue at a glance. Stage directions, inside a speech or between two, are grey italic, and the eye can skip them when running lines. The Spanish edition is a new translation that follows Spanish stage practice, with a dash after each name and the directions in parentheses.
+
+## Method
+
+### 1 · An act is a plain heading
+
+<Excerpt region="acts" />
+
+The act title is a first-level heading in Abril Fatface at 24 pt, with no design slot. `textTransform` sets it in capitals, and its three grid lines of 13.6 pt put the capitals 5.5 mm below the top of the text block ([headings](/en/docs/configuration#headings)). `textAlign: 'center'` cannot be set per level, so it also centres the cast list’s headings and the *Scene* label. `breakBefore` with parity `'odd'` starts the act on a recto, facing the cast list. The config has to restate it, because any `headings` object turns the first level’s page break off ([break before](/en/docs/configuration#break-before)).
+
+### 2 · The cast list is a table read from tab-separated lines
+
+<Excerpt region="cast" />
+
+Postext has no pipe tables, so each table is a resource. The rows are in `content.cast.en.md`, one line per row with a tab between the cells, and `parseTSV` turns them into a model ([building table models](/en/docs/configuration#building-table-models)). The one line without a tab, the original cast with the theatre and the date, becomes a merged row: `mergeCells` gives its first cell `colSpan: 2` and keeps the second in the grid, marked `hiddenBy`. `headerRowCount: 1` sets that row in the plum band. No other row is filled, because the canvas shows a pale seam between two filled cells side by side. The actors’ column takes a third of the width, and each of its cells is set flush right. The scenes go through the same function under a named style with no rules ([named table styles](/en/docs/configuration#named-table-styles)). A table sets all the text in its cells in one colour, the body ink unless `bodyColor` names another, so the bold names of the persons print in ink here and plum in the dialogue.
+
+### 3 · Ornaments with no number and no caption
+
+<Excerpt region="ornament" />
+
+A resource type with an empty `captionPrefix` and `shortLabel` prints its pictures bare ([resource types](/en/docs/configuration#resource-types)). Its `defaultPlacement` puts the carnation where `::resource{id="fleuron"}` stands, centred and 0.24 of the 107 mm measure wide, about 26 mm. The two tables use a second unnumbered type, so neither is labelled *Table 1*.
+
+### 4 · The title page is a heading style
+
+<Excerpt region="playbill" />
+
+`# The Importance of Being Earnest {style="playbill" …}` carries the title in four attributes, which the design sets in two faces: Abril Fatface at 40 and 60 pt for the nouns, Libre Baskerville italic at 17 pt for *The* and *of Being* ([heading attributes](/en/docs/document-format#heading-attributes)). The plum ground, the frame and the carnation are one SVG drawn in code and anchored to the bleed ([image elements](/en/docs/configuration#image-elements)). The style sets `span: 'page'` although the book has one column. Kept in the column, the design would be cut off at the top and at the foot of the text block, 20 mm below the top of the sheet and 23.3 mm above its foot. The style’s empty `header` keeps the running heads off the cast list, which belongs to the same section, and its empty `footer` keeps the drop folio off the title page, where it would print plum on plum ([heading styles](/en/docs/configuration#heading-styles)).
+
+An opener’s images reserve no height, so the heading holds the page only down to its lowest line of text, the premiere at 176 mm. The space left below it is too short for the next heading, and the captured pages come out the same without the `:::pagebreak` after the title. The break is there for later edits: without it, moving the theatre and the premiere up to 150 and 156 mm starts *The Persons of the Play* on the plum sheet. In 1.4.1 a centred line with `letterSpacing` sits half that spacing left of centre, so `line()` moves each tracked line right by the same amount. *OSCAR WILDE* is 0.07 mm off centre instead of 0.56.
+
+### 5 · Running heads that skip the act’s first page
+
+<Excerpt region="heads" />
+
+The verso carries the play’s title from the frontmatter and the recto the act, from `{chapterTitle}`, both in Playfair Display SC capitals with the folio in plum at the outer edge ([text elements](/en/docs/configuration#text-elements)). The act’s first page counts as an opener because its first block is a heading that breaks the page, so `pages: 'body'` keeps the heads off it, and the footer gives it a drop folio instead.
+
+<Note>
+A screenplay indents its dialogue from both sides instead of hanging it: <RecipeLink slug="screenplay-format">Screenplay format</RecipeLink> sets each speech as a frameless box padded to the width of the dialogue block.
+</Note>
+
+## Variations
+
+### Line the directions up with the turnovers
+
+Set flush left with a 5 mm first-line indent, a one-line direction starts where the turnover lines of the speeches do, and the scene description becomes two indented paragraphs under its centred label.
+
+```diff
+ const direction = { id: 'direction', fontSize: pt(8.6),
+-  textAlign: 'center', firstLineIndent: pt(0) };
++  textAlign: 'left', firstLineIndent: mm(5) };
+```
+
+### Leave a line between speeches
+
+`paragraphSpacing: true` adds a blank grid line after every speech. The English act then runs to five pages instead of three, the Spanish one to four.
+
+```diff
+   maxRuntTracking: 0, // gotcha: runt-tracking-unpainted
++  paragraphSpacing: true,
+ };
+```
+
+## Pitfalls
+
+- Every italic run in the dialogue takes `italicColor`, emphasis included, so Lane’s emphatic *is* prints in the grey of the directions. The grey has to go on `bodyText` because in 1.4.1 a paragraph style cannot give its italics a colour of their own; only roman type would keep the *is* in ink.
+- Three of Wilde’s speeches end on a word alone: *information.*, *that?* and *you.* The script sets `bodyText.maxRuntTracking: 0` because of the pitfall *A runt fix can tighten tracking that is never painted*. At the default, 1.4.1 pulls *that?* up with 2.0 mm of negative tracking that the canvas does not paint, and the line prints with its word spaces at half their width. With word spacing alone, *that?* moves up only with a `minWordSpacing` of 0.5, which crushes the line the same way, or with a measure 1.5 mm wider, which sets ten lines looser than 1.5 times the normal space instead of two. The English pages keep the three runts rather than change Wilde’s words. The Spanish translation was reworded wherever a line ended on a one-letter word or a syllable stood alone.
+- Names hyphenate like any other word: *Au-gusta* and *Gwen-dolen* break across lines on page 5. A word joiner (U+2060) inside *Augusta* keeps it whole, but it stretches the line above to 1.71 times the normal word space, so the English text keeps the hyphens.
+- Playfair Display SC draws *fi* as a lowercase ligature on the canvas, so *first* would print a lowercase *fi* among small capitals. That is why the cast list’s band says *The original cast*.

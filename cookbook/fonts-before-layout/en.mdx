@@ -1,0 +1,79 @@
+---
+title: "Type specimen with every font loaded before layout"
+summary: "A four-page type specimen whose first build names every face its pages use; the pen loads them, clears the width cache and builds again."
+description: "Declare one FontFace per font file, read the faces a first Postext build asks for, load them and clear the measurement cache before you build again."
+question: "Why do my line breaks change or PDF words overlap, and how do I load my own font files before layout?"
+aliases: ["web fonts", "self-hosted fonts", "FontFace", "document.fonts", "fallback font", "unicode-range", "latin-ext", "clearMeasurementCache", "type specimen", "font audit"]
+pageNotes: { "1": "The cover of House Specimen Nº 3: an ultramarine field over the top half of the page holds a white Noto Serif Display italic Ag at 240 pt and two mono lines that name it and the text and label faces; below it the title Three faces, proofed, an italic lead and the opening paragraph.", "2": "A waterfall of Ysabeau Office from 7 to 14 pt, one line per size, labelled beside it in ultramarine mono, then Spanish, Polish and Czech pangrams at 13 pt.", "3": "The audit: an IBM Plex Mono table with an ultramarine header listing the ten faces the layout asked for, each family named once, with the sizes of each and a status line read from build 2, between paragraphs that explain it.", "4": "The first paragraph of page 1 twice. Above, marked first, as the first build set it: its lines break in other places and some run past a hairline at the edge of the measure into a pale ultramarine wash. Below, marked last, as the last build set it, with every line short of the rule. A caption counts the lines the first build broke elsewhere; the closing paragraph and the colophon follow." }
+---
+
+## What you'll build
+
+*House Specimen Nº 3*, from the imaginary Pellow Lane Press, is a four-page type specimen for three faces. On the cover, an ultramarine field holds a white *Ag* in Noto Serif Display italic at 240 pt and two mono lines that name the three faces; the title sits below the field. Page 2 runs Ysabeau Office down a waterfall from 7 to 14 pt, then sets Spanish, Polish and Czech pangrams whose ż, ř and ů need a second font file. Page 3 is the audit: an IBM Plex Mono table, filled in by the pen, of the ten faces the layout asked for and their sizes. Page 4 sets page 1's first paragraph twice, from the first build and from the last. The first build ran before the fonts had arrived, so its lines end in other places and some run past the measure.
+
+## Method
+
+### 1 · Declare every file without fetching it
+
+<Excerpt region="declare" />
+
+A `FontFace` is one file, as an `@font-face` rule is, so a face with a latin and a latin-ext file is declared with two `FontFace` objects that share a family, weight and style and differ in `unicodeRange`, copied from the family's CSS. Adding them to `document.fonts` downloads nothing: the browser fetches a file when a `load()` call or a line of text needs its characters. `buildDocument` loads no fonts (only `loadBundleFonts` does, for the files inside a `.postext` bundle), and `customFonts` in a config only describes those files, so a page built from Markdown has to declare its own.
+
+### 2 · Build, load, clear, build again
+
+<Excerpt region="build" />
+
+The first build measures with whatever the browser holds, a fallback face, but its pages already name every font they need. `buildWithLoadedFonts`, the short answer above, collects those names from each build, loads the faces still missing with the booklet's text as the sample, and builds again until a build finds nothing left to load. That sample also fetches the latin-ext files of the display and mono faces, which set none of those letters; if the download size matters, load each face with its own text only. `clearMeasurementCache()` takes no argument and empties the widths the first build cached; without it the second build keeps every line break of the first (see Variations).
+
+### 3 · Build the audit from the layout
+
+<Excerpt region="audit" />
+
+The table is the same walk grouped by face, with each size converted from the layout's pixels back to points. Its note reads two more fields of the build it describes: `converged`, true when the layout's passes settled, and `warnings`, which in 1.4.1 lists each box that fits no column. Check both before you show or export a page. The table holds more faces than the pages show, because every text block, table and caption names a bold, an italic and a bold italic beside its own face, and `renderToPdf` asks for all of them. The short answer requires a `FontFace` of its own for every face something is set in, because `document.fonts.check()` returns true for an undeclared family and for a bold the browser can fake. A face that is only named loads when it is declared: a family with no italic file passes, and the table would mark its italics `no file`.
+
+### 4 · Keep the first build as evidence
+
+<Excerpt region="art-proof" />
+
+`buildWithLoadedFonts` returns every build, so the pen can paint the first one again once the real faces are in and compare it line by line with the last; the count in the caption comes from that comparison. A plain line measured in a narrower fallback runs past the measure until the column's clip, 2 pt past its edge, cuts off its last letters, so the pen paints page 1 with a widened column to show the whole overrun. The canvas and `postext-pdf` draw each run of a justified or mixed-style line where the layout measured it, so a real face wider than the fallback prints over the next word, and the words of a PDF built before its fonts arrived overlap.
+
+### 5 · A waterfall on the text's rhythm
+
+<Excerpt region="type" />
+
+Ysabeau Office sets the text at 11 on 15.5 pt, with a blank line between paragraphs instead of an indent. The text is ragged, so every word space keeps its natural width. Bold, italic and references are set in ink; left alone, they would take the main colour. Every waterfall size and pangram is a paragraph style two leads (31 pt) deep, so the page keeps the text's 15.5 pt rhythm. The size labels are mono chips, and the one-digit sizes get half a letter of padding on each side, so every sample starts on the same edge.
+
+### 6 · Three faces on one cover
+
+<Excerpt region="opener" />
+
+The cover is the H1 level's design: the letters of the heading's `glyphs` attribute in the display face at 240 pt, and under them two mono lines that name that face and the text and label faces, as on a type foundry's specimen sheet. `span: 'page'` lets the bleed-anchored field run off the top edge; kept in the column, the design is clipped at the top margin, which cuts off the head of the field and the kicker. `minHeight` counts from the top margin and reserves the room down to `Y.end`, 42 mm below the field; without it the text starts a line higher, tight under the lead.
+
+## Variations
+
+### Leave the cache alone
+
+The pen still loads every face, but the second build keeps every line break of the first: both strips on page 4 run past the rule, the caption counts 0 lines broken elsewhere, and the words of the mono captions print over each other, each run drawn where the fallback measured it.
+
+```diff
+-    clearMeasurementCache(); // the widths measured with a fallback stay cached until cleared
++    // clearMeasurementCache();
+```
+
+### Forget a face
+
+Leave out the bold of IBM Plex Mono, which sets the kicker and the table header, and the pen throws `No FontFace for IBM Plex Mono 700 normal` before it shows a page; with `document.fonts.check()` alone, the browser would have thickened the regular.
+
+```diff
+-  'IBM Plex Mono': ['400', '400i', '700', '700i'], // labels, chips, the table, captions
++  'IBM Plex Mono': ['400', '400i', '700i'], // labels, chips, the table, captions
+```
+
+### Embed the same faces in a PDF
+
+`renderToPdf` embeds the bytes its `fontProvider` returns for each face, and the provider in <RecipeLink slug="pdf-with-embedded-fonts">a real PDF with the same fonts embedded</RecipeLink> serves Fontsource's latin files, which stop at Latin-1: for this booklet's ż, ł, ř and ů, have it return each face's whole font file from your own folder.
+
+## Pitfalls
+
+- `document.fonts.load(font)` with no sample text loads only the file that covers a space, the latin one; pass the text, or ż and ř fall back to a system face with no warning.
+- `renderPageToCanvas` and `postext-pdf` clip each column 2 pt past its edge, so a line measured with a narrower fallback loses its last letters and no warning is raised.

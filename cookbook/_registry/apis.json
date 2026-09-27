@@ -1,0 +1,339 @@
+{
+  "$comment": "Exported symbols recipes import (from postext, postext/worker and postext-pdf) → the docs section that explains them. The capture lists the symbols a pen imports (detected.apis) and the recipe page links each through this map; a symbol with no dedicated docs section points at the nearest one. Keys are case-sensitive export names.",
+  "buildDocument": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Building a document",
+      "es": "Construir un documento"
+    }
+  },
+  "renderPage": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Rendering a page to a bitmap",
+      "es": "Renderizar una página a un bitmap"
+    }
+  },
+  "renderPageToCanvas": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Rendering a page to a bitmap",
+      "es": "Renderizar una página a un bitmap"
+    }
+  },
+  "renderToCanvas": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Rendering a page to a bitmap",
+      "es": "Renderizar una página a un bitmap"
+    }
+  },
+  "registerResourceImage": {
+    "slug": "architecture",
+    "heading": {
+      "en": "API Surface",
+      "es": "Superficie de API"
+    }
+  },
+  "unregisterResourceImage": {
+    "slug": "architecture",
+    "heading": {
+      "en": "API Surface",
+      "es": "Superficie de API"
+    }
+  },
+  "clearResourceImages": {
+    "slug": "architecture",
+    "heading": {
+      "en": "API Surface",
+      "es": "Superficie de API"
+    }
+  },
+  "clearMeasurementCache": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Measurement cache",
+      "es": "Caché de medidas"
+    }
+  },
+  "createMeasurementCache": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Measurement cache",
+      "es": "Caché de medidas"
+    }
+  },
+  "measureGlyphWidth": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Integrating the HTML viewer",
+      "es": "Integrar el visor HTML"
+    }
+  },
+  "BuildCancelledError": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Cooperative cancellation inside the engine",
+      "es": "Cancelación cooperativa dentro del motor"
+    }
+  },
+  "defaultResourceTypes": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Resource types",
+      "es": "Tipos de recurso"
+    }
+  },
+  "applyHtmlViewerOverrides": {
+    "slug": "configuration",
+    "heading": {
+      "en": "HTML Viewer",
+      "es": "Visor HTML"
+    }
+  },
+  "applySingleInkToSvg": {
+    "slug": "configuration",
+    "heading": {
+      "en": "How single ink works",
+      "es": "Cómo funciona la tinta única"
+    }
+  },
+  "resolvePageConfig": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Resolving defaults",
+      "es": "Resolver valores por defecto"
+    }
+  },
+  "stripConfigDefaults": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Stripping defaults",
+      "es": "Eliminar valores por defecto"
+    }
+  },
+  "PAGE_SIZE_PRESETS": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Page size presets",
+      "es": "Tamaños de página predefinidos"
+    }
+  },
+  "parseMarkdown": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Parsing",
+      "es": "Parseo"
+    }
+  },
+  "parseMarkdownWithIssues": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Parsing",
+      "es": "Parseo"
+    }
+  },
+  "extractFrontmatter": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Parsing",
+      "es": "Parseo"
+    }
+  },
+  "KNOWN_DIRECTIVES": {
+    "slug": "document-format",
+    "heading": {
+      "en": "Directives",
+      "es": "Directivas"
+    }
+  },
+  "KNOWN_CONTAINERS": {
+    "slug": "document-format",
+    "heading": {
+      "en": "Containers",
+      "es": "Contenedores"
+    }
+  },
+  "initMathEngine": {
+    "slug": "document-format",
+    "heading": {
+      "en": "Mathematical formulas",
+      "es": "Fórmulas matemáticas"
+    }
+  },
+  "parseTSV": {
+    "slug": "document-format",
+    "heading": {
+      "en": "Block embed (optional, explicit inline placement)",
+      "es": "Inserción en bloque (opcional, colocación en línea explícita)"
+    }
+  },
+  "mergeCells": {
+    "slug": "document-format",
+    "heading": {
+      "en": "Block embed (optional, explicit inline placement)",
+      "es": "Inserción en bloque (opcional, colocación en línea explícita)"
+    }
+  },
+  "setCellBackground": {
+    "slug": "document-format",
+    "heading": {
+      "en": "Block embed (optional, explicit inline placement)",
+      "es": "Inserción en bloque (opcional, colocación en línea explícita)"
+    }
+  },
+  "setCellImage": {
+    "slug": "document-format",
+    "heading": {
+      "en": "Block embed (optional, explicit inline placement)",
+      "es": "Inserción en bloque (opcional, colocación en línea explícita)"
+    }
+  },
+  "setAlignment": {
+    "slug": "document-format",
+    "heading": {
+      "en": "Block embed (optional, explicit inline placement)",
+      "es": "Inserción en bloque (opcional, colocación en línea explícita)"
+    }
+  },
+  "continuationAfter": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Laying out and rendering a bundle",
+      "es": "Componer y renderizar un paquete"
+    }
+  },
+  "contentOutline": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Table of contents",
+      "es": "Índice de contenidos"
+    }
+  },
+  "outlineFromDoc": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Table of contents",
+      "es": "Índice de contenidos"
+    }
+  },
+  "computeOutline": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Table of contents",
+      "es": "Índice de contenidos"
+    }
+  },
+  "openBundle": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Opening a bundle",
+      "es": "Abrir un paquete"
+    }
+  },
+  "createBundle": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Creating a bundle",
+      "es": "Crear un paquete"
+    }
+  },
+  "buildBundle": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Laying out and rendering a bundle",
+      "es": "Componer y renderizar un paquete"
+    }
+  },
+  "loadBundleFonts": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Laying out and rendering a bundle",
+      "es": "Componer y renderizar un paquete"
+    }
+  },
+  "registerBundleImages": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Laying out and rendering a bundle",
+      "es": "Componer y renderizar un paquete"
+    }
+  },
+  "bundleImageUrl": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Laying out and rendering a bundle",
+      "es": "Componer y renderizar un paquete"
+    }
+  },
+  "bundleResourceBytes": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Laying out and rendering a bundle",
+      "es": "Componer y renderizar un paquete"
+    }
+  },
+  "bundleFontProvider": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Laying out and rendering a bundle",
+      "es": "Componer y renderizar un paquete"
+    }
+  },
+  "readBundle": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Low-level API",
+      "es": "API de bajo nivel"
+    }
+  },
+  "zipBundle": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Low-level API",
+      "es": "API de bajo nivel"
+    }
+  },
+  "renderToHtml": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Integrating the HTML viewer",
+      "es": "Integrar el visor HTML"
+    }
+  },
+  "renderToHtmlIndexed": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Going further",
+      "es": "Siguiente paso"
+    }
+  },
+  "createLayoutWorker": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Running layout in a Web Worker",
+      "es": "Ejecutar la composición en un Web Worker"
+    }
+  },
+  "renderToPdf": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Generating PDFs",
+      "es": "Generación de PDF"
+    }
+  },
+  "decompressWoff2": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Browser font provider (Fontsource + WOFF2)",
+      "es": "Proveedor de fuentes en el navegador (Fontsource + WOFF2)"
+    }
+  },
+  "createPdfWorker": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Driving PDF export from the worker",
+      "es": "Exportar PDF desde el worker"
+    }
+  }
+}

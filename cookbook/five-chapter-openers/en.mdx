@@ -1,0 +1,71 @@
+---
+title: "Five chapter openers in one book"
+summary: "One opener on level 1 and four heading styles named in the Markdown; each style swaps the accent colour, and some also change the margins, columns or folios."
+description: "Five chapter openers in one Postext book: a novel's drop cap, a framed title, a stacked poster title, a manual's number badge and a coda low on an empty page."
+question: "How do I give every chapter its own opener, colour or photo, and pick it from the Markdown?"
+aliases: ["heading styles", "chapter opener variants", "photo per chapter", "drop cap", "boxed initial", "raised initial", "number badge", "stacked title", "cartouche", "section palette", "apertura de capítulo"]
+pageNotes: { "1": "Chapter One, “The Voice”: a small red tracked kicker, a light italic title, a short red rule and an opening paragraph whose five-line red initial M meets the first line's capitals.", "2": "The chapter runs on in justified Lora under the book's running head, folio and title on the left.", "3": "The chapter's last page: seven lines at the head of the page, under a running head with the chapter title and folio on the right.", "4": "Chapter the Second, “The Frame”: the title set in a cream cartouche of a heavy blue rule and a hairline, over a blue printer's flower, and an opening paragraph with a three-line blue initial.", "5": "Chapter Three: “Say it out loud.” stacked on three lines in white Fraunces Black on a magenta field that bleeds off the top, and below it a paragraph whose initial M is white on a magenta box.", "6": "Chapter 4, “Number Everything”: mono running heads, a heavy rule, an orange number badge beside a bold sans title, and two ragged columns with numbered sections.", "7": "The coda, “Leave Room”: a grey kicker and a small title halfway down an empty page, a raised initial S rising above the first line, and the colophon." }
+---
+
+## What you'll build
+
+*Five Ways to Begin* is a seven-page book about chapter openers, 180 × 240 mm, and each chapter is set in the opener it describes. Chapter one is a novel's: a tracked kicker, a light italic title and a five-line red initial, with running heads on the pages that follow. Chapter two puts its title and a printer's flower inside a cream cartouche drawn with two blue rules. Chapter three stacks its title in white Fraunces Black on a magenta field that bleeds off the page, over a mono initial reversed out of a box. Chapter four, the manual, has mono running heads, an orange number badge beside its title and two columns of Geist. The coda sets its title halfway down an empty page, above a raised initial. Chapter one uses level 1's own opener; the other four name a heading style on their heading line.
+
+## Method
+
+### 1 · Set the book's own opener on the level
+
+<Excerpt region="literary" />
+
+Chapter one has no style, so it takes level 1's own design, which every style starts from ([the short answer](#the-short-answer) shows the level and the styles). Drop caps exist only in design text, so the chapter's first paragraph comes from `lead="…"` on the heading line and `lead()` sets it in the opener; the body text flows on below. The engine stands the letter on the fifth baseline, but at its default size the capital is as tall as all five line boxes and rises 2.2 mm above the first line's capitals. `dropSize()` sizes it from the capital height of Lora and Fraunces (0.7 em), so the top of the M lines up with them.
+
+### 2 · Frame the title in two boxes
+
+<Excerpt region="framed" />
+
+Array order is paint order, so the boxes come first and the type on top; the ornament is an image element, which draws a registered SVG resource that is never numbered or cited. An image element is also how a chapter gets a photo of its own, but its `resourceId` is a fixed id, not an `{attr.…}` template: each chapter needs a style whose image element names its bitmap, as in <RecipeLink slug="magazine-feature-opener">the magazine feature</RecipeLink>. The `framed` style in the short answer sets `palette` to turn `accent` blue on this chapter's pages, so the rules, the kicker and the drop folio print blue, and its `margins` centre the text block under the frame. In 1.4.1 a drop cap's `color` ignores the section palette, so the initial names the blue with `col('lapis')`.
+
+### 3 · Stack the title, box the initial
+
+<Excerpt region="stacked" />
+
+The stack is written in the Markdown: `# Say it \\ out \\ loud.` breaks `{titleText}` at each `\\`, while running heads and the PDF outline read the title on one line ([line breaks in titles](/en/docs/document-format#line-breaks-in-titles)). The field hangs from the top of the bleed, full width and 130 mm deep, and the lead starts 8 mm under it. The boxed initial is two elements. The lead's drop cap sets the M over three lines, and the magenta box painted before it is sized from the lead's line box and Geist Mono's metrics, so the colour above and below the M is as wide as its side bearings.
+
+### 4 · Give the manual a badge, two columns and its own heads
+
+<Excerpt region="spec" />
+
+The badge is a text element with a fill and padding but no width, so its width follows `{chapterNumber}`, and the title is placed `right-of` it: at chapter 10 the badge grows by one figure, 5.5 mm, and the title moves with it. Its bottom padding is 1 mm less than the top because the line box holds that much more under the figures, so the 4 sits centred. In the `spec` style, `layout` sets the section in two columns and the level's `span: 'page'` runs the opener across both. Its `margins` widen the text block to 144 mm, `bodyStyle` sets ragged Geist on the book's 14.5 pt grid, `header` replaces the book's running heads and an empty `footer` drops the folio.
+
+### 5 · Leave the coda room
+
+<Excerpt region="quiet" />
+
+The kicker hangs 92 mm below the top of the text block, and the raised initial is a one-line drop cap: its foot stands on the first baseline and, at 46 pt, it rises into the white above instead of sinking into the paragraph. In the `quiet` style, `margins` narrow the measure to 106 mm, `bodyStyle` sets the text ragged at 12.5/17.5 pt, `footer` swaps the drop folio for a small one at the outer corner and `palette` turns the kicker grey. Nothing on this page prints a chapter number, so `numbered: false` would show only in a chapter added after the coda, which would still be the fifth.
+
+## Variations
+
+### Send every chapter to a recto
+
+With `'odd'`, every chapter opens on a right-hand page and chapters two to five each get a blank verso before them, so the book grows from 7 to 11 pages.
+
+```diff
+-  breakBefore: { enabled: true, parity: 'any' },
++  breakBefore: { enabled: true, parity: 'odd' },
+```
+
+### Drop the initial three lines
+
+`dropSize()` takes the number of lines, so a three-line initial still lines up with the first line's capitals.
+
+```diff
+-    lines: 5, fontSize: dropSize(5), fontFamily: 'Fraunces', fontWeight: 400,
++    lines: 3, fontSize: dropSize(3), fontFamily: 'Fraunces', fontWeight: 400,
+```
+
+## Pitfalls
+
+- Design text is never justified, so a lead in the opener is set ragged even in a justified book. Give it a size of its own (here 12/17 pt against the text's 10.8/14.5) so the ragged edge looks intended.
+- The boxed initial is fitted by hand to Lora 12/17, to Geist Mono's M and to the design baseline, which 1.4.1 places 0.8 down the line box (`BASE`) and does not expose. If you change the lead's face, size or leading, the letter, the number of lines or the engine version, check the box against the first line's capitals again.
+- A drop cap that spans every line of its paragraph still reserves its whole line box: in 1.4.1 the opener's height runs 3.5 mm past chapter three's lead, which can push the text down one line of the grid. With the field 130 mm deep, the overhang adds no grid line; if you change the depth, check the white under the lead.
+- Titles never rotate or run vertically: design text is always horizontal. Stack the words with `\\` instead, as chapter three does.

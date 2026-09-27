@@ -1,0 +1,4311 @@
+{
+  "$comment": "User-facing features, the Cookbook's main filter (feat=, AND) and the 'Ingredients' links. Keys are permanent kebab-case ids; recipes list them in recipe.json features.primary/also. label/definition/aliases are bilingual (aliases are search-only synonyms, including Spanish trade terms). docs points at the most precise h1-h3 heading of docs/<slug>-<locale>.mdx (text exactly as written; the site slugs it with github-slugger). research lists the research-catalogue ids this feature covers (design/feature-idmap.json maps them back). detect is optional and only WARNs (spec C27) or feeds 'Also uses' (scripts/cookbook/checks.ts detectFeatures): config entries are dotted paths into the recipe's user config ('[]' marks an array item and is ignored in matching), fired when the path or anything under it is set, so pick paths a recipe sets only when it uses the feature; markdown entries are JavaScript regular-expression sources tested with the 'm' flag against every recorded markdown; api entries are exported symbols the script imports. Any entry firing is a match. Baseline features every recipe sets (trim, margins, body type, headings, running heads, palette) deliberately have no detect rule.",
+  "page-size": {
+    "label": {
+      "en": "Trim size",
+      "es": "Formato de página"
+    },
+    "definition": {
+      "en": "Sets the physical page: a size preset or a custom width and height in mm, plus the dpi the layout and the canvas render at.",
+      "es": "Fija la página física: un tamaño predefinido o un ancho y un alto a medida en mm, y los ppp a los que se compone y se pinta el canvas."
+    },
+    "aliases": {
+      "en": [
+        "page size",
+        "trim",
+        "custom page size",
+        "A4",
+        "A5",
+        "square book",
+        "dpi",
+        "resolution"
+      ],
+      "es": [
+        "tamaño de página",
+        "formato",
+        "tamaño a medida",
+        "A4",
+        "A5",
+        "libro cuadrado",
+        "ppp",
+        "resolución"
+      ]
+    },
+    "group": "page",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Page size presets",
+        "es": "Tamaños de página predefinidos"
+      }
+    },
+    "research": [
+      "PG-1",
+      "PG-2",
+      "PG-6"
+    ]
+  },
+  "mirrored-margins": {
+    "label": {
+      "en": "Mirrored margins",
+      "es": "Márgenes simétricos"
+    },
+    "definition": {
+      "en": "Four independent margins; with mirror on, left becomes the inner (spine) margin and swaps on every verso, so pages pair as spreads.",
+      "es": "Cuatro márgenes independientes; con mirror activado, el izquierdo pasa a ser el interior (el del lomo) y en las páginas pares cambia de lado, así que las dos páginas de cada doble página quedan simétricas."
+    },
+    "aliases": {
+      "en": [
+        "facing pages",
+        "inner margin",
+        "outer margin",
+        "spine margin",
+        "gutter margin",
+        "spreads",
+        "recto verso"
+      ],
+      "es": [
+        "páginas enfrentadas",
+        "margen interior",
+        "margen exterior",
+        "margen del lomo",
+        "márgenes espejo",
+        "doble página",
+        "recto y verso"
+      ]
+    },
+    "group": "page",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Mirrored margins",
+        "es": "Márgenes simétricos (espejo)"
+      }
+    },
+    "research": [
+      "PG-3",
+      "PG-4"
+    ]
+  },
+  "units-and-dimensions": {
+    "label": {
+      "en": "Units and dimensions",
+      "es": "Unidades y medidas"
+    },
+    "definition": {
+      "en": "Every size is a value with a unit (mm, cm, in, pt, px, em, rem); em follows the element's own type size and is refused for page geometry.",
+      "es": "Cada medida es un valor con su unidad (mm, cm, in, pt, px, em, rem); em sigue el cuerpo del propio elemento y no se admite en la geometría de página."
+    },
+    "aliases": {
+      "en": [
+        "mm",
+        "pt",
+        "em",
+        "rem",
+        "points",
+        "millimetres"
+      ],
+      "es": [
+        "mm",
+        "pt",
+        "em",
+        "rem",
+        "puntos",
+        "milímetros"
+      ]
+    },
+    "group": "page",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Dimensions",
+        "es": "Dimensiones"
+      }
+    },
+    "research": [
+      "X-2",
+      "UC-DIM"
+    ]
+  },
+  "page-background": {
+    "label": {
+      "en": "Paper colour",
+      "es": "Color del papel"
+    },
+    "definition": {
+      "en": "Tints the whole page, for cream stock or a dark edition for reading at night; the text colours are set separately to match.",
+      "es": "Tiñe la página entera, para un papel crema o una edición oscura para leer de noche; los colores del texto se ajustan aparte."
+    },
+    "aliases": {
+      "en": [
+        "page background",
+        "tinted paper",
+        "cream paper",
+        "dark page",
+        "night edition"
+      ],
+      "es": [
+        "fondo de página",
+        "papel tintado",
+        "papel crema",
+        "página oscura",
+        "edición nocturna"
+      ]
+    },
+    "group": "colour",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Page",
+        "es": "Página"
+      }
+    },
+    "research": [
+      "PG-5"
+    ],
+    "detect": {
+      "config": [
+        "page.backgroundColor"
+      ]
+    }
+  },
+  "baseline-grid": {
+    "label": {
+      "en": "Baseline grid",
+      "es": "Rejilla base"
+    },
+    "definition": {
+      "en": "The body leading is the grid every line sits on, so lines align across columns and facing pages; drawing the grid over the pages only shows it.",
+      "es": "El interlineado del cuerpo es la rejilla en la que se asientan todas las líneas, así que quedan alineadas entre columnas y entre páginas enfrentadas; dibujar la rejilla sobre las páginas solo sirve para verla."
+    },
+    "aliases": {
+      "en": [
+        "vertical rhythm",
+        "grid alignment",
+        "register",
+        "line grid",
+        "lines align across columns"
+      ],
+      "es": [
+        "ritmo vertical",
+        "retícula base",
+        "registro",
+        "alinear líneas entre columnas",
+        "rejilla de líneas base"
+      ]
+    },
+    "group": "page",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Baseline grid",
+        "es": "Rejilla base"
+      }
+    },
+    "research": [
+      "PG-7",
+      "RS-GRID"
+    ],
+    "detect": {
+      "config": [
+        "page.baselineGrid"
+      ]
+    }
+  },
+  "off-grid-spacing": {
+    "label": {
+      "en": "Leaving the grid on purpose",
+      "es": "Salir de la rejilla a propósito"
+    },
+    "definition": {
+      "en": "Headings, paragraph styles and stacked boxes can keep exact spacing off the grid; the text after them snaps back to it.",
+      "es": "Los títulos, los estilos de párrafo y los recuadros apilados pueden conservar un espaciado exacto fuera de la rejilla; el texto que los sigue vuelve a ella."
+    },
+    "aliases": {
+      "en": [
+        "snapToGrid",
+        "exact spacing",
+        "off grid",
+        "snap back"
+      ],
+      "es": [
+        "snapToGrid",
+        "espaciado exacto",
+        "fuera de rejilla",
+        "volver a la rejilla"
+      ]
+    },
+    "group": "page",
+    "docs": {
+      "slug": "architecture",
+      "heading": {
+        "en": "Grid-Breaking Elements",
+        "es": "Elementos que rompen la rejilla"
+      }
+    },
+    "research": [
+      "HD-5",
+      "PS-4",
+      "CO-SNAP"
+    ],
+    "detect": {
+      "config": [
+        "headings.snapToGrid",
+        "calloutStyles[].snapToGrid"
+      ]
+    }
+  },
+  "bleed-and-crop-marks": {
+    "label": {
+      "en": "Bleed and crop marks",
+      "es": "Sangrado y marcas de corte"
+    },
+    "definition": {
+      "en": "Grows the sheet by the bleed, draws crop marks at the corners in the canvas and in the PDF, and lets design elements anchor to the bleed.",
+      "es": "Amplía el pliego con el sangrado, dibuja marcas de corte en las esquinas en el canvas y en el PDF, y permite anclar elementos de diseño a la sangre."
+    },
+    "aliases": {
+      "en": [
+        "bleed",
+        "crop marks",
+        "trim marks",
+        "cut lines",
+        "print ready",
+        "full bleed"
+      ],
+      "es": [
+        "sangre",
+        "marcas de corte",
+        "líneas de corte",
+        "listo para imprenta",
+        "a sangre",
+        "sangrado"
+      ]
+    },
+    "group": "pdf",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Cut lines",
+        "es": "Marcas de corte"
+      }
+    },
+    "research": [
+      "PG-8"
+    ],
+    "detect": {
+      "config": [
+        "page.cutLines"
+      ]
+    }
+  },
+  "column-layouts": {
+    "label": {
+      "en": "One or two columns",
+      "es": "Una o dos columnas"
+    },
+    "definition": {
+      "en": "A single column or two equal columns with their gutter; two columns is the default, so a novel must ask for one.",
+      "es": "Una sola columna o dos columnas iguales con su medianil; dos columnas es el valor por defecto, así que en una novela hay que pedir una sola."
+    },
+    "aliases": {
+      "en": [
+        "single column",
+        "two columns",
+        "double column",
+        "gutter",
+        "gutter width",
+        "layoutType"
+      ],
+      "es": [
+        "una columna",
+        "dos columnas",
+        "medianil",
+        "ancho del medianil",
+        "layoutType"
+      ]
+    },
+    "group": "page",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Layout types",
+        "es": "Tipos de disposición"
+      }
+    },
+    "research": [
+      "LY-1",
+      "LY-2",
+      "LY-3"
+    ]
+  },
+  "column-rule": {
+    "label": {
+      "en": "Column rule",
+      "es": "Filete de columna"
+    },
+    "definition": {
+      "en": "A vertical hairline in the gutter, broken around full-width bands, in the canvas and the PDF.",
+      "es": "Un filete vertical en el medianil, interrumpido por las bandas a todo el ancho, en el canvas y en el PDF."
+    },
+    "aliases": {
+      "en": [
+        "gutter rule",
+        "vertical rule",
+        "column line",
+        "newspaper rule"
+      ],
+      "es": [
+        "filete del medianil",
+        "línea vertical",
+        "corondel",
+        "filete de periódico"
+      ]
+    },
+    "group": "page",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Column rule",
+        "es": "Filete de columna"
+      }
+    },
+    "research": [
+      "LY-4"
+    ],
+    "detect": {
+      "config": [
+        "layout.columnRule"
+      ]
+    }
+  },
+  "column-and-a-half": {
+    "label": {
+      "en": "Column and a half",
+      "es": "Columna y media"
+    },
+    "definition": {
+      "en": "An asymmetric layout: a wide main column and a narrow side column, on a fixed side or on the outer edge of each page.",
+      "es": "Una disposición asimétrica: una columna principal ancha y una lateral estrecha, a un lado fijo o en el borde exterior de cada página."
+    },
+    "aliases": {
+      "en": [
+        "one and a half columns",
+        "oneAndHalf",
+        "side column",
+        "asymmetric layout",
+        "sideColumnSide",
+        "outer column"
+      ],
+      "es": [
+        "columna lateral",
+        "oneAndHalf",
+        "disposición asimétrica",
+        "sideColumnSide",
+        "columna exterior"
+      ]
+    },
+    "group": "page",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Layout types",
+        "es": "Tipos de disposición"
+      }
+    },
+    "research": [
+      "LY-5",
+      "LY-7"
+    ],
+    "detect": {
+      "config": [
+        "layout.sideColumnPercent",
+        "layout.sideColumnSide",
+        "layout.sideColumnRole"
+      ]
+    }
+  },
+  "side-column-floats": {
+    "label": {
+      "en": "Margin column for floats",
+      "es": "Columna al margen para flotantes"
+    },
+    "definition": {
+      "en": "A column-and-a-half page whose side column takes no body text, only the figures, tables and boxes placed there, as in the margin of many textbooks.",
+      "es": "Una página en columna y media cuya columna lateral no recibe texto, solo las figuras, tablas y recuadros que se colocan en ella, como el margen de muchos libros de texto."
+    },
+    "aliases": {
+      "en": [
+        "textbook margin",
+        "marginalia",
+        "margin figures",
+        "sideColumnRole",
+        "float channel",
+        "sidebar"
+      ],
+      "es": [
+        "margen de libro de texto",
+        "marginalia",
+        "figuras al margen",
+        "sideColumnRole",
+        "canal de flotantes",
+        "barra lateral"
+      ]
+    },
+    "group": "page",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Layout",
+        "es": "Disposición"
+      }
+    },
+    "research": [
+      "LY-6"
+    ],
+    "detect": {
+      "config": [
+        "layout.sideColumnRole"
+      ]
+    }
+  },
+  "page-breaks": {
+    "label": {
+      "en": "Page and column breaks",
+      "es": "Saltos de página y de columna"
+    },
+    "definition": {
+      "en": "Move the next block to a new page, to the next recto or verso (adding a blank page when needed), or to the next column.",
+      "es": "Llevan el bloque siguiente a una página nueva, a la siguiente página impar o par (con una página en blanco si hace falta) o a la columna siguiente."
+    },
+    "aliases": {
+      "en": [
+        "pagebreak",
+        "columnbreak",
+        "new page",
+        "blank page",
+        "start on a right-hand page",
+        "recto",
+        "fresh spread"
+      ],
+      "es": [
+        "pagebreak",
+        "columnbreak",
+        "página nueva",
+        "página en blanco",
+        "empezar en página impar",
+        "salto de columna",
+        "pliego nuevo"
+      ]
+    },
+    "group": "structure",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "`:::pagebreak`",
+        "es": "`:::pagebreak`"
+      }
+    },
+    "research": [
+      "DIR-PB",
+      "DIR-PB-PAR",
+      "DIR-CB"
+    ],
+    "detect": {
+      "markdown": [
+        "^:::pagebreak",
+        "^:::columnbreak"
+      ]
+    }
+  },
+  "vertical-space": {
+    "label": {
+      "en": "Explicit vertical space",
+      "es": "Espacio vertical explícito"
+    },
+    "definition": {
+      "en": "Adds whole or fractional lines of space between two blocks, where blank lines add nothing; dropped at a column top.",
+      "es": "Añade líneas enteras o fraccionarias de espacio entre dos bloques, donde las líneas en blanco no añaden nada; se descarta al principio de una columna."
+    },
+    "aliases": {
+      "en": [
+        "space",
+        "blank lines",
+        "extra space",
+        "vertical gap",
+        "stanza gap"
+      ],
+      "es": [
+        "espacio",
+        "líneas en blanco",
+        "espacio extra",
+        "hueco vertical",
+        "separación entre estrofas"
+      ]
+    },
+    "group": "structure",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "`:::space`",
+        "es": "`:::space`"
+      }
+    },
+    "research": [
+      "DIR-SPACE"
+    ],
+    "detect": {
+      "markdown": [
+        "^:::space"
+      ]
+    }
+  },
+  "column-balancing": {
+    "label": {
+      "en": "Column balancing",
+      "es": "Equilibrado de columnas"
+    },
+    "definition": {
+      "en": "Ends every column flush with the page foot by adjusting, in this order, the space around headings, lists and floats, then paragraph looseness and tracking; it also levels the last page of a chapter.",
+      "es": "Hace que cada columna acabe a ras del pie de la página ajustando, por este orden, el espacio junto a títulos, listas y flotantes, la holgura de los párrafos y el espaciado entre letras; además nivela la última página de cada capítulo."
+    },
+    "aliases": {
+      "en": [
+        "vertical justification",
+        "flush columns",
+        "flush bottoms",
+        "balanced last page",
+        "feathering"
+      ],
+      "es": [
+        "justificación vertical",
+        "columnas a ras",
+        "pies a ras",
+        "última página equilibrada",
+        "columnas niveladas"
+      ]
+    },
+    "group": "page",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Column balancing",
+        "es": "Equilibrado de columnas"
+      }
+    },
+    "research": [
+      "HD-6",
+      "HD-7",
+      "HD-8"
+    ],
+    "detect": {
+      "config": [
+        "headings.balancing"
+      ]
+    }
+  },
+  "body-typography": {
+    "label": {
+      "en": "Body type",
+      "es": "Tipografía del texto"
+    },
+    "definition": {
+      "en": "The text face, its size, leading and weights; the leading is also the baseline grid pitch.",
+      "es": "La fuente del texto, su cuerpo, su interlineado y sus pesos; el interlineado es además el paso de la rejilla base."
+    },
+    "aliases": {
+      "en": [
+        "body text",
+        "font size",
+        "leading",
+        "line height",
+        "text face",
+        "font weight"
+      ],
+      "es": [
+        "texto de cuerpo",
+        "cuerpo de letra",
+        "interlineado",
+        "tamaño de letra",
+        "fuente del texto",
+        "peso"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Body text",
+        "es": "Texto de cuerpo"
+      }
+    },
+    "research": [
+      "BT-1",
+      "BT-2"
+    ]
+  },
+  "paragraph-indents": {
+    "label": {
+      "en": "Indents, alignment and paragraph spacing",
+      "es": "Sangrías, alineación y separación de párrafos"
+    },
+    "definition": {
+      "en": "Justified or ragged text, first-line indents with the first paragraph flush after a heading, or block paragraphs with space between.",
+      "es": "Texto justificado o en bandera, sangría de primera línea con el primer párrafo sin sangrar tras un título, o párrafos en bloque separados por un espacio."
+    },
+    "aliases": {
+      "en": [
+        "first-line indent",
+        "ragged right",
+        "flush left",
+        "justified",
+        "paragraph spacing",
+        "indentAfterHeading"
+      ],
+      "es": [
+        "sangría de primera línea",
+        "texto en bandera",
+        "alineado a la izquierda",
+        "justificado",
+        "espacio entre párrafos",
+        "indentAfterHeading"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Body text",
+        "es": "Texto de cuerpo"
+      }
+    },
+    "research": [
+      "BT-4",
+      "BT-5",
+      "BT-6"
+    ]
+  },
+  "emphasis-colours": {
+    "label": {
+      "en": "Bold, italic and their colours",
+      "es": "Negrita, cursiva y sus colores"
+    },
+    "definition": {
+      "en": "Bold and italic runs and the colour they print in; by default they take the accent blue, so a monochrome book sets them back to the text colour.",
+      "es": "Los fragmentos en negrita y cursiva y el color con que se imprimen; por defecto toman el azul de acento, así que en un libro a una tinta hay que devolverlos al color del texto."
+    },
+    "aliases": {
+      "en": [
+        "boldColor",
+        "italicColor",
+        "blue bold text",
+        "key terms",
+        "coloured emphasis"
+      ],
+      "es": [
+        "boldColor",
+        "italicColor",
+        "negrita azul",
+        "términos clave",
+        "énfasis en color"
+      ]
+    },
+    "group": "colour",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Body text",
+        "es": "Texto de cuerpo"
+      }
+    },
+    "research": [
+      "BT-3",
+      "IN-B",
+      "IN-I",
+      "IN-BI",
+      "PS-5"
+    ]
+  },
+  "knuth-plass": {
+    "label": {
+      "en": "Optimal line breaking (Knuth–Plass)",
+      "es": "Corte de líneas óptimo (Knuth–Plass)"
+    },
+    "definition": {
+      "en": "Breaks each paragraph as a whole for even word spacing, within word-spacing bounds, instead of filling line by line.",
+      "es": "Corta cada párrafo en su conjunto para igualar el espacio entre palabras, dentro de los límites fijados, en lugar de llenar línea a línea."
+    },
+    "aliases": {
+      "en": [
+        "justification",
+        "line breaking",
+        "word spacing",
+        "rivers",
+        "greedy vs optimal",
+        "optimalLineBreaking",
+        "TeX"
+      ],
+      "es": [
+        "justificación",
+        "corte de líneas",
+        "espaciado entre palabras",
+        "calles",
+        "voraz frente a óptimo",
+        "optimalLineBreaking",
+        "TeX"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "justification",
+      "heading": {
+        "en": "Knuth-Plass: Seeing the Whole Paragraph",
+        "es": "Knuth-Plass: ver el párrafo completo"
+      }
+    },
+    "research": [
+      "BT-7",
+      "BT-8"
+    ]
+  },
+  "widows-orphans-runts": {
+    "label": {
+      "en": "Widows, orphans and runts",
+      "es": "Viudas, huérfanas y líneas cortas"
+    },
+    "definition": {
+      "en": "Keeps lone lines off column tops and feet and one-word last lines out of paragraphs; keeps a heading with its text, and a paragraph ending in a colon with the list it introduces.",
+      "es": "Evita las líneas sueltas en la cabeza y el pie de las columnas y las últimas líneas de una sola palabra; mantiene cada título con su texto, y el párrafo que acaba en dos puntos, con la lista que presenta."
+    },
+    "aliases": {
+      "en": [
+        "widows",
+        "orphans",
+        "runts",
+        "short last line",
+        "keep with next",
+        "keep together"
+      ],
+      "es": [
+        "viudas",
+        "huérfanas",
+        "runts",
+        "última línea corta",
+        "mantener con el siguiente",
+        "mantener unido"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Orphans, widows, runts, and keep-together rules",
+        "es": "Huérfanas, viudas, *runts* y reglas de cohesión"
+      }
+    },
+    "research": [
+      "BT-10",
+      "BT-11",
+      "BT-12",
+      "BT-13",
+      "HD-4"
+    ]
+  },
+  "paragraph-styles": {
+    "label": {
+      "en": "Paragraph styles",
+      "es": "Estilos de párrafo"
+    },
+    "definition": {
+      "en": "Named styles for runs of paragraphs set apart from the body: verse, epigraphs, dedications, signatures, small print.",
+      "es": "Estilos con nombre para grupos de párrafos que se apartan del texto general: versos, epígrafes, dedicatorias, firmas, letra pequeña."
+    },
+    "aliases": {
+      "en": [
+        "verse",
+        "poetry",
+        "epigraph",
+        "dedication",
+        "centred text",
+        "pull quote",
+        ":::paragraphs"
+      ],
+      "es": [
+        "verso",
+        "poesía",
+        "epígrafe",
+        "dedicatoria",
+        "texto centrado",
+        "cita destacada",
+        ":::paragraphs"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Paragraph styles",
+        "es": "Estilos de párrafo"
+      }
+    },
+    "research": [
+      "PS-1",
+      "PS-3",
+      "CT-PARA"
+    ],
+    "detect": {
+      "markdown": [
+        "^:::paragraphs"
+      ]
+    }
+  },
+  "bibliography": {
+    "label": {
+      "en": "Bibliographies and glossaries",
+      "es": "Bibliografías y glosarios"
+    },
+    "definition": {
+      "en": "Reference lists and glossaries in smaller type with a hanging indent, one paragraph per entry.",
+      "es": "Listas de referencias y glosarios en cuerpo menor con sangría francesa, un párrafo por entrada."
+    },
+    "aliases": {
+      "en": [
+        "references",
+        "hanging indent",
+        "works cited",
+        "glossary",
+        "endmatter"
+      ],
+      "es": [
+        "referencias",
+        "sangría francesa",
+        "obras citadas",
+        "glosario",
+        "páginas finales"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Paragraph styles",
+        "es": "Estilos de párrafo"
+      }
+    },
+    "research": [
+      "PS-2"
+    ],
+    "detect": {
+      "config": [
+        "paragraphStyles[].hangingIndent"
+      ]
+    }
+  },
+  "bullet-lists": {
+    "label": {
+      "en": "Bullet lists and checklists",
+      "es": "Listas de viñetas y de comprobación"
+    },
+    "definition": {
+      "en": "Bullet glyph, colour, weight, indents and spacing per nesting level (two spaces per level, up to five), and task items with box glyphs.",
+      "es": "Viñeta, color, peso, sangrías y espaciado por nivel de anidamiento (dos espacios por nivel, hasta cinco), y tareas con casillas."
+    },
+    "aliases": {
+      "en": [
+        "bullets",
+        "unordered list",
+        "nested list",
+        "bulletChar",
+        "task list",
+        "checkbox",
+        "to-do",
+        "checklist"
+      ],
+      "es": [
+        "viñetas",
+        "lista no ordenada",
+        "lista anidada",
+        "bulletChar",
+        "lista de tareas",
+        "casilla",
+        "pendientes",
+        "lista de verificación"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Unordered Lists",
+        "es": "Listas no ordenadas"
+      }
+    },
+    "research": [
+      "UL-1",
+      "UL-2",
+      "UL-3",
+      "FM-UL",
+      "UL-4",
+      "FM-TASK"
+    ]
+  },
+  "numbered-lists": {
+    "label": {
+      "en": "Numbered lists",
+      "es": "Listas numeradas"
+    },
+    "definition": {
+      "en": "Arabic, roman or letter numbering per level, styled separators and hanging step numbers.",
+      "es": "Numeración arábiga, romana o con letras por nivel, separadores con estilo propio y números de paso colgados."
+    },
+    "aliases": {
+      "en": [
+        "ordered list",
+        "numberFormat",
+        "(a) (i) numbering",
+        "roman numerals",
+        "step numbers",
+        "outline numbering"
+      ],
+      "es": [
+        "lista ordenada",
+        "numberFormat",
+        "numeración (a) (i)",
+        "números romanos",
+        "pasos numerados",
+        "numeración de esquema"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Ordered Lists",
+        "es": "Listas ordenadas"
+      }
+    },
+    "research": [
+      "OL-1",
+      "OL-2",
+      "OL-3",
+      "OL-4",
+      "FM-OL"
+    ]
+  },
+  "chips": {
+    "label": {
+      "en": "Inline chips",
+      "es": "Chips en línea"
+    },
+    "definition": {
+      "en": "Rounded boxes around words that wrap as one unit and never stretch: keycaps, tags, word banks, syllables.",
+      "es": "Cajas redondeadas alrededor de palabras que pasan de línea como una unidad y nunca se estiran: teclas, etiquetas, bancos de palabras, sílabas."
+    },
+    "aliases": {
+      "en": [
+        "chip",
+        "keycap",
+        "keyboard key",
+        "tag",
+        "pill",
+        "badge",
+        "word bank"
+      ],
+      "es": [
+        "chip",
+        "ficha",
+        "tecla",
+        "etiqueta",
+        "píldora",
+        "banco de palabras"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Chip styles",
+        "es": "Estilos de chip"
+      }
+    },
+    "research": [
+      "IN-CHIP",
+      "CH-BORDER",
+      "CH-GAP",
+      "CH-PAD",
+      "CH-TYPE",
+      "CH-DEFAULT",
+      "CH-FILL",
+      "CH-WARN"
+    ],
+    "detect": {
+      "markdown": [
+        ":chip\\["
+      ]
+    }
+  },
+  "swatches": {
+    "label": {
+      "en": "Colour swatches",
+      "es": "Muestras de color"
+    },
+    "definition": {
+      "en": "A small square of colour on the baseline, for colour keys in text, captions and table notes.",
+      "es": "Un pequeño cuadrado de color sobre la línea base, para leyendas de color en el texto, los pies y las notas de tabla."
+    },
+    "aliases": {
+      "en": [
+        "colour key",
+        "legend",
+        "swatch",
+        "color key"
+      ],
+      "es": [
+        "leyenda de color",
+        "leyenda",
+        "muestra",
+        "clave de color"
+      ]
+    },
+    "group": "colour",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Inline formatting",
+        "es": "Formato en línea"
+      }
+    },
+    "research": [
+      "IN-SWATCH"
+    ],
+    "detect": {
+      "markdown": [
+        ":swatch\\{"
+      ]
+    }
+  },
+  "super-subscripts": {
+    "label": {
+      "en": "Superscripts and subscripts",
+      "es": "Superíndices y subíndices"
+    },
+    "definition": {
+      "en": "Raised and lowered text written in the Markdown itself, without MathJax: exponents, ordinals, chemical formulas, note markers.",
+      "es": "Texto por encima o por debajo de la línea, escrito en el propio Markdown y sin pasar por MathJax: exponentes, ordinales, fórmulas químicas, llamadas de nota."
+    },
+    "aliases": {
+      "en": [
+        "superscript",
+        "subscript",
+        "chemical formula",
+        "H2O",
+        "note markers"
+      ],
+      "es": [
+        "superíndice",
+        "subíndice",
+        "fórmula química",
+        "H2O",
+        "llamadas de nota"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Inline formatting",
+        "es": "Formato en línea"
+      }
+    },
+    "research": [
+      "IN-SUP",
+      "IN-SUB"
+    ],
+    "detect": {
+      "markdown": [
+        "\\^[^\\s^][^^\\n]*\\^",
+        "~[^\\s~][^~\\n]*~"
+      ]
+    }
+  },
+  "markdown-basics": {
+    "label": {
+      "en": "Markdown essentials",
+      "es": "Lo esencial del Markdown"
+    },
+    "definition": {
+      "en": "Paragraphs, blockquotes, inline code and links as Postext reads them: links print as text and code as plain text.",
+      "es": "Párrafos, citas, código en línea y enlaces tal como los lee Postext: los enlaces se imprimen como texto y el código como texto normal."
+    },
+    "aliases": {
+      "en": [
+        "markdown",
+        "blockquote",
+        "inline code",
+        "links",
+        "paragraphs"
+      ],
+      "es": [
+        "markdown",
+        "cita",
+        "código en línea",
+        "enlaces",
+        "párrafos"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Block constructs",
+        "es": "Construcciones de bloque"
+      }
+    },
+    "research": [
+      "FM-P",
+      "FM-BQ",
+      "IN-CODE",
+      "IN-LINK",
+      "FM-FENCE"
+    ]
+  },
+  "escapes": {
+    "label": {
+      "en": "Escapes and literal characters",
+      "es": "Escapes y caracteres literales"
+    },
+    "definition": {
+      "en": "Backslash escapes and word joiners that keep dollars, asterisks, dialogue dashes and years at a paragraph start from being read as markup.",
+      "es": "Escapes con barra invertida y unidores de palabra que evitan que los dólares, los asteriscos, las rayas de diálogo o un año al principio de párrafo se lean como marcado."
+    },
+    "aliases": {
+      "en": [
+        "escape",
+        "backslash",
+        "dollar sign",
+        "literal asterisk",
+        "dialogue dash",
+        "word joiner"
+      ],
+      "es": [
+        "escape",
+        "barra invertida",
+        "signo de dólar",
+        "asterisco literal",
+        "raya de diálogo",
+        "unidor de palabras"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Authoring conventions",
+        "es": "Normas de redacción"
+      }
+    },
+    "research": [
+      "IN-ESC"
+    ]
+  },
+  "font-loading": {
+    "label": {
+      "en": "Fonts before layout",
+      "es": "Fuentes antes de componer"
+    },
+    "definition": {
+      "en": "Layout measures with the faces the browser has loaded, so every face is loaded first and the measurement cache cleared if one arrives late.",
+      "es": "La composición mide con las fuentes que el navegador ha cargado, así que cada fuente se carga antes y la caché de medidas se vacía si alguna llega tarde."
+    },
+    "aliases": {
+      "en": [
+        "web fonts",
+        "FontFace",
+        "document.fonts",
+        "Fontsource",
+        "Google Fonts",
+        "line breaks change",
+        "clearMeasurementCache"
+      ],
+      "es": [
+        "fuentes web",
+        "FontFace",
+        "document.fonts",
+        "Fontsource",
+        "Google Fonts",
+        "los cortes de línea cambian",
+        "clearMeasurementCache"
+      ]
+    },
+    "group": "fonts",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Measurement cache",
+        "es": "Caché de medidas"
+      }
+    }
+  },
+  "custom-fonts": {
+    "label": {
+      "en": "Your own fonts",
+      "es": "Tus propias fuentes"
+    },
+    "definition": {
+      "en": "Brand or licensed families declared in customFonts, registered for layout and embedded in the PDF from the same bytes.",
+      "es": "Familias corporativas o con licencia declaradas en customFonts, registradas para la composición e incrustadas en el PDF con los mismos bytes."
+    },
+    "aliases": {
+      "en": [
+        "brand fonts",
+        "licensed fonts",
+        "customFonts",
+        "font files",
+        "otf",
+        "ttf",
+        "woff2"
+      ],
+      "es": [
+        "fuentes corporativas",
+        "fuentes con licencia",
+        "customFonts",
+        "archivos de fuente",
+        "otf",
+        "ttf",
+        "woff2"
+      ]
+    },
+    "group": "fonts",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Custom fonts",
+        "es": "Fuentes personalizadas"
+      }
+    },
+    "research": [
+      "CF-FONTS"
+    ],
+    "detect": {
+      "config": [
+        "customFonts"
+      ]
+    }
+  },
+  "pdf-fonts": {
+    "label": {
+      "en": "Fonts embedded in the PDF",
+      "es": "Fuentes incrustadas en el PDF"
+    },
+    "definition": {
+      "en": "A font provider hands renderToPdf the static TrueType bytes of every face the layout measured, so the PDF sets exactly the same lines.",
+      "es": "Un proveedor de fuentes entrega a renderToPdf los bytes TrueType estáticos de cada fuente que midió la composición, para que el PDF componga exactamente las mismas líneas."
+    },
+    "aliases": {
+      "en": [
+        "fontProvider",
+        "embed fonts",
+        "decompressWoff2",
+        "Fontsource",
+        "font subsetting"
+      ],
+      "es": [
+        "fontProvider",
+        "incrustar fuentes",
+        "decompressWoff2",
+        "Fontsource",
+        "subconjunto de fuentes"
+      ]
+    },
+    "group": "fonts",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Why a font provider?",
+        "es": "¿Por qué un proveedor de fuentes?"
+      }
+    },
+    "detect": {
+      "api": [
+        "decompressWoff2"
+      ]
+    }
+  },
+  "hyphenation-languages": {
+    "label": {
+      "en": "Hyphenation and document language",
+      "es": "Separación silábica e idioma del documento"
+    },
+    "definition": {
+      "en": "Hyphenation from TeX patterns in eight languages, chosen by the document locale, which also sets the table continuation strings and the tagged-PDF language.",
+      "es": "Separación silábica con patrones de TeX en ocho idiomas, según el locale del documento, que fija también los textos de continuación de las tablas y el idioma del PDF etiquetado."
+    },
+    "aliases": {
+      "en": [
+        "hyphenation",
+        "locale",
+        "Spanish",
+        "French",
+        "German",
+        "language",
+        "soft hyphen"
+      ],
+      "es": [
+        "separación silábica",
+        "partición de palabras",
+        "guionado",
+        "locale",
+        "español",
+        "idioma",
+        "guion blando"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "justification",
+      "heading": {
+        "en": "Supported Locales",
+        "es": "Idiomas soportados"
+      }
+    },
+    "research": [
+      "BT-9",
+      "PG-11"
+    ]
+  },
+  "localised-labels": {
+    "label": {
+      "en": "Figure and Table in your language",
+      "es": "Figura y Tabla en tu idioma"
+    },
+    "definition": {
+      "en": "defaultResourceTypes(locale) gives the built-in Figure and Table types, labels and references in the document's language.",
+      "es": "defaultResourceTypes(locale) devuelve los tipos Figura y Tabla de serie, con etiquetas y referencias en el idioma del documento."
+    },
+    "aliases": {
+      "en": [
+        "Figure label",
+        "Figura",
+        "localised captions",
+        "defaultResourceTypes",
+        "translate labels"
+      ],
+      "es": [
+        "etiqueta Figura",
+        "Figure",
+        "pies traducidos",
+        "defaultResourceTypes",
+        "traducir etiquetas"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Resource types",
+        "es": "Tipos de recurso"
+      }
+    },
+    "research": [
+      "RT-1"
+    ],
+    "detect": {
+      "api": [
+        "defaultResourceTypes"
+      ]
+    }
+  },
+  "bilingual-bundles": {
+    "label": {
+      "en": "One book, two languages",
+      "es": "Un libro, dos idiomas"
+    },
+    "definition": {
+      "en": "A bundle carries per-locale chapters, config and resources; openBundle picks the edition to lay out.",
+      "es": "Un paquete lleva capítulos, configuración y recursos por idioma; openBundle elige la edición que se compone."
+    },
+    "aliases": {
+      "en": [
+        "bilingual",
+        "translation",
+        "localized",
+        "two editions",
+        "multilingual"
+      ],
+      "es": [
+        "bilingüe",
+        "traducción",
+        "localized",
+        "dos ediciones",
+        "multilingüe"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Opening a bundle",
+        "es": "Abrir un paquete"
+      }
+    }
+  },
+  "heading-typography": {
+    "label": {
+      "en": "Heading levels",
+      "es": "Niveles de título"
+    },
+    "definition": {
+      "en": "Face, size scale, colour, weight, margins, italics and capitals for each heading level, H1 to H6.",
+      "es": "Fuente, escala de cuerpos, color, peso, márgenes, cursiva y mayúsculas para cada nivel de título, de H1 a H6."
+    },
+    "aliases": {
+      "en": [
+        "heading hierarchy",
+        "heading sizes",
+        "H1",
+        "H2",
+        "uppercase headings",
+        "type scale"
+      ],
+      "es": [
+        "jerarquía de títulos",
+        "encabezados",
+        "tamaños de título",
+        "H1",
+        "H2",
+        "títulos en mayúsculas"
+      ]
+    },
+    "group": "headings",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Per-level overrides",
+        "es": "Configuración por nivel"
+      }
+    },
+    "research": [
+      "HD-1",
+      "HD-2",
+      "HD-14",
+      "FM-H"
+    ]
+  },
+  "heading-numbering": {
+    "label": {
+      "en": "Numbered headings",
+      "es": "Títulos numerados"
+    },
+    "definition": {
+      "en": "Numbering templates per level (1, 1.1, IV, A, 01), which the openers, running heads and contents also print.",
+      "es": "Plantillas de numeración por nivel (1, 1.1, IV, A, 01), que también usan las aperturas, las cabeceras y el índice."
+    },
+    "aliases": {
+      "en": [
+        "section numbers",
+        "chapter numbers",
+        "numberingTemplate",
+        "1.1.1",
+        "roman chapter numbers"
+      ],
+      "es": [
+        "numeración de secciones",
+        "número de capítulo",
+        "numberingTemplate",
+        "1.1.1",
+        "capítulos en romanos",
+        "encabezados numerados"
+      ]
+    },
+    "group": "headings",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Per-level overrides",
+        "es": "Configuración por nivel"
+      }
+    },
+    "research": [
+      "HD-3"
+    ],
+    "detect": {
+      "config": [
+        "headings.levels[].numberingTemplate"
+      ]
+    }
+  },
+  "chapter-breaks": {
+    "label": {
+      "en": "Chapters that open on a recto",
+      "es": "Capítulos que abren en página impar"
+    },
+    "definition": {
+      "en": "A heading level starts a new page: the next one, the next recto or the next verso, with a blank page added when needed.",
+      "es": "Un nivel de título empieza en página nueva: la siguiente, la siguiente impar o la siguiente par, con una página en blanco si hace falta."
+    },
+    "aliases": {
+      "en": [
+        "breakBefore",
+        "right-hand page",
+        "odd page",
+        "chapters run on",
+        "parity"
+      ],
+      "es": [
+        "breakBefore",
+        "página impar",
+        "página derecha",
+        "capítulos seguidos",
+        "paridad"
+      ]
+    },
+    "group": "headings",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Break before",
+        "es": "Saltar antes"
+      }
+    },
+    "research": [
+      "HD-9"
+    ]
+  },
+  "opener-band": {
+    "label": {
+      "en": "Full-width chapter band",
+      "es": "Banda de capítulo a todo el ancho"
+    },
+    "definition": {
+      "en": "A heading that spans every column as an opener band, with the body in columns beneath it.",
+      "es": "Un título que ocupa todas las columnas como banda de apertura, con el texto en columnas debajo."
+    },
+    "aliases": {
+      "en": [
+        "span page",
+        "title across columns",
+        "chapter band",
+        "opener band"
+      ],
+      "es": [
+        "span page",
+        "título sobre las columnas",
+        "banda de capítulo",
+        "banda de apertura"
+      ]
+    },
+    "group": "headings",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Span and advanced design",
+        "es": "Span y diseño avanzado"
+      }
+    },
+    "research": [
+      "HD-10"
+    ],
+    "detect": {
+      "config": [
+        "headings.levels[].span"
+      ]
+    }
+  },
+  "opener-design": {
+    "label": {
+      "en": "Designed openers",
+      "es": "Aperturas diseñadas"
+    },
+    "definition": {
+      "en": "A heading drawn as a free composition of text, rules, boxes and pictures, reserving the height it needs above the body.",
+      "es": "Un título dibujado como composición libre de textos, filetes, cajas e imágenes, que reserva la altura que necesita sobre el texto."
+    },
+    "aliases": {
+      "en": [
+        "chapter opener",
+        "advancedDesign",
+        "big chapter number",
+        "title page design",
+        "sink",
+        "opener"
+      ],
+      "es": [
+        "apertura de capítulo",
+        "advancedDesign",
+        "número de capítulo grande",
+        "diseño de portada",
+        "caída de capítulo",
+        "apertura"
+      ]
+    },
+    "group": "headings",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Span and advanced design",
+        "es": "Span y diseño avanzado"
+      }
+    },
+    "research": [
+      "HD-11",
+      "HD-12"
+    ],
+    "detect": {
+      "config": [
+        "headings.levels[].advancedDesign",
+        "headingStyles[].advancedDesign"
+      ]
+    }
+  },
+  "heading-attributes": {
+    "label": {
+      "en": "Heading attributes",
+      "es": "Atributos de título"
+    },
+    "definition": {
+      "en": "Key–value pairs on a heading (author, kicker, lead) that openers, running heads and the contents print through {attr.name}.",
+      "es": "Pares clave-valor en un título (autor, antetítulo, entradilla) que las aperturas, las cabeceras y el índice imprimen con {attr.nombre}."
+    },
+    "aliases": {
+      "en": [
+        "author line",
+        "kicker",
+        "standfirst",
+        "lead",
+        "deck",
+        "byline",
+        "attr"
+      ],
+      "es": [
+        "línea de autor",
+        "antetítulo",
+        "entradilla",
+        "sumario",
+        "firma",
+        "attr",
+        "atributos de encabezado"
+      ]
+    },
+    "group": "headings",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Heading attributes",
+        "es": "Atributos de encabezado"
+      }
+    },
+    "research": [
+      "HD-13",
+      "FM-HATTR"
+    ],
+    "detect": {
+      "markdown": [
+        "^#{1,6} .*\\{[^}]*=[^}]*\\}\\s*$"
+      ]
+    }
+  },
+  "heading-styles": {
+    "label": {
+      "en": "Heading styles",
+      "es": "Estilos de título"
+    },
+    "definition": {
+      "en": "Named variants of a heading level, picked with {style=\"…\"}: a different opener, typography, running heads or page setup per chapter.",
+      "es": "Variantes con nombre de un nivel de título, elegidas con {style=\"…\"}: otra apertura, tipografía, cabeceras o página por capítulo."
+    },
+    "aliases": {
+      "en": [
+        "opener variants",
+        "per-chapter design",
+        "front matter style",
+        "headingStyles"
+      ],
+      "es": [
+        "variantes de apertura",
+        "diseño por capítulo",
+        "estilo de preliminares",
+        "headingStyles",
+        "estilos de encabezado"
+      ]
+    },
+    "group": "headings",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Heading styles",
+        "es": "Estilos de encabezado"
+      }
+    },
+    "research": [
+      "FM-HSTYLE",
+      "HS-LEVEL",
+      "HS-BODY"
+    ],
+    "detect": {
+      "config": [
+        "headingStyles"
+      ],
+      "markdown": [
+        "^#{1,6} .*\\{[^}]*style=\"[^\"]+\"[^}]*\\}\\s*$"
+      ]
+    }
+  },
+  "section-geometry": {
+    "label": {
+      "en": "Section geometry",
+      "es": "Geometría por sección"
+    },
+    "definition": {
+      "en": "A heading style that changes margins and column layout for its section, such as a one-column preface in a two-column book.",
+      "es": "Un estilo de título que cambia márgenes y columnas en su sección, como un prólogo a una columna en un libro a dos."
+    },
+    "aliases": {
+      "en": [
+        "single-column preface",
+        "section layout",
+        "section margins"
+      ],
+      "es": [
+        "prólogo a una columna",
+        "disposición por sección",
+        "márgenes por sección"
+      ]
+    },
+    "group": "headings",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Heading styles",
+        "es": "Estilos de encabezado"
+      }
+    },
+    "research": [
+      "HS-MARGINS",
+      "HS-LAYOUT"
+    ],
+    "detect": {
+      "config": [
+        "headingStyles[].layout",
+        "headingStyles[].margins"
+      ]
+    }
+  },
+  "unnumbered-headings": {
+    "label": {
+      "en": "Unnumbered chapters",
+      "es": "Capítulos sin número"
+    },
+    "definition": {
+      "en": "A preface, appendix or colophon heading that takes no number and leaves the chapter count untouched.",
+      "es": "Un título de prólogo, apéndice o colofón que no lleva número ni altera la cuenta de capítulos."
+    },
+    "aliases": {
+      "en": [
+        "preface",
+        "unnumbered",
+        "numbered false",
+        "appendix"
+      ],
+      "es": [
+        "prólogo",
+        "sin numerar",
+        "numbered false",
+        "apéndice"
+      ]
+    },
+    "group": "headings",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Heading styles",
+        "es": "Estilos de encabezado"
+      }
+    },
+    "research": [
+      "HS-NUMBERED"
+    ],
+    "detect": {
+      "config": [
+        "headingStyles[].numbered"
+      ]
+    }
+  },
+  "title-line-breaks": {
+    "label": {
+      "en": "Line breaks in titles",
+      "es": "Saltos de línea en los títulos"
+    },
+    "definition": {
+      "en": "A double backslash breaks a designed title where you want it, while running heads, contents and bookmarks stay on one line.",
+      "es": "Una doble barra invertida corta un título diseñado donde quieras, mientras las cabeceras, el índice y los marcadores siguen en una línea."
+    },
+    "aliases": {
+      "en": [
+        "two-line title",
+        "title break",
+        "forced break"
+      ],
+      "es": [
+        "título en dos líneas",
+        "corte de título",
+        "salto forzado"
+      ]
+    },
+    "group": "headings",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Line breaks in titles",
+        "es": "Saltos de línea en los títulos"
+      }
+    },
+    "research": [
+      "FM-TBRK"
+    ],
+    "detect": {
+      "markdown": [
+        "^#{1,6} .*\\\\\\\\"
+      ]
+    }
+  },
+  "drop-caps": {
+    "label": {
+      "en": "Drop caps in openers",
+      "es": "Capitulares en las aperturas"
+    },
+    "definition": {
+      "en": "A drop cap and indented paragraphs inside a design text element, for the lead of a chapter or article opener.",
+      "es": "Una capitular y párrafos sangrados dentro de un elemento de texto de diseño, para la entradilla de una apertura de capítulo o de artículo."
+    },
+    "aliases": {
+      "en": [
+        "drop cap",
+        "initial",
+        "versal",
+        "lead paragraph",
+        "dropCap"
+      ],
+      "es": [
+        "capitular",
+        "letra capital",
+        "inicial",
+        "entradilla",
+        "dropCap"
+      ]
+    },
+    "group": "headings",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Text elements",
+        "es": "Elementos de texto"
+      }
+    },
+    "research": [
+      "HF-17"
+    ],
+    "detect": {
+      "config": [
+        "headings.levels[].advancedDesign.slot.elements[].dropCap",
+        "headingStyles[].advancedDesign.slot.elements[].dropCap"
+      ]
+    }
+  },
+  "running-heads": {
+    "label": {
+      "en": "Running heads and folios",
+      "es": "Cabeceras y folios"
+    },
+    "definition": {
+      "en": "Header and footer slots with placeholders ({pageNumber}, {chapterTitle}, {title}…) set per recto or verso, with long titles truncated or wrapped.",
+      "es": "Ranuras de cabecera y pie con marcadores ({pageNumber}, {chapterTitle}, {title}…) distintas en recto y verso, con los títulos largos recortados o partidos."
+    },
+    "aliases": {
+      "en": [
+        "page numbers",
+        "header",
+        "footer",
+        "folio",
+        "verso recto",
+        "running title",
+        "chapter title in header"
+      ],
+      "es": [
+        "números de página",
+        "encabezado",
+        "pie de página",
+        "folio",
+        "cornisa",
+        "titulillo",
+        "verso y recto"
+      ]
+    },
+    "group": "furniture",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Headers & footers",
+        "es": "Encabezados y pies"
+      }
+    },
+    "research": [
+      "HF-1",
+      "HF-2",
+      "HF-3",
+      "HF-5",
+      "HF-6",
+      "HF-7",
+      "HF-16"
+    ]
+  },
+  "page-role-filters": {
+    "label": {
+      "en": "Heads by page role",
+      "es": "Cabeceras según el tipo de página"
+    },
+    "definition": {
+      "en": "Show a design element only on body, opener, part or blank pages, and on odd or even pages.",
+      "es": "Muestra un elemento de diseño solo en páginas de texto, de apertura, de parte o en blanco, y en páginas pares o impares."
+    },
+    "aliases": {
+      "en": [
+        "hide running head on openers",
+        "blank pages",
+        "drop folio",
+        "pages body",
+        "parity filter"
+      ],
+      "es": [
+        "ocultar cabecera en aperturas",
+        "páginas en blanco",
+        "folio al pie en aperturas",
+        "pages body",
+        "filtro de paridad"
+      ]
+    },
+    "group": "furniture",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Text elements",
+        "es": "Elementos de texto"
+      }
+    },
+    "research": [
+      "HF-4",
+      "DS-PAGES"
+    ],
+    "detect": {
+      "config": [
+        "header.elements[].pages",
+        "footer.elements[].pages"
+      ]
+    }
+  },
+  "design-elements": {
+    "label": {
+      "en": "Text, rules and boxes in page designs",
+      "es": "Textos, filetes y cajas en los diseños de página"
+    },
+    "definition": {
+      "en": "The drawing elements shared by headers, footers, openers and part pages: text with an optional pill, horizontal and vertical rules, and filled or framed boxes painted in array order.",
+      "es": "Los elementos de dibujo que comparten cabeceras, pies, aperturas y páginas de parte: textos con píldora opcional, filetes horizontales y verticales y cajas rellenas o con marco, pintados en el orden de la lista."
+    },
+    "aliases": {
+      "en": [
+        "design slot",
+        "watermark",
+        "background tint",
+        "pill",
+        "rule element",
+        "box element",
+        "badge"
+      ],
+      "es": [
+        "ranura de diseño",
+        "marca de agua",
+        "fondo tintado",
+        "píldora",
+        "elemento de línea",
+        "elemento de caja",
+        "insignia"
+      ]
+    },
+    "group": "furniture",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Headers & footers",
+        "es": "Encabezados y pies"
+      }
+    },
+    "research": [
+      "HF-8",
+      "HF-9",
+      "HF-10",
+      "DS-TEXT",
+      "DS-RULE",
+      "DS-BOX"
+    ]
+  },
+  "design-images": {
+    "label": {
+      "en": "Pictures in page designs",
+      "es": "Imágenes en los diseños de página"
+    },
+    "definition": {
+      "en": "Logos, photos and ornaments placed in headers, footers, openers and part pages, sized with the aspect ratio kept.",
+      "es": "Logotipos, fotos y adornos colocados en cabeceras, pies, aperturas y páginas de parte, con la proporción conservada."
+    },
+    "aliases": {
+      "en": [
+        "logo",
+        "opener photo",
+        "decorative image",
+        "ornament",
+        "image element"
+      ],
+      "es": [
+        "logotipo",
+        "foto de apertura",
+        "imagen decorativa",
+        "adorno",
+        "elemento de imagen"
+      ]
+    },
+    "group": "furniture",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Image elements",
+        "es": "Elementos de imagen"
+      }
+    },
+    "research": [
+      "HF-11",
+      "DS-IMAGE"
+    ]
+  },
+  "design-anchoring": {
+    "label": {
+      "en": "Anchoring design elements",
+      "es": "Anclaje de elementos de diseño"
+    },
+    "definition": {
+      "en": "Place elements against the container, the page, the bleed or another element (right-of, below, align-*) instead of by coordinates.",
+      "es": "Coloca los elementos respecto al contenedor, la página, la sangre u otro elemento (right-of, below, align-*) en lugar de por coordenadas."
+    },
+    "aliases": {
+      "en": [
+        "anchor",
+        "placement",
+        "number badge",
+        "element to element",
+        "offset"
+      ],
+      "es": [
+        "ancla",
+        "placement",
+        "insignia de número",
+        "elemento a elemento",
+        "desplazamiento"
+      ]
+    },
+    "group": "furniture",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Element placement",
+        "es": "Posicionamiento de elementos"
+      }
+    },
+    "research": [
+      "HF-12",
+      "HF-13",
+      "HF-15",
+      "DS-ANCHOR"
+    ]
+  },
+  "bleed-bands": {
+    "label": {
+      "en": "Bleed bands and thumb tabs",
+      "es": "Bandas a sangre y pestañas"
+    },
+    "definition": {
+      "en": "Colour fields anchored to the page or the bleed, edge to edge, including thumb-index tabs on the fore-edge that step down with each chapter.",
+      "es": "Campos de color anclados a la página o a la sangre, de borde a borde, incluidas pestañas de índice en el corte delantero que bajan con cada capítulo."
+    },
+    "aliases": {
+      "en": [
+        "thumb index",
+        "thumb tabs",
+        "edge band",
+        "full-bleed band",
+        "colour band"
+      ],
+      "es": [
+        "índice de uñeros",
+        "pestañas",
+        "uñeros",
+        "banda de borde",
+        "banda a sangre",
+        "banda de color"
+      ]
+    },
+    "group": "furniture",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Element placement",
+        "es": "Posicionamiento de elementos"
+      }
+    },
+    "research": [
+      "HF-14"
+    ]
+  },
+  "section-running-heads": {
+    "label": {
+      "en": "Running heads per section",
+      "es": "Cabeceras por sección"
+    },
+    "definition": {
+      "en": "A heading style carries its own header and footer, so front matter, sections or dictionary letters get their own furniture.",
+      "es": "Un estilo de título lleva su propia cabecera y su propio pie, así que los preliminares, las secciones o las letras de un diccionario tienen los suyos."
+    },
+    "aliases": {
+      "en": [
+        "front matter running heads",
+        "section header",
+        "different header per chapter"
+      ],
+      "es": [
+        "cabeceras de preliminares",
+        "cabecera por sección",
+        "cabecera distinta por capítulo"
+      ]
+    },
+    "group": "furniture",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Heading styles",
+        "es": "Estilos de encabezado"
+      }
+    },
+    "research": [
+      "HS-RUNHEADS"
+    ],
+    "detect": {
+      "config": [
+        "headingStyles[].header",
+        "headingStyles[].footer"
+      ]
+    }
+  },
+  "callout-styles": {
+    "label": {
+      "en": "Callout boxes",
+      "es": "Recuadros"
+    },
+    "definition": {
+      "en": "Named box styles for notes, tips and warnings: background, border, radius, stripe, title and their own body and list typography.",
+      "es": "Estilos de recuadro con nombre para notas, consejos y advertencias: fondo, borde, radio, franja, título y tipografía propia de texto y listas."
+    },
+    "aliases": {
+      "en": [
+        "callout",
+        "note box",
+        "tip",
+        "warning box",
+        "sidebar box",
+        "admonition",
+        "pull quote",
+        "calloutStyles"
+      ],
+      "es": [
+        "recuadro",
+        "aviso",
+        "caja de nota",
+        "consejo",
+        "advertencia",
+        "cita destacada",
+        "calloutStyles"
+      ]
+    },
+    "group": "boxes",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Callout styles",
+        "es": "Estilos de aviso"
+      }
+    },
+    "research": [
+      "CT-CALLOUT",
+      "CO-TITLE",
+      "CO-FRAME",
+      "CO-STRIPE",
+      "CO-TITLESTYLE",
+      "CO-BODY",
+      "CO-LISTS"
+    ],
+    "detect": {
+      "markdown": [
+        "^:::callout"
+      ]
+    }
+  },
+  "callout-icons": {
+    "label": {
+      "en": "Box icons and corner badges",
+      "es": "Iconos y distintivos de esquina"
+    },
+    "definition": {
+      "en": "A glyph or picture beside a box's content, hung on its top corner, or as a wide strip of pictograms.",
+      "es": "Un glifo o una imagen junto al contenido de un recuadro, colgado de su esquina superior o como tira ancha de pictogramas."
+    },
+    "aliases": {
+      "en": [
+        "icon",
+        "corner icon",
+        "pictogram",
+        "badge"
+      ],
+      "es": [
+        "icono",
+        "icono de esquina",
+        "pictograma",
+        "distintivo"
+      ]
+    },
+    "group": "boxes",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Callout styles",
+        "es": "Estilos de aviso"
+      }
+    },
+    "research": [
+      "CO-ICON",
+      "CO-ICON-CORNER",
+      "CO-ICON-WIDE"
+    ],
+    "detect": {
+      "config": [
+        "calloutStyles[].icon"
+      ]
+    }
+  },
+  "callout-marker": {
+    "label": {
+      "en": "Marker column beside a box",
+      "es": "Columna de marca junto al recuadro"
+    },
+    "definition": {
+      "en": "An icon and a vertical rule set outside the box, in a column of their own.",
+      "es": "Un icono y un filete vertical fuera del recuadro, en una columna propia."
+    },
+    "aliases": {
+      "en": [
+        "margin icon",
+        "marker",
+        "icon with rule"
+      ],
+      "es": [
+        "icono al margen",
+        "marca",
+        "icono con filete"
+      ]
+    },
+    "group": "boxes",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Callout styles",
+        "es": "Estilos de aviso"
+      }
+    },
+    "research": [
+      "CO-MARKER"
+    ],
+    "detect": {
+      "config": [
+        "calloutStyles[].marker"
+      ]
+    }
+  },
+  "callout-label-tabs": {
+    "label": {
+      "en": "Numbered box tabs",
+      "es": "Pestañas numeradas en los recuadros"
+    },
+    "definition": {
+      "en": "A label tab on the box edge (\"BOX 1-1\") set from the fence's label attribute.",
+      "es": "Una pestaña en el borde del recuadro («RECUADRO 1-1») tomada del atributo label de la valla."
+    },
+    "aliases": {
+      "en": [
+        "box label",
+        "BOX 1-1",
+        "tab label"
+      ],
+      "es": [
+        "etiqueta del recuadro",
+        "RECUADRO 1-1",
+        "pestaña"
+      ]
+    },
+    "group": "boxes",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Callout styles",
+        "es": "Estilos de aviso"
+      }
+    },
+    "research": [
+      "CO-LABEL"
+    ],
+    "detect": {
+      "config": [
+        "calloutStyles[].label"
+      ]
+    }
+  },
+  "callout-columns": {
+    "label": {
+      "en": "Columns inside a box",
+      "es": "Columnas dentro de un recuadro"
+    },
+    "definition": {
+      "en": "Two or more balanced columns within a callout, such as a text column beside a figure or a three-up panel.",
+      "es": "Dos o más columnas equilibradas dentro de un recuadro, como un texto junto a una figura o un panel de tres."
+    },
+    "aliases": {
+      "en": [
+        "columns",
+        "three-up panel",
+        "two columns in a box"
+      ],
+      "es": [
+        "columnas",
+        "panel de tres",
+        "dos columnas en una caja"
+      ]
+    },
+    "group": "boxes",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "`:::columns`",
+        "es": "`:::columns`"
+      }
+    },
+    "research": [
+      "CT-COLS",
+      "CO-COLGAP"
+    ],
+    "detect": {
+      "markdown": [
+        "^:::columns"
+      ]
+    }
+  },
+  "nested-callouts": {
+    "label": {
+      "en": "Nested boxes",
+      "es": "Recuadros anidados"
+    },
+    "definition": {
+      "en": "A callout inside a callout, each with its own style, stacked at exact spacing: worksheet cards with answer boxes.",
+      "es": "Un recuadro dentro de otro, cada uno con su estilo, apilados con espaciado exacto: fichas de ejercicios con cajas de respuesta."
+    },
+    "aliases": {
+      "en": [
+        "nested callout",
+        "answer boxes",
+        "box in a box"
+      ],
+      "es": [
+        "recuadro anidado",
+        "cajas de respuesta",
+        "caja dentro de caja"
+      ]
+    },
+    "group": "boxes",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "The `:::callout` container",
+        "es": "El contenedor `:::callout`"
+      }
+    },
+    "research": [
+      "CT-NEST"
+    ],
+    "detect": {
+      "markdown": [
+        "^:::callout[^\\n]*\\n(?:(?!^:::\\s*$)[\\s\\S])*?^:::callout"
+      ]
+    }
+  },
+  "span-boxes": {
+    "label": {
+      "en": "Boxes across the page",
+      "es": "Recuadros a todo el ancho"
+    },
+    "definition": {
+      "en": "A box that crosses every column mid-page; the columns above it end level and resume below it.",
+      "es": "Un recuadro que cruza todas las columnas a media página; las columnas de encima acaban a la misma altura y continúan debajo."
+    },
+    "aliases": {
+      "en": [
+        "span block",
+        "full-width box",
+        "in numbers panel"
+      ],
+      "es": [
+        "bloque a todo el ancho",
+        "caja a todo el ancho",
+        "panel de cifras"
+      ]
+    },
+    "group": "boxes",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "The `:::callout` container",
+        "es": "El contenedor `:::callout`"
+      }
+    },
+    "research": [
+      "CO-SPAN-PAGE"
+    ],
+    "detect": {
+      "markdown": [
+        "^:::callout\\{[^}]*span=\"page\""
+      ]
+    }
+  },
+  "side-boxes": {
+    "label": {
+      "en": "Margin notes",
+      "es": "Notas al margen"
+    },
+    "definition": {
+      "en": "Boxes set in the side column level with the paragraph they gloss, in a column-and-a-half layout with a float channel.",
+      "es": "Cajas en la columna lateral a la altura del párrafo que glosan, en columna y media con canal de flotantes."
+    },
+    "aliases": {
+      "en": [
+        "margin notes",
+        "glosses",
+        "side notes",
+        "marginalia",
+        "span side"
+      ],
+      "es": [
+        "notas al margen",
+        "glosas",
+        "notas laterales",
+        "marginalia",
+        "span side"
+      ]
+    },
+    "group": "boxes",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Callout styles",
+        "es": "Estilos de aviso"
+      }
+    },
+    "research": [
+      "CO-SPAN-SIDE"
+    ],
+    "detect": {
+      "markdown": [
+        "^:::callout\\{[^}]*span=\"side\""
+      ]
+    }
+  },
+  "floated-callouts": {
+    "label": {
+      "en": "Floated boxes",
+      "es": "Recuadros flotantes"
+    },
+    "definition": {
+      "en": "A box that leaves the flow for the top or foot of a page while the text keeps filling the page it left.",
+      "es": "Un recuadro que sale del flujo hacia la cabeza o el pie de una página mientras el texto sigue llenando la página que dejó."
+    },
+    "aliases": {
+      "en": [
+        "float a box",
+        "placement top",
+        "placement bottom",
+        "sidebar at the foot"
+      ],
+      "es": [
+        "caja flotante",
+        "placement top",
+        "placement bottom",
+        "recuadro al pie"
+      ]
+    },
+    "group": "boxes",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "The `:::callout` container",
+        "es": "El contenedor `:::callout`"
+      }
+    },
+    "research": [
+      "CO-FLOAT"
+    ],
+    "detect": {
+      "markdown": [
+        "^:::callout\\{[^}]*placement=\"(top|bottom|auto)\""
+      ]
+    }
+  },
+  "fixed-callouts": {
+    "label": {
+      "en": "Pinned boxes and badges",
+      "es": "Recuadros fijos e insignias"
+    },
+    "definition": {
+      "en": "A box pinned to an exact spot on its page, shrink-wrapped to its title when wanted; any text column it overlaps is shortened to clear it.",
+      "es": "Un recuadro fijado en un punto exacto de su página, ajustado a su título si se quiere; las columnas de texto que pisa se acortan para dejarle sitio."
+    },
+    "aliases": {
+      "en": [
+        "sticker",
+        "badge",
+        "fixed position",
+        "placement fixed",
+        "stamp"
+      ],
+      "es": [
+        "pegatina",
+        "insignia",
+        "posición fija",
+        "placement fixed",
+        "sello"
+      ]
+    },
+    "group": "boxes",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "The `:::callout` container",
+        "es": "El contenedor `:::callout`"
+      }
+    },
+    "research": [
+      "CO-FIXED",
+      "CO-WIDTH-AUTO"
+    ],
+    "detect": {
+      "config": [
+        "calloutStyles[].fixed"
+      ],
+      "markdown": [
+        "^:::callout\\{[^}]*placement=\"fixed\""
+      ]
+    }
+  },
+  "callout-splitting": {
+    "label": {
+      "en": "Boxes that split or stay whole",
+      "es": "Recuadros que se parten o no"
+    },
+    "definition": {
+      "en": "Long boxes split across columns and pages, keeping the frame and dropping the title; short ones move whole; one that fits nowhere raises calloutOverflow.",
+      "es": "Los recuadros largos se parten entre columnas y páginas, conservan el marco y pierden el título; los cortos se mueven enteros; el que no cabe en ninguna parte da calloutOverflow."
+    },
+    "aliases": {
+      "en": [
+        "keepTogether",
+        "split box",
+        "box continues",
+        "calloutOverflow",
+        "splitMinLines"
+      ],
+      "es": [
+        "keepTogether",
+        "caja partida",
+        "el recuadro continúa",
+        "calloutOverflow",
+        "splitMinLines"
+      ]
+    },
+    "group": "boxes",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "The `:::callout` container",
+        "es": "El contenedor `:::callout`"
+      }
+    },
+    "research": [
+      "CO-SPLIT",
+      "CO-OVERFLOW"
+    ],
+    "detect": {
+      "config": [
+        "calloutStyles[].keepTogether",
+        "calloutStyles[].splitMinLines"
+      ]
+    }
+  },
+  "resources": {
+    "label": {
+      "en": "Figures and tables as resources",
+      "es": "Figuras y tablas como recursos"
+    },
+    "definition": {
+      "en": "Images, SVGs and tables are declared once as resources with a caption and registered per backend; Markdown images are stripped.",
+      "es": "Las imágenes, los SVG y las tablas se declaran una vez como recursos con su pie y se registran para cada salida; las imágenes de Markdown se eliminan."
+    },
+    "aliases": {
+      "en": [
+        "images",
+        "pictures",
+        "figures",
+        "registerResourceImage",
+        "bitmap",
+        "SVG",
+        "![]()"
+      ],
+      "es": [
+        "imágenes",
+        "ilustraciones",
+        "figuras",
+        "registerResourceImage",
+        "mapa de bits",
+        "SVG",
+        "![]()"
+      ]
+    },
+    "group": "figures",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Resources",
+        "es": "Recursos"
+      }
+    },
+    "research": [
+      "IN-IMG"
+    ],
+    "detect": {
+      "api": [
+        "registerResourceImage"
+      ]
+    }
+  },
+  "citations": {
+    "label": {
+      "en": "Citations that place figures",
+      "es": "Citas que colocan las figuras"
+    },
+    "definition": {
+      "en": "A :ref cites a resource (\"see Fig. 3.2\") and its first citation places it: the figure floats to the first free slot after it.",
+      "es": "Un :ref cita un recurso («véase la fig. 3.2») y su primera cita lo coloca: la figura flota hasta el primer hueco libre después de ella."
+    },
+    "aliases": {
+      "en": [
+        "cross-reference",
+        ":ref",
+        "see figure",
+        "figure reference",
+        "float by reference"
+      ],
+      "es": [
+        "referencia cruzada",
+        ":ref",
+        "véase la figura",
+        "referencia a figura",
+        "flotar por referencia"
+      ]
+    },
+    "group": "figures",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Inline reference (the primary form)",
+        "es": "Referencia en línea (la forma principal)"
+      }
+    },
+    "research": [
+      "IN-REF",
+      "RT-6",
+      "RS-REF",
+      "BT-14"
+    ],
+    "detect": {
+      "markdown": [
+        ":ref\\{"
+      ]
+    }
+  },
+  "figure-numbering": {
+    "label": {
+      "en": "Numbered captions",
+      "es": "Pies numerados"
+    },
+    "definition": {
+      "en": "Figure and table numbers follow the order of first citation, per chapter or section, in decimal, roman or letters.",
+      "es": "Los números de figura y de tabla siguen el orden de la primera cita, por capítulo o sección, en arábigos, romanos o letras."
+    },
+    "aliases": {
+      "en": [
+        "figure numbers",
+        "Figure 3.2",
+        "numberingTemplate",
+        "resetOn",
+        "counterFormat"
+      ],
+      "es": [
+        "números de figura",
+        "Figura 3.2",
+        "numberingTemplate",
+        "resetOn",
+        "counterFormat"
+      ]
+    },
+    "group": "figures",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "First-reference numbering",
+        "es": "Numeración por primera referencia"
+      }
+    },
+    "research": [
+      "RS-NUM",
+      "RT-3"
+    ]
+  },
+  "resource-types": {
+    "label": {
+      "en": "Custom resource types",
+      "es": "Tipos de recurso propios"
+    },
+    "definition": {
+      "en": "New numbered families (Map, Plate, Listing, Chart) with their own counters, labels and caption prefixes.",
+      "es": "Familias numeradas nuevas (Mapa, Lámina, Listado, Gráfico) con sus propios contadores, etiquetas y prefijos de pie."
+    },
+    "aliases": {
+      "en": [
+        "plate",
+        "map",
+        "listing",
+        "chart",
+        "resourceTypes"
+      ],
+      "es": [
+        "lámina",
+        "mapa",
+        "listado",
+        "gráfico",
+        "resourceTypes"
+      ]
+    },
+    "group": "figures",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Resource types",
+        "es": "Tipos de recurso"
+      }
+    },
+    "research": [
+      "RT-2"
+    ],
+    "detect": {
+      "config": [
+        "resourceTypes"
+      ]
+    }
+  },
+  "float-placement": {
+    "label": {
+      "en": "Figure placement",
+      "es": "Colocación de figuras"
+    },
+    "definition": {
+      "en": "Top, bottom, auto or here, in a column or across the page, at a fraction of the width, per resource or per type; floats of one sequence never overtake each other.",
+      "es": "Arriba, abajo, automática o aquí, en una columna o a todo el ancho, a una fracción del ancho, por recurso o por tipo; los flotantes de una misma serie nunca se adelantan entre sí."
+    },
+    "aliases": {
+      "en": [
+        "float",
+        "top of page",
+        "span page",
+        "defaultPlacement",
+        "figure goes to the next page",
+        "placement",
+        "figure width",
+        "half-width figure",
+        "small table",
+        "align"
+      ],
+      "es": [
+        "flotante",
+        "cabeza de página",
+        "span page",
+        "defaultPlacement",
+        "la figura pasa a la página siguiente",
+        "colocación",
+        "ancho de figura",
+        "figura a media columna",
+        "tabla pequeña",
+        "alineación"
+      ]
+    },
+    "group": "figures",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Placement",
+        "es": "Colocación"
+      }
+    },
+    "research": [
+      "RS-POS",
+      "RS-SPAN",
+      "RT-7",
+      "RT-4",
+      "RS-ORDER",
+      "RS-WIDTH",
+      "RT-8"
+    ]
+  },
+  "inline-embeds": {
+    "label": {
+      "en": "Figures exactly here",
+      "es": "Figuras justo aquí"
+    },
+    "definition": {
+      "en": "A resource with position here, embedded with ::resource at an exact point in the flow instead of floating.",
+      "es": "Un recurso con posición here, insertado con ::resource en un punto exacto del flujo en lugar de flotar."
+    },
+    "aliases": {
+      "en": [
+        "::resource",
+        "inline figure",
+        "no float",
+        "embed"
+      ],
+      "es": [
+        "::resource",
+        "figura en línea",
+        "sin flotar",
+        "insertar"
+      ]
+    },
+    "group": "figures",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Block embed (optional, explicit inline placement)",
+        "es": "Inserción en bloque (opcional, colocación en línea explícita)"
+      }
+    },
+    "research": [
+      "RS-EMBED",
+      "RT-10"
+    ],
+    "detect": {
+      "markdown": [
+        "^::resource\\{"
+      ]
+    }
+  },
+  "side-captions": {
+    "label": {
+      "en": "Side captions",
+      "es": "Pies laterales"
+    },
+    "definition": {
+      "en": "The figure stays in the main column while its caption sits in the margin channel, level with its top.",
+      "es": "La figura se queda en la columna principal mientras su pie va al canal del margen, a la altura de su borde superior."
+    },
+    "aliases": {
+      "en": [
+        "caption beside figure",
+        "captionSide",
+        "margin caption"
+      ],
+      "es": [
+        "pie al lado de la figura",
+        "captionSide",
+        "pie al margen"
+      ]
+    },
+    "group": "figures",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Placement",
+        "es": "Colocación"
+      }
+    },
+    "research": [
+      "LY-8",
+      "RS-CAPSIDE"
+    ]
+  },
+  "fit-figures": {
+    "label": {
+      "en": "Figures fitted to the page",
+      "es": "Figuras ajustadas a la página"
+    },
+    "definition": {
+      "en": "Shrinks a figure taller than the page, and sets a slightly too tall inline figure smaller so it stays with its text.",
+      "es": "Reduce una figura más alta que la página y compone más pequeña una figura en línea algo alta para que siga junto a su texto."
+    },
+    "aliases": {
+      "en": [
+        "fitFiguresToPage",
+        "shrink figure",
+        "tall figure"
+      ],
+      "es": [
+        "fitFiguresToPage",
+        "reducir figura",
+        "figura alta"
+      ]
+    },
+    "group": "figures",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Layout",
+        "es": "Disposición"
+      }
+    },
+    "research": [
+      "LY-9"
+    ],
+    "detect": {
+      "config": [
+        "layout.fitFiguresToPage"
+      ]
+    }
+  },
+  "float-barriers": {
+    "label": {
+      "en": "Float barriers",
+      "es": "Barreras para flotantes"
+    },
+    "definition": {
+      "en": "No float escapes its chapter or part, and a box style can stop pending figures from passing it.",
+      "es": "Ningún flotante se escapa de su capítulo o parte, y un estilo de recuadro puede impedir que las figuras pendientes lo sobrepasen."
+    },
+    "aliases": {
+      "en": [
+        "floatBarrier",
+        "keep figures in chapter",
+        "figures after summary"
+      ],
+      "es": [
+        "floatBarrier",
+        "figuras dentro del capítulo",
+        "figuras tras el resumen"
+      ]
+    },
+    "group": "figures",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Placement",
+        "es": "Colocación"
+      }
+    },
+    "research": [
+      "CO-BARRIER",
+      "RS-BARRIER"
+    ],
+    "detect": {
+      "config": [
+        "calloutStyles[].floatBarrier"
+      ]
+    }
+  },
+  "captions": {
+    "label": {
+      "en": "Caption style",
+      "es": "Estilo de los pies"
+    },
+    "definition": {
+      "en": "Caption face, size, alignment and gap, a bold coloured label with an italic description, below the resource or above it on a coloured bar, per document or per type.",
+      "es": "Fuente, cuerpo, alineación y separación del pie, con la etiqueta en negrita y en color y la descripción en cursiva, debajo del recurso o encima sobre una barra de color, para todo el documento o por tipo."
+    },
+    "aliases": {
+      "en": [
+        "figure caption",
+        "captionStyle",
+        "legend",
+        "caption label",
+        "caption above",
+        "table title",
+        "caption bar"
+      ],
+      "es": [
+        "pie de figura",
+        "captionStyle",
+        "leyenda",
+        "etiqueta del pie",
+        "pie encima",
+        "título de tabla",
+        "barra de pie"
+      ]
+    },
+    "group": "figures",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Caption style",
+        "es": "Estilo de pies de recurso"
+      }
+    },
+    "research": [
+      "CP-1",
+      "CP-2",
+      "CP-5",
+      "RS-CAPTION",
+      "RT-5",
+      "CP-3",
+      "CP-4"
+    ]
+  },
+  "credit-notes": {
+    "label": {
+      "en": "Source and credit lines",
+      "es": "Líneas de fuente y crédito"
+    },
+    "definition": {
+      "en": "A smaller note under a caption for the source, licence or photographer, kept with the figure.",
+      "es": "Una nota menor bajo el pie para la fuente, la licencia o el fotógrafo, que va siempre con la figura."
+    },
+    "aliases": {
+      "en": [
+        "photo credit",
+        "source line",
+        "attribution",
+        "note"
+      ],
+      "es": [
+        "crédito fotográfico",
+        "línea de fuente",
+        "atribución",
+        "nota"
+      ]
+    },
+    "group": "figures",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Caption style",
+        "es": "Estilo de pies de recurso"
+      }
+    },
+    "research": [
+      "RS-NOTE",
+      "RT-11"
+    ]
+  },
+  "svg-print-masters": {
+    "label": {
+      "en": "SVG print masters",
+      "es": "Másteres de impresión para SVG"
+    },
+    "definition": {
+      "en": "A vector PDF that the PDF backend embeds verbatim in place of an SVG figure, for artwork exact to the illustrator's file.",
+      "es": "Un PDF vectorial que la salida PDF incrusta tal cual en lugar de una figura SVG, para ilustraciones idénticas al archivo del ilustrador."
+    },
+    "aliases": {
+      "en": [
+        "vector figures",
+        "pdfFileId",
+        "sharp diagrams",
+        "Illustrator"
+      ],
+      "es": [
+        "figuras vectoriales",
+        "pdfFileId",
+        "diagramas nítidos",
+        "Illustrator"
+      ]
+    },
+    "group": "figures",
+    "docs": {
+      "slug": "sandbox",
+      "heading": {
+        "en": "`preset.json`",
+        "es": "`preset.json`"
+      }
+    },
+    "research": [
+      "RS-PDFMASTER",
+      "RT-13"
+    ]
+  },
+  "single-ink": {
+    "label": {
+      "en": "Single-ink diagrams",
+      "es": "Diagramas a una tinta"
+    },
+    "definition": {
+      "en": "Recolours every SVG to tints of one ink by luminance, for spot-colour printing or a two-colour book.",
+      "es": "Recolorea cada SVG con tintes de una sola tinta según su luminancia, para imprimir a tinta plana o hacer un libro a dos colores."
+    },
+    "aliases": {
+      "en": [
+        "spot colour",
+        "two-colour book",
+        "riso",
+        "applySingleInkToSvg",
+        "duotone"
+      ],
+      "es": [
+        "tinta plana",
+        "libro a dos tintas",
+        "riso",
+        "applySingleInkToSvg",
+        "duotono"
+      ]
+    },
+    "group": "colour",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Diagram style",
+        "es": "Estilo de diagramas"
+      }
+    },
+    "research": [
+      "DG-1",
+      "DG-2",
+      "RS-INK"
+    ],
+    "detect": {
+      "config": [
+        "diagramStyle.singleInk"
+      ],
+      "api": [
+        "applySingleInkToSvg"
+      ]
+    }
+  },
+  "table-model": {
+    "label": {
+      "en": "Tables from data",
+      "es": "Tablas a partir de datos"
+    },
+    "definition": {
+      "en": "Table resources with header rows, merged cells, column proportions, per-cell alignment and lists inside cells; pipe tables are not parsed.",
+      "es": "Tablas como recursos con filas de cabecera, celdas combinadas, proporciones de columna, alineación por celda y listas dentro de las celdas; las tablas con barras no se interpretan."
+    },
+    "aliases": {
+      "en": [
+        "table",
+        "merged cells",
+        "rowspan",
+        "colspan",
+        "column widths",
+        "parseTSV",
+        "mergeCells"
+      ],
+      "es": [
+        "tabla",
+        "celdas combinadas",
+        "rowspan",
+        "colspan",
+        "ancho de columnas",
+        "parseTSV",
+        "mergeCells"
+      ]
+    },
+    "group": "tables",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Block embed (optional, explicit inline placement)",
+        "es": "Inserción en bloque (opcional, colocación en línea explícita)"
+      }
+    },
+    "research": [
+      "RS-TBL",
+      "TB-8",
+      "RS-TALIGN",
+      "TB-9"
+    ],
+    "detect": {
+      "api": [
+        "parseTSV",
+        "mergeCells"
+      ]
+    }
+  },
+  "table-style": {
+    "label": {
+      "en": "Table style",
+      "es": "Estilo de tablas"
+    },
+    "definition": {
+      "en": "Cell typography, header and body fills, rule patterns from full grid to rule-free, rounded frames and padding.",
+      "es": "Tipografía de las celdas, rellenos de cabecera y cuerpo, filetes desde la rejilla completa hasta ninguno, marcos redondeados y relleno interior."
+    },
+    "aliases": {
+      "en": [
+        "tableStyle",
+        "booktabs",
+        "horizontal rules",
+        "rounded table",
+        "header fill"
+      ],
+      "es": [
+        "tableStyle",
+        "filetes horizontales",
+        "tabla redondeada",
+        "relleno de cabecera"
+      ]
+    },
+    "group": "tables",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Table style",
+        "es": "Estilo de tablas"
+      }
+    },
+    "research": [
+      "TB-1",
+      "TB-2",
+      "TB-3",
+      "TB-4",
+      "TB-5"
+    ]
+  },
+  "table-styles": {
+    "label": {
+      "en": "Named table styles",
+      "es": "Estilos de tabla con nombre"
+    },
+    "definition": {
+      "en": "Several table looks in one document, each picked by id and inheriting the document's table style.",
+      "es": "Varios aspectos de tabla en un mismo documento, elegidos por id y heredando el estilo de tabla del documento."
+    },
+    "aliases": {
+      "en": [
+        "tableStyles",
+        "styleId",
+        "several table styles"
+      ],
+      "es": [
+        "tableStyles",
+        "styleId",
+        "varios estilos de tabla"
+      ]
+    },
+    "group": "tables",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Named table styles",
+        "es": "Estilos de tabla con nombre"
+      }
+    },
+    "research": [
+      "TB-6",
+      "RS-TSTYLE"
+    ],
+    "detect": {
+      "config": [
+        "tableStyles"
+      ]
+    }
+  },
+  "table-split": {
+    "label": {
+      "en": "Tables across pages",
+      "es": "Tablas que pasan de página"
+    },
+    "definition": {
+      "en": "Long tables split between rows with the header repeated, \"(cont.)\" on the caption and a \"Continued\" marker, never inside a rowspan.",
+      "es": "Las tablas largas se parten entre filas con la cabecera repetida, «(cont.)» en el pie y un aviso de «Continúa», nunca dentro de un rowspan."
+    },
+    "aliases": {
+      "en": [
+        "long table",
+        "repeat header",
+        "continued",
+        "table overflow",
+        "multi-page table"
+      ],
+      "es": [
+        "tabla larga",
+        "repetir cabecera",
+        "continúa",
+        "desbordamiento de tabla",
+        "tabla de varias páginas"
+      ]
+    },
+    "group": "tables",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Tables taller than the page",
+        "es": "Tablas más altas que la página"
+      }
+    },
+    "research": [
+      "TB-7"
+    ],
+    "detect": {
+      "config": [
+        "tableStyle.overflow",
+        "tableStyles[].overflow"
+      ]
+    }
+  },
+  "cell-fills": {
+    "label": {
+      "en": "Cell fills",
+      "es": "Rellenos de celda"
+    },
+    "definition": {
+      "en": "A palette-linked background per cell, for heat maps, compatibility matrices and zebra rows set by hand.",
+      "es": "Un fondo por celda enlazado a la paleta, para mapas de calor, matrices de compatibilidad y filas alternas hechas a mano."
+    },
+    "aliases": {
+      "en": [
+        "heat map",
+        "cell background",
+        "zebra rows",
+        "setCellBackground",
+        "matrix"
+      ],
+      "es": [
+        "mapa de calor",
+        "fondo de celda",
+        "filas alternas",
+        "setCellBackground",
+        "matriz"
+      ]
+    },
+    "group": "tables",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Block embed (optional, explicit inline placement)",
+        "es": "Inserción en bloque (opcional, colocación en línea explícita)"
+      }
+    },
+    "research": [
+      "RS-TFILL"
+    ],
+    "detect": {
+      "api": [
+        "setCellBackground"
+      ]
+    }
+  },
+  "cell-images": {
+    "label": {
+      "en": "Pictures in table cells",
+      "es": "Imágenes en las celdas"
+    },
+    "definition": {
+      "en": "A bitmap or SVG drawn inside a cell, unnumbered, with the cell text under it and the row growing to fit.",
+      "es": "Un mapa de bits o un SVG dibujado dentro de una celda, sin numerar, con el texto de la celda debajo; la fila crece hasta que cabe."
+    },
+    "aliases": {
+      "en": [
+        "icons in cells",
+        "product table",
+        "setCellImage",
+        "cell image"
+      ],
+      "es": [
+        "iconos en celdas",
+        "tabla de productos",
+        "setCellImage",
+        "imagen en celda"
+      ]
+    },
+    "group": "tables",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Block embed (optional, explicit inline placement)",
+        "es": "Inserción en bloque (opcional, colocación en línea explícita)"
+      }
+    },
+    "research": [
+      "TB-10",
+      "RS-TIMG"
+    ],
+    "detect": {
+      "api": [
+        "setCellImage"
+      ]
+    }
+  },
+  "rotated-tables": {
+    "label": {
+      "en": "Landscape tables and figures",
+      "es": "Tablas y figuras apaisadas"
+    },
+    "definition": {
+      "en": "A wide table or figure turned a quarter on a page of its own, flush to the spine; a table that does not fit continues on the next page, broken between rows.",
+      "es": "Una tabla o figura ancha girada un cuarto de vuelta en una página propia, junto al lomo; si la tabla no cabe, sigue en la página siguiente, cortada entre filas."
+    },
+    "aliases": {
+      "en": [
+        "landscape",
+        "rotate",
+        "sideways table",
+        "wide table"
+      ],
+      "es": [
+        "apaisada",
+        "girar",
+        "tabla de lado",
+        "tabla ancha"
+      ]
+    },
+    "group": "tables",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Placement",
+        "es": "Colocación"
+      }
+    },
+    "research": [
+      "RS-ROT",
+      "RT-9"
+    ]
+  },
+  "math": {
+    "label": {
+      "en": "Mathematics",
+      "es": "Matemáticas"
+    },
+    "definition": {
+      "en": "Inline and display LaTeX set by MathJax, on the grid and vector in every output, with chemistry through mhchem.",
+      "es": "LaTeX en línea y destacado compuesto por MathJax, sobre la rejilla y vectorial en todas las salidas, con química mediante mhchem."
+    },
+    "aliases": {
+      "en": [
+        "LaTeX",
+        "equations",
+        "formulas",
+        "MathJax",
+        "mhchem",
+        "initMathEngine"
+      ],
+      "es": [
+        "LaTeX",
+        "ecuaciones",
+        "fórmulas",
+        "MathJax",
+        "mhchem",
+        "initMathEngine"
+      ]
+    },
+    "group": "math",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Mathematical formulas",
+        "es": "Fórmulas matemáticas"
+      }
+    },
+    "research": [
+      "IN-MATH",
+      "FM-MATHD",
+      "MA-1",
+      "MA-2",
+      "MA-3",
+      "MA-4"
+    ],
+    "detect": {
+      "markdown": [
+        "\\$\\$",
+        "(^|[^\\\\])\\$[^$\\s][^$\\n]*\\$"
+      ],
+      "api": [
+        "initMathEngine"
+      ]
+    }
+  },
+  "frontmatter": {
+    "label": {
+      "en": "Document metadata",
+      "es": "Metadatos del documento"
+    },
+    "definition": {
+      "en": "YAML frontmatter with title, subtitle, author and date, which the placeholders of running heads and covers print and the PDF takes as its title.",
+      "es": "Bloque frontmatter en YAML con título, subtítulo, autor y fecha; lo imprimen los marcadores de las cabeceras y las cubiertas, y da el título del PDF."
+    },
+    "aliases": {
+      "en": [
+        "frontmatter",
+        "YAML",
+        "title",
+        "author",
+        "metadata"
+      ],
+      "es": [
+        "frontmatter",
+        "YAML",
+        "título",
+        "autor",
+        "metadatos"
+      ]
+    },
+    "group": "structure",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Frontmatter",
+        "es": "Frontmatter"
+      }
+    },
+    "research": [
+      "FM-FRONT"
+    ]
+  },
+  "covers": {
+    "label": {
+      "en": "Covers, title pages and colophons",
+      "es": "Cubiertas, portadas y colofones"
+    },
+    "definition": {
+      "en": "Full-page designs built from heading styles: a cover or title page from metadata and art, a half title, a colophon on the verso.",
+      "es": "Diseños a página completa construidos con estilos de título: una cubierta o portada con metadatos e ilustración, una portadilla, un colofón en el verso."
+    },
+    "aliases": {
+      "en": [
+        "cover",
+        "title page",
+        "half title",
+        "colophon",
+        "imprint",
+        "copyright page"
+      ],
+      "es": [
+        "cubierta",
+        "portada",
+        "portadilla",
+        "colofón",
+        "página de créditos",
+        "página de derechos"
+      ]
+    },
+    "group": "structure",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Heading styles",
+        "es": "Estilos de encabezado"
+      }
+    }
+  },
+  "roman-front-matter": {
+    "label": {
+      "en": "Roman front matter",
+      "es": "Preliminares en romanos"
+    },
+    "definition": {
+      "en": "Page numbers in roman numerals for the front matter, restarting at 1 with chapter one, with matching page labels in the PDF.",
+      "es": "Números de página en romanos para los preliminares, que vuelven a 1 con el primer capítulo, y las mismas etiquetas de página en el PDF."
+    },
+    "aliases": {
+      "en": [
+        "roman numerals",
+        "page numbering",
+        "restart numbering",
+        "i ii iii",
+        "page labels",
+        "front matter"
+      ],
+      "es": [
+        "números romanos",
+        "numeración de páginas",
+        "reiniciar numeración",
+        "i ii iii",
+        "etiquetas de página",
+        "preliminares"
+      ]
+    },
+    "group": "structure",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "`:::numbering`",
+        "es": "`:::numbering`"
+      }
+    },
+    "research": [
+      "DIR-NUM",
+      "PG-9",
+      "PG-10",
+      "PDF-LABELS"
+    ],
+    "detect": {
+      "config": [
+        "page.pageNumbering"
+      ],
+      "markdown": [
+        "^:::numbering"
+      ]
+    }
+  },
+  "toc": {
+    "label": {
+      "en": "Table of contents",
+      "es": "Índice de contenidos"
+    },
+    "definition": {
+      "en": "A :::toc built from the headings: dot leaders, page labels as printed, author lines, coloured part rows and clickable PDF entries.",
+      "es": "Un :::toc generado a partir de los títulos: líneas de puntos, números de página tal como se imprimen, líneas de autor, filas de parte en color y entradas con enlace en el PDF."
+    },
+    "aliases": {
+      "en": [
+        "contents",
+        "TOC",
+        "dot leaders",
+        "page numbers in contents",
+        "anthology contents"
+      ],
+      "es": [
+        "índice",
+        "sumario",
+        "tabla de contenidos",
+        "líneas de puntos",
+        "índice de antología"
+      ]
+    },
+    "group": "structure",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Table of contents",
+        "es": "Índice de contenidos"
+      }
+    },
+    "research": [
+      "DIR-TOC",
+      "TOC-LEVELS",
+      "TOC-PAGENUM",
+      "TOC-LEADER",
+      "TOC-CONVERGE",
+      "TOC-LINKS",
+      "TOC-SUB",
+      "TOC-UNNUM",
+      "TOC-PARTROWS",
+      "FM-HTOC",
+      "HS-TOC"
+    ],
+    "detect": {
+      "markdown": [
+        "^:::toc"
+      ]
+    }
+  },
+  "part-dividers": {
+    "label": {
+      "en": "Part divider pages",
+      "es": "Portadillas de parte"
+    },
+    "definition": {
+      "en": "A :::part opens a designed divider page (and its verso) with number, title and an optional chapter list, above the chapters it groups.",
+      "es": "Un :::part abre una portadilla diseñada (y su verso) con número, título y, si se quiere, la lista de capítulos, por encima de los capítulos que agrupa."
+    },
+    "aliases": {
+      "en": [
+        "parts",
+        "sections",
+        "divider page",
+        "part title",
+        "book sections"
+      ],
+      "es": [
+        "partes",
+        "secciones",
+        "página separadora",
+        "título de parte",
+        "secciones del libro"
+      ]
+    },
+    "group": "structure",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "The `:::part` container",
+        "es": "El contenedor `:::part`"
+      }
+    },
+    "research": [
+      "CT-PART",
+      "PT-PAGE",
+      "PT-PARITY",
+      "PT-AFTER",
+      "PT-MARGINS",
+      "PT-BODY",
+      "PT-PH",
+      "PT-ROLE",
+      "PT-DESIGN",
+      "PT-VERSO"
+    ],
+    "detect": {
+      "markdown": [
+        "^:::part"
+      ]
+    }
+  },
+  "part-palettes": {
+    "label": {
+      "en": "Colours per part",
+      "es": "Colores por parte"
+    },
+    "definition": {
+      "en": "A part or heading style overrides palette entries, so bands, running heads and text accents take the section's colour.",
+      "es": "Una parte o un estilo de título redefine entradas de la paleta, y las bandas, las cabeceras y los acentos del texto toman el color de la sección."
+    },
+    "aliases": {
+      "en": [
+        "section colours",
+        "colour-coded sections",
+        "palette per chapter",
+        "palette attribute"
+      ],
+      "es": [
+        "colores por sección",
+        "secciones por colores",
+        "paleta por capítulo",
+        "atributo palette"
+      ]
+    },
+    "group": "colour",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "The `:::part` container",
+        "es": "El contenedor `:::part`"
+      }
+    },
+    "research": [
+      "PT-PALETTE",
+      "HS-PALETTE"
+    ],
+    "detect": {
+      "markdown": [
+        "^:::part\\{[^}]*palette="
+      ],
+      "config": [
+        "headingStyles[].palette"
+      ]
+    }
+  },
+  "multi-chapter-books": {
+    "label": {
+      "en": "Books built chapter by chapter",
+      "es": "Libros construidos capítulo a capítulo"
+    },
+    "definition": {
+      "en": "Chapters laid out one by one that continue page, figure and chapter numbers, the open part and page parity from the chapter before.",
+      "es": "Capítulos compuestos uno a uno que continúan la numeración de páginas, figuras y capítulos, la parte abierta y la paridad del capítulo anterior."
+    },
+    "aliases": {
+      "en": [
+        "buildBundle",
+        "continuation",
+        "chapters",
+        "whole book",
+        "continuous numbering"
+      ],
+      "es": [
+        "buildBundle",
+        "continuation",
+        "capítulos",
+        "libro completo",
+        "numeración continua"
+      ]
+    },
+    "group": "structure",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Laying out and rendering a bundle",
+        "es": "Componer y renderizar un paquete"
+      }
+    },
+    "research": [
+      "PT-CONT"
+    ],
+    "detect": {
+      "api": [
+        "buildBundle",
+        "continuationAfter"
+      ]
+    }
+  },
+  "color-palette": {
+    "label": {
+      "en": "Semantic colour palette",
+      "es": "Paleta de color semántica"
+    },
+    "definition": {
+      "en": "Named colours that every setting links to by id, so a whole document retints by changing one swatch; the default colours derive from main-color.",
+      "es": "Colores con nombre a los que cada ajuste se enlaza por id, de modo que todo el documento cambia de tono al modificar una muestra; los colores por defecto salen de main-color."
+    },
+    "aliases": {
+      "en": [
+        "palette",
+        "paletteId",
+        "main-color",
+        "rebrand",
+        "retint",
+        "brand colour"
+      ],
+      "es": [
+        "paleta",
+        "paletteId",
+        "main-color",
+        "cambiar de marca",
+        "cambiar el tono",
+        "color corporativo"
+      ]
+    },
+    "group": "colour",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Color Palette",
+        "es": "Paleta de colores"
+      }
+    },
+    "research": [
+      "UC-PAL",
+      "X-1"
+    ]
+  },
+  "pdf-export": {
+    "label": {
+      "en": "PDF export",
+      "es": "Exportación a PDF"
+    },
+    "definition": {
+      "en": "renderToPdf turns the laid-out document, or a whole book, into PDF bytes in the browser, with progress reports for long books.",
+      "es": "renderToPdf convierte el documento compuesto, o un libro entero, en los bytes de un PDF en el navegador, e informa del progreso en los libros largos."
+    },
+    "aliases": {
+      "en": [
+        "PDF",
+        "renderToPdf",
+        "download PDF",
+        "postext-pdf",
+        "onProgress"
+      ],
+      "es": [
+        "PDF",
+        "renderToPdf",
+        "descargar PDF",
+        "postext-pdf",
+        "onProgress"
+      ]
+    },
+    "group": "pdf",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Generating PDFs",
+        "es": "Generación de PDF"
+      }
+    },
+    "research": [
+      "PDF-PROGRESS"
+    ],
+    "detect": {
+      "api": [
+        "renderToPdf"
+      ]
+    }
+  },
+  "pdf-outlines": {
+    "label": {
+      "en": "PDF bookmarks",
+      "es": "Marcadores del PDF"
+    },
+    "definition": {
+      "en": "A bookmark tree built from the headings, with parts above their chapters.",
+      "es": "Un árbol de marcadores construido con los títulos, con las partes por encima de sus capítulos."
+    },
+    "aliases": {
+      "en": [
+        "outlines",
+        "bookmarks",
+        "PDF navigation"
+      ],
+      "es": [
+        "outlines",
+        "marcadores",
+        "navegación del PDF"
+      ]
+    },
+    "group": "pdf",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "PDF generation (config)",
+        "es": "Generación de PDF (configuración)"
+      }
+    },
+    "research": [
+      "PDF-OUTLINES"
+    ]
+  },
+  "pdf-colour-space": {
+    "label": {
+      "en": "CMYK and grayscale PDFs",
+      "es": "PDF en CMYK y en escala de grises"
+    },
+    "definition": {
+      "en": "Colours carry a model (hex, rgb, cmyk, hsl), and the PDF can be forced to CMYK or grayscale for the printer or a proof.",
+      "es": "Los colores llevan su modelo (hex, rgb, cmyk, hsl) y el PDF puede forzarse a CMYK o a escala de grises para la imprenta o una prueba."
+    },
+    "aliases": {
+      "en": [
+        "CMYK",
+        "grayscale",
+        "colour space",
+        "colorSpace",
+        "print colours"
+      ],
+      "es": [
+        "CMYK",
+        "escala de grises",
+        "espacio de color",
+        "colorSpace",
+        "colores de imprenta"
+      ]
+    },
+    "group": "pdf",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "PDF generation (config)",
+        "es": "Generación de PDF (configuración)"
+      }
+    },
+    "research": [
+      "PDF-CS",
+      "UC-COLOR"
+    ]
+  },
+  "tagged-pdf": {
+    "label": {
+      "en": "Accessible tagged PDF",
+      "es": "PDF accesible etiquetado"
+    },
+    "definition": {
+      "en": "A PDF/UA-1 structure tree in reading order: headings, lists, tables with headers, figures with their alt text, formulas, title and language.",
+      "es": "Un árbol de estructura PDF/UA-1 en orden de lectura: títulos, listas, tablas con cabeceras, figuras con su texto alternativo, fórmulas, título e idioma."
+    },
+    "aliases": {
+      "en": [
+        "accessibility",
+        "PDF/UA",
+        "tagged PDF",
+        "screen reader",
+        "a11y",
+        "altText",
+        "image description"
+      ],
+      "es": [
+        "accesibilidad",
+        "PDF/UA",
+        "PDF etiquetado",
+        "lector de pantalla",
+        "a11y",
+        "altText",
+        "descripción de imagen"
+      ]
+    },
+    "group": "pdf",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "PDF generation (config)",
+        "es": "Generación de PDF (configuración)"
+      }
+    },
+    "research": [
+      "PDF-A11Y",
+      "RS-ALT",
+      "RT-12"
+    ]
+  },
+  "html-viewer": {
+    "label": {
+      "en": "HTML reading edition",
+      "es": "Edición de lectura en HTML"
+    },
+    "definition": {
+      "en": "renderToHtml writes the same layout as positioned HTML: selectable text, links for citations, one or several pages side by side.",
+      "es": "renderToHtml escribe la misma composición como HTML posicionado: texto seleccionable, enlaces en las citas, una página o varias, una junto a otra."
+    },
+    "aliases": {
+      "en": [
+        "HTML",
+        "renderToHtml",
+        "web edition",
+        "responsive reader",
+        "screen edition"
+      ],
+      "es": [
+        "HTML",
+        "renderToHtml",
+        "edición web",
+        "lector adaptable",
+        "edición de pantalla"
+      ]
+    },
+    "group": "html",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Integrating the HTML viewer",
+        "es": "Integrar el visor HTML"
+      }
+    },
+    "research": [
+      "HV-RENDER",
+      "HV-MEASURE",
+      "HV-GAP",
+      "HV-KP"
+    ],
+    "detect": {
+      "api": [
+        "renderToHtml"
+      ]
+    }
+  },
+  "screen-overrides": {
+    "label": {
+      "en": "A simpler design for screen",
+      "es": "Un diseño más sencillo para pantalla"
+    },
+    "definition": {
+      "en": "htmlViewer.overrides patches the print config for the screen edition, applied with applyHtmlViewerOverrides.",
+      "es": "htmlViewer.overrides cambia la configuración de imprenta para la edición de pantalla y se aplica con applyHtmlViewerOverrides."
+    },
+    "aliases": {
+      "en": [
+        "print and screen",
+        "htmlViewer",
+        "overrides",
+        "two editions from one config"
+      ],
+      "es": [
+        "imprenta y pantalla",
+        "htmlViewer",
+        "overrides",
+        "dos ediciones con una configuración"
+      ]
+    },
+    "group": "html",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "HTML Viewer",
+        "es": "Visor HTML"
+      }
+    },
+    "research": [
+      "HV-OVR"
+    ],
+    "detect": {
+      "config": [
+        "htmlViewer.overrides"
+      ],
+      "api": [
+        "applyHtmlViewerOverrides"
+      ]
+    }
+  },
+  "canvas-rendering": {
+    "label": {
+      "en": "Pages on a canvas",
+      "es": "Páginas en un canvas"
+    },
+    "definition": {
+      "en": "buildDocument lays out Markdown and a config into pages; renderPageToCanvas paints any page at any scale.",
+      "es": "buildDocument compone el Markdown y la configuración en páginas; renderPageToCanvas pinta cualquier página a cualquier escala."
+    },
+    "aliases": {
+      "en": [
+        "buildDocument",
+        "renderPageToCanvas",
+        "renderPage",
+        "canvas",
+        "PNG",
+        "Markdown to pages"
+      ],
+      "es": [
+        "buildDocument",
+        "renderPageToCanvas",
+        "renderPage",
+        "canvas",
+        "PNG",
+        "de Markdown a páginas"
+      ]
+    },
+    "group": "integration",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Rendering a page to a bitmap",
+        "es": "Renderizar una página a un bitmap"
+      }
+    }
+  },
+  "bundles": {
+    "label": {
+      "en": ".postext bundles",
+      "es": "Paquetes .postext"
+    },
+    "definition": {
+      "en": "A whole book in one file (chapters, config, resources and fonts) that code can create, open and lay out, and the Sandbox can edit.",
+      "es": "Un libro entero en un archivo (capítulos, configuración, recursos y fuentes) que el código puede crear, abrir y componer, y el Sandbox puede editar."
+    },
+    "aliases": {
+      "en": [
+        "bundle",
+        ".postext",
+        "openBundle",
+        "createBundle",
+        "zip",
+        "preset"
+      ],
+      "es": [
+        "paquete",
+        ".postext",
+        "openBundle",
+        "createBundle",
+        "zip",
+        "preset"
+      ]
+    },
+    "group": "integration",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Bundles (`.postext` files)",
+        "es": "Paquetes (archivos `.postext`)"
+      }
+    },
+    "detect": {
+      "api": [
+        "openBundle",
+        "createBundle"
+      ]
+    }
+  },
+  "worker": {
+    "label": {
+      "en": "Layout in a Web Worker",
+      "es": "Composición en un Web Worker"
+    },
+    "definition": {
+      "en": "Runs the layout off the main thread with registered fonts and cooperative cancellation, so long books never freeze the page.",
+      "es": "Ejecuta la composición fuera del hilo principal, con fuentes registradas y cancelación cooperativa, para que los libros largos no bloqueen la página."
+    },
+    "aliases": {
+      "en": [
+        "Web Worker",
+        "createLayoutWorker",
+        "off main thread",
+        "cancellation",
+        "responsive UI"
+      ],
+      "es": [
+        "Web Worker",
+        "createLayoutWorker",
+        "fuera del hilo principal",
+        "cancelación",
+        "interfaz fluida"
+      ]
+    },
+    "group": "integration",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Running layout in a Web Worker",
+        "es": "Ejecutar la composición en un Web Worker"
+      }
+    },
+    "detect": {
+      "api": [
+        "createLayoutWorker"
+      ]
+    }
+  },
+  "diagnostics": {
+    "label": {
+      "en": "Warnings and diagnostics",
+      "es": "Avisos y diagnóstico"
+    },
+    "definition": {
+      "en": "Layout warnings, parse issues and convergence, the Highlight Loose Lines and Page Negative aids, and the Sandbox's Checks panel.",
+      "es": "Avisos de composición, problemas de análisis y convergencia, las ayudas Resaltar líneas flojas y Negativo de página, y el panel Revisión del Sandbox."
+    },
+    "aliases": {
+      "en": [
+        "warnings",
+        "debug",
+        "loose lines",
+        "converged",
+        "Checks panel",
+        "parseMarkdownWithIssues",
+        "overlays"
+      ],
+      "es": [
+        "avisos",
+        "depuración",
+        "líneas flojas",
+        "convergencia",
+        "panel Revisión",
+        "parseMarkdownWithIssues",
+        "superposiciones"
+      ]
+    },
+    "group": "integration",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Debug",
+        "es": "Depuración"
+      }
+    },
+    "research": [
+      "DBG-OVERLAYS",
+      "DBG-WARN"
+    ],
+    "detect": {
+      "api": [
+        "parseMarkdownWithIssues"
+      ]
+    }
+  }
+}

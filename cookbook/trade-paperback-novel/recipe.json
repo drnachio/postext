@@ -1,0 +1,213 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 38,
+  "status": "published",
+  "chapter": "publications",
+  "order": 30,
+  "level": 2,
+  "genres": [
+    "novel"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "opener-design",
+      "chapter-breaks",
+      "section-running-heads"
+    ],
+    "also": [
+      "mirrored-margins",
+      "heading-styles",
+      "covers",
+      "heading-attributes",
+      "design-elements",
+      "design-images",
+      "section-geometry",
+      "page-role-filters",
+      "running-heads",
+      "frontmatter",
+      "paragraph-styles",
+      "vertical-space",
+      "resources",
+      "resource-types",
+      "inline-embeds",
+      "page-background",
+      "widows-orphans-runts"
+    ]
+  },
+  "answers": [
+    "Q24",
+    "Q28",
+    "Q39",
+    "Q30",
+    "Q35",
+    "Q23",
+    "Q73"
+  ],
+  "gaps": [],
+  "gotchas": [
+    "headings-drop-h1-break",
+    "parity-page1-recto",
+    "design-text-newline",
+    "design-lineheight-multiple",
+    "design-text-ragged",
+    "overflow-ellipsis-default",
+    "runt-tracking-unpainted",
+    "palette-skips-designs",
+    "resource-double-quotes",
+    "quote-frontmatter",
+    "fonts-first"
+  ],
+  "explainsWarnings": [
+    "parityCascade"
+  ],
+  "related": [
+    "spanish-pocket-novel",
+    "five-chapter-openers",
+    "front-matter-roman-to-arabic",
+    "running-heads-by-parity"
+  ],
+  "workarounds": [
+    {
+      "followup": "EF-05",
+      "package": "postext",
+      "note": "level 1 restates breakBefore (parity 'odd') because any headings object drops the H1 break"
+    },
+    {
+      "followup": "EF-11",
+      "package": "postext",
+      "note": "every frontmatter value is quoted: title and author feed the cover and the running heads"
+    },
+    {
+      "followup": "EF-71",
+      "package": "postext",
+      "note": "col() writes the hex beside the paletteId, because the cover, opener and running-head designs do not read the palette"
+    },
+    {
+      "followup": "EF-56",
+      "package": "postext",
+      "note": "the lead's design-text lineHeight is the multiple LEAD / 9.5, never a Dimension, which would drop the opener's reservation"
+    },
+    {
+      "followup": "EF-01",
+      "package": "postext",
+      "note": "the lead sets paragraphIndent: pt(0.01) so that the \\n in each lead attribute breaks the line; at 0 the lead prints the two characters \\n and wraps where the measure ends"
+    },
+    {
+      "followup": "EF-109",
+      "package": "postext",
+      "note": "design text cannot be justified, so the small-caps lead is a centred display of two lines broken by sense instead of a justified first line"
+    },
+    {
+      "followup": "EF-111",
+      "package": "postext",
+      "note": "bodyText.maxRuntTracking: 0: at the default, the paragraph ending 'nodding good-by to him.' is set a line shorter with negative tracking the canvas does not paint"
+    },
+    {
+      "followup": "EF-66",
+      "package": "postext",
+      "note": "the U+00A0 after Mr. and Mrs. holds only in plain paragraphs; in the two paragraphs with italics it is an ordinary space, and neither line happens to break there"
+    },
+    {
+      "followup": "EF-113",
+      "package": "postext",
+      "note": "the cover style sets span: 'page' in this single-column book: kept in the column, its design is clipped at the column top (165 mm down, the section's margin), so the art disappears and the title loses its top"
+    }
+  ],
+  "engine": {
+    "postext": "1.4.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "crop",
+    "pages": "all",
+    "expect": {
+      "pages": [
+        8,
+        8
+      ],
+      "nearEmptyPages": [
+        2,
+        6
+      ]
+    },
+    "focus": {
+      "page": 1,
+      "x": 0,
+      "y": 0,
+      "w": 1,
+      "h": 0.9
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "The Awakening (1899), chapters I and II",
+          "es": "The Awakening (El despertar, 1899), capítulos I y II"
+        },
+        "who": "Kate Chopin",
+        "source": "https://www.gutenberg.org/ebooks/160",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The colophon",
+          "es": "El colofón"
+        },
+        "who": "Postext Cookbook",
+        "license": "original"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "The cover’s view of the gulf and the camomile tailpiece, drawn in code in the page’s palette",
+          "es": "La vista del golfo de la cubierta y el florón de manzanilla, dibujados en código con la paleta de la página"
+        },
+        "who": "Ignacio Ferro",
+        "license": "MIT"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Crimson Pro",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Cormorant Garamond",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Cormorant SC",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "MIT"
+  },
+  "created": "2026-09-25",
+  "updated": "2026-09-26"
+}

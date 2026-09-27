@@ -1,0 +1,119 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 34,
+  "status": "published",
+  "chapter": "figures",
+  "order": 20,
+  "level": 3,
+  "genres": ["catalogue"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["float-placement", "chapter-breaks"],
+    "also": [
+      "citations", "resource-types", "figure-numbering", "captions", "credit-notes",
+      "resources", "cell-images", "opener-design", "opener-band", "drop-caps",
+      "design-elements", "design-images", "heading-attributes", "heading-styles",
+      "mirrored-margins", "canvas-rendering"
+    ]
+  },
+  "answers": ["Q41", "Q64", "Q69", "Q28"],
+  "gaps": ["float-shrink", "body-drop-cap"],
+  "gotchas": ["top-float-next-page", "bitmap-print-size", "design-text-ragged", "design-text-newline", "design-lineheight-multiple"],
+  "explainsWarnings": ["bitmapTooSmall"],
+  "related": ["seed-catalogue", "photo-essay-full-bleed", "textbook-margin-column", "five-chapter-openers"],
+  "workarounds": [
+    { "followup": "EF-05", "package": "postext", "note": "the H1 breakBefore { parity: 'even' } is restated because a headings object drops it (gotcha headings-drop-h1-break)" },
+    { "followup": "EF-71", "package": "postext", "note": "col() writes the hex beside each paletteId, because 1.4.1 paints design elements (openers, cover, folios) and bodyText.referenceColor from the hex, never from the palette (gotcha palette-skips-designs)" },
+    { "followup": "EF-56", "package": "postext", "note": "the title, the lead and the tombstone give lineHeight as a multiple (pt leading / size for the lead and the tombstone), because a Dimension silently drops the opener's reserved height, minHeight included (gotcha design-lineheight-multiple)" },
+    { "followup": "EF-111", "package": "postext", "note": "bodyText.maxRuntTracking is 0: a runt fix's negative tracking is measured but never painted (gotcha runt-tracking-unpainted)" },
+    { "followup": "EF-01", "package": "postext", "note": "the three-line tombstone is one attribute with \\n breaks, which a design text honours only with a paragraphIndent, so it carries paragraphIndent: pt(0.01) (gotcha design-text-newline)" },
+    { "followup": "EF-109", "package": "postext", "note": "a drop cap exists only in design text, so each entry's lead is a heading attribute drawn with dropCap; design text cannot be justified, so the lead is set ragged above the justified commentary (gotcha design-text-ragged)" },
+    { "followup": "EF-106", "package": "postext", "note": "the lead's dropCap is drawn only because the text element has overflow: 'wrap' (every design text in the pen does; the default 'ellipsis-end' drops the initial silently)" },
+    { "followup": "EF-127", "package": "postext", "note": "dropCap.fontSize is computed (dropSize) so the initial's top meets the first line's capitals and its foot the third baseline; the default size rises above line 1" },
+    { "followup": "EF-98", "package": "postext", "note": "layout.fitFiguresToPage would shrink each plate to the page, but 1.4.1 sets the shrunk picture flush left in its page-wide float, ignoring align, with the caption at the block's edge; the pen computes placement.width from the scan's aspect ratio instead, so the float itself narrows and align: 'center' centres plate and caption" },
+    { "followup": "EF-11", "package": "postext", "note": "every frontmatter value is quoted (the title feeds the verso folio line)" },
+    { "followup": "EF-153", "package": "postext", "note": "the cover's tracked name (DORÉ) is moved right by half its tracking: 1.4.1 measures design text with the tracking after its last letter, so centred tracked capitals stand left of the centre line" }
+  ],
+  "engine": { "postext": "1.4.1" },
+  "kit": ["core", "fonts", "viewer"],
+  "sample": { "locales": ["en"] },
+  "capture": {
+    "hero": [4, 5],
+    "card": "spread",
+    "pages": "all",
+    "expect": { "pages": [8, 8], "nearEmptyPages": [1] }
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "The catalogue entries, captions, tombstones and checklist",
+          "es": "Las fichas, los pies, las fichas técnicas y la lista de obras del catálogo"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      },
+      {
+        "what": {
+          "en": "Quotations from Don Quixote in John Ormsby’s English translation (1885)",
+          "es": "Citas del Quijote en la traducción inglesa de John Ormsby (1885)"
+        },
+        "who": "Miguel de Cervantes · John Ormsby",
+        "source": "https://www.gutenberg.org/ebooks/996",
+        "license": "PD"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "Cat. 1, Don Quixote in His Library (Part I, ch. I), wood engraving by Héliodore Pisan after Gustave Doré, 1863; scan from Wikimedia Commons, reduced to 835 px wide",
+          "es": "Cat. 1, Don Quijote en su biblioteca (primera parte, cap. I), grabado en madera de Héliodore Pisan según dibujo de Gustave Doré, 1863; escaneado de Wikimedia Commons, reducido a 835 px de ancho"
+        },
+        "who": "Gustave Doré · Héliodore Pisan",
+        "source": "https://commons.wikimedia.org/wiki/File:Gustave_Dor%C3%A9_-_Miguel_de_Cervantes_-_Don_Quixote_-_Part_1_-_Chapter_1_-_Plate_1_%22A_world_of_disorderly_notions,_picked_out_of_his_books,_crowded_into_his_imagination%22.jpg",
+        "license": "PD",
+        "file": "library-835.jpg"
+      },
+      {
+        "what": {
+          "en": "Cat. 2, The Vigil of Arms (Part I, ch. III), wood engraving by Héliodore Pisan after Gustave Doré, 1863; scan from Wikimedia Commons, reduced to 835 px wide",
+          "es": "Cat. 2, La vela de armas (primera parte, cap. III), grabado en madera de Héliodore Pisan según dibujo de Gustave Doré, 1863; escaneado de Wikimedia Commons, reducido a 835 px de ancho"
+        },
+        "who": "Gustave Doré · Héliodore Pisan",
+        "source": "https://commons.wikimedia.org/wiki/File:Cap_III_Quixote_a_velar_armas.jpg",
+        "license": "PD",
+        "file": "vigil-835.jpg"
+      },
+      {
+        "what": {
+          "en": "Cat. 3, The Adventure of the Windmills (Part I, ch. VIII), wood engraving by Héliodore Pisan after Gustave Doré, 1863; scan from Wikimedia Commons, reduced to 835 px wide",
+          "es": "Cat. 3, La aventura de los molinos de viento (primera parte, cap. VIII), grabado en madera de Héliodore Pisan según dibujo de Gustave Doré, 1863; escaneado de Wikimedia Commons, reducido a 835 px de ancho"
+        },
+        "who": "Gustave Doré · Héliodore Pisan",
+        "source": "https://commons.wikimedia.org/wiki/File:Adventure_with_the_Windmills.jpg",
+        "license": "PD",
+        "file": "windmills-835.jpg"
+      },
+      {
+        "what": {
+          "en": "The cover’s detail of Cat. 3: a 1,100-px square cut from the same scan and reduced to 540 px",
+          "es": "El detalle de Cat. 3 en la cubierta: un cuadrado de 1100 px recortado del mismo escaneado y reducido a 540 px"
+        },
+        "who": "Gustave Doré · Héliodore Pisan",
+        "source": "https://commons.wikimedia.org/wiki/File:Adventure_with_the_Windmills.jpg",
+        "license": "PD",
+        "file": "windmills-detail-540.jpg"
+      }
+    ],
+    "fonts": [
+      { "family": "Ibarra Real Nova", "license": "OFL-1.1" },
+      { "family": "Libre Bodoni", "license": "OFL-1.1" },
+      { "family": "Sofia Sans Condensed", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-25",
+  "updated": "2026-09-26"
+}

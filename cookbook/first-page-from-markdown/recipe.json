@@ -1,0 +1,52 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 12,
+  "status": "published",
+  "chapter": "output",
+  "order": 20,
+  "level": 2,
+  "genres": ["magazine"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["frontmatter", "color-palette", "running-heads"],
+    "also": [
+      "canvas-rendering", "opener-design", "opener-band", "design-images", "design-anchoring",
+      "page-role-filters", "font-loading", "page-size", "mirrored-margins", "column-layouts",
+      "body-typography", "emphasis-colours", "swatches", "hyphenation-languages",
+      "bullet-lists", "callout-styles", "title-line-breaks"
+    ]
+  },
+  "answers": ["Q25", "Q16", "Q01"],
+  "gotchas": [
+    "palette-skips-designs", "headings-drop-h1-break", "quote-frontmatter", "fonts-first",
+    "font-family-one-name", "config-cache-identity", "hyphenation-locales",
+    "overflow-ellipsis-default", "design-lineheight-multiple"
+  ],
+  "workarounds": [
+    { "followup": "EF-71", "package": "postext", "note": "col() writes the palette hex beside each paletteId: 1.4.1 paints the colours of header, footer and opener elements from the inline hex (gotcha palette-skips-designs)" },
+    { "followup": "EF-05", "package": "postext", "note": "the H1 breakBefore is restated because a headings object drops it" },
+    { "followup": "EF-11", "package": "postext", "note": "every frontmatter value is quoted" },
+    { "followup": "EF-13", "package": "postext", "note": "one family name per fontFamily" },
+    { "followup": "EF-14", "package": "postext", "note": "locale is the exact bundled code ('en-us' | 'es'): a region-tagged code such as 'es-ES' silently hyphenates as American English (gotcha hyphenation-locales)" },
+    { "followup": "EF-56", "package": "postext", "note": "the opener's design texts give lineHeight as a multiple (1, 1.3), never pt(): a dimension measures the opener as NaN and drops its reservation with no warning (gotcha design-lineheight-multiple)" }
+  ],
+  "related": ["magazine-feature-opener", "running-heads-by-parity", "chapter-opener-bleed-band"],
+  "engine": { "postext": "1.4.1" },
+  "kit": ["core", "fonts", "viewer", "images"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": 1, "card": "page", "expect": { "pages": [2, 2] } },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [],
+    "images": [],
+    "fonts": [
+      { "family": "Newsreader", "license": "OFL-1.1" },
+      { "family": "Young Serif", "license": "OFL-1.1" },
+      { "family": "Inter Tight", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-25",
+  "updated": "2026-09-26"
+}

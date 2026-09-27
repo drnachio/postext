@@ -1,0 +1,63 @@
+---
+title: "Fichas de catálogo frente a sus láminas"
+summary: "Cada ficha abre página par y cita su lámina al empezar el comentario; la lámina flota a la impar de enfrente con 221 mm de alto y el ancho que da su proporción."
+description: "Catálogo de gabinete compuesto con Postext: tres grabados de Doré, cada ficha en página par frente a su lámina y, al final, una lista de obras con miniaturas."
+question: "¿Cómo compongo cada ficha de catálogo en la página izquierda con su lámina enfrente, en la derecha?"
+aliases: ["catálogo de arte", "catálogo de exposición", "lámina enfrentada", "página de enfrente", "ficha técnica", "lista de obras", "grabado en madera", "art catalogue"]
+pageNotes: { "1": "La cubierta: sobre un negro cálido, un filete dorado enmarca un detalle cuadrado del grabado de los molinos, con el caballero y su caballo enganchados en el aspa; debajo, DORÉ en grandes mayúsculas color crema, el subtítulo en cursiva Three plates for Don Quixote, 1863 y una línea de crédito espaciada al pie.", "2": "La ficha Cat. 1 en una página par: un 1 grande en sepia junto al título en cursiva Don Quixote in His Library, un filete a lo ancho de la caja de texto, la ficha técnica en la columna exterior, una entradilla con capitular sepia de tres líneas y cuatro párrafos justificados de comentario.", "3": "El grabado de la biblioteca llena la página impar frente a su ficha, centrado, con el pie Cat. 1 y una línea de crédito debajo.", "5": "La vela de armas, a la luz de la luna, ocupa la página impar frente a la ficha Cat. 2, con su pie y su línea de crédito.", "7": "La aventura de los molinos llena la página impar frente a la ficha Cat. 3, con su pie y su línea de crédito.", "8": "La lista de obras: un 1–3 en sepia junto al título Works in the Exhibition, una nota sobre la edición de 1863, una tabla con la miniatura, el número, el título, el capítulo y la página de cada lámina, y el colofón." }
+---
+
+## Lo que vas a componer
+
+Un pequeño catálogo en inglés para una exposición de gabinete: tres grabados en madera del *Quijote* de Gustave Doré (París, 1863), en página de 230 × 280 mm. La cubierta compone DORÉ en Libre Bodoni de 88 pt sobre un negro cálido, bajo un detalle enmarcado de la lámina de los molinos. Cada ficha abre una página par con un número de catálogo en sepia junto a un título en cursiva, la ficha técnica en la columna exterior, una entradilla con capitular de tres líneas y el comentario. La primera frase del comentario cita la lámina, que abre la página impar de enfrente, centrada y con 221 mm de alto; lámina, pie y línea de crédito llenan así la caja de texto. La última página es una lista de obras con una miniatura en la primera celda de cada fila y la página en que se imprime cada lámina.
+
+## Elaboración
+
+### 1 · La lámina espera a la página de enfrente
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Cada ficha salta a página par, y un flotante `top` nunca cae en la página que lo cita, así que la lámina citada en la primera frase del comentario se salta la par y abre la impar de enfrente. Postext 1.4.1 no reduce un flotante para que quepa en el hueco que le queda en su página, de modo que `plate()` calcula el ancho del flotante a partir de la proporción del escaneado y de la altura que deja la caja de texto una vez descontados el pie y la línea de crédito. `layout.fitFiguresToPage` reduciría una lámina demasiado alta para la página, pero la 1.4.1 pega entonces la imagen reducida a la izquierda de un flotante que sigue ocupando todo el ancho. Una fracción de ancho estrecha el propio flotante, y `align: 'center'` centra la lámina junto con su pie.
+
+### 2 · La cabeza de la ficha sale de su título
+
+<Excerpt region="opener" />
+
+Cada título `#` lleva como atributos su capítulo, su ficha técnica y su entradilla, y la apertura los coloca. El número grande es el `{number}` del propio título, que da `numberingTemplate: '{1}'`; como cada ficha tiene una sola lámina, coincide con el contador `Cat.` de las láminas. En la 1.4.1 la capitular solo existe en el texto de diseño, que no se puede justificar, así que la entradilla es un atributo compuesto en bandera, a 13,5 pt, sobre el comentario justificado. `dropSize(3)` da a la inicial el cuerpo justo para que su parte alta toque las mayúsculas de la primera línea y su pie apoye en la tercera línea de base. `minHeight` reserva sitio para una entradilla de cinco líneas, de modo que en Cat. 3, cuya entradilla ocupa cuatro, el comentario empieza en la misma línea que en las otras fichas. `TITLE_Y` coloca el título 1,2 mm más abajo que el número para alinear sus mayúsculas con las cifras, que en Libre Bodoni miden 0,716 em frente a los 0,754 em de las mayúsculas.
+
+### 3 · Declara el original y dibuja una copia menor
+
+<Excerpt region="scans" />
+
+Postext mide un mapa de bits por los píxeles que declara, a la resolución del documento, y nunca lo imprime más ancho de lo que esos píxeles permiten. `plate()` declara el original de cada lámina, el escaneado de Commons reducido a 2400 px de alto: 1900 × 2400 px en Cat. 1, que a `page.dpi: 150` podría llegar a 322 mm. Por eso manda la fracción de ancho: la lámina mide 221 mm de alto, y a esa altura 2400 px dan unos 275 ppp. Con los 300 ppp por defecto, se quedaría en 161 mm de ancho. El lienzo dibuja en esa caja la imagen que esté registrada, así que la receta carga de `assets/` tres copias de 835 px, 0,97 MB frente a los 5,8 MB de los originales. Si dibujara los originales de 2400 px, los cielos se llenarían de bandas de muaré y las imágenes de la captura pesarían unos 0,3 MB más, por encima del límite de 1,4 MB del Recetario.
+
+### 4 · Una cubierta desde un estilo de título
+
+<Excerpt region="cover" />
+
+La cubierta es el primer título, `# Doré {style="cover" …}`, dibujado por un estilo sin folios. Su elemento de imagen dibuja `windmills-detail-540.jpg`, un recurso registrado que ningún párrafo cita y que, por tanto, ni se numera ni lleva pie. Es un cuadrado de 1100 px recortado del escaneado de los molinos y reducido a 540 px, el ancho que ocupa en una página de 1000 px. La 1.4.1 mide el texto de diseño con el espaciado de 8 pt también detrás de la última letra, con lo que el nombre centrado quedaría 4 pt a la izquierda del eje de la página; por eso se desplaza a la derecha la mitad de ese espaciado.
+
+### 5 · Miniaturas en las celdas de la lista de obras
+
+<Excerpt region="checklist" />
+
+La propiedad `image` de una celda ajusta un recurso de mapa de bits al ancho interior de la celda, aquí 23 mm. Cada miniatura es una copia propia de 300 px, declarada con ese tamaño, en lugar de la lámina de 835 px reducida al dibujarla. La tabla no tiene texto de pie y su tipo deja vacío el prefijo, así que no se dibuja ningún pie. El estilo de la lista solo fija `numbered: false` y su diseño; el ancho de página, el salto a página par y el margen inferior los toma del nivel 1.
+
+### 6 · Detén la maquetación si una ficha no cabe
+
+<Excerpt region="check" />
+
+Una ficha que se pasa de su página par sigue mandando la lámina a la página siguiente. El resto del comentario va detrás de la lámina, y una página en blanco devuelve la ficha siguiente a una par, con lo que cada lámina posterior se imprime dos páginas después de la que indica la lista de obras. La comprobación detiene la maquetación en la primera página sin lámina que no sea una apertura y muestra su número en la barra del visor.
+
+## Variantes
+
+### Deja aire bajo las láminas
+
+Con una altura fija, todas las láminas miden 190 mm, centradas, con unos 31 mm de caja de texto vacía bajo la línea de crédito.
+
+```diff
+-const PLATE_H = (LINES * LEAD - UNDER) * PT; // 221.1 mm: the rest of the text block
++const PLATE_H = 190; // mm: the same height for every plate, with air below
+```
+
+### Pon figuras en la columna exterior
+
+Para figuras y glosas que se apilan en una columna exterior reservada a flotantes, junto al párrafo que las cita, mira <RecipeLink slug="textbook-margin-column">el libro de texto con columna al margen</RecipeLink>.

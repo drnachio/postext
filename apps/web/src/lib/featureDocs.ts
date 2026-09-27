@@ -1,4 +1,5 @@
-import { extractToc, getDocSource } from "@/lib/docs";
+import { docAnchorPath } from "@/lib/cookbook/docLinks";
+import type { DocAnchor, Locale } from "@/lib/cookbook/types";
 
 /** The six capability cards of the home page's chapter 2, in display order.
  *  Each entry expects a `<key>Title` and `<key>Description` pair in the
@@ -12,7 +13,7 @@ export type FeatureKey = (typeof FEATURE_KEYS)[number];
  *  with the same slugger the doc page uses, so it survives accents and
  *  punctuation; a renamed heading fails `featureDocPath` loudly (and the unit
  *  test) instead of shipping a dead fragment. */
-const FEATURE_DOCS: Record<FeatureKey, { slug: string; heading: Record<string, string> }> = {
+const FEATURE_DOCS: Record<FeatureKey, DocAnchor> = {
   justification: {
     slug: "justification",
     heading: { en: "Knuth-Plass: Seeing the Whole Paragraph", es: "Knuth-Plass: ver el párrafo completo" },
@@ -42,10 +43,13 @@ const FEATURE_DOCS: Record<FeatureKey, { slug: string; heading: Record<string, s
 /** Locale-less docs path (`/docs/<slug>#<anchor>`) of the section that
  *  explains a capability card. */
 export function featureDocPath(key: FeatureKey, locale: string): string {
-  const { slug, heading } = FEATURE_DOCS[key];
-  const text = heading[locale] ?? heading.en;
-  const doc = getDocSource(slug, locale) ?? getDocSource(slug, "en");
-  const item = doc && extractToc(doc.source).find((i) => i.text === text);
-  if (!item) throw new Error(`featureDocPath: no "${text}" heading in docs/${slug}-${locale}.mdx`);
-  return `/docs/${slug}#${item.id}`;
+  const anchor = FEATURE_DOCS[key];
+  // Unknown locales fall back to the English doc.
+  const lang: Locale = locale === "es" ? "es" : "en";
+  const path = docAnchorPath(anchor, lang);
+  if (!path) {
+    const text = anchor.heading[lang];
+    throw new Error(`featureDocPath: no "${text}" heading in docs/${anchor.slug}-${locale}.mdx`);
+  }
+  return path;
 }

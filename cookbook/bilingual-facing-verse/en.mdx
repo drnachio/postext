@@ -1,0 +1,69 @@
+---
+title: "Facing translation, stanza by stanza"
+summary: "Each poem is a frameless box with two columns: a fixed column break opens the English at its title, and :::space keeps each stanza level with its original."
+description: "A bilingual chapbook set with Postext: each Spanish poem faces its English version in a two-column box, with a fixed column break and :::space between stanzas."
+question: "How do I set a poem and its translation side by side, starting on the same line, stanza by stanza?"
+aliases: ["facing translation", "parallel text", "en face", "dual-language edition", "bilingual poetry", "translation beside the original", "columns inside a box", "breaks attribute", "column break in a box", "stanza alignment", "stanza gap", "turnover", "hanging indent", "verse", "chapbook", "edición bilingüe", "traducción enfrentada"]
+pageNotes: { "3": "The drawing of the salt pans reaches 84 mm down the page. Under it, poem I opens with its numeral, and LA SALINA AL ALBA heads the Spanish column and THE SALT PANS AT DAWN the English italic. The fourth English line turns over, and the first Spanish stanza ends with two blank lines, so both second stanzas start on the same line.", "4": "Poems II and III, each a numeral over two columns whose stanzas face each other line for line." }
+---
+
+## What you'll build
+
+A bilingual chapbook of five poems about a salt pan in the south of Spain, 156 × 234 mm, with the Spanish on the left and the poet’s own English version on the right, line for line. A title page with a flamingo and the author’s note come first; the poems open under a drawing of pink ponds, heaps of salt and flamingos at sunrise. Each poem sits in a frameless box under a madder numeral in Castoro Titling, the Spanish in one column and the English in the other. The English starts on the same line as the Spanish, and every stanza starts level with its original. When an English line is too long for its column, the rest of it turns over 2 em in, and the Spanish stanza opposite ends with an extra blank line.
+
+## Method
+
+### 1 · A poem is a box with a fixed column break
+
+The code is [the short answer](#the-short-answer) above. `:::columns` works only inside a box, so each poem is a callout whose style drops the fill and the padding and prints the fence’s `title`, the numeral ([`:::columns`](/en/docs/document-format#columns)). Without `breaks`, the group cuts where its two columns come out level. Both halves of these poems are the same height, so the cut falls on the English title anyway; lengthen two lines of *The Rake* until they turn over, and the cut moves one block down and leaves THE RAKE at the foot of the Spanish column. `breaks="14"` names the block that opens the second column, so the English title heads it whatever the heights of the two halves.
+
+### 2 · A paragraph per line, a :::space per stanza break
+
+<Excerpt region="verse" />
+
+Markdown joins the lines of a paragraph, so each line of verse is a paragraph of its own, in the ragged `verse` style, which 1.4.1 never hyphenates. A `:::space` between stanzas leaves a blank line in each column. It is not a block, so `breaks` does not count it ([`:::space`](/en/docs/document-format#space)). The English *each one standing on its own reflection.* is too long for its 55 mm column and turns over 2 em in; the Spanish stanza opposite ends with `:::space{lines=2}`, so the next stanzas start on the same line.
+
+<PageShot page={3} crop="0.1,0.385,0.8,0.248" caption="Poem I on page 3: reflection. turns over in the English, and the Spanish stanza ends with two blank lines instead of one." />
+
+### 3 · The note is hyphenated in its own language
+
+<Excerpt region="note" />
+
+`locale` picks the hyphenation patterns by exact code. With `'es'` the Spanish note breaks *ori-ginal* and *Duna-liella*; with the English patterns both words go whole to the next line, and only *arras-traba* breaks under either ([supported locales](/en/docs/justification#supported-locales)). Word spaces may shrink to 0.8 and stretch to 1.35 of their normal width, and no justified line in either note stretches past that. The note’s heading is a design whose one element, the title, sits 36 mm below the top of the text block, so the note starts 73 mm from the top edge of its page.
+
+### 4 · The title page and the drawing are headings
+
+<Excerpt region="front" />
+
+Each is a level-1 heading with a style of its own ([heading styles](/en/docs/configuration#heading-styles)): the title page’s design takes `{author}` from the frontmatter, and both designs take `{attr.other}` from the heading’s attributes. The drawing starts at the top edge of the page, above the text block, where a design kept in the column would be clipped, so its style has `span: 'page'`. An image reserves no height, so without `minHeight` the heading is 25.6 mm deep and poem I starts 58 mm down the page, on a drawing that reaches 84 mm. A `minHeight` of eleven lines plus the level’s one-line bottom margin ends the heading at 83.4 mm.
+
+### 5 · The running heads name both languages
+
+<Excerpt region="heads" />
+
+The verso carries the Spanish title and the recto the English one, in the order of the columns. `pages: 'body'` keeps them off the three pages that open with a heading. The note and the drawing get a folio at the foot instead, and the title page’s style empties its header and its footer ([text elements](/en/docs/configuration#text-elements)).
+
+## Variations
+
+### Widen the gutter
+
+At 12 mm the columns narrow to 53 mm, and *Los turistas paran y hacen fotos:* turns over in poem III, so its second stanza starts a line below the English; end the English stanza with `:::space{lines=2}` to level them.
+
+```diff
+-const GAP = 8; // mm between the original and the translation: each column is 55 mm wide
++const GAP = 12; // mm between the original and the translation: each column is 53 mm wide
+```
+
+### Hang turnovers deeper
+
+At 3 em, *reflection.* on page 3 starts one em further in.
+
+```diff
+-const verse = { id: 'verse', textAlign: 'left', hangingIndent: em(2) };
++const verse = { id: 'verse', textAlign: 'left', hangingIndent: em(3) };
+```
+
+## Pitfalls
+
+- A `:::space` put before the English title vanishes: the second column opens at the block `breaks` names, and the space falls at the cut. Put it after the title, like the `:::space{lines=0.5}` under each column title here.
+- Count `breaks` from the Spanish title: with a title and 12 lines, the English title is block 14. Every line of verse is a block, so one more Spanish line moves the English title to block 15, and `breaks` has to go up with it.

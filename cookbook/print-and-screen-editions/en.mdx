@@ -1,0 +1,73 @@
+---
+title: "One source, print and screen editions"
+summary: "Both editions come from one config: htmlViewer.overrides holds the dark screen design, and applyHtmlViewerOverrides merges it in before each HTML build."
+description: "A magazine section in Postext, set as a two-column print issue and as a dark, resizable HTML reading view from one Markdown source and one config."
+question: "How do I show the same document as a responsive HTML reading view with a simpler screen design?"
+aliases: ["screen edition", "reading view", "web edition", "dark mode", "night theme", "responsive HTML", "resize", "ResizeObserver", "Shadow DOM", "htmlViewer overrides"]
+pageNotes: { "1": "The part divider of Notes on Weather: a rain-blue field with white diagonal rain strokes that stay clear of the type, a tall Roman numeral I, the part title Autumn and the three notes listed at the foot.", "2": "The Rain note: a pale fog band with the kicker Autumn · Note 1, the title in Gloock and an italic lead, two justified columns, and a rain gauge drawn in section at the head of the second column.", "3": "The Fog note: two balanced columns over a panorama that runs across the foot of the page, a valley filled with layered fog under a pale sun, a church spire and trees rising out of it and a fenced bank in the foreground.", "4": "The Wind note: a wind rose heads the second column, its longest blue petals pointing west and south-west, and the note ends with the colophon of the issue." }
+---
+
+## What you'll build
+
+*Notes on Weather*, the autumn section of a small magazine, set twice from the same Markdown. On paper it is a 225 × 297 mm issue: a rain-blue divider page, three notes that open under a pale fog band, two justified columns, and drawings of a rain gauge, a fogged valley and a wind rose. On screen it is a single ragged column of Newsreader, pale grey on near-black, in HTML text a reader can select and copy, with no divider page, fog bands or folios. The pane opens on the gauge, shrunk to the pane's height and drawn in night colours, beside the printed page it sits on. Scroll up for the Rain opener, or drag the pane's corner and the text is laid out again at the new size. The screen design is nine keys under `htmlViewer.overrides`, inside the print config.
+
+## Method
+
+### 1 · One set of colour names, two sets of values
+
+<Excerpt region="palette" />
+
+Every colour in the config names a palette id, and the hex written beside it is only the day fallback. So the screen edition switches to the night colours by replacing one array. The [overrides](/en/docs/configuration#html-viewer) in [the short answer](#the-short-answer) merge objects key by key and heading levels on `level`, and replace any other array whole, `colorPalette` included. `main-color` is part of the palette, so the engine defaults that use it change as well. In postext 1.4.1 the new palette does not reach the design elements or the reference colour, so `relink()` rewrites every linked colour from the palette of the merged config.
+
+### 2 · Openers: a band on paper, the words on screen
+
+<Excerpt region="opener" />
+
+The kicker, title and lead elements are defined once and spread into both designs, so both editions show the same heading attributes: `{attr.kicker}`, `{attr.lead}` and the part's `{partTitle}`. On paper a level-1 heading breaks to a new page and spans both columns, and its design hangs a fog band from the bleed. `minHeight` reserves the band's depth below the top margin plus `AIR`, the 9 mm between the band and the first line. The printed titles are set at 54 pt because each is one short word and the only large type on its page. On screen the same level is set as an in-column heading with no band and no air. The override merges on `level`, so every heading setting it does not restate stays as printed.
+
+### 3 · A divider page that exists only on paper
+
+<Excerpt region="part" />
+
+In print, `:::part` opens <PageRef page={1}>the rain-blue divider</PageRef>: a box bled off every edge, an image element of rain strokes that leave the type clear, the numeral and title from the fence, and the list of notes in white. The screen overrides set `parts.page: false`, so no page opens and the list is not set. The [part](/en/docs/configuration#parts) still applies its number and title to the notes after it, and the screen kicker reads “Autumn · Note 1” as the printed one does.
+
+### 4 · Draw every figure twice
+
+<Excerpt region="figures" />
+
+Swapping the palette does not recolour an SVG, so each drawing is made once per palette. `figures(edition)` builds the same resources for both editions, each pointing at that edition's file: `gauge-day.svg` in print, `gauge-night.svg` on screen. Ids, captions, alt texts and placements do not change, so every `:ref` in the Markdown resolves to the same figure and number in either edition. In the screen edition the alt text goes into each `<img alt>`, where a screen reader finds it.
+
+### 5 · Host the screen edition
+
+<Excerpt region="screen" />
+
+Each screen page is as tall as the pane, so `fitFiguresToPage` shrinks the gauge until it fits on one page with its caption ([layout](/en/docs/configuration#layout)). At 96 dpi, the resolution CSS assumes, the millimetres and points inherited from print render at their nominal size ([integrating the HTML viewer](/en/docs/configuration#integrating-the-html-viewer)). The pen writes `renderToHtml`'s absolutely positioned lines into a Shadow DOM, where the page's selectors cannot reach them. The wrapper's `all: initial` also blocks inherited properties such as `letter-spacing`: the engine measured the lines without them, and an inherited value would make the text overprint. HTML pages are transparent unless painted, so `page.backgroundColor` takes the night paper from the palette. The ResizeObserver waits 150 ms and rebuilds from a fresh `config()` only when the pane's width or height has changed; after the rebuild the pane scrolls back to the same fraction of its height.
+
+## Variations
+
+### Read by day
+
+Remove the night palette and use the day values for the pane and the figures; the screen edition then shows white pages, dark ink and the day drawings.
+
+```diff
+-  colorPalette: paletteOf(night), // arrays are replaced whole: the night values
+   parts: { page: false }, // no divider page; the part still names the notes after it
+@@
+-pane.style.background = night.paper; // the pane's own ground, beside the pages and the scrollbar
++pane.style.background = day.paper; // the pane's own ground, beside the pages and the scrollbar
+@@
+-  const screenDoc = buildDocument({ markdown, resources: figures('night') },
++  const screenDoc = buildDocument({ markdown, resources: figures('day') },
+```
+
+### Give the print openers a chapter number on a colour band
+
+For a heavier print opener, with a saturated band and a big chapter number, see <RecipeLink slug="chapter-opener-bleed-band">Chapter opener on a full-bleed band</RecipeLink>; the screen overrides stay the same.
+
+## Pitfalls
+
+- Check the end of every note after an edit. If a note's last paragraph pushes a two-line tail onto a new page (widow control keeps the two lines together), postext 1.4.1 gives that page's column the height of one line and the canvas clips the second. Both samples are copy-fitted so that no note ends that way.
+- In ragged text, 1.4.1 can end a line on the “(” before a reference, and in a pane the reader can resize, some width will produce that break. These notes write “as Fig. 2 shows”, never “(Fig. 2)”.
+- Let a screen paragraph start on a page's last line (`avoidWidows: false`). With that rule on, 1.4.1 can force a paragraph taller than the page, whole, into the gap under a figure, where it runs off the foot of the page; a pane of 240 × 460 or 260 × 500 px shows it.
+- Keep the pane at least 400 px tall (the pen's `min-height`). In a narrow pane less than about 350 px tall, the screen opener is taller than the page's content area; postext 1.4.1 then drops its whole reservation and sets the first paragraph over the title.
+- Give the pane a size before you lay it out. A pane with no width, hidden or squeezed out of a flex row, would give a zero-width page, which is why `showScreen()` skips a pane narrower or shorter than `FOLDED`, 200 px.

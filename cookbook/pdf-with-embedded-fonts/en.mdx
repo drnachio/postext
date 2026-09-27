@@ -1,0 +1,71 @@
+---
+title: "A real PDF with the same fonts embedded"
+summary: "A recital programme exported to PDF. Each face is fetched once, for FontFace and for the PDF, and each heading becomes a bookmark."
+description: "With Postext, export a PDF in the browser that embeds the WOFF2 files the page was set in, converted to TrueType, and gives every heading a bookmark."
+question: "How do I export a real PDF in the browser, with bookmarks and exactly the fonts the page was set in?"
+aliases: ["embed fonts in a PDF", "download a PDF", "PDF bookmarks", "PDF outline", "font provider", "FontFace from bytes", "decompressWoff2", "WOFF2 to TTF", "PDF fonts do not match", "concert programme", "recital programme"]
+pageNotes: { "1": "The cover: night teal to the trim, The Harbour Consort in small gilt capitals, the title Home from Sea in large gilt italics on two lines, a subtitle in pale italics, the date and the venue in spaced capitals, and rows of gilt wave scales that rise from the foot and fade towards the title.", "2": "Page 2: the kicker Twilight recital in deep gilt capitals, the heading Programme over a short gilt rule, the order of performance as a table with a teal head in white capitals, right-aligned durations and a pale total row, then the notes on the music in justified text.", "3": "Page 3: the heading The texts, then two poems set line by line under italic titles, with the indents of their printed editions: Longfellow's The Tide Rises, the Tide Falls, whose refrain is indented, and Stevenson's Requiem, whose last three lines are in italics.", "4": "Page 4: Tennyson's Crossing the Bar in four stanzas with its short lines indented, a paragraph on the performers and a colophon in small grey Tenor Sans." }
+---
+
+## What you'll build
+
+The programme for a twilight recital, *Home from Sea*: four A5 pages for a consort of soprano, cello and harp. The cover is night teal, with the title in gilt Fraunces italic and rows of gilt wave scales rising from the foot. Inside, the order of performance is a table with a teal head in Tenor Sans capitals and a tinted total row. The notes are justified Crimson Text. The words of the three songs are poems by Longfellow, Stevenson and Tennyson, set with the indents of their printed editions. The *Build the PDF* button makes the file you would email to the audience or put on the venue's website. Its four pages match the screen line for line. It embeds only the seven font files the browser loaded, and each heading is a bookmark. For commercial printing, see <RecipeLink slug="print-ready-pdf">the print-ready PDF</RecipeLink>.
+
+## Method
+
+### 1 · One download per face, for the page and for the PDF
+
+The code is [the short answer](#the-short-answer) above. Postext measures every word with the faces the browser has loaded when the build runs, and the PDF draws each line where that layout put it. If the PDF embeds a different file, such as a variable font's default instance or a system fallback, each word still starts at its measured position, but its letters have other widths, so words overlap or leave gaps. The recipe therefore fetches each face once. Its bytes become a `FontFace` before the first build, and the font provider passes the same bytes through `decompressWoff2` for the PDF, so the export downloads no fonts of its own.
+
+### 2 · Fonts first, then the layout
+
+<Excerpt region="build" />
+
+`registerFaces()` resolves only when every face in `FONTS` has loaded, so the first build measures with the faces the PDF will embed. It is also the only build, because `FONTS` lists every bold and italic a block of Crimson Text or Fraunces can ask for, and the kit's `buildWithFonts` finds nothing to add ([Measurement cache](/en/docs/configuration#measurement-cache)). That check only helps the screen. If `FONTS` misses a face, `buildWithFonts` loads it and runs the layout again, with a console warning when a block is set in that face and none when it is a bold or an italic, but the PDF still gets the closest face the provider has.
+
+### 3 · The export, and a list of what it embedded
+
+<Excerpt region="pdf" />
+
+`renderToPdf` calls `onProgress` in three phases: `prepare` once the fonts and the cover are embedded, `pages` after each page, and `save` before it writes the file. Here it asks the provider for ten faces. The status line lists the seven files the provider served, exactly the ones in `FONTS`, and three stand-ins, all for Tenor Sans, which ships only a regular 400 and is never set in bold or italic here. Any other stand-in points to a face missing from `FONTS`. If you remove Crimson Text 600, the line reports `Crimson Text 600 → 400` and the bold *The Harbour Consort* on page 4 prints at regular weight. CodePen's preview cannot show a PDF, so the kit's `offerPdf` replaces the button with two links, one that opens the PDF in a new tab and one that downloads it ([Generating PDFs](/en/docs/configuration#generating-pdfs)).
+
+### 4 · The heading tree is the bookmark tree
+
+<Excerpt region="headings" />
+
+In the PDF, the bookmarks panel shows the cover's title, *Programme* with *About the music* under it, *The texts* with its three songs, and *The performers*. The outline follows the heading levels, so choose them with the bookmarks in mind: here, an H1 per section and an H2 per song. *The performers* has a heading style of its own, an H1 with no page break and no opener, so it shares page 4 with Tennyson's poem and still gets a top-level bookmark. The `\\` that breaks the cover title in two becomes a space in the bookmark.
+
+### 5 · Title and author from the frontmatter
+
+<Excerpt region="cover" />
+
+Every frontmatter value is quoted. The cover prints two of them through `{author}` and `{subtitle}`, and the PDF's document properties take the title *Home from Sea* and the author *The Harbour Consort* from the same block. The date and the venue are attributes of the cover heading. The drawing behind them is one SVG the width of the page, and the PDF keeps it as vector paths.
+
+## Variations
+
+### Leave the bookmarks out
+
+A one-page flyer or a poster has nothing to bookmark. With `outlines: false` the PDF has no outline, and it opens with the sidebar closed.
+
+```diff
+-    outlines: true, // the default, spelled out: each heading becomes a bookmark
++    outlines: false,
+```
+
+### Serve the fonts yourself
+
+Point the fetch at your own copies of the same static WOFF2 files, one per weight and style, under Fontsource's file names. The page and the PDF still share each download.
+
+```diff
+-    files.set(file, fetch(`https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${file}.woff2`)
++    files.set(file, fetch(`/fonts/${file}.woff2`)
+       .then((res) => {
+-        if (!res.ok) throw new Error(`Fontsource has no ${family} ${weight} ${style}`);
++        if (!res.ok) throw new Error(`No font file ${file}.woff2`);
+```
+
+## Pitfalls
+
+List in `FONTS` every bold and italic your text can use. If one is missing, the screen still looks right, because the kit loads the face without a warning, but the PDF prints the provider's nearest face, and only the stand-ins on the status line reveal the swap.
+
+Use static files, one per weight and style. From a variable WOFF2 the PDF embeds only the default instance, so a bold run would print at regular weight ([Why a font provider?](/en/docs/configuration#why-a-font-provider)).

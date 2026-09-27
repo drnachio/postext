@@ -1,0 +1,211 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 15,
+  "status": "published",
+  "chapter": "type",
+  "order": 30,
+  "level": 2,
+  "genres": [
+    "poetry"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "paragraph-styles",
+      "vertical-space",
+      "toc"
+    ],
+    "also": [
+      "paragraph-indents",
+      "escapes",
+      "heading-numbering",
+      "opener-design",
+      "heading-styles",
+      "unnumbered-headings",
+      "heading-attributes",
+      "design-images",
+      "covers",
+      "frontmatter",
+      "section-running-heads",
+      "running-heads",
+      "resource-types",
+      "inline-embeds",
+      "color-palette",
+      "page-role-filters"
+    ]
+  },
+  "answers": [
+    "Q43",
+    "Q23",
+    "Q37",
+    "Q44",
+    "Q73"
+  ],
+  "gaps": [
+    "hard-line-breaks"
+  ],
+  "gotchas": [
+    "ragged-no-hyphenation",
+    "digit-period-list",
+    "toc-number-baseline",
+    "heading-number-placeholders",
+    "style-inherits-break",
+    "headings-drop-h1-break",
+    "resource-double-quotes",
+    "palette-skips-designs",
+    "design-lineheight-multiple",
+    "overflow-ellipsis-default",
+    "quote-frontmatter",
+    "fonts-first"
+  ],
+  "explainsWarnings": [],
+  "related": [
+    "critical-edition-line-numbers",
+    "bilingual-facing-verse",
+    "shaped-verse",
+    "anthology-with-bylines"
+  ],
+  "workarounds": [
+    {
+      "followup": "EF-21",
+      "package": "postext",
+      "note": "the verse style says hyphenation: false although it changes nothing in 1.4.1, where ragged text is never hyphenated: it keeps the verse whole if ragged text starts to hyphenate"
+    },
+    {
+      "followup": "EF-05",
+      "package": "postext",
+      "note": "level 1's breakBefore (parity 'any') is restated because a headings object drops it"
+    },
+    {
+      "followup": "EF-60",
+      "package": "postext",
+      "note": "the front-matter heading styles restate breakBefore parity 'any' instead of inheriting level 1's, so a change to the poems' parity cannot put blank pages between the preliminary leaves"
+    },
+    {
+      "followup": "EF-09",
+      "package": "postext",
+      "note": "the roman numerals come from numberingTemplate '{1:I}' through {number}; {numberRoman} is filled only on part pages"
+    },
+    {
+      "followup": "EF-58",
+      "package": "postext",
+      "note": "the contents numerals are set at the titles' size (Italiana 11 pt), where they sit on the titles' baseline to within a pixel at 150 dpi; at 9 pt they rode visibly high"
+    },
+    {
+      "followup": "EF-71",
+      "package": "postext",
+      "note": "every design colour carries its hex beside its paletteId (col()), because design slots never read the palette"
+    },
+    {
+      "followup": "EF-56",
+      "package": "postext",
+      "note": "the title page's title takes lineHeight: 1, a multiple; a Dimension would silently drop the design's reserved height"
+    },
+    {
+      "followup": "EF-11",
+      "package": "postext",
+      "note": "every frontmatter value is quoted: the title page prints {title}, {subtitle} and {author}"
+    },
+    {
+      "followup": "EF-66",
+      "package": "postext",
+      "note": "the two ties in God’s Grandeur (the soil, bright wings.) sit in verse lines with no italic or bold, where U+00A0 holds; in a line with inline formatting it would still break"
+    },
+    {
+      "followup": "EF-128",
+      "package": "postext",
+      "note": "a paragraph style cannot indent a line and also hang its turnover (hangingIndent overrides firstLineIndent), so indentVerse() turns each pair of leading spaces into em spaces behind a word joiner and the verse style keeps only hangingIndent"
+    }
+  ],
+  "engine": {
+    "postext": "1.4.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en"
+    ]
+  },
+  "capture": {
+    "hero": [
+      2,
+      3
+    ],
+    "card": "spread",
+    "pages": "all",
+    "expect": {
+      "pages": [
+        8,
+        8
+      ],
+      "nearEmptyPages": [
+        1
+      ]
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "“God’s Grandeur”, “The Windhover”, “Pied Beauty” and “Inversnaid”, with the places and dates from the editor’s notes, in the first edition of Poems of Gerard Manley Hopkins (1918); accents and indents checked against the proofread Wikisource transcription of that edition",
+          "es": "«God’s Grandeur», «The Windhover», «Pied Beauty» e «Inversnaid», con los lugares y las fechas de las notas del editor, en la primera edición de Poems of Gerard Manley Hopkins (1918); los acentos y las sangrías, cotejados con la transcripción revisada de esa edición en Wikisource"
+        },
+        "who": "Gerard Manley Hopkins; Robert Bridges (editor)",
+        "source": "https://www.gutenberg.org/ebooks/22403",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The note on the text, the plate’s caption and the colophon",
+          "es": "La nota sobre el texto, el pie de la lámina y el colofón"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "The frontispiece photogram of fern and rowan and the rowan ornament, drawn in code in the page’s palette",
+          "es": "El fotograma del frontispicio, con helecho y serbal, y el adorno de serbal, dibujados en código con la paleta de la página"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Sorts Mill Goudy",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Italiana",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Marcellus SC",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-09-25",
+  "updated": "2026-09-25"
+}

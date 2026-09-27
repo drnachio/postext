@@ -1,0 +1,70 @@
+---
+title: "Guía de paseos con pestañas de índice"
+summary: "Guía de bolsillo con un estilo de título por paseo, cuya paleta cambia la pestaña del corte, las paradas, el tono del recuadro y la página en blanco anterior."
+description: "Lisboa a pie, guía de paseos compuesta con Postext. La pestaña y la página en blanco pintada van en la cabecera; cada paseo fija cuatro colores en su estilo."
+question: "¿Cómo quito la cabecera de aperturas y páginas en blanco, y pinto la página par en blanco del color del paseo?"
+aliases: ["guía de viaje", "paseos", "pestaña", "índice de uñeros", "secciones por colores", "página en blanco pintada", "pines del plano", "paradas numeradas", "icono de esquina"]
+pageNotes: { "1": "La cubierta: una pared de azulejos azules y blancos a la que le falta uno junto al corte, el título en una placa enmarcada y los tres paseos con su número y su color.", "2": "La página 2, la introducción, con cabecera y sin pestaña, y un plano de las rutas cuyos pines numerados coinciden con las paradas.", "3": "El paseo 1 abre en página impar bajo una banda terracota con azulejos hacia el corte; de su pie cuelga la pestaña terracota con un 1 en blanco.", "5": "La página 5 cierra el paseo 1 con la quinta parada y una línea terracota en la letra de los rótulos que te manda al paseo 2.", "6": "La página 6, la página par en blanco antes del paseo 2, pintada de borde a borde del amarillo del paseo bajo un dibujo claro de azulejos, con su número, el 2, en tinta." }
+---
+
+## Lo que vas a componer
+
+Las siete primeras páginas de *Lisboa a pie*, guía de bolsillo de 120 × 200 mm. La cubierta es una pared de azulejos azules y blancos con el título en una placa enmarcada como un rótulo de calle lisboeta, y la página 2 presenta los tres paseos con un plano de sus rutas. Cada paseo tiene un color, terracota para Alfama y amarillo para la Baixa, y una pestaña en el corte lleva ese color y su número a la misma altura en cada página del paseo. Con el paseo cambian también la banda de la apertura, las paradas, la cabecera de la página impar y el tono del recuadro «No te lo pierdas». La página par en blanco que empuja el paseo 2 a una impar va pintada de su amarillo y lleva su número. El texto es Albert Sans en bandera; los nombres, DM Serif Display, y los rótulos, Asap Condensed.
+
+## Elaboración
+
+### 1 · Nombra los colores que cambia un paseo
+
+<Excerpt region="palette" />
+
+La `palette` de un estilo de título sustituye entradas por su id en las páginas de su sección ([estilos de encabezado](/es/docs/configuration#estilos-de-encabezado)), así que todo color que deba seguir al paseo se enlaza a una de cuatro entradas: `band` para los campos de color, la pestaña y los círculos de las paradas; `bandInk` para el texto sobre papel; `onBand` para el texto sobre un campo, y `wash` para el recuadro. El blanco sobre el amarillo de la Baixa da un contraste de 2:1, así que el `onBand` de ese paseo es la tinta, con 8:1. Los elementos de diseño siguen el id, mientras que el texto se recolorea por valor: un color igual al hex base de una entrada toma el valor del paseo, y por eso los cuatro valores base son distintos. El título del recuadro en la página 4 y la línea que te manda al paseo 2 en la página 5 son texto en `bandInk`, y los dos salen en terracota. `col()` escribe el hex junto al id porque en 1.4.1 la paleta del documento no llega nunca a los elementos de diseño.
+
+### 2 · Deja las cabeceras en las páginas de texto
+
+<Excerpt region="running-heads" />
+
+Tras la composición, cada página recibe una función ([elementos de texto](/es/docs/configuration#elementos-de-texto)). La primera página de un paseo es `opener`, porque su título fuerza un salto de página; la página de relleno antes de una impar es `blank`, y las demás son `body`. Las cabeceras llevan `pages: 'body'`, así que no salen en las aperturas de las páginas 3 y 7 ni en la página en blanco 6, y el folio al pie lleva `'opener'`. La página par imprime el `{title}` del frontmatter, y la impar, `Paseo {chapterNumber} · {chapterTitle}` en `bandInk`, terracota en la página 5. Las pestañas de la respuesta corta llevan `'all'`. El campo de la página en blanco va después en la lista, y como el orden de la lista es el orden de pintado, tapa la pestaña en la página 6. La introducción de la página 2 va antes del paseo 1 y allí `{chapterNumber}` está vacío, así que su estilo lleva un `header` propio con las cuatro cabeceras y sin pestañas. Sin él, la página 2 imprimiría una pestaña azul vacía.
+
+### 3 · Abre cada paseo bajo su banda y numera sus paradas
+
+<Excerpt region="levels" />
+
+La banda se ancla a la sangre, que aquí es el corte, y entra 30 mm en el área de texto. Para eso el nivel lleva `span: 'page'`, porque en 1.4.1 un diseño que se queda en la columna se recorta en el margen superior y la banda empezaría 18 mm más abajo. El diseño termina con la banda, y `minHeight` reserva ocho líneas de la rejilla base, 37,3 mm; la apertura ocupa la mayor de las dos alturas, así que en las páginas 3 y 7 el texto empieza 7,3 mm bajo la banda. Cada parada es un título de nivel 3 cuyo diseño pone `{number}` en un círculo de 5,4 mm relleno de `band`. La plantilla `{3}` vuelve a empezar en cada paseo, porque un título de nivel 1 reinicia los contadores inferiores, y los pines del plano llevan los mismos números. Una parada lleva una línea de rejilla de margen encima y ninguna debajo, y su círculo baja 3,2 mm dentro de las dos líneas que ocupa el título. Quedan unos 8,3 mm de blanco sobre el círculo y 2,1 mm bajo él; entre párrafos hay 6,4 mm.
+
+### 4 · Cuelga un azulejo del recuadro y deja los chips en tinta
+
+<Excerpt region="box-and-chips" />
+
+El recuadro solo lleva el tono claro del paseo, sin filete ni borde, y un azulejo dibujado en código en su esquina ([estilos de aviso](/es/docs/configuration#estilos-de-aviso)). `cornerSide: 'outer'` cuelga el azulejo medio fuera del lado exterior del recuadro, a ras de su borde superior; en la página 4, par, es el lado izquierdo, donde empieza el título. Con 6,5 mm de relleno a los dos lados, el título libra el azulejo y se alinea con el texto del recuadro en cualquiera de las dos páginas. La paleta del paseo cambia el tono y el título, pero el azulejo sigue azul, porque sus colores van dibujados en el SVG. La paleta de un paseo no llega a los chips en 1.4.1: enlazados a `band`, los datos del paseo seguirían en azul de azulejo en los dos paseos. Por eso los chips van en tinta sobre papel, con un contorno gris en `muted`, iguales en todos los paseos.
+
+### 5 · Haz la leyenda del plano con muestras de color
+
+<Excerpt region="map" />
+
+El plano es un recurso SVG que va donde está `::resource{id="routes"}`, con un tipo de recurso propio para que su pie diga «Plano 1». En la nota, tres muestras de color hacen de leyenda de las rutas: `:swatch{color="alfama"}` y las de `baixa` y `belem`. Una muestra de color acepta el id de una entrada de la paleta ([formato en línea](/es/docs/document-format#formato-en-línea)). La paleta recibe de `WALKS` una entrada por paseo, y el dibujo toma los colores de las rutas del mismo objeto, así que la leyenda coincide con las rutas y con las pestañas. Los números de los pines se dibujan con trazos, porque un SVG dibujado como imagen no puede usar las fuentes web de la página.
+
+## Variantes
+
+### Deja sin pintar la página par en blanco
+
+Sin el campo, la página 6 conserva su pestaña: `pages: 'all'` la imprime también en la página en blanco, en el amarillo del paseo 2 y con un 2.
+
+```diff
+-const header = { elements: [...heads, ...tabs, ...blankPage] };
++const header = { elements: [...heads, ...tabs] };
+```
+
+### Añade el tercer paseo
+
+`WALKS` ya tiene los colores de Belém y `walkStyles` su estilo, así que basta un título. El paseo empieza en la página 9, y la 8, que queda en blanco, va pintada de verde azulado con un 3 blanco.
+
+```diff
++# Belém {style="belem" route="Del monasterio a la torre"}
++
++El tranvía 15 va de la Praça da Figueira a Belém junto al río.
+```
+
+## Errores frecuentes
+
+- La página 6 existe porque el paseo 1 termina en la página 5, impar. Un paseo que termina en página par no deja página en blanco, y entonces el color del paseo siguiente solo se ve en sus propias páginas.
+- Antes del primer paseo numerado, `{chapterNumber}` está vacío, así que un elemento que lo imprima, como la pestaña, necesita allí un estilo que lo deje fuera.

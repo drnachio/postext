@@ -1,0 +1,1017 @@
+{
+  "$comment": "The questions users ask (research: understand/user-doubts.md §4), Q01–Q80, permanent ids. recipe.json answers lists them, answers[0] being the question the recipe's band shows. kind: 'how' or 'why'; text: the question as a reader asks it; index: its back-of-book form (\"Footnotes, workarounds for\"); theme: the chapter id it belongs to; gap: set when the honest answer is a workaround for an unsupported feature.",
+  "Q01": {
+    "kind": "how",
+    "text": {
+      "en": "How do I turn a Markdown string into typeset pages and draw one on a canvas?",
+      "es": "¿Cómo convierto una cadena Markdown en páginas compuestas y dibujo una en un canvas?"
+    },
+    "index": {
+      "en": "Canvas, drawing typeset pages on a",
+      "es": "Canvas, dibujar páginas compuestas en un"
+    },
+    "theme": "output"
+  },
+  "Q02": {
+    "kind": "how",
+    "text": {
+      "en": "How do I export a real PDF in the browser with the fonts embedded?",
+      "es": "¿Cómo exporto un PDF de verdad en el navegador, con las fuentes incrustadas?"
+    },
+    "index": {
+      "en": "PDF, exporting with embedded fonts",
+      "es": "PDF, exportar con fuentes incrustadas"
+    },
+    "theme": "output"
+  },
+  "Q03": {
+    "kind": "why",
+    "text": {
+      "en": "Why do my line breaks change, or PDF words overlap, and how do I load fonts correctly?",
+      "es": "¿Por qué cambian mis cortes de línea o se solapan las palabras en el PDF, y cómo cargo bien las fuentes?"
+    },
+    "index": {
+      "en": "Fonts, loading before layout",
+      "es": "Fuentes, cargarlas antes de componer"
+    },
+    "theme": "output"
+  },
+  "Q04": {
+    "kind": "how",
+    "text": {
+      "en": "How do I show a responsive, scrollable HTML reading view of the same document?",
+      "es": "¿Cómo muestro el mismo documento en HTML, en una vista de lectura con desplazamiento que se adapte a la pantalla?"
+    },
+    "index": {
+      "en": "HTML reading view",
+      "es": "HTML, vista de lectura en"
+    },
+    "theme": "output"
+  },
+  "Q05": {
+    "kind": "how",
+    "text": {
+      "en": "How do I keep the page responsive while a long book lays out (Web Worker, cancellation)?",
+      "es": "¿Cómo evito que la página se bloquee mientras se compone un libro largo (Web Worker, cancelación)?"
+    },
+    "index": {
+      "en": "Web Worker, laying out off the main thread",
+      "es": "Web Worker, componer fuera del hilo principal"
+    },
+    "theme": "output"
+  },
+  "Q06": {
+    "kind": "how",
+    "text": {
+      "en": "How do I lay out a multi-chapter book so page, figure and chapter numbers continue across chapters?",
+      "es": "¿Cómo compongo un libro de varios capítulos para que la numeración de páginas, figuras y capítulos continúe de uno a otro?"
+    },
+    "index": {
+      "en": "Chapters, continuous numbering across",
+      "es": "Capítulos, numeración continua entre"
+    },
+    "theme": "structure"
+  },
+  "Q07": {
+    "kind": "how",
+    "text": {
+      "en": "How do I open a .postext file and render it with its own fonts, images and config?",
+      "es": "¿Cómo abro un archivo .postext y lo pinto con sus propias fuentes, imágenes y configuración?"
+    },
+    "index": {
+      "en": "Bundles, opening .postext files",
+      "es": "Paquetes, abrir archivos .postext"
+    },
+    "theme": "output"
+  },
+  "Q08": {
+    "kind": "how",
+    "text": {
+      "en": "How do I create a .postext bundle from code, to hand a document to the Sandbox or another program?",
+      "es": "¿Cómo creo un paquete .postext desde el código para pasar un documento al Sandbox o a otro programa?"
+    },
+    "index": {
+      "en": "Bundles, creating from code",
+      "es": "Paquetes, crearlos desde el código"
+    },
+    "theme": "output"
+  },
+  "Q09": {
+    "kind": "how",
+    "text": {
+      "en": "How do I use my own brand or licensed fonts in the layout and embed them in the PDF?",
+      "es": "¿Cómo uso mis fuentes corporativas o con licencia en la composición y las incrusto en el PDF?"
+    },
+    "index": {
+      "en": "Fonts, brand and licensed",
+      "es": "Fuentes corporativas y con licencia"
+    },
+    "theme": "output"
+  },
+  "Q10": {
+    "kind": "how",
+    "text": {
+      "en": "How do I add images and tables from code (resources) instead of Markdown ![]()?",
+      "es": "¿Cómo añado imágenes y tablas desde el código (recursos) en lugar de ![]() de Markdown?"
+    },
+    "index": {
+      "en": "Resources, images and tables from code",
+      "es": "Recursos, imágenes y tablas desde el código"
+    },
+    "theme": "figures"
+  },
+  "Q11": {
+    "kind": "how",
+    "text": {
+      "en": "How do I map a click on the rendered page back to the Markdown source, to build an editor?",
+      "es": "¿Cómo relaciono un clic en la página pintada con el Markdown de origen, para construir un editor?"
+    },
+    "index": {
+      "en": "Source mapping, from page to Markdown",
+      "es": "Correspondencia con el origen, de la página al Markdown"
+    },
+    "theme": "output"
+  },
+  "Q12": {
+    "kind": "how",
+    "text": {
+      "en": "Can I generate pages or PDFs on a server or in a CLI (Node)?",
+      "es": "¿Puedo generar páginas o PDF en un servidor o desde la línea de comandos (Node)?"
+    },
+    "index": {
+      "en": "Server-side layout, workarounds for",
+      "es": "Composición en servidor, alternativas a la"
+    },
+    "theme": "output",
+    "gap": "server-side"
+  },
+  "Q13": {
+    "kind": "how",
+    "text": {
+      "en": "How do I make a print-ready PDF with bleed, crop marks, bookmarks, page labels and a colour space?",
+      "es": "¿Cómo hago un PDF listo para imprenta con sangrado, marcas de corte, marcadores, etiquetas de página y espacio de color?"
+    },
+    "index": {
+      "en": "PDF, print-ready",
+      "es": "PDF listo para imprenta"
+    },
+    "theme": "output"
+  },
+  "Q14": {
+    "kind": "how",
+    "text": {
+      "en": "How do I produce an accessible (tagged, PDF/UA) PDF with alt text and a document language?",
+      "es": "¿Cómo genero un PDF accesible (etiquetado, PDF/UA) con texto alternativo e idioma del documento?"
+    },
+    "index": {
+      "en": "PDF, accessible and tagged",
+      "es": "PDF accesible y etiquetado"
+    },
+    "theme": "output"
+  },
+  "Q15": {
+    "kind": "how",
+    "text": {
+      "en": "How do I give the screen edition a simpler design than the print edition, from one config?",
+      "es": "¿Cómo doy a la edición de pantalla un diseño más sencillo que a la impresa, con una sola configuración?"
+    },
+    "index": {
+      "en": "Screen edition, simpler design for the",
+      "es": "Edición de pantalla, diseño más sencillo para la"
+    },
+    "theme": "output"
+  },
+  "Q16": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set up a book page: trim size, mirrored inner and outer margins, two columns and a gutter?",
+      "es": "¿Cómo preparo una página de libro: formato, márgenes interior y exterior simétricos, dos columnas y medianil?"
+    },
+    "index": {
+      "en": "Page setup, trim, margins and columns",
+      "es": "Página, formato, márgenes y columnas"
+    },
+    "theme": "page"
+  },
+  "Q17": {
+    "kind": "how",
+    "text": {
+      "en": "How do I lock text to a baseline grid so lines align across columns and facing pages?",
+      "es": "¿Cómo ajusto el texto a una rejilla base para que las líneas se alineen entre columnas y páginas enfrentadas?"
+    },
+    "index": {
+      "en": "Baseline grid, aligning lines to a",
+      "es": "Rejilla base, alinear las líneas a una"
+    },
+    "theme": "page"
+  },
+  "Q18": {
+    "kind": "how",
+    "text": {
+      "en": "How do I make a column-and-a-half layout, with a wide text column and a narrow side column?",
+      "es": "¿Cómo compongo en columna y media, con una columna de texto ancha y una lateral estrecha?"
+    },
+    "index": {
+      "en": "Column and a half, layout in",
+      "es": "Columna y media, componer en"
+    },
+    "theme": "page"
+  },
+  "Q19": {
+    "kind": "how",
+    "text": {
+      "en": "How do I get flush column bottoms and a balanced last page (vertical justification)?",
+      "es": "¿Cómo consigo columnas a ras del pie y una última página equilibrada (justificación vertical)?"
+    },
+    "index": {
+      "en": "Columns, balancing flush to the foot",
+      "es": "Columnas, equilibrarlas a ras del pie"
+    },
+    "theme": "page"
+  },
+  "Q20": {
+    "kind": "how",
+    "text": {
+      "en": "How do I get good justification and hyphenation for Spanish, French or German text?",
+      "es": "¿Cómo consigo una buena justificación y separación silábica en textos en español, francés o alemán?"
+    },
+    "index": {
+      "en": "Hyphenation, per language",
+      "es": "Separación silábica por idioma"
+    },
+    "theme": "type"
+  },
+  "Q21": {
+    "kind": "how",
+    "text": {
+      "en": "How do I avoid widows, orphans and one-word last lines (runts), and keep a heading with its text?",
+      "es": "¿Cómo evito viudas, huérfanas y últimas líneas de una sola palabra, y mantengo cada título con su texto?"
+    },
+    "index": {
+      "en": "Widows, orphans and runts, avoiding",
+      "es": "Viudas, huérfanas y líneas cortas, evitar"
+    },
+    "theme": "type"
+  },
+  "Q22": {
+    "kind": "why",
+    "text": {
+      "en": "Why is one line set ragged or over-stretched (URLs, long compounds, long words in cells)?",
+      "es": "¿Por qué una línea sale en bandera o demasiado estirada (URL, compuestos largos, palabras largas en celdas)?"
+    },
+    "index": {
+      "en": "Loose lines, causes of",
+      "es": "Líneas flojas, causas de las"
+    },
+    "theme": "type"
+  },
+  "Q23": {
+    "kind": "how",
+    "text": {
+      "en": "How do I add extra vertical space between two blocks, when blank lines do nothing?",
+      "es": "¿Cómo añado espacio vertical entre dos bloques, si las líneas en blanco no hacen nada?"
+    },
+    "index": {
+      "en": "Vertical space, adding between blocks",
+      "es": "Espacio vertical, añadirlo entre bloques"
+    },
+    "theme": "type"
+  },
+  "Q24": {
+    "kind": "how",
+    "text": {
+      "en": "How do I force a page or column break, and start every chapter on a right-hand page?",
+      "es": "¿Cómo fuerzo un salto de página o de columna, y hago que cada capítulo empiece en página impar?"
+    },
+    "index": {
+      "en": "Page breaks, and chapters on a recto",
+      "es": "Saltos de página, y capítulos en página impar"
+    },
+    "theme": "structure"
+  },
+  "Q25": {
+    "kind": "how",
+    "text": {
+      "en": "How do I stop headings, bold words and bullets from coming out blue?",
+      "es": "¿Cómo evito que los títulos, las negritas y las viñetas salgan en azul?"
+    },
+    "index": {
+      "en": "Blue defaults, removing the",
+      "es": "Azul por defecto, quitar el"
+    },
+    "theme": "type"
+  },
+  "Q26": {
+    "kind": "how",
+    "text": {
+      "en": "How do I make a chapter opener with a full-bleed colour band, a big chapter number and the title?",
+      "es": "¿Cómo hago una apertura de capítulo con una banda de color a sangre, un número de capítulo grande y el título?"
+    },
+    "index": {
+      "en": "Chapter openers, with a bleed band",
+      "es": "Aperturas de capítulo con banda a sangre"
+    },
+    "theme": "headings"
+  },
+  "Q27": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set a chapter title across the page while the body runs in two columns below?",
+      "es": "¿Cómo pongo el título de capítulo a todo el ancho mientras el texto sigue a dos columnas debajo?"
+    },
+    "index": {
+      "en": "Chapter titles across the columns",
+      "es": "Títulos de capítulo sobre las columnas"
+    },
+    "theme": "headings"
+  },
+  "Q28": {
+    "kind": "how",
+    "text": {
+      "en": "How do I add an author line, a standfirst or a lead with a drop cap to an opener?",
+      "es": "¿Cómo añado a una apertura una línea de autor, una entradilla o un primer párrafo con capitular?"
+    },
+    "index": {
+      "en": "Openers, author line, standfirst and drop cap",
+      "es": "Aperturas, autor, entradilla y capitular"
+    },
+    "theme": "headings"
+  },
+  "Q29": {
+    "kind": "how",
+    "text": {
+      "en": "How do I give every chapter its own photo, colour or opener variant?",
+      "es": "¿Cómo doy a cada capítulo su propia foto, su color o una variante de apertura?"
+    },
+    "index": {
+      "en": "Openers, a different one per chapter",
+      "es": "Aperturas, una distinta por capítulo"
+    },
+    "theme": "headings"
+  },
+  "Q30": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set running heads: book title on the left page, chapter title on the right, page number outside?",
+      "es": "¿Cómo pongo cabeceras: el título del libro en la página izquierda, el del capítulo en la derecha y el folio por fuera?"
+    },
+    "index": {
+      "en": "Running heads, verso and recto",
+      "es": "Cabeceras de página par e impar"
+    },
+    "theme": "running-heads"
+  },
+  "Q31": {
+    "kind": "how",
+    "text": {
+      "en": "How do I hide running heads on openers and blank pages, or paint a blank verso in the part colour?",
+      "es": "¿Cómo oculto las cabeceras en las aperturas y las páginas en blanco, o pinto una página par en blanco con el color de la parte?"
+    },
+    "index": {
+      "en": "Running heads, hiding on openers and blanks",
+      "es": "Cabeceras, ocultarlas en aperturas y páginas en blanco"
+    },
+    "theme": "running-heads"
+  },
+  "Q32": {
+    "kind": "how",
+    "text": {
+      "en": "How do I number headings (1, 1.1, 1.1.1) and style each level differently?",
+      "es": "¿Cómo numero los títulos (1, 1.1, 1.1.1) y doy a cada nivel un estilo distinto?"
+    },
+    "index": {
+      "en": "Headings, numbering and styling levels",
+      "es": "Títulos, numerar y dar estilo a los niveles"
+    },
+    "theme": "headings"
+  },
+  "Q33": {
+    "kind": "how",
+    "text": {
+      "en": "How do I build a number badge beside the title that widens when the number grows (9 → 10)?",
+      "es": "¿Cómo hago una insignia con el número junto al título que se ensanche cuando el número crece (9 → 10)?"
+    },
+    "index": {
+      "en": "Number badges beside titles",
+      "es": "Insignias con número junto al título"
+    },
+    "theme": "headings"
+  },
+  "Q34": {
+    "kind": "how",
+    "text": {
+      "en": "How do I handle more than six heading levels?",
+      "es": "¿Qué hago si necesito más de seis niveles de título?"
+    },
+    "index": {
+      "en": "Headings, more than six levels",
+      "es": "Títulos, más de seis niveles"
+    },
+    "theme": "headings",
+    "gap": "heading-level-7"
+  },
+  "Q35": {
+    "kind": "how",
+    "text": {
+      "en": "How do I make a cover, a half title, a title page and a colophon?",
+      "es": "¿Cómo hago una cubierta, una portadilla, una portada y un colofón?"
+    },
+    "index": {
+      "en": "Cover, title page and colophon",
+      "es": "Cubierta, portada y colofón"
+    },
+    "theme": "structure"
+  },
+  "Q36": {
+    "kind": "how",
+    "text": {
+      "en": "How do I number the front matter in roman numerals and restart at 1 with chapter 1?",
+      "es": "¿Cómo numero los preliminares en romanos y vuelvo a empezar en 1 con el capítulo 1?"
+    },
+    "index": {
+      "en": "Front matter, roman page numbers",
+      "es": "Preliminares, números de página en romanos"
+    },
+    "theme": "structure"
+  },
+  "Q37": {
+    "kind": "how",
+    "text": {
+      "en": "How do I add a table of contents that updates itself (leaders, page numbers, authors, part rows)?",
+      "es": "¿Cómo añado un índice que se actualice solo (líneas de puntos, números de página, autores, filas de parte)?"
+    },
+    "index": {
+      "en": "Table of contents, automatic",
+      "es": "Índice de contenidos automático"
+    },
+    "theme": "structure"
+  },
+  "Q38": {
+    "kind": "how",
+    "text": {
+      "en": "How do I divide a book into parts or sections, each with its own colour and divider page?",
+      "es": "¿Cómo divido un libro en partes o secciones, cada una con su color y su portadilla?"
+    },
+    "index": {
+      "en": "Parts, colours and divider pages",
+      "es": "Partes, colores y portadillas"
+    },
+    "theme": "structure"
+  },
+  "Q39": {
+    "kind": "how",
+    "text": {
+      "en": "How do I insert deliberate blank pages, or start a section on a fresh spread?",
+      "es": "¿Cómo inserto páginas en blanco a propósito, o empiezo una sección en una doble página nueva?"
+    },
+    "index": {
+      "en": "Blank pages, deliberate",
+      "es": "Páginas en blanco a propósito"
+    },
+    "theme": "structure"
+  },
+  "Q40": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set a bibliography or glossary (hanging indent, smaller type)?",
+      "es": "¿Cómo compongo una bibliografía o un glosario (sangría francesa, cuerpo menor)?"
+    },
+    "index": {
+      "en": "Bibliography and glossary",
+      "es": "Bibliografía y glosario"
+    },
+    "theme": "type"
+  },
+  "Q41": {
+    "kind": "how",
+    "text": {
+      "en": "How do I make an art catalogue: entry on the left page, plate on the facing right page?",
+      "es": "¿Cómo hago un catálogo de arte: la ficha en la página izquierda y la lámina enfrente, en la derecha?"
+    },
+    "index": {
+      "en": "Art catalogue, entry facing its plate",
+      "es": "Catálogo de arte, ficha frente a su lámina"
+    },
+    "theme": "publications"
+  },
+  "Q42": {
+    "kind": "how",
+    "text": {
+      "en": "How do I lay out a magazine in sections, each article opening on a spread with its lead photo on the facing page?",
+      "es": "¿Cómo maqueto una revista por secciones en la que cada artículo abre en doble página, frente a su foto principal?"
+    },
+    "index": {
+      "en": "Magazine, sections and article openers",
+      "es": "Revista, secciones y aperturas de artículo"
+    },
+    "theme": "publications"
+  },
+  "Q43": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set poetry: one line per verse, stanza gaps, hanging indents for wrapped lines, no hyphenation?",
+      "es": "¿Cómo compongo poesía: un verso por línea, espacio entre estrofas, sangría francesa en los versos que no caben y sin separación silábica?"
+    },
+    "index": {
+      "en": "Poetry, setting verse",
+      "es": "Poesía, componer verso"
+    },
+    "theme": "type"
+  },
+  "Q44": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set an epigraph, a dedication, a signature, or a pull quote with a big quote mark?",
+      "es": "¿Cómo compongo un epígrafe, una dedicatoria, una firma o una cita destacada con una comilla grande?"
+    },
+    "index": {
+      "en": "Epigraphs, dedications and pull quotes",
+      "es": "Epígrafes, dedicatorias y citas destacadas"
+    },
+    "theme": "type"
+  },
+  "Q45": {
+    "kind": "how",
+    "text": {
+      "en": "How do I do footnotes?",
+      "es": "¿Cómo hago notas al pie?"
+    },
+    "index": {
+      "en": "Footnotes, workarounds for",
+      "es": "Notas al pie, alternativas a las"
+    },
+    "theme": "boxes",
+    "gap": "footnotes"
+  },
+  "Q46": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set margin notes or glosses beside the paragraph they explain?",
+      "es": "¿Cómo pongo notas al margen o glosas junto al párrafo que explican?"
+    },
+    "index": {
+      "en": "Margin notes and glosses",
+      "es": "Notas al margen y glosas"
+    },
+    "theme": "boxes"
+  },
+  "Q47": {
+    "kind": "how",
+    "text": {
+      "en": "How do I show code listings?",
+      "es": "¿Cómo muestro listados de código?"
+    },
+    "index": {
+      "en": "Code listings, workarounds for",
+      "es": "Listados de código, alternativas a los"
+    },
+    "theme": "boxes",
+    "gap": "code-blocks"
+  },
+  "Q48": {
+    "kind": "how",
+    "text": {
+      "en": "How do I typeset maths (inline, display, equations) and keep it vector in the PDF?",
+      "es": "¿Cómo compongo matemáticas (en línea, destacadas, ecuaciones) y las mantengo vectoriales en el PDF?"
+    },
+    "index": {
+      "en": "Mathematics, typesetting",
+      "es": "Matemáticas, componer"
+    },
+    "theme": "type"
+  },
+  "Q49": {
+    "kind": "how",
+    "text": {
+      "en": "How do I write superscripts, subscripts and chemical formulas without full maths?",
+      "es": "¿Cómo escribo superíndices, subíndices y fórmulas químicas sin escribir LaTeX?"
+    },
+    "index": {
+      "en": "Superscripts and subscripts",
+      "es": "Superíndices y subíndices"
+    },
+    "theme": "type"
+  },
+  "Q50": {
+    "kind": "how",
+    "text": {
+      "en": "How do I colour key terms (bold or italic) in the body or inside boxes?",
+      "es": "¿Cómo doy color a los términos clave (en negrita o cursiva) en el texto o dentro de los recuadros?"
+    },
+    "index": {
+      "en": "Key terms, colouring",
+      "es": "Términos clave, darles color"
+    },
+    "theme": "type"
+  },
+  "Q51": {
+    "kind": "how",
+    "text": {
+      "en": "How do I make inline chips: keyboard keys, tags, word banks for exercises?",
+      "es": "¿Cómo hago chips en línea: teclas, etiquetas, bancos de palabras para ejercicios?"
+    },
+    "index": {
+      "en": "Chips, inline",
+      "es": "Chips en línea"
+    },
+    "theme": "type"
+  },
+  "Q52": {
+    "kind": "how",
+    "text": {
+      "en": "How do I add colour-key swatches to text, captions or table notes?",
+      "es": "¿Cómo añado muestras de color como leyenda en el texto, los pies o las notas de tabla?"
+    },
+    "index": {
+      "en": "Swatches, colour keys",
+      "es": "Muestras de color, leyendas"
+    },
+    "theme": "type"
+  },
+  "Q53": {
+    "kind": "how",
+    "text": {
+      "en": "How do I customise lists: bullets per level, (a)/(i) numbering, task checkboxes, spacing that stays on the grid?",
+      "es": "¿Cómo personalizo las listas: viñetas por nivel, numeración (a)/(i), casillas de tareas y un espaciado que respete la rejilla?"
+    },
+    "index": {
+      "en": "Lists, customising",
+      "es": "Listas, personalizar"
+    },
+    "theme": "type"
+  },
+  "Q54": {
+    "kind": "how",
+    "text": {
+      "en": "How do I write dialogue dashes, years at a paragraph start, prices and literal symbols without Markdown misreading them?",
+      "es": "¿Cómo escribo rayas de diálogo, años al principio de párrafo, precios y símbolos literales sin que el Markdown los malinterprete?"
+    },
+    "index": {
+      "en": "Escapes, literal characters",
+      "es": "Escapes, caracteres literales"
+    },
+    "theme": "type"
+  },
+  "Q55": {
+    "kind": "how",
+    "text": {
+      "en": "How do I make note, tip or warning boxes with an icon, a coloured stripe and rounded corners?",
+      "es": "¿Cómo hago recuadros de nota, consejo o advertencia con icono, franja de color y esquinas redondeadas?"
+    },
+    "index": {
+      "en": "Callouts, note, tip and warning boxes",
+      "es": "Recuadros de nota, consejo y advertencia"
+    },
+    "theme": "boxes"
+  },
+  "Q56": {
+    "kind": "how",
+    "text": {
+      "en": "How do I let a long box split across columns and pages, or keep a short one together?",
+      "es": "¿Cómo dejo que un recuadro largo se parta entre columnas y páginas, o mantengo uno corto entero?"
+    },
+    "index": {
+      "en": "Callouts, splitting or keeping together",
+      "es": "Recuadros, partirlos o mantenerlos enteros"
+    },
+    "theme": "boxes"
+  },
+  "Q57": {
+    "kind": "how",
+    "text": {
+      "en": "How do I float a box to the top or bottom of the page while the text keeps flowing?",
+      "es": "¿Cómo llevo un recuadro a la cabeza o al pie de la página sin que el texto deje de llenarla?"
+    },
+    "index": {
+      "en": "Callouts, floating",
+      "es": "Recuadros flotantes"
+    },
+    "theme": "boxes"
+  },
+  "Q58": {
+    "kind": "how",
+    "text": {
+      "en": "How do I pin a badge or sticker to a fixed position on the page?",
+      "es": "¿Cómo fijo una insignia o una pegatina en una posición concreta de la página?"
+    },
+    "index": {
+      "en": "Badges, pinned to the page",
+      "es": "Insignias fijas en la página"
+    },
+    "theme": "boxes"
+  },
+  "Q59": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set a box across both columns mid-page, such as a 3-up \"in numbers\" panel?",
+      "es": "¿Cómo pongo un recuadro que cruce las dos columnas a media página, como un panel de cifras en tres bloques?"
+    },
+    "index": {
+      "en": "Callouts across both columns",
+      "es": "Recuadros que cruzan las dos columnas"
+    },
+    "theme": "boxes"
+  },
+  "Q60": {
+    "kind": "how",
+    "text": {
+      "en": "How do I put two columns inside a box (a text column beside a figure column)?",
+      "es": "¿Cómo pongo dos columnas dentro de un recuadro (una de texto junto a otra con una figura)?"
+    },
+    "index": {
+      "en": "Callouts, columns inside",
+      "es": "Recuadros, columnas dentro de los"
+    },
+    "theme": "boxes"
+  },
+  "Q61": {
+    "kind": "how",
+    "text": {
+      "en": "How do I nest boxes, such as a worksheet card holding answer boxes, with exact spacing?",
+      "es": "¿Cómo anido recuadros, como una ficha de ejercicios con cajas de respuesta, con un espaciado exacto?"
+    },
+    "index": {
+      "en": "Callouts, nested",
+      "es": "Recuadros anidados"
+    },
+    "theme": "boxes"
+  },
+  "Q62": {
+    "kind": "how",
+    "text": {
+      "en": "How do I add a numbered tab (\"BOX 1-1\"), a corner icon, or a margin icon with a rule?",
+      "es": "¿Cómo añado una pestaña numerada («RECUADRO 1-1»), un icono de esquina o un icono al margen con un filete?"
+    },
+    "index": {
+      "en": "Callouts, tabs, corner icons and markers",
+      "es": "Recuadros, pestañas, iconos de esquina y marcas"
+    },
+    "theme": "boxes"
+  },
+  "Q63": {
+    "kind": "how",
+    "text": {
+      "en": "How do I add a figure with a numbered caption and cite it in the text (\"see Fig. 3.2\")?",
+      "es": "¿Cómo añado una figura con pie numerado y la cito en el texto («véase la fig. 3.2»)?"
+    },
+    "index": {
+      "en": "Figures, numbered and cited",
+      "es": "Figuras numeradas y citadas"
+    },
+    "theme": "figures"
+  },
+  "Q64": {
+    "kind": "how",
+    "text": {
+      "en": "How do I control where a figure goes: top of page, across both columns, exactly here, or in the margin?",
+      "es": "¿Cómo decido dónde va una figura: en la cabeza de la página, a lo ancho de las dos columnas, justo aquí o al margen?"
+    },
+    "index": {
+      "en": "Figures, controlling placement",
+      "es": "Figuras, controlar su colocación"
+    },
+    "theme": "figures"
+  },
+  "Q65": {
+    "kind": "how",
+    "text": {
+      "en": "How do I make a table with header rows, merged cells, column widths and per-cell alignment?",
+      "es": "¿Cómo hago una tabla con filas de cabecera, celdas combinadas, anchos de columna y alineación por celda?"
+    },
+    "index": {
+      "en": "Tables, merged cells and header rows",
+      "es": "Tablas, celdas combinadas y filas de cabecera"
+    },
+    "theme": "tables"
+  },
+  "Q66": {
+    "kind": "how",
+    "text": {
+      "en": "How do I split a long table across pages with a repeated header and a \"continued\" marker?",
+      "es": "¿Cómo parto una tabla larga entre páginas con la cabecera repetida y un aviso de «continúa»?"
+    },
+    "index": {
+      "en": "Tables, splitting across pages",
+      "es": "Tablas, partirlas entre páginas"
+    },
+    "theme": "tables"
+  },
+  "Q67": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set a wide table in landscape on its own page?",
+      "es": "¿Cómo compongo una tabla ancha apaisada en su propia página?"
+    },
+    "index": {
+      "en": "Tables, landscape",
+      "es": "Tablas apaisadas"
+    },
+    "theme": "tables"
+  },
+  "Q68": {
+    "kind": "how",
+    "text": {
+      "en": "How do I style several tables differently (fills, zebra cells, rounded frames) in one document?",
+      "es": "¿Cómo doy estilos distintos a varias tablas (rellenos, filas alternas, marcos redondeados) en un mismo documento?"
+    },
+    "index": {
+      "en": "Tables, several styles in one document",
+      "es": "Tablas, varios estilos en un documento"
+    },
+    "theme": "tables"
+  },
+  "Q69": {
+    "kind": "how",
+    "text": {
+      "en": "How do I put pictures or icons inside table cells?",
+      "es": "¿Cómo pongo imágenes o iconos dentro de las celdas de una tabla?"
+    },
+    "index": {
+      "en": "Tables, pictures in cells",
+      "es": "Tablas, imágenes en las celdas"
+    },
+    "theme": "tables"
+  },
+  "Q70": {
+    "kind": "how",
+    "text": {
+      "en": "How do I keep diagrams sharp, with selectable text, in the PDF (SVG, print masters)?",
+      "es": "¿Cómo mantengo los diagramas nítidos y con texto seleccionable en el PDF (SVG, másteres de impresión)?"
+    },
+    "index": {
+      "en": "Diagrams, sharp and vector in the PDF",
+      "es": "Diagramas nítidos y vectoriales en el PDF"
+    },
+    "theme": "figures"
+  },
+  "Q71": {
+    "kind": "how",
+    "text": {
+      "en": "How do I recolour every diagram to a single spot ink?",
+      "es": "¿Cómo paso todos los diagramas a una sola tinta plana?"
+    },
+    "index": {
+      "en": "Single ink, recolouring diagrams",
+      "es": "Una sola tinta, recolorear diagramas"
+    },
+    "theme": "figures"
+  },
+  "Q72": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set a caption beside a figure, or above a table on a caption bar?",
+      "es": "¿Cómo pongo el pie al lado de una figura, o encima de una tabla sobre una barra de color?"
+    },
+    "index": {
+      "en": "Captions, beside or above",
+      "es": "Pies, al lado o encima"
+    },
+    "theme": "figures"
+  },
+  "Q73": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set unnumbered artwork: ornaments, vignettes, logos?",
+      "es": "¿Cómo compongo ilustraciones sin numerar: adornos, viñetas, logotipos?"
+    },
+    "index": {
+      "en": "Ornaments and unnumbered artwork",
+      "es": "Adornos e ilustraciones sin numerar"
+    },
+    "theme": "figures"
+  },
+  "Q74": {
+    "kind": "how",
+    "text": {
+      "en": "How do I get \"Figure\" and \"Table\" labels in my document's language?",
+      "es": "¿Cómo consigo las etiquetas «Figura» y «Tabla» en el idioma de mi documento?"
+    },
+    "index": {
+      "en": "Figure and Table labels, translating",
+      "es": "Etiquetas Figura y Tabla, traducir las"
+    },
+    "theme": "figures"
+  },
+  "Q75": {
+    "kind": "how",
+    "text": {
+      "en": "How do I publish the same book in two languages from one project?",
+      "es": "¿Cómo publico el mismo libro en dos idiomas desde un solo proyecto?"
+    },
+    "index": {
+      "en": "Bilingual editions",
+      "es": "Ediciones bilingües"
+    },
+    "theme": "output"
+  },
+  "Q76": {
+    "kind": "how",
+    "text": {
+      "en": "How do I port an existing PDF, Word or InDesign publication to Postext?",
+      "es": "¿Cómo paso a Postext una publicación que ya existe en PDF, Word o InDesign?"
+    },
+    "index": {
+      "en": "Porting existing publications",
+      "es": "Publicaciones existentes, pasarlas a Postext"
+    },
+    "theme": "output"
+  },
+  "Q77": {
+    "kind": "how",
+    "text": {
+      "en": "How do I find out what is wrong with my document (warnings, overflow, non-converging layout)?",
+      "es": "¿Cómo averiguo qué falla en mi documento (avisos, desbordamientos, composición que no converge)?"
+    },
+    "index": {
+      "en": "Warnings and diagnostics",
+      "es": "Avisos y diagnóstico"
+    },
+    "theme": "output"
+  },
+  "Q78": {
+    "kind": "how",
+    "text": {
+      "en": "Can Postext set three or more text columns, or wrap text around an image?",
+      "es": "¿Puede Postext componer tres o más columnas de texto, o hacer que el texto rodee una imagen?"
+    },
+    "index": {
+      "en": "Three columns and text wrap, workarounds for",
+      "es": "Tres columnas y contorneo, alternativas a"
+    },
+    "theme": "page",
+    "gap": "three-columns"
+  },
+  "Q79": {
+    "kind": "how",
+    "text": {
+      "en": "How do I add a watermark, a background tint or a decorative image on every page?",
+      "es": "¿Cómo añado una marca de agua, un fondo de color o una imagen decorativa en todas las páginas?"
+    },
+    "index": {
+      "en": "Watermarks and page backgrounds",
+      "es": "Marcas de agua y fondos de página"
+    },
+    "theme": "running-heads"
+  },
+  "Q80": {
+    "kind": "how",
+    "text": {
+      "en": "How do I build a worksheet page: fill-in lines, answer boxes, word banks, checklists?",
+      "es": "¿Cómo hago una ficha de ejercicios: líneas para rellenar, cajas de respuesta, bancos de palabras, listas de comprobación?"
+    },
+    "index": {
+      "en": "Worksheets",
+      "es": "Fichas de ejercicios"
+    },
+    "theme": "boxes"
+  },
+  "Q81": {
+    "kind": "how",
+    "text": {
+      "en": "How do I place design elements against the page, the bleed or one another instead of by coordinates?",
+      "es": "¿Cómo coloco los elementos de diseño respecto a la página, la sangre o entre sí, en lugar de por coordenadas?"
+    },
+    "index": {
+      "en": "Anchoring design elements to each other",
+      "es": "Anclaje de elementos de diseño entre sí"
+    },
+    "theme": "headings"
+  },
+  "Q82": {
+    "kind": "how",
+    "text": {
+      "en": "How do I number every fifth line of a poem in the margin and key my notes to those line numbers?",
+      "es": "¿Cómo numero en el margen cada quinto verso de un poema y remito mis notas a esos números de verso?"
+    },
+    "index": {
+      "en": "Line numbers in verse, and notes keyed to them",
+      "es": "Numeración de versos y notas referidas a ella"
+    },
+    "theme": "type",
+    "gap": "line-numbers"
+  },
+  "Q83": {
+    "kind": "how",
+    "text": {
+      "en": "How do I add a thumb index: a tab on the fore-edge that steps down the page from one letter or chapter to the next?",
+      "es": "¿Cómo añado un índice de pestañas: una pestaña en el corte delantero que baja por la página de una letra o un capítulo al siguiente?"
+    },
+    "index": {
+      "en": "Thumb index, tabs on the fore-edge",
+      "es": "Índice de pestañas en el corte"
+    },
+    "theme": "running-heads"
+  },
+  "Q84": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set a screenplay or a play: scene headings, character names, and dialogue indented from both sides?",
+      "es": "¿Cómo compongo un guion de cine o una obra de teatro: encabezados de escena, nombres de personaje y diálogo sangrado por los dos lados?"
+    },
+    "index": {
+      "en": "Screenplays and plays, script format",
+      "es": "Guiones de cine y de teatro, formato"
+    },
+    "theme": "type"
+  }
+}

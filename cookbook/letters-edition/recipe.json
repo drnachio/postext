@@ -1,0 +1,228 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 64,
+  "status": "published",
+  "chapter": "headings",
+  "order": 80,
+  "level": 2,
+  "genres": [
+    "novel"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "heading-attributes",
+      "design-anchoring",
+      "paragraph-styles"
+    ],
+    "also": [
+      "opener-design",
+      "heading-numbering",
+      "chapter-breaks",
+      "heading-styles",
+      "covers",
+      "design-images",
+      "title-line-breaks",
+      "running-heads",
+      "page-role-filters",
+      "mirrored-margins",
+      "page-background",
+      "page-breaks",
+      "hyphenation-languages",
+      "super-subscripts",
+      "frontmatter",
+      "color-palette",
+      "canvas-rendering"
+    ]
+  },
+  "answers": [
+    "Q44",
+    "Q20",
+    "Q30"
+  ],
+  "gotchas": [
+    "attr-values",
+    "headings-drop-h1-break",
+    "heading-number-placeholders",
+    "cover-pagebreak",
+    "hyphenation-locales",
+    "nbsp-breaks",
+    "palette-skips-designs",
+    "design-lineheight-multiple",
+    "overflow-ellipsis-default",
+    "runt-tracking-unpainted",
+    "fonts-first",
+    "design-text-no-inline-marks"
+  ],
+  "engine": {
+    "postext": "1.4.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": [
+      4,
+      5
+    ],
+    "card": "crop",
+    "focus": {
+      "page": 1,
+      "x": 0,
+      "y": 0.0667,
+      "w": 1,
+      "h": 0.5
+    },
+    "pages": "all",
+    "expect": {
+      "pages": [
+        5,
+        5
+      ],
+      "nearEmptyPages": [
+        1
+      ]
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "Frederick II’s letters to Voltaire of 6 and 12 June 1740 and Voltaire’s letter to him of 1 April 1778, in Correspondance de Voltaire avec le roi de Prusse (Paris, Librairie de la Bibliothèque nationale, 1889), one misprint corrected (ouvragés), the salutations and signatures set apart",
+          "es": "Las cartas de Federico II a Voltaire del 6 y el 12 de junio de 1740 y la de Voltaire al rey del 1 de abril de 1778, en Correspondance de Voltaire avec le roi de Prusse (París, Librairie de la Bibliothèque nationale, 1889), con una errata corregida (ouvragés) y los saludos y las firmas en línea aparte"
+        },
+        "who": "Frédéric II · Voltaire",
+        "source": "https://www.gutenberg.org/ebooks/25734",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The headnote and the colophon",
+          "es": "La nota inicial y el colofón"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "The cover: two folded letters and a wax seal on green morocco, drawn in code",
+          "es": "La cubierta: dos cartas plegadas y un sello de lacre sobre tafilete verde, dibujadas en código"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Crimson Pro",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "IM Fell French Canon",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "IM Fell DW Pica SC",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-09-26",
+  "updated": "2026-09-26",
+  "gaps": [
+    "hard-line-breaks"
+  ],
+  "explainsWarnings": [],
+  "workarounds": [
+    {
+      "followup": "EF-05",
+      "package": "postext",
+      "note": "headings.levels[0] writes breakBefore: { enabled: false } out, so the letters run on two grid lines apart: in 1.4.1 any headings object already drops the H1 page break, and an engine that restores the documented always-odd default would put every letter on a recto behind a blank page"
+    },
+    {
+      "followup": "EF-03",
+      "package": "postext",
+      "note": "a :::pagebreak follows the cover heading: the cover design reserves room down to its subtitle (ten grid lines) and nothing for the drawing, and without the break the headnote and the first letter start on page 1, over the art"
+    },
+    {
+      "followup": "EF-113",
+      "package": "postext",
+      "note": "the cover style sets span: 'page' although the book has one column. Kept in the column, its design is clipped to the column's top and bottom, which leaves paper bands above and below the leather and drops the names above the title; page 1 then counts as a 'body' page, and the running heads print folio 1 on the cover"
+    },
+    {
+      "followup": "EF-152",
+      "package": "postext",
+      "note": "span: 'page' on the cover also keeps the title's \\\\ break: the in-column design gets {titleText} with the break turned into a space, and 'Mon sort est changé' runs on one line across the page"
+    },
+    {
+      "followup": "EF-25",
+      "package": "postext",
+      "note": "design text has no inline marks, and Crimson Pro has no ᵉ or ʳ modifier letters, so the dateline and the recto running head print '1er avril 1778' with the ordinal at full size; the headnote, which is body text, sets 1^er^ and I^er^ as superscripts"
+    },
+    {
+      "followup": "EF-71",
+      "package": "postext",
+      "note": "col() writes each colour's hex beside its paletteId, because 1.4.1 paints design elements (the letter heads, the running heads, the cover) from the hex; bodyText.referenceColor is restated in ink although the letters have no :ref, since 1.4.1 leaves it blue whatever main-color says"
+    },
+    {
+      "followup": "EF-09",
+      "package": "postext",
+      "note": "the letter numbers are {number} from numberingTemplate '{1:I}'; {numberRoman} is filled only on part pages in 1.4.1"
+    },
+    {
+      "followup": "EF-56",
+      "package": "postext",
+      "note": "the cover title's lineHeight is the multiple 1, never a dimension, which would drop the design's reserved height"
+    },
+    {
+      "followup": "EF-66",
+      "package": "postext",
+      "note": "the letters keep the transcription's unspaced ; : ? and !: 1.4.1 breaks lines at a narrow no-break space (U+202F) as at any space, so French spacing could leave a mark at the head of a line"
+    },
+    {
+      "followup": "EF-173",
+      "package": "postext",
+      "note": "paragraph styles have no italic or letter-case setting in 1.4.1: the headnote is italic because its Markdown is wrapped in *…*, and the signature style takes a family cut as small capitals, IM Fell DW Pica SC"
+    },
+    {
+      "followup": "EF-14",
+      "package": "postext",
+      "note": "locale is the exact bundled code 'fr'; a region tag such as 'fr-FR' would hyphenate the French with the American patterns"
+    },
+    {
+      "followup": "EF-111",
+      "package": "postext",
+      "note": "bodyText.maxRuntTracking is 0 because a runt fix can set tracking that 1.4.1 measures but never paints; no paragraph on these pages needs one, so the setting matters only once the text is edited"
+    }
+  ],
+  "related": [
+    "anthology-with-bylines",
+    "poetry-collection",
+    "din-business-letter",
+    "spanish-pocket-novel"
+  ]
+}

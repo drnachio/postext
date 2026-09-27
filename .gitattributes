@@ -1,0 +1,2 @@
+# Generated Cookbook captures (images, PDFs): hide them from diffs
+apps/web/public/cookbook/** -diff

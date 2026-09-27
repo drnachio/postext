@@ -1,0 +1,81 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 32,
+  "status": "published",
+  "chapter": "boxes",
+  "order": 50,
+  "level": 3,
+  "genres": ["novel"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["side-boxes", "side-column-floats", "column-and-a-half"],
+    "also": [
+      "mirrored-margins", "callout-styles", "super-subscripts", "paragraph-styles",
+      "opener-design", "opener-band", "design-elements", "design-images", "design-anchoring",
+      "drop-caps", "heading-attributes", "running-heads", "page-role-filters", "resources",
+      "color-palette", "knuth-plass", "chips"
+    ]
+  },
+  "answers": ["Q46", "Q45", "Q18", "Q28"],
+  "gaps": ["footnotes"],
+  "gotchas": [
+    "side-box-starts-at-fence", "side-box-after-heading", "heading-number-placeholders",
+    "opener-image-no-reserve", "design-text-ragged", "design-lineheight-multiple",
+    "palette-skips-designs", "headings-drop-h1-break"
+  ],
+  "workarounds": [
+    { "followup": "EF-67", "package": "postext", "note": "glosses a and b are fenced between the heading and the first paragraph so that they stand beside it; those side boxes count as the block after the heading, so indentAfterHeading: false would not set the paragraph flush (gotcha side-box-after-heading). The config keeps the default and wraps the paragraph in :::paragraphs{style=\"opening\"}, a style with firstLineIndent: 0" },
+    { "followup": "EF-09", "package": "postext", "note": "the kicker prints Chapter {attr.num}, the numeral written on the heading line: the excerpt is a document of its own, so {chapterNumber} would print its own H1 count (gotcha heading-number-placeholders)" },
+    { "followup": "EF-90", "package": "postext", "note": "the headpiece is an image element and reserves no height (gotcha opener-image-no-reserve). The kicker is offset HEADPIECE - TOP + 8 mm from the top of the opener, and the title and headnote hang below it: those text elements count, so the reserve they carry runs past the drawing and the text starts on line 23, under the headnote" },
+    { "followup": "EF-113", "package": "postext", "note": "level 1 sets span: 'page' so that the opener paints unclipped: kept in the text column, its design is clipped at the column's top edge, which cuts the top 22 mm of the drawing (the sides are painted), and width 'fill' resolves to the 87.5 mm column, which wraps the title" },
+    { "followup": "EF-109", "package": "postext", "note": "design text is never justified (gotcha design-text-ragged), so the drop cap opens the editor's italic headnote, set ragged, and Carroll's justified text starts in the flow below it" },
+    { "followup": "EF-106", "package": "postext", "note": "the headnote sets overflow: 'wrap', without which its dropCap is dropped silently" },
+    { "followup": "EF-127", "package": "postext", "note": "dropSize() gives the initial an explicit fontSize from the cap heights of Unna (0.597 em) and Rozha One (0.56 em): the default size is as tall as both line boxes and its top rises above the headnote's first capitals" },
+    { "followup": "EF-56", "package": "postext", "note": "every design text lineHeight is a multiple of its size (HEADNOTE.lead / HEADNOTE.size, 10 / 7.5, 1.05), never a dimension (gotcha design-lineheight-multiple)" },
+    { "followup": "EF-71", "package": "postext", "note": "col() writes the hex beside each paletteId, because 1.4.1 paints design elements (kicker, title, headnote, drop cap, note on this edition, running heads, folios) from the hex, not from the palette (gotcha palette-skips-designs)" },
+    { "followup": "EF-05", "package": "postext", "note": "the H1 breakBefore is restated with parity 'odd' because a headings object drops it (gotcha headings-drop-h1-break)" }
+  ],
+  "related": ["critical-edition-line-numbers", "textbook-margin-column", "endnotes-instead-of-footnotes", "spanish-pocket-novel"],
+  "engine": { "postext": "1.4.1" },
+  "kit": ["core", "fonts", "viewer", "images"],
+  "sample": { "locales": ["en"] },
+  "capture": {
+    "hero": [2, 3],
+    "card": "crop",
+    "focus": { "page": 1, "x": 0, "y": 0, "w": 1, "h": 0.498 },
+    "pages": "all",
+    "expect": { "pages": [3, 3] }
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": { "en": "Alice’s Adventures in Wonderland (1865), the opening of chapter VII, “A Mad Tea-Party”", "es": "Alice’s Adventures in Wonderland (1865), comienzo del capítulo VII, «A Mad Tea-Party»" },
+        "who": "Lewis Carroll",
+        "source": "https://www.gutenberg.org/ebooks/11",
+        "license": "PD"
+      },
+      {
+        "what": { "en": "The headnote, the eight glosses and the note on this edition", "es": "La entradilla, las ocho glosas y la nota sobre esta edición" },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": { "en": "The tea-table seen from above, drawn in code in the page’s palette", "es": "La mesa del té vista desde arriba, dibujada en código con la paleta de la página" },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "fonts": [
+      { "family": "Unna", "license": "OFL-1.1" },
+      { "family": "Rozha One", "license": "OFL-1.1" },
+      { "family": "Cormorant SC", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-25",
+  "updated": "2026-09-26"
+}

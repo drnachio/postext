@@ -1,0 +1,51 @@
+---
+title: "Carta comercial según DIN 5008"
+summary: "Un presupuesto en alemán de dos hojas A4. El asunto es el H1, y su diseño coloca el membrete, la dirección y el bloque de información donde manda la forma B."
+description: "Código de una carta comercial DIN 5008 en Postext, con la dirección en la ventana del sobre, el bloque de información, las marcas de plegado y «Seite 2 von 2»."
+question: "¿Cómo coloco al milímetro la dirección y el bloque de información de una carta según la DIN 5008?"
+aliases: ["carta comercial", "DIN 5008", "forma B", "ventana del sobre", "sobre con ventana", "campo de dirección", "membrete", "línea de remite", "bloque de información", "marcas de plegado", "marca de perforación", "página 2 de 2", "firma", "presupuesto", "Geschäftsbrief"]
+pageNotes: { "1": "Primera hoja de un presupuesto en alemán de la Fensterwerkstatt Tessin. En la cabeza, una banda azul de Berlín lleva el dibujo en blanco de una doble ventana, el nombre Tessin con FENSTERWERKSTATT · BERLIN debajo y, a la derecha, las tres especialidades del taller. Bajo la banda, la línea de remite y una dirección de cuatro líneas quedan dentro de cuatro pequeñas escuadras, y a la derecha baja el bloque de información, con la fecha separada del resto. El asunto, en negrita, identifica el presupuesto 2026-117 para 24 dobles ventanas. El texto va justificado, con la separación silábica del alemán (mundgebla-sene cierra la cuarta línea del primer párrafo), y termina con una lista de seis trabajos. En el borde izquierdo están las marcas grises de plegado y de perforación; al pie, los datos de la empresa en tres columnas.", "2": "Segunda hoja: una franja azul fina en la cabeza y, debajo, una línea con el nombre del taller, la referencia y la fecha, con Seite 2 von 2 a la derecha. El texto da el precio y el calendario y ofrece llevar una hoja de ventana restaurada a la junta de propietarios. Siguen Mit freundlichen Grüßen, una firma en bolígrafo azul, el nombre y el cargo, y tres anexos bajo Anlagen. Las marcas y los datos de la empresa se repiten como en la primera hoja." }
+---
+
+## Lo que vas a componer
+
+La Fensterwerkstatt Tessin, un taller berlinés inventado que restaura dobles ventanas, manda un presupuesto a la administración de una finca. Son dos hojas A4 en alemán, compuestas según la forma B de la DIN 5008. Arriba, una banda de azul de Berlín lleva el logotipo y el nombre del taller. Debajo, todo está donde lo pone la norma: la línea de remite y la dirección, dentro del campo de 85 × 45 mm que asoma por la ventana de un sobre DL; el bloque de información, a 125 mm del borde izquierdo; el asunto en negrita, dos líneas en blanco bajo el campo, y las marcas de plegado y perforación, a 105, 148,5 y 210 mm. Los datos de la empresa ocupan tres columnas al pie de ambas hojas. La segunda repite la referencia junto a «Seite 2 von 2» y termina con una firma dibujada en código.
+
+## Elaboración
+
+### 1 · Fija la primera página a la hoja en milímetros
+
+<Excerpt region="answer" highlight="1-4" />
+
+`at()` ancla un elemento por su esquina superior izquierda a `'page'`, la caja de corte ([posicionamiento de elementos](/es/docs/configuration#posicionamiento-de-elementos)). Cada `x` y cada `y` miden, por tanto, la distancia a la esquina de la hoja, y las cifras de la norma se copian tal cual: la dirección, a 25 mm del borde izquierdo y a 62,7 mm del superior; la primera etiqueta del bloque de información, a 125 y 50. Todos estos elementos forman el diseño del H1. El texto del título es el asunto (`{titleText}`), y la dirección y las referencias son atributos suyos, así que el papel de cartas queda en la configuración y la carta, en el Markdown. El asunto, a 100,6 mm, es el elemento más bajo, de modo que el título reserva la hoja hasta el pie del asunto. `marginBottom` añade las dos líneas en blanco, y el saludo empieza en la siguiente línea de la rejilla base, a 117 mm.
+
+La dirección es un único atributo con `\n` entre sus líneas. En la 1.4.1, un texto de diseño solo convierte en salto de línea el `\n` de un atributo si su `paragraphIndent` es mayor que cero. La dirección usa 0,01 pt, una sangría que no se ve; con 0, la barra y la n salen impresas en la dirección. Sin `span: 'page'`, el diseño se queda en la columna de texto y se recorta en el margen superior de 27 mm: el logotipo y el nombre desaparecen, y de la banda solo quedan los 5 mm de abajo.
+
+### 2 · Encadena el bloque de información desde una etiqueta fija
+
+<Excerpt region="info" />
+
+Solo la primera etiqueta está fijada a la hoja. Las demás cuelgan `'below'` de la anterior, y cada valor cuelga de su etiqueta con `'align-top'` y 29 mm de desplazamiento, así que añadir una fila a `INFO` no obliga a calcular coordenadas. El texto de diseño sitúa la línea base al 80 % de la altura de línea. La etiqueta de 7 pt (`lineHeight: 12 / 7`) y el valor de 9 pt (`12 / 9`) tienen los dos una línea de 12 pt, y por eso comparten línea base en cada fila de 4,23 mm.
+
+### 3 · Dibuja el membrete en el mismo diseño
+
+<Excerpt region="letterhead" />
+
+La banda es una caja fijada a la esquina de la hoja. `width: 'fill'` la extiende de borde a borde, y sus 32 mm de alto la llevan 5 mm por debajo del margen superior, que está a 27 mm. El logotipo es un elemento de imagen que dibuja un recurso de 18 mm de alto y toma el ancho del propio dibujo ([elementos de imagen](/es/docs/configuration#elementos-de-imagen)). El nombre cuelga `'right-of'` del logotipo, y la línea del oficio, `'below'` del nombre. Ocho filetes de 3 mm forman una escuadra en cada esquina del campo de dirección, los 85 × 45 mm de la hoja que asoman por la ventana del sobre.
+
+### 4 · Pon en la cabecera y el pie lo que comparten todas las hojas
+
+<Excerpt region="furniture" />
+
+Cualquier elemento del diseño del H1 fijado por debajo del asunto suma altura a la reserva del título. Con la marca de plegado de 210 mm en el diseño, el saludo baja a 222,8 mm y la carta pasa a tres páginas. La ranura de la cabecera se pinta en todas las páginas sin reservar espacio, y por eso las tres marcas van en ella ([encabezados y pies](/es/docs/configuration#encabezados-y-pies)). La página 1 empieza con el H1, lo que la convierte en página de apertura (`'opener'`), así que `pages: 'body'` limita la franja azul, la línea de referencia y `Seite {pageNumber} von {totalPages}` a las hojas siguientes. La línea de referencia toma los atributos del H1 con `{attr.unser-zeichen}` y `{attr.datum}`.
+
+### 5 · Coloca la firma en el flujo del texto
+
+<Excerpt region="signature" />
+
+`::resource{id="signature"}` pone el dibujo bajo «Mit freundlichen Grüßen», y `width: 0.297` le da 49 mm de ancho y 21,1 mm de alto, algo menos de cuatro líneas de 15 pt. El texto que sigue a un recurso en el flujo vuelve a la rejilla base. Con `0.25`, el dibujo medía 17,8 mm de alto, y los 3,4 mm que la rejilla añadía debajo alejaban el nombre de la firma. El tipo de recurso tiene el `captionPrefix` vacío, y la 1.4.1 no compone pie cuando el prefijo y el pie están vacíos, así que bajo la firma no aparece ni rótulo ni número ([tipos de recurso](/es/docs/configuration#tipos-de-recurso)). El logotipo es un recurso del mismo tipo, y solo lo dibuja el elemento de imagen. Ningún `:ref` ni `::resource` lo nombra, así que nunca entra en el flujo.
+
+## Errores frecuentes
+
+- La tarjeta sobre `\n` en los atributos dice que, con `paragraphIndent` a 0, el texto se queda en una sola línea. En la 1.4.1 la dirección se parte al llenar sus 75 mm de ancho, y los dos caracteres `\n` salen impresos donde debería haber un salto de línea.
+- `{totalPages}` cuenta las páginas de todo el documento: con dos cartas en un mismo Markdown, la segunda hoja de la primera diría «Seite 2 von 4». Compón cada carta por separado.

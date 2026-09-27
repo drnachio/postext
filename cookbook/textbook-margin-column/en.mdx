@@ -1,0 +1,90 @@
+---
+title: "Textbook with a margin column"
+summary: "A column-and-a-half page whose outer column holds only floats: span 'side' figures and glosses stack there, and captionSide moves the other captions into it."
+description: "The Postext code for a physics chapter with a float-only column in the outer margin for ray diagrams, key-term glosses and figure captions."
+question: "How do I keep figures, captions and glosses in an outer margin column that the body text never enters?"
+aliases: ["margin column", "marginal column", "margin notes", "sidenotes", "glosses", "side captions", "marginal figures", "column and a half", "Tufte layout", "physics textbook"]
+pageNotes: { "1": "Chapter 4 opens with the title Light and Lenses in the text column and a large green 4 in the outer margin, the learning objectives below it and, level with section 4.1, a key-term gloss beside the paragraph that defines the refractive index; a burning-glass diagram on a dark panel fills the foot of the text column, its caption beside it in the margin.", "2": "On the verso the margin column sits on the left: a refraction diagram, the critical-angle gloss and a diagram of a semicircular glass block stack in it, and the optical-fibre figure at the foot of the text column has its caption in the margin.", "3": "A dark panel in which a white beam crosses a prism and fans out into a spectrum spans both columns at the head of the recto; in the margin, the dispersion gloss starts just below the sentence that defines the term, the focal-length gloss stands level with section 4.3, and the caption of a lens diagram set on a light plate sits at the foot.", "4": "The diverging-lens figure heads the margin column of the last page; the Key ideas panel starts below the chapter's closing paragraph, level with the Questions heading, and runs beside the questions; a one-line colophon ends the chapter." }
+---
+
+## What you'll build
+
+Chapter 4 of *Lever and Lens*, an introductory physics textbook on a 210 × 275 mm page. The body text runs in one wide column and never enters the outer margin, a 53 mm channel. The chapter number, a green 4, sits in that channel level with the title, and the learning objectives go under it. Ray diagrams stack from the head of the channel, and key terms go in mint glosses beside the passages that define them. The figures that stay in the text column, on dark or light plates, have their captions in the margin, level with the foot of the figure. Only the prism panel crosses both columns. The margins mirror, so the channel is on the fore-edge of every page, on the right of a recto and on the left of a verso.
+
+## Method
+
+### 1 · Give the margin to the floats
+
+This step's code is [the short answer](#the-short-answer) above. In a [column-and-a-half layout](/en/docs/configuration#layout-types), `sideColumnPercent: 30` gives the side column 30 % of the 176 mm content width (52.8 mm), and the text column keeps what is left after the 7 mm gutter (116 mm, about 75 characters of 9.3 pt Merriweather). `sideColumnRole: 'floats'` keeps the body text out of the side column, and `sideColumnSide: 'outer'` puts it on the outer side, which the mirrored margins switch from page to page. Figures go there with `span: 'side'`. A box with `span="side"` on its fence leaves the flow and goes into the channel at the height the text has reached, so each gloss starts level with the block that follows its fence.
+
+### 2 · Let the citation place each figure
+
+<Excerpt region="figures" />
+
+The first `:ref` to a figure numbers it and places it where its [placement](/en/docs/document-format#placement) says. A `span: 'side'` figure stacks from the head of the channel on the page that cites it, however far down the citation is, and moves to the next page when the rest of that channel is too short. Figures 4.2 and 4.3, both cited on <PageRef page={2}>page 88</PageRef>, stack down that page's channel with the critical-angle gloss between them. The prism is a page-wide `top` float cited on page 88, and a float never goes above its citation, so it opens page 89 across both columns. Figures 4.1, 4.4 and 4.6 stay in the text column and take `captionSide` from the figure type's `defaultPlacement`. They take the bottom slot of the column, so each caption sits level with the foot of its figure; in a top slot it would align with the figure's top.
+
+### 3 · Open the chapter in the margin
+
+<Excerpt region="opener" />
+
+The level-1 heading stays in the text column, where a [design slot](/en/docs/configuration#span-and-advanced-design) stacks its text, the rule and the standfirst; the kicker hangs from the page's top-right corner and the numeral from the kicker, both as wide as the channel. `minHeight` fixes the opener at nine grid lines (42.9 mm), enough for a one-line title, the rule and a four-line standfirst, so a shorter standfirst does not pull the text up. The kicker and the 104 pt numeral end 40.6 mm below the top margin, inside those nine lines, so they do not push the text down either. The channel is on the right only on a recto, so the H1 breaks to an odd page. The objectives box comes after the first paragraph rather than straight after the heading, and no margin figure is cited before it (see Pitfalls).
+
+### 4 · Keep the folios on the channel's edge
+
+<Excerpt region="heads" />
+
+Each element is anchored to the physical page and filtered by `parity`, so folio and running head sit on the same edge as the channel on both sides of the spread. `pages: 'body'` keeps them off the opener, which gets a drop folio at the foot of the channel instead.
+
+### 5 · Start the book at chapter 4
+
+<Excerpt region="build" />
+
+These pages are chapter 4 of a longer book. The continuation sets the chapter counter to 3, so `{chapterNumber}` prints 4 and level 2's `numberingTemplate: '{1}.{2}'` numbers the sections 4.1 to 4.3; the figures run from 4.1 to 4.7. `## Questions {style="plain"}` takes a `headingStyles` entry with `numbered: false`, so that heading has no number. The folios start at 87 because the first page is a recto, and a recto carries an odd folio.
+
+### 6 · Name the colours once
+
+<Excerpt region="palette" />
+
+Every colour in the configuration links to a palette entry and also carries its hex, which `col()` copies from the same object. Postext 1.4.1 paints design elements and the reference colour with that hex, not with the palette entry (see Pitfalls). To retint the chapter, edit `palette`: the diagrams read the same object, so their glass, rays, dark panels and light plate change along with the numerals, labels and glosses. `main-color` points at the accent, so any default colour in the text styles that the configuration leaves unset prints green, not the engine's blue.
+
+## Variations
+
+### Keep the captions under the figures
+
+With the figure type's plain defaults, the captions of figures 4.1, 4.4 and 4.6 take lines from the text column, and the channel holds only diagrams and glosses.
+
+```diff
+-const resourceTypes = defaultResourceTypes(LANG).map((type) => (type.id !== 'figure' ? type
+-  : { ...type, defaultPlacement: { captionSide: true } })); // gotcha: resource-types-locale
++const resourceTypes = defaultResourceTypes(LANG); // gotcha: resource-types-locale
+```
+
+### Put the channel on the right of every page
+
+For a document read one page at a time on screen, stop mirroring the margins and move the verso's folio and running head to the right-hand edge; chapters can then open on either page.
+
+```diff
+-  sideColumnSide: 'outer', // right on a recto, left on a verso (the margins are mirrored)
++  sideColumnSide: 'right', // what 'outer' means anyway once the margins stop mirroring
+-    bottom: mm(BOTTOM), left: mm(INNER), right: mm(OUTER), mirror: true } }, // left: recto's inner
++    bottom: mm(BOTTOM), left: mm(INNER), right: mm(OUTER), mirror: false } },
+-      { level: 1, breakBefore: { enabled: true, parity: 'odd' }, marginBottom: pt(LEAD),
++      { level: 1, breakBefore: { enabled: true, parity: 'any' }, marginBottom: pt(LEAD),
+-const verso = { parity: 'even', edge: 'top-left' }; // x counts in from the left edge
++const verso = { parity: 'even', edge: 'top-right' };
+-  head({ id: 'verso-folio', ...verso, ...folio, x: OUTER }),
+-  head({ id: 'verso-title', ...verso, content: '{title}', x: OUTER + HEAD_GAP }),
++  head({ id: 'verso-folio', ...verso, ...folio, x: -OUTER }),
++  head({ id: 'verso-title', ...verso, content: '{title}', x: -(OUTER + HEAD_GAP) }),
+-  head({ id: 'drop-folio', ...recto, ...folio, pages: 'opener', edge: 'bottom-right', x: -OUTER,
++  head({ id: 'drop-folio', ...folio, pages: 'opener', edge: 'bottom-right', x: -OUTER,
+```
+
+### Open the chapter under a colour band
+
+<RecipeLink slug="chapter-opener-bleed-band">Chapter opener on a full-bleed band</RecipeLink> bleeds a colour band off the top of the page and sets the title and a 168 pt chapter number on it.
+
+## Pitfalls
+
+- Figures and glosses stack in the channel in the order the text reaches them, never side by side. The critical-angle gloss is fenced after the Snell's-law paragraph and before the paragraph that cites figure 4.3, so on <PageRef page={2}>page 88</PageRef> it stacks between figures 4.2 and 4.3, beside the paragraph that introduces the term. Fenced after that citation, it would land under figure 4.3.
+- On a chapter's first page, cite margin figures only after the objectives box. Side figures stack from the head of the channel without making room for the kicker and the numeral anchored there, so a figure cited in the first paragraph is painted over them.

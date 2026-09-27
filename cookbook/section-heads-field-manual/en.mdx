@@ -1,0 +1,75 @@
+---
+title: "Section heads seven levels deep"
+summary: "Sections numbered 1.1 to 1.12 in an amber pill that widens with its number, four more levels beneath them, and a seventh made with a heading style."
+description: "A trail crew's field manual set in Postext: numbered heads in a pill, ruled and italic levels, a seventh level, an unnumbered checklist and nested lists."
+question: "How do I number headings 1.1 and 1.1.1, style every level differently and put the number in a pill?"
+aliases: ["numbered headings", "section numbers", "heading numbering", "decimal numbering", "heading levels", "H7", "seventh heading level", "more than six levels", "number badge", "number pill", "unnumbered section", "run-in heads", "nested ordered list", "a) i) numbering", "task list", "checkbox", "field manual", "technical manual"]
+pageNotes: { "1": "The opener of chapter 1, Drainage: the number 1 in a large amber pill beside the title, an italic standfirst, and the elevation profile of a trail rising to the right across the head of the page, in bands of green with twelve amber dots for the sites flagged for new water bars. Below, two columns open with sections 1.1 to 1.3 in small amber pills, a bullet list and the ruled head 1.2.1.", "2": "Sections 1.4 to 1.7 run down both columns; section 1.5, whose title wraps to two lines beside its pill, holds the chapter's deepest heads: the ruled heads 1.5.1 and 1.5.2, italic heads, the green head Tools for the trench, the mono capital label Steel bars and, under it, two tool names in grey italic.", "3": "The end of 1.7, then sections 1.8 to 1.12, the pill widening from 1.9 to 1.10, safety rules opening on green bold terms, and an unnumbered Checklist beside a hollow amber square, with a list numbered 1., a) and i. and two task boxes; a small grey colophon closes the chapter." }
+---
+
+## What you'll build
+
+Chapter 1 of a trail crew's field manual, *Drainage*, on three B5 pages in two columns: IBM Plex Serif for the text, IBM Plex Sans Condensed for the heads and section numbers, IBM Plex Mono for labels, folios and subsection numbers. The opener sets the chapter number in a large amber pill over a trail's elevation profile, where amber dots mark twelve sites flagged for new water bars. Smaller pills number sections 1.1 to 1.12 and widen at 1.10. Heads 1.2.1, 1.5.1 and 1.5.2 are tracked capitals under a green rule. Levels 4 to 6 go unnumbered and change face instead (serif italic, green condensed bold, mono capitals), and a seventh level in grey italic names the tools. The safety rules open on green run-in terms. An unnumbered checklist, marked by a hollow square, closes the chapter with lists numbered 1., a) and i. and two task boxes.
+
+## Method
+
+### 1 · Put the number in a pill that grows with it
+
+The code is in [the short answer](#the-short-answer) above. `numberingTemplate: '{1}.{2}'` joins the chapter and section counters into 1.1 to 1.12 ([per-level overrides](/en/docs/configuration#per-level-overrides)). A level with an advanced design no longer prints the number before its title, so the design places `{number}` itself. Here it sits in a text element with a filled, rounded `box` and no width, so the pill is as wide as the number plus its padding: 10.1 mm for 1.9 and 12.7 mm for 1.10. `'right-of'` hangs the title on the pill's right edge and aligns its lines left, which is why the long title of 1.5 wraps beside the number ([element placement](/en/docs/configuration#element-placement)). The title also needs `overflow: 'wrap'`, because by default design text that does not fit is cut with an ellipsis. The pill is 3 pt shorter than two grid lines, and every section head starts on a grid line, so those 3 pt are the gap between the pill and the text under it, whether the head opens a column or follows a paragraph.
+
+<PageShot page={3} crop="0.07,0.3,0.44,0.215" caption="Page 3: the pill widens from 1.9 to 1.10, and the title moves right by the width of the extra digit." />
+
+### 2 · Rule and track the third level
+
+<Excerpt region="ruled" />
+
+In 1.4.1 a heading level has no `letterSpacing`, but design text does, so level 3 is drawn by a design as well: a 0.75 pt green rule, the number in IBM Plex Mono and the tracked title beside it. The third counter of `'{1}.{2}.{3}'` restarts under every section, so 1.2.1 and 1.5.1 both end in 1. `DROP` lowers only the rule. The number is placed `LEAD - DROP` under it, which keeps number and title a grid line below the top of the head for any `DROP`. With the rule nearer the number than the paragraph above, it reads as part of the head.
+
+### 3 · Step down through levels 4 to 6
+
+<Excerpt region="levels" />
+
+A level without a `numberingTemplate` prints no number, so from level 4 down the heads differ in face, colour or case instead: an italic serif at level 4, the display face in green at 5 and semibold mono capitals at 6. The line height and margins set on `headings` itself reach every level and put each head on the grid, with a blank line above it and none below. Any `headings` object drops the default page break before a chapter, so level 1 restates it.
+
+### 4 · Make a seventh level and an unnumbered section with styles
+
+<Excerpt region="styles" />
+
+Markdown stops at `######`, and a heading drops its bold and italic marks, so `###### *Rock bar*` would print as one more level 6. The heading style `'level7'` sets the tool names in a grey condensed italic of weight 500, lighter than the 600 of level 6, and `textTransform: 'none'` switches off the capitals they would otherwise inherit. They read a step below the mono label above them, though at 8.4 pt they are larger than its 7.8 pt ([heading styles](/en/docs/configuration#heading-styles)). `numbered: false` leaves the checklist out of the count, so a section after it would still be 1.13. An empty `{number}` would still paint the amber pill, so the style brings its own design, with a hollow square in the pill's place. The green run-in terms of the safety rules come from the `boldColor` of a paragraph style.
+
+### 5 · Change the list markers with depth
+
+<Excerpt region="lists" />
+
+Each depth takes its own marker, colour and separator from `levels`: the checklist counts 1., a) and i. ([ordered per-level overrides](/en/docs/configuration#ordered-per-level-overrides)) and the bullets fade from green to sage ([unordered per-level overrides](/en/docs/configuration#unordered-per-level-overrides)). Level 1 keeps the default format, `'arabic'`; `'decimal'`, the word CSS uses, would print “undefined”. The two `- [ ]` items that close the checklist print `taskCheckboxChar`, ☐ by default, in place of the bullet, in the green of the first-level bullets ([task list extensions](/en/docs/configuration#task-list-extensions)). With zero margins above and below, every list stays on the baseline grid.
+
+### 6 · Open the chapter on the trail's profile
+
+<Excerpt region="opener" />
+
+The profile is an image element of the opener, anchored to the page and as wide as it. A page-wide figure floated to the top and cited on page 1 would have opened page 2 instead ([image elements](/en/docs/configuration#image-elements)). In an opener a picture reserves no height, so `minHeight` starts the text on the first grid line 6 mm or more below it. The legend on the green is design text, because an SVG drawn as an image cannot use the page's fonts. The large pill reuses the section pill's face and fill, and `{number}` prints the chapter's own number, from `numberingTemplate: '{1}'`.
+
+## Variations
+
+### Drop the chapter number from the pills
+
+Take the chapter's counter out of the template and the pills read 1 to 12, widening at 10; level 3 prints 1.5.1 until its own template drops `{1}` too.
+
+```diff
+-const h2 = { level: 2, numberingTemplate: '{1}.{2}',
++const h2 = { level: 2, numberingTemplate: '{2}',
+```
+
+### Give every pill the same width
+
+A fixed width, that of 1.10, centres each number in an equal pill and lines the titles up in one column.
+
+```diff
+-  placement: at('container', 'top-left') }; // plus its padding
++  placement: { ...at('container', 'top-left'), size: { width: mm(12.7) } } };
+```
+
+## Pitfalls
+
+- The seventh level is a level-6 heading with the style `level7`, so no head in the sample drops more than one level below the head before it: *The trench*, *Tools for the trench*, STEEL BARS and *Rock bar* run 4, 5, 6, 6. The Sandbox warning “Heading hierarchy jump” reports exactly such a skip, so it never appears on this chapter.
+- A lead-in line that ends in a colon stays with its list only if the first item fits in the room left: in 1.4.1 the rule checks for one line, so a two-line first item that meets a single free line moves to the next column alone and strands the colon. Section 1.2 keeps its first item to one line in both editions.

@@ -1,0 +1,127 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 40,
+  "status": "published",
+  "chapter": "output",
+  "order": 70,
+  "level": 3,
+  "genres": ["manual"],
+  "outputs": ["canvas", "pdf", "bundle"],
+  "features": {
+    "primary": ["custom-fonts", "color-palette", "cell-fills"],
+    "also": [
+      "swatches",
+      "opener-design",
+      "heading-numbering",
+      "opener-band",
+      "table-styles",
+      "paragraph-styles",
+      "resource-types",
+      "captions",
+      "float-placement",
+      "design-elements",
+      "body-typography",
+      "column-layouts",
+      "font-loading",
+      "pdf-export",
+      "bundles",
+      "canvas-rendering",
+      "resources"
+    ]
+  },
+  "answers": ["Q09", "Q02", "Q25", "Q52", "Q08"],
+  "gotchas": [
+    "fonts-first",
+    "custom-fonts-declarative",
+    "pdf-provider-all-styles",
+    "faked-font-styles",
+    "latin-subset",
+    "pdf-font-copies",
+    "palette-skips-designs",
+    "design-lineheight-multiple",
+    "overflow-ellipsis-default",
+    "config-cache-identity",
+    "quote-frontmatter",
+    "nbsp-breaks"
+  ],
+  "workarounds": [
+    {
+      "followup": "EF-20",
+      "package": "postext-pdf",
+      "note": "renderToPdf asks for ten faces, four of which no text uses (the italic of Big Shoulders Display; the italic, SemiBold and SemiBold italic of Spline Sans Mono): the provider answers each with the nearest brand file of the same family"
+    },
+    {
+      "followup": "EF-121",
+      "package": "postext-pdf",
+      "note": "not routed around: the PDF holds ten font programs for the six files, because renderToPdf writes one per requested face; the four stand-ins (one more Big Shoulders Display ExtraBold, three more Spline Sans Mono Regular) are unused copies of 215 to 255 bytes, and the write-up says so"
+    },
+    {
+      "followup": "EF-71",
+      "package": "postext",
+      "note": "col() writes the hex beside each paletteId, because 1.4.1 paints the band, the openers and the cover from the hex; bodyText.referenceColor restates ink, since references skip the palette and would print the default blue"
+    },
+    {
+      "followup": "EF-56",
+      "package": "postext",
+      "note": "every design text gives lineHeight as a multiple (1, 1.36, 0.86), never a Dimension"
+    },
+    {
+      "followup": "EF-11",
+      "package": "postext",
+      "note": "every frontmatter value is quoted: the band prints {title} · {subtitle}, and the PDF takes its title and author from them"
+    },
+    {
+      "followup": "EF-66",
+      "package": "postext",
+      "note": "'line 3' is glued with U+00A0 in a plain paragraph; the map paragraph, which holds :ref runs, was reworded instead, since U+00A0 still breaks in rich paragraphs"
+    },
+    {
+      "followup": "EF-149",
+      "package": "postext",
+      "note": "the Do and Don't types keep numberingTemplate '{n}', so the captions read 'Do 1.' and 'Don't 1.': with an empty template 1.4.1 prints 'Do .' before the caption text and 'Do' plus a no-break space for a :ref"
+    }
+  ],
+  "related": ["pdf-with-embedded-fonts", "fonts-before-layout", "parts-in-colour", "technical-datasheet"],
+  "engine": { "postext": "1.4.1", "postextPdf": "1.4.1" },
+  "kit": ["core", "fonts", "viewer", "pdf", "images"],
+  "sample": { "locales": ["en"] },
+  "capture": {
+    "hero": [2, 3],
+    "card": "spread",
+    "pages": "all",
+    "expect": { "pages": [4, 4], "nearEmptyPages": [1] }
+  },
+  "downloads": { "pdf": true },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "The Metro de Alba identity manual, a fictional network",
+          "es": "El manual de identidad del Metro de Alba, una red ficticia"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "The network drawing on the cover and the two map examples, drawn in code",
+          "es": "El dibujo de la red en la cubierta y los dos ejemplos de plano, dibujados en código"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "fonts": [
+      { "family": "Public Sans", "license": "OFL-1.1" },
+      { "family": "Big Shoulders Display", "license": "OFL-1.1" },
+      { "family": "Spline Sans Mono", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-25",
+  "updated": "2026-09-26"
+}

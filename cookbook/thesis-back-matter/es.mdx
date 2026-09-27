@@ -1,0 +1,67 @@
+---
+title: "Final de tesis: apéndice, glosario e índice"
+summary: "El final de una tesis en blanco y negro: apéndice con letra, glosario a dos columnas, bibliografía APA e índice cuyos números de página calcula el pen."
+description: "Estilos de título para el final de una tesis en Postext: apéndice A, glosario a dos columnas, bibliografía con sangría francesa e índice sacado de las páginas."
+question: "¿Cómo compongo el glosario, la bibliografía y el índice de una tesis, con sangría francesa y cuerpo menor?"
+aliases: ["tesis", "tesis doctoral", "trabajo de fin de máster", "apéndice", "anexo", "apéndice con letra", "glosario", "bibliografía", "referencias", "normas APA", "índice alfabético", "índice analítico", "índice de materias", "sangría francesa", "blanco y negro"]
+pageNotes: { "1": "La página 171 abre el capítulo 6, Conclusion, bajo una banda negra de 62 mm: el título y un numeral de 118 pt en blanco, con el antetítulo CHAPTER encima. La tabla 6.1 queda al pie, entre filetes horizontales.", "3": "La página 173, Appendix A, Interview guide: la banda lleva la letra A donde el capítulo llevaba su numeral. Debajo, siete preguntas numeradas con dos repreguntas y la tabla A.1.", "4": "La página 174, el glosario: en la banda, el antetítulo BACK MATTER y una nota en cursiva; debajo, dos columnas en bandera de términos en negrita con sangría francesa de 1 em.", "5": "La página 175, la bibliografía: una columna de diecisiete referencias APA en cuerpo 9,3, cada una con sangría francesa de 1,5 em.", "6": "La página 176, el índice alfabético: letras en la fuente de titulares sobre dos columnas de entradas y subentradas sangradas. Algunos números van en negrita (el glosario) o en cursiva (las tablas).", "7": "La página 177: el índice termina en dos columnas casi iguales bajo la cabecera INDEX, y lo sigue el colofón." }
+---
+
+## Lo que vas a componer
+
+Las siete últimas páginas de una tesis doctoral sobre la lectura en pantalla y en papel, en formato B5 y en blanco y negro. El capítulo 6, el apéndice A, el glosario, la bibliografía y el índice alfabético abren bajo la misma banda negra de 62 mm, con el título calado en blanco. El capítulo lleva su numeral en la banda; el apéndice, su letra; y las secciones finales, el antetítulo BACK MATTER y una nota breve en cursiva. El capítulo va a una columna justificada. El glosario y el índice pasan a dos columnas en bandera y la bibliografía vuelve a una, con las líneas de continuación de cada entrada sangradas. El pen lee los números de página del índice en las páginas compuestas y agrupa los seguidos en tramos como 171–73. Los números en cursiva remiten a una tabla, y los de negrita, al glosario.
+
+## Elaboración
+
+### 1 · Un estilo de título para cada parte del final
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `# Glossary {style="glossary" note="…"}` abre una sección que llega hasta el siguiente título de nivel 1, y sus páginas toman la disposición, las cabeceras y la apertura del estilo ([estilos de encabezado](/es/docs/configuration#estilos-de-encabezado)), de modo que el glosario y el índice pasan a dos columnas y la bibliografía, cuyo estilo no fija disposición, vuelve a la columna única del documento. `numbered: false` deja estos títulos fuera de la cuenta de capítulos (sin él, en la banda del glosario saldría un 8), y cada estilo declara su salto de página, porque el que no lo declara hereda el `'odd'` del capítulo y deja páginas pares en blanco. Las entradas del glosario y de la bibliografía son párrafos de un bloque `:::paragraphs{style="…"}` en cuerpo 9,3 sobre 12,4 pt, frente al 11 sobre 14,6 del texto, con las líneas de continuación sangradas 1 em en el glosario y 1,5 em en la bibliografía ([estilos de párrafo](/es/docs/configuration#estilos-de-párrafo)).
+
+### 2 · Una sola banda para todas las aperturas
+
+<Excerpt region="opener" />
+
+La marca es `{number}`, que queda vacío en un título sin numerar, así que el mismo diseño sirve para el capítulo, para el apéndice, que pasa `{attr.letter}` como marca, y para las secciones finales, que imprimen su `{attr.note}` donde iría el numeral. `minHeight` reserva ocho líneas de 14,6 pt, 41,2 mm desde la cabeza de la mancha, que dejan 3,2 mm libres bajo la banda y mantienen el texto en su rejilla. En los textos de diseño, la línea base cae a 0,8 de la altura de línea, de modo que una caja alineada abajo cuyo pie queda a `below()` de una línea base asienta en ella su última línea. Así, el título, el numeral de 118 pt y la última línea de la nota se apoyan en la línea base del título, a 52,5 mm del corte. La línea del numeral mide 0,72 veces su cuerpo porque en la 1.4.1 una línea más alta que su caja ignora `verticalAlign: 'bottom'`.
+
+### 3 · La letra del apéndice se pone a mano
+
+<Excerpt region="appendix" />
+
+En postext 1.4.1 un estilo de título no puede cambiar la numeración de su nivel, así que el apéndice va sin numerar y su letra se escribe como atributo: `# Interview guide {style="appendix" letter="A"}`. La banda y la cabecera del apéndice la toman de ahí, y un tipo de recurso propio numera sus tablas A.1, A.2, etc.; con el tipo por defecto, la tabla sería la 6.2, porque un título sin numerar deja el contador de capítulos en 6. Los títulos del capítulo se numeran con las plantillas de cada nivel: `'{1}.{2}'` imprime 6.1, y `continuation.headings.h1: 5` hace de este el sexto capítulo.
+
+### 4 · Las cabeceras, hacia el margen exterior
+
+<Excerpt region="running-heads" />
+
+Los cuatro textos se anclan a la página y se filtran por `parity`, lo que mantiene el folio en el borde exterior de las dos páginas; cada uno se coloca por su borde superior, a `above()` por encima de una línea base situada a 17,5 mm del corte, así que el folio de 9,5 pt y las mayúsculas de 7,5 pt quedan en la misma línea. La par lleva el título de la tesis (`{title}`, del frontmatter) y la impar el de la sección (`{chapterTitle}`), como INDEX en la <PageRef page={7}>página 177</PageRef>. `pages: 'body'` las deja fuera de las aperturas, donde el folio pasa al pie. La impar del capítulo diría *Chapter 6. Conclusion* y la del apéndice *Appendix A. Interview guide*, pero en esta muestra solo el índice sigue en una página impar después de su apertura.
+
+### 5 · Los números del índice salen de las páginas
+
+<Excerpt region="index" />
+
+Postext no genera índices alfabéticos, pero el documento compuesto guarda cada línea con su texto y su página. El pen compone una vez con las entradas sin números, une las líneas en una sola cadena (del glosario, solo los términos en negrita; nada de la bibliografía ni del índice), busca en ella el patrón de cada entrada y vuelve a componer con los números escritos; el índice es la última sección y abre página, así que nada de lo que va antes se mueve entre las dos composiciones. Las celdas de tabla, leídas de `page.floats`, dan números en cursiva, y el glosario, en negrita, como avisa la nota del índice. Una línea que acaba en guion se une a la siguiente sin él, y cada guion de un patrón es opcional, porque una línea justificada que corta *meta-analyses* por su propio guion se marca como partida, igual que la que corta *expository* tras *expos-*.
+
+### 6 · Todos los valores por defecto, en negro
+
+<Excerpt region="palette" />
+
+La negrita, la cursiva y las viñetas y números de las listas siguen por defecto la entrada `main-color` de la paleta, así que, si le das el color de la tinta, salen en negro y no en azul ([paleta de colores](/es/docs/configuration#paleta-de-colores)). En la 1.4.1 la paleta no llega a `bodyText.referenceColor`, y por eso la configuración lo repite: sin esa línea, *Table 6.1* sale en el texto en azul #295AA3. `referenceBold: false` pone la referencia en redonda, como las citas autor-año que la rodean.
+
+<Note>Tres cosas siguen haciéndose a mano: una lista de tablas, las remisiones a una página del texto (*véase p. 172*) y, en la 1.4.1, un contador con letras para los apéndices. El pen busca los términos del índice en las páginas 171 a 174, todo lo que precede a la bibliografía; en una tesis entera compuesta como un solo documento, los buscaría desde la primera página.</Note>
+
+## Variantes
+
+### Abre cada sección en página impar
+
+Las tesis que se encuadernan para una biblioteca suelen abrir cada sección en página impar. El glosario, la bibliografía y el índice pasan entonces a las páginas 175, 177 y 179, cada una tras una par en blanco, y los números en negrita del índice apuntan a la 175.
+
+```diff
+-const backMatter = (id, extra) => ({ id, numbered: false, breakBefore: { enabled: true,
+-  parity: 'any' }, advancedDesign: opener('Back matter'), header: sectionHeads, ...extra });
++const backMatter = (id, extra) => ({ id, numbered: false, breakBefore: { enabled: true,
++  parity: 'odd' }, advancedDesign: opener('Back matter'), header: sectionHeads, ...extra });
+```
+
+### Compón también el principio de la tesis
+
+Los preliminares, numerados en romanos antes de la página 1, están en <RecipeLink slug="front-matter-roman-to-arabic">Preliminares con folios romanos y luego la página 1</RecipeLink>.

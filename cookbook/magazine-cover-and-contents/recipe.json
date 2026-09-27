@@ -1,0 +1,159 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 23,
+  "status": "published",
+  "chapter": "publications",
+  "order": 10,
+  "level": 3,
+  "genres": ["magazine"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["design-anchoring", "toc", "part-palettes"],
+    "also": [
+      "section-running-heads",
+      "opener-design",
+      "heading-styles",
+      "unnumbered-headings",
+      "design-images",
+      "design-elements",
+      "heading-attributes",
+      "color-palette",
+      "opener-band",
+      "float-placement",
+      "floated-callouts",
+      "callout-styles",
+      "paragraph-styles",
+      "resource-types",
+      "resources",
+      "canvas-rendering"
+    ]
+  },
+  "answers": ["Q35", "Q37", "Q38", "Q29"],
+  "gotchas": [
+    "toc-part-rows-no-label",
+    "palette-skips-designs",
+    "opener-image-no-reserve",
+    "headings-drop-h1-break",
+    "top-float-next-page",
+    "bitmap-print-size",
+    "design-lineheight-multiple",
+    "runt-tracking-unpainted",
+    "hyphenation-locales",
+    "fonts-first"
+  ],
+  "explainsWarnings": [],
+  "related": ["magazine-feature-opener", "riso-zine-single-ink", "newspaper-front-page", "parts-in-colour"],
+  "workarounds": [
+    {
+      "followup": "EF-10",
+      "package": "postext",
+      "note": "the contents' part rows carry no {pageNumber}: with parts.page false there is no divider page, so a part has no page label to print (gotcha toc-part-rows-no-label)"
+    },
+    {
+      "followup": "EF-71",
+      "package": "postext",
+      "note": "col() writes each colour's hex beside its paletteId, because 1.4.1 does not apply colorPalette to design elements (gotcha palette-skips-designs); a part's palette still recolours them through the paletteId"
+    },
+    {
+      "followup": "EF-90",
+      "package": "postext",
+      "note": "a story opener's picture reserves no height (gotcha opener-image-no-reserve): the band panel and the byline reach below the picture's foot, so they set where the story starts, with no minHeight"
+    },
+    {
+      "followup": "EF-05",
+      "package": "postext",
+      "note": "the H1 breakBefore is restated because any headings object drops it (gotcha headings-drop-h1-break)"
+    },
+    {
+      "followup": "EF-56",
+      "package": "postext",
+      "note": "design text lineHeight is a multiple of the size (0.86, 1, 1.02, 1.05, 1.12, 1.35): a pt() value silently drops an opener's reserved height in 1.4.1 (gotcha design-lineheight-multiple)"
+    },
+    {
+      "followup": "EF-14",
+      "package": "postext",
+      "note": "exact hyphenation codes 'en-us' and 'es' (gotcha hyphenation-locales)"
+    },
+    {
+      "followup": "EF-64",
+      "package": "postext",
+      "note": "the stacked text boxes of the cover lines, the price box and barcode, and the opener panel overlap by SEAM (0.3 mm): on the canvas two design box fills (box.backgroundColor) that meet at a fractional pixel leave a hairline of the picture between them, the same seam EF-64 records for adjacent table-cell fills, whose proposed fix covers only table cells (with SEAM 0 the seams show on pages 1, 3, 4 and 6)"
+    },
+    {
+      "followup": "EF-111",
+      "package": "postext",
+      "note": "bodyText.maxRuntTracking is 0 (gotcha runt-tracking-unpainted): in 1.4.1 a runt fix can give a paragraph negative tracking (a block letterSpacing), which the layout measures but the canvas and postext-pdf renderers paint only above 0; its justified lines then crush their word spaces (painted segment by segment, overlapping by under 1 px), and an unstyled ragged last line, painted with one fillText, runs about 1.9 mm past the column edge and is clipped (the Spanish feature once printed 'como todo el mund', its 'o.' cut); word spacing alone still shortens runts, and the remaining runts were copy-fitted"
+    }
+  ],
+  "engine": { "postext": "1.4.1" },
+  "kit": ["core", "fonts", "viewer", "images"],
+  "sample": {
+    "locales": ["en", "es"]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "crop",
+    "focus": { "page": 1, "x": 0, "y": 0, "w": 1, "h": 0.575},
+    "expect": {
+      "pages": [6, 6],
+      "nearEmptyPages": [1]
+    }
+  },
+  "credits": {
+    "authors": [
+      { "name": "Ignacio Ferro", "github": "drnachio" }
+    ],
+    "text": [],
+    "images": [
+      {
+        "what": {
+          "en": "Castellina in Chianti (the cover and its copy in the contents)",
+          "es": "Castellina in Chianti (la portada y su copia en el sumario)"
+        },
+        "who": "Rowan Heuvel",
+        "source": "https://commons.wikimedia.org/wiki/File:Castellina_In_Chianti_(Unsplash).jpg",
+        "license": "CC0-1.0",
+        "file": "castellina-cover-1150.jpg"
+      },
+      {
+        "what": {
+          "en": "Castellina in Chianti, a detail (the feature's photograph)",
+          "es": "Castellina in Chianti, un detalle (la foto del reportaje)"
+        },
+        "who": "Rowan Heuvel",
+        "source": "https://commons.wikimedia.org/wiki/File:Castellina_In_Chianti_(Unsplash).jpg",
+        "license": "CC0-1.0",
+        "file": "castellina-farm-1530.jpg"
+      },
+      {
+        "what": {
+          "en": "Plants in beakers (the Field notes opener)",
+          "es": "Plantas en matraces (la apertura del Cuaderno de campo)"
+        },
+        "who": "chuttersnap",
+        "source": "https://commons.wikimedia.org/wiki/File:Plants_in_beakers_(Unsplash).jpg",
+        "license": "CC0-1.0",
+        "file": "flasks-1920.jpg"
+      },
+      {
+        "what": {
+          "en": "Harvesting the wheat crop (the Kitchen opener)",
+          "es": "Cosecha de trigo (la apertura de Cocina)"
+        },
+        "who": "meriç tuna",
+        "source": "https://commons.wikimedia.org/wiki/File:Harvesting_the_Wheat_Crop_(Unsplash).jpg",
+        "license": "CC0-1.0",
+        "file": "harvest-1840.jpg"
+      }
+    ],
+    "fonts": [
+      { "family": "Spectral", "license": "OFL-1.1" },
+      { "family": "Bodoni Moda", "license": "OFL-1.1" },
+      { "family": "Jost", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-25",
+  "updated": "2026-09-26"
+}

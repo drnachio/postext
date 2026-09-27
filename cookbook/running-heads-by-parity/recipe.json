@@ -1,0 +1,79 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 5,
+  "status": "published",
+  "chapter": "running-heads",
+  "order": 10,
+  "level": 2,
+  "genres": ["novel"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["running-heads", "page-role-filters"],
+    "also": [
+      "design-anchoring", "design-elements", "opener-design", "heading-attributes",
+      "title-line-breaks", "chapter-breaks", "mirrored-margins", "page-size", "page-background",
+      "frontmatter", "emphasis-colours", "color-palette", "callout-styles", "paragraph-styles",
+      "widows-orphans-runts", "canvas-rendering", "multi-chapter-books"
+    ]
+  },
+  "answers": ["Q30", "Q31", "Q25"],
+  "gaps": ["markdown-extras"],
+  "gotchas": [
+    "ellipsis-mid-word", "overflow-ellipsis-default", "negative-offsets", "palette-skips-designs",
+    "header-paints-over-text", "parity-page1-recto", "headings-drop-h1-break", "quote-frontmatter",
+    "fonts-first", "style-italic-colour", "hyphenation-locales"
+  ],
+  "explainsWarnings": ["headerFooterUnknownPlaceholder", "headerFooterMetadataMissing"],
+  "related": ["walking-guide-thumb-tabs", "book-from-chapters", "chapter-opener-bleed-band"],
+  "workarounds": [
+    { "followup": "EF-05", "package": "postext", "note": "the H1 breakBefore is restated because a headings object drops it" },
+    { "followup": "EF-11", "package": "postext", "note": "every frontmatter value is quoted (a bare number or date would print empty)" },
+    { "followup": "EF-76", "package": "postext", "note": "maxWidth (CAP) is fitted to essay IV's title in each edition so the ellipsis follows a whole word; ellipsis-end cuts between letters and keeps a trailing space ('false …'), so other titles would still be cut mid-word" },
+    { "followup": "EF-71", "package": "postext", "note": "every header, footer and opener colour carries its hex beside its paletteId, because design slots never read the palette; repointing main-color leaves the built-in head blue" },
+    { "followup": "EF-68", "package": "postext", "note": "the colophon names no title in italics: its muted paragraph style has no italicColor, so an italic run would print in bodyText.italicColor, the ink" },
+    { "followup": "EF-89", "package": "postext", "note": "runtMinCharacters: 16 lets essay IV end on 'our minds.': at the default 20 both 'our minds.' and 'minds.' fall under the threshold, and the flat runtPenalty cannot prefer the two-word ending, so Knuth–Plass keeps the tighter first line and leaves 'minds.' alone" },
+    { "followup": "EF-14", "package": "postext", "note": "locale is the exact bundled code ('en-us' | 'es'): a region-tagged code such as 'es-ES' silently hyphenates as American English (gotcha hyphenation-locales)" }
+  ],
+  "engine": { "postext": "1.4.1" },
+  "kit": ["core", "fonts", "viewer"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": {
+    "hero": [2, 3],
+    "card": "loupe",
+    "focus": { "page": 3, "x": 0.584, "y": 0.036, "w": 0.35, "h": 0.07 },
+    "pages": "all",
+    "expect": { "pages": [5, 5] }
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": { "en": "Essays, Book I, chapters IV and V, in Charles Cotton’s translation edited by William Carew Hazlitt (1877)", "es": "Ensayos, libro I, capítulos IV y V, en la traducción inglesa de Charles Cotton editada por William Carew Hazlitt (1877)" },
+        "who": "Michel de Montaigne; Charles Cotton; William Carew Hazlitt",
+        "source": "https://www.gutenberg.org/ebooks/3600",
+        "license": "PD"
+      },
+      {
+        "what": { "en": "Essais, livre I, chapitres IV et V: the 1595 French text in the Général Michaud edition (Firmin-Didot, 1907)", "es": "Essais, livre I, chapitres IV et V: el texto francés de 1595 en la edición del general Michaud (Firmin-Didot, 1907)" },
+        "who": "Michel de Montaigne",
+        "source": "https://www.gutenberg.org/ebooks/48529",
+        "license": "PD"
+      },
+      {
+        "what": { "en": "Spanish translation, with its verse glosses", "es": "Traducción al español, con sus glosas de los versos" },
+        "who": "Postext Cookbook",
+        "license": "original"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Baskervville", "license": "OFL-1.1" },
+      { "family": "Libre Caslon Display", "license": "OFL-1.1" },
+      { "family": "Alegreya SC", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "MIT" },
+  "created": "2026-09-25",
+  "updated": "2026-09-25"
+}

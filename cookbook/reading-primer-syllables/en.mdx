@@ -1,0 +1,65 @@
+---
+title: "Early reader with syllable chips"
+summary: "A Spanish primer unit for the letter M: syllables as chips in the colour of their vowel, and a grid of picture words with a drawing in each cell."
+description: "A reading-primer unit set with Postext: one chip style per vowel, words written as touching syllable chips, a rounded picture grid and tracing rows."
+question: "How do I set syllables as coloured inline chips, one colour per vowel, in an early-reading primer?"
+aliases: ["early reader", "phonics", "syllables", "reading primer", "children's workbook", "cartilla"]
+pageNotes: { "1": "A cream band with a giant Mm, a butterfly and an apple; below it the syllables ma, me, mi, mo, mu and am, em, im, om, um as chips coloured by vowel, then eight words split into syllable chips.", "2": "Six picture words, mano, mapa, mesa, mimosa, mono and muñeca, in a rounded grid of cream tiles, each drawing above its syllables; below it, tracing rows for m, M and the five syllables.", "3": "Four sentences at 24 pt with the new words in syllable chips, a cream box of outlined syllables to colour in, a note for the family and the colophon." }
+---
+
+## What you'll build
+
+Unit 7 of *Letra a letra*, an invented Spanish reading primer: three pages on the letter M. Spanish primers teach reading syllable by syllable, so the sample is in Spanish only. The opener sets a 190 pt DynaPuff Mm on a cream band beside two things whose Spanish names start with m, a butterfly (*mariposa*) and an apple (*manzana*). The unit's syllables are chips in the colour of their vowel: red a, orange e, teal i, blue o, purple u. Syllables with an m are filled and the rest are outlined, so a child sees which half of *mesa* belongs to this unit. Page 38 sets six picture words in a rounded grid, a drawing in each cell, then three rows of letters to trace. Page 39 has four sentences at 24 pt, a box of syllables to colour in and a note for the family.
+
+## Method
+
+### 1 · A chip style per vowel and a function that writes the chips
+
+[The short answer](#the-short-answer) builds 21 chip styles by spreading one `syllable` object. There is a filled style per vowel for syllables with an m, an outlined one per vowel for the rest, a `-frase` twin of each of those ten, and `pinta`, the ink outline a child colours in. `syllables()` turns `{mi·mo·sa}` into three `:chip[…]` with nothing between them, so the syllables of a word touch and the white border draws the seam. Across a word space a chip keeps at least its `gap`, and 0.5 em sets the words of a 24 pt row 4.2 mm apart, where the space alone leaves 2.3 mm. Inside a sentence that gap would nearly double the space before the new word, so a word that follows another word gets the `-frase` twins, whose `gap` of 0 leaves the 2.3 mm space as it is.
+
+### 2 · Leading that clears the chips
+
+<Excerpt region="reading" />
+
+A chip's vertical padding and border paint outside its line and add no leading, so a chip taller than the line pitch runs into the chips of the line below. A 24 pt syllable chip is 10.4 mm tall; at 30 pt leading (10.6 mm), the chips of two sentences would stand 0.1 mm apart. The lines a child reads get 45 pt and the rows of syllables 60 pt, three and four lines of the instructions' 15 pt grid.
+
+### 3 · A drawing in every cell
+
+<Excerpt region="pictures" />
+
+`setCellImage` sets a drawing above a cell's text at a fraction of the cell's inner width, 0.72 here (36.5 mm), and the row grows to hold it. Under each drawing is the word in syllable chips. A table cell takes chip markup like any paragraph. The `dibujos` table style rounds the frame and its fills at 5 mm and parts the cream tiles with 4 pt white rules.
+
+### 4 · One line of space before the box
+
+<Excerpt region="boxes" />
+
+The Markdown puts `:::space{lines=1}` between the last sentence and the colouring box, one 15 pt line (5.3 mm). The box's `marginTop` is 0, so that line is the whole gap; without it the box would start where the last sentence's line ends. A `:::space` that opens a box is dropped, so the box starts with its prompt line and the chips of the colour key, and its own `:::space` comes after them, between the key and the colouring task.
+
+### 5 · The letter's opener
+
+<Excerpt region="opener" />
+
+The Mm is the heading's text (`{titleText}`); the unit number, the series and the letter's name are attributes on the same heading line. The band, the butterfly and the apple are images, and an opener reserves no height for images. Without `minHeight` the opener ends at the foot of the word *manzana*, 88.7 mm from the top of the page, and the first activity title starts at 99.3 mm, 2.6 mm above the lowest point of the wave (101.9 mm). A `minHeight` of 16 grid lines ends the opener at 102.7 mm, and the title's two grid lines of `marginTop` start it at 113.3 mm, on the grid and 11.4 mm below the wave.
+
+### 6 · Icons beside the activity titles
+
+<Excerpt region="activities" />
+
+Each activity title names its heading style, as in `## Lee las frases {style="lee"}`, and the style draws an icon with the title centred beside it. The titles are still level-2 headings, so the `H2` level spaces them: two grid lines of `lineHeight` for the title and two more of `marginTop` above it.
+
+## Variations
+
+### Round the syllables into pills
+
+A radius over half the chip's height is clamped to that half, so a large value draws round ends. A one-letter syllable comes out nearly a circle, and the seams inside a word become notches.
+
+```diff
+-  paddingX: em(0.26), paddingY: em(0.05), gap: em(0.5) };
++  paddingX: em(0.26), paddingY: em(0.05), gap: em(0.5), borderRadius: em(1) };
+```
+
+## Pitfalls
+
+Give `minHeight` whole grid lines. At 85 mm, 0.33 mm past the 16th line, the first title started 0.33 mm off the grid. Its heading block then ran on to the next grid line, 15.5 mm tall instead of 10.6, and everything under it on page 37 moved down 5.3 mm.
+
+With column balancing on, a `minHeight` of 16 lines left the activities of page 37 where 17 lines put them: the page had one grid line to spare, and balancing put it above the first activity title. The config turns balancing off (`headings.balancing`), so the spare line stays at the foot of the page.

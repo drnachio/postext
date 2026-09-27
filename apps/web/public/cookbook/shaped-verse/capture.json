@@ -1,0 +1,451 @@
+{
+  "schemaVersion": 1,
+  "slug": "shaped-verse",
+  "sourceHash": "230b989fc659820e32963b9a613077cdce4d13116f9b615ef7e6196c508b04cc",
+  "engine": {
+    "postext": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-26T22:15:41.688Z",
+  "variants": {
+    "en": {
+      "hash8": "d18f3c85",
+      "vdtHash": "03c8d302a3fd45bf9da749671dfe2cc5d949b21b",
+      "timings": {
+        "importMs": 326,
+        "fontsMs": 861,
+        "buildMs": 4,
+        "totalMs": 1819,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          148,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "IM Fell English",
+          "sizePt": 12.4,
+          "leadingPt": 17
+        },
+        "families": [
+          "IM Fell English",
+          "IM Fell English SC",
+          "IM Fell Great Primer"
+        ],
+        "pages": 4,
+        "ownLines": 102
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 27264,
+          "alt": "Opening page 1: THE TEMPLE."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 51566,
+          "alt": "Opening page 2: THE ALTAR."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 58300,
+          "alt": "Opening page 3: EASTER WINGS."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 63266,
+          "alt": "Page 4: Herbert’s motto."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].textTransform",
+          "headings.textAlign",
+          "layout",
+          "layout.layoutType",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "page"
+        ],
+        "configLeaves": 55,
+        "designElements": 0,
+        "directives": [
+          ":::space",
+          ":::pagebreak"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "IM Fell English SC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IM Fell English",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "IM Fell English",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IM Fell Great Primer",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "page-background",
+          "page-breaks",
+          "vertical-space"
+        ],
+        "suggestedLevel": 1
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "d74e5f10",
+      "vdtHash": "b5b6a2332c81ef2ef2eca86e17be2dc40d33003a",
+      "timings": {
+        "importMs": 134,
+        "fontsMs": 29,
+        "buildMs": 4,
+        "totalMs": 819,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          148,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "IM Fell English",
+          "sizePt": 12.4,
+          "leadingPt": 17
+        },
+        "families": [
+          "IM Fell English",
+          "IM Fell English SC",
+          "IM Fell Great Primer"
+        ],
+        "pages": 4,
+        "ownLines": 102
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 27898,
+          "alt": "Página de apertura 1: EL TEMPLO."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 48760,
+          "alt": "Página de apertura 2: EL ALTAR."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 56332,
+          "alt": "Página de apertura 3: ALAS DE PASCUA."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 72544,
+          "alt": "Página 4: El lema de Herbert."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].textTransform",
+          "headings.textAlign",
+          "layout",
+          "layout.layoutType",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "page"
+        ],
+        "configLeaves": 55,
+        "designElements": 0,
+        "directives": [
+          ":::space",
+          ":::pagebreak"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "IM Fell English SC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IM Fell English",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "IM Fell English",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IM Fell Great Primer",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "page-background",
+          "page-breaks",
+          "vertical-space"
+        ],
+        "suggestedLevel": 1
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
+      }
+    }
+  }
+}

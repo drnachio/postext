@@ -39,6 +39,7 @@ export async function Footer() {
               <Kicker className="text-gold">{t("product")}</Kicker>
               <ul className="mt-5 space-y-3">
                 <li><Link href="/docs" className={LINK}>{t("docs")}</Link></li>
+                <li><Link href="/cookbook" className={LINK}>{t("cookbook")}</Link></li>
                 <li><Link href="/sandbox" className={LINK}>{t("sandbox")}</Link></li>
               </ul>
             </div>
@@ -69,7 +70,7 @@ export async function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col gap-3 border-t border-white/10 pt-6 font-sans text-xs text-mist/60 md:flex-row md:items-center md:justify-between 2xl:text-sm">
-          <p>{t("copyright", { year: new Date().getFullYear() })}</p>
+          <p>{t("copyright")}</p>
           <p className="font-body italic">{t("colophon")}</p>
         </div>
       </div>

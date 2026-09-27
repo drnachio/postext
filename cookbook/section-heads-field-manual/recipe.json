@@ -1,0 +1,195 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 18,
+  "status": "published",
+  "chapter": "headings",
+  "order": 40,
+  "level": 2,
+  "genres": [
+    "manual"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "heading-numbering",
+      "design-elements",
+      "design-anchoring"
+    ],
+    "also": [
+      "heading-typography",
+      "heading-styles",
+      "unnumbered-headings",
+      "opener-design",
+      "design-images",
+      "heading-attributes",
+      "paragraph-styles",
+      "emphasis-colours",
+      "bullet-lists",
+      "numbered-lists",
+      "baseline-grid",
+      "widows-orphans-runts",
+      "running-heads",
+      "page-role-filters",
+      "mirrored-margins",
+      "color-palette",
+      "resources"
+    ]
+  },
+  "answers": [
+    "Q32",
+    "Q33",
+    "Q34",
+    "Q53"
+  ],
+  "gaps": [
+    "heading-level-7"
+  ],
+  "gotchas": [
+    "headings-drop-h1-break",
+    "heading-marks-dropped",
+    "overflow-ellipsis-default",
+    "palette-skips-designs",
+    "opener-image-no-reserve",
+    "top-float-next-page",
+    "svg-no-webfonts",
+    "numbering-vocabularies",
+    "sandbox-only-warnings",
+    "nbsp-breaks",
+    "quote-frontmatter",
+    "hyphenation-locales",
+    "fonts-first",
+    "runt-tracking-unpainted"
+  ],
+  "explainsWarnings": [
+    "headingHierarchy"
+  ],
+  "related": [
+    "side-heads-hanging-numbers",
+    "journal-article-with-maths",
+    "chapter-opener-bleed-band",
+    "baseline-grid-book-page"
+  ],
+  "workarounds": [
+    {
+      "followup": "EF-05",
+      "package": "postext",
+      "note": "the H1 breakBefore is restated (parity 'odd') because a headings object drops it"
+    },
+    {
+      "followup": "EF-83",
+      "package": "postext",
+      "note": "headings have no letterSpacing, so the tracked capitals of level 3 are drawn by an advanced design (design text takes letterSpacing)"
+    },
+    {
+      "followup": "EF-90",
+      "package": "postext",
+      "note": "the profile is an opener image, which reserves no height: minHeight reaches past the profile's foot, so the text starts on the first grid line 6 mm or more under it"
+    },
+    {
+      "followup": "EF-71",
+      "package": "postext",
+      "note": "col() writes each colour's hex beside its paletteId, because design slots (the pills, the rules, the running heads) never read the palette"
+    },
+    {
+      "followup": "EF-12",
+      "package": "postext",
+      "note": "level 1 keeps the default numberFormat 'arabic' and levels 2 and 3 name 'lower-alpha' and 'lower-roman'; the CSS word 'decimal' would print 'undefined'"
+    },
+    {
+      "followup": "EF-66",
+      "package": "postext",
+      "note": "a no-break space is not trusted to hold a number to its unit (it breaks in paragraphs with inline formatting; a plain justified paragraph kept it in every re-test), so sentences are reworded until '5 per cent', '30 cm' and '15 to 20 cm' each stay on one line (and on one page) in each edition"
+    },
+    {
+      "followup": "EF-14",
+      "package": "postext",
+      "note": "locale is the exact bundled code ('en-us' | 'es'); a region-tagged code would hyphenate as American English"
+    },
+    {
+      "followup": "EF-11",
+      "package": "postext",
+      "note": "every frontmatter value is quoted (a bare value can print empty in {title})"
+    },
+    {
+      "followup": "EF-110",
+      "package": "postext",
+      "note": "keepColonWithList strands a lead-in line ending in ':' when the list's first item runs to two lines and only one line is left (the item cannot split, but the rule checks for one line): 1.2's first item is kept to one line in each edition so its colon line and list stay together"
+    },
+    {
+      "followup": "EF-111",
+      "package": "postext",
+      "note": "bodyText.maxRuntTracking is 0 (gotcha runt-tracking-unpainted): in 1.4.1 a runt fix can set a paragraph one line shorter with negative tracking (a block letterSpacing of up to -10 per mille), which the layout measures but the canvas renderer never paints, so its justified word spaces print crushed (round 1 had three such paragraphs, among them 1.3 on the hero, at about 4 px of ink per gap beside 7-8 px lines); every paragraph of both editions is also copy-fitted to the 0.85-1.4 spacing band, so no runt fix fires at all (tightenRunts: false gives the same layout)"
+    },
+    {
+      "followup": "EF-122",
+      "package": "postext",
+      "note": "a heading drops its inline marks, so the seventh level is the heading style level7 (italic, lighter, grey) on a level-6 heading instead of *marks* in the title (gotcha heading-marks-dropped)"
+    }
+  ],
+  "engine": {
+    "postext": "1.4.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "crop",
+    "focus": {
+      "page": 1,
+      "x": 0,
+      "y": 0.035,
+      "w": 1,
+      "h": 0.56
+    },
+    "pages": "all",
+    "expect": {
+      "pages": [
+        3,
+        3
+      ]
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [],
+    "fonts": [
+      {
+        "family": "IBM Plex Serif",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "IBM Plex Sans Condensed",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "IBM Plex Mono",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-09-25",
+  "updated": "2026-09-25"
+}

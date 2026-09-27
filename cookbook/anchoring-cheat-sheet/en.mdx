@@ -1,0 +1,70 @@
+---
+title: "Anchoring cheat sheet: a poster built from chained elements"
+summary: "An A3 lecture poster whose elements hang from the bleed, the page, their slot or one another, and a second sheet that frames each element and tags thirteen."
+description: "A lecture poster set in Postext without coordinates: a sky pinned to the bleed, a Sun to the page, the rest chained, and a sheet of construction lines."
+question: "How do I place design elements against the page, the bleed or each other instead of by coordinates?"
+aliases: ["anchoring", "anchor", "element placement", "design slot", "poster", "construction lines", "no coordinates", "below", "above", "right-of", "align-bottom", "container frame", "footer container", "bleed band", "eclipse poster"]
+pageNotes: { "1": "An A3 poster for four lectures before the total solar eclipse of 2 August 2027. An ultramarine sky fills the top two thirds, with a black Moon covering a lemon Sun cut by the right edge and a white corona round it; the title The Shadow Returns sits in white at the foot of the sky, between a yellow kicker and a three-line standfirst. Below, four blue dates head four columns of talks and speakers, two columns of fine print follow, and a blue band with the club’s mark runs along the foot of the sheet.", "2": "The same poster with each element’s box framed in pink and thirteen pink tags that print an element’s id, edge, anchor and any offset, among them #deck · align-bottom #sky · x +18 y −14 and #day2 · right-of #day1 · x +7. Two more tags label the frames of the header and footer containers, which run along the top and bottom margins, and the text under the evenings explains how to read the sheet." }
+---
+
+## What you'll build
+
+A poster from a fictional astronomy club for four Thursday lectures before the total solar eclipse of 2 August 2027. An ultramarine sky fills the top two thirds of an A3 sheet. On the right a black Moon covers a lemon Sun cut off by the trim, and a corona drawn in code spreads behind both. The title, *The Shadow Returns* in 120 pt Funnel Display, stands on its standfirst at the foot of the sky. Under the horizon four blue dates head the talks, and the fine print runs in two columns above a blue band. Each element hangs from the bleed, the page, its slot or another element, and its offsets count from there. The second sheet repeats the poster with a pink frame round each element’s box and round the header and footer containers, and a tag on thirteen elements that prints each one’s placement.
+
+## Method
+
+### 1 · Pin two elements to the sheet and hang the rest from them
+
+The code is [the short answer](#the-short-answer) above. In it, `anchor.to` names what an element hangs from: `'bleed'` and `'page'` are frames of the sheet (the same box while `page.cutLines` is off), `'container'` is the slot’s own box and `'#id'` is another element ([element placement](/en/docs/configuration#element-placement)). A box with no width runs to the far edge of its frame, so the sky fills the bleed from side to side. An element placed against the sky measures from the sky’s left edge, which is the bleed’s, so the standfirst takes `INSET`, 18 mm, as its `x`. The headline is built upwards from the sky’s lower edge. `'align-bottom'` puts the foot of the standfirst’s box `AIR`, 14 mm, above that edge, and `'above'` sets each element’s foot on the top of the one below it, so a title that runs to more lines lifts the kicker instead of covering the standfirst. Under the design, the fine print starts on the first 16 pt grid line at least 3.2 mm below the lowest element, the speakers’ line; those 3.2 mm are the heading’s default bottom margin.
+
+### 2 · Hang the Moon and the corona from the Sun
+
+<Excerpt region="eclipse" />
+
+The Sun is the one element pinned to the page, the trim box. Measured from the `'top-right'` corner, a positive `x` runs past the right edge, so 30 mm of the disc is cut off. The Moon and the corona hang from the Sun with `'align-top'`, so moving the Sun moves both. Their offsets count from the Sun’s top-left corner: the Moon sits 2 mm right and 2.5 mm down, which leaves a sliver of Sun at the upper left, and the corona starts `HALO`, 75 mm, up and to the left, which centres its 300 mm square on the 150 mm disc. The corona is an image element that takes the size of its box ([image elements](/en/docs/configuration#image-elements)) and comes before the discs in the list, so it is painted behind them.
+
+### 3 · Chain the evenings into columns
+
+<Excerpt region="programme" />
+
+Each date, talk and speaker line has a fixed `size.width` of `COL`, and `'right-of'` plus `GUT` lays the next date one column over. Without a width a date shrink-wraps to its digits (the ‘8’ is 17 mm wide), so the ‘15’ would start 7 mm after it and each talk would run on one line into the next column. `COL` splits the text width into four with the same 7 mm gutter as the two columns of fine print below, which puts the second column of fine print under the 22. Each talk hangs `'below'` its date and each speaker line below its talk, so a talk that wrapped to a third line would push down its own speaker and no other.
+
+### 4 · Put the band in the footer, on every page
+
+<Excerpt region="footer" />
+
+Anything that has to print on every page, such as this band, goes in the header or footer slot, and a heading style with a header or footer of its own replaces that slot on its section’s pages. The guides style’s footer repeats these four elements with their frames and tags, which is why the band and the mark print on both sheets. The footer’s container is the bottom margin, from the text down to the trim: `'bottom-left'` counts up from the trim and `'top-right'` down from the text, and the mark’s −10 and the “Free entry” line’s +10 land on the same 10 mm strip in the middle of the band ([headers and footers](/en/docs/configuration#headers--footers)). The footer is painted after the text and takes no room from it, so `FOOT` sets both the bottom margin and the band’s height, and the band stays clear of the lines above it.
+
+### 5 · Draw the construction lines from the same config
+
+<Excerpt region="guides" />
+
+`guides()` walks the poster’s elements. A text gets a border on its box and a square box a border on its style; neither moves anything, because only padding makes a box bigger. An image or a round disc gets a square box of its own size hung from its top-left corner, so the corner of the Sun that the Moon and the corona hang from is drawn too. Each tag is a text hung from its element, written by `describe()` from that element’s own `placement`, so a tag cannot disagree with the config it labels. `{style="guides"}` on the second heading brings in this design and a header and footer of its own ([heading styles](/en/docs/configuration#heading-styles)). A tag with no width only has the room between its anchor and the container’s right edge, which is why the `#free` tag starts 30 mm left of its text. `pageIndexOffset: 1`, in the content’s `continuation`, makes the poster a verso, so the viewer sets the two sheets side by side.
+
+## Variations
+
+### Add a 3 mm bleed and crop marks
+
+Three millimetres of `BLEED` switch on the cut lines and push the sky and the foot band 3 mm into the bleed they hang from, while `INSET` keeps the text on the margin; the Sun, the Moon and the corona hang from the page, and because 1.4.1 does not clip design elements to the bleed they run on across the white margin to the sheet’s edge.
+
+```diff
+-const BLEED = 0; // mm; 3 for the printer, which switches on page.cutLines below
++const BLEED = 3; // mm; 3 for the printer, which switches on page.cutLines below
+```
+
+### Raise the horizon
+
+Taking 20 mm off `SKY` lifts the sky’s edge, and with it the standfirst, the title, the kicker and the twelve texts of the programme, while the fine print starts on a higher grid line; the Sun hangs from the page, so the second change lifts it the same 20 mm, or the ‘w’ of *Shadow* would touch the crescent.
+
+```diff
+-const SKY = 272; // mm from the trim's top edge to the horizon, the sky's lower edge
++const SKY = 252; // mm from the trim's top edge to the horizon, the sky's lower edge
+-  disc('sun', 'sun', at('page', 'top-right', 30, 25)), // 30 mm of it past the right edge
++  disc('sun', 'sun', at('page', 'top-right', 30, 5)), // 30 mm of it past the right edge
+```
+
+## Pitfalls
+
+- In a pen, 1.4.1 reports neither a cyclic nor a dangling anchor. The Sandbox’s Checks panel lists them in the header, the footer, part pages and heading levels, but not in heading styles such as `guides`. An element pinned to an `#id` that does not exist is placed against the container: an element edge such as `'below'` falls back to the container’s top-left corner, offset included, and a container edge such as `'top-right'` to that corner. In a loop, one element falls back the same way and the others chain off it.
+- `'align-left'` and `'align-top'` land on the same point in 1.4.1: both put the element’s top-left corner on its anchor’s top-left corner.
+- A border is painted centred on the box’s edge, so each 1 pt pink frame reaches 0.5 pt outside the box it traces, although the configuration docs say strokes are painted inside.

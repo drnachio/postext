@@ -1,0 +1,3 @@
+# Invierno {months="Diciembre · enero · febrero" lead="Por debajo de catorce grados las abejas se juntan en una bola sobre los panales y viven de las reservas que guardaron en otoño."}
+
+La colonia pasa el frío apiñada en un racimo como el de la :ref{id="winter-frame" style="full" case="lower"}. Las abejas de fuera se aprietan, con la cabeza hacia dentro, para no dejar escapar el calor; las de dentro hacen temblar los músculos del vuelo para calentar el centro, y la bola entera sube despacio por los cuadros mientras come. No abras la colmena. Una vez al mes, levanta un poco la parte de atrás para sopesarla y limpia de abejas muertas la piquera.

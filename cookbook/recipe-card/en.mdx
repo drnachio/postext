@@ -1,0 +1,87 @@
+---
+title: "Recipe card: ingredients beside the method"
+summary: "Two cookbook pages with a white recipe card under a SERVES 4 tab: ingredients, tags and a checklist on the left, steps with 26 pt red numbers on the right."
+description: "Two cookbook pages in Postext: a recipe card with a servings tab, ingredients beside the method in two columns, big step numbers, tag chips and a checklist."
+question: "How do I set the ingredients beside the method, in two columns inside a box with a servings tab?"
+aliases: ["recipe card", "cookbook", "recipe", "ingredients", "method", "two columns in a box", "servings tab", "serves 4", "step numbers", "numbered steps", "tags", "headnote", "checklist", "mise en place", "pictograms"]
+pageNotes: { "1": "Tortilla de patatas: across the top, a drawing of a golden omelette with a slice pulled out, on a white plate with a white-dotted blue rim, a red-checked napkin and a saffron table, beside an olive sprig; a handwritten note, “onion, always!”, points at the omelette. The kicker, the two-line title and three white pills sit on the saffron. Under an italic headnote, a white card with a red SERVES 4 tab on its top-right corner holds, on the left, five ingredients with olive dashes, three tag chips and a checklist headed by line drawings of a bowl, a pan and a plate; on the right, five steps with big red figures. A one-line note under the card: Keep the oil.", "2": "Gazpacho andaluz on the facing page: a bowl of orange-red soup with diced vegetables, drops of oil and a spoon, on a blue-checked napkin and a sage table, two tomatoes at its foot and the note “serve it ice cold!”. The same card, tabbed SERVES 6, lists eight ingredients and five steps; a note on making it ahead and the colophon close the page, and the foot names the recipe beside the folio." }
+---
+
+## What you'll build
+
+Two facing pages from *Salt & Olive Oil*, an invented Spanish home cookbook, on a 190 × 250 mm trim, one recipe to a page. A drawing made in code bleeds across the top 104 mm: a tortilla with a slice pulled out on a saffron table, a bowl of gazpacho on a sage one. Over it sit a kicker, the title in 42 pt Young Serif, pills for time, difficulty and season, and a note in Caveat handwriting that points at the dish. Below the italic headnote, a white card carries a tomato-red servings tab on its top-right corner. The ingredients run down its left column with olive dashes and tag chips; under the tortilla's, line drawings of a bowl, a pan and a plate head a checklist. The method fills the right column, each step led by a 26 pt old-style figure.
+
+## Method
+
+### 1 · Give each column a box of its own
+
+With loose lists, a [columns group in a box](/en/docs/document-format#columns) cuts where its columns level best, between blocks or between the lines of one, so the gazpacho's first step splits across the gutter: its first line closes the ingredient column and the rest opens the method column. A nested box, as in [the short answer](#the-short-answer) above, is one block, and the group never cuts inside it. A picture set in one needs a `::resource` with placement `'here'`, since any other placement makes it a float, which leaves the box and is placed like any cited figure. The card style's `label` turns the fence's `label="SERVES 4"` into the tab: an `offset` equal to its `height` stands it on the card's top edge, and the `rule` runs from the far corner to the fork and knife ([callout styles](/en/docs/configuration#callout-styles)).
+
+### 2 · Centre the step numbers on two lines
+
+<Excerpt region="steps" />
+
+A list number is painted centred a little above the item's first baseline, so `numberFontSize` alone would set the 26 pt figures level with the first line; `numberVerticalOffset` lowers them 2.5 mm, to the middle of the band from the first line's capitals to the second line's baseline. Young Serif has old-style figures: 3, 4 and 5 descend below the baseline that 1 and 2 sit on. With `separatorColor` set, the separator is painted as a run of its own, and the default full stop prints olive beside a red figure ([ordered lists](/en/docs/configuration#ordered-lists)).
+
+### 3 · Head the checklist with a strip of drawings
+
+<Excerpt region="prep" />
+
+The `prep` box holds only its title and its icon, so it works as a header: an icon `width` 3.75 times its `size` stretches the icon's square into an 18.75 × 5 mm strip, and the three drawings fill it left of the title ([callout styles](/en/docs/configuration#callout-styles)). An icon takes a column of its own beside everything in its box, so the tasks go after the box, where they line up with the ingredients' dashes instead of starting 21 mm in. `- [ ]` items print the default task box, and `unorderedLists.marginTop: 0` lets them follow the header at its `marginBottom`, the 2.4 mm gap the column titles keep ([unordered lists](/en/docs/configuration#unordered-lists)).
+
+### 4 · Make the tags chips
+
+<Excerpt region="chips" />
+
+`:chip[Vegetarian]{style="tag"}` puts a word in a box that never breaks across lines. A `borderRadius` larger than half the box's height is clamped to that half, which turns both ends into semicircles; with `borderWidth: 0` the pill is drawn in the tint alone. The box is 11.4 pt tall, under the card's 12.8 pt leading, so a second line of tags would not touch the first ([chip styles](/en/docs/configuration#chip-styles)).
+
+### 5 · One design, one drawing per recipe
+
+<Excerpt region="opener" />
+
+`# Tortilla \\ de patatas {style="tortilla" kicker="…" lead="…"}` picks a heading style and fills its slots from the attributes, the italic headnote among them ([heading attributes](/en/docs/document-format#heading-attributes)). An image element names a fixed resource id, which is why `opener(art)` builds one style per drawing. Each pill is anchored `right-of` the one before it, the title `above` the first pill and the kicker above the title, so a longer title pushes the kicker up while the pills keep their line. The drawing reserves no height in 1.4.1, but the headnote under it does, so the card starts below the headnote without a `minHeight`. The note is anchored to the page, like the drawing, and ends 2 mm short of the drawn arrow on both pages, although the mirrored margins move the text block 2 mm to the right on the recto.
+
+### 6 · Register the drawings as resources
+
+<Excerpt region="pictures" />
+
+The opener's image element, the tab's icon and the checklist header's icon each name a resource, and the canvas paints the file `loadSvg` registered for it. No `:ref` cites these resources, so none becomes a numbered figure. An SVG drawn as an image cannot use the page's web fonts, so the drawings carry no words: the handwritten notes are design text set over them.
+
+## Variations
+
+### Count blocks instead of boxing the columns
+
+Without the column boxes, `breaks` names the child that opens the right column, and each list item, the tags line and the checklist's header count as one: the gazpacho needs `breaks="10"` (eight ingredients and the tags come first), the tortilla `breaks="11"`. The column titles and the column style's space between steps disappear with them.
+
+```diff
+ :::callout{type="card" label="SERVES 6"}
+-:::columns{count=2}
+-:::callout{type="column" title="Ingredients"}
++:::columns{count=2 breaks="10"}
+ - **1.5 kg** ripe plum tomatoes
+@@ seven more ingredients and a blank line @@
+ :chip[Vegan]{style="tag"} :chip[No-cook]{style="tag"} :chip[Make ahead]{style="tag"}
+-:::
+-:::callout{type="column" title="Method"}
++
+ 1. Chop the tomatoes, seeded pepper, peeled cucumber and garlic.
+@@ steps 2 to 5 @@
+ :::
+-:::
+ :::
+```
+
+### Stand the tab on the left corner
+
+`'top-left'` mirrors the label: the tab moves to the left corner, the fork and knife to its right, and the rule runs in from the right.
+
+```diff
+     background: col('tomato'), height: mm(TAB), offset: mm(TAB), paddingX: mm(2.6),
++    position: 'top-left', // 'top-right' by default
+```
+
+## Pitfalls
+
+- A label has no `textTransform` or `letterSpacing` in 1.4.1, so SERVES 4 and PARA 4 are typed in capitals in the fences.
+- The task box ☐ is in none of the three faces, so the browser draws it from a system font and its shape changes from one system to another.
+- Keep a wide icon in the box's own column: at `position: 'corner'`, 1.4.1 offsets it by half its height, not half its width, so the 18.75 mm strip runs 16 mm past the box's right edge.

@@ -2,7 +2,8 @@
  * Plain-Markdown renditions of the site's pages, for LLMs and agents
  * (`/<locale>/<page>.md`, `Accept: text/markdown`, `llms.txt`,
  * `llms-full.txt`). Everything is derived from the same sources the HTML
- * pages render — the MDX docs and the message files — so the two never drift.
+ * pages render — the MDX docs, the Cookbook's recipe folders and the message
+ * files — so the two never drift.
  */
 import en from "../../messages/en.json";
 import es from "../../messages/es.json";
@@ -11,6 +12,13 @@ import { getAllDocs, getDocSource, type DocMeta } from "@/lib/docs";
 import { SITE_NAME, SITE_URL, localizedUrl } from "@/lib/seo";
 import { FEATURE_KEYS, featureDocPath } from "@/lib/featureDocs";
 import { GUIDE_BUNDLE_FILE, GUIDE_BUNDLE_PATH } from "@/lib/guideBundle";
+import { catalogRecipe } from "@/lib/cookbook/catalog";
+import { docAnchorPath } from "@/lib/cookbook/docLinks";
+import { captureVariantFor, pageImages, pdfDownload } from "@/lib/cookbook/images";
+import { getAllRecipes, getComposed, getRecipe, getVisibleRecipes, recipeHref, writeupFor } from "@/lib/cookbook/recipes";
+import { loadRegistry } from "@/lib/cookbook/registry";
+import { relatedRecipes } from "@/lib/cookbook/related";
+import type { ComposedPen, Credit, DocAnchor, LicenseId, Locale, Recipe, Registry } from "@/lib/cookbook/types";
 
 type Messages = typeof en;
 const MESSAGES: Record<string, Messages> = { en, es: es as Messages };
@@ -42,6 +50,55 @@ const LABELS = {
     fullDocs: "Full documentation",
     links: "Links",
     otherLocaleDocs: "Documentación en español",
+    cookbook: "Cookbook",
+    cookbookTitle: "Postext Cookbook",
+    cookbookDesc: "Postext examples to copy, from a chapter opener to a whole book, each with the pages it sets and its full code.",
+    cookbookIntro:
+      "Each recipe is a pen: one JavaScript module (with an HTML page and CSS when it needs them) that imports postext from esm.sh and builds its own page. Every link below is a recipe's Markdown rendition, which holds the write-up and the whole code.",
+    allRecipes: "All recipes, by chapter",
+    noRecipes: "No recipes yet.",
+    part: "Part",
+    chapter: "Chapter",
+    recipe: "Recipe",
+    numberSign: "Nº",
+    level: "Level",
+    outputs: "Outputs",
+    genres: "Genres",
+    draft: "Draft",
+    requires: "Requires",
+    testedWith: "tested with",
+    testedOn: "on",
+    pages: "Pages",
+    pdf: "PDF",
+    answers: "This recipe answers",
+    teaches: "Teaches",
+    alsoUses: "Also uses",
+    configAtAGlance: "Config at a glance",
+    apis: "APIs",
+    typefaces: "Typefaces",
+    lines: "lines",
+    wholeRecipe:
+      "The files below are composed from the recipe's folder, with the sample text and the Cookbook's shared kit inlined. To run them as one page, put the HTML in `<body>`, the CSS in a `<style>` element and the script in a `<script type=\"module\">`; or paste each into the matching panel of a new CodePen (JS as a module). The script imports postext from esm.sh, so there is nothing to install or build.",
+    wholeRecipeScript:
+      "One file, composed from the recipe's folder with the sample text and the Cookbook's shared kit inlined; it builds its own page. To run it, put it in a `<script type=\"module\">` on an empty page, or paste it into the JS panel of a new CodePen (as a module). It imports postext from esm.sh, so there is nothing to install or build.",
+    externals: "Loaded by the page",
+    sourceFolder: "Source folder",
+    notComposed: "The code of this recipe could not be composed",
+    pitfall: "Pitfall",
+    warning: "Layout warning",
+    fix: "Fix",
+    fixedIn: "fixed in",
+    recipeBy: "Recipe",
+    creditText: "Text",
+    creditImages: "Images",
+    creditType: "Type",
+    creditCode: "Code",
+    creditContent: "Sample content",
+    source: "source",
+    related: "Related",
+    licenseOriginal: "original",
+    licensePD: "public domain",
+    licenseAuthorised: "reproduced with permission",
   },
   es: {
     docs: "Documentación",
@@ -61,6 +118,55 @@ const LABELS = {
     fullDocs: "Documentación completa",
     links: "Enlaces",
     otherLocaleDocs: "English documentation",
+    cookbook: "Recetario",
+    cookbookTitle: "Recetario de Postext",
+    cookbookDesc: "Ejemplos de Postext para copiar, desde una apertura de capítulo hasta un libro entero, cada uno con las páginas que compone y su código completo.",
+    cookbookIntro:
+      "Cada receta es un pen: un módulo JavaScript (con una página HTML y su CSS cuando los necesita) que importa postext desde esm.sh y compone su propia página. Cada enlace de abajo es la versión Markdown de una receta, con la explicación y el código completo.",
+    allRecipes: "Todas las recetas, por capítulos",
+    noRecipes: "Todavía no hay recetas.",
+    part: "Parte",
+    chapter: "Capítulo",
+    recipe: "Receta",
+    numberSign: "N.º",
+    level: "Nivel",
+    outputs: "Salidas",
+    genres: "Géneros",
+    draft: "Borrador",
+    requires: "Requiere",
+    testedWith: "probada con",
+    testedOn: "el",
+    pages: "Páginas",
+    pdf: "PDF",
+    answers: "Esta receta responde a",
+    teaches: "Enseña",
+    alsoUses: "También usa",
+    configAtAGlance: "La configuración de un vistazo",
+    apis: "API",
+    typefaces: "Tipografías",
+    lines: "líneas",
+    wholeRecipe:
+      "Los archivos de abajo se componen a partir de la carpeta de la receta, con el texto de ejemplo y el kit común del Recetario ya incluidos. Para ejecutarlos como una sola página, pon el HTML en `<body>`, el CSS en un elemento `<style>` y el script en un `<script type=\"module\">`; o pega cada uno en el panel correspondiente de un pen nuevo de CodePen (el JS como módulo). El script importa postext desde esm.sh, así que no hay nada que instalar ni compilar.",
+    wholeRecipeScript:
+      "Un solo archivo, compuesto a partir de la carpeta de la receta con el texto de ejemplo y el kit común del Recetario ya incluidos; construye su propia página. Para ejecutarlo, ponlo en un `<script type=\"module\">` de una página vacía o pégalo en el panel JS de un pen nuevo de CodePen (como módulo). Importa postext desde esm.sh, así que no hay nada que instalar ni compilar.",
+    externals: "Recursos que carga la página",
+    sourceFolder: "Carpeta de la receta",
+    notComposed: "No se ha podido componer el código de esta receta",
+    pitfall: "Error frecuente",
+    warning: "Aviso de maquetación",
+    fix: "Solución",
+    fixedIn: "resuelto en",
+    recipeBy: "Receta",
+    creditText: "Texto",
+    creditImages: "Imágenes",
+    creditType: "Tipografías",
+    creditCode: "Código",
+    creditContent: "Contenido de ejemplo",
+    source: "fuente",
+    related: "Relacionadas",
+    licenseOriginal: "original",
+    licensePD: "dominio público",
+    licenseAuthorised: "reproducido con permiso",
   },
 } as const;
 
@@ -176,27 +282,101 @@ function codePenToMarkdown(tag: string, labels: ReturnType<typeof labelsFor>): s
   return `> **${labels.example}: ${title}**${description ? ` — ${description}` : ""} ([${labels.exampleSource}](${src}))`;
 }
 
+/** JSX attributes of a tag: `a="x"`, `a='x'`, `a={3}`, `a={"x"}`. */
+function jsxAttrs(tag: string): Record<string, string> {
+  const attrs: Record<string, string> = {};
+  const re = /([A-Za-z][\w-]*)=(?:"([^"]*)"|'([^']*)'|\{\s*(?:"([^"]*)"|'([^']*)'|([^}]*?))\s*\})/g;
+  for (const m of tag.matchAll(re)) attrs[m[1]!] = decodeEntities(m[2] ?? m[3] ?? m[4] ?? m[5] ?? m[6] ?? "");
+  return attrs;
+}
+
+/** Block components that stand alone on their lines (`<Excerpt … />`). */
+const BLOCK_TAGS = ["Illustration", "CodePenExample", "Excerpt", "PageShot", "Gotcha"] as const;
+type CookbookBlockTag = "Excerpt" | "PageShot" | "Gotcha";
+/** Inline components (`<Feature id="x">text</Feature>`, or self-closing). */
+const INLINE_TAGS = ["Feature", "RecipeLink", "PageRef"] as const;
+type CookbookInlineTag = (typeof INLINE_TAGS)[number];
+
 /**
- * Turns a doc's MDX source into plain Markdown: drops the metadata export
- * and MDX comments, rewrites `<Illustration>` / `<CodePenExample>` into
- * descriptive blockquotes, HTML tables into GFM tables, and decodes the
- * entities MDX needs. Fenced code blocks pass through untouched.
+ * How the Cookbook's MDX components read as Markdown in one recipe (the
+ * rendition knows its composed script, pages and registries). Without it,
+ * blocks that need that context are dropped and inline ones keep their text.
  */
-export function mdxToMarkdown(source: string, locale: string, pageUrl: string): string {
+export interface MdxComponentRenderers {
+  block?: Partial<Record<CookbookBlockTag, (attrs: Record<string, string>) => string>>;
+  inline?: Partial<Record<CookbookInlineTag, (attrs: Record<string, string>, children: string) => string>>;
+}
+
+/** Rewrites the inline components of one prose line. */
+function inlineComponents(line: string, renderers?: MdxComponentRenderers): string {
+  let out = line;
+  for (const tag of INLINE_TAGS) {
+    if (!out.includes(`<${tag}`)) continue;
+    const render = renderers?.inline?.[tag] ?? ((_: Record<string, string>, children: string) => children);
+    // Self-closing first, so a paired match cannot start at one.
+    out = out
+      .replace(new RegExp(`<${tag}\\b([^>]*?)/>`, "g"), (_, attrs: string) => render(jsxAttrs(attrs), ""))
+      .replace(new RegExp(`<${tag}\\b([^>]*?)>([\\s\\S]*?)</${tag}>`, "g"), (_, attrs: string, children: string) =>
+        render(jsxAttrs(attrs), children)
+      );
+  }
+  return out;
+}
+
+/** Drops a leading YAML frontmatter block (`---` … `---`). */
+function stripFrontmatter(source: string): string {
+  return source.replace(/^\uFEFF?---[ \t]*\n[\s\S]*?\n---[ \t]*(?:\n|$)/, "");
+}
+
+/**
+ * Turns a doc's MDX source into plain Markdown: drops YAML frontmatter, the
+ * metadata export and MDX comments, rewrites `<Illustration>` /
+ * `<CodePenExample>` into descriptive blockquotes, the Cookbook's components
+ * through `renderers` (`<Note>` into a blockquote), HTML tables into GFM
+ * tables, and decodes the entities MDX needs. Fenced code blocks pass
+ * through untouched.
+ */
+export function mdxToMarkdown(
+  source: string,
+  locale: string,
+  pageUrl: string,
+  renderers?: MdxComponentRenderers
+): string {
   const labels = labelsFor(locale);
-  const lines = source.replace(/\r\n/g, "\n").split("\n");
+  const lines = stripFrontmatter(source.replace(/\r\n/g, "\n")).split("\n");
   const out: string[] = [];
   let fence: string | null = null;
   let buffer: string[] | null = null; // multi-line JSX element being collected
-  type BufferKind = "table" | "meta" | "comment" | "tag";
+  type BufferKind = "table" | "meta" | "comment" | "tag" | "note";
   let bufferKind: BufferKind | null = null;
+
+  const prose = (line: string) =>
+    decodeEntities(unwrapJsxStrings(inlineComponents(line, renderers).replace(/\\([{}])/g, "$1")));
 
   const flushBuffer = () => {
     const text = buffer!.join("\n");
+    const trimmed = text.trim();
     if (bufferKind === "table") out.push(htmlTableToMarkdown(text, pageUrl));
     else if (bufferKind === "tag") {
-      if (/^<Illustration\b/.test(text.trim())) out.push(illustrationToMarkdown(text, labels.figure));
-      else if (/^<CodePenExample\b/.test(text.trim())) out.push(codePenToMarkdown(text, labels));
+      const name = /^<([A-Za-z]+)/.exec(trimmed)?.[1];
+      if (name === "Illustration") out.push(illustrationToMarkdown(text, labels.figure));
+      else if (name === "CodePenExample") out.push(codePenToMarkdown(text, labels));
+      else if (name === "Excerpt" || name === "PageShot" || name === "Gotcha") {
+        const attrs = jsxAttrs(trimmed);
+        const render = renderers?.block?.[name];
+        if (render) out.push(render(attrs));
+        else if (name === "PageShot" && attrs.caption) out.push(`*${attrs.caption}*`);
+      }
+    } else if (bufferKind === "note") {
+      // `<Note>` … `</Note>`: an aside, as a blockquote.
+      const inner = trimmed.replace(/^<Note\b[^>]*>/, "").replace(/<\/Note>$/, "").trim();
+      out.push(
+        inner
+          .split("\n")
+          .map((l) => prose(l.trim()))
+          .map((l) => (l ? `> ${l}` : ">"))
+          .join("\n")
+      );
     }
     buffer = null;
     bufferKind = null;
@@ -209,7 +389,8 @@ export function mdxToMarkdown(source: string, locale: string, pageUrl: string): 
         (bufferKind === "table" && /<\/table>/.test(line)) ||
         (bufferKind === "meta" && /^\};?\s*$/.test(line)) ||
         (bufferKind === "comment" && /\*\/\}/.test(line)) ||
-        (bufferKind === "tag" && /\/>\s*$/.test(line));
+        (bufferKind === "tag" && /\/>\s*$/.test(line)) ||
+        (bufferKind === "note" && /<\/Note>/.test(line));
       if (done) flushBuffer();
       continue;
     }
@@ -232,7 +413,8 @@ export function mdxToMarkdown(source: string, locale: string, pageUrl: string): 
     if (/^export\s+const\s+metadata\s*=/.test(trimmed)) kind = "meta";
     else if (trimmed.startsWith("{/*")) kind = "comment";
     else if (trimmed.startsWith("<table")) kind = "table";
-    else if (/^<(Illustration|CodePenExample)\b/.test(trimmed)) kind = "tag";
+    else if (new RegExp(`^<(${BLOCK_TAGS.join("|")})\\b`).test(trimmed)) kind = "tag";
+    else if (/^<Note\b/.test(trimmed)) kind = "note";
     else if (/^(import|export)\s/.test(trimmed)) continue;
 
     if (kind) {
@@ -242,16 +424,39 @@ export function mdxToMarkdown(source: string, locale: string, pageUrl: string): 
         (kind === "table" && /<\/table>/.test(line)) ||
         (kind === "meta" && /\}\s*;?\s*$/.test(trimmed) && trimmed.includes("{") && !trimmed.endsWith("{")) ||
         (kind === "comment" && /\*\/\}/.test(line)) ||
-        (kind === "tag" && /\/>\s*$/.test(line));
+        (kind === "tag" && /\/>\s*$/.test(line)) ||
+        (kind === "note" && /<\/Note>/.test(line));
       if (closesNow) flushBuffer();
       continue;
     }
 
-    out.push(decodeEntities(unwrapJsxStrings(line.replace(/\\([{}])/g, "$1"))));
+    out.push(prose(line));
   }
   if (buffer) flushBuffer();
 
-  return out.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+  return collapseBlankLines(out.join("\n")).trim();
+}
+
+/** Squeezes runs of blank lines to one, outside fenced code. */
+function collapseBlankLines(markdown: string): string {
+  let fence: string | null = null;
+  let blank = false;
+  const out: string[] = [];
+  for (const line of markdown.split("\n")) {
+    const f = line.match(/^\s*(`{3,}|~{3,})/);
+    if (f) {
+      if (fence === null) fence = f[1]!;
+      else if (line.trim().startsWith(fence) && line.trim().replace(/[`~]/g, "") === "") fence = null;
+    } else if (fence === null && line.trim() === "") {
+      if (blank) continue;
+      blank = true;
+      out.push(line.trim());
+      continue;
+    }
+    blank = false;
+    out.push(line);
+  }
+  return out.join("\n");
 }
 
 // ---------------------------------------------------------------------------
@@ -265,11 +470,14 @@ function header(opts: {
   path: string;
   availableLocales?: readonly string[];
   meta?: Pick<DocMeta, "lastUpdated" | "readingTime">;
+  /** Extra facts, listed after the HTML version (without the "- "). */
+  facts?: string[];
 }): string {
   const labels = labelsFor(opts.locale);
   const lines = [`# ${opts.title}`, ""];
   if (opts.description) lines.push(`> ${opts.description}`, "");
   const facts: string[] = [`- ${labels.canonical}: ${localizedUrl(opts.locale, opts.path)}`];
+  for (const fact of opts.facts ?? []) facts.push(`- ${fact}`);
   if (opts.meta?.lastUpdated) facts.push(`- ${labels.lastUpdated}: ${opts.meta.lastUpdated}`);
   if (opts.meta?.readingTime) facts.push(`- ${labels.readingTime}: ${opts.meta.readingTime}`);
   const others = (opts.availableLocales ?? routing.locales).filter((l) => l !== opts.locale);
@@ -420,6 +628,7 @@ export function homeMarkdown(locale: string): string {
     "",
     `- [GitHub](${REPO_URL})`,
     `- [npm](${NPM_URL})`,
+    `- [${labels.cookbook}](${markdownUrl(locale, COOKBOOK_PATH)}): ${labels.cookbookDesc}`,
     `- [${labels.sandbox}](${localizedUrl(locale, "/sandbox")}): ${labels.sandboxDesc}`,
     `- [${m.Footer.mitLicense}](${markdownUrl(locale, "/license")})`,
     "",
@@ -490,6 +699,370 @@ export function legalMarkdown(page: LegalPage, locale: string): string {
   ].join("\n");
 }
 
+// ---------------------------------------------------------------------------
+// Cookbook
+// ---------------------------------------------------------------------------
+
+const COOKBOOK_PATH = "/cookbook";
+const COOKBOOK_SOURCE_URL = `${REPO_URL}/tree/main/cookbook`;
+
+function cookbookLocale(locale: string): Locale {
+  return locale === "es" ? "es" : "en";
+}
+
+/** "Nº 012" / "N.º 012" */
+function recipeNumber(n: number, locale: string): string {
+  return `${labelsFor(locale).numberSign} ${String(n).padStart(3, "0")}`;
+}
+
+function recipeMarkdownUrl(slug: string, locale: string): string {
+  return markdownUrl(locale, recipeHref(slug));
+}
+
+/** A docs section as a link into its doc's Markdown rendition, or null
+ *  when the heading no longer exists. */
+function docMarkdownUrl(anchor: DocAnchor, locale: Locale): string | null {
+  const path = docAnchorPath(anchor, locale);
+  if (!path) return null;
+  const [page, hash] = path.split("#");
+  return `${markdownUrl(locale, page)}${hash ? `#${hash}` : ""}`;
+}
+
+function link(text: string, url: string | null | undefined): string {
+  return url ? `[${text}](${url})` : text;
+}
+
+/** A fence one backtick longer than any run of backticks in `code`. */
+function fenced(code: string, lang: string): string {
+  const longest = Math.max(2, ...[...code.matchAll(/`+/g)].map((m) => m[0].length));
+  const fence = "`".repeat(longest + 1);
+  return `${fence}${lang}\n${code.replace(/\n+$/, "")}\n${fence}`;
+}
+
+/** Lines `a`–`b` (1-based, inclusive) of the composed script, fenced, with
+ *  a comment naming them so a reader can find them in the whole file. */
+function scriptExcerpt(pen: ComposedPen, [a, b]: [number, number], locale: string): string {
+  const code = pen.js.split("\n").slice(a - 1, b).join("\n");
+  return fenced(`// script.js, ${labelsFor(locale).lines} ${a}–${b}\n${code}`, "js");
+}
+
+/** A title as a sentence: a plain lowercase first word capitalised (never
+ *  an identifier such as `fontFamily`), and a closing full stop. */
+function sentence(text: string): string {
+  const t = text.trim();
+  if (!t) return "";
+  const capitalised = /^[a-z]+(?=[\s,.:;!?]|$)/.test(t) ? t[0]!.toUpperCase() + t.slice(1) : t;
+  return capitalised + (/[.!?…]$/.test(t) ? "" : ".");
+}
+
+function licenseName(license: LicenseId, locale: string): string {
+  const labels = labelsFor(locale);
+  if (license === "original") return labels.licenseOriginal;
+  if (license === "PD") return labels.licensePD;
+  if (license === "reproduction-authorised") return labels.licenseAuthorised;
+  return license;
+}
+
+/** "Level 2 (Intermediate)" */
+function levelText(level: number, registry: Registry, locale: Locale): string {
+  const title = registry.taxonomy.levels.find((l) => l.id === level)?.title[locale];
+  return `${labelsFor(locale).level} ${level}${title ? ` (${title})` : ""}`;
+}
+
+function genreText(recipe: Recipe, registry: Registry, locale: Locale): string {
+  return recipe.meta.genres
+    .map((id) => registry.taxonomy.genres.find((g) => g.id === id)?.title[locale] ?? id)
+    .join(", ");
+}
+
+/** One line of a recipe list: `[Nº 012 · Title](….md): summary · level · genres`. */
+function recipeListLine(recipe: Recipe, registry: Registry, locale: Locale): string {
+  const fm = writeupFor(recipe, locale)?.frontmatter;
+  const title = `${recipeNumber(recipe.meta.number, locale)} · ${fm?.title ?? recipe.slug}`;
+  const facts = [fm?.summary, levelText(recipe.meta.level, registry, locale), genreText(recipe, registry, locale)];
+  if (recipe.meta.status === "draft") facts.push(labelsFor(locale).draft);
+  return `- [${title}](${recipeMarkdownUrl(recipe.slug, locale)}): ${facts.filter(Boolean).join(" · ")}`;
+}
+
+/** The Cookbook's contents (`/{locale}/cookbook.md`): every visible recipe,
+ *  grouped by part and chapter, each linking to its own rendition. */
+export function cookbookMarkdown(locale: string): string {
+  const lang = cookbookLocale(locale);
+  const labels = labelsFor(locale);
+  const recipes = getVisibleRecipes();
+  const lines = [
+    header({ title: labels.cookbookTitle, description: labels.cookbookDesc, locale, path: COOKBOOK_PATH }),
+    labels.cookbookIntro,
+    "",
+  ];
+  if (recipes.length === 0) return [...lines, labels.noRecipes, ""].join("\n");
+  const registry = loadRegistry();
+  const { parts, chapters } = registry.taxonomy;
+  for (const part of parts) {
+    const shelves = chapters
+      .filter((c) => c.part === part.id)
+      .sort((a, b) => a.number - b.number)
+      .map((chapter) => ({ chapter, recipes: recipes.filter((r) => r.meta.chapter === chapter.id) }))
+      .filter((shelf) => shelf.recipes.length > 0);
+    if (shelves.length === 0) continue;
+    lines.push(`## ${labels.part} ${part.number} · ${part.title[lang]}`, "");
+    for (const { chapter, recipes: shelf } of shelves) {
+      lines.push(`### ${labels.chapter} ${chapter.number} · ${chapter.title[lang]}`, "", chapter.intro[lang], "");
+      lines.push(...shelf.map((recipe) => recipeListLine(recipe, registry, lang)), "");
+    }
+  }
+  return lines.join("\n");
+}
+
+/** How the write-up's components read in this recipe's rendition. */
+function recipeRenderers(
+  recipe: Recipe,
+  pen: ComposedPen | null,
+  registry: Registry,
+  locale: Locale
+): MdxComponentRenderers {
+  const labels = labelsFor(locale);
+  const pages = pageImages(recipe, locale);
+  const pageUrl = (n: string | undefined) => {
+    const page = pages.find((p) => String(p.n) === n);
+    return page ? `${SITE_URL}${page.src}` : null;
+  };
+  return {
+    block: {
+      Excerpt: ({ region }) => {
+        const found = region ? pen?.ranges.regions[region] : undefined;
+        return found && pen ? scriptExcerpt(pen, found.lines, locale) : "";
+      },
+      PageShot: ({ page, caption }) => {
+        const url = pageUrl(page);
+        const alt = pages.find((p) => String(p.n) === page)?.alt ?? caption ?? "";
+        const image = url ? `![${alt.replace(/[[\]]/g, "")}](${url})` : "";
+        return [image, caption ? `*${caption}*` : ""].filter(Boolean).join("\n\n");
+      },
+      Gotcha: ({ id }) => {
+        const gotcha = id ? registry.gotchas[id] : undefined;
+        return gotcha ? `> **${labels.pitfall}:** ${sentence(gotcha.title[locale])} ${gotcha.body[locale]}` : "";
+      },
+    },
+    inline: {
+      Feature: ({ id }, children) => {
+        const feature = id ? registry.features[id] : undefined;
+        const text = children || feature?.label[locale] || id || "";
+        return feature ? link(text, docMarkdownUrl(feature.docs, locale)) : text;
+      },
+      RecipeLink: ({ slug }, children) => {
+        const target = slug ? getRecipe(slug) : null;
+        const text = children || (target && writeupFor(target, locale)?.frontmatter.title) || slug || "";
+        return target ? link(text, recipeMarkdownUrl(target.slug, locale)) : text;
+      },
+      PageRef: ({ page }, children) => link(children || `${labels.pages} ${page}`, pageUrl(page)),
+    },
+  };
+}
+
+/** The Ingredients section: features, config, APIs and type, linked to the
+ *  docs' Markdown renditions. */
+function ingredientsMarkdown(recipe: Recipe, registry: Registry, locale: Locale): string[] {
+  const labels = labelsFor(locale);
+  const { primary, also } = recipe.meta.features;
+  const search = catalogRecipe(recipe, locale, registry, []).search;
+  const captured = captureVariantFor(recipe, locale)?.data.detected;
+  // Features the capture found in the code that recipe.json does not declare.
+  const undeclared = (captured?.features ?? []).filter((id) => !primary.includes(id) && !also.includes(id));
+  const featureLink = (id: string) => {
+    const feature = registry.features[id];
+    return feature ? link(feature.label[locale], docMarkdownUrl(feature.docs, locale)) : id;
+  };
+  const out: string[] = [`**${labels.teaches}**`, ""];
+  for (const id of primary) {
+    const feature = registry.features[id];
+    out.push(`- ${featureLink(id)}${feature ? `: ${feature.definition[locale]}` : ""}`);
+  }
+  out.push("");
+  const alsoUses = [...also, ...undeclared];
+  if (alsoUses.length > 0) out.push(`**${labels.alsoUses}**`, "", ...alsoUses.map((id) => `- ${featureLink(id)}`), "");
+  const configKeys = search.configKeys.filter((key) => /^[A-Za-z]+$/.test(key));
+  if (configKeys.length > 0) {
+    const items = configKeys.map((key) => {
+      const anchor = registry.config[key];
+      return link(`\`${key}\``, anchor ? docMarkdownUrl(anchor, locale) : null);
+    });
+    out.push(`**${labels.configAtAGlance}**`, "", `- ${items.join(", ")}`, "");
+  }
+  if (search.apis.length > 0) {
+    const items = search.apis.map((api) => {
+      const anchor = registry.apis[api];
+      return link(`\`${api}\``, anchor ? docMarkdownUrl(anchor, locale) : null);
+    });
+    out.push(`**${labels.apis}**`, "", `- ${items.join(", ")}`, "");
+  }
+  const fonts = recipe.meta.credits.fonts;
+  if (fonts.length > 0) {
+    out.push(`**${labels.typefaces}**`, "", `- ${fonts.map((f) => `${f.family} (${f.license})`).join(", ")}`, "");
+  }
+  return out;
+}
+
+function creditLine(credit: Credit, locale: Locale): string {
+  const labels = labelsFor(locale);
+  const source = credit.source
+    ? /^https?:\/\//.test(credit.source)
+      ? ` ([${labels.source}](${credit.source}))`
+      : ` (${credit.source})`
+    : "";
+  return `${credit.what[locale]}: ${credit.who}${source}, ${licenseName(credit.license, locale)}`;
+}
+
+/** A recipe's rendition (`/{locale}/cookbook/<slug>.md`): the write-up with
+ *  its generated sections, every excerpt expanded and the whole code. */
+export function recipeMarkdown(slug: string, locale: string): string | null {
+  if (!routing.locales.includes(locale as (typeof routing.locales)[number])) return null;
+  const recipe = getRecipe(slug);
+  if (!recipe) return null;
+  const lang = cookbookLocale(locale);
+  const labels = labelsFor(locale);
+  const writeup = writeupFor(recipe, lang);
+  if (!writeup) return null;
+  const registry = loadRegistry();
+  const { meta } = recipe;
+  const { sections: headings } = registry.taxonomy;
+  const path = recipeHref(slug);
+  const pageUrl = localizedUrl(locale, path);
+
+  let pen: ComposedPen | null = null;
+  let composeError = "";
+  try {
+    pen = getComposed(slug, lang);
+  } catch (error) {
+    // Development only: a production build fails on the recipe page first.
+    composeError = (error as Error).message;
+  }
+  const renderers = recipeRenderers(recipe, pen, registry, lang);
+  const authored = (id: keyof typeof headings) => {
+    const chunk = writeup.sections[id];
+    return chunk ? mdxToMarkdown(chunk, locale, pageUrl, renderers) : "";
+  };
+
+  // Header facts.
+  const chapter = registry.taxonomy.chapters.find((c) => c.id === meta.chapter);
+  const outputs = meta.outputs.map((id) => registry.taxonomy.outputs.find((o) => o.id === id)?.title[lang] ?? id);
+  const capture = recipe.capture;
+  const requires = [`postext ≥ ${meta.engine.postext}`];
+  if (meta.engine.postextPdf) requires.push(`postext-pdf ≥ ${meta.engine.postextPdf}`);
+  let tested = "";
+  if (capture) {
+    const versions = [capture.engine.postext, capture.engine.postextPdf && `postext-pdf ${capture.engine.postextPdf}`];
+    tested = ` · ${labels.testedWith} ${versions.filter(Boolean).join(", ")} ${labels.testedOn} ${capture.capturedAt.slice(0, 10)}`;
+  }
+  const pages = pageImages(recipe, lang);
+  const pdf = pdfDownload(recipe, lang);
+  const facts = [
+    [
+      `${labels.recipe} ${recipeNumber(meta.number, lang)}`,
+      chapter?.title[lang],
+      levelText(meta.level, registry, lang),
+      `${labels.outputs}: ${outputs.join(", ")}`,
+      meta.status === "draft" ? labels.draft : "",
+    ]
+      .filter(Boolean)
+      .join(" · "),
+    `${labels.genres}: ${genreText(recipe, registry, lang)}`,
+    `${labels.requires} ${requires.join(", ")}${tested}`,
+  ];
+  if (pages.length > 0) {
+    facts.push(`${labels.pages}: ${pages.map((p) => `[${p.label || p.n}](${SITE_URL}${p.src})`).join(", ")}`);
+  }
+  if (pdf) facts.push(`${labels.pdf}: ${SITE_URL}${pdf.href}`);
+  facts.push(`${labels.lastUpdated}: ${meta.updated}`);
+
+  const out: string[] = [
+    header({ title: writeup.frontmatter.title, description: writeup.frontmatter.summary, locale, path, facts }),
+  ];
+
+  // What you'll build, then the questions it answers.
+  const questions = meta.answers
+    .map((id, i) => (i === 0 && writeup.frontmatter.question) || registry.questions[id]?.text[lang])
+    .filter((q): q is string => Boolean(q));
+  out.push(`## ${headings.build[lang]}`, "", authored("build"), "");
+  if (questions.length > 0) out.push(`**${labels.answers}:**`, "", ...questions.map((q) => `- ${q}`), "");
+
+  // The short answer: the `answer` region.
+  const answer = pen?.ranges.regions.answer;
+  if (pen && answer) {
+    out.push(`## ${headings.short[lang]}`, "");
+    // Region titles are code comments, written in English (as on the page).
+    if (answer.title && lang === "en") out.push(sentence(answer.title), "");
+    out.push(scriptExcerpt(pen, answer.lines, lang), "");
+  }
+
+  out.push(`## ${headings.ingredients[lang]}`, "", ...ingredientsMarkdown(recipe, registry, lang));
+  out.push(`## ${headings.method[lang]}`, "", authored("method"), "");
+
+  // The whole recipe: every composed file.
+  out.push(`## ${headings.whole[lang]}`, "");
+  if (pen) {
+    const scriptOnly = !pen.html && !pen.css;
+    out.push(scriptOnly ? labels.wholeRecipeScript : labels.wholeRecipe, "");
+    out.push(`- ${labels.sourceFolder}: ${COOKBOOK_SOURCE_URL}/${slug}`);
+    const externals = [...(pen.pen.stylesheets ?? []), ...(pen.pen.scripts ?? [])];
+    if (externals.length > 0) out.push(`- ${labels.externals}: ${externals.join(", ")}`);
+    out.push("");
+    if (pen.html) out.push("### index.html", "", fenced(pen.html, "html"), "");
+    if (pen.css) out.push("### style.css", "", fenced(pen.css, "css"), "");
+    out.push("### script.js", "", fenced(pen.js, "js"), "");
+  } else {
+    out.push(`${labels.notComposed}: ${composeError}`, "", `- ${labels.sourceFolder}: ${COOKBOOK_SOURCE_URL}/${slug}`, "");
+  }
+
+  const variations = authored("variations");
+  if (variations) out.push(`## ${headings.variations[lang]}`, "", variations, "");
+
+  // Pitfalls: the shared gotchas, the warnings the recipe explains, then its own lines.
+  const pitfalls: string[] = [];
+  for (const id of meta.gotchas ?? []) {
+    const gotcha = registry.gotchas[id];
+    if (!gotcha) continue;
+    const fixed = gotcha.fixedIn ? ` (${labels.fixedIn} postext ${gotcha.fixedIn})` : "";
+    pitfalls.push(`- **${sentence(gotcha.title[lang])}**${fixed} ${gotcha.body[lang]}`);
+  }
+  for (const kind of meta.explainsWarnings ?? []) {
+    const warning = registry.warnings[kind];
+    if (!warning) continue;
+    const docs = warning.docs ? docMarkdownUrl(warning.docs, lang) : null;
+    pitfalls.push(
+      `- **${labels.warning}: ${warning.label[lang]}** (\`${kind}\`). ${warning.cause[lang]} ${labels.fix}: ${warning.fix[lang]}${
+        docs ? ` ([${labels.docs}](${docs}))` : ""
+      }`
+    );
+  }
+  const ownPitfalls = authored("pitfalls");
+  if (pitfalls.length > 0 || ownPitfalls) {
+    out.push(`## ${headings.pitfalls[lang]}`, "", ...pitfalls);
+    if (ownPitfalls) out.push(...(pitfalls.length > 0 ? [""] : []), ownPitfalls);
+    out.push("");
+  }
+
+  // Credits.
+  const { credits, license } = meta;
+  const authors = credits.authors.map((a) =>
+    a.github ? `${a.name} ([@${a.github}](https://github.com/${a.github}))` : a.url ? `[${a.name}](${a.url})` : a.name
+  );
+  out.push(`## ${headings.credits[lang]}`, "", `- ${labels.recipeBy}: ${authors.join(", ")}`);
+  for (const credit of credits.text) out.push(`- ${labels.creditText}: ${creditLine(credit, lang)}`);
+  for (const credit of credits.images) out.push(`- ${labels.creditImages}: ${creditLine(credit, lang)}`);
+  if (credits.fonts.length > 0) {
+    out.push(`- ${labels.creditType}: ${credits.fonts.map((f) => `${f.family} (${f.license})`).join(", ")}`);
+  }
+  out.push(`- ${labels.creditCode}: ${license.code} · ${labels.creditContent}: ${license.content}`, "");
+
+  const related = relatedRecipes(slug);
+  if (related.length > 0) {
+    out.push(`## ${labels.related}`, "", ...related.map((r) => recipeListLine(r, registry, lang)), "");
+  }
+
+  return collapseBlankLines(out.join("\n")).trimEnd() + "\n";
+}
+
 /**
  * Markdown for a localized path (`""`, `/docs/<slug>`, `/license`, …), or
  * `null` when the path has no rendition.
@@ -504,6 +1077,9 @@ export function pageMarkdown(locale: string, path: string): string | null {
   }
   const doc = clean.match(/^docs\/([a-z0-9-]+)$/);
   if (doc) return docMarkdown(doc[1]!, locale);
+  if (clean === "cookbook") return cookbookMarkdown(locale);
+  const recipe = clean.match(/^cookbook\/([a-z0-9-]+)$/);
+  if (recipe) return recipeMarkdown(recipe[1]!, locale);
   if ((LEGAL_PAGES as readonly string[]).includes(clean)) return legalMarkdown(clean as LegalPage, locale);
   return null;
 }
@@ -513,12 +1089,33 @@ export function markdownPaths(locale: string): string[] {
   const docs = getAllDocs()
     .filter((d) => d.locales[locale])
     .map((d) => `/docs/${d.slug}`);
-  return ["", "/docs", ...docs, ...LEGAL_PAGES.map((p) => `/${p}`)];
+  const recipes = getVisibleRecipes().map((r) => recipeHref(r.slug));
+  return ["", "/docs", ...docs, COOKBOOK_PATH, ...recipes, ...LEGAL_PAGES.map((p) => `/${p}`)];
 }
 
 // ---------------------------------------------------------------------------
 // llms.txt
 // ---------------------------------------------------------------------------
+
+/** llms.txt's Cookbook section: one line per published recipe (drafts are
+ *  noindex even when shown), each linking to its rendition (which holds the
+ *  whole code), then the contents. Empty while there are no recipes. */
+function cookbookList(locale: string): string[] {
+  const recipes = getAllRecipes();
+  if (recipes.length === 0) return [];
+  const lang = cookbookLocale(locale);
+  const labels = labelsFor(locale);
+  return [
+    `## ${labels.cookbook}`,
+    "",
+    ...recipes.map((recipe) => {
+      const fm = writeupFor(recipe, lang)?.frontmatter;
+      return `- [${fm?.title ?? recipe.slug}](${recipeMarkdownUrl(recipe.slug, locale)})${fm?.summary ? `: ${fm.summary}` : ""}`;
+    }),
+    `- [${labels.allRecipes}](${markdownUrl(locale, COOKBOOK_PATH)})`,
+    "",
+  ];
+}
 
 /** The `llms.txt` index (https://llmstxt.org) for one locale. */
 export function llmsTxt(locale: string): string {
@@ -540,6 +1137,7 @@ export function llmsTxt(locale: string): string {
     "",
     ...docsList(locale),
     "",
+    ...cookbookList(locale),
     `## ${labels.links}`,
     "",
     `- [GitHub](${REPO_URL}): source code, issues and examples`,

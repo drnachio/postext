@@ -101,6 +101,9 @@ export default async function LocaleLayout({
 
   setRequestLocale(locale);
   const messages = await getMessages();
+  // Client components get every namespace but the Sandbox's (three
+  // quarters of the messages): the sandbox layout provides it to its page.
+  const clientMessages = Object.fromEntries(Object.entries(messages).filter(([ns]) => ns !== "Sandbox"));
   const t = await getTranslations({ locale, namespace: "Metadata" });
 
   const jsonLd = [
@@ -113,7 +116,8 @@ export default async function LocaleLayout({
       description: t("description"),
       potentialAction: {
         "@type": "SearchAction",
-        target: `${localizedUrl(locale, "/docs")}?q={search_term_string}`,
+        // The Cookbook gallery is the one page that reads `?q=`.
+        target: `${localizedUrl(locale, "/cookbook")}?q={search_term_string}`,
         "query-input": "required name=search_term_string",
       },
     },
@@ -161,7 +165,7 @@ export default async function LocaleLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider messages={clientMessages}>
           <ThemeProvider>
             <CookieConsentProvider>
               <a href="#main-content" className="skip-to-content">

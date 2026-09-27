@@ -1,0 +1,641 @@
+{
+  "schemaVersion": 1,
+  "slug": "figures-float-where-cited",
+  "sourceHash": "454adabccc1ebb85d1a48b43a21c1cb562b84150fd8496b8b72dc5df17e91344",
+  "engine": {
+    "postext": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-26T21:00:56.783Z",
+  "variants": {
+    "en": {
+      "hash8": "8543fcfd",
+      "vdtHash": "c7736c397e41fbf46401b9a9c3b28663b083c9a5",
+      "timings": {
+        "importMs": 169,
+        "fontsMs": 59,
+        "buildMs": 243,
+        "totalMs": 1445,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          200,
+          250
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 6,
+        "mirror": true,
+        "body": {
+          "family": "Faustina",
+          "sizePt": 9.4,
+          "leadingPt": 13.4
+        },
+        "families": [
+          "Faustina",
+          "IBM Plex Sans Condensed",
+          "Montserrat"
+        ],
+        "pages": 4,
+        "ownLines": 237
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "27",
+          "role": "opener",
+          "w": 1000,
+          "h": 1250,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 92506,
+          "alt": "Opening page 27: How glaciers carve mountain valleys. Figure 2.1. A river cuts a V; a glacier widens the valley into a U. Dashed, the V the ice wore away."
+        },
+        {
+          "n": 2,
+          "label": "28",
+          "role": "body",
+          "w": 1000,
+          "h": 1250,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 123656,
+          "alt": "Page 28: 2.2 Where glaciers are born. Figure 2.2. Profile of a valley glacier: ice fed above the equilibrium line flows down to melt below it. · Figure 2.3. A cirque in section. The ice rotates in the basin and deepens it below the rock lip."
+        },
+        {
+          "n": 3,
+          "label": "29",
+          "role": "body",
+          "w": 1000,
+          "h": 1250,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 135564,
+          "alt": "Page 29: 2.3 The tools of the ice. Figure 2.6. Roche moutonnée. The ice polished the gentle face and plucked the steep one. · Figure 2.4. Abrasion: stones held in the base of the ice scratch the bed. · Figure 2.5. Plucking: water freezes in the joints and the ice carries block…"
+        },
+        {
+          "n": 4,
+          "label": "30",
+          "role": "body",
+          "w": 1000,
+          "h": 1250,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 129722,
+          "alt": "Page 30: 2.6 Reading a glacial landscape. Figure 2.7. Two glaciers join: their lateral moraines become a medial one, and the terminal moraine dams a lake."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "defaultResourceTypes",
+          "parseMarkdown",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "captionStyle",
+          "captionStyle.descriptionItalic",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelColor",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "captionStyle.note.gap",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].direction",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "header.elements[].thickness",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.maxLinesPerHeading",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberingTemplate",
+          "headings.levels[].span",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "unorderedLists",
+          "unorderedLists.color",
+          "unorderedLists.marginBottom",
+          "unorderedLists.marginTop"
+        ],
+        "configSections": [
+          "bodyText",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "unorderedLists"
+        ],
+        "configLeaves": 251,
+        "designElements": 12,
+        "directives": [
+          "::resource",
+          ":::space",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 7,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Faustina",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Faustina",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Faustina",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Montserrat",
+            "weight": 800,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "citations",
+          "column-balancing",
+          "heading-attributes",
+          "heading-numbering",
+          "inline-embeds",
+          "localised-labels",
+          "opener-band",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "resource-types",
+          "resources",
+          "vertical-space"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 4,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.95
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "f50e68c0",
+      "vdtHash": "00f114c29169e30b4f63a482b587e365bcc8e652",
+      "timings": {
+        "importMs": 957,
+        "fontsMs": 845,
+        "buildMs": 156,
+        "totalMs": 2836,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          200,
+          250
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 6,
+        "mirror": true,
+        "body": {
+          "family": "Faustina",
+          "sizePt": 9.4,
+          "leadingPt": 13.4
+        },
+        "families": [
+          "Faustina",
+          "IBM Plex Sans Condensed",
+          "Montserrat"
+        ],
+        "pages": 4,
+        "ownLines": 237
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "27",
+          "role": "opener",
+          "w": 1000,
+          "h": 1250,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 95770,
+          "alt": "Página de apertura 27: Cómo esculpen los glaciares el paisaje. Figura 2.1. Un río abre un valle en V; un glaciar lo ensancha en U. A trazos, la V que borró el hielo."
+        },
+        {
+          "n": 2,
+          "label": "28",
+          "role": "body",
+          "w": 1000,
+          "h": 1250,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 126582,
+          "alt": "Página 28: 2.2 Donde nacen los glaciares. Figura 2.2. Perfil de un glaciar: el hielo nacido sobre la línea de equilibrio baja a fundirse bajo ella. · Figura 2.3. Circo glaciar en sección. El hielo gira en la cubeta y la ahonda por debajo del umbral."
+        },
+        {
+          "n": 3,
+          "label": "29",
+          "role": "body",
+          "w": 1000,
+          "h": 1250,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 136456,
+          "alt": "Página 29: 2.3 Las herramientas del hielo. Figura 2.6. Roca aborregada. El hielo pulió la cara tendida y arrancó bloques de la abrupta. · Figura 2.4. Abrasión: los cantos presos en la base del hielo rayan el lecho. · Figura 2.5. Arranque: el agua se hiela en las diaclasas y el…"
+        },
+        {
+          "n": 4,
+          "label": "30",
+          "role": "body",
+          "w": 1000,
+          "h": 1250,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 129946,
+          "alt": "Página 30: 2.6 Cómo leer un paisaje glaciar. Figura 2.7. Dos glaciares se unen: sus morrenas laterales forman la central, y la frontal represa un lago."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "defaultResourceTypes",
+          "parseMarkdown",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "captionStyle",
+          "captionStyle.descriptionItalic",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelColor",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "captionStyle.note.gap",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].direction",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "header.elements[].thickness",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.maxLinesPerHeading",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberingTemplate",
+          "headings.levels[].span",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "unorderedLists",
+          "unorderedLists.color",
+          "unorderedLists.marginBottom",
+          "unorderedLists.marginTop"
+        ],
+        "configSections": [
+          "bodyText",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "unorderedLists"
+        ],
+        "configLeaves": 251,
+        "designElements": 12,
+        "directives": [
+          "::resource",
+          ":::space",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 7,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Faustina",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Faustina",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Faustina",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Montserrat",
+            "weight": 800,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "citations",
+          "column-balancing",
+          "heading-attributes",
+          "heading-numbering",
+          "inline-embeds",
+          "localised-labels",
+          "opener-band",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "resource-types",
+          "resources",
+          "vertical-space"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 4,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.98
+        },
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
+      }
+    }
+  }
+}

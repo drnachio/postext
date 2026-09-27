@@ -1,0 +1,76 @@
+---
+title: "Portada de periódico"
+summary: "Portada y página 2 de un semanario local a dos columnas con filete, titulares a todo el ancho en recuadros y una franja de breves a cuatro columnas al pie."
+description: "Portada de periódico en Postext, con el código: mancheta gótica, titulares en recuadros a todo el ancho, columnas con filete y breves a cuatro columnas."
+question: "¿Puedo componer una página de periódico a más de dos columnas, o hacer que el texto rodee la foto?"
+aliases: ["periódico", "portada", "primera plana", "mancheta", "cabecera del periódico", "titular a toda plana", "breves", "tres columnas", "cuatro columnas", "filete de columna", "corondel", "semanario"]
+pageNotes: { "1": "La portada de The Elverdale Courier: la mancheta en letra gótica entre una oreja con el tiempo y otra con el precio, un filete grueso y otro fino sobre la línea de fecha, el titular a dos líneas Harrow Ridge turbines win the town’s vote, un subtítulo en cursiva, una foto de aerogeneradores en una loma nevada a lo ancho de las dos columnas, la noticia en dos columnas justificadas separadas por un filete fino y, al pie, una franja de breves a cuatro columnas sobre fondo beis, cada breve precedido de un chip rojo.", "2": "La página 2, bajo el rótulo rojo Town & Valley sobre una barra negra: la noticia del puente Old Mill con un dibujo del puente de dos arcos entre sus orillas y su nueva zapata en rojo, una tabla con la previsión del tiempo a cinco días en cabeza de la columna derecha, un segundo titular a todo el ancho sobre la noticia de los resultados por barrios y una columna de cartas, y al pie una tabla con el voto de los cinco barrios y una barra roja y gris en cada fila." }
+---
+
+## Lo que vas a componer
+
+Portada y página 2 de *The Elverdale Courier*, un semanario comarcal inventado, en páginas de 246 × 328 mm. La mancheta gótica va entre dos orejas, el tiempo y el precio, sobre dos filetes y la línea de fecha. La noticia principal arranca con un titular a dos líneas en Libre Franklin Black de 56 pt sobre las dos columnas, un subtítulo en cursiva y una foto en banda de 222 mm, y sigue en dos columnas justificadas con filete. Al pie, cuatro breves comparten una franja de fondo beis, uno por columna, cada uno encabezado por un chip rojo. La página 2 abre con un rótulo de sección rojo y lleva la noticia del puente con un dibujo hecho en código, el tiempo en cabeza de la columna derecha, un segundo titular a todo el ancho, las cartas y una tabla de votos con una barra en cada fila.
+
+## Elaboración
+
+### 1 · Papel de periódico, tinta y un rojo
+
+<Excerpt region="palette" />
+
+El papel es un blanco roto cálido (#f8f5ee) y la letra, un negro frío (#111315). El único rojo, #a6192e, va en los rótulos de sección, los antetítulos, los chips y las barras del sí. Cada color lleva su `paletteId` y su hexadecimal, porque la 1.4.1 pinta los elementos de diseño con el hexadecimal. `main-color` apunta a la tinta, de modo que las cursivas y todo lo que la configuración deja por defecto sale en negro. `bodyText.boldColor` también se fija en la tinta: de él toman su color las remisiones y la negrita de los recuadros, y la paleta no llega a ninguna de las dos. Sin él, las dos remisiones de la página 2 y las primeras palabras en negrita de los breves salen en el azul por defecto, #295AA3.
+
+### 2 · La mancheta es el H1 de la portada
+
+<Excerpt region="nameplate" />
+
+`# The Elverdale Courier` lleva el estilo de título `front`, que compone la mancheta con el texto del título y siete de sus atributos (`issue`, `area`, `outlook`, `temps`, `since`, `day` y `price`); la fecha sale del `publishDate` del frontmatter. Una caja vacía de siete líneas exactas de la rejilla (31,1 mm) fija la altura de la apertura. Los filetes, la línea de fecha y el nombre cuelgan de su pie, y así la apertura termina justo en una línea de la rejilla. Con una caja de 6,6 líneas, en la 1.4.1 el filete de columna atraviesa el nombre y la línea de fecha.
+
+### 3 · Un titular sobre las dos columnas es un recuadro
+
+<Excerpt region="banner" />
+
+Un título solo ocupa las dos columnas como apertura, y una apertura empieza página. Si pones `span: 'page'` en el H2 de la noticia de los barrios en lugar de en su recuadro, esa noticia se va a una tercera página. Un recuadro sin marco con `span="page"`, en cambio, puede empezar a media página. En la <PageRef page={2}>página 2</PageRef>, las columnas quedan igualadas por encima de él y siguen debajo. Dentro van el H2, con uno de tres estilos de título (56, 30 o 22 pt), el subtítulo en cursiva y, en la portada, la foto. Su `marginBottom` de media línea hace que las columnas empiecen en la siguiente línea de la rejilla, 3,4 mm por debajo del subtítulo en la página 2. Con el margen por defecto quedan 7,8 mm y las cartas pasan a una tercera página.
+
+### 4 · Más de dos columnas caben en un recuadro
+
+El código de este paso es [la respuesta corta](#la-respuesta-corta) de arriba. El texto de una página admite como mucho dos columnas ([Tipos de disposición](/es/docs/configuration#tipos-de-disposición)), por lo que las cuatro o cinco columnas de un periódico tienen que ir en un recuadro, aquí uno a todo el ancho con un grupo [`:::columns`](/es/docs/document-format#columns) dentro. `breaks` cuenta los bloques del grupo, uno por breve, así que los breves 2, 3 y 4 abren las columnas 2, 3 y 4. Cada columna mide 49 mm, con el medianil de 6 mm de la página entre una y otra.
+
+```markdown
+:::callout{type="briefs" span="page" placement="bottom" title="In brief"}
+:::columns{count=4 breaks="2,3,4"}
+:chip[TRANSPORT]{style="flag"} **Bus 44 back on Sundays.** The Elverdale to Kirkby bus …
+
+:chip[SCHOOLS]{style="flag"} **An orchard for Brook Lane.** Pupils at Brook Lane …
+…
+:::
+:::
+```
+
+`placement="bottom"` lleva el recuadro al pie de la <PageRef page={1}>página 1</PageRef>, donde ocupa 36,9 mm, y la noticia llena los 83 mm de columna que quedan encima. La 1.4.1 tampoco hace que el texto rodee una imagen. Un flotante ocupa una banda entera de su columna o de la página; por eso la foto principal es una banda sobre las dos columnas dentro del recuadro del titular, y el dibujo del puente ocupa todo el ancho de la columna 1. Para poner texto junto a una imagen sirve el mismo tipo de recuadro: en `:::columns{count=2 breaks="2"}`, la línea `::resource` abre la primera columna y el texto, la segunda.
+
+### 5 · Imágenes en línea, tablas flotantes
+
+<Excerpt region="floats" />
+
+La foto va en línea dentro del recuadro del titular porque un flotante `top` a todo el ancho nunca cae por encima de la línea que lo cita; como flotante, abriría la página 2 (véase Errores frecuentes). El dibujo del puente también va en línea, tras el párrafo sobre la pila. La previsión flota a la cabeza de una columna y cae en la de la derecha. La tabla de barrios flota bajo las dos columnas, donde se detiene el filete de columna. En la última página se coloca justo debajo de las columnas igualadas, y por eso el texto de encima está ajustado para que la tabla llegue al pie. Los dos tipos de recurso fijan `captionPrefix: ''`, y la 1.4.1 solo imprime la etiqueta del pie cuando el prefijo tiene texto, así que ningún pie empieza por «Figure 1».
+
+### 6 · Una página interior abre con un rótulo de sección
+
+<Excerpt region="inside" />
+
+`# Town & Valley` es un H1 cuyo `breakBefore` lleva la paridad `'any'`, así que la sección abre la página 2 sin una página en blanco delante. Su diseño es un rótulo rojo sobre una barra de 3 pt, colgado de una caja vacía de dos líneas de la rejilla. La línea de folio es una cabecera anclada a 6 mm del borde superior de la página, con una versión para las pares y otra para las impares. El estilo de la portada vacía la cabecera, de modo que sobre la mancheta no se imprime línea de folio.
+
+## Variantes
+
+### Deja los breves bajo la foto
+
+Sin `placement="bottom"` en `content.en.md`, la franja se queda en su sitio del texto, justo debajo de la foto, y la noticia principal sigue por debajo hasta el pie de la página.
+
+```diff
+-:::callout{type="briefs" span="page" placement="bottom" title="In brief"}
++:::callout{type="briefs" span="page" title="In brief"}
+```
+
+## Errores frecuentes
+
+- Si le das a la foto `placement: { position: 'top', span: 'page' }`, sale de la página 1 y queda sola en la página 2. La noticia de la portada termina entonces 92 mm por encima de la franja de breves, y la sección pasa a la página 3.

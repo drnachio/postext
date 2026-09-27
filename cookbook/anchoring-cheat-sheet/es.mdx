@@ -1,0 +1,70 @@
+---
+title: "Chuleta de anclajes: un cartel de elementos encadenados"
+summary: "Un cartel A3 cuyos elementos cuelgan de la sangre, de la página, de su ranura o unos de otros, y una segunda hoja que enmarca cada elemento y rotula trece."
+description: "Un cartel A3 compuesto en Postext sin coordenadas, con el cielo anclado a la sangre, el Sol a la página y lo demás encadenado, y su hoja de construcción."
+question: "¿Cómo coloco los elementos de diseño respecto a la página, la sangre o entre sí, sin usar coordenadas?"
+aliases: ["anclajes", "anclaje", "posicionamiento de elementos", "ranura", "cartel", "líneas de construcción", "sin coordenadas", "below", "above", "right-of", "align-bottom", "contenedor", "contenedor del pie", "banda a sangre", "cartel del eclipse"]
+pageNotes: { "1": "Un cartel A3 para cuatro charlas antes del eclipse total de Sol del 2 de agosto de 2027. Un cielo azul ultramar ocupa los dos tercios superiores, con una Luna negra que tapa un Sol amarillo limón cortado por el borde derecho y una corona blanca alrededor; el título Vuelve la sombra, en blanco, se asienta al pie del cielo, entre un antetítulo amarillo y una entradilla de tres líneas. Debajo, cuatro fechas en azul encabezan cuatro columnas de charlas y ponentes, siguen dos columnas de letra pequeña y, al pie de la hoja, una banda azul lleva el emblema del club.", "2": "El mismo cartel con la caja de cada elemento enmarcada en rosa y trece etiquetas rosas que dan el id de un elemento, su borde, su ancla y su desplazamiento, si lo hay, entre ellas #deck · align-bottom #sky · x +18 y −14 y #day2 · right-of #day1 · x +7. Otras dos etiquetas rotulan los marcos de los contenedores de la cabecera y del pie, que recorren los márgenes superior e inferior, y el texto bajo las cuatro tardes explica cómo leer la hoja." }
+---
+
+## Lo que vas a componer
+
+Cartel de un club de astronomía ficticio para cuatro charlas, los jueves de abril, antes del eclipse total de Sol del 2 de agosto de 2027. Un cielo azul ultramar llena los dos tercios superiores de un A3. Una Luna negra tapa un Sol amarillo limón cortado por el borde derecho, y detrás de ambos se extiende una corona dibujada con código. El título, *Vuelve la sombra* en Funnel Display de 120 pt, se apoya en su entradilla al pie del cielo. Bajo el horizonte, cuatro fechas azules encabezan las charlas, y la letra pequeña va a dos columnas sobre una banda azul. Cada elemento cuelga de la sangre, de la página, de su ranura o de otro, y sus desplazamientos se miden desde ahí. La segunda hoja enmarca en rosa la caja de cada elemento y los contenedores de cabecera y pie, y rotula trece elementos con su anclaje.
+
+## Elaboración
+
+### 1 · Ancla dos elementos a la hoja y cuelga los demás de ellos
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. En él, `anchor.to` dice de qué cuelga un elemento: `'bleed'` y `'page'` son marcos de la hoja (la misma caja mientras `page.cutLines` esté desactivado), `'container'` es la caja de la propia ranura y `'#id'` es otro elemento ([posicionamiento de elementos](/es/docs/configuration#posicionamiento-de-elementos)). Una caja sin ancho llega hasta el borde opuesto de su marco, así que el cielo ocupa la sangre de lado a lado. Un elemento colocado respecto al cielo se mide desde el borde izquierdo del cielo, que es el de la sangre; por eso la `x` de la entradilla es `INSET`, 18 mm. El titular se monta de abajo arriba desde el borde inferior del cielo. `'align-bottom'` deja la base de la caja de la entradilla `AIR`, 14 mm, por encima de ese borde, y `'above'` apoya cada elemento sobre el de debajo, de modo que un título con más líneas sube el antetítulo en vez de pisar la entradilla. Bajo el diseño, la letra pequeña empieza en la primera línea de la rejilla base de 16 pt que queda al menos 3,2 mm por debajo del elemento más bajo, la línea de los ponentes; esos 3,2 mm son el margen inferior que el título lleva por defecto.
+
+### 2 · Cuelga la Luna y la corona del Sol
+
+<Excerpt region="eclipse" />
+
+El Sol es el único elemento anclado a la página, que es la caja de corte. Contada desde la esquina `'top-right'`, una `x` positiva sale por el borde derecho, y 30 mm del disco quedan fuera. La Luna y la corona cuelgan del Sol con `'align-top'`, así que se mueven con él. Sus desplazamientos se cuentan desde la esquina superior izquierda del Sol: la Luna se corre 2 mm a la derecha y 2,5 mm hacia abajo, lo que deja un filo de Sol arriba a la izquierda, y la corona empieza `HALO`, 75 mm, más arriba y más a la izquierda, lo que centra su cuadrado de 300 mm sobre el disco de 150 mm. La corona es un elemento de imagen que toma el tamaño de su caja ([elementos de imagen](/es/docs/configuration#elementos-de-imagen)) y va en la lista antes que los discos para pintarse detrás de ellos.
+
+### 3 · Encadena las cuatro tardes en columnas
+
+<Excerpt region="programme" />
+
+Cada fecha, charla y ponente tiene un `size.width` fijo de `COL`, y `'right-of'` más `GUT` pone la fecha siguiente una columna más allá. Sin ancho, una fecha se ajusta a sus cifras (el «8» mide 17 mm), así que el «15» empezaría 7 mm después y cada charla correría en una sola línea hasta meterse en la columna siguiente. `COL` reparte el ancho del texto entre cuatro con el mismo medianil de 7 mm que las dos columnas de letra pequeña de debajo, por lo que la segunda columna de letra pequeña empieza bajo el 22. Cada charla cuelga `'below'` de su fecha y cada ponente de su charla, de modo que una charla que ocupara tres líneas bajaría a su ponente y a ningún otro.
+
+### 4 · Lleva la banda al pie, en todas las páginas
+
+<Excerpt region="footer" />
+
+Lo que tenga que salir en todas las páginas, como esta banda, va en la ranura de la cabecera o del pie, y un estilo de título con cabecera o pie propios la sustituye en las páginas de su sección. El pie del estilo de las guías repite estos cuatro elementos con sus marcos y sus etiquetas; por eso la banda y el emblema salen en las dos hojas. El contenedor del pie es el margen inferior, del texto al corte: `'bottom-left'` cuenta hacia arriba desde el corte y `'top-right'` hacia abajo desde el texto, y el −10 del emblema y el +10 de la línea «Entrada libre» caen en la misma franja de 10 mm, en mitad de la banda ([encabezados y pies](/es/docs/configuration#encabezados-y-pies)). El pie se pinta después del texto y no le quita sitio, de modo que `FOOT` es a la vez el margen inferior y la altura de la banda, que así nunca pisa las líneas de encima.
+
+### 5 · Dibuja las líneas de construcción desde la misma configuración
+
+<Excerpt region="guides" />
+
+`guides()` recorre los elementos del cartel. Un texto recibe un borde en su caja, y una caja cuadrada, un borde en su estilo; ninguno de los dos mueve nada, porque solo el `padding` agranda una caja. Una imagen o un disco redondo recibe una caja cuadrada de su mismo tamaño colgada de su esquina superior izquierda, así que también queda dibujada la esquina del Sol de la que cuelgan la Luna y la corona. Cada etiqueta es un texto colgado de su elemento y escrito por `describe()` a partir del `placement` de ese elemento, así que ninguna etiqueta puede contradecir la configuración que rotula. `{style="guides"}` en el segundo título trae este diseño, con una cabecera y un pie propios ([estilos de encabezado](/es/docs/configuration#estilos-de-encabezado)). Una etiqueta sin ancho solo dispone del espacio entre su ancla y el borde derecho del contenedor; por eso la etiqueta de `#free` empieza 30 mm a la izquierda de su texto. `pageIndexOffset: 1`, en la `continuation` del contenido, convierte el cartel en página par, y así el visor pone las dos hojas una junto a otra.
+
+## Variantes
+
+### Añade 3 mm de sangre y marcas de corte
+
+Con 3 mm de `BLEED` se activan las marcas de corte, y el cielo y la banda del pie, que cuelgan de la sangre, entran 3 mm en ella mientras `INSET` deja el texto en el margen; el Sol, la Luna y la corona cuelgan de la página, y como la 1.4.1 no recorta los elementos de diseño a la sangre, siguen por el margen blanco hasta el borde de la hoja.
+
+```diff
+-const BLEED = 0; // mm; 3 for the printer, which switches on page.cutLines below
++const BLEED = 3; // mm; 3 for the printer, which switches on page.cutLines below
+```
+
+### Sube el horizonte
+
+Con 20 mm menos de `SKY` sube el borde del cielo, y con él la entradilla, el título, el antetítulo y los doce textos del programa, mientras la letra pequeña pasa a una línea más alta de la rejilla base; el Sol cuelga de la página, así que el segundo cambio lo sube los mismos 20 mm para que guarde la distancia con el título, que en la edición inglesa llegaría a tocar el filo de Sol.
+
+```diff
+-const SKY = 272; // mm from the trim's top edge to the horizon, the sky's lower edge
++const SKY = 252; // mm from the trim's top edge to the horizon, the sky's lower edge
+-  disc('sun', 'sun', at('page', 'top-right', 30, 25)), // 30 mm of it past the right edge
++  disc('sun', 'sun', at('page', 'top-right', 30, 5)), // 30 mm of it past the right edge
+```
+
+## Errores frecuentes
+
+- En un pen, la versión 1.4.1 no avisa de un anclaje cíclico ni de uno roto. El panel Revisión del Sandbox los señala en la cabecera, el pie, las portadillas de parte y los niveles de título, pero no en los estilos de título como `guides`. Un elemento anclado a un `#id` que no existe se coloca respecto al contenedor: un borde de elemento como `'below'` cae en la esquina superior izquierda del contenedor, con su desplazamiento, y un borde de contenedor como `'top-right'`, en esa esquina. En un bucle, un elemento cae de la misma manera y los demás se encadenan a él.
+- En la 1.4.1, `'align-left'` y `'align-top'` llevan al mismo punto: los dos ponen la esquina superior izquierda del elemento sobre la de su ancla.
+- Un borde se pinta centrado sobre el contorno de la caja, así que cada marco rosa de 1 pt sobresale 0,5 pt de la caja que traza, aunque la documentación de la configuración dice que los trazos se pintan por dentro.

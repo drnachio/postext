@@ -1,0 +1,53 @@
+/* The editor: the Markdown on the left, the page it sets on the right, on a walnut desk. */
+#editor {
+  --desk: #1c1814; --well: #120f0c; --text: #e4d9c1; --dim: #a39680; --brass: #c9a75e;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto 1fr auto;
+  gap: 0 30px; box-sizing: border-box; width: min(1152px, 100% - 32px); margin: 24px auto 0;
+  padding: 0 30px; background: var(--desk); border-radius: 14px;
+  box-shadow: 0 0 0 1px #2c261f, 0 30px 60px -30px rgb(0 0 0 / .9);
+  font: 500 12px/1.4 system-ui, sans-serif; color: var(--dim);
+}
+#editor > header, #editor > footer {
+  grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; min-height: 58px;
+  letter-spacing: .12em; text-transform: uppercase;
+}
+#editor > header { justify-content: space-between; }
+#editor select {
+  margin-left: 8px; padding: 5px 8px; border: 1px solid #3a3229; border-radius: 6px;
+  background: var(--well); color: var(--text); font: inherit; letter-spacing: .06em;
+}
+#source {
+  box-sizing: border-box; width: 100%; height: 100%; min-height: 360px; resize: none;
+  padding: 20px 22px; border: 0; border-radius: 8px; outline: 1px solid #2c261f;
+  background: var(--well); color: var(--text); caret-color: var(--brass);
+  font: 13.5px/1.7 ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  scrollbar-width: thin; scrollbar-color: #3a3229 transparent;
+}
+#source:focus { outline-color: var(--brass); }
+#source::selection { background: rgb(201 167 94 / .35); }
+#editor figure { margin: 0; display: flex; flex-direction: column; align-items: center; }
+/* The page at 110 × 147 mm, as tall as the desk allows. */
+#proof {
+  display: block; height: min(700px, 100vh - 170px); aspect-ratio: 110 / 147; background: #f2ead8;
+  box-shadow: 0 1px 2px rgb(0 0 0 / .6), 0 24px 44px -18px rgb(0 0 0 / .9);
+}
+#editor figcaption { display: flex; align-items: center; gap: 14px; margin-top: 12px; }
+#editor figcaption button {
+  width: 30px; height: 30px; border: 1px solid #3a3229; border-radius: 50%; padding: 0;
+  background: none; color: var(--text); font: 16px/1 system-ui, sans-serif; cursor: pointer;
+}
+#editor figcaption button:hover { border-color: var(--brass); color: var(--brass); }
+#folio { min-width: 56px; text-align: center; font-variant-numeric: tabular-nums; }
+#editor > footer { color: var(--text); font-variant-numeric: tabular-nums; }
+/* The heartbeat: a hand the main thread turns every frame. */
+#beat { width: 24px; height: 24px; flex: none; }
+#beat circle { fill: none; stroke: var(--brass); stroke-width: 1.5; }
+#beat path { stroke: var(--brass); stroke-width: 2; stroke-linecap: round; }
+@media (max-width: 760px) {
+  #editor { grid-template-columns: 1fr; padding: 0 16px; gap: 0; }
+  #editor > header { flex-direction: column; align-items: flex-start; padding: 14px 0; }
+  #source { height: 42vh; }
+  #editor figure { margin-top: 20px; }
+  #proof { height: auto; width: min(420px, 100%); }
+  #editor > footer { flex-wrap: wrap; padding: 12px 0; }
+}

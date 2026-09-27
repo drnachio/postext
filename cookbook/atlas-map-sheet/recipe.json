@@ -1,0 +1,63 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 67,
+  "status": "published",
+  "chapter": "figures",
+  "order": 40,
+  "level": 3,
+  "genres": ["manual"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["rotated-tables", "swatches", "captions"],
+    "also": [
+      "resource-types", "figure-numbering", "citations", "float-placement", "credit-notes",
+      "color-palette", "opener-design", "opener-band", "heading-attributes", "mirrored-margins",
+      "table-model", "table-style", "cell-fills", "chips", "running-heads", "resources",
+      "canvas-rendering"
+    ]
+  },
+  "answers": ["Q63", "Q64", "Q52"],
+  "gaps": [],
+  "gotchas": [
+    "top-float-next-page", "no-zebra", "svg-no-webfonts", "resource-types-locale", "nbsp-breaks",
+    "ragged-runts", "style-italic-colour", "headings-drop-h1-break", "palette-skips-designs",
+    "design-lineheight-multiple", "overflow-ellipsis-default", "config-cache-identity",
+    "fonts-first", "quote-frontmatter"
+  ],
+  "workarounds": [
+    { "followup": "EF-189", "package": "postext", "note": "1.4.1 does not level a closing page that follows a page taken whole by a float (here the turned chart on page 3; a page-tall figure that is not turned does the same): without a break, every paragraph of page 4 fills its left-hand column and only the colophon, which no longer fits there, starts the right-hand one; a :::columnbreak before 'About this sheet' splits the closing text by hand in both editions. Move it when the text changes" },
+    { "followup": "EF-23", "package": "postext", "note": "a table style has no zebra option, so gazetteer() fills every other body row cell by cell with setCellBackground and a palette-linked colour" },
+    { "followup": "EF-66", "package": "postext", "note": "a no-break space still breaks a caption note (with U+00A0 the English key of Map 3 breaks between '3' and 'harbour office'), so each entry of the key is a bare 'key' chip that keeps its number, its name and the dot after it on one line" },
+    { "followup": "EF-147", "package": "postext", "note": "the text is ragged, and 1.4.1 has no runt control for ragged text: the last line of every paragraph was read in both editions and reworded until it held more than one word, and three Spanish lines that ended on 'y' were reworded" },
+    { "followup": "EF-68", "package": "postext", "note": "the colophon is set upright: 1.4.1 paints italic runs in a paragraph style with bodyText.italicColor, so an italic colophon printed in ink instead of the style's muted grey" },
+    { "followup": "EF-33", "package": "postext", "note": "the gazetteer's table type comes from defaultResourceTypes(LANG), Tabla in Spanish; the map type is named in the pen for both languages" },
+    { "followup": "EF-05", "package": "postext", "note": "the H1 page break is restated in headings.levels[0].breakBefore" },
+    { "followup": "EF-71", "package": "postext", "note": "col() writes the hex beside each paletteId, and referenceColor is restated: 1.4.1 paints the opener's band, kicker, title and lead, the running heads and the reference colour from the hex" },
+    { "followup": "EF-56", "package": "postext", "note": "design text lineHeight is given as a multiple" },
+    { "followup": "EF-11", "package": "postext", "note": "every frontmatter value is quoted: the title feeds the opener's large name and the verso running head" }
+  ],
+  "related": ["garden-almanac", "walking-guide-thumb-tabs", "figures-float-where-cited", "textbook-margin-column"],
+  "engine": { "postext": "1.4.1" },
+  "kit": ["core", "fonts", "viewer", "images"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": {
+    "hero": 1,
+    "card": "loupe",
+    "focus": { "page": 1, "x": 0.33, "y": 0.55, "w": 0.42, "h": 0.28 },
+    "expect": { "pages": [4, 4] }
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [],
+    "images": [],
+    "fonts": [
+      { "family": "Marcellus", "license": "OFL-1.1" },
+      { "family": "Alegreya Sans", "license": "OFL-1.1" },
+      { "family": "Alegreya Sans SC", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-26",
+  "updated": "2026-09-26"
+}

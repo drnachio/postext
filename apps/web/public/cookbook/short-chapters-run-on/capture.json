@@ -1,0 +1,663 @@
+{
+  "schemaVersion": 1,
+  "slug": "short-chapters-run-on",
+  "sourceHash": "a0226d1e44f9037b9d89dfab59e4e95ee1c76c98d8de255a2ebd6587aeaff523",
+  "engine": {
+    "postext": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-26T22:16:39.686Z",
+  "variants": {
+    "en": {
+      "hash8": "63f11a4e",
+      "vdtHash": "9a424bd179d7d886823253dd5ee5893ef7bd85b5",
+      "timings": {
+        "importMs": 241,
+        "fontsMs": 1184,
+        "buildMs": 17,
+        "totalMs": 2109,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          110,
+          178
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Tinos",
+          "sizePt": 9.5,
+          "leadingPt": 12.600000000000001
+        },
+        "families": [
+          "Abril Fatface",
+          "League Spartan",
+          "Tinos"
+        ],
+        "pages": 7,
+        "ownLines": 171
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1618,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 20682,
+          "alt": "Opening page 1: Dom Casmurro."
+        },
+        {
+          "n": 2,
+          "label": "212",
+          "role": "opener",
+          "w": 1000,
+          "h": 1618,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 28422,
+          "alt": "Opening page 212: Capítulo CXXIII."
+        },
+        {
+          "n": 3,
+          "label": "213",
+          "role": "body",
+          "w": 1000,
+          "h": 1618,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 155898,
+          "alt": "Page 213: CXIX Não faça isso, querida."
+        },
+        {
+          "n": 4,
+          "label": "214",
+          "role": "body",
+          "w": 1000,
+          "h": 1618,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 126746,
+          "alt": "Page 214: CXX Os autos."
+        },
+        {
+          "n": 5,
+          "label": "215",
+          "role": "body",
+          "w": 1000,
+          "h": 1618,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 139980,
+          "alt": "Page 215: CXXII O enterro."
+        },
+        {
+          "n": 6,
+          "label": "216",
+          "role": "body",
+          "w": 1000,
+          "h": 1618,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 147320,
+          "alt": "Page 216: CXXIII Olhos de ressaca."
+        },
+        {
+          "n": 7,
+          "label": "217",
+          "role": "body",
+          "w": 1000,
+          "h": 1618,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 52220,
+          "alt": "Page 217."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.lineHeight",
+          "bodyText.maxRuntTracking",
+          "bodyText.referenceColor",
+          "calloutStyles",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.italicColor",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].icon",
+          "calloutStyles[].icon.kind",
+          "calloutStyles[].icon.resourceId",
+          "calloutStyles[].icon.size",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].placement",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.gap",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headings",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 290,
+        "designElements": 17,
+        "directives": [
+          ":::pagebreak",
+          ":::numbering",
+          ":::callout"
+        ],
+        "inline": [
+          "{attrs}",
+          "\\\\"
+        ],
+        "resources": {
+          "svg": 2,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Abril Fatface",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "League Spartan",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Tinos",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Tinos",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-icons",
+          "callout-styles",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-breaks",
+          "page-role-filters",
+          "resources",
+          "roman-front-matter",
+          "title-line-breaks",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.78
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "63f11a4e",
+      "vdtHash": "9a424bd179d7d886823253dd5ee5893ef7bd85b5",
+      "timings": {
+        "importMs": 95,
+        "fontsMs": 18,
+        "buildMs": 18,
+        "totalMs": 833,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          110,
+          178
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Tinos",
+          "sizePt": 9.5,
+          "leadingPt": 12.600000000000001
+        },
+        "families": [
+          "Abril Fatface",
+          "League Spartan",
+          "Tinos"
+        ],
+        "pages": 7,
+        "ownLines": 171
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1618,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 20682,
+          "alt": "Página de apertura 1: Dom Casmurro."
+        },
+        {
+          "n": 2,
+          "label": "212",
+          "role": "opener",
+          "w": 1000,
+          "h": 1618,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 28422,
+          "alt": "Página de apertura 212: Capítulo CXXIII."
+        },
+        {
+          "n": 3,
+          "label": "213",
+          "role": "body",
+          "w": 1000,
+          "h": 1618,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 155898,
+          "alt": "Página 213: CXIX Não faça isso, querida."
+        },
+        {
+          "n": 4,
+          "label": "214",
+          "role": "body",
+          "w": 1000,
+          "h": 1618,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 126746,
+          "alt": "Página 214: CXX Os autos."
+        },
+        {
+          "n": 5,
+          "label": "215",
+          "role": "body",
+          "w": 1000,
+          "h": 1618,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 139980,
+          "alt": "Página 215: CXXII O enterro."
+        },
+        {
+          "n": 6,
+          "label": "216",
+          "role": "body",
+          "w": 1000,
+          "h": 1618,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 147320,
+          "alt": "Página 216: CXXIII Olhos de ressaca."
+        },
+        {
+          "n": 7,
+          "label": "217",
+          "role": "body",
+          "w": 1000,
+          "h": 1618,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 52220,
+          "alt": "Página 217."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.lineHeight",
+          "bodyText.maxRuntTracking",
+          "bodyText.referenceColor",
+          "calloutStyles",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.italicColor",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].icon",
+          "calloutStyles[].icon.kind",
+          "calloutStyles[].icon.resourceId",
+          "calloutStyles[].icon.size",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].placement",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.gap",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headings",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 290,
+        "designElements": 17,
+        "directives": [
+          ":::pagebreak",
+          ":::numbering",
+          ":::callout"
+        ],
+        "inline": [
+          "{attrs}",
+          "\\\\"
+        ],
+        "resources": {
+          "svg": 2,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Abril Fatface",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "League Spartan",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Tinos",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Tinos",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-icons",
+          "callout-styles",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-breaks",
+          "page-role-filters",
+          "resources",
+          "roman-front-matter",
+          "title-line-breaks",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.78
+        },
+        "findings": []
+      }
+    }
+  }
+}

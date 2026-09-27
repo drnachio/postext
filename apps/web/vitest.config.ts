@@ -8,5 +8,9 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["src/**/*.test.ts"],
+    // One test renders the Markdown of every docs and Cookbook page. It
+    // takes well under a second, but past vitest's 5 s default when the
+    // machine is busy with other suites.
+    testTimeout: 30_000,
   },
 });

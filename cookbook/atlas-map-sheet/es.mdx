@@ -1,0 +1,71 @@
+---
+title: "Hoja de atlas: mapas numerados y una carta girada"
+summary: "Mapas con numeración propia y el pie sobre una barra azul, una leyenda de muestras en los colores de los mapas y una carta náutica girada en la página 3."
+description: "Cuatro páginas de atlas compuestas con Postext: mapas numerados con el pie sobre una barra, una leyenda de muestras, un nomenclátor y una carta apaisada."
+question: "¿Cómo numero los mapas como un tipo de figura propio, con el pie sobre una barra, y los cito en el texto?"
+aliases: ["atlas", "mapas", "figuras de mapa", "nomenclátor", "leyenda", "muestras de color", "figura apaisada", "figura girada", "barra de pie", "carta náutica", "map", "gazetteer"]
+pageNotes: { "1": "La apertura: una banda azul oscuro en la cabeza de la página con el antetítulo Hoja 1 · Las islas y sus aguas, el título Las islas Solan y una rosa de los vientos; dos columnas cortas de texto, y al pie el mapa 1, el relieve de cuatro islas en tintas de arena y ocre sobre agua azul clara y más oscura, con carreteras rojas y una leyenda de muestras que empieza por En metros.", "2": "El mapa 2, el extremo norte de Brannay con curvas de nivel, los tres Hool Stacks frente a su punta noroeste y discos rojos numerados, y el mapa 3, el plano del puerto de Kirkwick con sondas y una clave de números en círculos, encabezan las dos columnas; el texto sigue debajo.", "3": "El mapa 4, una carta de todo el grupo y de la costa de tierra firme, girada un cuarto de vuelta con el norte hacia el lomo; en el margen, una cuadrícula con letras de la A a la H y números del 1 al 6; sondas en mar abierto y diecisiete discos rojos.", "4": "La tabla 1, el nomenclátor: diecisiete filas con un disco rojo numerado, el lugar, qué es, su isla y su cuadro, y una fila de cada dos teñida de azul; debajo, dos columnas de texto de cierre y el colofón, y abajo del todo el pie de imprenta bajo un filete." }
+---
+
+## Lo que vas a componer
+
+La primera hoja de un atlas de las islas Solan, un archipiélago inventado y dibujado en código a partir de un campo de alturas. La página 1 se abre con una banda azul oscuro, el nombre del atlas a 56 pt y una rosa de los vientos, y el mapa 1, el relieve del grupo, ocupa el pie de la página. El norte de la isla principal y el plano de su puerto encabezan las dos columnas de la página 2. En la página 3, la carta va girada un cuarto de vuelta para que su cuadrícula de 8 km llene la página. La página 4 recoge el nomenclátor, diecisiete lugares en discos rojos con su cuadro de la carta, y abajo, el pie de imprenta. Cada mapa lleva el pie encima, sobre una barra azul, y la leyenda del mapa 1 es una línea de muestras con sus colores.
+
+## Elaboración
+
+### 1 · Una paleta para la página y para los mapas
+
+<Excerpt region="palette" />
+
+Las seis tintas de los mapas son claves del mismo objeto que los colores de la página, así que `colorPalette` las incluye como entradas de la paleta y los dibujos toman de `palette[id]` los rellenos de su SVG. El blanco del papel tiene un contraste de 9,2:1 sobre `band`, el azul de la apertura, de las barras de los pies y de la fila de cabecera de la tabla. `road`, el único rojo, se reserva para carreteras, faros y números de lugar, con un contraste de 5,4:1 sobre el papel. `main-color` toma el hex de `band`, y los valores por defecto enlazan con ese identificador los títulos, las barras de los pies y las viñetas de las listas, así que cualquiera de ellos que la configuración no fije sale en el azul del atlas.
+
+### 2 · Adónde va cada mapa
+
+El código es [la respuesta corta](#la-respuesta-corta), más arriba. El mapa 1 es un flotante `bottom` porque un flotante `top` a todo el ancho nunca cae en la página que lo cita. Los mapas 2 y 3 son flotantes `top` de columna citados en la página 1, así que encabezan las dos columnas de la página 2 ([Colocación](/es/docs/document-format#colocación)). `rotate: 'ccw'` lleva la parte de arriba de la carta al borde izquierdo y le deja la página 3 para ella sola. Girado, el dibujo mide 247,6 mm a lo largo de la página, las 53 líneas de la rejilla base de la caja menos una para el espacio del flotante, y 182,2 mm a lo ancho, lo que queda de la medida de 196 mm tras restar la barra del pie y la nota. Un dibujo más alto se reduciría y dejaría papel en blanco en la cabeza de la página.
+
+### 3 · Una leyenda con los mismos identificadores
+
+<Excerpt region="legend" />
+
+`RELIEF` enumera las franjas con su identificador de paleta y la altura en que empieza cada una. El dibujo rellena cada franja con `palette[id]` y la leyenda bajo el mapa 1 escribe un `:swatch` con el mismo identificador, así que un hex nuevo en la paleta cambia a la vez el dibujo y la leyenda. La leyenda da la unidad una sola vez y con todas sus letras, porque la nota va en Alegreya Sans SC, que imprime una *m* minúscula como una M versalita. En la <PageRef page={2}>página 2</PageRef>, el texto pone las mismas muestras junto a las dos profundidades del agua.
+
+### 4 · Los mapas son recursos, y su cita los numera y los coloca
+
+<Excerpt region="resources" />
+
+Un recurso recibe su número en la primera cita del texto, y `:ref{id="north" case="lower"}` imprime la etiqueta corta del tipo y ese número en minúscula, «mapa 2», tanto en el texto como en una nota. La carta y el nomenclátor se citan por primera vez en la página 2, por ese orden, así que la carta ocupa la página 3, y el nomenclátor, la cabeza de la página 4. La rosa de los vientos es un recurso del mismo tipo, pero solo la dibuja la apertura y el texto no la cita nunca, así que los mapas siguen numerados del 1 al 4. Cada entrada de la clave del puerto es un solo chip sin fondo, borde ni relleno, de modo que el número, el nombre y el punto que va detrás quedan en la misma línea; con espacios de no separación, 1.4.1 parte la clave de la edición inglesa entre el 3 y *harbour office*.
+
+### 5 · Números que comparten los mapas y el nomenclátor
+
+<Excerpt region="gazetteer" />
+
+`PLACES` va ordenada de norte a sur y numerada en ese orden; los mapas imprimen esos números en discos rojos, y la tabla, en chips rojos. `square()` calcula el cuadro de la carta con las mismas coordenadas en kilómetros que sitúan cada marca en los mapas, así que Kirkwick, el número 6, cae en D3 tanto en la carta como en la tabla. Un estilo de tabla tiene un solo relleno para el cuerpo, así que una fila de cada dos se rellena celda a celda con `setCellBackground`.
+
+### 6 · El nombre del atlas en una banda de su propio azul
+
+<Excerpt region="opener" />
+
+La banda es una caja anclada a `'bleed'` y sin anchura, así que va de borde a borde. El título grande es `{title}`, el nombre del atlas en el frontmatter, y el título de la hoja pasa al antetítulo, detrás de su número. Por sí sola, la banda reserva espacio hasta su pie, y el texto empezaría 3,9 mm por debajo; `minHeight` amplía la reserva a 14 líneas de la rejilla base bajo el margen superior, y el texto empieza a 8,7 mm de la banda.
+
+## Variantes
+
+### Gira la carta al otro lado
+
+Girada en el sentido de las agujas del reloj, la carta tiene la parte de arriba y la barra del pie en el corte exterior de la página 3, y el lector tiene que girar el libro en sentido contrario al habitual, el que sigue `'ccw'`.
+
+```diff
+-  chart: { rotate: 'ccw' }, // turned a quarter, top to the left, on a page of its own
++  chart: { rotate: 'cw' }, // turned a quarter, top to the right, on a page of its own
+```
+
+### Gira una tabla
+
+Una tabla gira con el mismo ajuste y, cuando es demasiado ancha para una página, sigue girada en la siguiente bajo la fila de cabecera repetida: mira <RecipeLink slug="garden-almanac">el almanaque del huerto</RecipeLink>.
+
+### Pon un mapa al margen
+
+En una maqueta de columna y media, la columna exterior puede reservarse para las figuras y sus pies, sin texto: mira <RecipeLink slug="textbook-margin-column">el libro de texto con columna al margen</RecipeLink>.
+
+## Errores frecuentes
+
+- El texto de cierre de la <PageRef page={4}>página 4</PageRef> se reparte a mano con un `:::columnbreak`. Postext 1.4.1 no equilibra las columnas de una página de cierre que sigue a una página ocupada entera por un flotante, aquí la carta girada, y sin el salto todos los párrafos van a la columna izquierda y solo el colofón empieza la derecha. Mueve el salto cuando cambie el texto.

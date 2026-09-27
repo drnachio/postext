@@ -1,0 +1,92 @@
+---
+title: "Running heads by parity in a book of essays"
+summary: "Header elements filtered by parity and page role: book title on versos, essay title cut short on rectos, folio tabs in the margin, a drop folio on openers."
+description: "A pocket Montaigne set in Postext, with running heads chosen by parity and page role, folio tabs in the outer margin and an ellipsis for long essay titles."
+question: "How do I put the book title on left pages, the chapter on right pages and the folio outside?"
+aliases: ["running head", "verso and recto heads", "odd and even pages", "page number outside", "folio tab", "long chapter title", "truncate title with ellipsis", "hide header on chapter opener", "blank page colour", "blue header default"]
+pageNotes: { "3": "The recto head cuts the essay’s 81-character title with an ellipsis before a 0.5 pt sepia divider and the folio tab in the outer margin.", "4": "Page 32, a verso, carries the book’s title; the essay ends a third of the way down." }
+---
+
+## What you'll build
+
+Pages 29 to 33 of a pocket edition of Montaigne’s *Essays* in Charles Cotton’s English: the whole of chapter IV and the opening of chapter V. Versos carry the book’s title in spaced capitals. Rectos carry the essay’s title in italic, cut short with an ellipsis, since chapter IV’s title runs to 81 characters. Each folio sits in a sepia tab in the outer margin, 3 mm from a 0.5 pt rule on the edge of the text block. An opener has no head, only a folio at the foot. The text is Baskervville on a warm off-white page, the titles Libre Caslon Display, the folios and the book’s title Alegreya SC. Every head is defined in the configuration, so the engine’s built-in head, blue Open Sans at 8 pt, never prints.
+
+## Method
+
+### 1 · Replace the built-in blue head
+
+<Excerpt region="palette" />
+
+Every colour in the configuration links to one of these entries. If you leave `header` undefined, the engine draws its built-in head: `{title}` on rectos and `{chapterTitle}` on versos over a 1 pt rule, in Open Sans 600 at 8 pt and `#295AA3` blue ([headers and footers](/en/docs/configuration#headers--footers)). Pointing `main-color` at the sepia recolours the text defaults but leaves that head blue, because design slots never read the palette. So each head here is written out in full, with its colours in hex. Bold, italic and references also default to `main-color`, and `bodyText` sets them back to the ink.
+
+### 2 · Build every head from one tab
+
+<Excerpt region="tab" />
+
+The short answer anchors each head’s tab to `'page'`, so its offsets are measured from the trim. From the `top-right` corner a positive `x` runs off the page, which is why the recto tab takes a negative one. The divider hangs from the tab and the title from the divider ([element placement](/en/docs/configuration#element-placement)). The tab’s sizes are named constants because the other pieces are measured from them. The divider is `TAB_H` tall. The folio and both titles share one 9 pt line box, and a design text’s baseline sits 80% of the way down its line box, so all three stand on one baseline at any type size.
+
+<PageShot page={2} crop="0.04,0.045,0.6,0.05" caption="Page 30, a verso: tab, divider and the book’s title, reading inwards from the outer margin." />
+
+<PageShot page={3} crop="0.34,0.045,0.62,0.05" caption="Page 31, a recto: the essay’s title, cut before the divider and the tab in the outer margin." />
+
+### 3 · Mirror the margins and count whole lines
+
+<Excerpt region="page" />
+
+With `mirror: true`, the `right` margin is the outer one on a recto and moves to the left on a verso, so `OUTER` is always the fore-edge margin, where the tabs hang. The bottom margin is derived from the trim, the top margin and `LINES`, which keeps the text block at exactly `LINES` lines of `LEAD` (31 × 14 pt here) whatever trim or top margin you set. Every full page ends on the 31st line, so facing pages such as <PageRef page={2}>30 and 31</PageRef> end level.
+
+### 4 · Let the opener show the whole title
+
+<Excerpt region="opener" />
+
+The opener sets the title in full with `overflow: 'wrap'` and breaks it at each `\\` in the heading line. Only a page-spanning opener honours those breaks, so the level has `span: 'page'` ([line breaks in titles](/en/docs/document-format#line-breaks-in-titles)). In the running head, `{chapterTitle}` always gives the title on one line, and the ellipsis cuts that line. The numeral comes from the heading’s `{num="IV"}` attribute and the small capitals beside the plate from the frontmatter’s `subtitle`.
+
+### 5 · Open every essay on a recto
+
+<Excerpt region="levels" />
+
+Any `headings` object switches off the H1 page break, so it is restated. With `'odd'`, an essay that ends on a recto is followed by a blank verso. The Spanish edition has one, because its chapter IV ends on page 31; here chapter IV ends on page 32, a verso, and chapter V opens on page 33. The heads’ `pages: 'body'` keeps them off blank pages and off openers (the pages whose first block is this heading). The footer’s `pages: 'opener'` prints the drop folio on openers only ([text elements](/en/docs/configuration#text-elements)).
+
+### 6 · Start the folios at 29
+
+<Excerpt region="build" />
+
+`parity` goes by the page’s place in the book and ignores its folio. `pageIndexOffset: 28` adds 28 to every page’s index, so recto and verso, the mirrored margins and the odd and even heads follow the book page. `pageNumbering.startAt` then numbers these pages 29 to 33. Without the offset the first page of the build is a recto whatever folio it prints. That happens to suit page 29, but with `startAt: 30` the book’s title would land on page 31 and the essay’s on page 32, each on the wrong side of the spread.
+
+## Variations
+
+### Give long titles a short running title
+
+Write the running title on the heading line, `{num="IV" short="Of false objects"}`, and print the attribute instead of the whole title; a chapter without `short` prints nothing there.
+
+```diff
+-  { kind: 'text', id: 'essay', content: '{chapterTitle}', parity: 'odd', pages: 'body',
++  { kind: 'text', id: 'essay', content: '{attr.short}', parity: 'odd', pages: 'body',
+```
+
+### Let essays open on either side
+
+With `'any'` an essay starts on the next page, recto or verso, and no blank page is ever added. The plate hangs from the top-left corner of the text block and the drop folio is centred under it, so both sit the same way on a verso as on a recto.
+
+```diff
+-      { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
++      { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
+```
+
+### Paint the blank verso in the accent
+
+A box with `pages: 'blank'` prints only on the pages the recto break adds: in the Spanish edition it fills page 32 with sepia, and the English edition, which has no blank page, is unchanged.
+
+```diff
+ const footer = { elements: [folio({ id: 'drop-folio', parity: 'all', pages: 'opener',
+-  anchor: { to: 'container', edge: 'bottom' }, y: -HEAD })] };
++  anchor: { to: 'container', edge: 'bottom' }, y: -HEAD }),
++  { kind: 'box', id: 'blank-leaf', pages: 'blank', style: { backgroundColor: col('sepia') },
++    placement: { anchor: page('top-left'),
++      size: { width: mm(TRIM.width), height: mm(TRIM.height) } } }] };
+```
+
+## Pitfalls
+
+- `CAP` is fitted to essay IV’s title in each edition, the only one a running head shows here. Essay V’s head would still be cut mid-word (“Whether the governor of a place besieged ou…”), so a book of long titles needs the short running title from Variations.
+- In the English edition, raising `minWordSpacing` from 0.7 to 0.75 leaves the first line of essay V (“Quintus Marcius, the Roman legate…”) with no break inside the band, and its word spaces stretch to 2.4 times their normal width. The Spanish edition has no such line. After any change, check the loosest lines the capture lists.

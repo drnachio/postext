@@ -1,0 +1,84 @@
+---
+title: "Recuadros que se parten, flotan y se fijan"
+summary: "Una hoja de prácticas en la que el procedimiento se parte entre dos columnas, la hoja de datos encabeza la página siguiente y una insignia va fija al pie."
+description: "Un cuaderno de prácticas en Postext: un aviso entero, un procedimiento partido entre dos columnas, la hoja de datos flotada a la página 43 y una insignia fija."
+question: "¿Cómo dejo que un recuadro largo se parta, hago flotar otro a la página siguiente y fijo una insignia al pie?"
+aliases: ["recuadro partido", "recuadro que continúa", "keepTogether", "recuadro flotante", "insignia fija", "pegatina", "recuadro fijo", "panel a todo el ancho", "panel en tres columnas", "hoja de prácticas", "cuaderno de prácticas", "ficha de laboratorio"]
+pageNotes: { "1": "La apertura de la Práctica 4, Construye un reloj de sol: una banda amarillo sol con el título en gris antracita y, junto al corte delantero, un abanico de sombras de una tarde calculadas para la latitud de Madrid. Bajo la introducción, el panel amarillo «Necesitarás» ocupa las dos columnas y se divide en otras tres.", "2": "Una franja antracita de seguridad con un triángulo de aviso amarillo y, después, el recuadro amarillo Procedimiento, con un compás en una insignia sobre su esquina exterior: los pasos 1 a 4 bajo su título, al pie de la columna izquierda, y los pasos 5 a 14 en la cabeza de la derecha, a la misma medida y sin título ni insignia.", "3": "El recuadro Hoja de datos, una hoja amarilla pálida con la tabla del mediodía solar de Madrid mes a mes, flotado a la cabeza de la página; debajo corren dos columnas de texto.", "4": "El reloj de perfil a mediodía en verano y en invierno, la tabla de lecturas junto al final del texto, un resumen en tres columnas a todo el ancho y una insignia antracita Autoevaluación · 10 min fija al pie, con una mano que señala colgada en el margen." }
+---
+
+## Lo que vas a componer
+
+Cuatro páginas de *Taller de ciencias*, un cuaderno de prácticas escolar: la Práctica 4, «Construye un reloj de sol». En la página 42, el aviso de seguridad queda entero, y el procedimiento de catorce pasos, con fondo amarillo y un compás en la esquina, empieza al pie de la columna izquierda y continúa en la cabeza de la derecha, a la misma medida y sin título. La hoja de datos de Madrid sale del flujo en esa página y encabeza la 43, sobre el texto. Al pie de la última página va fija una insignia antracita, «Autoevaluación · 10 min», con una mano que la señala desde el margen. En la apertura, la banda amarillo sol lleva las sombras de una varilla entre el mediodía y las cinco de la tarde, calculadas para la latitud de Madrid, y un panel a todo el ancho reparte los materiales en tres columnas.
+
+## Elaboración
+
+### 1 · Una base común para todos los recuadros
+
+<Excerpt region="look" />
+
+Todos los estilos parten de `box()`: el título en monoespaciada, un cuerpo de 8,8 pt (el texto va a 9,4) y el relleno interior. Después, cada uno añade un solo rasgo propio: el aviso, una franja antracita; el procedimiento, un fondo amarillo; la hoja de datos, un fondo crema; el resumen, un filete superior, y la insignia, una píldora antracita. Así, el alumno distingue cada recuadro antes de leer su título. En el procedimiento, el fondo marca además la continuación: la parte que sigue en la cabeza de la columna derecha no lleva título, y solo el amarillo la une a los pasos 1 a 4, al pie de la izquierda.
+
+### 2 · Entero, partido, flotante y fijo
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. El procedimiento mide 192 mm y en una columna caben 211, así que, si se mantuviera entero, saltaría a la cabeza de la columna derecha y dejaría 43 mm vacíos al pie de la izquierda. Con `keepTogether: false` empieza donde cae y sigue en la columna siguiente, o en la página siguiente, como muestra la segunda variante ([el contenedor `:::callout`](/es/docs/configuration#el-contenedor-callout)). La continuación pierde el título y el icono. Con un icono en línea, además, devolvería al texto la columna del icono y el resto se compondría más ancho; por eso el compás va en la esquina exterior del recuadro, donde no resta anchura y las dos partes conservan la misma medida. La valla de la hoja de datos lleva `placement="top"`, así que el recuadro sale del flujo en la <PageRef page={2}>página 42</PageRef> y encabeza la siguiente. La insignia es `fixed`, y un `offset.x` negativo lleva la mano y su filete al margen exterior para que el borde de la insignia quede alineado con el texto.
+
+### 3 · Cruza la página con un panel de tres columnas
+
+<Excerpt region="panel" />
+
+Con `span: 'page'`, el recuadro de materiales ocupa las dos columnas. La introducción queda cortada a la misma altura por encima y el texto sigue a dos columnas por debajo (<PageRef page={1}>página 41</PageRef>). Dentro de la valla, `:::columns{count=3 breaks="5,9"}` fija dónde empieza cada columna en lugar de equilibrarlas: `breaks` cuenta bloques hijos, y cada elemento de lista es uno, así que la segunda y la tercera columna empiezan en el quinto y el noveno, las etiquetas en negrita. `columnGap` usa el medianil de 7 mm de la página, y las columnas del panel quedan tan separadas como las del texto.
+
+```markdown
+:::callout{type="material" title="Necesitarás"}
+:::columns{count=3 breaks="5,9"}
+**Para la esfera**
+
+- Cartón pluma de 20 × 30 cm
+- La plantilla de la esfera
+- Pegamento y rotulador
+
+**Para el gnomon y la base**
+…
+:::
+:::
+```
+
+### 4 · Un amarillo para los campos, otro más claro para el recuadro largo
+
+<Excerpt region="palette" />
+
+El amarillo sol se reserva para los fondos grandes, la banda y el panel; sobre él, el antracita y la tinta dan un contraste de 7,4:1 y 8,6:1. Como color de letra sobre blanco se quedaría en 1,8:1, así que nunca se usa para texto. El procedimiento lleva `light`, un amarillo más claro: sobre él la tinta llega a 11:1, y el corte se sigue viendo en la miniatura de la galería. La hoja de datos lleva `tint`, un crema casi blanco, para que no se confunda con el procedimiento, el otro recuadro con fondo del pliego. `main-color` apunta al antracita, de modo que los valores por defecto que la configuración no cambia salen en antracita y no en el azul del motor.
+
+### 5 · Abre la práctica con una banda amarilla
+
+<Excerpt region="opener" />
+
+La banda es un elemento de caja anclado a la página; el dibujo, un elemento de imagen junto al corte delantero. El antetítulo, la entradilla y la línea de sesiones salen de atributos de la línea del título. Como la banda está anclada a la página, la apertura ya reserva altura hasta su pie, y el texto empezaría 3,6 mm por debajo. `minHeight: BAND - TOP + AIR` pide 8 mm; la reserva se ajusta a la siguiente línea de la rejilla base y el texto empieza 8,4 mm bajo la banda.
+
+## Variantes
+
+### Mantén entero el procedimiento
+
+Sin ese ajuste, el procedimiento, que cabe en una columna, pasa entero a la cabeza de la columna derecha y deja 43 mm vacíos al pie de la izquierda.
+
+```diff
+-  box('pasos', { keepTogether: false, background: col('light'),
++  box('pasos', { background: col('light'),
+```
+
+### Haz flotar la hoja de datos al pie
+
+Con `placement="bottom"` en `content.es.md`, la hoja de datos ocupa el pie de la página donde cae su valla, la 42. El procedimiento, desplazado, empieza en la cabeza de la columna derecha y se parte entre las dos páginas hasta la cabeza de la 43.
+
+```diff
+-:::callout{type="datos" placement="top" title="Hoja de datos · Madrid, 40,4° N · 3,7° O"}
++:::callout{type="datos" placement="bottom" title="Hoja de datos · Madrid, 40,4° N · 3,7° O"}
+```
+
+## Errores frecuentes
+
+- Un recuadro más alto que una columna entera se parte diga lo que diga `keepTogether`. El ajuste solo decide en los recuadros que caben en una columna, como este procedimiento de 192 mm en una columna de 211.
+- `splitMinLines` cuenta las líneas de todo el recuadro a cada lado del corte, no las del paso que corta, así que el corte aún puede dejar sola una línea de un paso. El texto anterior al procedimiento está ajustado para que el corte caiga entre los pasos 4 y 5; en la variante con la hoja de datos al pie, la última línea del paso 11 abre sola la página 43. Un cambio en el texto que precede a un recuadro partido puede mover el corte, así que vuelve a mirar dónde cae después de cada retoque.
+- Un icono en línea ocupa una columna propia, y la continuación la devuelve. Si el corte cae entre pasos, el resto del recuadro se desplaza a la izquierda lo que miden el icono y su separación; si cae dentro de un paso, el resto del paso se recompone más ancho y puede repetir palabras. Un icono en la esquina, o una franja lateral sobre la que asentarlo, mantiene las dos partes a la misma medida.
+- Un recuadro con `placement="top"` encabeza la página siguiente a aquella en la que cae su valla, así que la valla va en la página anterior a la que debe encabezar. Aquí está justo antes del procedimiento, en la 42.

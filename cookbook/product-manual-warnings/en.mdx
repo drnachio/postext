@@ -1,0 +1,64 @@
+---
+title: "Product manual with safety notices"
+summary: "A German kettle manual whose WARNUNG and VORSICHT boxes carry the warning triangle on a signal-coloured band, with German figure and table labels."
+description: "A German appliance manual in Postext: signal-word boxes with a triangle on a coloured band, key chips, a parts drawing and a table split over two pages."
+question: "How do I make warning boxes with an icon on a coloured stripe, in a language Postext does not label?"
+aliases: ["safety notice", "warning box", "caution box", "notice box", "signal word", "hazard triangle", "instruction manual", "user manual", "German", "Bedienungsanleitung", "WARNUNG", "VORSICHT", "keycap", "troubleshooting table"]
+pageNotes: { "1": "The cover: Verra W1 in white on a teal wall above a white kettle drawn in teal lines, standing on the white lower third of the page, with Bedienungsanleitung, a DE tab and the model line.", "2": "Section 1, Sicherheitshinweise, under a teal tab holding a white 1. Three paragraphs, the last naming the signal words as filled red, amber and teal chips, then two boxes: WARNUNG · STROMSCHLAG with a white triangle on a red band inside a thin red frame, and VORSICHT · VERBRÜHUNGSGEFAHR with a black triangle on an amber band.", "3": "Section 2: a side view of the kettle with eight numbered teal leaders, Abbildung 1, then Tabelle 1, a four-row legend whose numbers are round teal chips and whose control panel row shows three outlined keys, two short paragraphs and a three-item checklist.", "4": "Section 3: steps numbered in large teal figures with outlined key chips, dashes nested two levels under the last step, a teal HINWEIS box with rounded corners and an info icon, and a four-item temperature list.", "5": "Section 4, Reinigung und Entkalken: two paragraphs, three descaling steps under large teal numbers and a HINWEIS box, then section 5, Störungen beheben, whose paragraph cites Tabelle 2.", "6": "Tabelle 2, the troubleshooting table: a black head row, faults in bold spanning their causes, and Fortsetzung auf der nächsten Seite under the last row.", "7": "Tabelle 2 continued under its repeated head and (Fortsetzung) in the caption, then Technische Daten in a four-column table and Entsorgung with a colophon." }
+---
+
+## What you'll build
+
+A seven-page instruction manual for the Verra W1, an invented electric kettle, in German on A5. The safety page sets its two hazard levels as boxes: a band in the signal colour runs down the left side and carries the warning triangle, and a thin frame of the same colour closes the box, red for WARNUNG and amber for VORSICHT. HINWEIS, the level for damage to the appliance, drops the band and the triangle for a rounded teal tint. The paragraph above the boxes sets all three signal words as filled chips. Page 3 has a parts drawing with numbered leaders above its legend, and on page 4 the key names are outlined chips beside large step numbers. The troubleshooting table runs over pages 6 and 7. Captions read Abbildung and Tabelle, and the split table is marked Fortsetzung on both pages.
+
+## Method
+
+### 1 · A band that carries the triangle
+
+The code is [the short answer](#the-short-answer) above. `stripe` paints the band down the left edge. When a box has a side stripe, 1.4.1 centres the icon on the stripe instead of giving it a column of its own ([callout styles](/en/docs/configuration#callout-styles)), and `align: 'top'` puts the icon's top edge level with the title's. The `border` in the same colour closes the band into a frame; without it the text of the box would stand on the bare page beside a coloured bar. `PAD_Y` is worked out so that the title, its gap and the top and bottom padding add up to two lines of the 12.8 pt grid. The body keeps the grid's leading, so each box is a whole number of lines tall (WARNUNG 10, VORSICHT 8), and `marginTop: pt(LEAD)` leaves exactly one line between the two boxes on page 2. VORSICHT keeps amber for the band and the frame and sets its title and bullets in ink: amber on white measures 2.0:1, and small type needs 4.5:1. HINWEIS starts from the same base (`...notice(…)`) and turns the band and the frame off, so its info icon takes a column of its own and `borderRadius` rounds a plain tint.
+
+### 2 · German names for figures and tables
+
+<Excerpt region="types" />
+
+`locale: 'de'` gives the manual German hyphenation, but 1.4.1 has the names of resource types and the continuation notes of a split table in English and Spanish only. Without these lines the captions read Figure 2.1 and Table 5.1, and the note under the first part of the split table says Continued. A resource type written by hand has to give every field, the numbering included. `counted` supplies it: `{n}` with `resetOn: 'never'` counts through the whole manual (Abbildung 1, Tabelle 1 to 3) instead of starting again in every section. Only the table type sets `captionStyle.position: 'above'`, so tables take their caption over the head and the drawing keeps its caption underneath.
+
+### 3 · Keys, signal words and part numbers as chips
+
+<Excerpt region="chips" />
+
+`taste` outlines a key name in the mono face with no fill, the way the label is printed on the button. The signal-word chips are filled with the colours of their boxes, and the amber chip sets its word in ink, as the VORSICHT title does. `nr` gives the part numbers a radius larger than half their height, so they come out as discs like the numbered circles on the drawing. Chip sizes are set in em of the text around them: a key is 8.6 pt in the running text and 7.5 pt in a table cell ([chip styles](/en/docs/configuration#chip-styles)).
+
+### 4 · Step numbers on the baseline
+
+<Excerpt region="steps" />
+
+The steps are an ordered list with the numbers in Red Hat Display 800 at 15 pt, in teal, with no separator. 1.4.1 centres a list number on its first line instead of standing it on the baseline, so a 15 pt figure beside 9.3 pt text hangs about 1 pt below the line. `numberVerticalOffset: pt(-1)`, a value measured on the capture, lifts its foot onto the baseline. `itemSpacing` separates the steps by 5 pt to make room for the large figures. The bullets nested under a step start at 6.5 mm, level with the step's text; they are teal dashes, and the third level has grey ones ([ordered lists](/en/docs/configuration#ordered-lists)).
+
+### 5 · Section numbers in a reversed tab
+
+<Excerpt region="section" />
+
+Each section is a first-level heading in the column, drawn from a design slot. The tab prints `{number}` (filled by `numberingTemplate: '{1}'`) in white on a teal square, and the title starts 3 mm to its right. Number and title share one size and line height, so the same top padding sets them on one baseline. The tab is a 22 pt square, 3.6 pt less than two lines of the 12.8 pt grid, so the heading stays within two grid lines. The cover is a first-level heading too, set in an unnumbered heading style, so Sicherheitshinweise is section 1.
+
+### 6 · A troubleshooting table with merged cells that splits
+
+<Excerpt region="tables" />
+
+Each table is TSV in a content file of its own. In the troubleshooting data, a line whose first cell is empty belongs to the fault above it, and `mergeCells` joins those first cells into one tall cell and marks the cells it covers as hidden. `parseTSV` sets no header row, so `headerRowCount: 1` declares it, and that row is the one repeated on page 7. The table is taller than a page, and in 1.4.1 only a floated table splits, so `position: 'top'` makes it a float. The cut falls between rows and never through a merged cell, so every fault stays on the same page as its causes ([tables taller than the page](/en/docs/configuration#tables-taller-than-the-page)). It is cited on page 5 and heads page 6, the first page after its citation that a top float can take. `fold` sets two halves of a list side by side, for the legend and for the technical data, and the legend centres its number chips with `align: 'center'`.
+
+## Variations
+
+### Number figures and tables by section
+
+With the section number in the template and a reset at every section, the drawing becomes Abbildung 2.1 and the troubleshooting table Tabelle 5.1.
+
+```diff
+-const counted = { numberingTemplate: '{n}', resetOn: 'never', counterFormat: 'decimal' }; // 1, 2…
++const counted = { numberingTemplate: '{h1}.{n}', resetOn: 'h1', counterFormat: 'decimal' };
+```
+
+## Pitfalls
+
+- In 1.4.1 the item after a nested list is spaced by the nested list's `itemSpacing`, not by its own list's. With 5 pt between steps and none between bullets, a step that followed a bullet list would sit 5 pt closer than the others, so the bullets here hang from the last step only.
+- Column balancing pushes a box that closes a page down to the page's last grid line, so any room left on the page opens above the box ([column balancing](/en/docs/configuration#column-balancing)). The text of page 2 was fitted to fill its column exactly. Delete one VORSICHT bullet and the box still ends at the foot, while the gap between the two boxes grows from 4.5 to 13.6 mm; with `headings: { balancing: { enabled: false } }` the box stays one line under WARNUNG and the page ends two lines short.

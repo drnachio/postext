@@ -1,0 +1,97 @@
+---
+title: "Chapter opener on a full-bleed band"
+summary: "An advancedDesign opener on the level-1 heading: a bleed band, the chapter number on its foot, and a kicker and standfirst from the heading's attributes."
+description: "A textbook chapter opener in Postext: a bleed band, a 168 pt chapter number, kicker and standfirst from the heading line, and a style that recolours chapter 4."
+question: "How do I make a chapter opener with a bleed colour band, a big chapter number and a two-line title?"
+aliases: ["chapter opener", "colour band", "big chapter number", "chapter number", "standfirst", "kicker", "textbook", "chapter colours", "thumb tab"]
+pageNotes: { "1": "A terracotta band fills the top of the page with the kicker “Chapter 3 · Plate tectonics”, the title “The Restless Crust” on two lines, an italic standfirst and a white 3 standing on the band's dark foot; a cross-section of a subducting plate sits at the foot of the page.", "3": "Chapter 4, “Fire from Below”, opens with the same design in teal.", "4": "Chapter 4 closes with review questions, the colophon and a teal cross-section of a shield volcano and a stratovolcano across the foot of the page." }
+---
+
+## What you'll build
+
+The chapter openers of *Earth in Motion*, an introductory geology textbook on a 210 × 280 mm page. Chapter 3 opens under a terracotta band bled off the top of the page. The band carries a tracked kicker, the title broken where the author chose, an italic standfirst and a 168 pt chapter number that stands on the band's dark foot at the fore-edge. Two justified columns start under the band, and a cross-section of a sinking plate takes the foot of the page. Chapter 4 repeats the design in teal, down to the thumb tab, the section numbers, the references and the label of its figure. The design is set once, on the level-1 heading. Each chapter's heading line supplies the kicker's topic and the standfirst as attributes, and names a style when the chapter takes another colour.
+
+## Method
+
+### 1 · Hang the band and the numeral from the page
+
+The code is [the short answer](#the-short-answer) above. The band and its foot hang from the bleed's top-left corner. Like any box or rule given no width, they stretch to the far edge of that frame, so they reach the trim, and the bleed once `BLEED` is set. The numeral hangs from the page's top-right corner: `y: BAND - 0.8 * NUMERAL * PT` puts its baseline on the foot, and `BEARING` moves its box 2 mm into the margin to make up for the digit's side bearing, so the ink lines up roughly with the text edge. The kicker hangs from the container. The title hangs below the kicker and the standfirst below the title, through `below` anchors with `overflow: 'wrap'`, so a longer title pushes the standfirst down. The standfirst is a text element filled from the heading's `lead` attribute; an author line would be one more, `{attr.author}`, chained the same way. `minHeight: BAND - TOP + AIR` sets where the body starts. The numeral's box reaches 0.2 × its size (11.9 mm) below the foot, and an opener reserves space down to its lowest element, so `AIR` has to be at least 11.9 mm; with less, the numeral's box would set where the text starts.
+
+### 2 · Give the chapter heading the page
+
+<Excerpt region="levels" />
+
+`span: 'page'` opens each chapter on a new page and sets the level-1 heading across both columns; `advancedDesign` draws the opener in place of the heading text, and the body starts below the reserved height. On its own, `span` takes the next page, recto or verso, and any `headings` object drops the default break to a recto. The break is therefore restated with `parity: 'odd'`, which puts every opener on a recto, where the numeral's right-hand anchor is the fore-edge. At level 2, `numberingTemplate: '{1}.{2}'` numbers the sections 3.1, 3.2… in the band colour; a level 3 with `'{1}.{2}.{3}'` would go on to 3.1.1.
+
+### 3 · Name the chapter colour once
+
+<Excerpt region="palette" />
+
+Every colour in the configuration links to one of these entries. The engine's own defaults link to `main-color`, so pointing that entry at the band colour also recolours every default the configuration leaves unset. Chapter 4's heading line, `# Fire from \\ Below {style="teal" topic="Volcanoes" lead="…"}`, picks the style, which swaps `band` until the next level-1 heading. Design slots follow the swap through their palette link, and text colours equal to the base `band` are repainted, so the tab, the section and list numbers, the references, the caption label and the drop folio turn teal on <PageRef page={3}>pages 43 and 44</PageRef>. The same line fills `{attr.topic}` and `{attr.lead}`, and its `\\` breaks `{titleText}` where the author wants it ([heading attributes](/en/docs/document-format#heading-attributes), [line breaks in titles](/en/docs/document-format#line-breaks-in-titles)).
+
+### 4 · Let the first citation place each figure
+
+<Excerpt region="figure" />
+
+A `:ref` numbers its figure and places it in the first free slot after the paragraph that cites it. Figure 3.1 is `auto`. It is cited on the opener while both columns still have room, so it takes the foot of that page; as a `top` float it would have opened page 42, because a float never goes above its own reference. Figure 4.1 is cited low in the second column of page 43, where a page-wide band no longer fits, so `bottom` sends it to page 44. That is the chapter's last page, and on a last page the engine lifts foot floats to sit directly under the last lines of text, with no gap above them.
+
+### 5 · Heads, a thumb tab and a drop folio
+
+<Excerpt region="heads" />
+
+Each header element hangs from a top corner of the page and is filtered by `parity`, so the folio and the tab always sit on the fore-edge. The tab's box hangs from the bleed's corner instead and widens with `BLEED`, so it still bleeds after trimming. `pages: 'body'` keeps all of these off the openers, which get a drop folio from the footer. The verso names the chapter with `{chapterTitle}`, on one line, because the `\\` only breaks the title in the opener. Textbooks usually name the section on the recto. Postext 1.4.1 has no placeholder for the section, so the recto head prints the book's `{title}`; these four pages never show it, because both of their rectos are openers.
+
+### 6 · Start the book at chapter 3
+
+<Excerpt region="build" />
+
+These pages are chapters 3 and 4 of a longer book, so `buildDocument` gets a `continuation` with the counters as chapters 1 and 2 left them. With `h1: 2` in its `headings`, the next `#` is chapter 3: `{chapterNumber}` prints 3, sections number from 3.1 and the first figure becomes 3.1. `pageNumbering.startAt: 41` starts the folios at 41. The first page stays a recto whatever its folio, because parity is counted on the physical page and `pageIndexOffset` is left at 0; the first folio, 41, is odd to match.
+
+## Variations
+
+### Make the band deeper
+
+`BAND` sets the depth of the band, the numeral's position and the height reserved above the text. A deeper band pushes text onto the next page, so refit each chapter (see the last pitfall) or let chapters run on.
+
+```diff
+-const BAND = 100; // mm from the trim to the foot of the band
++const BAND = 128; // mm from the trim to the foot of the band
+```
+
+### Print it with a bleed
+
+With a 3 mm bleed, the band, its foot and the tab run 3 mm past the trim, the numeral stays on the foot, and `page.cutLines` switches on with the same value.
+
+```diff
+-const BLEED = 0; // mm: 0 on screen; about 3 for print, which also switches on page.cutLines
++const BLEED = 3; // mm: 0 on screen; about 3 for print, which also switches on page.cutLines
+```
+
+### Add a colour for another chapter
+
+Each chapter colour is one more palette entry and one more style; write `{style="slate"}` on that chapter's heading line.
+
+```diff
+   band2: '#2e6f73', // the second chapter colour, a teal; the sea in Figure 3.1
++  band3: '#3d4f6b', // a third chapter colour, a slate blue
+@@
+-const headingStyles = [{ id: 'teal', palette: { band: palette.band2 } }];
++const headingStyles = [{ id: 'teal', palette: { band: palette.band2 } },
++  { id: 'slate', palette: { band: palette.band3 } }];
+```
+
+### Let chapters run on
+
+With `'any'` a chapter opens on the next page. After a chapter that ends on a recto it opens on the verso, with no blank page before it, and its numeral stands by the spine, since it hangs from the page's right edge. These pages stay the same, as chapter 3 already ends on a verso.
+
+```diff
+-      { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
++      { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
+```
+
+## Pitfalls
+
+- The band has a fixed height, while the kicker, the title and the standfirst hang from the top margin and grow downwards, so a longer standfirst or a three-line title runs into the foot. Keep standfirsts to about five lines, as both editions do, or derive `BAND` from the longest opener.
+- The formula for the numeral's `y` assumes `lineHeight: 1`. A design text's baseline sits 0.8 of the way down its line box, and `0.8 * NUMERAL` is that distance only when the box is as tall as the type. Change the line height or the anchor and the formula has to change with it. `BEARING` is set by eye, because each digit has its own side bearing (here the 3 and the 4 end 0.8 mm apart).
+- A style's palette recolours design elements and text. A picture keeps the colours it was drawn with: Figure 4.1 is teal because the code draws it from `band2`, and a terracotta figure placed in chapter 4 would stay terracotta.
+- With `parity: 'odd'`, a chapter that runs a few lines past its last page leaves a nearly empty page and a blank verso before the next opener, and postext 1.4.1 sets that page with a column shorter than its text, so the chapter's last line is lost. Fit the copy, as both editions here do, and check each chapter's last page whenever the text or `BAND` changes.

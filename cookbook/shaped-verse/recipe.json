@@ -1,0 +1,108 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 62,
+  "status": "published",
+  "chapter": "type",
+  "order": 100,
+  "level": 1,
+  "genres": ["poetry"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["paragraph-indents", "heading-typography", "vertical-space"],
+    "also": [
+      "page-breaks",
+      "chapter-breaks",
+      "body-typography",
+      "emphasis-colours",
+      "page-size",
+      "mirrored-margins",
+      "column-layouts",
+      "page-background",
+      "color-palette",
+      "canvas-rendering"
+    ]
+  },
+  "answers": ["Q23", "Q43", "Q44", "Q24"],
+  "gaps": ["rotated-text"],
+  "gotchas": ["headings-drop-h1-break", "ragged-runts", "fonts-first"],
+  "related": [
+    "poetry-collection",
+    "bilingual-facing-verse",
+    "critical-edition-line-numbers",
+    "first-page-from-markdown"
+  ],
+  "workarounds": [
+    {
+      "followup": "EF-71",
+      "package": "postext",
+      "note": "bodyText.referenceColor is set in ink because 1.4.1 does not link it to main-color: the pages have no :ref, but without it the resolved reference colour stays #295AA3 and the capture's default-skin check (C17) fails"
+    },
+    {
+      "followup": "EF-147",
+      "package": "postext",
+      "note": "centred text gets no runt protection and breaks first-fit, so the prose on page 4 was reworded until no paragraph ends on a lone word and no line splits 'pages 34 and 35' or opens a quotation on its last word, and no Spanish line ends on a one-letter word; the colophon is set a paragraph per line"
+    },
+    {
+      "followup": "EF-05",
+      "package": "postext",
+      "note": "headings.levels[0] restates breakBefore (parity 'odd'): the title opens page 1, so it changes nothing on these pages, but any headings object drops the H1 break in 1.4.1 and a second # title added to the keepsake would run on without it"
+    }
+  ],
+  "engine": { "postext": "1.4.1" },
+  "kit": ["core", "fonts", "viewer"],
+  "sample": {
+    "locales": ["en", "es"]
+  },
+  "capture": {
+    "hero": [2, 3],
+    "card": "crop",
+    "focus": { "page": 3, "x": 0.098, "y": 0.111, "w": 0.776, "h": 0.41 },
+    "pages": "all",
+    "expect": {
+      "pages": [4, 4]
+    }
+  },
+  "credits": {
+    "authors": [
+      { "name": "Ignacio Ferro", "github": "drnachio" }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "“The Altar” and “Easter wings”, the title, subtitle, byline and epigraph of the title page, and Herbert’s motto with a clause of the printers’ preface, from the first edition of The Temple (Cambridge, 1633) in the EEBO-TCP transcription (CC0 1.0); the letters and stops it marks as illegible or unknown at six line ends (four in The Altar, two in Easter wings) are supplied",
+          "es": "«The Altar» y «Easter wings», el título, el subtítulo, el nombre del autor y el epígrafe de la portada, y el lema de Herbert con una frase del prólogo de los impresores, de la primera edición de The Temple (Cambridge, 1633) según la transcripción de EEBO-TCP (CC0 1.0); se suplen las letras y los signos que esa transcripción da por ilegibles o desconocidos en seis finales de verso (cuatro de The Altar y dos de Easter wings)"
+        },
+        "who": "George Herbert; Text Creation Partnership",
+        "source": "https://github.com/textcreationpartnership/A03058",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "Psalm 29:9 in the Spanish edition, from the Reina-Valera Bible of 1909",
+          "es": "El versículo 9 del salmo 29 en la edición castellana, de la Biblia Reina-Valera de 1909"
+        },
+        "who": "Reina-Valera 1909",
+        "source": "https://es.wikisource.org/wiki/Biblia_Reina-Valera_1909/Salmos/29",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The Spanish versions of both poems, of the subtitle, the motto and the printers’ clause, and the title-page imprint, the note on the text and the colophon of both editions, written for this recipe",
+          "es": "Las versiones castellanas de los dos poemas, del subtítulo, del lema y de la frase de los impresores, y el pie de imprenta de la portada, la nota sobre el texto y el colofón de las dos ediciones, escritos para esta receta"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "IM Fell English", "license": "OFL-1.1" },
+      { "family": "IM Fell Great Primer", "license": "OFL-1.1" },
+      { "family": "IM Fell English SC", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-26",
+  "updated": "2026-09-26"
+}

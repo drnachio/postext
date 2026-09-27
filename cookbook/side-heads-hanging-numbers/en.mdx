@@ -1,0 +1,61 @@
+---
+title: "Side heads, hanging numbers and run-in heads"
+summary: "A competition brief whose section titles stand in a margin channel on the text's baselines, with subsection numbers hung in the gutter and run-in heads in red."
+description: "A five-page Spanish competition brief in Postext, with its section titles in a 50 mm channel on the left and the subsection numbers hung in the gutter."
+question: "How do I set section heads in a margin channel, hang the subsection numbers and run the smallest heads in?"
+aliases: ["side heads", "marginal heads", "margin heads", "hanging numbers", "hanging section numbers", "run-in heads", "Swiss report", "competition brief", "section number and rule", "margin channel", "heading in the margin"]
+pageNotes: { "1": "The first page of the brief: the council's name in two lines at top left, the kicker EXPEDIENTE BML-2026/04 in red, the title Bases del concurso in a light serif across two lines and an italic lead. A site plan runs across the whole text block, with the old quarter's lanes, a grid of chamfered blocks, the promenade, the harbour and the plot in red. Below, section 1 opens with a red 1 and a black rule; its title, Objeto del concurso, stands in the left channel on the first line of the text, and subsections 1.1 and 1.2 hang their red numbers in the gutter.", "2": "Section 2, El emplazamiento, with its title in the channel and under it a small plan of the plot: the lonja in grey with its thirteen bays, six trees along the north edge and red arrows for the entrances. Subsections 2.1 to 2.3 hang their numbers beside the text; section 3 opens lower down with a two-line title in the channel, followed by subsection 3.1.", "3": "An elevation of the lonja crosses the head of the page: thirteen vaults, eleven arches and four red pilasters at the east end. Under it the programme table, with an ink header row, fills the text column, and its caption, Tabla 1, stands in the channel level with the table's top. Subsections 3.2 and 3.3 follow, then section 4, Criterios de proyecto, whose paragraphs open on red bold terms.", "4": "Three more criteria opening on red bold terms, then sections 5, Entrega de propuestas, and 6, Jurado y plazos, each with its number and rule and its title in the channel, and subsections 5.1 to 6.1 with hanging numbers. The text column ends level with the foot of the page.", "5": "Subsections 6.2 and 6.3, the calendar of the competition as a table with an ink header, and a small grey colophon." }
+---
+
+## What you'll build
+
+Five A4 pages of an architectural competition brief, in which the council of Puerto Lince, a fictional Spanish port, calls for designs to turn its 1931 fish market into the town library. The layout follows Swiss municipal reports. A 50 mm channel runs down the left of every page, and each section opens on a red number and a black rule across the whole text block. The section's title stands in the channel in Noto Serif Display, level with the first line of the text. Subsection numbers hang in the gutter in red DM Mono, so every subsection title keeps the text's left edge. The judging criteria in section 4 open on bold terms in red. Page 1 sets a 58 pt title over a site plan, a plan of the plot stands in the channel on page 2, and an elevation of the quay front opens page 3.
+
+## Method
+
+### 1 · Print the section title from a box in the channel
+
+The code is [the short answer](#the-short-answer) above. A heading reserves room down to the lowest element of its design, so a title drawn in the channel level with the section's first line would push the text down a line, and two for a two-line title. The heading's design draws only the number and the rule instead, and `sideHeads()` copies the text of each `## Title` into a `:::callout` fenced right after the heading. With `span="side"` that box leaves the flow and stands in the channel on the grid line where the text resumes ([callout styles](/en/docs/configuration#callout-styles)). Boxes and body text both set a line's baseline 0.8 of the line height down, so a box on the text's 14 pt leading puts each line of a two-line title on a baseline of the paragraph beside it. The Markdown stays a plain `## Programa de necesidades`. Since the heading's design prints no `{titleText}`, the Sandbox lists the warning *Heading title not referenced*, although the box prints the title.
+
+<PageShot page={2} crop="0,0.068,1,0.292" caption="Page 2: the number and the rule come from the heading, the title from the box in the channel, level with the first line of the text. The plot plan stacks under it." />
+
+### 2 · Keep the channel for heads and figures
+
+<Excerpt region="channel" />
+
+`sideColumnRole: 'floats'` keeps the text out of the channel ([layout types](/en/docs/configuration#layout-types)). After the opener, the channel holds only the six section titles and the plot plan, both sent there with `span: 'side'`, and the caption of table 1. The side column defaults to `'right'`, and a brief printed on one side of the sheet keeps it on the same side of every page. `sideColumnSide: 'left'` puts it on the left, where each section title is read before its text.
+
+### 3 · Hang the numbers and run the smallest heads in
+
+<Excerpt region="lower" />
+
+The subsection title starts on the column's left edge. Its number is anchored `'left-of'` the title, right-aligned in a 12 mm box that ends 2 mm short of the text, so numbers such as 2.1 and 3.3 hang in the gutter and every title lines up with the text under it ([element placement](/en/docs/configuration#element-placement)). The box needs a fixed width. An `'auto'` width is clamped to the column. Out in the gutter that leaves no width at all, and the number is not drawn. Level 2 prints `'{2}'` and level 3 `'{2}.{3}'`, because with `{1}` every number would start with the 1 of the brief's one H1. The criteria in section 4 are a fourth level set without a heading. Each paragraph opens on a bold term, and `bodyText.boldColor` prints it in red ([body text](/en/docs/configuration#body-text)). No other paragraph has bold, and table cells take their colour from `tableStyle`, so the bold Total row of table 1 stays black.
+
+### 4 · Give each figure and table its own placement
+
+<Excerpt region="resources" />
+
+The plot plan goes into the channel with `span: 'side'` and stacks under the side head of section 2 ([placement](/en/docs/document-format#placement)). `width: PLAN_W / SIDE` makes it 44 mm wide, which puts its 88 metres at exactly 1:2000. The facade elevation is a `'top'` float across the page. It is cited on page 2 and opens page 3, since a float is never placed above its reference. The programme table, also cited on page 2, floats to the head of the text column on page 3; set inline, it would have opened page 3 and sent the elevation on to page 4. `captionSide: true` stands its caption in the channel, level with the table's top. The calendar sits where `::resource` puts it, at the end of the brief.
+
+### 5 · Open the brief on the site plan
+
+<Excerpt region="opener" />
+
+With `span: 'page'` the opener's container is the whole text block, channel included ([span and advanced design](/en/docs/configuration#span-and-advanced-design)). The kicker and the title are placed 57 mm in, on the text column's left edge, and the plan runs across channel and column. Without it the container is the text column, every element moves 57 mm to the right, and the title, the lead and the plan run past the right edge of the page. An image element reserves no height, so `minHeight` sets the reserve down to the plan's foot. Rounded up to a whole grid line, it leaves the rule of section 1 as far from its text as the rule of every later section. The kicker, the lead and the map legend are attributes of the `# Bases del concurso` line.
+
+## Variations
+
+### Rule the text column only
+
+Anchor the rule to the heading's own box instead of the number, and it runs from the text's left edge to the column's right edge, with only the number and the title in the channel.
+
+```diff
+-        color: col('ink'), placement: { ...at('#number', 'right-of', mm(2), RULE_Y),
++        color: col('ink'), placement: { ...at('container', 'top-left', mm(0), RULE_Y),
+```
+
+## Pitfalls
+
+- A side figure takes the head of the channel on the page that cites it, and a side head fenced after it stacks under the figure, below the start of its own section. Cite side figures after the section head of their page, as section 2 cites the plot plan.
+- In postext 1.4.1 a side box fenced between a heading and its first paragraph gives that paragraph a first-line indent, even with `indentAfterHeading: false`. This brief has no indents, so nothing shows. With an indented texture, wrap each section's first paragraph in a `:::paragraphs` container whose style sets `firstLineIndent: 0`.
+- In postext 1.4.1 a paragraph style's `spaceBetween` is also added after the container's last paragraph, where it does not merge into the next heading's `marginTop` as body paragraph spacing does. With the criteria in such a container and one line of `spaceBetween`, section 5 had three blank lines above it and every other section two, so this brief colours its run-in terms with `bodyText.boldColor`.

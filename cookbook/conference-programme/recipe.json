@@ -1,0 +1,62 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 53,
+  "status": "published",
+  "chapter": "tables",
+  "order": 50,
+  "level": 3,
+  "genres": ["ephemera"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["table-model", "table-split", "cell-fills"],
+    "also": [
+      "swatches", "chips", "float-placement", "table-style", "captions", "opener-design",
+      "opener-band", "heading-attributes", "heading-styles", "covers", "localised-labels",
+      "resource-types", "paragraph-styles", "page-breaks", "running-heads",
+      "color-palette"
+    ]
+  },
+  "answers": ["Q65", "Q66", "Q52", "Q74", "Q26"],
+  "gaps": [],
+  "gotchas": [
+    "merged-cells-hiddenby", "top-float-next-page", "here-table-no-split",
+    "resource-types-locale", "ragged-runts", "headings-drop-h1-break", "palette-skips-designs",
+    "design-lineheight-multiple", "overflow-ellipsis-default", "svg-no-webfonts", "nbsp-breaks",
+    "config-cache-identity", "fonts-first"
+  ],
+  "workarounds": [
+    { "followup": "EF-34", "package": "postext", "note": "the grid is built row by row from the programme text, and every span goes through mergeCells, which keeps the covered cells in the grid marked hiddenBy" },
+    { "followup": "EF-33", "package": "postext", "note": "1.4.1 has resource type names and table continuation strings in English and Spanish only, so Taula, Figura and their plurals are written over defaultResourceTypes('ca'), and (continuació) and Continua a la pàgina següent into tableStyle" },
+    { "followup": "EF-167", "package": "postext", "note": "1.4.1 does not level a chapter's closing page when the rest of a split table opens it (page 4), so a :::columnbreak before Rosa Fontanet's note levels its two columns by hand; check it again whenever the Thursday text changes" },
+    { "followup": "EF-147", "package": "postext", "note": "the text is ragged, and 1.4.1 has no runt control for ragged text: the last line of every paragraph was read and reworded until it held more than one word" },
+    { "followup": "EF-66", "package": "postext", "note": "a no-break space still breaks a caption note, so each room of the plan's note is a bare 'sala' chip, which keeps its number and name on one line" },
+    { "followup": "EF-05", "package": "postext", "note": "the H1 page break is restated in headings.levels[0].breakBefore" },
+    { "followup": "EF-71", "package": "postext", "note": "col() writes the hex beside each paletteId, and referenceColor is restated: 1.4.1 paints header, footer and opener element colours and the reference colour from the hex" },
+    { "followup": "EF-56", "package": "postext", "note": "design text lineHeight is given as a multiple" }
+  ],
+  "related": ["garden-almanac", "seed-catalogue", "technical-datasheet", "magazine-feature-opener"],
+  "engine": { "postext": "1.4.1" },
+  "kit": ["core", "fonts", "viewer", "images"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": {
+    "hero": [2, 3],
+    "card": "spread",
+    "expect": { "pages": [6, 6], "nearEmptyPages": [1] }
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      { "what": { "en": "The programme’s Catalan text, both schedules included, written for this recipe, and the cover, band and floor-plan drawings, generated in code", "es": "El texto catalán del programa, con las dos parrillas, escrito para esta receta, y los dibujos de la cubierta, la banda y el plano, generados en código" }, "who": "Ignacio Ferro", "license": "CC-BY-4.0" }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Schibsted Grotesk", "license": "OFL-1.1" },
+      { "family": "Unbounded", "license": "OFL-1.1" },
+      { "family": "Chivo Mono", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-26",
+  "updated": "2026-09-27"
+}

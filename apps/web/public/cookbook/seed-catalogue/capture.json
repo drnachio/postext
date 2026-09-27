@@ -1,0 +1,384 @@
+{
+  "schemaVersion": 1,
+  "slug": "seed-catalogue",
+  "sourceHash": "68064cf8a89fb1c54f65acf9eb5043ccc7a1addcd276adbfdb4ae44f7d065305",
+  "engine": {
+    "postext": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-26T21:37:17.397Z",
+  "variants": {
+    "en": {
+      "hash8": "621aaaab",
+      "vdtHash": "08f7147b8f63e109acabb88638e8a382364cf278",
+      "timings": {
+        "importMs": 148,
+        "fontsMs": 38,
+        "buildMs": 9,
+        "totalMs": 859,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          190,
+          250
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 7,
+        "mirror": true,
+        "body": {
+          "family": "Gelasio",
+          "sizePt": 9.5,
+          "leadingPt": 13
+        },
+        "families": [
+          "Alfa Slab One",
+          "Cabin Condensed",
+          "Gelasio"
+        ],
+        "pages": 4,
+        "ownLines": 229
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1316,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 98108,
+          "alt": "Opening page 1: Spring Seeds."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1316,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 72224,
+          "alt": "Page 2. Vegetable Seeds."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1316,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 93842,
+          "alt": "Page 3: From Our Trial Garden. Vegetable Seeds (continued)."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1316,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 38362,
+          "alt": "Opening page 4: Order Sheet."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "mergeCells",
+          "parseTSV",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "setAlignment",
+          "setCellBackground",
+          "setCellContent",
+          "setCellImage"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.maxWordSpacing",
+          "bodyText.referenceBold",
+          "bodyText.referenceItalic",
+          "captionStyle",
+          "captionStyle.background",
+          "captionStyle.backgroundEnabled",
+          "captionStyle.color",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "captionStyle.note.fontSize",
+          "captionStyle.padding",
+          "captionStyle.position",
+          "chipStyles",
+          "chipStyles[].background",
+          "chipStyles[].backgroundEnabled",
+          "chipStyles[].bold",
+          "chipStyles[].borderColor",
+          "chipStyles[].borderRadius",
+          "chipStyles[].borderWidth",
+          "chipStyles[].color",
+          "chipStyles[].fontFamily",
+          "chipStyles[].fontSize",
+          "chipStyles[].id",
+          "chipStyles[].paddingX",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].layout",
+          "headingStyles[].layout.layoutType",
+          "headingStyles[].span",
+          "headings",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyle",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.continuedSuffix",
+          "tableStyle.continuesMarker",
+          "tableStyle.headerBackground",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.overflow",
+          "tableStyle.rules",
+          "tableStyles",
+          "tableStyles[].bodyBackground",
+          "tableStyles[].bodyBackgroundEnabled",
+          "tableStyles[].bodyFontFamily",
+          "tableStyles[].bodyFontSize",
+          "tableStyles[].borderColor",
+          "tableStyles[].borderRadius",
+          "tableStyles[].borderWidth",
+          "tableStyles[].cellPadding",
+          "tableStyles[].headerBackground",
+          "tableStyles[].id",
+          "tableStyles[].rules"
+        ],
+        "configSections": [
+          "bodyText",
+          "captionStyle",
+          "chipStyles",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle",
+          "tableStyles"
+        ],
+        "configLeaves": 433,
+        "designElements": 22,
+        "directives": [
+          ":::paragraphs",
+          "::resource"
+        ],
+        "inline": [
+          "{attrs}",
+          ":ref",
+          ":chip"
+        ],
+        "resources": {
+          "svg": 10,
+          "bitmap": 0,
+          "table": 3
+        },
+        "fonts": [
+          {
+            "family": "Alfa Slab One",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Cabin Condensed",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Cabin Condensed",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Cabin Condensed",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Gelasio",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Gelasio",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Gelasio",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "cell-fills",
+          "cell-images",
+          "chips",
+          "citations",
+          "heading-attributes",
+          "heading-styles",
+          "inline-embeds",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "resource-types",
+          "resources",
+          "section-geometry",
+          "section-running-heads",
+          "table-model",
+          "table-split",
+          "table-styles"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.33
+        },
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
+      }
+    }
+  }
+}

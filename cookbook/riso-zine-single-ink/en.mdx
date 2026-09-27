@@ -1,0 +1,72 @@
+---
+title: "Two-ink riso zine: art in one spot colour"
+summary: "A four-page zine for a two-drum risograph: full-colour drawings print as tints of the pink, recoloured by the pen for the canvas and by renderToPdf in the PDF."
+description: "A riso zine whose full-colour SVG drawings print as tints of one spot ink, on screen and in the PDF, through diagramStyle.singleInk and applySingleInkToSvg."
+question: "How do I print every SVG drawing in tints of one spot ink, and every other colour in a second?"
+aliases: ["risograph", "riso", "two-colour print", "spot colour", "duotone", "single ink", "zine", "misregistration", "off register", "grey proof", "two-colour textbook", "halftone"]
+pageNotes: { "1": "The cover: the issue number and the line Six routes after midnight, three ridden end to end, then a pink halftone full moon behind two blue overhead wires, a blue bus-stop pole whose flag lists NIGHT, N12, N27 and N41, and NIGHT BUSES in tall condensed capitals, blue over a pink copy set slightly off register.", "2": "Page 2: the kicker Brackwater, 00:10 to 06:00 over AFTER THE LAST TRAIN, the opening paragraph, the N12 note after its pink route chip, a driver's words in condensed capitals under a pink stripe, and the start of the N27 note.", "3": "Page 3: the night network in tints of pink above a pale pink caption bar, the end of the N27 note, the N41 note, and a small inset of the same map in six colours beside the note As drawn.", "4": "The back cover: a pink destination blind reading NOT IN SERVICE, the notice for issue 5 with three places to pick it up, the colophon in a monospaced face and a pink halftone moon in the lower corner." }
+---
+
+## What you'll build
+
+*Night Buses* is a free zine about a city's night buses: four pages of 120 × 160 mm on one sheet folded once, for a risograph with two drums, blue and fluorescent pink. Every colour in the config is one of the two inks, a 25% screen of the pink or the cream paper. The drawings are made in full colour (a route map in six colours, a moon in greys, an amber destination blind on black) and print from the pink drum as tints of pink, darker colours as denser tints. <PageRef page={3}>The map</PageRef> prints in pink, and a small inset lower on its page keeps the six colours as drawn. The cover title is set twice, with the pink copy 0.8 mm right of the blue one and 0.5 mm higher. The pen also builds a colour PDF and a grey proof.
+
+## Method
+
+### 1 · Two drums, and every colour one of them
+
+<Excerpt region="inks" />
+
+A risograph prints each ink from its own drum, so a third colour anywhere in the config would need a third drum. `screen()` mixes a share of an ink with the paper colour, the way a screen prints part of the dots and leaves paper between them. A 25% screen of the pink is `#f2c7d3`, the ground of the chips and the caption. `main-color` points at the pink, so any default the config leaves alone prints from that drum and not in the engine's own blue, `#295AA3`. `col()` writes each hex beside its id because 1.4.1 applies the palette to the text styles but not to design elements.
+
+### 2 · Recolour each drawing once per output
+
+The code is [the short answer](#the-short-answer) above. With `diagramStyle.singleInk`, `renderToPdf` turns every colour of an SVG into a tint of `inkColor` whose strength is 1 minus the colour's relative luminance ([diagram style](/en/docs/configuration#diagram-style)), so the navy N12 prints at 84% and the yellow N50 at 24%. In 1.4.1 the canvas paints a registered SVG unchanged, so `registerArt()` registers a copy recoloured by `applySingleInkToSvg` and keeps the original drawing for `resourceBytes`. Sampled on the canvas and in the PDF rasterised at 300 dpi, the N12 line is (242, 109, 171), the tint the formula gives for a strength of 0.836. A second pass would lighten it to 44%, so the PDF is never handed the recoloured copy.
+
+### 3 · Print the title twice, off register
+
+<Excerpt region="cover" />
+
+A risograph prints one drum after the other, and the sheet never lands twice in exactly the same place. `twice()` returns two copies of a text element, the pink one first, 0.8 mm to the right and 0.5 mm up. Array order is paint order, so the blue copy covers the pink except for a sliver along the top and right edges of each letter. Canvas and PDF paint opaque colour, so the overlap stays blue where a riso would print purple. The design spans the page because the issue line sits above the text block and the pole runs past its foot; in a design kept in the column, 1.4.1 clips both at the column's edges.
+
+### 4 · Keep small type in the dark ink
+
+<Excerpt region="inside" />
+
+On the cream paper the blue measures 6.4:1 and the fluorescent pink 2.9:1, too faint for type at 8 or 9 pt. Every word the engine sets therefore prints from the blue drum. The chips are blue Space Mono on the 25% screen (4.85:1) inside a pink outline, and the caption is blue Epilogue on the same screen. The pink prints the stripe over the quote, the chip outlines, the bullets, the folio squares and the offset copies of the titles. The lettering inside the drawings belongs to the art and prints pink with it. The speaker's name is the box title, set in bold 7.5 pt Space Mono capitals above the quote.
+
+### 5 · Set the inset beside its note
+
+<Excerpt region="drawn" />
+
+In one column a float takes the whole width of its band, so a small picture floated there would leave the rest of the band empty. The inset is a heading design instead: `### As drawn {style="drawn" note="…"}` prints the picture and, to its right, the heading as a label with the note under it. A design's images reserve no height, so `minHeight` sets a floor at the picture's height. The note is about as tall today; with a shorter note, the next block would run over the picture. `registerSnapshot()` draws the same `network()` map into a PNG, and since single ink recolours only SVG, the inset keeps its six colours on screen and in the PDF.
+
+## Variations
+
+### Load an orange drum
+
+The moon, the map, the blind, the chips, the stripe and the offset copies of both titles turn orange and the type stays blue; the caption, the note and the colophon go on naming the pink drum until you edit them.
+
+```diff
+-const DRUMS = { ink: '#1d4fb8', spot: '#f0509a' };
++const DRUMS = { ink: '#1d4fb8', spot: '#ff6c2f' };
+```
+
+### Print a two-colour textbook
+
+With black type and a blue spot on white paper, the same drawings print as tints of the blue, like the diagrams in a two-colour schoolbook; the caption, the note and the colophon still name the pink drum until you edit them.
+
+```diff
+-const DRUMS = { ink: '#1d4fb8', spot: '#f0509a' };
+-const PAPER = '#f3efe6'; // cream stock: where no ink falls
++const DRUMS = { ink: '#1f1f1f', spot: '#0078bf' };
++const PAPER = '#ffffff'; // white stock: where no ink falls
+```
+
+## Pitfalls
+
+- Give `renderToPdf` the original drawing. In 1.4.1 it recolours whatever SVG it receives, so a copy that is already recoloured goes through the formula again and the N12 line drops from 84% to 44%.
+- In 1.4.1 `applySingleInkToSvg` rewrites hex colours, `rgb()` and `rgba()` with whole-number channels, and the keywords `white` and `black`. A shape that names `red`, uses `hsl()` or leaves its fill at the default black keeps that colour, which would need a third drum. Give every fill and stroke a hex value.
+- `colorSpace: 'grayscale'` greys what postext paints and embeds bitmaps as they are, so the PNG inset stays in colour in the grey proof. Only the pen's second button builds the proof; the pages above are the canvas, and the PDF offered on this page is the colour one.
+- With paragraph spacing on, 1.4.1 can add a line of space before the rest of a paragraph that continues on the next page under a top float. The text here does not trigger it. After you edit the copy, check the first line under the map, since one extra line can push the inset to a fifth page.
+- In the pen both buttons read "Build the PDF". The first builds the colour PDF and the second the grey proof; once a file is built, its button gives way to an "Open the PDF ↗" link and a download link with the file's name.

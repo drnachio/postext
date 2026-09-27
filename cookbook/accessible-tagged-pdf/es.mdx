@@ -1,0 +1,61 @@
+---
+title: "PDF accesible y etiquetado (PDF/UA)"
+summary: "Una guía de reciclaje en PDF/UA-1 etiquetado, con texto alternativo, celdas de cabecera, idioma e índice con enlaces; la vista previa dibuja las etiquetas."
+description: "Una guía municipal de reciclaje compuesta en Postext y exportada como PDF etiquetado que cumple PDF/UA-1, con texto alternativo, cabeceras de tabla e idioma."
+question: "¿Cómo exporto un PDF etiquetado (PDF/UA) con texto alternativo, celdas de cabecera e idioma del documento?"
+aliases: ["PDF/UA", "PDF/UA-1", "PDF accesible", "PDF etiquetado", "lector de pantalla", "texto alternativo", "orden de lectura", "árbol de estructura", "celdas de cabecera", "idioma del documento", "veraPDF", "guía de reciclaje"]
+pageNotes: { "1": "La cubierta: una banda azul marino en los tres quintos superiores, con el título Reciclar en el barrio en letra blanca grande en dos líneas y, al pie, los cinco contenedores de calle (amarillo, azul, verde, marrón y gris, cada uno con un pictograma blanco u oscuro) sobre un bordillo amarillo. Debajo, una entradilla en cuerpo grande y, al pie de la página, el nombre del ayuntamiento en letra monoespaciada pequeña.", "2": "La página 2: Índice, con las dos secciones numeradas y sus apartados, líneas de puntos y números de página, sobre tres recuadros con fondo de color: Cómo usar esta guía, Esta guía, en otros formatos y Datos útiles. En la segunda columna, Presentación, una carta de cinco párrafos, en un cuerpo mayor que el del texto y firmada por la concejala de Medio Ambiente.", "3": "La página 3 con su orden de lectura dibujado: una banda azul marino con un 1 amarillo y el título Qué va en cada contenedor y, debajo, dos columnas en las que cada bloque etiquetado está en un recuadro magenta, numerado del 1 al 14 y con el nombre de su etiqueta (H1, P, Figure, H2, Table). La figura muestra los cinco contenedores; cada contenedor tiene un título y un párrafo, y la tabla 1.1 da el contenedor de once residuos, con un cuadrado de color junto al nombre de cada contenedor y uno vacío junto al punto limpio. El párrafo del vidrio sigue en la segunda columna y conserva su número, el 9, en un recuadro discontinuo, y el pie de página está marcado como Artifact.", "4": "La página 4: una banda azul marino con un 2 y Lo que no va al contenedor; después, el punto limpio con una lista de lo que admite, los días de recogida en la tabla 2.1, cuatro pasos numerados para pedir la recogida de muebles y el colofón." }
+---
+
+## Lo que vas a componer
+
+*Reciclar en el barrio* es la guía de reciclaje de un ayuntamiento inventado: cuatro páginas A4 para leer en pantalla o imprimir en casa. La cubierta, azul marino, lleva los cinco contenedores sobre un bordillo amarillo. La página 2 reúne el índice, tres recuadros y la carta de la concejala; la 3 y la 4, las dos secciones, a dos columnas en bandera. El PDF etiquetado que exporta el código supera las comprobaciones PDF/UA-1 de veraPDF, con títulos, listas, recuadros y tablas en orden de lectura, texto alternativo en la figura y celdas de cabecera en las tablas. El archivo declara título e idioma (`es`), y los marcadores y las filas del índice son enlaces. Como las etiquetas no se imprimen, el código las dibuja solo en la vista previa de la página 3, la que ves aquí, con un recuadro numerado por bloque y el nombre de su etiqueta.
+
+## Elaboración
+
+### 1 · El idioma y el título del documento
+
+<Excerpt region="identity" />
+
+postext-pdf escribe el idioma de las etiquetas a partir de `locale`, aquí `/Lang es`, para que un lector de pantalla lea la guía con pronunciación española; si falta, el archivo declara `en-US`. El `title` y el `author` del frontmatter de `content.es.md` dan el título y el autor del PDF, y el archivo pide a los visores que muestren ese título en la barra de la ventana en lugar del nombre de archivo. `defaultResourceTypes(LANG)` da a los pies y a las citas sus nombres en español: «Figura 1.1», «tabla 1.1». El texto accesible de la figura y de las tablas está en [la respuesta corta](#la-respuesta-corta): el `altText` da la descripción alternativa de la figura (`/Alt`) y el resumen de cada tabla (`/Summary`), y la primera fila y la primera columna de las dos tablas se etiquetan como celdas de cabecera.
+
+### 2 · Un solo esquema, y una banda de cubierta con el título y nada más
+
+<Excerpt region="headings" />
+
+El árbol de etiquetas toma sus elementos H1 y H2 de los títulos del Markdown, y los marcadores del PDF salen de la misma lista, así que la cubierta, el índice, la carta y las dos secciones son de nivel 1, y los ladillos, de nivel 2. postext-pdf etiqueta cada texto del diseño de un título dentro de ese título. Por eso la banda de la cubierta lleva solo el título, y la entradilla y el nombre del ayuntamiento van debajo, como párrafos. Las bandas azul marino, el bordillo y la fila de contenedores son elementos de diseño, y el PDF marca las cajas y las imágenes de diseño como artefactos, así que no necesitan texto alternativo y el lector de pantalla se las salta.
+
+### 3 · Un índice con enlaces
+
+<Excerpt region="contents" />
+
+`:::toc` recoge los H1 y los H2 con el número de página que imprimen, y en el PDF cada una de sus once filas enlaza con el principio de su página. Las citas `:ref` de la página 3, «figura 1.1» y «tabla 1.1», y la de la página 4, «tabla 2.1», llevan a la figura y a las tablas. Las líneas de puntos usan la letra de los números de página, Atkinson Hyperlegible Next Bold, porque en Public Sans una serie de puntos ocupa más que el punto suelto con el que se calcula la línea, y los puntos se montaban sobre los números.
+
+### 4 · El orden de lectura, dibujado en la página
+
+<Excerpt region="reading-order" />
+
+Un lector de pantalla sigue las etiquetas, y `renderToPdf` etiqueta cada página en el orden en que la pinta: el título de la banda, la primera columna de arriba abajo, la segunda y, al final, los flotantes de la página. Esta función repite ese orden para numerar los recuadros de la página 3, y el árbol de estructura del PDF da los mismos catorce elementos en el mismo orden. Ese orden obliga a poner la figura y las dos tablas en el flujo, con `placement: { position: 'here' }` y una línea `::resource`. Si flotara al pie de la primera columna, la figura 1.1 se etiquetaría después de la tabla 1.1, el último bloque de su página. El párrafo del vidrio que sigue en la segunda columna conserva un solo número, el 9, porque el PDF etiqueta las dos partes como un único párrafo.
+
+### 5 · Colores elegidos por su contraste
+
+<Excerpt region="palette" />
+
+PDF/UA-1 no comprueba el color, pero WCAG 2.2 pide 4,5:1 entre el texto y su fondo. La tinta da 15,6:1 sobre blanco; la letra blanca, 12,5:1 sobre las bandas azul marino, y el gris del pie de página, 7,0:1. El amarillo da 1,8:1 sobre blanco, así que solo aparece sobre azul marino (6,9:1) y como relleno. Los pictogramas siguen el 3:1 que WCAG pide a los gráficos: blanco cuando llega a esa proporción sobre su contenedor y tinta sobre el amarillo. `cell()` escribe el nombre de cada contenedor junto a su muestra de color, y da al punto limpio un cuadrado vacío, así que ninguna indicación depende de distinguir colores.
+
+## Variantes
+
+### Deja flotar la figura
+
+Quita la colocación y la figura 1.1 flota al pie de la primera columna de la página 3, y el PDF la etiqueta después de la tabla 1.1, el último bloque de la página.
+
+```diff
+-  { id: 'contenedores', typeId: 'figure', kind: 'svg', placement: { position: 'here' },
++  { id: 'contenedores', typeId: 'figure', kind: 'svg',
+```
+
+## Errores frecuentes
+
+El código no puede validar su propio PDF, porque veraPDF funciona fuera del navegador. Descarga el archivo y ejecuta `verapdf -f ua1 accessible-tagged-pdf.pdf`; el PDF capturado para esta página pasa la validación. El validador no sabe si un texto alternativo describe su imagen, así que escucha también la guía con un lector de pantalla.
+
+En postext 1.4.1 un enlace de Markdown imprime sus palabras y no añade ningún enlace al PDF; solo enlazan las citas `:ref` y las filas del índice. Por eso el colofón imprime la dirección web completa.

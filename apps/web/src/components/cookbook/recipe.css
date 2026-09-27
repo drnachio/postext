@@ -1,0 +1,1429 @@
+/* ── Cookbook: the recipe page ─────────────────────────────────────────
+   Band, light table, lightbox, write-up blocks, aside and the strips after
+   it. Plain CSS over the site's tokens (globals.css); the page sets the
+   chapter's part class (`--part`, `--part-ink`, `--part-on`). The theme is
+   class-based (html.dark / html.light). */
+
+.cb-recipe {
+  --cb-code-size: 0.76rem;
+  --cb-code-lh: 1.7;
+}
+
+.cb-container {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+@media (min-width: 640px) {
+  .cb-container {
+    padding-inline: 1.5rem;
+  }
+}
+@media (min-width: 1536px) {
+  .cb-container {
+    max-width: 80rem;
+    padding-inline: 2rem;
+  }
+}
+
+/* ── Band ── */
+.cb-band-number {
+  position: absolute;
+  top: 0.4rem;
+  right: 1rem;
+  display: flex;
+  align-items: flex-start;
+  font-size: clamp(5rem, 11vw, 9rem);
+  line-height: 0.8;
+  pointer-events: none;
+  user-select: none;
+  font-variant-numeric: lining-nums;
+}
+.cb-band-no {
+  margin: 0.32em 0.1em 0 0;
+  font-size: 0.26em;
+  letter-spacing: 0;
+}
+@media (min-width: 640px) {
+  .cb-band-number {
+    right: 1.5rem;
+  }
+}
+@media (max-width: 639.98px) {
+  /* On a phone the Nº is a pale float at the top right, lifted into the
+     band's top padding (2rem - 0.4rem): the kicker's lines stop short of it
+     instead of running under it ("N.º" is wider than "Nº"). */
+  .cb-band-number {
+    position: relative;
+    top: auto;
+    right: auto;
+    float: right;
+    margin: -1.6rem 0 0.25rem 0.75rem;
+    opacity: 0.2;
+  }
+}
+.cb-band .cb-level > span {
+  box-shadow: inset 0 0 0 1.5px currentColor;
+}
+.cb-band .cb-level > span[data-on] {
+  background: currentColor;
+}
+.cb-band-question {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  opacity: 0.95;
+}
+.cb-draft-tab {
+  position: absolute;
+  top: 0;
+  left: 1rem;
+  padding: 0.3rem 0.6rem 0.35rem;
+  border-radius: 0 0 4px 4px;
+  background: var(--brand-night);
+  color: #ef7a62;
+  font-family: var(--font-sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+@media (min-width: 640px) {
+  .cb-draft-tab {
+    left: 1.5rem;
+  }
+}
+
+/* The band's actions: outlined in the band's own ink, the primary one in
+   night (it reads on every part colour, in both themes). */
+.cb-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.55rem;
+}
+.cb-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.1rem;
+  padding: 0 0.85rem;
+  border: 1.5px solid color-mix(in srgb, currentColor 42%, transparent);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+.cb-action:hover {
+  border-color: currentColor;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+.cb-action-primary {
+  border-color: var(--brand-night);
+  background: var(--brand-night);
+  color: #f4f1ea;
+}
+.cb-action-primary:hover {
+  border-color: #000;
+  background: #000;
+}
+.cb-action-primary svg {
+  color: var(--brand-gilt);
+}
+.cb-action-link {
+  border-color: transparent;
+  padding-inline: 0.45rem;
+}
+.cb-action-link:hover {
+  border-color: transparent;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Light table: the pages on a night desk, in both themes ── */
+.cb-lt {
+  color: var(--foreground);
+  background:
+    radial-gradient(ellipse 70% 75% at 50% 42%, #272b34 0%, #1a1d23 58%, #121418 100%);
+}
+.cb-lt-inner {
+  max-width: 80rem;
+  margin-inline: auto;
+  padding: 2rem 1.5rem 1.6rem;
+}
+.cb-lt-stage {
+  /* Horizontal swipes turn the spread. */
+  touch-action: pan-y pinch-zoom;
+  display: grid;
+  grid-template-columns: minmax(2.6rem, 1fr) auto minmax(2.6rem, 1fr);
+  align-items: center;
+  gap: 1.5rem;
+  border-radius: 6px;
+}
+.cb-lt-stage > .cb-lt-nav:first-child {
+  justify-self: end;
+}
+.cb-lt-stage:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 10px;
+}
+.cb-lt-spread {
+  --lt-h: min(34rem, 64svh);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: min(calc(100vw - 11rem), 68rem, calc(var(--lt-h) * var(--ar)));
+  aspect-ratio: var(--ar);
+}
+.cb-lt-page {
+  position: relative;
+  margin: 0;
+}
+.cb-lt-page img {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #fff;
+}
+.cb-lt-page:not(.is-empty) {
+  box-shadow:
+    0 1px 1px rgb(0 0 0 / 0.35),
+    0 16px 36px -8px rgb(0 0 0 / 0.65);
+}
+/* The spine: each page darkens towards the fold. */
+.cb-lt-page:not(.is-empty)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.cb-lt-page.is-verso::after {
+  background: linear-gradient(to left, rgb(0 0 0 / 0.16), rgb(0 0 0 / 0.04) 3%, transparent 9%);
+}
+.cb-lt-page.is-recto::after {
+  background: linear-gradient(to right, rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.05) 3%, transparent 9%);
+}
+.cb-lt-open {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+.cb-lt-open:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+}
+.cb-lt-nav {
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border: 1.5px solid var(--rule-strong);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.03);
+  color: var(--foreground);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, opacity 0.15s;
+}
+.cb-lt-nav:hover:not(:disabled) {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.cb-lt-nav:disabled {
+  opacity: 0.28;
+  cursor: default;
+}
+.cb-lt-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 2rem;
+  margin-top: 1.4rem;
+}
+.cb-lt-count,
+.cb-lt-link {
+  font-family: var(--font-sans);
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--slate);
+}
+.cb-lt-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 1.25rem;
+}
+.cb-lt-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0;
+  border: 0;
+  background: none;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.cb-lt-link:hover {
+  color: var(--foreground);
+}
+.cb-lt-empty {
+  padding: 3rem 1rem;
+  text-align: center;
+  font-family: var(--font-body);
+  font-style: italic;
+  color: var(--slate);
+}
+
+/* The filmstrip: every spread as a pair of 240 w thumbnails. */
+.cb-lt-film {
+  display: flex;
+  justify-content: safe center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 0.35rem 0.25rem 0.8rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.cb-lt-film-tab {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  height: 4.2rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.cb-lt-film-tab:hover {
+  opacity: 0.85;
+}
+.cb-lt-film-tab[aria-selected="true"] {
+  opacity: 1;
+}
+.cb-lt-film-tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  bottom: -0.6rem;
+  height: 3px;
+  background: var(--brand);
+}
+.cb-lt-film-tab:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 4px;
+}
+.cb-lt-film-tab img {
+  display: block;
+  width: auto;
+  height: 100%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.5);
+}
+/* The missing half of a spread (page 1 alone on the right): a faint sheet,
+   so the thumbnail still reads as verso and recto. */
+.cb-lt-film-blank {
+  display: block;
+  flex-shrink: 0;
+  width: calc(4.2rem * var(--page-ar, 0.75));
+  height: 100%;
+  background: rgb(255 255 255 / 0.05);
+}
+
+/* The tombstone: the specimen's facts, set like a museum label. */
+.cb-tombstone ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 62rem;
+  margin: 1.5rem auto 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.58rem;
+  line-height: 2;
+  letter-spacing: 0.15em;
+  text-align: center;
+  color: var(--slate);
+}
+.cb-tombstone li:not(:last-child)::after {
+  content: "·";
+  margin-inline: 0.75em;
+  opacity: 0.7;
+}
+
+/* Mobile: single pages in a scroll-snap strip. */
+.cb-lt-snap,
+.cb-lt-dots {
+  display: none;
+}
+@media (max-width: 639.98px) {
+  .cb-lt-inner {
+    padding: 1.25rem 0 1.1rem;
+  }
+  .cb-lt-stage,
+  .cb-lt-film,
+  .cb-lt-count {
+    display: none;
+  }
+  .cb-lt-snap {
+    display: flex;
+    gap: 0.75rem;
+    padding-inline: 6vw;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .cb-lt-snap-page {
+    display: flex;
+    flex: 0 0 88vw;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0;
+    border: 0;
+    background: none;
+    scroll-snap-align: center;
+  }
+  .cb-lt-snap-page img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 70svh;
+    background: #fff;
+    box-shadow: 0 10px 28px -6px rgb(0 0 0 / 0.6);
+  }
+  .cb-lt-dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 0.9rem;
+  }
+  .cb-lt-dots > span {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--rule-strong);
+    transition: width 0.2s, background-color 0.2s;
+  }
+  .cb-lt-dots > span[data-active] {
+    width: 16px;
+    background: var(--brand);
+  }
+  .cb-lt-bar {
+    justify-content: center;
+    margin-top: 0.75rem;
+    padding-inline: 1rem;
+  }
+  .cb-tombstone ul {
+    margin-top: 0.9rem;
+    padding-inline: 1rem;
+  }
+}
+
+/* ── Lightbox ── */
+.cb-lb {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--brand-night);
+  color: var(--foreground);
+  overscroll-behavior: contain;
+}
+.cb-lb[open] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+.cb-lb::backdrop {
+  background: rgb(0 0 0 / 0.6);
+}
+.cb-lb-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 1rem 0.5rem 1.25rem;
+}
+.cb-lb-count,
+.cb-lb-hint {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--slate);
+}
+.cb-lb-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.cb-lb-modes {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 7px;
+  background: var(--surface-2);
+}
+.cb-lb-mode {
+  padding: 0.35rem 0.7rem;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  color: var(--slate);
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cb-lb-mode[aria-checked="true"] {
+  background: var(--foreground);
+  color: var(--brand-night);
+}
+.cb-lb-close {
+  display: grid;
+  place-items: center;
+  width: 2.3rem;
+  height: 2.3rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--foreground);
+  cursor: pointer;
+}
+.cb-lb-close:hover {
+  background: var(--rule-strong);
+}
+.cb-lb-stage {
+  /* Horizontal swipes turn the page. */
+  touch-action: pan-y pinch-zoom;
+  display: grid;
+  grid-template-columns: 2.6rem minmax(0, 1fr) 2.6rem;
+  align-items: center;
+  gap: 1rem;
+  min-height: 0;
+  padding: 0 1rem;
+}
+.cb-lb-pages {
+  --lb-h: calc(100dvh - 7rem);
+  justify-self: center;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: min(100%, calc(var(--lb-h) * var(--ar)));
+  aspect-ratio: var(--ar);
+}
+.cb-lb-pages.is-single {
+  grid-template-columns: 1fr;
+}
+.cb-lb-hint {
+  padding: 0.6rem 1rem 0.9rem;
+  text-align: center;
+  opacity: 0.8;
+}
+@media (max-width: 639.98px) {
+  .cb-lb-stage {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0 0.5rem;
+  }
+  .cb-lb-stage > .cb-lt-nav {
+    display: none;
+  }
+  .cb-lb-hint {
+    display: none;
+  }
+  .cb-lb-pages {
+    --lb-h: calc(100dvh - 4.5rem);
+  }
+}
+
+/* ── Body: the write-up and its aside ── */
+.cb-body {
+  display: grid;
+  gap: 2rem;
+  padding-top: 2.5rem;
+  padding-bottom: 1rem;
+}
+@media (min-width: 1024px) {
+  .cb-body {
+    grid-template-columns: minmax(0, 46rem) 14.5rem;
+    justify-content: space-between;
+    gap: 4rem;
+  }
+}
+.cb-article {
+  min-width: 0;
+}
+
+/* The aside: On this page, then the facts. */
+.cb-aside-inner {
+  position: sticky;
+  top: 5rem;
+  max-height: calc(100vh - 6rem);
+  overflow-y: auto;
+  padding-bottom: 2rem;
+  scrollbar-width: thin;
+}
+.cb-aside-title {
+  margin-bottom: 0.6rem;
+  font-size: 0.6rem;
+  color: var(--slate);
+}
+.cb-toc ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cb-toc a {
+  display: block;
+  padding: 0.22rem 0 0.22rem 0.75rem;
+  border-left: 3px solid color-mix(in srgb, var(--rule) 70%, transparent);
+  font-family: var(--font-sans);
+  font-size: 0.74rem;
+  line-height: 1.35;
+  color: var(--slate);
+  text-decoration: none;
+  transition: color 0.15s, border-color 0.15s;
+}
+.cb-toc a:hover {
+  color: var(--foreground);
+}
+.cb-toc a[aria-current] {
+  border-left-color: var(--part);
+  color: var(--part-ink);
+  font-weight: 600;
+}
+.cb-facts {
+  display: grid;
+  gap: 1.1rem;
+  margin: 1.75rem 0 0;
+  font-family: var(--font-sans);
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+.cb-facts dt {
+  margin-bottom: 0.35rem;
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--slate);
+}
+.cb-facts dd {
+  margin: 0;
+}
+.cb-facts dd a {
+  color: var(--foreground);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--part-ink) 40%, transparent);
+  text-underline-offset: 3px;
+}
+.cb-facts dd a:hover {
+  color: var(--part-ink);
+}
+.cb-facts .cb-config {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.cb-facts .cb-config a,
+.cb-facts .cb-config code {
+  padding: 0.12rem 0.4rem;
+  border-radius: 4px;
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--part-ink);
+  text-decoration: none;
+}
+.cb-facts .cb-config a::after {
+  content: " ↗";
+  opacity: 0.55;
+}
+.cb-facts .cb-config a:hover {
+  background: var(--surface-2);
+}
+.cb-facts-note {
+  color: var(--slate);
+}
+
+/* Below lg the aside folds into a disclosure. */
+.cb-aside-mobile {
+  margin: 1rem 0;
+  border-radius: 8px;
+  background: var(--surface);
+}
+.cb-aside-mobile summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  color: var(--slate);
+  list-style: none;
+  cursor: pointer;
+}
+.cb-aside-mobile summary::-webkit-details-marker {
+  display: none;
+}
+.cb-aside-mobile summary svg {
+  transition: transform 0.2s;
+}
+.cb-aside-mobile[open] summary svg {
+  transform: rotate(180deg);
+}
+.cb-aside-mobile-body {
+  padding: 0 1rem 1.1rem;
+}
+.cb-aside-mobile .cb-facts .cb-config :is(a, code) {
+  background: var(--surface-2);
+}
+
+/* ── Write-up ── */
+.cb-writeup > .cb-section:first-child > h2 {
+  margin-top: 0;
+}
+.cb-writeup .docs-content > :last-child {
+  margin-bottom: 0;
+}
+/* Generated blocks are UI, not prose: ragged, no hyphens. */
+.cb-writeup :is(.cb-answers, .cb-ingredients, .cb-credits, .cb-pitfall, .cb-excerpt, .cb-whole, .cb-whole-note, .cb-credits-links) {
+  text-align: left;
+  hyphens: manual;
+  -webkit-hyphens: manual;
+}
+.cb-answers {
+  margin-top: 1.4rem;
+  padding: 0.95rem 1.2rem 1rem;
+  border-radius: 8px;
+  background: var(--callout-bg);
+}
+.cb-answers .kicker {
+  margin-bottom: 0.45rem;
+  font-size: 0.6rem;
+  color: var(--part-ink);
+}
+.docs-content .cb-answers ul {
+  margin: 0;
+  font-size: 0.95em;
+  font-style: italic;
+}
+.docs-content .cb-answers li:last-child {
+  margin-bottom: 0;
+}
+
+/* Code: excerpts and the whole recipe. The line numbers are CSS content
+   (never copied) and stick to the left edge while the code scrolls. */
+.docs-content pre.cb-code {
+  margin: 0;
+  padding: 0.7rem 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--surface);
+  font-size: var(--cb-code-size);
+  line-height: var(--cb-code-lh);
+  text-align: left;
+  hyphens: manual;
+  /* The mono face's programming ligatures would draw `=>` as ⇒ and `===`
+     as ≡: show the characters a reader copies. */
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+.cb-code-lines {
+  display: grid;
+  min-width: max-content;
+}
+.cb-code .cb-line {
+  padding-right: 1.25rem;
+}
+.cb-code .cb-line[data-highlighted] {
+  background: color-mix(in srgb, var(--part) 14%, transparent);
+  box-shadow: inset 3px 0 0 var(--part);
+}
+.cb-code .cb-line[data-flash] {
+  animation: cb-flash 2.6s ease-out;
+}
+/* Without the fade, the target stays tinted until the flash ends. */
+@media (prefers-reduced-motion: reduce) {
+  .cb-code .cb-line[data-flash] {
+    background: color-mix(in srgb, var(--brand) 22%, transparent);
+  }
+}
+.cb-code .cb-line:focus {
+  outline: none;
+}
+.cb-code .cb-line:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
+}
+@keyframes cb-flash {
+  from {
+    background: color-mix(in srgb, var(--brand) 32%, transparent);
+  }
+  to {
+    background: transparent;
+  }
+}
+.docs-content .cb-code .cb-ln {
+  position: sticky;
+  left: 0;
+  display: inline-block;
+  width: 5ch;
+  margin-right: 1.25ch;
+  padding-right: 1ch;
+  background: var(--surface);
+  color: color-mix(in srgb, var(--slate) 75%, transparent);
+  font-weight: 400;
+  text-align: right;
+  text-decoration: none;
+  user-select: none;
+}
+.cb-code .cb-ln::before {
+  content: attr(data-n);
+}
+/* The prose cites these numbers: full slate on the light surface (AA). */
+.light .docs-content .cb-code .cb-ln {
+  color: var(--slate);
+}
+.docs-content .cb-code a.cb-ln:hover {
+  color: var(--part-ink);
+}
+.cb-code .cb-line[data-highlighted] .cb-ln {
+  background: color-mix(in srgb, var(--part) 14%, var(--surface));
+}
+/* Tokens are coloured by palette classes whose rules the page writes
+   (lib/cookbook/highlight `highlightCss`); a token with more than colours
+   carries both themes as custom properties instead. */
+.docs-content .cb-code [style*="--shiki-dark"] {
+  color: var(--shiki-dark);
+  font-style: var(--shiki-dark-font-style, inherit);
+}
+:root.light .docs-content .cb-code [style*="--shiki-light"] {
+  color: var(--shiki-light);
+  font-style: var(--shiki-light-font-style, inherit);
+}
+
+.cb-excerpt {
+  margin: 1.1rem 0 1.4rem;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--surface);
+}
+.cb-excerpt-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.35rem 0.4rem 0.35rem 1rem;
+  background: var(--surface-2);
+}
+.cb-excerpt-file {
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--slate);
+}
+.cb-excerpt-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.15rem;
+}
+.docs-content .cb-code-button,
+.cb-code-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.32rem 0.55rem;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--slate);
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
+}
+.docs-content .cb-code-button:hover,
+.cb-code-button:hover {
+  background: var(--surface);
+  color: var(--foreground);
+}
+.docs-content .cb-excerpt-caption {
+  margin: 0;
+  padding: 0.1rem 1rem 0.8rem;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--slate);
+}
+.cb-excerpt-missing {
+  padding: 0.6rem 0.9rem;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--brand-vermilion) 16%, transparent);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+}
+@media (max-width: 479.98px) {
+  /* Room for the file name: the code bars keep their icons only (the
+     text stays in the DOM as the buttons' names). */
+  .cb-excerpt-actions .cb-code-button,
+  .cb-whole-actions .cb-code-button {
+    font-size: 0;
+    gap: 0;
+  }
+}
+
+/* The whole recipe: tabs, a collapsed view with "Show all", and folds for
+   the Markdown sample and the kit. */
+.cb-whole {
+  gap: 0;
+  margin-top: 1rem;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--surface);
+}
+.cb-whole-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.3rem 0.4rem 0.3rem 0.5rem;
+  overflow-x: auto;
+  background: var(--surface-2);
+  scrollbar-width: none;
+}
+.cb-whole-tabs {
+  flex-shrink: 0;
+}
+.cb-whole-tab {
+  padding-inline: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+.cb-whole-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.15rem;
+}
+.cb-whole-body {
+  position: relative;
+}
+.cb-whole-body[data-collapsed] {
+  max-height: calc(40 * var(--cb-code-lh) * var(--cb-code-size) + 0.7rem);
+  overflow: hidden;
+}
+.cb-whole-body[data-collapsed]::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 5rem;
+  background: linear-gradient(to bottom, transparent, var(--surface));
+  pointer-events: none;
+}
+.cb-whole-more {
+  display: block;
+  width: 100%;
+  padding: 0.65rem;
+  border: 0;
+  background: var(--surface);
+  color: var(--part-ink);
+  font-family: var(--font-sans);
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cb-whole-more:hover {
+  background: var(--surface-2);
+}
+.cb-fold {
+  margin: 0.3rem 0;
+}
+.cb-fold > summary {
+  display: block;
+  padding: 0.3rem 1rem 0.3rem calc(5ch + 1.25ch + 1rem);
+  background: color-mix(in srgb, var(--part) 9%, transparent);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--part-ink);
+  list-style: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.cb-fold > summary::-webkit-details-marker {
+  display: none;
+}
+.cb-fold > summary::before {
+  content: "▸";
+  display: inline-block;
+  width: 1.1em;
+}
+.cb-fold[open] > summary::before {
+  content: "▾";
+}
+.cb-fold > summary:hover {
+  background: color-mix(in srgb, var(--part) 16%, transparent);
+}
+.docs-content .cb-whole-note {
+  margin: 0.75rem 0 0;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--slate);
+}
+
+/* Ingredients and credits: label column, then chips or text. */
+.cb-ingredients,
+.cb-credits {
+  display: grid;
+  gap: 0.9rem;
+  margin: 1rem 0 0;
+}
+.cb-ingredients > div,
+.cb-credits > div {
+  display: grid;
+  gap: 0.35rem;
+}
+@media (min-width: 640px) {
+  .cb-ingredients > div,
+  .cb-credits > div {
+    grid-template-columns: 7.5rem minmax(0, 1fr);
+    gap: 1rem;
+  }
+}
+.cb-ingredients dt,
+.cb-credits dt {
+  padding-top: 0.3rem;
+  font-family: var(--font-sans);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--slate);
+}
+.cb-ingredients dd,
+.cb-credits dd {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.cb-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.docs-content .cb-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.22rem 0.62rem;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 0.74rem;
+  font-weight: 500;
+  line-height: 1.3;
+  text-decoration: none;
+  transition: background-color 0.15s, color 0.15s;
+}
+.docs-content a.cb-chip:hover {
+  background: var(--surface-2);
+  color: var(--part-ink);
+}
+.docs-content .cb-chip.is-primary {
+  background: color-mix(in srgb, var(--part) 18%, transparent);
+  color: var(--part-ink);
+  font-weight: 650;
+}
+.docs-content .cb-chip code {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 0.95em;
+}
+.docs-content .cb-plain-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.docs-content .cb-plain-list li {
+  margin-bottom: 0.15rem;
+}
+.cb-credits-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin-top: 1.25rem;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+}
+
+/* Pitfalls: a warm panel with a stripe (vermilion; gilt for warnings). */
+.cb-pitfalls {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1rem 0 1.25rem;
+}
+.cb-pitfall {
+  padding: 0.85rem 1.1rem 0.9rem 1.25rem;
+  border-radius: 0 8px 8px 0;
+  background: var(--callout-bg);
+  box-shadow: inset 4px 0 0 var(--brand-vermilion);
+  scroll-margin-top: 5rem;
+}
+.cb-pitfall.is-warning {
+  box-shadow: inset 4px 0 0 var(--brand-gilt);
+}
+.docs-content .cb-pitfall p {
+  margin: 0 0 0.35rem;
+}
+.docs-content .cb-pitfall p:last-child {
+  margin-bottom: 0;
+}
+.docs-content .cb-pitfall .cb-pitfall-kicker {
+  margin-bottom: 0.3rem;
+  font-size: 0.58rem;
+  color: var(--vermilion);
+}
+.docs-content .cb-pitfall.is-warning .cb-pitfall-kicker {
+  color: var(--gilt);
+}
+.docs-content .cb-pitfall-kicker code {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 1.05em;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.docs-content .cb-pitfall .cb-pitfall-title {
+  font-family: var(--font-head);
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.cb-pitfall-body {
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.cb-pitfall-fixed {
+  color: var(--slate);
+}
+
+/* MDX components. */
+.cb-note {
+  margin: 1.5rem 0;
+  padding: 0.9rem 1.1rem 0.9rem 1.2rem;
+  border-left: 4px solid var(--part, var(--brand));
+  border-radius: 0 6px 6px 0;
+  background: var(--callout-bg);
+  font-family: var(--font-sans);
+  font-size: 0.9em;
+  line-height: 1.65;
+  text-align: left;
+  hyphens: manual;
+}
+.cb-note > :last-child {
+  margin-bottom: 0;
+}
+.cb-pageref-mark {
+  display: inline-block;
+  margin-left: 0.3em;
+  padding: 0.05rem 0.3rem;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--part) 16%, transparent);
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  vertical-align: 0.12em;
+}
+.cb-pageshot {
+  margin: 1.5rem 0;
+}
+.cb-pageshot-frame {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2), 0 10px 26px -10px rgb(0 0 0 / 0.45);
+  cursor: zoom-in;
+}
+.docs-content .cb-pageshot-frame img {
+  position: absolute;
+  max-width: none;
+  height: auto;
+  border-radius: 0;
+}
+.cb-pageshot figcaption {
+  margin-top: 0.55rem;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--slate);
+}
+
+/* ── After the write-up: collections, related plates, prev/next ── */
+.cb-after {
+  display: grid;
+  /* Without an explicit track the column grows to the widest min-content
+     (a related plate's image), 468 px on a 375 px screen. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 3rem;
+  padding-top: 3rem;
+  padding-bottom: 4.5rem;
+}
+.cb-after-title {
+  margin-bottom: 1.25rem;
+  font-size: 0.64rem;
+  color: var(--slate);
+}
+.cb-related-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2.25rem 1.75rem;
+}
+@media (min-width: 640px) {
+  .cb-related-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1024px) {
+  .cb-related-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.cb-collections {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+}
+.cb-collection {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.55rem;
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  background: var(--surface);
+}
+.cb-collection-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.8rem;
+  margin: 0;
+}
+.cb-collection-head .kicker {
+  font-size: 0.6rem;
+  color: var(--part-ink);
+}
+.cb-collection-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 650;
+  color: var(--foreground);
+}
+.cb-collection-title:hover {
+  color: var(--part-ink);
+}
+.cb-collection-head .cb-collection-pos {
+  color: var(--slate);
+}
+.cb-collection-links {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+}
+.cb-collection-links a {
+  color: var(--slate);
+}
+.cb-collection-links a:hover {
+  color: var(--foreground);
+}
+/* The next recipe is set right, also when its title wraps. */
+.cb-collection-links > :nth-child(2) {
+  text-align: right;
+}
+@media (max-width: 639.98px) {
+  /* Two titles side by side get about 140 px each on a phone: one per line. */
+  .cb-collection-links {
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+  .cb-collection-links > span:empty {
+    display: none;
+  }
+  .cb-collection-links > :nth-child(2) {
+    align-self: flex-end;
+  }
+}
+.cb-prevnext {
+  display: grid;
+  gap: 0.75rem;
+}
+@media (min-width: 640px) {
+  .cb-prevnext {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.cb-prevnext-link {
+  display: grid;
+  align-content: start;
+  gap: 0.4rem;
+  padding: 1rem 1.25rem 1.1rem;
+  border-radius: 8px;
+  background: var(--surface);
+  transition: background-color 0.15s;
+}
+.cb-prevnext-link:hover {
+  background: var(--surface-2);
+}
+.cb-prevnext-link.is-next {
+  text-align: right;
+}
+.cb-prevnext-link .kicker {
+  font-size: 0.58rem;
+  color: var(--slate);
+}
+.cb-prevnext-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 650;
+  line-height: 1.25;
+  color: var(--foreground);
+  text-wrap: balance;
+}
+.cb-prevnext-link:hover .cb-prevnext-title {
+  color: var(--part-ink);
+}
+.cb-prevnext-no {
+  font-family: var(--font-sans);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--slate);
+}
+
+/* ── Mobile action bar and the toast ── */
+.cb-action-bar {
+  display: none;
+}
+@media (max-width: 639.98px) {
+  /* The bar is fixed over the foot of the screen: its room goes at the end
+     of the document, after the footer, so nothing stays under it. */
+  body:has(.cb-action-bar) {
+    padding-bottom: calc(3.75rem + env(safe-area-inset-bottom));
+  }
+  .cb-action-bar {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 40;
+    display: block;
+    padding: 0.5rem 1rem calc(0.5rem + env(safe-area-inset-bottom));
+    background: rgb(21 23 28 / 0.94);
+    color: var(--foreground);
+    backdrop-filter: blur(10px);
+  }
+  .cb-action-bar-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .cb-action-bar .cb-action {
+    flex: 1;
+    min-height: 2.75rem;
+  }
+  .cb-action-bar .cb-action-primary {
+    border-color: var(--brand-gilt);
+    background: var(--brand-gilt);
+    color: var(--brand-night);
+  }
+  .cb-action-bar .cb-action-primary svg {
+    color: currentColor;
+  }
+}
+.cb-toast-region {
+  position: fixed;
+  left: 50%;
+  bottom: 1.25rem;
+  z-index: 70;
+  width: max-content;
+  max-width: calc(100vw - 2rem);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+@media (max-width: 639.98px) {
+  .cb-toast-region {
+    bottom: calc(4.5rem + env(safe-area-inset-bottom));
+  }
+  /* Touch targets of at least 44 px on phones. */
+  .docs-content .cb-code-button,
+  .cb-code-button {
+    justify-content: center;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+  .cb-lt-link,
+  .cb-lb-mode {
+    min-height: 2.75rem;
+  }
+  .cb-fold > summary {
+    padding-block: 0.85rem;
+  }
+  .cb-lb-close {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+  .cb-aside-mobile .cb-toc a {
+    padding-block: 0.6rem;
+  }
+}
+.cb-toast {
+  margin: 0;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  background: var(--foreground);
+  color: var(--background);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.4;
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.3);
+  animation: cb-toast-in 0.2s ease-out;
+}
+@keyframes cb-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.4rem);
+  }
+}

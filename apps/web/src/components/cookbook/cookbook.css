@@ -1,0 +1,371 @@
+/* ── Cookbook ───────────────────────────────────────────────────────────
+   Gallery and plates. Plain CSS over the site's tokens (globals.css); the
+   theme is class-based (html.dark / html.light), never prefers-color-scheme. */
+
+/* The desk a plate's transparent capture sits on: one image file serves
+   both themes, the ground is CSS. */
+:root,
+:root.dark,
+.on-night {
+  --desk: #1b1d22;
+  --desk-page: #f4f1ea;
+}
+:root.light {
+  --desk: #e7e1d4;
+  --desk-page: #ffffff;
+}
+
+/* ── Level squares (■■□), on plates and on the recipe page ── */
+.cb-level {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 3px;
+  vertical-align: middle;
+}
+.cb-level > span {
+  width: 0.45rem;
+  height: 0.45rem;
+  box-shadow: inset 0 0 0 1.5px var(--part);
+  opacity: 0.6;
+}
+.cb-level > span[data-on] {
+  background: var(--part);
+  box-shadow: none;
+  opacity: 1;
+}
+
+/* Book view vs results view. The pre-paint script sets the attribute on
+   deep links; the filters island keeps it in sync. */
+html[data-cb-filtered] .cb-book {
+  display: none !important;
+}
+html:not([data-cb-filtered]) .cb-results {
+  display: none !important;
+}
+
+/* ── Frontispiece ── */
+/* The night band keeps the bright gilt em in the light theme too. */
+:root.light .cb-front .hero-em {
+  color: var(--brand-gilt);
+}
+.cb-front-title {
+  transition: font-size 0.2s ease;
+}
+/* Filtered, the frontispiece is a slim header: kicker and H1. */
+html[data-cb-filtered] .cb-front-inner {
+  padding-top: 1.75rem;
+  padding-bottom: 1.5rem;
+}
+html[data-cb-filtered] .cb-front-title {
+  font-size: 1.9rem;
+}
+html[data-cb-filtered] .cb-front-inner > :first-child {
+  grid-column: 1 / -1;
+}
+html[data-cb-filtered] .cb-front-title br {
+  display: none;
+}
+
+/* ── Contents strip ── */
+.cb-leader {
+  flex: 1 1 auto;
+  min-width: 1.5rem;
+  margin-bottom: 0.3em;
+  border-bottom: 2px dotted var(--rule-strong);
+}
+
+/* Horizontal rows that scroll inside themselves (chips, mobile shelves). */
+.cb-scroll-row {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.cb-scroll-row::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Filter bar ── */
+.cb-bar {
+  top: var(--cb-nav-h, 3.35rem);
+}
+.cb-bar-shadow {
+  box-shadow: 0 10px 24px -18px rgba(0, 0, 0, 0.55);
+}
+:root.light .cb-bar-shadow {
+  box-shadow: 0 10px 24px -18px rgba(21, 23, 28, 0.35);
+}
+.cb-kbd {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  line-height: 1;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  background: var(--surface-2);
+  color: var(--slate);
+}
+
+/* ── Plates ── */
+.cb-plate {
+  --plate-title: 1.2rem;
+  border-radius: 4px;
+}
+.cb-plate-lg {
+  --plate-title: 1.45rem;
+}
+.cb-plate-title {
+  font-size: var(--plate-title);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  font-variation-settings: "SOFT" 30, "WONK" 0;
+}
+.cb-plate-summary {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+/* The stretched link: the whole plate is the target; the ring goes round
+   the plate, in the brand colour. */
+.cb-plate-link {
+  outline: none;
+}
+.cb-plate-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.cb-plate:has(.cb-plate-link:focus-visible) {
+  outline: 2px solid var(--brand);
+  outline-offset: 8px;
+}
+.cb-plate:hover .cb-plate-title,
+.cb-plate:has(.cb-plate-link:focus-visible) .cb-plate-title {
+  color: var(--part-ink);
+}
+
+.cb-stage {
+  aspect-ratio: 4 / 3;
+}
+.cb-stage-inner {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--desk);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.cb-stage-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+/* White pages glow on the night desk: take the edge off. */
+:root:not(.light) .cb-stage-img,
+.on-night .cb-stage-img {
+  filter: brightness(0.94);
+}
+.cb-plate-marks {
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+@media (hover: hover) {
+  .cb-plate:hover .cb-plate-marks {
+    opacity: 1;
+  }
+}
+.cb-plate:has(.cb-plate-link:focus-visible) .cb-plate-marks {
+  opacity: 1;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .cb-plate:hover .cb-stage-inner {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 26px -16px rgba(0, 0, 0, 0.55);
+  }
+}
+
+.cb-draft {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0.75rem;
+  z-index: 2;
+  padding: 0.2rem 0.45rem 0.25rem;
+  border-radius: 0 0 3px 3px;
+  background: var(--brand-vermilion);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.cb-badge {
+  padding: 0.12rem 0.35rem;
+  border-radius: 3px;
+  background: var(--surface-2);
+  color: var(--slate);
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+}
+.cb-badge-workaround {
+  background: color-mix(in srgb, var(--vermilion) 16%, transparent);
+  color: var(--vermilion);
+}
+/* A lighter tint keeps the small vermilion text at AA on the light page. */
+.light .cb-badge-workaround {
+  background: color-mix(in srgb, var(--vermilion) 10%, transparent);
+}
+
+/* ── Placeholder stage (a recipe with no capture yet) ── */
+.cb-ph {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cb-ph-page {
+  position: relative;
+  height: 80%;
+  aspect-ratio: 3 / 4;
+  background: var(--desk-page);
+  box-shadow: 0 10px 22px -12px rgba(0, 0, 0, 0.5);
+}
+.cb-ph-band {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 32%;
+  background: var(--part, var(--brand-blue));
+}
+.cb-ph-title {
+  position: absolute;
+  left: 12%;
+  bottom: 22%;
+  width: 52%;
+  height: 11%;
+  background: rgba(255, 255, 255, 0.85);
+}
+/* The kicker over the title. */
+.cb-ph-title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 170%;
+  width: 45%;
+  height: 40%;
+  background: inherit;
+  opacity: 0.6;
+}
+.part-gilt .cb-ph-title {
+  background: rgba(14, 16, 20, 0.8);
+}
+.cb-ph-text {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 40%;
+  bottom: 14%;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(21, 23, 28, 0.16) 0 3px,
+    transparent 3px 7px
+  );
+  -webkit-mask: linear-gradient(90deg, #000 0 46%, transparent 46% 54%, #000 54% 100%);
+  mask: linear-gradient(90deg, #000 0 46%, transparent 46% 54%, #000 54% 100%);
+}
+.cb-ph-folio {
+  position: absolute;
+  bottom: 4%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  line-height: 1;
+  color: var(--brand-gilt-deep);
+}
+
+/* ── Shelves ── */
+.cb-shelf {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 34rem;
+}
+
+/* Below 640 px a shelf is a row of snapping plates; crop marks and the
+   hover lift need room inside the scroller. */
+@media (max-width: 639.98px) {
+  .cb-shelf-row {
+    display: flex;
+    gap: 1.25rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 1rem;
+    padding: 1.25rem 1rem 0.75rem;
+    margin-inline: -1rem;
+    scrollbar-width: none;
+  }
+  .cb-shelf-row::-webkit-scrollbar {
+    display: none;
+  }
+  .cb-shelf-row > li {
+    flex: 0 0 78vw;
+    scroll-snap-align: start;
+  }
+}
+
+/* ── Empty state: a blank page with crop marks and a gilt folio ── */
+.cb-blank {
+  position: relative;
+  width: 7.5rem;
+  aspect-ratio: 3 / 4;
+  background: var(--desk-page);
+  box-shadow: 0 16px 34px -18px rgba(0, 0, 0, 0.55);
+}
+.cb-blank-folio {
+  position: absolute;
+  bottom: 0.6rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  color: var(--brand-gilt-deep);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .cb-reveal {
+      animation: reveal-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 45%;
+    }
+  }
+}
+
+/* The field has its own clear button. */
+.cb-search-input::-webkit-search-cancel-button,
+.cb-search-input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Keyboard focus and in-page anchors land below the navbar and the sticky
+   filter bar, not under them. */
+html:has(.cb-bar) {
+  scroll-padding-top: calc(var(--cb-nav-h, 3.35rem) + 4.5rem);
+}
+@media (min-width: 640px) {
+  html:has(.cb-bar) {
+    scroll-padding-top: calc(var(--cb-nav-h, 3.35rem) + 7rem);
+  }
+}

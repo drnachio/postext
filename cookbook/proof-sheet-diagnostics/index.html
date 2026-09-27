@@ -1,0 +1,42 @@
+<section id="proof">
+  <header>
+    <p id="slug" data-en="The Tideline 41 · news galley · proof desk" data-es="La Marea 41 · galerada · mesa de pruebas"></p>
+    <h2 id="verdict"></h2>
+    <p id="passes"></p>
+  </header>
+  <div class="desk">
+    <div id="galley"></div>
+    <ol id="report"></ol>
+  </div>
+  <div class="source">
+    <label for="source" data-en="The galley’s Markdown: click a line on a page to select it here" data-es="El Markdown de la galerada: pulsa una línea de una página para seleccionarla aquí"></label>
+    <textarea id="source" spellcheck="false"></textarea>
+    <p>
+      <button id="again" type="button" data-en="Proof again" data-es="Revisar de nuevo"></button>
+      <button id="fixed" type="button" data-en="Load the second pass" data-es="Cargar las segundas pruebas"></button>
+    </p>
+  </div>
+  <template id="words"><!-- the report's words, in the language of the sample -->
+    <i data-key="unclosedMath" data-en="Unclosed maths" data-es="Fórmula sin cerrar"></i>
+    <i data-key="unclosedMathBlock" data-en="Unclosed display maths" data-es="Fórmula en bloque sin cerrar"></i>
+    <i data-key="formula" data-en="Stray formula" data-es="Fórmula perdida"></i>
+    <i data-key="unclosedContainer" data-en="Unclosed fence" data-es="Valla sin cerrar"></i>
+    <i data-key="calloutOverflow" data-en="Box runs {} mm past its column" data-es="El recuadro desborda su columna en {} mm"></i>
+    <i data-key="unknownResourceId" data-en="Unknown id: prints “?”" data-es="Id desconocido: imprime «?»"></i>
+    <i data-key="unknownDirective" data-en="Unknown directive: prints as text" data-es="Directiva desconocida: sale como texto"></i>
+    <i data-key="yearList" data-en="A year opened a numbered list" data-es="Un año abrió una lista numerada"></i>
+    <i data-key="looseLine" data-en="Loose line, {}×" data-es="Línea floja, {}×"></i>
+    <i data-key="raggedLine" data-en="Line set ragged: its spaces would pass 3×" data-es="Línea en bandera: sus espacios pasarían de 3×"></i>
+    <i data-key="addressHyphen" data-en="Hyphen added inside an address" data-es="Guion añadido dentro de una dirección"></i>
+    <i data-key="unsettled" data-en="Layout did not settle in {} passes" data-es="La composición no se asentó en {} pasadas"></i>
+    <i data-key="faults" data-en="{} faults" data-es="{} fallos"></i>
+    <i data-key="fault" data-en="{} fault" data-es="{} fallo"></i>
+    <i data-key="clean" data-en="Nothing to mark" data-es="Nada que marcar"></i>
+    <i data-key="first" data-en="on the first pass" data-es="en las primeras pruebas"></i>
+    <i data-key="second" data-en="on the second pass" data-es="en las segundas pruebas"></i>
+    <i data-key="edited" data-en="in the edited copy" data-es="en la copia editada"></i>
+    <i data-key="page" data-en="Proof, page {}" data-es="Prueba, página {}"></i>
+    <i data-key="title" data-en="The Tideline · galley proof" data-es="La Marea · galerada"></i>
+  </template>
+</section>
+<main id="pages"></main>

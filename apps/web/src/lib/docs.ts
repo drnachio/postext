@@ -144,6 +144,11 @@ export function hasLocaleVersion(slug: string, locale: string): boolean {
 }
 
 export interface SearchSection {
+  /** What the entry opens: a docs section, or (in the ⌘K palette) a Cookbook
+   *  recipe or the recipes that explain a layout warning. */
+  kind: "doc" | "recipe" | "warning";
+  /** Locale-less target: "/docs/<slug>#<anchor>", "/cookbook/<slug>", … */
+  href: string;
   id: string;
   slug: string;
   docTitle: string;
@@ -189,6 +194,8 @@ export function extractSearchSections(slug: string, source: string, docTitle: st
     const body = stripMdxForSearch(current.buffer.join("\n"));
     if (body || current.title) {
       sections.push({
+        kind: "doc",
+        href: current.anchor ? `/docs/${slug}#${current.anchor}` : `/docs/${slug}`,
         id: `${slug}::${counter++}`,
         slug,
         docTitle,

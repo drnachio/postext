@@ -1,0 +1,69 @@
+---
+title: "Magazine cover and sectioned contents"
+summary: "A photo cover whose cover lines hang below the masthead, and contents generated with a coloured row per section. Each section is a part that opens no page."
+description: "Six pages of a magazine in Postext. The cover is one design slot over a photograph, and the contents group each story under a tab in its section's colour."
+question: "How do I make a magazine cover and a colophon, and what stands in for a half title and a title page?"
+aliases: ["magazine cover", "masthead", "cover lines", "contents page", "sections by colour", "section colours", "front of book", "issue number", "folio tab", "editor's letter", "colophon"]
+pageNotes: { "1": "The cover: a Tuscan valley under a pale sky, FALLOW in black Bodoni across the top, a paper panel with three cover lines whose kickers are olive, terracotta and wine, and a price box with a made-up barcode in the lower right corner.", "2": "The contents: a large 14 in earth brown, three section rows with coloured tabs, each story's title, page number and standfirst, a small copy of the cover, and the editor's letter, the contributors and a small colophon in the right-hand column.", "3": "Field notes: glass flasks of green shoots across the top of the page, with a terracotta panel rising into its foot that carries the title and standfirst, then two justified columns and a terracotta folio tab.", "4": "The feature opener: a drawn patchwork of fields seen from above, one of them left fallow, with an olive panel rising into its foot.", "5": "The feature continues under a photograph of a farmhouse among vines and cypresses, with an olive fact box listing the seven-year rotation and an olive pull quote.", "6": "Kitchen: ripe wheat with a wine-red panel rising into its foot, then the ingredients and the method with wine-red dashes and numbers." }
+---
+
+## What you'll build
+
+Six pages from an issue of *FALLOW*, an imaginary quarterly of food and land, on a 230 × 300 mm page. A Tuscan valley bleeds off the cover under a 118 pt Bodoni masthead, and three cover lines sit on a paper panel, each kicker in its section's colour, with the price and barcode in the corner. Page 2 holds the generated contents: a coloured tab per section, with the story's title, page number and standfirst under it. The right-hand column carries the editor's letter, the contributors and the colophon. The sections that follow are terracotta, olive and wine. Every story opens with a picture bled across the head of the page and a panel in the section's colour rising into it, and its folio tabs, bullets and boxes take that colour. The colour is set by the `:::part` fence above each story, which opens no divider page.
+
+## Method
+
+### 1 · Hang the cover from its masthead
+
+The code is [the short answer](#the-short-answer) above. Only the photograph, the two lines at the head and the price are anchored to the page. Everything else is anchored to another element ([element placement](/en/docs/configuration#element-placement)): the masthead below the strap, the first kicker 8 mm below the masthead, then each line below its kicker and each kicker below the line before, so a longer cover line or a bigger masthead pushes down what sits under it instead of printing over it. Each kicker and each line carries its own paper box, 84 mm wide, and the six boxes stacked together make the panel, which grows with the words. Every box after the first overlaps the one above by 0.3 mm (`SEAM`), and the barcode overlaps the price the same way, because on the canvas two fills that only touch leave a hairline of the photograph between them. A magazine has no half title and no title page; the cover carries its name, and the contents page carries the issue number, the season and the colophon. For a book's front matter, see <RecipeLink slug="front-matter-roman-to-arabic">Front matter in roman folios, then page 1</RecipeLink>.
+
+### 2 · Make each section a part without a page
+
+<Excerpt region="sections" />
+
+With `parts.page: false`, a fence such as `:::part{title="Features" palette="band=#5d6a2b"}` opens no divider page and only sets the section's title and palette from the next block on ([the `:::part` container](/en/docs/configuration#the-part-container)). Each story's H1 takes a [heading style](/en/docs/configuration#heading-styles) with `numbered: false`, so the contents list it without a number. The style picks the opener's picture, and the part supplies the colour.
+
+### 3 · Link every section colour to one entry
+
+<Excerpt region="palette" />
+
+A part overrides palette entries by id, so everything that changes with the section links to `band`: the opener's panel, the folio tab, the bullets and list numbers, the pull quote, and the fact box's stripe and title. In the text the override goes by value: any colour whose hex equals `band`'s base hex (`#8b6a3e`) takes the section's, which is why no other entry uses that hex. Design elements work the other way round. Postext 1.4.1 paints the hex written beside their `paletteId` and ignores `colorPalette`, but a part's override reaches them through the `paletteId`, so `col()` writes both.
+
+### 4 · Let the contents group themselves
+
+<Excerpt region="contents" />
+
+`:::toc` lists the stories and gives each `:::part` a row laid out from `toc.parts.design` with that part's palette ([table of contents](/en/docs/configuration#table-of-contents)), so one row design prints three tabs in three colours. The rule and the tab both hang from `mid`, the row's middle raised 1 mm, which keeps the tab clear of the title below. With the leader off, nothing runs between a title and its page number (3, 4 and 6), and `subtitle.attr` prints the opener's `standfirst` attribute under the title in italic. The colophon that ends the right-hand column is a paragraph style, Jost 7 pt in `muted`, which the Markdown applies with `:::paragraphs{style="colophon"}`.
+
+### 5 · Give every story the same opener
+
+<Excerpt region="opener" />
+
+The picture bleeds off the top of the page and reaches 150 mm down it. A panel in `band` rises 34 mm into its foot. The panel is three text boxes 136 mm wide, each chained `below` the one before, holding the section's name from `{partTitle}`, the title and the standfirst. The picture reserves no height, so the story starts under the lowest element that does, the byline, whose empty 5 mm of bottom padding keeps the first line at least that far below it.
+
+### 6 · Name the section in the folio
+
+<Excerpt region="folios" />
+
+The page number sits in a 6.5 mm square of `band` at the outer foot. The section's name is anchored beside it, towards the gutter, and the story's title beside the name; all three boxes are 6.5 mm tall with their text centred vertically, so they share one centre line. Magazines print the folio on an opening page too, so the footer has no `pages` filter. The cover's heading style empties the footer, and the contents' style puts the magazine's name and the issue's season (`{title}` and `{publishDate}`) where the section and the story go.
+
+## Variations
+
+### Set the masthead in the house colour
+
+The masthead takes the earth brown of the big 14 on the contents page.
+
+```diff
+-    textTransform: 'uppercase', align: 'center', color: col('ink') },
++    textTransform: 'uppercase', align: 'center', color: col('band') },
+```
+
+### Open each section on a divider page
+
+For parts with a page of their own, and a page number in each part row of the contents, see <RecipeLink slug="parts-in-colour">Parts in colour from one attribute</RecipeLink>.
+
+## Pitfalls
+
+- An image element fits its picture inside its box and never crops it. Cut each JPEG to its box first, 23 : 30 for the cover and 230 × 150 mm for the openers, or the picture shrinks and leaves white strips at the edges.
+- In the text, a part recolours every colour whose hex equals `band`'s base hex, whether or not it links to `band`. Keep that hex for what should change with the section.
+- The stories are copy-fitted in both languages: some sentences of the Spanish Field notes were shortened so that it stays on one page, and one sentence of the English feature lost three words so that both columns of page 4 end level. After an edit, check that no story spills a few lines onto a new page and that every page except a story's last ends level.

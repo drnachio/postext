@@ -1,0 +1,111 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 13,
+  "status": "published",
+  "chapter": "page",
+  "order": 20,
+  "level": 2,
+  "genres": ["any"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["mirrored-margins", "baseline-grid"],
+    "also": [
+      "column-balancing", "off-grid-spacing", "float-placement", "widows-orphans-runts",
+      "paragraph-styles", "page-size", "column-layouts", "column-rule", "units-and-dimensions",
+      "body-typography", "bullet-lists", "numbered-lists", "heading-typography", "running-heads",
+      "page-role-filters", "resources", "canvas-rendering"
+    ]
+  },
+  "answers": ["Q16", "Q17", "Q19", "Q21"],
+  "gaps": [],
+  "gotchas": [
+    "top-float-next-page", "float-stretch-closing-page", "headings-drop-h1-break",
+    "palette-skips-designs", "hyphenation-locales", "resource-types-locale", "quote-frontmatter",
+    "fonts-first"
+  ],
+  "explainsWarnings": [],
+  "related": [
+    "spanish-pocket-novel", "running-heads-by-parity", "section-heads-field-manual",
+    "justification-lab"
+  ],
+  "workarounds": [
+    {
+      "followup": "EF-05",
+      "package": "postext",
+      "note": "levels[0].breakBefore is restated, because any headings object drops the H1 page break"
+    },
+    {
+      "followup": "EF-14",
+      "package": "postext",
+      "note": "locale is the exact bundled code ('en-us' | 'es'): a region-tagged code would hyphenate the Spanish edition as American English"
+    },
+    {
+      "followup": "EF-33",
+      "package": "postext",
+      "note": "resourceTypes: defaultResourceTypes(LANG) makes the Spanish captions and :ref labels read 'Figura'; config.locale alone leaves them in English"
+    },
+    {
+      "followup": "EF-70",
+      "package": "postext",
+      "note": "headings.balancing.stretchAfterFloats is false as a guard: with the first draft of the copy the lever started the second closing column on the English page 11 one line low under the page-wide figure; the fitted copy splits evenly and no longer trips it"
+    },
+    {
+      "followup": "EF-71",
+      "package": "postext",
+      "note": "the running heads and folios take col(), which writes each hex beside its paletteId, because design slots (and bodyText.referenceColor) never read the palette"
+    },
+    { "followup": "EF-11", "package": "postext", "note": "every frontmatter value is quoted" },
+    {
+      "followup": "EF-65",
+      "package": "postext",
+      "note": "copy-fitted: in 78 mm columns of Vollkorn several justified lines stretched past maxWordSpacing (up to 2.75×) with the first draft; both samples were reworded until no line exceeds the default 2 (worst 1.88 in English, 1.83 in Spanish). Tightening min/maxWordSpacing to 0.75/1.8 left lines past the cap and doubled the hyphenated line ends in Spanish, so the defaults stay"
+    },
+    {
+      "followup": "EF-100",
+      "package": "postext",
+      "note": "the title stays in the first column: a heading level with span: 'page' and no advancedDesign is measured at the column width, so its band keeps the height of the wrapped title while it prints one line across the page, and the column rule is drawn through the band"
+    }
+  ],
+  "engine": { "postext": "1.4.1" },
+  "kit": ["core", "fonts", "viewer", "images"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": {
+    "hero": 1,
+    "card": "crop",
+    "focus": { "page": 1, "x": 0.057, "y": 0.037, "w": 0.81, "h": 0.4555 },
+    "pages": "all",
+    "expect": { "pages": [3, 3] }
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "The essay “The Secret Canon” and its Spanish version “El canon secreto”, written for this recipe",
+          "es": "El ensayo «El canon secreto» y su versión inglesa, «The Secret Canon», escritos para esta receta"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "The two drawings, made in code in the page's palette",
+          "es": "Los dos dibujos, hechos en código con la paleta de la página"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "fonts": [
+      { "family": "Vollkorn", "license": "OFL-1.1" },
+      { "family": "Playfair Display", "license": "OFL-1.1" },
+      { "family": "Vollkorn SC", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-25",
+  "updated": "2026-09-26"
+}

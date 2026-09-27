@@ -1,0 +1,176 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 33,
+  "status": "published",
+  "chapter": "boxes",
+  "order": 60,
+  "level": 2,
+  "genres": [
+    "manual"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "callout-columns",
+      "callout-label-tabs",
+      "numbered-lists"
+    ],
+    "also": [
+      "nested-callouts",
+      "callout-icons",
+      "chips",
+      "bullet-lists",
+      "callout-styles",
+      "opener-design",
+      "opener-band",
+      "heading-styles",
+      "heading-attributes",
+      "design-elements",
+      "design-images",
+      "title-line-breaks",
+      "page-background",
+      "running-heads",
+      "color-palette",
+      "paragraph-styles",
+      "resources"
+    ]
+  },
+  "answers": [
+    "Q60",
+    "Q62",
+    "Q53",
+    "Q51",
+    "Q28"
+  ],
+  "gotchas": [
+    "callout-columns",
+    "list-number-centred",
+    "box-list-colour-numbers",
+    "chip-overlap",
+    "numbering-vocabularies",
+    "opener-image-no-reserve",
+    "headings-drop-h1-break",
+    "design-lineheight-multiple",
+    "overflow-ellipsis-default",
+    "palette-skips-designs",
+    "svg-no-webfonts",
+    "config-cache-identity",
+    "fonts-first"
+  ],
+  "related": [
+    "bistro-menu",
+    "textbook-box-family",
+    "newspaper-front-page",
+    "worksheet-answer-boxes"
+  ],
+  "workarounds": [
+    {
+      "followup": "EF-05",
+      "package": "postext",
+      "note": "the H1 breakBefore is restated because a headings object drops it"
+    },
+    {
+      "followup": "EF-113",
+      "package": "postext",
+      "note": "a heading design kept in the column is clipped at the column's top edge, so the H1 is span: 'page' even in this one-column layout, and the drawing starts at the top of the paper instead of 22 mm down"
+    },
+    {
+      "followup": "EF-90",
+      "package": "postext",
+      "note": "the opener's drawing does not count towards the height the opener reserves; the italic lead set 6 mm under the drawing does, so the card starts below it without a minHeight"
+    },
+    {
+      "followup": "EF-56",
+      "package": "postext",
+      "note": "design text lineHeight is a multiple of the size (1 for the title, 1.45 for the lead), never a pt() value"
+    },
+    {
+      "followup": "EF-71",
+      "package": "postext",
+      "note": "the palette does not reach design-slot colours or bodyText.referenceColor; col() writes the hex beside every paletteId, so the pills, title, lead and folios keep their colours"
+    },
+    {
+      "followup": "EF-58",
+      "package": "postext",
+      "note": "a list number is centred 0.3 em above the item's first baseline with the canvas 'middle' baseline, so the 26 pt step figures would ride high; numberVerticalOffset (DROP, 2.5 mm) centres them on the step's first two lines"
+    },
+    {
+      "followup": "EF-92",
+      "package": "postext",
+      "note": "a box's lists.color also recolours its numbered lists when it differs from unorderedLists.color, so the olive dashes are set document-wide in unorderedLists.color and the step numbers stay tomato"
+    },
+    {
+      "followup": "EF-142",
+      "package": "postext",
+      "note": "the pictogram strip is an inline icon to the left of the checklist's title, not a corner badge: 1.4.1 centres a corner icon on the corner by half its height, not half its width, so the 18.75 mm strip would hang 16.25 mm past the box's right edge"
+    }
+  ],
+  "engine": {
+    "postext": "1.4.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "es",
+      "en"
+    ]
+  },
+  "capture": {
+    "hero": [
+      1,
+      2
+    ],
+    "card": "crop",
+    "focus": {
+      "page": 1,
+      "x": 0.013,
+      "y": 0,
+      "w": 0.974,
+      "h": 0.555
+    },
+    "expect": {
+      "pages": [
+        2,
+        2
+      ]
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Young Serif",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Figtree",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Caveat",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-09-25",
+  "updated": "2026-09-26"
+}

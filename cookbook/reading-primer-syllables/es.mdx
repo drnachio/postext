@@ -1,0 +1,65 @@
+---
+title: "Cartilla de lectura con sílabas en chips"
+summary: "Una unidad de cartilla dedicada a la eme, con cada sílaba en un chip del color de su vocal y seis palabras en una tabla, cada una bajo su dibujo."
+description: "Una unidad de cartilla compuesta con Postext: un estilo de chip por vocal, palabras de sílabas en chips pegados, una tabla con dibujos y pautas de caligrafía."
+question: "¿Cómo compongo sílabas en chips de colores, un color por vocal, para una cartilla de lectura?"
+aliases: ["cartilla", "sílabas", "lectoescritura", "infantil", "método silábico", "ficha de lectura"]
+pageNotes: { "1": "Una franja crema con una Mm gigante, una mariposa y una manzana; debajo, las sílabas ma, me, mi, mo, mu y am, em, im, om, um en chips del color de su vocal, y ocho palabras partidas en chips de sílabas.", "2": "Seis palabras con dibujo, mano, mapa, mesa, mimosa, mono y muñeca, en una tabla redondeada de baldosas crema, cada dibujo sobre sus sílabas; debajo, pautas para repasar m, M y las cinco sílabas.", "3": "Cuatro frases a 24 pt con las palabras nuevas en chips de sílabas, un recuadro crema de sílabas para colorear, una nota para la familia y el colofón." }
+---
+
+## Lo que vas a componer
+
+La unidad 7 de *Letra a letra*, una cartilla de lectura inventada: tres páginas dedicadas a la eme. La apertura compone una Mm de DynaPuff a 190 pt sobre una franja crema, junto a dos cosas cuyo nombre empieza por eme, una mariposa y una manzana. Las sílabas de la unidad van en chips del color de su vocal: rojo la a, naranja la e, turquesa la i, azul la o y morado la u. Las que llevan eme van rellenas y las demás, solo con el contorno, así que el niño ve qué mitad de *mesa* es de esta unidad. La página 38 reúne seis palabras con dibujo en una tabla de esquinas redondeadas y tres pautas para repasar. La 39 trae cuatro frases a 24 pt, un recuadro de sílabas para colorear y una nota para la familia.
+
+## Elaboración
+
+### 1 · Un estilo de chip por vocal y una función que escribe los chips
+
+[La respuesta corta](#la-respuesta-corta) saca los 21 estilos de chip de un mismo objeto, `syllable`. Hay uno relleno por vocal para las sílabas con eme, otro con contorno por vocal para las demás, un gemelo `-frase` de cada uno de esos diez y `pinta`, el contorno en tinta que el niño colorea. La función `syllables()` convierte `{mi·mo·sa}` en tres `:chip[…]` sin nada entre ellos, así que las sílabas de una palabra se tocan y el borde blanco marca la junta. Donde hay un espacio entre palabras, el chip guarda como mínimo su `gap`: con 0,5 em, las palabras de una fila de 24 pt quedan a 4,2 mm, y el espacio solo dejaría 2,3 mm. Dentro de una frase, ese `gap` casi duplicaría el espacio delante de la palabra nueva; por eso, cuando la palabra va detrás de otra, lleva los gemelos `-frase`, con `gap` 0, y el espacio se queda en 2,3 mm.
+
+### 2 · Un interlineado que deja sitio a los chips
+
+<Excerpt region="reading" />
+
+El relleno vertical y el borde de un chip se pintan fuera de su línea y no suman interlineado, así que un chip más alto que el interlineado choca con los chips de la línea de abajo. Un chip de sílaba a 24 pt mide 10,4 mm de alto; con 30 pt de interlineado (10,6 mm), los chips de dos frases quedarían a 0,1 mm. Por eso las líneas que lee el niño llevan 45 pt y las filas de sílabas 60 pt, tres y cuatro líneas de la rejilla base de 15 pt en la que van las consignas.
+
+### 3 · Un dibujo en cada celda
+
+<Excerpt region="pictures" />
+
+`setCellImage` pone un dibujo encima del texto de una celda con una fracción de su ancho interior, aquí 0,72 (36,5 mm), y la fila crece para que quepa. Bajo cada dibujo va la palabra en chips de sílabas, que una celda admite como cualquier párrafo. El estilo de tabla `dibujos` redondea el marco y sus rellenos a 5 mm y separa las baldosas crema con filetes blancos de 4 pt.
+
+### 4 · Una línea de espacio antes del recuadro
+
+<Excerpt region="boxes" />
+
+Entre la última frase y el recuadro para colorear, el Markdown lleva `:::space{lines=1}`, una línea de 15 pt (5,3 mm). El `marginTop` del recuadro es 0, así que esa línea es todo el espacio; sin ella, el recuadro empezaría justo donde acaba la línea de la última frase. Un `:::space` que abre un recuadro se descarta, de modo que el recuadro empieza con su enunciado y los chips de la muestra de colores, y su propio `:::space` va detrás, entre la muestra y la tarea de colorear.
+
+### 5 · La apertura de la letra
+
+<Excerpt region="opener" />
+
+La Mm es el texto del título (`{titleText}`), y el número de la unidad, la serie y el nombre de la letra son atributos de esa misma línea. La franja, la mariposa y la manzana son imágenes, y una apertura no reserva altura para las imágenes. Sin `minHeight`, la apertura acaba al pie de la palabra *manzana*, a 88,7 mm del borde superior de la página, y el título de la primera actividad empieza a 99,3 mm, 2,6 mm por encima del punto más bajo de la onda (101,9 mm). Con un `minHeight` de 16 líneas de la rejilla base, la apertura termina a 102,7 mm, y las dos líneas de `marginTop` del título lo bajan a 113,3 mm, sobre la rejilla y 11,4 mm por debajo de la onda.
+
+### 6 · Iconos junto a los títulos de actividad
+
+<Excerpt region="activities" />
+
+Cada título de actividad nombra su estilo, como en `## Lee las frases {style="lee"}`, y el estilo dibuja un icono con el título centrado a su lado. Siguen siendo títulos de nivel 2, así que el espacio lo fija el nivel `H2`: dos líneas de la rejilla base de `lineHeight` para el título y otras dos de `marginTop` encima.
+
+## Variantes
+
+### Convierte las sílabas en píldoras
+
+Un radio mayor que la mitad de la altura del chip se recorta a esa mitad, así que un valor grande dibuja extremos redondos. Una sílaba de una sola letra sale casi redonda, y las juntas dentro de una palabra se convierten en muescas.
+
+```diff
+-  paddingX: em(0.26), paddingY: em(0.05), gap: em(0.5) };
++  paddingX: em(0.26), paddingY: em(0.05), gap: em(0.5), borderRadius: em(1) };
+```
+
+## Errores frecuentes
+
+Da a `minHeight` líneas enteras de la rejilla base. Con 85 mm, 0,33 mm más allá de la línea 16, el primer título empezó 0,33 mm fuera de la rejilla. Su bloque se alargó entonces hasta la línea siguiente, 15,5 mm en lugar de 10,6, y todo lo que va debajo en la página 37 bajó 5,3 mm.
+
+Con el equilibrado de columnas activo, un `minHeight` de 16 líneas dejaba las actividades de la página 37 donde las dejaban 17: a la página le sobraba una línea de la rejilla base, y el equilibrado la ponía encima del título de la primera actividad. La configuración lo desactiva (`headings.balancing`), así que la línea sobrante se queda al pie de la página.
