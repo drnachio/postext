@@ -23,7 +23,7 @@ geometry, media and scan pages, and names the next command.
 | EPUB | `pandoc_to_postext.py` | CSS + a rendered PDF, if one exists | chapters follow the spine |
 | HTML / web pages | `pandoc_to_postext.py`, or a small parser for one site's markup | screenshots / print CSS | strip navigation, boilerplate and embeds |
 | InDesign (.indd) | export **IDML** + print PDF, then `idml_extract.py` | the print PDF | IDML has styles and text but not the final positions |
-| LaTeX | `pandoc_to_postext.py` (keeps `$…$` math) | the compiled PDF | custom macros need a pandoc Lua filter or manual care |
+| LaTeX | `pandoc_to_postext.py` (keeps `$…$` math; a display in mid-paragraph stays glued to it, so the "where …" after it continues the paragraph) | the compiled PDF | custom macros need a pandoc Lua filter or manual care |
 | Markdown (GitHub/pandoc) | `pandoc_to_postext.py SOURCE --from markdown` | — | never copy CommonMark as is: tables, footnotes, fences, `---` are not Postext |
 | XML (JATS, DocBook, CNXML, TEI) | pandoc (`jats`, `docbook`) or a small ElementTree walker | the publisher's PDF | two passes: register ids, then write |
 | Plain text (Gutenberg…) | a small script: slice by heading regex, blank-line paragraphs | — | `_it_` → `*it*`; verse detection |
@@ -196,11 +196,12 @@ Gotchas:
 
 ## Content you must not copy blindly
 
-- **Rights**: check the licence of the text, images and fonts. Replace
-  pictures you may not reproduce with licensed ones (Wikimedia Commons, CC0
-  or public-domain museum collections), checking the licence of each file
-  before downloading. Record credits (a credits chapter plus `note` credit
-  lines). Licensed fonts: `redistributable: false`.
+- **Rights**: when the user owns the title (publisher, author, licensee;
+  see SKILL.md, "Who ports"), convert the text and images in full. Only for
+  third-party pieces they cannot reuse: replace those pictures with licensed
+  ones (Wikimedia Commons, CC0 or public-domain museum collections), checking
+  the licence of each file before downloading, and record credits (a credits
+  chapter plus `note` credit lines). Licensed fonts: `redistributable: false`.
 - **Characters the fonts cannot set** (Greek, IPA, emoji, CJK): check font
   coverage (`fonts.py info`), then choose between a fallback family for those
   runs, a paragraph style, or removal.

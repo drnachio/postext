@@ -11,7 +11,7 @@ python3 scripts/lint_project.py my-book --quiet
 Fix every ERROR. Common ones:
 
 - pipe tables, code fences, footnotes or `---` left over from CommonMark;
-- a `::resource`, `$$` or ordered list glued to the paragraph above;
+- a `::resource` or ordered list glued to the paragraph above, or a `$$` fence glued there that does not close before the next blank line;
 - unknown callout types, paragraph styles, heading styles or resource ids;
 - a bitmap without `width`/`height`;
 - `em` in page, gutter, body size or heading sizes (the layout throws);
@@ -37,7 +37,18 @@ node scripts/render.mjs my-book --lang es --out /tmp/my-book.pdf --png /tmp/page
 - `PARSE unclosedMath|unclosedContainer`: a stray `$` or a missing `:::`.
 - `WARN calloutOverflow`: a keep-together box does not fit a column. Set
   `keepTogether: false`, shorten it, or change the box's span.
+- `WARN unknownResourceId|unknownDirective|malformedEmbed|unknown…Style|raggedTableGrid`
+  (releases with engine content warnings): a reference, `:::` line, `::resource`
+  line or style id the engine could not resolve, or a table whose merged cells
+  left the grid irregular. Each line says what the output does instead; fix the
+  source at the reported file and line.
 - `PROBLEM font families used but not bundled`: add the files to `fonts[]`.
+- `NOTE preset.json has no "configVersion"` (or an older one): the config is
+  laid out, as in the Sandbox, with the postext 1.4 rules the line names
+  (heading breaks, formula size, space around inline resources, plain
+  headings, drop-cap sizes, room under a colon line, box cuts, breaks at dashes, breaks at
+  compounds' hyphens, ragged breaking, split under a heading, space under paragraph containers).
+  Set `"configVersion": 8` and check the pages again when the config is meant for today's rules.
 - Run each language (`--lang`).
 
 ## 3. Compare with the source, page by page

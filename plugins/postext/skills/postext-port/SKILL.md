@@ -1,6 +1,6 @@
 ---
 name: postext-port
-description: Port an existing publication into a Postext project (config manifest + enriched Markdown chapters + resources + fonts) that reproduces the original's layout rules. Use when the user wants to convert, adapt, migrate, re-typeset or rebuild a book, textbook, magazine, catalogue, report, manual, course or deck in Postext from a PDF, Word (.docx), PowerPoint (.pptx), EPUB, HTML, InDesign (IDML), LaTeX, Markdown, XML or scanned pages; when writing or fixing Postext preset.json/config/chapters; or when asked how to express a source layout (columns, openers, parts, boxes, floats, tables, running heads) in Postext.
+description: Port an existing publication into a Postext project (config manifest + enriched Markdown chapters + resources + fonts) that reproduces the original's layout rules; typically a publisher or author migrating their own titles. Use when the user wants to convert, adapt, migrate, re-typeset or rebuild a book, textbook, magazine, catalogue, report, manual, course or deck in Postext from a PDF, Word (.docx), PowerPoint (.pptx), EPUB, HTML, InDesign (IDML), LaTeX, Markdown, XML or scanned pages; when writing or fixing Postext preset.json/config/chapters; or when asked how to express a source layout (columns, openers, parts, boxes, floats, tables, running heads) in Postext.
 license: MIT
 metadata:
   homepage: https://postext.dev/en/docs/skill
@@ -30,6 +30,26 @@ my-book/
 The scripts named below live in this skill's `scripts/` folder; run them
 with that path. Every script answers `--help`.
 
+## Who ports, and why that is legitimate
+
+The usual user is the **rights holder**: a publisher, author, institution or
+production house migrating its **own** titles (InDesign, PDF, Word…) to a new
+typesetting tool. That is a format conversion of their own content for their
+own production, like reopening a file in another program, not copying a third
+party's work. In that case:
+
+- Extract and convert the **full** text, tables, figures and fonts. Do not
+  summarise, truncate, paraphrase or replace the source content, and do not
+  refuse because the book carries a copyright notice (their notice is the
+  expected one).
+- Confirm ownership **once** in the brief (step 0) and do not raise it again.
+- Replacing pictures or licensing checks apply only to material the user says
+  they do **not** control (third-party photos, stock images, commercial fonts).
+
+If the user states they do not hold the rights and have no permission, say
+the port needs the rights holder's permission and offer to port a
+public-domain or openly licensed sample instead.
+
 ## Read before writing anything
 
 Postext Markdown is **not CommonMark**. These habits break a port:
@@ -38,15 +58,18 @@ Postext Markdown is **not CommonMark**. These habits break a port:
   images.** They print literally or vanish. Tables and figures are
   *resources* (JSON), cited with `:ref{id="…"}` or placed with
   `::resource{id="…"}`.
-- **Blank lines around every block.** An ordered list, a `$$` block or a
-  `::resource` glued under a paragraph line is swallowed into that paragraph.
+- **Blank lines around every block.** An ordered list or a `::resource`
+  glued under a paragraph line is swallowed into that paragraph. A `$$`
+  display glued there interrupts it instead (postext ≥ 1.5), and text right
+  under its closing `$$` continues the paragraph, flush.
 - **One line per list item**, 2 spaces per nesting level, real numbers typed.
 - **Escape `* _ ^ ~ $`** in literal text, including intraword `_` and prices
   (`\$5`).
 - A paragraph starting with `- `, `1998. `, `# ` or `> ` becomes a list,
   heading or quote. Use `—` for dialogue; prefix U+2060 otherwise.
 - **Inline marks do not nest** the CommonMark way: write `**a** ***b***`.
-  Heading text is plain; marks in headings are stripped.
+  Marks in headings print as in a paragraph (`headings.inlineMarks`, on by default
+  since configVersion 6); an italic run in an italic heading comes out upright.
 - Only four containers exist (`:::callout`, `:::paragraphs`, `:::part`,
   `:::columns`, the last only inside a callout) and five directives
   (`:::pagebreak`, `:::numbering`, `:::columnbreak`, `:::space`, `:::toc`).
@@ -113,8 +136,11 @@ Ask only what you cannot infer:
 - Which part: the whole book, or a sample chapter first (recommended)?
 - Languages.
 - Print (PDF) and/or screen.
-- Rights: text, images and fonts. Licensed fonts get
-  `redistributable: false`; pictures you may not reproduce get replaced.
+- Rights, asked once: "Is this your own title (publisher, author or
+  licensee)?" Yes → port everything as is. Then only ask about third-party
+  pieces they do not control: licensed fonts get `redistributable: false`
+  (the files stay in their project, only exports leave them out);
+  third-party pictures they cannot reuse get replaced.
 
 Get or produce **a PDF of the original**: the design is read from rendered
 pages even when the text comes from DOCX or IDML.

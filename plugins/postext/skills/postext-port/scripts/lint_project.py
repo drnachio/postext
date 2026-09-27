@@ -137,6 +137,16 @@ def style_ids(cfg: dict) -> dict[str, set[str]]:
     }
 
 
+def _fence_closes(lines: list[str], i: int) -> bool:
+    """Whether the `$$` fence on line i closes before the next blank line."""
+    for line in lines[i + 1:]:
+        if not line.strip():
+            return False
+        if line.strip() == "$$":
+            return True
+    return False
+
+
 def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res_ids: set[str], rep: Report,
                    embedded: set[str], referenced: set[str]) -> None:
     lines = text.split("\n")
@@ -180,8 +190,10 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
             rep.warn(where, "~~strike~~ is not strikethrough in Postext (it becomes a subscript)")
         # math blocks
         if line == "$$":
-            if prev_nonblank and prev_kind == "para":
-                rep.error(where, "display math glued to the paragraph above is swallowed into it: add a blank line")
+            # A fence closed before the next blank line interrupts the
+            # paragraph above it (postext >= 1.5); an open one is swallowed.
+            if prev_nonblank and prev_kind == "para" and not _fence_closes(lines, i):
+                rep.error(where, "display math glued to the paragraph above, with no closing $$ before the next blank line, is swallowed into it: add a blank line above it")
             in_math = True
             continue
         # resource embeds
@@ -319,8 +331,6 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                 rep.error(where, ":swatch needs color=")
             elif not re.fullmatch(r"#[0-9a-fA-F]{3}|#[0-9a-fA-F]{6}", col) and col not in ids["palette"]:
                 rep.warn(where, f"swatch colour {col!r} is neither #hex nor a palette id (draws an empty outline)")
-        if " " in line:
-            rep.info(where, "NBSP is an ordinary breakable space in Postext")
     for fname, ln in stack:
         rep.error(f"{name}:{ln}", f":::{fname} is never closed")
 
@@ -348,6 +358,17 @@ def main() -> None:
     m = json.loads(mf.read_text(encoding="utf-8"))
     if m.get("version") not in (1, 2):
         rep.error("preset.json", "version must be 1 or 2")
+    cv = m.get("configVersion")
+    if isinstance(cv, bool) or not isinstance(cv, (int, float)) or cv < 8:
+        rep.warn("preset.json", "configVersion is missing or below 8: the bundle reads with older rules "
+                 "(up to 1.4: H1 breaks pinned, maths x 1.1312, inline gap 'above'; below 6: heading marks plain, "
+                 "drop caps at the 1.4 size, one line of room under a colon line before its list, no gap around "
+                 "inline figures in boxes, box cuts that may leave one line of a paragraph; below 7: no line "
+                 "break after a closed dash, ragged text set line by line; below 8: no Knuth-Plass break "
+                 "after a compound's hyphen in a justified paragraph without formatting, a paragraph under a "
+                 "heading at a column foot split 1.4's way, as many lines as fit however few go on, and the "
+                 "space under a :::paragraphs container added to the next block's instead of merged with it); "
+                 "set \"configVersion\": 8 for today's rules")
     for k in ("id", "name"):
         if not m.get(k):
             rep.error("preset.json", f"{k} is required")

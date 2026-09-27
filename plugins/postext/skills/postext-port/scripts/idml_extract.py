@@ -40,6 +40,7 @@ from postext_md import (  # noqa: E402
     Slugger,
     attr_value,
     caption_kind,
+    collapse_spaces,
     fence,
     guard_line_start,
     heading,
@@ -411,7 +412,7 @@ def cmd_markdown(args) -> None:
             runs.append(Run(t, r.bold, r.italic, r.position in ("Superscript", "OTSuperscript"),
                             r.position in ("Subscript", "OTSubscript")))
         if plain:
-            return re.sub(r"\s+", " ", "".join(x.text for x in runs)).strip()
+            return collapse_spaces("".join(x.text for x in runs))
         return render_runs(runs)
 
     def target() -> list:

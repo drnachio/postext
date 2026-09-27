@@ -59,7 +59,7 @@ DESCRIPTION = (
     "column-and-a-half biochemistry textbook, the main column at the spine and an "
     "outer column of figures, key concepts and activities"
 )
-LICENSE = "© Editorial Médica Panamericana, reproduced with permission"
+LICENSE = "© Editorial Médica Panamericana"
 CREDITS = "Feduchi, Romero, Yáñez, Blasco, García-Hoz · Editorial Médica Panamericana"
 #: The face the figures set their labels in — what a word this builder
 #: puts back into a picture is set in.

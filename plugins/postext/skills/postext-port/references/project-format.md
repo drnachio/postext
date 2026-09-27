@@ -21,6 +21,18 @@ my-book/
 ```jsonc
 {
   "version": 2,                        // 2 = book with chapters (1 = single "markdown" file, legacy)
+  "configVersion": 8,                  // the config rules `config` is written for (postext ≥ 1.5). Without it the
+                                       // bundle reads as 1.4: H1 breaks pinned, maths × 1.1312 when a chapter has `$`,
+                                       // layout.inlineResourceGap 'above' when a chapter embeds a ::resource,
+                                       // layout.inlineResourceGapInBoxes false when one sits inside a :::callout,
+                                       // headings.inlineMarks false when a heading carries marks, drop caps at 1.4 size,
+                                       // bodyText.colonListRoom 'line' when a list follows a line ending in ':',
+                                       // layout.boxChildSplitMinLines 1 when a chapter opens a :::callout,
+                                       // bodyText.breakAfterDashes false when a chapter sets a closed dash (say—that's),
+                                       // bodyText.optimalRagged false when the config sets running text ragged,
+                                       // bodyText.breakAfterHyphens false when a chapter sets a compound (well-known)
+                                       // headings.keepWithNextSplit 'fill' when a chapter has a heading
+                                       // bodyText.paragraphContainerSpacing 'add' when a paragraph style meets a :::paragraphs
   "id": "my-book",                     // [a-z0-9-], stable
   "name": "My Book",
   "description": "…", "locale": "es", "locales": ["es", "en"],
@@ -88,7 +100,7 @@ only drops the print master). It does **not** check `kind`, `typeId` against
   language-prefixed ids, keep them all in the shared list, and leave
   `localized.resources` empty.
 - Always put `config.locale` (`es`, `en-us`, `fr`, `de`, `it`, `pt`, `ca`, `nl`):
-  hyphenation, table continuation strings ("(cont.)") and the PDF `/Lang`.
+  hyphenation, built-in resource types, table continuation strings ("(cont.)") and the PDF `/Lang`.
 
 ## 3. Resources
 
@@ -101,7 +113,7 @@ embeds them with `::resource{id="…"}` (placement `here`).
 { "id": "neptune-spot", "typeId": "figure", "kind": "bitmap", "file": "resources/neptune-spot.jpg",
   "width": 3200, "height": 1800,
   "caption": "Dark spot on *Neptune*.",          // inline markup allowed; the label/number is added
-  "note": "Credit: ESO/P. Irwin et al.",         // credit line under the caption
+  "note": "Credit: ESO/P. Irwin et al.",         // credit line under the caption; `\\` (or `\` at a line end) starts a new line, in captions too
   "altText": "A blue planet with a dark oval",   // always write it (tagged PDF)
   "placement": { "position": "top", "span": "page" } }
 
@@ -136,7 +148,8 @@ embeds them with `::resource{id="…"}` (placement `here`).
 - **placement**: `position` `auto` (float to the first free slot after the first
   `:ref`) | `top` | `bottom` | `here` (inline at the `::resource` line);
   `span` `column` | `page` | `side` (the float column of a `oneAndHalf` layout);
-  `width` 0–1 + `align`; `captionSide: true` (caption in the side column beside
+  `width` 0–1 + `align` (`align` also places a bitmap/SVG narrower than its slot,
+  e.g. a small bitmap or one `fitFiguresToPage` shrank); `captionSide: true` (caption in the side column beside
   a main-column figure); `rotate: "ccw"|"cw"` (landscape table/figure on its own
   page, spine-flush; split between rows when too long). Missing fields fall
   back to the resource type's `defaultPlacement`, then `auto`/`column`.
@@ -208,10 +221,15 @@ node render.mjs my-book --lang es --out /tmp/my-book.pdf --png /tmp/my-book-page
 ```
 
 It mirrors the sandbox loader (defaults ← config ← localized config; chapters
-joined like the book view) and reports `PARSE` issues (unclosed math/fences),
+joined like the book view). A manifest without `configVersion` is read as the
+Sandbox reads it, with the 1.4 rules pinned (§1), and a `NOTE` line names the
+rules it kept. It reports `PARSE` issues (unclosed math/fences),
 `WARN calloutOverflow`, unknown resource ids, and font families that are not
 bundled. Line breaks can differ very slightly from the browser (fontkit vs
-canvas metrics); the sandbox's PDF tab is the reference.
+canvas metrics); the sandbox's PDF tab is the reference. A config that names
+no language (`locale` or `bodyText.hyphenation.locale`) hyphenates in en-us
+here, while the Sandbox falls back to the language of its interface: set
+`config.locale` (the linter notes a missing one).
 
 ## 7. Bundles from code
 
@@ -248,10 +266,17 @@ const { bytes: out, warnings } = await createBundle({
   (`bundle.files.get('resources/fig.svg')`).
 - `openBundle` uses the Sandbox's base config (default palette + localised
   resource types) under the manifest's `config`, and applies `localized`
-  for the chosen locale, so code and Sandbox lay the book out alike.
+  for the chosen locale, so code and Sandbox lay the book out alike. The
+  resource types are in the language the bundle serves (`bundle.locale`):
+  a one-language bundle keeps its own whatever locale is asked for. A
+  manifest with no `locale` takes the language its `config` sets
+  (`locale`, then the hyphenation locale).
 - `createBundle` strips config defaults, writes fonts as `fonts[]` (never
   `config.customFonts`), and warns about missing payloads, `.woff` faces and
-  `redistributable: false` families (left out).
+  `redistributable: false` families (left out). Pass `mtime: new Date(1980, 0, 1)`
+  for byte-identical output (otherwise every file is dated now). Build the
+  date from local fields: a zip stores local time, so a timestamp or a
+  `…Z` string gives different bytes in each time zone.
 - `buildBundle` lays each chapter out with the previous one's counters,
   page parity and numbering, and gives `:::toc` chapters the book outline —
   so every chapter starts on a new page, as in the Sandbox (the headless

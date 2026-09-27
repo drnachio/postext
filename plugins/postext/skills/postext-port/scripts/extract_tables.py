@@ -42,7 +42,9 @@ def parse_pages(spec: str | None, page_count: int) -> list[int]:
 def clean(text) -> str:
     if text is None:
         return ""
-    return re.sub(r"\s+", " ", str(text).replace("\n", " ")).strip()
+    # Collapse breaking whitespace; no-break spaces glue their neighbours in
+    # table cells too (postext 1.5), so they stay.
+    return re.sub(r"[^\S\u00a0\u202f\u2007]+", " ", str(text).replace("\n", " ")).strip()
 
 
 def table_model(table, header_rows: int) -> dict:
