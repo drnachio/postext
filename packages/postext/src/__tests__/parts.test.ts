@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline';
+import { buildBundle } from '../bundle';
 import { computePartValues } from '../pipeline/placeholders';
 import { derivePartResolvedConfig, parsePartNumber, parsePartPalette, planParts } from '../pipeline/parts';
 import { continuationAfter } from '../pipeline/continuation';
@@ -9,7 +10,7 @@ import { dimensionToPx } from '../units';
 import { stripConfigDefaults } from '../defaults';
 import { resolvePartsConfig, stripPartsDefaults } from '../defaults/parts';
 import type { DesignElement, PostextConfig } from '../types';
-import type { VDTDesignTextBlock } from '../vdt';
+import type { VDTDesignTextBlock, VDTPage } from '../vdt';
 
 // Deterministic text measurement stub (no DOM in the node test env).
 class StubCtx {
@@ -622,6 +623,109 @@ describe(':::part verso design', () => {
     // Only the verso gets it: the next content page has no band.
     const next = doc.pages[partIdx + 2];
     expect(next?.openerBand).toBeUndefined();
+  });
+
+  it('needs a blank page after the part page: breakAfter parity or the next heading\'s parity leaves one', () => {
+    const versoDesign = {
+      elements: [{
+        kind: 'box' as const, id: 'bg',
+        placement: { anchor: { to: 'page' as const, edge: 'top-left' as const }, size: { width: 'fill' as const, height: 'fill' as const } },
+        style: { backgroundColor: { hex: '#e3e0d6', model: 'hex' as const } },
+      }],
+    };
+    const md = `${filler(1)}\n\n:::part{number="I" title="Mud"}\n:::\n\n# Curlew\n\nText.`;
+    const painted = (h1: 'any' | 'odd' | 'always-odd', breakAfter: { enabled: boolean; parity: 'any' | 'odd' }) => {
+      const doc = buildDocument({ markdown: md }, {
+        ...base,
+        headings: { levels: [{ level: 1, breakBefore: { enabled: true, parity: h1 } }] },
+        parts: { ...base.parts, versoDesign, breakAfter },
+      });
+      const partIdx = doc.pages.findIndex((p) => p.partInfo);
+      const after = doc.pages[partIdx + 1]!;
+      return { blank: after.columns.every((c) => c.blocks.length === 0), painted: after.openerBand !== undefined };
+    };
+    // The chapter's own odd parity leaves the verso blank…
+    expect(painted('odd', { enabled: true, parity: 'any' })).toEqual({ blank: true, painted: true });
+    expect(painted('always-odd', { enabled: true, parity: 'any' })).toEqual({ blank: true, painted: true });
+    // …a chapter that may open on a verso takes it, and nothing is painted…
+    expect(painted('any', { enabled: true, parity: 'any' })).toEqual({ blank: false, painted: false });
+    // …unless the part's own break asks for the next recto.
+    expect(painted('any', { enabled: true, parity: 'odd' })).toEqual({ blank: true, painted: true });
+  });
+
+  it('keeps the part break and the verso design when the part is a chapter of its own', () => {
+    const versoDesign = {
+      elements: [{
+        kind: 'box' as const, id: 'bg',
+        placement: { anchor: { to: 'page' as const, edge: 'top-left' as const }, size: { width: 'fill' as const, height: 'fill' as const } },
+        style: { backgroundColor: { hex: '#e3e0d6', model: 'hex' as const } },
+      }],
+    };
+    const chapters = [`# Intro\n\n${filler(1)}`, ':::part{number="I" title="Mud"}\n:::', '# Curlew\n\nText.'];
+    /** One letter per physical page: P part page, V painted blank (verso
+     *  design), B plain blank, T text. */
+    const shape = (pages: VDTPage[]) => pages.map((p) => {
+      if (p.partInfo) return 'P';
+      if (p.columns.some((c) => c.blocks.length > 0)) return 'T';
+      return p.openerBand ? 'V' : 'B';
+    }).join('');
+    for (const body of ['', 'An epigraph.\n']) {
+      const book = chapters.map((c, i) => (i === 1 ? `:::part{number="I" title="Mud"}\n${body}:::` : c));
+      for (const h1 of ['any', 'odd', 'always-odd'] as const) {
+        for (const parity of ['any', 'odd', 'even'] as const) {
+          const config: PostextConfig = {
+            ...base,
+            headings: { levels: [{ level: 1, breakBefore: { enabled: h1 !== 'any', parity: h1 === 'any' ? 'odd' : h1 } }] },
+            parts: { ...base.parts, versoDesign, breakAfter: { enabled: true, parity } },
+          };
+          const whole = buildDocument({ markdown: book.join('\n\n') }, config);
+          const docs = buildBundle({ chapters: book.map((markdown) => ({ markdown })), config, resources: [] });
+          // The book laid out chapter by chapter reads as the same book.
+          const label = `${body ? 'epigraph' : 'empty'} ${h1}/${parity}`;
+          expect(`${label}: ${shape(docs.flatMap((d) => d.pages))}`).toBe(`${label}: ${shape(whole.pages)}`);
+        }
+      }
+    }
+    // The verso is painted with the part's placeholders.
+    const docs = buildBundle({
+      chapters: chapters.map((markdown) => ({ markdown })),
+      config: {
+        ...base,
+        parts: {
+          ...base.parts,
+          versoDesign: {
+            elements: [{
+              kind: 'text', id: 't', content: '{partNumber} {partTitle}', fontSize: pt(9), overflow: 'wrap',
+              placement: { anchor: { to: 'page', edge: 'top-left' }, size: { width: 'auto', height: 'auto' } },
+            }],
+          },
+        },
+      },
+      resources: [],
+    });
+    const verso = docs[2]!.pages[0]!;
+    expect(verso.columns.every((c) => c.blocks.length === 0)).toBe(true);
+    const text = (verso.openerBand?.blocks ?? []).filter((b): b is VDTDesignTextBlock => b.kind === 'text').map((b) => b.lines.map((l) => l.text).join(' '));
+    expect(text).toEqual(['I Mud']);
+  });
+
+  it('owes the part break to the next chapter only when the part closes its chapter', () => {
+    const resolved = { parts: { breakAfter: { enabled: true, parity: 'odd' as const } } };
+    expect(continuationAfter({ markdown: ':::part{title="Mud"}\n:::' }, resolved).afterPartPage).toBe(true);
+    expect(continuationAfter({ markdown: ':::part{title="Mud"}\nAn epigraph.\n:::\n' }, resolved).afterPartPage).toBe(true);
+    expect(continuationAfter({ markdown: ':::part{title="Mud"}\n:::\n\n# Curlew' }, resolved).afterPartPage).toBeUndefined();
+    expect(continuationAfter({ markdown: '# Curlew' }, resolved).afterPartPage).toBeUndefined();
+    // Without a divider page there is nothing to turn.
+    expect(continuationAfter({ markdown: ':::part{title="Mud"}\n:::' }, { parts: { page: false } }).afterPartPage).toBeUndefined();
+    // The flag is the chapter's own, never inherited: the chapter after the
+    // part holds the page after it — even an empty one, whose single page
+    // is the part's verso.
+    const before = continuationAfter({ markdown: ':::part{title="Mud"}\n:::' }, resolved);
+    expect(continuationAfter({ markdown: '# Curlew' }, resolved, before).afterPartPage).toBeUndefined();
+    expect(continuationAfter({ markdown: '' }, resolved, before).afterPartPage).toBeUndefined();
+    // Directives that place nothing may follow the fence; a page break may not.
+    expect(continuationAfter({ markdown: ':::part{title="Mud"}\n:::\n\n:::numbering{format="decimal"}' }, resolved).afterPartPage).toBe(true);
+    expect(continuationAfter({ markdown: ':::part{title="Mud"}\n:::\n\n:::pagebreak' }, resolved).afterPartPage).toBeUndefined();
   });
 
   it('leaves the verso plain when versoDesign is empty', () => {

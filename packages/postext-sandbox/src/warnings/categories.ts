@@ -13,11 +13,15 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'missingFontFamily':
     case 'missingFontVariant':
     case 'duplicateFontVariant':
+    case 'fontFamilyStack':
       return 'fonts';
     case 'unknownResourceId':
     case 'duplicateResourceId':
     case 'danglingTypeRef':
     case 'bitmapTooSmall':
+    case 'unknownTableStyle':
+    case 'raggedTableGrid':
+    case 'missingImage':
       return 'figures';
     case 'headerFooterUnknownPlaceholder':
     case 'headerFooterMetadataMissing':
@@ -26,12 +30,17 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'designTextClipAlwaysTruncates':
     case 'headingSpanWithoutBreak':
     case 'headingAdvancedWithoutTitleText':
+    case 'sideColumnPercentClamped':
+    case 'unknownNumberFormat':
+    case 'unknownConfigKey':
+    case 'headingDesignCut':
       return 'design';
     case 'looseLine':
     case 'calloutOverflow':
     case 'alphaPdfOverflow':
     case 'chipOverlap':
     case 'parityCascade':
+    case 'unsupportedHyphenationLocale':
       return 'typesetting';
     case 'storageUnavailable':
       return 'system';

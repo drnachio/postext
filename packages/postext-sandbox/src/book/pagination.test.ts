@@ -129,6 +129,18 @@ describe('createBookPlanner', () => {
     expect(plan.chapters.map((c) => c.number)).toEqual([null, 1, null, 2]);
   });
 
+  it('numbers a chapter whose heading restarts the count with its startAt', () => {
+    const config: PostextConfig = { headingStyles: [{ id: 'appendix', numberingTemplate: 'Appendix {1:A}' }] };
+    const book = [
+      newChapter('one', 'One', '# One\n\n# Two', 1),
+      newChapter('a', 'A', 'Lead-in.\n\n# Survey {style="appendix" startAt=1}\n\n# Data {style="appendix"}', 1),
+      newChapter('b', 'B', '# Tables {style="appendix"}', 1),
+      newChapter('bad', 'Bad', '# Index {startAt=0}', 1),
+    ];
+    const plan = createBookPlanner().plan(book, config, resources, {});
+    expect(plan.chapters.map((c) => c.number)).toEqual([1, 1, 3, 4]);
+  });
+
   it('ignores a layout whose inputs changed and re-keys the chapters after a parity shift', () => {
     const planner = createBookPlanner();
     const p0 = planner.plan(chapters, config, resources, {});
@@ -243,6 +255,58 @@ describe('createBookPlanner', () => {
     expect(titles(p5.byId.front!)).toEqual(['One@1/2', 'Two@?/?', 'Detail@?/?', 'Three@?/?']);
   });
 
+  it('points a part row without a page at the next chapter\'s first content page', () => {
+    // `parts.page: false` and a fence closing chapter a: the part reaches
+    // no page of a; its content (and running heads) start with chapter c,
+    // after its parity blank.
+    const noPage: PostextConfig = { parts: { page: false } };
+    const planner = createBookPlanner();
+    const book = [
+      newChapter('front', 'Front', ':::toc\n:::', 1),
+      newChapter('a', 'A', '# One\n\n:::part{number="I" title="Mud"}\n:::', 1),
+      newChapter('empty', 'Empty', '', 1),
+      newChapter('c', 'C', '# Two', 1),
+    ];
+    const layoutIn = (plan: ChapterPlan, over: Partial<ChapterLayout> & { pageCount: number }): ChapterLayout =>
+      layoutFor(plan, { configKey: configKeyOf(noPage), ...over }, book);
+    const p0 = planner.plan(book, noPage, resources, {});
+    const front = layoutIn(p0.byId.front!, { pageCount: 2 });
+    const p1 = planner.plan(book, noPage, resources, { front });
+    const a = layoutIn(p1.byId.a!, { pageCount: 1, outlinePages: [{ index: 0, number: { delta: 0 }, format: 'decimal' }, null] });
+    const p2 = planner.plan(book, noPage, resources, { front, a });
+    // An empty chapter holds no content page: the row looks past it.
+    const empty = layoutIn(p2.byId.empty!, { pageCount: 1, leadingBlankPages: 1, firstContentPageNumber: { delta: 0 } });
+    const p3 = planner.plan(book, noPage, resources, { front, a, empty });
+    const titles = (plan: ChapterPlan) => plan.outline!.map((e) => `${e.title}@${e.pageLabel ?? '?'}/${e.pageIndex ?? '?'}`);
+    // Chapter c's pages are not known yet: the row waits.
+    expect(titles(p3.byId.front!)).toEqual(['One@3/2', 'Mud@?/?', 'Two@?/?']);
+    const c = layoutIn(p3.byId.c!, { pageCount: 2, leadingBlankPages: 1, firstContentPageNumber: { delta: 1 }, lastPageNumber: { delta: 1 }, outlinePages: [{ index: 1, number: { delta: 1 }, format: 'decimal' }] });
+    const p4 = planner.plan(book, noPage, resources, { front, a, empty, c });
+    expect(titles(p4.byId.front!)).toEqual(['One@3/2', 'Mud@6/5', 'Two@6/5']);
+  });
+
+  it('hands the part break a chapter closing on its part page owes to the next chapter', () => {
+    const planner = createBookPlanner();
+    const book = [
+      newChapter('a', 'A', '# One', 1),
+      newChapter('part', 'Part', ':::part{number="I" title="Mud"}\n:::', 1),
+      newChapter('c', 'C', '# Two', 1),
+      newChapter('d', 'D', '# Three', 1),
+    ];
+    const p0 = planner.plan(book, config, resources, {});
+    expect(p0.byId.c!.continuation?.afterPartPage).toBe(true);
+    expect(p0.byId.d!.continuation?.afterPartPage).toBeUndefined();
+    // It can move the chapter's pages (`breakAfter.parity`): the record is
+    // keyed on it. Chapters that follow no part keep the keys they had.
+    const same = [book[0]!, { ...book[1]!, markdown: ':::part{number="I" title="Mud"}\n:::\n\nMore.' }, book[2]!, book[3]!];
+    const p1 = planner.plan(same, config, resources, {});
+    expect(p1.byId.c!.continuation?.afterPartPage).toBeUndefined();
+    expect(p0.byId.c!.continuationKey).not.toBe(p1.byId.c!.continuationKey);
+    expect(p0.byId.c!.continuationKey).toContain('after-part');
+    expect(p1.byId.c!.continuationKey).not.toContain('after-part');
+    expect(p0.byId.d!.continuationKey).not.toContain('after-part');
+  });
+
   it('keys records on the resource set, not its order', () => {
     const planner = createBookPlanner();
     const p0 = planner.plan(chapters, config, resources, {});
@@ -319,6 +383,42 @@ describe('plan and layout equivalence', () => {
     // Same parity but a different first page number: not the same either.
     const p5 = planner.plan(chapters, config, resources, { a: { ...layoutFor(p1.byId.a!, { pageCount: 3 }), lastPageNumber: { delta: 5 } } });
     expect(sameLayoutInputs(b, p5.byId.b!)).toBe(false);
+  });
+  it('hands every chapter the book\'s page count once paginated, when the configuration prints it', () => {
+    const counting: PostextConfig = {
+      footer: {
+        elements: [{
+          kind: 'text', id: 'folio', content: '{pageNumber} / {bookTotalPages}', fontSize: { value: 8, unit: 'pt' }, overflow: 'wrap',
+          placement: { anchor: { to: 'container', edge: 'top' }, size: { width: 'auto', height: 'auto' } },
+        }],
+      },
+    };
+    const record = (p: ChapterPlan, pageCount: number): ChapterLayout => ({ ...layoutFor(p, { pageCount }), configKey: configKeyOf(counting) });
+    const book = createBookPlanner();
+    const p0 = book.plan(chapters, counting, resources, {});
+    const a = record(p0.byId.a!, 3);
+    const p1 = book.plan(chapters, counting, resources, { a });
+    const b = record(p1.byId.b!, 5);
+    const p2 = book.plan(chapters, counting, resources, { a, b });
+    // Not every chapter has pages yet: no count to hand out.
+    expect(p2.chapters.map((c) => c.continuation?.bookPageCount)).toEqual([undefined, undefined, undefined]);
+    const c = record(p2.byId.c!, 2);
+    const p3 = book.plan(chapters, counting, resources, { a, b, c });
+    expect(p3.chapters.map((ch) => ch.continuation?.bookPageCount)).toEqual([10, 10, 10]);
+    // The first chapter inherits the count alone; the records stay current.
+    expect(p3.byId.a!.continuation).toEqual({ bookPageCount: 10 });
+    expect(p3.chapters.map((ch) => ch.layout)).toEqual([a, b, c]);
+    expect(p3.byId.b!.continuationKey).toBe(p2.byId.b!.continuationKey);
+    // A chapter growing two pages (the parity after it holds, so the
+    // records do) changes every chapter's inputs.
+    const p4 = book.plan(chapters, counting, resources, { a, b: { ...b, pageCount: 7, lastPageNumber: { delta: 6 } }, c });
+    expect(p4.chapters.map((ch) => ch.continuation?.bookPageCount)).toEqual([12, 12, 12]);
+    expect(sameLayoutInputs(p3.byId.a!, p4.byId.a!)).toBe(false);
+    // A configuration that does not print it hands out nothing.
+    const plain = planner.plan(chapters, config, resources, {
+      a: layoutFor(p0.byId.a!, { pageCount: 3 }),
+    });
+    expect(plain.byId.a!.continuation).toBeUndefined();
   });
   it('sameChapterLayout compares inputs by identity and the page outcome by value', () => {
     const plan = planner.plan(chapters, config, resources, {}).byId.a!;

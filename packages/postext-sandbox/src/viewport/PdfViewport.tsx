@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  configUsesPlaceholder,
+  metadataText,
   resolveDebugConfig,
   resolvePdfGenerationConfig,
   type LayoutContinuation,
-  type NumeralStyle,
   type PostextConfig,
   type Resource,
   type VDTDocument,
@@ -14,6 +15,7 @@ import { createPdfWorker, type PdfWorkerHandle, type RenderProgress } from 'post
 import { useBookPages, useBookPlan, useChapterPlan, useSandboxDispatch, useSandboxSelector, useLayoutSource } from '../context/SandboxContext';
 import { composeBookMemo } from '../book/compose';
 import { chapterLayoutFromDoc } from '../book/pagination';
+import { layOutBookChain } from '../book/chain';
 import { layoutCacheKey } from '../book/layoutKeys';
 import type { ComposedBook } from '../book/types';
 import { ensureConfigFontsLoaded, onCustomFontsChanged } from '../controls/fontLoader';
@@ -89,7 +91,7 @@ export function PdfViewport() {
   // rebuilt (new objects) far more often than its content changes.
   const continuationSig = scope === 'book'
     ? 'book'
-    : `${chapterSource.plan.continuationKey}|${continuation?.pageIndexOffset ?? ''}|${continuation?.pageNumbering?.startAt ?? ''}`;
+    : `${chapterSource.plan.continuationKey}|${continuation?.pageIndexOffset ?? ''}|${continuation?.pageNumbering?.startAt ?? ''}|${continuation?.bookPageCount ?? ''}`;
 
   const effectiveConfig = useMemo((): PostextConfig => withHyphenationLocale(config, locale), [config, locale]);
 
@@ -141,39 +143,36 @@ export function PdfViewport() {
         // worker has already built (or holds in its cache) costs nothing
         // and the contents chapter is laid out once, with the outline the
         // plan already settled. Pages and numbering chain on what the
-        // chapters actually came to, not on the records.
-        let offset = 0;
-        let nextNumbering: { format: NumeralStyle; startAt: number } | null = null;
+        // chapters actually came to, not on the records; so does the
+        // book's page count (`{bookTotalPages}`) when a chapter printed
+        // another one than the book came to.
         const count = snapshotPlan.chapters.length;
-        for (let i = 0; i < count; i++) {
-          const chapterPlan = snapshotPlan.chapters[i]!;
-          const chapter = snapshotChapters.find((c) => c.id === chapterPlan.chapterId);
-          if (!chapter) continue;
-          setProgress({ pass: i + 1, blocks: i, totalBlocks: count, pages: offset });
-          const book = composeBookMemo(snapshotChapters, chapter.id);
-          const continuation: LayoutContinuation | undefined = i === 0
-            ? undefined
-            : { ...chapterPlan.continuation, pageIndexOffset: offset, ...(nextNumbering ? { pageNumbering: nextNumbering } : {}) };
-          const doc = await layoutWorker.build(
-            { markdown: book.markdown, metadata: book.metadata, resources: snapshotResources, continuation, outline: chapterPlan.outline },
-            snapshotConfig,
-            {
-              cacheKey: layoutCacheKey({
-                markdown: book.markdown,
-                metadata: book.metadata,
-                config: snapshotConfig,
-                resources: snapshotResources,
-                continuation,
-                continuationKey: chapterPlan.continuationKey,
-                outlineKey: chapterPlan.outlineKey,
-              }),
-            },
-          );
-          docs.push(doc);
-          offset += doc.pages.length;
-          const last = doc.pages[doc.pages.length - 1];
-          if (last) nextNumbering = { format: last.pageNumberFormat, startAt: last.pageNumberValue + 1 };
-        }
+        const chain = await layOutBookChain(
+          snapshotPlan.chapters,
+          async (chapterPlan, continuation, pagesBefore) => {
+            const chapter = snapshotChapters.find((c) => c.id === chapterPlan.chapterId);
+            if (!chapter) return null;
+            setProgress({ pass: chapterPlan.index + 1, blocks: chapterPlan.index, totalBlocks: count, pages: pagesBefore });
+            const book = composeBookMemo(snapshotChapters, chapter.id);
+            return layoutWorker.build(
+              { markdown: book.markdown, metadata: book.metadata, resources: snapshotResources, continuation, outline: chapterPlan.outline },
+              snapshotConfig,
+              {
+                cacheKey: layoutCacheKey({
+                  markdown: book.markdown,
+                  metadata: book.metadata,
+                  config: snapshotConfig,
+                  resources: snapshotResources,
+                  continuation,
+                  continuationKey: chapterPlan.continuationKey,
+                  outlineKey: chapterPlan.outlineKey,
+                }),
+              },
+            );
+          },
+          configUsesPlaceholder(snapshotConfig, 'bookTotalPages'),
+        );
+        docs.push(...chain);
       } else {
         const doc = await layoutWorker.build(
           { markdown: snapshotSource.markdown, metadata: snapshotSource.metadata, resources: snapshotResources, continuation: snapshotContinuation, outline: snapshotOutline },
@@ -324,7 +323,8 @@ export function PdfViewport() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    const metaTitle = typeof book.metadata.title === 'string' ? book.metadata.title : undefined;
+    // Typed YAML (`title: 1984`) names the file too.
+    const metaTitle = metadataText(book.metadata.title) || undefined;
     const title = metaTitle ?? book.markdown.match(/^#\s+(.+)$/m)?.[1]?.trim() ?? 'document';
     a.download = `${title.replace(/[^a-z0-9-_]+/gi, '-')}.pdf`;
     document.body.appendChild(a);

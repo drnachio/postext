@@ -5,9 +5,13 @@ import {
   isKnownPlaceholder,
   computeChapterAttrs,
   computeChapterNumbers,
+  computePageMarks,
+  leadingBoldText,
+  markPlaceholder,
   type PlaceholderContext,
 } from '../pipeline/placeholders';
-import { resolveDesignPlaceholders, isAllowedPlaceholder, type DesignPlaceholderContext } from '../design/placeholders';
+import { resolveDesignPlaceholders, isAllowedPlaceholder, configUsesPlaceholder, type DesignPlaceholderContext } from '../design/placeholders';
+import type { VDTDesignTextBlock } from '../vdt';
 import { buildDocument } from '../pipeline';
 import type { VDTBlock, VDTPage } from '../vdt';
 import type { PostextConfig } from '../types';
@@ -78,6 +82,11 @@ describe('{attr.*} placeholders — header/footer resolver', () => {
   it('a missing attr resolves to the empty string with no unknown-placeholder warning', () => {
     expect(resolvePlaceholders('[{attr.missing}]', ctx([{ author: 'A' }, {}]))).toMatchObject({ text: '[]', unknownPlaceholders: [] });
     expect(resolvePlaceholders('[{attr.author}]', ctx(undefined))).toMatchObject({ text: '[]', unknownPlaceholders: [] });
+  });
+
+  it('passes attribute values, and only them, through `attrValue`', () => {
+    const r = resolvePlaceholders('{chapterTitle}: {attr.author}', ctx([{}, { author: 'a' }]), { attrValue: (v) => v.toUpperCase() });
+    expect(r.text).toBe('One: A');
   });
 });
 
@@ -150,5 +159,104 @@ describe('{chapterNumber} without a numbering template', () => {
   it('prefers the rendered numbering prefix when present', () => {
     const block = { ...h1(0, 'One'), numberPrefix: 'Chapter 4. ' } as VDTBlock;
     expect(computeChapterNumbers([block], 1, [page(0)])).toEqual(['Chapter 4.']);
+  });
+});
+
+describe('running marks: {firstMark.<key>} / {lastMark.<key>}', () => {
+  const heading = (pageIndex: number, text: string, level: number, contentIndex: number): VDTBlock =>
+    ({ ...h1(pageIndex, text), headingLevel: level, contentIndex }) as VDTBlock;
+
+  it('parses the namespaced names and allows them in running heads only', () => {
+    expect(markPlaceholder('firstMark.h2')).toEqual({ which: 'first', key: 'h2' });
+    expect(markPlaceholder('lastMark.entry')).toEqual({ which: 'last', key: 'entry' });
+    expect(markPlaceholder('firstMark')).toBeUndefined();
+    expect(markPlaceholder('middleMark.h2')).toBeUndefined();
+    expect(collectPlaceholderNames('{firstMark.entry} – {lastMark.entry}')).toEqual(['firstMark.entry', 'lastMark.entry']);
+    expect(isKnownPlaceholder('lastMark.h3')).toBe(true);
+    expect(isAllowedPlaceholder('firstMark.h2', 'header')).toBe(true);
+    expect(isAllowedPlaceholder('lastMark.h2', 'footer')).toBe(true);
+    expect(isAllowedPlaceholder('firstMark.h2', 'heading')).toBe(false);
+    expect(isAllowedPlaceholder('bookTotalPages', 'footer')).toBe(true);
+    expect(isAllowedPlaceholder('bookTotalPages', 'heading')).toBe(true);
+  });
+
+  it('takes the first and last mark starting on each page, else the one in effect', () => {
+    const blocks = [
+      heading(0, 'Intro', 1, 0),
+      heading(1, 'Aback', 2, 1),
+      heading(1, 'Abaft', 2, 2),
+      heading(1, 'Aboard', 2, 3),
+      // A heading split across pages marks the page it starts on only.
+      heading(3, 'Anchor', 2, 4),
+      heading(4, 'Anchor', 2, 4),
+    ];
+    const marks = computePageMarks(blocks, 5, { level: 2 });
+    expect(marks.first).toEqual(['', 'Aback', 'Aboard', 'Anchor', 'Anchor']);
+    expect(marks.last).toEqual(['', 'Aboard', 'Aboard', 'Anchor', 'Anchor']);
+    // Paragraph marks come from the content: its style and headword.
+    const para = (pageIndex: number, contentIndex: number): VDTBlock => ({ ...h1(pageIndex, ''), type: 'paragraph', headingLevel: undefined, contentIndex }) as VDTBlock;
+    const words: Record<number, { styleId: string; text: string }> = { 10: { styleId: 'entry', text: 'Ballast' }, 11: { styleId: 'note', text: 'Aside' }, 12: { styleId: 'entry', text: 'Beam' } };
+    const entries = computePageMarks([para(0, 10), para(0, 11), para(1, 12)], 3, { styleId: 'entry' }, (i) => words[i]);
+    expect(entries).toEqual({ first: ['Ballast', 'Beam', 'Beam'], last: ['Ballast', 'Beam', 'Beam'] });
+  });
+
+  it('reads a paragraph\'s headword from its leading bold run', () => {
+    const span = (text: string, bold = false) => ({ text, bold, italic: false });
+    expect(leadingBoldText([span('Aback.', true), span(' Said of the sails.')])).toBe('Aback');
+    expect(leadingBoldText([span(' '), span('Abaft', true), span(', ', true), span('behind')])).toBe('Abaft');
+    expect(leadingBoldText([span('Plain '), span('bold', true)])).toBe('');
+  });
+
+  it('resolves in header slots through the context', () => {
+    const ctx: DesignPlaceholderContext = {
+      kind: 'header', page: page(1), allPages: [page(0), page(1)], metadata: {}, chapterTitleByPageIndex: [],
+      bookTotalPages: 12,
+      marksFor: (key) => (key === 'h2' ? { first: ['', 'Aback'], last: ['', 'Aboard'] } : undefined),
+    };
+    expect(resolveDesignPlaceholders('{firstMark.h2} – {lastMark.h2} · {firstMark.h3} · {totalPages}/{bookTotalPages}', ctx).text).toBe('Aback – Aboard ·  · 2/12');
+    expect(resolveDesignPlaceholders('{bookTotalPages}', { ...ctx, bookTotalPages: undefined }).text).toBe('2');
+  });
+
+  it('tells whether a configuration names a placeholder', () => {
+    expect(configUsesPlaceholder({ footer: { elements: [{ kind: 'text', id: 'f', content: '{pageNumber} of {bookTotalPages}' }] } } as PostextConfig, 'bookTotalPages')).toBe(true);
+    expect(configUsesPlaceholder({ footer: { elements: [{ kind: 'text', id: 'f', content: '{totalPages}' }] } } as PostextConfig, 'bookTotalPages')).toBe(false);
+    expect(configUsesPlaceholder(undefined, 'bookTotalPages')).toBe(false);
+  });
+
+  it('prints a dictionary\'s first and last headword and a book\'s sections', () => {
+    const pt = (value: number) => ({ value, unit: 'pt' as const });
+    const words = ['Aback', 'Abaft', 'Aboard', 'Adrift', 'Aft', 'Anchor', 'Astern', 'Ballast', 'Beam', 'Bowline', 'Capstan', 'Careen'];
+    const entries = words.map((w) => `**${w}.** ${'A nautical term defined at some length so that the entries fill the page. '.repeat(8)}`).join('\n\n');
+    const cfg: PostextConfig = {
+      page: { width: pt(360), height: pt(240), margins: { top: pt(24), bottom: pt(18), left: pt(18), right: pt(18) } },
+      paragraphStyles: [{ id: 'entry', name: 'Entry' }],
+      header: {
+        elements: [{
+          kind: 'text', id: 'rh', content: '{firstMark.entry} – {lastMark.entry} | {firstMark.h2}', fontSize: pt(8), overflow: 'wrap',
+          placement: { anchor: { to: 'container', edge: 'bottom' }, size: { width: 'auto', height: 'auto' } },
+        }],
+      },
+    };
+    const doc = buildDocument({ markdown: `## Letter A\n\n:::paragraphs{style="entry"}\n${entries}\n:::\n` }, cfg);
+    expect(doc.pages.length).toBeGreaterThan(2);
+    const text = (p: VDTPage) => (p.header?.blocks ?? []).filter((b): b is VDTDesignTextBlock => b.kind === 'text').map((b) => b.lines.map((l) => l.text).join(' ')).join('');
+    // Each page's headwords, in the order the entries were placed.
+    const byPage = doc.pages.map((p) => {
+      const heads: string[] = [];
+      for (const b of doc.blocks) {
+        if (b.pageIndex !== p.index || b.type !== 'paragraph') continue;
+        const first = b.lines[0]?.text ?? '';
+        const w = words.find((word) => first.startsWith(`${word}.`));
+        if (w && !heads.includes(w)) heads.push(w);
+      }
+      return heads;
+    });
+    let current = '';
+    doc.pages.forEach((p, i) => {
+      const heads = byPage[i]!;
+      const first = heads[0] ?? current;
+      if (heads.length > 0) current = heads[heads.length - 1]!;
+      expect(text(p)).toBe(`${first} – ${current} | Letter A`);
+    });
   });
 });

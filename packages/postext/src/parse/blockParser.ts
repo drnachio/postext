@@ -8,7 +8,7 @@
 import type { ContainerName, ContentBlock, DirectiveName, ListKind, ParseIssue } from './types';
 import { parseDirectiveAttrs } from './attrs';
 import { extractInlineMath, fixMathSourceMap, injectMathSpans } from './inlineMath';
-import { BREAK_PLACEHOLDER, TITLE_BREAK_RE, extractInlineChips, extractInlineRefs, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, stripInlineFormatting, titleBreakIndices } from './inlineFormatting';
+import { BREAK_PLACEHOLDER, TITLE_BREAK_RE, extractInlineChips, extractInlineRefs, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, protectCodeSpans, titleBreakIndices, trimSpans } from './inlineFormatting';
 import { buildBlockMapping } from './sourceMapping';
 
 export { parseDirectiveAttrs, spaceDirectiveLines, MAX_SPACE_LINES } from './attrs';
@@ -44,6 +44,9 @@ const LIST_ITEM_RE = /^(\s*)([-*+])\s+(.*)$/;
 const BLOCK_MATH_SINGLE_RE = /^\s*\$\$([\s\S]+?)\$\$\s*$/;
 /** Standalone `$$` marker (opening or closing a multi-line display block). */
 const BLOCK_MATH_FENCE_RE = /^\s*\$\$\s*$/;
+/** A one-line display that may interrupt a paragraph: one formula, with no
+ *  `$$` inside it (`$$a$$ and $$b$$` is a line of text, not a display). */
+const INTERRUPTING_MATH_SINGLE_RE = /^\s*\$\$((?:(?!\$\$)[\s\S])+)\$\$\s*$/;
 
 /** `::resource{id="..."}` block embed on its own line. Malformed variants
  *  (missing/empty id, extra attrs) fall through to paragraph parsing. */
@@ -126,6 +129,31 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
   const containerStack: { id: number; name: ContainerName; sourceStart: number; sourceEnd: number }[] = [];
   let nextContainerId = 1;
 
+  /** Index of the last source line of the latest display formula that
+   *  interrupted a paragraph: a paragraph that starts on the next line
+   *  continues the one the formula interrupted (see
+   *  `ContentBlock.continuesParagraph`). A display set off from the text
+   *  above it by a blank line (or following a list, a quotation, a heading)
+   *  interrupts nothing, and the text under it is a new paragraph, as it
+   *  was up to postext 1.4. */
+  let lastDisplayEnd = -2;
+  /** Index of the display line that ended the latest paragraph run. */
+  let interruptingDisplayAt = -1;
+  /** Whether a `$$` fence line at index `k` has a closing fence after it
+   *  before the next blank line, so it can open a display inside a
+   *  paragraph (a stray `$$` stays text, as it was up to postext 1.4). */
+  const hasClosingFence = (k: number): boolean => {
+    for (let j = k + 1; j < rawLines.length; j++) {
+      const l = rawLines[j]!;
+      if (l.trim() === '') return false;
+      if (BLOCK_MATH_FENCE_RE.test(l)) return true;
+    }
+    return false;
+  };
+  /** Whether the display starting at line `k` belongs to a paragraph: it
+   *  ended a paragraph run, or it follows such a display directly. */
+  const displayInterrupts = (k: number): boolean => k === interruptingDisplayAt || k === lastDisplayEnd + 1;
+
   let i = 0;
   while (i < rawLines.length) {
     const line = rawLines[i]!;
@@ -151,6 +179,7 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
         sourceEnd: srcEnd,
         sourceMap: [],
       });
+      if (displayInterrupts(i)) lastDisplayEnd = i;
       i++;
       continue;
     }
@@ -189,6 +218,7 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
         sourceEnd: srcEnd,
         sourceMap: [],
       });
+      if (displayInterrupts(startIdx)) lastDisplayEnd = closed ? i : i - 1;
       if (closed) i++; // consume the closing fence
       continue;
     }
@@ -322,7 +352,7 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
       headingRawContent = headingRawContent.replace(TITLE_BREAK_RE, BREAK_PLACEHOLDER);
       // Inline pre-passes run refs -> math -> formatting so a ref's `text="…"`
       // attribute is shielded from the later math/formatting scanners.
-      const refExtract = extractInlineRefs(headingRawContent, contentAbsStart);
+      const refExtract = extractInlineRefs(protectCodeSpans(headingRawContent), contentAbsStart);
       const swExtract = extractInlineSwatches(refExtract.cleaned, contentAbsStart);
       const { cleaned, maths, issues: mathIssues } = extractInlineMath(
         swExtract.cleaned,
@@ -331,12 +361,12 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
         srcEnd,
       );
       issues.push(...mathIssues);
-      const rawText = stripInlineFormatting(cleaned);
+      // Inline marks become runs, as in a paragraph (EF-122); the text is
+      // the title with its markers dropped, trimmed. A configuration with
+      // `headings.inlineMarks: false` sets them plain again
+      // (`plainHeadingBlocks`).
       const rawSpans = injectRefSpans(injectSwatchSpans(
-        injectMathSpans(
-          [{ text: rawText, bold: false, italic: false }],
-          maths,
-        ), swExtract.swatches),
+        injectMathSpans(trimSpans(parseInlineFormatting(cleaned)), maths), swExtract.swatches),
         refExtract.refs,
       );
       const mapping = buildBlockMapping(markdown, srcStart, srcEnd, rawSpans);
@@ -403,7 +433,7 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
 
           const contentOffset = leading + markerLength;
           const itemSrcStart = srcStart + contentOffset;
-          const chipExtract = extractInlineChips(itemText, itemSrcStart);
+          const chipExtract = extractInlineChips(protectCodeSpans(itemText), itemSrcStart);
           const refExtract = extractInlineRefs(chipExtract.cleaned, itemSrcStart);
           const swExtract = extractInlineSwatches(refExtract.cleaned, itemSrcStart);
           const mathExtract = extractInlineMath(swExtract.cleaned, null, itemSrcStart, srcEnd);
@@ -460,7 +490,7 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
       }
       const srcStart = lineOffsets[startIdx]!;
       const srcEnd = lineEndOffset(lastIdx);
-      const chipExtract = extractInlineChips(quoteLines.join(' '), srcStart);
+      const chipExtract = extractInlineChips(protectCodeSpans(quoteLines.join(' ')), srcStart);
       const refExtract = extractInlineRefs(chipExtract.cleaned, srcStart);
       const swExtract = extractInlineSwatches(refExtract.cleaned, srcStart);
       const mathExtract = extractInlineMath(swExtract.cleaned, null, srcStart, srcEnd);
@@ -494,6 +524,18 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
       const pl = rawLine.trim();
       if (pl === '' || pl.match(HEADING_RE) || pl.startsWith('>') || rawLine.match(LIST_ITEM_RE)) break;
       if (i > startIdx && isFenceLine(pl)) break;
+      // A display formula on its own line interrupts the paragraph, blank
+      // line or not: the text before it is a paragraph that leads into it,
+      // the text right after it continues that paragraph (EF-85). Only a
+      // whole display: one formula on the line, or a `$$` fence closed
+      // before the next blank line.
+      if (
+        i > startIdx
+        && (INTERRUPTING_MATH_SINGLE_RE.test(rawLine) || (BLOCK_MATH_FENCE_RE.test(rawLine) && hasClosingFence(i)))
+      ) {
+        interruptingDisplayAt = i;
+        break;
+      }
       paraLines.push(pl);
       lastIdx = i;
       i++;
@@ -501,7 +543,7 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
     if (paraLines.length > 0) {
       const srcStart = lineOffsets[startIdx]!;
       const srcEnd = lineEndOffset(lastIdx);
-      const chipExtract = extractInlineChips(paraLines.join(' '), srcStart);
+      const chipExtract = extractInlineChips(protectCodeSpans(paraLines.join(' ')), srcStart);
       const refExtract = extractInlineRefs(chipExtract.cleaned, srcStart);
       const swExtract = extractInlineSwatches(refExtract.cleaned, srcStart);
       const mathExtract = extractInlineMath(swExtract.cleaned, null, srcStart, srcEnd);
@@ -516,6 +558,7 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
         type: 'paragraph',
         text: mapping.text,
         spans: mapping.spans,
+        ...(startIdx === lastDisplayEnd + 1 ? { continuesParagraph: true } : {}),
         sourceStart: srcStart,
         sourceEnd: srcEnd,
         sourceMap: mapping.sourceMap,

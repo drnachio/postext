@@ -9,6 +9,7 @@ import {
   DEFAULT_LIST_MARGIN_TOP,
   DEFAULT_LIST_MARGIN_BOTTOM,
   DEFAULT_LIST_ITEM_SPACING,
+  DEFAULT_LIST_SNAP_TOP_TO_GRID,
   DEFAULT_LIST_HANGING_INDENT,
   DEFAULT_TASK_CHECKBOX_CHAR,
   DEFAULT_TASK_CHECKED_CHAR,
@@ -59,6 +60,7 @@ export function resolveUnorderedListsConfig(
     marginTop: partial?.marginTop ?? DEFAULT_LIST_MARGIN_TOP,
     marginBottom: partial?.marginBottom ?? DEFAULT_LIST_MARGIN_BOTTOM,
     itemSpacing: partial?.itemSpacing ?? DEFAULT_LIST_ITEM_SPACING,
+    snapTopToGrid: partial?.snapTopToGrid ?? DEFAULT_LIST_SNAP_TOP_TO_GRID,
     hangingIndent: partial?.hangingIndent ?? DEFAULT_LIST_HANGING_INDENT,
     levels,
     taskCheckboxChar: partial?.taskCheckboxChar ?? DEFAULT_TASK_CHECKBOX_CHAR,
@@ -84,6 +86,7 @@ export const DEFAULT_UNORDERED_LISTS_STATIC = {
   marginTop: DEFAULT_LIST_MARGIN_TOP,
   marginBottom: DEFAULT_LIST_MARGIN_BOTTOM,
   itemSpacing: DEFAULT_LIST_ITEM_SPACING,
+  snapTopToGrid: DEFAULT_LIST_SNAP_TOP_TO_GRID,
   hangingIndent: DEFAULT_LIST_HANGING_INDENT,
   taskCheckboxChar: DEFAULT_TASK_CHECKBOX_CHAR,
   taskCheckedChar: DEFAULT_TASK_CHECKED_CHAR,
@@ -144,6 +147,10 @@ export function stripUnorderedListsDefaults(
   }
   if (lists.itemSpacing !== undefined && !dimensionsEqual(lists.itemSpacing, DEFAULT_LIST_ITEM_SPACING)) {
     result.itemSpacing = lists.itemSpacing;
+    hasOverride = true;
+  }
+  if (lists.snapTopToGrid !== undefined && lists.snapTopToGrid !== DEFAULT_LIST_SNAP_TOP_TO_GRID) {
+    result.snapTopToGrid = lists.snapTopToGrid;
     hasOverride = true;
   }
   if (lists.hangingIndent !== undefined && lists.hangingIndent !== DEFAULT_LIST_HANGING_INDENT) {

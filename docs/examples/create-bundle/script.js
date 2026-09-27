@@ -30,7 +30,9 @@ const chapters = [
 
 const config = {
   layout: { layoutType: 'double' },
-  headings: { levels: [{ level: 1, numberingTemplate: 'Chapter {1}' }] },
+  // Two short chapters that run on, with no blank verso between them (an
+  // H1 otherwise opens on a fresh recto), as in the open-bundle sample.
+  headings: { levels: [{ level: 1, numberingTemplate: 'Chapter {1}', breakBefore: { enabled: false } }] },
 };
 
 // Everything a .postext file holds: manifest, chapters, resources, fonts.

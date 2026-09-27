@@ -112,9 +112,9 @@ Postext extends the standard cost model with three editorial penalties that stee
 
 - **Orphan penalty** applies when a candidate split would leave fewer than `orphanMinLines` lines at the top of the next column. Default `orphanPenalty` is `1000`.
 - **Widow penalty** applies when the split would leave fewer than `widowMinLines` lines at the bottom of the current column. Default `widowPenalty` is `1000`.
-- **Runt penalty** applies when the paragraph's final line would be shorter than roughly `runtMinCharacters × normalSpaceWidth` pixels. Default `runtPenalty` is `1000`. Unlike orphan/widow (which add linearly to the split demerit), runt is injected as equivalent *badness* inside the Knuth–Plass squared formula so it competes on the same scale as line badness (which saturates at 10000) rather than being dwarfed by it.
+- **Runt penalty** applies when the paragraph's final line would be shorter than roughly `runtMinCharacters × normalSpaceWidth` pixels — a count of word spaces, not letters: the default 20 is a last line of roughly 8 to 12 letters. Default `runtPenalty` is `1000`, the same for every runt; with `gradedRuntPenalty` it is scaled by the line's shortfall, `runtPenalty × (1 − width / threshold)`, so a two-word ending costs less than a one-word one and wins when a line above can give a word up. Unlike orphan/widow (which add linearly to the split demerit), runt is injected as equivalent *badness* inside the Knuth–Plass squared formula so it competes on the same scale as line badness (which saturates at 10000) rather than being dwarfed by it.
 
-When the penalty loses anyway — every alternative break is infeasible — the engine falls back on what a compositor does by hand: it sets the paragraph one line shorter (`tightenRunts`). The word spaces of every line tighten, never past `minWordSpacing`, and when that alone cannot carry the stranded words a little negative tracking joins in, the smallest step that works and never more than `maxRuntTracking` thousandths of an em. Column balancing plays by the same rule in the other direction: a paragraph it would run one line long to fill a short column is left alone when that extra line would end in a runt — filling a column is no reason to strand a syllable.
+When the penalty loses anyway — every alternative break is infeasible — the engine falls back on what a compositor does by hand: it sets the paragraph one line shorter (`tightenRunts`). The word spaces of every line tighten, never past `minWordSpacing`, and when that alone cannot carry the stranded words a little negative tracking joins in, the smallest step that works and never more than `maxRuntTracking` thousandths of an em. The shorter setting has to respect `maxWordSpacing` too. Fitting the words into one line fewer tightens most lines, but it can move a break so that another line has to stretch far. A setting that would stretch a line past `maxWordSpacing` or, when the paragraph already has a looser line, past that line, is no fix, and the runt stays. Only lines that stay justified count: a line the paragraph sets ragged because it would stretch past 3× the normal space (see [Lines the Breaker Cannot Fill](#lines-the-breaker-cannot-fill)) does not raise the bar, and the shorter setting may not set more lines ragged than the paragraph had. Nor does the fix trade a ragged line for justified lines past that bar: the paragraph keeps its ragged line and its runt. Column balancing plays by the same rule in the other direction: a paragraph it would run one line long to fill a short column is left alone when that extra line would end in a runt — filling a column is no reason to strand a syllable.
 
 The runt penalty is added to the candidate node's demerits inside the line breaker, so the solver is free to trade a slightly looser line for a longer final one — but only within `maxWordSpacing`: a line stretched beyond that limit carries an extra badness larger than any runt or hyphen penalty, so the breaker prefers a short last line, or a hyphenated last word, over word spacing that overshoots the limit. Orphan and widow penalties enter a separate optimisation that runs when a paragraph crosses a column boundary: every candidate split is scored — slack, orphan, and widow demerits summed — and the cheapest split wins, so the engine will naturally prefer splits that avoid both whenever possible. Tune the trade-off by adjusting `orphanPenalty`, `widowPenalty`, or `runtPenalty`; set any of them to `0` to disable that rule entirely. List items opt in via `avoidOrphansInLists`, `avoidWidowsInLists`, and `avoidRuntsInLists` (all `true` by default).
 
@@ -173,7 +173,7 @@ The patterns encode a set of numbered rules that, when overlaid on a word, indic
   </tbody>
 </table>
 
-Each locale loads its own pattern set. Hypher instances are lazily created and cached — the first call for a given locale pays the initialization cost; subsequent calls are instant. If an unknown locale is passed, the engine falls back to `en-us`.
+Each locale loads its own pattern set. Hypher instances are lazily created and cached — the first call for a given locale pays the initialization cost; subsequent calls are instant. A region-tagged locale uses its language's patterns (`'es-ES'` hyphenates with `'es'`, `'en-GB'` with `'en-us'`). A language with no patterns here falls back to `en-us`, and the engine warns once on the console (see [Hyphenation](/en/docs/configuration#hyphenation) in the configuration reference).
 
 ### Why Hypher (and Not a Custom Algorithm)
 
@@ -231,10 +231,27 @@ The algorithm treats hyphenation breaks as just another option to evaluate along
 
 The consecutive-hyphen demerit (default 3000) ensures the algorithm strongly avoids placing hyphens on two adjacent lines — a typographic convention that virtually all style guides enforce.
 
-Hyphenation is only applied when both `bodyText.hyphenation.enabled` is `true` **and** `bodyText.textAlign` is `'justify'`. Left-aligned text does not benefit from hyphenation because the right edge is intentionally ragged.
+A hyphen on the last line of a column or a page sends the reader to the next column mid-word. `bodyText.hyphenateAcrossColumns: false` keeps it off those lines: when the line that closes a column ends on a hyphen, the paragraph is broken again with a hyphen there priced like a runt, so the breaker ends that line on a whole word whenever the word spaces of the lines above can take the difference within `maxWordSpacing` and `minWordSpacing`. Where they cannot, the hyphen stays. It covers the first column break of a paragraph, and the later ones that fall where a full column ends. A later break that falls elsewhere — a column cut short to keep a widow off it, a closing band cut level — gets a second re-break from that column: the lines already set in the columns before keep their breaks, and only the rest of the paragraph is broken again. So a hyphen stays only where no setting within the limits avoids it, in practice at a paragraph's first column break. The breaker tells apart the ways of reaching a line only up to the last line it guards, so a retry costs about as much as the first measure: one more measure for every paragraph it breaks again.
 
-Two break opportunities exist regardless of that setting. A **hard hyphen between two letters** — `enseñanza-aprendizaje`, `físico-química` — is a place the line may end: the word already carries the hyphen, so nothing is added. And a **word wider than its whole measure** (a narrow table cell, a long compound in a narrow column) is never let run past it: the engine divides it at the last syllable that fits, with a hyphen, or at the last character that fits when the dictionary offers no syllable there.
+By default, hyphenation is only applied when both `bodyText.hyphenation.enabled` is `true` **and** `bodyText.textAlign` is `'justify'`: a ragged edge is meant to vary. Ragged text can be hyphenated too, with `bodyText.hyphenation.ragged: true`. A ragged line has no word spacing to even out, so a **hyphenation zone** decides instead: a word that does not fit is divided only when sending it whole to the next line would leave a gap wider than `hyphenation.zone` (3 em by default). Knuth-Plass sets ragged running text too (`bodyText.optimalRagged`, on by default): its word spaces keep their width, each line pays for how far it falls short of the measure, and the zone decides which syllables it may take; two syllable ends in a row cost the consecutive-hyphen demerit. Set line by line (`optimalRagged: false`), no more than two lines in a row end on a syllable. See [Ragged text](/en/docs/configuration#ragged-text).
 
+Two break opportunities exist regardless of that setting. A **hard hyphen between two letters** — `enseñanza-aprendizaje`, `físico-química` — is a place the line may end: the word already carries the hyphen, so nothing is added. Knuth-Plass takes it in every paragraph with `bodyText.breakAfterHyphens` (on by default), priced like a syllable; in a justified paragraph without inline formatting, only with two letters on each side of the hyphen, so no line ends on the `e-` of `e-mail`. With it off, as up to postext 1.4, a justified paragraph without inline formatting does not break right after such a hyphen, while the same paragraph with one italic word anywhere does; books saved before postext 1.5 read with it off. The line ends on the text's own hyphen, which the line records as `hardHyphen` beside `hyphenated`, so a reader that drops an added hyphen (the running heads, the Sandbox's caret) keeps this one. An **em or en dash set closed between words** — `say—that’s`, `riddles.—I`, `Hamburg–Berlin` — is a place the line may end too, on both breakers, with `bodyText.breakAfterDashes` (on by default): the line ends on the dash, nothing is added and nothing is charged. So is a dash that ends a run of one style before a word in another (`see—*and*`). The line is `hyphenated` then, without `hardHyphen`. Never after a dash that opens an aside or a line of dialogue (`—dijo`, `said "—Hola`; a quote that closes a word may stand before the dash, as in `"no"—and` or German `„nein“—und`), before punctuation, before a quotation mark or a bracket (`thinking—" and`, `says—“no”`), inside a run of dashes or inside a range of numbers (`1914–1918`). And a **word wider than its whole measure** (a narrow table cell, a long compound in a narrow column) is never let run past it: the engine divides it at the last syllable that fits, with a hyphen, or at the last character that fits when the dictionary offers no syllable there; a cut next to a hyphen the word carries falls after that hyphen and adds none, so the word never shows two. The rest of the word keeps its own break points: a compound goes on breaking at its hyphens and a web address at its joints, where up to postext 1.4 the rest was divided at the dictionary's syllables. A paragraph without inline formatting is cut at the last character that fits, without a hyphen, unless it is hyphenated. No set of breaks around such a word is feasible for Knuth-Plass, so a justified paragraph that holds one is set line by line instead.
+
+
+### Compound words
+
+A compound joined by a hyphen (`after-dinner`, `teórico-práctico`) can break in two kinds of place: after its own hyphen, and at the dictionary's syllables of either part (`af-ter-dinner`). TeX, and the Chicago Manual of Style, keep the parts whole and break a compound only at its hyphen. `bodyText.hyphenation.compounds: false` does the same: the dictionary leaves every word with a hyphen between two letters alone, so it breaks only after that hyphen. A soft hyphen typed in the word still breaks, and a compound wider than the whole line is still divided where it must be. The default, `true`, keeps dividing the parts, which gives a justified narrow column more ways to fill its lines.
+
+Portuguese spelling asks for the hyphen of a compound broken at the end of a line to be repeated at the start of the next one (`vencer-` · `-se`), and so do the Spanish Academy's rules since 2010 (`léxico-` · `-semántico`), so the reader knows the hyphen belongs to the word. `bodyText.repeatHyphen: true` does it. The repeated hyphen is measured with its line, so the breaker leaves room for it, and it is painted like the rest of the text; in the PDF it carries a replacement text that leaves it out, so text copied or extracted from the PDF reads the word once (`vencer-se`). The line records it as `repeatedHyphen`, and its `plainStart` and `sourceStart` point past it, so the source mapping, links and running heads read the word as written. A web address never gets one. It applies to the running text, headings, lists, blockquotes and boxes; a paragraph without formatting that holds a compound is then broken by the breaker that sets formatted text.
+
+### Where a Line Never Breaks
+
+Some places are never break opportunities, on either breaker:
+
+- **A no-break space.** U+00A0, the narrow no-break space U+202F and the figure space U+2007 glue the words on either side: a number and its unit, a page reference, a group of thousands. The same holds in captions, table cells, boxes and design text (running heads, openers). Each keeps its own width, as it is measured; justification stretches the word spaces only. A face with no glyph for U+202F or U+2007 gets the width browsers give them, half a word space and a digit, in every output, the PDF included; practically every face has U+00A0. A group glued this way that is wider than the whole line is the exception, with or without inline formatting: it breaks at its last no-break space, rather than being cut inside a word. The word joiner U+2060 glues without taking any room. So does U+FEFF, the zero-width no-break space, though the word joiner is the character meant for it.
+- **Text that touches.** A bold or italic word and the punctuation after it (`**osmosis**.`), the brackets around an inline reference (`(:ref{id="fig-3"})`), a word set in two runs: text with no space in between is one unit, as if it were one word. When such a unit does not fit what is left of a line, it goes down whole. When it opens a line and still does not fit, its last word is hyphenated at a syllable so the punctuation goes down with the word's tail; only a unit with no syllable to break at leaves its punctuation to open the next line.
+
+Up to postext 1.4, a paragraph with inline formatting or a `:ref` could break at a no-break space, and a ragged line could end on the `(` before a reference or open with the full stop after a bold word.
 
 ## Word Spacing Bounds
 
@@ -251,8 +268,8 @@ The glue model gives the engine explicit bounds on how much inter-word spaces ca
   <tbody>
     <tr>
       <td><code>maxWordSpacing</code></td>
-      <td><code>1.9</code></td>
-      <td>Upper bound for word spacing, as a multiplier of the normal space width. At the default value, spaces can stretch up to 190% of their natural width.</td>
+      <td><code>2</code></td>
+      <td>Upper bound for word spacing, as a multiplier of the normal space width. At the default value, spaces can stretch up to 200% of their natural width.</td>
     </tr>
     <tr>
       <td><code>minWordSpacing</code></td>
@@ -269,8 +286,8 @@ stretchPerSpace = normalSpaceWidth × (maxWordSpacing - 1)
 shrinkPerSpace  = normalSpaceWidth × (1 - minWordSpacing)
 ```
 
-At the defaults (1.9 / 0.6), if the normal space width is 4 px:
-- Each space can stretch by 3.6 px (from 4 px to 7.6 px)
+At the defaults (2 / 0.6), if the normal space width is 4 px:
+- Each space can stretch by 4 px (from 4 px to 8 px)
 - Each space can shrink by 1.6 px (from 4 px to 2.4 px)
 
 **Tighter bounds** (e.g., `maxWordSpacing: 1.2`) produce more uniform spacing but give the algorithm less room to maneuver, which may result in more hyphenation or, in extreme cases, overflow. **Looser bounds** (e.g., `maxWordSpacing: 2.5`) give the algorithm more flexibility but allow visibly uneven spacing on some lines.
@@ -279,7 +296,24 @@ The defaults of 2 and 0.6 favor the algorithm's flexibility — giving Knuth-Pla
 
 ### Lines the Breaker Cannot Fill
 
-Sometimes no break set stays within the bounds: a long URL breaks only at its own joints, or a list item's last word will not come up and every hyphenation would leave a runt. Knuth-Plass then accepts the least bad line, whose few word spaces would have to stretch to several times their width. Instead of stretching them, the engine sets such a line **ragged** — it is drawn at its natural spacing and the right edge gives, like a paragraph's last line. The threshold is 3× the normal space width, the same one the sandbox's loose-line warning uses, so a line past it is fixed rather than flagged. Lines within the threshold are left as measured.
+Knuth-Plass does not stretch a line past `maxWordSpacing` when it has a choice, and neither does the runt fix (see [Orphan, widow, and runt penalties](#orphan-widow-and-runt-penalties)). A line beyond the bound costs more than any other defect it weighs — a hyphen, a short last line, a line a little looser than its neighbours — from the moment it passes the bound, and the cost then grows with the square of its stretch ratio, so the breaker hyphenates a word, spreads the slack over the lines around it, or sets two lines slightly loose rather than one far too loose.
+
+Sometimes no break set stays within the bounds. The line that cannot take the next word has too few spaces to share the slack: the first line under a paragraph indent, followed by a word too long to come up and too short to hyphenate; a line of long unbreakable terms; a long URL that breaks only at its own joints; a list item whose last word will not come up while every hyphenation would leave a runt. How often it happens depends on the measure, the face and the language. In an 83 mm column of English at 9.3 pt, 2 % to 8 % of the lines of a chapter went past `maxWordSpacing`, depending on the face (the widest the most); the same chapter in Spanish, whose hyphenation offers many more breaks, had none. Knuth-Plass then accepts the least bad line, and its spaces stretch past the bound. When they would stretch to more than 3× the normal space width, the engine sets the line **ragged** instead — it is drawn at its natural spacing and the right edge gives, like a paragraph's last line. The threshold is the same one the sandbox's loose-line warning uses, so a line past it is fixed rather than flagged. Lines within the threshold are left as measured. The same holds inside callout boxes, whose narrow measures are where it happens most; up to postext 1.4 a box kept such a line justified however far its spaces stretched.
+
+To get fewer of these lines, in this order: check that hyphenation is on and set to the language of the text; widen the measure or reduce the text size; let the lines take a little tracking (next section); or raise `maxWordSpacing`, which lets the same lines count as within the bound without setting them any differently.
+
+### Tracking as a Last Resort
+
+`bodyText.maxJustifyTracking` lets such a line take a little tracking — letter spacing — instead of more word space, up to that many thousandths of an em a character (10 = 0.01 em, the InDesign unit). It works both ways: a line whose spaces would stretch past `maxWordSpacing` spreads its letters until its spaces are back at the bound, and a line that would fit only with its spaces below `minWordSpacing` tightens its letters instead of sending a word down. Knuth-Plass weighs it when it chooses the breaks: a tracked line costs a little more than one within the bounds and much less than one past them, so tracking is taken only where word spacing alone would fail. Lines within the bounds, a paragraph's last line (unless it runs over), a line of one word and a line holding a chip never take any. The line records it as `VDTLine.letterSpacing`, on top of its block's own tracking, and the canvas, HTML and PDF paint it.
+
+```ts
+bodyText: {
+  maxWordSpacing: 2,
+  maxJustifyTracking: 10, // at most 0.01 em a letter, either way
+}
+```
+
+It is off by default, so documents keep their lines unless they ask for it. In the English chapter above, 10‰ brought the lines past `maxWordSpacing` down to one or none per face, and 20‰ to none in three faces out of four. Keep it small: past 20‰ or so the tracking starts to show as a lighter or darker line.
 
 ### The Final Line
 
@@ -291,7 +325,7 @@ There is one exception. Knuth-Plass may accept a final line whose natural conten
 
 The `bodyText.optimalLineBreaking` property (default: `true`) controls which line-breaking algorithm the engine uses:
 
-- **`true`**: Knuth-Plass dynamic-programming algorithm. Evaluates all possible break sets and picks the globally optimal one. This is the recommended setting for any justified text.
+- **`true`**: Knuth-Plass dynamic-programming algorithm. Evaluates all possible break sets and picks the globally optimal one. This is the recommended setting for any justified text. Ragged running text takes it too with `bodyText.optimalRagged` (on by default): the word spaces keep their width and the breaker weighs how far each line falls short of the measure instead, a line 3 em short costing what a justified line at `maxWordSpacing` does, so the ragged edge comes out more even and the runt rules apply.
 - **`false`**: Greedy first-fit, powered by Pretext's `layoutNextLine()`. Faster but produces lower-quality results. Use this only when performance matters more than typographic quality (e.g., real-time preview at very high character counts).
 
 When Knuth-Plass is active and produces no valid breaks (which can happen with extremely narrow columns or words longer than the column width), the engine automatically falls back to greedy breaking for that paragraph.
@@ -305,7 +339,9 @@ Even with Knuth-Plass and hyphenation, some lines will be looser than ideal — 
 
 Every line in the Virtual Document Tree carries a `justifiedSpaceRatio` — the ratio of the actual justified space width to the font's natural space width. A value of 1.0 means the spaces are at their natural width. A value of 2.5 means the spaces are 2.5 times wider than normal.
 
-When `debug.looseLineHighlight.enabled` is `true`, the renderer paints a semi-transparent overlay on every line whose `justifiedSpaceRatio` exceeds the configured `threshold`. The default threshold is 3.0 — meaning only lines with spaces three times wider than normal are highlighted. This is a deliberately high bar; lines this loose are genuine typographic problems.
+When `debug.looseLineHighlight.enabled` is `true`, the Sandbox paints a semi-transparent overlay over its Canvas preview on every line whose `justifiedSpaceRatio` exceeds the configured `threshold`. The default threshold is 3.0 — meaning only lines with spaces three times wider than normal are highlighted. This is a deliberately high bar; lines this loose are genuine typographic problems. It is also the width past which the engine sets a justified line ragged instead of stretching it (see [Lines the Breaker Cannot Fill](#lines-the-breaker-cannot-fill)), so at the default the highlight and the `looseLines` warning find almost nothing in running text: such a line is fixed, not flagged. Lower the threshold, to 1.5 or 2, to find the lines that are loose but still justified.
+
+The overlay is not part of the page, so exported pages never show it. To draw it on a canvas of your own, call `drawLooseLines(ctx, page, doc, { threshold })` right after `renderPageToCanvas`; `findLooseLines(doc, { threshold })` returns the same lines as data (see [Loose lines in your own canvas](/en/docs/configuration#loose-lines-in-your-own-canvas)).
 
 ### Configuration
 
@@ -337,7 +373,7 @@ The loose-line highlight is part of the `debug` section of `PostextConfig`:
       <td><code>looseLineHighlight.threshold</code></td>
       <td><code>number</code></td>
       <td><code>3</code></td>
-      <td>Multiplier of the normal space width above which a line is considered loose. Lower values catch more lines; higher values highlight only the worst offenders.</td>
+      <td>Multiplier of the normal space width above which a line is considered loose. Lower values catch more lines; higher values highlight only the worst offenders. At 3 or above, running text shows next to nothing, since lines past 3× are set ragged.</td>
     </tr>
   </tbody>
 </table>
@@ -377,6 +413,10 @@ When you enable loose-line highlighting and see red bands across certain lines, 
       <td>Enable <code>bodyText.hyphenation.enabled</code>. Justification without hyphenation is almost always worse.</td>
     </tr>
     <tr>
+      <td>A few lines stay loose whatever the face</td>
+      <td>Let those lines take a little tracking: <code>bodyText.maxJustifyTracking: 10</code>. See <a href="#tracking-as-a-last-resort">Tracking as a last resort</a>.</td>
+    </tr>
+    <tr>
       <td>Word spacing bounds are too tight</td>
       <td>Increase <code>maxWordSpacing</code> slightly (e.g., from 2 to 2.4). This gives the algorithm more room.</td>
     </tr>
@@ -392,11 +432,12 @@ When you enable loose-line highlighting and see red bands across certain lines, 
 
 Knuth-Plass solves the *horizontal* problem — where each line breaks. Column balancing solves its *vertical* counterpart: where each column ends. Publishers expect every column of a page to start at the top and end flush with the page bottom, line for line across the whole spread. The very rules that protect text quality work against this: orphan/widow protection, `keepWithNext` headings, and unsplittable figures all push content to the next column before the current one is completely full, leaving one or more empty baseline-grid lines at its bottom.
 
-When `headings.balancing` is enabled (the default), the engine closes those gaps the way a human compositor would, applying three levers in strict editorial priority order — each lever only acts on what the previous one could not absorb:
+When `headings.balancing` is enabled (the default), the engine closes those gaps the way a human compositor would, applying its levers in strict editorial priority order — each lever only acts on what the previous one could not absorb:
 
-1. **Space above headings.** Whole baseline-grid lines are added to the top margin of the headings inside the short column. When several lines are needed and the column holds several headings, the lines are distributed round-robin in importance order, so the most important heading always receives the largest share — 3 lines over an `h2` and an `h3` become +2 above the `h2` and +1 above the `h3`. Headings at the very top of a column never receive extra space (columns keep starting at the page top), and a trailing heading is never pushed toward the column bottom.
-2. **Space after list ends.** A grid line is added where a list or enumeration ends — air after a list reads naturally. Capped per list end (`maxLinesAfterList`, default 1).
-3. **Loose paragraphs.** As a last resort, paragraphs of the column are re-broken one line longer — TeX's `\looseness=+1` — up to `maxLooseParagraphs` of them (two by default), one extra line each. The breaker re-runs Knuth-Plass asking for exactly one extra line and accepts the result only when **every line of the loose solution stays below `maxWordSpacing`**: type colour never exceeds the limit you already configured. The engine prefers the longest paragraphs in the column, where the extra space dilutes across the most inter-word glue and becomes invisible. Requires `optimalLineBreaking` (the default); paragraphs split across columns are excluded.
+1. **A box closing the column.** A callout box that ends a short column moves down by the exact room under its foot, so its bottom edge meets the last grid line, level with the column beside it; the room may be a fraction of a line. It runs first and takes the whole gap unless `closingBox` says otherwise: `'last'` lets the levers below take the whole lines first and gives the box only what they leave, so a box that annotates the paragraph above it stays close to it; `'off'` never moves the box.
+2. **Space above headings.** Whole baseline-grid lines are added to the top margin of the headings inside the short column. When several lines are needed and the column holds several headings, the lines are distributed round-robin in importance order, so the most important heading always receives the largest share — 3 lines over an `h2` and an `h3` become +2 above the `h2` and +1 above the `h3`. Headings at the very top of a column never receive extra space (columns keep starting at the page top), and a trailing heading is never pushed toward the column bottom.
+3. **Space after list ends.** A grid line is added where a list or enumeration ends — air after a list reads naturally. Capped per list end (`maxLinesAfterList`, default 1). Then a grid line under a display formula or a box the text resumes after, and one under a figure or table that heads the column (`stretchAfterFloats`, `maxLinesAfterFloat`). The text under the figure may be the rest of a paragraph begun on the page before; it moves down all the same, by the line the break rules left free at the foot of the column (a line the widow rule kept empty, a paragraph space with no room for text after it).
+4. **Loose paragraphs.** As a last resort, paragraphs of the column are re-broken one line longer — TeX's `\looseness=+1` — up to `maxLooseParagraphs` of them (two by default), one extra line each. The breaker re-runs Knuth-Plass asking for exactly one extra line and accepts the result only when **every line of the loose solution stays below `maxWordSpacing`**: type colour never exceeds the limit you already configured. The engine prefers the longest paragraphs in the column, where the extra space dilutes across the most inter-word glue and becomes invisible. Requires `optimalLineBreaking` (the default); paragraphs split across columns are excluded. A paragraph the runt fix set a line shorter counts its extra line from that setting: it may win back the line the fix took out, but only at a setting with no runt and no line past `maxWordSpacing` (up to postext 1.4 it could come back with a line far past the limit).
 
    When word spacing alone cannot gain the line, the paragraph may also take a little positive **tracking** — the compositor's classic fix. The engine tries the smallest amount first (half of `maxTracking`, then `maxTracking`, in thousandths of an em per character; 10 = 0.01 em by default) and keeps the first that gains the line, still under the same word-spacing gate. The tracking is measured into the paragraph's lines and painted by every backend (canvas `letterSpacing`, CSS `letter-spacing`, PDF character spacing). Turn it off with `trackParagraphs: false`.
 
@@ -413,23 +454,24 @@ A short column is sometimes the *correct* output, and balancing knows to step as
 - A column with **no usable stretch point** (no eligible heading, list end, or loosenable paragraph) keeps its gap rather than degrade the typography.
 
 ```js
-const layout = createLayout({
+const doc = buildDocument(content, {
   headings: {
     balancing: {
       enabled: true,            // default
       maxLinesPerHeading: 4,    // cap per heading
-      stretchAfterLists: true,  // lever 2
+      stretchAfterLists: true,  // lever 3
       maxLinesAfterList: 1,     // cap per list end
-      looseParagraphs: true,    // lever 3 — bounded by bodyText.maxWordSpacing
+      looseParagraphs: true,    // lever 4 — bounded by bodyText.maxWordSpacing
       maxLooseParagraphs: 2,    // loose paragraphs per short column
       trackParagraphs: true,    // let a loose paragraph take a little tracking
       maxTracking: 10,          // ‰ em per character (0.01 em)
+      closingBox: 'first',      // lever 1: 'first' | 'last' | 'off'
     },
   },
 });
 ```
 
-In the Sandbox these live in the *Headings* section of **Design → Headings & contents** ("Balance Columns", with "Stretch After Lists", "Stretch Under Figures" and "Loose Paragraphs" nested under it). Turn on the baseline grid (**Design → Advanced → On-screen aids**) and look at the Canvas view to see the effect: with balancing off, short columns end above the last grid line; with it on, every balanceable column closes on the same line. See the [Configuration](/en/docs/configuration#column-balancing) page for the full option reference.
+In the Sandbox these live in the *Headings* section of **Design → Headings & contents** ("Balance Columns", with "Stretch After Lists", "Stretch Under Figures", "Box Closing a Column" and "Loose Paragraphs" nested under it). Turn on the baseline grid (**Design → Advanced → On-screen aids**) and look at the Canvas view to see the effect: with balancing off, short columns end above the last grid line; with it on, every balanceable column closes on the same line. See the [Configuration](/en/docs/configuration#column-balancing) page for the full option reference.
 
 ## Complete Example
 

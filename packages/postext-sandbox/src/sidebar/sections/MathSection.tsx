@@ -116,6 +116,22 @@ export const MathSection = memo(function MathSection() {
         onReset={() => resetField('marginBottom')}
         units={MARGIN_UNITS}
       />
+      <ToggleSwitch
+        label={labels.mathIndentAfterDisplay}
+        checked={math.indentAfterDisplay}
+        onChange={(v) => updateMath({ indentAfterDisplay: v })}
+        tooltip={labels.mathIndentAfterDisplayTooltip}
+        isDefault={math.indentAfterDisplay === D.indentAfterDisplay}
+        onReset={() => resetField('indentAfterDisplay')}
+      />
+      <ToggleSwitch
+        label={labels.mathKeepWithLeadIn}
+        checked={math.keepWithLeadIn}
+        onChange={(v) => updateMath({ keepWithLeadIn: v })}
+        tooltip={labels.mathKeepWithLeadInTooltip}
+        isDefault={math.keepWithLeadIn === D.keepWithLeadIn}
+        onReset={() => resetField('keepWithLeadIn')}
+      />
     </CollapsibleSection>
   );
 });

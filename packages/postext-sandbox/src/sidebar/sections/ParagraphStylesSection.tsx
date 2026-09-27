@@ -2,14 +2,15 @@
 
 import { memo, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
-import type { ColorValue, DimensionUnit, ParagraphStyleConfig, ResolvedParagraphStyleConfig } from 'postext';
-import { resolveBodyTextConfig, resolveParagraphStylesConfig } from 'postext';
+import type { BodyTextConfig, ColorValue, DimensionUnit, ParagraphContainerSpacing, ParagraphStyleConfig, ResolvedParagraphStyleConfig } from 'postext';
+import { DEFAULT_BODY_TEXT_CONFIG, resolveBodyTextConfig, resolveParagraphStylesConfig } from 'postext';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import {
   CollapsibleSection,
   ColorPicker,
   DimensionInput,
   FontPicker,
+  NumberInput,
   SelectInput,
   ToggleSwitch,
 } from '../../controls';
@@ -59,6 +60,8 @@ interface ParagraphStyleCardProps {
   resolved: ResolvedParagraphStyleConfig;
   /** The body text bold colour — what an unset `boldColor` renders with. */
   bodyBoldColor: ColorValue;
+  /** The body text italic colour — what an unset `italicColor` renders with. */
+  bodyItalicColor: ColorValue;
   otherIds: Set<string>;
   onChange: (partial: Partial<ParagraphStyleConfig>) => void;
   onResetField: (field: keyof ParagraphStyleConfig) => void;
@@ -74,6 +77,7 @@ function ParagraphStyleCard({
   style,
   resolved,
   bodyBoldColor,
+  bodyItalicColor,
   otherIds,
   onChange,
   onResetField,
@@ -81,6 +85,8 @@ function ParagraphStyleCard({
   onRemove,
 }: ParagraphStyleCardProps) {
   const labels = useSandboxLabels();
+  // Ragged styles hyphenate too once the body turns ragged hyphenation on.
+  const raggedHyphenation = useSandboxSelector((s) => s.config.bodyText?.hyphenation?.ragged === true);
   const [idDraft, setIdDraft] = useState(style.id);
   const draftSlug = slugifyStyleId(idDraft);
   const idTaken = draftSlug.length > 0 && draftSlug !== style.id && otherIds.has(draftSlug);
@@ -100,6 +106,10 @@ function ParagraphStyleCard({
   const alignOptions = [
     { value: 'left', label: labels.bodyTextAlignLeft },
     { value: 'justify', label: labels.bodyTextAlignJustify },
+  ];
+  const textTransformOptions = [
+    { value: 'none', label: labels.headingTextTransformNone },
+    { value: 'uppercase', label: labels.headingTextTransformUppercase },
   ];
 
   return (
@@ -208,6 +218,62 @@ function ParagraphStyleCard({
         onReset={() => onResetField('boldColor')}
         fieldId={`paragraphStyle-${style.id}-boldColor`}
       />
+      <ColorPicker
+        label={labels.bodyItalicColor}
+        value={resolved.italicColor ?? bodyItalicColor}
+        onChange={(v) => onChange({ italicColor: v })}
+        tooltip={labels.paragraphStyleItalicColorTooltip}
+        isDefault={unset('italicColor')}
+        onReset={() => onResetField('italicColor')}
+        fieldId={`paragraphStyle-${style.id}-italicColor`}
+      />
+      <NumberInput
+        label={labels.bodyFontWeight}
+        value={resolved.fontWeight}
+        onChange={(v) => onChange({ fontWeight: v })}
+        min={100}
+        max={900}
+        step={10}
+        tooltip={labels.textStyleFontWeightTooltip}
+        isDefault={unset('fontWeight')}
+        onReset={() => onResetField('fontWeight')}
+      />
+      <NumberInput
+        label={labels.bodyBoldFontWeight}
+        value={resolved.boldFontWeight}
+        onChange={(v) => onChange({ boldFontWeight: v })}
+        min={100}
+        max={900}
+        step={10}
+        tooltip={labels.textStyleBoldFontWeightTooltip}
+        isDefault={unset('boldFontWeight')}
+        onReset={() => onResetField('boldFontWeight')}
+      />
+      <ToggleSwitch
+        label={labels.textStyleItalic}
+        checked={resolved.italic}
+        onChange={(v) => onChange({ italic: v })}
+        tooltip={labels.textStyleItalicTooltip}
+        isDefault={unset('italic')}
+        onReset={() => onResetField('italic')}
+      />
+      <ToggleSwitch
+        label={labels.textStyleSmallCaps}
+        checked={resolved.smallCaps}
+        onChange={(v) => onChange({ smallCaps: v })}
+        tooltip={labels.textStyleSmallCapsTooltip}
+        isDefault={unset('smallCaps')}
+        onReset={() => onResetField('smallCaps')}
+      />
+      <SelectInput
+        label={labels.paragraphStyleTextTransform}
+        value={resolved.textTransform}
+        options={textTransformOptions}
+        onChange={(v) => onChange({ textTransform: v as ParagraphStyleConfig['textTransform'] })}
+        tooltip={labels.paragraphStyleTextTransformTooltip}
+        isDefault={unset('textTransform')}
+        onReset={() => onResetField('textTransform')}
+      />
       <SelectInput
         label={labels.alignmentLabel}
         value={resolved.textAlign}
@@ -216,7 +282,7 @@ function ParagraphStyleCard({
         isDefault={unset('textAlign')}
         onReset={() => onResetField('textAlign')}
       />
-      {resolved.textAlign === 'justify' && (
+      {(resolved.textAlign === 'justify' || raggedHyphenation) && (
         <ToggleSwitch
           label={labels.bodyHyphenation}
           checked={resolved.hyphenation}
@@ -225,6 +291,17 @@ function ParagraphStyleCard({
           onReset={() => onResetField('hyphenation')}
         />
       )}
+      <DimensionInput
+        label={labels.paragraphStyleIndent}
+        value={resolved.indent}
+        onChange={(v) => onChange({ indent: v })}
+        min={0}
+        step={0.1}
+        units={SPACING_UNITS}
+        tooltip={labels.paragraphStyleIndentTooltip}
+        isDefault={unset('indent')}
+        onReset={() => onResetField('indent')}
+      />
       <DimensionInput
         label={labels.bodyFirstLineIndent}
         value={resolved.firstLineIndent}
@@ -280,6 +357,14 @@ function ParagraphStyleCard({
         isDefault={unset('marginBottom')}
         onReset={() => onResetField('marginBottom')}
       />
+      <ToggleSwitch
+        label={labels.paragraphStyleSnapToGrid}
+        checked={resolved.snapToGrid}
+        onChange={(v) => onChange({ snapToGrid: v })}
+        tooltip={labels.paragraphStyleSnapToGridTooltip}
+        isDefault={unset('snapToGrid')}
+        onReset={() => onResetField('snapToGrid')}
+      />
     </div>
     </SearchScope>
   );
@@ -331,6 +416,22 @@ export const ParagraphStylesSection = memo(function ParagraphStylesSection() {
     write(styles.filter((s) => s.id !== id));
   };
 
+  /** The document-wide rule for the space under a container, kept in
+   *  `bodyText` (EF-159, EF-181). */
+  const writeContainerSpacing = (value: ParagraphContainerSpacing | undefined) => {
+    const next: BodyTextConfig = { ...bodyTextRaw };
+    if (value === undefined) delete next.paragraphContainerSpacing;
+    else next.paragraphContainerSpacing = value;
+    dispatch({
+      type: 'UPDATE_CONFIG',
+      payload: { bodyText: Object.keys(next).length > 0 ? next : undefined },
+    });
+  };
+  const containerSpacingOptions = [
+    { value: 'collapse', label: labels.paragraphContainerSpacingCollapse },
+    { value: 'add', label: labels.paragraphContainerSpacingAdd },
+  ];
+
   return (
     <CollapsibleSection
       title={labels.paragraphStylesSection}
@@ -345,12 +446,24 @@ export const ParagraphStylesSection = memo(function ParagraphStylesSection() {
           {labels.paragraphStylesEmpty}
         </p>
       )}
+      {styles.length > 0 && (
+        <SelectInput
+          label={labels.paragraphContainerSpacing}
+          value={bodyText.paragraphContainerSpacing}
+          options={containerSpacingOptions}
+          onChange={(v) => writeContainerSpacing(v as ParagraphContainerSpacing)}
+          tooltip={labels.paragraphContainerSpacingTooltip}
+          isDefault={bodyText.paragraphContainerSpacing === DEFAULT_BODY_TEXT_CONFIG.paragraphContainerSpacing}
+          onReset={() => writeContainerSpacing(undefined)}
+        />
+      )}
       {styles.map((style, i) => (
         <ParagraphStyleCard
           key={style.id}
           style={style}
           resolved={resolved[i] ?? resolveParagraphStylesConfig([style], bodyText)[0]!}
           bodyBoldColor={bodyText.boldColor ?? bodyText.color}
+          bodyItalicColor={bodyText.italicColor ?? bodyText.color}
           otherIds={new Set(styles.filter((s) => s.id !== style.id).map((s) => s.id))}
           onChange={(partial) => updateStyle(style.id, partial)}
           onResetField={(field) => resetStyleField(style.id, field)}

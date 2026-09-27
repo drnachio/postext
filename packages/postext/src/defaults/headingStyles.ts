@@ -21,6 +21,7 @@ function resolveHeadingStyleConfig(
   bodyText: ResolvedBodyTextConfig,
   unorderedLists: ResolvedUnorderedListsConfig,
   orderedLists: ResolvedOrderedListsConfig,
+  docLayout: ResolvedLayoutConfig | undefined,
 ): ResolvedHeadingStyleConfig {
   const overrides: ResolvedHeadingStyleOverrides = resolveHeadingLevelOverrides(partial);
   const pm = page.margins;
@@ -29,9 +30,15 @@ function resolveHeadingStyleConfig(
     name: partial.name ?? partial.id,
     numbered: partial.numbered ?? true,
     toc: partial.toc ?? true,
+    runningChapter: partial.runningChapter ?? true,
     overrides,
     palette: { ...(partial.palette ?? {}) },
   };
+  if (partial.breakBefore) {
+    const { enabled, parity } = partial.breakBefore;
+    out.breakBefore = { ...(enabled !== undefined ? { enabled } : {}), ...(parity !== undefined ? { parity } : {}) };
+  }
+  if (partial.numberingTemplate !== undefined) out.numberingTemplate = partial.numberingTemplate;
   if (partial.header) out.header = resolveDesignSlot(partial.header, 'header');
   if (partial.footer) out.footer = resolveDesignSlot(partial.footer, 'footer');
   if (partial.margins) {
@@ -43,7 +50,23 @@ function resolveHeadingStyleConfig(
       mirror: partial.margins.mirror ?? pm.mirror,
     };
   }
-  if (partial.layout) out.layout = resolveLayoutConfig(partial.layout) as ResolvedLayoutConfig;
+  if (partial.layout) {
+    const layout = resolveLayoutConfig(partial.layout) as ResolvedLayoutConfig;
+    // The section's column rule takes each field it leaves unset from the
+    // document's, so a section that only changes its columns keeps the
+    // document's rule (EF-112).
+    const own = partial.layout.columnRule;
+    out.layout = docLayout
+      ? {
+          ...layout,
+          columnRule: {
+            enabled: own?.enabled ?? docLayout.columnRule.enabled,
+            color: own?.color ?? docLayout.columnRule.color,
+            lineWidth: own?.lineWidth ?? docLayout.columnRule.lineWidth,
+          },
+        }
+      : layout;
+  }
   if (partial.bodyStyle) {
     const b = partial.bodyStyle;
     out.bodyStyle = {
@@ -67,13 +90,17 @@ export function resolveHeadingStylesConfig(
   bodyText: ResolvedBodyTextConfig,
   unorderedLists: ResolvedUnorderedListsConfig,
   orderedLists: ResolvedOrderedListsConfig,
+  /** The document's layout: a style's `layout.columnRule` takes the fields
+   *  it leaves unset from it. Without it they take the static defaults. */
+  layout?: ResolvedLayoutConfig,
 ): ResolvedHeadingStyleConfig[] {
   return (partial ?? DEFAULT_HEADING_STYLES).map((s) =>
-    resolveHeadingStyleConfig(s, page, bodyText, unorderedLists, orderedLists));
+    resolveHeadingStyleConfig(s, page, bodyText, unorderedLists, orderedLists, layout));
 }
 
 /** Drop unset fields and the static defaults (`numbered: true`, `toc:
- *  true`, `name` equal to `id`, empty slots / palettes). Level overrides
+ *  true`, `runningChapter: true`, `name` equal to `id`, empty slots /
+ *  palettes). Level overrides
  *  and the inherited section fields are kept whenever set. Returns
  *  `undefined` when no styles remain. */
 export function stripHeadingStylesDefaults(
@@ -88,6 +115,7 @@ export function stripHeadingStylesDefaults(
       if (k === 'name' && v === s.id) continue;
       if (k === 'numbered' && v === true) continue;
       if (k === 'toc' && v === true) continue;
+      if (k === 'runningChapter' && v === true) continue;
       if (k === 'header' || k === 'footer') {
         const slot = stripDesignSlotDefaults(v as HeadingStyleConfig['header'], k);
         if (slot && slot.elements && slot.elements.length > 0) out[k] = slot;

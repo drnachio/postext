@@ -3,7 +3,7 @@
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext';
 import { resolveHeadingsConfig, DEFAULT_HEADINGS_CONFIG, DEFAULT_COLUMN_BALANCING, dimensionsEqual, colorsEqual } from 'postext';
-import type { HeadingsConfig, HeadingLevelConfig, DimensionUnit } from 'postext';
+import type { HeadingsConfig, HeadingLevelConfig, DimensionUnit, ClosingBoxLever, KeepWithNextSplit } from 'postext';
 import {
   CollapsibleSection,
   ColorPicker,
@@ -44,7 +44,7 @@ export const HeadingsSection = memo(function HeadingsSection() {
   const resetBalancingField = (
     field: 'enabled' | 'maxLinesPerHeading' | 'stretchAfterLists' | 'maxLinesAfterList' | 'stretchAfterFloats'
       | 'maxLinesAfterFloat' | 'looseParagraphs' | 'maxLooseParagraphs' | 'trackParagraphs' | 'maxTracking'
-      | 'trailing' | 'beforeSpan',
+      | 'trailing' | 'beforeSpan' | 'closingBox',
   ) => {
     if (!raw?.balancing) return;
     const next = { ...raw.balancing };
@@ -130,7 +130,9 @@ export const HeadingsSection = memo(function HeadingsSection() {
   const isMarginBottomDefault = dimensionsEqual(headings.marginBottom, D.marginBottom);
   const isTextAlignDefault = headings.textAlign === D.textAlign;
   const isKeepWithNextDefault = headings.keepWithNext === D.keepWithNext;
+  const isKeepWithNextSplitDefault = headings.keepWithNextSplit === D.keepWithNextSplit;
   const isSnapToGridDefault = headings.snapToGrid === D.snapToGrid;
+  const isInlineMarksDefault = headings.inlineMarks === D.inlineMarks;
   const isBalEnabledDefault = headings.balancing.enabled === DEFAULT_COLUMN_BALANCING.enabled;
   const isBalMaxLinesDefault = headings.balancing.maxLinesPerHeading === DEFAULT_COLUMN_BALANCING.maxLinesPerHeading;
   const isBalAfterListsDefault = headings.balancing.stretchAfterLists === DEFAULT_COLUMN_BALANCING.stretchAfterLists;
@@ -143,10 +145,19 @@ export const HeadingsSection = memo(function HeadingsSection() {
   const isBalMaxTrackingDefault = headings.balancing.maxTracking === DEFAULT_COLUMN_BALANCING.maxTracking;
   const isBalTrailingDefault = headings.balancing.trailing === DEFAULT_COLUMN_BALANCING.trailing;
   const isBalBeforeSpanDefault = headings.balancing.beforeSpan === DEFAULT_COLUMN_BALANCING.beforeSpan;
+  const isBalClosingBoxDefault = headings.balancing.closingBox === DEFAULT_COLUMN_BALANCING.closingBox;
+
+  const CLOSING_BOX_OPTIONS = [
+    { value: 'first', label: labels.balanceClosingBoxFirst },
+    { value: 'last', label: labels.balanceClosingBoxLast },
+    { value: 'off', label: labels.balanceClosingBoxOff },
+  ];
 
   const ALIGN_OPTIONS = [
     { value: 'left', label: labels.headingsTextAlignLeft },
     { value: 'justify', label: labels.headingsTextAlignJustify },
+    { value: 'center', label: labels.headingsTextAlignCenter },
+    { value: 'right', label: labels.headingsTextAlignRight },
   ];
 
   return (
@@ -247,6 +258,21 @@ export const HeadingsSection = memo(function HeadingsSection() {
         onReset={() => resetField('keepWithNext')}
       />
 
+      {headings.keepWithNext && (
+        <SelectInput
+          label={labels.headingsKeepWithNextSplit}
+          value={headings.keepWithNextSplit}
+          options={[
+            { value: 'rules', label: labels.headingsKeepWithNextSplitRules },
+            { value: 'fill', label: labels.headingsKeepWithNextSplitFill },
+          ]}
+          onChange={(value) => updateHeadings({ keepWithNextSplit: value as KeepWithNextSplit })}
+          tooltip={labels.headingsKeepWithNextSplitTooltip}
+          isDefault={isKeepWithNextSplitDefault}
+          onReset={() => resetField('keepWithNextSplit')}
+        />
+      )}
+
       <ToggleSwitch
         label={labels.headingsSnapToGrid}
         checked={headings.snapToGrid}
@@ -254,6 +280,15 @@ export const HeadingsSection = memo(function HeadingsSection() {
         tooltip={labels.headingsSnapToGridTooltip}
         isDefault={isSnapToGridDefault}
         onReset={() => resetField('snapToGrid')}
+      />
+
+      <ToggleSwitch
+        label={labels.headingsInlineMarks}
+        checked={headings.inlineMarks}
+        onChange={(v) => updateHeadings({ inlineMarks: v })}
+        tooltip={labels.headingsInlineMarksTooltip}
+        isDefault={isInlineMarksDefault}
+        onReset={() => resetField('inlineMarks')}
       />
 
       <ToggleSwitch
@@ -332,6 +367,17 @@ export const HeadingsSection = memo(function HeadingsSection() {
               onReset={() => resetBalancingField('maxLinesAfterFloat')}
             />
           )}
+          <SelectInput
+            label={labels.balanceClosingBox}
+            value={headings.balancing.closingBox}
+            options={CLOSING_BOX_OPTIONS}
+            onChange={(value) =>
+              updateHeadings({ balancing: { ...raw?.balancing, closingBox: value as ClosingBoxLever } })
+            }
+            tooltip={labels.balanceClosingBoxTooltip}
+            isDefault={isBalClosingBoxDefault}
+            onReset={() => resetBalancingField('closingBox')}
+          />
           <ToggleSwitch
             label={labels.balanceLooseParagraphs}
             checked={headings.balancing.looseParagraphs}

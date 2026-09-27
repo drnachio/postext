@@ -78,6 +78,7 @@ export function layoutCacheKey(input: {
     c?.pageIndexOffset ?? '',
     c?.pageNumbering?.startAt ?? '',
     c?.pageNumbering?.format ?? '',
+    c?.bookPageCount ?? '',
     input.outlineKey,
   ].join('|');
 }

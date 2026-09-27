@@ -3,7 +3,7 @@
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { resolveBodyTextConfig, resolveTableStyleConfig } from 'postext';
-import type { TableStyleConfig, ResolvedTableStyleConfig, TableRules, TableOverflow, DimensionUnit } from 'postext';
+import type { TableStyleConfig, ResolvedTableStyleConfig, TableRules, TableOverflow, TableTextTransform, DimensionUnit } from 'postext';
 import {
   CollapsibleSection,
   ColorPicker,
@@ -18,6 +18,7 @@ const FONT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em'];
 const BORDER_UNITS: DimensionUnit[] = ['pt', 'px'];
 const RADIUS_UNITS: DimensionUnit[] = ['pt', 'px', 'mm'];
 const SPACING_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
+const TRACKING_UNITS: DimensionUnit[] = ['pt', 'em', 'px'];
 
 export interface TableStyleFieldsProps {
   /** The stored (partial) style being edited. */
@@ -103,6 +104,24 @@ export function TableStyleFields({
             fieldId={`${fieldIdPrefix}-bodyBackground`}
           />
         )}
+        <ToggleSwitch
+          label={labels.tableBodyAlternateFill}
+          checked={ts.bodyAlternateBackgroundEnabled}
+          onChange={(v) => update({ bodyAlternateBackgroundEnabled: v })}
+          tooltip={labels.tableBodyAlternateFillTooltip}
+          isDefault={unset('bodyAlternateBackgroundEnabled')}
+          onReset={() => resetField('bodyAlternateBackgroundEnabled')}
+        />
+        {ts.bodyAlternateBackgroundEnabled && (
+          <ColorPicker
+            label={labels.tableBodyAlternateColor}
+            value={ts.bodyAlternateBackground}
+            onChange={(v) => update({ bodyAlternateBackground: v })}
+            isDefault={unset('bodyAlternateBackground')}
+            onReset={() => resetField('bodyAlternateBackground')}
+            fieldId={`${fieldIdPrefix}-bodyAlternateBackground`}
+          />
+        )}
       </CollapsibleSection>
 
       <CollapsibleSection title={labels.tableHeaderGroup} sectionId={`${sectionIdPrefix}.header`} variant="subsection">
@@ -143,6 +162,29 @@ export function TableStyleFields({
           onChange={(v) => update({ headerItalic: v })}
           isDefault={unset('headerItalic')}
           onReset={() => resetField('headerItalic')}
+        />
+        <SelectInput
+          label={labels.tableHeaderTextTransform}
+          value={ts.headerTextTransform}
+          options={[
+            { value: 'none', label: labels.headingTextTransformNone },
+            { value: 'uppercase', label: labels.headingTextTransformUppercase },
+          ]}
+          onChange={(v) => update({ headerTextTransform: v as TableTextTransform })}
+          tooltip={labels.tableHeaderTextTransformTooltip}
+          isDefault={unset('headerTextTransform')}
+          onReset={() => resetField('headerTextTransform')}
+        />
+        <DimensionInput
+          label={labels.tableHeaderLetterSpacing}
+          value={ts.headerLetterSpacing}
+          onChange={(v) => update({ headerLetterSpacing: v })}
+          min={-5}
+          step={0.1}
+          units={TRACKING_UNITS}
+          tooltip={labels.tableHeaderLetterSpacingTooltip}
+          isDefault={unset('headerLetterSpacing')}
+          onReset={() => resetField('headerLetterSpacing')}
         />
         <ToggleSwitch
           label={labels.tableHeaderFill}

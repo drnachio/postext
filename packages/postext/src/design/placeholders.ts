@@ -1,11 +1,15 @@
-import type { DocumentMetadata } from '../types';
+import type { DocumentMetadata, PostextConfig } from '../types';
 import type { VDTPage } from '../vdt';
-import { formatNumeral } from '../numbering';
+import { formatCounter, formatNumeral } from '../numbering';
+import { metadataText } from '../frontmatter';
 import {
   resolvePlaceholders as legacyResolvePlaceholders,
   attrPlaceholderKey,
+  markPlaceholder,
   PLACEHOLDER_NAME_RE,
+  type PageMarks,
   type PlaceholderContext as LegacyPlaceholderContext,
+  type PlaceholderResolveOptions,
   type PlaceholderResult,
 } from '../pipeline/placeholders';
 
@@ -20,6 +24,12 @@ export interface HeadingPlaceholderInfo {
   formattedNumber: string;
   /** Raw numeric counter for the heading level, if available. */
   numericValue?: number;
+  /** Document language of the spelled-out placeholders (`{numberWords}`,
+   *  `{numberOrdinalWords}`); English when unset. */
+  locale?: string;
+  /** `{chapterNumber}` of the chapter the heading belongs to (its own for a
+   *  level-1 heading, else the last level-1 heading's before it) — not the
+   *  page's, which is the later chapter where two meet on a page. */
   chapterNumber?: string;
   chapterTitle?: string;
   /** Heading attributes (`# Title {key="value"}`), for `{attr.<key>}`. */
@@ -32,6 +42,11 @@ export interface DesignPlaceholderContext {
   allPages: VDTPage[];
   metadata: DocumentMetadata;
   chapterTitleByPageIndex: string[];
+  /** The chapter in force at the top of each page, title and number; back
+   *  `{chapterTitleAtTop}` / `{chapterNumberAtTop}` in header and footer
+   *  slots (see `computeChapterTitlesAtTop`). */
+  chapterTitleAtTopByPageIndex?: string[];
+  chapterNumberAtTopByPageIndex?: string[];
   /** Current chapter's H1 attributes per page index; backs `{attr.<key>}`
    *  in header/footer slots (and as a fallback in heading slots). */
   chapterAttrsByPageIndex?: Record<string, string>[];
@@ -46,6 +61,12 @@ export interface DesignPlaceholderContext {
   /** Current chapter number per page index; backs `{chapterNumber}` in
    *  header/footer slots (heading slots use `heading.chapterNumber`). */
   chapterNumberByPageIndex?: string[];
+  /** Physical pages of the whole book (`{bookTotalPages}`); defaults to
+   *  `allPages.length`. */
+  bookTotalPages?: number;
+  /** Running marks per key, for `{firstMark.<key>}` / `{lastMark.<key>}`
+   *  in header and footer slots (see `computePageMarks`). */
+  marksFor?: (key: string) => PageMarks | undefined;
   /** Only present in heading and part contexts. */
   heading?: HeadingPlaceholderInfo;
 }
@@ -53,12 +74,15 @@ export interface DesignPlaceholderContext {
 const HEADER_FOOTER_PLACEHOLDERS = new Set([
   'pageNumber',
   'totalPages',
+  'bookTotalPages',
   'title',
   'subtitle',
   'author',
   'publishDate',
   'chapterTitle',
   'chapterNumber',
+  'chapterTitleAtTop',
+  'chapterNumberAtTop',
   'partTitle',
   'partNumber',
 ]);
@@ -66,6 +90,7 @@ const HEADER_FOOTER_PLACEHOLDERS = new Set([
 const HEADING_PLACEHOLDERS = new Set([
   'pageNumber',
   'totalPages',
+  'bookTotalPages',
   'title',
   'subtitle',
   'author',
@@ -81,6 +106,10 @@ const HEADING_PLACEHOLDERS = new Set([
   'numberRomanLower',
   'numberAlpha',
   'numberAlphaLower',
+  'numberWords',
+  'numberWordsLower',
+  'numberOrdinalWords',
+  'numberOrdinalWordsLower',
 ]);
 
 export function allowedPlaceholdersFor(kind: DesignContextKind): Set<string> {
@@ -88,9 +117,21 @@ export function allowedPlaceholdersFor(kind: DesignContextKind): Set<string> {
 }
 
 /** Whether `name` is a valid placeholder in a slot of the given kind. Covers
- *  the fixed sets above plus the open-ended `attr.<key>` namespace. */
+ *  the fixed sets above plus the open-ended `attr.<key>` namespace, and —
+ *  in running heads (header and footer) — the `firstMark.<key>` /
+ *  `lastMark.<key>` marks. */
 export function isAllowedPlaceholder(name: string, kind: DesignContextKind): boolean {
-  return allowedPlaceholdersFor(kind).has(name) || attrPlaceholderKey(name) !== undefined;
+  if (allowedPlaceholdersFor(kind).has(name) || attrPlaceholderKey(name) !== undefined) return true;
+  return (kind === 'header' || kind === 'footer') && markPlaceholder(name) !== undefined;
+}
+
+/** Whether any text of `config` names the placeholder `{name}` — a design
+ *  slot's element, a heading style's running head… A scan of the whole
+ *  configuration, for hosts deciding what a layout needs (the book's page
+ *  count for `{bookTotalPages}`); cache it per configuration when calling
+ *  it often. */
+export function configUsesPlaceholder(config: PostextConfig | undefined, name: string): boolean {
+  return config !== undefined && JSON.stringify(config).includes(`{${name}}`);
 }
 
 /** `{attr.<key>}`: the heading's own attribute first (heading contexts),
@@ -118,6 +159,14 @@ function resolveHeadingName(name: string, ctx: DesignPlaceholderContext): string
       return h?.numericValue !== undefined ? formatNumeral(h.numericValue, 'upper-alpha') : '';
     case 'numberAlphaLower':
       return h?.numericValue !== undefined ? formatNumeral(h.numericValue, 'lower-alpha') : '';
+    case 'numberWords':
+      return h?.numericValue !== undefined ? formatCounter(h.numericValue, 'Words', h.locale) : '';
+    case 'numberWordsLower':
+      return h?.numericValue !== undefined ? formatCounter(h.numericValue, 'words', h.locale) : '';
+    case 'numberOrdinalWords':
+      return h?.numericValue !== undefined ? formatCounter(h.numericValue, 'Ordinal', h.locale) : '';
+    case 'numberOrdinalWordsLower':
+      return h?.numericValue !== undefined ? formatCounter(h.numericValue, 'ordinal', h.locale) : '';
     case 'chapterNumber':
       return h?.chapterNumber ?? ctx.chapterNumberByPageIndex?.[ctx.page.index] ?? '';
     case 'chapterTitle':
@@ -130,14 +179,16 @@ function resolveHeadingName(name: string, ctx: DesignPlaceholderContext): string
       return ctx.page.pageLabel;
     case 'totalPages':
       return String(ctx.allPages.length);
+    case 'bookTotalPages':
+      return String(ctx.bookTotalPages ?? ctx.allPages.length);
     case 'title':
-      return typeof ctx.metadata.title === 'string' ? ctx.metadata.title : '';
+      return metadataText(ctx.metadata.title) ?? '';
     case 'subtitle':
-      return typeof ctx.metadata.subtitle === 'string' ? ctx.metadata.subtitle : '';
+      return metadataText(ctx.metadata.subtitle) ?? '';
     case 'author':
-      return typeof ctx.metadata.author === 'string' ? ctx.metadata.author : '';
+      return metadataText(ctx.metadata.author) ?? '';
     case 'publishDate':
-      return typeof ctx.metadata.publishDate === 'string' ? ctx.metadata.publishDate : '';
+      return metadataText(ctx.metadata.publishDate) ?? '';
     default:
       return '';
   }
@@ -149,6 +200,7 @@ function resolveHeadingName(name: string, ctx: DesignPlaceholderContext): string
 export function resolveDesignPlaceholders(
   template: string,
   ctx: DesignPlaceholderContext,
+  options?: PlaceholderResolveOptions,
 ): PlaceholderResult {
   if (ctx.kind !== 'heading' && ctx.kind !== 'part') {
     const legacy: LegacyPlaceholderContext = {
@@ -156,12 +208,16 @@ export function resolveDesignPlaceholders(
       allPages: ctx.allPages,
       metadata: ctx.metadata,
       chapterTitleByPageIndex: ctx.chapterTitleByPageIndex,
+      chapterTitleAtTopByPageIndex: ctx.chapterTitleAtTopByPageIndex,
+      chapterNumberAtTopByPageIndex: ctx.chapterNumberAtTopByPageIndex,
       chapterAttrsByPageIndex: ctx.chapterAttrsByPageIndex,
       partTitleByPageIndex: ctx.partTitleByPageIndex,
       partNumberByPageIndex: ctx.partNumberByPageIndex,
       chapterNumberByPageIndex: ctx.chapterNumberByPageIndex,
+      bookTotalPages: ctx.bookTotalPages,
+      marksFor: ctx.marksFor,
     };
-    return legacyResolvePlaceholders(template, legacy);
+    return legacyResolvePlaceholders(template, legacy, options);
   }
   const allowed = HEADING_PLACEHOLDERS;
   const unknown: string[] = [];
@@ -183,7 +239,8 @@ export function resolveDesignPlaceholders(
       }
       const attrKey = attrPlaceholderKey(name);
       if (attrKey !== undefined) {
-        out += resolveAttrPlaceholder(attrKey, ctx);
+        const value = resolveAttrPlaceholder(attrKey, ctx);
+        out += options?.attrValue ? options.attrValue(value) : value;
         i = end + 1;
         continue;
       }
@@ -200,4 +257,20 @@ export function resolveDesignPlaceholders(
     i++;
   }
   return { text: out, unknownPlaceholders: unknown, missingMetadata: missing };
+}
+
+/** The `\n` escape: the two characters backslash + n, which is how a design
+ *  template or a heading attribute value writes a line break. */
+export function unescapeLineBreaks(text: string): string {
+  return text.replace(/\\n/g, '\n');
+}
+
+/** The text a design text element prints, before any case transform: its
+ *  placeholders filled in, and the `\n` escape turned into a newline in the
+ *  element's own template and in `{attr.<key>}` values. Text a placeholder
+ *  mirrors from the document (a title, a frontmatter value) is printed as
+ *  written, so a code span holding `\n` stays on its line; its real
+ *  newlines (a `\\` title break) still start new lines. */
+export function resolveDesignText(template: string, ctx: DesignPlaceholderContext): string {
+  return resolveDesignPlaceholders(unescapeLineBreaks(template), ctx, { attrValue: unescapeLineBreaks }).text;
 }

@@ -2,6 +2,14 @@ import type { InlineSpan } from '../parse';
 import type { MeasuredBlock, MeasurementCache, MeasureBlockOptions } from './types';
 import { measureBlock } from './plain';
 import { measureRichBlock } from './rich';
+import { getHyphenationLocale } from '../hyphenate';
+
+/** Options that change a block's lines, joined into its cache key. The
+ *  active hyphenation dictionary is one: soft hyphens (and the syllables an
+ *  overlong word is divided at) depend on it. */
+function optionsKey(options: MeasureBlockOptions | undefined): string {
+  return `${options?.textAlign ?? ''}\x00${options?.hyphenate ?? ''}\x00${options?.firstLineIndentPx ?? ''}\x00${options?.hangingIndent ?? ''}\x00${options?.optimal ?? ''}\x00${options?.maxStretchRatio ?? ''}\x00${options?.minShrinkRatio ?? ''}\x00${options?.runtPenalty ?? ''}\x00${options?.runtMinCharacters ?? ''}\x00${options?.looseness ?? ''}\x00${options?.letterSpacingPx ?? ''}\x00${options?.hyphenationZonePx ?? ''}\x00${getHyphenationLocale()}${options?.justifyTrackingPx ? `\x00${options.justifyTrackingPx}` : ''}${options?.runtGraded ? '\x00rg' : ''}${options?.avoidHyphenAtLines?.length ? `\x00ah${options.avoidHyphenAtLines.join(',')}` : ''}`;
+}
 
 function buildPlainCacheKey(
   text: string,
@@ -10,14 +18,22 @@ function buildPlainCacheKey(
   lineHeightPx: number,
   options: MeasureBlockOptions | undefined,
 ): string {
-  return `${text}\x00${font}\x00${maxWidthPx}\x00${lineHeightPx}\x00${options?.textAlign ?? ''}\x00${options?.hyphenate ?? ''}\x00${options?.firstLineIndentPx ?? ''}\x00${options?.hangingIndent ?? ''}\x00${options?.optimal ?? ''}\x00${options?.maxStretchRatio ?? ''}\x00${options?.minShrinkRatio ?? ''}\x00${options?.runtPenalty ?? ''}\x00${options?.runtMinCharacters ?? ''}\x00${options?.looseness ?? ''}\x00${options?.letterSpacingPx ?? ''}`;
+  return `${text}\x00${font}\x00${maxWidthPx}\x00${lineHeightPx}\x00${optionsKey(options)}`;
 }
 
 /** A chip is one placeholder char in the span text: its words and resolved
  *  box decide its measure, so they join the key. */
 function chipCacheKey(chip: NonNullable<InlineSpan['chip']>): string {
-  const words = chip.spans.map((s) => `${s.text}~${s.bold}~${s.italic}~${s.script ?? ''}`).join('~');
+  const words = chip.spans.map((s) => `${s.text}~${s.bold}~${s.italic}~${s.script ?? ''}${s.smallCaps ? '~sc' : ''}`).join('~');
   return `|chip:${words}|${chip.box ? JSON.stringify(chip.box) : ''}`;
+}
+
+/** A formula is one placeholder char in the span text too: its TeX decides
+ *  what is painted, and its render's size (which follows the maths font
+ *  scale, or is a placeholder's before the engine is ready) its measure. */
+function mathCacheKey(span: InlineSpan): string {
+  const render = span.mathRender;
+  return `|m:${span.math!.tex}${render ? `|${render.widthPx}x${render.heightPx}` : ''}`;
 }
 
 function buildRichCacheKey(
@@ -27,18 +43,25 @@ function buildRichCacheKey(
   lineHeightPx: number,
   options: MeasureBlockOptions | undefined,
 ): string {
-  const spanKey = spans.map((s) => `${s.text}|${s.bold}|${s.italic}|${s.ref?.resourceId ?? ''}${s.chip ? chipCacheKey(s.chip) : ''}`).join('\x01');
-  return `R\x00${spanKey}\x00${fonts[0]}\x00${fonts[1]}\x00${fonts[2]}\x00${fonts[3]}\x00${maxWidthPx}\x00${lineHeightPx}\x00${options?.textAlign ?? ''}\x00${options?.hyphenate ?? ''}\x00${options?.firstLineIndentPx ?? ''}\x00${options?.hangingIndent ?? ''}\x00${options?.optimal ?? ''}\x00${options?.maxStretchRatio ?? ''}\x00${options?.minShrinkRatio ?? ''}\x00${options?.runtPenalty ?? ''}\x00${options?.runtMinCharacters ?? ''}\x00${options?.looseness ?? ''}\x00${options?.letterSpacingPx ?? ''}`;
+  // Script and small-caps marks change the measure of the same text, and a
+  // formula or a swatch colour what a placeholder paints: they join the key
+  // only when set, so the common keys are unchanged.
+  const spanKey = spans.map((s) => `${s.text}|${s.bold}|${s.italic}|${s.ref?.resourceId ?? ''}${s.chip ? chipCacheKey(s.chip) : ''}${s.math ? mathCacheKey(s) : ''}${s.swatch ? `|sw:${s.swatch.color}` : ''}${s.script ? `|${s.script}` : ''}${s.smallCaps ? '|sc' : ''}`).join('\x01');
+  return `R\x00${spanKey}\x00${fonts[0]}\x00${fonts[1]}\x00${fonts[2]}\x00${fonts[3]}\x00${maxWidthPx}\x00${lineHeightPx}\x00${optionsKey(options)}`;
 }
 
+/** A cached result must read exactly like a fresh measure: the block's own
+ *  fields (`totalHeight`, `lastLineRunt`, whatever it gains) are carried
+ *  whole, and only the lines — which the pipeline shifts and stamps — are
+ *  copied. */
 function cloneMeasuredBlock(block: MeasuredBlock): MeasuredBlock {
   return {
+    ...block,
     lines: block.lines.map((l) => ({
       ...l,
       bbox: { ...l.bbox },
       segments: l.segments ? l.segments.map((s) => ({ ...s })) : undefined,
     })),
-    totalHeight: block.totalHeight,
   };
 }
 

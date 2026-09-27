@@ -3,6 +3,7 @@ import { dimensionToPx } from '../units';
 import type { ResolvedConfig } from '../vdt';
 import { buildFontString } from '../measure';
 import { computeBaselineGrid } from './config';
+import { DEFAULT_BLOCKQUOTE_CONFIG } from '../defaults/bodyText';
 
 export interface BlockStyle {
   fontString: string;
@@ -22,28 +23,79 @@ export interface BlockStyle {
   referenceItalic?: boolean;
   textAlign: TextAlign;
   hyphenate: boolean;
+  /** Hyphenation zone (px) of a ragged block that hyphenates
+   *  (`bodyText.hyphenation.ragged`); unset for justified text and for
+   *  blocks that do not hyphenate. */
+  hyphenationZonePx?: number;
   marginTopPx: number;
   marginBottomPx: number;
   firstLineIndentPx: number;
   hangingIndent: boolean;
+  /** Indent of every line (px) from the left edge of the column or box —
+   *  a paragraph style's `indent`; the first-line and hanging indents are
+   *  measured from it. Unset: none. */
+  indentPx?: number;
+  /** Set the text in small capitals (a paragraph style's or a callout
+   *  body's `smallCaps`): every span is measured and painted so. */
+  smallCaps?: boolean;
+  /** Set the text in capitals (a paragraph style's `textTransform:
+   *  'uppercase'`): the block's text is upper-cased, length for length,
+   *  before it is measured. */
+  uppercase?: boolean;
+  /** Tracking the style itself sets (px after every glyph; negative
+   *  tightens) — a heading level's `letterSpacing`. Measured on the rich
+   *  path and stamped on the block (`VDTBlock.letterSpacing`). Unset: none. */
+  letterSpacingPx?: number;
+}
+
+/** The four faces of a text style: `italic` sets the regular text in
+ *  italics and flips `*…*` runs back to upright (the blockquote rule). */
+function textFaces(
+  family: string,
+  sizePx: number,
+  weight: number,
+  boldWeight: number,
+  italic: boolean,
+): Pick<BlockStyle, 'fontString' | 'boldFontString' | 'italicFontString' | 'boldItalicFontString'> {
+  const base = italic ? 'italic' : 'normal';
+  const flip = italic ? 'normal' : 'italic';
+  return {
+    fontString: buildFontString(family, sizePx, weight.toString(), base),
+    boldFontString: buildFontString(family, sizePx, boldWeight.toString(), base),
+    italicFontString: buildFontString(family, sizePx, weight.toString(), flip),
+    boldItalicFontString: buildFontString(family, sizePx, boldWeight.toString(), flip),
+  };
+}
+
+/** Whether a block with this alignment hyphenates, and its hyphenation zone
+ *  when it is ragged: justified text hyphenates when `enabled`; ragged text
+ *  only when `bodyText.hyphenation.ragged` is on too, within the zone. */
+function hyphenationFor(
+  enabled: boolean,
+  textAlign: TextAlign,
+  resolved: ResolvedConfig,
+  fontSizePx: number,
+): Pick<BlockStyle, 'hyphenate' | 'hyphenationZonePx'> {
+  if (!enabled) return { hyphenate: false };
+  if (textAlign === 'justify') return { hyphenate: true };
+  const h = resolved.bodyText.hyphenation;
+  if (!h.ragged) return { hyphenate: false };
+  return { hyphenate: true, hyphenationZonePx: Math.max(0, dimensionToPx(h.zone, resolved.page.dpi, fontSizePx)) };
 }
 
 export function resolveBodyStyle(resolved: ResolvedConfig): BlockStyle {
   const dpi = resolved.page.dpi;
   const fontSizePx = dimensionToPx(resolved.bodyText.fontSize, dpi);
   const lineHeightPx = computeBaselineGrid(resolved);
-  const weight = resolved.bodyText.fontWeight.toString();
-  const fontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, weight);
-  const boldWeight = resolved.bodyText.boldFontWeight.toString();
-  const boldFontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, boldWeight);
-  const italicFontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, weight, 'italic');
-  const boldItalicFontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, boldWeight, 'italic');
-  const textAlign = resolved.bodyText.textAlign;
-  const hyphenate = resolved.bodyText.hyphenation.enabled && textAlign === 'justify';
-  const firstLineIndentPx = dimensionToPx(resolved.bodyText.firstLineIndent, dpi, fontSizePx);
-  const hangingIndent = resolved.bodyText.hangingIndent;
-  const marginBottomPx = resolved.bodyText.paragraphSpacing ? lineHeightPx : 0;
-  return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: resolved.bodyText.color.hex, boldColor: resolved.bodyText.boldColor?.hex, italicColor: resolved.bodyText.italicColor?.hex, referenceColor: resolved.bodyText.referenceColor.hex, referenceBold: resolved.bodyText.referenceBold, referenceItalic: resolved.bodyText.referenceItalic, textAlign, hyphenate, marginTopPx: 0, marginBottomPx, firstLineIndentPx, hangingIndent };
+  const body = resolved.bodyText;
+  // `italic` / `smallCaps` are set only in a callout's derived config.
+  const faces = textFaces(body.fontFamily, fontSizePx, body.fontWeight, body.boldFontWeight, !!body.italic);
+  const textAlign = body.textAlign;
+  const hyphenation = hyphenationFor(body.hyphenation.enabled, textAlign, resolved, fontSizePx);
+  const firstLineIndentPx = dimensionToPx(body.firstLineIndent, dpi, fontSizePx);
+  const hangingIndent = body.hangingIndent;
+  const marginBottomPx = body.paragraphSpacing ? lineHeightPx : 0;
+  return { ...faces, fontSizePx, lineHeightPx, color: body.color.hex, boldColor: body.boldColor?.hex, italicColor: body.italicColor?.hex, referenceColor: body.referenceColor.hex, referenceBold: body.referenceBold, referenceItalic: body.referenceItalic, textAlign, ...hyphenation, marginTopPx: 0, marginBottomPx, firstLineIndentPx, hangingIndent, ...(body.smallCaps ? { smallCaps: true } : {}) };
 }
 
 export function resolveHeadingStyle(
@@ -52,6 +104,11 @@ export function resolveHeadingStyle(
   /** The level config to use — a heading style's merged level (see
    *  `headingLevelFor`) — instead of the plain level lookup. */
   levelConfig?: ResolvedHeadingLevelConfig,
+  /** Whether the heading carries a bold run (`**…**`, EF-122): its bold
+   *  faces then take the body's bold weight, or the level's own when it is
+   *  heavier. Without one they stay the level's face, so a heading with no
+   *  bold run keeps the font strings it always had. */
+  hasBold = false,
 ): BlockStyle {
   const dpi = resolved.page.dpi;
   const headingConfig: ResolvedHeadingLevelConfig = levelConfig
@@ -70,13 +127,22 @@ export function resolveHeadingStyle(
   const baseItalic = headingConfig.italic ? 'italic' : 'normal';
   const flipItalic = headingConfig.italic ? 'normal' : 'italic';
   const fontString = buildFontString(headingConfig.fontFamily, fontSizePx, weight, baseItalic);
-  const boldFontString = fontString;
   const italicFontString = buildFontString(headingConfig.fontFamily, fontSizePx, weight, flipItalic);
-  const boldItalicFontString = italicFontString;
+  const boldWeight = hasBold ? Math.max(headingConfig.fontWeight, resolved.bodyText.boldFontWeight) : headingConfig.fontWeight;
+  const boldFontString = boldWeight === headingConfig.fontWeight
+    ? fontString
+    : buildFontString(headingConfig.fontFamily, fontSizePx, boldWeight.toString(), baseItalic);
+  const boldItalicFontString = boldWeight === headingConfig.fontWeight
+    ? italicFontString
+    : buildFontString(headingConfig.fontFamily, fontSizePx, boldWeight.toString(), flipItalic);
   const textAlign = resolved.headings.textAlign;
   const marginTopPx = dimensionToPx(headingConfig.marginTop, dpi, fontSizePx);
   const marginBottomPx = dimensionToPx(headingConfig.marginBottom, dpi, fontSizePx);
-  return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: headingConfig.color.hex, textAlign, hyphenate: false, marginTopPx, marginBottomPx, firstLineIndentPx: 0, hangingIndent: false };
+  // Tracking (EF-83): left unset at zero so untracked headings measure (and
+  // cache) exactly as before.
+  const trackingPx = headingConfig.letterSpacing ? dimensionToPx(headingConfig.letterSpacing, dpi, fontSizePx) : 0;
+  const letterSpacingPx = Number.isFinite(trackingPx) && trackingPx !== 0 ? trackingPx : undefined;
+  return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: headingConfig.color.hex, textAlign, hyphenate: false, marginTopPx, marginBottomPx, firstLineIndentPx: 0, hangingIndent: false, ...(letterSpacingPx !== undefined ? { letterSpacingPx } : {}) };
 }
 
 export function resolveMathDisplayStyle(resolved: ResolvedConfig): BlockStyle {
@@ -102,29 +168,49 @@ export function resolveMathDisplayStyle(resolved: ResolvedConfig): BlockStyle {
   };
 }
 
+/** Block style for Markdown blockquotes (`> …`), from
+ *  `bodyText.blockquote` over the body's face, size, leading, alignment and
+ *  hyphenation: its colour (1.4's grey by default), italics (a `*…*` run
+ *  inside flips back to upright), the side indent every line takes
+ *  (`indentPx`) and the first-line indent measured from it (the body's
+ *  unless the blockquote names one). The body's bold, italic and
+ *  reference colours do not apply, as in postext 1.4. */
 export function resolveBlockquoteStyle(resolved: ResolvedConfig): BlockStyle {
   const dpi = resolved.page.dpi;
-  const fontSizePx = dimensionToPx(resolved.bodyText.fontSize, dpi);
+  const body = resolved.bodyText;
+  // A resolved configuration built by hand may lack it.
+  const quote = body.blockquote ?? DEFAULT_BLOCKQUOTE_CONFIG;
+  const fontSizePx = dimensionToPx(body.fontSize, dpi);
   const lineHeightPx = computeBaselineGrid(resolved);
-  const weight = resolved.bodyText.fontWeight.toString();
-  const fontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, weight, 'italic');
-  const boldWeight = resolved.bodyText.boldFontWeight.toString();
-  const boldFontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, boldWeight, 'italic');
-  // Inside a blockquote (already italic), `*text*` flips back to upright.
-  const italicFontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, weight, 'normal');
-  const boldItalicFontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, boldWeight, 'normal');
-  const textAlign = resolved.bodyText.textAlign;
-  const hyphenate = resolved.bodyText.hyphenation.enabled && textAlign === 'justify';
-  const firstLineIndentPx = dimensionToPx(resolved.bodyText.firstLineIndent, dpi, fontSizePx);
-  const hangingIndent = resolved.bodyText.hangingIndent;
-  return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: '#666666', textAlign, hyphenate, marginTopPx: 0, marginBottomPx: 0, firstLineIndentPx, hangingIndent };
+  const faces = textFaces(body.fontFamily, fontSizePx, body.fontWeight, body.boldFontWeight, quote.italic);
+  const textAlign = body.textAlign;
+  const hyphenation = hyphenationFor(body.hyphenation.enabled, textAlign, resolved, fontSizePx);
+  const firstLineIndentPx = dimensionToPx(quote.firstLineIndent ?? body.firstLineIndent, dpi, fontSizePx);
+  const hangingIndent = body.hangingIndent;
+  const indentPx = dimensionToPx(quote.indent, dpi, fontSizePx);
+  return {
+    ...faces,
+    fontSizePx,
+    lineHeightPx,
+    color: quote.color.hex,
+    textAlign,
+    ...hyphenation,
+    marginTopPx: 0,
+    marginBottomPx: 0,
+    firstLineIndentPx,
+    hangingIndent,
+    ...(Number.isFinite(indentPx) && indentPx > 0 ? { indentPx } : {}),
+    ...(body.smallCaps ? { smallCaps: true } : {}),
+  };
 }
 
 /** Block style for paragraphs inside a `:::paragraphs{style="…"}` container.
- *  Mirrors {@link resolveBodyStyle} (weights, emphasis and reference colours
- *  come from the body text) with the style's own face, size, leading,
- *  alignment and indents. A non-zero `hangingIndent` turns into the
- *  measurer's hanging mode (lines 2+ indented); `spaceBetween` lands in
+ *  Mirrors {@link resolveBodyStyle} (reference colours come from the body
+ *  text; the bold and italic colours too, unless the style sets its own)
+ *  with the style's own face, weights, slant, size, leading, alignment,
+ *  indents and small caps. A non-zero `hangingIndent`
+ *  turns into the measurer's hanging mode (lines 2+ indented), and `indent`
+ *  shifts every line (`indentPx`); `spaceBetween` lands in
  *  `marginBottomPx`, the same slot body `paragraphSpacing` uses, so the gap
  *  flows through pending spacing and the grid snap like any other margin. */
 export function resolveParagraphStyle(
@@ -138,38 +224,34 @@ export function resolveParagraphStyle(
   const lineHeightPx = lh.unit === 'em' || lh.unit === 'rem'
     ? fontSizePx * lh.value
     : dimensionToPx(lh, dpi, fontSizePx);
-  const weight = body.fontWeight.toString();
-  const boldWeight = body.boldFontWeight.toString();
-  const fontString = buildFontString(style.fontFamily, fontSizePx, weight);
-  const boldFontString = buildFontString(style.fontFamily, fontSizePx, boldWeight);
-  const italicFontString = buildFontString(style.fontFamily, fontSizePx, weight, 'italic');
-  const boldItalicFontString = buildFontString(style.fontFamily, fontSizePx, boldWeight, 'italic');
+  const faces = textFaces(style.fontFamily, fontSizePx, style.fontWeight, style.boldFontWeight, style.italic);
   const textAlign = style.textAlign;
-  const hyphenate = style.hyphenation && textAlign === 'justify';
+  const hyphenation = hyphenationFor(style.hyphenation, textAlign, resolved, fontSizePx);
   const hangingIndentPx = dimensionToPx(style.hangingIndent, dpi, fontSizePx);
   const hangingIndent = hangingIndentPx > 0;
   const firstLineIndentPx = hangingIndent
     ? hangingIndentPx
     : dimensionToPx(style.firstLineIndent, dpi, fontSizePx);
   const marginBottomPx = dimensionToPx(style.spaceBetween, dpi, fontSizePx);
+  const indentPx = style.indent ? dimensionToPx(style.indent, dpi, fontSizePx) : 0;
   return {
-    fontString,
-    boldFontString,
-    italicFontString,
-    boldItalicFontString,
+    ...faces,
     fontSizePx,
     lineHeightPx,
     color: style.color.hex,
     boldColor: style.boldColor?.hex ?? body.boldColor?.hex,
-    italicColor: body.italicColor?.hex,
+    italicColor: style.italicColor?.hex ?? body.italicColor?.hex,
     referenceColor: body.referenceColor.hex,
     referenceBold: body.referenceBold,
     referenceItalic: body.referenceItalic,
     textAlign,
-    hyphenate,
+    ...hyphenation,
     marginTopPx: 0,
     marginBottomPx,
     firstLineIndentPx,
     hangingIndent,
+    ...(Number.isFinite(indentPx) && indentPx > 0 ? { indentPx } : {}),
+    ...(style.smallCaps ? { smallCaps: true } : {}),
+    ...(style.textTransform === 'uppercase' ? { uppercase: true } : {}),
   };
 }

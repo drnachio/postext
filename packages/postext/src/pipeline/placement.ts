@@ -31,6 +31,15 @@ export function resetLinePositions(
   }));
 }
 
+/** The layout each page's columns were cut with: the document's, or a
+ *  styled section's own (`deriveSectionGeometryConfig`). */
+const pageLayouts = new WeakMap<VDTPage, ResolvedConfig['layout']>();
+
+/** The layout `page` was created with (see `createPageWithColumns`). */
+export function pageLayoutOf(page: VDTPage): ResolvedConfig['layout'] | undefined {
+  return pageLayouts.get(page);
+}
+
 export function createPageWithColumns(
   pageIndex: number,
   resolved: ResolvedConfig,
@@ -53,6 +62,7 @@ export function createPageWithColumns(
     if (i === sideIndex) col.kind = 'side';
     page.columns.push(col);
   }
+  pageLayouts.set(page, resolved.layout);
   return page;
 }
 
@@ -416,6 +426,9 @@ export function placeAtomicBlock(
   contentArea: BoundingBox,
   pageWidthPx: number,
   pageHeightPx: number,
+  /** Called with each page the block opens, before it is placed there (the
+   *  flow's float flush, see `advanceToNextColumn`). */
+  onNewPage?: (page: VDTPage) => void,
 ): number {
   let col = currentColumn(doc, cursor);
 
@@ -437,7 +450,7 @@ export function placeAtomicBlock(
     const fitsFreshColumn = resolved.layout.fitFiguresToPage && groupHeight <= contentArea.height + FIT_EPS;
     if (col.blocks.length === 0 && col.availableHeight >= 0.5 && !fitsFreshColumn) break;
     if (guard++ >= 8) break;
-    advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+    advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
     col = currentColumn(doc, cursor);
   }
 

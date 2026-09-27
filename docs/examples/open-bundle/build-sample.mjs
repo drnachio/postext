@@ -62,7 +62,9 @@ const config = {
   bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 10.5, unit: 'pt' } },
   headings: {
     fontFamily: 'EB Garamond',
-    levels: [{ level: 1, numberingTemplate: 'Chapter {1}' }],
+    // Two short chapters that run on, with no blank verso between them
+    // (an H1 otherwise opens on a fresh recto).
+    levels: [{ level: 1, numberingTemplate: 'Chapter {1}', breakBefore: { enabled: false } }],
   },
   customFonts: [{ name: 'EB Garamond', variants }],
 };

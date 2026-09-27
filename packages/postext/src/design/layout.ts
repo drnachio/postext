@@ -1,11 +1,11 @@
 import type {
   AnchorEdge,
   ColorValue,
+  DesignTextAlign,
   Dimension,
   ElementBoxStyle,
   ElementPlacement,
   ElementSize,
-  HAlign,
   PageParity,
   PageRole,
   PageRoleFilter,
@@ -20,13 +20,26 @@ import type {
   VAlign,
 } from '../types';
 import { dimensionToPx } from '../units';
-import { createBoundingBox, type BoundingBox } from '../vdt';
+import { resolveDesignLineHeight } from '../defaults/headerFooter';
+import { createBoundingBox, pictureTraits, type BoundingBox } from '../vdt';
 import { buildFontString, measureTextWidth } from '../measure';
-import { hyphenateText } from '../hyphenate';
+import { hyphenateText, withoutSlashJoints } from '../hyphenate';
+import { BREAKING_SPACE_RUNS_SPLIT_RE, NO_BREAK_SPACES, isBreakingSpaceRun } from '../measure/spaces';
 import {
-  resolveDesignPlaceholders,
+  resolveDesignText,
   type DesignPlaceholderContext,
 } from './placeholders';
+import {
+  RichMeasurer,
+  ellipsisEndCut,
+  ellipsisMiddleCut,
+  ellipsisStartCut,
+  parseRichDesignText,
+  singleRichLine,
+  wrapRich,
+  type DesignTextRun,
+  type RichLine,
+} from './richText';
 
 /** A line of wrapped text with its measured width and baseline offset. */
 export interface WrappedLine {
@@ -41,6 +54,13 @@ export interface WrappedLine {
   topY: number;
   /** Line-box height (lineHeight * fontSize). */
   height: number;
+  /** Present when the line mixes fonts (inline marks) or is justified: the
+   *  runs painted one after another from the line's start instead of
+   *  `text`. */
+  runs?: DesignTextRun[];
+  /** A justified line: the px added to each of its word spaces (the runs'
+   *  widths include it). */
+  wordSpacingPx?: number;
 }
 
 export interface ResolvedPadding {
@@ -75,12 +95,18 @@ export interface ResolvedTextPrimitive extends ResolvedElementGeometry {
   fontString: string;
   fontSizePx: number;
   color: string;
-  align: HAlign;
+  align: DesignTextAlign;
   verticalAlign: VAlign;
   /** Whether the element needs a clip rect during rendering. */
   needsClip: boolean;
+  /** The drop cap of a text element (a primitive of its own, after the
+   *  text's): in a heading design its box reserves nothing below the text's
+   *  (EF-108). */
+  dropCap?: boolean;
   /** Tracking after every glyph, in px; 0 when the element sets none. */
   letterSpacingPx: number;
+  /** Outline stroked over the glyphs; absent when the element sets none. */
+  stroke?: { widthPx: number; color: string; hollow?: boolean };
   /** Content box (inside padding) offsets, relative to element x/y. */
   contentX: number;
   contentY: number;
@@ -109,6 +135,9 @@ export interface ResolvedImagePrimitive extends ResolvedElementGeometry {
   fileId: string;
   /** Bitmap format when known (`'png'`, `'jpeg'`, …). */
   format?: string;
+  /** Bitmap or SVG, and an SVG's print master (see `pictureTraits`). */
+  imageKind?: 'bitmap' | 'svg';
+  pdfFileId?: string;
 }
 
 export type ResolvedPrimitive =
@@ -121,6 +150,9 @@ export interface DesignSlotLayout {
   /** Container bbox passed in (absolute page coordinates). */
   container: { x: number; y: number; width: number; height: number };
   primitives: ResolvedPrimitive[];
+  /** Id of the element each primitive comes from (a text element's drop
+   *  cap is a primitive of its own), parallel to `primitives`. */
+  elementIds: string[];
   /** Elements flagged with cyclic anchor graph or dangling references. */
   issues: LayoutIssue[];
 }
@@ -223,13 +255,20 @@ function overrideBoxStyle(style: ElementBoxStyle | undefined, overrides: Record<
 }
 
 /** The element with every palette-linked colour (text colour, rule colour,
- *  box background / border) that a `:::part` overrides taking the part's
+ *  box background / border, outline, drop cap) that a `:::part` overrides taking the part's
  *  value — how a section recolours the running heads and opener bands of
  *  its pages without a second design. */
 export function applyPaletteOverrides(el: ResolvedDesignElement, overrides: Record<string, string>): ResolvedDesignElement {
   switch (el.kind) {
     case 'text':
-      return { ...el, color: overrideColor(el.color, overrides) ?? el.color, box: overrideBoxStyle(el.box, overrides) };
+      return {
+        ...el,
+        color: overrideColor(el.color, overrides) ?? el.color,
+        box: overrideBoxStyle(el.box, overrides),
+        ...(el.stroke ? { stroke: { ...el.stroke, color: overrideColor(el.stroke.color, overrides) } } : {}),
+        // The drop cap's own colour follows the palette too (EF-107).
+        ...(el.dropCap?.color ? { dropCap: { ...el.dropCap, color: overrideColor(el.dropCap.color, overrides) } } : {}),
+      };
     case 'rule':
       return { ...el, color: overrideColor(el.color, overrides) ?? el.color };
     case 'box':
@@ -389,6 +428,30 @@ function resolveElementAnchor(
 /** Width of a run of text in the element's font, tracking included. */
 type TextMeasure = (text: string) => number;
 
+/** How far a text's lines move down from the top of its content box
+ *  (`contentHeight` tall) for `verticalAlign`. Lines taller than the box
+ *  run out on the side the alignment leaves free, as CSS flex alignment
+ *  does: upwards for `'bottom'`, both ways for `'middle'` (EF-138; up to
+ *  postext 1.4 they always hung from the top). */
+export function textVerticalOffset(
+  verticalAlign: VAlign,
+  contentHeight: number,
+  lines: readonly { topY: number; height: number }[],
+): number {
+  const linesHeight = lines.reduce((s, l) => Math.max(s, l.topY + l.height), 0);
+  if (verticalAlign === 'top') return 0;
+  if (verticalAlign === 'bottom') return contentHeight - linesHeight;
+  return (contentHeight - linesHeight) / 2;
+}
+
+/** The tracking a line's measured width carries after its last glyph: the
+ *  element's `letterSpacingPx` when the line holds any text. Canvas, CSS and
+ *  PDF all add it after every character, the last one included; it is
+ *  advance, not ink, so alignment leaves it out (EF-153). */
+export function trailingTracking(text: string, letterSpacingPx: number): number {
+  return letterSpacingPx !== 0 && text.length > 0 ? letterSpacingPx : 0;
+}
+
 function ellipsize(
   text: string,
   measure: TextMeasure,
@@ -411,7 +474,8 @@ function ellipsize(
         hi = mid - 1;
       }
     }
-    return text.slice(0, lo) + ellipsis;
+    // At a word boundary, without the space before the ellipsis (EF-76).
+    return text.slice(0, ellipsisEndCut(text, 0, text.length, lo)) + ellipsis;
   }
   if (mode === 'start') {
     let lo = 0;
@@ -424,7 +488,7 @@ function ellipsize(
         lo = mid + 1;
       }
     }
-    return ellipsis + text.slice(lo);
+    return ellipsis + text.slice(ellipsisStartCut(text, 0, text.length, lo));
   }
   // middle
   let leftLen = 0;
@@ -439,7 +503,8 @@ function ellipsize(
     rightLen++;
     if (leftLen + rightLen >= text.length) break;
   }
-  return text.slice(0, leftLen) + ellipsis + text.slice(text.length - rightLen);
+  const kept = ellipsisMiddleCut(text, 0, text.length, leftLen, rightLen);
+  return text.slice(0, kept.left) + ellipsis + text.slice(text.length - kept.right);
 }
 
 const SOFT_HYPHEN = '\u00AD';
@@ -452,8 +517,15 @@ function breakWordWithHyphenation(
 ): { head: string; tail: string } | undefined {
   // Returns a split of the word where head (with trailing hyphen if hyphenated)
   // fits in maxWidth. Returns undefined if no split is possible.
+  // A group glued by no-break spaces ("Fig. 3") parts at the last of them
+  // that leaves a head that fits, before any syllable or character (EF-66).
+  for (let i = word.length - 2; i >= 1; i--) {
+    if (!NO_BREAK_SPACES.includes(word[i]!) || NO_BREAK_SPACES.includes(word[i - 1]!)) continue;
+    if (measure(word.slice(0, i)) <= maxWidth) return { head: word.slice(0, i), tail: word.slice(i + 1) };
+  }
   if (useHyphenation) {
-    const hy = hyphenateText(word);
+    // Syllables only: the slash joints would ride along into the pieces.
+    const hy = withoutSlashJoints(word, hyphenateText(word));
     if (hy.includes(SOFT_HYPHEN)) {
       const parts = hy.split(SOFT_HYPHEN);
       let best: { head: string; tail: string } | undefined;
@@ -495,11 +567,12 @@ function wrapToWidth(
   const paragraphs = text.split('\n');
   const out: string[] = [];
   for (const para of paragraphs) {
-    const words = para.split(/(\s+)/);
+    // Words part at breaking spaces only: a no-break space glues (EF-66).
+    const words = para.split(BREAKING_SPACE_RUNS_SPLIT_RE);
     let current = '';
     for (const part of words) {
       const test = current + part;
-      if (measure(test) <= maxWidth || (current.length === 0 && /^\s*$/.test(part))) {
+      if (measure(test) <= maxWidth || (current.length === 0 && (part === '' || isBreakingSpaceRun(part)))) {
         current = test;
       } else if (current.length === 0) {
         // Single word doesn't fit — try hyphenation / char break.
@@ -555,42 +628,34 @@ interface TextMeasurement {
   needsClip: boolean;
 }
 
+/** Lines stacked from the top of the content box, `lineHeightPx` apart. */
+function stackLines(rows: { text: string; width: number; runs?: DesignTextRun[] }[], lineHeightPx: number): WrappedLine[] {
+  return rows.map((r, i) => ({
+    text: r.text,
+    width: r.width,
+    topY: i * lineHeightPx,
+    baselineY: i * lineHeightPx + lineHeightPx * 0.8,
+    height: lineHeightPx,
+    ...(r.runs ? { runs: r.runs } : {}),
+  }));
+}
+
+/** Lay out a plain text. A newline always starts a new line; `overflow`
+ *  decides what happens to a line wider than `maxContentWidth`: wrap onto
+ *  more lines, or stay one line that is truncated (`ellipsis-*`) or clipped
+ *  by the renderer (`clip`). */
 function layoutText(
   text: string,
   measure: TextMeasure,
-  fontSizePx: number,
-  lineHeight: number,
+  lineHeightPx: number,
   overflow: TextOverflow,
   /** When not undefined, constrains text width. Otherwise measure natural. */
   maxContentWidth: number | undefined,
   hyphenate: boolean | undefined,
 ): TextMeasurement {
-  const lineHeightPx = fontSizePx * lineHeight;
-  if (maxContentWidth === undefined) {
-    // Single natural line.
-    const width = measure(text);
-    return {
-      lines: [{
-        text,
-        width,
-        topY: 0,
-        baselineY: lineHeightPx * 0.8,
-        height: lineHeightPx,
-      }],
-      contentWidth: width,
-      contentHeight: lineHeightPx,
-      needsClip: false,
-    };
-  }
-  if (overflow === 'wrap') {
+  if (maxContentWidth !== undefined && overflow === 'wrap') {
     const lines = wrapToWidth(text, measure, maxContentWidth, hyphenate ?? false);
-    const wrapped: WrappedLine[] = lines.map((t, i) => ({
-      text: t,
-      width: measure(t),
-      topY: i * lineHeightPx,
-      baselineY: i * lineHeightPx + lineHeightPx * 0.8,
-      height: lineHeightPx,
-    }));
+    const wrapped = stackLines(lines.map((t) => ({ text: t, width: measure(t) })), lineHeightPx);
     const w = wrapped.reduce((m, l) => Math.max(m, l.width), 0);
     return {
       lines: wrapped,
@@ -599,19 +664,16 @@ function layoutText(
       needsClip: false,
     };
   }
-  if (overflow === 'clip') {
-    const natural = measure(text);
+  const rows = text.split('\n');
+  if (maxContentWidth === undefined || overflow === 'clip') {
+    // Natural lines (clipped to the box by the renderer for `clip`).
+    const lines = stackLines(rows.map((t) => ({ text: t, width: measure(t) })), lineHeightPx);
+    const natural = lines.reduce((m, l) => Math.max(m, l.width), 0);
     return {
-      lines: [{
-        text,
-        width: natural,
-        topY: 0,
-        baselineY: lineHeightPx * 0.8,
-        height: lineHeightPx,
-      }],
-      contentWidth: Math.min(natural, maxContentWidth),
-      contentHeight: lineHeightPx,
-      needsClip: true,
+      lines,
+      contentWidth: maxContentWidth === undefined ? natural : Math.min(natural, maxContentWidth),
+      contentHeight: lines.length * lineHeightPx,
+      needsClip: maxContentWidth !== undefined,
     };
   }
   // ellipsis-*
@@ -619,19 +681,43 @@ function layoutText(
     overflow === 'ellipsis-start' ? 'start'
     : overflow === 'ellipsis-middle' ? 'middle'
     : 'end';
-  const visible = ellipsize(text, measure, maxContentWidth, mode);
-  const width = measure(visible);
+  const lines = stackLines(rows.map((t) => {
+    const visible = ellipsize(t, measure, maxContentWidth, mode);
+    return { text: visible, width: measure(visible) };
+  }), lineHeightPx);
   return {
-    lines: [{
-      text: visible,
-      width,
-      topY: 0,
-      baselineY: lineHeightPx * 0.8,
-      height: lineHeightPx,
-    }],
-    contentWidth: width,
-    contentHeight: lineHeightPx,
+    lines,
+    contentWidth: lines.reduce((m, l) => Math.max(m, l.width), 0),
+    contentHeight: lines.length * lineHeightPx,
     needsClip: false,
+  };
+}
+
+/** Lay out a text with inline marks: the same rules as `layoutText`, with
+ *  every line built from runs. */
+function layoutRichText(
+  m: RichMeasurer,
+  lineHeightPx: number,
+  overflow: TextOverflow,
+  maxContentWidth: number,
+  hyphenate: boolean | undefined,
+): TextMeasurement {
+  const rows: RichLine[] = [];
+  let start = 0;
+  const text = m.rt.text;
+  for (const row of text.split('\n')) {
+    const end = start + row.length;
+    if (overflow === 'wrap') rows.push(...wrapRich(m, start, end, () => maxContentWidth, hyphenate ?? false));
+    else rows.push(singleRichLine(m, start, end, maxContentWidth, overflow));
+    start = end + 1;
+  }
+  const lines = stackLines(rows, lineHeightPx);
+  const natural = lines.reduce((mx, l) => Math.max(mx, l.width), 0);
+  return {
+    lines,
+    contentWidth: overflow === 'clip' ? Math.min(natural, maxContentWidth) : natural,
+    contentHeight: lines.length * lineHeightPx,
+    needsClip: overflow === 'clip',
   };
 }
 
@@ -736,11 +822,13 @@ export function layoutDesignSlot(
   // order is still the array order (first = back), restored below.
   const ordered = topoSort(candidates, issues);
 
-  // Precompute: resolved text contents (placeholder-expanded).
+  // Precompute: resolved text contents (placeholder-expanded), with the
+  // `\n` escape of the template and of attribute values turned into a
+  // newline before any case transform (which would make it `\N`).
   const textContent = new Map<string, string>();
   for (const el of ordered) {
     if (el.kind === 'text') {
-      const { text } = resolveDesignPlaceholders(el.content, context.placeholders);
+      const text = resolveDesignText(el.content, context.placeholders);
       textContent.set(el.id, el.textTransform === 'uppercase' ? text.toLocaleUpperCase() : text);
     }
   }
@@ -819,28 +907,55 @@ export function layoutDesignSlot(
     }
   }
 
-  const primitives = candidates.flatMap((el) => primsByElement.get(el) ?? []);
+  const primitives: ResolvedPrimitive[] = [];
+  const elementIds: string[] = [];
+  for (const el of candidates) {
+    for (const prim of primsByElement.get(el) ?? []) {
+      primitives.push(prim);
+      elementIds.push(el.id);
+    }
+  }
 
   return {
     container: context.container,
     primitives,
+    elementIds,
     issues,
   };
 }
 
+/** A syllable break of `word` whose head, with its hyphen, still fits after
+ *  `line` in `maxWidth`: the longest such head, or undefined. Used to fill
+ *  a justified line (EF-109). */
+function syllableFill(line: string, word: string, measure: TextMeasure, maxWidth: number): { head: string; tail: string } | undefined {
+  const hy = withoutSlashJoints(word, hyphenateText(word));
+  if (!hy.includes(SOFT_HYPHEN) || hy.split(SOFT_HYPHEN).join('') !== word) return undefined;
+  const parts = hy.split(SOFT_HYPHEN);
+  let best: { head: string; tail: string } | undefined;
+  for (let k = 1; k < parts.length; k++) {
+    const head = `${parts.slice(0, k).join('')}-`;
+    if (measure(line + head) > maxWidth) break;
+    best = { head, tail: parts.slice(k).join('') };
+  }
+  return best;
+}
+
 /** Greedy wrap of one paragraph where every line may have its own width
- *  (`widthFor(lineIndex)`), preserving existing line breaks. */
-function wrapWithWidths(text: string, measure: TextMeasure, widthFor: (i: number) => number, hyphenate: boolean, startLine = 0): string[] {
+ *  (`widthFor(lineIndex)`), preserving existing line breaks. With `fill`
+ *  (a justified text that hyphenates), a word that does not fit the rest
+ *  of a line is cut at its last syllable break that does. */
+function wrapWithWidths(text: string, measure: TextMeasure, widthFor: (i: number) => number, hyphenate: boolean, startLine = 0, fill = false): string[] {
   const out: string[] = [];
   let i = startLine;
   for (const para of text.split('\n')) {
-    const words = para.split(/(\s+)/);
+    // Words part at breaking spaces only: a no-break space glues (EF-66).
+    const words = para.split(BREAKING_SPACE_RUNS_SPLIT_RE);
     let current = '';
     let maxWidth = Math.max(1, widthFor(i));
     const flush = () => { out.push(current); current = ''; i++; maxWidth = Math.max(1, widthFor(i)); };
     for (const part of words) {
       const test = current + part;
-      if (measure(test) <= maxWidth || (current.length === 0 && /^\s*$/.test(part))) {
+      if (measure(test) <= maxWidth || (current.length === 0 && (part === '' || isBreakingSpaceRun(part)))) {
         current = test;
       } else if (current.length === 0) {
         let remaining = part;
@@ -852,8 +967,16 @@ function wrapWithWidths(text: string, measure: TextMeasure, widthFor: (i: number
           remaining = split.tail;
         }
       } else {
-        flush();
-        current = part.trimStart();
+        const word = part.trimStart();
+        const cut = fill && hyphenate ? syllableFill(current, word, measure, maxWidth) : undefined;
+        if (cut) {
+          current += cut.head;
+          flush();
+          current = cut.tail;
+        } else {
+          flush();
+          current = word;
+        }
         if (measure(current) > maxWidth) {
           let remaining = current; current = '';
           while (remaining.length > 0) {
@@ -873,24 +996,114 @@ function wrapWithWidths(text: string, measure: TextMeasure, widthFor: (i: number
   return out;
 }
 
+/** The share of a letter's size its capitals take, for a drop cap's
+ *  default size (the faces' own cap heights are not measured). */
+const CAP_HEIGHT_RATIO = 0.72;
+
+/** The spaces a justified line stretches: those CSS `word-spacing` widens
+ *  (U+0020 and the no-break space U+00A0). */
+const STRETCHABLE_SPACE_RE = /[ \u00A0]/g;
+/** A line cut after each run of stretchable spaces. */
+const WORD_WITH_SPACES_RE = /[^ \u00A0]+[ \u00A0]*|[ \u00A0]+/g;
+
+function stretchableSpaces(text: string): number {
+  return text.match(STRETCHABLE_SPACE_RE)?.length ?? 0;
+}
+
+/**
+ * A wrapped line justified to `width` (EF-109): its word spaces stretched
+ * by the same amount so the line ends at the right edge of its room. The
+ * line is cut into runs after every space, each run's width taking its
+ * spaces' share of the stretch, so the canvas and PDF paint it by advancing
+ * run by run; `wordSpacingPx` gives the HTML its `word-spacing`. Runs of
+ * inline marks are cut the same way, keeping their fonts; a subscript and
+ * a superscript set over each other are left whole. A line with no space
+ * to stretch, or already as wide as its room, is returned as it is (its
+ * trailing spaces dropped).
+ */
+function justifyLine(
+  line: { text: string; width: number; runs?: DesignTextRun[] },
+  width: number,
+  measure: TextMeasure,
+  measureIn: (text: string, font: string) => number,
+  font: string,
+): { text: string; width: number; runs?: DesignTextRun[]; wordSpacingPx?: number } {
+  // Trailing spaces (a plain wrapped line may keep them) are not stretched.
+  let runs = line.runs;
+  let text = line.text;
+  let natural = line.width;
+  if (!runs && /[ \u00A0]+$/.test(text)) {
+    text = text.replace(/[ \u00A0]+$/, '');
+    natural = measure(text);
+  }
+  const pieces: DesignTextRun[] = runs ?? [{ text, fontString: font, width: natural }];
+  const splittable = (i: number): boolean => !pieces[i]!.stacked && !pieces[i - 1]?.stacked;
+  let spaces = 0;
+  pieces.forEach((r, i) => { if (splittable(i)) spaces += stretchableSpaces(r.text); });
+  const room = width - natural;
+  if (spaces === 0 || room <= 0.01) return runs ? line : { text, width: natural };
+  const extra = room / spaces;
+  const out: DesignTextRun[] = [];
+  pieces.forEach((r, i) => {
+    if (!splittable(i)) { out.push(r); return; }
+    const words = r.text.match(WORD_WITH_SPACES_RE) ?? [r.text];
+    let sum = 0;
+    words.forEach((w, k) => {
+      // The last piece keeps what kerning across the cuts leaves, so the
+      // run as a whole advances as far as it did.
+      const own = k < words.length - 1 ? measureIn(w, r.fontString) : r.width - sum;
+      sum += own;
+      out.push({ ...r, text: w, width: own + extra * stretchableSpaces(w) });
+    });
+  });
+  runs = out;
+  return { text, width: natural + room, runs, wordSpacingPx: extra };
+}
+
+/** Distance between the baselines of a design text: its absolute leading
+ *  (`lineHeightLength`), else its multiplier times the font size. Read
+ *  through `resolveDesignLineHeight` as well, so a slot built by hand (not
+ *  resolved) that carries a {@link Dimension} or a malformed value still
+ *  lays out — at the default leading when unusable, never NaN. */
+function designLineHeightPx(el: ResolvedDesignTextElement, fontSizePx: number, dpi: number): number {
+  const leading = resolveDesignLineHeight(el.lineHeightLength ?? el.lineHeight, el.fontSize);
+  const px = leading.lineHeightLength ? dimPx(leading.lineHeightLength, dpi) : fontSizePx * leading.lineHeight;
+  return Number.isFinite(px) ? px : 0;
+}
+
 function layoutTextElement(
   el: ResolvedDesignTextElement,
-  text: string,
+  resolvedText: string,
   pin: AnchorResult,
   container: AnchorReference,
   dpi: number,
   anchoredToElement: boolean,
 ): ResolvedTextPrimitive[] {
+  let text = resolvedText;
   const fontSizePx = dimPx(el.fontSize, dpi);
   const weight = el.fontWeight === 400 ? 'normal' : String(el.fontWeight);
   const style = el.italic ? 'italic' : 'normal';
   const fontString = buildFontString(el.fontFamily, fontSizePx, weight, style);
   // Tracking advances every character (spaces included) by `letterSpacingPx`,
   // exactly as canvas `letterSpacing` / CSS `letter-spacing` / PDF `Tc` do.
-  const letterSpacingPx = Math.max(0, dimPx(el.letterSpacing, dpi, fontSizePx));
-  const measure: TextMeasure = (t) => measureTextWidth(t, fontString) + letterSpacingPx * t.length;
+  // Negative tracking tightens a display title (EF-82); a width never drops
+  // below zero, however tight.
+  const trackingPx = dimPx(el.letterSpacing, dpi, fontSizePx);
+  const letterSpacingPx = Number.isFinite(trackingPx) ? trackingPx : 0;
+  const measure: TextMeasure = (t) => Math.max(0, measureTextWidth(t, fontString) + letterSpacingPx * t.length);
   const box = resolveBox(el.box, dpi, fontSizePx);
   const padding: ResolvedPadding = box?.padding ?? { top: 0, right: 0, bottom: 0, left: 0 };
+  // Inline marks: a text that carries any is laid out in runs; one that
+  // carries none (only escapes) is plain text with its markers resolved.
+  const rich = el.inlineMarks
+    ? parseRichDesignText(text, { family: el.fontFamily, sizePx: fontSizePx, weight: el.fontWeight, italic: el.italic })
+    : undefined;
+  const richM = rich?.hasMarks ? new RichMeasurer(rich, letterSpacingPx) : undefined;
+  if (rich && !rich.hasMarks) text = rich.text;
+  const strokeWidthPx = el.stroke ? Math.max(0, dimPx(el.stroke.width, dpi, fontSizePx)) : 0;
+  const stroke = el.stroke && strokeWidthPx > 0
+    ? { widthPx: strokeWidthPx, color: colorHex(el.stroke.color ?? el.color), ...(el.stroke.hollow ? { hollow: true } : {}) }
+    : undefined;
 
   const widthSize = resolveFixedSize(el.placement.size?.width, dpi, fontSizePx);
   const heightSize = resolveFixedSize(el.placement.size?.height, dpi, fontSizePx);
@@ -920,33 +1133,62 @@ function layoutTextElement(
     contentMax = Math.max(0, elementWidth - padding.left - padding.right);
   }
 
-  // Paragraphs (a newline, or the `\n` escape of an attribute value) with
-  // a first-line indent, and a drop cap on the first: wrapping text only.
-  const lineHeightPx = fontSizePx * el.lineHeight;
+  // Paragraphs (a newline, which the `\n` escape of the template or of an
+  // attribute value has become) with a first-line indent, and a drop cap on
+  // the first: wrapping text only.
+  const lineHeightPx = designLineHeightPx(el, fontSizePx, dpi);
   const paraIndentPx = Math.max(0, dimPx(el.paragraphIndent, dpi, fontSizePx));
-  const normalised = text.replace(/\\n/g, '\n');
-  const paragraphs = normalised.split(/\n+/).map((p) => p.trim()).filter((p) => p.length > 0);
-  const dropCap = el.dropCap && el.overflow === 'wrap' && contentMax !== undefined && paragraphs.length > 0 && paragraphs[0]!.length > 1
+  // Paragraph ranges of the text laid out (the plain text of a marked one),
+  // each trimmed of surrounding whitespace; empty ones are dropped, so
+  // consecutive newlines count as one.
+  const source = richM ? richM.rt.text : text;
+  const paraRanges: [number, number][] = [];
+  let rowStart = 0;
+  for (const row of source.split('\n')) {
+    let a = rowStart;
+    let b = rowStart + row.length;
+    while (a < b && /\s/.test(source[a]!)) a++;
+    while (b > a && /\s/.test(source[b - 1]!)) b--;
+    if (b > a) paraRanges.push([a, b]);
+    rowStart += row.length + 1;
+  }
+  const paragraphs = paraRanges.map(([a, b]) => source.slice(a, b));
+  // A drop cap makes the text wrap whatever its `overflow` (EF-106): the
+  // letter spans lines, so a single truncated line cannot hold it.
+  const wraps = el.overflow === 'wrap' || el.dropCap !== undefined;
+  const justify = el.align === 'justify' && wraps;
+  const dropCap = el.dropCap && wraps && contentMax !== undefined && paragraphs.length > 0 && paragraphs[0]!.length > 1
     ? el.dropCap
     : undefined;
   let m: TextMeasurement;
   let cap: { text: string; font: string; fontPx: number; width: number; lines: number; color: string } | undefined;
-  if ((dropCap || (paraIndentPx > 0 && paragraphs.length > 1)) && el.overflow === 'wrap' && contentMax !== undefined) {
+  if ((dropCap || justify || (paraIndentPx > 0 && paragraphs.length > 1)) && wraps && contentMax !== undefined) {
     const maxW = contentMax;
     const wrapped: WrappedLine[] = [];
     let capLines = 0;
     let capRoom = 0;
     if (dropCap) {
       capLines = Math.max(1, Math.round(dropCap.lines ?? 2));
-      const capFontPx = dropCap.fontSize ? dimPx(dropCap.fontSize, dpi, fontSizePx) : (capLines * lineHeightPx) / 0.72;
+      // The letter stands on the baseline of the last line it spans; by
+      // default its capitals reach those of the first line: the text's cap
+      // height plus `lines - 1` line spacings, capitals being 0.72 of the
+      // size (EF-127).
+      const capFontPx = dropCap.fontSize
+        ? dimPx(dropCap.fontSize, dpi, fontSizePx)
+        : fontSizePx + ((capLines - 1) * lineHeightPx) / CAP_HEIGHT_RATIO;
       const capWeight = (dropCap.fontWeight ?? el.fontWeight) === 400 ? 'normal' : String(dropCap.fontWeight ?? el.fontWeight);
       const capFont = buildFontString(dropCap.fontFamily ?? el.fontFamily, capFontPx, capWeight, 'normal');
       const letter = paragraphs[0]!.slice(0, 1);
       paragraphs[0] = paragraphs[0]!.slice(1).trimStart();
+      paraRanges[0]![0] = paraRanges[0]![1] - paragraphs[0].length;
       const capW = measureTextWidth(letter, capFont);
       capRoom = capW + Math.max(0, dimPx(dropCap.gap, dpi, fontSizePx));
       cap = { text: letter, font: capFont, fontPx: capFontPx, width: capW, lines: capLines, color: colorHex(dropCap.color ?? el.color) };
     }
+    // Justified lines fill their room by stretching their word spaces, and
+    // a word that does not fit may be cut at a syllable to fill (EF-109).
+    const fill = justify && (el.hyphenate ?? false);
+    const measureIn = (t: string, font: string): number => Math.max(0, measureTextWidth(t, font) + letterSpacingPx * t.length);
     let lineNo = 0;
     paragraphs.forEach((para, p) => {
       const offsetOf = (i: number): number => {
@@ -954,27 +1196,45 @@ function layoutTextElement(
         if (p > 0 && i === 0) return paraIndentPx;
         return 0;
       };
-      const local: number[] = [];
-      const lines = wrapWithWidths(para, measure, (i) => maxW - offsetOf(i), el.hyphenate ?? false);
-      lines.forEach((t, i) => {
-        local.push(i);
+      const lines: { text: string; width: number; runs?: DesignTextRun[]; wordSpacingPx?: number }[] = richM
+        ? wrapRich(richM, paraRanges[p]![0], paraRanges[p]![1], (i) => maxW - offsetOf(i), el.hyphenate ?? false, fill)
+        : wrapWithWidths(para, measure, (i) => maxW - offsetOf(i), el.hyphenate ?? false, 0, fill).map((t) => ({ text: t, width: measure(t) }));
+      lines.forEach((l, i) => {
+        // The last line of a paragraph is set flush left. The others are
+        // stretched until their last glyph ends on the edge: the tracking
+        // after it runs past (EF-153).
+        const line = justify && i < lines.length - 1
+          ? justifyLine(l, maxW - offsetOf(i) + trailingTracking(l.text.trimEnd(), letterSpacingPx), measure, measureIn, fontString)
+          : l;
         wrapped.push({
-          text: t,
-          width: measure(t),
+          text: line.text,
+          width: line.width,
           xOffset: offsetOf(i),
           topY: lineNo * lineHeightPx,
           baselineY: lineNo * lineHeightPx + lineHeightPx * 0.8,
           height: lineHeightPx,
+          ...(line.runs ? { runs: line.runs } : {}),
+          ...(line.wordSpacingPx !== undefined ? { wordSpacingPx: line.wordSpacingPx } : {}),
         });
         lineNo++;
       });
     });
     const w = wrapped.reduce((mx, l) => Math.max(mx, l.width + (l.xOffset ?? 0)), 0);
     m = { lines: wrapped, contentWidth: w, contentHeight: wrapped.length * lineHeightPx, needsClip: false };
+  } else if (richM && contentMax !== undefined) {
+    m = layoutRichText(richM, lineHeightPx, el.overflow, contentMax, el.hyphenate);
   } else {
-    m = layoutText(text, measure, fontSizePx, el.lineHeight, el.overflow, contentMax, el.hyphenate);
+    m = layoutText(text, measure, lineHeightPx, el.overflow, contentMax, el.hyphenate);
   }
-  const contentWidth = m.contentWidth;
+  // The tracking after a line's last glyph is advance, not ink: a box that
+  // shrink-wraps its text leaves it out (EF-153), as the alignment of each
+  // line does (`textPrimitiveToBlock`), so a tracked title anchored to a
+  // corner or a centre sits where its letters are.
+  let contentWidth = m.contentWidth;
+  if (letterSpacingPx !== 0) {
+    const inkWidth = m.lines.reduce((mx, l) => Math.max(mx, (l.xOffset ?? 0) + Math.max(0, l.width - trailingTracking(l.text, letterSpacingPx))), 0);
+    contentWidth = m.needsClip && contentMax !== undefined ? Math.min(inkWidth, contentMax) : inkWidth;
+  }
   if (elementWidth === undefined) elementWidth = contentWidth + padding.left + padding.right;
   if (clampToContainer) {
     const maxW = fillToContainerEdge(pin.anchorX, pin.pinX, container);
@@ -998,7 +1258,7 @@ function layoutTextElement(
   // right-align. This keeps the first character of every wrapped line at the
   // same vertical gutter as the anchor, matching user intent.
   const autoWidth = el.placement.size?.width === undefined || el.placement.size?.width === 'auto';
-  const effectiveAlign: HAlign = anchoredToElement && autoWidth
+  const effectiveAlign: DesignTextAlign = anchoredToElement && autoWidth
     ? (pin.pinX === 'start' ? 'left' : pin.pinX === 'end' ? 'right' : el.align)
     : el.align;
 
@@ -1022,17 +1282,20 @@ function layoutTextElement(
     contentWidth: Math.max(0, elementWidth - padding.left - padding.right),
     contentHeight: Math.max(0, elementHeight - padding.top - padding.bottom),
     box,
+    ...(stroke ? { stroke } : {}),
   };
   if (!cap) return [main];
-  // The drop cap: its baseline on the baseline of the last line it spans.
+  // The drop cap: its baseline on the baseline of the last line it spans,
+  // wherever `verticalAlign` moves those lines in the box.
   const capLineH = cap.fontPx * 1.2;
   const anchorLine = m.lines[Math.min(cap.lines, m.lines.length) - 1];
   const targetBaseline = anchorLine ? anchorLine.baselineY : lineHeightPx * 0.8;
+  const linesOffset = textVerticalOffset(el.verticalAlign, main.contentHeight, m.lines);
   const capPrim: ResolvedTextPrimitive = {
     kind: 'text',
     id: `${el.id}-dropcap`,
     x: x + padding.left,
-    y: y + padding.top + targetBaseline - capLineH * 0.8,
+    y: y + padding.top + linesOffset + targetBaseline - capLineH * 0.8,
     width: cap.width,
     height: capLineH,
     lines: [{ text: cap.text, width: cap.width, topY: 0, baselineY: capLineH * 0.8, height: capLineH }],
@@ -1042,11 +1305,14 @@ function layoutTextElement(
     align: 'left',
     verticalAlign: 'top',
     needsClip: false,
+    dropCap: true,
     letterSpacingPx: 0,
     contentX: 0,
     contentY: 0,
     contentWidth: cap.width,
     contentHeight: capLineH,
+    // The outline takes the cap's own colour unless it sets one.
+    ...(stroke ? { stroke: { ...stroke, color: el.stroke?.color ? stroke.color : cap.color } } : {}),
   };
   return [main, capPrim];
 }
@@ -1139,6 +1405,7 @@ function layoutImageElement(
     height: h,
     fileId,
     ...(resource?.bitmap?.format ? { format: resource.bitmap.format } : {}),
+    ...pictureTraits(resource, fileId),
   };
 }
 

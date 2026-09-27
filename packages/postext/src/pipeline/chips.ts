@@ -42,6 +42,9 @@ export function resolveChipBox(style: ResolvedChipStyleConfig, dpi: number, base
     borderRadiusPx: px(style.borderRadius),
     paddingXPx: px(style.paddingX),
     paddingYPx: px(style.paddingY),
+    // Only when set, so a box without them keeps its cache key.
+    ...(style.paddingTop ? { paddingTopPx: px(style.paddingTop) } : {}),
+    ...(style.paddingBottom ? { paddingBottomPx: px(style.paddingBottom) } : {}),
     gapPx: px(style.gap),
   };
 }

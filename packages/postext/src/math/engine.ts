@@ -1,4 +1,5 @@
 import type { MathRender, MathPath, MathViewBox } from './types';
+import type { MathJaxConverter } from './mathjax';
 import {
   IDENTITY,
   multiply,
@@ -11,23 +12,10 @@ import {
 // MathJax singleton — lazy init, liteAdaptor so it runs in any environment
 // ---------------------------------------------------------------------------
 
-type MJHandle = {
-  document: {
-    convert: (tex: string, options: {
-      display: boolean;
-      em: number;
-      ex: number;
-      containerWidth: number;
-    }) => unknown;
-  };
-  adaptor: {
-    outerHTML: (node: unknown) => string;
-  };
-};
-
-let handle: MJHandle | null = null;
+let handle: MathJaxConverter | null = null;
 let initPromise: Promise<void> | null = null;
 const initListeners = new Set<() => void>();
+let warnedWithoutEngine = false;
 
 export function isMathReady(): boolean {
   return handle !== null;
@@ -42,44 +30,72 @@ export function onMathReady(fn: () => void): () => void {
   return () => { initListeners.delete(fn); };
 }
 
+/**
+ * Load MathJax and start the TeX → SVG converter. Await it before laying
+ * out a document with `$…$` / `$$…$$` on the main thread (the layout worker
+ * calls it itself): until it resolves, every formula is set as a grey
+ * placeholder box. Idempotent; a failed start can be retried.
+ */
 export async function initMathEngine(): Promise<void> {
   if (handle !== null) return;
   if (initPromise) return initPromise;
   initPromise = (async () => {
-    // Dynamically import so the ~1 MB MathJax bundle is only paid for on
-    // documents that actually contain math.
-    const [{ mathjax }, { TeX }, { SVG }, { liteAdaptor }, { RegisterHTMLHandler }, allPackages] = await Promise.all([
-      import('mathjax-full/js/mathjax.js'),
-      import('mathjax-full/js/input/tex.js'),
-      import('mathjax-full/js/output/svg.js'),
-      import('mathjax-full/js/adaptors/liteAdaptor.js'),
-      import('mathjax-full/js/handlers/html.js'),
-      import('mathjax-full/js/input/tex/AllPackages.js'),
-    ]);
-    const adaptor = liteAdaptor();
-    RegisterHTMLHandler(adaptor);
-    const tex = new TeX({ packages: allPackages.AllPackages });
-    const svg = new SVG({ fontCache: 'local', exFactor: 0.5 });
-    const document = mathjax.document('', { InputJax: tex, OutputJax: svg });
-    handle = { document, adaptor } as unknown as MJHandle;
+    // Dynamically import so the ~1.8 MB MathJax bundle is only paid for on
+    // documents that actually contain math. The module holds every MathJax
+    // piece the engine uses and ships pre-bundled (see ./mathjax.ts).
+    try {
+      const { createMathJaxConverter } = await import('./mathjax');
+      handle = createMathJaxConverter();
+    } catch (err) {
+      initPromise = null;
+      const reason = err instanceof Error ? err.message : String(err);
+      throw new Error(`[postext] the math engine failed to start: ${reason}`, { cause: err });
+    }
     for (const fn of initListeners) fn();
     initListeners.clear();
   })();
   return initPromise;
 }
 
+/**
+ * Called when the layout sets a formula with no engine running, so it gets a
+ * grey placeholder box. Warns once, and only when nobody asked for the
+ * engine: a host that lays out now and again from `onMathReady` has
+ * `initMathEngine` in flight and expects the placeholders.
+ */
+export function noteMathWithoutEngine(): void {
+  if (handle !== null || initPromise !== null || warnedWithoutEngine) return;
+  warnedWithoutEngine = true;
+  console.warn(
+    '[postext] This document contains math, but the math engine is not running, so every formula is laid out as a grey placeholder box. '
+    + 'Call `await initMathEngine()` before `buildDocument` (the layout worker does it for you).',
+  );
+}
+
 // ---------------------------------------------------------------------------
 // LRU cache
 // ---------------------------------------------------------------------------
 
+/** A formula whose box follows its measure (an equation number, `\tag`):
+ *  MathJax's markup is converted once and sized per measure. */
+interface FullWidthEntry {
+  kind: 'fullWidth';
+  svgOnly: string;
+  error?: string;
+  exPx: number;
+  byWidth: Map<number, MathRender>;
+}
+
 const MAX_CACHE = 512;
-const cache = new Map<string, MathRender>();
+/** Measures kept per full-width formula (a book sets them in a handful). */
+const MAX_WIDTHS = 8;
+const cache = new Map<string, MathRender | FullWidthEntry>();
 
 function cacheKey(tex: string, displayMode: boolean, fontSizePx: number, lineBoxPx: number): string {
   return `${displayMode ? 'D' : 'I'}|${fontSizePx}|${lineBoxPx}|${tex}`;
 }
 
-function cacheGet(key: string): MathRender | undefined {
+function cacheGet(key: string): MathRender | FullWidthEntry | undefined {
   const v = cache.get(key);
   if (v) {
     cache.delete(key);
@@ -88,7 +104,7 @@ function cacheGet(key: string): MathRender | undefined {
   return v;
 }
 
-function cacheSet(key: string, v: MathRender): void {
+function cacheSet(key: string, v: MathRender | FullWidthEntry): void {
   if (cache.has(key)) cache.delete(key);
   cache.set(key, v);
   if (cache.size > MAX_CACHE) {
@@ -103,23 +119,76 @@ function cacheSet(key: string, v: MathRender): void {
 
 interface ParsedSvg {
   viewBox: MathViewBox;
-  widthEx: number;
-  heightEx: number;
-  verticalAlignEx: number;
+  widthPx: number;
+  heightPx: number;
+  /** Below the baseline, in px (MathJax's negated `vertical-align`). */
+  depthPx: number;
   paths: MathPath[];
-  defs: Map<string, string>;
+  /** MathJax's `<text>` elements (characters outside its TeX fonts, such as
+   *  the "ó" of `\text{ecuación}`), re-serialised with their whole
+   *  transform in the root's user space. Only the flattened HTML markup of a
+   *  full-width formula uses them: canvas and PDF paint the paths. */
+  texts: string[];
 }
+
+const EX_RE = /^\s*(-?\d*\.?\d+)ex\s*$/;
+const PERCENT_RE = /^\s*(-?\d*\.?\d+)%\s*$/;
 
 function parseExValue(attr: string | undefined): number | null {
   if (!attr) return null;
-  const m = /(-?\d*\.?\d+)ex/.exec(attr);
+  const m = EX_RE.exec(attr);
   return m ? Number(m[1]) : null;
 }
 
-function parseStyleVerticalAlign(style: string | undefined): number {
-  if (!style) return 0;
-  const m = /vertical-align:\s*(-?\d*\.?\d+)ex/.exec(style);
-  return m ? Number(m[1]) : 0;
+function parseStyleEx(style: string | undefined, property: string): number | null {
+  if (!style) return null;
+  const m = new RegExp(`(?:^|;)\\s*${property}:\\s*(-?\\d*\\.?\\d+)ex`).exec(style);
+  return m ? Number(m[1]) : null;
+}
+
+/** A length of a nested `<svg>`'s viewport, in the user units of the
+ *  viewport it sits in (`ref` for a percentage); undefined when absent or
+ *  in a unit the flattener does not follow. */
+function viewportLength(attr: string | undefined, ref: number): number | undefined {
+  if (attr === undefined) return undefined;
+  const pct = PERCENT_RE.exec(attr);
+  if (pct) return (Number(pct[1]) / 100) * ref;
+  const m = /^\s*(-?\d*\.?\d+)(px)?\s*$/.exec(attr);
+  return m ? Number(m[1]) : undefined;
+}
+
+/** The transform a nested `<svg>` establishes: its viewBox fitted into its
+ *  viewport under `preserveAspectRatio` (SVG 1.1 §7.8). MathJax sets the
+ *  equation and its number in such viewports — a 1-unit-wide viewBox
+ *  centred (`xMidYMid`) or pushed to the right edge (`xMaxYMid`) of a
+ *  full-width box. */
+function viewportMatrix(
+  viewBox: readonly number[],
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  preserveAspectRatio: string | undefined,
+): AffineMatrix {
+  const [vx = 0, vy = 0, vw = 0, vh = 0] = viewBox;
+  if (!(vw > 0) || !(vh > 0)) return [1, 0, 0, 1, x, y];
+  const [align = 'xMidYMid', meetOrSlice = 'meet'] = (preserveAspectRatio ?? '').trim().split(/\s+/).filter(Boolean);
+  let sx = width / vw;
+  let sy = height / vh;
+  let tx = x;
+  let ty = y;
+  if (align !== 'none') {
+    const s = meetOrSlice === 'slice' ? Math.max(sx, sy) : Math.min(sx, sy);
+    sx = s;
+    sy = s;
+    const ax = align.slice(0, 4);
+    const ay = align.slice(4, 8);
+    if (ax === 'xMid') tx += (width - vw * s) / 2;
+    else if (ax === 'xMax') tx += width - vw * s;
+    if (ay === 'YMid') ty += (height - vh * s) / 2;
+    else if (ay === 'YMax') ty += height - vh * s;
+  }
+  return [sx, 0, 0, sy, tx - vx * sx, ty - vy * sy];
 }
 
 const ATTR_RE = /(\w[\w:-]*)\s*=\s*"([^"]*)"/g;
@@ -133,18 +202,51 @@ function readAttrs(tagText: string): Record<string, string> {
   return out;
 }
 
-// Walk SVG string as a stream of tokens and accumulate a CTM per leaf.
-// Emits `<path>` and `<use>` leaves with their resolved transform.
-function parseSvg(svgMarkup: string): ParsedSvg | null {
+/** Whether MathJax sized the formula's box by its container (an equation
+ *  with a number: `width="100%"`) instead of in `ex`. */
+function isFullWidthSvg(svgMarkup: string): boolean {
+  const svgOpen = /<svg\b([^>]*)>/.exec(svgMarkup);
+  return !!svgOpen && PERCENT_RE.test(readAttrs(svgOpen[1]!)['width'] ?? '');
+}
+
+/**
+ * Flatten MathJax's SVG into paths and size it in px. `exPx` is one `ex`
+ * of MathJax's sizes in px — the TeX font's x-height at the formula's
+ * size. A full-width box (an equation with a number) is set
+ * `measurePx` wide (never narrower than MathJax's `min-width`): its paths
+ * come out in px of that box, the equation and its number placed where a
+ * browser would draw them. Returns null when the markup has no `<svg>`, or
+ * a size in a form the flattener does not read.
+ */
+function parseSvg(svgMarkup: string, exPx: number, measurePx: number | undefined): ParsedSvg | null {
   // Root <svg>
   const svgOpen = /<svg\b([^>]*)>/.exec(svgMarkup);
   if (!svgOpen) return null;
   const rootAttrs = readAttrs(svgOpen[1]!);
-  const vb = rootAttrs['viewBox']?.split(/\s+/).map(Number) ?? [0, 0, 0, 0];
-  const viewBox: MathViewBox = { minX: vb[0]!, minY: vb[1]!, width: vb[2]!, height: vb[3]! };
-  const widthEx = parseExValue(rootAttrs['width']) ?? 0;
+  const widthAttr = rootAttrs['width'];
   const heightEx = parseExValue(rootAttrs['height']) ?? 0;
-  const verticalAlignEx = parseStyleVerticalAlign(rootAttrs['style']);
+  const depthPx = -(parseStyleEx(rootAttrs['style'], 'vertical-align') ?? 0) * exPx;
+  const heightPx = heightEx * exPx;
+
+  let viewBox: MathViewBox;
+  let widthPx: number;
+  const fullWidth = PERCENT_RE.exec(widthAttr ?? '');
+  if (fullWidth) {
+    // No viewBox: user units are px of the box, whose width follows the
+    // measure (MathJax scales its internal units down to px itself).
+    const minWidthPx = (parseStyleEx(rootAttrs['style'], 'min-width') ?? 0) * exPx;
+    const share = (Number(fullWidth[1]) / 100) * (measurePx ?? 0);
+    widthPx = Math.max(minWidthPx, share);
+    viewBox = { minX: 0, minY: 0, width: widthPx, height: heightPx };
+  } else {
+    const widthEx = parseExValue(widthAttr);
+    // An empty formula is `width="0"`; anything else unread would set a
+    // formula of no width (it would vanish from the page).
+    if (widthEx === null && widthAttr !== undefined && widthAttr.trim() !== '0') return null;
+    widthPx = (widthEx ?? 0) * exPx;
+    const vb = rootAttrs['viewBox']?.split(/\s+/).map(Number) ?? [0, 0, 0, 0];
+    viewBox = { minX: vb[0]!, minY: vb[1]!, width: vb[2]!, height: vb[3]! };
+  }
 
   const defs = new Map<string, string>();
   // Collect defs: <path id="..." d="..."/>
@@ -164,6 +266,7 @@ function parseSvg(svgMarkup: string): ParsedSvg | null {
   const body = svgMarkup.slice(bodyStart, svgMarkup.lastIndexOf('</svg>'));
 
   const paths: MathPath[] = [];
+  const texts: string[] = [];
   interface Frame { matrix: AffineMatrix; fill: string; stroke: string; tag: string }
   const stack: Frame[] = [
     { matrix: IDENTITY, fill: 'currentColor', stroke: 'currentColor', tag: '__root__' },
@@ -187,7 +290,18 @@ function parseSvg(svgMarkup: string): ParsedSvg | null {
     const fill = attrs['fill'] ?? parent.fill;
     const stroke = attrs['stroke'] ?? parent.stroke;
 
-    if (name === 'path' && attrs['d']) {
+    if (name === 'svg') {
+      // A nested viewport (MathJax's equation / number boxes): its
+      // percentages refer to the outer box, and its viewBox is fitted in.
+      const x = viewportLength(attrs['x'], viewBox.width) ?? 0;
+      const y = viewportLength(attrs['y'], viewBox.height) ?? 0;
+      const w = viewportLength(attrs['width'], viewBox.width) ?? viewBox.width;
+      const h = viewportLength(attrs['height'], viewBox.height) ?? viewBox.height;
+      const vb = attrs['viewBox']?.trim().split(/[\s,]+/).map(Number);
+      ctm = multiply(ctm, vb && vb.length === 4 && vb.every(Number.isFinite)
+        ? viewportMatrix(vb, x, y, w, h, attrs['preserveAspectRatio'])
+        : [1, 0, 0, 1, x, y]);
+    } else if (name === 'path' && attrs['d']) {
       const dOut = transformPath(attrs['d']!, ctm);
       paths.push({ d: dOut, fill });
     } else if (name === 'use') {
@@ -198,6 +312,21 @@ function parseSvg(svgMarkup: string): ParsedSvg | null {
         const dOut = transformPath(dRaw, ctm);
         paths.push({ d: dOut, fill });
       }
+    } else if (name === 'text' && !selfClose) {
+      // A character MathJax sets as text, not as a glyph path: keep it,
+      // with its transform flattened like a path's.
+      const close = body.indexOf('</text>', tagRe.lastIndex);
+      if (close >= 0) {
+        const content = body.slice(tagRe.lastIndex, close);
+        tagRe.lastIndex = close + '</text>'.length;
+        const kept = Object.entries(attrs)
+          .filter(([k]) => k !== 'transform' && k !== 'fill')
+          .map(([k, v]) => ` ${k}="${v}"`)
+          .join('');
+        const matrix = ctm.map((v) => +v.toFixed(4)).join(' ');
+        texts.push(`<text transform="matrix(${matrix})" fill="${fill}"${kept}>${content}</text>`);
+      }
+      continue;
     } else if (name === 'rect') {
       // MathJax emits <rect> for fraction bars, sqrt bars, etc.
       const x = Number(attrs['x'] ?? 0);
@@ -216,7 +345,7 @@ function parseSvg(svgMarkup: string): ParsedSvg | null {
     }
   }
 
-  return { viewBox, widthEx, heightEx, verticalAlignEx, paths, defs };
+  return { viewBox, widthPx, heightPx, depthPx, paths, texts };
 }
 
 // ---------------------------------------------------------------------------
@@ -230,6 +359,11 @@ export interface RenderOptions {
   /** Override the default colour (MathJax emits "currentColor" which is a
    *  CSS construct; we substitute here so the SVG is self-contained). */
   color?: string;
+  /** Display math: the width of the measure the formula is set in, in px.
+   *  A numbered equation (`\tag{…}`) takes this width, the equation
+   *  centred and its number flush right; without it, it takes the least
+   *  width that holds both. Other formulas keep their own width. */
+  containerWidthPx?: number;
 }
 
 function errorRender(tex: string, displayMode: boolean, fontSizePx: number, message: string): MathRender {
@@ -253,6 +387,91 @@ function errorRender(tex: string, displayMode: boolean, fontSizePx: number, mess
   };
 }
 
+/** Size MathJax's markup at `exPx` per ex (in `measurePx` for a full-width
+ *  box) into a render. */
+function sizeRender(
+  tex: string,
+  displayMode: boolean,
+  fontSizePx: number,
+  svgOnly: string,
+  error: string | undefined,
+  exPx: number,
+  lineBoxPx: number,
+  measurePx: number | undefined,
+): MathRender {
+  const parsed = parseSvg(svgOnly, exPx, measurePx);
+  if (!parsed) return errorRender(tex, displayMode, fontSizePx, 'Could not parse MathJax SVG output');
+
+  let widthPx = parsed.widthPx;
+  let heightPx = parsed.heightPx;
+  // vertical-align is negative when the depth extends below baseline.
+  let ascentPx = heightPx - parsed.depthPx;
+  let scale = 1;
+
+  // Inline scale-down: keep the grid intact even if the formula is tall.
+  if (!displayMode && heightPx > lineBoxPx && lineBoxPx > 0) {
+    scale = lineBoxPx / heightPx;
+    widthPx *= scale;
+    heightPx *= scale;
+    ascentPx *= scale;
+    // depth scales too
+  }
+
+  // Keep paths color-agnostic — backends substitute `currentColor` at paint
+  // time (see canvas-backend / html-backend). Baking `options.color` into
+  // the cached render would make the LRU cache miss every time the user
+  // tweaks the math or body colour, which we want to avoid.
+  const resolvedPaths: MathPath[] = parsed.paths.map((p) => ({
+    d: p.d,
+    fill: p.fill,
+  }));
+
+  const svgSerialized = isFullWidthSvg(svgOnly)
+    ? serializePaths(parsed.viewBox, resolvedPaths, parsed.texts, widthPx, heightPx)
+    : serializeForHtml(parsed.viewBox, svgOnly, widthPx, heightPx);
+
+  return {
+    tex,
+    displayMode,
+    svg: svgSerialized,
+    paths: resolvedPaths,
+    viewBox: parsed.viewBox,
+    widthPx,
+    heightPx,
+    ascentPx,
+    depthPx: heightPx - ascentPx,
+    scale,
+    ...(error ? { error } : {}),
+  };
+}
+
+/** A full-width render at `measurePx`, from its cache entry. */
+function fullWidthRender(
+  entry: FullWidthEntry,
+  tex: string,
+  displayMode: boolean,
+  fontSizePx: number,
+  lineBoxPx: number,
+  measurePx: number | undefined,
+): MathRender {
+  const w = measurePx !== undefined && measurePx > 0 ? measurePx : 0;
+  const hit = entry.byWidth.get(w);
+  if (hit) return hit;
+  const r = sizeRender(tex, displayMode, fontSizePx, entry.svgOnly, entry.error, entry.exPx, lineBoxPx, w > 0 ? w : undefined);
+  entry.byWidth.set(w, r);
+  if (entry.byWidth.size > MAX_WIDTHS) {
+    const first = entry.byWidth.keys().next().value;
+    if (first !== undefined) entry.byWidth.delete(first);
+  }
+  return r;
+}
+
+/**
+ * Typeset TeX as SVG at `fontSizePx`: one em of the formula is
+ * `fontSizePx` (MathJax sizes in `ex`, the TeX font's x-height, 0.442 em).
+ * Cached; before {@link initMathEngine} resolves it returns a placeholder
+ * box instead (not cached).
+ */
 export function renderMath(
   tex: string,
   displayMode: boolean,
@@ -260,24 +479,33 @@ export function renderMath(
   options: RenderOptions = {},
 ): MathRender {
   const lineBoxPx = options.lineBoxPx ?? Number.POSITIVE_INFINITY;
-  const key = cacheKey(tex, displayMode, fontSizePx, lineBoxPx === Number.POSITIVE_INFINITY ? 0 : lineBoxPx);
+  const lineBoxKey = lineBoxPx === Number.POSITIVE_INFINITY ? 0 : lineBoxPx;
+  const key = cacheKey(tex, displayMode, fontSizePx, lineBoxKey);
   const cached = cacheGet(key);
-  if (cached) return cached;
+  if (cached) {
+    return 'kind' in cached
+      ? fullWidthRender(cached, tex, displayMode, fontSizePx, lineBoxKey, options.containerWidthPx)
+      : cached;
+  }
 
   if (!handle) {
+    noteMathWithoutEngine();
     const r = placeholderRender(tex, displayMode, fontSizePx);
     // Do NOT cache the placeholder — we want the real render to replace it.
     return r;
   }
 
+  // One ex of MathJax's sizes is the TeX font's x-height. Handing MathJax
+  // that ex (not a guessed half em) keeps its scale at 1 and makes 1000
+  // font units exactly `fontSizePx`.
+  const em = fontSizePx;
+  const exPx = fontSizePx * handle.xHeight;
   let svgMarkup = '';
   try {
-    const em = fontSizePx;
-    const ex = fontSizePx * 0.5;
     const node = handle.document.convert(tex, {
       display: displayMode,
       em,
-      ex,
+      ex: exPx,
       containerWidth: 80 * em,
     });
     svgMarkup = handle.adaptor.outerHTML(node);
@@ -304,55 +532,13 @@ export function renderMath(
   if (merror) error = merror[1];
   else if (/data-mml-node="merror"/.test(svgOnly)) error = 'Invalid LaTeX';
 
-  const parsed = parseSvg(svgOnly);
-  if (!parsed) {
-    const r = errorRender(tex, displayMode, fontSizePx, 'Could not parse MathJax SVG output');
-    cacheSet(key, r);
-    return r;
+  if (isFullWidthSvg(svgOnly)) {
+    const entry: FullWidthEntry = { kind: 'fullWidth', svgOnly, exPx, byWidth: new Map(), ...(error ? { error } : {}) };
+    cacheSet(key, entry);
+    return fullWidthRender(entry, tex, displayMode, fontSizePx, lineBoxKey, options.containerWidthPx);
   }
 
-  const exPx = fontSizePx * 0.5;
-  let widthPx = parsed.widthEx * exPx;
-  let heightPx = parsed.heightEx * exPx;
-  // vertical-align is negative when the depth extends below baseline.
-  const depthPx = -parsed.verticalAlignEx * exPx;
-  let ascentPx = heightPx - depthPx;
-  let scale = 1;
-
-  // Inline scale-down: keep the grid intact even if the formula is tall.
-  if (!displayMode && heightPx > lineBoxPx && lineBoxPx > 0) {
-    scale = lineBoxPx / heightPx;
-    widthPx *= scale;
-    heightPx *= scale;
-    ascentPx *= scale;
-    // depth scales too
-  }
-
-  // Keep paths color-agnostic — backends substitute `currentColor` at paint
-  // time (see canvas-backend / html-backend). Baking `options.color` into
-  // the cached render would make the LRU cache miss every time the user
-  // tweaks the math or body colour, which we want to avoid.
-  const resolvedPaths: MathPath[] = parsed.paths.map((p) => ({
-    d: p.d,
-    fill: p.fill,
-  }));
-
-  const svgSerialized = serializeForHtml(parsed, svgOnly, widthPx, heightPx, ascentPx);
-
-  const render: MathRender = {
-    tex,
-    displayMode,
-    svg: svgSerialized,
-    paths: resolvedPaths,
-    viewBox: parsed.viewBox,
-    widthPx,
-    heightPx,
-    ascentPx,
-    depthPx: heightPx - ascentPx,
-    scale,
-    ...(error ? { error } : {}),
-  };
-
+  const render = sizeRender(tex, displayMode, fontSizePx, svgOnly, error, exPx, lineBoxKey, undefined);
   cacheSet(key, render);
   return render;
 }
@@ -360,8 +546,7 @@ export function renderMath(
 // Re-serialise the MathJax SVG with our computed widthPx/heightPx so the
 // HTML backend can embed it directly and get correct layout without having
 // to know about ex units.
-function serializeForHtml(parsed: ParsedSvg, svgOnly: string, widthPx: number, heightPx: number, _ascentPx: number): string {
-  const { viewBox } = parsed;
+function serializeForHtml(viewBox: MathViewBox, svgOnly: string, widthPx: number, heightPx: number): string {
   // Replace the <svg> open tag's attributes with our px-based sizing so the
   // SVG participates in the surrounding flow as a block of the exact box
   // size we have measured.
@@ -369,6 +554,16 @@ function serializeForHtml(parsed: ParsedSvg, svgOnly: string, widthPx: number, h
     /<svg\b[^>]*>/,
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox.minX} ${viewBox.minY} ${viewBox.width} ${viewBox.height}" width="${widthPx}" height="${heightPx}">`,
   );
+}
+
+// A full-width formula as the flattened paths: MathJax's markup places the
+// equation and its number in nested viewports that need its stylesheet
+// (`overflow: visible`) to show, so the HTML gets the paths as they were
+// laid out instead — and its `<text>` characters, as the markup of an
+// unnumbered formula keeps them.
+function serializePaths(viewBox: MathViewBox, paths: MathPath[], texts: string[], widthPx: number, heightPx: number): string {
+  const body = paths.map((p) => `<path d="${p.d}" fill="${p.fill}"/>`).join('') + texts.join('');
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox.minX} ${viewBox.minY} ${viewBox.width} ${viewBox.height}" width="${widthPx}" height="${heightPx}">${body}</svg>`;
 }
 
 // Provisional render used before MathJax finishes loading. Width heuristic is

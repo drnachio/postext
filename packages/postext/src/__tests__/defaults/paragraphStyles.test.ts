@@ -35,13 +35,37 @@ describe('paragraph style defaults', () => {
       lineHeight: { value: 1.4, unit: 'em' },
       color: body.color,
       textAlign: 'left',
+      fontWeight: body.fontWeight,
+      boldFontWeight: body.boldFontWeight,
+      italic: false,
+      smallCaps: false,
       hyphenation: false,
+      indent: { value: 0, unit: 'em' },
       firstLineIndent: { value: 1, unit: 'em' },
       hangingIndent: { value: 0, unit: 'em' },
       spaceBetween: { value: 0, unit: 'em' },
       marginTop: { value: 0, unit: 'em' },
       marginBottom: { value: 0, unit: 'em' },
+      snapToGrid: true,
+      textTransform: 'none',
     });
+  });
+
+  it('resolves and strips weights, italic and small caps (EF-24)', () => {
+    const [r] = resolveParagraphStylesConfig([{ id: 'dir', fontWeight: 300, boldFontWeight: 600, italic: true, smallCaps: true }], body);
+    expect([r!.fontWeight, r!.boldFontWeight, r!.italic, r!.smallCaps]).toEqual([300, 600, true, true]);
+    expect(stripParagraphStylesDefaults([{ id: 'a', italic: false, smallCaps: false }])).toEqual([{ id: 'a' }]);
+    expect(stripParagraphStylesDefaults([{ id: 'a', fontWeight: 400, italic: true, smallCaps: true }]))
+      .toEqual([{ id: 'a', fontWeight: 400, italic: true, smallCaps: true }]);
+  });
+
+  it('resolves and strips the italic colour only when set (EF-68)', () => {
+    const blue = { hex: '#0000AA', model: 'hex' as const };
+    const [plain] = resolveParagraphStylesConfig([{ id: 'p' }], body);
+    expect(plain).not.toHaveProperty('italicColor');
+    const [set] = resolveParagraphStylesConfig([{ id: 'c', italicColor: blue }], body);
+    expect(set!.italicColor).toEqual(blue);
+    expect(stripParagraphStylesDefaults([{ id: 'c', italicColor: blue }])).toEqual([{ id: 'c', italicColor: blue }]);
   });
 
   it('explicit fields win over the inherited ones', () => {

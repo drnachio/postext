@@ -52,6 +52,7 @@ import {
   type BoundingBox,
   createBoundingBox,
   createVDTBlock,
+  pictureTraits,
   type ResolvedConfig,
   type ResolvedResourceBlock,
   type VDTBlock,
@@ -62,10 +63,13 @@ import {
 import { buildFontString, measureBlock, measureRichBlock, measureTextWidth } from '../measure';
 import { applyStyleAttrs, isMarkerBlock } from './buildHelpers';
 import { resetLinePositions } from './placement';
-import { resolveBodyStyle, resolveBlockquoteStyle, type BlockStyle } from './styles';
-import { computeLevelIndentsPx, computeOrderedLevelIndentsPx } from './lists';
-import { measureContentBlock, type BlockMeasureContext } from './measureContentBlock';
+import { raggedLooseLines } from './raggedLines';
+import { resolveBodyStyle, resolveBlockquoteStyle } from './styles';
+import { computeLevelIndentsPx, computeOrderedLevelIndentsPx, listBulletPosition, listItemGapPx } from './lists';
+import { measureContentBlock, type BlockMeasureContext, type MeasureContentBlockOptions } from './measureContentBlock';
 import { uppercasePreservingLength } from './buildBlockKind';
+import { headingIsHidden } from './headingStyles';
+import type { ParagraphContainerPlan } from './paragraphContainers';
 
 // ---------------------------------------------------------------------------
 // Pre-pass: callout ranges keyed by the start marker's content-block index.
@@ -104,7 +108,8 @@ export function planCallouts(contentBlocks: readonly ContentBlock[]): Map<number
 }
 
 /** The style a `:::callout{type="…"}` selects: the matching id, else the
- *  first configured style (the sandbox flags unknown types as a warning). */
+ *  first configured style (`collectContentWarnings` reports an unknown type
+ *  in `doc.contentWarnings`). */
 export function pickCalloutStyle(
   styles: readonly ResolvedCalloutStyleConfig[],
   type: string | undefined,
@@ -124,7 +129,8 @@ export function pickCalloutStyle(
 /** Shallow copy of `resolved` whose `bodyText`, `unorderedLists` and
  *  `orderedLists` carry the callout style's `body` / `lists` overrides, so
  *  `resolveBodyStyle`, the list item resolvers and the indent cascade yield
- *  the callout typography without any callout-specific branches. Child
+ *  the callout typography without any callout-specific branches (the
+ *  body's `italic` / `smallCaps` ride on `bodyText` for that). Child
  *  headings (rare) keep the normal heading styles. */
 export function deriveCalloutResolvedConfig(
   resolved: ResolvedConfig,
@@ -135,9 +141,16 @@ export function deriveCalloutResolvedConfig(
   const ol = resolved.orderedLists;
   // Level-specific bullets/colours only follow the override when it actually
   // differs from the general value they were resolved from — a style that
-  // inherits keeps the document's per-level bullets intact.
+  // inherits keeps the document's per-level bullets intact (and so does one
+  // that repeats the document's bullet or colour: its nested levels keep
+  // their dashes).
   const bulletOverride = lists.bulletChar !== ul.bulletChar;
   const colorOverride = lists.color.hex !== ul.color.hex;
+  // The numbers of ordered lists take the box's colour whenever the style
+  // sets it, also to the document's bullet colour (EF-92): the ordered lists
+  // have a colour of their own, which an unset `lists.color` leaves alone.
+  // A resolved style without the flag (built by hand) keeps the old rule.
+  const numberColorOverride = lists.colorSet === true || colorOverride;
   return {
     ...resolved,
     bodyText: {
@@ -148,6 +161,10 @@ export function deriveCalloutResolvedConfig(
       color: body.color,
       boldColor: body.boldColor ?? body.color,
       ...(body.italicColor ? { italicColor: body.italicColor } : {}),
+      fontWeight: body.fontWeight,
+      boldFontWeight: body.boldFontWeight,
+      ...(body.italic ? { italic: true } : {}),
+      ...(body.smallCaps ? { smallCaps: true } : {}),
       textAlign: body.textAlign,
       hyphenation: { ...resolved.bodyText.hyphenation, enabled: body.hyphenation },
       paragraphSpacing: body.paragraphSpacing,
@@ -172,11 +189,11 @@ export function deriveCalloutResolvedConfig(
     },
     orderedLists: {
       ...ol,
-      color: colorOverride ? lists.color : ol.color,
+      color: numberColorOverride ? lists.color : ol.color,
       indent: lists.indent,
       gap: lists.gap,
       itemSpacing: lists.itemSpacing,
-      levels: ol.levels.map((l) => ({ ...l, color: colorOverride ? lists.color : l.color })),
+      levels: ol.levels.map((l) => ({ ...l, color: numberColorOverride ? lists.color : l.color })),
     },
   };
 }
@@ -228,15 +245,22 @@ export interface CalloutLayoutInput {
   /** Block ids: the frame's own id and a generator for the children. */
   frameId: string;
   nextChildId: () => string;
-  /** Optional paragraph-style override per child index (nested
-   *  `:::paragraphs` containers). */
-  paragraphStyleFor?: (blockIdx: number) => BlockStyle | undefined;
+  /** The document's `:::paragraphs` containers (see
+   *  `planParagraphContainers`): a child inside one is set in its style,
+   *  and the container's margins are applied around it as in running text. */
+  paragraphContainers?: ParagraphContainerPlan;
   /** Source offset of the markdown body inside the original document. */
   bodyOffset?: number;
   /** Lay out a continuation fragment of a split box (`keepTogether:
    *  false`): the frame keeps its background, border, stripe and marker but
-   *  drops the title and the in-box icon — the head already carries them. */
+   *  drops the title and the in-box icon — the head already carries them
+   *  (a style with `repeatTitle` repeats the title with its
+   *  `continuedSuffix`). */
   continuation?: boolean;
+  /** The fragment is followed by another one (a split box's head or middle
+   *  part): a style with `continuesMarkerEnabled` sets its marker under
+   *  the last line. */
+  continues?: boolean;
   /** Line-level cuts of a split box: skip the first `lineFrom` text lines
    *  of the first child (a continuation opening inside a paragraph — its
    *  bullet, if a list item, stays with the head), and keep only the first
@@ -244,6 +268,14 @@ export interface CalloutLayoutInput {
    *  Ignored for children that are not text runs (figures, display math). */
   lineFrom?: number;
   lineTo?: number;
+  /** The box widths (as `width`) the first child's lines up to `lineFrom`
+   *  were counted at, in line order: from line `fromLine` on, at `width`.
+   *  Set when a split box goes on in a column of another width than the
+   *  fragments before it (a one-and-a-half layout with text in both
+   *  columns): the first child is broken again as they set it, its lines
+   *  from `lineFrom` on for this `width`, so no text is lost or repeated
+   *  at the cut. Without it the child is measured at `width` alone. */
+  lineWidths?: readonly CalloutLineWidth[];
   /** The box lands on a verso of mirrored margins: an `'outer'` corner icon
    *  hangs on the left corner there. */
   mirrored?: boolean;
@@ -255,6 +287,18 @@ export interface CalloutLayoutInput {
   /** `calloutPath` of the box's frame and children: set when the box is
    *  itself nested (see `VDTBlock.calloutPath`). */
   nestPath?: readonly number[];
+}
+
+/** The measures of `layoutCallout`'s first child across widths (see
+ *  `CalloutLayoutInput.lineWidths`), per resolved configuration and
+ *  content block: a build lays a split box out again on every pass. */
+const acrossWidthsMemo = new WeakMap<ResolvedConfig, WeakMap<ContentBlock, Map<string, ReturnType<typeof measureContentBlock> | undefined>>>();
+
+/** A box width the first child of a continuation was counted at (see
+ *  `CalloutLayoutInput.lineWidths`). */
+export interface CalloutLineWidth {
+  fromLine: number;
+  width: number;
 }
 
 /** An enclosing nested fence a fragment opens inside (see `openNested`). */
@@ -297,6 +341,10 @@ export interface CalloutLayoutResult {
   marginTopPx: number;
   /** Bottom margin in px (baked into the post-callout grid snap). */
   marginBottomPx: number;
+  /** Height the style's continuation marker adds to a fragment that goes
+   *  on (`continuesMarkerEnabled`); 0 without one. The split code ranks its
+   *  cuts with it. */
+  continuesMarkerPx: number;
 }
 
 const VALID_SPANS: ReadonlySet<string> = new Set(['column', 'page', 'side']);
@@ -345,6 +393,7 @@ function offsetBlock(blk: VDTBlock, ox: number, oy: number): void {
   if (blk.bulletOffsetX !== undefined) blk.bulletOffsetX += ox;
   if (blk.separatorX !== undefined) blk.separatorX += ox;
   if (blk.bulletY !== undefined) blk.bulletY += oy;
+  if (blk.bulletBaselineY !== undefined) blk.bulletBaselineY += oy;
   if (blk.resourceBlock) offsetResourceBlock(blk.resourceBlock, ox, oy);
   // A nested box's frame carries its decoration on the overlay.
   if (blk.designOverlay) {
@@ -359,6 +408,10 @@ function offsetDesignBlock(b: VDTDesignBlock, ox: number, oy: number): void {
   b.bbox.y += oy;
   if (b.kind === 'text') {
     for (const line of b.lines) line.baselineY += oy;
+  }
+  if (b.kind === 'box' && b.clip) {
+    b.clip.x += ox;
+    b.clip.y += oy;
   }
 }
 
@@ -412,32 +465,45 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   const stripeRight = sideStripe && style.stripe.side === 'right';
   const topStripe = stripeOn && style.stripe.side === 'top';
 
-  const hasIcon = !input.continuation && iconPresent(style.icon);
-  const iconSize = hasIcon ? px(style.icon.size) : 0;
-  const iconBoxW = hasIcon && style.icon.width ? Math.max(iconSize, px(style.icon.width)) : iconSize;
+  // The icon is drawn on the head only (`hasIcon`), but its geometry is
+  // the box's on every fragment.
+  const iconOn = iconPresent(style.icon);
+  const hasIcon = !input.continuation && iconOn;
+  const iconSize = iconOn ? px(style.icon.size) : 0;
+  const iconBoxW = iconOn && style.icon.width ? Math.max(iconSize, px(style.icon.width)) : iconSize;
   const gapPx = px(style.titleStyle.gap);
   // The icon takes its own column only when there is no side stripe to sit
-  // over. A continuation that opens inside a paragraph (`lineFrom`) keeps
-  // that column empty: its lines were counted at the head's inner width,
-  // so the text must wrap the same way — line `lineFrom` on, nothing lost
-  // or doubled.
-  const openingMidRun = !!input.continuation && (input.lineFrom ?? 0) > 0;
+  // over. A continuation keeps that column, empty (EF-114): a box has one
+  // measure in columns of one width, and a continuation that opens inside a
+  // paragraph (`lineFrom`) wraps its text as the head counted it, line
+  // `lineFrom` on, nothing lost or doubled. In a column of another width
+  // the paragraph is broken again as the fragments before counted it
+  // (`lineWidths`).
   const cornerIcon = style.icon.position === 'corner';
   // A corner badge hangs on the top-right corner — or the left one, for an
   // `'outer'` badge on a verso of mirrored margins (`'inner'` on a recto).
   const cornerRight = style.icon.cornerSide === 'right'
     || (style.icon.cornerSide === 'outer' && !input.mirrored)
     || (style.icon.cornerSide === 'inner' && !!input.mirrored);
-  const iconColumnKept = (hasIcon || (openingMidRun && iconPresent(style.icon))) && !sideStripe && !cornerIcon;
+  const iconColumnKept = iconOn && !sideStripe && !cornerIcon;
   const iconColumn = iconColumnKept ? iconBoxW + gapPx : 0;
+  // A corner badge is centred on its corner by the width it is drawn at: a
+  // wide strip (`icon.width`) hangs half its width past the border, not
+  // half its height (EF-142).
+  const cornerIconW = cornerIcon && iconOn ? iconFootprintWidth(style.icon, iconSize, iconBoxW, ctx) : iconSize;
 
   const innerX = (stripeLeft ? stripeW : 0) + padL + iconColumn;
   const innerTop = (topStripe ? stripeW : 0) + padT;
 
   // --- Title -----------------------------------------------------------------
+  // A continuation repeats the title, with its suffix, only when the style
+  // asks for it (`repeatTitle`); the repeat is pagination furniture.
+  const repeatedTitle = !!input.continuation && style.repeatTitle && rawTitle.trim().length > 0;
+  const suffix = repeatedTitle ? style.continuedSuffix.trim() : '';
+  const shownTitle = suffix.length > 0 ? `${rawTitle} ${suffix}` : rawTitle;
   const titleText = style.titleStyle.textTransform === 'uppercase'
-    ? uppercasePreservingLength(rawTitle)
-    : rawTitle;
+    ? uppercasePreservingLength(shownTitle)
+    : shownTitle;
   const titleFontPx = dimensionToPx(style.titleStyle.fontSize, dpi, em);
   const titleFont = buildFontString(
     style.titleStyle.fontFamily,
@@ -445,14 +511,19 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     style.titleStyle.fontWeight.toString(),
     style.titleStyle.italic ? 'italic' : 'normal',
   );
-  const titleLineHeight = titleFontPx * 1.2;
+  // The title's leading (EF-182): `em` / `rem` count its own size; 1.2 em
+  // unless the style sets one.
+  const titleLh = style.titleStyle.lineHeight ?? { value: 1.2, unit: 'em' as const };
+  const titleLineHeight = titleLh.unit === 'em' || titleLh.unit === 'rem'
+    ? titleFontPx * titleLh.value
+    : dimensionToPx(titleLh, dpi, titleFontPx);
   const titleTrackingPx = Math.max(0, dimensionToPx(style.titleStyle.letterSpacing, dpi, titleFontPx));
   // A corner badge on the left hangs half over the title's side: the title
   // starts past it (its inner half plus the icon gap), at least — a
   // configured `indent` only adds beyond that room.
-  const cornerLeftRoom = hasIcon && cornerIcon && !cornerRight ? Math.max(0, iconSize / 2 + gapPx - padL) : 0;
+  const cornerLeftRoom = hasIcon && cornerIcon && !cornerRight ? Math.max(0, cornerIconW / 2 + gapPx - padL) : 0;
   const titleIndentPx = Math.max(cornerLeftRoom, dimensionToPx(style.titleStyle.indent, dpi, titleFontPx));
-  const hasTitle = !input.continuation && titleText.trim().length > 0;
+  const hasTitle = (!input.continuation || repeatedTitle) && titleText.trim().length > 0;
   const titleWidthOf = (t: string): number => measureTextWidth(t, titleFont) + titleTrackingPx * t.length;
 
   // Box width: `fill` uses the given width less the marker column; `auto`
@@ -498,6 +569,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       })),
       clip: false,
       ...(titleTrackingPx > 0 ? { letterSpacingPx: titleTrackingPx } : {}),
+      ...(repeatedTitle ? { artifact: true } : {}),
     };
     cursorY += titleHeight;
   }
@@ -515,41 +587,165 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   interface Stack {
     cursorY: number;
     prevMarginBottom: number;
+    /** `prevMarginBottom` comes from a negative `:::paragraphs` margin: it
+     *  applies as it is instead of collapsing with the next block's top
+     *  margin of zero. */
+    pull: boolean;
     prevWasListItem: boolean;
+    /** The list item placed last, when `prevWasListItem`: its item spacing
+     *  and depth, for the space before the next item (EF-165). */
+    prevListItem?: { spacingPx: number; depth: number };
     first: boolean;
+    /** A `:::space` before the first child counts (see `addSpace`). */
+    keepLeadingSpace: boolean;
   }
-  /** A `:::space` between children: body lines of the box's own type,
-   *  dropped at the top of the box (or of a `:::columns` group). */
+  /** A `:::space` between children: body lines of the box's own type.
+   *  Before the first child it is dropped, like at the top of a column —
+   *  the padding already sets the content off the frame — unless it opens
+   *  the head of a box under its title, or the box holds nothing else (an
+   *  answer box sized by its space); at the top of a `:::columns` group or
+   *  of a split box's continuation it always vanishes. */
   const addSpace = (raw: ContentBlock, st: Stack): void => {
-    if (raw.type !== 'directive' || raw.directiveName !== 'space' || st.first) return;
+    if (raw.type !== 'directive' || raw.directiveName !== 'space') return;
+    if (st.first && !st.keepLeadingSpace) return;
     st.cursorY += (spaceDirectiveLines(raw.directiveAttrs) ?? 1) * bodyStyle.lineHeightPx;
   };
+  /** The gap an inline resource keeps in the box (`layout.inlineResourceGapInBoxes`):
+   *  a line of the box's text, above it and, with `inlineResourceGap:
+   *  'around'`, below it. None when off (postext 1.4). */
+  const resourceGapPx = input.resolved.layout.inlineResourceGapInBoxes ? bodyStyle.lineHeightPx : 0;
+  const resourceGapBelow = input.resolved.layout.inlineResourceGap !== 'above';
   const isFirstRealOf = (k: number): boolean => children.slice(0, k).every((c) => c.type === 'directive' || isMarkerBlock(c));
   const isLastRealOf = (k: number): boolean => children.slice(k + 1).every((c) => c.type === 'directive' || isMarkerBlock(c));
+  /** The widths of `lineWidths` as a child's measure: a child set `width`
+   *  wide in a box `input.width` wide is that much narrower at every box
+   *  width (the box's padding, stripe, icon and marker columns stay). */
+  const childWidthAt = (boxWidth: number, width: number): number => Math.max(1, width - (input.width - boxWidth));
+  /** The first child of a continuation that goes on in a column of another
+   *  width than the fragments before it (`lineWidths`), measured as they
+   *  counted its lines and, from `lineFrom` on, for this box: the lines
+   *  the earlier fragments placed keep their breaks. `undefined` when the
+   *  child is measured at `width` alone: no width changed, the child is
+   *  not the first one or opens at its head, or its placed lines cannot
+   *  be set again as they were (then it is sliced from a measure at
+   *  `width`, as before). */
+  const measureFirstChildAcrossWidths = (
+    raw: ContentBlock,
+    blockIdx: number,
+    k: number,
+    width: number,
+    styleOverride: MeasureContentBlockOptions['styleOverride'],
+  ) => {
+    const history = input.lineWidths;
+    const lineFrom = input.lineFrom ?? 0;
+    if (!history || history.length === 0 || lineFrom <= 0 || !isFirstRealOf(k)) return undefined;
+    if (history.every((h) => Math.abs(h.width - input.width) <= 0.5)) return undefined;
+    // A split tries many cuts from the same start, and these measures are
+    // not cached by the measurement cache (they break at several widths).
+    let perBlock = acrossWidthsMemo.get(input.resolved);
+    if (!perBlock) acrossWidthsMemo.set(input.resolved, (perBlock = new WeakMap()));
+    let memo = perBlock.get(raw);
+    if (!memo) perBlock.set(raw, (memo = new Map()));
+    const styleAt = input.resolved.calloutStyles.indexOf(style);
+    // Every fragment's measure: the head's, then each one after it, which
+    // keeps the lines the fragments before it placed and breaks the rest
+    // for its own width. The one this fragment is set from is the last.
+    const last = history[history.length - 1]!;
+    const widths = Math.abs(last.width - input.width) <= 0.5
+      ? history
+      : [...history, { fromLine: lineFrom, width: input.width }];
+    const steps = widths.map((h) => ({ fromLine: h.fromLine, columnWidth: childWidthAt(h.width, width) }));
+    const base = steps[0]!.columnWidth;
+    let prev: ReturnType<typeof measureContentBlock> | undefined;
+    for (let i = 0; i < steps.length; i++) {
+      const key = `${styleAt}|${blockIdx}|${steps.slice(0, i + 1).map((st) => `${st.fromLine}:${st.columnWidth}`).join(',')}`;
+      if (memo.has(key)) {
+        prev = memo.get(key);
+        if (!prev) return undefined;
+        continue;
+      }
+      let next: ReturnType<typeof measureContentBlock> | undefined;
+      if (i === 0) {
+        next = measureContentBlock(raw, blockIdx, base, derivedCtx, { styleOverride }) ?? undefined;
+      } else if (prev) {
+        const keep = steps[i]!.fromLine;
+        const breaks = prev.measured.breaks;
+        const keepBreaks = breaks && breaks.at.length >= keep ? { path: breaks.path, at: breaks.at.slice(0, keep) } : undefined;
+        const again = measureContentBlock(raw, blockIdx, base, derivedCtx, {
+          styleOverride,
+          restColumnWidths: steps.slice(1, i + 1),
+          ...(keepBreaks ? { keepBreaks } : {}),
+          // No shorter setting for a runt: its tracking would part the
+          // lines kept from the ones placed before.
+          looseness: 0,
+        });
+        const a = again?.measured.lines ?? [];
+        const b = prev.measured.lines;
+        next = again && (again.letterSpacingPx ?? 0) === (prev.letterSpacingPx ?? 0) && a.length > keep && b.length >= keep
+          && b.slice(0, keep).every((l, j) => a[j]!.text === l.text && a[j]!.hyphenated === l.hyphenated)
+          ? again
+          : undefined;
+      }
+      memo.set(key, next);
+      if (!next) return undefined;
+      prev = next;
+    }
+    return prev && prev.measured.lines.length > lineFrom ? prev : undefined;
+  };
   /** Lay out one child at `width` from `x`, appending it to `into` and
    *  advancing the stack. */
   const placeChild = (raw: ContentBlock, k: number, width: number, x: number, st: Stack, into: VDTBlock[], unitsInto: CalloutUnit[]): VDTBlock | undefined => {
     const blockIdx = childStartIdx + k;
-    const measuredBlock = measureContentBlock(raw, blockIdx, width, derivedCtx, {
-      styleOverride: input.paragraphStyleFor?.(blockIdx),
-    });
+    // Inside a `:::paragraphs` container: its style, and for the block that
+    // closes it the tail style, which carries the container's bottom margin.
+    const container = input.paragraphContainers?.byBlock[blockIdx];
+    const next = children[k + 1];
+    const isContainerTail = container !== undefined && next?.type === 'containerEnd' && next.containerId === container.id;
+    const styleOverride = container ? (isContainerTail ? container.tailStyle : container.style) : undefined;
+    const measuredBlock = measureFirstChildAcrossWidths(raw, blockIdx, k, width, styleOverride)
+      ?? measureContentBlock(raw, blockIdx, width, derivedCtx, { styleOverride });
     if (!measuredBlock) return undefined;
-    const { kind, measured, prefixLen, absoluteSourceMap, mathDisplayRender, resourceBlock } = measuredBlock;
-    const { style: bs, vdtType, headingLevel, numberPrefix, listBullet, listDepth, listKind, bulletXOffsetInColumn, strikethroughText } = kind;
+    const { kind, measured, prefixLen, absoluteSourceMap, mathDisplayRender, resourceBlock, letterSpacingPx } = measuredBlock;
+    const { vdtType, headingLevel, numberPrefix, headingNumber, listBullet, listDepth, listKind, bulletXOffsetInColumn, strikethroughText } = kind;
+    // A structural heading (`hidden`) keeps its lines' text but prints
+    // nothing and takes no room: no line height, no margins, and the
+    // spacing around it collapses as if it were not there.
+    const hiddenHeading = vdtType === 'heading' && headingIsHidden(
+      raw,
+      derivedCtx.headingLevels?.forBlock(raw) ?? derivedCtx.resolved.headings.levels.find((l) => l.level === raw.level),
+    );
+    const bs = hiddenHeading ? { ...kind.style, lineHeightPx: 0, marginTopPx: 0, marginBottomPx: 0 } : kind.style;
+    // An inline resource keeps the gap as in running text (EF-117): a line
+    // of the box's text above it, and below it with `'around'`.
+    const inlineResource = vdtType === 'resource' && !!resourceBlock;
+    const marginTopPx = inlineResource ? Math.max(bs.marginTopPx, resourceGapPx) : bs.marginTopPx;
+    const marginBottomPx = inlineResource && resourceGapBelow ? Math.max(bs.marginBottomPx, resourceGapPx) : bs.marginBottomPx;
 
-    // Spacing above: margin collapsing, list-item spacing inside a run.
+    // Spacing above: margin collapsing, list-item spacing inside a run. A
+    // pull (a negative container margin) applies as it is, unless the
+    // block has a top margin of its own — as in running text.
     let spacing: number;
-    if (st.first) {
+    if (hiddenHeading) {
+      spacing = 0;
+    } else if (st.first) {
+      spacing = st.prevMarginBottom;
+    } else if (st.pull && marginTopPx <= 0) {
       spacing = st.prevMarginBottom;
     } else if (vdtType === 'listItem' && st.prevWasListItem) {
-      spacing = listBullet ? listBullet.itemSpacingPx : 0;
+      // The shallower list's spacing, as in running text (EF-165).
+      const here = { spacingPx: listBullet ? listBullet.itemSpacingPx : 0, depth: listDepth ?? 1 };
+      spacing = st.prevListItem ? listItemGapPx(st.prevListItem, here) : here.spacingPx;
     } else {
-      spacing = Math.max(st.prevMarginBottom, bs.marginTopPx);
+      spacing = Math.max(st.prevMarginBottom, marginTopPx);
     }
     st.cursorY += spacing;
 
     const blk = createVDTBlock(input.nextChildId(), vdtType, bs.fontString, bs.color, bs.textAlign);
     applyStyleAttrs(blk, bs);
+    // The tracking the lines were measured with (a runt set one line
+    // shorter, a heading level's `letterSpacing`): painted as measured,
+    // as in the flow (EF-111).
+    if (letterSpacingPx !== undefined) blk.letterSpacing = letterSpacingPx;
     blk.contentIndex = blockIdx;
     blk.containerId = containerId;
     blk.dirty = false;
@@ -557,6 +753,8 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     blk.headingLevel = headingLevel;
     if (nestPath) blk.calloutPath = [...nestPath];
     if (numberPrefix) blk.numberPrefix = numberPrefix;
+    if (headingNumber !== undefined) blk.headingNumber = headingNumber;
+    if (hiddenHeading) blk.hidden = true;
     blk.sourceMap = absoluteSourceMap;
     blk.plainPrefixLen = prefixLen;
 
@@ -570,7 +768,10 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     const lineTo = isTextRun && isLastReal && input.lineTo !== undefined
       ? Math.max(lineFrom + 1, Math.min(input.lineTo, measured.lines.length))
       : measured.lines.length;
-    const keptLines = isTextRun ? measured.lines.slice(Math.min(lineFrom, measured.lines.length - 1), lineTo) : measured.lines;
+    // A justified line the breaker could not fill is set ragged, as in the
+    // running text (EF-104): a box's narrow measure is where it happens most.
+    const textLines = isTextRun ? raggedLooseLines(measured.lines, bs.textAlign) : measured.lines;
+    const keptLines = isTextRun ? textLines.slice(Math.min(lineFrom, textLines.length - 1), lineTo) : measured.lines;
     const openedMidRun = lineFrom > 0;
 
     let height: number;
@@ -627,7 +828,9 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       if (strikethroughText) blk.strikethroughText = true;
       const firstLine = blk.lines[0];
       if (firstLine) {
-        blk.bulletY = firstLine.baseline - listBullet.textFontSizePx * 0.3 + listBullet.verticalOffsetPx;
+        const at = listBulletPosition(listBullet, firstLine.baseline);
+        blk.bulletY = at.bulletY;
+        if (at.bulletBaselineY !== undefined) blk.bulletBaselineY = at.bulletBaselineY;
       }
     } else if (listBullet) {
       blk.listDepth = listDepth;
@@ -637,10 +840,44 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     into.push(blk);
     unitsInto.push({ kind: 'block', block: blk });
     st.cursorY += height;
-    st.prevMarginBottom = bs.marginBottomPx;
-    st.prevWasListItem = vdtType === 'listItem';
-    st.first = false;
+    if (!hiddenHeading) {
+      st.prevMarginBottom = marginBottomPx;
+      // A negative container bottom margin pulls the next block up.
+      st.pull = isContainerTail && bs.marginBottomPx < 0;
+      st.prevWasListItem = vdtType === 'listItem';
+      st.prevListItem = vdtType === 'listItem' ? { spacingPx: listBullet ? listBullet.itemSpacingPx : 0, depth: listDepth ?? 1 } : undefined;
+      st.first = false;
+    }
     return blk;
+  };
+
+  /** A `:::paragraphs` fence among the children: the container's top margin
+   *  on entry, and its bottom margin on exit when the block before is not a
+   *  paragraph (a closing paragraph carries it in its tail style). Each
+   *  collapses with the spacing already there, as in running text; a
+   *  negative one pulls (see `Stack.pull`). At the top of the box it
+   *  vanishes, as at the top of a column. Under a closing paragraph the
+   *  space is at least the box's paragraph spacing, as between two
+   *  paragraphs of its text (`bodyText.paragraphContainerSpacing:
+   *  'collapse'`, EF-181). */
+  const containerMargin = (raw: ContentBlock, k: number, st: Stack): void => {
+    if ((raw.type !== 'containerStart' && raw.type !== 'containerEnd') || raw.containerId === undefined) return;
+    const pc = input.paragraphContainers?.byId.get(raw.containerId);
+    if (!pc || st.first) return;
+    if (raw.type === 'containerEnd' && children[k - 1]?.type === 'paragraph') {
+      if (input.resolved.bodyText.paragraphContainerSpacing === 'collapse' && !st.pull && bodyStyle.marginBottomPx > st.prevMarginBottom) {
+        st.prevMarginBottom = bodyStyle.marginBottomPx;
+      }
+      return;
+    }
+    const margin = raw.type === 'containerStart' ? pc.marginTopPx : pc.marginBottomPx;
+    if (margin < 0) {
+      st.prevMarginBottom += margin;
+      st.pull = true;
+    } else if (margin > st.prevMarginBottom) {
+      st.prevMarginBottom = margin;
+      st.pull = false;
+    }
   };
 
   /** Lay out the nested box whose fence opens with `open` (content index
@@ -677,10 +914,17 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       containerId,
       frameId: input.nextChildId(),
       nextChildId: input.nextChildId,
-      ...(input.paragraphStyleFor ? { paragraphStyleFor: input.paragraphStyleFor } : {}),
+      ...(input.paragraphContainers ? { paragraphContainers: input.paragraphContainers } : {}),
       ...(input.bodyOffset !== undefined ? { bodyOffset: input.bodyOffset } : {}),
       continuation: !!reopened,
+      // Cut before its closing marker, the nested box goes on in the next
+      // fragment too.
+      ...(!closed ? { continues: true } : {}),
       ...(reopened && input.lineFrom !== undefined ? { lineFrom: input.lineFrom } : {}),
+      // The nested box is `input.width - width` narrower at every width.
+      ...(reopened && input.lineWidths
+        ? { lineWidths: input.lineWidths.map((h) => ({ fromLine: h.fromLine, width: childWidthAt(h.width, width) })) }
+        : {}),
       ...(!closed && input.lineTo !== undefined ? { lineTo: input.lineTo } : {}),
       ...(reopened && reopened.openRest.length > 0 ? { openNested: reopened.openRest } : {}),
       mirrored: input.mirrored,
@@ -708,6 +952,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     });
     st.cursorY += nested.totalHeight;
     st.prevMarginBottom = nested.marginBottomPx;
+    st.pull = false;
     st.prevWasListItem = false;
     st.first = false;
     return blocks;
@@ -726,7 +971,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     const lh = blk.lines[0]?.bbox.height ?? 0;
     const tail: VDTBlock = { ...blk, id: input.nextChildId(), lines: resetLinePositions(blk.lines.slice(l), lh) };
     delete tail.bulletText; delete tail.bulletFontString; delete tail.bulletColor;
-    delete tail.bulletOffsetX; delete tail.bulletY;
+    delete tail.bulletOffsetX; delete tail.bulletY; delete tail.bulletBaselineY;
     delete tail.separatorText; delete tail.separatorFontString; delete tail.separatorColor; delete tail.separatorX;
     tail.bbox = createBoundingBox(blk.bbox.x, 0, blk.bbox.width, tail.lines.length * lh);
     tail.sourceStart = tail.lines[0]?.sourceStart ?? blk.sourceStart;
@@ -741,7 +986,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     // Spacing above the group: as a block with no margin of its own.
     const spacing = st.first ? st.prevMarginBottom : st.prevMarginBottom;
     const groupTop = st.cursorY + spacing;
-    const gst: Stack = { cursorY: 0, prevMarginBottom: 0, prevWasListItem: false, first: true };
+    const gst: Stack = { cursorY: 0, prevMarginBottom: 0, pull: false, prevWasListItem: false, first: true, keepLeadingSpace: false };
     /** The group's items: a child block, or a nested box's blocks (frame first). */
     const stack: { blocks: VDTBlock[]; unit: CalloutUnit }[] = [];
     for (let k = k0; k < k1; k++) {
@@ -757,6 +1002,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
         }
       }
       addSpace(raw, gst);
+      containerMargin(raw, k, gst);
       if (raw.type === 'directive' || isMarkerBlock(raw)) continue;
       if (placeChild(raw, k, colW, innerX, gst, into, unitsInto)) stack.push({ blocks: into, unit: unitsInto[0]! });
     }
@@ -844,11 +1090,20 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     });
     st.cursorY = groupTop + groupHeight;
     st.prevMarginBottom = 0;
+    st.pull = false;
     st.prevWasListItem = false;
     st.first = false;
   };
 
-  const st: Stack = { cursorY, prevMarginBottom: hasTitle ? gapPx : 0, prevWasListItem: false, first: true };
+  const holdsContent = children.some((c) => c.type !== 'directive' && !isMarkerBlock(c));
+  const st: Stack = {
+    cursorY,
+    prevMarginBottom: hasTitle ? gapPx : 0,
+    pull: false,
+    prevWasListItem: false,
+    first: true,
+    keepLeadingSpace: !input.continuation && (hasTitle || !holdsContent),
+  };
   if (!isAuto) {
     let k0 = 0;
     // A continuation opening inside a nested box redraws it (and the boxes
@@ -878,8 +1133,54 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
         continue;
       }
       addSpace(raw, st);
+      containerMargin(raw, k, st);
       if (raw.type === 'directive' || isMarkerBlock(raw)) continue;
       placeChild(raw, k, innerWidth, innerX, st, childBlocks, units);
+    }
+  }
+
+  // --- Continuation marker ---------------------------------------------------
+  // "Continued" under the last line of a fragment that goes on, in the box's
+  // body face and size, aligned in the inner width; like the repeated title
+  // it is pagination furniture.
+  const continuesText = style.continuesMarkerEnabled && !isAuto ? style.continuesMarker.trim() : '';
+  let continuesBlock: VDTDesignTextBlock | undefined;
+  let continuesMarkerPx = 0;
+  if (continuesText.length > 0) {
+    const font = buildFontString(
+      style.body.fontFamily,
+      em,
+      style.body.fontWeight.toString(),
+      style.continuesMarkerItalic ? 'italic' : 'normal',
+    );
+    const lh = bodyStyle.lineHeightPx;
+    const { lines } = measureRichBlock(
+      [{ text: continuesText, bold: false, italic: false }],
+      font, font, font, font, innerWidth, lh,
+      { textAlign: 'left' },
+    );
+    continuesMarkerPx = lines.length * lh;
+    if (input.continues && lines.length > 0) {
+      const top = st.cursorY;
+      const align = style.continuesMarkerAlign;
+      continuesBlock = {
+        kind: 'text',
+        bbox: createBoundingBox(innerX, top, innerWidth, continuesMarkerPx),
+        fontString: font,
+        color: bodyStyle.color,
+        lines: lines.map((ln, i) => {
+          const slack = Math.max(0, innerWidth - ln.bbox.width);
+          return {
+            text: ln.text,
+            xOffset: align === 'right' ? slack : align === 'center' ? slack / 2 : 0,
+            baselineY: top + i * lh + lh * 0.8,
+            width: ln.bbox.width,
+          };
+        }),
+        clip: false,
+        artifact: true,
+      };
+      st.cursorY += continuesMarkerPx;
     }
   }
   cursorY = st.cursorY;
@@ -892,6 +1193,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     const extra = iconSize - contentH;
     if (style.icon.align === 'center') {
       if (titleBlock) offsetDesignBlock(titleBlock, 0, extra / 2);
+      if (continuesBlock) offsetDesignBlock(continuesBlock, 0, extra / 2);
       for (const blk of childBlocks) offsetBlock(blk, 0, extra / 2);
     }
     contentBottom += extra;
@@ -919,10 +1221,17 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       : stripeLeft
         ? createBoundingBox(0, 0, stripeW, boxHeight)
         : createBoundingBox(boxWidth - stripeW, 0, stripeW, boxHeight);
+    // On a rounded frame the stripe follows the corners: it is clipped to
+    // the frame's rounded rectangle (the radius clamped as the frame's is),
+    // so its square ends never stick out past the background and border.
+    const frameRadius = Math.max(0, Math.min(px(style.borderRadius), boxWidth / 2, boxHeight / 2));
     overlayBlocks.push({
       kind: 'box',
       bbox: stripeBox,
       box: { backgroundColor: style.stripe.color.hex, borderWidthPx: 0, borderRadiusPx: 0 },
+      ...(frameRadius > 0
+        ? { clip: { x: 0, y: 0, width: boxWidth, height: boxHeight, radii: [frameRadius, frameRadius, frameRadius, frameRadius] as [number, number, number, number] } }
+        : {}),
     });
   }
   let iconFileId: string | undefined;
@@ -933,7 +1242,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     // A corner badge hangs on its corner half past the border, flush with
     // the top edge.
     const iconX = cornerIcon
-      ? (cornerRight ? boxWidth - iconSize / 2 : -iconSize / 2)
+      ? (cornerRight ? boxWidth - cornerIconW / 2 : -cornerIconW / 2)
       : sideStripe
         ? (stripeLeft ? (stripeW - iconSize) / 2 : boxWidth - stripeW + (stripeW - iconSize) / 2)
         : innerX - iconColumn;
@@ -950,6 +1259,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     }
   }
   if (titleBlock) overlayBlocks.push(titleBlock);
+  if (continuesBlock) overlayBlocks.push(continuesBlock);
 
   // --- Label tab ---------------------------------------------------------------
   // The fence's `label` on a tab hugging a top corner, rising `offset`
@@ -997,7 +1307,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
           const k = Math.min(iconW / dims.width, tabH / dims.height);
           w = dims.width * k; h = dims.height * k;
         }
-        overlayBlocks.push({ kind: 'image', bbox: createBoundingBox(onRight ? iconX + iconW - w : iconX, tabY + (tabH - h) / 2, w, h), fileId });
+        overlayBlocks.push({ kind: 'image', bbox: createBoundingBox(onRight ? iconX + iconW - w : iconX, tabY + (tabH - h) / 2, w, h), fileId, ...pictureTraits(resource, fileId) });
         edgeX = onRight ? iconX + iconW - w : iconX + w;
       }
     }
@@ -1099,6 +1409,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     totalHeight: frameHeight,
     marginTopPx: px(style.marginTop),
     marginBottomPx: px(style.marginBottom),
+    continuesMarkerPx,
   };
 }
 
@@ -1123,6 +1434,18 @@ function fitInSquare(x: number, y: number, size: number, w?: number, h?: number)
   const fw = w * scale;
   const fh = h * scale;
   return createBoundingBox(x + (size - fw) / 2, y + (size - fh) / 2, fw, fh);
+}
+
+/** How wide the icon `buildIconBlock` draws for `spec` in a slot `size`
+ *  tall and `boxWidth` wide: the fitted picture of a wide resource icon (a
+ *  strip), else the square. A corner badge is centred on its corner by
+ *  this width (EF-142). */
+function iconFootprintWidth(spec: IconSpec, size: number, boxWidth: number, ctx: BlockMeasureContext): number {
+  if (spec.kind !== 'resource' || boxWidth <= size) return size;
+  const resource = ctx.resourceById.get(spec.resourceId);
+  const dims = resource?.bitmap ?? resource?.svg;
+  if (!dims?.width || !dims.height) return size;
+  return dims.width * Math.min(boxWidth / dims.width, size / dims.height);
 }
 
 interface BuiltIcon {
@@ -1156,7 +1479,7 @@ function buildIconBlock(
       bbox = createBoundingBox(x, y + (size - fh) / 2, fw, fh);
     }
     return {
-      block: { kind: 'image', bbox, fileId },
+      block: { kind: 'image', bbox, fileId, ...pictureTraits(resource, fileId) },
       fileId,
       format: resource?.bitmap?.format,
     };

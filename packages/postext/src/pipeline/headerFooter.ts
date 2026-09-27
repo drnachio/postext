@@ -1,7 +1,7 @@
 import type { PartPageInfo } from './placeholders';
-import { applyPartPalettesToFlow } from './partPalette';
-import { TITLE_BREAK_RE, applyTitleBreaks } from '../parse/inlineFormatting';
-import type { DocumentMetadata, Resource, ResolvedDesignSlot, ResolvedDesignTextElement, ResolvedHeadingLevelConfig } from '../types';
+import { applyPartPalettesToFlow, type FlowColorValues } from './partPalette';
+import { TITLE_BREAK_RE, applyTitleBreaks, parseInlineFormatting } from '../parse/inlineFormatting';
+import type { DesignTextAlign, DocumentMetadata, Resource, ResolvedDesignSlot, ResolvedDesignTextElement, ResolvedHeadingLevelConfig, TextAlign } from '../types';
 import {
   createBoundingBox,
   type VDTBlock,
@@ -14,16 +14,20 @@ import {
   type VDTDesignImageBlock,
   type VDTPage,
 } from '../vdt';
-import { computeChapterTitles, computeChapterNumbers, computeChapterAttrs, computePartValues } from './placeholders';
-import { parsePartNumber } from './parts';
+import { computeChapterTitles, computeChapterTitlesAtTop, computeChapterNumbers, computeChapterNumbersAtTop, computeChapterNumbersByBlock, computeChapterAttrs, computePageMarks, computePartValues, lineJoin, markSourceOf, type JoinedLine, type PageMarks } from './placeholders';
+import { parsePartNumber, partMarkPages } from './parts';
 import { computePageMetrics } from './buildHelpers';
+import { resolvedLocale } from './config';
 import { classifyPages } from './pageRoles';
-import { computeSectionStyles, createHeadingLevelResolver, type HeadingLevelResolver } from './headingStyles';
+import { computeSectionStyles, createHeadingLevelResolver, headingIsHidden, type HeadingLevelResolver } from './headingStyles';
 import { dimensionToPx } from '../units';
+import { resolveDesignLineHeight } from '../defaults/headerFooter';
 import type { ResolvedConfig } from '../vdt';
 import type { PageRole } from '../types';
 import {
   layoutDesignSlot,
+  textVerticalOffset,
+  trailingTracking,
   type DesignFrames,
   type ResolvedPrimitive,
   type ResolvedTextPrimitive,
@@ -31,7 +35,8 @@ import {
   type ResolvedBoxPrimitive,
   type ResolvedImagePrimitive,
 } from '../design/layout';
-import type { DesignPlaceholderContext } from '../design/placeholders';
+import { resolveDesignText, type DesignPlaceholderContext, type HeadingPlaceholderInfo } from '../design/placeholders';
+import { plainDesignText } from '../design/richText';
 
 /** Slots live in the page margin area between the body edge and the trim
  *  edge. Header slot container: from the trim top down to body top.
@@ -72,11 +77,13 @@ function footerContainerBbox(
 }
 
 function textAlignOffsetX(
-  align: 'left' | 'center' | 'right',
+  align: DesignTextAlign,
   contentWidth: number,
   lineWidth: number,
 ): number {
-  if (align === 'left') return 0;
+  // A justified line fills its room; the last line of a paragraph is set
+  // flush left.
+  if (align === 'left' || align === 'justify') return 0;
   if (align === 'right') return Math.max(0, contentWidth - lineWidth);
   return Math.max(0, (contentWidth - lineWidth) / 2);
 }
@@ -93,24 +100,27 @@ function imagePrimitiveToBlock(prim: ResolvedImagePrimitive): VDTDesignImageBloc
     kind: 'image',
     bbox: createBoundingBox(prim.x, prim.y, prim.width, prim.height),
     fileId: prim.fileId,
+    ...(prim.imageKind ? { imageKind: prim.imageKind } : {}),
+    ...(prim.pdfFileId ? { pdfFileId: prim.pdfFileId } : {}),
   };
 }
 
 function textPrimitiveToBlock(prim: ResolvedTextPrimitive): VDTDesignTextBlock {
-  const totalContentHeight = prim.lines.reduce(
-    (s, l) => Math.max(s, l.topY + l.height),
-    0,
-  );
-  const vOffset =
-    prim.verticalAlign === 'top' ? 0
-    : prim.verticalAlign === 'bottom' ? Math.max(0, prim.contentHeight - totalContentHeight)
-    : Math.max(0, (prim.contentHeight - totalContentHeight) / 2);
+  // Lines taller than the box run out on the side the alignment leaves
+  // free (EF-138). A drop cap's primitive carries the offset of its text
+  // already, and is top-aligned.
+  const vOffset = textVerticalOffset(prim.verticalAlign, prim.contentHeight, prim.lines);
 
+  // A centred or right-aligned line is placed by its ink: the tracking
+  // after its last glyph does not count (EF-153).
   const lines = prim.lines.map((l) => ({
     text: l.text,
-    xOffset: prim.contentX + (l.xOffset ?? 0) + textAlignOffsetX(prim.align, prim.contentWidth - (l.xOffset ?? 0), l.width),
+    xOffset: prim.contentX + (l.xOffset ?? 0)
+      + textAlignOffsetX(prim.align, prim.contentWidth - (l.xOffset ?? 0), l.width - trailingTracking(l.text, prim.letterSpacingPx)),
     baselineY: prim.y + prim.contentY + vOffset + l.baselineY,
     width: l.width,
+    ...(l.runs ? { runs: l.runs.map((r) => ({ ...r })) } : {}),
+    ...(l.wordSpacingPx !== undefined ? { wordSpacingPx: l.wordSpacingPx } : {}),
   }));
 
   return {
@@ -128,9 +138,11 @@ function textPrimitiveToBlock(prim: ResolvedTextPrimitive): VDTDesignTextBlock {
         }
       : undefined,
     clip: prim.needsClip,
-    ...(prim.letterSpacingPx !== undefined && prim.letterSpacingPx > 0
+    // Negative tracking (a tightened display title) is painted too (EF-82).
+    ...(prim.letterSpacingPx !== undefined && prim.letterSpacingPx !== 0
       ? { letterSpacingPx: prim.letterSpacingPx }
       : {}),
+    ...(prim.stroke ? { stroke: { ...prim.stroke } } : {}),
   };
 }
 
@@ -157,6 +169,76 @@ function boxPrimitiveToBlock(prim: ResolvedBoxPrimitive): VDTDesignBoxBlock {
   };
 }
 
+/** Where a primitive's reservation ends: its foot, except for a drop cap,
+ *  whose line box runs a quarter of its size under its baseline. The letter
+ *  sits inside its paragraph's lines, so it reserves nothing below the text
+ *  (`text`, the primitive before it) — at most down to its own baseline,
+ *  should the text end above it (EF-108). */
+function reservedBottom(prim: ResolvedPrimitive, text: ResolvedPrimitive | undefined): number {
+  const foot = prim.y + prim.height;
+  if (prim.kind !== 'text' || !prim.dropCap || !text) return foot;
+  const baseline = prim.y + (prim.lines[0]?.baselineY ?? prim.height);
+  return Math.min(foot, Math.max(text.y + text.height, baseline));
+}
+
+/** Height of the container a design is measured against: large enough
+ *  that nothing reaches its foot. */
+const MEASURE_CONTAINER_HEIGHT = 1e6;
+
+/** The placeholder context a heading design is laid out with during body
+ *  layout, before the pages exist (a one-page stub). */
+function headingPlaceholders(
+  heading: HeadingPlaceholderInfo,
+  metadata: DocumentMetadata,
+  pageIndex: number,
+): DesignPlaceholderContext {
+  const stubPage = { index: pageIndex, pageLabel: '1' } as unknown as VDTPage;
+  return {
+    kind: 'heading',
+    page: stubPage,
+    allPages: [stubPage],
+    metadata,
+    chapterTitleByPageIndex: [],
+    heading,
+  };
+}
+
+/**
+ * The page boxes a heading's design paints, laid out against `container`
+ * — the band the placed heading takes, as `buildHeadersAndFooters` lays it
+ * out — in absolute page px. Only the elements that reserve room: those
+ * with `reserve: false` are decoration the text and the floats may cover.
+ * The placement pass keeps the float-only side column clear of them
+ * (EF-78): a chapter numeral set in the margin column is no room for a
+ * marginal figure.
+ */
+export function headingDesignBoxes(
+  level: ResolvedHeadingLevelConfig,
+  heading: HeadingPlaceholderInfo,
+  container: { x: number; y: number; width: number; height: number },
+  dpi: number,
+  metadata: DocumentMetadata,
+  pageIndex: number,
+  frames?: DesignFrames,
+  resourceById?: ReadonlyMap<string, Resource>,
+): Array<{ x: number; y: number; width: number; height: number }> {
+  if (!level.advancedDesign.enabled || level.advancedDesign.slot.elements.length === 0) return [];
+  const result = layoutDesignSlot(
+    level.advancedDesign.slot,
+    { container, dpi, placeholders: headingPlaceholders(heading, metadata, pageIndex), frames, resourceById },
+    pageIndex,
+  );
+  const excluded = new Set(level.advancedDesign.slot.elements.filter((el) => el.reserve === false).map((el) => el.id));
+  const out: Array<{ x: number; y: number; width: number; height: number }> = [];
+  result.primitives.forEach((prim, i) => {
+    if (excluded.has(result.elementIds[i]!)) return;
+    if (![prim.x, prim.y, prim.width, prim.height].every(Number.isFinite)) return;
+    const bottom = reservedBottom(prim, result.primitives[i - 1]);
+    out.push({ x: prim.x, y: prim.y, width: prim.width, height: Math.max(0, bottom - prim.y) });
+  });
+  return out;
+}
+
 /** Measure the natural bottom of a heading's advanced-design slot when laid
  *  out against a container of the given `width` with unbounded height.
  *  Returns 0 if the level has no advanced design or the slot is empty. Used
@@ -164,10 +246,19 @@ function boxPrimitiveToBlock(prim: ResolvedBoxPrimitive): VDTDesignBoxBlock {
  *  subsequent blocks sit below the actual bottom of the design content
  *  rather than below the natural text bottom. Applies to both in-column
  *  headings (overlay in block bbox) and page-spanning openers (width is the
- *  full content area; passed in by the caller). */
+ *  full content area; passed in by the caller).
+ *
+ *  Two kinds of element never count: those flagged `reserve: false`
+ *  (decoration that may overlap the text), and those whose position or
+ *  height follows the container's height — anchored to its middle or its
+ *  foot, `'fill'` tall, or chained to such an element. The container at
+ *  paint time is the band this height reserves, so they are laid out
+ *  against the result and cannot set it. They are found by laying the slot
+ *  out against two container heights and keeping only the primitives that
+ *  did not move. */
 export function measureHeadingAdvancedDesignHeight(
   level: ResolvedHeadingLevelConfig,
-  heading: { titleText: string; formattedNumber: string; chapterNumber: string; attrs?: Record<string, string> },
+  heading: HeadingPlaceholderInfo,
   width: number,
   dpi: number,
   metadata: DocumentMetadata,
@@ -181,21 +272,52 @@ export function measureHeadingAdvancedDesignHeight(
   /** Absolute page position of the heading container's top-left. Defaults
    *  to the frames' page origin when omitted. */
   origin?: { x: number; y: number },
+  /** Resources by id, for `kind: 'image'` elements — the pictures painted
+   *  with the design count like its other elements (EF-90). Without it an
+   *  image element cannot be sized and counts nothing. */
+  resourceById?: ReadonlyMap<string, Resource>,
 ): number {
-  if (!level.advancedDesign.enabled) return 0;
+  return measureHeadingDesign(level, heading, width, dpi, metadata, pageIndex, frames, origin, resourceById).height;
+}
+
+/** What a heading's advanced design needs of the band it is laid out in
+ *  (see {@link measureHeadingDesign}). */
+export interface HeadingDesignMeasure {
+  /** The height the design reserves below the heading's top (see
+   *  {@link measureHeadingAdvancedDesignHeight}), `minHeight` included. */
+  height: number;
+  /** The least height the band needs at paint time for every text that
+   *  rides on it to start at or below the heading's top; 0 when none
+   *  does. */
+  textFloor: number;
+}
+
+/** {@link measureHeadingAdvancedDesignHeight}, with the floor that texts
+ *  riding on the band set (`textFloor`). A text anchored to the foot or
+ *  the middle of the band (a title set on the last line of a tall opener)
+ *  does not set the reserved height, but the band has to be tall enough to
+ *  hold it: the caller keeps the band it paints at least `textFloor` tall,
+ *  so such a title never rises above the heading's top into the text over
+ *  it (EF-176; up to postext 1.4 it did when it was taller than the
+ *  heading's own lines). Boxes, rules and pictures that ride on the band
+ *  set no floor: a panel may reach above the heading on purpose. */
+export function measureHeadingDesign(
+  level: ResolvedHeadingLevelConfig,
+  heading: HeadingPlaceholderInfo,
+  width: number,
+  dpi: number,
+  metadata: DocumentMetadata,
+  pageIndex: number,
+  frames?: DesignFrames,
+  origin?: { x: number; y: number },
+  resourceById?: ReadonlyMap<string, Resource>,
+): HeadingDesignMeasure {
+  if (!level.advancedDesign.enabled) return { height: 0, textFloor: 0 };
   const minHeightPx = level.advancedDesign.minHeight
     ? dimensionToPx(level.advancedDesign.minHeight, dpi)
     : 0;
-  if (level.advancedDesign.slot.elements.length === 0) return minHeightPx;
-  const stubPage = { index: pageIndex, pageLabel: '1' } as unknown as VDTPage;
-  const placeholders: DesignPlaceholderContext = {
-    kind: 'heading',
-    page: stubPage,
-    allPages: [stubPage],
-    metadata,
-    chapterTitleByPageIndex: [],
-    heading,
-  };
+  if (level.advancedDesign.slot.elements.length === 0) return { height: minHeightPx, textFloor: 0 };
+  const placeholders = headingPlaceholders(heading, metadata, pageIndex);
   let stubFrames: DesignFrames | undefined;
   if (frames) {
     const ox = origin?.x ?? frames.page.x;
@@ -203,16 +325,43 @@ export function measureHeadingAdvancedDesignHeight(
     const shift = (f: DesignFrames['page']) => ({ x: f.x - ox, y: f.y - oy, width: f.width, height: f.height });
     stubFrames = { page: shift(frames.page), bleed: shift(frames.bleed) };
   }
-  const result = layoutDesignSlot(
+  const layoutAt = (height: number) => layoutDesignSlot(
     level.advancedDesign.slot,
-    { container: { x: 0, y: 0, width, height: 1e6 }, dpi, placeholders, frames: stubFrames },
+    { container: { x: 0, y: 0, width, height }, dpi, placeholders, frames: stubFrames, resourceById },
     pageIndex,
   );
+  const result = layoutAt(MEASURE_CONTAINER_HEIGHT);
+  // Only an element reaching far down the container can follow its height
+  // (its middle is half a million px down): the second layout is skipped
+  // for every other design.
+  const taller = result.primitives.some((p) => p.y + p.height > MEASURE_CONTAINER_HEIGHT / 4)
+    ? layoutAt(2 * MEASURE_CONTAINER_HEIGHT)
+    : result;
+  const excluded = new Set(level.advancedDesign.slot.elements.filter((el) => el.reserve === false).map((el) => el.id));
   let bottom = 0;
-  for (const prim of result.primitives) {
-    bottom = Math.max(bottom, prim.y + prim.height);
-  }
-  return Math.max(bottom, minHeightPx);
+  let textFloor = 0;
+  result.primitives.forEach((prim, i) => {
+    if (excluded.has(result.elementIds[i]!)) return;
+    // A primitive a malformed value left without a finite box reserves
+    // nothing: a NaN here would make the caller drop the whole reservation
+    // (minHeight included).
+    if (!Number.isFinite(prim.y + prim.height)) return;
+    const moved = taller.primitives[i];
+    if (!moved) return;
+    const stretched = Math.abs(moved.height - prim.height) > 0.5;
+    if (Math.abs(moved.y - prim.y) > 0.5 || stretched) {
+      // A text riding on the band: its top moves `rate` px for each px of
+      // band, so the band that brings it up to the heading's top (y = 0)
+      // is the least it needs.
+      if (prim.kind === 'text' && !stretched) {
+        const rate = (moved.y - prim.y) / MEASURE_CONTAINER_HEIGHT;
+        if (rate > 0) textFloor = Math.max(textFloor, MEASURE_CONTAINER_HEIGHT - prim.y / rate);
+      }
+      return;
+    }
+    bottom = Math.max(bottom, reservedBottom(prim, result.primitives[i - 1]));
+  });
+  return { height: Math.max(bottom, minHeightPx), textFloor };
 }
 
 /** Optional page-level inputs for `layoutSlotToVdt`. */
@@ -237,7 +386,7 @@ export interface SlotLayoutExtras {
   metadata?: Record<string, unknown>;
 }
 
-const HEADING_LINE_PLACEHOLDER = /\{(number|numberDecimal|numberRoman|numberRomanLower|numberAlpha|numberAlphaLower|chapterNumber|chapterTitle)\}/;
+const HEADING_LINE_PLACEHOLDER = /\{(number|numberDecimal|numberRoman|numberRomanLower|numberAlpha|numberAlphaLower|numberWords|numberWordsLower|numberOrdinalWords|numberOrdinalWordsLower|chapterNumber|chapterTitle)\}/;
 const METADATA_ELEMENT = /^\s*\{(title|subtitle|author|publishDate)\}\s*$/;
 
 /** The source a text element maps back to, from what its content renders:
@@ -293,7 +442,14 @@ export function layoutSlotToVdt(
     for (const el of slot.elements) {
       if (el.kind !== 'text') continue;
       const src = sourceForElement(el.content, extras);
-      if (src) sourceByElement.set(el.id, src);
+      if (!src) continue;
+      // Inline marks drop their markers from the printed text. The
+      // per-character map holds while the mapped value is still printed as
+      // written (no markers or escapes of its own); otherwise only the range
+      // maps back.
+      const keepMap = !el.inlineMarks || src.text === undefined
+        || plainDesignText(resolveDesignText(el.content, placeholders)).includes(src.text);
+      sourceByElement.set(el.id, keepMap ? src : { start: src.start, end: src.end });
     }
   }
   const blocks = result.primitives.map((prim) => {
@@ -365,34 +521,251 @@ function openerContainerBbox(
 function findOpenerHeading(
   page: VDTPage,
   levels: HeadingLevelResolver,
-): { block: VDTBlock; level: number; titleText: string; numberPrefix: string } | undefined {
+): { block: VDTBlock; level: number; title: DefaultOpenerTitle; numberPrefix: string } | undefined {
   for (const col of page.columns) {
     for (const block of col.blocks) {
       if (block.type !== 'heading' || !block.headingLevel) continue;
       const lvl = levels.forLevel(block.headingLevel, block.headingStyleId);
       if (!lvl) continue;
       if (lvl.span !== 'page') continue;
-      const full = block.lines
-        .map((ln) => (ln.segments ?? []).map((s) => s.text).join(''))
-        .join(' ');
+      // A structural heading prints nothing, not even an opener.
+      if (headingIsHidden(block, lvl)) continue;
       const pref = block.numberPrefix ?? '';
-      const title = applyTitleBreaks(
-        pref && full.startsWith(`${pref} `) ? full.slice(pref.length + 1) : full,
-        block.titleBreaks,
-        block.titleLength ?? -1,
-      );
-      return { block, level: block.headingLevel, titleText: title, numberPrefix: pref };
+      const title = defaultOpenerTitle(block.lines, pref, block.titleBreaks, block.titleLength ?? -1);
+      return { block, level: block.headingLevel, title, numberPrefix: pref };
     }
   }
   return undefined;
 }
 
+/** The title the default opener of a page-span heading prints, read from
+ *  the heading's laid-out lines. */
+export interface DefaultOpenerTitle {
+  /** The plain title, as `{titleText}` resolves it: the lines joined back
+   *  into the text they were broken from (see `lineJoin`: a space where the
+   *  break took one, a no-break space where it parted a glued group,
+   *  nothing after a hard hyphen or inside a divided word, whose added
+   *  hyphen goes), the number prefix dropped, a forced break
+   *  (`\\`) as a newline. */
+  titleText: string;
+  /** The same title written as inline Markdown, when the heading sets bold,
+   *  italic, superscript or subscript runs (EF-122): the opener then paints
+   *  the runs the heading was measured with. Left out when the heading has
+   *  none, or when its runs cannot be written back exactly (a small-capitals
+   *  run, a link, a marker character next to a run); the opener then prints
+   *  the title plain, and its band still holds every line it paints. */
+  marked?: string;
+}
+
+/** A heading line as the title readers need it: its segments, and how it
+ *  was broken from the next one. */
+export type TitleLine = JoinedLine & {
+  segments?: readonly { text: string; bold?: boolean; italic?: boolean; script?: 'sup' | 'sub' }[];
+};
+
+/** `{titleText}` of a heading, from the lines it was laid out in: the
+ *  plain title of {@link defaultOpenerTitle}. */
+export function headingTitleText(
+  lines: readonly TitleLine[],
+  numberPrefix: string,
+  titleBreaks: readonly number[] | undefined,
+  titleLength: number,
+): string {
+  return defaultOpenerTitle(lines, numberPrefix, titleBreaks, titleLength).titleText;
+}
+
+type TitleRunFlags = { bold: boolean; italic: boolean; script?: 'sup' | 'sub' };
+const PLAIN_RUN: TitleRunFlags = { bold: false, italic: false };
+/** The marker characters a backslash escapes (see `protectEscapes`). */
+const TITLE_ESCAPE_RE = /[*_^~`]/g;
+const escapeTitleRun = (text: string): string => text.replace(TITLE_ESCAPE_RE, (c) => `\\${c}`);
+const sameEmphasis = (a: TitleRunFlags, b: TitleRunFlags): boolean => a.bold === b.bold && a.italic === b.italic;
+
+/** The title a page-span heading's default opener prints, from the lines the
+ *  heading was measured into (see {@link DefaultOpenerTitle}). The same
+ *  reading serves the band's measure (`build.ts`) and its paint, so the
+ *  two lay out one text. */
+export function defaultOpenerTitle(
+  lines: readonly TitleLine[],
+  numberPrefix: string,
+  titleBreaks: readonly number[] | undefined,
+  titleLength: number,
+): DefaultOpenerTitle {
+  const chars: string[] = [];
+  const flags: TitleRunFlags[] = [];
+  /** Where a line break was read back as a space or a no-break space. */
+  const separators = new Set<number>();
+  let hasMarks = false;
+  lines.forEach((ln, i) => {
+    const start = chars.length;
+    // The hyphen repeated from the line before (`repeatHyphen`) is not part
+    // of the title: "bem-" | "-aventurados" reads "bem-aventurados".
+    let skipRepeated = ln.repeatedHyphen === true;
+    for (const s of ln.segments ?? []) {
+      let from = 0;
+      if (skipRepeated && s.text.length > 0) {
+        if (s.text.startsWith('-')) from = 1;
+        skipRepeated = false;
+      }
+      const f: TitleRunFlags = s.bold || s.italic || s.script
+        ? { bold: !!s.bold, italic: !!s.italic, ...(s.script ? { script: s.script } : {}) }
+        : PLAIN_RUN;
+      if (f !== PLAIN_RUN) hasMarks = true;
+      for (let k = from; k < s.text.length; k++) {
+        chars.push(s.text[k]!);
+        flags.push(f);
+      }
+    }
+    // Read the lines back as the text they were broken from (EF-162): the
+    // space a break took comes back, a word the break divided is whole
+    // again (its added hyphen goes), and a hard hyphen at a line end keeps
+    // its word ("Word-" | "Book" is "Word-Book"), and a group glued by a
+    // no-break space that the line parted gets its no-break space back.
+    // Up to postext 1.4 every line break became a space.
+    const next = lines[i + 1];
+    let end = chars.length;
+    if (next !== undefined) while (end > start && (chars[end - 1] === ' ' || chars[end - 1] === '\t')) end--;
+    const { drop, separator } = lineJoin(chars.slice(start, end).join(''), ln, next, end < chars.length);
+    chars.length = end - drop;
+    flags.length = end - drop;
+    if (separator) {
+      separators.add(chars.length);
+      chars.push(separator);
+      flags.push(PLAIN_RUN);
+    }
+  });
+  // The space two lines were broken at takes the emphasis of the words on
+  // both sides of it, when they share one.
+  for (let i = 1; i < chars.length - 1; i++) {
+    if (flags[i] === PLAIN_RUN && (chars[i] === ' ' || separators.has(i)) && sameEmphasis(flags[i - 1]!, flags[i + 1]!)) {
+      const f = flags[i - 1]!;
+      if (f.bold || f.italic) flags[i] = { bold: f.bold, italic: f.italic };
+    }
+  }
+  const full = chars.join('');
+  const drop = numberPrefix && full.startsWith(`${numberPrefix} `) ? numberPrefix.length + 1 : 0;
+  const title = full.slice(drop);
+  const titleText = applyTitleBreaks(title, titleBreaks, titleLength);
+  if (!hasMarks) return { titleText };
+  let tChars = chars.slice(drop);
+  let tFlags = flags.slice(drop);
+  // The forced breaks, as `applyTitleBreaks` sets them: a newline at each
+  // recorded index, the spaces and tabs around it dropped.
+  if (titleBreaks && titleBreaks.length > 0 && title.length === titleLength) {
+    for (const i of titleBreaks) if (i < tChars.length) tChars[i] = '\n';
+    const keep = tChars.map((c, i) => {
+      if (c !== ' ' && c !== '\t') return true;
+      let a = i - 1;
+      while (a >= 0 && (tChars[a] === ' ' || tChars[a] === '\t')) a--;
+      let b = i + 1;
+      while (b < tChars.length && (tChars[b] === ' ' || tChars[b] === '\t')) b++;
+      return tChars[a] !== '\n' && tChars[b] !== '\n';
+    });
+    tFlags = tFlags.filter((_, i) => keep[i]);
+    tChars = tChars.filter((_, i) => keep[i]);
+  }
+  if (tChars.join('') !== titleText) return { titleText };
+  const scripted = (a: number, b: number): string => {
+    let out = '';
+    let i = a;
+    while (i < b) {
+      const script = tFlags[i]!.script;
+      let j = i + 1;
+      while (j < b && tFlags[j]!.script === script) j++;
+      const text = escapeTitleRun(tChars.slice(i, j).join(''));
+      out += script === 'sup' ? `^${text}^` : script === 'sub' ? `~${text}~` : text;
+      i = j;
+    }
+    return out;
+  };
+  let marked = '';
+  let i = 0;
+  while (i < tChars.length) {
+    if (tChars[i] === '\n') {
+      marked += '\n';
+      i++;
+      continue;
+    }
+    // A run of one emphasis, within one line; its edge spaces stay outside
+    // the markers, as Markdown needs them.
+    let j = i + 1;
+    while (j < tChars.length && tChars[j] !== '\n' && sameEmphasis(tFlags[j]!, tFlags[i]!)) j++;
+    const { bold, italic } = tFlags[i]!;
+    let a = i;
+    let b = j;
+    if (bold || italic) {
+      while (a < b && /\s/.test(tChars[a]!)) a++;
+      while (b > a && /\s/.test(tChars[b - 1]!)) b--;
+    }
+    if (a < b && (bold || italic)) {
+      const marker = bold && italic ? '***' : bold ? '**' : '*';
+      marked += scripted(i, a) + marker + scripted(a, b) + marker + scripted(b, j);
+    } else {
+      marked += scripted(i, j);
+    }
+    i = j;
+  }
+  // Kept only when it reads back as the same text with the same runs.
+  const spans = parseInlineFormatting(marked);
+  if (spans.map((s) => s.text).join('') !== titleText) return { titleText };
+  let at = 0;
+  for (const s of spans) {
+    if (s.smallCaps || s.links || s.math) return { titleText };
+    for (let k = 0; k < s.text.length; k++, at++) {
+      if (/\s/.test(s.text[k]!)) continue;
+      const f = tFlags[at]!;
+      if (f.bold !== !!s.bold || f.italic !== !!s.italic || f.script !== s.script) return { titleText };
+    }
+  }
+  return { titleText, marked };
+}
+
+/** The height of the title a page-span heading's default opener paints
+ *  across `width`, with the opener's own painter (a greedy wrap at natural
+ *  widths, a justified heading set flush left). The band reserved for the
+ *  heading is at least this tall, so it holds every line the opener paints
+ *  even where the heading's own measure fits more on a line: a justified
+ *  line whose spaces shrink, a forced break, a run the opener sets plain
+ *  (EF-100). */
+export function measureDefaultOpenerHeight(
+  level: ResolvedHeadingLevelConfig,
+  textAlign: TextAlign,
+  title: DefaultOpenerTitle,
+  numberPrefix: string,
+  width: number,
+  dpi: number,
+  metadata: DocumentMetadata,
+  pageIndex: number,
+): number {
+  const slot = synthesiseDefaultOpenerSlot(level, numberPrefix.length > 0, textAlign, title.marked !== undefined);
+  const placeholders = headingPlaceholders(
+    { titleText: title.marked ?? title.titleText, formattedNumber: numberPrefix },
+    metadata,
+    pageIndex,
+  );
+  const result = layoutDesignSlot(slot, { container: { x: 0, y: 0, width, height: MEASURE_CONTAINER_HEIGHT }, dpi, placeholders }, pageIndex);
+  let bottom = 0;
+  for (const prim of result.primitives) {
+    if (prim.kind !== 'text') continue;
+    for (const ln of prim.lines) bottom = Math.max(bottom, ln.topY + ln.height);
+  }
+  return bottom;
+}
+
 /** Build a synthesised default design slot for a `span: 'page'` heading when
  *  the user has not configured an `advancedDesign.slot`. Renders as a single
  *  text element, anchored to fill the full-page-width container, using the
- *  heading level's resolved typography. Emits `{number} {titleText}` when the
- *  heading carries a numberPrefix, otherwise `{titleText}`. */
-function synthesiseDefaultOpenerSlot(level: ResolvedHeadingLevelConfig, hasNumberPrefix: boolean): ResolvedDesignSlot {
+ *  heading level's resolved typography and `headings.textAlign` (justified
+ *  sets flush left, like the last line of a justified heading). Emits
+ *  `{number} {titleText}` when the heading carries a numberPrefix, otherwise
+ *  `{titleText}`. With `marked`, `{titleText}` holds the title as inline
+ *  Markdown (see {@link DefaultOpenerTitle}) and the element reads it so. */
+function synthesiseDefaultOpenerSlot(
+  level: ResolvedHeadingLevelConfig,
+  hasNumberPrefix: boolean,
+  textAlign: TextAlign,
+  marked = false,
+): ResolvedDesignSlot {
   // `{number}` is the heading placeholder for the formatted number;
   // `{formattedNumber}` is not one, and left the title with a leading space.
   const content = hasNumberPrefix ? '{number} {titleText}' : '{titleText}';
@@ -412,11 +785,17 @@ function synthesiseDefaultOpenerSlot(level: ResolvedHeadingLevelConfig, hasNumbe
     fontWeight: level.fontWeight,
     italic: level.italic,
     color: level.color,
-    align: 'left',
+    align: textAlign === 'center' || textAlign === 'right' ? textAlign : 'left',
     verticalAlign: 'middle',
-    lineHeight: level.lineHeight.unit === 'em' ? level.lineHeight.value : 1.2,
+    // The level's own leading, as the band that holds the title was
+    // measured with it (EF-100).
+    ...resolveDesignLineHeight(level.lineHeight, level.fontSize),
     overflow: 'wrap',
     hyphenate: true,
+    // The level's tracking, as its in-column text is measured (EF-83).
+    ...(level.letterSpacing && level.letterSpacing.value !== 0 ? { letterSpacing: level.letterSpacing } : {}),
+    // The heading's bold, italic and script runs (EF-122).
+    ...(marked ? { inlineMarks: true } : {}),
   };
   return { elements: [textEl] };
 }
@@ -494,19 +873,29 @@ function synthesiseDefaultTocPartSlot(resolved: ResolvedConfig): ResolvedDesignS
 function pagesWithPartMarks(doc: VDTDocument): PartPageInfo[] {
   if (!doc.partMarks || doc.partMarks.length === 0) return doc.pages;
   const marked = new Map<number, NonNullable<PartPageInfo['partInfo']>>();
-  for (const mark of doc.partMarks) {
-    let page: number | undefined;
-    for (const b of doc.blocks) {
-      if (b.contentIndex !== undefined && b.contentIndex > mark.afterContentIndex && b.pageIndex !== undefined) {
-        page = page === undefined ? b.pageIndex : Math.min(page, b.pageIndex);
-      }
-    }
+  const pages = partMarkPages(doc);
+  doc.partMarks.forEach((mark, i) => {
+    const page = pages[i];
     if (page !== undefined) marked.set(page, { number: mark.number, title: mark.title, ...(mark.palette ? { palette: mark.palette } : {}) });
-  }
+  });
   return doc.pages.map((p, i) => (marked.has(i) && !p.partInfo ? { ...p, partInfo: marked.get(i) } : p));
 }
 
-export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: ReadonlyMap<string, Resource>): void {
+/** What the header/footer pass needs from the content beyond the laid-out
+ *  document. */
+export interface HeaderFooterInputs {
+  /** For a paragraph content block inside a `:::paragraphs{style=…}`
+   *  container: the style id and the paragraph's leading bold text, which
+   *  `{firstMark.<style>}` / `{lastMark.<style>}` print. */
+  paragraphMark?: (contentIndex: number) => { styleId: string; text: string } | undefined;
+  /** What each kind of flow colour takes under a page's palette overrides
+   *  where two palette entries share a base value (see
+   *  `flowColorValues`). Without it such a value takes the last override
+   *  that changes it. */
+  flowColorValues?: (overrides: Readonly<Record<string, string>>) => FlowColorValues;
+}
+
+export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: ReadonlyMap<string, Resource>, inputs: HeaderFooterInputs = {}): void {
   const resolved = doc.config;
   const dpi = resolved.page.dpi;
   const metrics = computePageMetrics(resolved);
@@ -516,13 +905,57 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
   classifyPages(doc, resolved);
 
   const chapterTitleByPageIndex = computeChapterTitles(doc.blocks, doc.pages.length, doc.pages);
-  const chapterNumberByPageIndex = computeChapterNumbers(doc.blocks, doc.pages.length, doc.pages, doc.chapterOrdinalOffset ?? 0);
+  // A heading style with an empty `numberingTemplate` prints no number, not
+  // even the chapter ordinal `{chapterNumber}` falls back to.
+  const numberlessStyles = new Set(resolved.headingStyles.filter((s) => s.numberingTemplate === '').map((s) => s.id));
+  const numberless = numberlessStyles.size > 0
+    ? (b: VDTBlock) => b.headingStyleId !== undefined && numberlessStyles.has(b.headingStyleId)
+    : undefined;
+  const chapterNumberByPageIndex = computeChapterNumbers(
+    doc.blocks,
+    doc.pages.length,
+    doc.pages,
+    doc.chapterOrdinalOffset ?? 0,
+    numberless,
+  );
+  // The chapter in force at the top of each page (`{chapterTitleAtTop}`,
+  // `{chapterNumberAtTop}`): the one a page runs on from, even where a new
+  // chapter starts lower down (EF-187).
+  const chapterTitleAtTopByPageIndex = computeChapterTitlesAtTop(doc.blocks, doc.pages.length, doc.pages);
+  const chapterNumberAtTopByPageIndex = computeChapterNumbersAtTop(
+    doc.blocks,
+    doc.pages.length,
+    doc.pages,
+    doc.chapterOrdinalOffset ?? 0,
+    numberless,
+  );
+  // A heading design (opener, in-column overlay, contents part row) prints
+  // the chapter its block belongs to, not the page's: where two chapters
+  // meet on a page, the page value is the later one's. Its height was
+  // measured with this value too (`build.ts`).
+  const chapterNumberByBlock = computeChapterNumbersByBlock(doc.blocks, doc.chapterOrdinalOffset ?? 0, numberless);
+  const chapterNumberOf = (block: VDTBlock, pageIndex: number): string =>
+    chapterNumberByBlock.get(block) ?? chapterNumberByPageIndex[pageIndex] ?? '';
   // Parity (odd/even elements) counts the pages before a continued document.
   const pageIndexOffset = doc.pageIndexOffset ?? 0;
   const chapterAttrsByPageIndex = computeChapterAttrs(doc.blocks, doc.pages.length, doc.pages);
+  // `{bookTotalPages}`: the host's count of the whole book, else the pages
+  // up to the end of this document.
+  const bookTotalPages = doc.bookPageCount ?? pageIndexOffset + doc.pages.length;
+  // Running marks, computed per key the first time a template names it.
+  const marksByKey = new Map<string, PageMarks>();
+  const marksFor = (key: string): PageMarks => {
+    let marks = marksByKey.get(key);
+    if (!marks) {
+      marks = computePageMarks(doc.blocks, doc.pages.length, markSourceOf(key), inputs.paragraphMark);
+      marksByKey.set(key, marks);
+    }
+    return marks;
+  };
   const partValues = computePartValues(pagesWithPartMarks(doc), doc.partStart);
   const { partTitleByPageIndex, partNumberByPageIndex } = partValues;
   const headingLevels = createHeadingLevelResolver(resolved);
+  const locale = resolvedLocale(resolved);
   // Styled sections (`{style="…"}` headings): their running heads replace
   // the document's on their pages, and their palette overrides stack on the
   // part's.
@@ -532,7 +965,7 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
     return section && Object.keys(section.palette).length > 0 ? { ...palette, ...section.palette } : palette;
   });
   // The same overrides recolour the palette-linked colours of the flow.
-  applyPartPalettesToFlow(doc, partPaletteByPageIndex, resolved.colorPalette);
+  applyPartPalettesToFlow(doc, partPaletteByPageIndex, resolved.colorPalette, inputs.flowColorValues);
 
   for (const page of doc.pages) {
     // Per-page content area: mirrored margins swap inner/outer on even pages.
@@ -551,8 +984,12 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
         allPages: doc.pages,
         metadata: doc.metadata,
         chapterTitleByPageIndex,
+        chapterTitleAtTopByPageIndex,
+        chapterNumberAtTopByPageIndex,
         chapterNumberByPageIndex,
         chapterAttrsByPageIndex,
+        bookTotalPages,
+        marksFor,
         partTitleByPageIndex,
         partNumberByPageIndex,
         partPaletteByPageIndex,
@@ -567,15 +1004,18 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
       );
     }
     // Back of a part divider: a blank page right after a part page takes the
-    // part's verso design (the model book tints the whole leaf).
-    const prevPage = page.index > 0 ? doc.pages[page.index - 1] : undefined;
+    // part's verso design (the model book tints the whole leaf). The part
+    // page may close the preceding chapter (`doc.afterPartPage`).
+    const prevPart = page.index > 0
+      ? doc.pages[page.index - 1]!.partInfo
+      : doc.afterPartPage ? doc.partStart : undefined;
     if (
       !page.partInfo
-      && prevPage?.partInfo
+      && prevPart
       && resolved.parts.versoDesign.elements.length > 0
       && page.columns.every((c) => c.blocks.length === 0)
     ) {
-      const { number, title } = prevPage.partInfo;
+      const { number, title } = prevPart;
       const placeholders: DesignPlaceholderContext = {
         kind: 'part',
         page,
@@ -584,6 +1024,8 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
         chapterTitleByPageIndex,
         chapterNumberByPageIndex,
         chapterAttrsByPageIndex,
+        bookTotalPages,
+        marksFor,
         partTitleByPageIndex,
         partNumberByPageIndex,
         partPaletteByPageIndex,
@@ -591,6 +1033,7 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
           titleText: title.replace(TITLE_BREAK_RE, '\n'),
           formattedNumber: number,
           numericValue: parsePartNumber(number),
+          locale,
           chapterNumber: chapterNumberByPageIndex[page.index] ?? '',
         },
       };
@@ -618,6 +1061,8 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
         chapterTitleByPageIndex,
         chapterNumberByPageIndex,
         chapterAttrsByPageIndex,
+        bookTotalPages,
+        marksFor,
         partTitleByPageIndex,
         partNumberByPageIndex,
         partPaletteByPageIndex,
@@ -625,6 +1070,7 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
           titleText: title.replace(TITLE_BREAK_RE, '\n'),
           formattedNumber: number,
           numericValue: parsePartNumber(number),
+          locale,
           chapterNumber: chapterNumberByPageIndex[page.index] ?? '',
         },
       };
@@ -648,9 +1094,13 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
     if (opener) {
       const level = headingLevels.forLevel(opener.level, opener.block.headingStyleId);
       if (level) {
-        const slot = level.advancedDesign.enabled && level.advancedDesign.slot.elements.length > 0
+        const designed = level.advancedDesign.enabled && level.advancedDesign.slot.elements.length > 0;
+        // The default opener prints the heading's runs (`marked`); a design's
+        // `{titleText}` is the plain title.
+        const marked = designed ? undefined : opener.title.marked;
+        const slot = designed
           ? level.advancedDesign.slot
-          : synthesiseDefaultOpenerSlot(level, opener.numberPrefix.length > 0);
+          : synthesiseDefaultOpenerSlot(level, opener.numberPrefix.length > 0, resolved.headings.textAlign, marked !== undefined);
         const placeholders: DesignPlaceholderContext = {
           kind: 'heading',
           page,
@@ -659,13 +1109,17 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
           chapterTitleByPageIndex,
           chapterNumberByPageIndex,
           chapterAttrsByPageIndex,
+          bookTotalPages,
+          marksFor,
           partTitleByPageIndex,
           partNumberByPageIndex,
           partPaletteByPageIndex,
           heading: {
-            titleText: opener.titleText,
+            titleText: marked ?? opener.title.titleText,
             formattedNumber: opener.numberPrefix,
-            chapterNumber: chapterNumberByPageIndex[page.index] ?? '',
+            numericValue: opener.block.headingNumber,
+            locale,
+            chapterNumber: chapterNumberOf(opener.block, page.index),
             attrs: opener.block.attrs,
           },
         };
@@ -677,7 +1131,7 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
           dpi,
           {
             ...extras,
-            titleSource: headingTitleSource(opener.block, opener.titleText),
+            titleSource: headingTitleSource(opener.block, opener.title.titleText),
             attrSources: opener.block.attrSources,
             attrs: opener.block.attrs,
             headingSource: headingLineSource(opener.block),
@@ -713,6 +1167,8 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
             chapterTitleByPageIndex,
             chapterNumberByPageIndex,
             chapterAttrsByPageIndex,
+            bookTotalPages,
+            marksFor,
             partTitleByPageIndex,
             partNumberByPageIndex,
             partPaletteByPageIndex: doc.pages.map((_, i) => (i === page.index ? palette : partPaletteByPageIndex[i] ?? {})),
@@ -720,7 +1176,8 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
               titleText: tp.title,
               formattedNumber: tp.number,
               numericValue: parsePartNumber(tp.number),
-              chapterNumber: chapterNumberByPageIndex[page.index] ?? '',
+              locale,
+              chapterNumber: chapterNumberOf(block, page.index),
             },
           };
           const overlay = layoutSlotToVdt(
@@ -740,11 +1197,11 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
         if (lvl.span === 'page') continue;
         if (!lvl.advancedDesign.enabled) continue;
         if (lvl.advancedDesign.slot.elements.length === 0) continue;
-        const full = block.lines
-          .map((ln) => (ln.segments ?? []).map((s) => s.text).join(''))
-          .join(' ');
         const pref = block.numberPrefix ?? '';
-        const title = pref && full.startsWith(`${pref} `) ? full.slice(pref.length + 1) : full;
+        // The lines joined back into the title (EF-162), with a forced break
+        // (`\\`) as a newline, as the block's height was measured
+        // (`build.ts`) and as an opener prints it (EF-152).
+        const title = headingTitleText(block.lines, pref, block.titleBreaks, block.titleLength ?? -1);
         const placeholders: DesignPlaceholderContext = {
           kind: 'heading',
           page,
@@ -753,13 +1210,17 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
           chapterTitleByPageIndex,
           chapterNumberByPageIndex,
           chapterAttrsByPageIndex,
+          bookTotalPages,
+          marksFor,
           partTitleByPageIndex,
           partNumberByPageIndex,
           partPaletteByPageIndex,
           heading: {
             titleText: title,
             formattedNumber: pref,
-            chapterNumber: chapterNumberByPageIndex[page.index] ?? '',
+            numericValue: block.headingNumber,
+            locale,
+            chapterNumber: chapterNumberOf(block, page.index),
             attrs: block.attrs,
           },
         };
@@ -787,8 +1248,12 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
         allPages: doc.pages,
         metadata: doc.metadata,
         chapterTitleByPageIndex,
+        chapterTitleAtTopByPageIndex,
+        chapterNumberAtTopByPageIndex,
         chapterNumberByPageIndex,
         chapterAttrsByPageIndex,
+        bookTotalPages,
+        marksFor,
         partTitleByPageIndex,
         partNumberByPageIndex,
         partPaletteByPageIndex,

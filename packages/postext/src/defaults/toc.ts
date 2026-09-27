@@ -16,7 +16,8 @@ const HALF_EM: Dimension = { value: 0.5, unit: 'em' };
 const PART_HEIGHT: Dimension = { value: 2, unit: 'em' };
 
 /** Static defaults of the `toc` section. Typography inherits the body text
- *  at resolve time; the part row height defaults to two body lines. */
+ *  at resolve time; the part row height defaults to `2em` of the body size
+ *  (EF-119), not two body lines. */
 export const DEFAULT_TOC_CONFIG = {
   levels: [1],
   leader: { enabled: true, char: '.', gap: HALF_EM },

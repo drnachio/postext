@@ -1,10 +1,12 @@
 /**
- * Vector emission of SVG resources into the PDF content stream.
+ * Vector emission of SVG resources into the PDF.
  *
  * Converts a conservative subset of SVG into a flat list of filled / stroked
  * paths in the SVG's root user space, which {@link drawVectorDrawing} then
  * paints with native PDF path operators — so the figure stays vector (sharp at
- * any zoom, tiny on disk) instead of going through a raster fallback.
+ * any zoom, tiny on disk) instead of going through a raster fallback. The
+ * paths of a drawing are written once per document, as a form XObject that
+ * every page drawing it paints.
  *
  * Supported: `svg` (root, `viewBox`, `preserveAspectRatio`), `g` / `a`,
  * `defs`, `path`, `rect`, `circle`, `ellipse`, `line`, `polyline`, `polygon`,
@@ -33,13 +35,18 @@
  */
 
 import {
+  PDFContentStream,
+  PDFContext,
+  PDFDict,
+  PDFName,
+  PDFNumber,
   PDFOperator,
   PDFOperatorNames,
+  PDFRef,
   LineCapStyle,
   LineJoinStyle,
   type PDFFont,
   type PDFImage,
-  type PDFName,
   appendBezierCurve,
   drawObject,
   beginText,
@@ -1421,46 +1428,188 @@ function pathOps(segs: PathSeg[]): PDFOperator[] {
   return ops;
 }
 
-/** ExtGState per distinct (fill alpha, stroke alpha) pair, per page. */
-const alphaStates = new WeakMap<PageCtx['page'], Map<string, ReturnType<PageCtx['page']['node']['newExtGState']>>>();
+/**
+ * The resources of one form XObject: fonts, alpha states and pictures, each
+ * named once. The form carries its own `/Resources`, so every page that
+ * paints it finds them there.
+ */
+class FormResources {
+  private readonly fonts = new Map<PDFFont, PDFName>();
+  private readonly alphas = new Map<string, PDFName>();
+  private readonly images = new Map<PDFRef, PDFName>();
+  private readonly fontDict: Record<string, PDFRef> = {};
+  private readonly gsDict: Record<string, PDFDict> = {};
+  private readonly xobjectDict: Record<string, PDFRef> = {};
 
-/** Font resource name per (page, font). */
-const fontNames = new WeakMap<PageCtx['page'], Map<PDFFont, PDFName>>();
+  constructor(private readonly context: PDFContext) {}
 
-function fontName(ctx: PageCtx, font: PDFFont): PDFName {
-  let names = fontNames.get(ctx.page);
-  if (!names) {
-    names = new Map();
-    fontNames.set(ctx.page, names);
+  font(font: PDFFont): PDFName {
+    let name = this.fonts.get(font);
+    if (!name) {
+      const key = `F${this.fonts.size + 1}`;
+      this.fontDict[key] = font.ref;
+      name = PDFName.of(key);
+      this.fonts.set(font, name);
+    }
+    return name;
   }
-  let name = names.get(font);
-  if (!name) {
-    name = ctx.page.node.newFontDictionary(font.name, font.ref);
-    names.set(font, name);
+
+  alpha(ca: number, CA: number): PDFOperator | null {
+    if (ca >= 1 && CA >= 1) return null;
+    const id = `${round(ca)}|${round(CA)}`;
+    let name = this.alphas.get(id);
+    if (!name) {
+      const key = `GSa${this.alphas.size + 1}`;
+      this.gsDict[key] = this.context.obj({ Type: 'ExtGState', ca: round(ca), CA: round(CA) });
+      name = PDFName.of(key);
+      this.alphas.set(id, name);
+    }
+    return setGraphicsState(name);
   }
-  return name;
+
+  image(ref: PDFRef): PDFName {
+    let name = this.images.get(ref);
+    if (!name) {
+      const key = `Im${this.images.size + 1}`;
+      this.xobjectDict[key] = ref;
+      name = PDFName.of(key);
+      this.images.set(ref, name);
+    }
+    return name;
+  }
+
+  dict(): PDFDict {
+    const entries: Record<string, Record<string, PDFRef | PDFDict>> = {};
+    if (this.fonts.size > 0) entries.Font = this.fontDict;
+    if (this.alphas.size > 0) entries.ExtGState = this.gsDict;
+    if (this.images.size > 0) entries.XObject = this.xobjectDict;
+    return this.context.obj(entries);
+  }
 }
 
-function alphaState(ctx: PageCtx, ca: number, CA: number): PDFOperator | null {
-  if (ca >= 1 && CA >= 1) return null;
-  let states = alphaStates.get(ctx.page);
-  if (!states) {
-    states = new Map();
-    alphaStates.set(ctx.page, states);
+/** The operators that paint `drawing`'s items in its root user space. */
+function drawingOps(drawing: VectorDrawing, res: FormResources, colorSpace: PageCtx['colorSpace']): PDFOperator[] {
+  const ops: PDFOperator[] = [];
+  for (const shape of drawing.shapes) {
+    ops.push(pushGraphicsState());
+    for (const c of shape.clips) {
+      ops.push(...pathOps(c.segs), c.evenOdd ? clipEvenOdd() : clip(), endPath());
+    }
+    if (shape.kind === 'image') {
+      if (shape.pdfImage) {
+        // The unit square maps onto the picture's box; the image's rows run
+        // bottom-up in PDF, so the box is flipped inside the y-down root
+        // space to keep the picture upright.
+        const [a, b, c, d, e, f] = mul(shape.matrix, [shape.width, 0, 0, -shape.height, shape.x, shape.y + shape.height]);
+        ops.push(concatTransformationMatrix(round(a), round(b), round(c), round(d), round(e), round(f)), drawObject(res.image(shape.pdfImage.ref)));
+      }
+      ops.push(popGraphicsState());
+      continue;
+    }
+    if (shape.kind === 'text') {
+      for (const run of shape.runs) {
+        const font = run.font.pdfFont;
+        if (!font) continue;
+        const gs = res.alpha(run.fill.alpha, 1);
+        ops.push(pushGraphicsState());
+        if (gs) ops.push(gs);
+        // Text matrix: local → root, then undo the root y-flip so glyphs
+        // stand upright, with the pen at the run's baseline start.
+        const [a, b, c, d, e, f] = mul(run.matrix, [1, 0, 0, -1, run.x, run.y]);
+        ops.push(
+          setFillingColor(colorFromHex(run.fill.hex, colorSpace)),
+          beginText(),
+          setFontAndSize(res.font(font), round(run.size)),
+          setTextMatrix(round(a), round(b), round(c), round(d), round(e), round(f)),
+          showTextShaped(font, run.text),
+          endText(),
+          popGraphicsState(),
+        );
+      }
+      ops.push(popGraphicsState());
+      continue;
+    }
+    const gs = res.alpha(shape.fill?.alpha ?? 1, shape.stroke?.alpha ?? 1);
+    if (gs) ops.push(gs);
+    if (shape.fill) ops.push(setFillingColor(colorFromHex(shape.fill.hex, colorSpace)));
+    if (shape.stroke) {
+      const st = shape.stroke;
+      ops.push(
+        setStrokingColor(colorFromHex(st.hex, colorSpace)),
+        setLineWidth(round(st.width)),
+        setLineCap(st.cap),
+        setLineJoin(st.join),
+        PDFOperator.of(PDFOperatorNames.SetLineMiterLimit, [PDFNumber.of(round(st.miterLimit))]),
+      );
+      if (st.dash) ops.push(setDashPattern(st.dash.map(round), round(st.dashOffset)));
+    }
+    ops.push(...pathOps(shape.segs));
+    if (shape.fill && shape.stroke) {
+      ops.push(shape.evenOdd ? PDFOperator.of(PDFOperatorNames.FillEvenOddAndStroke) : fillAndStroke());
+    } else if (shape.fill) {
+      ops.push(shape.evenOdd ? PDFOperator.of(PDFOperatorNames.FillEvenOdd) : fill());
+    } else {
+      ops.push(stroke());
+    }
+    ops.push(popGraphicsState());
   }
-  const key = `${round(ca)}|${round(CA)}`;
-  let name = states.get(key);
+  return ops;
+}
+
+/** A drawing written once as a form XObject, and the box (in its user
+ *  space) that holds every viewport it has been drawn in so far. */
+interface VectorForm {
+  ref: PDFRef;
+  stream: PDFContentStream;
+  bbox: [number, number, number, number];
+}
+
+/** The forms of each document, by drawing and colour space. */
+const formsByContext = new WeakMap<PDFContext, WeakMap<VectorDrawing, Map<string, VectorForm>>>();
+
+/** The form XObject that paints `drawing` in `ctx`'s document, written the
+ *  first time the drawing is drawn there (EF-183): an SVG drawn on many
+ *  pages (a frame in every page's design, a picture repeated) is stored
+ *  once, and each page paints it with `Do`. */
+function vectorForm(ctx: PageCtx, drawing: VectorDrawing): VectorForm {
+  const context = ctx.page.doc.context;
+  let byDrawing = formsByContext.get(context);
+  if (!byDrawing) formsByContext.set(context, (byDrawing = new WeakMap()));
+  let bySpace = byDrawing.get(drawing);
+  if (!bySpace) byDrawing.set(drawing, (bySpace = new Map()));
+  let form = bySpace.get(ctx.colorSpace);
+  if (!form) {
+    const res = new FormResources(context);
+    const ops = drawingOps(drawing, res, ctx.colorSpace);
+    const [vx, vy, vw, vh] = drawing.viewBox;
+    const bbox: [number, number, number, number] = [vx, vy, vx + vw, vy + vh];
+    const stream = context.formXObject(ops, { BBox: bbox.map(round), Resources: res.dict() });
+    form = { ref: context.register(stream), stream, bbox };
+    bySpace.set(ctx.colorSpace, form);
+  }
+  return form;
+}
+
+/** Resource name of a form on a page, one per (page, form). */
+const formNames = new WeakMap<PageCtx['page'], Map<PDFRef, PDFName>>();
+
+function formName(ctx: PageCtx, ref: PDFRef): PDFName {
+  let names = formNames.get(ctx.page);
+  if (!names) formNames.set(ctx.page, (names = new Map()));
+  let name = names.get(ref);
   if (!name) {
-    const dict = ctx.page.doc.context.obj({ Type: 'ExtGState', ca: round(ca), CA: round(CA) });
-    name = ctx.page.node.newExtGState('GSa', dict);
-    states.set(key, name);
+    name = ctx.page.node.newXObject('Vec', ref);
+    names.set(ref, name);
   }
-  return setGraphicsState(name);
+  return name;
 }
 
 /**
  * Paint a {@link VectorDrawing} into the page, fitted to the given box in the
  * document's pixel space (top-down, like every other `PageCtx` primitive).
+ * The drawing itself is a form XObject written once per document (see
+ * {@link vectorForm}); the page clips to the viewport, maps the drawing's
+ * user space onto it and paints the form.
  */
 export function drawVectorDrawing(
   ctx: PageCtx,
@@ -1488,82 +1637,33 @@ export function drawVectorDrawing(
     oy = (h - vh * s) * drawing.aspect.yAlign;
     sx = sy = s;
   }
-  const ops: PDFOperator[] = [pushGraphicsState()];
-  // Clip to the viewport (overflow: hidden on the root svg).
-  ops.push(rectangle(round(x0), round(yTop - h), round(w), round(h)), clip(), endPath());
-  // SVG user space → PDF points: scale, flip y, place the viewBox origin.
-  ops.push(concatTransformationMatrix(
-    round(sx), 0, 0, round(-sy),
-    round(x0 + ox - vx * sx),
-    round(yTop - oy + vy * sy),
-  ));
-
-  for (const shape of drawing.shapes) {
-    ops.push(pushGraphicsState());
-    for (const c of shape.clips) {
-      ops.push(...pathOps(c.segs), c.evenOdd ? clipEvenOdd() : clip(), endPath());
-    }
-    if (shape.kind === 'image') {
-      if (shape.pdfImage) {
-        // The unit square maps onto the picture's box; the image's rows run
-        // bottom-up in PDF, so the box is flipped inside the y-down root
-        // space to keep the picture upright.
-        const [a, b, c, d, e, f] = mul(shape.matrix, [shape.width, 0, 0, -shape.height, shape.x, shape.y + shape.height]);
-        const name = ctx.page.node.newXObject('Image', shape.pdfImage.ref);
-        ops.push(concatTransformationMatrix(round(a), round(b), round(c), round(d), round(e), round(f)), drawObject(name));
-      }
-      ops.push(popGraphicsState());
-      continue;
-    }
-    if (shape.kind === 'text') {
-      for (const run of shape.runs) {
-        const font = run.font.pdfFont;
-        if (!font) continue;
-        const gs = alphaState(ctx, run.fill.alpha, 1);
-        ops.push(pushGraphicsState());
-        if (gs) ops.push(gs);
-        // Text matrix: local → root, then undo the root y-flip so glyphs
-        // stand upright, with the pen at the run's baseline start.
-        const [a, b, c, d, e, f] = mul(run.matrix, [1, 0, 0, -1, run.x, run.y]);
-        ops.push(
-          setFillingColor(colorFromHex(run.fill.hex, ctx.colorSpace)),
-          beginText(),
-          setFontAndSize(fontName(ctx, font), round(run.size)),
-          setTextMatrix(round(a), round(b), round(c), round(d), round(e), round(f)),
-          showTextShaped(font, run.text),
-          endText(),
-          popGraphicsState(),
-        );
-      }
-      ops.push(popGraphicsState());
-      continue;
-    }
-    const gs = alphaState(ctx, shape.fill?.alpha ?? 1, shape.stroke?.alpha ?? 1);
-    if (gs) ops.push(gs);
-    if (shape.fill) ops.push(setFillingColor(colorFromHex(shape.fill.hex, ctx.colorSpace)));
-    if (shape.stroke) {
-      const st = shape.stroke;
-      ops.push(
-        setStrokingColor(colorFromHex(st.hex, ctx.colorSpace)),
-        setLineWidth(round(st.width)),
-        setLineCap(st.cap),
-        setLineJoin(st.join),
-        PDFOperator.of(PDFOperatorNames.SetLineMiterLimit, [ctx.page.doc.context.obj(round(st.miterLimit))]),
-      );
-      if (st.dash) ops.push(setDashPattern(st.dash.map(round), round(st.dashOffset)));
-    }
-    ops.push(...pathOps(shape.segs));
-    if (shape.fill && shape.stroke) {
-      ops.push(shape.evenOdd ? PDFOperator.of(PDFOperatorNames.FillEvenOddAndStroke) : fillAndStroke());
-    } else if (shape.fill) {
-      ops.push(shape.evenOdd ? PDFOperator.of(PDFOperatorNames.FillEvenOdd) : fill());
-    } else {
-      ops.push(stroke());
-    }
-    ops.push(popGraphicsState());
+  const form = vectorForm(ctx, drawing);
+  // The form's box holds every viewport it is drawn in, mapped back into
+  // its user space: inside the viewport SVG shows what a 'meet' drawing
+  // paints past its view box, and a form is clipped to its box.
+  const u0 = vx - ox / sx;
+  const u1 = vx + (w - ox) / sx;
+  const v0 = vy - oy / sy;
+  const v1 = vy + (h - oy) / sy;
+  const box: [number, number, number, number] = [
+    Math.min(form.bbox[0], u0), Math.min(form.bbox[1], v0),
+    Math.max(form.bbox[2], u1), Math.max(form.bbox[3], v1),
+  ];
+  if (box.some((v, i) => v !== form.bbox[i])) {
+    form.bbox = box;
+    form.stream.dict.set(PDFName.of('BBox'), ctx.page.doc.context.obj(box.map(round)));
   }
-  ops.push(popGraphicsState());
-  // In slices: a drawing of many thousands of paths would overflow the
-  // call stack as one spread argument list.
-  for (let i = 0; i < ops.length; i += 4000) ctx.page.pushOperators(...ops.slice(i, i + 4000));
+  ctx.page.pushOperators(
+    pushGraphicsState(),
+    // Clip to the viewport (overflow: hidden on the root svg).
+    rectangle(round(x0), round(yTop - h), round(w), round(h)), clip(), endPath(),
+    // SVG user space → PDF points: scale, flip y, place the viewBox origin.
+    concatTransformationMatrix(
+      round(sx), 0, 0, round(-sy),
+      round(x0 + ox - vx * sx),
+      round(yTop - oy + vy * sy),
+    ),
+    drawObject(formName(ctx, form.ref)),
+    popGraphicsState(),
+  );
 }

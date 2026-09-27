@@ -1,4 +1,5 @@
-import type { ResourceType } from '../types';
+import type { PostextConfig, ResourceType } from '../types';
+import { languageOf, presentTag } from '../locale';
 
 /** Localised display strings for a built-in resource type. The numbering
  *  behaviour (template, reset, counter format) is language-independent and
@@ -10,8 +11,9 @@ interface ResourceTypeStrings {
   captionPrefix: string;
 }
 
-/** Per-language strings for the two built-in types. English is the fallback for
- *  any locale not listed here. Add a language by adding a key. */
+/** Per-language strings for the two built-in types, one per bundled
+ *  hyphenation language. English is the fallback for any locale not listed
+ *  here. Add a language by adding a key. */
 const BUILTIN_TYPE_STRINGS: Record<string, { figure: ResourceTypeStrings; table: ResourceTypeStrings }> = {
   en: {
     figure: { name: 'Figure', namePlural: 'Figures', shortLabel: 'Fig.', captionPrefix: 'Figure' },
@@ -21,13 +23,43 @@ const BUILTIN_TYPE_STRINGS: Record<string, { figure: ResourceTypeStrings; table:
     figure: { name: 'Figura', namePlural: 'Figuras', shortLabel: 'Fig.', captionPrefix: 'Figura' },
     table: { name: 'Tabla', namePlural: 'Tablas', shortLabel: 'Tabla', captionPrefix: 'Tabla' },
   },
+  fr: {
+    figure: { name: 'Figure', namePlural: 'Figures', shortLabel: 'Fig.', captionPrefix: 'Figure' },
+    table: { name: 'Tableau', namePlural: 'Tableaux', shortLabel: 'Tabl.', captionPrefix: 'Tableau' },
+  },
+  de: {
+    figure: { name: 'Abbildung', namePlural: 'Abbildungen', shortLabel: 'Abb.', captionPrefix: 'Abbildung' },
+    table: { name: 'Tabelle', namePlural: 'Tabellen', shortLabel: 'Tab.', captionPrefix: 'Tabelle' },
+  },
+  it: {
+    figure: { name: 'Figura', namePlural: 'Figure', shortLabel: 'Fig.', captionPrefix: 'Figura' },
+    table: { name: 'Tabella', namePlural: 'Tabelle', shortLabel: 'Tab.', captionPrefix: 'Tabella' },
+  },
+  pt: {
+    figure: { name: 'Figura', namePlural: 'Figuras', shortLabel: 'Fig.', captionPrefix: 'Figura' },
+    table: { name: 'Tabela', namePlural: 'Tabelas', shortLabel: 'Tab.', captionPrefix: 'Tabela' },
+  },
+  ca: {
+    figure: { name: 'Figura', namePlural: 'Figures', shortLabel: 'Fig.', captionPrefix: 'Figura' },
+    table: { name: 'Taula', namePlural: 'Taules', shortLabel: 'Taula', captionPrefix: 'Taula' },
+  },
+  nl: {
+    figure: { name: 'Figuur', namePlural: 'Figuren', shortLabel: 'Fig.', captionPrefix: 'Figuur' },
+    table: { name: 'Tabel', namePlural: 'Tabellen', shortLabel: 'Tab.', captionPrefix: 'Tabel' },
+  },
 };
 
-/** Resolve a (possibly regional) locale tag like `es-ES` to a strings entry,
- *  falling back to English. */
+/** Resolve a (possibly regional) locale tag like `es-ES` or `pt_BR` to a
+ *  strings entry, falling back to English. */
 function stringsForLocale(locale: string): { figure: ResourceTypeStrings; table: ResourceTypeStrings } {
-  const lang = locale.toLowerCase().split('-')[0];
-  return BUILTIN_TYPE_STRINGS[lang] ?? BUILTIN_TYPE_STRINGS.en;
+  return BUILTIN_TYPE_STRINGS[languageOf(locale)] ?? BUILTIN_TYPE_STRINGS.en!;
+}
+
+/** The document language the built-in strings follow: `config.locale`, else
+ *  the hyphenation locale, else English — the resolution the table
+ *  continuation strings use too. A blank tag counts as unset. */
+export function documentLocale(config: PostextConfig | undefined): string {
+  return presentTag(config?.locale) ?? presentTag(config?.bodyText?.hyphenation?.locale) ?? 'en';
 }
 
 /** Built-in resource types provided when a config does not define its own,

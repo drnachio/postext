@@ -70,7 +70,7 @@ has gone fuzzy.
     </tr>
     <tr>
       <td><strong>Note</strong></td>
-      <td>A footnote, endnote, or margin note, defined by <code>PostextNote</code>. The content model carries notes, but note layout is still an early-stage area of the engine.</td>
+      <td>A footnote, endnote, or margin note, defined by <code>PostextNote</code>. Planned, not implemented yet: the content model accepts notes, but the engine does not read them, so they are neither laid out nor rendered.</td>
     </tr>
     <tr>
       <td><strong>Baseline Grid</strong></td>
@@ -136,7 +136,7 @@ interface PostextContent {
   markdown: string;            // enriched markdown with :ref / ::resource markers
   metadata?: DocumentMetadata; // title, subtitle, author, publishDate, …
   resources?: Resource[];      // bitmaps, SVGs, tables — referenced by id
-  notes?: PostextNote[];       // footnotes, endnotes, margin notes
+  notes?: PostextNote[];       // footnotes, endnotes, margin notes (not laid out yet)
 }
 
 interface Resource {
@@ -156,7 +156,7 @@ interface Resource {
 ```
 
 **Resources** carry the visual data: captions, alt text, and a kind-specific payload. Binary payloads (bitmaps, SVGs) live *out-of-band* — the resource only stores a `fileId`, and the renderer resolves it at draw time (the sandbox keeps the bytes in IndexedDB). Table resources are the exception: their `TableModel` (a grid of cells with spans and alignment) travels inline, because it is structured data, not bytes.
-**Notes** carry content and a marker style, referenced from inline positions in the markdown.
+**Notes** are meant to carry content and a marker style, referenced from inline positions in the markdown. They are not implemented yet: the engine ignores `notes`, and the markdown has no note-reference syntax.
 
 This separation is an opinionated design choice, and it matters more than it looks. The markdown owns the *reading order* and *semantic structure* — what comes first, what is a heading, where a footnote is referenced. The resources and notes arrays own the *visual data* — image dimensions, caption text, note content. By keeping them apart, the same markdown can be laid out in completely different ways just by changing the configuration. A two-column academic layout and a single-column blog post can share the same source content. And the engine can make placement decisions — like deferring an image to the next column because it does not fit here — without ever touching your source content.
 
@@ -240,7 +240,7 @@ Every aspect of the layout pipeline is controlled by `PostextConfig`. The full s
 
 ### Parsing Strategy
 
-Parsing is deliberately the simplest step in the pipeline. Markdown goes in, gets parsed into an AST, and each node becomes a `VDTBlock`. Resource and note references are resolved against the `resources[]` and `notes[]` arrays by ID. The output is a flat list of typed, content-filled blocks — but with no page assignment, no column, no position.
+Parsing is deliberately the simplest step in the pipeline. Markdown goes in, gets parsed into an AST, and each node becomes a `VDTBlock`. Resource references are resolved against the `resources[]` array by ID (the `notes[]` array is not read yet: notes are planned, not implemented). The output is a flat list of typed, content-filled blocks — but with no page assignment, no column, no position.
 
 Think of it as a manifest: "there is a heading, then a paragraph with 200 words, then a figure reference, then another paragraph." No measurements. No positioning. No layout decisions at all. The heavy work starts in Pass 2.
 
@@ -323,13 +323,15 @@ interface VDTBlock {
 // A measured line of text
 interface VDTLine {
   text: string;
-  bbox: BoundingBox;
+  bbox: BoundingBox;            // natural width: a justified line is painted to its block's right edge
   baseline: number;             // y-position of the text baseline
-  hyphenated: boolean;          // line ends with a hyphen
+  hyphenated: boolean;          // line ends inside a word, or after a closed dash ("say—" | "that’s")
+  hardHyphen?: boolean;         // …after a hyphen the text carries ("well-" | "known"): nothing added
+  repeatedHyphen?: boolean;     // opens with that hyphen repeated ("vencer-" | "-se"), not in the source
   segments?: VDTLineSegment[];  // word/space/math runs for justified rendering
   isLastLine?: boolean;         // last line of its paragraph
   justifiedSpaceRatio?: number; // applied space width ÷ normal space width
-  sourceStart?: number;         // markdown source map (char offsets)
+  sourceStart?: number;         // markdown source map (char offsets; a line opening with `\$` starts at the backslash)
   sourceEnd?: number;
   plainStart?: number;          // plain-text source map
   plainEnd?: number;
@@ -383,7 +385,7 @@ The key difference from a game engine is that a game renders each frame once and
 ### Pass 1: Content Structuring
 
 - **Input:** Raw `PostextContent`
-- **Action:** Parse markdown into an AST, resolve resource and note references against `resources[]` and `notes[]` by ID, create initial `VDTBlock` nodes
+- **Action:** Parse markdown into an AST, resolve resource references against `resources[]` by ID, create initial `VDTBlock` nodes (notes, and so `notes[]`, are planned, not implemented yet)
 - **Output:** Flat `VDTBlock[]` (typed and content-filled, but with no page or column assignment)
 - **Runs once** (not part of the convergence loop)
 
@@ -417,7 +419,7 @@ This is the moment the VDT becomes a real document. Before this pass, blocks are
 
 Before any content blocks land, the pass reserves space for structural elements — running headers and footers (laid out as design slots from `config.header` / `config.footer`) and any float bands already pending for the freshly opened page. These reservations reduce the `availableHeight` of each column, so when content blocks start flowing in, the engine already knows exactly how much room is available.
 
-**Column bands and span columns.** `page.columns` is a flat array in reading order, but a page is not always a single row of columns. A page-span inline block — today a `:::callout` with `span: 'page'` in a multi-column layout — cuts the page into stacked *bands*: the text columns of the current band are closed at the cut line (their height clamped, `availableHeight` zero), the block gets its own full-width column with `kind: 'span'`, and a fresh band of text columns (`band + 1`, same x and width, same bottom as the band it replaces) is appended below it. Columns are only ever appended, so `columnIndex` keeps addressing `page.columns[i]`, and renderers need no special drawing: each column clips to its own bbox (widened by `columnClipRect` — 2pt for glyph ink plus however far the column's design overlays, such as a heading tab or a callout badge, hang past it — the same rectangle in the canvas and PDF backends), and the column rule is drawn per band between adjacent text columns. Column balancing ignores span columns and zero-height bands. A span block cuts directly where the band is level (page top, right after an opener heading, another span block or a top float band); arriving in an uneven band it proposes a *band cap* instead (`packages/postext/src/pipeline/bandCaps.ts`) — the columns of the band that opens with a given content block are shortened to `ceil(Σ used / N / grid)` lines — and `buildDocument` re-runs the placement pass with the cap (growing it one line at a time when the capped band overflows, at most a few extra passes, then falling back to the next page), so the text fills the shortened columns under every placement rule, ends level at the cut, and the closed columns keep whatever slack remains as `availableHeight` for balancing to absorb. The same mechanism levels the *closing* band of a chapter and of the document (`headings.balancing.trailing`): a chapter opener, a `:::part`, a chapter-closing `placement: 'fixed'` callout or the end of the document reached with the current band's columns uneven proposes a `kind: 'trailing'` cap, keyed by the boundary block; because a cap is keyed by the block that opens its band — and that block moves whenever an earlier page absorbs extra balancing lines — trailing caps are resolved *after* column balancing has settled, with the balancing hints frozen, and a short polish round then lets the levers fill what the cut left short. `placement: 'fixed'` callouts leave the flow: the box is anchored to the page content area / trim box / bleed box, the text columns it covers give up that zone (cut from the bottom or the top like a float band, moving to the next page on a conflict), and frame plus children go to `page.floats`.
+**Column bands and span columns.** `page.columns` is a flat array in reading order, but a page is not always a single row of columns. A page-span inline block — today a `:::callout` with `span: 'page'` in a multi-column layout — cuts the page into stacked *bands*: the text columns of the current band are closed at the cut line (their height clamped, `availableHeight` zero), the block gets its own full-width column with `kind: 'span'`, and a fresh band of text columns (`band + 1`, same x and width, same bottom as the band it replaces) is appended below it. Columns are only ever appended, so `columnIndex` keeps addressing `page.columns[i]`, and renderers need no special drawing: each column clips to its own bbox (widened by `columnClipRect` — 2pt for glyph ink plus however far the column's design overlays, such as a heading tab or a callout badge, hang past its sides, and however far a heading's design reaches above its top; its foot stays the edge — the same rectangle in the canvas and PDF backends), and the column rule is drawn per band between adjacent text columns, starting under the band a page-span heading holds at the head of the page (`columnRuleSegments`), in the page's own rule when a styled section sets one (`VDTPage.columnRule`, read through `pageColumnRule`). Column balancing ignores span columns and zero-height bands. A span block cuts directly where the band is level (page top, right after an opener heading, another span block or a top float band); arriving in an uneven band it proposes a *band cap* instead (`packages/postext/src/pipeline/bandCaps.ts`) — the columns of the band that opens with a given content block are shortened to `ceil(Σ used / N / grid)` lines — and `buildDocument` re-runs the placement pass with the cap (growing it one line at a time when the capped band overflows, at most a few extra passes, then falling back to the next page), so the text fills the shortened columns under every placement rule, ends level at the cut, and the closed columns keep whatever slack remains as `availableHeight` for balancing to absorb. The same mechanism levels the *closing* band of a chapter and of the document (`headings.balancing.trailing`): a chapter opener, a `:::part`, a chapter-closing `placement: 'fixed'` callout or the end of the document reached with the current band's columns uneven proposes a `kind: 'trailing'` cap, keyed by the boundary block; because a cap is keyed by the block that opens its band — and that block moves whenever an earlier page absorbs extra balancing lines — trailing caps are resolved *after* column balancing has settled, with the balancing hints frozen, and a short polish round then lets the levers fill what the cut left short. `placement: 'fixed'` callouts leave the flow: the box is anchored to the page content area / trim box / bleed box, the text columns it covers give up that zone (cut from the bottom or the top like a float band, moving to the next page on a conflict), and frame plus children go to `page.floats`.
 
 ### Pass 4: Resource Placement
 
@@ -514,7 +516,7 @@ Some groupings are bigger than a single paragraph — they span adjacent blocks 
 
 - **Heading with its first paragraph.** A heading must never appear at the bottom of a column if the paragraph it introduces would start in the next column. Enforced by `headings.keepWithNext` (default `true`): if there is not room for the heading *plus* the body's widow minimum (`bodyText.widowMinLines`, default `2`) of the next block — or just one line when `avoidWidows` is off — the heading is pushed forward to travel with its text.
 - **Consecutive headings.** When multiple headings appear in sequence (e.g., an h2 followed by an h3 followed by a paragraph), the entire group must stay together. None of the headings can be left stranded at the bottom of a column without the content they introduce.
-- **Colon-introduced lists.** When a paragraph ends with a colon that directly introduces a list, the colon-bearing line must stay with the start of the list. Enforced by `bodyText.keepColonWithList` (default `true`): if placing the paragraph would leave no room for the first list item, the colon-bearing last line (or the whole paragraph, if it is one line) moves forward together with the list. Whenever this rule has to push the whole paragraph and a run of headings immediately precedes it in the column, those headings are pulled forward too so `keepWithNext` is not silently violated; the only exception is when the column contains just the heading(s) that a previous iteration already moved forward, in which case the engine keeps the paragraph with the heading and accepts the softer colon/list separation to avoid looping.
+- **Colon-introduced lists.** When a paragraph ends with a colon that directly introduces a list, the colon-bearing line must stay with the start of the list. Enforced by `bodyText.keepColonWithList` (default `true`): if placing the paragraph would leave no room for the first list item to start (all of it when the orphan and widow rules for lists keep it whole; one line with `bodyText.colonListRoom: 'line'`, as up to postext 1.4), the colon-bearing last line (or the whole paragraph, if it is one line) moves forward together with the list. Whenever this rule has to push the whole paragraph and a run of headings immediately precedes it in the column, those headings are pulled forward too so `keepWithNext` is not silently violated; the only exception is when the column contains just the heading(s) that a previous iteration already moved forward, in which case the engine keeps the paragraph with the heading and accepts the softer colon/list separation to avoid looping.
 - **Figure with its caption.** A figure and its caption are an inseparable unit. They always move together.
 
 When a keep-together violation is detected, the engine pushes the entire group to the next column or page. The vacated space is handled by the normal column-filling mechanism (the line breaker has already chosen a break set that fits; if the resulting column is a little short, Pass 7 redistributes vertical space around grid-breaking elements to keep the baseline grid honest).
@@ -584,7 +586,7 @@ Some elements inevitably break the grid because their height is not a multiple o
 - **Images** (arbitrary pixel height)
 - **Tables** (variable height)
 - **Block quotes** (may use different font size or padding)
-- **Footnote separators** (fixed height rule)
+- **Footnote separators** (fixed height rule; footnotes are planned, not implemented yet)
 
 ### Spacing Adjustment Algorithm
 
@@ -707,8 +709,9 @@ Consider what the engine is up against: thousands of text blocks across hundreds
 5. **Layered measurement caching.** The measure module (`packages/postext/src/measure/`) keeps
    an explicit measurement cache keyed on text, fonts, width, and every layout-affecting option,
    on top of Pretext's own `prepare()` cache and a raw text-width cache. Re-measuring an
-   unchanged paragraph costs a map lookup. `clearMeasurementCache()` flushes all of it — including
-   the text-width cache, so glyph widths are correct after fonts finish loading.
+   unchanged paragraph costs a map lookup. `clearMeasurementCache()` flushes Pretext's cache and
+   the text-width cache, so glyph widths are correct after fonts finish loading; it takes no
+   argument and does not touch a measurement cache, which is replaced with a new one instead.
 
 6. **Hot-path line breaking.** The Knuth-Plass active-node handling was rewritten for speed:
    the active set is compacted in place as nodes retire, and candidates are deduplicated
@@ -808,7 +811,7 @@ Here is how the main types defined in `packages/postext/src/types.ts` map to the
     </tr>
     <tr>
       <td><code>PostextNote</code></td>
-      <td>Becomes a footnote, endnote, or margin note block in Pass 1</td>
+      <td>Planned, not implemented yet: the engine does not read <code>notes</code>. Once implemented, a note becomes a footnote, endnote, or margin note block in Pass 1</td>
     </tr>
     <tr>
       <td><code>PostextResource</code></td>

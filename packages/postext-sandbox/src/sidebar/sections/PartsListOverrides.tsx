@@ -19,7 +19,7 @@ import {
   ToggleSwitch,
 } from '../../controls';
 import { TEXT_SIZE_UNITS, INDENT_UNITS, MARGIN_UNITS, OFFSET_UNITS } from './OrderedListsSection/units';
-import { numberFormatOptions } from './OrderedListsSection/numberFormat';
+import { listNumberFormatValue, numberFormatOptions } from './OrderedListsSection/numberFormat';
 
 type Labels = ReturnType<typeof useSandboxLabels>;
 
@@ -64,7 +64,9 @@ export function PartsOrderedListsOverrides({
       </p>
       <SelectInput
         label={labels.orderedListsNumberFormat}
-        value={raw?.numberFormat ?? base.numberFormat}
+        // The override is raw: show it as the engine reads it (`decimal` is
+        // `arabic`), or a preset's spelling would match no option.
+        value={raw?.numberFormat !== undefined ? listNumberFormatValue(raw.numberFormat) : base.numberFormat}
         options={numberFormatOptions(labels)}
         onChange={(v) => onUpdate({ numberFormat: v as OrderedListNumberFormat })}
         tooltip={labels.orderedListsNumberFormatTooltip}
@@ -246,6 +248,14 @@ export function PartsOrderedListsOverrides({
         units={MARGIN_UNITS}
       />
       <ToggleSwitch
+        label={labels.orderedListsSnapTopToGrid}
+        checked={raw?.snapTopToGrid ?? base.snapTopToGrid}
+        onChange={(v) => onUpdate({ snapTopToGrid: v })}
+        tooltip={labels.orderedListsSnapTopToGridTooltip}
+        isDefault={isDefault('snapTopToGrid')}
+        onReset={() => onReset('snapTopToGrid')}
+      />
+      <ToggleSwitch
         label={labels.orderedListsHangingIndent}
         checked={raw?.hangingIndent ?? base.hangingIndent}
         onChange={(v) => onUpdate({ hangingIndent: v })}
@@ -406,6 +416,14 @@ export function PartsUnorderedListsOverrides({
         isDefault={isDefault('marginBottom')}
         onReset={() => onReset('marginBottom')}
         units={MARGIN_UNITS}
+      />
+      <ToggleSwitch
+        label={labels.unorderedListsSnapTopToGrid}
+        checked={raw?.snapTopToGrid ?? base.snapTopToGrid}
+        onChange={(v) => onUpdate({ snapTopToGrid: v })}
+        tooltip={labels.unorderedListsSnapTopToGridTooltip}
+        isDefault={isDefault('snapTopToGrid')}
+        onReset={() => onReset('snapTopToGrid')}
       />
       <ToggleSwitch
         label={labels.unorderedListsHangingIndent}

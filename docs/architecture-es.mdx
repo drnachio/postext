@@ -70,7 +70,7 @@ desdibujado.
     </tr>
     <tr>
       <td><strong>Note</strong></td>
-      <td>Nota al pie, nota final o nota al margen, definida por <code>PostextNote</code>. El modelo de contenido transporta las notas, pero su composición sigue siendo un área temprana del motor.</td>
+      <td>Nota al pie, nota final o nota al margen, definida por <code>PostextNote</code>. Prevista, pero aún no implementada: el modelo de contenido acepta notas, pero el motor no las lee, así que ni se componen ni se renderizan.</td>
     </tr>
     <tr>
       <td><strong>Baseline Grid</strong></td>
@@ -82,7 +82,7 @@ desdibujado.
     </tr>
     <tr>
       <td><strong>Demerits</strong></td>
-      <td>El coste total de un corte de línea candidato en Knuth-Plass: <em>badness</em> más penalizaciones (separación silábica, viudas/huérfanas/<em>runts</em>, desajuste de clase de <em>fitness</em>). El algoritmo elige el conjunto de cortes con el total más bajo.</td>
+      <td>El coste total de un corte de línea candidato en Knuth-Plass: <em>badness</em> más penalizaciones (separación silábica, viudas/huérfanas/líneas cortas, desajuste de clase de <em>fitness</em>). El algoritmo elige el conjunto de cortes con el total más bajo.</td>
     </tr>
     <tr>
       <td><strong>Fitness Class</strong></td>
@@ -136,7 +136,7 @@ interface PostextContent {
   markdown: string;            // markdown enriquecido con marcadores :ref / ::resource
   metadata?: DocumentMetadata; // título, subtítulo, autoría, fecha de publicación, …
   resources?: Resource[];      // bitmaps, SVGs, tablas — referenciados por id
-  notes?: PostextNote[];       // notas al pie, finales y al margen
+  notes?: PostextNote[];       // notas al pie, finales y al margen (aún no se componen)
 }
 
 interface Resource {
@@ -156,7 +156,7 @@ interface Resource {
 ```
 
 Los **recursos** llevan los datos visuales: pies, texto alternativo y un payload específico de su `kind`. Los payloads binarios (bitmaps, SVGs) viven *fuera de banda* — el recurso solo guarda un `fileId`, y el renderizador lo resuelve en el momento de dibujar (el sandbox guarda los bytes en IndexedDB). Las tablas son la excepción: su `TableModel` (una cuadrícula de celdas con fusiones y alineación) viaja en línea, porque son datos estructurados, no bytes.
-Las **notas** llevan contenido y un estilo de marcador, referenciados desde posiciones en línea dentro del markdown.
+Las **notas** están pensadas para llevar contenido y un estilo de marcador, referenciados desde posiciones en línea dentro del markdown. Todavía no están implementadas: el motor ignora `notes` y el markdown no tiene sintaxis para referenciar notas.
 
 Esta separación es una decisión de diseño deliberada, y tiene más importancia de lo que parece. El markdown es dueño del *orden de lectura* y la *estructura semántica* — qué va primero, qué es un encabezado, dónde se referencia una nota al pie. Los arrays de recursos y notas son dueños de los *datos visuales* — dimensiones de imagen, texto de pies de foto, contenido de notas. Al mantenerlos separados, el mismo markdown puede componerse de formas completamente distintas simplemente cambiando la configuración. Una maquetación académica a dos columnas y un artículo de blog a columna única pueden compartir el mismo contenido fuente. Y el motor puede tomar decisiones de colocación — como diferir una imagen a la siguiente columna porque aquí no cabe — sin tocar jamás tu contenido original.
 
@@ -207,7 +207,7 @@ Cada aspecto del pipeline de composición está controlado por `PostextConfig`. 
   <tbody>
     <tr>
       <td><code>bodyText</code> / <code>headings</code></td>
-      <td>Penalizaciones por campo de viudas/huérfanas/<em>runts</em>, reglas de cohesión, límites de justificación, separación silábica — véase <a href="/es/docs/configuration#texto-de-cuerpo">Configuración → Texto de cuerpo</a></td>
+      <td>Penalizaciones por campo de viudas/huérfanas/líneas cortas, reglas de cohesión, límites de justificación, separación silábica — véase <a href="/es/docs/configuration#texto-de-cuerpo">Configuración → Texto de cuerpo</a></td>
       <td>Pasada 2, Pasada 5</td>
     </tr>
     <tr>
@@ -240,7 +240,7 @@ Cada aspecto del pipeline de composición está controlado por `PostextConfig`. 
 
 ### Estrategia de análisis
 
-El análisis es deliberadamente el paso más simple de todo el pipeline. El markdown entra, se parsea en un AST, y cada nodo se convierte en un `VDTBlock`. Las referencias a recursos y notas se resuelven contra los arrays `resources[]` y `notes[]` por ID. La salida es una lista plana de bloques tipados y con contenido, pero sin asignación de página, ni columna, ni posición.
+El análisis es deliberadamente el paso más simple de todo el pipeline. El markdown entra, se parsea en un AST, y cada nodo se convierte en un `VDTBlock`. Las referencias a recursos se resuelven contra el array `resources[]` por ID (el array `notes[]` todavía no se lee: las notas están previstas, pero no implementadas). La salida es una lista plana de bloques tipados y con contenido, pero sin asignación de página, ni columna, ni posición.
 
 Piensa en ello como un manifiesto: "hay un encabezado, luego un párrafo de 200 palabras, luego una referencia a una figura, luego otro párrafo." Sin mediciones. Sin posicionamiento. Sin ninguna decisión de composición. El trabajo pesado empieza en la Pasada 2.
 
@@ -323,13 +323,15 @@ interface VDTBlock {
 // Una línea de texto medida
 interface VDTLine {
   text: string;
-  bbox: BoundingBox;
+  bbox: BoundingBox;            // ancho natural: una línea justificada se pinta hasta el borde derecho de su bloque
   baseline: number;             // posición y de la línea base del texto
-  hyphenated: boolean;          // la línea termina con guión
+  hyphenated: boolean;          // la línea termina dentro de una palabra, o tras una raya sin espacios («I.—» | «Que»)
+  hardHyphen?: boolean;         // …tras un guion del propio texto («físico-» | «química»): no se añade nada
+  repeatedHyphen?: boolean;     // empieza con ese guion repetido («léxico-» | «-semántico»), que no está en la fuente
   segments?: VDTLineSegment[];  // tramos palabra/espacio/matemática para justificar
   isLastLine?: boolean;         // última línea de su párrafo
   justifiedSpaceRatio?: number; // ancho de espacio aplicado ÷ ancho de espacio normal
-  sourceStart?: number;         // mapa al markdown original (offsets de carácter)
+  sourceStart?: number;         // mapa al markdown original (offsets de carácter; una línea que empieza por `\$` empieza en la barra)
   sourceEnd?: number;
   plainStart?: number;          // mapa al texto plano del bloque
   plainEnd?: number;
@@ -383,7 +385,7 @@ La diferencia clave respecto a un motor de juegos es que un juego renderiza cada
 ### Pasada 1: Estructuración del contenido
 
 - **Entrada:** `PostextContent` sin procesar
-- **Acción:** Analizar el markdown en un AST, resolver las referencias a recursos y notas contra `resources[]` y `notes[]` por ID, crear los nodos `VDTBlock` iniciales
+- **Acción:** Analizar el markdown en un AST, resolver las referencias a recursos contra `resources[]` por ID, crear los nodos `VDTBlock` iniciales (las notas, y con ellas `notes[]`, están previstas, pero aún no implementadas)
 - **Salida:** `VDTBlock[]` plano (tipado y con contenido, pero sin asignación de página ni columna)
 - **Se ejecuta una sola vez** (no forma parte del bucle de convergencia)
 
@@ -417,7 +419,7 @@ Este es el momento en que el VDT se convierte en un documento de verdad. Antes d
 
 Antes de que aterrice ningún bloque de contenido, la pasada reserva espacio para elementos estructurales — cabeceras y pies de página (compuestos como slots de diseño a partir de `config.header` / `config.footer`) y las bandas de flotados ya pendientes para la página recién abierta. Estas reservas reducen el `availableHeight` de cada columna, así que cuando los bloques de contenido empiezan a fluir, el motor ya sabe exactamente cuánto espacio hay disponible.
 
-**Bandas de columnas y columnas a ancho de página.** `page.columns` es un array plano en orden de lectura, pero una página no siempre es una única fila de columnas. Un bloque en línea a ancho de página — hoy un `:::callout` con `span: 'page'` en una disposición multicolumna — corta la página en *bandas* apiladas: las columnas de texto de la banda actual se cierran en la línea de corte (su altura se recorta y `availableHeight` queda a cero), el bloque recibe su propia columna a todo el ancho con `kind: 'span'`, y debajo se añade una banda nueva de columnas de texto (`band + 1`, con la misma x y anchura y el mismo fondo que la banda a la que sustituye). Las columnas solo se añaden al final, así que `columnIndex` sigue apuntando a `page.columns[i]`, y los renderizadores no necesitan ningún trazado especial: cada columna recorta a su propio bbox (ensanchado por `columnClipRect`: 2pt para la tinta de los glifos más lo que sobresalgan de la columna sus diseños superpuestos, como la pestaña de un título o el distintivo de un recuadro; el mismo rectángulo en los backends canvas y PDF), y el filete entre columnas se dibuja por banda entre columnas de texto adyacentes. El equilibrado de columnas ignora las columnas a ancho de página y las bandas de altura cero. Un bloque a ancho de página corta directamente donde la banda está nivelada (inicio de página, justo después de un encabezado de apertura, de otro bloque a ancho de página o de una banda de flotantes superior); si llega a una banda desigual propone en su lugar un *tope de banda* (`packages/postext/src/pipeline/bandCaps.ts`) — las columnas de la banda que abre un bloque de contenido dado se acortan a `ceil(Σ usado / N / rejilla)` líneas — y `buildDocument` repite la pasada de colocación con ese tope (agrandándolo línea a línea cuando la banda acortada desborda, como mucho unas pocas pasadas adicionales, y pasando después a la página siguiente), de modo que el texto llena las columnas acortadas bajo todas las reglas de colocación, termina nivelado en el corte, y las columnas cerradas conservan la holgura que quede como `availableHeight` para que el equilibrado la absorba. El mismo mecanismo nivela la banda de *cierre* de cada capítulo y del documento (`headings.balancing.trailing`): una apertura de capítulo, un `:::part`, un aviso `placement: 'fixed'` que cierra el capítulo o el final del documento alcanzado con las columnas de la banda actual desiguales propone un tope `kind: 'trailing'`, indexado por el bloque límite; como un tope se indexa por el bloque que abre su banda — y ese bloque se mueve cada vez que una página anterior absorbe líneas de equilibrado —, los topes de cierre se resuelven *después* de que el equilibrado de columnas se haya asentado, con sus ajustes congelados, y una breve ronda de pulido deja que las palancas rellenen lo que el corte dejó corto. Los avisos `placement: 'fixed'` salen del flujo: la caja se ancla al área de contenido / caja de corte / caja de sangre de la página, las columnas de texto que cubre ceden esa zona (recortada por abajo o por arriba como una banda de flotantes, pasando a la página siguiente si hay conflicto), y la caja con sus hijos va a `page.floats`.
+**Bandas de columnas y columnas a ancho de página.** `page.columns` es un array plano en orden de lectura, pero una página no siempre es una única fila de columnas. Un bloque en línea a ancho de página — hoy un `:::callout` con `span: 'page'` en una disposición multicolumna — corta la página en *bandas* apiladas: las columnas de texto de la banda actual se cierran en la línea de corte (su altura se recorta y `availableHeight` queda a cero), el bloque recibe su propia columna a todo el ancho con `kind: 'span'`, y debajo se añade una banda nueva de columnas de texto (`band + 1`, con la misma x y anchura y el mismo fondo que la banda a la que sustituye). Las columnas solo se añaden al final, así que `columnIndex` sigue apuntando a `page.columns[i]`, y los renderizadores no necesitan ningún trazado especial: cada columna recorta a su propio bbox (ensanchado por `columnClipRect`: 2pt para la tinta de los glifos más lo que sobresalgan por los lados de la columna sus diseños superpuestos, como la pestaña de un título o el distintivo de un recuadro, y lo que suba por encima de su parte alta el diseño de un encabezado; el pie sigue siendo el borde; el mismo rectángulo en los backends canvas y PDF), y el filete entre columnas se dibuja por banda entre columnas de texto adyacentes, empezando bajo la banda que ocupa un encabezado a ancho de página en la cabeza de la página (`columnRuleSegments`), con el filete propio de la página cuando una sección con estilo fija uno (`VDTPage.columnRule`, leído con `pageColumnRule`). El equilibrado de columnas ignora las columnas a ancho de página y las bandas de altura cero. Un bloque a ancho de página corta directamente donde la banda está nivelada (inicio de página, justo después de un encabezado de apertura, de otro bloque a ancho de página o de una banda de flotantes superior); si llega a una banda desigual propone en su lugar un *tope de banda* (`packages/postext/src/pipeline/bandCaps.ts`) — las columnas de la banda que abre un bloque de contenido dado se acortan a `ceil(Σ usado / N / rejilla)` líneas — y `buildDocument` repite la pasada de colocación con ese tope (agrandándolo línea a línea cuando la banda acortada desborda, como mucho unas pocas pasadas adicionales, y pasando después a la página siguiente), de modo que el texto llena las columnas acortadas bajo todas las reglas de colocación, termina nivelado en el corte, y las columnas cerradas conservan la holgura que quede como `availableHeight` para que el equilibrado la absorba. El mismo mecanismo nivela la banda de *cierre* de cada capítulo y del documento (`headings.balancing.trailing`): una apertura de capítulo, un `:::part`, un aviso `placement: 'fixed'` que cierra el capítulo o el final del documento alcanzado con las columnas de la banda actual desiguales propone un tope `kind: 'trailing'`, indexado por el bloque límite; como un tope se indexa por el bloque que abre su banda — y ese bloque se mueve cada vez que una página anterior absorbe líneas de equilibrado —, los topes de cierre se resuelven *después* de que el equilibrado de columnas se haya asentado, con sus ajustes congelados, y una breve ronda de pulido deja que las palancas rellenen lo que el corte dejó corto. Los avisos `placement: 'fixed'` salen del flujo: la caja se ancla al área de contenido / caja de corte / caja de sangre de la página, las columnas de texto que cubre ceden esa zona (recortada por abajo o por arriba como una banda de flotantes, pasando a la página siguiente si hay conflicto), y la caja con sus hijos va a `page.floats`.
 
 ### Pasada 4: Colocación de recursos
 
@@ -492,9 +494,9 @@ Las **viudas y huérfanas** son los signos más visibles de una composición ama
 - Una **huérfana** es una sola línea de un párrafo que queda varada al inicio de una columna. El
   grueso del párrafo está en la columna anterior, pero una línea se desbordó (parece desconectada
   de su contexto).
-- Un *runt* es un párrafo cuya última línea es una sola palabra corta (o dos) — visualmente demasiado corta para sentirse como una línea de texto en condiciones. Menos grave estructuralmente que una viuda, pero igual de molesto para un lector atento.
+- Una **línea corta** (*runt*, en inglés) es la última línea de un párrafo cuando se queda en una sola palabra corta (o dos): visualmente demasiado corta para sentirse como una línea de texto en condiciones. Menos grave estructuralmente que una viuda, pero igual de molesta para un lector atento.
 
-Los tres se tratan inyectando **demerits** (penalizaciones) en el algoritmo de división de líneas de Knuth-Plass. En lugar de maquetar el párrafo y después tratar de reparar un corte malo *a posteriori*, el motor enseña al algoritmo que ciertos conjuntos de cortes son más caros que otros. El algoritmo elige entonces el conjunto de cortes globalmente óptimo, que de forma natural evita viudas, huérfanas y *runts* siempre que es posible.
+Las tres se tratan inyectando **demerits** (penalizaciones) en el algoritmo de división de líneas de Knuth-Plass. En lugar de maquetar el párrafo y después tratar de reparar un corte malo *a posteriori*, el motor enseña al algoritmo que ciertos conjuntos de cortes son más caros que otros. El algoritmo elige entonces el conjunto de cortes globalmente óptimo, que de forma natural evita viudas, huérfanas y líneas cortas siempre que es posible.
 
 Concretamente, para cada nodo de corte candidato en un párrafo:
 
@@ -504,7 +506,7 @@ Concretamente, para cada nodo de corte candidato en un párrafo:
 
 Estas penalizaciones conviven con los demerits habituales — *badness* (razón de ajuste al cuadrado), coste de separación silábica y desajuste de clase de *fitness* — en una única optimización global. Un detalle de renderizado completa el cuadro: en los párrafos justificados, las líneas finales se renderizan en bandera — excepto las líneas finales *desbordadas*, cuyos espacios entre palabras se comprimen para caber en la medida según la semántica de ajuste de glue de TeX, aplicada de forma idéntica en los backends de canvas, HTML y PDF. El algoritmo puede aceptar alguna de ellas si la alternativa es peor (un párrafo sin un corte legal que cumpla todas las reglas), pero casi siempre encontrará un conjunto de cortes que las evite. Los ítems de lista se apuntan a la misma protección mediante `avoidOrphansInLists`, `avoidWidowsInLists`, `avoidRuntsInLists` (todos a `true` por defecto).
 
-Una cuarta presión blanda, `slackWeight`, pondera un coste cuadrático de "espacio de columna no utilizado", de modo que el algoritmo prefiere conjuntos de cortes que llenen las columnas de forma ajustada. Juntos, estos demerits convierten la Pasada 5 en un refinamiento *de división de líneas*: la mayoría de casos de viudas, huérfanas y *runts* se resuelven dentro del solver de Knuth-Plass, no mediante ajustes de tracking *a posteriori*.
+Una cuarta presión blanda, `slackWeight`, pondera un coste cuadrático de "espacio de columna no utilizado", de modo que el algoritmo prefiere conjuntos de cortes que llenen las columnas de forma ajustada. Juntos, estos demerits convierten la Pasada 5 en un refinamiento *de división de líneas*: la mayoría de casos de viudas, huérfanas y líneas cortas se resuelven dentro del solver de Knuth-Plass, no mediante ajustes de tracking *a posteriori*.
 
 Todo esto se puede afinar en `BodyTextConfig` — véase [Configuración → Huérfanas, viudas, *runts* y cohesión](/es/docs/configuration#huérfanas-viudas-runts-y-reglas-de-cohesión). Ajustar cualquier `*Penalty` a `0` desactiva efectivamente esa regla.
 
@@ -514,7 +516,7 @@ Algunas agrupaciones son mayores que un solo párrafo — abarcan bloques adyace
 
 - **Título con su primer párrafo.** Un título nunca debe aparecer al final de una columna si el párrafo que introduce empezaría en la columna siguiente. Lo gestiona `headings.keepWithNext` (por defecto `true`): si no hay sitio para el título *más* el mínimo de viudas del cuerpo (`bodyText.widowMinLines`, por defecto `2`) del bloque siguiente — o solo una línea cuando `avoidWidows` está desactivado —, el título se empuja hacia adelante para viajar con su texto.
 - **Títulos consecutivos.** Cuando aparecen varios títulos en secuencia (por ejemplo, un h2 seguido de un h3 seguido de un párrafo), todo el grupo debe permanecer junto. Ninguno de los títulos puede quedar suelto al final de una columna sin el contenido que introducen.
-- **Listas introducidas con dos puntos.** Cuando un párrafo termina con dos puntos que introducen directamente una lista, la línea que lleva los dos puntos debe quedarse con el inicio de la lista. Lo gestiona `bodyText.keepColonWithList` (por defecto `true`): si colocar el párrafo no dejaría sitio para el primer ítem de la lista, la última línea con los dos puntos (o el párrafo entero, si es de una sola línea) se mueve adelante junto con la lista. Siempre que esta regla tenga que empujar el párrafo completo y justo antes haya una secuencia de títulos en la columna, esos títulos también se arrastran hacia adelante para no violar silenciosamente `keepWithNext`; la única excepción es cuando la columna contiene solo el título (o títulos) que una iteración anterior ya movió hacia adelante, en cuyo caso el motor deja el párrafo junto al título y acepta la separación más leve entre dos puntos y lista para evitar un bucle.
+- **Listas introducidas con dos puntos.** Cuando un párrafo termina con dos puntos que introducen directamente una lista, la línea que lleva los dos puntos debe quedarse con el inicio de la lista. Lo gestiona `bodyText.keepColonWithList` (por defecto `true`): si colocar el párrafo no dejaría sitio para que empiece el primer ítem de la lista (todo él cuando las reglas de huérfanas y viudas de las listas lo mantienen entero; una línea con `bodyText.colonListRoom: 'line'`, como hasta postext 1.4), la última línea con los dos puntos (o el párrafo entero, si es de una sola línea) se mueve adelante junto con la lista. Siempre que esta regla tenga que empujar el párrafo completo y justo antes haya una secuencia de títulos en la columna, esos títulos también se arrastran hacia adelante para no violar silenciosamente `keepWithNext`; la única excepción es cuando la columna contiene solo el título (o títulos) que una iteración anterior ya movió hacia adelante, en cuyo caso el motor deja el párrafo junto al título y acepta la separación más leve entre dos puntos y lista para evitar un bucle.
 - **Figura con su pie.** Una figura y su pie de figura son una unidad inseparable. Siempre se mueven juntos.
 
 Cuando se detecta una violación de cohesión, el motor empuja todo el grupo a la siguiente columna o página. El espacio vacante se gestiona mediante el mecanismo normal de llenado de columnas (el divisor de líneas ya ha elegido un conjunto de cortes que encaja; si la columna resultante queda algo corta, la Pasada 7 redistribuye el espacio vertical alrededor de elementos que rompen la rejilla para mantenerla honesta).
@@ -547,9 +549,9 @@ El algoritmo calcula la altura total de contenido de todos los bloques en una p�
 
 <Illustration name="ConvergenceLoop" data='{"title": "Bucle de convergencia", "desc": "La Pasada 1 parsea, la Pasada 2 mide, y las pasadas 3 a 7 se ejecutan dentro del bucle de convergencia. Si algún bloque permanece dirty y el contador de iteraciones está por debajo de cinco, el bucle vuelve a ejecutarse desde la Pasada 3.", "caption": "El motor vuelve a la Pasada 3 hasta que ningún bloque quede dirty (máx 5 iteraciones).", "passBadges": [{"num": "Pasada 1", "name": "parsear"}, {"num": "Pasada 2", "name": "medir"}, {"num": "Pasada 3", "name": "colocar"}, {"num": "Pasada 4", "name": "recursos"}, {"num": "Pasada 5", "name": "tipografía"}, {"num": "Pasada 6", "name": "equilibrar"}, {"num": "Pasada 7", "name": "ritmo"}], "loopBadge": "bucle de convergencia (máx 5 iteraciones)", "loopCondition": "si hay bloques dirty &amp;&amp; iteraciones < 5"}' />
 
-Piensa en el bucle de convergencia como el motor discutiendo consigo mismo. La Pasada 5 elige un conjunto de cortes que evita una viuda en el párrafo A — pero al hacerlo, el párrafo A queda una línea más corto, lo que deja un hueco al final de la columna 2. La Pasada 6 re-equilibra las columnas para compensar, lo que empuja un título a una nueva columna, lo que activa `keepWithNext` y fuerza al título a saltar entero a la siguiente columna. La Pasada 7 ajusta el ritmo vertical, lo que podría crear un nuevo *runt* donde antes estaba el título. Así que el motor vuelve a la Pasada 3, re-coloca los bloques con las medidas actualizadas, y recorre toda la secuencia otra vez. Cada iteración resuelve más problemas de los que crea — hasta que, finalmente, nada queda sucio.
+Piensa en el bucle de convergencia como el motor discutiendo consigo mismo. La Pasada 5 elige un conjunto de cortes que evita una viuda en el párrafo A — pero al hacerlo, el párrafo A queda una línea más corto, lo que deja un hueco al final de la columna 2. La Pasada 6 re-equilibra las columnas para compensar, lo que empuja un título a una nueva columna, lo que activa `keepWithNext` y fuerza al título a saltar entero a la siguiente columna. La Pasada 7 ajusta el ritmo vertical, lo que podría crear una nueva línea corta donde antes estaba el título. Así que el motor vuelve a la Pasada 3, re-coloca los bloques con las medidas actualizadas, y recorre toda la secuencia otra vez. Cada iteración resuelve más problemas de los que crea — hasta que, finalmente, nada queda sucio.
 
-Como la mayoría de los casos de viudas, huérfanas y *runts* se resuelven *dentro* del solver de Knuth-Plass en una sola pasada de división de líneas, los documentos típicos ahora convergen en 1–2 iteraciones. El bucle sigue siendo necesario cuando eventos a nivel de bloque (un título empujado por `keepWithNext`, una figura diferida por la colocación, o el equilibrado de columnas igualando alturas) desplazan los límites de columna sobre los que midió la Pasada 5. Cuando eso ocurre, la Pasada 3 re-coloca, la Pasada 5 re-divide con las nuevas restricciones, y el bucle se asienta.
+Como la mayoría de los casos de viudas, huérfanas y líneas cortas se resuelven *dentro* del solver de Knuth-Plass en una sola pasada de división de líneas, los documentos típicos ahora convergen en 1–2 iteraciones. El bucle sigue siendo necesario cuando eventos a nivel de bloque (un título empujado por `keepWithNext`, una figura diferida por la colocación, o el equilibrado de columnas igualando alturas) desplazan los límites de columna sobre los que midió la Pasada 5. Cuando eso ocurre, la Pasada 3 re-coloca, la Pasada 5 re-divide con las nuevas restricciones, y el bucle se asienta.
 
 Tras completarse las pasadas 5–7, el motor comprueba si hay bloques marcados como `dirty`. Si existen bloques sucios y el contador de iteraciones está por debajo de 5, el pipeline se re-ejecuta desde la **Pasada 3**.
 
@@ -584,7 +586,7 @@ Algunos elementos rompen la rejilla porque su altura no es múltiplo de `baselin
 - **Imágenes:** altura arbitraria en píxeles
 - **Tablas:** altura variable
 - **Citas:** pueden usar tamaño de fuente o padding diferente
-- **Separadores de notas al pie:** filete de altura fija
+- **Separadores de notas al pie:** filete de altura fija (las notas al pie están previstas, pero aún no implementadas)
 
 ### Algoritmo de ajuste de espaciado
 
@@ -708,8 +710,9 @@ Piensa a qué se enfrenta el motor: miles de bloques de texto repartidos en cien
    una caché de medición explícita cuya clave incluye el texto, las fuentes, el ancho y cada opción
    que afecta a la composición, por encima de la caché propia de `prepare()` de Pretext y de una
    caché cruda de anchuras de texto. Re-medir un párrafo sin cambios cuesta una consulta a un mapa.
-   `clearMeasurementCache()` lo vacía todo — incluida la caché de anchuras de texto, para que las
-   anchuras de glifo sean correctas tras la carga de fuentes.
+   `clearMeasurementCache()` vacía la caché de Pretext y la de anchuras de texto, para que las
+   anchuras de glifo sean correctas tras la carga de fuentes; no recibe argumentos ni toca una
+   caché de medición, que se sustituye por otra nueva.
 
 6. **División de líneas en la ruta caliente.** La gestión de nodos activos de Knuth-Plass se
    reescribió por velocidad: el conjunto activo se compacta in situ a medida que los nodos se
@@ -812,7 +815,7 @@ Así se relacionan los tipos principales definidos en `packages/postext/src/type
     </tr>
     <tr>
       <td><code>PostextNote</code></td>
-      <td>Se convierte en un bloque de nota al pie, nota final o nota al margen en la Pasada 1</td>
+      <td>Prevista, pero aún no implementada: el motor no lee <code>notes</code>. Cuando lo esté, cada nota se convertirá en un bloque de nota al pie, nota final o nota al margen en la Pasada 1</td>
     </tr>
     <tr>
       <td><code>PostextResource</code></td>

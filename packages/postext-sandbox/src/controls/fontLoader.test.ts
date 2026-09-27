@@ -1,5 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import type { CustomFontFamily } from 'postext';
+import type { CustomFontFamily, DesignTextElement } from 'postext';
+import { DEFAULT_FOOTER_SLOT, DEFAULT_HEADER_SLOT, DEFAULT_TEXT_ELEMENT } from 'postext';
 import {
   customFontsSignature,
   getConfigFontFamilies,
@@ -70,9 +71,74 @@ describe('getConfigFontFamilies', () => {
     expect(families).toContain('Cell Serif');
   });
 
+  it('collects the paragraph style fonts', () => {
+    const families = getConfigFontFamilies({ paragraphStyles: [{ id: 'dir', fontFamily: 'Stage Serif', italic: true }, { id: 'plain' }] });
+    expect(families).toContain('Stage Serif');
+  });
+
   it('collects the chip style fonts', () => {
     const families = getConfigFontFamilies({ chipStyles: [{ id: 'key', fontFamily: 'Key Mono' }, { id: 'tag' }] });
     expect(families).toContain('Key Mono');
+  });
+
+  // The design-slot elements (running heads, footers, openers, part and
+  // contents designs) are laid out by the worker too: a family named only
+  // there must reach it, or that text is measured with a fallback font.
+  const text = (content: string, fontFamily?: string): DesignTextElement => ({
+    kind: 'text',
+    id: content,
+    placement: { anchor: { to: 'container', edge: 'top' } },
+    content,
+    fontSize: { value: 8, unit: 'pt' },
+    overflow: 'ellipsis-end',
+    ...(fontFamily ? { fontFamily } : {}),
+  });
+
+  it('collects the fonts of design-slot elements, wherever the slot is', () => {
+    const families = getConfigFontFamilies({
+      bodyText: { fontFamily: 'Body Serif' },
+      headings: {
+        fontFamily: 'Head Sans',
+        levels: [{ level: 1, advancedDesign: { enabled: true, slot: { elements: [text('{titleText}', 'Opener Display')] } } }],
+      },
+      header: { elements: [text('{title}', 'Running Head Sans')] },
+      footer: { elements: [text('{pageNumber}', 'Folio Sans')] },
+      headingStyles: [{
+        id: 'preface',
+        name: 'Preface',
+        header: { elements: [text('{titleText}', 'Section Head Sans')] },
+        footer: { elements: [text('{pageNumber}', 'Section Folio Sans')] },
+      }],
+      parts: { design: { elements: [text('{titleText}', 'Part Display')] } },
+      toc: { parts: { design: { elements: [text('{titleText}', 'Contents Part Sans')] } } },
+    });
+    for (const family of [
+      'Opener Display', 'Running Head Sans', 'Folio Sans', 'Section Head Sans', 'Section Folio Sans',
+      'Part Display', 'Contents Part Sans',
+    ]) {
+      expect(families).toContain(family);
+    }
+    expect(new Set(families).size).toBe(families.length);
+  });
+
+  it('collects the families the engine falls back to in design slots', () => {
+    // No header / footer: the built-in running head and folio are drawn.
+    const defaults = getConfigFontFamilies({ bodyText: { fontFamily: 'Body Serif' } });
+    for (const el of [...DEFAULT_HEADER_SLOT.elements, ...DEFAULT_FOOTER_SLOT.elements]) {
+      if (el.kind === 'text') expect(defaults).toContain(el.fontFamily);
+    }
+    // A text element that names no family is set in the element default.
+    const unnamed = getConfigFontFamilies({ bodyText: { fontFamily: 'Body Serif' }, header: { elements: [text('{title}')] } });
+    expect(unnamed).toContain(DEFAULT_TEXT_ELEMENT.fontFamily);
+  });
+
+  it('skips the fonts of a switched-off heading design', () => {
+    const families = getConfigFontFamilies({
+      headings: {
+        levels: [{ level: 1, advancedDesign: { enabled: false, slot: { elements: [text('{titleText}', 'Unused Display')] } } }],
+      },
+    });
+    expect(families).not.toContain('Unused Display');
   });
 });
 
@@ -95,6 +161,16 @@ describe('collectFontUsage / missingUsedVariants', () => {
     expect(usage.get('Body')).toHaveLength(5);
   });
 
+  it('reads the italic flag of paragraph styles and callout bodies', () => {
+    const config = {
+      paragraphStyles: [{ id: 'dir', fontFamily: 'Stage', fontWeight: 300, italic: true }],
+      calloutStyles: [{ id: 'aside', body: { fontFamily: 'Aside', italic: true } }],
+    } as unknown as import('postext').PostextConfig;
+    const usage = collectFontUsage(config);
+    expect(usage.get('Stage')).toEqual([{ weight: 300, style: 'italic' }]);
+    expect(usage.get('Aside')).toEqual([{ weight: 400, style: 'italic' }]);
+  });
+
   it('reports only the requested variants a family has no file for', () => {
     const config = {
       bodyText: { fontFamily: 'Body' },
@@ -108,5 +184,22 @@ describe('collectFontUsage / missingUsedVariants', () => {
       { weight: 700, style: 'italic' },
     ]);
     expect(missingUsedVariants(family('Unused', []), config)).toEqual([]);
+  });
+
+  it('asks bold and the other slant of a design text set with inline marks', () => {
+    const config = {
+      header: {
+        elements: [
+          { kind: 'text', id: 'a', content: 'x', fontFamily: 'Marks', fontWeight: 300, italic: true, inlineMarks: true },
+          { kind: 'text', id: 'b', content: 'y', fontFamily: 'Plain', fontWeight: 300 },
+        ],
+      },
+    } as unknown as import('postext').PostextConfig;
+    const usage = collectFontUsage(config);
+    expect(usage.get('Marks')).toEqual(expect.arrayContaining([
+      { weight: 700, style: 'italic' },
+      { weight: 300, style: 'normal' },
+    ]));
+    expect(usage.get('Plain')).toEqual([{ weight: 300, style: 'normal' }]);
   });
 });

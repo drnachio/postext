@@ -36,6 +36,44 @@ function indexSvgText(fileId: string, rec: BlobRecord): void {
  *  single-ink recolouring was applied). */
 const decoded = new Map<string, string>();
 
+/** File ids whose payload the previews paint as placeholders (the Checks
+ *  panel's `missingImage`), for two reasons kept apart so that neither
+ *  path clears the other's verdict: a payload missing from the blob store
+ *  (both the canvas and the HTML path read the store, and either clears it
+ *  once a later read succeeds), and one that is stored but does not decode
+ *  (only the canvas path decodes, so only it clears that). The HTML path
+ *  hands the browser a URL without decoding it, so a truncated upload must
+ *  keep its warning while the HTML tab is shown. */
+const missingPayloads = new Set<string>();
+const undecodable = new Set<string>();
+const unavailable = new Set<string>();
+const unavailableListeners = new Set<() => void>();
+
+function setFlag(set: Set<string>, fileId: string, on: boolean): void {
+  if (on === set.has(fileId)) return;
+  if (on) set.add(fileId);
+  else set.delete(fileId);
+  const now = missingPayloads.has(fileId) || undecodable.has(fileId);
+  if (now === unavailable.has(fileId)) return;
+  if (now) unavailable.add(fileId);
+  else unavailable.delete(fileId);
+  for (const cb of unavailableListeners) cb();
+}
+
+/** The file ids of image payloads the previews could not read or decode. */
+export function unavailableResourceImages(): ReadonlySet<string> {
+  return unavailable;
+}
+
+/** Be told when {@link unavailableResourceImages} changes; returns the
+ *  unsubscribe function. */
+export function onUnavailableResourceImagesChange(cb: () => void): () => void {
+  unavailableListeners.add(cb);
+  return () => {
+    unavailableListeners.delete(cb);
+  };
+}
+
 /** The blob fileId backing a resource's image payload, if any. */
 function imageFileId(r: Resource): string | undefined {
   if (r.kind === 'bitmap') return r.bitmap?.fileId;
@@ -79,6 +117,9 @@ const urls = new Map<string, { variant: string; url: string }>();
  *  re-reads and re-registers it (used when a blob is overwritten in place). */
 export function invalidateResourceImage(fileId: string): void {
   decoded.delete(fileId);
+  // The decode verdict was about the bytes being replaced; the next canvas
+  // decode gives the new one.
+  setFlag(undecodable, fileId, false);
   dropSvgTextIndex(fileId);
   const entry = urls.get(fileId);
   if (entry) {
@@ -109,6 +150,9 @@ export async function ensureResourceImageUrls(
     const existing = urls.get(fileId);
     if (existing && existing.variant === variant) continue;
     const rec = await getBlob(fileId).catch(() => null);
+    // Only whether the payload is stored: this path does not decode it, so
+    // it leaves the canvas's decode verdict alone.
+    setFlag(missingPayloads, fileId, !rec);
     if (!rec) continue;
     indexSvgText(fileId, rec);
     let blob: Blob;
@@ -143,13 +187,16 @@ export async function ensureResourceImages(
     const variant = r.kind === 'svg' && inkHex ? inkHex.toLowerCase() : '';
     if (decoded.get(fileId) === variant) continue;
     const rec = await getBlob(fileId).catch(() => null);
+    setFlag(missingPayloads, fileId, !rec);
     if (!rec) continue;
     indexSvgText(fileId, rec);
     const img = await decodeImage(rec, variant || null).catch(() => null);
+    setFlag(undecodable, fileId, !img);
     if (!img) continue;
     // SVGs go in as vector sources: the canvas backend rasterises them once
     // per placed size instead of on every draw.
-    registerResourceImage(fileId, img, { vector: rec.contentType === 'image/svg+xml' });
+    // Recoloured here already (`variant`): the canvas must not tint it again.
+    registerResourceImage(fileId, img, { vector: rec.contentType === 'image/svg+xml', singleInk: false });
     decoded.set(fileId, variant);
     changed = true;
   }

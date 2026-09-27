@@ -76,6 +76,66 @@ function resolveRequired(value: ColorValue, palette: ColorPaletteEntry[] | undef
   return { hex: entry.value.hex, model: entry.value.model };
 }
 
+/** Keys whose subtree the palette pass leaves alone: the palette itself, and
+ *  the HTML viewer's overrides — a partial config that is merged (and then
+ *  resolved against its own palette) only when the HTML viewer applies it. */
+const PALETTE_WALK_SKIP = new Set(['colorPalette', 'htmlViewer']);
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (typeof value !== 'object' || value === null) return false;
+  const proto = Object.getPrototypeOf(value);
+  return proto === Object.prototype || proto === null;
+}
+
+/**
+ * `node` with every palette-linked colour in it — any `ColorValue` whose
+ * `paletteId` names an entry of the palette (`byId`) — taking that entry's
+ * value, wherever it sits: design slots (running heads, heading and part
+ * openers, heading styles, contents rows), callout labels, reference
+ * colours… The link is kept, so a part's or a styled section's palette
+ * overrides still find the colour. A link to an entry that does not exist
+ * keeps its stored value. Subtrees with nothing to change are returned as
+ * they are (the same objects), so identity-keyed caches downstream hold.
+ */
+function relinkPaletteColors<T>(node: T, byId: ReadonlyMap<string, ColorValue>, ancestors = new Set<object>()): T {
+  if (Array.isArray(node)) {
+    if (ancestors.has(node)) return node;
+    ancestors.add(node);
+    let out: unknown[] | undefined;
+    node.forEach((item, i) => {
+      const next = relinkPaletteColors(item, byId, ancestors);
+      if (next !== item) {
+        out ??= node.slice();
+        out[i] = next;
+      }
+    });
+    ancestors.delete(node);
+    return (out ?? node) as T;
+  }
+  if (!isPlainObject(node) || ancestors.has(node)) return node;
+  if (typeof node.hex === 'string' && typeof node.paletteId === 'string') {
+    const entry = byId.get(node.paletteId);
+    if (!entry || (entry.hex === node.hex && entry.model === node.model)) return node;
+    return { ...node, hex: entry.hex, model: entry.model } as T;
+  }
+  ancestors.add(node);
+  let out: Record<string, unknown> | undefined;
+  for (const [key, value] of Object.entries(node)) {
+    if (PALETTE_WALK_SKIP.has(key) || value === null || typeof value !== 'object') continue;
+    const next = relinkPaletteColors(value, byId, ancestors);
+    if (next !== value) {
+      out ??= { ...node };
+      out[key] = next;
+    }
+  }
+  ancestors.delete(node);
+  return (out ?? node) as T;
+}
+
+function paletteById(palette: ColorPaletteEntry[]): Map<string, ColorValue> {
+  return new Map(palette.map((e) => [e.id, e.value]));
+}
+
 /** A resolved table style (the document's or a named one) with its colours
  *  read through the palette. */
 function paletteResolvedTableStyle<T extends ResolvedTableStyleConfig>(ts: T, palette: ColorPaletteEntry[]): T {
@@ -85,6 +145,7 @@ function paletteResolvedTableStyle<T extends ResolvedTableStyleConfig>(ts: T, pa
     headerColor: resolveRequired(ts.headerColor, palette),
     headerBackground: resolveRequired(ts.headerBackground, palette),
     bodyBackground: resolveRequired(ts.bodyBackground, palette),
+    bodyAlternateBackground: resolveRequired(ts.bodyAlternateBackground, palette),
     borderColor: resolveRequired(ts.borderColor, palette),
   };
 }
@@ -97,15 +158,28 @@ function paletteTableStyle<T extends TableStyleConfig>(ts: T, palette: ColorPale
     headerColor: resolveColor(ts.headerColor, palette),
     headerBackground: resolveColor(ts.headerBackground, palette),
     bodyBackground: resolveColor(ts.bodyBackground, palette),
+    bodyAlternateBackground: resolveColor(ts.bodyAlternateBackground, palette),
     borderColor: resolveColor(ts.borderColor, palette),
   };
 }
 
+/** The resolved config with its palette-linked colours read through
+ *  `palette`. The colours listed below take the palette value and drop the
+ *  link (as they always have); every other palette-linked colour — the
+ *  design slots, `bodyText.referenceColor`, callout labels… — takes the
+ *  value and keeps the link (see `relinkPaletteColors`). */
 export function applyPaletteToResolvedConfig(
   resolved: ResolvedConfig,
   palette: ColorPaletteEntry[] | undefined,
 ): ResolvedConfig {
   if (!palette || palette.length === 0) return resolved;
+  return relinkPaletteColors(applyPaletteToListedResolvedColors(resolved, palette), paletteById(palette));
+}
+
+function applyPaletteToListedResolvedColors(
+  resolved: ResolvedConfig,
+  palette: ColorPaletteEntry[],
+): ResolvedConfig {
   return {
     ...resolved,
     bodyText: {
@@ -247,10 +321,19 @@ function applyPaletteToCaptionStyle(
   };
 }
 
+/** `config` with its palette-linked colours read through its own
+ *  `colorPalette`: the colours listed below take the palette value and drop
+ *  the link; every other one (design slots, `bodyText.referenceColor`…)
+ *  takes the value and keeps the link, so part and section palette
+ *  overrides still apply to it. `htmlViewer.overrides` is left as written. */
 export function applyPaletteToConfig(config: PostextConfig | undefined): PostextConfig | undefined {
   if (!config) return config;
   const palette = config.colorPalette;
   if (!palette || palette.length === 0) return config;
+  return relinkPaletteColors(applyPaletteToListedColors(config, palette), paletteById(palette));
+}
+
+function applyPaletteToListedColors(config: PostextConfig, palette: ColorPaletteEntry[]): PostextConfig {
 
   const next: PostextConfig = { ...config };
 

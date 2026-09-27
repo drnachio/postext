@@ -30,7 +30,8 @@ const figure = (id: string): Resource => ({
 
 const numbered: PostextConfig = {
   page: { width: pt(360), height: pt(480), margins: { top: pt(18), bottom: pt(18), left: pt(18), right: pt(18) } },
-  headings: { levels: [{ level: 1, numberingTemplate: 'Chapter {1}' }, { level: 2, numberingTemplate: '{1}.{2}' }] },
+  // Chapters run on: these tests are about counters and page numbers.
+  headings: { levels: [{ level: 1, numberingTemplate: 'Chapter {1}', breakBefore: { enabled: false } }, { level: 2, numberingTemplate: '{1}.{2}' }] },
 };
 
 const headingPrefixes = (markdown: string, continuation?: LayoutContinuation, resources?: Resource[]) => {

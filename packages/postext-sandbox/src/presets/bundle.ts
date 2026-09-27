@@ -6,7 +6,7 @@
 // here touches storage or the DOM.
 
 import type { PostextConfig, Resource } from 'postext';
-import { planBundle as planCoreBundle, readBundle, resolveBundleFiles } from 'postext/bundle';
+import { isBundleManifest, planBundle as planCoreBundle, readBundle, resolveBundleConfigLocale, resolveBundleFiles } from 'postext/bundle';
 import type { BundleByteSources as CoreByteSources, BundleFileReader, BundleIdScheme, PlannedFile } from 'postext/bundle';
 import { ENGINE_KEY, configKeyOf, resourcesKeyOf } from '../book/layoutKeys';
 import { createDefaultConfig } from '../context/defaultConfig';
@@ -68,12 +68,16 @@ export async function parseBundle(
   const presetId = (manifest as { id?: unknown } | null)?.id;
   if (typeof presetId !== 'string' || !presetId) throw new Error(`Invalid preset manifest for "${summary.id}"`);
   const scheme = ids ?? presetIdScheme(presetId);
+  // The pristine configuration in the bundle's language, which is not the
+  // viewer's when the bundle has one language only: a Spanish book opened
+  // from /en keeps "Figura" and "Tabla" (EF-150).
+  const language = isBundleManifest(manifest) ? resolveBundleConfigLocale(manifest, locale) : locale;
   let read;
   try {
     read = await readBundle(manifest, readFile, {
       locale,
       ids: scheme,
-      baseConfig: createDefaultConfig(locale),
+      baseConfig: createDefaultConfig(language),
       measureSvg: svgIntrinsicSize,
       measureBitmap: bitmapSize,
       ...(onWarning ? { onWarning } : {}),

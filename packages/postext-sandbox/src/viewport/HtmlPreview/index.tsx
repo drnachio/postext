@@ -163,12 +163,23 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     shadow.appendChild(scroll);
     scrollHostRef.current = scroll;
     contentHostRef.current = scroll;
+    // A Markdown link in the preview opens in a tab of its own instead of
+    // navigating the Sandbox away (`:ref` anchors, `#…`, stay in place).
+    const onLinkClick = (event: MouseEvent) => {
+      const anchor = (event.target as Element | null)?.closest?.('a[href]');
+      const href = anchor?.getAttribute('href');
+      if (!anchor || !href || href.startsWith('#')) return;
+      event.preventDefault();
+      window.open((anchor as HTMLAnchorElement).href, '_blank', 'noopener,noreferrer');
+    };
+    scroll.addEventListener('click', onLinkClick);
     // The DOM that lastRender was diffing against is gone — force a full
     // rebuild on the next relayout.
     lastRenderRef.current = null;
     lastRenderSigRef.current = null;
     overlayMapRef.current.clear();
     return () => {
+      scroll.removeEventListener('click', onLinkClick);
       scrollHostRef.current = null;
       contentHostRef.current = null;
       lastRenderRef.current = null;
@@ -385,6 +396,8 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
         padding: PADDING_PX,
         background: 'transparent',
         resourceImageUrl: getResourceImageUrl,
+        // The URLs are recoloured for single ink already (see above).
+        singleInk: false,
       });
 
       scroll.dataset.mode = currentColumnMode;

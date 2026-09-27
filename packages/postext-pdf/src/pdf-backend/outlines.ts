@@ -15,7 +15,13 @@ interface OutlineEntry {
   y: number;
 }
 
+/** A heading's bookmark title: its number and its title as written. A
+ *  letter-case transform (`textTransform: 'uppercase'`) is how the page
+ *  prints the heading, not its name — as with CSS `text-transform`, the
+ *  bookmark keeps the source's case (EF-81). */
 function extractBlockText(block: VDTBlock): string {
+  const written = block.sourceTitle?.replace(/\s+/g, ' ').trim();
+  if (written) return block.numberPrefix ? `${block.numberPrefix} ${written}` : written;
   const raw = block.lines
     .map((line) => line.text)
     .join(' ')

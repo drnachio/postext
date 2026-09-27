@@ -12,6 +12,7 @@ import type {
   OrderedListsConfig,
   OrderedListLevelConfig,
   OrderedListNumberFormat,
+  OrderedListNumberWidth,
 } from 'postext';
 import {
   CollapsibleSection,
@@ -290,6 +291,26 @@ export const OrderedListsSection = memo(function OrderedListsSection() {
         isDefault={isItemSpacingDefault}
         onReset={() => resetField('itemSpacing')}
         units={MARGIN_UNITS}
+      />
+      <ToggleSwitch
+        label={labels.orderedListsSnapTopToGrid}
+        checked={lists.snapTopToGrid}
+        onChange={(v) => updateLists({ snapTopToGrid: v })}
+        tooltip={labels.orderedListsSnapTopToGridTooltip}
+        isDefault={lists.snapTopToGrid === D.snapTopToGrid}
+        onReset={() => resetField('snapTopToGrid')}
+      />
+      <SelectInput
+        label={labels.orderedListsNumberWidth}
+        value={lists.numberWidth}
+        options={[
+          { value: 'run', label: labels.orderedListsNumberWidthRun },
+          { value: 'level', label: labels.orderedListsNumberWidthLevel },
+        ]}
+        onChange={(v) => updateLists({ numberWidth: v as OrderedListNumberWidth })}
+        tooltip={labels.orderedListsNumberWidthTooltip}
+        isDefault={lists.numberWidth === D.numberWidth}
+        onReset={() => resetField('numberWidth')}
       />
       <ToggleSwitch
         label={labels.orderedListsHangingIndent}

@@ -20,7 +20,9 @@ function plainHeading(s: string): string {
     .replace(/\{[^}]*\}\s*$/, '')
     .replace(/\s*\\\\\s*/g, ' ')
     .replace(/[*_`~]+/g, '')
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    // A link keeps its label. Its URL may hold balanced parentheses
+    // (`…/El_Greco_(painter)`); an unbalanced one ends at the first `)`.
+    .replace(/\[([^\]]*)\]\((?:(?:[^()]|\([^()]*\))*|[^)]*)\)/g, '$1')
     .replace(/\\([\\`*_{}[\]()#+\-.!])/g, '$1')
     .trim();
 }

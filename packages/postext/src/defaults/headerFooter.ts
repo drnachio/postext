@@ -18,6 +18,7 @@ import type {
   ResolvedDesignTextElement,
 } from '../types';
 import { DEFAULT_MAIN_COLOR } from './shared';
+import { dimensionToPx } from '../units';
 
 export type HeaderFooterSlotKind = 'header' | 'footer';
 
@@ -305,6 +306,43 @@ export function migrateLegacyHeaderFooterConfig(
 // Resolve / strip
 // ---------------------------------------------------------------------------
 
+const ABSOLUTE_UNITS = new Set(['cm', 'mm', 'in', 'pt', 'px']);
+/** The DPI an absolute leading is compared to the font size at when the two
+ *  mix `px` with physical units (the default page DPI): only the editor's
+ *  equivalent multiplier depends on it, never the layout. */
+const EQUIVALENT_MULTIPLIER_DPI = 300;
+
+/** A design text's leading as written (`DesignTextElement.lineHeight`: a
+ *  multiplier, or a {@link Dimension}) as the resolved element carries it:
+ *  a multiplier, plus the absolute length when one was given. A numeric
+ *  string counts as the number it spells; anything unusable — not a
+ *  positive finite number, a dimension of an unknown unit — is the default
+ *  multiplier. Never NaN. */
+export function resolveDesignLineHeight(
+  value: unknown,
+  fontSize: Dimension | undefined,
+): { lineHeight: number; lineHeightLength?: Dimension } {
+  const fallback = { lineHeight: DEFAULT_TEXT_ELEMENT.lineHeight };
+  const positive = (n: unknown): number | undefined => {
+    const v = typeof n === 'string' && n.trim() !== '' ? Number(n) : n;
+    return typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : undefined;
+  };
+  const n = positive(value);
+  if (n !== undefined) return { lineHeight: n };
+  if (!value || typeof value !== 'object') return fallback;
+  const { value: raw, unit } = value as { value?: unknown; unit?: unknown };
+  const v = positive(raw);
+  if (v === undefined || typeof unit !== 'string') return fallback;
+  if (unit === 'em' || unit === 'rem') return { lineHeight: v };
+  if (!ABSOLUTE_UNITS.has(unit)) return fallback;
+  const length = { value: v, unit } as Dimension;
+  const size = fontSize && ABSOLUTE_UNITS.has(fontSize.unit)
+    ? dimensionToPx(fontSize, EQUIVALENT_MULTIPLIER_DPI)
+    : 0;
+  const equivalent = size > 0 ? dimensionToPx(length, EQUIVALENT_MULTIPLIER_DPI) / size : DEFAULT_TEXT_ELEMENT.lineHeight;
+  return { lineHeight: equivalent, lineHeightLength: length };
+}
+
 function resolveTextElement(el: DesignTextElement, idx: number): ResolvedDesignTextElement {
   return {
     kind: 'text',
@@ -318,19 +356,24 @@ function resolveTextElement(el: DesignTextElement, idx: number): ResolvedDesignT
     },
     content: el.content,
     fontFamily: el.fontFamily ?? DEFAULT_TEXT_ELEMENT.fontFamily,
-    fontSize: el.fontSize,
+    // Typed as required, but a JSON config may leave it out: the documented
+    // 8 pt, not a zero-size (invisible) text.
+    fontSize: el.fontSize ?? DEFAULT_TEXT_ELEMENT.fontSize,
     fontWeight: el.fontWeight ?? DEFAULT_TEXT_ELEMENT.fontWeight,
     italic: el.italic ?? DEFAULT_TEXT_ELEMENT.italic,
     color: el.color ?? DEFAULT_TEXT_ELEMENT.color,
     align: el.align ?? DEFAULT_TEXT_ELEMENT.align,
     verticalAlign: el.verticalAlign ?? DEFAULT_TEXT_ELEMENT.verticalAlign,
-    lineHeight: el.lineHeight ?? DEFAULT_TEXT_ELEMENT.lineHeight,
+    ...resolveDesignLineHeight(el.lineHeight, el.fontSize ?? DEFAULT_TEXT_ELEMENT.fontSize),
     letterSpacing: el.letterSpacing,
     overflow: el.overflow ?? DEFAULT_TEXT_ELEMENT.overflow,
     hyphenate: el.hyphenate,
     ...(el.textTransform ? { textTransform: el.textTransform } : {}),
     ...(el.dropCap ? { dropCap: el.dropCap } : {}),
     ...(el.paragraphIndent ? { paragraphIndent: el.paragraphIndent } : {}),
+    ...(el.inlineMarks ? { inlineMarks: true } : {}),
+    ...(el.stroke ? { stroke: el.stroke } : {}),
+    ...(el.reserve === false ? { reserve: false } : {}),
     box: el.box,
   };
 }
@@ -347,8 +390,11 @@ function resolveRuleElement(el: DesignRuleElement, idx: number): ResolvedDesignR
       size: el.placement.size ?? {},
     },
     direction: el.direction ?? 'horizontal',
-    color: el.color,
-    thickness: el.thickness,
+    // The documented defaults (EF-136): a rule that leaves them out is a
+    // black 0.5 pt line, not an invisible one.
+    color: el.color ?? { ...DEFAULT_RULE_ELEMENT.color },
+    thickness: el.thickness ?? { ...DEFAULT_RULE_ELEMENT.thickness },
+    ...(el.reserve === false ? { reserve: false } : {}),
   };
 }
 
@@ -364,6 +410,7 @@ function resolveBoxElement(el: DesignBoxElement, idx: number): ResolvedDesignBox
       size: el.placement.size ?? {},
     },
     style: el.style,
+    ...(el.reserve === false ? { reserve: false } : {}),
   };
 }
 
@@ -379,6 +426,7 @@ function resolveImageElement(el: DesignImageElement, idx: number): ResolvedDesig
       size: el.placement.size ?? { width: 'auto', height: 'auto' },
     },
     resourceId: el.resourceId,
+    ...(el.reserve === false ? { reserve: false } : {}),
   };
 }
 

@@ -12,236 +12,94 @@ postext is a layout engine that takes semantic content — enriched markdown wit
 npm install postext
 ```
 
-Requires React >= 18 as a peer dependency.
+The main entry has no framework dependency. React (>= 18, a peer dependency) is used only by the `postext/react` subpath. PDF output lives in the companion package [`postext-pdf`](https://www.npmjs.com/package/postext-pdf).
+
+From a CDN, import it as a module — no build step:
+
+```js
+import { buildDocument, renderPage } from 'https://esm.sh/postext';
+```
 
 ## Quick Example
 
-```tsx
-import { createLayout } from 'postext';
-import type { PostextContent, PostextConfig } from 'postext';
+```ts
+import { buildDocument, registerResourceImage, renderPage } from 'postext';
+import type { PostextConfig, PostextContent } from 'postext';
 
 const content: PostextContent = {
-  markdown: '# My Article\n\nFirst paragraph of the article...',
+  markdown: '# My Article\n\nThe harbour, shown in :ref{id="harbour"}, was rebuilt in 1854.',
   resources: [
     {
-      id: 'hero',
-      type: 'image',
-      src: '/images/hero.jpg',
-      alt: 'Hero image',
-      caption: 'Photo by Jane Doe',
-    },
-  ],
-  notes: [
-    {
-      id: 'note-1',
-      type: 'footnote',
-      content: 'See the original study for details.',
+      id: 'harbour',
+      typeId: 'figure',
+      kind: 'bitmap',
+      caption: 'The harbour at dawn.',
+      altText: 'Fishing boats moored in a small harbour',
+      createdAt: 0,
+      updatedAt: 0,
+      bitmap: { fileId: 'harbour.jpg', format: 'jpeg', width: 1600, height: 1000 },
     },
   ],
 };
 
 const config: PostextConfig = {
-  page: {
-    sizePreset: '17x24',
-    dpi: 300,
-  },
-  layout: {
-    layoutType: 'double',
-    gutterWidth: { value: 0.75, unit: 'cm' },
-  },
-  bodyText: {
-    fontFamily: 'EB Garamond',
-    fontSize: { value: 9, unit: 'pt' },
-    hyphenation: { enabled: true, locale: 'en-us' },
-  },
-  headings: {
-    fontFamily: 'Open Sans',
-  },
-};
-
-const Layout = createLayout(content, config);
-```
-
-## With pretext
-
-postext is designed to work alongside [`@chenglou/pretext`](https://github.com/chenglou/pretext). **pretext** measures how much space text needs (DOM-free, 300-600x faster than DOM measurement). **postext** uses those measurements to make editorial layout decisions.
-
-```ts
-import { prepare, layout } from '@chenglou/pretext';
-import { createLayout } from 'postext';
-
-// pretext: measure text dimensions
-const prepared = prepare(paragraphText, '16px/1.5 Inter');
-const { height } = layout(prepared, columnWidth, 24);
-
-// postext: apply layout rules
-const Layout = createLayout(content, config);
-```
-
-## API
-
-### `createLayout(content, config?)`
-
-Returns a React component that renders the laid-out content.
-
-| Parameter | Type | Description |
-|---|---|---|
-| `content` | `PostextContent` | The semantic content to lay out |
-| `config` | `PostextConfig` | Optional layout configuration |
-
-### Types
-
-#### `PostextContent`
-
-The input content structure.
-
-| Field | Type | Description |
-|---|---|---|
-| `markdown` | `string` | Main content in enriched markdown |
-| `resources?` | `PostextResource[]` | Images, tables, figures, pull quotes |
-| `notes?` | `PostextNote[]` | Footnotes, endnotes, margin notes |
-
-#### `PostextResource`
-
-An embeddable resource referenced within the content.
-
-| Field | Type | Description |
-|---|---|---|
-| `id` | `string` | Unique identifier |
-| `type` | `'image' \| 'table' \| 'figure' \| 'pullQuote'` | Resource type |
-| `src?` | `string` | Source URL (for images) |
-| `alt?` | `string` | Alt text |
-| `caption?` | `string` | Caption text |
-| `content?` | `string` | Inline content (for tables/pull quotes) |
-| `width?` | `number` | Width in pixels |
-| `height?` | `number` | Height in pixels |
-
-#### `PostextNote`
-
-A reference note attached to the content.
-
-| Field | Type | Description |
-|---|---|---|
-| `id` | `string` | Unique identifier |
-| `type` | `'footnote' \| 'endnote' \| 'marginNote'` | Note type |
-| `content` | `string` | Note content |
-| `marker?` | `string` | Custom marker (defaults to auto-numbering) |
-
-#### `PostextConfig`
-
-Top-level layout configuration. All fields are optional — defaults are applied by the resolver functions.
-
-| Field | Type | Description |
-|---|---|---|
-| `page?` | `PageConfig` | Page dimensions, margins, DPI, baseline grid, cut lines |
-| `layout?` | `LayoutConfig` | Column arrangement (`layoutType`, `gutterWidth`, `sideColumnPercent`, `sideColumnRole`, `sideColumnSide`, `columnRule`, `fitFiguresToPage`) |
-| `bodyText?` | `BodyTextConfig` | Body text typography (font, size, line height, hyphenation, indentation) |
-| `headings?` | `HeadingsConfig` | Heading typography with per-level overrides (H1–H6) |
-| `debug?` | `DebugConfig` | Editor-only sync indicators (`cursorSync`, `selectionSync`) |
-| `columnConfig?` | `ColumnConfig` | Reserved — advanced column control, not yet processed by the engine |
-| `resourcePlacement?` | `ResourcePlacementConfig` | Reserved — advanced resource placement |
-| `typography?` | `TypographyConfig` | Reserved — advanced typographic rules (orphans, widows, keep-together) |
-| `references?` | `ReferenceConfig` | Reserved — footnote/endnote/numbering settings |
-| `sectionOverrides?` | `PostextSectionOverride[]` | Reserved — per-section rule overrides |
-| `renderer?` | `'web' \| 'pdf'` | Reserved — output format selector |
-| `columns?` | `number` | Legacy — superseded by `layout.layoutType`. Kept in the type for backward compatibility |
-| `gutter?` | `string` | Legacy — superseded by `layout.gutterWidth`. Kept in the type for backward compatibility |
-
-For the full reference (all fields, defaults, resolver and stripper utilities) see the [Configuration docs](https://postext.dev/en/docs/configuration).
-
-#### `DebugConfig`
-
-Visual indicators rendered by the interactive editor to keep source text and layout in sync. Ignored by exported output.
-
-| Field | Type | Description |
-|---|---|---|
-| `cursorSync?` | `SyncIndicatorConfig` | Caret mirror in the rendered layout. Default: enabled, `#2563eb` |
-| `selectionSync?` | `SyncIndicatorConfig` | Highlighted range matching the source selection. Default: enabled, `#fde04780` |
-
-`SyncIndicatorConfig` is `{ enabled: boolean; color?: ColorValue }`.
-
-#### `HyphenationConfig`
-
-| Field | Type | Description |
-|---|---|---|
-| `enabled?` | `boolean` | Whether to allow hyphenation. Default `true` |
-| `locale?` | `HyphenationLocale` | `'en-us' \| 'es' \| 'fr' \| 'de' \| 'it' \| 'pt' \| 'ca' \| 'nl'`. Default `'en-us'` |
-
-#### `ColumnConfig`
-
-| Field | Type | Description |
-|---|---|---|
-| `count?` | `number` | Number of columns |
-| `gutter?` | `string` | Space between columns |
-| `columnRule?` | `{ width?, style?, color? }` | Visual rule between columns |
-| `balancing?` | `boolean` | Equalize column heights |
-
-#### `ResourcePlacementConfig`
-
-| Field | Type | Description |
-|---|---|---|
-| `defaultStrategy?` | `PlacementStrategy` | Default placement strategy |
-| `deferPlacement?` | `boolean` | Find next available position if resource doesn't fit |
-| `preserveAspectRatio?` | `boolean` | Maintain aspect ratio when sizing |
-
-#### `PlacementStrategy`
-
-```ts
-type PlacementStrategy =
-  | 'topOfColumn'
-  | 'inline'
-  | 'floatLeft'
-  | 'floatRight'
-  | 'fullWidthBreak'
-  | 'margin';
-```
-
-#### `TypographyConfig`
-
-| Field | Type | Description |
-|---|---|---|
-| `orphans?` | `number` | Min lines at top of column |
-| `widows?` | `number` | Min lines at bottom of column |
-| `hyphenation?` | `boolean` | Enable hyphenation |
-| `ragOptimization?` | `boolean` | Minimize ragged right edges |
-| `spacing?` | `object` | Space before/after headings, figures, block quotes |
-| `keepTogether?` | `object` | Keep heading with paragraph, figure with caption |
-
-#### `ReferenceConfig`
-
-| Field | Type | Description |
-|---|---|---|
-| `footnotes?` | `{ placement?, marker? }` | Footnote placement and marker style |
-| `figureNumbering?` | `boolean` | Auto-number figures |
-| `tableNumbering?` | `boolean` | Auto-number tables |
-| `marginNotes?` | `boolean` | Enable margin notes |
-
-#### `PostextSectionOverride`
-
-| Field | Type | Description |
-|---|---|---|
-| `selector` | `string` | CSS selector or content marker |
-| `columns?` | `ColumnConfig` | Column overrides for this section |
-| `typography?` | `TypographyConfig` | Typography overrides |
-| `resourcePlacement?` | `ResourcePlacementConfig` | Placement overrides |
-
-## Font Loading
-
-When using custom fonts (e.g. `'EB Garamond'`, `'Open Sans'`), ensure they are loaded before rendering to avoid a flash of unstyled text. The `postext-sandbox` package provides an awaitable utility for this:
-
-```ts
-import { preloadConfigFonts } from 'postext-sandbox';
-
-const config: PostextConfig = {
-  bodyText: { fontFamily: 'EB Garamond' },
+  page: { sizePreset: '17x24', dpi: 150 },
+  layout: { layoutType: 'double', gutterWidth: { value: 0.75, unit: 'cm' } },
+  bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } },
   headings: { fontFamily: 'Open Sans' },
+  locale: 'en-us',
 };
 
-await preloadConfigFonts(config);
-// Fonts are now loaded — safe to render
+// Fonts before layout: text measured with a fallback font breaks differently.
+await Promise.all(['16px "EB Garamond"', 'bold 16px "Open Sans"'].map((f) => document.fonts.load(f)));
+
+// Images are registered by `fileId`, out of band.
+const img = new Image();
+img.src = '/images/harbour.jpg';
+await img.decode();
+registerResourceImage('harbour.jpg', img);
+
+const doc = buildDocument(content, config);
+document.body.append(...doc.pages.map((page) => renderPage(page, doc)));
 ```
 
-The `<PostextSandbox>` component handles this automatically, blocking rendering until all config fonts are ready.
+`buildDocument` returns the Virtual Document Tree (VDT): every page, column, line and figure with its coordinates. The renderers only paint it.
+
+## API at a glance
+
+| Export | What it does |
+|---|---|
+| `buildDocument(content, config?)` | Lays the content out and returns the VDT (`VDTDocument`). |
+| `renderPage(page, doc)`, `renderPageToCanvas(page, doc, canvas, { scale? })` | Paint one page on a canvas. |
+| `renderToHtml(doc, options?)` | Absolutely positioned HTML for the pages. Pages are transparent unless you pass `background`. |
+| `renderToPdf(doc, { fontProvider })` | From `postext-pdf`: a print-ready, tagged PDF. |
+| `initMathEngine()` | Starts MathJax. Await it before laying out `$…$` / `$$…$$` on the main thread; until then formulas are grey placeholder boxes. |
+| `registerResourceImage(fileId, image)` | Supplies the decoded image of a bitmap or SVG resource to the canvas renderer. |
+| `findLooseLines(doc)`, `drawLooseLines(ctx, page, doc)` | The loose justified lines, as data or painted over a page. |
+| `openBundle`, `createBundle`, `buildBundle` | Read, write and lay out `.postext` books. |
+| `createLayoutWorker()` (`postext/worker`) | Runs the layout in a Web Worker, with cancellation. Works from esm.sh too. |
+| `createLayout(content, config?)` (`postext/react`) | A React component that lays the content out and shows its pages. |
+
+The resolvers (`resolve*Config`), strippers (`strip*Defaults`), `DEFAULT_*` constants and every type are exported as well. See the [configuration reference](https://postext.dev/en/docs/configuration) and the [document format](https://postext.dev/en/docs/document-format).
+
+## Content
+
+`PostextContent` is the input:
+
+| Field | Type | Description |
+|---|---|---|
+| `markdown` | `string` | Enriched markdown: headings, lists, `:ref{id="…"}` citations, `::resource{id="…"}` embeds, `:::callout`, `:::part`, `:::toc`, `$…$` math, … |
+| `resources?` | `Resource[]` | Bitmaps, SVGs and tables, referenced by `id` from the markdown. Binary payloads are referenced by `fileId`; tables carry their model inline. |
+| `metadata?` | `DocumentMetadata` | Title, author and dates (also read from the markdown's YAML frontmatter). |
+| `continuation?` | `LayoutContinuation` | Counters, page numbering and parity carried over from the chapters before, for a book laid out chapter by chapter. |
+| `outline?` | `OutlineEntry[]` | The book's outline, for a `:::toc` in a chapter laid out on its own. |
+| `notes?` | `PostextNote[]` | **Not implemented yet.** Accepted, but the engine ignores it: footnotes, endnotes and margin notes are not laid out. |
+
+Footnotes are on the roadmap. Until then, set notes as text: a superscript marker in the body (`^1^`) and the notes in a `:::paragraphs{style="notes"}` block at the end of the section.
+
+## Fonts
+
+postext measures text with the browser's canvas, so the document's web fonts must be loaded before `buildDocument` (for example with `document.fonts.load('16px "EB Garamond"')`). Widths are cached: if you built before the fonts arrived, call `clearMeasurementCache()` and build again. A layout worker has its own font set; send it the font files with `registerFonts`.
 
 ## Bundles (`.postext` files)
 
@@ -261,10 +119,26 @@ const { bytes } = await createBundle({ name: 'My Book', chapters: [{ markdown: '
 
 See [Bundles](https://postext.dev/en/docs/configuration#bundles-postext-files) for the full API, the PDF adapters and live examples.
 
+## With pretext
+
+postext is designed to work alongside [`@chenglou/pretext`](https://github.com/chenglou/pretext). **pretext** measures how much space text needs (DOM-free, 300-600x faster than DOM measurement). **postext** uses those measurements to make editorial layout decisions.
+
+```ts
+import { prepare, layout } from '@chenglou/pretext';
+import { buildDocument } from 'postext';
+
+// pretext: measure text dimensions
+const prepared = prepare(paragraphText, '16px/1.5 Inter');
+const { height } = layout(prepared, columnWidth, 24);
+
+// postext: apply layout rules
+const doc = buildDocument(content, config);
+```
+
 ## Full Documentation
 
 Visit [postext.dev](https://postext.dev/) for the full documentation, project vision, architecture, and roadmap. For contributing guidelines, see the [GitHub repository](https://github.com/drnachio/postext).
 
 ## License
 
-MIT
+MIT. The math engine bundles [MathJax](https://github.com/mathjax/MathJax-src) and [mhchemParser](https://github.com/mhchem/mhchemParser), both under the Apache License 2.0.

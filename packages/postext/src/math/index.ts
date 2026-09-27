@@ -6,5 +6,6 @@ export {
   renderMath,
   placeholderRender,
   clearMathCache,
+  noteMathWithoutEngine,
   type RenderOptions,
 } from './engine';

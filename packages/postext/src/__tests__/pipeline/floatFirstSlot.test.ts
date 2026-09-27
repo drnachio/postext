@@ -333,4 +333,20 @@ describe('a page-span float on the closing page of a chapter', () => {
     // …leaving the rest of the page free under it.
     expect(pageFoot - bottomOf(f.block)).toBeGreaterThan(4 * doc.baselineGrid);
   });
+
+  it('stays at the page foot with layout.hugClosingFloats off (EF-94)', () => {
+    const md = `Intro :ref{id="t1"} text.\n\n${filler(2)}`;
+    const resources = [{ ...smallTable('t1'), placement: { position: 'bottom' as const, span: 'page' as const } }];
+    const hugged = floatById(build(md, resources), 't1');
+    const doc = build(md, resources, { ...PAGE, layout: { hugClosingFloats: false } });
+    const f = floatById(doc, 't1');
+    const page = doc.pages[f.page]!;
+    const pageFoot = page.contentArea.y + page.contentArea.height;
+    // The table ends on the page foot, where a bottom float ends on any page…
+    expect(bottomOf(f.block)).toBeCloseTo(pageFoot, 0);
+    expect(f.block.bbox.y).toBeGreaterThan(hugged.block.bbox.y + 4 * doc.baselineGrid);
+    // …and the text above it is set as it was.
+    const lines = (d: VDTDocument) => d.pages.flatMap((p) => p.columns.flatMap((c) => c.blocks.flatMap((b) => b.lines.map((l) => `${Math.round(l.bbox.y)}:${l.text}`))));
+    expect(lines(doc)).toEqual(lines(build(md, resources)));
+  });
 });

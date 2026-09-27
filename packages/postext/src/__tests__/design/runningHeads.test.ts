@@ -93,11 +93,13 @@ describe('running heads — letter-spacing on design text', () => {
   const layout = (el: DesignElement) =>
     layoutDesignSlot(resolveDesignSlot({ elements: [el] }), { container, dpi: DPI, placeholders }, 0).primitives[0]!;
 
-  it('widens the element by one tracking unit per character and reports the tracking', () => {
+  it('widens the element by one tracking unit per character but the last, and reports the tracking', () => {
     const plain = layout(text());
     const tracked = layout(text(pt(0.5)));
     expect(plain.width).toBe(63);
-    expect(tracked.width).toBeCloseTo(63 + 9 * 0.5);
+    // The tracking after the last glyph is advance, not ink: a box that
+    // shrink-wraps its text leaves it out (EF-153).
+    expect(tracked.width).toBeCloseTo(63 + 8 * 0.5);
     expect(plain.kind === 'text' && plain.letterSpacingPx).toBe(0);
     expect(tracked.kind === 'text' && tracked.letterSpacingPx).toBeCloseTo(0.5);
   });

@@ -78,7 +78,7 @@ with Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot, OpenCode and
     <tr><td><code>fonts.py</code>, <code>images.py</code>, <code>convert_assets.py</code></td><td>Instance, subset, scale and split fonts; convert images to sRGB, trim and join them; turn <code>.ai</code>/<code>.pdf</code> artwork into SVG</td></tr>
     <tr><td><code>preset_kit.py</code></td><td>Scaffolds the project and its generator script, builds <code>preset.json</code>, packs the <code>.postext</code> file</td></tr>
     <tr><td><code>lint_project.py</code></td><td>Catches everything the parser and loader silently get wrong</td></tr>
-    <tr><td><code>render.mjs</code></td><td>Lays the project (a folder or a <code>.postext</code> file) out headlessly with the real engine, prints warnings and writes the PDF</td></tr>
+    <tr><td><code>render.mjs</code></td><td>Lays the project (a folder or a <code>.postext</code> file) out headlessly with the real engine, reading its configuration as the Sandbox does, prints warnings and writes the PDF</td></tr>
     <tr><td><code>compare_pages.py</code></td><td>Places source and Postext pages side by side</td></tr>
   </tbody>
 </table>

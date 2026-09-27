@@ -1,4 +1,6 @@
 import type { ContentBlock } from './parse';
+import { caseWords, numberToWords, type WordsCase } from './numberWords';
+import type { OrderedListNumberFormat } from './types';
 
 export type NumeralStyle =
   | 'decimal'
@@ -8,9 +10,18 @@ export type NumeralStyle =
   | 'upper-roman'
   | 'lower-roman';
 
+/** A counter spelled out in words (heading templates only): cardinal
+ *  (`words`) or ordinal (`ordinal`), the case of the suffix picking the
+ *  case of the words — `{1:words}` "twenty-one", `{1:Words}` "Twenty-one",
+ *  `{1:WORDS}` "TWENTY-ONE". */
+export type SpelledNumeralStyle = 'words' | 'Words' | 'WORDS' | 'ordinal' | 'Ordinal' | 'ORDINAL';
+
+/** Format of a counter in a heading numbering template. */
+export type CounterStyle = NumeralStyle | SpelledNumeralStyle;
+
 type Token =
   | { kind: 'literal'; text: string }
-  | { kind: 'counter'; level: number; style: NumeralStyle };
+  | { kind: 'counter'; level: number; style: CounterStyle };
 
 const STYLE_ALIASES: Record<string, NumeralStyle> = {
   '1': 'decimal',
@@ -26,6 +37,84 @@ const STYLE_ALIASES: Record<string, NumeralStyle> = {
   i: 'lower-roman',
   'lower-roman': 'lower-roman',
 };
+
+/** The numeral styles a format field can name: every {@link NumeralStyle}
+ *  but the template-only zero-padded `decimal-02`. */
+export type NumberFormatStyle = Exclude<NumeralStyle, 'decimal-02'>;
+
+/** Every spelling of a numbering format the engine accepts, lower-cased.
+ *  Three configuration vocabularies grew apart — page labels and
+ *  `:::numbering` say `lower-roman`, resource counters `roman-lower`, lists
+ *  `arabic` for decimal — and CSS adds `lower-latin`; each field takes all
+ *  of them. */
+const NUMBER_FORMAT_NAMES: ReadonlyMap<string, NumberFormatStyle> = new Map<string, NumberFormatStyle>([
+  ['decimal', 'decimal'],
+  ['arabic', 'decimal'],
+  ['lower-roman', 'lower-roman'],
+  ['roman-lower', 'lower-roman'],
+  ['upper-roman', 'upper-roman'],
+  ['roman-upper', 'upper-roman'],
+  ['lower-alpha', 'lower-alpha'],
+  ['alpha-lower', 'lower-alpha'],
+  ['lower-latin', 'lower-alpha'],
+  ['upper-alpha', 'upper-alpha'],
+  ['alpha-upper', 'upper-alpha'],
+  ['upper-latin', 'upper-alpha'],
+]);
+
+/** The one-character tokens of the heading templates (`{1:i}`), which the
+ *  format fields accept as well. Case-sensitive: `i` and `I` differ. */
+const NUMBER_FORMAT_TOKENS: ReadonlyMap<string, NumberFormatStyle> = new Map<string, NumberFormatStyle>([
+  ['1', 'decimal'],
+  ['i', 'lower-roman'],
+  ['I', 'upper-roman'],
+  ['a', 'lower-alpha'],
+  ['A', 'upper-alpha'],
+]);
+
+/**
+ * The numeral style a numbering-format value names, in any of the
+ * spellings the engine accepts (see `NUMBER_FORMAT_NAMES`: `decimal` /
+ * `arabic`, `lower-roman` / `roman-lower` / `i`, `upper-alpha` /
+ * `alpha-upper` / `upper-latin` / `A`…; names are case-insensitive).
+ * `undefined` for anything else — the caller numbers in decimal.
+ */
+export function parseNumberFormat(value: unknown): NumberFormatStyle | undefined {
+  if (typeof value !== 'string') return undefined;
+  const v = value.trim();
+  return NUMBER_FORMAT_TOKENS.get(v) ?? NUMBER_FORMAT_NAMES.get(v.toLowerCase());
+}
+
+/** A numeral style in the ordered-list vocabulary (`arabic` for decimal). */
+export function toOrderedListNumberFormat(style: NumberFormatStyle): OrderedListNumberFormat {
+  return style === 'decimal' ? 'arabic' : style;
+}
+
+/** A template token's style: its own alias, else any format-field
+ *  spelling (`{1:roman-lower}`), else decimal. */
+function templateStyle(raw: string): NumeralStyle {
+  const s = raw.trim();
+  return Object.prototype.hasOwnProperty.call(STYLE_ALIASES, s) ? STYLE_ALIASES[s]! : parseNumberFormat(s) ?? 'decimal';
+}
+
+const SPELLED_STYLES = new Set<string>(['words', 'Words', 'WORDS', 'ordinal', 'Ordinal', 'ORDINAL']);
+
+function counterStyleOf(raw: string | undefined): CounterStyle {
+  if (!raw) return 'decimal';
+  const key = raw.trim();
+  if (SPELLED_STYLES.has(key)) return key as SpelledNumeralStyle;
+  return templateStyle(key);
+}
+
+/** A counter value in a template style; spelled-out styles use the
+ *  document language `locale`. */
+export function formatCounter(n: number, style: CounterStyle, locale?: string): string {
+  if (!SPELLED_STYLES.has(style)) return formatNumeral(n, style as NumeralStyle);
+  if (n <= 0) return '';
+  const kind = style.toLowerCase() === 'ordinal' ? 'ordinal' : 'cardinal';
+  const wordsCase: WordsCase = style === style.toUpperCase() ? 'upper' : style[0] === style[0]!.toUpperCase() ? 'capital' : 'lower';
+  return caseWords(numberToWords(n, kind, locale), wordsCase, locale);
+}
 
 export function parseTemplate(tpl: string): Token[] {
   const tokens: Token[] = [];
@@ -58,9 +147,7 @@ export function parseTemplate(tpl: string): Token[] {
       const [rawLevel, rawStyle] = body.split(':');
       const level = Number(rawLevel);
       if (Number.isInteger(level) && level >= 1 && level <= 6) {
-        const style: NumeralStyle = rawStyle
-          ? STYLE_ALIASES[rawStyle.trim()] ?? 'decimal'
-          : 'decimal';
+        const style = counterStyleOf(rawStyle);
         flush();
         tokens.push({ kind: 'counter', level, style });
         i = end + 1;
@@ -122,6 +209,10 @@ export function formatNumeral(n: number, style: NumeralStyle): string {
       return toRoman(n);
     case 'lower-roman':
       return toRoman(n).toLowerCase();
+    default:
+      // A style from outside the type (a hand-written config, a stale
+      // continuation) numbers in decimal rather than printing "undefined".
+      return String(n);
   }
 }
 
@@ -165,6 +256,7 @@ function renderTemplate(
   tokens: Token[],
   counters: number[],
   currentLevel: number,
+  locale?: string,
 ): string {
   const pieces: RenderPiece[] = [];
   for (const t of tokens) {
@@ -174,7 +266,7 @@ function renderTemplate(
     }
     if (t.level > currentLevel) continue;
     const value = counters[t.level] ?? 0;
-    const rendered = value > 0 ? formatNumeral(value, t.style) : '';
+    const rendered = value > 0 ? formatCounter(value, t.style, locale) : '';
     pieces.push({ kind: 'counter', text: rendered });
   }
   return renderCounterTemplate(pieces);
@@ -292,7 +384,40 @@ export function collectPageLabelRuns(labels: PageLabelInfo[]): PageLabelRun[] {
 /** Heading counters carried over from preceding content: `[h1..h6]`. */
 export type HeadingCounterStart = readonly number[];
 
-export function computeHeadingNumbers(
+/** The value a heading's `startAt` attribute (`# Appendix {startAt=1}`)
+ *  sets its level's counter to, in place of advancing it: a positive
+ *  integer, else undefined (the attribute is ignored). */
+export function headingCounterStart(block: Pick<ContentBlock, 'attrs'>): number | undefined {
+  const raw = block.attrs?.startAt;
+  if (raw === undefined) return undefined;
+  const n = Number(raw);
+  return Number.isInteger(n) && n >= 1 ? n : undefined;
+}
+
+/** A numbered heading's counter after it: its `startAt`, else one more
+ *  than the level's running count. */
+export function nextHeadingCounter(block: Pick<ContentBlock, 'attrs'>, current: number): number {
+  return headingCounterStart(block) ?? current + 1;
+}
+
+export interface HeadingNumberingOptions {
+  /** Document language of spelled-out counters (`{1:words}`,
+   *  `{1:ordinal}`). English when unset. */
+  locale?: string;
+  /** A template replacing the level's for one heading (a heading style's
+   *  `numberingTemplate`); `undefined` keeps the level's. */
+  templateFor?: (block: ContentBlock) => string | undefined;
+}
+
+export interface HeadingNumbering {
+  /** Rendered number prefix per block index; undefined where none. */
+  prefixes: Array<string | undefined>;
+  /** Counter value of each numbered heading (its level's running count)
+   *  per block index; undefined for other blocks and unnumbered headings. */
+  values: Array<number | undefined>;
+}
+
+export function computeHeadingNumbering(
   blocks: ContentBlock[],
   templates: HeadingTemplates,
   start?: HeadingCounterStart,
@@ -300,26 +425,45 @@ export function computeHeadingNumbers(
    *  (a style with `numbered: false`) gets no prefix and counts for nothing.
    *  Every heading is numbered when omitted. */
   isNumbered: (block: ContentBlock) => boolean = () => true,
-): Array<string | undefined> {
+  options: HeadingNumberingOptions = {},
+): HeadingNumbering {
   const counters = [0, 0, 0, 0, 0, 0, 0];
   if (start) for (let lvl = 1; lvl <= 6; lvl++) counters[lvl] = start[lvl - 1] ?? 0;
-  const parsed: Record<number, Token[] | null> = {};
-  for (let lvl = 1; lvl <= 6; lvl++) {
-    const tpl = templates[lvl as 1 | 2 | 3 | 4 | 5 | 6] ?? '';
-    parsed[lvl] = tpl.length > 0 ? parseTemplate(tpl) : null;
-  }
+  const parsed = new Map<string, Token[] | null>();
+  const tokensOf = (tpl: string): Token[] | null => {
+    let tokens = parsed.get(tpl);
+    if (tokens === undefined) {
+      tokens = tpl.length > 0 ? parseTemplate(tpl) : null;
+      parsed.set(tpl, tokens);
+    }
+    return tokens;
+  };
   const prefixes: Array<string | undefined> = new Array(blocks.length);
+  const values: Array<number | undefined> = new Array(blocks.length);
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i]!;
     if (b.type !== 'heading' || !b.level) continue;
     if (!isNumbered(b)) continue;
     const lvl = b.level;
-    counters[lvl] = (counters[lvl] ?? 0) + 1;
+    counters[lvl] = nextHeadingCounter(b, counters[lvl] ?? 0);
     for (let k = lvl + 1; k <= 6; k++) counters[k] = 0;
-    const tokens = parsed[lvl];
+    values[i] = counters[lvl];
+    const tokens = tokensOf(options.templateFor?.(b) ?? templates[lvl as 1 | 2 | 3 | 4 | 5 | 6] ?? '');
     if (!tokens) continue;
-    const rendered = renderTemplate(tokens, counters, lvl);
+    const rendered = renderTemplate(tokens, counters, lvl, options.locale);
     if (rendered.length > 0) prefixes[i] = rendered;
   }
-  return prefixes;
+  return { prefixes, values };
+}
+
+/** The rendered number prefix of every heading (see
+ *  {@link computeHeadingNumbering}). */
+export function computeHeadingNumbers(
+  blocks: ContentBlock[],
+  templates: HeadingTemplates,
+  start?: HeadingCounterStart,
+  isNumbered: (block: ContentBlock) => boolean = () => true,
+  options?: HeadingNumberingOptions,
+): Array<string | undefined> {
+  return computeHeadingNumbering(blocks, templates, start, isNumbered, options).prefixes;
 }

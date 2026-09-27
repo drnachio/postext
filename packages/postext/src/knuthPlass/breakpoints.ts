@@ -5,11 +5,63 @@
 import type { KPItem, KPOptions, KPPenalty } from './types';
 import {
   BADNESS_CAP,
+  COLUMN_END_HYPHEN_BADNESS,
   DEFAULT_CONSECUTIVE_HYPHEN_DEMERIT,
   DEFAULT_FITNESS_CLASS_DEMERIT,
   KP_INFINITY,
   OVER_STRETCH_BADNESS,
+  RAGGED_SPACE_RATIO,
+  TRACKING_BADNESS,
 } from './constants';
+
+/** A line's adjustment ratio and the tracking it takes (see
+ *  {@link adjustLine}). */
+export interface LineAdjustment {
+  /** Adjustment ratio of the word spaces once tracking has taken its part. */
+  r: number;
+  /** Tracking the line takes, px after every character; negative tightens. */
+  tracking: number;
+  /** Share of the line's tracking capacity it uses (0–1). */
+  share: number;
+}
+
+/**
+ * The adjustment ratio of a line whose content leaves `slack` px against
+ * its measure (negative when it runs over), with `stretch` / `shrink` px of
+ * word-space give. With `trackingPerChar` set and the line holding at least
+ * one word space (`trackable`), the part of the adjustment beyond the
+ * limits (a ratio above 1, or below -1) goes into tracking on its `chars`
+ * characters, up to `trackingPerChar` each: a loose line's spaces come back
+ * to the stretch limit, a tight one fits at the shrink limit. Shared by the
+ * breaker and the line reconstruction, so both agree on every line.
+ */
+export function adjustLine(
+  slack: number,
+  stretch: number,
+  shrink: number,
+  chars: number,
+  trackingPerChar: number,
+  trackable: boolean,
+): LineAdjustment {
+  let r: number;
+  if (slack >= 0) r = stretch > 0 ? slack / stretch : KP_INFINITY;
+  else r = shrink > 0 ? slack / shrink : -KP_INFINITY;
+  if (trackingPerChar <= 0 || !trackable || chars <= 0 || (r <= 1 && r >= -1)) return { r, tracking: 0, share: 0 };
+  const capacity = trackingPerChar * chars;
+  if (r > 1) {
+    const excess = slack - stretch;
+    const used = Math.min(excess, capacity);
+    const left = excess - used;
+    // Nothing left once the letters took their part: the spaces sit at their
+    // limit (r = 1), even when they cannot stretch at all (maxWordSpacing 1).
+    // A line of rigid spaces that fits exactly (0 over 0) needs no tracking.
+    if (left <= 0) return used > 0 ? { r: 1, tracking: used / chars, share: used / capacity } : { r: 0, tracking: 0, share: 0 };
+    return { r: stretch > 0 ? 1 + left / stretch : KP_INFINITY, tracking: used / chars, share: used / capacity };
+  }
+  const deficit = -slack - shrink;
+  if (deficit > capacity) return { r, tracking: 0, share: 0 };
+  return { r: -1, tracking: -deficit / chars, share: deficit / capacity };
+}
 
 // ---------------------------------------------------------------------------
 // Active-node structure for the DP
@@ -28,8 +80,24 @@ interface ActiveNode {
   totalStretch: number;
   /** Accumulated shrink capacity. */
   totalShrink: number;
+  /** Accumulated characters, word spaces and untrackable boxes (tracking). */
+  totalChars: number;
+  totalSpaces: number;
+  totalNoTracking: number;
   /** Accumulated demerits. */
   totalDemerits: number;
+  /** Kept only for a negative `looseness` (0 otherwise): the widest word
+   *  spacing, as a multiple of the normal space, of the chain's lines that
+   *  stay justified (tracking taken), and how many of its lines stretch
+   *  past `RAGGED_SPACE_RATIO` and so are set ragged. A shorter setting may
+   *  not go past either (see `looseness`). A line with no word space (one
+   *  word, a URL piece) is set at its natural width and counts in neither. */
+  loosest: number;
+  ragged: number;
+  /** Word spaces (glue that is not the closing glue) and their natural
+   *  width up to the start of the next line, for `loosest`. */
+  totalWordSpaces: number;
+  totalWordSpaceWidth: number;
   /** Pointer for traceback. */
   previous: ActiveNode | null;
 }
@@ -66,12 +134,27 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
     fitnessClassDemerit = DEFAULT_FITNESS_CLASS_DEMERIT,
     runtPenalty = 0,
     runtMinWidth = 0,
+    runtGraded = false,
   } = options;
+  const trackingPerChar = options.trackingPerChar ?? 0;
+  // A ragged setting: the right-hand glue every line gets (see
+  // `KPOptions.raggedStretch`).
+  const raggedStretch = options.raggedStretch !== undefined && options.raggedStretch > 0 ? options.raggedStretch : 0;
+  const zone = options.hyphenationZone;
   const terminalBreakPosition = items.length - 1;
   // Merge nodes by fitness class alone once the line width is uniform: the
   // line count only matters for `lineWidth(line)` (and for a looseness
-  // target, which needs every count kept apart).
-  const uniformFrom = (options.looseness ?? 0) !== 0 ? undefined : options.lineWidthUniformFrom;
+  // target, which needs every count kept apart). Lines that must not end on
+  // a hyphen need their counts kept apart up to the last of them only:
+  // past it no cost depends on the count, and merging is exact again.
+  const avoidHyphenAt = options.avoidHyphenAtLines && options.avoidHyphenAtLines.length > 0
+    ? new Set(options.avoidHyphenAtLines)
+    : undefined;
+  const lastAvoidedLine = avoidHyphenAt ? Math.max(...avoidHyphenAt) : 0;
+  const fixedBreaks = options.fixedBreaks ?? [];
+  const uniformFrom = (options.looseness ?? 0) !== 0 || options.lineWidthUniformFrom === undefined
+    ? undefined
+    : Math.max(options.lineWidthUniformFrom, lastAvoidedLine + 1, fixedBreaks.length + 1);
 
   // Prefix sums over box/glue widths and glue stretch/shrink.
   // sumWidthAt has length items.length + 1: sumWidthAt[k] covers items 0..k-1,
@@ -83,18 +166,70 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
   const sumWidthAt: number[] = [0];
   const sumStretchAt: number[] = [0];
   const sumShrinkAt: number[] = [0];
+  // Tracking: characters, word spaces (the closing glue is none) and boxes
+  // tracking may not reach, only kept when tracking is on.
+  let sumChars = 0;
+  let sumSpaces = 0;
+  let sumNoTracking = 0;
+  const sumCharsAt: number[] = [0];
+  const sumSpacesAt: number[] = [0];
+  const sumNoTrackingAt: number[] = [0];
+  // A short looseness target weighs each line's word spacing (see
+  // `ActiveNode.loosest`): word spaces and their natural width.
+  // Ragged lines keep their word spaces: there is no word spacing to gate.
+  const gateShort = (options.looseness ?? 0) < 0 && options.normalSpaceWidth > 0 && raggedStretch === 0;
+  let sumWordSpaces = 0;
+  let sumWordSpaceWidth = 0;
+  const sumWordSpacesAt: number[] = [0];
+  const sumWordSpaceWidthAt: number[] = [0];
 
-  for (const item of items) {
+  // For a zoned syllable (ragged hyphenation): the word space before its
+  // word, where the line would end if the word went down whole, and the one
+  // after it, where the word ends.
+  const spaceBefore: number[] | undefined = zone !== undefined ? [] : undefined;
+  const spaceAfter: number[] | undefined = zone !== undefined ? new Array<number>(items.length) : undefined;
+  if (spaceAfter) {
+    let next = items.length - 1;
+    for (let k = items.length - 1; k >= 0; k--) {
+      if (items[k]!.type === 'glue') next = k;
+      spaceAfter[k] = next;
+    }
+  }
+  let lastGlue = -1;
+  for (let k = 0; k < items.length; k++) {
+    const item = items[k]!;
+    if (spaceBefore) {
+      if (item.type === 'glue') lastGlue = k;
+      spaceBefore.push(lastGlue);
+    }
     if (item.type === 'box') {
       sumWidth += item.width;
+      if (trackingPerChar > 0) {
+        sumChars += item.chars ?? 0;
+        if (item.noTracking) sumNoTracking++;
+      }
     } else if (item.type === 'glue') {
       sumWidth += item.width;
       sumStretch += item.stretch;
       sumShrink += item.shrink;
+      if (trackingPerChar > 0 && item.sourceIndex >= 0) sumSpaces++;
+      if (gateShort && item.sourceIndex >= 0) {
+        sumWordSpaces++;
+        sumWordSpaceWidth += item.width;
+      }
     }
     sumWidthAt.push(sumWidth);
     sumStretchAt.push(sumStretch);
     sumShrinkAt.push(sumShrink);
+    if (trackingPerChar > 0) {
+      sumCharsAt.push(sumChars);
+      sumSpacesAt.push(sumSpaces);
+      sumNoTrackingAt.push(sumNoTracking);
+    }
+    if (gateShort) {
+      sumWordSpacesAt.push(sumWordSpaces);
+      sumWordSpaceWidthAt.push(sumWordSpaceWidth);
+    }
   }
 
   // Seed active node list with a "start of paragraph" sentinel
@@ -105,7 +240,14 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
     totalWidth: 0,
     totalStretch: 0,
     totalShrink: 0,
+    totalChars: 0,
+    totalSpaces: 0,
+    totalNoTracking: 0,
     totalDemerits: 0,
+    loosest: 0,
+    ragged: 0,
+    totalWordSpaces: 0,
+    totalWordSpaceWidth: 0,
     previous: null,
   }];
 
@@ -138,6 +280,9 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
     // adds the penalty's width (e.g. a discretionary hyphen).
     const breakWidth = item.type === 'penalty' ? item.width : 0;
     const isFlagged = item.type === 'penalty' && item.flagged;
+    // What the break adds at the start of the next line (a repeated hyphen).
+    const postWidth = item.type === 'penalty' ? item.postWidth ?? 0 : 0;
+    const postChars = item.type === 'penalty' ? item.postChars ?? 0 : 0;
 
     bestNewNodeByKey.clear();
 
@@ -154,7 +299,7 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
       const available = lineWidth(a.line);
       const slack = available - contentWidth;
 
-      const lineStretch = sumStretchAt[i]! - a.totalStretch;
+      const lineStretch = sumStretchAt[i]! - a.totalStretch + raggedStretch;
       const lineShrink = sumShrinkAt[i]! - a.totalShrink;
 
       let r: number;
@@ -162,6 +307,23 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
         r = lineStretch > 0 ? slack / lineStretch : KP_INFINITY;
       } else {
         r = lineShrink > 0 ? slack / lineShrink : -KP_INFINITY;
+      }
+      // Beyond the word-spacing limits, tracking (when on) takes its part.
+      let trackingShare = 0;
+      let trackedWidth = 0;
+      if (trackingPerChar > 0 && (r > 1 || r < -1)) {
+        const chars = sumCharsAt[i]! - a.totalChars + (item.type === 'penalty' ? item.chars ?? 0 : 0);
+        const adjusted = adjustLine(
+          slack,
+          lineStretch,
+          lineShrink,
+          chars,
+          trackingPerChar,
+          sumSpacesAt[i]! - a.totalSpaces > 0 && sumNoTrackingAt[i]! - a.totalNoTracking === 0,
+        );
+        r = adjusted.r;
+        trackingShare = adjusted.share;
+        trackedWidth = adjusted.tracking * chars;
       }
 
       // Too far behind: the line is overfull beyond shrinkability. Drop the
@@ -174,6 +336,22 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
       // Infeasible — too few items to fill the line.
       if (r > KP_INFINITY) {
         continue;
+      }
+
+      // A line whose break is fixed ends there and nowhere else.
+      if (a.line < fixedBreaks.length && i !== fixedBreaks[a.line]) {
+        continue;
+      }
+
+      // Ragged hyphenation zone: a dictionary syllable only in a word that
+      // does not fit the rest of the line, and only where the word, sent
+      // down whole, would leave more than the zone empty (a word that opens
+      // its line cannot go down).
+      if (spaceBefore && spaceAfter && item.type === 'penalty' && item.zoned) {
+        const available = lineWidth(a.line);
+        if (sumWidthAt[spaceAfter[i]!]! - a.totalWidth <= available) continue;
+        const g = spaceBefore[i]!;
+        if (g > a.position && available - (sumWidthAt[g]! - a.totalWidth) <= zone!) continue;
       }
 
       const badness = computeBadness(r);
@@ -195,7 +373,14 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
       // flat cost made the count of loose lines matter more than how
       // loose they are, and bought a 3× line to keep a 2.2× one tight.
       const overStretch = r > 1 ? Math.max(OVER_STRETCH_BADNESS, 2 * runtPenalty) * r * r : 0;
-      const effectiveBadness = badness + overStretch + (isRunt ? runtPenalty : 0);
+      // Graded (opt-in): the penalty follows the shortfall, so a two-word
+      // ending costs less than a one-word one and wins when a line above
+      // can give a word up for it (EF-89).
+      const runtCost = isRunt ? (runtGraded ? runtPenalty * (1 - contentWidth / runtMinWidth) : runtPenalty) : 0;
+      // A hyphen ending a line that closes a column or a page (EF-86).
+      const columnEndHyphen = isFlagged && avoidHyphenAt?.has(a.line + 1) ? COLUMN_END_HYPHEN_BADNESS : 0;
+      const effectiveBadness = badness + overStretch + runtCost + columnEndHyphen
+        + (trackingShare > 0 ? TRACKING_BADNESS * trackingShare * trackingShare : 0);
 
       let d: number;
       if (pen >= 0) {
@@ -222,6 +407,23 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
 
       const totalDemerits = a.totalDemerits + d;
 
+      // Word spacing of the line as the reconstruction sets it (what
+      // `VDTLine.justifiedSpaceRatio` reports): its spaces' natural width
+      // plus the slack the letters did not take, over the normal spaces.
+      // The last line keeps its natural spacing (the closing glue takes the
+      // slack) and counts in neither.
+      let loosest = a.loosest;
+      let ragged = a.ragged;
+      if (gateShort && slack > 0 && i !== terminalBreakPosition) {
+        const wordSpaces = sumWordSpacesAt[i]! - a.totalWordSpaces;
+        if (wordSpaces > 0) {
+          const spacing = (sumWordSpaceWidthAt[i]! - a.totalWordSpaceWidth + slack - trackedWidth)
+            / (wordSpaces * options.normalSpaceWidth);
+          if (spacing > RAGGED_SPACE_RATIO) ragged++;
+          else if (spacing > loosest) loosest = spacing;
+        }
+      }
+
       // Keys of merged nodes (fc alone, 0–3) never collide with the
       // per-line keys, which start at 4.
       const key = uniformFrom !== undefined && a.line + 1 >= uniformFrom ? fc : (a.line + 1) * 4 + fc;
@@ -233,15 +435,24 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
       // Cumulative totals at the START of the next line. The next line begins
       // at item i+1, so sumWidthAt[i + 1] is correct for both break kinds: it
       // includes a broken-at glue (consumed, excluded by the subtraction
-      // above) and adds nothing for a penalty.
+      // above) and adds nothing for a penalty. What a penalty adds at the
+      // start of the next line (`postWidth`) is taken off, so that line
+      // counts it.
       bestNewNodeByKey.set(key, {
         position: i,
         line: a.line + 1,
         fitnessClass: fc,
-        totalWidth: sumWidthAt[i + 1]!,
+        totalWidth: sumWidthAt[i + 1]! - postWidth,
         totalStretch: sumStretchAt[i + 1]!,
         totalShrink: sumShrinkAt[i + 1]!,
+        totalChars: trackingPerChar > 0 ? sumCharsAt[i + 1]! - postChars : 0,
+        totalSpaces: trackingPerChar > 0 ? sumSpacesAt[i + 1]! : 0,
+        totalNoTracking: trackingPerChar > 0 ? sumNoTrackingAt[i + 1]! : 0,
         totalDemerits,
+        loosest,
+        ragged,
+        totalWordSpaces: gateShort ? sumWordSpacesAt[i + 1]! : 0,
+        totalWordSpaceWidth: gateShort ? sumWordSpaceWidthAt[i + 1]! : 0,
         previous: a,
       });
     }
@@ -263,10 +474,17 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
         position: i,
         line: 1, // We lost track — start fresh
         fitnessClass: 1,
-        totalWidth: sumWidthAt[i + 1]!,
+        totalWidth: sumWidthAt[i + 1]! - postWidth,
         totalStretch: sumStretchAt[i + 1]!,
         totalShrink: sumShrinkAt[i + 1]!,
+        totalChars: trackingPerChar > 0 ? sumCharsAt[i + 1]! - postChars : 0,
+        totalSpaces: trackingPerChar > 0 ? sumSpacesAt[i + 1]! : 0,
+        totalNoTracking: trackingPerChar > 0 ? sumNoTrackingAt[i + 1]! : 0,
         totalDemerits: 0,
+        loosest: 0,
+        ragged: 0,
+        totalWordSpaces: gateShort ? sumWordSpacesAt[i + 1]! : 0,
+        totalWordSpaceWidth: gateShort ? sumWordSpaceWidthAt[i + 1]! : 0,
         previous: null,
       });
     }
@@ -289,17 +507,25 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
   // last line or take a line out of a column that runs over. The DP never
   // merges nodes with different line counts, so when such a sequence is
   // feasible a final node for it exists here. A long sequence is gated on
-  // chain quality so it never stretches a line beyond the user's limit; a
-  // short one needs no gate — an infeasible break (spaces shrunk past
-  // `minShrinkRatio`) never becomes a node. When nothing matches, the
-  // natural solution stands.
+  // chain quality so it never stretches a line beyond the user's limit. A
+  // short one never shrinks a space past `minShrinkRatio` (such a break
+  // never becomes a node), but it can stretch one: fitting the paragraph in
+  // fewer lines may take a break sequence with a line far looser than any
+  // the natural one sets. It is gated too (EF-65): none of its lines that
+  // stay justified may be looser than `maxStretchRatio` or than the natural
+  // sequence's loosest such line, whichever is looser, and it may not have
+  // more lines past `RAGGED_SPACE_RATIO` (set ragged) than the natural one.
+  // A line the natural sequence sets ragged does not raise the bar. When
+  // nothing matches, the natural solution stands.
   const looseness = options.looseness ?? 0;
   if (looseness !== 0 && best) {
     const targetLine = best.line + looseness;
+    const loosestAllowed = Math.max(options.maxStretchRatio, best.loosest) + 1e-9;
     let alternative: ActiveNode | null = null;
     for (const a of activeNodes) {
       if (a.position !== lastBreakPosition || a.line !== targetLine) continue;
       if (looseness > 0 && !chainWithinStretchLimit(a)) continue;
+      if (gateShort && (a.loosest > loosestAllowed || a.ragged > best.ragged)) continue;
       if (alternative === null || a.totalDemerits < alternative.totalDemerits) alternative = a;
     }
     if (alternative) best = alternative;

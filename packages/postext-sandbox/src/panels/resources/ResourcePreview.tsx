@@ -7,6 +7,7 @@ import { useSandboxLabels, useSandboxSelector } from '../../context/SandboxConte
 import { getBlob } from '../../storage/blobStore';
 import { inlineSvgFonts } from '../../controls/svgFonts';
 import { parseInlinePreview } from '../../controls/InlineMarkdownInput';
+import { captionPreviewLabel } from './captionLabel';
 
 // ---------------------------------------------------------------------------
 // ResourcePreview — a mock embed of how a resource will appear in the document:
@@ -58,19 +59,20 @@ interface CaptionFootProps {
   type: ResourceType | undefined;
 }
 
-/** Render the caption foot: "<prefix> #. <caption>" with inline microformats. */
+/** Render the caption foot: "<prefix> #. <caption>" with inline microformats,
+ *  the label set as the engine sets it (see {@link captionPreviewLabel}). */
 function CaptionFoot({ resource, type }: CaptionFootProps) {
-  const prefix = type ? type.captionPrefix || type.shortLabel || type.name : '';
+  const label = captionPreviewLabel(type);
   const tokens = parseInlinePreview(resource.caption ?? '');
-  if (!prefix && tokens.length === 0) return null;
+  if (!label && tokens.length === 0) return null;
   return (
     <figcaption
       className="text-xs"
       style={{ color: PAPER_MUTED, lineHeight: '16px', wordBreak: 'break-word' }}
     >
-      {prefix && (
+      {label && (
         <span style={{ fontWeight: 600, color: PAPER_INK }}>
-          {prefix} #.{tokens.length > 0 ? ' ' : ''}
+          {tokens.length > 0 ? label : label.trimEnd()}
         </span>
       )}
       {tokens.map((token, i) => (

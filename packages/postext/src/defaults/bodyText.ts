@@ -1,9 +1,21 @@
-import type { BodyTextConfig, ResolvedBodyTextConfig, HyphenationConfig, HyphenationLocale } from '../types';
+import type { BlockquoteConfig, BodyTextConfig, ResolvedBlockquoteConfig, ResolvedBodyTextConfig, HyphenationConfig, LocaleTag } from '../types';
+import { hyphenationLocaleFor, presentTag } from '../locale';
 import { dimensionsEqual, colorsEqual, DEFAULT_MAIN_COLOR } from './shared';
 
 export const DEFAULT_HYPHENATION_CONFIG: ResolvedBodyTextConfig['hyphenation'] = {
   enabled: true,
   locale: 'en-us',
+  ragged: false,
+  zone: { value: 3, unit: 'em' },
+  compounds: true,
+};
+
+/** Blockquotes as postext 1.4 set them: grey, italic, the body's
+ *  first-line indent, no side indent. */
+export const DEFAULT_BLOCKQUOTE_CONFIG: ResolvedBlockquoteConfig = {
+  color: { hex: '#666666', model: 'hex' },
+  italic: true,
+  indent: { value: 0, unit: 'em' },
 };
 
 export const DEFAULT_BODY_TEXT_CONFIG: ResolvedBodyTextConfig = {
@@ -28,7 +40,13 @@ export const DEFAULT_BODY_TEXT_CONFIG: ResolvedBodyTextConfig = {
   indentAfterHeading: true,
   maxWordSpacing: 2,
   minWordSpacing: 0.6,
+  maxJustifyTracking: 0,
   optimalLineBreaking: true,
+  optimalRagged: true,
+  breakAfterDashes: true,
+  breakAfterHyphens: true,
+  repeatHyphen: false,
+  blockquote: DEFAULT_BLOCKQUOTE_CONFIG,
   avoidOrphans: true,
   orphanMinLines: 2,
   // Penalties below are normalized to a shared 0–10000 scale. Each expresses
@@ -48,21 +66,75 @@ export const DEFAULT_BODY_TEXT_CONFIG: ResolvedBodyTextConfig = {
   avoidRunts: true,
   runtMinCharacters: 20,
   runtPenalty: 1000,
+  gradedRuntPenalty: false,
   avoidRuntsInLists: true,
   tightenRunts: true,
   maxRuntTracking: 10,
   keepColonWithList: true,
+  colonListRoom: 'item',
+  hyphenateAcrossColumns: true,
+  paragraphContainerSpacing: 'collapse',
 };
 
 export function hyphenationEqual(a: HyphenationConfig | undefined, b: HyphenationConfig | undefined): boolean {
   if (!a && !b) return true;
   if (!a || !b) return false;
-  return (a.enabled ?? DEFAULT_HYPHENATION_CONFIG.enabled) === (b.enabled ?? DEFAULT_HYPHENATION_CONFIG.enabled)
-    && (a.locale ?? DEFAULT_HYPHENATION_CONFIG.locale) === (b.locale ?? DEFAULT_HYPHENATION_CONFIG.locale);
+  const D = DEFAULT_HYPHENATION_CONFIG;
+  return (a.enabled ?? D.enabled) === (b.enabled ?? D.enabled)
+    && (a.locale ?? D.locale) === (b.locale ?? D.locale)
+    && (a.ragged ?? D.ragged) === (b.ragged ?? D.ragged)
+    && dimensionsEqual(a.zone ?? D.zone, b.zone ?? D.zone)
+    && (a.compounds ?? D.compounds) === (b.compounds ?? D.compounds);
 }
 
-export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?: HyphenationLocale): ResolvedBodyTextConfig {
-  if (!partial) return { ...DEFAULT_BODY_TEXT_CONFIG, hyphenation: { ...DEFAULT_HYPHENATION_CONFIG, locale: documentLocale ?? DEFAULT_HYPHENATION_CONFIG.locale } };
+/** Resolve the hyphenation settings. The locale — the explicit one, else the
+ *  document language; a blank tag counts as unset — becomes the bundled
+ *  patterns it names (`'es-ES'` → `'es'`), keeping the original tag when it
+ *  differs. A language without patterns is reported only when hyphenation
+ *  is on: switching it off is the remedy. */
+function resolveHyphenation(partial: HyphenationConfig | undefined, documentLocale: LocaleTag | undefined): ResolvedBodyTextConfig['hyphenation'] {
+  const D = DEFAULT_HYPHENATION_CONFIG;
+  const requested = presentTag(partial?.locale) ?? presentTag(documentLocale) ?? D.locale;
+  const enabled = partial?.enabled ?? D.enabled;
+  const locale = hyphenationLocaleFor(requested, enabled);
+  return {
+    enabled,
+    locale,
+    ...(requested !== locale ? { tag: requested } : {}),
+    ragged: partial?.ragged ?? D.ragged,
+    zone: partial?.zone ?? D.zone,
+    compounds: partial?.compounds ?? D.compounds,
+  };
+}
+
+/** A blockquote style in full: unset fields keep postext 1.4's look (see
+ *  {@link DEFAULT_BLOCKQUOTE_CONFIG}); an unset `firstLineIndent` stays
+ *  unset, the body's then applying. */
+export function resolveBlockquoteConfig(partial?: BlockquoteConfig): ResolvedBlockquoteConfig {
+  const D = DEFAULT_BLOCKQUOTE_CONFIG;
+  return {
+    color: partial?.color ?? D.color,
+    italic: partial?.italic ?? D.italic,
+    indent: partial?.indent ?? D.indent,
+    ...(partial?.firstLineIndent ? { firstLineIndent: partial.firstLineIndent } : {}),
+  };
+}
+
+/** `blockquote` without the fields that hold their default; undefined when
+ *  none is left. */
+export function stripBlockquoteDefaults(blockquote?: BlockquoteConfig): BlockquoteConfig | undefined {
+  if (!blockquote) return undefined;
+  const D = DEFAULT_BLOCKQUOTE_CONFIG;
+  const out: BlockquoteConfig = {};
+  if (blockquote.color !== undefined && !colorsEqual(blockquote.color, D.color)) out.color = blockquote.color;
+  if (blockquote.italic !== undefined && blockquote.italic !== D.italic) out.italic = blockquote.italic;
+  if (blockquote.indent !== undefined && !dimensionsEqual(blockquote.indent, D.indent)) out.indent = blockquote.indent;
+  if (blockquote.firstLineIndent !== undefined) out.firstLineIndent = blockquote.firstLineIndent;
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
+export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?: LocaleTag): ResolvedBodyTextConfig {
+  if (!partial) return { ...DEFAULT_BODY_TEXT_CONFIG, hyphenation: resolveHyphenation(undefined, documentLocale) };
 
   return {
     fontFamily: partial.fontFamily ?? DEFAULT_BODY_TEXT_CONFIG.fontFamily,
@@ -83,16 +155,19 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
     textAlign: partial.textAlign ?? DEFAULT_BODY_TEXT_CONFIG.textAlign,
     fontWeight: partial.fontWeight ?? DEFAULT_BODY_TEXT_CONFIG.fontWeight,
     boldFontWeight: partial.boldFontWeight ?? DEFAULT_BODY_TEXT_CONFIG.boldFontWeight,
-    hyphenation: {
-      enabled: partial.hyphenation?.enabled ?? DEFAULT_HYPHENATION_CONFIG.enabled,
-      locale: partial.hyphenation?.locale ?? documentLocale ?? DEFAULT_HYPHENATION_CONFIG.locale,
-    },
+    hyphenation: resolveHyphenation(partial.hyphenation, documentLocale),
     firstLineIndent: partial.firstLineIndent ?? DEFAULT_BODY_TEXT_CONFIG.firstLineIndent,
     hangingIndent: partial.hangingIndent ?? DEFAULT_BODY_TEXT_CONFIG.hangingIndent,
     indentAfterHeading: partial.indentAfterHeading ?? DEFAULT_BODY_TEXT_CONFIG.indentAfterHeading,
     maxWordSpacing: partial.maxWordSpacing ?? DEFAULT_BODY_TEXT_CONFIG.maxWordSpacing,
     minWordSpacing: partial.minWordSpacing ?? DEFAULT_BODY_TEXT_CONFIG.minWordSpacing,
+    maxJustifyTracking: partial.maxJustifyTracking ?? DEFAULT_BODY_TEXT_CONFIG.maxJustifyTracking,
     optimalLineBreaking: partial.optimalLineBreaking ?? DEFAULT_BODY_TEXT_CONFIG.optimalLineBreaking,
+    optimalRagged: partial.optimalRagged ?? DEFAULT_BODY_TEXT_CONFIG.optimalRagged,
+    breakAfterDashes: partial.breakAfterDashes ?? DEFAULT_BODY_TEXT_CONFIG.breakAfterDashes,
+    breakAfterHyphens: partial.breakAfterHyphens ?? DEFAULT_BODY_TEXT_CONFIG.breakAfterHyphens,
+    repeatHyphen: partial.repeatHyphen ?? DEFAULT_BODY_TEXT_CONFIG.repeatHyphen,
+    blockquote: resolveBlockquoteConfig(partial.blockquote),
     avoidOrphans: partial.avoidOrphans ?? DEFAULT_BODY_TEXT_CONFIG.avoidOrphans,
     orphanMinLines: partial.orphanMinLines ?? DEFAULT_BODY_TEXT_CONFIG.orphanMinLines,
     orphanPenalty: partial.orphanPenalty ?? DEFAULT_BODY_TEXT_CONFIG.orphanPenalty,
@@ -105,10 +180,18 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
     avoidRunts: partial.avoidRunts ?? DEFAULT_BODY_TEXT_CONFIG.avoidRunts,
     runtMinCharacters: partial.runtMinCharacters ?? DEFAULT_BODY_TEXT_CONFIG.runtMinCharacters,
     runtPenalty: partial.runtPenalty ?? DEFAULT_BODY_TEXT_CONFIG.runtPenalty,
+    gradedRuntPenalty: partial.gradedRuntPenalty ?? DEFAULT_BODY_TEXT_CONFIG.gradedRuntPenalty,
     avoidRuntsInLists: partial.avoidRuntsInLists ?? DEFAULT_BODY_TEXT_CONFIG.avoidRuntsInLists,
     tightenRunts: partial.tightenRunts ?? DEFAULT_BODY_TEXT_CONFIG.tightenRunts,
     maxRuntTracking: partial.maxRuntTracking ?? DEFAULT_BODY_TEXT_CONFIG.maxRuntTracking,
     keepColonWithList: partial.keepColonWithList ?? DEFAULT_BODY_TEXT_CONFIG.keepColonWithList,
+    colonListRoom: partial.colonListRoom === 'line' || partial.colonListRoom === 'item'
+      ? partial.colonListRoom
+      : DEFAULT_BODY_TEXT_CONFIG.colonListRoom,
+    hyphenateAcrossColumns: partial.hyphenateAcrossColumns ?? DEFAULT_BODY_TEXT_CONFIG.hyphenateAcrossColumns,
+    paragraphContainerSpacing: partial.paragraphContainerSpacing === 'add' || partial.paragraphContainerSpacing === 'collapse'
+      ? partial.paragraphContainerSpacing
+      : DEFAULT_BODY_TEXT_CONFIG.paragraphContainerSpacing,
   };
 }
 
@@ -194,8 +277,33 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig): BodyTextConfig
     result.minWordSpacing = bodyText.minWordSpacing;
     hasOverride = true;
   }
+  if (bodyText.maxJustifyTracking !== undefined && bodyText.maxJustifyTracking !== DEFAULT_BODY_TEXT_CONFIG.maxJustifyTracking) {
+    result.maxJustifyTracking = bodyText.maxJustifyTracking;
+    hasOverride = true;
+  }
   if (bodyText.optimalLineBreaking !== undefined && bodyText.optimalLineBreaking !== DEFAULT_BODY_TEXT_CONFIG.optimalLineBreaking) {
     result.optimalLineBreaking = bodyText.optimalLineBreaking;
+    hasOverride = true;
+  }
+  if (bodyText.optimalRagged !== undefined && bodyText.optimalRagged !== DEFAULT_BODY_TEXT_CONFIG.optimalRagged) {
+    result.optimalRagged = bodyText.optimalRagged;
+    hasOverride = true;
+  }
+  if (bodyText.breakAfterDashes !== undefined && bodyText.breakAfterDashes !== DEFAULT_BODY_TEXT_CONFIG.breakAfterDashes) {
+    result.breakAfterDashes = bodyText.breakAfterDashes;
+    hasOverride = true;
+  }
+  if (bodyText.breakAfterHyphens !== undefined && bodyText.breakAfterHyphens !== DEFAULT_BODY_TEXT_CONFIG.breakAfterHyphens) {
+    result.breakAfterHyphens = bodyText.breakAfterHyphens;
+    hasOverride = true;
+  }
+  if (bodyText.repeatHyphen !== undefined && bodyText.repeatHyphen !== DEFAULT_BODY_TEXT_CONFIG.repeatHyphen) {
+    result.repeatHyphen = bodyText.repeatHyphen;
+    hasOverride = true;
+  }
+  const blockquote = stripBlockquoteDefaults(bodyText.blockquote);
+  if (blockquote) {
+    result.blockquote = blockquote;
     hasOverride = true;
   }
   if (bodyText.avoidOrphans !== undefined && bodyText.avoidOrphans !== DEFAULT_BODY_TEXT_CONFIG.avoidOrphans) {
@@ -246,6 +354,10 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig): BodyTextConfig
     result.runtPenalty = bodyText.runtPenalty;
     hasOverride = true;
   }
+  if (bodyText.gradedRuntPenalty !== undefined && bodyText.gradedRuntPenalty !== DEFAULT_BODY_TEXT_CONFIG.gradedRuntPenalty) {
+    result.gradedRuntPenalty = bodyText.gradedRuntPenalty;
+    hasOverride = true;
+  }
   if (bodyText.avoidRuntsInLists !== undefined && bodyText.avoidRuntsInLists !== DEFAULT_BODY_TEXT_CONFIG.avoidRuntsInLists) {
     result.avoidRuntsInLists = bodyText.avoidRuntsInLists;
     hasOverride = true;
@@ -260,6 +372,18 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig): BodyTextConfig
   }
   if (bodyText.keepColonWithList !== undefined && bodyText.keepColonWithList !== DEFAULT_BODY_TEXT_CONFIG.keepColonWithList) {
     result.keepColonWithList = bodyText.keepColonWithList;
+    hasOverride = true;
+  }
+  if (bodyText.colonListRoom !== undefined && bodyText.colonListRoom !== DEFAULT_BODY_TEXT_CONFIG.colonListRoom) {
+    result.colonListRoom = bodyText.colonListRoom;
+    hasOverride = true;
+  }
+  if (bodyText.hyphenateAcrossColumns !== undefined && bodyText.hyphenateAcrossColumns !== DEFAULT_BODY_TEXT_CONFIG.hyphenateAcrossColumns) {
+    result.hyphenateAcrossColumns = bodyText.hyphenateAcrossColumns;
+    hasOverride = true;
+  }
+  if (bodyText.paragraphContainerSpacing !== undefined && bodyText.paragraphContainerSpacing !== DEFAULT_BODY_TEXT_CONFIG.paragraphContainerSpacing) {
+    result.paragraphContainerSpacing = bodyText.paragraphContainerSpacing;
     hasOverride = true;
   }
 

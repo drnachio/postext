@@ -91,13 +91,39 @@ export function openBundleZip(bytes: Uint8Array): OpenedBundleZip {
 
 const STORED_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'webp', 'gif', 'woff2']);
 
+export interface ZipBundleOptions {
+  /** Modification date written on every file of the archive. Unset: the
+   *  time of the call, so two archives of the same files differ in those
+   *  bytes. Pass a fixed date and the same files always give the same
+   *  bytes. A zip keeps a date and time with no time zone, in two-second
+   *  steps, from 1980 to 2099, and the date is written in the machine's
+   *  local time. For bytes that match on every machine, build the date
+   *  from local fields (`new Date(1980, 0, 1)`, the earliest a zip can
+   *  hold): a timestamp or a string ending in `Z` names an instant, which
+   *  falls on a different local time in each time zone. A date outside
+   *  those years, in local time, throws. */
+  mtime?: Date | number | string;
+}
+
+/** `mtime` as a date a zip entry can hold (its local time from 1980 to
+ *  2099: the format keeps no time zone), else an error. */
+function checkedZipDate(mtime: Date | number | string): Date {
+  const date = new Date(mtime);
+  const year = date.getFullYear();
+  if (Number.isNaN(date.getTime()) || year < 1980 || year > 2099) {
+    throw new Error(`zipBundle: mtime must be a date from 1980 to 2099 in local time (got ${String(mtime)})`);
+  }
+  return date;
+}
+
 /** Zip a bundle's files (path → bytes). Already-compressed payloads are
  *  stored as-is. */
-export function zipBundle(files: Record<string, Uint8Array>): Uint8Array {
-  const input: Record<string, [Uint8Array, { level: 0 | 6 }]> = {};
+export function zipBundle(files: Record<string, Uint8Array>, options: ZipBundleOptions = {}): Uint8Array {
+  const mtime = options.mtime !== undefined ? checkedZipDate(options.mtime) : undefined;
+  const input: Record<string, [Uint8Array, { level: 0 | 6; mtime?: Date }]> = {};
   for (const [path, data] of Object.entries(files)) {
     const ext = path.split('.').pop()?.toLowerCase() ?? '';
-    input[path] = [data, { level: STORED_EXTENSIONS.has(ext) ? 0 : 6 }];
+    input[path] = [data, { level: STORED_EXTENSIONS.has(ext) ? 0 : 6, ...(mtime ? { mtime } : {}) }];
   }
   return zipSync(input);
 }

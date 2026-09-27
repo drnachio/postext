@@ -42,10 +42,12 @@ export interface ResolvedPlacement {
  *  the first free slot after the reference (top or bottom); `'top'` /
  *  `'bottom'` restrict the search to that kind of slot. */
 export interface PlannedFloat {
-  /** Where the flow stood when the float's first reference was reached
-   *  (the top of the citing block, on that page): a `span: 'side'` float
-   *  stacks no higher than this on that page — beside the text that cites
-   *  it. Stamped by the build when the float is enqueued. */
+  /** Where the flow stood when the float's first reference was reached:
+   *  the top of the citing block, on that page, when the float is
+   *  enqueued; for a float cited in running text, restamped with the page
+   *  and top of the citing line once that line is placed (the float takes
+   *  no slot before it). A `span: 'side'` float stacks no higher than this
+   *  on that page — beside the text that cites it. */
   refPageIndex?: number;
   refY?: number;
   resourceId: string;
@@ -102,11 +104,17 @@ export function resolveResourcePlacement(
  * `'top'` or `'bottom'`; `'here'` resources are left for inline `::resource`
  * placement and are not returned here. Resources with an unknown id or type are
  * skipped (the warnings phase surfaces those).
+ *
+ * `incorporated` holds the resources the preceding content already took in
+ * (the ids of `continuation.resourceNumbers`): a chapter laid out after the
+ * one that first cited a figure only refers to it — the figure was placed
+ * there, and is not placed again (EF-57).
  */
 export function computeFloatPlan(
   blocks: ContentBlock[],
   resources: Resource[],
   resourceTypes: ResourceType[],
+  incorporated?: ReadonlySet<string>,
 ): PlannedFloat[] {
   const resourceById = new Map<string, Resource>();
   for (const r of resources) resourceById.set(r.id, r);
@@ -114,7 +122,7 @@ export function computeFloatPlan(
   for (const t of resourceTypes) typeById.set(t.id, t);
 
   const plan: PlannedFloat[] = [];
-  const seen = new Set<string>();
+  const seen = new Set<string>(incorporated);
 
   const record = (resourceId: string, blockIdx: number) => {
     if (seen.has(resourceId)) return;
@@ -144,7 +152,22 @@ export function computeFloatPlan(
 }
 
 /** The set of resource ids that float (so the build loop can skip their inline
- *  `::resource` placement). Derived from a {@link computeFloatPlan} result. */
-export function floatedResourceIds(plan: PlannedFloat[]): Set<string> {
-  return new Set(plan.map((f) => f.resourceId));
+ *  `::resource` placement). Derived from a {@link computeFloatPlan} result,
+ *  plus the floating resources of `incorporated` (placed by the preceding
+ *  content: a `::resource` for one of them is just another reference). */
+export function floatedResourceIds(
+  plan: PlannedFloat[],
+  incorporated?: ReadonlySet<string>,
+  resources: Resource[] = [],
+  resourceTypes: ResourceType[] = [],
+): Set<string> {
+  const ids = new Set(plan.map((f) => f.resourceId));
+  if (incorporated && incorporated.size > 0) {
+    const typeById = new Map(resourceTypes.map((t) => [t.id, t]));
+    for (const r of resources) {
+      if (!incorporated.has(r.id)) continue;
+      if (resolveResourcePlacement(r, typeById.get(r.typeId)).position !== 'here') ids.add(r.id);
+    }
+  }
+  return ids;
 }

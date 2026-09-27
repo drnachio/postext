@@ -17,6 +17,8 @@ import type { ContentBlock } from '../parse';
 import type { HeadingCounters, Resource, ResourceNumberEntry, ResourceType, ResourceCounterFormat } from '../types';
 import {
   formatNumeral,
+  nextHeadingCounter,
+  parseNumberFormat,
   renderCounterTemplate,
   type NumeralStyle,
   type RenderPiece,
@@ -35,20 +37,10 @@ const EMPTY_HEADING: HeadingContext = { h1: 0, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0
 
 /** Translate a resource `counterFormat` to the shared `NumeralStyle` used by
  *  {@link formatNumeral}. The resource model uses `'roman-lower'` style names
- *  whereas the numeral formatter uses `'lower-roman'`. */
+ *  whereas the numeral formatter uses `'lower-roman'`; either spelling (and
+ *  the list's `arabic`) is read, and an unknown one counts in decimal. */
 function counterFormatToStyle(format: ResourceCounterFormat): NumeralStyle {
-  switch (format) {
-    case 'decimal':
-      return 'decimal';
-    case 'roman-lower':
-      return 'lower-roman';
-    case 'roman-upper':
-      return 'upper-roman';
-    case 'alpha-lower':
-      return 'lower-alpha';
-    case 'alpha-upper':
-      return 'upper-alpha';
-  }
+  return parseNumberFormat(format) ?? 'decimal';
 }
 
 /** Walk `blocks` and produce, for each block index, the heading counters in
@@ -69,7 +61,7 @@ export function computeHeadingContext(
     const b = blocks[i]!;
     if (b.type === 'heading' && b.level && b.level >= 1 && b.level <= 6 && isNumbered(b)) {
       const lvl = b.level;
-      counters[lvl] = (counters[lvl] ?? 0) + 1;
+      counters[lvl] = nextHeadingCounter(b, counters[lvl] ?? 0);
       for (let k = lvl + 1; k <= 6; k++) counters[k] = 0;
     }
     out[i] = {

@@ -11,14 +11,55 @@ type VDTSegment = NonNullable<VDTLine['segments']>[number];
  * `sourceMap`. An inline `:ref` renders its resolved label ("tabla 1.1") but
  * is a single placeholder char in the plain text, so it must count as 1 or
  * every glyph after it on the line maps to the wrong source offset. Mirrors
- * the line-length math in `stampSourceRanges`. A trailing soft hyphen on a
- * hyphenated line's last segment has no source char either.
+ * the line-length math in `stampSourceRanges`. The hyphen a break added at
+ * the end of a hyphenated line's last segment has no source char either
+ * (see {@link addsHyphen}), nor the hyphen a line opens with when it repeats
+ * the one of the compound the line before broke at (`dropLeadingHyphen`,
+ * see {@link opensWithRepeatedHyphen}).
  */
-export function segmentPlainLength(seg: VDTSegment, dropTrailingHyphen: boolean): number {
+export function segmentPlainLength(seg: VDTSegment, dropTrailingHyphen: boolean, dropLeadingHyphen = false): number {
+  if (seg.refContinues) return 0;
   if (seg.refResourceId !== undefined) return 1;
   if (seg.kind === 'swatch') return 1;
-  if (dropTrailingHyphen && seg.text.endsWith('-')) return Math.max(0, seg.text.length - 1);
-  return seg.text.length;
+  let len = seg.text.length;
+  if (dropLeadingHyphen && seg.text.startsWith('-')) len--;
+  if (dropTrailingHyphen && seg.text.endsWith('-') && len > 0) len--;
+  return Math.max(0, len);
+}
+
+/** Whether segment `i` of a line opens with the hyphen the line repeats
+ *  from the compound the line before broke at (`bodyText.repeatHyphen`):
+ *  the line's first segment, on a line flagged `repeatedHyphen`. */
+export function opensWithRepeatedHyphen(line: Pick<VDTLine, 'repeatedHyphen'>, i: number): boolean {
+  return i === 0 && line.repeatedHyphen === true;
+}
+
+/** Whether the hyphen a line ends with was added by its break, and so has
+ *  no plain char: a hyphenated line, unless it broke after a hyphen the text
+ *  carries (`hardHyphen`, "well-" | "known"). */
+export function addsHyphen(line: Pick<VDTLine, 'hyphenated' | 'hardHyphen'>): boolean {
+  return line.hyphenated === true && line.hardHyphen !== true;
+}
+
+/**
+ * A line's segments with the runs of one `:ref` painted in pieces (a label
+ * in small capitals: one run per case, the later ones `refContinues`)
+ * folded into one segment, so the caret and click math treat the whole
+ * label as the reference's single plain char. Returns `segs` itself when
+ * nothing folds.
+ */
+export function foldRefRuns(segs: readonly VDTSegment[]): VDTSegment[] {
+  if (!segs.some((s) => s.refContinues)) return segs as VDTSegment[];
+  const out: VDTSegment[] = [];
+  for (const seg of segs) {
+    const last = out[out.length - 1];
+    if (seg.refContinues && last && last.refResourceId === seg.refResourceId) {
+      out[out.length - 1] = { ...last, text: last.text + seg.text, width: last.width + seg.width };
+    } else {
+      out.push(seg);
+    }
+  }
+  return out;
 }
 
 /** Page-space position of a resource embed (inline block or float band). */
@@ -258,7 +299,7 @@ export function xForPlainInLine(
   const blockRight = block.bbox.x + block.bbox.width;
   const lineLen = Math.max(0, (line.plainEnd ?? 0) - (line.plainStart ?? 0));
   const justifyFill = block.textAlign === 'justify' && line.isLastLine === false;
-  const segs = line.segments;
+  const segs = line.segments && foldRefRuns(line.segments);
 
   if (!segs || segs.length === 0) {
     const renderedWidth = justifyFill
@@ -287,7 +328,7 @@ export function xForPlainInLine(
   for (let i = 0; i < segs.length; i++) {
     const seg = segs[i]!;
     const isLastSeg = i === lastIdx;
-    const segPlainLen = segmentPlainLength(seg, isLastSeg && line.hyphenated === true);
+    const segPlainLen = segmentPlainLength(seg, isLastSeg && addsHyphen(line), opensWithRepeatedHyphen(line, i));
     const segRendered = seg.width + (seg.kind === 'space' ? extraPerSpace : 0);
     if (inLineOffset <= cum + segPlainLen) {
       const within = inLineOffset - cum;
@@ -378,7 +419,7 @@ export function pixelToSourceOffset(
   //    justify-fill math from xForPlainInLine.
   const blockRight = hitBlock.bbox.x + hitBlock.bbox.width;
   const justifyFill = hitBlock.textAlign === 'justify' && hitLine.isLastLine === false;
-  const segs = hitLine.segments;
+  const segs = hitLine.segments && foldRefRuns(hitLine.segments);
   const lineLen = Math.max(0, hitLine.plainEnd - hitLine.plainStart);
   let inLineOffset: number;
 
@@ -413,7 +454,7 @@ export function pixelToSourceOffset(
     for (let i = 0; i < segs.length; i++) {
       const seg = segs[i]!;
       const isLastSeg = i === lastIdx;
-      const segPlainLen = segmentPlainLength(seg, isLastSeg && hitLine.hyphenated === true);
+      const segPlainLen = segmentPlainLength(seg, isLastSeg && addsHyphen(hitLine), opensWithRepeatedHyphen(hitLine, i));
       const segRendered = seg.width + (seg.kind === 'space' ? extraPerSpace : 0);
       if (clampedX <= x + segRendered) {
         const within = clampedX - x;

@@ -3,6 +3,8 @@ import { createVDTPage, createVDTColumn, createBoundingBox, type VDTBlock, type 
 import {
   enumerateCurrentPageSlots,
   measureFloatBand,
+  measureSideStack,
+  clearSideObstacles,
   columnHasFloatBand,
   fitsStrict,
   type ColumnCapKind,
@@ -116,5 +118,44 @@ describe('float slots (pure)', () => {
     page.floats = [{ bbox: createBoundingBox(col.bbox.x, 500, col.bbox.width, 80) } as VDTBlock];
     expect(columnHasFloatBand(page, col)).toBe(true);
     expect(columnHasFloatBand(page, page.columns[1]!)).toBe(false);
+  });
+});
+
+describe('side stack obstacles (EF-78)', () => {
+  const snap = (v: number) => CONTENT.y + Math.ceil((v - CONTENT.y - 0.01) / GRID) * GRID;
+  const sideCol = (used = 0): VDTColumn => {
+    const col = createVDTColumn(0, createBoundingBox(300, CONTENT.y, 100, CONTENT.height));
+    col.kind = 'side';
+    col.availableHeight -= used;
+    return col;
+  };
+
+  it('keeps an item that fits above an obstacle where it is', () => {
+    expect(clearSideObstacles(20, 100, [{ top: 300, bottom: 340 }], 12, snap)).toBe(20);
+    expect(clearSideObstacles(20, 100, undefined, 12, snap)).toBe(20);
+  });
+
+  it('moves an item that would reach an obstacle (gap included) under it, on the grid', () => {
+    // 20 + 100 + 12 reaches 132 > 125: under the obstacle, 12 below it.
+    expect(clearSideObstacles(20, 100, [{ top: 125, bottom: 150 }], 12, snap)).toBe(snap(162));
+    // An obstacle at the head of the column holds the item under it.
+    expect(clearSideObstacles(20, 30, [{ top: 20, bottom: 70 }], 12, snap)).toBe(snap(82));
+  });
+
+  it('clears every obstacle it meets on the way down, whatever their order', () => {
+    const obstacles = [{ top: 200, bottom: 230 }, { top: 40, bottom: 60 }];
+    // Under the first, the item (150 tall) would reach the second.
+    expect(clearSideObstacles(20, 150, obstacles, 12, snap)).toBe(snap(242));
+  });
+
+  it('measureSideStack consumes the room the obstacle took above the item', () => {
+    const col = sideCol(0);
+    const plain = measureSideStack({ height: 100 }, col, undefined, CONTENT, GRID, 12);
+    expect(plain).toEqual({ need: 112, y: 20 });
+    const under = measureSideStack({ height: 100 }, col, undefined, CONTENT, GRID, 12, [{ top: 20, bottom: 70 }]);
+    expect(under.y).toBe(snap(82));
+    expect(under.need).toBe(under.y - 20 + 100 + 12);
+    // An obstacle further down leaves the head of the column to the item.
+    expect(measureSideStack({ height: 100 }, col, undefined, CONTENT, GRID, 12, [{ top: 400, bottom: 420 }])).toEqual(plain);
   });
 });

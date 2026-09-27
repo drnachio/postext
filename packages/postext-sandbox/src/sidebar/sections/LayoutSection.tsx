@@ -103,6 +103,10 @@ export const LayoutSection = memo(function LayoutSection() {
     { value: 'outer', label: labels.sideColumnSideOuter },
     { value: 'inner', label: labels.sideColumnSideInner },
   ];
+  const INLINE_GAP_OPTIONS = [
+    { value: 'around', label: labels.inlineResourceGapAround },
+    { value: 'above', label: labels.inlineResourceGapAbove },
+  ];
   const isCrEnabledDefault = layout.columnRule.enabled === DEFAULT_COLUMN_RULE.enabled;
   const isCrColorDefault = colorsEqual(layout.columnRule.color, DEFAULT_COLUMN_RULE.color);
   const isCrLineWidthDefault = dimensionsEqual(layout.columnRule.lineWidth, DEFAULT_COLUMN_RULE.lineWidth);
@@ -240,6 +244,42 @@ export const LayoutSection = memo(function LayoutSection() {
         tooltip={labels.fitFiguresToPageTooltip}
         isDefault={layout.fitFiguresToPage === D.fitFiguresToPage}
         onReset={() => resetField('fitFiguresToPage')}
+      />
+      <SelectInput
+        label={labels.inlineResourceGap}
+        value={layout.inlineResourceGap}
+        options={INLINE_GAP_OPTIONS}
+        onChange={(v) => updateLayout({ inlineResourceGap: v as LayoutConfig['inlineResourceGap'] })}
+        tooltip={labels.inlineResourceGapTooltip}
+        isDefault={layout.inlineResourceGap === D.inlineResourceGap}
+        onReset={() => resetField('inlineResourceGap')}
+      />
+      <ToggleSwitch
+        label={labels.inlineResourceGapInBoxes}
+        checked={layout.inlineResourceGapInBoxes}
+        onChange={(v) => updateLayout({ inlineResourceGapInBoxes: v })}
+        tooltip={labels.inlineResourceGapInBoxesTooltip}
+        isDefault={layout.inlineResourceGapInBoxes === D.inlineResourceGapInBoxes}
+        onReset={() => resetField('inlineResourceGapInBoxes')}
+      />
+      <NumberInput
+        label={labels.boxChildSplitMinLines}
+        value={layout.boxChildSplitMinLines}
+        onChange={(v) => updateLayout({ boxChildSplitMinLines: v })}
+        min={1}
+        max={6}
+        step={1}
+        tooltip={labels.boxChildSplitMinLinesTooltip}
+        isDefault={layout.boxChildSplitMinLines === D.boxChildSplitMinLines}
+        onReset={() => resetField('boxChildSplitMinLines')}
+      />
+      <ToggleSwitch
+        label={labels.hugClosingFloats}
+        checked={layout.hugClosingFloats}
+        onChange={(v) => updateLayout({ hugClosingFloats: v })}
+        tooltip={labels.hugClosingFloatsTooltip}
+        isDefault={layout.hugClosingFloats === D.hugClosingFloats}
+        onReset={() => resetField('hugClosingFloats')}
       />
     </CollapsibleSection>
   );

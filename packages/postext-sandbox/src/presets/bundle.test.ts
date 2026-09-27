@@ -54,6 +54,30 @@ describe('parseBundle', () => {
     expect(en.resources[0]!.caption).toBe('shared');
     expect(en.config.resourceTypes?.[0]!.captionPrefix).toBe('Plate');
   });
+  // EF-150: the built-in resource types under a bundle's configuration were
+  // localised to the viewer's locale, so a Spanish book imported at
+  // /en/sandbox printed "Figure 1.1" under Spanish text.
+  it('localises the default resource types to the language the bundle serves', async () => {
+    const spanish = manifest({ locale: 'es', resources: [{ id: 'fig', typeId: 'figure', kind: 'svg', file: 'fig.svg' }] });
+    const files = { 'doc.md': '# Uno', 'fig.svg': SVG };
+    const prefixes = (config: PostextConfig) => (config.resourceTypes ?? []).map((t) => t.captionPrefix);
+    const fromEn = await parseBundle(spanish, readerFrom(files), { locale: 'en', summary });
+    expect(fromEn.locale).toBe('es');
+    expect(prefixes(fromEn.config)).toEqual(prefixes(createDefaultConfig('es')));
+    expect(prefixes(fromEn.config)).toEqual(['Figura', 'Tabla']);
+    // A bundle that names no language is read in the viewer's.
+    const unnamed = await parseBundle(manifest(), readerFrom(files), { locale: 'es', summary });
+    expect(prefixes(unnamed.config)).toEqual(['Figura', 'Tabla']);
+    // Unless its configuration names the document's language.
+    const configured = await parseBundle(manifest({ config: { locale: 'es' } }), readerFrom(files), { locale: 'en', summary });
+    expect(prefixes(configured.config)).toEqual(['Figura', 'Tabla']);
+    // A bilingual bundle: the language of the chapters served.
+    const both = manifest({ locale: 'en', markdown: { en: 'en.md', es: 'es.md' } });
+    const bilingual = { 'en.md': 'EN', 'es.md': 'ES' };
+    expect(prefixes((await parseBundle(both, readerFrom(bilingual), { locale: 'es-AR', summary })).config)).toEqual(['Figura', 'Tabla']);
+    expect(prefixes((await parseBundle(both, readerFrom(bilingual), { locale: 'de', summary })).config)).toEqual(['Figure', 'Table']);
+  });
+
   it('lets a locale bring its own artwork, and reads that file\'s own size', async () => {
     const m = manifest({
       markdown: { en: 'en.md', es: 'es.md' },
@@ -343,6 +367,132 @@ describe('parseBundle (v2)', () => {
       ['id2', 'Second', '# Second'],
       ['id3', 'Cap. 3', 'plain'],
     ]);
+  });
+});
+
+// EF-05: a bundle postext 1.4 wrote carries `headings` with no H1 break,
+// which 1.4 laid out with none; it is read (and imported) with that break.
+describe('bundles written by postext 1.4 or earlier', () => {
+  const book = (over: Record<string, unknown> = {}) => ({
+    version: 2, id: 'book', name: 'Book',
+    chapters: [{ title: 'One', file: 'chapters/01.md' }],
+    config: { headings: { fontFamily: 'Georgia', levels: [{ level: 1, numberingTemplate: 'Chapter {1}' }] } },
+    ...over,
+  });
+  const files = { 'chapters/01.md': '# One' };
+
+  it('keeps the H1 break 1.4 laid out when the manifest has no configVersion', async () => {
+    const loaded = await parseBundle(book(), readerFrom(files), { locale: 'en', summary });
+    expect(loaded.config.headings?.levels?.[0]).toEqual({ level: 1, numberingTemplate: 'Chapter {1}', breakBefore: { enabled: false } });
+    const today = await parseBundle(book({ configVersion: 3 }), readerFrom(files), { locale: 'en', summary });
+    expect(today.config.headings?.levels?.[0]).toEqual({ level: 1, numberingTemplate: 'Chapter {1}' });
+  });
+
+  it('exports with the configuration version, so a re-import reads it as it is', async () => {
+    const config: PostextConfig = { ...createDefaultConfig('en'), headings: { fontFamily: 'Georgia' } };
+    const built = await buildBundleFiles(
+      { id: 'book', name: 'Book' },
+      { chapters: [newChapter('c1', 'One', '# One', 1)], config, resources: [] },
+      { readBlob: async () => null, readFont: async () => null },
+    );
+    const opened = openBundleZip(zipBundle(built.files));
+    expect((opened.manifest as { configVersion?: number }).configVersion).toBe(8);
+    const loaded = await parseBundle(opened.manifest, opened.readFile, { locale: 'en', summary });
+    expect(loaded.config.headings).toEqual({ fontFamily: 'Georgia' });
+  });
+
+  // EF-75: 1.4 set formulas 0.5 ÷ 0.442 times larger than 1.5 does; a
+  // bundle it wrote that sets maths is opened (and imported) at that size.
+  it('keeps the maths size 1.4 laid out when the manifest is older than rules 4', async () => {
+    const { LEGACY_MATH_SIZE } = await import('postext/bundle');
+    const maths = { 'chapters/01.md': '# One\n\nArea $\\pi r^2$.' };
+    for (const stamp of [{}, { configVersion: 3 }]) {
+      const loaded = await parseBundle(book(stamp), readerFrom(maths), { locale: 'en', summary });
+      expect(loaded.config.math?.fontSizeScale).toBe(LEGACY_MATH_SIZE);
+    }
+    const today = await parseBundle(book({ configVersion: 4 }), readerFrom(maths), { locale: 'en', summary });
+    expect(today.config.math).toBeUndefined();
+    // No formula in the book: nothing to pin.
+    expect((await parseBundle(book(), readerFrom(files), { locale: 'en', summary })).config.math).toBeUndefined();
+  });
+
+  // EF-93: 1.4 kept the float gap above an inline figure only; a bundle it
+  // wrote that embeds one is opened (and imported) with that spacing.
+  it('keeps the space 1.4 left under inline figures when the manifest is older than rules 5', async () => {
+    const embeds = { 'chapters/01.md': '# One\n\nText.\n\n::resource{id="fig"}\n\nMore.' };
+    for (const stamp of [{}, { configVersion: 3 }, { configVersion: 4 }]) {
+      const loaded = await parseBundle(book(stamp), readerFrom(embeds), { locale: 'en', summary });
+      expect(loaded.config.layout?.inlineResourceGap).toBe('above');
+    }
+    const today = await parseBundle(book({ configVersion: 5 }), readerFrom(embeds), { locale: 'en', summary });
+    expect(today.config.layout?.inlineResourceGap).toBeUndefined();
+    // EF-117: a figure inside a box, under a manifest older than rules 6,
+    // keeps the 1.4 spacing there.
+    const boxed = { 'chapters/01.md': '# One\n\n:::callout\nText.\n\n::resource{id="fig"}\n:::' };
+    for (const stamp of [{}, { configVersion: 5 }]) {
+      const loaded = await parseBundle(book(stamp), readerFrom(boxed), { locale: 'en', summary });
+      expect(loaded.config.layout?.inlineResourceGapInBoxes).toBe(false);
+    }
+    expect((await parseBundle(book({ configVersion: 6 }), readerFrom(boxed), { locale: 'en', summary })).config.layout).toBeUndefined();
+    expect((await parseBundle(book({ configVersion: 5 }), readerFrom(embeds), { locale: 'en', summary })).config.layout).toBeUndefined();
+    // No `::resource` in the book: nothing to pin.
+    expect((await parseBundle(book({ configVersion: 4 }), readerFrom(files), { locale: 'en', summary })).config.layout).toBeUndefined();
+  });
+
+  // EF-122: up to 1.4 a heading printed its `*italic*` as plain text; a
+  // bundle it wrote whose headings carry marks is opened that way.
+  it('keeps the headings plain when the manifest is older than rules 6 and its headings carry marks', async () => {
+    const marked = { 'chapters/01.md': '# One\n\n## The *Titanic*\n\nText.' };
+    for (const stamp of [{}, { configVersion: 3 }, { configVersion: 5 }]) {
+      const loaded = await parseBundle(book(stamp), readerFrom(marked), { locale: 'en', summary });
+      expect(loaded.config.headings?.inlineMarks).toBe(false);
+    }
+    const today = await parseBundle(book({ configVersion: 6 }), readerFrom(marked), { locale: 'en', summary });
+    expect(today.config.headings?.inlineMarks).toBeUndefined();
+    // No heading carries a mark: nothing to pin.
+    expect((await parseBundle(book({ configVersion: 5 }), readerFrom(files), { locale: 'en', summary })).config.headings?.inlineMarks).toBeUndefined();
+  });
+
+  // EF-110: 1.4 took one line of room under a colon line as enough for the
+  // list after it; a bundle it wrote with such a list keeps that rule.
+  it('keeps the 1.4 room under a colon line when the manifest is older than rules 6', async () => {
+    const lists = { 'chapters/01.md': '# One\n\nLook for these signs:\n\n- one\n- two' };
+    for (const stamp of [{}, { configVersion: 3 }, { configVersion: 5 }]) {
+      const loaded = await parseBundle(book(stamp), readerFrom(lists), { locale: 'en', summary });
+      expect(loaded.config.bodyText?.colonListRoom).toBe('line');
+    }
+    const today = await parseBundle(book({ configVersion: 6 }), readerFrom(lists), { locale: 'en', summary });
+    expect(today.config.bodyText?.colonListRoom).toBeUndefined();
+    // No list after a colon in the book: nothing to pin.
+    expect((await parseBundle(book({ configVersion: 5 }), readerFrom(files), { locale: 'en', summary })).config.bodyText?.colonListRoom).toBeUndefined();
+  });
+
+  // EF-115: 1.4 could cut a box inside a paragraph or list item leaving one
+  // line of it on a side; a bundle it wrote with a box keeps that cut.
+  it('keeps the 1.4 box cuts when the manifest is older than rules 6 and a chapter holds a box', async () => {
+    const boxes = { 'chapters/01.md': '# One\n\n:::callout\n- a step\n- another step\n:::' };
+    for (const stamp of [{}, { configVersion: 3 }, { configVersion: 5 }]) {
+      const loaded = await parseBundle(book(stamp), readerFrom(boxes), { locale: 'en', summary });
+      expect(loaded.config.layout?.boxChildSplitMinLines).toBe(1);
+    }
+    const today = await parseBundle(book({ configVersion: 6 }), readerFrom(boxes), { locale: 'en', summary });
+    expect(today.config.layout?.boxChildSplitMinLines).toBeUndefined();
+    // No box in the book: nothing to pin.
+    expect((await parseBundle(book({ configVersion: 5 }), readerFrom(files), { locale: 'en', summary })).config.layout?.boxChildSplitMinLines).toBeUndefined();
+  });
+
+  // EF-141: 1.4's Knuth–Plass never broke after a dash set closed between
+  // words; a bundle it wrote with one keeps those breaks.
+  it('keeps the 1.4 breaks at dashes when the manifest is older than rules 7 and a chapter sets a closed dash', async () => {
+    const dashes = { 'chapters/01.md': '# One\n\nI say\u2014that is all.' };
+    for (const stamp of [{}, { configVersion: 3 }, { configVersion: 6 }]) {
+      const loaded = await parseBundle(book(stamp), readerFrom(dashes), { locale: 'en', summary });
+      expect(loaded.config.bodyText?.breakAfterDashes).toBe(false);
+    }
+    const today = await parseBundle(book({ configVersion: 8 }), readerFrom(dashes), { locale: 'en', summary });
+    expect(today.config.bodyText?.breakAfterDashes).toBeUndefined();
+    // No closed dash in the book: nothing to pin.
+    expect((await parseBundle(book({ configVersion: 6 }), readerFrom(files), { locale: 'en', summary })).config.bodyText?.breakAfterDashes).toBeUndefined();
   });
 });
 

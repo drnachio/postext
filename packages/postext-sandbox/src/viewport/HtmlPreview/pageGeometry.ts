@@ -35,6 +35,7 @@ function shiftBlockY(block: VDTBlock, dy: number): void {
     line.baseline += dy;
   }
   if (block.bulletY !== undefined) block.bulletY += dy;
+  if (block.bulletBaselineY !== undefined) block.bulletBaselineY += dy;
   const rb = block.resourceBlock;
   if (rb) {
     for (const ln of [...rb.captionLines, ...rb.noteLines, ...(rb.continuesLines ?? [])]) {

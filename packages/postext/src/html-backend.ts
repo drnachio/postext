@@ -16,8 +16,12 @@ import type {
   BoundingBox,
   ResolvedResourceBlock,
   RoundedOutline,
+  RenderWarning,
 } from './vdt';
-import { tableFrameOutline } from './vdt';
+import { tableCellFillRects, tableFrameOutline } from './vdt';
+import { dimensionToPx } from './units';
+import { documentInkHex, isSingleInkSvgUrl, singleInkColorMatrix } from './svg/singleInk';
+import { lineTrailingTracking } from './lineInk';
 
 export interface RenderHtmlOptions {
   /** Layout mode: single vertical column or many columns laid out horizontally. */
@@ -33,7 +37,126 @@ export interface RenderHtmlOptions {
    *  sandbox), so the host supplies them. When omitted, or when it returns
    *  undefined for a fileId, bitmap/SVG resources render as a neutral
    *  placeholder box so layout stays stable. */
-  resourceImageUrl?: (fileId: string) => string | undefined;
+  resourceImageUrl?: ((fileId: string) => string | undefined) & {
+    /** The default of {@link RenderHtmlOptions.singleInk} for this
+     *  resolver's URLs: `false` on one whose SVG URLs are already recoloured
+     *  for single ink (`bundleImageUrl` does), `true` on one that serves the
+     *  raw markup. */
+    singleInk?: boolean;
+  };
+  /** Whether `diagramStyle.singleInk` recolours SVG pictures here: each
+   *  SVG `<img>` gets a CSS filter (an `feColorMatrix` on its page) that
+   *  maps its pixels to tints of the document's ink — the mapping
+   *  `applySingleInkToSvg` applies to the markup, and the PDF backend to
+   *  SVG bytes. Bitmaps are never tinted, and neither is an SVG data URI
+   *  whose markup `applySingleInkToSvg` marked. (A design image of a VDT built
+   *  before design images carried `imageKind` is tinted when its URL is an
+   *  SVG data URI or ends in `.svg`.) Every page then carries the filter
+   *  definition. Defaults to the resolver's own `singleInk`, else false in
+   *  postext 1.x: hosts written for 1.4 serve SVGs recoloured with
+   *  `applySingleInkToSvg`, as the Sandbox does, and a picture tinted twice
+   *  comes out lighter. Pass `true` when `resourceImageUrl` returns the raw
+   *  markup. The next major release turns it on by default. */
+  singleInk?: boolean;
+  /** Told of what the render could not produce as asked: an image with no
+   *  URL (no `resourceImageUrl`, or one that returns nothing for its
+   *  `fileId`) is emitted as a placeholder and reported once per `fileId`
+   *  and render call, as a `missingImage` warning. */
+  onWarning?: (warning: RenderWarning) => void;
+  /** Resources anchored elsewhere on the page that shows this document's
+   *  HTML (`id="pt-res-<id>"`). A `:ref` links to its resource's anchor
+   *  when this document places that resource or the id is listed here;
+   *  otherwise it is set as plain text in its link colour, since nothing on
+   *  the page would take the link. A host that joins several documents'
+   *  HTML on one page — a book's chapters, each rendered on its own — lists
+   *  the resources all of them place ({@link anchoredResourceIds}), so a
+   *  reference to a figure an earlier chapter placed links to it. */
+  refTargets?: Iterable<string>;
+}
+
+/** The single-ink filter of one page: its element id and the colour
+ *  matrix. Every page carries the `<filter>` definition while single ink
+ *  applies, used or not, so a block patched in later resolves it. */
+interface InkFilter {
+  id: string;
+  matrix: number[];
+}
+
+/** Render options as the painters see them: the caller's, plus the page's
+ *  single-ink filter when single ink applies and the reporter of the images
+ *  emitted as placeholders on the page in progress. */
+interface HtmlPaint extends RenderHtmlOptions {
+  ink?: InkFilter;
+  missingImage?: (fileId: string, resourceId?: string) => void;
+  /** Resources a `:ref` links to: those this document anchors (see
+   *  {@link anchoredResourceIds}) and the caller's `refTargets`. A `:ref`
+   *  to any other one — a figure an earlier chapter placed, in a chapter
+   *  rendered on its own — is set as plain text in its link colour, not as
+   *  a link to nowhere (the PDF backend drops such a link the same way). */
+  linkTargets?: ReadonlySet<string>;
+}
+
+/**
+ * The resources this document anchors in its HTML (`id="pt-res-<id>"`):
+ * those whose embed (a first slice, for a split table) is on one of its
+ * pages. A host that renders a book's chapters one by one onto a single page
+ * passes the union over the chapters as `RenderHtmlOptions.refTargets`:
+ *
+ * ```ts
+ * const docs = buildBundle(bundle);
+ * const refTargets = new Set(docs.flatMap((d) => [...anchoredResourceIds(d)]));
+ * const html = docs.map((d) => renderToHtml(d, { refTargets })).join('');
+ * ```
+ */
+export function anchoredResourceIds(doc: VDTDocument): Set<string> {
+  const ids = new Set<string>();
+  for (const page of doc.pages) {
+    for (const block of [...page.columns.flatMap((c) => c.blocks), ...(page.floats ?? [])]) {
+      const rb = block.resourceBlock;
+      if (rb?.resource.id && !rb.slice?.continued) ids.add(rb.resource.id);
+    }
+  }
+  return ids;
+}
+
+/** Whether a `:ref` segment links anywhere in the document being rendered. */
+function refLinks(resourceId: string, targets: ReadonlySet<string> | undefined): boolean {
+  return !targets || targets.has(resourceId);
+}
+
+/** Whether an image URL names an SVG: a data URI of that type, or a path
+ *  ending in `.svg` (query and fragment aside). Blob URLs cannot tell. */
+function isSvgUrl(url: string): boolean {
+  return /^data:image\/svg\+xml[;,]/i.test(url) || /\.svg(?:[?#]|$)/i.test(url);
+}
+
+/** The `filter` declaration tinting an image to the page's ink: an SVG
+ *  (`svg: true`) or, of unknown kind, an SVG-looking URL; never a bitmap,
+ *  and never an SVG data URI `applySingleInkToSvg` recoloured already (it
+ *  carries `SINGLE_INK_MARK`). Empty when single ink does not apply. */
+function inkFilterDecl(paint: HtmlPaint, svg: boolean | undefined, url: string): string {
+  const ink = paint.ink;
+  if (!ink || svg === false || (svg === undefined && !isSvgUrl(url)) || isSingleInkSvgUrl(url)) return '';
+  return `filter:url(#${ink.id});`;
+}
+
+/** The page's `<filter>` definition: a zero-size inline SVG, first in the
+ *  page so every `url(#…)` on it resolves. */
+function inkFilterDefs(ink: InkFilter): string {
+  const values = ink.matrix.map((v) => +v.toFixed(6)).join(' ');
+  return (
+    `<svg aria-hidden="true" focusable="false" width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden;">` +
+    `<filter id="${ink.id}" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="${values}"/></filter>` +
+    `</svg>`
+  );
+}
+
+/** The URL of an image payload, reporting a miss (the caller then emits the
+ *  placeholder). */
+function imageUrl(options: HtmlPaint | undefined, fileId: string, resourceId?: string): string | undefined {
+  const url = options?.resourceImageUrl?.(fileId);
+  if (!url) options?.missingImage?.(fileId, resourceId);
+  return url || undefined;
 }
 
 const HTML_ESCAPE: Record<string, string> = {
@@ -149,13 +272,72 @@ function renderTextSegment(
   return `<span style="${pos}${colorDecl}">${text}</span>`;
 }
 
-function renderSegments(line: VDTLine, block: VDTBlock): string {
+/** A `:ref` painted as several runs (a label in small capitals: one run per
+ *  case) from `segs[start]` on. Every run is placed as measured, and all of
+ *  them sit in one anchor, so the reference stays one link. `paint` renders
+ *  one run, as plain text, at its x. Returns the markup, the index past the
+ *  last run and the x after it. */
+function renderRefRuns(
+  segs: readonly VDTLineSegment[],
+  start: number,
+  x: number,
+  color: string,
+  paint: (seg: VDTLineSegment, x: number) => string,
+  linked = true,
+): { html: string; end: number; x: number } {
+  const runs: string[] = [];
+  let i = start;
+  do {
+    const seg = segs[i]!;
+    runs.push(paint(seg, x));
+    x += seg.width;
+    i++;
+  } while (segs[i]?.refContinues);
+  if (!linked) return { html: runs.join(''), end: i, x };
+  const href = refAnchorHref(segs[start]!.refResourceId!);
+  return { html: `<a href="${href}" style="text-decoration:none;color:${color};">${runs.join('')}</a>`, end: i, x };
+}
+
+/** Wraps each run of segments of one link (`VDTLineSegment.href`) in an
+ *  `<a>`: `at` returns the markup to emit before a segment with that link
+ *  (closing the previous anchor, opening its own), `end` the markup that
+ *  closes the line. The segments stay absolutely positioned inside it; the
+ *  anchor takes the text colour, so a link reads as the surrounding text. */
+function linkRuns(): { at: (href: string | undefined) => string; end: () => string } {
+  let open: string | undefined;
+  return {
+    at(href) {
+      if (href === open) return '';
+      const close = open !== undefined ? '</a>' : '';
+      open = href;
+      return close + (href !== undefined
+        ? `<a href="${esc(href)}" rel="noopener noreferrer" style="color:inherit;text-decoration:none;">`
+        : '');
+    },
+    end() {
+      const close = open !== undefined ? '</a>' : '';
+      open = undefined;
+      return close;
+    },
+  };
+}
+
+/** A segment's link, unless it is a `:ref` (which links to its resource). */
+function segmentHref(seg: VDTLineSegment): string | undefined {
+  return seg.refResourceId === undefined ? seg.href : undefined;
+}
+
+function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<string>): string {
+  // The tracking after the last glyph is advance, not ink: centring and
+  // right alignment leave it out (EF-153), as the canvas does.
+  const trailing = lineTrailingTracking(line, (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0));
   if (!line.segments || line.segments.length === 0) {
     const plainIndent = line.bbox.x - block.bbox.x;
+    const plainWidth = line.bbox.width - trailing;
     const plainLeft = block.textAlign === 'right'
-      ? Math.max(0, block.bbox.width - plainIndent - line.bbox.width)
+      ? Math.max(0, block.bbox.width - plainIndent - plainWidth)
       : block.textAlign === 'center'
-        ? Math.max(0, (block.bbox.width - plainIndent - line.bbox.width) / 2)
+        ? Math.max(0, (block.bbox.width - plainIndent - plainWidth) / 2)
         : 0;
     return `<span style="position:absolute;left:${plainLeft.toFixed(3)}px;top:0;white-space:pre;">${esc(line.text)}</span>`;
   }
@@ -185,16 +367,28 @@ function renderSegments(line: VDTLine, block: VDTBlock): string {
 
   // Centred / right alignment — math display blocks, ragged-left paragraph
   // styles. Distribute the leading gap.
-  const slack = Math.max(0, effectiveWidth - contentWidth);
+  const slack = Math.max(0, effectiveWidth - (contentWidth - trailing));
   const leadingGap = block.textAlign === 'center' ? slack / 2 : block.textAlign === 'right' ? slack : 0;
 
   const parts: string[] = [];
+  const links = linkRuns();
   let x = leadingGap;
-  for (const seg of line.segments) {
+  const segs = line.segments;
+  const paintText = (seg: VDTLineSegment, at: number, inLink = false): string => {
+    const font = quoteFontString(pickSegmentFont(seg, block));
+    const color = pickSegmentColor(seg, block);
+    const fontDecl = font !== quoteFontString(block.fontString) ? `font:${font};` : '';
+    const colorDecl = color !== block.color ? `color:${color};` : '';
+    const top = seg.baselineShift ? `${seg.baselineShift.toFixed(3)}px` : '0';
+    return renderTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, color);
+  };
+  for (let i = 0; i < segs.length; i++) {
+    const seg = segs[i]!;
     if (seg.kind === 'space') {
       x += useJustify ? justifiedSpaceWidth : seg.width;
       continue;
     }
+    parts.push(links.at(segmentHref(seg)));
     if (seg.kind === 'math') {
       parts.push(renderMathSegmentSvg(seg, x, line, block));
       x += seg.width;
@@ -211,14 +405,17 @@ function renderSegments(line: VDTLine, block: VDTBlock): string {
       x += seg.width;
       continue;
     }
-    const font = quoteFontString(pickSegmentFont(seg, block));
-    const color = pickSegmentColor(seg, block);
-    const fontDecl = font !== quoteFontString(block.fontString) ? `font:${font};` : '';
-    const colorDecl = color !== block.color ? `color:${color};` : '';
-    const top = seg.baselineShift ? `${seg.baselineShift.toFixed(3)}px` : '0';
-    parts.push(renderTextSegment(seg, x, top, fontDecl, colorDecl, color));
+    if (seg.refResourceId !== undefined && segs[i + 1]?.refContinues) {
+      const group = renderRefRuns(segs, i, x, pickSegmentColor(seg, block), (run, at) => paintText(run, at, true), refLinks(seg.refResourceId, targets));
+      parts.push(group.html);
+      x = group.x;
+      i = group.end - 1;
+      continue;
+    }
+    parts.push(paintText(seg, x, seg.refResourceId !== undefined && !refLinks(seg.refResourceId, targets)));
     x += seg.width;
   }
+  parts.push(links.end());
   return parts.join('');
 }
 
@@ -289,16 +486,26 @@ function renderBullet(block: VDTBlock): string {
   // Canvas uses `textBaseline='middle'` at `bulletY` to center the em square
   // on the x-height; in HTML we get the equivalent alignment naturally when
   // both bullet and line share top/height and font metrics.
+  // A marker set on the line's baseline (a contents number, whatever its
+  // face and size): the box takes the line's own font, so its baseline is
+  // the text's, and the marker sits in an inner box of its face with no
+  // line height, which aligns on that baseline without moving it — the
+  // way a text segment in another face does (`renderTextSegment`).
+  const onBaseline = block.bulletBaselineY !== undefined;
+  const lineFont = quoteFontString(block.fontString);
+  const baselineShift = onBaseline ? block.bulletBaselineY! - firstLine.baseline : 0;
   const markerDiv = (cls: string, x: number, font: string, color: string, text: string): string =>
     `<div class="${cls}" aria-hidden="true" style="` +
     `position:absolute;` +
     `left:${x}px;` +
-    `top:${firstLine.bbox.y}px;` +
+    `top:${firstLine.bbox.y + baselineShift}px;` +
     `height:${firstLine.bbox.height}px;` +
-    `font:${font};` +
+    `font:${onBaseline ? lineFont : font};` +
     `color:${color};` +
     `white-space:pre;` +
-    `">${esc(text)}</div>`;
+    (onBaseline
+      ? `"><span style="font:${font};line-height:0;">${esc(text)}</span></div>`
+      : `">${esc(text)}</div>`);
   let html = markerDiv('pt-bullet', block.bulletOffsetX, bulletFont, bulletColor, block.bulletText);
   // Ordered-list separator styled apart from the number (own font/colour).
   if (block.separatorText && block.separatorX !== undefined) {
@@ -309,12 +516,14 @@ function renderBullet(block: VDTBlock): string {
   return html;
 }
 
-function renderLine(line: VDTLine, block: VDTBlock): string {
+function renderLine(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<string>): string {
   const font = quoteFontString(block.fontString);
   const strikethroughDecl = block.strikethroughText ? 'text-decoration:line-through;' : '';
-  // Column-balancing tracking: measured into the segment widths, so the
+  // Tracking — the block's (column balancing, a runt set short) and the
+  // line's own (justification): measured into the segment widths, so the
   // glyphs must spread the same way.
-  const trackingDecl = block.letterSpacing ? `letter-spacing:${block.letterSpacing}px;` : '';
+  const tracking = (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0);
+  const trackingDecl = tracking !== 0 ? `letter-spacing:${tracking}px;` : '';
   return (
     `<div class="pt-line" data-block="${esc(block.id)}" style="` +
     `position:absolute;` +
@@ -325,7 +534,7 @@ function renderLine(line: VDTLine, block: VDTBlock): string {
     `color:${block.color};` +
     strikethroughDecl +
     trackingDecl +
-    `">${renderSegments(line, block)}</div>`
+    `">${renderSegments(line, block, targets)}</div>`
   );
 }
 
@@ -360,16 +569,34 @@ function renderResourceLine(
   color: string,
   linkColor: string,
   labelColor: string = color,
+  targets?: ReadonlySet<string>,
 ): string {
   const baseFont = quoteFontString(fonts.normal);
   const parts: string[] = [];
   if (line.segments && line.segments.length > 0) {
+    const segs = line.segments;
+    const segColorOf = (seg: VDTLineSegment): string => (seg.refResourceId !== undefined
+      ? linkColor
+      : seg.captionLabel
+        ? labelColor
+        : color);
+    const paintText = (seg: VDTLineSegment, at: number, inLink = false): string => {
+      const font = quoteFontString(pickResourceFont(seg, fonts));
+      const segColor = segColorOf(seg);
+      const fontDecl = font !== baseFont ? `font:${font};` : '';
+      const colorDecl = segColor !== color ? `color:${segColor};` : '';
+      const top = seg.baselineShift ? `${seg.baselineShift.toFixed(3)}px` : '0';
+      return renderTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, segColor);
+    };
+    const links = linkRuns();
     let x = 0;
-    for (const seg of line.segments) {
+    for (let i = 0; i < segs.length; i++) {
+      const seg = segs[i]!;
       if (seg.kind === 'space') {
         x += seg.width;
         continue;
       }
+      parts.push(links.at(segmentHref(seg)));
       if (seg.kind === 'swatch') {
         parts.push(renderSwatch(x, line.baseline - line.bbox.y, seg.width, seg.swatch?.color, color));
         x += seg.width;
@@ -380,18 +607,17 @@ function renderResourceLine(
         x += seg.width;
         continue;
       }
-      const font = quoteFontString(pickResourceFont(seg, fonts));
-      const segColor = seg.refResourceId !== undefined
-        ? linkColor
-        : seg.captionLabel
-          ? labelColor
-          : color;
-      const fontDecl = font !== baseFont ? `font:${font};` : '';
-      const colorDecl = segColor !== color ? `color:${segColor};` : '';
-      const top = seg.baselineShift ? `${seg.baselineShift.toFixed(3)}px` : '0';
-      parts.push(renderTextSegment(seg, x, top, fontDecl, colorDecl, segColor));
+      if (seg.refResourceId !== undefined && segs[i + 1]?.refContinues) {
+        const group = renderRefRuns(segs, i, x, linkColor, (run, at) => paintText(run, at, true), refLinks(seg.refResourceId, targets));
+        parts.push(group.html);
+        x = group.x;
+        i = group.end - 1;
+        continue;
+      }
+      parts.push(paintText(seg, x, seg.refResourceId !== undefined && !refLinks(seg.refResourceId, targets)));
       x += seg.width;
     }
+    parts.push(links.end());
   } else {
     parts.push(`<span style="position:absolute;left:0;top:0;white-space:pre;">${esc(line.text)}</span>`);
   }
@@ -403,6 +629,9 @@ function renderResourceLine(
     `height:${line.bbox.height}px;` +
     `font:${baseFont};` +
     `color:${color};` +
+    // A tracked line (a table header set with `headerLetterSpacing`) was
+    // measured with the tracking in its widths.
+    (line.letterSpacing ? `letter-spacing:${line.letterSpacing}px;` : '') +
     `">${parts.join('')}</div>`
   );
 }
@@ -417,11 +646,14 @@ function renderFittedImage(
   y: number,
   w: number,
   h: number,
+  paint?: HtmlPaint,
+  svg?: boolean,
 ): string {
   if (url) {
+    const filter = paint ? inkFilterDecl(paint, svg, url) : '';
     return (
       `<img src="${esc(url)}" alt="${esc(alt)}" style="position:absolute;` +
-      `left:${x}px;top:${y}px;width:${w}px;height:${h}px;" />`
+      `left:${x}px;top:${y}px;width:${w}px;height:${h}px;${filter}" />`
     );
   }
   const labelSize = Math.max(10, Math.min(16, h * 0.1));
@@ -449,7 +681,7 @@ function clipToOutline(html: string, o: RoundedOutline): string {
   );
 }
 
-function renderResourceTable(rb: ResolvedResourceBlock, bx: number, by: number, options: RenderHtmlOptions): string {
+function renderResourceTable(rb: ResolvedResourceBlock, bx: number, by: number, options: HtmlPaint): string {
   const t = rb.table;
   if (!t) return '';
   const parts: string[] = [];
@@ -457,18 +689,21 @@ function renderResourceTable(rb: ResolvedResourceBlock, bx: number, by: number, 
   // to its outer contour, then is drawn round on top.
   const rounded = t.frameRadii !== undefined;
   const outline = (outset: number) => tableFrameOutline(t, bx, by, rb.bodyRect.width, outset);
-  // Cell backgrounds first (the cell's own fill, else the header tint / body
-  // fill), then borders, then text — same paint order as the canvas backend.
+  // Cell backgrounds first (the cell's own fill, else the header tint / the
+  // body or zebra fill), then borders, then text — same paint order as the
+  // canvas backend. Each opaque fill runs across the edges it shares with
+  // the cells painted after it, so no seam shows between cells at a
+  // fractional device-pixel ratio (see `tableCellFillRects`).
   const fills: string[] = [];
-  for (const cell of t.cells) {
-    const fill = cell.background ?? (cell.isHeader ? t.headerBackground : t.bodyBackground);
-    if (!fill) continue;
-    fills.push(
-      `<div aria-hidden="true" style="position:absolute;` +
-      `left:${cell.rect.x}px;top:${cell.rect.y}px;` +
-      `width:${cell.rect.width}px;height:${cell.rect.height}px;` +
-      `background:${fill};"></div>`,
-    );
+  for (const { fill, rects } of tableCellFillRects(t)) {
+    for (const r of rects) {
+      fills.push(
+        `<div aria-hidden="true" style="position:absolute;` +
+        `left:${r.x}px;top:${r.y}px;` +
+        `width:${r.width}px;height:${r.height}px;` +
+        `background:${fill};"></div>`,
+      );
+    }
   }
   parts.push(rounded ? clipToOutline(fills.join(''), outline(0)) : fills.join(''));
   if (t.borderWidthPx > 0) {
@@ -524,21 +759,21 @@ function renderResourceTable(rb: ResolvedResourceBlock, bx: number, by: number, 
   for (const cell of t.cells) {
     const img = cell.image;
     if (!img) continue;
-    const url = options.resourceImageUrl?.(img.fileId);
+    const url = imageUrl(options, img.fileId, img.resourceId);
     const { x, y, width, height } = img.rect;
-    parts.push(renderFittedImage(url, '', img.kind === 'svg' ? 'SVG' : 'Image', x, y, width, height));
+    parts.push(renderFittedImage(url, '', img.kind === 'svg' ? 'SVG' : 'Image', x, y, width, height, options, img.kind === 'svg'));
   }
   for (const cell of t.cells) {
     const fonts = cell.isHeader ? headerFonts : bodyFonts;
     const color = cell.isHeader ? t.headerColor : t.color;
     for (const line of cell.lines) {
-      parts.push(renderResourceLine(line, fonts, color, rb.linkColor));
+      parts.push(renderResourceLine(line, fonts, color, rb.linkColor, color, options.linkTargets));
     }
   }
   return parts.join('');
 }
 
-function renderResourceBlockHtml(block: VDTBlock, options: RenderHtmlOptions): string {
+function renderResourceBlockHtml(block: VDTBlock, options: HtmlPaint): string {
   const rb = block.resourceBlock;
   if (!rb) return '';
   const parts: string[] = [];
@@ -559,9 +794,9 @@ function renderResourceBlockHtml(block: VDTBlock, options: RenderHtmlOptions): s
     : '';
 
   if (rb.kind === 'bitmap' || rb.kind === 'svg') {
-    const url = rb.fileId ? options.resourceImageUrl?.(rb.fileId) : undefined;
+    const url = rb.fileId ? imageUrl(options, rb.fileId, rb.resource.id) : undefined;
     // `<img>`, or a neutral placeholder matching the canvas backend's colours.
-    parts.push(renderFittedImage(url, rb.resource.altText ?? '', rb.kind === 'svg' ? 'SVG' : 'Image', bx, by, bw, bh));
+    parts.push(renderFittedImage(url, rb.resource.altText ?? '', rb.kind === 'svg' ? 'SVG' : 'Image', bx, by, bw, bh, options, rb.kind === 'svg'));
   } else if (rb.kind === 'table') {
     parts.push(renderResourceTable(rb, bx, by, options));
   }
@@ -582,7 +817,7 @@ function renderResourceBlockHtml(block: VDTBlock, options: RenderHtmlOptions): s
     boldItalic: rb.captionBoldItalicFontString,
   };
   for (const line of rb.captionLines) {
-    parts.push(renderResourceLine(line, captionFonts, rb.captionColor, rb.linkColor, rb.captionLabelColor));
+    parts.push(renderResourceLine(line, captionFonts, rb.captionColor, rb.linkColor, rb.captionLabelColor, options.linkTargets));
   }
   const noteFonts: ResourceLineFonts = {
     normal: rb.noteFontString,
@@ -591,7 +826,7 @@ function renderResourceBlockHtml(block: VDTBlock, options: RenderHtmlOptions): s
     boldItalic: rb.noteBoldItalicFontString,
   };
   for (const line of [...rb.noteLines, ...(rb.continuesLines ?? [])]) {
-    parts.push(renderResourceLine(line, noteFonts, rb.noteColor, rb.linkColor));
+    parts.push(renderResourceLine(line, noteFonts, rb.noteColor, rb.linkColor, rb.noteColor, options.linkTargets));
   }
   if (!rot) return anchor + parts.join('');
   return (
@@ -638,24 +873,52 @@ function renderDesignTextBlock(block: VDTDesignTextBlock): string {
   const lineParts: string[] = [];
   for (const line of block.lines) {
     const top = line.baselineY - block.bbox.y - fontSize * 0.8;
+    // Inline marks: the runs as inline spans on the line's baseline, each
+    // in its own font; a script is shifted off the baseline. Of a subscript
+    // and a superscript set over each other, the first sits in a box that
+    // takes no room and the second in one as wide as the pair (EF-80).
+    const inner = line.runs
+      ? line.runs.map((run, i) => {
+          const runFont = quoteFontString(run.fontString);
+          const fontDecl = runFont !== font ? `font:${runFont};` : '';
+          const stackDecl = run.stacked
+            ? 'display:inline-block;width:0;'
+            : line.runs![i - 1]?.stacked ? `display:inline-block;min-width:${run.width.toFixed(3)}px;` : '';
+          const shiftDecl = run.baselineShift ? `position:relative;top:${run.baselineShift.toFixed(3)}px;` : '';
+          return fontDecl || stackDecl || shiftDecl ? `<span style="${fontDecl}${stackDecl}${shiftDecl}">${esc(run.text)}</span>` : esc(run.text);
+        }).join('')
+      : esc(line.text);
+    // A justified line: its word spaces widened as the canvas and the PDF
+    // advance its runs (EF-109).
+    const wordSpacingDecl = line.wordSpacingPx ? `word-spacing:${line.wordSpacingPx.toFixed(3)}px;` : '';
     lineParts.push(
       `<span style="` +
       `position:absolute;` +
       `left:${line.xOffset.toFixed(3)}px;` +
       `top:${top.toFixed(3)}px;` +
       `line-height:1;white-space:pre;` +
-      `">${esc(line.text)}</span>`,
+      wordSpacingDecl +
+      `">${inner}</span>`,
     );
   }
   const clipDecl = block.clip ? 'overflow:hidden;' : '';
   const trackingDecl = block.letterSpacingPx ? `letter-spacing:${block.letterSpacingPx}px;` : '';
+  // An outline over the glyphs (centred on their edges, as on canvas and in
+  // the PDF); hollow letters leave the fill transparent.
+  const strokeDecl = block.stroke && block.stroke.widthPx > 0
+    ? `-webkit-text-stroke:${block.stroke.widthPx}px ${block.stroke.color};` +
+      (block.stroke.hollow ? '-webkit-text-fill-color:transparent;' : '')
+    : '';
+  // Pagination furniture (a split callout's repeated title and marker) is
+  // read once: hidden from assistive technology.
+  const hidden = block.artifact ? ' aria-hidden="true"' : '';
   parts.push(
-    `<div style="` +
+    `<div${hidden} style="` +
     `position:absolute;` +
     `left:${block.bbox.x}px;top:${block.bbox.y}px;` +
     `width:${block.bbox.width}px;height:${block.bbox.height}px;` +
     `font:${font};color:${block.color};` +
-    clipDecl + trackingDecl +
+    clipDecl + trackingDecl + strokeDecl +
     `">${lineParts.join('')}</div>`,
   );
   return parts.join('');
@@ -675,19 +938,23 @@ function renderDesignRuleBlock(block: VDTDesignRuleBlock): string {
 }
 
 function renderDesignBoxBlock(block: VDTDesignBoxBlock): string {
-  return renderBoxAt(block.bbox, block.box);
+  const html = renderBoxAt(block.bbox, block.box);
+  // A callout stripe on a rounded frame: clipped to the frame's outline.
+  return block.clip ? clipToOutline(html, block.clip) : html;
 }
 
 /** Image block (e.g. a callout icon): `<img>` from `resourceImageUrl`, or a
  *  neutral placeholder box when the host cannot supply the image. */
-function renderDesignImageBlock(block: VDTDesignImageBlock, options?: RenderHtmlOptions): string {
+function renderDesignImageBlock(block: VDTDesignImageBlock, options?: HtmlPaint): string {
   const { x, y, width, height } = block.bbox;
   if (width <= 0 || height <= 0) return '';
-  const url = options?.resourceImageUrl?.(block.fileId);
+  const url = imageUrl(options, block.fileId);
   if (url) {
+    const svg = block.imageKind === undefined ? undefined : block.imageKind === 'svg';
+    const filter = options ? inkFilterDecl(options, svg, url) : '';
     return (
       `<img src="${esc(url)}" alt="" style="position:absolute;` +
-      `left:${x}px;top:${y}px;width:${width}px;height:${height}px;" />`
+      `left:${x}px;top:${y}px;width:${width}px;height:${height}px;${filter}" />`
     );
   }
   return (
@@ -698,20 +965,20 @@ function renderDesignImageBlock(block: VDTDesignImageBlock, options?: RenderHtml
   );
 }
 
-function renderDesignBlock(block: VDTDesignBlock, options?: RenderHtmlOptions): string {
+function renderDesignBlock(block: VDTDesignBlock, options?: HtmlPaint): string {
   if (block.kind === 'text') return renderDesignTextBlock(block);
   if (block.kind === 'rule') return renderDesignRuleBlock(block);
   if (block.kind === 'image') return renderDesignImageBlock(block, options);
   return renderDesignBoxBlock(block);
 }
 
-function renderDesignSlot(slot: VDTDesignSlot, options?: RenderHtmlOptions): string {
+function renderDesignSlot(slot: VDTDesignSlot, options?: HtmlPaint): string {
   const parts: string[] = [];
   for (const block of slot.blocks) parts.push(renderDesignBlock(block, options));
   return parts.join('');
 }
 
-function renderBlockInner(block: VDTBlock, options: RenderHtmlOptions): string {
+function renderBlockInner(block: VDTBlock, options: HtmlPaint): string {
   if (block.hidden) return '';
   if (block.designOverlay) return renderDesignSlot(block.designOverlay, options);
   // Resource embeds carry their own measured geometry (image/table + caption);
@@ -720,7 +987,7 @@ function renderBlockInner(block: VDTBlock, options: RenderHtmlOptions): string {
   const parts: string[] = [];
   parts.push(renderBullet(block));
   for (const line of block.lines) {
-    parts.push(renderLine(line, block));
+    parts.push(renderLine(line, block, options.linkTargets));
   }
   return parts.join('');
 }
@@ -732,7 +999,7 @@ function renderBlockInner(block: VDTBlock, options: RenderHtmlOptions): string {
  * per-block DOM patching — consumers can replace a single block's outerHTML
  * without touching the rest of the page.
  */
-function renderBlock(block: VDTBlock, options: RenderHtmlOptions): string {
+function renderBlock(block: VDTBlock, options: HtmlPaint): string {
   return (
     `<div class="pt-block" data-block-id="${esc(block.id)}" style="display:contents;">` +
     renderBlockInner(block, options) +
@@ -753,8 +1020,25 @@ interface PageRenderResult {
   decorationHtml: string;
 }
 
-function renderPageDetailed(page: VDTPage, background: string, options: RenderHtmlOptions): PageRenderResult {
+function renderPageDetailed(
+  page: VDTPage,
+  background: string,
+  pageOptions: HtmlPaint,
+  ink: { hex: string; matrix: number[] } | null = null,
+  /** With cut lines, how far the bleed box lies inside the sheet (px); 0
+   *  without them. */
+  bleedInset = 0,
+): PageRenderResult {
   const bgDecl = background && background !== 'transparent' ? `background:${background};` : '';
+  // With cut lines nothing the page paints shows past the bleed box, as on
+  // the canvas and in the PDF (EF-133).
+  const clipDecl = bleedInset > 0 ? `clip-path:inset(${bleedInset}px);` : '';
+  // A filter id local to the page and its ink, so every page is
+  // self-contained (a patcher may replace pages one by one) and two
+  // documents on one page never share a filter.
+  const options: HtmlPaint = ink
+    ? { ...pageOptions, ink: { id: `pt-ink-${ink.hex.replace(/[^0-9a-z]/gi, '')}-${page.index}`, matrix: ink.matrix } }
+    : pageOptions;
   const blocks: Array<{ id: string; html: string }> = [];
   for (const col of page.columns) {
     for (const block of col.blocks) {
@@ -774,8 +1058,11 @@ function renderPageDetailed(page: VDTPage, background: string, options: RenderHt
   const slotParts: string[] = [];
   if (page.header) slotParts.push(renderDesignSlot(page.header, options));
   if (page.footer) slotParts.push(renderDesignSlot(page.footer, options));
-  const decorationHtml = openerHtml + slotParts.join('');
-  const innerHtml = openerHtml + blocksHtml + slotParts.join('');
+  // Whether or not a picture on the page uses it: a host patching blocks
+  // one by one may bring in an SVG image the first render did not have.
+  const defsHtml = options.ink ? inkFilterDefs(options.ink) : '';
+  const decorationHtml = defsHtml + openerHtml + slotParts.join('');
+  const innerHtml = defsHtml + openerHtml + blocksHtml + slotParts.join('');
   const outerHtml =
     `<div class="pt-page" data-page="${page.index}" style="` +
     `position:relative;` +
@@ -783,6 +1070,7 @@ function renderPageDetailed(page: VDTPage, background: string, options: RenderHt
     `height:${page.height}px;` +
     `flex-shrink:0;` +
     bgDecl +
+    clipDecl +
     `">${innerHtml}</div>`;
   return { outerHtml, innerHtml, blocks, decorationHtml };
 }
@@ -804,6 +1092,27 @@ export interface HtmlRenderIndex {
 }
 
 /**
+ * CSS declarations (a `prop:value;` list) that reset the inherited text
+ * properties to the values the engine measured with. Every line of the
+ * output is positioned at the widths the canvas measured, so a host that
+ * sets `letter-spacing`, `word-spacing`, `text-transform`, a `font-variant`
+ * or a `line-height` on an ancestor would otherwise widen or change the
+ * glyph runs and make lines overprint. The `.pt-doc` root carries them
+ * before its own layout declarations; a host that mounts the pages'
+ * `innerHtml` in containers of its own sets them on its root.
+ */
+export const HTML_TEXT_RESET =
+  'letter-spacing:normal;word-spacing:normal;text-transform:none;text-indent:0;' +
+  'white-space:normal;word-break:normal;overflow-wrap:normal;' +
+  'font-style:normal;font-variant:normal;font-weight:400;font-stretch:normal;' +
+  'font-feature-settings:normal;font-variation-settings:normal;font-kerning:auto;' +
+  'font-optical-sizing:auto;font-size-adjust:none;font-synthesis:initial;' +
+  'line-height:normal;text-align:left;text-shadow:none;text-rendering:auto;' +
+  'text-emphasis:none;hyphens:manual;direction:ltr;writing-mode:horizontal-tb;' +
+  '-webkit-text-stroke:0;-webkit-text-fill-color:currentcolor;' +
+  '-webkit-text-size-adjust:100%;text-size-adjust:100%;';
+
+/**
  * Like renderToHtml, but also returns a per-page / per-block breakdown that
  * callers can use to diff against a previous render and patch only the DOM
  * subtrees whose HTML actually changed.
@@ -823,10 +1132,35 @@ export function renderToHtmlIndexed(
       ? `display:flex;flex-direction:row;gap:${gap}px;align-items:flex-start;padding:${padding}px;box-sizing:border-box;width:max-content;`
       : `display:flex;flex-direction:column;align-items:center;padding:${padding}px 0;box-sizing:border-box;`;
 
+  // Single-ink diagrams: SVG pictures are filtered to the ink when the host
+  // asks (its URLs are not recoloured already).
+  const singleInk = options.singleInk ?? options.resourceImageUrl?.singleInk ?? false;
+  const inkHex = singleInk ? documentInkHex(doc.config) : null;
+  const inkMatrix = inkHex ? singleInkColorMatrix(inkHex) : null;
+  const ink = inkHex && inkMatrix ? { hex: inkHex, matrix: inkMatrix } : null;
+
   const indexedPages: HtmlRenderIndexPage[] = [];
   const pageHtmlParts: string[] = [];
+  const onWarning = options.onWarning;
+  const reported = new Set<string>();
+  const linkTargets = anchoredResourceIds(doc);
+  for (const id of options.refTargets ?? []) linkTargets.add(id);
+  const bleedInset = doc.trimOffset > 0
+    ? Math.max(0, doc.trimOffset - dimensionToPx(doc.config.page.cutLines.bleed, doc.config.page.dpi))
+    : 0;
   for (const p of doc.pages) {
-    const detail = renderPageDetailed(p, background, options);
+    const pageOptions: HtmlPaint = onWarning
+      ? {
+          ...options,
+          linkTargets,
+          missingImage: (fileId: string, resourceId?: string) => {
+            if (reported.has(fileId)) return;
+            reported.add(fileId);
+            onWarning({ kind: 'missingImage', fileId, ...(resourceId !== undefined ? { resourceId } : {}), pageIndex: p.index });
+          },
+        }
+      : { ...options, linkTargets };
+    const detail = renderPageDetailed(p, background, pageOptions, ink, bleedInset);
     pageHtmlParts.push(detail.outerHtml);
     indexedPages.push({
       index: p.index,
@@ -838,8 +1172,9 @@ export function renderToHtmlIndexed(
     });
   }
 
+  // The host's inherited text properties are reset first (EF-96).
   const html =
-    `<div class="pt-doc" data-mode="${mode}" style="${docStyle}">` +
+    `<div class="pt-doc" data-mode="${mode}" style="${HTML_TEXT_RESET}${docStyle}">` +
     pageHtmlParts.join('') +
     `</div>`;
 

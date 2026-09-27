@@ -4,9 +4,9 @@ import {
 } from 'pdf-lib';
 import type { ResourceImageMap, SvgRasterizer } from './renderResourceBlock';
 import fontkit from '@pdf-lib/fontkit';
-import type { HyphenationLocale, PdfColorSpace, VDTBlock, VDTDocument, VDTPage } from 'postext';
-import { columnClipRect, computePageTextExtent, dimensionToPx } from 'postext';
-import { FontCache, type PdfFontProvider } from '../fontCache';
+import type { HyphenationLocale, PdfColorSpace, RenderWarning, VDTBlock, VDTDocument, VDTPage } from 'postext';
+import { columnClipRect, computePageTextExtent, dimensionToPx, pageColumnRule } from 'postext';
+import { FontCache, type FontFallback, type PdfFontProvider } from '../fontCache';
 import {
   type PageCtx,
   colorFromHex,
@@ -39,20 +39,31 @@ export interface RenderToPdfOptions {
   fontProvider: PdfFontProvider;
   pageNegative?: boolean;
   /** Emit a PDF outline tree (bookmarks) so readers can jump between
-   *  headings. Defaults to true. */
+   *  headings. When omitted, the first document's
+   *  `config.pdfGeneration.outlines`, else true. */
   outlines?: boolean;
   /** Force every colour in the rendered output through the given PDF colour
-   *  space. Defaults to `'rgb'` (pdf-lib's native output). */
+   *  space. When omitted, the first document's `config.pdfGeneration`
+   *  (`colorSpace`, while its `forceColorSpace` is on), else `'rgb'`
+   *  (pdf-lib's native output). In `'cmyk'`, crop marks are painted in
+   *  registration colour (the `/All` separation), so they print on every
+   *  plate. */
   colorSpace?: PdfColorSpace;
   /** Resolver for resource binary bytes by `fileId`. The bytes are sniffed:
    *  bitmaps embed as images, SVG markup is emitted as vector paths (or
    *  rasterised in the browser when it uses unsupported features), and a
-   *  single-page PDF (`Resource.svg.pdfFileId` print masters) is embedded
-   *  verbatim. When omitted, resource images are drawn as placeholders. */
+   *  single-page PDF is embedded verbatim. An SVG with a print master
+   *  (`Resource.svg.pdfFileId`) is asked for by the master's id first,
+   *  wherever it is drawn (a figure, a table cell, a design image, a box
+   *  icon) — its first page is embedded in place of the SVG unless
+   *  `diagramStyle.singleInk` is on — and by the SVG's own id when the
+   *  master is missing or does not decode. When omitted, resource images
+   *  are drawn as placeholders. */
   resourceBytes?: ResourceBytesProvider;
   /** Emit an accessible, tagged PDF (PDF/UA-1 oriented): logical structure
    *  tree, alt text on figures, document language and title, decoration
-   *  flagged as artifacts. Defaults to true. */
+   *  flagged as artifacts. When omitted, the first document's
+   *  `config.pdfGeneration.accessible`, else true. */
   accessible?: boolean;
   /** Called as the render advances: after the fonts and resources are
    *  embedded, after every page, and before the file is written. */
@@ -60,6 +71,53 @@ export interface RenderToPdfOptions {
   /** Rasterises an SVG the vector subset cannot draw. Defaults to the
    *  document's `Image` + canvas; a worker must supply one (its host's). */
   rasterizeSvg?: SvgRasterizer;
+  /** Called for each non-fatal problem met while rendering (see
+   *  {@link PdfWarning}): a face the font provider rejected and another cut
+   *  of its family embedded instead (`fontFallback`), and an image with no
+   *  bytes from `resourceBytes` (or bytes that did not decode), drawn as a
+   *  placeholder and reported once per `fileId` as a `missingImage` warning
+   *  carrying the page and the index of its document in `input`. Without
+   *  it, a `fontFallback` goes to `console.warn` with its `message`, and a
+   *  `missingImage` is not reported. */
+  onWarning?: (warning: PdfWarning) => void;
+}
+
+/** A face set in another cut of its family. The render goes on; the text
+ *  keeps its layout but is drawn in the substitute face. */
+export interface PdfFontFallbackWarning {
+  /** `fontFallback`: the font provider rejected a face the pages use, and
+   *  another face of the same family is embedded in its place — the first
+   *  that loads among the nine standard weights in CSS font-matching order,
+   *  in the same style first and then in the other (italic ↔ upright). The
+   *  text keeps its layout (positions come from the VDT) but is drawn in
+   *  the substitute face. */
+  kind: 'fontFallback';
+  family: string;
+  weight: number;
+  style: 'normal' | 'italic';
+  /** The face embedded instead. */
+  fallback: { weight: number; style: 'normal' | 'italic' };
+  /** The provider's error message for the rejected face. */
+  reason: string;
+  /** A one-line English description, for logs. */
+  message: string;
+}
+
+/** A non-fatal problem met while rendering a PDF. The render goes on; the
+ *  output differs from what the document asked for in the way described:
+ *  a font fallback ({@link PdfFontFallbackWarning}), or one of the engine's
+ *  render warnings (`RenderWarning`: an image painted as a placeholder,
+ *  `formatWarning` describes it). Narrow on `kind`. */
+export type PdfWarning = PdfFontFallbackWarning | RenderWarning;
+
+/** The warning of a face set in another cut of its family. */
+function fontFallbackWarning(f: FontFallback): PdfFontFallbackWarning {
+  const face = (weight: number, style: string) => `${weight}${style === 'italic' ? ' italic' : ''}`;
+  return {
+    kind: 'fontFallback',
+    ...f,
+    message: `postext-pdf: "${f.family}" ${face(f.weight, f.style)} is not available from the font provider (${f.reason}); using ${face(f.fallback.weight, f.fallback.style)} instead`,
+  };
 }
 
 export interface RenderProgress {
@@ -72,17 +130,39 @@ export interface RenderProgress {
 export type { PdfFontProvider };
 export type { ResourceBytesProvider } from './renderResourceBlock';
 
-/** BCP 47 tag of a postext locale (`/Lang`). */
-function languageTag(locale: HyphenationLocale | undefined): string | undefined {
+/** BCP 47 tag of a postext locale (`/Lang`): the tag the document named
+ *  (`'es-ES'`, `'sv'`) when its hyphenation patterns are another locale's,
+ *  else the patterns' own (`'en-us'` → `'en-US'`). */
+function languageTag(hyphenation: { locale?: HyphenationLocale; tag?: string } | undefined): string | undefined {
+  const locale = hyphenation?.tag?.trim() || hyphenation?.locale;
   if (!locale) return undefined;
-  const [lang, region] = locale.split('-');
-  return region ? `${lang}-${region.toUpperCase()}` : lang;
+  // Canonical case: language lower, a two-letter region upper, the script
+  // and variant subtags as given.
+  return locale.replace(/_/g, '-').split('-')
+    .map((sub, i) => (i === 0 ? sub.toLowerCase() : sub.length === 2 ? sub.toUpperCase() : sub))
+    .join('-');
+}
+
+/** A metadata value as PDF text. The engine hands the printed fields over
+ *  as strings; a VDT from elsewhere may still carry typed YAML values
+ *  (`title: 1984` is a number, a date a `Date`, `author: [A, B]` a list),
+ *  which pdf-lib rejects — coerce them rather than throw. */
+function metadataString(value: unknown): string | undefined {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number') return Number.isFinite(value) ? String(value) : undefined;
+  if (typeof value === 'boolean') return String(value);
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? undefined : value.toISOString().slice(0, 10);
+  if (Array.isArray(value)) {
+    const items = value.map(metadataString).filter((v): v is string => !!v);
+    return items.length > 0 ? items.join(', ') : undefined;
+  }
+  return undefined;
 }
 
 /** Title of the document for the PDF metadata: the declared title, else the
  *  first heading (PDF/UA-1 §7.1 requires one). */
 function documentTitle(docs: readonly VDTDocument[]): string {
-  const declared = docs[0]?.metadata?.title?.trim();
+  const declared = metadataString(docs[0]?.metadata?.title)?.trim();
   if (declared) return declared;
   let best: VDTBlock | undefined;
   for (const doc of docs) {
@@ -100,7 +180,9 @@ function documentTitle(docs: readonly VDTDocument[]): string {
 
 /** The heading element an opener band's text belongs to: the part title on
  *  a part-divider page, else the `span: 'page'` heading the band replaced
- *  (hidden in its column), else a plain paragraph. */
+ *  (hidden in its column, its lines still set — a structural `hidden`
+ *  heading, whose lines have no height, prints nothing at all), else a
+ *  plain paragraph. */
 function openerTextElem(page: VDTPage, structure: StructureFlow): () => StructElem {
   let elem: StructElem | undefined;
   return () => {
@@ -108,7 +190,7 @@ function openerTextElem(page: VDTPage, structure: StructureFlow): () => StructEl
     if (page.partInfo) return (elem = structure.partHeading());
     for (const col of page.columns) {
       for (const block of col.blocks) {
-        if (block.hidden && block.type === 'heading') return (elem = structure.blockElem(block));
+        if (block.hidden && block.type === 'heading' && (block.lines[0]?.bbox.height ?? 0) > 0) return (elem = structure.blockElem(block));
       }
     }
     return (elem = structure.tree.root.child('P'));
@@ -124,12 +206,21 @@ function renderPage(
   colorSpace: PdfColorSpace,
   resourceCtx: ResourceRenderContext,
   tree: StructTree | undefined,
+  onMissingImage?: PageCtx['onMissingImage'],
 ): void {
   const scale = makeScale(doc.config.page.dpi);
   const pageWidthPt = vdtPage.width * scale;
   const pageHeightPt = vdtPage.height * scale;
   const page = pdfDoc.addPage([pageWidthPt, pageHeightPt]);
-  const ctx: PageCtx = { page, pageHeightPt, scale, colorSpace, tags: tree?.beginPage(page) };
+  // With cut lines the sheet carries the bleed and the marks: say where the
+  // page is trimmed and how far its art runs, for imposition and preflight.
+  if (doc.config.page.cutLines.enabled) {
+    const trimPt = doc.trimOffset * scale;
+    const bleedPt = Math.max(0, doc.trimOffset - dimensionToPx(doc.config.page.cutLines.bleed, doc.config.page.dpi)) * scale;
+    page.setTrimBox(trimPt, trimPt, pageWidthPt - 2 * trimPt, pageHeightPt - 2 * trimPt);
+    page.setBleedBox(bleedPt, bleedPt, pageWidthPt - 2 * bleedPt, pageHeightPt - 2 * bleedPt);
+  }
+  const ctx: PageCtx = { page, pageHeightPt, scale, colorSpace, tags: tree?.beginPage(page), ...(onMissingImage ? { onMissingImage } : {}) };
   const structure = resourceCtx.structure;
 
   // Background: full page white first (cut-mark area stays white), then the
@@ -139,10 +230,10 @@ function renderPage(
 
   const bgHex = doc.config.page.backgroundColor.hex;
   const trimOff = doc.trimOffset;
+  const bleedPx = trimOff > 0
+    ? dimensionToPx(doc.config.page.cutLines.bleed, doc.config.page.dpi)
+    : 0;
   if (bgHex && bgHex !== 'transparent') {
-    const bleedPx = trimOff > 0
-      ? dimensionToPx(doc.config.page.cutLines.bleed, doc.config.page.dpi)
-      : 0;
     fillRectPx(
       ctx,
       trimOff - bleedPx,
@@ -151,6 +242,15 @@ function renderPage(
       vdtPage.height - (trimOff - bleedPx) * 2,
       colorFromHex(bgHex, colorSpace),
     );
+  }
+
+  // With cut lines the sheet also carries the slug, where only the marks
+  // print: everything the page paints is clipped to the bleed box, as a
+  // DTP export clips it (EF-133). The marks are drawn after the clip ends.
+  const bleedClip = trimOff > 0;
+  if (bleedClip) {
+    const inset = Math.max(0, trimOff - bleedPx);
+    pushClipRect(ctx, inset, inset, vdtPage.width - inset * 2, vdtPage.height - inset * 2);
   }
 
   tagArtifact(ctx, { type: 'Layout' });
@@ -175,17 +275,11 @@ function renderPage(
     }
   }
 
-  if (doc.config.layout.columnRule.enabled && vdtPage.columns.length > 1) {
-    const crLineWidthPx = dimensionToPx(
-      doc.config.layout.columnRule.lineWidth,
-      doc.config.page.dpi,
-    );
-    renderColumnRule(
-      ctx,
-      vdtPage.columns,
-      doc.config.layout.columnRule.color.hex,
-      crLineWidthPx,
-    );
+  // The page's own rule on a styled section's pages, else the document's
+  // (mirrors the canvas backend via `pageColumnRule`).
+  const columnRule = pageColumnRule(vdtPage, doc);
+  if (columnRule.enabled && vdtPage.columns.length > 1) {
+    renderColumnRule(ctx, vdtPage.columns, columnRule.color, columnRule.lineWidthPx);
   }
 
   // Opener / part bands go under the columns so their backgrounds sit
@@ -208,7 +302,13 @@ function renderPage(
     const clip = columnClipRect(col, doc.config.page.dpi);
     pushClipRect(ctx, clip.x, clip.y, clip.width, clip.height);
     for (const block of col.blocks) {
-      if (block.tocPart && block.designOverlay) continue;
+      if (block.tocPart && block.designOverlay) {
+        // Painted below, but read in its place among the contents rows.
+        if (structure && !block.hidden && block.designOverlay.blocks.some((b) => b.kind === 'text')) {
+          structure.blockElem(block);
+        }
+        continue;
+      }
       renderBlock(ctx, block, col.bbox.width, col.bbox.x, fontCache, resourceCtx);
     }
     popClip(ctx);
@@ -216,15 +316,21 @@ function renderPage(
     // run past the column (a band reaching beyond the page numbers): it
     // is drawn outside the column clip, like a float.
     for (const block of col.blocks) {
-      if (block.tocPart && block.designOverlay) renderBlock(ctx, block, col.bbox.width, col.bbox.x, fontCache, resourceCtx);
+      if (!block.tocPart || !block.designOverlay) continue;
+      const paint = () => renderBlock(ctx, block, col.bbox.width, col.bbox.x, fontCache, resourceCtx);
+      if (structure) structure.aside(paint);
+      else paint();
     }
   }
 
   // Floated resources sit outside the column clip (a `span: 'page'` float can
   // cross the gutter); they carry an absolute bbox positioned at build time.
+  // A tagged render reads each one after the text that cites it (EF-146).
   if (vdtPage.floats) {
     for (const fb of vdtPage.floats) {
-      renderBlock(ctx, fb, fb.bbox.width, fb.bbox.x, fontCache, resourceCtx);
+      const paint = () => renderBlock(ctx, fb, fb.bbox.width, fb.bbox.x, fontCache, resourceCtx);
+      if (structure) structure.readFloat(fb, paint);
+      else paint();
     }
   }
 
@@ -234,13 +340,12 @@ function renderPage(
   if (vdtPage.header) renderHeaderFooterSlot(ctx, vdtPage.header, fontCache, resourceCtx.images, pagination('Header'));
   if (vdtPage.footer) renderHeaderFooterSlot(ctx, vdtPage.footer, fontCache, resourceCtx.images, pagination('Footer'));
 
+  if (bleedClip) popClip(ctx);
+
   // Page negative: overlay white rect with Difference blend across trim+bleed.
   // Crop marks remain un-inverted (drawn afterwards).
   tagArtifact(ctx, { type: 'Page' });
   if (pageNegative) {
-    const bleedPx = trimOff > 0
-      ? dimensionToPx(doc.config.page.cutLines.bleed, doc.config.page.dpi)
-      : 0;
     const invX = trimOff - bleedPx;
     const invY = trimOff - bleedPx;
     const invW = vdtPage.width - (trimOff - bleedPx) * 2;
@@ -250,6 +355,22 @@ function renderPage(
 
   renderCutLines(ctx, vdtPage, doc);
   ctx.tags?.close();
+}
+
+/** The output settings of a render: each one from `options` when given,
+ *  else from the document's `config.pdfGeneration` (a colour space only
+ *  while its `forceColorSpace` is on), else the default — RGB, bookmarks
+ *  and tagging on. */
+function pdfSettings(
+  options: Pick<RenderToPdfOptions, 'outlines' | 'accessible' | 'colorSpace'>,
+  doc: VDTDocument | undefined,
+): { outlines: boolean; accessible: boolean; colorSpace: PdfColorSpace } {
+  const gen = doc?.config.pdfGeneration;
+  return {
+    outlines: options.outlines ?? gen?.outlines ?? true,
+    accessible: options.accessible ?? gen?.accessible ?? true,
+    colorSpace: options.colorSpace ?? (gen?.forceColorSpace ? gen.colorSpace : undefined) ?? 'rgb',
+  };
 }
 
 /**
@@ -270,12 +391,15 @@ export async function renderToPdf(
   const pdfDoc = await PDFDocument.create();
   pdfDoc.registerFontkit(fontkit);
 
-  if (first.metadata?.title) pdfDoc.setTitle(first.metadata.title);
-  if (first.metadata?.author) pdfDoc.setAuthor(first.metadata.author);
+  const metaTitle = metadataString(first.metadata?.title);
+  const metaAuthor = metadataString(first.metadata?.author);
+  if (metaTitle) pdfDoc.setTitle(metaTitle);
+  if (metaAuthor) pdfDoc.setAuthor(metaAuthor);
   pdfDoc.setCreator('postext');
   pdfDoc.setProducer('postext-pdf');
 
-  const fontCache = new FontCache(pdfDoc, options.fontProvider);
+  const warn = options.onWarning ?? ((w: PdfWarning) => { if (w.kind === 'fontFallback') console.warn(w.message); });
+  const fontCache = new FontCache(pdfDoc, options.fontProvider, (f) => warn(fontFallbackWarning(f)));
   for (const doc of docs) await fontCache.preloadFontStrings(collectFontStrings(doc));
 
   const missing = fontCache.missing();
@@ -285,14 +409,17 @@ export async function renderToPdf(
     );
   }
 
-  const colorSpace: PdfColorSpace = options.colorSpace ?? 'rgb';
+  // Each setting: the option when given, else the first document's
+  // `pdfGeneration`, else the default.
+  const settings = pdfSettings(options, first);
+  const colorSpace = settings.colorSpace;
 
   // Accessible output: the structure tree the pages tag their content into.
-  const tree = (options.accessible ?? true)
+  const tree = settings.accessible
     ? new StructTree(pdfDoc, {
         title: documentTitle(docs),
-        author: first.metadata?.author,
-        lang: languageTag(first.config.bodyText.hyphenation?.locale),
+        author: metaAuthor,
+        lang: languageTag(first.config.bodyText.hyphenation),
         producer: 'postext-pdf',
         creatorTool: 'postext',
       })
@@ -311,7 +438,10 @@ export async function renderToPdf(
   // onto the PDF's pages from the first document's offset.
   const linkRegistry = new LinkRegistry(first.pageIndexOffset ?? 0);
   let rendered = 0;
-  for (const doc of docs) {
+  // Placeholders are reported once per image for the whole file.
+  const onWarning = options.onWarning;
+  const reportedImages = new Set<string>();
+  for (const [documentIndex, doc] of docs.entries()) {
     // Block ids restart per document: each gets its own structure flow
     // (paragraph fragments, lists and callouts never span chapters).
     const resourceCtx: ResourceRenderContext = {
@@ -320,7 +450,14 @@ export async function renderToPdf(
       structure: tree ? new StructureFlow(tree) : undefined,
     };
     for (const page of doc.pages) {
-      renderPage(pdfDoc, page, doc, fontCache, options.pageNegative ?? false, colorSpace, resourceCtx, tree);
+      const onMissingImage = onWarning
+        ? (fileId: string, resourceId?: string) => {
+            if (reportedImages.has(fileId)) return;
+            reportedImages.add(fileId);
+            onWarning({ kind: 'missingImage', fileId, ...(resourceId !== undefined ? { resourceId } : {}), pageIndex: page.index, documentIndex });
+          }
+        : undefined;
+      renderPage(pdfDoc, page, doc, fontCache, options.pageNegative ?? false, colorSpace, resourceCtx, tree, onMissingImage);
       rendered++;
       options.onProgress?.({ phase: 'pages', pages: rendered, totalPages });
     }
@@ -329,13 +466,16 @@ export async function renderToPdf(
   // Attach inline-ref link annotations now that every destination is known.
   linkRegistry.finalize(pdfDoc, tree);
 
-  if (options.outlines ?? true) {
+  if (settings.outlines) {
     addOutlines(pdfDoc, docs);
   }
 
   addPageLabels(pdfDoc, docs);
 
   tree?.finalize();
+
+  // A face asked for but never drawn with is not written.
+  fontCache.dropUnusedFonts();
 
   options.onProgress?.({ phase: 'save', pages: rendered, totalPages });
   return pdfDoc.save();

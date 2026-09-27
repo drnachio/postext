@@ -34,6 +34,7 @@ import { cloneBook, singleChapterBook } from '../book/chapterOps';
 import type { BookContent, Chapter } from '../book/types';
 import { createBookPlanner } from '../book/pagination';
 import { cloneContentForProject, projectFileId, projectFontFileId, remapContentFileIds } from '../storage/projectFiles';
+import { PROJECT_RECORD_VERSION } from '../storage/projectMigration';
 import {
   deleteProject,
   generateChapterId,
@@ -205,7 +206,7 @@ function newRecord(
   id = generateProjectId(),
 ): ProjectRecord {
   const now = Date.now();
-  return { version: 2, id, ...meta, ...content, createdAt: now, updatedAt: now };
+  return { version: PROJECT_RECORD_VERSION, id, ...meta, ...content, createdAt: now, updatedAt: now };
 }
 
 function bookOfState(s: SandboxState): BookContent {

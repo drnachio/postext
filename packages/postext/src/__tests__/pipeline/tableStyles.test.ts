@@ -5,7 +5,9 @@ import { resolveAllConfig } from '../../pipeline/config';
 import { buildDocument } from '../../pipeline';
 import { defaultResourceTypes } from '../../defaults/resourceTypes';
 import { renderToHtml } from '../../html-backend';
-import { tableFrameOutline } from '../../vdt';
+import { renderPageToCanvas } from '../../canvas-backend';
+import { tableCellFill, tableCellFillRects, tableFrameOutline } from '../../vdt';
+import { stripTableStyleDefaults } from '../../defaults/tableStyle';
 import { dimensionToPx } from '../../units';
 import type { PostextConfig, Resource, TableCell, TableModel } from '../../types';
 
@@ -203,5 +205,103 @@ describe('per-style overflow', () => {
     const slices = (id: string) => doc.pages.flatMap((p) => (p.floats ?? []).filter((b) => b.resourceBlock!.resource.id === id));
     expect(slices('split').length).toBeGreaterThan(1);
     expect(slices('gone')).toHaveLength(0);
+  });
+});
+
+describe('zebra rows (bodyAlternateBackground)', () => {
+  const ZEBRA: PostextConfig = {
+    tableStyle: { bodyBackgroundEnabled: true, bodyBackground: hex('#ffffff'), bodyAlternateBackgroundEnabled: true, bodyAlternateBackground: hex('#eef3fa') },
+  };
+  const striped = (t: { cells: { row: number; col: number; alternate?: boolean }[] }) =>
+    [...new Set(t.cells.filter((c) => c.alternate).map((c) => c.row))];
+
+  it('is off by default: no alternate cells, no alternate fill, the same table as before', () => {
+    const t = layout(table('a', undefined, 4)).block.table!;
+    expect(striped(t)).toEqual([]);
+    expect(t.bodyAlternateBackground).toBeUndefined();
+    expect(Object.keys(t)).not.toContain('bodyAlternateBackground');
+    // A colour alone does not switch it on.
+    const colourOnly = layout(table('a', undefined, 4), { tableStyle: { bodyAlternateBackground: hex('#eef3fa') } }).block.table!;
+    expect(colourOnly).toEqual(t);
+  });
+
+  it('stripes every second body row, counting from the row after the header', () => {
+    const t = layout(table('a', undefined, 5), ZEBRA).block.table!;
+    expect(t.bodyAlternateBackground).toBe('#eef3fa');
+    // Row 0 is the header; body rows 1–5: the 2nd and 4th are alternate.
+    expect(striped(t)).toEqual([2, 4]);
+    const fill = (row: number) => tableCellFill(t, t.cells.find((c) => c.row === row && c.col === 0)!);
+    expect([0, 1, 2, 3].map(fill)).toEqual([t.headerBackground, '#ffffff', '#eef3fa', '#ffffff']);
+  });
+
+  it('keeps a cell fill over the stripe and the stripe of a merged cell’s first row', () => {
+    const m: TableModel = {
+      headerRowCount: 1,
+      rows: [
+        [cell('H', { isHeader: true }), cell('I', { isHeader: true })],
+        [cell('a'), cell('b')],
+        [cell('c', { rowSpan: 2 }), cell('d', { background: hex('#ff0000') })],
+        [cell('', { hiddenBy: { row: 2, col: 0 } }), cell('f')],
+      ],
+    };
+    const t = layout({ ...table('m'), table: { model: m } }, ZEBRA).block.table!;
+    const at = (row: number, col: number) => t.cells.find((c) => c.row === row && c.col === col)!;
+    expect(at(2, 0).alternate).toBe(true);
+    expect(tableCellFill(t, at(2, 1))).toBe('#ff0000');
+    expect(at(3, 1).alternate).toBeUndefined();
+  });
+
+  it('a continued slice keeps every row’s stripe', () => {
+    const res = table('a', undefined, 12);
+    const whole = layout(res, ZEBRA).block.table!;
+    const part = layout(res, ZEBRA, { startRow: 6, endRow: 13, continues: false }).block.table!;
+    const rowsOf = (t: typeof whole) => striped(t).filter((r) => r >= 6);
+    expect(rowsOf(part)).toEqual(rowsOf(whole));
+    expect(part.cells.filter((c) => c.row === 0).every((c) => !c.alternate)).toBe(true);
+  });
+
+  it('a named style sets its own zebra rows, and the default is stripped', () => {
+    const config: PostextConfig = { tableStyles: [{ id: 'z', bodyAlternateBackgroundEnabled: true }] };
+    expect(striped(layout(table('a', 'z', 4), config).block.table!)).toEqual([2, 4]);
+    expect(layout(table('a', 'z', 4), config).block.table!.bodyAlternateBackground).toBe('#f2f2f2');
+    expect(striped(layout(table('a', undefined, 4), config).block.table!)).toEqual([]);
+    expect(stripTableStyleDefaults({ bodyAlternateBackgroundEnabled: false, bodyAlternateBackground: hex('#f2f2f2') })).toBeUndefined();
+    expect(stripTableStyleDefaults({ bodyAlternateBackgroundEnabled: true })).toEqual({ bodyAlternateBackgroundEnabled: true });
+  });
+
+  it('follows the palette', () => {
+    const config: PostextConfig = {
+      colorPalette: [{ id: 'stripe', name: 'Stripe', value: hex('#123456') }],
+      tableStyle: { bodyAlternateBackgroundEnabled: true, bodyAlternateBackground: { hex: '#000000', model: 'hex', paletteId: 'stripe' } },
+    };
+    expect(layout(table('a', undefined, 2), config).block.table!.bodyAlternateBackground).toBe('#123456');
+  });
+
+  it('the canvas backend paints the alternate fill', () => {
+    const doc = buildDocument({ markdown: '::resource{id="a"}\n', resources: [table('a', undefined, 4, { placement: { position: 'here' } })] }, ZEBRA);
+    const fills: string[] = [];
+    const ctx: Record<string | symbol, unknown> = new Proxy({}, {
+      get(target: Record<string | symbol, unknown>, key) {
+        if (key === 'fillRect') return () => { fills.push(String(target.fillStyle)); };
+        if (key === 'measureText') return (s: string) => ({ width: s.length * 7 });
+        if (key in target) return target[key];
+        return () => undefined;
+      },
+      set(target, key, value) { target[key] = value; return true; },
+    });
+    const canvas = { width: 0, height: 0, getContext: () => ctx } as unknown as HTMLCanvasElement;
+    renderPageToCanvas(doc.pages[0]!, doc, canvas);
+    expect(fills.filter((f) => f === '#eef3fa')).toHaveLength(4);
+  });
+
+  it('the HTML backend paints the alternate fill', () => {
+    const doc = buildDocument({ markdown: '::resource{id="a"}\n', resources: [table('a', undefined, 4, { placement: { position: 'here' } })] }, ZEBRA);
+    const html = renderToHtml(doc);
+    // Four zebra cells, painted with the strips they run under their later
+    // neighbours (EF-64, `tableCellFillRects`).
+    const t = doc.blocks.find((b) => b.resourceBlock)!.resourceBlock!.table!;
+    expect(t.cells.filter((c) => tableCellFill(t, c) === '#eef3fa')).toHaveLength(4);
+    const painted = tableCellFillRects(t).filter((f) => f.fill === '#eef3fa').flatMap((f) => f.rects);
+    expect((html.match(/background:#eef3fa;/g) ?? []).length).toBe(painted.length);
   });
 });

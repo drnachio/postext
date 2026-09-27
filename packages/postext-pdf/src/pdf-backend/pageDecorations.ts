@@ -1,5 +1,21 @@
+import {
+  PDFDict,
+  PDFName,
+  PDFNumber,
+  PDFOperator,
+  PDFOperatorNames,
+  lineTo,
+  moveTo,
+  popGraphicsState,
+  pushGraphicsState,
+  setLineWidth,
+  stroke,
+  type PDFDocument,
+  type PDFPage,
+  type PDFRef,
+} from 'pdf-lib';
 import type { VDTDocument, VDTPage, VDTColumn, BoundingBox } from 'postext';
-import { dimensionToPx, columnRuleSegments } from 'postext';
+import { dimensionToPx, columnRuleSegments, cropMarkSegments } from 'postext';
 import { type PageCtx, drawLinePx, colorFromHex } from './primitives';
 
 export function renderBaselineGrid(
@@ -47,36 +63,58 @@ export function renderColumnRule(
 export function renderCutLines(ctx: PageCtx, page: VDTPage, doc: VDTDocument): void {
   const { cutLines, dpi } = doc.config.page;
   if (!cutLines.enabled) return;
-  const bleedPx = dimensionToPx(cutLines.bleed, dpi);
-  const markOffsetPx = dimensionToPx(cutLines.markOffset, dpi);
-  const markLengthPx = dimensionToPx(cutLines.markLength, dpi);
   const markWidthPx = dimensionToPx(cutLines.markWidth, dpi);
-  const totalExpansion = bleedPx + markOffsetPx + markLengthPx;
-  const trimX = totalExpansion;
-  const trimY = totalExpansion;
-  const trimW = page.width - totalExpansion * 2;
-  const trimH = page.height - totalExpansion * 2;
-  const color = colorFromHex(cutLines.color.hex, ctx.colorSpace);
-
-  const corners = [
-    { x: trimX, y: trimY },
-    { x: trimX + trimW, y: trimY },
-    { x: trimX, y: trimY + trimH },
-    { x: trimX + trimW, y: trimY + trimH },
-  ];
-
-  for (const corner of corners) {
-    const isLeft = corner.x === trimX;
-    const isTop = corner.y === trimY;
-    const hDir = isLeft ? -1 : 1;
-    const hStart = corner.x + hDir * markOffsetPx;
-    const hEnd = corner.x + hDir * (markOffsetPx + markLengthPx);
-    drawLinePx(ctx, hStart, corner.y, hEnd, corner.y, color, markWidthPx);
-    const vDir = isTop ? -1 : 1;
-    const vStart = corner.y + vDir * markOffsetPx;
-    const vEnd = corner.y + vDir * (markOffsetPx + markLengthPx);
-    drawLinePx(ctx, corner.x, vStart, corner.x, vEnd, color, markWidthPx);
+  // Round the trim box the `TrimBox` of the page is written from.
+  const segments = cropMarkSegments(page, doc.config.page, doc.trimOffset);
+  if (ctx.colorSpace === 'cmyk') {
+    // A CMYK file goes to separations: crop marks belong on every plate.
+    const { scale, pageHeightPt } = ctx;
+    const space = registrationSpaceName(ctx.page);
+    for (const seg of segments) {
+      ctx.page.pushOperators(
+        pushGraphicsState(),
+        PDFOperator.of(PDFOperatorNames.StrokingColorspace, [space]),
+        PDFOperator.of(PDFOperatorNames.StrokingColorN, [PDFNumber.of(1)]),
+        setLineWidth(Math.max(0.01, markWidthPx * scale)),
+        moveTo(seg.x1 * scale, pageHeightPt - seg.y1 * scale),
+        lineTo(seg.x2 * scale, pageHeightPt - seg.y2 * scale),
+        stroke(),
+        popGraphicsState(),
+      );
+    }
+    return;
   }
+  const color = colorFromHex(cutLines.color.hex, ctx.colorSpace);
+  for (const seg of segments) drawLinePx(ctx, seg.x1, seg.y1, seg.x2, seg.y2, color, markWidthPx);
+}
+
+/** The registration colour space, `[/Separation /All /DeviceCMYK f]` with a
+ *  tint of 1 mapping to C1 M1 Y1 K1 on screen: a colour that paints on
+ *  every separation. One object per document. */
+const registrationSpaces = new WeakMap<PDFDocument, PDFRef>();
+/** Its resource name on each page that draws with it. */
+const registrationNames = new WeakMap<PDFPage, PDFName>();
+
+function registrationSpaceName(page: PDFPage): PDFName {
+  const known = registrationNames.get(page);
+  if (known) return known;
+  const context = page.doc.context;
+  let ref = registrationSpaces.get(page.doc);
+  if (!ref) {
+    const tint = context.obj({ FunctionType: 2, Domain: [0, 1], C0: [0, 0, 0, 0], C1: [1, 1, 1, 1], N: 1 });
+    ref = context.register(context.obj([PDFName.of('Separation'), PDFName.of('All'), PDFName.of('DeviceCMYK'), tint]));
+    registrationSpaces.set(page.doc, ref);
+  }
+  const { Resources } = page.node.normalizedEntries();
+  let spaces = Resources.lookupMaybe(PDFName.of('ColorSpace'), PDFDict);
+  if (!spaces) {
+    spaces = context.obj({});
+    Resources.set(PDFName.of('ColorSpace'), spaces);
+  }
+  const name = spaces.uniqueKey('CSAll');
+  spaces.set(name, ref);
+  registrationNames.set(page, name);
+  return name;
 }
 
 /** The page's content area: `page.contentArea` when the pipeline set it

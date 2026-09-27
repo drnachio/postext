@@ -58,7 +58,9 @@ export async function loadBundleFonts(
 
 /** Decode the bundle's pictures and register them with the canvas backend
  *  (`registerResourceImage`), recolouring SVG figures when the config asks
- *  for single-ink diagrams. Await it before painting. */
+ *  for single-ink diagrams — with the markup pass, which gives the PDF's
+ *  colours exactly, and registered with `singleInk: false`, so the canvas
+ *  never tints them again. Await it before painting. */
 export async function registerBundleImages(bundle: BundleSource): Promise<void> {
   const inkHex = diagramInkHex(bundle.config);
   await Promise.all(bundle.resources.map(async (r) => {
@@ -74,19 +76,22 @@ export async function registerBundleImages(bundle: BundleSource): Promise<void> 
           img.onerror = () => reject(new Error(`Could not decode ${fileId}`));
           img.src = url;
         });
-        registerResourceImage(fileId, img, { vector: true });
+        // Recoloured above already: the canvas must not tint it again.
+        registerResourceImage(fileId, img, { vector: true, singleInk: false });
       } finally {
         URL.revokeObjectURL(url);
       }
     } else {
-      registerResourceImage(fileId, await createImageBitmap(blob));
+      registerResourceImage(fileId, await createImageBitmap(blob), { singleInk: false });
     }
   }));
 }
 
 /** A `resourceImageUrl` resolver for `renderToHtml`: object URLs over the
- *  bundle's pictures, built once. `revoke()` frees them. */
-export function bundleImageUrl(bundle: BundleSource): ((fileId: string) => string | undefined) & { revoke: () => void } {
+ *  bundle's pictures, built once. `revoke()` frees them. Its SVGs are
+ *  recoloured for single ink already, which `singleInk: false` tells
+ *  `renderToHtml` (so it adds no filter of its own). */
+export function bundleImageUrl(bundle: BundleSource): ((fileId: string) => string | undefined) & { revoke: () => void; singleInk: false } {
   const inkHex = diagramInkHex(bundle.config);
   const urls = new Map<string, string>();
   for (const r of bundle.resources) {
@@ -96,6 +101,7 @@ export function bundleImageUrl(bundle: BundleSource): ((fileId: string) => strin
   }
   const resolve = (fileId: string): string | undefined => urls.get(fileId);
   return Object.assign(resolve, {
+    singleInk: false as const,
     revoke: () => {
       for (const url of urls.values()) URL.revokeObjectURL(url);
       urls.clear();
@@ -105,7 +111,9 @@ export function bundleImageUrl(bundle: BundleSource): ((fileId: string) => strin
 
 /** A `resourceBytes` resolver for `postext-pdf`'s `renderToPdf`: an SVG
  *  figure resolves to its vector print master (`svg.pdfFileId`) when it has
- *  one — unless single-ink is on, which recolours SVG markup only. */
+ *  one — unless single-ink is on, which recolours SVG markup only. The
+ *  bytes are the bundle's own: the PDF backend recolours them once (it
+ *  leaves markup `applySingleInkToSvg` marked as it is). */
 export function bundleResourceBytes(bundle: BundleSource): (fileId: string) => Uint8Array | undefined {
   const singleInk = diagramInkHex(bundle.config) !== null;
   const bytes = new Map<string, Uint8Array>();

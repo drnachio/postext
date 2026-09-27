@@ -9,6 +9,8 @@ export const DEFAULT_MATH_CONFIG: ResolvedMathConfig = {
   fontSizeScale: 1.0,
   marginTop: DEFAULT_MATH_MARGIN_TOP,
   marginBottom: DEFAULT_MATH_MARGIN_BOTTOM,
+  indentAfterDisplay: true,
+  keepWithLeadIn: false,
 };
 
 export function resolveMathConfig(partial?: MathConfig): ResolvedMathConfig {
@@ -18,6 +20,8 @@ export function resolveMathConfig(partial?: MathConfig): ResolvedMathConfig {
     fontSizeScale: partial.fontSizeScale ?? DEFAULT_MATH_CONFIG.fontSizeScale,
     marginTop: partial.marginTop ?? DEFAULT_MATH_CONFIG.marginTop,
     marginBottom: partial.marginBottom ?? DEFAULT_MATH_CONFIG.marginBottom,
+    indentAfterDisplay: partial.indentAfterDisplay ?? DEFAULT_MATH_CONFIG.indentAfterDisplay,
+    keepWithLeadIn: partial.keepWithLeadIn ?? DEFAULT_MATH_CONFIG.keepWithLeadIn,
   };
   if (partial.color !== undefined) resolved.color = partial.color;
   return resolved;
@@ -45,6 +49,14 @@ export function stripMathDefaults(math?: MathConfig): MathConfig | undefined {
   }
   if (math.marginBottom !== undefined && !dimensionsEqual(math.marginBottom, DEFAULT_MATH_CONFIG.marginBottom)) {
     result.marginBottom = math.marginBottom;
+    hasOverride = true;
+  }
+  if (math.indentAfterDisplay !== undefined && math.indentAfterDisplay !== DEFAULT_MATH_CONFIG.indentAfterDisplay) {
+    result.indentAfterDisplay = math.indentAfterDisplay;
+    hasOverride = true;
+  }
+  if (math.keepWithLeadIn !== undefined && math.keepWithLeadIn !== DEFAULT_MATH_CONFIG.keepWithLeadIn) {
+    result.keepWithLeadIn = math.keepWithLeadIn;
     hasOverride = true;
   }
   return hasOverride ? result : undefined;

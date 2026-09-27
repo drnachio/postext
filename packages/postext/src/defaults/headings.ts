@@ -1,4 +1,4 @@
-import type { HeadingsConfig, HeadingLevelConfig, HeadingBreakBeforeConfig, ResolvedHeadingsConfig, ResolvedHeadingLevelConfig, ResolvedHeadingBreakBeforeConfig, HeadingAdvancedDesignConfig, ResolvedHeadingAdvancedDesignConfig, ColumnBalancingConfig, ColorValue, Dimension } from '../types';
+import type { HeadingsConfig, HeadingLevelConfig, HeadingBreakBeforeConfig, ResolvedHeadingsConfig, ResolvedHeadingLevelConfig, ResolvedHeadingBreakBeforeConfig, HeadingAdvancedDesignConfig, ResolvedHeadingAdvancedDesignConfig, ColumnBalancingConfig, ClosingBoxLever, KeepWithNextSplit, ColorValue, Dimension } from '../types';
 import { dimensionsEqual, colorsEqual, DEFAULT_MAIN_COLOR } from './shared';
 import { resolveDesignSlot } from './headerFooter';
 
@@ -18,11 +18,16 @@ function resolveAdvancedDesign(raw?: HeadingAdvancedDesignConfig): ResolvedHeadi
   };
 }
 
-function resolveBreakBefore(raw?: HeadingBreakBeforeConfig): ResolvedHeadingBreakBeforeConfig {
-  if (!raw) return { ...DEFAULT_BREAK_BEFORE };
+/** A partial `breakBefore` merged field by field over `base` (the level's
+ *  default, or the level a heading style applies to): setting only
+ *  `parity` keeps the base's `enabled`, and vice versa. */
+export function resolveBreakBefore(
+  raw?: HeadingBreakBeforeConfig,
+  base: ResolvedHeadingBreakBeforeConfig = DEFAULT_BREAK_BEFORE,
+): ResolvedHeadingBreakBeforeConfig {
   return {
-    enabled: raw.enabled ?? DEFAULT_BREAK_BEFORE.enabled,
-    parity: raw.parity ?? DEFAULT_BREAK_BEFORE.parity,
+    enabled: raw?.enabled ?? base.enabled,
+    parity: raw?.parity ?? base.parity,
   };
 }
 
@@ -30,6 +35,9 @@ const DEFAULT_HEADING_FONT = 'Open Sans';
 const DEFAULT_HEADING_LINE_HEIGHT: Dimension = { value: 1.2, unit: 'em' };
 const DEFAULT_HEADING_COLOR: ColorValue = { ...DEFAULT_MAIN_COLOR };
 const DEFAULT_HEADING_FONT_WEIGHT = 700;
+const CLOSING_BOX_LEVERS: readonly ClosingBoxLever[] = ['first', 'last', 'off'];
+const KEEP_WITH_NEXT_SPLITS: readonly KeepWithNextSplit[] = ['rules', 'fill'];
+
 export const DEFAULT_COLUMN_BALANCING = {
   enabled: true,
   maxLinesPerHeading: 4,
@@ -43,18 +51,21 @@ export const DEFAULT_COLUMN_BALANCING = {
   maxTracking: 10,
   trailing: true,
   beforeSpan: true,
+  closingBox: 'first' as ClosingBoxLever,
 };
 
 const DEFAULT_HEADING_MARGIN_TOP: Dimension = { value: 1.5, unit: 'em' };
 const DEFAULT_HEADING_MARGIN_BOTTOM: Dimension = { value: 0.5, unit: 'em' };
+/** No tracking: the heading's letters at their natural spacing. */
+const DEFAULT_HEADING_LETTER_SPACING: Dimension = { value: 0, unit: 'pt' };
 
 const DEFAULT_HEADING_LEVELS: ResolvedHeadingLevelConfig[] = [
-  { level: 1, fontSize: { value: 18, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false, breakBefore: { enabled: true, parity: 'always-odd' }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none' },
-  { level: 2, fontSize: { value: 15, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false, breakBefore: { ...DEFAULT_BREAK_BEFORE }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none' },
-  { level: 3, fontSize: { value: 12, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false, breakBefore: { ...DEFAULT_BREAK_BEFORE }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none' },
-  { level: 4, fontSize: { value: 10, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false, breakBefore: { ...DEFAULT_BREAK_BEFORE }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none' },
-  { level: 5, fontSize: { value: 9, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false, breakBefore: { ...DEFAULT_BREAK_BEFORE }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none' },
-  { level: 6, fontSize: { value: 8, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false, breakBefore: { ...DEFAULT_BREAK_BEFORE }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none' },
+  { level: 1, fontSize: { value: 18, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false, letterSpacing: DEFAULT_HEADING_LETTER_SPACING, breakBefore: { enabled: true, parity: 'always-odd' }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none', hidden: false, snapToGrid: true },
+  { level: 2, fontSize: { value: 15, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false, letterSpacing: DEFAULT_HEADING_LETTER_SPACING, breakBefore: { ...DEFAULT_BREAK_BEFORE }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none', hidden: false, snapToGrid: true },
+  { level: 3, fontSize: { value: 12, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false, letterSpacing: DEFAULT_HEADING_LETTER_SPACING, breakBefore: { ...DEFAULT_BREAK_BEFORE }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none', hidden: false, snapToGrid: true },
+  { level: 4, fontSize: { value: 10, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false, letterSpacing: DEFAULT_HEADING_LETTER_SPACING, breakBefore: { ...DEFAULT_BREAK_BEFORE }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none', hidden: false, snapToGrid: true },
+  { level: 5, fontSize: { value: 9, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false, letterSpacing: DEFAULT_HEADING_LETTER_SPACING, breakBefore: { ...DEFAULT_BREAK_BEFORE }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none', hidden: false, snapToGrid: true },
+  { level: 6, fontSize: { value: 8, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false, letterSpacing: DEFAULT_HEADING_LETTER_SPACING, breakBefore: { ...DEFAULT_BREAK_BEFORE }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none', hidden: false, snapToGrid: true },
 ];
 
 export const DEFAULT_HEADINGS_CONFIG: ResolvedHeadingsConfig = {
@@ -66,7 +77,9 @@ export const DEFAULT_HEADINGS_CONFIG: ResolvedHeadingsConfig = {
   marginTop: DEFAULT_HEADING_MARGIN_TOP,
   marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM,
   keepWithNext: true,
+  keepWithNextSplit: 'rules',
   snapToGrid: true,
+  inlineMarks: true,
   balancing: { ...DEFAULT_COLUMN_BALANCING },
   levels: DEFAULT_HEADING_LEVELS,
 };
@@ -88,7 +101,12 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
   const generalMarginTop = partial.marginTop ?? DEFAULT_HEADINGS_CONFIG.marginTop;
   const generalMarginBottom = partial.marginBottom ?? DEFAULT_HEADINGS_CONFIG.marginBottom;
   const generalKeepWithNext = partial.keepWithNext ?? DEFAULT_HEADINGS_CONFIG.keepWithNext;
+  // Any other value reads as the default.
+  const keepWithNextSplit = KEEP_WITH_NEXT_SPLITS.includes(partial.keepWithNextSplit as KeepWithNextSplit)
+    ? partial.keepWithNextSplit!
+    : DEFAULT_HEADINGS_CONFIG.keepWithNextSplit;
   const generalSnapToGrid = partial.snapToGrid ?? DEFAULT_HEADINGS_CONFIG.snapToGrid;
+  const inlineMarks = partial.inlineMarks ?? DEFAULT_HEADINGS_CONFIG.inlineMarks;
   const balancing = partial.balancing
     ? {
         enabled: partial.balancing.enabled ?? DEFAULT_COLUMN_BALANCING.enabled,
@@ -114,6 +132,10 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
           partial.balancing.trailing ?? DEFAULT_COLUMN_BALANCING.trailing,
         beforeSpan:
           partial.balancing.beforeSpan ?? DEFAULT_COLUMN_BALANCING.beforeSpan,
+        // Any other value reads as the default.
+        closingBox: CLOSING_BOX_LEVERS.includes(partial.balancing.closingBox as ClosingBoxLever)
+          ? partial.balancing.closingBox!
+          : DEFAULT_COLUMN_BALANCING.closingBox,
       }
     : { ...DEFAULT_COLUMN_BALANCING };
 
@@ -130,20 +152,26 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
       marginBottom: override?.marginBottom ?? generalMarginBottom,
       numberingTemplate: override?.numberingTemplate ?? def.numberingTemplate,
       italic: override?.italic ?? def.italic,
-      breakBefore: resolveBreakBefore(override?.breakBefore),
+      letterSpacing: override?.letterSpacing ?? def.letterSpacing,
+      breakBefore: resolveBreakBefore(override?.breakBefore, def.breakBefore),
       span: override?.span ?? def.span,
       advancedDesign: resolveAdvancedDesign(override?.advancedDesign),
       textTransform: override?.textTransform ?? def.textTransform,
+      hidden: override?.hidden ?? def.hidden,
+      snapToGrid: override?.snapToGrid ?? generalSnapToGrid,
     };
   });
 
-  return { fontFamily: generalFont, lineHeight: generalLineHeight, color: generalColor, textAlign: generalTextAlign, fontWeight: generalFontWeight, marginTop: generalMarginTop, marginBottom: generalMarginBottom, keepWithNext: generalKeepWithNext, snapToGrid: generalSnapToGrid, balancing, levels };
+  return { fontFamily: generalFont, lineHeight: generalLineHeight, color: generalColor, textAlign: generalTextAlign, fontWeight: generalFontWeight, marginTop: generalMarginTop, marginBottom: generalMarginBottom, keepWithNext: generalKeepWithNext, keepWithNextSplit, snapToGrid: generalSnapToGrid, inlineMarks, balancing, levels };
 }
 
 /** The level fields a heading style (or any partial level config) sets,
  *  resolved to their final shape — `breakBefore` and `advancedDesign`
  *  normalised, everything else passed through — so they can be merged
- *  over a resolved level with a spread. */
+ *  over a resolved level with a spread. `breakBefore` is resolved on its
+ *  own here (unset fields as for a level without a break); a heading
+ *  style's break is merged over its level's instead (see
+ *  `createHeadingLevelResolver`). */
 export function resolveHeadingLevelOverrides(
   partial: Omit<HeadingLevelConfig, 'level' | 'numberingTemplate'>,
 ): Partial<Omit<ResolvedHeadingLevelConfig, 'level' | 'numberingTemplate'>> {
@@ -156,10 +184,13 @@ export function resolveHeadingLevelOverrides(
   if (partial.marginTop !== undefined) out.marginTop = partial.marginTop;
   if (partial.marginBottom !== undefined) out.marginBottom = partial.marginBottom;
   if (partial.italic !== undefined) out.italic = partial.italic;
+  if (partial.letterSpacing !== undefined) out.letterSpacing = partial.letterSpacing;
   if (partial.breakBefore !== undefined) out.breakBefore = resolveBreakBefore(partial.breakBefore);
   if (partial.span !== undefined) out.span = partial.span;
   if (partial.advancedDesign !== undefined) out.advancedDesign = resolveAdvancedDesign(partial.advancedDesign);
   if (partial.textTransform !== undefined) out.textTransform = partial.textTransform;
+  if (partial.hidden !== undefined) out.hidden = partial.hidden;
+  if (partial.snapToGrid !== undefined) out.snapToGrid = partial.snapToGrid;
   return out;
 }
 
@@ -201,8 +232,16 @@ export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig
     result.keepWithNext = headings.keepWithNext;
     hasOverride = true;
   }
+  if (headings.keepWithNextSplit !== undefined && headings.keepWithNextSplit !== DEFAULT_HEADINGS_CONFIG.keepWithNextSplit) {
+    result.keepWithNextSplit = headings.keepWithNextSplit;
+    hasOverride = true;
+  }
   if (headings.snapToGrid !== undefined && headings.snapToGrid !== DEFAULT_HEADINGS_CONFIG.snapToGrid) {
     result.snapToGrid = headings.snapToGrid;
+    hasOverride = true;
+  }
+  if (headings.inlineMarks !== undefined && headings.inlineMarks !== DEFAULT_HEADINGS_CONFIG.inlineMarks) {
+    result.inlineMarks = headings.inlineMarks;
     hasOverride = true;
   }
   if (headings.balancing) {
@@ -289,12 +328,22 @@ export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig
       b.beforeSpan = headings.balancing.beforeSpan;
       hasBOverride = true;
     }
+    if (
+      headings.balancing.closingBox !== undefined
+      && headings.balancing.closingBox !== DEFAULT_COLUMN_BALANCING.closingBox
+    ) {
+      b.closingBox = headings.balancing.closingBox;
+      hasBOverride = true;
+    }
     if (hasBOverride) {
       result.balancing = b;
       hasOverride = true;
     }
   }
   if (headings.levels && headings.levels.length > 0) {
+    // A level's `snapToGrid` inherits the headings-wide value, so it is
+    // only an override where it differs from that one.
+    const generalSnapToGrid = headings.snapToGrid ?? DEFAULT_HEADINGS_CONFIG.snapToGrid;
     const strippedLevels: HeadingLevelConfig[] = [];
     for (const level of headings.levels) {
       const def = DEFAULT_HEADING_LEVELS.find((d) => d.level === level.level);
@@ -337,6 +386,10 @@ export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig
         entry.italic = level.italic;
         levelHasOverride = true;
       }
+      if (level.letterSpacing !== undefined && level.letterSpacing.value !== 0) {
+        entry.letterSpacing = level.letterSpacing;
+        levelHasOverride = true;
+      }
       if (level.span !== undefined && level.span !== 'column') {
         entry.span = level.span;
         levelHasOverride = true;
@@ -345,13 +398,28 @@ export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig
         entry.textTransform = level.textTransform;
         levelHasOverride = true;
       }
+      if (level.hidden !== undefined && level.hidden !== def.hidden) {
+        entry.hidden = level.hidden;
+        levelHasOverride = true;
+      }
+      if (level.snapToGrid !== undefined && level.snapToGrid !== generalSnapToGrid) {
+        entry.snapToGrid = level.snapToGrid;
+        levelHasOverride = true;
+      }
       if (level.advancedDesign && (level.advancedDesign.enabled || (level.advancedDesign.slot?.elements?.length ?? 0) > 0)) {
         entry.advancedDesign = level.advancedDesign;
         levelHasOverride = true;
       }
       if (level.breakBefore) {
-        const enabledOverride = level.breakBefore.enabled !== undefined && level.breakBefore.enabled !== DEFAULT_BREAK_BEFORE.enabled;
-        const parityOverride = level.breakBefore.parity !== undefined && level.breakBefore.parity !== DEFAULT_BREAK_BEFORE.parity;
+        // A field is dropped only when it restates both the level's default
+        // and the no-break default: H1's own default (always-odd) differs
+        // from the others', so an H1 `enabled: false` survives, and a value
+        // restating it is kept, so configs saved before overrides merged
+        // onto the level default strip (and hash) exactly as they did.
+        const restates = <K extends keyof ResolvedHeadingBreakBeforeConfig>(key: K) =>
+          level.breakBefore![key] === def.breakBefore[key] && level.breakBefore![key] === DEFAULT_BREAK_BEFORE[key];
+        const enabledOverride = level.breakBefore.enabled !== undefined && !restates('enabled');
+        const parityOverride = level.breakBefore.parity !== undefined && !restates('parity');
         if (enabledOverride || parityOverride) {
           entry.breakBefore = {
             ...(enabledOverride ? { enabled: level.breakBefore.enabled } : {}),

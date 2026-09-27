@@ -1,10 +1,13 @@
-import type { VDTDocument, VDTPage } from '../vdt';
+import type { RenderWarning, VDTDocument, VDTPage } from '../vdt';
 import { computePageTextExtent } from '../vdt';
 import { dimensionToPx } from '../units';
 import { columnClipRect } from '../columnClip';
+import { pageColumnRule } from '../columnRule';
 import { renderBaselineGrid, renderColumnRule, renderCutLines, computeContentArea } from './decorations';
 import { renderBlock } from './blockRender';
 import { renderHeaderFooterSlot } from './headerFooter';
+import { documentInkHex } from '../svg/singleInk';
+import { setMissingImageSink, setTintUnflagged } from './renderResourceBlock';
 export {
   registerResourceImage,
   unregisterResourceImage,
@@ -20,9 +23,52 @@ export interface RenderPageOptions {
    *  size it is shown, times the device pixel ratio: fewer pixels to fill
    *  and to keep. The drawing itself stays in page pixels. */
   scale?: number;
+  /** Told of what the render could not paint as asked: an image with
+   *  nothing registered for its `fileId` (see `registerResourceImage`) is
+   *  painted as a placeholder and reported once per `fileId` and render
+   *  call, as a `missingImage` warning. */
+  onWarning?: (warning: RenderWarning) => void;
+  /** Whether `diagramStyle.singleInk` tints the SVG pictures registered
+   *  without a `singleInk` flag of their own (see
+   *  `RegisterResourceImageOptions.singleInk`) to the document's ink.
+   *  Defaults to false in postext 1.x: hosts written for 1.4 recolour the
+   *  markup with `applySingleInkToSvg` before decoding it, and a picture
+   *  tinted twice comes out lighter. A picture decoded from an SVG data URI
+   *  `applySingleInkToSvg` marked, or registered with `singleInk: false`,
+   *  is never tinted. The next major release turns it on. */
+  singleInk?: boolean;
 }
 
 export function renderPageToCanvas(
+  page: VDTPage,
+  doc: VDTDocument,
+  canvas: HTMLCanvasElement,
+  options?: RenderPageOptions,
+): void {
+  const previousTint = setTintUnflagged(options?.singleInk === true);
+  try {
+    const onWarning = options?.onWarning;
+    if (!onWarning) {
+      paintPage(page, doc, canvas, options);
+      return;
+    }
+    const reported = new Set<string>();
+    const previous = setMissingImageSink((fileId, resourceId) => {
+      if (reported.has(fileId)) return;
+      reported.add(fileId);
+      onWarning({ kind: 'missingImage', fileId, ...(resourceId !== undefined ? { resourceId } : {}), pageIndex: page.index });
+    });
+    try {
+      paintPage(page, doc, canvas, options);
+    } finally {
+      setMissingImageSink(previous);
+    }
+  } finally {
+    setTintUnflagged(previousTint);
+  }
+}
+
+function paintPage(
   page: VDTPage,
   doc: VDTDocument,
   canvas: HTMLCanvasElement,
@@ -49,12 +95,15 @@ export function renderPageToCanvas(
 
   const bgColor = doc.config.page.backgroundColor.hex;
   const trimOff = doc.trimOffset;
+  // Single-ink diagrams: SVG pictures are tinted to this ink as they paint
+  // (those the host flags, or every unflagged one when the render asks).
+  const inkHex = documentInkHex(doc.config);
 
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, page.width, page.height);
 
+  const bleedPx = trimOff > 0 ? dimensionToPx(doc.config.page.cutLines.bleed, doc.config.page.dpi) : 0;
   if (bgColor && bgColor !== 'transparent') {
-    const bleedPx = trimOff > 0 ? dimensionToPx(doc.config.page.cutLines.bleed, doc.config.page.dpi) : 0;
     ctx.fillStyle = bgColor;
     ctx.fillRect(
       trimOff - bleedPx,
@@ -62,6 +111,19 @@ export function renderPageToCanvas(
       page.width - (trimOff - bleedPx) * 2,
       page.height - (trimOff - bleedPx) * 2,
     );
+  }
+
+  // With cut lines the sheet also carries the slug, where only the marks
+  // print: everything the page paints is clipped to the bleed box, as a
+  // DTP export clips it (EF-133). A design element anchored to the page or
+  // the bleed may run past it; that part would be cut off with the slug.
+  const bleedClip = trimOff > 0;
+  if (bleedClip) {
+    const inset = Math.max(0, trimOff - bleedPx);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(inset, inset, page.width - inset * 2, page.height - inset * 2);
+    ctx.clip();
   }
 
   if (doc.config.page.baselineGrid.enabled) {
@@ -83,14 +145,15 @@ export function renderPageToCanvas(
     }
   }
 
-  if (doc.config.layout.columnRule.enabled && page.columns.length > 1) {
-    const crLineWidthPx = dimensionToPx(doc.config.layout.columnRule.lineWidth, doc.config.page.dpi);
-    renderColumnRule(ctx, page.columns, doc.config.layout.columnRule.color.hex, crLineWidthPx);
+  // The page's own rule on a styled section's pages, else the document's.
+  const columnRule = pageColumnRule(page, doc);
+  if (columnRule.enabled && page.columns.length > 1) {
+    renderColumnRule(ctx, page.columns, columnRule.color, columnRule.lineWidthPx);
   }
 
   // Opener / part bands are painted before the columns so their backgrounds
   // sit under the body text rather than over it.
-  if (page.openerBand) renderHeaderFooterSlot(ctx, page.openerBand);
+  if (page.openerBand) renderHeaderFooterSlot(ctx, page.openerBand, inkHex);
 
   // Clip to column bounds, widened for glyph ink and for design overlays
   // that hang past the column on purpose (see `columnClipRect`).
@@ -102,14 +165,14 @@ export function renderPageToCanvas(
     ctx.clip();
     for (const block of col.blocks) {
       if (block.tocPart && block.designOverlay) continue;
-      renderBlock(ctx, block, col.bbox.width, col.bbox.x);
+      renderBlock(ctx, block, col.bbox.width, col.bbox.x, inkHex);
     }
     ctx.restore();
     // A part row of the contents carries a design of its own, which may
     // run past the column (a band reaching beyond the page numbers): it
     // is drawn outside the column clip, like a float.
     for (const block of col.blocks) {
-      if (block.tocPart && block.designOverlay) renderBlock(ctx, block, col.bbox.width, col.bbox.x);
+      if (block.tocPart && block.designOverlay) renderBlock(ctx, block, col.bbox.width, col.bbox.x, inkHex);
     }
   }
 
@@ -118,11 +181,13 @@ export function renderPageToCanvas(
   // gutter). They were positioned at build time, so they render straight
   // from their absolute bbox.
   if (page.floats) {
-    for (const fb of page.floats) renderBlock(ctx, fb, fb.bbox.width, fb.bbox.x);
+    for (const fb of page.floats) renderBlock(ctx, fb, fb.bbox.width, fb.bbox.x, inkHex);
   }
 
-  if (page.header) renderHeaderFooterSlot(ctx, page.header);
-  if (page.footer) renderHeaderFooterSlot(ctx, page.footer);
+  if (page.header) renderHeaderFooterSlot(ctx, page.header, inkHex);
+  if (page.footer) renderHeaderFooterSlot(ctx, page.footer, inkHex);
+
+  if (bleedClip) ctx.restore();
 
   if (options?.pageNegative) {
     ctx.filter = 'none';
@@ -131,12 +196,25 @@ export function renderPageToCanvas(
   renderCutLines(ctx, page, doc);
 }
 
-export function renderPage(page: VDTPage, doc: VDTDocument): HTMLCanvasElement {
+export function renderPage(page: VDTPage, doc: VDTDocument, options?: RenderPageOptions): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
-  renderPageToCanvas(page, doc, canvas);
+  renderPageToCanvas(page, doc, canvas, options);
   return canvas;
 }
 
-export function renderToCanvas(doc: VDTDocument): HTMLCanvasElement[] {
-  return doc.pages.map((page) => renderPage(page, doc));
+export function renderToCanvas(doc: VDTDocument, options?: RenderPageOptions): HTMLCanvasElement[] {
+  // One report per `fileId` for the whole document, not per page.
+  const onWarning = options?.onWarning;
+  const reported = new Set<string>();
+  const pageOptions: RenderPageOptions | undefined = onWarning
+    ? {
+        ...options,
+        onWarning: (w) => {
+          if (reported.has(w.fileId)) return;
+          reported.add(w.fileId);
+          onWarning(w);
+        },
+      }
+    : options;
+  return doc.pages.map((page) => renderPage(page, doc, pageOptions));
 }

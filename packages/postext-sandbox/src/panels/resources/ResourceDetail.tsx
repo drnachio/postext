@@ -133,6 +133,10 @@ export function ResourceDetail({
     onChange(touch({ placement: next }));
   };
   const placementWidthPercent = Math.round((currentPlacement.width ?? 1) * 100);
+  // The alignment places a resource narrower than its slot: one narrowed by
+  // Width, or a picture (bitmap or SVG) narrower than the column — smaller
+  // than it, or shrunk by `layout.fitFiguresToPage` — at any width.
+  const alignApplies = placementWidthPercent < 100 || resource.kind === 'bitmap' || resource.kind === 'svg';
 
   // Named table style (`config.tableStyles`); unset = the document's table style.
   const tableStyles = useSandboxSelector((s) => s.config.tableStyles) ?? [];
@@ -297,7 +301,7 @@ export function ResourceDetail({
           </select>
         </Field>
 
-        <Field label={labels.resourceCaptionLabel}>
+        <Field label={labels.resourceCaptionLabel} hint={labels.resourceCaptionHint}>
           <InlineMarkdownInput
             value={resource.caption ?? ''}
             onChange={(value) => onChange(touch({ caption: value }))}
@@ -392,9 +396,12 @@ export function ResourceDetail({
             <option value="ccw">{labels.resourceRotateCcw}</option>
             <option value="cw">{labels.resourceRotateCw}</option>
           </select>
-          {/* Width fraction, alignment of a narrower float and the caption
-              beside the figure (side column of a column-and-a-half layout). */}
-          {placementPosition !== 'here' && placementRotate === 'none' && (
+          {/* Width fraction and alignment of a resource narrower than its
+              slot (floats and inline embeds alike; a picture narrower than
+              the column follows the alignment at full width too), and the
+              caption beside a column float (side column of a
+              column-and-a-half layout). */}
+          {placementRotate === 'none' && (
             <div className="mt-1.5 flex flex-col gap-1.5">
               <div className="flex gap-1.5">
                 <select
@@ -424,16 +431,16 @@ export function ResourceDetail({
                   onChange={(e) => setPlacementKey('align', e.target.value === 'left' ? undefined : (e.target.value as ResourcePlacement['align']))}
                   aria-label={labels.resourceTypePlacementAlign}
                   title={labels.resourceTypePlacementAlignTooltip}
-                  disabled={placementWidthPercent >= 100}
+                  disabled={!alignApplies}
                   className={inputClass}
-                  style={{ ...inputStyle, opacity: placementWidthPercent >= 100 ? 0.5 : 1 }}
+                  style={{ ...inputStyle, opacity: alignApplies ? 1 : 0.5 }}
                 >
                   <option value="left">{labels.headerFooterElementAlignLeft}</option>
                   <option value="center">{labels.headerFooterElementAlignCenter}</option>
                   <option value="right">{labels.headerFooterElementAlignRight}</option>
                 </select>
               </div>
-              {placementSpan === 'column' && (
+              {placementPosition !== 'here' && placementSpan === 'column' && (
                 <label className="flex cursor-pointer items-center gap-2 text-xs" style={{ color: 'var(--foreground)' }} title={labels.resourceTypePlacementCaptionSideTooltip}>
                   <input
                     type="checkbox"

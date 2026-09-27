@@ -7,21 +7,29 @@ import type {
   ColorValue,
 } from '../types';
 import { dimensionsEqual, colorsEqual } from './shared';
+import { languageOf, presentTag } from '../locale';
 
 /** Default header fill — a neutral light grey. */
 const DEFAULT_HEADER_BACKGROUND: ColorValue = { hex: '#f0f0f0', model: 'hex' };
 /** Default body fill — white (only painted when explicitly enabled). */
 const DEFAULT_BODY_BACKGROUND: ColorValue = { hex: '#ffffff', model: 'hex' };
+/** Default fill of the alternate (zebra) body rows — a light grey, only
+ *  painted when explicitly enabled. */
+const DEFAULT_BODY_ALTERNATE_BACKGROUND: ColorValue = { hex: '#f2f2f2', model: 'hex' };
 
 /** Static defaults independent of the body text (fonts/colours inherit body
  *  text and are filled in {@link resolveTableStyleConfig}). */
 const STATIC_DEFAULTS = {
   headerBold: true,
   headerItalic: false,
+  headerLetterSpacing: { value: 0, unit: 'pt' as const },
+  headerTextTransform: 'none' as const,
   headerBackgroundEnabled: true,
   headerBackground: DEFAULT_HEADER_BACKGROUND,
   bodyBackgroundEnabled: false,
   bodyBackground: DEFAULT_BODY_BACKGROUND,
+  bodyAlternateBackgroundEnabled: false,
+  bodyAlternateBackground: DEFAULT_BODY_ALTERNATE_BACKGROUND,
   borders: true,
   // 0.75pt ≈ 1px at 96dpi, and scales with the page dpi (preserving the
   // previous `Math.max(1, round(dpi/96))` behaviour).
@@ -35,18 +43,24 @@ const STATIC_DEFAULTS = {
 } satisfies Partial<ResolvedTableStyleConfig>;
 
 /** Localised continuation strings: the caption suffix of a continued slice
- *  and the marker under a slice that continues. English is the fallback for
- *  any locale not listed here. Add a language by adding a key. */
+ *  and the marker under a slice that continues, one per bundled hyphenation
+ *  language. English is the fallback for any locale not listed here. Add a
+ *  language by adding a key. */
 const CONTINUATION_STRINGS: Record<string, { continuedSuffix: string; continuesMarker: string }> = {
   en: { continuedSuffix: '(cont.)', continuesMarker: 'Continued' },
   es: { continuedSuffix: '(cont.)', continuesMarker: 'Continúa' },
+  fr: { continuedSuffix: '(suite)', continuesMarker: 'À suivre' },
+  de: { continuedSuffix: '(Forts.)', continuesMarker: 'Wird fortgesetzt' },
+  it: { continuedSuffix: '(segue)', continuesMarker: 'Continua' },
+  pt: { continuedSuffix: '(cont.)', continuesMarker: 'Continua' },
+  ca: { continuedSuffix: '(cont.)', continuesMarker: 'Continua' },
+  nl: { continuedSuffix: '(vervolg)', continuesMarker: 'Wordt vervolgd' },
 };
 
 /** Default continuation strings for a (possibly regional) locale tag such
- *  as `es-ES`, falling back to English. */
+ *  as `es-ES` or `pt_BR`, falling back to English. */
 export function defaultTableContinuationStrings(locale = 'en'): { continuedSuffix: string; continuesMarker: string } {
-  const lang = locale.toLowerCase().split('-')[0] ?? 'en';
-  return CONTINUATION_STRINGS[lang] ?? CONTINUATION_STRINGS.en!;
+  return { ...(CONTINUATION_STRINGS[languageOf(locale)] ?? CONTINUATION_STRINGS.en!) };
 }
 
 /** Resolve a partial table-style config into a fully-specified one. Font
@@ -61,7 +75,7 @@ export function resolveTableStyleConfig(
   // Continuation strings follow the document language: the explicit
   // `locale`, else the hyphenation locale (which the sandbox derives from
   // the app language when unset).
-  const strings = defaultTableContinuationStrings(locale ?? bodyText.hyphenation.locale);
+  const strings = defaultTableContinuationStrings(presentTag(locale) ?? bodyText.hyphenation.locale);
   return {
     bodyFontFamily: p.bodyFontFamily ?? bodyText.fontFamily,
     bodyFontSize: p.bodyFontSize ?? bodyText.fontSize,
@@ -71,10 +85,14 @@ export function resolveTableStyleConfig(
     headerColor: p.headerColor ?? bodyText.color,
     headerBold: p.headerBold ?? STATIC_DEFAULTS.headerBold,
     headerItalic: p.headerItalic ?? STATIC_DEFAULTS.headerItalic,
+    headerLetterSpacing: p.headerLetterSpacing ?? STATIC_DEFAULTS.headerLetterSpacing,
+    headerTextTransform: p.headerTextTransform ?? STATIC_DEFAULTS.headerTextTransform,
     headerBackgroundEnabled: p.headerBackgroundEnabled ?? STATIC_DEFAULTS.headerBackgroundEnabled,
     headerBackground: p.headerBackground ?? STATIC_DEFAULTS.headerBackground,
     bodyBackgroundEnabled: p.bodyBackgroundEnabled ?? STATIC_DEFAULTS.bodyBackgroundEnabled,
     bodyBackground: p.bodyBackground ?? STATIC_DEFAULTS.bodyBackground,
+    bodyAlternateBackgroundEnabled: p.bodyAlternateBackgroundEnabled ?? STATIC_DEFAULTS.bodyAlternateBackgroundEnabled,
+    bodyAlternateBackground: p.bodyAlternateBackground ?? STATIC_DEFAULTS.bodyAlternateBackground,
     borders: p.borders ?? STATIC_DEFAULTS.borders,
     borderColor: p.borderColor ?? bodyText.color,
     borderWidth: p.borderWidth ?? STATIC_DEFAULTS.borderWidth,
@@ -120,10 +138,14 @@ export function stripTableStyleDefaults(
   // Statically-defaulted fields: keep only when different from the default.
   if (tableStyle.headerBold !== undefined && tableStyle.headerBold !== STATIC_DEFAULTS.headerBold) { r.headerBold = tableStyle.headerBold; has = true; }
   if (tableStyle.headerItalic !== undefined && tableStyle.headerItalic !== STATIC_DEFAULTS.headerItalic) { r.headerItalic = tableStyle.headerItalic; has = true; }
+  if (tableStyle.headerLetterSpacing !== undefined && tableStyle.headerLetterSpacing.value !== 0) { r.headerLetterSpacing = tableStyle.headerLetterSpacing; has = true; }
+  if (tableStyle.headerTextTransform !== undefined && tableStyle.headerTextTransform !== STATIC_DEFAULTS.headerTextTransform) { r.headerTextTransform = tableStyle.headerTextTransform; has = true; }
   if (tableStyle.headerBackgroundEnabled !== undefined && tableStyle.headerBackgroundEnabled !== STATIC_DEFAULTS.headerBackgroundEnabled) { r.headerBackgroundEnabled = tableStyle.headerBackgroundEnabled; has = true; }
   if (tableStyle.headerBackground !== undefined && !colorsEqual(tableStyle.headerBackground, STATIC_DEFAULTS.headerBackground)) { r.headerBackground = tableStyle.headerBackground; has = true; }
   if (tableStyle.bodyBackgroundEnabled !== undefined && tableStyle.bodyBackgroundEnabled !== STATIC_DEFAULTS.bodyBackgroundEnabled) { r.bodyBackgroundEnabled = tableStyle.bodyBackgroundEnabled; has = true; }
   if (tableStyle.bodyBackground !== undefined && !colorsEqual(tableStyle.bodyBackground, STATIC_DEFAULTS.bodyBackground)) { r.bodyBackground = tableStyle.bodyBackground; has = true; }
+  if (tableStyle.bodyAlternateBackgroundEnabled !== undefined && tableStyle.bodyAlternateBackgroundEnabled !== STATIC_DEFAULTS.bodyAlternateBackgroundEnabled) { r.bodyAlternateBackgroundEnabled = tableStyle.bodyAlternateBackgroundEnabled; has = true; }
+  if (tableStyle.bodyAlternateBackground !== undefined && !colorsEqual(tableStyle.bodyAlternateBackground, STATIC_DEFAULTS.bodyAlternateBackground)) { r.bodyAlternateBackground = tableStyle.bodyAlternateBackground; has = true; }
   if (tableStyle.borders !== undefined && tableStyle.borders !== STATIC_DEFAULTS.borders) { r.borders = tableStyle.borders; has = true; }
   if (tableStyle.borderWidth !== undefined && !dimensionsEqual(tableStyle.borderWidth, STATIC_DEFAULTS.borderWidth)) { r.borderWidth = tableStyle.borderWidth; has = true; }
   if (tableStyle.cellPadding !== undefined && !dimensionsEqual(tableStyle.cellPadding, STATIC_DEFAULTS.cellPadding)) { r.cellPadding = tableStyle.cellPadding; has = true; }

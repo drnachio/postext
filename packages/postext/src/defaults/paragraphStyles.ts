@@ -27,12 +27,20 @@ function resolveParagraphStyleConfig(
     color: partial.color ?? bodyText.color,
     textAlign: partial.textAlign ?? bodyText.textAlign,
     ...(partial.boldColor ? { boldColor: partial.boldColor } : {}),
+    ...(partial.italicColor ? { italicColor: partial.italicColor } : {}),
+    fontWeight: partial.fontWeight ?? bodyText.fontWeight,
+    boldFontWeight: partial.boldFontWeight ?? bodyText.boldFontWeight,
+    italic: partial.italic ?? false,
+    smallCaps: partial.smallCaps ?? false,
     hyphenation: partial.hyphenation ?? bodyText.hyphenation.enabled,
+    indent: partial.indent ?? ZERO,
     firstLineIndent: partial.firstLineIndent ?? bodyText.firstLineIndent,
     hangingIndent: partial.hangingIndent ?? ZERO,
     spaceBetween: partial.spaceBetween ?? ZERO,
     marginTop: partial.marginTop ?? ZERO,
     marginBottom: partial.marginBottom ?? ZERO,
+    snapToGrid: partial.snapToGrid ?? true,
+    textTransform: partial.textTransform === 'uppercase' ? 'uppercase' : 'none',
   };
 }
 
@@ -44,7 +52,8 @@ export function resolveParagraphStylesConfig(
 }
 
 /** Drop fields equal to their static default (zero dimensions, `name` equal
- *  to `id`). Inherited typographic fields are kept whenever explicitly set,
+ *  to `id`, `italic` / `smallCaps` off, `snapToGrid` on, no `textTransform`). Inherited typographic fields
+ *  (weights included) are kept whenever explicitly set,
  *  since their effective default depends on the body text. Returns
  *  `undefined` when no styles remain. */
 export function stripParagraphStylesDefaults(
@@ -60,12 +69,20 @@ export function stripParagraphStylesDefaults(
     if (s.color !== undefined) r.color = s.color;
     if (s.textAlign !== undefined) r.textAlign = s.textAlign;
     if (s.boldColor !== undefined) r.boldColor = s.boldColor;
+    if (s.italicColor !== undefined) r.italicColor = s.italicColor;
+    if (s.fontWeight !== undefined) r.fontWeight = s.fontWeight;
+    if (s.boldFontWeight !== undefined) r.boldFontWeight = s.boldFontWeight;
+    if (s.italic) r.italic = true;
+    if (s.smallCaps) r.smallCaps = true;
     if (s.hyphenation !== undefined) r.hyphenation = s.hyphenation;
+    if (s.indent !== undefined && !isZero(s.indent)) r.indent = s.indent;
     if (s.firstLineIndent !== undefined) r.firstLineIndent = s.firstLineIndent;
     if (s.hangingIndent !== undefined && !isZero(s.hangingIndent)) r.hangingIndent = s.hangingIndent;
     if (s.spaceBetween !== undefined && !isZero(s.spaceBetween)) r.spaceBetween = s.spaceBetween;
     if (s.marginTop !== undefined && !isZero(s.marginTop)) r.marginTop = s.marginTop;
     if (s.marginBottom !== undefined && !isZero(s.marginBottom)) r.marginBottom = s.marginBottom;
+    if (s.snapToGrid === false) r.snapToGrid = false;
+    if (s.textTransform !== undefined && s.textTransform !== 'none') r.textTransform = s.textTransform;
     return r;
   });
 }

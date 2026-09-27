@@ -75,7 +75,7 @@ describe('click → source offset matches the rendered glyph (real pipeline)', (
         const seg = segs[i]!;
         const isLast = i === segs.length - 1;
         const plainLen = seg.refResourceId !== undefined ? 1
-          : (isLast && line.hyphenated && seg.text.endsWith('-')) ? seg.text.length - 1 : seg.text.length;
+          : (isLast && line.hyphenated && !line.hardHyphen && seg.text.endsWith('-')) ? seg.text.length - 1 : seg.text.length;
         for (let k = 0; k < plainLen; k++) {
           const plainIdx = line.plainStart! + cum + k;
           const expected = block.sourceMap![plainIdx - prefix];

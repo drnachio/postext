@@ -32,10 +32,14 @@ import {
   fill,
   setStrokingColor,
   setLineWidth,
+  setTextRenderingMode,
+  TextRenderingMode,
+  setGraphicsState,
 } from 'pdf-lib';
-import { hexToRgb, rgbToCmyk, rgbToGrayscale } from '../colors';
+import { colorAlpha, hexToRgb, rgbToCmyk, rgbToGrayscale } from '../colors';
 import type { PdfColorSpace, RoundedOutline, VDTChip } from 'postext';
 import type { PageTagger } from './tagging';
+import { fallbackPieces, type FallbackFace, type TextPiece } from './fallbackSpaces';
 
 export interface PageCtx {
   page: PDFPage;
@@ -51,6 +55,10 @@ export interface PageCtx {
    *  `*Px` helpers compute — to page user space, for the annotation and
    *  structure rects that live outside the content stream. */
   mapRectPt?: (rect: [number, number, number, number]) => [number, number, number, number];
+  /** Told of every image the page paints as a placeholder (no bytes, or
+   *  bytes that did not decode), with its resource when the painter knows
+   *  it. Set when the host asked for render warnings. */
+  onMissingImage?: (fileId: string, resourceId?: string) => void;
 }
 
 /** A PDF transformation matrix `[a b c d e f]` (`x' = a·x + c·y + e`,
@@ -96,14 +104,19 @@ export function drawSwatchPx(
   const x = (xPx + strokePx / 2) * scale;
   const y = pageHeightPt - (baselinePx - strokePx / 2) * scale;
   const side = (sidePx - strokePx) * scale;
+  const fillColor = fill ? colorFromHex(fill, ctx.colorSpace) : undefined;
+  const fillAlpha = alphaOf(fillColor);
+  const inkAlpha = alphaOf(ink);
   ctx.page.drawRectangle({
     x,
     y,
     width: side,
     height: side,
-    ...(fill ? { color: colorFromHex(fill, ctx.colorSpace) } : {}),
+    ...(fillColor ? { color: fillColor } : {}),
     borderColor: ink,
     borderWidth: Math.max(0.01, strokePx * scale),
+    ...(fillColor && fillAlpha < 1 ? { opacity: fillAlpha } : {}),
+    ...(inkAlpha < 1 ? { borderOpacity: inkAlpha } : {}),
   });
 }
 
@@ -122,6 +135,19 @@ export function whiteColor(colorSpace: PdfColorSpace): Color {
 // descriptors, so sharing instances is safe.
 const colorCache = new Map<string, Color>();
 
+/** Opacity riding on a {@link colorFromHex} colour (absent: opaque). pdf-lib
+ *  reads only a colour's channels, so the extra field travels with it to
+ *  the painters, which set it as an ExtGState constant alpha. */
+interface AlphaColor {
+  alpha?: number;
+}
+
+/**
+ * The pdf-lib colour of a document colour string — `#rgb`, `#rrggbb`, with
+ * an alpha channel (`#rgba`, `#rrggbbaa`), `rgb()` / `rgba()` or
+ * `transparent` — in the output colour space. A translucent colour carries
+ * its opacity along (see {@link alphaOf}); malformed input paints black.
+ */
 export function colorFromHex(hex: string, colorSpace: PdfColorSpace): Color {
   const key = `${colorSpace}|${hex}`;
   const cached = colorCache.get(key);
@@ -136,8 +162,46 @@ export function colorFromHex(hex: string, colorSpace: PdfColorSpace): Color {
   } else {
     color = rgb(c.r, c.g, c.b);
   }
+  const alpha = colorAlpha(hex);
+  if (alpha < 1) (color as AlphaColor).alpha = alpha;
   colorCache.set(key, color);
   return color;
+}
+
+/** Opacity of a colour made by {@link colorFromHex}, 0 … 1. */
+export function alphaOf(color: Color | undefined): number {
+  return (color as AlphaColor | undefined)?.alpha ?? 1;
+}
+
+/** ExtGState per distinct (fill alpha, stroke alpha) pair, per page. */
+const alphaStates = new WeakMap<PDFPage, Map<string, PDFName>>();
+
+const roundAlpha = (n: number): number => Math.round(Math.max(0, Math.min(1, n)) * 1000) / 1000;
+
+/** The `gs` operator setting constant fill (`ca`) and stroke (`CA`) alpha,
+ *  one shared ExtGState per pair and page; null when both are opaque. */
+export function alphaStateOp(ctx: PageCtx, fillAlpha: number, strokeAlpha = 1): PDFOperator | null {
+  const ca = roundAlpha(fillAlpha);
+  const CA = roundAlpha(strokeAlpha);
+  if (ca >= 1 && CA >= 1) return null;
+  let states = alphaStates.get(ctx.page);
+  if (!states) {
+    states = new Map();
+    alphaStates.set(ctx.page, states);
+  }
+  const key = `${ca}|${CA}`;
+  let name = states.get(key);
+  if (!name) {
+    const dict = ctx.page.doc.context.obj({ Type: 'ExtGState', ca, CA });
+    name = ctx.page.node.newExtGState('GSa', dict);
+    states.set(key, name);
+  }
+  return setGraphicsState(name);
+}
+
+/** `op` as a one-element list when set, for spreading into operator runs. */
+function opt(op: PDFOperator | null): PDFOperator[] {
+  return op ? [op] : [];
 }
 
 /** Back-compat alias — defaults to RGB. */
@@ -159,6 +223,18 @@ export function fillRectPx(
   const y = pageHeightPt - (yPx + hPx) * scale;
   const width = wPx * scale;
   const height = hPx * scale;
+  const alpha = alphaOf(color);
+  if (alpha < 1 && !blendMode) {
+    ctx.page.pushOperators(
+      pushGraphicsState(),
+      ...opt(alphaStateOp(ctx, alpha)),
+      setFillingColor(color),
+      rectangle(x, y, width, height),
+      fill(),
+      popGraphicsState(),
+    );
+    return;
+  }
   ctx.page.drawRectangle({
     x,
     y,
@@ -166,7 +242,29 @@ export function fillRectPx(
     height,
     color,
     ...(blendMode ? { blendMode } : {}),
+    ...(alpha < 1 ? { opacity: alpha } : {}),
   });
+}
+
+/** Fill several rectangles (px) in one colour with a single fill operation:
+ *  the viewer rasterises them as one shape, so rectangles that abut or
+ *  overlap leave no seam between them. */
+export function fillRectsPx(
+  ctx: PageCtx,
+  rects: readonly { x: number; y: number; width: number; height: number }[],
+  color: Color,
+): void {
+  if (rects.length === 0) return;
+  const { scale, pageHeightPt } = ctx;
+  const alpha = alphaOf(color);
+  ctx.page.pushOperators(
+    pushGraphicsState(),
+    ...(alpha < 1 ? opt(alphaStateOp(ctx, alpha)) : []),
+    setFillingColor(color),
+    ...rects.map((r) => rectangle(r.x * scale, pageHeightPt - (r.y + r.height) * scale, r.width * scale, r.height * scale)),
+    fill(),
+    popGraphicsState(),
+  );
 }
 
 export function drawLinePx(
@@ -179,6 +277,20 @@ export function drawLinePx(
   thicknessPx: number,
 ): void {
   const { scale, pageHeightPt } = ctx;
+  const alpha = alphaOf(color);
+  if (alpha < 1) {
+    ctx.page.pushOperators(
+      pushGraphicsState(),
+      ...opt(alphaStateOp(ctx, 1, alpha)),
+      setStrokingColor(color),
+      setLineWidth(Math.max(0.01, thicknessPx * scale)),
+      moveTo(x1Px * scale, pageHeightPt - y1Px * scale),
+      lineTo(x2Px * scale, pageHeightPt - y2Px * scale),
+      stroke(),
+      popGraphicsState(),
+    );
+    return;
+  }
   ctx.page.drawLine({
     start: { x: x1Px * scale, y: pageHeightPt - y1Px * scale },
     end: { x: x2Px * scale, y: pageHeightPt - y2Px * scale },
@@ -228,20 +340,42 @@ export function showTextShaped(font: PDFFont, text: string): PDFOperator {
   }
   const hit = cache.get(text);
   if (hit) return hit;
-  // `encodeText` also registers the glyphs with the font's subset (the ids
-  // it returns are subset ids), so it runs even when positions are added.
-  const encoded = font.encodeText(text);
-  const op = shapedOperator(font, text, encoded) ?? showText(encoded);
+  const op = fallbackOperator(font, text) ?? shapedTextOperator(font, text);
   if (cache.size >= ENCODE_CACHE_SLOTS) cache.clear();
   cache.set(text, op);
   return op;
 }
 
-function shapedOperator(font: PDFFont, text: string, encoded: PDFHexString): PDFOperator | undefined {
-  const embedder = (font as unknown as { embedder?: { font?: ShapingFace; fontFeatures?: unknown } }).embedder;
+function shapingFace(font: PDFFont): { face: ShapingFace & FallbackFace; features: unknown } | undefined {
+  const embedder = (font as unknown as { embedder?: { font?: ShapingFace & FallbackFace; fontFeatures?: unknown } }).embedder;
   const face = embedder?.font;
   if (!face || typeof face.layout !== 'function' || !face.unitsPerEm) return undefined;
-  const run = face.layout(text, embedder!.fontFeatures);
+  return { face, features: embedder!.fontFeatures };
+}
+
+/** `text` shaped as one run: a `TJ` with the shaper's positions, or a plain
+ *  `Tj` when it has none. */
+function shapedTextOperator(font: PDFFont, text: string): PDFOperator {
+  // `encodeText` also registers the glyphs with the font's subset (the ids
+  // it returns are subset ids), so it runs even when positions are added.
+  const encoded = font.encodeText(text);
+  const parts = shapedParts(font, text, encoded);
+  return parts && parts.length > 1 ? adjustedOperator(font, parts) : showText(encoded);
+}
+
+/** The `TJ` array (hex glyph runs and adjustments) of a shaped run, or
+ *  undefined when the shaper's positions cannot be matched to its glyphs. */
+function shapedParts(font: PDFFont, text: string, encoded: PDFHexString): Array<string | number> | undefined {
+  return shapedRun(font, text, encoded)?.parts;
+}
+
+/** {@link shapedParts} with the sum of the glyphs' own widths (their `W`
+ *  entries), in thousandths of the font size. */
+function shapedRun(font: PDFFont, text: string, encoded: PDFHexString): { parts: Array<string | number>; widths: number } | undefined {
+  const shaping = shapingFace(font);
+  if (!shaping) return undefined;
+  const { face } = shaping;
+  const run = face.layout(text, shaping.features);
   const hex = encoded.asString();
   const count = run.glyphs.length;
   if (count === 0 || hex.length !== count * 4 || run.positions.length !== count) return undefined;
@@ -249,6 +383,7 @@ function shapedOperator(font: PDFFont, text: string, encoded: PDFHexString): PDF
   // glyph drawn at `pen + xOffset` then advancing by `xAdvance` (not its
   // W width `advanceWidth`) is `-xOffset, glyph, -(xAdvance - w - xOffset)`.
   const toText = 1000 / face.unitsPerEm;
+  const subsetFont = isSubsetFont(font);
   const parts: Array<string | number> = [];
   let pendingHex = '';
   let pendingAdjust = 0;
@@ -256,6 +391,7 @@ function shapedOperator(font: PDFFont, text: string, encoded: PDFHexString): PDF
     if (pendingHex) parts.push(pendingHex);
     pendingHex = '';
   };
+  let widths = 0;
   for (let i = 0; i < count; i++) {
     const pos = run.positions[i]!;
     const lead = tjNumber(pendingAdjust - pos.xOffset * toText);
@@ -263,17 +399,186 @@ function shapedOperator(font: PDFFont, text: string, encoded: PDFHexString): PDF
       flushHex();
       parts.push(lead);
     }
-    pendingHex += hex.slice(i * 4, i * 4 + 4);
+    const cid = hex.slice(i * 4, i * 4 + 4);
+    pendingHex += cid;
     pendingAdjust = -(pos.xAdvance - run.glyphs[i]!.advanceWidth - pos.xOffset) * toText;
+    widths += cid === '0000' && subsetFont ? MISSING_WIDTH : run.glyphs[i]!.advanceWidth * toText;
   }
   flushHex();
-  if (parts.length === 1) return undefined;
-  const context = font.doc.context;
-  const array = PDFArray.withContext(context);
+  return { parts, widths };
+}
+
+/** The width a viewer gives a glyph with no `W` entry (no `DW` is written). */
+const MISSING_WIDTH = 1000;
+
+/** Whether pdf-lib embeds `font` as a subset, whose `W` array never lists
+ *  the notdef glyph (CID 0): a viewer advances it by {@link MISSING_WIDTH}. */
+function isSubsetFont(font: PDFFont): boolean {
+  return !!(font as unknown as { embedder?: { subset?: unknown } }).embedder?.subset;
+}
+
+function adjustedOperator(font: PDFFont, parts: Array<string | number>): PDFOperator {
+  const array = PDFArray.withContext(font.doc.context);
   for (const part of parts) {
     array.push(typeof part === 'number' ? PDFNumber.of(part) : PDFHexString.of(part));
   }
   return PDFOperator.of(PDFOperatorNames.ShowTextAdjusted, [array]);
+}
+
+/** A plain `Tj` for a single glyph run (or none), else a `TJ`. */
+function partsOperator(font: PDFFont, parts: Array<string | number>): PDFOperator {
+  if (parts.length === 0) return showText(PDFHexString.of(''));
+  return parts.length === 1 && typeof parts[0] === 'string' ? showText(PDFHexString.of(parts[0])) : adjustedOperator(font, parts);
+}
+
+/** Append a part to a `TJ` array, merging it into a neighbouring glyph run
+ *  or number; a zero adjustment is dropped. */
+function pushPart(parts: Array<string | number>, part: string | number): void {
+  const last = parts[parts.length - 1];
+  if (typeof part === 'number') {
+    if (part === 0) return;
+    if (typeof last === 'number') parts[parts.length - 1] = tjNumber(last + part);
+    else parts.push(part);
+  } else if (typeof last === 'string') parts[parts.length - 1] = last + part;
+  else parts.push(part);
+}
+
+/** A text set for a show-text array: its glyph runs and adjustments, where
+ *  they leave the pen (thousandths of the font size: the glyphs' `W`
+ *  widths less the adjustments, before any character spacing) and how
+ *  many glyphs they show. */
+interface ShownRun {
+  parts: Array<string | number>;
+  advance: number;
+  glyphs: number;
+}
+
+/** Glyphs and pen advance of a run of parts whose glyph widths sum to
+ *  `widths` (thousandths of the font size). */
+function shownRunOf(parts: Array<string | number>, widths: number): ShownRun {
+  let advance = widths;
+  let glyphs = 0;
+  for (const part of parts) {
+    if (typeof part === 'number') advance -= part;
+    else glyphs += part.length / 4;
+  }
+  return { parts, advance, glyphs };
+}
+
+/** The parts of a text holding spaces the face has no glyph for, or
+ *  invisible characters (see {@link fallbackOperator}). */
+function fallbackRun(font: PDFFont, face: FallbackFace, pieces: TextPiece[]): ShownRun {
+  const toText = 1000 / face.unitsPerEm;
+  const spaceGlyph = face.hasGlyphForCodePoint(0x20) ? face.glyphForCodePoint(0x20) : undefined;
+  const parts: Array<string | number> = [];
+  let widths = 0;
+  for (const piece of pieces) {
+    if ('space' in piece) {
+      if (spaceGlyph) {
+        pushPart(parts, font.encodeText(' ').asString());
+        pushPart(parts, tjNumber((spaceGlyph.advanceWidth - piece.space) * toText));
+        widths += spaceGlyph.advanceWidth * toText;
+      } else {
+        pushPart(parts, tjNumber(-piece.space * toText));
+      }
+      continue;
+    }
+    const encoded = font.encodeText(piece.text);
+    const shaped = shapedRun(font, piece.text, encoded);
+    for (const part of shaped?.parts ?? [encoded.asString()]) pushPart(parts, part);
+    widths += shaped?.widths ?? font.widthOfTextAtSize(piece.text, 1000);
+  }
+  return shownRunOf(parts, widths);
+}
+
+/**
+ * The show-text operator of a text holding a space the face has no glyph
+ * for (a narrow no-break space, a figure space…) or an invisible character
+ * (a word joiner): painted as the canvas measured it, not as `.notdef`
+ * boxes (see `fallbackSpaces.ts`). A missing space is the face's space
+ * glyph — text extraction still finds a space there — moved to the
+ * browser's advance for it; an invisible character is not drawn. Undefined
+ * for text that needs none of this.
+ */
+function fallbackOperator(font: PDFFont, text: string): PDFOperator | undefined {
+  const shaping = shapingFace(font);
+  if (!shaping) return undefined;
+  const pieces = fallbackPieces(shaping.face, text);
+  if (!pieces) return undefined;
+  return partsOperator(font, fallbackRun(font, shaping.face, pieces).parts);
+}
+
+const runsByFont = new WeakMap<PDFFont, Map<string, ShownRun>>();
+
+/** `text` as {@link showTextShaped} paints it, with the advance and glyph
+ *  count it leaves (cached per font). Undefined when the font carries no
+ *  shaper to measure it with. */
+function shownRun(font: PDFFont, text: string): ShownRun | undefined {
+  let cache = runsByFont.get(font);
+  if (!cache) {
+    cache = new Map();
+    runsByFont.set(font, cache);
+  }
+  const hit = cache.get(text);
+  if (hit) return hit;
+  const shaping = shapingFace(font);
+  if (!shaping) return undefined;
+  const pieces = fallbackPieces(shaping.face, text);
+  let run: ShownRun;
+  if (pieces) {
+    run = fallbackRun(font, shaping.face, pieces);
+  } else {
+    const encoded = font.encodeText(text);
+    const hex = encoded.asString();
+    const shaped = shapedRun(font, text, encoded);
+    run = shownRunOf(shaped?.parts ?? (hex ? [hex] : []), shaped?.widths ?? font.widthOfTextAtSize(text, 1000));
+  }
+  if (cache.size >= ENCODE_CACHE_SLOTS) cache.clear();
+  cache.set(text, run);
+  return run;
+}
+
+/** Below this (thousandths of the font size) the pen is left where the
+ *  glyphs put it and the difference is carried to the next piece: the
+ *  layout and the embedded face agree on almost every word, and the
+ *  `TJ` then holds only the kerning. */
+const MEASURED_TOLERANCE = 0.5;
+
+/**
+ * One show-text operator for a line's pieces (its words and spaces, each
+ * with the width the layout measured it at): every piece starts where the
+ * layout put it (EF-137). The face's own glyphs set each piece, a `TJ`
+ * number after it moves the pen to where the next one starts, so a glyph
+ * the embedded face lacks (measured by the browser in another font) or
+ * any other difference between the two measures never shifts the words
+ * after it. Spaces stay real space glyphs, for text extraction.
+ * `trackingPx` is the character spacing (`Tc`) the line is painted with,
+ * added after every glyph. Undefined when the font carries no shaper.
+ */
+export function measuredTextOperator(
+  font: PDFFont,
+  pieces: readonly { text: string; width: number }[],
+  sizePx: number,
+  trackingPx = 0,
+): PDFOperator | undefined {
+  if (!(sizePx > 0)) return undefined;
+  const parts: Array<string | number> = [];
+  const tracking = (trackingPx / sizePx) * 1000;
+  // How far the pen is right of where the layout wants it, in thousandths.
+  let ahead = 0;
+  for (let i = 0; i < pieces.length; i++) {
+    const piece = pieces[i]!;
+    const run = shownRun(font, piece.text);
+    if (!run) return undefined;
+    for (const part of run.parts) pushPart(parts, part);
+    ahead += run.advance + run.glyphs * tracking - (piece.width / sizePx) * 1000;
+    if (i < pieces.length - 1 && Math.abs(ahead) >= MEASURED_TOLERANCE) {
+      const n = tjNumber(ahead);
+      pushPart(parts, n);
+      ahead -= n;
+    }
+  }
+  return partsOperator(font, parts);
 }
 
 const fontKeysByPage = new WeakMap<PDFPage, Map<PDFFont, PDFName>>();
@@ -292,6 +597,16 @@ function fontKeyOn(page: PDFPage, font: PDFFont): PDFName {
   return key;
 }
 
+/** Outline of the glyphs a text is drawn with (a design text's `stroke`):
+ *  stroked over the fill, or alone for hollow letters. */
+export interface TextOutline {
+  color: Color;
+  widthPx: number;
+  hollow?: boolean;
+}
+
+/** `actualText`, when set, is what copying, text extraction and assistive
+ *  technology read for the glyphs painted (see {@link pushTextObject}). */
 export function drawTextPx(
   ctx: PageCtx,
   text: string,
@@ -300,20 +615,94 @@ export function drawTextPx(
   font: PDFFont,
   sizePx: number,
   color: Color,
+  outline?: TextOutline,
+  actualText?: string,
 ): void {
   if (!text) return;
+  pushTextObject(ctx, showTextShaped(font, text), xPx, baselinePx, font, sizePx, color, outline, actualText);
+}
+
+/**
+ * Paint a line's pieces (its words and spaces, with their measured widths)
+ * in one text object from `xPx`, each piece where the layout measured it
+ * (see {@link measuredTextOperator}). `trackingPx` is the character spacing
+ * already set for the line. Returns false, painting nothing, when the font
+ * cannot be measured that way; the caller then paints the text itself.
+ * `actualText` as in {@link drawTextPx}.
+ */
+export function drawMeasuredTextPx(
+  ctx: PageCtx,
+  pieces: readonly { text: string; width: number }[],
+  xPx: number,
+  baselinePx: number,
+  font: PDFFont,
+  sizePx: number,
+  color: Color,
+  trackingPx = 0,
+  actualText?: string,
+): boolean {
+  const op = measuredTextOperator(font, pieces, sizePx, trackingPx);
+  if (!op) return false;
+  pushTextObject(ctx, op, xPx, baselinePx, font, sizePx, color, undefined, actualText);
+  return true;
+}
+
+/**
+ * The operators pdf-lib's `drawText` emits, around a show-text operator.
+ * With `actualText` the show-text operator sits in a `/Span` marked-content
+ * sequence whose `/ActualText` is that text (PDF 1.7 §14.9.4), inside the
+ * text object, where readers expect it: copying, text extraction and
+ * assistive technology read it instead of the glyphs. The span has no MCID,
+ * so in a tagged PDF it nests in the structure sequence open around it.
+ */
+function pushTextObject(
+  ctx: PageCtx,
+  show: PDFOperator,
+  xPx: number,
+  baselinePx: number,
+  font: PDFFont,
+  sizePx: number,
+  color: Color,
+  outline?: TextOutline,
+  actualText?: string,
+): void {
   const { scale, pageHeightPt } = ctx;
+  // Text render mode 2 fills then strokes the glyphs; mode 1 only strokes.
+  const outlineOps = outline && outline.widthPx > 0
+    ? [
+        setStrokingColor(outline.color),
+        setLineWidth(outline.widthPx * scale),
+        setTextRenderingMode(outline.hollow ? TextRenderingMode.Outline : TextRenderingMode.FillAndOutline),
+      ]
+    : [];
   // The operators pdf-lib's `drawText` emits, with the encoding cached.
   ctx.page.pushOperators(
     pushGraphicsState(),
+    // The outline's own alpha is the stroke alpha of the glyphs.
+    ...opt(alphaStateOp(ctx, alphaOf(color), outlineOps.length > 0 ? alphaOf(outline!.color) : 1)),
+    ...outlineOps,
     beginText(),
     setFillingColor(color),
     setFontAndSize(fontKeyOn(ctx.page, font), sizePx * scale),
     setTextMatrix(1, 0, 0, 1, xPx * scale, pageHeightPt - baselinePx * scale),
-    showTextShaped(font, text),
+    ...(actualText === undefined ? [show] : withActualText(ctx, actualText, show)),
     endText(),
     popGraphicsState(),
   );
+}
+
+type OperatorArg = Parameters<typeof PDFOperator.of>[1] extends (infer A)[] | undefined ? A : never;
+
+/** `show` inside a `/Span` whose `/ActualText` is `text`. */
+function withActualText(ctx: PageCtx, text: string, show: PDFOperator): PDFOperator[] {
+  // A property list (`<< /ActualText … >>`) is an inline dictionary operand
+  // of `BDC`; pdf-lib types operator arguments narrowly but serialises it.
+  const props = ctx.page.doc.context.obj({ ActualText: PDFHexString.fromText(text) }) as unknown as OperatorArg;
+  return [
+    PDFOperator.of(PDFOperatorNames.BeginMarkedContentSequence, [PDFName.of('Span'), props]),
+    show,
+    PDFOperator.of(PDFOperatorNames.EndMarkedContent),
+  ];
 }
 
 export function pushClipRect(
@@ -378,6 +767,7 @@ export function pushClipOutline(ctx: PageCtx, o: RoundedOutline): void {
 export function fillOutlinePx(ctx: PageCtx, o: RoundedOutline, color: Color): void {
   ctx.page.pushOperators(
     pushGraphicsState(),
+    ...opt(alphaStateOp(ctx, alphaOf(color))),
     setFillingColor(color),
     ...roundedOutlineOps(ctx, o),
     fill(),
@@ -412,6 +802,7 @@ export function drawChipBoxPx(ctx: PageCtx, chip: VDTChip, xPx: number, baseline
 export function strokeOutlinePx(ctx: PageCtx, o: RoundedOutline, color: Color, thicknessPx: number): void {
   ctx.page.pushOperators(
     pushGraphicsState(),
+    ...opt(alphaStateOp(ctx, 1, alphaOf(color))),
     setStrokingColor(color),
     setLineWidth(Math.max(0.01, thicknessPx * ctx.scale)),
     ...roundedOutlineOps(ctx, o),

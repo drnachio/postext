@@ -39,6 +39,14 @@ Call `extractFrontmatter(source)` to split the frontmatter from the body. The pa
 
 Frontmatter is parsed with [`gray-matter`](https://github.com/jonschlinkert/gray-matter), so any shape of YAML is accepted. Postext itself only looks at `title`, `subtitle`, `author`, and `publishDate`; additional keys are preserved on `PostextContent.metadata` and are yours to use.
 
+YAML gives its values types: `1984` is a number, `2026-04-15` a date, `[Ana Gil, Luis Paz]` a list. Postext prints each of those four fields as text whatever its type:
+
+- a number in its plain decimal form, and a boolean as `true` or `false` (`title: 1984` prints *1984*). YAML reads a number as a value, not digit by digit: `1.50` prints *1.5*, `017` (octal) *15*, `1:30` (base 60) *90*;
+- a date as its calendar day, written out in the document's language — the `locale` setting, else the hyphenation locale: `publishDate: 2026-04-15` prints *April 15, 2026* in English, *15 de abril de 2026* in Spanish, *15. April 2026* in German. A date with a time of day prints the day of its UTC time and drops the time: `2026-09-24T23:30:00-05:00` is 04:30 UTC on the 25th and prints *September 25, 2026*;
+- a list as its items joined by commas (`author: [Ana Gil, Luis Paz]` prints *Ana Gil, Luis Paz*).
+
+Quote a value to print it exactly as written — a number that must keep its digits, a date that must keep its day: `publishDate: "15/04/2026"`, `title: "1984"`. The text reaches `doc.metadata`, the placeholders (`{title}`, `{publishDate}`…) and the PDF title and author. One of the four fields with no text form — a nested map, an empty `title:` — is left out of `doc.metadata`. `extractFrontmatter` still returns the values as YAML typed them; `metadataText(value, locale)` gives the text Postext prints for one.
+
 
 ## Block constructs
 
@@ -68,7 +76,7 @@ Postext recognises seven prose block types, plus the directives and resource emb
     <tr>
       <td>Blockquote</td>
       <td><code>&gt; quoted text</code></td>
-      <td>Every line of the quote must start with <code>&gt;</code> (one optional space after). Consecutive quote lines merge into a single blockquote block.</td>
+      <td>Every line of the quote must start with <code>&gt;</code> (one optional space after). Consecutive quote lines merge into a single blockquote block. It is set as <code>bodyText.blockquote</code> says: grey italics with the body's first-line indent unless you change them (see <a href="/en/docs/configuration#blockquotes">Configuration › Blockquotes</a>).</td>
     </tr>
     <tr>
       <td>Unordered list</td>
@@ -109,12 +117,24 @@ A heading line may end with an attribute block in braces — the same `key="valu
 
 The braces and their content are removed from the heading text (the title above renders as *The Long Road*) and stored on the heading as `attrs`. They are exposed to design slots as `{attr.<key>}` placeholders: in the heading's own advanced-design slot, and in page headers and footers, where they resolve from the current chapter's H1. Only a balanced, brace-free block at the very end of the line is recognised; a lone `{}` or an unbalanced brace stays in the text. See **Configuration → Headers & footers**.
 
+A value printed by a design text may span several lines: the two characters `\n` start a new line there, whatever the element's `overflow` (`to="Firma X\nStrasse 1\n10115 Berlin"` prints a three-line address). With `inlineMarks` on the element, inline marks in the value apply too: `authors="Ana Ruiz^1^, Luis Gil^2^"` sets the affiliation numbers as superscripts. The escape belongs to attribute values (and to the design's own templates): the characters `\n` in a heading's text, say in a code span, print as written.
+
 Two attributes have a meaning of their own. `style="<id>"` applies a named [heading style](/en/docs/configuration#heading-styles) to the heading — a preface or an authors list with its own opener design, running heads, page geometry and body typography, and no chapter number when the style says `numbered: false`. `toc="false"` (or `"true"`) overrides whether the heading is listed by `:::toc`:
 
 ```markdown
 # Preface {style="front-matter"}
 
 # Contents {style="front-matter" toc="false"}
+```
+
+Two more change what a heading prints and how it counts. `hidden="true"` (or `"false"`) overrides the `hidden` of the heading's level or style: a hidden heading prints nothing and takes no room — in the flow and inside a `:::callout` box alike — but still opens its page, counts, and is listed in the contents, the `{chapterTitle}` running heads and the PDF bookmarks. `startAt=N`, a positive integer, sets the heading's level counter to `N` instead of advancing it; the headings after it count on from there, in later chapters too, and the levels below restart under it as usual. With a heading style that letters appendices (`numberingTemplate: 'Appendix {1:A}'`), the first appendix restarts the count so that it reads *Appendix A* rather than continuing from the chapters:
+
+```markdown
+# To my mother {hidden="true" toc="false"}
+
+# Survey instrument {style="appendix" startAt=1}
+
+# Raw data {style="appendix"}
 ```
 
 ## Directives
@@ -170,7 +190,28 @@ Directives are single-line control tags written as `:::name` or `:::name{attrs}`
 
 Attribute values may be double-quoted (<code>"…"</code>), single-quoted (<code>'…'</code>), or bare (<code>startAt=17</code>). A bare key without `=` is treated as a present-but-empty flag.
 
-Only `pagebreak`, `numbering`, `columnbreak`, `space` and `toc` are recognized as single-line directives today — any other `:::name` line that is not a container (below) is parsed as a paragraph and surfaces an **Unknown directive** warning in the sandbox.
+Only `pagebreak`, `numbering`, `columnbreak`, `space` and `toc` are recognized as single-line directives today — any other `:::name` line that is not a container (below) is parsed as a paragraph and surfaces an **Unknown directive** warning in the sandbox. The engine records it too, as an `unknownDirective` entry in the document's `contentWarnings` (see [Configuration › Warnings in the document](/en/docs/configuration#warnings-in-the-document)).
+
+### Attribute values
+
+The same `key="value"` syntax is read by heading attributes, directive and container fences (`:::name{…}`), inline references (`:ref{…}`), chips (`:chip[…]{…}`) and swatches (`:swatch{…}`). Its rules:
+
+- **Keys** start with a letter or `_` and go on with letters, digits, `_` or `-`. Spaces around `=` are fine, a repeated key keeps its last value, and a key without `=` is a flag with an empty value.
+- **Quoted values.** A double-quoted value may hold anything but `"`, single quotes included; a single-quoted one anything but `'`. So a value with double quotes goes in single quotes: `lead='He said "hi"'`. There are no escapes — a backslash is an ordinary character — so a value that needs both ASCII quotes takes typographic ones (`“…”`, `’`).
+- **Bare values** (`startAt=17`, `year=1998`) run to the next space: `title=Hello world` is `title="Hello"` plus a flag `world`.
+- **No braces.** `{` and `}` never go in a value. The first `}` ends the block: a fence whose value holds one is no longer a directive but a paragraph, and inline the rest of the value spills into the text. In a heading, a `}` in a value leaves the whole block in the title, and a `{` after a space starts the block over: `# Title {note="a {b"}` keeps `Title {note="a` as its title and reads only a flag `b`.
+- **Dollar signs are plain text.** Attributes are read before inline maths, so `lead="from $5 to $6"` is just text.
+- **One line.** An attribute block never spans lines.
+
+```markdown
+# The Long Road {lead='A "road novel", they said' price="$18"}
+
+:::callout{type="note" title='The "fast" path'}
+…
+:::
+```
+
+`::resource{id="…"}` is stricter: the id in double quotes and no other attribute (see [Resources](#resources)).
 
 ### Containers
 
@@ -219,9 +260,9 @@ The attributes accepted by each container, and how it is styled, are documented 
 :::
 ```
 
-A callout is laid out as a box — an optional title, then its content typeset with the style's own body and list typography. It keeps together by default, moving whole to the next column or page when it does not fit (a box taller than a whole column splits all the same, rather than overflow); a style with `keepTogether: false` lets it split between its blocks, or between lines, leaving at least `splitMinLines` text lines — or a figure, table, display formula or nested box — on each side of the cut. Full-width boxes (`span="page"`) cut the page into column bands; `span="side"` boxes leave the flow into the float-only side column of a one-and-a-half layout (`layout.sideColumnRole: 'floats'`), stacked beside the text they interrupt, and lay out as column boxes where there is no such column; `placement="fixed"` boxes leave the flow and are pinned to page coordinates (a self-assessment badge in the bottom-left corner of a chapter's last page, say), the columns they cover giving up that zone; floating boxes (`placement="top"` / `"bottom"`) leave the flow where they occur and take the first free band after that position — the foot of the page, or the head or foot of the next — while the text after them fills the page they left. A style with `floatBarrier: true` (a chapter's closing "key points" box, typically) makes the box a **float barrier**: every figure or table referenced before it is placed before it — in the page's free slots, or on pages opened ahead of the box — so no float escapes past the end of its chapter. An unknown `:::name` fence is not a container — the line is treated as text, exactly like an unknown directive.
+A callout is laid out as a box — an optional title, then its content typeset with the style's own body and list typography. It keeps together by default, moving whole to the next column or page when it does not fit (a box taller than a whole column splits all the same, rather than overflow); a style with `keepTogether: false` lets it split between its blocks, or between lines, leaving at least `splitMinLines` text lines — or a figure, table, display formula or nested box — on each side of the cut (a cut inside a paragraph or list item also leaves at least `layout.boxChildSplitMinLines` of its lines on each side: two by default, `splitMinLines` when that is lower; books saved before 1.5 whose chapters hold a box are read with 1, the 1.4 cut). Each part after the first opens without the icon, though its text keeps the icon's column, and without the title unless the style repeats it (`repeatTitle`: "Key points (cont.)"); a style can also set a "Continued" marker under every part that goes on (`continuesMarkerEnabled`) — see [Marks on a split box](/en/docs/configuration#marks-on-a-split-box). Full-width boxes (`span="page"`) cut the page into column bands; `span="side"` boxes leave the flow into the float-only side column of a one-and-a-half layout (`layout.sideColumnRole: 'floats'`), stacked beside the text they interrupt, and lay out as column boxes where there is no such column; `placement="fixed"` boxes leave the flow and are pinned to page coordinates (a self-assessment badge in the bottom-left corner of a chapter's last page, say), the columns they cover giving up that zone; floating boxes (`placement="top"` / `"bottom"`) leave the flow where they occur and take the first free band after that position — the foot of the page, or the head or foot of the next — while the text after them fills the page they left. A style with `floatBarrier: true` (a chapter's closing "key points" box, typically) makes the box a **float barrier**: every figure or table referenced before it is placed before it — in the page's free slots, or on pages opened ahead of the box — so no float escapes past the end of its chapter. An unknown `:::name` fence is not a container — the line is treated as text, exactly like an unknown directive.
 
-A `:::part` fence takes `number` (as you want it printed — `"I"`, `"IV"`, `"3"`; it is also parsed so the design can re-format it) and `title`; both are optional. A third attribute, `palette="band=#hex"` (several `id=#hex` pairs, comma-separated), recolours every design colour linked to those palette ids — running heads, opener band, part designs — and the text-flow colours that share their base value (headings, bold, references, bullets, captions) for the part and the chapters that follow it, until the next part; see [Configuration › Parts](/en/docs/configuration#parts). The container always opens a page of its own: a page break of the configured parity before it, a single body column at the `parts.margins`, the opener design over the whole page, and another page break after the closing fence. The body — usually the list of the chapters the part groups, or nothing at all — is typeset with `parts.bodyStyle`:
+A `:::part` fence takes `number` (as you want it printed — `"I"`, `"IV"`, `"3"`; it is also parsed so the design can re-format it) and `title`; both are optional. A third attribute, `palette="band=#hex"` (several `id=#hex` pairs, comma-separated), recolours every design colour linked to those palette ids — running heads, opener band, part designs — and the text-flow colours that share their base value (headings, bold, references, bullets, captions, tables, boxes, chips) for the part and the chapters that follow it, until the next part; see [Configuration › Parts](/en/docs/configuration#parts). The container always opens a page of its own: a page break of the configured parity before it, a single body column at the `parts.margins`, the opener design over the whole page, and another page break after the closing fence. The body — usually the list of the chapters the part groups, or nothing at all — is typeset with `parts.bodyStyle`:
 
 ```
 :::part{number="I" title="Foundations"}
@@ -250,6 +291,32 @@ Inside a `:::callout`, a `:::columns{count=2}` … `:::` group sets the blocks b
 :::
 ```
 
+**How `breaks` counts.** `breaks` numbers the group's blocks in order — paragraphs, list items (one block each), display formulas, figures and tables — and a nested `:::callout` counts as one block however many it holds. Directives are not blocks: a `:::space` between two stanzas does not shift the count. A number below 2, past the group's last block, or not after the previous break is ignored. Inside a group `:::space` separates two blocks as anywhere else in a box, and it vanishes at the top of the group and at the head of each of its columns (a `breaks` position or a levelling cut) — to open the group lower, put the space before the `:::columns` fence. Two columns that carry the same spacing therefore line up stanza by stanza:
+
+```md
+:::callout{type="verse"}
+:::columns{count=2 breaks="4"}
+The lamp is lit at dusk,
+
+and trimmed before the dawn.
+
+:::space
+
+The keeper sleeps by day.
+
+La lámpara se enciende al anochecer,
+
+y se despabila antes del alba.
+
+:::space
+
+El farero duerme de día.
+:::
+:::
+```
+
+Here the fourth block, "La lámpara…", opens the second column; the two `:::space` lines are not counted and leave the same gap in both columns.
+
 A `:::callout` fence also accepts `label="…"`: the text a style with a `label` tab prints on the box's top corner (`:::callout{type="box" label="BOX 1-1" title="The octet rule"}`).
 
 A `:::callout` inside another one is a box of its own — a worksheet card holding answer boxes, say. It takes its own style (background, border, radius, padding, title, icon) at the full inner width of the outer box and stacks among its other blocks; its `span` and `placement` are ignored, since a nested box always flows inside its parent. Each fence closes the innermost box still open:
@@ -268,11 +335,13 @@ A second answer box.
 :::
 ```
 
-When the outer box splits across columns or pages (`keepTogether: false`, or taller than a column), a nested box moves whole to the next fragment unless its own style lets it split too; every fragment redraws the frames it holds, and a continued nested box drops its title and icon.
+When the outer box splits across columns or pages (`keepTogether: false`, or taller than a column), a nested box moves whole to the next fragment unless its own style lets it split too; every fragment redraws the frames it holds, and a continued nested box drops its icon, and its title unless its style repeats it (`repeatTitle`).
 
 ### `:::pagebreak`
 
 The directive itself does not force parity on its own — only the next block's layout. Use it to end a preface, force a dedication onto its own page, or mark the end of a section. When both a page break and a numbering reset are wanted at the same point, compose `:::pagebreak` followed by `:::numbering` — the numbering switch applies at the fresh page the `:::pagebreak` just created.
+
+A page break on a page that is still empty does nothing, so it never adds a blank page. Nor does it replace the `breakBefore` of a heading right after it (level 1 has one by default): the heading still applies its parity, which can add a blank page after the one the directive opened. To start a heading exactly there, turn its break off (see **Configuration → Heading styles**). After a cover heading that fills its page the break is optional: the cover already claims the rest of its page, in single- and multi-column layouts alike, and a `:::pagebreak` right after it does no harm. It is needed only after a cover whose design stops short of the page foot, when the text should still start on the next page (see **Configuration → Reserved height**).
 
 ```md
 The old chapter ends here.
@@ -296,6 +365,8 @@ The two kinds of blank pages `:::pagebreak` (and `breakBefore`) can introduce ar
 
 - `blankForParity: true` — inserted to satisfy a parity constraint. In `{chapterTitle}` headers this page carries the **upcoming** chapter's title, because the blank exists only to push that chapter onto the right parity.
 - `blankForForce: true` — the mandatory leading separator of an `'always-*'` mode. It belongs to the **previous** chapter — a deliberate end-of-chapter breath, not parity padding for the next chapter.
+
+The same two rules give a blank page the running heads and palette of a styled section — see [Configuration › Heading styles](/en/docs/configuration#heading-styles).
 
 #### Document-start exception
 
@@ -324,6 +395,8 @@ Preface pages are labelled `i`, `ii`, `iii`, …; the first chapter opens on a r
 
 Format-only changes (no `startAt`) keep the counter flowing — useful for, say, switching from `lower-alpha` to `upper-alpha` without resetting.
 
+`format` takes any spelling of a numbering format — `roman-lower` and `i` work as well as `lower-roman`, `arabic` as well as `decimal` (see [Configuration › Numbering format spellings](/en/docs/configuration#numbering-format-spellings)). A value that is none of them leaves the format as it was, and the sandbox flags it.
+
 ### `:::space`
 
 `:::space` leaves vertical space between two blocks: to separate a closing line from the text above it, to push an epigraph or a signature down a little, or to open a *space break* between two runs of text. Extra blank lines in the Markdown do not do this — as in any Markdown, a run of blank lines is just one paragraph separator, which keeps a document from changing layout when an editor or formatter adds or trims whitespace.
@@ -344,8 +417,16 @@ Two lines lower still.
 - **It adds up.** The space is added to the margin that already separates the two blocks — a heading's top margin, a list's bottom margin — instead of collapsing into it. Two `:::space` lines in a row add two lines.
 - **It is dropped at a break**, like LaTeX's `\vspace`: at the top of a column or page it vanishes, so a page never opens with a hole; and when it does not fit at the foot of a column it simply ends that column, without carrying the rest over.
 - **The paragraph after it is set flush.** When `bodyText.indentAfterHeading` is off, a paragraph right after `:::space` loses its first-line indent, as it does after a heading — the usual convention for text resuming after a blank line.
-- **Inside a callout** (or a `:::columns` group) it separates the box's children the same way, measured in the box's own body lines, and is dropped at the top of the box.
+- **Inside a callout** (or a `:::columns` group) it separates the box's children the same way, measured in the box's own body lines. Before the box's first block it is dropped, like at the top of a column — the padding already sets the content off the frame — except in two cases where it opens that much room: right under the box's title, and in a box that holds nothing else (an answer box, a space to write in, sized in lines). It always vanishes at the top of a `:::columns` group, at the head of each of its columns, and at the top of the part of a split box that continues on the next column or page. Inside a `:::paragraphs` container it works as between body paragraphs.
 - **Keep-with-next** counts it: a heading followed by `:::space` moves on when the space and the first lines of its text do not fit under it.
+
+An answer box of a worksheet is a box whose only content is space: the question in its title, four lines of room below it.
+
+```md
+:::callout{type="answer" title="1. Name the three parts of the lantern."}
+:::space{lines=4}
+:::
+```
 
 For a fixed break rather than space, use `:::columnbreak` or `:::pagebreak`.
 
@@ -364,7 +445,7 @@ The page numbers are the ones the document actually prints. A document laid out 
 
 ### Line breaks in titles
 
-Write `\\` inside a heading (or inside a part's `title` attribute) to force a line break where the title is displayed as a title: the in-column heading keeps flowing and shows a space there, while an opener design's `{titleText}` breaks the line at that point. Running heads, `{chapterTitle}`, `{partTitle}` and the PDF outline always render the title on one line.
+Write `\\` inside a heading (or inside a part's `title` attribute) to force a line break where the title is displayed as a title: the in-column heading keeps flowing and shows a space there, while an opener design's `{titleText}` breaks the line at that point (in every `overflow` mode of the text element). Running heads, `{chapterTitle}`, `{partTitle}` and the PDF outline always render the title on one line.
 
 ```md
 # Concepts of health and illness. \\ Community health {author="I. Zango Martín"}
@@ -372,7 +453,7 @@ Write `\\` inside a heading (or inside a part's `title` attribute) to force a li
 
 ## Inline formatting
 
-Inline markup is recognised inside any text block (headings, paragraphs, blockquotes, list items).
+Inline markup is recognised inside any text block (headings, paragraphs, blockquotes, list items). In a heading it follows `headings.inlineMarks`, on by default: the title's italic, bold, scripts, small capitals and links print as in a paragraph, and an italic run in an italic heading comes out upright. With it off the markers are dropped and the title prints in the heading's own style; configurations stored by postext 1.4 or earlier whose headings carry marks are read that way (see [Configuration › Headings](/en/docs/configuration#headings)). A heading design prints `{titleText}` as plain text either way.
 
 <Illustration name="InlineFormatting" data='{"title": "Inline formatting at a glance", "desc": "Markdown-to-rendered comparison for bold, italic, bold italic, inline code, and links.", "caption": "Markdown on the left, rendered result on the right.", "rows": [{"markdown": "**bold**", "rendered": "bold", "style": "bold"}, {"markdown": "*italic*", "rendered": "italic", "style": "italic"}, {"markdown": "***both***", "rendered": "both", "style": "bold-italic"}, {"markdown": "`code`", "rendered": "code", "style": "code"}, {"markdown": "[link](https://…)", "rendered": "link", "style": "link"}]}' />
 
@@ -393,7 +474,7 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
     <tr>
       <td>Italic</td>
       <td><code>*italic*</code> or <code>_italic_</code></td>
-      <td>Rendered with the italic variant of the current font family. An optional <code>bodyText.italicColor</code> overrides the default body color for italic spans.</td>
+      <td>Rendered with the italic variant of the current font family. An optional <code>bodyText.italicColor</code> overrides the default body color for italic spans. An underscore marks emphasis only at a word boundary, as in CommonMark: one between two letters or digits — <code>snake_case_name</code>, a URL's <code>SR_AIR_EN.pdf</code> — is text (also for <code>__bold__</code>); inside a word, use asterisks (<code>un*believ*able</code>).</td>
     </tr>
     <tr>
       <td>Bold italic</td>
@@ -408,22 +489,32 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
     <tr>
       <td>Subscript</td>
       <td><code>~text~</code></td>
-      <td>Same size, lowered a third of the text size — a chemical index (<code>H~2~O</code>, <code>p<em>K</em>~a~</code>). Combines with bold and italic (<code>**H~2~O**</code>).</td>
+      <td>Same size, lowered 0.15 of the text size, so it stays within the descenders — a chemical index (<code>H~2~O</code>, <code>p<em>K</em>~a~</code>). Combines with bold and italic (<code>**H~2~O**</code>). A subscript and a superscript written together, with nothing between them, are stacked as in a formula: <code>*T*~0~^2^</code> sets the 2 over the 0, whichever comes first, the subscript lowered 0.25 of the text size to clear the superscript, and the pair takes the width of the wider one. A space or a letter between them sets them one after the other; a word joiner (U+2060) does too, with nothing visible between them. A stacked pair never parts at a line break: a word too wide for the line breaks before the pair.</td>
+    </tr>
+    <tr>
+      <td>Small caps</td>
+      <td><code>:smallcaps[text]</code></td>
+      <td>Lowercase letters set as capitals at 70% of the text size — a character's name in a play, an acronym in running text. Takes other marks inside and around it; see <a href="#small-capitals">Small capitals</a>.</td>
     </tr>
     <tr>
       <td>Inline code</td>
       <td><code>`code`</code></td>
-      <td>Backticks are stripped; the span is rendered as plain text. Distinct code styling is on the roadmap.</td>
+      <td>Backticks are stripped; the span is rendered as plain text, exactly as written: a <code>{':ref{…}'}</code>, a chip, maths, a link or an emphasis marker inside it prints literally, which is how a text shows the syntax. Distinct code styling is on the roadmap.</td>
     </tr>
     <tr>
       <td>Escape</td>
-      <td><code>\*</code>, <code>\_</code>, <code>\^</code>, <code>\~</code>, <code>\`</code></td>
-      <td>A backslash sets the marker character itself — the asterisk of a table footnote (<code>\* pOH = −log [OH^−^]</code>), a literal caret — instead of opening a span. Works in the body and in captions, cells and notes.</td>
+      <td><code>{'\\*'}</code>, <code>{'\\_'}</code>, <code>{'\\^'}</code>, <code>{'\\~'}</code>, <code>{'\\`'}</code>, <code>{'\\$'}</code></td>
+      <td>A backslash sets the marker character itself — the asterisk of a table footnote (<code>{'\\* pOH = −log [OH^−^]'}</code>), a literal caret, a dollar sign that opens no formula — instead of opening a span. Works in the body, in chips and in captions, cells and notes. (Up to postext 1.4 captions, cells, notes and chips printed the backslash of <code>{'\\$'}</code>.)</td>
+    </tr>
+    <tr>
+      <td>No-break space</td>
+      <td>the character itself: U+00A0, U+202F, U+2007</td>
+      <td>Glues the words on either side, so a line never breaks between them: a number and its unit (37 °C), a page reference (p. 12), a group of thousands (225 000). The no-break space (U+00A0), the narrow no-break space (U+202F) and the figure space (U+2007) all glue — in the body, captions, cells, boxes and running heads — and each keeps its own width: justification stretches the word spaces only. Many faces have no glyph for the narrow no-break space or the figure space; they are then set as browsers set them, in the canvas, the HTML and the PDF alike: half a word space and the width of a digit. Practically every face has U+00A0, so it is the safe choice. A group glued this way that is wider than the whole line breaks at its last no-break space rather than inside a word. The word joiner (U+2060) glues without taking room. Type the character itself: an HTML entity such as <code>{'&nbsp;'}</code> prints as it is written. See <a href="/en/docs/justification#where-a-line-never-breaks">Where a line never breaks</a>.</td>
     </tr>
     <tr>
       <td>Link</td>
       <td><code>[text](https://…)</code></td>
-      <td>The visible text is kept in the flow; the URL is discarded by the current renderer. Link handling is on the roadmap.</td>
+      <td>The visible text is kept in the flow, set exactly as without the link. The URL makes the words a live link in the HTML and PDF output; see <a href="#links">Links</a>.</td>
     </tr>
     <tr>
       <td>Image</td>
@@ -443,6 +534,29 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
   </tbody>
 </table>
 
+### Links
+
+A Markdown link, `[text](url)`, keeps its text in the flow exactly as the text would be set without it: the link never changes line breaks, spacing or colour. It keeps its URL for the outputs that can follow it:
+
+- **HTML** (`renderToHtml`): the linked words are wrapped in `<a href="…" rel="noopener noreferrer">`, which takes the text colour and has no underline. There is one anchor per run of linked words on a line.
+- **PDF** (`postext-pdf`): each run of linked words on a line becomes a clickable URI link annotation. In a tagged PDF it is a `Link` element whose text is the linked words.
+- **Canvas**: painted as plain text, since a canvas has no click surface.
+
+```markdown
+Read the [configuration guide](https://postext.dev/en/docs/configuration "Configuration")
+or write to [the team](mailto:team@example.com).
+```
+
+- The destination may carry a title, which is ignored (`[text](https://example.com "Title")`). It may also be wrapped in angle brackets, where spaces become `%20` (`[text](<https://example.com/a b>)`).
+- Only safe targets are kept: `http:`, `https:`, `mailto:`, `tel:`, `ftp:` and relative URLs (`../guide`, `#top`). Any other scheme (`javascript:`, `data:`, `file:`…) sets the text without a link. The PDF links absolute URLs only.
+- The destination may contain parentheses as long as they balance, as in CommonMark: `[photo](https://commons.wikimedia.org/wiki/File:Bike_(Unsplash).jpg)` links the whole URL. A backslash escapes a character (`\(`, `\_`). When the parentheses do not balance, the destination ends at its first `)` and the text is set without a link; encode a lone parenthesis as `%28` or `%29`. A space also ends the destination unless it is wrapped in angle brackets.
+- A word glued to the link text shares the link. In `see [the site](https://example.com).` the full stop is part of the clickable area.
+- The link text may carry emphasis (`[**bold** words](…)`) and may sit inside it (`**[words](…)**`).
+- Links work in paragraphs, list items, blockquotes, callouts, captions, notes and table cells, and in headings while `headings.inlineMarks` is on (the default). The running heads, the outline and the contents rows made from a heading keep the text only, and so does the text of a `:chip[…]`.
+- Reference-style links (`[text][id]`) and autolinks (`<https://…>`) are not recognised (see [What is NOT supported](#what-is-not-supported)).
+
+In the VDT the target is on each linked segment, as `VDTLineSegment.href`. The parser keeps a span's links as ranges of its text, in `InlineSpan.links`, and never splits a span for a link, which is why a link cannot change the layout.
+
 ### Inline chips
 
 `:chip[text]` sets `text` in a box — a rounded, tinted "chip" — that flows with the line: the words of a word bank or a classify exercise, keyboard keys, tags. `:chip[text]{style="key"}` picks a named style from `chipStyles` (see the configuration reference); without `style`, or with an id no style declares, the chip takes the first style (a built-in `chip` style when the configuration has none; the sandbox warns about an unknown id).
@@ -455,10 +569,28 @@ Press :chip[Ctrl]{style="key"} + :chip[C]{style="key"} to copy.
 
 - **One unit.** A chip is never broken or hyphenated inside; the line breaks between chips, at the word spaces around them. A chip wider than the whole line overflows it rather than splitting.
 - **Width.** Its advance is the text plus the horizontal padding and the outline on both sides. Justification stretches the word spaces only, never the inside of a chip. The style's `gap` is the least room kept between the box and a neighbouring word or chip across a space — a narrower space is topped up (not at a line edge, and not against glued punctuation such as `:chip[a],`).
-- **Height.** The box is a band around the baseline, 0.8 em above and 0.25 em below at the chip's size, grown by the vertical padding and the outline. The vertical padding paints outside the line box and never changes the line height, so the baseline grid holds; a box taller than the line pitch touches the chips of the next line, and the sandbox flags it ("Chips touch the next line") so the padding, outline or size can be reduced.
-- **Text.** The chip text takes its own inline marks (`:chip[**bold** word]`, `:chip[x^2^]`) and the emphasis around it (`**:chip[a]**`); the style may set its family, size, colour, bold and italic. Write `\]` for a literal bracket inside. References, swatches and math inside a chip stay literal.
+- **Height.** The box is a band around the baseline, 0.8 em above and 0.25 em below at the chip's size, grown by the vertical padding and the outline. The vertical padding paints outside the line box and never changes the line height, so the baseline grid holds; a box taller than the line pitch can run into a chip on the line above or below, and the sandbox flags two chips on different lines that overlap ("Chips touch the next line") so the padding, outline or size can be reduced.
+- **Text.** The chip text takes its own inline marks (`:chip[**bold** word]`, `:chip[x^2^]`) and the emphasis around it (`**:chip[a]**`); the style may set its family, size, colour, bold and italic. Write `\]` for a literal bracket inside. References, swatches and math inside a chip stay literal, and `\$` prints a dollar sign (up to postext 1.4 it printed the backslash too).
+- **Empty.** A chip of spaces alone (`:chip[ ]`, no-break spaces included) is an empty box — an answer blank, an end mark: as wide as its style's horizontal padding and outline, as tall as a chip with words. Size the blank with a style's `paddingX` (`:chip[ ]{style="blank"}`). With nothing at all between the brackets, `:chip[]` stays literal text.
 - **Where.** Paragraphs, list items, blockquotes, callouts, table cells, captions and notes. Headings keep `:chip[…]` as literal text.
 - **Output.** Canvas, HTML and PDF paint the box and set the words as real text: selectable in the HTML, extractable and in reading order in the PDF (in a tagged PDF the box is a layout artifact and the words belong to the paragraph).
+
+### Small capitals
+
+`:smallcaps[text]` sets `text` in small capitals — the names of the characters in a play, an acronym in running text, the first words of a chapter. Lowercase letters are set as capitals at 70% of the text size, while capitals, digits and punctuation keep the full size, so `:smallcaps[Hamlet]` prints a full-size H followed by a small-capital AMLET.
+
+```markdown
+Enter :smallcaps[Hamlet] and :smallcaps[Horatio], reading.
+
+The :smallcaps[unesco] report and the :smallcaps[who] guidelines.
+```
+
+- **Synthesised.** The small capitals are drawn from the face's own capitals, the same way on the canvas, in the HTML and in the PDF, so the text measures and breaks identically everywhere. A face's real small caps (the OpenType `smcp` feature) are not used; for them, set the text in a small-caps family (a family whose name ends in "SC", for example) through a paragraph style.
+- **Marks.** The text takes its own inline marks (`:smallcaps[**Ophelia**]`) and the emphasis around it (`*:smallcaps[Act I]*`); write `\]` for a literal bracket inside. A reference or a chip inside it is set in small capitals too, and a reference stays one link in the HTML and the PDF; a formula is not.
+- **Breaking.** Words wrap and hyphenate as usual; hyphenation reads each word in its own case.
+- **Where.** Paragraphs, list items, blockquotes, callouts, table cells, captions and notes, and headings while `headings.inlineMarks` is on (the default); with it off, the markup is removed from a heading and the text prints as written.
+- **Whole paragraphs.** A paragraph style or a callout body with `smallCaps: true` sets all its text this way (see [Paragraph styles](/en/docs/configuration#paragraph-styles)).
+- **Text.** The canvas, the HTML and the PDF carry the letters as painted: copying `:smallcaps[Hamlet]` gives "HAMLET".
 
 
 ## Mathematical formulas
@@ -467,9 +599,12 @@ Math support is a first-class part of the document format. Postext parses `$…$
 
 - **Inline:** `$…$`. Recognised inside any text block (paragraph, heading, blockquote, list item). Contributes a single atomic, non-breaking box to the line; Knuth-Plass treats it like a word that must not be split. If the formula's natural height would break the line box, it is scaled down uniformly so the baseline grid is preserved — very tall expressions belong in display mode.
 - **Display:** `$$…$$`. Either on its own line (`$$\int_0^1 x^2\,dx$$`) or fenced across multiple lines with `$$` markers on their own lines. Rendered centred on the column and snapped to the baseline grid with configurable top and bottom margins (`math.marginTop`, `math.marginBottom`) — exactly the same correction mechanism headings use, so the paragraph after the formula lands back on the grid.
-- **Escaping:** `\$` is a literal dollar sign. Unmatched `$` or `$$` delimiters produce an `unclosedMath` entry in the Sandbox's Checks panel with a click-to-focus source anchor.
+- **Text around a display:** a display formula on its own line interrupts a paragraph even with no blank line above it. The text before it is a paragraph that leads into it; text written right under the closing `$$`, with no blank line, continues the interrupted paragraph and is set with no first-line indent, as TeX sets the "where …" after a display. A formula set off from the text above it by a blank line (or following a list, a quotation or a heading) interrupts nothing: the text after it is a new paragraph, indented as usual, blank line or not (`math.indentAfterDisplay: false` sets it flush too). Only a whole display interrupts a paragraph — one formula on the line, or a `$$` fence closed before the next blank line; a line such as `$$a$$ and $$b$$` stays text. `math.keepWithLeadIn` keeps a formula in the column of the line that introduces it. (Up to postext 1.4 a `$$…$$` line with no blank line above it was read as part of the paragraph and printed as it was written.)
+- **Equation numbers:** `\tag{…}` numbers a display formula: it spans the column (or the callout's inner width), the equation centred and its number flush right on its line — on each tagged row of an `align`. `\tag*{…}` prints the label without parentheses. Only explicit tags are numbered.
+- **Escaping:** `\$` is a literal dollar sign. Captions, table cells, notes and chips are not parsed for maths, so a `$` there prints as it is; `\$` prints a dollar sign there too, and one escaped string reads the same in the text and in a table. Unmatched `$` or `$$` delimiters produce an `unclosedMath` entry in the Sandbox's Checks panel with a click-to-focus source anchor.
 - **Errors:** TeX source that MathJax rejects (undefined macros, syntax errors) surfaces as an `invalidMath` warning. The formula is replaced by a small red placeholder so the layout geometry stays valid.
-- **Configuration:** the `math` section of the config exposes `enabled`, `fontSizeScale` (relative to the body font size), `color` (inherits the body colour when unset), and the display margins.
+- **Configuration:** the `math` section of the config exposes `enabled`, `fontSizeScale` (relative to the size of the surrounding text: at 1.0 one em of the formula is that size — the body size for display formulas and for inline maths in body text; since postext 1.5, which sets formulas about 13% smaller than 1.4 did, while bundles and Sandbox books saved by 1.4 keep their size — see [Formula size](/en/docs/configuration#math)), `color` (inherits the body colour when unset), and the display margins.
+- **The engine:** MathJax loads on demand. The Sandbox and the layout worker start it themselves; in your own code, `await initMathEngine()` before `buildDocument`, or every formula is laid out as a grey placeholder box (see [Starting the math engine](/en/docs/configuration#starting-the-math-engine)).
 
 ```md
 The Euler identity $e^{i\pi}+1=0$ links the five fundamental constants.
@@ -477,6 +612,14 @@ The Euler identity $e^{i\pi}+1=0$ links the five fundamental constants.
 $$
 \int_0^{\infty} e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2}
 $$
+```
+
+A formula in the middle of a sentence, and the sentence going on after it with no indent:
+
+```md
+For a pendulum of length $L$ the period is
+$$T_0 = 2\pi\sqrt{L/g}$$
+where $g$ is the acceleration of free fall.
 ```
 
 
@@ -510,9 +653,11 @@ Here is the floor plan we discussed.
 The keeper's quarters occupy the eastern wing.
 ```
 
-For a floated resource the `::resource` directive is unnecessary — the `:ref` already placed it, and a redundant `::resource` for the same id is simply treated as another reference, not a second copy. A `::resource` only renders the resource inline when its resolved placement is `"here"`. An inline resource keeps a line of space above it (the float gap), like a float would, unless the block before asks for more.
+For a floated resource the `::resource` directive is unnecessary — the `:ref` already placed it, and a redundant `::resource` for the same id is simply treated as another reference, not a second copy. A `::resource` only renders the resource inline when its resolved placement is `"here"`. An inline resource keeps a line of space above it (the float gap), like a float would, unless the block before asks for more. In the running text it keeps the same space below it; then the text after it goes back onto the baseline grid, which can add up to a line more. A heading, a list, a box or another inline resource right after it shares that space with its own space above: the larger of the two applies, not both. (Up to postext 1.4 the space below was only what the grid snap left, anywhere from nothing to a line; `layout.inlineResourceGap: 'above'` keeps that rule, and books saved before 1.5 are read with it.) Inside a box (`:::callout`) the resource keeps the same space, a line of the box's own text above it and, with `'around'`, below it; at the top or the foot of the box the padding sets it off instead. (Up to postext 1.4 it sat right against the text of the box; `layout.inlineResourceGapInBoxes: false` keeps that, and books saved before 1.5 whose boxes embed a resource are read with it.)
 
 The `id` must match a resource defined in the Figures panel. The engine renders the resource (bitmap, SVG, or table) with its caption drawn underneath as a figure/table foot. The caption text is composed from the resource type's `captionPrefix`, the computed number, and the resource's own caption — e.g. **Figure 1.7. The original lighthouse plan.** Its typography is governed by [Configuration › Caption style](/en/docs/configuration#caption-style): label and description share one typeface and size, while the label keeps independent bold/italic/colour settings; the gap above the caption defaults to `0.75em` and the alignment to left. The caption can instead sit above the resource (`captionStyle.position: 'above'`, globally or per resource type), optionally on a coloured bar. A resource may also carry a `note` — a short source line or credit, with the same inline formatting and `:ref` marks as the caption — set in a smaller run under the resource (under the caption when the caption is below, under the body when it is above) and styled through `captionStyle.note`.
+
+**Line breaks in captions and notes.** A caption or a note is one paragraph set at the measure of its slot, and a newline typed in it is a space. To start a new line, write `\\` — the forced break of titles — or end the line with a backslash, Markdown's hard break: `¹ Measured at 20 °C. \\ ² Mean of three runs.` sets each footnote of a wide table on a line of its own. The line before a break keeps its natural width, never stretched to the measure, and two breaks in a row make no empty line (a no-break space between them does). In a table cell `\\` does what a newline does: it opens a new paragraph; the indentation of the line after it is kept, so two leading spaces still nest a list item. In the text itself the two backslashes are always a break, with no escape: to print them, set them in inline code, where backslashes print as written. In a link's destination they stay part of the URL, and in a directive's attributes (a `:ref`'s `text`) part of the value; inside a chip, which is set on one line, a break is a space. (Up to postext 1.4 the backslashes printed, and a caption or a note broke only where the measure ran out.)
 
 Table resources draw their own grid, styled through [Configuration › Table style](/en/docs/configuration#table-style): body and header cells have fully independent typography, the header background defaults to `#f0f0f0`, borders to `0.75pt`, and `cellPadding` to `0.375em` — any field left unset inherits from the body text. Column widths are part of the table itself: `TableModel.columnWidths` holds one relative weight per column (`[2, 1, 1]` gives the first column half the width); when unset, columns split the width equally. A table can also be set in a named variant: `table.styleId` picks one of the document's `tableStyles` (see [Configuration › Named table styles](/en/docs/configuration#named-table-styles)), whose unset fields inherit `tableStyle`; an unknown or missing id keeps `tableStyle`.
 
@@ -520,11 +665,11 @@ A cell places its content with `TableCell.align` (`left`, `center`, `right`; lis
 
 A table cell can also hold an image. `TableCell.image` names a bitmap or SVG resource by id (`{ "resourceId": "fig-arm", "width": 0.7 }`): the image is drawn inside the cell — never numbered, floated or captioned — fitted to the cell's inner width (or the fraction of it given by `width`, default `1`) with its aspect ratio kept, aligned like the cell's text, and any cell text runs under it. The row grows to hold it. In the sandbox's table editor the image button of the toolbar picks the resource for the active cell and a width field sets the fraction. An id that matches no image resource leaves the cell text-only.
 
-A cell can carry its own fill. `TableCell.background` is a colour value (`{ "hex": "#c1dfd6", "model": "hex" }`, optionally linked to a document palette entry with `paletteId`) painted instead of the style's header or body background — a compatibility matrix shades its cells green, red and yellow this way. The sandbox's table editor sets it from the fill control of the toolbar. To key such fills, the caption, the note and any text block accept an inline **colour swatch**: `:swatch{color="#c1dfd6"}` (a hex, or the id of a palette entry — `:swatch{color="table-compatible"}`) sets a small square on the baseline, three quarters of the font size, filled with the colour and outlined in the text colour, so a note can read `:swatch{color="ok"}: compatible; :swatch{color="no"}: incompatible`. A colour that resolves to nothing draws an empty outline.
+A cell can carry its own fill. `TableCell.background` is a colour value (`{ "hex": "#c1dfd6", "model": "hex" }`, optionally linked to a document palette entry with `paletteId`) painted instead of the style's header or body background — a compatibility matrix shades its cells green, red and yellow this way. The sandbox's table editor sets it from the fill control of the toolbar. To key such fills, the caption, the note and any text block accept an inline **colour swatch**: `:swatch{color="#c1dfd6"}` (a hex, or the id of a palette entry — `:swatch{color="table-compatible"}`) sets a small square on the baseline, three quarters of the font size, filled with the colour and outlined in the text colour, so a note can read `:swatch{color="ok"}: compatible; :swatch{color="no"}: incompatible`. A colour that resolves to nothing draws an empty outline. The hex may carry an alpha channel (`#rrggbbaa`, `#rgba`), and `rgb()` / `rgba()` colours work too, so a translucent cell fill has a matching translucent key (see [Configuration › Transparency](/en/docs/configuration#transparency)).
 
 SVG resources can additionally be recoloured for single-spot-colour printing via `diagramStyle.singleInk` (default `false`). When enabled, every colour in an SVG diagram is remapped to a luminance-mapped tint of `diagramStyle.inkColor` (which defaults to the main palette colour, `#295AA3`) — white maps to paper, black to the full ink — so figures reproduce faithfully when the document is printed with a single spot colour. See [Configuration › Diagram style](/en/docs/configuration#diagram-style).
 
-A malformed embed (missing or empty `id`, extra attributes) is not promoted to a resource block; it falls through to ordinary paragraph parsing and remains visible in the output, and the sandbox surfaces a warning.
+A malformed embed (missing or empty `id`, an unquoted or single-quoted `id`, extra attributes) is not promoted to a resource block; it falls through to ordinary paragraph parsing and remains visible in the output. So does a well-formed embed line glued under a paragraph line without a blank line between them: it is read as part of that paragraph. Both raise a `malformedEmbed` warning — an **Embed set as text** entry in the sandbox's Checks panel.
 
 Inline references are recognised inside any text block — paragraphs, headings, blockquotes, and list items — and may sit alongside bold, italic, inline code, and inline math.
 
@@ -569,7 +714,7 @@ The `:ref` directive accepts three optional attributes, in any order. `style` se
   </tbody>
 </table>
 
-If a `:ref` (or `::resource`) names an id with no matching resource, the label falls back to `?` and the sandbox raises an **unknown resource** warning.
+If a `:ref` (or `::resource`) names an id with no matching resource, the label falls back to `?` (a `text=` label is printed instead, still with no number or link) and the sandbox raises an **unknown resource** warning. The engine records it as an `unknownResourceId` entry in the document's `contentWarnings`, with the reference's source range and page — also for a `:ref` inside a caption, a note or a table cell of a resource the text uses.
 
 ### First-reference numbering
 
@@ -581,6 +726,8 @@ This means numbers follow the order the reader meets them, not the order resourc
 - Inserting a new reference *earlier* in the document automatically renumbers everything after it. There is no manual numbering to keep in sync.
 
 Numbering is per resource type and respects each type's reset scope and counter format — see [Configuration › Resource types](/en/docs/configuration#resource-types) for the template tokens (`{h1}`, `{n}`), `resetOn`, and `counterFormat`.
+
+Only what the text references is counted: a resource that only a design draws (an image element of a chapter opener, say) gets no number and leaves the counter as it was. And `{h1}` counts every level-1 heading whose style is not `numbered: false`, even one whose `numberingTemplate` is empty, so an article whose only H1 is its title numbers its figures 1.1, 1.2… by default. [Configuration › What is numbered](/en/docs/configuration#what-is-numbered) has both rules and the settings for Figure 1, 2….
 
 ### Placement
 
@@ -603,7 +750,7 @@ Each resource has a **placement** that decides where its float lands, resolved p
     <tr>
       <td><code>width</code>, <code>align</code></td>
       <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code></td>
-      <td>A resource narrower than its slot: <code>width</code> is the fraction of the column (or page) width it takes, <code>align</code> where it sits in the slot (a small table centred in its column; a page-wide band whose picture spans one column). Floats and inline <code>::resource</code> embeds alike.</td>
+      <td>A resource narrower than its slot: <code>width</code> is the fraction of the column (or page) width it takes, <code>align</code> where it sits in the slot (a small table centred in its column; a page-wide band whose picture spans one column). A picture narrower than its slot — a bitmap smaller than the column, or one <code>layout.fitFiguresToPage</code> shrank — also sits there per <code>align</code>, under a caption that keeps the slot's measure. Floats and inline <code>::resource</code> embeds alike.</td>
     </tr>
     <tr>
       <td><code>captionSide</code></td>
@@ -618,18 +765,62 @@ Each resource has a **placement** that decides where its float lands, resolved p
     <tr>
       <td><code>rotate</code></td>
       <td><code>"ccw"</code> · <code>"cw"</code></td>
-      <td>Set the resource turned a quarter turn — a landscape table in a portrait book. <code>"ccw"</code> turns it counter-clockwise, its top facing the left edge of the page (the reader turns the book clockwise), the usual convention; <code>"cw"</code> the other way. A turned resource is always a page-span float on a page of its own: it is laid out across the height of the content area, sits flush to the spine when the margins are mirrored (flush left otherwise), and a table too wide for one page is cut between rows and continues, turned, on the following pages with its header repeated, exactly like an upright table taller than a page. A turned figure is scaled to fit the page. Ignored for an inline (<code>"here"</code>) embed.</td>
+      <td>Set the resource turned a quarter turn — a landscape table in a portrait book. <code>"ccw"</code> turns it counter-clockwise, its top facing the left edge of the page (the reader turns the book clockwise), the usual convention; <code>"cw"</code> the other way. A turned resource is always a page-span float on a page of its own: it is laid out along the height of the content area, rounded down to whole lines of the baseline grid and less one body line, the float gap every float band keeps (a 237 mm text area on a 14 pt grid holds 47 lines, 232.1 mm, so the resource gets 46 of them, 227.2 mm), sits flush to the spine when the margins are mirrored (flush left otherwise), and a table too wide for one page is cut between rows and continues, turned, on the following pages with its header repeated, exactly like an upright table taller than a page. A turned figure is scaled to fit the page. Ignored for an inline (<code>"here"</code>) embed.</td>
     </tr>
   </tbody>
 </table>
 
-A float goes into the **first free slot after its first reference**, in reading order: the bottom of the column the reference sits in, then the top and the bottom of the next empty column of the same page, then the bands of the next page the flow opens (a page-span float takes the bottom of the page when every column still has room for it, else a band of the next page). It is never shrunk, and it never lands before its reference. Floats of one numbering sequence appear in reference order: a figure that fits nowhere on a page holds up the figures behind it (a waiting table does not hold up a figure, nor the other way round), so figure 12 never appears before figure 11. A table that would otherwise wait is cut instead: offered the head of an empty column, it takes the rows that fit and continues in the next slot — the column beside it or the next page — with its header rows repeated (see `tableStyle.overflow`).
+A float goes into the **first free slot after its first reference**, in reading order: the bottom of the column the reference sits in, then the top and the bottom of the next empty column of the same page, then the bands of the next page the flow opens (a page-span float takes the bottom of the page when every column still has room for it, else a band of the next page). A page an inline figure or table opens counts too: a float waiting for that page takes its head, above the figure or table, when both fit on it; when they do not, the figure or table keeps the page and the float waits for the next one. Up to postext 1.4 such a page was skipped, and the float waited for the page after it even when both fitted. It is never shrunk, and it never lands before its reference. Floats of one numbering sequence appear in reference order: a figure that fits nowhere on a page holds up the figures behind it (a waiting table does not hold up a figure, nor the other way round), so figure 12 never appears before figure 11. A table that would otherwise wait is cut instead: offered the head of an empty column, it takes the rows that fit and continues in the next slot — the column beside it or the next page — with its header rows repeated (see `tableStyle.overflow`).
 
-Floats never escape their chapter: at a chapter opener (a heading level with `breakBefore` or `span: 'page'`), a `:::part`, a callout style with `floatBarrier: true` (the closing "key points" box of a chapter) and at the end of the document, every float still pending is placed first — in the page's free slots, or on pages opened ahead of the boundary. A figure or table that asked for the head of a page may then take the foot of the chapter's closing page, under its balanced columns, rather than a page of its own. A `:::pagebreak` simply sends pending floats to the page that follows it.
+Floats never escape their chapter: at a chapter opener (a heading level with `breakBefore` or `span: 'page'`), a `:::part`, a callout style with `floatBarrier: true` (the closing "key points" box of a chapter) and at the end of the document, every float still pending is placed first — in the page's free slots, or on pages opened ahead of the boundary. A float first cited by the opener itself (a chapter title that names its figure), or by the first block after a `:::part`, belongs to the new chapter: it lands after that line, like any other. A figure or table that asked for the head of a page may then take the foot of the chapter's closing page, under its balanced columns, rather than a page of its own. A `:::pagebreak` simply sends pending floats to the page that follows it.
 
 Float bands are corrected against the baseline grid so the surrounding text keeps the page-wide vertical rhythm. A **top** band grows its bottom margin to the next grid line, so the text below the float stays aligned with the neighbouring columns and the facing page. A **bottom** float is anchored so its caption's last line shares a baseline with the last text line of the other columns (captionless content aligns its bottom edge to the last grid slot) — full pages therefore end at the same height across columns and across facing pages.
 
+On the closing page of a chapter — and of the document — nothing follows the page-wide figures and tables set below the last band of text, so they move up to sit one float gap under it, stacked in their order, instead of leaving white between the text and a figure at the page foot. That holds for a `position: 'bottom'` float too. To keep them at the foot, as on every other page, set `layout.hugClosingFloats: false` (see [Configuration › Layout](/en/docs/configuration#layout)). Pages with a side column never move them.
+
 All three backends — the canvas preview, the HTML viewer, and the PDF output — render resources. In the HTML backend, image payloads live out-of-band, so the host supplies them through the `resourceImageUrl(fileId)` resolver option; when the resolver is missing (or returns nothing for a file), the resource renders as a neutral placeholder box so the layout stays stable.
+
+#### Where a float can land
+
+"Never before its reference" counts from the line that cites the float: the float waits until that line is set, and takes the first free slot after it in reading order — the head of the page the line is set on comes before it. A side float (`span: 'side'`, in the float-only side column of a one-and-a-half layout) is the exception: it stacks in the side column beside the text that cites it, and may sit higher on the page than the citing line. For a figure cited on page 5:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Placement</th>
+      <th>On page 5</th>
+      <th style={{ width: '220px' }}>Otherwise</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>top</code>, <code>span: 'page'</code></td>
+      <td>Never: the band at the head of the page is above the citing line.</td>
+      <td>The top band of page 6.</td>
+    </tr>
+    <tr>
+      <td><code>top</code>, <code>span: 'column'</code></td>
+      <td>The head of a later column that is still empty — cited in the first of two columns, it can open the second.</td>
+      <td>The head of a column of page 6.</td>
+    </tr>
+    <tr>
+      <td><code>auto</code> or <code>bottom</code>, <code>span: 'page'</code></td>
+      <td>The foot band of page 5, when every column still has room for it.</td>
+      <td>A band of page 6.</td>
+    </tr>
+    <tr>
+      <td><code>auto</code> or <code>bottom</code>, <code>span: 'column'</code></td>
+      <td>The foot of the citing column; then the foot (either) or the head (<code>auto</code> only) of a later empty column.</td>
+      <td>Page 6.</td>
+    </tr>
+  </tbody>
+</table>
+
+- A chapter opener page follows the same rules: a page-span `auto` or `bottom` float cited in the opener's first paragraph can take that page's foot band, under its text; a `top` one opens the next page. To have the picture on the page that cites it, use `auto` or `bottom`, or draw it as an image element of the opener's design.
+- Two column floats cited in the same paragraph take the next two slots: typically the first the foot of the citing column, the second the head of the next empty column — side by side on the page.
+- In a single-column layout a page-span float is a column float, and the same rules hold: a `top` float cited on a page lands at the head of the next one.
+- A paragraph that runs from one page onto the next counts from its citing line too. When the paragraph begins at the foot of page 5 and the reference falls on page 6 — or the whole paragraph moves to page 6, because not enough of its lines fit at the foot of page 5 — the reference is on page 6: a `top` float opens page 7, and an `auto` one takes the foot of page 6 when there is room for it. The same holds between the columns of a page, and for a box split across pages: a figure its second part cites waits for that part.
+- **Changed in postext 1.5.** Up to postext 1.4 a float was queued when the layout reached the paragraph that cites it, so the page such a paragraph ran onto (or moved to) could open with the float, above the line holding the reference. Such a figure now lands a page later, or at the foot of the page when it asks for `auto`; a page-count change can follow.
 
 
 ## What is NOT supported
@@ -637,16 +828,18 @@ All three backends — the canvas preview, the HTML viewer, and the PDF output �
 Postext does not recognise the following CommonMark features. They are either treated as plain text (and therefore will appear literally in the output) or silently dropped:
 
 - **Setext-style headings** — the `===` / `---` underline form. Use ATX (`#`) headings.
-- **Fenced or indented code blocks** — triple-backtick fences and 4-space indentation. Inline code works; multiline code will be rendered line-by-line as paragraphs.
+- **Fenced or indented code blocks** — ` ``` ` or `~~~` fences and 4-space indentation. The lines inside are read as ordinary Markdown, not kept as a listing: lines with no blank line between them join into one paragraph and lose their leading spaces, a line that starts with `#` and a space becomes a heading (`#!/usr/bin/env` stays text) and one that starts with `-` or `1.` and a space a list item, a pair of `$` signs becomes a formula, and the fence lines print as text: a ` ``` ` fence as one backtick, the opening one followed by the info string (`` `bash``), and a `~~~` fence as one small `~` set as a subscript. To set a listing, write each line as a paragraph of its own (a blank line between lines) inside a `:::paragraphs` block whose paragraph style sets a monospaced `fontFamily`, and wrap each line in backticks, which keep `#`, `$`, `*` and the rest as written. Ordinary spaces at the start of a line are dropped and a run of them inside a line shrinks to one, inside the backticks too, so indent and align with no-break spaces (U+00A0) and put them inside the backticks: one before the opening backtick is dropped as well. Inline code is recognised, but it has no code face: see [Inline formatting](#inline-formatting).
 - **HTML passthrough** — raw `<tags>` are not interpreted. MDX-style tags are not supported either; Postext source is pure markdown.
 - **Horizontal rules** — `---`, `***`, `___`.
 - **Tables** — pipe tables are not parsed. Tables are modeled as structured resources on `PostextContent.resources`.
 - **Reference-style links** — `[text][id]` plus a definition block.
 - **Autolinks** — `<https://example.com>`.
 - **Strikethrough** — `~~text~~`. The strikethrough renderer is currently reserved for completed task items.
-- **Footnote markers in markdown** — `[^1]`. Footnotes ride on `PostextContent.notes` and are referenced by id, not by inline syntax.
+- **Footnote markers in markdown** — `[^1]`. Footnotes, endnotes and margin notes are not implemented yet: there is no reference syntax, and `PostextContent.notes`, which the types accept, is ignored by the engine. Until they are, set notes as text: a superscript marker in the body (`^1^`) and the notes gathered at the end of the section or chapter in a `:::paragraphs{style="notes"}` block with a small paragraph style.
 
 This list will shrink over time. Until then, anything not explicitly listed in the supported section above should be assumed to be literal text.
+
+Beyond the syntax, two families of writing systems are not set correctly yet: right-to-left scripts (Arabic, Hebrew…), which have no bidirectional layout, and Chinese, Japanese and Korean, which break between characters with basic line-start and line-end rules only, and are never justified between characters. Hyphenation patterns and built-in labels ship for eight languages. See [Languages and scripts](/en/docs/configuration#languages-and-scripts).
 
 
 ## Authoring conventions

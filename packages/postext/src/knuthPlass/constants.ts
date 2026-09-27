@@ -12,6 +12,21 @@ export const BADNESS_CAP = 10000;
  *  and multiplied by the square of the adjustment ratio, so the cost rises
  *  with the overshoot (see `computeBreakpoints`). */
 export const OVER_STRETCH_BADNESS = 2000;
+/** Extra badness of a line that takes tracking (`KPOptions.trackingPerChar`)
+ *  at the full capacity of its letters, scaled by the square of the share it
+ *  uses: tracking only ever sets a line word spacing alone would take past
+ *  its limits, and such a line stays dearer than one within them. */
+export const TRACKING_BADNESS = 100;
+/** Extra badness of a hyphenated break ending a line that closes a column
+ *  or a page (`KPOptions.avoidHyphenAtLines`). On the runt penalty's scale:
+ *  it outweighs any line within the word-spacing limits (and a hyphen
+ *  elsewhere), and stays below the cost of a line stretched past them. */
+export const COLUMN_END_HYPHEN_BADNESS = 1000;
 export const MAX_STRETCH = Number.MAX_SAFE_INTEGER;
+/** Word spacing (justified over normal space) past which a justified line
+ *  is set ragged instead of stretched (`pipeline/raggedLines.ts`). The
+ *  breaker's looseness gate counts such lines apart from the ones that
+ *  stay justified. */
+export const RAGGED_SPACE_RATIO = 3;
 
 export const SOFT_HYPHEN = '\u00AD';

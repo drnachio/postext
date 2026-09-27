@@ -8,12 +8,13 @@
 
 import type { ContentBlock, InlineSpan } from '../parse';
 import { flattenTitleBreaks, TITLE_BREAK_RE } from '../parse/inlineFormatting';
-import { computeHeadingNumbers, type HeadingTemplates } from '../numbering';
+import { collapseBreakingSpaces } from '../measure/spaces';
+import { computeHeadingNumbering, type HeadingNumberingOptions, type HeadingTemplates } from '../numbering';
 import type { HeadingCounters, OutlineEntry, PostextConfig } from '../types';
 import type { ResolvedConfig, VDTDocument } from '../vdt';
-import { resolveAllConfig } from './config';
-import { headingIsListed, headingIsNumbered, headingStyleOf } from './headingStyles';
-import { planParts } from './parts';
+import { resolvedLocale, resolveAllConfig } from './config';
+import { headingIsListed, headingIsNumbered, headingMarksFor, headingStyleOf } from './headingStyles';
+import { partMarkPages, planParts } from './parts';
 
 /** Whether the parsed content holds a `:::toc` directive. */
 export function hasTocDirective(blocks: readonly ContentBlock[]): boolean {
@@ -44,26 +45,39 @@ export function headingTemplatesOf(resolved: ResolvedConfig): HeadingTemplates {
   return templates;
 }
 
+/** What heading numbering takes from the resolved config beside the level
+ *  templates: the document language (spelled-out counters) and the heading
+ *  styles' own templates. */
+export function headingNumberingOptions(resolved: ResolvedConfig): HeadingNumberingOptions {
+  const styled = resolved.headingStyles.some((s) => s.numberingTemplate !== undefined);
+  return {
+    locale: resolvedLocale(resolved),
+    ...(styled ? { templateFor: (b: ContentBlock) => headingStyleOf(b, resolved)?.numberingTemplate } : {}),
+  };
+}
+
 /**
  * The outline of parsed content: one entry per heading (every level — the
  * contents pick the levels they list) and per part, in document order,
- * without page labels. Numbers follow the level templates, else the
- * chapter ordinal for level 1, continuing from `before` (the counters and
- * chapter ordinal the preceding content left).
+ * without page labels. Numbers follow the level templates (or a heading
+ * style's own), else the chapter ordinal for level 1, continuing from
+ * `before` (the counters and chapter ordinal the preceding content left).
  */
 export function computeOutline(
   blocks: readonly ContentBlock[],
   resolved: ResolvedConfig,
   before?: HeadingCounters,
 ): OutlineEntry[] {
+  // Headings whose marks the configuration leaves off list plain (EF-122).
+  blocks = headingMarksFor(blocks as ContentBlock[], resolved);
   const isNumbered = (b: ContentBlock) => headingIsNumbered(b, resolved);
-  const prefixes = computeHeadingNumbers(
+  const { prefixes, values } = computeHeadingNumbering(
     [...blocks],
     headingTemplatesOf(resolved),
     before ? [before.h1, before.h2, before.h3, before.h4, before.h5, before.h6] : undefined,
     isNumbered,
+    headingNumberingOptions(resolved),
   );
-  let ordinal = before?.h1 ?? 0;
   const parts = planParts(blocks);
   const out: OutlineEntry[] = [];
   for (let i = 0; i < blocks.length; i++) {
@@ -83,16 +97,20 @@ export function computeOutline(
     }
     if (b.type !== 'heading' || !b.level) continue;
     const numbered = isNumbered(b);
-    if (numbered && b.level === 1) ordinal++;
     const prefix = prefixes[i] ?? '';
-    const number = numbered ? (prefix.length > 0 ? prefix : b.level === 1 ? String(ordinal) : '') : '';
     const style = headingStyleOf(b, resolved);
+    // Without a template, a chapter lists its ordinal: the level-1 counter.
+    // A style whose own template is empty prints no number at all.
+    const ordinal = b.level === 1 && style?.numberingTemplate !== '';
+    const number = numbered ? (prefix.length > 0 ? prefix : ordinal ? String(values[i] ?? '') : '') : '';
     out.push({
       kind: 'heading',
       level: b.level,
-      title: flattenTitleBreaks(b.text).replace(/\s+/g, ' ').trim(),
+      // No-break spaces stay: a running head or contents entry keeps them.
+      title: collapseBreakingSpaces(flattenTitleBreaks(b.text)).trim(),
       spans: titleSpans(b.spans),
       number,
+      ...(numbered && values[i] !== undefined ? { counter: values[i] } : {}),
       numbered,
       listed: headingIsListed(b, resolved),
       ...(style ? { styleId: style.id } : {}),
@@ -114,7 +132,8 @@ export function computeOutlineFor(
 /**
  * The outline of a laid-out document: the entries `computeOutline` gives
  * for its content (`parsedOutline`, in the same order), each with the label
- * of the page it landed on. Parts come from the part pages, headings from
+ * of the page it landed on. Parts come from the part pages (with
+ * `parts.page: false`, the page their content starts on), headings from
  * the heading blocks; both in page order (a part page always precedes its
  * chapters).
  */
@@ -128,8 +147,16 @@ export function outlineFromDoc(doc: VDTDocument, parsedOutline: readonly Outline
     if (headingPage.has(b.contentIndex)) continue;
     headingPage.set(b.contentIndex, { pageLabel: doc.pages[b.pageIndex]?.pageLabel ?? '', pageIndex: offset + b.pageIndex });
   }
-  const partPages: { pageLabel: string; pageIndex: number }[] = [];
+  const partPages: ({ pageLabel: string; pageIndex: number } | undefined)[] = [];
   for (const page of doc.pages) if (page.partInfo) partPages.push({ pageLabel: page.pageLabel, pageIndex: offset + page.index });
+  // Parts set without a divider page (`parts.page: false`) point at the
+  // page their content starts on — the one their running heads switch on.
+  if (doc.partMarks && doc.partMarks.length > 0) {
+    for (const index of partMarkPages(doc)) {
+      const page = index !== undefined ? doc.pages[index] : undefined;
+      partPages.push(page ? { pageLabel: page.pageLabel, pageIndex: offset + page.index } : undefined);
+    }
+  }
   const headingIndices = [...headingPage.keys()].sort((a, b) => a - b);
   let h = 0;
   let p = 0;

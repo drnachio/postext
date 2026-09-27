@@ -19,12 +19,15 @@ export function PlaceholderPicker({ onInsert, slotKind = 'header' }: Props) {
   const LABELS: Record<string, string | undefined> = {
     pageNumber: labels.headerFooterPlaceholderPageNumber,
     totalPages: labels.headerFooterPlaceholderTotalPages,
+    bookTotalPages: labels.headerFooterPlaceholderBookTotalPages,
     title: labels.headerFooterPlaceholderTitle,
     subtitle: labels.headerFooterPlaceholderSubtitle,
     author: labels.headerFooterPlaceholderAuthor,
     publishDate: labels.headerFooterPlaceholderPublishDate,
     chapterTitle: labels.headerFooterPlaceholderChapterTitle,
     chapterNumber: labels.headerFooterPlaceholderChapterNumber,
+    chapterTitleAtTop: labels.headerFooterPlaceholderChapterTitleAtTop,
+    chapterNumberAtTop: labels.headerFooterPlaceholderChapterNumberAtTop,
     partTitle: labels.headerFooterPlaceholderPartTitle,
     partNumber: labels.headerFooterPlaceholderPartNumber,
     titleText: labels.headerFooterPlaceholderHeadingTitle,
@@ -34,6 +37,10 @@ export function PlaceholderPicker({ onInsert, slotKind = 'header' }: Props) {
     numberRomanLower: labels.headerFooterPlaceholderNumberRomanLower,
     numberAlpha: labels.headerFooterPlaceholderNumberAlpha,
     numberAlphaLower: labels.headerFooterPlaceholderNumberAlphaLower,
+    numberWords: labels.headerFooterPlaceholderNumberWords,
+    numberWordsLower: labels.headerFooterPlaceholderNumberWordsLower,
+    numberOrdinalWords: labels.headerFooterPlaceholderNumberOrdinalWords,
+    numberOrdinalWordsLower: labels.headerFooterPlaceholderNumberOrdinalWordsLower,
   };
 
   const kind: DesignContextKind = slotKind;
@@ -73,6 +80,15 @@ export function PlaceholderPicker({ onInsert, slotKind = 'header' }: Props) {
         {' — '}
         {labels.headerFooterPlaceholderAttrHint}
       </div>
+      {(slotKind === 'header' || slotKind === 'footer') && (
+        <div className="mt-1 text-xs" style={{ color: 'var(--slate)' }}>
+          <code>{'{firstMark.h2}'}</code>
+          {' / '}
+          <code>{'{lastMark.h2}'}</code>
+          {' — '}
+          {labels.headerFooterPlaceholderMarkHint}
+        </div>
+      )}
     </div>
   );
 }

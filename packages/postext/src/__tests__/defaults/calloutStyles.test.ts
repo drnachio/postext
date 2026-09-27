@@ -56,6 +56,7 @@ describe('callout style defaults', () => {
       gap: { value: 0.5, unit: 'em' },
       letterSpacing: { value: 0, unit: 'pt' },
       indent: { value: 0, unit: 'pt' },
+      lineHeight: { value: 1.2, unit: 'em' },
     });
     expect(r!.icon.fontFamily).toBe('Inter');
     expect(r!.body).toEqual({
@@ -63,6 +64,10 @@ describe('callout style defaults', () => {
       fontSize: { value: 9, unit: 'pt' },
       lineHeight: { value: 1.4, unit: 'em' },
       color: body.color,
+      fontWeight: body.fontWeight,
+      boldFontWeight: body.boldFontWeight,
+      italic: false,
+      smallCaps: false,
       textAlign: 'left',
       hyphenation: false,
       paragraphSpacing: body.paragraphSpacing,
@@ -164,6 +169,33 @@ describe('callout style defaults', () => {
     expect(stripCalloutStylesDefaults([{ id: 'form', snapToGrid: false }])).toEqual([{ id: 'form', snapToGrid: false }]);
     expect(stripCalloutStylesDefaults([{ id: 'form', snapToGrid: true }])).toEqual([{ id: 'form' }]);
     expect(resolve([{ id: 'form', snapToGrid: false }])[0]!.snapToGrid).toBe(false);
+  });
+
+  it('resolves and strips the body weights, italic and small caps (EF-24)', () => {
+    const [r] = resolve([{ id: 'dir', body: { fontWeight: 300, boldFontWeight: 600, italic: true, smallCaps: true } }]);
+    expect([r!.body.fontWeight, r!.body.boldFontWeight, r!.body.italic, r!.body.smallCaps]).toEqual([300, 600, true, true]);
+    expect(stripCalloutStylesDefaults([{ id: 'a', body: { italic: false, smallCaps: false } }])).toEqual([{ id: 'a' }]);
+    expect(stripCalloutStylesDefaults([{ id: 'a', body: { fontWeight: 400, italic: true, smallCaps: true } }]))
+      .toEqual([{ id: 'a', body: { fontWeight: 400, italic: true, smallCaps: true } }]);
+  });
+
+  it('resolves and strips the continuation marks (EF-29)', () => {
+    const [r] = resolve([{ id: 'kp' }]);
+    expect([r!.repeatTitle, r!.continuesMarkerEnabled, r!.continuesMarkerAlign, r!.continuesMarkerItalic]).toEqual([false, false, 'right', true]);
+    // The strings follow the document language (here the hyphenation locale).
+    expect([r!.continuedSuffix, r!.continuesMarker]).toEqual(['(cont.)', 'Continued']);
+    const es = resolveCalloutStylesConfig([{ id: 'kp' }], body, headings, lists, 'es');
+    expect(es[0]!.continuesMarker).toBe('Continúa');
+    expect(stripCalloutStylesDefaults([{
+      id: 'kp', repeatTitle: false, continuesMarkerEnabled: false, continuesMarkerAlign: 'right', continuesMarkerItalic: true,
+    }])).toEqual([{ id: 'kp' }]);
+    const set: CalloutStyleConfig = {
+      id: 'kp', repeatTitle: true, continuedSuffix: "(CONT'D)", continuesMarkerEnabled: true,
+      continuesMarker: '(MORE)', continuesMarkerAlign: 'center', continuesMarkerItalic: false,
+    };
+    expect(stripCalloutStylesDefaults([set])).toEqual([set]);
+    // Language-dependent strings are kept even when equal to one default.
+    expect(stripCalloutStylesDefaults([{ id: 'kp', continuesMarker: 'Continued' }])).toEqual([{ id: 'kp', continuesMarker: 'Continued' }]);
   });
 
   it('keeps the body bold colour when stripping', () => {

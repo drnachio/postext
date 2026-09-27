@@ -142,7 +142,7 @@ export function RuntsSubsection({
         value={bodyText.runtMinCharacters}
         onChange={(v) => updateBodyText({ runtMinCharacters: v })}
         min={1}
-        max={20}
+        max={60}
         step={1}
         tooltip={labels.bodyRuntMinCharactersTooltip}
         isDefault={isRuntMinCharactersDefault}
@@ -158,6 +158,14 @@ export function RuntsSubsection({
         tooltip={labels.bodyRuntPenaltyTooltip}
         isDefault={isRuntPenaltyDefault}
         onReset={() => resetField('runtPenalty')}
+      />
+      <ToggleSwitch
+        label={labels.bodyGradedRuntPenalty}
+        checked={bodyText.gradedRuntPenalty}
+        onChange={(checked) => updateBodyText({ gradedRuntPenalty: checked })}
+        tooltip={labels.bodyGradedRuntPenaltyTooltip}
+        isDefault={bodyText.gradedRuntPenalty === DEFAULT_BODY_TEXT_CONFIG.gradedRuntPenalty}
+        onReset={() => resetField('gradedRuntPenalty')}
       />
       <ToggleSwitch
         label={labels.bodyAvoidRuntsInLists}

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { PostextConfig, VDTDocument } from 'postext';
+import type { PostextConfig, Resource, VDTDocument } from 'postext';
 import { computeWarnings } from './compute';
 import type { WarningPayload } from './types';
+import type { ComposedBook } from '../book/types';
 
 function kinds(markdown: string, config: PostextConfig = {}): WarningPayload['kind'][] {
   return computeWarnings({ markdown, config, doc: null }).map((w) => w.payload.kind);
@@ -87,20 +88,68 @@ describe('chip warnings', () => {
     expect(kinds(':chip[c]{style="nope"}', { chipStyles: [{ id: 'nope' }] })).not.toContain('unknownChipStyle');
   });
 
-  it('flags chips taller than the line pitch once per style', () => {
-    const chip = (styleId: string, ascent: number, descent: number) => ({
-      kind: 'chip', text: '', width: 10,
-      chip: { styleId, runs: [], marginLeft: 0, marginRight: 0, boxWidth: 10, ascent, descent, paddingX: 0, borderWidth: 0, borderRadius: 0 },
+  // EF-118: a chip taller than the line pitch is fine until a chip on the
+  // line above or below stands in the way of its box.
+  describe('chips that run into a chip on another line', () => {
+    const chip = (styleId: string, ascent: number, descent: number, width = 10) => ({
+      kind: 'chip', text: '', width,
+      chip: { styleId, runs: [], marginLeft: 0, marginRight: 0, boxWidth: width, ascent, descent, paddingX: 0, borderWidth: 0, borderRadius: 0 },
     });
-    const line = (segments: unknown[]) => ({ text: '', bbox: { x: 0, y: 0, width: 100, height: 20 }, baseline: 16, hyphenated: false, segments, sourceStart: 0, sourceEnd: 5 });
-    const doc = {
-      pages: [],
+    const text = (width: number) => ({ kind: 'text', text: 'x', width });
+    const space = (width: number) => ({ kind: 'space', text: ' ', width });
+    // A line box 20 px tall at `y`, its baseline 16 px down.
+    const line = (y: number, segments: unknown[], isLastLine = true) => ({
+      text: '', bbox: { x: 0, y, width: 100, height: 20 }, baseline: y + 16, hyphenated: false, segments, sourceStart: 0, sourceEnd: 5, isLastLine,
+    });
+    const block = (lines: unknown[], textAlign = 'left') => ({ sourceStart: 0, sourceEnd: 5, textAlign, bbox: { x: 0, y: 0, width: 100, height: 200 }, lines });
+    const doc = (blocks: unknown[]) => ({
+      pages: [{ columns: [{ blocks }], floats: [], marginNotes: [] }],
+      blocks,
       warnings: [],
       config: { page: { dpi: 72 } },
-      blocks: [{ sourceStart: 0, sourceEnd: 5, lines: [line([chip('tall', 16, 6), chip('tall', 16, 6), chip('fits', 14, 5)])] }],
-    } as unknown as VDTDocument;
-    const found = computeWarnings({ markdown: 'x', config: {}, doc }).filter((w) => w.payload.kind === 'chipOverlap');
-    expect(found.map((w) => w.payload)).toEqual([{ kind: 'chipOverlap', style: 'tall', overlapPt: 2 }]);
+    }) as unknown as VDTDocument;
+    const overlaps = (d: VDTDocument) =>
+      computeWarnings({ markdown: 'x', config: {}, doc: d }).filter((w) => w.payload.kind === 'chipOverlap').map((w) => w.payload);
+
+    it('does not flag a tall chip with no chip above or below it', () => {
+      // 22 px of box on a 20 px pitch, alone in its paragraph.
+      expect(overlaps(doc([block([line(0, [chip('tall', 16, 6), chip('tall', 16, 6)])])]))).toEqual([]);
+    });
+
+    it('does not flag tall chips on lines far enough apart (list items with space between them)', () => {
+      expect(overlaps(doc([block([line(0, [chip('tall', 16, 6)])]), block([line(44, [chip('tall', 16, 6)])])]))).toEqual([]);
+    });
+
+    it('flags chips on consecutive lines whose boxes meet, once per style, with the overlap', () => {
+      const d = doc([block([
+        line(0, [chip('tall', 16, 6), chip('fits', 14, 5)]),
+        line(20, [chip('tall', 16, 6)]),
+        line(40, [chip('tall', 17, 6)]),
+      ])]);
+      // 0.72 pt per px at 72 dpi is 1: line 1 ends at 22, line 2 starts at
+      // 20; line 2 ends at 42, line 3 starts at 39.
+      expect(overlaps(d)).toEqual([{ kind: 'chipOverlap', style: 'tall', overlapPt: 3 }]);
+    });
+
+    it('does not flag chips on consecutive lines that stand apart across the line', () => {
+      expect(overlaps(doc([block([line(0, [chip('tall', 16, 6)]), line(20, [text(50), chip('tall', 16, 6)])])]))).toEqual([]);
+    });
+
+    it('places the chips of a justified line where its spaces put them', () => {
+      // Line 1 is justified: its one space widens to 80 px and pushes the
+      // chip to the right end, over the chip of line 2.
+      const justified = doc([block([
+        line(0, [text(10), space(5), chip('tall', 16, 6)], false),
+        line(20, [text(90), chip('tall', 16, 6)]),
+      ], 'justify')]);
+      expect(overlaps(justified)).toEqual([{ kind: 'chipOverlap', style: 'tall', overlapPt: 2 }]);
+      // Set ragged, the chip of line 1 stays at the left.
+      const ragged = doc([block([
+        line(0, [text(10), space(5), chip('tall', 16, 6)], false),
+        line(20, [text(90), chip('tall', 16, 6)]),
+      ], 'left')]);
+      expect(overlaps(ragged)).toEqual([]);
+    });
   });
 });
 
@@ -177,6 +226,111 @@ describe('design slot placeholder warnings', () => {
     const found = find('', 'designDanglingAnchor', config);
     expect(found.map((w) => [w.payload.slot, w.payload.referencedId])).toEqual([['part', 'ghost']]);
   });
+
+  // EF-134: the design checks walked the running heads, the part opener and
+  // the heading levels, not the heading styles, so a loop or a missing
+  // `#id` in a style's design or section running heads was never listed.
+  describe('heading styles (EF-134)', () => {
+    const at = (id: string, to: string) => ({ ...text('{titleText}'), id, placement: { anchor: { to: `#${to}` as const, edge: 'below' as const } } });
+    const styled: PostextConfig = {
+      headingStyles: [
+        {
+          id: 'index',
+          advancedDesign: { enabled: true, slot: { elements: [at('a', 'b'), at('b', 'a'), at('c', 'ghost')] } },
+          header: { elements: [{ ...text('{chapterTitle} {nope}'), id: 'rh', placement: { anchor: { to: '#missing', edge: 'below' } } }] },
+          footer: { elements: [{ ...text('{pageNumber}'), id: 'f1' }] },
+        },
+        // A design that is not switched on is not drawn: nothing to check.
+        { id: 'off', advancedDesign: { enabled: false, slot: { elements: [at('x', 'y')] } } },
+      ],
+    };
+
+    it('lists cyclic and dangling anchors in a style\'s design and running heads', () => {
+      const cyclic = find('', 'designCyclicAnchor', styled);
+      expect(cyclic.map((w) => [w.payload.slot, w.payload.styleId, w.payload.elementId]).sort()).toEqual([
+        ['heading', 'index', 'a'],
+        ['heading', 'index', 'b'],
+      ]);
+      const dangling = find('', 'designDanglingAnchor', styled);
+      expect(dangling.map((w) => [w.payload.slot, w.payload.styleId, w.payload.elementId, w.payload.referencedId])).toEqual([
+        ['heading', 'index', 'c', 'ghost'],
+        ['header', 'index', 'rh', 'missing'],
+      ]);
+      // Distinct ids from the level and document checks.
+      const ids = [...cyclic, ...dangling].map((w) => w.id);
+      expect(new Set(ids).size).toBe(ids.length);
+      expect(ids.every((id) => id.includes('style-index'))).toBe(true);
+    });
+
+    it('checks the placeholders of a style\'s slots with their own allow-lists', () => {
+      const found = find('', 'headerFooterUnknownPlaceholder', styled);
+      expect(found.map((w) => [w.payload.slot, w.payload.styleId, w.payload.name])).toEqual([['header', 'index', 'nope']]);
+    });
+
+    it('stays quiet when the design checks are off', () => {
+      const config: PostextConfig = { ...styled, debug: { warnings: { designIssues: false } } };
+      const warnings = computeWarnings({ markdown: '', config, doc: null });
+      expect(warnings.some((w) => w.payload.kind === 'designCyclicAnchor' || w.payload.kind === 'designDanglingAnchor')).toBe(false);
+    });
+
+    // A cover style that prints the book's title and subtitle, as deep-sky's
+    // does. With no laid-out document (the PDF view opened first), the check
+    // read no metadata at all and listed both as missing.
+    it('reads the metadata from the front matter when no document is laid out', () => {
+      const cover: PostextConfig = {
+        headingStyles: [{ id: 'cover', advancedDesign: { enabled: true, slot: { elements: [text('{title} · {subtitle} · {publishDate}')] } } }],
+      };
+      const missing = (markdown: string) =>
+        find(markdown, 'headerFooterMetadataMissing', cover).filter((w) => w.payload.styleId !== undefined).map((w) => [w.payload.styleId, w.payload.name]);
+      expect(missing('---\ntitle: Deep Sky\nsubtitle: Eight views\npublishDate: 2026-09-24\n---\n\n# Deep Sky {style="cover"}\n')).toEqual([]);
+      expect(missing('---\ntitle: Deep Sky\n---\n\n# Deep Sky {style="cover"}\n')).toEqual([
+        ['cover', 'subtitle'],
+        ['cover', 'publishDate'],
+      ]);
+      expect(missing('# Deep Sky {style="cover"}\n').map(([, name]) => name)).toEqual(['title', 'subtitle', 'publishDate']);
+    });
+
+    // A later chapter has no front matter of its own: the book's metadata
+    // (its first chapter's front matter) is what the engine prints.
+    it('reads the book\'s metadata for a chapter laid out on its own', () => {
+      const cover: PostextConfig = {
+        headingStyles: [{ id: 'cover', advancedDesign: { enabled: true, slot: { elements: [text('{title} · {subtitle}')] } } }],
+      };
+      const markdown = '# Galaxies {style="cover"}\n';
+      const book: ComposedBook = { markdown, metadata: { title: 'Deep Sky', subtitle: 'Eight views' }, segments: [], scope: { only: 'c6' } };
+      const warnings = computeWarnings({ markdown, config: cover, doc: null, book });
+      expect(warnings.filter((w) => w.payload.kind === 'headerFooterMetadataMissing')).toEqual([]);
+    });
+  });
+
+  // The other slots set with a part's placeholders: the blank verso after a
+  // part page and the part rows of the contents.
+  describe('part verso and contents part rows', () => {
+    const at = (id: string, to: string, content = '{titleText}') => ({ ...text(content), id, placement: { anchor: { to: `#${to}` as const, edge: 'below' as const } } });
+    const config: PostextConfig = {
+      parts: { versoDesign: { elements: [at('v1', 'v2'), at('v2', 'v1')] } },
+      toc: { parts: { design: { elements: [at('r1', 'ghost', '{number} {pageNumber} {bogus}')] } } },
+    };
+
+    it('lists their cyclic and dangling anchors', () => {
+      const cyclic = find('', 'designCyclicAnchor', config);
+      expect(cyclic.map((w) => [w.payload.slot, w.payload.configPath, w.payload.elementId]).sort()).toEqual([
+        ['part', 'parts.versoDesign', 'v1'],
+        ['part', 'parts.versoDesign', 'v2'],
+      ]);
+      const dangling = find('', 'designDanglingAnchor', config);
+      expect(dangling.map((w) => [w.payload.configPath, w.payload.elementId, w.payload.referencedId])).toEqual([
+        ['toc.parts.design', 'r1', 'ghost'],
+      ]);
+      const ids = [...cyclic, ...dangling].map((w) => w.id);
+      expect(new Set(ids).size).toBe(ids.length);
+    });
+
+    it('checks their placeholders against the part allow-list', () => {
+      const found = find('', 'headerFooterUnknownPlaceholder', config);
+      expect(found.map((w) => [w.payload.slot, w.payload.configPath, w.payload.name])).toEqual([['part', 'toc.parts.design', 'bogus']]);
+    });
+  });
 });
 
 describe('chapter attribution', () => {
@@ -208,6 +362,103 @@ describe('chapter attribution', () => {
   });
 });
 
+describe('engine content warnings', () => {
+  const tableResource = (id: string, extra: Partial<Resource> = {}): Resource => ({
+    id,
+    typeId: 'table',
+    kind: 'table',
+    createdAt: 0,
+    updatedAt: 0,
+    table: { model: { rows: [[{ content: 'A', colSpan: 2 }, { content: 'C' }], [{ content: '1' }, { content: '2' }, { content: '3' }]] }, styleId: 'zebra' },
+    ...extra,
+  });
+  const photo: Resource = {
+    id: 'photo',
+    typeId: 'figure',
+    kind: 'bitmap',
+    createdAt: 0,
+    updatedAt: 0,
+    bitmap: { fileId: 'file-photo', format: 'png', width: 10, height: 10 },
+  };
+
+  it('flags a heading style no style declares', () => {
+    const found = find('# Preface {style="front"}\n\nText.', 'unknownHeadingStyle');
+    expect(found.map((w) => w.payload)).toEqual([{ kind: 'unknownHeadingStyle', style: 'front', level: 1 }]);
+    expect(found[0]!.line).toBe(1);
+    expect(kinds('# Preface {style="front"}', { headingStyles: [{ id: 'front' }] })).not.toContain('unknownHeadingStyle');
+  });
+
+  it('flags the table style id and the ragged grid of a table the text uses', () => {
+    const md = 'Intro.\n\nSee :ref{id="t1"}.';
+    const all = computeWarnings({ markdown: md, config: {}, doc: null, resources: [tableResource('t1')] });
+    const payloads = all.map((w) => w.payload).filter((p) => p.kind === 'unknownTableStyle' || p.kind === 'raggedTableGrid');
+    expect(payloads).toEqual([
+      { kind: 'unknownTableStyle', resourceId: 't1', styleId: 'zebra' },
+      { kind: 'raggedTableGrid', resourceId: 't1', reason: 'spanOverlap', row: 0, col: 1, count: 2 },
+    ]);
+    const w = all.find((x) => x.payload.kind === 'unknownTableStyle')!;
+    expect(md.slice(w.sourceStart, w.sourceEnd)).toBe(':ref{id="t1"}');
+    expect(w.line).toBe(3);
+  });
+
+  it('does not list what the built document reports as well twice', () => {
+    const md = 'See :ref{id="nope"}.';
+    const doc = {
+      pages: [],
+      blocks: [],
+      config: { page: { dpi: 72 } },
+      warnings: [{ kind: 'unknownResourceId', resourceId: 'nope', usage: 'ref', sourceStart: 4, sourceEnd: 19, pageIndex: 0 }],
+    } as unknown as VDTDocument;
+    const found = computeWarnings({ markdown: md, config: {}, doc }).filter((w) => w.payload.kind === 'unknownResourceId');
+    expect(found).toHaveLength(1);
+    expect(found[0]!.payload).toEqual({ kind: 'unknownResourceId', resourceId: 'nope', usage: 'ref' });
+  });
+
+  it('no longer flags a :::name line inside display math', () => {
+    expect(kinds('$$\n:::banana\n$$')).not.toContain('unknownDirective');
+  });
+
+  it('flags an embed line that prints as text', () => {
+    const found = find('Text.\n\n::resource{id=fig}', 'malformedEmbed');
+    expect(found.map((w) => [w.payload.name, w.line])).toEqual([['resource', 3]]);
+  });
+
+  it('flags an image the previews cannot read, unless storage itself is out', () => {
+    const md = 'Look :ref{id="photo"}.';
+    const found = computeWarnings({ markdown: md, config: {}, doc: null, resources: [photo], unavailableImages: new Set(['file-photo']) })
+      .filter((w) => w.payload.kind === 'missingImage');
+    expect(found.map((w) => w.payload)).toEqual([{ kind: 'missingImage', resourceId: 'photo', fileId: 'file-photo' }]);
+    expect(md.slice(found[0]!.sourceStart, found[0]!.sourceEnd)).toBe(':ref{id="photo"}');
+    const unused = computeWarnings({ markdown: 'Nothing.', config: {}, doc: null, resources: [photo], unavailableImages: new Set(['file-photo']) });
+    expect(unused.map((w) => w.payload.kind)).not.toContain('missingImage');
+    const noStorage = computeWarnings({ markdown: md, config: {}, doc: null, resources: [photo], unavailableImages: new Set(['file-photo']), storageUnavailable: true });
+    expect(noStorage.map((w) => w.payload.kind)).not.toContain('missingImage');
+  });
+
+  it('flags an image only the configuration draws: design elements and callout icons and label tabs', () => {
+    const pic = (id: string): Resource => ({ ...photo, id, bitmap: { ...photo.bitmap!, fileId: `file-${id}` } });
+    const image = (id: string, resourceId: string) => ({
+      kind: 'image' as const, id, resourceId, placement: { anchor: { to: 'container' as const, edge: 'top-left' as const }, size: { width: { value: 10, unit: 'pt' as const } } },
+    });
+    const config: PostextConfig = {
+      header: { elements: [image('logo', 'seal')] },
+      headings: { levels: [{ level: 1, advancedDesign: { enabled: true, slot: { elements: [image('opener', 'opener-photo')] } } }] },
+      headingStyles: [{ id: 'off', advancedDesign: { enabled: false, slot: { elements: [image('never', 'unused')] } } }],
+      calloutStyles: [
+        { id: 'note', icon: { kind: 'resource', resourceId: 'note-icon' }, label: { icon: { resourceId: 'tab-icon' } } },
+        { id: 'glyph', icon: { kind: 'glyph', glyph: '!', resourceId: 'stale-icon' } },
+      ],
+    };
+    const ids = ['seal', 'opener-photo', 'unused', 'note-icon', 'tab-icon', 'stale-icon'];
+    const found = computeWarnings({
+      markdown: 'No references.', config, doc: null, resources: ids.map(pic), unavailableImages: new Set(ids.map((id) => `file-${id}`)),
+    }).filter((w) => w.payload.kind === 'missingImage');
+    expect(found.map((w) => w.payload.kind === 'missingImage' && w.payload.resourceId).sort()).toEqual(['note-icon', 'opener-photo', 'seal', 'tab-icon']);
+    // They belong to no place in the text.
+    expect(found.every((w) => w.sourceStart === undefined)).toBe(true);
+  });
+});
+
 describe(':::space warnings', () => {
   it('accepts the directive with or without a valid lines value', () => {
     const md = 'A\n\n:::space\n\nB\n\n:::space{lines=2}\n\nC\n\n:::space{lines=0.5}\n\nD';
@@ -221,5 +472,130 @@ describe(':::space warnings', () => {
       expect(hits).toHaveLength(1);
       expect(hits[0]!.payload.value).toBe(bad);
     }
+  });
+});
+
+describe('config value warnings', () => {
+  it('reports a font stack in a font family and an unknown number format', () => {
+    const config: PostextConfig = {
+      bodyText: { fontFamily: 'EB Garamond, serif' },
+      orderedLists: { numberFormat: 'roman' as never },
+    };
+    expect(find('Text.', 'fontFamilyStack', config).map((w) => w.payload)).toEqual([
+      { kind: 'fontFamilyStack', path: 'bodyText.fontFamily', value: 'EB Garamond, serif', used: 'EB Garamond' },
+    ]);
+    expect(find('Text.', 'unknownNumberFormat', config).map((w) => w.payload)).toEqual([
+      { kind: 'unknownNumberFormat', path: 'orderedLists.numberFormat', value: 'roman', used: 'arabic' },
+    ]);
+    const clean = kinds('Text.', { bodyText: { fontFamily: 'EB Garamond' }, orderedLists: { numberFormat: 'decimal' as never } });
+    expect(clean).not.toContain('unknownNumberFormat');
+    expect(clean).not.toContain('fontFamilyStack');
+  });
+
+  it('accepts every spelling of a :::numbering format', () => {
+    expect(kinds(':::numbering{format="roman-lower"}')).not.toContain('numberingInvalidFormat');
+    expect(kinds(':::numbering{format="i"}')).not.toContain('numberingInvalidFormat');
+    expect(find(':::numbering{format="roman"}', 'numberingInvalidFormat')).toHaveLength(1);
+  });
+});
+
+describe('config values the engine replaces', () => {
+  it('reports a side column that leaves a column with no width, with the path and the value used', () => {
+    const config: PostextConfig = {
+      layout: { layoutType: 'oneAndHalf', sideColumnPercent: 120 },
+      headingStyles: [{ id: 'notes', layout: { layoutType: 'oneAndHalf', sideColumnPercent: -5 } }],
+    };
+    const hits = find('Text.', 'sideColumnPercentClamped', config);
+    expect(hits.map((w) => [w.payload.path, w.payload.value])).toEqual([
+      ['layout.sideColumnPercent', '120'],
+      ['headingStyles[0].layout.sideColumnPercent', '-5'],
+    ]);
+    expect(hits[1]!.payload.used).toBe('1');
+    expect(new Set(hits.map((w) => w.id)).size).toBe(2);
+    // Not tied to the text: nothing to jump to in the editor.
+    expect(hits.every((w) => w.sourceStart === undefined)).toBe(true);
+  });
+
+  it('stays silent for a side column both columns can take, and for other layouts', () => {
+    expect(kinds('Text.', { layout: { layoutType: 'oneAndHalf', sideColumnPercent: 14 } })).not.toContain('sideColumnPercentClamped');
+    expect(kinds('Text.', { layout: { layoutType: 'double', sideColumnPercent: 120 } })).not.toContain('sideColumnPercentClamped');
+  });
+});
+
+describe('hyphenation locale warnings', () => {
+  it('flags a document language with no bundled hyphenation patterns', () => {
+    const hits = find('Hej.', 'unsupportedHyphenationLocale', { locale: 'sv' });
+    expect(hits).toHaveLength(1);
+    expect(hits[0]!.payload.locale).toBe('sv');
+    // The explicit hyphenation locale is the one hyphenation uses.
+    expect(find('Hej.', 'unsupportedHyphenationLocale', { locale: 'es', bodyText: { hyphenation: { locale: 'fi' } } })[0]!.payload.locale).toBe('fi');
+    expect(find('Hej.', 'unsupportedHyphenationLocale', { locale: 'sv', bodyText: { hyphenation: { locale: 'de' } } })).toHaveLength(0);
+  });
+
+  it('stays quiet once hyphenation is switched off, the remedy it suggests', () => {
+    expect(find('Hej.', 'unsupportedHyphenationLocale', { locale: 'sv', bodyText: { hyphenation: { enabled: false } } })).toHaveLength(0);
+    expect(find('Hej.', 'unsupportedHyphenationLocale', { bodyText: { hyphenation: { enabled: false, locale: 'fi' } } })).toHaveLength(0);
+  });
+
+  it('accepts bundled languages with any region subtag', () => {
+    for (const locale of ['es', 'es-ES', 'pt-BR', 'en-GB', 'ca-ES-valencia', 'nl']) {
+      expect(kinds('Text.', { locale }), locale).not.toContain('unsupportedHyphenationLocale');
+    }
+    expect(kinds('Text.')).not.toContain('unsupportedHyphenationLocale');
+  });
+});
+
+describe('unknown heading settings (EF-83)', () => {
+  it('lists a key a heading level or style does not have, with the setting it is closest to', () => {
+    const config = {
+      headings: { levels: [{ level: 2, tracking: { value: 1, unit: 'pt' } }] },
+      headingStyles: [{ id: 'back', letterSpacng: { value: 1.35, unit: 'pt' } }],
+    } as unknown as PostextConfig;
+    const hits = find('Text.', 'unknownConfigKey', config);
+    expect(hits.map((w) => w.payload)).toEqual([
+      { kind: 'unknownConfigKey', path: 'headings.levels[0].tracking', value: 'tracking', used: '' },
+      { kind: 'unknownConfigKey', path: 'headingStyles[0].letterSpacng', value: 'letterSpacng', used: '', suggestion: 'letterSpacing' },
+    ]);
+    expect(kinds('Text.', { headings: { levels: [{ level: 2, letterSpacing: { value: 1, unit: 'pt' } }] } })).not.toContain('unknownConfigKey');
+  });
+});
+
+describe('heading designs cut off (EF-91)', () => {
+  const text = (baselines: number[]) => ({
+    kind: 'text', bbox: { x: 0, y: 0, width: 100, height: 20 }, fontString: '10px Lora', color: '#000',
+    lines: baselines.map((baselineY) => ({ text: 'Lead', xOffset: 0, baselineY, width: 20 })), clip: false,
+  });
+  const heading = (extra: Record<string, unknown>) => ({
+    type: 'heading', headingLevel: 1, sourceStart: 2, sourceEnd: 9, columnIndex: 0, pageIndex: 0,
+    bbox: { x: 0, y: 0, width: 100, height: 380 }, lines: [], ...extra,
+  });
+  const column = (blocks: unknown[]) => ({ index: 0, bbox: { x: 20, y: 20, width: 360, height: 360 }, blocks });
+  const docWith = (page: Record<string, unknown>): VDTDocument => ({
+    pages: [{ index: 0, width: 400, height: 400, columns: [column([])], ...page }],
+    warnings: [],
+    blocks: [],
+    config: { page: { dpi: 72 } },
+  } as unknown as VDTDocument);
+  const cut = (doc: VDTDocument) => computeWarnings({ markdown: '# Rain\n\nText.', config: {}, doc }).filter((w) => w.payload.kind === 'headingDesignCut');
+  const band = (baselines: number[]) => ({ bbox: { x: 20, y: 20, width: 360, height: 360 }, blocks: [text(baselines)] });
+
+  it('flags an opener whose text runs past the foot of the page, at the heading', () => {
+    const hits = cut(docWith({ openerBand: band([60, 390, 410, 430]), columns: [column([heading({ hidden: true })])] }));
+    expect(hits).toHaveLength(1);
+    expect(hits[0]!.payload).toMatchObject({ kind: 'headingDesignCut', level: 1, page: 1 });
+    // 30pt past the page foot (400).
+    expect((hits[0]!.payload as { overflowMm: number }).overflowMm).toBeCloseTo((30 * 25.4) / 72, 5);
+    expect(hits[0]!.sourceStart).toBe(2);
+  });
+
+  it('flags an in-column design whose text runs past the foot of its column (canvas and PDF clip it there)', () => {
+    expect(cut(docWith({ columns: [column([heading({ designOverlay: band([60, 385]) })])] }))).toHaveLength(1);
+  });
+
+  it('stays silent for a design that fits: a dateline in the bottom margin of an opener is on the page', () => {
+    expect(cut(docWith({ openerBand: band([60, 392]), columns: [column([heading({ hidden: true })])] }))).toHaveLength(0);
+    expect(cut(docWith({ columns: [column([heading({ designOverlay: band([60, 370]) })])] }))).toHaveLength(0);
+    // A part page's design belongs to no heading.
+    expect(cut(docWith({ partInfo: { number: 'I', title: 'Part' }, openerBand: band([900]) }))).toHaveLength(0);
   });
 });

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { resolveBodyTextConfig, resolveHeadingsConfig } from 'postext';
+import { primaryFontFamily, resolveBodyTextConfig, resolveHeadingsConfig } from 'postext';
 import { useSandboxLabels, useSandboxSelector } from '../context/SandboxContext';
 import { getConfigFontFamilies, isCustomFontFamily, loadFont } from '../controls/fontLoader';
 import { RowTag } from '../ui';
@@ -12,9 +12,11 @@ import { RowTag } from '../ui';
 export function BookFonts() {
   const labels = useSandboxLabels();
   const config = useSandboxSelector((s) => s.config);
-  const body = resolveBodyTextConfig(config.bodyText).fontFamily;
+  // Families as the engine sets them: a CSS font stack by its first family,
+  // as `getConfigFontFamilies` lists it.
+  const body = primaryFontFamily(resolveBodyTextConfig(config.bodyText).fontFamily);
   const headings = resolveHeadingsConfig(config.headings);
-  const headingFamilies = new Set([headings.fontFamily, ...headings.levels.map((l) => l.fontFamily)]);
+  const headingFamilies = new Set([headings.fontFamily, ...headings.levels.map((l) => l.fontFamily)].map(primaryFontFamily));
   const families = getConfigFontFamilies(config);
   // Body first, then headings, then the rest alphabetically.
   const rank = (f: string) => (f === body ? 0 : headingFamilies.has(f) ? 1 : 2);

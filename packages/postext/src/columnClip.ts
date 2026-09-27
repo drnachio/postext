@@ -16,6 +16,29 @@ export function designOverlayOverhang(blocks: readonly VDTBlock[], x0: number, x
   return [left, right];
 }
 
+/** How far the design overlays of the heading blocks among `blocks` reach
+ *  above `y0`, in px (0 when they stay below it). */
+export function headingDesignOverhangAbove(blocks: readonly VDTBlock[], y0: number): number {
+  let above = 0;
+  for (const block of blocks) {
+    if (block.type !== 'heading' || !block.designOverlay || block.hidden) continue;
+    for (const b of block.designOverlay.blocks) above = Math.max(above, y0 - b.bbox.y);
+  }
+  return above;
+}
+
+/** How far the first block of a column starts above `y0`, in px (0 when it
+ *  does not, and for a box frame, which is cut at the column's top). The
+ *  first block of a column under a page-span opener may sit up to a line
+ *  above the column's top, level with the first block under the opener in
+ *  the opener's column, while the column itself starts on the grid
+ *  (EF-139). */
+function firstBlockAbove(blocks: readonly VDTBlock[], y0: number): number {
+  const first = blocks.find((b) => !b.hidden);
+  if (!first?.bbox || first.type === 'callout') return 0;
+  return Math.max(0, y0 - first.bbox.y);
+}
+
 /**
  * The rectangle a renderer clips a column's blocks to. It is the column's
  * bbox widened horizontally by a small buffer (2pt) so that glyph ink
@@ -23,16 +46,25 @@ export function designOverlayOverhang(blocks: readonly VDTBlock[], x0: number, x
  * is not chopped; the gutters between columns absorb it. A block's design
  * overlay may hang past the column on purpose — a callout's corner badge
  * sits half outside its box, a heading tab juts into the margin — so the
- * clip also grows to take in every overlay block of the column. Shared by
- * the canvas and PDF backends so both paint the same thing.
+ * clip also grows to take in every overlay block of the column. A heading's
+ * design may also reach above the column — a band anchored to the top of
+ * the page or of the bleed — and the clip grows up to take that in too
+ * (EF-113), and so does the first block of a column under a page-span
+ * opener set a little above the column's top (EF-139). The column's foot
+ * stays the edge: the flow ends there, and a design reaching past it is cut
+ * and reported (`collectHeadingDesignCuts`).
+ * A box frame (a callout) is cut at the column's top as well, with the text
+ * inside it. Shared by the canvas and PDF backends so both paint the same
+ * thing.
  */
 export function columnClipRect(col: VDTColumn, dpi: number): BoundingBox {
   const overhang = dimensionToPx({ value: 2, unit: 'pt' }, dpi);
   const [left, right] = designOverlayOverhang(col.blocks, col.bbox.x, col.bbox.x + col.bbox.width);
+  const above = Math.max(headingDesignOverhangAbove(col.blocks, col.bbox.y), firstBlockAbove(col.blocks, col.bbox.y));
   return {
     x: col.bbox.x - overhang - left,
-    y: col.bbox.y,
+    y: col.bbox.y - above,
     width: col.bbox.width + overhang * 2 + left + right,
-    height: col.bbox.height,
+    height: col.bbox.height + above,
   };
 }

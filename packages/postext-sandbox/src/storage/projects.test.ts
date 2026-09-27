@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { PostextConfig, Resource } from 'postext';
 import { referencedFileIds, toSummary, type ProjectRecord } from './projects';
 import { projectFileId, projectFontFileId, remapContentFileIds } from './projectFiles';
+import { PROJECT_RECORD_VERSION } from './projectMigration';
 import type { BookContent } from '../book/types';
 
 const book: BookContent = { chapters: [{ id: 'c1', title: 'One', markdown: '# x', createdAt: 0, updatedAt: 0 }], activeChapterId: 'c1' };
@@ -68,7 +69,7 @@ describe('remapContentFileIds', () => {
 describe('toSummary', () => {
   it('drops the content slices', () => {
     const record: ProjectRecord = {
-      version: 2, id: 'p', name: 'P', description: 'd', locale: 'es', bundleId: 'b', sourcePresetId: 's',
+      version: PROJECT_RECORD_VERSION, id: 'p', name: 'P', description: 'd', locale: 'es', bundleId: 'b', sourcePresetId: 's',
       thumbnail: { fileId: 'blob-cover', mime: 'image/jpeg' },
       createdAt: 1, updatedAt: 2, ...book, config, resources,
     };

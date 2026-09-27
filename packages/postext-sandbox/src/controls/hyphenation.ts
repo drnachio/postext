@@ -7,9 +7,11 @@ export const LOCALE_TO_HYPHENATION: Record<string, HyphenationLocale> = {
 };
 
 /** `config` with the app locale's hyphenation dictionary filled in when the
- *  user has not chosen one. Returns `config` itself when nothing changes. */
+ *  document names no language: neither a hyphenation locale nor its
+ *  `locale`, which the engine falls back to. Returns `config` itself when
+ *  nothing changes. */
 export function withHyphenationLocale(config: PostextConfig, locale: string): PostextConfig {
-  if (config.bodyText?.hyphenation?.locale) return config;
+  if (config.bodyText?.hyphenation?.locale || config.locale) return config;
   const hypLocale = LOCALE_TO_HYPHENATION[locale] ?? 'en-us';
   // One derived object per (config, locale): the fingerprints keyed on
   // the config object (layout records, the worker's document cache) then

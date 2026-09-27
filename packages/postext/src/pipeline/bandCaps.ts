@@ -36,6 +36,12 @@ export interface BandCap {
   /** Part index of the band's opening block (`0` unless it is the
    *  continuation of a paragraph split across columns / pages). */
   startPart: number;
+  /** Bands the same opening block and part were offered to before this
+   *  one in the proposing pass (absent: none). A block offered to a band
+   *  that has no room for it — a page a float fills — moves on without
+   *  placing anything and opens the next band as well; the cap belongs to
+   *  the band it was measured in. */
+  startVisit?: number;
   /** Height of the capped band in baseline-grid lines. */
   lines: number;
   /** Times the cap has been grown by one line after an overflow. */
@@ -46,6 +52,13 @@ export interface BandCap {
    *  is then the height of the other columns, which take the text the cut
    *  displaces. */
   zone?: BandCapZone;
+  /** How far below its bare top the band started when the cap was
+   *  proposed, because every column of it had a float band at its head
+   *  (`lines` counts from under them). The capped pass can open the band
+   *  before those floats land, when the band's top is still the bare one;
+   *  the cut is then taken from `headPx` lower, where it was measured, or
+   *  it would come that much too high and the band never end level. */
+  headPx?: number;
 }
 
 export interface BandCapZone {
@@ -80,7 +93,15 @@ export function bandTop(cols: readonly VDTColumn[]): number {
   return Math.min(...cols.map((c) => c.bbox.y));
 }
 
-/** Cut every column of a (still empty) band level at `bandTop + capPx`,
+/** Top edge of a band before the float bands at its columns' heads pushed
+ *  them down: `floatHead` gives the px reserved at a column's head. Equal
+ *  to {@link bandTop} unless every column holds such a float. */
+export function bareBandTop(cols: readonly VDTColumn[], floatHead: (col: VDTColumn) => number): number {
+  return Math.min(...cols.map((c) => c.bbox.y - floatHead(c)));
+}
+
+/** Cut every column of a (still empty) band level at `top + capPx` (`top`
+ *  defaults to {@link bandTop}),
  *  remembering each column's true bottom in `uncappedBottoms` so the band
  *  can be restored (`uncapBand`) when the span block cuts it. The cut is an
  *  absolute line, so a column that starts lower (under a top float band)
@@ -94,8 +115,9 @@ export function applyBandCap(
   uncappedBottoms: Map<VDTColumn, number>,
   zone?: BandCapZone,
   trailing = false,
+  top = bandTop(cols),
 ): void {
-  const cut = bandTop(cols) + capPx;
+  const cut = top + capPx;
   for (let i = 0; i < cols.length; i++) {
     const c = cols[i]!;
     const colCut = zone && zone.columns.includes(i) ? Math.min(cut, zone.top) : cut;
@@ -140,8 +162,20 @@ export function columnBottom(col: VDTColumn, uncappedBottoms: ReadonlyMap<VDTCol
  *  column feet, which shortened the columns instead of filling them). */
 export function bandCapLines(cols: readonly VDTColumn[], gridPx: number, extraPx = 0): number {
   const top = bandTop(cols);
+  const used = (c: VDTColumn): number => (c.bbox.height - c.availableHeight) + (c.bbox.y - top);
+  // Columns of different widths (a one-and-a-half layout with text in both
+  // columns): text runs on from one into the other broken again for its
+  // width, so a line of the wide column fills more than a line of the
+  // narrow one. The cut spreads the text by area, each column's height
+  // weighted by its width (EF-157).
+  const widths = cols.map((c) => c.bbox.width);
+  if (Math.max(...widths) - Math.min(...widths) > 0.5) {
+    const area = cols.reduce((sum, c) => sum + used(c) * c.bbox.width, 0);
+    const width = widths.reduce((sum, w) => sum + w, 0);
+    return Math.max(1, Math.ceil((area / width + extraPx / cols.length - 0.01) / gridPx));
+  }
   let total = extraPx;
-  for (const c of cols) total += (c.bbox.height - c.availableHeight) + (c.bbox.y - top);
+  for (const c of cols) total += used(c);
   return Math.max(1, Math.ceil((total / cols.length - 0.01) / gridPx));
 }
 
@@ -173,7 +207,7 @@ export function bandCapLinesAroundZone(
 }
 
 const capKey = (spanIndex: number, cap: BandCap): string =>
-  `${spanIndex}:${cap.startContentIndex}:${cap.startPart}:${cap.lines}`;
+  `${spanIndex}:${cap.startContentIndex}:${cap.startPart}:${cap.startVisit ?? 0}:${cap.lines}`;
 
 /**
  * Drive the band-cap passes. `initial` is the plain first pass; `runPass`
@@ -281,9 +315,12 @@ export function* resolveBandCapsGen<T extends BandPassReport>(
  * caps before it have settled (a dropped one, or a closing band the earlier
  * caps uncovered) joins the next pass, so a cap that stumbles while another
  * is still being retried is not lost. Span caps must stay delivered — a
- * trailing cap that unsettles one is abandoned. The layout returned never
- * carries an undelivered cap; when no trailing cap survives, `initial` is
- * returned untouched.
+ * trailing cap that unsettles one is abandoned. Out of passes, the caps
+ * still undelivered are dropped; one that was delivered and comes undone
+ * once they are (the flow after them moved) is dropped in the next round,
+ * and the others are kept. The layout returned never carries an
+ * undelivered cap; when no trailing cap survives, `initial` is returned
+ * untouched.
  */
 export function resolveTrailingCaps<T extends BandPassReport>(
   initial: T,
@@ -350,13 +387,18 @@ export function* resolveTrailingCapsGen<T extends BandPassReport>(
   }
 
   // Out of passes: strip whatever is still undelivered and keep the rest.
-  const failing = trailingKeys().filter((i) => !result.spanPlacedInBand.has(i));
-  if (failing.length === 0) return { result, caps, passCount };
-  for (const i of failing) caps.delete(i);
-  if (trailingKeys().length === 0) return giveUp();
-  result = runPass(caps);
-  passCount++;
-  yield;
-  const delivered = [...caps.keys()].every((i) => result.spanPlacedInBand.has(i));
-  return delivered ? { result, caps, passCount } : giveUp();
+  // Dropping a cap moves the flow after it, which can unsettle a cap that
+  // was delivered: that one is dropped in turn (each round drops at least
+  // one), so the caps still delivered are kept rather than all given up.
+  let failing = trailingKeys().filter((i) => !result.spanPlacedInBand.has(i));
+  while (failing.length > 0) {
+    for (const i of failing) caps.delete(i);
+    if (trailingKeys().length === 0) return giveUp();
+    result = runPass(caps);
+    passCount++;
+    yield;
+    if ([...spanCaps.keys()].some((i) => !result.spanPlacedInBand.has(i))) return giveUp();
+    failing = trailingKeys().filter((i) => !result.spanPlacedInBand.has(i));
+  }
+  return { result, caps, passCount };
 }

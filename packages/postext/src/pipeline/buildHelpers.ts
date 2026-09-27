@@ -14,7 +14,8 @@ import {
 } from '../vdt';
 import type { BlockStyle } from './styles';
 import type { MeasuredBlock } from '../measure';
-import { renderMath, isMathReady } from '../math';
+import { NO_BREAK_SPACES } from '../measure/spaces';
+import { renderMath, isMathReady, noteMathWithoutEngine } from '../math';
 
 // ---------------------------------------------------------------------------
 // Page geometry
@@ -145,12 +146,14 @@ export function enrichMathSpans(
   const mathFontSizePx = style.fontSizePx * resolved.math.fontSizeScale;
   const mathColor = resolved.math.color?.hex ?? style.color;
 
+  const mathReady = isMathReady();
+  if (mathEnabled && !mathReady) noteMathWithoutEngine();
   const enrichedSpans = contentBlock.spans.map((s) => {
     if (!s.math) return s;
     if (!mathEnabled) {
       return { text: `$${s.math.tex}$`, bold: s.bold, italic: s.italic };
     }
-    const render = isMathReady()
+    const render = mathReady
       ? renderMath(s.math.tex, false, mathFontSizePx, { lineBoxPx: style.lineHeightPx, color: mathColor })
       : undefined;
     return { ...s, mathRender: render };
@@ -181,6 +184,14 @@ export function computeMeasureViewport(
   let measureFirstLineIndent = style.firstLineIndentPx;
   let measureHangingIndent = style.hangingIndent;
 
+  // A paragraph style's `indent`: every line shifts right and the measure
+  // narrows by it; the first-line or hanging indent counts from there.
+  if (!listBullet && style.indentPx !== undefined && style.indentPx > 0) {
+    const indentPx = Math.min(style.indentPx, Math.max(0, columnWidth - 1));
+    measureMaxWidth = Math.max(1, columnWidth - indentPx);
+    lineXShift = indentPx;
+  }
+
   if (listBullet) {
     const textGap = listBullet.bulletWidthPx + listBullet.gapPx;
     if (listBullet.hangingIndent) {
@@ -203,16 +214,29 @@ export function computeMeasureViewport(
 // Per-line source-range mapping
 // ---------------------------------------------------------------------------
 
+/** An author's soft hyphen or zero-width space: plain text (and source) a
+ *  line may leave unprinted. `\s` matches neither. */
+function isUnprinted(c: string | undefined): boolean {
+  return c === '\u00AD' || c === '\u200B';
+}
+
+/** ASCII punctuation: what a backslash may escape (CommonMark). */
+const ESCAPABLE_RE = /[!-/:-@[-`{-~]/;
+
 /**
  * Stamps `plainStart` / `plainEnd` / `sourceStart` / `sourceEnd` on every line
  * of `measured`, accounting for any heading-number prefix that prepends chars
- * with no source.
+ * with no source. `source` is the markdown the block's offsets index (the
+ * body, before `bodyOffset`): with it, a line that opens with a backslash
+ * escape (`\$40`) starts at the backslash, which the plain text does not
+ * print (EF-178). A block's `sourceMap` maps the escaped character itself.
  */
 export function stampSourceRanges(
   measured: MeasuredBlock,
   rawBlock: ContentBlock,
   contentBlock: ContentBlock,
   bodyOffset: number,
+  source?: string,
 ): { prefixLen: number; absoluteSourceMap: number[] } {
   const blockSrcStart = rawBlock.sourceStart + bodyOffset;
   const blockSrcEnd = rawBlock.sourceEnd + bodyOffset;
@@ -225,38 +249,82 @@ export function stampSourceRanges(
     if (idx >= srcMap.length) return blockSrcEnd;
     return srcMap[idx]! + bodyOffset;
   };
+  /** Where plain character `p` starts in the source: at the backslash of an
+   *  escape (`\$`), which the plain text skips, unless the character before
+   *  it is written with that backslash. Line boundaries fall there, so a
+   *  line that opens with an escape covers its backslash and the line before
+   *  it stops short of it. */
+  const plainToSrcStart = (p: number): number => {
+    const idx = p - prefixLen;
+    if (source === undefined || idx <= 0 || idx >= srcMap.length) return plainToSrc(p);
+    const at = srcMap[idx]!;
+    const escaped = at > 0 && source[at - 1] === '\\' && srcMap[idx - 1]! < at - 1 && ESCAPABLE_RE.test(source[at] ?? '');
+    return (escaped ? at - 1 : at) + bodyOffset;
+  };
 
+  // The block's plain text (heading prefix included): what the lines' plain
+  // offsets index, and what tells a hyphen or a separator the break added
+  // from one the source carries.
+  const plain = contentBlock.text;
   let cumPlain = 0;
   const lastLineIdx = measured.lines.length - 1;
-  for (let li = 0; li < measured.lines.length; li++) {
-    const line = measured.lines[li]!;
-    // If segments are present, prefer their aggregate text length for a more
-    // accurate plain-char count (excludes trailing hyphen for hyphenated lines).
-    let lineLen: number;
+  // The line's characters as plain text counts them. An inline `:ref`
+  // segment renders a multi-char label but occupies a single placeholder
+  // char in the block's plain text / `sourceMap` (mirrors the math
+  // placeholder); the later runs of a reference painted in pieces (small
+  // capitals) count 0.
+  const unitsOf = (line: MeasuredBlock['lines'][number]): (string | null)[] => {
+    const units: (string | null)[] = [];
     if (line.segments && line.segments.length > 0) {
-      // An inline `:ref` segment renders a multi-char label but occupies a
-      // single placeholder char in the block's plain text / `sourceMap`. Count
-      // it as 1 so plain offsets stay aligned with the source map for any text
-      // that follows the reference (mirrors the math placeholder).
-      lineLen = line.segments.reduce(
-        (s, seg) => s + (seg.refResourceId !== undefined ? 1 : seg.text.length),
-        0,
-      );
-      if (line.hyphenated) {
-        const last = line.segments[line.segments.length - 1]!;
-        if (last.text.endsWith('-')) lineLen -= 1;
+      for (const seg of line.segments) {
+        if (seg.refContinues) continue;
+        if (seg.refResourceId !== undefined) units.push(null);
+        else for (let k = 0; k < seg.text.length; k++) units.push(seg.text[k]!);
       }
     } else {
-      lineLen = line.text.length - (line.hyphenated ? 1 : 0);
+      for (let k = 0; k < line.text.length; k++) units.push(line.text[k]!);
+    }
+    return units;
+  };
+  let nextUnits = measured.lines.length > 0 ? unitsOf(measured.lines[0]!) : [];
+  for (let li = 0; li < measured.lines.length; li++) {
+    const line = measured.lines[li]!;
+    const units = nextUnits;
+    nextUnits = li < lastLineIdx ? unitsOf(measured.lines[li + 1]!) : [];
+    // Walk the plain text along the line. An author's soft hyphen or
+    // zero-width space inside the line is plain text the line may not print
+    // (the plain path drops every U+200B); a hyphenated line's final hyphen
+    // is the break's own (a dictionary syllable, a word cut for being wider
+    // than the line) unless the source carries it there (a hard hyphen), and
+    // only then plain text.
+    let i = cumPlain;
+    // The hyphen a line opens with when it repeats the one of the compound
+    // the line before broke at (`repeatHyphen`) is not in the plain text.
+    for (let u = line.repeatedHyphen && units[0] === '-' ? 1 : 0; u < units.length; u++) {
+      const c = units[u];
+      // A zero-width character the line holds and the plain text does not
+      // (a break opportunity a measurer inserted) is no source character.
+      if (isUnprinted(c ?? undefined) && c !== plain[i]) continue;
+      while (isUnprinted(plain[i]) && c !== plain[i]) i++;
+      if (u === units.length - 1 && line.hyphenated && c === '-' && plain[i] !== '-') break;
+      i++;
     }
     line.plainStart = cumPlain;
-    line.plainEnd = cumPlain + lineLen;
-    // Advance past the separator space that was consumed to break the line
-    // (skip when hyphenated — break was at a soft hyphen — or on the last line).
-    const skipSeparator = !line.hyphenated && li !== lastLineIdx ? 1 : 0;
+    line.plainEnd = i;
+    // Advance past the separator the break consumed: the space (or an
+    // author's soft hyphen or zero-width space) right after the line in the
+    // plain text. A break that consumed nothing — at a syllable or a hard
+    // hyphen, between two ideographs, inside a word cut for being wider than
+    // the line — skips nothing, and neither does the last line. Nor does a
+    // no-break space the next line opens on: two runs glued by one (an
+    // italic word and the number after it) part where they meet when the
+    // group is wider than the line, and the second line keeps the space.
+    const after = plain[line.plainEnd];
+    const opensNext = after !== undefined && NO_BREAK_SPACES.includes(after) && nextUnits[0] === after;
+    const skipSeparator = li !== lastLineIdx && after !== undefined && (/\s/.test(after) || isUnprinted(after)) && !opensNext ? 1 : 0;
     cumPlain = line.plainEnd + skipSeparator;
-    line.sourceStart = plainToSrc(line.plainStart);
-    line.sourceEnd = plainToSrc(line.plainEnd);
+    line.sourceStart = plainToSrcStart(line.plainStart);
+    line.sourceEnd = plainToSrcStart(line.plainEnd);
   }
 
   const absoluteSourceMap = srcMap.map((o) => o + bodyOffset);
