@@ -3,7 +3,7 @@
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext';
 import { resolveBodyTextConfig, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_HYPHENATION_CONFIG, dimensionsEqual, colorsEqual } from 'postext';
-import type { BodyTextConfig, HyphenationConfig, HyphenationLocale } from 'postext';
+import type { BodyTextConfig, ColonListRoom, HyphenationConfig, LocaleTag } from 'postext';
 import {
   CollapsibleSection,
   FieldGroup,
@@ -14,8 +14,10 @@ import {
   SelectInput,
   ToggleSwitch,
 } from '../../../controls';
-import { LOCALE_TO_HYPHENATION, LOCALE_OPTIONS, TEXT_SIZE_UNITS, LINE_HEIGHT_UNITS, INDENT_UNITS } from './constants';
-import { JustificationSubsection } from './JustificationSubsection';
+import { LOCALE_TO_HYPHENATION, localeOptionsFor, TEXT_SIZE_UNITS, LINE_HEIGHT_UNITS, INDENT_UNITS } from './constants';
+import { JustificationSubsection, RaggedBreakingSubsection } from './JustificationSubsection';
+import { BlockquoteSubsection } from './BlockquoteSubsection';
+import { RaggedHyphenationSubsection } from './HyphenationFields';
 import { TypeSample } from '../../settings/TypeSample';
 import { AlignPicture } from '../../settings/pictures';
 import { OrphansSubsection, WidowsSubsection, RuntsSubsection } from './OrphansWidowsRuntsSubsections';
@@ -36,7 +38,7 @@ export const BodyTextSection = memo(function BodyTextSection() {
   const effectiveHyphenationLocale = raw?.hyphenation?.locale ?? documentLocale ?? defaultLocale;
   const effectiveDocumentLocale = documentLocale ?? defaultLocale;
 
-  const updateDocumentLocale = (value: HyphenationLocale | undefined) => {
+  const updateDocumentLocale = (value: LocaleTag | undefined) => {
     dispatch({ type: 'UPDATE_CONFIG', payload: { locale: value } });
   };
 
@@ -71,7 +73,9 @@ export const BodyTextSection = memo(function BodyTextSection() {
 
   const handleTextAlignChange = (value: string) => {
     const textAlign = value as BodyTextConfig['textAlign'];
-    if (textAlign === 'left') {
+    // Going ragged drops the justified-only hyphenation settings, unless
+    // ragged text hyphenates too.
+    if (textAlign === 'left' && !raw?.hyphenation?.ragged) {
       const next: BodyTextConfig = { ...raw, textAlign };
       delete next.hyphenation;
       const hasKeys = Object.keys(next).length > 0;
@@ -123,6 +127,12 @@ export const BodyTextSection = memo(function BodyTextSection() {
   const isRuntPenaltyDefault = bodyText.runtPenalty === D.runtPenalty;
   const isAvoidRuntsInListsDefault = bodyText.avoidRuntsInLists === D.avoidRuntsInLists;
   const isKeepColonWithListDefault = bodyText.keepColonWithList === D.keepColonWithList;
+  const isColonListRoomDefault = bodyText.colonListRoom === D.colonListRoom;
+
+  const COLON_LIST_ROOM_OPTIONS = [
+    { value: 'item', label: labels.bodyColonListRoomItem },
+    { value: 'line', label: labels.bodyColonListRoomLine },
+  ];
 
   const ALIGN_OPTIONS = [
     { value: 'left', label: labels.bodyTextAlignLeft, icon: <AlignPicture align="left" /> },
@@ -229,6 +239,49 @@ export const BodyTextSection = memo(function BodyTextSection() {
             labels={labels}
           />
         )}
+        {bodyText.textAlign !== 'justify' && (
+          <RaggedHyphenationSubsection
+            bodyText={bodyText}
+            raw={raw}
+            updateBodyText={updateBodyText}
+            updateHyphenation={updateHyphenation}
+            labels={labels}
+            effectiveHyphenationLocale={effectiveHyphenationLocale}
+            isHyphenationLocaleDefault={isHyphenationLocaleDefault}
+          />
+        )}
+        {bodyText.textAlign !== 'justify' && (
+          <RaggedBreakingSubsection
+            bodyText={bodyText}
+            updateBodyText={updateBodyText}
+            resetField={resetField}
+            labels={labels}
+          />
+        )}
+        <ToggleSwitch
+          label={labels.bodyBreakAfterDashes}
+          checked={bodyText.breakAfterDashes}
+          onChange={(checked) => updateBodyText({ breakAfterDashes: checked })}
+          tooltip={labels.bodyBreakAfterDashesTooltip}
+          isDefault={bodyText.breakAfterDashes === D.breakAfterDashes}
+          onReset={() => resetField('breakAfterDashes')}
+        />
+        <ToggleSwitch
+          label={labels.bodyBreakAfterHyphens}
+          checked={bodyText.breakAfterHyphens}
+          onChange={(checked) => updateBodyText({ breakAfterHyphens: checked })}
+          tooltip={labels.bodyBreakAfterHyphensTooltip}
+          isDefault={bodyText.breakAfterHyphens === D.breakAfterHyphens}
+          onReset={() => resetField('breakAfterHyphens')}
+        />
+        <ToggleSwitch
+          label={labels.bodyRepeatHyphen}
+          checked={bodyText.repeatHyphen}
+          onChange={(checked) => updateBodyText({ repeatHyphen: checked })}
+          tooltip={labels.bodyRepeatHyphenTooltip}
+          isDefault={bodyText.repeatHyphen === D.repeatHyphen}
+          onReset={() => resetField('repeatHyphen')}
+        />
         <DimensionInput
           label={labels.bodyFirstLineIndent}
           value={bodyText.firstLineIndent}
@@ -298,8 +351,8 @@ export const BodyTextSection = memo(function BodyTextSection() {
         <SelectInput
           label={labels.documentLocale}
           value={effectiveDocumentLocale}
-          options={LOCALE_OPTIONS}
-          onChange={(v) => updateDocumentLocale(v as HyphenationLocale)}
+          options={localeOptionsFor(effectiveDocumentLocale)}
+          onChange={(v) => updateDocumentLocale(v)}
           tooltip={labels.documentLocaleTooltip}
           isDefault={documentLocale === undefined}
           onReset={() => updateDocumentLocale(undefined)}
@@ -382,7 +435,19 @@ export const BodyTextSection = memo(function BodyTextSection() {
           isDefault={isKeepColonWithListDefault}
           onReset={() => resetField('keepColonWithList')}
         />
+        {bodyText.keepColonWithList && (
+          <SelectInput
+            label={labels.bodyColonListRoom}
+            value={bodyText.colonListRoom}
+            options={COLON_LIST_ROOM_OPTIONS}
+            onChange={(value) => updateBodyText({ colonListRoom: value as ColonListRoom })}
+            tooltip={labels.bodyColonListRoomTooltip}
+            isDefault={isColonListRoomDefault}
+            onReset={() => resetField('colonListRoom')}
+          />
+        )}
       </CollapsibleSection>
+      <BlockquoteSubsection bodyText={bodyText} raw={raw} updateBodyText={updateBodyText} labels={labels} />
       <CollapsibleSection title={labels.bodyGroupReferences} sectionId="bodyText-references" variant="subsection">
         <ColorPicker
           label={labels.bodyReferenceColor}

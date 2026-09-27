@@ -60,6 +60,7 @@ from postext_md import (  # noqa: E402
     attr_value,
     caption_kind,
     clean_text,
+    collapse_spaces,
     fence,
     guard_line_start,
     heading,
@@ -560,7 +561,7 @@ def para_text(p: Para, vocab: Vocabulary, base: dict[str, tuple[bool, bool]], pl
                     lr[0].text = lr[0].text.lstrip()
         runs += lr
     if plain:
-        return re.sub(r"\s+", " ", clean_text("".join(r.text for r in runs))).strip()
+        return collapse_spaces(clean_text("".join(r.text for r in runs)))
     return render_runs(runs)
 
 

@@ -1,0 +1,628 @@
+{
+  "schemaVersion": 1,
+  "slug": "bundle-round-trip",
+  "sourceHash": "ad5e266bca297197ab0bad99f5d2d2cf2c5f05beefe0105b47fa0b59e154c44f",
+  "engine": {
+    "postext": "1.4.1",
+    "postextPdf": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-26T21:40:48.507Z",
+  "variants": {
+    "en": {
+      "hash8": "c823c651",
+      "vdtHash": "d2fe912e592ee9899c2345dd91df86aa2b3ff987",
+      "timings": {
+        "importMs": 580,
+        "fontsMs": 158,
+        "buildMs": 110,
+        "totalMs": 1768,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          99,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": false,
+        "body": {
+          "family": "DM Sans",
+          "sizePt": 9.4,
+          "leadingPt": 13.4
+        },
+        "families": [
+          "DM Sans",
+          "DM Serif Display",
+          "Instrument Sans"
+        ],
+        "pages": 2,
+        "ownLines": 180
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 2121,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 69566,
+          "alt": "Opening page 1: The Tide Mill."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 2121,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 137618,
+          "alt": "Page 2: Two tides a day. Figure 1. Two hours after high water: the pond turns the wheel, and the estuary has fallen below the dashed line. · Table 1. Opening hours. Last entry 45 minutes before closing."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "bundle-round-trip.pdf",
+        "bytes": 40282,
+        "pages": 2
+      },
+      "detected": {
+        "apis": [
+          "buildBundle",
+          "bundleFontProvider",
+          "bundleResourceBytes",
+          "clearMeasurementCache",
+          "createBundle",
+          "decompressWoff2",
+          "defaultResourceTypes",
+          "loadBundleFonts",
+          "openBundle",
+          "registerBundleImages",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.maxWordSpacing",
+          "bodyText.minWordSpacing",
+          "captionStyle",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "customFonts",
+          "customFonts[].name",
+          "customFonts[].variants",
+          "customFonts[].variants[].fileId",
+          "customFonts[].variants[].fileName",
+          "customFonts[].variants[].format",
+          "customFonts[].variants[].style",
+          "customFonts[].variants[].weight",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "footer.elements[].style",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].id",
+          "headings",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].namePlural",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyle",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules"
+        ],
+        "configSections": [
+          "bodyText",
+          "captionStyle",
+          "colorPalette",
+          "customFonts",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle"
+        ],
+        "configLeaves": 239,
+        "designElements": 8,
+        "directives": [
+          ":::pagebreak",
+          "::resource",
+          ":::space",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 2,
+          "bitmap": 0,
+          "table": 1
+        },
+        "fonts": [
+          {
+            "family": "DM Sans",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "DM Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "DM Sans",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "DM Serif Display",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "DM Serif Display",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Instrument Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Instrument Sans",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "bundles",
+          "citations",
+          "custom-fonts",
+          "heading-attributes",
+          "heading-styles",
+          "inline-embeds",
+          "localised-labels",
+          "multi-chapter-books",
+          "opener-band",
+          "opener-design",
+          "page-breaks",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "vertical-space"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.31
+        },
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "2262a441",
+      "vdtHash": "b8016586a7b5c4982f6a8c8b14793753600ce3bb",
+      "timings": {
+        "importMs": 291,
+        "fontsMs": 72,
+        "buildMs": 36,
+        "totalMs": 1041,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          99,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": false,
+        "body": {
+          "family": "DM Sans",
+          "sizePt": 9.4,
+          "leadingPt": 13.4
+        },
+        "families": [
+          "DM Sans",
+          "DM Serif Display",
+          "Instrument Sans"
+        ],
+        "pages": 2,
+        "ownLines": 180
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 2121,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 80322,
+          "alt": "Página de apertura 1: El molino de mareas."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 2121,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 143460,
+          "alt": "Página 2: Dos mareas al día. Figura 1. Dos horas tras la pleamar: el estanque mueve el rodezno y la ría ha quedado por debajo de la línea discontinua. · Tabla 1. Horario. Última entrada 45 minutos antes del cierre."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "bundle-round-trip.pdf",
+        "bytes": 42550,
+        "pages": 2
+      },
+      "detected": {
+        "apis": [
+          "buildBundle",
+          "bundleFontProvider",
+          "bundleResourceBytes",
+          "clearMeasurementCache",
+          "createBundle",
+          "decompressWoff2",
+          "defaultResourceTypes",
+          "loadBundleFonts",
+          "openBundle",
+          "registerBundleImages",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.maxWordSpacing",
+          "bodyText.minWordSpacing",
+          "captionStyle",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "customFonts",
+          "customFonts[].name",
+          "customFonts[].variants",
+          "customFonts[].variants[].fileId",
+          "customFonts[].variants[].fileName",
+          "customFonts[].variants[].format",
+          "customFonts[].variants[].style",
+          "customFonts[].variants[].weight",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "footer.elements[].style",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].id",
+          "headings",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].namePlural",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyle",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules"
+        ],
+        "configSections": [
+          "bodyText",
+          "captionStyle",
+          "colorPalette",
+          "customFonts",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle"
+        ],
+        "configLeaves": 239,
+        "designElements": 8,
+        "directives": [
+          ":::pagebreak",
+          "::resource",
+          ":::space",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 2,
+          "bitmap": 0,
+          "table": 1
+        },
+        "fonts": [
+          {
+            "family": "DM Sans",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "DM Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "DM Sans",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "DM Serif Display",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "DM Serif Display",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Instrument Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Instrument Sans",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "bundles",
+          "citations",
+          "custom-fonts",
+          "heading-attributes",
+          "heading-styles",
+          "inline-embeds",
+          "localised-labels",
+          "multi-chapter-books",
+          "opener-band",
+          "opener-design",
+          "page-breaks",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "vertical-space"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.29
+        },
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
+      }
+    }
+  }
+}

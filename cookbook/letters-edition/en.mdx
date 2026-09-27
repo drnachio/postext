@@ -1,0 +1,67 @@
+---
+title: "Letters edition: datelines and signatures"
+summary: "Letters run on without page breaks; each dateline comes from heading attributes, and paragraph styles set the salutation, the signature and a postscript."
+description: "Three letters by Frederick II and Voltaire set in Postext as a 14 × 21 cm edition, with datelines taken from heading attributes and signatures set flush right."
+question: "How do I set each letter’s salutation, flush-right signature and postscript in a book of letters?"
+aliases: ["letters", "correspondence", "epistolary", "dateline", "signature", "salutation", "postscript", "vedette", "letter head"]
+pageNotes: { "2": "The headnote in italic, then Letter I: LETTRE I in red small capitals, Frédéric à Voltaire in Fell italic, the dateline À Charlottembourg, le 6 juin 1740 flush right, the salutation ‘Mon cher ami,’ and, at the foot of the letter, the signature FÉDÉRIC flush right.", "3": "Letter II opens the page under the running head 12 juin 1740, with Frederick’s eighteen lines of verse indented from the margin.", "4": "Letter II ends with FÉDÉRIC and a postscript a size smaller; further down, Letter III opens with its dateline À Paris, le 1er avril 1778 and the salutation ‘Sire,’.", "5": "Voltaire’s letter ends with VOLTAIRE flush right, then the colophon; the running head reads 1er avril 1778." }
+---
+
+## What you'll build
+
+Five pages of *Mon sort est changé*, a 14 × 21 cm edition of three letters in French: the two that Frederick II wrote to Voltaire six and twelve days after he became king of Prussia, in June 1740, and Voltaire’s letter of 1 April 1778, two months before his death. The cover, drawn in code, shows two folded letters and a red wax seal on green morocco inside a gilt double fillet. Inside, the letters run on with no page breaks. Each head gives the number in red small capitals and the two correspondents in Fell italic, with the place and date flush right beneath them. The salutation has a line of its own, and the signature, in small capitals, ends the letter at the right margin; Frederick’s postscript follows his signature a size smaller. The running head on each recto gives the date of the letter.
+
+## Method
+
+### 1 · Read the dateline from the heading
+
+The code is [the short answer](#the-short-answer) above. Each letter is a level-1 heading whose attributes hold its place and date, and the head prints them as `{attr.place}, le {attr.date}.` ([heading attributes](/en/docs/document-format#heading-attributes)). The dateline’s box reaches the right edge of the column (`width: 'fill'`), and `align: 'right'` sets the words against that edge; without it, design text is centred. The salutation, the signature and the postscript are [paragraph styles](/en/docs/configuration#paragraph-styles) applied with `:::paragraphs{style="…"}`. A paragraph style has no italic or letter-case setting in 1.4.1, so the signature takes IM Fell DW Pica SC, a family whose lower case is cut as small capitals.
+
+### 2 · Run the letters on
+
+<Excerpt region="letters" />
+
+With `breakBefore` off, a letter starts two grid lines (`marginTop`) below the grid line where the one before ends. On <PageRef page={4}>page 4</PageRef> the postscript, set on 12.6 pt leading, ends between grid lines, so about three lines of white stand above Letter III. On page 2, Letter I runs to the foot of the page and Letter II opens page 3. The setting is written out because 1.4.1 already drops the level-1 break once the config has a `headings` object, and a fixed engine would open every letter on a recto ([break before](/en/docs/configuration#break-before)). `numberingTemplate: '{1:I}'` numbers the letters I to III, and the head prints the numeral through `{number}`.
+
+### 3 · Date the recto with the letter
+
+<Excerpt region="running-heads" />
+
+In a page header, `{attr.date}` takes the attribute of the last level-1 heading that starts on or before the page. Page 3 prints 12 juin 1740, and page 5, where Voltaire’s letter continues from page 4, prints 1er avril 1778 ([text elements](/en/docs/configuration#text-elements)). The heads sit 12 mm below the top edge of the page, the folio on the outer margin and the words 8 mm further in. `pages: 'body'` keeps them off the cover, which counts as an opener because its heading spans the page. The date is set in the Crimson Pro italic of the dateline it repeats, and the names on the verso in the small capitals of the letter numbers.
+
+### 4 · Make the cover a heading and close its page
+
+<Excerpt region="cover" />
+
+The cover is the first heading, in the `cover` [heading style](/en/docs/configuration#heading-styles): an image element anchored to the bleed carries the drawing, and the title, the names and the subtitle come from the heading and the frontmatter. `numbered: false` leaves it out of the count, so Frederick’s first letter is I. The design reserves room only down to its lowest text, the subtitle, and none for the drawing. Without the `:::pagebreak` after the heading, the headnote and Letter I would start on page 1, over the two drawn letters and the seal.
+
+### 5 · Hyphenate the French, and keep the spaces open
+
+<Excerpt region="text" />
+
+`locale: 'fr'` hyphenates with the French patterns (*ou-vrage* on page 2, *représen-tation* on page 4). Justification, whole-paragraph line breaking and the widow, orphan and runt rules are on by default. `minWordSpacing: 0.75` stops a word space from shrinking below three quarters of Crimson Pro’s; at the default 0.6, the tightest justified line on page 5 would set its spaces at 0.70 of that width. At 14.4 pt leading the page holds 33 lines, and the bottom margin is what is left below them, 20.4 mm.
+
+### 6 · Link every colour to the palette
+
+<Excerpt region="palette" />
+
+`col()` writes each colour’s hex beside its palette id. In 1.4.1 the palette reaches the text styles but not the design elements, which paint that hex: the letter heads, the running heads and the cover. The italic of the headnote and of the colophon takes the default italic colour, which is linked to `main-color`; with that entry set to the ink, it prints in ink and not in the engine’s blue, #295AA3.
+
+## Variations
+
+### Name the place in the running head
+
+The same attributes can give the recto the whole dateline, *À Charlottembourg, le 12 juin 1740*.
+
+```diff
+-  head('recto-date', '{attr.date}', 'odd', at('page', 'top-right', -(MARGIN.outer + 8), HEAD_Y),
++  head('recto-date', '{attr.place}, le {attr.date}', 'odd',
++    at('page', 'top-right', -(MARGIN.outer + 8), HEAD_Y),
+```
+
+## Pitfalls
+
+- The recto takes the date of the last letter that *starts* on or before the page. A page that ends one letter and opens the next carries the new letter’s date, the way a dictionary’s running head names the last entry on the page.
+- A heading without the attribute prints an empty string, with no warning: a letter without `place="…"` gets a dateline that starts with a comma. Check the heading of every letter.
+- The letters keep the transcription’s unspaced ; : ? and !. French practice puts a narrow no-break space before them, but 1.4.1 breaks lines at that space like any other, so a mark could start a line.
+- Crimson Pro has no modifier letters ᵉ (U+1D49) or ʳ (U+02B3), so 1ᵉʳ spelled in Unicode would print in a fallback font. The headnote, which is body text, sets `1^er^` as a superscript; the dateline and the recto head are design text and print 1er with the ordinal at full size.

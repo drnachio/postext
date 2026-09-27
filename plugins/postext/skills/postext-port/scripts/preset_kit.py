@@ -47,6 +47,16 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
+# The configuration rules the manifest's `config` is written for (postext's
+# CONFIG_VERSION). A manifest without it is read as a postext 1.4 bundle:
+# heading breaks, maths size, the space around inline figures (in boxes too),
+# heading marks, drop-cap sizes, the room under a colon line that
+# introduces a list, the lines a box cut leaves of a paragraph, the line
+# breaks after a closed dash and after a compound's hyphen, the breaking of
+# ragged text, the split of a paragraph under a heading and the space under
+# :::paragraphs containers pinned to 1.4.
+CONFIG_VERSION = 8
+
 # ---------------------------------------------------------------------------
 # primitives
 # ---------------------------------------------------------------------------
@@ -379,10 +389,12 @@ def fingerprint(project: Path | str) -> str:
 
 
 def write_manifest(project: Path | str, manifest: dict) -> Path:
-    """Write preset.json (v2) after checking that every referenced file exists,
-    then fingerprint.json (lets the sandbox notice edits)."""
+    """Write preset.json (v2, stamped with CONFIG_VERSION unless the manifest
+    names one) after checking that every referenced file exists, then
+    fingerprint.json (lets the sandbox notice edits)."""
     project = Path(project)
     manifest.setdefault("version", 2)
+    manifest.setdefault("configVersion", CONFIG_VERSION)
     missing = []
     chapters = manifest.get("chapters", {})
     specs = chapters if isinstance(chapters, list) else [c for v in chapters.values() for c in v]
@@ -461,7 +473,7 @@ def config(lang: str) -> dict:
         "headings": {{
             "fontFamily": BODY_FONT, "color": ACCENT,
             "levels": [
-                # Always spell out H1 breakBefore: once `headings` exists, the default recto break is gone.
+                # Always spell out H1 breakBefore: postext 1.4 and earlier drop the default recto break once `headings` exists.
                 {{"level": 1, "fontSize": pt(22), "breakBefore": {{"enabled": True, "parity": "odd"}}, "span": "page"}},
                 {{"level": 2, "fontSize": pt(12)}},
             ],
@@ -501,7 +513,7 @@ def resources() -> list:
 def main() -> None:
     primary = LANGS[0]
     manifest = {{
-        "version": 2, "id": ID, "name": NAME, "locale": primary, "locales": LANGS,
+        "version": 2, "configVersion": 8, "id": ID, "name": NAME, "locale": primary, "locales": LANGS,
         "view": {{"canvasScope": "book"}},
         "chapters": {{lang: chapters_from_dir(HERE, lang) for lang in LANGS}},
         "config": config(primary),

@@ -382,6 +382,65 @@ describe('list-end and loose-paragraph levers', () => {
     expect(proposeBalanceLines(bottom, NO_FORCED, emptyState(), baseOptions()).lines.get(61)).toBeUndefined();
   });
 
+  it('adds no line under a float band on a page that does not flow on (EF-70)', () => {
+    // The same column on a chapter's closing page (a forced break after it)
+    // or cut by a trailing cap: its head stays level with the column beside.
+    const closing = (): VDTDocument => {
+      // Column 1 is full: column 0 ends two lines short of it.
+      const full = fakeBlock({ type: 'paragraph', bbox: { x: 500, y: 0, width: 480, height: 900 } });
+      const doc = fakeDoc([
+        [
+          { blocks: [afterListPara(62), para()], availableHeight: 2 * 24 },
+          { blocks: [full], availableHeight: 0 },
+        ],
+        [{ blocks: [para()], availableHeight: 0 }],
+      ]);
+      const col = doc.pages[0]!.columns[0]!;
+      col.bbox = { ...col.bbox, y: 300, height: 600 };
+      doc.pages[0]!.floats = [fakeBlock({ type: 'resource', bbox: { x: 0, y: 0, width: 480, height: 280 } })];
+      return doc;
+    };
+    const forced = closing();
+    const gaps = collectColumnGaps(forced, new Set([0]));
+    expect(gaps.flatMap((g) => g.candidates).some((c) => c.kind === 'afterFloat')).toBe(false);
+    expect(proposeBalanceLines(forced, new Set([0]), emptyState(), baseOptions()).lines.get(62)).toBeUndefined();
+
+    const capped = closing();
+    for (const c of capped.pages[0]!.columns) c.trailingCap = true;
+    expect(proposeBalanceLines(capped, NO_FORCED, emptyState(), baseOptions()).lines.get(62)).toBeUndefined();
+  });
+
+  it('moves no box heading its column under a float band down on a closing page (EF-70)', () => {
+    // A box opens the column right under a figure and closes it too: on a
+    // page that flows on it takes the room under its foot; on a closing
+    // page (or in a band cut level) it stays at the head, level with the
+    // column beside it, as the after-float lever does.
+    const build = (): VDTDocument => {
+      const frame = fakeBlock({ type: 'callout', contentIndex: 70, containerId: 9, bbox: { x: 0, y: 300, width: 480, height: 500 } });
+      const child = fakeBlock({ type: 'paragraph', contentIndex: 71, containerId: 9, bbox: { x: 10, y: 310, width: 460, height: 480 } });
+      const full = fakeBlock({ type: 'paragraph', bbox: { x: 500, y: 0, width: 480, height: 900 } });
+      const doc = fakeDoc([
+        [
+          { blocks: [frame, child], availableHeight: 100 },
+          { blocks: [full], availableHeight: 0 },
+        ],
+        [{ blocks: [para()], availableHeight: 0 }],
+      ]);
+      const col = doc.pages[0]!.columns[0]!;
+      col.bbox = { ...col.bbox, y: 300, height: 600 };
+      doc.pages[0]!.floats = [fakeBlock({ type: 'resource', bbox: { x: 0, y: 0, width: 480, height: 280 } })];
+      return doc;
+    };
+    const boxLever = (doc: VDTDocument, forced: ReadonlySet<number>) =>
+      collectColumnGaps(doc, forced).flatMap((g) => g.candidates).find((c) => c.kind === 'trailingCallout');
+
+    expect(boxLever(build(), NO_FORCED)).toMatchObject({ contentIndex: 70, gapPx: 100 });
+    expect(boxLever(build(), new Set([0]))).toBeUndefined();
+    const capped = build();
+    for (const c of capped.pages[0]!.columns) c.trailingCap = true;
+    expect(boxLever(capped, NO_FORCED)).toBeUndefined();
+  });
+
   it('levers the paragraph resuming under a float band on its own fragment', () => {
     // EMP / Deep Sky: the column under the figure opens with the tail of a
     // paragraph that started in the column before. The room belongs under
@@ -434,6 +493,40 @@ describe('list-end and loose-paragraph levers', () => {
       [{ blocks: [para()], availableHeight: 0 }],
     ]);
     expect(proposeBalanceLines(plain, NO_FORCED, emptyState(), baseOptions()).lines.get(71)).toBeUndefined();
+  });
+
+  it('gives a heading that opens a column under a float band no room on a closing page (EF-79)', () => {
+    // The same column on a page that ends the chapter, or in a band cut
+    // level: the heading keeps its place at the head, level with the column
+    // beside it, whatever `stretchAfterFloats` says.
+    const build = (): VDTDocument => {
+      // The column beside it runs to the page foot: the band's level.
+      const full = fakeBlock({ type: 'paragraph', bbox: { x: 500, y: 0, width: 480, height: 900 } });
+      const doc = fakeDoc([
+        [
+          { blocks: [heading(70, 4), para(), para()], availableHeight: 2 * 24 },
+          { blocks: [full], availableHeight: 0 },
+        ],
+        [{ blocks: [para()], availableHeight: 0 }],
+      ]);
+      const col = doc.pages[0]!.columns[0]!;
+      col.bbox = { ...col.bbox, y: 300, height: 600 };
+      doc.pages[0]!.floats = [fakeBlock({ type: 'resource', bbox: { x: 0, y: 0, width: 480, height: 280 } })];
+      return doc;
+    };
+    // The short column is balanceable in every case: the lever is the question.
+    expect(collectColumnGaps(build(), new Set([0]))[0]).toMatchObject({ columnIndex: 0, gapLines: 2 });
+    const headingLever = (doc: VDTDocument, forced: ReadonlySet<number>) =>
+      collectColumnGaps(doc, forced).flatMap((g) => g.candidates).find((c) => c.contentIndex === 70);
+
+    expect(headingLever(build(), NO_FORCED)?.kind).toBe('heading');
+    expect(headingLever(build(), new Set([0]))).toBeUndefined();
+    for (const stretchAfterFloats of [true, false]) {
+      expect(proposeBalanceLines(build(), new Set([0]), emptyState(), baseOptions({ stretchAfterFloats })).lines.get(70)).toBeUndefined();
+    }
+    const capped = build();
+    for (const c of capped.pages[0]!.columns) c.trailingCap = true;
+    expect(headingLever(capped, NO_FORCED)).toBeUndefined();
   });
 
   it('exhausts heading capacity before touching list ends', () => {

@@ -1,0 +1,673 @@
+{
+  "schemaVersion": 1,
+  "slug": "proof-sheet-diagnostics",
+  "sourceHash": "9fda8cd868548774544e6197e66e1bdaa811426e12bc474472cd71e588a533b7",
+  "engine": {
+    "postext": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-26T22:07:41.686Z",
+  "variants": {
+    "en": {
+      "hash8": "4d7f6952",
+      "vdtHash": "6460d6768ef521b3ffcc6bfd567ce238dc292b73",
+      "timings": {
+        "importMs": 201,
+        "fontsMs": 1044,
+        "buildMs": 9,
+        "totalMs": 1914,
+        "builds": 3
+      },
+      "specimen": {
+        "trimMm": [
+          190,
+          253
+        ],
+        "dpi": 150,
+        "layoutType": "oneAndHalf",
+        "gutterMm": 6,
+        "mirror": true,
+        "body": {
+          "family": "Charis SIL",
+          "sizePt": 10,
+          "leadingPt": 14
+        },
+        "families": [
+          "Charis SIL",
+          "Chivo",
+          "Fragment Mono"
+        ],
+        "pages": 2,
+        "ownLines": 250
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1332,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 86754,
+          "alt": "Opening page 1: The Night Ferry Returns. Map 1. Night route, north up. Solid: straight across on the flood, 12 minutes. Dashed red: on the ebb, when the current runs out to sea (arrow), bowed upstream of the Coffin Rock shoal (dotted), 15 minutes."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1332,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 150780,
+          "alt": "Page 2."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "screenshot"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "KNOWN_CONTAINERS",
+          "KNOWN_DIRECTIVES",
+          "buildDocument",
+          "clearMeasurementCache",
+          "parseMarkdownWithIssues",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.maxRuntTracking",
+          "bodyText.maxWordSpacing",
+          "bodyText.minWordSpacing",
+          "calloutStyles",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.paragraphSpacing",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].border",
+          "calloutStyles[].border.color",
+          "calloutStyles[].border.enabled",
+          "calloutStyles[].border.width",
+          "calloutStyles[].borderRadius",
+          "calloutStyles[].fixed",
+          "calloutStyles[].fixed.anchor",
+          "calloutStyles[].fixed.offset",
+          "calloutStyles[].id",
+          "calloutStyles[].keepTogether",
+          "calloutStyles[].lists",
+          "calloutStyles[].lists.bulletChar",
+          "calloutStyles[].lists.bulletFontSize",
+          "calloutStyles[].lists.color",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].placement",
+          "calloutStyles[].span",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].title",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.gap",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "calloutStyles[].width",
+          "captionStyle",
+          "captionStyle.color",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.labelBold",
+          "captionStyle.labelColor",
+          "captionStyle.lineHeight",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].span",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "layout.sideColumnPercent",
+          "layout.sideColumnRole",
+          "layout.sideColumnSide",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "resourceTypes"
+        ],
+        "configLeaves": 295,
+        "designElements": 8,
+        "directives": [
+          ":::callout",
+          ":::columns"
+        ],
+        "inline": [
+          "{attrs}",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 2,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Charis SIL",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Charis SIL",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Charis SIL",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Chivo",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Chivo",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Chivo",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Chivo",
+            "weight": 900,
+            "style": "normal"
+          },
+          {
+            "family": "Fragment Mono",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-columns",
+          "callout-splitting",
+          "callout-styles",
+          "citations",
+          "column-and-a-half",
+          "diagnostics",
+          "fixed-callouts",
+          "heading-attributes",
+          "opener-band",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "resource-types",
+          "resources",
+          "side-column-floats"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.5
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "61301935",
+      "vdtHash": "e8b868264909ccb87913c1c13d663da39aed646a",
+      "timings": {
+        "importMs": 81,
+        "fontsMs": 20,
+        "buildMs": 8,
+        "totalMs": 798,
+        "builds": 3
+      },
+      "specimen": {
+        "trimMm": [
+          190,
+          253
+        ],
+        "dpi": 150,
+        "layoutType": "oneAndHalf",
+        "gutterMm": 6,
+        "mirror": true,
+        "body": {
+          "family": "Charis SIL",
+          "sizePt": 10,
+          "leadingPt": 14
+        },
+        "families": [
+          "Charis SIL",
+          "Chivo",
+          "Fragment Mono"
+        ],
+        "pages": 2,
+        "ownLines": 250
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1332,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 91272,
+          "alt": "Página de apertura 1: Vuelve la barcaza nocturna. Mapa 1. Ruta nocturna, norte arriba. Continua: en línea recta con la llenante, 12 minutos. Roja discontinua: con la vaciante (flecha), aguas arriba del bajo Piedra Negra (punteado), 15 minutos."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1332,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 149204,
+          "alt": "Página 2."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "screenshot"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "KNOWN_CONTAINERS",
+          "KNOWN_DIRECTIVES",
+          "buildDocument",
+          "clearMeasurementCache",
+          "parseMarkdownWithIssues",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.maxRuntTracking",
+          "bodyText.maxWordSpacing",
+          "bodyText.minWordSpacing",
+          "calloutStyles",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.paragraphSpacing",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].border",
+          "calloutStyles[].border.color",
+          "calloutStyles[].border.enabled",
+          "calloutStyles[].border.width",
+          "calloutStyles[].borderRadius",
+          "calloutStyles[].fixed",
+          "calloutStyles[].fixed.anchor",
+          "calloutStyles[].fixed.offset",
+          "calloutStyles[].id",
+          "calloutStyles[].keepTogether",
+          "calloutStyles[].lists",
+          "calloutStyles[].lists.bulletChar",
+          "calloutStyles[].lists.bulletFontSize",
+          "calloutStyles[].lists.color",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].placement",
+          "calloutStyles[].span",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].title",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.gap",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "calloutStyles[].width",
+          "captionStyle",
+          "captionStyle.color",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.labelBold",
+          "captionStyle.labelColor",
+          "captionStyle.lineHeight",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].span",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "layout.sideColumnPercent",
+          "layout.sideColumnRole",
+          "layout.sideColumnSide",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "resourceTypes"
+        ],
+        "configLeaves": 295,
+        "designElements": 8,
+        "directives": [
+          ":::callout",
+          ":::columns"
+        ],
+        "inline": [
+          "{attrs}",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 2,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Charis SIL",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Charis SIL",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Charis SIL",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Chivo",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Chivo",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Chivo",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Chivo",
+            "weight": 900,
+            "style": "normal"
+          },
+          {
+            "family": "Fragment Mono",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-columns",
+          "callout-splitting",
+          "callout-styles",
+          "citations",
+          "column-and-a-half",
+          "diagnostics",
+          "fixed-callouts",
+          "heading-attributes",
+          "opener-band",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "resource-types",
+          "resources",
+          "side-column-floats"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.45
+        },
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
+      }
+    }
+  }
+}

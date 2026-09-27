@@ -34,3 +34,27 @@ describe('columnClipRect', () => {
     expect(clip).toEqual({ x: 58, y: 40, width: 224, height: 300 });
   });
 });
+
+describe('columnClipRect above and below the column (EF-113)', () => {
+  const at = (y: number, height: number): VDTDesignBlock => ({
+    kind: 'box',
+    bbox: { x: 60, y, width: 200, height },
+    box: { borderWidthPx: 0, borderRadiusPx: 0 },
+  });
+
+  it('takes in a heading design reaching above the column top', () => {
+    const heading = block([at(0, 120)], { type: 'heading' });
+    expect(columnClipRect(column([heading]), DPI)).toEqual({ x: 58, y: 0, width: 204, height: 340 });
+  });
+
+  it('still cuts a heading design at the column foot, where the flow ends', () => {
+    const foot = block([at(300, 80)], { type: 'heading' });
+    expect(columnClipRect(column([foot]), DPI)).toEqual({ x: 58, y: 40, width: 204, height: 300 });
+  });
+
+  it('keeps clipping a box frame at the column top and foot', () => {
+    // A callout frame taller than its column is cut with its text.
+    const frame = block([at(20, 400)], { type: 'callout' });
+    expect(columnClipRect(column([frame]), DPI)).toEqual({ x: 58, y: 40, width: 204, height: 300 });
+  });
+});

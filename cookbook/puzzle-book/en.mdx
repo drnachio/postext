@@ -1,0 +1,72 @@
+---
+title: "Puzzle book: crossword, word search and maze"
+summary: "A crossword and a word search built as tables from lines of letters: black squares and found words are cell fills, clue numbers are superscripts."
+description: "A summer puzzle book for children, set in Postext: a crossword and a word search built as tables, a seeded maze, and answers printed from the same data."
+question: "How do I give each table in a document its own look: grid rules, cell fills, tiles, a rounded frame?"
+aliases: ["crossword", "word search", "wordsearch", "maze", "labyrinth", "activity book", "puzzle book", "summer workbook", "children's book", "answer key", "grid from text"]
+pageNotes: { "1": "The cover: a pale yellow sky with a large orange sun setting into a blue sea striped with white waves, a sailing boat on the horizon, two gulls and a turtle swimming. Summer Workbook in large navy letters, Puzzles from the sea, a coral Ages 9 to 11 label, and a white field to write a name on.", "2": "Puzzle 1 under a sea-blue band with a wavy foot: a nine-by-nine crossword with navy squares and small bold numbers in the corners of the squares where words start, then the clues in a pale yellow box, Across on the left and Down on the right.", "3": "Puzzle 2 under a mint band: two centred rows of five word chips, the first, UMBRELLA, filled coral, above a twelve-by-twelve grid of capitals on pale yellow tiles with white joints and rounded corners; the letters of UMBRELLA are on coral tiles.", "4": "Puzzle 3 under a coral band: a maze on pale sand from a nest at the top left, where a turtle has just hatched beside two empty shells, to an opening onto a blue sea at the bottom right.", "5": "The answers side by side under a yellow band: the solved crossword, the word search with every word on mint, and the maze on sand with its way out drawn in coral from the empty nest down to the sea, where the hatchling swims. Below them, a Did you know? box sets a cutaway drawing of turtle eggs buried in the sand beside a paragraph on how loggerhead turtles nest. The colophon runs along the foot beside the folio." }
+---
+
+## What you'll build
+
+A summer workbook for children of nine to eleven: a cover, three puzzles about the sea and a page of answers. Pages 2 to 5 open under a colour field with a wavy foot (sea blue, mint, coral, then yellow for the answers) and a 46 pt title in Lilita One. The code builds the crossword and the word search as tables from lines of letters and gives each its own table style: ruled squares for the crossword, pale tiles with white joints and rounded corners for the word search. The crossword's black squares and the word already found in the word search are cell fills, and the clue numbers are superscripts in the corners. The maze is an SVG drawn from a seed. The last page prints the three answers side by side from the same data, above a box on how loggerhead turtles nest.
+
+## Method
+
+### 1 · One table style, three looks
+
+The code is [the short answer](#the-short-answer) above. `tableStyle` sets Chivo Mono for every grid. Each named style in `tableStyles` sets its own type size, padding and rules, and a table picks one with `table.styleId`. A column's width is its share of the table's width, but a row is as deep as its lines plus the padding, so the padding sets the depth of each square. The word search keeps the crossword's 9.41 mm square around one line of 15 pt capitals, and `pad()` works out the 2.9 pt that line leaves above and below it. Its rules, 2.4 pt wide and in the paper's colour, cut the pale fill into tiles, and `borderRadius` rounds the frame's corners to 4 mm and clips the fills to them. On the answer page `key()` fits nine or twelve squares into 54 mm: 6 mm squares with 8 pt letters for the crossword, 4.5 mm squares with 6 pt letters for the word search. The maze answer is drawn 54 mm square, so the three answers are equally deep and their captions share a baseline 106.4 mm from the top edge.
+
+### 2 · Nine squares, fifteen lines
+
+<Excerpt region="crossword" />
+
+A white square holds two lines of 8.9 pt Chivo Mono (the clue number and an empty line) inside 1 pt of padding, 26.7 pt in all: 9.41 mm, a ninth of the table's width. Nine squares are 84.7 mm deep, the depth of fifteen 16 pt lines of body text, and the clue box starts on the baseline grid one line below. A square gets a number, in reading order, when an across or a down word starts in it. The number is a bold superscript of 5.2 pt (58 % of 8.9 pt) raised 3 pt (a third of 8.9 pt), which puts it in the square's top corner. The empty line is a word joiner (U+2060). With a no-break space in its place, 1.4.1 drops the line and the grid comes out 45.5 mm deep. A black square is an empty cell with a `background` of its own, linked to `ink`.
+
+### 3 · The code finds the words in the grid
+
+<Excerpt region="search" />
+
+The grid is twelve lines of capitals in its own content file, after the list of words to find. `locate()` looks for each word in eight directions and throws unless there is exactly one match, so a typo in the grid or in the list stops the build before it prints a word nobody can find. `setCellBackground` returns a new table model with one more square filled. The fill is linked to a palette entry and covers the style's tile: coral for UMBRELLA on page 3, mint for all ten words on page 5. Named table styles have no setting for alternate rows in 1.4.1, so the first Variation calls `setCellBackground` on every cell of every other row. The word bank above the grid is two centred rows of chips: UMBRELLA's is filled coral like its squares, and the other nine are white with a navy border.
+
+### 4 · One opener, four colours
+
+<Excerpt region="openers" />
+
+Pages 2 to 5 share one design. A colour field runs 40 mm down from the top edge and ends in a wavy foot drawn in the paper's colour; the kicker, the title and the theme in its white pill come from the heading line and its attributes. The field and the folio disc are linked to the palette entry `band`, and each page's heading style gives `band` its own value, so `# Word Search {style="sopa"}` turns both mint on page 3. Level 1 sets `span: 'page'` although the book has a single column: 1.4.1 clips a design kept in the column at the 16 mm top margin, which would cut off the top of the field and the kicker. The field's box counts towards the depth the opener reserves, so the text starts on the next grid line, 44.2 mm from the top edge and 4 mm under the waves.
+
+### 5 · The answers come from the same data
+
+<Excerpt region="answers" />
+
+The answer page calls `crossword()` with `solved` and `wordSearch()` with all ten words, on the same content files as the puzzles, so an edit to a grid changes its answer too. The puzzles and the drawings use the type Plain, whose empty `captionPrefix` prints no caption for a resource with no caption text. The answers use the type Solution, numbered 1 to 3 in reading order to match the kickers Puzzle 1 to Puzzle 3. They sit in a box with no fill or border that holds `:::columns{count=3 breaks="2,3"}`, where `breaks` opens a new column at the second and third answers; each answer is 54 mm wide in a 55.3 mm column. The Did you know? box does the same with `breaks="2"` to set the nest drawing beside its paragraph.
+
+## Variations
+
+### Stripe the word search's rows
+
+A deeper yellow on every other row helps a young reader follow a line of letters, and since the words are filled after the stripes, UMBRELLA stays coral and the answer grid keeps its mint words.
+
+```diff
+   let model = { rows: letters.map((line) => [...line].map((content) => ({ content,
+     align: 'center' }))) };
++  const stripe = { hex: '#ffdd80', model: 'hex' }; // a shade deeper than the tiles
++  letters.forEach((line, r) => r % 2 && [...line].forEach((_, c) => {
++    model = setCellBackground(model, { row: r, col: c }, stripe);
++  }));
+   for (const [word, fill] of fills) {
+```
+
+### Draw a harder maze
+
+Twenty-one by eleven squares fit the same width at 8.4 mm each, and the answer on page 5 is drawn from the new maze.
+
+```diff
+-const theMaze = maze(17, 9, 2027);
++const theMaze = maze(21, 11, 2027);
+```
+
+## Pitfalls
+
+- The clue numbers in the box are typed in the content file, while the ones in the grid are computed. After you edit a grid, check the clues against it, since the code does not compare them.
+- A heading style's palette recolours design elements, text and table rules, but not the inside of an SVG, so the waves at the foot of each field are drawn in the paper's colour and one drawing serves all four fields. In 1.4.1 it skips table fills too: a crossword square linked to `band` would stay sea blue on the yellow answer page.

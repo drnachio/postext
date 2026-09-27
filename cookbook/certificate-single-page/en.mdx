@@ -1,0 +1,81 @@
+---
+title: "Certificate with a guilloche border"
+summary: "End-of-course certificates drawn by one heading style: a guilloche frame in its header, a seal and signature lines in its footer, the name in its opener."
+description: "End-of-course certificates in Postext: a guilloche border and a seal drawn in code, the name in script from each heading, and the whole class in one PDF."
+question: "How do I put a guilloche border, a seal and signature lines on every page of a certificate?"
+aliases: ["diploma", "certificate", "award", "guilloche", "ornamental border", "seal", "signature lines", "mail merge", "class list", "batch PDF", "one page per record", "decorative border on every page"]
+pageNotes: { "1": "A US Letter certificate on cream paper, framed by a teal band of cream guilloche lenses with a cream rosette in each corner. Inside, the tracked capitals line The Quoin Room · Letterpress workshop, CERTIFICATE in large teal capitals and OF COMPLETION, then This certifies that in italic and the name Imogen Achterberg in black script over a gold rule. Four centred lines of citation and an italic date line follow. Near the foot, a red seal with two ribbon tails sits between the signature lines of Harriet Colfax, master printer, and Samuel Okoro, course tutor, with a one-line imprint below; the serial number No. 26-031 is printed in red at the top right.", "2": "The same certificate for Tomás Okafor, serial number 26-032.", "3": "The same certificate for Ruth Adair, serial number 26-033." }
+---
+
+## What you'll build
+
+End-of-course certificates for the Quoin Room, a fictional letterpress workshop in Providence: one US Letter page per student. The Spanish edition sets them as A4 diplomas for La Cuña, a workshop in Zaragoza. A teal band filled with cream guilloche lenses frames the sheet, with a cream rosette at each corner; both are drawn in code from sine curves and hypotrochoids. Under a title in tracked capitals, the student's name is set in 48 pt Pinyon Script above a gold rule, and the citation is centred in Rosarivo. A red seal with two ribbon tails sits between the signature lines, with a one-line imprint below. Because one heading style draws the whole page, each student is one Markdown heading, and the PDF holds the class with a bookmark per name.
+
+## Method
+
+### 1 · Let one heading style draw the page
+
+The style itself is [the short answer](#the-short-answer) above. A heading style governs the pages of its section ([heading styles](/en/docs/configuration#heading-styles)): its `header` and `footer` replace the document's, which are empty here, its `margins` set the text area and its `advancedDesign` draws the opener. An opener's height rounds up to whole lines of the 17 pt body grid. A `minHeight` of 106 mm becomes 18 lines, so the citation starts 140 mm from the top edge; on A4, `y()` makes it 112.7 mm, or 19 lines, and the citation starts at 146 mm. The title block alone would start the citation at 128 mm (134 mm on A4). Without `marginBottom: 0`, the default 0.5 em under a heading would push the same 106 mm to 19 lines.
+
+### 2 · Hang the frame from the page in the header
+
+<Excerpt region="frame" />
+
+An image element draws a resource at the size of its placement ([image elements](/en/docs/configuration#image-elements)): anchored to the page's top-left corner with both sides `'fill'`, the guilloche covers the trim box, and the SVG, declared with the page's proportions, fills it without stretching. The header paints it over `page.backgroundColor` and reserves no room, so the margins alone keep the text at least 32 mm from the trim, inside the inner rule at 26 mm. A watermark placed in the header would print over the words, because the header is painted after the text. In a header, `{attr.serial}` reads the attribute of the heading whose section the page belongs to, so each certificate prints its own number.
+
+### 3 · Keep only the title block in the opener
+
+<Excerpt region="title" />
+
+Each line is anchored to the page's `'top'` edge, which centres it, with a `y` measured from the trim, so the block keeps its place whatever the margins; `y()` stretches those positions from Letter to A4. The name is the heading's own text, read through `{titleText}`, so the PDF bookmarks and tags carry it. With `overflow: 'wrap'` a long name takes a second line; the default would cut it short with an ellipsis. `centred()` shifts each tracked line right by half its tracking. Without it, each one sits that far left of the page's centre: 0.4 mm for the kicker, 0.5 mm for *Certificate* and 0.7 mm for *of completion*.
+
+### 4 · Hang the seal and the signatures from one edge
+
+<Excerpt region="signatures" />
+
+Everything in the footer is measured from `SIGN`, the seal's top edge, and the style's bottom margin ends the text area at the same edge, so a citation too long for the page moves on to the next one instead of running under the seal. Moved into the opener, the lines and the names would count towards its height ([span and advanced design](/en/docs/configuration#span-and-advanced-design)); since they reach below the text area, 1.4.1 would drop the whole reservation and start the citation 7.6 mm under the top margin, on top of the title. `LINE` takes the width between the page margins, subtracts the seal's 34 mm disc, halves the rest and takes off 3 mm, so each line stops 3 mm short of the seal on both trims (56 mm long on Letter, 53 mm on A4). Each name and role is a text element as wide as its line, which centres it under the line.
+
+### 5 · Merge the class list into headings
+
+<Excerpt region="merge" />
+
+Each row becomes a `#` heading that names the style and carries the serial as an attribute ([heading attributes](/en/docs/document-format#heading-attributes)), followed by the wording from `content.en.md`, so three rows give three pages. Level 1's `breakBefore` with parity `'any'` starts each heading on a new page with no blank page between certificates; the style inherits it.
+
+### 6 · Build one PDF for the whole class
+
+<Excerpt region="pdf" />
+
+The class is one document, so `renderToPdf` writes a single three-page file with a bookmark per heading, each named after a student. `renderToPdf` also takes an array of documents, such as the chapters of a book, but a document per student means one `buildDocument` call for each. As headings, the whole class is laid out in one build, and the viewer shows all three certificates from that build. Besides the four faces the pages print, the PDF asks for bold and bold italic Rosarivo, which Fontsource does not ship: the kit's font provider snaps each request to the nearest face the family has ([why a font provider?](/en/docs/configuration#why-a-font-provider)).
+
+## Variations
+
+### Print a PDF per student
+
+One button per student builds that certificate as a document of its own, with a fresh `config()`, and names the file after the serial number; each file weighs about 245 KB.
+
+```diff
+-offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
+-  `${RECIPE}.pdf`); // bookmarks: one per heading, so one per student
+-document.querySelector('[data-postext-pdf]').textContent = t({ en: 'Class list → one PDF',
+-  es: 'Toda la clase en un PDF' });
++for (const [name, serial] of CLASS) {
++  offerPdf(() => renderToPdf(buildDocument({ markdown:
++    `# ${name} {style="certificate" serial="${serial}"}\n\n${markdown}`, metadata, resources },
++    config()), { fontProvider: fontsourceProvider, resourceBytes: imageBytes }), `${serial}.pdf`);
++  document.querySelector(`[data-postext-pdf="${serial}.pdf"]`).textContent = name;
++}
+```
+
+### Print the frame and the title in navy
+
+The SVG art and the config read the same `palette` object, so changing one entry recolours the band, the rosette patterns and the title lines.
+
+```diff
+-  teal: '#1f5f5b', // the frame, the title lines
++  teal: '#2b3a67', // the frame, the title lines
+```
+
+## Pitfalls
+
+- In 1.4.1 a centred design text with `letterSpacing` sits half a letter space left of its anchor, and a right-set one ends a whole space short, because its width includes the tracking after its last letter. `space()` moves the tracked lines back.
+- postext-pdf 1.4.1 writes an SVG into the content stream of every page that draws it, with no shared copy: the frame adds about 210 KB to each page, so the three-page PDF weighs 694 KB (58 KB without the frame) and a class of thirty would weigh about 6.6 MB.

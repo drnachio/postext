@@ -10,6 +10,7 @@ import { getEditorTheme } from './postextTheme';
 import { frontmatterHighlight, frontmatterParser, frontmatterTheme } from './frontmatterHighlight';
 import { mathHighlight, mathTheme } from './mathHighlight';
 import { chipHighlight, chipTheme } from './chipSyntax';
+import { smallCapsHighlight, smallCapsTheme } from './smallCapsSyntax';
 import { refCompletion, type RefCompletionContext } from './refCompletion';
 
 interface UseCodeMirrorOptions {
@@ -70,6 +71,8 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
       mathHighlight,
       chipTheme,
       chipHighlight,
+      smallCapsTheme,
+      smallCapsHighlight,
       refCompletion(() => getRefContextRef.current?.() ?? { resources: [], types: [] }),
       keymap.of([...defaultKeymap, ...historyKeymap]),
       themeCompartment.current.of(getEditorTheme(isDark)),

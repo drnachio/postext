@@ -1,0 +1,185 @@
+{
+  "$comment": "Every top-level PostextConfig key (packages/postext/src/types.ts) → its section in docs/configuration. Used for the 'Config at a glance' links and to index detected.configKeys for search. `locale` points at Hyphenation, whose 'Document language' subsection (an h4) explains it.",
+  "page": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Page",
+      "es": "Página"
+    }
+  },
+  "layout": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Layout",
+      "es": "Disposición"
+    }
+  },
+  "bodyText": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Body text",
+      "es": "Texto de cuerpo"
+    }
+  },
+  "headings": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Headings",
+      "es": "Encabezados"
+    }
+  },
+  "tableStyle": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Table style",
+      "es": "Estilo de tablas"
+    }
+  },
+  "tableStyles": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Named table styles",
+      "es": "Estilos de tabla con nombre"
+    }
+  },
+  "captionStyle": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Caption style",
+      "es": "Estilo de pies de recurso"
+    }
+  },
+  "diagramStyle": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Diagram style",
+      "es": "Estilo de diagramas"
+    }
+  },
+  "paragraphStyles": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Paragraph styles",
+      "es": "Estilos de párrafo"
+    }
+  },
+  "calloutStyles": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Callout styles",
+      "es": "Estilos de aviso"
+    }
+  },
+  "chipStyles": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Chip styles",
+      "es": "Estilos de chip"
+    }
+  },
+  "parts": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Parts",
+      "es": "Partes"
+    }
+  },
+  "headingStyles": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Heading styles",
+      "es": "Estilos de encabezado"
+    }
+  },
+  "toc": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Table of contents",
+      "es": "Índice de contenidos"
+    }
+  },
+  "unorderedLists": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Unordered Lists",
+      "es": "Listas no ordenadas"
+    }
+  },
+  "orderedLists": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Ordered Lists",
+      "es": "Listas ordenadas"
+    }
+  },
+  "math": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Math",
+      "es": "Matemáticas"
+    }
+  },
+  "header": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Headers & footers",
+      "es": "Encabezados y pies"
+    }
+  },
+  "footer": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Headers & footers",
+      "es": "Encabezados y pies"
+    }
+  },
+  "locale": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Hyphenation",
+      "es": "Separación silábica"
+    }
+  },
+  "debug": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Debug",
+      "es": "Depuración"
+    }
+  },
+  "htmlViewer": {
+    "slug": "configuration",
+    "heading": {
+      "en": "HTML Viewer",
+      "es": "Visor HTML"
+    }
+  },
+  "pdfGeneration": {
+    "slug": "configuration",
+    "heading": {
+      "en": "PDF generation (config)",
+      "es": "Generación de PDF (configuración)"
+    }
+  },
+  "colorPalette": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Color Palette",
+      "es": "Paleta de colores"
+    }
+  },
+  "customFonts": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Custom fonts",
+      "es": "Fuentes personalizadas"
+    }
+  },
+  "resourceTypes": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Resource types",
+      "es": "Tipos de recurso"
+    }
+  }
+}

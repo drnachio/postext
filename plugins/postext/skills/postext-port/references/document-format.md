@@ -11,7 +11,7 @@ Where the online docs disagree, this file is right (§14).
 
 - Postext does **not** use remark or micromark and is **not** CommonMark. It is a hand-written, line-based tokenizer plus regular-expression inline passes.
 - The parser emits a **flat** list of `ContentBlock`s. There are 9 block types: `heading`, `paragraph`, `blockquote`, `listItem`, `mathDisplay`, `resourceBlock`, `directive`, `containerStart`, `containerEnd`. Containers are start/end marker pairs, not trees.
-- Constructs the parser does not recognise are **never dropped silently**. They become literal paragraph text, except that inline images are removed and link URLs are discarded.
+- Constructs the parser does not recognise are **never dropped silently**. They become literal paragraph text, except that inline images are removed. A link `[text](url)` is recognised: its text is set in the flow and its URL becomes a live link in the HTML and PDF output (§4).
 - Figures, images, SVGs and tables are **not written in Markdown**. They are `Resource` objects (JSON) kept outside the text and cited by id (§9).
 - Visual styling lives in the config and is selected by id: callout `type`, paragraph-container `style`, heading `style`, chip `style`, palette ids. An unknown id falls back to a default and triggers a sandbox warning (§13).
 - Blank lines separate blocks. **Consecutive non-blank lines join into one paragraph with a single space.** No hard line break syntax exists (§3.3).
@@ -64,9 +64,10 @@ author: "Anon"
 
 ### 2.1 Inline content inside headings (differs from paragraphs)
 
-A heading's inline content goes through `stripInlineFormatting`:
-- `**bold**`, `*italic*`, `__…__`, `_…_`, `` `code` ``, `^sup^` and `~sub~` are **reduced to plain text**. The markers are removed and no emphasis is kept. The heading's look comes only from the level/style config.
-- Links become their text. Images are removed.
+A heading's inline content is read like a paragraph's while `headings.inlineMarks` is on (the default since `configVersion` 6):
+- `**bold**`, `*italic*`, `__…__`, `_…_`, `^sup^`, `~sub~`, `:smallcaps[…]` and links become runs. An italic run flips the heading's slant (upright in an italic heading); bold takes `bodyText.boldFontWeight`, or the heading's weight when heavier. The contents rows keep bold and italic; running heads, `{chapterTitle}`, the PDF outline and design `{titleText}` stay plain.
+- With `headings.inlineMarks: false` (and in a preset without `configVersion` 6 whose headings carry marks) they are **reduced to plain text**: the markers are removed and the heading's look comes only from the level/style config.
+- `` `code` `` becomes its text. Images are removed.
 - Escapes `\* \_ \^ \~ \`` produce the literal character.
 - **Kept as live spans:** `:ref{…}`, `:swatch{…}` (`:326`) and inline `$math$` (`:327`).
 - **`:chip[…]` is NOT processed in headings.** It stays literal text.
@@ -133,12 +134,12 @@ The first line is always taken. Subsequent lines are appended (trimmed, joined w
 - a heading line (`# …`);
 - a line starting with `>` (after trim);
 - an **unordered** list line (`^\s*[-*+]\s+`), which includes task items;
-- any `:::…` fence line: known or unknown directive/container, or a bare `:::`.
+- any `:::…` fence line: known or unknown directive/container, or a bare `:::`;
+- a whole display formula (postext ≥ 1.5): a `$$…$$` line, or a `$$` fence closed before the next blank line. The text right under the closing `$$` continues the paragraph, flush (§11). Up to 1.4 these lines were swallowed as text.
 
 **The paragraph does NOT stop at the following. They are swallowed into the paragraph as literal text:**
 - ordered list lines. `Intro\n1. first\n2. second` gives one paragraph `Intro 1. first 2. second`. **Always put a blank line before an ordered list.**
 - `::resource{id="…"}`. **Always put blank lines around `::resource`.**
-- the `$$` display-math fences. **Always put blank lines around display math.**
 
 ### 3.2 Line-start traps (apply to the FIRST line of any block)
 
@@ -157,7 +158,7 @@ The same triggers also end a running paragraph mid-way (§3.1): a continuation l
 
 - **No hard line break.** Trailing two spaces are trimmed away, and a trailing `\` stays as a literal backslash. Each verse line or address line must be **its own paragraph** (blank line between), usually inside a `:::paragraphs{style="verse"}` container (§6.2). This is how the Don Quijote preset sets verse.
 - Leading and trailing whitespace of every line is trimmed. Internal runs of spaces survive in the text but are measured as spaces.
-- **Non-breaking spaces:** the measurer splits on `/\S+|\s+/`. JS `\s` matches U+00A0 and U+202F, so a typed NBSP is treated as an ordinary **breakable, stretchable** space. No engine code special-cases U+00A0 (verified by searching the source). Plain text has no reliable "glue" character. A `:chip` and a `:ref` label are the only atomic inline units.
+- **Non-breaking spaces (postext ≥ 1.5):** U+00A0, the narrow U+202F and the figure space U+2007 **glue** the words on either side, on every breaker (plain and rich text, Knuth–Plass, captions, cells, boxes, design text): a number and its unit (37 °C, with U+202F), a group of thousands (225 000, with U+00A0), a label and its number. Each keeps its own width; justification stretches only the word spaces. The word joiner U+2060 glues with no width. Type the character itself, not `&nbsp;` (HTML is not interpreted). A glued group wider than the whole line breaks at its last no-break space. The atomic inline units are therefore NBSP-glued groups, text that touches with no space (`**word**.`, `(:ref{…})`), a `:chip` and a `:ref` label. Up to 1.4 a paragraph with inline formatting or a `:ref` could break at a NBSP, and the port scripts replaced it with a plain space; they keep it now.
 - **Soft hyphen U+00AD** is honoured as a discretionary break, with a hyphen added at the break (; `knuthPlass/`).
 - A **hard hyphen between two letters** (`enseñanza-aprendizaje`) is a break opportunity; the line ends on the existing hyphen.
 - Automatic hyphenation follows the config locale.
@@ -174,7 +175,7 @@ Pipeline order per block:
 2. `extractInlineRefs`
 3. `extractInlineSwatches`
 4. `extractInlineMath`
-5. `parseInlineFormatting` (links, images and code stripped, then bold, italic and scripts)
+5. `parseInlineFormatting` (link syntax reduced to its text, with the URL kept as a range on the span; images and code stripped; then bold, italic and scripts)
 
 Earlier passes shield their content from later ones. Math is extracted before emphasis, so `*` inside `$…$` is safe.
 
@@ -185,22 +186,23 @@ Earlier passes shield their content from later ones. Math is extracted before em
 | Bold italic | `***x***` or `___x___` | both | `:355` |
 | Italic inside bold | `**a *b* c**` | works | |
 | Bold inside italic | `*a **b** c*` | **does not work.** The outer `*` stay literal; only `b` is bold | |
-| Superscript | `^x^` | smaller and raised. Content must start and end with a non-space; no newline; no inner `^` | `:289-308` |
-| Subscript | `~x~` | smaller and lowered. Same rules | `:289-308` |
-| Inline code | `` `x` `` | **backticks removed, rendered as plain body text.** The content is still parsed for emphasis, math and refs: `` `a*b*c` `` gives italic "b", and `` `echo $HOME` `` can open math. Escape inside it too. | `:313-318` |
-| Link | `[text](url)` | text kept, URL discarded. Regex `\[([^\]]+)\]\([^)]+\)`: a URL containing `)` breaks it. `[Wiki](…/A_(b))` gives `Wiki) end` | `:316` |
+| Superscript | `^x^` | 58% of the size, raised 1/3 em. Content must start and end with a non-space; no newline; no inner `^` | `:289-308` |
+| Subscript | `~x~` | 58% of the size, lowered 0.15 em. Same rules. A subscript and a superscript that touch (`T~0~^2^`, either order) are stacked, the subscript 0.25 em down; a space, a letter or a word joiner (U+2060) between them sets them one after the other. A stacked pair never parts at a line break (a word too wide for the line breaks before it) | `:289-308` |
+| Small caps | `:smallcaps[x]` | lowercase letters as capitals at 70% of the size (synthesised, identical on every backend). Takes marks inside and around it; `\]` for a literal `]`; empty or unclosed stays literal. Headings strip the markup. See §10.3 | |
+| Inline code | `` `x` `` | **backticks removed, rendered as plain body text, literally**: emphasis markers, `$`, links, `:ref{…}` and chips inside it print as written (the way to show syntax). | `:313-318` |
+| Link | `[text](url)` | text kept and set exactly as without the link. The URL becomes a live link in HTML (`<a>`) and PDF (a URI annotation), not on canvas. Only `http`, `https`, `mailto`, `tel`, `ftp` and relative URLs are linked; any other scheme keeps the text only. The destination takes **balanced parentheses** as in CommonMark (`[Wiki](…/A_(b))` links the whole URL); an unbalanced one ends at the first `)` and the text is set with no link. A `"title"` is ignored; `<…>` may hold spaces. Works in paragraphs, lists, quotes, callouts, captions, notes and cells, not in headings or chips | `replaceLinkSyntax`, `linkHref` |
 | Image | `![alt](src)` | **removed** from the text | `:315` |
 | Escapes | `\*` `\_` `\^` `\~` `` \` `` | the literal character (body, captions, cells, notes) | `:261-273` |
-| Dollar | `\$` | literal `$`; otherwise `$` opens inline math |  |
+| Dollar | `\$` | literal `$`; otherwise `$` opens inline math. Captions, cells, notes and chip texts have no maths: `$` is literal there, and `\$` gives `$` too (postext ≥ 1.5; 1.4 printed `\$` there). In an attribute value (`:ref{text="…"}`) a backslash is ordinary: `\$` stays `\$` |  |
 
 **Emphasis gotchas:**
-- **Intraword underscores italicise:** `snake_case_name` gives `snake` + *case* + `name`, and `http://a.com/x_y_z` italicises `y`. Write `\_` in identifiers, URLs and file names.
+- **Intraword underscores are text** (since the engine follows CommonMark here): `snake_case_name` and `http://a.com/x_y_z` keep their underscores; only `_emphasis_` at word boundaries italicises. For emphasis inside a word, use `*`. (Older engines italicised between two intraword underscores: write `\_` there if a document must also lay out on them.)
 - Lone asterisks pair up across a paragraph: `x * y * z` gives an italic ` y `. Write `\*` or use `×` / `·`.
 - `~` pairs: `~~strike~~` has **no strikethrough**. It gives a subscript `~strike` plus literal tildes. A span is `~X~` / `^X^` where X starts and ends with a non-space and has no inner marker or newline. `from ~5 to ~10` stays literal only because the text before the second `~` ends in a space. `about ~5km~ish` would subscript. When in doubt, write `\~` (or `\^`).
 - Patterns are non-greedy and can span what were separate source lines (lines are joined first).
 - Emphasis does not cross block boundaries.
 
-**Not supported:** strikethrough, underline, small caps markup, inline HTML, reference links `[a][b]`, autolinks `<http://…>`, footnote markers `[^1]`, emoji shortcodes, inline language spans. The PDF tagging `Lang` comes only from config. No per-span `lang` exists in the Markdown.
+**Not supported:** strikethrough, underline, inline HTML, reference links `[a][b]`, autolinks `<http://…>`, footnote markers `[^1]`, emoji shortcodes, inline language spans. The PDF tagging `Lang` comes only from config. No per-span `lang` exists in the Markdown.
 
 ---
 
@@ -230,6 +232,7 @@ Earlier passes shield their content from later ones. Math is extracted before em
 - No nesting (`>>` leaves a `>` in the text), and no lists or headings inside (`> - item` gives the text `- item`).
 - Full inline set (chips, refs, swatches, math, emphasis).
 - A blockquote glued under a paragraph line ends the paragraph.
+- Its look is `bodyText.blockquote`: `color` (default #666666), `italic` (default true; `*…*` inside flips back to upright), `indent` (every line, default 0) and `firstLineIndent` (counted from `indent`, default the body's). Family, size, leading and alignment are the body's.
 - Use it for simple quotes. For epigraphs, attributions or multi-paragraph quotes, prefer `:::paragraphs{style="…"}` (§7.2) with a configured paragraph style.
 
 ---
@@ -260,14 +263,14 @@ Plan: , 299-318`. Placement: .
 | attr | values | default | notes |
 |---|---|---|---|
 | `type` | id of a `calloutStyles[]` entry | the **first** configured style | An unknown or missing type falls back to the first style, with an `unknownCalloutType` warning. The built-in default has one style, `note`. |
-| `title` | text | the style's `title` (default `''`) | **Plain text only.** `**…**` is not parsed and shows literally. Cannot contain `}` or the quote character used. The style may uppercase it. Dropped on continuation fragments. |
+| `title` | text | the style's `title` (default `''`) | **Plain text only.** `**…**` is not parsed and shows literally. Cannot contain `}` or the quote character used. The style may uppercase it. Dropped on continuation fragments, unless the style has `repeatTitle` (then repeated with `continuedSuffix`). |
 | `label` | text | `''` | Printed in the label tab, **only if the style configures `label`**. E.g. `label="BOX 1-1"`. |
 | `span` | `column` \| `page` \| `side` | the style's `span` (default `column`) | `page`: full-width band cutting the columns. `side`: into the float-only side column of a one-and-a-half layout (`layout.sideColumnRole:'floats'`), otherwise acts as `column`. Invalid values are ignored. |
 | `placement` | `here` \| `auto` \| `top` \| `bottom` \| `fixed` | the style's `placement` (default `here`) | `here`: inline in the flow. `auto`/`top`/`bottom`: floated to the first free band after its position while the text continues. `fixed`: pinned to page coordinates by the style's `fixed.anchor/offset`. Invalid values are ignored. |
 
-- Style-level only (not attributes): `icon`, `marker`, `stripe`, `border`, `background`, `width: fill|auto`, `keepTogether` (default `true`), `splitMinLines` (default 2), `floatBarrier`, `snapToGrid`, `columnGap`, and the body/list typography. **There is no per-instance `icon` or `keepTogether` attribute.** To vary them, define another style and select it with `type`.
+- Style-level only (not attributes): `icon`, `marker`, `stripe`, `border`, `background`, `width: fill|auto`, `keepTogether` (default `true`), `splitMinLines` (default 2), the continuation marks (`repeatTitle`, `continuedSuffix`, `continuesMarkerEnabled`, `continuesMarker`, `continuesMarkerAlign`, `continuesMarkerItalic`), `floatBarrier`, `snapToGrid`, `columnGap`, and the body/list typography. **There is no per-instance `icon` or `keepTogether` attribute.** To vary them, define another style and select it with `type`.
 - **Nesting:** a `:::callout` inside a callout is its own box with its own style, at the parent's inner width. Its `span`/`placement` are ignored. Each `:::` closes the innermost box.
-- **Splitting:** a box keeps together unless the style has `keepTogether:false`, or it is taller than a column. A split happens between children, or between lines with at least `splitMinLines` lines per side. Continuations drop the title and icon.
+- **Splitting:** a box keeps together unless the style has `keepTogether:false`, or it is taller than a column. A split happens between children, or between lines with at least `splitMinLines` lines per side; a cut inside a paragraph or list item also leaves at least `layout.boxChildSplitMinLines` (2) of its lines on each side (`splitMinLines` when lower). Continuations drop the icon (their text keeps its column, empty), and the title unless the style has `repeatTitle` ("Key points (cont.)"); `continuesMarkerEnabled` sets `continuesMarker` ("Continued" / "Continúa", or a script's "(MORE)") under every part that goes on. Both marks are artifacts in a tagged PDF.
 - **`floatBarrier` style:** every pending float referenced before the box is placed before it (typical for the chapter-closing "key points" box).
 
 ```md
@@ -295,7 +298,8 @@ Answer box.
 
 - The style applies **only to `paragraph` blocks** inside the container. Lists, quotes and headings inside keep their normal styles.
 - The container's `marginTop` is applied on entry and `marginBottom` after the last paragraph. Negative margins pull the flow up.
-- Works inside callouts too.
+- Works inside callouts too (nested boxes included). Unset fields inherit the document's `bodyText`, not the box's `body`.
+- A style may set `fontWeight` / `boldFontWeight`, `italic: true` (stage directions; `*…*` runs turn upright) and `smallCaps: true` (a cast list).
 - This is **the** way to do verse, epigraphs, colophons, dedications, small print, lead-ins, signatures, code-like text (with a mono style) and centred lines. **Each line of a poem is its own paragraph (blank line between)**:
 
 ```md
@@ -339,6 +343,9 @@ Source: ; .
 - **Only inside a `:::callout`.** Elsewhere the fences are ignored and the blocks flow normally.
 - `count`: integer, default 2.
 - `breaks`: a comma list of **1-based block indices** within the group where columns 2, 3, … start. Values must be > 1. Without `breaks`, the columns are balanced, and a cut may fall inside a paragraph or list item. With `breaks`, there is no mid-paragraph cut.
+- `breaks` counts blocks only: paragraphs, list items (one each), display formulas, figures, tables; a nested callout counts as **one**. Directives (`:::space`) are **not** counted. A value past the last block or not after the previous break is ignored.
+- `:::space` inside the group separates blocks, but is **dropped at the top of the group and at each column head** (so equal stanza gaps line up across columns). Put space before the `:::columns` fence to push the group down.
+- Every column shares the box's `body`/`lists` typography; a group has no style of its own.
 - The gap between columns is the callout style's `columnGap`.
 
 ```md
@@ -431,9 +438,11 @@ Tables are `kind:"table"` resources with a `TableModel`:
 - `table.styleId` names a `tableStyles` entry.
 
 **Snippet syntax** (cell content, caption, note), from :
-- Recognised: `**bold**`, `*italic*`, `^sup^`, `~sub~`, escapes, `:ref{…}`, `:swatch{…}` and `:chip[…]`.
+- Recognised: `**bold**`, `*italic*`, `^sup^`, `~sub~`, escapes, `:ref{…}`, `:swatch{…}`, `:chip[…]` and `:smallcaps[…]`.
 - **Inline `$math$` is NOT supported in snippets.** The `$` stays literal.
 - In **cells**, `\n` separates paragraphs. A paragraph starting with a marker is a hanging list item: `•·◦○▪‣-*–—` or `1.`/`1)` (up to 3 digits) followed by whitespace. Two leading spaces per nesting level.
+- A cell paragraph of ordinary spaces sets nothing; one holding a U+00A0 sets a line (postext ≥ 1.5), and a trailing U+00A0 keeps its width, so `'760\u00A0'` right-aligned over `'(231)'` ends a space short of the edge and sets the 0 close to the 1 (exactly under it only if the space is as wide as `)`, which it rarely is). 1.4 dropped both (there, a word joiner U+2060 after the no-break space keeps it).
+- **Line breaks** (postext ≥ 1.5): `\\`, or a backslash ending a line, breaks the line in a caption or a note (`¹ At 20 °C. \\ ² Mean of three runs.`); in a cell it opens a new paragraph, as `\n` does. A plain newline in a caption or note is a space. The two backslashes stay literal only in inline code, link destinations and directive attributes, and read as a space inside a chip label.
 
 ---
 
@@ -444,7 +453,7 @@ Tables are `kind:"table"` resources with a `TableModel`:
 **Regex:** `:chip\[((?:\\.|[^\]\\\n])+)\](?:\{([^}\n]*)\})?`.
 - The text is non-empty and on one line in the source. Paragraph lines are pre-joined, so a chip may straddle source lines inside a paragraph. Whitespace collapses to a single space. `\]` gives a literal `]`.
 - `{…}` must follow `]` immediately. **Only `style` is read.** Missing or unknown: the first `chipStyles` entry (built-in id `chip`), with an `unknownChipStyle` warning.
-- The chip text takes its own emphasis and scripts (`:chip[**bold** x^2^]`). Refs, swatches and math inside a chip stay literal. Surrounding emphasis applies (`**:chip[a]**`).
+- The chip text takes its own emphasis and scripts (`:chip[**bold** x^2^]`). Refs, swatches and math inside a chip stay literal; `\$` gives `$` (postext ≥ 1.5; 1.4 printed `\$`). Surrounding emphasis applies (`**:chip[a]**`).
 - Works in paragraphs, list items, blockquotes, callouts, cells, captions and notes. **Not in headings** (literal). Not in callout `title` attributes.
 - Never broken or hyphenated. Line breaks happen at the spaces around it.
 
@@ -463,6 +472,19 @@ Classify: :chip[battery] :chip[cable] :chip[switch]
 :swatch{color="ok"}: compatible; :swatch{color="#e5adb8"}: incompatible
 ```
 
+### 10.3 `:smallcaps[text]` (small capitals)
+
+**Regex:** `:smallcaps\[((?:\\.|[^\]\\\n])+)\]`, after chips are taken out (so `:smallcaps[:chip[key]]` works).
+- Lowercase letters are set as capitals at 70% of the size; capitals, digits and punctuation keep the full size. **Synthesised** from the face's capitals (no OpenType `smcp`), identical in canvas, HTML and PDF. For real small caps, use a small-caps family ("… SC") in a paragraph style.
+- Takes its own marks (`:smallcaps[**Ophelia**]`) and the surrounding emphasis (`*:smallcaps[Act I]*`). Refs and chips inside are set in small caps too (a ref stays one link in HTML and PDF); math is not. Write `\]` for a literal `]`. Empty (`:smallcaps[]`) or unclosed stays literal.
+- Works in paragraphs, list items, blockquotes, callouts, cells, captions and notes, and in headings while `headings.inlineMarks` is on (the default); with it off, headings strip the markup.
+- Words still hyphenate (read in their own case). Copy/extraction yields the capitals ("HAMLET").
+- Whole paragraphs: `paragraphStyles[].smallCaps: true` or `calloutStyles[].body.smallCaps: true`.
+
+```md
+Enter :smallcaps[Hamlet] and :smallcaps[Horatio], reading.
+```
+
 ---
 
 ## 11. Math (MathJax TeX, `AllPackages`, so amsmath, mhchem etc.; )
@@ -476,8 +498,9 @@ Classify: :chip[battery] :chip[cable] :chip[switch]
   - Rendered as one atomic box, scaled down if taller than the line.
 - **Display, single line:** the whole line is `$$…$$` (regex `^\s*\$\$([\s\S]+?)\$\$\s*$`, , 140-156`). Text after it (`$$x$$ and more`) makes it an ordinary paragraph.
 - **Display, multi-line:** a `$$` line, the TeX lines, then a `$$` line. Unclosed: runs to the end of the document, with an `unclosedMathBlock` warning.
-  - **Needs a blank line before it** when it follows a paragraph line. Otherwise the fences are swallowed into the paragraph.
-- Display math is centred and grid-snapped with `math.marginTop/Bottom`. There is no equation numbering syntax; use `\tag{…}` in TeX if needed.
+  - **No blank line is needed before it** (postext ≥ 1.5). Written under a paragraph line, a whole display (fence closed before the next blank line) interrupts the paragraph. Up to 1.4 the fences were swallowed into the paragraph.
+- **Text after a display:** text written right under the closing `$$` of a display that interrupted a paragraph continues that paragraph, flush, as TeX sets the "where …". Leave a blank line after the display to start a new, indented paragraph. A display with a blank line above it interrupts nothing: the text after it is a new paragraph, indented unless `math.indentAfterDisplay: false`. `math.keepWithLeadIn: true` keeps the formula in the column of its lead-in line.
+- Display math is centred and grid-snapped with `math.marginTop/Bottom`. Equation numbers: `\tag{…}` in the TeX (`\tag*{…}` without parentheses) — the formula spans its measure, number flush right (postext ≥ 1.5; 1.4 dropped a tagged formula). No automatic numbering.
 - Invalid TeX produces an `invalidMath` warning and a red placeholder.
 
 ```md
@@ -498,7 +521,7 @@ Known directives: `pagebreak`, `numbering`, `columnbreak`, `space`, `toc`. Execu
 |---|---|---|
 | `:::pagebreak` | `parity`: `odd` \| `even` \| `always-odd` \| `always-even`. Anything else (incl. `any`) means no parity; the sandbox warns `pagebreakInvalidParity`. | Next block on a new page. `odd`/`even` add a blank page if needed. `always-*` forces at least one separator blank, which belongs to the previous content. Pending floats go to the new page. Skipped while the first page is still empty. |
 | `:::columnbreak` | none | Ends the current column; continues in the next column, or on the next page from the last column. A no-op in an empty column. The column keeps its gap (balancing skips it). |
-| `:::space` | `lines`: body lines (baseline grid), default `1`; fractions allowed; > 0 and ≤ 20, else one line and the sandbox warns `spaceInvalidLines`. | Vertical space between two blocks, **added** to their margin (not collapsed into a heading's top margin); repeated lines add up. Dropped at a column/page top; one that does not fit ends the column without carrying over. A paragraph right after it loses its first-line indent when `indentAfterHeading` is off. Keep-with-next counts it. The only directive honoured inside a `:::callout`/`:::columns` (measured in the box's body lines, dropped at the box top). Extra blank lines in the Markdown never add space. |
+| `:::space` | `lines`: body lines (baseline grid), default `1`; fractions allowed; > 0 and ≤ 20, else one line and the sandbox warns `spaceInvalidLines`. | Vertical space between two blocks, **added** to their margin (not collapsed into a heading's top margin); repeated lines add up. Dropped at a column/page top; one that does not fit ends the column without carrying over. A paragraph right after it loses its first-line indent when `indentAfterHeading` is off. Keep-with-next counts it. The only directive honoured inside a `:::callout`/`:::columns` (measured in the box's body lines). Before a box's first block it is dropped, **except** right under the title or in a box holding nothing else (answer box sized in lines: `:::callout{type="answer" title="Q1"}` + `:::space{lines=4}` + `:::`). Always dropped at the top of a `:::columns` group, at each of its column heads, and at the top of a split box's continuation. Works inside `:::paragraphs`. Extra blank lines in the Markdown never add space. |
 | `:::numbering` | `format`: `decimal` \| `lower-roman` \| `upper-roman` \| `lower-alpha` \| `upper-alpha`. `startAt`: integer ≥ 1. Both optional; invalid values are ignored, with `numberingInvalidFormat`/`numberingInvalidStartAt` warnings. | Switches the page-number format and/or restarts the counter **at the next page boundary** (or at the current page if it has no numbered content yet). Canonical form: `:::pagebreak{parity="odd"}` followed by `:::numbering{format="decimal" startAt=1}` before chapter 1. |
 | `:::toc` | none | Expands, before layout, into one entry per listed heading (levels in `toc.levels`, default level 1) and one row per part. Page labels converge over passes. In the sandbox the book outline is supplied, so chapter files work. Exclude the contents heading itself with `{toc="false"}`. |
 
@@ -524,6 +547,7 @@ Known directives: `pagebreak`, `numbering`, `columnbreak`, `space`, `toc`. Execu
 | Placeholder | Available in |
 |---|---|
 | `{pageNumber}` `{totalPages}` `{title}` `{subtitle}` `{author}` `{publishDate}` `{chapterTitle}` `{chapterNumber}` `{partTitle}` `{partNumber}` | header/footer and heading/part designs |
+| `{chapterTitleAtTop}` `{chapterNumberAtTop}` `{firstMark.<key>}` `{lastMark.<key>}` | header/footer only |
 | `{titleText}` `{number}` `{numberDecimal}` `{numberRoman}` `{numberRomanLower}` `{numberAlpha}` `{numberAlphaLower}` | heading/part designs only |
 | `{attr.<key>}` | anywhere; the Markdown supplies it through heading attributes (§2.2) |
 
@@ -535,9 +559,11 @@ The Markdown's only role is to provide values:
 
 `{{` and `}}` escape braces in templates.
 
-**Sandbox warnings tied to the document format**:
-- `unknownDirective`, `unclosedContainer`, `unclosedMath`, `invalidMath`
-- `unknownParagraphStyle`, `unknownCalloutType`, `unknownChipStyle`, `chipOverlap`
+**Sandbox warnings tied to the document format** (the engine reports the unknown ids, directives,
+styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings` / `collectContentWarnings`):
+- `unknownDirective`, `malformedEmbed`, `unclosedContainer`, `unclosedMath`, `invalidMath`
+- `unknownParagraphStyle`, `unknownCalloutType`, `unknownChipStyle`, `unknownHeadingStyle`, `unknownTableStyle`, `chipOverlap`
+- `raggedTableGrid` (a merged grid that is not rectangular), `missingImage` (an image with nothing to draw)
 - `numberingInvalidFormat`, `numberingInvalidStartAt`, `pagebreakInvalidParity`
 - `unknownResourceId` (embed or ref), `duplicateResourceId`, `danglingTypeRef`
 - `headingHierarchy`, `consecutiveHeadings`, `listAfterHeading`
@@ -549,20 +575,20 @@ The Markdown's only role is to provide values:
 
 1. **Containers:** the docs table says "Three container names" (callout, paragraphs, part). The code has **four**, including `columns`. The docs do describe `:::columns` in a later section.
 2. **Callout `placement`:** the docs list `here|top|bottom|fixed`. The code also accepts **`auto`**, which floats to the first free band, top or bottom.
-3. **"Inline markup is recognised inside any text block (headings…)":** wrong for headings. Bold, italic, sup/sub, code and links are stripped to plain text there. Only refs, swatches and math survive.
+3. **"Inline markup is recognised inside any text block (headings…)":** true for headings only with `headings.inlineMarks` on, the default since `configVersion` 6. A preset without it whose headings carry marks reads `inlineMarks: false`, and its headings stay plain (only refs, swatches and math survive).
 4. **Ordered list start:** the docs imply the start number is kept and the list counts from it. In fact **every item prints its own literal number**.
 5. **List termination:** "two or more blank lines terminate the list". The parser does split the run, but numbering and indentation runs only close at a non-list block, so the render continues the list.
 6. **Worked example is invalid:** the nested items `   a. Tighter…` / `   b. Looser…` are not list syntax. They become a paragraph that also swallows the following `3. Contrast…` line.
-7. **Inline code:** the docs say it is "rendered as plain text". True, but its content is still parsed for emphasis, math and refs. Backticks do not protect.
+7. **Inline code:** (Fixed) its content is literal now: emphasis, math, links and refs inside backticks print as written. Older engines parsed them.
 8. **Strikethrough:** the docs say it is not recognised. It is worse: `~~x~~` turns into a subscript with stray tildes.
-9. **Intraword `_`** italicises. The docs do not mention it.
-10. **Links:** a URL containing `)` breaks the pattern and leaks text. Not documented.
-11. **Footnotes:** the docs say footnotes "ride on `PostextContent.notes` and are referenced by id". `PostextNote` exists in , but **nothing in the engine consumes `notes`**. Footnotes are unimplemented, and there is no reference syntax.
+9. **Intraword `_`:** (Fixed) an underscore between two letters or digits is text now (CommonMark), so URLs and `snake_case` keep theirs. Older engines italicised between two of them.
+10. **Links:** resolved. A URL with balanced parentheses is read whole, an unbalanced one sets the text with no link, and the docs describe both (`document-format` › Links).
+11. **Footnotes:** unimplemented. `PostextContent.notes` and `PostextNote` exist in the types, but **nothing in the engine consumes `notes`**, and there is no reference syntax. The docs now say so; older copies claimed notes "ride on `PostextContent.notes`".
 12. **`:::pagebreak{parity="any"}`:** documented as the default value. It is accepted by being ignored (the same as no parity), and the sandbox may flag it.
 13. **Heading attrs eat any trailing `{word …}`** (e.g. `{a, b}`). Undocumented.
-14. **Display math and `::resource` glued under a paragraph** are swallowed. The docs say a fence "does not need a blank line before it", which is true only for `:::` fences, not for `$$` or `::resource`.
+14. **`::resource` glued under a paragraph** is swallowed, like an ordered-list line. The docs say a fence "does not need a blank line before it", which is true only for `:::` fences, not for `::resource`. (Fixed in 1.5 for display maths: a whole `$$` display under a paragraph line interrupts it, and the text right under its closing `$$` continues the paragraph flush, §11.)
 15. **Captions, cells and notes do not support inline math.** The docs only say they share the "inline formatting and `:ref` marks".
-16. **NBSP:** there is no mention that U+00A0 is treated as a normal breakable space.
+16. **NBSP:** (Fixed in 1.5) U+00A0, U+202F and U+2007 glue their neighbours, and the docs say so (`document-format` › No-break space, `justification` › Where a Line Never Breaks). Older engines could break at them in text with inline formatting or a `:ref`.
 17. The **Spanish** doc (`docs/document-format-es.mdx`) was not diffed separately. Assume it has the same gaps.
 
 ---
@@ -588,7 +614,7 @@ The Markdown's only role is to provide values:
 | Cross-reference to a section or page | **Unsupported.** Write the text literally. |
 | Footnote | **Unsupported.** Options: an inline superscript marker `^1^` plus the notes gathered in a `:::paragraphs{style="notes"}` or callout at the end of the section or chapter. |
 | Superscript / subscript / chemistry | `x^2^`, `H~2~O`, or `$\ce{H2O}$` (mhchem is available). |
-| Formula | `$…$` inline, `$$ … $$` display on its own lines with blank lines around. Escape currency `$` as `\$`. |
+| Formula | `$…$` inline, `$$ … $$` display on its own lines with blank lines around; glue it under its lead-in line when the text after it continues the sentence ("where …", §11). Escape currency `$` as `\$`. |
 | Code listing | No code blocks. Use `:::paragraphs{style="code"}` with a mono style, one paragraph per line. Escape `* _ ^ ~ $` inside it. |
 | Horizontal rule / ornament / asterism | No `---`. Use a centred `:::paragraphs{style="asterism"}` with `⁂` or `* * *` (escape as `\* \* \*`), or an ornament resource with `::resource`. |
 | Forced page / column break | `:::pagebreak{parity="odd"}` / `:::columnbreak`. |
@@ -598,15 +624,16 @@ The Markdown's only role is to provide values:
 | Part divider | `:::part{number="I" title="…" palette="band=#hex"}` … `:::` at the top of the part's first chapter file. |
 | Keyboard keys, tags, word bank | `:chip[…]{style="…"}`. |
 | Colour legend | `:swatch{color="…"}`. |
-| Links | `[text](url)` keeps only the text (the URL is lost). Put important URLs in the text itself; they get URL-aware line breaking. |
-| Small caps, underline, strikethrough, colour spans, language spans | **Unsupported inline.** Use a chip style or a paragraph style, or accept plain text. |
+| Links | `[text](url)`: the text is set as usual and the URL is a live link in the HTML and PDF output. Print cannot follow it, so for a printed book also put important URLs in the text itself; they get URL-aware line breaking. |
+| Small caps | `:smallcaps[…]` inline; `smallCaps: true` on a paragraph style or a callout body for whole paragraphs. |
+| Underline, strikethrough, colour spans, language spans | **Unsupported inline.** Use a chip style or a paragraph style, or accept plain text. |
 | HTML entities | Use the literal Unicode characters. |
 
 ---
 
 ## 16. Pre-flight checklist for a generated chapter
 
-1. Blank line before and after every heading, list, quote, `$$` block, `::resource`, and `:::` fence.
+1. Blank line before and after every heading, list, quote, `::resource`, and `:::` fence. A `$$` block gets them too, unless it sits inside a sentence: glued under a paragraph line it interrupts it, and text right under its closing `$$` continues that paragraph flush (§11).
 2. No paragraph line starts with `- `, `* `, `+ `, `> `, `# `, or `<digits>. ` / `<digits>) ` unless that construct is intended.
 3. Every list item is on one line. Nesting uses 2 spaces per level. Ordered items carry their real numbers.
 4. Escape stray `*`, `_` (including inside words and URLs), `^`, `~` and `$` with a backslash.

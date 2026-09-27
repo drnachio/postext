@@ -19,21 +19,25 @@ import {
   mimeForFile,
   pickChapterSpecs,
   pickLocaleOverrides,
+  resolveBundleConfigLocale,
   resolveBundleLocale,
   resourceFromSpec,
   slugify,
   svgSize,
   uniqueSlug,
 } from './manifest';
+import { CONFIG_VERSION, migrateBundleConfig } from './configVersion';
 import type {
   BundleBlob,
   BundleCanvasScope,
   BundleChapter,
+  BundleChapterSpec,
   BundleFileReader,
   BundleFontFamilySpec,
   BundleFontFile,
   BundleIdScheme,
   BundleImageSize,
+  BundleLocaleOverrides,
   BundleManifest,
   BundleManifestV2,
   BundleResourceSpec,
@@ -53,7 +57,34 @@ export interface ReadBundleOptions {
   /** How loaded files are named (`fileId`). Defaults to their path. */
   ids?: BundleIdScheme;
   /** Configuration under the manifest's `config`. Defaults to
-   *  `bundleBaseConfig(locale)`. */
+   *  `bundleBaseConfig()` in the language of the bundle
+   *  (`resolveBundleConfigLocale(manifest, locale)`: the locale it serves,
+   *  or the language its `config` names when the manifest names none), so
+   *  a bundle in one language gets resource types in that language,
+   *  whatever `locale` asks for. A host that passes its own base should
+   *  localise it to the same language. It is taken in today's terms, with
+   *  one exception: under a manifest older than `CONFIG_VERSION` whose
+   *  chapters set maths, a base `math` that neither the manifest nor the
+   *  locale replaces is pinned with the bundle's (`fontSizeScale` ×
+   *  `LEGACY_MATH_SIZE`, see `pinLegacyMathSize`), since 1.4 set the
+   *  bundle's formulas at that size; so is a base `layout`'s inline gap
+   *  (`pinLegacyInlineGap`) when the chapters embed a resource, and its
+   *  gap in boxes (`pinLegacyBoxResourceGap`) when they embed one inside a
+   *  `:::callout`; a base `bodyText`'s colon-list room
+   *  (`pinLegacyColonListRoom`) when they introduce a list with a colon; a
+   *  base `headings`' inline marks (`pinLegacyHeadingMarks`) when a heading
+   *  of theirs carries one; a base `layout`'s box cut
+   *  (`pinLegacyBoxChildCut`) when they hold a `:::callout`; a base
+   *  `bodyText`'s dash breaks (`pinLegacyDashBreaks`) when they set a dash
+   *  closed between words, its compound breaks (`pinLegacyHyphenBreaks`)
+   *  when they set a hyphen between two letters, and its ragged breaking
+   *  (`pinLegacyRaggedBreaking`) when the configuration sets some running
+   *  text ragged; a base `headings`' split under a heading
+   *  (`pinLegacyHeadingSplit`) when they have a heading; a base
+   *  `bodyText`'s space under `:::paragraphs` containers
+   *  (`pinLegacyParagraphContainerSpacing`) when they hold one and the
+   *  configuration declares a paragraph style; and the size of every drop
+   *  cap in the base that names none (`pinLegacyDropCapSize`). */
   baseConfig?: PostextConfig;
   /** Intrinsic size of an SVG whose spec omits it. Defaults to `svgSize`. */
   measureSvg?: (markup: string) => BundleImageSize | undefined;
@@ -71,7 +102,22 @@ export interface ReadBundleResult {
   locale: string;
   chapters: BundleChapter[];
   /** Base config + manifest `config` + the locale's overrides, with the
-   *  bundle's font families appended to `customFonts`. */
+   *  bundle's font families appended to `customFonts`. A manifest stored
+   *  under older rules than `CONFIG_VERSION` (none: postext 1.4 or earlier)
+   *  is read in today's terms (see `migrateConfig`): its heading breaks,
+   *  its maths size when its chapters set maths, the space around its
+   *  inline resources when they embed one (inside a box too, when a box
+   *  embeds one), its headings' inline marks when a heading carries one,
+   *  the size of its drop caps, the room kept for a list under a colon line
+   *  when its chapters introduce one so, the lines a box cut leaves of a
+   *  paragraph or list item when they hold a box, the line breaks after a
+   *  closed dash when they set one, the line breaks at a compound's hyphen
+   *  when they set one, the line-by-line breaking of its ragged text when
+   *  it has some, the split of a paragraph under a heading when they have
+   *  a heading, and the space under its `:::paragraphs` containers when
+   *  they hold one, are the ones 1.4 laid out. The layout
+   *  fixes of postext 1.5 that no pin holds back apply to it as to any
+   *  book. */
   config: PostextConfig;
   resources: Resource[];
   /** Resource payloads (pictures and PDF print masters). */
@@ -82,7 +128,20 @@ export interface ReadBundleResult {
 const identityIds: BundleIdScheme = { blob: (f) => f, font: (f) => f };
 
 /** Read a manifest plus its files. Throws on an invalid manifest or a
- *  missing chapter, picture or font file. */
+ *  missing chapter, picture or font file. The configuration of a manifest
+ *  written by postext 1.4 or earlier (no `configVersion`) keeps the heading
+ *  breaks, the maths size, the space around inline resources in the text
+ *  and inside boxes, the heading marks, the drop-cap sizes, the room under
+ *  a colon line that introduces a list, the lines a box cut leaves of a
+ *  paragraph or list item, the breaks at dashes and at compounds'
+ *  hyphens, the breaking of ragged text, the split under a heading and the
+ *  space under `:::paragraphs` containers it laid out then (see
+ *  `pinLegacyHeadingBreaks`, `pinLegacyMathSize`, `pinLegacyInlineGap`,
+ *  `pinLegacyBoxResourceGap`, `pinLegacyHeadingMarks`,
+ *  `pinLegacyDropCapSize`, `pinLegacyColonListRoom`, `pinLegacyBoxChildCut`,
+ *  `pinLegacyDashBreaks`, `pinLegacyHyphenBreaks`,
+ *  `pinLegacyRaggedBreaking`, `pinLegacyHeadingSplit` and
+ *  `pinLegacyParagraphContainerSpacing`). */
 export async function readBundle(
   manifest: unknown,
   readFile: BundleFileReader,
@@ -90,6 +149,10 @@ export async function readBundle(
 ): Promise<ReadBundleResult> {
   if (!isBundleManifest(manifest)) throw new Error('Invalid bundle manifest (preset.json)');
   const locale = options.locale ?? manifest.locale ?? 'en';
+  // The language the content comes in: a single-language bundle serves its
+  // own whatever the reader asks for, so its default resource types
+  // ("Figura", "Tabla") follow that, not the reader's locale (EF-150).
+  const served = resolveBundleLocale(manifest, locale);
   const ids = options.ids ?? identityIds;
   const onWarning = options.onWarning;
   const measureSvg = options.measureSvg ?? svgSize;
@@ -155,11 +218,22 @@ export async function readBundle(
     fontSet.files.map(async (f) => ({ ...f, bytes: await readFile(f.file) })),
   );
 
-  const baseConfig = { ...(options.baseConfig ?? bundleBaseConfig(locale)), ...(manifest.config ?? {}), ...(overrides?.config ?? {}) };
+  // A manifest written for older rules (postext 1.4 or earlier has no
+  // `configVersion`) is read with the heading breaks, the maths size and
+  // the inline gap it laid out then. The reader's own base configuration
+  // keeps its heading breaks, but its `math` and `layout`, when no layer
+  // replaces them, are the ones 1.4 set the book with, so they are pinned
+  // with the rest.
+  const baseConfig = migrateBundleConfig(
+    options.baseConfig ?? bundleBaseConfig(resolveBundleConfigLocale(manifest, locale)),
+    [manifest.config ?? {}, overrides?.config ?? {}],
+    manifest.configVersion,
+    { content: chapters.map((c) => c.markdown) },
+  );
   const customFonts = [...(manifest.config?.customFonts ?? []), ...fontSet.families];
   const config = customFonts.length > 0 ? { ...baseConfig, customFonts } : baseConfig;
 
-  return { manifest, locale: resolveBundleLocale(manifest, locale), chapters, config, resources, blobs, fonts };
+  return { manifest, locale: served, chapters, config, resources, blobs, fonts };
 }
 
 // ---------------------------------------------------------------------------
@@ -172,6 +246,25 @@ export interface BundleMeta {
   locale?: string;
 }
 
+/** What another locale of a bilingual bundle brings on top of the shared
+ *  content (see {@link BundleContent.localized}). */
+export interface BundleLocaleContent {
+  /** The locale's own chapters, in book order. Absent: it reads the
+   *  shared (primary) chapters. */
+  chapters?: readonly { title: string; markdown: string }[];
+  /** Top-level configuration keys for the locale, each replacing the
+   *  shared key wholesale when read; a key equal to the shared one is not
+   *  written. Fonts are shared: the families of `customFonts` join the
+   *  bundle's. */
+  config?: PostextConfig;
+  /** The locale's wording and artwork of the shared resources, merged by
+   *  id: `caption`, `note`, `altText`, `table`, and a picture of its own
+   *  (`bitmap.fileId` / `svg.fileId`, `svg.pdfFileId`) when the artwork
+   *  carries words. Other fields are shared; an id that is not among the
+   *  resources is left out with a warning. */
+  resources?: readonly (Pick<Resource, 'id'> & Partial<Resource>)[];
+}
+
 export interface BundleContent {
   chapters: readonly { title: string; markdown: string }[];
   config: PostextConfig;
@@ -180,6 +273,12 @@ export interface BundleContent {
   canvasScope?: BundleCanvasScope;
   /** The cover picture, carried as the manifest's `thumbnail`. */
   thumbnail?: { fileId: string; mime: string };
+  /** Other locales of a bilingual bundle, by locale tag (`es`, `pt-BR`);
+   *  `chapters`, `config` and `resources` are then the primary locale's
+   *  (`BundleMeta.locale`, required). Written as the manifest's `locales`,
+   *  a locale → chapters map (when any locale has chapters of its own) and
+   *  `localized`. */
+  localized?: Record<string, BundleLocaleContent>;
 }
 
 export interface PlannedFile {
@@ -189,6 +288,8 @@ export interface PlannedFile {
   kind: 'blob' | 'font';
   /** Resource id (blob) or family name (font), for warnings. */
   owner: string;
+  /** Set on a picture only one locale reads (its own artwork). */
+  locale?: string;
 }
 
 export interface BundlePlan {
@@ -222,6 +323,18 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
   const files: PlannedFile[] = [];
   const takenResourceNames = new Set<string>();
   const takenFontNames = new Set<string>();
+  const localized = content.localized && Object.keys(content.localized).length > 0 ? content.localized : undefined;
+  if (localized) {
+    if (!meta.locale) throw new Error('planBundle: `localized` needs `locale`, the language of the shared content');
+    for (const key of Object.keys(localized)) {
+      if (key.trim().length === 0 || key.toLowerCase() === meta.locale.toLowerCase()) {
+        throw new Error(`planBundle: \`localized\` names the primary locale "${key}" again`);
+      }
+    }
+  }
+  // File name (slug) of each resource with a payload, for the pictures a
+  // locale brings of its own.
+  const resourceNames = new Map<string, string>();
 
   const resources: BundleResourceSpec[] = [];
   for (const r of content.resources) {
@@ -235,6 +348,7 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
     }
     const name = uniqueSlug(slugify(r.id), takenResourceNames, 'resource');
     takenResourceNames.add(name);
+    resourceNames.set(r.id, name);
     const path = `resources/${name}.${ext}`;
     files.push({ path, fileId, kind: 'blob', owner: r.id });
     let pdfFile: string | undefined;
@@ -253,8 +367,16 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
     });
   }
 
+  // Fonts are shared by every locale: a family only a locale's config
+  // names joins the primary ones.
+  const families = [...(content.config.customFonts ?? [])];
+  for (const entry of Object.values(localized ?? {})) {
+    for (const family of entry.config?.customFonts ?? []) {
+      if (!families.some((f) => f.name === family.name)) families.push(family);
+    }
+  }
   const fonts: BundleFontFamilySpec[] = [];
-  for (const family of content.config.customFonts ?? []) {
+  for (const family of families) {
     // A family the document may set but not pass on: its files stay behind
     // and no `fonts[]` entry names it, so the bundle opens with the
     // reader's own fallback for that family.
@@ -287,29 +409,131 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
   const configWithoutFonts: Partial<PostextConfig> = { ...stripConfigDefaults(content.config) };
   delete configWithoutFonts.customFonts;
 
-  const takenChapterNames = new Set<string>();
-  const chapterSpecs: BundleManifestV2['chapters'] = [];
+  // Chapter files: `chapters/01-intro.md`, or one folder per locale when
+  // any locale has chapters of its own (`chapters/es/01-intro.md`).
   const chapterFiles: BundlePlan['chapterFiles'] = [];
-  content.chapters.forEach((c, i) => {
-    const path = chapterFileName(i, c.title, takenChapterNames, content.chapters.length);
-    chapterSpecs.push({ title: c.title, file: path });
-    chapterFiles.push({ path, markdown: c.markdown });
-  });
+  const writeChapters = (chapters: readonly { title: string; markdown: string }[], folder?: string): BundleChapterSpec[] => {
+    const taken = new Set<string>();
+    return chapters.map((c, i) => {
+      const name = chapterFileName(i, c.title, taken, chapters.length);
+      const path = folder ? name.replace(/^chapters\//, `chapters/${folder}/`) : name;
+      chapterFiles.push({ path, markdown: c.markdown });
+      return { title: c.title, file: path };
+    });
+  };
+  const perLocale = localized !== undefined && Object.values(localized).some((l) => l.chapters && l.chapters.length > 0);
+  let chapterSpecs: BundleManifestV2['chapters'];
+  if (localized && perLocale && meta.locale) {
+    const primary = writeChapters(content.chapters, localeFolder(meta.locale));
+    const map: Record<string, BundleChapterSpec[]> = { [meta.locale]: primary };
+    for (const [locale, entry] of Object.entries(localized)) {
+      map[locale] = entry.chapters && entry.chapters.length > 0 ? writeChapters(entry.chapters, localeFolder(locale)) : primary;
+    }
+    chapterSpecs = map;
+  } else {
+    chapterSpecs = writeChapters(content.chapters);
+  }
+
+  // Per locale, what differs from the shared content: configuration keys,
+  // and the wording and artwork of resources.
+  const localizedSpecs: Record<string, BundleLocaleOverrides> = {};
+  const byId = new Map(content.resources.map((r) => [r.id, r]));
+  for (const [locale, entry] of Object.entries(localized ?? {})) {
+    const overrides: BundleLocaleOverrides = {};
+    if (entry.config) {
+      const config = localizedConfig(entry.config, configWithoutFonts);
+      if (Object.keys(config).length > 0) overrides.config = config;
+    }
+    const wording: NonNullable<BundleLocaleOverrides['resources']> = [];
+    for (const r of entry.resources ?? []) {
+      const base = byId.get(r.id);
+      if (!base) {
+        warnings.push(`${r.id}: not among the resources, its ${locale} wording left out`);
+        continue;
+      }
+      const spec: NonNullable<BundleLocaleOverrides['resources']>[number] = { id: r.id };
+      for (const key of LOCALIZABLE_RESOURCE_FIELDS) {
+        const value = r[key];
+        if (value !== undefined && !sameJson(value, base[key])) (spec as Record<string, unknown>)[key] = value;
+      }
+      // Artwork of its own (a picture with words in it), written in the
+      // locale's folder under the shared file's name.
+      const merged = { ...base, ...r } as Resource;
+      const ext = extensionForResource(merged);
+      const fileId = r.bitmap?.fileId ?? r.svg?.fileId;
+      const pdfFileId = r.svg?.pdfFileId;
+      const ownFile = !!ext && !!fileId && fileId !== (base.bitmap?.fileId ?? base.svg?.fileId);
+      const ownMaster = !!pdfFileId && pdfFileId !== base.svg?.pdfFileId && merged.kind === 'svg';
+      let name = resourceNames.get(r.id);
+      if ((ownFile || ownMaster) && name === undefined) {
+        name = uniqueSlug(slugify(r.id), takenResourceNames, 'resource');
+        takenResourceNames.add(name);
+        resourceNames.set(r.id, name);
+      }
+      if (ownFile) {
+        spec.file = `resources/${localeFolder(locale)}/${name}.${ext}`;
+        files.push({ path: spec.file, fileId: fileId!, kind: 'blob', owner: r.id, locale });
+        const width = r.bitmap?.width ?? r.svg?.width;
+        const height = r.bitmap?.height ?? r.svg?.height;
+        if (width) spec.width = width;
+        if (height) spec.height = height;
+      }
+      if (ownMaster) {
+        spec.pdfFile = `resources/${localeFolder(locale)}/${name}.pdf`;
+        files.push({ path: spec.pdfFile, fileId: pdfFileId!, kind: 'blob', owner: r.id, locale });
+      }
+      if (Object.keys(spec).length > 1) wording.push(spec);
+    }
+    if (wording.length > 0) overrides.resources = wording;
+    localizedSpecs[locale] = overrides;
+  }
 
   const manifest: BundleManifestV2 = {
     version: 2,
+    configVersion: CONFIG_VERSION,
     id: meta.id,
     name: meta.name,
     ...(meta.description ? { description: meta.description } : {}),
     ...(meta.locale ? { locale: meta.locale } : {}),
+    ...(localized && meta.locale ? { locales: [meta.locale, ...Object.keys(localized)] } : {}),
     ...(thumbnailPath ? { thumbnail: thumbnailPath } : {}),
     ...(content.canvasScope === 'book' ? { view: { canvasScope: 'book' as const } } : {}),
     chapters: chapterSpecs,
     config: configWithoutFonts as PostextConfig,
     ...(resources.length > 0 ? { resources } : {}),
     ...(fonts.length > 0 ? { fonts } : {}),
+    ...(localized ? { localized: localizedSpecs } : {}),
   };
   return { manifest, files, chapterFiles, warnings };
+}
+
+/** Resource fields a locale may word differently. */
+const LOCALIZABLE_RESOURCE_FIELDS = ['caption', 'note', 'altText', 'table'] as const;
+
+/** Folder a locale's own files are written in (`chapters/es/…`). */
+function localeFolder(locale: string): string {
+  return slugify(locale) || 'locale';
+}
+
+function sameJson(a: unknown, b: unknown): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+/** The top-level keys of a locale's configuration that differ from the
+ *  shared (stripped) configuration, each stripped of its defaults. A key
+ *  whose value is all defaults while the shared one is not is written as
+ *  given (`layout: {}`), so that it still replaces the shared key. */
+function localizedConfig(own: PostextConfig, shared: Partial<PostextConfig>): Partial<PostextConfig> {
+  const stripped = stripConfigDefaults(own) as Record<string, unknown>;
+  const raw = own as Record<string, unknown>;
+  const base = shared as Record<string, unknown>;
+  const out: Record<string, unknown> = {};
+  for (const key of Object.keys(raw)) {
+    if (key === 'customFonts' || raw[key] === undefined) continue;
+    if (sameJson(stripped[key], base[key])) continue;
+    out[key] = stripped[key] ?? raw[key];
+  }
+  return out as Partial<PostextConfig>;
 }
 
 export interface BundleByteSources {
@@ -346,7 +570,7 @@ export async function resolveBundleFiles(plan: BundlePlan, sources: BundleByteSo
         : await Promise.resolve(sources.readFont(f.fileId)).catch(() => null);
       if (!bytes) {
         missingPaths.add(f.path);
-        warnings.push(`${f.owner}: missing file, skipped`);
+        warnings.push(f.locale ? `${f.owner}: missing ${f.locale} file, the shared one is used` : `${f.owner}: missing file, skipped`);
         return;
       }
       files[f.path] = toBytes(bytes);
@@ -372,6 +596,30 @@ export async function resolveBundleFiles(plan: BundlePlan, sources: BundleByteSo
     };
     if (!resources || resources.length === 0) delete manifest.resources;
     if (!fonts || fonts.length === 0) delete manifest.fonts;
+    // A locale whose own artwork is missing reads the shared picture.
+    if (manifest.localized) {
+      const localized: Record<string, BundleLocaleOverrides> = {};
+      for (const [locale, overrides] of Object.entries(manifest.localized)) {
+        const wording = overrides.resources
+          ?.map((r) => {
+            const spec = { ...r };
+            if (spec.file && missingPaths.has(spec.file)) {
+              delete spec.file;
+              delete spec.width;
+              delete spec.height;
+              delete spec.pdfFile;
+            }
+            if (spec.pdfFile && missingPaths.has(spec.pdfFile)) delete spec.pdfFile;
+            return spec;
+          })
+          .filter((r) => Object.keys(r).length > 1);
+        const next: BundleLocaleOverrides = { ...overrides };
+        if (wording && wording.length > 0) next.resources = wording;
+        else delete next.resources;
+        localized[locale] = next;
+      }
+      manifest = { ...manifest, localized };
+    }
   }
 
   const enc = new TextEncoder();

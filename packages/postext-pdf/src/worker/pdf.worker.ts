@@ -50,6 +50,7 @@ ctx.addEventListener('message', async (event: MessageEvent<PdfRequestMessage>) =
           rasterizeSvg: (svg, widthPx, heightPx) => ask({ kind: 'rasterize', svg, widthPx, heightPx }).catch(() => null),
           resourceBytes: (fileId) => bytesById.get(fileId),
           onProgress: (progress) => post({ kind: 'progress', id: msg.id, progress }),
+          onWarning: (warning) => post({ kind: 'warning', id: msg.id, warning }),
         });
         post({ kind: 'rendered', id: msg.id, bytes }, [bytes.buffer]);
       } catch (err) {

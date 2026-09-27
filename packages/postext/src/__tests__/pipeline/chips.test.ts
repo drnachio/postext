@@ -79,6 +79,17 @@ describe('chip parsing', () => {
     expect(md[p.sourceMap[i2 + 2]!]).toBe('n');
   });
 
+  it('turns a whitespace-only chip (spaces, NBSP) into an empty chip, not literal markup', () => {
+    for (const md of ['Blank :chip[ ]{style="gap"} here', 'Blank :chip[   ] here', 'Blank :chip[\t ] here']) {
+      const spans = parseInlineSnippetSpans(md);
+      const chips = spans.filter((s) => s.chip);
+      expect(chips).toHaveLength(1);
+      expect(chips[0]!.chip!.spans.map((s) => s.text).join('')).toBe('');
+      expect(spans.map((s) => s.text).join('')).not.toContain(':chip');
+    }
+    expect(parseInlineSnippetSpans(':chip[ ]{style="gap"}').find((s) => s.chip)!.chip!.style).toBe('gap');
+  });
+
   it('parses chips in list items and blockquotes', () => {
     const { blocks } = parseMarkdownWithIssues('- item :chip[a]\n\n> quote :chip[b]');
     expect(blocks.filter((b) => b.spans.some((s) => s.chip)).map((b) => b.type)).toEqual(['listItem', 'blockquote']);
@@ -147,6 +158,29 @@ describe('chip layout', () => {
     const plainLine = firstParagraph(plain).lines[0]!;
     expect(p.lines[0]!.baseline).toBe(plainLine.baseline);
     for (const line of p.lines) expect(line.bbox.height).toBe(plainLine.bbox.height);
+  });
+
+  it('sizes an empty chip by its padding and border alone', () => {
+    const cfg = base({ chipStyles: [{ id: 'blank', paddingX: px(30), paddingY: px(2), borderWidth: px(1), gap: px(0) }] });
+    const doc = buildDocument({ markdown: 'Answer: :chip[ ] and :chip[ ] done.' }, cfg);
+    const p = firstParagraph(doc);
+    expect(p.lines.map((l) => l.text).join(' ')).not.toContain(':chip');
+    const segs = chipSegs(doc);
+    expect(segs).toHaveLength(2);
+    const fontPx = Number(/(\d*\.?\d+)px/.exec(p.fontString)![1]);
+    for (const seg of segs) {
+      const c = seg.chip!;
+      expect(c.runs).toEqual([]);
+      expect(c.boxWidth).toBeCloseTo(2 * (30 + 1), 6);
+      expect(seg.width).toBeCloseTo(c.boxWidth, 6);
+      // Same height as a chip with words: the text band plus padding.
+      expect(c.ascent).toBeCloseTo(fontPx * 0.8 + 2 + 1, 6);
+      expect(c.descent).toBeCloseTo(fontPx * 0.25 + 2 + 1, 6);
+    }
+    // All three renderers paint the box with no words in it.
+    const html = renderToHtml(doc);
+    expect(html.match(/border:1\.000px solid/g)).toHaveLength(2);
+    expect(html).not.toContain(':chip');
   });
 
   it('widens a narrow space to the gap, shared between two chips, and not at a line edge', () => {

@@ -1,0 +1,61 @@
+---
+title: "Accessible tagged PDF (PDF/UA)"
+summary: "A recycling guide exported as a tagged PDF/UA-1 file with alt text, table header cells, its language and linked contents; the preview draws the tags on page 3."
+description: "A council recycling guide in Postext, exported as a tagged PDF that passes PDF/UA-1, with alt text, header cells, language, bookmarks and linked contents."
+question: "How do I export a tagged PDF (PDF/UA) with alt text, table header cells and the document's language?"
+aliases: ["PDF/UA", "PDF/UA-1", "accessible PDF", "tagged PDF", "screen reader", "alt text", "reading order", "structure tree", "table header cells", "document language", "veraPDF", "recycling guide"]
+pageNotes: { "1": "The cover: a navy band over the top three fifths, with the title Reciclar en el barrio in large white type on two lines and the five street bins (yellow, blue, green, brown and grey, each with a white or dark pictogram) standing on a yellow kerb at its foot. Below it, a lead in large type, and the council's name in small monospaced type at the foot of the page.", "2": "Page 2: Índice, the contents with two numbered sections and their subsections, dotted leaders and page numbers, over three tinted boxes: Cómo usar esta guía, Esta guía, en otros formatos and Datos útiles. In the second column, Presentación, a five-paragraph letter set a size larger than the body and signed by the councillor for the environment.", "3": "Page 3 with its reading order drawn on: a navy band with a yellow numeral 1 and the title Qué va en cada contenedor, then two columns in which every tagged block sits in a magenta box, numbered from 1 to 14 and named by its tag (H1, P, Figure, H2, Table). The figure shows the five bins; each bin has a heading and a paragraph; table 1.1 gives the container for eleven items, with a coloured square beside each container's name and an empty one beside the recycling centre. The paragraph on glass runs into the second column and keeps its number, 9, in a dashed box, and the footer is marked Artifact.", "4": "Page 4: a navy band with the numeral 2 and Lo que no va al contenedor, then the recycling centre with a bulleted list of what it takes, the collection days as table 2.1, four numbered steps for booking a furniture collection and the colophon." }
+---
+
+## What you'll build
+
+*Reciclar en el barrio* is a four-page A4 recycling guide from an invented Spanish council, for reading on screen or printing at home. The navy cover shows the five street bins on a yellow kerb. Page 2 holds the contents and three boxes beside a letter from the councillor, and pages 3 and 4 the two sections, in two ragged columns of Atkinson Hyperlegible Next. The pen exports a tagged PDF that passes veraPDF's PDF/UA-1 checks, with headings, lists, boxes and tables in reading order, alt text on the figure and header cells in both tables. The file declares its title and language (`es`), and its bookmarks and contents rows link to the pages. Tags do not print, so the pen draws them over page 3 of its preview, shown here, each tagged block in a numbered box labelled with its tag. The downloaded PDF has no overlay.
+
+## Method
+
+### 1 · The document's language and title
+
+<Excerpt region="identity" />
+
+postext-pdf writes the language of the tags from `locale`, here `/Lang es`, so a screen reader reads the guide with Spanish pronunciation; without it the file declares `en-US`. The `title` and `author` of the frontmatter in `content.es.md` become the PDF's title and author, and the file asks viewers to show that title in the window bar instead of the file name. `defaultResourceTypes(LANG)` gives the captions and the citations their Spanish names: “Figura 1.1”, “tabla 1.1”. [The short answer](#the-short-answer) gives the figure and the tables their accessible text: `altText` becomes the figure's alternate description (`/Alt`) and each table's `/Summary`, and the first row and the first column of both tables are tagged as header cells.
+
+### 2 · One outline, and a cover band with nothing but the title
+
+<Excerpt region="headings" />
+
+The tag tree takes its H1 and H2 elements from the Markdown headings, and the PDF's bookmarks come from the same list, so the cover, the contents, the letter and both sections are level 1 and the crossheads level 2. postext-pdf tags every text element of a heading's design as part of that heading, so the cover's band holds only the title, and the lead and the council's name are set below it as paragraphs. The navy bands, the kerb and the row of bins are design elements, and the PDF marks design boxes and images as artifacts, so they need no alt text and a screen reader skips them.
+
+### 3 · Contents that link
+
+<Excerpt region="contents" />
+
+`:::toc` lists the H1s and H2s with the page labels they print, and in the PDF each of its eleven rows links to the top of its page. The `:ref` citations “figura 1.1” and “tabla 1.1” on page 3 and “tabla 2.1” on page 4 link to the figure and the tables. The leaders take the page numbers' face, Atkinson Hyperlegible Next Bold, because in Public Sans a run of full stops is spaced wider than the single dot the leader is counted from, and the dots ran into the numbers.
+
+### 4 · Reading order, drawn on the page
+
+<Excerpt region="reading-order" />
+
+A screen reader follows the tags, and `renderToPdf` tags each page in the order it paints it: the band's title, the first column from top to bottom, the second, then the page's floats. This function replays that order to number the boxes on page 3, and the PDF's structure tree lists the same fourteen elements in the same order. That order is why the figure and both tables sit in the flow, with `placement: { position: 'here' }` and a `::resource` line. Floated to the foot of the first column, figure 1.1 would be tagged after table 1.1, the last block on its page. The paragraph on glass that runs into the second column keeps one number, 9, because the PDF tags both parts as one paragraph.
+
+### 5 · Colours picked by contrast ratio
+
+<Excerpt region="palette" />
+
+PDF/UA-1 does not check colour, but WCAG 2.2 asks for 4.5:1 between text and its background. The ink measures 15.6:1 on white, white type 12.5:1 on the navy bands and the footer's grey 7.0:1. The yellow gives 1.8:1 on white, so it appears only on navy (6.9:1) and as a fill. The pictograms follow WCAG's 3:1 for graphics: white where it reaches that against the bin, ink on the yellow one. `cell()` writes each container's name beside its swatch, and gives the recycling centre an empty square, so no instruction depends on telling colours apart.
+
+## Variations
+
+### Let the figure float
+
+Drop the placement and figure 1.1 floats to the foot of page 3's first column, and the PDF tags it after table 1.1, the last block on the page.
+
+```diff
+-  { id: 'contenedores', typeId: 'figure', kind: 'svg', placement: { position: 'here' },
++  { id: 'contenedores', typeId: 'figure', kind: 'svg',
+```
+
+## Pitfalls
+
+The pen cannot validate its own PDF, because veraPDF runs outside the browser. Download the file and run `verapdf -f ua1 accessible-tagged-pdf.pdf`; the copy captured for this page passes. The checker cannot tell whether an alt text describes its picture, so listen to the guide with a screen reader as well.
+
+In postext 1.4.1 a Markdown link prints its words and adds no link to the PDF; only `:ref` citations and contents rows link. The colophon prints the web address in full.

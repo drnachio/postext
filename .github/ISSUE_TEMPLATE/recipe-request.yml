@@ -1,0 +1,102 @@
+name: Recipe request
+description: Ask the Cookbook for a layout you want to see built with Postext, with the code to copy.
+title: "[Recipe]: "
+labels: ["cookbook", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a recipe for the [Postext Cookbook](https://postext.dev/en/cookbook).
+
+        A recipe is a complete, copy-ready example: a real publication set with Postext (a magazine opener, a textbook page with margin notes, a poetry collection, a print-ready PDF) plus the code, the method and the pitfalls. The more concrete the layout you describe, the better the recipe.
+
+        Before you open this request:
+
+        - **Search the Cookbook and the existing issues.** Try the words you would use (for example "margin notes", "notas al pie", "running heads"): the gallery also finds recipes by question, feature and warning name.
+        - **Something Postext cannot do yet?** Ask anyway. If the engine lacks the feature, the Cookbook shows the honest workaround, and the request helps us plan the engine.
+        - **Found a bug in the engine or in a recipe?** Use the bug report form instead.
+
+  - type: textarea
+    id: layout
+    attributes:
+      label: What layout do you want to build?
+      description: |
+        Describe the page, spread or document from the reader's side: what it looks like, what goes where, what makes it special. Name the genre (novel, textbook, magazine, catalogue, report, workbook, poster…), the trim size and the number of columns if you know them.
+      placeholder: |
+        "A two-column field guide at 15 × 21 cm. Each species opens on a recto with a full-width photo band, the common and Latin names over it, and a small coloured thumb tab on the fore-edge that changes colour by family. The body text has margin notes with measurements."
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: What question should the recipe answer?
+      description: The one "How do I…?" or "Why does…?" you would type into a search box. Add more if the layout raises several.
+      placeholder: "How do I put a thumb tab on the fore-edge that moves down with each chapter?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples and links
+      description: |
+        Links to printed or online examples of the layout (photos of a page, a PDF, a publisher's site, a design you admire). If you attach images, make sure you may share them; we never copy third-party pages into a recipe, we rebuild the idea with open content.
+      placeholder: |
+        - https://…
+        - A photo of a page from a field guide I own (attached)
+
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language of the sample document
+      description: Recipes are bilingual when they can be. Tell us which language the example should be written in first.
+      options:
+        - English
+        - Spanish / Español
+        - Both, English and Spanish
+        - Another language (say which below)
+        - No preference
+    validations:
+      required: true
+
+  - type: dropdown
+    id: output
+    attributes:
+      label: Output you care about
+      description: Where the result has to look right. Pick every one that applies.
+      multiple: true
+      options:
+        - Canvas (pages on screen)
+        - PDF (print or download)
+        - HTML reading view
+        - .postext bundle (open in the Sandbox)
+        - Interactive (live controls, rebuild on input)
+        - Not sure
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else
+      description: Fonts or colours you have in mind, content you could contribute (under an open licence), constraints (print shop requirements, accessibility), or what you tried already.
+
+  - type: dropdown
+    id: contribution
+    attributes:
+      label: Would you like to write the recipe?
+      description: Optional. The contributor guide is cookbook/README.md in the repository.
+      options:
+        - "Yes, I can open a pull request."
+        - "Yes, with guidance."
+        - "I can contribute content (text, pictures) but not code."
+        - "No, I am requesting it as a user."
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched the Cookbook and the existing issues and did not find this recipe.
+          required: true
+        - label: Any content or pictures I link to may be shared, and I understand recipes use only open-licensed content.
+          required: true

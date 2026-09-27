@@ -9,6 +9,7 @@ import {
   setCellContent,
   setAlignment,
   parseTSV,
+  tableGridIssues,
 } from '../../table/model';
 import type { TableModel, TableCell } from '../../types';
 
@@ -251,5 +252,143 @@ describe('table model — TSV paste normalization', () => {
   it('a single cell parses as a 1x1 grid', () => {
     const m = parseTSV('solo');
     expect(m.rows).toEqual([[{ content: 'solo' }]]);
+  });
+});
+
+describe('table model — TSV header rows', () => {
+  it('marks the leading rows as header rows', () => {
+    const m = parseTSV('Part\tQty\nBolt\t4\nNut\t8', { headerRows: 1 });
+    expect(m.headerRowCount).toBe(1);
+    expect(m.rows[0]!.map((c) => c.isHeader)).toEqual([true, true]);
+    expect(m.rows[1]!.map((c) => c.isHeader)).toEqual([undefined, undefined]);
+  });
+
+  it('clamps the header to the rows there are and ignores zero', () => {
+    expect(parseTSV('a\tb', { headerRows: 5 }).headerRowCount).toBe(1);
+    const none = parseTSV('a\tb\nc\td', { headerRows: 0 });
+    expect(none.headerRowCount).toBeUndefined();
+    expect(none.rows[0]![0]).toEqual({ content: 'a' });
+    expect(parseTSV('a', { headerRows: -2 }).headerRowCount).toBeUndefined();
+  });
+
+  it('keeps the model without a header when no option is given', () => {
+    expect(parseTSV('a\tb\nc\td')).toEqual({ rows: [[{ content: 'a' }, { content: 'b' }], [{ content: 'c' }, { content: 'd' }]] });
+  });
+});
+
+describe('table model — grid validation', () => {
+  it('accepts rectangular grids and merges made with mergeCells', () => {
+    expect(tableGridIssues(grid(3, 3))).toEqual([]);
+    const merged = mergeCells(mergeCells(grid(3, 3), { start: { row: 0, col: 0 }, end: { row: 0, col: 1 } }), {
+      start: { row: 1, col: 2 },
+      end: { row: 2, col: 2 },
+    });
+    expect(tableGridIssues(merged)).toEqual([]);
+  });
+
+  it('flags a colSpan whose covered cell was left out HTML-style', () => {
+    const m: TableModel = {
+      rows: [
+        [{ content: 'A', colSpan: 2 }, { content: 'C' }],
+        [{ content: '1' }, { content: '2' }, { content: '3' }],
+      ],
+    };
+    expect(tableGridIssues(m)).toEqual([
+      { kind: 'spanOverlap', row: 0, col: 1, coveredBy: { row: 0, col: 0 } },
+      { kind: 'missingCells', row: 0, col: 2 },
+    ]);
+  });
+
+  it('flags a rowSpan whose covered cell was left out of the next row', () => {
+    const m: TableModel = {
+      rows: [
+        [{ content: 'A', rowSpan: 2 }, { content: 'B' }],
+        [{ content: 'C' }],
+      ],
+    };
+    expect(tableGridIssues(m)).toEqual([
+      { kind: 'spanOverlap', row: 1, col: 0, coveredBy: { row: 0, col: 0 } },
+      { kind: 'missingCells', row: 1, col: 1 },
+    ]);
+  });
+
+  it('does not count positions a merge covers past a short row as holes', () => {
+    const m: TableModel = {
+      rows: [
+        [{ content: 'A' }, { content: 'B', rowSpan: 2 }],
+        [{ content: 'C' }],
+      ],
+    };
+    expect(tableGridIssues(m)).toEqual([]);
+  });
+});
+
+describe('table model — row/col edits across merges', () => {
+  /** A 4×4 grid with a 2×2 merge at (1,1)–(2,2), primary "M". */
+  const merged = (): TableModel => {
+    const m = mergeCells(grid(4, 4), { start: { row: 1, col: 1 }, end: { row: 2, col: 2 } });
+    return setCellContent(m, { row: 1, col: 1 }, 'M');
+  };
+  const primaryAt = (m: TableModel, row: number, col: number) => m.rows[row]![col]!;
+  const coveredBy = (m: TableModel) =>
+    m.rows.flatMap((row, r) => row.flatMap((cell, c) => (cell.hiddenBy ? [`${r},${c}>${cell.hiddenBy.row},${cell.hiddenBy.col}`] : [])));
+
+  it('addRow before a merge moves it down, covered cells included', () => {
+    const m = addRow(merged(), 0);
+    expect(primaryAt(m, 2, 1)).toMatchObject({ content: 'M', rowSpan: 2, colSpan: 2 });
+    expect(coveredBy(m)).toEqual(['2,2>2,1', '3,1>2,1', '3,2>2,1']);
+    expect(tableGridIssues(m)).toEqual([]);
+  });
+
+  it('addRow inside a merge grows it over the new row', () => {
+    const m = addRow(merged(), 2);
+    expect(primaryAt(m, 1, 1)).toMatchObject({ content: 'M', rowSpan: 3, colSpan: 2 });
+    expect(coveredBy(m)).toEqual(['1,2>1,1', '2,1>1,1', '2,2>1,1', '3,1>1,1', '3,2>1,1']);
+    expect(tableGridIssues(m)).toEqual([]);
+    // Right after the merge: untouched.
+    expect(primaryAt(addRow(merged(), 3), 1, 1).rowSpan).toBe(2);
+  });
+
+  it('addColumn before or inside a merge moves or widens it', () => {
+    const before = addColumn(merged(), 1);
+    expect(primaryAt(before, 1, 2)).toMatchObject({ content: 'M', rowSpan: 2, colSpan: 2 });
+    expect(tableGridIssues(before)).toEqual([]);
+    const inside = addColumn(merged(), 2);
+    expect(primaryAt(inside, 1, 1)).toMatchObject({ content: 'M', rowSpan: 2, colSpan: 3 });
+    expect(coveredBy(inside)).toEqual(['1,2>1,1', '1,3>1,1', '2,1>1,1', '2,2>1,1', '2,3>1,1']);
+    expect(tableGridIssues(inside)).toEqual([]);
+  });
+
+  it('removeRow of a covered row shrinks the merge; of its first row keeps the content', () => {
+    const covered = removeRow(merged(), 2);
+    expect(primaryAt(covered, 1, 1)).toMatchObject({ content: 'M', colSpan: 2 });
+    expect(primaryAt(covered, 1, 1).rowSpan).toBeUndefined();
+    expect(coveredBy(covered)).toEqual(['1,2>1,1']);
+    expect(tableGridIssues(covered)).toEqual([]);
+    const first = removeRow(merged(), 1);
+    expect(primaryAt(first, 1, 1)).toMatchObject({ content: 'M', colSpan: 2 });
+    expect(coveredBy(first)).toEqual(['1,2>1,1']);
+    expect(tableGridIssues(first)).toEqual([]);
+    // A row above the merge: it moves up.
+    const above = removeRow(merged(), 0);
+    expect(primaryAt(above, 0, 1)).toMatchObject({ content: 'M', rowSpan: 2, colSpan: 2 });
+    expect(coveredBy(above)).toEqual(['0,2>0,1', '1,1>0,1', '1,2>0,1']);
+  });
+
+  it('removeColumn of a covered or first column shrinks the merge, keeping its content', () => {
+    for (const at of [1, 2]) {
+      const m = removeColumn(merged(), at);
+      expect(primaryAt(m, 1, 1)).toMatchObject({ content: 'M', rowSpan: 2 });
+      expect(primaryAt(m, 1, 1).colSpan).toBeUndefined();
+      expect(coveredBy(m)).toEqual(['2,1>1,1']);
+      expect(tableGridIssues(m)).toEqual([]);
+    }
+  });
+
+  it('drops a merge whose last covered row or column goes, and leaves unmerged grids as before', () => {
+    const wide = mergeCells(grid(3, 3), { start: { row: 1, col: 0 }, end: { row: 1, col: 1 } });
+    const m = removeRow(wide, 1);
+    expect(m.rows.flat().some((c) => c.hiddenBy || c.colSpan || c.rowSpan)).toBe(false);
+    expect(removeRow(grid(3, 3), 1)).toEqual({ rows: [grid(3, 3).rows[0], grid(3, 3).rows[2]] });
   });
 });

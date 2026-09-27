@@ -1,0 +1,349 @@
+{
+  "schemaVersion": 1,
+  "slug": "trade-paperback-novel",
+  "sourceHash": "a8a04823cd00a8fb38ca2ccc3ea28e112df0a78a64072307f17c897e35bc2ba9",
+  "engine": {
+    "postext": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-26T08:29:55.555Z",
+  "variants": {
+    "en": {
+      "hash8": "cec3c40d",
+      "vdtHash": "4c0e7e3ff8d3793ca5b1e42a37ac99a8395d7458",
+      "timings": {
+        "importMs": 111,
+        "fontsMs": 18,
+        "buildMs": 22,
+        "totalMs": 806,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          140,
+          216
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Crimson Pro",
+          "sizePt": 10.5,
+          "leadingPt": 14
+        },
+        "families": [
+          "Cormorant Garamond",
+          "Cormorant SC",
+          "Crimson Pro"
+        ],
+        "pages": 8,
+        "ownLines": 179
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 54666,
+          "alt": "Opening page 1: The Awakening."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1543,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 20662,
+          "alt": "Page 2."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 118416,
+          "alt": "Opening page 3: I."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1543,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 176124,
+          "alt": "Page 4."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "body",
+          "w": 1000,
+          "h": 1543,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 137000,
+          "alt": "Page 5."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "blank",
+          "w": 1000,
+          "h": 1543,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 3330,
+          "alt": "Blank page 6."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 121932,
+          "alt": "Opening page 7: II."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "body",
+          "w": 1000,
+          "h": 1543,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 151622,
+          "alt": "Page 8."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.maxRuntTracking",
+          "bodyText.maxWordSpacing",
+          "bodyText.minWordSpacing",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].italic",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].margins",
+          "headingStyles[].margins.top",
+          "headingStyles[].span",
+          "headings",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].italic",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "layout",
+          "layout.layoutType",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].spaceBetween",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].defaultPlacement",
+          "resourceTypes[].defaultPlacement.align",
+          "resourceTypes[].defaultPlacement.position",
+          "resourceTypes[].defaultPlacement.width",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "page",
+          "paragraphStyles",
+          "resourceTypes"
+        ],
+        "configLeaves": 222,
+        "designElements": 12,
+        "directives": [
+          ":::paragraphs",
+          ":::space",
+          "::resource"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 3,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Cormorant Garamond",
+            "weight": 500,
+            "style": "italic"
+          },
+          {
+            "family": "Cormorant SC",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "heading-attributes",
+          "heading-styles",
+          "inline-embeds",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "resource-types",
+          "resources",
+          "section-geometry",
+          "section-running-heads",
+          "vertical-space"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 1,
+          "share": 0.0087,
+          "worst": 2.15
+        },
+        "findings": []
+      }
+    }
+  }
+}

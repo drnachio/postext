@@ -1,0 +1,74 @@
+---
+title: ".postext round trip in two languages"
+summary: "A two-sided DL leaflet written to a .postext file in code and laid out again from its bytes, with the faces, drawings and caption labels each edition carries."
+description: "createBundle writes the leaflet to a .postext file and openBundle reads it back with its fonts and drawings, for an English and a Spanish edition."
+question: "How do I lay out a .postext file with the fonts, pictures and config it carries?"
+aliases: ["postext file", "bundle", "createBundle", "openBundle", "loadBundleFonts", "round trip", "bilingual leaflet", "hand off to the Sandbox", "DL leaflet", "tide mill"]
+pageNotes: { "1": "The front of a DL leaflet: on a sand field, the kicker Arenal estuary · Visitor leaflet 3 and the title The Tide Mill in blue italic, over a mill wheel whose lower half shows pale under the blue estuary; a blue tab at the top edge reads EN. An italic lead and the line Open all year · Free on Sundays sit in the water.", "2": "The back: the mill in section at the head, pond on the left, estuary on the right below a dashed high-water line, captioned Figure 1; the section Two tides a day in justified DM Sans; the opening hours as Table 1 with a blue header; three lines on access and tickets, a colophon, and a blue strip with the publisher's name." }
+---
+
+## What you'll build
+
+Both sides of a DL visitor leaflet, 99 × 210 mm, for a tide mill on an invented estuary. The front is one drawing: a mill wheel on the waterline, its upper half on the sand and its lower half pale under the blue water, with the title in 50 pt DM Serif Display italic and a blue tab that names the edition, EN or ES. The back opens with the mill in section, then the text in justified DM Sans, the opening hours in a table with a blue header, captions in Instrument Sans, a colophon and a blue strip with the publisher. Each edition is written to a `.postext` file, and every page here is laid out from that file's bytes, with the faces and drawings it carries.
+
+## Method
+
+### 1 · Write the edition, then read back only the bytes
+
+<Excerpt region="answer" highlight="14-17" />
+
+`createBundle` zips the chapter, the config, the resources and every file they name; `openBundle` gets nothing but those bytes. The faces come from `loadBundleFonts`, the drawings from `registerBundleImages` and the design from `bundle.config`. A face left out of `files` prints in the browser's fallback font, and a drawing left out is dropped with a warning and its reference prints (?). Inside the zip each `fileId` becomes a path (`mill.svg` is now `resources/mill.svg`), and the resources and `customFonts` that `openBundle` returns already use the new names ([opening a bundle](/en/docs/configuration#opening-a-bundle)).
+
+### 2 · Put the faces in the file
+
+<Excerpt region="faces" />
+
+A bundle carries a face when `customFonts` names it and `files` holds its bytes under the variant's `fileId`; `createBundle` stores DM Sans 400 as `fonts/dm-sans-400-normal.woff2`. The pen downloads the seven woff2 files from Fontsource but registers none of them: `loadBundleFonts` adds the bundle's copies to `document.fonts` before `buildBundle` measures a line, and the PDF takes its faces from the same seven files.
+
+### 3 · Name every file by its fileId
+
+<Excerpt region="resources" />
+
+The two drawings are SVG markup made by the pen, handed to `files` under the `svg.fileId` of their resources; the table is data, so it travels in `preset.json` with its caption. The section and the table are set with `position: 'here'`: the section at the head of the back, the hours under the paragraph that cites them. In 1.4.1 an inline resource gets no space below it, so a `:::space{lines=0.5}` line after the table leaves 3.7 mm under its caption; without it the next paragraph starts 1.4 mm under the caption.
+
+### 4 · Write the labels into the file
+
+<Excerpt region="labels" />
+
+When a file has no `resourceTypes`, `openBundle` builds them in the language the reader asks for, not in the file's: the Spanish leaflet opened with `{ locale: 'en' }`, or imported into the Sandbox at /en/sandbox, prints Figure 1.1 over Spanish text. Types written into the config replace that default, so the Spanish file prints Figura 1 and Tabla 1 wherever it is opened. `'{n}'` drops the chapter number, which a two-page leaflet does not need ([resource types](/en/docs/configuration#resource-types)). The same `config()` sets `locale`, which picks the Spanish hyphenation patterns (compuer-tas on the back) and the language the PDF declares.
+
+### 5 · Hand the same bytes on
+
+<Excerpt region="handoff" />
+
+The link offers the `bytes` the pages were laid out from, 132 KB with the fonts. Imported in the Sandbox (*Books → New → Open a .postext file…*) the file becomes a Spanish or English book with the wheel as its picture, taken from `thumbnail`. The PDF takes its faces from `bundleFontProvider`, which returns the bundle's face nearest in weight, in the same style when there is one, and its drawings from `bundleResourceBytes`, so no font or picture is downloaded a second time ([laying out and rendering a bundle](/en/docs/configuration#laying-out-and-rendering-a-bundle)).
+
+### 6 · Draw the front with one heading
+
+<Excerpt region="cover" />
+
+The front is the design of the cover heading: the drawing anchored to the page at full size, the heading's text through `{titleText}`, the kicker, lead and facts line from its attributes, and a text element with a box for the language tab. The H1 level is `span: 'page'`, so the drawing starts at the paper's edge. A heading design kept in the column is cut at the text block's top and bottom edges: the drawing would start 12 mm down and stop 13 mm above the bottom edge, and the language tab would shrink to a strip without its letters.
+
+## Variations
+
+### Read a bilingual bundle
+
+The Postext guide carries its English and Spanish chapters, config and captions in one file; `{ locale }` picks the edition, which opens as twelve chapters on 48 pages in either language, while the link still offers the leaflet's file and the PDF button builds the guide.
+
+```diff
+-const bundle = await openBundle(bytes);
++const guide = await fetch('https://postext.dev/bundles/postext-guide.postext');
++const bundle = await openBundle(await guide.arrayBuffer(), { locale: LANG });
+```
+
+### Let the reader pick the labels
+
+Without the types, the labels follow the language the file is opened in, and the figures count from the cover heading: the Spanish edition prints Figura 1.1 here and Figure 1.1 once the Sandbox at /en/sandbox imports it.
+
+```diff
+-  resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, numberingTemplate: '{n}' })),
+```
+
+## Pitfalls
+
+- `createBundle` in postext 1.4.1 writes one language per file. The `localized` input under [Bilingual bundles](/en/docs/configuration#bilingual-bundles) is not in that release, though `openBundle` 1.4.1 reads such files.

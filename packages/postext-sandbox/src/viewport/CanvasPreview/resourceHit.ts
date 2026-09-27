@@ -2,7 +2,7 @@ import type { VDTDocument } from 'postext';
 import { mapInlineSnippet, resourceBlockRectToPage, resourceBlockToLocal } from 'postext';
 import type { ResourceFocusTarget } from '../../context/SandboxContext';
 import { hitSvgTextIndex, type SvgTextIndex } from '../../controls/svgSource';
-import { resourceBlocksOnPage, segmentPlainLength } from './geometry';
+import { addsHyphen, foldRefRuns, resourceBlocksOnPage, segmentPlainLength } from './geometry';
 
 // ---------------------------------------------------------------------------
 // Resource text hit-testing (pure). Resource runs — table cells, captions,
@@ -75,7 +75,7 @@ export function stampRunPlainRanges(lines: readonly VDTLine[], plainText: string
     while (p < plainText.length && isWhitespace(plainText[p]!)) p++;
     const plainStart = p;
     const segPlainLens: number[] = [];
-    const segs = line.segments ?? [];
+    const segs = foldRefRuns(line.segments ?? []);
     for (let i = 0; i < segs.length; i++) {
       const seg = segs[i]!;
       let len: number;
@@ -84,7 +84,7 @@ export function stampRunPlainRanges(lines: readonly VDTLine[], plainText: string
       } else if (seg.kind === 'space') {
         len = seg.text.length;
       } else {
-        len = segmentPlainLength(seg, i === segs.length - 1 && line.hyphenated === true);
+        len = segmentPlainLength(seg, i === segs.length - 1 && addsHyphen(line));
       }
       segPlainLens.push(len);
       consume(len);
@@ -97,7 +97,7 @@ export function stampRunPlainRanges(lines: readonly VDTLine[], plainText: string
 /** Plain index (absolute in the run) for an x on a resource line. Resource
  *  lines paint sequentially from `line.bbox.x` at natural widths. */
 export function plainIndexInResourceLine(line: VDTLine, stamped: StampedLine, xPage: number): number {
-  const segs = line.segments;
+  const segs = line.segments && foldRefRuns(line.segments);
   const lineLen = stamped.plainEnd - stamped.plainStart;
   if (!segs || segs.length === 0) {
     const w = line.bbox.width;
@@ -126,7 +126,7 @@ export function plainIndexInResourceLine(line: VDTLine, stamped: StampedLine, xP
 /** Page x for a plain index (absolute in the run) on a resource line. */
 export function xForPlainInResourceLine(line: VDTLine, stamped: StampedLine, plainIndex: number): number {
   const inLine = Math.max(0, plainIndex - stamped.plainStart);
-  const segs = line.segments;
+  const segs = line.segments && foldRefRuns(line.segments);
   const lineLen = stamped.plainEnd - stamped.plainStart;
   if (!segs || segs.length === 0) {
     const ratio = lineLen > 0 ? Math.min(1, inLine / lineLen) : 0;

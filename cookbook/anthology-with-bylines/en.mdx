@@ -1,0 +1,82 @@
+---
+title: "Anthology with bylines"
+summary: "Three essays on walking whose headings carry author, year and magazine: the opener prints all three; the verso running heads and the contents print the author."
+description: "A pocket anthology of Hazlitt, Thoreau and Stevenson set in Postext: heading attributes fill the bylines, the verso running heads and the contents page."
+question: "How do I build a contents page that fills itself in, with leaders, page numbers and each essay’s author?"
+aliases: ["anthology", "edited collection", "essay collection", "contributors", "byline", "author under the title in the contents", "author in the running head", "contents with authors", "chapter author", "toc subtitle"]
+pageNotes: { "2": "The contents: rust roman numerals, essay titles in Gloock with spaced dot leaders to pages 3, 5 and 8, each author’s name in heather italic underneath, and the note on the texts pinned to the foot of the page.", "3": "Essay I opens under its numeral and title, with the byline WILLIAM HAZLITT and the dateline The New Monthly Magazine, 1822, above a hairline.", "6": "A verso: the folio and HENRY DAVID THOREAU in the running head.", "7": "A recto: the running head WALKING beside the folio; the essay ends four lines short of the foot." }
+---
+
+## What you'll build
+
+Nine pages of *Afoot*, a pocket anthology of three essays on walking, by Hazlitt (1822), Thoreau (1862) and Stevenson (1876). A dusk landscape drawn in code fills the cover. The contents give each essay a rust numeral, a title in Gloock, spaced leaders to its page and the author’s name in heather italic underneath. Each essay opens with its numeral and title, a byline in spaced capitals and a dateline with the magazine and year of its first printing. Versos carry the author’s name, rectos the essay’s title. Every essay’s heading carries its author, year and source as attributes, and the opener, the running heads and the contents print them from there, so a fourth essay needs no change to the configuration.
+
+## Method
+
+### 1 · Number the essays and sink their text
+
+<Excerpt region="opener" />
+
+The level’s `numberingTemplate: '{1:I}'` numbers the essays I, II and III, and `{number}` prints the numeral above the title ([span and advanced design](/en/docs/configuration#span-and-advanced-design)). `minHeight` reserves 12 lines of 14 pt and the hairline ends 7 mm above that, so under a one-line title the text starts 79 mm from the top edge on every opener. A second line of 26 pt title adds 9.9 mm and pushes the text one grid line down; with `SINK = 14`, one-line and two-line titles start their text on the same line. `marginBottom: pt(0)` keeps the heading’s default margin from adding to the reserve.
+
+### 2 · Let the contents fill themselves in
+
+<Excerpt region="contents" />
+
+`:::toc` in the Markdown prints one entry per listed heading: number, title, leaders, page label and, through `subtitle`, the author. `buildDocument` lays the book out again until the page labels stop changing, so a renamed or lengthened essay updates the contents ([table of contents](/en/docs/configuration#table-of-contents)). Postext 1.4.1 puts the middle of an entry’s number 0.3 × the entry size above the baseline, and Chrome puts Gloock’s middle 0.3125 em above its baseline, so a numeral of 0.3 × 15 ÷ 0.3125 = 14.4 pt stands on the 15 pt title’s baseline; a 12 pt one rides 0.3 mm high. A book with parts also gets a row for each `:::part`, drawn by `toc.parts.design`, as in <RecipeLink slug="parts-in-colour">Parts in colour</RecipeLink>.
+
+### 3 · Author on the verso, essay on the recto
+
+<Excerpt region="running-heads" />
+
+Each head is anchored to the page, 11 mm from the top edge, and `parity` picks the side: the folio lines up with the outer edge of the text and the name or title sits 7 mm further in. The `pages: 'body'` in `head()` keeps the heads off the openers, where the byline already names the author, and the footer’s `pages: 'opener'` prints a drop folio there instead ([text elements](/en/docs/configuration#text-elements)). `{chapterTitle}` prints the essay’s title without its numeral.
+
+### 4 · Keep the cover and the contents out of the count
+
+<Excerpt region="front" />
+
+With `numbered: false` the cover and the contents do not advance the counter, so Hazlitt is I, and `toc: false` keeps them off the list ([heading styles](/en/docs/configuration#heading-styles)). Both styles inherit the level’s `breakBefore`, parity `'any'`, which is why the contents follows the cover on page 2 without a `:::pagebreak`. The cover style spans the page in a one-column book because a design kept in the column is clipped at the column’s top and bottom edges, which would leave 20 mm of paper above the landscape.
+
+### 5 · Write every colour out with its palette link
+
+<Excerpt region="palette" />
+
+In 1.4.1 `colorPalette` reaches the text styles but not the design elements, so `col()` writes each colour’s hex beside its `paletteId`: the bylines, the running heads and the cover paint that hex. Pointing `main-color` at the ink covers every default the configuration does not restate, which would otherwise print in the engine’s blue, `#295AA3`.
+
+## Variations
+
+### List where each essay first appeared
+
+`toc.subtitle` prints any attribute of the heading, so the same Markdown can list each essay’s first magazine under its title.
+
+```diff
+-const authorLine = { enabled: true, attr: 'author', fontFamily: 'Spectral', fontSize: pt(10),
++const authorLine = { enabled: true, attr: 'source', fontFamily: 'Spectral', fontSize: pt(10),
+```
+
+### Put the book’s title on the verso
+
+Many books set their own title on the verso and the chapter’s on the recto; `{title}` reads it from the Markdown’s frontmatter and prints AFOOT.
+
+```diff
+-const versoAuthor = head('verso-author', '{attr.author}', 'even',
++const versoAuthor = head('verso-author', '{title}', 'even',
+```
+
+### Open every essay on a recto
+
+With parity `'odd'`, Stevenson moves to page 9 behind a blank page 8. The two front-matter styles then need an `'any'` of their own, or the contents inherit `'odd'` and open on page 3 behind a blank verso.
+
+```diff
+-  breakBefore: { enabled: true, parity: 'any' } }; // 'any': each piece opens on the next page
++  breakBefore: { enabled: true, parity: 'odd' } };
+-const bare = { numbered: false, toc: false, header: { elements: [] }, footer: { elements: [] } };
++const bare = { numbered: false, toc: false, breakBefore: { enabled: true, parity: 'any' },
++  header: { elements: [] }, footer: { elements: [] } };
+```
+
+## Pitfalls
+
+- Hazlitt quotes verse in the middle of his sentences. A paragraph keeps no line breaks, so each line of verse is a paragraph of its own in a `:::paragraphs{style="verse"}` container, and the sentence that resumes after it goes in a `runon` style with no indent. A Markdown blockquote would print in a fixed `#666666` grey italic, with the body’s first-line indent and no side indent, and no setting changes that in 1.4.1.
+- An attribute that a heading lacks prints nothing and raises no warning. Without `author="…"`, an essay’s byline and verso head come out empty and its line under the title disappears from the contents.
+- The 14.4 pt of step 2 holds for Gloock only. For another face, find how far above the baseline Chrome puts its middle: `measureText('I').alphabeticBaseline` with `textBaseline = 'middle'` returns it, negated, in pixels. Then set `numberFontSize` to 0.3 × the entry size divided by that distance in em (Hanken Grotesk’s is 0.2675 em).

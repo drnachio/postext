@@ -1,0 +1,70 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 68,
+  "status": "published",
+  "chapter": "figures",
+  "order": 50,
+  "level": 2,
+  "genres": ["photobook"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["design-images", "heading-styles", "opener-design"],
+    "also": [
+      "design-anchoring", "section-geometry", "heading-attributes", "chapter-breaks",
+      "page-role-filters", "citations", "resource-types", "captions", "covers",
+      "page-background", "mirrored-margins", "design-elements", "hyphenation-languages",
+      "color-palette", "resources", "canvas-rendering"
+    ]
+  },
+  "answers": ["Q29", "Q39", "Q31", "Q73"],
+  "gotchas": [
+    "opener-image-no-reserve", "opener-taller-than-column", "parity-page1-recto",
+    "headings-drop-h1-break", "palette-skips-designs", "design-lineheight-multiple",
+    "svg-no-marker-filters", "runt-tracking-unpainted", "hyphenation-locales", "fonts-first"
+  ],
+  "related": ["five-chapter-openers", "catalogue-facing-plates", "magazine-feature-opener", "chapter-opener-bleed-band"],
+  "workarounds": [
+    { "followup": "EF-90", "package": "postext", "note": "each plate style sets minHeight to the page's 210 mm, because a design's images reserve no height: without it the storm's right half, which draws no text, keeps only its heading's own 7.6 mm line and the next text starts on that page (gotcha opener-image-no-reserve)" },
+    { "followup": "EF-91", "package": "postext", "note": "the plate styles set zero margins, so the column is as tall as minHeight: in the text pages' 158 mm column, 1.4.1 drops a 210 mm reservation whole and the three texts print over the plates before them (gotcha opener-taller-than-column)" },
+    { "followup": "EF-05", "package": "postext", "note": "level 1 states breakBefore { enabled: false }, which changes nothing in 1.4.1 (it already drops the H1 break once a headings object exists); when the default always-odd break comes back, the setting stops the texts from breaking, so their pages stay body pages with a folio (gotcha headings-drop-h1-break)" },
+    { "followup": "EF-71", "package": "postext", "note": "col() writes the hex beside each paletteId, because 1.4.1 paints design elements (the captions, the cover title, the folio) and bodyText.referenceColor from the hex (gotcha palette-skips-designs)" },
+    { "followup": "EF-56", "package": "postext", "note": "design text lineHeight is a multiple of the size (1 for the cover title, 1.05 for the text titles, 1.5 for the colophon): a Dimension silently drops the opener's reservation (gotcha design-lineheight-multiple)" },
+    { "followup": "EF-149", "package": "postext", "note": "plate IV's type has an empty numberingTemplate, so a bare :ref would print 'lámina' (or 'plate') and a no-break space; the citation gives its own words with :ref's text" },
+    { "followup": "EF-94", "package": "postext", "note": "page 6 is the last page of text before the night plate, where 1.4.1 lifts a float below the text to one float gap under it (build.ts hugClosingText) and placement.position 'bottom' changes nothing; plate IV is set there on purpose, one line under the paragraph, and each text is fitted to one page so the plate and its caption end above the folio" },
+    { "followup": "EF-111", "package": "postext", "note": "bodyText.maxRuntTracking is 0: a runt fix's negative tracking is measured but never painted (gotcha runt-tracking-unpainted)" },
+    { "followup": "EF-14", "package": "postext", "note": "locale is 'es' or 'en-us', the exact codes: any other tag falls back to American English patterns (gotcha hyphenation-locales)" }
+  ],
+  "engine": { "postext": "1.4.1" },
+  "kit": ["core", "fonts", "viewer", "images"],
+  "sample": { "locales": ["es", "en"] },
+  "capture": {
+    "hero": [4, 5],
+    "card": "crop",
+    "focus": { "page": 1, "x": 0, "y": 0, "w": 1, "h": 1 },
+    "pages": "all",
+    "expect": { "pages": [9, 9], "nearEmptyPages": [1, 3, 4, 5, 7, 9] }
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "The three texts, the captions and the colophon, in Spanish and English, and the six plates, drawn in code",
+          "es": "Los tres textos, los pies y el colofón, en español y en inglés, y las seis láminas, dibujadas en código"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Andada Pro", "license": "OFL-1.1" },
+      { "family": "Syne", "license": "OFL-1.1" },
+      { "family": "Syne Mono", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-26",
+  "updated": "2026-09-27"
+}

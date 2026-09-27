@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { VDTDocument } from 'postext';
 import { composeBook } from './compose';
-import { composedBookPageMap } from './stitch';
+import { composedBookPageMap, stitchDocuments } from './stitch';
 
 const chapters = [
   { id: 'a', title: 'A', markdown: '# A\n\nOne.', createdAt: 0, updatedAt: 0 },
@@ -35,5 +35,30 @@ describe('composedBookPageMap', () => {
     const map = composedBookPageMap(docWith([[], [null], [b]]), book);
     expect(map.pageChapters).toEqual([1, 1, 1]);
     expect(map.chapterFirstPages).toEqual([-1, 2, -1]);
+  });
+});
+
+describe('stitchDocuments', () => {
+  it('shifts each chapter\'s layout and content warnings to book pages, keeping page-less ones', () => {
+    const chapter = (pages: number, warnings: VDTDocument['warnings'], contentWarnings: VDTDocument['contentWarnings']): VDTDocument => ({
+      pages: Array.from({ length: pages }, (_, index) => ({ index })),
+      blocks: [],
+      converged: true,
+      iterationCount: 1,
+      ...(warnings ? { warnings } : {}),
+      ...(contentWarnings ? { contentWarnings } : {}),
+    }) as unknown as VDTDocument;
+    const book = stitchDocuments([
+      { chapterId: 'a', doc: chapter(2, [{ kind: 'calloutOverflow', pageIndex: 1, columnIndex: 0, overflowPx: 4 }], undefined) },
+      {
+        chapterId: 'b',
+        doc: chapter(3, [{ kind: 'calloutOverflow', pageIndex: 0, columnIndex: 1, overflowPx: 2 }], [
+          { kind: 'unknownResourceId', resourceId: 'x', usage: 'ref', sourceStart: 4, sourceEnd: 9, pageIndex: 2 },
+          { kind: 'unknownResourceId', resourceId: 'y', usage: 'embed', sourceStart: 12, sourceEnd: 20 },
+        ]),
+      },
+    ])!;
+    expect(book.doc.warnings!.map((w) => w.pageIndex)).toEqual([1, 2]);
+    expect(book.doc.contentWarnings!.map((w) => w.pageIndex)).toEqual([4, undefined]);
   });
 });

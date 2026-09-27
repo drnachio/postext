@@ -56,16 +56,23 @@ import type {
 } from '../vdt';
 import { createBoundingBox } from '../vdt';
 import { measureRichBlock, measureTextWidth, buildFontString } from '../measure';
+import type { MeasureBlockOptions } from '../measure';
+import { isSwatchFill, measureRichSnippet } from '../measure/rich';
+import { isBlankText } from '../measure/spaces';
+import { linkSegments } from '../measure/links';
 import { dimensionToPx } from '../units';
 // Caption / table-cell / note content is parsed with the shared snippet
 // parser so measurement and the sandbox's glyph→snippet mapping agree on
 // one span list (`:ref{…}` becomes a one-char placeholder span).
 import { parseInlineSnippetSpans as parseRefAwareSpans } from '../parse/inlineSnippet';
+import { sliceSpan } from '../parse/links';
 import { chipContextOf, fontSizePxOf, resolveChipSpans, type ChipContext } from './chips';
 import { mergeCaptionStyle } from '../defaults/captionStyle';
 import { pickTableStyle } from '../defaults/tableStyle';
 import { resolveColorValue } from '../defaults/shared';
 import { resolveBodyStyle } from './styles';
+import { uppercasePreservingLength } from './buildBlockKind';
+import { lineTrailingTracking } from '../lineInk';
 import type { ResourceNumberingMap } from './resourceNumbering';
 
 /** Non-breaking space used to glue a resolved `:ref` label into a single
@@ -134,17 +141,20 @@ export interface TableRowMetrics {
   groupHeaderRow: boolean[];
 }
 
-/** Resolve the colour of every inline `:swatch{…}` span: a `#rgb` / `#rrggbb`
- *  hex is normalised to six digits; any other value is looked up as a
- *  document palette entry id. An unresolved colour is left as written (the
- *  measurer then draws an empty outline). Spans without a swatch pass through. */
+/** Resolve the colour of every inline `:swatch{…}` span: a `#rgb` / `#rgba`
+ *  hex is normalised to six / eight digits, a `#rrggbb` / `#rrggbbaa` one
+ *  lower-cased, an `rgb()` / `rgba()` colour kept as written; any other
+ *  value is looked up as a document palette entry id. An unresolved colour
+ *  is left as written (the measurer then draws an empty outline). Spans
+ *  without a swatch pass through. */
 export function resolveSwatchSpans(spans: InlineSpan[], palette: ColorPaletteEntry[] | undefined): InlineSpan[] {
   return spans.map((span) => {
     if (!span.swatch) return span;
     const raw = span.swatch.color.trim();
-    const short = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(raw);
-    if (short) return { ...span, swatch: { color: `#${short[1]}${short[1]}${short[2]}${short[2]}${short[3]}${short[3]}`.toLowerCase() } };
-    if (/^#[0-9a-f]{6}$/i.test(raw)) return { ...span, swatch: { color: raw.toLowerCase() } };
+    const short = /^#([0-9a-f])([0-9a-f])([0-9a-f])([0-9a-f])?$/i.exec(raw);
+    if (short) return { ...span, swatch: { color: `#${short.slice(1).filter(Boolean).map((d) => d + d).join('')}`.toLowerCase() } };
+    if (/^#(?:[0-9a-f]{6}|[0-9a-f]{8})$/i.test(raw)) return { ...span, swatch: { color: raw.toLowerCase() } };
+    if (isSwatchFill(raw)) return { ...span, swatch: { color: raw } };
     const entry = palette?.find((e) => e.id === raw);
     return entry ? { ...span, swatch: { color: entry.value.hex } } : span;
   });
@@ -170,12 +180,32 @@ export function resolveRefLabel(
   const resource = resources.find((r) => r.id === ref.resourceId);
   const type = resource ? resourceTypes.find((t) => t.id === resource.typeId) : undefined;
   if (ref.style === 'full') {
-    const name = applyRefCase(type?.name ?? type?.shortLabel ?? '', ref.case);
-    return name ? `${name}${NBSP}${number}` : number;
+    return labelWithNumber(applyRefCase(type?.name ?? type?.shortLabel ?? '', ref.case), number);
   }
   // default: short label + number (e.g. "Fig. 1.7")
-  const short = applyRefCase(type?.shortLabel ?? type?.name ?? '', ref.case);
-  return short ? `${short}${NBSP}${number}` : number;
+  return labelWithNumber(applyRefCase(type?.shortLabel ?? type?.name ?? '', ref.case), number);
+}
+
+/** "Fig. 1.7": a type's label and a number, glued by a no-break space. A
+ *  type whose `numberingTemplate` is empty has no number, and its label
+ *  stands alone (EF-149). */
+function labelWithNumber(label: string, number: string): string {
+  if (!label) return number;
+  return number ? `${label}${NBSP}${number}` : label;
+}
+
+/** The label that opens a caption: "Figure 1.7. " — or, for a type
+ *  numbered with an empty template, "Figure. ". Without a number, spaces at
+ *  the prefix's end are dropped, and a prefix that already ends in a stop
+ *  (`.`, `:`, `!`, `?`, `…` or a full-width form, as in "Pl.") takes no
+ *  second one. Empty without a prefix. */
+const CAPTION_STOP_RE = /[.:!?…。．：！？]$/;
+function captionLabelText(captionPrefix: string, number: string): string {
+  if (captionPrefix.length === 0) return '';
+  if (number) return `${captionPrefix}${NBSP}${number}. `;
+  const label = captionPrefix.trimEnd();
+  if (label.length === 0) return '';
+  return CAPTION_STOP_RE.test(label) ? `${label} ` : `${label}. `;
 }
 
 /** Apply a `:ref{case=…}` transform to the label part of a computed
@@ -241,6 +271,11 @@ function fitWidth(intrinsicW: number, intrinsicH: number, columnWidth: number): 
   return { width, height };
 }
 
+/** Share of the free room set left of a body aligned per `placement.align`. */
+function alignFactor(align: 'left' | 'center' | 'right' | undefined): number {
+  return align === 'center' ? 0.5 : align === 'right' ? 1 : 0;
+}
+
 /** One resolved font set (normal / bold / italic / bold+italic), its colour,
  *  and its line height, for either the body or header cells of a table. */
 interface CellFontSet {
@@ -250,6 +285,11 @@ interface CellFontSet {
   boldItalicFontString: string;
   color: string;
   lineHeightPx: number;
+  /** Tracking after every character (px), measured into the lines and set
+   *  on each as `VDTLine.letterSpacing` for the renderers; absent for none. */
+  letterSpacingPx?: number;
+  /** Set the text in capitals (length-preserving). */
+  uppercase?: boolean;
 }
 
 /** Fully-resolved table styling consumed by {@link layoutTable}. */
@@ -264,6 +304,9 @@ interface TableLayoutStyle {
   headerBackground?: string;
   /** Body fill (hex), or undefined when disabled. */
   bodyBackground?: string;
+  /** Fill of the alternate (zebra) body rows (hex), or undefined when
+   *  disabled. */
+  bodyAlternateBackground?: string;
   /** Which rules to stroke. */
   rules: TableRules;
   /** Gap between a list marker and its text inside a cell (px) — the
@@ -288,25 +331,34 @@ interface CellItemMarker {
  *  its dot or bracket — followed by whitespace and some text. */
 const CELL_ITEM_MARKER = /^(\s*)([•·◦○▪‣\-*–—]|\d{1,3}[.)])(\s+)(?=\S)/;
 
-/** Split a cell's spans into paragraphs at hard line breaks (`\n`). The
- *  break characters are dropped; an empty paragraph (a blank line) is kept
- *  out — the measurer would skip it as whitespace anyway. */
-function splitCellParagraphs(spans: InlineSpan[]): InlineSpan[][] {
+/** A cell breaks its lines at a newline and at a forced break (`\\`, see
+ *  `SNIPPET_BREAK_RE`); a caption or a note only at a forced break. */
+const CELL_BREAK_RE = /[\n\u2028]/;
+const FORCED_BREAK_RE = /\u2028/;
+
+/** Split a cell's spans into paragraphs at hard line breaks (`\n`, and
+ *  the forced breaks). The break characters are dropped; an empty paragraph
+ *  (a blank line) is kept out — the measurer would skip it as whitespace
+ *  anyway. A line holding a no-break space is no blank line: it sets a
+ *  line of the cell, as in CommonMark (EF-154). */
+function splitCellParagraphs(spans: InlineSpan[], breakRe: RegExp = CELL_BREAK_RE): InlineSpan[][] {
   const out: InlineSpan[][] = [];
   let current: InlineSpan[] = [];
   const flush = () => {
-    if (current.some((sp) => sp.text.trim().length > 0)) out.push(current);
+    if (current.some((sp) => !isBlankText(sp.text))) out.push(current);
     current = [];
   };
   for (const span of spans) {
-    if (span.ref || span.math || !span.text.includes('\n')) {
+    if (span.ref || span.math || !breakRe.test(span.text)) {
       current.push(span);
       continue;
     }
-    const pieces = span.text.split('\n');
+    const pieces = span.text.split(breakRe);
+    let at = 0;
     pieces.forEach((piece, i) => {
       if (i > 0) flush();
-      if (piece.length > 0) current.push({ ...span, text: piece });
+      if (piece.length > 0) current.push(span.links ? sliceSpan(span, at, at + piece.length) : { ...span, text: piece });
+      at += piece.length + 1;
     });
   }
   flush();
@@ -322,8 +374,49 @@ function takeCellItemMarker(spans: InlineSpan[]): { marker: CellItemMarker; span
   if (!m) return null;
   const [whole, indent, text, ws] = m as unknown as [string, string, string, string];
   const rest = first.text.slice(whole.length);
-  const stripped = rest.length > 0 ? [{ ...first, text: rest }, ...spans.slice(1)] : spans.slice(1);
+  const stripped = rest.length > 0 ? [first.links ? sliceSpan(first, whole.length) : { ...first, text: rest }, ...spans.slice(1)] : spans.slice(1);
   return { marker: { text, ws, level: Math.min(5, 1 + Math.floor(indent.length / 2)) }, spans: stripped };
+}
+
+/** The four faces a caption or note run is set in (normal, bold, italic,
+ *  bold italic). */
+type SnippetFonts = readonly [string, string, string, string];
+
+/**
+ * Measure a caption or a note. Without a forced break it is one rich block,
+ * exactly as before; with forced breaks (`\\`, or a backslash ending a line
+ * — see `SNIPPET_BREAK_RE`) each piece is measured on its own and the
+ * pieces are stacked, one line pitch apart. An empty piece (two breaks in a
+ * row) adds no line. Lines are block-relative (y = 0 at the first line).
+ */
+function measureSnippetLines(
+  spans: InlineSpan[],
+  fonts: SnippetFonts,
+  maxWidthPx: number,
+  lineHeightPx: number,
+  options: MeasureBlockOptions,
+): VDTLine[] {
+  const [normal, bold, italic, boldItalic] = fonts;
+  // The measurer sets every line flush left at its natural width unless it
+  // justifies: a centred or right-aligned caption or note is pushed over by
+  // each line's slack (EF-166), as table cells are.
+  const align = options.textAlign;
+  const aligned = (lines: VDTLine[]): VDTLine[] =>
+    align === 'center' || align === 'right'
+      ? lines.map((line) => {
+          const slack = Math.max(0, maxWidthPx - line.bbox.width);
+          return shiftLines([line], align === 'center' ? slack / 2 : slack, 0)[0]!;
+        })
+      : lines;
+  const measure = (ps: InlineSpan[]): VDTLine[] =>
+    aligned(linkSegments(measureRichSnippet(ps, normal, bold, italic, boldItalic, maxWidthPx, lineHeightPx, options).lines, ps));
+  if (!spans.some((s) => !s.ref && !s.math && FORCED_BREAK_RE.test(s.text))) return measure(spans);
+  const lines: VDTLine[] = [];
+  for (const piece of splitCellParagraphs(spans, FORCED_BREAK_RE)) {
+    const measured = measure(piece);
+    lines.push(...shiftLines(measured, 0, lines.length * lineHeightPx));
+  }
+  return lines;
 }
 
 /**
@@ -345,18 +438,26 @@ function measureCellContent(
   const paragraphs = splitCellParagraphs(spans);
   const lines: VDTLine[] = [];
   let y = 0;
-  const measure = (ps: InlineSpan[], w: number) => measureRichBlock(
-    ps, set.fontString, set.boldFontString, set.italicFontString, set.boldItalicFontString,
-    Math.max(1, w), set.lineHeightPx, { textAlign: 'left' },
-  );
+  const tracking = set.letterSpacingPx ?? 0;
+  const measure = (ps: InlineSpan[], w: number) => {
+    const m = measureRichSnippet(
+      ps, set.fontString, set.boldFontString, set.italicFontString, set.boldItalicFontString,
+      Math.max(1, w), set.lineHeightPx, tracking !== 0 ? { textAlign: 'left', letterSpacingPx: tracking } : { textAlign: 'left' },
+    );
+    const linked = linkSegments(m.lines, ps);
+    return { ...m, lines: tracking !== 0 ? linked.map((line) => ({ ...line, letterSpacing: tracking })) : linked };
+  };
   // Plain paragraphs follow the cell's horizontal alignment: the measurer
   // sets every line flush left at its natural width, so a centred or
   // right-aligned line is pushed over by the slack. List items stay flush
-  // left (their markers align).
-  const slack = (line: VDTLine): number =>
-    textAlign === 'center' ? Math.max(0, (width - line.bbox.width) / 2)
-      : textAlign === 'right' ? Math.max(0, width - line.bbox.width)
+  // left (their markers align). The tracking after a tracked line's last
+  // letter is advance, not ink, and is left out (EF-153).
+  const slack = (line: VDTLine): number => {
+    const ink = line.bbox.width - lineTrailingTracking(line, tracking);
+    return textAlign === 'center' ? Math.max(0, (width - ink) / 2)
+      : textAlign === 'right' ? Math.max(0, width - ink)
         : 0;
+  };
   for (const paragraph of paragraphs) {
     const item = takeCellItemMarker(paragraph);
     if (!item) {
@@ -365,7 +466,7 @@ function measureCellContent(
       y += m.lines.length * set.lineHeightPx;
       continue;
     }
-    const markerWidth = measureTextWidth(item.marker.text, set.fontString);
+    const markerWidth = measureTextWidth(item.marker.text, set.fontString) + tracking * item.marker.text.length;
     const indentPx = markerWidth + listGapPx;
     const levelOffset = (item.marker.level - 1) * indentPx;
     const textX = levelOffset + indentPx;
@@ -404,6 +505,7 @@ interface FittedCellImage {
   kind: 'bitmap' | 'svg';
   fileId: string;
   format?: string;
+  pdfFileId?: string;
   altText?: string;
   x: number;
   width: number;
@@ -433,6 +535,7 @@ function fitCellImage(
   const target = Math.max(1, innerWidth * fraction);
   let fileId: string | undefined;
   let format: string | undefined;
+  let pdfFileId: string | undefined;
   let kind: 'bitmap' | 'svg';
   let width: number;
   let height: number;
@@ -446,6 +549,7 @@ function fitCellImage(
   } else if (resource.kind === 'svg' && resource.svg) {
     kind = 'svg';
     fileId = resource.svg.fileId;
+    pdfFileId = resource.svg.pdfFileId;
     const iw = resource.svg.width ?? 0;
     const ih = resource.svg.height ?? 0;
     width = target;
@@ -456,7 +560,7 @@ function fitCellImage(
   if (!fileId) return null;
   const x = align === 'center' ? (innerWidth - width) / 2 : align === 'right' ? innerWidth - width : 0;
   const altText = resource.altText ?? resource.caption;
-  return { resourceId: resource.id, kind, fileId, format, altText, x: Math.max(0, x), width, height };
+  return { resourceId: resource.id, kind, fileId, format, pdfFileId, altText, x: Math.max(0, x), width, height };
 }
 
 /** Smallest border thickness (px) we let through: thinner rules would vanish
@@ -655,8 +759,9 @@ function layoutTable(
       const isHeader = cellIsHeader(cell, r, model);
       const set = isHeader ? header : body;
       const cellWidth = spanWidth(c, colSpan) - cellPaddingPx * 2;
+      const parsed = parseRefAwareSpans(cell.content);
       const spans = resolveCellChips(resolveSwatchSpans(resolveRefSpans(
-        parseRefAwareSpans(cell.content),
+        set.uppercase ? parsed.map((s) => (s.ref || s.math ? s : { ...s, text: uppercasePreservingLength(s.text) })) : parsed,
         resourceNumbering,
         resourceTypes,
         resources,
@@ -745,6 +850,11 @@ function layoutTable(
     metrics = { rowHeights: [...rowMinHeight], headerRowCount, breakableAfter, groupHeaderRow };
   }
 
+  // Zebra rows count the body rows from the first one after the header, by
+  // model row: a continuation slice keeps every row's stripe, and a merged
+  // cell takes the stripe of its first row.
+  const zebra = style.bodyAlternateBackground !== undefined;
+  const zebraFrom = zebra ? tableHeaderRowCount(model) : 0;
   const cells: VDTResourceTableCell[] = measured.map((m) => {
     const x0 = columnEdges[m.col] ?? 0;
     const x1 = columnEdges[Math.min(m.col + m.colSpan, colCount)] ?? columnWidth;
@@ -765,6 +875,7 @@ function layoutTable(
           fileId: m.image.fileId,
           ...(m.image.format !== undefined ? { format: m.image.format } : {}),
           ...(m.image.altText !== undefined ? { altText: m.image.altText } : {}),
+          ...(m.image.pdfFileId ? { pdfFileId: m.image.pdfFileId } : {}),
           rect: createBoundingBox(x0 + cellPaddingPx + m.image.x, top, m.image.width, m.image.height),
         }
       : undefined;
@@ -780,6 +891,7 @@ function layoutTable(
       lines: placed,
       ...(image ? { image } : {}),
       ...(m.background !== undefined ? { background: m.background } : {}),
+      ...(zebra && !m.isHeader && m.row >= zebraFrom && (m.row - zebraFrom) % 2 === 1 ? { alternate: true } : {}),
     };
   });
 
@@ -798,6 +910,7 @@ function layoutTable(
     borderWidthPx,
     headerBackground: style.headerBackground,
     bodyBackground: style.bodyBackground,
+    ...(zebra ? { bodyAlternateBackground: style.bodyAlternateBackground } : {}),
     cells,
     columnEdges,
     rowEdges,
@@ -897,6 +1010,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     const hWeight = ts.headerBold ? boldWeight : normalWeight;
     const hBase = ts.headerItalic ? 'italic' : 'normal';
     const hFlip = ts.headerItalic ? 'normal' : 'italic';
+    const headerTrackingPx = dimensionToPx(ts.headerLetterSpacing, dpi, headerFontPx);
     const style: TableLayoutStyle = {
       body: {
         fontString: buildFontString(ts.bodyFontFamily, bodyFontPx, normalWeight),
@@ -913,6 +1027,8 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
         boldItalicFontString: buildFontString(ts.headerFontFamily, headerFontPx, boldWeight, hFlip),
         color: ts.headerColor.hex,
         lineHeightPx: headerFontPx * lineHeightRatio,
+        ...(headerTrackingPx !== 0 ? { letterSpacingPx: headerTrackingPx } : {}),
+        ...(ts.headerTextTransform === 'uppercase' ? { uppercase: true } : {}),
       },
       borderColor: ts.borderColor.hex,
       borderWidthPx: ts.borders && ts.rules !== 'none'
@@ -921,6 +1037,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       cellPaddingPx: dimensionToPx(ts.cellPadding, dpi, bodyFontPx),
       headerBackground: ts.headerBackgroundEnabled ? ts.headerBackground.hex : undefined,
       bodyBackground: ts.bodyBackgroundEnabled ? ts.bodyBackground.hex : undefined,
+      bodyAlternateBackground: ts.bodyAlternateBackgroundEnabled ? ts.bodyAlternateBackground.hex : undefined,
       rules: ts.rules,
       listGapPx: dimensionToPx(resolved.unorderedLists.gap, dpi, bodyFontPx),
       palette,
@@ -977,9 +1094,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   const hasCaption = captionText.trim().length > 0 || captionPrefix.length > 0;
   if (hasCaption) {
     // Prefix span: "<captionPrefix> <number>. " (non-breaking inside the label).
-    const prefixText = captionPrefix.length > 0
-      ? `${captionPrefix}${NBSP}${number}.${number ? ' ' : ''}`
-      : '';
+    const prefixText = captionLabelText(captionPrefix, number);
     const resolvedSpans = resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
       parseRefAwareSpans(captionText),
       resourceNumbering,
@@ -1000,17 +1115,13 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     const allSpans: InlineSpan[] = prefixText.length > 0
       ? [{ text: prefixText, bold: cs.labelBold, italic: cs.labelItalic, captionLabel: true }, ...descSpans, ...suffixSpans]
       : [...descSpans, ...suffixSpans];
-    const measured = measureRichBlock(
+    measuredCaption = measureSnippetLines(
       allSpans,
-      captionFontString,
-      captionBoldFontString,
-      captionItalicFontString,
-      captionBoldItalicFontString,
+      [captionFontString, captionBoldFontString, captionItalicFontString, captionBoldItalicFontString],
       Math.max(1, (input.captionAside?.width ?? columnWidth) - captionPaddingPx * 2),
       captionLineHeightPx,
       { textAlign: cs.align },
     );
-    measuredCaption = measured.lines;
   }
   const captionTextHeight = measuredCaption.length * captionLineHeightPx;
   // Height of the caption band: the text plus the bar padding on both sides.
@@ -1042,17 +1153,13 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     const slanted: InlineSpan[] = cs.note.italic
       ? noteSpans.map((s) => ({ ...s, italic: s.italic || true }))
       : noteSpans;
-    const measured = measureRichBlock(
+    measuredNote = measureSnippetLines(
       slanted,
-      noteFontString,
-      noteBoldFontString,
-      noteItalicFontString,
-      noteBoldItalicFontString,
+      [noteFontString, noteBoldFontString, noteItalicFontString, noteBoldItalicFontString],
       Math.max(1, input.captionAside?.width ?? columnWidth),
       noteLineHeightPx,
       { textAlign: cs.note.align },
     );
-    measuredNote = measured.lines;
   }
   const noteHeight = measuredNote.length > 0
     ? measuredNote.length * noteLineHeightPx + noteGapPx
@@ -1126,7 +1233,15 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     : captionAbove ? 0 : bodyHeight + (captionBandHeight > 0 ? captionGapPx : 0);
   const bodyY = captionAbove ? captionHeight : 0;
   const asideDx = aside ? aside.dx : 0;
-  const bodyRect = createBoundingBox(0, bodyY, bodyWidth, bodyHeight);
+  // A picture narrower than its slot — shrunk to fit the page or the room
+  // left (`layout.fitFiguresToPage`), or a bitmap smaller than the column —
+  // sits in the slot per `placement.align`, as a float narrowed by
+  // `placement.width` does; the caption and note keep the slot's measure.
+  // A turned figure and one with its caption beside it stay flush left.
+  const bodyX = !rotate && !aside && (resource.kind === 'bitmap' || resource.kind === 'svg') && bodyWidth < columnWidth
+    ? (columnWidth - bodyWidth) * alignFactor(resource.placement?.align ?? resourceType?.defaultPlacement?.align)
+    : 0;
+  const bodyRect = createBoundingBox(bodyX, bodyY, bodyWidth, bodyHeight);
   // Table cells were laid out with the table's top at y = 0; when the caption
   // sits above, move them down with the body (block-relative, like captions).
   if (table && bodyY > 0) {

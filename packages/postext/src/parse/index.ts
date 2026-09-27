@@ -8,6 +8,7 @@ export type {
   UnclosedContainerIssue,
   MathMeta,
   InlineSpan,
+  InlineLink,
   TextSpan,
   MathSpan,
   ListKind,

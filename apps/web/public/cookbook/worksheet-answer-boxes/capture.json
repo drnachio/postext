@@ -1,0 +1,749 @@
+{
+  "schemaVersion": 1,
+  "slug": "worksheet-answer-boxes",
+  "sourceHash": "e736371a06570a7b9faa2dfcff0bd76a0f6148d47c80afb9d00eb494a55dff09",
+  "engine": {
+    "postext": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-25T19:04:18.032Z",
+  "variants": {
+    "en": {
+      "hash8": "da4c2cb9",
+      "vdtHash": "53eb7a4ede2cb678bb722efe06b05a78cfe1b16d",
+      "timings": {
+        "importMs": 1644,
+        "fontsMs": 37,
+        "buildMs": 12,
+        "totalMs": 2467,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          200,
+          260
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": false,
+        "body": {
+          "family": "Andika",
+          "sizePt": 12,
+          "leadingPt": 17
+        },
+        "families": [
+          "Andika",
+          "Baloo 2",
+          "Fredoka"
+        ],
+        "pages": 4,
+        "ownLines": 180
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1300,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 55030,
+          "alt": "Opening page 1: Plants and their parts."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1300,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 61040,
+          "alt": "Page 2: 2 Name the parts."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1300,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 33994,
+          "alt": "Page 3: 4 Parts we eat."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1300,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 39344,
+          "alt": "Page 4: 6 Try it at home."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.paragraphSpacing",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].body",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.paragraphSpacing",
+          "calloutStyles[].border",
+          "calloutStyles[].border.color",
+          "calloutStyles[].border.enabled",
+          "calloutStyles[].border.width",
+          "calloutStyles[].borderRadius",
+          "calloutStyles[].columnGap",
+          "calloutStyles[].id",
+          "calloutStyles[].lists",
+          "calloutStyles[].lists.bulletChar",
+          "calloutStyles[].lists.gap",
+          "calloutStyles[].lists.itemSpacing",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].snapToGrid",
+          "calloutStyles[].title",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.gap",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "chipStyles",
+          "chipStyles[].background",
+          "chipStyles[].bold",
+          "chipStyles[].borderColor",
+          "chipStyles[].borderRadius",
+          "chipStyles[].borderWidth",
+          "chipStyles[].fontFamily",
+          "chipStyles[].fontSize",
+          "chipStyles[].gap",
+          "chipStyles[].id",
+          "chipStyles[].paddingX",
+          "chipStyles[].paddingY",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.enabled",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberingTemplate",
+          "headings.levels[].span",
+          "headings.snapToGrid",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "orderedLists",
+          "orderedLists.fontFamily",
+          "orderedLists.fontWeight",
+          "orderedLists.marginTop",
+          "orderedLists.numberVerticalOffset",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyles",
+          "tableStyles[].bodyBackground",
+          "tableStyles[].bodyBackgroundEnabled",
+          "tableStyles[].bodyColor",
+          "tableStyles[].bodyFontFamily",
+          "tableStyles[].bodyFontSize",
+          "tableStyles[].borderColor",
+          "tableStyles[].borderRadius",
+          "tableStyles[].borderWidth",
+          "tableStyles[].cellPadding",
+          "tableStyles[].headerBackgroundEnabled",
+          "tableStyles[].id",
+          "tableStyles[].rules"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "chipStyles",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "orderedLists",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyles"
+        ],
+        "configLeaves": 470,
+        "designElements": 20,
+        "directives": [
+          ":::paragraphs",
+          ":::callout",
+          ":::space",
+          ":::columns",
+          "::resource"
+        ],
+        "inline": [
+          "{attrs}",
+          "\\\\",
+          ":chip"
+        ],
+        "resources": {
+          "svg": 8,
+          "bitmap": 0,
+          "table": 1
+        },
+        "fonts": [
+          {
+            "family": "Andika",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Andika",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Baloo 2",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Baloo 2",
+            "weight": 800,
+            "style": "normal"
+          },
+          {
+            "family": "Fredoka",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Fredoka",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Fredoka",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Fredoka",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-columns",
+          "callout-styles",
+          "chips",
+          "column-balancing",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "inline-embeds",
+          "nested-callouts",
+          "off-grid-spacing",
+          "opener-band",
+          "opener-design",
+          "paragraph-styles",
+          "resource-types",
+          "resources",
+          "table-styles",
+          "title-line-breaks",
+          "unnumbered-headings",
+          "vertical-space"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "5b099dbf",
+      "vdtHash": "f562ce5b971655dc140a5deac9498a9a1827da00",
+      "timings": {
+        "importMs": 217,
+        "fontsMs": 54,
+        "buildMs": 8,
+        "totalMs": 1102,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          200,
+          260
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": false,
+        "body": {
+          "family": "Andika",
+          "sizePt": 12,
+          "leadingPt": 17
+        },
+        "families": [
+          "Andika",
+          "Baloo 2",
+          "Fredoka"
+        ],
+        "pages": 4,
+        "ownLines": 180
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1300,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 57392,
+          "alt": "Página de apertura 1: Las plantas y sus partes."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1300,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 66200,
+          "alt": "Página 2: 2 Nombra las partes."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1300,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 36328,
+          "alt": "Página 3: 4 Partes que comemos."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1300,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 45236,
+          "alt": "Página 4: 6 Pruébalo en casa."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.paragraphSpacing",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].body",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.paragraphSpacing",
+          "calloutStyles[].border",
+          "calloutStyles[].border.color",
+          "calloutStyles[].border.enabled",
+          "calloutStyles[].border.width",
+          "calloutStyles[].borderRadius",
+          "calloutStyles[].columnGap",
+          "calloutStyles[].id",
+          "calloutStyles[].lists",
+          "calloutStyles[].lists.bulletChar",
+          "calloutStyles[].lists.gap",
+          "calloutStyles[].lists.itemSpacing",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].snapToGrid",
+          "calloutStyles[].title",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.gap",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "chipStyles",
+          "chipStyles[].background",
+          "chipStyles[].bold",
+          "chipStyles[].borderColor",
+          "chipStyles[].borderRadius",
+          "chipStyles[].borderWidth",
+          "chipStyles[].fontFamily",
+          "chipStyles[].fontSize",
+          "chipStyles[].gap",
+          "chipStyles[].id",
+          "chipStyles[].paddingX",
+          "chipStyles[].paddingY",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.enabled",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberingTemplate",
+          "headings.levels[].span",
+          "headings.snapToGrid",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "orderedLists",
+          "orderedLists.fontFamily",
+          "orderedLists.fontWeight",
+          "orderedLists.marginTop",
+          "orderedLists.numberVerticalOffset",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyles",
+          "tableStyles[].bodyBackground",
+          "tableStyles[].bodyBackgroundEnabled",
+          "tableStyles[].bodyColor",
+          "tableStyles[].bodyFontFamily",
+          "tableStyles[].bodyFontSize",
+          "tableStyles[].borderColor",
+          "tableStyles[].borderRadius",
+          "tableStyles[].borderWidth",
+          "tableStyles[].cellPadding",
+          "tableStyles[].headerBackgroundEnabled",
+          "tableStyles[].id",
+          "tableStyles[].rules"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "chipStyles",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "orderedLists",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyles"
+        ],
+        "configLeaves": 470,
+        "designElements": 20,
+        "directives": [
+          ":::paragraphs",
+          ":::callout",
+          ":::space",
+          ":::columns",
+          "::resource"
+        ],
+        "inline": [
+          "{attrs}",
+          "\\\\",
+          ":chip"
+        ],
+        "resources": {
+          "svg": 8,
+          "bitmap": 0,
+          "table": 1
+        },
+        "fonts": [
+          {
+            "family": "Andika",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Andika",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Baloo 2",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Baloo 2",
+            "weight": 800,
+            "style": "normal"
+          },
+          {
+            "family": "Fredoka",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Fredoka",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Fredoka",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Fredoka",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-columns",
+          "callout-styles",
+          "chips",
+          "column-balancing",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "inline-embeds",
+          "nested-callouts",
+          "off-grid-spacing",
+          "opener-band",
+          "opener-design",
+          "paragraph-styles",
+          "resource-types",
+          "resources",
+          "table-styles",
+          "title-line-breaks",
+          "unnumbered-headings",
+          "vertical-space"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
+      }
+    }
+  }
+}

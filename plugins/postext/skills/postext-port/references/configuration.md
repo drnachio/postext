@@ -92,26 +92,27 @@ Conversion at `page.dpi` (default 300):
 | `paragraphStyles` | ParagraphStyleConfig[] | `[]` | §11 `:::paragraphs{style=…}` |
 | `calloutStyles` | CalloutStyleConfig[] | `[{id:'note',name:'Note'}]` | §12 `:::callout{type=…}` — declaring replaces the default list |
 | `chipStyles` | ChipStyleConfig[] | `[{id:'chip',name:'Chip'}]` | §13 inline `:chip[…]{style=…}` |
-| `resourceTypes` | ResourceType[] | Figure + Table (English!) | §15 numbering, caption prefix, default placement |
+| `resourceTypes` | ResourceType[] | Figure + Table in the document language (`locale`, else the hyphenation locale; English for other languages) | §15 numbering, caption prefix, default placement |
 | `tableStyle` | TableStyleConfig | §16 | document table style |
 | `tableStyles` | NamedTableStyleConfig[] | `[]` | §16 per-table via `resource.table.styleId` |
 | `captionStyle` | CaptionStyleConfig | §17 | + per-type overrides |
 | `diagramStyle` | DiagramStyleConfig | `{singleInk:false}` | §18 |
 | `math` | MathConfig | §19 | |
 | `colorPalette` | ColorPaletteEntry[] | `[main-color #295AA3]` | §0 |
-| `locale` | HyphenationLocale | `'en-us'` | document language: hyphenation fallback, table continuation strings, PDF `/Lang` |
+| `locale` | LocaleTag (any BCP 47 tag: `'es'`, `'es-ES'`, `'pt-BR'`) | `'en-us'` | document language: hyphenation fallback, built-in resource types and table continuation strings, PDF `/Lang` |
 | `customFonts` | CustomFontFamily[] | — | §20 **do not write in preset.json config** |
 | `htmlViewer` | HtmlViewerConfig | §21 | screen-only; `overrides` = partial config merged for HTML |
 | `pdfGeneration` | PdfGenerationConfig | §21 | outlines, tagging, colour space |
 | `debug` | DebugConfig | §21 | editor overlays + warning toggles; no effect on output |
 
 Not configurable (no config exists — don't look for it): footnotes / endnotes / margin notes
-(`[^1]` unsupported; emulate with callouts or `span:'side'`), blockquote style (always body font
-in italic), body drop caps (only design text elements have `dropCap`),
+(`[^1]` unsupported; emulate with callouts or `span:'side'`), a blockquote's own family, size,
+leading or alignment (quotes take the body's; colour, italics and indents are `bodyText.blockquote`),
+body drop caps (only design text elements have `dropCap`),
 table line height (= body leading ratio × table font size), heading hyphenation (off),
-per-level heading `textAlign` (only `headings.textAlign`), negative tracking in design text
-(`letterSpacing` clamped ≥ 0). Document metadata (`{title}`, `{subtitle}`, `{author}`,
-`{publishDate}`) comes from the **front matter of the first chapter**, not from the config.
+per-level heading `textAlign` (only `headings.textAlign`). Document metadata (`{title}`,
+`{subtitle}`, `{author}`, `{publishDate}`) comes from the **front matter of the first chapter**,
+not from the config.
 
 ---------------------------------------------------------------------------------
 
@@ -144,6 +145,10 @@ Gotchas
 - Mid-document folio changes (roman front matter → decimal from 1) use the `:::numbering` directive
   in markdown, not config. Book mode continues numbering across chapters automatically.
 - `cutLines.enabled` expands the sheet by the bleed; design elements anchored to `'bleed'` then run into it.
+  The sheet grows by bleed + markOffset + markLength a side; marks start max(bleed, markOffset)
+  outside the trim. The PDF gets a TrimBox and a BleedBox, and CMYK output paints the marks in
+  registration colour (`/All`). Everything the page paints is clipped to the bleed box (canvas,
+  PDF, HTML): only the marks print outside it.
 
 ---------------------------------------------------------------------------------
 
@@ -157,7 +162,11 @@ layout
 ├─ sideColumnRole     'text' | 'floats'                      default 'text'   oneAndHalf only
 ├─ sideColumnSide     'right'|'left'|'outer'|'inner'         default 'right'  oneAndHalf only
 ├─ columnRule         { enabled=false, color=#cccccc, lineWidth=0.5pt }
-└─ fitFiguresToPage   boolean                                default false (HTML viewer sets it)
+├─ fitFiguresToPage   boolean                                default false (HTML viewer sets it)
+├─ hugClosingFloats   boolean                                default true   closing page: page-wide floats below the last text move up under it
+├─ inlineResourceGap  'around' | 'above'                     default 'around'  (a preset without configVersion ≥ 5 reads 'above')
+├─ inlineResourceGapInBoxes boolean                          default true  (a preset below configVersion 6 reads false)
+└─ boxChildSplitMinLines number                              default 2  lines of a paragraph/item a box cut leaves per side (a preset below configVersion 6 with a :::callout reads 1)
 ```
 Geometry:
 - `double`: two equal columns, `colW = (contentW − gutter)/2`.
@@ -174,6 +183,24 @@ Geometry:
   (main + gutter + side), not just the main column.
 - Default is `'double'`: a single-column book must say `layoutType: 'single'`.
 - A section can switch layout via `headingStyles[].layout` (e.g. single-column preface in a two-column book).
+- `inlineResourceGap: 'around'` (postext ≥ 1.5): an inline `::resource` keeps one line of float gap
+  below it as well as above, and the text after it goes back onto the grid under that gap. `'above'`
+  is the 1.4 rule: the text resumes at the next grid line, however close. A manifest without
+  `"configVersion"` (or one below 5) is read as a 1.4 bundle and gets `'above'` when a chapter
+  embeds a resource (project-format.md).
+- `inlineResourceGapInBoxes: true` (postext ≥ 1.5): an inline `::resource` inside a `:::callout`
+  keeps a line of the box's text above it (and below it with `'around'`); `false` is the 1.4 rule,
+  the resource right against the text around it. A manifest below `"configVersion": 6` gets
+  `false` when a chapter embeds a resource inside a box. The old workaround `:::space{lines=0.33}`
+  around the embed is no longer needed.
+- `boxChildSplitMinLines: 2` (postext ≥ 1.5): a box that splits inside a paragraph or list item
+  leaves at least 2 of its lines on each side (the style's `splitMinLines` when lower). `1` is the
+  1.4 rule, a lone line allowed as long as each side holds `splitMinLines` lines in all. A manifest
+  below `"configVersion": 6` gets `1` when a chapter opens a `:::callout`.
+- `columnRule` stops under a page-span heading's band (it starts where the text starts). A heading
+  style's `layout.columnRule` is drawn on its section's pages; its unset fields take the document's.
+- `hugClosingFloats: false` leaves a `position: 'bottom'` float at the foot of a chapter's closing
+  page, as on every other page (default: it moves up to sit one float gap under the last text).
 
 ---------------------------------------------------------------------------------
 
@@ -198,26 +225,48 @@ bodyText
 ├─ firstLineIndent   Dimension       1.5 em          set {0,'mm'} for block paragraphs
 ├─ hangingIndent     boolean         false           indent all lines but the first
 ├─ indentAfterHeading boolean        true            false = first paragraph after a heading unindented (classic book style)
-└─ hyphenation       { enabled=true, locale=<config.locale ?? 'en-us'> }
-                      locale: 'en-us'|'es'|'fr'|'de'|'it'|'pt'|'ca'|'nl'
+├─ blockquote        { color=#666666, italic=true, indent=0, firstLineIndent=<body's> }   how `> …` quotes are set (colour palette-linkable; indent = every line, first line counted from it)
+└─ hyphenation       { enabled=true, locale=<config.locale ?? 'en-us'>, ragged=false, zone=3em, compounds=true }
+                      locale: any BCP 47 tag; patterns for 'en-us'|'es'|'fr'|'de'|'it'|'pt'|'ca'|'nl' (region ignored; other languages → en-us + console warning)
+                      ragged: also hyphenate ragged text, only where the word does not fit and sending it down would leave a gap wider than zone (em = text size); line by line ≤ 2 hyphenated lines in a row, with optimalRagged two in a row are only discouraged
+                      compounds: false = the dictionary leaves a word with a hyphen between two letters whole; it breaks only after that hyphen (TeX; after- | dinner, never af- | ter-dinner)
 ```
 H&J / Knuth–Plass
 ```
 ├─ optimalLineBreaking  boolean  true   Knuth-Plass (false = greedy)
+├─ optimalRagged        boolean  true   ragged running text (body, blockquotes, lists, ragged paragraph styles, box bodies, part and section bodies) broken with Knuth-Plass too: even edge, runt rules work;
+│                        false = line by line (1.4; a preset without configVersion 7 that sets running text ragged reads false)
+├─ breakAfterDashes     boolean  true   a line may end after an em/en dash set closed between words (say—that's, riddles.—I); never after an opening dash (—dijo, said "—Hola), before punctuation, a quote or a bracket (thinking—" and, says—“no”), or inside 1914–1918;
+│                        false = 1.4 breaks (a preset without configVersion 7 whose chapters set such a dash reads false)
+├─ breakAfterHyphens    boolean  true   Knuth-Plass may end a line after a compound's hyphen (well- | known) in every paragraph;
+│                        false = 1.4 breaks: a justified paragraph without formatting never breaks there (a preset without configVersion 8 whose chapters set a compound reads false)
+├─ repeatHyphen         boolean  false  the line after a break at a compound's hyphen opens with a hyphen too (vencer- | -se; Portuguese, Spanish RAE 2010); line.repeatedHyphen; never in a URL
 ├─ maxWordSpacing       number   2      × normal space; also the cap for balancing "loose" paragraphs
 ├─ minWordSpacing       number   0.6    × normal space
 ├─ avoidRunts           true;  runtMinCharacters 20;  runtPenalty 1000;  avoidRuntsInLists true
-├─ tightenRunts         true   re-set a runt paragraph one line shorter (tighter spaces, ≤ maxRuntTracking)
+│                        runtMinCharacters counts word spaces, not letters (a space ≈ ½ letter): 2 × N for a last line of N letters
+├─ gradedRuntPenalty    false  true = a runt costs runtPenalty × (1 − width/threshold): a two-word ending costs less than one word
+├─ tightenRunts         true   re-set a runt paragraph one line shorter (tighter spaces, ≤ maxRuntTracking; refused if a justified line passes max(maxWordSpacing, the paragraph's loosest justified line) or more lines go ragged)
 ├─ maxRuntTracking      10     thousandths of an em (10 = 0.01em), applied negatively
+├─ maxJustifyTracking   0      thousandths of an em, either way: a justified line past maxWordSpacing (or under minWordSpacing) takes letter spacing instead (0 = off; 10 is plenty; needs optimalLineBreaking)
 ├─ avoidOrphans         true;  orphanMinLines 2;  orphanPenalty 1000;  avoidOrphansInLists true
 ├─ avoidWidows          true;  widowMinLines 2;   widowPenalty 1000;   avoidWidowsInLists true
 ├─ slackWeight          10     pressure to fill columns (0 = off)
-└─ keepColonWithList    true   paragraph ending in ':' stays with the list it introduces
+├─ keepColonWithList    true   paragraph ending in ':' stays with the list it introduces
+├─ colonListRoom        'item' room kept under the colon line: 'item' = what the first item needs by the list orphan/widow rules
+│                        (a 2-line item kept whole needs 2 lines); 'line' = one line (1.4; a preset without configVersion 6 reads 'line'
+│                        when a chapter has a list after a line ending in ':')
+├─ hyphenateAcrossColumns true false = re-break a paragraph so the last line of a column (or page) ends on a whole word, within the word-spacing limits (InDesign's Hyphenate Across Column); ragged text set with optimalRagged too (only its line ends move)
+└─ paragraphContainerSpacing 'collapse'  space under a :::paragraphs container: 'collapse' = max(spaceBetween, marginBottom,
+                         the text's paragraph spacing) merged with the next block's own space above (a heading's marginTop);
+                         'add' = 1.4 (style space baked into the grid snap, next block's space added under it; a preset
+                         without configVersion 8 that declares a paragraph style reads 'add' when a chapter has :::paragraphs)
 ```
 Gotchas
-- Hyphenation only applies when `textAlign: 'justify'`. Words < 5 chars never break (2 before / 3 after).
+- Hyphenation only applies when `textAlign: 'justify'`, unless `hyphenation.ragged: true` (ragged text too, within `zone`). Words < 5 chars never break (2 before / 3 after).
 - For a Spanish book set top-level `locale: 'es'` (hyphenation follows unless `hyphenation.locale` is set).
 - All widow/orphan/runt rules are soft penalties, never hard.
+- No-break spaces (U+00A0, U+202F, U+2007) and the word joiner (U+2060) glue their neighbours on every breaker; type the character, not `&nbsp;`. U+00A0 is in practically every face; a face without U+202F/U+2007 gets half a word space / a digit width.
 
 ---------------------------------------------------------------------------------
 
@@ -234,7 +283,14 @@ headings
 ├─ marginTop     1.5 em            (em = level font size)
 ├─ marginBottom  0.5 em
 ├─ keepWithNext  true              never strand a heading at a column foot
+├─ keepWithNextSplit 'rules'       the paragraph under a heading at a column foot splits keeping widowMinLines
+│                                  under it and orphanMinLines after, else the heading moves on with it;
+│                                  'fill' = as many lines as fit, however few go on (1.4; a preset without
+│                                  configVersion 8 whose chapters have a heading reads 'fill')
 ├─ snapToGrid    true              false = keep exact marginBottom (text may sit off-grid until next snap point)
+├─ inlineMarks   true              *it* **b** ^sup^ ~sub~ :smallcaps[] and links print in headings (italic flips:
+│                                  upright in an italic heading); false = plain, as 1.4 (a preset without
+│                                  configVersion 6 whose headings carry marks reads false)
 ├─ balancing     ColumnBalancingConfig — see 5.2
 └─ levels        HeadingLevelConfig[] — entries matched by `level` (1–6)
 ```
@@ -243,23 +299,34 @@ headings
 ```
 { level: 1..6,                         REQUIRED
   fontSize: Dimension (abs)            defaults H1 18pt, H2 15, H3 12, H4 10, H5 9, H6 8
-  lineHeight, fontFamily, color, fontWeight, marginTop, marginBottom   → inherit general
+  lineHeight, fontFamily, color, fontWeight, marginTop, marginBottom, snapToGrid   → inherit general
   italic: boolean                      false
+  letterSpacing: Dimension             0 (tracking after every glyph, spaces and number prefix included;
+                                       em = level fontSize; negative tightens; centre/right lines are placed
+                                       by their letters, the tracking after the last glyph left out; ignored
+                                       when advancedDesign renders the level: design text has its own)
   textTransform: 'none'|'uppercase'    'none' (length-preserving; number prefix kept as written)
   numberingTemplate: string            ''  → no automatic number
   breakBefore: { enabled: boolean, parity: 'any'|'odd'|'even'|'always-odd'|'always-even' }
   span: 'column'|'page'                'column'
   advancedDesign: { enabled: boolean, slot: DesignSlot, minHeight?: Dimension(abs) }
+  hidden: boolean                      false → structural heading: prints nothing, takes no room
+                                       (in the flow and inside callouts), still breaks / counts /
+                                       is listed / bookmarked
 }
 ```
-- **CRITICAL GOTCHA — H1 page break.** With `headings` absent, H1 defaults to
-  `breakBefore: {enabled:true, parity:'always-odd'}` (blank separator page + recto). As soon as
-  you provide ANY `headings` object, levels without an explicit `breakBefore` resolve to
-  `{enabled:false, parity:'any'}` — including H1.
-  Always spell out `levels[0].breakBefore` for chapter openers. (Verified: `{headings:{fontFamily:'X'}}` on a two-H1 doc gives 1 page; no headings key gives 3.)
+- **H1 page break.** H1 defaults to `breakBefore: {enabled:true, parity:'always-odd'}` (blank
+  separator page + recto), and a partial `breakBefore` merges field by field over it
+  (`{parity:'odd'}` keeps the break). **postext 1.4 and earlier** dropped it as soon as ANY
+  `headings` object was given (levels without an explicit `breakBefore` resolved to
+  `{enabled:false, parity:'any'}`), so spell out `levels[0].breakBefore` for chapter openers:
+  the project then reads the same on every version.
 - `numberingTemplate` tokens: `{1}`…`{6}` = counter of that level, optional style suffix
-  `{1:I}` upper roman, `{1:i}` lower roman, `{1:A}`/`{1:a}` alpha, `{1:01}` zero-padded;
-  other text literal; `\{` escapes. Empty counters collapse with their separator.
+  `{1:I}` upper roman, `{1:i}` lower roman, `{1:A}`/`{1:a}` alpha, `{1:01}` zero-padded,
+  `{1:words}`/`{1:Words}`/`{1:WORDS}` spelled out, `{1:ordinal}`/`{1:Ordinal}`/`{1:ORDINAL}`
+  ordinal words (English or Spanish by `locale`, else the hyphenation locale; other languages
+  take English); other text literal; `\{` escapes. Empty counters collapse with their separator.
+  A heading line's `{startAt=N}` sets its level counter to N instead of advancing it.
   The number is prepended to the title **followed by one space**,
   e.g. `'{1}.{2}'` → "2.3 Title"; `'Chapter {1}.'` → "Chapter 2. Title". It also feeds `{number}`
   in designs (not prepended there) and the TOC. `{chapterNumber}` = the H1 prefix, or the chapter
@@ -273,15 +340,35 @@ headings
 - `advancedDesign.enabled: true` → the heading's own text is NOT drawn; the slot must include
   `{titleText}` somewhere. Container: `span:'page'` → x = content-area left, width = full
   content width, y = heading top, height = reserved height; `span:'column'` → the heading's
-  block box in its column. Reserved height = max(design bottom, `minHeight`); elements
-  anchored to `'page'`/`'bleed'` above the heading don't add height. Use `minHeight` to push
-  the text down to where the book's first text line starts (e.g. 52mm opener).
+  block box in its column. Reserved height = max(heading text, design bottom, `minHeight`)
+  plus the heading's `marginBottom` (from its style, its level or `headings.marginBottom`; 0.5 em
+  by default), rounded up to the grid when headings snap: for a band exactly `minHeight` tall,
+  set that `marginBottom` to 0;
+  elements anchored to `'page'`/`'bleed'` above the heading don't add height, those reaching
+  below it do (a seal at the page foot reserves the page). Not counted: elements with
+  `reserve: false` (decoration under the text) and elements that follow the band (container
+  middle/bottom anchors, `'fill'` heights, boxes/vertical rules with no height, and anything
+  chained to them). Use `minHeight` to push the text down to where the book's first text line
+  starts (e.g. 52mm opener). A reservation past the column foot claims the rest of the page
+  (in-column: the column), so a full-page cover needs no `:::pagebreak`; one after it is
+  harmless (never adds a blank page). In-column designs paint with the heading block and are
+  clipped to the column (canvas/PDF): put page-anchored decoration in a `span:'page'` opener.
+  A `\\` break in the title is a newline in `{titleText}` in both kinds of design. Under a
+  page-span band every column starts like the heading's own: text where text right under the
+  opener would start (its marginBottom below its title or design, on the page grid when the level
+  snaps; 1.4 set it against the band when a heading followed the opener), a heading or display
+  formula level with the first visible heading or display formula under the opener (balancing
+  space above that one is not repeated), else with that text; what it snaps lands on the grid.
 - Heading slot placeholders: `{titleText}`, `{number}`, `{numberDecimal}`, `{numberRoman}`,
   `{numberRomanLower}`, `{numberAlpha}`, `{numberAlphaLower}`, `{chapterNumber}`, `{chapterTitle}`,
   `{partTitle}`, `{partNumber}`, `{pageNumber}`, `{totalPages}`, `{title}`, `{subtitle}`,
   `{author}`, `{publishDate}`, `{attr.<key>}` (heading-line attribute `# T {author="…"}`,
-  falling back to the chapter H1's).
-- Headings are never hyphenated; bold inside a heading uses the heading weight.
+  falling back to the chapter H1's), `{numberWords}` / `{numberWordsLower}` /
+  `{numberOrdinalWords}` / `{numberOrdinalWordsLower}` (the counter in words).
+  `{numberDecimal}`…`{numberAlphaLower}` and the words print the heading's counter (its level's
+  running count) whatever the template prints — empty on postext 1.4 and earlier (parts only
+  there), and on unnumbered headings.
+- Headings are never hyphenated; bold inside a heading takes `bodyText.boldFontWeight`, or the heading weight when heavier.
 
 ### 5.2 `headings.balancing` — ColumnBalancingConfig (vertical justification)
 Defaults:
@@ -289,13 +376,16 @@ Defaults:
 enabled true | maxLinesPerHeading 4 | stretchAfterLists true | maxLinesAfterList 1
 stretchAfterFloats true | maxLinesAfterFloat 1 | looseParagraphs true | maxLooseParagraphs 2
 trackParagraphs true | maxTracking 10 (‰ em) | trailing true | beforeSpan true
+closingBox 'first'  ('first' | 'last' | 'off')
 ```
 Levers in order: box closing a short column pushed to the foot → extra grid lines above headings
 (favouring lower level numbers) → after list ends → under top floats → loose paragraphs
 (TeX looseness +1, within `bodyText.maxWordSpacing`, optional ≤ maxTracking positive tracking).
 `trailing`: level the closing band of a chapter (short last page → equal-height columns).
-`beforeSpan`: level the columns a `span:'page'` callout interrupts. Disable `enabled` for
-ragged-bottom books.
+`beforeSpan`: level the columns a `span:'page'` callout interrupts. `closingBox: 'last'` runs the
+box lever after the spacing levers (the box takes only the fraction of a line they leave, so a
+box annotating the paragraph above it stays close to it); `'off'` never moves the box. Disable
+`enabled` for ragged-bottom books.
 
 ---------------------------------------------------------------------------------
 
@@ -308,12 +398,22 @@ running heads, margins, layout, body typography, palette.
 { id: string (REQUIRED), name?: string,
   numbered?: boolean = true      false: no counter advance, no number, {chapterNumber} empty (preface, index)
   toc?: boolean = true           listed by :::toc (heading can override {toc="false"})
-  // any HeadingLevelConfig field except level/numberingTemplate:
+  runningChapter?: boolean = true  false (H1 only): running heads pass over it and keep the chapter
+                                 it interrupts ({chapterTitle}, {chapterNumber}, {attr.*}, h1 marks);
+                                 for a plate or a map set as an H1 inside a chapter; the style still
+                                 opens its own section (slots, margins, palette) until the next H1
+  numberingTemplate?: string     replaces the level's template ('Appendix {1:A}'); counter stays the
+                                 level's, so restart it with {startAt=1} on the first heading;
+                                 '' prints no number anywhere (no H1 ordinal in the contents or
+                                 {chapterNumber} either), though the heading still counts
+  // any HeadingLevelConfig field except level:
   fontFamily, fontSize, lineHeight, color, fontWeight, marginTop, marginBottom, italic,
-  textTransform, breakBefore, span, advancedDesign
+  letterSpacing, textTransform, breakBefore (merged field by field over the level's), span,
+  advancedDesign, hidden, snapToGrid
   header?: DesignSlot, footer?: DesignSlot      replace document running heads on the section's pages ({elements:[]} = none)
   margins?: PageMargins                          each side inherits page margin; pair with breakBefore
-  layout?: LayoutConfig                          e.g. {layoutType:'single'} — resolved from scratch (unset fields = layout DEFAULTS, not the document layout!)
+  layout?: LayoutConfig                          e.g. {layoutType:'single'} — resolved from scratch (unset fields = layout DEFAULTS, not the document layout!),
+                                                 except columnRule: its unset fields take the document's, and the section's pages draw it
   bodyStyle?: PartsBodyStyleConfig               (§8) typography of paragraphs/lists in the section
   palette?: Record<paletteId, '#hex'>            recolours palette-linked design colours + flow colours on the section's pages
 }
@@ -359,6 +459,11 @@ placement: {
   right-anchored element needs a **negative** x offset to move inward; `bottom` anchors need
   negative y to move up (built-in header uses `bottom-right`, y = −16pt).
 - `'fill'` runs to the frame edge from the anchor point.
+- Element edges put a corner on a corner of the target: `right-of` = beside, tops level;
+  `left-of` = to its left, tops level; `below` = under, left edges level; `above` = over, left
+  edges level; `align-top` and `align-left` are the SAME placement (top-left corners together);
+  `align-bottom` = bottom-left corners; `align-right` = top-right corners. No edge puts the
+  bottom-right corners together: use `align-bottom` plus an x offset, or anchor the other way.
 - Offsets in em throw — use mm/pt.
 
 ### 7.3 Element kinds
@@ -372,28 +477,49 @@ bottom folio only there). Parity/pages are ignored inside heading slots.
 { kind:'text', id, placement, content: string (template; '{{' '}}' = literal braces),
   fontSize: Dimension(abs)  REQUIRED,  overflow: 'wrap'|'ellipsis-start'|'ellipsis-end'|'ellipsis-middle'|'clip'  REQUIRED in type
   fontFamily='EB Garamond', fontWeight=400, italic=false, color=#000000,
-  align='center' ('left'|'center'|'right'), verticalAlign='middle', lineHeight=1.2 (number × fontSize),
-  letterSpacing?: Dimension (≥0, em = font size), textTransform?: 'none'|'uppercase',
+  align='center' ('left'|'center'|'right'|'justify' — justify: word spaces stretched on every wrapped line
+    but a paragraph's last; with hyphenate a word is also cut at a syllable to fill), verticalAlign='middle'
+    (lines taller than a fixed height run out on the free side: 'bottom' keeps the last line box's foot
+    on the box's foot, 'middle' runs out both ways; a drop cap follows its lines),
+    lineHeight=1.2 (number × fontSize),
+  letterSpacing?: Dimension (negative tightens, em = font size; the tracking after a line's last glyph
+    counts neither for centre/right alignment nor for an auto width, and a justified line's last glyph
+    ends on the edge), textTransform?: 'none'|'uppercase',
   hyphenate?: boolean (wrap only), box?: ElementBoxStyle,
-  dropCap?: { lines=2, fontFamily?, fontWeight?, fontSize?, color?, gap? },
+  dropCap?: { lines=2, fontFamily?, fontWeight?, fontSize?, color?, gap? }   (the text wraps whatever its
+    overflow; default size = text size + (lines−1) × leading / 0.72, top level with the first line's
+    capitals; a preset without configVersion 6 gets its 1.4 size written out as fontSize),
   paragraphIndent?: Dimension     ('\n' in content separates paragraphs)
+  inlineMarks?: boolean   (read **b** *i* ^sup^ ~sub~ in the resolved text, values included)
+  stroke?: { width: Dimension, color?: ColorValue (= text colour), hollow?: boolean }
+  reserve?: boolean       (heading slots: false = don't count toward the reserved height)
   parity?, pages? }
 ```
+A newline or the two characters `\n` (in the template or an `{attr.*}` value; not in titles
+or front-matter values, which print as written) always starts a new line, in every `overflow`
+mode (ellipsis/clip act per line). An auto-width text is clamped to the room between its anchor
+and the container edge it grows toward: an offset toward that edge shrinks it (twice for
+`top`/`bottom`), one past it leaves it empty (ellipsis) or one letter per line (wrap) — use a
+fixed `size.width` or anchor to `'page'`.
 Element defaults are NOT the built-in header's (Open Sans 8pt/600 main colour) — set everything.
 Resolver falls back to `overflow: 'ellipsis-end'` if omitted; use `'wrap'` for multi-line titles
 with a fixed `size.width`.
 Header/footer placeholders: `{pageNumber}` (the page LABEL, e.g. "xii"), `{totalPages}`,
 `{title}`, `{subtitle}`, `{author}`, `{publishDate}` (front matter), `{chapterTitle}` (latest H1),
-`{chapterNumber}`, `{partTitle}`, `{partNumber}`, `{attr.<key>}` (chapter H1 attribute).
+`{chapterNumber}`, `{chapterTitleAtTop}` / `{chapterNumberAtTop}` (the chapter in force at the top
+of the page: differs where a chapter starts below other text, for run-on chapters),
+`{partTitle}`, `{partNumber}`, `{attr.<key>}` (chapter H1 attribute).
 
-**rule**: `{ kind:'rule', id, placement, direction: 'horizontal'|'vertical', color: ColorValue (req), thickness: Dimension (req) }`
+**rule**: `{ kind:'rule', id, placement, direction: 'horizontal'|'vertical', color: ColorValue (req), thickness: Dimension (req), reserve? }`
+(required in the type; a JSON config that leaves them out gets 'horizontal', #000000 and 0.5pt)
 — length from `size.width` (horizontal) / `size.height` (vertical); `'fill'` = to frame edge.
 
-**box**: `{ kind:'box', id, placement (with size), style: ElementBoxStyle }`
+**box**: `{ kind:'box', id, placement (with size), style: ElementBoxStyle, reserve? }`
 `ElementBoxStyle = { backgroundColor?, borderColor?, borderWidth?, borderRadius?, padding?: {top,right,bottom,left} }`
-(stroke painted inside; radius clamped). Use for colour bands, thumb tabs, backdrops.
+(stroke painted inside: its outer edge on the box edge, in canvas, HTML and PDF; radius clamped).
+Use for colour bands, thumb tabs, backdrops.
 
-**image**: `{ kind:'image', id, placement, resourceId }` — bitmap/SVG resource
+**image**: `{ kind:'image', id, placement, resourceId, reserve? }` — bitmap/SVG resource
 (e.g. logo, cover photo). One of width/height `'auto'` keeps aspect; both set = fit & centre.
 
 ### 7.4 Header/footer defaults
@@ -432,8 +558,15 @@ Part-slot placeholders: `{titleText}` (fence title), `{number}` (as written), `{
 Part palette: applies from the part page until the next part (and across separately laid-out
 chapters via continuation); recolours palette-linked design colours AND every flow colour equal
 to the base value of an overridden entry (headings, bold/italic/ref colours, bullets, numbers,
-caption labels, table text/rules, callout frames). So link section-coloured things to one
+caption labels and bars, table text/rules/fills, callout frames, chips). So link section-coloured things to one
 palette id (e.g. `band`) and give each part its own `palette="band=#…"`.
+Two entries with the same base value that a part sets apart: each flow colour follows the entry
+its own settings link to. Told apart: a block's text / bold / italic / reference / marker /
+separator colours; each heading level and heading style; a contents row's text / number / page
+number; each callout style's fills / border / rules / text; each colour of each table, chip and
+caption style. Still by value (the override wins): settings in different places that set the same
+colour of a block (`bodyText.color` vs a callout `body.color`, a paragraph style `color`,
+`bodyText.blockquote.color`) linked to such entries: give those entries distinct base values.
 Page role of a part page = `'part'` (filter running heads with `pages`).
 
 ---------------------------------------------------------------------------------
@@ -453,7 +586,7 @@ toc
 ├─ leader       { enabled=true, char='.', gap=0.5em }      ('. ' spaces the dots)
 ├─ subtitle     { enabled=false, attr='author', fontFamily, fontSize, fontWeight, italic=true, color, indent=0 }
 └─ parts        { enabled=true, breakBefore=false, design: DesignSlot (row; placeholders {number} {numberRoman}… {titleText} {pageNumber}),
-                  height = 2em (two body lines), marginTop=0, marginBottom=0 }
+                  height = 2em (twice the body size, not two body lines), marginTop=0, marginBottom=0 }
 ```
 
 ---------------------------------------------------------------------------------
@@ -471,6 +604,7 @@ fontWeight = 700, italic = false   (marker)
 bulletChar = '•', bulletFontSize = 1em (em = body size), bulletVerticalOffset = 0em (neg = up)
 gap = 0.5em (marker → text), indent = 0em (level 1; deeper levels cascade from parent text start unless set)
 marginTop = 1.5em, marginBottom = 1.5em, itemSpacing = 0em, hangingIndent = true
+snapTopToGrid = false  (true: the space above rounds up so the first item sits on the grid)
 levels[]: { level 1–5, bulletChar, fontFamily, fontSize, color, fontWeight, italic, indent, verticalOffset }
 taskCheckboxChar '☐', taskCheckedChar '☑', taskCompletedStrikethrough true, taskCompletedColor?
 ```
@@ -479,14 +613,17 @@ orderedLists
 fontFamily = body, color = main-color, fontWeight = 700, italic = false  (number marker)
 numberFormat = 'arabic'|'lower-alpha'|'upper-alpha'|'lower-roman'|'upper-roman'  ('arabic')
 separator = '.', numberFontSize = 1em, gap = 0.5em, indent = 0em, numberVerticalOffset = 0em
-marginTop/Bottom = 1.5em, itemSpacing = 0em, hangingIndent = true
+marginTop/Bottom = 1.5em, itemSpacing = 0em, hangingIndent = true, snapTopToGrid = false
+numberWidth = 'run'  ('run' = text after the widest number of the item's own run, so a list broken by a figure or
+                      a paragraph can shift its text; 'level' = widest number at that depth in the chapter)
 separatorFontFamily / separatorFontWeight / separatorItalic / separatorColor  → inherit number style
 separatorGap = 0em  (a differing separator style draws the separator as its own run)
 levels[]: { level 1–5, numberFormat, separator, fontFamily, fontSize, color, fontWeight, italic,
             indent, verticalOffset, separatorFontFamily, separatorFontWeight, separatorItalic,
             separatorColor, separatorGap }
 ```
-Numbers are right-aligned within a run. List margins of 1.5em are large — books usually want
+Numbers are right-aligned within a run (within the depth with `numberWidth: 'level'`). Around a list nested
+in another the outer list's `itemSpacing` applies on both sides. List margins of 1.5em are large — books usually want
 `{0.5,'em'}` or a pt value. Nested list depth in markdown = 2 spaces per level (max 5).
 
 ---------------------------------------------------------------------------------
@@ -497,12 +634,22 @@ Numbers are right-aligned within a run. List margins of 1.5em are large — book
 ```
 { id (REQUIRED), name?,
   fontFamily, fontSize, lineHeight (em = own size), color, textAlign, boldColor,
-  hyphenation: boolean, firstLineIndent        → inherit bodyText
-  hangingIndent: Dimension = 0   (non-zero replaces firstLineIndent)
-  spaceBetween = 0, marginTop = 0, marginBottom = 0 (minimum; flow snaps back to grid after) }
+  italicColor                    (→ bodyText.italicColor, NOT `color`: a coloured style sets both)
+  hyphenation: boolean, firstLineIndent,
+  fontWeight, boldFontWeight                   → inherit bodyText
+  italic = false                 (italic paragraphs; `*…*` runs flip upright — stage directions)
+  smallCaps = false              (synthesised small caps, 0.7 of the size — cast lists, headwords)
+  indent: Dimension = 0          (every line; firstLineIndent and hangingIndent count from it)
+  hangingIndent: Dimension = 0   (non-zero replaces firstLineIndent; counts from indent)
+  spaceBetween = 0, marginTop = 0, marginBottom = 0 (minimum; flow snaps back to grid after)
+  snapToGrid = true              (false = exact space under the container, flow stays off the grid)
+  textTransform = 'none'         ('uppercase' = capitals, chip words and :ref labels too, length-preserving; maths untouched) }
 ```
-No `fontWeight`/`italic`: weights follow the body text (use markdown `**…**`). Inside the
-container the flow leaves the baseline grid.
+Inside the container the flow leaves the baseline grid. When it closes on a paragraph, the space under it merges
+with the next block's own (a heading's `marginTop`) and is at least the text's paragraph spacing
+(`bodyText.paragraphContainerSpacing`); when it closes on a list, the list keeps its own space and `marginBottom` follows. Unknown keys in a style raise `unknownConfigKey`. The style applies inside callouts too,
+margins included (they collapse with the neighbours' spacing; none at the top of the box); its
+unset fields inherit the document body text, not the box's `body`.
 
 ---------------------------------------------------------------------------------
 
@@ -516,17 +663,23 @@ All em values = the callout body font size.
   title = ''                         default title; fence title overrides
   span = 'column'                    'column' | 'page' (span block across columns) | 'side' (float-only side column)
   placement = 'here'                 'here' | 'auto' | 'top' | 'bottom' | 'fixed'   (side boxes never float)
+  sideAtColumnEnd = 'before'         side box whose following text continues on the next page (full column, or a
+                                     paragraph/heading the break rules move on): 'before' = at the fence, beside
+                                     the text before it (slides up; glosses), 'after' = level with the first line
+                                     of the text after it, on that page (line numbers, marginal heads)
   fixed = { anchor: {to:'container', edge:'bottom-left'}, offset: {x:0pt, y:0pt} }   for placement:'fixed' (container = content area)
   floatBarrier = false               pending figures placed before this box (chapter-closing summaries)
   width = 'fill'                     'auto' = shrink-wrap title only (badge), children ignored
   backgroundEnabled = true, background = #f4f4f4
   border = { enabled=false, color=#cccccc, width=0.5pt }
-  borderRadius = 0em
+  borderRadius = 0em                 the stripe is clipped to it; the label tab stays square
   padding = { top, right, bottom, left } = 0.75em each
   stripe = { enabled=false, side='left'|'right'|'top', width=1.5em, color=main }
   icon = { kind='none'|'glyph'|'resource', glyph='', resourceId='', fontFamily=headings font,
            fontWeight=400, size=1.5em, width? (non-square box), color=main, align='top'|'center',
            position='inline'|'corner', cornerSide='right'|'left'|'outer'|'inner' }
+           (a corner icon is centred on its corner by its drawn width, a wide `width` strip included;
+           a left-corner title starts past its inner half)
   label = unset (no tab). If set: { fontFamily=headings, fontSize=body size, fontWeight=700,
            color=#fff, background=main, position='top-right'|'top-left', height=1.4em, paddingX=0.6em,
            offset=0, inset=0, icon:{resourceId,width=1em,gap=0.3em}, rule:{enabled=false,color=main,width=0.5pt} }
@@ -535,20 +688,32 @@ All em values = the callout body font size.
              align='center', gap=0.5em, rule:{enabled=false, color=main, width=0.5pt, length=0} }
              icon + vertical rule OUTSIDE the box on its left
   titleStyle = { fontFamily=headings font, fontSize=body size, fontWeight=700, italic=false,
-                 color=main, textTransform='none'|'uppercase', gap=0.5em, letterSpacing=0, indent=0 }
-  body = { fontFamily, fontSize, lineHeight, color, boldColor, italicColor,
+                 color=main, textTransform='none'|'uppercase', gap=0.5em, letterSpacing=0, indent=0,
+                 lineHeight=1.2em (em = title size; set the body leading to keep boxes a whole number of lines) }
+  body = { fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight,
            textAlign: 'left'|'justify', hyphenation: boolean, paragraphSpacing, firstLineIndent }   → inherit bodyText
+         + italic = false, smallCaps = false   (paragraphs, list items and blockquotes of the box)
   lists = { bulletChar, color, indent, gap, itemSpacing, bulletFontSize?, bulletFontWeight? }  → inherit unorderedLists
+           (a set `color` also colours ordered-list numbers, even when equal to unorderedLists.color)
   columnGap = 1.5em                  for :::columns{count=N} groups inside the box
   marginTop = 0.75em, marginBottom = 0.75em (minimum; grid-snapped after)
   snapToGrid = true                  false = exact marginBottom (stacked-box worksheets)
-  keepTogether = true                false = may split between children / lines; continuation drops title+icon
-  splitMinLines = 2 }
+  keepTogether = true                false = may split between children / lines; continuation drops icon (its column stays, empty) (+ title unless repeatTitle)
+  splitMinLines = 2                  fewest text lines on each side of a cut; a cut inside a paragraph or
+                                     list item also keeps ≥ layout.boxChildSplitMinLines (2) of its lines
+                                     per side (splitMinLines when lower)
+  repeatTitle = false                continuation repeats the title + continuedSuffix ("HAMLET (CONT'D)")
+  continuedSuffix = '(cont.)'        by locale, like tables
+  continuesMarkerEnabled = false     marker under the last line of each part that goes on
+  continuesMarker = 'Continued' | 'Continúa' (by locale)   e.g. '(MORE)'
+  continuesMarkerAlign = 'right'     'left' | 'center' | 'right'
+  continuesMarkerItalic = true }
 ```
 Gotchas: `body.textAlign` only `'left'|'justify'`. Callout body inherits body text colours,
 so boxes with coloured bold need `body.boldColor`. `span:'page'` in a multi-column layout cuts
 the page into bands (text above levelled). Nested callouts take their own style but ignore
-span/placement/floatBarrier/snapToGrid.
+span/placement/floatBarrier/snapToGrid. Ordered-list numbers inside a box come from the global
+`orderedLists` (callout `lists` has bullet fields only); `:::columns` groups share the box body.
 
 ---------------------------------------------------------------------------------
 
@@ -558,6 +723,7 @@ Inline `:chip[text]{style="id"}` (word banks, keys, tags). Chip without style �
 ```
 { id (REQUIRED), name?, backgroundEnabled=true, background=#e8eef7, borderColor=main,
   borderWidth=0.5pt (0 = none), borderRadius=0.3em, paddingX=0.3em, paddingY=0.1em (paints outside line box),
+  paddingTop?/paddingBottom? (= paddingY; top larger than bottom, e.g. 0.2em/0.05em, centres a capital in a round chip),
   fontFamily?/fontSize?/color? (= surrounding text; fontSize em = surrounding), bold=false, italic=false, gap=0.25em }
 ```
 
@@ -580,6 +746,8 @@ Inline `:chip[text]{style="id"}` (word banks, keys, tags). Chip without style �
 { id: string (REQUIRED; resource.typeId), name: string, namePlural?: string,
   shortLabel: string          used by :ref default style ("Fig. 1.7")
   numberingTemplate: string   tokens {n} (counter, per counterFormat), {h1}…{h6} (heading counters, decimal); '' = unnumbered
+                              (≥ 1.5: caption "<prefix>. <caption>", no second stop after a prefix ending in . : ! ? …,
+                              :ref prints the label alone; 1.4 printed "Do .Caption" / "Do ")
   resetOn: 'never'|'h1'|…|'h6'
   counterFormat: 'decimal'|'roman-lower'|'roman-upper'|'alpha-lower'|'alpha-upper'
   captionPrefix: string       caption = "<prefix> <number>. <caption>" ('' for unlabelled photos)
@@ -596,10 +764,11 @@ align?:   'left' (default) | 'center' | 'right'
 captionSide?: boolean    caption in the float-only side column, level with the figure (column floats, oneAndHalf+floats)
 ```
 Gotchas
-- **Engine default types are English** ( uses `defaultResourceTypes` without
-  locale). The sandbox injects `defaultResourceTypes(locale)` only when the config has none.
-  For a non-English preset always declare `resourceTypes` explicitly (and translate per locale
-  via `localized.<lang>.config.resourceTypes` in preset.json).
+- **Engine default types follow the document language**: with `resourceTypes` unset, the
+  engine uses `defaultResourceTypes(locale)` (else the hyphenation locale; strings exist for
+  en, es, fr, de, it, pt, ca, nl, English otherwise). Older engines used English. Still declare
+  `resourceTypes` explicitly in a preset (and translate per locale via
+  `localized.<lang>.config.resourceTypes` in preset.json).
 - Numbering follows first `:ref` in reading order; `{h1}` is the chapter number (continues across chapters in book mode).
 - Pair `{h1}.{n}` with `resetOn:'h1'`.
 
@@ -612,8 +781,10 @@ tableStyle; fonts/colours inherit bodyText:
 bodyFontFamily, bodyFontSize, bodyColor           → body text
 headerFontFamily, headerFontSize, headerColor     → body text
 headerBold = true, headerItalic = false
+headerLetterSpacing = 0pt (em = header size), headerTextTransform = 'none' | 'uppercase'
 headerBackgroundEnabled = true, headerBackground = #f0f0f0
 bodyBackgroundEnabled = false, bodyBackground = #ffffff
+bodyAlternateBackgroundEnabled = false, bodyAlternateBackground = #f2f2f2   (zebra rows: every second body row after the header)
 borders = true, borderColor = body colour, borderWidth = 0.75pt
 cellPadding = 0.375em (em = table body size)
 rules = 'grid' | 'horizontal' | 'outer' | 'none'   ('grid')
@@ -626,7 +797,8 @@ tableStyles[]: `{ id (REQUIRED), name?, …any tableStyle field }` — unset fie
 Not in config (lives in the resource's TableModel): `columnWidths` (relative weights),
 `headerRowCount`, cell `align`/`verticalAlign`/`background`/`colSpan`/`rowSpan`/`image`.
 Table line height = body leading ratio × table font size (no key; `bodyLineHeight` is ignored).
-No zebra striping key (use per-cell `background`).
+Zebra rows: `bodyAlternateBackgroundEnabled` + `bodyAlternateBackground` (counted by model row after the
+header rows; a cell's own `background` wins; a split table keeps each row's stripe).
 
 ---------------------------------------------------------------------------------
 
@@ -653,7 +825,20 @@ luminance (spot-colour books). Disables SVG `pdfFileId` print masters when on.
 
 ## 19. `math`
 
-`{ enabled = true, fontSizeScale = 1.0, color? (= body), marginTop = 0.8em, marginBottom = 0.8em }` (MathJax SVG).
+`{ enabled = true, fontSizeScale = 1.0, color? (= body), marginTop = 0.8em, marginBottom = 0.8em,
+indentAfterDisplay = true, keepWithLeadIn = false }` (MathJax SVG).
+- `indentAfterDisplay: false` sets every paragraph right after a display formula flush (the "where …"
+  continuation). A display written inside a paragraph (no blank line above) always gets a flush
+  continuation: see document-format.md §11.
+- `keepWithLeadIn: true` carries the lead-in line (the paragraph's last line) to the next column with a
+  formula that does not fit under it (TeX's predisplay penalty); the whole paragraph goes when the
+  lines left behind would be fewer than `bodyText.widowMinLines` (one line when `avoidWidows` is off).
+  Default: the formula alone moves on.
+
+One em of a formula = surrounding text size × `fontSizeScale` (body size for display maths and inline maths in body text; the heading / caption / box size for inline maths there) (postext ≥ 1.5; 1.4 set maths ~13 % larger —
+`pinLegacyMathSize(config)` from `postext/bundle` reproduces it, i.e. `fontSizeScale: 1.131` plus
+`marginTop`/`marginBottom` `0.7072em` for the default margins: em margins grow with the scale, so the scale alone
+moves the text after each display formula). Measure a source's maths against its body text before setting it.
 
 ---------------------------------------------------------------------------------
 
@@ -667,7 +852,7 @@ luminance (spot-colour books). Disables SVG `pdfFileId` print masters when on.
 
 **preset.json** — `version: 2` manifest (full reference: project-format.md):
 ```
-{ version: 2, id, name, description?, locale?, locales?, thumbnail?, license?, credits?, tags?,
+{ version: 2, configVersion: 8, id, name, description?, locale?, locales?, thumbnail?, license?, credits?, tags?,
   default?, view?: { canvasScope?: 'book'|'chapter' },
   chapters: [{title, file}] | { "<locale>": [{title, file}] },
   config: PostextConfig,                          // WITHOUT customFonts
@@ -676,6 +861,20 @@ luminance (spot-colour books). Disables SVG `pdfFileId` print masters when on.
   localized?: { "<locale>": { config?: Partial<PostextConfig> (top-level keys REPLACED wholesale),
                               resources?: [{ id, caption?, note?, altText?, table?, file?, pdfFile?, width?, height? }] } } }
 ```
+`configVersion: 8` says `config` is written for today's rules (`preset_kit.write_manifest` sets it). Without it
+the bundle reads as postext 1.4 wrote it: H1 breaks pinned, maths × 1.1312 when a chapter has `$`,
+`layout.inlineResourceGap: 'above'` when a chapter embeds a `::resource`, `layout.inlineResourceGapInBoxes: false`
+when one is embedded inside a `:::callout`, `headings.inlineMarks: false` when a heading carries `*`, `_`, `^`,
+`~` or a link, `bodyText.colonListRoom: 'line'` when a chapter has a list after a line ending in ':',
+`layout.boxChildSplitMinLines: 1` when a chapter opens a `:::callout`, `bodyText.breakAfterDashes: false` when
+a chapter sets an em or en dash closed between words, `bodyText.optimalRagged: false` when the config sets some
+running text ragged, `bodyText.breakAfterHyphens: false` when a chapter sets a hyphen between two letters,
+`headings.keepWithNextSplit: 'fill'` when a chapter has a heading, `bodyText.paragraphContainerSpacing: 'add'`
+when the config declares a paragraph style and a chapter opens a `:::paragraphs` container, and every design
+drop cap's 1.4 size written out. A manifest stamped 5 gets the pins of rules 6, 7 and 8 only; one stamped 6,
+those of rules 7 and 8; one stamped 7, those of rules 8. The pins keep what those rules changed, not
+every 1.4 page: 1.5's layout fixes (page-span opener measure, drop caps in heading designs, tracking in boxes,
+the loose-paragraph limit…) apply to an old bundle too.
 Must NOT go in `config`: `customFonts` (built from `fonts[]`; fileIds are storage-local —
 anything in config.customFonts is concatenated and would point at nothing), resource payloads,
 metadata (front matter of chapter 1), `view` (top-level of the manifest, not config).
@@ -687,6 +886,8 @@ metadata (front matter of chapter 1), `view` (top-level of the manifest, not con
 ## 21. Output / viewer / debug
 
 `pdfGeneration`: `{ outlines = true, forceColorSpace = false, colorSpace = 'cmyk'|'rgb'|'grayscale' ('cmyk'), accessible = true (tagged PDF/UA-1, lang = config.locale) }`.
+`renderToPdf` takes each setting from its own options, else from the first document's `pdfGeneration`
+(`colorSpace` only while `forceColorSpace` is on), else the defaults (bookmarks, tagged, RGB).
 
 `htmlViewer`: `{ maxCharsPerLine = 70, columnGap = 50 (CSS px number), optimalLineBreaking = false, overrides?: Omit<PostextConfig,'htmlViewer'> }`.
 `overrides` merge: objects recursive; `levels` arrays merged by `level`; every other array
@@ -705,9 +906,9 @@ The HTML viewer also turns on `layout.fitFiguresToPage` itself.
 1. `page.margins` default: docs "2 cm all sides"; code top/bottom 2 cm, **left/right 1.5 cm**.
 2. Lists `fontFamily`/`fontWeight`/`italic`/`color`: docs "item text"; code = **marker only**, item text is body style.
 3. Design text `overflow` default: docs `'wrap'`; resolver fallback `'ellipsis-end'` (field is required in the type anyway).
-4. `bodyText.textAlign`, `headings.textAlign`, caption `note.align`: docs list 2 values; type is full `TextAlign` (`left|justify|center|right`).
-5. H1 `breakBefore` default only survives when `headings` is entirely absent (docs imply per-level default).
-6. `defaultResourceTypes(locale)` is locale-aware, but the engine calls it without locale (English) when `resourceTypes` is unset; only the sandbox localizes.
+4. `bodyText.textAlign`: docs list 2 values; type is full `TextAlign` (`left|justify|center|right`). (`headings.textAlign` is documented with all four.) Caption `align` and `note.align` take all four; `center` / `right` work since 1.5 (1.4 set them flush left).
+5. postext 1.4 and earlier: the H1 `breakBefore` default only survives when `headings` is entirely absent. Fixed since (merged per field); restate it for older versions.
+6. (Fixed) `defaultResourceTypes(locale)` is locale-aware, and the engine now calls it with the document language when `resourceTypes` is unset; older engines used English there.
 7. `customFonts` docs schema omits `redistributable`.
 8. Docs say `rem` is relative to body size; code treats `rem` identically to `em` (caller's base).
 9. Docs' header/footer element tables still describe legacy `marginFromBody`/`marginFromEdge`/`width:'full'`; write `placement` instead.

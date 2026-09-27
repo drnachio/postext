@@ -1,0 +1,74 @@
+---
+title: "One book from separate chapters"
+summary: "buildBundle sets five Markdown files as one book: each chapter opens on a recto, and page, chapter and figure numbers run on from file to file."
+description: "A beekeeping handbook in four seasons, set with buildBundle from one Markdown file per chapter; its contents page gives the folio each chapter opens on."
+question: "How do I lay out a book chapter by chapter so page, chapter and figure numbers carry on across chapters?"
+aliases: ["multi-chapter book", "chapters in separate files", "continuous page numbers", "numbered straight through", "chapter on a right-hand page", "book contents page", "whole-book PDF", "buildBundle"]
+pageNotes: { "6": "Page 6 is left blank: Winter fills one page, so Spring opens on page 7, the next right-hand page, and the verso between them has no running head or folio.", "11": "Page 11 is the book’s one right-hand body page: its running head reads SUMMER, the chapter title, beside the folio." }
+---
+
+## What you'll build
+
+*A Beekeeper’s Year* is a small handbook in four chapters, one per season. It opens with Autumn, since the beekeeper’s year begins when the last honey comes off. Each chapter is a separate Markdown file with no page, chapter or figure number in it. `buildBundle` carries those counts from each file to the next and sets the chapters, with a fifth file for the cover and contents, as one book of eleven pages. Every chapter opens on a right-hand page under a corner of honeycomb that holds its number. The contents page, on the verso facing Autumn, mirrors that opener with its title flush against the spine, and lists each chapter’s folio. One brood frame, drawn in code, appears once in each chapter as Figures 1.1 to 4.1. Page 6 stays blank because Winter fills a single page and Spring has to open on a recto.
+
+## Method
+
+### 1 · One file per chapter
+
+<Excerpt region="chapters" />
+
+Each season is its own document, so you can rewrite one chapter without opening the others. The first document holds the frontmatter, the cover and the contents. In Postext 1.4.1 the later documents inherit none of its metadata, and the PDF reads its title and author from the first document only.
+
+### 2 · Rules that carry across documents
+
+This step’s code is [the short answer](#the-short-answer) above. [`buildBundle`](/en/docs/configuration#laying-out-and-rendering-a-bundle) lays the documents out in order with one shared config and passes each one a `continuation` from those before it: the number of physical pages already set, so parity, mirrored margins and odd and even running heads carry on; the next folio; and the chapter and figure counters. With `parity: 'odd'`, a chapter that follows one ending on a recto starts with a blank verso, and that blank belongs to its own document ([break before](/en/docs/configuration#break-before)). The cover and the contents are [heading styles](/en/docs/configuration#heading-styles) with `numbered: false`, so Autumn is still chapter 1. Both inherit `span: 'page'` from the chapter level, which puts each on a page of its own without a `:::pagebreak`. The contents style turns off the inherited parity, which would otherwise leave page 2 blank.
+
+### 3 · Contents for the whole book
+
+<Excerpt region="contents" />
+
+`:::toc` sits in the first document but lists the chapters and sections of the whole book. `buildBundle` lays the book out, collects every heading with the page label it got, and lays the book out again with that outline until the labels stop moving, three passes at most ([table of contents](/en/docs/configuration#table-of-contents)). The months under each title come from a heading attribute, `{months="…"}`, which the opener prints too.
+
+### 4 · One opener, mirrored for the contents
+
+<Excerpt region="opener" />
+
+`{chapterNumber}` counts on from the documents laid out before, so Spring’s opener prints 3 although its file holds no number. The number’s box is computed from the centre of its comb cell, and number and comb both hang from the top right corner of the bleed, so changing the trim or adding a bleed for print moves them together. On the contents page the kicker, read from `{subtitle}`, and the title are set flush right against the spine, and the comb moves to the verso’s outer corner. Its title then sits at the same height as Autumn’s on the facing page.
+
+### 5 · Running heads in every document
+
+<Excerpt region="running-heads" />
+
+Only the first document has frontmatter, so in Postext 1.4.1 `{title}` prints nothing in every later document, Autumn included. The verso head therefore has the book’s title typed in as plain text. `{chapterTitle}` and `{pageNumber}` are resolved page by page and print in every document; page 11, the one right-hand body page, carries SUMMER beside its folio. `pages: 'body'` keeps every head off the openers and the blank page.
+
+### 6 · Spreads on screen, one PDF for the book
+
+<Excerpt region="build" />
+
+`buildBundle` returns an array of documents, one per Markdown file. `showPages` pairs the pages by `pageIndexOffset + page.index`, so page 1 stands alone as a recto and pages 2 and 3, 4 and 5 and so on face each other. `renderToPdf` takes the same array and writes one file with the book’s page labels and a bookmark for every chapter and section.
+
+## Variations
+
+### Print one chapter with its book folios
+
+Pass a single document to `renderToPdf` to proof Spring on its own, still numbered 6 to 8 as in the book. The blank page 6 comes with it, because a blank verso in front of an opener belongs to the chapter that opens after it.
+
+```diff
+-offerPdf(() => renderToPdf(docs, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
++offerPdf(() => renderToPdf(docs[3], { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
+```
+
+### Number the figures straight through the book
+
+A figure counter that never resets numbers the four frames 1 to 4 across the documents instead of 1.1 to 4.1.
+
+```diff
+-  resourceTypes: defaultResourceTypes(LANG),
++  resourceTypes: defaultResourceTypes(LANG)
++    .map((type) => ({ ...type, numberingTemplate: '{n}', resetOn: 'never' })),
+```
+
+## Pitfalls
+
+- At the head of a page, and under a figure that heads one, a subhead loses its `marginTop`. A subhead that takes its space from the margin stands one line above its text in those two places and a line and a half above it everywhere else. Here the space is in the subhead's own line: `lineHeight` is a line and a half and the margin one line, so every subhead in the book stands the same distance above its text.
+- By default a justified line may stretch its spaces to twice their width, and the line breaker prefers that to a hyphen. At that default the English edition had no hyphens at all, and lines whose spaces were nearly twice the normal width sat next to lines squeezed to 0.7. `maxWordSpacing: 1.7` makes the breaker hyphenate instead. After changing it, check the last line of every paragraph: a tighter limit can leave a single word there, and rewording a few words of the paragraph fixes it.

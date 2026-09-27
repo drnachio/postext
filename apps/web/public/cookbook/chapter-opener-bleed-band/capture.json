@@ -1,0 +1,649 @@
+{
+  "schemaVersion": 1,
+  "slug": "chapter-opener-bleed-band",
+  "sourceHash": "b12953b62374da5da124cb245c3d03d77e7eefeb0b4a5f673747028d8182644e",
+  "engine": {
+    "postext": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-26T20:56:43.000Z",
+  "variants": {
+    "en": {
+      "hash8": "1e51b4f6",
+      "vdtHash": "0902a8ab8e5894cebae1ea4bdc4423f05133742f",
+      "timings": {
+        "importMs": 1170,
+        "fontsMs": 16,
+        "buildMs": 103,
+        "totalMs": 2471,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          280
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 8,
+        "mirror": true,
+        "body": {
+          "family": "Roboto Serif",
+          "sizePt": 9.3,
+          "leadingPt": 13.200000000000001
+        },
+        "families": [
+          "Archivo",
+          "Archivo Narrow",
+          "Roboto Serif"
+        ],
+        "pages": 4,
+        "ownLines": 181
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "41",
+          "role": "opener",
+          "w": 1000,
+          "h": 1333,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 117182,
+          "alt": "Opening page 41: The Restless Crust. Figure 3.1. A plate’s life in cross-section: born at a ridge (left), it cools as it drifts away and sinks under a continent; dots mark earthquakes."
+        },
+        {
+          "n": 2,
+          "label": "42",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 216292,
+          "alt": "Page 42: 3.2 Where plates meet."
+        },
+        {
+          "n": 3,
+          "label": "43",
+          "role": "opener",
+          "w": 1000,
+          "h": 1333,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 166138,
+          "alt": "Opening page 43: Fire from Below."
+        },
+        {
+          "n": 4,
+          "label": "44",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 151064,
+          "alt": "Page 44: 4.3 Living with volcanoes. Figure 4.1. Two volcanoes in cross-section: a broad shield built of runny basalt flows (left) and a steep stratovolcano of lava and ash layers (right)."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "defaultResourceTypes",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "captionStyle",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].style",
+          "header.elements[].textTransform",
+          "headingStyles",
+          "headingStyles[].id",
+          "headingStyles[].palette",
+          "headingStyles[].palette.band",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberingTemplate",
+          "headings.levels[].span",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "orderedLists",
+          "orderedLists.color",
+          "orderedLists.fontFamily",
+          "orderedLists.marginBottom",
+          "orderedLists.marginTop",
+          "page",
+          "page.cutLines",
+          "page.cutLines.bleed",
+          "page.cutLines.enabled",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes"
+        ],
+        "configSections": [
+          "bodyText",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "orderedLists",
+          "page",
+          "paragraphStyles",
+          "resourceTypes"
+        ],
+        "configLeaves": 266,
+        "designElements": 15,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          "\\\\",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 2,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Archivo Narrow",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Archivo Narrow",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Archivo Narrow",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Archivo Narrow",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Archivo",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Archivo",
+            "weight": 800,
+            "style": "normal"
+          },
+          {
+            "family": "Roboto Serif",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Roboto Serif",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Roboto Serif",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "bleed-and-crop-marks",
+          "citations",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "localised-labels",
+          "opener-band",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "part-palettes",
+          "resource-types",
+          "resources",
+          "title-line-breaks"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 4,
+        "looseLines": {
+          "count": 1,
+          "share": 0.0049,
+          "worst": 2.08
+        },
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "03edc7fa",
+      "vdtHash": "d1d00ab3ff736ce7b1d8d5206ac740614048080a",
+      "timings": {
+        "importMs": 321,
+        "fontsMs": 24,
+        "buildMs": 29,
+        "totalMs": 1095,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          280
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 8,
+        "mirror": true,
+        "body": {
+          "family": "Roboto Serif",
+          "sizePt": 9.3,
+          "leadingPt": 13.200000000000001
+        },
+        "families": [
+          "Archivo",
+          "Archivo Narrow",
+          "Roboto Serif"
+        ],
+        "pages": 4,
+        "ownLines": 181
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "41",
+          "role": "opener",
+          "w": 1000,
+          "h": 1333,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 117012,
+          "alt": "Página de apertura 41: La corteza inquieta. Figura 3.1. La vida de una placa, en corte: nace en la dorsal (izquierda), se enfría al alejarse y se hunde bajo el continente; los puntos son terremotos."
+        },
+        {
+          "n": 2,
+          "label": "42",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 223388,
+          "alt": "Página 42: 3.2 Donde las placas se encuentran."
+        },
+        {
+          "n": 3,
+          "label": "43",
+          "role": "opener",
+          "w": 1000,
+          "h": 1333,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 165030,
+          "alt": "Página de apertura 43: Fuego desde abajo."
+        },
+        {
+          "n": 4,
+          "label": "44",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 168618,
+          "alt": "Página 44: 4.3 Vivir con los volcanes. Figura 4.1. Dos volcanes en corte: un escudo ancho, de coladas de basalto fluido (izquierda), y un estratovolcán de capas de lava y ceniza (derecha)."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "defaultResourceTypes",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "captionStyle",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].style",
+          "header.elements[].textTransform",
+          "headingStyles",
+          "headingStyles[].id",
+          "headingStyles[].palette",
+          "headingStyles[].palette.band",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberingTemplate",
+          "headings.levels[].span",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "orderedLists",
+          "orderedLists.color",
+          "orderedLists.fontFamily",
+          "orderedLists.marginBottom",
+          "orderedLists.marginTop",
+          "page",
+          "page.cutLines",
+          "page.cutLines.bleed",
+          "page.cutLines.enabled",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes"
+        ],
+        "configSections": [
+          "bodyText",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "orderedLists",
+          "page",
+          "paragraphStyles",
+          "resourceTypes"
+        ],
+        "configLeaves": 266,
+        "designElements": 15,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          "\\\\",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 2,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Archivo Narrow",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Archivo Narrow",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Archivo Narrow",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Archivo Narrow",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Archivo",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Archivo",
+            "weight": 800,
+            "style": "normal"
+          },
+          {
+            "family": "Roboto Serif",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Roboto Serif",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Roboto Serif",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "bleed-and-crop-marks",
+          "citations",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "localised-labels",
+          "opener-band",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "part-palettes",
+          "resource-types",
+          "resources",
+          "title-line-breaks"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.99
+        },
+        "findings": []
+      }
+    }
+  }
+}

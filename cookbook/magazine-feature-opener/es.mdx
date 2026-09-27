@@ -1,0 +1,70 @@
+---
+title: "Reportaje de revista: de la foto de apertura al signo final"
+summary: "Una apertura advancedDesign pone una foto a sangre y saca del título antetítulo, titular, entradilla y firma; siguen recuadros flotantes y un chip de cierre."
+description: "Un reportaje de revista en Postext: apertura con foto a sangre armada desde el título de Markdown, comillas colgadas, recuadros flotantes y signo final."
+question: "¿Cómo saco del título de Markdown el antetítulo, la entradilla, la firma y el crédito de una apertura?"
+aliases: ["reportaje de revista", "apertura de artículo", "foto de apertura", "entradilla", "firma", "crédito fotográfico", "cita destacada", "comillas colgadas", "recuadro de datos", "en cifras", "signo final", "cierre de artículo", "apertura de sección"]
+pageNotes: { "1": "Un lago de montaña que refleja las nubes entre laderas otoñales ocupa la parte alta de la página; debajo, el antetítulo Clima · Reportaje, el titular El lago que lleva la cuenta en dos líneas, una entradilla en cursiva y la firma, y luego dos columnas justificadas.", "2": "La página par: ladillos en cursiva verde azulada, una cita destacada con las comillas colgadas en el margen exterior y un recuadro De un vistazo bajo un filete verde azulado, en cabeza de la columna derecha.", "3": "La página impar: una banda de pinar nevado arriba, el final del reportaje cerrado con un pequeño cuadrado negro y un panel oscuro En cifras al pie.", "4": "Cinco clases de hielo, una guía de campo, se abre con el mismo diseño: el dibujo de un lago helado en sección ocupa el lugar de la foto y el antetítulo va en teja." }
+---
+
+## Lo que vas a componer
+
+El reportaje del número de invierno de *Boreal*, revista de naturaleza, en página de 225 × 297 mm. Un lago de montaña a sangre ocupa lo alto de la primera página. Debajo, un antetítulo espaciado encabeza un titular en dos líneas, con la entradilla en cursiva a su derecha y la firma debajo; el crédito del fotógrafo va al pie de la foto. El titular es el texto del título de Markdown, y antetítulo, entradilla, firma y crédito, sus atributos. La doble página siguiente va a dos columnas justificadas. En la par, una cita con las comillas colgadas en el margen y un recuadro de datos en cabeza de la columna derecha; en la impar, un pinar nevado arriba y un panel oscuro de cifras al pie. Un cuadradito negro cierra el reportaje. Después, una guía de campo repite la apertura con un dibujo y el antetítulo en teja.
+
+## Elaboración
+
+### 1 · Arma la apertura con la línea del título
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Cada `{attr.<clave>}` imprime el valor `<clave>="…"` de la línea `#` del reportaje, y `{titleText}`, el propio título ([atributos de encabezado](/es/docs/document-format#atributos-de-encabezado)), así que cada pieza lleva sus textos en su propio Markdown y todos los títulos de nivel 1 comparten diseño. La foto cuelga del borde superior de la página y el contenedor empieza 22 mm más abajo, así que `depth - TOP` es el borde inferior de la foto medido desde el contenedor; el crédito va 2 mm por debajo, en la esquina superior derecha, y el antetítulo 9 mm por debajo, en la izquierda. El titular va `below` (debajo) del antetítulo, con los 118 mm de `HEAD` como medida. La entradilla va `right-of` (a la derecha) del titular, sin anchura propia, así que sus líneas llegan hasta el borde del contenedor; la firma va `below` la entradilla, de modo que una entradilla más larga la empuja hacia abajo en vez de montarse sobre ella. El nivel no fija `minHeight`. El titular y la firma terminan en un relleno vacío de 5 mm que cuenta en la altura de la apertura, así que el texto arranca en la primera línea de la rejilla al menos 5 mm por debajo del que acabe más abajo, ocupe cada uno las líneas que ocupe.
+
+### 2 · Declara las imágenes una vez, con sus píxeles reales
+
+<Excerpt region="resources" />
+
+Un elemento de diseño nombra su imagen por el id del recurso, así que la foto de la apertura se declara como cualquier figura pero nunca se cita: solo la apertura la dibuja, hasta el corte, adonde no llega ningún flotante. Los mapas de bits se miden a los 150 `dpi` de la página, así que los 2000 px del pinar dan 339 mm y se reducen al ancho de la mancha, 195 mm, unos 260 ppp en la impresión. Las imágenes tienen un tipo propio, con el prefijo del pie y la plantilla de numeración vacíos, así que el pie del pinar no lleva número de figura. La banda es un flotante `top` a todo el ancho, y un flotante `top` abre la página siguiente a la que lo cita. Su línea `::resource` queda en la página par, tras el párrafo de 1944, así que la banda encabeza la impar.
+
+### 3 · Cuelga las comillas en el margen
+
+<Excerpt region="quote" />
+
+Un icono de glifo ocupa una columna propia junto al texto, y eso sangraría la cita. La separación (`gap`) negativa devuelve el texto sobre la parte derecha del cuadrado del glifo, que está vacía. Un relleno izquierdo negativo, igual a lo que queda de esa columna (tamaño + separación), la saca después al margen, y el texto vuelve a empezar en el borde de la columna. El marco de la caja se queda en la columna, así que un fondo no llegaría hasta las comillas. Las comillas latinas se asientan más abajo y son más anchas, así que esta edición compone su « a 28 pt, en un cuadrado que el relleno saca 22,5 pt; la “ inglesa va a 50 pt y sale 34 pt. La « asoma unos 4,5 mm en los 14 mm del margen exterior de la página par, y la “, unos 6.
+
+### 4 · Lleva los recuadros a una cabeza de columna y al pie de página
+
+<Excerpt region="boxes" />
+
+Con `placement: 'top'` el recuadro de datos flota: sale del flujo y toma la siguiente cabeza de columna libre, así que el texto sigue hasta el pie de la columna en vez de dejar un blanco donde el recuadro no cabía. El panel de cifras flota hacia el lado contrario, al pie de la página, y ocupa las dos columnas; sus tres cifras son títulos de nivel 4, un nivel que el reportaje no usa, repartidos con `breaks="3,5"`, que cuenta bloques, no líneas. El signo final es un chip sin texto visible. Su `paddingX` le da al cuadrado la anchura, y el cuerpo del chip, la altura; las dos miden 1,05 em del propio chip.
+
+### 5 · Cabeceras que nombran el número y el reportaje
+
+<Excerpt region="heads" />
+
+Los elementos de cabecera se pintan sobre la página y no reservan sitio, así que cada pieza se ancla a la página, en el margen superior, con distancias en milímetros. La página par nombra la revista y el número desde el frontmatter; la impar, el título del reportaje, y `pages: 'body'` las aparta de las aperturas, que solo llevan el folio, al pie. En un texto de diseño, la línea base cae a 0,8 de la altura de su caja de línea, que mide 1,2 veces el cuerpo. Con esa cuenta, `baseline()` coloca la etiqueta de 7,5 pt 0,34 mm más abajo que el folio de 8,5 pt y apoya el cuadrado en la misma línea. Si cambias cualquiera de los dos cuerpos, las tres piezas siguen en una sola línea base.
+
+### 6 · Reutiliza la apertura en la pieza siguiente
+
+<Excerpt region="guide" />
+
+La apertura es una función, así que la guía de campo recibe el mismo diseño con su propia imagen y su propia altura mediante un estilo de título, `# Cinco clases \\ de hielo {style="guide" …}`; la `\\` [parte el titular](/es/docs/document-format#saltos-de-línea-en-los-títulos) por donde quiere la redacción. El dibujo baja 126 mm por la página en vez de 160; el crédito y el antetítulo se miden desde `depth - TOP` y los demás textos cuelgan del antetítulo, así que todos suben 34 mm y el texto de la guía empieza más arriba. La paleta del estilo cambia `lake` por el teja en esas páginas, así que el antetítulo, y cualquier ladillo o recuadro enlazado a `lake`, se vuelve teja sin añadir un argumento de color a `opener()`; los chips no siguen la paleta, y por eso el signo final es negro.
+
+## Variantes
+
+### Abre cada pieza en página impar
+
+Con `'odd'`, la guía de campo pasa a la página 61 y la 60 se queda en blanco.
+
+```diff
+- { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
++ { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
+```
+
+### Pon el titular sobre una banda de color
+
+Para un capítulo de libro de texto, donde una banda de color y un número grande ocupan el lugar de la foto, mira <RecipeLink slug="chapter-opener-bleed-band">Apertura de capítulo sobre banda a sangre</RecipeLink>.
+
+## Errores frecuentes
+
+- Un elemento de imagen encaja la foto dentro de su caja y nunca la recorta. Recorta el JPEG a las proporciones de la caja, aquí 225 × 160 mm, o la foto encogerá y dejará franjas blancas en los bordes de la página.
+- Las comillas colgadas necesitan margen. Si al editar la cita pasa a una columna derecha, las comillas se meten en los 6 mm del medianil, casi pegadas al texto de la columna izquierda: adelántala o retrásala un párrafo.
+- El texto está ajustado para terminar en la página 59, encima del panel de cifras. Unas líneas más mandan la cola a una página propia, así que, después de cada cambio, vuelve a ajustar el texto de las dos ediciones.
+- `runtMinCharacters: 40` evita las últimas líneas de una sola palabra. Cuando no hay manera de evitar una última línea corta, el motor compone el párrafo con una línea menos: aprieta los espacios entre palabras y, si no basta, quita hasta 0,01 em entre letras. Después de editar, busca los párrafos así de apretados y recorta o añade en ellos unas palabras; el texto publicado no necesita ese ajuste en ninguna de las dos lenguas.

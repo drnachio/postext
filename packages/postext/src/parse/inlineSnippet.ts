@@ -1,5 +1,5 @@
 import type { InlineSpan } from './types';
-import { extractInlineChips, extractInlineRefs, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting } from './inlineFormatting';
+import { extractInlineChips, extractInlineRefs, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, protectCodeSpans, protectDollarEscapes, replaceSnippetBreaks } from './inlineFormatting';
 import { computeSourceMap } from './sourceMapping';
 
 /**
@@ -19,9 +19,16 @@ import { computeSourceMap } from './sourceMapping';
 
 /** Parse a snippet into inline spans, recognising the inline `:ref{…}`
  *  microformat so references resolve to their computed labels. Each ref
- *  becomes a one-char placeholder span (see `REF_PLACEHOLDER`). */
+ *  becomes a one-char placeholder span (see `REF_PLACEHOLDER`). A forced
+ *  line break (`\\`, or a backslash ending a line) becomes one
+ *  `BREAK_PLACEHOLDER` char, where the measurer starts a new line; inside
+ *  inline code and link destinations it stays literal, and in a chip's
+ *  label (set on one line) it becomes a space. Snippets are not parsed for
+ *  maths: a `$` prints as written, and `\$` prints a dollar sign, as it does
+ *  in the body. A link destination reads its own escapes, and a directive's
+ *  attributes (a ref's `text="…"`) are printed as written. */
 export function parseInlineSnippetSpans(content: string): InlineSpan[] {
-  const chips = extractInlineChips(content, 0);
+  const chips = extractInlineChips(protectDollarEscapes(replaceSnippetBreaks(protectCodeSpans(content))), 0);
   const { cleaned, refs } = extractInlineRefs(chips.cleaned, 0);
   const sw = extractInlineSwatches(cleaned, 0);
   return injectChipSpans(injectRefSpans(injectSwatchSpans(parseInlineFormatting(sw.cleaned), sw.swatches), refs), chips.chips);
@@ -33,10 +40,12 @@ export interface InlineSnippetMapping {
   spans: InlineSpan[];
   /** The raw joined span text — NOT whitespace-normalised, because resource
    *  runs are measured from the raw spans (a `\n\n` inside a cell survives as
-   *  one whitespace token). Each `:ref{…}` is one placeholder char. */
+   *  one whitespace token). Each `:ref{…}` is one placeholder char, and so
+   *  is each forced line break (`BREAK_PLACEHOLDER`, whitespace to `\s`). */
   text: string;
   /** `sourceMap[i]` is the offset in `content` of `text[i]` (markers such as
-   *  `**` are skipped; a ref placeholder maps to the leading `:`). */
+   *  `**` are skipped; a ref placeholder maps to the leading `:`, a forced
+   *  break to its backslash). */
   sourceMap: number[];
 }
 

@@ -1,5 +1,6 @@
-import type { ResolvedBodyTextConfig, OrderedListsConfig, OrderedListLevelConfig, ResolvedOrderedListsConfig, ResolvedOrderedListLevelConfig, OrderedListNumberFormat, ColorValue, Dimension } from '../types';
+import type { ResolvedBodyTextConfig, OrderedListsConfig, OrderedListLevelConfig, ResolvedOrderedListsConfig, ResolvedOrderedListLevelConfig, OrderedListNumberFormat, OrderedListNumberWidth, ColorValue, Dimension } from '../types';
 import { dimensionsEqual, DEFAULT_MAIN_COLOR } from './shared';
+import { parseNumberFormat, toOrderedListNumberFormat } from '../numbering';
 import {
   DEFAULT_LIST_BULLET_FONT_SIZE,
   DEFAULT_LIST_GAP,
@@ -8,6 +9,7 @@ import {
   DEFAULT_LIST_MARGIN_TOP,
   DEFAULT_LIST_MARGIN_BOTTOM,
   DEFAULT_LIST_ITEM_SPACING,
+  DEFAULT_LIST_SNAP_TOP_TO_GRID,
   DEFAULT_LIST_HANGING_INDENT,
 } from './lists-shared';
 
@@ -16,6 +18,15 @@ const DEFAULT_ORDERED_SEPARATOR = '.';
 const DEFAULT_ORDERED_LIST_FONT_WEIGHT = 700;
 const DEFAULT_ORDERED_LIST_COLOR: ColorValue = { ...DEFAULT_MAIN_COLOR };
 const DEFAULT_ORDERED_SEPARATOR_GAP: Dimension = { value: 0, unit: 'em' };
+const DEFAULT_ORDERED_NUMBER_WIDTH: OrderedListNumberWidth = 'run';
+
+/** A list `numberFormat` in the list vocabulary, whatever vocabulary it was
+ *  written in (`decimal`, `roman-lower`, `i`… — see `parseNumberFormat`);
+ *  `undefined` when unset or unknown. */
+export function listNumberFormat(value: unknown): OrderedListNumberFormat | undefined {
+  const style = parseNumberFormat(value);
+  return style ? toOrderedListNumberFormat(style) : undefined;
+}
 
 export function resolveOrderedListsConfig(
   partial: OrderedListsConfig | undefined,
@@ -25,7 +36,9 @@ export function resolveOrderedListsConfig(
   const generalColor = partial?.color ?? DEFAULT_ORDERED_LIST_COLOR;
   const generalFontWeight = partial?.fontWeight ?? DEFAULT_ORDERED_LIST_FONT_WEIGHT;
   const generalItalic = partial?.italic ?? false;
-  const generalNumberFormat = partial?.numberFormat ?? DEFAULT_ORDERED_NUMBER_FORMAT;
+  // Any spelling of a format is read; an unknown one numbers in arabic
+  // (`collectConfigWarnings` reports it).
+  const generalNumberFormat = listNumberFormat(partial?.numberFormat) ?? DEFAULT_ORDERED_NUMBER_FORMAT;
   const generalSeparator = partial?.separator ?? DEFAULT_ORDERED_SEPARATOR;
   const generalFontSize = partial?.numberFontSize ?? DEFAULT_LIST_BULLET_FONT_SIZE;
   const generalIndent = partial?.indent ?? DEFAULT_LIST_INDENT;
@@ -41,7 +54,9 @@ export function resolveOrderedListsConfig(
     const italic = override?.italic ?? generalItalic;
     return {
       level,
-      numberFormat: override?.numberFormat ?? generalNumberFormat,
+      numberFormat: override?.numberFormat === undefined
+        ? generalNumberFormat
+        : listNumberFormat(override.numberFormat) ?? DEFAULT_ORDERED_NUMBER_FORMAT,
       separator: override?.separator ?? generalSeparator,
       fontFamily,
       fontSize: override?.fontSize ?? generalFontSize,
@@ -74,6 +89,8 @@ export function resolveOrderedListsConfig(
     marginTop: partial?.marginTop ?? DEFAULT_LIST_MARGIN_TOP,
     marginBottom: partial?.marginBottom ?? DEFAULT_LIST_MARGIN_BOTTOM,
     itemSpacing: partial?.itemSpacing ?? DEFAULT_LIST_ITEM_SPACING,
+    snapTopToGrid: partial?.snapTopToGrid ?? DEFAULT_LIST_SNAP_TOP_TO_GRID,
+    numberWidth: partial?.numberWidth === 'level' ? 'level' : DEFAULT_ORDERED_NUMBER_WIDTH,
     hangingIndent: partial?.hangingIndent ?? DEFAULT_LIST_HANGING_INDENT,
     levels,
     separatorFontFamily: partial?.separatorFontFamily ?? generalFont,
@@ -96,6 +113,8 @@ export const DEFAULT_ORDERED_LISTS_STATIC = {
   marginTop: DEFAULT_LIST_MARGIN_TOP,
   marginBottom: DEFAULT_LIST_MARGIN_BOTTOM,
   itemSpacing: DEFAULT_LIST_ITEM_SPACING,
+  snapTopToGrid: DEFAULT_LIST_SNAP_TOP_TO_GRID,
+  numberWidth: DEFAULT_ORDERED_NUMBER_WIDTH,
   hangingIndent: DEFAULT_LIST_HANGING_INDENT,
   separatorGap: DEFAULT_ORDERED_SEPARATOR_GAP,
 };
@@ -124,7 +143,8 @@ export function stripOrderedListsDefaults(
     result.italic = lists.italic;
     hasOverride = true;
   }
-  if (lists.numberFormat !== undefined && lists.numberFormat !== DEFAULT_ORDERED_NUMBER_FORMAT) {
+  // Another spelling of the default (`decimal`) is the default.
+  if (lists.numberFormat !== undefined && listNumberFormat(lists.numberFormat) !== DEFAULT_ORDERED_NUMBER_FORMAT) {
     result.numberFormat = lists.numberFormat;
     hasOverride = true;
   }
@@ -158,6 +178,14 @@ export function stripOrderedListsDefaults(
   }
   if (lists.itemSpacing !== undefined && !dimensionsEqual(lists.itemSpacing, DEFAULT_LIST_ITEM_SPACING)) {
     result.itemSpacing = lists.itemSpacing;
+    hasOverride = true;
+  }
+  if (lists.snapTopToGrid !== undefined && lists.snapTopToGrid !== DEFAULT_LIST_SNAP_TOP_TO_GRID) {
+    result.snapTopToGrid = lists.snapTopToGrid;
+    hasOverride = true;
+  }
+  if (lists.numberWidth !== undefined && lists.numberWidth !== DEFAULT_ORDERED_NUMBER_WIDTH) {
+    result.numberWidth = lists.numberWidth;
     hasOverride = true;
   }
   if (lists.hangingIndent !== undefined && lists.hangingIndent !== DEFAULT_LIST_HANGING_INDENT) {

@@ -26,10 +26,12 @@ const words = (n: number): string => Array.from({ length: n }, (_, i) => `palabr
 const NO_FORCED = new Set<number>();
 
 /**
- * A section whose lead-in paragraph ("… son:") is followed by a list item
- * too tall to start in the room left under it, so the plain pass closes the
- * column with the colon line and the list opens the next column. `filler`
- * tunes how much room is left under the colon line.
+ * A section whose lead-in paragraph ("… son:") and the start of its list
+ * close a column the plain pass left short, under a heading that can take
+ * the gap. (Up to EF-110 a first item too tall to start under the colon
+ * line left the line alone at the column's foot; `keepColonWithList` now
+ * moves it on with the list.) `filler` tunes how much room is left under
+ * the colon line.
  */
 function markdown(filler: number): string {
   return [
@@ -87,20 +89,22 @@ interface ColonColumn {
   gapLines: number;
 }
 
-/** The column the plain pass closed with the colon line, when it also left
- *  a gap under it that a heading above could absorb. Only on a page that
- *  flows on: the closing band of the document is levelled by a trailing
- *  cap, which re-cuts its columns on purpose. */
+/** The column the plain pass closed with the colon line and the list items
+ *  set under it, when it also left a gap that a heading above could
+ *  absorb. Only on a page that flows on: the closing band of the document
+ *  is levelled by a trailing cap, which re-cuts its columns on purpose. */
 function colonColumn(doc: VDTDocument): ColonColumn | null {
   for (const gap of collectColumnGaps(doc, NO_FORCED)) {
     if (gap.pageIndex >= doc.pages.length - 1) continue;
     const col = doc.pages[gap.pageIndex]!.columns[gap.columnIndex]!;
-    const last = col.blocks[col.blocks.length - 1];
-    if (!last || last.type !== 'paragraph' || last.contentIndex === undefined) continue;
-    const text = last.lines.map((l) => l.text).join(' ');
+    let at = col.blocks.length - 1;
+    while (at >= 0 && col.blocks[at]!.type === 'listItem') at--;
+    const lead = col.blocks[at];
+    if (!lead || lead.type !== 'paragraph' || lead.contentIndex === undefined) continue;
+    const text = lead.lines.map((l) => l.text).join(' ');
     if (!/:\s*$/.test(text)) continue;
     if (!gap.candidates.some((c) => c.kind === 'heading')) continue;
-    return { pageIndex: gap.pageIndex, columnIndex: gap.columnIndex, contentIndex: last.contentIndex, gapLines: gap.gapLines };
+    return { pageIndex: gap.pageIndex, columnIndex: gap.columnIndex, contentIndex: lead.contentIndex, gapLines: gap.gapLines };
   }
   return null;
 }
@@ -123,10 +127,9 @@ describe('column balancing keeps a colon lead-in where the plain pass put it', (
 
     const balanced = build(md, true);
 
-    // The colon line still closes the same column…
+    // The colon line is still in the same column…
     const col = balanced.pages[target.pageIndex]!.columns[target.columnIndex]!;
-    const last = col.blocks[col.blocks.length - 1];
-    expect(last?.contentIndex).toBe(target.contentIndex);
+    expect(col.blocks.some((b) => b.contentIndex === target.contentIndex && b.type === 'paragraph')).toBe(true);
 
     // …and the levers absorbed the gap the plain pass left under it.
     const gapAfter = collectColumnGaps(balanced, NO_FORCED)

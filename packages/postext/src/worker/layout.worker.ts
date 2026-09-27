@@ -6,6 +6,7 @@ import { initMathEngine, isMathReady } from '../math';
 import { createMeasurementCache, clearMeasurementCache } from '../measure';
 import type { MeasurementCache } from '../measure';
 import type { RequestMessage, ResponseMessage, FontPayload } from './protocol';
+import { documentFontFamilies, fontFaceDescriptors, unavailableFontFamilies } from './fonts';
 import type { PostextContent, Resource } from '../types';
 import type { VDTDocument } from '../vdt';
 
@@ -59,6 +60,37 @@ function faceKey(p: Pick<FontPayload, 'family' | 'weight' | 'style' | 'unicodeRa
   return `${p.family}|${p.weight}|${p.style}|${p.unicodeRange ?? ''}`;
 }
 
+/** Whether each font family the documents used could be found in the
+ *  worker (registered or installed), until the fonts change. */
+const familyAvailable = new Map<string, boolean>();
+let probeContext: OffscreenCanvasRenderingContext2D | null | undefined;
+
+function measureWidth(font: string, text: string): number {
+  if (probeContext === undefined) probeContext = new OffscreenCanvas(1, 1).getContext('2d');
+  if (!probeContext) return 0;
+  probeContext.font = font;
+  return probeContext.measureText(text).width;
+}
+
+/** The families of `doc` the worker measured with a fallback font: a worker
+ *  has its own font set, so a web font the page loaded is not there until
+ *  `registerFonts` sends it. */
+function missingFonts(doc: VDTDocument): string[] | undefined {
+  if (typeof OffscreenCanvas === 'undefined') return undefined;
+  const families = documentFontFamilies(doc);
+  // A registered family is there, even one whose faces cover only some
+  // scripts (a symbol font) and so would fail the Latin probe.
+  const registered = new Set([...registeredFaces].map((key) => key.split('|', 1)[0]!));
+  for (const f of families) if (registered.has(f)) familyAvailable.set(f, true);
+  const unchecked = families.filter((f) => !familyAvailable.has(f));
+  if (unchecked.length > 0) {
+    const missing = new Set(unavailableFontFamilies(unchecked, measureWidth));
+    for (const f of unchecked) familyAvailable.set(f, !missing.has(f));
+  }
+  const out = families.filter((f) => familyAvailable.get(f) === false);
+  return out.length > 0 ? out : undefined;
+}
+
 async function registerFonts(faces: FontPayload[]): Promise<void> {
   const fontSet = (ctx as unknown as { fonts?: FontFaceSet }).fonts;
   if (!fontSet) return;
@@ -68,11 +100,7 @@ async function registerFonts(faces: FontPayload[]): Promise<void> {
       const key = faceKey(face);
       if (registeredFaces.has(key)) return;
       try {
-        const ff = new FontFace(face.family, face.buffer, {
-          weight: face.weight,
-          style: face.style,
-          unicodeRange: face.unicodeRange,
-        });
+        const ff = new FontFace(face.family, face.buffer, fontFaceDescriptors(face));
         await ff.load();
         fontSet.add(ff);
         registeredFaces.add(key);
@@ -89,6 +117,7 @@ async function registerFonts(faces: FontPayload[]): Promise<void> {
     measurementCache = createMeasurementCache();
     clearMeasurementCache();
     docCache.clear();
+    familyAvailable.clear();
   }
 }
 
@@ -111,6 +140,7 @@ function unregisterFonts(families: string[]): void {
   measurementCache = createMeasurementCache();
   clearMeasurementCache();
   docCache.clear();
+  familyAvailable.clear();
 }
 
 const PROGRESS_INTERVAL_MS = 80;
@@ -187,7 +217,9 @@ async function runBuild(msg: BuildRequest): Promise<void> {
       post({ kind: 'cancelled', id: msg.id });
     } else {
       if (msg.cacheKey) docCachePut(msg.cacheKey, doc);
-      post({ kind: 'built', id: msg.id, doc: msg.wantDoc === false ? null : doc, stats: { passes, totalMs: performance.now() - startedAt } });
+      const totalMs = performance.now() - startedAt;
+      const missing = missingFonts(doc);
+      post({ kind: 'built', id: msg.id, doc: msg.wantDoc === false ? null : doc, stats: { passes, totalMs, ...(missing ? { missingFonts: missing } : {}) } });
     }
   } catch (err) {
     if (err instanceof BuildCancelledError) {

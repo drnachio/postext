@@ -14,9 +14,10 @@
  */
 
 import type { VDTBlock, VDTLine, ResolvedResourceBlock, RoundedOutline } from '../vdt';
-import { tableFrameOutline } from '../vdt';
+import { tableCellFill, tableFrameOutline } from '../vdt';
 import { paintSwatch } from './swatch';
 import { paintChip } from './chip';
+import { applySingleInkToPixels, isSingleInkSvgUrl } from '../svg/singleInk';
 
 /** A decoded image the canvas backend can `drawImage`. */
 export type ResourceImageSource = CanvasImageSource;
@@ -28,11 +29,26 @@ export interface RegisterResourceImageOptions {
    *  {@link drawResourceImage}). Defaults to true for an `HTMLImageElement`
    *  — the host decodes rasters through `createImageBitmap`. */
   vector?: boolean;
+  /** Whether `diagramStyle.singleInk` recolours this picture on canvas:
+   *  `true` tints the pixels of this SVG picture — a figure, a cell image,
+   *  a design image or box icon whose resource is an SVG — to the
+   *  document's ink (the mapping `applySingleInkToSvg` applies to markup),
+   *  never a bitmap; `false` paints it as given, for a picture recoloured
+   *  with `applySingleInkToSvg` before it was decoded (`registerBundleImages`
+   *  and the Sandbox do). Unset, the render decides
+   *  (`RenderPageOptions.singleInk`, off by default in postext 1.x, where
+   *  hosts recolour the markup themselves). An `<img>` whose `src` is an
+   *  SVG data URI marked by `applySingleInkToSvg` (`SINGLE_INK_MARK`) is
+   *  never tinted, whatever this says. (A design image of a VDT built
+   *  before design images carried `imageKind` is tinted when it is a vector
+   *  source or registered with `true`.) */
+  singleInk?: boolean;
 }
 
 interface RegistryEntry {
   image: ResourceImageSource;
   vector: boolean;
+  singleInk?: boolean;
 }
 
 /** Module-level registry of decoded images, keyed by `fileId`. The sandbox
@@ -44,13 +60,28 @@ function isImageElement(image: ResourceImageSource): boolean {
   return typeof HTMLImageElement !== 'undefined' && image instanceof HTMLImageElement;
 }
 
+/** Whether a decoded image shows markup `applySingleInkToSvg` recoloured:
+ *  an `<img>` (anything with a `src`) loaded from an SVG data URI that
+ *  carries the mark. A blob URL or a bitmap cannot tell. */
+function isSingleInkImage(image: ResourceImageSource): boolean {
+  const src = (image as { src?: unknown }).src;
+  return typeof src === 'string' && isSingleInkSvgUrl(src);
+}
+
 /** Register (or replace) a decoded image for a `fileId`. */
 export function registerResourceImage(
   fileId: string,
   image: ResourceImageSource,
   options?: RegisterResourceImageOptions,
 ): void {
-  imageRegistry.set(fileId, { image, vector: options?.vector ?? isImageElement(image) });
+  // Recoloured already (a marked data URI): never tinted again, whatever
+  // the flag says.
+  const singleInk = isSingleInkImage(image) ? false : options?.singleInk;
+  imageRegistry.set(fileId, {
+    image,
+    vector: options?.vector ?? isImageElement(image),
+    ...(singleInk !== undefined ? { singleInk } : {}),
+  });
   dropRasters(fileId);
 }
 
@@ -71,6 +102,33 @@ export function clearResourceImages(): void {
  *  decoding before a render. */
 export function getResourceImage(fileId: string): ResourceImageSource | undefined {
   return imageRegistry.get(fileId)?.image;
+}
+
+/** Told of every image a render paints as a placeholder (nothing
+ *  registered for its `fileId`). Set by `renderPageToCanvas` for the span of
+ *  one synchronous page paint when the host asked for warnings. */
+export type MissingImageSink = (fileId: string, resourceId?: string) => void;
+let missingImageSink: MissingImageSink | null = null;
+
+/** Install the sink for the paint in progress; returns the one it replaces,
+ *  for the caller to restore. */
+export function setMissingImageSink(sink: MissingImageSink | null): MissingImageSink | null {
+  const previous = missingImageSink;
+  missingImageSink = sink;
+  return previous;
+}
+
+/** Whether the paint in progress tints the SVG pictures registered without
+ *  a `singleInk` flag (`RenderPageOptions.singleInk`). Set by
+ *  `renderPageToCanvas` for the span of one synchronous page paint. */
+let tintUnflagged = false;
+
+/** Set {@link tintUnflagged} for the paint in progress; returns the value it
+ *  replaces, for the caller to restore. */
+export function setTintUnflagged(on: boolean): boolean {
+  const previous = tintUnflagged;
+  tintUnflagged = on;
+  return previous;
 }
 
 // ---------------------------------------------------------------------------
@@ -132,11 +190,13 @@ function evictRastersTo(budget: number): void {
 }
 
 /** The bitmap of `image` at `w`×`h` device pixels, rasterised on the first
- *  request; null when no offscreen canvas can be made (or the size is out
- *  of range), in which case the caller draws the source directly. */
-function getVectorRaster(fileId: string, image: ResourceImageSource, w: number, h: number): RasterCanvas | null {
+ *  request — its pixels tinted to `inkHex` when set (single-ink diagrams);
+ *  null when no offscreen canvas can be made, the size is out of range or
+ *  the pixels cannot be read back (a tainted cross-origin image), in which
+ *  case the caller draws the source directly. */
+function getVectorRaster(fileId: string, image: ResourceImageSource, w: number, h: number, inkHex: string | null = null): RasterCanvas | null {
   if (w <= 0 || h <= 0 || w > RASTER_MAX_SIDE || h > RASTER_MAX_SIDE) return null;
-  const key = `${fileId}|${w}x${h}`;
+  const key = inkHex ? `${fileId}|${w}x${h}|${inkHex}` : `${fileId}|${w}x${h}`;
   const hit = rasterCache.get(key);
   if (hit) {
     rasterCache.delete(key);
@@ -151,6 +211,11 @@ function getVectorRaster(fileId: string, image: ResourceImageSource, w: number, 
   if (!ctx) return null;
   try {
     ctx.drawImage(image, 0, 0, w, h);
+    if (inkHex) {
+      const pixels = ctx.getImageData(0, 0, w, h);
+      if (!applySingleInkToPixels(pixels.data, inkHex)) return null;
+      ctx.putImageData(pixels, 0, 0);
+    }
   } catch {
     return null;
   }
@@ -165,9 +230,32 @@ export function resourceRasterCacheBytes(): number {
   return rasterBytes;
 }
 
+/** How a picture is painted under `diagramStyle.singleInk`: the document's
+ *  ink (null when single ink is off), and whether the picture is an SVG
+ *  (`true`), a bitmap (`false`) or unknown — a design image of a VDT built
+ *  before design images carried `imageKind` (`undefined`: the registry
+ *  decides). */
+export interface ImageInk {
+  inkHex: string | null;
+  svg?: boolean;
+}
+
+/** Whether a registered picture takes the ink: never a bitmap, never one
+ *  its host recoloured (`singleInk: false`), one registered without a flag
+ *  only when the render asks ({@link tintUnflagged}); then an SVG always,
+ *  one of unknown kind when it is a vector source or registered with
+ *  `singleInk: true`. */
+function takesInk(entry: RegistryEntry, ink: ImageInk | undefined): ink is { inkHex: string; svg?: boolean } {
+  if (!ink?.inkHex || ink.svg === false || !(entry.singleInk ?? tintUnflagged)) return false;
+  return ink.svg === true || entry.singleInk === true || entry.vector;
+}
+
 /** Draw the registered image of `fileId` into the box, through the raster
- *  cache for vector sources. Returns false when nothing is registered, so
- *  the caller can paint its placeholder. */
+ *  cache for vector sources — tinted to the document's ink for a raw SVG
+ *  picture of a single-ink document (see {@link ImageInk}). Returns false
+ *  when nothing is registered, so the caller can paint its placeholder (the
+ *  miss goes to the render's {@link MissingImageSink}, with `resourceId`
+ *  when the caller knows it). */
 export function drawResourceImage(
   ctx: CanvasRenderingContext2D,
   fileId: string,
@@ -175,14 +263,20 @@ export function drawResourceImage(
   y: number,
   w: number,
   h: number,
+  ink?: ImageInk,
+  resourceId?: string,
 ): boolean {
   const entry = imageRegistry.get(fileId);
-  if (!entry) return false;
-  if (entry.vector) {
+  if (!entry) {
+    missingImageSink?.(fileId, resourceId);
+    return false;
+  }
+  const inkHex = takesInk(entry, ink) ? ink.inkHex : null;
+  if (entry.vector || inkHex) {
     // The page canvas is 1 device px per page px (no transform), so the
     // placed box rounded to whole pixels is the bitmap size the figure
     // shows at.
-    const raster = getVectorRaster(fileId, entry.image, Math.round(w), Math.round(h));
+    const raster = getVectorRaster(fileId, entry.image, Math.round(w), Math.round(h), inkHex);
     if (raster) {
       ctx.drawImage(raster, x, y, w, h);
       return true;
@@ -209,6 +303,9 @@ function pickFont(
 /** Paint one already-positioned rich-text line (absolute page coords). Used for
  *  both the caption and individual table cells. `:ref` segments are recoloured
  *  to `linkColor`. */
+/** A caption, note or cell line. A tracked line (a table header set with
+ *  `headerLetterSpacing`) was measured with the tracking in its widths, so
+ *  it is painted with the same canvas `letterSpacing`, reset afterwards. */
 function paintLine(
   ctx: CanvasRenderingContext2D,
   line: VDTLine,
@@ -219,6 +316,23 @@ function paintLine(
   color: string,
   linkColor: string,
   labelColor: string = color,
+): void {
+  const tracking = line.letterSpacing ?? 0;
+  if (tracking !== 0) ctx.letterSpacing = `${tracking}px`;
+  paintLineRuns(ctx, line, font, boldFont, italicFont, boldItalicFont, color, linkColor, labelColor);
+  if (tracking !== 0) ctx.letterSpacing = '0px';
+}
+
+function paintLineRuns(
+  ctx: CanvasRenderingContext2D,
+  line: VDTLine,
+  font: string,
+  boldFont: string,
+  italicFont: string,
+  boldItalicFont: string,
+  color: string,
+  linkColor: string,
+  labelColor: string,
 ): void {
   ctx.textBaseline = 'alphabetic';
   if (line.segments && line.segments.length > 0) {
@@ -277,7 +391,7 @@ function drawPlaceholder(
 }
 
 /** Trace a rounded outline (per-corner radii) as the current path. */
-function roundedOutlinePath(ctx: CanvasRenderingContext2D, o: RoundedOutline): void {
+export function roundedOutlinePath(ctx: CanvasRenderingContext2D, o: RoundedOutline): void {
   const { x, y, width: w, height: h } = o;
   const [tl, tr, br, bl] = o.radii;
   ctx.beginPath();
@@ -293,11 +407,50 @@ function roundedOutlinePath(ctx: CanvasRenderingContext2D, o: RoundedOutline): v
   ctx.closePath();
 }
 
+/** Tolerance for "the transform has no shear" (a quarter turn made with
+ *  `rotate(±π/2)` leaves cosines of ~1e-17). */
+const AXIS_EPS = 1e-9;
+
+type RectFiller = (x: number, y: number, w: number, h: number) => void;
+
+/**
+ * A `fillRect` that moves the rectangle's edges to the nearest device-pixel
+ * boundaries under the context's current transform. Each fill is
+ * anti-aliased on its own, so two fills meeting on a fractional device
+ * pixel both cover it partly and the page shows through: a faint seam
+ * between table cells of the same colour. Snapped, neighbours meet on a
+ * pixel boundary. Works for scale + translate and quarter turns; under any
+ * other transform (or on a context without `getTransform`) it fills as
+ * given. Read the transform once: it must not change while filling.
+ */
+function pixelSnappedFill(ctx: CanvasRenderingContext2D): RectFiller {
+  const plain: RectFiller = (x, y, w, h) => ctx.fillRect(x, y, w, h);
+  const m = typeof ctx.getTransform === 'function' ? ctx.getTransform() : undefined;
+  if (!m) return plain;
+  const { a, b, c, d, e, f } = m;
+  // Device x from user x (and y from y) — or, turned, device y from x.
+  const straight = Math.abs(b) < AXIS_EPS && Math.abs(c) < AXIS_EPS && Math.abs(a) > AXIS_EPS && Math.abs(d) > AXIS_EPS;
+  const turned = Math.abs(a) < AXIS_EPS && Math.abs(d) < AXIS_EPS && Math.abs(b) > AXIS_EPS && Math.abs(c) > AXIS_EPS;
+  if (!straight && !turned) return plain;
+  const [sx, ox, sy, oy] = straight ? [a, e, d, f] : [b, f, c, e];
+  const snap = (v: number, s: number, o: number) => (Math.round(s * v + o) - o) / s;
+  return (x, y, w, h) => {
+    const x0 = snap(x, sx, ox);
+    const x1 = snap(x + w, sx, ox);
+    const y0 = snap(y, sy, oy);
+    const y1 = snap(y + h, sy, oy);
+    // A cell thinner than a device pixel keeps its own edges.
+    if (x0 === x1 || y0 === y1) ctx.fillRect(x, y, w, h);
+    else ctx.fillRect(Math.min(x0, x1), Math.min(y0, y1), Math.abs(x1 - x0), Math.abs(y1 - y0));
+  };
+}
+
 function renderTable(
   ctx: CanvasRenderingContext2D,
   rb: ResolvedResourceBlock,
   bx: number,
   by: number,
+  inkHex: string | null,
 ): void {
   const t = rb.table;
   if (!t) return;
@@ -309,14 +462,16 @@ function renderTable(
     roundedOutlinePath(ctx, tableFrameOutline(t, bx, by, rb.bodyRect.width, outset));
     ctx.clip();
   };
-  // Cell backgrounds first (the cell's own fill, else the header tint / body
-  // fill), then borders, then text.
+  // Cell backgrounds first (the cell's own fill, else the header tint / the
+  // body or zebra fill), then borders, then text. Fills sit on device
+  // pixels so neighbouring cells show no seam.
   if (rounded) clipTo(0);
+  const fillCell = pixelSnappedFill(ctx);
   for (const cell of t.cells) {
-    const fill = cell.background ?? (cell.isHeader ? t.headerBackground : t.bodyBackground);
+    const fill = tableCellFill(t, cell);
     if (fill) {
       ctx.fillStyle = fill;
-      ctx.fillRect(cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height);
+      fillCell(cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height);
     }
   }
   if (rounded) ctx.restore();
@@ -355,7 +510,7 @@ function renderTable(
     const img = cell.image;
     if (!img) continue;
     const { x, y, width, height } = img.rect;
-    if (!drawResourceImage(ctx, img.fileId, x, y, width, height)) {
+    if (!drawResourceImage(ctx, img.fileId, x, y, width, height, { inkHex, svg: img.kind === 'svg' }, img.resourceId)) {
       drawPlaceholder(ctx, x, y, width, height, img.kind === 'svg' ? 'SVG' : 'Image');
     }
   }
@@ -374,6 +529,8 @@ function renderTable(
 export function renderResourceBlock(
   ctx: CanvasRenderingContext2D,
   block: VDTBlock,
+  /** The document's single ink (`documentInkHex`), null when off. */
+  inkHex: string | null = null,
 ): void {
   const rb = block.resourceBlock;
   if (!rb) return;
@@ -391,12 +548,12 @@ export function renderResourceBlock(
   const bh = rb.bodyRect.height;
 
   if (rb.kind === 'bitmap' || rb.kind === 'svg') {
-    const drawn = rb.fileId ? drawResourceImage(ctx, rb.fileId, bx, by, bw, bh) : false;
+    const drawn = rb.fileId ? drawResourceImage(ctx, rb.fileId, bx, by, bw, bh, { inkHex, svg: rb.kind === 'svg' }, rb.resource.id) : false;
     if (!drawn) {
       drawPlaceholder(ctx, bx, by, bw, bh, rb.kind === 'svg' ? 'SVG' : 'Image');
     }
   } else if (rb.kind === 'table') {
-    renderTable(ctx, rb, bx, by);
+    renderTable(ctx, rb, bx, by, inkHex);
   }
 
   // Caption bar (behind the caption lines), then caption + note lines — all

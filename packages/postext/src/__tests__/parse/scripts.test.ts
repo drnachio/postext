@@ -44,7 +44,10 @@ describe('inline superscript / subscript', () => {
     expect(sup.baselineShift).toBeLessThan(0);
     const sub = scriptMetrics('italic 20px Serif', 'sub');
     expect(sub.baselineShift).toBeGreaterThan(0);
-    expect(sub.baselineShift).toBeCloseTo(-sup.baselineShift, 6);
+    // A subscript drops 0.15 em, well short of the third of an em a
+    // superscript rises (EF-80).
+    expect(sub.baselineShift).toBeCloseTo(20 * 0.15, 6);
+    expect(sup.baselineShift).toBeCloseTo(-20 * 0.333, 6);
   });
 
   it('lays out script segments at the script size with a baseline shift', () => {

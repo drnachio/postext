@@ -1,0 +1,69 @@
+---
+title: "Portada de revista e índice por secciones"
+summary: "Una portada cuyas llamadas cuelgan del nombre de la revista y un sumario generado con una fila de color por sección. Cada sección es una parte sin portadilla."
+description: "Seis páginas de una revista en Postext. La portada es una ranura sobre una foto, y el sumario agrupa los artículos bajo pestañas del color de cada sección."
+question: "¿Cómo hago la portada y el colofón de una revista, y qué sustituye a la anteportada y la portada de un libro?"
+aliases: ["portada de revista", "cubierta de revista", "llamadas de portada", "nombre de la revista", "cabecera de la revista", "mancheta", "sumario", "índice por secciones", "colores por sección", "número de la revista", "pestaña de folio", "carta del editor", "colofón"]
+pageNotes: { "1": "La portada: un valle toscano bajo un cielo pálido, FALLOW en Bodoni negra de lado a lado, un panel de papel con tres llamadas cuyos antetítulos son oliva, teja y granate, y en la esquina inferior derecha el precio con un código de barras inventado.", "2": "El sumario: un gran 14 en color tierra, tres filas de sección con pestañas de color, el título, la página y la entradilla de cada artículo, una miniatura de la portada y, en la columna derecha, la carta de la editora, los colaboradores y un pequeño colofón.", "3": "Cuaderno de campo: matraces con brotes verdes en lo alto de la página y, montado sobre el pie de la foto, un panel teja con el título y la entradilla; debajo, dos columnas justificadas y la pestaña teja del folio.", "4": "La apertura del reportaje: un mosaico de campos dibujado a vista de pájaro, uno de ellos en barbecho, y un panel oliva montado sobre su pie.", "5": "El reportaje sigue bajo una foto de una casa de campo entre viñas y cipreses, con un recuadro oliva que enumera la rotación de siete años y una cita destacada en oliva.", "6": "Cocina: trigo maduro y un panel granate montado sobre su pie; debajo, los ingredientes y la elaboración, con rayas y números en granate." }
+---
+
+## Lo que vas a componer
+
+Seis páginas de 230 × 300 mm de un número de *FALLOW*, revista trimestral imaginaria de comida y tierra. La portada es un valle toscano a sangre bajo FALLOW en Bodoni de 118 pt, con tres llamadas sobre un panel de papel, cada antetítulo en el color de su sección, y el precio y el código de barras en la esquina. `:::toc` compone el sumario de la página 2: bajo la pestaña de color de cada sección, el título, la página y la entradilla del artículo; a la derecha, la carta de la editora, los colaboradores y el colofón. Siguen tres secciones, en teja, oliva y granate, cuyos artículos abren con una imagen a sangre en la cabeza de la página y un panel de su color montado encima; folios, viñetas y recuadros llevan ese color. Lo pone la valla `:::part` que precede a cada artículo, sin abrir portadilla.
+
+## Elaboración
+
+### 1 · Cuelga la portada de su nombre
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Solo la foto, las dos líneas de cabeza y el precio se anclan a la página. Todo lo demás se ancla a otro elemento ([posicionamiento de elementos](/es/docs/configuration#posicionamiento-de-elementos)): el nombre de la revista, bajo la línea superior; el primer antetítulo, 8 mm por debajo del nombre, y a partir de ahí cada llamada bajo su antetítulo y cada antetítulo bajo la llamada anterior. Así, si una llamada ocupa más líneas o el nombre crece, empuja lo que tiene debajo en vez de pisarlo. Cada antetítulo y cada llamada llevan su propia caja de papel de 84 mm de ancho, y las seis cajas apiladas forman el panel, que crece con el texto. Cada caja, salvo la primera, se solapa 0,3 mm (`SEAM`) con la de encima, igual que el código de barras con el precio, porque en el canvas dos fondos que solo se tocan dejan ver entre ellos una raya finísima de la foto. Una revista no lleva la anteportada ni la portada de un libro; su nombre va en la portada, y el número, la fecha y el colofón, en el sumario. Los preliminares de un libro están en <RecipeLink slug="front-matter-roman-to-arabic">Preliminares con folios romanos y luego la página 1</RecipeLink>.
+
+### 2 · Haz de cada sección una parte sin página
+
+<Excerpt region="sections" />
+
+Con `parts.page: false`, una valla como `:::part{title="Reportajes" palette="band=#5d6a2b"}` no abre portadilla y solo fija el título y la paleta de la sección desde el bloque siguiente ([el contenedor `:::part`](/es/docs/configuration#el-contenedor-part)). El H1 de cada artículo usa un [estilo de título](/es/docs/configuration#estilos-de-encabezado) con `numbered: false`, así que el sumario lo recoge sin número. El estilo elige la imagen de la apertura, y el color lo pone la parte.
+
+### 3 · Enlaza todos los colores de sección a una entrada
+
+<Excerpt region="palette" />
+
+Una parte redefine entradas de la paleta por su id, así que todo lo que cambia con la sección se enlaza a `band`: el panel de la apertura, la pestaña del folio, las viñetas y los números de las listas, la cita destacada, y el filete y el título del recuadro de datos. En el texto, la redefinición va por valor: cualquier color cuyo hex coincida con el hex base de `band` (`#8b6a3e`) toma el de la sección, y por eso ninguna otra entrada usa ese hex. En los elementos de diseño es al revés. Postext 1.4.1 pinta el hex escrito junto a su `paletteId` y no consulta `colorPalette`, pero la redefinición de una parte les llega por el `paletteId`; por eso `col()` escribe los dos.
+
+### 4 · Deja que el sumario se agrupe solo
+
+<Excerpt region="contents" />
+
+`:::toc` recoge los artículos y da a cada `:::part` una fila compuesta con `toc.parts.design` y la paleta de esa parte ([índice de contenidos](/es/docs/configuration#índice-de-contenidos)), así que un solo diseño de fila imprime tres pestañas de tres colores. El filete y la pestaña cuelgan de `mid`, el centro de la fila subido 1 mm para que la pestaña no roce el título de debajo. Sin línea de puntos, entre cada título y su página (3, 4 y 6) solo queda blanco, y `subtitle.attr` pone debajo, en cursiva, el atributo `standfirst` de la apertura. El colofón que cierra la columna derecha es un estilo de párrafo en Jost de 7 pt y color `muted` que el Markdown aplica con `:::paragraphs{style="colophon"}`.
+
+### 5 · Da a todos los artículos la misma apertura
+
+<Excerpt region="opener" />
+
+La imagen, a sangre, ocupa los 150 mm de arriba de la página. Un panel en `band` monta 34 mm sobre su pie: son tres cajas de texto de 136 mm, cada una anclada `below` (debajo) de la anterior, con el nombre de la sección que da `{partTitle}`, el título y la entradilla. La imagen no reserva altura, así que el texto empieza bajo el elemento más bajo que sí la reserva, la firma, cuyo relleno inferior vacío de 5 mm lo mantiene al menos a esa distancia.
+
+### 6 · Nombra la sección en el folio
+
+<Excerpt region="folios" />
+
+El número de página va en un cuadrado de `band` de 6,5 mm, al pie y por el lado exterior. El nombre de la sección se ancla a su lado, hacia el medianil, y el título del artículo junto al nombre; las tres cajas miden 6,5 mm de alto y llevan el texto centrado en vertical, así que comparten eje. Las revistas también folian las páginas de apertura, por eso el pie no lleva filtro `pages`. El estilo de la portada deja el pie vacío, y el del sumario pone el nombre de la revista y la fecha del número (`{title}` y `{publishDate}`) donde van la sección y el artículo.
+
+## Variantes
+
+### Pon el nombre de la revista en el color de la casa
+
+El nombre de la revista toma el color tierra del gran 14 del sumario.
+
+```diff
+-    textTransform: 'uppercase', align: 'center', color: col('ink') },
++    textTransform: 'uppercase', align: 'center', color: col('band') },
+```
+
+### Abre cada sección con una portadilla
+
+Para partes con página propia, y un número de página en cada fila de parte del sumario, mira <RecipeLink slug="parts-in-colour">Partes en color con un solo atributo</RecipeLink>.
+
+## Errores frecuentes
+
+- Un elemento de imagen encaja la imagen en su caja y nunca la recorta. Recorta antes cada JPEG a su caja, 23 : 30 para la portada y 230 × 150 mm para las aperturas, o la imagen encoge y deja franjas blancas en los bordes.
+- En el texto, una parte cambia cualquier color cuyo hex coincida con el hex base de `band`, esté enlazado a `band` o no. Reserva ese hex para lo que deba cambiar con la sección.
+- Los artículos están ajustados a sus páginas en los dos idiomas: en castellano se acortaron algunas frases del Cuaderno de campo para que quepa en una página, y en inglés una frase del reportaje perdió tres palabras para que las dos columnas de la página 4 acaben a la misma altura. Si cambias el texto, comprueba que ningún artículo pase unas líneas a una página nueva y que todas las páginas, salvo la última de cada artículo, acaben igualadas.

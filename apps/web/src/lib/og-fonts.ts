@@ -11,7 +11,7 @@ const LORA_ITALIC_URL = "https://fonts.gstatic.com/s/lora/v37/0QI8MX1D_JOuMw_hLd
 
 const load = (url: string) => fetch(url).then((res) => res.arrayBuffer());
 
-export async function loadOgFonts() {
+async function fetchOgFonts() {
   const [fraunces, frauncesItalic, geist, lora] = await Promise.all([
     load(FRAUNCES_800_URL),
     load(FRAUNCES_600_ITALIC_URL),
@@ -24,6 +24,21 @@ export async function loadOgFonts() {
     { name: "Geist", data: geist, weight: 600 as const, style: "normal" as const },
     { name: "Lora", data: lora, weight: 400 as const, style: "italic" as const },
   ];
+}
+
+let ogFonts: ReturnType<typeof fetchOgFonts> | null = null;
+
+/** The four cuts, fetched once per process: a build renders a card per
+ *  page and locale (every recipe included), which would otherwise mean
+ *  hundreds of identical downloads. A failed fetch is not cached. */
+export function loadOgFonts() {
+  if (!ogFonts) {
+    ogFonts = fetchOgFonts();
+    ogFonts.catch(() => {
+      ogFonts = null;
+    });
+  }
+  return ogFonts;
 }
 
 /** Fraunces 800 alone, for the icons. */

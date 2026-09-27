@@ -1,0 +1,513 @@
+{
+  "schemaVersion": 1,
+  "slug": "cv-with-sidebar",
+  "sourceHash": "7a27f3d9250f1d85da0401d6f5fa2bc748b25741d18e737a3e4afc253f600145",
+  "engine": {
+    "postext": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-26T22:03:51.845Z",
+  "variants": {
+    "en": {
+      "hash8": "6768ca91",
+      "vdtHash": "6f2e25bbf722ea5029f3c4ed87f45c8fa350b753",
+      "timings": {
+        "importMs": 177,
+        "fontsMs": 752,
+        "buildMs": 5,
+        "totalMs": 1532,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          297
+        ],
+        "dpi": 150,
+        "layoutType": "oneAndHalf",
+        "gutterMm": 10,
+        "mirror": false,
+        "body": {
+          "family": "Hanken Grotesk",
+          "sizePt": 9.3,
+          "leadingPt": 13.200000000000001
+        },
+        "families": [
+          "Hanken Grotesk",
+          "Hedvig Letters Serif"
+        ],
+        "pages": 1,
+        "ownLines": 178
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "body",
+          "w": 1000,
+          "h": 1414,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 121570,
+          "alt": "Page 1: Irene Salcedo."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.paragraphSpacing",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.boldColor",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.paragraphSpacing",
+          "calloutStyles[].id",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.gap",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "chipStyles",
+          "chipStyles[].background",
+          "chipStyles[].bold",
+          "chipStyles[].borderRadius",
+          "chipStyles[].borderWidth",
+          "chipStyles[].color",
+          "chipStyles[].fontFamily",
+          "chipStyles[].fontSize",
+          "chipStyles[].gap",
+          "chipStyles[].id",
+          "chipStyles[].paddingX",
+          "chipStyles[].paddingY",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].placement",
+          "header.elements[].resourceId",
+          "header.elements[].style",
+          "headings",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "layout.sideColumnPercent",
+          "layout.sideColumnRole",
+          "layout.sideColumnSide",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "unorderedLists",
+          "unorderedLists.bulletChar",
+          "unorderedLists.color",
+          "unorderedLists.fontWeight",
+          "unorderedLists.itemSpacing",
+          "unorderedLists.marginBottom",
+          "unorderedLists.marginTop"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "chipStyles",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "page",
+          "paragraphStyles",
+          "unorderedLists"
+        ],
+        "configLeaves": 265,
+        "designElements": 11,
+        "directives": [
+          ":::callout",
+          ":::space",
+          ":::paragraphs"
+        ],
+        "inline": [
+          ":chip",
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 1,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Hanken Grotesk",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Hanken Grotesk",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Hanken Grotesk",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Hedvig Letters Serif",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "chips",
+          "column-and-a-half",
+          "heading-attributes",
+          "nested-callouts",
+          "opener-design",
+          "paragraph-styles",
+          "resources",
+          "side-boxes",
+          "side-column-floats",
+          "vertical-space"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "d7751900",
+      "vdtHash": "20cdaf24337119824009c3c30ffc3134c5197110",
+      "timings": {
+        "importMs": 74,
+        "fontsMs": 13,
+        "buildMs": 5,
+        "totalMs": 749,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          297
+        ],
+        "dpi": 150,
+        "layoutType": "oneAndHalf",
+        "gutterMm": 10,
+        "mirror": false,
+        "body": {
+          "family": "Hanken Grotesk",
+          "sizePt": 9.3,
+          "leadingPt": 13.200000000000001
+        },
+        "families": [
+          "Hanken Grotesk",
+          "Hedvig Letters Serif"
+        ],
+        "pages": 1,
+        "ownLines": 178
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "body",
+          "w": 1000,
+          "h": 1414,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 132808,
+          "alt": "Página 1: Irene Salcedo."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.paragraphSpacing",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.boldColor",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.paragraphSpacing",
+          "calloutStyles[].id",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.gap",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "chipStyles",
+          "chipStyles[].background",
+          "chipStyles[].bold",
+          "chipStyles[].borderRadius",
+          "chipStyles[].borderWidth",
+          "chipStyles[].color",
+          "chipStyles[].fontFamily",
+          "chipStyles[].fontSize",
+          "chipStyles[].gap",
+          "chipStyles[].id",
+          "chipStyles[].paddingX",
+          "chipStyles[].paddingY",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].placement",
+          "header.elements[].resourceId",
+          "header.elements[].style",
+          "headings",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "layout.sideColumnPercent",
+          "layout.sideColumnRole",
+          "layout.sideColumnSide",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "unorderedLists",
+          "unorderedLists.bulletChar",
+          "unorderedLists.color",
+          "unorderedLists.fontWeight",
+          "unorderedLists.itemSpacing",
+          "unorderedLists.marginBottom",
+          "unorderedLists.marginTop"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "chipStyles",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "page",
+          "paragraphStyles",
+          "unorderedLists"
+        ],
+        "configLeaves": 265,
+        "designElements": 11,
+        "directives": [
+          ":::callout",
+          ":::space",
+          ":::paragraphs"
+        ],
+        "inline": [
+          ":chip",
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 1,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Hanken Grotesk",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Hanken Grotesk",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Hanken Grotesk",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Hedvig Letters Serif",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "chips",
+          "column-and-a-half",
+          "heading-attributes",
+          "nested-callouts",
+          "opener-design",
+          "paragraph-styles",
+          "resources",
+          "side-boxes",
+          "side-column-floats",
+          "vertical-space"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
+      }
+    }
+  }
+}

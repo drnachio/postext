@@ -69,6 +69,65 @@ describe('inline :ref segments count as one plain char', () => {
   it('still maps text before the ref exactly', () => {
     expect(pixelToSourceOffset(doc, 0, 26, 10)).toBe(SOURCE.indexOf('la'));
   });
+
+  it('counts a ref painted as several small-caps runs as one char', () => {
+    // `:smallcaps[…]` paints the label as case runs ("T" + "ABLA 1.1"); the
+    // runs after the first continue the reference.
+    const split: VDTSegment[] = [
+      ...segments.slice(0, 4),
+      word('T', 10, { refResourceId: 'tabla-1-1' }),
+      word('ABLA 1.1', 80, { refResourceId: 'tabla-1-1', refContinues: true }),
+      ...segments.slice(5),
+    ];
+    const splitBlock = { ...block, lines: [{ ...block.lines[0]!, segments: split }] } as VDTBlock;
+    const splitDoc = { pages: [{}], blocks: [splitBlock] } as unknown as VDTDocument;
+    expect(pixelToSourceOffset(splitDoc, 0, X_COMPRUEBA + 1, 10)).toBe(SRC_COMPRUEBA);
+    const plain = sourceToPlainIndex(splitBlock, SRC_COMPRUEBA);
+    expect(xForPlainInLine(splitBlock, splitBlock.lines[0]!, plain!)).toBe(X_COMPRUEBA);
+    // A caret right after the reference sits after its last run.
+    expect(xForPlainInLine(splitBlock, splitBlock.lines[0]!, PLAIN.indexOf(' se'))).toBe(20 + 5 + 20 + 5 + 90);
+  });
+});
+
+// `bodyText.repeatHyphen`: "vencer-" | "-se a si": the second line opens
+// with a hyphen the source does not hold there.
+describe('a line that opens with a repeated hyphen', () => {
+  const SRC = 'vencer-se a si';
+  const hyphenBlock = {
+    type: 'paragraph',
+    pageIndex: 0,
+    textAlign: 'left',
+    bbox: { x: 0, y: 0, width: 100, height: 40 },
+    sourceStart: 0,
+    sourceEnd: SRC.length,
+    sourceMap: [...SRC].map((_, i) => i),
+    plainPrefixLen: 0,
+    lines: [
+      { text: 'vencer-', bbox: { x: 0, y: 0, width: 70, height: 20 }, segments: [word('vencer-', 70)], plainStart: 0, plainEnd: 7, hyphenated: true, hardHyphen: true },
+      {
+        text: '-se a si',
+        bbox: { x: 0, y: 20, width: 80, height: 20 },
+        segments: [word('-se', 30), space(), word('a', 10), space(), word('si', 20)],
+        plainStart: 7,
+        plainEnd: 14,
+        isLastLine: true,
+        hyphenated: false,
+        repeatedHyphen: true,
+      },
+    ],
+  } as unknown as VDTBlock;
+  const hyphenDoc = { pages: [{}], blocks: [hyphenBlock] } as unknown as VDTDocument;
+
+  it('maps the words after it to their own source', () => {
+    // Just inside "a" (after "-se" and a space): the source's "a".
+    expect(pixelToSourceOffset(hyphenDoc, 0, 36, 30)).toBe(SRC.indexOf(' a ') + 1);
+    // The end of the line is the end of the source.
+    expect(pixelToSourceOffset(hyphenDoc, 0, 80, 30)).toBe(SRC.length);
+  });
+
+  it('places a caret after the repeated word where it is painted', () => {
+    expect(xForPlainInLine(hyphenBlock, hyphenBlock.lines[1]!, SRC.indexOf(' a') - 7)).toBe(30);
+  });
 });
 
 describe('designImageFileIdAtPixel', () => {

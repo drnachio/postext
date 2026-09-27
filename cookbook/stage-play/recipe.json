@@ -1,0 +1,242 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 70,
+  "status": "published",
+  "chapter": "publications",
+  "order": 40,
+  "level": 2,
+  "genres": [
+    "novel"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "paragraph-styles",
+      "emphasis-colours",
+      "table-model"
+    ],
+    "also": [
+      "paragraph-indents",
+      "heading-typography",
+      "chapter-breaks",
+      "table-style",
+      "table-styles",
+      "resource-types",
+      "inline-embeds",
+      "heading-styles",
+      "covers",
+      "heading-attributes",
+      "design-images",
+      "design-elements",
+      "running-heads",
+      "page-role-filters",
+      "frontmatter",
+      "page-background",
+      "color-palette"
+    ]
+  },
+  "answers": [
+    "Q84",
+    "Q50",
+    "Q65",
+    "Q73"
+  ],
+  "gotchas": [
+    "headings-drop-h1-break",
+    "style-italic-colour",
+    "merged-cells-hiddenby",
+    "here-table-no-split",
+    "resource-double-quotes",
+    "palette-skips-designs",
+    "design-lineheight-multiple",
+    "runt-tracking-unpainted",
+    "quote-frontmatter",
+    "hyphenation-locales",
+    "fonts-first",
+    "opener-clipped-at-top",
+    "opener-image-no-reserve",
+    "table-fill-seams"
+  ],
+  "engine": {
+    "postext": "1.4.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": [
+      2,
+      3
+    ],
+    "card": "crop",
+    "focus": {
+      "page": 1,
+      "x": 0,
+      "y": 0.15,
+      "w": 1,
+      "h": 0.505
+    },
+    "pages": "all",
+    "expect": {
+      "pages": [
+        5,
+        5
+      ],
+      "nearEmptyPages": [
+        1,
+        2
+      ]
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "The Importance of Being Earnest (1895): the persons and scenes of the play, the first cast and the opening of the first act",
+          "es": "The Importance of Being Earnest (La importancia de llamarse Ernesto, 1895): los personajes y los lugares de la obra, el reparto del estreno y el comienzo del primer acto"
+        },
+        "who": "Oscar Wilde",
+        "source": "https://www.gutenberg.org/ebooks/844",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The Spanish translation of the extract, the cast list and the scenes",
+          "es": "La traducción al español del fragmento, del reparto y de los lugares de la acción"
+        },
+        "who": "Postext Cookbook",
+        "license": "original"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "The title page’s frame and the carnation fleuron, drawn in code in the page’s palette",
+          "es": "El marco de la portada y el florón del clavel, dibujados en código con la paleta de la página"
+        },
+        "who": "Ignacio Ferro",
+        "license": "MIT"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Libre Baskerville",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Abril Fatface",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Playfair Display SC",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "MIT"
+  },
+  "created": "2026-09-26",
+  "updated": "2026-09-26",
+  "gaps": [
+    "pipe-tables",
+    "tab-stops"
+  ],
+  "related": [
+    "screenplay-format",
+    "poetry-collection",
+    "technical-datasheet",
+    "letters-edition"
+  ],
+  "workarounds": [
+    {
+      "followup": "EF-05",
+      "package": "postext",
+      "note": "level 1 restates breakBefore (parity 'odd') because any headings object drops the H1 break; the act opens on page 3, facing the cast list"
+    },
+    {
+      "followup": "EF-68",
+      "package": "postext",
+      "note": "a paragraph style has no italicColor, so the directions' grey is bodyText.italicColor: every italic run of the dialogue takes it too, Lane's emphasised 'is' included"
+    },
+    {
+      "followup": "EF-173",
+      "package": "postext",
+      "note": "a paragraph style has no italic switch, so every direction and the scene description are written *…* in the Markdown"
+    },
+    {
+      "followup": "EF-34",
+      "package": "postext",
+      "note": "the spanning rows of the cast list (its header) and of the scenes (the time of the action) are joined with mergeCells, which writes the hiddenBy placeholder the covered cell needs"
+    },
+    {
+      "followup": "EF-64",
+      "package": "postext",
+      "note": "the cast list has a single header row, merged into one cell: the canvas leaves a pale seam between two filled header cells side by side"
+    },
+    {
+      "followup": "EF-174",
+      "package": "postext",
+      "note": "a table style has no textTransform or letterSpacing, so the header row takes its small capitals from the face itself, Playfair Display SC at 400"
+    },
+    {
+      "followup": "EF-71",
+      "package": "postext",
+      "note": "col() writes the hex beside every paletteId, because the title page's lines and the running heads are design elements that do not read colorPalette"
+    },
+    {
+      "followup": "EF-113",
+      "package": "postext",
+      "note": "the playbill style sets span: 'page' in this single-column book: kept in the column, its design is cut off at the top and at the foot of the text block, 20 mm below the top of the sheet and 23.3 mm above its foot, while the sides still reach the bleed"
+    },
+    {
+      "followup": "EF-90",
+      "package": "postext",
+      "note": "the Markdown ends the title page with :::pagebreak: its plum ground is an image, which reserves no height, so the heading holds the page only down to its lowest text line, the premiere at 176 mm. The captured pages are the same without the break, but with the theatre and the premiere at 150 and 156 mm and no break, 'The Persons of the Play' starts on page 1 in both editions"
+    },
+    {
+      "followup": "EF-153",
+      "package": "postext",
+      "note": "each centred, tracked line of the title page is moved right by half its tracking: without it OSCAR WILDE sits 0.56 mm left of centre, with it 0.07 mm"
+    },
+    {
+      "followup": "EF-111",
+      "package": "postext",
+      "note": "bodyText.maxRuntTracking: 0: at the default (10‰), Algernon's 'Is marriage so demoralising as that?' is pulled onto one line with -10‰ of tracking, 2.0 mm across its 60 characters, and word spaces at 0.74 of normal; the canvas paints no negative tracking, so the eight spaces absorb those 2.0 mm as well and print at 0.52 of normal, below minWordSpacing (0.65)"
+    },
+    {
+      "followup": "EF-56",
+      "package": "postext",
+      "note": "the title page's design text sets lineHeight: 1, a multiple, never a Dimension, which would drop the whole design"
+    },
+    {
+      "followup": "EF-11",
+      "package": "postext",
+      "note": "title, subtitle and author are quoted in the frontmatter: they feed the running head and the title page"
+    },
+    {
+      "followup": "EF-14",
+      "package": "postext",
+      "note": "locale is the exact code 'en-us' or 'es', the only forms that hyphenate"
+    }
+  ]
+}

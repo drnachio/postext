@@ -1,0 +1,97 @@
+---
+title: "Poemas compuestos verso a verso"
+summary: "Cada verso es un párrafo, y el que no cabe sigue con 4 em de sangría francesa. Los espacios eme guardan las sangrías de 1918; :::space separa las estrofas."
+description: "Cuatro poemas de Hopkins con Postext: un párrafo por verso, las sangrías de 1918, sangría francesa en los largos, :::space entre estrofas e índice con puntos."
+question: "¿Cómo compongo poemas verso a verso, con sangrías, estrofas separadas, sangría francesa y sin partir palabras?"
+aliases: ["poesía", "poema", "verso", "estrofa", "espacio entre estrofas", "verso sangrado", "sangría", "espacio eme", "unidor de palabras", "verso largo", "verso partido", "sangría francesa", "saltos de línea", "poemario", "plaquette", "líneas de puntos", "puntos guía", "dedicatoria", "fecha del poema", "adorno", "viñeta", "remate", "frontispicio", "anteportada", "Gerard Manley Hopkins"]
+pageNotes: { "2": "El frontispicio: un fotograma de una fronda de helecho y una rama de serbal con bayas, en blanco sobre un fondo salvia dado a brochazos, con su pie debajo en cursiva.", "4": "El índice: cuatro títulos en cursiva tras sus números, líneas de puntos espaciados hasta el número de página, y después una breve nota sobre el texto y el colofón.", "6": "The Windhover: la dedicatoria va encima del primer verso, los versos que riman en -iding y en -illion entran 2 em, y cuatro versos largos siguen en la línea de abajo con 4 em de sangría francesa.", "7": "Pied Beauty: los versos entran 1 o 2 em según su rima, y el medio verso final, Praise him., queda a 8 em del margen." }
+---
+
+## Lo que vas a componer
+
+Un poemario de 140 × 216 mm con cuatro poemas de Gerard Manley Hopkins sobre la naturaleza, según la primera edición (1918). Tras la anteportada, un fotograma de helecho y serbal hace de frontispicio frente a la portada, compuesta en Italiana. El índice da el número romano y el título en cursiva de cada poema, con puntos espaciados hasta la página. Cada poema abre página bajo su número. Los versos son párrafos y conservan las sangrías de 1918: en *Pied Beauty* se escalonan según la rima, y los largos de *The Windhover* siguen en la línea de abajo con 4 em de sangría, el doble que sus sangrías. Entre estrofas queda una línea en blanco, y ninguna palabra se parte salvo donde la partió Hopkins. Debajo de cada poema va la fecha, a la derecha, y tras el último, una ramita de serbal. Los poemas llevan el folio centrado abajo.
+
+## Elaboración
+
+### 1 · Cada verso es un párrafo
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Postext junta en una sola las líneas de un párrafo de Markdown, de ahí que cada verso tenga que ser un párrafo. El estilo del verso los compone en bandera, porque justificados estirarían hasta la medida la primera parte de un verso partido. Lo que pasa a la línea siguiente lleva 4 em de sangría francesa, más que los 1 o 2 em de los versos sangrados por la rima, para que nadie lo tome por otro verso ([estilos de párrafo](/es/docs/configuration#estilos-de-párrafo)). Un párrafo pierde los espacios con que empieza, también los espacios eme, y un estilo con sangría francesa no aplica la de primera línea. Por eso `indentVerse` convierte cada par de espacios iniciales en un espacio eme precedido de un unidor de palabras, un carácter de ancho cero donde se detiene el recorte. Los versos que riman entre sí quedan a la misma distancia del margen, como en 1918. Las líneas en blanco no añaden espacio: cada separación entre estrofas es una línea `:::space` dentro del contenedor, que deja una línea de la rejilla base y se descarta si cae en lo alto de una página ([`:::space`](/es/docs/document-format#space)).
+
+<PageShot page={6} crop="0.08,0.22,0.86,0.48" caption="The Windhover, página 6: los versos que riman en -iding entran 2 em, y los cuatro que no caben en la página siguen en la línea de abajo, con 4 em de sangría francesa." />
+
+### 2 · Las líneas que rodean un poema también tienen estilo
+
+<Excerpt region="lines" />
+
+La dedicatoria de *The Windhover*, encima del poema, y el lugar y la fecha, debajo de cada uno, acompañan a los versos sin formar parte de ellos. Cada una de esas líneas es un contenedor `:::paragraphs` con un solo párrafo, y por eso admite un estilo propio. Ninguno de los dos estilos fija el interlineado y sus márgenes miden una línea (15 pt), de modo que el poema no se sale de la rejilla del cuerpo. La fecha queda una línea por debajo del último verso, alineada a la derecha, en Marcellus SC de 8 pt, la misma letra de los folios.
+
+### 3 · Cada poema abre página bajo su número
+
+<Excerpt region="poem-head" />
+
+En lugar de su texto, el título imprime un diseño en la columna. Ahí, `{number}` es el contador con el formato de `numberingTemplate: '{1:I}'`, de I a IV, y `{titleText}` es el título ([span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)). El nivel no tiene margen inferior, y `minHeight` hace que el título de cada poema ocupe seis líneas de la rejilla (31,75 mm). El número y un título de una línea llenan cuatro, y un título que pasa a dos líneas llena cinco; así, todos los poemas empiezan en la misma línea de la página. En la <PageRef page={6}>página 6</PageRef>, esa línea es la de la dedicatoria. La paridad `'any'` salta a la página siguiente, par o impar, y entre los poemas no queda ninguna página en blanco.
+
+### 4 · Los preliminares también son títulos
+
+<Excerpt region="front" />
+
+Un estilo de título puede saltar a una página nueva y dibujar en ella un diseño, así que la anteportada, el frontispicio y la portada son un título cada uno, con su estilo. Con `numbered: false` no entran en la cuenta, y el primer poema sigue siendo el I. `toc: false` los deja fuera del índice, y como su pie de página está vacío, sus páginas no llevan folio ([estilos de encabezado](/es/docs/configuration#estilos-de-encabezado)). Los estilos ocupan la página entera porque un diseño en la columna se recorta a la caja de texto: la lámina, que va a sangre, perdería los bordes y se quedaría sin pie. El pie de la lámina sale del atributo `caption` del título; el autor, el título y el subtítulo de la portada, del frontmatter.
+
+### 5 · El índice se rellena solo
+
+<Excerpt region="contents" />
+
+`:::toc` recoge cada título cuyo estilo lo admite en el índice, con el número de la misma plantilla y la etiqueta de la página donde cae. El libro se compone de nuevo hasta que esas etiquetas dejen de cambiar ([índice de contenidos](/es/docs/configuration#índice-de-contenidos)). El título de la propia página, Contents, tiene un estilo con `numbered: false`; sin él, Contents sería el poema I. Con `'. '` como carácter de relleno, cada punto va seguido de un espacio. Los puntos se alinean a la derecha, para que coincidan de una entrada a otra, y salen con la letra y el color de los números de página, porque `toc.leader` no tiene ajuste de color.
+
+### 6 · Un adorno es un tipo de recurso sin rótulo
+
+<Excerpt region="ornament" />
+
+Una imagen en el texto es un recurso, y todo recurso tiene un tipo. El tipo del adorno tiene vacío el prefijo del pie y la ramita no lleva pie, de modo que debajo no aparece ningún rótulo como «Figure 1» ([tipos de recurso](/es/docs/configuration#tipos-de-recurso)). El `defaultPlacement` del tipo coloca la ramita donde está `::resource{id="sprig"}`, centrada y con un quinto de la medida; para el remate bajo *Inversnaid* basta esa línea del Markdown. `resourceTypes` sustituye a la lista predeterminada, por lo que este libro no tiene tipos de figura ni de tabla. Si los necesitas, pon `...defaultResourceTypes()` en la lista, delante del adorno.
+
+## Variantes
+
+### Sangra más los versos partidos
+
+Con una sangría francesa mayor, el resto de cada verso partido queda más lejos del margen. Sirve para poemas en los que muchos versos no caben en la línea.
+
+```diff
+-  hangingIndent: em(4), // a turned line hangs past the 1 and 2 em indents
++  hangingIndent: em(6), // a turned line hangs past the 1 and 2 em indents
+```
+
+### Empieza todos los versos en el margen
+
+Sin `indentVerse`, Postext recorta los espacios iniciales y todos los versos empiezan en el margen; solo los versos partidos siguen sangrados.
+
+```diff
+-const verses = indentVerse(markdown); // the leading spaces of verse, as em spaces
++const verses = markdown; // leading spaces left to the trim
+```
+
+### Abre cada poema en página impar
+
+Con la paridad `'odd'`, cada poema salta a la siguiente página impar. El libro pasa de ocho páginas a once, y las tres pares que quedan en blanco no llevan folio, porque los folios se filtran por el rol de la página.
+
+```diff
+ const poems = { level: 1, numberingTemplate: '{1:I}', advancedDesign: poemHead,
+-  marginBottom: pt(0), breakBefore: { enabled: true, parity: 'any' } };
++  marginBottom: pt(0), breakBefore: { enabled: true, parity: 'odd' } };
+```
+
+### Numera los poemas con cifras
+
+El estilo del contador en la plantilla cambia a la vez el número de la página del poema y el del índice.
+
+```diff
+-const poems = { level: 1, numberingTemplate: '{1:I}', advancedDesign: poemHead,
++const poems = { level: 1, numberingTemplate: '{1}', advancedDesign: poemHead,
+```
+
+## Errores frecuentes
+
+- Deja una línea en blanco después de cada verso. Dos versos sin una línea en blanco entre ellos forman un solo párrafo, y el poema se recompone como prosa.
+- Da al estilo del verso su propio `textAlign`. Un estilo de párrafo hereda el del cuerpo, y el verso justificado estira hasta la medida la primera parte de cada verso partido.
+- Un verso que empieza por un año y un punto, como «1877. », o por un guion y un espacio se convierte en un elemento de lista, porque cada verso es un párrafo. Pon delante un unidor de palabras (U+2060), como hace `indentVerse` antes de una sangría.
+- Para que dos palabras pasen juntas a la línea de abajo, únelas con un espacio de no separación (U+00A0), como *the soil* y *bright wings.* en la página 5. Se mantiene en un verso de texto llano; en uno con cursiva o negrita el motor sigue cortando ahí.
+- Un elemento del pie de página con `pages` en `'all'` se imprime también en las páginas en blanco. Aquí el folio se compone de dos elementos, uno para las aperturas y otro para las páginas de texto, así que una página par en blanco se queda en blanco.

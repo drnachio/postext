@@ -1,0 +1,75 @@
+---
+title: "Títulos de sección hasta siete niveles"
+summary: "Secciones del 1.1 al 1.12 numeradas en una píldora ámbar que crece con el número, cuatro niveles más por debajo y un séptimo sacado de un estilo de título."
+description: "El manual de campo de una brigada de senderos, en Postext: títulos numerados en píldoras, niveles con filete y cursiva, un séptimo nivel y listas anidadas."
+question: "¿Cómo numero los títulos 1.1 y 1.1.1, doy a cada nivel un estilo distinto y pongo el número en una píldora?"
+aliases: ["títulos numerados", "numeración de títulos", "numeración decimal", "niveles de título", "encabezados numerados", "H7", "séptimo nivel de título", "más de seis niveles", "insignia con número", "píldora con número", "sección sin numerar", "títulos en línea", "lista numerada anidada", "numeración a) i)", "lista de tareas", "casillas", "manual de campo", "manual técnico"]
+pageNotes: { "1": "La apertura del capítulo 1, Drenaje: el número 1 en una gran píldora ámbar junto al título, una entradilla en cursiva y el perfil de un sendero que sube hacia la derecha por la cabeza de la página, en bandas verdes con doce puntos ámbar en los sitios balizados para nuevos desviadores. Debajo, dos columnas empiezan con las secciones 1.1 a 1.3 en pequeñas píldoras ámbar, una lista de viñetas y el título con filete 1.2.1.", "2": "Las secciones 1.4 a 1.6 llenan las dos columnas; la 1.5, cuyo título pasa a dos líneas junto a su píldora, reúne los niveles más hondos del capítulo: los títulos con filete 1.5.1 y 1.5.2, títulos en cursiva, el título verde Herramientas para la zanja, la etiqueta Barras de acero en mayúsculas de paso fijo y, bajo ella, los nombres de dos herramientas en cursiva gris.", "3": "Las secciones 1.7 a 1.12, con la píldora que se ensancha del 1.9 al 1.10, normas de seguridad que empiezan por términos en negrita verde y una Lista de control sin número, con un cuadrado ámbar hueco al lado, una lista numerada 1., a) e i. y dos casillas de tarea; un colofón gris en letra pequeña cierra el capítulo." }
+---
+
+## Lo que vas a componer
+
+*Drenaje*, capítulo 1 del manual de campo de una brigada de senderos, en tres páginas B5 a dos columnas: IBM Plex Serif para el texto, Sans Condensed para títulos y números de sección, y Mono para etiquetas, folios y números de apartado. La apertura pone el número en una gran píldora ámbar sobre el perfil del sendero, con doce puntos ámbar donde irán nuevos desviadores. Las secciones 1.1 a 1.12 llevan el número en píldoras menores, que se ensanchan en el 1.10. Un filete verde y mayúsculas espaciadas marcan los apartados 1.2.1, 1.5.1 y 1.5.2. Los niveles 4 a 6, sin número, cambian de letra, de color o de caja, y un séptimo, en cursiva gris, nombra las herramientas. Las normas de seguridad empiezan en negrita verde. Cierra el capítulo una lista de control sin número, con un cuadrado hueco al lado, listas 1., a) e i. y dos casillas.
+
+## Elaboración
+
+### 1 · Pon el número en una píldora que crece con él
+
+El código está en [la respuesta corta](#la-respuesta-corta), más arriba. `numberingTemplate: '{1}.{2}'` junta el contador del capítulo y el de la sección, y así las secciones van del 1.1 al 1.12 ([configuración por nivel](/es/docs/configuration#configuración-por-nivel)). Si el nivel tiene un diseño avanzado, el número ya no se imprime delante del título y es el diseño el que coloca `{number}`. Aquí va en un elemento de texto con una caja (`box`) de fondo ámbar y esquinas redondeadas, sin ancho fijo, de modo que la píldora mide lo que el número más su relleno: 10,1 mm en el 1.9 y 12,7 mm en el 1.10. `'right-of'` cuelga el título del borde derecho de la píldora y alinea sus líneas a la izquierda; por eso el título largo de la 1.5 pasa a una segunda línea junto al número y no debajo ([posicionamiento de elementos](/es/docs/configuration#posicionamiento-de-elementos)). El título necesita además `overflow: 'wrap'`, porque, por defecto, el texto de diseño que no cabe se corta con puntos suspensivos. A la píldora le faltan 3 pt para medir dos líneas de la rejilla, y como cada título de sección empieza en una línea de la rejilla, esos 3 pt son el blanco que queda entre la píldora y el texto de debajo, tanto si el título abre una columna como si sigue a un párrafo.
+
+<PageShot page={3} crop="0.07,0.465,0.44,0.218" caption="Página 3: la píldora se ensancha del 1.9 al 1.10 y el título se desplaza a la derecha lo que ocupa la cifra de más." />
+
+### 2 · Pon filete y espaciado al tercer nivel
+
+<Excerpt region="ruled" />
+
+En la 1.4.1 los títulos no tienen `letterSpacing` y el texto de diseño sí, así que el nivel 3 también es un diseño: un filete verde de 0,75 pt, el número en IBM Plex Mono y, a su lado, el título en mayúsculas espaciadas. El tercer contador de `'{1}.{2}.{3}'` vuelve a empezar en cada sección; por eso tanto el 1.2.1 como el 1.5.1 terminan en 1. `DROP` baja solo el filete. El número se coloca `LEAD - DROP` por debajo de él, de modo que número y título quedan una línea de la rejilla por debajo de donde empieza el título, sea cual sea `DROP`. Como el filete queda más cerca del número que del párrafo anterior, se lee como parte del título.
+
+### 3 · Baja del nivel 4 al 6
+
+<Excerpt region="levels" />
+
+Un nivel sin `numberingTemplate` no imprime número, así que a partir del nivel 4 lo que distingue un título de otro es la letra, el color o la caja: una cursiva con remates en el 4, la letra de los títulos, en verde, en el 5 y mayúsculas seminegras de paso fijo en el 6. El interlineado y los márgenes definidos en el propio `headings` llegan a todos los niveles y ponen cada título sobre la rejilla, con una línea en blanco encima y ninguna debajo. Cualquier objeto `headings` anula el salto de página que abre cada capítulo, y por eso el nivel 1 lo declara de nuevo.
+
+### 4 · Haz un séptimo nivel y una sección sin número con estilos
+
+<Excerpt region="styles" />
+
+Markdown no pasa de `######`, y un título pierde sus marcas de negrita y cursiva, así que `###### *Barra de palanca*` saldría como un nivel 6 más. El estilo de título `'level7'` compone los nombres de las herramientas en una cursiva estrecha gris de peso 500, más ligera que el 600 del nivel 6, y `textTransform: 'none'` les quita las mayúsculas que heredarían. Se leen un escalón por debajo de la etiqueta de paso fijo que los precede, aunque a 8,4 pt son más grandes que los 7,8 pt de la etiqueta ([estilos de encabezado](/es/docs/configuration#estilos-de-encabezado)). `numbered: false` deja la lista de control fuera de la cuenta, de modo que una sección posterior seguiría siendo la 1.13. Un `{number}` vacío seguiría pintando la píldora ámbar, así que el estilo trae su propio diseño, con un cuadrado hueco en su lugar. El verde de los términos que abren las normas de seguridad es el `boldColor` de un estilo de párrafo.
+
+### 5 · Cambia las marcas de la lista con la profundidad
+
+<Excerpt region="lists" />
+
+Cada profundidad toma de `levels` su marca, su color y su separador: la lista de control numera con 1., a) e i. ([sobrescrituras por nivel de las listas ordenadas](/es/docs/configuration#sobrescrituras-por-nivel-listas-ordenadas)) y las viñetas pasan del verde al salvia ([sobrescrituras por nivel de las no ordenadas](/es/docs/configuration#sobrescrituras-por-nivel-listas-no-ordenadas)). El nivel 1 conserva el formato por defecto, `'arabic'`; `'decimal'`, la palabra que usa CSS, imprimiría «undefined». Las dos entradas `- [ ]` del final de la lista de control llevan, en lugar de viñeta, el `taskCheckboxChar`, que por defecto es ☐, en el verde de las viñetas de primer nivel ([extensiones para listas de tareas](/es/docs/configuration#extensiones-para-listas-de-tareas)). Con los márgenes de arriba y de abajo a cero, todas las listas siguen sobre la rejilla base.
+
+### 6 · Abre el capítulo sobre el perfil del sendero
+
+<Excerpt region="opener" />
+
+El perfil es un elemento de imagen de la apertura, anclado a la página y tan ancho como ella. Si fuera una figura flotante a todo el ancho, citada en la página 1 y colocada arriba, abriría la página 2 ([elementos de imagen](/es/docs/configuration#elementos-de-imagen)). En una apertura, una imagen no reserva altura, así que `minHeight` lleva el texto a la primera línea de la rejilla que quede al menos 6 mm por debajo de ella. La leyenda sobre el verde es texto de diseño, porque un SVG pintado como imagen no puede usar las fuentes de la página. La píldora grande repite la letra y el ámbar de las de sección, y su `{number}` es el número del capítulo, que da `numberingTemplate: '{1}'`.
+
+## Variantes
+
+### Quita el número del capítulo de las píldoras
+
+Quita de la plantilla el contador del capítulo y las píldoras irán del 1 al 12, más anchas a partir del 10; el nivel 3 seguirá imprimiendo 1.5.1 mientras su propia plantilla conserve `{1}`.
+
+```diff
+-const h2 = { level: 2, numberingTemplate: '{1}.{2}',
++const h2 = { level: 2, numberingTemplate: '{2}',
+```
+
+### Da a todas las píldoras el mismo ancho
+
+Un ancho fijo, el del 1.10, centra cada número en una píldora igual a las demás y alinea los títulos en una sola columna.
+
+```diff
+-  placement: at('container', 'top-left') }; // plus its padding
++  placement: { ...at('container', 'top-left'), size: { width: mm(12.7) } } };
+```
+
+## Errores frecuentes
+
+- El séptimo nivel es un título de nivel 6 con el estilo `level7`, así que ningún título del ejemplo baja más de un nivel respecto al anterior: *La zanja*, *Herramientas para la zanja*, BARRAS DE ACERO y *Barra de palanca* son de los niveles 4, 5, 6 y 6. El Sandbox avisa de ese caso con «Salto en la jerarquía de títulos», y en este capítulo el aviso no aparece.
+- Una línea que termina en dos puntos solo sigue unida a su lista si el primer elemento cabe en el espacio que queda: en la versión 1.4.1 la regla comprueba que quepa una línea, así que un primer elemento de dos líneas que encuentra una sola línea libre pasa solo a la columna siguiente y deja los dos puntos aislados. La sección 1.2 mantiene su primer elemento en una línea en las dos ediciones.

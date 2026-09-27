@@ -2,15 +2,21 @@
 
 import { useState, type ReactNode } from 'react';
 import { AlertTriangle, ChevronRight, CircleCheck, Type, FileWarning, Heading, List, FileText, Sigma, Image, Database } from 'lucide-react';
-import { KNOWN_CONTAINERS, KNOWN_DIRECTIVES } from 'postext';
+import { HYPHENATION_LOCALES, KNOWN_CONTAINERS, KNOWN_DIRECTIVES } from 'postext';
 import { useSandbox, useSandboxWarnings } from '../context/SandboxContext';
 import { Collapsible, EmptyState, ListRow, PanelBody, PanelHeader, cn } from '../ui';
 import { WARNING_CATEGORY_ORDER, warningCategory, type WarningCategory } from '../warnings/categories';
 import type { Warning, WarningPayload } from '../warnings/types';
 import type { SandboxLabels } from '../types';
 
-/** Human tag for the design slot a warning points at. */
-function slotWhere(slot: string, level?: number): string {
+/** Where a design warning points: the slot (`header`, `part`, `H2`); for
+ *  a heading style its `{style="…"}` and, for the running heads of its
+ *  section, the slot after it; for the part's verso and the contents' part
+ *  rows, the configuration key. */
+function slotWhere(payload: { slot: string; level?: number; styleId?: string; configPath?: string }): string {
+  const { slot, level, styleId, configPath } = payload;
+  if (configPath !== undefined) return configPath;
+  if (styleId !== undefined) return slot === 'heading' ? `{style="${styleId}"}` : `{style="${styleId}"} ${slot}`;
   return slot === 'heading' ? `H${level ?? ''}` : slot;
 }
 
@@ -36,6 +42,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'headerFooterMetadataMissing':
       return FileText;
     case 'unknownDirective':
+    case 'malformedEmbed':
     case 'unclosedContainer':
     case 'unknownParagraphStyle':
     case 'unknownCalloutType':
@@ -49,6 +56,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'parityCascade':
     case 'alphaPdfOverflow':
     case 'calloutOverflow':
+    case 'sideColumnPercentClamped':
       return FileWarning;
     case 'designCyclicAnchor':
     case 'designDanglingAnchor':
@@ -56,16 +64,29 @@ function iconFor(kind: WarningPayload['kind']) {
       return FileWarning;
     case 'headingSpanWithoutBreak':
     case 'headingAdvancedWithoutTitleText':
+    case 'unknownHeadingStyle':
+    case 'headingDesignCut':
       return Heading;
     case 'unknownResourceId':
     case 'duplicateResourceId':
     case 'danglingTypeRef':
     case 'bitmapTooSmall':
+    case 'unknownTableStyle':
+    case 'raggedTableGrid':
+    case 'missingImage':
       return Image;
     case 'storageUnavailable':
       return Database;
     case 'chapterFrontmatterIgnored':
       return FileText;
+    case 'fontFamilyStack':
+      return Type;
+    case 'unknownNumberFormat':
+      return List;
+    case 'unknownConfigKey':
+      return FileWarning;
+    case 'unsupportedHyphenationLocale':
+      return Type;
     default:
       return AlertTriangle;
   }
@@ -99,6 +120,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsHeaderFooterMetadataMissingTitle;
     case 'unknownDirective':
       return labels.warningsUnknownDirectiveTitle;
+    case 'malformedEmbed':
+      return labels.warningsMalformedEmbedTitle;
     case 'unclosedContainer':
       return labels.warningsUnclosedContainerTitle;
     case 'unknownParagraphStyle':
@@ -107,6 +130,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsUnknownCalloutTypeTitle;
     case 'unknownChipStyle':
       return labels.warningsUnknownChipStyleTitle;
+    case 'unknownHeadingStyle':
+      return labels.warningsUnknownHeadingStyleTitle;
     case 'chipOverlap':
       return labels.warningsChipOverlapTitle;
     case 'numberingInvalidFormat':
@@ -124,6 +149,10 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsAlphaPdfOverflowTitle;
     case 'calloutOverflow':
       return labels.warningsCalloutOverflowTitle;
+    case 'headingDesignCut':
+      return labels.warningsHeadingDesignCutTitle;
+    case 'sideColumnPercentClamped':
+      return labels.warningsSideColumnPercentClampedTitle;
     case 'designCyclicAnchor':
       return labels.warningsDesignCyclicAnchorTitle;
     case 'designDanglingAnchor':
@@ -142,10 +171,24 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsDanglingTypeRefTitle;
     case 'bitmapTooSmall':
       return labels.warningsBitmapTooSmallTitle;
+    case 'unknownTableStyle':
+      return labels.warningsUnknownTableStyleTitle;
+    case 'raggedTableGrid':
+      return labels.warningsRaggedTableGridTitle;
+    case 'missingImage':
+      return labels.warningsMissingImageTitle;
     case 'storageUnavailable':
       return labels.warningsStorageUnavailableTitle;
     case 'chapterFrontmatterIgnored':
       return labels.warningsChapterFrontmatterIgnoredTitle;
+    case 'fontFamilyStack':
+      return labels.warningsFontFamilyStackTitle;
+    case 'unknownNumberFormat':
+      return labels.warningsUnknownNumberFormatTitle;
+    case 'unknownConfigKey':
+      return labels.warningsUnknownConfigKeyTitle;
+    case 'unsupportedHyphenationLocale':
+      return labels.warningsUnsupportedHyphenationLocaleTitle;
   }
 }
 
@@ -154,6 +197,12 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
 const KNOWN_FENCE_NAMES = [...KNOWN_DIRECTIVES, ...KNOWN_CONTAINERS]
   .map((n) => `\`${n}\``)
   .join(', ');
+
+/** `#id · ` prefix of a warning raised in a resource's caption, note or
+ *  cells. */
+function inResource(id: string | undefined): string {
+  return id !== undefined ? `#${id} · ` : '';
+}
 
 function formatVariantList(
   variants: Array<{ weight: number; style: 'normal' | 'italic' }>,
@@ -188,19 +237,23 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
     case 'unclosedMath':
       return `${payload.delimiter}${payload.tex.slice(0, 40)}…`;
     case 'headerFooterUnknownPlaceholder':
-      return `${slotWhere(payload.slot, payload.level)} · {${payload.name}} — ${labels.warningsHeaderFooterUnknownPlaceholderDetail}`;
+      return `${slotWhere(payload)} · {${payload.name}} — ${labels.warningsHeaderFooterUnknownPlaceholderDetail}`;
     case 'headerFooterMetadataMissing':
-      return `${slotWhere(payload.slot, payload.level)} · {${payload.name}} — ${labels.warningsHeaderFooterMetadataMissingDetail}`;
+      return `${slotWhere(payload)} · {${payload.name}} — ${labels.warningsHeaderFooterMetadataMissingDetail}`;
     case 'unknownDirective':
       return `:::${payload.name} — ${labels.warningsUnknownDirectiveDetail.replace('__names__', KNOWN_FENCE_NAMES)}`;
     case 'unclosedContainer':
       return `:::${payload.name} — ${labels.warningsUnclosedContainerDetail}`;
+    case 'malformedEmbed':
+      return `::${payload.name} — ${labels.warningsMalformedEmbedDetail}`;
     case 'unknownParagraphStyle':
       return `:::paragraphs{style="${payload.style}"} — ${labels.warningsUnknownParagraphStyleDetail}`;
     case 'unknownCalloutType':
       return `:::callout{type="${payload.type}"} — ${labels.warningsUnknownCalloutTypeDetail}`;
     case 'unknownChipStyle':
-      return `:chip[…]{style="${payload.style}"} — ${labels.warningsUnknownChipStyleDetail}`;
+      return `${inResource(payload.inResource)}:chip[…]{style="${payload.style}"} — ${labels.warningsUnknownChipStyleDetail}`;
+    case 'unknownHeadingStyle':
+      return `H${payload.level} {style="${payload.style}"} — ${labels.warningsUnknownHeadingStyleDetail}`;
     case 'chipOverlap':
       return labels.warningsChipOverlapDetail
         .replace('__style__', payload.style)
@@ -223,16 +276,22 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsCalloutOverflowDetail
         .replace('__page__', String(payload.page))
         .replace('__mm__', payload.overflowMm.toFixed(1));
+    case 'headingDesignCut':
+      return `H${payload.level} — ${labels.warningsHeadingDesignCutDetail
+        .replace('__page__', String(payload.page))
+        .replace('__mm__', payload.overflowMm.toFixed(1))}`;
+    case 'sideColumnPercentClamped':
+      return `${payload.path}: ${payload.value} — ${labels.warningsSideColumnPercentClampedDetail.replace('__used__', payload.used)}`;
     case 'designCyclicAnchor': {
-      const where = slotWhere(payload.slot, payload.level);
+      const where = slotWhere(payload);
       return `${where} · #${payload.elementId} — ${labels.warningsDesignCyclicAnchorDetail}`;
     }
     case 'designDanglingAnchor': {
-      const where = slotWhere(payload.slot, payload.level);
+      const where = slotWhere(payload);
       return `${where} · #${payload.elementId} → #${payload.referencedId} — ${labels.warningsDesignDanglingAnchorDetail}`;
     }
     case 'designTextClipAlwaysTruncates': {
-      const where = slotWhere(payload.slot, payload.level);
+      const where = slotWhere(payload);
       return `${where} · #${payload.elementId} — ${labels.warningsDesignTextClipAlwaysTruncatesDetail}`;
     }
     case 'headingSpanWithoutBreak':
@@ -240,8 +299,11 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
     case 'headingAdvancedWithoutTitleText':
       return `H${payload.level} — ${labels.warningsHeadingAdvancedWithoutTitleTextDetail}`;
     case 'unknownResourceId': {
+      if (payload.usage === 'cellImage') {
+        return `${inResource(payload.inResource)}image → #${payload.resourceId} — ${labels.warningsUnknownResourceIdDetail}`;
+      }
       const where = payload.usage === 'embed' ? '::resource' : ':ref';
-      return `${where}{id=${payload.resourceId}} — ${labels.warningsUnknownResourceIdDetail}`;
+      return `${inResource(payload.inResource)}${where}{id=${payload.resourceId}} — ${labels.warningsUnknownResourceIdDetail}`;
     }
     case 'duplicateResourceId':
       return `#${payload.resourceId} ×${payload.count} — ${labels.warningsDuplicateResourceIdDetail}`;
@@ -249,10 +311,30 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `#${payload.resourceId} → ${payload.typeId} — ${labels.warningsDanglingTypeRefDetail}`;
     case 'bitmapTooSmall':
       return `#${payload.resourceId} · ${payload.renderedWidth}px / ${payload.bitmapWidth}px — ${labels.warningsBitmapTooSmallDetail}`;
+    case 'unknownTableStyle':
+      return `#${payload.resourceId} · styleId="${payload.styleId}" — ${labels.warningsUnknownTableStyleDetail}`;
+    case 'raggedTableGrid': {
+      const detail = payload.reason === 'spanOverlap'
+        ? labels.warningsRaggedTableGridOverlapDetail
+        : labels.warningsRaggedTableGridMissingDetail;
+      return `#${payload.resourceId} · ${detail.replace('__row__', String(payload.row + 1)).replace('__col__', String(payload.col + 1))}${payload.count > 1 ? ` (×${payload.count})` : ''}`;
+    }
+    case 'missingImage':
+      return `#${payload.resourceId} — ${labels.warningsMissingImageDetail}`;
     case 'storageUnavailable':
       return labels.warningsStorageUnavailableDetail;
     case 'chapterFrontmatterIgnored':
       return labels.warningsChapterFrontmatterIgnoredDetail.replace('__chapter__', payload.chapterTitle);
+    case 'fontFamilyStack':
+      return `${payload.path}: "${payload.value}" — ${labels.warningsFontFamilyStackDetail.replace('__used__', payload.used)}`;
+    case 'unknownNumberFormat':
+      return `${payload.path}: "${payload.value}" — ${labels.warningsUnknownNumberFormatDetail.replace('__used__', payload.used)}`;
+    case 'unknownConfigKey':
+      return `${payload.path} — ${labels.warningsUnknownConfigKeyDetail}${payload.suggestion ? ` ${labels.warningsUnknownConfigKeySuggestion.replace('__suggestion__', payload.suggestion)}` : ''}`;
+    case 'unsupportedHyphenationLocale':
+      return labels.warningsUnsupportedHyphenationLocaleDetail
+        .replace('__locale__', payload.locale)
+        .replace('__locales__', HYPHENATION_LOCALES.join(', '));
   }
 }
 

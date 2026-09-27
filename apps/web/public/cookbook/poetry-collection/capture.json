@@ -1,0 +1,380 @@
+{
+  "schemaVersion": 1,
+  "slug": "poetry-collection",
+  "sourceHash": "f67542acf3151b28cc77028e53a4c12d919af8e4c71fdb0d0948cbf2024dc7a4",
+  "engine": {
+    "postext": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-26T21:05:08.907Z",
+  "variants": {
+    "en": {
+      "hash8": "d99a3d85",
+      "vdtHash": "00a412d5a0a9913e13d7b9c8f857fa977e51e468",
+      "timings": {
+        "importMs": 119,
+        "fontsMs": 50,
+        "buildMs": 42,
+        "totalMs": 797,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          140,
+          216
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Sorts Mill Goudy",
+          "sizePt": 11,
+          "leadingPt": 15
+        },
+        "families": [
+          "Italiana",
+          "Marcellus SC",
+          "Sorts Mill Goudy"
+        ],
+        "pages": 8,
+        "ownLines": 180
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 5216,
+          "alt": "Opening page 1: Pied Beauty."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 71638,
+          "alt": "Opening page 2: Fern and Rowan."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 15970,
+          "alt": "Opening page 3: Pied Beauty."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 60920,
+          "alt": "Opening page 4: Contents."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 61364,
+          "alt": "Opening page 5: I God’s Grandeur."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 70400,
+          "alt": "Opening page 6: II The Windhover."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 45962,
+          "alt": "Opening page 7: III Pied Beauty."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 59624,
+          "alt": "Opening page 8: IV Inversnaid."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.maxWordSpacing",
+          "bodyText.minWordSpacing",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].fontFamily",
+          "headingStyles[].fontSize",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].id",
+          "headingStyles[].lineHeight",
+          "headingStyles[].marginBottom",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.layoutType",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].hangingIndent",
+          "paragraphStyles[].hyphenation",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].defaultPlacement",
+          "resourceTypes[].defaultPlacement.align",
+          "resourceTypes[].defaultPlacement.position",
+          "resourceTypes[].defaultPlacement.width",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "toc",
+          "toc.leader",
+          "toc.leader.char",
+          "toc.leader.gap",
+          "toc.levels",
+          "toc.levels[].italic",
+          "toc.levels[].level",
+          "toc.levels[].marginBottom",
+          "toc.levels[].numberColor",
+          "toc.levels[].numberFontFamily",
+          "toc.levels[].numberFontWeight",
+          "toc.levels[].numberGap",
+          "toc.levels[].numberWidth",
+          "toc.pageNumber",
+          "toc.pageNumber.color",
+          "toc.pageNumber.fontFamily",
+          "toc.pageNumber.fontSize",
+          "toc.pageNumber.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "toc"
+        ],
+        "configLeaves": 263,
+        "designElements": 12,
+        "directives": [
+          ":::toc",
+          ":::space",
+          ":::paragraphs",
+          "::resource"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 2,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Italiana",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Marcellus SC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Sorts Mill Goudy",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Sorts Mill Goudy",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "bibliography",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "inline-embeds",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "resource-types",
+          "resources",
+          "section-running-heads",
+          "toc",
+          "unnumbered-headings",
+          "vertical-space"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.51
+        },
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
+      }
+    }
+  }
+}

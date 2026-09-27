@@ -292,6 +292,15 @@ export const UnorderedListsSection = memo(function UnorderedListsSection() {
       />
 
       <ToggleSwitch
+        label={labels.unorderedListsSnapTopToGrid}
+        checked={lists.snapTopToGrid}
+        onChange={(v) => updateLists({ snapTopToGrid: v })}
+        tooltip={labels.unorderedListsSnapTopToGridTooltip}
+        isDefault={lists.snapTopToGrid === D.snapTopToGrid}
+        onReset={() => resetField('snapTopToGrid')}
+      />
+
+      <ToggleSwitch
         label={labels.unorderedListsHangingIndent}
         checked={lists.hangingIndent}
         onChange={(v) => updateLists({ hangingIndent: v })}

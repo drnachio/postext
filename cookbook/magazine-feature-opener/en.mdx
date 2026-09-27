@@ -1,0 +1,70 @@
+---
+title: "Magazine feature: photo opener to end mark"
+summary: "One advancedDesign opener sets a bleed photo and the heading's kicker, headline, standfirst and byline; two floated boxes and a chip end mark follow."
+description: "A magazine feature set in Postext, with a bleed photo opener built from the Markdown heading, a hanging pull quote, two floated boxes and a square end mark."
+question: "How do I give a magazine opener a kicker, standfirst, byline and photo credit from the Markdown heading?"
+aliases: ["magazine feature", "article opener", "photo opener", "hero photo", "standfirst", "byline", "photo credit", "pull quote", "hanging quotation mark", "fact box", "in numbers panel", "end mark", "end sign", "department opener"]
+pageNotes: { "1": "A mountain lake mirroring clouds between autumn slopes fills the top of the page; below it, the kicker Climate · Field report, the headline The Lake That Keeps Time on two lines, an italic standfirst and the byline, then two justified columns.", "2": "The verso: teal italic crossheads, a pull quote whose quotation mark hangs in the outer margin, and an At a glance box under a teal stripe at the head of the right-hand column.", "3": "The recto: a band of snowy pine wood across the top, the end of the story closed by a small black square, and a dark In numbers panel at the foot.", "4": "Five Kinds of Ice, a field guide, opens with the same design over a drawing of a frozen lake in section, with a rust kicker." }
+---
+
+## What you'll build
+
+The feature well of *Boreal*, a nature magazine's winter issue, on a 225 × 297 mm page. The story opens under a mountain lake bled across the top of the page. Below the picture, a tracked kicker tops a two-line headline, with an italic standfirst to its right and the byline under it; the photographer’s credit runs under the photo. The headline is the text of the Markdown heading, and the kicker, standfirst, byline and credit are its attributes. The story continues across a spread in two justified columns. The verso has a pull quote with a hanging quotation mark and a fact box at the head of the right-hand column; the recto, a band of pine wood at the top and a dark numbers panel at the foot. A small square ends the story. Overleaf, a field guide reuses the opener with a drawing and a rust kicker.
+
+## Method
+
+### 1 · Build the opener from the heading line
+
+The code is [the short answer](#the-short-answer) above. Each `{attr.<key>}` prints the `<key>="…"` value on the story’s `#` line and `{titleText}` prints the heading itself ([heading attributes](/en/docs/document-format#heading-attributes)), so each story keeps its words in its own Markdown and every level-1 heading shares one design. The photo hangs from the page’s top edge and the container starts 22 mm lower, so `depth - TOP` is the photo’s lower edge measured from the container; the credit sits 2 mm below that line at the top-right and the kicker 9 mm below it at the top-left. The headline goes `below` the kicker, set to the 118 mm `HEAD` measure. The standfirst goes `right-of` the headline with no width of its own, so it wraps at the container’s edge, and the byline goes `below` the standfirst, so a longer standfirst pushes the byline down instead of running into it. The level has no `minHeight`. The headline and the byline each end in an empty 5 mm padding that counts toward the opener’s height, so the story starts on the first grid line at least 5 mm under whichever of the two ends lower, however many lines each runs to.
+
+### 2 · Declare the pictures once, by their real pixels
+
+<Excerpt region="resources" />
+
+A design element names its picture by resource id, so the opener’s photograph is declared like any figure but never cited: only the opener draws it, out to the trim, which no float reaches. Bitmaps are measured at the page’s 150 `dpi`, so the pine wood’s 2000 px make 339 mm and shrink to the 195 mm measure, about 260 dpi in print. The pictures get a type of their own, with an empty caption prefix and numbering template, so the pine wood’s caption carries no figure number. The band is a page-wide `top` float, and a top float opens the page after the one that cites it. Its `::resource` line sits on the verso, after the 1944 paragraph, so the band heads the recto.
+
+### 3 · Hang the quotation mark in the margin
+
+<Excerpt region="quote" />
+
+A glyph icon takes a column of its own beside the text, which would indent the quote. The negative gap slides the text back over the empty right-hand side of the glyph’s square. A negative left padding as wide as what is left of that column (size + gap, 34 pt) then moves the column out into the margin, and the text starts back on the column edge. The box’s frame stays on the column, so a background would stop short of the mark. The square starts 12 mm out, and the mark, centred in it, hangs about 6 mm into the verso’s 14 mm outer margin. The Spanish edition sets its « smaller, because a guillemet sits lower and runs wider than a quotation mark.
+
+### 4 · Float the boxes to a column head and the page foot
+
+<Excerpt region="boxes" />
+
+With `placement: 'top'` the fact box floats: it leaves the flow and takes the next free column head, so the text runs on to the foot of the column instead of leaving a gap where the box did not fit. The numbers panel floats the other way, to the foot of the page, and spans both columns; its three figures are level-4 headings, a level the story never uses, placed by `breaks="3,5"`, which counts child blocks, not lines. The end mark is a chip with no visible text. Its `paddingX` gives the square its width and the chip’s font size gives its height, both 1.05 em at the chip’s own size.
+
+### 5 · Running heads that name the issue and the story
+
+<Excerpt region="heads" />
+
+Header elements paint over the page and reserve no space, so every piece is anchored to the page in the top margin with millimetre offsets. The verso names the magazine and the issue from the frontmatter, the recto the feature’s title, and `pages: 'body'` keeps both off the openers, which carry only a folio, at the foot. A design text’s baseline sits 0.8 of the way down its line box, which is 1.2 times its size, so `baseline()` drops the 7.5 pt label 0.34 mm below the 8.5 pt folio and stands the square on the same line. If you change either size, the three pieces still share one baseline.
+
+### 6 · Reuse the opener for the next item
+
+<Excerpt region="guide" />
+
+The opener is a function, so the field guide gets the same design with its own picture and depth through a heading style, `# Five Kinds of Ice {style="guide" kicker="Field guide" …}`. The drawing bleeds 126 mm down the page instead of 160; the credit and the kicker are measured from `depth - TOP` and the other words hang from the kicker, so they all move up 34 mm and the guide’s text starts higher. The style’s palette maps `lake` to rust on those pages, so the kicker, and any crosshead or box linked to `lake`, turns rust without a colour argument to `opener()`; chips do not follow the palette, which is why the end mark is ink.
+
+## Variations
+
+### Open every item on a recto
+
+With `'odd'`, the field guide moves to page 61, and page 60 stays blank.
+
+```diff
+- { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
++ { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
+```
+
+### Put the title on a band of colour
+
+For a textbook chapter, where a colour band and a big number replace the photograph, see <RecipeLink slug="chapter-opener-bleed-band">Chapter opener on a full-bleed band</RecipeLink>.
+
+## Pitfalls
+
+- An image element fits the picture inside its box and never crops it. Crop the JPEG to the proportions of the box, 225 × 160 mm here, or the photograph shrinks and leaves white strips at the edges of the page.
+- The hanging mark needs a margin. If an edit moves the pull quote into a right-hand column, the mark fills the 6 mm gutter and touches the text of the left-hand column: move the quote a paragraph earlier or later.
+- The story is fitted to end on page 59, above the numbers panel. A few more lines send its tail to a page of its own, so after an edit, fit the copy again in both languages.
+- `runtMinCharacters: 40` keeps one-word last lines out. When the line breaker cannot avoid a short last line, the engine sets the paragraph one line shorter, with tighter word spaces and, if that is not enough, up to 0.01 em less between letters. After an edit, look for a paragraph set that tight and trim or add a few words to it instead; the shipped copy needs the fix in neither language.

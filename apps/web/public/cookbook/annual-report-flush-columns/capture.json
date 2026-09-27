@@ -1,0 +1,416 @@
+{
+  "schemaVersion": 1,
+  "slug": "annual-report-flush-columns",
+  "sourceHash": "67e106c8a85200483372d216913d188c792df3e11f1e556fc870ee1920c38cca",
+  "engine": {
+    "postext": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-26T21:42:30.399Z",
+  "variants": {
+    "en": {
+      "hash8": "c80de4fd",
+      "vdtHash": "acb80050a15795f726871b2fb5ad94744c1c4ef8",
+      "timings": {
+        "importMs": 226,
+        "fontsMs": 53,
+        "buildMs": 57,
+        "totalMs": 1101,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          280
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 7,
+        "mirror": true,
+        "body": {
+          "family": "Brygada 1918",
+          "sizePt": 9.4,
+          "leadingPt": 13.4
+        },
+        "families": [
+          "Brygada 1918",
+          "Epilogue",
+          "Spline Sans Mono"
+        ],
+        "pages": 5,
+        "ownLines": 250
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1333,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 46778,
+          "alt": "Opening page 1: Tidewell Community Energy."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1333,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 147886,
+          "alt": "Opening page 2: The wind and the sun took turns."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1333,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 109872,
+          "alt": "Opening page 3: Harrow Down, the Saltings and 21 roofs. Chart 1. Output by month in 2025, in megawatt-hours: ⁤ wind at Harrow Down and ⁤ sun on the Saltings and the 21 roofs."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 155718,
+          "alt": "Page 4: Availability. Table 1. Output by site, in megawatt-hours. · Chart 2. How the two turbines spent the 17,520 hours of their year."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1333,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 94668,
+          "alt": "Opening page 5: Paying 3.5% and still adding to reserves. Table 2. Income statement for the year to 31 December."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "mergeCells",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.maxWordSpacing",
+          "bodyText.minWordSpacing",
+          "bodyText.referenceBold",
+          "bodyText.referenceColor",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].columnGap",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.gap",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "captionStyle",
+          "captionStyle.color",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelColor",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "captionStyle.note.fontSize",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].id",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.maxLinesPerHeading",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "layout",
+          "layout.gutterWidth",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].boldColor",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].textAlign",
+          "parts",
+          "parts.page",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].captionStyle",
+          "resourceTypes[].captionStyle.position",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "tableStyle",
+          "tableStyle.bodyColor",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules",
+          "tableStyles",
+          "tableStyles[].cellPadding",
+          "tableStyles[].id",
+          "unorderedLists",
+          "unorderedLists.bulletChar",
+          "unorderedLists.color",
+          "unorderedLists.marginBottom",
+          "unorderedLists.marginTop"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "page",
+          "paragraphStyles",
+          "parts",
+          "resourceTypes",
+          "tableStyle",
+          "tableStyles",
+          "unorderedLists"
+        ],
+        "configLeaves": 383,
+        "designElements": 16,
+        "directives": [
+          ":::part",
+          ":::callout",
+          ":::columns",
+          ":::paragraphs",
+          "::resource"
+        ],
+        "inline": [
+          "{attrs}",
+          "\\\\",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 4,
+          "bitmap": 0,
+          "table": 2
+        },
+        "fonts": [
+          {
+            "family": "Brygada 1918",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Brygada 1918",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Brygada 1918",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Epilogue",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Epilogue",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Epilogue",
+            "weight": 800,
+            "style": "normal"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-columns",
+          "callout-styles",
+          "citations",
+          "column-balancing",
+          "floated-callouts",
+          "heading-attributes",
+          "heading-styles",
+          "inline-embeds",
+          "opener-band",
+          "opener-design",
+          "paragraph-styles",
+          "part-dividers",
+          "part-palettes",
+          "resource-types",
+          "resources",
+          "section-running-heads",
+          "span-boxes",
+          "table-model",
+          "table-styles",
+          "title-line-breaks"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 5,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.78
+        },
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -10,6 +10,8 @@ import type {
   ResolvedUnorderedListsConfig,
 } from '../types';
 import { colorsEqual, dimensionsEqual, DEFAULT_MAIN_COLOR } from './shared';
+import { defaultTableContinuationStrings } from './tableStyle';
+import { presentTag } from '../locale';
 
 const EM = (value: number): Dimension => ({ value, unit: 'em' });
 const PT0: Dimension = { value: 0, unit: 'pt' };
@@ -21,6 +23,7 @@ export const DEFAULT_CALLOUT_STYLE_STATIC = {
   title: '',
   span: 'column' as const,
   placement: 'here' as const,
+  sideAtColumnEnd: 'before' as const,
   fixed: {
     anchor: { to: 'container', edge: 'bottom-left' } as ElementAnchor,
     offset: { x: PT0, y: PT0 },
@@ -88,12 +91,17 @@ export const DEFAULT_CALLOUT_STYLE_STATIC = {
     color: { ...DEFAULT_MAIN_COLOR } as ColorValue,
     textTransform: 'none' as const,
     gap: EM(0.5),
+    lineHeight: EM(1.2),
   },
   marginTop: EM(0.75),
   marginBottom: EM(0.75),
   snapToGrid: true,
   keepTogether: true,
   splitMinLines: 2,
+  repeatTitle: false,
+  continuesMarkerEnabled: false,
+  continuesMarkerAlign: 'right' as const,
+  continuesMarkerItalic: true,
 };
 
 /** One neutral style ships by default so `:::callout` works out of the box:
@@ -105,14 +113,20 @@ function resolveCalloutStyleConfig(
   bodyText: ResolvedBodyTextConfig,
   headings: ResolvedHeadingsConfig,
   unorderedLists: ResolvedUnorderedListsConfig,
+  locale: string | undefined,
 ): ResolvedCalloutStyleConfig {
   const d = DEFAULT_CALLOUT_STYLE_STATIC;
+  // Continuation strings follow the document language, as a table's do
+  // (a blank `locale` is unset).
+  const strings = defaultTableContinuationStrings(presentTag(locale) ?? bodyText.hyphenation.locale);
   return {
     id: partial.id,
     name: partial.name ?? partial.id,
     title: partial.title ?? d.title,
     span: partial.span ?? d.span,
     placement: partial.placement ?? d.placement,
+    // Any other value reads as the default.
+    sideAtColumnEnd: partial.sideAtColumnEnd === 'after' ? 'after' : d.sideAtColumnEnd,
     fixed: {
       anchor: partial.fixed?.anchor ?? d.fixed.anchor,
       offset: {
@@ -209,6 +223,7 @@ function resolveCalloutStyleConfig(
       gap: partial.titleStyle?.gap ?? d.titleStyle.gap,
       letterSpacing: partial.titleStyle?.letterSpacing ?? PT0,
       indent: partial.titleStyle?.indent ?? PT0,
+      lineHeight: partial.titleStyle?.lineHeight ?? d.titleStyle.lineHeight,
     },
     body: {
       fontFamily: partial.body?.fontFamily ?? bodyText.fontFamily,
@@ -217,6 +232,10 @@ function resolveCalloutStyleConfig(
       color: partial.body?.color ?? bodyText.color,
       ...(partial.body?.boldColor ?? bodyText.boldColor ? { boldColor: partial.body?.boldColor ?? bodyText.boldColor } : {}),
       ...(partial.body?.italicColor ? { italicColor: partial.body.italicColor } : {}),
+      fontWeight: partial.body?.fontWeight ?? bodyText.fontWeight,
+      boldFontWeight: partial.body?.boldFontWeight ?? bodyText.boldFontWeight,
+      italic: partial.body?.italic ?? false,
+      smallCaps: partial.body?.smallCaps ?? false,
       textAlign: partial.body?.textAlign ?? (bodyText.textAlign === 'justify' ? 'justify' : 'left'),
       hyphenation: partial.body?.hyphenation ?? bodyText.hyphenation.enabled,
       paragraphSpacing: partial.body?.paragraphSpacing ?? bodyText.paragraphSpacing,
@@ -230,6 +249,9 @@ function resolveCalloutStyleConfig(
       itemSpacing: partial.lists?.itemSpacing ?? unorderedLists.itemSpacing,
       ...(partial.lists?.bulletFontSize ? { bulletFontSize: partial.lists.bulletFontSize } : {}),
       ...(partial.lists?.bulletFontWeight !== undefined ? { bulletFontWeight: partial.lists.bulletFontWeight } : {}),
+      // Set, not merely equal to the inherited value: the box's colour then
+      // reaches its ordered-list numbers (EF-92).
+      ...(partial.lists?.color ? { colorSet: true } : {}),
     },
     marginTop: partial.marginTop ?? d.marginTop,
     marginBottom: partial.marginBottom ?? d.marginBottom,
@@ -238,17 +260,28 @@ function resolveCalloutStyleConfig(
     splitMinLines: Number.isInteger(partial.splitMinLines) && partial.splitMinLines! >= 1
       ? partial.splitMinLines!
       : d.splitMinLines,
+    repeatTitle: partial.repeatTitle ?? d.repeatTitle,
+    continuedSuffix: partial.continuedSuffix ?? strings.continuedSuffix,
+    continuesMarkerEnabled: partial.continuesMarkerEnabled ?? d.continuesMarkerEnabled,
+    continuesMarker: partial.continuesMarker ?? strings.continuesMarker,
+    continuesMarkerAlign: partial.continuesMarkerAlign ?? d.continuesMarkerAlign,
+    continuesMarkerItalic: partial.continuesMarkerItalic ?? d.continuesMarkerItalic,
   };
 }
 
+/** Resolve the callout styles. `locale` is the document language of the
+ *  continuation strings (`continuedSuffix` / `continuesMarker`) when a
+ *  style leaves them unset — `PostextConfig.locale`, else the hyphenation
+ *  locale. */
 export function resolveCalloutStylesConfig(
   partial: CalloutStyleConfig[] | undefined,
   bodyText: ResolvedBodyTextConfig,
   headings: ResolvedHeadingsConfig,
   unorderedLists: ResolvedUnorderedListsConfig,
+  locale?: string,
 ): ResolvedCalloutStyleConfig[] {
   return (partial ?? DEFAULT_CALLOUT_STYLES).map((s) =>
-    resolveCalloutStyleConfig(s, bodyText, headings, unorderedLists),
+    resolveCalloutStyleConfig(s, bodyText, headings, unorderedLists, locale),
   );
 }
 
@@ -258,7 +291,8 @@ function stripObject<T extends object>(obj: T): T | undefined {
 
 /** Drop every field equal to its static default (and `name` equal to `id`).
  *  Inherited fields (`titleStyle.fontFamily`, `titleStyle.fontSize`,
- *  `icon.fontFamily`, `marker.fontFamily`, `body.*`, `lists.*`) are kept whenever set, since
+ *  `icon.fontFamily`, `marker.fontFamily`, `body.*`, `lists.*`) and the
+ *  language-dependent continuation strings are kept whenever set, since
  *  their effective default depends on other config sections. Returns
  *  `undefined` when the list is the built-in default (a single bare
  *  `note` style) or empty. */
@@ -273,6 +307,7 @@ export function stripCalloutStylesDefaults(
     if (s.title !== undefined && s.title !== d.title) r.title = s.title;
     if (s.span !== undefined && s.span !== d.span) r.span = s.span;
     if (s.placement !== undefined && s.placement !== d.placement) r.placement = s.placement;
+    if (s.sideAtColumnEnd !== undefined && s.sideAtColumnEnd !== d.sideAtColumnEnd) r.sideAtColumnEnd = s.sideAtColumnEnd;
     if (s.fixed) {
       const f: CalloutFixedConfig = {};
       const a = s.fixed.anchor;
@@ -372,6 +407,7 @@ export function stripCalloutStylesDefaults(
       if (s.titleStyle.letterSpacing !== undefined && !dimensionsEqual(s.titleStyle.letterSpacing, PT0)) t.letterSpacing = s.titleStyle.letterSpacing;
       if (s.titleStyle.indent !== undefined && !dimensionsEqual(s.titleStyle.indent, PT0)) t.indent = s.titleStyle.indent;
       if (s.titleStyle.gap !== undefined && !dimensionsEqual(s.titleStyle.gap, d.titleStyle.gap)) t.gap = s.titleStyle.gap;
+      if (s.titleStyle.lineHeight !== undefined && !dimensionsEqual(s.titleStyle.lineHeight, d.titleStyle.lineHeight)) t.lineHeight = s.titleStyle.lineHeight;
       const kept = stripObject(t);
       if (kept) r.titleStyle = kept;
     }
@@ -383,6 +419,10 @@ export function stripCalloutStylesDefaults(
       if (s.body.color !== undefined) b.color = s.body.color;
       if (s.body.boldColor !== undefined) b.boldColor = s.body.boldColor;
       if (s.body.italicColor !== undefined) b.italicColor = s.body.italicColor;
+      if (s.body.fontWeight !== undefined) b.fontWeight = s.body.fontWeight;
+      if (s.body.boldFontWeight !== undefined) b.boldFontWeight = s.body.boldFontWeight;
+      if (s.body.italic) b.italic = true;
+      if (s.body.smallCaps) b.smallCaps = true;
       if (s.body.textAlign !== undefined) b.textAlign = s.body.textAlign;
       if (s.body.hyphenation !== undefined) b.hyphenation = s.body.hyphenation;
       if (s.body.paragraphSpacing !== undefined) b.paragraphSpacing = s.body.paragraphSpacing;
@@ -409,6 +449,19 @@ export function stripCalloutStylesDefaults(
     if (s.snapToGrid !== undefined && s.snapToGrid !== d.snapToGrid) r.snapToGrid = s.snapToGrid;
     if (s.keepTogether !== undefined && s.keepTogether !== d.keepTogether) r.keepTogether = s.keepTogether;
     if (s.splitMinLines !== undefined && s.splitMinLines !== d.splitMinLines) r.splitMinLines = s.splitMinLines;
+    if (s.repeatTitle !== undefined && s.repeatTitle !== d.repeatTitle) r.repeatTitle = s.repeatTitle;
+    // Continuation strings default per document language: kept whenever set.
+    if (s.continuedSuffix !== undefined) r.continuedSuffix = s.continuedSuffix;
+    if (s.continuesMarkerEnabled !== undefined && s.continuesMarkerEnabled !== d.continuesMarkerEnabled) {
+      r.continuesMarkerEnabled = s.continuesMarkerEnabled;
+    }
+    if (s.continuesMarker !== undefined) r.continuesMarker = s.continuesMarker;
+    if (s.continuesMarkerAlign !== undefined && s.continuesMarkerAlign !== d.continuesMarkerAlign) {
+      r.continuesMarkerAlign = s.continuesMarkerAlign;
+    }
+    if (s.continuesMarkerItalic !== undefined && s.continuesMarkerItalic !== d.continuesMarkerItalic) {
+      r.continuesMarkerItalic = s.continuesMarkerItalic;
+    }
     return r;
   });
   // The built-in default (a single bare `note` style) needs no persisting.

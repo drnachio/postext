@@ -6,9 +6,10 @@ import type {
   VDTDesignImageBlock,
   VDTDesignBoxStyle,
 } from '../vdt';
-import { drawResourceImage } from './renderResourceBlock';
+import { drawResourceImage, roundedOutlinePath } from './renderResourceBlock';
 
-function drawRoundedRectPath(
+/** Adds a rounded rectangle to the current path, as a closed subpath. */
+function traceRoundedRect(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -17,7 +18,6 @@ function drawRoundedRectPath(
   r: number,
 ): void {
   const radius = Math.max(0, Math.min(r, w / 2, h / 2));
-  ctx.beginPath();
   ctx.moveTo(x + radius, y);
   ctx.lineTo(x + w - radius, y);
   ctx.arcTo(x + w, y, x + w, y + radius, radius);
@@ -30,6 +30,30 @@ function drawRoundedRectPath(
   ctx.closePath();
 }
 
+function drawRoundedRectPath(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+): void {
+  ctx.beginPath();
+  traceRoundedRect(ctx, x, y, w, h, r);
+}
+
+/**
+ * A box's fill, then its border inside the box (EF-131): the border's outer
+ * edge runs along the box edge, as CSS `box-sizing: border-box` draws it in
+ * the HTML output. A square border is stroked on a path half its width in.
+ * A rounded one is filled as the ring between the box's outline (the box's
+ * radius) and the same outline inset by the border width, its radius less
+ * that width and at least 0, which is CSS's inner border edge; a stroke
+ * would lose the outer radius where it is under half the border width. A
+ * border as wide as the box fills it. Up to postext 1.4 the stroke was
+ * centred on the edge and reached half its width outside the box. Used by
+ * design boxes, text-element boxes and callout frames.
+ */
 function drawBoxBackground(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -40,27 +64,32 @@ function drawBoxBackground(
 ): void {
   if (w <= 0 || h <= 0) return;
   if (!style.backgroundColor && !style.borderColor) return;
+  const bw = style.borderColor ? Math.max(0, style.borderWidthPx) : 0;
+  const solid = bw > 0 && (bw >= w || bw >= h);
+  const outerRadius = Math.max(0, Math.min(style.borderRadiusPx, w / 2, h / 2));
   ctx.save();
-  if (style.borderRadiusPx > 0) {
-    drawRoundedRectPath(ctx, x, y, w, h, style.borderRadiusPx);
-    if (style.backgroundColor) {
-      ctx.fillStyle = style.backgroundColor;
+  if (outerRadius > 0) {
+    if (style.backgroundColor || solid) {
+      drawRoundedRectPath(ctx, x, y, w, h, outerRadius);
+      ctx.fillStyle = solid ? style.borderColor! : style.backgroundColor!;
       ctx.fill();
     }
-    if (style.borderColor && style.borderWidthPx > 0) {
-      ctx.lineWidth = style.borderWidthPx;
-      ctx.strokeStyle = style.borderColor;
-      ctx.stroke();
+    if (bw > 0 && !solid) {
+      ctx.beginPath();
+      traceRoundedRect(ctx, x, y, w, h, outerRadius);
+      if (w > 2 * bw && h > 2 * bw) traceRoundedRect(ctx, x + bw, y + bw, w - 2 * bw, h - 2 * bw, outerRadius - bw);
+      ctx.fillStyle = style.borderColor!;
+      ctx.fill('evenodd');
     }
   } else {
-    if (style.backgroundColor) {
-      ctx.fillStyle = style.backgroundColor;
+    if (style.backgroundColor || solid) {
+      ctx.fillStyle = solid ? style.borderColor! : style.backgroundColor!;
       ctx.fillRect(x, y, w, h);
     }
-    if (style.borderColor && style.borderWidthPx > 0) {
-      ctx.lineWidth = style.borderWidthPx;
-      ctx.strokeStyle = style.borderColor;
-      ctx.strokeRect(x, y, w, h);
+    if (bw > 0 && !solid) {
+      ctx.lineWidth = bw;
+      ctx.strokeStyle = style.borderColor!;
+      ctx.strokeRect(x + bw / 2, y + bw / 2, w - bw, h - bw);
     }
   }
   ctx.restore();
@@ -79,10 +108,34 @@ function renderTextBlock(ctx: CanvasRenderingContext2D, block: VDTDesignTextBloc
   ctx.fillStyle = block.color;
   ctx.font = block.fontString;
   ctx.textBaseline = 'alphabetic';
-  const tracked = block.letterSpacingPx !== undefined && block.letterSpacingPx > 0;
+  // Negative tracking tightens the letters (EF-82).
+  const tracked = block.letterSpacingPx !== undefined && block.letterSpacingPx !== 0;
   if (tracked) ctx.letterSpacing = `${block.letterSpacingPx}px`;
+  // An outline is stroked over the filled glyphs (or alone, for hollow
+  // letters), centred on their edges — as PDF render mode 2 / 1 and CSS
+  // `-webkit-text-stroke` do.
+  const stroke = block.stroke && block.stroke.widthPx > 0 ? block.stroke : undefined;
+  if (stroke) {
+    ctx.strokeStyle = stroke.color;
+    ctx.lineWidth = stroke.widthPx;
+  }
+  const paint = (text: string, x: number, y: number) => {
+    if (!stroke?.hollow) ctx.fillText(text, x, y);
+    if (stroke) ctx.strokeText(text, x, y);
+  };
   for (const line of block.lines) {
-    ctx.fillText(line.text, block.bbox.x + line.xOffset, line.baselineY);
+    if (!line.runs) {
+      paint(line.text, block.bbox.x + line.xOffset, line.baselineY);
+      continue;
+    }
+    // Inline marks: each run in its own font, one after another.
+    let x = block.bbox.x + line.xOffset;
+    for (const run of line.runs) {
+      ctx.font = run.fontString;
+      paint(run.text, x, line.baselineY + (run.baselineShift ?? 0));
+      x += run.width;
+    }
+    ctx.font = block.fontString;
   }
   if (tracked) ctx.letterSpacing = '0px';
   ctx.restore();
@@ -102,16 +155,29 @@ function renderRuleBlock(ctx: CanvasRenderingContext2D, block: VDTDesignRuleBloc
 }
 
 function renderBoxBlock(ctx: CanvasRenderingContext2D, block: VDTDesignBoxBlock): void {
+  const clip = block.clip;
+  if (!clip) {
+    drawBoxBackground(ctx, block.bbox.x, block.bbox.y, block.bbox.width, block.bbox.height, block.box);
+    return;
+  }
+  // A callout stripe on a rounded frame: clipped to the frame's outline.
+  ctx.save();
+  roundedOutlinePath(ctx, clip);
+  ctx.clip();
   drawBoxBackground(ctx, block.bbox.x, block.bbox.y, block.bbox.width, block.bbox.height, block.box);
+  ctx.restore();
 }
 
 /** Image block (e.g. a callout icon): drawn from the resource image
  *  registry, with a neutral placeholder when the image is not decoded yet. */
-function renderImageBlock(ctx: CanvasRenderingContext2D, block: VDTDesignImageBlock): void {
+function renderImageBlock(ctx: CanvasRenderingContext2D, block: VDTDesignImageBlock, inkHex: string | null): void {
   const { x, y, width, height } = block.bbox;
   if (width <= 0 || height <= 0) return;
   ctx.save();
-  if (!drawResourceImage(ctx, block.fileId, x, y, width, height)) {
+  // Single ink tints an SVG picture, never a bitmap; a VDT without the
+  // kind leaves it to the registry.
+  const svg = block.imageKind === undefined ? undefined : block.imageKind === 'svg';
+  if (!drawResourceImage(ctx, block.fileId, x, y, width, height, { inkHex, svg })) {
     ctx.fillStyle = 'rgba(160,160,160,0.12)';
     ctx.fillRect(x, y, width, height);
     ctx.strokeStyle = 'rgba(160,160,160,0.5)';
@@ -124,11 +190,13 @@ function renderImageBlock(ctx: CanvasRenderingContext2D, block: VDTDesignImageBl
 export function renderHeaderFooterSlot(
   ctx: CanvasRenderingContext2D,
   slot: VDTDesignSlot,
+  /** The document's single ink (`documentInkHex`), null when off. */
+  inkHex: string | null = null,
 ): void {
   for (const block of slot.blocks) {
     if (block.kind === 'text') renderTextBlock(ctx, block);
     else if (block.kind === 'rule') renderRuleBlock(ctx, block);
-    else if (block.kind === 'image') renderImageBlock(ctx, block);
+    else if (block.kind === 'image') renderImageBlock(ctx, block, inkHex);
     else renderBoxBlock(ctx, block);
   }
 }

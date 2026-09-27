@@ -11,12 +11,20 @@ import type { KPItem, RichTokenMeta } from './types';
 import { HYPHEN_PENALTY, KP_INFINITY, MAX_STRETCH } from './constants';
 import { cleanSoftHyphens } from './utils';
 import { trimChipLineEdges } from '../measure/chipEdges';
+import { lineTracking, trackSegments } from './tracking';
 
 interface RichBreakPoint {
   charIndex: number;
   widthBefore: number;
   /** A hard hyphen the word carries: the line ends as it is, no hyphen added. */
   bare?: boolean;
+  /** No hyphenation point (between ideographs): nothing added, no penalty. */
+  free?: boolean;
+  /** For the greedy breaker only (after a dash): not a break here. */
+  greedyOnly?: boolean;
+  /** A soft hyphen typed in the text: never held back by a hyphenation
+   *  zone. */
+  author?: boolean;
 }
 
 interface RichToken {
@@ -26,6 +34,13 @@ interface RichToken {
   script?: 'sup' | 'sub';
   scriptFont?: string;
   baselineShift?: number;
+  /** One of a subscript and a superscript set over each other (see
+   *  `stackedScriptPairs` in `measure/rich.ts`): the `first` has width 0,
+   *  the `second` the pair's advance. */
+  stacked?: 'first' | 'second';
+  /** Small capitals: flagged on the segment, which the measurer splits into
+   *  capital runs once the lines are built (see `measure/rich.ts`). */
+  smallCaps?: boolean;
   kind: 'text' | 'space';
   width: number;
   breakPoints?: RichBreakPoint[];
@@ -38,6 +53,9 @@ interface RichToken {
   chip?: VDTChip;
   /** Bare break points (URL joints): no hyphen is appended at the break. */
   bareBreaks?: boolean;
+  /** Ends on a closed dash the next, touching token follows: a free break
+   *  after it (see `markDashJoins` in `measure/rich.ts`). */
+  dashJoin?: boolean;
 }
 
 export function richTokensToItems(
@@ -45,6 +63,10 @@ export function richTokensToItems(
   normalSpaceWidth: number,
   maxStretchRatio: number,
   minShrinkRatio: number,
+  /** A break after a compound's hyphen opens the next line with a hyphen
+   *  too (`MeasureBlockOptions.repeatHyphen`): its penalty carries that
+   *  hyphen as post-break width. */
+  repeatHyphen = false,
 ): KPItem[] {
   const items: KPItem[] = [];
   const stretchPerSpace = normalSpaceWidth * (maxStretchRatio - 1);
@@ -70,14 +92,28 @@ export function richTokensToItems(
       continue;
     }
 
-    // Text token — may have soft-hyphen break points
-    if (token.breakPoints && token.breakPoints.length > 0) {
+    // Characters tracking spreads: none on a formula or a swatch; a chip
+    // paints its own runs, so its line takes no tracking at all.
+    // Two stacked scripts advance as far as the wider one: the first
+    // counts no character, the second the longer run's (see `trackSegments`).
+    const atomic = token.mathRender !== undefined || token.swatch !== undefined || token.chip !== undefined;
+    const stackedChars = token.stacked === 'first'
+      ? 0
+      : token.stacked === 'second' ? Math.max(token.text.length, tokens[t - 1]?.text.length ?? 0) : undefined;
+    const tracking = (from: number, to: number): { chars: number; noTracking?: true } => (
+      token.chip ? { chars: 0, noTracking: true } : { chars: atomic ? 0 : stackedChars ?? to - from }
+    );
+
+    // Text token — may have soft-hyphen break points (the greedy breaker's
+    // own ones left out: Knuth–Plass breaks there on neither path)
+    const breakPoints = token.breakPoints?.filter((bp) => !bp.greedyOnly);
+    if (breakPoints && breakPoints.length > 0) {
       const hyphenW = token.hyphenWidth ?? 0;
       let prevCharIndex = 0;
       let prevWidth = 0;
 
-      for (let bp = 0; bp < token.breakPoints.length; bp++) {
-        const breakPoint = token.breakPoints[bp]!;
+      for (let bp = 0; bp < breakPoints.length; bp++) {
+        const breakPoint = breakPoints[bp]!;
         const fragmentWidth = breakPoint.widthBefore - prevWidth;
 
         // Box for the fragment before this break point
@@ -86,18 +122,30 @@ export function richTokensToItems(
           width: fragmentWidth,
           sourceIndex: t,
           meta: { ...meta, subStart: prevCharIndex, subEnd: breakPoint.charIndex },
+          ...tracking(prevCharIndex, breakPoint.charIndex),
         });
 
         // Penalty at the break: a soft hyphen adds one, a hard hyphen the
-        // word carries ends the line as it is.
-        items.push({
-          type: 'penalty',
-          width: breakPoint.bare ? 0 : hyphenW,
-          penalty: HYPHEN_PENALTY,
-          flagged: true,
-          sourceIndex: t,
-          meta: { ...meta, ...(breakPoint.bare ? { bare: true } : {}) },
-        });
+        // word carries ends the line as it is, and a break between
+        // ideographs costs nothing and adds nothing.
+        items.push(breakPoint.free
+          ? { type: 'penalty', width: 0, penalty: 0, flagged: false, sourceIndex: t, meta: { ...meta, free: true } }
+          : {
+            type: 'penalty',
+            width: breakPoint.bare ? 0 : hyphenW,
+            penalty: HYPHEN_PENALTY,
+            flagged: true,
+            sourceIndex: t,
+            meta: { ...meta, ...(breakPoint.bare ? { bare: true } : {}) },
+            // The hyphen a syllable break adds (a URL joint adds none).
+            ...(breakPoint.bare || token.bareBreaks ? {} : { chars: 1 }),
+            // A dictionary syllable: the hyphenation zone of ragged text
+            // governs it (the author's soft hyphens and the word's own
+            // joints always break).
+            ...(breakPoint.bare || token.bareBreaks || breakPoint.author ? {} : { zoned: true }),
+            // The compound's hyphen, repeated at the start of the next line.
+            ...(repeatHyphen && breakPoint.bare && !token.bareBreaks ? { postWidth: hyphenW, postChars: 1 } : {}),
+          });
 
         prevCharIndex = breakPoint.charIndex;
         prevWidth = breakPoint.widthBefore;
@@ -109,6 +157,7 @@ export function richTokensToItems(
         width: token.width - prevWidth,
         sourceIndex: t,
         meta: { ...meta, subStart: prevCharIndex, subEnd: token.text.length },
+        ...tracking(prevCharIndex, token.text.length),
       });
     } else {
       // Simple text token without break points
@@ -117,7 +166,14 @@ export function richTokensToItems(
         width: token.width,
         sourceIndex: t,
         meta: { ...meta, subStart: 0, subEnd: token.text.length },
+        ...tracking(0, token.text.length),
       });
+    }
+
+    // A closed dash that ends this run, the next run touching it: the line
+    // may end on the dash, as after one inside a word.
+    if (token.dashJoin) {
+      items.push({ type: 'penalty', width: 0, penalty: 0, flagged: false, sourceIndex: t, meta: { ...meta, free: true } });
     }
   }
 
@@ -149,6 +205,9 @@ export function reconstructRichLines(
   lineIndentFn: (lineIndex: number) => number,
   normalSpaceWidth: number,
   textAlign: TextAlign,
+  /** `KPOptions.trackingPerChar` the breaks were found with: each line
+   *  takes the tracking the breaker counted on (`VDTLine.letterSpacing`). */
+  trackingPerChar = 0,
 ): VDTLine[] {
   const lines: VDTLine[] = [];
   let lineStart = 0;
@@ -158,11 +217,17 @@ export function reconstructRichLines(
     const isLastLine = li === breaks.length - 1;
     const lineIndent = lineIndentFn(li);
     const lineMaxWidth = lineWidthFn(li);
+    // The break before this line repeats the compound's hyphen here.
+    const before = items[lineStart - 1];
+    const repeated = before?.type === 'penalty' && (before.postWidth ?? 0) > 0 ? before.postWidth! : 0;
 
     const breakItem = items[breakAt]!;
-    const hyphenated = breakItem.type === 'penalty' && breakItem.flagged;
+    // A break between ideographs ends the line inside a run, like a
+    // hyphenation point, but adds no hyphen.
+    const freeBreak = breakItem.type === 'penalty' && (breakItem.meta as RichTokenMeta | undefined)?.free === true;
+    const hyphenated = breakItem.type === 'penalty' && (breakItem.flagged || freeBreak);
 
-    const lineSegments: VDTLineSegment[] = [];
+    const lineSegments: (VDTLineSegment & { smallCaps?: boolean })[] = [];
     const textParts: string[] = [];
 
     for (let j = lineStart; j < breakAt; j++) {
@@ -187,6 +252,8 @@ export function reconstructRichLines(
           ...(token.chip ? { chip: token.chip } : {}),
           ...(token.refResourceId !== undefined ? { refResourceId: token.refResourceId } : {}),
           ...(token.script ? { script: token.script, fontString: token.scriptFont, baselineShift: token.baselineShift } : {}),
+          ...(token.stacked === 'first' ? { stacked: true } : {}),
+          ...(token.smallCaps ? { smallCaps: true } : {}),
         });
         textParts.push(cleanText);
       } else if (it.type === 'glue' && meta) {
@@ -206,11 +273,19 @@ export function reconstructRichLines(
       textParts.pop();
     }
 
+    // The repeated hyphen opens the line, on the tail of the compound.
+    const opensRepeated = repeated > 0 && lineSegments[0]?.kind === 'text';
+    if (opensRepeated) {
+      lineSegments[0] = { ...lineSegments[0]!, text: `-${lineSegments[0]!.text}`, width: lineSegments[0]!.width + repeated };
+      textParts[0] = `-${textParts[0]}`;
+    }
+
     // If hyphenated, append '-' to the last text segment — unless the break
-    // is a bare one inside a URL, which ends the line as it is.
+    // is a bare one inside a URL, or between ideographs, which ends the
+    // line as it is.
     const breakMeta = breakItem.meta as RichTokenMeta | undefined;
     const breakToken = breakMeta ? tokens[breakMeta.originalTokenIndex] : undefined;
-    if (hyphenated && lineSegments.length > 0 && !breakToken?.bareBreaks && !breakMeta?.bare) {
+    if (hyphenated && !freeBreak && lineSegments.length > 0 && !breakToken?.bareBreaks && !breakMeta?.bare) {
       const hyphenW = breakToken?.hyphenWidth ?? 0;
       const lastIdx = lineSegments.length - 1;
       const last = lineSegments[lastIdx]!;
@@ -226,6 +301,9 @@ export function reconstructRichLines(
 
     const lineText = textParts.join('');
     const segments = trimChipLineEdges(lineSegments);
+    // Tracking the breaker counted on for this line, spread on its letters.
+    const tracking = trackingPerChar > 0 ? lineTracking(items, lineStart, breakAt, lineMaxWidth, trackingPerChar) : 0;
+    if (tracking !== 0) trackSegments(segments, tracking);
     const contentWidth = segments.reduce((s, seg) => s + seg.width, 0);
 
     // Compute justifiedSpaceRatio
@@ -248,9 +326,13 @@ export function reconstructRichLines(
       bbox: createBoundingBox(lineIndent, li * lineHeightPx, contentWidth, lineHeightPx),
       baseline: li * lineHeightPx + lineHeightPx * 0.8,
       hyphenated,
+      // The line ends on a hyphen the word carries (EF-140).
+      ...(hyphenated && breakMeta?.bare ? { hardHyphen: true } : {}),
+      ...(opensRepeated ? { repeatedHyphen: true } : {}),
       segments,
       isLastLine,
       ...(justifiedSpaceRatio !== undefined ? { justifiedSpaceRatio } : {}),
+      ...(tracking !== 0 ? { letterSpacing: tracking } : {}),
     });
 
     lineStart = breakAt + 1;

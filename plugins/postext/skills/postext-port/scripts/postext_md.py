@@ -40,7 +40,9 @@ _LIGATURES = {
     "ﬆ": "st",
 }
 
-_SPACES_RE = re.compile(r"[ -   　\t]")
+# Odd spaces become plain spaces; the no-break ones (U+00A0, U+202F narrow,
+# U+2007 figure) are kept: postext 1.5 glues the words on either side of them.
+_SPACES_RE = re.compile(r"[ -  -  　\t]")
 _ZERO_WIDTH_RE = re.compile(r"[​‌‍﻿\u0007]")
 
 
@@ -52,9 +54,22 @@ def clean_text(text: str) -> str:
     text = _ZERO_WIDTH_RE.sub("", text)
     text = _SPACES_RE.sub(" ", text)
     text = text.replace(" ", " ").replace(" ", " ")
-    text = text.replace("‑", "-")  # non-breaking hyphen: Postext has no glue
-    text = text.replace(" ", " ")  # NBSP is an ordinary breakable space in Postext
+    # Non-breaking hyphen: many faces lack the glyph, so it becomes a plain
+    # hyphen (a break opportunity between letters). To keep a compound on one
+    # line, join it with a word joiner (U+2060) instead.
+    text = text.replace("‑", "-")
     return unicodedata.normalize("NFC", text)
+
+
+# Runs of breaking whitespace; the no-break spaces are not collapsed, since
+# they glue their neighbours (Python's `\s` matches them too).
+_BREAKING_SPACE_RUN_RE = re.compile(r"[^\S\u00a0\u202f\u2007]+")
+
+
+def collapse_spaces(text: str) -> str:
+    """Collapse runs of breaking whitespace to one space and trim the ends,
+    keeping the no-break spaces (U+00A0, U+202F, U+2007) in the text."""
+    return _BREAKING_SPACE_RUN_RE.sub(" ", text).strip()
 
 
 def escape(text: str) -> str:
@@ -120,7 +135,7 @@ def attr_value(value: str) -> str:
     Double quotes become typographic ones; braces become parentheses."""
     value = clean_text(value)
     value = value.replace('"', "”").replace("{", "(").replace("}", ")")
-    value = re.sub(r"\s+", " ", value).strip()
+    value = collapse_spaces(value)
     return value
 
 
@@ -136,7 +151,7 @@ def heading(level: int, text: str, **attributes: str | None) -> str:
     A title ending in braces would be read as attributes: a trailing word joiner
     keeps them literal."""
     level = max(1, min(6, level))
-    text = re.sub(r"\s+", " ", clean_text(text)).strip()
+    text = collapse_spaces(clean_text(text))
     text = text.replace("\\\\", "\\")
     a = attrs(**attributes)
     if not a and text.endswith("}"):
@@ -281,6 +296,40 @@ def ref(rid: str, style: str | None = None, case: str | None = None) -> str:
     if case:
         extra += f' case="{case}"'
     return f':ref{{id="{rid}"{extra}}}'
+
+
+_LINK_SCHEMES = ("http:", "https:", "mailto:", "tel:", "ftp:")
+
+
+def link_destination(url: str) -> str | None:
+    """The destination to write in `[text](…)` for `url`, or None when Postext
+    would not link it: only http(s), mailto, tel and ftp URLs are live links
+    (a relative path means nothing outside the source document). Characters
+    the Postext parser would misread are percent-encoded: spaces, `$` (inline
+    math), backslashes, angle brackets, and parentheses that do not balance
+    (balanced ones are read as part of the URL)."""
+    url = url.strip()
+    if not url.lower().startswith(_LINK_SCHEMES):
+        return None
+    depth = 0
+    balanced = True
+    for ch in url:
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+            if depth < 0:
+                balanced = False
+    balanced = balanced and depth == 0
+    out = []
+    for ch in url:
+        if ch.isspace():
+            out.append("%20")
+        elif ch in "$\\<>" or (ch in "()" and not balanced):
+            out.append("%{:02X}".format(ord(ch)))
+        else:
+            out.append(ch)
+    return "".join(out)
 
 
 def join_blocks(blocks: list[str]) -> str:

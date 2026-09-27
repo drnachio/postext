@@ -21,11 +21,13 @@
  * share — e.g. 3 lines over an h2 and an h3 become +2 above the h2 and +1
  * above the h3.
  *
- * When the column's headings cannot absorb the whole gap, three further
- * levers apply in editorial priority order:
+ * When the column's headings cannot absorb the whole gap, further levers
+ * apply in editorial priority order:
  *  - first of all, a callout box closing the column takes the room under
  *    its foot as space above it, so the foot lands on the last grid slot of
- *    the page, level with the last line of the column beside it;
+ *    the page, level with the last line of the column beside it (with
+ *    `headings.balancing.closingBox: 'last'` it runs after the spacing
+ *    levers and takes only what they leave; with `'off'` never);
  *  - extra grid lines where a list/enumeration ends (space after a list
  *    reads naturally), capped per list end;
  *  - extra grid lines between a top float band (a figure or table at the
@@ -40,7 +42,8 @@
  *    fix), keeping the smallest value that works, never above `maxTracking`.
  */
 
-import type { VDTBlock, VDTColumn, VDTDocument, VDTPage } from '../vdt';
+import type { BalanceLever, VDTBlock, VDTColumn, VDTDocument, VDTPage } from '../vdt';
+import type { ClosingBoxLever } from '../types';
 
 /** Tolerance against FP drift when converting free space to grid lines. */
 const EPS = 0.01;
@@ -86,7 +89,33 @@ export function gapLinesIn(gaps: readonly ColumnGap[], range: PageRange): number
   return n;
 }
 
-export type BalanceCandidateKind = 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'trailingCallout' | 'looseParagraph';
+/** Room (px) still open under the callout boxes that close a column of the
+ *  pages in `range` — the `trailingCallout` candidates' gaps. Often less
+ *  than a line, so {@link gapLinesIn} does not see it: the balancing loop
+ *  uses it to break a tie between two layouts with the same empty lines. */
+export function boxRoomIn(gaps: readonly ColumnGap[], range: PageRange): number {
+  let px = 0;
+  for (const g of gaps) {
+    if (g.pageIndex < range.from || g.pageIndex > range.to) continue;
+    for (const c of g.candidates) if (c.kind === 'trailingCallout') px += c.gapPx ?? 0;
+  }
+  return px;
+}
+
+/** Lever keys (see {@link balanceKey}) of the boxes closing a column — the
+ *  `trailingCallout` candidates of `gaps`. */
+export function boxLeverKeys(gaps: readonly ColumnGap[]): Set<number> {
+  const keys = new Set<number>();
+  for (const g of gaps) {
+    for (const c of g.candidates) if (c.kind === 'trailingCallout') keys.add(balanceKey(c.contentIndex, c.part ?? 0));
+  }
+  return keys;
+}
+
+/** The kind of stretch point a candidate is: one of the balancing levers,
+ *  which the placement pass records on the block it applies to
+ *  (`VDTBlock.balancing`). */
+export type BalanceCandidateKind = BalanceLever;
 
 interface BalanceCandidate {
   /** Stable content-block index keying the adjustment across passes. */
@@ -243,6 +272,10 @@ export function collectColumnGaps(
     return { contentIndex: frame.contentIndex, part: 0, kind: 'trailingCallout', level: 0, order: frameAt, lineCount: 0, gapPx };
   };
 
+  // `headings.balancing.closingBox: 'off'` (EF-105): no box closing a
+  // column is ever moved down, so none is a candidate.
+  const boxLever = (doc.config?.headings?.balancing?.closingBox ?? 'first') !== 'off';
+
   const gaps: ColumnGap[] = [];
   for (let p = 0; p <= lastContentPage; p++) {
     const page = doc.pages[p]!;
@@ -273,7 +306,7 @@ export function collectColumnGaps(
       // the box down (the trailing-callout lever alone) so its foot ends
       // level with the last line of the columns beside it.
       if (c === lastNonEmpty && !pageFlowsOn && !col.trailingCap) {
-        const closing = closingBoxGap(doc, page, col);
+        const closing = boxLever ? closingBoxGap(doc, page, col) : null;
         if (closing) gaps.push({ pageIndex: p, columnIndex: c, gapLines: 0, candidates: [closing] });
         continue;
       }
@@ -328,6 +361,14 @@ export function collectColumnGaps(
       }
       let gapLines = Math.floor((free + EPS) / doc.baselineGrid);
 
+      // A closing page — one that does not flow on (a chapter's last page,
+      // a page before an explicit break), or a closing band cut level by a
+      // trailing cap — ends short with its column heads level: the room
+      // under a float band there would only drop one column's first line
+      // below the others' to line the feet up (EF-70). The other levers
+      // work inside the column and keep its head.
+      const closingBand = col.trailingCap === true || !pageFlowsOn;
+
       const candidates: BalanceCandidate[] = [];
       // A callout box closing the column (its frame and children are the
       // column's last blocks) takes the room under its foot, up to the
@@ -338,6 +379,8 @@ export function collectColumnGaps(
       // head in the column before, as any note closing a column. The box's
       // tail bakes its bottom margin and a grid snap in, so that room is
       // measured from the frame itself and taken exactly, not by the line.
+      // A box heading the column under a float band is the float's room in
+      // a closing band, like the after-float lever: it stays at the head.
       const visible = col.blocks.filter((b) => !b.hidden);
       const last = visible[visible.length - 1];
       if (last && last.containerId !== undefined) {
@@ -345,7 +388,7 @@ export function collectColumnGaps(
         const frame = frameAt >= 0 ? visible[frameAt]! : undefined;
         if (
           frame
-          && (frameAt >= 1 || floatBandAbove(page, col))
+          && (frameAt >= 1 || (floatBandAbove(page, col) && !closingBand))
           && frame.contentIndex !== undefined
           && visible.slice(frameAt).every((b) => b.containerId === last.containerId)
         ) {
@@ -365,10 +408,14 @@ export function collectColumnGaps(
           }
           const gapPx = target - (frame.bbox.y + frame.bbox.height);
           if (gapPx > doc.baselineGrid * 0.1) {
-            candidates.push({ contentIndex: frame.contentIndex, part: frame.callout?.part ?? 0, kind: 'trailingCallout', level: 0, order: frameAt, lineCount: 0, gapPx });
+            if (boxLever) {
+              candidates.push({ contentIndex: frame.contentIndex, part: frame.callout?.part ?? 0, kind: 'trailingCallout', level: 0, order: frameAt, lineCount: 0, gapPx });
+            }
             // The box takes its room exactly; the whole-line levers above it
             // may only take the whole lines of it (a line more overflows the
             // column — or the cut of a capped band — and the pass is lost).
+            // With the box's own lever off they still may: the margin under
+            // a box that ends a column is no room anyone reads.
             gapLines = Math.max(gapLines, Math.floor(gapPx / doc.baselineGrid + EPS));
           }
         }
@@ -388,11 +435,14 @@ export function collectColumnGaps(
         // from the column before is a lever like any other — the room goes
         // under the figure, where nobody reads a gap, and its lines land
         // back on the grid of the column beside it.
+        // In a closing band that heading keeps its place, as any first block
+        // under the float does there (EF-79): room above it would only drop
+        // its column's head below the one beside it.
         const underFloat = i === 0 && columnUnderTopFloat(page, col);
         if (
           b.type === 'heading'
           && b.headingLevel !== undefined
-          && (i >= 1 || underFloat)
+          && (i >= 1 || (underFloat && !closingBand))
           && i < col.blocks.length - 1
         ) {
           candidates.push({
@@ -402,7 +452,7 @@ export function collectColumnGaps(
             order: i,
             lineCount: b.lines.length,
           });
-        } else if (underFloat) {
+        } else if (underFloat && !closingBand) {
           candidates.push({
             contentIndex: b.contentIndex,
             part: fragmentOf(b),
@@ -507,6 +557,10 @@ export interface BalanceProposalOptions {
    *  moved content across a column break (see {@link firstDivergentColumn})
    *  and was discarded. */
   failedLines?: ReadonlySet<number>;
+  /** Where the lever of a box closing a column runs
+   *  (`headings.balancing.closingBox`); the document's setting when
+   *  omitted. */
+  closingBox?: ClosingBoxLever;
 }
 
 /** Position of a column in a document, in reading order. */
@@ -573,7 +627,9 @@ export interface BalanceProposal {
  * strict editorial priority order, on top of the already-applied `current`
  * state:
  *  0. a callout box closing the column — the exact room under its foot
- *     goes above it, so the foot meets the last grid slot;
+ *     goes above it, so the foot meets the last grid slot (`closingBox:
+ *     'last'` moves this step after step 3, where it takes the room the
+ *     whole lines before it left; `'off'` drops it);
  *  1. headings — round-robin in importance order (level asc, then reading
  *     order), capped at `maxLinesPerHeading`;
  *  2. list ends — round-robin in reading order, capped at
@@ -618,20 +674,28 @@ export function proposeBalanceLines(
     return remaining;
   };
 
+  const boxOrder = options.closingBox ?? doc.config?.headings?.balancing?.closingBox ?? 'first';
   for (const gap of collectColumnGaps(doc, forcedBreakPages)) {
     let remaining = gap.gapLines;
     // A box closing the column takes the exact room under its foot (a
     // fraction of a line is fine — the box interior is off-grid anyway),
-    // which closes the column's gap outright.
-    for (const cand of gap.candidates) {
-      if (cand.kind !== 'trailingCallout' || cand.gapPx === undefined) continue;
-      const key = balanceKey(cand.contentIndex, cand.part ?? 0);
-      if (options.failedLines?.has(key)) continue;
-      const cur = lines.get(key) ?? 0;
-      lines.set(key, cur + cand.gapPx / doc.baselineGrid);
-      changed = true;
-      remaining = 0;
-    }
+    // which closes the column's gap outright. Taken after other levers
+    // (`closingBox: 'last'`), that room is what their `used` whole lines,
+    // which move the box down too, leave of it.
+    const takeBoxRoom = (used: number): void => {
+      for (const cand of gap.candidates) {
+        if (cand.kind !== 'trailingCallout' || cand.gapPx === undefined) continue;
+        const key = balanceKey(cand.contentIndex, cand.part ?? 0);
+        if (options.failedLines?.has(key)) continue;
+        const px = cand.gapPx - used * doc.baselineGrid;
+        if (!(px > doc.baselineGrid * 0.1)) continue;
+        const cur = lines.get(key) ?? 0;
+        lines.set(key, cur + px / doc.baselineGrid);
+        changed = true;
+        remaining = 0;
+      }
+    };
+    if (boxOrder === 'first') takeBoxRoom(0);
 
     const headings = gap.candidates
       .filter((c) => c.kind === 'heading')
@@ -658,6 +722,8 @@ export function proposeBalanceLines(
         .sort((a, b) => a.order - b.order);
       remaining = distribute(afterFloats, remaining, options.maxLinesAfterFloat);
     }
+
+    if (boxOrder === 'last') takeBoxRoom(gap.gapLines - remaining);
 
     if (
       remaining > 0

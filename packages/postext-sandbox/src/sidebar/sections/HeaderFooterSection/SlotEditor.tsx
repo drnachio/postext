@@ -16,6 +16,7 @@ import type {
 import { Button, IconButton as UiIconButton } from '../../../ui';
 import { SearchScope } from '../../search/SearchScope';
 import { ShowingDefaultsContext } from '../../../controls/fieldContext';
+import { ToggleSwitch } from '../../../controls';
 import { TextElementEditor } from './TextElementEditor';
 import { RuleElementEditor } from './RuleElementEditor';
 import { BoxElementEditor } from './BoxElementEditor';
@@ -97,6 +98,14 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
     const arr = currentRaw.slice();
     arr[index] = next;
     commit(arr);
+  };
+
+  /** `reserve` is left out of the element unless it is switched off. */
+  const setReserve = (index: number, reserve: boolean) => {
+    const next = { ...currentRaw[index]! };
+    if (reserve) delete next.reserve;
+    else next.reserve = false;
+    updateAt(index, next);
   };
 
   const removeAt = (index: number) => {
@@ -201,6 +210,16 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
                   onChange={(next) => updateAt(idx, next)}
                 />
               ) : null}
+              {slotKey === 'heading' && (
+                <ToggleSwitch
+                  label={labels.headerFooterElementReserve}
+                  checked={rawEl.reserve !== false}
+                  onChange={(v) => setReserve(idx, v)}
+                  tooltip={labels.headerFooterElementReserveTooltip}
+                  isDefault={rawEl.reserve !== false}
+                  onReset={() => setReserve(idx, true)}
+                />
+              )}
             </div>
           </div>
           </SearchScope>

@@ -47,7 +47,7 @@ export function TypeSample({ body, lang }: TypeSampleProps) {
           fontSize: `${Math.min(sizePt * (4 / 3), 22)}px`,
           lineHeight: sizePt > 0 ? leadPt / sizePt : 1.3,
           textAlign: body.textAlign === 'justify' ? 'justify' : 'left',
-          hyphens: body.textAlign === 'justify' && body.hyphenation.enabled ? 'auto' : 'manual',
+          hyphens: (body.textAlign === 'justify' || body.hyphenation.ragged) && body.hyphenation.enabled ? 'auto' : 'manual',
           textIndent: `${indentPt * (4 / 3)}px`,
         }}
       >

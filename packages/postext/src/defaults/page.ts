@@ -1,5 +1,6 @@
 import type { PageConfig, ResolvedPageConfig, ResolvedPageNumberingConfig, PageMargins, PageNumberingConfig, PageSizePreset, Dimension, CutLinesConfig } from '../types';
 import { dimensionsEqual, colorsEqual } from './shared';
+import { parseNumberFormat } from '../numbering';
 
 export const PAGE_SIZE_PRESETS: Record<
   Exclude<PageSizePreset, 'custom'>,
@@ -48,7 +49,9 @@ export const DEFAULT_PAGE_CONFIG: ResolvedPageConfig = {
 function resolvePageNumbering(raw?: PageNumberingConfig): ResolvedPageNumberingConfig {
   if (!raw) return { ...DEFAULT_PAGE_NUMBERING };
   return {
-    format: raw.format ?? DEFAULT_PAGE_NUMBERING.format,
+    // Any spelling of a format is read (`roman-lower`, `arabic`, `i`…); an
+    // unknown one numbers in decimal (`collectConfigWarnings` reports it).
+    format: parseNumberFormat(raw.format) ?? DEFAULT_PAGE_NUMBERING.format,
     startAt: raw.startAt ?? DEFAULT_PAGE_NUMBERING.startAt,
   };
 }
@@ -166,7 +169,9 @@ export function stripPageDefaults(page?: PageConfig): PageConfig | undefined {
     }
   }
   if (page.pageNumbering) {
-    const formatOverride = page.pageNumbering.format !== undefined && page.pageNumbering.format !== DEFAULT_PAGE_NUMBERING.format;
+    // Another spelling of the default (`arabic`) is the default.
+    const formatOverride = page.pageNumbering.format !== undefined
+      && (parseNumberFormat(page.pageNumbering.format) ?? page.pageNumbering.format) !== DEFAULT_PAGE_NUMBERING.format;
     const startAtOverride = page.pageNumbering.startAt !== undefined && page.pageNumbering.startAt !== DEFAULT_PAGE_NUMBERING.startAt;
     if (formatOverride || startAtOverride) {
       result.pageNumbering = {

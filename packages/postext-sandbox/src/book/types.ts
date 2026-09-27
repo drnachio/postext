@@ -150,7 +150,10 @@ export interface ChapterPlan {
   number: number | null;
   /** What the engine inherits. `undefined` for the first chapter (a
    *  self-contained document); the counters alone while the pages of a
-   *  preceding chapter are still unknown. */
+   *  preceding chapter are still unknown. When the configuration prints
+   *  `{bookTotalPages}` and every chapter is paginated, every chapter — the
+   *  first one too — also gets the book's page count (`bookPageCount`),
+   *  which is not part of {@link continuationKey}: it moves no page. */
   continuation: LayoutContinuation | undefined;
   /** Whether `continuation` carries the page fields (offset and numbering)
    *  — false while a preceding chapter still has no current layout. */

@@ -14,10 +14,12 @@ import type {
   CalloutIconPosition,
   CalloutLabelConfig,
   CalloutListStyleConfig,
+  CalloutMarkerTextAlign,
   CalloutMarkerConfig,
   CalloutMarkerRuleConfig,
   CalloutPaddingConfig,
   CalloutPlacement,
+  CalloutSideAtColumnEnd,
   CalloutSpan,
   CalloutStripeConfig,
   CalloutStripeSide,
@@ -338,6 +340,8 @@ function CalloutStyleCard({
   onRemove,
 }: CalloutStyleCardProps) {
   const labels = useSandboxLabels();
+  // Ragged bodies hyphenate too once the body text turns ragged hyphenation on.
+  const raggedHyphenation = useSandboxSelector((s) => s.config.bodyText?.hyphenation?.ragged === true);
   const [idDraft, setIdDraft] = useState(style.id);
   const draftSlug = slugifyStyleId(idDraft);
   const idTaken = draftSlug.length > 0 && draftSlug !== style.id && otherIds.has(draftSlug);
@@ -430,6 +434,10 @@ function CalloutStyleCard({
     { value: 'page', label: labels.calloutStyleSpanPage },
     { value: 'side', label: labels.calloutStyleSpanSide },
   ];
+  const sideAtColumnEndOptions = [
+    { value: 'before', label: labels.calloutStyleSideAtColumnEndBefore },
+    { value: 'after', label: labels.calloutStyleSideAtColumnEndAfter },
+  ];
   const placementOptions = [
     { value: 'here', label: labels.calloutStylePlacementHere },
     { value: 'auto', label: labels.calloutStylePlacementAuto },
@@ -488,6 +496,11 @@ function CalloutStyleCard({
   const bodyAlignOptions = [
     { value: 'left', label: labels.bodyTextAlignLeft },
     { value: 'justify', label: labels.bodyTextAlignJustify },
+  ];
+  const markerAlignOptions = [
+    { value: 'left', label: labels.headerFooterElementAlignLeft },
+    { value: 'center', label: labels.headerFooterElementAlignCenter },
+    { value: 'right', label: labels.headerFooterElementAlignRight },
   ];
 
   return (
@@ -572,6 +585,15 @@ function CalloutStyleCard({
         tooltip={labels.calloutStyleSpanTooltip}
         isDefault={unset('span')}
         onReset={() => onResetField('span')}
+      />
+      <SelectInput
+        label={labels.calloutStyleSideAtColumnEnd}
+        value={resolved.sideAtColumnEnd}
+        options={sideAtColumnEndOptions}
+        onChange={(v) => onChange({ sideAtColumnEnd: v as CalloutSideAtColumnEnd })}
+        tooltip={labels.calloutStyleSideAtColumnEndTooltip}
+        isDefault={unset('sideAtColumnEnd')}
+        onReset={() => onResetField('sideAtColumnEnd')}
       />
       <SelectInput
         label={labels.calloutStylePlacement}
@@ -732,6 +754,64 @@ function CalloutStyleCard({
         isDefault={unset('columnGap')}
         onReset={() => onResetField('columnGap')}
       />
+
+      <CollapsibleSection
+        title={labels.calloutStyleContinuationGroup}
+        sectionId={`${sectionId}.continuation`}
+        variant="subsection"
+      >
+        <ToggleSwitch
+          label={labels.calloutStyleRepeatTitle}
+          checked={resolved.repeatTitle}
+          onChange={(v) => onChange({ repeatTitle: v })}
+          tooltip={labels.calloutStyleRepeatTitleTooltip}
+          isDefault={unset('repeatTitle')}
+          onReset={() => onResetField('repeatTitle')}
+        />
+        {resolved.repeatTitle && (
+          <TextInput
+            label={labels.calloutStyleContinuedSuffix}
+            value={resolved.continuedSuffix}
+            onChange={(v) => onChange({ continuedSuffix: v })}
+            isDefault={unset('continuedSuffix')}
+            onReset={() => onResetField('continuedSuffix')}
+          />
+        )}
+        <ToggleSwitch
+          label={labels.tableContinuesMarkerEnabled}
+          checked={resolved.continuesMarkerEnabled}
+          onChange={(v) => onChange({ continuesMarkerEnabled: v })}
+          tooltip={labels.calloutStyleContinuesMarkerTooltip}
+          isDefault={unset('continuesMarkerEnabled')}
+          onReset={() => onResetField('continuesMarkerEnabled')}
+        />
+        {resolved.continuesMarkerEnabled && (
+          <>
+            <TextInput
+              label={labels.tableContinuesMarker}
+              value={resolved.continuesMarker}
+              onChange={(v) => onChange({ continuesMarker: v })}
+              isDefault={unset('continuesMarker')}
+              onReset={() => onResetField('continuesMarker')}
+            />
+            <SelectInput
+              label={labels.calloutStyleContinuesMarkerAlign}
+              value={resolved.continuesMarkerAlign}
+              options={markerAlignOptions}
+              onChange={(v) => onChange({ continuesMarkerAlign: v as CalloutMarkerTextAlign })}
+              isDefault={unset('continuesMarkerAlign')}
+              onReset={() => onResetField('continuesMarkerAlign')}
+            />
+            <ToggleSwitch
+              label={labels.calloutStyleContinuesMarkerItalic}
+              checked={resolved.continuesMarkerItalic}
+              onChange={(v) => onChange({ continuesMarkerItalic: v })}
+              isDefault={unset('continuesMarkerItalic')}
+              onReset={() => onResetField('continuesMarkerItalic')}
+            />
+          </>
+        )}
+      </CollapsibleSection>
 
       <CollapsibleSection
         title={labels.calloutStyleBorderGroup}
@@ -1198,6 +1278,18 @@ function CalloutStyleCard({
           isDefault={groupUnset('titleStyle', 'indent')}
           onReset={() => resetGroupField('titleStyle', 'indent')}
         />
+        <DimensionInput
+          label={labels.calloutStyleTitleLineHeight}
+          value={resolved.titleStyle.lineHeight}
+          onChange={(v) => title({ lineHeight: v })}
+          min={0.5}
+          max={5}
+          step={0.1}
+          units={LINE_HEIGHT_UNITS}
+          tooltip={labels.calloutStyleTitleLineHeightTooltip}
+          isDefault={groupUnset('titleStyle', 'lineHeight')}
+          onReset={() => resetGroupField('titleStyle', 'lineHeight')}
+        />
       </CollapsibleSection>
 
       <CollapsibleSection
@@ -1264,6 +1356,44 @@ function CalloutStyleCard({
           onReset={() => resetGroupField('body', 'italicColor')}
           fieldId={`${fieldId}-body-italic`}
         />
+        <NumberInput
+          label={labels.bodyFontWeight}
+          value={resolved.body.fontWeight}
+          onChange={(v) => body({ fontWeight: v })}
+          min={100}
+          max={900}
+          step={10}
+          tooltip={labels.textStyleFontWeightTooltip}
+          isDefault={groupUnset('body', 'fontWeight')}
+          onReset={() => resetGroupField('body', 'fontWeight')}
+        />
+        <NumberInput
+          label={labels.bodyBoldFontWeight}
+          value={resolved.body.boldFontWeight}
+          onChange={(v) => body({ boldFontWeight: v })}
+          min={100}
+          max={900}
+          step={10}
+          tooltip={labels.textStyleBoldFontWeightTooltip}
+          isDefault={groupUnset('body', 'boldFontWeight')}
+          onReset={() => resetGroupField('body', 'boldFontWeight')}
+        />
+        <ToggleSwitch
+          label={labels.textStyleItalic}
+          checked={resolved.body.italic}
+          onChange={(v) => body({ italic: v })}
+          tooltip={labels.textStyleItalicTooltip}
+          isDefault={groupUnset('body', 'italic')}
+          onReset={() => resetGroupField('body', 'italic')}
+        />
+        <ToggleSwitch
+          label={labels.textStyleSmallCaps}
+          checked={resolved.body.smallCaps}
+          onChange={(v) => body({ smallCaps: v })}
+          tooltip={labels.textStyleSmallCapsTooltip}
+          isDefault={groupUnset('body', 'smallCaps')}
+          onReset={() => resetGroupField('body', 'smallCaps')}
+        />
         <SelectInput
           label={labels.alignmentLabel}
           value={resolved.body.textAlign}
@@ -1272,7 +1402,7 @@ function CalloutStyleCard({
           isDefault={groupUnset('body', 'textAlign')}
           onReset={() => resetGroupField('body', 'textAlign')}
         />
-        {resolved.body.textAlign === 'justify' && (
+        {(resolved.body.textAlign === 'justify' || raggedHyphenation) && (
           <ToggleSwitch
             label={labels.bodyHyphenation}
             checked={resolved.body.hyphenation}
@@ -1399,13 +1529,16 @@ export const CalloutStylesSection = memo(function CalloutStylesSection() {
   const resources = useSandboxResources();
   const iconResources = resources.filter((r) => r.kind === 'svg' || r.kind === 'bitmap');
 
+  // Continuation strings default per document language, the way the engine
+  // resolves them (see the table style section).
+  const docLocale = useSandboxSelector((s) => s.config.locale ?? s.config.bodyText?.hyphenation?.locale ?? s.locale);
   const bodyText = resolveBodyTextConfig(bodyTextRaw);
   const headings = resolveHeadingsConfig(headingsRaw);
   const unorderedLists = resolveUnorderedListsConfig(unorderedListsRaw, bodyText);
   const styles: CalloutStyleConfig[] = raw ?? DEFAULT_CALLOUT_STYLES;
-  const resolved = resolveCalloutStylesConfig(styles, bodyText, headings, unorderedLists);
+  const resolved = resolveCalloutStylesConfig(styles, bodyText, headings, unorderedLists, docLocale);
   const resolveOne = (style: CalloutStyleConfig): ResolvedCalloutStyleConfig =>
-    resolveCalloutStylesConfig([style], bodyText, headings, unorderedLists)[0]!;
+    resolveCalloutStylesConfig([style], bodyText, headings, unorderedLists, docLocale)[0]!;
 
   const write = (next: CalloutStyleConfig[]) => {
     dispatch({

@@ -12,29 +12,96 @@ import { tagArtifact, tagContent, type ArtifactSpec, type StructElem } from './t
 
 /** How an accessible render tags a design slot: its text goes to the
  *  element `text()` returns (created on first use), or counts as an
- *  artifact when `text` is absent (running headers / footers); rules,
- *  boxes and images are always artifacts of class `artifact`. */
+ *  artifact when `text` is absent (running headers / footers) or the text
+ *  block is pagination furniture (`artifact`: a split callout's repeated
+ *  title and continuation marker); rules, boxes and images are always
+ *  artifacts of class `artifact`. */
 export interface SlotMark {
   text?: () => StructElem;
   artifact: ArtifactSpec;
 }
 
-function tagSlotText(ctx: PageCtx, mark: SlotMark | undefined): void {
+function tagSlotText(ctx: PageCtx, mark: SlotMark | undefined, block: VDTDesignTextBlock): void {
   if (!mark) return;
-  if (mark.text) tagContent(ctx, mark.text());
+  if (mark.text && !block.artifact) tagContent(ctx, mark.text());
   else tagArtifact(ctx, mark.artifact);
 }
 import { parseFontString } from '../fontString';
 import { FontCache } from '../fontCache';
 import {
   type PageCtx,
+  alphaOf,
   colorFromHex,
   drawTextPx,
   fillRectPx,
+  pushClipOutline,
   pushClipRect,
   popClip,
+  type TextOutline,
 } from './primitives';
 
+/** pdf-lib drawing options for a translucent fill / stroke (none when opaque). */
+const opacity = (alpha: number) => (alpha < 1 ? { opacity: alpha } : {});
+const borderOpacity = (alpha: number) => (alpha < 1 ? { borderOpacity: alpha } : {});
+
+/** A rounded rectangle (px, top-down) as an SVG path in top-down points,
+ *  for `drawSvgPath` anchored at the page's top-left corner. Clockwise on
+ *  the page, or counter-clockwise with `reverse`, so that a filled path
+ *  holding both leaves the inner one empty. A radius of 0 gives no arcs. */
+function roundedRectSvgPath(
+  ctx: PageCtx,
+  xPx: number,
+  yPx: number,
+  wPx: number,
+  hPx: number,
+  radiusPx: number,
+  reverse = false,
+): string {
+  const { scale } = ctx;
+  const r = Math.max(0, Math.min(radiusPx, wPx / 2, hPx / 2)) * scale;
+  const sx = xPx * scale;
+  const sy = yPx * scale;
+  const width = wPx * scale;
+  const height = hPx * scale;
+  const arc = (x: number, y: number) => (r > 0 ? ` A ${r} ${r} 0 0 ${reverse ? 0 : 1} ${x} ${y}` : '');
+  if (reverse) {
+    return (
+      `M ${sx + r} ${sy}` +
+      arc(sx, sy + r) +
+      ` L ${sx} ${sy + height - r}` +
+      arc(sx + r, sy + height) +
+      ` L ${sx + width - r} ${sy + height}` +
+      arc(sx + width, sy + height - r) +
+      ` L ${sx + width} ${sy + r}` +
+      arc(sx + width - r, sy) +
+      ' Z'
+    );
+  }
+  return (
+    `M ${sx + r} ${sy}` +
+    ` L ${sx + width - r} ${sy}` +
+    arc(sx + width, sy + r) +
+    ` L ${sx + width} ${sy + height - r}` +
+    arc(sx + width - r, sy + height) +
+    ` L ${sx + r} ${sy + height}` +
+    arc(sx, sy + height - r) +
+    ` L ${sx} ${sy + r}` +
+    arc(sx + r, sy) +
+    ' Z'
+  );
+}
+
+/**
+ * A box's fill, then its border inside the box (EF-131), as the canvas
+ * backend and the HTML output (`box-sizing: border-box`) draw it: the
+ * border's outer edge runs along the box edge. A square border is stroked
+ * on a path half its width in. A rounded one is filled as the ring between
+ * the box's outline and the same outline inset by the border width, its
+ * radius less that width and at least 0 (CSS's inner border edge), so the
+ * outer corner keeps the box's radius even where that is under half the
+ * border width. A border as wide as the box fills it. Up to postext 1.4 the
+ * stroke was centred on the edge.
+ */
 function drawRoundedBox(
   ctx: PageCtx,
   xPx: number,
@@ -46,28 +113,23 @@ function drawRoundedBox(
   if (wPx <= 0 || hPx <= 0) return;
   const { scale, pageHeightPt } = ctx;
   const radius = Math.max(0, Math.min(style.borderRadiusPx, wPx / 2, hPx / 2));
-  const width = wPx * scale;
-  const height = hPx * scale;
+  const bw = style.borderColor ? Math.max(0, style.borderWidthPx) : 0;
+  const solid = bw > 0 && (bw >= wPx || bw >= hPx);
+  const fillHex = solid ? style.borderColor : style.backgroundColor;
   if (radius <= 0) {
-    const x = xPx * scale;
-    const y = pageHeightPt - (yPx + hPx) * scale;
-    if (style.backgroundColor) {
-      ctx.page.drawRectangle({
-        x,
-        y,
-        width,
-        height,
-        color: colorFromHex(style.backgroundColor, ctx.colorSpace),
-      });
+    const rect = (x: number, y: number, w: number, h: number) =>
+      ({ x: x * scale, y: pageHeightPt - (y + h) * scale, width: w * scale, height: h * scale });
+    if (fillHex) {
+      const color = colorFromHex(fillHex, ctx.colorSpace);
+      ctx.page.drawRectangle({ ...rect(xPx, yPx, wPx, hPx), color, ...opacity(alphaOf(color)) });
     }
-    if (style.borderColor && style.borderWidthPx > 0) {
+    if (bw > 0 && !solid) {
+      const borderColor = colorFromHex(style.borderColor!, ctx.colorSpace);
       ctx.page.drawRectangle({
-        x,
-        y,
-        width,
-        height,
-        borderColor: colorFromHex(style.borderColor, ctx.colorSpace),
-        borderWidth: style.borderWidthPx * scale,
+        ...rect(xPx + bw / 2, yPx + bw / 2, wPx - bw, hPx - bw),
+        borderColor,
+        borderWidth: bw * scale,
+        ...borderOpacity(alphaOf(borderColor)),
       });
     }
     return;
@@ -76,33 +138,18 @@ function drawRoundedBox(
   // SVG path. `drawSvgPath` interprets the path in SVG space (y grows
   // downwards) from the origin passed as `x`/`y`, so anchor it at the top-left
   // corner of the page and express the corners in top-down points.
-  const r = radius * scale;
-  const sx = xPx * scale;
-  const sy = yPx * scale;
-  const path =
-    `M ${sx + r} ${sy}` +
-    ` L ${sx + width - r} ${sy}` +
-    ` A ${r} ${r} 0 0 1 ${sx + width} ${sy + r}` +
-    ` L ${sx + width} ${sy + height - r}` +
-    ` A ${r} ${r} 0 0 1 ${sx + width - r} ${sy + height}` +
-    ` L ${sx + r} ${sy + height}` +
-    ` A ${r} ${r} 0 0 1 ${sx} ${sy + height - r}` +
-    ` L ${sx} ${sy + r}` +
-    ` A ${r} ${r} 0 0 1 ${sx + r} ${sy} Z`;
   const origin = { x: 0, y: pageHeightPt };
-
-  if (style.backgroundColor) {
-    ctx.page.drawSvgPath(path, {
-      ...origin,
-      color: colorFromHex(style.backgroundColor, ctx.colorSpace),
-    });
+  if (fillHex) {
+    const color = colorFromHex(fillHex, ctx.colorSpace);
+    ctx.page.drawSvgPath(roundedRectSvgPath(ctx, xPx, yPx, wPx, hPx, radius), { ...origin, color, ...opacity(alphaOf(color)) });
   }
-  if (style.borderColor && style.borderWidthPx > 0) {
-    ctx.page.drawSvgPath(path, {
-      ...origin,
-      borderColor: colorFromHex(style.borderColor, ctx.colorSpace),
-      borderWidth: style.borderWidthPx * scale,
-    });
+  if (bw > 0 && !solid) {
+    const color = colorFromHex(style.borderColor!, ctx.colorSpace);
+    // drawSvgPath fills by the nonzero rule: the inner outline runs the
+    // other way round and stays empty.
+    let path = roundedRectSvgPath(ctx, xPx, yPx, wPx, hPx, radius);
+    if (wPx > 2 * bw && hPx > 2 * bw) path += ` ${roundedRectSvgPath(ctx, xPx + bw, yPx + bw, wPx - 2 * bw, hPx - 2 * bw, radius - bw, true)}`;
+    ctx.page.drawSvgPath(path, { ...origin, color, ...opacity(alphaOf(color)) });
   }
 }
 
@@ -124,19 +171,26 @@ function renderTextBlock(
   if (clip) {
     pushClipRect(ctx, block.bbox.x, block.bbox.y, block.bbox.width, block.bbox.height);
   }
-  const tracked = block.letterSpacingPx !== undefined && block.letterSpacingPx > 0;
+  // Negative tracking tightens the letters (EF-82).
+  const tracked = block.letterSpacingPx !== undefined && block.letterSpacingPx !== 0;
   if (tracked) ctx.page.pushOperators(setCharacterSpacing(block.letterSpacingPx! * ctx.scale));
-  tagSlotText(ctx, mark);
+  const outline: TextOutline | undefined = block.stroke && block.stroke.widthPx > 0
+    ? { color: colorFromHex(block.stroke.color, ctx.colorSpace), widthPx: block.stroke.widthPx, hollow: block.stroke.hollow }
+    : undefined;
+  tagSlotText(ctx, mark, block);
   for (const line of block.lines) {
-    drawTextPx(
-      ctx,
-      line.text,
-      block.bbox.x + line.xOffset,
-      line.baselineY,
-      font,
-      size,
-      color,
-    );
+    if (!line.runs) {
+      drawTextPx(ctx, line.text, block.bbox.x + line.xOffset, line.baselineY, font, size, color, outline);
+      continue;
+    }
+    // Inline marks: each run in its own font, one after another.
+    let x = block.bbox.x + line.xOffset;
+    for (const run of line.runs) {
+      const runFont = fontCache.get(run.fontString) ?? font;
+      const runSize = parseFontString(run.fontString)?.sizePx ?? size;
+      drawTextPx(ctx, run.text, x, line.baselineY + (run.baselineShift ?? 0), runFont, runSize, color, outline);
+      x += run.width;
+    }
   }
   if (tracked) ctx.page.pushOperators(setCharacterSpacing(0));
   if (clip) popClip(ctx);
@@ -164,6 +218,7 @@ function renderImageBlock(ctx: PageCtx, block: VDTDesignImageBlock, images: Reso
   if (embedded) {
     drawEmbeddedResource(ctx, embedded, x, y, width, height);
   } else {
+    ctx.onMissingImage?.(block.fileId);
     fillRectPx(ctx, x, y, width, height, colorFromHex('#e8e8e8', ctx.colorSpace));
   }
 }
@@ -178,6 +233,16 @@ export function renderHeaderFooterSlot(
   for (const block of slot.blocks) {
     if (block.kind === 'text') {
       renderTextBlock(ctx, block, fontCache, mark);
+      continue;
+    }
+    if (block.kind === 'box' && block.clip) {
+      // A callout stripe on a rounded frame, clipped to the frame's
+      // outline. The clip's graphics state opens first: a marked-content
+      // sequence must nest inside it, so the artifact opens after it.
+      pushClipOutline(ctx, block.clip);
+      if (mark) tagArtifact(ctx, mark.artifact);
+      renderBoxBlock(ctx, block);
+      popClip(ctx);
       continue;
     }
     if (mark) tagArtifact(ctx, mark.artifact);

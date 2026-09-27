@@ -57,8 +57,12 @@ function hasPlate(slot: DesignSlot, leafWidth: number, dpi: number): boolean {
   });
 }
 
-/** Multiply every dimension in `value` — offsets, sizes, type sizes, rule
- *  thicknesses — by `k`, units untouched. Plain numbers (a line height, a
+/** Multiply every absolute dimension in `value` — offsets, sizes, type
+ *  sizes, rule thicknesses, an absolute leading — by `k`, units untouched.
+ *  A length in `em` / `rem` is left as it is: a design resolves it against
+ *  the element's type size, which is scaled already, so scaling it too
+ *  would shrink it twice (a design text's `lineHeight: { value: 1.3, unit:
+ *  'em' }` would tighten its leading). Plain numbers (a line height, a
  *  font weight) and everything else are left alone. */
 function scaleDimensions(value: unknown, k: number): unknown {
   if (k === 1) return value;
@@ -66,6 +70,7 @@ function scaleDimensions(value: unknown, k: number): unknown {
   if (value === null || typeof value !== 'object') return value;
   const obj = value as Record<string, unknown>;
   if (typeof obj.value === 'number' && typeof obj.unit === 'string') {
+    if (obj.unit === 'em' || obj.unit === 'rem') return value;
     return { ...obj, value: obj.value * k };
   }
   const out: Record<string, unknown> = {};
@@ -383,8 +388,10 @@ export function buildHtmlConfigOverride(
   // layout keeps its proportions. Page geometry is in px and stays put.
   const dpi = htmlViewerDpi(fontScale);
 
+  // The document's own language first (its hyphenation locale, else its
+  // `locale`); the app language only stands in when it names neither.
   const hypLocale =
-    base.bodyText?.hyphenation?.locale ?? LOCALE_TO_HYPHENATION[locale] ?? 'en-us';
+    base.bodyText?.hyphenation?.locale ?? base.locale ?? LOCALE_TO_HYPHENATION[locale] ?? 'en-us';
 
   // Single-column mode: disable widow/orphan/runt avoidance (no column breaks
   // to protect — the whole document lives on one tall, scrollable page).

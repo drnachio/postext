@@ -16,3 +16,6 @@ plugins/**/__pycache__/
 # npx skills add <source> --skill <name>)
 .agents/skills/
 .claude/skills/
+
+# Cookbook capture network cache
+apps/web/.cache/

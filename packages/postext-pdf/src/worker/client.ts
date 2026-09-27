@@ -4,7 +4,7 @@ import type { RenderToPdfOptions } from '../pdf-backend';
 import { rasterizeSvgWithDom, type SvgRasterizer } from '../pdf-backend/renderResourceBlock';
 import type { PdfRequestMessage, PdfResponseMessage } from './protocol';
 
-export type { RenderProgress } from '../pdf-backend';
+export type { PdfWarning, PdfFontFallbackWarning, RenderProgress } from '../pdf-backend';
 
 export interface PdfWorkerRenderOptions extends Omit<RenderToPdfOptions, 'resourceBytes' | 'rasterizeSvg'> {
   /** Resource bytes by file id. Their buffers are transferred: pass copies
@@ -80,6 +80,12 @@ export function createPdfWorker(options?: CreatePdfWorkerOptions): PdfWorkerHand
       }
       case 'progress': {
         pending.get(msg.id)?.options.onProgress?.(msg.progress);
+        return;
+      }
+      case 'warning': {
+        const onWarning = pending.get(msg.id)?.options.onWarning;
+        if (onWarning) onWarning(msg.warning);
+        else if (msg.warning.kind === 'fontFallback') console.warn(msg.warning.message);
         return;
       }
       case 'rendered': {

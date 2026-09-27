@@ -10,8 +10,8 @@
 
 import type { ContentBlock } from '../parse';
 import type { Resource, ResourceType } from '../types';
-import type { ResolvedResourceBlock } from '../vdt';
-import type { MeasuredBlock, MeasurementCache } from '../measure';
+import type { ResolvedResourceBlock, VDTLine } from '../vdt';
+import type { BreakTrace, MeasuredBlock, MeasurementCache } from '../measure';
 import type { renderMath } from '../math';
 import type { BlockStyle } from './styles';
 import {
@@ -20,12 +20,14 @@ import {
   isMarkerBlock,
   stampSourceRanges,
 } from './buildHelpers';
-import { resolveBlockKind, type BlockKind, type BlockKindContext } from './buildBlockKind';
+import { resolveBlockKind, uppercasePreservingLength, type BlockKind, type BlockKindContext } from './buildBlockKind';
 import { runMeasurement } from './buildMeasurement';
+import { linkSegments } from '../measure/links';
 import { resolveRefSpans, resolveSwatchSpans, shiftResourceBlockX } from './resourceLayout';
 import { chipContextOf, resolveChipSpans } from './chips';
 import type { ResourceNumberingMap } from './resourceNumbering';
 import { measureTocBlock } from './toc';
+import { LINE_MAX_SPACE_RATIO } from './raggedLines';
 
 /** Everything `measureContentBlock` needs that is constant across one
  *  placement pass. Built once before the loop; `blockIdx` and the paragraph
@@ -37,11 +39,32 @@ export interface BlockMeasureContext
   cache?: MeasurementCache;
   /** Source offset of the markdown body inside the original document. */
   bodyOffset: number;
+  /** The markdown body the blocks' source offsets index (before
+   *  `bodyOffset`): lines read it to start at the backslash of an escape
+   *  they open with (see `stampSourceRanges`). */
+  source?: string;
   resources: Resource[];
   resourceTypes: ResourceType[];
   resourceNumbering: ResourceNumberingMap;
   /** Ids of resources that float to page bands (never placed inline). */
   floatedIds: ReadonlySet<string>;
+  /** Content indices of the `containerStart` markers of the boxes that left
+   *  the flow — set in the side column, floated to a band or fixed — filled
+   *  by the placement pass as it sets them. A paragraph after a heading
+   *  looks past them (`bodyText.indentAfterHeading`). */
+  leftFlow?: ReadonlySet<number>;
+}
+
+/** Index of the `containerStart` marker that the `containerEnd` at `endIdx`
+ *  closes, when there is one. */
+function containerStartOf(blocks: readonly ContentBlock[], endIdx: number): number | undefined {
+  const id = blocks[endIdx]?.containerId;
+  if (id === undefined) return undefined;
+  for (let i = endIdx - 1; i >= 0; i--) {
+    const b = blocks[i]!;
+    if (b.type === 'containerStart' && b.containerId === id) return i;
+  }
+  return undefined;
 }
 
 export interface MeasuredContentBlock {
@@ -73,6 +96,18 @@ export interface MeasureContentBlockOptions {
   /** Resource blocks: the widest a figure's image may be set, its caption
    *  keeping the column's width (`layout.fitFiguresToPage`). */
   figureMaxBodyWidth?: number;
+  /** Lines (1-based) a column or a page ends on, which should not end on
+   *  a hyphen (`bodyText.hyphenateAcrossColumns: false`). */
+  avoidHyphenAtLines?: readonly number[];
+  /** The breaks of the lines of an earlier setting to keep as they are
+   *  (see `MeasureBlockOptions.keepBreaks`): a paragraph broken again after
+   *  its first lines were placed. Such a measurement is not cached. */
+  keepBreaks?: BreakTrace;
+  /** Columns of other widths the paragraph runs on into, in line order:
+   *  from line `fromLine` (0-based) on, its lines are broken for a column
+   *  `columnWidth` px wide (see `MeasureBlockOptions.restWidths`). Such a
+   *  measurement is not cached. */
+  restColumnWidths?: readonly { fromLine: number; columnWidth: number }[];
 }
 
 /**
@@ -147,12 +182,16 @@ export function measureContentBlock(
   // non-breaking token tagged with its `refResourceId` (handled by the
   // rich-text measurer), so we always take the rich path for ref blocks.
   if (contentBlock.spans.some((s) => s.ref)) {
+    const spans = resolveRefSpans(contentBlock.spans, ctx.resourceNumbering, ctx.resourceTypes, ctx.resources, {
+      bold: bodyStyle.referenceBold ?? true,
+      italic: bodyStyle.referenceItalic ?? false,
+    });
     contentBlock = {
       ...contentBlock,
-      spans: resolveRefSpans(contentBlock.spans, ctx.resourceNumbering, ctx.resourceTypes, ctx.resources, {
-        bold: bodyStyle.referenceBold ?? true,
-        italic: bodyStyle.referenceItalic ?? false,
-      }),
+      // A paragraph style in capitals sets the labels so too (EF-173).
+      spans: style.uppercase
+        ? spans.map((s) => (s.ref ? { ...s, text: uppercasePreservingLength(s.text) } : s))
+        : spans,
     };
   }
 
@@ -166,7 +205,12 @@ export function measureContentBlock(
     contentBlock = { ...contentBlock, spans: resolveChipSpans(contentBlock.spans, chipContextOf(resolved), style.fontSizePx) };
   }
 
-  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.swatch || s.chip || s.script);
+  // A small-caps style (paragraph style, callout body) sets every span so.
+  if (style.smallCaps && contentBlock.spans.some((s) => !s.smallCaps)) {
+    contentBlock = { ...contentBlock, spans: contentBlock.spans.map((s) => (s.smallCaps ? s : { ...s, smallCaps: true })) };
+  }
+
+  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.swatch || s.chip || s.script || s.smallCaps);
 
   // List items reserve horizontal space for indent + bullet + gap.
   const {
@@ -189,17 +233,41 @@ export function measureContentBlock(
     && blockIdx > 0
   ) {
     // A paragraph after a `:::space` opens a space break and is set flush
-    // too — the usual rule for text resuming after a blank line.
+    // too — the usual rule for text resuming after a blank line. A box
+    // that left the flow (set in the side column, floated or fixed) and a
+    // floated figure are no block before it in its column: they are looked
+    // past (EF-67).
     let prevIdx = blockIdx - 1;
     let afterSpace = false;
-    while (
-      prevIdx >= 0
-      && (contentBlocks[prevIdx]!.type === 'directive' || isMarkerBlock(contentBlocks[prevIdx]))
-    ) {
-      if (contentBlocks[prevIdx]!.directiveName === 'space') afterSpace = true;
+    while (prevIdx >= 0) {
+      const prev = contentBlocks[prevIdx]!;
+      if (prev.type === 'containerEnd' && ctx.leftFlow && ctx.leftFlow.size > 0) {
+        const start = containerStartOf(contentBlocks, prevIdx);
+        if (start !== undefined && ctx.leftFlow.has(start)) {
+          prevIdx = start - 1;
+          continue;
+        }
+      }
+      if (prev.type === 'resourceBlock' && prev.resourceId !== undefined && ctx.floatedIds.has(prev.resourceId)) {
+        prevIdx--;
+        continue;
+      }
+      if (prev.type !== 'directive' && !isMarkerBlock(prev)) break;
+      if (prev.directiveName === 'space') afterSpace = true;
       prevIdx--;
     }
     if (afterSpace || (prevIdx >= 0 && contentBlocks[prevIdx]!.type === 'heading')) {
+      effectiveFirstLineIndent = 0;
+    }
+  }
+  // The text after a display formula (EF-85): a paragraph written right
+  // under the closing `$$` continues the one the formula interrupted, and
+  // is set flush as in TeX; with `math.indentAfterDisplay: false`, so is
+  // any paragraph that follows a display formula.
+  if (vdtType === 'paragraph' && !style.hangingIndent && effectiveFirstLineIndent !== 0) {
+    if (rawBlock.continuesParagraph) {
+      effectiveFirstLineIndent = 0;
+    } else if (!resolved.math.indentAfterDisplay && contentBlocks[blockIdx - 1]?.type === 'mathDisplay') {
       effectiveFirstLineIndent = 0;
     }
   }
@@ -210,7 +278,11 @@ export function measureContentBlock(
   // Tracking is measured on the rich path (per-token canvas widths); left
   // undefined when unused so the common-case cache keys stay unchanged.
   const hasRichFonts = !!(style.boldFontString && style.italicFontString && style.boldItalicFontString);
-  const letterSpacingPx = hasRichFonts && opts?.trackingEm ? opts.trackingEm * style.fontSizePx : 0;
+  // The style's own tracking (a heading level's `letterSpacing`, EF-83),
+  // plus what column balancing asks of a loose paragraph.
+  const letterSpacingPx = hasRichFonts
+    ? (style.letterSpacingPx ?? 0) + (opts?.trackingEm ? opts.trackingEm * style.fontSizePx : 0)
+    : 0;
   const measureOptions = {
     textAlign: style.textAlign,
     hyphenate: style.hyphenate,
@@ -221,12 +293,45 @@ export function measureContentBlock(
     minShrinkRatio: resolved.bodyText.minWordSpacing,
     runtPenalty: runtActive ? resolved.bodyText.runtPenalty : 0,
     runtMinCharacters: runtActive ? resolved.bodyText.runtMinCharacters : 0,
+    // Left undefined when off, so the common-case cache keys stay unchanged.
+    runtGraded: runtActive && resolved.bodyText.gradedRuntPenalty ? true : undefined,
+    avoidHyphenAtLines: opts?.avoidHyphenAtLines,
+    ...(opts?.keepBreaks ? { keepBreaks: opts.keepBreaks } : {}),
+    ...(opts?.restColumnWidths && opts.restColumnWidths.length > 0
+      ? {
+        restWidths: opts.restColumnWidths.map((s) => ({
+          fromLine: s.fromLine,
+          maxWidthPx: computeMeasureViewport(s.columnWidth, style, listBullet).measureMaxWidth,
+        })),
+      }
+      : {}),
     looseness: opts?.looseness,
     letterSpacingPx: letterSpacingPx !== 0 ? letterSpacingPx : undefined,
+    hyphenationZonePx: style.hyphenationZonePx,
+    // Justification tracking (EF-65): left undefined when off, so the
+    // common-case cache keys stay unchanged.
+    justifyTrackingPx: resolved.bodyText.maxJustifyTracking > 0 && style.textAlign === 'justify' && vdtType !== 'heading'
+      ? (resolved.bodyText.maxJustifyTracking / 1000) * style.fontSizePx
+      : undefined,
+    // Breaks after a closed dash (EF-141) and Knuth–Plass on ragged running
+    // text (EF-147): left undefined when off, the 1.4 breaks.
+    breakAfterDashes: resolved.bodyText.breakAfterDashes ? true : undefined,
+    // A compound's hyphen on every path (EF-186), compounds the dictionary
+    // leaves whole (EF-169) and the repeated hyphen: left undefined when
+    // they keep the 1.4 breaks.
+    breakAfterHyphens: resolved.bodyText.breakAfterHyphens ? true : undefined,
+    hyphenateCompounds: resolved.bodyText.hyphenation.compounds ? undefined : false,
+    repeatHyphen: resolved.bodyText.repeatHyphen ? true : undefined,
+    optimalRagged: resolved.bodyText.optimalRagged && style.textAlign !== 'justify'
+      && (vdtType === 'paragraph' || vdtType === 'blockquote' || vdtType === 'listItem')
+      ? true
+      : undefined,
   };
-  // URLs / DOIs get their bare break opportunities on the rich path only.
+  // URLs / DOIs get their bare break opportunities on the rich path only,
+  // and so does a hyphenation zone (the rich greedy breaker weighs it).
   const hasUrl = /(?:^|\s)(?:(?:https?|ftp):\/\/|www\.|10\.\d{4,}\/)\S/i.test(contentBlock.text);
-  const useRich = hasRichFonts && (hasRichSpans || letterSpacingPx !== 0 || hasUrl);
+  const zoned = style.hyphenationZonePx !== undefined;
+  const useRich = hasRichFonts && (hasRichSpans || letterSpacingPx !== 0 || hasUrl || zoned);
 
   const first = runMeasurement({
     vdtType, rawBlock, contentBlock, style, measureMaxWidth, measureOptions, mathEnabled, useRich, cache,
@@ -239,9 +344,17 @@ export function measureContentBlock(
   // set the paragraph one line shorter, the way a compositor does. Tighter
   // word spacing first — every feasible break already keeps the spaces at or
   // above `minWordSpacing` — and then a little tracking, the smallest rung
-  // that carries the line.
+  // that carries the line. A shorter setting is no fix (EF-65), and the
+  // runt stays, when a line of it that stays justified stretches past
+  // `maxWordSpacing` or, when the paragraph already has a looser justified
+  // line, past that line; or when it has more lines past 3x than the
+  // paragraph had (`raggedLooseLines` sets those ragged). A line the
+  // paragraph sets ragged does not raise the bar: trading it for loose
+  // justified lines is no better.
   if (measured.lastLineRunt && runtActive && resolved.bodyText.tightenRunts && opts?.looseness === undefined) {
     const target = measured.lines.length - 1;
+    const natural = wordSpacingProfile(measured.lines);
+    const loosestAllowed = Math.max(resolved.bodyText.maxWordSpacing, natural.loosest) + 1e-9;
     for (const rung of runtTrackingLadder(resolved.bodyText.maxRuntTracking, hasRichFonts)) {
       const spacing = letterSpacingPx - (rung / 1000) * style.fontSizePx;
       const attempt = runMeasurement({
@@ -251,9 +364,11 @@ export function measureContentBlock(
           looseness: -1,
           letterSpacingPx: spacing !== 0 ? spacing : undefined,
         },
-        useRich: hasRichFonts && (hasRichSpans || spacing !== 0 || hasUrl),
+        useRich: hasRichFonts && (hasRichSpans || spacing !== 0 || hasUrl || zoned),
       });
-      if (attempt.measured.lines.length === target && !attempt.measured.lastLineRunt) {
+      if (attempt.measured.lines.length !== target || attempt.measured.lastLineRunt) continue;
+      const profile = wordSpacingProfile(attempt.measured.lines);
+      if (profile.loosest <= loosestAllowed && profile.ragged <= natural.ragged) {
         measured = attempt.measured;
         trackingPx = spacing;
         break;
@@ -269,14 +384,34 @@ export function measureContentBlock(
     }
   }
 
+  // Markdown links: the target rides on the segments of the linked words
+  // (the layout itself never sees them).
+  measured = { ...measured, lines: linkSegments(measured.lines, contentBlock.spans) };
+
   // Per-line source-range mapping using the block's plain→source map.
   // Accounts for heading numbering prefix which prepends chars with no source.
-  const { prefixLen, absoluteSourceMap } = stampSourceRanges(measured, rawBlock, contentBlock, bodyOffset);
+  const { prefixLen, absoluteSourceMap } = stampSourceRanges(measured, rawBlock, contentBlock, bodyOffset, ctx.source);
 
   return {
     kind, contentBlock, measured, prefixLen, absoluteSourceMap, mathDisplayRender,
     ...(trackingPx !== 0 ? { letterSpacingPx: trackingPx } : {}),
   };
+}
+
+/** How loose a paragraph's justified lines are: the widest word spacing of
+ *  the ones that stay justified, as a multiple of the normal space
+ *  (`VDTLine.justifiedSpaceRatio`; 0 when none is), and how many stretch
+ *  past `LINE_MAX_SPACE_RATIO`, which `raggedLooseLines` sets ragged. */
+function wordSpacingProfile(lines: readonly VDTLine[]): { loosest: number; ragged: number } {
+  let loosest = 0;
+  let ragged = 0;
+  for (const line of lines) {
+    const ratio = line.justifiedSpaceRatio;
+    if (line.isLastLine || ratio === undefined) continue;
+    if (ratio > LINE_MAX_SPACE_RATIO) ragged++;
+    else if (ratio > loosest) loosest = ratio;
+  }
+  return { loosest, ragged };
 }
 
 /** Tracking rungs a runt fix may climb, in thousandths of an em: none

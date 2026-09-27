@@ -7,7 +7,7 @@
 
 import type { ContentBlock } from '../parse';
 import type { ColorValue, Dimension } from '../types';
-import type { ResolvedConfig } from '../vdt';
+import type { ResolvedConfig, VDTDocument } from '../vdt';
 import { dimensionsEqual } from '../defaults/shared';
 import { resolveBodyStyle, resolveBlockquoteStyle } from './styles';
 import {
@@ -116,6 +116,21 @@ export function parsePartNumber(raw: string): number | undefined {
   return total;
 }
 
+/** Per entry of `doc.partMarks` (a part set without a divider page), the
+ *  index of the page it takes effect on: the earliest page holding a block
+ *  placed after its fence. `undefined` when nothing follows the fence. */
+export function partMarkPages(doc: Pick<VDTDocument, 'blocks' | 'partMarks'>): (number | undefined)[] {
+  return (doc.partMarks ?? []).map((mark) => {
+    let page: number | undefined;
+    for (const b of doc.blocks) {
+      if (b.contentIndex !== undefined && b.contentIndex > mark.afterContentIndex && b.pageIndex !== undefined && b.pageIndex >= 0) {
+        page = page === undefined ? b.pageIndex : Math.min(page, b.pageIndex);
+      }
+    }
+    return page;
+  });
+}
+
 type Eq = (a: unknown, b: unknown) => boolean;
 const eqStrict: Eq = (a, b) => a === b;
 const eqDim: Eq = (a, b) =>
@@ -151,6 +166,7 @@ const UNORDERED_FIELDS: ListFieldSpec[] = [
   { key: 'marginTop', eq: eqDim },
   { key: 'marginBottom', eq: eqDim },
   { key: 'itemSpacing', eq: eqDim },
+  { key: 'snapTopToGrid', eq: eqStrict },
   { key: 'hangingIndent', eq: eqStrict },
   { key: 'taskCheckboxChar', eq: eqStrict },
   { key: 'taskCheckedChar', eq: eqStrict },
@@ -184,6 +200,7 @@ const ORDERED_FIELDS: ListFieldSpec[] = [
   { key: 'marginTop', eq: eqDim },
   { key: 'marginBottom', eq: eqDim },
   { key: 'itemSpacing', eq: eqDim },
+  { key: 'snapTopToGrid', eq: eqStrict },
   { key: 'hangingIndent', eq: eqStrict },
   { key: 'separatorFontFamily', levelKey: 'separatorFontFamily', eq: eqStrict, inheritsFrom: 'fontFamily' },
   { key: 'separatorFontWeight', levelKey: 'separatorFontWeight', eq: eqStrict, inheritsFrom: 'fontWeight' },

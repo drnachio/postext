@@ -66,6 +66,7 @@ export function CaptionStyleFields({
   const alignOptions = [
     { value: 'left', label: labels.alignLeft },
     { value: 'center', label: labels.alignCenter },
+    { value: 'right', label: labels.alignRight },
   ];
   const positionOptions = [
     { value: 'below', label: labels.captionPositionBelow },

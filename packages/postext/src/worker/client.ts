@@ -4,9 +4,14 @@ import type { BuildProgress } from '../pipeline/build';
 
 export type { BuildProgress } from '../pipeline/build';
 import type { BuildStats, FontPayload, RequestMessage, ResponseMessage } from './protocol';
+import { cdnWorkerEntryUrl } from './entryUrl';
 
 export type { BuildStats, FontPayload } from './protocol';
 export type { BuildPassInfo } from '../pipeline/build';
+
+/** A face for `registerFonts`: a `FontPayload` whose CSS weight may also be
+ *  a number (`700` as well as `'700'` or `'bold'`). */
+export type FontPayloadInput = Omit<FontPayload, 'weight'> & { weight: string | number };
 
 export interface BuildOptions {
   signal?: AbortSignal;
@@ -25,7 +30,7 @@ export interface BuildOptions {
 }
 
 export interface LayoutWorkerHandle {
-  registerFonts(faces: FontPayload[]): Promise<void>;
+  registerFonts(faces: FontPayloadInput[]): Promise<void>;
   /** Drop every face whose family matches one of `families` from the worker's
    *  face set so the next `registerFonts` for that family takes effect
    *  instead of being deduped against a stale face. */
@@ -59,13 +64,57 @@ export interface CreateLayoutWorkerOptions {
    * tooling that needs to control the worker URL resolution.
    */
   worker?: Worker;
+  /**
+   * URL of the worker entry module (`postext/worker/entry`) to start, when
+   * it is not the file next to this module — a copy on your server, or a
+   * CDN build such as `https://esm.sh/postext@1.4.2/worker/entry`. A URL on
+   * another origin is started through a same-origin blob module that
+   * imports it (a worker script must be same-origin; the CDN must allow
+   * CORS). Ignored when `worker` is given.
+   */
+  url?: string | URL;
+}
+
+function pageLocation(): { origin?: string; href?: string } | undefined {
+  return (globalThis as { location?: { origin?: string; href?: string } }).location;
+}
+
+/** Start a module worker at `url`, wrapped in a same-origin blob module when
+ *  the page is on another origin. */
+function startModuleWorker(url: string, pageOrigin: string | undefined): { worker: Worker; objectUrl?: string } {
+  if (pageOrigin === undefined || new URL(url).origin === pageOrigin) {
+    return { worker: new Worker(url, { type: 'module' }) };
+  }
+  const objectUrl = URL.createObjectURL(new Blob([`import ${JSON.stringify(url)};\n`], { type: 'text/javascript' }));
+  return { worker: new Worker(objectUrl, { type: 'module' }), objectUrl };
+}
+
+function spawnLayoutWorker(options?: CreateLayoutWorkerOptions): { worker: Worker; objectUrl?: string } {
+  if (options?.worker) return { worker: options.worker };
+  const location = pageLocation();
+  const pageOrigin = location?.origin && location.origin !== 'null' ? location.origin : undefined;
+  if (options?.url !== undefined) return startModuleWorker(new URL(String(options.url), location?.href).href, pageOrigin);
+  // Loaded from a CDN (esm.sh): the file next to this module is not served
+  // there, and would be cross-origin anyway; start the CDN's worker entry.
+  const cdnEntry = cdnWorkerEntryUrl(import.meta.url, pageOrigin);
+  if (cdnEntry) return startModuleWorker(cdnEntry, pageOrigin);
+  // Bundlers (Vite, webpack, Next.js) recognise this exact expression and
+  // emit the worker as a chunk of its own: keep it inline.
+  return { worker: new Worker(new URL('./layout.worker.js', import.meta.url), { type: 'module' }) };
 }
 
 export function createLayoutWorker(
   options?: CreateLayoutWorkerOptions,
 ): LayoutWorkerHandle {
-  const worker = options?.worker
-    ?? new Worker(new URL('./layout.worker.js', import.meta.url), { type: 'module' });
+  const spawned = spawnLayoutWorker(options);
+  const worker = spawned.worker;
+  /** The blob wrapper's URL, revoked once the worker has answered (it has
+   *  loaded the module by then) or is disposed. */
+  let objectUrl = spawned.objectUrl;
+  const releaseObjectUrl = () => {
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+    objectUrl = undefined;
+  };
 
   let nextId = 1;
   let disposed = false;
@@ -73,8 +122,11 @@ export function createLayoutWorker(
   /** Fingerprint of the resource list the worker holds (messages are
    *  handled in order, so once sent it is there for every later build). */
   let sentResourcesKey: string | null = null;
+  /** Families already reported as missing in the worker (warned once). */
+  const reportedMissingFonts = new Set<string>();
 
   worker.addEventListener('message', (event: MessageEvent<ResponseMessage>) => {
+    releaseObjectUrl();
     const msg = event.data;
     const entry = pending.get(msg.id);
     if (!entry) return;
@@ -84,6 +136,14 @@ export function createLayoutWorker(
         return;
       case 'built':
         pending.delete(msg.id);
+        for (const family of msg.stats.missingFonts ?? []) {
+          if (reportedMissingFonts.has(family)) continue;
+          reportedMissingFonts.add(family);
+          console.warn(
+            `[postext/worker] "${family}" is not available inside the layout worker, so its text was measured with a fallback font. `
+            + 'A worker does not share the page\'s fonts: send the faces with registerFonts() before building.',
+          );
+        }
         entry.onStats?.(msg.stats);
         entry.resolve(msg.doc ?? undefined);
         return;
@@ -107,6 +167,7 @@ export function createLayoutWorker(
   });
 
   worker.addEventListener('error', (event) => {
+    releaseObjectUrl();
     for (const entry of pending.values()) {
       entry.reject(new Error(event.message || 'Worker error'));
     }
@@ -128,7 +189,7 @@ export function createLayoutWorker(
           reject,
         });
         send(
-          { kind: 'registerFonts', id, faces },
+          { kind: 'registerFonts', id, faces: faces.map((f) => ({ ...f, weight: String(f.weight) })) },
           faces.map((f) => f.buffer),
         );
       });
@@ -188,6 +249,7 @@ export function createLayoutWorker(
     dispose() {
       if (disposed) return;
       disposed = true;
+      releaseObjectUrl();
       try { worker.postMessage({ kind: 'dispose' } satisfies RequestMessage); } catch { /* ignore */ }
       worker.terminate();
       for (const entry of pending.values()) {

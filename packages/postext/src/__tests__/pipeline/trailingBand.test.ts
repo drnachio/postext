@@ -179,4 +179,36 @@ describe('trailing band balance', () => {
     expect(out.result.spanPlacedInBand.has(205)).toBe(true);
     expect(out.result).not.toBe(initial);
   });
+
+  // Driver-level again: out of passes, the driver drops the caps still
+  // undelivered. One that was delivered only while a dropped cap held the
+  // flow above it (the band before a page-wide box and the chapter's
+  // closing page, EMP ch. 4 in a probe) comes undone and is dropped in
+  // turn; the caps still delivered stay. Up to round 4 the driver gave up
+  // on every cap there.
+  it('keeps the caps still delivered once the failing ones are dropped', () => {
+    const cap = (startContentIndex: number, lines: number): BandCap =>
+      ({ kind: 'trailing', startContentIndex, startPart: 0, lines, retries: 0 });
+    const report = (placed: number[], applied: number[], ranWith: number[], proposals: [number, BandCap][] = []):
+      BandPassReport & { ranWith: number[] } => ({
+      bandCapProposals: new Map(proposals),
+      spanPlacedInBand: new Set(placed),
+      bandCapsApplied: new Set(applied),
+      ranWith,
+    });
+    const initial = report([], [], [], [[200, cap(150, 20)], [300, cap(250, 10)]]);
+    let passes = 0;
+    const out = resolveTrailingCaps(initial, new Map(), (caps) => {
+      passes++;
+      const ran = [...caps.keys()];
+      // The first pass uncovers boundary 100, whose cap never fits its cut.
+      // 200 is delivered while 100 holds the flow above it (and before 100
+      // came up); 300 always is.
+      const placed = [...(caps.has(200) && (caps.has(100) || passes === 1) ? [200] : []), ...(caps.has(300) ? [300] : [])];
+      return report(placed, ran, ran, passes === 1 ? [[100, cap(90, 30)]] : []);
+    });
+    expect([...out.caps.keys()]).toEqual([300]);
+    expect(out.result.ranWith).toEqual([300]);
+    expect(out.result.spanPlacedInBand.has(300)).toBe(true);
+  });
 });

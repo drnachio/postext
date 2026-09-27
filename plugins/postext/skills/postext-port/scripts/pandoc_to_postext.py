@@ -49,6 +49,7 @@ from postext_md import (  # noqa: E402
     Slugger,
     attr_value,
     clean_text,
+    collapse_spaces,
     escape,
     fence,
     guard_line_start,
@@ -61,6 +62,7 @@ from postext_md import (  # noqa: E402
     CAPTION_LABEL_RE,
     caption_kind,
     link_mentions,
+    link_destination,
 )
 
 FORMAT_BY_EXT = {
@@ -158,7 +160,7 @@ def plain_text(inlines) -> str:
                 pass
 
     walk(inlines or [])
-    return re.sub(r"\s+", " ", "".join(out)).strip()
+    return collapse_spaces("".join(out))
 
 
 # ---------------------------------------------------------------------------
@@ -210,7 +212,9 @@ class Converter:
                 out += self.runs(v, bold, italic, True, False)
             elif k == "Subscript":
                 out += self.runs(v, bold, italic, False, True)
-            elif k in ("Underline", "SmallCaps", "Strikeout"):
+            elif k == "SmallCaps":
+                out += self.small_caps(v, bold, italic, sup, sub)
+            elif k in ("Underline", "Strikeout"):
                 self.report[f"{k} dropped (no inline equivalent)"] += 1
                 out += self.runs(v, bold, italic, sup, sub)
             elif k == "Quoted":
@@ -236,14 +240,28 @@ class Converter:
                     out.append(Run(txt, bold, italic, sup, sub))
             elif k == "Link":
                 _, inner, (url, _title) = v
-                out += self.runs(inner, bold, italic, sup, sub)
+                inner_runs = self.runs(inner, bold, italic, sup, sub)
                 label = plain_text(inner)
-                if url.startswith("#"):
-                    self.report["internal links reduced to their text"] += 1
-                elif self.args.keep_urls and url and url.rstrip("/") != label.rstrip("/"):
-                    out.append(Run(f" ({url})", bold, italic))
+                dest = link_destination(url)
+                text = render_runs(inner_runs)
+                if dest and text and "[" not in text and "]" not in text:
+                    # A live link in the HTML and PDF output. Spaces at the
+                    # edges of the label stay outside the brackets.
+                    raw = "".join(r.text for r in inner_runs)
+                    lead = " " if raw[:1].isspace() else ""
+                    trail = " " if raw[-1:].isspace() else ""
+                    out.append(Run(f"{lead}[{text}]({dest}){trail}", raw=True))
+                    self.report["links kept as [text](url)"] += 1
                 else:
-                    self.report["link URLs dropped (Postext keeps link text only)"] += 1
+                    out += inner_runs
+                    if url.startswith("#"):
+                        self.report["internal links reduced to their text"] += 1
+                    elif dest is None:
+                        self.report["relative or non-web links reduced to their text"] += 1
+                    else:
+                        self.report["links with brackets in their text reduced to their text"] += 1
+                if self.args.keep_urls and url and not url.startswith("#") and url.rstrip("/") != label.rstrip("/"):
+                    out.append(Run(f" ({url})", bold, italic))
             elif k == "Image":
                 rid = self.image_resource(v, inline=True)
                 if rid:
@@ -266,9 +284,24 @@ class Converter:
                     out += self.runs(inner, bold or bool(m.get("bold")), italic ^ bool(m.get("italic")), sup, sub)
                     continue
                 if "smallcaps" in classes:
-                    self.report["small caps dropped"] += 1
+                    out += self.small_caps(inner, bold, italic, sup, sub)
+                    continue
                 out += self.runs(inner, bold, italic, sup, sub)
         return out
+
+    def small_caps(self, inlines, bold, italic, sup, sub) -> list[Run]:
+        """`:smallcaps[…]` around the rendered runs (their emphasis kept
+        inside; a literal `]` in the text escaped, while the markup of raw
+        runs — a chip's brackets — stays as it is)."""
+        runs = [
+            r if r.raw else Run(r.text.replace("]", "\\]"), r.bold, r.italic, r.sup, r.sub)
+            for r in self.runs(inlines, bold, italic, sup, sub)
+        ]
+        inner = render_runs(runs)
+        if not inner:
+            return []
+        self.report["small caps set with :smallcaps[…]"] += 1
+        return [Run(f":smallcaps[{inner}]", raw=True)]
 
     def inline(self, inlines) -> str:
         return render_runs(self.runs(inlines))
@@ -584,7 +617,12 @@ class Converter:
                 return [resource_embed(rid)] if rid else []
             if len(only) == 1 and t(only[0]) == "Math" and t(c(only[0])[0]) == "DisplayMath":
                 return [f"$$\n{c(only[0])[1].strip()}\n$$"]
-            # split display math out of mixed paragraphs
+            # Display maths inside a paragraph stays in it: the formula goes
+            # right under its lead-in line and the text after it right under
+            # the closing `$$`, with no blank lines, so Postext (1.5 and
+            # later) reads that text as the same paragraph and sets it flush,
+            # as TeX sets the "where ...". A display that opens the paragraph
+            # has no text to interrupt and stays a block of its own.
             parts: list[list] = [[]]
             maths: list[str] = []
             for x in v:
@@ -594,12 +632,27 @@ class Converter:
                 else:
                     parts[-1].append(x)
             out: list[str] = []
+            glued: list[str] = []
             for n, p in enumerate(parts):
                 txt = self.inline(p)
                 if txt:
-                    out.append(guard_line_start(txt))
+                    glued.append(guard_line_start(txt))
                 if n < len(maths):
-                    out.append(f"$$\n{maths[n]}\n$$")
+                    if glued:
+                        # A blank line inside the fence would end the
+                        # paragraph and leave the `$$` lines as its text.
+                        tex = "\n".join(l for l in maths[n].split("\n") if l.strip())
+                        if tex:
+                            glued.append(f"$$\n{tex}\n$$")
+                            self.report["display maths glued under its lead-in line (text right after it continues that paragraph)"] += 1
+                        else:
+                            # An empty display sets nothing; the text around
+                            # it stays one paragraph.
+                            self.report["empty display maths dropped"] += 1
+                    else:
+                        out.append(f"$$\n{maths[n]}\n$$")
+            if glued:
+                out.append("\n".join(glued))
             return out
         if k == "Header":
             level, a, inlines = v
@@ -645,7 +698,7 @@ class Converter:
         if k == "RawBlock":
             fmt, txt = v
             txt = re.sub(r"<[^>]+>", " ", txt)
-            txt = re.sub(r"\s+", " ", txt).strip()
+            txt = collapse_spaces(txt)
             if txt:
                 self.report[f"raw {fmt} blocks reduced to text"] += 1
                 return [guard_line_start(escape(txt))]
@@ -854,7 +907,7 @@ def main() -> None:
     ap.add_argument("--lang", default="en", help="content language (chapters/<lang>/, quote marks)")
     ap.add_argument("--notes", choices=["endnotes", "inline", "drop"], default="endnotes", help="what to do with footnotes (Postext has none)")
     ap.add_argument("--speaker-notes", choices=["drop", "keep", "callout"], default="drop", help="PPTX speaker notes: drop, keep as body text, or wrap in a callout of type 'notes'")
-    ap.add_argument("--keep-urls", action="store_true", help="append (url) after link text (Postext keeps only link text)")
+    ap.add_argument("--keep-urls", action="store_true", help="also print (url) after the link text, for print output (links are kept as live [text](url) links either way)")
     ap.add_argument("--link-refs", action="store_true", help="turn 'Figure 1.2' / 'Table 3' mentions into :ref and float those resources")
     ap.add_argument("--dump-styles", action="store_true", help="only list the Word/ODT paragraph and character styles with counts")
     args = ap.parse_args()

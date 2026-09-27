@@ -1,0 +1,66 @@
+---
+title: "Programa de congreso con una parrilla de celdas combinadas"
+summary: "Un programa de dos jornadas: mergeCells extiende la plenaria por las tres salas y los talleres por dos franjas, y cada ponencia lleva el color de su itinerario."
+description: "Un programa de congreso en catalán hecho con Postext: una parrilla de celdas combinadas y colores por itinerario que sigue en otra página, y aperturas en negro."
+question: "¿Cómo combino las celdas de una parrilla para que una plenaria ocupe todas las salas y un taller dos franjas?"
+aliases: ["programa de congreso", "programa de jornadas", "parrilla", "horario", "agenda", "rowspan", "colspan", "celdas combinadas", "tabla por colores", "catalán"]
+pageNotes: { "1": "La cubierta sobre negro: la ele geminada mayúscula, L·L, dibujada como una L violeta, un punto ámbar y una L turquesa, cada L un asta alta con el pie redondeado. Debajo, 7es Jornades · Programa en versales pequeñas ámbar, Jornades de Tipografia i Edició Digital en una letra de rótulo ancha y blanca, las fechas 12–13.11.2026 en violeta y Girona · La Impremta, Barri Vell.", "2": "El jueves se abre con una banda negra en la cabeza de la página: Primera jornada · 12 de novembre en versales ámbar, un 12 blanco de unos 39 mm de alto con Dijous al lado y una hilera de formas violetas, turquesas y ámbar en el pie de la banda. Debajo, tres párrafos de avisos prácticos con tres muestras de color que nombran los itinerarios, y luego Qui parla dijous y las primeras notas de ponentes, cada nombre en negrita y las líneas siguientes sangradas.", "3": "La Taula 1, la parrilla del jueves, llena la página: una fila de cabecera negra con la hora y las tres salas, las partes del día en versales violetas pequeñas, la conferencia inaugural en una celda negra que ocupa las tres salas, dos talleres que llenan dos franjas cada uno y cada ponencia en una pieza violeta, turquesa o ámbar. Continua a la pàgina següent cierra la página.", "4": "La parrilla termina en la cabeza de la página bajo la misma fila de cabecera, con el pie acabado en (continuació): el paseo y la cena de la noche, y una nota sobre la duración de las sesiones. Debajo, el resto de ponentes del jueves y Al vespre en dos columnas igualadas.", "5": "El viernes se abre con la misma banda, un 13 y Divendres. Una introducción breve y el primer ponente del viernes quedan sobre la Taula 2, que ocupa entera el pie de la página: la plenaria y la clausura en negro, un taller en dos franjas y las ponencias en los colores de su itinerario.", "6": "Un plano de La Impremta en la cabeza de la página: las dos salas de ponencias, el vestíbulo con el guardarropa al lado, la escalera que sube al aula de talleres y el patio con dos árboles, numerados del 1 al 6 en círculos negros y nombrados en la nota bajo la Figura 1. Debajo, los últimos ponentes del viernes, Com arribar y el colofón en dos columnas." }
+---
+
+## Lo que vas a componer
+
+El programa impreso, en catalán, de unas jornadas de tipografía inventadas que se celebran en Girona. La cubierta dibuja la ele geminada mayúscula, L·L, con tres módulos de color sobre negro. Cada jornada se abre con una banda negra de 76 mm y el día del mes en una cifra de 144 pt. La parrilla del jueves es una tabla. La conferencia inaugural ocupa una celda negra que abarca las tres salas, y cada taller, dos franjas horarias. Las partes del día encabezan sus filas a todo lo ancho, y cada ponencia es una pieza del color de su itinerario; las muestras de color del pie hacen de leyenda. La parrilla no cabe en una página, así que llena la 3 y termina en la 4, bajo su fila de cabecera repetida. La del viernes, más corta, cabe entera al pie de su página de apertura.
+
+## Elaboración
+
+### 1 · Convierte cada línea del programa en una fila
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Cada jornada es texto plano en un archivo de contenido, con una línea por franja horaria: `|` separa las salas, una letra indica el itinerario, `*` marca una plenaria sobre relleno negro, `/` abre cada línea que sigue al título y `^` prolonga la sesión de la franja anterior. Todas las combinaciones salen de `mergeCells`. Una línea con una sola sesión, como la plenaria o una pausa, ocupa las tres columnas de sala. Un taller ocupa su celda y la de debajo, y una parte del día (MATÍ, TARDA), que se escribe como una línea sin `|`, las cuatro columnas. Las celdas cubiertas siguen en la cuadrícula, marcadas con `hiddenBy`, porque la columna de cada celda es su posición en la fila ([Construir modelos de tabla](/es/docs/configuration#construir-modelos-de-tabla)). `headerRowCount: 1` convierte los nombres de las salas en la fila de cabecera. Los `columnWidths` son pesos relativos, y 12 + 3 × 42 suman los 138 mm del ancho de caja, así que la columna de la hora mide 12 mm y cada sala 42. `setAlignment(…, 'left', 'middle')` centra cada taller en vertical en sus dos filas.
+
+### 2 · Deja que el jueves continúe y el viernes quede entero
+
+<Excerpt region="split" />
+
+La parrilla del jueves se cita en la página 2 y va en la cabeza de una página. Un flotante nunca sube por encima de su referencia, así que la parrilla abre la página 3. No cabe en ella, y `overflow: 'split'` la corta entre dos filas, nunca dentro de una celda combinada ([Tablas más altas que la página](/es/docs/configuration#tablas-más-altas-que-la-página)). La página 3 acaba con la fila de las 17.30 y el aviso debajo. La 4 repite la fila de cabecera y el pie completo, con la leyenda de colores, seguido de `(continuació)`, y la nota solo aparece bajo esta última parte. La del viernes va al pie de una página y cabe bajo el texto que la cita en la página 5. Postext 1.4.1 solo trae en inglés y en español los nombres de los tipos de recurso y estos dos textos, así que las palabras catalanas, plurales incluidos, se escriben sobre `defaultResourceTypes('ca')` y en el estilo de tabla. `numberingTemplate: '{n}'` con `resetOn: 'never'` numera las dos parrillas en una sola serie: Taula 1 y Taula 2.
+
+### 3 · Corta los rellenos en piezas
+
+<Excerpt region="tiles" />
+
+`setCellBackground`, en la respuesta corta, da a cada sesión el color de la paleta de su itinerario, y unos filetes de 1,6 pt del color del papel cortan los rellenos en piezas separadas por líneas blancas ([Estilo de tablas](/es/docs/configuration#estilo-de-tablas)). Una tabla tiene un solo color de texto para las celdas del cuerpo, así que el blanco de la plenaria es un chip cuyo estilo fija el color y quita el relleno, el borde y el margen lateral del chip. Las horas y las partes del día también son chips, en Chivo Mono ([Estilos de chip](/es/docs/configuration#estilos-de-chip)). Un chip nunca se parte entre dos líneas; el título de una plenaria y la línea de su ponente caben cada uno en una línea de la celda de tres salas. En la nota del plano, el chip `sala` deja el texto tal cual y mantiene en una línea el número y el nombre de cada sala, cosa que en 1.4.1 no consigue un espacio de no separación.
+
+### 4 · Abre cada jornada con una banda
+
+<Excerpt region="opener" />
+
+El diseño del título de primer nivel dibuja la banda: una caja de 76 mm de alto desde el borde de sangre, con la franja de módulos a lo largo de su pie. La fecha sale del atributo `date` del título, y la cifra, de `day`. El trazo del 1 de Unbounded 800 a 144 pt empieza 0,76 mm dentro de su caja, y el de la primera mayúscula de la fecha, entre 0,1 y 0,2 mm dentro de la suya; por eso la cifra se desplaza 0,6 mm a la izquierda, y la fecha, la cifra y el texto empiezan su trazo a menos de 0,2 mm unos de otros. El nombre del día va a la derecha de la cifra, bajado `BASELINE` × (144 − 26) pt para que las dos líneas de base coincidan, porque en un texto de diseño con `lineHeight: 1` la línea de base queda a 0,8 de la altura de su caja. `minHeight` reserva la página hasta 7 mm por debajo de la banda, y la rejilla base redondea esa reserva hacia arriba hasta 14 líneas, así que la caja de la primera línea de texto empieza 10,2 mm bajo la banda. Con `AIR = 0` manda la caja de la propia cifra, que baja más allá del pie de la banda, y el texto empieza 5,6 mm bajo la banda.
+
+### 5 · Sangra las notas de los ponentes
+
+<Excerpt region="bios" />
+
+Cada ponente es un párrafo de un bloque `:::paragraphs{style="bio"}`. El nombre en negrita empieza en el borde de la columna y las líneas siguientes entran 4 mm, en sangría francesa, así que los nombres quedan alineados columna abajo, como en un índice ([Estilos de párrafo](/es/docs/configuration#estilos-de-párrafo)). El texto va en bandera, un ajuste en el que 1.4.1 no evita las últimas líneas de una sola palabra, así que cada nota se reescribió hasta que su última línea tuvo al menos dos.
+
+## Variantes
+
+### Redondea las esquinas de la parrilla
+
+Una tabla partida redondea las esquinas superiores de su primera parte, en la página 3, y las inferiores de la última, en la página 4, donde solo se ve la derecha porque la columna de la hora no tiene relleno.
+
+```diff
+-  cellPadding: mm(1.5) };
++  cellPadding: mm(1.5), borderRadius: mm(2.5) };
+```
+
+### Numera cada parrilla por jornada
+
+Si se cuenta por títulos de primer nivel, como en los tipos predefinidos, salen la Taula 1.1 y la Taula 2.1, y el plano pasa a ser la Figura 2.1; el estilo de la cubierta no se numera, así que el jueves es el título 1.
+
+```diff
+-  numberingTemplate: '{n}', resetOn: 'never' })); // Taula 1, Taula 2: one count, not per day
++  numberingTemplate: '{h1}.{n}', resetOn: 'h1' })); // Taula 1.1, Taula 2.1: per day
+```
+
+## Errores frecuentes
+
+- Las columnas de la página 4 se igualan a mano, con un `:::columnbreak` antes de la nota de Rosa Fontanet. Postext 1.4.1 no iguala la última página de un capítulo cuando la abre el resto de una tabla partida, así que la primera columna llega al pie y la segunda se queda corta. Mueve el salto cada vez que cambie el texto del jueves.

@@ -1,0 +1,91 @@
+---
+title: "Front matter in roman folios, then page 1"
+summary: "The cover and prelims are unnumbered headings counted in lower-case roman; :::numbering restarts the count at 1 on the recto where the novel opens."
+description: "Frankenstein’s cover and prelims are counted i to x, and Letter I, on a recto, is page 1. The contents and the PDF’s page labels give the same numbers."
+question: "How do I number the front matter i, ii, iii and start again at 1 on a recto where the novel begins?"
+aliases: ["roman page numbers", "roman numerals", "front matter", "prelims", "preliminary pages", "book cover", "half title", "title page", "imprint page", "copyright page", "dedication", "epigraph", "frontispiece", "blank verso", "letter signature", "restart page numbering", "PDF page labels"]
+pageNotes: { "3": "The half title, page iii. Its style breaks to a right-hand page, so the back of the cover, page ii, is blank and prints no folio.", "4": "The frontispiece, page iv, faces the title page, v; neither prints its folio.", "10": "The last page of the Preface: its folio, x, is set in small capitals centred at the foot.", "11": "Letter I opens on a right-hand page under the northern lights over St Petersburgh; its folio, 1, sits in the same place as the x on the facing page.", "13": "Page 3: on a right-hand page the running head sets the letter’s title beside the folio, both towards the outer margin.", "14": "Page 4, the end of Letter I: the running head sets the book’s title beside the folio, and Walton’s signature is set flush right." }
+---
+
+## What you'll build
+
+The first leaves of *Frankenstein* as a pocket classic, 129 × 198 mm: a cover with lightning on Mont Blanc, its back left blank, a half title, a frontispiece of Walton’s ship beset in the ice facing the title page, the imprint low on its verso, the dedication to Godwin over Milton’s epigraph, a contents page and the Preface of 1818. Those ten pages are numbered i to x, but only the contents and the Preface print their numbers. Letter I starts the novel on a right-hand page, under the northern lights, and its folio reads 1 in the same place as the x on the facing page. The letter runs on to Walton’s signature. The ix beside the Preface in the contents and the 1 beside the letter come from the finished pages, and a PDF viewer labels the pages the same way.
+
+## Method
+
+### 1 · Each leaf is a heading with a design
+
+<Excerpt region="leaves" />
+
+A heading opens a page of its own and becomes a PDF bookmark; the design in its style places the leaf’s type and drawings. With `numbered: false` and `toc: false` the leaves stay out of the chapter count and the contents. An empty header and footer give them what printers call blind folios: the title page prints no number but is still page v, which is why the Preface can be ix. Only the half title keeps an odd break, and that leaves the back of the cover blank. The imprint, the dedication, the epigraph and Walton’s close are `:::paragraphs` blocks set in the styles at the end of the excerpt.
+
+### 2 · The contents take their numbers from the layout
+
+<Excerpt region="contents" />
+
+`:::toc` lists every heading its style lets in, with the label of the page it lands on ([table of contents](/en/docs/configuration#table-of-contents)). The Contents and the Preface share the `front` style, which sets `toc: false`, and the Preface overrides it with `{toc="true"}`. Neither the Preface nor Letter I is numbered, so their entries print no chapter number. The second line of the letter’s entry is its `to="…"` attribute. The page numbers are set in the folio face. The entries start on the same baseline as the Preface’s first line, so the two facing pages line up.
+
+### 3 · The novel opens on a recto, under the northern lights
+
+<Excerpt region="letter" />
+
+The drawing bleeds off the head of the page and fades into the paper at its foot, where the letter begins. In Postext 1.4.1 an image never counts towards the room an opener reserves (its texts, rules and boxes do, even anchored to the page), so `minHeight` alone puts the first line below the drawing ([span and advanced design](/en/docs/configuration#span-and-advanced-design)). The kicker and the dateline come from the heading’s `to` and `dateline` attributes. Letter I also carries `{style="letter"}`, a style whose only setting is `numbered: false`, because Walton’s letters come before Chapter I and have no chapter number.
+
+### 4 · The running heads come back with the novel
+
+<Excerpt region="heads" />
+
+A section keeps the document’s header and footer unless its style replaces them. The front matter replaces both and the letter style does not, so from page 1 the novel prints these heads on its body pages and, on its opener, the drop folio defined in the short answer. `{pageNumber}` prints the label of the page it sits on, so the `folio()` helper sets x on one side of the spine and 1 on the other with the same design.
+
+### 5 · The PDF carries the same page numbers
+
+<Excerpt region="build" />
+
+`buildDocument` repeats the layout until the page labels in the contents stop changing, so one call is enough. `renderToPdf` writes those labels into the PDF: in a viewer that reads page labels, the page-number field runs from i to x and then from 1, and “go to page 1” opens Letter I. Each heading becomes a bookmark named after its text, which is why the leaves have plain titles: Cover, Half title, Frontispiece, Title page, Imprint, Dedication.
+
+## Variations
+
+### Count the prelims in capitals
+
+Upper-case numerals print as full capitals in the folio face, taller than the small capitals that lower-case numerals give.
+
+```diff
+-const pageNumbering = { format: 'lower-roman', startAt: 1 }; // startAt spelled out: cover = i
++const pageNumbering = { format: 'upper-roman', startAt: 1 }; // startAt spelled out: cover = I
+```
+
+### Number the book straight through
+
+Leave out `startAt` and the count carries on in arabic figures, so Letter I becomes page 11, as in books that count their prelims with the text.
+
+```diff
+-:::numbering{format="decimal" startAt=1}
++:::numbering{format="decimal"}
+```
+
+### Leave out the frontispiece
+
+Delete the `# Frontispiece` heading and send the title page to a recto: page iv stays blank, the Preface is still ix and Letter I is still 1.
+
+```diff
+-  { id: 'title', ...blind, advancedDesign: design([ // v: four frontmatter fields, one attribute
++  { id: 'title', ...blind, breakBefore: { enabled: true, parity: 'odd' },
++    advancedDesign: design([ // v: four frontmatter fields, one attribute
+```
+
+### Add a bleed and crop marks for press
+
+With `cutLines` the cover and the opener, both anchored to the bleed, run 3 mm past the trim; the folios and the page count do not change ([cut lines](/en/docs/configuration#cut-lines)).
+
+```diff
+     backgroundColor: col('paper'), pageNumbering,
++    cutLines: { enabled: true }, // a 3 mm bleed and crop marks
+```
+
+## Pitfalls
+
+- The leaves inherit level 1’s `'odd'` break. Left alone, each one waits for a right-hand page. The prelims then run to fourteen pages instead of ten, with four more blank versos, and the frontispiece faces a blank page instead of the title page. Restate the break with `parity: 'any'`, as this recipe does, or switch it off with `breakBefore: { enabled: false }`; a page-span heading opens its own page either way.
+- Drop the `:::pagebreak` before `:::numbering` when level 1 breaks with `'always-odd'`, the engine’s own H1 default. If the text before it ends on a right-hand page, the pagebreak pads to the next recto, then the heading adds its separator page and pads again, which leaves three blank pages in a row instead of one. After an `'odd'` break, as here, the pagebreak changes nothing; after `'any'`, it is what puts page 1 on a recto.
+- A Preface that grows by one page pushes Letter I two pages on, because the odd-page break adds a blank verso before it. Check the page count whenever you edit the prelims.
+- Keep an opener’s type above the foot of the text block. In Postext 1.4.1 a heading design that reaches below it loses its whole reserved height, `minHeight` included. On the cover nothing changes, since no text follows it; on a chapter opener the text would start right under the title.
+- The contents’ leader dots are set in the page numbers’ face and colour, and `toc.leader` has no colour of its own, so here they print in steel blue.

@@ -1,0 +1,66 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 20,
+  "status": "published",
+  "chapter": "boxes",
+  "order": 20,
+  "level": 2,
+  "genres": ["paper"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["super-subscripts", "bibliography", "section-geometry"],
+    "also": [
+      "heading-styles", "column-balancing", "column-rule",
+      "paragraph-styles", "escapes", "emphasis-colours", "citations", "figure-numbering",
+      "resource-types", "captions", "opener-design", "design-images", "heading-attributes",
+      "running-heads", "mirrored-margins", "color-palette"
+    ]
+  },
+  "answers": ["Q45", "Q40", "Q49"],
+  "gaps": ["footnotes"],
+  "gotchas": [
+    "digit-period-list", "ragged-no-hyphenation", "section-column-rule", "nbsp-breaks",
+    "top-float-next-page", "palette-skips-designs", "opener-reserves-anchored", "headings-drop-h1-break",
+    "overflow-ellipsis-default", "svg-no-webfonts", "svg-no-marker-filters", "parity-page1-recto",
+    "quote-frontmatter", "config-cache-identity", "fonts-first"
+  ],
+  "explainsWarnings": [],
+  "related": ["annotated-classic-glosses", "critical-edition-line-numbers", "thesis-back-matter", "journal-article-with-maths"],
+  "workarounds": [
+    { "followup": "EF-05", "package": "postext", "note": "the H1 breakBefore is restated because a headings object drops it" },
+    { "followup": "EF-113", "package": "postext", "note": "the single-column lecture's H1 sets span: 'page' only so that its page-anchored soot field and candle paint above the top of the text block: without it the opener's design is clipped at the column's top edge, although a span means nothing in one column" },
+    { "followup": "EF-112", "package": "postext", "note": "a heading style's layout.columnRule is never drawn: the canvas (and the PDF) renderer reads only doc.config.layout.columnRule, so the notes' rule is declared on the document's layout, which draws it only on pages with two columns (gotcha section-column-rule); move it into the notes style when fixed" },
+    { "followup": "EF-21", "package": "postext", "note": "the notes are set ragged so no line stretches the en space after a note number, and ragged text is never hyphenated: columns of about 40 characters keep the rag shallow" },
+    { "followup": "EF-66", "package": "postext", "note": "a no-break space is a break opportunity in design text too (design/layout.ts splits on /\\s+/), so the opener's subtitle is 86 mm wide, which breaks it after a dash, never before one" },
+    { "followup": "EF-71", "package": "postext", "note": "design slots do not read the palette: col() writes every colour's hex beside its paletteId (gotcha palette-skips-designs)" },
+    { "followup": "EF-11", "package": "postext", "note": "every frontmatter value is quoted" },
+    { "followup": "EF-18", "package": "postext", "note": "the opener sets no minHeight: its soot field, a page-anchored box reaching below the heading, sets the reserve (gotcha opener-reserves-anchored), and the H1's default 9 pt bottom margin rides on it; if page-anchored elements stop counting, give the opener minHeight: mm(FIELD - TOP)" }
+  ],
+  "engine": { "postext": "1.4.1" },
+  "kit": ["core", "fonts", "viewer", "images"],
+  "sample": { "locales": ["en"] },
+  "capture": {
+    "hero": [4, 5],
+    "card": "crop",
+    "focus": { "page": 5, "x": 0, "y": 0, "w": 1, "h": 0.5 },
+    "pages": "all",
+    "expect": { "pages": [5, 5] }
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      { "what": { "en": "The Chemical History of a Candle, Lecture I (abridged), and William Crookes’s notes to it, from the Chatto & Windus impression of 1908", "es": "The Chemical History of a Candle, conferencia I (abreviada), y las notas de William Crookes, de la reimpresión de Chatto & Windus de 1908" }, "who": "Michael Faraday; William Crookes", "source": "https://www.gutenberg.org/ebooks/14474", "license": "PD" },
+      { "what": { "en": "The notes signed Ed., the colophon and the drawings", "es": "Las notas firmadas Ed., el colofón y los dibujos" }, "who": "Ignacio Ferro", "license": "CC-BY-4.0" }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Libre Bodoni", "license": "OFL-1.1" },
+      { "family": "Besley", "license": "OFL-1.1" },
+      { "family": "Archivo Narrow", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-25",
+  "updated": "2026-09-26"
+}

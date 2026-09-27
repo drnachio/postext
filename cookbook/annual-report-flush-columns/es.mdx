@@ -1,0 +1,67 @@
+---
+title: "Memoria anual con columnas a ras"
+summary: "La memoria anual de una cooperativa energética a dos columnas que acaban en la misma línea, con un recuadro de cifras a lo ancho y la última página igualada."
+description: "Una memoria anual de cinco páginas compuesta con Postext sobre una rejilla de 50 líneas: cada columna acaba a ras del pie y la página de cierre sale igualada."
+question: "¿Cómo hago que cada columna acabe en la última línea de la rejilla y que la página de cierre quede igualada?"
+aliases: ["justificación vertical", "columnas a ras", "columnas equilibradas", "pie de columna igualado", "cifras clave", "panel de cifras", "cuenta de resultados", "memoria anual", "annual report", "colores por sección", "recuadro flotante"]
+pageNotes: { "1": "La cubierta: un fondo azul casi negro con Tidewell Community Energy en blanco, 2025 en cifras blancas muy grandes, Annual report and accounts en amarillo y el periodo en mayúsculas espaciadas. En la mitad inferior, una cinta verde azulado y otra amarilla se ensanchan y se cruzan de enero a diciembre, rotuladas WIND y SUN, sobre una fila de iniciales de los meses, con dos líneas de letra pequeña al pie.", "2": "La carta de la presidenta bajo una franja azul mar y el título The wind and the sun took turns. Los primeros párrafos se cortan a la misma altura en las dos columnas sobre un recuadro azul casi negro con tres cifras en amarillo, 8.47 GWh, 2,316 y £84,000; la carta sigue debajo y acaba en una firma manuscrita al pie de la columna derecha.", "3": "El informe de explotación bajo una franja verde azulado, dos columnas con ladillos del mismo color, una lista breve de los tres tejados mayores y, al pie de la página, un gráfico de barras dobles, verdes y amarillas, con los doce meses.", "4": "Una nota sobre cómo se cuenta un kilovatio hora, a dos columnas bajo un filete verde azulado en la cabeza de la página; debajo, una tabla de producción por emplazamiento y un gráfico de anillo con las horas de los aerogeneradores en la cabeza de cada columna, y el resto del informe hasta el pie.", "5": "El informe de la tesorera bajo una franja rojo ladrillo: dos columnas cortas que acaban en la misma línea y, debajo, la cuenta de resultados a lo ancho de la página, con la fila de cabecera en azul casi negro, los encabezados de grupo en cursiva y los subtotales en negrita sobre un tinte claro." }
+---
+
+## Lo que vas a componer
+
+La memoria de 2025 de Tidewell Community Energy, una cooperativa inventada con dos aerogeneradores, un huerto solar y paneles en 21 tejados. Cinco páginas de 210 × 280 mm, en inglés. En la cubierta, dos cintas dibujan mes a mes la producción eólica y la solar bajo un «2025» de 150 pt. Siguen la carta de la presidenta, el informe de explotación y las cuentas, a dos columnas justificadas de Brygada 1918 sobre una rejilla de 50 líneas. Las columnas llenas acaban en la última línea, y las cortas, a la altura de su vecina. Un recuadro de tres cifras cruza la página de la carta, y una nota flotante sobre los contadores abre la página 4. En la página de cierre, las columnas acaban juntas sobre la cuenta de resultados. Un atributo `palette` tiñe de verde azulado las páginas de explotación y de rojo ladrillo la de cuentas.
+
+## Elaboración
+
+### 1 · Todo sobre la rejilla, y las palancas cierran los huecos
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. La caja de texto mide exactamente 50 líneas de 13,4 pt, y el margen inferior (21,6 mm) se calcula a partir de esa altura. Cada ladillo ocupa una línea de la rejilla encima y otra propia, así que una columna que acaba corta se queda corta en líneas enteras, que es lo que añade el <Feature id="column-balancing">equilibrado de columnas</Feature>. En la <PageRef page={3}>página 3</PageRef>, el párrafo de tres líneas sobre el granizo pasa entero a la página 4 por `avoidOrphans`, el ajuste con el que Postext impide que la última línea de un párrafo quede sola en la cabeza de una columna (la línea viuda de los manuales españoles), y la columna derecha se queda dos líneas corta. Con `maxLinesPerHeading: 1`, una de esas líneas va al espacio sobre *The Saltings and the roofs* y la otra queda para la palanca siguiente, que la pone tras la lista de tejados. Con el valor por defecto, 4, irían las dos sobre el título.
+
+### 2 · Iguala el texto sobre un recuadro que cruza la página
+
+<Excerpt region="figures" />
+
+Un recuadro con `span="page"` parte en bandas una página a dos columnas. En la <PageRef page={2}>página 2</PageRef>, la carta se corta en ocho líneas por columna encima del recuadro y sigue debajo en las dos columnas. Dentro, `:::columns{count=3 breaks="3,5"}` abre la segunda y la tercera columna en la segunda y la tercera cifra (los bloques tercero y quinto del grupo), en lugar de cortar donde las columnas quedarían más igualadas. El estilo de párrafo `figure` compone esas cifras a 26 pt, y su `boldColor` las pone en amarillo.
+
+### 3 · Haz flotar un recuadro a la cabeza de la página siguiente
+
+<Excerpt region="aside" />
+
+En el Markdown, la nota sobre los contadores va tras el primer párrafo sobre Harrow Down, en la página 3, pero `placement="top"` la saca del flujo y la coloca en la cabeza de la página siguiente. El informe llena el resto de la página 3, y la <PageRef page={4}>página 4</PageRef> se abre con el recuadro sobre las dos columnas. Debajo, la tabla por emplazamiento y el gráfico de anillo, ambos con `position: 'top'`, encabezan una columna cada uno, una línea de la rejilla más abajo de lo que quedarían sin los 3,5 mm de relleno inferior del recuadro.
+
+### 4 · Da a cada sección su color sin portadilla
+
+<Excerpt region="palette" />
+
+Con `parts: { page: false }`, una valla como `:::part{number="02" title="Operations" palette="band=#1c6e67"}` no abre página. Da nombre a la sección en la franja de apertura y junto al folio, y cambia `band` en todas las páginas hasta la parte siguiente. Las franjas, los ladillos, las viñetas de la lista, las etiquetas de los pies y el filete de la nota toman `band`, así que las páginas de explotación salen en verde azulado y la de cuentas en rojo ladrillo, mientras la carta conserva el azul mar de base (<Feature id="part-palettes">colores por parte</Feature>).
+
+### 5 · Construye las tablas con los datos e iguala la última página
+
+<Excerpt region="data" />
+
+`statement()` convierte `DATA.accounts` en la cuenta de resultados fila a fila. Una etiqueta que empieza por `=` imprime en negrita, sobre el tinte, la suma acumulada de cada año. Los costes van en negativo en los datos, así que el *Operating surplus* sale de esa suma sin teclear ningún total. Una etiqueta sin cifras, como *Income* u *Operating costs*, pasa a ser una sola celda en cursiva a lo ancho de la tabla, combinada con `mergeCells`, que escribe también las celdas ocultas que necesita cada combinación. En la <PageRef page={5}>página 5</PageRef>, la cuenta va como flotante a lo ancho del pie, bajo el informe de la tesorera, con el que acaba el documento. Sin equilibrado, las columnas llegarían a 12 líneas la izquierda y a 9 la derecha; el corte de cierre deja las dos en 11, y la palanca de títulos añade sobre *Cash and reserves* la línea que aún le falta a la derecha.
+
+## Variantes
+
+### Deja todo el hueco a los títulos
+
+En la página 3, las dos líneas libres van entonces sobre *The Saltings and the roofs*, y ninguna tras la lista.
+
+```diff
+-const balancing = { maxLinesPerHeading: 1 }; // one line per heading; the next lever takes more
++const balancing = {}; // the default: up to 4 lines above each heading
+```
+
+### Desactiva el equilibrado
+
+La columna derecha de la página 3 acaba entonces dos líneas corta. En la página 5, la izquierda llega a 12 líneas y la derecha se queda en 9, y la cuenta empieza una línea más abajo.
+
+```diff
+-const balancing = { maxLinesPerHeading: 1 }; // one line per heading; the next lever takes more
++const balancing = { enabled: false };
+```
+
+## Errores frecuentes
+
+- Si las columnas de la página de cierre difieren en una sola línea, se quedan así, con la izquierda una línea más larga, como las dejaría un cajista; el corte de cierre solo actúa con dos líneas de diferencia o más. Para que acaben juntas, alarga o acorta el texto en una línea.
+- Postext 1.4.1 quita los espacios del final de cada celda de tabla, también el de no separación. Para alinear las cifras positivas con los costes entre paréntesis, la receta cierra cada cifra positiva con un espacio de no separación y un carácter de unión (U+2060, *word joiner*).

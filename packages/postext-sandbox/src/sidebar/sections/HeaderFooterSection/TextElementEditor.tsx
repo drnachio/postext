@@ -1,6 +1,6 @@
 'use client';
 
-import { AlignCenter, AlignLeft, AlignRight } from 'lucide-react';
+import { AlignCenter, AlignJustify, AlignLeft, AlignRight } from 'lucide-react';
 
 import { useState } from 'react';
 import { useSandboxLabels } from '../../../context/SandboxContext';
@@ -15,7 +15,7 @@ import type {
   ColorValue,
   ElementSize,
   VAlign,
-  HAlign,
+  DesignTextAlign,
 } from 'postext';
 import {
   TextInput,
@@ -27,6 +27,7 @@ import {
   ColorPicker,
 } from '../../../controls';
 import { NestedGroup } from '../../../controls';
+import { lineHeightFieldValue, lineHeightFromField } from './lineHeight';
 import { PlaceholderPicker } from './PlaceholderPicker';
 import { PlacementFields, PagesSelect, type Sibling } from './PlacementFields';
 import {
@@ -41,6 +42,7 @@ import {
 
 const TEXT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const TRACKING_UNITS: DimensionUnit[] = ['pt', 'em', 'px'];
+const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'mm'];
 const BOX_SIZE_UNITS: DimensionUnit[] = ['pt', 'mm', 'cm', 'in', 'em', 'px'];
 const ZERO: Dimension = { value: 0, unit: 'pt' };
 const DEFAULT_CUSTOM_WIDTH: Dimension = { value: 40, unit: 'mm' };
@@ -92,6 +94,20 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
     update({ dropCap });
   };
 
+  type Stroke = NonNullable<DesignTextElement['stroke']>;
+  /** Merge into `stroke`; a zero width drops the outline altogether, and
+   *  unset colour / hollow keys are left out. */
+  const updateStroke = (partial: Partial<Stroke>) => {
+    const stroke: Stroke = { width: raw.stroke?.width ?? ZERO, ...raw.stroke, ...partial };
+    if (stroke.color === undefined) delete stroke.color;
+    if (!stroke.hollow) delete stroke.hollow;
+    const next: DesignTextElement = { ...raw };
+    if (stroke.width.value > 0) next.stroke = stroke;
+    else delete next.stroke;
+    onChange(next);
+  };
+  const strokeWidth = raw.stroke?.width ?? ZERO;
+
   const insertAtCursor = (placeholder: string) => {
     update({ content: `${raw.content ?? ''}{${placeholder}}` });
   };
@@ -109,6 +125,12 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
   const isColorDefault = colorsEqual(resolved.color, DEFAULT_TEXT_ELEMENT.color);
   const isVerticalAlignDefault = raw.verticalAlign === undefined;
   const isLineHeightDefault = raw.lineHeight === undefined;
+  // Leading: `em` is the multiplier of the font size, `pt` / `mm` the
+  // distance between baselines (see `lineHeightFromField`).
+  const lineHeightValue = lineHeightFieldValue(resolved);
+  const updateLineHeight = (dim: Dimension) => {
+    update({ lineHeight: lineHeightFromField(lineHeightValue, dim, resolved.fontSize) });
+  };
   const isLetterSpacingDefault = raw.letterSpacing === undefined;
   const isTextTransformDefault = raw.textTransform === undefined || raw.textTransform === 'none';
   const widthMode = sizeMode(raw.placement.size?.width);
@@ -231,8 +253,9 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
           { value: 'left', label: labels.headerFooterElementAlignLeft, icon: <AlignLeft size={13} /> },
           { value: 'center', label: labels.headerFooterElementAlignCenter, icon: <AlignCenter size={13} /> },
           { value: 'right', label: labels.headerFooterElementAlignRight, icon: <AlignRight size={13} /> },
+          { value: 'justify', label: labels.headerFooterElementAlignJustify, icon: <AlignJustify size={13} /> },
         ]}
-        onChange={(v) => update({ align: v as HAlign })}
+        onChange={(v) => update({ align: v as DesignTextAlign })}
         tooltip={labels.headerFooterElementTextAlignTooltip}
         isDefault={raw.align === undefined}
         onReset={() => {
@@ -339,13 +362,13 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
         fieldId={`headerFooter-text-color-${raw.id}`}
         tooltip={labels.headerFooterElementColorTooltip}
       />
-      <NumberInput
+      <DimensionInput
         label={labels.headerFooterElementLineHeight}
-        value={resolved.lineHeight}
-        onChange={(v) => update({ lineHeight: v })}
-        min={0.5}
-        max={4}
+        value={lineHeightValue}
+        onChange={updateLineHeight}
+        min={0.1}
         step={0.05}
+        units={LINE_HEIGHT_UNITS}
         tooltip={labels.headerFooterElementLineHeightTooltip}
         isDefault={isLineHeightDefault}
         onReset={() => {
@@ -358,7 +381,7 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
         label={labels.headerFooterElementLetterSpacing}
         value={raw.letterSpacing ?? ZERO}
         onChange={(dim: Dimension) => update({ letterSpacing: dim })}
-        min={0}
+        min={-5}
         step={0.1}
         units={TRACKING_UNITS}
         tooltip={labels.headerFooterElementLetterSpacingTooltip}
@@ -498,6 +521,55 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
             units={BOX_SIZE_UNITS}
             isDefault={raw.dropCap.gap === undefined}
             onReset={() => resetDropCapField('gap')}
+          />
+        </NestedGroup>
+      )}
+      <ToggleSwitch
+        label={labels.headerFooterElementInlineMarks}
+        checked={raw.inlineMarks ?? false}
+        onChange={(v) => {
+          const next: DesignTextElement = { ...raw };
+          if (v) next.inlineMarks = true;
+          else delete next.inlineMarks;
+          onChange(next);
+        }}
+        tooltip={labels.headerFooterElementInlineMarksTooltip}
+        isDefault={!raw.inlineMarks}
+        onReset={() => {
+          const next: DesignTextElement = { ...raw };
+          delete next.inlineMarks;
+          onChange(next);
+        }}
+      />
+      <DimensionInput
+        label={labels.headerFooterElementStrokeWidth}
+        value={strokeWidth}
+        onChange={(dim: Dimension) => updateStroke({ width: dim })}
+        min={0}
+        step={0.1}
+        units={TRACKING_UNITS}
+        tooltip={labels.headerFooterElementStrokeWidthTooltip}
+        isDefault={raw.stroke === undefined}
+        onReset={() => updateStroke({ width: ZERO })}
+      />
+      {raw.stroke && (
+        <NestedGroup>
+          <ColorPicker
+            label={labels.headerFooterElementStrokeColor}
+            value={raw.stroke.color ?? resolved.color}
+            onChange={(c: ColorValue) => updateStroke({ color: c })}
+            isDefault={raw.stroke.color === undefined}
+            onReset={() => updateStroke({ color: undefined })}
+            fieldId={`headerFooter-text-stroke-${raw.id}`}
+            tooltip={labels.headerFooterElementStrokeColorTooltip}
+          />
+          <ToggleSwitch
+            label={labels.headerFooterElementStrokeHollow}
+            checked={raw.stroke.hollow ?? false}
+            onChange={(v) => updateStroke({ hollow: v })}
+            tooltip={labels.headerFooterElementStrokeHollowTooltip}
+            isDefault={!raw.stroke.hollow}
+            onReset={() => updateStroke({ hollow: false })}
           />
         </NestedGroup>
       )}

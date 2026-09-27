@@ -12,6 +12,7 @@ import { EditorView, keymap } from '@codemirror/view';
 import { Prec, StateEffect, StateField, type EditorState, type Extension } from '@codemirror/state';
 import type { Resource, ResourceKind, ResourceType } from 'postext';
 import { chipCompletionSource, type ChipStyleOption } from './chipSyntax';
+import { smallCapsCompletionSource } from './smallCapsSyntax';
 
 /** What the `@` picker needs from the sandbox: the current resources and the
  *  resource types that name them (figure/table/…) in the document locale.
@@ -265,8 +266,8 @@ export function refCompletion(getContext: () => RefCompletionContext): Extension
     Prec.highest(dismissOnEscape),
     autocompletion({
       // One completion config per editor: the chip directive and style ids
-      // share it with the `@` picker.
-      override: [refSource(getContext), chipCompletionSource(() => getContext().chipStyles ?? [])],
+      // and the small-caps directive share it with the `@` picker.
+      override: [refSource(getContext), chipCompletionSource(() => getContext().chipStyles ?? []), smallCapsCompletionSource],
       activateOnTyping: true,
       icons: false,
       tooltipClass: () => 'cm-refPicker',

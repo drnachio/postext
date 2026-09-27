@@ -22,12 +22,14 @@ import type {
   ResolvedUnorderedListsConfig,
   ResolvedOrderedListsConfig,
   ResolvedMathConfig,
+  ResolvedPdfGenerationConfig,
   ResolvedDesignSlot,
   ResolvedPartsConfig,
   ResolvedHeadingStyleConfig,
   ResolvedTocConfig,
   PageRole,
   PartState,
+  PostextConfig,
 } from './types';
 import type { NumeralStyle } from './numbering';
 import type { MathRender } from './math/types';
@@ -73,10 +75,18 @@ export interface ResolvedConfig {
   headingStyles: ResolvedHeadingStyleConfig[];
   /** The table of contents `:::toc` prints. */
   toc: ResolvedTocConfig;
+  /** The document language (`PostextConfig.locale`) when the config sets
+   *  one; `resolvedLocale()` falls back to the hyphenation locale. Spelled-
+   *  out heading numbers follow it. */
+  locale?: PostextConfig['locale'];
   /** The document's colour palette, kept so per-resource-type caption
    *  overrides (`ResourceType.captionStyle`) can resolve palette colours at
    *  layout time. Absent when the config defines no palette. */
   colorPalette?: ColorPaletteEntry[];
+  /** The PDF settings (`PostextConfig.pdfGeneration`), resolved, when the
+   *  config sets any. Layout ignores them; `renderToPdf` in postext-pdf
+   *  reads them for each setting its own options leave out. */
+  pdfGeneration?: ResolvedPdfGenerationConfig;
 }
 
 // ---------------------------------------------------------------------------
@@ -105,6 +115,9 @@ export interface VDTChipRun {
   italic?: boolean;
   /** Script offset off the baseline (px, positive down). */
   baselineShift?: number;
+  /** The first of a subscript and a superscript set over each other, as
+   *  on {@link VDTLineSegment.stacked}. */
+  stacked?: boolean;
 }
 
 /** A laid-out inline chip (`:chip[…]`): a box drawn from
@@ -142,6 +155,13 @@ export interface VDTLineSegment {
   width: number;
   bold?: boolean;
   italic?: boolean;
+  /** Target of the Markdown link (`[text](url)`) this segment is part of:
+   *  an `http:`, `https:`, `mailto:`, `tel:` or `ftp:` URL, or a relative
+   *  one. The HTML backend wraps the linked words in an `<a>`, the PDF
+   *  backend adds a URI link annotation (absolute URLs only); the canvas
+   *  paints them as plain text. A word glued to the link text (its closing
+   *  full stop) shares the link. */
+  href?: string;
   /** Present when `kind === 'math'`. The rendered formula. */
   mathRender?: MathRender;
   /** Present when `kind === 'swatch'`: an inline colour swatch (`:swatch{…}`),
@@ -157,6 +177,12 @@ export interface VDTLineSegment {
    *  Renderers recolour it (link colour) and the PDF backend emits a link
    *  annotation to the resource's named destination. */
   refResourceId?: string;
+  /** Set on the second and later segments of one `:ref` painted as several
+   *  runs (a label in small capitals: one run per case). Such a segment
+   *  continues the previous one's reference: it takes no plain-text char of
+   *  its own, and renderers extend that segment's link (one anchor, one
+   *  annotation, one `Link` element) instead of opening another. */
+  refContinues?: boolean;
   /** True when this segment is part of a caption's numbered label, so renderers
    *  paint it in the configured caption-label colour. */
   captionLabel?: boolean;
@@ -171,13 +197,54 @@ export interface VDTLineSegment {
    *  renderers add to the line's baseline. */
   script?: 'sup' | 'sub';
   baselineShift?: number;
+  /** Set on the first of a subscript and a superscript that touch
+   *  (`T~0~^2^`, `T^2^~0~`), which are set one over the other: this segment
+   *  advances nothing (`width` 0) and the next one is painted at the same
+   *  x, its `width` the pair's advance (the wider of the two). A renderer
+   *  that paints segments one after another by their widths sets them
+   *  stacked as it is; one that flows text (HTML inline runs) gives this
+   *  segment a box that takes no room. */
+  stacked?: boolean;
 }
 
 export interface VDTLine {
   text: string;
+  /** Where the line sits and its natural width: the sum of its segments'
+   *  widths, spaces at their measured width. A justified line (not the last
+   *  of its paragraph, not {@link ragged}, with a word space) is painted
+   *  wider: its spaces take the slack (see {@link justifiedSpaceRatio}), so
+   *  its text runs from `bbox.x` to the right edge of its block,
+   *  `block.bbox.x + block.bbox.width`. So does a last line wider than that
+   *  edge, whose spaces are narrowed to fit. An overlay or a hit test on the
+   *  painted text widens or narrows such a line to that edge. */
   bbox: BoundingBox;
   baseline: number;
+  /** The line ends inside a word, or at least not at a space. Mostly the
+   *  break added the hyphen it ends with: a dictionary syllable, a soft
+   *  hyphen typed in the text, a word divided for being wider than the
+   *  line. It is also set where the break adds nothing: after a hyphen the
+   *  word carries ({@link hardHyphen}; on the breaker that sets words run by
+   *  run, and on Knuth–Plass for ragged text), after an em or en dash set
+   *  closed between words (`bodyText.breakAfterDashes`, on every breaker but
+   *  pretext's first-fit one; no `hardHyphen`, the line ends on the dash),
+   *  at a URL joint, between ideographs. Pretext's first-fit breaker (a
+   *  heading, a paragraph set line by line without formatting) leaves it
+   *  false after a hyphen or a dash of the text. Whether a final `-` is the
+   *  text's own is read from `hardHyphen`. */
   hyphenated: boolean;
+  /** Set on a {@link hyphenated} line that ends after a hyphen the text
+   *  carries ("meta-" | "analyses", or a word wider than the line cut right
+   *  after one): the hyphen is part of the text and of the line's source
+   *  range, and the break added nothing. Absent otherwise. */
+  hardHyphen?: boolean;
+  /** The line opens with the hyphen of the compound the line before broke
+   *  at, repeated (`bodyText.repeatHyphen`, "vencer-" | "-se"): its `text`
+   *  and first segment start with a `-` that is not in the source there,
+   *  and `plainStart` / `sourceStart` point past it. The PDF backend paints
+   *  it under an `/ActualText` that leaves it out, so text copied or
+   *  extracted from the PDF reads the word once ("vencer-se"). Absent
+   *  otherwise. */
+  repeatedHyphen?: boolean;
   /** Per-segment data for justified rendering */
   segments?: VDTLineSegment[];
   /** Whether this is the last line of the paragraph (ragged even when justified) */
@@ -185,7 +252,8 @@ export interface VDTLine {
   /** Set ragged inside a justified paragraph: a line a URL made unfillable
    *  (its few word spaces would stretch past the loose-line threshold). */
   ragged?: boolean;
-  /** Approximate character offset in the original markdown source where this line begins */
+  /** Approximate character offset in the original markdown source where this line begins.
+   *  A line that opens with a backslash escape (`\$40`) begins at its backslash. */
   sourceStart?: number;
   /** Approximate character offset just past the last source character contributing to this line */
   sourceEnd?: number;
@@ -194,8 +262,18 @@ export interface VDTLine {
   /** Plain-text end offset within the block's plain text (exclusive) */
   plainEnd?: number;
   /** For justified (non-last) lines: ratio of the applied justified space width
-   *  to the normal space width of the block's font. 1.0 means natural spacing. */
+   *  to the normal space width of the block's font. 1.0 means natural spacing.
+   *  The line's `bbox.width` stays its natural width; painted, each space
+   *  grows by the slack shared among them, and the line ends on the right
+   *  edge of the measure. */
   justifiedSpaceRatio?: number;
+  /** Tracking this line takes on top of its block's (`VDTBlock.letterSpacing`),
+   *  px after every glyph — negative tightens: a justified line its word
+   *  spaces alone would set past `bodyText.maxWordSpacing` or
+   *  `minWordSpacing`, within `bodyText.maxJustifyTracking`. Measured into
+   *  the widths of its text segments; renderers paint the line with the sum
+   *  of both. Absent when the line takes none. */
+  letterSpacing?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -222,6 +300,9 @@ export interface VDTResourceTableCellImage {
   /** Alternative text of the image (the resource's `altText`, else its
    *  caption), for accessible output. */
   altText?: string;
+  /** For an SVG with a print master (`Resource.svg.pdfFileId`): the
+   *  master's id, which the PDF backend embeds in place of the SVG. */
+  pdfFileId?: string;
   /** Pixel rect of the image, in the same frame as the cell `rect`. */
   rect: BoundingBox;
 }
@@ -243,6 +324,10 @@ export interface VDTResourceTableCell {
   /** The cell's own fill (hex, `TableCell.background` resolved through the
    *  palette), painted instead of the table's header / body fill. */
   background?: string;
+  /** A body cell on an alternate (even-numbered) body row of a table with
+   *  zebra rows: it takes `bodyAlternateBackground` instead of
+   *  `bodyBackground`. Set only while the table style enables them. */
+  alternate?: boolean;
 }
 
 /** Laid-out table geometry for a `kind: 'table'` resource block. */
@@ -270,6 +355,9 @@ export interface VDTResourceTableLayout {
   headerBackground?: string;
   /** Body background colour (hex), or undefined for no fill. */
   bodyBackground?: string;
+  /** Fill of the alternate body rows (hex, `tableStyle.bodyAlternateBackground`),
+   *  painted on the cells marked `alternate`; absent without zebra rows. */
+  bodyAlternateBackground?: string;
   cells: VDTResourceTableCell[];
   /** Column x-edges (length = columnCount + 1) relative to block origin. */
   columnEdges: number[];
@@ -317,6 +405,94 @@ export function tableFrameOutline(
     height: height + outset * 2,
     radii: [grow(tl), grow(tr), grow(br), grow(bl)],
   };
+}
+
+/** The fill (hex) a table cell is painted with, or undefined for none: the
+ *  cell's own `background`, else the header tint for a header cell, else
+ *  the alternate body fill on a zebra row, else the body fill. Every
+ *  backend paints cells through it. */
+export function tableCellFill(
+  table: Pick<VDTResourceTableLayout, 'headerBackground' | 'bodyBackground' | 'bodyAlternateBackground'>,
+  cell: Pick<VDTResourceTableCell, 'background' | 'isHeader' | 'alternate'>,
+): string | undefined {
+  if (cell.background !== undefined) return cell.background;
+  if (cell.isHeader) return table.headerBackground;
+  if (cell.alternate && table.bodyAlternateBackground !== undefined) return table.bodyAlternateBackground;
+  return table.bodyBackground;
+}
+
+/** One cell fill as {@link tableCellFillRects} paints it. */
+export interface TableCellFillRects {
+  /** The fill (hex), as {@link tableCellFill} gives it. */
+  fill: string;
+  /** The cell's rect, then the strips it runs across the edges it shares
+   *  with later neighbours. */
+  rects: BoundingBox[];
+}
+
+/** Cells whose edges are this close (px) share an edge. */
+const CELL_EDGE_EPS = 0.01;
+
+/** Whether a fill (`#rgb`, `#rrggbb`, `#rgba`, `#rrggbbaa`) is opaque. */
+function isOpaqueFill(hex: string): boolean {
+  const h = hex.replace(/^#/, '');
+  if (h.length === 8) return h.slice(6).toLowerCase() === 'ff';
+  if (h.length === 4) return h[3]!.toLowerCase() === 'f';
+  return true;
+}
+
+/**
+ * The cell fills of a laid-out table in paint order, each as the cell's
+ * rect followed by a strip across every edge it shares with an opaque
+ * neighbour painted after it: along the shared part of the edge, reaching
+ * half the narrower cell into each. A renderer that anti-aliases each fill
+ * on its own — an HTML page at a fractional device-pixel ratio, a PDF
+ * viewer — would otherwise let the page show through where two fills meet
+ * inside a pixel: a faint seam between cells of one tint. The strip covers
+ * the edge's pixels whole, and the later cell, painted over it, blends its
+ * edge into the earlier fill instead of the page. Translucent fills keep
+ * to their own cell (the overlap would show). The HTML and PDF backends
+ * paint the fills this way; the canvas snaps its fills to device pixels
+ * instead.
+ */
+export function tableCellFillRects(
+  table: Pick<VDTResourceTableLayout, 'cells' | 'headerBackground' | 'bodyBackground' | 'bodyAlternateBackground'>,
+): TableCellFillRects[] {
+  const filled: { rect: BoundingBox; fill: string }[] = [];
+  for (const cell of table.cells) {
+    const fill = tableCellFill(table, cell);
+    if (fill !== undefined) filled.push({ rect: cell.rect, fill });
+  }
+  return filled.map((a, i) => {
+    const rects: BoundingBox[] = [a.rect];
+    if (!isOpaqueFill(a.fill)) return { fill: a.fill, rects };
+    const ar = a.rect;
+    for (let j = i + 1; j < filled.length; j++) {
+      const b = filled[j]!;
+      if (!isOpaqueFill(b.fill)) continue;
+      const br = b.rect;
+      const y0 = Math.max(ar.y, br.y);
+      const y1 = Math.min(ar.y + ar.height, br.y + br.height);
+      const x0 = Math.max(ar.x, br.x);
+      const x1 = Math.min(ar.x + ar.width, br.x + br.width);
+      // The strip straddles the shared edge (half the narrower cell each
+      // side), so the edge's pixels are covered by one shape whatever the
+      // renderer does with separate shapes of one colour.
+      if (y1 - y0 > CELL_EDGE_EPS) {
+        const d = Math.min(ar.width, br.width) / 2;
+        const edge = Math.abs(br.x - (ar.x + ar.width)) < CELL_EDGE_EPS ? br.x
+          : Math.abs(br.x + br.width - ar.x) < CELL_EDGE_EPS ? ar.x : undefined;
+        if (edge !== undefined) rects.push({ x: edge - d, y: y0, width: 2 * d, height: y1 - y0 });
+      }
+      if (x1 - x0 > CELL_EDGE_EPS) {
+        const d = Math.min(ar.height, br.height) / 2;
+        const edge = Math.abs(br.y - (ar.y + ar.height)) < CELL_EDGE_EPS ? br.y
+          : Math.abs(br.y + br.height - ar.y) < CELL_EDGE_EPS ? ar.y : undefined;
+        if (edge !== undefined) rects.push({ x: x0, y: edge - d, width: x1 - x0, height: 2 * d });
+      }
+    }
+    return { fill: a.fill, rects };
+  });
 }
 
 /** Background bar painted behind a resource caption (issue #49 §7). */
@@ -488,15 +664,31 @@ export interface VDTBlock {
    *  in-column rendering shows as spaces. */
   titleBreaks?: number[];
   titleLength?: number;
+  /** The heading's title as written in the source — before its level's
+   *  (or style's) `textTransform`, numbering prefix excluded, forced title
+   *  breaks as spaces. Present only when the lines print it otherwise (an
+   *  `uppercase` heading) and the title cites no resource (a `:ref` label
+   *  is resolved in the lines only), so PDF bookmarks can name the heading
+   *  as it was written (EF-81). The `{titleText}` design placeholder is
+   *  the title as printed, transform applied. */
+  sourceTitle?: string;
   /** Index of the originating content block in the parsed markdown block
    *  list. Stable across layout passes — used by column balancing to key
-   *  extra-spacing adjustments to headings. */
+   *  extra-spacing adjustments to headings. A floated figure or table (in
+   *  `page.floats`, or a page-wide one in a span column) carries the index
+   *  of the block that first cites or embeds it, which is where a tagged
+   *  PDF reads it. */
   contentIndex?: number;
   /** Id of the heading style (`{style="…"}`) applied to this heading. */
   headingStyleId?: string;
   /** True for a heading whose style has `numbered: false`: it advances no
    *  counter and `{chapterNumber}` is empty on its pages. */
   unnumbered?: boolean;
+  /** True for a level-1 heading whose style has `runningChapter: false` (a
+   *  plate, a map): the running heads pass over it and keep naming the
+   *  chapter in force before it (`{chapterTitle}`, `{chapterNumber}`,
+   *  `{attr.<key>}`, the `h1` guide words). */
+  notRunningChapter?: boolean;
   /** Present on the part row of an expanded `:::toc`: the row's design is
    *  laid out from `toc.parts.design` with these values (see
    *  `buildHeadersAndFooters`), replacing the block's (empty) line. */
@@ -508,6 +700,11 @@ export interface VDTBlock {
    *  column-balancing stretch points. */
   tocEntry?: { pageIndex?: number };
   numberPrefix?: string;
+  /** A numbered heading's counter: its level's running count (the `3` of
+   *  a third chapter, whatever its template prints). Backs `{numberDecimal}`,
+   *  `{numberRoman}`, `{numberWords}`… in heading designs. Absent on
+   *  unnumbered headings and other blocks. */
+  headingNumber?: number;
   fontString: string;
   boldFontString?: string;
   italicFontString?: string;
@@ -518,10 +715,18 @@ export interface VDTBlock {
   /** Colour for inline `:ref` segments (`refResourceId` set). */
   refColor?: string;
   textAlign: TextAlign;
-  /** Tracking applied to this block's text (px added after every glyph).
-   *  Set by column balancing on a loose paragraph; renderers paint it via
-   *  canvas `letterSpacing`, CSS `letter-spacing` or PDF `Tc`. */
+  /** Tracking applied to this block's text (px added after every glyph;
+   *  negative tightens). Set by column balancing on a loose paragraph, on
+   *  a paragraph set a line short to pull up a runt, and on a heading whose
+   *  level or heading style sets `letterSpacing` (EF-83). Renderers paint it
+   *  via canvas `letterSpacing`, CSS `letter-spacing` or PDF `Tc`, adding a
+   *  line's own `VDTLine.letterSpacing`. */
   letterSpacing?: number;
+  /** Column balancing: the levers that fired on this block — space added
+   *  above it, the paragraph run a line long — and how much. Absent when
+   *  balancing left the block alone. The band caps that cut a band level
+   *  are recorded on its columns (`VDTColumn.bandCapped`, `trailingCap`). */
+  balancing?: VDTBalancing;
   /** Character offset in the original markdown where the source content for this block starts */
   sourceStart?: number;
   /** Character offset just past the last source character for this block */
@@ -540,8 +745,17 @@ export interface VDTBlock {
   bulletColor?: string;
   /** Absolute page X coordinate where the bullet is drawn */
   bulletOffsetX?: number;
-  /** Absolute page Y coordinate for the bullet's vertical midpoint (paired with textBaseline='middle') */
+  /** Absolute page Y coordinate for the bullet's vertical midpoint (paired
+   *  with textBaseline='middle'): its em box centred on the text's
+   *  x-height. Every marker has it, a contents number included, as up to
+   *  postext 1.4; a renderer that knows `bulletBaselineY` prefers that. */
   bulletY?: number;
+  /** Absolute page Y coordinate of the baseline a marker set as text sits
+   *  on — a contents entry's number, which shares the first line's baseline
+   *  whatever its face and size. When present, renderers paint the marker
+   *  (and its separator) with its alphabetic baseline here instead of
+   *  centring it on `bulletY`. Absent for list bullets and numbers. */
+  bulletBaselineY?: number;
   /** Ordered-list separator drawn as its own run after the number (only when
    *  its style differs from the number's; otherwise `bulletText` carries it). */
   separatorText?: string;
@@ -549,7 +763,8 @@ export interface VDTBlock {
   separatorFontString?: string;
   /** Separator colour (hex) */
   separatorColor?: string;
-  /** Absolute page X coordinate where the separator run starts (shares `bulletY`) */
+  /** Absolute page X coordinate where the separator run starts (shares the
+   *  bullet's `bulletY`, or its `bulletBaselineY` when set) */
   separatorX?: number;
   /** List kind for `listItem` blocks — drives bullet shape and text decoration. */
   listKind?: 'unordered' | 'ordered' | 'task';
@@ -562,7 +777,10 @@ export interface VDTBlock {
   tex?: string;
   /** When true, the block is skipped during rendering but still reserves
    *  its bbox space within the column flow. Used for headings with
-   *  `span: 'page'` whose visual output is produced by an opener band. */
+   *  `span: 'page'` whose visual output is produced by an opener band, and
+   *  for structural headings (`hidden` on their level or style), which
+   *  reserve nothing: their lines keep the text (contents, bookmarks,
+   *  running heads) but have no height. */
   hidden?: boolean;
   /** Optional in-column design slot rendered in place of the block's default
    *  text content. Populated for heading blocks whose level has
@@ -613,6 +831,38 @@ export interface ResolvedCalloutBlock {
   continued?: boolean;
 }
 
+/** The column-balancing levers (`headings.balancing`), in the order they
+ *  are tried on a short column:
+ *  - `trailingCallout` — a box closing the column moved down by the room
+ *    under its foot (after `afterFloat` with `closingBox: 'last'`, never
+ *    with `'off'`);
+ *  - `heading` — whole grid lines above a heading;
+ *  - `listEnd` — a grid line where a list ends;
+ *  - `afterDisplay` — a grid line under a display formula or a box;
+ *  - `afterFloat` — a grid line under a float band heading the column;
+ *  - `looseParagraph` — a paragraph re-broken a line long (plus tracking
+ *    when word spacing alone could not gain the line). */
+export type BalanceLever = 'trailingCallout' | 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'looseParagraph';
+
+/** What column balancing did to one block (`VDTBlock.balancing`). */
+export interface VDTBalancing {
+  /** The levers that fired on the block, in the order above. Usually one;
+   *  a paragraph after a list can take the list-end line and also run a
+   *  line long. */
+  levers: BalanceLever[];
+  /** Space the spacing levers added above the block, in px: whole grid
+   *  lines, or the exact room under a closing box (`trailingCallout`).
+   *  `0` when only `looseParagraph` fired — that paragraph grows by its
+   *  extra lines instead. */
+  spaceAbove: number;
+  /** `looseParagraph`: lines the paragraph gained. */
+  extraLines?: number;
+  /** `looseParagraph`: tracking that gained the line, in thousandths of an
+   *  em (`0` when word spacing alone did); the block's `letterSpacing` is
+   *  the same value in px. */
+  tracking?: number;
+}
+
 export interface VDTColumn {
   index: number;
   bbox: BoundingBox;
@@ -648,6 +898,22 @@ export interface VDTFootnoteArea {
   separator: boolean;
 }
 
+/** One run of a design text line set with inline marks (`inlineMarks`):
+ *  its own font (bold, italic, a script at the reduced size) and advance.
+ *  Runs are painted one after another from the line's `xOffset`. */
+export interface VDTDesignTextRun {
+  text: string;
+  fontString: string;
+  /** Advance of the run, tracking included. */
+  width: number;
+  /** Superscript / subscript offset off the baseline (px, positive down). */
+  baselineShift?: number;
+  /** The first of a subscript and a superscript set over each other, as
+   *  on {@link VDTLineSegment.stacked}: width 0, the next run painted at
+   *  the same x. */
+  stacked?: boolean;
+}
+
 /** Line of wrapped text inside a `VDTDesignTextBlock`. */
 export interface VDTDesignTextLine {
   text: string;
@@ -657,6 +923,24 @@ export interface VDTDesignTextLine {
   baselineY: number;
   /** Measured width of the visible text. */
   width: number;
+  /** Present when the line mixes fonts (a text with inline marks) or is
+   *  justified: paint these runs instead of `text` in the block font, each
+   *  at the end of the one before. `text` stays the plain concatenation of
+   *  the runs. A justified line is cut after every word space, and each
+   *  run's `width` takes its spaces' share of the stretch. */
+  runs?: VDTDesignTextRun[];
+  /** Present on a justified line (`align: 'justify'`): the px added to every
+   *  word space (U+0020 and the no-break space U+00A0), as CSS
+   *  `word-spacing` adds it. The runs' widths already include it. */
+  wordSpacingPx?: number;
+}
+
+/** Outline of the glyphs of a design text block, resolved to px / hex. */
+export interface VDTDesignTextStroke {
+  widthPx: number;
+  color: string;
+  /** Paint the outline only, leaving the letters unfilled. */
+  hollow?: boolean;
 }
 
 /** Rounded-rectangle box style resolved to absolute px / hex values. */
@@ -681,6 +965,10 @@ export interface VDTDesignTextBlock {
   /** Tracking applied after every glyph, in px (canvas `letterSpacing`,
    *  CSS `letter-spacing`, PDF `Tc`). Absent or 0 = none. */
   letterSpacingPx?: number;
+  /** Outline stroked over the glyphs after they are filled (canvas
+   *  `strokeText`, CSS `-webkit-text-stroke`, PDF text render mode 1/2).
+   *  Absent = none. */
+  stroke?: VDTDesignTextStroke;
   /** Source range of the text this block displays when it mirrors document
    *  text (an opener's `{titleText}`), so editors can map clicks on the
    *  band back to the markdown. */
@@ -690,6 +978,11 @@ export interface VDTDesignTextBlock {
    *  per-character source offsets, when the text mirrors document text. */
   sourceText?: string;
   sourceMap?: number[];
+  /** Pagination furniture rather than document text — the title a split
+   *  callout repeats on a continuation, its "Continued" marker: a tagged
+   *  PDF marks it an artifact and the HTML hides it from assistive
+   *  technology, so the text is read once. */
+  artifact?: boolean;
 }
 
 /** Rendered rule inside a design slot. */
@@ -706,6 +999,11 @@ export interface VDTDesignBoxBlock {
   kind: 'box';
   bbox: BoundingBox;
   box: VDTDesignBoxStyle;
+  /** Paint the box clipped to this rounded outline (page coordinates, like
+   *  `bbox`): the stripe of a callout whose frame has a `borderRadius`
+   *  follows the frame's rounded corners, as CSS clips a `border-left` to
+   *  `border-radius`. Absent = no clip. */
+  clip?: RoundedOutline;
 }
 
 /** Image drawn from the resource image registry (e.g. a callout icon). */
@@ -715,6 +1013,14 @@ export interface VDTDesignImageBlock {
   /** Out-of-band binary id resolved at render time (canvas registry, HTML
    *  `resourceImageUrl`, PDF resource image map). */
   fileId: string;
+  /** The kind of the resource's picture: whether `diagramStyle.singleInk`
+   *  tints it (an SVG) or not (a bitmap). Absent on a VDT built before the
+   *  field existed; the canvas and HTML backends then guess from the
+   *  registered source or the URL. */
+  imageKind?: 'bitmap' | 'svg';
+  /** For an SVG with a print master (`Resource.svg.pdfFileId`): the
+   *  master's id, which the PDF backend embeds in place of the SVG. */
+  pdfFileId?: string;
 }
 
 export type VDTDesignBlock =
@@ -736,6 +1042,13 @@ export type VDTHeaderFooterBlock = VDTDesignBlock;
 export type VDTHeaderFooterTextBlock = VDTDesignTextBlock;
 /** @deprecated Use `VDTDesignRuleBlock`. */
 export type VDTRuleBlock = VDTDesignRuleBlock;
+
+/** A column rule resolved to px and hex (see `VDTPage.columnRule`). */
+export interface VDTColumnRule {
+  enabled: boolean;
+  color: string;
+  lineWidthPx: number;
+}
 
 export interface VDTPage {
   index: number;
@@ -763,6 +1076,11 @@ export interface VDTPage {
     titleSourceEnd?: number;
   };
   columns: VDTColumn[];
+  /** The column rule of a page laid out with a heading style's own
+   *  `layout` (a styled section's pages) when it differs from the
+   *  document's `layout.columnRule`: whether it is drawn, its colour and its
+   *  width. Absent on every other page, which takes the document's rule. */
+  columnRule?: VDTColumnRule;
   header?: VDTDesignSlot;
   footer?: VDTDesignSlot;
   /** Optional full-width opener band above the column flow, used for
@@ -800,7 +1118,7 @@ export interface VDTPage {
 /** Something the layout could not set as asked and placed anyway — a box
  *  taller than any column it could go to. Hosts surface these as warnings;
  *  the geometry still describes what was painted. */
-export interface LayoutWarning {
+export interface CalloutOverflowWarning {
   /** `calloutOverflow`: a `:::callout` box that fits no column was placed
    *  overflowing its column (by `overflowPx`). */
   kind: 'calloutOverflow';
@@ -813,12 +1131,144 @@ export interface LayoutWarning {
   overflowPx: number;
 }
 
+/** A configuration value the engine could not use as written, and what it
+ *  used instead. Produced by `collectConfigWarnings` (also on
+ *  {@link VDTDocument.configWarnings}); hosts surface these as warnings.
+ *  Unlike a {@link LayoutWarning} or a {@link ContentWarning} it belongs to
+ *  no page. */
+export interface ConfigWarning {
+  /** `unknownNumberFormat`: a list `numberFormat`, a page-numbering
+   *  `format` or a resource type's `counterFormat` in no spelling the
+   *  engine knows; it numbers in decimal.
+   *  `fontFamilyStack`: a `fontFamily` (or `…FontFamily`) holding a CSS font
+   *  stack; the text is set in the stack's first family.
+   *  `sideColumnPercentClamped`: a `oneAndHalf` layout's
+   *  `sideColumnPercent` that would leave one of its columns with no width
+   *  (or is not a number); the columns are cut at `used` percent instead.
+   *  `unknownConfigKey`: a key the heading settings or a paragraph style do
+   *  not have (`headings`, `headings.balancing`, a heading level, a heading
+   *  style, a paragraph style — and the same under
+   *  `htmlViewer.overrides`), such as a misspelt `letterSpacng`; the
+   *  engine ignores it. `value` is the key, `used` is empty, and
+   *  `suggestion` names the key it is closest to, when one is close. */
+  kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'unknownConfigKey';
+  /** Where the value sits in the config, e.g.
+   *  `orderedLists.levels[1].numberFormat`, `header.elements[0].fontFamily`,
+   *  `headingStyles[2].layout.sideColumnPercent`. */
+  path: string;
+  /** The value as written (the key itself, for `unknownConfigKey`). */
+  value: string;
+  /** The value the engine used instead (`arabic` / `decimal`, the first
+   *  family of the stack, the side column's percent); empty for an
+   *  `unknownConfigKey`, which is ignored. */
+  used: string;
+  /** `unknownConfigKey` only: the known key the unknown one is closest to
+   *  (another case, a letter or two apart), when there is one. */
+  suggestion?: string;
+}
+
+/** Where a content warning points: the source range of the construct in
+ *  the markdown given to the build (frontmatter included), and the page it
+ *  was placed on. Both are absent when the construct has no place in the
+ *  text (a style id set on a resource that is never placed) or put nothing
+ *  on a page (an embed of an unknown id). */
+interface ContentWarningBase {
+  sourceStart?: number;
+  sourceEnd?: number;
+  pageIndex?: number;
+}
+
+/** A reference the build could not resolve, or markup it did not
+ *  recognise and set in a fallback: the output is complete but not what the
+ *  source asked for. Computed from the source before layout (see
+ *  `collectContentWarnings`); the build lists them in
+ *  {@link VDTDocument.contentWarnings}. Narrow on `kind` — further kinds may
+ *  be added in minor releases. */
+export type ContentWarning = ContentWarningBase & (
+  /** A `::resource{id}` embed, an inline `:ref{id}` or a table cell's
+   *  image names a resource id no resource has: the embed is left out, the
+   *  reference prints `?` (or its `text=` label) with no number or link, the
+   *  cell stays text-only. `inResource` names the
+   *  resource whose caption, note or cell holds the reference. */
+  | { kind: 'unknownResourceId'; resourceId: string; usage: 'embed' | 'ref' | 'cellImage'; inResource?: string }
+  /** A `:::name` line whose name is neither a directive nor a container:
+   *  it is set as text. */
+  | { kind: 'unknownDirective'; name: string }
+  /** A `::name` line that is not a well-formed embed standing alone —
+   *  `::resource{id="…"}` with double quotes and no other attribute, after
+   *  a blank line: it is set as text. */
+  | { kind: 'malformedEmbed'; name: string }
+  /** `:::paragraphs{style}` names no paragraph style: the paragraphs are set
+   *  as body text. */
+  | { kind: 'unknownParagraphStyle'; style: string }
+  /** `:::callout{type}` names none of the configured callout styles: the box
+   *  takes the first one. Not raised while `calloutStyles` is unset or
+   *  empty (every type is then the built-in plain box). */
+  | { kind: 'unknownCalloutType'; type: string }
+  /** `:chip[…]{style}` names no chip style: the chip takes the first one.
+   *  `inResource` names the resource whose caption, note or cell holds it. */
+  | { kind: 'unknownChipStyle'; style: string; inResource?: string }
+  /** A heading's `{style}` attribute names no heading style: the heading
+   *  and its section keep the level's own settings. */
+  | { kind: 'unknownHeadingStyle'; style: string; level: number }
+  /** A table resource's `table.styleId` names no `tableStyles` entry: the
+   *  table is set in the document's `tableStyle`. */
+  | { kind: 'unknownTableStyle'; styleId: string; resourceId: string }
+  /** A table's grid is not rectangular once its merges are counted (see
+   *  `tableGridIssues`): cells are laid out by their array index, so a cell
+   *  left out HTML-style under a `colSpan` / `rowSpan` shifts the cells
+   *  after it (`spanOverlap`: a visible cell sits under a merge instead of
+   *  carrying `hiddenBy`), or a row ends short and leaves a hole
+   *  (`missingCells`). `row` / `col` locate the first issue; `count` is
+   *  how many the table has. */
+  | { kind: 'raggedTableGrid'; resourceId: string; reason: 'spanOverlap' | 'missingCells'; row: number; col: number; count: number }
+);
+
+/** What a build reports in `VDTDocument.warnings`: a construct the layout
+ *  had to force ({@link CalloutOverflowWarning}), with the shape it has had
+ *  since postext 1.4. What the source names wrongly is in
+ *  {@link VDTDocument.contentWarnings} instead. */
+export type LayoutWarning = CalloutOverflowWarning;
+
+/** Reported by the renderers (canvas, HTML, PDF) through their `onWarning`
+ *  option while they paint — never stored in the VDT, since what a host
+ *  can supply changes after the layout. */
+export interface MissingImageWarning {
+  /** `missingImage`: an image (figure, table-cell image, callout icon or
+   *  design image) had no picture to draw — nothing registered for it
+   *  (canvas), no URL (HTML), no or undecodable bytes (PDF) — and was
+   *  painted as a neutral placeholder. */
+  kind: 'missingImage';
+  /** The payload id the host resolves (`registerResourceImage`,
+   *  `resourceImageUrl`, `resourceBytes`). */
+  fileId: string;
+  /** The resource the image belongs to, when the painter knows it (a
+   *  figure or a cell image; not a callout icon or design image). */
+  resourceId?: string;
+  /** Page of the first placeholder, in its document. */
+  pageIndex: number;
+  /** Which of the documents given to a multi-document render (a book
+   *  rendered to one PDF) the page belongs to. */
+  documentIndex?: number;
+}
+
+/** Warnings a renderer reports while painting. */
+export type RenderWarning = MissingImageWarning;
+
 export interface VDTDocument {
   pages: VDTPage[];
   blocks: VDTBlock[];
-  /** Layout warnings raised while placing the content (see
-   *  {@link LayoutWarning}); absent or empty when everything fit. */
+  /** Layout warnings raised while placing the content: boxes the layout
+   *  had to force (see {@link LayoutWarning}). Absent or empty when
+   *  everything fit. */
   warnings?: LayoutWarning[];
+  /** References and markup the source names wrongly, each set in a
+   *  fallback (see {@link ContentWarning}), located on the pages of the
+   *  finished layout. Absent when the source is clean. */
+  contentWarnings?: ContentWarning[];
+  /** Configuration values the engine replaced (see {@link ConfigWarning});
+   *  absent when the config is clean. */
+  configWarnings?: ConfigWarning[];
   config: ResolvedConfig;
   baselineGrid: number;
   /** Pixel offset from canvas edge to trim edge (0 when cutLines disabled) */
@@ -832,6 +1282,11 @@ export interface VDTDocument {
   /** Physical pages before page 0 (`PostextContent.continuation`): shifts
    *  parity everywhere. Absent or 0 for a self-contained document. */
   pageIndexOffset?: number;
+  /** Physical pages of the whole book the document belongs to
+   *  (`continuation.bookPageCount`), what `{bookTotalPages}` prints. Absent
+   *  when the host did not say: the placeholder then counts the pages up
+   *  to the end of this document. */
+  bookPageCount?: number;
   /** Indices of the pages where a `:::numbering{startAt=…}` directive
    *  restarts the page count, ascending. The pages before the first one
    *  continue the inherited numbering (`continuation.pageNumbering` or
@@ -846,6 +1301,10 @@ export interface VDTDocument {
    *  `continuation.part`): `{partTitle}` / `{partNumber}` and the part's
    *  palette overrides apply from page 0 until the document opens a part. */
   partStart?: PartState;
+  /** The page before this document is the part page of `partStart`
+   *  (`continuation.afterPartPage`): a first page left blank is the part's
+   *  verso and takes `parts.versoDesign`. */
+  afterPartPage?: boolean;
   /** Parts set without a divider page (`parts.page: false`): each takes
    *  effect on the page of the first block placed after its fence
    *  (`afterContentIndex`, the fence's closing content index). */
@@ -855,6 +1314,19 @@ export interface VDTDocument {
 // ---------------------------------------------------------------------------
 // Factory functions
 // ---------------------------------------------------------------------------
+
+/** What a design image block records of the resource picture `fileId`
+ *  (already picked from `resource`): its kind, which decides whether
+ *  `diagramStyle.singleInk` tints it, and an SVG's print master. */
+export function pictureTraits(
+  resource: Resource | undefined,
+  fileId: string,
+): Pick<VDTDesignImageBlock, 'imageKind' | 'pdfFileId'> {
+  if (resource?.bitmap?.fileId === fileId) return { imageKind: 'bitmap' };
+  const svg = resource?.svg;
+  if (svg?.fileId !== fileId) return {};
+  return { imageKind: 'svg', ...(svg.pdfFileId ? { pdfFileId: svg.pdfFileId } : {}) };
+}
 
 export function createBoundingBox(
   x: number,

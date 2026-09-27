@@ -5,7 +5,7 @@ import { flattenTitleBreaks } from '../parse/inlineFormatting';
  * differ from `rawBlock` when a heading numbering prefix has been prepended.
  */
 
-import type { ContentBlock, ListKind } from '../parse';
+import type { ContentBlock, InlineSpan, ListKind } from '../parse';
 import type { Resource, ResourceType } from '../types';
 import type { ResolvedConfig, VDTBlock } from '../vdt';
 import type { BlockStyle } from './styles';
@@ -22,6 +22,8 @@ export interface BlockKind {
   vdtType: VDTBlock['type'];
   headingLevel?: number;
   numberPrefix?: string;
+  /** A numbered heading's counter value (see `VDTBlock.headingNumber`). */
+  headingNumber?: number;
   contentBlock: ContentBlock;
   listBullet?: ListBulletStyle;
   listDepth?: number;
@@ -42,6 +44,8 @@ export interface BlockKindContext {
   bodyStyle: BlockStyle;
   blockquoteStyle: BlockStyle;
   headingPrefixes: Array<string | undefined>;
+  /** Counter value of every numbered heading, by block index. */
+  headingNumbers?: Array<number | undefined>;
   blockIdx: number;
   listLevelIndentsPx: number[];
   orderedLevelIndentsPx: number[];
@@ -74,6 +78,17 @@ export function uppercasePreservingLength(text: string): string {
   return out;
 }
 
+/** A span in capitals for a paragraph style's `textTransform`, the words
+ *  of a chip included; maths as it is. */
+function uppercaseSpan(span: InlineSpan): InlineSpan {
+  if (span.math) return span;
+  return {
+    ...span,
+    text: uppercasePreservingLength(span.text),
+    ...(span.chip ? { chip: { ...span.chip, spans: span.chip.spans.map(uppercaseSpan) } } : {}),
+  };
+}
+
 export function resolveBlockKind(
   rawBlock: ContentBlock,
   ctx: BlockKindContext,
@@ -101,8 +116,9 @@ export function resolveBlockKind(
     case 'heading': {
       const level = rawBlock.level ?? 1;
       const levelCfg = ctx.headingLevels?.forBlock(rawBlock) ?? resolved.headings.levels.find((l) => l.level === level);
-      const style = resolveHeadingStyle(level, resolved, levelCfg);
+      const style = resolveHeadingStyle(level, resolved, levelCfg, rawBlock.spans.some((s) => s.bold));
       const numberPrefix = headingPrefixes[blockIdx];
+      const headingNumber = ctx.headingNumbers?.[blockIdx];
       let contentBlock: ContentBlock = rawBlock;
       // Letter-case transform on the title text (the numbering prefix, added
       // below, is kept as written). Length-preserving so `sourceMap` stays 1:1.
@@ -125,9 +141,14 @@ export function resolveBlockKind(
       if (numberPrefix) {
         const sep = `${numberPrefix} `;
         const firstSpan = contentBlock.spans[0];
-        const newSpans = firstSpan
-          ? [{ ...firstSpan, text: sep + firstSpan.text }, ...contentBlock.spans.slice(1)]
-          : [{ text: sep, bold: false, italic: false }];
+        // A title that opens with a marked run (EF-122) keeps the number in
+        // the heading's own style: the number is a span of its own.
+        const marked = firstSpan && (firstSpan.bold || firstSpan.italic || firstSpan.script || firstSpan.smallCaps || firstSpan.links);
+        const newSpans = !firstSpan
+          ? [{ text: sep, bold: false, italic: false }]
+          : marked
+            ? [{ text: sep, bold: false, italic: false }, ...contentBlock.spans]
+            : [{ ...firstSpan, text: sep + firstSpan.text }, ...contentBlock.spans.slice(1)];
         contentBlock = { ...contentBlock, text: sep + contentBlock.text, spans: newSpans };
       }
       return {
@@ -135,6 +156,7 @@ export function resolveBlockKind(
         vdtType: 'heading',
         headingLevel: rawBlock.level,
         numberPrefix,
+        ...(headingNumber !== undefined ? { headingNumber } : {}),
         contentBlock,
         bulletXOffsetInColumn: 0,
         strikethroughText: false,
@@ -185,13 +207,26 @@ export function resolveBlockKind(
         strikethroughText: resolvedList.strikethroughText,
       };
     }
-    default:
+    default: {
+      const style = rawBlock.type === 'paragraph' && paragraphStyleOverride ? paragraphStyleOverride : bodyStyle;
+      // A paragraph style's `textTransform` (EF-173), length-preserving as
+      // a heading's, so the source map stays 1:1. Maths is left alone; the
+      // words of a chip are set in capitals too (a `:ref` label is, once
+      // resolved, in `measureContentBlock`).
+      const contentBlock: ContentBlock = style.uppercase
+        ? {
+            ...rawBlock,
+            text: uppercasePreservingLength(rawBlock.text),
+            spans: rawBlock.spans.map(uppercaseSpan),
+          }
+        : rawBlock;
       return {
-        style: rawBlock.type === 'paragraph' && paragraphStyleOverride ? paragraphStyleOverride : bodyStyle,
+        style,
         vdtType: 'paragraph',
-        contentBlock: rawBlock,
+        contentBlock,
         bulletXOffsetInColumn: 0,
         strikethroughText: false,
       };
+    }
   }
 }

@@ -3,11 +3,38 @@
 // supplied by the caller.
 
 import type { PostextConfig, Resource } from 'postext';
+import { CONFIG_VERSION, migrateConfig as migrateEngineConfig, pinLegacyBoxChildCut, pinLegacyBoxResourceGap, pinLegacyColonListRoom, pinLegacyDashBreaks, pinLegacyDropCapSize, pinLegacyHeadingBreaks, pinLegacyHeadingMarks, pinLegacyHeadingSplit, pinLegacyHyphenBreaks, pinLegacyInlineGap, pinLegacyMathSize, pinLegacyParagraphContainerSpacing, pinLegacyRaggedBreaking } from 'postext/bundle';
 import { deriveChapterTitle, newChapter } from '../book/chapterOps';
 import type { BookContent, Chapter } from '../book/types';
 import type { ProjectThumbnail } from './projects';
 
-export const PROJECT_RECORD_VERSION = 2 as const;
+/** Record shape: the engine's `CONFIG_VERSION` (`postext/bundle`) itself,
+ *  so records, the working copy and `postext-config.json` exports are
+ *  stamped with the configuration rules their config was saved under, and
+ *  an older one is migrated once, then re-stamped. 8 in postext 1.5:
+ *  records saved before 3 have their heading breaks pinned (see
+ *  {@link pinLegacyHeadingBreaks}), records saved before 4 their maths
+ *  size (see {@link pinLegacyMathSize}), records saved before 5 the
+ *  space under their inline figures (see {@link pinLegacyInlineGap}), and
+ *  records saved before 6 their headings' inline marks, their drop caps,
+ *  the room under a colon line that introduces a list, the space around
+ *  the inline figures of their boxes and the lines a box cut leaves of a
+ *  paragraph or list item (see {@link pinLegacyHeadingMarks}, {@link
+ *  pinLegacyDropCapSize}, {@link pinLegacyColonListRoom}, {@link
+ *  pinLegacyBoxResourceGap} and {@link pinLegacyBoxChildCut}), and
+ *  records saved before 7 their breaks at dashes and the line-by-line
+ *  breaking of their ragged text (see {@link pinLegacyDashBreaks} and
+ *  {@link pinLegacyRaggedBreaking}), and records saved before 8 their
+ *  breaks at a compound's hyphen, the split of a paragraph under a heading
+ *  and the space under their `:::paragraphs` containers (see {@link
+ *  pinLegacyHyphenBreaks}, {@link pinLegacyHeadingSplit} and {@link
+ *  pinLegacyParagraphContainerSpacing}). Records 1 and 2 were numbered by
+ *  the Sandbox alone, before 1.5; they are older than 3 on every count.
+ *  Records 3 to 7 were written by the 1.5 prereleases: 3 before the maths
+ *  size changed, 4 before the inline gap did, 5 before the five version-6
+ *  rules did, 6 before the two version-7 rules did, 7 before the three
+ *  version-8 rules did. */
+export const PROJECT_RECORD_VERSION: number = CONFIG_VERSION;
 
 export interface MigrationDeps {
   ids: () => string;
@@ -56,6 +83,22 @@ export function normalizeBookContent(raw: unknown, deps: MigrationDeps): BookCon
   return { chapters, activeChapterId, ...(canvasScope ? { canvasScope } : {}) };
 }
 
+/** A configuration saved by postext 1.4 or earlier, pinned to the heading
+ *  breaks, the maths size, the space around inline figures (in boxes
+ *  too), the heading marks, the drop caps, the room under a colon line
+ *  that introduces a list, the box cuts, the breaks at dashes and at
+ *  compounds' hyphens, the breaking of ragged text, the split under a
+ *  heading and the space under `:::paragraphs` containers it laid out: the
+ *  engine's own migrations, which `.postext` bundles written without a
+ *  `configVersion` go through too (see
+ *  `pinLegacyHeadingBreaks`, `pinLegacyMathSize`, `pinLegacyInlineGap`,
+ *  `pinLegacyBoxResourceGap`, `pinLegacyHeadingMarks`,
+ *  `pinLegacyDropCapSize`, `pinLegacyColonListRoom`,
+ *  `pinLegacyBoxChildCut`, `pinLegacyDashBreaks`, `pinLegacyHyphenBreaks`,
+ *  `pinLegacyRaggedBreaking`, `pinLegacyHeadingSplit` and
+ *  `pinLegacyParagraphContainerSpacing` in `postext/bundle`). */
+export { pinLegacyBoxChildCut, pinLegacyBoxResourceGap, pinLegacyColonListRoom, pinLegacyDashBreaks, pinLegacyDropCapSize, pinLegacyHeadingBreaks, pinLegacyHeadingMarks, pinLegacyHeadingSplit, pinLegacyHyphenBreaks, pinLegacyInlineGap, pinLegacyMathSize, pinLegacyParagraphContainerSpacing, pinLegacyRaggedBreaking };
+
 export interface MigratedProjectRecord extends BookContent {
   version: typeof PROJECT_RECORD_VERSION;
   id: string;
@@ -69,6 +112,27 @@ export interface MigratedProjectRecord extends BookContent {
   updatedAt: number;
   config: PostextConfig;
   resources: Resource[];
+}
+
+/** A configuration stored under record `version` (a number, or absent for
+ *  the earliest records), in today's terms. `content` is the markdown it
+ *  lays out, when known: a book with no `$` sets no maths, and its
+ *  configuration is not given a maths size; one with no `::resource{id="…"}`
+ *  line embeds no inline figure, and is not given the 1.4 space under one;
+ *  one with no such line inside a `:::callout` is not given the 1.4 space
+ *  around a figure in a box; one whose headings carry no inline mark is
+ *  not given the 1.4 plain headings; one with no list introduced by a line
+ *  ending in a colon is not given the 1.4 room under such a line; one
+ *  with no `:::callout` is not given the 1.4 box cut; one with no em or
+ *  en dash set closed between words is not given the 1.4 dash breaks; one
+ *  with no heading is not given the 1.4 split under a heading; one with
+ *  no `:::paragraphs` container is not given the 1.4 space under
+ *  containers; one with no hyphen between two letters is not given the 1.4
+ *  compound breaks (see `migrateConfig` in `postext/bundle`). */
+export function migrateConfig(config: PostextConfig, version: unknown, content?: Iterable<string>): PostextConfig {
+  // Records are numbered as the engine numbers configuration rules
+  // (`CONFIG_VERSION`), so the engine's migration applies as is.
+  return migrateEngineConfig(config, typeof version === 'number' ? version : 0, content === undefined ? {} : { content });
 }
 
 /** A stored record in today's shape, or null when it cannot be read. Legacy
@@ -90,7 +154,7 @@ export function migrateProjectRecord(raw: unknown, deps: MigrationDeps): Migrate
     ...(isThumbnail(raw.thumbnail) ? { thumbnail: raw.thumbnail } : {}),
     createdAt: typeof raw.createdAt === 'number' ? raw.createdAt : now,
     updatedAt: typeof raw.updatedAt === 'number' ? raw.updatedAt : now,
-    config: isRecord(raw.config) ? (raw.config as PostextConfig) : {},
+    config: isRecord(raw.config) ? migrateConfig(raw.config as PostextConfig, raw.version, book.chapters.map((c) => c.markdown)) : {},
     resources: Array.isArray(raw.resources) ? (raw.resources as Resource[]) : [],
     ...book,
   };

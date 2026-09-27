@@ -1,0 +1,515 @@
+{
+  "schemaVersion": 1,
+  "slug": "bistro-menu",
+  "sourceHash": "3bd0d1d48b33b18dd98971c3850743012ac48530e9195eebab26b22dd562c479",
+  "engine": {
+    "postext": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-26T21:58:56.073Z",
+  "variants": {
+    "en": {
+      "hash8": "5da612fc",
+      "vdtHash": "ea916ad1081e90ade4234f4ce4e935877a96d01b",
+      "timings": {
+        "importMs": 188,
+        "fontsMs": 783,
+        "buildMs": 4,
+        "totalMs": 1588,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          230,
+          310
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": false,
+        "body": {
+          "family": "Noticia Text",
+          "sizePt": 10.5,
+          "leadingPt": 14.5
+        },
+        "families": [
+          "Josefin Sans",
+          "Limelight",
+          "Noticia Text"
+        ],
+        "pages": 2,
+        "ownLines": 153
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "body",
+          "w": 1000,
+          "h": 1348,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 70884,
+          "alt": "Page 1: Les Tanneurs."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1348,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 51054,
+          "alt": "Page 2: La Cave."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "mergeCells",
+          "parseTSV",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.textAlign",
+          "chipStyles",
+          "chipStyles[].background",
+          "chipStyles[].backgroundEnabled",
+          "chipStyles[].bold",
+          "chipStyles[].borderColor",
+          "chipStyles[].borderRadius",
+          "chipStyles[].borderWidth",
+          "chipStyles[].color",
+          "chipStyles[].fontFamily",
+          "chipStyles[].fontSize",
+          "chipStyles[].gap",
+          "chipStyles[].id",
+          "chipStyles[].name",
+          "chipStyles[].paddingX",
+          "chipStyles[].paddingY",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.textAlign",
+          "layout",
+          "layout.layoutType",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].name",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].defaultPlacement",
+          "resourceTypes[].defaultPlacement.position",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyle",
+          "tableStyle.bodyColor",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackgroundEnabled",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules"
+        ],
+        "configSections": [
+          "bodyText",
+          "chipStyles",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle"
+        ],
+        "configLeaves": 141,
+        "designElements": 3,
+        "directives": [
+          "::resource",
+          ":::paragraphs",
+          ":::pagebreak"
+        ],
+        "inline": [
+          ":chip"
+        ],
+        "resources": {
+          "svg": 2,
+          "bitmap": 0,
+          "table": 5
+        },
+        "fonts": [
+          {
+            "family": "Josefin Sans",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Limelight",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noticia Text",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Noticia Text",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noticia Text",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "chips",
+          "inline-embeds",
+          "opener-design",
+          "page-background",
+          "page-breaks",
+          "paragraph-styles",
+          "resource-types",
+          "resources",
+          "table-model"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "5f1bb543",
+      "vdtHash": "a0db979bcfd05eacd43b6a286b7926c7d4c7c405",
+      "timings": {
+        "importMs": 77,
+        "fontsMs": 20,
+        "buildMs": 3,
+        "totalMs": 763,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          230,
+          310
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": false,
+        "body": {
+          "family": "Noticia Text",
+          "sizePt": 10.5,
+          "leadingPt": 14.5
+        },
+        "families": [
+          "Josefin Sans",
+          "Limelight",
+          "Noticia Text"
+        ],
+        "pages": 2,
+        "ownLines": 153
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "body",
+          "w": 1000,
+          "h": 1348,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 73972,
+          "alt": "Página 1: Les Tanneurs."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1348,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 50738,
+          "alt": "Página 2: La Cave."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "mergeCells",
+          "parseTSV",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.textAlign",
+          "chipStyles",
+          "chipStyles[].background",
+          "chipStyles[].backgroundEnabled",
+          "chipStyles[].bold",
+          "chipStyles[].borderColor",
+          "chipStyles[].borderRadius",
+          "chipStyles[].borderWidth",
+          "chipStyles[].color",
+          "chipStyles[].fontFamily",
+          "chipStyles[].fontSize",
+          "chipStyles[].gap",
+          "chipStyles[].id",
+          "chipStyles[].name",
+          "chipStyles[].paddingX",
+          "chipStyles[].paddingY",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.textAlign",
+          "layout",
+          "layout.layoutType",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].name",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].defaultPlacement",
+          "resourceTypes[].defaultPlacement.position",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyle",
+          "tableStyle.bodyColor",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackgroundEnabled",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules"
+        ],
+        "configSections": [
+          "bodyText",
+          "chipStyles",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle"
+        ],
+        "configLeaves": 141,
+        "designElements": 3,
+        "directives": [
+          "::resource",
+          ":::paragraphs",
+          ":::pagebreak"
+        ],
+        "inline": [
+          ":chip"
+        ],
+        "resources": {
+          "svg": 2,
+          "bitmap": 0,
+          "table": 5
+        },
+        "fonts": [
+          {
+            "family": "Josefin Sans",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Limelight",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noticia Text",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Noticia Text",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noticia Text",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "chips",
+          "inline-embeds",
+          "opener-design",
+          "page-background",
+          "page-breaks",
+          "paragraph-styles",
+          "resource-types",
+          "resources",
+          "table-model"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    }
+  }
+}

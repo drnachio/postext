@@ -1,0 +1,77 @@
+---
+title: "Clásico de bolsillo: capítulos breves seguidos"
+summary: "Dom Casmurro en bolsillo: capítulos breves seguidos, con títulos dibujados en la columna y sin líneas ni títulos sueltos en los saltos de página."
+description: "Dom Casmurro en bolsillo con Postext: capítulos seguidos bajo títulos centrados, separación silábica portuguesa y ninguna página que abra con una línea sola."
+question: "¿Cómo encadeno capítulos breves, cada título con su texto, sin huérfanas ni últimas líneas de una palabra?"
+aliases: ["capítulos seguidos", "capítulos breves", "mantener con el siguiente", "título unido al texto", "viudas y huérfanas", "líneas cortas", "libro de bolsillo", "separación silábica en portugués", "Machado de Assis", "capítulos en números romanos", "fragmento de un libro", "contadores de continuación"]
+pageNotes: { "1": "La cubierta: MACHADO DE ASSIS en versales crema sobre una banda ciruela, Dom Casmurro en Abril Fatface ciruela sobre un panel crema con un filete corto azafrán, y el sello de la casuarina en azafrán sobre COLEÇÃO CASUARINA en la banda del pie.", "2": "La lámina, página 212 sin foliar: el Pan de Azúcar y Urca ante un cielo de mañana en bandas con un sol bajo azafrán, filas de oleaje ciruela con dos canoas, y CAPÍTULO CXXIII sobre una línea de ese capítulo en cursiva crema.", "3": "La página 213 sigue con el capítulo CXVIII. Cerca del pie empieza el capítulo CXIX, NÃO FAÇA ISSO, QUERIDA, bajo un numeral ciruela y con dos líneas de texto debajo; la cabecera lo nombra.", "4": "Página 214, bajo la cabecera DOM CASMURRO: las dos últimas líneas del CXIX, el capítulo CXX, OS AUTOS, y al pie el CXXI, A CATASTROPHE, con dos líneas bajo su título.", "5": "Página 215: el final del CXXI y el capítulo CXXII, O ENTERRO, que nombra la cabecera.", "6": "Página 216, bajo DOM CASMURRO: el final del CXXII y el capítulo CXXIII, OLHOS DE RESSACA.", "7": "Página 217: las cinco últimas líneas del CXXIII, que acaban en o nadador da manhã, y al pie de la página el colofón en letra pequeña gris junto al sello de la casuarina." }
+---
+
+## Lo que vas a componer
+
+Cinco páginas del final de *Dom Casmurro* (Machado de Assis, 1899), en el portugués original, compuestas como libro de bolsillo de 110 × 178 mm para una colección inventada, la Coleção Casuarina. Las preceden una cubierta en bandas ciruela, crema y ciruela, con el título en Abril Fatface y el sello azafrán de la colección, y una lámina del mar revuelto de Flamengo, frente a la 213. El texto va del final del CXVIII al del CXXIII, y ningún capítulo abre página. Cada uno empieza dos líneas por debajo del final del anterior (tres en el CXIX, para llenar la 213), con un numeral romano en ciruela, el título en versales espaciadas y un filete corto azafrán. En la 214 empiezan dos; en la 215 y la 216, uno. Todas las páginas de texto menos la última acaban en su línea 33, y ninguna empieza con una línea sola.
+
+## Elaboración
+
+### 1 · Encadena los capítulos, cada título con su texto
+
+<Excerpt region="answer" highlight="17-24" />
+
+El nivel de capítulo lleva el salto desactivado, y `marginTop` coloca cada título dos líneas por debajo de la última del capítulo anterior. Su diseño no lleva `span`, así que el título se dibuja dentro de la columna, en un bloque de tres líneas de alto, y el texto que va debajo cae en la rejilla base ([saltar antes](/es/docs/configuration#saltar-antes), [span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)). Las reglas de cohesión conservan sus valores por defecto. Los párrafos de cuatro líneas que siguen al CXIX y al CXXI dejan dos líneas al pie de su página y pasan dos a la siguiente; con `avoidOrphans: false` se partirían en tres y una, y las páginas 214 y 215 empezarían con una línea sola ([huérfanas, viudas y *runts*](/es/docs/configuration#huérfanas-viudas-runts-y-reglas-de-cohesión)). El equilibrado de columnas añade sobre el CXIX una tercera línea de blanco, y con ella la página 213 acaba en la línea 33 ([equilibrado de columnas](/es/docs/configuration#equilibrado-de-columnas)).
+
+<PageShot page={3} crop="0,.683,1,.317" caption="Página 213: el capítulo CXIX empieza tres líneas por debajo del final del CXVIII y conserva dos líneas de su texto al pie." />
+
+### 2 · Compón una página de 33 líneas, con separación silábica portuguesa
+
+<Excerpt region="text" />
+
+El margen inferior mide 16,3 mm, lo que queda de los 178 mm de alto tras el margen superior de 15 mm y 33 líneas de 12,6 pt, así que todas las páginas llenas acaban en la misma línea. Tinos, que tiene los mismos anchos que la Times New Roman, compone unos 59 caracteres por línea en la medida de 84 mm a 9,5 pt. `locale: 'pt'` divide las palabras con los patrones portugueses: *at-tracção*, *af-fluencia*, *genealogica-mente* ([idiomas soportados](/es/docs/justification#idiomas-soportados)). Todos los párrafos llevan sangría, también el primero después de un título, como es costumbre en las ediciones portuguesas y brasileñas, y para eso basta el valor por defecto de `indentAfterHeading`.
+
+### 3 · Pon el título del libro en la página par y el capítulo en la impar
+
+<Excerpt region="heads" />
+
+`{title}` imprime el título de los metadatos del documento, y `{chapterTitle}`, el del último capítulo que empieza en la página o antes, así que la 217 nombra el CXXIII, que empezó en la 216 ([elementos de texto](/es/docs/configuration#elementos-de-texto)). La 213 nombra el CXIX, que empieza al pie, aunque sus primeras 25 líneas cierran el CXVIII: 1.4.1 no tiene marcador para el capítulo con el que abre una página. `SHIFT` lleva las cabeceras al centro de la caja de texto, a 1 mm del centro de la página, porque el margen interior mide 2 mm más que el exterior.
+
+### 4 · Dibuja la cubierta y la lámina como títulos
+
+<Excerpt region="cover" />
+
+Las dos son [estilos de título](/es/docs/configuration#estilos-de-encabezado) con `numbered: false`, así que el primer capítulo numerado sigue siendo el CXIX. `span: 'page'` las convierte en páginas de apertura. Sin él, las bandas de la cubierta se cortan en los bordes superior e inferior de la caja de texto, la cabecera y el folio 1 se imprimen sobre la cubierta y el título sale en una sola línea. El pie de la lámina sale de su título: CAPÍTULO CXXIII es el texto del título, y la cita en cursiva, su atributo `quote` ([atributos de encabezado](/es/docs/document-format#atributos-de-encabezado)). El `:::pagebreak` que sigue a cada una aparta el texto de las ilustraciones, porque 1.4.1 no reserva sitio para la banda del pie de la cubierta ni para la imagen de la lámina.
+
+### 5 · Di al fragmento en qué punto del libro está
+
+<Excerpt region="excerpt" />
+
+`continuation.headings` da los contadores de títulos con los que empieza el fragmento. Con `h1: 118`, el primer título numerado es el capítulo CXIX; sin él, los cinco capítulos salen numerados del I al V. `numberingTemplate: '{1:I}'`, en el nivel de capítulo, pone esos números en romanos, y el diseño los imprime con `{number}`. `:::numbering{startAt=212}`, tras el salto de página de la cubierta, numera la lámina como 212 y las páginas de texto de la 213 a la 217 ([`:::numbering`](/es/docs/document-format#numbering)).
+
+## Variantes
+
+### Abre cada capítulo en una página nueva
+
+Con un salto antes de cada capítulo, las cinco páginas de texto pasan a ser siete: la 214 lleva solo el CXIX, su título y cuatro líneas, y la 213, donde no empieza ningún capítulo, toma como cabecera el título de la lámina, CAPÍTULO CXXIII.
+
+```diff
+-  breakBefore: { enabled: false }, marginTop: pt(2 * LEAD), advancedDesign: chapterHead };
++  breakBefore: { enabled: true, parity: 'any' }, marginTop: pt(2 * LEAD),
++  advancedDesign: chapterHead };
+```
+
+### Pon el número del capítulo en la página impar
+
+`{chapterNumber}` imprime el numeral del mismo capítulo del que sale el título: *CXIX · NÃO FAÇA ISSO, QUERIDA*.
+
+```diff
+-  head('recto-chapter', '{chapterTitle}', 'odd', SHIFT),
++  head('recto-chapter', '{chapterNumber} · {chapterTitle}', 'odd', SHIFT),
+```
+
+## Errores frecuentes
+
+- Si subes `widowMinLines` a 3, en 1.4.1 el CXIX y el CXXI se quedan al pie con tres líneas debajo, y sus párrafos de cuatro líneas se parten en tres y una: las páginas 214 y 215 empiezan con una línea sola, sea cual sea el valor de `orphanPenalty`.
+- Si el CXVIII crece unas líneas, al CXIX solo le queda sitio para una línea bajo su título. `keepWithNext` lleva entonces el título a la página 214, y la 213 acaba cuatro o cinco líneas antes del pie; con `keepWithNext: false`, el título cierra la 213 sin texto debajo.
+- La lámina es un H1, así que `{chapterTitle}` recurre a ella: una página de texto en la que no ha empezado ningún capítulo desde la lámina, como la 213 cuando el CXIX pasa a la siguiente, lleva como cabecera CAPÍTULO CXXIII.
+- Con `avoidRunts` desactivado, la última línea del libro lleva *manhã.* sola en lugar de *nadador da manhã.*
+- Sin el `:::pagebreak` que sigue a la cubierta, y sin la lámina, el capítulo CXVIII empieza a 19,5 mm del borde superior de la cubierta, bajo su línea de título de 3 mm. Sin el que sigue a la lámina, once líneas de texto se imprimen sobre el mar si el pie de la lámina sube a 94 mm.
+- En estas páginas ninguna línea se corta por el guion de un pronombre enclítico (*Vesti-me*, *metteu-se*). Pon en cursiva *Emfim*, la primera palabra del CXXIII, y 1.4.1 compone ese párrafo con el corte de líneas del texto con marcas, que acaba una línea en *vencer-* y empieza la siguiente con *se a si mesma*, sin el guion que la ortografía portuguesa repite al principio de la línea.
+- Estos saltos de página valen solo para este texto a 9,5 sobre 12,6 pt en una medida de 84 mm. Si cambias el texto, el cuerpo o la medida, vuelve a mirar el pie de cada página y el blanco sobre cada título.

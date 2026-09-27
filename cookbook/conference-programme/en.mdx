@@ -1,0 +1,66 @@
+---
+title: "Conference programme with a merged schedule grid"
+summary: "A two-day programme in schedule grids: mergeCells spans a plenary across the three rooms and a workshop over two slots, and each talk takes its track's colour."
+description: "A conference programme in Catalan set with Postext: a schedule grid with merged cells and track colours that splits across pages, and day openers on ink bands."
+question: "How do I merge a schedule grid's cells so a plenary spans every room and a workshop two time slots?"
+aliases: ["conference programme", "event programme", "schedule", "timetable", "agenda", "rowspan", "colspan", "merged cells", "colour-coded table", "Catalan"]
+pageNotes: { "1": "The cover on ink: the capital ela geminada, L·L, drawn as a violet L, an amber dot and a teal L, each L a tall stem with a rounded foot. Below, 7es Jornades · Programa in small amber capitals, Jornades de Tipografia i Edició Digital in a wide white display face, the dates 12–13.11.2026 in violet and Girona · La Impremta, Barri Vell.", "2": "Thursday opens on an ink band across the head of the page: Primera jornada · 12 de novembre in amber capitals, a white 12 about 39 mm tall with Dijous beside it, and a row of violet, teal and amber shapes along the band's foot. Below, three paragraphs of practical notes with three colour swatches naming the tracks, then Qui parla dijous and the first speakers' notes, each name in bold with the lines under it indented.", "3": "Taula 1, Thursday's schedule, fills the page: an ink head row with the hour and three rooms, the parts of the day in small violet capitals, the opening lecture in an ink cell across the three rooms, two workshops that each fill two time slots, and every talk in a violet, teal or amber tile. Continua a la pàgina següent closes the page.", "4": "The grid ends at the head of the page under the same head row, its caption now ending in (continuació): the evening walk and the dinner, and a note on how long sessions last. Below, the rest of Thursday's speakers and Al vespre in two level columns.", "5": "Friday opens on the same band with a 13 and Divendres. A short introduction and the first Friday speaker sit above Taula 2, which fills the foot of the page whole: the plenary and the closing session in ink, one workshop across two slots, the talks in their track colours.", "6": "A floor plan of La Impremta across the head of the page: the two lecture rooms, the hall with the cloakroom beside it, the stairs up to the workshop room and the courtyard with two trees, numbered 1 to 6 in black discs and named in the note under Figura 1. Below it, the last Friday speakers, Com arribar and the colophon in two columns." }
+---
+
+## What you'll build
+
+The printed programme of an invented typography conference in Girona, written in Catalan. The cover draws the capital ela geminada, L·L, as three coloured modules on ink. Each day opens on a 76 mm ink band with the day of the month as a 144 pt numeral. Thursday's schedule is a table. The opening lecture fills one ink cell across the three rooms, and each workshop takes two time slots. The parts of the day head their rows across the whole grid, and each talk is a tile in its track's colour, keyed by the swatches in the caption. The grid is taller than a page, so it fills page 3 and ends on page 4 under its repeated head row. Friday's shorter grid fits whole at the foot of its opening page.
+
+## Method
+
+### 1 · Turn each line of the programme into a row
+
+The code is [the short answer](#the-short-answer) above. Each day is plain text in a content file, one line per time slot: `|` separates the rooms, a letter names the track, `*` marks a plenary on an ink fill, `/` starts each line after the title, and `^` continues the session of the slot above. `mergeCells` makes every span. A line with one session, such as the plenary or a break, takes the three room columns. A workshop takes its cell and the one below, and a part of the day (MATÍ, TARDA), written as a line with no `|`, takes all four columns. The cells a merge covers stay in the grid, marked `hiddenBy`, because a cell's column is its index in the row ([Building table models](/en/docs/configuration#building-table-models)). `headerRowCount: 1` makes the room names the head row. The `columnWidths` are relative weights, and 12 + 3 × 42 adds up to the 138 mm measure, so the hour column is 12 mm wide and each room 42 mm. `setAlignment(…, 'left', 'middle')` centres each workshop vertically in its two rows.
+
+### 2 · Let Thursday run over and keep Friday whole
+
+<Excerpt region="split" />
+
+Thursday's grid is cited on page 2 and placed at the head of a page. A float never goes above its reference, so the grid opens page 3. It is taller than the page, and `overflow: 'split'` cuts it between two rows, never inside a merged cell ([Tables taller than the page](/en/docs/configuration#tables-taller-than-the-page)). Page 3 ends with the 17.30 row and the marker under it. Page 4 repeats the head row and the whole caption, swatch key included, followed by `(continuació)`, and the note prints only under this last part. Friday's grid goes to the foot of a page and fits under the text that cites it on page 5. Postext 1.4.1 has resource type names and these two strings in English and Spanish only, so the Catalan words, plurals included, are written over `defaultResourceTypes('ca')` and into the table style. `numberingTemplate: '{n}'` with `resetOn: 'never'` counts both grids in one series, Taula 1 and Taula 2.
+
+### 3 · Cut the fills into tiles
+
+<Excerpt region="tiles" />
+
+`setCellBackground` in the short answer gives each session its track's palette entry, and grid rules 1.6 pt wide in the paper colour cut the fills into tiles with white gutters ([Table style](/en/docs/configuration#table-style)). A table has one text colour for its body cells, so the plenary's white type is a chip whose style sets the colour and turns off the chip's fill, border and side padding. The times and the parts of the day are chips too, in Chivo Mono ([Chip styles](/en/docs/configuration#chip-styles)). A chip never breaks across lines; a plenary's title and its speaker line each fit on one line of the three-room cell. In the plan's note, the `sala` chip leaves the text as it is and keeps each room's number and name on one line, which a no-break space does not do in 1.4.1.
+
+### 4 · Open each day on a band
+
+<Excerpt region="opener" />
+
+The first-level heading's design draws the band: a box 76 mm deep from the bleed edge, with the strip of modules along its foot. The date comes from the heading's `date` attribute and the numeral from `day`. The 1 of Unbounded 800 at 144 pt starts its ink 0.76 mm into its box and the date's first capital 0.1 to 0.2 mm into its own, so the numeral moves 0.6 mm left, and the date, the numeral and the text start their ink within 0.2 mm of each other. The day's name sits to the right of the numeral, lowered by `BASELINE` × (144 − 26) pt so that the two baselines meet, because a design text with `lineHeight: 1` has its baseline 0.8 of the way down its box. `minHeight` reserves the page down to 7 mm below the band, and the baseline grid rounds the reserve up to 14 lines, so the first line box of text starts 10.2 mm under the band. With `AIR = 0` the numeral's own box, which reaches past the band's foot, sets the height instead, and the text starts 5.6 mm under the band.
+
+### 5 · Indent the speakers' turnovers
+
+<Excerpt region="bios" />
+
+Each speaker is one paragraph of a `:::paragraphs{style="bio"}` block. The bold name starts at the column's edge and the lines under it step in 4 mm, so the names line up down the column as in an index ([Paragraph styles](/en/docs/configuration#paragraph-styles)). The text is set ragged, and 1.4.1 has no runt control for ragged text, so each note was reworded until its last line held at least two words.
+
+## Variations
+
+### Round the grid's corners
+
+A split table rounds the top corners of its first part, on page 3, and the bottom corners of its last part, on page 4, where only the right one shows because the hour column has no fill.
+
+```diff
+-  cellPadding: mm(1.5) };
++  cellPadding: mm(1.5), borderRadius: mm(2.5) };
+```
+
+### Number each day's grid on its own
+
+Counting per level-1 heading, as the built-in types do, gives Taula 1.1 and Taula 2.1 and turns the plan into Figura 2.1; the cover's style is not numbered, so Thursday is heading 1.
+
+```diff
+-  numberingTemplate: '{n}', resetOn: 'never' })); // Taula 1, Taula 2: one count, not per day
++  numberingTemplate: '{h1}.{n}', resetOn: 'h1' })); // Taula 1.1, Taula 2.1: per day
+```
+
+## Pitfalls
+
+- Page 4's columns are levelled by hand, with a `:::columnbreak` before Rosa Fontanet's note. Postext 1.4.1 does not level a chapter's last page when the rest of a split table opens it, so the first column runs to the foot and the second stays short. Move the break whenever the Thursday text changes.

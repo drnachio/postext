@@ -1,0 +1,62 @@
+---
+title: "Photo essay with full-bleed plates"
+summary: "Plates as heading styles built from a list, each filling its page to the trim; the storm plate runs across the gutter of a spread in two halves."
+description: "A landscape photobook in Postext: six plates of one mountain range, each a heading style built from a list, one across a spread, and three short texts."
+question: "How do I give each plate of a photo essay a full-bleed page of its own, and run one across a spread?"
+aliases: ["photobook", "photo essay", "full-bleed photo", "plate", "picture across the gutter", "double-page spread", "panorama", "list of plates", "fotolibro", "lámina a sangre"]
+pageNotes: { "1": "The first plate: layered ridges fading into a peach dawn haze under a deep blue sky, SIERRA in heavy white capitals across the sky with the subtitle under it, and the numeral I and the hour 08:12 in the lower left corner.", "2": "A text page on pale stone paper: the hours in small rust monospace, the title The climb in a wide bold sans, four justified paragraphs in a 100 mm column near the spine, and the folio at the foot.", "3": "The noon plate: a grey granite cirque over a lake, dark slopes and boulders in front, the numeral II and 14:06 in the lower left.", "4": "The left half of the storm plate: a ceiling of dark cloud, a curtain of rain over the ridges, and the numeral III with 16:40 in the lower left.", "5": "The right half of the storm plate: a bolt of lightning over the ridges, and at the right edge far ridges lit warm where the sun breaks through.", "6": "The text Eleven seconds, and under it plate IV, a narrow dusk panorama of a crest lit orange under strips of cloud in a violet sky, captioned IV, Dusk, 19:41.", "7": "The night plate: stars over dark ridges and two lit windows at a refuge, numbered V, 22:10.", "8": "The text First snow, in four paragraphs.", "9": "The last plate: the cirque of the noon plate white with new snow, numbered VI, 08:31, with the colophon in two lines of small type in the lower right." }
+---
+
+## What you'll build
+
+*Sierra*, a landscape photobook on a 280 × 210 mm page: one day in a granite range in six plates, from first light to the morning after the first snow. Each plate fills its page to the trim and carries only a small numeral and the hour in its lower left corner; the first also carries the title, SIERRA in 72-pt Syne, reversed out of the dawn sky. The storm runs across the gutter of pages 4 and 5 as one picture. Three short texts, set in a 100 mm column near the spine, face the plates that follow them. The storm’s text ends on a smaller dusk plate that floats under it, with its numeral in the caption. The last plate shows the cirque of the second from the same boulder, under snow.
+
+## Method
+
+### 1 · A heading style for each plate, built from a list
+
+The code is [the short answer](#the-short-answer) above. A heading style can name its own picture, so each plate is a style that `plate()` builds from one row of `PLATES`, and the Markdown sets the order of the essay, one line per plate: `# Storm {style="tormenta" n="III" hora="16:40"}`. `span: 'page'` starts every plate on a page of its own. Zero margins make the plate’s column as tall as the page, and `minHeight` fills that column, so whatever follows a plate starts on the next page. You need both settings. Without `minHeight`, the storm’s right half, which draws no text, keeps only its heading’s own 7.6 mm line, and the next text starts on that page, over the picture. With the text pages’ margins, the column is 158 mm deep, shorter than the 210 mm `minHeight`, so postext 1.4.1 drops the reservation altogether and all three texts print over the plates before them.
+
+The storm’s two styles draw the same 560 mm picture: the verso half at the page’s left edge, the recto half 280 mm further left, so each page shows its own half and the canvas crops the rest at the trim. `parity: 'even'` keeps the two halves facing. Without it, taking the noon plate out of the Markdown would put the left half on page 3, a recto, and the right half overleaf on page 4; with it, page 3 stays blank and the storm still fills pages 4 and 5.
+
+### 2 · The numeral and the hour come from the heading line
+
+<Excerpt region="caption" />
+
+The numeral and the hour are heading attributes, so the content stays in the Markdown and one design serves every plate. The hour hangs `right-of` the numeral, which aligns their tops. A design text’s baseline sits 0.8 of its line box below the element’s top, and the line box is 1.2 times the type size by default, so `dropTo(13, 8)` lowers the hour by 0.8 × 1.2 × (13 − 8) pt and puts the 8-pt hour on the 13-pt numeral’s baseline, 193.4 mm from the top of the page. The hour opens with a middle dot, as plate IV’s caption does, because Syne’s I is a plain bar, and alone beside the hour it reads as a rule. The recto half of the storm draws no caption, and the snow plate sets its caption in ink, because its foreground is white.
+
+### 3 · A title and a colophon on the plates themselves
+
+<Excerpt region="cover" />
+
+The first plate is the cover. `{title}` and `{subtitle}` read the frontmatter, and `extra` in `PLATES` adds both elements to that plate’s design, in the colour of its caption. The colophon goes on the last plate the same way, in ink on the snow: two 7.5-pt elements, one per line, from the `colofon` and `tipos` attributes, flush right, the second on the numeral’s baseline. A single wrapped element would break wherever its width ran out; with one element per line, the break falls after the licence.
+
+### 4 · Texts follow their plates without a break
+
+<Excerpt region="texts" />
+
+The plate before a text fills its page, so the text starts the next page with no break of its own. A page whose first block is a heading with a break is an opener page, and the folio’s `pages: 'body'` leaves it out. With no break, the text pages keep their folio; the plates, opened by span headings, get none. postext 1.4.1 already drops the level-1 break once a `headings` object exists, so deleting `breakBefore: { enabled: false }` changes nothing today. The line matters once a release restores the default always-odd break: it keeps the texts from breaking, so their pages stay body pages with a folio. `FOOT` sets the folio on the baseline of the plates’ numerals, 193.4 mm from the top of the page, so a text’s folio and the numeral of the plate facing it sit on one line.
+
+### 5 · Declare every plate, cite only the one that floats
+
+<Excerpt region="plates" />
+
+A design’s image element draws a declared resource, so all six pictures are in `resources`. Plate IV is the only one cited with `:ref`, and so the only one that floats. It takes the first free slot after the citation, on the page of its text, one line under the last paragraph. A numbered type would caption it *Plate 1*, since it is the only resource of its type that floats. `lamina` has an empty `numberingTemplate` instead, and the caption itself begins with IV. In the sentence, `:ref`’s `text` names the plate, because a bare `:ref` prints only the word *plate*.
+
+## Variations
+
+### Float plates opposite their entries
+
+For plates that float to the recto facing a catalogue entry, with the figure’s width set from its proportions, see <RecipeLink slug="catalogue-facing-plates">Catalogue entries facing their plates</RecipeLink>.
+
+### Open an article on a bled photograph
+
+For a photograph bled across the head of an article, with the headline and standfirst over it, see <RecipeLink slug="magazine-feature-opener">the magazine feature</RecipeLink>.
+
+## Pitfalls
+
+- Never cite a plate that a design draws. Cited, it also floats as a figure: a `:ref` to the noon plate in the first text puts a second copy of it on page 3, and the storm moves two pages on, after a blank page.
+- The dusk plate sits one line under its text, not at the foot of the page. On the last page before a plate, postext 1.4.1 lifts a float that lies below the text up to it, and `position: 'bottom'` changes nothing there.
+- Each text is fitted to one page in both editions. When the first runs on to page 3, the noon plate moves to page 4 and the storm to pages 6 and 7, after a blank page 5.
+- The storm’s right half is a second `# Storm` heading. The page prints no title for it, but a `:::toc` built from the headings lists the storm twice, on pages 4 and 5.
+- The plates stop at the trim, which is the edge of the canvas. With `page.cutLines` on, the canvas grows around the trim, and the bleed around each plate shows the paper colour. For print, anchor the plates to `'bleed'` and make each one larger by the bleed on every side.

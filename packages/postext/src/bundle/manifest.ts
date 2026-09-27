@@ -2,6 +2,7 @@
 // naming, and conversion of manifest entries into engine resources and
 // custom fonts. No DOM or storage access.
 
+import { presentTag } from '../locale';
 import type { CustomFontFamily, CustomFontFormat, Resource } from '../types';
 import type {
   BundleChapterSpec,
@@ -143,38 +144,66 @@ export function pickMarkdownFile(manifest: BundleManifestV1, locale: string): st
   return pickByLocale(md, locale, manifest.locale);
 }
 
-/** The per-locale overrides that apply to `locale`, or null when the
- *  manifest has none. A bundle whose chapters are a locale map applies the
- *  overrides of the locale its chapters were picked from, so text and
- *  wording never disagree. */
-export function pickLocaleOverrides(manifest: BundleManifest, locale: string): BundleLocaleOverrides | null {
-  const localized = manifest.localized;
-  if (!localized || Object.keys(localized).length === 0) return null;
+/** The key a bundle's content is served under for `locale`: the key of its
+ *  chapter map when the chapters are a locale map; with shared chapters
+ *  and `localized` wording, the manifest's own locale or one of the
+ *  localized keys; null for a bundle in a single language. */
+function contentLocaleKey(manifest: BundleManifest, locale: string): string | null {
   const chapterMap = manifest.version === 2 && !Array.isArray(manifest.chapters) ? manifest.chapters
     : manifest.version === 1 && typeof manifest.markdown !== 'string' ? manifest.markdown
       : null;
-  const key = chapterMap
-    ? pickLocaleKey(Object.keys(chapterMap), locale, manifest.locale)
-    : pickLocaleKey(Object.keys(localized), locale, manifest.locale);
-  // Only that locale's own overrides (exact tag or base language) apply: a
-  // locale without any keeps the shared wording.
+  if (chapterMap) return pickLocaleKey(Object.keys(chapterMap), locale, manifest.locale);
+  const localized = Object.keys(manifest.localized ?? {});
+  if (localized.length === 0) return null;
+  // Shared chapters: the manifest's own locale is one of the candidates, so
+  // reading it — or a locale the bundle does not carry — keeps the shared
+  // wording instead of falling back to the first localized entry.
+  return pickLocaleKey(manifest.locale ? [manifest.locale, ...localized] : localized, locale, manifest.locale);
+}
+
+/** The per-locale overrides that apply to `locale`, or null when the
+ *  manifest has none: those of the locale the content is served under (see
+ *  {@link resolveBundleLocale}), so text and wording never disagree. That
+ *  is the entry of the exact tag; for any locale but the manifest's own,
+ *  else the entry of its bare base language (`pt` for `pt-BR`), else of a
+ *  regional variant of the same language. The manifest's own locale is
+ *  what the shared wording is written in: only an entry naming it exactly
+ *  rewords it, never a sibling variant (`pt-BR` when the bundle is
+ *  `pt-PT`). */
+export function pickLocaleOverrides(manifest: BundleManifest, locale: string): BundleLocaleOverrides | null {
+  const localized = manifest.localized;
+  if (!localized || Object.keys(localized).length === 0) return null;
+  const key = contentLocaleKey(manifest, locale);
+  if (key === null) return null;
   const wanted = key.toLowerCase();
-  const base = wanted.split(/[-_]/)[0]!;
   const keys = Object.keys(localized);
-  const found = keys.find((k) => k.toLowerCase() === wanted)
+  const exact = keys.find((k) => k.toLowerCase() === wanted);
+  if (exact) return localized[exact]!;
+  if (manifest.locale?.toLowerCase() === wanted) return null;
+  const base = wanted.split(/[-_]/)[0]!;
+  const found = keys.find((k) => k.toLowerCase() === base)
     ?? keys.find((k) => k.toLowerCase().split(/[-_]/)[0] === base);
   return found ? localized[found]! : null;
 }
 
 /** The locale a bundle actually serves for `locale`: the key of its
- *  chapter map when the content is a locale map, else the manifest's own
- *  locale, else `locale` itself. */
+ *  chapter map when the content is a locale map, the key whose wording it
+ *  reads when shared chapters carry `localized` wording, else the
+ *  manifest's own locale, else `locale` itself. */
 export function resolveBundleLocale(manifest: BundleManifest, locale: string): string {
-  const map = manifest.version === 2
-    ? (Array.isArray(manifest.chapters) ? null : manifest.chapters)
-    : (typeof manifest.markdown === 'string' ? null : manifest.markdown);
-  if (map) return pickLocaleKey(Object.keys(map), locale, manifest.locale);
-  return manifest.locale ?? locale;
+  return contentLocaleKey(manifest, locale) ?? manifest.locale ?? locale;
+}
+
+/** The language a bundle's default configuration is localised to (the
+ *  names of the built-in resource types: "Figure", "Figura"), read for
+ *  `locale`. When the manifest names its languages, the one its content is
+ *  served in ({@link resolveBundleLocale}); when it names none, the
+ *  document language of its own `config` (`locale`, then
+ *  `bodyText.hyphenation.locale`), as the engine resolves it; else
+ *  `locale`. */
+export function resolveBundleConfigLocale(manifest: BundleManifest, locale: string): string {
+  if (presentTag(manifest.locale) || contentLocaleKey(manifest, locale) !== null) return resolveBundleLocale(manifest, locale);
+  return presentTag(manifest.config?.locale) ?? presentTag(manifest.config?.bodyText?.hyphenation?.locale) ?? locale;
 }
 
 /** The chapter files to read for `locale`: a version 1 manifest yields a

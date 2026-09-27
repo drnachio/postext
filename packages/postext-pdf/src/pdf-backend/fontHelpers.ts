@@ -1,72 +1,123 @@
-import type { VDTDocument, VDTBlock, VDTLine } from 'postext';
+import type { VDTDocument, VDTBlock, VDTDesignSlot, VDTLine } from 'postext';
 
-/** Collect every fontString referenced anywhere in the VDT. */
+/** The four faces a run of rich text picks from by its bold / italic flags. */
+interface FaceSet {
+  normal: string;
+  bold: string;
+  italic: string;
+  boldItalic: string;
+}
+
+/**
+ * Collect the fontString of every face the pages paint, walking them the
+ * way the renderer does: a block's base face when it sets any line, the
+ * face each text segment picks (bold / italic / its own), chip runs,
+ * bullets, design-slot text, resource captions, notes and table cells.
+ * Faces a block merely could use — the italic cut of a heading nobody
+ * slants, the bold note face of a figure without a note — are left out, so
+ * the font provider is never asked for them (EF-20). Hidden blocks, and the
+ * lines of a block drawn through its design overlay, paint nothing.
+ */
 export function collectFontStrings(doc: VDTDocument): string[] {
   const out = new Set<string>();
-  // Floated resources live on their page's float band, not in doc.blocks.
-  const blocks: VDTBlock[] = [...doc.blocks];
   for (const page of doc.pages) {
-    if (page.floats) blocks.push(...page.floats);
-  }
-  for (const block of blocks) {
-    // Design overlays (advanced heading designs, callout titles/icons).
-    if (block.designOverlay) {
-      for (const b of block.designOverlay.blocks) {
-        if (b.kind === 'text') out.add(b.fontString);
-      }
+    for (const col of page.columns) {
+      for (const block of col.blocks) addBlockFonts(block, out);
     }
-    addChipFonts(block.lines, out);
-    if (block.fontString) out.add(block.fontString);
-    if (block.boldFontString) out.add(block.boldFontString);
-    if (block.italicFontString) out.add(block.italicFontString);
-    if (block.boldItalicFontString) out.add(block.boldItalicFontString);
-    if (block.bulletFontString) out.add(block.bulletFontString);
-    if (block.separatorFontString) out.add(block.separatorFontString);
-    // Resource caption + table cell fonts (issue #49).
-    const rb = block.resourceBlock;
-    if (rb) {
-      out.add(rb.captionFontString);
-      out.add(rb.captionBoldFontString);
-      out.add(rb.captionItalicFontString);
-      out.add(rb.captionBoldItalicFontString);
-      out.add(rb.noteFontString);
-      out.add(rb.noteBoldFontString);
-      out.add(rb.noteItalicFontString);
-      out.add(rb.noteBoldItalicFontString);
-      addChipFonts(rb.captionLines, out);
-      addChipFonts(rb.noteLines, out);
-      addChipFonts(rb.continuesLines, out);
-      for (const cell of rb.table?.cells ?? []) addChipFonts(cell.lines, out);
-      if (rb.table) {
-        out.add(rb.table.fontString);
-        out.add(rb.table.boldFontString);
-        out.add(rb.table.italicFontString);
-        out.add(rb.table.boldItalicFontString);
-        out.add(rb.table.headerFontString);
-        out.add(rb.table.headerBoldFontString);
-        out.add(rb.table.headerItalicFontString);
-        out.add(rb.table.headerBoldItalicFontString);
-      }
-    }
-  }
-  for (const page of doc.pages) {
-    for (const slot of [page.header, page.footer, page.openerBand]) {
-      if (!slot) continue;
-      for (const b of slot.blocks) {
-        if (b.kind === 'text') out.add(b.fontString);
-      }
-    }
+    // Floated resources live on their page's float band, not in a column.
+    for (const block of page.floats ?? []) addBlockFonts(block, out);
+    for (const slot of [page.header, page.footer, page.openerBand]) addSlotFonts(slot, out);
   }
   return [...out];
 }
 
-/** The fonts of the inline chips on `lines` (a chip may set its own family). */
-function addChipFonts(lines: readonly VDTLine[] | undefined, out: Set<string>): void {
+function addBlockFonts(block: VDTBlock, out: Set<string>): void {
+  if (block.hidden) return;
+  // Design overlays (advanced heading designs, callout frames) replace the
+  // block's own lines.
+  if (block.designOverlay) {
+    addSlotFonts(block.designOverlay, out);
+    return;
+  }
+  const rb = block.resourceBlock;
+  if (block.type === 'resource') {
+    if (!rb) return;
+    const caption: FaceSet = {
+      normal: rb.captionFontString,
+      bold: rb.captionBoldFontString,
+      italic: rb.captionItalicFontString,
+      boldItalic: rb.captionBoldItalicFontString,
+    };
+    const note: FaceSet = {
+      normal: rb.noteFontString,
+      bold: rb.noteBoldFontString,
+      italic: rb.noteItalicFontString,
+      boldItalic: rb.noteBoldItalicFontString,
+    };
+    addLinesFonts(rb.captionLines, caption, out);
+    addLinesFonts(rb.noteLines, note, out);
+    addLinesFonts(rb.continuesLines, note, out);
+    const t = rb.table;
+    if (t) {
+      const body: FaceSet = { normal: t.fontString, bold: t.boldFontString, italic: t.italicFontString, boldItalic: t.boldItalicFontString };
+      const header: FaceSet = {
+        normal: t.headerFontString,
+        bold: t.headerBoldFontString,
+        italic: t.headerItalicFontString,
+        boldItalic: t.headerBoldItalicFontString,
+      };
+      for (const cell of t.cells) addLinesFonts(cell.lines, cell.isHeader ? header : body, out);
+    }
+    return;
+  }
+  if (block.type === 'listItem' && block.bulletText && block.bulletFontString && block.bulletOffsetX !== undefined && block.lines[0]) {
+    out.add(block.bulletFontString);
+    if (block.separatorText && block.separatorX !== undefined) out.add(block.separatorFontString ?? block.bulletFontString);
+  }
+  addLinesFonts(block.lines, {
+    normal: block.fontString,
+    bold: block.boldFontString ?? block.fontString,
+    italic: block.italicFontString ?? block.fontString,
+    boldItalic: block.boldItalicFontString ?? block.boldFontString ?? block.italicFontString ?? block.fontString,
+  }, out);
+}
+
+/** The faces a run of lines paints: the base face (spaces, plain lines)
+ *  once any line sets something, then each text segment's pick. */
+function addLinesFonts(lines: readonly VDTLine[] | undefined, faces: FaceSet, out: Set<string>): void {
   for (const line of lines ?? []) {
-    for (const seg of line.segments ?? []) {
-      for (const run of seg.chip?.runs ?? []) out.add(run.fontString);
+    const segments = line.segments ?? [];
+    if (line.text.length === 0 && segments.length === 0) continue;
+    out.add(faces.normal);
+    for (const seg of segments) {
+      if (seg.kind === 'space' || seg.kind === 'math' || seg.kind === 'swatch') continue;
+      // A chip may set its own family; its runs carry their faces.
+      if (seg.chip) {
+        for (const run of seg.chip.runs) if (run.text) out.add(run.fontString);
+        continue;
+      }
+      if (!seg.text) continue;
+      out.add(seg.fontString ?? pickFace(!!seg.bold, !!seg.italic, faces));
     }
   }
+}
+
+function addSlotFonts(slot: VDTDesignSlot | undefined, out: Set<string>): void {
+  for (const b of slot?.blocks ?? []) {
+    if (b.kind !== 'text' || !b.lines.some((l) => l.text.length > 0)) continue;
+    out.add(b.fontString);
+    // Inline-mark runs: bold, italic, a script at the reduced size.
+    for (const line of b.lines) {
+      for (const run of line.runs ?? []) if (run.text) out.add(run.fontString);
+    }
+  }
+}
+
+function pickFace(bold: boolean, italic: boolean, faces: FaceSet): string {
+  if (bold && italic) return faces.boldItalic;
+  if (bold) return faces.bold;
+  if (italic) return faces.italic;
+  return faces.normal;
 }
 
 export function pickSegmentFont(

@@ -40,6 +40,7 @@ export function stitchDocuments(chapters: readonly StitchedChapter[]): StitchedB
   const pageChapters: number[] = [];
   const chapterFirstPages: number[] = [];
   const warnings: NonNullable<VDTDocument['warnings']> = [];
+  const contentWarnings: NonNullable<VDTDocument['contentWarnings']> = [];
   const restarts: number[] = [];
   let converged = true;
   let iterationCount = 0;
@@ -54,6 +55,8 @@ export function stitchDocuments(chapters: readonly StitchedChapter[]): StitchedB
     }
     for (const block of doc.blocks) blocks.push(offset === 0 ? block : { ...block, pageIndex: block.pageIndex + offset });
     for (const w of doc.warnings ?? []) warnings.push(offset === 0 ? w : { ...w, pageIndex: w.pageIndex + offset });
+    // A content warning whose construct put nothing on a page has no page.
+    for (const w of doc.contentWarnings ?? []) contentWarnings.push(offset === 0 || w.pageIndex === undefined ? w : { ...w, pageIndex: w.pageIndex + offset });
     for (const r of doc.pageNumberRestarts ?? []) restarts.push(r + offset);
     converged &&= doc.converged;
     iterationCount += doc.iterationCount;
@@ -63,6 +66,7 @@ export function stitchDocuments(chapters: readonly StitchedChapter[]): StitchedB
     pages,
     blocks,
     ...(warnings.length > 0 ? { warnings } : {}),
+    ...(contentWarnings.length > 0 ? { contentWarnings } : {}),
     converged,
     iterationCount,
     pageIndexOffset: 0,

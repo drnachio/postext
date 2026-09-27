@@ -1,0 +1,66 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 8,
+  "status": "published",
+  "chapter": "boxes",
+  "order": 10,
+  "level": 2,
+  "genres": ["textbook"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["callout-styles", "callout-label-tabs", "callout-icons"],
+    "also": [
+      "callout-marker", "callout-columns", "span-boxes", "floated-callouts", "emphasis-colours",
+      "color-palette", "opener-design", "opener-band", "design-images", "heading-attributes",
+      "title-line-breaks", "running-heads", "mirrored-margins", "resources", "citations",
+      "float-placement", "canvas-rendering"
+    ]
+  },
+  "answers": ["Q55", "Q62", "Q50"],
+  "gotchas": [
+    "headings-drop-h1-break", "ragged-run-punctuation", "nbsp-breaks", "latin-subset",
+    "svg-no-webfonts", "top-float-next-page", "callout-columns", "resource-types-locale",
+    "hyphenation-locales", "fonts-first", "overflow-ellipsis-default", "parity-page1-recto",
+    "config-cache-identity"
+  ],
+  "explainsWarnings": ["unknownCalloutType"],
+  "related": [
+    "product-manual-warnings",
+    "boxes-split-float-pin",
+    "worksheet-answer-boxes",
+    "textbook-margin-column"
+  ],
+  "workarounds": [
+    { "followup": "EF-05", "package": "postext", "note": "the H1 breakBefore is restated because a headings object drops it" },
+    { "followup": "EF-62", "package": "postext", "note": "ragged box text can break between '(' and a :ref; each edition's BOX 2.1 cites its figure where '(Fig. 2.2)' sits mid-line, checked by eye" },
+    { "followup": "EF-73", "package": "postext", "note": "ragged box text can set the punctuation after a bold run alone on the next line; every bold key term in a box is followed by a space, never by punctuation, and each edition's boxes are checked by eye" },
+    { "followup": "EF-66", "package": "postext", "note": "a no-break space is still a break opportunity, so '37 °C' could split; the BOX 2.1 sentence in each edition is worded so the temperature sits mid-line" },
+    { "followup": "EF-92", "package": "postext", "note": "a box's lists.color recolours its numbered lists only when it differs from unorderedLists.color (otherwise the numbers take orderedLists.color); the document's bullets are set in ink so every box keeps its own hue" },
+    { "followup": "EF-33", "package": "postext", "note": "config.locale does not localise Figure: resourceTypes: defaultResourceTypes(LANG) is passed by hand" },
+    { "followup": "EF-14", "package": "postext", "note": "locale is the exact bundled code ('en-us' | 'es'): a region-tagged code such as 'es-ES' silently hyphenates as American English (gotcha hyphenation-locales)" },
+    { "followup": "EF-99", "package": "postext", "note": "borderRadius does not reach a side stripe (painted as its own square bar, unclipped), so only the unstriped warning is rounded and Method step 3 says why; revisit the step when fixed" }
+  ],
+  "engine": { "postext": "1.4.1" },
+  "kit": ["core", "fonts", "viewer", "images"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": {
+    "hero": [2, 3],
+    "card": "crop",
+    "focus": { "page": 2, "x": 0.017, "y": 0.35, "w": 0.48, "h": 0.27 },
+    "expect": { "pages": [3, 3] }
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [],
+    "images": [],
+    "fonts": [
+      { "family": "Noto Serif", "license": "OFL-1.1" },
+      { "family": "Lexend", "license": "OFL-1.1" },
+      { "family": "Barlow Semi Condensed", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-25",
+  "updated": "2026-09-26"
+}

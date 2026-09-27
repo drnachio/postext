@@ -5,6 +5,7 @@ import { renderHeaderFooterSlot } from './headerFooter';
 import { renderResourceBlock } from './renderResourceBlock';
 import { paintSwatch } from './swatch';
 import { paintChip } from './chip';
+import { lineTrailingTracking } from '../lineInk';
 
 function pickSegmentFont(
   bold: boolean,
@@ -179,6 +180,7 @@ function renderLine(
   textAlign: TextAlign,
   columnWidth: number,
   columnX: number,
+  trailing = 0,
 ): void {
   ctx.textBaseline = 'alphabetic';
 
@@ -209,11 +211,13 @@ function renderLine(
   }
 
   // Centred / right alignment — math display blocks, and paragraph styles
-  // set ragged from the left. Distribute the remaining space.
+  // set ragged from the left. Distribute the remaining space. The tracking
+  // after the last glyph (`trailing`) is advance, not ink: left out, so the
+  // letters are centred or end on the edge (EF-153).
   if ((textAlign === 'center' || textAlign === 'right') && segments) {
     let contentWidth = 0;
     for (const seg of segments) contentWidth += seg.width;
-    const slack = Math.max(0, effectiveWidth - contentWidth);
+    const slack = Math.max(0, effectiveWidth - (contentWidth - trailing));
     const startX = line.bbox.x + (textAlign === 'center' ? slack / 2 : slack);
     renderSegments(ctx, segments, startX, line.baseline, style);
     return;
@@ -230,7 +234,8 @@ function renderLine(
 
   ctx.font = style.font;
   ctx.fillStyle = style.color;
-  const plainX = textAlign === 'right' ? line.bbox.x + Math.max(0, effectiveWidth - line.bbox.width) : line.bbox.x;
+  const plainSlack = Math.max(0, effectiveWidth - (line.bbox.width - trailing));
+  const plainX = line.bbox.x + (textAlign === 'right' ? plainSlack : textAlign === 'center' ? plainSlack / 2 : 0);
   ctx.fillText(line.text, plainX, line.baseline);
 }
 
@@ -240,9 +245,12 @@ function renderBullet(ctx: CanvasRenderingContext2D, block: VDTBlock): void {
   if (!firstLine) return;
   ctx.save();
   ctx.fillStyle = block.bulletColor ?? block.color;
-  ctx.textBaseline = 'middle';
+  // A marker set as text (a contents number) sits on `bulletBaselineY` as
+  // its baseline; a list bullet is centred on `bulletY`.
+  const onBaseline = block.bulletBaselineY !== undefined;
+  ctx.textBaseline = onBaseline ? 'alphabetic' : 'middle';
   ctx.font = block.bulletFontString;
-  const y = block.bulletY ?? firstLine.baseline;
+  const y = block.bulletBaselineY ?? block.bulletY ?? firstLine.baseline;
   ctx.fillText(block.bulletText, block.bulletOffsetX, y);
   // Ordered-list separator styled apart from the number (own font/colour).
   if (block.separatorText && block.separatorX !== undefined) {
@@ -274,14 +282,16 @@ export function renderBlock(
   block: VDTBlock,
   columnWidth: number,
   columnX: number,
+  /** The document's single ink (`documentInkHex`), null when off. */
+  inkHex: string | null = null,
 ): void {
   if (block.hidden) return;
   if (block.designOverlay) {
-    renderHeaderFooterSlot(ctx, block.designOverlay);
+    renderHeaderFooterSlot(ctx, block.designOverlay, inkHex);
     return;
   }
   if (block.type === 'resource') {
-    renderResourceBlock(ctx, block);
+    renderResourceBlock(ctx, block, inkHex);
     return;
   }
   if (block.type === 'listItem') {
@@ -303,14 +313,15 @@ export function renderBlock(
   // column, so this is identical for them.
   void columnWidth;
   void columnX;
-  // Column-balancing tracking: the block was measured with this much extra
-  // advance after every glyph, so paint it the same way.
-  const tracked = block.letterSpacing !== undefined && block.letterSpacing > 0;
-  if (tracked) ctx.letterSpacing = `${block.letterSpacing}px`;
+  // Tracking: the block (column balancing, a runt set short — negative)
+  // and each line (justification tracking) were measured with this much
+  // extra advance after every glyph, so paint them the same way.
   for (const line of block.lines) {
-    renderLine(ctx, line, style, block.textAlign, block.bbox.width, block.bbox.x);
+    const tracking = (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0);
+    if (tracking !== 0) ctx.letterSpacing = `${tracking}px`;
+    renderLine(ctx, line, style, block.textAlign, block.bbox.width, block.bbox.x, lineTrailingTracking(line, tracking));
+    if (tracking !== 0) ctx.letterSpacing = '0px';
   }
-  if (tracked) ctx.letterSpacing = '0px';
   if (block.strikethroughText) {
     renderStrikethrough(ctx, block);
   }

@@ -1,0 +1,168 @@
+{
+  "$comment": "The Cookbook's book structure: parts (the docs' part colours and numerals), the ten chapters a recipe belongs to (exactly one each; ids and numbers are permanent, new chapters are appended, cap 12), the secondary facets (genres, outputs, levels) and the localised H2 headings of the write-up template. Labels here feed the gallery's filters, the band and the catalogue; no UI string for these lives in messages/*.json.",
+  "parts": [
+    { "id": "page", "number": "I", "color": "blue", "title": { "en": "The page", "es": "La página" } },
+    { "id": "book", "number": "II", "color": "gilt", "title": { "en": "The book", "es": "El libro" } },
+    { "id": "practice", "number": "III", "color": "vermilion", "title": { "en": "In practice", "es": "La práctica" } }
+  ],
+  "chapters": [
+    {
+      "id": "page",
+      "number": 1,
+      "part": "page",
+      "title": { "en": "Page & grid", "es": "Página y retícula" },
+      "intro": {
+        "en": "Trim sizes, mirrored margins, one, two and one-and-a-half columns, the baseline grid, flush columns and pages built to exact positions.",
+        "es": "Formatos de página, márgenes simétricos, maquetas a una columna, a dos y a columna y media, la rejilla base, columnas que acaban a ras y páginas compuestas con medidas exactas."
+      }
+    },
+    {
+      "id": "type",
+      "number": 2,
+      "part": "page",
+      "title": { "en": "Type & text", "es": "Texto y tipografía" },
+      "intro": {
+        "en": "Justification and hyphenation per language, verse set line by line, paragraph styles, chips, superscripts, subscripts and maths.",
+        "es": "Justificación y separación silábica por idioma, verso compuesto línea a línea, estilos de párrafo, chips, superíndices, subíndices y matemáticas."
+      }
+    },
+    {
+      "id": "headings",
+      "number": 3,
+      "part": "page",
+      "title": { "en": "Headings & openers", "es": "Títulos y aperturas" },
+      "intro": {
+        "en": "Band and photo openers, sunk and framed titles, side heads and hanging numbers, badges, datelines and one-off designed pages.",
+        "es": "Aperturas con banda y con foto, títulos hundidos y enmarcados, títulos al margen y números colgados, insignias, fechas y páginas sueltas de diseño propio."
+      }
+    },
+    {
+      "id": "running-heads",
+      "number": 4,
+      "part": "book",
+      "title": { "en": "Running heads & folios", "es": "Cabeceras y folios" },
+      "intro": {
+        "en": "Verso and recto heads, folios, filters by page role and parity, thumb tabs that move or change colour, and painted blank pages.",
+        "es": "Cabeceras de página par e impar, folios, filtros por tipo de página y paridad, uñeros que bajan o cambian de color y páginas en blanco pintadas."
+      }
+    },
+    {
+      "id": "structure",
+      "number": 5,
+      "part": "book",
+      "title": { "en": "Book structure", "es": "Estructura del libro" },
+      "intro": {
+        "en": "Covers, front matter, contents generated from the headings, parts in colour, back matter and books built chapter by chapter.",
+        "es": "Cubiertas, preliminares, índices generados a partir de los títulos, partes en color, páginas finales y libros compuestos capítulo a capítulo."
+      }
+    },
+    {
+      "id": "boxes",
+      "number": 6,
+      "part": "book",
+      "title": { "en": "Boxes & notes", "es": "Recuadros y notas" },
+      "intro": {
+        "en": "Callout families, boxes that split, float or stay pinned, margin glosses, stand-ins for footnotes, worksheets, recipe cards and code listings.",
+        "es": "Familias de recuadros, cajas que se parten, flotan o se quedan fijas, glosas al margen, sustitutos de las notas al pie, fichas de ejercicios y de recetas, y listados de código."
+      }
+    },
+    {
+      "id": "figures",
+      "number": 7,
+      "part": "book",
+      "title": { "en": "Figures & images", "es": "Figuras e imágenes" },
+      "intro": {
+        "en": "Numbered figures that float to their citation, facing plates, maps and rotated overviews, full-bleed spreads and single-ink artwork.",
+        "es": "Figuras numeradas que flotan hasta su cita, láminas enfrentadas, mapas y vistas giradas, dobles páginas a sangre e ilustración a una sola tinta."
+      }
+    },
+    {
+      "id": "tables",
+      "number": 8,
+      "part": "book",
+      "title": { "en": "Tables", "es": "Tablas" },
+      "intro": {
+        "en": "Tables built from data: merged headers, splits with a repeated header, fills and swatch keys, pictures in cells, calendars and grids.",
+        "es": "Tablas construidas a partir de datos: cabeceras combinadas, cortes con cabecera repetida, rellenos y leyendas de color, imágenes en celdas, calendarios y rejillas."
+      }
+    },
+    {
+      "id": "publications",
+      "number": 9,
+      "part": "practice",
+      "title": { "en": "Complete publications", "es": "Publicaciones completas" },
+      "intro": {
+        "en": "Whole issues and editions, each using at least eight features on four pages or more.",
+        "es": "Números y ediciones completos, cada uno con al menos ocho funciones repartidas en cuatro páginas o más."
+      }
+    },
+    {
+      "id": "output",
+      "number": 10,
+      "part": "practice",
+      "title": { "en": "Output & integration", "es": "Salida e integración" },
+      "intro": {
+        "en": "From a Markdown string to canvas, HTML and PDF: fonts, print-ready and tagged PDFs, screen editions, bundles, workers, diagnostics and live rebuilds.",
+        "es": "De una cadena Markdown al canvas, al HTML y al PDF: fuentes, PDF para imprenta y PDF etiquetados, ediciones de pantalla, paquetes, workers, diagnóstico y recomposición en vivo."
+      }
+    }
+  ],
+  "genres": [
+    { "id": "novel", "title": { "en": "Fiction, drama & literary prose", "es": "Narrativa, teatro y prosa literaria" } },
+    { "id": "poetry", "title": { "en": "Poetry", "es": "Poesía" } },
+    { "id": "textbook", "title": { "en": "Textbooks", "es": "Libros de texto" } },
+    { "id": "workbook", "title": { "en": "Workbooks & exercises", "es": "Cuadernos y ejercicios" } },
+    { "id": "manual", "title": { "en": "Manuals, guides & reference", "es": "Manuales, guías y obras de consulta" } },
+    { "id": "paper", "title": { "en": "Papers & academic", "es": "Artículos y trabajos académicos" } },
+    { "id": "report", "title": { "en": "Reports", "es": "Informes y memorias" } },
+    { "id": "magazine", "title": { "en": "Magazines & zines", "es": "Revistas y fanzines" } },
+    { "id": "newsletter", "title": { "en": "Newspapers & newsletters", "es": "Periódicos y boletines" } },
+    { "id": "catalogue", "title": { "en": "Catalogues", "es": "Catálogos" } },
+    { "id": "photobook", "title": { "en": "Photobooks", "es": "Fotolibros" } },
+    { "id": "ephemera", "title": { "en": "Single sheets & ephemera", "es": "Hojas sueltas y efímeros" } },
+    { "id": "any", "title": { "en": "Any genre", "es": "Cualquier género" } }
+  ],
+  "outputs": [
+    { "id": "canvas", "title": { "en": "Canvas", "es": "Canvas" } },
+    { "id": "html", "title": { "en": "HTML", "es": "HTML" } },
+    { "id": "pdf", "title": { "en": "PDF", "es": "PDF" } },
+    { "id": "bundle", "title": { "en": ".postext bundle", "es": "Paquete .postext" } },
+    { "id": "live", "title": { "en": "Live controls", "es": "Controles en vivo" } }
+  ],
+  "levels": [
+    {
+      "id": 1,
+      "title": { "en": "Basic", "es": "Básico" },
+      "criteria": {
+        "en": "Markdown plus at most four design sections in the config (colorPalette and the empty header and footer every recipe carries do not count), no design slots, at most one resource and a single buildDocument call.",
+        "es": "Markdown y como mucho cuatro secciones de diseño en la configuración (no cuentan colorPalette ni la cabecera y el pie vacíos que lleva toda receta), sin ranuras de diseño, un recurso como máximo y una sola llamada a buildDocument."
+      }
+    },
+    {
+      "id": 2,
+      "title": { "en": "Intermediate", "es": "Intermedio" },
+      "criteria": {
+        "en": "Design slots (openers, running heads), resources with placement, named styles or a PDF export.",
+        "es": "Ranuras de diseño (aperturas, cabeceras), recursos con colocación, estilos con nombre o exportación a PDF."
+      }
+    },
+    {
+      "id": 3,
+      "title": { "en": "Advanced", "es": "Avanzado" },
+      "criteria": {
+        "en": "Any of buildBundle, parts with palettes, rotated or split tables, a column-and-a-half float channel with side captions, maths, workers or interactive rebuilds.",
+        "es": "Cualquiera de estos: buildBundle, partes con paleta propia, tablas giradas o partidas, columna y media con canal de flotantes y pies laterales, matemáticas, workers o recomposición interactiva."
+      }
+    }
+  ],
+  "sections": {
+    "build": { "en": "What you'll build", "es": "Lo que vas a componer" },
+    "short": { "en": "The short answer", "es": "La respuesta corta" },
+    "ingredients": { "en": "Ingredients", "es": "Ingredientes" },
+    "method": { "en": "Method", "es": "Elaboración" },
+    "whole": { "en": "The whole recipe", "es": "La receta completa" },
+    "variations": { "en": "Variations", "es": "Variantes" },
+    "pitfalls": { "en": "Pitfalls", "es": "Errores frecuentes" },
+    "credits": { "en": "Credits", "es": "Créditos" }
+  }
+}

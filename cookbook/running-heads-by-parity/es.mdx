@@ -1,0 +1,92 @@
+---
+title: "Cabeceras según la paridad en un libro de ensayos"
+summary: "Cabeceras por paridad y tipo de página: el título del libro en las pares, el del ensayo cortado en las impares y solo un folio al pie en las aperturas."
+description: "Un Montaigne de bolsillo compuesto con Postext: cabeceras por paridad y tipo de página, folios en pestañas al margen y títulos largos con puntos suspensivos."
+question: "¿Cómo pongo el título del libro en las páginas pares, el del capítulo en las impares y el folio por fuera?"
+aliases: ["cabecera", "titulillo", "cabeceras de página par e impar", "folio exterior", "folio en pestaña", "título de capítulo largo", "cortar título con puntos suspensivos", "ocultar cabecera en la apertura", "color de la página en blanco", "cabecera azul por defecto"]
+pageNotes: { "3": "La cabecera de la página impar corta con puntos suspensivos el título del ensayo, de 87 caracteres, antes de un filete sepia de 0,5 pt y de la pestaña del folio en el margen exterior.", "4": "La página 32 queda en blanco, sin cabecera ni folio: el capítulo IV termina en la 31 y el V tiene que abrir en impar." }
+---
+
+## Lo que vas a componer
+
+Las páginas 29 a 33 de los *Ensayos* de Montaigne en edición de bolsillo y traducción nueva: el capítulo IV entero y el arranque del V. Las pares llevan el título del libro en versales espaciadas, y las impares, el del ensayo en cursiva, cortado con puntos suspensivos porque el del capítulo IV tiene 87 caracteres. Cada folio va en una pestaña sepia en el margen exterior, a 3 mm de un filete de 0,5 pt en el borde de la caja. Las aperturas solo tienen un folio al pie, y la página en blanco anterior al capítulo V no lleva cabecera ni folio. El texto va en Baskervville sobre papel ahuesado; los títulos, en Libre Caslon Display, y los folios y el título del libro, en Alegreya SC. La configuración define todas las cabeceras, así que la del motor (Open Sans de 8 pt, en azul) no se imprime.
+
+## Elaboración
+
+### 1 · Sustituye la cabecera azul de serie
+
+<Excerpt region="palette" />
+
+Cada color de la configuración enlaza con una de estas entradas. Si dejas `header` sin definir, el motor dibuja su cabecera de serie: `{title}` en las impares y `{chapterTitle}` en las pares sobre un filete de 1 pt, en Open Sans 600 de 8 pt y en azul `#295AA3` ([encabezados y pies](/es/docs/configuration#encabezados-y-pies)). Si `main-color` toma el valor del sepia, cambian los colores por defecto del texto, pero esa cabecera sigue en azul, porque las ranuras de diseño no leen la paleta. Por eso aquí cada cabecera se escribe entera, con sus colores en hexadecimal. La negrita, la cursiva y las referencias también toman `main-color` por defecto, y `bodyText` les devuelve el color de la tinta.
+
+### 2 · Todas las cabeceras salen de una pestaña
+
+<Excerpt region="tab" />
+
+La respuesta corta ancla a `'page'` la pestaña de cada cabecera, así que sus desplazamientos se miden desde el corte. Desde la esquina `top-right`, una `x` positiva saca la pestaña de la página; por eso la de la impar la lleva negativa. De la pestaña cuelga el filete, y del filete, el título ([posicionamiento de elementos](/es/docs/configuration#posicionamiento-de-elementos)). Las medidas de la pestaña van en constantes porque las demás piezas se miden a partir de ellas. El filete mide `TAB_H` de alto. El folio y los dos títulos comparten una caja de línea de 9 pt, y la línea de base de un texto de diseño cae al 80 % de la altura de esa caja, así que los tres quedan sobre la misma línea de base con cualquier cuerpo.
+
+<PageShot page={2} crop="0.04,0.045,0.6,0.05" caption="Página 30, par: pestaña, filete y título del libro, hacia dentro desde el margen exterior." />
+
+<PageShot page={3} crop="0.29,0.045,0.67,0.05" caption="Página 31, impar: el título del ensayo, recortado antes del filete y de la pestaña del margen exterior." />
+
+### 3 · Márgenes en espejo y líneas enteras
+
+<Excerpt region="page" />
+
+Con `mirror: true`, el margen `right` es el exterior en la página impar y pasa a la izquierda en la par, así que `OUTER` es siempre el del corte delantero, donde cuelgan las pestañas. El margen inferior se calcula a partir del formato, del margen superior y de `LINES`, de modo que la caja de texto tiene exactamente `LINES` líneas de `LEAD` (aquí, 31 de 14 pt), tenga el formato o el margen superior que tenga. Toda página llena acaba en la línea 31, y por eso dos páginas enfrentadas, como la <PageRef page={2}>30 y la 31</PageRef>, terminan a la misma altura.
+
+### 4 · La apertura muestra el título entero
+
+<Excerpt region="opener" />
+
+La apertura compone el título completo con `overflow: 'wrap'`, partido en cada `\\` de la línea del título. Solo una apertura a toda la página respeta esos saltos, y de ahí el `span: 'page'` del nivel ([saltos de línea en los títulos](/es/docs/document-format#saltos-de-línea-en-los-títulos)). En la cabecera, `{chapterTitle}` da siempre el título en una sola línea, y los puntos suspensivos cortan esa línea. El número romano sale del atributo `{num="IV"}` del título, y las versalitas junto a la placa, del `subtitle` del frontmatter.
+
+### 5 · Cada ensayo abre en página impar
+
+<Excerpt region="levels" />
+
+Cualquier objeto `headings` desactiva el salto de página del H1; por eso aquí se vuelve a declarar. Con `'odd'`, a un ensayo que termina en impar le sigue una página par en blanco. Aquí el capítulo IV acaba en <PageRef page={3}>una impar</PageRef>, de modo que la 32 queda en blanco y el V abre en la 33. El `pages: 'body'` de las cabeceras las deja fuera de las páginas en blanco y de las aperturas (las páginas cuyo primer bloque es este título). El `pages: 'opener'` del pie imprime el folio solo en las aperturas ([elementos de texto](/es/docs/configuration#elementos-de-texto)).
+
+### 6 · Los folios empiezan en 29
+
+<Excerpt region="build" />
+
+`parity` se calcula a partir del lugar que ocupa la página en el libro, y el folio no interviene. `pageIndexOffset: 28` suma 28 al índice de cada página, así que las impares y las pares, los márgenes en espejo y las cabeceras de cada lado siguen la página del libro. Después, `pageNumbering.startAt` numera estas páginas del 29 al 33. Sin ese desplazamiento, la primera página compuesta es impar, sea cual sea su folio. Con el folio 29 coincide por casualidad, pero con `startAt: 30` el título del libro caería en la 31 y el del ensayo en la 32, cada uno en el lado equivocado del pliego.
+
+## Variantes
+
+### Pon un titulillo corto a los títulos largos
+
+Escribe el titulillo en la línea del título, `{num="IV" short="Los objetos falsos"}`, e imprime el atributo en lugar del título entero; un capítulo sin `short` no imprime nada ahí.
+
+```diff
+-  { kind: 'text', id: 'essay', content: '{chapterTitle}', parity: 'odd', pages: 'body',
++  { kind: 'text', id: 'essay', content: '{attr.short}', parity: 'odd', pages: 'body',
+```
+
+### Deja que los ensayos abran en cualquier página
+
+Con `'any'`, cada ensayo empieza en la página siguiente, par o impar, y nunca se añade una página en blanco. La placa cuelga de la esquina superior izquierda de la caja de texto y el folio del pie va centrado bajo ella, así que los dos quedan igual en par que en impar.
+
+```diff
+-      { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
++      { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
+```
+
+### Pinta de sepia la página en blanco
+
+Un elemento `box` con `pages: 'blank'` solo se imprime en las páginas que añade el salto a impar: en esta edición llena de sepia la página 32, y la edición inglesa, que no tiene página en blanco, no cambia.
+
+```diff
+ const footer = { elements: [folio({ id: 'drop-folio', parity: 'all', pages: 'opener',
+-  anchor: { to: 'container', edge: 'bottom' }, y: -HEAD })] };
++  anchor: { to: 'container', edge: 'bottom' }, y: -HEAD }),
++  { kind: 'box', id: 'blank-leaf', pages: 'blank', style: { backgroundColor: col('sepia') },
++    placement: { anchor: page('top-left'),
++      size: { width: mm(TRIM.width), height: mm(TRIM.height) } } }] };
+```
+
+## Errores frecuentes
+
+- `CAP` está ajustado al título del ensayo IV en cada edición, el único que muestra aquí una cabecera. La del ensayo V quedaría cortada a mitad de palabra («Si el jefe de una plaza sitiada debe salir a parlam…»), así que un libro de títulos largos necesita el titulillo corto de las variantes.
+- En la edición inglesa, subir `minWordSpacing` de 0,7 a 0,75 deja la primera línea del ensayo V («Quintus Marcius, the Roman legate…») sin ningún corte dentro de la horquilla, y sus espacios entre palabras se abren hasta 2,4 veces su ancho normal. En la española no pasa. Después de cualquier cambio, revisa las líneas más abiertas que lista la captura.

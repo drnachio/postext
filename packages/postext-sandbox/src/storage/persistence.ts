@@ -2,9 +2,13 @@ import type { PostextConfig } from 'postext';
 import { stripConfigDefaults } from 'postext';
 import type { AppliedPresetSnapshot } from '../presets/types';
 import type { BookContent } from '../book/types';
-import { normalizeBookContent, type MigrationDeps } from './projectMigration';
+import { PROJECT_RECORD_VERSION, migrateConfig, normalizeBookContent, type MigrationDeps } from './projectMigration';
 
 const CONFIG_KEY = 'postext-sandbox-config';
+/** Shape of the saved configuration, numbered as project records are
+ *  (`PROJECT_RECORD_VERSION`); a copy saved before the stamp existed is
+ *  migrated as a version 2 record. */
+const CONFIG_VERSION_KEY = 'postext-sandbox-config-version';
 const MARKDOWN_KEY = 'postext-sandbox-markdown';
 const BOOK_KEY = 'postext-sandbox-book';
 const VIEWPORT_KEY = 'postext-sandbox-viewport';
@@ -36,14 +40,60 @@ function getStorage(): Storage | null {
 
 export function saveConfig(config: PostextConfig): void {
   const stripped = stripConfigDefaults(config);
-  getStorage()?.setItem(CONFIG_KEY, JSON.stringify(stripped));
+  const storage = getStorage();
+  storage?.setItem(CONFIG_KEY, JSON.stringify(stripped));
+  storage?.setItem(CONFIG_VERSION_KEY, String(PROJECT_RECORD_VERSION));
 }
 
+/** The markdown of the saved working book (or of the legacy single
+ *  document), or undefined when there is none or it cannot be read. */
+function savedBookText(storage: Storage | null): string[] | undefined {
+  const raw = storage?.getItem(BOOK_KEY);
+  if (raw) {
+    try {
+      const book: unknown = JSON.parse(raw);
+      const chapters = (book as { chapters?: unknown } | null)?.chapters;
+      if (Array.isArray(chapters) && chapters.every((c) => typeof (c as { markdown?: unknown } | null)?.markdown === 'string')) {
+        return chapters.map((c) => (c as { markdown: string }).markdown);
+      }
+    } catch { /* fall through to the legacy key */ }
+  }
+  const legacy = storage?.getItem(MARKDOWN_KEY);
+  return typeof legacy === 'string' ? [legacy] : undefined;
+}
+
+/** The saved configuration in today's terms (see `migrateConfig`), or null
+ *  when none was saved. An older copy is migrated against the saved
+ *  working book, whose maths (or lack of any) decides the maths pin, whose
+ *  inline figures (or lack of any) the inline-gap pin and, inside boxes,
+ *  the box-gap pin, whose headings' marks the heading-marks pin, whose
+ *  lists introduced by a colon (or lack of any) the colon-list pin,
+ *  whose boxes (or lack of any) the box-cut pin, whose dashes set closed
+ *  between words (or lack of any) the dash-break pin, whose headings (or
+ *  lack of any) the heading-split pin, whose compounds (or lack of any)
+ *  the compound-break pin, and whose `:::paragraphs` containers (or lack
+ *  of any) the container-space pin. */
 export function loadConfig(): PostextConfig | null {
-  const raw = getStorage()?.getItem(CONFIG_KEY);
+  return loadStoredConfig()?.config ?? null;
+}
+
+/** The saved configuration both as it was stored (`stored`) and in today's
+ *  terms (`config`, see {@link loadConfig}); the same object twice when the
+ *  migration changed nothing. Null when none was saved. The applied
+ *  preset's snapshot hashed the stored copy, so a caller that compares it
+ *  with the migrated one re-keys it first (see `rekeyMigratedConfig`). */
+export function loadStoredConfig(): { stored: PostextConfig; config: PostextConfig } | null {
+  const storage = getStorage();
+  const raw = storage?.getItem(CONFIG_KEY);
   if (!raw) return null;
   try {
-    return JSON.parse(raw) as PostextConfig;
+    const parsed: unknown = JSON.parse(raw);
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return null;
+    const stored = parsed as PostextConfig;
+    const stamp = Number(storage?.getItem(CONFIG_VERSION_KEY));
+    const version = Number.isFinite(stamp) && stamp > 0 ? stamp : 2;
+    const config = migrateConfig(stored, version, version < PROJECT_RECORD_VERSION ? savedBookText(storage) : undefined);
+    return { stored, config };
   } catch {
     return null;
   }
@@ -330,6 +380,7 @@ export function loadToolbarPinned(id: string): boolean | null {
 export function clearStorage(): void {
   const storage = getStorage();
   storage?.removeItem(CONFIG_KEY);
+  storage?.removeItem(CONFIG_VERSION_KEY);
   storage?.removeItem(MARKDOWN_KEY);
   storage?.removeItem(BOOK_KEY);
   storage?.removeItem(VIEWPORT_KEY);
@@ -394,6 +445,10 @@ function readJsonFile<T>(file: File, validate: (data: unknown) => data is T): Pr
 export interface ConfigExport {
   type: 'postext-config';
   version: 1;
+  /** The configuration rules `config` is written for, numbered as project
+   *  records are (`PROJECT_RECORD_VERSION`). Absent in a file exported by
+   *  postext 1.4 or earlier. */
+  configVersion?: number;
   config: PostextConfig;
 }
 
@@ -406,11 +461,32 @@ function isConfigExport(data: unknown): data is ConfigExport {
 
 export function exportConfigToJson(config: PostextConfig): void {
   const stripped = stripConfigDefaults(config);
-  downloadJson({ type: 'postext-config', version: 1, config: stripped }, 'postext-config.json');
+  downloadJson({ type: 'postext-config', version: 1, configVersion: PROJECT_RECORD_VERSION, config: stripped }, 'postext-config.json');
 }
 
-export function importConfigFromJson(file: File): Promise<ConfigExport> {
-  return readJsonFile(file, isConfigExport);
+/** An exported configuration in today's terms: one exported by postext
+ *  1.4 or earlier (no `configVersion`) keeps the heading breaks, the maths
+ *  size, the space around inline figures (in the text and inside boxes),
+ *  the heading marks, the drop-cap sizes, the room under a colon line that
+ *  introduces a list, the box cuts, the breaks at dashes, the breaking of
+ *  ragged text, the split under a heading, the breaks at compounds'
+ *  hyphens and the space under `:::paragraphs` containers it laid out
+ *  (see `migrateConfig`); the file carries no chapters, so its maths size
+ *  is pinned whenever maths is on, its ragged breaking whenever it sets
+ *  running text ragged, its space under containers whenever it declares
+ *  a paragraph style, and its gaps, heading marks, colon-list room, box
+ *  cut, dash breaks, split under a heading and compound breaks always.
+ *  One stamped 3 to 7
+ *  (a 1.5 prerelease) gets only the pins of the rules after it. */
+export function configFromExport(data: ConfigExport): PostextConfig {
+  return migrateConfig(data.config, data.configVersion);
+}
+
+/** Read a `postext-config.json`; its `config` comes back in today's terms
+ *  (see {@link configFromExport}). */
+export async function importConfigFromJson(file: File): Promise<ConfigExport> {
+  const data = await readJsonFile(file, isConfigExport);
+  return { ...data, config: configFromExport(data) };
 }
 
 // Markdown export/import (plain .md files)

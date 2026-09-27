@@ -1,0 +1,62 @@
+---
+title: "One-page CV with a sidebar"
+summary: "A one-page A4 CV whose plum sidebar is one box in a float-only left column, carried into the margins by header boxes, with job dates set flush right."
+description: "A one-page CV in a column-and-a-half layout, where one plum box fills the side column and header boxes carry its colour to the edges of the sheet."
+question: "How do I lay out a one-page CV with a coloured sidebar column and the dates flush right?"
+aliases: ["CV", "résumé", "resume", "curriculum vitae", "two-column CV", "sidebar", "coloured sidebar", "dates flush right", "skills as tags", "currículum"]
+pageNotes: { "1": "An A4 CV. A plum band runs down the left edge of the sheet from top to foot; at its head a stack of five cloth-bound books in apricot, white, berry and lilac stands level with the baseline of the name. Under it, apricot capitals head the sections, whose text is white: Contact; Skills and Tools, set as rounded pills; Languages, Education, Teaching and Outside work. On the white page to the right, Irene Salcedo in a large serif, BOOK DESIGNER AND ART DIRECTOR in small berry capitals, a five-line profile, then Experience, a berry serif head with a hairline running to the margin, three jobs whose titles sit on the left with the dates flush right on the same line and the employer in italic below, a list of Selected books and a one-line colophon." }
+---
+
+## What you'll build
+
+The CV of Irene Salcedo, a fictional book designer in Madrid, on one A4 sheet. A plum band 66 mm wide runs down the left edge from the top of the sheet to its foot. At its head, a stack of cloth-bound books drawn in code stands level with the baseline of her name. Below it come her contact details, her skills and tools set as pills, her languages, education and teaching, and what she does outside work. Her name, in 46 pt Hedvig Letters Serif, heads a 118 mm text column with a five-line profile, three jobs and a list of the books she designed. Each job head puts the title on the left and the dates flush right on the same baseline, with the employer in italic below. The first sidebar title shares a baseline with the role under the name.
+
+## Method
+
+### 1 · Nest the sections in one side box
+
+<Excerpt region="sections" />
+
+Inside the column, the band is the box from [the short answer](#the-short-answer). Its fence comes before the name, so `span="side"` puts it at the head of the float-only column. The sections are boxes nested inside it, with no fill of their own, so the plum runs unbroken from Contact to Outside work. As separate side boxes they stand 4.7 to 9.1 mm apart, even with `marginBottom` at 0. The pills are about 3.9 mm tall. Skills and Tools use a section style of their own, `chips`, whose 16 pt leading leaves 1.8 mm between rows; the 12.4 pt of the other sections would leave half a millimetre ([chip styles](/en/docs/configuration#chip-styles)).
+
+### 2 · Paint the margins around the column
+
+<Excerpt region="margins" />
+
+The side column sits inside the page margins, so the sidebar box stops 9 mm short of the left edge and 18 mm short of the top. Three header boxes fill the top margin above the column, the left margin from top to foot and the bottom margin below the column. Header elements are painted after the text and on top of it, so the recipe keeps them in the margins, where no text runs. They also repeat on every page, and a second page would carry the band too ([headers & footers](/en/docs/configuration#headers--footers)). The top and left boxes overlap the sidebar box by 0.5 mm, and the foot box climbs 1 mm above the column's foot, over the end of the sidebar box, so no hairline of paper shows at the joins. The `:::space` that closes the sidebar box takes it down to 278.0 mm, 0.8 mm above the column's foot, with 2.76 lines in English and 1.76 in Spanish.
+
+### 3 · Set the name at the head of the text column
+
+<Excerpt region="name" />
+
+The H1 keeps the default `span: 'column'`. With `'page'` it becomes an opener across both columns; set after the sidebar box, it moves to page 2, and there the side column starts under the name, 45.9 mm down. `breakBefore` is off because the sidebar box is already on the page: with a break, the name and the whole text column move to page 2. The level's `marginBottom` of one grid line starts the profile at 45.9 mm instead of 41.3 mm. The sidebar box's top padding is `ROLE_Y`, the name's height plus the gap under it, so the first sidebar title and the role share a baseline, 39.3 mm from the top edge.
+
+### 4 · Put the dates on the job title's line
+
+<Excerpt region="jobs" />
+
+Each job is an H3 whose attributes carry the employer and the dates: `### Art director {org="Ediciones del Albardín, Madrid" dates="2021 – present"}` ([heading attributes](/en/docs/document-format#heading-attributes)). The title and the dates are anchored to the top of the same container, one to each corner, at the same size and leading, so they sit on one baseline. The title is held to 84 mm and set to wrap: a long one breaks onto a second line before it reaches the dates, and the employer moves down under it. With the space above it, each section head fills exactly three grid lines, which puts every job head 9 pt under a grid line whether it follows a section head or a list.
+
+## Variations
+
+### Recolour the band
+
+Each colour is written once, in `palette`, and the band boxes, the sidebar box, the chips, the role, the heads and the drawing take it from there. These three lines turn the band, the accent and the chips teal.
+
+```diff
+-  band: '#3a2235', // the sidebar
++  band: '#1d3b3a', // the sidebar
+-  accent: '#8f3b62', // on paper: the role and the section heads (7.1:1)
++  accent: '#2b5f5b', // on paper: the role and the section heads (7.3:1)
+-  chip: '#744d6c', // on the band: the skill chips
++  chip: '#456d69', // on the band: the skill chips
+```
+
+### Float figures into the same column
+
+The <RecipeLink slug="textbook-margin-column">textbook with a margin column</RecipeLink> puts figures, side captions and glosses in a float-only column on the outer edge of every page.
+
+## Pitfalls
+
+- Fit the `:::space` to the page. In the English edition 2.76 lines end the box 0.8 mm above the column's foot. At 2.96 lines it runs 0.1 mm past the foot and the whole sidebar moves to page 2; at 2.66 a strip of paper opens between the box and the foot box.
+- A box in the name's design cannot paint the band. One that ends just above the column's foot makes the heading reserve 265 mm, more than the column's 260.8 mm, and the text moves to page 2; one that runs on to the foot of the sheet drops the heading's reserved height, and the profile rises to 30.3 mm, over the role.

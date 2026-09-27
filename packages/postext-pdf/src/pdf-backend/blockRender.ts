@@ -1,9 +1,9 @@
-import { setCharacterSpacing } from 'pdf-lib';
+import { popGraphicsState, pushGraphicsState, setCharacterSpacing } from 'pdf-lib';
 import type { Color, PDFFont } from 'pdf-lib';
 import type { VDTBlock, VDTLine, VDTLineSegment, MathRender } from 'postext';
 import { parseFontString } from '../fontString';
 import { FontCache } from '../fontCache';
-import { type PageCtx, drawLinePx, drawSwatchPx, drawTextPx, colorFromHex } from './primitives';
+import { type PageCtx, alphaOf, alphaStateOp, drawLinePx, drawMeasuredTextPx, drawSwatchPx, drawTextPx, colorFromHex } from './primitives';
 import { paintChip } from './chip';
 import { pickSegmentColor, pickSegmentFont } from './fontHelpers';
 import { renderHeaderFooterSlot } from './headerFooter';
@@ -11,7 +11,7 @@ import {
   renderResourceBlock,
   type ResourceImageMap,
 } from './renderResourceBlock';
-import { LinkRegistry } from './links';
+import { LinkRegistry, RefRun, UriRuns } from './links';
 import { tagArtifact, tagContent, type StructElem } from './tagging';
 import type { StructureFlow } from './structureFlow';
 
@@ -42,7 +42,12 @@ function renderMathRender(
     // other keyword falls back to the text colour.
     if (path.fill === 'none') continue;
     const color = path.fill.startsWith('#') ? colorFromHex(path.fill, ctx.colorSpace) : fallbackColor;
+    // A translucent text colour: the constant alpha wraps the path (pdf-lib
+    // would add an ExtGState per path otherwise).
+    const gs = alphaStateOp(ctx, alphaOf(color));
+    if (gs) ctx.page.pushOperators(pushGraphicsState(), gs);
     ctx.page.drawSvgPath(path.d, { x, y, scale: S, color });
+    if (gs) ctx.page.pushOperators(popGraphicsState());
   }
 }
 
@@ -66,7 +71,9 @@ function renderMathSegment(
  * In a tagged render (`elem` set) the text joins `elem`, each inline formula
  * gets its own `Formula` element (alt text = its TeX) and each ref a `Link`
  * element; word spaces are painted as real space glyphs so text extraction
- * never has to infer them from the gaps of a justified line.
+ * never has to infer them from the gaps of a justified line. A ref painted
+ * as several runs (small capitals; the later runs flagged `refContinues`)
+ * is still one `Link` element with one annotation over all its runs.
  */
 function renderSegments(
   ctx: PageCtx,
@@ -84,15 +91,21 @@ function renderSegments(
   justifiedSpaceWidth?: number,
 ): void {
   let x = startX;
-  for (const seg of segments) {
+  const refRun = new RefRun();
+  const uris = new UriRuns(ctx, line, linkRegistry, elem);
+  const repeatedAt = repeatedHyphenSegment(line, segments);
+  for (let i = 0; i < segments.length; i++) {
+    const seg = segments[i]!;
     if (seg.kind === 'space') {
+      const inLink = uris.space(seg.text);
       if (ctx.tags && seg.text) {
-        tagContent(ctx, elem);
+        tagContent(ctx, inLink ?? elem);
         drawTextPx(ctx, seg.text, x, baseline, blockFont, blockSize, blockColor);
       }
       x += justifiedSpaceWidth ?? seg.width;
       continue;
     }
+    if (seg.kind !== 'text' || seg.chip) uris.other();
     if (seg.kind === 'math') {
       if (elem) {
         const formula = elem.type === 'Formula' ? elem : elem.child('Formula', { alt: seg.mathRender?.tex ?? '' });
@@ -124,24 +137,32 @@ function renderSegments(
         ? block.refColor
         : pickSegmentColor(!!seg.bold, !!seg.italic, block));
     const color = colorHex === block.color ? blockColor : colorFromHex(colorHex, ctx.colorSpace);
-    const link = seg.refResourceId !== undefined && elem ? elem.child('Link') : undefined;
-    tagContent(ctx, link ?? elem);
-    drawTextPx(ctx, seg.text, x, baseline + (seg.baselineShift ?? 0), font, size, color);
-    if (seg.refResourceId !== undefined && linkRegistry) {
+    // A `:ref` links to its resource — one `Link` for all the runs of one
+    // set in small capitals —, a Markdown link's words to its URL.
+    const uriElem = uris.word(seg.refResourceId === undefined ? seg.href : undefined, x, seg.width, seg.text);
+    const link = refRun.enter(seg, x, elem);
+    tagContent(ctx, link ?? uriElem ?? elem);
+    // The hyphen repeated from the line before is painted but not read.
+    const actualText = i === repeatedAt ? seg.text.slice(1) : undefined;
+    drawTextPx(ctx, seg.text, x, baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText);
+    const ref = refRun.leave(seg, segments[i + 1]);
+    if (ref && linkRegistry) {
       const { scale, pageHeightPt } = ctx;
-      const x1 = x * scale;
+      const x1 = ref.startX * scale;
       const x2 = (x + seg.width) * scale;
       const y2 = pageHeightPt - line.bbox.y * scale;
       const y1 = pageHeightPt - (line.bbox.y + line.bbox.height) * scale;
-      linkRegistry.addLink(ctx.page, [x1, y1, x2, y2], seg.refResourceId, link ? { elem: link, contents: seg.text } : undefined);
+      linkRegistry.addLink(ctx.page, [x1, y1, x2, y2], ref.resourceId, link ? { elem: link, contents: ref.text } : undefined);
     }
     x += seg.width;
   }
+  uris.end();
 }
 
-/** Column-balancing tracking: the block was measured with extra advance
- *  after every glyph, so paint it with the matching character spacing
- *  (`Tc`, in points at the page scale) and reset it afterwards. */
+/** Tracking: the block (column balancing; negative for a runt set short)
+ *  and the line (justification tracking) were measured with extra advance
+ *  after every glyph, so paint the line with the matching character
+ *  spacing (`Tc`, in points at the page scale) and reset it afterwards. */
 function renderLine(
   ctx: PageCtx,
   line: VDTLine,
@@ -152,10 +173,24 @@ function renderLine(
   linkRegistry: LinkRegistry | undefined,
   elem: StructElem | undefined,
 ): void {
-  const tracked = block.letterSpacing !== undefined && block.letterSpacing > 0;
-  if (tracked) ctx.page.pushOperators(setCharacterSpacing(block.letterSpacing! * ctx.scale));
-  renderLineText(ctx, line, block, columnWidth, columnX, fontCache, linkRegistry, elem);
-  if (tracked) ctx.page.pushOperators(setCharacterSpacing(0));
+  const tracking = (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0);
+  if (tracking !== 0) ctx.page.pushOperators(setCharacterSpacing(tracking * ctx.scale));
+  renderLineText(ctx, line, block, columnWidth, columnX, fontCache, linkRegistry, elem, tracking, trailingTracking(line, tracking));
+  if (tracking !== 0) ctx.page.pushOperators(setCharacterSpacing(0));
+}
+
+/** The tracking a line's measured width carries after its last glyph:
+ *  `tracking` when the line ends on text, else 0. It is advance, not ink,
+ *  so centring and right alignment leave it out (EF-153), as the canvas
+ *  and HTML backends do (`lineTrailingTracking` in postext). */
+function trailingTracking(line: VDTLine, tracking: number): number {
+  if (tracking === 0) return 0;
+  const segments = line.segments;
+  if (segments && segments.length > 0) {
+    const last = segments[segments.length - 1]!;
+    return last.kind === 'text' && last.text.length > 0 ? tracking : 0;
+  }
+  return /\S$/.test(line.text) ? tracking : 0;
 }
 
 function renderLineText(
@@ -167,6 +202,8 @@ function renderLineText(
   fontCache: FontCache,
   linkRegistry: LinkRegistry | undefined,
   elem: StructElem | undefined,
+  tracking: number,
+  trailing = 0,
 ): void {
   const blockFont = fontCache.get(block.fontString);
   if (!blockFont) return;
@@ -200,7 +237,7 @@ function renderLineText(
   if ((block.textAlign === 'center' || block.textAlign === 'right') && segments) {
     let contentWidth = 0;
     for (const seg of segments) contentWidth += seg.width;
-    const slack = Math.max(0, effectiveWidth - contentWidth);
+    const slack = Math.max(0, effectiveWidth - (contentWidth - trailing));
     const startX = line.bbox.x + (block.textAlign === 'center' ? slack / 2 : slack);
     renderSegments(ctx, segments, startX, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem);
     return;
@@ -208,16 +245,68 @@ function renderLineText(
 
   // Ragged (left-aligned) rendering — also used for last lines of justified
   // blocks. Segments are needed when any of them styles differently from the
-  // block (bold/italic/math/ref/own font or colour); otherwise one drawTextPx
-  // paints the line.
-  if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined)) {
+  // block (bold/italic/math/ref/own font or colour); otherwise one text
+  // object paints the line.
+  if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined || s.href !== undefined || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined)) {
     renderSegments(ctx, segments, line.bbox.x, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem);
     return;
   }
 
   tagContent(ctx, elem);
-  const plainX = block.textAlign === 'right' ? line.bbox.x + Math.max(0, effectiveWidth - line.bbox.width) : line.bbox.x;
-  drawTextPx(ctx, line.text, plainX, line.baseline, blockFont, blockSize, blockColor);
+  const plainSlack = Math.max(0, effectiveWidth - (line.bbox.width - trailing));
+  const plainX = line.bbox.x + (block.textAlign === 'right' ? plainSlack : block.textAlign === 'center' ? plainSlack / 2 : 0);
+  // Each word where the layout measured it (EF-137): the embedded face's
+  // own widths could differ, most of all for a character it has no glyph
+  // for, and would carry the rest of the line along. A line with
+  // right-to-left letters stays one run, which the shaper turns around.
+  // The hyphen repeated from the line before is painted but not read.
+  const actualText = line.repeatedHyphen && line.text.startsWith('-') ? line.text.slice(1) : undefined;
+  if (segments && segments.length > 0 && !hasRightToLeft(line.text)
+    && drawMeasuredTextPx(ctx, withLineEndSpace(segments, line.text), plainX, line.baseline, blockFont, blockSize, blockColor, tracking, actualText)) return;
+  drawTextPx(ctx, line.text, plainX, line.baseline, blockFont, blockSize, blockColor, undefined, actualText);
+}
+
+/**
+ * The index of the segment that opens with the hyphen repeated from the line
+ * before (`VDTLine.repeatedHyphen`, "vencer-" | "-se"), or -1. The PDF paints
+ * that segment with an `/ActualText` that leaves the hyphen out, so copying
+ * and text extraction read the word once, as written ("vencer-se").
+ */
+function repeatedHyphenSegment(line: VDTLine, segments: readonly VDTLineSegment[]): number {
+  if (!line.repeatedHyphen) return -1;
+  const i = segments.findIndex((s) => s.kind !== 'space');
+  const seg = segments[i];
+  return seg && seg.kind === 'text' && !seg.chip && seg.text.startsWith('-') ? i : -1;
+}
+
+/** A ragged line's segments, plus the space that ends the line when its
+ *  text has one and the segments leave it out. The space takes no room
+ *  past the line, but it is painted, as it was when the whole text was one
+ *  run, so extracted text keeps the words either side of the break apart. */
+function withLineEndSpace(segments: readonly VDTLineSegment[], text: string): ReadonlyArray<{ text: string; width: number }> {
+  let shown = '';
+  for (const seg of segments) shown += seg.text;
+  if (text.length <= shown.length || !text.startsWith(shown)) return segments;
+  const rest = text.slice(shown.length);
+  return /^\s+$/.test(rest) ? [...segments, { text: rest, width: 0 }] : segments;
+}
+
+/** Whether `text` holds a right-to-left letter: Hebrew, Arabic, Syriac,
+ *  Thaana, N'Ko and the scripts after them up to U+08FF, their
+ *  presentation forms, and the right-to-left blocks of the supplementary
+ *  planes. */
+function hasRightToLeft(text: string): boolean {
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    if (c < 0x0590) continue;
+    if (c <= 0x08ff || (c >= 0xfb1d && c <= 0xfdff) || (c >= 0xfe70 && c <= 0xfefe)) return true;
+    if (c >= 0xd800 && c <= 0xdbff) {
+      const cp = text.codePointAt(i)!;
+      if ((cp >= 0x10800 && cp <= 0x10fff) || (cp >= 0x1e800 && cp <= 0x1efff)) return true;
+      i++;
+    }
+  }
+  return false;
 }
 
 function renderBullet(ctx: PageCtx, block: VDTBlock, fontCache: FontCache, elem: StructElem | undefined): void {
@@ -239,8 +328,12 @@ function renderBullet(ctx: PageCtx, block: VDTBlock, fontCache: FontCache, elem:
   // Canvas uses `textBaseline='middle'` at bulletY; pdf-lib draws from the
   // alphabetic baseline. Shift the baseline down by ~0.3em so the em-square
   // midline aligns at bulletY, matching canvas placement within hinting tolerance.
+  // A marker set as text (a contents number) has its baseline at
+  // `bulletBaselineY` (postext 1.5); `bulletY` stays its em-box midpoint.
+  const baselineY = block.bulletBaselineY;
+  const onBaseline = baselineY !== undefined;
   const midY = block.bulletY ?? firstLine.baseline;
-  const baselinePx = midY + size * 0.3;
+  const baselinePx = onBaseline ? baselineY : midY + size * 0.3;
   tagContent(ctx, elem);
   drawTextPx(ctx, block.bulletText, block.bulletOffsetX, baselinePx, font, size, color);
 
@@ -251,7 +344,7 @@ function renderBullet(ctx: PageCtx, block: VDTBlock, fontCache: FontCache, elem:
     if (!sepFont) return;
     const sepSize = parseFontString(sepFontString)?.sizePx ?? size;
     const sepColor = colorFromHex(block.separatorColor ?? colorHex, ctx.colorSpace);
-    drawTextPx(ctx, block.separatorText, block.separatorX, midY + sepSize * 0.3, sepFont, sepSize, sepColor);
+    drawTextPx(ctx, block.separatorText, block.separatorX, onBaseline ? baselineY : midY + sepSize * 0.3, sepFont, sepSize, sepColor);
   }
 }
 

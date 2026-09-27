@@ -1,0 +1,579 @@
+{
+  "schemaVersion": 1,
+  "slug": "research-poster",
+  "sourceHash": "7be04e637bb70c50032dc7677225ea2485e6cd9d365de74cfcd0fdb5d2d2c45c",
+  "engine": {
+    "postext": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-26T22:10:53.680Z",
+  "variants": {
+    "en": {
+      "hash8": "14a5def7",
+      "vdtHash": "f0743b9c43456acb58666b0f252e02bd7f02bf42",
+      "timings": {
+        "importMs": 207,
+        "fontsMs": 784,
+        "buildMs": 8,
+        "totalMs": 1592,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          600,
+          800
+        ],
+        "dpi": 72,
+        "layoutType": "double",
+        "gutterMm": 12,
+        "mirror": false,
+        "body": {
+          "family": "Rethink Sans",
+          "sizePt": 28,
+          "leadingPt": 38
+        },
+        "families": [
+          "Bitter",
+          "Rethink Sans",
+          "Saira Condensed"
+        ],
+        "pages": 1,
+        "ownLines": 204
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1333,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 175282,
+          "alt": "Opening page 1: Street trees and sidewalk heat. Figure 1. Ashby Road, schematic plan: crowns from the canopy survey and the 16 loggers (orange). Widths across the street are not to scale. · Figure 2. Canopy cover per block (bars, %) and the air at head height against the stree…"
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "loupe"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "defaultResourceTypes",
+          "registerResourceImage",
+          "renderPage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.paragraphSpacing",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].columnGap",
+          "calloutStyles[].id",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.gap",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "captionStyle",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelColor",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "captionStyle.note.fontSize",
+          "chipStyles",
+          "chipStyles[].background",
+          "chipStyles[].bold",
+          "chipStyles[].borderColor",
+          "chipStyles[].borderRadius",
+          "chipStyles[].borderWidth",
+          "chipStyles[].color",
+          "chipStyles[].gap",
+          "chipStyles[].id",
+          "chipStyles[].paddingX",
+          "chipStyles[].paddingY",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "headings.levels[].span",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].boldColor",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].hangingIndent",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].spaceBetween",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].namePlural",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "chipStyles",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "page",
+          "paragraphStyles",
+          "resourceTypes"
+        ],
+        "configLeaves": 251,
+        "designElements": 7,
+        "directives": [
+          ":::callout",
+          ":::columns",
+          "::resource",
+          ":::paragraphs",
+          ":::space"
+        ],
+        "inline": [
+          "{attrs}",
+          ":ref",
+          ":swatch",
+          ":chip"
+        ],
+        "resources": {
+          "svg": 4,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Bitter",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Bitter",
+            "weight": 800,
+            "style": "normal"
+          },
+          {
+            "family": "Rethink Sans",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Rethink Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Rethink Sans",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Saira Condensed",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Saira Condensed",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "bibliography",
+          "callout-columns",
+          "callout-styles",
+          "chips",
+          "citations",
+          "floated-callouts",
+          "heading-attributes",
+          "inline-embeds",
+          "localised-labels",
+          "nested-callouts",
+          "opener-band",
+          "opener-design",
+          "page-background",
+          "paragraph-styles",
+          "resource-types",
+          "resources",
+          "span-boxes",
+          "swatches",
+          "vertical-space"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "d1772603",
+      "vdtHash": "b717fc638f7b5d90f019ccf8d28d46dda7cf1ca9",
+      "timings": {
+        "importMs": 73,
+        "fontsMs": 32,
+        "buildMs": 8,
+        "totalMs": 765,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          600,
+          800
+        ],
+        "dpi": 72,
+        "layoutType": "double",
+        "gutterMm": 12,
+        "mirror": false,
+        "body": {
+          "family": "Rethink Sans",
+          "sizePt": 28,
+          "leadingPt": 38
+        },
+        "families": [
+          "Bitter",
+          "Rethink Sans",
+          "Saira Condensed"
+        ],
+        "pages": 1,
+        "ownLines": 204
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1333,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 182712,
+          "alt": "Página de apertura 1: Arbolado viario y calor en la acera. Figura 1. La avenida en plano esquemático: las copas del inventario de arbolado y los 16 registradores (naranja). Los anchos transversales no están a escala. · Figura 2. Copa por manzana (barras, %) y aire a la altura…"
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "loupe"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "defaultResourceTypes",
+          "registerResourceImage",
+          "renderPage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.paragraphSpacing",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].columnGap",
+          "calloutStyles[].id",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.gap",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "captionStyle",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelColor",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "captionStyle.note.fontSize",
+          "chipStyles",
+          "chipStyles[].background",
+          "chipStyles[].bold",
+          "chipStyles[].borderColor",
+          "chipStyles[].borderRadius",
+          "chipStyles[].borderWidth",
+          "chipStyles[].color",
+          "chipStyles[].gap",
+          "chipStyles[].id",
+          "chipStyles[].paddingX",
+          "chipStyles[].paddingY",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "headings.levels[].span",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].boldColor",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].hangingIndent",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].spaceBetween",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].namePlural",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "chipStyles",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "page",
+          "paragraphStyles",
+          "resourceTypes"
+        ],
+        "configLeaves": 251,
+        "designElements": 7,
+        "directives": [
+          ":::callout",
+          ":::columns",
+          "::resource",
+          ":::paragraphs",
+          ":::space"
+        ],
+        "inline": [
+          "{attrs}",
+          ":ref",
+          ":swatch",
+          ":chip"
+        ],
+        "resources": {
+          "svg": 4,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Bitter",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Bitter",
+            "weight": 800,
+            "style": "normal"
+          },
+          {
+            "family": "Rethink Sans",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Rethink Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Rethink Sans",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Saira Condensed",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Saira Condensed",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "bibliography",
+          "callout-columns",
+          "callout-styles",
+          "chips",
+          "citations",
+          "floated-callouts",
+          "heading-attributes",
+          "inline-embeds",
+          "localised-labels",
+          "nested-callouts",
+          "opener-band",
+          "opener-design",
+          "page-background",
+          "paragraph-styles",
+          "resource-types",
+          "resources",
+          "span-boxes",
+          "swatches",
+          "vertical-space"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
+      }
+    }
+  }
+}

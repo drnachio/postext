@@ -1,0 +1,84 @@
+---
+title: "Boxes that split, float and pin"
+summary: "A lab worksheet in which the procedure box splits between two columns, the data sheet moves to the head of the next page and a badge is pinned to the foot."
+description: "A Spanish school workbook set in Postext, with a warning kept whole, a procedure split between columns, a data sheet floated to page 43 and a pinned badge."
+question: "How do I let a long box split, float another box to the next page and pin a badge to the foot?"
+aliases: ["split box", "box across columns", "keepTogether", "continued box", "floating box", "pinned badge", "sticker", "fixed box", "full-width panel", "three-up panel", "worksheet", "lab sheet"]
+pageNotes: { "1": "The opener of Práctica 4, Construye un reloj de sol (Build a sundial): a sun-yellow band with the title in charcoal and, at the fore-edge, a fan of afternoon shadows drawn for Madrid's latitude. Below the introduction, a yellow Necesitarás panel crosses both columns with three columns of its own.", "2": "A charcoal safety bar with a yellow warning triangle, then the yellow Procedimiento box with a compass badge on its outer corner: steps 1 to 4 under its title at the foot of the left column, steps 5 to 14 at the head of the right one, at the same measure, with no title or badge.", "3": "The Hoja de datos box, a pale yellow sheet with a twelve-month table of Madrid's solar noon, floated to the head of the page; two columns of text run under it.", "4": "The dial in profile at a summer and a winter noon, the students' log table beside the end of the text, a summary band in three columns across the page, and a charcoal Autoevaluación · 10 min badge pinned to the foot, a pointing hand hung in the margin." }
+---
+
+## What you'll build
+
+Four pages of *Taller de ciencias*, a Spanish school lab workbook: Práctica 4, “Construye un reloj de sol” (Build a sundial). On page 42 the safety warning stays in one piece, and the fourteen-step procedure, on a yellow fill with a compass badge on its corner, starts at the foot of the left column and goes on at the head of the right one, at the same measure and without its title. The Madrid data sheet leaves the flow on that page and heads page 43, above the text. A charcoal “Autoevaluación · 10 min” badge is pinned to the foot of the last page, with a pointing hand in the margin beside it. On the opener, a sun-yellow band carries a chart of a stick's shadows from noon to 5 p.m. at Madrid's latitude, and a panel lists the materials in three columns across the page.
+
+## Method
+
+### 1 · One base style for every box
+
+<Excerpt region="look" />
+
+Every style starts from `box()`: the mono title, 8.8 pt type against the text's 9.4 pt, and the padding. Each then adds one device: a charcoal bar on the safety warning, a yellow fill on the procedure, a paper tint on the data sheet, a top rule on the summary, a charcoal pill for the badge. A student can tell the boxes apart by that device before reading a title. On the procedure the fill also marks the continuation: the part at the head of the right column has no title, so only the yellow links it to steps 1 to 4 at the foot of the left one.
+
+### 2 · Keep, split, float and pin
+
+The code is [the short answer](#the-short-answer) above. The procedure measures 192 mm and a column holds 211, so a box kept whole would jump to the head of the right column and leave 43 mm empty at the foot of the left one. `keepTogether: false` lets it start where it falls and go on in the next column, or on the next page, as the second variation shows ([the `:::callout` container](/en/docs/configuration#the-callout-container)). A continuation drops the title and the icon. With an inline icon it would also give the icon's column back to the text and set the rest wider, so the compass sits on the box's outer corner, where it takes no width and both parts keep the same measure. The data sheet's fence carries `placement="top"`, so the box leaves the flow on <PageRef page={2}>page 42</PageRef> and heads the next page. The badge is `fixed`, and a negative `offset.x` moves the hand and its rule into the outer margin, so the left edge of the badge lines up with the text.
+
+### 3 · Cross the page with a three-column panel
+
+<Excerpt region="panel" />
+
+With `span: 'page'` the materials box crosses both columns. The introduction above it is cut level, and the text resumes in two columns under it (<PageRef page={1}>page 41</PageRef>). Inside the fence, `:::columns{count=3 breaks="5,9"}` sets where each column starts instead of balancing them. `breaks` counts child blocks, and each list item is one, so the second and third columns open at the fifth and ninth blocks, the bold labels. `columnGap` is the page's 7 mm gutter, so the panel's columns sit as far apart as the text columns.
+
+```markdown
+:::callout{type="material" title="Necesitarás"}
+:::columns{count=3 breaks="5,9"}
+**Para la esfera**
+
+- Cartón pluma de 20 × 30 cm
+- La plantilla de la esfera
+- Pegamento y rotulador
+
+**Para el gnomon y la base**
+…
+:::
+:::
+```
+
+### 4 · One yellow for fields, a lighter one for the long box
+
+<Excerpt region="palette" />
+
+Sun yellow is kept for the fields of colour, the band and the panel, where charcoal and ink read at 7.4:1 and 8.6:1. As a type colour on white it would reach 1.8:1, so it never carries type. The procedure takes `light`, a paler yellow: ink reads on it at 11:1, and the break still shows in the gallery thumbnail. The data sheet takes `tint`, closer to paper, so it cannot be mistaken for the procedure, the other filled box on the spread. `main-color` points at charcoal, so the defaults the config does not override print in charcoal instead of the engine's blue.
+
+### 5 · Open on a yellow band
+
+<Excerpt region="opener" />
+
+The band is a box element anchored to the page and the drawing an image element at the fore-edge; the kicker, the lead and the session line come from attributes on the heading line. Because the band is anchored to the page, the opener already reserves its height down to the band's foot, and the text would start 3.6 mm under it. `minHeight: BAND - TOP + AIR` asks for 8 mm; the reservation snaps to the next grid line, and the text starts 8.4 mm under the band.
+
+## Variations
+
+### Keep the procedure in one piece
+
+Without the setting, the procedure, which fits in a column, moves whole to the head of the right column and leaves 43 mm empty at the foot of the left one.
+
+```diff
+-  box('pasos', { keepTogether: false, background: col('light'),
++  box('pasos', { background: col('light'),
+```
+
+### Float the data sheet to the foot
+
+With `placement="bottom"` in `content.es.md`, the data sheet takes the foot of page 42, where its fence falls. The procedure it displaces starts at the head of the right column and splits across the page turn, ending at the head of page 43.
+
+```diff
+-:::callout{type="datos" placement="top" title="Hoja de datos · Madrid, 40,4° N · 3,7° O"}
++:::callout{type="datos" placement="bottom" title="Hoja de datos · Madrid, 40,4° N · 3,7° O"}
+```
+
+## Pitfalls
+
+- A box taller than a whole column splits whatever `keepTogether` says. The setting only decides for boxes that fit a column, like this 192 mm procedure in a 211 mm column.
+- `splitMinLines` counts the lines of the whole box on each side of a cut, not those of the step it cuts, so a cut can still leave one line of a step alone. The text before the procedure is fitted so the cut falls between steps 4 and 5; in the float-to-the-foot variation, the last line of step 11 opens page 43 on its own. Any edit to the text above a split box can move the cut, so look at where it falls after each one.
+- An inline icon takes a column of its own, and a continuation gives it back. Cut between steps, the rest of the box moves left by the icon and its gap; cut inside a step, the rest of the step rewraps wider and can print words twice. A corner icon, or a side stripe for the icon to sit on, keeps both parts at one measure.
+- A box floated with `placement="top"` heads the page after the one its fence falls on, so the fence goes on the page before the one the box should head. Here it sits just before the procedure, on page 42.

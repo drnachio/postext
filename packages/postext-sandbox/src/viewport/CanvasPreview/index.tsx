@@ -128,7 +128,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   // as a string: the plan is re-derived (new objects) on every layout
   // record, and only its content should start a build.
   const planKey = useMemo(
-    () => plan.chapters.map((p) => `${p.chapterId}|${p.paginated ? 1 : 0}|${p.continuationKey}|${p.outlineKey}|${p.continuation?.pageIndexOffset ?? ''}|${p.continuation?.pageNumbering?.startAt ?? ''}`).join('\n'),
+    () => plan.chapters.map((p) => `${p.chapterId}|${p.paginated ? 1 : 0}|${p.continuationKey}|${p.outlineKey}|${p.continuation?.pageIndexOffset ?? ''}|${p.continuation?.pageNumbering?.startAt ?? ''}|${p.continuation?.bookPageCount ?? ''}`).join('\n'),
     [plan],
   );
   const bookSource = useMemo(() => (canvasScope === 'book' ? { chapters, planKey } : null), [canvasScope, chapters, planKey]);
@@ -179,9 +179,10 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   const builtSourceRef = useRef<ComposedBook | null>(null);
   const deferredResources = useDeferredValue(resources);
   const rawDeferredConfig = useDeferredValue(config);
-  // Inject app-locale-derived hyphenation locale when user hasn't set one explicitly
+  // Inject app-locale-derived hyphenation locale when the document names no
+  // language (neither a hyphenation locale nor its `locale`)
   const deferredConfig = useMemo((): PostextConfig => {
-    if (rawDeferredConfig.bodyText?.hyphenation?.locale) return rawDeferredConfig;
+    if (rawDeferredConfig.bodyText?.hyphenation?.locale || rawDeferredConfig.locale) return rawDeferredConfig;
     const hypLocale = LOCALE_TO_HYPHENATION[locale] ?? 'en-us';
     return {
       ...rawDeferredConfig,
@@ -424,8 +425,9 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
           // this build over.
           if (!chapterPlan) return;
           const source = composeBookMemo(snapshotChapters, chapter.id);
+          // The first chapter inherits nothing but the book's page count.
           const continuation: LayoutContinuation | undefined = chapterPlan.index === 0
-            ? undefined
+            ? chapterPlan.continuation
             : { ...chapterPlan.continuation, pageIndexOffset: offset, ...(nextNumbering ? { pageNumbering: nextNumbering } : {}) };
           const keyInput = { markdown: source.markdown, metadata: source.metadata, config: deferredConfig, resources: deferredResources, continuation, outlineKey: chapterPlan.outlineKey };
           // What the chapter was built from, whatever the records say: the

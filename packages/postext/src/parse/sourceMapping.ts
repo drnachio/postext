@@ -1,6 +1,20 @@
 import type { InlineSpan } from './types';
 import { MATH_PLACEHOLDER } from './inlineMath';
-import { BREAK_PLACEHOLDER, CHIP_PLACEHOLDER, REF_PLACEHOLDER, SWATCH_PLACEHOLDER } from './inlineFormatting';
+import { BREAK_PLACEHOLDER, CHIP_PLACEHOLDER, REF_PLACEHOLDER, SMALLCAPS_OPENER, SWATCH_PLACEHOLDER } from './inlineFormatting';
+import { sliceSpan } from './links';
+
+/** A `:smallcaps[` at `r` that the parser took as markup: its closing `]`
+ *  comes later on the same line (an unclosed one stays literal text). */
+function isSmallCapsOpenerAt(markdown: string, r: number, end: number): boolean {
+  if (!markdown.startsWith(SMALLCAPS_OPENER, r)) return false;
+  for (let j = r + SMALLCAPS_OPENER.length; j < end; j++) {
+    const c = markdown[j]!;
+    if (c === '\n') return false;
+    if (c === '\\') { j++; continue; }
+    if (c === ']') return j > r + SMALLCAPS_OPENER.length;
+  }
+  return false;
+}
 
 /**
  * Build a per-character map from plain text to absolute source offsets.
@@ -100,19 +114,41 @@ export function computeSourceMap(
       continue;
     }
     if (ch === BREAK_PLACEHOLDER) {
-      // Title break: the plain char stands for the `\\` pair in the source.
-      while (r < blockSrcEnd && !(markdown[r] === '\\' && markdown[r + 1] === '\\')) r++;
+      // Forced break: the plain char stands for the `\\` pair in the source
+      // (a title, a snippet) — with the spaces and the one newline after it
+      // that the break swallowed, but not the next line's indentation — or
+      // for a backslash ending a line (a snippet).
+      const breakAt = (i: number): number => {
+        if (markdown[i] !== '\\') return 0;
+        if (markdown[i + 1] === '\\') {
+          let j = i + 2;
+          while (j < blockSrcEnd && (markdown[j] === ' ' || markdown[j] === '\t')) j++;
+          if (markdown[j] === '\r' && markdown[j + 1] === '\n') j += 2;
+          else if (markdown[j] === '\n') j++;
+          return j - i;
+        }
+        if (markdown[i + 1] === '\n') return 2;
+        if (markdown[i + 1] === '\r' && markdown[i + 2] === '\n') return 3;
+        return 0;
+      };
+      while (r < blockSrcEnd && breakAt(r) === 0) r++;
       if (r >= blockSrcEnd) {
         map[p] = blockSrcEnd;
         continue;
       }
       map[p] = r;
-      r += 2;
+      r += breakAt(r);
       continue;
     }
     const isSpace = ch === ' ';
     while (r < blockSrcEnd) {
       const rc = markdown[r]!;
+      // The opener of a `:smallcaps[…]` run has no plain character: skip
+      // it whole, so its letters never match the text inside.
+      if (rc === ':' && isSmallCapsOpenerAt(markdown, r, blockSrcEnd)) {
+        r += SMALLCAPS_OPENER.length;
+        continue;
+      }
       if (rc === ch) break;
       if (isSpace && (rc === '\n' || rc === '\t')) break;
       r++;
@@ -143,7 +179,11 @@ function normalizeWhitespaceInSpans(spans: InlineSpan[]): InlineSpan[] {
   let inSpace = true; // start true to strip leading whitespace
   for (const span of spans) {
     const result: string[] = [];
-    for (const ch of span.text) {
+    // `kept[i]`: characters kept before `span.text[i]` — remaps link ranges.
+    const kept: number[] | undefined = span.links ? [] : undefined;
+    for (let i = 0; i < span.text.length; i++) {
+      const ch = span.text[i]!;
+      kept?.push(result.length);
       if (COLLAPSIBLE_WS.has(ch)) {
         if (!inSpace) {
           result.push(' ');
@@ -154,14 +194,24 @@ function normalizeWhitespaceInSpans(spans: InlineSpan[]): InlineSpan[] {
         inSpace = false;
       }
     }
-    out.push({ ...span, text: result.join('') });
+    const text = result.join('');
+    if (!kept) {
+      out.push({ ...span, text });
+      continue;
+    }
+    kept.push(text.length);
+    const { links, ...rest } = span;
+    const moved = (links ?? [])
+      .map((l) => ({ start: kept[l.start]!, end: kept[l.end]!, href: l.href }))
+      .filter((l) => l.end > l.start);
+    out.push(moved.length > 0 ? { ...rest, text, links: moved } : { ...rest, text });
   }
   // Strip trailing space from the last span that contributed content
   for (let i = out.length - 1; i >= 0; i--) {
     const text = out[i]!.text;
     if (text.length === 0) continue;
     if (text.endsWith(' ')) {
-      out[i] = { ...out[i]!, text: text.slice(0, -1) };
+      out[i] = sliceSpan(out[i]!, 0, text.length - 1);
     }
     break;
   }

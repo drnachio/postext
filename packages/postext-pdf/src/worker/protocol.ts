@@ -1,5 +1,5 @@
 import type { VDTDocument } from 'postext';
-import type { RenderProgress, RenderToPdfOptions } from '../pdf-backend';
+import type { PdfWarning, RenderProgress, RenderToPdfOptions } from '../pdf-backend';
 
 /** The render options that travel to the worker as data. */
 export type PdfRenderSettings = Pick<RenderToPdfOptions, 'pageNegative' | 'outlines' | 'colorSpace' | 'accessible'>;
@@ -24,6 +24,9 @@ export type PdfRequestMessage =
 
 export type PdfResponseMessage =
   | { kind: 'progress'; id: number; progress: RenderProgress }
+  /** A render warning (`RenderToPdfOptions.onWarning`: a font fallback, an
+   *  image painted as a placeholder), forwarded as it happens. */
+  | { kind: 'warning'; id: number; warning: PdfWarning }
   | { kind: 'rendered'; id: number; bytes: Uint8Array }
   | { kind: 'error'; id: number; message: string; stack?: string }
   /** The worker cannot reach fonts or decode SVG itself: it asks the host. */

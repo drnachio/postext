@@ -3,6 +3,7 @@ import type { ContentBlock, ListKind } from '../parse';
 import { dimensionToPx } from '../units';
 import type { ResolvedConfig } from '../vdt';
 import { buildFontString, measureGlyphWidth } from '../measure';
+import { listNumberFormat } from '../defaults/orderedLists';
 import type { BlockStyle } from './styles';
 import { resolveBodyStyle } from './styles';
 
@@ -17,6 +18,9 @@ export interface ListBulletStyle {
   itemSpacingPx: number;
   textFontSizePx: number;
   verticalOffsetPx: number;
+  /** Set the marker on the first line's baseline instead of centring it on
+   *  the x-height (a contents entry's number). */
+  onBaseline?: boolean;
   /** Ordered-list separator drawn as its own run (only when its style
    *  differs from the number's). `separatorOffsetPx` is measured from the
    *  bullet's left edge. */
@@ -24,6 +28,44 @@ export interface ListBulletStyle {
   separatorFontString?: string;
   separatorColor?: string;
   separatorOffsetPx?: number;
+}
+
+/**
+ * The space between two consecutive list items (EF-165): the item spacing
+ * of the list the shallower of the two belongs to, so a nested list keeps
+ * its parent list's spacing on both sides of it, after its last item as
+ * before its first. Between two items of one depth it is the first one's.
+ */
+export function listItemGapPx(
+  prev: { spacingPx: number; depth: number },
+  next: { spacingPx: number; depth: number },
+): number {
+  return next.depth < prev.depth ? next.spacingPx : prev.spacingPx;
+}
+
+/** The item spacing (px) of the list a list item belongs to, as
+ *  {@link resolveOrderedListItemStyle} and
+ *  {@link resolveUnorderedListItemStyle} work it out: its kind's
+ *  `itemSpacing`, `em` being the body size. */
+export function listItemSpacingPx(item: ContentBlock, resolved: ResolvedConfig): number {
+  const lists = item.listKind === 'ordered' ? resolved.orderedLists : resolved.unorderedLists;
+  const dpi = resolved.page.dpi;
+  return dimensionToPx(lists.itemSpacing, dpi, dimensionToPx(resolved.bodyText.fontSize, dpi));
+}
+
+/** Where a list marker is painted, from the item's first line: centred on
+ *  the text's x-height (`bulletY` is the em-box midpoint, painted with
+ *  `textBaseline = 'middle'`), and, for a marker set as text
+ *  (`onBaseline`), also on the line's baseline (`bulletBaselineY`), which
+ *  renderers prefer. `bulletY` keeps its meaning for every marker, so a
+ *  renderer that predates `bulletBaselineY` paints as it did. */
+export function listBulletPosition(
+  bullet: Pick<ListBulletStyle, 'textFontSizePx' | 'verticalOffsetPx' | 'onBaseline'>,
+  firstLineBaseline: number,
+): { bulletY: number; bulletBaselineY?: number } {
+  const bulletY = firstLineBaseline - bullet.textFontSizePx * 0.3 + bullet.verticalOffsetPx;
+  if (bullet.onBaseline) return { bulletY, bulletBaselineY: firstLineBaseline + bullet.verticalOffsetPx };
+  return { bulletY };
 }
 
 export interface ListItemResolved {
@@ -223,7 +265,9 @@ function toAlpha(n: number, upper: boolean): string {
 }
 
 function formatListNumber(n: number, format: OrderedListNumberFormat): string {
-  switch (format) {
+  // The resolver hands over the list spelling; a part's partial override is
+  // applied after it, so read any spelling here too (unknown → arabic).
+  switch (listNumberFormat(format) ?? 'arabic') {
     case 'arabic': return n.toString();
     case 'lower-alpha': return toAlpha(n, false);
     case 'upper-alpha': return toAlpha(n, true);
@@ -235,7 +279,8 @@ function formatListNumber(n: number, format: OrderedListNumberFormat): string {
 /**
  * Walks content blocks identifying contiguous ordered-list runs per depth,
  * computes each item's formatted number + width, and the max width per run
- * (for right-align). Also tracks the global max per depth (for level-indent
+ * (for right-align; per depth instead with `orderedLists.numberWidth:
+ * 'level'`). Also tracks the global max per depth (for level-indent
  * cascade in ordered lists).
  */
 export function computeOrderedListRunMetrics(
@@ -248,6 +293,10 @@ export function computeOrderedListRunMetrics(
   const perBlock = new Map<number, OrderedRunMetric>();
   const maxWidthByDepth = new Map<number, number>();
   const runsByDepth = new Map<number, OpenRun>();
+  /** The widest number (separator run left out) per depth, and each
+   *  item's depth, for `numberWidth: 'level'` (EF-171). */
+  const maxNumberByDepth = new Map<number, number>();
+  const depthOf = new Map<number, number>();
 
   // Pre-compute per-level font strings (used to measure number widths) and
   // the separator run style when it differs from the number's.
@@ -288,6 +337,8 @@ export function computeOrderedListRunMetrics(
     const markerWidth = sepRun ? maxWidth + sepRun.gapPx + separatorWidthPx : maxWidth;
     const prevDepthMax = maxWidthByDepth.get(depth) ?? 0;
     if (markerWidth > prevDepthMax) maxWidthByDepth.set(depth, markerWidth);
+    if (maxWidth > (maxNumberByDepth.get(depth) ?? 0)) maxNumberByDepth.set(depth, maxWidth);
+    for (const idx of run.itemIdxs) depthOf.set(idx, depth);
     runsByDepth.delete(depth);
   };
 
@@ -344,6 +395,14 @@ export function computeOrderedListRunMetrics(
     }
   }
   closeAllRuns();
+  // `numberWidth: 'level'`: every item's number column is the widest at
+  // its depth in the document, so all of them start their text alike.
+  if (lists.numberWidth === 'level') {
+    for (const [idx, entry] of perBlock) {
+      const widest = maxNumberByDepth.get(depthOf.get(idx) ?? 1);
+      if (widest !== undefined) entry.maxNumberWidthPx = widest;
+    }
+  }
   return { perBlock, maxWidthByDepth };
 }
 

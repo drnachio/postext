@@ -39,6 +39,14 @@ export interface MathMeta {
   sourceEnd: number;
 }
 
+/** A Markdown link inside an inline span: the characters `[start, end)` of
+ *  the span's `text`, pointing at `href` (see {@link InlineSpan.links}). */
+export interface InlineLink {
+  start: number;
+  end: number;
+  href: string;
+}
+
 export interface InlineSpan {
   text: string;
   bold: boolean;
@@ -46,6 +54,11 @@ export interface InlineSpan {
   /** Superscript (`^text^`) or subscript (`~text~`): set smaller and
    *  raised / lowered off the baseline (an exponent, a chemical index). */
   script?: 'sup' | 'sub';
+  /** Small capitals (`:smallcaps[text]`, or a paragraph / callout body
+   *  style with `smallCaps`): lowercase letters are set as capitals at a
+   *  reduced size (see `SMALL_CAPS_SIZE_RATIO`), capitals keep the full
+   *  size. */
+  smallCaps?: boolean;
   /** Marks this span as a resource caption's numbered label (e.g. "Figure 1.")
    *  so renderers can paint it in the configured label colour. Flows span →
    *  token → segment, mirroring {@link ref}. */
@@ -77,6 +90,14 @@ export interface InlineSpan {
     spans: InlineSpan[];
     box?: ChipBox;
   };
+  /** Markdown links (`[text](url)`) inside this span, as ranges of its
+   *  `text`. A link never splits a span — the spans are those of the text
+   *  without the link syntax, so layout does not change — and a link whose
+   *  text crosses emphasis spreads over the spans it crosses. The measurer
+   *  stamps the target on the segments of the linked words
+   *  (`VDTLineSegment.href`). Only safe targets are kept: `http:`,
+   *  `https:`, `mailto:`, `tel:`, `ftp:` and relative URLs. */
+  links?: InlineLink[];
   /** Present when this span is an inline reference to a `Resource`. The
    *  `text` carries placeholder/fallback content; the pipeline resolves the
    *  reference to its computed number/label. */
@@ -113,6 +134,12 @@ export interface ChipBox {
   borderRadiusPx: number;
   paddingXPx: number;
   paddingYPx: number;
+  /** Set only when the style sets its own (`paddingTop`); `paddingYPx`
+   *  otherwise. */
+  paddingTopPx?: number;
+  /** Set only when the style sets its own (`paddingBottom`); `paddingYPx`
+   *  otherwise. */
+  paddingBottomPx?: number;
   gapPx: number;
 }
 
@@ -200,6 +227,12 @@ export interface ContentBlock {
   checked?: boolean;
   /** TeX source for `mathDisplay` blocks. */
   tex?: string;
+  /** For `paragraph` blocks: the paragraph continues the one a display
+   *  formula interrupted — the formula sits right under that paragraph's
+   *  text and this paragraph's first line right under the formula's
+   *  closing `$$`, with no blank line on either side — so it is set with no
+   *  first-line indent, as TeX sets the text after a display. */
+  continuesParagraph?: boolean;
   /** For `directive` blocks: the directive name (e.g. `'pagebreak'`). */
   directiveName?: DirectiveName;
   /** For `directive` blocks: parsed attributes. */

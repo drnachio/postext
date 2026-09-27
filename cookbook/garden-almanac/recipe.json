@@ -1,0 +1,64 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 35,
+  "status": "published",
+  "chapter": "tables",
+  "order": 20,
+  "level": 3,
+  "genres": ["manual"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["rotated-tables", "table-model", "cell-fills"],
+    "also": [
+      "table-split", "table-styles", "table-style", "cell-images", "swatches", "chips",
+      "callout-columns", "opener-design", "opener-band", "heading-attributes", "color-palette",
+      "mirrored-margins", "credit-notes", "localised-labels", "hyphenation-languages",
+      "resources", "canvas-rendering"
+    ]
+  },
+  "answers": ["Q67", "Q65", "Q68", "Q69", "Q52"],
+  "gaps": [],
+  "gotchas": [
+    "here-table-no-split", "merged-cells-hiddenby", "resource-types-locale",
+    "opener-image-no-reserve", "headings-drop-h1-break", "palette-skips-designs",
+    "design-lineheight-multiple", "overflow-ellipsis-default", "config-cache-identity",
+    "fonts-first"
+  ],
+  "workarounds": [
+    { "followup": "EF-34", "package": "postext", "note": "parseTSV leaves headerRowCount unset, so the matrix's head row is declared by hand; every merge goes through mergeCells, which marks the covered cells hiddenBy" },
+    { "followup": "EF-33", "package": "postext", "note": "1.4.1 names resource types and table continuation strings in English and Spanish only: the Italian Tabella, (segue) and Continua alla pagina seguente are written by hand" },
+    { "followup": "EF-90", "package": "postext", "note": "the opener's drawing, an image element, reserves no height, so minHeight starts the text on the first grid line 5 mm or more under it" },
+    { "followup": "EF-94", "package": "postext", "note": "page 28 is the last page of text, so 1.4.1 lifts the page-wide matrix to one line under the text; the copy and the matrix's drawings are sized so that it ends about 10 mm above the bottom margin" },
+    { "followup": "EF-05", "package": "postext", "note": "the H1 page break is restated in headings.levels[0].breakBefore" },
+    { "followup": "EF-71", "package": "postext", "note": "col() writes the hex beside each paletteId: 1.4.1 paints header, footer and opener element colours from the hex" },
+    { "followup": "EF-56", "package": "postext", "note": "design text lineHeight is given as a multiple" },
+    { "followup": "EF-154", "package": "postext", "note": "a day without a note gets its second line from a word joiner (U+2060), not a no-break space: 1.4.1 sets no line for a table-cell paragraph that holds only U+00A0, so the weeks without notes came out a line shorter" }
+  ],
+  "related": ["atlas-map-sheet", "annual-report-flush-columns", "bistro-menu", "recipe-card"],
+  "engine": { "postext": "1.4.1" },
+  "kit": ["core", "fonts", "viewer", "images"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": {
+    "hero": 1,
+    "card": "crop",
+    "focus": { "page": 1, "x": 0, "y": 0.03, "w": 1, "h": 0.5625 },
+    "expect": { "pages": [4, 4] }
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      { "what": { "en": "The Italian text of the March pages, with the table captions, the notes and the colophon, written for this recipe", "es": "El texto italiano de las páginas de marzo, con los pies y las notas de las tablas y el colofón, escrito para esta receta" }, "who": "Ignacio Ferro", "license": "CC-BY-4.0" },
+      { "what": { "en": "The proverb “Marzo asciutto, aprile bagnato, beato il villan che ha seminato”, a traditional Italian saying", "es": "El refrán «Marzo asciutto, aprile bagnato, beato il villan che ha seminato», un dicho tradicional italiano" }, "who": "Proverbio contadino", "license": "PD" }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Piazzolla", "license": "OFL-1.1" },
+      { "family": "Gilda Display", "license": "OFL-1.1" },
+      { "family": "Commissioner", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-25",
+  "updated": "2026-09-26"
+}

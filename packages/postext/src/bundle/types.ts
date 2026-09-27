@@ -88,6 +88,25 @@ interface BundleManifestBase extends BundleShowcaseMeta {
    *  served from a private preset source. */
   default?: boolean;
   view?: BundleViewSpec;
+  /** The configuration rules `config` and each `localized[…].config` are
+   *  written for (`CONFIG_VERSION`: 8 since postext 1.5, which writes it on
+   *  every manifest). A manifest without it was written by postext 1.4 or
+   *  earlier, and `readBundle` reads its configuration with the heading
+   *  breaks, the maths size, the space around inline resources (in the
+   *  text and inside boxes), the heading marks, the drop-cap sizes, the
+   *  room under a colon line that introduces a list, the lines a box cut
+   *  leaves of a paragraph or list item, the breaks at dashes and at
+   *  compounds' hyphens, the breaking of ragged text, the split under a
+   *  heading and the space under `:::paragraphs` containers 1.4 laid out
+   *  (`pinLegacyHeadingBreaks`, `pinLegacyMathSize`, `pinLegacyInlineGap`,
+   *  `pinLegacyBoxResourceGap`, `pinLegacyHeadingMarks`,
+   *  `pinLegacyDropCapSize`, `pinLegacyColonListRoom`,
+   *  `pinLegacyBoxChildCut`, `pinLegacyDashBreaks`, `pinLegacyHyphenBreaks`,
+   *  `pinLegacyRaggedBreaking`, `pinLegacyHeadingSplit`,
+   *  `pinLegacyParagraphContainerSpacing`); one stamped 3 to 7 (a 1.5
+   *  prerelease) gets the pins of the rules after it only. A manifest
+   *  written by hand for today's rules sets it to 8. */
+  configVersion?: number;
   config?: PostextConfig;
   resources?: BundleResourceSpec[];
   fonts?: BundleFontFamilySpec[];

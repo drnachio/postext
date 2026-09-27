@@ -1,0 +1,71 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 2,
+  "status": "published",
+  "chapter": "type",
+  "order": 10,
+  "level": 3,
+  "genres": ["paper"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["math", "heading-numbering"],
+    "also": [
+      "opener-design", "span-boxes", "chips", "citations", "unnumbered-headings", "heading-styles",
+      "opener-band", "heading-attributes", "figure-numbering", "float-placement",
+      "super-subscripts", "captions", "table-style", "paragraph-styles", "resources",
+      "bibliography", "pdf-export"
+    ]
+  },
+  "answers": ["Q48", "Q49", "Q32", "Q40", "Q63"],
+  "gaps": ["math-in-captions", "booktabs-rules"],
+  "gotchas": [
+    "math-bundle", "math-tag-vanishes", "dollar-math", "nbsp-breaks", "design-text-no-inline-marks",
+    "svg-no-webfonts", "float-stretch-closing-page", "quote-frontmatter", "headings-drop-h1-break",
+    "fonts-first"
+  ],
+  "explainsWarnings": ["invalidMath", "unclosedMath"],
+  "related": [
+    "lab-report-formulas",
+    "thesis-back-matter",
+    "endnotes-instead-of-footnotes",
+    "technical-datasheet"
+  ],
+  "workarounds": [
+    { "followup": "EF-15", "package": "postext", "note": "every symbol is imported from esm.sh/postext?bundle and initMathEngine() is awaited before the build" },
+    { "followup": "EF-74", "package": "postext", "note": "a display formula with \\tag renders 0 wide: numbered() rewrites each tagged equation into \\mathmakebox boxes as wide as the column, with the number flush right" },
+    { "followup": "EF-75", "package": "postext", "note": "maths is drawn with 1 ex = half the font size: math.fontSizeScale 0.94 matches its x-height to STIX Two Text (retune it when the scale is fixed), and MATH_EM measures the em the equation-number boxes are drawn in" },
+    { "followup": "EF-66", "package": "postext", "note": "U+00A0 breaks like a normal space: percentages are closed up (0.08%), multiple citations written [4,6] and [8,9], and a sentence whose 'Eq. (1)' split at a line end names the textbook formula instead; check that no Eq. or Section ends a line" },
+    { "followup": "EF-70", "package": "postext", "note": "headings.balancing.stretchAfterFloats is off, so the columns under Figure 3 on the closing page start level" },
+    { "followup": "EF-25", "package": "postext", "note": "the author marks in the title block are the characters ¹ and ², since design text prints ^1^ literally" },
+    { "followup": "EF-11", "package": "postext", "note": "every frontmatter value is quoted" },
+    { "followup": "EF-05", "package": "postext", "note": "the H1 breakBefore is restated because a headings object drops it" },
+    { "followup": "EF-84", "package": "postext", "note": "a display formula does not keep with its lead-in line: the copy is fitted, and figures go to the head of a column (position 'top') so no lead-in stands above one with its equation beyond" },
+    { "followup": "EF-85", "package": "postext", "note": "the paragraph after a display formula is always indented: each one opens a new sentence ('Here L is…') instead of a LaTeX-style 'where…'" },
+    { "followup": "EF-83", "package": "postext", "note": "in-column headings take no letterSpacing: the back-matter headings are untracked capitals (textTransform uppercase)" },
+    { "followup": "EF-79", "package": "postext", "note": "on a closing page under a page-wide top float, a heading that opens a column is still a balancing lever (stretchAfterFloats: false does not switch it off) and drops a grid line, so the column heads no longer align; the back matter is fitted so no heading opens column 2 of p. 216" }
+  ],
+  "engine": { "postext": "1.4.1", "postextPdf": "1.4.1", "math": true },
+  "kit": ["core", "fonts", "viewer", "pdf", "images"],
+  "sample": { "locales": ["en"] },
+  "capture": {
+    "hero": 1,
+    "card": "crop",
+    "focus": { "page": 1, "x": 0.01, "y": 0, "w": 0.98, "h": 0.52 },
+    "expect": { "pages": [4, 4], "console": ["module \"buffer\" not found", "module \"esprima\" not found"] }
+  },
+  "downloads": { "pdf": true },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [],
+    "images": [],
+    "fonts": [
+      { "family": "STIX Two Text", "license": "OFL-1.1" },
+      { "family": "Schibsted Grotesk", "license": "OFL-1.1" },
+      { "family": "Azeret Mono", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-25",
+  "updated": "2026-09-26"
+}

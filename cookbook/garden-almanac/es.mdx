@@ -1,0 +1,64 @@
+---
+title: "Almanaque del huerto: calendario y gráfico apaisado"
+summary: "Un gráfico de siembras apaisado en dos páginas, un calendario calculado con fechas y una matriz de cultivos asociados, coloreados con la paleta."
+description: "Marzo en un almanaque italiano para el huerto: un calendario calculado a partir de fechas, una matriz de cultivos asociados en colores y un gráfico apaisado."
+question: "¿Cómo compongo una tabla ancha en apaisado, en páginas propias y con la cabecera repetida al continuar?"
+aliases: ["calendario", "almanaque", "calendario de siembra", "tabla apaisada", "tabla girada", "diagrama de Gantt", "mapa de calor", "fases lunares", "italiano", "huerto"]
+pageNotes: { "1": "La apertura de marzo: plantones en tierra oscura bajo un cielo pálido, «Marzo» en cuerpo grande y un refrán campesino, dos columnas de texto y el mes en una cuadrícula. Los domingos van en rojo sobre una columna crema, el domingo y el lunes de Pascua sobre rosa, y las cuatro fases de la luna aparecen dibujadas junto a los días 8, 15, 22 y 30.", "2": "Un recuadro azul pálido con las tareas del mes en dos columnas, una sección breve sobre cultivos asociados con muestras de color en el texto y una matriz de diez por diez: casillas verdes con un +, rosas con un − y crema en blanco, con el dibujo de cada cultivo en la diagonal.", "3": "El gráfico de siembras, girado un cuarto de vuelta a la izquierda: para leerlo hay que girar el libro en el sentido de las agujas del reloj. Tal como está la página, los cultivos son columnas agrupadas por familias, con el nombre al pie; las quincenas del año suben desde enero, justo encima de los nombres, hasta diciembre, en la cabeza de la página, y las cabeceras de estación y de mes ocupan una franja junto al borde izquierdo. Las fechas de siembra y trasplante dibujan barras de casillas ocres, verdes y marrones, y la cabecera de marzo va en rojo.", "4": "El gráfico continúa desde la familia de las Liliacee con la cabecera repetida y «(segue)» al final del pie, y termina con una nota: en el sur se siembra antes y en la montaña, después." }
+---
+
+## Lo que vas a componer
+
+Las páginas de marzo de un almanaque de huerto en italiano. La página 27 se abre con un dibujo de plantones en tierra oscura bajo un cielo pálido, «Marzo» a 84 pt y un refrán campesino. Bajo dos columnas de texto va el calendario del mes, que el pen calcula con las fechas: los domingos en rojo sobre una columna crema, el domingo y el lunes de Pascua sobre rosa y las fases de la luna junto a sus días. La página 28 reúne las tareas del mes en un recuadro de dos columnas y colorea de verde, rosa o crema una matriz de diez por diez de cultivos asociados, con el dibujo de cada cultivo en la diagonal. El gráfico de siembras, 38 cultivos por quincenas, no cabe a lo ancho y va girado en las páginas 29 y 30, con la cabecera repetida en la segunda.
+
+## Elaboración
+
+### 1 · Gira el gráfico y deja que continúe
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Con `rotate: 'ccw'`, la tabla pasa a ser un flotante a lo ancho de la página, en páginas propias ([Colocación](/es/docs/document-format#colocación)), con la cabecera hacia el borde izquierdo, y se pega al lomo tanto en la página impar como en la par. Girada, la tabla se compone a lo alto de la caja de texto y ocupa 227 de sus 237 mm: las 47 líneas enteras de 14 pt que caben en la rejilla, menos una para la separación del flotante. Sus filas se apilan a lo ancho de los 176 mm de la caja; cuando ya no caben, la tabla se corta entre dos filas y continúa en la página siguiente, bajo sus dos filas de cabecera y su pie, que termina en `(segue)` ([Tablas más altas que la página](/es/docs/configuration#tablas-más-altas-que-la-página)). Solo un flotante puede girar o partirse: con `position: 'here'` el giro se ignora y la tabla nunca se parte. La cabecera lleva tres clases de celdas combinadas: `Coltura` ocupa sus dos filas, cada estación abarca sus meses y cada mes, sus dos quincenas.
+
+### 2 · Un calendario calculado con fechas
+
+<Excerpt region="calendar" />
+
+Con `Date.UTC`, cada fecha se convierte en un número de día, y de ese número sale el día de la semana; la cuadrícula empieza el lunes 1 de marzo y ocupa cinco semanas. La Pascua sale del cómputo eclesiástico, y las fases de la luna, del mes sinódico medio. Con ese cálculo, una fase puede caer un día antes o después, como advierte el pie. El mismo bucle que dibuja cada luna escribe su fecha en el pie. La imagen de una celda siempre va encima de su texto; por eso cada día ocupa dos columnas, la de la luna y la de la fecha: una luna en la celda de la fecha bajaría la cifra solo en cuatro días. Los domingos y las fiestas salen en rojo con un estilo de chip que solo cambia el color, y las notas son chips a la mitad del cuerpo. Un día sin nota lleva como segunda línea un unidor de palabras (U+2060), y así las cinco semanas tienen la misma altura.
+
+### 3 · Colorea la matriz a partir de símbolos pegados
+
+<Excerpt region="matrix" />
+
+Las parejas se escriben como TSV, un símbolo por celda. En postext 1.4.1, `parseTSV` crea celdas normales y deja `headerRowCount` sin fijar, así que se añade a mano `headerRowCount: 1` para que la fila con los nombres de los cultivos sea la cabecera. Los pesos de `columnWidths` reparten en milímetros los 176 mm de la medida: 26 para los nombres y 15 para cada cultivo. Cada símbolo corresponde a una entrada de la paleta, que `setCellBackground` pone de fondo en la celda; el `+` y el `−` se imprimen también, en un chip a 1,4 em, para que la matriz se lea en una copia en escala de grises. La diagonal empareja cada cultivo consigo mismo, y ahí `setCellImage` pone su dibujo, al 62 % del ancho interior de la celda.
+
+### 4 · Pon la leyenda con muestras de color
+
+<Excerpt region="resources" />
+
+`:swatch{color="leaf"}` compone un cuadrado de tres cuartos del cuerpo, relleno con una entrada de la paleta y perfilado en el color del texto; estas páginas lo usan en el texto corrido, en dos pies y en una nota. La leyenda del gráfico va en su pie, porque cada parte de una tabla partida repite el pie, mientras que la nota solo sale bajo la última. El calendario es un tipo de recurso propio con el prefijo del pie vacío, y su pie empieza por la leyenda y no por una etiqueta `Tabella`. `position: 'bottom'` con `span: 'page'` coloca el calendario y la matriz a lo ancho de las dos columnas, al pie de su página. La página 28 es la última con texto. En una página así, 1.4.1 sube el flotante a lo ancho de la página hasta una línea por debajo del texto; por eso la matriz termina 10 mm por encima del margen inferior.
+
+### 5 · Un estilo de la casa y una variante por tabla
+
+<Excerpt region="styles" />
+
+`tableStyle` fija el estilo de la casa: cabecera con fondo de tinta y rótulos en Commissioner del color del papel, filetes finos entre filas y los textos de continuación en italiano, que 1.4.1 solo trae en inglés y en español. Cada estilo con nombre indica solo lo que cambia su tabla. El calendario compone los días en Gilda Display a 15 pt; la matriz quita el relleno de la cabecera, y la matriz y el gráfico trazan una rejilla de filetes del color del papel, de 2 pt y 1 pt, que corta sus rellenos en casillas.
+
+### 6 · El mes se abre con un dibujo
+
+<Excerpt region="opener" />
+
+El título de primer nivel se dibuja con una ranura de elementos. El dibujo es un elemento de imagen en la cabeza de la página, y el antetítulo, el refrán y su fuente salen de los atributos del título. En 1.4.1 un elemento de imagen no reserva altura, y `minHeight` lo compensa: 92 mm de dibujo más 5 mm de aire, menos los 22 mm del margen superior, dan 75 mm, que se redondean hacia arriba a 16 líneas de 14 pt (79 mm). La primera línea de texto queda a 101 mm del borde superior de la página, 9 mm por debajo de la tierra. El título se desplaza 1,5 mm a la izquierda, lo que mide el blanco lateral de la M de Gilda Display a 84 pt, y así la gracia de la M se alinea con el antetítulo; el refrán se desplaza lo mismo hacia la derecha.
+
+## Variantes
+
+### Gira el gráfico en el sentido de las agujas del reloj
+
+La cabecera mira entonces al borde derecho de la página, y el lector gira el libro hacia el otro lado.
+
+```diff
+-const chartPlacement = { rotate: 'ccw' }; // a float, never 'here' (gotcha: here-table-no-split)
++const chartPlacement = { rotate: 'cw' }; // a float, never 'here' (gotcha: here-table-no-split)
+```
+
+## Errores frecuentes
+
+- La imagen de una celda de tabla se dibuja siempre encima del texto de la celda y con su misma alineación. Para poner un icono junto a una cifra, dale al icono una columna propia, como hace el calendario con la luna.
+- La nota de una tabla partida solo aparece bajo la última parte; una leyenda que necesiten todas las partes va en el pie.

@@ -5,6 +5,10 @@ import { useLocale, useTranslations } from "next-intl";
 import { Dialog } from "@base-ui/react/dialog";
 import MiniSearch from "minisearch";
 import type { SearchSection } from "@/lib/docs";
+import { usePathname } from "@/i18n/navigation";
+import { cookbookPaletteEntries, makeProcessTerm, tokenize } from "@/lib/cookbook/search";
+import type { Catalog, PartColor } from "@/lib/cookbook/types";
+import { unpackCatalog, type PackedCatalog } from "@/lib/cookbook/wire";
 
 interface IndexPayload {
   locale: string;
@@ -17,7 +21,21 @@ interface Hit {
   terms: string[];
 }
 
-const MAX_RESULTS = 12;
+/** Both indexes, built on the first open. */
+interface Indexes {
+  docs: MiniSearch<SearchSection> | null;
+  /** Recipes and explained warnings, from the Cookbook's catalogue. */
+  cookbook: MiniSearch<SearchSection> | null;
+  byId: Map<string, SearchSection>;
+  /** Part colour of each Cookbook entry (its recipe's chapter). */
+  colors: Map<string, PartColor>;
+  /** Sources whose fetch failed: the next open fetches them again. */
+  docsFailed: boolean;
+  cookbookFailed: boolean;
+}
+
+const MAX_DOCS = 8;
+const MAX_RECIPES = 4;
 const SNIPPET_LEN = 160;
 const OPEN_EVENT = "docs-search:open";
 
@@ -37,13 +55,14 @@ function buildSnippet(body: string, terms: string[]): string {
 
 function highlight(text: string, terms: string[]) {
   if (!terms.length) return text;
-  const pattern = new RegExp(
-    "(" + terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")",
-    "gi",
-  );
+  // Marks whole words: the Cookbook index matches folded stems ("head" for
+  // "heads"), so a match runs on to the end of its word.
+  const source = "(?:" + terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")[\\p{L}\\p{N}]*";
+  const pattern = new RegExp(`(${source})`, "giu");
+  const whole = new RegExp(`^${source}$`, "iu");
   const parts = text.split(pattern);
   return parts.map((part, i) =>
-    pattern.test(part) ? (
+    whole.test(part) ? (
       <mark key={i} className="bg-brand/20 text-foreground rounded px-0.5">
         {part}
       </mark>
@@ -60,52 +79,113 @@ function useShortcutLabel() {
   }, []);
 }
 
+async function fetchJson<T>(url: string): Promise<T | null> {
+  const res = await fetch(url);
+  return res.ok ? ((await res.json()) as T) : null;
+}
+
+function docsIndex(sections: SearchSection[]): MiniSearch<SearchSection> {
+  const ms = new MiniSearch<SearchSection>({
+    fields: ["sectionTitle", "docTitle", "breadcrumb", "body"],
+    storeFields: ["id"],
+    idField: "id",
+    searchOptions: {
+      boost: { sectionTitle: 3, docTitle: 2, breadcrumb: 1.5 },
+      prefix: true,
+      fuzzy: 0.2,
+    },
+  });
+  ms.addAll(sections);
+  return ms;
+}
+
+/** The Cookbook's entries, indexed with the gallery's tokenizer (camelCase
+ *  and dotted config paths split, accents and plurals folded). */
+function cookbookIndex(entries: SearchSection[], locale: string): MiniSearch<SearchSection> {
+  const ms = new MiniSearch<SearchSection>({
+    fields: ["sectionTitle", "breadcrumb", "body"],
+    storeFields: ["id"],
+    idField: "id",
+    tokenize,
+    processTerm: makeProcessTerm(locale === "es" ? "es" : "en"),
+    searchOptions: {
+      boost: { sectionTitle: 3, breadcrumb: 1.5 },
+      prefix: true,
+      fuzzy: (term) => (term.length >= 5 ? 0.2 : false),
+    },
+  });
+  ms.addAll(entries);
+  return ms;
+}
+
 export function DocsSearchPalette() {
   const locale = useLocale();
+  const pathname = usePathname();
   const t = useTranslations("DocsSearch");
 
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(0);
-  const [index, setIndex] = useState<MiniSearch<SearchSection> | null>(null);
-  const [sectionsById, setSectionsById] = useState<Map<string, SearchSection>>(new Map());
+  const [indexes, setIndexes] = useState<Indexes | null>(null);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const listRef = useRef<HTMLUListElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
+  // The docs index and the Cookbook's catalogue are separate files (the docs
+  // one stays cached as it was), fetched in parallel; either may fail alone.
+  // Only what loaded is kept: a failed source is fetched again on the next
+  // open, and nothing is cached when both fail.
   const loadIndex = useCallback(async () => {
-    if (index || loading) return;
+    const needDocs = !indexes || indexes.docsFailed;
+    const needCookbook = !indexes || indexes.cookbookFailed;
+    if (loading || (!needDocs && !needCookbook)) return;
     setLoading(true);
     try {
-      const res = await fetch(`/${locale}/docs/search-index`);
-      const data: IndexPayload = await res.json();
-      const ms = new MiniSearch<SearchSection>({
-        fields: ["sectionTitle", "docTitle", "breadcrumb", "body"],
-        storeFields: ["id"],
-        idField: "id",
-        searchOptions: {
-          boost: { sectionTitle: 3, docTitle: 2, breadcrumb: 1.5 },
-          prefix: true,
-          fuzzy: 0.2,
-        },
-      });
-      ms.addAll(data.sections);
-      const map = new Map<string, SearchSection>();
-      for (const s of data.sections) map.set(s.id, s);
-      setIndex(ms);
-      setSectionsById(map);
+      const [docs, packed] = await Promise.all([
+        needDocs ? fetchJson<IndexPayload>(`/${locale}/docs/search-index`).catch(() => null) : null,
+        needCookbook ? fetchJson<Catalog | PackedCatalog>(`/${locale}/cookbook/catalog.json`).catch(() => null) : null,
+      ]);
+      const catalog = packed ? unpackCatalog(packed) : null;
+      if (!docs && !catalog) return;
+      const next: Indexes = indexes
+        ? { ...indexes, byId: new Map(indexes.byId), colors: new Map(indexes.colors) }
+        : { docs: null, cookbook: null, byId: new Map(), colors: new Map(), docsFailed: true, cookbookFailed: true };
+      if (docs) {
+        const docSections = docs.sections ?? [];
+        for (const s of docSections) next.byId.set(s.id, s);
+        next.docs = docSections.length ? docsIndex(docSections) : null;
+        next.docsFailed = false;
+      }
+      if (catalog) {
+        const recipeSections = cookbookPaletteEntries(catalog, { cookbook: t("groupCookbook") });
+        const chapterColor = new Map(catalog.facets.chapters.map((c) => [c.id, c.color]));
+        const recipeColor = new Map(catalog.recipes.map((r) => [r.slug, chapterColor.get(r.chapter)]));
+        for (const entry of recipeSections) {
+          next.byId.set(entry.id, entry);
+          const color = recipeColor.get(entry.slug);
+          if (color) next.colors.set(entry.id, color);
+        }
+        next.cookbook = recipeSections.length ? cookbookIndex(recipeSections, locale) : null;
+        next.cookbookFailed = false;
+      }
+      setIndexes(next);
     } finally {
       setLoading(false);
     }
-  }, [index, loading, locale]);
+  }, [indexes, loading, locale, t]);
 
   // Open/close work lives in the event handler (not an effect): kick off the
   // index fetch, focus the input once the portal has mounted, and reset the
-  // query on close. The Dialog and the global shortcuts share this path.
+  // query on close. The Dialog, the global shortcuts and the open event
+  // (whose `detail.query` prefills the field) share this path.
   const handleOpenChange = useCallback(
-    (next: boolean) => {
+    (next: boolean, prefill?: string) => {
       setOpen(next);
       if (next) {
+        if (prefill !== undefined) {
+          setQuery(prefill);
+          setSelected(0);
+        }
         void loadIndex();
         setTimeout(() => inputRef.current?.focus(), 50);
       } else {
@@ -123,7 +203,10 @@ export function DocsSearchPalette() {
         handleOpenChange(true);
       }
     };
-    const onCustom = () => handleOpenChange(true);
+    const onCustom = (e: Event) => {
+      const prefill = (e as CustomEvent<{ query?: unknown } | null>).detail?.query;
+      handleOpenChange(true, typeof prefill === "string" ? prefill : undefined);
+    };
     window.addEventListener("keydown", onKey);
     window.addEventListener(OPEN_EVENT, onCustom);
     return () => {
@@ -132,24 +215,32 @@ export function DocsSearchPalette() {
     };
   }, [handleOpenChange]);
 
-  // Search results derive from the query and the loaded index — no state.
-  const hits = useMemo<Hit[]>(() => {
-    if (!index || !query.trim()) return [];
-    const results = index.search(query).slice(0, MAX_RESULTS);
-    const mapped: Hit[] = [];
-    for (const r of results) {
-      const section = sectionsById.get(String(r.id));
-      if (!section) continue;
-      mapped.push({ section, score: r.score, terms: r.terms });
-    }
-    return mapped;
-  }, [query, index, sectionsById]);
+  // Two groups, Docs and Cookbook; on the Cookbook's own pages recipes come
+  // first. Results derive from the query and the loaded indexes — no state.
+  const cookbookFirst = pathname === "/cookbook" || pathname.startsWith("/cookbook/");
+  const groups = useMemo(() => {
+    if (!indexes || !query.trim()) return [];
+    const run = (ms: MiniSearch<SearchSection> | null, max: number): Hit[] => {
+      if (!ms) return [];
+      const hits: Hit[] = [];
+      for (const r of ms.search(query).slice(0, max)) {
+        const section = indexes.byId.get(String(r.id));
+        if (section) hits.push({ section, score: r.score, terms: r.terms });
+      }
+      return hits;
+    };
+    const docs = { id: "docs", label: t("groupDocs"), hits: run(indexes.docs, MAX_DOCS) };
+    const cookbook = { id: "cookbook", label: t("groupCookbook"), hits: run(indexes.cookbook, MAX_RECIPES) };
+    return (cookbookFirst ? [cookbook, docs] : [docs, cookbook]).filter((g) => g.hits.length > 0);
+  }, [query, indexes, cookbookFirst, t]);
+  const hits = useMemo(() => groups.flatMap((g) => g.hits), [groups]);
 
   const hrefFor = useCallback(
-    (section: SearchSection) =>
-      section.anchor
-        ? `/${locale}/docs/${section.slug}#${section.anchor}`
-        : `/${locale}/docs/${section.slug}`,
+    (section: SearchSection) => {
+      // Entries from an index built before `href` existed still open their doc.
+      const path = section.href || (section.anchor ? `/docs/${section.slug}#${section.anchor}` : `/docs/${section.slug}`);
+      return `/${locale}${path}`;
+    },
     [locale],
   );
 
@@ -188,12 +279,12 @@ export function DocsSearchPalette() {
   };
 
   useEffect(() => {
-    const li = listRef.current?.children[selected] as HTMLElement | undefined;
-    li?.scrollIntoView({ block: "nearest" });
+    const row = listRef.current?.querySelector<HTMLElement>(`[data-index="${selected}"]`);
+    row?.scrollIntoView({ block: "nearest" });
   }, [selected]);
 
   return (
-    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
+    <Dialog.Root open={open} onOpenChange={(next) => handleOpenChange(next)}>
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 transition-opacity duration-150" />
         <Dialog.Popup
@@ -239,7 +330,7 @@ export function DocsSearchPalette() {
           </div>
 
           <div className="max-h-[60vh] overflow-y-auto">
-            {loading && !index ? (
+            {loading && !indexes ? (
               <div className="px-4 py-8 text-center font-body text-sm text-slate">{t("loading")}</div>
             ) : !query.trim() ? (
               <div className="px-4 py-8 text-center font-body text-sm text-slate">{t("emptyState")}</div>
@@ -248,47 +339,73 @@ export function DocsSearchPalette() {
                 {t("noResults", { query })}
               </div>
             ) : (
-              <ul ref={listRef} role="listbox" className="py-2">
-                {hits.map((hit, i) => {
-                  const { section } = hit;
-                  const snippet = buildSnippet(section.body, hit.terms);
-                  const isSel = i === selected;
-                  const href = hrefFor(section);
+              <div ref={listRef} role="listbox" aria-label={t("title")} className="pb-2">
+                {groups.map((group) => {
+                  const offset = hits.indexOf(group.hits[0]!);
                   return (
-                    <li key={section.id} role="option" aria-selected={isSel}>
-                      <a
-                        href={href}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          navigateTo(href);
-                        }}
-                        onMouseEnter={() => setSelected(i)}
-                        className={`flex w-full flex-col gap-1 px-4 py-2.5 text-left transition-colors ${
-                          isSel ? "bg-surface" : "hover:bg-surface/50"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 font-body text-xs text-slate">
-                          <span className="font-medium text-foreground/70">{section.docTitle}</span>
-                          {section.breadcrumb && (
-                            <>
-                              <span aria-hidden>›</span>
-                              <span className="truncate">{section.breadcrumb}</span>
-                            </>
-                          )}
-                        </div>
-                        <div className="font-display text-sm font-medium text-foreground">
-                          {highlight(section.sectionTitle, hit.terms)}
-                        </div>
-                        {snippet && (
-                          <div className="font-body text-xs text-slate line-clamp-2">
-                            {highlight(snippet, hit.terms)}
-                          </div>
-                        )}
-                      </a>
-                    </li>
+                    <ul key={group.id} role="group" aria-label={group.label}>
+                      <li role="presentation" className="kicker px-4 pt-3 pb-1 text-slate">
+                        {group.label}
+                      </li>
+                      {group.hits.map((hit, j) => {
+                        const i = offset + j;
+                        const { section } = hit;
+                        const snippet = buildSnippet(section.body, hit.terms);
+                        const isSel = i === selected;
+                        const href = hrefFor(section);
+                        const color = indexes?.colors.get(section.id);
+                        return (
+                          <li key={section.id} role="option" aria-selected={isSel} data-index={i}>
+                            <a
+                              href={href}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                navigateTo(href);
+                              }}
+                              onMouseEnter={() => setSelected(i)}
+                              className={`flex w-full flex-col gap-1 px-4 py-2.5 text-left transition-colors ${
+                                isSel ? "bg-surface" : "hover:bg-surface/50"
+                              }`}
+                            >
+                              {section.kind === "doc" ? (
+                                <div className="flex items-center gap-2 font-body text-xs text-slate">
+                                  <span className="font-medium text-foreground/70">{section.docTitle}</span>
+                                  {section.breadcrumb && (
+                                    <>
+                                      <span aria-hidden>›</span>
+                                      <span className="truncate">{section.breadcrumb}</span>
+                                    </>
+                                  )}
+                                </div>
+                              ) : (
+                                <div
+                                  className={`flex min-w-0 items-center gap-2 font-body text-xs text-slate ${
+                                    color ? `part-${color}` : ""
+                                  }`}
+                                >
+                                  <span aria-hidden className="size-2 shrink-0 bg-[var(--part,var(--brand))]" />
+                                  <span className="kicker shrink-0 text-[0.62rem] text-[var(--part-ink,var(--brand))]">
+                                    {section.kind === "recipe" ? t("recipeKicker") : t("warningKicker")}
+                                  </span>
+                                  <span className="truncate">{section.breadcrumb}</span>
+                                </div>
+                              )}
+                              <div className="font-display text-sm font-medium text-foreground">
+                                {highlight(section.sectionTitle, hit.terms)}
+                              </div>
+                              {snippet && (
+                                <div className="font-body text-xs text-slate line-clamp-2">
+                                  {highlight(snippet, hit.terms)}
+                                </div>
+                              )}
+                            </a>
+                          </li>
+                        );
+                      })}
+                    </ul>
                   );
                 })}
-              </ul>
+              </div>
             )}
           </div>
 
@@ -309,8 +426,14 @@ export function DocsSearchPalette() {
   );
 }
 
+/** Opens the ⌘K palette from anywhere, optionally with a query already
+ *  typed (the Cookbook's empty state searches the docs this way). */
+export function openSearchPalette(query?: string) {
+  window.dispatchEvent(new CustomEvent(OPEN_EVENT, { detail: query === undefined ? null : { query } }));
+}
+
 function openPalette() {
-  window.dispatchEvent(new CustomEvent(OPEN_EVENT));
+  openSearchPalette();
 }
 
 interface TriggerProps {

@@ -94,6 +94,112 @@ const normalizeRange = (range: CellRange): CellRange => ({
 const samePos = (a: CellPos, b: CellPos): boolean =>
   a.row === b.row && a.col === b.col;
 
+/** A merged block of the grid: its primary cell, where it sits and how far
+ *  it spans. */
+interface Merge {
+  row: number;
+  col: number;
+  rowSpan: number;
+  colSpan: number;
+  cell: TableCell;
+}
+
+/** The merged blocks of `rows`: every primary cell spanning more than one
+ *  cell. */
+const findMerges = (rows: TableCell[][]): Merge[] => {
+  const merges: Merge[] = [];
+  rows.forEach((row, r) => row.forEach((cell, c) => {
+    if (cell.hiddenBy) return;
+    const rowSpan = Math.max(1, cell.rowSpan ?? 1);
+    const colSpan = Math.max(1, cell.colSpan ?? 1);
+    if (rowSpan > 1 || colSpan > 1) merges.push({ row: r, col: c, rowSpan, colSpan, cell: cloneCell(cell) });
+  }));
+  return merges;
+};
+
+/** Undo `merges` in place: spans dropped from the primaries, `hiddenBy`
+ *  from the cells they cover. Cells hidden by anything else are left as
+ *  they are. */
+const clearMerges = (rows: TableCell[][], merges: readonly Merge[]): void => {
+  for (const mg of merges) {
+    for (let r = mg.row; r < mg.row + mg.rowSpan && r < rows.length; r++) {
+      for (let c = mg.col; c < mg.col + mg.colSpan && c < rows[r].length; c++) {
+        const cell = rows[r][c];
+        if (r === mg.row && c === mg.col) {
+          delete cell.rowSpan;
+          delete cell.colSpan;
+        } else if (cell.hiddenBy && cell.hiddenBy.row === mg.row && cell.hiddenBy.col === mg.col) {
+          delete cell.hiddenBy;
+        }
+      }
+    }
+  }
+};
+
+/** Lay `merges` onto `rows` in place, as {@link mergeCells} would: each
+ *  primary cell at its position with its spans, the other cells of its
+ *  block hidden by it. A block reduced to one cell keeps its primary cell
+ *  (its content survives) without spans; an empty one is dropped. */
+const applyMerges = (rows: TableCell[][], merges: readonly Merge[]): void => {
+  for (const mg of merges) {
+    if (mg.rowSpan < 1 || mg.colSpan < 1) continue;
+    if (mg.row >= rows.length || mg.col >= rows[mg.row].length) continue;
+    const primary = cloneCell(mg.cell);
+    delete primary.hiddenBy;
+    if (mg.colSpan > 1) primary.colSpan = mg.colSpan;
+    else delete primary.colSpan;
+    if (mg.rowSpan > 1) primary.rowSpan = mg.rowSpan;
+    else delete primary.rowSpan;
+    rows[mg.row][mg.col] = primary;
+    for (let r = mg.row; r < mg.row + mg.rowSpan && r < rows.length; r++) {
+      for (let c = mg.col; c < mg.col + mg.colSpan && c < rows[r].length; c++) {
+        if (r === mg.row && c === mg.col) continue;
+        const hidden = cloneCell(rows[r][c]);
+        delete hidden.colSpan;
+        delete hidden.rowSpan;
+        hidden.hiddenBy = { row: mg.row, col: mg.col };
+        rows[r][c] = hidden;
+      }
+    }
+  }
+};
+
+/**
+ * Apply a structural edit to a grid that may hold merges: the merges are
+ * undone, `edit` inserts or removes plain cells, and each merge — moved,
+ * grown or shrunk by `move` — is laid back. So a row or column added inside
+ * a merged block widens it, one removed shrinks it (a block losing its first
+ * row or column keeps its content in the new top-left cell), and every
+ * `hiddenBy` keeps pointing at its primary cell. A grid without merges goes
+ * through `edit` alone.
+ */
+const editAcrossMerges = (
+  rows: TableCell[][],
+  edit: (rows: TableCell[][]) => void,
+  move: (mg: Merge) => void,
+): TableCell[][] => {
+  const merges = findMerges(rows);
+  if (merges.length === 0) {
+    edit(rows);
+    return rows;
+  }
+  clearMerges(rows, merges);
+  edit(rows);
+  for (const mg of merges) move(mg);
+  applyMerges(rows, merges);
+  return rows;
+};
+
+/** A merge after an insertion at `at` along one axis: it moves when it lies
+ *  at or past `at`, and grows when `at` falls inside it. */
+const shiftForInsert = (start: number, span: number, at: number): [number, number] =>
+  start >= at ? [start + 1, span] : at < start + span ? [start, span + 1] : [start, span];
+
+/** A merge after the removal of line `at` along one axis: it moves up when
+ *  it lies past `at`, and shrinks when `at` falls inside it. */
+const shiftForRemove = (start: number, span: number, at: number): [number, number] =>
+  start > at ? [start - 1, span] : at < start + span ? [start, span - 1] : [start, span];
+
 // ---------------------------------------------------------------------------
 // Row / column structure
 // ---------------------------------------------------------------------------
@@ -111,7 +217,9 @@ export const addRow = (m: TableModel, at: number): TableModel => {
   const newRow: TableCell[] = Array.from({ length: cols }, () =>
     makeEmptyCell(isHeaderRow),
   );
-  rows.splice(index, 0, newRow);
+  editAcrossMerges(rows, (grid) => grid.splice(index, 0, newRow), (mg) => {
+    [mg.row, mg.rowSpan] = shiftForInsert(mg.row, mg.rowSpan, index);
+  });
 
   const next = withRows(m, rows);
   if (m.headerRowCount !== undefined && index < m.headerRowCount) {
@@ -127,12 +235,15 @@ export const addRow = (m: TableModel, at: number): TableModel => {
 export const addColumn = (m: TableModel, at: number): TableModel => {
   const cols = columnCount(m);
   const index = Math.max(0, Math.min(at, cols));
-  const rows = cloneRows(m).map((row, rowIndex) => {
-    const isHeaderRow =
-      m.headerRowCount !== undefined && rowIndex < m.headerRowCount;
-    const insertAt = Math.min(index, row.length);
-    row.splice(insertAt, 0, makeEmptyCell(isHeaderRow));
-    return row;
+  const rows = editAcrossMerges(cloneRows(m), (grid) => {
+    grid.forEach((row, rowIndex) => {
+      const isHeaderRow =
+        m.headerRowCount !== undefined && rowIndex < m.headerRowCount;
+      const insertAt = Math.min(index, row.length);
+      row.splice(insertAt, 0, makeEmptyCell(isHeaderRow));
+    });
+  }, (mg) => {
+    [mg.col, mg.colSpan] = shiftForInsert(mg.col, mg.colSpan, index);
   });
   const next = withRows(m, rows);
   if (next.columnWidths !== undefined) {
@@ -144,8 +255,9 @@ export const addColumn = (m: TableModel, at: number): TableModel => {
 /** Remove the row at `at`. Out-of-range indices leave the model unchanged. */
 export const removeRow = (m: TableModel, at: number): TableModel => {
   if (at < 0 || at >= m.rows.length) return withRows(m, cloneRows(m));
-  const rows = cloneRows(m);
-  rows.splice(at, 1);
+  const rows = editAcrossMerges(cloneRows(m), (grid) => grid.splice(at, 1), (mg) => {
+    [mg.row, mg.rowSpan] = shiftForRemove(mg.row, mg.rowSpan, at);
+  });
 
   const next = withRows(m, rows);
   if (m.headerRowCount !== undefined && at < m.headerRowCount) {
@@ -157,9 +269,10 @@ export const removeRow = (m: TableModel, at: number): TableModel => {
 /** Remove the column at `at`. Out-of-range indices leave the model unchanged. */
 export const removeColumn = (m: TableModel, at: number): TableModel => {
   if (at < 0 || at >= columnCount(m)) return withRows(m, cloneRows(m));
-  const rows = cloneRows(m).map((row) => {
-    if (at < row.length) row.splice(at, 1);
-    return row;
+  const rows = editAcrossMerges(cloneRows(m), (grid) => {
+    for (const row of grid) if (at < row.length) row.splice(at, 1);
+  }, (mg) => {
+    [mg.col, mg.colSpan] = shiftForRemove(mg.col, mg.colSpan, at);
   });
   const next = withRows(m, rows);
   if (next.columnWidths !== undefined && at < next.columnWidths.length) {
@@ -336,12 +449,22 @@ export const unmergeCell = (m: TableModel, at: CellPos): TableModel => {
 // Parsing
 // ---------------------------------------------------------------------------
 
+/** Options of {@link parseTSV}. */
+export interface ParseTSVOptions {
+  /** Leading rows that form the table header: their cells are marked
+   *  `isHeader` and the model gets `headerRowCount` (clamped to the row
+   *  count), so a table split across pages repeats them. Default 0 (no
+   *  header). */
+  headerRows?: number;
+}
+
 /**
  * Build a {@link TableModel} from tab-separated text. Rows are split on
  * newlines (CRLF / CR / LF), cells on tabs. Shorter rows are padded with empty
  * cells so the grid is rectangular. Empty input yields an empty model.
+ * `options.headerRows` turns the leading rows into header rows.
  */
-export const parseTSV = (input: string): TableModel => {
+export const parseTSV = (input: string, options?: ParseTSVOptions): TableModel => {
   const text = input.replace(/\r\n?/g, '\n');
   const lines = text.split('\n');
   // Drop a single trailing empty line (common with trailing newline) but keep
@@ -354,12 +477,74 @@ export const parseTSV = (input: string): TableModel => {
 
   const grid = lines.map((line) => line.split('\t'));
   const cols = grid.reduce((max, row) => Math.max(max, row.length), 0);
+  const requested = Math.floor(options?.headerRows ?? 0);
+  const headerRows = Number.isFinite(requested) ? Math.max(0, Math.min(requested, grid.length)) : 0;
 
-  const rows: TableCell[][] = grid.map((row) =>
-    Array.from({ length: cols }, (_unused, c) => ({
-      content: row[c] ?? '',
-    })),
+  const rows: TableCell[][] = grid.map((row, r) =>
+    Array.from({ length: cols }, (_unused, c): TableCell => (
+      r < headerRows ? { content: row[c] ?? '', isHeader: true } : { content: row[c] ?? '' }
+    )),
   );
 
-  return { rows };
+  return headerRows > 0 ? { rows, headerRowCount: headerRows } : { rows };
+};
+
+// ---------------------------------------------------------------------------
+// Validation
+// ---------------------------------------------------------------------------
+
+/** A place where a table model is not the rectangular grid the layout
+ *  expects (see {@link tableGridIssues}). */
+export interface TableGridIssue {
+  /** `'spanOverlap'`: a visible cell sits under another cell's `colSpan` /
+   *  `rowSpan` — the cell a merge covers must stay in its row, marked
+   *  `hiddenBy`, or the cells after it shift. `'missingCells'`: a row ends
+   *  before the grid's last column with no merge covering the rest, which
+   *  leaves a hole. */
+  kind: 'spanOverlap' | 'missingCells';
+  /** The offending cell (`spanOverlap`), or the first position of the row
+   *  with no cell (`missingCells`). */
+  row: number;
+  col: number;
+  /** For `spanOverlap`: the primary cell whose merge covers the position. */
+  coveredBy?: CellPos;
+}
+
+/**
+ * Check that a table model is a rectangular grid once its merges are
+ * counted. Cells are laid out by their array index — `rows[r][c]` sits in
+ * column `c` — so a model written HTML-style, leaving out the cells a
+ * `colSpan` / `rowSpan` covers instead of keeping them with `hiddenBy` (what
+ * {@link mergeCells} does), shifts the cells after the merge onto it.
+ * Returns the issues in row-major order (at most one `missingCells` per
+ * row); an empty list means the grid is sound.
+ */
+export const tableGridIssues = (m: TableModel): TableGridIssue[] => {
+  const issues: TableGridIssue[] = [];
+  const cols = columnCount(m);
+  /** Position → the primary cell whose merge covers it. */
+  const owner = new Map<string, CellPos>();
+  const key = (r: number, c: number): string => `${r}:${c}`;
+  m.rows.forEach((row, r) => {
+    row.forEach((cell, c) => {
+      // A covered cell stands in for its position; it claims nothing more.
+      if (cell.hiddenBy) return;
+      const by = owner.get(key(r, c));
+      if (by) issues.push({ kind: 'spanOverlap', row: r, col: c, coveredBy: { row: by.row, col: by.col } });
+      const rowSpan = Math.max(1, cell.rowSpan ?? 1);
+      const colSpan = Math.max(1, cell.colSpan ?? 1);
+      for (let rr = r; rr < Math.min(r + rowSpan, m.rows.length); rr++) {
+        for (let cc = c; cc < Math.min(c + colSpan, cols); cc++) {
+          if ((rr !== r || cc !== c) && !owner.has(key(rr, cc))) owner.set(key(rr, cc), { row: r, col: c });
+        }
+      }
+    });
+    // A position past the row's end that no merge reaches is a hole.
+    for (let c = row.length; c < cols; c++) {
+      if (owner.has(key(r, c))) continue;
+      issues.push({ kind: 'missingCells', row: r, col: c });
+      break;
+    }
+  });
+  return issues;
 };

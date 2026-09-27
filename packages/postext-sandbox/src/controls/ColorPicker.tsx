@@ -66,8 +66,12 @@ export function ColorPicker({ label, value: rawValue, onChange, tooltip, isDefau
     onChange({ hex: entry.value.hex, model: entry.value.model, paletteId });
   };
 
+  // Unlinking keeps the colour the page shows: the entry's, not the value
+  // stored beside the link (which may predate a change of the entry).
   const unlink = () => {
-    onChange({ hex: value.hex, model: value.model });
+    onChange(linkedEntry
+      ? { hex: linkedEntry.value.hex, model: linkedEntry.value.model }
+      : { hex: value.hex, model: value.model });
   };
 
   const displayText = isLinked ? linkedEntry!.name : formatColor(value.hex, mode);

@@ -1,0 +1,72 @@
+---
+title: "Pasatiempos: crucigrama, sopa de letras y laberinto"
+summary: "Un crucigrama y una sopa de letras compuestos como tablas a partir de líneas de letras: las casillas negras son rellenos de celda; los números, superíndices."
+description: "Un cuaderno infantil de pasatiempos compuesto con Postext: crucigrama y sopa de letras en tablas, un laberinto generado con una semilla y las soluciones."
+question: "¿Cómo doy a cada tabla su propio aspecto: filetes, rellenos de celda, teselas, marco redondeado?"
+aliases: ["crucigrama", "sopa de letras", "laberinto", "pasatiempos", "cuaderno de verano", "cuaderno de actividades", "libro infantil", "soluciones", "rejilla a partir de texto"]
+pageNotes: { "1": "La cubierta: un cielo amarillo claro con un gran sol anaranjado que se pone en un mar azul con rayas de olas blancas, un velero en el horizonte, dos gaviotas y una tortuga que nada. Cuaderno de verano en letras grandes azul marino, Pasatiempos del mar, una etiqueta coral De 9 a 11 años y un campo blanco para escribir el nombre.", "2": "Pasatiempo 1 bajo una banda azul mar con el pie ondulado: un crucigrama de nueve por nueve con casillas azul marino y números pequeños en negrita en la esquina de las casillas donde empieza una palabra; debajo, las definiciones en un recuadro amarillo claro, Horizontales a la izquierda y Verticales a la derecha.", "3": "Pasatiempo 2 bajo una banda menta: dos filas centradas de cinco chips con las palabras, el primero, SOMBRILLA, en coral, sobre una rejilla de doce por doce mayúsculas en teselas amarillo claro con juntas blancas y esquinas redondeadas; las letras de SOMBRILLA están sobre teselas coral.", "4": "Pasatiempo 3 bajo una banda coral: un laberinto sobre arena clara, desde un nido arriba a la izquierda, donde una tortuga acaba de salir del huevo junto a dos cáscaras vacías, hasta una salida al mar azul abajo a la derecha.", "5": "Las soluciones, una junto a otra, bajo una banda amarilla: el crucigrama resuelto, la sopa de letras con todas las palabras sobre menta y el laberinto sobre la arena, con la salida en coral desde el nido vacío hasta el mar, donde nada la cría. Debajo, un recuadro ¿Sabías que…? pone un dibujo en corte de los huevos de tortuga enterrados en la arena junto a un párrafo sobre cómo anida la tortuga boba. El colofón va al pie, junto al folio." }
+---
+
+## Lo que vas a componer
+
+Un cuaderno de verano para niños de 9 a 11 años: la cubierta, tres pasatiempos sobre el mar y una página de soluciones. Las páginas 2 a 5 se abren bajo un campo de color con el pie ondulado (azul mar, menta, coral y amarillo) y un título de 46 pt en Lilita One. El código compone el crucigrama y la sopa de letras como tablas a partir de líneas de letras, cada una con su estilo: casillas con filetes en el crucigrama, teselas claras con juntas blancas y esquinas redondeadas en la sopa. Las casillas negras y la palabra ya encontrada son rellenos de celda, y los números de las definiciones, superíndices en la esquina. El laberinto es un SVG generado con una semilla. La última página reúne las tres soluciones, sacadas de los mismos datos, sobre un recuadro que cuenta cómo anida la tortuga boba.
+
+## Elaboración
+
+### 1 · Un estilo de tabla, tres aspectos
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `tableStyle` pone todas las rejillas en Chivo Mono. Cada estilo con nombre de `tableStyles` fija su cuerpo, su relleno interior y sus filetes, y la tabla elige el suyo con `table.styleId`. El ancho de una columna es su parte del ancho de la tabla, pero una fila mide lo que sus líneas más el relleno interior, así que es el relleno el que fija la altura de cada casilla. La sopa de letras conserva la casilla de 9,41 mm del crucigrama alrededor de una línea de mayúsculas de 15 pt, y `pad()` calcula los 2,9 pt que deja esa línea por encima y por debajo. Sus filetes, de 2,4 pt y del color del papel, cortan el fondo claro en teselas, y `borderRadius` redondea las esquinas del marco a 4 mm y recorta los rellenos a su forma. En la página de soluciones, `key()` mete nueve o doce casillas en 54 mm: casillas de 6 mm con letras de 8 pt en el crucigrama y de 4,5 mm con letras de 6 pt en la sopa de letras. La solución del laberinto se dibuja en un cuadrado de 54 mm, así que las tres soluciones tienen la misma altura y sus pies comparten la línea de base, a 106,4 mm del borde superior.
+
+### 2 · Nueve casillas, quince líneas
+
+<Excerpt region="crossword" />
+
+Cada casilla blanca lleva dos líneas de Chivo Mono de 8,9 pt (el número de la definición y una línea vacía) dentro de 1 pt de relleno interior, 26,7 pt en total: 9,41 mm, un noveno del ancho de la tabla. Nueve casillas miden 84,7 mm, lo mismo que quince líneas de 16 pt del texto principal, y el recuadro de las definiciones empieza en la rejilla base una línea más abajo. Una casilla lleva número, en orden de lectura, cuando en ella empieza una palabra horizontal o vertical. El número es un superíndice en negrita de 5,2 pt (el 58 % de 8,9 pt) subido 3 pt (un tercio de 8,9 pt), y eso lo coloca en la esquina superior de la casilla. La línea vacía es un carácter de unión de palabras (U+2060). Con un espacio de no separación en su lugar, la 1.4.1 descarta esa línea y la rejilla se queda en 45,5 mm de alto. Una casilla negra es una celda vacía con `background` propio, vinculado a `ink`.
+
+### 3 · El código busca las palabras en la rejilla
+
+<Excerpt region="search" />
+
+La rejilla son doce líneas de mayúsculas en su propio archivo de contenido, después de la lista de palabras que hay que buscar. `locate()` busca cada palabra en las ocho direcciones y lanza un error si no aparece exactamente una vez, así que una errata en la rejilla o en la lista detiene la composición antes de que se imprima una palabra que nadie podrá encontrar. `setCellBackground` devuelve un modelo de tabla nuevo con una casilla más rellena. El relleno va vinculado a una entrada de la paleta y tapa la tesela del estilo: coral para SOMBRILLA en la página 3, menta para las diez palabras en la página 5. En la 1.4.1 los estilos de tabla con nombre no tienen ningún ajuste para alternar el fondo de las filas, así que la primera variante llama a `setCellBackground` en todas las celdas de una fila sí y otra no. El banco de palabras de encima de la rejilla son dos filas centradas de chips: el de SOMBRILLA va relleno de coral, como sus casillas, y los otros nueve son blancos con borde azul marino.
+
+### 4 · Una apertura, cuatro colores
+
+<Excerpt region="openers" />
+
+Las páginas de la 2 a la 5 comparten el mismo diseño. Un campo de color baja 40 mm desde el borde superior y termina en un pie ondulado dibujado en el color del papel; el antetítulo, el título y el tema, en su píldora blanca, salen de la línea del título y de sus atributos. El campo y el disco del folio están vinculados a la entrada `band` de la paleta, y el estilo de título de cada página le da su propio valor, de modo que `# Sopa de letras {style="sopa"}` los vuelve menta en la página 3. El nivel 1 lleva `span: 'page'` aunque el cuaderno tiene una sola columna: la 1.4.1 recorta por el margen superior de 16 mm un diseño que se queda en la columna, y eso cortaría la parte de arriba del campo y el antetítulo. La caja del campo cuenta en la altura que reserva la apertura, así que el texto empieza en la siguiente línea de la rejilla base, a 44,2 mm del borde superior y 4 mm por debajo de las olas.
+
+### 5 · Las soluciones salen de los mismos datos
+
+<Excerpt region="answers" />
+
+La página de soluciones vuelve a llamar a `crossword()` con `solved` y a `wordSearch()` con las diez palabras, sobre los mismos archivos de contenido que los pasatiempos, así que si cambias una rejilla cambia también su solución. Los pasatiempos y los dibujos son del tipo Plain, cuyo `captionPrefix` vacío no imprime pie en un recurso sin texto de pie. Las soluciones son del tipo Solución, numeradas del 1 al 3 en orden de lectura para que coincidan con los antetítulos, de Pasatiempo 1 a Pasatiempo 3. Van en un recuadro sin fondo ni borde que contiene `:::columns{count=3 breaks="2,3"}`, donde `breaks` abre una columna nueva en la segunda y en la tercera solución; cada una mide 54 mm de ancho en una columna de 55,3 mm. El recuadro ¿Sabías que…? hace lo mismo con `breaks="2"` para poner el dibujo del nido junto a su párrafo.
+
+## Variantes
+
+### Alterna el fondo de las filas de la sopa de letras
+
+Un amarillo más intenso en una fila sí y otra no ayuda a un lector pequeño a seguir la fila, y como las palabras se rellenan después, SOMBRILLA sigue en coral y la solución conserva sus palabras en menta.
+
+```diff
+   let model = { rows: letters.map((line) => [...line].map((content) => ({ content,
+     align: 'center' }))) };
++  const stripe = { hex: '#ffdd80', model: 'hex' }; // a shade deeper than the tiles
++  letters.forEach((line, r) => r % 2 && [...line].forEach((_, c) => {
++    model = setCellBackground(model, { row: r, col: c }, stripe);
++  }));
+   for (const [word, fill] of fills) {
+```
+
+### Dibuja un laberinto más difícil
+
+Con 21 por 11 casillas en el mismo ancho, cada una mide 8,4 mm, y la solución de la página 5 se dibuja a partir del nuevo laberinto.
+
+```diff
+-const theMaze = maze(17, 9, 2027);
++const theMaze = maze(21, 11, 2027);
+```
+
+## Errores frecuentes
+
+- Los números de las definiciones del recuadro se escriben a mano en el archivo de contenido, y los de la rejilla se calculan. Después de cambiar una rejilla, repasa las definiciones con ella, porque el código no las compara.
+- La paleta de un estilo de título cambia el color de los elementos de diseño, del texto y de los filetes de las tablas, pero no el del interior de un SVG, así que las olas del pie de cada campo se dibujan en el color del papel y un solo dibujo sirve para los cuatro campos. En la 1.4.1 tampoco llega a los rellenos de las tablas: una casilla del crucigrama vinculada a `band` seguiría en azul mar en la página amarilla de soluciones.

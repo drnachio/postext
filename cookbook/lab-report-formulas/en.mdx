@@ -1,0 +1,80 @@
+---
+title: "Lab report: formulas, subscripts and a titration curve"
+summary: "A four-page chemistry report on A4 that marks formulas and units in the text with ~ and ^ and keeps TeX for the reaction and the equations."
+description: "A chemistry lab report set with Postext. Formulas take sub- and superscripts in the text face, and the table and titration curve share one set of readings."
+question: "How do I write chemical formulas and units with subscripts and superscripts, and keep TeX for the equations?"
+aliases: ["lab report", "practical write-up", "chemistry", "chemical formula", "subscript", "superscript", "units", "mhchem", "titration curve", "hanging numbers"]
+pageNotes: { "1": "A pale pink band carries the course line, the title with the practical number 4 hung in the left margin and the byline, its labels hung the same way; at the right a drawn burette drips into a flask of pale pink liquid, deep pink where the drop lands. Below the band come the abstract with a pink stripe on its left, sections 1 and 2 with hanging numbers, the neutralisation reaction and the equation for the pH at equivalence.", "2": "The Henderson–Hasselbalch equation, section 3 with the apparatus list and a safety note in a thin pink frame, and section 4 with the six numbered steps of the method.", "3": "Section 5, Results: Table 1 of burette readings under a slate header, the figures right-aligned in a monospaced face and the mean and standard deviation labels spanning three columns, the vinegar's concentration worked out as a display equation, subsection 5.2 on the pH curve and the start of the discussion.", "4": "Figure 1, the titration curve: pink dots for the pH meter readings on the model line, the indicator's range as a pink band, the equivalence point ringed and the pKa read at half the equivalence volume; then the end of the discussion, section 7 with the conclusion, three references with hanging indents and the colophon." }
+---
+
+## What you'll build
+
+Three Year 12 students titrate a cider vinegar with sodium hydroxide to find how much acetic acid it holds, and write the work up as Practical 4 of their chemistry course. The report runs to four A4 pages printed on one side. Its 55 mm left margin holds the section numbers, so every title and paragraph starts on the same edge. The burette and the table head are slate grey, and the only colour is phenolphthalein's pink, pale for the band of the report head and the indicator's range on the curve, deep for the section numbers and the pH readings. Formulas and units in the running text are set in the text face with sub- and superscripts; TeX sets the reaction and three displayed equations. Table 1 and the curve of Figure 1 are both computed from one array of burette readings in the pen.
+
+## Method
+
+### 1 · Write formulas as text, keep TeX for the equations
+
+The code is [the short answer](#the-short-answer) above. [`~…~` and `^…^`](/en/docs/document-format#inline-formatting) set a run at 58 % of the text size in the text's own face, so `CH~3~COOH`, `OH^−^` (its minus is U+2212) and `cm^3^` keep the weight and colour of the sentence around them. The marks also work in captions and table cells, where TeX cannot be used. The reaction, written with mhchem's `\ce{…}`, and the equations are TeX between `$$`. The [maths engine](/en/docs/configuration#starting-the-math-engine) ships only in the `?bundle` build, so every symbol is imported from that build. `math.fontSizeScale` is left at 1: in 1.4.1 a formula's x-height is half the type size, and Inria Serif's is 0.495 em, so the lowercase of formula and text come out the same height.
+
+### 2 · Hang the section numbers in the margin
+
+<Excerpt region="hanging" />
+
+Each heading level's design is a slot with two elements: the title on the text edge, and the `{number}` anchored `left-of` it, 4 mm away, in a 33 mm box set right. The box needs a fixed width. An auto width is clamped to the room the column leaves on its left, and it leaves none, so the box shrinks to 0 mm and the heads grow by one to three lines. The level's `fontSize` and `lineHeight` only set the room a head takes in the flow, one 15 pt line. The design sets the type: sections numbered `{2}` in 13 pt pink, subsections `{2}.{3}` in grey at the text size.
+
+### 3 · Draw the report head from the H1
+
+<Excerpt region="head" />
+
+The report's one H1 takes the `report` [heading style](/en/docs/configuration#span-and-advanced-design), which replaces it with a drawn head: a pink band across the top of the page, the burette, the course line, the title with the practical number hung like a section number, and the byline. The byline's values come from the [heading's attributes](/en/docs/document-format#heading-attributes) and the frontmatter's `publishDate`. The band is a box, and boxes count towards the height a head reserves, so even without `minHeight` the text would start under the band's foot, 104 mm from the top of the page. `minHeight` sets a floor 8 mm below the band; with the H1's bottom margin and the 15 pt grid, that leaves 15 mm of white above the abstract instead of 4.7 mm.
+
+### 4 · Name the table and figure in the report's language
+
+<Excerpt region="labels" />
+
+[`defaultResourceTypes(LANG)`](/en/docs/configuration#resource-types) gives Tabla and Figura in the Spanish edition, which the locale alone would leave in English. Their `{h1}.{n}` template prints a plain 1 here, because the report's H1 is unnumbered and an empty `{h1}` drops out with its dot. The table's caption goes above the table, where reports put it. The text cites table and figure with `:ref{id="lecturas" style="full"}`, in the ink and weight of the words around it.
+
+### 5 · Compute the table and the curve from the same readings
+
+<Excerpt region="data" />
+
+The four pairs of burette readings give every cell of Table 1, the mean and the standard deviation, and the mean volume sets the equivalence point of the pH model that Figure 1 draws. The first row is the header (`headerRowCount: 1`), and `columnWidths` gives the label column 1.8 shares of the width. Each cell carries its own `align`, and [`mergeCells`](/en/docs/configuration#building-table-models) runs the mean and deviation labels across the first three columns, set right against their values. The figures are in Sometype Mono, so their decimal points line up. The column heads are quantities over units, such as `V~b~ used / cm^3^`, marked up like the text.
+
+### 6 · Close on references with hanging indents
+
+<Excerpt region="references" />
+
+A `:::paragraphs{style="references"}` fence applies the [paragraph style](/en/docs/configuration#paragraph-styles) to each reference: 9 on 12.5 pt, ragged, with a 6 mm hanging indent and 4 pt between entries. In 1.4.1 ragged paragraphs are never hyphenated, so a long title such as *Fundamentals of Analytical Chemistry* breaks only between words. The colophon has a style of its own, Inria Sans at 7.4 pt, with one 15 pt line of space above it.
+
+## Variations
+
+### Tint the safety note instead of framing it
+
+A fill in the end-point pink replaces the frame, so the box still carries a single device.
+
+```diff
+   box('safety', t({ es: 'Seguridad', en: 'Safety' }), {
+-    border: { enabled: true, color: col('phenol'), width: pt(0.75) },
++    backgroundEnabled: true, background: col('blush'),
+```
+
+### Number tables and figures by section
+
+The results become Table 5.1 and Figure 5.1, counted afresh in each section.
+
+```diff
+-const resourceTypes = defaultResourceTypes(LANG).map((type) => (type.id === 'table'
+-  ? { ...type, captionStyle: { position: 'above' } } : type)); // a table's caption goes on top
++const resourceTypes = defaultResourceTypes(LANG).map((type) => ({ ...type,
++  numberingTemplate: '{h2}.{n}', resetOn: 'h2',
++  ...(type.id === 'table' && { captionStyle: { position: 'above' } }) }));
+```
+
+## Pitfalls
+
+- A display formula does not keep with the line that introduces it, so a lead-in ending in “so” can close a page with its equation on the next. The copy of both editions is fitted to end page 1 with the [OH⁻] equation under its sentence.
+- The TeX glyphs are MathJax's own, not Inria Serif, so an equation reads a little lighter than the text around it. Keep formulas inside sentences as `~` and `^` marks, and reserve TeX for the lines that need it.
+- In 1.4.1 a heading design kept in the column is clipped at the column's top edge. The `report` style sets `span: 'page'` in this one-column report for that reason alone: without it the top 24 mm of the band and the burette print white.
+- A caption is set ragged, and in 1.4.1 a ragged line can break between a word and its superscript. At two lines, Table 1's caption broke between `mol·dm` and `−3`, so it is cut to one line; check every caption that carries a unit.
+- Web fonts do not reach an SVG drawn as an image, so the curve's tick labels and axis titles are MathJax outlines: `tex()` asks `renderMath` for the paths of each label and places them in the SVG. They stay vector in the PDF and use the same glyphs as the equations.

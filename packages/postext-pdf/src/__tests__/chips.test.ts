@@ -70,12 +70,12 @@ const markdown = [
 let pdf: PDFDocument;
 let bytes: Uint8Array;
 
-function pageContent(index: number): string {
-  const contents = pdf.getPage(index).node.Contents();
+function pageContent(index: number, doc: PDFDocument = pdf): string {
+  const contents = doc.getPage(index).node.Contents();
   const refs = contents instanceof PDFArray ? contents.asArray() : [contents];
   return refs
     .map((ref) => {
-      const s = pdf.context.lookup(ref);
+      const s = doc.context.lookup(ref);
       return s instanceof PDFRawStream ? new TextDecoder('latin1').decode(decodePDFRawStream(s).decode()) : '';
     })
     .join('\n');
@@ -120,5 +120,23 @@ describe('inline chips in the PDF', () => {
       expect(text).toContain(word);
     }
     expect(text).toMatch(/pila cable interruptor/);
+  });
+
+  // EF-02: a chip of spaces is an empty box (an answer blank), not markup.
+  it('paints an empty chip as a box with no text', async () => {
+    const doc = buildDocument({ markdown: 'Respuesta: :chip[ ]{style="key"} y fin.' }, config);
+    const out = await PDFDocument.load(await renderToPdf(doc, { fontProvider }));
+    const content = pageContent(0, out);
+    expect(content).toMatch(/\/Artifact <<\n\/Type \/Layout\n>> BDC/);
+    expect(/\bf\n/.test(content)).toBe(true);
+    expect((content.match(/\b(BDC|BMC)\n/g) ?? []).length).toBe((content.match(/\bEMC\n/g) ?? []).length);
+    if (hasPdftotext) {
+      const file = path.join(os.tmpdir(), `postext-empty-chip-${process.pid}.pdf`);
+      fs.writeFileSync(file, await out.save());
+      const text = execFileSync('pdftotext', ['-raw', file, '-'], { encoding: 'utf8' }).replace(/\s+/g, ' ');
+      fs.unlinkSync(file);
+      expect(text).toMatch(/Respuesta: y fin\./);
+      expect(text).not.toContain(':chip');
+    }
   });
 });

@@ -1,0 +1,225 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 44,
+  "status": "published",
+  "chapter": "type",
+  "order": 70,
+  "level": 3,
+  "genres": [
+    "poetry"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "side-boxes",
+      "paragraph-styles",
+      "vertical-space"
+    ],
+    "also": [
+      "side-column-floats",
+      "column-and-a-half",
+      "chips",
+      "callout-styles",
+      "mirrored-margins",
+      "opener-design",
+      "design-elements",
+      "design-images",
+      "heading-attributes",
+      "heading-styles",
+      "frontmatter",
+      "running-heads",
+      "page-role-filters",
+      "color-palette"
+    ]
+  },
+  "answers": [
+    "Q82",
+    "Q43",
+    "Q45",
+    "Q18",
+    "Q23"
+  ],
+  "gaps": [
+    "line-numbers",
+    "footnotes",
+    "hard-line-breaks"
+  ],
+  "gotchas": [
+    "side-box-starts-at-fence",
+    "ragged-no-hyphenation",
+    "ragged-runts",
+    "attr-values",
+    "design-text-no-inline-marks",
+    "opener-image-no-reserve",
+    "style-inherits-break",
+    "headings-drop-h1-break",
+    "palette-skips-designs",
+    "design-lineheight-multiple",
+    "config-cache-identity",
+    "fonts-first"
+  ],
+  "explainsWarnings": [],
+  "related": [
+    "poetry-collection",
+    "annotated-classic-glosses",
+    "endnotes-instead-of-footnotes",
+    "side-heads-hanging-numbers"
+  ],
+  "workarounds": [
+    {
+      "followup": "EF-161",
+      "package": "postext",
+      "note": "each number is fenced after its line and lifted back onto it by a top padding of minus one line (LEAD). Fenced before its line, the number of a line that opens a page slid up beside the last line of the page before: a side box fenced when the text column is full slides up the side column instead of waiting for the next page"
+    },
+    {
+      "followup": "EF-05",
+      "package": "postext",
+      "note": "level 1 restates breakBefore with parity 'odd', because a headings object drops it (gotcha headings-drop-h1-break)"
+    },
+    {
+      "followup": "EF-60",
+      "package": "postext",
+      "note": "the notes' heading style sets its own breakBefore with parity 'any': inheriting level 1's 'odd', the notes waited for page 9 behind a blank page 8 (gotcha style-inherits-break)"
+    },
+    {
+      "followup": "EF-113",
+      "package": "postext",
+      "note": "level 1 spans the page so that the laurel, anchored to the page's top-right corner, is painted above the text block; kept in the column, the design is clipped at the column's top edge, 21 mm below the trim"
+    },
+    {
+      "followup": "EF-90",
+      "package": "postext",
+      "note": "the laurel is an image element and reserves no height (gotcha opener-image-no-reserve): the kicker, title and headnote below it reach down the 20 lines the opener takes, and minHeight, a floor at the same depth, keeps the verse on line 21 when the headnote is shorter"
+    },
+    {
+      "followup": "EF-71",
+      "package": "postext",
+      "note": "col() writes the hex beside each paletteId, because 1.4.1 paints design slots (the kicker, both titles, the headnote, the running heads and the folios) from the hex (gotcha palette-skips-designs)"
+    },
+    {
+      "followup": "EF-56",
+      "package": "postext",
+      "note": "the titles and the headnote take lineHeight as a multiple of their size (1, 13 / 9.5), never a dimension (gotcha design-lineheight-multiple)"
+    },
+    {
+      "followup": "EF-25",
+      "package": "postext",
+      "note": "the headnote is design text, which has no inline italics (gotcha design-text-no-inline-marks), so it cannot set Chester and Irish apart as 1645 does; the whole headnote is italic and the note on the text claims the 1645 italic of names for the poem only"
+    },
+    {
+      "followup": "EF-128",
+      "package": "postext",
+      "note": "short lines take a style of their own (firstLineIndent 2 em) instead of the verse style with its hangingIndent: one paragraph style cannot indent a line and also hang its turnover"
+    },
+    {
+      "followup": "EF-21",
+      "package": "postext",
+      "note": "verse and notes are ragged, and 1.4.1 never hyphenates ragged text (gotcha ragged-no-hyphenation): the verse needs no hyphenation setting, and the rag of the notes was read on the capture. If ragged text starts to hyphenate, give the verse style hyphenation: false"
+    },
+    {
+      "followup": "EF-147",
+      "package": "postext",
+      "note": "the notes are ragged, and 1.4.1 runs no runt check on ragged text: their last lines were read on the capture and reworded where one word stood alone"
+    }
+  ],
+  "engine": {
+    "postext": "1.4.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "loupe",
+    "focus": {
+      "page": 1,
+      "x": 0.12,
+      "y": 0.5695,
+      "w": 0.7,
+      "h": 0.2411
+    },
+    "pages": [
+      1,
+      2,
+      3,
+      6,
+      7,
+      8,
+      9
+    ],
+    "expect": {
+      "pages": [
+        9,
+        9
+      ]
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "Lycidas, with its headnote, in the text of Poems of Mr. John Milton (1645), pages 57–65, from the proofread Wikisource transcription of the 1927 facsimile; checked against H. C. Beeching’s Oxford text (Project Gutenberg eBook 1745)",
+          "es": "Lycidas, con su nota preliminar, en el texto de Poems of Mr. John Milton (1645), páginas 57–65, según la transcripción revisada de Wikisource del facsímil de 1927; cotejado con el texto de Oxford de H. C. Beeching (Project Gutenberg, libro electrónico 1745)"
+        },
+        "who": "John Milton",
+        "source": "https://en.wikisource.org/wiki/Poems_of_Mr._John_Milton,_Both_English_and_Latin,_Compos%27d_at_several_times/Lycidas",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The note on the text, the notes and the colophon",
+          "es": "La nota sobre el texto, las notas y el colofón"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "The sprig of bay laurel on the first page, drawn in code in the page’s greens",
+          "es": "La rama de laurel de la primera página, dibujada en código con los verdes de la página"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Linden Hill",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Imbue",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Libre Franklin",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-09-26",
+  "updated": "2026-09-26"
+}

@@ -1,0 +1,1137 @@
+{
+  "$comment": "Shared pitfalls, keyed by permanent ids (the catalogue's). A recipe lists them in recipe.json gotchas and they render in its Pitfalls section; <Gotcha id=\"…\"/> quotes one in the write-up; code comments cite them as // gotcha: <id>. feature ties a pitfall to the registry feature it belongs to. followup names the engine follow-up (design/engine-followups.md, EF-xx) whose fix would make the pitfall obsolete; set fixedIn to the postext version that ships the fix, and the pitfall stops showing on recipes captured with it.",
+  "headings-drop-h1-break": {
+    "title": {
+      "en": "Any headings object switches off the H1 page break",
+      "es": "Cualquier objeto headings desactiva el salto de página del H1"
+    },
+    "body": {
+      "en": "By default an H1 breaks to a recto (always-odd), but passing any headings object resets that default, so chapters run on and span: 'page' does nothing. Restate headings.levels[0].breakBefore: { enabled: true, parity } in every config.",
+      "es": "Por defecto un H1 salta a una página impar (always-odd), pero cualquier objeto headings anula ese valor, así que los capítulos van seguidos y span: 'page' no hace nada. Vuelve a declarar headings.levels[0].breakBefore: { enabled: true, parity } en cada configuración."
+    },
+    "feature": "chapter-breaks",
+    "followup": "EF-05"
+  },
+  "attr-values": {
+    "title": {
+      "en": "Attribute values: no { or }; single-quote a value with \"",
+      "es": "Valores de atributo: sin { ni }; comillas simples si llevan \""
+    },
+    "body": {
+      "en": "An attribute value ends at the closing brace, so it cannot hold { or }. A value that contains a double quote goes in single quotes; a dollar sign is fine.",
+      "es": "Un valor de atributo termina en la llave de cierre, así que no puede contener { ni }. Un valor que lleve comillas dobles va entre comillas simples; el signo de dólar no da problemas."
+    },
+    "feature": "heading-attributes"
+  },
+  "quote-frontmatter": {
+    "title": {
+      "en": "Quote every frontmatter value",
+      "es": "Entrecomilla cada valor del frontmatter"
+    },
+    "body": {
+      "en": "YAML reads title: 1984 as a number and a date as a Date object, and non-string values print empty in placeholders and leave the PDF without a title. Quote every value: title: \"1984\".",
+      "es": "YAML lee title: 1984 como un número y una fecha como un objeto Date, y los valores que no son cadenas se imprimen vacíos en los marcadores y dejan el PDF sin título. Entrecomilla cada valor: title: \"1984\"."
+    },
+    "feature": "frontmatter",
+    "followup": "EF-11"
+  },
+  "fonts-first": {
+    "title": {
+      "en": "Load every face before layout",
+      "es": "Carga todas las fuentes antes de componer"
+    },
+    "body": {
+      "en": "Layout measures text with the faces the browser has loaded and caches the widths, so a face that arrives after the first build leaves wrong line breaks and a PDF that no longer matches the screen. Load every weight and style first, and call clearMeasurementCache() before rebuilding when one arrives late.",
+      "es": "La composición mide el texto con las fuentes que el navegador ha cargado y guarda los anchos, así que una fuente que llega después de la primera composición deja cortes de línea erróneos y un PDF que ya no coincide con la pantalla. Carga antes todos los pesos y estilos, y llama a clearMeasurementCache() antes de recomponer si alguna llega tarde."
+    },
+    "feature": "font-loading"
+  },
+  "opener-reserves-anchored": {
+    "title": {
+      "en": "An opener reserves height down to its lowest page-anchored element",
+      "es": "Una apertura reserva altura hasta su elemento anclado más bajo"
+    },
+    "body": {
+      "en": "An advanced-design opener reserves the height of its lowest element, and page- or bleed-anchored elements below the heading count too, so decoration at the foot of the page pushes the text to the next page. Keep such decoration above the heading, move it to a header or footer slot, or set the reservation with minHeight.",
+      "es": "Una apertura de diseño avanzado reserva la altura de su elemento más bajo, y cuentan también los anclados a la página o a la sangre que quedan por debajo del título, así que un adorno al pie de la página empuja el texto a la siguiente. Deja esos adornos por encima del título, pásalos a una ranura de cabecera o de pie, o fija la reserva con minHeight."
+    },
+    "feature": "opener-design",
+    "followup": "EF-18"
+  },
+  "top-float-next-page": {
+    "title": {
+      "en": "A 'top' float never lands on its citing page",
+      "es": "Un flotante 'top' nunca cae en la página que lo cita"
+    },
+    "body": {
+      "en": "A float never goes above its own reference, so a page-wide 'top' float cited on page N opens page N+1. Cite it earlier, or use position 'auto' or 'bottom', which can take the foot of the citing page.",
+      "es": "Un flotante nunca va por encima de su propia referencia, así que un flotante 'top' a todo el ancho citado en la página N abre la página N+1. Cítalo antes, o usa la posición 'auto' o 'bottom', que pueden ocupar el pie de la página que lo cita."
+    },
+    "feature": "float-placement"
+  },
+  "float-queues-at-paragraph": {
+    "title": {
+      "en": "A figure is queued where its citing paragraph starts",
+      "es": "Una figura entra en la cola donde empieza el párrafo que la cita"
+    },
+    "body": {
+      "en": "A figure is queued when the paragraph that cites it starts, not at the line of its :ref. When that paragraph begins at the foot of one page and the citation falls on the next, a 'top' figure can open that next page above the sentence that cites it. Put the :ref early in its paragraph, or open a new paragraph with it.",
+      "es": "Una figura entra en la cola cuando empieza el párrafo que la cita, no en la línea de su :ref. Si ese párrafo empieza al pie de una página y la cita cae en la siguiente, una figura 'top' puede abrir esa página por encima de la frase que la cita. Pon el :ref al principio de su párrafo, o abre con él un párrafo nuevo."
+    },
+    "feature": "citations",
+    "followup": "EF-69"
+  },
+  "cover-pagebreak": {
+    "title": {
+      "en": "Put :::pagebreak after a full-page cover",
+      "es": "Pon :::pagebreak tras una cubierta a página completa"
+    },
+    "body": {
+      "en": "In a multi-column layout a full-page opener such as a cover lets the next block start in column 2 of the same page, on top of the art. A :::pagebreak right after the cover heading ends the page and leaves no blank one.",
+      "es": "Con varias columnas, una apertura a página completa, como una cubierta, deja que el bloque siguiente empiece en la columna 2 de la misma página, encima de la ilustración. Un :::pagebreak justo después del título de la cubierta cierra la página sin dejar una en blanco."
+    },
+    "feature": "covers",
+    "followup": "EF-03"
+  },
+  "space-dropped-box-top": {
+    "title": {
+      "en": ":::space is dropped at the top of a box or column",
+      "es": ":::space se descarta al principio de un recuadro o columna"
+    },
+    "body": {
+      "en": ":::space is dropped at the top of a column, a box or a :::columns group, even when it is the box's only content, so an answer box made of space collapses. Open the box with a title or a prompt line, then add the space.",
+      "es": ":::space se descarta al principio de una columna, de un recuadro o de un grupo :::columns, aunque sea el único contenido de la caja, así que una caja de respuesta hecha solo de espacio se queda sin altura. Abre la caja con un título o una línea de enunciado y añade después el espacio."
+    },
+    "feature": "vertical-space",
+    "followup": "EF-04"
+  },
+  "empty-chip": {
+    "title": {
+      "en": "A whitespace-only chip prints its markup",
+      "es": "Un chip solo con espacios imprime su marcado"
+    },
+    "body": {
+      "en": "A chip whose text is only spaces, no-break spaces included, prints :chip[ ] literally. For a blank answer chip put a word joiner (U+2060) inside it.",
+      "es": "Un chip cuyo texto son solo espacios, incluidos los de no separación, imprime :chip[ ] tal cual. Para un chip de respuesta en blanco, pon dentro un unidor de palabras (U+2060)."
+    },
+    "feature": "chips",
+    "followup": "EF-02"
+  },
+  "design-text-newline": {
+    "title": {
+      "en": "\\n in an attribute breaks lines only with paragraphIndent > 0",
+      "es": "\\n en un atributo solo corta líneas con paragraphIndent > 0"
+    },
+    "body": {
+      "en": "In a design text element, a \\n written in an attribute value starts a new line only when paragraphIndent is above zero or a drop cap is set; otherwise the text stays on one line. Set paragraphIndent to a hair (0.01 pt), or use one attribute per line.",
+      "es": "En un elemento de texto de diseño, un \\n escrito en el valor de un atributo solo abre línea nueva si paragraphIndent es mayor que cero o hay capitular; si no, el texto sigue en una línea. Pon en paragraphIndent un valor mínimo (0,01 pt) o usa un atributo por línea."
+    },
+    "feature": "design-elements",
+    "followup": "EF-01"
+  },
+  "heading-number-placeholders": {
+    "title": {
+      "en": "{number}/{chapterNumber} print the H1 number; {numberRoman} is parts-only",
+      "es": "{number}/{chapterNumber} dan el número del H1; {numberRoman} solo en partes"
+    },
+    "body": {
+      "en": "{number} and {chapterNumber} print the heading's formatted number, but {numberRoman}, {numberDecimal} and the other numeric variants are filled only on part pages. Format a chapter number in its numberingTemplate ({1:I}) or pass it as an attribute.",
+      "es": "{number} y {chapterNumber} imprimen el número ya formateado del título, pero {numberRoman}, {numberDecimal} y las demás variantes numéricas solo se rellenan en las páginas de parte. Da formato al número de capítulo en su numberingTemplate ({1:I}) o pásalo como atributo."
+    },
+    "feature": "heading-numbering",
+    "followup": "EF-09"
+  },
+  "section-last-wins": {
+    "title": {
+      "en": "A page takes the header of the last section that starts on it",
+      "es": "Una página toma la cabecera de la última sección que empieza en ella"
+    },
+    "body": {
+      "en": "When two heading styles start on one page, the page takes the header, footer and palette of the last one. A separator blank belongs to the chapter before it, parity padding to the chapter after it.",
+      "es": "Cuando dos estilos de título empiezan en la misma página, esta toma la cabecera, el pie y la paleta del último. Una página en blanco de separación pertenece al capítulo anterior, y el relleno de paridad al siguiente."
+    },
+    "feature": "section-running-heads"
+  },
+  "ragged-no-hyphenation": {
+    "title": {
+      "en": "Ragged text is never hyphenated",
+      "es": "En el texto en bandera no hay separación silábica"
+    },
+    "body": {
+      "en": "Hyphenation applies to justified text only; ragged-right text breaks between words, so a narrow ragged column gets a deep rag. Justify the passage or widen the measure.",
+      "es": "La separación silábica solo se aplica al texto justificado; el texto en bandera corta entre palabras, así que una columna estrecha en bandera queda muy desigual. Justifica el pasaje o ensancha la medida."
+    },
+    "feature": "hyphenation-languages",
+    "followup": "EF-21"
+  },
+  "invisible-heading": {
+    "title": {
+      "en": "A heading that prints nothing needs a design with one element",
+      "es": "Un título que no imprime nada necesita un diseño con un elemento"
+    },
+    "body": {
+      "en": "A heading meant only for structure (a colophon or dedication) still prints: a page-span heading gets a synthesised {titleText} opener and an in-column one its text. Give it an advanced design holding one invisible element, such as a 0.1 pt box.",
+      "es": "Un título pensado solo para la estructura (un colofón o una dedicatoria) se sigue imprimiendo: uno a todo el ancho recibe una apertura sintetizada con {titleText} y uno en columna, su texto. Dale un diseño avanzado con un único elemento invisible, como una caja de 0,1 pt."
+    },
+    "feature": "opener-design",
+    "followup": "EF-26"
+  },
+  "verso-design-breakafter": {
+    "title": {
+      "en": "parts.versoDesign needs parts.breakAfter parity 'odd'",
+      "es": "parts.versoDesign necesita parts.breakAfter con paridad 'odd'"
+    },
+    "body": {
+      "en": "The back of a part divider is painted only when parts.breakAfter { enabled: true, parity: 'odd' } leaves that verso blank.",
+      "es": "El dorso de una portadilla de parte solo se pinta cuando parts.breakAfter { enabled: true, parity: 'odd' } deja ese verso en blanco."
+    },
+    "feature": "part-dividers"
+  },
+  "toc-part-rows-no-label": {
+    "title": {
+      "en": "Part rows without a divider page have no page label",
+      "es": "Las filas de parte sin portadilla no tienen número de página"
+    },
+    "body": {
+      "en": "With parts.page: false there is no divider page, so a contents part row has no page label to print. Leave {pageNumber} out of the part-row design in that case.",
+      "es": "Con parts.page: false no hay portadilla, así que la fila de parte del índice no tiene número de página que imprimir. En ese caso deja {pageNumber} fuera del diseño de la fila."
+    },
+    "feature": "toc",
+    "followup": "EF-10"
+  },
+  "pdf-master-resourcebytes": {
+    "title": {
+      "en": "renderToPdf ignores svg.pdfFileId: serve the master through resourceBytes",
+      "es": "renderToPdf ignora svg.pdfFileId: sirve el máster con resourceBytes"
+    },
+    "body": {
+      "en": "Outside bundles, renderToPdf asks resourceBytes for the SVG's own fileId and never for svg.pdfFileId. Return the print master's bytes for the SVG's fileId in your resourceBytes.",
+      "es": "Fuera de los paquetes, renderToPdf pide a resourceBytes el fileId del propio SVG y nunca svg.pdfFileId. Devuelve en tu resourceBytes los bytes del máster de impresión para el fileId del SVG."
+    },
+    "feature": "svg-print-masters",
+    "followup": "EF-06"
+  },
+  "design-text-no-inline-marks": {
+    "title": {
+      "en": "Design text has no inline ^sup^ or **bold**",
+      "es": "El texto de diseño no admite ^sup^ ni **negrita**"
+    },
+    "body": {
+      "en": "Design text elements print plain text, so ^1^ or **bold** in an attribute appear literally. Use Unicode superscripts (¹ ² ³ are in the latin subset) or a second element in another weight.",
+      "es": "Los elementos de texto de diseño imprimen texto plano, así que ^1^ o **negrita** en un atributo aparecen tal cual. Usa superíndices Unicode (¹ ² ³ están en el subconjunto latin) o un segundo elemento con otro peso."
+    },
+    "feature": "design-elements",
+    "followup": "EF-25"
+  },
+  "no-zebra": {
+    "title": {
+      "en": "Named table styles have no zebra rows",
+      "es": "Los estilos de tabla no tienen filas alternas"
+    },
+    "body": {
+      "en": "A table style has a header fill and a single body fill, with no alternating rows. Fill every other row cell by cell (setCellBackground) with a palette-linked tint.",
+      "es": "Un estilo de tabla tiene un relleno de cabecera y uno solo para el cuerpo, sin filas alternas. Rellena una fila de cada dos celda a celda (setCellBackground) con un tinte enlazado a la paleta."
+    },
+    "feature": "cell-fills",
+    "followup": "EF-23"
+  },
+  "bundle-metadata": {
+    "title": {
+      "en": "buildBundle passes no metadata between chapters; {totalPages} is per chapter",
+      "es": "buildBundle no pasa metadatos de un capítulo a otro; {totalPages} es por capítulo"
+    },
+    "body": {
+      "en": "buildBundle passes no metadata from one chapter to the next: {title}, {author} and the rest come only from a chapter's own frontmatter, so every chapter without one prints them blank (and the Sandbox drops the frontmatter of every chapter after the first), and {totalPages} counts the pages of each chapter. Write the book title literally in the running heads.",
+      "es": "buildBundle no pasa metadatos de un capítulo al siguiente: {title}, {author} y los demás salen solo del frontmatter del propio capítulo, así que todo capítulo sin él los deja vacíos (y el Sandbox descarta el frontmatter de todos los capítulos menos el primero), y {totalPages} cuenta las páginas de cada capítulo. Escribe el título del libro literalmente en las cabeceras."
+    },
+    "feature": "multi-chapter-books",
+    "followup": "EF-08"
+  },
+  "merged-cells-hiddenby": {
+    "title": {
+      "en": "Merged cells need hiddenBy placeholders: use mergeCells",
+      "es": "Las celdas combinadas necesitan hiddenBy: usa mergeCells"
+    },
+    "body": {
+      "en": "Cells are laid out by their position in the row array, so a merged cell needs placeholder cells marked hiddenBy where it spreads; leaving them out, as HTML does, shifts every later column. Build merges with mergeCells.",
+      "es": "Las celdas se colocan según su posición en la fila, así que una celda combinada necesita celdas de relleno marcadas con hiddenBy donde se extiende; omitirlas, como en HTML, desplaza todas las columnas siguientes. Combina celdas con mergeCells."
+    },
+    "feature": "table-model",
+    "followup": "EF-34"
+  },
+  "font-family-one-name": {
+    "title": {
+      "en": "fontFamily is one family name, never a CSS stack",
+      "es": "fontFamily es un nombre de familia, nunca una pila CSS"
+    },
+    "body": {
+      "en": "A stack such as 'Lora, serif' is read as one family that does not exist, so text silently measures with a fallback and canvas, HTML and PDF disagree. Name a single family.",
+      "es": "Una pila como 'Lora, serif' se lee como una única familia que no existe, así que el texto se mide sin aviso con una fuente de reserva y el canvas, el HTML y el PDF no coinciden. Escribe una sola familia."
+    },
+    "feature": "font-loading",
+    "followup": "EF-13"
+  },
+  "bitmap-print-size": {
+    "title": {
+      "en": "Bitmaps are laid out in px at the document dpi: declare print size",
+      "es": "Los mapas de bits se miden en píxeles a la resolución del documento: declara el tamaño de impresión"
+    },
+    "body": {
+      "en": "A bitmap resource is sized from the width and height it declares, in pixels at the document's dpi, not from the file. Declare the print-size pixels (about 300 dpi at the printed width) so the figure lands at the right size and stays sharp.",
+      "es": "Un recurso de mapa de bits toma su tamaño del ancho y el alto que declara, en píxeles a la resolución del documento, no del archivo. Declara los píxeles del tamaño de impresión (unos 300 ppp al ancho impreso) para que la figura salga a su tamaño y nítida."
+    },
+    "feature": "resources"
+  },
+  "numbering-vocabularies": {
+    "title": {
+      "en": "Lists say 'arabic', resources 'roman-upper', pages 'upper-roman'",
+      "es": "Listas 'arabic', recursos 'roman-upper', páginas 'upper-roman'"
+    },
+    "body": {
+      "en": "Each numbering setting spells its formats differently: lists take numberFormat 'arabic' ('decimal' prints \"undefined\"), resource types take counterFormat 'roman-upper', pages and :::numbering take 'upper-roman'.",
+      "es": "Cada ajuste de numeración escribe sus formatos a su manera: las listas usan numberFormat 'arabic' ('decimal' imprime «undefined»), los tipos de recurso counterFormat 'roman-upper' y las páginas y :::numbering 'upper-roman'."
+    },
+    "feature": "numbered-lists",
+    "followup": "EF-12"
+  },
+  "resource-double-quotes": {
+    "title": {
+      "en": "::resource{id=\"…\"} takes double quotes only",
+      "es": "::resource{id=\"…\"} solo admite comillas dobles"
+    },
+    "body": {
+      "en": "A block embed is recognised only as ::resource{id=\"…\"} with double quotes; any other form stays in the text as a visible line.",
+      "es": "Una inserción de bloque solo se reconoce como ::resource{id=\"…\"} con comillas dobles; cualquier otra forma se queda en el texto como una línea visible."
+    },
+    "feature": "inline-embeds"
+  },
+  "pdf-provider-all-styles": {
+    "title": {
+      "en": "The PDF asks for every weight and style of every family",
+      "es": "El PDF pide todos los pesos y estilos de cada familia"
+    },
+    "body": {
+      "en": "renderToPdf asks the font provider for the bold, italic and bold-italic faces of every family a block could use, even ones never printed, and a single rejection stops the export. The provider must snap to the nearest weight the family ships and fall back to upright when there is no italic.",
+      "es": "renderToPdf pide al proveedor de fuentes la negrita, la cursiva y la negrita cursiva de cada familia que un bloque podría usar, aunque nunca se imprima, y un solo rechazo detiene la exportación. El proveedor debe ajustarse al peso más cercano que tenga la familia y volver a la redonda cuando no haya cursiva."
+    },
+    "feature": "pdf-fonts",
+    "followup": "EF-20"
+  },
+  "html-limits": {
+    "title": {
+      "en": "HTML output has no column rule, grid or marks, and is transparent",
+      "es": "La salida HTML no tiene filetes, retícula ni marcas, y es transparente"
+    },
+    "body": {
+      "en": "renderToHtml draws no column rule, baseline grid or crop marks, and its pages are transparent unless you pass a background, which on a dark page means dark text on dark.",
+      "es": "renderToHtml no dibuja filetes de columna, rejilla base ni marcas de corte, y sus páginas son transparentes si no le pasas un fondo, lo que en una página oscura deja texto oscuro sobre oscuro."
+    },
+    "feature": "html-viewer"
+  },
+  "math-bundle": {
+    "title": {
+      "en": "Maths needs https://esm.sh/postext?bundle and initMathEngine()",
+      "es": "Las matemáticas necesitan postext?bundle e initMathEngine()"
+    },
+    "body": {
+      "en": "Formulas from https://esm.sh/postext paint grey boxes without an error. Import every symbol from https://esm.sh/postext?bundle, never mixing the two URLs, and await initMathEngine() before the first build.",
+      "es": "Las fórmulas cargadas desde https://esm.sh/postext se pintan como cajas grises sin ningún error. Importa todos los símbolos desde https://esm.sh/postext?bundle, sin mezclar nunca las dos URL, y espera a initMathEngine() antes de la primera composición."
+    },
+    "feature": "math",
+    "followup": "EF-15"
+  },
+  "config-cache-identity": {
+    "title": {
+      "en": "A config is cached by identity: build a fresh object",
+      "es": "Una configuración se cachea por identidad: crea un objeto nuevo"
+    },
+    "body": {
+      "en": "The engine caches resolved configs by object identity, so changing a config in place and building again reuses the old result. Build a fresh object for every build, which is why a recipe's config is a factory: config().",
+      "es": "El motor guarda en caché las configuraciones resueltas según la identidad del objeto, así que modificar el mismo objeto y volver a componer reutiliza el resultado anterior. Crea un objeto nuevo en cada composición: por eso la configuración de una receta es una función, config()."
+    },
+    "feature": "canvas-rendering"
+  },
+  "svg-no-webfonts": {
+    "title": {
+      "en": "Text inside an SVG <img> cannot use web fonts",
+      "es": "El texto dentro de un SVG <img> no puede usar fuentes web"
+    },
+    "body": {
+      "en": "An SVG is drawn as an image, and an image has no access to the page's web fonts, so its labels fall back to a system face. Outline the text, embed an @font-face subset in the SVG, or move the labels to the caption.",
+      "es": "Un SVG se dibuja como imagen, y una imagen no tiene acceso a las fuentes web de la página, así que sus rótulos salen con una fuente del sistema. Convierte el texto en trazados, incrusta un subconjunto @font-face en el SVG o lleva los rótulos al pie."
+    },
+    "feature": "resources"
+  },
+  "svg-no-marker-filters": {
+    "title": {
+      "en": "No <marker> or filters in SVG art (raster fallback)",
+      "es": "Sin <marker> ni filtros en los SVG, o pasan a mapa de bits"
+    },
+    "body": {
+      "en": "An SVG figure stays vector in the PDF only without <marker>, filters and masks; otherwise it falls back to a raster, and deeply nested filters can blank it in Chrome. Draw arrowheads as paths.",
+      "es": "Una figura SVG solo sigue siendo vectorial en el PDF sin <marker>, filtros ni máscaras; si no, pasa a mapa de bits, y los filtros muy anidados pueden dejarla en blanco en Chrome. Dibuja las puntas de flecha como trazados."
+    },
+    "feature": "resources"
+  },
+  "latin-subset": {
+    "title": {
+      "en": "Fontsource latin files drop glyphs outside Latin",
+      "es": "Los archivos latin de Fontsource solo traen glifos del rango latino"
+    },
+    "body": {
+      "en": "The PDF provider embeds Fontsource's latin files, which cover Spanish and Western European text but not →, ≈, ✓, ★, Greek or Central European letters; those glyphs go missing in the PDF. Keep PDF text inside the latin range.",
+      "es": "El proveedor del PDF incrusta los archivos latin de Fontsource, que cubren el español y las lenguas de Europa occidental pero no →, ≈, ✓, ★, el griego ni las letras de Europa central; esos glifos faltan en el PDF. Mantén el texto del PDF dentro del rango latin."
+    },
+    "feature": "pdf-fonts"
+  },
+  "digit-period-list": {
+    "title": {
+      "en": "'1998. ' or '- ' at a paragraph start opens a list",
+      "es": "«1998. » o «- » al principio de un párrafo abren una lista"
+    },
+    "body": {
+      "en": "A paragraph that starts with a number, a period and a space, or with a hyphen and a space, becomes a list item. Put a word joiner (U+2060) before the number, and write dialogue with an em dash.",
+      "es": "Un párrafo que empieza por un número, un punto y un espacio, o por un guion y un espacio, se convierte en un elemento de lista. Pon un unidor de palabras (U+2060) antes del número y escribe los diálogos con raya."
+    },
+    "feature": "escapes"
+  },
+  "dollar-math": {
+    "title": {
+      "en": "A bare $ opens maths: write \\$",
+      "es": "Un $ suelto abre matemáticas: escribe \\$"
+    },
+    "body": {
+      "en": "A dollar sign opens inline maths, so a price such as $40 starts a formula. Write \\$40.",
+      "es": "El signo de dólar abre matemáticas en línea, así que un precio como $40 empieza una fórmula. Escribe \\$40."
+    },
+    "feature": "escapes"
+  },
+  "side-box-no-float": {
+    "title": {
+      "en": "Side boxes never float: they wait for room",
+      "es": "Los recuadros laterales no flotan: esperan sitio"
+    },
+    "body": {
+      "en": "A span: 'side' box does not float: it sits beside the block it follows and, when the margin channel is full, waits for the next page. Put each gloss right after the paragraph it explains.",
+      "es": "Un recuadro con span: 'side' no flota: se coloca junto al bloque al que sigue y, si el canal del margen está lleno, espera a la página siguiente. Pon cada glosa justo después del párrafo que explica."
+    },
+    "feature": "side-boxes"
+  },
+  "callout-columns": {
+    "title": {
+      "en": ":::columns works only inside a box and never splits",
+      "es": ":::columns solo funciona dentro de un recuadro y no se parte"
+    },
+    "body": {
+      "en": ":::columns is ignored outside a callout, and a box that splits never cuts inside a columns group. A breaks attribute counts child blocks, with a nested box as one.",
+      "es": ":::columns se ignora fuera de un recuadro, y un recuadro que se parte nunca corta dentro de un grupo de columnas. El atributo breaks cuenta bloques hijos, y un recuadro anidado cuenta como uno."
+    },
+    "feature": "callout-columns"
+  },
+  "here-table-no-split": {
+    "title": {
+      "en": "A 'here' table never splits",
+      "es": "Una tabla 'here' nunca se parte"
+    },
+    "body": {
+      "en": "Only floated tables split across columns and pages; a table placed 'here' moves whole. Let a long table float, or keep inline tables short.",
+      "es": "Solo se parten entre columnas y páginas las tablas flotantes; una tabla colocada 'here' se mueve entera. Deja flotar las tablas largas o mantén cortas las tablas en línea."
+    },
+    "feature": "table-split"
+  },
+  "sandbox-only-warnings": {
+    "title": {
+      "en": "Most warnings exist only in the Sandbox",
+      "es": "La mayoría de los avisos solo existen en el Sandbox"
+    },
+    "body": {
+      "en": "Unknown ids, styles and directives, missing fonts and loose lines are checked by the Sandbox, not the engine: a pen only gets doc.warnings and parseMarkdownWithIssues. An unknown style silently falls back and an unknown directive prints as text, so check your ids.",
+      "es": "Los ids, estilos y directivas desconocidos, las fuentes que faltan y las líneas flojas los comprueba el Sandbox, no el motor: un pen solo recibe doc.warnings y parseMarkdownWithIssues. Un estilo desconocido se sustituye sin aviso por otro y una directiva desconocida se imprime como texto, así que revisa tus ids."
+    },
+    "feature": "diagnostics",
+    "followup": "EF-19"
+  },
+  "viewer-settings-sandbox-only": {
+    "title": {
+      "en": "Some htmlViewer settings exist only in the Sandbox",
+      "es": "Algunos ajustes de htmlViewer solo existen en el Sandbox"
+    },
+    "body": {
+      "en": "htmlViewer.maxCharsPerLine, columnGap and optimalLineBreaking are read by the Sandbox's viewer, not by renderToHtml. In your own page, size the page yourself and pass mode and columnGap to renderToHtml; overrides are applied with applyHtmlViewerOverrides.",
+      "es": "htmlViewer.maxCharsPerLine, columnGap y optimalLineBreaking los lee el visor del Sandbox, no renderToHtml. En tu propia página, dimensiona tú la página y pasa mode y columnGap a renderToHtml; las correcciones se aplican con applyHtmlViewerOverrides."
+    },
+    "feature": "html-viewer"
+  },
+  "header-paints-over-text": {
+    "title": {
+      "en": "Header and footer elements paint over text",
+      "es": "Los elementos de cabecera y pie se pintan encima del texto"
+    },
+    "body": {
+      "en": "Header and footer elements are painted over the page and the text area does not make room for them. Keep them within the margins, which are what reserve their space.",
+      "es": "Los elementos de cabecera y pie se pintan sobre la página y el área de texto no les deja sitio. Mantenlos dentro de los márgenes, que son los que les reservan el espacio."
+    },
+    "feature": "running-heads"
+  },
+  "resource-types-locale": {
+    "title": {
+      "en": "Localise Figure/Table with defaultResourceTypes(locale)",
+      "es": "Traduce Figura y Tabla con defaultResourceTypes(locale)"
+    },
+    "body": {
+      "en": "The config's locale sets hyphenation, not captions: without resourceTypes the built-in types say Figure and Table in English. Pass resourceTypes: defaultResourceTypes('es') for Spanish; for any other language, write the names yourself in resourceTypes.",
+      "es": "El locale de la configuración fija la separación silábica, no los pies: sin resourceTypes, los tipos de serie dicen Figure y Table en inglés. Pasa resourceTypes: defaultResourceTypes('es') para el español; para cualquier otro idioma, escribe tú los nombres en resourceTypes."
+    },
+    "feature": "localised-labels",
+    "followup": "EF-33"
+  },
+  "hyphenation-locales": {
+    "title": {
+      "en": "Only 8 locales hyphenate, by exact code",
+      "es": "Solo 8 idiomas tienen separación silábica, con el código exacto"
+    },
+    "body": {
+      "en": "Hyphenation ships for en-us, es, fr, de, it, pt, ca and nl, matched exactly: 'es-ES' or any other language silently falls back to American English.",
+      "es": "La separación silábica existe para en-us, es, fr, de, it, pt, ca y nl, con el código exacto: 'es-ES' o cualquier otro idioma pasa sin aviso al inglés americano."
+    },
+    "feature": "hyphenation-languages",
+    "followup": "EF-14"
+  },
+  "unknown-ref-silent": {
+    "title": {
+      "en": "An unknown :ref id prints '?' with no engine warning",
+      "es": "Un :ref desconocido imprime «?» sin aviso del motor"
+    },
+    "body": {
+      "en": "A :ref to an id no resource has prints \"?\" and places nothing, and only the Sandbox warns about it. Check that every cited id exists.",
+      "es": "Un :ref a un id que no tiene ningún recurso imprime «?» y no coloca nada, y solo el Sandbox avisa. Comprueba que existe cada id que citas."
+    },
+    "feature": "citations",
+    "followup": "EF-19"
+  },
+  "parity-page1-recto": {
+    "title": {
+      "en": "Page 1 is a recto: plan pages with physical numbers",
+      "es": "La página 1 es impar: planifica con números físicos"
+    },
+    "body": {
+      "en": "Page 1 is a right-hand page and page 2 the first verso, so plan spreads with physical page numbers: an opener on an even page faces the odd page after it.",
+      "es": "La página 1 queda a la derecha y la 2 es la primera página par, así que planifica los pliegos con números de página físicos: una apertura en página par queda frente a la impar que la sigue."
+    },
+    "feature": "page-breaks"
+  },
+  "nested-callout-limits": {
+    "title": {
+      "en": "A nested box ignores span, placement and snapToGrid",
+      "es": "Un recuadro anidado ignora span, placement y snapToGrid"
+    },
+    "body": {
+      "en": "A callout nested in another ignores its span, placement, snapToGrid and floatBarrier: it always flows inside its parent, at the parent's inner width.",
+      "es": "Un recuadro anidado en otro ignora su span, placement, snapToGrid y floatBarrier: siempre se compone dentro del recuadro que lo contiene, con el ancho interior de este."
+    },
+    "feature": "nested-callouts"
+  },
+  "numbering-next-page": {
+    "title": {
+      "en": ":::numbering takes effect at the next page",
+      "es": ":::numbering se aplica en la página siguiente"
+    },
+    "body": {
+      "en": ":::numbering changes the count from the next page that starts, not the current one. Put it right after a :::pagebreak (parity odd before chapter one) so the new numbering begins where you mean.",
+      "es": ":::numbering cambia la cuenta a partir de la siguiente página que empieza, no de la actual. Colócalo justo después de un :::pagebreak (con paridad odd antes del primer capítulo) para que la numeración nueva empiece donde quieres."
+    },
+    "feature": "roman-front-matter"
+  },
+  "overflow-ellipsis-default": {
+    "title": {
+      "en": "Design text overflow defaults to 'ellipsis-end'",
+      "es": "El desbordamiento del texto de diseño es 'ellipsis-end' por defecto"
+    },
+    "body": {
+      "en": "A design text element that does not fit its width ends in an ellipsis by default. Set overflow: 'wrap' for titles that should break onto more lines.",
+      "es": "Un elemento de texto de diseño que no cabe en su ancho termina en puntos suspensivos por defecto. Pon overflow: 'wrap' en los títulos que deban pasar a más líneas."
+    },
+    "feature": "design-elements"
+  },
+  "negative-offsets": {
+    "title": {
+      "en": "Container-relative negative offsets render nothing",
+      "es": "Los desplazamientos negativos relativos al contenedor no pintan nada"
+    },
+    "body": {
+      "en": "Auto-width design text is clamped to its container, so a negative offset from the container pushes it out and nothing renders. Anchor such elements to the page or the bleed with explicit mm offsets, or give them a fixed width.",
+      "es": "El texto de diseño de ancho automático se limita a su contenedor, así que un desplazamiento negativo respecto al contenedor lo saca fuera y no se pinta nada. Ancla esos elementos a la página o a la sangre con desplazamientos explícitos en mm, o dales un ancho fijo."
+    },
+    "feature": "design-anchoring"
+  },
+  "single-ink-canvas": {
+    "title": {
+      "en": "renderPage does not recolour SVGs; renderToPdf does",
+      "es": "renderPage no recolorea los SVG; renderToPdf sí"
+    },
+    "body": {
+      "en": "diagramStyle.singleInk is applied by renderToPdf, but the canvas paints registered SVGs as given. Recolour the markup with applySingleInkToSvg before registering it, so screen and PDF match.",
+      "es": "renderToPdf aplica diagramStyle.singleInk, pero el canvas pinta los SVG registrados tal como llegan. Recolorea el marcado con applySingleInkToSvg antes de registrarlo para que pantalla y PDF coincidan."
+    },
+    "feature": "single-ink",
+    "followup": "EF-17"
+  },
+  "chip-overlap": {
+    "title": {
+      "en": "Chips taller than the line pitch touch the next line",
+      "es": "Los chips más altos que el interlineado tocan la línea siguiente"
+    },
+    "body": {
+      "en": "A chip whose box is taller than the line pitch touches the chips on the next line (the chipOverlap warning). Reduce its vertical padding, border or size, or open the leading.",
+      "es": "Un chip cuya caja es más alta que el interlineado toca los chips de la línea siguiente (el aviso chipOverlap). Reduce su relleno vertical, su borde o su cuerpo, o abre el interlineado."
+    },
+    "feature": "chips"
+  },
+  "palette-skips-designs": {
+    "title": {
+      "en": "A swapped palette misses design elements and the reference colour",
+      "es": "Una paleta cambiada no llega a los elementos de diseño ni al color de las remisiones"
+    },
+    "body": {
+      "en": "postext 1.4.1 reads colorPalette into the text styles (body, headings, lists, captions, tables, boxes) but not into the elements of headers, footers, openers and part pages, nor into bodyText.referenceColor: they keep the hex written beside their paletteId. When you swap the palette, for a dark screen edition or a retint, rewrite every linked colour from colorPalette before the build.",
+      "es": "postext 1.4.1 aplica colorPalette a los estilos de texto (cuerpo, títulos, listas, pies, tablas, recuadros), pero no a los elementos de cabeceras, pies de página, aperturas y portadillas, ni a bodyText.referenceColor: conservan el hex escrito junto a su paletteId. Si cambias la paleta, para una edición de pantalla oscura o para recolorear, reescribe cada color enlazado a partir de colorPalette antes de componer."
+    },
+    "feature": "color-palette",
+    "followup": "EF-71"
+  },
+  "float-stretch-closing-page": {
+    "title": {
+      "en": "A top float can push the last column down on a closing page",
+      "es": "Un flotante superior puede bajar la última columna en una página de cierre"
+    },
+    "body": {
+      "en": "In postext 1.4.1, when a chapter or story ends on a page that opens with a page-wide top float and its lines split unevenly between the columns, stretchAfterFloats adds a blank line under the float in the shorter column instead of letting it end short, so the two columns no longer start on the same line. Set headings.balancing.stretchAfterFloats to false, or fit the copy to an even number of lines.",
+      "es": "En postext 1.4.1, cuando un capítulo o un reportaje termina en una página que se abre con un flotante superior a todo el ancho y sus líneas se reparten de forma desigual entre las columnas, el ajuste stretchAfterFloats añade una línea en blanco bajo el flotante en la columna más corta en vez de dejar que termine antes, y las dos columnas ya no empiezan en la misma línea. Pon headings.balancing.stretchAfterFloats a false o ajusta el texto a un número par de líneas."
+    },
+    "feature": "column-balancing",
+    "followup": "EF-70"
+  },
+  "math-tag-vanishes": {
+    "title": {
+      "en": "A \\tag makes a display formula vanish",
+      "es": "Un \\tag hace desaparecer la fórmula destacada"
+    },
+    "body": {
+      "en": "In postext 1.4.1 a display formula with \\tag{…} comes out 0 wide, so nothing prints and no invalidMath warning is raised. Number the equations yourself: centre the formula and set its number flush right in \\mathmakebox boxes whose widths add up to the column.",
+      "es": "En postext 1.4.1 una fórmula destacada con \\tag{…} sale con anchura 0, así que no se imprime nada y no salta el aviso invalidMath. Numera tú las ecuaciones: centra la fórmula y pon su número al borde derecho en cajas \\mathmakebox cuyas anchuras sumen la de la columna."
+    },
+    "feature": "math",
+    "followup": "EF-74"
+  },
+  "nbsp-breaks": {
+    "title": {
+      "en": "A no-break space still breaks the line",
+      "es": "Un espacio de no separación sigue partiendo la línea"
+    },
+    "body": {
+      "en": "In postext 1.4.1 the line breaker treats U+00A0 as an ordinary space, so 0.08 %, 2.006 s or Section 2 can split across two lines. Close the pair up (0.08%) or reword the sentence.",
+      "es": "En postext 1.4.1 el algoritmo de corte trata U+00A0 como un espacio normal, así que 0,08 %, 2,006 s o sección 2 pueden quedar en dos líneas. Junta los dos elementos (0,08%) o reescribe la frase."
+    },
+    "feature": "escapes",
+    "followup": "EF-66"
+  },
+  "design-lineheight-multiple": {
+    "title": {
+      "en": "A design text's lineHeight is a multiple, never a dimension",
+      "es": "El lineHeight de un texto de diseño es un múltiplo, nunca una medida"
+    },
+    "body": {
+      "en": "In a design slot, a text element's lineHeight multiplies its font size (lineHeight: 1.05). In postext 1.4.1 a dimension such as pt(15) is not rejected: the opener's height measures as NaN, the room it reserves, minHeight included, is dropped without a warning and the text runs under the title.",
+      "es": "En una ranura de diseño, el lineHeight de un elemento de texto multiplica su cuerpo (lineHeight: 1.05). En postext 1.4.1 una medida como pt(15) no da error: la altura de la apertura sale NaN, el espacio que reserva, minHeight incluido, se pierde sin aviso y el texto se superpone al título."
+    },
+    "feature": "design-elements",
+    "followup": "EF-56"
+  },
+  "bundle-ref-places-again": {
+    "title": {
+      "en": "A :ref to an earlier chapter's figure places it again",
+      "es": "Un :ref a una figura de un capítulo anterior la vuelve a colocar"
+    },
+    "body": {
+      "en": "Under buildBundle in postext 1.4.1, a :ref to a figure first cited in an earlier chapter prints the right number but floats the figure a second time in the later chapter, where it counts as a first reference. Refer back in words (the October frame, figure 1.1).",
+      "es": "Con buildBundle, en postext 1.4.1, un :ref a una figura citada por primera vez en un capítulo anterior imprime el número correcto, pero vuelve a colocar la figura en el capítulo posterior, donde cuenta como primera referencia. Remite a ella con palabras (el cuadro de octubre, figura 1.1)."
+    },
+    "feature": "multi-chapter-books",
+    "followup": "EF-57"
+  },
+  "style-inherits-break": {
+    "title": {
+      "en": "A heading style inherits its level's page break",
+      "es": "Un estilo de título hereda el salto de página de su nivel"
+    },
+    "body": {
+      "en": "A headingStyles entry takes every field it leaves out from its heading level, breakBefore included. A contents page or a colophon styled on an H1 after a :::pagebreak inherits parity 'odd' and lands behind a blank page. Give such a style breakBefore: { enabled: false }.",
+      "es": "Una entrada de headingStyles toma de su nivel de título todo lo que no fija, también breakBefore. Un índice o un colofón con estilo sobre un H1 tras un :::pagebreak hereda la paridad 'odd' y cae detrás de una página en blanco. Dale a ese estilo breakBefore: { enabled: false }."
+    },
+    "feature": "heading-styles",
+    "followup": "EF-60"
+  },
+  "style-italic-colour": {
+    "title": {
+      "en": "A paragraph style has no italic colour",
+      "es": "Un estilo de párrafo no tiene color de cursiva"
+    },
+    "body": {
+      "en": "In postext 1.4.1 a paragraph style sets color and boldColor but no italicColor: its italic runs take bodyText.italicColor. A muted style (small print, a source line) prints its italic titles darker than the words around them. Keep such styles in the body's ink, or avoid italics in them.",
+      "es": "En postext 1.4.1 un estilo de párrafo fija color y boldColor, pero no italicColor: sus cursivas toman bodyText.italicColor. Un estilo atenuado (la letra pequeña, la línea «Fuente:» de una tabla) imprime sus títulos en cursiva más oscuros que el texto que los rodea. Deja esos estilos en el color del texto o evita en ellos las cursivas."
+    },
+    "feature": "paragraph-styles",
+    "followup": "EF-68"
+  },
+  "side-box-after-heading": {
+    "title": {
+      "en": "A side box after a heading indents the next paragraph",
+      "es": "Un recuadro lateral tras un título sangra el párrafo siguiente"
+    },
+    "body": {
+      "en": "In postext 1.4.1 a span: 'side' box fenced between a heading and its first paragraph gives that paragraph a first-line indent, even with indentAfterHeading: false: the box leaves the flow, but its blocks still count as the block after the heading. Fence the box after the first paragraph.",
+      "es": "En postext 1.4.1, un recuadro con span: 'side' entre un título y su primer párrafo le da a ese párrafo sangría de primera línea, aunque indentAfterHeading sea false: el recuadro sale del flujo, pero sus bloques siguen contando como el bloque que sigue al título. Coloca el recuadro después del primer párrafo."
+    },
+    "feature": "side-boxes",
+    "followup": "EF-67"
+  },
+  "ellipsis-mid-word": {
+    "title": {
+      "en": "The ellipsis cuts mid-word and keeps a space before it",
+      "es": "Los puntos suspensivos cortan a mitad de palabra y conservan el espacio anterior"
+    },
+    "body": {
+      "en": "In postext 1.4.1 overflow: 'ellipsis-end' cuts after the last character that fits, not at a word boundary, and keeps a space it lands after, so a running head can end 'fals…' or 'false …'. Fit maxWidth to a word end for a title you know, or give long titles a short running title in a heading attribute.",
+      "es": "En postext 1.4.1, overflow: 'ellipsis-end' corta tras el último carácter que cabe, no en un límite de palabra, y conserva el espacio si cae justo detrás de uno, así que una cabecera puede acabar en «fals…» o «false …». Ajusta maxWidth al final de una palabra si conoces el título, o da a los títulos largos un título corto de cabecera en un atributo."
+    },
+    "feature": "design-elements",
+    "followup": "EF-76"
+  },
+  "ragged-run-punctuation": {
+    "title": {
+      "en": "Ragged text can strand punctuation next to bold or a :ref",
+      "es": "El texto en bandera puede dejar sola la puntuación junto a una negrita o un :ref"
+    },
+    "body": {
+      "en": "In postext 1.4.1 text that is not justified (box bodies, ragged paragraphs) can break a line between a bold or italic run, or a :ref, and the punctuation touching it: a full stop can open the next line, and the '(' before a reference can end the line above. Justified text never breaks there. Read the boxes of every edition and reword any sentence where it happens, so the run sits mid-line.",
+      "es": "En postext 1.4.1, el texto que no va justificado (cuerpos de recuadro, párrafos en bandera) puede partir la línea entre una negrita, una cursiva o un :ref y el signo de puntuación pegado a ellos: un punto puede abrir la línea siguiente y el «(» de una remisión puede cerrar la anterior. El texto justificado nunca se parte ahí. Revisa los recuadros de cada edición y reescribe la frase afectada para que ese tramo quede en mitad de la línea."
+    },
+    "feature": "emphasis-colours",
+    "followup": "EF-73"
+  },
+  "toc-number-baseline": {
+    "title": {
+      "en": "Contents numbers sit a little above the entry's baseline",
+      "es": "Los números del índice quedan algo por encima de la línea base de la entrada"
+    },
+    "body": {
+      "en": "In postext 1.4.1 :::toc paints each entry's number centred on the line instead of on the text's baseline, so the chapter numbers ride slightly high beside their titles, about 0.7 mm next to a 16 pt title, whatever face or size you give them. No toc option moves them yet, so look at the contents page at full size before you print.",
+      "es": "En postext 1.4.1, :::toc pinta el número de cada entrada centrado en la línea y no sobre la línea base del texto, así que los números de capítulo quedan algo altos junto a sus títulos, unos 0,7 mm al lado de un título de 16 pt, sea cual sea su fuente o su tamaño. Todavía no hay opción de toc que los mueva, así que revisa el índice a tamaño real antes de imprimir."
+    },
+    "feature": "toc",
+    "followup": "EF-58"
+  },
+  "here-figure-no-space-after": {
+    "title": {
+      "en": "An inline figure gets space above it but not below",
+      "es": "Una figura en línea lleva aire encima, pero no debajo"
+    },
+    "body": {
+      "en": "In postext 1.4.1 a figure that ::resource sets at position 'here' gets one grid line of space above it, but below it only what is left over when the next line snaps to the baseline grid: anywhere from a whole line to almost nothing, so the next paragraph can start right under the caption. Follow the ::resource line with :::space{lines=1}; like any :::space, it is dropped at the top of a column.",
+      "es": "En postext 1.4.1, una figura que ::resource coloca con la posición 'here' lleva una línea de la rejilla base de aire encima, pero debajo solo lo que sobra cuando la línea siguiente se ajusta a la rejilla: desde una línea entera hasta casi nada, así que el párrafo siguiente puede empezar pegado al pie. Pon :::space{lines=1} tras la línea ::resource; como todo :::space, se descarta en la cabeza de una columna."
+    },
+    "feature": "inline-embeds",
+    "followup": "EF-93"
+  },
+  "box-embed-no-gap": {
+    "title": {
+      "en": "A table or figure inside a box gets no space around it",
+      "es": "Una tabla o una figura dentro de un recuadro no lleva aire alrededor"
+    },
+    "body": {
+      "en": "In postext 1.4.1 a table or figure that ::resource sets at position 'here' inside a :::callout gets none of the space it keeps in the running text: it touches the paragraph above it and the one below. Put a :::space before the ::resource line, and another after it when text follows; a fraction of a line, such as lines=0.33, gives a small gap.",
+      "es": "En postext 1.4.1, una tabla o una figura que ::resource coloca con la posición 'here' dentro de un :::callout no recibe nada del aire que conserva en el texto corrido: toca el párrafo de encima y el de debajo. Pon un :::space antes de la línea ::resource, y otro después si sigue texto; una fracción de línea, como lines=0.33, deja un espacio pequeño."
+    },
+    "feature": "inline-embeds",
+    "followup": "EF-117"
+  },
+  "opener-image-no-reserve": {
+    "title": {
+      "en": "An opener's images never count towards the height it reserves",
+      "es": "Las imágenes de una apertura no cuentan para la altura que reserva"
+    },
+    "body": {
+      "en": "In postext 1.4.1 an advanced-design heading measures the height it reserves without its images: its texts, rules and boxes count, even when anchored to the page, but an image, such as a picture bled across the head of the page, reserves nothing, so the text can start on top of it. Set minHeight to where the text should begin.",
+      "es": "En postext 1.4.1, un título con diseño avanzado mide la altura que reserva sin contar sus imágenes: sus textos, filetes y cajas cuentan, aunque estén anclados a la página, pero una imagen, como un dibujo a sangre en la cabeza de la página, no reserva nada, así que el texto puede empezar encima de ella. Fija con minHeight dónde debe empezar el texto."
+    },
+    "feature": "opener-design",
+    "followup": "EF-90"
+  },
+  "drop-cap-palette": {
+    "title": {
+      "en": "A section or part palette does not recolour a drop cap",
+      "es": "La paleta de una sección o de una parte no recolorea la capitular"
+    },
+    "body": {
+      "en": "In postext 1.4.1 a heading style's palette, like a part's, recolours the palette-linked colours of the design elements on its pages (texts, rules, boxes, box backgrounds and borders) but not dropCap.color: the initial keeps the hex written in the config. Give the drop cap the section's own colour, or leave dropCap.color unset so that it takes the colour of its text element.",
+      "es": "En postext 1.4.1, la paleta de un estilo de título, igual que la de una parte, recolorea en sus páginas los colores enlazados de los elementos de diseño (textos, filetes, cajas, fondos y bordes de caja), pero no dropCap.color: la capitular conserva el hex escrito en la configuración. Pon en la capitular el color propio de la sección, o deja dropCap.color sin fijar para que tome el color de su elemento de texto."
+    },
+    "feature": "drop-caps",
+    "followup": "EF-107"
+  },
+  "section-column-rule": {
+    "title": {
+      "en": "A heading style's column rule is not drawn",
+      "es": "El filete de columna de un estilo de título no se dibuja"
+    },
+    "body": {
+      "en": "In postext 1.4.1 a heading style's layout switches its section to two columns, but the renderers read only the document's layout.columnRule, so a columnRule inside headingStyles[].layout is ignored. Declare the rule on the document's layout instead: it is drawn only where a page has more than one column, so a single-column book gets it on its two-column section alone.",
+      "es": "En postext 1.4.1, el layout de un estilo de título pasa su sección a dos columnas, pero los renderizadores solo leen el layout.columnRule del documento, así que un columnRule dentro de headingStyles[].layout se ignora. Declara el filete en el layout del documento: solo se dibuja donde una página tiene más de una columna, de modo que un libro a una columna lo muestra únicamente en su sección a dos columnas."
+    },
+    "feature": "column-rule",
+    "followup": "EF-112"
+  },
+  "box-paragraph-margins": {
+    "title": {
+      "en": "A paragraph style's margins do not count inside a box",
+      "es": "Los márgenes de un estilo de párrafo no cuentan dentro de un recuadro"
+    },
+    "body": {
+      "en": "In postext 1.4.1 a :::paragraphs container nested in a :::callout ignores its style's marginTop and marginBottom, so a small-print line set under a note's text sits right against it. Give the style a taller lineHeight, which puts air above its first line, or keep the line out of the box.",
+      "es": "En postext 1.4.1, un contenedor :::paragraphs dentro de un :::callout no aplica el marginTop ni el marginBottom de su estilo, así que una línea en letra pequeña bajo el texto de una nota queda pegada a él. Da al estilo un lineHeight mayor, que deja aire sobre su primera línea, o saca esa línea del recuadro."
+    },
+    "feature": "paragraph-styles",
+    "followup": "EF-77"
+  },
+  "design-text-ragged": {
+    "title": {
+      "en": "Design text is never justified, so a drop-cap lead is ragged",
+      "es": "El texto de diseño nunca se justifica, así que la entradilla de una capitular va en bandera"
+    },
+    "body": {
+      "en": "In postext 1.4.1 a design text element aligns left, centre or right and wraps word by word: there is no justified alignment, and hyphenate: true only splits a word too long for a whole line. The lines of a lead set beside a dropCap therefore end ragged next to justified body text. Keep the lead to the lines beside the initial and fit them by hand: with lines: 1 (a raised initial) the lead is one line, which the dropCap gap can fit flush; the paragraph goes on in the Markdown.",
+      "es": "En postext 1.4.1, un elemento de texto de diseño se alinea a la izquierda, al centro o a la derecha y corta palabra a palabra: no hay alineación justificada, y hyphenate: true solo parte una palabra que no cabe en una línea entera. Las líneas de una entradilla junto a una dropCap acaban, por tanto, en bandera al lado del texto justificado. Limita la entradilla a las líneas que acompañan a la capitular y ajústalas a mano: con lines: 1 (una capitular alzada) la entradilla es una sola línea, que el gap de la dropCap puede dejar a ras; el párrafo sigue en el Markdown."
+    },
+    "feature": "drop-caps",
+    "followup": "EF-109"
+  },
+  "drop-cap-extra-line": {
+    "title": {
+      "en": "A drop cap's font box can add a blank line under the lead",
+      "es": "La caja de una capitular puede dejar una línea en blanco bajo la entradilla"
+    },
+    "body": {
+      "en": "In postext 1.4.1 an opener reserves the height of every element's box, and a dropCap initial's box is 1.2 em tall, so it reaches below the baseline of the last line it spans. When the lead has no line under the initial, that overhang rounds the reserved height up to one more grid line, and the body starts after a blank line. Give the heading level marginBottom: minus one lead, which the grid snap subtracts, and reset it to 0 in any heading style of that level that draws no initial.",
+      "es": "En postext 1.4.1, una apertura reserva la altura de la caja de cada elemento, y la caja de una capitular dropCap mide 1,2 em de alto, así que baja por debajo de la línea de base de la última línea que abarca. Cuando la entradilla no tiene ninguna línea bajo la capitular, ese sobrante redondea la altura reservada a una línea más de la rejilla y el texto empieza tras una línea en blanco. Da al nivel del título un marginBottom de menos un interlineado, que el ajuste a la rejilla resta, y devuélvelo a 0 en los estilos de ese nivel que no dibujen capitular."
+    },
+    "feature": "drop-caps",
+    "followup": "EF-108"
+  },
+  "widow-orphan-names": {
+    "title": {
+      "en": "avoidWidows guards the foot of a column, avoidOrphans its head",
+      "es": "avoidWidows vigila el pie de la columna, y avoidOrphans, su cabeza"
+    },
+    "body": {
+      "en": "Postext names the two lone lines its own way: avoidWidows (widowMinLines, widowPenalty) keeps a paragraph's first line from standing alone at the foot of a column, and avoidOrphans (orphanMinLines, orphanPenalty) keeps its last line from standing alone at the head of the next. Many style manuals give the two names the other way round, so pick the setting by where it acts. Both are on by default and work as penalties: the layout weighs each one against the empty lines that obeying it would leave.",
+      "es": "Postext da nombre propio a las dos líneas solas: avoidWidows (widowMinLines, widowPenalty) evita que la primera línea de un párrafo quede sola al pie de una columna, y avoidOrphans (orphanMinLines, orphanPenalty), que la última quede sola en la cabeza de la siguiente. Muchos manuales de estilo usan los dos nombres al revés, así que elige el ajuste por el lugar donde actúa. Los dos vienen activados y funcionan como penalizaciones: la composición compara cada una con las líneas vacías que dejaría respetarla."
+    },
+    "feature": "widows-orphans-runts"
+  },
+  "heading-marks-dropped": {
+    "title": {
+      "en": "A heading drops its bold and italic marks",
+      "es": "Un título pierde sus marcas de negrita y cursiva"
+    },
+    "body": {
+      "en": "In postext 1.4.1 a heading line loses its inline marks: ###### *Rock bar* prints Rock bar in the plain level-6 face, without the asterisks and without italic. A seventh level, or a word set apart inside a title, needs a heading style ({style=\"…\"}) or an advanced design instead.",
+      "es": "En postext 1.4.1 una línea de título pierde sus marcas en línea: ###### *Barra de palanca* imprime Barra de palanca con la letra normal del nivel 6, sin asteriscos y sin cursiva. Un séptimo nivel, o una palabra destacada dentro de un título, necesitan un estilo de título ({style=\"…\"}) o un diseño avanzado."
+    },
+    "feature": "heading-styles",
+    "followup": "EF-122"
+  },
+  "faked-font-styles": {
+    "title": {
+      "en": "A bold or italic the family lacks is faked on screen, not in the PDF",
+      "es": "La negrita o la cursiva que la familia no trae se simula en pantalla, no en el PDF"
+    },
+    "body": {
+      "en": "When text asks for a weight or style its family does not ship (a bold table header in a single-face label font, italic in a sans with no italics), the browser synthesises it on the canvas and in HTML, thickening or slanting the upright face on the same widths. A PDF embeds real faces only, so there the provider's closest face prints plain. Put only faces the family ships in your font list and set every style to match, such as tableStyle.headerBold: false.",
+      "es": "Cuando un texto pide un peso o un estilo que su familia no trae (una cabecera de tabla en negrita con una fuente de rótulos de un solo estilo, cursiva en una sans sin cursivas), el navegador lo sintetiza en el canvas y en HTML: engruesa o inclina la redonda con los mismos anchos. Un PDF solo incrusta fuentes reales, así que allí se imprime la fuente más cercana que dé el proveedor, sin engrosar ni inclinar. Pon en tu lista de fuentes solo las que la familia trae y ajusta cada estilo a ellas, por ejemplo con tableStyle.headerBold: false."
+    },
+    "feature": "pdf-fonts"
+  },
+  "runt-tracking-unpainted": {
+    "title": {
+      "en": "A runt fix can tighten tracking that is never painted",
+      "es": "El arreglo de las líneas cortas puede apretar un interletraje que nunca se pinta"
+    },
+    "body": {
+      "en": "In postext 1.4.1, when a paragraph ends on a runt, the layout sets it one line shorter: first with tighter word spacing, then with up to maxRuntTracking thousandths of an em of negative tracking. The canvas and PDF renderers paint tracking only above zero, so a tracked paragraph prints untracked: its justified lines lose the difference from their word spaces and look crushed, and its last line can run past the measure and be clipped at the column edge. Set bodyText.maxRuntTracking: 0, which keeps the word-spacing fix, and reword any runt that comes back.",
+      "es": "En postext 1.4.1, cuando un párrafo acaba en una línea corta, el motor lo compone con una línea menos: primero aprieta el espacio entre palabras y luego aplica hasta maxRuntTracking milésimas de em de interletraje negativo. Los renderizadores de canvas y PDF solo pintan el interletraje mayor que cero, así que el párrafo se imprime sin él: sus líneas justificadas pierden esa diferencia en los espacios entre palabras, que salen aplastados, y su última línea puede pasarse de la medida y quedar cortada en el borde de la columna. Pon bodyText.maxRuntTracking: 0, que conserva el arreglo por el espacio entre palabras, y reescribe los párrafos que vuelvan a acabar en una línea corta."
+    },
+    "feature": "widows-orphans-runts",
+    "followup": "EF-111"
+  },
+  "list-number-centred": {
+    "title": {
+      "en": "A list number is centred on its first line, not set on the baseline",
+      "es": "El número de una lista se centra en su primera línea, no se apoya en la línea base"
+    },
+    "body": {
+      "en": "In postext 1.4.1 an ordered list's number is painted with the canvas 'middle' baseline, 0.3 em of the text above the item's first baseline, so a number in another face or at a larger numberFontSize grows up and down from there instead of standing on the line: a display face rides high, and a big step number hangs across the first line. Place it with orderedLists.numberVerticalOffset, and check the result at full size.",
+      "es": "En postext 1.4.1 el número de una lista numerada se pinta con la línea base «middle» del canvas, 0,3 em del texto por encima de la primera línea base del elemento, así que un número en otra fuente o con un numberFontSize mayor crece hacia arriba y hacia abajo desde ahí en vez de apoyarse en la línea: una fuente de rótulo queda alta y un número grande de paso cuelga sobre la primera línea. Colócalo con orderedLists.numberVerticalOffset y revisa el resultado a tamaño real."
+    },
+    "feature": "numbered-lists",
+    "followup": "EF-58"
+  },
+  "column-rule-through-opener": {
+    "title": {
+      "en": "The column rule can run down through a page-span opener",
+      "es": "El filete de columna puede atravesar una apertura a todo el ancho"
+    },
+    "body": {
+      "en": "In postext 1.4.1 the column rule of a band starts at the top of its highest column. A page-span heading stays in the first column, so when its opener does not end exactly on a grid line, the sliver of second column left beside it makes the rule start at the top of the text block and cross the opener. Make the opener a whole number of grid lines deep, with an empty box of that height or a minHeight when the design is shorter: it then ends on a grid line and leaves no sliver.",
+      "es": "En postext 1.4.1 el filete de columna de una banda empieza en lo alto de su columna más alta. Un título a todo el ancho se queda en la primera columna, así que, si su apertura no termina justo en una línea de la rejilla base, el resquicio de segunda columna que queda a su lado hace que el filete arranque en lo alto de la caja de texto y cruce la apertura. Dale a la apertura una altura de líneas de rejilla enteras, con una caja vacía de esa altura o con minHeight si el diseño es más bajo: así termina en una línea de la rejilla y no deja resquicio."
+    },
+    "feature": "column-rule",
+    "followup": "EF-101"
+  },
+  "box-list-colour-numbers": {
+    "title": {
+      "en": "A box's lists.color also recolours its list numbers",
+      "es": "El lists.color de un recuadro también cambia el color de los números de sus listas"
+    },
+    "body": {
+      "en": "In postext 1.4.1 a callout style's lists.color reaches the numbers of its ordered lists whenever it differs from unorderedLists.color, even when orderedLists sets a colour of its own: give a box olive bullets that way and its step numbers turn olive too. To colour a box's bullets alone, set unorderedLists.color for the document and leave lists.color out of the box style.",
+      "es": "En postext 1.4.1 el lists.color de un estilo de recuadro llega a los números de sus listas numeradas siempre que sea distinto de unorderedLists.color, aunque orderedLists fije su propio color: si das así viñetas verde oliva a un recuadro, sus números de paso también se vuelven verde oliva. Para colorear solo las viñetas de un recuadro, fija unorderedLists.color en el documento y deja lists.color fuera del estilo del recuadro."
+    },
+    "feature": "callout-styles",
+    "followup": "EF-92"
+  },
+  "custom-fonts-declarative": {
+    "title": {
+      "en": "customFonts loads no font",
+      "es": "customFonts no carga ninguna fuente"
+    },
+    "body": {
+      "en": "config.customFonts only names font files by fileId: buildDocument and the canvas, HTML and PDF renderers never read it, so a family listed there and not registered is measured and painted in a fallback. Register each face yourself (a FontFace from its bytes) before the first build and give the same bytes to the PDF font provider. createBundle reads the list to pack the files into a .postext, and the Sandbox reads it to register the faces.",
+      "es": "config.customFonts solo nombra archivos de fuente por su fileId: buildDocument y los renderizadores de canvas, HTML y PDF no lo leen nunca, así que una familia que figura ahí y no se ha registrado se mide y se pinta con una fuente de reserva. Registra tú cada estilo (un FontFace con sus bytes) antes de la primera composición y pasa esos mismos bytes al proveedor de fuentes del PDF. createBundle lee la lista para meter los archivos en un .postext, y el Sandbox, para registrar las fuentes."
+    },
+    "feature": "custom-fonts"
+  },
+  "float-read-last": {
+    "title": {
+      "en": "A floated figure is read after the text of its page",
+      "es": "Una figura flotante se lee después del texto de su página"
+    },
+    "body": {
+      "en": "renderToPdf tags a page in the order it paints it: an opener band's title, each column from top to bottom, then the page's floats. A figure or table that floats to the head of a column is therefore read after the last paragraph and the last table of its page, away from the sentence that cites it. Set the ones a reader must meet where they are cited inline, with placement 'here' and a ::resource line.",
+      "es": "renderToPdf etiqueta cada página en el orden en que la pinta: el título de la banda de apertura, cada columna de arriba abajo y, al final, los flotantes de la página. Una figura o una tabla que flota a la cabeza de una columna se lee, por tanto, después del último párrafo y de la última tabla de su página, lejos de la frase que la cita. Pon en línea las que el lector deba encontrar donde se citan, con placement 'here' y una línea ::resource."
+    },
+    "feature": "tagged-pdf",
+    "followup": "EF-146"
+  },
+  "toc-leader-kerning": {
+    "title": {
+      "en": "Contents leaders overrun in a face that kerns full stops",
+      "es": "Las líneas de puntos del índice se desbordan con una letra que separa los puntos seguidos"
+    },
+    "body": {
+      "en": "postext 1.4.1 counts a leader's dots from the width of one dot and sets them in the page numbers' face. Some faces space a run of full stops wider than that (Public Sans Bold at 12 pt: 6.7 px for one dot at 150 dpi, 7.6 px for each dot of a run), so the dots overrun their room, touch the page number and stop lining up from row to row. Give toc.pageNumber a fontFamily whose full stops keep their width in a run, such as the body face.",
+      "es": "postext 1.4.1 cuenta los puntos de una línea de puntos por el ancho de un solo punto y los compone con la letra de los números de página. Algunas letras separan más los puntos seguidos (Public Sans Bold a 12 pt: 6,7 px un punto suelto a 150 ppp y 7,6 px cada punto de una serie), así que los puntos se salen de su hueco, tocan el número de página y dejan de alinearse de una fila a otra. Da a toc.pageNumber un fontFamily cuyos puntos conserven su ancho en serie, como la letra del texto."
+    },
+    "feature": "toc",
+    "followup": "EF-148"
+  },
+  "ragged-runts": {
+    "title": {
+      "en": "Ragged text is never checked for runts",
+      "es": "En el texto en bandera no se evitan las líneas cortas"
+    },
+    "body": {
+      "en": "optimalLineBreaking, avoidRunts, runtPenalty and runtMinCharacters act on the Knuth–Plass line breaker, which postext 1.4.1 runs for justified text only. A ragged paragraph is broken line by line and can end on one short word whatever those settings say. Read the last lines of ragged text and reword a paragraph that ends on a runt.",
+      "es": "optimalLineBreaking, avoidRunts, runtPenalty y runtMinCharacters actúan sobre el algoritmo de Knuth–Plass, que postext 1.4.1 solo aplica al texto justificado. Un párrafo en bandera se corta línea a línea y puede terminar en una sola palabra corta, digan lo que digan esos ajustes. Revisa las últimas líneas del texto en bandera y reescribe el párrafo que acabe en una línea corta."
+    },
+    "feature": "widows-orphans-runts",
+    "followup": "EF-147"
+  },
+  "bundle-labels-reader-locale": {
+    "title": {
+      "en": "A bundle without resourceTypes labels figures in the reader's language",
+      "es": "Un paquete sin resourceTypes rotula las figuras en el idioma de quien lo abre"
+    },
+    "body": {
+      "en": "When a .postext file carries no resourceTypes, openBundle in postext 1.4.1 builds Figure and Table in the locale the reader asks for, not in the file's own, and the Sandbox imports every file in the language of its interface. A Spanish bundle opened with { locale: 'en' }, or imported at /en/sandbox, prints Figure 1.1 over Spanish text while bundle.locale still says 'es'. Write resourceTypes: defaultResourceTypes(lang) into the config you pass to createBundle.",
+      "es": "Cuando un archivo .postext no trae resourceTypes, openBundle en postext 1.4.1 crea Figura y Tabla en el idioma que pide quien lo abre, no en el del archivo, y el Sandbox importa cada archivo en el idioma de su interfaz. Un paquete en español abierto con { locale: 'en' }, o importado desde /en/sandbox, imprime Figure 1.1 sobre texto en español aunque bundle.locale siga diciendo 'es'. Escribe resourceTypes: defaultResourceTypes(idioma) en la configuración que pasas a createBundle."
+    },
+    "feature": "bundles",
+    "followup": "EF-150"
+  },
+  "side-box-starts-at-fence": {
+    "title": {
+      "en": "A side box starts level with the block after its fence",
+      "es": "Un recuadro lateral empieza a la altura del bloque que sigue a su valla"
+    },
+    "body": {
+      "en": "In postext 1.4.1 a span: 'side' box stands in the side column at the height the text has reached at its fence, on the next grid line, and under any box already there. Fence a gloss just before the paragraph it explains: fenced after it, the gloss starts beside the next paragraph. A box that would run past the column's foot slides up until its foot sits on the column's foot, as far as the box above it allows; one that still does not fit waits for the side column of the next page.",
+      "es": "En postext 1.4.1, un recuadro con span: 'side' se coloca en la columna lateral a la altura a la que ha llegado el texto en su valla, en la siguiente línea de la rejilla y debajo de los recuadros que ya haya. Pon la valla de una glosa justo antes del párrafo que explica: si va después, la glosa empieza junto al párrafo siguiente. Un recuadro que pasaría del pie de la columna sube hasta que su pie coincide con el de la columna, si el recuadro de encima le deja sitio; si aun así no cabe, espera a la columna lateral de la página siguiente."
+    },
+    "feature": "side-boxes"
+  },
+  "cell-dollar-backslash": {
+    "title": {
+      "en": "A table cell keeps the backslash of \\$",
+      "es": "Una celda de tabla conserva la barra de \\$"
+    },
+    "body": {
+      "en": "postext 1.4.1 does not read table cells for maths and does not unescape \\$ in them: a cell written \\$4.50 prints \\$4.50, backslash included, while \\* in the same cell prints a plain asterisk. A paragraph needs the escape, because a bare $ opens maths there. Write $ bare in cell content and \\$ in paragraphs; a string used in both places prints wrong in one of them.",
+      "es": "postext 1.4.1 no lee las celdas de tabla como matemáticas ni quita la barra de \\$: una celda escrita \\$4.50 imprime \\$4.50, con la barra, mientras que \\* en la misma celda imprime solo el asterisco. En un párrafo el escape sí hace falta, porque allí un $ suelto abre matemáticas. Escribe $ sin barra en las celdas y \\$ en los párrafos; un texto que se use en los dos sitios sale mal en uno de ellos."
+    },
+    "feature": "table-model",
+    "followup": "EF-151"
+  },
+  "pdf-font-copies": {
+    "title": {
+      "en": "The PDF keeps a font copy for every face it asks for",
+      "es": "El PDF guarda una copia de fuente por cada estilo que pide"
+    },
+    "body": {
+      "en": "postext-pdf 1.4.1 writes one font program for every family, weight and style it asks the font provider for, even when the provider answers several of them with the same file and no page draws with the face. Each stand-in for a missing italic or weight therefore adds another copy of the file it borrows, unused when no text is set in that face. pdffonts lists only the fonts the pages use, but the copies are in the file all the same, and nothing a pen does removes them.",
+      "es": "postext-pdf 1.4.1 escribe un programa de fuente por cada familia, peso y estilo que pide al proveedor de fuentes, aunque el proveedor responda a varios con el mismo archivo y ninguna página dibuje con ese estilo. Por eso, cada sustituto de una cursiva o de un peso que falta añade otra copia del archivo que toma prestado, sin usar si ningún texto va en ese estilo. pdffonts solo lista las fuentes que usan las páginas, pero las copias están en el archivo igualmente, y nada de lo que haga un pen las quita."
+    },
+    "feature": "pdf-fonts",
+    "followup": "EF-121"
+  },
+  "split-paragraph-measure": {
+    "title": {
+      "en": "A paragraph keeps the measure of the column it starts in",
+      "es": "Un párrafo conserva la medida de la columna en la que empieza"
+    },
+    "body": {
+      "en": "In postext 1.4.1 a paragraph is broken into lines once, at the width of the column where it starts. In a column-and-a-half page with text in both columns, a paragraph that runs over from the wide column into the narrow one keeps its long lines, which are clipped at the narrow column's edge; one that runs from the narrow column into the next page's wide column keeps its short lines. End each column on a whole paragraph: fit the copy, and put a :::columnbreak after the last paragraph so that the next block opens the next column.",
+      "es": "En postext 1.4.1 un párrafo se corta en líneas una sola vez, con el ancho de la columna en la que empieza. En una página a columna y media con texto en las dos columnas, un párrafo que pasa de la columna ancha a la estrecha conserva sus líneas largas, que se recortan en el borde de la columna estrecha; uno que pasa de la columna estrecha a la ancha de la página siguiente conserva sus líneas cortas. Termina cada columna con un párrafo completo: ajusta el texto y pon un :::columnbreak después del último párrafo, para que el bloque siguiente abra la columna siguiente."
+    },
+    "feature": "column-and-a-half",
+    "followup": "EF-157"
+  },
+  "section-palette-skips-chips": {
+    "title": {
+      "en": "A section or part palette does not recolour chips",
+      "es": "La paleta de una sección o de una parte no recolorea los chips"
+    },
+    "body": {
+      "en": "In postext 1.4.1 the palette of a heading style or a part recolours the text, the boxes and the design elements of its pages, but a chip keeps the colours of its chipStyles entry. A chip linked to an entry the section overrides shows the document's value on every page. Set chips in colours no section changes, such as ink on paper, or give each section a chip style of its own.",
+      "es": "En postext 1.4.1 la paleta de un estilo de título o de una parte recolorea en sus páginas el texto, los recuadros y los elementos de diseño, pero un chip conserva los colores de su entrada de chipStyles. Un chip enlazado a una entrada que la sección cambia muestra el valor del documento en todas las páginas. Pon los chips en colores que ninguna sección cambie, como tinta sobre papel, o da a cada sección su propio estilo de chip."
+    },
+    "feature": "chips",
+    "followup": "EF-87"
+  },
+  "inline-table-skips-top-float": {
+    "title": {
+      "en": "A page that opens on an inline table skips a waiting top float",
+      "es": "Una página que empieza con una tabla en línea se salta un flotante de cabeza pendiente"
+    },
+    "body": {
+      "en": "In postext 1.4.1, when an inline table (position 'here', set with ::resource) moves to the head of the next page, a page-wide 'top' float cited on the page before does not take the head of that page: it waits for the page after. Float the table too (position 'top' or 'auto', cited with :ref), or cite the figure where the next page opens on text.",
+      "es": "En postext 1.4.1, cuando una tabla en línea (posición 'here', colocada con ::resource) pasa a la cabeza de la página siguiente, un flotante 'top' a todo el ancho citado en la página anterior no ocupa la cabeza de esa página: espera a la de después. Haz flotar también la tabla (posición 'top' o 'auto', citada con :ref) o cita la figura donde la página siguiente empiece con texto."
+    },
+    "feature": "float-placement",
+    "followup": "EF-160"
+  },
+  "cell-blank-line": {
+    "title": {
+      "en": "A blank line in a table cell is dropped",
+      "es": "Una línea en blanco dentro de una celda desaparece"
+    },
+    "body": {
+      "en": "A line break in a table cell starts a new paragraph, but postext 1.4.1 drops a paragraph that is empty or holds only no-break spaces (U+00A0), so a cell written 'NAME\\n\\n' is one line tall. To leave lines to write on, put a word joiner (U+2060) on each blank line: 'NAME\\n\\u2060\\n\\u2060' is three lines tall.",
+      "es": "Un salto de línea dentro de una celda empieza un párrafo nuevo, pero postext 1.4.1 descarta el párrafo vacío o que solo lleva espacios de no separación (U+00A0), así que una celda escrita 'NOMBRE\\n\\n' ocupa una sola línea. Para dejar líneas en las que escribir, pon un unidor de palabras (U+2060) en cada línea en blanco: 'NOMBRE\\n\\u2060\\n\\u2060' ocupa tres."
+    },
+    "feature": "table-model",
+    "followup": "EF-154"
+  },
+  "worker-own-fonts": {
+    "title": {
+      "en": "The layout worker measures with its own fonts",
+      "es": "El worker de composición mide con sus propias fuentes"
+    },
+    "body": {
+      "en": "A worker has a FontFaceSet of its own, so the faces the page has loaded are invisible to it. Send it the bytes of every face with registerFonts() before the first build, with the weight as a string ('400'). Without them the worker measures in a fallback font, with no error or warning, and the line breaks and the page count change.",
+      "es": "Un worker tiene su propio FontFaceSet, así que no ve las fuentes que ha cargado la página. Envíale los bytes de cada fuente con registerFonts() antes de la primera composición, con el peso como texto ('400'). Sin ellos mide con una fuente de reserva, sin error ni aviso, y cambian los cortes de línea y el número de páginas."
+    },
+    "feature": "worker",
+    "followup": "EF-35"
+  },
+  "worker-cdn-origin": {
+    "title": {
+      "en": "createLayoutWorker() cannot start its worker from a CDN",
+      "es": "createLayoutWorker() no puede arrancar su worker desde una CDN"
+    },
+    "body": {
+      "en": "Called with no options, createLayoutWorker() starts the worker file that sits next to the module. Imported from esm.sh, that file is on another origin, and the Worker constructor throws a SecurityError ('cannot be accessed from origin'). Start a module worker from a same-origin blob that imports https://esm.sh/postext/worker/entry and pass it in: createLayoutWorker({ worker }). A bundler that serves postext from your own origin does not need the blob.",
+      "es": "Sin opciones, createLayoutWorker() arranca el archivo del worker que está junto al módulo. Importado desde esm.sh, ese archivo está en otro origen y el constructor Worker lanza un SecurityError («cannot be accessed from origin»). Arranca un worker de módulo desde un blob del mismo origen que importe https://esm.sh/postext/worker/entry y pásaselo: createLayoutWorker({ worker }). Con un empaquetador que sirva postext desde tu propio origen, el blob no hace falta."
+    },
+    "feature": "worker",
+    "followup": "EF-35"
+  },
+  "balancing-drops-last-box": {
+    "title": {
+      "en": "Column balancing drops the box that ends a page to its foot",
+      "es": "El equilibrado de columnas baja al pie el recuadro que cierra una página"
+    },
+    "body": {
+      "en": "When a box is the last block on a page that the text goes on from, column balancing (on by default) moves the room left under the box above it, so the box leaves the block before it and ends on the page's last line. In postext 1.4.1 no single balancing option turns this off: headings.balancing.enabled: false turns off all balancing, which suits pages meant to end short, such as a page of poems.",
+      "es": "Cuando un recuadro es el último bloque de una página tras la que sigue el texto, el equilibrado de columnas (activo por defecto) pasa el espacio que queda debajo por encima del recuadro, que se separa del bloque anterior y termina en la última línea de la página. En postext 1.4.1 ninguna opción del equilibrado lo desactiva por separado: headings.balancing.enabled: false apaga todo el equilibrado, lo que conviene a páginas que deben terminar cortas, como una página de poemas."
+    },
+    "feature": "column-balancing",
+    "followup": "EF-105"
+  },
+  "side-boxes-line-apart": {
+    "title": {
+      "en": "Side boxes stacked in the channel keep a line of paper between them",
+      "es": "Los recuadros laterales apilados en el canal dejan una línea de papel entre ellos"
+    },
+    "body": {
+      "en": "In postext 1.4.1 a span: 'side' box leaves at least one body line under it before the next thing in the channel, rounded up to the baseline grid, whatever its marginBottom says. Boxes that share a background therefore never touch: stacked, they read as separate cards. For one continuous panel, fence a single side box and nest the sections inside it.",
+      "es": "En postext 1.4.1, un recuadro con span: 'side' deja debajo al menos una línea de texto antes de lo siguiente que haya en el canal, redondeada a la rejilla base, diga lo que diga su marginBottom. Por eso los recuadros con el mismo fondo nunca se tocan: apilados, se leen como tarjetas sueltas. Para un panel continuo, abre un solo recuadro lateral y anida dentro las secciones."
+    },
+    "feature": "side-boxes"
+  },
+  "opener-clipped-at-top": {
+    "title": {
+      "en": "An opener kept in its column is cut off at the top of the text block",
+      "es": "Una apertura que se queda en su columna se corta en la cabeza de la caja de texto"
+    },
+    "body": {
+      "en": "In postext 1.4.1 an advanced-design heading that stays in its column is clipped at the column's top edge: a box or a picture anchored to the page or the bleed paints into the side margins but not into the top margin, and no warning says so. Give such a heading span: 'page', even in a single-column book: its design is then painted as the page's opener band, whole.",
+      "es": "En postext 1.4.1, un título con diseño avanzado que se queda en su columna se recorta por el borde superior de la columna: una caja o una imagen ancladas a la página o a la sangre se pintan en los márgenes laterales, pero no en el de cabeza, y ningún aviso lo dice. Dale span: 'page' a ese título, aunque el libro tenga una sola columna: su diseño se pinta entonces entero, como banda de apertura de la página."
+    },
+    "feature": "opener-design",
+    "followup": "EF-113"
+  },
+  "opener-taller-than-column": {
+    "title": {
+      "en": "An opener taller than its column loses its whole reservation",
+      "es": "Una apertura más alta que su columna pierde toda la reserva"
+    },
+    "body": {
+      "en": "In postext 1.4.1, when the height an advanced-design heading reserves (its minHeight, or its lowest design element) is taller than the column it opens, the heading keeps only the height of its own title line, with no warning, and the text runs over the design. A full-page plate needs a column as tall as the page: give its heading style zero margins, then set minHeight to the page's height.",
+      "es": "En postext 1.4.1, cuando la altura que reserva un título con diseño avanzado (su minHeight, o su elemento de diseño más bajo) supera la de la columna que abre, el título se queda solo con la altura de su propia línea, sin ningún aviso, y el texto se compone encima del diseño. Una lámina a página completa necesita una columna tan alta como la página: dale márgenes cero a su estilo de título y fija minHeight en la altura de la página."
+    },
+    "feature": "opener-design",
+    "followup": "EF-91"
+  },
+  "table-fill-seams": {
+    "title": {
+      "en": "Two filled table cells side by side show a pale seam on the canvas",
+      "es": "Entre dos celdas de tabla rellenas asoma una línea clara en el canvas"
+    },
+    "body": {
+      "en": "In postext 1.4.1 the canvas renderer fills each table cell with a rectangle of its own at fractional pixel positions, so where two filled cells meet (the cells of a header row filled in colour, or tinted body cells) a hairline of the page shows between them. Fill only rows whose cells are merged into one, stroke the rules in the fill colour, or leave the cells unfilled.",
+      "es": "En postext 1.4.1, el renderizador de canvas rellena cada celda de la tabla con un rectángulo propio en posiciones de píxel fraccionarias, así que donde se tocan dos celdas rellenas (las de una fila de cabecera en color o celdas del cuerpo con fondo) asoma entre ellas una línea finísima del color del papel. Rellena solo filas cuyas celdas estén combinadas en una, traza los filetes en el color del relleno o deja las celdas sin relleno."
+    },
+    "feature": "table-style",
+    "followup": "EF-64"
+  }
+}

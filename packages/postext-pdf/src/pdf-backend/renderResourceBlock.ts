@@ -9,7 +9,9 @@
  *
  * The bytes are sniffed, so the host never has to say what it hands over:
  *   - `%PDF`  → the first page is embedded as a form XObject and drawn
- *               verbatim (vector print masters, `Resource.svg.pdfFileId`);
+ *               verbatim (vector print masters: an SVG's
+ *               `Resource.svg.pdfFileId`, named on every use of the SVG in
+ *               the VDT, is asked for first, outside single-ink mode);
  *   - SVG     → single-ink recolouring when `diagramStyle.singleInk` is on,
  *               then vector emission through {@link svgToVectorDrawing}, with
  *               `text` set in fonts loaded through the document's
@@ -25,7 +27,7 @@
  * become clickable link annotations targeting the resource embed's destination.
  */
 
-import { PDFHexString, type Color, type PDFImage, type PDFDocument, type PDFEmbeddedPage, type PDFFont } from 'pdf-lib';
+import { PDFHexString, setCharacterSpacing, type Color, type PDFImage, type PDFDocument, type PDFEmbeddedPage, type PDFFont } from 'pdf-lib';
 import type {
   VDTBlock,
   VDTLine,
@@ -33,7 +35,7 @@ import type {
   ResolvedResourceBlock,
   VDTResourceTableCell,
 } from 'postext';
-import { applySingleInkToSvg, resolveColorValue, tableFrameOutline } from 'postext';
+import { applySingleInkToSvg, resolveColorValue, tableCellFillRects, tableFrameOutline } from 'postext';
 import { parseFontString } from '../fontString';
 import { FontCache, type PdfFontProvider } from '../fontCache';
 import {
@@ -43,6 +45,7 @@ import {
   drawLinePx,
   drawSwatchPx,
   fillRectPx,
+  fillRectsPx,
   colorFromHex,
   mapRectThrough,
   pushTransform,
@@ -51,7 +54,7 @@ import {
   popClip,
   strokeOutlinePx,
 } from './primitives';
-import { LinkRegistry } from './links';
+import { LinkRegistry, RefRun, UriRuns } from './links';
 import { paintChip } from './chip';
 import { tagArtifact, tagContent, type StructAttrs, type StructElem } from './tagging';
 import type { StructureFlow } from './structureFlow';
@@ -325,10 +328,49 @@ export async function preloadResourceImages(
   const inkHex = ds?.singleInk
     ? resolveColorValue(ds.inkColor, doc.config.colorPalette, ds.inkColor).hex
     : null;
+  // Vector print masters (`svg.pdfFileId`) by the SVG's own `fileId`: every
+  // use of the picture names its master — the figure, a table cell, a
+  // design image or box icon — so the master is embedded wherever the SVG
+  // is drawn, in whichever chapter of a book draws it first. Single-ink
+  // mode recolours SVG markup, which a master is not, so it keeps the SVG.
+  const masters = new Map<string, string>();
+  const noteMaster = (fileId: string | undefined, pdfFileId: string | undefined) => {
+    if (fileId && pdfFileId && !masters.has(fileId)) masters.set(fileId, pdfFileId);
+  };
+  if (!inkHex) {
+    for (const block of blocks) {
+      const svg = block.resourceBlock?.resource?.svg;
+      noteMaster(svg?.fileId, svg?.pdfFileId);
+      for (const cell of block.resourceBlock?.table?.cells ?? []) noteMaster(cell.image?.fileId, cell.image?.pdfFileId);
+      for (const b of block.designOverlay?.blocks ?? []) if (b.kind === 'image') noteMaster(b.fileId, b.pdfFileId);
+    }
+    for (const page of doc.pages) {
+      for (const slot of [page.header, page.footer, page.openerBand]) {
+        for (const b of slot?.blocks ?? []) if (b.kind === 'image') noteMaster(b.fileId, b.pdfFileId);
+      }
+    }
+  }
+
+  /** Embed a print master for `fileId`; false when there is none, or it
+   *  does not decode (the SVG is embedded instead). */
+  const embedMaster = async (fileId: string): Promise<boolean> => {
+    const masterId = masters.get(fileId);
+    const bytes = masterId ? bytesProvider(masterId) : undefined;
+    if (!bytes || sniffBytes(bytes) !== 'pdf') return false;
+    try {
+      const [page] = await pdfDoc.embedPdf(bytes, [0]);
+      if (!page) return false;
+      out.set(fileId, { kind: 'page', page });
+      return true;
+    } catch {
+      return false;
+    }
+  };
 
   /** Embed one payload by `fileId` (format hint from the resource when known). */
   const embed = async (fileId: string, format: string | undefined): Promise<void> => {
     if (out.has(fileId)) return;
+    if (await embedMaster(fileId)) return;
     const bytes = bytesProvider(fileId);
     if (!bytes) return;
     try {
@@ -461,6 +503,10 @@ interface PaintFonts {
  *  In a tagged render the text joins `elem` (refs get a `Link` child) and
  *  word spaces are painted as real glyphs; without `elem` the line joins
  *  whatever sequence is open (an artifact for repeated table headers). */
+/** A caption, note or cell line. A tracked line (a table header set with
+ *  `headerLetterSpacing`) was measured with the tracking in its widths, so
+ *  it is painted with the matching character spacing (`Tc`, in points at
+ *  the page scale), reset afterwards. */
 function paintLine(
   ctx: PageCtx,
   line: VDTLine,
@@ -473,20 +519,44 @@ function paintLine(
   labelColor: Color = color,
   elem?: StructElem,
 ): void {
+  const tracking = line.letterSpacing ?? 0;
+  if (tracking !== 0) ctx.page.pushOperators(setCharacterSpacing(tracking * ctx.scale));
+  paintLineRuns(ctx, line, fonts, fontCache, color, linkColor, linkRegistry, resolveRefId, labelColor, elem);
+  if (tracking !== 0) ctx.page.pushOperators(setCharacterSpacing(0));
+}
+
+function paintLineRuns(
+  ctx: PageCtx,
+  line: VDTLine,
+  fonts: PaintFonts,
+  fontCache: FontCache,
+  color: Color,
+  linkColor: Color,
+  linkRegistry: LinkRegistry | undefined,
+  resolveRefId: ((seg: { refResourceId?: string }) => string | undefined),
+  labelColor: Color,
+  elem: StructElem | undefined,
+): void {
   const baseFont = fontCache.get(fonts.normal);
   if (!baseFont) return;
   const baseSize = parseFontString(fonts.normal)?.sizePx ?? 0;
   if (line.segments && line.segments.length > 0) {
+    const segs = line.segments;
+    const refRun = new RefRun();
     let x = line.bbox.x;
-    for (const seg of line.segments) {
+    const uris = new UriRuns(ctx, line, linkRegistry, elem);
+    for (let i = 0; i < segs.length; i++) {
+      const seg = segs[i]!;
       if (seg.kind === 'space') {
+        const inLink = uris.space(seg.text);
         if (ctx.tags && seg.text) {
-          tagContent(ctx, elem);
+          tagContent(ctx, inLink ?? elem);
           drawTextPx(ctx, seg.text, x, line.baseline, baseFont, baseSize, color);
         }
         x += seg.width;
         continue;
       }
+      if (seg.kind !== 'text' || seg.chip) uris.other();
       if (seg.kind === 'swatch') {
         tagContent(ctx, elem);
         drawSwatchPx(ctx, x, line.baseline, seg.width, seg.swatch?.color, color);
@@ -504,20 +574,25 @@ function paintLine(
       const size = parseFontString(fontStr)?.sizePx ?? baseSize;
       const refId = resolveRefId(seg);
       const segColor = refId !== undefined ? linkColor : seg.captionLabel ? labelColor : color;
-      const link = refId !== undefined && elem ? elem.child('Link') : undefined;
-      tagContent(ctx, link ?? elem);
+      // A `:ref` links to its resource — a ref painted as several runs
+      // (small capitals) is one link —, a Markdown link's words to its URL.
+      const uriElem = uris.word(refId === undefined ? seg.href : undefined, x, seg.width, seg.text);
+      const link = refId !== undefined ? refRun.enter(seg, x, elem, refId) : undefined;
+      tagContent(ctx, link ?? uriElem ?? elem);
       drawTextPx(ctx, seg.text, x, line.baseline + (seg.baselineShift ?? 0), font, size, segColor);
-      if (refId !== undefined && linkRegistry) {
+      const ref = refId !== undefined ? refRun.leave(seg, segs[i + 1], refId) : undefined;
+      if (ref && linkRegistry) {
         const { scale, pageHeightPt } = ctx;
-        const x1 = x * scale;
+        const x1 = ref.startX * scale;
         const y2 = pageHeightPt - (line.bbox.y) * scale;
         const y1 = pageHeightPt - (line.bbox.y + line.bbox.height) * scale;
         const x2 = (x + seg.width) * scale;
         const rect: [number, number, number, number] = [x1, y1, x2, y2];
-        linkRegistry.addLink(ctx.page, ctx.mapRectPt ? ctx.mapRectPt(rect) : rect, refId, link ? { elem: link, contents: seg.text } : undefined);
+        linkRegistry.addLink(ctx.page, ctx.mapRectPt ? ctx.mapRectPt(rect) : rect, ref.resourceId, link ? { elem: link, contents: ref.text } : undefined);
       }
       x += seg.width;
     }
+    uris.end();
     return;
   }
   tagContent(ctx, elem);
@@ -608,8 +683,6 @@ function renderTable(
   tagArtifact(ctx, { type: 'Layout' });
   const cellElems = tableElem ? tableCellElems(tableElem, t.cells, !!rb.slice?.continued) : undefined;
   const borderColor = colorFromHex(t.borderColor, ctx.colorSpace);
-  const headerBg = t.headerBackground ? colorFromHex(t.headerBackground, ctx.colorSpace) : undefined;
-  const bodyBg = t.bodyBackground ? colorFromHex(t.bodyBackground, ctx.colorSpace) : undefined;
   const bodyColor = colorFromHex(t.color, ctx.colorSpace);
   const headerColor = colorFromHex(t.headerColor, ctx.colorSpace);
   const bodyFonts: PaintFonts = {
@@ -637,11 +710,13 @@ function renderTable(
     popClip(ctx);
     tagArtifact(ctx, { type: 'Layout' });
   };
-  // Cell backgrounds (the cell's own fill, else the header tint / body fill).
+  // Cell backgrounds (the cell's own fill, else the header tint / the body
+  // or zebra fill). Each opaque fill runs across the edges it shares with
+  // the cells painted after it, in the same fill operation, so a viewer
+  // shows no seam between two cells (see `tableCellFillRects`).
   if (rounded) clipTo(0);
-  for (const cell of t.cells) {
-    const fill = cell.background ? colorFromHex(cell.background, ctx.colorSpace) : cell.isHeader ? headerBg : bodyBg;
-    if (fill) fillRectPx(ctx, cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height, fill);
+  for (const { fill, rects } of tableCellFillRects(t)) {
+    fillRectsPx(ctx, rects, colorFromHex(fill, ctx.colorSpace));
   }
   if (rounded) unclip();
   // Borders: the full cell grid, horizontal rules only, or the outer frame.
@@ -692,7 +767,10 @@ function renderTable(
     }
     const embedded = images.get(img.fileId);
     if (embedded) drawEmbeddedResource(ctx, embedded, x, y, width, height);
-    else fillRectPx(ctx, x, y, width, height, colorFromHex('#eeeeee', ctx.colorSpace));
+    else {
+      ctx.onMissingImage?.(img.fileId, img.resourceId);
+      fillRectPx(ctx, x, y, width, height, colorFromHex('#eeeeee', ctx.colorSpace));
+    }
   }
   // Cell content.
   for (const cell of t.cells) {
@@ -767,6 +845,7 @@ export function renderResourceBlock(
     if (embedded) {
       drawEmbeddedResource(ctx, embedded, bx, by, bw, bh);
     } else {
+      if (rb.fileId) ctx.onMissingImage?.(rb.fileId, rb.resource.id);
       drawPlaceholder(ctx, rb, bx, by);
     }
   } else if (rb.kind === 'table') {

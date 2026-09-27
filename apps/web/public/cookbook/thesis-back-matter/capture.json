@@ -1,0 +1,413 @@
+{
+  "schemaVersion": 1,
+  "slug": "thesis-back-matter",
+  "sourceHash": "75ddec01ca127894f666f5c37dc228553329ca118d82b51f448a25bed6e716e1",
+  "engine": {
+    "postext": "1.4.1",
+    "postextPdf": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-26T21:31:30.403Z",
+  "variants": {
+    "en": {
+      "hash8": "1edadd62",
+      "vdtHash": "3a7551b07d45451f65965aabeffcc7c76901d863",
+      "timings": {
+        "importMs": 208,
+        "fontsMs": 64,
+        "buildMs": 24,
+        "totalMs": 1099,
+        "builds": 3
+      },
+      "specimen": {
+        "trimMm": [
+          176,
+          250
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Libertinus Serif",
+          "sizePt": 11,
+          "leadingPt": 14.600000000000001
+        },
+        "families": [
+          "Libertinus Sans",
+          "Libertinus Serif",
+          "Libertinus Serif Display"
+        ],
+        "pages": 7,
+        "ownLines": 250
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "171",
+          "role": "opener",
+          "w": 1000,
+          "h": 1420,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 95096,
+          "alt": "Opening page 171: 6 Conclusion. Table 6.1. Main results by medium."
+        },
+        {
+          "n": 2,
+          "label": "172",
+          "role": "body",
+          "w": 1000,
+          "h": 1420,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 138650,
+          "alt": "Page 172: 6.2 Implications for teaching and design."
+        },
+        {
+          "n": 3,
+          "label": "173",
+          "role": "opener",
+          "w": 1000,
+          "h": 1420,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 77722,
+          "alt": "Opening page 173: Interview guide. Table A.1. Timing of an interview session."
+        },
+        {
+          "n": 4,
+          "label": "174",
+          "role": "opener",
+          "w": 1000,
+          "h": 1420,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 124718,
+          "alt": "Opening page 174: Glossary."
+        },
+        {
+          "n": 5,
+          "label": "175",
+          "role": "opener",
+          "w": 1000,
+          "h": 1420,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 119464,
+          "alt": "Opening page 175: References."
+        },
+        {
+          "n": 6,
+          "label": "176",
+          "role": "opener",
+          "w": 1000,
+          "h": 1420,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 58448,
+          "alt": "Opening page 176: Index."
+        },
+        {
+          "n": 7,
+          "label": "177",
+          "role": "body",
+          "w": 1000,
+          "h": 1420,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 31792,
+          "alt": "Page 177: R."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "thesis-back-matter.pdf",
+        "bytes": 112359,
+        "pages": 7
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "defaultResourceTypes",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.lineHeight",
+          "bodyText.maxWordSpacing",
+          "bodyText.minWordSpacing",
+          "bodyText.referenceBold",
+          "bodyText.referenceColor",
+          "calloutStyles",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].id",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].span",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "captionStyle",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.note",
+          "captionStyle.note.fontSize",
+          "captionStyle.position",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].direction",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "header.elements[].thickness",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].layout",
+          "headingStyles[].layout.gutterWidth",
+          "headingStyles[].layout.layoutType",
+          "headingStyles[].numbered",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.maxLinesPerHeading",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberingTemplate",
+          "headings.levels[].span",
+          "headings.snapToGrid",
+          "layout",
+          "layout.layoutType",
+          "orderedLists",
+          "orderedLists.marginBottom",
+          "orderedLists.marginTop",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].hangingIndent",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].spaceBetween",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].namePlural",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyle",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackgroundEnabled",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules",
+          "unorderedLists",
+          "unorderedLists.bulletChar"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "orderedLists",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle",
+          "unorderedLists"
+        ],
+        "configLeaves": 855,
+        "designElements": 51,
+        "directives": [
+          ":::paragraphs",
+          ":::callout"
+        ],
+        "inline": [
+          ":ref",
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 2
+        },
+        "fonts": [
+          {
+            "family": "Libertinus Sans",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Libertinus Serif Display",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libertinus Serif",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Libertinus Serif",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libertinus Serif",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "bibliography",
+          "callout-styles",
+          "citations",
+          "column-balancing",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "localised-labels",
+          "off-grid-spacing",
+          "opener-band",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "section-geometry",
+          "section-running-heads",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 3,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.56
+        },
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
+      }
+    }
+  }
+}

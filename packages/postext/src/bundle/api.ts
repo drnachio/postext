@@ -127,6 +127,36 @@ export interface CreateBundleInput {
   thumbnail?: { data: BundleFileData; mime: string };
   /** Ask viewers to lay the whole book out as one canvas. */
   canvasScope?: BundleCanvasScope;
+  /** Modification date written on every file of the archive. Unset: the
+   *  time of the call, so two calls with the same input give different
+   *  bytes. A fixed date built from local fields (`new Date(1980, 0, 1)`)
+   *  makes the output byte-stable on every machine, for hashing or
+   *  comparing bundles. See `ZipBundleOptions.mtime` for the dates a zip
+   *  can hold and why a timestamp differs between time zones. */
+  mtime?: Date | number | string;
+  /** More languages of the same book, by locale tag (`es`, `pt-BR`): a
+   *  bilingual bundle that `openBundle(bytes, { locale })` reads in any of
+   *  them. `chapters`, `config` and `resources` above are then the content
+   *  of `locale`, which is required. */
+  localized?: Record<string, CreateBundleLocale>;
+}
+
+/** One more language of a bundle (see {@link CreateBundleInput.localized}). */
+export interface CreateBundleLocale {
+  /** The book in this language, one entry per chapter (a chapter without
+   *  a title takes its first `# ` heading). Absent: the locale reads the
+   *  primary chapters. */
+  chapters?: { title?: string; markdown: string }[];
+  /** Configuration for this language. Each top-level key replaces the
+   *  shared one wholesale when the bundle is read in the locale; keys left
+   *  out, or equal to the shared ones, are shared. A full configuration
+   *  works as well as the few keys that change. */
+  config?: PostextConfig;
+  /** Wording and artwork of the shared resources in this language, matched
+   *  by `id`: `caption`, `note`, `altText`, a table's `table`, and a picture
+   *  of its own (`bitmap.fileId` / `svg.fileId`, `svg.pdfFileId`, looked up
+   *  in `files`) when the artwork carries words. Other fields are shared. */
+  resources?: (Pick<Resource, 'id'> & Partial<Resource>)[];
 }
 
 export interface CreatedBundle {
@@ -153,7 +183,16 @@ const THUMBNAIL_ID = '\u0000thumbnail';
 export async function createBundle(input: CreateBundleInput): Promise<CreatedBundle> {
   const source = input.chapters ?? (input.markdown !== undefined ? [{ markdown: input.markdown }] : []);
   if (source.length === 0) throw new Error('createBundle: give `chapters` or `markdown`');
-  const chapters = source.map((c, i) => ({ title: c.title || chapterTitle(c.markdown, i + 1), markdown: c.markdown }));
+  const titled = (list: readonly { title?: string; markdown: string }[]) =>
+    list.map((c, i) => ({ title: c.title || chapterTitle(c.markdown, i + 1), markdown: c.markdown }));
+  const chapters = titled(source);
+  const localized = input.localized
+    ? Object.fromEntries(Object.entries(input.localized).map(([locale, entry]) => [locale, {
+      ...(entry.chapters && entry.chapters.length > 0 ? { chapters: titled(entry.chapters) } : {}),
+      ...(entry.config ? { config: entry.config } : {}),
+      ...(entry.resources ? { resources: entry.resources } : {}),
+    }]))
+    : undefined;
   const fileMap = input.files instanceof Map ? input.files : new Map(Object.entries(input.files ?? {}));
   const lookup = async (fileId: string): Promise<Uint8Array | null> => {
     if (fileId === THUMBNAIL_ID) return input.thumbnail ? dataToBytes(input.thumbnail.data) : null;
@@ -168,10 +207,12 @@ export async function createBundle(input: CreateBundleInput): Promise<CreatedBun
       resources: input.resources ?? [],
       ...(input.canvasScope ? { canvasScope: input.canvasScope } : {}),
       ...(input.thumbnail ? { thumbnail: { fileId: THUMBNAIL_ID, mime: input.thumbnail.mime } } : {}),
+      ...(localized ? { localized } : {}),
     },
   );
   const resolved = await resolveBundleFiles(plan, { readBlob: lookup, readFont: lookup });
-  return { bytes: zipBundle(resolved.files), manifest: resolved.manifest, files: resolved.files, warnings: resolved.warnings };
+  const bytes = zipBundle(resolved.files, input.mtime !== undefined ? { mtime: input.mtime } : {});
+  return { bytes, manifest: resolved.manifest, files: resolved.files, warnings: resolved.warnings };
 }
 
 /** Media type of a file inside a bundle (for a Blob, an object URL). */

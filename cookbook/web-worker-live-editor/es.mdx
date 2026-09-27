@@ -1,0 +1,57 @@
+---
+title: "Editor en vivo con la composición en un Web Worker"
+summary: "Markdown junto a una página de bolsillo: un worker creado desde un blob compone con fuentes propias y cada pulsación cancela la composición en curso."
+description: "Compón en un Web Worker arrancado desde un blob del mismo origen, pásale las fuentes, cancela la composición en cada pulsación y pinta en el hilo principal."
+question: "¿Cómo mantengo fluido un editor al componer un texto largo, con fuentes y cancelación en un Web Worker?"
+aliases: ["Web Worker", "createLayoutWorker", "registerFonts", "AbortController", "cancelar una composición", "vista previa en vivo", "fuera del hilo principal", "editor de Markdown", "sin interfaz", "Node"]
+pageNotes: { "1": "La portada: en los 84 mm de arriba, un campo burdeos enmarcado por un doble filete dorado lleva un cuadrante de latón con cuatro esferas pequeñas; debajo, sobre papel crema, The Time Machine en Cinzel en dos líneas, An Invention en cursiva burdeos, un filete corto de latón y H. G. Wells en versalitas.", "2": "El texto del capítulo I empieza en la novena línea, bajo un número romano burdeos, un filete corto de latón e INTRODUCTION en versales espaciadas; los dos primeros párrafos llenan el resto de la página y el folio va al pie.", "3": "Una página impar de réplicas breves, con Introduction en versalitas burdeos sobre el texto y el folio en el margen exterior.", "4": "Una página par con The Time Machine en la cabecera y el folio en el margen exterior; una frase del Viajero del Tiempo va en cursiva.", "5": "Una página impar sobre la geometría de cuatro dimensiones, con la cabecera Introduction." }
+---
+
+## Lo que vas a componer
+
+Compones el capítulo I de *La máquina del tiempo*, de H. G. Wells, en inglés, como libro de bolsillo de 110 × 147 mm, junto a su Markdown. La portada lleva un cuadrante de latón con cuatro esferas sobre un campo burdeos y, debajo, el título en Cinzel. El texto del capítulo empieza en la novena línea, bajo un número romano y un filete de latón, y va en Baskervville de 9,5/13 pt, con cabeceras en versalitas. Cada pulsación recompone el capítulo en un Web Worker, y a la derecha aparece la página donde está el cursor. Bajo el editor, una aguja que el hilo principal gira en cada fotograma se para mientras ese hilo está ocupado, y la línea de estado da la duración, el fotograma más largo y las composiciones que canceló una pulsación posterior. Un desplegable arriba a la derecha pasa la composición al hilo principal, para comparar.
+
+## Elaboración
+
+### 1 · Arranca el worker desde un blob
+
+El código de este paso es [la respuesta corta](#la-respuesta-corta). En la 1.4.1, `createLayoutWorker()` sin opciones arranca el archivo del worker que está junto al módulo. Si el módulo viene de esm.sh, ese archivo es de otro origen y el constructor `Worker` lanza un SecurityError. Una URL de blob creada por la página tiene el origen de la página, así que la respuesta corta arranca un worker de módulo desde un blob de una sola línea que importa `postext/worker/entry` de esm.sh, y se lo pasa a `createLayoutWorker({ worker })`. El objeto que devuelve tiene un `build()` que acepta el mismo contenido y la misma configuración que `buildDocument()` y se resuelve con el mismo tipo de documento ([Ejecutar la composición en un Web Worker](/es/docs/configuration#ejecutar-la-composición-en-un-web-worker)).
+
+<Note>Postext no tiene modo de servidor: mide el texto con un canvas, así que compone en un navegador o en un worker. Para un trabajo por lotes, abre la página en Chrome en modo headless con Puppeteer y saca de ahí las páginas o el PDF. Para un proyecto `.postext` en disco, el `render.mjs` de la skill postext-port ejecuta el motor en Node y, en lugar del canvas, mide con fontkit sobre las fuentes del propio proyecto ([Scripts](/es/docs/skill#scripts)).</Note>
+
+### 2 · Carga cada fuente dos veces
+
+<Excerpt region="fonts" />
+
+El worker tiene su propio `FontFaceSet` y no ve las fuentes que ha cargado la página, así que la respuesta corta descarga los mismos archivos de Fontsource y pasa sus bytes a `registerFonts()`, con el peso como cadena (`'400'`). Si quitas esa llamada, el worker de la 1.4.1 mide con una fuente de reserva y no avisa: compone este capítulo en 175 líneas en vez de 190, y ya la primera línea termina en «him)» en lugar de en «of». Un archivo que no se descarga tampoco da error. Si al worker le llega una página 404 en lugar de la Baskervville redonda, `registerFonts()` se resuelve igual y el capítulo sale en 186 líneas, con un aviso solo en la consola del worker. Por eso la respuesta corta comprueba el código HTTP de cada descarga antes de enviar ningún byte, y si alguna falla lanza un error con la fuente y el código. La página carga además las mismas fuentes con `loadFonts()`, porque el canvas pinta con las de la página.
+
+### 3 · Compón en cada pulsación, pinta en el hilo principal
+
+<Excerpt region="editor" />
+
+`typeset()` cancela la composición en curso antes de pedir la siguiente. La promesa de la composición cancelada se rechaza en el acto con un `AbortError`, que `typeset()` convierte en `null`. En el worker, una composición que aún espera en la cola se descarta enseguida, y la que está en marcha se detiene al terminar su pasada de colocación, porque solo se comprueba la cancelación entre una pasada y la siguiente. `refresh()` numera sus composiciones y solo pinta la última, así que una composición del worker que llega tarde no puede pintar encima de una del hilo principal. El documento vuelve al hilo principal, donde `renderPageToCanvas()` lo pinta con las imágenes registradas allí. Al worker solo le hace falta el tamaño de cada imagen, que va en el recurso (1100 × 840). Cada bloque guarda su posición en el Markdown (`sourceStart`), y `follow()` muestra la última página con un bloque que empieza en el cursor o antes.
+
+<Note>Tiempos tomados en el equipo en el que se hizo la captura, en doce cargas de la página además de la que muestra la tarjeta. La línea de estado cronometra cada composición desde la petición hasta el primer fotograma posterior a la llegada de las páginas. La primera composición del worker tarda entre 66 y 141 ms y las siguientes entre 10 y 36 ms, porque el worker conserva una caché de medidas mientras vive; entretanto, el fotograma más largo se queda entre 8 y 18 ms. En el hilo principal, la primera composición detiene la aguja entre 54 y 74 ms. Las siguientes, con una caché propia, tardan entre 5 y 17 ms y alargan el fotograma más largo hasta 25 ms como mucho, fotograma y medio a 60 Hz. Una composición que dura más que un fotograma (16,7 ms a 60 Hz), como la primera de este capítulo o las de un libro de muchos capítulos, congela el editor en el hilo principal y no en el worker.</Note>
+
+### 4 · Una portada que es un estilo de título
+
+<Excerpt region="title" />
+
+La línea `# The Time Machine {style="title"}` compone la página 1 con el estilo de título `title`, cuyos `header` y `footer` vacíos la dejan sin cabeceras ni folio. `numbered: false` deja el título fuera de la cuenta de capítulos, así que Introduction sigue siendo el capítulo I. La lámina se ancla a la esquina superior izquierda del sangrado y el nombre del autor queda por debajo del pie de la columna; `span: 'page'` permite que el diseño pinte en los dos sitios. Sin esa opción, la 1.4.1 recorta el diseño a la columna: la lámina pierde sus 15 mm de arriba y el nombre del autor no se pinta.
+
+### 5 · Cabeceras según el tipo de página
+
+<Excerpt region="heads" />
+
+`pages: 'body'` deja sin cabeceras la portada y la apertura, y `parity` pone el título del libro en las páginas pares y el del capítulo en las impares, con los folios en el margen exterior. La apertura lleva en cambio un folio al pie, un elemento del `footer` con `pages: 'opener'`. Folios y cabeceras van en cuerpo 8 y a 8,2 mm del borde superior, así que las cifras del folio se apoyan en la misma línea base que la cabecera.
+
+### 6 · La apertura del capítulo
+
+<Excerpt region="opener" />
+
+El `{number}` del diseño imprime el número del capítulo con la forma que le da `numberingTemplate: '{1:I}'`, una I romana. `minHeight` reserva al menos ocho líneas, así que el texto empieza en la novena mientras el título ocupe una o dos, y más abajo si un título más largo necesita más sitio. `breakBefore` se repite porque cualquier objeto `headings` anula el salto de página del H1 por defecto; `parity: 'any'` deja que el capítulo abra en la página 2, frente a su segunda página.
+
+## Errores frecuentes
+
+- En postext 1.4.1, una composición con caché de medidas puede cortar las líneas de otra manera que una sin ella, y el worker siempre usa una. Con la medida de 90 mm de esta receta, el capítulo ocupa 190 líneas en los dos casos, pero con márgenes de 13 y 10 mm (una medida de 87 mm) y el espaciado entre palabras por defecto ocupa 196 líneas sin caché y 199 con ella. El pen le da al hilo principal una caché propia (`createMeasurementCache()`), así que los dos hilos siguen componiendo las mismas páginas si cambias la medida.
+- Un mapa de importaciones de la página no llega al worker. Si fijas `https://esm.sh/postext@1.4.1` en la página, fija el `import` del blob a la misma versión, o cada hilo puede ejecutar una versión distinta.

@@ -1,0 +1,565 @@
+{
+  "schemaVersion": 1,
+  "slug": "dictionary-thumb-index",
+  "sourceHash": "0e22ec21b0385f8a056029b5ccfe038982e5022be6d3f554b46b9a20f14f1d07",
+  "engine": {
+    "postext": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-26T21:50:30.715Z",
+  "variants": {
+    "en": {
+      "hash8": "261233ca",
+      "vdtHash": "793b4b405b15c16d5191da398e20c89300ac4fd3",
+      "timings": {
+        "importMs": 119,
+        "fontsMs": 51,
+        "buildMs": 96,
+        "totalMs": 2951,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          150,
+          200
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 4,
+        "mirror": true,
+        "body": {
+          "family": "Alegreya",
+          "sizePt": 8,
+          "leadingPt": 10.4
+        },
+        "families": [
+          "Alegreya",
+          "Alegreya SC",
+          "Alegreya Sans SC"
+        ],
+        "pages": 4,
+        "ownLines": 185
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1333,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 152420,
+          "alt": "Opening page 1: The Sailor’s Word-Book."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 195620,
+          "alt": "Page 2: B."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 200836,
+          "alt": "Page 3: C."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 117086,
+          "alt": "Page 4."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.maxRuntTracking",
+          "bodyText.maxWordSpacing",
+          "bodyText.minWordSpacing",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].fontSize",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].span",
+          "headings",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.columnRule",
+          "layout.columnRule.color",
+          "layout.columnRule.enabled",
+          "layout.columnRule.lineWidth",
+          "layout.gutterWidth",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].boldColor",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].hangingIndent",
+          "paragraphStyles[].id",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 35148,
+        "designElements": 2506,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 1,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Alegreya Sans SC",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Alegreya Sans SC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Alegreya SC",
+            "weight": 900,
+            "style": "normal"
+          },
+          {
+            "family": "Alegreya",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Alegreya",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Alegreya",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "bibliography",
+          "column-rule",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "resources",
+          "section-running-heads"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 4,
+        "looseLines": {
+          "count": 18,
+          "share": 0.0826,
+          "worst": 2.11
+        },
+        "findings": [
+          {
+            "check": "C24",
+            "severity": "warn",
+            "detail": "18 of 218 justified lines (8.3 %) stretch past 1.7× (worst 2.11×); loosest: p. 3 2.11× “which the distances of ships in a fleet are fre-”, p. 2 2.08× “verse position of the drift being understood. –”, p. 1 2.0100000000000002× “taken aback, when brought to by an unexpected”"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "139728f8",
+      "vdtHash": "a77efb7bf99b958445415baf2395ed7720eb4c98",
+      "timings": {
+        "importMs": 307,
+        "fontsMs": 46,
+        "buildMs": 153,
+        "totalMs": 1400,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          150,
+          200
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 4,
+        "mirror": true,
+        "body": {
+          "family": "Alegreya",
+          "sizePt": 8,
+          "leadingPt": 10.4
+        },
+        "families": [
+          "Alegreya",
+          "Alegreya SC",
+          "Alegreya Sans SC"
+        ],
+        "pages": 4,
+        "ownLines": 185
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1333,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 157328,
+          "alt": "Página de apertura 1: Vocabulario del marinero."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 204326,
+          "alt": "Página 2: B."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 197230,
+          "alt": "Página 3: C."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 130788,
+          "alt": "Página 4."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.maxRuntTracking",
+          "bodyText.maxWordSpacing",
+          "bodyText.minWordSpacing",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].fontSize",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].span",
+          "headings",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.columnRule",
+          "layout.columnRule.color",
+          "layout.columnRule.enabled",
+          "layout.columnRule.lineWidth",
+          "layout.gutterWidth",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].boldColor",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].hangingIndent",
+          "paragraphStyles[].id",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 35148,
+        "designElements": 2506,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 1,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Alegreya Sans SC",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Alegreya Sans SC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Alegreya SC",
+            "weight": 900,
+            "style": "normal"
+          },
+          {
+            "family": "Alegreya",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Alegreya",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Alegreya",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "bibliography",
+          "column-rule",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "resources",
+          "section-running-heads"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 4,
+        "looseLines": {
+          "count": 4,
+          "share": 0.0178,
+          "worst": 1.77
+        },
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
+      }
+    }
+  }
+}

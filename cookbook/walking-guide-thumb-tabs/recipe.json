@@ -1,0 +1,72 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 47,
+  "status": "published",
+  "chapter": "running-heads",
+  "order": 30,
+  "level": 3,
+  "genres": ["manual"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["bleed-bands", "part-palettes", "page-role-filters"],
+    "also": [
+      "section-running-heads", "heading-styles", "opener-design", "heading-attributes",
+      "heading-numbering", "chapter-breaks", "running-heads", "color-palette", "chips",
+      "callout-icons", "swatches", "inline-embeds", "resource-types", "design-images",
+      "design-elements", "covers", "canvas-rendering"
+    ]
+  },
+  "answers": ["Q31", "Q30", "Q62", "Q52"],
+  "gaps": [],
+  "gotchas": [
+    "section-last-wins", "section-palette-skips-chips", "palette-skips-designs",
+    "style-inherits-break", "headings-drop-h1-break", "negative-offsets", "parity-page1-recto",
+    "ragged-no-hyphenation", "ragged-runts", "svg-no-webfonts", "fonts-first"
+  ],
+  "explainsWarnings": [],
+  "workarounds": [
+    { "followup": "EF-113", "package": "postext", "note": "the walk level keeps span: 'page' in a one-column guide: kept in the column, the opener band and the cover's tiles would be cut at the top margin, 18 mm from the edge, instead of reaching the trim" },
+    { "followup": "EF-152", "package": "postext", "note": "the cover style inherits span: 'page' from the level, the only path that honours the \\\\ break in '# Lisbon \\\\ on Foot'; in the column the title wraps as 'Lisbon on / Foot'" },
+    { "followup": "EF-87", "package": "postext", "note": "the chips are ink on paper with a muted outline: a walk's palette does not reach chips, so a chip linked to 'band' or 'wash' would keep the tile-blue base values on every walk's pages (gotcha section-palette-skips-chips)" },
+    { "followup": "EF-71", "package": "postext", "note": "col() writes each colour's hex beside its paletteId: a heading style's palette follows the id, but the document palette never reaches design elements in 1.4.1" },
+    { "followup": "EF-05", "package": "postext", "note": "the walk level states breakBefore: { enabled: true, parity: 'odd' }, since a headings object drops the documented level-1 break" },
+    { "followup": "EF-60", "package": "postext", "note": "the intro style sets breakBefore: { enabled: false }: it would inherit the walk level's odd-page break and leave page 2 blank" },
+    { "followup": "EF-21", "package": "postext", "note": "the text is ragged, so it is never hyphenated; the recipe sets no locale and claims no hyphenation" },
+    { "followup": "EF-147", "package": "postext", "note": "ragged paragraphs get no runt control: the last line of every paragraph, box and caption was checked by hand in both editions, and paragraphs that ended on one short word were reworded" },
+    { "followup": "EF-153", "package": "postext", "note": "the cover's centred, tracked kicker is placed 0.35 mm right of the plaque's edge, half its 2 pt tracking, which centred text counts after the last letter" },
+    { "followup": "EF-11", "package": "postext", "note": "every frontmatter value is quoted" }
+  ],
+  "related": ["parts-in-colour", "running-heads-by-parity", "chapter-opener-bleed-band", "recipe-card"],
+  "engine": { "postext": "1.4.1" },
+  "kit": ["core", "fonts", "viewer", "images"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": {
+    "hero": [6, 7],
+    "card": "spread",
+    "pages": "all",
+    "expect": { "pages": [7, 7], "nearEmptyPages": [1, 6] }
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [],
+    "images": [
+      {
+        "what": {
+          "en": "The tiles, the map of the routes and its pins, drawn in code",
+          "es": "Los azulejos, el plano de las rutas y sus pines, dibujados en código"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "fonts": [
+      { "family": "Albert Sans", "license": "OFL-1.1" },
+      { "family": "DM Serif Display", "license": "OFL-1.1" },
+      { "family": "Asap Condensed", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-26",
+  "updated": "2026-09-26"
+}

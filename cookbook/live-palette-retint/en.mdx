@@ -1,0 +1,64 @@
+---
+title: "Retint a whole document from one palette"
+summary: "Each colour in the config carries a palette id, so one function returns a fresh config that sets a festival programme in red, teal, violet or sand."
+description: "A two-page festival programme whose headings, bold type, bullets, chips, swatches, table fills, running head and folio take their colour from one palette."
+question: "How do I replace the default blue of headings, bold text and bullets with colours from my own palette?"
+aliases: ["colour palette", "retint", "recolour", "colourway", "theme colours", "brand colours", "main-color", "paletteId", "default blue", "live preview", "config cache", "structuredClone"]
+pageNotes: { "1": "The front of the programme: a red field over the top half with the kicker Almarén · 12–18 June 2027, the title Riverside Music Week in white and a waveform of pale rounded bars; below, two ragged columns open with an introduction and list Saturday to Monday, each event with a bold red time and a chip: Free outlined in red, or the price in white on red.", "2": "The back: a red caption bar over a grid of six venues by seven days, the venue names set flush right against the tiles, red squares for ticketed concerts and pale pink ones for free events, with a swatch key; then Tuesday to Friday in two columns, a Tickets box under a red stripe, the colophon and the folio 2 in a red pill." }
+---
+
+## What you'll build
+
+The programme of *Riverside Music Week*, a fictional festival in a river town, printed as a 200 mm square leaflet. The front page has a colour field across its top half, with the title in Syne 800 at 46 pt and a waveform of pale rounded bars; below it, two ragged columns list the week day by day, each event with a bold time and a price chip. The back maps the week as a grid of coloured tiles under a caption bar, then lists Tuesday to Friday and ends with a tickets box under a stripe and the colophon. Above the pages the pen shows four proofs, in red, teal, violet and sand. Their colours come from seven palette entries named by role, plus `main-color` set to the band colour. Click a proof and the whole document is built again in that palette.
+
+## Method
+
+### 1 · Name colours by the job they do
+
+<Excerpt region="palette" />
+
+`band` fills the colour fields, `onBand` colours the type set on them, `deep` is the accent for type on white paper and `tint` the light fill. Each colourway sets those four and shares the three neutrals. Against white, the teal band measures 3.3:1 and the sand band 2.1:1, too low for white type on the band or for band-coloured type on paper. Those two palettes set `onBand` in ink, and all four set bold text and headings in `deep`, a darker shade that measures between 5.99:1 (sand) and 8.40:1 (violet) on white.
+
+### 2 · Link everything the engine would print blue
+
+<Excerpt region="links" />
+
+The engine's blue is a palette entry, `main-color` (#295AA3), and [its defaults](/en/docs/configuration#the-default-palette) point headings, bold, italic, references, bullets and the running head at it. Here each of those carries a palette id: times and key terms in bold `deep`, italics in ink, bullets in `band`, and on page 2 a running head in `deep` and the folio in `onBand` on a `band` pill. `retint()` also points `main-color` at the band; since this config sets every colour, that changes nothing on these pages, but a style added later without a colour takes the band instead of blue. The tickets box sets no bold colour of its own, so it inherits `bodyText.boldColor` with its palette id, and its bold changes with the colourway.
+
+### 3 · Draw the artwork with design boxes
+
+<Excerpt region="opener" />
+
+The opener is a [design slot](/en/docs/configuration#box-elements) holding a box bled off the top edge, 29 rounded bars for the waveform and three text elements: the heading's own text as the title, and the kicker and standfirst from its attributes. The bars are boxes rather than an SVG, so their fill is one more `tint` link that `relink()` rewrites; an SVG would have to be redrawn and registered again for every colourway. On its own, the band box would start the text on the grid line 2.4 mm under the band; `minHeight`, 18 lines or 85.1 mm below the top margin, reserves more and moves the first line to 7 mm under it.
+
+### 4 · Let the palette fill the table
+
+<Excerpt region="grid" />
+
+The grid is a table resource, outside the config, so `relink()` never touches it. Its [cell fills](/en/docs/document-format#block-embed-optional-explicit-inline-placement) carry palette ids all the same, and the engine resolves them from the document palette when it lays out the table; the `:swatch{color="band"}` and `:swatch{color="tint"}` of the key in the table note resolve the same way. The chips in the listings use the same two ids, so a filled square, the chip beside a time and the key's swatch agree in every colourway.
+
+### 5 · Build a fresh config on every click
+
+<Excerpt region="live" />
+
+Each button calls `retint()`, which calls `config()`, so every build gets a new object with no cached resolution behind it. The engine resolves a config once and [caches the result against that object](/en/docs/configuration#global-state-shared-in-one-page). Keep one config and change its palette entries in place, and the next build reuses the old resolution: in a test on 1.4.1, the headings, bullets, chips and caption bar kept their first colour, while the swatches and cell fills, which read the palette during layout, took the new one. Assigning a new `colorPalette` array to the same object changed nothing. A `structuredClone()` of the edited config does get a fresh resolution, but its design slots and reference colour still carry the old hex, so the band, the waveform, the furniture and “Table 1” stayed red; `retint()` rewrites those hexes and returns a new object.
+
+## Variations
+
+### Keep bold text in ink
+
+Leave the accent to the headings, bullets and chips, and set the times and key terms in the text colour.
+
+```diff
+-  boldColor: col('deep'), referenceColor: col('deep'), textAlign: 'left', firstLineIndent: pt(0) };
++  boldColor: col('ink'), referenceColor: col('deep'), textAlign: 'left', firstLineIndent: pt(0) };
+```
+
+### Give each part of a book its own colour
+
+For colours that change inside one document, part by part, see <RecipeLink slug="parts-in-colour">Parts in colour from one attribute</RecipeLink>.
+
+## Pitfalls
+
+- Delete `relink()` and build the teal edition to see what postext 1.4.1 leaves behind: the band, the waveform, the white title, the running head, the folio pill and the reference “Table 1” keep the red edition's colours, while the text, lists, chips, caption bar, table and tickets box follow the palette.
+- Keep `bodyText.boldColor` set when a box holds bold text. The box copies it, palette id included; leave it unset and 1.4.1 copies the default instead, so in the teal edition the bold outside the box takes the band while “week pass” in the box prints in #295AA3.

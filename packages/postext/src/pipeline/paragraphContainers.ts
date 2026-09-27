@@ -13,17 +13,26 @@ import { resolveParagraphStyle, type BlockStyle } from './styles';
 export interface ParagraphContainer {
   /** `containerId` of the start/end marker pair. */
   id: number;
+  /** The `style` id the container names. */
+  styleId: string;
   /** Style for every paragraph in the container. */
   style: BlockStyle;
-  /** Style for the container's last paragraph: the container's
-   *  `marginBottom` is baked into its `marginBottomPx` so the grid snap that
-   *  closes the container guarantees the margin (grid wins, margin is a
-   *  minimum — the same convention snapped headings follow). */
+  /** Style for the container's last paragraph: its `marginBottomPx` is
+   *  the space under the container, the larger of `spaceBetween` and
+   *  `marginBottom` (a negative `marginBottom` as it is). With
+   *  `bodyText.paragraphContainerSpacing: 'add'` (1.4) it is baked into
+   *  the grid snap that closes the container (grid wins, margin is a
+   *  minimum — the same convention snapped headings follow); with
+   *  `'collapse'` the flow snaps under the text and carries what the snap
+   *  left of the space, so it merges with the next block's own. */
   tailStyle: BlockStyle;
   /** Applied on entry through pending spacing. */
   marginTopPx: number;
   /** Fallback for containers whose last block is not a paragraph. */
   marginBottomPx: number;
+  /** The style's `snapToGrid`: whether the flow snaps back onto the
+   *  baseline grid under the container's last paragraph (EF-184). */
+  snapToGrid: boolean;
 }
 
 export interface ParagraphContainerPlan {
@@ -41,9 +50,8 @@ export function planParagraphContainers(
   const byBlock = new Array<ParagraphContainer | undefined>(contentBlocks.length);
   const dpi = resolved.page.dpi;
   // Every open container occupies one slot, undefined for non-`paragraphs`
-  // containers and for unknown style ids (those render as plain body text —
-  // the build has no warnings channel; the editor's warnings phase can flag
-  // them).
+  // containers and for unknown style ids (those render as plain body text,
+  // and `collectContentWarnings` reports them in `doc.contentWarnings`).
   const open: Array<ParagraphContainer | undefined> = [];
   const cache = new Map<string, Omit<ParagraphContainer, 'id'>>();
 
@@ -63,10 +71,12 @@ export function planParagraphContainers(
             // the entries' own spacing instead of collapsing with it.
             const tailMarginPx = marginBottomPx < 0 ? marginBottomPx : Math.max(style.marginBottomPx, marginBottomPx);
             base = {
+              styleId,
               style,
               tailStyle: { ...style, marginBottomPx: tailMarginPx },
               marginTopPx: dimensionToPx(cfg.marginTop, dpi, style.fontSizePx),
               marginBottomPx,
+              snapToGrid: cfg.snapToGrid,
             };
             cache.set(styleId, base);
           }

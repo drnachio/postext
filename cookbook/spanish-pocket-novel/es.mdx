@@ -1,0 +1,77 @@
+---
+title: "Español justificado en una novela de bolsillo"
+summary: "El comienzo de Marianela en edición de bolsillo: separación silábica del español, espacios de menos de 1,7×, capitular alzada y el plano como Figura 1."
+description: "Marianela, de Galdós, en edición de bolsillo de 11,5 × 18 cm: partición silábica, espacios de menos de 1,7×, rayas, comillas latinas y un plano como Figura 1."
+question: "¿Cómo justifico un texto en español con separación silábica, rayas, comillas latinas y «Figura», no «Figure»?"
+aliases: ["ortotipografía", "partición de palabras", "separación silábica en español", "raya", "diálogo", "comillas latinas", "comillas angulares", "capitular alzada", "letra capital", "Figura en vez de Figure", "espaciado entre palabras", "línea corta", "novela de bolsillo", "frontispicio"]
+pageNotes: { "1": "El frontispicio: un plano conjetural de las minas de Socartes, con el camino punteado del viajero desde la villa, por la pasadera y el cerro arbolado, hasta el borde de la mina.", "2": "El capítulo I: CAPÍTULO PRIMERO en versalitas sobre un filete corto y el título Perdido en cursiva; a un cuarto de la altura de la página empieza el texto, con una S alzada en color sangre de toro." }
+---
+
+## Lo que vas a componer
+
+El comienzo de *Marianela* (1878), de Galdós, en una edición de bolsillo de 11,5 × 18 cm, con un plano conjetural de las minas de Socartes frente al capítulo I. Sobre el título, en Libre Bodoni cursiva, va *capítulo primero* en versalitas y escrito con letras; el texto, en Gentium Book Plus, empieza a un cuarto de la altura de la página con una capitular alzada color sangre de toro. Las palabras se parten por sílabas (*hie-rro*, *esta-blecimiento*) y los espacios no pasan de 1,7 veces su ancho normal; ningún párrafo termina con el resto de una palabra partida. Los diálogos llevan raya, la misma que abre y cierra los incisos del narrador. La consigna del viajero va entre «comillas latinas», y entre “inglesas” en la nota final, que la cita dentro de otra cita. El plano es la *Figura 1*, citada en el texto como [fig. 1]. Las cabeceras, en Marcellus SC, llevan el autor en las pares y el título en las impares.
+
+## Elaboración
+
+### 1 · Sílabas del español, espacios contenidos
+
+El código está en [la respuesta corta](#la-respuesta-corta), más arriba. Los patrones de separación silábica del español los elige `locale: 'es'`, y solo ese código exacto: con `'es-ES'`, estas páginas parten *cabal-los*, *hi-erro* y *establec-imiento* con las reglas del inglés americano, y en una línea los espacios llegan a 2,13× ([idiomas soportados](/es/docs/justification#idiomas-soportados)). La justificación, Knuth–Plass y las reglas de viudas y huérfanas vienen activadas de serie. Además, en una medida de 86 mm hay que contener los espacios: con el `maxWordSpacing: 2` por defecto, ocho líneas pasan de 1,6× y la más abierta llega a 1,89×; con 1,7, la más abierta se queda en 1,65×, porque entonces el algoritmo parte *hie-rro* y *ca-lles* ([límites de espaciado entre palabras](/es/docs/justification#límites-de-espaciado-entre-palabras)). Por encima del límite una línea cuesta mucho más, pero sigue siendo válida, así que en una medida más estrecha, si no hay un corte mejor, puede pasarse. `runtMinCharacters: 26` evita los restos de palabra partida que deja pasar el valor por defecto, 20 anchos de espacio: *siem- / pre adelante.* pasa a ser *Adelante, / siempre adelante.*, y *So- / cartes [fig. 1].*, *de / Socartes [fig. 1].* ([líneas cortas](/es/docs/configuration#huérfanas-viudas-runts-y-reglas-de-cohesión)).
+
+### 2 · Una página de bolsillo de líneas enteras
+
+<Excerpt region="page" />
+
+El margen inferior se calcula a partir del formato, del margen superior y de `LINES`, así que la caja tiene exactamente 30 líneas de 13,8 pt y toda página llena acaba en la misma línea de base, como se ve en <PageRef page={3}>las páginas 10 y 11</PageRef>. Con `mirror: true`, el margen interior, de 15 mm, queda del lado del lomo en las dos páginas, y el exterior, de 14 mm, del lado del corte ([márgenes simétricos](/es/docs/configuration#márgenes-simétricos-espejo)), y en la medida de 86 mm caben unos 57 caracteres de Gentium Book Plus a 10 pt.
+
+### 3 · El capítulo en letras y una capitular alzada
+
+<Excerpt region="opener" />
+
+Las plantillas de numeración solo imprimen números y letras (1, 01, I, i, A, a), nunca palabras, así que *capítulo primero* sale del atributo `ordinal` del propio título ([atributos de encabezado](/es/docs/document-format#atributos-de-encabezado)). Postext solo dibuja capitulares en el texto de diseño, que se compone en bandera, y solo si ese texto lleva `overflow: 'wrap'`. Para que la bandera no se note, la capitular acompaña a una sola línea: `lines: 1` la alza junto a la línea que guarda el atributo `lead`, e `INITIAL_GAP` se ha ido ajustando hasta que esa línea acaba a ras, a 0,1 mm de la medida. El párrafo sigue en el Markdown, sin sangría ([elementos de texto](/es/docs/configuration#elementos-de-texto)). El `marginBottom` del nivel del capítulo sustituye al margen por defecto, que añadiría una línea en blanco; su valor, `-LEAD`, recupera además la línea de más que la caja de la capitular, de 1,2 em de alto, suma a la altura de la apertura.
+
+<PageShot page={2} crop="0.08,0.1,0.84,0.289" caption="Página 9: el antetítulo y el título del capítulo, y la capitular alzada junto a una primera línea que acaba en el mismo punto que las líneas justificadas que la siguen." />
+
+### 4 · El plano, enfrente del capítulo, como Figura 1
+
+<Excerpt region="figure" />
+
+`position: 'here'` coloca el plano donde está `::resource{id="plano"}`, bajo un título propio. Ese título convierte la página 8 del libro en una apertura, y en las aperturas no se imprimen cabeceras. Su estilo deja vacío el pie de página y fija su propio salto, de modo que la lámina queda frente al capítulo I, sin cabecera ni folio, aunque los capítulos empiecen en página impar ([estilos de encabezado](/es/docs/configuration#estilos-de-encabezado)). Los tipos en español de la respuesta corta imprimen *Figura 1.* en el pie del plano (sin `resourceTypes` diría *Figure 1.1*, sea cual sea el idioma) y *Fig. 1* en el texto, que el `case="lower"` del `:ref` del Markdown convierte en *fig. 1*. La referencia va entre corchetes, que en las ediciones españolas señalan lo que el editor añade al texto del autor.
+
+### 5 · El autor en la página par, el título en la impar
+
+<Excerpt region="heads" />
+
+`parity: 'even'` pone el autor en las pares y `'odd'` el título en las impares, y `pages: 'body'` los deja fuera de la apertura, donde solo aparece el folio al pie, el elemento con `pages: 'opener'`. Cada cabecera se ancla a la página y `SHIFT` la desplaza al centro de la caja, que queda medio milímetro fuera del centro de la página porque el margen interior y el exterior no miden lo mismo. Por eso mismo el folio al pie tiene una versión para cada paridad. Los folios van en Gentium, porque en Marcellus SC el 1 y el 0 se confunden con la I y la O.
+
+### 6 · La puntuación española, en el Markdown
+
+<Excerpt region="styles" />
+
+<PageRef page={5}>La página 12</PageRef>, la última, se cierra con tres estilos de párrafo. Los asteriscos, de Bodoni y en color sangre de toro, van centrados tras un [`:::space{lines=2}`](/es/docs/document-format#space), porque las líneas en blanco no añaden espacio. La nota de la edición va en cuerpo 8,3 con 11 pt de interlineado, y el colofón, en cuerpo 7,5 y en el gris de las cabeceras. La nota se queda en el color del texto: un estilo de párrafo no tiene color de cursiva, y en una nota gris el título *Marianela*, en cursiva, saldría más oscuro que el resto. En el Markdown, el diálogo empieza con raya (—) y nunca con guion, porque un guion seguido de un espacio al principio de la línea abre una lista. *1878.* al comienzo de la nota abriría una lista numerada, y por eso lleva delante un unidor de palabras (U+2060). Los asteriscos van escapados (`\*`); sin la barra, el primero abriría una lista con viñetas y los otros dos una cursiva, y la línea desaparecería.
+
+## Variantes
+
+### Abre cada capítulo en página impar
+
+Con `'odd'`, delante de un capítulo que fuera a empezar en página par se añade una página en blanco, como en una edición menos apretada. El capítulo I ya empieza en impar, y la lámina conserva su página porque su estilo fija su propio salto.
+
+```diff
+-const chapter = { level: 1, breakBefore: { enabled: true, parity: 'any' },
++const chapter = { level: 1, breakBefore: { enabled: true, parity: 'odd' },
+```
+
+### Numera las figuras por capítulo
+
+Si se dejan los tipos en español tal como vienen, las figuras se numeran dentro de cada título de primer nivel: el plano pasa a ser la *Figura 1.1*, y la referencia, *fig. 1.1*.
+
+```diff
+-const resourceTypes = defaultResourceTypes(LOCALE)
+-  .map((type) => ({ ...type, numberingTemplate: '{n}', resetOn: 'never' }));
++const resourceTypes = defaultResourceTypes(LOCALE);
+```
+
+## Errores frecuentes
+
+- Con una caída de nueve líneas en lugar de ocho, la página 11 se quedaba una línea corta, porque `avoidWidows` no deja que un párrafo empiece en la última línea de la página. Después de cualquier cambio en los ajustes o en el texto, revisa el pie de todas las páginas.
+- El atributo `lead` se corta a media frase (*…vino tranquila*) y el párrafo del Markdown lo retoma (*y oscura la noche*), porque el atributo guarda solo las palabras que caben junto a la capitular. Con otra letra, otro cuerpo, otra medida u otro `INITIAL_GAP`, la línea deja de acabar a ras: pasa palabras de uno a otro hasta que vuelva a hacerlo.
+- Ninguna de estas fuentes trae el asterismo ⁂ (U+2042) en su archivo latin de Fontsource, así que el navegador lo sacaría de una fuente del sistema. En los libros españoles, además, lo habitual son tres asteriscos espaciados.

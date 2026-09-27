@@ -1,0 +1,370 @@
+import fs from "node:fs";
+import path from "node:path";
+import { describe, expect, it } from "vitest";
+import { composePen } from "./compose.ts";
+import {
+  CONFIG_KEYS,
+  KNOWN_CONTAINERS,
+  KNOWN_DIRECTIVES,
+  configKeys,
+  detectPen,
+  markdownConstructs,
+  parseImports,
+  penFonts,
+  scanJs,
+  staticLevel,
+  usedApis,
+} from "./detect.ts";
+import { KIT_IMPORTS, imageSize, isAllowedUrl, lintPen, lintRecipe } from "./lint.ts";
+import { REPO_DIR } from "./paths.ts";
+import { listRecipeSlugs, readKit } from "./sources.ts";
+import type { KitBlock, Locale, RecipeMeta, RecipeSources } from "./types.ts";
+
+// ─── A pen that follows every convention ────────────────────────────────────
+
+const SCRIPT = String.raw`// ═══ Postext Cookbook · Nº 042 · Fixture opener ═════════════════════════════
+// https://postext.dev/en/cookbook/fixture-opener
+// Code: MIT · Text: original (MIT)
+// Fonts: Newsreader, Archivo (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+import {
+  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  defaultResourceTypes,
+} from 'https://esm.sh/postext';
+import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
+
+const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
+const RECIPE = 'fixture-opener';
+
+// ─── 1 · Design ─────────────────────────────────────────────────────────────
+const palette = { ink: '#14181d', band: '#2a7f97' };
+const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
+
+// #region answer: an explicit H1 page break next to the heading styles
+const headings = {
+  fontFamily: 'Archivo',
+  color: col('ink'),
+  // restated on purpose (gotcha headings-drop-h1-break)
+  levels: [
+    {
+      level: 1,
+      fontSize: pt(24),
+      breakBefore: { enabled: true, parity: 'odd' },
+    },
+    { level: 2, fontSize: pt(14) },
+  ],
+};
+// #endregion
+
+const config = () => ({ // a factory: the engine caches resolved configs per object
+  locale: LANG,
+  resourceTypes: defaultResourceTypes(LANG),
+  colorPalette: Object.entries(palette)
+    .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
+  page: {
+    sizePreset: 'custom', width: mm(150), height: mm(210),
+    margins: { top: mm(20), bottom: mm(20), left: mm(18), right: mm(18), mirror: true },
+  },
+  bodyText: { fontFamily: 'Newsreader', fontSize: pt(9.5), lineHeight: pt(13), color: col('ink') },
+  'headings': headings,
+  header: { elements: [] },
+  footer: { elements: [] },
+});
+
+// ─── 2 · Content ────────────────────────────────────────────────────────────
+const markdown = /* @content */ '';
+const resources = [
+  { id: 'photo', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0,
+    bitmap: { fileId: 'photo.jpg', format: 'jpeg', width: 1200, height: 800 } },
+];
+const pattern = /['"]\s*\/\//g; // a regex with quotes and slashes must not confuse the scanner
+
+// ─── 3 · Fonts ──────────────────────────────────────────────────────────────
+const FONTS = { Newsreader: ['400', '400i', '700'], Archivo: ['700'] };
+
+// ─── 4 · Build & show ───────────────────────────────────────────────────────
+await loadFonts(FONTS, markdown);
+await loadImage('photo.jpg', asset('photo.jpg'));
+const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+showPages(doc, { title: t({ en: 'Fixture opener', es: 'Apertura de prueba' }) });
+offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
+  ` + "`${RECIPE}.pdf`" + String.raw`);
+
+// @kit core fonts viewer pdf images
+`;
+
+function fixtureSources(overrides: Partial<RecipeSources> = {}): RecipeSources {
+  return {
+    slug: "fixture-opener",
+    script: SCRIPT,
+    html: "",
+    css: "",
+    pen: {},
+    content: {
+      en: '---\ntitle: "Fixture"\n---\n# One\n\nSee :ref{id="photo"}. A `tick` and ${dollar}.\n\n::resource{id="photo"}\n',
+      es: "# Uno\n\nTexto.\n",
+    },
+    assets: ["assets/photo.jpg"],
+    ...overrides,
+  };
+}
+
+function fixtureMeta(): RecipeMeta {
+  return {
+    schemaVersion: 1,
+    number: 42,
+    status: "draft",
+    chapter: "headings",
+    order: 10,
+    level: 2,
+    genres: ["magazine"],
+    outputs: ["canvas", "pdf"],
+    features: { primary: ["heading-styles"], also: ["palette-links"] },
+    answers: ["Q29"],
+    engine: { postext: "1.4.1", postextPdf: "1.4.1" },
+    kit: ["core", "fonts", "viewer", "pdf", "images"],
+    sample: { locales: ["en", "es"] },
+    capture: { hero: 1, card: "page" },
+    downloads: { pdf: true },
+    credits: {
+      authors: [{ name: "Fixture" }],
+      text: [],
+      images: [{ what: { en: "Photo", es: "Foto" }, who: "Fixture", license: "CC0-1.0", file: "photo.jpg" }],
+      fonts: [
+        { family: "Newsreader", license: "OFL-1.1" },
+        { family: "Archivo", license: "OFL-1.1" },
+      ],
+    },
+    license: { code: "MIT", content: "MIT" },
+    created: "2026-09-25",
+    updated: "2026-09-25",
+  };
+}
+
+const kit = readKit();
+
+function lint(
+  edit: (script: string) => string = (s) => s,
+  { meta = fixtureMeta(), sources = {}, variant = "en" }: { meta?: RecipeMeta; sources?: Partial<RecipeSources>; variant?: Locale } = {},
+) {
+  const src = fixtureSources({ script: edit(SCRIPT), ...sources });
+  const pen = composePen(src, meta, variant, { kit });
+  return lintPen(pen, meta, src, { kit, repoFileExists: (p) => fs.existsSync(path.join(REPO_DIR, p)) });
+}
+
+describe("lintPen (fixture)", () => {
+  it("passes a pen that follows the conventions, in both editions", () => {
+    expect(lint().fails).toEqual([]);
+    expect(lint(undefined, { variant: "es" }).fails).toEqual([]);
+  });
+
+  it("checks the banners and the answer region", () => {
+    expect(lint((s) => s.replace("Nº 042", "Nº 041")).fails).toContain("script.js line 1: the banner says Nº 041; recipe.json says 042");
+    expect(lint((s) => s.replace("≥ 1.4.1", "≥ 1.3.0")).fails).toContain(
+      "script.js line 4: the banner needs postext ≥ 1.3.0; recipe.json says 1.4.1",
+    );
+    expect(lint((s) => s.replace("3 · Fonts", "3 · Type")).fails.some((f) => /^script\.js line \d+: section 3 is "Fonts"$/.test(f))).toBe(true);
+    expect(lint((s) => s.replace("#region answer", "#region opener")).fails).toContain(
+      "script.js: needs exactly one `// #region answer: <what it shows>`",
+    );
+    const many = Array.from({ length: 7 }, (_, i) => `// #region r${i}: extra\nconst r${i} = ${i};\n// #endregion`).join("\n");
+    expect(lint((s) => s.replace("// ─── 2 · Content", `${many}\n// ─── 2 · Content`)).fails).toContain(
+      'script.js: at most 6 regions besides "answer" (has 7)',
+    );
+    expect(lint((s) => s.replace("const RECIPE = 'fixture-opener'", "const RECIPE = 'other'")).fails).toContain(
+      "script.js: RECIPE is 'other' but the folder is fixture-opener",
+    );
+    expect(lint((s) => s.replace("const RECIPE", "const LANG = 'en'; // @lang\nconst RECIPE")).fails).toContain(
+      "script.js: exactly one `const LANG = 'en'; // @lang` line (found 2)",
+    );
+  });
+
+  it("allows only the unpinned engine URLs, once", () => {
+    const pinned = lint((s) => s.replace("'https://esm.sh/postext';", "'https://esm.sh/postext@1.4.1';")).fails;
+    expect(pinned.some((f) => f.includes("no version pins"))).toBe(true);
+    const other = lint((s) => s.replace("'https://esm.sh/postext-pdf'", "'https://unpkg.com/postext-pdf'")).fails;
+    expect(other.some((f) => f.includes("pens import only from"))).toBe(true);
+    const twice = lint((s) => s.replace("const LANG", "import { parseMarkdown } from 'https://esm.sh/postext';\nconst LANG")).fails;
+    expect(twice).toContain("script.js: exactly one import statement from https://esm.sh/postext (or ?bundle for math), found 2");
+  });
+
+  it("ties ?bundle to engine.math", () => {
+    const bundled = lint((s) => s.replace("'https://esm.sh/postext';", "'https://esm.sh/postext?bundle';")).fails;
+    expect(bundled).toContain("script.js: https://esm.sh/postext?bundle is only for engine.math recipes");
+    const meta = { ...fixtureMeta(), engine: { ...fixtureMeta().engine, math: true } };
+    expect(lint(undefined, { meta }).fails).toEqual(
+      expect.arrayContaining([
+        "script.js: engine.math recipes import every postext symbol from https://esm.sh/postext?bundle",
+        "script.js: math recipes `await initMathEngine()` before the first build",
+      ]),
+    );
+  });
+
+  it("ties the pdf output, the postext-pdf import and the pdf kit block", () => {
+    const meta = { ...fixtureMeta(), outputs: ["canvas" as const], kit: ["core", "fonts", "viewer", "images"] as KitBlock[], downloads: {} };
+    const fails = lint((s) => s.replace(/offerPdf\([\s\S]*?\);\n/, ""), { meta }).fails;
+    expect(fails.some((f) => f.startsWith('script.js: a "pdf" output, an import from https://esm.sh/postext-pdf'))).toBe(true);
+    const noImage = lint((s) => s.replace("registerResourceImage,", "")).fails;
+    expect(noImage).toContain('script.js: the "images" kit block needs `registerResourceImage` imported from postext');
+    const meta2 = { ...fixtureMeta(), kit: ["core", "fonts", "viewer", "pdf"] as KitBlock[] };
+    expect(lint(undefined, { meta: meta2 }).fails).toContain(
+      'script.js: calls loadImage() from the "images" kit block, which recipe.json "kit" does not list',
+    );
+  });
+
+  it("catches the engine traps", () => {
+    expect(lint((s) => s.replace("const config = () => ({", "const config = {").replace("\n});\n\n// ─── 2", "\n};\n\n// ─── 2")).fails).toContain(
+      "script.js: the config is a factory, `const config = () => ({ … })` (the engine caches resolved configs per object)",
+    );
+    const noBreak = lint((s) => s.replace("      breakBefore: { enabled: true, parity: 'odd' },\n", "")).fails;
+    expect(noBreak.some((f) => f.includes("any `headings` object drops the default H1 page break"))).toBe(true);
+    const stack = lint((s) => s.replace("fontFamily: 'Archivo'", "fontFamily: 'Archivo, sans-serif'")).fails;
+    expect(stack.some((f) => /^script\.js line \d+: fontFamily holds one family, not a stack \("Archivo, sans-serif"\)$/.test(f))).toBe(true);
+    expect(lint((s) => s.replace("  header:", "  orderedLists: { numberFormat: 'decimal' },\n  header:")).fails.some((f) => f.includes("numberFormat: 'arabic'"))).toBe(true);
+    expect(lint((s) => s.replace("  header:", "  headingStyle: [],\n  header:")).fails.some((f) => f.includes("`headingStyle` is not a config key"))).toBe(true);
+    expect(lint((s) => s.replace("  footer: { elements: [] },\n", "")).fails).toContain("script.js: the config must set `footer` (never the default skin)");
+    const bitmap = lint((s) => s.replace(", width: 1200, height: 800", "")).fails;
+    expect(bitmap.some((f) => f.endsWith(": bitmaps declare width and height at print size"))).toBe(true);
+    const clock = lint((s) => s.replace("const palette", "const seed = Math.random() + Date.now() + new Date().getTime();\nconst palette")).fails;
+    expect(clock.filter((f) => f.includes("captures must be deterministic"))).toHaveLength(3);
+  });
+
+  it("checks the content files", () => {
+    const content = { en: "# One\n\n::resource{id='photo'}\n\n:::sidebar\n", es: "# Uno\n" };
+    const fails = lint(undefined, { sources: { content } }).fails;
+    expect(fails).toContain(`content.en.md: "::resource{id='photo'}" is not \`::resource{id="…"}\` (double quotes, id only)`);
+    expect(fails).toContain('content.en.md: ":::sidebar" is not a Postext directive (it prints as text)');
+    const bare = lint(undefined, { sources: { content: { en: "---\ntitle: Bare\n---\n# One\n", es: "# Uno\n" } } }).fails;
+    expect(bare).toContain('content.en.md: frontmatter line 2: quote the value ("…")');
+  });
+
+  it("keeps the network on the allowlist and assets in the folder", () => {
+    const fails = lint((s) => s.replace("await loadImage('photo.jpg', asset('photo.jpg'));", "await loadImage('photo.jpg', 'https://example.com/photo.jpg');\nawait loadImage('b.jpg', asset('missing.jpg'));")).fails;
+    expect(fails.some((f) => f.includes("https://example.com/photo.jpg is not on the network allowlist"))).toBe(true);
+    expect(fails.some((f) => f.includes("asset('missing.jpg'): no assets/missing.jpg in the recipe folder"))).toBe(true);
+    const gh = lint((s) => s.replace("asset('photo.jpg')", "'https://cdn.jsdelivr.net/gh/drnachio/postext@main/cookbook/fixture-opener/assets/nope.jpg'")).fails;
+    expect(gh.some((f) => f.includes("cookbook/fixture-opener/assets/nope.jpg does not exist in the repo"))).toBe(true);
+    expect(isAllowedUrl("https://cdn.jsdelivr.net/npm/@fontsource/newsreader@5/files/x.woff2")).toBe(true);
+    expect(isAllowedUrl("https://cdn.jsdelivr.net/npm/lodash")).toBe(false);
+    expect(isAllowedUrl("https://cdn.jsdelivr.net/gh/drnachio/postext@develop/cookbook/x")).toBe(false);
+    expect(isAllowedUrl("http://postext.dev/x")).toBe(false);
+  });
+
+  it("enforces the size limits", () => {
+    const long = Array.from({ length: 320 }, (_, i) => `const v${i} = ${i};`).join("\n");
+    const fails = lint((s) => s.replace("// ─── 2 · Content", `${long}\n// ─── 2 · Content`)).fails;
+    expect(fails.some((f) => /script\.js: \d+ lines of recipe code \(at most 300\)/.test(f))).toBe(true);
+    const words = Array.from({ length: 2600 }, () => "word").join(" ");
+    expect(lint(undefined, { sources: { content: { en: words, es: "x" } } }).fails).toContain("content.en.md: 2600 words (at most 2500)");
+  });
+});
+
+// ─── detect.ts ──────────────────────────────────────────────────────────────
+
+describe("detect", () => {
+  const pen = composePen(fixtureSources(), fixtureMeta(), "en", { kit });
+
+  it("scans code, comments and literals", () => {
+    const scan = scanJs("const a = `x ${`y ${1}`} z`; // c /* d */\nconst r = /[/'\"]/g; const s = 'e\\'f';");
+    expect(scan.comments.map((c) => c.text)).toEqual(["// c /* d */"]);
+    expect(scan.literals.map((l) => [l.kind, l.text])).toEqual([
+      ["template", "y \u0000"],
+      ["template", "x \u0000 z"],
+      ["regex", "[/'\"]"],
+      ["string", "e'f"],
+    ]);
+    expect(scan.bare.length).toBe(scan.code.length);
+  });
+
+  it("finds imports, used APIs, config keys and fonts", () => {
+    const imports = parseImports(pen.js);
+    expect(imports.map((i) => i.url)).toEqual(["https://esm.sh/postext", "https://esm.sh/postext-pdf"]);
+    expect(usedApis(pen.js)).toEqual([
+      "buildDocument", "clearMeasurementCache", "decompressWoff2", "defaultResourceTypes", "registerResourceImage",
+      "renderPageToCanvas", "renderToPdf",
+    ]);
+    // A spread is a use; a property of the same name is not.
+    const spread = `import { parseTSV, mergeCells } from "https://esm.sh/postext";\nconst t = { ...parseTSV(tsv) };\nt.mergeCells();`;
+    expect(usedApis(spread)).toEqual(["parseTSV"]);
+    expect(configKeys(pen.js)).toEqual(["locale", "resourceTypes", "colorPalette", "page", "bodyText", "headings", "header", "footer"]);
+    expect(configKeys("const config = () => ({ page, ...base, [k]: 1, 'bodyText': {}, layout() {} });")).toEqual(["page", "bodyText", "layout"]);
+    expect(penFonts(pen.js)).toEqual([
+      { family: "Newsreader", weight: 400, style: "normal" },
+      { family: "Newsreader", weight: 400, style: "italic" },
+      { family: "Newsreader", weight: 700, style: "normal" },
+      { family: "Archivo", weight: 700, style: "normal" },
+    ]);
+  });
+
+  it("finds the Markdown constructs", () => {
+    const md = [
+      "---",
+      ':::toc{x="frontmatter is skipped"}',
+      "---",
+      "# Title \\\\ two lines {author=\"A\"}",
+      ":::callout{type=\"note\"}",
+      "Press :chip[Ctrl] and see :ref{id=\"f\"}, :swatch{color=\"ok\"}, $x^2$, H~2~O, 10^3^ and \\$5.",
+      ":::",
+      "::resource{id=\"f\"}",
+      "$$E = mc^2$$",
+      ":::pagebreak{parity=\"odd\"}",
+      ":::aside",
+    ].join("\n");
+    expect(markdownConstructs(md)).toEqual({
+      directives: [":::callout", "::resource", "$$", ":::pagebreak"],
+      inline: ["{attrs}", "\\\\", ":ref", ":chip", ":swatch", "$…$", "^…^", "~…~"],
+      unknown: ["aside"],
+    });
+  });
+
+  it("suggests a level", () => {
+    const detected = detectPen(pen, Object.values(fixtureSources().content));
+    expect(detected.suggestedLevel).toBe(2);
+    expect(detected.families).toEqual(["Newsreader", "Archivo"]);
+    expect(detected.resources).toEqual({ svg: 0, bitmap: 1, table: 0 });
+    expect(staticLevel("const config = () => ({ page: {} });", { apis: ["buildDocument"], configKeys: ["page"] })).toBe(1);
+    expect(staticLevel("", { apis: ["buildBundle"], configKeys: [] })).toBe(3);
+  });
+
+  it("reads image sizes", () => {
+    const png = new Uint8Array(32);
+    png.set([0x89, 0x50, 0x4e, 0x47], 0);
+    png.set([0, 0, 0x09, 0x60, 0, 0, 0x06, 0x40], 16);
+    expect(imageSize(png)).toEqual({ width: 2400, height: 1600 });
+    const jpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0, 4, 0, 0, 0xff, 0xc0, 0, 17, 8, 0x03, 0x20, 0x04, 0xb0, 3, 0, 0, 0, 0]);
+    expect(imageSize(jpeg)).toEqual({ width: 1200, height: 800 });
+  });
+});
+
+// ─── The engine and the kit, kept in sync ───────────────────────────────────
+
+describe("engine vocabularies", () => {
+  const source = (file: string) => fs.readFileSync(path.join(REPO_DIR, "packages/postext/src", file), "utf-8");
+
+  it("CONFIG_KEYS lists PostextConfig's keys", () => {
+    const body = /export interface PostextConfig \{([\s\S]*?)\n\}/.exec(source("types.ts"))?.[1] ?? "";
+    const keys = [...body.matchAll(/^ {2}([a-zA-Z]+)\??:/gm)].map((m) => m[1]);
+    expect([...CONFIG_KEYS].sort()).toEqual(keys.sort());
+  });
+
+  it("the directive lists match the parser's", () => {
+    const parser = source("parse/blockParser.ts");
+    const set = (name: string) => [...(new RegExp(`${name}[^=]*= new Set\\(\\[([^\\]]*)\\]`).exec(parser)?.[1] ?? "").matchAll(/'([a-z-]+)'/g)].map((m) => m[1]);
+    expect([...KNOWN_DIRECTIVES].sort()).toEqual(set("KNOWN_DIRECTIVES").sort());
+    expect([...KNOWN_CONTAINERS].sort()).toEqual(set("KNOWN_CONTAINERS").sort());
+  });
+
+  it("each kit block calls the import the lint requires", () => {
+    for (const [block, need] of Object.entries(KIT_IMPORTS)) {
+      if (need) expect(kit[block as KitBlock]).toMatch(new RegExp(`\\b${need.name}\\(`));
+    }
+  });
+});
+
+// ─── cookbook/<slug>/ ───────────────────────────────────────────────────────
+
+describe("recipe pens", () => {
+  it("pass the lint in every edition", () => {
+    const failures = listRecipeSlugs().flatMap((slug) => lintRecipe(slug).fails.map((f) => `${slug}: ${f}`));
+    expect(failures).toEqual([]);
+  });
+});

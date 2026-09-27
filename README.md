@@ -5,6 +5,8 @@
 
 **A programmable typesetter for the web.**
 
+🌐 **Website:** [postext.dev](https://postext.dev/) · 📖 **Documentation:** [postext.dev/en/docs](https://postext.dev/en/docs)
+
 Postext is a layout engine that bridges the centuries-old craft of print typesetting and the modern web. It takes semantic content — enriched markdown with referenced resources — and applies professional editorial layout rules to produce publication-grade output for both HTML and PDF.
 
 Built on top of [`@chenglou/pretext`](https://github.com/chenglou/pretext) for DOM-free text measurement.
@@ -20,8 +22,8 @@ Built on top of [`@chenglou/pretext`](https://github.com/chenglou/pretext) for D
   # Heading                 │                        │         HTML + CSS
   Paragraph text...         │  1. Parse & structure  │    ┌─► (web rendering)
   More text with a     ───► │  2. Measure (pretext)  │ ───┤
-  ![figure](ref) and        │  3. Apply layout rules │    └─► PDF
-  a [^footnote].            │  4. Compute geometry   │        (print rendering)
+  :ref{id="fig"} and        │  3. Apply layout rules │    └─► PDF
+  a $formula$.              │  4. Compute geometry   │        (print rendering)
                             │                        │
                             └────────────────────────┘
                                       ▲
@@ -29,7 +31,7 @@ Built on top of [`@chenglou/pretext`](https://github.com/chenglou/pretext) for D
                             (columns, rules, spacing)
 ```
 
-1. **Input.** Enriched markdown with referenced resources: images, tables, figures, footnotes, pull quotes. The content is semantic, not visual — it describes *what* to present, not *how*.
+1. **Input.** Enriched markdown with referenced resources: images, tables, figures, formulas, pull quotes. The content is semantic, not visual — it describes *what* to present, not *how*.
 
 2. **Engine.** postext parses the content structure, calls pretext for pixel-perfect text measurement without touching the DOM, then runs the layout algorithm: column balancing, resource placement, typographic quality rules, reference systems. All driven by configuration files.
 
@@ -95,7 +97,7 @@ const { height } = layout(prepared, columnWidth, 24);
 const doc = buildDocument(content, config);
 // => "Put this paragraph in column 2, starting at y=320.
 //     Move the image to the top of column 3.
-//     Add a footnote at the bottom of column 2.
+//     Float the table to the top of page 3.
 //     Break here to avoid a widow."
 ```
 
@@ -107,7 +109,7 @@ pretext gives you the measurements. postext gives you the layout.
 
 ## Features
 
-Everything below ships today in `postext` and `postext-pdf` 1.2.
+Everything below ships today in `postext` and `postext-pdf` 1.4, except what is marked **(1.5)**, which arrives with the next minor release.
 
 ### Column-based layouts
 
@@ -159,7 +161,7 @@ Everything below ships today in `postext` and `postext-pdf` 1.2.
 
 ### Math
 
-- LaTeX math, inline (`$…$`) and display (`$$…$$`), rendered to crisp SVG via MathJax in every backend.
+- LaTeX math, inline (`$…$`) and display (`$$…$$`), rendered to crisp SVG via MathJax in every backend, loaded on demand (`await initMathEngine()`). **(1.5)** MathJax ships pre-bundled, so it loads the same from a bundler, Node or a CDN.
 
 ### Headers & footers
 
@@ -172,7 +174,8 @@ Everything below ships today in `postext` and `postext-pdf` 1.2.
 - **Canvas renderer.** Rasterize any page for previews and thumbnails (`renderPage`, `renderPageToCanvas`).
 - **HTML renderer.** Precise absolutely-positioned markup; `renderToHtmlIndexed` returns a per-block index so viewers can patch only the DOM nodes that changed between builds.
 - **PDF renderer** (`postext-pdf`). Print-ready output with document outlines, clickable cross-reference links, embedded custom fonts (woff2/woff/ttf/otf) with GPOS kerning, vector SVG figures (with optional PDF print masters), RGB, CMYK, or grayscale color spaces, and **tagged, accessible PDF/UA-1** output validated with veraPDF.
-- **Web Worker.** `postext/worker` runs the pipeline off the main thread with last-wins cancellation.
+- **Web Worker.** `postext/worker` runs the pipeline off the main thread with last-wins cancellation; **(1.5)** also straight from esm.sh.
+- **React.** **(1.5)** `postext/react` shows a document's pages in a component; the main entry never loads React.
 - **Format-agnostic core.** The engine computes geometry; renderers translate it.
 
 ### Sandbox
@@ -181,6 +184,12 @@ Everything below ships today in `postext` and `postext-pdf` 1.2.
 - Books travel as `.postext` bundles that carry their pagination, so an imported book opens already paginated.
 - The same `.postext` files are created and opened from code with the `postext` package (`createBundle`, `openBundle`, `buildBundle`), so a book moves between the Sandbox, the agent skill and your own program.
 - Bilingual showcase bundles — a magazine, a literary edition, an atlas, an exhibition catalogue, a physics textbook, a column-and-a-half biochemistry manual — plus a built-in guide to Postext, itself set as a book.
+
+### Cookbook
+
+- A gallery of complete, copy-ready examples at [postext.dev/en/cookbook](https://postext.dev/en/cookbook) (*Recetario* in Spanish): each recipe is a real publication set with Postext — an opener, a book page with running heads, a data table, a print-ready PDF — grouped in chapters and searchable by feature, genre, level and output.
+- Every recipe page shows the captured pages and the whole pen, with Copy, Open in CodePen, an `.html` download and, where it applies, the PDF; a write-up explains the method step by step, with excerpts of the real code, and the pitfalls. The same content is available as Markdown for agents (`/en/cookbook/<slug>.md`, and in `llms.txt`).
+- Recipes live in [`cookbook/`](cookbook/README.md), one folder each (metadata, bilingual write-ups, the pen and its sample text); `pnpm cookbook new | dev | lint | capture` scaffolds, previews, checks and captures them against the released engine.
 
 ### Configuration-driven
 
@@ -206,6 +215,7 @@ postext/
 │   ├── postext-sandbox/          # Interactive sandbox UI (controls + viewports)
 │   └── typescript-config/        # Shared TypeScript configurations
 ├── docs/                         # Bilingual MDX documentation (<topic>-en.mdx / <topic>-es.mdx)
+├── cookbook/                     # Cookbook recipes (one folder each), registries and pen kit
 ├── plugins/postext/              # Agent skill `postext-port` (Claude Code plugin + skills.sh)
 ├── .claude-plugin/               # Claude Code plugin marketplace manifest
 ├── turbo.json                    # Turborepo task pipeline

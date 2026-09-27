@@ -1,0 +1,880 @@
+{
+  "schemaVersion": 1,
+  "slug": "magazine-cover-and-contents",
+  "sourceHash": "c402f2d2e977e6b28aef46901d9fa8958e19ff764ccad7848024b1b1e42308d9",
+  "engine": {
+    "postext": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-26T21:26:34.704Z",
+  "variants": {
+    "en": {
+      "hash8": "cb8d65a8",
+      "vdtHash": "72d6e08946cbaad118ea5311dcaa531bf76f44af",
+      "timings": {
+        "importMs": 316,
+        "fontsMs": 1745,
+        "buildMs": 268,
+        "totalMs": 3357,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          230,
+          300
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 6,
+        "mirror": true,
+        "body": {
+          "family": "Spectral",
+          "sizePt": 9.5,
+          "leadingPt": 13.5
+        },
+        "families": [
+          "Bodoni Moda",
+          "Jost",
+          "Spectral"
+        ],
+        "pages": 6,
+        "ownLines": 250
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1304,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 242722,
+          "alt": "Opening page 1: Fallow."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1304,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 109086,
+          "alt": "Opening page 2: Contents. On the cover: the hills below Castellina in Chianti, where our feature is set."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1304,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 164472,
+          "alt": "Opening page 3: The Grain Archive."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1304,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 189984,
+          "alt": "Opening page 4: The Year of Rest."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "body",
+          "w": 1000,
+          "h": 1304,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 192748,
+          "alt": "Page 5. Vines and cypresses by a farmhouse near Castellina in Chianti, in summer."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "opener",
+          "w": 1000,
+          "h": 1304,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 140562,
+          "alt": "Opening page 6: Threshing-Day Bread."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.maxRuntTracking",
+          "bodyText.maxWordSpacing",
+          "bodyText.minWordSpacing",
+          "bodyText.referenceColor",
+          "bodyText.runtMinCharacters",
+          "calloutStyles",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.hyphenation",
+          "calloutStyles[].body.italicColor",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].placement",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "captionStyle",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "captionStyle.note.fontSize",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].box",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].italic",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].toc",
+          "headings",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].italic",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "headings.marginBottom",
+          "layout",
+          "layout.gutterWidth",
+          "locale",
+          "orderedLists",
+          "orderedLists.color",
+          "orderedLists.fontFamily",
+          "orderedLists.fontWeight",
+          "orderedLists.marginBottom",
+          "orderedLists.marginTop",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].spaceBetween",
+          "paragraphStyles[].textAlign",
+          "parts",
+          "parts.page",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "toc",
+          "toc.leader",
+          "toc.leader.enabled",
+          "toc.levels",
+          "toc.levels[].fontFamily",
+          "toc.levels[].fontSize",
+          "toc.levels[].fontWeight",
+          "toc.levels[].level",
+          "toc.levels[].marginBottom",
+          "toc.pageNumber",
+          "toc.pageNumber.fontSize",
+          "toc.pageNumber.width",
+          "toc.parts",
+          "toc.parts.design",
+          "toc.parts.height",
+          "toc.subtitle",
+          "toc.subtitle.attr",
+          "toc.subtitle.color",
+          "toc.subtitle.enabled",
+          "toc.subtitle.fontFamily",
+          "toc.subtitle.fontSize",
+          "unorderedLists",
+          "unorderedLists.bulletChar",
+          "unorderedLists.color",
+          "unorderedLists.fontFamily",
+          "unorderedLists.fontWeight",
+          "unorderedLists.marginBottom",
+          "unorderedLists.marginTop"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "orderedLists",
+          "page",
+          "paragraphStyles",
+          "parts",
+          "resourceTypes",
+          "toc",
+          "unorderedLists"
+        ],
+        "configLeaves": 952,
+        "designElements": 49,
+        "directives": [
+          ":::toc",
+          "::resource",
+          ":::columnbreak",
+          ":::paragraphs",
+          ":::part",
+          ":::callout",
+          ":::space"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 2,
+          "bitmap": 5,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Bodoni Moda",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Bodoni Moda",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Bodoni Moda",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Bodoni Moda",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Bodoni Moda",
+            "weight": 900,
+            "style": "normal"
+          },
+          {
+            "family": "Jost",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Jost",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Spectral",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Spectral",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Spectral",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "heading-attributes",
+          "heading-styles",
+          "inline-embeds",
+          "opener-band",
+          "opener-design",
+          "page-background",
+          "page-breaks",
+          "paragraph-styles",
+          "part-dividers",
+          "part-palettes",
+          "resource-types",
+          "resources",
+          "section-running-heads",
+          "toc",
+          "unnumbered-headings",
+          "vertical-space"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 5,
+        "looseLines": {
+          "count": 1,
+          "share": 0.0088,
+          "worst": 2.44
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "the edition's images weigh 1.23 MB (warning at 0.9 MB for 6 pages)"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "48ff4f2e",
+      "vdtHash": "9d5f1fd7bd2fcb7bf9d383f763d37be0cb095967",
+      "timings": {
+        "importMs": 104,
+        "fontsMs": 97,
+        "buildMs": 75,
+        "totalMs": 1156,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          230,
+          300
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 6,
+        "mirror": true,
+        "body": {
+          "family": "Spectral",
+          "sizePt": 9.5,
+          "leadingPt": 13.5
+        },
+        "families": [
+          "Bodoni Moda",
+          "Jost",
+          "Spectral"
+        ],
+        "pages": 6,
+        "ownLines": 250
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1304,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 244660,
+          "alt": "Página de apertura 1: Fallow."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1304,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 115682,
+          "alt": "Página de apertura 2: Sumario. En la portada: las colinas de Castellina in Chianti, escenario del reportaje."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1304,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 171300,
+          "alt": "Página de apertura 3: El archivo del grano."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1304,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 196038,
+          "alt": "Página de apertura 4: El año del descanso."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "body",
+          "w": 1000,
+          "h": 1304,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 201978,
+          "alt": "Página 5. Viñas y cipreses junto a una casa de campo de Castellina in Chianti, en verano."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "opener",
+          "w": 1000,
+          "h": 1304,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 148400,
+          "alt": "Página de apertura 6: El pan de la trilla."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.maxRuntTracking",
+          "bodyText.maxWordSpacing",
+          "bodyText.minWordSpacing",
+          "bodyText.referenceColor",
+          "bodyText.runtMinCharacters",
+          "calloutStyles",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.hyphenation",
+          "calloutStyles[].body.italicColor",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].placement",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "captionStyle",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "captionStyle.note.fontSize",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].box",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].italic",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].toc",
+          "headings",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].italic",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "headings.marginBottom",
+          "layout",
+          "layout.gutterWidth",
+          "locale",
+          "orderedLists",
+          "orderedLists.color",
+          "orderedLists.fontFamily",
+          "orderedLists.fontWeight",
+          "orderedLists.marginBottom",
+          "orderedLists.marginTop",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].spaceBetween",
+          "paragraphStyles[].textAlign",
+          "parts",
+          "parts.page",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "toc",
+          "toc.leader",
+          "toc.leader.enabled",
+          "toc.levels",
+          "toc.levels[].fontFamily",
+          "toc.levels[].fontSize",
+          "toc.levels[].fontWeight",
+          "toc.levels[].level",
+          "toc.levels[].marginBottom",
+          "toc.pageNumber",
+          "toc.pageNumber.fontSize",
+          "toc.pageNumber.width",
+          "toc.parts",
+          "toc.parts.design",
+          "toc.parts.height",
+          "toc.subtitle",
+          "toc.subtitle.attr",
+          "toc.subtitle.color",
+          "toc.subtitle.enabled",
+          "toc.subtitle.fontFamily",
+          "toc.subtitle.fontSize",
+          "unorderedLists",
+          "unorderedLists.bulletChar",
+          "unorderedLists.color",
+          "unorderedLists.fontFamily",
+          "unorderedLists.fontWeight",
+          "unorderedLists.marginBottom",
+          "unorderedLists.marginTop"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "orderedLists",
+          "page",
+          "paragraphStyles",
+          "parts",
+          "resourceTypes",
+          "toc",
+          "unorderedLists"
+        ],
+        "configLeaves": 952,
+        "designElements": 49,
+        "directives": [
+          ":::toc",
+          "::resource",
+          ":::columnbreak",
+          ":::paragraphs",
+          ":::part",
+          ":::callout",
+          ":::space"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 2,
+          "bitmap": 5,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Bodoni Moda",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Bodoni Moda",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Bodoni Moda",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Bodoni Moda",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Bodoni Moda",
+            "weight": 900,
+            "style": "normal"
+          },
+          {
+            "family": "Jost",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Jost",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Spectral",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Spectral",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Spectral",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "heading-attributes",
+          "heading-styles",
+          "inline-embeds",
+          "opener-band",
+          "opener-design",
+          "page-background",
+          "page-breaks",
+          "paragraph-styles",
+          "part-dividers",
+          "part-palettes",
+          "resource-types",
+          "resources",
+          "section-running-heads",
+          "toc",
+          "unnumbered-headings",
+          "vertical-space"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 3,
+        "looseLines": {
+          "count": 1,
+          "share": 0.0081,
+          "worst": 2.29
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "the edition's images weigh 1.27 MB (warning at 0.9 MB for 6 pages)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
+      }
+    }
+  }
+}

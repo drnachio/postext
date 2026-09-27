@@ -15,6 +15,10 @@ export const DEFAULT_LAYOUT_CONFIG: ResolvedLayoutConfig = {
   sideColumnSide: 'right',
   columnRule: { ...DEFAULT_COLUMN_RULE },
   fitFiguresToPage: false,
+  hugClosingFloats: true,
+  inlineResourceGap: 'around',
+  inlineResourceGapInBoxes: true,
+  boxChildSplitMinLines: 2,
 };
 
 export function resolveLayoutConfig(partial?: LayoutConfig): ResolvedLayoutConfig {
@@ -34,6 +38,13 @@ export function resolveLayoutConfig(partial?: LayoutConfig): ResolvedLayoutConfi
         }
       : { ...DEFAULT_COLUMN_RULE },
     fitFiguresToPage: partial.fitFiguresToPage ?? DEFAULT_LAYOUT_CONFIG.fitFiguresToPage,
+    hugClosingFloats: partial.hugClosingFloats ?? DEFAULT_LAYOUT_CONFIG.hugClosingFloats,
+    inlineResourceGap: partial.inlineResourceGap === 'above' ? 'above' : DEFAULT_LAYOUT_CONFIG.inlineResourceGap,
+    inlineResourceGapInBoxes: partial.inlineResourceGapInBoxes ?? DEFAULT_LAYOUT_CONFIG.inlineResourceGapInBoxes,
+    // A whole number of lines, at least one; anything else is the default.
+    boxChildSplitMinLines: Number.isInteger(partial.boxChildSplitMinLines) && partial.boxChildSplitMinLines! >= 1
+      ? partial.boxChildSplitMinLines!
+      : DEFAULT_LAYOUT_CONFIG.boxChildSplitMinLines,
   };
 }
 
@@ -65,6 +76,22 @@ export function stripLayoutDefaults(layout?: LayoutConfig): LayoutConfig | undef
   }
   if (layout.fitFiguresToPage !== undefined && layout.fitFiguresToPage !== DEFAULT_LAYOUT_CONFIG.fitFiguresToPage) {
     result.fitFiguresToPage = layout.fitFiguresToPage;
+    hasOverride = true;
+  }
+  if (layout.hugClosingFloats !== undefined && layout.hugClosingFloats !== DEFAULT_LAYOUT_CONFIG.hugClosingFloats) {
+    result.hugClosingFloats = layout.hugClosingFloats;
+    hasOverride = true;
+  }
+  if (layout.inlineResourceGap !== undefined && layout.inlineResourceGap !== DEFAULT_LAYOUT_CONFIG.inlineResourceGap) {
+    result.inlineResourceGap = layout.inlineResourceGap;
+    hasOverride = true;
+  }
+  if (layout.inlineResourceGapInBoxes !== undefined && layout.inlineResourceGapInBoxes !== DEFAULT_LAYOUT_CONFIG.inlineResourceGapInBoxes) {
+    result.inlineResourceGapInBoxes = layout.inlineResourceGapInBoxes;
+    hasOverride = true;
+  }
+  if (layout.boxChildSplitMinLines !== undefined && layout.boxChildSplitMinLines !== DEFAULT_LAYOUT_CONFIG.boxChildSplitMinLines) {
+    result.boxChildSplitMinLines = layout.boxChildSplitMinLines;
     hasOverride = true;
   }
   if (layout.columnRule) {

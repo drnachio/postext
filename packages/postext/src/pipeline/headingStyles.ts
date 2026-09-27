@@ -9,9 +9,11 @@
  */
 
 import type { ContentBlock } from '../parse';
+import { plainSpans } from '../parse/inlineFormatting';
 import type { ResolvedHeadingLevelConfig, ResolvedHeadingStyleConfig } from '../types';
 import type { ResolvedConfig, VDTBlock } from '../vdt';
 import { buildHeadingLevelMap } from './config';
+import { resolveBreakBefore } from '../defaults/headings';
 import type { ChapterTitlePageInfo } from './placeholders';
 import { derivePartResolvedConfig, derivePartMeasureContext } from './parts';
 import type { BlockMeasureContext } from './measureContentBlock';
@@ -28,6 +30,30 @@ export function headingStyleOf(
   return resolved.headingStyles.find((s) => s.id === id);
 }
 
+const plainHeadingsMemo = new WeakMap<readonly ContentBlock[], ContentBlock[]>();
+
+/** The parsed blocks as a configuration with `headings.inlineMarks: false`
+ *  lays them out: every heading's spans set plain (see `plainSpans`), the
+ *  text unchanged. `blocks` itself when marks are on or no heading carries
+ *  one. Memoised on the (memoised) parsed array. */
+export function headingMarksFor(blocks: ContentBlock[], resolved: ResolvedConfig): ContentBlock[] {
+  if (resolved.headings.inlineMarks) return blocks;
+  let out = plainHeadingsMemo.get(blocks);
+  if (!out) {
+    let changed = false;
+    const next = blocks.map((b) => {
+      if (b.type !== 'heading') return b;
+      const spans = plainSpans(b.spans);
+      if (spans.length === b.spans.length && spans.every((s, i) => s === b.spans[i])) return b;
+      changed = true;
+      return { ...b, spans };
+    });
+    out = changed ? next : blocks;
+    plainHeadingsMemo.set(blocks, out);
+  }
+  return out;
+}
+
 /** Whether a heading block advances the numbering counters. */
 export function headingIsNumbered(block: ContentBlock, resolved: ResolvedConfig): boolean {
   return headingStyleOf(block, resolved)?.numbered ?? true;
@@ -40,6 +66,20 @@ export function headingIsListed(block: Pick<ContentBlock, 'type' | 'attrs'>, res
   if (attr === 'false' || attr === 'no' || attr === '0') return false;
   if (attr === 'true' || attr === 'yes' || attr === '1') return true;
   return headingStyleOf(block, resolved)?.toc ?? true;
+}
+
+/** Whether a heading is structural only — prints nothing and takes no
+ *  room (`hidden`): its `{hidden="true"}` / `{hidden="false"}` attribute,
+ *  else the `hidden` of the level config it renders with (a style's
+ *  included). */
+export function headingIsHidden(
+  block: { attrs?: Record<string, string> },
+  level: Pick<ResolvedHeadingLevelConfig, 'hidden'> | undefined,
+): boolean {
+  const attr = block.attrs?.hidden;
+  if (attr === 'true' || attr === 'yes' || attr === '1') return true;
+  if (attr === 'false' || attr === 'no' || attr === '0') return false;
+  return level?.hidden === true;
 }
 
 /** Per-level lookups with every style's overrides merged in, cached per
@@ -62,7 +102,12 @@ export function createHeadingLevelResolver(resolved: ResolvedConfig): HeadingLev
     const key = `${level}|${styleId}`;
     const hit = cache.get(key);
     if (hit) return hit;
-    const merged: ResolvedHeadingLevelConfig = { ...base, ...style.overrides, level: base.level };
+    const merged: ResolvedHeadingLevelConfig = {
+      ...base,
+      ...style.overrides,
+      level: base.level,
+      breakBefore: resolveBreakBefore(style.breakBefore, base.breakBefore),
+    };
     cache.set(key, merged);
     return merged;
   };

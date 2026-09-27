@@ -1,6 +1,14 @@
 import type { CustomFontFamily, CustomFontVariant, PostextConfig } from 'postext';
 import type { FontPayload } from 'postext/worker';
-import { resolveBodyTextConfig, resolveHeadingsConfig, resolveUnorderedListsConfig, resolveOrderedListsConfig } from 'postext';
+import {
+  DEFAULT_TEXT_ELEMENT,
+  primaryFontFamily,
+  resolveBodyTextConfig,
+  resolveHeaderFooterConfig,
+  resolveHeadingsConfig,
+  resolveUnorderedListsConfig,
+  resolveOrderedListsConfig,
+} from 'postext';
 import { getFontFile } from '../storage/fontStorage';
 
 const FONT_LOAD_TIMEOUT_MS = 3000;
@@ -146,6 +154,36 @@ export function loadFont(font: string): Promise<void> {
   return promise;
 }
 
+/** Config keys naming a font family: `fontFamily`, `bodyFontFamily`,
+ *  `headerFontFamily`, `separatorFontFamily`, `numberFontFamily`… */
+const FONT_FAMILY_KEY = /^(?:f|[a-z]\w*F)ontFamily$/;
+
+/**
+ * Adds every family `node` names, at any depth. A design-slot text element
+ * that names none is set in the element default. A subtree switched off
+ * with `enabled: false` (a heading's advanced design, a contents part row)
+ * draws nothing, so its families are skipped.
+ */
+function collectNamedFamilies(node: unknown, families: Set<string>): void {
+  if (!node || typeof node !== 'object') return;
+  if (Array.isArray(node)) {
+    for (const item of node) collectNamedFamilies(item, families);
+    return;
+  }
+  const rec = node as Record<string, unknown>;
+  if (rec.enabled === false) return;
+  if (rec.kind === 'text' && typeof rec.content === 'string' && rec.fontFamily === undefined) {
+    families.add(DEFAULT_TEXT_ELEMENT.fontFamily);
+  }
+  for (const [key, value] of Object.entries(rec)) {
+    if (typeof value === 'string') {
+      if (FONT_FAMILY_KEY.test(key) && value.trim()) families.add(value);
+    } else {
+      collectNamedFamilies(value, families);
+    }
+  }
+}
+
 export function getConfigFontFamilies(config: PostextConfig): string[] {
   const body = resolveBodyTextConfig(config.bodyText);
   const headings = resolveHeadingsConfig(config.headings);
@@ -182,6 +220,11 @@ export function getConfigFontFamilies(config: PostextConfig): string[] {
   for (const style of config.chipStyles ?? []) {
     if (style.fontFamily) families.add(style.fontFamily);
   }
+  // Paragraph styles (`:::paragraphs`): a face of their own; unset, the
+  // body family.
+  for (const style of config.paragraphStyles ?? []) {
+    if (style.fontFamily) families.add(style.fontFamily);
+  }
   // Part list overrides (partial configs applied inside `:::part`).
   const partLists = [config.parts?.bodyStyle?.unorderedLists, config.parts?.bodyStyle?.orderedLists];
   for (const lists of partLists) {
@@ -193,7 +236,18 @@ export function getConfigFontFamilies(config: PostextConfig): string[] {
       if ('separatorFontFamily' in level && level.separatorFontFamily) families.add(level.separatorFontFamily);
     }
   }
-  return Array.from(families);
+  // Running heads and folios: with no `header` / `footer`, the built-in
+  // ones are drawn, in families of their own.
+  for (const slot of [resolveHeaderFooterConfig(config.header, 'header'), resolveHeaderFooterConfig(config.footer, 'footer')]) {
+    for (const el of slot.elements) if (el.kind === 'text') families.add(el.fontFamily);
+  }
+  // Every other family the configuration names: design-slot elements
+  // (openers, section running heads, part and contents designs), heading
+  // styles, captions, paragraph styles, contents entries…
+  collectNamedFamilies(config, families);
+  // A CSS font stack sets its text in the first family (the engine's
+  // `primaryFontFamily`): load that one.
+  return [...new Set(Array.from(families, primaryFontFamily))];
 }
 
 export function preloadConfigFonts(config: PostextConfig): Promise<void> {
@@ -588,7 +642,7 @@ function missingVariants(family: CustomFontFamily, wanted: readonly FontVariantU
  * config node carrying a `fontFamily` contributes its `fontWeight` (400
  * when unset) and `fontStyle` (normal when unset). The body text family
  * also needs the four standard variants, since markdown emphasis sets bold
- * and italic runs in it.
+ * and italic runs in it; so does a design text with `inlineMarks`.
  */
 export function collectFontUsage(config: PostextConfig): Map<string, FontVariantUse[]> {
   const usage = new Map<string, FontVariantUse[]>();
@@ -606,15 +660,25 @@ export function collectFontUsage(config: PostextConfig): Map<string, FontVariant
     const rec = node as Record<string, unknown>;
     if (typeof rec.fontFamily === 'string' && rec.fontFamily.trim()) {
       const weight = typeof rec.fontWeight === 'number' ? rec.fontWeight : 400;
-      const style = rec.fontStyle === 'italic' ? 'italic' : 'normal';
-      add(rec.fontFamily, { weight, style });
+      // `fontStyle: 'italic'` (headings) or `italic: true` (titles,
+      // paragraph styles, callout bodies).
+      const style = rec.fontStyle === 'italic' || rec.italic === true ? 'italic' : 'normal';
+      const family = primaryFontFamily(rec.fontFamily);
+      add(family, { weight, style });
+      // A design text with inline marks sets bold runs (700, or its own
+      // weight when heavier) and italic runs in the other slant.
+      if (rec.inlineMarks === true) {
+        const italic = rec.italic === true;
+        add(family, { weight: Math.max(700, weight), style: italic ? 'italic' : 'normal' });
+        add(family, { weight, style: italic ? 'normal' : 'italic' });
+      }
     }
     for (const value of Object.values(rec)) walk(value);
   };
   walk(config);
   const body = config.bodyText?.fontFamily;
   if (typeof body === 'string' && body.trim()) {
-    for (const v of STANDARD_VARIANTS) add(body, v);
+    for (const v of STANDARD_VARIANTS) add(primaryFontFamily(body), v);
   }
   return usage;
 }

@@ -116,3 +116,85 @@ describe(':::space placement', () => {
     expect(topOf(spaced, 'B.') - topOf(plain, 'B.')).toBeCloseTo(GRID, 3);
   });
 });
+
+// EF-04: a box made only of `:::space` (an answer box, writing room) is as
+// tall as the space asks, and space right under the title opens the body
+// that much lower. At the top of an untitled box with content, of a
+// `:::columns` group, or of the continuation of a split box it still
+// vanishes.
+describe(':::space at the top of a box', () => {
+  const frameOf = (doc: VDTDocument): VDTBlock => {
+    const f = doc.blocks.find((b) => b.type === 'callout');
+    if (!f) throw new Error('no callout frame');
+    return f;
+  };
+  const heightOf = (md: string, config: PostextConfig = CONFIG): number =>
+    frameOf(buildDocument({ markdown: md }, config)).bbox.height;
+  const box = (body: string, attrs = '') => `Intro.\n\n:::callout{type="note"${attrs}}\n${body}\n:::\n\nAfter.`;
+
+  it('sizes a box made only of space', () => {
+    const empty = heightOf(box(''));
+    expect(heightOf(box(':::space{lines=3}')) - empty).toBeCloseTo(3 * GRID, 3);
+    expect(heightOf(box(':::space\n\n:::space{lines=0.5}')) - empty).toBeCloseTo(1.5 * GRID, 3);
+  });
+
+  it('keeps space right under the title', () => {
+    const titled = heightOf(box('', ' title="Q1"'));
+    expect(heightOf(box(':::space{lines=3}', ' title="Q1"')) - titled).toBeCloseTo(3 * GRID, 3);
+    const doc = (body: string) => buildDocument({ markdown: box(body, ' title="Q1"') }, CONFIG);
+    expect(topOf(doc(':::space{lines=2}\n\nAnswer.'), 'Answer.') - topOf(doc('Answer.'), 'Answer.')).toBeCloseTo(2 * GRID, 3);
+  });
+
+  it('still drops it at the top of a :::columns group', () => {
+    const cols = (body: string) => box(`:::columns{count=2}\n${body}\n:::`);
+    const plain = buildDocument({ markdown: cols('One.\n\nTwo.') }, CONFIG);
+    const spaced = buildDocument({ markdown: cols(':::space{lines=2}\n\nOne.\n\nTwo.') }, CONFIG);
+    expect(topOf(spaced, 'One.')).toBeCloseTo(topOf(plain, 'One.'), 3);
+    expect(topOf(spaced, 'Two.')).toBeCloseTo(topOf(plain, 'Two.'), 3);
+  });
+
+  // EF-40: `breaks` counts blocks, not directives; a space before a column
+  // start vanishes there, and equal spacing lines the columns up.
+  it(':::columns breaks skips directives, and a space at a column head vanishes', () => {
+    const md = box([
+      ':::columns{count=2 breaks="4"}',
+      'Uno.', '', 'Dos.', '', ':::space', '', 'Tres.', '', ':::space{lines=2}', '',
+      'One.', '', 'Two.', '', ':::space', '', 'Three.',
+      ':::',
+    ].join('\n'));
+    const doc = buildDocument({ markdown: md }, CONFIG);
+    const x = (t: string) => blockTexts(doc).find((b) => b.lines[0]!.text === t)!.bbox.x;
+    // The fourth block (the spaces not counted) opens the second column.
+    expect(x('One.')).toBeGreaterThan(x('Tres.'));
+    expect(x('Tres.')).toBeCloseTo(x('Uno.'), 3);
+    // Both columns start level (the two-line space before "One." is gone)
+    // and their stanza gaps line up.
+    expect(topOf(doc, 'One.')).toBeCloseTo(topOf(doc, 'Uno.'), 3);
+    expect(topOf(doc, 'Three.')).toBeCloseTo(topOf(doc, 'Tres.'), 3);
+    expect(topOf(doc, 'Tres.') - topOf(doc, 'Dos.')).toBeCloseTo(2 * GRID, 3);
+  });
+
+  it('drops it at the top of the continuation of a split box', () => {
+    const config: PostextConfig = {
+      ...CONFIG,
+      layout: { layoutType: 'single' },
+      calloutStyles: [{ id: 'note', keepTogether: false, splitMinLines: 1 }],
+    };
+    const lines = Array.from({ length: 30 }, (_, i) => `Line ${i + 1}.`);
+    const md = (gap: string) => `:::callout{type="note"}\n${lines.slice(0, 15).join('\n\n')}\n\n${gap}${lines.slice(15).join('\n\n')}\n:::`;
+    const plain = buildDocument({ markdown: md('') }, config);
+    const frames = plain.blocks.filter((b) => b.type === 'callout');
+    expect(frames.length).toBeGreaterThan(1);
+    // The first item of the second fragment, with and without a space
+    // right before it in the source.
+    const firstOfRest = (doc: VDTDocument): VDTBlock =>
+      doc.blocks.find((b) => b.type === 'paragraph' && b.pageIndex === 1)!;
+    const head = firstOfRest(plain);
+    const gapAt = Number(head.lines[0]!.text.replace(/\D/g, '')) - 1;
+    const withGap = `:::callout{type="note"}\n${lines.slice(0, gapAt).join('\n\n')}\n\n:::space{lines=2}\n\n${lines.slice(gapAt).join('\n\n')}\n:::`;
+    const spaced = buildDocument({ markdown: withGap }, config);
+    const rest = firstOfRest(spaced);
+    expect(rest.lines[0]!.text).toBe(head.lines[0]!.text);
+    expect(rest.bbox.y).toBeCloseTo(head.bbox.y, 3);
+  });
+});

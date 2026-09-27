@@ -1,6 +1,7 @@
 import type { VDTDocument, VDTPage, VDTColumn, BoundingBox } from '../vdt';
 import { dimensionToPx } from '../units';
 import { columnRuleSegments } from '../columnRule';
+import { cropMarkSegments } from '../cropMarks';
 
 export function renderBaselineGrid(
   ctx: CanvasRenderingContext2D,
@@ -74,51 +75,15 @@ export function renderCutLines(
   const { cutLines, dpi } = doc.config.page;
   if (!cutLines.enabled) return;
 
-  const bleedPx = dimensionToPx(cutLines.bleed, dpi);
-  const markOffsetPx = dimensionToPx(cutLines.markOffset, dpi);
-  const markLengthPx = dimensionToPx(cutLines.markLength, dpi);
-  const markWidthPx = dimensionToPx(cutLines.markWidth, dpi);
-  const totalExpansion = bleedPx + markOffsetPx + markLengthPx;
-
-  // Trim rect (the final page after cutting)
-  const trimX = totalExpansion;
-  const trimY = totalExpansion;
-  const trimW = page.width - totalExpansion * 2;
-  const trimH = page.height - totalExpansion * 2;
-
   ctx.save();
   ctx.strokeStyle = cutLines.color.hex;
-  ctx.lineWidth = markWidthPx;
+  ctx.lineWidth = dimensionToPx(cutLines.markWidth, dpi);
 
-  // Each corner has two perpendicular marks.
-  // Marks start at markOffset outside the trim edge and extend markLength further out.
-  const corners = [
-    { x: trimX, y: trimY },                    // top-left
-    { x: trimX + trimW, y: trimY },            // top-right
-    { x: trimX, y: trimY + trimH },            // bottom-left
-    { x: trimX + trimW, y: trimY + trimH },    // bottom-right
-  ];
-
-  for (const corner of corners) {
-    const isLeft = corner.x === trimX;
-    const isTop = corner.y === trimY;
-
-    // Horizontal mark
-    const hDir = isLeft ? -1 : 1;
-    const hStart = corner.x + hDir * markOffsetPx;
-    const hEnd = corner.x + hDir * (markOffsetPx + markLengthPx);
+  // Two marks at each trim corner, clear of the bleed (see `cropMarkSegments`).
+  for (const seg of cropMarkSegments(page, doc.config.page, doc.trimOffset)) {
     ctx.beginPath();
-    ctx.moveTo(hStart, corner.y);
-    ctx.lineTo(hEnd, corner.y);
-    ctx.stroke();
-
-    // Vertical mark
-    const vDir = isTop ? -1 : 1;
-    const vStart = corner.y + vDir * markOffsetPx;
-    const vEnd = corner.y + vDir * (markOffsetPx + markLengthPx);
-    ctx.beginPath();
-    ctx.moveTo(corner.x, vStart);
-    ctx.lineTo(corner.x, vEnd);
+    ctx.moveTo(seg.x1, seg.y1);
+    ctx.lineTo(seg.x2, seg.y2);
     ctx.stroke();
   }
 

@@ -70,6 +70,24 @@ export interface DocumentHashSource {
   resources: Resource[];
 }
 
+/** The snapshot re-keyed to a configuration that was migrated on load
+ *  (`loadStoredConfig`: a working copy saved under older rules, whose
+ *  heading breaks or maths size are pinned). The snapshot hashed the copy
+ *  as it was stored; when `stored` still hashes to it the user had changed
+ *  nothing, and `migrated` is that same document read in today's terms, so
+ *  its hash takes the old one's place. Otherwise (an edited copy, or a
+ *  migration that leaves the hash alone) the snapshot itself comes back.
+ *  Hash both as the state holds them (after `withDefaultResourceTypes`). */
+export function rekeyMigratedConfig(
+  snapshot: AppliedPresetSnapshot,
+  stored: PostextConfig,
+  migrated: PostextConfig,
+): AppliedPresetSnapshot {
+  if (hashConfig(stored) !== snapshot.configHash) return snapshot;
+  const configHash = hashConfig(migrated);
+  return configHash === snapshot.configHash ? snapshot : { ...snapshot, configHash };
+}
+
 /** True when the document, configuration and resource set still hash to what
  *  the snapshot recorded — i.e. the user has not changed anything since the
  *  preset was applied. Without a snapshot nothing can be asserted: false. */

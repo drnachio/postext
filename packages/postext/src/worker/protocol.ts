@@ -10,6 +10,10 @@ export interface BuildStats {
   totalMs: number;
   /** The document came from the worker's cache (no pass was run). */
   cached?: boolean;
+  /** Font families the document's text is set in that the worker could not
+   *  find — neither registered with `registerFonts` nor installed — so they
+   *  were measured with a fallback font. Absent when every family was there. */
+  missingFonts?: string[];
 }
 
 export interface FontPayload {

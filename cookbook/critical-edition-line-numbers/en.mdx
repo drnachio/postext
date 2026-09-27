@@ -1,0 +1,76 @@
+---
+title: "Critical edition: line numbers and line-keyed notes"
+summary: "Milton’s Lycidas in the 1645 text: a script counts the lines and adds a side box after every fifth, and each note opens on its line number, set as a chip."
+description: "Milton’s Lycidas set as a critical edition in Postext, with every fifth line numbered in a 6 mm column at the fore-edge and the notes keyed to those numbers."
+question: "How do I number every fifth line of a poem in the margin and key my notes to those line numbers?"
+aliases: ["line numbers", "numbered lines", "verse numbers", "critical edition", "apparatus", "commentary", "notes keyed to lines", "line-keyed notes", "margin numbers", "old spelling", "Milton", "Lycidas", "pastoral elegy", "laurel"]
+pageNotes: { "1": "The opening page: a sprig of bay laurel with unripe berries enters from the top right corner; under it JOHN MILTON in small green capitals, LYCIDAS in tall thin capitals and the 1645 headnote in italic, then lines 1 to 14 with the numbers 5 and 10 in green at the right.", "2": "A verso: lines 15 to 46, the verse paragraphs a blank line apart and the short lines set in, with the numbers 15 to 45 in green to the left of the verse.", "8": "The first page of notes: NOTES in tall capitals, a paragraph on the text, then notes that each open on a green line number followed by the words they explain in italic and a closing bracket." }
+---
+
+## What you'll build
+
+*Lycidas*, Milton’s elegy for Edward King, set as a small critical edition of 138 × 216 mm in the text and spelling of the 1645 *Poems*. The first page opens under a sprig of bay laurel, with the title in tall Imbue capitals over the headnote Milton added in 1645. The 193 lines follow one to a line of type, with a blank line between verse paragraphs and the short lines set in. Every fifth line has its number in laurel green, in a 6 mm column at the fore-edge: right of the verse on a recto, left of it on a verso. The verse carries no note markers. The notes fill the two pages after the poem, and each opens on the number of its line, in the same green Libre Franklin as the numbers in the margin.
+
+## Method
+
+### 1 · Count the lines before the layout
+
+The code for this step is [the short answer](#the-short-answer) above. Postext does not number lines, so `numberVerse()` counts them in the Markdown before the build. It gives every line a paragraph of its own and, after every fifth, adds a `:::callout{type="lineno" span="side"}` that holds the number. A side box starts in the side column at the height the text has reached at its fence, so this one starts under the line it follows. The style’s top padding of minus one line (−14.5 pt) lifts the number back beside that line and leaves the box no height ([callout styles](/en/docs/configuration#callout-styles)). Fenced before its line, the box would stand level with it on most pages, but where the numbered line opens a page, the box slides up beside the last line of the page before. Inside the box, the `number` paragraph style aligns the figures right, so the numbers share a right edge, and gives them the verse’s 14.5 pt leading, which puts each one on the baseline of its line.
+
+### 2 · A channel six millimetres wide
+
+<Excerpt region="page" />
+
+With `sideColumnRole: 'floats'`, the narrow column of a `oneAndHalf` layout takes side boxes and never text ([layout types](/en/docs/configuration#layout-types)). `sideColumnPercent` is a share of the text block, so the pen derives it from millimetres: 6 of 90 mm, enough for the widest number. Libre Franklin’s figures are proportional, and at 7.5 pt the zero is the widest of them (1.8 mm, against 1.2 mm for the one), so 100, at 4.9 mm, is the widest number in the poem; 180 and 190 set 4.8 mm. `'outer'` follows the mirrored margins, so the numbers stand right of the verse on a recto and left of it on a verso; on a recto they end on the same edge as the folio above them. The verse column is 80 mm, 1.9 mm more than line 31, the longest, so no line turns over.
+
+### 3 · Each line of verse is a paragraph
+
+<Excerpt region="verse" />
+
+Postext joins the lines of a Markdown paragraph, so each line of verse needs a paragraph of its own, and `numberVerse()` puts each in a `:::paragraphs` container with the verse style ([paragraph styles](/en/docs/configuration#paragraph-styles)). One style cannot indent a line and also hang its turnover, so Milton’s fourteen short lines, line 4 among them, take a style of their own: in a one-line paragraph, a first-line indent of 2 em moves the whole line. A blank line between verse paragraphs becomes `:::space{lines=1}`, one line of the grid. At the head of a page it is dropped ([`:::space`](/en/docs/document-format#space)), so page 2 starts on line 15 at the top of the text block, and the paragraph break between lines 14 and 15 does not show (see Pitfalls).
+
+### 4 · The laurel, the title and the headnote
+
+<Excerpt region="opener" />
+
+The first-level heading prints a design instead of its own text ([span and advanced design](/en/docs/configuration#span-and-advanced-design)). `{author}` comes from the frontmatter, and the headnote from an attribute on the heading line, `# Lycidas {headnote="In this Monody …"}` ([heading attributes](/en/docs/document-format#heading-attributes)). The laurel is an image element and reserves no height, so the depth of the opener comes from the texts under it: the kicker, 50 mm below the top of the text block, the title and the four lines of the headnote reach down 20 of the page’s 34 lines, and the first verse paragraph, 14 lines, takes the rest. `minHeight` is a floor at the same depth: cut the headnote to three lines and the verse still starts on line 21, where without the floor it rises to line 20. `marginBottom: pt(0)` keeps the heading’s default margin out of the gap; with it, the verse would start on line 22 and send line 14 to page 2. The level spans the page because a design kept in the column is clipped at the column’s top edge, 21 mm below the trim, and the laurel starts at the trim.
+
+### 5 · Notes keyed to line numbers
+
+<Excerpt region="notes" />
+
+Postext 1.4.1 sets no footnotes, so the apparatus comes after the poem and is keyed to line numbers. Each note opens on its line number, written `:chip[8]{style="line"}`, then the words it explains in italic and a closing bracket. The chip has no fill, outline or side padding, so only the face and the colour change: 7.7 pt Libre Franklin in laurel green ([chip styles](/en/docs/configuration#chip-styles)). Linden Hill has no bold, so the numbers are marked by a change of face instead. The note style indents every line after the first by 1.6 em, which leaves the numbers clear at the left, and the notes are set ragged, like the verse. `# Notes {style="notes"}` breaks to page 8 and sets its title in the capitals of the opener, at 30 pt.
+
+<PageShot page={8} crop="0.24,0.318,0.66,0.249" caption="Page 8: each note opens on the green number of its line; the verse on pages 1 to 7 carries no markers." />
+
+### 6 · Running heads by parity
+
+<Excerpt region="heads" />
+
+Each element is anchored to the page and filtered by `parity` and `pages: 'body'` ([text elements](/en/docs/configuration#text-elements)). The verso carries the author and the recto `{chapterTitle}`, which reads LYCIDAS over the poem and NOTES over the notes, because the notes open with a heading of their own. The folio stands at the outer edge of the text block; the two opening pages, 1 and 8, carry it at the foot instead.
+
+## Variations
+
+### Number every tenth line
+
+Long poems are often numbered by tens; the 6 mm column needs no change.
+
+```diff
+-const EVERY = 5;
++const EVERY = 10;
+```
+
+### Keep every number right of the verse
+
+With the side column fixed on the right, the numbers stand right of the verse on every page, which puts them by the spine on a verso.
+
+```diff
+-  sideColumnSide: 'outer', // right of the verse on a recto, left of it on a verso
++  sideColumnSide: 'right', // right of the verse on every page
+```
+
+## Pitfalls
+
+- A numbered line that turns over carries its number beside the turnover, because the side box is fenced after the whole paragraph. At 80 mm no line of *Lycidas* turns over; if you narrow the measure, check the numbered lines.
+- `:::space` is dropped at the head of a page, so the paragraph break between lines 14 and 15, which falls at the turn from page 1 to page 2, does not show. If your edition must show every break, give the first line of each verse paragraph an indent instead, as 1645 does.
+- [The card on side boxes](#gotcha-side-box-starts-at-fence) tells you to fence a gloss before its paragraph, so that it starts level with the paragraph’s first line. A line number is fenced after its line and lifted back by the negative padding instead: fenced before, the number of a line that opens a page slides up beside the last line of the page before (step 1).

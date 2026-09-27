@@ -1,0 +1,69 @@
+---
+title: "Brand fonts in layout, PDF and bundle"
+summary: "A fictional metro's identity manual set in the brand's own font files, fetched once and reused by the layout, the PDF's font provider and a .postext bundle."
+description: "Register your own font files before the layout, give the PDF the same bytes through a font provider and pack the ones you may share into a .postext bundle."
+question: "How do I set pages in my own font files and embed those same files in the PDF?"
+aliases: ["brand fonts", "licensed fonts", "corporate typeface", "self-hosted fonts", "FontFace from bytes", "customFonts", "redistributable", "font provider", "brand guidelines", "identity manual", "colour swatches", "fuentes corporativas"]
+pageNotes: { "1": "The cover: Metro de Alba in black condensed capitals and lowercase on one line, Identity manual and the edition under it, and over the lower half of the page five thick lines in red, teal, yellow, purple and green that share a track from the lower left, cross a grey river and fan out to the right, with white stations ringed in black.", "2": "Page 2: an ink band across the head with a red square and the manual's title, a giant red 01 beside the heading Colour and its standfirst, two columns on the line colours with small colour squares in the text, and across the foot a table whose first column is nine blocks of colour, followed by names, HEX, RGB and CMYK values in a monospace.", "3": "Page 3: the band with a purple square, a giant purple 02 beside the heading Type, text on the three typefaces under the heads Big Shoulders Display, Public Sans, Weights and Spline Sans Mono, with specimen lines of Public Sans and Spline Sans Mono, and across the foot a black platform sign reading Puerta del Mercado in white, with teal, yellow and green squares before Lines 2, 3 and 5.", "4": "Page 4: the band with a green square, a giant green 03 beside the heading Usage, two columns of rules for the network map (drawing, names, geography, line width, files for suppliers) ending with the colophon, and across the foot two framed drawings side by side: Do, three lines bending together at 45 degrees with white stations, and Don't, the same lines at free angles with coloured dots." }
+---
+
+## What you'll build
+
+Four pages of the identity manual for Metro de Alba, a fictional metro of five lines. On the cover, the five lines leave the lower left on one shared track and branch to the right after crossing a grey river, under the name in Big Shoulders Display. Each section opens under an ink band, with a large two-digit number in the colour of one line. In *01 Colour* the first column of the table is the colour itself; *02 Type* has specimen lines and a platform sign, and *03 Usage* closes on two framed map drawings, one drawn by the rules (Do) and one against them (Don't). All the text is set in six font files that the script downloads before the first layout. The PDF is drawn with the same six files, and the `.postext` file carries five, because the display face is marked as not redistributable.
+
+## Method
+
+### 1 · Register the brand's faces, build, and give the PDF the same bytes
+
+<Excerpt region="build" />
+
+Layout measures every word with the faces in `document.fonts`, so `loadBrandFonts()` in [the short answer](#the-short-answer) fetches each file once, keeps its bytes and registers a `FontFace` built from them before `buildDocument` runs. The kit's `loadFonts` only fetches from Fontsource, and a brand serves its files from its own server. In postext-pdf 1.4.1 `renderToPdf` asks for ten faces, four of which no text uses (the display face's italic, and the italic, SemiBold and SemiBold italic of the monospace), and `brandFontProvider` answers each request with the closest file of the same family ([Why a font provider?](/en/docs/configuration#why-a-font-provider)). The pages use only the six files the canvas measured, but 1.4.1 also writes an unused copy of the stand-in file for each of those four requests.
+
+### 2 · The colour system is one list
+
+<Excerpt region="colours" />
+
+Because the palette and Table 1.1 are built from the same nine rows, the table cannot list a value the pages do not use. `setCellBackground` fills the empty first cell of each row with that row's colour, linked to the palette. In the text, `:swatch{color="line-2"}` takes a palette id and draws a square outlined in the text colour. `main-color` has the hex of Ink, so headings and bold and italic runs, whose defaults link to it, print in Ink instead of the engine's blue. References keep that blue in 1.4.1 whatever `main-color` holds; `bodyText.referenceColor: col('ink')` sets them in Ink as well ([Color Palette](/en/docs/configuration#color-palette)).
+
+### 3 · One opener, three line colours
+
+<Excerpt region="sections" />
+
+`numberingTemplate: '{1:01}'` writes the counter with two digits, and `{number}` prints 01, 02 and 03 in the opener; the cover heading is `numbered: false` and gets no number. The three section styles differ only in the palette entry `section`, which each sets to its line's colour. The number and the square in the band are linked to `section`, so one opener design serves all three sections. `minHeight` reserves ten lines of the 14 pt grid for the opener, and the text of every section starts on the same grid line of its page.
+
+### 4 · Do and Don't are figure types
+
+<Excerpt region="do-dont" />
+
+A resource type can carry a partial `captionStyle`, and these two set only the label colour, Signal green for Do and Signal red for Don't ([Resource types](/en/docs/configuration#resource-types)). The signals reach 5.1:1 and 5.5:1 on white, while lines 1, 2, 3 and 5 stay under the 4.5:1 that small text needs. Both drawings float with `position: 'bottom'` and are cited in the same paragraph, the first under Drawing the map, so they share the foot of page 4, Do in the left column and Don't in the right.
+
+### 5 · The bundle packs the fonts it may share
+
+<Excerpt region="bundle" />
+
+`createBundle` reads `config.customFonts`, looks up each variant's bytes in `files` by its `fileId` and writes them under `fonts/`, with a `fonts` entry in the manifest. The display family carries `redistributable: false`, standing in for a licence that forbids handing the files on (Big Shoulders Display itself is under the OFL). Its file stays out, and `warnings` names the family. The 81 KB file holds the chapter, the configuration, the three drawings and five font files. Layout never reads `customFonts`; the pages come out the same without it ([Creating a bundle](/en/docs/configuration#creating-a-bundle)).
+
+## Variations
+
+### Pack the display face too
+
+If the licence lets you hand the files on, drop the flag, and the bundle carries all three families in 96 KB.
+
+```diff
+-  name, redistributable: name !== DISPLAY, // the display face reaches suppliers another way
++  name,
+```
+
+### Use a real Bold
+
+`boldFontWeight: 600` sets bold runs, table heads and caption labels in the SemiBold, because the brand has no Bold; if your family has one, add its files to `FONTS`, delete the setting and rewrite the sample's specimen line and its “There is no Bold”, which would no longer hold.
+
+```diff
+-    boldFontWeight: 600, // the brand has no Bold: its SemiBold sets **emphasis**
+-  'Public Sans': ['400', '400i', '600', '600i'],
++  'Public Sans': ['400', '400i', '600', '600i', '700', '700i'],
+```
+
+## Pitfalls
+
+Pass `createBundle` each font's bytes under the `fileId` that `customFonts` gives it. A variant without bytes is left out with a “missing file, skipped” warning, and a family that loses every variant drops out of the manifest.

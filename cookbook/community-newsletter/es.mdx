@@ -1,0 +1,61 @@
+---
+title: "Boletín vecinal: noticia principal y breves"
+summary: "Un boletín de huertos en columna y media: la noticia llena la columna ancha y sigue en la página 2; los saltos de columna llevan los breves a la estrecha."
+description: "Un boletín de huertos en Postext: texto en las dos columnas de una página en columna y media, saltos de columna, chips como etiquetas y texto junto a un dibujo."
+question: "¿Cómo pongo la noticia en una columna ancha y los breves en otra estrecha, y un texto junto a una imagen?"
+aliases: ["boletín", "hoja informativa", "boletín vecinal", "boletín de asociación", "columna de breves", "breves", "salto de página", "sigue en la página 2", "etiquetas", "texto junto a una imagen", "newsletter"]
+pageNotes: { "1": "Una franja de color paja, con una hilera de plantones en su borde inferior, cruza la parte de arriba con el nombre de la asociación en mayúsculas verdes pequeñas, La Gaceta del Huerto en letras verdes gruesas en dos líneas y una pestaña roja con N.º 47 · Primavera 2026. Debajo, la columna ancha lleva una etiqueta roja NOTICIAS, el titular Abren los cajones de compost compartidos, una entradilla, la firma, un plano en color de las parcelas, visto desde arriba, con tres cajones de compost junto a la puerta, dos párrafos y una etiqueta color paja Sigue en la página 2. La columna estrecha, tras un filete fino, lleva el título En breve, en rojo, y reúne cinco breves que empiezan con etiquetas redondeadas rojas, amarillas o con borde verde.", "2": "Bajo una cabecera con el título, la temporada y el folio 2 en rojo, la columna ancha empieza con una etiqueta Viene de la página 1 y el título Qué va en los cajones; siguen un gráfico de líneas con la temperatura del montón, centrado y con el 62 % del ancho de la columna, más texto y un recuadro verde pálido en el que un párrafo queda junto al dibujo de un bancal cuadrado dividido en dieciséis cuadros sembrados. La columna estrecha, titulada Avisos, recoge ocho avisos bajo títulos rojos en mayúsculas y termina con el colofón." }
+---
+
+## Lo que vas a componer
+
+El número de primavera de *La Gaceta del Huerto*, boletín de una asociación de huertos inventada, impreso por las dos caras de una hoja A4. Una franja color paja lleva el nombre en Titan One, en dos líneas, una hilera de plantones al pie y una pestaña color tomate con número y temporada. Debajo, la página se divide en una columna de 113 mm y otra de 57 mm. La noticia principal, sobre tres cajones de compost, llena la columna ancha bajo un plano dibujado con código y se interrumpe con una etiqueta «Sigue en la página 2». La columna estrecha reúne cinco breves con etiquetas en forma de píldora. La página 2 retoma la noticia bajo un título de continuación y centra un gráfico de temperaturas. Más abajo, un recuadro a dos columnas pone el dibujo de un bancal junto a su texto. Ocho avisos llenan la columna estrecha.
+
+## Elaboración
+
+### 1 · Deja que el Markdown llene cada columna
+
+Los ajustes de la disposición están en [la respuesta corta](#la-respuesta-corta), más arriba. En una disposición `oneAndHalf` la columna estrecha lleva texto por defecto, y el texto baja por la columna ancha, sigue por la estrecha y pasa a la columna ancha de la página siguiente ([tipos de disposición](/es/docs/configuration#tipos-de-disposición)). Un `:::columnbreak` termina la columna donde está ([directivas](/es/docs/document-format#directivas)): tras la etiqueta «Sigue en la página 2» abre la columna estrecha para los breves, y tras el último breve, en la última columna de la página, abre la página 2. En este número las dos columnas de la página 1 están ajustadas para terminar en la misma línea de la rejilla base, a 275 mm del borde superior, así que quitar cualquiera de los dos saltos deja las páginas igual. Los saltos hacen falta cuando cambia el texto. Quita el segundo párrafo de la noticia y, sin el primer salto, «En breve» queda a 247 mm, en la columna ancha, bajo la etiqueta, y el primer breve empieza en la ancha y termina en la estrecha, donde su segunda mitad conserva la medida de 113 mm con la que empezó y la columna de 57 mm la recorta.
+
+### 2 · Monta la mancheta con el frontmatter
+
+<Excerpt region="masthead" />
+
+El H1 lleva un estilo de título cuyo diseño dibuja la mancheta, y `span: 'page'` pone ese diseño sobre las dos columnas. `{titleText}`, a 60 pt, se parte en dos líneas en su caja de 178 mm. La pestaña une `{attr.issue}`, escrito en la línea del H1, y `{publishDate}`, del frontmatter, que tiene que ser una cadena entre comillas ([elementos de texto](/es/docs/configuration#elementos-de-texto)). Sin `minHeight`, la mancheta reservaría espacio hasta el pie de la franja, a 62 mm del borde superior, y el texto empezaría en la línea siguiente de la rejilla base, a 62,5 mm, pegado a la franja. Con un `minHeight` de diez líneas de la rejilla, empieza a 67 mm.
+
+### 3 · Etiqueta los breves con chips
+
+<Excerpt region="tags" />
+
+Declarar `chipStyles` sustituye el chip azul pálido de serie, y un chip sin `style` toma el primero ([estilos de chip](/es/docs/configuration#estilos-de-chip)). Un radio mayor que la mitad de la altura de la caja dibuja una píldora. Un chip nunca se parte por dentro, así que la línea solo se corta en el espacio de antes o de después de un chip, y una fecha como «Sáb. 11 de abril» queda en una sola línea. Los estilos de chip no pueden poner el texto en mayúsculas; por eso las etiquetas se escriben así en el Markdown. El relleno vertical se pinta fuera de la línea, así que la rejilla base de 13,4 pt se mantiene.
+
+### 4 · Pon el texto junto al dibujo dentro de un recuadro
+
+<Excerpt region="box" />
+
+Postext no contornea el texto alrededor de una imagen: una figura ocupa una franja entera de su columna. Dentro de un recuadro, en cambio, un grupo `:::columns` pone bloques uno al lado del otro ([`:::columns`](/es/docs/document-format#columns)). `breaks="2"` empieza la segunda columna, de 50 mm, en el dibujo, así que el párrafo queda entero en la primera. En este número el párrafo (61,2 mm) es más bajo que el dibujo con su pie (75,7 mm), y quitar `breaks="2"` no cambia nada. Sirve para un párrafo más largo: sin él, el grupo se equilibra, y con un párrafo de veintiuna líneas las dos últimas saltan a lo alto de la segunda columna, encima del dibujo.
+
+### 5 · Centra un gráfico estrecho en su franja
+
+<Excerpt region="band" />
+
+`width: 0.62` da al gráfico 70,1 mm de los 113 mm de la columna, y `align: 'center'` lo centra con 21,5 mm de papel a cada lado ([colocación](/es/docs/document-format#colocación)). El texto de encima y de debajo conserva la medida entera y nunca entra en ese blanco. Los dibujos son de un tipo de recurso con `captionPrefix` vacío, así que cada pie empieza con sus propias palabras en negrita, sin «Figura 1» delante.
+
+## Variantes
+
+### Pon los breves a la izquierda
+
+La columna ancha se sigue leyendo primero, así que el mismo Markdown pone la noticia a la derecha y los breves a la izquierda.
+
+```diff
+   layoutType: 'oneAndHalf',
++  sideColumnSide: 'left',
+```
+
+### Pon los breves a lo ancho de la página
+
+El cuerpo tiene como mucho dos columnas de texto. La <RecipeLink slug="newspaper-front-page">portada de periódico</RecipeLink> reparte cuatro breves a lo ancho del pie de la página en un recuadro con `:::columns{count=4}`.
+
+## Errores frecuentes
+
+- En esta disposición, el filete de columna de la página 1 empieza en lo alto de la caja de texto, detrás de la mancheta, reserve esta las líneas que reserve. La franja color paja se pinta encima; una mancheta sin franja de color dejaría ver el filete cruzando el nombre.

@@ -1,0 +1,180 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 41,
+  "status": "published",
+  "chapter": "output",
+  "order": 80,
+  "level": 2,
+  "genres": [
+    "ephemera"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf",
+    "bundle"
+  ],
+  "features": {
+    "primary": [
+      "bundles",
+      "localised-labels",
+      "custom-fonts"
+    ],
+    "also": [
+      "hyphenation-languages",
+      "figure-numbering",
+      "citations",
+      "inline-embeds",
+      "vertical-space",
+      "multi-chapter-books",
+      "covers",
+      "heading-styles",
+      "heading-attributes",
+      "opener-design",
+      "design-elements",
+      "design-images",
+      "frontmatter",
+      "captions",
+      "table-style",
+      "pdf-export",
+      "pdf-fonts"
+    ]
+  },
+  "answers": [
+    "Q07",
+    "Q08",
+    "Q75",
+    "Q74"
+  ],
+  "gotchas": [
+    "fonts-first",
+    "bundle-labels-reader-locale",
+    "hyphenation-locales",
+    "headings-drop-h1-break",
+    "here-figure-no-space-after",
+    "svg-no-webfonts",
+    "palette-skips-designs",
+    "design-lineheight-multiple",
+    "overflow-ellipsis-default",
+    "config-cache-identity"
+  ],
+  "related": [
+    "print-and-screen-editions",
+    "pdf-with-embedded-fonts",
+    "book-from-chapters",
+    "spanish-pocket-novel"
+  ],
+  "workarounds": [
+    {
+      "followup": "EF-07",
+      "package": "postext",
+      "note": "createBundle in 1.4.1 has no localized input, so each edition writes a single-locale bundle of its own from the same config factory and LANG; openBundle already reads bilingual files such as postext.dev/bundles/postext-guide.postext"
+    },
+    {
+      "followup": "EF-150",
+      "package": "postext",
+      "note": "readBundle localises the base resource types to the locale the reader asks for, not the one it serves, so the Spanish file opened with { locale: 'en' } (and imported at /en/sandbox, whose parseBundle passes the interface language) prints Figure 1.1 while bundle.locale says 'es'; the config writes resourceTypes: defaultResourceTypes(LANG) into the file, which replaces the base key"
+    },
+    {
+      "followup": "EF-113",
+      "package": "postext",
+      "note": "a heading design kept in the column is cut at the text block's top and bottom edges (not at its sides), so the cover heading is span: 'page' in a one-column leaflet; without it the art starts 12 mm down, stops 13 mm above the bottom edge and the language tab shrinks to a strip without its letters"
+    },
+    {
+      "followup": "EF-93",
+      "package": "postext",
+      "note": "an inline ('here') resource gets space above it but none below: the paragraph after the hours table started 1.4 mm under its caption, against 4.7 mm above the table; :::space{lines=0.5} after the embed gives 3.7 mm"
+    },
+    {
+      "followup": "EF-05",
+      "package": "postext",
+      "note": "the H1 breakBefore is restated because a headings object drops it; the cover opens the leaflet, so it changes nothing on these pages"
+    },
+    {
+      "followup": "EF-14",
+      "package": "postext",
+      "note": "hyphenation matches the exact code, so the English edition says 'en-us'; the same value sets the PDF's /Lang (en-US and es in the two files)"
+    },
+    {
+      "followup": "EF-71",
+      "package": "postext",
+      "note": "the palette does not reach design-slot colours (the cover's kicker, title, lead, facts and tab, the foot strip); col() writes the hex beside every paletteId"
+    },
+    {
+      "followup": "EF-121",
+      "package": "postext-pdf",
+      "note": "renderToPdf embeds one font program per requested face key, so each PDF carries 10 font programs for the 7 faces its pages use (DM Sans Italic and Instrument Sans 400 and 700 twice, 40-43 KB in all); a pen cannot route around it, noted so the file size is not taken for a recipe fault"
+    },
+    {
+      "followup": "EF-56",
+      "package": "postext",
+      "note": "design text lineHeight is a multiple of the size (0.96 for the cover title, 1.4 for the lead), never a pt() value"
+    }
+  ],
+  "engine": {
+    "postext": "1.4.1",
+    "postextPdf": "1.4.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "crop",
+    "focus": {
+      "page": 1,
+      "x": 0,
+      "y": 0,
+      "w": 1,
+      "h": 0.52
+    },
+    "expect": {
+      "pages": [
+        2,
+        2
+      ]
+    }
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [],
+    "fonts": [
+      {
+        "family": "DM Sans",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "DM Serif Display",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Instrument Sans",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-09-26",
+  "updated": "2026-09-26"
+}

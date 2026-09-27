@@ -1,0 +1,79 @@
+---
+title: "Artículo a dos columnas con ecuaciones numeradas"
+summary: "Artículo de física a dos columnas con siete ecuaciones numeradas, compuestas con el MathJax de la versión ?bundle. En el PDF siguen siendo vectoriales."
+description: "Artículo de física con la apertura dibujada por un estilo de título, ecuaciones MathJax numeradas, una tabla calculada y bibliografía con sangría francesa."
+question: "¿Cómo compongo un artículo con fórmulas y ecuaciones numeradas, y las mantengo vectoriales en el PDF?"
+aliases: ["artículo científico", "artículo de revista", "artículo de investigación", "preprint", "ecuaciones", "ecuaciones numeradas", "numeración de ecuaciones", "LaTeX", "MathJax", "fórmulas", "tag", "resumen", "palabras clave", "bibliografía", "dos columnas"]
+pageNotes: { "1": "Una banda verde botella lleva el nombre de la revista, Measure, la imagen estroboscópica de un péndulo colgado del filete de la mancheta, con la última bola en rojo al final de su recorrido, y el título The period of a pendulum at large amplitudes. Debajo van los autores, las fechas de recepción, aceptación y publicación y la licencia; después, un resumen sobre fondo verde claro con cuatro palabras clave en chips, y las dos columnas con la primera ecuación numerada.", "2": "La sección 2, Theory, con las ecuaciones 2 a 7 numeradas en el borde derecho de su columna y la figura 1, el péndulo y sus símbolos, en cabeza de la segunda columna.", "3": "El final del método, Results, Discussion y el comienzo de Conclusions. La figura 2 representa el periodo frente a la amplitud en cabeza de la segunda columna, y la tabla 1 recoge las medidas al pie de la primera.", "4": "La figura 3, el plano de fases, ocupa la cabeza de la página a todo el ancho; debajo, el final de las conclusiones, las secciones finales y la bibliografía se reparten las dos columnas, que empiezan y terminan a la misma altura." }
+---
+
+## Lo que vas a componer
+
+Un artículo de investigación del número de septiembre de *Measure*, revista ficticia de física experimental en acceso abierto, en A4 y a dos columnas. Una banda verde botella lleva el nombre de la revista, la imagen estroboscópica de un péndulo y el título. Debajo van los autores, las fechas y la licencia, y un resumen sobre fondo verde claro, con cuatro palabras clave en chips, ocupa las dos columnas. Siguen seis secciones numeradas, con siete ecuaciones con número y 46 fórmulas en línea; MathJax las compone todas, y también los rótulos de las figuras. La tabla 1 y los puntos de la figura 2 salen de las mismas medidas. En la última página, el final de las conclusiones, las secciones finales y la bibliografía ocupan, bajo la figura 3, dos columnas que terminan a la misma altura. El PDF guarda cada fórmula como contornos vectoriales, sin fuente matemática que incrustar.
+
+## Elaboración
+
+### 1 · Carga el motor empaquetado y numera las ecuaciones
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. En 1.4.1 las [matemáticas](/es/docs/configuration#matemáticas) necesitan la versión `?bundle` del motor. Todos los símbolos tienen que importarse de ella, porque con la URL normal `initMathEngine()` lanza un error, y hay que esperar a `initMathEngine()` antes de la primera composición; si no, cada fórmula sale como una caja gris y no salta ningún aviso. A partir de ahí, `$…$` compone matemáticas en línea y `$$…$$` fórmulas destacadas, y `renderToPdf` escribe cada fórmula como trazados vectoriales. Esa misma versión dibuja con anchura 0 la fórmula que lleva `\tag`, y no se imprime nada. `numbered()` reescribe cada ecuación etiquetada como tres cajas `\mathmakebox` (3 em vacíos, la fórmula centrada y el número pegado a la derecha en otros 3 em) que entre todas miden 0,1 em menos que la columna. Las anchuras van en el em de MathJax, que `MATH_EM` mide componiendo una caja vacía de 10 em.
+
+### 2 · Dibuja el bloque del título con un estilo de título
+
+<Excerpt region="title" />
+
+El título del artículo lleva `#` (nivel 1), así que encabeza los marcadores del PDF, con las secciones numeradas debajo. Su [estilo de título](/es/docs/configuration#estilos-de-encabezado) `article` lo sustituye por una ranura de elementos de diseño: una banda a sangre por arriba, el nombre de la revista, la imagen estroboscópica y el título, partido en dos donde el Markdown lleva `\\`. Los autores y dos de las fechas salen de los atributos del título, y la de publicación, del `publishDate` del frontmatter. `minHeight` reserva 130 mm desde el margen superior hasta el pie de los autores, y el resumen empieza debajo.
+
+### 3 · Numera las secciones, no el título
+
+<Excerpt region="numbering" />
+
+Cada nivel tiene su plantilla y su tipografía: `{2}` numera las seis secciones, del 1 al 6, en 11,5 pt y el verde de la revista; `{2}.{3}`, las subsecciones de «Theory», de la 2.1 a la 2.3, en seminegra de 10 pt y el color del texto, y `numbered: false` deja el título y las secciones finales fuera de la cuenta. Cada título devuelve a la rejilla base de 12,6 pt el texto que lo sigue, así que las líneas de las dos columnas quedan a la misma altura a ambos lados del medianil. Figuras y tablas se numeran seguidas en todo el artículo con `{n}`. El `{h1}.{n}` por defecto imprimiría aquí los mismos números, porque el título sin numerar deja vacío `{h1}` y un contador vacío desaparece con su punto, pero `{n}` no depende de eso. El tipo tabla, además, coloca el pie encima de la tabla, como hacen las revistas.
+
+### 4 · Extiende el resumen sobre las dos columnas
+
+<Excerpt region="abstract" />
+
+Un recuadro `span: 'page'` bajo el bloque del título compone el resumen a todo el ancho de la caja, y las dos columnas empiezan debajo. Un relleno de 22 mm a cada lado deja sus líneas en torno a los 90 caracteres. Las palabras clave son [chips](/es/docs/configuration#estilos-de-chip), que nunca se parten entre dos líneas, y cada una lleva `{style="keyword"}`. Su estilo de párrafo, `keywords`, va en bandera, porque al justificar una línea de chips los espacios entre ellos se abren hasta dejar huecos.
+
+### 5 · Cierra con una bibliografía con sangría francesa
+
+<Excerpt region="references" />
+
+Un contenedor `:::paragraphs` aplica a cada referencia el [estilo de párrafo](/es/docs/configuration#estilos-de-párrafo) `references`, cuyo `hangingIndent` de 5 mm deja el número en el margen y sangra 5 mm las líneas siguientes. El equilibrado de columnas iguala la última banda del artículo. En la <PageRef page={4}>página 216</PageRef>, el final de las conclusiones, las secciones finales y la bibliografía se reparten las dos columnas bajo la figura 3. El equilibrado solo puede añadir espacio y una referencia de dos líneas no se puede partir, así que las secciones finales se reescribieron con dos líneas menos hasta que las dos columnas terminaron a la misma altura.
+
+### 6 · Calcula la tabla y rotula las figuras con MathJax
+
+<Excerpt region="figures" />
+
+Una sola lista, `runs`, alimenta la tabla 1 y los puntos de la figura 2, y la columna de valores previstos de la tabla es la ecuación (6) calculada para cada amplitud. El texto cita cada recurso con `:ref{id="…" style="full"}`, que imprime «Figure 2» en negrita, en el color del texto, y hace flotar el recurso hasta el primer hueco libre tras la cita. En 1.4.1 los pies y las celdas no admiten matemáticas, así que usan el marcado normal `~sub~` y `^sup^` (`*T*~0~`), y los símbolos dentro del texto siguen siendo `$T_0$`. Una figura SVG se dibuja como imagen y no puede usar las fuentes web de la página, así que `tex()` llama a `renderMath` para cada rótulo y escribe sus contornos en el SVG como trazados. La *θ*₀ de la figura 1 es el mismo glifo de las fórmulas y sigue siendo vectorial en el PDF.
+
+## Variantes
+
+### Numera las figuras dentro de cada sección
+
+Los artículos largos cuentan las figuras por secciones; así se imprime «Figure 1.1» en la introducción y «Table 4.1» en los resultados.
+
+```diff
+-  numberingTemplate: '{n}', resetOn: 'never',
++  numberingTemplate: '{h2}.{n}', resetOn: 'h2',
+```
+
+### Lleva los números de ecuación a la izquierda
+
+Intercambia las dos cajas exteriores y los números pasan al borde izquierdo de la columna.
+
+```diff
+-  `$$\\mathmakebox[${NUMBER_EM}em]{}\\mathmakebox[${FORMULA_EM}em]{${body.trim()}}`
+-  + `\\mathmakebox[${NUMBER_EM}em][r]{(${n})}$$`);
++  `$$\\mathmakebox[${NUMBER_EM}em][l]{(${n})}\\mathmakebox[${FORMULA_EM}em]{${body.trim()}}`
++  + `\\mathmakebox[${NUMBER_EM}em]{}$$`);
+```
+
+## Errores frecuentes
+
+- Una fórmula destacada no va unida a la línea que la introduce. Una frase como «gives the period as» puede cerrar una columna, o quedar encima de una figura, con la ecuación ya en la columna siguiente. Ajusta el texto y manda las figuras a la cabeza de una columna (`position: 'top'`, como la figura 1) para que nunca caigan entre las dos.
+- El párrafo que sigue a una fórmula destacada es un párrafo nuevo y lleva sangría. Empiézalo como una frase propia («Here *L* is…») en vez de con un «where…» a la manera de LaTeX.
+- Un `~0~` normal baja su cifra un tercio de em, por debajo de los descendentes, y un `^2^` detrás va a continuación del ₀ en lugar de quedar encima. En el texto corrido escribe `$T_0$` y `$T_0^2$`, y guarda el marcado normal para los pies y las celdas, que no admiten matemáticas.
+- En una página de cierre bajo una figura a todo el ancho, el equilibrado puede añadir una línea sobre un título que abre columna, y entonces las dos columnas empiezan desfasadas una línea; `stretchAfterFloats: false` no lo evita. Revisa la última página y ajusta el texto en una línea.
+- En 1.4.1 un título dentro de la columna no admite `letterSpacing`, y por eso los títulos de las secciones finales van en mayúsculas sin espaciar. Las mayúsculas espaciadas funcionan en el texto de diseño y en el título de un recuadro, como en el antetítulo y en la etiqueta del resumen.
+- Comprueba que la fuente de rótulos tenga ¹, ² y ±, y letras griegas si algún pie las necesita. Instrument Sans, la primera que se probó, no trae ninguno de los tres en sus archivos de Fontsource, y Schibsted Grotesk no tiene griego, así que el pie de la figura 1 nombra la amplitud con palabras en lugar de *θ*₀.

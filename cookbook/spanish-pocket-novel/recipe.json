@@ -1,0 +1,160 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 16,
+  "status": "published",
+  "chapter": "type",
+  "order": 40,
+  "level": 2,
+  "genres": ["novel"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["hyphenation-languages", "knuth-plass", "drop-caps"],
+    "also": [
+      "opener-design",
+      "heading-attributes",
+      "design-elements",
+      "widows-orphans-runts",
+      "mirrored-margins",
+      "chapter-breaks",
+      "page-role-filters",
+      "running-heads",
+      "citations",
+      "figure-numbering",
+      "localised-labels",
+      "inline-embeds",
+      "heading-styles",
+      "vertical-space",
+      "paragraph-styles",
+      "escapes",
+      "page-background"
+    ]
+  },
+  "answers": ["Q20", "Q21", "Q54", "Q74", "Q28"],
+  "gaps": ["body-drop-cap", "markdown-extras"],
+  "gotchas": [
+    "hyphenation-locales",
+    "resource-types-locale",
+    "design-text-ragged",
+    "drop-cap-extra-line",
+    "digit-period-list",
+    "attr-values",
+    "headings-drop-h1-break",
+    "design-lineheight-multiple",
+    "overflow-ellipsis-default",
+    "palette-skips-designs",
+    "style-italic-colour",
+    "style-inherits-break",
+    "svg-no-webfonts",
+    "quote-frontmatter",
+    "fonts-first"
+  ],
+  "explainsWarnings": [],
+  "related": [
+    "justification-lab",
+    "trade-paperback-novel",
+    "short-chapters-run-on",
+    "five-chapter-openers"
+  ],
+  "workarounds": [
+    {
+      "followup": "EF-05",
+      "package": "postext",
+      "note": "the H1 breakBefore is restated because a headings object drops it"
+    },
+    {
+      "followup": "EF-14",
+      "package": "postext",
+      "note": "locale is the exact bundled code 'es': 'es-ES' silently hyphenates with the American patterns (cabal-los, hi-erro, establec-imiento on these pages)"
+    },
+    {
+      "followup": "EF-33",
+      "package": "postext",
+      "note": "resourceTypes: defaultResourceTypes('es') by hand, because config.locale leaves the captions as 'Figure 1.1'"
+    },
+    {
+      "followup": "EF-11",
+      "package": "postext",
+      "note": "every frontmatter value is quoted (title and author feed the running heads)"
+    },
+    {
+      "followup": "EF-56",
+      "package": "postext",
+      "note": "the lead's design-text lineHeight is the multiple LEAD / BODY, never a Dimension, which would drop the opener's reservation"
+    },
+    {
+      "followup": "EF-60",
+      "package": "postext",
+      "note": "the plate's heading style restates breakBefore with parity 'any': it would inherit the chapter level's break, so with parity 'odd' the map would move to a recto behind a blank page and face another blank page"
+    },
+    {
+      "followup": "EF-68",
+      "package": "postext",
+      "note": "the nota style stays in ink: a paragraph style has no italicColor, so its italic Marianela would print darker than a muted note"
+    },
+    {
+      "followup": "EF-71",
+      "package": "postext",
+      "note": "col() writes the hex beside the paletteId, because design slots (opener, heads, plate) do not read the palette"
+    },
+    {
+      "followup": "EF-109",
+      "package": "postext",
+      "note": "design text has no justification, so the lead beside the initial is a single line whose gap (INITIAL_GAP 0.55 mm) is copy-fitted to end flush with the measure; a three-line drop cap would set three ragged lines"
+    },
+    {
+      "followup": "EF-108",
+      "package": "postext",
+      "note": "the initial's 1.2 em font box counts toward the opener's reserved height, which rounds up to one line too many; the chapter level takes it back with marginBottom: pt(-LEAD), and the plate's heading style resets marginBottom to 0"
+    },
+    {
+      "followup": "EF-106",
+      "package": "postext",
+      "note": "a design text's dropCap is drawn only when overflow is 'wrap' (the default 'ellipsis-end' drops the initial with no warning), so the lead sets overflow: 'wrap' though it is one line"
+    }
+  ],
+  "engine": { "postext": "1.4.1" },
+  "kit": ["core", "fonts", "viewer", "images"],
+  "sample": { "locales": ["es"] },
+  "capture": { "hero": [1, 2], "card": "spread", "pages": "all", "expect": {"pages": [5, 5]} },
+  "credits": {
+    "authors": [{"name": "Ignacio Ferro", "github": "drnachio"}],
+    "text": [
+      {
+        "what": {
+          "en": "Marianela (1878), the opening of chapter I, “Perdido”, with today’s spelling and punctuation",
+          "es": "Marianela (1878), comienzo del capítulo I, «Perdido», con la ortografía y la puntuación actuales"
+        },
+        "who": "Benito Pérez Galdós",
+        "source": "https://www.gutenberg.org/ebooks/17340",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The edition’s note and the map’s caption",
+          "es": "La nota a la edición y el pie del plano"
+        },
+        "who": "Postext Cookbook",
+        "license": "original"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "The conjectural map of the Socartes mines, drawn in code in the page’s palette",
+          "es": "El plano conjetural de las minas de Socartes, dibujado en código con la paleta de la página"
+        },
+        "who": "Ignacio Ferro",
+        "license": "MIT"
+      }
+    ],
+    "fonts": [
+      { "family": "Gentium Book Plus", "license": "OFL-1.1" },
+      { "family": "Libre Bodoni", "license": "OFL-1.1" },
+      { "family": "Marcellus SC", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "MIT" },
+  "created": "2026-09-25",
+  "updated": "2026-09-25"
+}

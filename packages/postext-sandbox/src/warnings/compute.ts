@@ -1,6 +1,8 @@
 import type {
   PostextConfig,
+  VDTBlock,
   VDTDocument,
+  VDTLine,
   ResolvedDebugConfig,
   ContentBlock,
   ParseIssue,
@@ -10,10 +12,9 @@ import type {
   DesignContextKind,
 } from 'postext';
 import {
-  KNOWN_CONTAINERS,
-  KNOWN_DIRECTIVES,
   spaceDirectiveLines,
   parseMarkdownWithIssues,
+  collectContentWarnings,
   resolveDebugConfig,
   resolveHeaderFooterConfig,
   resolveHeadingsConfig,
@@ -21,7 +22,13 @@ import {
   collectPlaceholderNames,
   isAllowedPlaceholder,
   isMetadataPlaceholder,
-  DEFAULT_CHIP_STYLES,
+  extractFrontmatter,
+  metadataText,
+  collectConfigWarnings,
+  collectHeadingDesignCuts,
+  parseNumberFormat,
+  matchHyphenationLocale,
+  findLooseLines,
 } from 'postext';
 import {
   getConfigFontSpecs,
@@ -31,7 +38,7 @@ import {
   isKnownUnavailableGoogleFont,
   isRemovedCustomFontFamily,
 } from '../controls/fontLoader';
-import type { Warning } from './types';
+import type { Warning, WarningPayload } from './types';
 import type { ComposedBook } from '../book/types';
 import { fromBookLine, fromBookOffset } from '../book/compose';
 import { frontmatterRange } from '../book/frontmatter';
@@ -72,26 +79,25 @@ function collectLooseLineWarnings(
   const threshold = debug.looseLineHighlight.threshold;
   const out: Warning[] = [];
   let idx = 0;
-  for (const block of doc.blocks) {
-    for (const line of block.lines) {
-      const ratio = line.justifiedSpaceRatio;
-      if (ratio === undefined || ratio <= threshold) continue;
-      const sourceStart = line.sourceStart ?? block.sourceStart;
-      const sourceEnd = line.sourceEnd ?? block.sourceEnd;
-      out.push({
-        id: `loose-${idx++}-${sourceStart ?? 'x'}`,
-        payload: { kind: 'looseLine', ratio, threshold },
-        sourceStart,
-        sourceEnd,
-        line: sourceStart !== undefined ? lineNumberForOffset(markdown, sourceStart) : undefined,
-      });
-    }
+  for (const { block, line, ratio } of findLooseLines(doc, { threshold })) {
+    const sourceStart = line.sourceStart ?? block.sourceStart;
+    const sourceEnd = line.sourceEnd ?? block.sourceEnd;
+    out.push({
+      id: `loose-${idx++}-${sourceStart ?? 'x'}`,
+      payload: { kind: 'looseLine', ratio, threshold },
+      sourceStart,
+      sourceEnd,
+      line: sourceStart !== undefined ? lineNumberForOffset(markdown, sourceStart) : undefined,
+    });
   }
   return out;
 }
 
 /** Warnings the layout itself raised (`doc.warnings`): a box the engine
- *  had to place overflowing its column because no column could hold it. */
+ *  had to place overflowing its column because no column could hold it.
+ *  The content warnings the build lists in `doc.contentWarnings` (unknown
+ *  ids, styles and directives) are read from the source by
+ *  {@link collectEngineContentWarnings} — before the layout exists, too. */
 function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warning[] {
   const out: Warning[] = [];
   const pxPerMm = doc.config.page.dpi / 25.4;
@@ -107,6 +113,24 @@ function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warning[] {
     });
   }
   return out;
+}
+
+/** Heading designs taller than their page can hold (EF-91), as the engine
+ *  finds them (`collectHeadingDesignCuts`): text of the design laid out
+ *  past the foot of the page (an opener, painted across the page) or past
+ *  the foot of the heading's column (an in-column design, which canvas and
+ *  PDF clip to its column). The heading then claims the rest of its page or
+ *  column, so nothing runs under it, but that part of the design is lost —
+ *  a long lead on a small screen page. */
+function collectHeadingDesignCutWarnings(doc: VDTDocument, markdown: string): Warning[] {
+  const pxPerMm = doc.config.page.dpi / 25.4;
+  return collectHeadingDesignCuts(doc).map((cut, idx) => ({
+    id: `heading-design-cut-${idx}-${cut.sourceStart ?? 'x'}`,
+    payload: { kind: 'headingDesignCut', level: cut.level, page: cut.pageIndex + 1 + (doc.pageIndexOffset ?? 0), overflowMm: cut.overflowPx / pxPerMm },
+    sourceStart: cut.sourceStart,
+    sourceEnd: cut.sourceEnd,
+    line: cut.sourceStart !== undefined ? lineNumberForOffset(markdown, cut.sourceStart) : undefined,
+  }));
 }
 
 function collectHeadingHierarchyWarnings(blocks: ContentBlock[], markdown: string): Warning[] {
@@ -148,22 +172,8 @@ function collectConsecutiveHeadingsWarnings(blocks: ContentBlock[], markdown: st
   return out;
 }
 
-const DIRECTIVE_RE = /^:::\s*([a-z][a-z0-9-]*)\b/;
-/** Every `:::name` the parser understands: leaf directives plus fenced
- *  containers (`callout`, `paragraphs`, `part`). Widened to `string` so
- *  arbitrary names scanned from the source can be tested. */
-const KNOWN_FENCE_NAMES: ReadonlySet<string> = new Set<string>([
-  ...KNOWN_DIRECTIVES,
-  ...KNOWN_CONTAINERS,
-]);
-const ALLOWED_PAGE_FORMATS = new Set([
-  'decimal',
-  'lower-roman',
-  'upper-roman',
-  'lower-alpha',
-  'upper-alpha',
-]);
-
+/** Attribute validation on parsed directive blocks. Unknown `:::name` lines
+ *  are the engine's `unknownDirective` (see {@link collectEngineContentWarnings}). */
 function collectDirectiveWarnings(
   markdown: string,
   blocks: ContentBlock[],
@@ -171,35 +181,12 @@ function collectDirectiveWarnings(
   const out: Warning[] = [];
   let idx = 0;
 
-  // 1. Unknown directive-looking lines that didn't parse as a directive
-  //    block. We scan the markdown for `:::name` lines and flag those whose
-  //    `name` isn't recognized.
-  const rawLines = markdown.split('\n');
-  let offset = 0;
-  for (const rawLine of rawLines) {
-    const lineLen = rawLine.length;
-    const m = rawLine.trim().match(DIRECTIVE_RE);
-    if (m) {
-      const name = m[1]!;
-      if (!KNOWN_FENCE_NAMES.has(name)) {
-        out.push({
-          id: `directive-unknown-${idx++}-${offset}`,
-          payload: { kind: 'unknownDirective', name },
-          sourceStart: offset,
-          sourceEnd: offset + lineLen,
-          line: lineNumberForOffset(markdown, offset),
-        });
-      }
-    }
-    offset += lineLen + 1; // +1 for '\n'
-  }
-
-  // 2. Attribute-level validation on parsed directive blocks.
   for (const b of blocks) {
     if (b.type !== 'directive' || !b.directiveAttrs) continue;
     const attrs = b.directiveAttrs;
     if (b.directiveName === 'numbering') {
-      if (attrs.format !== undefined && !ALLOWED_PAGE_FORMATS.has(attrs.format)) {
+      // Any spelling the engine reads (`roman-lower`, `arabic`, `i`…) is fine.
+      if (attrs.format !== undefined && parseNumberFormat(attrs.format) === undefined) {
         out.push({
           id: `numbering-format-${idx++}-${b.sourceStart}`,
           payload: { kind: 'numberingInvalidFormat', value: attrs.format },
@@ -251,27 +238,12 @@ function collectDirectiveWarnings(
   return out;
 }
 
-/**
- * Fenced-container warnings:
- *   - unclosedContainer: a `:::name` fence still open at end of input (from
- *     the parser's issue list); points at the opening line.
- *   - unknownParagraphStyle: `:::paragraphs{style="x"}` where `x` is not a
- *     configured paragraph style id.
- *   - unknownCalloutType: `:::callout{type="x"}` where `x` is not a
- *     configured callout style id. Mirrors `pickCalloutStyle` in the engine:
- *     with no configured styles every type resolves to the built-in `note`
- *     look (nothing to warn about); with a non-empty list an unknown type
- *     silently falls back to the first style, which is worth flagging.
- */
-function collectContainerWarnings(
-  markdown: string,
-  blocks: ContentBlock[],
-  issues: ParseIssue[],
-  config: PostextConfig,
-): Warning[] {
+/** Fenced containers still open at the end of the document (from the
+ *  parser's issue list), pointing at the opening line. Unknown paragraph and
+ *  callout style ids are the engine's (see {@link collectEngineContentWarnings}). */
+function collectContainerWarnings(markdown: string, issues: ParseIssue[]): Warning[] {
   const out: Warning[] = [];
   let idx = 0;
-
   for (const issue of issues) {
     if (issue.kind !== 'unclosedContainer') continue;
     out.push({
@@ -282,97 +254,107 @@ function collectContainerWarnings(
       line: lineNumberForOffset(markdown, issue.sourceStart),
     });
   }
+  return out;
+}
 
-  const paragraphStyleIds = new Set((config.paragraphStyles ?? []).map((s) => s.id));
-  const calloutStyleIds = new Set((config.calloutStyles ?? []).map((s) => s.id));
+/** A chip's box on the page, as the renderers draw it. */
+interface ChipBox {
+  styleId: string;
+  line: VDTLine;
+  block: VDTBlock;
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
 
-  for (const b of blocks) {
-    if (b.type !== 'containerStart') continue;
-    const attrs = b.containerAttrs ?? {};
-    if (b.containerName === 'paragraphs') {
-      const style = attrs.style;
-      if (style !== undefined && !paragraphStyleIds.has(style)) {
-        out.push({
-          id: `paragraphs-style-${idx++}-${b.sourceStart}`,
-          payload: { kind: 'unknownParagraphStyle', style },
-          sourceStart: b.sourceStart,
-          sourceEnd: b.sourceEnd,
-          line: lineNumberForOffset(markdown, b.sourceStart),
-        });
-      }
-    } else if (b.containerName === 'callout' && calloutStyleIds.size > 0) {
-      const type = attrs.type;
-      if (type !== undefined && !calloutStyleIds.has(type)) {
-        out.push({
-          id: `callout-type-${idx++}-${b.sourceStart}`,
-          payload: { kind: 'unknownCalloutType', type },
-          sourceStart: b.sourceStart,
-          sourceEnd: b.sourceEnd,
-          line: lineNumberForOffset(markdown, b.sourceStart),
-        });
-      }
+/** The chips of one line where the renderers draw them: the segments laid
+ *  end to end from the line's start, with the word spaces of a justified
+ *  line widened (and a centred or right-aligned line shifted) the way the
+ *  canvas, HTML and PDF backends set them. */
+function chipBoxesOf(block: VDTBlock, line: VDTLine): ChipBox[] {
+  const segments = line.segments ?? [];
+  if (!segments.some((s) => s.chip)) return [];
+  const effectiveWidth = block.bbox.width - (line.bbox.x - block.bbox.x);
+  let natural = 0;
+  let words = 0;
+  let spaces = 0;
+  for (const seg of segments) {
+    natural += seg.width;
+    if (seg.kind === 'space') spaces++;
+    else words += seg.width;
+  }
+  let x = line.bbox.x;
+  let spaceWidth: number | undefined;
+  if (block.textAlign === 'justify' && spaces > 0 && ((!line.isLastLine && !line.ragged) || natural > effectiveWidth)) {
+    spaceWidth = (effectiveWidth - words) / spaces;
+  } else if (block.textAlign === 'center' || block.textAlign === 'right') {
+    const slack = Math.max(0, effectiveWidth - natural);
+    x += block.textAlign === 'center' ? slack / 2 : slack;
+  }
+  const out: ChipBox[] = [];
+  for (const seg of segments) {
+    if (seg.chip) {
+      const left = x + seg.chip.marginLeft;
+      out.push({
+        styleId: seg.chip.styleId,
+        line,
+        block,
+        left,
+        right: left + seg.chip.boxWidth,
+        top: line.baseline - seg.chip.ascent,
+        bottom: line.baseline + seg.chip.descent,
+      });
     }
+    x += seg.kind === 'space' && spaceWidth !== undefined ? spaceWidth : seg.width;
   }
   return out;
 }
 
-/**
- * Inline chip warnings:
- *   - unknownChipStyle: `:chip[…]{style="x"}` where `x` names no chip style
- *     (the built-in `chip` style while the config has none); the engine
- *     falls back to the first style.
- *   - chipOverlap: a chip box taller than the line pitch, so the boxes of
- *     chips on consecutive lines touch (the vertical padding paints outside
- *     the line box by design). One warning per style, at its first chip.
- */
-function collectChipWarnings(
-  markdown: string,
-  blocks: ContentBlock[],
-  config: PostextConfig,
-  doc: VDTDocument | null,
-): Warning[] {
+/** Chips whose boxes run into a chip on another line: the vertical padding
+ *  paints outside the line box by design, so a chip taller than the line
+ *  pitch is fine until a chip on the line above or below stands in its
+ *  way (EF-118). One warning per style, at its first such chip, with the
+ *  largest overlap. Unknown chip styles are the engine's (see {@link
+ *  collectEngineContentWarnings}). */
+function collectChipOverlapWarnings(markdown: string, doc: VDTDocument | null): Warning[] {
   const out: Warning[] = [];
-  let idx = 0;
-  const styleIds = new Set((config.chipStyles ?? DEFAULT_CHIP_STYLES).map((s) => s.id));
-  for (const b of blocks) {
-    let plain = 0;
-    for (const span of b.spans) {
-      const style = span.chip?.style;
-      if (style !== undefined && !styleIds.has(style)) {
-        const start = b.sourceMap[plain] ?? b.sourceStart;
-        const end = markdown.indexOf('}', start);
-        out.push({
-          id: `chip-style-${idx++}-${start}`,
-          payload: { kind: 'unknownChipStyle', style },
-          sourceStart: start,
-          sourceEnd: end >= 0 && end < b.sourceEnd ? end + 1 : b.sourceEnd,
-          line: lineNumberForOffset(markdown, start),
-        });
-      }
-      plain += span.text.length;
-    }
-  }
   if (!doc) return out;
   const ptPerPx = 72 / doc.config.page.dpi;
-  const flagged = new Set<string>();
-  for (const block of doc.blocks) {
-    for (const line of block.lines) {
-      for (const seg of line.segments ?? []) {
-        const chip = seg.chip;
-        if (!chip || flagged.has(chip.styleId)) continue;
-        const excess = chip.ascent + chip.descent - line.bbox.height;
-        if (excess <= 0.01) continue;
-        flagged.add(chip.styleId);
-        const src = line.sourceStart ?? block.sourceStart;
-        out.push({
-          id: `chip-overlap-${chip.styleId}`,
-          payload: { kind: 'chipOverlap', style: chip.styleId, overlapPt: excess * ptPerPx },
-          sourceStart: src,
-          sourceEnd: line.sourceEnd ?? block.sourceEnd,
-          line: src !== undefined ? lineNumberForOffset(markdown, src) : undefined,
-        });
+  const found = new Map<string, { box: ChipBox; overlapPx: number }>();
+  const note = (box: ChipBox, overlapPx: number): void => {
+    const seen = found.get(box.styleId);
+    if (!seen) found.set(box.styleId, { box, overlapPx });
+    else if (overlapPx > seen.overlapPx) seen.overlapPx = overlapPx;
+  };
+  for (const page of doc.pages) {
+    const blocks = [...page.columns.flatMap((c) => c.blocks), ...(page.floats ?? []), ...(page.marginNotes ?? [])];
+    const boxes = blocks.flatMap((block) => (block.hidden ? [] : block.lines.flatMap((line) => chipBoxesOf(block, line))));
+    boxes.sort((a, b) => a.top - b.top);
+    for (let i = 0; i < boxes.length; i++) {
+      const a = boxes[i]!;
+      for (let j = i + 1; j < boxes.length; j++) {
+        const b = boxes[j]!;
+        if (b.top >= a.bottom - 0.01) break;
+        if (a.line === b.line) continue;
+        const across = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+        if (across <= 0.01) continue;
+        const overlap = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+        if (overlap <= 0.01) continue;
+        note(a, overlap);
+        note(b, overlap);
       }
     }
+  }
+  for (const [styleId, { box, overlapPx }] of found) {
+    const src = box.line.sourceStart ?? box.block.sourceStart;
+    out.push({
+      id: `chip-overlap-${styleId}`,
+      payload: { kind: 'chipOverlap', style: styleId, overlapPt: overlapPx * ptPerPx },
+      sourceStart: src,
+      sourceEnd: box.line.sourceEnd ?? box.block.sourceEnd,
+      line: src !== undefined ? lineNumberForOffset(markdown, src) : undefined,
+    });
   }
   return out;
 }
@@ -497,6 +479,80 @@ function collectDesignWarnings(config: PostextConfig): Warning[] {
     }
   }
 
+  // The part's verso and the contents' part rows.
+  for (const s of partRowSlots(config)) {
+    const { cyclic, dangling } = detectAnchorIssues(s.elements);
+    for (const id of cyclic) {
+      out.push({
+        id: `design-cyclic-${s.tag}-${id}`,
+        payload: { kind: 'designCyclicAnchor', slot: 'part', configPath: s.configPath, elementId: id },
+      });
+    }
+    for (const d of dangling) {
+      out.push({
+        id: `design-dangling-${s.tag}-${d.id}-${d.target}`,
+        payload: { kind: 'designDanglingAnchor', slot: 'part', configPath: s.configPath, elementId: d.id, referencedId: d.target },
+      });
+    }
+  }
+
+  // Heading styles: their designs and their sections' running heads (EF-134).
+  for (const s of headingStyleSlots(config)) {
+    const { cyclic, dangling } = detectAnchorIssues(s.elements);
+    const tag = `style-${s.styleId}-${s.slot}`;
+    for (const id of cyclic) {
+      out.push({
+        id: `design-cyclic-${tag}-${id}`,
+        payload: { kind: 'designCyclicAnchor', slot: s.slot, styleId: s.styleId, elementId: id },
+      });
+    }
+    for (const d of dangling) {
+      out.push({
+        id: `design-dangling-${tag}-${d.id}-${d.target}`,
+        payload: { kind: 'designDanglingAnchor', slot: s.slot, styleId: s.styleId, elementId: d.id, referencedId: d.target },
+      });
+    }
+  }
+
+  return out;
+}
+
+/** The design slots laid out with a part's placeholders besides the part
+ *  opener (`parts.design`): the blank verso after a part page and the part
+ *  rows of the contents. Only those that are set: an empty slot draws
+ *  nothing (the verso) or the engine's own default row. */
+function partRowSlots(config: PostextConfig): Array<{
+  configPath: 'parts.versoDesign' | 'toc.parts.design';
+  tag: string;
+  elements: ResolvedDesignSlot['elements'];
+}> {
+  const out: ReturnType<typeof partRowSlots> = [];
+  if (config.parts?.versoDesign) {
+    out.push({ configPath: 'parts.versoDesign', tag: 'part-verso', elements: resolveDesignSlot(config.parts.versoDesign, 'header').elements });
+  }
+  if (config.toc?.parts?.design) {
+    out.push({ configPath: 'toc.parts.design', tag: 'toc-part', elements: resolveDesignSlot(config.toc.parts.design, 'header').elements });
+  }
+  return out;
+}
+
+/** The design slots of the heading styles, as the engine resolves them: a
+ *  style's design when it is switched on (drawn like a heading level's),
+ *  and the running heads of the section the style opens. */
+function headingStyleSlots(config: PostextConfig): Array<{
+  styleId: string;
+  slot: 'heading' | 'header' | 'footer';
+  elements: ResolvedDesignSlot['elements'];
+}> {
+  const out: ReturnType<typeof headingStyleSlots> = [];
+  for (const style of config.headingStyles ?? []) {
+    if (!style || typeof style.id !== 'string') continue;
+    if (style.advancedDesign?.enabled) {
+      out.push({ styleId: style.id, slot: 'heading', elements: resolveDesignSlot(style.advancedDesign.slot, 'header').elements });
+    }
+    if (style.header) out.push({ styleId: style.id, slot: 'header', elements: resolveDesignSlot(style.header, 'header').elements });
+    if (style.footer) out.push({ styleId: style.id, slot: 'footer', elements: resolveDesignSlot(style.footer, 'footer').elements });
+  }
   return out;
 }
 
@@ -513,6 +569,17 @@ function collectHeadingBreakParityWarnings(config: PostextConfig): Warning[] {
     }
   }
   return out;
+}
+
+/** Config values the engine replaces (see `collectConfigWarnings`): a CSS
+ *  font stack in a font-family field, an unknown numbering format, a
+ *  one-and-a-half layout's side column that leaves a column with no width,
+ *  a heading setting the engine does not know. */
+function collectConfigValueWarnings(config: PostextConfig): Warning[] {
+  return collectConfigWarnings(config).map((w) => ({
+    id: `config-${w.kind}-${w.path}`,
+    payload: { kind: w.kind, path: w.path, value: w.value, used: w.used, ...(w.suggestion ? { suggestion: w.suggestion } : {}) },
+  }));
 }
 
 function collectParityCascadeWarnings(doc: VDTDocument | null): Warning[] {
@@ -579,13 +646,81 @@ function collectListAfterHeadingWarnings(blocks: ContentBlock[], markdown: strin
  *  flagged as upscaled (blurry). Mirrors issue #49 §8. */
 const BITMAP_UPSCALE_THRESHOLD = 1.5;
 
+/** The source range of every resource's first embed or inline `:ref`, in
+ *  reading order: what a resource-level warning points at. */
+function firstResourceUses(blocks: ContentBlock[], markdown: string): Map<string, { start: number; end: number }> {
+  const uses = new Map<string, { start: number; end: number }>();
+  for (const b of blocks) {
+    if (b.type === 'resourceBlock' && b.resourceId !== undefined && !uses.has(b.resourceId)) {
+      uses.set(b.resourceId, { start: b.sourceStart, end: b.sourceEnd });
+    }
+    let plain = 0;
+    for (const span of b.spans) {
+      const id = span.ref?.resourceId;
+      if (id !== undefined && !uses.has(id)) {
+        const start = b.sourceMap[plain] ?? b.sourceStart;
+        const close = markdown.indexOf('}', start);
+        uses.set(id, { start, end: close >= 0 && close < b.sourceEnd ? close + 1 : b.sourceEnd });
+      }
+      plain += span.text.length;
+    }
+  }
+  return uses;
+}
+
+/** The payload a bitmap / SVG resource paints from. */
+function imageFileId(r: Resource): string | undefined {
+  if (r.kind === 'bitmap') return r.bitmap?.fileId;
+  if (r.kind === 'svg') return r.svg?.fileId;
+  return undefined;
+}
+
+/**
+ * The resource ids of the pictures the configuration itself draws: every
+ * design element of `kind: 'image'` — in the header and footer, a heading
+ * level's or heading style's design, a part's design or verso design, the
+ * contents' part rows —, every callout icon of `kind: 'resource'` and every
+ * callout label-tab icon. Walked generically, like the font collector, so a
+ * new design slot is covered without a change here. A subtree switched off
+ * (`enabled: false`) draws nothing and is skipped.
+ */
+export function configImageResourceIds(config: PostextConfig): Set<string> {
+  const ids = new Set<string>();
+  const visit = (node: unknown, key: string, parentKey: string): void => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) {
+      for (const item of node) visit(item, key, parentKey);
+      return;
+    }
+    const rec = node as Record<string, unknown>;
+    if (rec.enabled === false) return;
+    const id = rec.resourceId;
+    if (typeof id === 'string' && id.length > 0) {
+      // A design image element, a callout icon set to a resource, or a
+      // label tab's icon (which has no kind).
+      if (rec.kind === 'image' || rec.kind === 'resource' || (rec.kind === undefined && key === 'icon' && parentKey === 'label')) {
+        ids.add(id);
+      }
+    }
+    for (const [k, value] of Object.entries(rec)) {
+      if (value && typeof value === 'object') visit(value, k, key);
+    }
+  };
+  visit(config, '', '');
+  return ids;
+}
+
 /**
  * Resource integrity warnings (issue #49 §8):
- *   - unknownResourceId: an `::resource` embed or `:ref` inline reference whose
- *     id is not in `resources`.
  *   - duplicateResourceId: two or more resources sharing the same id.
  *   - danglingTypeRef: a resource whose `typeId` is not a known `ResourceType`.
  *   - bitmapTooSmall: a bitmap rendered larger than 1.5× its natural width.
+ *   - missingImage: an image the document uses (embedded, referenced, in a
+ *     used table's cells, or drawn by the configuration: see
+ *     {@link configImageResourceIds}) whose payload the previews could not
+ *     read (`unavailableImages`), so it paints as a placeholder.
+ * Unknown ids, table style ids and ragged grids are the engine's (see
+ * {@link collectEngineContentWarnings}).
  */
 function collectResourceWarnings(
   blocks: ContentBlock[],
@@ -593,9 +728,12 @@ function collectResourceWarnings(
   resources: Resource[],
   resourceTypes: ResourceType[],
   doc: VDTDocument | null,
-  /** Resource ids consumed by the configuration itself (callout icons),
-   *  which count as used even though the document never references them. */
+  /** Resource ids the configuration itself draws (see
+   *  {@link configImageResourceIds}), which count as used even though the
+   *  document never references them. */
   configUsedIds: ReadonlySet<string> = new Set(),
+  /** File ids whose payload could not be read or decoded. */
+  unavailableImages: ReadonlySet<string> = new Set(),
 ): Warning[] {
   const out: Warning[] = [];
   let idx = 0;
@@ -605,41 +743,34 @@ function collectResourceWarnings(
   for (const r of resources) {
     idCounts.set(r.id, (idCounts.get(r.id) ?? 0) + 1);
   }
-  const knownIds = new Set(idCounts.keys());
   const knownTypeIds = new Set(resourceTypes.map((t) => t.id));
 
-  // Track which resource ids are actually used (embedded, referenced, or
-  // consumed by the configuration).
-  const usedIds = new Set<string>(configUsedIds);
-
-  // 1. Walk blocks for embeds (`::resource`) and inline `:ref`s, flagging
-  //    unknown ids and recording usage with source positions for navigation.
-  for (const b of blocks) {
-    if (b.type === 'resourceBlock' && b.resourceId !== undefined) {
-      usedIds.add(b.resourceId);
-      if (!knownIds.has(b.resourceId)) {
-        out.push({
-          id: `resource-unknown-embed-${idx++}-${b.sourceStart}`,
-          payload: { kind: 'unknownResourceId', resourceId: b.resourceId, usage: 'embed' },
-          sourceStart: b.sourceStart,
-          sourceEnd: b.sourceEnd,
-          line: lineNumberForOffset(markdown, b.sourceStart),
-        });
+  // 1. Images the document uses with no readable payload.
+  if (unavailableImages.size > 0) {
+    const uses = firstResourceUses(blocks, markdown);
+    const byId = new Map(resources.map((r) => [r.id, r]));
+    // Cell images count where their table is used.
+    const cellUses = new Map<string, { start: number; end: number }>();
+    for (const [id, at] of uses) {
+      for (const row of byId.get(id)?.table?.model.rows ?? []) {
+        for (const cell of row) {
+          const image = cell.image?.resourceId;
+          if (image !== undefined && !uses.has(image) && !cellUses.has(image)) cellUses.set(image, at);
+        }
       }
     }
-    for (const span of b.spans) {
-      const ref = span.ref;
-      if (!ref) continue;
-      usedIds.add(ref.resourceId);
-      if (!knownIds.has(ref.resourceId)) {
-        out.push({
-          id: `resource-unknown-ref-${idx++}-${b.sourceStart}-${ref.resourceId}`,
-          payload: { kind: 'unknownResourceId', resourceId: ref.resourceId, usage: 'ref' },
-          sourceStart: b.sourceStart,
-          sourceEnd: b.sourceEnd,
-          line: lineNumberForOffset(markdown, b.sourceStart),
-        });
-      }
+    const reported = new Set<string>();
+    for (const r of resources) {
+      const fileId = imageFileId(r);
+      if (fileId === undefined || !unavailableImages.has(fileId) || reported.has(r.id)) continue;
+      const at = uses.get(r.id) ?? cellUses.get(r.id);
+      if (!at && !configUsedIds.has(r.id)) continue;
+      reported.add(r.id);
+      out.push({
+        id: `resource-missing-image-${r.id}`,
+        payload: { kind: 'missingImage', resourceId: r.id, fileId },
+        ...(at ? { sourceStart: at.start, sourceEnd: at.end, line: lineNumberForOffset(markdown, at.start) } : {}),
+      });
     }
   }
 
@@ -703,14 +834,17 @@ export function computeWarnings(params: {
   /** True when IndexedDB is unavailable, so binary resource payloads cannot
    *  be persisted or resolved. Surfaces the `storageUnavailable` warning. */
   storageUnavailable?: boolean;
+  /** File ids of image payloads the previews could not read or decode
+   *  (see `unavailableResourceImages`). Surfaces `missingImage`. */
+  unavailableImages?: ReadonlySet<string>;
   /** The composed book `markdown` came from. When given, every located
    *  warning also carries its chapter and chapter-local line/offsets. */
   book?: ComposedBook;
   /** Chapter titles by id (for `chapterFrontmatterIgnored`). */
   chapterTitles?: ReadonlyMap<string, string>;
 }): Warning[] {
-  const { markdown, config, doc, resources = [], storageUnavailable = false, book, chapterTitles } = params;
-  const warnings = computeDocumentWarnings({ markdown, config, doc, resources, storageUnavailable });
+  const { markdown, config, doc, resources = [], storageUnavailable = false, unavailableImages, book, chapterTitles } = params;
+  const warnings = computeDocumentWarnings({ markdown, config, doc, resources, storageUnavailable, unavailableImages, bookMetadata: book?.metadata });
   if (!book) return warnings;
   return attributeToChapters(warnings, book, chapterTitles);
 }
@@ -767,14 +901,50 @@ export function hasFrontmatter(markdown: string): boolean {
   return frontmatterRange(markdown) !== null;
 }
 
+/**
+ * The engine's content warnings (`collectContentWarnings`, what the build
+ * lists in `doc.contentWarnings`): unknown resource ids, `:::name` lines,
+ * paragraph, callout, chip, heading and table style ids, and ragged table
+ * grids. Read from the source here — so they show before the first layout —
+ * rather than from the document, so each is listed once.
+ */
+function collectEngineContentWarnings(markdown: string, config: PostextConfig, resources: Resource[]): Warning[] {
+  let found: ReturnType<typeof collectContentWarnings>;
+  try {
+    found = collectContentWarnings(markdown, config, resources);
+  } catch {
+    return [];
+  }
+  return found.map((w, idx) => {
+    const { sourceStart, sourceEnd } = w;
+    // The payload is the warning without its location (no page: the
+    // source may not have been laid out yet).
+    const payload: Record<string, unknown> = { ...w };
+    delete payload.sourceStart;
+    delete payload.sourceEnd;
+    delete payload.pageIndex;
+    return {
+      id: `content-${w.kind}-${idx}-${sourceStart ?? 'x'}`,
+      payload: payload as unknown as WarningPayload,
+      ...(sourceStart !== undefined
+        ? { sourceStart, sourceEnd, line: lineNumberForOffset(markdown, sourceStart) }
+        : {}),
+    };
+  });
+}
+
 function computeDocumentWarnings(params: {
   markdown: string;
   config: PostextConfig;
   doc: VDTDocument | null;
   resources: Resource[];
   storageUnavailable: boolean;
+  unavailableImages?: ReadonlySet<string>;
+  /** The book's metadata (`ComposedBook.metadata`), handed to the engine
+   *  beside `markdown`. */
+  bookMetadata?: Record<string, unknown>;
 }): Warning[] {
-  const { markdown, config, doc, resources, storageUnavailable } = params;
+  const { markdown, config, doc, resources, storageUnavailable, unavailableImages, bookMetadata } = params;
   const debug = resolveDebugConfig(config.debug);
   const toggles = debug.warnings;
   const warnings: Warning[] = [];
@@ -872,12 +1042,16 @@ function computeDocumentWarnings(params: {
     warnings.push(...collectLooseLineWarnings(doc, debug, markdown));
   }
   if (doc) warnings.push(...collectLayoutWarnings(doc, markdown));
+  if (doc) warnings.push(...collectHeadingDesignCutWarnings(doc, markdown));
 
-  warnings.push(...collectHeaderFooterWarnings(config, doc));
+  warnings.push(...collectHeaderFooterWarnings(config, doc, markdown, bookMetadata));
+  warnings.push(...collectEngineContentWarnings(markdown, config, resources));
   warnings.push(...collectDirectiveWarnings(markdown, blocks));
-  warnings.push(...collectContainerWarnings(markdown, blocks, issues, config));
-  warnings.push(...collectChipWarnings(markdown, blocks, config, doc));
+  warnings.push(...collectContainerWarnings(markdown, issues));
+  warnings.push(...collectChipOverlapWarnings(markdown, doc));
   warnings.push(...collectHeadingBreakParityWarnings(config));
+  warnings.push(...collectConfigValueWarnings(config));
+  warnings.push(...collectHyphenationLocaleWarnings(config));
   warnings.push(...collectParityCascadeWarnings(doc));
   warnings.push(...collectAlphaOverflowWarnings(doc));
   if (toggles.designIssues) {
@@ -891,11 +1065,10 @@ function computeDocumentWarnings(params: {
       resources,
       config.resourceTypes ?? [],
       doc,
-      new Set(
-        (config.calloutStyles ?? [])
-          .map((style) => (style.icon?.kind === 'resource' ? style.icon.resourceId : undefined))
-          .filter((id): id is string => typeof id === 'string' && id.length > 0),
-      ),
+      configImageResourceIds(config),
+      // With no storage every payload is unreadable: `storageUnavailable`
+      // says so once instead.
+      storageUnavailable ? undefined : unavailableImages,
     ),
   );
   if (storageUnavailable) {
@@ -905,36 +1078,58 @@ function computeDocumentWarnings(params: {
   return warnings;
 }
 
+/** The document's hyphenation language — its hyphenation locale, else its
+ *  `locale` — when no patterns ship for it: the engine falls back to en-us
+ *  (and says so only on the console). Not while hyphenation is switched
+ *  off, which is the remedy. */
+export function collectHyphenationLocaleWarnings(config: PostextConfig): Warning[] {
+  if (config.bodyText?.hyphenation?.enabled === false) return [];
+  const tag = config.bodyText?.hyphenation?.locale?.trim() || config.locale?.trim();
+  if (!tag || matchHyphenationLocale(tag)) return [];
+  return [{ id: `unsupported-hyphenation-locale-${tag}`, payload: { kind: 'unsupportedHyphenationLocale', locale: tag } }];
+}
+
 function collectHeaderFooterWarnings(
   config: PostextConfig,
   doc: VDTDocument | null,
+  markdown: string,
+  bookMetadata: Record<string, unknown> | undefined,
 ): Warning[] {
   const out: Warning[] = [];
-  const metadata = doc?.metadata ?? {};
+  // With no laid-out document (the PDF view opened first), the fields are
+  // read as the engine will read them: the book's metadata (the first
+  // chapter's front matter), then the text's own front matter.
+  const metadata: Record<string, unknown> = doc?.metadata ?? { ...bookMetadata, ...frontmatterMetadata(markdown) };
   const hasMetadata = (name: string): boolean => {
     if (!isMetadataPlaceholder(name)) return true;
-    const val = (metadata as Record<string, unknown>)[name];
-    return typeof val === 'string' && val.length > 0;
+    const val = metadataText(metadata[name]);
+    return val !== undefined && val.length > 0;
   };
 
   // Every design slot is validated against the engine allow-list for its
   // own kind (fixed names per kind plus the open-ended `attr.<key>`
   // namespace), so new placeholders never need a sandbox-side copy. Heading
   // and part slots accept the heading set (`{titleText}`, `{number}`…).
-  const check = (slot: DesignContextKind, elements: ResolvedDesignSlot['elements'], level?: number) => {
-    const tag = level !== undefined ? `${slot}${level}` : slot;
+  const check = (
+    slot: DesignContextKind,
+    elements: ResolvedDesignSlot['elements'],
+    where: { level?: number; styleId?: string; configPath?: 'parts.versoDesign' | 'toc.parts.design'; tag?: string } = {},
+  ) => {
+    const { level, styleId, configPath } = where;
+    const tag = where.tag ?? (styleId !== undefined ? `style-${styleId}-${slot}` : level !== undefined ? `${slot}${level}` : slot);
+    const owner = { ...(styleId !== undefined ? { styleId } : {}), ...(configPath !== undefined ? { configPath } : {}) };
     elements.forEach((el, elementIndex) => {
       if (el.kind !== 'text') return;
       for (const name of collectPlaceholderNames(el.content)) {
         if (!isAllowedPlaceholder(name, slot)) {
           out.push({
             id: `hf-unknown-${tag}-${elementIndex}-${name}`,
-            payload: { kind: 'headerFooterUnknownPlaceholder', slot, level, elementIndex, name },
+            payload: { kind: 'headerFooterUnknownPlaceholder', slot, level, ...owner, elementIndex, name },
           });
         } else if (!hasMetadata(name)) {
           out.push({
             id: `hf-metadata-${tag}-${elementIndex}-${name}`,
-            payload: { kind: 'headerFooterMetadataMissing', slot, level, elementIndex, name },
+            payload: { kind: 'headerFooterMetadataMissing', slot, level, ...owner, elementIndex, name },
           });
         }
       }
@@ -943,11 +1138,22 @@ function collectHeaderFooterWarnings(
   check('header', resolveHeaderFooterConfig(config.header, 'header').elements);
   check('footer', resolveHeaderFooterConfig(config.footer, 'footer').elements);
   for (const lvl of resolveHeadingsConfig(config.headings).levels) {
-    if (lvl.advancedDesign.enabled) check('heading', lvl.advancedDesign.slot.elements, lvl.level);
+    if (lvl.advancedDesign.enabled) check('heading', lvl.advancedDesign.slot.elements, { level: lvl.level });
   }
   check('part', resolveDesignSlot(config.parts?.design, 'header').elements);
+  for (const s of partRowSlots(config)) check('part', s.elements, { configPath: s.configPath, tag: s.tag });
+  for (const s of headingStyleSlots(config)) check(s.slot, s.elements, { styleId: s.styleId });
 
   return out;
+}
+
+/** The front matter's fields, or none when it does not parse. */
+function frontmatterMetadata(markdown: string): Record<string, unknown> {
+  try {
+    return extractFrontmatter(markdown).metadata as Record<string, unknown>;
+  } catch {
+    return {};
+  }
 }
 
 function collectMathRenderWarnings(doc: VDTDocument, markdown: string): Warning[] {

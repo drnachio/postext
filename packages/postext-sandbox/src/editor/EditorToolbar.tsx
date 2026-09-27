@@ -17,6 +17,7 @@ import {
   UnfoldVertical,
   Hash,
   Tag,
+  ALargeSmall,
 } from 'lucide-react';
 import type { EditorView } from '@codemirror/view';
 import { undo, redo } from '@codemirror/commands';
@@ -150,6 +151,11 @@ export function EditorToolbar({ viewRef, extraActions }: EditorToolbarProps) {
       icon: <Tag size={16} aria-hidden="true" />,
       label: labels.chipInline,
       action: () => { const v = getView(); if (v) wrapSelection(v, ':chip[', ']'); },
+    },
+    {
+      icon: <ALargeSmall size={16} aria-hidden="true" />,
+      label: labels.smallCapsInline,
+      action: () => { const v = getView(); if (v) wrapSelection(v, ':smallcaps[', ']'); },
     },
     {
       icon: <Quote size={16} aria-hidden="true" />,

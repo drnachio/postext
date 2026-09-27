@@ -22,6 +22,7 @@ const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 const MARGIN_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 const MIN_HEIGHT_UNITS: DimensionUnit[] = ['pt', 'mm', 'cm', 'in', 'em', 'px'];
 const ZERO_PT: Dimension = { value: 0, unit: 'pt' };
+const TRACKING_UNITS: DimensionUnit[] = ['pt', 'em', 'px'];
 
 const D = DEFAULT_HEADINGS_CONFIG;
 
@@ -168,6 +169,14 @@ export function HeadingLevelSection({
         units={MARGIN_UNITS}
       />
       <ToggleSwitch
+        label={labels.headingLevelSnapToGrid}
+        checked={resolved.snapToGrid}
+        onChange={(v) => onUpdate(level, { snapToGrid: v })}
+        tooltip={labels.headingLevelSnapToGridTooltip}
+        isDefault={raw?.snapToGrid === undefined}
+        onReset={() => onReset(level, 'snapToGrid')}
+      />
+      <ToggleSwitch
         label={labels.headingItalic}
         checked={resolved.italic}
         onChange={(v) => onUpdate(level, { italic: v })}
@@ -186,6 +195,17 @@ export function HeadingLevelSection({
         tooltip={labels.headingTextTransformTooltip}
         isDefault={isTextTransformDefault}
         onReset={() => onReset(level, 'textTransform')}
+      />
+      <DimensionInput
+        label={labels.headingLetterSpacing}
+        value={resolved.letterSpacing ?? ZERO_PT}
+        onChange={(dim) => onUpdate(level, { letterSpacing: dim })}
+        min={-5}
+        step={0.1}
+        tooltip={labels.headingLetterSpacingTooltip}
+        isDefault={raw?.letterSpacing === undefined}
+        onReset={() => onReset(level, 'letterSpacing')}
+        units={TRACKING_UNITS}
       />
       <TextInput
         label={labels.headingNumberingTemplate}
@@ -232,6 +252,14 @@ export function HeadingLevelSection({
         tooltip={labels.headingSpanTooltip}
         isDefault={resolved.span === 'column'}
         onReset={() => onUpdate(level, { span: 'column' })}
+      />
+      <ToggleSwitch
+        label={labels.headingHidden}
+        checked={resolved.hidden}
+        onChange={(v) => onUpdate(level, { hidden: v })}
+        tooltip={labels.headingHiddenTooltip}
+        isDefault={raw?.hidden === undefined}
+        onReset={() => onReset(level, 'hidden')}
       />
       <ToggleSwitch
         label={labels.headingAdvancedDesign}

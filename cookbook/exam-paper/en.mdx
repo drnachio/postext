@@ -1,0 +1,63 @@
+---
+title: "Exam paper with an answer sheet"
+summary: "A four-page history exam on US Letter, with bubbles and marks drawn as chips, questions numbered 1, a), i) and answer lines ruled by a table."
+description: "An exam paper in Postext, with candidate boxes and a bubble grid on the cover, questions numbered 1, a), i), marks in chips and answer lines ruled by a table."
+question: "How do I lay out an exam paper with a bubble grid, parts numbered a) and i), marks and ruled answer lines?"
+aliases: ["exam paper", "test paper", "mock exam", "question paper", "answer sheet", "answer grid", "bubble sheet", "OMR", "multiple choice", "answer lines", "writing lines", "marks", "question numbering", "candidate number", "turn over"]
+pageNotes: { "1": "A crimson band across the top third holds the session line, History in heavy white type, Paper 2 · Sources and interpretations and The American Civil War, 1863 in italics, over the year 1863 drawn in white outline and cut off by the foot of the band. Below it: the date and time allowed, a rounded form with boxes for name, class, candidate number and the mark out of 25, a pale pink box of instructions and information in two columns, and, under the crimson title Section A answer grid, a pale pink panel of numbered rows 1 to 10, each with four crimson bubbles lettered A to D. At the foot, in crimson capitals: Do not turn over until you are told to do so.", "2": "Section A, 10 marks: ten multiple-choice questions on 1863, each with a large bold number and a crimson full stop, and under each question a line of four options that each open with a lettered bubble.", "3": "Section B, 15 marks: the Gettysburg Address as Source A beside a crimson stripe, signed Abraham Lincoln. November 19, 1863, with a small credit line under it; then question 11 with parts a) i), a) ii), b) and c), each ending in a pink chip giving its marks, and Turn over at the foot.", "4": "The answer page: groups of grey rules two lines of text apart, the first row of each group holding its part in crimson, from one row for 11 a) i) to eight for 11 c); End of questions and the colophon close the page." }
+---
+
+## What you'll build
+
+Paper 2 of a mock history examination on the American Civil War, set as a four-page booklet on US Letter. The cover is a crimson band with the year 1863 drawn in outline, over the candidate's boxes, the instructions in two columns and a grid of lettered bubbles for Section A. Page 2 holds ten multiple-choice questions, each followed by its four options, and every option opens with a lettered bubble like the grid's. Page 3 sets the Gettysburg Address as Source A and numbers the questions on it 11, a), i), with the marks for each part in a chip. Page 4 is ruled for the answers, one rule every two lines of text, and each group of rules opens with the number of its part. Every page after the cover carries a folio and a ruled margin for the examiner, and the one right-hand page among them says Turn over.
+
+## Method
+
+### 1 · Number the questions and hang their options
+
+<Excerpt region="numbering" />
+
+Each level of `orderedLists` picks its own `numberFormat` and `separator`, and `separatorColor` paints the full stop and the brackets in the accent while the number stays in ink ([ordered lists](/en/docs/configuration#ordered-lists)). A list's numbers are right-aligned on the widest one in their run, so the text of every question starts 23 pt in: the 17 pt of '10.' plus `GAP`. The four options are one nested bullet item with an empty `bulletChar`. Its text starts at the level's `indent`, which is '10.' measured in the number face plus `GAP`, so the options line up under the question's first letter in any font. The spacing follows the item it comes after: 5 pt after a numbered item, 15 pt after a line of options.
+
+### 2 · Make the bubbles and the marks from chips
+
+<Excerpt region="chips" />
+
+A chip is a box inside the line, and a line break never falls within it ([inline chips](/en/docs/document-format#inline-chips)). With one capital inside, `paddingX: em(0.3)` makes the box about as wide as it is tall: 4.5 to 4.8 mm wide in the grid, for a height of 4.7 mm. `borderRadius: em(1)` is more than half the box, and a chip's radius is clamped to half its smaller side, so the ends are fully round. A chip with no `style` takes the first entry of `chipStyles`, so the eighty bubbles, forty in the grid and forty among the options, are bare chips such as `:chip[A]`; only the filled example in the instructions and the marks name a style. Postext 1.4.1 has no tab stops, so the marks cannot be set flush right; each chip ends its part, at least 0.5 em (`gap`) after the last word.
+
+### 3 · Give each form its own table style
+
+<Excerpt region="forms" />
+
+The candidate boxes, the bubble grid and the answer lines are three `tableStyles`, picked per table with `styleId` ([named table styles](/en/docs/configuration#named-table-styles)). The answer lines in [the short answer](#the-short-answer) use `rules: 'horizontal'` and a padding that makes each row two body lines deep, so every rule lands 30 pt (10.6 mm) below the one before, on every second line of the text's 15 pt grid. Postext 1.4.1 drops a cell line that is empty or holds only a no-break space, so the blank middle line of the MARK cell holds a U+2060 word joiner: that cell is three lines deep and sets the whole row at 14.4 mm, against 10.8 mm with a no-break space. The grid strokes its rules in the tint of its fill, because the canvas leaves faint seams between filled cells. Its title is a caption set 1.6 mm above it ([caption style](/en/docs/configuration#caption-style)). A heading would stand at least one body line (5.3 mm) higher, because every table placed 'here' keeps that much space above it. The `form` type has an empty `captionPrefix`, so no 'Form 1.' label comes before the title.
+
+### 4 · Draw the cover from the heading's attributes
+
+<Excerpt region="cover" />
+
+The cover is one heading, `# History {style="cover" …}`, and its style draws a band, the year and four lines of text filled in from the heading's attributes. With `span: 'page'` the page counts as an opener and the band can paint above the 22 mm top margin. Without it the design is clipped at the top of the column, so the band starts at the margin and the session line is lost. The style's `margins` widen the cover's column to the full 168 mm for the forms, and the next heading, an unstyled level 1, returns the body pages to the 134 mm measure.
+
+### 5 · Keep folios and Turn over off the cover
+
+<Excerpt region="furniture" />
+
+Every running element of the body pages carries `pages: 'body'`, so the cover, an opener, shows only its own notice (`pages: 'opener'`). The sections therefore start with `:::pagebreak` and a heading without `breakBefore`. A heading that breaks the page makes its page an opener, and pages 2 and 3 would lose their folio, running head and margin. `parity: 'odd'` keeps Turn over on the recto, since a verso already faces the page that follows it.
+
+## Variations
+
+### Print it on A4
+
+The band, the year, the margin rule and the notice take their sizes from `PAGE`, so A4 is a one-line change. The blocks of the cover keep their places, and the white under the grid grows by 17.6 mm in both editions.
+
+```diff
+-const [TEXT, LABEL, PAGE] = ['PT Serif', 'Inter Tight', { w: 215.9, h: 279.4 }]; // US Letter
++const [TEXT, LABEL, PAGE] = ['PT Serif', 'Inter Tight', { w: 210, h: 297 }]; // A4
+```
+
+### Add a word bank or a checklist
+
+Word banks, blanks and circles to colour are chips too: <RecipeLink slug="worksheet-answer-boxes">the worksheet with answer boxes and a word bank</RecipeLink> sets a bank of yellow chips in a nested box and a checklist that opens each line with an empty circle.
+
+## Pitfalls
+
+- Answer lines between the parts of a question split its list: the list after the table starts a new run, and a run right-aligns its numbers on its own widest one, so the text of ii) would start 1 mm to the right of the text of i). Here the answers sit on their own page, and every part stays in one list.

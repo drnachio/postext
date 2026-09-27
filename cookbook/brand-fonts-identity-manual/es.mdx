@@ -1,0 +1,69 @@
+---
+title: "Fuentes de marca en la composición, el PDF y el paquete"
+summary: "El manual de identidad de un metro ficticio con los archivos de fuente de la marca, descargados una vez para la composición, el PDF y un paquete .postext."
+description: "Registra tus archivos de fuente antes de componer, pasa los mismos bytes al PDF con un proveedor de fuentes y mete en un .postext los que puedas repartir."
+question: "¿Cómo compongo con los archivos de fuente de mi marca y los incrusto en el PDF?"
+aliases: ["fuentes corporativas", "fuentes con licencia", "tipografía de marca", "fuentes alojadas en tu servidor", "FontFace desde bytes", "customFonts", "redistributable", "proveedor de fuentes", "manual de marca", "manual de identidad", "muestras de color", "brand fonts"]
+pageNotes: { "1": "La cubierta: Metro de Alba en letra negra condensada, en una sola línea, con Identity manual y la edición debajo, y en la mitad inferior de la página cinco líneas gruesas en rojo, turquesa, amarillo, morado y verde que comparten vía desde abajo a la izquierda, cruzan un río gris y se abren hacia la derecha, con estaciones blancas de borde negro.", "2": "Página 2: una franja negra en la cabeza de la página con un cuadrado rojo y el título del manual, un 01 rojo enorme junto al título Colour y su entradilla, dos columnas sobre los colores de las líneas con cuadraditos de color en el texto y, al pie, una tabla cuya primera columna son nueve bloques de color, seguidos de nombres y de valores HEX, RGB y CMYK en letra monoespaciada.", "3": "Página 3: la franja con un cuadrado morado, un 02 morado enorme junto al título Type, texto sobre los tres tipos de letra bajo los títulos Big Shoulders Display, Public Sans, Weights y Spline Sans Mono, con líneas de muestra de Public Sans y Spline Sans Mono y, al pie, un rótulo de andén negro que dice Puerta del Mercado en blanco, con cuadrados turquesa, amarillo y verde delante de Lines 2, 3 and 5.", "4": "Página 4: la franja con un cuadrado verde, un 03 verde enorme junto al título Usage, dos columnas de reglas para el plano de la red (el trazado, los nombres, la geografía, el grosor de línea y los archivos para proveedores) que terminan con el colofón y, al pie, dos dibujos enmarcados uno junto a otro: Do, con tres líneas que giran juntas a 45 grados y estaciones blancas, y Don't, con las mismas líneas en ángulos libres y puntos de color." }
+---
+
+## Lo que vas a componer
+
+Cuatro páginas, en inglés, del manual de identidad del Metro de Alba, una red ficticia de cinco líneas. En la cubierta, las cinco líneas salen juntas de la esquina inferior izquierda y se separan hacia la derecha tras cruzar un río gris, bajo el nombre en Big Shoulders Display. Cada sección se abre bajo una franja negra, con un número de dos cifras en el color de una línea. En *01 Colour*, la primera columna de la tabla es el propio color; *02 Type* reúne líneas de muestra y un rótulo de andén, y *03 Usage* cierra con dos planos enmarcados, uno dibujado según las reglas (Do) y otro saltándoselas (Don't). Todo el texto sale de seis archivos de fuente que el código descarga antes de componer. El PDF se dibuja con esos seis archivos y el `.postext` lleva cinco, porque la fuente de rótulos está marcada como no redistribuible.
+
+## Elaboración
+
+### 1 · Registra las fuentes de la marca, compón y dale al PDF los mismos bytes
+
+<Excerpt region="build" />
+
+La composición mide cada palabra con las fuentes de `document.fonts`, así que `loadBrandFonts()`, en [la respuesta corta](#la-respuesta-corta), descarga cada archivo una sola vez, guarda los bytes y registra con ellos un `FontFace` antes de llamar a `buildDocument`. El `loadFonts` del kit solo descarga de Fontsource, y una marca sirve sus archivos desde su propio servidor. En postext-pdf 1.4.1, `renderToPdf` pide diez variantes, cuatro de las cuales no aparecen en ningún texto (la cursiva de la fuente de rótulos y la cursiva, la seminegrita y la seminegrita cursiva de la monoespaciada), y `brandFontProvider` responde a cada petición con el archivo más cercano de la misma familia ([¿Por qué un proveedor de fuentes?](/es/docs/configuration#por-qué-un-proveedor-de-fuentes)). Las páginas solo usan los seis archivos que midió el canvas, pero la 1.4.1 escribe además una copia sin usar del archivo sustituto por cada una de esas cuatro peticiones.
+
+### 2 · El sistema de color es una sola lista
+
+<Excerpt region="colours" />
+
+Como la paleta y la tabla 1.1 se construyen con las mismas nueve filas, la tabla no puede dar un valor que las páginas no usen. `setCellBackground` rellena la primera celda de cada fila, que va vacía, con el color de esa fila enlazado a la paleta. En el texto, `:swatch{color="line-2"}` recibe el identificador de una entrada de la paleta y dibuja un cuadrado perfilado con el color del texto. `main-color` toma el hex de Ink, de modo que los títulos, las negritas y las cursivas, enlazados a él por defecto, salen en Ink y no en el azul del motor. En la 1.4.1 las remisiones conservan ese azul aunque cambies `main-color`; por eso `bodyText.referenceColor: col('ink')` las pone también en Ink ([Paleta de colores](/es/docs/configuration#paleta-de-colores)).
+
+### 3 · Una apertura, tres colores de línea
+
+<Excerpt region="sections" />
+
+`numberingTemplate: '{1:01}'` escribe el contador con dos cifras, y `{number}` imprime 01, 02 y 03 en la apertura; el título de la cubierta lleva `numbered: false` y se queda sin número. Los tres estilos de sección solo se diferencian en la entrada `section` de la paleta, a la que cada uno da el color de su línea. El número y el cuadrado de la franja están enlazados a `section`, de modo que un único diseño de apertura sirve para las tres secciones. `minHeight` reserva para la apertura diez líneas de la rejilla base de 14 pt, y el texto de cada sección empieza en la misma línea de su página.
+
+### 4 · Do y Don't son tipos de figura
+
+<Excerpt region="do-dont" />
+
+Un tipo de recurso admite un `captionStyle` parcial, y estos dos solo cambian el color de la etiqueta: Signal green en Do y Signal red en Don't ([Tipos de recurso](/es/docs/configuration#tipos-de-recurso)). Los dos colores de señal llegan a 5,1:1 y 5,5:1 sobre blanco, mientras que las líneas 1, 2, 3 y 5 se quedan por debajo del 4,5:1 que pide el texto pequeño. Los dos dibujos flotan con `position: 'bottom'` y se citan en el mismo párrafo, el primero de Drawing the map, así que comparten el pie de la página 4, Do en la columna izquierda y Don't en la derecha.
+
+### 5 · El paquete lleva las fuentes que puede compartir
+
+<Excerpt region="bundle" />
+
+`createBundle` lee `config.customFonts`, busca en `files` los bytes de cada variante por su `fileId` y los guarda en `fonts/`, con una entrada `fonts` en el manifiesto. La familia de rótulos lleva `redistributable: false`, que aquí simula una licencia que no deja repartir los archivos (la de Big Shoulders Display, la OFL, sí lo permite). Su archivo se queda fuera y `warnings` nombra la familia. El archivo de 81 KB contiene el capítulo, la configuración, los tres dibujos y cinco archivos de fuente. La composición nunca lee `customFonts`, y sin él las páginas salen iguales ([Crear un paquete](/es/docs/configuration#crear-un-paquete)).
+
+## Variantes
+
+### Incluye también la fuente de rótulos
+
+Si la licencia te permite repartir los archivos, quita `redistributable` y el paquete llevará las tres familias en 96 KB.
+
+```diff
+-  name, redistributable: name !== DISPLAY, // the display face reaches suppliers another way
++  name,
+```
+
+### Usa una negrita de verdad
+
+Como la marca no tiene negrita, `boldFontWeight: 600` compone en seminegrita las negritas, los encabezados de tabla y las etiquetas de los pies; si tu familia la tiene, añade sus archivos a `FONTS`, borra el ajuste y cambia la línea de muestra del texto de ejemplo y su «There is no Bold», que dejarían de ser ciertos.
+
+```diff
+-    boldFontWeight: 600, // the brand has no Bold: its SemiBold sets **emphasis**
+-  'Public Sans': ['400', '400i', '600', '600i'],
++  'Public Sans': ['400', '400i', '600', '600i', '700', '700i'],
+```
+
+## Errores frecuentes
+
+Pasa a `createBundle` los bytes de cada fuente con el `fileId` que les da `customFonts`. Una variante sin bytes se queda fuera con el aviso «missing file, skipped», y la familia que se queda sin variantes desaparece del manifiesto.

@@ -1,0 +1,77 @@
+---
+title: "Justified Spanish in a pocket novel"
+summary: "The opening of Marianela’s chapter I as a pocket edition: Spanish hyphenation, word spaces under 1.7×, no runts, a raised initial and Figura 1 on the map."
+description: "Galdós’s Marianela in an 11.5 × 18 cm pocket edition: Spanish hyphenation, word spaces under 1.7×, rayas, comillas latinas and a map as Figura 1."
+question: "How do I justify and hyphenate Spanish, with dialogue dashes, guillemets and “Figura” instead of “Figure”?"
+aliases: ["Spanish typography", "Spanish hyphenation", "raya", "dialogue dash", "guillemets", "comillas latinas", "raised initial", "drop cap", "Figura instead of Figure", "word spacing limit", "hyphenated runt", "pocket novel", "frontispiece map"]
+pageNotes: { "1": "The frontispiece: a conjectural map of the Socartes mines, with the traveller’s dotted route from the town, over the footbridge and the wooded hill, to the edge of the pit.", "2": "Chapter I: CAPÍTULO PRIMERO in small capitals above a short rule and the italic title Perdido; a quarter of the way down the page, the text begins with a raised oxblood S." }
+---
+
+## What you'll build
+
+The opening of Galdós’s *Marianela* (1878) in an 11.5 × 18 cm pocket edition, with a conjectural map of the Socartes mines facing chapter I. Above the chapter’s italic Libre Bodoni title, *capítulo primero* is spelled out in small capitals; the text, in Gentium Book Plus, starts a quarter of the way down with a raised oxblood initial. Words break at Spanish syllables (*hie-rro*, *esta-blecimiento*) and word spaces stay under 1.7 times their normal width; no paragraph ends on the tail of a hyphenated word. Dialogue is set with *rayas*, the em dashes that also open and close the narrator’s *incisos* (asides). The traveller’s watchword is in «comillas latinas», and in English double quotes where the edition’s note quotes it inside a quotation. The map is *Figura 1*, cited in the text as [fig. 1]. Running heads in Marcellus SC name the author on versos and the title on rectos.
+
+## Method
+
+### 1 · Spanish syllables, spaces held in
+
+The code is [the short answer](#the-short-answer) above. `locale: 'es'` picks the Spanish hyphenation patterns, and only that exact code does: with `'es-ES'` these pages break *cabal-los*, *hi-erro* and *establec-imiento* by the American rules, and one line’s spaces open to 2.13× ([supported locales](/en/docs/justification#supported-locales)). Justification, Knuth–Plass and the widow and orphan rules are on by default. The 86 mm measure also needs its spaces held in: at the default `maxWordSpacing: 2`, eight lines open past 1.6× and the widest reaches 1.89×; at 1.7 the widest is 1.65×, because the breaker hyphenates *hie-rro* and *ca-lles* instead ([word spacing bounds](/en/docs/justification#word-spacing-bounds)). Past the limit a line costs far more but stays legal, so on a narrower measure with no better break it can still go over. `runtMinCharacters: 26` catches the hyphenated scraps that the default of 20 space widths lets through: *siem- / pre adelante.* becomes *Adelante, / siempre adelante.*, and *So- / cartes [fig. 1].* becomes *de / Socartes [fig. 1].* ([runts](/en/docs/configuration#orphans-widows-runts-and-keep-together-rules)).
+
+### 2 · A pocket page of whole lines
+
+<Excerpt region="page" />
+
+The bottom margin is computed from the trim, the top margin and `LINES`, so the text block holds exactly 30 lines of 13.8 pt and every full page ends on the same baseline, as <PageRef page={3}>pages 10 and 11</PageRef> do. With `mirror: true` the 15 mm inner margin stays at the spine and the 14 mm outer one at the fore-edge on both pages of a spread ([mirrored margins](/en/docs/configuration#mirrored-margins)), and the 86 mm measure holds about 57 characters of Gentium Book Plus at 10 pt.
+
+### 3 · The chapter in words and a raised initial
+
+<Excerpt region="opener" />
+
+Numbering templates print only numerals (1, 01, I, i, A, a), never words, so *capítulo primero* comes from the heading’s own `ordinal` attribute ([heading attributes](/en/docs/document-format#heading-attributes)). Postext draws an initial only in design text, which is set ragged, and only when that text has `overflow: 'wrap'`. To hide the ragged edge, the initial gets a single line: `lines: 1` raises it beside the one line held in the `lead` attribute, and `INITIAL_GAP` was adjusted until that line ends flush, 0.1 mm short of the measure. The paragraph carries on in the Markdown with no indent ([text elements](/en/docs/configuration#text-elements)). The chapter level’s `marginBottom` replaces the default margin, which would add a blank line; its value, `-LEAD`, also takes back the extra line that the initial’s 1.2 em font box adds to the opener’s height.
+
+<PageShot page={2} crop="0.08,0.1,0.84,0.289" caption="Page 9: the chapter’s label and title, and the raised initial beside a first line that ends flush with the justified text under it." />
+
+### 4 · The map faces the chapter as Figura 1
+
+<Excerpt region="figure" />
+
+`position: 'here'` sets the map where `::resource{id="plano"}` stands, under a heading of its own. That heading makes book page 8 an opener, and the running heads skip openers. Its style empties the footer and sets its own break, which keeps the plate opposite chapter I, with no head or folio, even when chapters open on rectos ([heading styles](/en/docs/configuration#heading-styles)). The Spanish types of the short answer print *Figura 1.* under the map (with no `resourceTypes` it reads *Figure 1.1*, whatever the locale) and *Fig. 1* in the text, which `case="lower"` in the Markdown’s `:ref` turns into *fig. 1*. The reference sits in square brackets, which Spanish editions use to mark what the editor adds to the author’s text.
+
+### 5 · The author on the verso, the title on the recto
+
+<Excerpt region="heads" />
+
+`parity: 'even'` puts the author on versos and `'odd'` the title on rectos, and `pages: 'body'` keeps both off the opener, where the only furniture is the drop folio set with `pages: 'opener'`. Each head is anchored to the page and moved by `SHIFT` onto the centre of the text block, which sits half a millimetre off the page’s centre because the inner and outer margins differ. The drop folio comes in two parities for the same reason. The folios are set in Gentium, because Marcellus SC draws 1 and 0 like I and O.
+
+### 6 · Spanish punctuation in the Markdown
+
+<Excerpt region="styles" />
+
+<PageRef page={5}>Page 12</PageRef>, the last, ends with three paragraph styles. The asterisks, in oxblood Bodoni, are centred after a [`:::space{lines=2}`](/en/docs/document-format#space), since blank lines add no space. The edition’s note is 8.3 pt on 11 pt leading, and the colophon is 7.5 pt in the grey of the running heads. The note stays in ink: a paragraph style has no italic colour, so the italic *Marianela* in a grey note would print darker than the words around it. In the Markdown, dialogue opens with a raya (—), never a hyphen, because a hyphen and a space at the start of a line open a list. *1878.* at the start of the note would open a numbered list, so a word joiner (U+2060) goes before the year. The asterisks are escaped (`\*`); unescaped, the first would open a bullet list and the other two an italic run, and the line would vanish.
+
+## Variations
+
+### Open every chapter on a recto
+
+With `'odd'`, a chapter that would start on a verso gets a blank page before it, as in a roomier edition. Chapter I already opens on a recto, and the plate keeps its page because its style sets its own break.
+
+```diff
+-const chapter = { level: 1, breakBefore: { enabled: true, parity: 'any' },
++const chapter = { level: 1, breakBefore: { enabled: true, parity: 'odd' },
+```
+
+### Number the figures by chapter
+
+Left as they come, the built-in Spanish types number figures within each first-level heading: the map becomes *Figura 1.1* and the reference *fig. 1.1*.
+
+```diff
+-const resourceTypes = defaultResourceTypes(LOCALE)
+-  .map((type) => ({ ...type, numberingTemplate: '{n}', resetOn: 'never' }));
++const resourceTypes = defaultResourceTypes(LOCALE);
+```
+
+## Pitfalls
+
+- A sink of nine lines instead of eight left page 11 one line short, because `avoidWidows` would not start a paragraph on the last line of the page. After any change to the settings or the text, check the foot of every page.
+- The `lead` attribute stops mid-sentence (*…vino tranquila*) where the Markdown paragraph picks up (*y oscura la noche*), because it holds exactly the words that fit beside the initial. Another face, size, measure or `INITIAL_GAP` breaks the flush fit: move words between the two until the line ends flush again.
+- None of these faces has the asterism ⁂ (U+2042) in its Fontsource latin file, so the browser would take it from a system font. Spanish books mark the break with three spaced asterisks in any case.

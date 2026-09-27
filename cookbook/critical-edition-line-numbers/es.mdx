@@ -1,0 +1,76 @@
+---
+title: "Edición crítica: numeración de versos y notas por verso"
+summary: "El Lycidas de Milton, texto de 1645: una función cuenta los versos, pone el número cada cinco en un recuadro lateral y abre cada nota con el número del verso."
+description: "Lycidas como edición crítica en Postext, con los versos numerados de cinco en cinco en una columna lateral de 6 mm y las notas remitidas a esos números."
+question: "¿Cómo numero al margen los versos de un poema de cinco en cinco y remito las notas a esos números?"
+aliases: ["numeración de versos", "números de línea", "versos numerados", "numerar de cinco en cinco", "edición crítica", "aparato crítico", "comentario", "notas por verso", "números al margen", "ortografía original", "Milton", "Lycidas", "elegía pastoril", "laurel"]
+pageNotes: { "1": "La página de apertura: una rama de laurel con bayas verdes entra por la esquina superior derecha; debajo, JOHN MILTON en versales verdes pequeñas, LYCIDAS en versales altas y finas y la nota preliminar de 1645 en cursiva, y después los versos 1 a 14, con los números 5 y 10 en verde a la derecha.", "2": "Una página par: los versos 15 a 46, con una línea en blanco entre estrofas y los versos cortos sangrados, y los números 15 a 45 en verde a la izquierda del verso.", "8": "La primera página de notas: NOTES en versales altas, un párrafo sobre el texto y después las notas; cada una empieza por un número de verso en verde, seguido de las palabras que comenta, en cursiva, y un corchete de cierre." }
+---
+
+## Lo que vas a componer
+
+*Lycidas*, la elegía de Milton a la muerte de Edward King, en una edición crítica de 138 × 216 mm que sigue el texto y la ortografía de los *Poems* de 1645. La primera página se abre bajo una rama de laurel, con el título en versales altas de Imbue sobre la nota preliminar que Milton añadió en 1645. Siguen los 193 versos, con una línea en blanco entre estrofas y los versos cortos sangrados. La numeración va de cinco en cinco, en verde laurel, en una columna de 6 mm del lado exterior: a la derecha del poema en las páginas impares y a la izquierda en las pares. El poema no lleva llamadas de nota. Las notas ocupan las dos páginas siguientes, y cada una empieza por el número de su verso, en la misma Libre Franklin verde de la numeración.
+
+## Elaboración
+
+### 1 · Cuenta los versos antes de componer
+
+El código de este paso es [la respuesta corta](#la-respuesta-corta), más arriba. Postext no numera líneas, así que `numberVerse()` cuenta los versos en el Markdown antes de componer. Da a cada verso un párrafo propio y, cada cinco versos, añade un `:::callout{type="lineno" span="side"}` con el número. Un recuadro lateral se coloca en su columna a la altura a la que ha llegado el texto en su valla, así que este empieza debajo del verso al que sigue. El relleno superior del estilo, de menos una línea (−14,5 pt), sube el número al nivel de ese verso y deja el recuadro sin altura ([estilos de aviso](/es/docs/configuration#estilos-de-aviso)). Con la valla antes del verso, el recuadro quedaría a su altura en casi todas las páginas, pero cuando el verso numerado abre página, el recuadro sube junto a la última línea de la página anterior. Dentro del recuadro, el estilo de párrafo `number` alinea las cifras a la derecha y les da el interlineado del verso, 14,5 pt, con lo que cada número cae en la línea base de su verso.
+
+### 2 · Una columna de seis milímetros
+
+<Excerpt region="page" />
+
+Con `sideColumnRole: 'floats'`, la columna estrecha de una disposición `oneAndHalf` recibe recuadros laterales y nunca texto ([tipos de disposición](/es/docs/configuration#tipos-de-disposición)). `sideColumnPercent` es un porcentaje de la caja de texto, y el código lo calcula a partir de milímetros: 6 de 90 mm, suficientes para el número más ancho. Las cifras de Libre Franklin son proporcionales, y a 7,5 pt el cero es la más ancha (1,8 mm, frente a 1,2 mm del uno), así que el número más ancho del poema es el 100, con 4,9 mm; el 180 y el 190 miden 4,8 mm. `'outer'` sigue a los márgenes simétricos, de modo que los números quedan a la derecha del verso en las páginas impares y a la izquierda en las pares; en las impares acaban en el mismo borde que el folio de encima. La columna del verso mide 80 mm, 1,9 mm más que el verso 31, el más largo, así que ningún verso pasa a la línea siguiente.
+
+### 3 · Cada verso es un párrafo
+
+<Excerpt region="verse" />
+
+Postext une las líneas de un párrafo de Markdown, así que cada verso necesita un párrafo propio, y `numberVerse()` pone cada uno en un contenedor `:::paragraphs` con el estilo del verso ([estilos de párrafo](/es/docs/configuration#estilos-de-párrafo)). Un mismo estilo no puede sangrar un verso y dar a la vez sangría francesa a lo que no le quepa en la línea, así que los catorce versos cortos de Milton, el 4 entre ellos, llevan un estilo propio: en un párrafo de una sola línea, una sangría de primera línea de 2 em desplaza todo el verso. Cada línea en blanco entre estrofas se convierte en `:::space{lines=1}`, una línea de la rejilla. Al principio de una página se descarta ([`:::space`](/es/docs/document-format#space)), así que la página 2 empieza con el verso 15 en lo alto de la caja de texto y el cambio de estrofa entre los versos 14 y 15 no se ve (mira «Errores frecuentes»).
+
+### 4 · El laurel, el título y la nota preliminar
+
+<Excerpt region="opener" />
+
+El título de primer nivel imprime un diseño en lugar de su propio texto ([span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)). `{author}` sale del frontmatter, y la nota preliminar, de un atributo en la línea del título, `# Lycidas {headnote="In this Monody …"}` ([atributos de encabezado](/es/docs/document-format#atributos-de-encabezado)). El laurel es un elemento de imagen y no reserva altura, así que la altura de la apertura la dan los textos que tiene debajo: el antetítulo, a 50 mm de lo alto de la caja de texto, el título y las cuatro líneas de la nota preliminar llegan hasta la línea 20 de las 34 de la página, y la primera estrofa, de 14 versos, ocupa el resto. `minHeight` fija un mínimo a esa misma profundidad: si recortas la nota preliminar a tres líneas, el poema sigue empezando en la línea 21, mientras que sin ese mínimo sube a la 20. `marginBottom: pt(0)` deja fuera del hueco el margen que el título lleva por defecto; con ese margen, el poema empezaría en la línea 22 y el verso 14 pasaría a la página 2. El nivel lleva `span: 'page'` porque un diseño que se queda dentro de la columna se recorta por su borde superior, 21 mm por debajo del corte, y el laurel arranca del corte mismo.
+
+### 5 · Notas remitidas al número de verso
+
+<Excerpt region="notes" />
+
+Postext 1.4.1 no compone notas al pie, así que el aparato va detrás del poema y remite a los números de verso. Cada nota empieza por el número del verso que comenta, escrito `:chip[8]{style="line"}`, seguido del lema en cursiva (las palabras comentadas) y de un corchete de cierre. El chip no tiene fondo, contorno ni relleno lateral, así que solo cambian la letra y el color: Libre Franklin de 7,7 pt en verde laurel ([estilos de chip](/es/docs/configuration#estilos-de-chip)). Linden Hill no tiene negrita, y por eso los números se distinguen por el cambio de letra. El estilo de nota sangra 1,6 em todas las líneas menos la primera, con lo que los números sobresalen a la izquierda, y las notas van en bandera, igual que el verso. `# Notes {style="notes"}` salta a la página 8 y compone su título con las versales de la apertura, a 30 pt.
+
+<PageShot page={8} crop="0.24,0.318,0.66,0.249" caption="Página 8: cada nota empieza por el número de su verso, en verde; el poema, en las páginas 1 a 7, no lleva llamadas." />
+
+### 6 · Cabeceras según la paridad
+
+<Excerpt region="heads" />
+
+Cada elemento se ancla a la página y se filtra con `parity` y `pages: 'body'` ([elementos de texto](/es/docs/configuration#elementos-de-texto)). La página par lleva el autor, y la impar, `{chapterTitle}`, que dice LYCIDAS sobre el poema y NOTES sobre las notas, porque las notas se abren con un título propio. El folio va en el borde exterior de la caja de texto; las dos páginas de apertura, la 1 y la 8, lo llevan al pie.
+
+## Variantes
+
+### Numera los versos de diez en diez
+
+Los poemas largos suelen numerarse de diez en diez; la columna de 6 mm se queda como está.
+
+```diff
+-const EVERY = 5;
++const EVERY = 10;
+```
+
+### Deja todos los números a la derecha del verso
+
+Con la columna lateral fija a la derecha, los números quedan a la derecha del verso en todas las páginas, y en las pares, junto al lomo.
+
+```diff
+-  sideColumnSide: 'outer', // right of the verse on a recto, left of it on a verso
++  sideColumnSide: 'right', // right of the verse on every page
+```
+
+## Errores frecuentes
+
+- Un verso numerado que no cabe en la medida lleva el número junto a su última línea, porque la valla del recuadro lateral va detrás del párrafo entero. A 80 mm ningún verso de *Lycidas* pasa a la línea siguiente; si estrechas la medida, revisa los versos numerados.
+- `:::space` se descarta al principio de una página, así que el cambio de estrofa entre los versos 14 y 15, que coincide con el paso de la página 1 a la 2, no se ve. Si tu edición tiene que marcar todos los cambios de estrofa, sangra el primer verso de cada una en lugar de dejar una línea en blanco, como hace la edición de 1645.
+- [La tarjeta sobre recuadros laterales](#gotcha-side-box-starts-at-fence) aconseja poner la valla de una glosa antes de su párrafo, para que empiece a la altura de su primera línea. El número de verso, en cambio, va después de su verso y sube con el relleno negativo: con la valla antes, el número de un verso que abre página sube junto a la última línea de la página anterior (paso 1).

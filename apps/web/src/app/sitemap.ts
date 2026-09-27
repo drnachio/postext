@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { routing } from "@/i18n/routing";
 import { getAllDocs } from "@/lib/docs";
+import { getAllRecipes, recipeHref } from "@/lib/cookbook/recipes";
 import { SITE_URL, localizedUrl } from "@/lib/seo";
 
 interface PageDef {
@@ -35,6 +36,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages: PageDef[] = [
     { path: "", changeFrequency: "weekly", priority: 1 },
     { path: "/docs", changeFrequency: "weekly", priority: 0.9 },
+    { path: "/cookbook", changeFrequency: "weekly", priority: 0.8 },
     { path: "/privacy-policy", changeFrequency: "yearly", priority: 0.3 },
     { path: "/cookie-policy", changeFrequency: "yearly", priority: 0.3 },
     { path: "/license", changeFrequency: "yearly", priority: 0.3 },
@@ -64,8 +66,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }
   }
 
+  // Every recipe page exists in both locales (a missing write-up falls back
+  // to the other language's). Published recipes only: drafts, even when
+  // COOKBOOK_DRAFTS=1 shows them, are noindex.
+  const recipeEntries = getAllRecipes().flatMap((recipe) =>
+    routing.locales.map((locale) =>
+      buildEntry(locale, {
+        path: recipeHref(recipe.slug),
+        changeFrequency: "monthly",
+        priority: 0.7,
+        lastModified: recipe.meta.updated,
+      })
+    )
+  );
+
   // Ensure URLs all sit under SITE_URL
   void SITE_URL;
 
-  return [...staticEntries, ...docEntries];
+  return [...staticEntries, ...docEntries, ...recipeEntries];
 }

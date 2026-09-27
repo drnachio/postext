@@ -1,0 +1,182 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 14,
+  "status": "published",
+  "chapter": "type",
+  "order": 20,
+  "level": 3,
+  "genres": [
+    "magazine"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "knuth-plass",
+      "widows-orphans-runts",
+      "diagnostics"
+    ],
+    "also": [
+      "hyphenation-languages",
+      "paragraph-indents",
+      "callout-columns",
+      "nested-callouts",
+      "callout-styles",
+      "opener-design",
+      "design-images",
+      "heading-attributes",
+      "paragraph-styles",
+      "canvas-rendering",
+      "resources",
+      "color-palette",
+      "running-heads",
+      "page-role-filters"
+    ]
+  },
+  "answers": [
+    "Q20",
+    "Q21",
+    "Q22",
+    "Q77"
+  ],
+  "gotchas": [
+    "widow-orphan-names",
+    "ragged-no-hyphenation",
+    "hyphenation-locales",
+    "sandbox-only-warnings",
+    "config-cache-identity",
+    "callout-columns",
+    "opener-image-no-reserve",
+    "top-float-next-page",
+    "svg-no-webfonts",
+    "design-lineheight-multiple",
+    "palette-skips-designs",
+    "headings-drop-h1-break",
+    "fonts-first"
+  ],
+  "explainsWarnings": [
+    "looseLine"
+  ],
+  "workarounds": [
+    {
+      "followup": "EF-19",
+      "package": "postext",
+      "note": "debug.looseLineHighlight is painted only by the Sandbox: marks() reads line.justifiedSpaceRatio, line.ragged and the split fragments from the VDT, and paintMarks() draws the highlighter on the comparison canvases (gotcha sandbox-only-warnings)"
+    },
+    {
+      "followup": "EF-21",
+      "package": "postext",
+      "note": "the ragged slip neither sets nor names hyphenation: false, since ragged text is never hyphenated (gotcha ragged-no-hyphenation)"
+    },
+    {
+      "followup": "EF-14",
+      "package": "postext",
+      "note": "exact hyphenation codes 'en-us' and 'es' (gotcha hyphenation-locales)"
+    },
+    {
+      "followup": "EF-56",
+      "package": "postext",
+      "note": "the opener title's lineHeight is a multiple (1.02), never a dimension (gotcha design-lineheight-multiple)"
+    },
+    {
+      "followup": "EF-71",
+      "package": "postext",
+      "note": "col() writes the hex beside every paletteId and bodyText.referenceColor is restated in ink: 1.4.1 skips the palette in design slots and in the reference colour (gotcha palette-skips-designs)"
+    },
+    {
+      "followup": "EF-05",
+      "package": "postext",
+      "note": "the H1 breakBefore is restated because a headings object drops it (gotcha headings-drop-h1-break)"
+    },
+    {
+      "followup": "EF-90",
+      "package": "postext",
+      "note": "the band box, not the diagram image, reserves the opener's height: 1.4.1 ignores image elements when it measures an advancedDesign (gotcha opener-image-no-reserve)"
+    },
+    {
+      "followup": "EF-105",
+      "package": "postext",
+      "note": "column balancing pushes a box that ends a column down to the column's foot, away from its paragraph (drop the sentence 'Much tighter… sees the gaps.' and the minWordSpacing box on p. 2 sits two lines under its paragraph): the essay is copy-fitted so every non-final column is full"
+    },
+    {
+      "followup": "EF-104",
+      "package": "postext",
+      "note": "a justified line inside a box is never set ragged past 3× (raggedLooseLines runs in the body flow only): the unhyphenated slip keeps lines past 3× (6.2× in English, 3.9× in Spanish), which the bench shows on purpose; the recipe's Pitfalls say so"
+    }
+  ],
+  "engine": {
+    "postext": "1.4.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": [
+      2,
+      3
+    ],
+    "card": "screenshot",
+    "selector": "#compare",
+    "viewport": {
+      "width": 1200,
+      "height": 900
+    },
+    "expect": {
+      "pages": [
+        3,
+        3
+      ]
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "The essay “The river problem” and its Spanish version “El problema de los ríos”, the bench test and the diagram, written and drawn for this recipe",
+          "es": "El ensayo «El problema de los ríos» y su versión inglesa, «The river problem», el banco de pruebas y el diagrama, escritos y dibujados para esta receta"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Petrona",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Bricolage Grotesque",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Source Code Pro",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-09-25",
+  "updated": "2026-09-26",
+  "related": ["spanish-pocket-novel", "proof-sheet-diagnostics", "baseline-grid-book-page", "section-heads-field-manual"]
+}

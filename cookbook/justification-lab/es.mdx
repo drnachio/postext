@@ -1,0 +1,67 @@
+---
+title: "Espaciado uniforme en columnas estrechas y justificadas"
+summary: "Corte Knuth–Plass con los espacios entre 0,8 y 1,6 veces el normal, junto a un control voraz con sus líneas flojas, solas y cortas marcadas desde el VDT."
+description: "Una revista de tipografía en A5 compuesta dos veces: Knuth–Plass con espaciado de 0,8 a 1,6 frente al corte voraz, con las líneas flojas marcadas desde el VDT."
+question: "¿Cómo consigo una justificación uniforme en columnas estrechas, con la separación silábica de cada idioma?"
+aliases: ["justificación", "espaciado entre palabras", "ríos", "calles", "líneas flojas", "Knuth-Plass", "cola", "pegamento", "corte voraz", "primer ajuste", "viudas", "huérfanas", "líneas cortas", "partición", "idioma de la partición", "columnas estrechas", "ajuste del texto", "justifiedSpaceRatio", "minWordSpacing", "maxWordSpacing"]
+pageNotes: { "1": "Una banda grafito con el antetítulo Galerada · n.º 12 · Justificación en amarillo fosforito, el título El problema de los ríos en blanco y una entradilla en cursiva; debajo, un diagrama: una fila de cajas blancas unidas por muelles amarillos cuya última palabra rebasa una línea de trazos que marca la medida, y la misma fila partida, con los muelles estirados hasta la medida. Bajo la banda empiezan dos columnas justificadas.", "2": "Dos columnas llenas: las secciones Línea a línea o en bloque, Límites para la cola, Partir palabras y Viudas y huérfanas, con los ajustes en vigor (minWordSpacing 0,8, maxWordSpacing 1,6; widowPenalty, orphanPenalty, slackWeight) en monoespaciada junto a un filete grafito.", "3": "El final del ensayo en dos columnas niveladas, con los ajustes de las líneas cortas y el colofón, sobre un banco de pruebas grafito al pie de la página: un mismo párrafo en bandera, justificado sin partir (con grandes huecos) y justificado con partición, y una nota en blanco." }
+---
+
+## Lo que vas a componer
+
+El número 12 de *Galerada*, revista de un taller tipográfico, en A5 y a dos columnas de unos cuarenta caracteres, donde cada línea justificada reparte la holgura entre cinco o seis espacios. La apertura dibuja sobre una banda grafito el modelo de Knuth y Plass: cajas de palabras unidas por muelles amarillos de cola que se estiran hasta llenar la medida. El ensayo explica por qué se aflojan las columnas estrechas e intercala en monoespaciada los ajustes de cada regla. Al pie de la página 3, un banco de pruebas compone un párrafo en bandera, justificado sin partir palabras y justificado partiéndolas. El pen compone además una segunda edición con el corte voraz, sin protecciones de viudas ni huérfanas, y, antes del número, muestra juntas las dos páginas 2, como en la tarjeta: las líneas flojas, en amarillo fosforito; las solas y las cortas, señaladas en el margen.
+
+## Elaboración
+
+### 1 · Estrecha los límites y conserva las protecciones
+
+El código de este paso es [la respuesta corta](#la-respuesta-corta) de arriba. [Knuth–Plass](/es/docs/justification#knuth-plass-ver-el-párrafo-completo), la separación silábica, las penalizaciones de viudas, huérfanas y líneas cortas y los títulos unidos a su texto vienen activados por defecto, así que la edición publicada solo estrecha los [límites del espaciado](/es/docs/justification#límites-de-espaciado-entre-palabras) a 0,8 y 1,6 veces un espacio normal (por defecto son 0,6 y 2). Una línea que pasa del límite superior cuesta más que cualquier guion o línea corta, así que el algoritmo prueba antes otros cortes; sin esos dos límites, este ensayo compone ocho líneas por encima de 1,6. La partición depende de `locale` y de su código exacto: `'es'`, `'fr'` y `'de'` tienen sus propios patrones de TeX, mientras que `'es-ES'` se parte como inglés estadounidense sin ningún aviso.
+
+### 2 · Marca las líneas flojas desde el árbol de composición
+
+<Excerpt region="marks" />
+
+Solo el Sandbox aplica `debug.looseLineHighlight`, y `doc.warnings` nunca menciona una línea floja, así que `marks()` lee directamente el [VDT](/es/docs/justification#depuración-de-líneas-flojas). Cada línea justificada lleva su `justifiedSpaceRatio`, un párrafo partido entre dos columnas vuelve como un bloque por fragmento, y una línea de más de 3× no tiene proporción, porque el motor [la compone en bandera](/es/docs/justification#líneas-que-el-algoritmo-no-puede-llenar) y la marca con `line.ragged`. Con cuarenta caracteres por línea, los límites no bastan para que todas queden por debajo de 1,6; mientras se ajustaba el texto del ensayo, las marcas señalaron qué frases había que reescribir.
+
+### 3 · Pon el control junto a la página publicada
+
+<Excerpt region="compare" />
+
+Las dos ediciones salen del mismo diseño, así que cualquier diferencia entre las dos páginas 2 se debe al algoritmo de corte y a sus protecciones. En el texto español, el control voraz deja 26 de sus 108 líneas justificadas por encima de 1,6, y seis de ellas pasan de 2; la edición de Knuth–Plass mantiene las 105 entre 0,80 y 1,59. En la página 2 del control, además, un párrafo acaba en una línea corta que solo lleva el final de una palabra partida.
+
+### 4 · Dale a cada ajuste su propio recuadro
+
+<Excerpt region="bench" />
+
+Un recuadro compone todas las columnas de un grupo [`:::columns`](/es/docs/document-format#columns) con un único estilo de texto, así que cada ficha es un recuadro anidado con su propio `body`, y `breaks="3"` apila en la primera columna la ficha en bandera y la que no parte palabras. La ficha en bandera no necesita `hyphenation: false`, porque el texto en bandera nunca se parte. El banco flota al pie de la página 3 con `placement: 'bottom'`, y su relleno inferior repite el marco de 4 mm porque el `marginBottom` de la última ficha se pierde al final del recuadro.
+
+### 5 · Dibuja el modelo en la apertura
+
+<Excerpt region="opener" />
+
+El diagrama es un [elemento de imagen](/es/docs/configuration#elementos-de-imagen) del diseño del H1. Como figura sería un flotante `top` a todo el ancho, y un flotante `top` citado en la página 1 abre la página 2. La banda es una caja, y las cajas cuentan para la altura que reserva una apertura, pero las imágenes no, así que el texto empieza bajo la banda sin `minHeight`, una línea más abajo por el `marginBottom` que el H1 trae por defecto. Los rótulos son texto de diseño colocado sobre las coordenadas del propio dibujo, porque un SVG pintado como imagen no puede usar las fuentes web de la página.
+
+## Variantes
+
+### Parte un texto en alemán
+
+Los patrones de partición se eligen por código exacto, así que un texto alemán necesita `'de'`.
+
+```diff
+-const locale = t({ en: 'en-us', es: 'es' }); // config().locale; 'es-ES' would be English
++const locale = 'de'; // German patterns; 'de-DE' would hyphenate as English
+```
+
+### Marca solo las peores líneas
+
+Sube el umbral de 1,6 a 2 y el resaltador marca solo las líneas cuyos espacios pasan del doble.
+
+```diff
+-        if (line.justifiedSpaceRatio > FENCES.maxWordSpacing || line.ragged) {
++        if (line.justifiedSpaceRatio > 2 || line.ragged) {
+```
+
+## Errores frecuentes
+
+- Un recuadro que queda al final de una columna baja hasta el pie cuando se equilibran las columnas, lejos del párrafo al que pertenece. Ajusta el texto para que la columna se llene, como hizo falta con el recuadro de ajustes bajo «Límites para la cola».
+- En postext 1.4.1 una línea dentro de un recuadro nunca se compone en bandera, por mucho que se estire: la ficha sin partición conserva una línea con espacios de casi cuatro veces el normal, que en el texto corrido se compondría en bandera.

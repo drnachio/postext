@@ -44,6 +44,7 @@ import {
   NestedGroup,
   NumberInput,
   SelectInput,
+  TextInput,
   ToggleSwitch,
   ChoiceInput,
 } from '../../controls';
@@ -57,6 +58,7 @@ import { breakParityOptions } from './HeadingsSection/breakParityOptions';
 
 const TEXT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
+const TRACKING_UNITS: DimensionUnit[] = ['pt', 'em', 'px'];
 const MARGIN_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 const MIN_HEIGHT_UNITS: DimensionUnit[] = ['pt', 'mm', 'cm', 'in', 'em', 'px'];
 const ZERO_PT: Dimension = { value: 0, unit: 'pt' };
@@ -167,8 +169,8 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
     set('advancedDesign', next);
   };
   const headingFields: (keyof HeadingStyleConfig)[] = [
-    'fontSize', 'lineHeight', 'fontFamily', 'fontWeight', 'color', 'italic', 'textTransform',
-    'marginTop', 'marginBottom', 'breakBefore', 'span', 'advancedDesign',
+    'fontSize', 'lineHeight', 'fontFamily', 'fontWeight', 'color', 'italic', 'textTransform', 'letterSpacing',
+    'marginTop', 'marginBottom', 'snapToGrid', 'breakBefore', 'span', 'hidden', 'advancedDesign',
   ];
   const hasHeadingOverrides = headingFields.some((f) => style[f] !== undefined);
   const resetHeadingFields = () => {
@@ -184,7 +186,18 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
   const mirror = margins?.mirror ?? base.page.margins.mirror ?? false;
 
   const layout = style.layout;
-  const resolvedLayout = layout ? resolveLayoutConfig(layout) : base.layout;
+  // A section's column rule takes the fields it leaves unset from the
+  // document's, as the engine resolves it.
+  const resolvedLayout = layout
+    ? {
+        ...resolveLayoutConfig(layout),
+        columnRule: {
+          enabled: layout.columnRule?.enabled ?? base.layout.columnRule.enabled,
+          color: layout.columnRule?.color ?? base.layout.columnRule.color,
+          lineWidth: layout.columnRule?.lineWidth ?? base.layout.columnRule.lineWidth,
+        },
+      }
+    : base.layout;
   const updateLayout = (partial: Partial<LayoutConfig>) => set('layout', { ...layout, ...partial });
   const resetLayoutField = (field: keyof LayoutConfig) => set('layout', omit(layout, field));
   const updateColumnRule = (partial: Partial<NonNullable<LayoutConfig['columnRule']>>) =>
@@ -349,6 +362,15 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
         isDefault={unset('numbered')}
         onReset={() => set('numbered', undefined)}
       />
+      <TextInput
+        label={labels.headingNumberingTemplate}
+        value={style.numberingTemplate ?? lvl.numberingTemplate}
+        onChange={(v) => set('numberingTemplate', v)}
+        placeholder={labels.headingNumberingTemplatePlaceholder}
+        tooltip={labels.headingStyleNumberingTemplateTooltip}
+        isDefault={unset('numberingTemplate')}
+        onReset={() => set('numberingTemplate', undefined)}
+      />
       <ToggleSwitch
         label={labels.headingStyleToc}
         checked={style.toc ?? true}
@@ -356,6 +378,14 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
         tooltip={labels.headingStyleTocTooltip}
         isDefault={unset('toc')}
         onReset={() => set('toc', undefined)}
+      />
+      <ToggleSwitch
+        label={labels.headingStyleRunningChapter}
+        checked={style.runningChapter ?? true}
+        onChange={(v) => set('runningChapter', v)}
+        tooltip={labels.headingStyleRunningChapterTooltip}
+        isDefault={unset('runningChapter')}
+        onReset={() => set('runningChapter', undefined)}
       />
 
       <CollapsibleSection
@@ -444,6 +474,17 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
           onReset={() => set('textTransform', undefined)}
         />
         <DimensionInput
+          label={labels.headingLetterSpacing}
+          value={style.letterSpacing ?? lvl.letterSpacing ?? ZERO_PT}
+          onChange={(dim) => set('letterSpacing', dim)}
+          min={-5}
+          step={0.1}
+          tooltip={labels.headingLetterSpacingTooltip}
+          isDefault={unset('letterSpacing')}
+          onReset={() => set('letterSpacing', undefined)}
+          units={TRACKING_UNITS}
+        />
+        <DimensionInput
           label={labels.headingMarginTop}
           value={style.marginTop ?? lvl.marginTop}
           onChange={(dim) => set('marginTop', dim)}
@@ -464,6 +505,14 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
           isDefault={unset('marginBottom')}
           onReset={() => set('marginBottom', undefined)}
           units={MARGIN_UNITS}
+        />
+        <ToggleSwitch
+          label={labels.headingLevelSnapToGrid}
+          checked={style.snapToGrid ?? lvl.snapToGrid}
+          onChange={(v) => set('snapToGrid', v)}
+          tooltip={labels.headingLevelSnapToGridTooltip}
+          isDefault={unset('snapToGrid')}
+          onReset={() => set('snapToGrid', undefined)}
         />
         <ToggleSwitch
           label={labels.headingBreakBefore}
@@ -502,6 +551,14 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
           tooltip={labels.headingSpanTooltip}
           isDefault={unset('span')}
           onReset={() => set('span', undefined)}
+        />
+        <ToggleSwitch
+          label={labels.headingHidden}
+          checked={style.hidden ?? lvl.hidden}
+          onChange={(v) => set('hidden', v)}
+          tooltip={labels.headingHiddenTooltip}
+          isDefault={unset('hidden')}
+          onReset={() => set('hidden', undefined)}
         />
         <ToggleSwitch
           label={labels.headingAdvancedDesign}

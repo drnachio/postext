@@ -1,0 +1,74 @@
+---
+title: "Ida y vuelta de un .postext en dos idiomas"
+summary: "Un folleto DL a doble cara guardado en un archivo .postext y compuesto de nuevo a partir de sus bytes, con las fuentes, los dibujos y las etiquetas que lleva."
+description: "createBundle guarda el folleto en un archivo .postext y openBundle lo vuelve a abrir con sus fuentes y dibujos, en una edición española y otra inglesa."
+question: "¿Cómo compongo un archivo .postext con las fuentes, las imágenes y la configuración que lleva dentro?"
+aliases: ["archivo postext", "paquete", "createBundle", "openBundle", "loadBundleFonts", "ida y vuelta", "folleto bilingüe", "pasar al Sandbox", "folleto DL", "molino de mareas"]
+pageNotes: { "1": "La portada de un folleto DL: sobre un campo color arena, el antetítulo Ría de Arenal · Folleto de visita 3 y el título El molino de mareas en cursiva azul, encima de una rueda de molino cuya mitad inferior se adivina pálida bajo el azul de la ría; una pestaña azul en el borde superior dice ES. Una entradilla en cursiva y la línea Abierto todo el año · Gratis los domingos quedan sobre el agua.", "2": "El dorso: el molino en sección en la cabeza, con el estanque a la izquierda y la ría a la derecha bajo una línea discontinua de pleamar, con el pie Figura 1; el apartado Dos mareas al día en DM Sans justificada; el horario como Tabla 1 con la cabecera en azul; tres líneas sobre el acceso y la entrada, un colofón y una franja azul con el nombre de la fundación que lo edita." }
+---
+
+## Lo que vas a componer
+
+Las dos caras de un folleto DL de visita, de 99 × 210 mm, para un molino de mareas en una ría inventada. La portada es un solo dibujo: una rueda de molino en la línea del agua, con la mitad superior sobre la arena y la inferior pálida bajo el azul del agua, el título en DM Serif Display cursiva de 50 pt y una pestaña azul con el código de la edición, ES o EN. El dorso empieza con el molino en sección y sigue con el texto en DM Sans justificada, el horario en una tabla con la cabecera en azul, pies en Instrument Sans, un colofón y una franja azul con la fundación que lo edita. Cada edición se escribe en un archivo `.postext`, y cada página que ves se compone a partir de los bytes de ese archivo, con las fuentes y los dibujos que lleva dentro.
+
+## Elaboración
+
+### 1 · Escribe la edición y vuelve a leer solo los bytes
+
+<Excerpt region="answer" highlight="14-17" />
+
+`createBundle` comprime en un zip el capítulo, la configuración, los recursos y todos los archivos que nombran, y `openBundle` no recibe más que esos bytes. Las fuentes salen de `loadBundleFonts`, los dibujos de `registerBundleImages` y el diseño de `bundle.config`. Una fuente que no esté en `files` sale con la fuente de reserva del navegador, y un dibujo que falte se descarta con un aviso y su remisión se imprime como (?). Dentro del zip, cada `fileId` pasa a ser una ruta (`mill.svg` es ahora `resources/mill.svg`), y los recursos y el `customFonts` que devuelve `openBundle` ya usan los nombres nuevos ([abrir un paquete](/es/docs/configuration#abrir-un-paquete)).
+
+### 2 · Mete las fuentes en el archivo
+
+<Excerpt region="faces" />
+
+Un paquete lleva una fuente cuando `customFonts` la nombra y `files` guarda sus bytes con el `fileId` de la variante; `createBundle` guarda la DM Sans 400 como `fonts/dm-sans-400-normal.woff2`. El pen descarga de Fontsource los siete woff2, pero no registra ninguno: `loadBundleFonts` añade a `document.fonts` las copias del paquete antes de que `buildBundle` mida una sola línea, y el PDF saca sus fuentes de esos mismos siete archivos.
+
+### 3 · Nombra cada archivo por su fileId
+
+<Excerpt region="resources" />
+
+Los dos dibujos son SVG que genera el propio pen y que se entregan en `files` con el `svg.fileId` de su recurso; la tabla son datos, así que viaja en `preset.json` con su pie. La sección y la tabla se colocan con `position: 'here'`: la sección en la cabeza del dorso y el horario bajo el párrafo que lo cita. En la versión 1.4.1, un recurso en línea no lleva aire debajo, así que una línea `:::space{lines=0.5}` tras la tabla deja 3,7 mm bajo el pie; sin ella, el párrafo siguiente empieza a 1,4 mm del pie.
+
+### 4 · Escribe las etiquetas en el archivo
+
+<Excerpt region="labels" />
+
+Cuando un archivo no trae `resourceTypes`, `openBundle` los crea en el idioma que pide quien lo abre, no en el del archivo: el folleto en español abierto con `{ locale: 'en' }`, o importado en el Sandbox desde /en/sandbox, imprime Figure 1.1 sobre texto en español. Los tipos escritos en la configuración sustituyen a esos, así que el archivo en español imprime Figura 1 y Tabla 1 lo abra quien lo abra. `'{n}'` quita el número de capítulo, que un folleto de dos páginas no necesita ([tipos de recurso](/es/docs/configuration#tipos-de-recurso)). La misma función `config()` fija `locale`, que elige los patrones de separación silábica del español (compuer-tas en el dorso) y el idioma que declara el PDF.
+
+### 5 · Entrega los mismos bytes
+
+<Excerpt region="handoff" />
+
+El enlace ofrece los mismos `bytes` desde los que se compusieron las páginas: 132 KB con las fuentes. Al importarlo en el Sandbox (*Libros → Nuevo → Abrir un archivo .postext…*), el archivo se convierte en un libro en español o en inglés que lleva como imagen la rueda de `thumbnail`. El PDF toma sus fuentes de `bundleFontProvider`, que devuelve la del paquete más próxima en peso, con el mismo estilo si lo hay, y sus dibujos de `bundleResourceBytes`, así que no se descarga dos veces ninguna fuente ni imagen ([componer y renderizar un paquete](/es/docs/configuration#componer-y-renderizar-un-paquete)).
+
+### 6 · Dibuja la portada con un solo título
+
+<Excerpt region="cover" />
+
+La portada es el diseño del título de cubierta: el dibujo anclado a la página a tamaño completo, el texto del título con `{titleText}`, el antetítulo, la entradilla y la línea de datos, que salen de sus atributos, y un texto con caja para la pestaña del idioma. El nivel 1 de los títulos lleva `span: 'page'`, así que el dibujo empieza en el borde del papel. Si se queda en la columna, el diseño se corta en los bordes superior e inferior de la caja de texto: el dibujo empezaría 12 mm más abajo y acabaría 13 mm antes del borde inferior, y la pestaña del idioma quedaría en una tira sin letras.
+
+## Variantes
+
+### Lee un paquete bilingüe
+
+La guía de Postext lleva en un solo archivo sus capítulos, su configuración y sus pies en inglés y en español; `{ locale }` elige la edición, que se abre como doce capítulos en 48 páginas en cualquiera de los dos idiomas, mientras el enlace sigue ofreciendo el archivo del folleto y el botón del PDF compone la guía.
+
+```diff
+-const bundle = await openBundle(bytes);
++const guide = await fetch('https://postext.dev/bundles/postext-guide.postext');
++const bundle = await openBundle(await guide.arrayBuffer(), { locale: LANG });
+```
+
+### Deja que el lector elija las etiquetas
+
+Sin los tipos, las etiquetas siguen el idioma con que se abre el archivo y las figuras cuentan desde el título de cubierta: la edición española imprime aquí Figura 1.1, y Figure 1.1 cuando la importa el Sandbox desde /en/sandbox.
+
+```diff
+-  resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, numberingTemplate: '{n}' })),
+```
+
+## Errores frecuentes
+
+- En postext 1.4.1, `createBundle` escribe un solo idioma por archivo. La entrada `localized` que describe [Paquetes bilingües](/es/docs/configuration#paquetes-bilingües) no está en esa versión, aunque `openBundle` 1.4.1 ya lee esos archivos.

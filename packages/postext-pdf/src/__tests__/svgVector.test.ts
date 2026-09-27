@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { PDFDocument, type PDFPage } from 'pdf-lib';
+import { PDFArray, PDFContentStream, PDFDict, PDFDocument, PDFName, type PDFPage } from 'pdf-lib';
 import type { VDTDocument } from 'postext';
+import { applySingleInkToSvg } from 'postext';
 import fs from 'node:fs';
 import fontkit from '@pdf-lib/fontkit';
 import {
@@ -27,6 +28,29 @@ function pageContent(page: PDFPage): string {
     getContentStream(): { getUnencodedContents(): Uint8Array };
   }).getContentStream();
   return new TextDecoder('latin1').decode(stream.getUnencodedContents());
+}
+
+/** The form XObjects a page's resources name, by resource name. */
+function pageForms(page: PDFPage): Map<string, PDFContentStream> {
+  const out = new Map<string, PDFContentStream>();
+  const xobjects = page.node.Resources()?.lookupMaybe(PDFName.of('XObject'), PDFDict);
+  for (const [name, ref] of xobjects?.entries() ?? []) {
+    const obj = page.doc.context.lookup(ref);
+    if (obj instanceof PDFContentStream && obj.dict.get(PDFName.of('Subtype')) === PDFName.of('Form')) out.set(name.asString(), obj);
+  }
+  return out;
+}
+
+/** A form XObject's operators, before pdf-lib deflates them. */
+function formContent(form: PDFContentStream): string {
+  return new TextDecoder('latin1').decode(form.getUnencodedContents());
+}
+
+/** The one form a page draws a vector drawing through. */
+function onlyForm(page: PDFPage): PDFContentStream {
+  const forms = [...pageForms(page).values()];
+  expect(forms).toHaveLength(1);
+  return forms[0]!;
 }
 
 const asPath = (item: VectorItem | undefined): VectorShape => {
@@ -209,18 +233,64 @@ describe('drawVectorDrawing', () => {
     drawVectorDrawing(ctx, drawing, 72, 144, 200, 100);
     const content = pageContent(page);
     // Viewport clip, then the user-space matrix: scale 2, flip y, origin at
-    // the box's top-left (72, 792 - 144 = 648).
+    // the box's top-left (72, 792 - 144 = 648), then the drawing's form.
     expect(content).toContain('72 548 200 100 re');
     expect(content).toContain('2 0 0 -2 72 648 cm');
+    expect(content).toMatch(/\/[^\s]+ Do/);
+    // The paths live in the form, not in the page's stream.
+    expect(content).not.toContain(' c\n');
+    const form = onlyForm(page);
+    const drawn = formContent(form);
     // Rect path in SVG units, painted even-odd through an alpha state.
-    expect(content).toMatch(/10 10 m\n30 10 l\n30 20 l\n10 20 l\nh\nf\*/);
-    expect(content).toMatch(/\/GSa[^\s]* gs/);
+    expect(drawn).toMatch(/10 10 m\n30 10 l\n30 20 l\n10 20 l\nh\nf\*/);
+    expect(drawn).toMatch(/\/GSa[^\s]* gs/);
     // Stroked circle: line width in user units, cubic segments, stroke op.
-    expect(content).toContain('2 w');
-    expect(content).toMatch(/55 25 m\n55 [\d.]+ [\d.]+ 30 50 30 c/);
-    expect(content).toMatch(/c\nh\nS/);
-    // Alpha state registered on the page resources.
-    expect(page.node.Resources()?.toString()).toContain('/GSa');
+    expect(drawn).toContain('2 w');
+    expect(drawn).toMatch(/55 25 m\n55 [\d.]+ [\d.]+ 30 50 30 c/);
+    expect(drawn).toMatch(/c\nh\nS/);
+    // Alpha state registered on the form's own resources; its box is the
+    // viewport in the drawing's user space.
+    expect(form.dict.get(PDFName.of('Resources'))?.toString()).toContain('/GSa');
+    expect(form.dict.lookup(PDFName.of('BBox'), PDFArray).asArray().map(String)).toEqual(['0', '0', '100', '50']);
+  });
+
+  // EF-183: an SVG drawn on several pages (a frame in every page's design,
+  // a figure repeated) is written once, as a form XObject each page paints.
+  it('writes a drawing once however many pages or times it is drawn', async () => {
+    const { pdfDoc, page, ctx } = await pageCtx();
+    const second = pdfDoc.addPage([612, 792]);
+    const ctx2: PageCtx = { ...ctx, page: second };
+    const drawing = svgToVectorDrawing(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50"><rect x="10" y="10" width="20" height="10" fill="#336699"/></svg>',
+    )!;
+    drawVectorDrawing(ctx, drawing, 72, 144, 200, 100);
+    drawVectorDrawing(ctx, drawing, 72, 400, 100, 50);
+    drawVectorDrawing(ctx2, drawing, 0, 0, 300, 150);
+    const [a] = [...pageForms(page).values()];
+    const [b] = [...pageForms(second).values()];
+    expect(a).toBeDefined();
+    expect(b).toBe(a);
+    // One resource name on the first page for both draws.
+    expect(pageForms(page).size).toBe(1);
+    expect(pageContent(page).match(/ Do\n/g)).toHaveLength(2);
+    // One form object in the whole document.
+    const forms = pdfDoc.context.enumerateIndirectObjects()
+      .filter(([, obj]) => obj instanceof PDFContentStream && obj.dict.get(PDFName.of('Subtype')) === PDFName.of('Form'));
+    expect(forms).toHaveLength(1);
+  });
+
+  it('grows the form\'s box to every viewport it is drawn in', async () => {
+    const { page, ctx } = await pageCtx();
+    const drawing = svgToVectorDrawing(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50"><rect x="-50" y="0" width="200" height="50" fill="#336699"/></svg>',
+    )!;
+    // 'meet' in a box twice as wide as the drawing: the viewport runs 50
+    // user units past the view box on each side, and SVG shows what is
+    // drawn there.
+    drawVectorDrawing(ctx, drawing, 0, 0, 200, 50);
+    expect(onlyForm(page).dict.lookup(PDFName.of('BBox'), PDFArray).asArray().map(String)).toEqual(['-50', '0', '150', '50']);
+    drawVectorDrawing(ctx, drawing, 0, 100, 100, 100);
+    expect(onlyForm(page).dict.lookup(PDFName.of('BBox'), PDFArray).asArray().map(String)).toEqual(['-50', '-25', '150', '75']);
   });
 });
 
@@ -243,8 +313,9 @@ describe('drawVectorDrawing (text)', () => {
     const content = pageContent(page);
     // Root matrix flips y; the text matrix flips it back at the pen (10, 30).
     expect(content).toContain('2 0 0 -2 72 648 cm');
-    expect(content).toMatch(/BT\n\/[^\s]+ 8 Tf\n1 0 0 -1 10 30 Tm\n<[0-9A-Fa-f]+> Tj\nET/);
-    expect(page.node.Resources()?.toString()).toContain('/Font');
+    const form = onlyForm(page);
+    expect(formContent(form)).toMatch(/BT\n\/[^\s]+ 8 Tf\n1 0 0 -1 10 30 Tm\n<[0-9A-Fa-f]+> Tj\nET/);
+    expect(form.dict.get(PDFName.of('Resources'))?.toString()).toContain('/Font');
   });
 });
 
@@ -321,6 +392,18 @@ describe('preloadResourceImages', () => {
     }
     const inked = await preloadResourceImages(pdfDoc, doc('a', true), () => svg);
     const shape = (inked.get('a') as { drawing: { shapes: { fill: { hex: string } }[] } }).drawing.shapes[0]!;
+    expect(shape.fill.hex).toBe('#295aa3');
+  });
+
+  // A host that recoloured the markup itself (`applySingleInkToSvg`, as
+  // 1.4-era pens and bundle files may) hands over marked bytes: the PDF
+  // does not tint them again, which would lighten black to 1 − L(ink).
+  it('never recolours SVG bytes that applySingleInkToSvg recoloured already', async () => {
+    const raw = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10" fill="#000000"/></svg>';
+    const pre = new TextEncoder().encode(applySingleInkToSvg(raw, '#295aa3'));
+    const { pdfDoc } = await pageCtx();
+    const inked = await preloadResourceImages(pdfDoc, doc('p', true), () => pre);
+    const shape = (inked.get('p') as { drawing: { shapes: { fill: { hex: string } }[] } }).drawing.shapes[0]!;
     expect(shape.fill.hex).toBe('#295aa3');
   });
 

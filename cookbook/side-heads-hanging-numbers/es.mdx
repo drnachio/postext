@@ -1,0 +1,61 @@
+---
+title: "Títulos al margen, números colgados y títulos en línea"
+summary: "Bases de concurso con los títulos de sección en un canal al margen, sobre las líneas base del texto, números colgados en el medianil y títulos en línea en rojo."
+description: "Bases de concurso de cinco páginas compuestas en Postext, con los títulos de sección en un canal de 50 mm y los números de apartado colgados en el medianil."
+question: "¿Cómo pongo los títulos en un canal al margen, cuelgo los números de apartado y compongo en línea los menores?"
+aliases: ["títulos al margen", "títulos marginales", "números colgados", "numeración colgada", "títulos en línea", "informe suizo", "bases de concurso", "número y filete de sección", "canal al margen", "título en el margen"]
+pageNotes: { "1": "La primera página de las bases: el nombre del Ayuntamiento en dos líneas arriba a la izquierda, el antetítulo EXPEDIENTE BML-2026/04 en rojo, el título Bases del concurso en dos líneas de una romana fina y una entradilla en cursiva. Un plano de situación cruza toda la caja: las callejas del barrio viejo, una retícula de manzanas achaflanadas, el paseo, el puerto y la parcela en rojo. Debajo empieza la sección 1 con un 1 rojo y un filete negro; su título, Objeto del concurso, está en el canal izquierdo a la altura de la primera línea del texto, y los apartados 1.1 y 1.2 cuelgan sus números rojos en el medianil.", "2": "La sección 2, El emplazamiento, con su título en el canal y debajo una planta pequeña de la parcela: la lonja en gris con sus trece crujías, seis árboles en el borde norte y flechas rojas en las entradas. Los apartados 2.1 a 2.3 cuelgan sus números junto al texto; más abajo empieza la sección 3, con un título de dos líneas en el canal, y su apartado 3.1.", "3": "Un alzado de la lonja cruza la cabeza de la página: trece bóvedas, once arcos y cuatro pilastras rojas en el extremo este. Debajo, la tabla del programa, con la fila de cabecera en negro, ocupa la columna de texto, y su pie, Tabla 1, queda en el canal a la altura del borde superior de la tabla. Siguen los apartados 3.2 y 3.3 y la sección 4, Criterios de proyecto, cuyos párrafos empiezan con términos en negrita roja.", "4": "Tres criterios más que empiezan con términos en negrita roja y luego las secciones 5, Entrega de propuestas, y 6, Jurado y plazos, cada una con su número y su filete y el título en el canal, y los apartados 5.1 a 6.1 con números colgados. La columna de texto llega hasta el pie de la página.", "5": "Los apartados 6.2 y 6.3, el calendario del concurso en una tabla con cabecera negra y un colofón pequeño en gris." }
+---
+
+## Lo que vas a componer
+
+En cinco páginas A4, el Ayuntamiento de Puerto Lince, un puerto inventado, convoca un concurso para convertir su lonja de 1931 en biblioteca. La maqueta es la de un informe municipal suizo. Una columna lateral de 50 mm, el canal, baja por la izquierda de cada página, y cada sección se abre con un número rojo y un filete negro que cruza toda la caja. Su título, en Noto Serif Display, va en el canal a la altura de la primera línea. Los números de los apartados cuelgan en el medianil, en DM Mono rojo, y los títulos quedan alineados con el texto. Los criterios del jurado empiezan con un término en negrita roja. La página 1 pone un título de 58 pt sobre el plano de situación, la planta de la parcela va en el canal de la página 2 y un alzado de la lonja abre la 3.
+
+## Elaboración
+
+### 1 · Imprime el título de la sección desde un recuadro en el canal
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Un título reserva sitio hasta el elemento más bajo de su diseño, así que el nombre de la sección, dibujado en el canal a la altura de la primera línea del texto, bajaría el texto una línea, y dos si ocupara dos líneas. Por eso el diseño del título dibuja solo el número y el filete, y `sideHeads()` copia el texto de cada `## Título` en un `:::callout` que va justo detrás. Con `span="side"`, ese recuadro sale del flujo y se coloca en el canal, en la línea de la rejilla en la que sigue el texto ([estilos de aviso](/es/docs/configuration#estilos-de-aviso)). En un recuadro, igual que en el texto, la línea base queda a 0,8 de la altura de línea, así que un recuadro con el interlineado del texto, 14 pt, pone cada línea de un título de dos líneas sobre una línea base del párrafo de al lado. El Markdown sigue siendo un simple `## Programa de necesidades`. Como el diseño del título no imprime `{titleText}`, el Sandbox avisa con *Título del encabezado sin referenciar*, aunque el recuadro imprima el título.
+
+<PageShot page={2} crop="0,0.068,1,0.292" caption="Página 2: el número y el filete salen del título; el nombre de la sección, del recuadro del canal, a la altura de la primera línea del texto. La planta de la parcela se apila debajo." />
+
+### 2 · Reserva el canal para títulos y figuras
+
+<Excerpt region="channel" />
+
+`sideColumnRole: 'floats'` deja el texto fuera del canal ([tipos de disposición](/es/docs/configuration#tipos-de-disposición)). Después de la apertura, en el canal solo están los seis títulos de sección y la planta de la parcela, que llegan con `span: 'side'`, y el pie de la tabla 1. Por defecto, la columna lateral va a la derecha, y unas bases impresas a una cara la mantienen en el mismo lado en todas las páginas. `sideColumnSide: 'left'` la pone a la izquierda, donde cada título de sección se lee antes que su texto.
+
+### 3 · Cuelga los números y compón en línea los títulos menores
+
+<Excerpt region="lower" />
+
+El título del apartado empieza en el borde izquierdo de la columna. Su número se ancla con `'left-of'` a la izquierda del título, alineado a la derecha en una caja de 12 mm que termina 2 mm antes del texto, de modo que números como 2.1 o 3.3 cuelgan en el medianil y cada título queda alineado con el texto que tiene debajo ([posicionamiento de elementos](/es/docs/configuration#posicionamiento-de-elementos)). La caja necesita una anchura fija. Una anchura `'auto'` se limita a la columna. En el medianil se queda en cero, y el número no se imprime. El nivel 2 imprime `'{2}'` y el nivel 3, `'{2}.{3}'`, porque con `{1}` todos los números empezarían por el 1 del único H1 de las bases. Los criterios de la sección 4 son un cuarto nivel que no lleva título propio. Cada párrafo empieza con un término en negrita, y `bodyText.boldColor` lo imprime en rojo ([texto de cuerpo](/es/docs/configuration#texto-de-cuerpo)). Ningún otro párrafo lleva negrita, y las celdas de las tablas toman su color de `tableStyle`, así que la fila del total de la tabla 1, también en negrita, se queda en negro.
+
+### 4 · Da a cada figura y a cada tabla su propia colocación
+
+<Excerpt region="resources" />
+
+La planta de la parcela va al canal con `span: 'side'` y se apila bajo el título de la sección 2 ([colocación](/es/docs/document-format#colocación)). `width: PLAN_W / SIDE` le da 44 mm de ancho, con lo que sus 88 metros quedan a escala 1:2000 exacta. El alzado de la fachada es un flotante `'top'` a todo el ancho de la página. Se cita en la página 2 y abre la 3, porque un flotante nunca se coloca por encima de su referencia. La tabla del programa, citada también en la página 2, flota a la cabeza de la columna de texto de la página 3; en línea, habría abierto la página 3 y mandado el alzado a la 4. `captionSide: true` pone su pie en el canal, a la altura del borde superior de la tabla. El calendario va donde lo pone `::resource`, al final de las bases.
+
+### 5 · Abre las bases con el plano de situación
+
+<Excerpt region="opener" />
+
+Con `span: 'page'`, el contenedor de la apertura es toda la caja, canal incluido ([span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)). El antetítulo y el título se desplazan 57 mm, hasta el borde izquierdo de la columna de texto, y el plano cruza el canal y la columna. Sin él, el contenedor es la columna de texto: todo se corre 57 mm a la derecha, y el título, la entradilla y el plano se salen de la página por el borde derecho. Un elemento de imagen no reserva altura, así que `minHeight` fija la reserva hasta el pie del plano. Redondeada a una línea entera de la rejilla, deja el filete de la sección 1 a la misma distancia de su texto que el de las demás secciones. El antetítulo, la entradilla y la leyenda del plano son atributos de la línea `# Bases del concurso`.
+
+## Variantes
+
+### Pon el filete solo sobre la columna de texto
+
+Ancla el filete a la caja del propio título en lugar de al número y irá del borde izquierdo del texto al derecho de la columna; en el canal quedarán solo el número y el nombre de la sección.
+
+```diff
+-        color: col('ink'), placement: { ...at('#number', 'right-of', mm(2), RULE_Y),
++        color: col('ink'), placement: { ...at('container', 'top-left', mm(0), RULE_Y),
+```
+
+## Errores frecuentes
+
+- Una figura lateral ocupa la cabeza del canal en la página que la cita, y un título al margen que se coloca después se apila bajo la figura, más abajo que el principio de su propia sección. Cita las figuras laterales después del título de sección de su página, como hace la sección 2 con la planta de la parcela.
+- En postext 1.4.1, un recuadro lateral colocado entre un título y su primer párrafo le da a ese párrafo sangría de primera línea, aunque `indentAfterHeading` sea `false`. Estas bases no llevan sangría, así que no se nota; si tu texto la lleva, envuelve el primer párrafo de cada sección en un contenedor `:::paragraphs` cuyo estilo fije `firstLineIndent: 0`.
+- En postext 1.4.1, el `spaceBetween` de un estilo de párrafo se suma también después del último párrafo del contenedor, y no se funde con el `marginTop` del título siguiente, como sí hace el espacio entre párrafos del cuerpo. Con los criterios en un contenedor así y una línea de `spaceBetween`, la sección 5 tenía encima tres líneas en blanco y las demás, dos; por eso estas bases dan color a los términos en línea con `bodyText.boldColor`.

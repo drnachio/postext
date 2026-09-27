@@ -239,6 +239,28 @@ function ChipStyleCard({ style, resolved, bodyText, otherIds, stored, onChange, 
           onReset={() => onResetField('paddingY')}
         />
         <DimensionInput
+          label={labels.chipStylePaddingTop}
+          value={resolved.paddingTop ?? resolved.paddingY}
+          onChange={(v) => onChange({ paddingTop: v })}
+          min={0}
+          step={0.05}
+          units={BOX_UNITS}
+          tooltip={labels.chipStylePaddingTopTooltip}
+          isDefault={unset('paddingTop')}
+          onReset={() => onResetField('paddingTop')}
+        />
+        <DimensionInput
+          label={labels.chipStylePaddingBottom}
+          value={resolved.paddingBottom ?? resolved.paddingY}
+          onChange={(v) => onChange({ paddingBottom: v })}
+          min={0}
+          step={0.05}
+          units={BOX_UNITS}
+          tooltip={labels.chipStylePaddingBottomTooltip}
+          isDefault={unset('paddingBottom')}
+          onReset={() => onResetField('paddingBottom')}
+        />
+        <DimensionInput
           label={labels.chipStyleGap}
           value={resolved.gap}
           onChange={(v) => onChange({ gap: v })}

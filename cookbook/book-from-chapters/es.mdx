@@ -1,0 +1,74 @@
+---
+title: "Un libro hecho de capítulos sueltos"
+summary: "buildBundle compone cinco archivos Markdown como un solo libro: cada capítulo abre en página impar y páginas, capítulos y figuras se numeran de corrido."
+description: "Un manual de apicultura en cuatro estaciones, compuesto por buildBundle con un archivo Markdown por capítulo; el índice da la página en que abre cada uno."
+question: "¿Cómo compongo un libro capítulo a capítulo sin que se corte la numeración de páginas, capítulos y figuras?"
+aliases: ["libro por capítulos", "capítulos en archivos separados", "numeración de páginas continua", "numerado de corrido", "capítulo en página impar", "índice del libro", "PDF del libro entero", "buildBundle"]
+pageNotes: { "6": "La página 6 queda en blanco: Invierno ocupa una sola página, así que Primavera abre en la 7, la impar siguiente, y la par que queda entre las dos no lleva cabecera ni folio.", "11": "La página 11 es la única impar de texto corrido del libro: su cabecera dice VERANO, el título del capítulo, junto al folio." }
+---
+
+## Lo que vas a componer
+
+*Un año de colmenar* es un manual breve de cuatro capítulos, uno por estación. Arranca en otoño, cuando sale la última alza y empieza el año del apicultor. Cada capítulo es un archivo Markdown sin números de página, capítulo ni figura. `buildBundle` lleva la cuenta de un archivo a otro y compone los capítulos, más un quinto archivo con la cubierta y el índice, como un libro de once páginas. Cada capítulo abre en página impar, bajo una esquina de panal que lleva su número. El índice, en la página par frente a Otoño, repite esa apertura en espejo, con el título pegado al lomo, y da la página de cada capítulo. El mismo cuadro de cría, dibujado con código, sale en cada capítulo, de la figura 1.1 a la 4.1. La página 6 queda en blanco porque Invierno cabe en una página y Primavera tiene que abrir en impar.
+
+## Elaboración
+
+### 1 · Un archivo por capítulo
+
+<Excerpt region="chapters" />
+
+Cada estación es un documento propio, así que puedes reescribir un capítulo sin abrir los demás. El primer documento lleva el frontmatter, la cubierta y el índice. En Postext 1.4.1 los documentos siguientes no heredan de él ningún metadato, y el PDF toma el título y la autora solo del primero.
+
+### 2 · Reglas que pasan de un documento a otro
+
+El código de este paso es [la respuesta corta](#la-respuesta-corta) de arriba. [`buildBundle`](/es/docs/configuration#componer-y-renderizar-un-paquete) compone los documentos en orden con una sola configuración y le pasa a cada uno una `continuation` con lo que dejaron los anteriores: el número de páginas físicas ya compuestas, para que sigan la paridad, los márgenes en espejo y las cabeceras de pares e impares; el folio siguiente, y los contadores de capítulos y figuras. Con `parity: 'odd'`, un capítulo que sigue a otro acabado en página impar empieza con una página par en blanco, y esa página pertenece a su propio documento ([saltar antes](/es/docs/configuration#saltar-antes)). La cubierta y el índice son [estilos de título](/es/docs/configuration#estilos-de-encabezado) con `numbered: false`, por lo que Otoño sigue siendo el capítulo 1. Los dos heredan del nivel de capítulo `span: 'page'`, que pone cada uno en su propia página sin necesidad de `:::pagebreak`. El estilo del índice desactiva la paridad heredada, que dejaría en blanco la página 2.
+
+### 3 · Un índice de todo el libro
+
+<Excerpt region="contents" />
+
+`:::toc` está en el primer documento, pero recoge los capítulos y las secciones de todo el libro. `buildBundle` compone el libro, anota cada título con la página que le ha tocado y lo vuelve a componer con ese esquema hasta que los folios dejan de moverse, tres pasadas como mucho ([índice de contenidos](/es/docs/configuration#índice-de-contenidos)). Los meses bajo cada título salen de un atributo del título, `{months="…"}`, que también imprime la apertura.
+
+### 4 · Una apertura, en espejo para el índice
+
+<Excerpt region="opener" />
+
+`{chapterNumber}` sigue contando desde los documentos compuestos antes, así que la apertura de Primavera muestra un 3 aunque su archivo no lleva ningún número. La caja del número se calcula a partir del centro de su celda del panal, y número y panal cuelgan los dos de la esquina superior derecha de la sangre; si cambias el formato o añades sangre para imprenta, se mueven juntos. En el índice, el antetítulo (que sale de `{subtitle}`) y el título van alineados a la derecha, contra el lomo, y el panal pasa a la esquina exterior de la página par; así su título cae a la misma altura que el de Otoño en el pliego.
+
+### 5 · Cabeceras en todos los documentos
+
+<Excerpt region="running-heads" />
+
+Solo el primer documento tiene frontmatter, así que en Postext 1.4.1 `{title}` sale vacío en todos los documentos siguientes, Otoño incluido. Por eso la cabecera de las páginas pares lleva el título del libro escrito como texto fijo. `{chapterTitle}` y `{pageNumber}` se resuelven página a página y salen en todos los documentos; la página 11, la única impar de texto corrido, lleva VERANO junto al folio. `pages: 'body'` deja sin cabecera las aperturas y la página en blanco.
+
+### 6 · Pliegos en pantalla, un PDF para el libro
+
+<Excerpt region="build" />
+
+`buildBundle` devuelve una lista de documentos, uno por archivo Markdown. `showPages` empareja las páginas por `pageIndexOffset + page.index`, así que la página 1 queda sola, como impar, y las demás quedan enfrentadas por pares: la 2 con la 3, la 4 con la 5, y así hasta el final. `renderToPdf` recibe la misma lista y escribe un único archivo con los folios del libro y un marcador por cada capítulo y sección.
+
+## Variantes
+
+### Imprime un capítulo con los folios del libro
+
+Pasa un solo documento a `renderToPdf` para sacar una prueba de Primavera, numerada del 6 al 8 como en el libro. La página 6 en blanco va con ella, porque la página par en blanco que precede a una apertura pertenece al capítulo que abre después.
+
+```diff
+-offerPdf(() => renderToPdf(docs, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
++offerPdf(() => renderToPdf(docs[3], { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
+```
+
+### Numera las figuras de corrido en todo el libro
+
+Un contador de figuras que no se reinicia numera los cuatro cuadros del 1 al 4 en todo el libro, en vez de 1.1 a 4.1.
+
+```diff
+-  resourceTypes: defaultResourceTypes(LANG),
++  resourceTypes: defaultResourceTypes(LANG)
++    .map((type) => ({ ...type, numberingTemplate: '{n}', resetOn: 'never' })),
+```
+
+## Errores frecuentes
+
+- En lo alto de una página, y bajo una figura que la encabeza, un título de sección pierde su `marginTop`. Si el aire del título sale del margen, en esos dos sitios queda a una línea de su texto y en el resto, a línea y media. Aquí el aire está en la propia línea del título: `lineHeight` mide línea y media y el margen, una línea, así que todos los títulos de sección del libro quedan a la misma distancia de su texto.
+- Por defecto, una línea justificada puede estirar sus espacios hasta el doble de su ancho, y el algoritmo de corte lo prefiere a un guion. Compuesta así, la edición inglesa no partía ni una palabra y dejaba espacios casi del doble junto a líneas apretadas al 0,7. `maxWordSpacing: 1.7` obliga al algoritmo a partir palabras. Después de cambiarlo, revisa la última línea de cada párrafo: un límite más estricto puede dejar ahí una palabra sola, y se arregla cambiando unas pocas palabras del párrafo.

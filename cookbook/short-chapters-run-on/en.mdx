@@ -1,0 +1,77 @@
+---
+title: "Pocket classic: short chapters that run on"
+summary: "Dom Casmurro as a pocket book: short chapters run on under heads drawn in the column, and no page break strands a line or a head."
+description: "Five pages of Dom Casmurro set with Postext as a pocket book, hyphenated in Portuguese: chapters run on under centred heads, and no page opens on a single line."
+question: "How do I run short chapters on, each head kept with its text, with no orphans or one-word last lines?"
+aliases: ["run-on chapters", "short chapters", "keep with next", "keep heading with text", "widows and orphans", "runts", "pocket book", "mass-market paperback", "Portuguese hyphenation", "Machado de Assis", "roman chapter numbers", "excerpt from a book", "continuation counters"]
+pageNotes: { "1": "The cover: MACHADO DE ASSIS in cream capitals on a plum band, Dom Casmurro in plum Abril Fatface on a cream panel over a short saffron rule, and the saffron casuarina roundel above COLEÇÃO CASUARINA on the plum foot band.", "2": "The plate, blind folio 212: the Sugarloaf and Urca against a banded morning sky with a low saffron sun, rows of plum swell with two canoes, and CAPÍTULO CXXIII over a line of that chapter in cream italic.", "3": "Page 213 goes on with chapter CXVIII. Near the foot, chapter CXIX, NÃO FAÇA ISSO, QUERIDA, starts under a plum numeral with two lines of text under it; the running head names it.", "4": "Page 214, under the running head DOM CASMURRO: the last two lines of CXIX, then chapter CXX, OS AUTOS, and at the foot chapter CXXI, A CATASTROPHE, with two lines under its head.", "5": "Page 215: the end of CXXI and chapter CXXII, O ENTERRO, which the running head names.", "6": "Page 216, under DOM CASMURRO: the end of CXXII and chapter CXXIII, OLHOS DE RESSACA.", "7": "Page 217: the last five lines of CXXIII, ending on o nadador da manhã, and at the foot of the page the colophon in small grey type beside the casuarina roundel." }
+---
+
+## What you'll build
+
+Five pages of text from near the end of *Dom Casmurro*, Machado de Assis’s novel of 1899, set in the original Portuguese as a 110 × 178 mm pocket book in an invented series, Coleção Casuarina. A cover in plum, cream and plum bands carries the title in Abril Fatface and the series’ saffron roundel, and a plate of the heavy sea off Flamengo faces page 213. The text runs from the end of chapter CXVIII to the end of CXXIII, and no chapter opens a page. Each starts two lines below the end of the one before (three at CXIX, to fill page 213), under a plum roman numeral, its title in tracked capitals and a short saffron rule. Page 214 has two chapter heads, 215 and 216 one each. Every page of text but the last ends on its 33rd line, and none opens on a single line.
+
+## Method
+
+### 1 · Run the chapters on, each head kept with its text
+
+<Excerpt region="answer" highlight="17-24" />
+
+The chapter level has its break turned off, and `marginTop` sets each head two lines under the last line of the chapter before. Its design has no `span`, so the head is drawn in the column, in a block three lines deep, and the text under it stays on the grid ([break before](/en/docs/configuration#break-before), [span and advanced design](/en/docs/configuration#span-and-advanced-design)). The keep rules are left at their defaults. The four-line paragraphs under CXIX and CXXI each leave two lines at the foot of their page and carry two over; with `avoidOrphans: false` they would split three and one, and pages 214 and 215 would open on a single line ([orphans, widows, runts](/en/docs/configuration#orphans-widows-runts-and-keep-together-rules)). Column balancing adds a third line of space above CXIX, so that page 213 ends on line 33 ([column balancing](/en/docs/configuration#column-balancing)).
+
+<PageShot page={3} crop="0,.683,1,.317" caption="Page 213: chapter CXIX starts three lines under the end of CXVIII and keeps two lines of its text at the foot." />
+
+### 2 · Set a page of 33 lines, with Portuguese hyphenation
+
+<Excerpt region="text" />
+
+The bottom margin is 16.3 mm, what the 178 mm height leaves after the 15 mm top margin and 33 lines of 12.6 pt, so every full page ends on the same line. Tinos, which has the widths of Times New Roman, sets about 59 characters a line on the 84 mm measure at 9.5 pt. `locale: 'pt'` hyphenates with the Portuguese patterns: *at-tracção*, *af-fluencia*, *genealogica-mente* ([supported locales](/en/docs/justification#supported-locales)). Every paragraph is indented, the first after a head too, as Portuguese and Brazilian editions usually are, so `indentAfterHeading` keeps its default.
+
+### 3 · Name the book over the verso and the chapter over the recto
+
+<Excerpt region="heads" />
+
+`{title}` prints the title in the frontmatter, and `{chapterTitle}` the last chapter that starts on or before the page, so page 217 names CXXIII, which began on page 216 ([text elements](/en/docs/configuration#text-elements)). Page 213 names CXIX, which begins at its foot, though its first 25 lines close CXVIII: 1.4.1 has no placeholder for the chapter a page opens in. `SHIFT` moves the heads onto the centre of the text block, 1 mm off the page’s centre because the inner margin is 2 mm wider than the outer one.
+
+### 4 · Draw the cover and the plate as headings
+
+<Excerpt region="cover" />
+
+Both are [heading styles](/en/docs/configuration#heading-styles) with `numbered: false`, so the first numbered chapter is still CXIX. `span: 'page'` makes each an opener page. Without it the cover’s bands stop at the top and foot of the text block, the running head and folio 1 print on the cover, and the title sets on one line. The plate’s caption comes from its heading: CAPÍTULO CXXIII is the heading’s text, and the italic quotation is its `quote` attribute ([heading attributes](/en/docs/document-format#heading-attributes)). The `:::pagebreak` after each keeps the text off the art, since 1.4.1 reserves no room for the cover’s foot band or the plate’s picture.
+
+### 5 · Tell the excerpt where it stands in the book
+
+<Excerpt region="excerpt" />
+
+`continuation.headings` gives the heading counters the excerpt starts from. With `h1: 118` the first numbered heading is chapter CXIX; without it the five chapters are numbered I to V. `numberingTemplate: '{1:I}'` in the chapter level sets those numbers in roman numerals, and the design prints them with `{number}`. `:::numbering{startAt=212}`, after the cover’s page break, numbers the plate 212 and the text pages 213 to 217 ([numbering](/en/docs/document-format#numbering)).
+
+## Variations
+
+### Open every chapter on a new page
+
+With a break before each chapter the five pages of text become seven: page 214 holds only CXIX, its head and four lines, and page 213, where no chapter starts, takes the plate’s title, CAPÍTULO CXXIII, as its running head.
+
+```diff
+-  breakBefore: { enabled: false }, marginTop: pt(2 * LEAD), advancedDesign: chapterHead };
++  breakBefore: { enabled: true, parity: 'any' }, marginTop: pt(2 * LEAD),
++  advancedDesign: chapterHead };
+```
+
+### Put the chapter number over the recto
+
+`{chapterNumber}` prints the numeral of the same chapter the title comes from: *CXIX · NÃO FAÇA ISSO, QUERIDA*.
+
+```diff
+-  head('recto-chapter', '{chapterTitle}', 'odd', SHIFT),
++  head('recto-chapter', '{chapterNumber} · {chapterTitle}', 'odd', SHIFT),
+```
+
+## Pitfalls
+
+- Raising `widowMinLines` to 3 in 1.4.1 lets CXIX and CXXI keep three lines under them at the foot, and their four-line paragraphs then split three and one: a single line opens pages 214 and 215, whatever `orphanPenalty` is.
+- If CXVIII grows by a few lines, CXIX has room for only one line under its head. `keepWithNext` then carries the head over to page 214 and page 213 ends four or five lines short; with `keepWithNext: false` the head closes page 213 with no text under it.
+- The plate is an H1, so `{chapterTitle}` falls back on it: a page of text where no chapter has started since the plate, like page 213 once CXIX moves on, prints CAPÍTULO CXXIII as its running head.
+- Turn `avoidRunts` off and the last line of the book holds *manhã.* alone instead of *nadador da manhã.*
+- Without the `:::pagebreak` after the cover, and with no plate, chapter CXVIII starts 19.5 mm from the top of the cover, under its 3 mm heading line. Without the one after the plate, eleven lines of text print over the sea once the caption moves up to 94 mm.
+- No line on these pages breaks at an enclitic’s hyphen (*Vesti-me*, *metteu-se*). Set *Emfim*, the first word of CXXIII, in italics and 1.4.1 sends that paragraph through the line breaker for text with inline marks, which ends a line on *vencer-* and starts the next with *se a si mesma*, without the hyphen that Portuguese spelling repeats at the head of the line.
+- These page breaks hold only for this text at 9.5 on 12.6 pt on an 84 mm measure. After you change the text, the size or the measure, look again at the foot of every page and the space above every head.

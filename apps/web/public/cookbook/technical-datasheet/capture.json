@@ -1,0 +1,436 @@
+{
+  "schemaVersion": 1,
+  "slug": "technical-datasheet",
+  "sourceHash": "39ce14199c51c1edb43a32949a1d127192937c770952a4562182d6e6ff5bc6a1",
+  "engine": {
+    "postext": "1.4.1",
+    "postextPdf": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-25T18:45:17.546Z",
+  "variants": {
+    "en": {
+      "hash8": "b0677359",
+      "vdtHash": "fd1d4233a6199d2d17a5bcb18e5c56f922c09464",
+      "timings": {
+        "importMs": 1317,
+        "fontsMs": 506,
+        "buildMs": 34,
+        "totalMs": 3785,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          216,
+          279
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 6,
+        "mirror": false,
+        "body": {
+          "family": "Fira Sans",
+          "sizePt": 9.3,
+          "leadingPt": 13
+        },
+        "families": [
+          "Fira Mono",
+          "Fira Sans",
+          "Fira Sans Condensed"
+        ],
+        "pages": 4,
+        "ownLines": 268
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1292,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 103726,
+          "alt": "Opening page 1: PX-7021. Figure 1. Pin configuration, 8-pin DFN, top view. · Figure 2. Typical application, bus address 48h."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1292,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 101186,
+          "alt": "Page 2: 4 Specifications. Table 1. Electrical characteristics, VDD = 1.6 V to 5.5 V and TA = −40 °C to 125 °C unless noted."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1292,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 121148,
+          "alt": "Page 3: 6 Detailed description. Table 2. Pin functions · Table 3. Register map."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1292,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 124554,
+          "alt": "Page 4: 6.3 Alert output. Table 3. Register map (continued) · Figure 3. Package outline and land pattern, 8-pin DFN, in mm. · Table 4. Order codes."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "technical-datasheet.pdf",
+        "bytes": 137141,
+        "pages": 4
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "defaultResourceTypes",
+          "mergeCells",
+          "parseTSV",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf",
+          "setAlignment",
+          "setCellBackground"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.boldFontWeight",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.paragraphSpacing",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].id",
+          "calloutStyles[].lists",
+          "calloutStyles[].lists.bulletChar",
+          "calloutStyles[].lists.color",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].title",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "captionStyle",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelColor",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "captionStyle.note.fontSize",
+          "chipStyles",
+          "chipStyles[].background",
+          "chipStyles[].backgroundEnabled",
+          "chipStyles[].bold",
+          "chipStyles[].borderRadius",
+          "chipStyles[].borderWidth",
+          "chipStyles[].color",
+          "chipStyles[].fontFamily",
+          "chipStyles[].fontSize",
+          "chipStyles[].id",
+          "chipStyles[].paddingX",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].placement",
+          "footer.elements[].resourceId",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].box",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "header.elements[].thickness",
+          "headingStyles",
+          "headingStyles[].id",
+          "headingStyles[].marginTop",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberingTemplate",
+          "headings.levels[].span",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].captionStyle",
+          "resourceTypes[].captionStyle.position",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].namePlural",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyle",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules",
+          "tableStyles",
+          "tableStyles[].bodyFontFamily",
+          "tableStyles[].borderColor",
+          "tableStyles[].borderRadius",
+          "tableStyles[].borderWidth",
+          "tableStyles[].cellPadding",
+          "tableStyles[].continuedSuffix",
+          "tableStyles[].continuesMarker",
+          "tableStyles[].headerBackground",
+          "tableStyles[].headerColor",
+          "tableStyles[].id",
+          "tableStyles[].overflow",
+          "tableStyles[].rules",
+          "unorderedLists",
+          "unorderedLists.color",
+          "unorderedLists.fontWeight",
+          "unorderedLists.gap",
+          "unorderedLists.itemSpacing",
+          "unorderedLists.marginBottom",
+          "unorderedLists.marginTop"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "chipStyles",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle",
+          "tableStyles",
+          "unorderedLists"
+        ],
+        "configLeaves": 434,
+        "designElements": 21,
+        "directives": [
+          ":::columnbreak",
+          ":::pagebreak",
+          ":::callout",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          ":ref",
+          ":chip",
+          "~…~"
+        ],
+        "resources": {
+          "svg": 4,
+          "bitmap": 0,
+          "table": 4
+        },
+        "fonts": [
+          {
+            "family": "Fira Mono",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Fira Sans Condensed",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Fira Sans Condensed",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Fira Sans Condensed",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Fira Sans Condensed",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Fira Sans",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Fira Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Fira Sans",
+            "weight": 600,
+            "style": "italic"
+          },
+          {
+            "family": "Fira Sans",
+            "weight": 600,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "cell-fills",
+          "chips",
+          "citations",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "localised-labels",
+          "opener-band",
+          "opener-design",
+          "page-breaks",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "resources",
+          "super-subscripts",
+          "table-model",
+          "table-split",
+          "table-styles"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": [
+          {
+            "check": "C26",
+            "severity": "warn",
+            "detail": "the hero is 24.7 % colour, pictures or display type (aim for 25 %+)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
+      }
+    }
+  }
+}

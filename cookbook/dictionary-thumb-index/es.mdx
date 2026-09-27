@@ -1,0 +1,58 @@
+---
+title: "Diccionario con índice de pestañas"
+summary: "Un bucle crea un estilo de título por letra, y la cabecera de cada uno pone la pestaña azul de su letra un paso más abajo en el corte, sobre un índice pálido."
+description: "Cuatro páginas del Sailor’s Word-Book de Smyth a dos columnas, con los lemas en azul, iniciales de cuatro líneas y una pestaña que baja un paso con cada letra."
+question: "¿Cómo hago que la pestaña de un diccionario baje por el corte delantero de una letra a la siguiente?"
+aliases: ["diccionario", "glosario", "vocabulario", "obra de consulta", "índice de pestañas", "pestañas", "índice en el corte", "lemas", "iniciales", "palabras guía"]
+pageNotes: { "1": "La página 1 abre el diccionario bajo una banda: un ancla con su cabo, VOCABULARIO DEL MARINERO en versalitas azul marino, el subtítulo y la firma de la portada de 1867 y un filete doble. Debajo van la nota del editor y una A azul de cuatro líneas. Por el borde derecho baja el índice de 22 pestañas, con la A en azul marino.", "2": "La página 2, par: las entradas de la A llenan la primera columna y acaban en la segunda, donde una B azul abre la letra siguiente. En el borde izquierdo la pestaña azul marca la B, un paso por debajo de la A, aunque la página empieza en la A.", "3": "La página 3: las entradas de la B acaban al pie de la primera columna y una C azul encabeza la segunda. En el borde derecho la pestaña de la C sobresale del índice pálido, dos pasos por debajo de la A.", "4": "La página 4: las últimas entradas de la C llenan las dos columnas, que acaban a la misma altura, y un colofón de tres líneas cierra la segunda." }
+---
+
+## Lo que vas a componer
+
+Cuatro páginas de una nueva edición del *Sailor’s Word-Book* del almirante Smyth (1867), de la A a la C, en una página de 150 × 200 mm. Las entradas van en dos columnas justificadas de Alegreya de 8 pt, separadas por un filete, con el lema en negrita azul marino y sangría francesa de 1 em. Cada letra se abre dentro de su columna con una inicial azul de cuatro líneas sobre un filete color latón, y las entradas siguen sin salto de página. En el corte delantero, cada página imprime el índice entero, 22 pestañas en un tono pálido. La de la letra en curso es azul marino, 3,2 mm más ancha que las demás, y baja un paso con cada letra. La edición española conserva los lemas ingleses de Smyth y traduce las entradas.
+
+## Elaboración
+
+### 1 · Un estilo de título por letra, cada uno con su pestaña
+
+El código está en [la respuesta corta](#la-respuesta-corta), más arriba. `TABS` enumera 22 pestañas; las letras con pocas voces comparten una (QR, UV, XYZ). Cada pestaña mide dos líneas de texto (7,34 mm), así que entre todas cubren las 44 líneas de la caja. El bucle da a cada letra un estilo de título cuyo `header` suma a las cabeceras y al índice pálido la pestaña azul de esa letra, un paso más abajo que la anterior ([estilos de encabezado](/es/docs/configuration#estilos-de-encabezado)). Cada celda se escribe dos veces, una por `parity`, y se ancla al borde exterior de la página, no al contenedor propio de la cabecera. Ese contenedor es el margen de cabeza, del ancho de la caja y desde el borde superior de la página hasta el texto, y las pestañas tienen que llegar al corte delantero y bajar por las 44 líneas. Una página toma la cabecera de la última sección que empieza en ella, así que la <PageRef page={2}>página 2</PageRef> empieza en la A y lleva la pestaña de la B.
+
+### 2 · Las cabeceras, fuera de la primera página
+
+<Excerpt region="running-heads" />
+
+Las cabeceras son elementos de texto anclados a la página y filtrados por `parity` y por `pages: 'body'` ([elementos de texto](/es/docs/configuration#elementos-de-texto)). El título de la página 1 abarca las dos columnas, y eso la convierte en página de apertura. Las cabeceras no salen en ella, y su folio lo pone el pie, un elemento con `pages: 'opener'` que se imprime 6 mm por debajo de la caja. En las impares, `{chapterTitle}` imprime la letra del último título de nivel 1 que hay en la página o antes de ella. Postext no tiene marcador para el primer lema de una página ni para el último, así que la cabecera impar dice *Letra C* donde un diccionario pondría las palabras guía.
+
+### 3 · Color para los lemas y nada más
+
+<Excerpt region="entries" />
+
+Cada entrada es un párrafo de un bloque `:::paragraphs{style="entry"}`, con sangría francesa de 1 em ([estilos de párrafo](/es/docs/configuration#estilos-de-párrafo)). El `boldColor` del cuerpo deja el **Nota.** de la página 1 en el color del texto, y el del estilo de entrada pone los lemas en azul marino. Un estilo de párrafo no tiene `italicColor`, así que las cursivas de las entradas conservan el color del cuerpo.
+
+### 4 · Una inicial de cuatro líneas dentro de la columna
+
+<Excerpt region="letter-heads" />
+
+`LETTER`, 55,8 pt, es el cuerpo con el que una mayúscula de Alegreya SC 900 (0,652 em de alto) se apoya en la cuarta línea de base y llega a la altura de las mayúsculas de la primera línea de texto. La letra y el filete color latón acaban dentro de la quinta línea, y el bloque del título baja hasta la siguiente línea de la rejilla base, así que cada inicial ocupa cinco líneas y las entradas de debajo siguen en la rejilla. En la <PageRef page={3}>página 3</PageRef>, la C que encabeza la segunda columna mide lo mismo que las cuatro primeras líneas de la primera. El nivel 1 declara `breakBefore: { enabled: false }`, y los estilos de las letras lo heredan. En 1.4.1 cualquier objeto `headings` ya quita el salto de página del nivel 1; con el valor escrito, las letras seguirán en la columna aunque una versión posterior recupere ese salto.
+
+### 5 · El título a lo ancho de las dos columnas
+
+<Excerpt region="title" />
+
+El estilo del título abarca la página con una banda que reúne el ancla, el nombre, un subtítulo y una firma tomados de atributos del título, y un filete doble ([span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)). El filete fino acaba 45,1 mm por debajo del borde superior de la caja, así que la banda se ajusta a 13 líneas de la rejilla, 47,7 mm. Bajo un título a todo el ancho, el filete de columna empieza igualmente en el borde superior de la caja y cruzaría el título. Un rectángulo del color del papel lo tapa hasta el filete fino, y el filete de columna solo asoma por debajo. `{titleText}` une con un espacio las líneas del título oculto, y 1.4.1 corta un título a todo el ancho a la medida de una columna. En inglés, con el cuerpo del H1 por defecto, la banda imprimía *Word- Book*; por eso el estilo del título da al título oculto el cuerpo del texto, con el que el nombre cabe en una línea de la columna de 60 mm.
+
+## Variantes
+
+### Imprime solo la pestaña en curso
+
+Los índices de pestañas impresos suelen mostrar solo la de la letra en curso; quita `ladder` de la cabecera y la pestaña azul seguirá bajando de la A a la C.
+
+```diff
+-  header: { elements: [...runningHeads, ...ladder,
++  header: { elements: [...runningHeads,
+```
+
+## Errores frecuentes
+
+- En postext 1.4.1 el filete de columna bajo un título a todo el ancho empieza en el borde superior de la caja aunque la banda mida un número entero de líneas de la rejilla, como esta. Lo tapa un rectángulo del color de la página, pintado debajo de los demás elementos del diseño.
+- Una columna de 60 mm admite unos 50 caracteres, y el inglés de Smyth no se puede reescribir. En la captura, 18 de las 218 líneas justificadas inglesas (un 8 %) estiran el espacio más de 1,7 veces su ancho normal, frente a menos de un 2 % en la edición española, cuya traducción se ajustó a la columna. El inglés llegaba al 17 % antes de cambiar por otras las cinco entradas que peor componían (*Aground*, *Aloft*, *Belay*, *Cockpit*, *Crow’s nest*). Elige entradas que compongan bien, o ensancha la columna.

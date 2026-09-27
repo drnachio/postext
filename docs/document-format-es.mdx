@@ -39,12 +39,20 @@ Llama a `extractFrontmatter(source)` para separar el frontmatter del cuerpo. El 
 
 El frontmatter se parsea con [`gray-matter`](https://github.com/jonschlinkert/gray-matter), por lo que se acepta cualquier forma válida de YAML. Postext solo consulta `title`, `subtitle`, `author` y `publishDate`; las demás claves se conservan en `PostextContent.metadata` y quedan disponibles para tu uso.
 
+YAML da tipo a sus valores: `1984` es un número, `2026-04-15` una fecha, `[Ana Gil, Luis Paz]` una lista. Postext imprime esos cuatro campos como texto, sea cual sea su tipo:
+
+- un número, en su forma decimal simple, y un booleano, como `true` o `false` (`title: 1984` imprime *1984*). YAML lee un número como un valor, no cifra a cifra: `1.50` imprime *1.5*, `017` (octal) *15* y `1:30` (base 60) *90*;
+- una fecha, como su día del calendario escrito en el idioma del documento —el ajuste `locale` o, si no está, el idioma de la separación silábica—: `publishDate: 2026-04-15` imprime *15 de abril de 2026* en español, *April 15, 2026* en inglés y *15. April 2026* en alemán. Una fecha con hora imprime el día de su hora UTC y descarta la hora: `2026-09-24T23:30:00-05:00` son las 04:30 UTC del día 25 e imprime *25 de septiembre de 2026*;
+- una lista, como sus elementos separados por comas (`author: [Ana Gil, Luis Paz]` imprime *Ana Gil, Luis Paz*).
+
+Pon el valor entre comillas para imprimirlo exactamente como está escrito —un número que deba conservar sus cifras, una fecha que deba conservar su día—: `publishDate: "15/04/2026"`, `title: "1984"`. El texto llega a `doc.metadata`, a los marcadores (`{title}`, `{publishDate}`…) y al título y el autor del PDF. Si uno de esos cuatro campos no tiene forma de texto —un mapa anidado, un `title:` vacío—, no pasa a `doc.metadata`. `extractFrontmatter` sigue devolviendo los valores con el tipo que les dio YAML; `metadataText(value, locale)` da el texto que Postext imprime para uno de ellos.
+
 
 ## Construcciones de bloque
 
 Postext reconoce siete tipos de bloque de prosa, además de las directivas y las inserciones de recursos que se describen más adelante en esta página. Los bloques siempre terminan al encontrar una línea en blanco o el inicio de otro bloque.
 
-<Illustration name="BlockTypesGallery" data='{"title": "Construcciones de bloque de prosa de un vistazo", "desc": "Los siete tipos de bloque de prosa que reconoce Postext: encabezado, párrafo, cita, lista no ordenada, lista ordenada, lista de tareas y fórmula en display, cada uno con su sintaxis markdown. Las directivas y las inserciones de recursos se describen por separado.", "caption": "Cada tipo de bloque de prosa y su entrada en markdown.", "blocks": [{"name": "Encabezado", "syntax": "# Título", "color": "blue"}, {"name": "Párrafo", "syntax": "Líneas de texto plano", "color": "orange"}, {"name": "Cita", "syntax": "> texto citado", "color": "green"}, {"name": "Lista no ordenada", "syntax": "- item", "color": "purple"}, {"name": "Lista ordenada", "syntax": "1. item", "color": "pink"}, {"name": "Lista de tareas", "syntax": "- [x] hecho", "color": "teal"}, {"name": "Fórmula display", "syntax": "$$ \\int f(x) $$", "color": "blue"}]}' />
+<Illustration name="BlockTypesGallery" data='{"title": "Construcciones de bloque de prosa de un vistazo", "desc": "Los siete tipos de bloque de prosa que reconoce Postext: encabezado, párrafo, cita, lista no ordenada, lista ordenada, lista de tareas y fórmula en bloque, cada uno con su sintaxis markdown. Las directivas y las inserciones de recursos se describen por separado.", "caption": "Cada tipo de bloque de prosa y su entrada en markdown.", "blocks": [{"name": "Encabezado", "syntax": "# Título", "color": "blue"}, {"name": "Párrafo", "syntax": "Líneas de texto plano", "color": "orange"}, {"name": "Cita", "syntax": "> texto citado", "color": "green"}, {"name": "Lista no ordenada", "syntax": "- item", "color": "purple"}, {"name": "Lista ordenada", "syntax": "1. item", "color": "pink"}, {"name": "Lista de tareas", "syntax": "- [x] hecho", "color": "teal"}, {"name": "Fórmula en bloque", "syntax": "$$ \\int f(x) $$", "color": "blue"}]}' />
 
 <table>
   <thead>
@@ -68,7 +76,7 @@ Postext reconoce siete tipos de bloque de prosa, además de las directivas y las
     <tr>
       <td>Cita (blockquote)</td>
       <td><code>&gt; texto citado</code></td>
-      <td>Cada línea de la cita debe comenzar con <code>&gt;</code> (seguido de un espacio opcional). Las líneas consecutivas de cita se combinan en un único bloque.</td>
+      <td>Cada línea de la cita debe comenzar con <code>&gt;</code> (seguido de un espacio opcional). Las líneas consecutivas de cita se combinan en un único bloque. Se compone como dice <code>bodyText.blockquote</code>: en cursiva gris con la sangría de primera línea del cuerpo, salvo que lo cambies (ver <a href="/es/docs/configuration#citas">Configuración › Citas</a>).</td>
     </tr>
     <tr>
       <td>Lista no ordenada</td>
@@ -86,7 +94,7 @@ Postext reconoce siete tipos de bloque de prosa, además de las directivas y las
       <td>Un elemento de lista no ordenada con una casilla entre corchetes. Acepta <code>x</code> en minúscula o <code>X</code> en mayúscula. Se renderiza con los glifos <code>taskCheckboxChar</code> / <code>taskCheckedChar</code>.</td>
     </tr>
     <tr>
-      <td>Fórmula display</td>
+      <td>Fórmula en bloque</td>
       <td><code>$$ … $$</code></td>
       <td>Una fórmula LaTeX compuesta como bloque propio. Se renderiza centrada en la columna, ajustada a la rejilla de línea base como una cabecera, y se mantiene vectorial en el PDF. Las formas de una sola línea y de valla multilínea se describen en <a href="#fórmulas-matemáticas">Fórmulas matemáticas</a>.</td>
     </tr>
@@ -109,12 +117,24 @@ Una línea de encabezado puede terminar con un bloque de atributos entre llaves 
 
 Las llaves y su contenido se eliminan del texto del encabezado (el título anterior se renderiza como *El largo camino*) y se guardan en el encabezado como `attrs`. Se exponen a las ranuras de diseño como marcadores `{attr.<clave>}`: en la ranura de diseño avanzado del propio encabezado, y en los encabezados y pies de página, donde se resuelven a partir del H1 del capítulo actual. Solo se reconoce un bloque equilibrado y sin llaves anidadas al final de la línea; un `{}` suelto o una llave sin cerrar permanece en el texto. Ver **Configuración → Encabezados y pies**.
 
+Un valor que imprime un texto de diseño puede ocupar varias líneas: los dos caracteres `\n` empiezan ahí una línea nueva, sea cual sea el `overflow` del elemento (`to="Firma X\nStrasse 1\n10115 Berlin"` imprime una dirección de tres líneas). Si el elemento tiene `inlineMarks`, las marcas en línea del valor también se aplican: `authors="Ana Ruiz^1^, Luis Gil^2^"` compone los números de filiación como superíndices. El escape es propio de los valores de atributo (y de las plantillas del propio diseño): los caracteres `\n` en el texto de un encabezado (dentro de código en línea, por ejemplo) se imprimen tal cual.
+
 Dos atributos tienen significado propio. `style="<id>"` aplica al encabezado un [estilo de encabezado](/es/docs/configuration#estilos-de-encabezado) con nombre — un prólogo o una lista de autores con su propio diseño de apertura, sus cabeceras, su geometría de página y su tipografía de cuerpo, y sin número de capítulo cuando el estilo declara `numbered: false`. `toc="false"` (o `"true"`) decide si el encabezado aparece en `:::toc`:
 
 ```markdown
 # Prólogo {style="preliminar"}
 
 # Índice {style="preliminar" toc="false"}
+```
+
+Otros dos cambian lo que imprime un encabezado y cómo cuenta. `hidden="true"` (o `"false"`) sobrescribe el `hidden` del nivel o del estilo del encabezado: un encabezado oculto no imprime nada ni ocupa espacio —ni en el flujo ni dentro de una caja `:::callout`—, pero sigue abriendo su página, cuenta y aparece en el índice, en las cabeceras con `{chapterTitle}` y en los marcadores del PDF. `startAt=N`, un entero positivo, pone el contador del nivel del encabezado en `N` en lugar de avanzarlo; los encabezados siguientes cuentan a partir de ahí, también en los capítulos posteriores, y los niveles inferiores se reinician bajo él como siempre. Con un estilo de encabezado que numera los apéndices con letra (`numberingTemplate: 'Apéndice {1:A}'`), el primer apéndice reinicia la cuenta para leerse *Apéndice A* en lugar de continuar la de los capítulos:
+
+```markdown
+# A mi madre {hidden="true" toc="false"}
+
+# Cuestionario {style="apendice" startAt=1}
+
+# Datos en bruto {style="apendice"}
 ```
 
 ## Directivas
@@ -170,7 +190,28 @@ Las directivas son etiquetas de control de una sola línea escritas como `:::nom
 
 Los valores de los atributos pueden ir entre comillas dobles (<code>"…"</code>), comillas simples (<code>'…'</code>) o sin comillas (<code>startAt=17</code>). Una clave sin `=` se trata como una bandera presente con valor vacío.
 
-Hoy solo se reconocen `pagebreak`, `numbering`, `columnbreak`, `space` y `toc` como directivas de una sola línea — cualquier otra línea `:::nombre` que no sea un contenedor (más abajo) se parsea como párrafo y genera un aviso **Directiva desconocida** en el sandbox.
+Hoy solo se reconocen `pagebreak`, `numbering`, `columnbreak`, `space` y `toc` como directivas de una sola línea — cualquier otra línea `:::nombre` que no sea un contenedor (más abajo) se parsea como párrafo y genera un aviso **Directiva desconocida** en el sandbox. El motor también lo registra, como una entrada `unknownDirective` en los `contentWarnings` del documento (véase [Configuración › Avisos del documento](/es/docs/configuration#avisos-del-documento)).
+
+### Valores de los atributos
+
+La misma sintaxis `clave="valor"` la leen los atributos de encabezado, las vallas de directivas y contenedores (`:::nombre{…}`), las referencias en línea (`:ref{…}`), los chips (`:chip[…]{…}`) y las muestras de color (`:swatch{…}`). Sus reglas:
+
+- **Claves.** Empiezan por una letra o `_` y siguen con letras, dígitos, `_` o `-`. Se admiten espacios alrededor del `=`, una clave repetida se queda con su último valor y una clave sin `=` es una bandera con valor vacío.
+- **Valores entre comillas.** Un valor entre comillas dobles puede contener cualquier cosa salvo `"`, comillas simples incluidas; uno entre comillas simples, cualquier cosa salvo `'`. Así, un valor con comillas dobles va entre simples: `lead='Dijo "hola"'`. No hay escapes —la barra invertida es un carácter normal—, así que un valor que necesite los dos tipos de comillas ASCII usa comillas tipográficas (`«…»`, `“…”`, `’`).
+- **Valores sin comillas** (`startAt=17`, `year=1998`) llegan hasta el siguiente espacio: `title=Hola mundo` es `title="Hola"` más una bandera `mundo`.
+- **Sin llaves.** `{` y `}` nunca van en un valor. La primera `}` cierra el bloque: una valla cuyo valor contenga una deja de ser una directiva y pasa a ser un párrafo, y en línea el resto del valor se derrama en el texto. En un encabezado, una `}` en un valor deja todo el bloque en el título, y una `{` tras un espacio empieza el bloque de nuevo: `# Título {nota="a {b"}` se queda con `Título {nota="a` como título y solo lee una bandera `b`.
+- **El signo `$` es texto.** Los atributos se leen antes que las fórmulas en línea, así que `lead="de 5 $ a 6 $"` es solo texto.
+- **Una línea.** Un bloque de atributos nunca ocupa más de una línea.
+
+```markdown
+# El largo camino {lead='Una "novela de carretera", dijeron' precio="18 $"}
+
+:::callout{type="note" title='El camino "rápido"'}
+…
+:::
+```
+
+`::resource{id="…"}` es más estricto: el id entre comillas dobles y ningún otro atributo (consulta [Recursos](#recursos)).
 
 ### Contenedores
 
@@ -219,9 +260,9 @@ Los atributos que admite cada contenedor, y cómo se estiliza, se documentan en 
 :::
 ```
 
-Un aviso se compone como una caja — un título opcional y después su contenido, con la tipografía de cuerpo y de listas propia del estilo. Por defecto se mantiene unido y pasa entero a la columna o página siguiente cuando no cabe (una caja más alta que una columna entera se parte igualmente, en lugar de desbordar); un estilo con `keepTogether: false` le permite partirse entre sus bloques, o entre líneas, dejando al menos `splitMinLines` líneas de texto — o una figura, tabla, fórmula en bloque o caja anidada — a cada lado del corte. Las cajas a ancho completo (`span="page"`) cortan la página en bandas de columnas; las cajas `span="side"` salen del flujo a la columna lateral solo para flotantes de una disposición de columna y media (`layout.sideColumnRole: 'floats'`), apiladas junto al texto que interrumpen, y se componen como cajas de columna donde no existe tal columna; las cajas `placement="fixed"` salen del flujo y se fijan a coordenadas de página (por ejemplo, un distintivo de autoevaluación en la esquina inferior izquierda de la última página del capítulo), y las columnas que cubren ceden esa zona; las cajas flotantes (`placement="top"` / `"bottom"`) salen del flujo donde aparecen y ocupan la primera banda libre tras esa posición — el pie de la página, o la cabecera o el pie de la siguiente — mientras el texto que las sigue rellena la página que dejaron. Un estilo con `floatBarrier: true` (normalmente la caja de «puntos clave» que cierra el capítulo) convierte la caja en una **barrera de flotantes**: toda figura o tabla referenciada antes se coloca antes que ella — en los huecos libres de la página, o en páginas abiertas por delante de la caja — de modo que ningún flotante escapa más allá del final de su capítulo. Una valla `:::nombre` desconocida no es un contenedor — la línea se trata como texto, exactamente igual que una directiva desconocida.
+Un aviso se compone como una caja — un título opcional y después su contenido, con la tipografía de cuerpo y de listas propia del estilo. Por defecto se mantiene unido y pasa entero a la columna o página siguiente cuando no cabe (una caja más alta que una columna entera se parte igualmente, en lugar de desbordar); un estilo con `keepTogether: false` le permite partirse entre sus bloques, o entre líneas, dejando al menos `splitMinLines` líneas de texto — o una figura, tabla, fórmula en bloque o caja anidada — a cada lado del corte (un corte dentro de un párrafo o de un elemento de lista deja además al menos `layout.boxChildSplitMinLines` de sus líneas a cada lado: dos por defecto, `splitMinLines` si es menor; los libros guardados antes de la 1.5 cuyos capítulos tienen recuadros se leen con 1, el corte de la 1.4). Cada parte posterior a la primera empieza sin el icono, aunque su texto conserva la columna del icono, y sin el título salvo que el estilo lo repita (`repeatTitle`: «Puntos clave (cont.)»); un estilo puede además poner un indicador «Continúa» bajo cada parte que sigue (`continuesMarkerEnabled`) — ver [Marcas de un recuadro partido](/es/docs/configuration#marcas-de-un-recuadro-partido). Las cajas a ancho completo (`span="page"`) cortan la página en bandas de columnas; las cajas `span="side"` salen del flujo a la columna lateral solo para flotantes de una disposición de columna y media (`layout.sideColumnRole: 'floats'`), apiladas junto al texto que interrumpen, y se componen como cajas de columna donde no existe tal columna; las cajas `placement="fixed"` salen del flujo y se fijan a coordenadas de página (por ejemplo, un distintivo de autoevaluación en la esquina inferior izquierda de la última página del capítulo), y las columnas que cubren ceden esa zona; las cajas flotantes (`placement="top"` / `"bottom"`) salen del flujo donde aparecen y ocupan la primera banda libre tras esa posición — el pie de la página, o la cabecera o el pie de la siguiente — mientras el texto que las sigue rellena la página que dejaron. Un estilo con `floatBarrier: true` (normalmente la caja de «puntos clave» que cierra el capítulo) convierte la caja en una **barrera de flotantes**: toda figura o tabla referenciada antes se coloca antes que ella — en los huecos libres de la página, o en páginas abiertas por delante de la caja — de modo que ningún flotante escapa más allá del final de su capítulo. Una valla `:::nombre` desconocida no es un contenedor — la línea se trata como texto, exactamente igual que una directiva desconocida.
 
-Una valla `:::part` admite `number` (tal como quieras imprimirlo — `"I"`, `"IV"`, `"3"`; además se interpreta para que el diseño pueda reformatearlo) y `title`; los dos son opcionales. Un tercer atributo, `palette="band=#hex"` (varios pares `id=#hex` separados por comas), recolorea todos los colores de diseño vinculados a esos ids de paleta — cabeceras, banda de apertura, diseños de parte — y los colores del flujo de texto que comparten su valor base (títulos, negrita, referencias, viñetas, pies) para la parte y los capítulos que la siguen, hasta la siguiente parte; ver [Configuración › Partes](/es/docs/configuration#partes). El contenedor abre siempre una página propia: un salto de página con la paridad configurada antes, una columna única de cuerpo en los `parts.margins`, el diseño de apertura sobre la página entera y otro salto de página tras la valla de cierre. El cuerpo — normalmente la lista de los capítulos que agrupa la parte, o nada en absoluto — se compone con `parts.bodyStyle`:
+Una valla `:::part` admite `number` (tal como quieras imprimirlo — `"I"`, `"IV"`, `"3"`; además se interpreta para que el diseño pueda reformatearlo) y `title`; los dos son opcionales. Un tercer atributo, `palette="band=#hex"` (varios pares `id=#hex` separados por comas), recolorea todos los colores de diseño vinculados a esos ids de paleta — cabeceras, banda de apertura, diseños de parte — y los colores del flujo de texto que comparten su valor base (títulos, negrita, referencias, viñetas, pies, tablas, recuadros, chips) para la parte y los capítulos que la siguen, hasta la siguiente parte; ver [Configuración › Partes](/es/docs/configuration#partes). El contenedor abre siempre una página propia: un salto de página con la paridad configurada antes, una columna única de cuerpo en los `parts.margins`, el diseño de apertura sobre la página entera y otro salto de página tras la valla de cierre. El cuerpo — normalmente la lista de los capítulos que agrupa la parte, o nada en absoluto — se compone con `parts.bodyStyle`:
 
 ```
 :::part{number="I" title="Fundamentos"}
@@ -250,6 +291,32 @@ Dentro de un `:::callout`, un grupo `:::columns{count=2}` … `:::` compone los 
 :::
 ```
 
+**Cómo cuenta `breaks`.** `breaks` numera los bloques del grupo en orden — párrafos, elementos de lista (un bloque cada uno), fórmulas en bloque, figuras y tablas —, y un `:::callout` anidado cuenta como un solo bloque, tenga los que tenga dentro. Las directivas no son bloques: un `:::space` entre dos estrofas no altera la cuenta. Un número menor que 2, posterior al último bloque del grupo o que no va después del corte anterior se ignora. Dentro de un grupo, `:::space` separa dos bloques como en cualquier otro punto del recuadro, y desaparece al principio del grupo y en la cabeza de cada una de sus columnas (una posición de `breaks` o un corte de nivelado); para empezar el grupo más abajo, pon el espacio antes de la valla `:::columns`. Así, dos columnas con los mismos espacios quedan alineadas estrofa a estrofa:
+
+```md
+:::callout{type="verso"}
+:::columns{count=2 breaks="4"}
+La lámpara se enciende al anochecer,
+
+y se despabila antes del alba.
+
+:::space
+
+El farero duerme de día.
+
+The lamp is lit at dusk,
+
+and trimmed before the dawn.
+
+:::space
+
+The keeper sleeps by day.
+:::
+:::
+```
+
+Aquí el cuarto bloque, «The lamp…», abre la segunda columna; las dos líneas `:::space` no cuentan y dejan el mismo hueco en ambas columnas.
+
 Una valla `:::callout` admite también `label="…"`: el texto que un estilo con pestaña `label` imprime en la esquina superior de la caja (`:::callout{type="recuadro" label="RECUADRO 1-1" title="La regla del octeto"}`).
 
 Un `:::callout` dentro de otro es una caja propia —una ficha de ejercicio con recuadros de respuesta, por ejemplo—. Toma su propio estilo (fondo, borde, radio, relleno, título, icono) al ancho interior completo de la caja exterior y se apila entre sus demás bloques; su `span` y su `placement` se ignoran, porque una caja anidada siempre fluye dentro de su madre. Cada valla de cierre cierra la caja abierta más interna:
@@ -268,11 +335,13 @@ Un segundo recuadro de respuesta.
 :::
 ```
 
-Cuando la caja exterior se parte entre columnas o páginas (`keepTogether: false`, o más alta que una columna), una caja anidada pasa entera al fragmento siguiente salvo que su propio estilo permita partirla también; cada fragmento vuelve a dibujar los marcos que contiene, y una caja anidada que continúa pierde su título y su icono.
+Cuando la caja exterior se parte entre columnas o páginas (`keepTogether: false`, o más alta que una columna), una caja anidada pasa entera al fragmento siguiente salvo que su propio estilo permita partirla también; cada fragmento vuelve a dibujar los marcos que contiene, y una caja anidada que continúa pierde su icono, y su título salvo que su estilo lo repita (`repeatTitle`).
 
 ### `:::pagebreak`
 
 La directiva por sí sola no fuerza paridad — solo afecta al siguiente bloque. Úsala para terminar un prólogo, forzar una dedicatoria en su propia página, o marcar el final de una sección. Cuando se quieren ambos efectos (salto de página y reinicio de numeración), compón `:::pagebreak` seguido de `:::numbering` — el cambio de numeración se aplica en la nueva página que acaba de crear `:::pagebreak`.
+
+Un salto de página en una página todavía vacía no hace nada, así que nunca añade una página en blanco. Tampoco sustituye al `breakBefore` de un encabezado que venga justo detrás (el nivel 1 lo tiene por defecto): el encabezado aplica igualmente su paridad, lo que puede añadir una página en blanco tras la que abrió la directiva. Para que un encabezado empiece justo ahí, desactiva su salto (ver **Configuración → Estilos de encabezado**). Detrás de un encabezado de portada que llena su página el salto es opcional: la portada ya reclama el resto de su página, tanto en disposiciones de una columna como de varias, y un `:::pagebreak` justo detrás no hace daño. Solo hace falta detrás de una portada cuyo diseño termina antes del pie de la página, cuando el texto debe empezar igualmente en la página siguiente (ver **Configuración → Altura reservada**).
 
 ```md
 El capítulo anterior termina aquí.
@@ -296,6 +365,8 @@ Los dos tipos de páginas en blanco que `:::pagebreak` (y `breakBefore`) pueden 
 
 - `blankForParity: true` — insertada para satisfacer una restricción de paridad. En el marcador `{chapterTitle}` esta página lleva el título del capítulo **entrante**, porque la página en blanco solo existe para empujar ese capítulo a la paridad correcta.
 - `blankForForce: true` — la página separadora obligatoria que añade un modo `'always-*'`. Pertenece al capítulo **anterior** — es una pausa deliberada de cierre de capítulo, no un relleno de paridad para el capítulo siguiente.
+
+Las mismas dos reglas dan a una página en blanco las cabeceras y la paleta de una sección con estilo — véase [Configuración › Estilos de encabezado](/es/docs/configuration#estilos-de-encabezado).
 
 #### Excepción al inicio del documento
 
@@ -324,6 +395,8 @@ Las páginas del prefacio se etiquetan `i`, `ii`, `iii`, …; el primer capítul
 
 Los cambios solo de formato (sin `startAt`) mantienen el contador vivo — útil para, por ejemplo, pasar de `lower-alpha` a `upper-alpha` sin reiniciar.
 
+`format` acepta cualquier grafía de un formato de numeración: `roman-lower` e `i` funcionan igual que `lower-roman`, y `arabic` igual que `decimal` (consulta [Configuración › Grafías de los formatos de numeración](/es/docs/configuration#grafías-de-los-formatos-de-numeración)). Un valor que no es ninguna de ellas deja el formato como estaba, y el sandbox lo señala.
+
 ### `:::space`
 
 `:::space` deja espacio vertical entre dos bloques: para separar una línea de cierre del texto que la precede, bajar un poco un epígrafe o una firma, o abrir un *blanco de separación* entre dos tramos de texto. Las líneas en blanco de más en el Markdown no lo hacen — como en cualquier Markdown, una serie de líneas en blanco es un único separador de párrafos, y así un documento no cambia de maquetación cuando un editor o un formateador añade o recorta espacios.
@@ -344,8 +417,16 @@ Y aquí, dos líneas más abajo todavía.
 - **Se suma.** El espacio se añade al margen que ya separa los dos bloques — el margen superior de un encabezado, el inferior de una lista — en lugar de fundirse con él. Dos líneas `:::space` seguidas suman dos líneas.
 - **Desaparece en los saltos**, como el `\vspace` de LaTeX: al principio de una columna o página se descarta, para que ninguna página empiece con un hueco; y si no cabe al pie de una columna, simplemente la termina, sin arrastrar el resto a la siguiente.
 - **El párrafo que le sigue va sin sangría.** Con `bodyText.indentAfterHeading` desactivado, un párrafo justo después de `:::space` pierde la sangría de primera línea, igual que tras un encabezado — la convención habitual cuando el texto se reanuda tras una línea en blanco.
-- **Dentro de un recuadro** (o de un grupo `:::columns`) separa los hijos del recuadro del mismo modo, medido en las líneas de texto del propio recuadro, y se descarta al principio de este.
+- **Dentro de un recuadro** (o de un grupo `:::columns`) separa los hijos del recuadro del mismo modo, medido en las líneas de texto del propio recuadro. Antes del primer bloque del recuadro se descarta, como al principio de una columna — el relleno ya separa el contenido del marco —, salvo en dos casos en los que abre ese espacio: justo debajo del título del recuadro y en un recuadro que no contiene nada más (un recuadro de respuesta, un espacio para escribir, medido en líneas). Siempre desaparece al principio de un grupo `:::columns`, en la cabeza de cada una de sus columnas y al principio de la parte de un recuadro partido que continúa en la columna o página siguiente. Dentro de un contenedor `:::paragraphs` funciona igual que entre párrafos de cuerpo.
 - **Mantener con el siguiente** lo tiene en cuenta: un encabezado seguido de `:::space` pasa a la columna siguiente cuando el espacio y las primeras líneas de su texto no caben debajo.
+
+El recuadro de respuesta de una ficha es un recuadro cuyo único contenido es espacio: la pregunta en su título y cuatro líneas libres debajo.
+
+```md
+:::callout{type="respuesta" title="1. Nombra las tres partes del farol."}
+:::space{lines=4}
+:::
+```
 
 Para un salto fijo en lugar de espacio, usa `:::columnbreak` o `:::pagebreak`.
 
@@ -364,7 +445,7 @@ Los números de página son los que el documento imprime realmente. Un documento
 
 ### Saltos de línea en los títulos
 
-Escribe `\\` dentro de un encabezado (o dentro del atributo `title` de una parte) para forzar un salto de línea allí donde el título se muestra como tal: el encabezado en columna sigue fluyendo y muestra un espacio, mientras que el `{titleText}` de un diseño de apertura salta de línea en ese punto. Las cabeceras de página, `{chapterTitle}`, `{partTitle}` y el índice del PDF siempre componen el título en una sola línea.
+Escribe `\\` dentro de un encabezado (o dentro del atributo `title` de una parte) para forzar un salto de línea allí donde el título se muestra como tal: el encabezado en columna sigue fluyendo y muestra un espacio, mientras que el `{titleText}` de un diseño de apertura salta de línea en ese punto (en cualquier modo de `overflow` del elemento de texto). Las cabeceras de página, `{chapterTitle}`, `{partTitle}` y el índice del PDF siempre componen el título en una sola línea.
 
 ```md
 # Concepto de salud y enfermedad. \\ Salud comunitaria {author="I. Zango Martín"}
@@ -372,7 +453,7 @@ Escribe `\\` dentro de un encabezado (o dentro del atributo `title` de una parte
 
 ## Formato en línea
 
-El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezados, párrafos, citas, elementos de lista).
+El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezados, párrafos, citas, elementos de lista). En un encabezado depende de `headings.inlineMarks`, activado por defecto: la cursiva, la negrita, los superíndices y subíndices, las versalitas y los enlaces del título se imprimen como en un párrafo, y un tramo en cursiva dentro de un encabezado en cursiva sale en redonda. Si se desactiva, se quitan los marcadores y el título se imprime con el estilo del encabezado; así se leen las configuraciones guardadas por postext 1.4 o anterior cuyos encabezados llevan marcas (ver [Configuración › Encabezados](/es/docs/configuration#encabezados)). El diseño de un encabezado imprime `{titleText}` como texto sin marcas en ambos casos.
 
 <Illustration name="InlineFormatting" data='{"title": "Formato en línea de un vistazo", "desc": "Comparativa markdown-a-renderizado para negrita, cursiva, negrita cursiva, código en línea y enlace.", "caption": "Markdown a la izquierda, resultado renderizado a la derecha.", "rows": [{"markdown": "**negrita**", "rendered": "negrita", "style": "bold"}, {"markdown": "*cursiva*", "rendered": "cursiva", "style": "italic"}, {"markdown": "***ambas***", "rendered": "ambas", "style": "bold-italic"}, {"markdown": "`código`", "rendered": "código", "style": "code"}, {"markdown": "[enlace](https://…)", "rendered": "enlace", "style": "link"}]}' />
 
@@ -393,7 +474,7 @@ El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezado
     <tr>
       <td>Cursiva</td>
       <td><code>*cursiva*</code> o <code>_cursiva_</code></td>
-      <td>Se renderiza con la variante cursiva de la fuente actual. Un <code>bodyText.italicColor</code> opcional anula el color general del cuerpo para los tramos en cursiva.</td>
+      <td>Se renderiza con la variante cursiva de la fuente actual. Un <code>bodyText.italicColor</code> opcional anula el color general del cuerpo para los tramos en cursiva. Un guion bajo marca énfasis solo en un límite de palabra, como en CommonMark: uno entre dos letras o cifras —<code>nombre_con_guiones</code>, el <code>SR_AIR_EN.pdf</code> de una URL— es texto (también para <code>__negrita__</code>); dentro de una palabra, usa asteriscos (<code>in*creí*ble</code>).</td>
     </tr>
     <tr>
       <td>Negrita cursiva</td>
@@ -408,22 +489,32 @@ El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezado
     <tr>
       <td>Subíndice</td>
       <td><code>~texto~</code></td>
-      <td>Mismo tamaño, bajado un tercio del cuerpo — un índice químico (<code>H~2~O</code>, <code>p<em>K</em>~a~</code>). Se combina con negrita y cursiva (<code>**H~2~O**</code>).</td>
+      <td>Mismo tamaño, bajado 0,15 del cuerpo, de modo que no pasa de los descendentes — un índice químico (<code>H~2~O</code>, <code>p<em>K</em>~a~</code>). Se combina con negrita y cursiva (<code>**H~2~O**</code>). Un subíndice y un superíndice escritos juntos, sin nada entre ellos, se apilan como en una fórmula: <code>*T*~0~^2^</code> compone el 2 sobre el 0, vaya primero el que vaya, con el subíndice bajado 0,25 del cuerpo para dejar sitio al superíndice, y el par ocupa lo que el más ancho de los dos. Un espacio o una letra entre ellos los compone uno detrás de otro; también una unión de palabras (U+2060), sin que se vea nada entre ellos. Un par apilado nunca se separa en un cambio de línea: una palabra que no cabe en la línea se corta antes del par.</td>
+    </tr>
+    <tr>
+      <td>Versalitas</td>
+      <td><code>:smallcaps[texto]</code></td>
+      <td>Las minúsculas se componen como mayúsculas al 70 % del cuerpo — el nombre de un personaje en una obra de teatro, una sigla en el texto corrido. Admite otras marcas dentro y alrededor; ver <a href="#versalitas">Versalitas</a>.</td>
     </tr>
     <tr>
       <td>Código en línea</td>
       <td><code>`código`</code></td>
-      <td>Las comillas invertidas se eliminan; el tramo se renderiza como texto plano. El estilo diferenciado para código está en el roadmap.</td>
+      <td>Las comillas invertidas se eliminan; el tramo se renderiza como texto plano, tal cual se escribió: un <code>{':ref{…}'}</code>, un chip, una fórmula, un enlace o un signo de marca dentro de él se imprimen literalmente, que es como un texto muestra la sintaxis. El estilo diferenciado para código está en el roadmap.</td>
     </tr>
     <tr>
       <td>Escape</td>
-      <td><code>\*</code>, <code>\_</code>, <code>\^</code>, <code>\~</code>, <code>\`</code></td>
-      <td>Una barra invertida compone el propio carácter marcador — el asterisco de una nota de tabla (<code>\* pOH = −log [OH^−^]</code>), un acento circunflejo literal — en vez de abrir un tramo. Vale en el cuerpo y en pies, celdas y notas.</td>
+      <td><code>{'\\*'}</code>, <code>{'\\_'}</code>, <code>{'\\^'}</code>, <code>{'\\~'}</code>, <code>{'\\`'}</code>, <code>{'\\$'}</code></td>
+      <td>Una barra invertida compone el propio carácter marcador — el asterisco de una nota de tabla (<code>{'\\* pOH = −log [OH^−^]'}</code>), un acento circunflejo literal, un signo de dólar que no abre ninguna fórmula — en vez de abrir un tramo. Vale en el cuerpo, en los chips y en pies, celdas y notas. (Hasta postext 1.4 los pies, las celdas, las notas y los chips imprimían la barra de <code>{'\\$'}</code>).</td>
+    </tr>
+    <tr>
+      <td>Espacio de no separación</td>
+      <td>el propio carácter: U+00A0, U+202F, U+2007</td>
+      <td>Une las palabras de ambos lados, de modo que la línea nunca se corta entre ellas: un número y su unidad (37 °C), una referencia de página (p. 12), un grupo de millares (225 000). El espacio de no separación (U+00A0), el espacio fino de no separación (U+202F) y el espacio de cifra (U+2007) unen —en el cuerpo, los pies, las celdas, los recuadros y las cabeceras— y cada uno conserva su propio ancho: la justificación solo estira los espacios entre palabras. Muchas fuentes no tienen glifo para el espacio fino de no separación ni para el espacio de cifra; entonces se componen como lo hacen los navegadores, igual en canvas, en HTML y en PDF: con la mitad de un espacio entre palabras y con el ancho de una cifra. Prácticamente todas las fuentes tienen U+00A0, así que es la opción segura. Un grupo unido así que es más ancho que toda la línea se corta en su último espacio de no separación antes que dentro de una palabra. El unidor de palabras (U+2060) une sin ocupar sitio. Escribe el propio carácter: una entidad HTML como <code>{'&nbsp;'}</code> se imprime tal como está escrita. Ver <a href="/es/docs/justification#dónde-nunca-se-corta-una-línea">Dónde nunca se corta una línea</a>.</td>
     </tr>
     <tr>
       <td>Enlace</td>
       <td><code>[texto](https://…)</code></td>
-      <td>El texto visible permanece en el flujo; la URL se descarta en el renderizador actual. El soporte de enlaces está en el roadmap.</td>
+      <td>El texto visible permanece en el flujo, compuesto exactamente igual que sin el enlace. La URL convierte esas palabras en un enlace activo en la salida HTML y PDF; consulta <a href="#enlaces">Enlaces</a>.</td>
     </tr>
     <tr>
       <td>Imagen</td>
@@ -438,10 +529,33 @@ El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezado
     <tr>
       <td>Matemáticas en línea</td>
       <td><code>$…$</code></td>
-      <td>Una fórmula LaTeX que fluye con el texto que la rodea, p. ej. <code>$e^{'{i\\pi}'}+1=0$</code>. Se compone con MathJax y se renderiza como trazos vectoriales en todos los backends. Usa <code>\\$</code> para un signo de dólar literal. El escalado, la forma display (<code>$$ … $$</code>) y el manejo de errores se describen en <a href="#fórmulas-matemáticas">Fórmulas matemáticas</a>.</td>
+      <td>Una fórmula LaTeX que fluye con el texto que la rodea, p. ej. <code>$e^{'{i\\pi}'}+1=0$</code>. Se compone con MathJax y se renderiza como trazos vectoriales en todos los backends. Usa <code>\\$</code> para un signo de dólar literal. El escalado, la forma en bloque (<code>$$ … $$</code>) y el manejo de errores se describen en <a href="#fórmulas-matemáticas">Fórmulas matemáticas</a>.</td>
     </tr>
   </tbody>
 </table>
+
+### Enlaces
+
+Un enlace Markdown, `[texto](url)`, mantiene su texto en el flujo exactamente como se compondría sin él: el enlace nunca cambia los cortes de línea, el espaciado ni el color. Conserva su URL para las salidas que pueden seguirla:
+
+- **HTML** (`renderToHtml`): las palabras enlazadas se envuelven en `<a href="…" rel="noopener noreferrer">`, que toma el color del texto y no se subraya. Hay un ancla por cada tramo de palabras enlazadas de una línea.
+- **PDF** (`postext-pdf`): cada tramo de palabras enlazadas de una línea se convierte en una anotación de enlace URI en la que se puede hacer clic. En un PDF etiquetado es un elemento `Link` cuyo texto son las palabras enlazadas.
+- **Canvas**: se pinta como texto normal, porque un canvas no tiene superficie donde hacer clic.
+
+```markdown
+Lee la [guía de configuración](https://postext.dev/es/docs/configuration "Configuración")
+o escribe [al equipo](mailto:equipo@example.com).
+```
+
+- El destino puede llevar un título, que se ignora (`[texto](https://example.com "Título")`). También puede ir entre corchetes angulares, donde los espacios pasan a ser `%20` (`[texto](<https://example.com/a b>)`).
+- Solo se conservan destinos seguros: `http:`, `https:`, `mailto:`, `tel:`, `ftp:` y URL relativas (`../guia`, `#inicio`). Cualquier otro esquema (`javascript:`, `data:`, `file:`…) compone el texto sin enlace. El PDF solo enlaza URL absolutas.
+- El destino puede contener paréntesis siempre que estén equilibrados, como en CommonMark: `[foto](https://commons.wikimedia.org/wiki/File:Bike_(Unsplash).jpg)` enlaza la URL entera. Una barra invertida escapa un carácter (`\(`, `\_`). Si los paréntesis no están equilibrados, el destino termina en su primer `)` y el texto se compone sin enlace; codifica un paréntesis suelto como `%28` o `%29`. Un espacio también termina el destino, salvo que vaya entre corchetes angulares.
+- Una palabra pegada al texto del enlace comparte el enlace. En `mira [el sitio](https://example.com).` el punto forma parte de la zona en la que se puede hacer clic.
+- El texto del enlace puede llevar énfasis (`[palabras en **negrita**](…)`) y puede ir dentro de él (`**[palabras](…)**`).
+- Los enlaces funcionan en párrafos, elementos de lista, citas, cajas, leyendas, notas y celdas de tabla, y en los encabezados mientras `headings.inlineMarks` esté activado (lo está por defecto). Los titulillos, el esquema y las filas del índice que salen de un encabezado conservan solo el texto, igual que el texto de un `:chip[…]`.
+- No se reconocen los enlaces por referencia (`[texto][id]`) ni los autoenlaces (`<https://…>`) (consulta [Qué NO se soporta](#qué-no-se-soporta)).
+
+En el VDT el destino está en cada segmento enlazado, como `VDTLineSegment.href`. El analizador guarda los enlaces de un tramo como rangos de su texto, en `InlineSpan.links`, y nunca parte un tramo por un enlace; por eso un enlace no puede cambiar la composición.
 
 ### Chips en línea
 
@@ -455,21 +569,42 @@ Pulsa :chip[Ctrl]{style="tecla"} + :chip[C]{style="tecla"} para copiar.
 
 - **Una unidad.** Un chip nunca se parte ni se divide con guion por dentro; la línea se corta entre chips, en los espacios que los rodean. Un chip más ancho que toda la línea la desborda en lugar de partirse.
 - **Ancho.** Su avance es el texto más el relleno horizontal y el contorno a ambos lados. La justificación solo estira los espacios entre palabras, nunca el interior de un chip. El `gap` del estilo es el espacio mínimo entre la caja y la palabra o el chip vecino a través de un espacio: un espacio más estrecho se completa (no en el borde de la línea, ni junto a la puntuación pegada, como en `:chip[a],`).
-- **Alto.** La caja es una banda alrededor de la línea base, 0,8 em por encima y 0,25 em por debajo al cuerpo del chip, que crece con el relleno vertical y el contorno. El relleno vertical se pinta fuera de la caja de línea y nunca cambia el interlineado, así que la retícula se mantiene; una caja más alta que el interlineado toca los chips de la línea siguiente, y el sandbox lo señala («Los chips tocan la línea siguiente») para reducir el relleno, el contorno o el cuerpo.
-- **Texto.** El texto del chip admite sus propias marcas (`:chip[**negrita** palabra]`, `:chip[x^2^]`) y el énfasis que lo rodea (`**:chip[a]**`); el estilo puede fijar su familia, cuerpo, color, negrita y cursiva. Escribe `\]` para un corchete literal dentro. Las referencias, las muestras de color y las fórmulas dentro de un chip quedan como texto literal.
+- **Alto.** La caja es una banda alrededor de la línea base, 0,8 em por encima y 0,25 em por debajo al cuerpo del chip, que crece con el relleno vertical y el contorno. El relleno vertical se pinta fuera de la caja de línea y nunca cambia el interlineado, así que la retícula se mantiene; una caja más alta que el interlineado puede invadir un chip de la línea de encima o de debajo, y el sandbox señala dos chips de líneas distintas que se solapan («Los chips tocan la línea siguiente») para reducir el relleno, el contorno o el cuerpo.
+- **Texto.** El texto del chip admite sus propias marcas (`:chip[**negrita** palabra]`, `:chip[x^2^]`) y el énfasis que lo rodea (`**:chip[a]**`); el estilo puede fijar su familia, cuerpo, color, negrita y cursiva. Escribe `\]` para un corchete literal dentro. Las referencias, las muestras de color y las fórmulas dentro de un chip quedan como texto literal, y `\$` imprime un signo de dólar (hasta postext 1.4 imprimía también la barra).
+- **Vacío.** Un chip hecho solo de espacios (`:chip[ ]`, espacios de no separación incluidos) es una caja vacía —un hueco para la respuesta, una marca de fin—: tan ancha como el relleno horizontal y el contorno de su estilo, tan alta como un chip con palabras. Da tamaño al hueco con el `paddingX` de un estilo (`:chip[ ]{style="hueco"}`). Sin nada entre los corchetes, `:chip[]` queda como texto literal.
 - **Dónde.** Párrafos, elementos de lista, citas, recuadros, celdas de tabla, leyendas y notas. En los encabezados `:chip[…]` queda como texto literal.
 - **Salida.** Canvas, HTML y PDF pintan la caja y componen las palabras como texto real: seleccionable en el HTML, extraíble y en orden de lectura en el PDF (en un PDF etiquetado la caja es un artefacto de maquetación y las palabras pertenecen al párrafo).
+
+### Versalitas
+
+`:smallcaps[texto]` compone `texto` en versalitas — los nombres de los personajes de una obra de teatro, una sigla en el texto corrido, las primeras palabras de un capítulo. Las minúsculas se componen como mayúsculas al 70 % del cuerpo, mientras que las mayúsculas, las cifras y la puntuación conservan el tamaño completo, de modo que `:smallcaps[Hamlet]` imprime una H de tamaño completo seguida de AMLET en versalitas.
+
+```markdown
+Entran :smallcaps[Hamlet] y :smallcaps[Horacio], leyendo.
+
+El informe de la :smallcaps[unesco] y las pautas de la :smallcaps[oms].
+```
+
+- **Sintetizadas.** Las versalitas se dibujan con las mayúsculas de la propia fuente, del mismo modo en el canvas, en el HTML y en el PDF, así que el texto mide y corta igual en todas partes. No se usan las versalitas reales de una fuente (la característica OpenType `smcp`); para ellas, compón el texto en una familia de versalitas (una cuyo nombre termine en «SC», por ejemplo) mediante un estilo de párrafo.
+- **Marcas.** El texto admite sus propias marcas en línea (`:smallcaps[**Ofelia**]`) y el énfasis que lo rodea (`*:smallcaps[Acto I]*`); escribe `\]` para un corchete literal dentro. Una referencia o un chip dentro se componen también en versalitas, y la referencia sigue siendo un solo enlace en el HTML y en el PDF; una fórmula, no.
+- **Cortes.** Las palabras pasan de línea y se dividen con guion como siempre; la separación silábica lee cada palabra tal como está escrita.
+- **Dónde.** Párrafos, elementos de lista, citas, recuadros, celdas de tabla, leyendas y notas, y encabezados mientras `headings.inlineMarks` esté activado (lo está por defecto); si se desactiva, el marcado se elimina del encabezado y el texto se imprime tal cual.
+- **Párrafos enteros.** Un estilo de párrafo o el cuerpo de un recuadro con `smallCaps: true` componen así todo su texto (ver [Estilos de párrafo](/es/docs/configuration#estilos-de-párrafo)).
+- **Texto.** El canvas, el HTML y el PDF llevan las letras tal como se pintan: al copiar `:smallcaps[Hamlet]` se obtiene «HAMLET».
 
 
 ## Fórmulas matemáticas
 
-El soporte matemático forma parte del formato de documento de primer nivel. Postext parsea `$…$` para fórmulas en línea y `$$…$$` para fórmulas en display (bloque), y las renderiza con [MathJax](https://www.mathjax.org/) en modo SVG. Los mismos trazos vectoriales alimentan los tres backends, de modo que la vista previa en canvas, la exportación HTML y la salida PDF coinciden píxel a píxel — y el PDF se mantiene completamente vectorial sea cual sea el nivel de zoom.
+El soporte matemático forma parte del formato de documento de primer nivel. Postext parsea `$…$` para fórmulas en línea y `$$…$$` para fórmulas en bloque, y las renderiza con [MathJax](https://www.mathjax.org/) en modo SVG. Los mismos trazos vectoriales alimentan los tres backends, de modo que la vista previa en canvas, la exportación HTML y la salida PDF coinciden píxel a píxel — y el PDF se mantiene completamente vectorial sea cual sea el nivel de zoom.
 
-- **En línea:** `$…$`. Se reconoce dentro de cualquier bloque de texto (párrafo, encabezado, cita, elemento de lista). Aporta una única caja atómica no partible a la línea; Knuth-Plass la trata como una palabra que no puede separarse. Si la altura natural de la fórmula rompería la caja de línea, se escala uniformemente para conservar la rejilla de línea base — las expresiones muy altas deben vivir en modo display.
-- **Display:** `$$…$$`. Bien en una línea propia (`$$\int_0^1 x^2\,dx$$`) o vallada en varias líneas con marcadores `$$` en sus propias líneas. Se renderiza centrada en la columna y ajustada a la rejilla de línea base con márgenes superior e inferior configurables (`math.marginTop`, `math.marginBottom`) — exactamente la misma corrección que usan los encabezados, de modo que el párrafo que sigue vuelve a caer sobre la rejilla.
-- **Escapado:** `\$` es un signo de dólar literal. Un delimitador `$` o `$$` sin cerrar produce una entrada `unclosedMath` en el panel Revisión del Sandbox con un ancla de fuente al que puedes saltar con un clic.
+- **En línea:** `$…$`. Se reconoce dentro de cualquier bloque de texto (párrafo, encabezado, cita, elemento de lista). Aporta una única caja atómica no partible a la línea; Knuth-Plass la trata como una palabra que no puede separarse. Si la altura natural de la fórmula rompería la caja de línea, se escala uniformemente para conservar la rejilla de línea base — las expresiones muy altas deben ir en una fórmula en bloque.
+- **En bloque:** `$$…$$`. Bien en una línea propia (`$$\int_0^1 x^2\,dx$$`) o vallada en varias líneas con marcadores `$$` en sus propias líneas. Se renderiza centrada en la columna y ajustada a la rejilla de línea base con márgenes superior e inferior configurables (`math.marginTop`, `math.marginBottom`) — exactamente la misma corrección que usan los encabezados, de modo que el párrafo que sigue vuelve a caer sobre la rejilla.
+- **El texto alrededor de una fórmula en bloque:** una fórmula en bloque escrita en su propia línea interrumpe un párrafo aunque no haya línea en blanco encima. El texto anterior es un párrafo que la introduce; el texto escrito justo bajo el `$$` de cierre, sin línea en blanco, continúa el párrafo interrumpido y se compone sin sangría de primera línea, como TeX compone el «donde …» tras una fórmula en bloque. Una fórmula separada del texto de encima por una línea en blanco (o que sigue a una lista, una cita o un encabezado) no interrumpe nada: el texto que la sigue es un párrafo nuevo, sangrado como siempre, haya línea en blanco o no (`math.indentAfterDisplay: false` también lo compone sin sangría). Solo una fórmula en bloque completa interrumpe un párrafo —una sola fórmula en la línea, o una valla `$$` que se cierra antes de la siguiente línea en blanco—; una línea como `$$a$$ y $$b$$` sigue siendo texto. `math.keepWithLeadIn` mantiene una fórmula en la columna de la línea que la introduce. (Hasta postext 1.4, una línea `$$…$$` sin línea en blanco encima se leía como parte del párrafo y se imprimía tal como estaba escrita).
+- **Números de ecuación:** `\tag{…}` numera una fórmula en bloque: ocupa la columna (o el ancho interior del recuadro), con la ecuación centrada y su número alineado a la derecha en su línea — en cada fila etiquetada de un `align`. `\tag*{…}` imprime la etiqueta sin paréntesis. Solo se numeran las etiquetas explícitas.
+- **Escapado:** `\$` es un signo de dólar literal. Los pies, las celdas de tabla, las notas y los chips no se analizan como fórmulas, así que un `$` se imprime allí tal cual; `\$` también imprime allí un signo de dólar, y una misma cadena escapada se lee igual en el texto y en una tabla. Un delimitador `$` o `$$` sin cerrar produce una entrada `unclosedMath` en el panel Revisión del Sandbox con un ancla de fuente al que puedes saltar con un clic.
 - **Errores:** el código TeX que MathJax rechaza (macros no definidos, errores de sintaxis) se refleja como un aviso `invalidMath`. La fórmula se sustituye por una pequeña caja roja para que la geometría del layout siga siendo válida.
-- **Configuración:** la sección `math` de la configuración expone `enabled`, `fontSizeScale` (relativo al tamaño del cuerpo), `color` (hereda del cuerpo si se omite) y los márgenes del display.
+- **Configuración:** la sección `math` de la configuración expone `enabled`, `fontSizeScale` (relativo al tamaño del texto que la rodea: con 1.0, un em de la fórmula mide ese tamaño — el del cuerpo para las fórmulas en bloque y para las fórmulas en línea del texto de cuerpo; desde postext 1.5, que compone las fórmulas en torno a un 13 % más pequeñas que la 1.4, aunque los paquetes y los libros del Sandbox guardados con la 1.4 conservan su tamaño — ver [Tamaño de las fórmulas](/es/docs/configuration#matemáticas)), `color` (hereda del cuerpo si se omite) y los márgenes de las fórmulas en bloque.
+- **El motor:** MathJax se carga bajo demanda. El Sandbox y el worker de composición lo arrancan por su cuenta; en tu propio código, llama a `await initMathEngine()` antes de `buildDocument`, o cada fórmula se compondrá como una caja gris provisional (consulta [Arrancar el motor de fórmulas](/es/docs/configuration#arrancar-el-motor-de-fórmulas)).
 
 ```md
 La identidad de Euler $e^{i\pi}+1=0$ enlaza las cinco constantes fundamentales.
@@ -477,6 +612,14 @@ La identidad de Euler $e^{i\pi}+1=0$ enlaza las cinco constantes fundamentales.
 $$
 \int_0^{\infty} e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2}
 $$
+```
+
+Una fórmula en mitad de una frase, y la frase que sigue tras ella sin sangría:
+
+```md
+Para un péndulo de longitud $L$, el periodo es
+$$T_0 = 2\pi\sqrt{L/g}$$
+donde $g$ es la aceleración de la caída libre.
 ```
 
 
@@ -510,9 +653,11 @@ Aquí está el plano que comentamos.
 Las dependencias del farero ocupan el ala este.
 ```
 
-Para un recurso que flota, la directiva `::resource` es innecesaria —el `:ref` ya lo colocó, y un `::resource` redundante para el mismo id se trata como otra referencia, no como una segunda copia. Un `::resource` solo renderiza el recurso en línea cuando su colocación resuelta es `"here"`. Un recurso en línea conserva una línea de espacio sobre él (el hueco de los flotantes), como lo haría un flotante, salvo que el bloque anterior pida más.
+Para un recurso que flota, la directiva `::resource` es innecesaria —el `:ref` ya lo colocó, y un `::resource` redundante para el mismo id se trata como otra referencia, no como una segunda copia. Un `::resource` solo renderiza el recurso en línea cuando su colocación resuelta es `"here"`. Un recurso en línea conserva una línea de espacio sobre él (el hueco de los flotantes), como lo haría un flotante, salvo que el bloque anterior pida más. En el texto corrido conserva el mismo espacio bajo él; después, el texto que sigue vuelve a la rejilla base, lo que puede añadir hasta una línea más. Un encabezado, una lista, un recuadro u otro recurso en línea justo después comparte ese espacio con su propio espacio superior: se aplica el mayor de los dos, no la suma. (Hasta postext 1.4, el espacio de debajo era solo lo que dejaba el ajuste a la rejilla, entre nada y una línea; `layout.inlineResourceGap: 'above'` mantiene esa regla, y los libros guardados antes de la 1.5 se leen con ella). Dentro de un recuadro (`:::callout`) el recurso conserva el mismo espacio, una línea del texto del propio recuadro encima y, con `'around'`, debajo; al principio o al final del recuadro ya lo separa el relleno. (Hasta postext 1.4 quedaba pegado al texto del recuadro; `layout.inlineResourceGapInBoxes: false` lo mantiene, y los libros guardados antes de la 1.5 cuyos recuadros insertan un recurso se leen así).
 
-El `id` debe coincidir con un recurso definido en el panel Figuras. El motor renderiza el recurso (imagen, SVG o tabla) con su pie dibujado debajo a modo de pie de figura/tabla. El texto del pie se compone a partir del `captionPrefix` del tipo de recurso, el número calculado y el pie propio del recurso — p. ej. **Figura 1.7. El plano original del faro.** Su tipografía se controla desde [Configuración › Estilo de pies](/es/docs/configuration#estilo-de-pies): la etiqueta y la descripción comparten tipografía y tamaño, mientras que la etiqueta conserva sus propios ajustes de negrita/cursiva/color; la separación sobre el pie es por defecto `0.75em` y la alineación, a la izquierda. El pie puede situarse en cambio encima del recurso (`captionStyle.position: 'above'`, de forma global o por tipo de recurso), opcionalmente sobre una barra de color. Un recurso puede llevar además una `note` — una línea breve de fuente o créditos, con el mismo formato en línea y las mismas marcas `:ref` que el pie — compuesta en un tamaño menor bajo el recurso (bajo el pie cuando este va debajo, bajo el cuerpo cuando va encima) y estilizada mediante `captionStyle.note`.
+El `id` debe coincidir con un recurso definido en el panel Figuras. El motor renderiza el recurso (imagen, SVG o tabla) con su pie dibujado debajo a modo de pie de figura/tabla. El texto del pie se compone a partir del `captionPrefix` del tipo de recurso, el número calculado y el pie propio del recurso — p. ej. **Figura 1.7. El plano original del faro.** Su tipografía se controla desde [Configuración › Estilo de pies de recurso](/es/docs/configuration#estilo-de-pies-de-recurso): la etiqueta y la descripción comparten tipografía y tamaño, mientras que la etiqueta conserva sus propios ajustes de negrita/cursiva/color; la separación sobre el pie es por defecto `0.75em` y la alineación, a la izquierda. El pie puede situarse en cambio encima del recurso (`captionStyle.position: 'above'`, de forma global o por tipo de recurso), opcionalmente sobre una barra de color. Un recurso puede llevar además una `note` — una línea breve de fuente o créditos, con el mismo formato en línea y las mismas marcas `:ref` que el pie — compuesta en un tamaño menor bajo el recurso (bajo el pie cuando este va debajo, bajo el cuerpo cuando va encima) y estilizada mediante `captionStyle.note`.
+
+**Saltos de línea en pies y notas.** Un pie o una nota es un único párrafo compuesto a la medida de su hueco, y un salto de línea escrito en él cuenta como un espacio. Para empezar una línea nueva, escribe `\\` —el salto forzado de los títulos— o termina la línea con una barra invertida, el salto duro de Markdown: `¹ Medido a 20 °C. \\ ² Media de tres ensayos.` compone cada nota de una tabla ancha en su propia línea. La línea anterior a un salto conserva su ancho natural, sin estirarse hasta la medida, y dos saltos seguidos no dejan una línea vacía (un espacio de no separación entre ellos, sí). En una celda de tabla, `\\` hace lo mismo que un salto de línea: abre un párrafo nuevo, y la sangría de la línea siguiente se conserva, de modo que dos espacios iniciales siguen anidando un elemento de lista. En el propio texto las dos barras son siempre un salto y no tienen escape: para imprimirlas, escríbelas en código en línea, donde las barras se imprimen tal cual. En el destino de un enlace siguen formando parte de la URL, y en los atributos de una directiva (el `text` de un `:ref`), del valor; dentro de un chip, que se compone en una sola línea, un salto es un espacio. (Hasta postext 1.4 las barras se imprimían, y un pie o una nota solo cambiaba de línea al agotarse la medida).
 
 Los recursos de tabla dibujan su propia rejilla, con estilo definido en [Configuración › Estilo de tablas](/es/docs/configuration#estilo-de-tablas): las celdas de cuerpo y de cabecera tienen tipografía totalmente independiente, el fondo de la cabecera es por defecto `#f0f0f0`, los bordes `0.75pt` y el `cellPadding` `0.375em` — cualquier campo sin definir hereda del texto del cuerpo. Los anchos de columna forman parte de la propia tabla: `TableModel.columnWidths` guarda un peso relativo por columna (`[2, 1, 1]` da a la primera columna la mitad del ancho); si no se indica, las columnas se reparten el ancho a partes iguales. Una tabla también puede componerse con una variante con nombre: `table.styleId` elige uno de los `tableStyles` del documento (véase [Configuración › Estilos de tabla con nombre](/es/docs/configuration#estilos-de-tabla-con-nombre)), cuyos campos sin definir heredan de `tableStyle`; un id desconocido o ausente conserva `tableStyle`.
 
@@ -520,11 +665,11 @@ Una celda coloca su contenido con `TableCell.align` (`left`, `center`, `right`; 
 
 Una celda de tabla también puede contener una imagen. `TableCell.image` nombra un recurso de imagen o SVG por su id (`{ "resourceId": "fig-brazo", "width": 0.7 }`): la imagen se dibuja dentro de la celda — nunca se numera, flota ni lleva pie — ajustada al ancho interior de la celda (o a la fracción que indique `width`, por defecto `1`) conservando su proporción, alineada como el texto de la celda, y el texto de la celda, si lo hay, va debajo. La fila crece para alojarla. En el editor de tablas del sandbox, el botón de imagen de la barra elige el recurso para la celda activa y un campo de ancho fija la fracción. Un id que no corresponda a ningún recurso de imagen deja la celda solo con texto.
 
-Una celda puede llevar su propio relleno. `TableCell.background` es un valor de color (`{ "hex": "#c1dfd6", "model": "hex" }`, opcionalmente vinculado a una entrada de la paleta del documento con `paletteId`) que se pinta en lugar del fondo de cabecera o de cuerpo del estilo — así sombrea sus celdas en verde, rojo y amarillo una matriz de compatibilidades. En el editor de tablas del sandbox se fija con el control de relleno de la barra. Para dar la clave de esos rellenos, la leyenda, la nota y cualquier bloque de texto admiten una **muestra de color** en línea: `:swatch{color="#c1dfd6"}` (un hexadecimal, o el id de una entrada de la paleta — `:swatch{color="table-compatible"}`) compone un pequeño cuadrado sobre la línea base, de tres cuartos del cuerpo, relleno con el color y perfilado con el color del texto, de modo que una nota puede decir `:swatch{color="ok"}: compatibles; :swatch{color="no"}: incompatibles`. Un color que no resuelve a nada dibuja solo el perfil.
+Una celda puede llevar su propio relleno. `TableCell.background` es un valor de color (`{ "hex": "#c1dfd6", "model": "hex" }`, opcionalmente vinculado a una entrada de la paleta del documento con `paletteId`) que se pinta en lugar del fondo de cabecera o de cuerpo del estilo — así sombrea sus celdas en verde, rojo y amarillo una matriz de compatibilidades. En el editor de tablas del sandbox se fija con el control de relleno de la barra. Para dar la clave de esos rellenos, la leyenda, la nota y cualquier bloque de texto admiten una **muestra de color** en línea: `:swatch{color="#c1dfd6"}` (un hexadecimal, o el id de una entrada de la paleta — `:swatch{color="table-compatible"}`) compone un pequeño cuadrado sobre la línea base, de tres cuartos del cuerpo, relleno con el color y perfilado con el color del texto, de modo que una nota puede decir `:swatch{color="ok"}: compatibles; :swatch{color="no"}: incompatibles`. Un color que no resuelve a nada dibuja solo el perfil. El hexadecimal puede llevar canal alfa (`#rrggbbaa`, `#rgba`), y también sirven los colores `rgb()` / `rgba()`, de modo que un relleno de celda translúcido tiene una clave igual de translúcida (consulta [Configuración › Transparencia](/es/docs/configuration#transparencia)).
 
 Los recursos SVG pueden además recolorearse para impresión a una sola tinta plana mediante `diagramStyle.singleInk` (por defecto `false`). Al activarlo, cada color del diagrama SVG se reasigna a un matiz de `diagramStyle.inkColor` según su luminancia (por defecto el color principal de la paleta, `#295AA3`) — el blanco se asigna al papel y el negro a la tinta plena — de modo que las figuras se reproducen con fidelidad cuando el documento se imprime con una única tinta plana. Ver [Configuración › Estilo de diagramas](/es/docs/configuration#estilo-de-diagramas).
 
-Una inserción mal formada (sin `id`, con `id` vacío o con atributos de más) no se promueve a bloque de recurso; recae en el parseo de párrafo normal y sigue siendo visible en la salida, y el sandbox muestra un aviso.
+Una inserción mal formada (sin `id`, con `id` vacío, con el `id` sin comillas o entre comillas simples, o con atributos de más) no se promueve a bloque de recurso; recae en el parseo de párrafo normal y sigue siendo visible en la salida. Lo mismo le ocurre a una línea de inserción bien formada pegada bajo una línea de párrafo sin una línea en blanco entre ambas: se lee como parte de ese párrafo. Las dos generan un aviso `malformedEmbed`, que el panel Revisión del sandbox muestra como **Inserción compuesta como texto**.
 
 Las referencias en línea se reconocen dentro de cualquier bloque de texto — párrafos, encabezados, citas y elementos de lista — y pueden convivir con negrita, cursiva, código en línea y matemáticas en línea.
 
@@ -569,7 +714,7 @@ La directiva `:ref` admite tres atributos opcionales, en cualquier orden. `style
   </tbody>
 </table>
 
-Si un `:ref` (o un `::resource`) nombra un id sin recurso correspondiente, la etiqueta recae en `?` y el sandbox emite un aviso de **recurso desconocido**.
+Si un `:ref` (o un `::resource`) nombra un id sin recurso correspondiente, la etiqueta recae en `?` (con `text=` se imprime esa etiqueta, igualmente sin número ni enlace) y el sandbox emite un aviso de **recurso desconocido**. El motor lo registra como una entrada `unknownResourceId` en los `contentWarnings` del documento, con el rango de origen y la página de la referencia; también para un `:ref` dentro del pie, la nota o una celda de tabla de un recurso que el texto usa.
 
 ### Numeración por primera referencia
 
@@ -581,6 +726,8 @@ Esto significa que los números siguen el orden en que el lector los encuentra, 
 - Insertar una nueva referencia *antes* en el documento renumera automáticamente todo lo que viene después. No hay numeración manual que mantener sincronizada.
 
 La numeración es por tipo de recurso y respeta el ámbito de reinicio y el formato de contador de cada tipo — ver [Configuración › Tipos de recurso](/es/docs/configuration#tipos-de-recurso) para los tokens de plantilla (`{h1}`, `{n}`), `resetOn` y `counterFormat`.
+
+Solo cuenta lo que el texto referencia: un recurso que solo dibuja un diseño (un elemento de imagen de una apertura de capítulo, por ejemplo) no lleva número y deja el contador como estaba. Y `{h1}` cuenta todos los encabezados de nivel 1 cuyo estilo no fije `numbered: false`, también los que tienen un `numberingTemplate` vacío, así que un artículo cuyo único H1 es su título numera sus figuras 1.1, 1.2… por defecto. [Configuración › Qué se numera](/es/docs/configuration#qué-se-numera) explica las dos reglas y los ajustes para obtener Figura 1, 2….
 
 ### Colocación
 
@@ -603,7 +750,7 @@ Cada recurso tiene una **colocación** que decide dónde aterriza su flotante, r
     <tr>
       <td><code>width</code>, <code>align</code></td>
       <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code></td>
-      <td>Un recurso más estrecho que su hueco: <code>width</code> es la fracción del ancho de la columna (o de la página) que ocupa y <code>align</code> dónde se sitúa en el hueco (una tabla pequeña centrada en su columna; una banda a ancho de página cuya imagen abarca una sola columna). Vale tanto para flotantes como para inserciones <code>::resource</code> en línea.</td>
+      <td>Un recurso más estrecho que su hueco: <code>width</code> es la fracción del ancho de la columna (o de la página) que ocupa y <code>align</code> dónde se sitúa en el hueco (una tabla pequeña centrada en su columna; una banda a ancho de página cuya imagen abarca una sola columna). Una imagen más estrecha que su hueco —un mapa de bits más pequeño que la columna, o una que <code>layout.fitFiguresToPage</code> redujo— también se sitúa ahí según <code>align</code>, bajo un pie que conserva la medida del hueco. Vale tanto para flotantes como para inserciones <code>::resource</code> en línea.</td>
     </tr>
     <tr>
       <td><code>captionSide</code></td>
@@ -618,18 +765,62 @@ Cada recurso tiene una **colocación** que decide dónde aterriza su flotante, r
     <tr>
       <td><code>rotate</code></td>
       <td><code>"ccw"</code> · <code>"cw"</code></td>
-      <td>Compone el recurso girado un cuarto de vuelta — una tabla apaisada en un libro vertical. <code>"ccw"</code> lo gira en sentido antihorario, con la cabecera hacia el borde izquierdo de la página (el lector gira el libro en sentido horario), la convención habitual; <code>"cw"</code> en el otro sentido. Un recurso girado es siempre un flotante a todo el ancho en una página propia: se compone a lo largo de la altura del área de contenido, queda pegado al lomo cuando los márgenes son simétricos (a la izquierda si no) y una tabla demasiado ancha para una página se corta entre filas y continúa, girada, en las páginas siguientes con la cabecera repetida, exactamente como una tabla vertical más alta que la página. Una figura girada se escala para caber en la página. Se ignora en un embebido en línea (<code>"here"</code>).</td>
+      <td>Compone el recurso girado un cuarto de vuelta — una tabla apaisada en un libro vertical. <code>"ccw"</code> lo gira en sentido antihorario, con la cabecera hacia el borde izquierdo de la página (el lector gira el libro en sentido horario), la convención habitual; <code>"cw"</code> en el otro sentido. Un recurso girado es siempre un flotante a todo el ancho en una página propia: se compone a lo largo de la altura del área de contenido, redondeada hacia abajo a líneas enteras de la rejilla y menos una línea del cuerpo, el hueco que deja toda banda de flotantes (un área de texto de 237 mm con una rejilla de 14 pt tiene 47 líneas, 232,1 mm, así que el recurso ocupa 46, 227,2 mm), queda pegado al lomo cuando los márgenes son simétricos (a la izquierda si no) y una tabla demasiado ancha para una página se corta entre filas y continúa, girada, en las páginas siguientes con la cabecera repetida, exactamente como una tabla vertical más alta que la página. Una figura girada se escala para caber en la página. Se ignora en un embebido en línea (<code>"here"</code>).</td>
     </tr>
   </tbody>
 </table>
 
-Un flotante ocupa el **primer hueco libre tras su primera referencia**, en orden de lectura: el final de la columna donde está la referencia, después el principio y el final de la siguiente columna vacía de la misma página, y después las bandas de la siguiente página que abra el flujo (un flotante a ancho de página ocupa el pie de la página cuando todas las columnas aún tienen sitio para él; si no, una banda de la página siguiente). Nunca se reduce, y nunca aterriza antes de su referencia. Los flotantes de una misma secuencia de numeración aparecen en orden de referencia: una figura que no cabe en ninguna parte de una página retiene a las figuras que vienen detrás (una tabla en espera no retiene a una figura, ni al revés), así que la figura 12 nunca aparece antes que la figura 11. Una tabla que tendría que esperar se corta en su lugar: si recibe la cabecera de una columna vacía, toma las filas que caben y continúa en el siguiente hueco — la columna de al lado o la página siguiente — con sus filas de cabecera repetidas (véase `tableStyle.overflow`).
+Un flotante ocupa el **primer hueco libre tras su primera referencia**, en orden de lectura: el final de la columna donde está la referencia, después el principio y el final de la siguiente columna vacía de la misma página, y después las bandas de la siguiente página que abra el flujo (un flotante a ancho de página ocupa el pie de la página cuando todas las columnas aún tienen sitio para él; si no, una banda de la página siguiente). También cuenta una página que abre una figura o una tabla en línea: un flotante que espera esa página ocupa su cabecera, por encima de la figura o la tabla, cuando las dos caben en ella; si no caben, la figura o la tabla se queda con la página y el flotante espera a la siguiente. Hasta postext 1.4 esa página se saltaba, y el flotante esperaba a la de después aunque cupieran las dos. Nunca se reduce, y nunca aterriza antes de su referencia. Los flotantes de una misma secuencia de numeración aparecen en orden de referencia: una figura que no cabe en ninguna parte de una página retiene a las figuras que vienen detrás (una tabla en espera no retiene a una figura, ni al revés), así que la figura 12 nunca aparece antes que la figura 11. Una tabla que tendría que esperar se corta en su lugar: si recibe la cabecera de una columna vacía, toma las filas que caben y continúa en el siguiente hueco — la columna de al lado o la página siguiente — con sus filas de cabecera repetidas (véase `tableStyle.overflow`).
 
-Los flotantes nunca escapan de su capítulo: en una apertura de capítulo (un nivel de encabezado con `breakBefore` o `span: 'page'`), en un `:::part`, en un estilo de aviso con `floatBarrier: true` (la caja de «puntos clave» que cierra el capítulo) y al final del documento, todo flotante pendiente se coloca primero — en los huecos libres de la página, o en páginas abiertas por delante del límite. Una figura o tabla que pidió la cabeza de una página puede ocupar entonces el pie de la página de cierre del capítulo, bajo sus columnas equilibradas, en lugar de una página propia. Un `:::pagebreak` simplemente envía los flotantes pendientes a la página que le sigue.
+Los flotantes nunca escapan de su capítulo: en una apertura de capítulo (un nivel de encabezado con `breakBefore` o `span: 'page'`), en un `:::part`, en un estilo de aviso con `floatBarrier: true` (la caja de «puntos clave» que cierra el capítulo) y al final del documento, todo flotante pendiente se coloca primero — en los huecos libres de la página, o en páginas abiertas por delante del límite. Un flotante que cita por primera vez la propia apertura (un título de capítulo que nombra su figura), o el primer bloque tras un `:::part`, pertenece al capítulo nuevo: cae después de esa línea, como cualquier otro. Una figura o tabla que pidió la cabeza de una página puede ocupar entonces el pie de la página de cierre del capítulo, bajo sus columnas equilibradas, en lugar de una página propia. Un `:::pagebreak` simplemente envía los flotantes pendientes a la página que le sigue.
 
 Las bandas de flotantes se corrigen contra la rejilla base para que el texto circundante mantenga el ritmo vertical de toda la página. Una banda **superior** amplía su margen inferior hasta la siguiente línea de la rejilla, de modo que el texto bajo el flotante queda alineado con las columnas vecinas y con la página enfrentada. Un flotante **inferior** se ancla de forma que la última línea de su leyenda comparta línea base con la última línea de texto de las demás columnas (el contenido sin leyenda alinea su borde inferior con la última celda de la rejilla) — así, las páginas llenas terminan a la misma altura entre columnas y entre páginas enfrentadas.
 
+En la página de cierre de un capítulo —y del documento— nada sigue a las figuras y tablas a lo ancho de la página que quedan bajo la última banda de texto, así que suben hasta quedar a un hueco de flotante bajo ella, apiladas en su orden, en lugar de dejar blanco entre el texto y una figura al pie de la página. Vale también para un flotante `position: 'bottom'`. Para dejarlas al pie, como en cualquier otra página, pon `layout.hugClosingFloats: false` (consulta [Configuración › Disposición](/es/docs/configuration#disposición)). En las páginas con columna lateral nunca se mueven.
+
 Los tres backends — la previsualización en canvas, el visor HTML y la salida PDF — renderizan recursos. En el backend HTML, las imágenes viven fuera del documento, así que el anfitrión las suministra mediante la opción de resolución `resourceImageUrl(fileId)`; cuando falta el resolutor (o no devuelve nada para un fichero), el recurso se renderiza como una caja neutra de relleno para que la maquetación se mantenga estable.
+
+#### Dónde puede caer un flotante
+
+«Nunca antes de su referencia» se cuenta desde la línea que cita el flotante: el flotante espera a que esa línea esté compuesta y ocupa el primer hueco libre tras ella en orden de lectura — la cabeza de la página donde se compone la línea viene antes. Un flotante lateral (`span: 'side'`, en la columna lateral reservada a flotantes de una disposición de columna y media) es la excepción: se apila en la columna lateral junto al texto que lo cita, y puede quedar en la página más arriba que la línea que lo cita. Para una figura citada en la página 5:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Colocación</th>
+      <th>En la página 5</th>
+      <th style={{ width: '220px' }}>Si no</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>top</code>, <code>span: 'page'</code></td>
+      <td>Nunca: la banda de la cabeza de la página está por encima de la línea que la cita.</td>
+      <td>La banda superior de la página 6.</td>
+    </tr>
+    <tr>
+      <td><code>top</code>, <code>span: 'column'</code></td>
+      <td>La cabeza de una columna posterior que siga vacía — citada en la primera de dos columnas, puede abrir la segunda.</td>
+      <td>La cabeza de una columna de la página 6.</td>
+    </tr>
+    <tr>
+      <td><code>auto</code> o <code>bottom</code>, <code>span: 'page'</code></td>
+      <td>La banda del pie de la página 5, cuando todas las columnas aún tienen sitio para él.</td>
+      <td>Una banda de la página 6.</td>
+    </tr>
+    <tr>
+      <td><code>auto</code> o <code>bottom</code>, <code>span: 'column'</code></td>
+      <td>El pie de la columna que lo cita; después el pie (ambas) o la cabeza (solo <code>auto</code>) de una columna posterior vacía.</td>
+      <td>La página 6.</td>
+    </tr>
+  </tbody>
+</table>
+
+- La página de una apertura de capítulo sigue las mismas reglas: un flotante a ancho de página `auto` o `bottom` citado en el primer párrafo de la apertura puede ocupar la banda del pie de esa página, bajo su texto; uno `top` abre la página siguiente. Para tener la imagen en la página que la cita, usa `auto` o `bottom`, o dibújala como elemento de imagen del diseño de la apertura.
+- Dos flotantes de columna citados en el mismo párrafo ocupan los dos huecos siguientes: normalmente el primero el pie de la columna que los cita y el segundo la cabeza de la siguiente columna vacía — uno junto a otro en la página.
+- En una disposición de una columna un flotante a ancho de página es un flotante de columna, y valen las mismas reglas: un flotante `top` citado en una página cae en la cabeza de la siguiente.
+- Un párrafo que pasa de una página a la siguiente también cuenta desde su línea de cita. Cuando el párrafo empieza al pie de la página 5 y la referencia cae en la 6 — o el párrafo entero pasa a la 6 porque al pie de la 5 no caben suficientes líneas suyas —, la referencia está en la 6: un flotante `top` abre la página 7, y uno `auto` ocupa el pie de la 6 si cabe. Lo mismo vale entre las columnas de una página y para una caja partida entre páginas: la figura que cita su segunda parte espera a esa parte.
+- **Cambia en postext 1.5.** Hasta postext 1.4 un flotante entraba en la cola cuando la maquetación llegaba al párrafo que lo cita, así que la página a la que ese párrafo pasaba (o se trasladaba entero) podía abrirse con el flotante, por encima de la línea que lleva la referencia. Esa figura cae ahora una página más tarde, o al pie de la página cuando pide `auto`; el número de páginas puede cambiar.
 
 
 ## Qué NO se soporta
@@ -637,16 +828,18 @@ Los tres backends — la previsualización en canvas, el visor HTML y la salida 
 Postext no reconoce las siguientes características de CommonMark. O se tratan como texto plano (y por tanto aparecerán literalmente en la salida) o se descartan silenciosamente:
 
 - **Encabezados tipo setext** — la forma con subrayado `===` / `---`. Usa encabezados ATX (`#`).
-- **Bloques de código con cercas o con indentación** — triple acento grave e indentación de 4 espacios. El código en línea funciona; el código multilínea se renderizará línea a línea como párrafos.
+- **Bloques de código con cercas o con indentación** — cercas ` ``` ` o `~~~` e indentación de 4 espacios. Las líneas de dentro se leen como Markdown corriente, no se conservan como un listado: las líneas sin una línea en blanco entre ellas se unen en un solo párrafo y pierden sus espacios iniciales, una línea que empieza por `#` y un espacio se convierte en un título (`#!/usr/bin/env` sigue siendo texto) y una que empieza por `-` o `1.` y un espacio en un elemento de lista, un par de signos `$` se convierte en una fórmula, y las líneas de la cerca se imprimen como texto: una cerca ` ``` ` como un acento grave, la de apertura seguida de la cadena de información (`` `bash``), y una cerca `~~~` como una `~` pequeña compuesta como subíndice. Para componer un listado, escribe cada línea como un párrafo propio (con una línea en blanco entre líneas) dentro de un bloque `:::paragraphs` cuyo estilo de párrafo fije una `fontFamily` monoespaciada, y encierra cada línea entre acentos graves, que conservan `#`, `$`, `*` y los demás tal como están escritos. Los espacios normales al principio de una línea se descartan y una serie de ellos dentro de la línea se reduce a uno, también entre los acentos graves, así que sangra y alinea con espacios de no separación (U+00A0) y ponlos dentro de los acentos graves: uno delante del acento grave de apertura también se descarta. El código en línea se reconoce, pero no tiene tipografía de código: ver [Formato en línea](#formato-en-línea).
 - **HTML en crudo** — las etiquetas `<tag>` no se interpretan. Tampoco se admiten etiquetas estilo MDX; la fuente Postext es markdown puro.
 - **Líneas horizontales** — `---`, `***`, `___`.
 - **Tablas** — las tablas con pipes no se parsean. Las tablas se modelan como recursos estructurados en `PostextContent.resources`.
 - **Enlaces por referencia** — `[texto][id]` con su bloque de definición.
 - **Autolinks** — `<https://example.com>`.
 - **Tachado** — `~~texto~~`. El renderizador de tachado está reservado actualmente para tareas completadas.
-- **Marcas de nota al pie en markdown** — `[^1]`. Las notas al pie viajan en `PostextContent.notes` y se referencian por id, no con sintaxis en línea.
+- **Marcas de nota al pie en markdown** — `[^1]`. Las notas al pie, las notas finales y las notas al margen todavía no están implementadas: no hay sintaxis para referenciarlas, y el motor ignora `PostextContent.notes`, aunque los tipos lo acepten. Mientras tanto, compón las notas como texto: una marca en superíndice en el cuerpo (`^1^`) y las notas reunidas al final de la sección o del capítulo en un bloque `:::paragraphs{style="notes"}` con un estilo de párrafo de cuerpo pequeño.
 
 Esta lista se irá reduciendo con el tiempo. Mientras tanto, cualquier cosa que no aparezca explícitamente arriba debe considerarse texto literal.
+
+Más allá de la sintaxis, dos familias de sistemas de escritura todavía no se componen bien: las escrituras de derecha a izquierda (árabe, hebreo…), que no tienen composición bidireccional, y el chino, el japonés y el coreano, que se cortan entre caracteres solo con reglas básicas de inicio y fin de línea y nunca se justifican entre caracteres. Los patrones de separación silábica y las etiquetas integradas existen para ocho idiomas. Ver [Idiomas y escrituras](/es/docs/configuration#idiomas-y-escrituras).
 
 
 ## Normas de redacción
@@ -708,7 +901,7 @@ Entre los fallos habituales están:
 ### Una nota sobre fórmulas
 
 Las matemáticas en línea como $a^2 + b^2 = c^2$ fluyen con el texto que las
-rodea, y las de display quedan centradas sobre la rejilla de línea base:
+rodea, y las fórmulas en bloque quedan centradas sobre la rejilla de línea base:
 
 $$
 \int_0^1 x^2\,dx = \tfrac{1}{3}

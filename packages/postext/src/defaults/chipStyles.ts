@@ -34,6 +34,8 @@ function resolveChipStyleConfig(partial: ChipStyleConfig): ResolvedChipStyleConf
     borderRadius: partial.borderRadius ?? d.borderRadius,
     paddingX: partial.paddingX ?? d.paddingX,
     paddingY: partial.paddingY ?? d.paddingY,
+    ...(partial.paddingTop ? { paddingTop: partial.paddingTop } : {}),
+    ...(partial.paddingBottom ? { paddingBottom: partial.paddingBottom } : {}),
     ...(partial.fontFamily ? { fontFamily: partial.fontFamily } : {}),
     ...(partial.fontSize ? { fontSize: partial.fontSize } : {}),
     ...(partial.color ? { color: partial.color } : {}),
@@ -48,7 +50,8 @@ export function resolveChipStylesConfig(partial: ChipStyleConfig[] | undefined):
 }
 
 /** The style a `:chip[…]{style="…"}` selects: the matching id, else the
- *  first configured style (the sandbox flags unknown ids as a warning). */
+ *  first configured style (`collectContentWarnings` reports an unknown id in
+ *  `doc.contentWarnings`). */
 export function pickChipStyle(
   styles: readonly ResolvedChipStyleConfig[],
   id: string | undefined,
@@ -61,8 +64,8 @@ export function pickChipStyle(
 }
 
 /** Drop every field equal to its static default (and `name` equal to `id`).
- *  Inherited fields (`fontFamily`, `fontSize`, `color`) are kept whenever
- *  set. Returns `undefined` when the list is the built-in default (a single
+ *  Inherited fields (`fontFamily`, `fontSize`, `color`, and `paddingTop` /
+ *  `paddingBottom`, which follow `paddingY`) are kept whenever set. Returns `undefined` when the list is the built-in default (a single
  *  bare `chip` style) or empty. */
 export function stripChipStylesDefaults(styles: ChipStyleConfig[] | undefined): ChipStyleConfig[] | undefined {
   if (!styles || styles.length === 0) return undefined;
@@ -77,6 +80,9 @@ export function stripChipStylesDefaults(styles: ChipStyleConfig[] | undefined): 
     if (s.borderRadius !== undefined && !dimensionsEqual(s.borderRadius, d.borderRadius)) r.borderRadius = s.borderRadius;
     if (s.paddingX !== undefined && !dimensionsEqual(s.paddingX, d.paddingX)) r.paddingX = s.paddingX;
     if (s.paddingY !== undefined && !dimensionsEqual(s.paddingY, d.paddingY)) r.paddingY = s.paddingY;
+    // Unset they follow `paddingY`, so any value set is kept.
+    if (s.paddingTop !== undefined) r.paddingTop = s.paddingTop;
+    if (s.paddingBottom !== undefined) r.paddingBottom = s.paddingBottom;
     if (s.fontFamily !== undefined) r.fontFamily = s.fontFamily;
     if (s.fontSize !== undefined) r.fontSize = s.fontSize;
     if (s.color !== undefined) r.color = s.color;

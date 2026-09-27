@@ -1,0 +1,75 @@
+---
+title: "Parts in colour from one attribute"
+summary: "A pocket field guide where each :::part sets one palette entry, and its divider, painted verso, thumb tabs, field marks and contents row print in that colour."
+description: "A field guide to two estuary habitats, set in Postext. Each :::part names a colour for its divider, painted verso, thumb tab, field marks and contents row."
+question: "How do I give each part of a book its own colour, divider page and painted verso, with coloured contents rows?"
+aliases: ["field guide", "parts", "section colours", "colour-coded sections", "divider page", "painted verso", "thumb tab", "part colour"]
+pageNotes: { "4": "Page 4 is the back of the Part I divider. The text leaves it blank, and parts.versoDesign paints it edge to edge in the part's mud brown, with the part's tab in reverse at the fore-edge and its name at the foot.", "8": "Page 8 is the back of the Part II divider, painted in reed green by the same design." }
+---
+
+## What you'll build
+
+*Birds of the Estuary* is a pocket field guide in two parts, one per habitat. The mudflats print in mud brown and the reedbeds in reed green, and each colour is written once, in the `:::part` that opens its habitat. Each divider is a full-bleed field with a 150 pt Roman numeral and the habitat's species listed in cream. The back of the leaf is painted to match, with the part's tab in reverse at the fore-edge. On the species pages the thumb tab, the folio, the kicker, the rule under the Latin name, the bold field marks, the bullets and the plate label take the part's colour. The contents open under a strip of the estuary and give each part a band in its colour, with its divider's page number. The drawings carry the two hexes in their SVG code, because a part's palette does not reach pictures.
+
+## Method
+
+### 1 · One palette entry for the parts to override
+
+<Excerpt region="palette" />
+
+A part overrides palette entries by id, so everything that should change with the habitat links to one entry, `band`. Its own value, a slate, prints only outside the parts (the cover's kicker and the title of the note under the contents), and no other colour in the config has the same hex. `col()` writes the hex beside the id, because in Postext 1.4.1 the document palette never reaches design elements; a part's override does, through the id.
+
+### 2 · A divider, its verso and its list
+
+The code for this step is [the short answer](#the-short-answer) above. A `:::part` opens a [divider page](/en/docs/configuration#parts) on a recto, and `parts.design` lays it out over the whole trim. The Markdown between its fences starts 125 mm from the top edge, under the title: a few lines on the habitat in the `habitat` paragraph style, then its list of species in `bodyStyle`. `versoDesign` paints the back of the leaf (the field, and the tab in reverse) only when that page is blank, and `breakAfter: { parity: 'odd' }` keeps it blank by sending the first species on to the next recto. `{numberRoman}` prints the part's `number="I"` as a Roman numeral (`"1"` would print the same I), while the species are numbered 1 to 4 in Arabic figures. The `\\` in the title breaks the line on the divider only; the contents and the running heads set the title on one line.
+
+### 3 · The text's accents follow the part
+
+<Excerpt region="flow" />
+
+From one `:::part` to the next, every text colour equal to `band`'s own value takes the part's value ([the `:::part` container](/en/docs/configuration#the-part-container)). Here those are the bold field marks, the bullets and the plate labels. Body text and italics stay in ink. The plates are a resource type of their own, labelled Plate and never reset, so they count 1 to 4 in step with the species.
+
+### 4 · The species opener
+
+<Excerpt region="species" />
+
+The species opener prints three of the heading's attributes: `status` in the kicker after the number, `size` at the right of the kicker and `latin` under the name. The kicker and the rule under the Latin name link to `band`, so one design serves both habitats. The heading sets no page break of its own: each species starts after a `:::pagebreak`, or after the break that follows the part, so its page counts as a body page and prints the running heads. The size is set without the label's capitals, because `cm` is a unit symbol.
+
+### 5 · A band per part in the contents
+
+<Excerpt region="contents" />
+
+`:::toc` gives every `:::part` a row and lays `toc.parts.design` out in it with that part's number, title, divider page and palette ([table of contents](/en/docs/configuration#table-of-contents)), so the same box prints brown for the mudflats and green for the reedbeds. Each species row under a band shows its number, a dotted leader and its page, with the Latin name from the `latin` attribute on the line below.
+
+### 6 · The part in the running heads and the tab
+
+<Excerpt region="running-heads" />
+
+With `pages: 'body'` the heads print on body pages only. The dividers are `part` pages and their painted versos `blank` pages; the cover and the contents each open with a page-wide heading, which makes them openers. The recto head prints `{partTitle}` on one line, and the tab at the fore-edge prints `{partNumber}` on a box whose background links to `band`.
+
+## Variations
+
+### Add a third habitat
+
+A fence before the first saltmarsh species adds a third colour, with its divider, painted verso and contents row, and the config stays as it is. Drop the note under the contents as well, because the third band and its species need the space.
+
+```diff
++:::part{number="III" title="The \\ Saltmarsh" palette="band=#6b4a7a"}
++:::
++
++# Common Shelduck {latin="Tadorna tadorna" size="58–67 cm" status="Resident"}
+```
+
+### Let the species face the divider
+
+Without the break to the next recto, the first species starts on the back of the divider, so no blank verso is left for `versoDesign` to paint.
+
+```diff
+-  breakAfter: { parity: 'odd' },
+```
+
+## Pitfalls
+
+- A part recolours the text by comparing values: any text colour equal to `band`'s own value switches with the part, even one linked to another entry or to none. Keep that hex for `band` alone.
+- The tab prints `{partNumber}`, which is empty outside a part, so a body page before the first `:::part` gets an empty slate tab. Keep every body page inside a part.
+- Pictures and inline swatches keep the colours written in them. The plates here take their habitat's colours from `HABITAT` in the code, so a new colour in a `:::part` has to go there too.

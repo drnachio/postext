@@ -145,6 +145,8 @@ export interface SandboxLabels {
   warningsListAfterHeadingDetail: string;
   warningsUnknownDirectiveTitle: string;
   warningsUnknownDirectiveDetail: string;
+  warningsMalformedEmbedTitle: string;
+  warningsMalformedEmbedDetail: string;
   warningsNumberingInvalidFormatTitle: string;
   warningsNumberingInvalidFormatDetail: string;
   warningsNumberingInvalidStartAtTitle: string;
@@ -159,6 +161,13 @@ export interface SandboxLabels {
   warningsAlphaPdfOverflowDetail: string;
   warningsCalloutOverflowTitle: string;
   warningsCalloutOverflowDetail: string;
+  warningsHeadingDesignCutTitle: string;
+  warningsHeadingDesignCutDetail: string;
+  /** A one-and-a-half layout's `sideColumnPercent` that leaves a column
+   *  with no width (or is not a number); the engine cuts the columns at
+   *  another value. `__used__` is that value, in percent. */
+  warningsSideColumnPercentClampedTitle: string;
+  warningsSideColumnPercentClampedDetail: string;
   warningsInvalidMathTitle: string;
   warningsUnclosedMathTitle: string;
   warningsUnclosedContainerTitle: string;
@@ -169,6 +178,8 @@ export interface SandboxLabels {
   warningsUnknownCalloutTypeDetail: string;
   warningsUnknownChipStyleTitle: string;
   warningsUnknownChipStyleDetail: string;
+  warningsUnknownHeadingStyleTitle: string;
+  warningsUnknownHeadingStyleDetail: string;
   warningsChipOverlapTitle: string;
   warningsChipOverlapDetail: string;
   warningsDesignCyclicAnchorTitle: string;
@@ -189,6 +200,13 @@ export interface SandboxLabels {
   warningsDanglingTypeRefDetail: string;
   warningsBitmapTooSmallTitle: string;
   warningsBitmapTooSmallDetail: string;
+  warningsUnknownTableStyleTitle: string;
+  warningsUnknownTableStyleDetail: string;
+  warningsRaggedTableGridTitle: string;
+  warningsRaggedTableGridOverlapDetail: string;
+  warningsRaggedTableGridMissingDetail: string;
+  warningsMissingImageTitle: string;
+  warningsMissingImageDetail: string;
   warningsStorageUnavailableTitle: string;
   warningsStorageUnavailableDetail: string;
   headingSpan: string;
@@ -225,6 +243,10 @@ export interface SandboxLabels {
   mathMarginTopTooltip: string;
   mathMarginBottom: string;
   mathMarginBottomTooltip: string;
+  mathIndentAfterDisplay: string;
+  mathIndentAfterDisplayTooltip: string;
+  mathKeepWithLeadIn: string;
+  mathKeepWithLeadInTooltip: string;
 
   // Body text section
   bodyText: string;
@@ -262,6 +284,12 @@ export interface SandboxLabels {
   bodyBoldFontWeightTooltip: string;
   bodyHyphenationLocale: string;
   bodyHyphenationLocaleTooltip: string;
+  bodyHyphenationRagged: string;
+  bodyHyphenationRaggedTooltip: string;
+  bodyHyphenationZone: string;
+  bodyHyphenationZoneTooltip: string;
+  bodyHyphenateCompounds: string;
+  bodyHyphenateCompoundsTooltip: string;
   bodyFirstLineIndent: string;
   bodyFirstLineIndentTooltip: string;
   bodyHangingIndent: string;
@@ -272,8 +300,29 @@ export interface SandboxLabels {
   bodyMaxWordSpacingTooltip: string;
   bodyMinWordSpacing: string;
   bodyMinWordSpacingTooltip: string;
+  bodyMaxJustifyTracking: string;
+  bodyMaxJustifyTrackingTooltip: string;
   bodyOptimalLineBreaking: string;
   bodyOptimalLineBreakingTooltip: string;
+  bodyHyphenateAcrossColumns: string;
+  bodyHyphenateAcrossColumnsTooltip: string;
+  bodyOptimalRagged: string;
+  bodyOptimalRaggedTooltip: string;
+  bodyBreakAfterDashes: string;
+  bodyBreakAfterDashesTooltip: string;
+  bodyBreakAfterHyphens: string;
+  bodyBreakAfterHyphensTooltip: string;
+  bodyRepeatHyphen: string;
+  bodyRepeatHyphenTooltip: string;
+  bodyGroupBlockquotes: string;
+  bodyBlockquoteColor: string;
+  bodyBlockquoteColorTooltip: string;
+  bodyBlockquoteItalic: string;
+  bodyBlockquoteItalicTooltip: string;
+  bodyBlockquoteIndent: string;
+  bodyBlockquoteIndentTooltip: string;
+  bodyBlockquoteFirstLineIndent: string;
+  bodyBlockquoteFirstLineIndentTooltip: string;
   bodyAvoidOrphans: string;
   bodyAvoidOrphansTooltip: string;
   bodyOrphanMinLines: string;
@@ -294,6 +343,8 @@ export interface SandboxLabels {
   bodyRuntMinCharactersTooltip: string;
   bodyRuntPenalty: string;
   bodyRuntPenaltyTooltip: string;
+  bodyGradedRuntPenalty: string;
+  bodyGradedRuntPenaltyTooltip: string;
   bodyAvoidRuntsInLists: string;
   bodyAvoidRuntsInListsTooltip: string;
   bodyAvoidOrphansInLists: string;
@@ -302,6 +353,10 @@ export interface SandboxLabels {
   bodyAvoidWidowsInListsTooltip: string;
   bodyKeepColonWithList: string;
   bodyKeepColonWithListTooltip: string;
+  bodyColonListRoom: string;
+  bodyColonListRoomTooltip: string;
+  bodyColonListRoomItem: string;
+  bodyColonListRoomLine: string;
 
   // Headings section
   headings: string;
@@ -334,10 +389,18 @@ export interface SandboxLabels {
   headingsTextAlignTooltip: string;
   headingsTextAlignLeft: string;
   headingsTextAlignJustify: string;
+  headingsTextAlignCenter: string;
+  headingsTextAlignRight: string;
   headingsKeepWithNext: string;
   headingsKeepWithNextTooltip: string;
+  headingsKeepWithNextSplit: string;
+  headingsKeepWithNextSplitTooltip: string;
+  headingsKeepWithNextSplitRules: string;
+  headingsKeepWithNextSplitFill: string;
   headingsSnapToGrid: string;
   headingsSnapToGridTooltip: string;
+  headingsInlineMarks: string;
+  headingsInlineMarksTooltip: string;
   headingFontWeight: string;
   headingFontWeightTooltip: string;
   headingMarginTop: string;
@@ -347,12 +410,18 @@ export interface SandboxLabels {
   headingNumberingTemplate: string;
   headingNumberingTemplateTooltip: string;
   headingNumberingTemplatePlaceholder: string;
+  headingLevelSnapToGrid: string;
+  headingLevelSnapToGridTooltip: string;
   headingItalic: string;
   headingItalicTooltip: string;
   headingTextTransform: string;
   headingTextTransformTooltip: string;
   headingTextTransformNone: string;
   headingTextTransformUppercase: string;
+  headingLetterSpacing: string;
+  headingLetterSpacingTooltip: string;
+  headingHidden: string;
+  headingHiddenTooltip: string;
   headingAdvancedMinHeight: string;
   headingAdvancedMinHeightTooltip: string;
   headingBreakBefore: string;
@@ -394,6 +463,8 @@ export interface SandboxLabels {
   unorderedListsMarginBottomTooltip: string;
   unorderedListsItemSpacing: string;
   unorderedListsItemSpacingTooltip: string;
+  unorderedListsSnapTopToGrid: string;
+  unorderedListsSnapTopToGridTooltip: string;
   unorderedListsHangingIndent: string;
   unorderedListsHangingIndentTooltip: string;
   unorderedListLevel: string;
@@ -463,6 +534,12 @@ export interface SandboxLabels {
   orderedListsMarginBottomTooltip: string;
   orderedListsItemSpacing: string;
   orderedListsItemSpacingTooltip: string;
+  orderedListsSnapTopToGrid: string;
+  orderedListsSnapTopToGridTooltip: string;
+  orderedListsNumberWidth: string;
+  orderedListsNumberWidthTooltip: string;
+  orderedListsNumberWidthRun: string;
+  orderedListsNumberWidthLevel: string;
   orderedListsHangingIndent: string;
   orderedListsHangingIndentTooltip: string;
   orderedListLevel: string;
@@ -541,6 +618,11 @@ export interface SandboxLabels {
   balanceTrailingTooltip: string;
   balanceBeforeSpan: string;
   balanceBeforeSpanTooltip: string;
+  balanceClosingBox: string;
+  balanceClosingBoxTooltip: string;
+  balanceClosingBoxFirst: string;
+  balanceClosingBoxLast: string;
+  balanceClosingBoxOff: string;
   balanceMaxTracking: string;
   balanceMaxTrackingTooltip: string;
 
@@ -677,6 +759,8 @@ export interface SandboxLabels {
   warningsChapterLabel: string;
   warningsChapterFrontmatterIgnoredTitle: string;
   warningsChapterFrontmatterIgnoredDetail: string;
+  warningsUnsupportedHyphenationLocaleTitle: string;
+  warningsUnsupportedHyphenationLocaleDetail: string;
   projectNew: string;
   projectNewFromCurrentShort: string;
   projectNewBlankShort: string;
@@ -742,6 +826,17 @@ export interface SandboxLabels {
   warningsMissingFontFamilyDetail: string;
   warningsDuplicateFontVariantTitle: string;
   warningsDuplicateFontVariantDetail: string;
+  /** A `fontFamily` holding a CSS font stack (`EB Garamond, serif`); the
+   *  text is set in its first family. `__used__` is that family. */
+  warningsFontFamilyStackTitle: string;
+  warningsFontFamilyStackDetail: string;
+  /** A list / page / resource numbering format the engine does not know;
+   *  it numbers in decimal. `__used__` is the decimal spelling used. */
+  warningsUnknownNumberFormatTitle: string;
+  warningsUnknownNumberFormatDetail: string;
+  warningsUnknownConfigKeyTitle: string;
+  warningsUnknownConfigKeyDetail: string;
+  warningsUnknownConfigKeySuggestion: string;
 
   // Color palette section
   colorPalette: string;
@@ -796,6 +891,7 @@ export interface SandboxLabels {
   headerFooterElementAlignLeft: string;
   headerFooterElementAlignCenter: string;
   headerFooterElementAlignRight: string;
+  headerFooterElementAlignJustify: string;
   headerFooterElementParity: string;
   headerFooterElementParityAll: string;
   headerFooterElementParityOdd: string;
@@ -844,6 +940,8 @@ export interface SandboxLabels {
   headerFooterPlaceholderHeadingTitle: string;
   headerFooterPlaceholderHeadingNumber: string;
   headerFooterPlaceholderChapterNumber: string;
+  headerFooterPlaceholderChapterTitleAtTop: string;
+  headerFooterPlaceholderChapterNumberAtTop: string;
   headerFooterElementAnchorTo: string;
   headerFooterElementAnchorContainer: string;
   headerFooterElementEdge: string;
@@ -894,6 +992,16 @@ export interface SandboxLabels {
   headerFooterElementDropCapGap: string;
   headerFooterElementParagraphIndent: string;
   headerFooterElementParagraphIndentTooltip: string;
+  headerFooterElementInlineMarks: string;
+  headerFooterElementInlineMarksTooltip: string;
+  headerFooterElementStrokeWidth: string;
+  headerFooterElementStrokeWidthTooltip: string;
+  headerFooterElementStrokeColor: string;
+  headerFooterElementStrokeColorTooltip: string;
+  headerFooterElementStrokeHollow: string;
+  headerFooterElementStrokeHollowTooltip: string;
+  headerFooterElementReserve: string;
+  headerFooterElementReserveTooltip: string;
   warningsHeaderFooterUnknownPlaceholderTitle: string;
   warningsHeaderFooterUnknownPlaceholderDetail: string;
   warningsHeaderFooterMetadataMissingTitle: string;
@@ -963,6 +1071,7 @@ export interface SandboxLabels {
   resourceCaptionLabel: string;
   resourceCaptionAria: string;
   resourceCaptionPlaceholder: string;
+  resourceCaptionHint: string;
   resourceNoteLabel: string;
   resourceNoteAria: string;
   resourceNotePlaceholder: string;
@@ -1068,6 +1177,7 @@ export interface SandboxLabels {
   alignmentLabel: string;
   alignLeft: string;
   alignCenter: string;
+  alignRight: string;
   backgroundColorLabel: string;
   // --- Table styling section ---
   tableStyleSection: string;
@@ -1075,7 +1185,14 @@ export interface SandboxLabels {
   tableHeaderGroup: string;
   tableBordersGroup: string;
   tableBodyFill: string;
+  tableBodyAlternateFill: string;
+  tableBodyAlternateFillTooltip: string;
+  tableBodyAlternateColor: string;
   tableHeaderFill: string;
+  tableHeaderLetterSpacing: string;
+  tableHeaderLetterSpacingTooltip: string;
+  tableHeaderTextTransform: string;
+  tableHeaderTextTransformTooltip: string;
   tableBorders: string;
   tableBorderColor: string;
   tableBorderWidth: string;
@@ -1127,6 +1244,10 @@ export interface SandboxLabels {
   paragraphStylesSection: string;
   paragraphStylesResetConfirm: string;
   paragraphStylesEmpty: string;
+  paragraphContainerSpacing: string;
+  paragraphContainerSpacingTooltip: string;
+  paragraphContainerSpacingCollapse: string;
+  paragraphContainerSpacingAdd: string;
   paragraphStyleAdd: string;
   paragraphStyleNewName: string;
   paragraphStyleDelete: string;
@@ -1136,6 +1257,8 @@ export interface SandboxLabels {
   paragraphStyleUsageHint: string;
   paragraphStyleNameLabel: string;
   paragraphStyleNameAria: string;
+  paragraphStyleIndent: string;
+  paragraphStyleIndentTooltip: string;
   paragraphStyleFirstLineIndentTooltip: string;
   paragraphStyleHangingIndent: string;
   paragraphStyleHangingIndentTooltip: string;
@@ -1143,6 +1266,10 @@ export interface SandboxLabels {
   paragraphStyleSpaceBetweenTooltip: string;
   paragraphStyleMarginTopTooltip: string;
   paragraphStyleMarginBottomTooltip: string;
+  paragraphStyleSnapToGrid: string;
+  paragraphStyleSnapToGridTooltip: string;
+  paragraphStyleTextTransform: string;
+  paragraphStyleTextTransformTooltip: string;
   calloutStylesSection: string;
   calloutStylesResetConfirm: string;
   calloutStylesEmpty: string;
@@ -1172,6 +1299,10 @@ export interface SandboxLabels {
   chipStylePaddingX: string;
   chipStylePaddingY: string;
   chipStylePaddingYTooltip: string;
+  chipStylePaddingTop: string;
+  chipStylePaddingTopTooltip: string;
+  chipStylePaddingBottom: string;
+  chipStylePaddingBottomTooltip: string;
   chipStyleGap: string;
   chipStyleGapTooltip: string;
   calloutStyleAdd: string;
@@ -1191,6 +1322,10 @@ export interface SandboxLabels {
   calloutStyleSpanColumn: string;
   calloutStyleSpanPage: string;
   calloutStyleSpanSide: string;
+  calloutStyleSideAtColumnEnd: string;
+  calloutStyleSideAtColumnEndTooltip: string;
+  calloutStyleSideAtColumnEndBefore: string;
+  calloutStyleSideAtColumnEndAfter: string;
   calloutStylePlacement: string;
   calloutStylePlacementTooltip: string;
   calloutStylePlacementHere: string;
@@ -1313,6 +1448,8 @@ export interface SandboxLabels {
   calloutStyleTitleLetterSpacing: string;
   calloutStyleTitleIndent: string;
   calloutStyleTitleIndentTooltip: string;
+  calloutStyleTitleLineHeight: string;
+  calloutStyleTitleLineHeightTooltip: string;
   calloutStyleBodyGroup: string;
   calloutStyleBodyHint: string;
   calloutStyleBodyBoldColor: string;
@@ -1373,7 +1510,13 @@ export interface SandboxLabels {
   headerFooterPlaceholderNumberRomanLower: string;
   headerFooterPlaceholderNumberAlpha: string;
   headerFooterPlaceholderNumberAlphaLower: string;
+  headerFooterPlaceholderNumberWords: string;
+  headerFooterPlaceholderNumberWordsLower: string;
+  headerFooterPlaceholderNumberOrdinalWords: string;
+  headerFooterPlaceholderNumberOrdinalWordsLower: string;
   headerFooterPlaceholderAttrHint: string;
+  headerFooterPlaceholderBookTotalPages: string;
+  headerFooterPlaceholderMarkHint: string;
   balanceMaxLinesAfterList: string;
   balanceMaxLinesAfterListTooltip: string;
   balanceMaxLinesAfterFloat: string;
@@ -1405,6 +1548,7 @@ export interface SandboxLabels {
   headerFooterElementLength: string;
   headerFooterElementLengthTooltip: string;
   paragraphStyleBoldColorTooltip: string;
+  paragraphStyleItalicColorTooltip: string;
   resourceTypePlacementGroup: string;
   resourceTypePlacementHint: string;
   resourceTypePlacementResetConfirm: string;
@@ -1444,6 +1588,9 @@ export interface SandboxLabels {
   headingStyleNumberedTooltip: string;
   headingStyleToc: string;
   headingStyleTocTooltip: string;
+  headingStyleRunningChapter: string;
+  headingStyleRunningChapterTooltip: string;
+  headingStyleNumberingTemplateTooltip: string;
   headingStyleHeading: string;
   headingStyleHeadingInfo: string;
   headingStyleRunningHeadsInfo: string;
@@ -1555,6 +1702,16 @@ export interface SandboxLabels {
   layoutOneAndHalfDescription: string;
   fitFiguresToPage: string;
   fitFiguresToPageTooltip: string;
+  hugClosingFloats: string;
+  hugClosingFloatsTooltip: string;
+  inlineResourceGap: string;
+  inlineResourceGapTooltip: string;
+  inlineResourceGapAround: string;
+  inlineResourceGapAbove: string;
+  inlineResourceGapInBoxes: string;
+  inlineResourceGapInBoxesTooltip: string;
+  boxChildSplitMinLines: string;
+  boxChildSplitMinLinesTooltip: string;
   pageGroupSize: string;
   pageGroupMargins: string;
   pageGroupMarginsDescription: string;
@@ -1587,6 +1744,20 @@ export interface SandboxLabels {
   bodyMaxRuntTrackingTooltip: string;
   calloutStyleBodyItalicColor: string;
   calloutStyleBodyItalicColorTooltip: string;
+  smallCapsInline: string;
+  textStyleFontWeightTooltip: string;
+  textStyleBoldFontWeightTooltip: string;
+  textStyleItalic: string;
+  textStyleItalicTooltip: string;
+  textStyleSmallCaps: string;
+  textStyleSmallCapsTooltip: string;
+  calloutStyleContinuationGroup: string;
+  calloutStyleRepeatTitle: string;
+  calloutStyleRepeatTitleTooltip: string;
+  calloutStyleContinuedSuffix: string;
+  calloutStyleContinuesMarkerTooltip: string;
+  calloutStyleContinuesMarkerAlign: string;
+  calloutStyleContinuesMarkerItalic: string;
   partsPage: string;
   partsPageTooltip: string;
   headerFooterElementTextAlign: string;

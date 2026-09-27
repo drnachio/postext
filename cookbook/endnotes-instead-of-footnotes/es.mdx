@@ -1,0 +1,70 @@
+---
+title: "Notas finales a dos columnas en lugar de notas al pie"
+summary: "Un preprocesador breve pasa las notas al pie de Markdown a llamadas voladas y a una sección que un estilo de título compone en página propia, a dos columnas."
+description: "La primera conferencia de Faraday sobre la vela, con seis notas finales. Cada llamada [^1] sale volada, y las notas van en página propia a dos columnas."
+question: "¿Cómo convierto las notas [^1] en notas finales si Postext no compone notas al pie?"
+aliases: ["notas al pie", "notas finales", "notas al final", "llamadas de nota", "números volados", "superíndices", "[^1]", "notas de GFM", "sangría francesa", "edición crítica", "notas del editor"]
+pageNotes: { "1": "La apertura de la conferencia I: un campo de hollín ocupa la mitad superior de la página, con una vela encendida apoyada en su borde inferior, el antetítulo LECTURE I en naranja y el título A Candle en crema. El texto empieza debajo; su primera llamada es un 1 pequeño y volado en naranja oscuro.", "4": "Un panel oscuro encabeza la página: dos llamas de vela, una bajo un tubo de cristal y otra en sección con flechas de aire que sube, con el pie Figure 1. Debajo sigue la conferencia hasta el final, con la llamada 6 en el primer párrafo.", "5": "Las notas: una banda de hollín con una vela recién apagada que echa humo y, debajo, seis notas en dos columnas de cuerpo menor, cada número en negrita naranja oscuro colgado en la sangría, y un colofón; las dos columnas terminan en la misma línea." }
+---
+
+## Lo que vas a componer
+
+La primera conferencia de *The Chemical History of a Candle*, de Michael Faraday, en inglés, compuesta como una pequeña edición de lectura de 156 × 234 mm. Se abre sobre un campo de hollín con una vela encendida apoyada en su borde inferior y sigue en una columna justificada de Libre Bodoni. Donde un libro pondría notas al pie, unos números pequeños y volados, en naranja oscuro, remiten a las notas, reunidas en una página propia bajo una banda de hollín con la vela ya apagada. Van a dos columnas en bandera, en cuerpo de 8,2 pt y con el número en negrita colgado en la sangría. Tres de las seis son de William Crookes, editor del texto en 1861, y salen de la reimpresión de 1908; las otras tres, nuevas, van firmadas *Ed.* Las dos columnas acaban en la misma línea, y el colofón cierra la segunda.
+
+## Elaboración
+
+### 1 · Convierte las notas al pie en notas finales antes de componer
+
+El preprocesador es [la respuesta corta](#la-respuesta-corta) de arriba. Postext 1.4.1 no compone notas: la llamada `[^1]` figura entre [lo que el formato no admite](/es/docs/document-format#qué-no-se-soporta), y el motor ignora `PostextContent.notes`, aunque los tipos lo aceptan. Una llamada `[^1]` suelta se imprime tal cual; dos en un mismo párrafo emparejan sus circunflejos como un superíndice y elevan todo el texto que queda entre ellas. Por eso el pen reescribe el Markdown antes de pasárselo a `buildDocument`. Numera las llamadas por el orden en que el texto las cita por primera vez y coloca todas las definiciones, en ese orden, donde está la primera, bajo `## Notes`. Cada nota empieza por `**1**`, porque `1. ` abriría una lista numerada. Un unidor de palabras (U+2060) abre cada llamada; sin él, el `**` de la llamada que sigue a `*Royal George*` se juntaría con el asterisco que cierra la cursiva en un `***`, y los asteriscos saldrían impresos.
+
+### 2 · Reserva la negrita para las llamadas
+
+<Excerpt region="markers" />
+
+El preprocesador escribe cada llamada como `**^n^**`. Los circunflejos ponen el número al 58 % del cuerpo del texto, elevado un tercio de ese cuerpo ([formato en línea](/es/docs/document-format#formato-en-línea)), y la negrita le da el color de `bodyText.boldColor`, que aquí está libre porque Faraday no usa negritas. Una cifra de 5,8 pt necesita un contraste de 4,5:1 sobre el papel, y el naranja de la llama solo llega a 2,6:1; por eso las llamadas van en el de la brasa, más oscuro. La remisión `[Fig. 1]` de la <PageRef page={3}>página 17</PageRef> sale del mismo color y en redonda, porque `referenceColor` hereda el color de la negrita y `referenceBold: false` le quita la negrita.
+
+### 3 · Compón las notas en cuerpo menor, con el número colgado
+
+<Excerpt region="notes" />
+
+Las notas van a 8,2 pt sobre 10,7 pt, unos cuatro quintos del cuerpo del texto. El `hangingIndent` de su estilo de párrafo se mide en la fuente, una vez cargada: un 5 en negrita y un espacio de medio cuadratín suman 1,12 em en Libre Bodoni, así que la primera palabra de cada nota queda alineada con sus líneas siguientes ([estilos de párrafo](/es/docs/configuration#estilos-de-párrafo)). Con el número fuera, en la sangría francesa, las notas no necesitan espacio entre ellas. Van en bandera porque la justificación estiraría ese espacio, y una columna justificada de 55 mm a 8,2 pt quedaría con demasiado blanco entre palabras. Las virgulillas marcan los subíndices igual que los circunflejos marcan los superíndices, como en `C~25~H~52~` en la nota 4 y `H~2~O` en la nota 5.
+
+### 4 · Da a las notas una página a dos columnas
+
+<Excerpt region="section" />
+
+El título `## Notes {style="notes" …}` abre una sección cuyas páginas toman la disposición y el diseño del estilo. `parity: 'any'` la empieza en la página siguiente, sea par o impar, y `span: 'page'` extiende la banda sobre las dos columnas, de modo que llega al corte y la segunda columna empieza debajo ([estilos de encabezado](/es/docs/configuration#estilos-de-encabezado)). La banda fija la reserva, pero la primera línea de la rejilla base libre de ella queda solo 3 mm por debajo del hollín; con los 5 mm que `BAND_GAP` suma a `minHeight`, las notas empiezan una línea más abajo. El filete de columna se declara en el `layout` del documento porque 1.4.1 no dibuja el `columnRule` de un estilo de título. El equilibrado de columnas, activo por defecto, corta la última página para que las dos columnas acaben en la misma línea ([equilibrado de columnas](/es/docs/configuration#equilibrado-de-columnas)).
+
+### 5 · Abre la conferencia sobre un campo de hollín
+
+<Excerpt region="opener" />
+
+El campo es una caja anclada a la página, y la vela, un elemento de imagen, se apoya en su borde inferior. El primer nivel de título lleva `span: 'page'` aunque la conferencia va a una sola columna: sin él, 1.4.1 recorta el diseño en la cabeza de la columna en vez de pintarlo desde el corte. El antetítulo, el subtítulo y la firma salen de la línea del título, `# A Candle {kicker="Lecture I" subtitle="…" byline="…"}`, así que la conferencia II no pediría código nuevo. Como el campo baja más que el título, es él quien fija la reserva. A ella se suma el margen inferior por defecto del título, de 0,5 em, y el texto empieza una línea de la rejilla base por debajo de la primera libre de hollín. El subtítulo mide 86 mm de ancho para que se parta después de una semirraya, porque en el texto de un diseño un espacio de no separación no impide el corte.
+
+### 6 · Usa la llama sobre el hollín y la brasa sobre el papel
+
+<Excerpt region="palette" />
+
+El naranja de la llama da un contraste de 6:1 sobre el hollín, pero solo de 2,6:1 sobre el papel. Por eso se reserva para los antetítulos de las bandas oscuras y para los dibujos, y todo lo pequeño que va en naranja sobre el papel (llamadas, números de nota, la etiqueta del pie de figura) usa la brasa, más oscura, que da 5,1:1. `main-color` apunta a la brasa, así que cualquier valor por defecto que la configuración no repita sigue el diseño en lugar de salir en azul.
+
+<Note>Una aclaración breve puede quedarse en el texto, entre paréntesis. Las glosas que el lector necesita junto a la línea pueden ir en una columna lateral, como en <RecipeLink slug="textbook-margin-column">Libro de texto con columna al margen</RecipeLink>.</Note>
+
+## Variantes
+
+### Imprime las llamadas en tinta
+
+Si el texto usa la negrita para su propio énfasis, pon las llamadas en tinta: `boldColor` da el mismo color a las llamadas y a cada palabra en negrita.
+
+```diff
+-const markers = { boldColor: col('ember'), // **^n^**: a superscript at 58 % of the text size
++const markers = { boldColor: col('ink'), // **^n^**: a superscript at 58 % of the text size
+```
+
+### Deja que las columnas de notas acaben desiguales
+
+Sin el equilibrado de la última página, la primera columna se llena hasta el pie antes de que empiece la segunda.
+
+```diff
+-  headings: { fontFamily: DISPLAY, color: col('ink'), levels: [
++  headings: { fontFamily: DISPLAY, color: col('ink'), balancing: { trailing: false }, levels: [
+```

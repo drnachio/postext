@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/build';
+import { renderToHtml } from '../../html-backend';
 import { createMeasurementCache } from '../../measure';
 import type { VDTBlock, VDTDocument } from '../../vdt';
 import type { ParagraphStyleConfig, PostextConfig } from '../../types';
@@ -209,5 +210,99 @@ describe(':::paragraphs containers', () => {
       }
       expect(pushed).toBeGreaterThan(0);
     }, 30_000);
+  });
+});
+
+// EF-68. A coloured paragraph style set its italic runs in the body text's
+// italic colour, with no way to give them the style's own.
+describe('paragraph style italic colour (EF-68)', () => {
+  const red = { hex: '#aa0000', model: 'hex' as const };
+  const blue = { hex: '#0000aa', model: 'hex' as const };
+  const green = { hex: '#00aa00', model: 'hex' as const };
+  const md = ['Intro *body italic*.', '', ':::paragraphs{style="c"}', 'Coloured text with *italic words* and **bold words**.', ':::', ''].join('\n');
+
+  it('italic runs in a styled paragraph take the style\'s italicColor', () => {
+    const doc = build(md, { bodyText: { italicColor: green }, paragraphStyles: [{ id: 'c', color: red, italicColor: blue }] });
+    const [intro, styled] = paragraphs(doc);
+    expect(styled!.color).toBe('#aa0000');
+    expect(styled!.italicColor).toBe('#0000aa');
+    expect(intro!.italicColor).toBe('#00aa00');
+    // Painted: the HTML backend colours the italic run.
+    const html = renderToHtml(doc);
+    expect(html).toMatch(/color:#0000aa[^>]*>[^<]*italic/);
+  });
+
+  it('without italicColor, italic runs keep the body text italic colour (as in 1.4)', () => {
+    const doc = build(md, { bodyText: { italicColor: green }, paragraphStyles: [{ id: 'c', color: red }] });
+    const styled = paragraphs(doc)[1]!;
+    expect(styled.italicColor).toBe('#00aa00');
+  });
+});
+
+// EF-77. A `:::paragraphs` container inside a callout ignored its style's
+// marginTop / marginBottom: the box stacked its entries as if the container
+// were not there. They collapse with the neighbours' spacing as in running
+// text, vanish at the top of the box, and a negative one pulls.
+describe(':::paragraphs inside a callout (EF-77)', () => {
+  const boxed = (lead: boolean) => [
+    'Intro.',
+    '',
+    ':::callout{type="note"}',
+    ...(lead ? ['First paragraph in the box.', ''] : []),
+    ':::paragraphs{style="bib"}',
+    entry(1),
+    '',
+    entry(1),
+    ':::',
+    '',
+    'Last paragraph in the box.',
+    ':::',
+    '',
+  ].join('\n');
+  const byText = (doc: VDTDocument, start: string): VDTBlock =>
+    doc.blocks.find((b) => b.type === 'paragraph' && b.lines[0]?.text.startsWith(start))!;
+  const entries = (doc: VDTDocument): VDTBlock[] =>
+    doc.blocks.filter((b) => b.type === 'paragraph' && b.lines[0]?.text.startsWith('Referencia'));
+  const bottom = (b: VDTBlock): number => b.bbox.y + b.bbox.height;
+  const gaps = (doc: VDTDocument) => {
+    const [e1, e2] = entries(doc);
+    return {
+      above: e1!.bbox.y - bottom(byText(doc, 'First')),
+      between: e2!.bbox.y - bottom(e1!),
+      below: byText(doc, 'Last').bbox.y - bottom(e2!),
+    };
+  };
+
+  it('applies the style margins around the container, collapsing with the spacing there', () => {
+    const plain = gaps(build(boxed(true), bibConfig()));
+    const spaced = gaps(build(boxed(true), bibConfig({
+      marginTop: { value: 1, unit: 'em' },
+      marginBottom: { value: 2, unit: 'em' },
+    })));
+    expect(spaced.above).toBeCloseTo(Math.max(plain.above, BIB_FONT_PX), 5);
+    expect(spaced.above).toBeGreaterThan(plain.above);
+    expect(spaced.between).toBeCloseTo(plain.between, 5);
+    expect(spaced.below).toBeCloseTo(Math.max(plain.below, 2 * BIB_FONT_PX), 5);
+    expect(spaced.below).toBeGreaterThan(plain.below);
+  });
+
+  it('a container that opens the box takes no top margin (as at the top of a column)', () => {
+    const md = boxed(false);
+    const firstEntry = (config: PostextConfig) => entries(build(md, config))[0]!.bbox.y;
+    expect(firstEntry(bibConfig({ marginTop: { value: 3, unit: 'em' } }))).toBeCloseTo(firstEntry(bibConfig()), 5);
+  });
+
+  it('a negative marginTop pulls the container up into the spacing above it', () => {
+    const plain = gaps(build(boxed(true), bibConfig({ spaceBetween: { value: 0, unit: 'em' } })));
+    const pulled = gaps(build(boxed(true), bibConfig({ marginTop: { value: -0.5, unit: 'em' } })));
+    expect(pulled.above).toBeCloseTo(plain.above - BIB_FONT_PX / 2, 5);
+  });
+
+  it('leaves a box without paragraph containers as it was', () => {
+    const md = ['Intro.', '', ':::callout{type="note"}', 'First paragraph in the box.', '', 'Last paragraph in the box.', ':::', ''].join('\n');
+    const doc = build(md, bibConfig({ marginTop: { value: 3, unit: 'em' } }));
+    const gap = byText(doc, 'Last').bbox.y - bottom(byText(doc, 'First'));
+    const ref = build(md, bibConfig());
+    expect(gap).toBeCloseTo(byText(ref, 'Last').bbox.y - bottom(byText(ref, 'First')), 5);
   });
 });

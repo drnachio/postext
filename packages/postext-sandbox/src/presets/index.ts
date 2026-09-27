@@ -39,7 +39,7 @@ export type { OpenedBundleZip } from './zip';
 export { createRemotePreset, fetchPresetIndex } from './remote';
 export { findDefaultPrivatePreset, listPresets } from './registry';
 export { applyPreset } from './apply';
-export { hashChapters, hashConfig, hashMarkdown, hashResources, hashString, isDocumentUntouched } from './hash';
+export { hashChapters, hashConfig, hashMarkdown, hashResources, hashString, isDocumentUntouched, rekeyMigratedConfig } from './hash';
 export type { DocumentHashSource } from './hash';
 export { decidePresetUpdate } from './watch';
 export type { PresetUpdateDecision } from './watch';

@@ -11,12 +11,72 @@ import type { TextAlign } from '../types';
 import type { KPItem } from './types';
 import { HYPHEN_PENALTY, KP_INFINITY, MAX_STRETCH, SOFT_HYPHEN } from './constants';
 import { cleanSoftHyphens } from './utils';
+import { lineTracking, trackSegments } from './tracking';
+import { breaksAfterDash, breaksAfterHardHyphen, isDash } from '../measure/breakRules';
+
+/** The break after a closed dash (`breakAfterDashes`): the line ends on the
+ *  dash as it is, nothing is added and nothing is charged. */
+interface FreeBreakMeta {
+  free: true;
+}
+
+/** The break after a hyphen the text carries (`hardHyphens`): the line ends
+ *  on that hyphen, nothing is added. */
+interface BareBreakMeta {
+  bare: true;
+}
+
+/** The character `back` places before the last one of segment `i` (`seg`),
+ *  read back into the text segments that end right before it (no space in
+ *  between), or undefined. */
+function charBefore(segments: readonly string[], kinds: readonly string[], i: number, seg: string, back = 1): string | undefined {
+  let k = seg.length - 1 - back;
+  let s = seg;
+  let j = i;
+  while (k < 0) {
+    if (kinds[j - 1] !== 'text') return undefined;
+    j--;
+    s = segments[j]!;
+    k += s.length;
+  }
+  return s[k];
+}
+
+const LETTER = /\p{L}/u;
+
+/** Whether the hyphen ending text segment `i` has at least two letters
+ *  on each side ("e-mail" has one before it, "X-ray" one before it). */
+function twoLettersAround(segments: readonly string[], kinds: readonly string[], i: number, seg: string): boolean {
+  const before = charBefore(segments, kinds, i, seg, 2);
+  if (before === undefined || !LETTER.test(before)) return false;
+  let after = '';
+  for (let j = i + 1; j < segments.length && kinds[j] === 'text' && after.length < 2; j++) after += segments[j]!;
+  return after.length >= 2 && LETTER.test(after[1]!);
+}
 
 export function pretextSegmentsToItems(
   prepared: PreparedTextWithSegments,
   normalSpaceWidth: number,
   maxStretchRatio: number,
   minShrinkRatio: number,
+  /** Add a break after an em or en dash set closed between words (see
+   *  `MeasureBlockOptions.breakAfterDashes`). Pretext keeps such a dash a
+   *  text segment of its own, or at the end of one, between two others with
+   *  no space in between, where Knuth–Plass had no break at all. */
+  breakAfterDashes = false,
+  /** Add a break after a hyphen the text carries between two letters
+   *  ("meta-" | "analyses"), priced like a syllable, as the rich path does.
+   *  Pretext ends a text segment on such a hyphen and breaks there when it
+   *  sets lines one by one. Up to postext 1.4, Knuth–Plass on justified
+   *  plain text never broke there: ragged text always asks for it, and
+   *  justified text with `MeasureBlockOptions.breakAfterHyphens`. */
+  hardHyphens = false,
+  /** Letters a compound needs on each side of its hyphen for that break:
+   *  2 keeps a line from ending on a lone letter ("e-" | "mail"). Justified
+   *  text that asks for the break with `breakAfterHyphens` takes 2; ragged
+   *  text, which pretext's line-by-line breaker gave every such break, and
+   *  compounds the dictionary leaves whole take 1. */
+  hardHyphenMinLetters = 1,
 ): KPItem[] {
   const items: KPItem[] = [];
   const segments = prepared.segments;
@@ -33,9 +93,31 @@ export function pretextSegmentsToItems(
     const w = widths[i]!;
 
     switch (kind) {
-      case 'text':
-        items.push({ type: 'box', width: w, sourceIndex: i });
+      case 'text': {
+        items.push({ type: 'box', width: w, sourceIndex: i, chars: segments[i]!.length });
+        const seg = segments[i]!;
+        const last = seg[seg.length - 1];
+        if (kinds[i + 1] !== 'text') break;
+        // The characters before the final dash or hyphen: in this segment,
+        // or at the end of the text segments before it. Pretext makes a
+        // quote and a dash after a space (`said "—Hola`) a segment of their
+        // own, so nothing stands before that quote.
+        if (breakAfterDashes && isDash(last)) {
+          if (breaksAfterDash(charBefore(segments, kinds, i, seg), last!, segments[i + 1]![0], charBefore(segments, kinds, i, seg, 2))) {
+            const meta: FreeBreakMeta = { free: true };
+            items.push({ type: 'penalty', width: 0, penalty: 0, flagged: false, sourceIndex: i, meta });
+          }
+        } else if (hardHyphens && last === '-') {
+          if (
+            breaksAfterHardHyphen(charBefore(segments, kinds, i, seg), segments[i + 1]![0])
+            && (hardHyphenMinLetters < 2 || twoLettersAround(segments, kinds, i, seg))
+          ) {
+            const meta: BareBreakMeta = { bare: true };
+            items.push({ type: 'penalty', width: 0, penalty: HYPHEN_PENALTY, flagged: true, sourceIndex: i, meta });
+          }
+        }
         break;
+      }
       case 'space':
       case 'glue':
         items.push({
@@ -53,6 +135,7 @@ export function pretextSegmentsToItems(
           penalty: HYPHEN_PENALTY,
           flagged: true,
           sourceIndex: i,
+          chars: 1,
         });
         break;
       case 'hard-break':
@@ -75,10 +158,10 @@ export function pretextSegmentsToItems(
         break;
       case 'preserved-space':
       case 'tab':
-        items.push({ type: 'box', width: w, sourceIndex: i });
+        items.push({ type: 'box', width: w, sourceIndex: i, chars: segments[i]!.length });
         break;
       default:
-        items.push({ type: 'box', width: w, sourceIndex: i });
+        items.push({ type: 'box', width: w, sourceIndex: i, chars: segments[i]!.length });
         break;
     }
   }
@@ -111,6 +194,9 @@ export function reconstructPretextLines(
   lineIndentFn: (lineIndex: number) => number,
   normalSpaceWidth: number,
   textAlign: TextAlign,
+  /** `KPOptions.trackingPerChar` the breaks were found with: each line
+   *  takes the tracking the breaker counted on (`VDTLine.letterSpacing`). */
+  trackingPerChar = 0,
 ): VDTLine[] {
   const segments = prepared.segments;
   const widths = (prepared as unknown as { widths: number[] }).widths;
@@ -126,9 +212,14 @@ export function reconstructPretextLines(
     const lineIndent = lineIndentFn(li);
     const lineMaxWidth = lineWidthFn(li);
 
-    // Determine if this break is at a penalty (hyphenation)
+    // Determine if this break is at a penalty (hyphenation). A break after
+    // a closed dash, or after a hyphen the text carries, ends the line
+    // inside the run too, but adds nothing.
     const breakItem = items[breakAt]!;
-    const hyphenated = breakItem.type === 'penalty' && breakItem.flagged;
+    const breakMeta = breakItem.type === 'penalty' ? (breakItem.meta as Partial<FreeBreakMeta & BareBreakMeta> | undefined) : undefined;
+    const freeBreak = breakMeta?.free === true;
+    const bareBreak = breakMeta?.bare === true;
+    const hyphenated = breakItem.type === 'penalty' && (breakItem.flagged || freeBreak);
 
     // Collect segments for this line: items from lineStart to breakAt
     // For glue breaks: line content is items lineStart..breakAt-1 (exclude the breaking glue)
@@ -165,7 +256,7 @@ export function reconstructPretextLines(
     }
 
     // If hyphenated, append '-' to the last text segment
-    if (hyphenated && lineSegments.length > 0) {
+    if (hyphenated && !freeBreak && !bareBreak && lineSegments.length > 0) {
       const lastIdx = lineSegments.length - 1;
       const last = lineSegments[lastIdx]!;
       if (last.kind === 'text') {
@@ -179,6 +270,9 @@ export function reconstructPretextLines(
     }
 
     const lineText = textParts.join('');
+    // Tracking the breaker counted on for this line, spread on its letters.
+    const tracking = trackingPerChar > 0 ? lineTracking(items, lineStart, breakAt, lineMaxWidth, trackingPerChar) : 0;
+    if (tracking !== 0) trackSegments(lineSegments, tracking);
     const contentWidth = lineSegments.reduce((s, seg) => s + seg.width, 0);
 
     // Compute justifiedSpaceRatio
@@ -201,9 +295,12 @@ export function reconstructPretextLines(
       bbox: createBoundingBox(lineIndent, li * lineHeightPx, contentWidth, lineHeightPx),
       baseline: li * lineHeightPx + lineHeightPx * 0.8,
       hyphenated,
+      // The line ends on a hyphen the word carries (EF-140).
+      ...(hyphenated && bareBreak ? { hardHyphen: true } : {}),
       segments: lineSegments,
       isLastLine,
       ...(justifiedSpaceRatio !== undefined ? { justifiedSpaceRatio } : {}),
+      ...(tracking !== 0 ? { letterSpacing: tracking } : {}),
     });
 
     // Next line starts after the break

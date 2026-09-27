@@ -17,7 +17,7 @@ import { stripConfigDefaults } from 'postext';
 import type { PanelId, ViewportTab, SandboxLabels } from '../types';
 import { DEFAULT_LABELS } from '../types';
 import { EMPTY_VIEW_HASH, readViewHash, sameBook, type ViewHash, type ViewHashBook } from '../storage/viewHash';
-import { loadConfig, loadBook, loadViewport, loadSidebarPercent, loadPanel, loadPresetApplied, loadPresetId, loadProjectId, loadHiddenPresetIds, saveConfig, saveBook, saveViewport, saveSidebarPercent, savePanel, savePresetApplied, saveProjectId, saveHiddenPresetIds } from '../storage/persistence';
+import { loadConfig, loadStoredConfig, loadBook, loadViewport, loadSidebarPercent, loadPanel, loadPresetApplied, loadPresetId, loadProjectId, loadHiddenPresetIds, saveConfig, saveBook, saveViewport, saveSidebarPercent, savePanel, savePresetApplied, saveProjectId, saveHiddenPresetIds } from '../storage/persistence';
 import { loadResources, saveResource, deleteResource } from '../storage/resources';
 import { customFontsSignature, setCustomFonts } from '../controls/fontLoader';
 import { pruneFontFiles } from '../storage/fontStorage';
@@ -45,6 +45,7 @@ import { hidePresetId, unhidePresetId } from '../presets/hidden';
 import { computeWarnings } from '../warnings/compute';
 import type { Warning } from '../warnings/types';
 import { hasIndexedDB } from '../storage/blobStore';
+import { onUnavailableResourceImagesChange, unavailableResourceImages } from '../controls/resourceImages';
 import { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES } from '../defaultMarkdown';
 import { withDefaultResourceTypes } from './defaultConfig';
 import { createPostextGuideConfig } from './guideConfig';
@@ -58,6 +59,7 @@ import {
   findDefaultPrivatePreset,
   isDocumentUntouched,
   listPresets,
+  rekeyMigratedConfig,
 } from '../presets';
 import type {
   AppliedPresetSnapshot,
@@ -1005,10 +1007,29 @@ export function SandboxProvider({
     const hashChapter = initialHash.chapter;
     const hashChapterId = hashChapter === null ? undefined : loadedBook.chapters[hashChapter]?.id;
     const book = hashChapterId ? { ...loadedBook, activeChapterId: hashChapterId } : loadedBook;
-    const savedConfig = loadConfig();
+    const storedConfig = loadStoredConfig();
     const savedViewport = loadViewport() as ViewportTab | null;
     const savedPercent = loadSidebarPercent();
     const savedPanel = loadPanel() as PanelId | null | undefined;
+    const config = withDefaultResourceTypes(
+      storedConfig?.config ?? initialConfig ?? createPostextGuideConfig(locale ?? 'en'),
+      locale ?? 'en',
+    );
+    // A working copy saved under older rules comes back migrated (its heading
+    // breaks and maths size pinned), while the applied preset's snapshot
+    // hashed it as stored: re-key the snapshot, or an untouched book would
+    // read as edited (Reload asking to discard, a changed preset marked
+    // stale instead of applied).
+    const savedSnapshot = loadPresetApplied();
+    let presetApplied = savedSnapshot;
+    if (savedSnapshot && storedConfig && storedConfig.config !== storedConfig.stored) {
+      presetApplied = rekeyMigratedConfig(
+        savedSnapshot,
+        withDefaultResourceTypes(storedConfig.stored, locale ?? 'en'),
+        config,
+      );
+      if (presetApplied !== savedSnapshot) savePresetApplied(presetApplied);
+    }
 
     return {
       markdown: activeChapter(book).markdown,
@@ -1018,10 +1039,7 @@ export function SandboxProvider({
       canvasScope: book.canvasScope ?? 'chapter',
       chapterLayouts: {},
       hiddenPresetIds: loadHiddenPresetIds(),
-      config: withDefaultResourceTypes(
-        savedConfig ?? initialConfig ?? createPostextGuideConfig(locale ?? 'en'),
-        locale ?? 'en',
-      ),
+      config,
       resources: [],
       storeReady: false,
       activePanel: savedPanel !== undefined ? savedPanel : ('markdown' as PanelId),
@@ -1043,7 +1061,7 @@ export function SandboxProvider({
       presetStatus: 'idle' as const,
       presetConfig: undefined,
       presetSummaries: [builtinPreset.summary],
-      presetApplied: loadPresetApplied(),
+      presetApplied,
       presetStale: false,
       presetUpdatedAt: null,
       activeProjectId: loadProjectId(),
@@ -1532,8 +1550,11 @@ export function SandboxProvider({
   const docSourceRef = useRef<ComposedBook | null>(null);
   const chapterDocsRef = useRef<Map<string, ChapterDocument>>(new Map());
   const warningsCacheRef = useRef<{ key: unknown[]; value: Warning[] } | null>(null);
+  /** Bumped whenever the set of unreadable image payloads changes (the
+   *  previews decode them after the layout): part of the warnings key. */
+  const imageStatusRef = useRef(0);
   const getWarnings = (s: SandboxState): Warning[] => {
-    const key = [s.chapters, s.activeChapterId, s.config, s.resources, s.docVersion, s.canvasScope, s.activeViewport];
+    const key = [s.chapters, s.activeChapterId, s.config, s.resources, s.docVersion, s.canvasScope, s.activeViewport, imageStatusRef.current];
     const cached = warningsCacheRef.current;
     if (cached && cached.key.every((k, i) => k === key[i])) return cached.value;
     const chapterBook = composeBookMemo(s.chapters, s.activeChapterId);
@@ -1554,6 +1575,7 @@ export function SandboxProvider({
       doc: wholeSource !== null && whole === null ? null : doc,
       resources: s.resources,
       storageUnavailable: !hasIndexedDB(),
+      unavailableImages: unavailableResourceImages(),
       book,
       chapterTitles: new Map(s.chapters.map((c) => [c.id, c.title])),
     });
@@ -1600,6 +1622,24 @@ export function SandboxProvider({
     }, WARNINGS_DEBOUNCE_MS);
     return () => clearTimeout(timer);
   }, [warnChapters, warnChapterId, warnConfig, warnResources, warnDocVersion]);
+
+  // An image payload found missing or undecodable (or readable again) after
+  // the previews decoded it: list the change without waiting for an edit.
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const off = onUnavailableResourceImagesChange(() => {
+      imageStatusRef.current++;
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        warningsRef.current = getWarningsRef.current(stateRef.current);
+        for (const cb of listenersRef.current) cb();
+      }, WARNINGS_DEBOUNCE_MS);
+    });
+    return () => {
+      off();
+      clearTimeout(timer);
+    };
+  }, []);
 
   const projectActions = useMemo<ProjectActions>(() => createProjectActions({
     dispatch,

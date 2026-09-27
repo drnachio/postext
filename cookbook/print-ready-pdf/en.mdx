@@ -1,0 +1,71 @@
+---
+title: "Print-ready PDF: bleed, crop marks and CMYK"
+summary: "An exhibition leaflet laid out with 3 mm of bleed and crop marks, exported as a CMYK PDF that takes its maps and floor plan from print masters."
+description: "A four-page exhibition leaflet in Postext with 3 mm of bleed and crop marks, exported as a CMYK PDF with embedded fonts, bookmarks and print masters."
+question: "How do I export a print-ready PDF with bleed, crop marks, CMYK colour, bookmarks and page labels?"
+aliases: ["print-ready PDF", "bleed", "crop marks", "trim marks", "CMYK", "print master", "prepress", "exhibition leaflet", "room sheet", "exhibition guide", "greyscale proof", "thumb tab"]
+pageNotes: { "1": "The cover, shown with its 3 mm of bleed and the crop marks at the corners: a dark green sea with islands in stepped greens, a dashed orange route with four stops that runs off the trim into the bleed, the title in 50 pt Space Grotesk, and the dates and venue at the foot.", "2": "The first inside page: the lead, rooms 1 and 2 under their waypoint kickers with an object label after each, and an orange tab with the folio 2 off the left edge.", "3": "Rooms 3 and 4, ending level with page 2, and the tab with the folio 3 off the right edge.", "4": "The back cover: practical information, the floor plan (figure 1) with the orange route from the vestibule through rooms 1 to 4, and a band of green relief that bleeds off three sides, with the venue, the dates and the colophon." }
+---
+
+## What you'll build
+
+The room sheet for *Cartografías imaginarias*, an invented exhibition of maps of imaginary places, as it goes to the printer, in Spanish on both editions of this page. Each 170 × 227 mm page sits on a sheet 22 mm larger that carries the bleed and the crop marks. On the cover an orange route crosses an archipelago in stepped greens and runs off the trim into the bleed. Inside, four rooms in ragged Karla open under waypoint kickers and an orange tab carries the folio off the fore-edge; the back cover sets a floor plan above a band of relief. The pen exports the press PDF, in CMYK with its fonts, bookmarks and page labels, and a greyscale proof. In the press PDF the maps and the plan come from print masters in hand-picked inks; the type, the tab and the waypoint rings take the plain conversion.
+
+## Method
+
+### 1 · Pick screen colours for their plates
+
+<Excerpt region="palette" />
+
+With `colorSpace: 'cmyk'`, postext-pdf converts each hex with a plain formula and no ICC profile: black is 1 minus the highest RGB channel, and cyan, magenta and yellow each come from their own channel and that black. A neutral grey therefore prints on the black plate alone (`#161616` becomes K91), and a colour with one channel at full strength prints with no black: the orange `#ff6626` becomes C0 M60 Y85 K0 in the tab, the rings and the route. Magenta comes out at 0 whenever green is the highest channel, so the forest becomes C82 M0 Y25 K76, which proofs as a petrol teal; the maps and the plan come from print masters for that reason (step 5), and the three-ink build stays only on the small bold forest type of the kickers, the figure reference and the caption labels.
+
+### 2 · A thumb tab that survives the guillotine
+
+<Excerpt region="tab" />
+
+The tab's box hangs from the bleed frame and is `BLEED` wider than the finished tab, so a cut that lands a millimetre outside the trim still leaves orange at the edge; the folio hangs from the page frame, which is the trim, and centres on the 10 mm that remain. `parity` picks the pages each element appears on and `edge` changes with it to reach the fore-edge, while `pages: 'body'` keeps the tab and the running heads (`{title}` and `{subtitle}` from the frontmatter) off both covers, which count as openers because each starts with a heading that spans the page or breaks to a new one. Any header or footer element repeats this way, so an `image` with `parity` and `pages` puts a watermark or a decorative picture on every page; slots paint over the text, and a tint behind it goes in `page.backgroundColor`.
+
+### 3 · Artwork to the bleed, type inside the trim
+
+<Excerpt region="covers" />
+
+`cutLines` adds the bleed, the mark offset and the 5 mm mark to every side of the page, 11 mm here, and since the short answer sets the offset equal to the bleed, the marks start at the bleed edge and run outwards, on the black plate. An image element anchored to the bleed with `width: 'fill'` takes that frame's width and keeps its own proportions: the cover map is drawn at 176 × 233 mm, the trim plus 3 mm a side, so it reaches the bleed edge where the crop marks start, while the type hangs from the text area, well inside the trim. The back cover is a heading style whose footer replaces the document's, with a band from the same generator anchored to the foot of the bleed and a bottom margin that stops the text 8 mm above it.
+
+### 4 · Headings that become bookmarks
+
+<Excerpt region="levels" />
+
+`renderToPdf` builds the bookmarks from the headings, so each room is a level-1 heading that follows on without a page break, and `numberingTemplate` gives the kicker its `{number}` and the bookmark its prefix: the PDF lists the cover, "Sala 1 Una isla en ninguna parte" to "Sala 4 La isla del tesoro", and the practical information. A designed heading hides its own text but keeps it for the bookmarks and the tags; without `fontFamily` that hidden text is set in Open Sans 700, which the pages would load and the PDF embed for that text alone. The page labels follow `page.pageNumbering`, left at its default, decimal from 1, so page 3 in a PDF viewer is the page whose tab reads 3.
+
+### 5 · Print masters in exact inks
+
+<Excerpt region="master" />
+
+Each drawing is defined once, as paths. The art region turns them into the SVG the canvas paints, and this region writes the same paths into a one-page CMYK PDF with builds chosen so that a proof matches the screen, which puts the sea at C100 M45 Y80 K55 instead of the plain C82 M0 Y25 K76. Each resource names its master in `svg.pdfFileId`, `pressPdf()` in the short answer hands the master's bytes to `renderToPdf` under the SVG's id, and postext-pdf embeds that page unchanged, as vectors in the master's own inks. That holds for the plan, a figure, and for the cover map and the back band, which are design images. The greyscale proof gets the SVGs instead, because an embedded master is never converted and would stay in colour.
+
+## Variations
+
+### Ask for 5 mm of bleed
+
+The artwork, the tab and the scale bar are sized from `BLEED`, and the crop marks follow it through `markOffset`, so a press that wants 5 mm needs only this change, and each sheet grows to 200 × 257 mm.
+
+```diff
+-const BLEED = 3; // mm of artwork past the trim: the cover, the tab and the back band reach it
++const BLEED = 5; // mm of artwork past the trim: the cover, the tab and the back band reach it
+```
+
+### Print the artwork from its SVGs
+
+Without `pdfFileId` the press file draws each picture from its SVG, still as vectors but through the plain conversion, and the sea prints C82 M0 Y25 K76, a petrol teal.
+
+```diff
+-  updatedAt: 0, ...extra, svg: { fileId: `${id}.svg`, pdfFileId: `${id}.pdf`,
++  updatedAt: 0, ...extra, svg: { fileId: `${id}.svg`,
+```
+
+## Pitfalls
+
+- postext-pdf 1.4.1 writes each page as a single MediaBox, the whole 192 × 249 mm sheet, with no TrimBox or BleedBox, and prints the crop marks on the black plate only. Give the print shop the trim size, 170 × 227 mm, or add the boxes in a prepress tool if the shop asks for PDF/X.
+- In 1.4.1 a crop mark starts `markOffset` outside the trim, not outside the bleed, so with a bleed wider than the default 3 mm offset the marks print over the artwork. Keep the offset equal to the bleed, as `cutLines` does here.
+- `renderToPdf` 1.4.1 does not read `config.pdfGeneration`. `pressPdf()` passes the colour space as an option, and bookmarks and tagging are on by default.
+- Once built, each button turns into an "Open the PDF ↗" link and a download link, and only the download links carry the file names.

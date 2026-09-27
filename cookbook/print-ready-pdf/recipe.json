@@ -1,0 +1,64 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 24,
+  "status": "published",
+  "chapter": "output",
+  "order": 30,
+  "level": 3,
+  "genres": ["ephemera"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["bleed-and-crop-marks", "pdf-colour-space", "svg-print-masters"],
+    "also": [
+      "pdf-export", "pdf-fonts", "pdf-outlines", "bleed-bands", "design-anchoring",
+      "design-images", "page-role-filters", "section-running-heads", "heading-styles", "covers",
+      "opener-design", "heading-attributes", "frontmatter", "running-heads", "resources",
+      "localised-labels", "color-palette"
+    ]
+  },
+  "answers": ["Q13", "Q02", "Q79"],
+  "gaps": ["pdf-x"],
+  "gotchas": [
+    "pdf-master-resourcebytes", "pdf-provider-all-styles", "svg-no-marker-filters",
+    "svg-no-webfonts", "latin-subset", "opener-image-no-reserve", "ragged-no-hyphenation",
+    "resource-types-locale", "headings-drop-h1-break", "palette-skips-designs",
+    "overflow-ellipsis-default", "config-cache-identity", "fonts-first"
+  ],
+  "explainsWarnings": [],
+  "related": ["riso-zine-single-ink", "accessible-tagged-pdf", "chapter-opener-bleed-band", "book-from-chapters"],
+  "workarounds": [
+    { "followup": "EF-06", "package": "postext-pdf", "note": "renderToPdf asks resourceBytes for svg.fileId and never for svg.pdfFileId, so pressPdf() answers each drawing's SVG id with the bytes of its print master (what bundleResourceBytes does for a .postext bundle)" },
+    { "followup": "EF-20", "package": "postext-pdf", "note": "the PDF asks for the bold, italic and bold-italic faces of every family, Space Grotesk's missing italic included: the kit's provider snaps weights and falls back to upright" },
+    { "followup": "EF-21", "package": "postext", "note": "the room texts are ragged and so never hyphenated; the measure stays at 118 mm and nothing claims hyphenation" },
+    { "followup": "EF-33", "package": "postext", "note": "config.locale does not name the figures: resourceTypes: defaultResourceTypes(LANG) is passed by hand, with one running count" },
+    { "followup": "EF-05", "package": "postext", "note": "the rooms' level-1 headings state breakBefore: { enabled: false }, since any headings object drops the default break; the back cover breaks through its heading style" },
+    { "followup": "EF-71", "package": "postext", "note": "col() writes the hex beside the paletteId, because design elements read the hex (gotcha palette-skips-designs)" },
+    { "followup": "EF-90", "package": "postext", "note": "the cover's map, a bleed-anchored image, reserves no height, so the text puts :::pagebreak after the cover heading; without it the lead and the first room print over the map" },
+    { "followup": "EF-120", "package": "postext", "note": "crop marks start markOffset outside the trim, not outside the bleed, so a bleed wider than the 3 mm default offset puts the marks on the artwork (canvas and PDF): cutLines sets markOffset: mm(BLEED) so one number keeps them clear" },
+    { "followup": "EF-124", "package": "postext-pdf", "note": "renderToPdf never reads config.pdfGeneration, so pressPdf() passes colorSpace as a renderToPdf option, and the bookmarks and page labels come from its defaults" }
+  ],
+  "engine": { "postext": "1.4.1", "postextPdf": "1.4.1" },
+  "kit": ["core", "fonts", "viewer", "pdf", "images"],
+  "sample": { "locales": ["es"] },
+  "capture": {
+    "hero": 1,
+    "card": "loupe",
+    "focus": { "page": 1, "x": 0.07, "y": 0.1, "w": 0.93, "h": 0.33 },
+    "expect": { "pages": [4, 4] }
+  },
+  "downloads": { "pdf": true },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [],
+    "images": [],
+    "fonts": [
+      { "family": "Karla", "license": "OFL-1.1" },
+      { "family": "Space Grotesk", "license": "OFL-1.1" },
+      { "family": "Space Mono", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-25",
+  "updated": "2026-09-26"
+}

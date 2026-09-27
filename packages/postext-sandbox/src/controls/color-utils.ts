@@ -12,21 +12,41 @@ export function clamp(v: number, min: number, max: number): number {
 
 // --- Alpha helpers ---
 
-/** Extract alpha (0–100) from 8-digit hex or 'transparent'. 6-digit hex → 100 */
+/** A colour value that is not a 6- or 8-digit hex (`#rgb`, `#rgba`,
+ *  `rgb()` / `rgba()`, which a hand-written config may use) as sRGB channels
+ *  and alpha; null when it does not parse. */
+function parseOtherColor(value: string): { hex6: string; alpha: number } | null {
+  try {
+    const c = new Color(value).to('srgb');
+    const [r, g, b] = c.coords;
+    return {
+      hex6: rgbToHex({ r: Math.round((r ?? 0) * 255), g: Math.round((g ?? 0) * 255), b: Math.round((b ?? 0) * 255) }),
+      alpha: Math.round((c.alpha ?? 1) * 100),
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Extract alpha (0–100) from 8-digit hex or 'transparent'. 6-digit hex → 100.
+ *  Other colour strings (`#rgba`, `rgba()`) are parsed. */
 export function hexAlpha(hex: string): number {
   if (!hex || hex === 'transparent') return 0;
   const clean = hex.replace('#', '');
   if (clean.length === 8) {
     return Math.round((parseInt(clean.slice(6, 8), 16) / 255) * 100);
   }
-  return 100;
+  if (hex.startsWith('#') && clean.length === 6) return 100;
+  return parseOtherColor(hex)?.alpha ?? 100;
 }
 
-/** Strip alpha from hex, returning 6-digit hex. 'transparent' → '#000000' */
+/** Strip alpha from hex, returning 6-digit hex. 'transparent' → '#000000'.
+ *  Other colour strings (`#rgb`, `#rgba`, `rgba()`) are converted. */
 export function hexWithoutAlpha(hex: string): string {
   if (!hex || hex === 'transparent') return '#000000';
   const clean = hex.replace('#', '');
-  return `#${clean.slice(0, 6)}`;
+  if (hex.startsWith('#') && (clean.length === 6 || clean.length === 8)) return `#${clean.slice(0, 6)}`;
+  return parseOtherColor(hex)?.hex6 ?? `#${clean.slice(0, 6)}`;
 }
 
 /** Combine 6-digit hex + alpha (0–100) into output. alpha=0 → 'transparent', alpha=100 → 6-digit hex */

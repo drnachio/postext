@@ -1,0 +1,59 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 69,
+  "status": "published",
+  "chapter": "tables",
+  "order": 60,
+  "level": 3,
+  "genres": ["workbook"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["cell-fills", "table-style", "super-subscripts"],
+    "also": [
+      "table-model", "table-styles", "chips", "callout-columns", "callout-styles",
+      "heading-styles", "part-palettes", "opener-design", "heading-attributes", "design-images",
+      "covers", "running-heads", "resource-types", "inline-embeds", "captions", "resources",
+      "canvas-rendering"
+    ]
+  },
+  "answers": ["Q68", "Q10", "Q49", "Q51", "Q60"],
+  "gaps": [],
+  "gotchas": [
+    "cell-blank-line", "here-table-no-split", "callout-columns", "opener-clipped-at-top",
+    "section-palette-skips-chips", "palette-skips-designs", "headings-drop-h1-break",
+    "design-lineheight-multiple", "svg-no-webfonts", "config-cache-identity", "fonts-first"
+  ],
+  "workarounds": [
+    { "followup": "EF-154", "package": "postext", "note": "every white square of the crossword gets its second line from a word joiner (U+2060): 1.4.1 drops a table-cell paragraph that is empty or holds only a no-break space, and with U+00A0 there every row came out one line deep (5.1 mm), a grid 45.5 mm tall instead of 84.7 mm square" },
+    { "followup": "EF-113", "package": "postext", "note": "the level-1 heading sets span: 'page' in this single-column booklet: kept in the column, the opener is clipped at the 16 mm top margin, which cuts the top of the colour field and the kicker" },
+    { "followup": "EF-130", "package": "postext", "note": "bodyText.boldColor is restated in ink for the bold clue numbers in the clue box: without it the box's bold takes the default #295AA3, since the palette does not reach callout bold in 1.4.1" },
+    { "followup": "EF-71", "package": "postext", "note": "col() writes each colour's hex beside its paletteId: a heading style's palette follows the id, but the document palette never reaches design elements in 1.4.1" },
+    { "followup": "EF-87", "package": "postext", "note": "the word-bank chips are ink on paper and coral, colours no puzzle's palette overrides: a chip linked to 'band' would keep the base sea blue on the word-search page" },
+    { "followup": "EF-05", "package": "postext", "note": "the H1 page break is restated in headings.levels[0].breakBefore, since any headings object drops the default one" },
+    { "followup": "EF-56", "package": "postext", "note": "design text lineHeight is given as a multiple (1 and 0.95), never as a dimension" }
+  ],
+  "related": ["worksheet-answer-boxes", "garden-almanac", "reading-primer-syllables", "exam-paper"],
+  "engine": { "postext": "1.4.1" },
+  "kit": ["core", "fonts", "viewer", "images"],
+  "sample": { "locales": ["es", "en"] },
+  "capture": {
+    "hero": 2,
+    "card": "crop",
+    "focus": { "page": 2, "x": 0, "y": 0.03, "w": 1, "h": 0.761 },
+    "expect": { "pages": [5, 5], "nearEmptyPages": [1] }
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [],
+    "images": [],
+    "fonts": [
+      { "family": "Lexend", "license": "OFL-1.1" },
+      { "family": "Lilita One", "license": "OFL-1.1" },
+      { "family": "Chivo Mono", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-26",
+  "updated": "2026-09-26"
+}

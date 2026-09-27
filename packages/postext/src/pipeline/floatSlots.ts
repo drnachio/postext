@@ -100,13 +100,68 @@ export interface FloatMeasure {
   rotatedWidth?: number;
   /** Height of a caption band set beside the body (`placement.captionSide`). */
   asideHeight?: number;
+  /** A floated box's `marginBottom` (px), when it is wider than the float
+   *  gap: the space a top band keeps under the box (EF-144). */
+  gapBelow?: number;
+  /** A floated box's `marginTop` (px), when it is wider than the float
+   *  gap: the space a bottom band keeps above the box. */
+  gapAbove?: number;
+}
+
+/** The space a top band keeps under `built`: the float gap, or a floated
+ *  box's wider `marginBottom`. */
+export function floatGapBelow(built: FloatMeasure, gapPx: number): number {
+  return Math.max(gapPx, built.gapBelow ?? 0);
+}
+
+/** The space a bottom band keeps above `built`: the float gap, or a
+ *  floated box's wider `marginTop`. */
+export function floatGapAbove(built: FloatMeasure, gapPx: number): number {
+  return Math.max(gapPx, built.gapAbove ?? 0);
+}
+
+/** A band of a side column that a heading design paints over (absolute y):
+ *  a chapter numeral hung in the outer margin column, say. What the side
+ *  stack sets there keeps clear of it (EF-78). */
+export interface SideObstacle {
+  top: number;
+  bottom: number;
+}
+
+/** The first position at or below `y` where an item `height` tall clears
+ *  every obstacle by `gapPx` above and below it. `snap` rounds a candidate
+ *  up to the baseline grid. An item that fits above an obstacle stays there:
+ *  a numeral beside a heading further down the page does not push the
+ *  figures stacked at the head of the column. */
+export function clearSideObstacles(
+  y: number,
+  height: number,
+  obstacles: readonly SideObstacle[] | undefined,
+  gapPx: number,
+  snap: (v: number) => number,
+): number {
+  if (!obstacles || obstacles.length === 0) return y;
+  let at = y;
+  // Each obstacle can push the item at most once: once below it, the item
+  // only moves further down.
+  for (let moved = true; moved;) {
+    moved = false;
+    for (const o of obstacles) {
+      if (at < o.bottom + gapPx - 0.01 && at + height + gapPx > o.top + 0.01) {
+        at = Math.max(at, snap(o.bottom + gapPx));
+        moved = true;
+      }
+    }
+  }
+  return at;
 }
 
 /** Geometry of a float stacked in the side column: it starts at the foot of
  *  what the column holds, or at `refY` (the top of the citing text) when
- *  that is lower, snapped up to the baseline grid of the content area, and
- *  consumes the column's free height from the stack's foot to its own foot
- *  plus `gapPx`. */
+ *  that is lower, snapped up to the baseline grid of the content area —
+ *  moved on under any heading-design element (`obstacles`) it would
+ *  overlap there — and consumes the column's free height from the stack's
+ *  foot to its own foot plus `gapPx`. */
 export function measureSideStack(
   built: FloatMeasure,
   col: VDTColumn,
@@ -114,10 +169,12 @@ export function measureSideStack(
   contentArea: BoundingBox,
   baselineGrid: number,
   gapPx: number,
+  obstacles?: readonly SideObstacle[],
 ): { need: number; y: number } {
   const used = sideUsedBottom(col);
   const raw = Math.max(used, refY ?? used);
-  const y = contentArea.y + Math.ceil((raw - contentArea.y - 0.01) / baselineGrid) * baselineGrid;
+  const snap = (v: number): number => contentArea.y + Math.ceil((v - contentArea.y - 0.01) / baselineGrid) * baselineGrid;
+  const y = clearSideObstacles(snap(raw), built.height, obstacles, gapPx, snap);
   const need = y - used + built.height + gapPx;
   return { need, y };
 }
@@ -140,7 +197,7 @@ export function measureFloatBand(
   trueBottomOf: (col: VDTColumn) => number,
 ): { need: number; y: number } {
   if (position === 'top') {
-    const rawNeed = built.height + gapPx;
+    const rawNeed = built.height + floatGapBelow(built, gapPx);
     const need = Math.ceil((rawNeed - 0.01) / baselineGrid) * baselineGrid;
     return { need, y: cols[0]!.bbox.y };
   }
@@ -153,7 +210,8 @@ export function measureFloatBand(
     ? gridAlignedBottom - 0.2 * baselineGrid - built.lastCaptionBaseline
     : gridAlignedBottom - built.height;
   let need = 0;
-  for (const col of cols) need = Math.max(need, trueBottomOf(col) - (y - gapPx));
+  const above = floatGapAbove(built, gapPx);
+  for (const col of cols) need = Math.max(need, trueBottomOf(col) - (y - above));
   return { need, y };
 }
 

@@ -1,3 +1,4 @@
+import { matchHyphenationLocale } from 'postext';
 import type { HyphenationLocale, DimensionUnit } from 'postext';
 
 export const LOCALE_TO_HYPHENATION: Record<string, HyphenationLocale> = {
@@ -14,6 +15,7 @@ export const LOCALE_TO_HYPHENATION: Record<string, HyphenationLocale> = {
 export const TEXT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 export const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 export const INDENT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
+export const HYPHENATION_ZONE_UNITS: DimensionUnit[] = ['em', 'pt', 'mm'];
 
 export const LOCALE_OPTIONS = [
   { value: 'en-us', label: 'English' },
@@ -25,3 +27,15 @@ export const LOCALE_OPTIONS = [
   { value: 'ca', label: 'Català' },
   { value: 'nl', label: 'Nederlands' },
 ];
+
+/** The options of a language select whose value is `value`: the bundled
+ *  languages, plus the stored tag itself when it is not one of them — a
+ *  region tag such as `es-ES`, or a language without hyphenation patterns —
+ *  so the select shows what the document says. The extra option is named
+ *  after the bundled language the tag maps to, else shown as written. */
+export function localeOptionsFor(value: string | undefined): { value: string; label: string }[] {
+  if (!value || LOCALE_OPTIONS.some((o) => o.value === value)) return LOCALE_OPTIONS;
+  const match = matchHyphenationLocale(value);
+  const base = match ? LOCALE_OPTIONS.find((o) => o.value === match)?.label : undefined;
+  return [...LOCALE_OPTIONS, { value, label: base ? `${base} (${value})` : value }];
+}

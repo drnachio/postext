@@ -1,0 +1,324 @@
+{
+  "schemaVersion": 1,
+  "slug": "fonts-before-layout",
+  "sourceHash": "7d01c616bc1f9f375228900d2d8b117c7c85625e95cba9919d3e66acc21e0455",
+  "engine": {
+    "postext": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-26T21:26:39.036Z",
+  "variants": {
+    "en": {
+      "hash8": "5357fb32",
+      "vdtHash": "9100be99e7b287372855704f742b2b360b51b9a8",
+      "timings": {
+        "importMs": 215,
+        "fontsMs": 1,
+        "buildMs": 4,
+        "totalMs": 9153,
+        "builds": 3
+      },
+      "specimen": {
+        "trimMm": [
+          180,
+          240
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Ysabeau Office",
+          "sizePt": 11,
+          "leadingPt": 15.5
+        },
+        "families": [
+          "IBM Plex Mono",
+          "Noto Serif Display",
+          "Ysabeau Office"
+        ],
+        "pages": 4,
+        "ownLines": 216
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1333,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 60234,
+          "alt": "Opening page 1: Three faces, proofed."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 56656,
+          "alt": "Page 2: Seven sizes of the text face."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 68716,
+          "alt": "Page 3: The proof. Table 1. Faces this document asked for, read from its own layout."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 84148,
+          "alt": "Page 4: What the first build got wrong. Figure 1. The first paragraph of page 1 as the first build set it, measured before the fonts had arrived (above), and as the last build set it (below). The first build broke 22 of its 43 lines of text elsewhere. The rule marks the measure."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "defaultResourceTypes",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.paragraphSpacing",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "captionStyle",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.labelColor",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "chipStyles",
+          "chipStyles[].backgroundEnabled",
+          "chipStyles[].borderWidth",
+          "chipStyles[].color",
+          "chipStyles[].fontFamily",
+          "chipStyles[].fontSize",
+          "chipStyles[].gap",
+          "chipStyles[].id",
+          "chipStyles[].paddingX",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].overflow",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].italic",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "layout",
+          "layout.layoutType",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].captionStyle",
+          "resourceTypes[].captionStyle.position",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].namePlural",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyle",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules"
+        ],
+        "configSections": [
+          "bodyText",
+          "captionStyle",
+          "chipStyles",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle"
+        ],
+        "configLeaves": 268,
+        "designElements": 10,
+        "directives": [
+          ":::paragraphs",
+          ":::pagebreak",
+          "::resource"
+        ],
+        "inline": [
+          "{attrs}",
+          ":chip"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 1,
+          "table": 1
+        },
+        "fonts": [
+          {
+            "family": "IBM Plex Mono",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Mono",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif Display",
+            "weight": 900,
+            "style": "italic"
+          },
+          {
+            "family": "Noto Serif Display",
+            "weight": 900,
+            "style": "normal"
+          },
+          {
+            "family": "Ysabeau Office",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Ysabeau Office",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "chips",
+          "heading-attributes",
+          "inline-embeds",
+          "localised-labels",
+          "opener-band",
+          "opener-design",
+          "page-breaks",
+          "page-role-filters",
+          "paragraph-styles",
+          "resource-types",
+          "resources"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    }
+  }
+}

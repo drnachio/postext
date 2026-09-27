@@ -1,0 +1,184 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 55,
+  "status": "published",
+  "chapter": "output",
+  "order": 100,
+  "level": 3,
+  "genres": [
+    "newsletter"
+  ],
+  "outputs": [
+    "canvas",
+    "live"
+  ],
+  "features": {
+    "primary": [
+      "diagnostics",
+      "escapes",
+      "callout-splitting"
+    ],
+    "also": [
+      "knuth-plass",
+      "fixed-callouts",
+      "citations",
+      "side-column-floats",
+      "side-boxes",
+      "callout-columns",
+      "callout-styles",
+      "opener-design",
+      "opener-band",
+      "heading-attributes",
+      "running-heads",
+      "page-role-filters",
+      "canvas-rendering",
+      "resources",
+      "resource-types",
+      "color-palette",
+      "page-background"
+    ]
+  },
+  "answers": [
+    "Q77",
+    "Q11",
+    "Q22"
+  ],
+  "gotchas": [
+    "sandbox-only-warnings",
+    "unknown-ref-silent",
+    "dollar-math",
+    "digit-period-list",
+    "callout-columns",
+    "config-cache-identity",
+    "opener-image-no-reserve",
+    "palette-skips-designs",
+    "headings-drop-h1-break",
+    "hyphenation-locales",
+    "design-lineheight-multiple",
+    "runt-tracking-unpainted",
+    "fonts-first"
+  ],
+  "explainsWarnings": [
+    "unclosedMath",
+    "unclosedContainer",
+    "calloutOverflow",
+    "unknownResourceId",
+    "unknownDirective",
+    "looseLine"
+  ],
+  "related": [
+    "justification-lab",
+    "newspaper-front-page",
+    "boxes-split-float-pin",
+    "textbook-margin-column"
+  ],
+  "workarounds": [
+    {
+      "followup": "EF-19",
+      "package": "postext",
+      "note": "1.4.1 reports parse issues and calloutOverflow only; proof() finds the rest itself: every :ref and ::resource id diffed against the resources, every ::: name against KNOWN_CONTAINERS and KNOWN_DIRECTIVES, lists numbered from a year and formulas read from parseMarkdownWithIssues' blocks, loose lines and hyphens inside addresses read from the layout's lines (gotchas sandbox-only-warnings, unknown-ref-silent)"
+    },
+    {
+      "followup": "EF-31",
+      "package": "postext",
+      "note": "paintMarks() washes loose lines itself from line.justifiedSpaceRatio after renderPageToCanvas: 1.4.1 paints the loose-line highlight only in the Sandbox and exports no helper to draw it on a canvas of your own"
+    },
+    {
+      "followup": "EF-71",
+      "package": "postext",
+      "note": "col() writes the hex beside every paletteId: 1.4.1 skips the palette in design slots (gotcha palette-skips-designs)"
+    },
+    {
+      "followup": "EF-05",
+      "package": "postext",
+      "note": "the H1 breakBefore is restated because a headings object drops it (gotcha headings-drop-h1-break)"
+    },
+    {
+      "followup": "EF-90",
+      "package": "postext",
+      "note": "the kicker, headline, standfirst and byline under the night-crossing drawing reserve the opener's height; the image element alone would reserve nothing (gotcha opener-image-no-reserve)"
+    },
+    {
+      "followup": "EF-56",
+      "package": "postext",
+      "note": "the headline and standfirst set lineHeight as multiples (0.96, 1.3), never as dimensions (gotcha design-lineheight-multiple)"
+    },
+    {
+      "followup": "EF-111",
+      "package": "postext",
+      "note": "bodyText.maxRuntTracking: 0, so no runt fix tightens tracking that 1.4.1 never paints (gotcha runt-tracking-unpainted)"
+    },
+    {
+      "followup": "EF-14",
+      "package": "postext",
+      "note": "exact hyphenation codes 'en-us' and 'es' (gotcha hyphenation-locales)"
+    },
+    {
+      "followup": "EF-105",
+      "package": "postext",
+      "note": "the lede is copy-fitted so the fact box's first fragment fills page 1 to its last line: with a line to spare, 1.4.1's column balancing pushes a box that closes a column down to the column's foot, leaving a gap between the fares paragraph and the box's stripe"
+    },
+    {
+      "followup": "EF-179",
+      "package": "postext",
+      "note": "linesOf() runs each justified line's wash and click target to the right edge of its block: 1.4.1 keeps the line's natural width in line.bbox, not the width it is painted at"
+    }
+  ],
+  "engine": {
+    "postext": "1.4.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "screenshot",
+    "selector": "#proof",
+    "expect": {
+      "pages": [
+        2,
+        2
+      ]
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Charis SIL",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Chivo",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Fragment Mono",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-09-26",
+  "updated": "2026-09-27"
+}

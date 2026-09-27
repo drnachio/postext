@@ -1,0 +1,534 @@
+{
+  "schemaVersion": 1,
+  "slug": "din-business-letter",
+  "sourceHash": "1a932581e62b69438d1e9a9a2f9c6fc72560dd40615484b7c7345fef37abb655",
+  "engine": {
+    "postext": "1.4.1",
+    "postextPdf": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-26T22:07:44.482Z",
+  "variants": {
+    "en": {
+      "hash8": "5cf359b0",
+      "vdtHash": "b6b87c1275cdf52447f16a5913cb27bf3d87ed3f",
+      "timings": {
+        "importMs": 379,
+        "fontsMs": 1180,
+        "buildMs": 76,
+        "totalMs": 2344,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          297
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": false,
+        "body": {
+          "family": "Nunito Sans",
+          "sizePt": 10.5,
+          "leadingPt": 15
+        },
+        "families": [
+          "Familjen Grotesk",
+          "Nunito Sans",
+          "Reddit Mono"
+        ],
+        "pages": 2,
+        "ownLines": 180
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 115004,
+          "alt": "Opening page 1: Angebot 2026-117: Instandsetzung der 24 Kastenfenster im Vorderhaus Christburger Straße 17."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1414,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 77816,
+          "alt": "Page 2."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "loupe"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "din-business-letter.pdf",
+        "bytes": 44368,
+        "pages": 2
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.lineHeight",
+          "bodyText.paragraphSpacing",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].direction",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].lineHeight",
+          "footer.elements[].overflow",
+          "footer.elements[].placement",
+          "footer.elements[].thickness",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].direction",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].lineHeight",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].placement",
+          "header.elements[].style",
+          "header.elements[].thickness",
+          "headings",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "headings.levels[].span",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "unorderedLists",
+          "unorderedLists.bulletChar"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "unorderedLists"
+        ],
+        "configLeaves": 576,
+        "designElements": 41,
+        "directives": [
+          "::resource",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 2,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Familjen Grotesk",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Nunito Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Nunito Sans",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Reddit Mono",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Reddit Mono",
+            "weight": 500,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "heading-attributes",
+          "inline-embeds",
+          "opener-band",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "resources"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.6
+        },
+        "findings": [
+          {
+            "check": "C26",
+            "severity": "warn",
+            "detail": "the hero is 11.7 % colour, pictures or display type (aim for 25 %+)"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "471cd508",
+      "vdtHash": "b6b87c1275cdf52447f16a5913cb27bf3d87ed3f",
+      "timings": {
+        "importMs": 174,
+        "fontsMs": 43,
+        "buildMs": 82,
+        "totalMs": 1077,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          297
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": false,
+        "body": {
+          "family": "Nunito Sans",
+          "sizePt": 10.5,
+          "leadingPt": 15
+        },
+        "families": [
+          "Familjen Grotesk",
+          "Nunito Sans",
+          "Reddit Mono"
+        ],
+        "pages": 2,
+        "ownLines": 180
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 115004,
+          "alt": "Página de apertura 1: Angebot 2026-117: Instandsetzung der 24 Kastenfenster im Vorderhaus Christburger Straße 17."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1414,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 77816,
+          "alt": "Página 2."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "loupe"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "din-business-letter.pdf",
+        "bytes": 44368,
+        "pages": 2
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.lineHeight",
+          "bodyText.paragraphSpacing",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].direction",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].lineHeight",
+          "footer.elements[].overflow",
+          "footer.elements[].placement",
+          "footer.elements[].thickness",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].direction",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].lineHeight",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].placement",
+          "header.elements[].style",
+          "header.elements[].thickness",
+          "headings",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "headings.levels[].span",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "unorderedLists",
+          "unorderedLists.bulletChar"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "unorderedLists"
+        ],
+        "configLeaves": 576,
+        "designElements": 41,
+        "directives": [
+          "::resource",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 2,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Familjen Grotesk",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Nunito Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Nunito Sans",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Reddit Mono",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Reddit Mono",
+            "weight": 500,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "heading-attributes",
+          "inline-embeds",
+          "opener-band",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "resources"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.6
+        },
+        "findings": [
+          {
+            "check": "C26",
+            "severity": "warn",
+            "detail": "the hero is 11.7 % colour, pictures or display type (aim for 25 %+)"
+          }
+        ]
+      }
+    }
+  }
+}

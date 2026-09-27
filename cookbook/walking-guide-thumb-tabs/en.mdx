@@ -1,0 +1,70 @@
+---
+title: "Walking guide with thumb tabs"
+summary: "A pocket guide with one heading style per walk, whose palette recolours the fore-edge tab, the stop numbers, the box’s tint and the blank verso before the walk."
+description: "Lisbon on Foot, a pocket walking guide set in Postext. Its thumb tab and painted blank page are header elements; each walk’s heading style sets four colours."
+question: "How do I keep running heads off openers and blank pages, and paint a blank verso in the section’s colour?"
+aliases: ["travel guide", "walking tour", "thumb tab", "thumb index", "colour-coded sections", "section colours", "painted blank page", "map pins", "numbered stops", "corner icon"]
+pageNotes: { "1": "The cover: a wall of blue-and-white azulejos with one tile missing at the fore-edge, the title on a framed plaque, and the three walks keyed by number in their colours.", "2": "Page 2, the introduction, with running heads and no thumb tab, and a map of the routes whose numbered pins match the stops.", "3": "Walk 1 opens on a recto under a terracotta band with a tile pattern towards the fore-edge; the terracotta tab with a white 1 hangs from the band’s foot.", "5": "Page 5 ends Walk 1 with the fifth stop and a terracotta line in the label face that sends you on to Walk 2.", "6": "Page 6, the blank verso before Walk 2, painted edge to edge in the walk’s yellow under a pale tile pattern, with the walk’s number, 2, in ink." }
+---
+
+## What you'll build
+
+The first seven pages of *Lisbon on Foot*, a pocket guide of 120 × 200 mm. The cover is a wall of blue-and-white azulejos with the title on a panel framed like a Lisbon street sign, and page 2 introduces the three walks with a map of their routes. Each walk has a colour, terracotta for Alfama and yellow for the Baixa, and a thumb tab on the fore-edge shows that colour and the walk’s number at the same height on every page of the walk. The opener band, the numbered stops, the recto running head and the tint of the Don’t miss box change with it. The blank verso that sends Walk 2 to a recto is painted in Walk 2’s yellow and prints its numeral. The text is Albert Sans, set ragged; the names are DM Serif Display and the labels Asap Condensed.
+
+## Method
+
+### 1 · Name the colours a walk changes
+
+<Excerpt region="palette" />
+
+A heading style’s `palette` replaces entries by id on the pages of its section ([heading styles](/en/docs/configuration#heading-styles)), so every colour that should follow the walk links to one of four entries: `band` for the fields, the tab and the stop circles, `bandInk` for type on paper, `onBand` for type on a field and `wash` for the box. White on the Baixa yellow measures 2:1, so that walk’s `onBand` is the ink, at 8:1. Design elements follow the id, while the text is recoloured by value: a colour equal to an entry’s base hex takes the walk’s value, which is why the four base values all differ. The box title on page 4 and the line that sends you on to Walk 2 on page 5 are text in `bandInk`, and both print in terracotta. `col()` writes the hex beside the id because in 1.4.1 the document palette never reaches design elements.
+
+### 2 · Keep the running heads to body pages
+
+<Excerpt region="running-heads" />
+
+After layout every page gets a role ([text elements](/en/docs/configuration#text-elements)). A walk’s first page is an `opener`, because its heading breaks the page; the padding page before a recto is `blank`; the rest are `body`. The heads take `pages: 'body'`, so the openers on pages 3 and 7 and the blank page 6 have none, and the drop folio takes `'opener'`. The verso prints the frontmatter’s `{title}`, the recto `Walk {chapterNumber} · {chapterTitle}` in `bandInk`, terracotta on page 5. The tabs from the short answer take `'all'`. The blank page’s field comes after them in the array, and since array order is paint order it covers the tab on page 6. Page 2, the introduction, comes before Walk 1, so `{chapterNumber}` is empty there, and its style has a `header` of its own with the four heads and no tabs. Without it, page 2 would print an empty blue tab.
+
+### 3 · Open each walk under its band, and number its stops
+
+<Excerpt region="levels" />
+
+The band is anchored to the bleed, which is the trim here, and reaches 30 mm into the text area. That needs `span: 'page'`, because in 1.4.1 a design kept in the column is cut at the top margin and the band would start 18 mm down. The design ends with the band and `minHeight` reserves eight grid lines, 37.3 mm; the opener takes the larger depth, so on pages 3 and 7 the text starts 7.3 mm under the band. Each stop is a level-3 heading whose design sets `{number}` in a 5.4 mm circle filled with `band`. The template `{3}` restarts at every walk, since a level-1 heading resets the deeper counters, and the pins on the map carry the same numbers. A stop has a grid line of margin above it and none below, and its circle sits 3.2 mm down the two grid lines the heading fills. That leaves about 8.3 mm of white above the circle and 2.1 mm under it; paragraphs are 6.4 mm apart.
+
+### 4 · Hang a tile on the box, and keep the chips in ink
+
+<Excerpt region="box-and-chips" />
+
+The box has no rule or border, only the walk’s tint and a tile drawn in code on its corner ([callout styles](/en/docs/configuration#callout-styles)). `cornerSide: 'outer'` hangs the tile half off the box’s outer side, flush with its top; on page 4, a verso, that is the left side, where the title starts. With 6.5 mm of padding on both sides the title clears the tile and stays in line with the box’s text on either page. The walk’s palette recolours the tint and the title, while the tile stays blue, because its colours are drawn into the SVG. A walk’s palette does not reach chips in 1.4.1: linked to `band`, the walk’s facts would stay tile blue in both walks. So the chips are ink on paper with a grey outline in `muted`, the same in every walk.
+
+### 5 · Key the map with the walks’ swatches
+
+<Excerpt region="map" />
+
+The map is an SVG resource set where `::resource{id="routes"}` stands, with a resource type of its own so that its caption reads Map 1. The note keys the routes with three swatches, `:swatch{color="alfama"}` and the same for `baixa` and `belem`. A swatch takes the id of a palette entry ([inline formatting](/en/docs/document-format#inline-formatting)). The palette gets one entry per walk from `WALKS`, and the drawing takes its route colours from the same object, so the key matches the routes and the tabs. The numbers in the pins are drawn as strokes, since an SVG drawn as an image cannot use the page’s web fonts.
+
+## Variations
+
+### Leave the blank verso unpainted
+
+Without the field, page 6 keeps its tab: `pages: 'all'` prints it on the blank page too, in Walk 2’s yellow with a 2.
+
+```diff
+-const header = { elements: [...heads, ...tabs, ...blankPage] };
++const header = { elements: [...heads, ...tabs] };
+```
+
+### Add the third walk
+
+`WALKS` already holds Belém’s colours and `walkStyles` its style, so the walk needs only its heading in the content. The walk opens on page 9, after a blank page 8 painted teal with a white 3.
+
+```diff
++# Belém {style="belem" route="From the monastery to the tower"}
++
++Tram 15 runs from Praça da Figueira to Belém along the river.
+```
+
+## Pitfalls
+
+- Page 6 exists because Walk 1 ends on page 5, a recto. A walk that ends on a verso leaves no blank page, and the next walk’s colour then shows only on its own pages.
+- Before the first numbered walk, `{chapterNumber}` is empty, so an element that prints it, such as the tab, needs a style there that leaves it out.

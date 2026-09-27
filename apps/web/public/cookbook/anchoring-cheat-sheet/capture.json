@@ -1,0 +1,491 @@
+{
+  "schemaVersion": 1,
+  "slug": "anchoring-cheat-sheet",
+  "sourceHash": "3d5ea67a19411f816378de0655f24d1135f7cd459b7512a00fb9947d2762e1df",
+  "engine": {
+    "postext": "1.4.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-26T21:24:51.017Z",
+  "variants": {
+    "en": {
+      "hash8": "c981c0ac",
+      "vdtHash": "550d59da7073815a7bf7065978df73a3350262c2",
+      "timings": {
+        "importMs": 305,
+        "fontsMs": 808,
+        "buildMs": 6,
+        "totalMs": 1723,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          297,
+          420
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 7,
+        "mirror": false,
+        "body": {
+          "family": "Funnel Sans",
+          "sizePt": 12,
+          "leadingPt": 16
+        },
+        "families": [
+          "Funnel Display",
+          "Funnel Sans",
+          "Martian Mono"
+        ],
+        "pages": 2,
+        "ownLines": 180
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 86044,
+          "alt": "Opening page 1: The Shadow Returns."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 119834,
+          "alt": "Opening page 2: The Shadow Returns."
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.paragraphSpacing",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].placement",
+          "footer.elements[].resourceId",
+          "footer.elements[].style",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headings",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].span",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "page",
+          "page.cutLines",
+          "page.cutLines.bleed",
+          "page.cutLines.enabled",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 1052,
+        "designElements": 67,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          "\\\\"
+        ],
+        "resources": {
+          "svg": 2,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Funnel Display",
+            "weight": 800,
+            "style": "normal"
+          },
+          {
+            "family": "Funnel Sans",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Funnel Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Funnel Sans",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Funnel Sans",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Martian Mono",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Martian Mono",
+            "weight": 500,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "bleed-and-crop-marks",
+          "heading-attributes",
+          "heading-styles",
+          "opener-band",
+          "opener-design",
+          "paragraph-styles",
+          "resources",
+          "section-running-heads",
+          "title-line-breaks"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "e99b53d4",
+      "vdtHash": "a4017521deedf95de5a58d2c6714f991b35c1c5c",
+      "timings": {
+        "importMs": 151,
+        "fontsMs": 20,
+        "buildMs": 7,
+        "totalMs": 889,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          297,
+          420
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 7,
+        "mirror": false,
+        "body": {
+          "family": "Funnel Sans",
+          "sizePt": 12,
+          "leadingPt": 16
+        },
+        "families": [
+          "Funnel Display",
+          "Funnel Sans",
+          "Martian Mono"
+        ],
+        "pages": 2,
+        "ownLines": 180
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 85390,
+          "alt": "Página de apertura 1: Vuelve la sombra."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 119858,
+          "alt": "Página de apertura 2: Vuelve la sombra."
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.paragraphSpacing",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].placement",
+          "footer.elements[].resourceId",
+          "footer.elements[].style",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headings",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].span",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "page",
+          "page.cutLines",
+          "page.cutLines.bleed",
+          "page.cutLines.enabled",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 1052,
+        "designElements": 67,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          "\\\\"
+        ],
+        "resources": {
+          "svg": 2,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Funnel Display",
+            "weight": 800,
+            "style": "normal"
+          },
+          {
+            "family": "Funnel Sans",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Funnel Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Funnel Sans",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Funnel Sans",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Martian Mono",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Martian Mono",
+            "weight": 500,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "bleed-and-crop-marks",
+          "heading-attributes",
+          "heading-styles",
+          "opener-band",
+          "opener-design",
+          "paragraph-styles",
+          "resources",
+          "section-running-heads",
+          "title-line-breaks"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    }
+  }
+}

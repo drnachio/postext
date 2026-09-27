@@ -1,5 +1,5 @@
 import type { VDTBlock, VDTDocument, ResolvedDebugConfig } from 'postext';
-import { resourceBlockRectToPage } from 'postext';
+import { findLooseLines, resourceBlockRectToPage } from 'postext';
 import type { ResourceSelection } from '../../context/SandboxContext';
 import { getSvgTextIndex } from '../../controls/svgTextIndex';
 import { svgSourceOffsetToCaret, svgSourceRangeToBoxes, type SvgCharBox } from '../../controls/svgSource';
@@ -242,23 +242,12 @@ export function drawOverlay(
   // A resource editor's selection paints regardless of Markdown editor focus.
   if (resourceSelection) drawResourceSelection(selectionGroup, doc, pageIndex, resourceSelection, debug);
 
-  // Loose-line highlight: paint lines whose justified space ratio exceeds the threshold.
+  // Loose-line highlight: paint lines whose justified space ratio exceeds the
+  // threshold (the engine's `findLooseLines`, as `drawLooseLines` paints them).
   if (looseLineGroup && debug.looseLineHighlight.enabled) {
-    const threshold = debug.looseLineHighlight.threshold;
     const fill = debug.looseLineHighlight.color.hex;
-    for (const block of doc.blocks) {
-      if (block.pageIndex !== pageIndex) continue;
-      for (const line of block.lines) {
-        const ratio = line.justifiedSpaceRatio;
-        if (ratio === undefined || ratio <= threshold) continue;
-        const rect = document.createElementNS(SVG_NS, 'rect');
-        rect.setAttribute('x', String(block.bbox.x));
-        rect.setAttribute('y', String(line.bbox.y));
-        rect.setAttribute('width', String(block.bbox.width));
-        rect.setAttribute('height', String(line.bbox.height));
-        rect.setAttribute('fill', fill);
-        looseLineGroup.appendChild(rect);
-      }
+    for (const loose of findLooseLines(doc, { threshold: debug.looseLineHighlight.threshold, pageIndex })) {
+      appendRect(looseLineGroup, loose.x, loose.y, loose.width, loose.height, fill);
     }
   }
 

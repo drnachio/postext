@@ -13,6 +13,9 @@
 //
 // The browser measures with canvas and loads Google Fonts for families you did
 // not bundle; here only bundled faces exist, so bundle every family you use.
+// The config is read as the Sandbox reads it: a manifest without
+// `configVersion` keeps the postext 1.4 rules it was written for (a NOTE line
+// lists them).
 import { readFileSync, writeFileSync, existsSync, mkdirSync, mkdtempSync, statSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -51,8 +54,10 @@ const OUT = opt('out', null);
 const PNG = opt('png', null);
 
 // ---- load the engine --------------------------------------------------------
+// `bundleApi` is the `postext/bundle` subpath (postext >= 1.3), for
+// `migrateConfig` (postext >= 1.5).
 const REPO = opt('repo', null);
-let postext, pdf, fontkit, computeWarnings = null;
+let postext, pdf, fontkit, computeWarnings = null, bundleApi = null;
 if (REPO) {
   const imp = (p) => import(pathToFileURL(join(resolve(REPO), p)).href);
   postext = await imp('packages/postext/dist/index.js');
@@ -60,6 +65,7 @@ if (REPO) {
   const req = createRequire(join(resolve(REPO), 'packages/postext-pdf/package.json'));
   fontkit = (await import(pathToFileURL(req.resolve('@pdf-lib/fontkit')).href)).default;
   try { ({ computeWarnings } = await imp('packages/postext-sandbox/dist/warnings/compute.js')); } catch { /* not built */ }
+  try { bundleApi = await imp('packages/postext/dist/bundle/index.js'); } catch { /* older checkout */ }
 } else {
   const candidates = [opt('tools', null), process.env.POSTEXT_TOOLS, join(homedir(), '.cache/postext-tools'), process.cwd()].filter(Boolean);
   const dir = candidates.find((d) => existsSync(join(d, 'node_modules/postext/package.json')));
@@ -72,6 +78,7 @@ if (REPO) {
   postext = await import(entry('postext', 'dist/index.js'));
   pdf = await import(entry('postext-pdf', 'dist/index.js'));
   fontkit = (await import(pathToFileURL(req.resolve('@pdf-lib/fontkit')).href)).default;
+  try { bundleApi = await import(entry('postext', 'dist/bundle/index.js')); } catch { /* older release */ }
 }
 
 // A packed `.postext` file: unzip it with the engine's own bundle reader
@@ -191,7 +198,61 @@ const resources = (manifest.resources ?? []).map((spec) => {
 });
 
 // ---- config: defaults <- config <- localized config -----------------------------
-const config = { colorPalette: postext.cloneDefaultColorPalette(), resourceTypes: postext.defaultResourceTypes(lang), ...(manifest.config ?? {}), ...(overrides.config ?? {}) };
+let config = { colorPalette: postext.cloneDefaultColorPalette(), resourceTypes: postext.defaultResourceTypes(lang), ...(manifest.config ?? {}), ...(overrides.config ?? {}) };
+// Read like the Sandbox reads a bundle (`readBundle`): a manifest written for
+// older config rules than this engine's (no `configVersion`: postext 1.4 or
+// earlier) keeps the rules it was laid out with: heading breaks, formula
+// size, space around inline resources, plain headings, drop-cap sizes, the
+// room under a colon line, box cuts, breaks at dashes and at compounds'
+// hyphens, ragged breaking, the split under a heading and the space under
+// paragraph containers. `migrateConfig` looks at every chapter of this
+// language, as the Sandbox loads them all.
+if (typeof bundleApi?.migrateConfig === 'function') {
+  const content = chapterSpecs.map((c) => readFileSync(join(BUNDLE, c.file), 'utf8'));
+  const read = bundleApi.migrateConfig(config, manifest.configVersion, { content });
+  // Each pin writes its own fields; a NOTE names the ones that changed.
+  const breaksOf = (c) => JSON.stringify([
+    (Array.isArray(c.headings?.levels) ? c.headings.levels : []).map((l) => [l?.level, l?.breakBefore]),
+    (Array.isArray(c.headingStyles) ? c.headingStyles : []).map((s) => s?.breakBefore),
+  ]);
+  const dropCapSizes = (value) => {
+    let n = 0;
+    const walk = (x) => {
+      if (Array.isArray(x)) x.forEach(walk);
+      else if (x && typeof x === 'object') {
+        if (x.kind === 'text' && x.dropCap?.fontSize !== undefined) n++;
+        Object.values(x).forEach(walk);
+      }
+    };
+    walk(value);
+    return n;
+  };
+  const kept = [
+    [breaksOf, 'heading breaks'],
+    [(c) => JSON.stringify(c.math), 'formula size'],
+    [(c) => `${c.layout?.inlineResourceGap}|${c.layout?.inlineResourceGapInBoxes}`, 'space around inline resources'],
+    [(c) => c.headings?.inlineMarks, 'plain headings'],
+    [dropCapSizes, 'drop-cap sizes'],
+    [(c) => c.bodyText?.colonListRoom, 'room under a colon line'],
+    [(c) => c.layout?.boxChildSplitMinLines, 'box cuts'],
+    [(c) => c.bodyText?.breakAfterDashes, 'breaks at dashes'],
+    [(c) => c.bodyText?.breakAfterHyphens, "breaks at compounds' hyphens"],
+    [(c) => c.bodyText?.optimalRagged, 'line-by-line ragged text'],
+    [(c) => c.headings?.keepWithNextSplit, 'split under a heading'],
+    [(c) => c.bodyText?.paragraphContainerSpacing, 'space under paragraph containers'],
+  ].filter(([of]) => of(read) !== of(config)).map(([, what]) => what);
+  if (kept.length) {
+    const v = manifest.configVersion;
+    const stamp = v === undefined
+      ? 'no "configVersion"'
+      : typeof v !== 'number' || !Number.isFinite(v)
+        ? `"configVersion": ${JSON.stringify(v)}, which is not a number and counts as none`
+        : `"configVersion": ${v}, older than this engine's ${bundleApi.CONFIG_VERSION}`;
+    const list = kept.length > 1 ? `${kept.slice(0, -1).join(', ')} and ${kept.at(-1)}` : kept[0];
+    console.log(`NOTE preset.json has ${stamp}: read as the Sandbox reads it, with the ${list} postext 1.4 used. Set "configVersion": ${bundleApi.CONFIG_VERSION} once the config is written for today's rules.`);
+  }
+  config = read;
+}
 const customFonts = [...families.entries()].map(([name, vs]) => ({ name, variants: vs.map((v) => ({ weight: v.weight, style: v.style ?? 'normal', fileId: v.file, format: v.file.split('.').pop() })) }));
 if (customFonts.length) config.customFonts = customFonts;
 
@@ -223,14 +284,29 @@ console.log(`layout: ${doc.pages.length} pages, converged=${doc.converged}, pass
 for (const issue of postext.parseMarkdownWithIssues(markdown).issues ?? []) {
   console.log(`PARSE ${issue.kind} ${where(issue.sourceStart)}: ${JSON.stringify(markdown.slice(issue.sourceStart, Math.min(issue.sourceEnd ?? issue.sourceStart, issue.sourceStart + 60)))}`);
 }
-for (const m of markdown.matchAll(/(?:::resource|:ref)\{[^}]*id="([^"]+)"/g)) if (!ids.has(m[1])) problems.push(`unknown resource id ${m[1]} at ${where(m.index)}`);
-for (const w of doc.warnings ?? []) {
-  console.log(`WARN ${w.kind} page ${w.pageIndex + 1} col ${w.columnIndex} overflow ${w.overflowPx?.toFixed?.(1)}px at ${where(w.sourceStart)}: ${JSON.stringify(markdown.slice(w.sourceStart, Math.min(w.sourceEnd ?? w.sourceStart, (w.sourceStart ?? 0) + 60)))}`);
+// Releases with engine content warnings list unknown ids in doc.contentWarnings.
+if (!postext.collectContentWarnings) {
+  for (const m of markdown.matchAll(/(?:::resource|:ref)\{[^}]*id="([^"]+)"/g)) if (!ids.has(m[1])) problems.push(`unknown resource id ${m[1]} at ${where(m.index)}`);
+}
+// doc.warnings: boxes the layout had to force; doc.contentWarnings: what the
+// source names wrongly.
+const engineWarnings = [...(doc.warnings ?? []), ...(doc.contentWarnings ?? [])];
+for (const w of engineWarnings) {
+  const snippet = w.sourceStart == null ? '' : JSON.stringify(markdown.slice(w.sourceStart, Math.min(w.sourceEnd ?? w.sourceStart, w.sourceStart + 60)));
+  if (w.kind === 'calloutOverflow') {
+    console.log(`WARN ${w.kind} page ${w.pageIndex + 1} col ${w.columnIndex} overflow ${w.overflowPx?.toFixed?.(1)}px at ${where(w.sourceStart)}: ${snippet}`);
+  } else {
+    // Unknown resource ids, directives, embeds and style ids, irregular table grids.
+    const text = postext.formatWarning ? postext.formatWarning(w) : JSON.stringify(w);
+    console.log(`WARN ${w.kind} at ${where(w.sourceStart)}: ${text}${snippet ? ` ${snippet}` : ''}`);
+  }
 }
 if (computeWarnings) {
   const IGNORE = new Set(['missingFont', 'missingFontFamily', 'storageUnavailable', opt('show-loose') ? '' : 'looseLine']);
+  // The kinds the engine reported above are listed once.
+  const reported = new Set(engineWarnings.map((w) => w.kind));
   for (const w of computeWarnings({ markdown, config, doc, resources })) {
-    if (IGNORE.has(w.payload.kind)) continue;
+    if (IGNORE.has(w.payload.kind) || reported.has(w.payload.kind)) continue;
     console.log(`SANDBOX-WARN ${JSON.stringify(w.payload)} ${where(w.sourceStart)}`);
   }
 }

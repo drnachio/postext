@@ -78,8 +78,8 @@ describe(':::toc', () => {
       ['heading', '1', 'The lantern', true, true],
       ['heading', '2', 'Trimming', true, true],
     ]);
-    // Headings carry no inline marks: the title is one plain run.
-    expect(outline[3]!.spans).toEqual([{ text: 'The lantern', bold: false, italic: false }]);
+    // A heading's inline marks carry into its entry (EF-122).
+    expect(outline[3]!.spans).toEqual([{ text: 'The ', bold: false, italic: false }, { text: 'lantern', bold: false, italic: true }]);
     expect(outline[3]!.attrs).toEqual({ author: 'A. Author' });
     expect(outline[2]!.palette).toEqual({ band: '#112233' });
     expect(outline.every((e) => e.pageLabel === undefined)).toBe(true);
@@ -194,6 +194,28 @@ describe(':::toc', () => {
     // tail snapped to the grid.
     expect(gap(lantern!, trimming!)).toBeCloseTo(dimensionToPx(pt(4), DPI), 1);
     expect(lantern!.snappedToGrid).toBe(false);
+  });
+
+  it('labels a part row with the page its content starts on when parts open no page', () => {
+    // `parts.page: false`: no divider page, so the row takes the page of
+    // the first block after the fence (the part's first heading here) —
+    // the page its running heads switch to the part on.
+    const noPage: PostextConfig = { ...base, parts: { page: false } };
+    const doc = buildDocument({ markdown: book }, noPage);
+    expect(doc.pages.some((p) => p.partInfo)).toBe(false);
+    const one = doc.blocks.find((b) => b.type === 'heading' && b.lines[0]?.text.includes('lantern'))!;
+    const part = tocBlocks(doc).find((b) => b.tocPart)!;
+    expect(part.tocPart).toMatchObject({ number: 'I', title: 'Foundations', pageLabel: doc.pages[one.pageIndex]!.pageLabel, pageIndex: one.pageIndex });
+    const overlayText = (part.designOverlay!.blocks.filter((b) => b.kind === 'text') as VDTDesignTextBlock[]).map((b) => b.lines.map((l) => l.text).join(' '));
+    expect(overlayText).toEqual(['I Foundations', doc.pages[one.pageIndex]!.pageLabel]);
+    // The outline a host assembles for a chapter printing the contents
+    // carries the same page, offset by the pages before the document.
+    const continued = buildDocument({ markdown: book, continuation: { pageIndexOffset: 4 } }, noPage);
+    const outline = outlineFromDoc(continued, computeOutline(parseMarkdown(book), resolveAllConfig(noPage)));
+    const partEntry = outline.find((e) => e.kind === 'part')!;
+    const heading = continued.blocks.find((b) => b.type === 'heading' && b.lines[0]?.text.includes('lantern'))!;
+    expect(partEntry.pageIndex).toBe(4 + heading.pageIndex);
+    expect(partEntry.pageLabel).toBe(continued.pages[heading.pageIndex]!.pageLabel);
   });
 
   it('uses a host-supplied outline as is, without a second pass', () => {

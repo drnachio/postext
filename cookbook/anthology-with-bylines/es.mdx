@@ -1,0 +1,82 @@
+---
+title: "Antología con firmas de autor"
+summary: "Tres ensayos sobre caminar cuyos títulos llevan autor, año y revista: la apertura imprime los tres datos; las cabeceras pares y el índice, solo el autor."
+description: "Antología de bolsillo de Hazlitt, Thoreau y Stevenson compuesta con Postext: las firmas, las cabeceras pares y el índice salen de los atributos de cada título."
+question: "¿Cómo hago un índice que se rellene solo, con líneas de puntos, números de página y el autor de cada ensayo?"
+aliases: ["antología", "obra colectiva", "libro de ensayos", "colaboradores", "firma de autor", "autor bajo el título en el índice", "autor en la cabecera", "índice con autores", "autor del capítulo", "subtítulo del índice"]
+pageNotes: { "2": "El índice: numerales romanos en rojo óxido, los títulos de los ensayos en Gloock con líneas de puntos espaciados hasta las páginas 3, 5 y 8, el nombre de cada autor debajo en cursiva morada y la nota sobre los textos fijada al pie de la página.", "3": "El ensayo I se abre con su numeral, su título, la firma WILLIAM HAZLITT y la procedencia, «The New Monthly Magazine, 1822», encima de un filete fino.", "6": "Una página par: el folio y HENRY DAVID THOREAU en la cabecera.", "7": "Una página impar: la cabecera WALKING junto al folio; el ensayo termina cuatro líneas antes del pie." }
+---
+
+## Lo que vas a componer
+
+Nueve páginas de *Afoot*, una antología de bolsillo con tres ensayos sobre caminar, de Hazlitt (1822), Thoreau (1862) y Stevenson (1876), en su inglés original. Un paisaje al atardecer, dibujado con código, ocupa la cubierta. El índice da a cada ensayo un numeral en rojo óxido, el título en Gloock, una línea de puntos espaciados hasta su página y, debajo, el nombre del autor en cursiva morada. Cada ensayo se abre con su numeral y su título, una firma en mayúsculas espaciadas y la revista y el año en que se publicó por primera vez. Las páginas pares llevan en la cabecera el autor; las impares, el título del ensayo. El título de cada ensayo lleva como atributos el autor, el año y la revista, y la apertura, las cabeceras y el índice los toman de ahí, así que para añadir un cuarto ensayo no hay que tocar la configuración.
+
+## Elaboración
+
+### 1 · Numerar los ensayos y bajar su texto
+
+<Excerpt region="opener" />
+
+El `numberingTemplate: '{1:I}'` del nivel numera los ensayos I, II y III, y `{number}` imprime el numeral sobre el título ([span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)). `minHeight` reserva 12 líneas de 14 pt y el filete fino acaba 7 mm por encima de ese límite, así que, con un título de una línea, el texto empieza a 79 mm del borde superior en todas las aperturas. Una segunda línea de título, a 26 pt, añade 9,9 mm y baja el texto una línea de la rejilla; con `SINK = 14`, el texto empieza a la misma altura bajo títulos de una y de dos líneas. El `marginBottom: pt(0)` del nivel impide que el margen por defecto del título se sume a esa reserva.
+
+### 2 · Un índice que se rellena solo
+
+<Excerpt region="contents" />
+
+`:::toc` en el Markdown imprime una entrada por cada título incluido, con el número, el texto del título, la línea de puntos, la etiqueta de la página y, gracias a `subtitle`, el autor. `buildDocument` vuelve a componer el libro hasta que las etiquetas de página dejen de cambiar, así que, si un ensayo cambia de título o de extensión, el índice se actualiza ([índice de contenidos](/es/docs/configuration#índice-de-contenidos)). Postext 1.4.1 coloca el centro del número de cada entrada 0,3 veces el cuerpo de la entrada por encima de la línea base, y Chrome sitúa el centro de Gloock 0,3125 em por encima de la suya, así que un numeral de 0,3 × 15 ÷ 0,3125 = 14,4 pt se apoya en la línea base del título de 15 pt; uno de 12 pt queda 0,3 mm más alto. Un libro con partes añade además una fila por cada `:::part`, con el diseño de `toc.parts.design`, como en <RecipeLink slug="parts-in-colour">Partes en color</RecipeLink>.
+
+### 3 · El autor en la página par, el ensayo en la impar
+
+<Excerpt region="running-heads" />
+
+Cada cabecera se ancla a la página, a 11 mm del borde superior, y `parity` elige el lado: el folio se alinea con el borde exterior del texto, y el nombre o el título queda 7 mm más adentro. El `pages: 'body'` de `head()` deja las cabeceras fuera de las aperturas, donde la firma ya nombra al autor, y el elemento del pie con `pages: 'opener'` imprime allí el folio, centrado bajo el texto ([elementos de texto](/es/docs/configuration#elementos-de-texto)). `{chapterTitle}` imprime el título del ensayo sin su numeral.
+
+### 4 · La cubierta y el índice no cuentan
+
+<Excerpt region="front" />
+
+Con `numbered: false`, la cubierta y el índice no hacen avanzar el contador, así que Hazlitt es el I, y `toc: false` los deja fuera de la lista ([estilos de título](/es/docs/configuration#estilos-de-encabezado)). Los dos estilos heredan el `breakBefore` del nivel, con paridad `'any'`, y por eso el índice sigue a la cubierta en la página 2 sin ningún `:::pagebreak`. El estilo de la cubierta ocupa toda la página aunque el libro tenga una sola columna, porque un diseño que se queda en la columna se recorta en sus bordes superior e inferior y dejaría 20 mm de papel por encima del paisaje.
+
+### 5 · Cada color escrito con su enlace a la paleta
+
+<Excerpt region="palette" />
+
+En 1.4.1 `colorPalette` llega a los estilos de texto pero no a los elementos de diseño, así que `col()` escribe el valor hexadecimal de cada color junto a su `paletteId`, y ese valor es el que pintan las firmas, las cabeceras y la cubierta. Con `main-color` en el color de la tinta, los valores por defecto que la configuración no redefine salen en ese color y no en el azul del motor, `#295AA3`.
+
+## Variantes
+
+### Indicar dónde se publicó cada ensayo
+
+`toc.subtitle` imprime cualquier atributo del título, así que el mismo Markdown puede poner bajo cada título la revista en la que se publicó por primera vez.
+
+```diff
+-const authorLine = { enabled: true, attr: 'author', fontFamily: 'Spectral', fontSize: pt(10),
++const authorLine = { enabled: true, attr: 'source', fontFamily: 'Spectral', fontSize: pt(10),
+```
+
+### Poner el título del libro en la página par
+
+Muchos libros ponen su propio título en las páginas pares y el del capítulo en las impares; `{title}` lo toma del frontmatter del Markdown e imprime AFOOT.
+
+```diff
+-const versoAuthor = head('verso-author', '{attr.author}', 'even',
++const versoAuthor = head('verso-author', '{title}', 'even',
+```
+
+### Abrir cada ensayo en página impar
+
+Con la paridad `'odd'`, Stevenson pasa a la página 9, tras una página 8 en blanco. Los dos estilos de los preliminares necesitan entonces su propio `'any'`; si no, el índice hereda `'odd'` y se abre en la página 3, tras una página par en blanco.
+
+```diff
+-  breakBefore: { enabled: true, parity: 'any' } }; // 'any': each piece opens on the next page
++  breakBefore: { enabled: true, parity: 'odd' } };
+-const bare = { numbered: false, toc: false, header: { elements: [] }, footer: { elements: [] } };
++const bare = { numbered: false, toc: false, breakBefore: { enabled: true, parity: 'any' },
++  header: { elements: [] }, footer: { elements: [] } };
+```
+
+## Errores frecuentes
+
+- Hazlitt cita versos en mitad de sus frases. Un párrafo no conserva los saltos de línea, así que cada verso es un párrafo propio dentro de un contenedor `:::paragraphs{style="verse"}`, y la frase que continúa después va en un estilo `runon`, sin sangría. Una cita en bloque de Markdown saldría en cursiva de un gris fijo, `#666666`, con la sangría de primera línea del cuerpo y sin sangría lateral, y ningún ajuste lo cambia en 1.4.1.
+- Un atributo que falta en un título no imprime nada ni da aviso. Sin `author="…"`, la firma y la cabecera par de ese ensayo salen vacías y su línea bajo el título desaparece del índice.
+- Los 14,4 pt del paso 2 valen solo para Gloock. Con otra fuente, averigua a qué altura sobre la línea base pone Chrome su centro: `measureText('I').alphabeticBaseline` con `textBaseline = 'middle'` la devuelve en píxeles, con el signo cambiado. Después da a `numberFontSize` el valor de 0,3 veces el cuerpo de la entrada dividido por esa distancia en em (la de Hanken Grotesk es 0,2675 em).

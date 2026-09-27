@@ -1,0 +1,122 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 30,
+  "status": "published",
+  "chapter": "structure",
+  "order": 40,
+  "level": 2,
+  "genres": ["novel"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["toc", "heading-attributes", "running-heads"],
+    "also": [
+      "opener-design", "heading-numbering", "heading-styles", "unnumbered-headings", "covers",
+      "design-images", "design-anchoring", "page-role-filters", "mirrored-margins",
+      "paragraph-styles", "fixed-callouts", "callout-styles", "vertical-space", "frontmatter",
+      "color-palette", "resources", "canvas-rendering"
+    ]
+  },
+  "answers": ["Q37", "Q28", "Q30"],
+  "gotchas": [
+    "attr-values", "headings-drop-h1-break", "style-inherits-break", "toc-number-baseline",
+    "heading-number-placeholders", "palette-skips-designs", "box-paragraph-margins",
+    "runt-tracking-unpainted", "fonts-first", "overflow-ellipsis-default"
+  ],
+  "gaps": ["hard-line-breaks"],
+  "explainsWarnings": [],
+  "workarounds": [
+    {"followup": "EF-05", "package": "postext", "note": "headings.levels[0] restates breakBefore: { enabled: true, parity: 'any' }: in 1.4.1 any headings object drops the documented H1 page break, and the cover and contents styles inherit this one"},
+    {"followup": "EF-71", "package": "postext", "note": "col() writes each colour's hex beside its paletteId: the document palette does not reach design elements (openers, running heads, the cover) or bodyText.referenceColor in 1.4.1"},
+    {"followup": "EF-58", "package": "postext", "note": "the contents numerals are Gloock at 0.3 × 15 ÷ 0.3125 = 14.4 pt beside 15 pt Gloock titles: 1.4.1 centres an entry's number (textBaseline 'middle') 0.3 × the entry size above the baseline, and Chrome puts Gloock's middle 0.3125 em above its baseline, so the 14.4 pt numeral stands on the title's baseline (measured 0.04 mm off); a 12 pt numeral rode 0.32 mm high, and a Hanken Grotesk 8.5 pt one (middle 0.2675 em) about 0.8 mm"},
+    {"followup": "EF-60", "package": "postext", "note": "the cover and contents styles inherit the level's breakBefore, parity 'any', which is what puts the contents on page 2 without a :::pagebreak; the 'Open every essay on a recto' Variation has to restate 'any' on both styles, or the contents inherit 'odd' and open on page 3 behind a blank verso"},
+    {"followup": "EF-113", "package": "postext", "note": "the cover style sets span: 'page' in this single-column book only so that its bleed-anchored dusk paints to the page edges: a heading design kept in the column is clipped at the column's top and bottom edges, which leaves 20 mm of paper above the art and 22 mm below it"},
+    {"followup": "EF-09", "package": "postext", "note": "the essay numeral is {number} from numberingTemplate '{1:I}'; {numberRoman} prints nothing in a chapter opener in 1.4.1"},
+    {"followup": "EF-77", "package": "postext", "note": "a :::space{lines=1} (one 12.5 pt line of the note's leading) separates the colophon from the note on the contents page: the colophon style's marginTop is ignored inside a box"},
+    {"followup": "EF-111", "package": "postext", "note": "bodyText.maxRuntTracking is 0: a runt fix's negative tracking is measured but not painted in 1.4.1, so word spacing alone shortens runts"},
+    { "followup": "EF-135","package": "postext", "note": "the lines of verse Hazlitt quotes are a :::paragraphs{style=\"verse\"} container, one paragraph per line in *italics*, not a Markdown blockquote: 1.4.1 paints a blockquote in a hard-coded #666666 italic, with the body's first-line indent and no side indent, and no colour or indent setting reaches it"}
+  ],
+  "related": ["front-matter-roman-to-arabic", "letters-edition", "running-heads-by-parity", "magazine-cover-and-contents"],
+  "engine": {"postext": "1.4.1"},
+  "kit": ["core", "fonts", "viewer", "images"],
+  "sample": {"locales": ["en"]},
+  "capture": {
+    "hero": [2, 3],
+    "card": "crop",
+    "focus": {"page": 1, "x": 0, "y": 0.06, "w": 1, "h": 0.5625},
+    "pages": "all",
+    "expect": {"pages": [9, 9], "nearEmptyPages": [1]}
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "“On Going a Journey” (1822), from its first line to “I sing for joy”, in Table Talk: Essays on Men and Manners",
+          "es": "«On Going a Journey» (1822), desde la primera línea hasta «I sing for joy», en Table Talk: Essays on Men and Manners"
+        },
+        "who": "William Hazlitt",
+        "source": "https://www.gutenberg.org/ebooks/3020",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "“Walking” (1862), its first five paragraphs",
+          "es": "«Walking» (1862), sus cinco primeros párrafos"
+        },
+        "who": "Henry David Thoreau",
+        "source": "https://www.gutenberg.org/ebooks/1022",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "“Walking Tours” (1876), the opening of its first paragraph and the whole of its second, in Virginibus Puerisque",
+          "es": "«Walking Tours» (1876), el comienzo de su primer párrafo y el segundo entero, en Virginibus Puerisque"
+        },
+        "who": "Robert Louis Stevenson",
+        "source": "https://www.gutenberg.org/ebooks/386",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The note on the texts and the colophon",
+          "es": "La nota sobre los textos y el colofón"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "The cover: hills at dusk, drawn in code",
+          "es": "La cubierta: colinas al atardecer, dibujadas con código"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Spectral",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Gloock",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Hanken Grotesk",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {"code": "MIT", "content": "CC-BY-4.0"},
+  "created": "2026-09-25",
+  "updated": "2026-09-26"
+}

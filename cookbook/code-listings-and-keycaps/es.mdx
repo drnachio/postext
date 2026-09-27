@@ -1,0 +1,74 @@
+---
+title: "Listados de código y teclas sin bloques de código"
+summary: "Guía de la terminal cuyos bloques de código pasan a ser recuadros oscuros antes de componer, con la negrita y la cursiva como colores y las teclas como chips."
+description: "Listados de código y teclas en Postext: los bloques entre acentos graves se reescriben como recuadros oscuros que entran en el margen, y Ctrl o Tab son chips."
+question: "¿Cómo muestro listados de código y atajos de teclado si no hay bloques de código?"
+aliases: ["bloque de código", "código fuente", "sesión de terminal", "salida de la terminal", "monoespaciada", "colorear el código", "atajo de teclado", "tecla", "chuleta", "código en línea"]
+pageNotes: { "1": "La apertura del capítulo 4: un antetítulo pequeño en ámbar, CAPÍTULO 4; el título «Piezas que encajan» en una letra de palo seco muy gruesa; una entradilla en cursiva y dos párrafos justificados con los nombres de las órdenes en letra monoespaciada y una tecla Intro, junto a una nota al margen, El indicador, bajo un filete ámbar. Debajo, un recuadro casi negro con la pestaña Terminal va de la columna de texto al margen exterior: las órdenes que se teclean, en negrita ámbar tras el signo del dólar, y las respuestas del intérprete, en gris claro. El párrafo que sigue al recuadro empieza sin sangría.", "2": "La sección «Cuando una orden no termina»: una nota En un Mac en el margen exterior, junto al título; Ctrl, C, Tab y la flecha hacia arriba, dibujadas como pequeñas teclas con contorno dentro de las líneas justificadas, y cuatro pasos numerados en ámbar con un separador › gris. Al pie, un recuadro casi negro, «Chuleta · bash y zsh», cruza el texto y el margen y empareja en dos columnas las teclas Ctrl y una letra con lo que hacen.", "3": "La sección «Un guion para guardar»: un recuadro casi negro bajo una pestaña copia.sh rotulada en verde, con las palabras clave en negrita ámbar, las cadenas en cursiva verde y los comentarios en gris; después, dos párrafos sobre el guion junto a una nota Modo archivo, el párrafo de cierre y el colofón en el margen." }
+---
+
+## Lo que vas a componer
+
+Tres páginas del capítulo 4 de *La terminal, con calma*, una guía de bolsillo inventada sobre la línea de comandos, en formato de 178 × 229 mm. El texto va justificado en Charis SIL, en una columna de 100 mm, con una columna lateral exterior para las notas. Cada listado es un recuadro casi negro en JetBrains Mono que entra en esa columna, bajo una pestaña con el nombre del archivo o de la sesión. Las palabras clave y las órdenes que tecleas salen en ámbar, las cadenas en verde y los comentarios en gris. Ctrl, Tab y las demás teclas se dibujan dentro de las líneas justificadas, y una chuleta de atajos con Ctrl, a dos columnas, ocupa el pie de la página 50. El Markdown conserva los bloques de código de siempre; una función breve convierte cada uno en un recuadro antes de componer.
+
+## Elaboración
+
+### 1 · Convierte cada bloque en un recuadro antes de componer
+
+El código de este paso es [la respuesta corta](#la-respuesta-corta) de arriba. Postext 1.4.1 lee un bloque entre acentos graves como Markdown corriente: sus líneas se funden en un solo párrafo, cada par de dólares se convierte en una fórmula, un guion bajo abre una cursiva y el comentario `# Copia cada carpeta…` pasa a ser un título de capítulo. `listings()` reescribe cada bloque como un recuadro `listing` con un párrafo por línea y una barra invertida delante de cada carácter que el Markdown interpretaría. La sangría la conserva el carácter de unión de palabras (U+2060) con que empieza cada línea. Sin él, el analizador recorta los espacios de no separación, el cuerpo del bucle de `copia.sh` pierde la sangría y desaparecen las dos líneas en blanco del guion. Lo que sigue al lenguaje en la línea de apertura (`copia.sh`, `Terminal`) se imprime en la [pestaña del recuadro](/es/docs/configuration#estilos-de-aviso). El párrafo que sigue a un listado va en `:::paragraphs{style="resume"}`, así que empieza sin sangría, como tras un título.
+
+### 2 · Deja el texto estrecho y que el código cruce el margen
+
+<Excerpt region="page" />
+
+A 10 pt, Charis SIL compone unos 62 caracteres por línea en la columna de 100 mm. La columna lateral de esta [disposición a columna y media](/es/docs/configuration#tipos-de-disposición) solo admite flotantes y notas, así que el texto nunca entra en ella. El `span: 'page'` del estilo del listado (en la respuesta corta) extiende cada listado por las dos columnas, 143 mm. Dentro de su margen interior, un recuadro admite 73 caracteres de JetBrains Mono a 8,6 pt; la línea más larga de estas páginas, la segunda de `copia.sh`, tiene 68.
+
+### 3 · Colorea el código con negrita y cursiva
+
+<Excerpt region="paint" />
+
+Postext no colorea la sintaxis, pero cada recuadro tiene su propio `boldColor` para la negrita y su `italicColor` para la cursiva, así que `paint()` pone en negrita las palabras clave (ámbar) y en cursiva las cadenas entre comillas (verde). Los comentarios toman un tercer color de `rem`, un estilo de chip que imprime su texto en gris con la letra monoespaciada, sin relleno, contorno, margen interior ni separación. `KEYWORDS` reúne las palabras reservadas del intérprete y algunas órdenes internas (`set`, `echo`, `cd`); los programas, como `mkdir` o `rsync`, quedan en redonda. En un bloque `console`, `session()` pone en negrita lo que tecleas tras el indicador y deja en redonda la respuesta del intérprete.
+
+### 4 · Compón las teclas y el código en línea como chips
+
+<Excerpt region="keycaps" />
+
+Postext quita los acentos graves y compone el código en línea con la letra del texto ([formato en línea](/es/docs/document-format#formato-en-línea)), así que `inlineCode()` convierte cada fragmento en un chip `code`: la monoespaciada a 0,88 em, sin caja. Las teclas son chips `key`, con un relleno claro y un contorno de 0,6 pt. Su cuerpo va en puntos, así que miden 7,8 pt en el texto de 10 pt, en la nota del margen de 8,6 pt y en la chuleta de 8,4 pt; con `em(0.78)`, las de la chuleta bajarían a 6,6 pt. Un chip nunca se parte entre líneas ni se estira ([chips en línea](/es/docs/document-format#chips-en-línea)), así que en una línea con teclas todo el hueco sobrante va a los espacios entre palabras. Con `spacing`, el algoritmo de partición de líneas busca otros cortes antes de dejar que un espacio pase del 140 % de su anchura normal. Con el valor por defecto, 200 %, cinco líneas de estas páginas lo superan; con el ajuste, la más abierta llega al 138 %.
+
+### 5 · Numera los pasos sobre la rejilla
+
+<Excerpt region="steps" />
+
+Los números van en Sora 800 con el color de acento, y el separador es un `›` monoespaciado en gris. Como su letra y su color no son los del número, el separador se dibuja como un fragmento propio ([listas ordenadas](/es/docs/configuration#listas-ordenadas)). Los márgenes de la lista son cero, así que los pasos siguen en la rejilla base de 14,5 pt del texto que los rodea. Los 1,5 em por defecto abrirían 5,3 mm sobre los pasos y llevarían la chuleta a la página 51.
+
+### 6 · Lleva la chuleta al pie de la página
+
+<Excerpt region="sheet" />
+
+La chuleta reutiliza el estilo del listado, con Sora para las acciones, y `placement: 'bottom'` la hace flotar hasta el pie de la página 50 ([recuadros flotantes](/es/docs/configuration#el-contenedor-callout)). Dentro del flujo, un recuadro que cruza la página necesita sitio para sí y para dos líneas de texto debajo. Aquí saltaría a la página 51 con 58 mm vacíos bajo los pasos, y el capítulo se iría a cuatro páginas. En el Markdown, `:::columns{count=2 breaks="8"}` abre la columna derecha en el octavo bloque, su título. El equilibrado por sí solo corta por altura, y cuando una acción ocupa dos líneas deja *Órdenes e historial* al pie de la columna izquierda. Cada entrada empieza por los mismos dos chips, `Ctrl` y una letra, los dos en la monoespaciada, así que las acciones arrancan a la misma distancia del borde izquierdo de su columna.
+
+## Variantes
+
+### Cuelga la pestaña a la derecha
+
+La pestaña pasa a la esquina superior derecha del recuadro, que en una página impar queda sobre la columna lateral.
+
+```diff
+-    position: 'top-left' },
++    position: 'top-right' },
+```
+
+### Da a los comentarios el color de las cadenas
+
+Sin el chip `rem`, un comentario es una cursiva más y sale en el mismo verde que las cadenas.
+
+```diff
+-    else if (comment) out += `:chip[${chipText(comment)}]{style="rem"}`;
++    else if (comment) out += `*${escape(comment)}*`;
+```
+
+## Errores frecuentes
+
+- Sangra los listados con espacios. `codeLine()` convierte los espacios iniciales y las series de espacios en espacios de no separación, mientras que un tabulador se imprime como un espacio corriente.
+- No pases de 73 caracteres en ninguna línea de código. Una línea más larga se parte por un espacio, y un comentario, que es un chip, nunca se parte: baja a una línea propia y se sale del borde del recuadro.
+- Los escapes de `codeLine()` también sirven en la prosa. Un párrafo que empieza por un año, como `1998. Se inaugura el laboratorio`, se convierte en el elemento 1998 de una lista si no lleva delante un carácter de unión de palabras, y `\$40` impide que un precio abra una fórmula. Un diálogo que empieza con raya no necesita escape; un guion y un espacio abrirían una lista.

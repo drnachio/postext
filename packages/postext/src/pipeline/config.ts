@@ -18,10 +18,13 @@ import {
   resolvePartsConfig,
   resolveHeadingStylesConfig,
   resolveTocConfig,
+  resolvePdfGenerationConfig,
   applyPaletteToConfig,
   applyPaletteToResolvedConfig,
+  DEFAULT_LAYOUT_CONFIG,
 } from '../defaults';
 import { dimensionToPx } from '../units';
+import { presentTag } from '../locale';
 import { createBoundingBox, type BoundingBox, type ResolvedConfig } from '../vdt';
 
 // Resolved configs are never mutated (derived variants spread them), so
@@ -49,9 +52,10 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
   const unorderedLists = resolveUnorderedListsConfig(config?.unorderedLists, bodyText);
   const orderedLists = resolveOrderedListsConfig(config?.orderedLists, bodyText);
   const page = resolvePageConfig(config?.page);
+  const layout = resolveLayoutConfig(config?.layout);
   const resolved: ResolvedConfig = {
     page,
-    layout: resolveLayoutConfig(config?.layout),
+    layout,
     bodyText,
     headings,
     tableStyle: resolveTableStyleConfig(config?.tableStyle, bodyText, config?.locale),
@@ -59,7 +63,7 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
     captionStyle: resolveCaptionStyleConfig(config?.captionStyle, bodyText),
     diagramStyle: resolveDiagramStyleConfig(config?.diagramStyle),
     paragraphStyles: resolveParagraphStylesConfig(config?.paragraphStyles, bodyText),
-    calloutStyles: resolveCalloutStylesConfig(config?.calloutStyles, bodyText, headings, unorderedLists),
+    calloutStyles: resolveCalloutStylesConfig(config?.calloutStyles, bodyText, headings, unorderedLists, config?.locale),
     chipStyles: resolveChipStylesConfig(config?.chipStyles),
     unorderedLists,
     orderedLists,
@@ -67,15 +71,30 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
     header: resolveHeaderFooterConfig(config?.header, 'header'),
     footer: resolveHeaderFooterConfig(config?.footer, 'footer'),
     parts: resolvePartsConfig(config?.parts, page, bodyText, unorderedLists, orderedLists),
-    headingStyles: resolveHeadingStylesConfig(config?.headingStyles, page, bodyText, unorderedLists, orderedLists),
+    headingStyles: resolveHeadingStylesConfig(config?.headingStyles, page, bodyText, unorderedLists, orderedLists, layout),
     toc: resolveTocConfig(config?.toc, bodyText),
+    ...(config?.locale ? { locale: config.locale } : {}),
     // Kept for per-resource-type caption overrides, which resolve their
-    // palette colours at layout time (see `mergeCaptionStyle`).
+    // palette colours at layout time (see `mergeCaptionStyle`). A copy: the
+    // result is cached against the config object, so a palette the caller
+    // changes in place must not reach the colours resolved at layout time
+    // (swatches, cell fills) while the ones resolved here keep the old
+    // values (EF-175).
     ...(rawConfig?.colorPalette && rawConfig.colorPalette.length > 0
-      ? { colorPalette: rawConfig.colorPalette }
+      ? { colorPalette: rawConfig.colorPalette.map((e) => ({ ...e, value: { ...e.value } })) }
       : {}),
+    // Not used by layout: carried in the VDT for the PDF backend.
+    ...(config?.pdfGeneration ? { pdfGeneration: resolvePdfGenerationConfig(config.pdfGeneration) } : {}),
   };
   return applyPaletteToResolvedConfig(resolved, rawConfig?.colorPalette);
+}
+
+/** The document language: `locale`, else the hyphenation locale (which the
+ *  Sandbox fills from the app language) — the same rule the table
+ *  continuation strings and `documentLocale` follow; a blank tag counts as
+ *  unset. */
+export function resolvedLocale(resolved: ResolvedConfig): string {
+  return presentTag(resolved.locale) ?? presentTag(resolved.bodyText.hyphenation.locale) ?? 'en-us';
 }
 
 /** Index heading-level configs by level so per-block lookups in the
@@ -114,6 +133,27 @@ export function sideColumnOnLeft(resolved: ResolvedConfig, isEvenPage: boolean):
   return !mirrored; // inner
 }
 
+/** Least share of the content width, in percent, that each column of a
+ *  `oneAndHalf` layout keeps (see {@link sideColumnPercentUsed}). */
+export const SIDE_COLUMN_MIN_SHARE = 1;
+
+/** The side-column width a `oneAndHalf` page is cut with, in percent of
+ *  the content width (`contentWidthPx`, with a `gutterPx` gutter). The
+ *  value is used as written — a numeric string reads as its number —
+ *  while both columns keep at least {@link SIDE_COLUMN_MIN_SHARE} % of the
+ *  content width. One that would leave either column narrower (a side
+ *  column at or below 0, or one so wide that the main column vanishes
+ *  behind the gutter) is clamped to the nearest value that keeps it, and a
+ *  value that is not a number takes the default. `collectConfigWarnings`
+ *  reports each value this changes. */
+export function sideColumnPercentUsed(value: number, contentWidthPx: number, gutterPx: number): number {
+  const percent = Number(value);
+  if (!Number.isFinite(percent)) return DEFAULT_LAYOUT_CONFIG.sideColumnPercent;
+  const gutterShare = contentWidthPx > 0 ? (gutterPx / contentWidthPx) * 100 : 0;
+  const max = 100 - gutterShare - SIDE_COLUMN_MIN_SHARE;
+  return Math.max(SIDE_COLUMN_MIN_SHARE, Math.min(max, percent));
+}
+
 /** Column boxes of a page in reading order. For a `oneAndHalf` layout the
  *  main column comes first and the side column second whatever their
  *  geometric order: a float-only side column (`sideColumnRole: 'floats'`)
@@ -143,7 +183,8 @@ export function computeColumnBboxes(
   }
 
   // oneAndHalf
-  const sideWidth = contentArea.width * (sideColumnPercent / 100);
+  const sidePercent = sideColumnPercentUsed(sideColumnPercent, contentArea.width, gutterPx);
+  const sideWidth = contentArea.width * (sidePercent / 100);
   const mainWidth = contentArea.width - sideWidth - gutterPx;
   if (sideColumnOnLeft(resolved, isEvenPage)) {
     return [

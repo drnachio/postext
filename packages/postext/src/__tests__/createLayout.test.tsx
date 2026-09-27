@@ -1,6 +1,8 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { createLayout } from "../createLayout";
+import { createLayout as createReactLayout } from "../react";
 import type { PostextContent, PostextConfig } from "../types";
 
 describe("createLayout", () => {
@@ -85,5 +87,25 @@ describe("createLayout", () => {
   it("works with empty config", () => {
     const Layout = createLayout(minimalContent, {});
     expect(Layout.displayName).toBe("PostextLayout");
+  });
+
+  it("renders the container its pages are painted into (it used to render nothing)", async () => {
+    // Deprecated main-entry alias: suspends until `postext/react` has loaded.
+    const Layout = createLayout(minimalContent);
+    await vi.waitFor(() => {
+      expect(renderToStaticMarkup(createElement(Layout))).toBe("<div></div>");
+    });
+  });
+});
+
+describe("createLayout from postext/react", () => {
+  const content: PostextContent = { markdown: "# Hello\n\nA paragraph of text." };
+
+  it("renders a container div with the given class and style", () => {
+    const Layout = createReactLayout(content);
+    expect(Layout.displayName).toBe("PostextLayout");
+    expect(renderToStaticMarkup(createElement(Layout, { className: "pages", style: { gap: 8 } }))).toBe(
+      '<div class="pages" style="gap:8px"></div>',
+    );
   });
 });

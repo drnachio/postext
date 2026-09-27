@@ -5,13 +5,21 @@ import {
   buildBundle,
   bundleFontProvider,
   bundleResourceBytes,
+  CONFIG_VERSION,
   createBundle,
   isBundleManifest,
+  migrateConfig,
   openBundle,
   openBundleZip,
+  pickLocaleOverrides,
+  resolveBundleLocale,
   svgSize,
 } from '../bundle';
+import type { BundleManifestV2 } from '../bundle';
+import { buildDocument } from '../pipeline';
+import { resolveHeadingsConfig } from '../defaults';
 import type { PostextConfig, Resource } from '../types';
+import type { VDTDesignTextBlock, VDTPage } from '../vdt';
 
 // Deterministic text measurement stub (no DOM in the node test env).
 class StubCtx {
@@ -53,6 +61,25 @@ const config: PostextConfig = {
   headings: { levels: [{ level: 1, numberingTemplate: 'Chapter {1}' }] },
   customFonts: [{ name: 'House Serif', variants: [{ weight: 400, style: 'normal', fileId: 'font-1', format: 'ttf', fileName: 'HouseSerif-Regular.ttf' }] }],
 };
+
+const filler = (n: number) =>
+  Array.from({ length: n }, (_, i) =>
+    `Paragraph ${i} with enough words to consume vertical space and force the column and page to overflow onto following pages.`,
+  ).join('\n\n');
+
+/** `config` with a one-element running head. */
+const withHeader = (content: string): PostextConfig => ({
+  ...config,
+  header: {
+    elements: [{
+      kind: 'text', id: 'rh', content, fontSize: pt(8), overflow: 'wrap',
+      placement: { anchor: { to: 'container', edge: 'bottom' }, size: { width: 'auto', height: 'auto' } },
+    }],
+  },
+});
+
+const headerText = (page: VDTPage): string =>
+  (page.header?.blocks ?? []).filter((b): b is VDTDesignTextBlock => b.kind === 'text').map((b) => b.lines.map((l) => l.text).join(' ')).join(' | ');
 
 async function sample() {
   return createBundle({
@@ -97,6 +124,224 @@ describe('createBundle', () => {
 
   it('requires some content', async () => {
     await expect(createBundle({ name: 'empty' })).rejects.toThrow(/chapters/);
+  });
+
+  it('writes a bilingual bundle that openBundle reads in either locale', async () => {
+    const SVG_ES = SVG.replace('#2a6f97', '#97432a');
+    const table: Resource = {
+      id: 'tbl', typeId: 'table', kind: 'table', caption: 'Hours of light.', createdAt: 1, updatedAt: 1,
+      table: { model: { rows: [[{ content: 'Dusk' }, { content: '19:40' }]] } },
+    };
+    const { bytes, manifest, files, warnings } = await createBundle({
+      name: 'The Lantern',
+      locale: 'en',
+      chapters: [
+        { markdown: '# Dusk\n\nThe lantern hung by the door. ::resource{id=fig-map}\n' },
+        { title: 'Night', markdown: '# Night\n\nNobody moved it.\n' },
+      ],
+      config: { ...config, layout: { layoutType: 'single' } },
+      resources: [svgResource, table],
+      files: { 'map-upload': SVG, 'map-es': SVG_ES, 'font-1': FONT },
+      localized: {
+        es: {
+          chapters: [
+            { markdown: '# Anochecer\n\nEl farol colgaba junto a la puerta. ::resource{id=fig-map}\n' },
+            { title: 'Noche', markdown: '# Noche\n\nNadie lo movió.\n' },
+          ],
+          // Top-level keys replace the shared ones; `layout: {}` goes back
+          // to the default two columns; `bodyText` repeats the shared
+          // value and is not written.
+          config: { headings: { levels: [{ level: 1, numberingTemplate: 'Capítulo {1}' }] }, layout: {}, bodyText: { fontFamily: 'House Serif' } },
+          resources: [
+            { id: 'fig-map', caption: 'Un mapa.', svg: { fileId: 'map-es', width: 200, height: 100 } },
+            { id: 'tbl', caption: 'Horas de luz.', table: { model: { rows: [[{ content: 'Anochecer' }, { content: '19:40' }]] } } },
+            { id: 'nope', caption: '¿?' },
+          ],
+        },
+      },
+    });
+    expect(warnings).toEqual(['nope: not among the resources, its es wording left out']);
+    expect(manifest.locale).toBe('en');
+    expect(manifest.locales).toEqual(['en', 'es']);
+    expect(manifest.chapters).toEqual({
+      en: [{ title: 'Dusk', file: 'chapters/en/01-dusk.md' }, { title: 'Night', file: 'chapters/en/02-night.md' }],
+      es: [{ title: 'Anochecer', file: 'chapters/es/01-anochecer.md' }, { title: 'Noche', file: 'chapters/es/02-noche.md' }],
+    });
+    expect(manifest.localized).toEqual({
+      es: {
+        config: { headings: { levels: [{ level: 1, numberingTemplate: 'Capítulo {1}' }] }, layout: {} },
+        resources: [
+          { id: 'fig-map', caption: 'Un mapa.', file: 'resources/es/fig-map.svg', width: 200, height: 100 },
+          { id: 'tbl', caption: 'Horas de luz.', table: { model: { rows: [[{ content: 'Anochecer' }, { content: '19:40' }]] } } },
+        ],
+      },
+    });
+    expect(isBundleManifest(JSON.parse(new TextDecoder().decode(files['preset.json'])))).toBe(true);
+    expect(Object.keys(files).sort()).toEqual([
+      'chapters/en/01-dusk.md', 'chapters/en/02-night.md', 'chapters/es/01-anochecer.md', 'chapters/es/02-noche.md',
+      'fonts/houseserif-regular.ttf', 'preset.json', 'resources/es/fig-map.svg', 'resources/fig-map.svg',
+    ]);
+
+    const es = await openBundle(bytes, { locale: 'es' });
+    expect(es.locale).toBe('es');
+    expect(es.locales).toEqual(['en', 'es']);
+    expect(es.chapters.map((c) => c.title)).toEqual(['Anochecer', 'Noche']);
+    expect(es.config.headings?.levels?.[0]?.numberingTemplate).toBe('Capítulo {1}');
+    expect(es.config.layout).toEqual({});
+    const esMap = es.resources.find((r) => r.id === 'fig-map')!;
+    expect(esMap.caption).toBe('Un mapa.');
+    expect(new TextDecoder().decode(es.files.get(esMap.svg!.fileId))).toBe(SVG_ES);
+    expect(es.resources.find((r) => r.id === 'tbl')!.caption).toBe('Horas de luz.');
+    const docs = buildBundle(es);
+    expect(docs.map((d) => d.blocks.find((b) => b.type === 'heading')?.numberPrefix?.trim())).toEqual(['Capítulo 1', 'Capítulo 2']);
+
+    const en = await openBundle(bytes);
+    expect(en.locale).toBe('en');
+    expect(en.chapters.map((c) => c.title)).toEqual(['Dusk', 'Night']);
+    expect(en.config.layout).toEqual({ layoutType: 'single' });
+    const enMap = en.resources.find((r) => r.id === 'fig-map')!;
+    expect(enMap.caption).toBe('A map.');
+    expect(new TextDecoder().decode(en.files.get(enMap.svg!.fileId))).toBe(SVG);
+  });
+
+  it('shares the chapters when only the wording is localized', async () => {
+    const { manifest, bytes } = await createBundle({
+      name: 'Shared',
+      locale: 'en',
+      markdown: '# One\n\n::resource{id=fig-map}',
+      resources: [svgResource],
+      files: { 'map-upload': SVG },
+      localized: { es: { resources: [{ id: 'fig-map', caption: 'Un mapa.' }] }, fr: { resources: [{ id: 'fig-map', caption: 'Une carte.' }] } },
+    });
+    expect(manifest.chapters).toEqual([{ title: 'One', file: 'chapters/01-one.md' }]);
+    expect(manifest.locales).toEqual(['en', 'es', 'fr']);
+    expect(manifest.localized).toEqual({ es: { resources: [{ id: 'fig-map', caption: 'Un mapa.' }] }, fr: { resources: [{ id: 'fig-map', caption: 'Une carte.' }] } });
+    const fr = await openBundle(bytes, { locale: 'fr' });
+    expect(fr.locale).toBe('fr');
+    expect(fr.chapters.map((c) => c.markdown)).toEqual(['# One\n\n::resource{id=fig-map}']);
+    expect(fr.resources[0]!.caption).toBe('Une carte.');
+    const es = await openBundle(bytes, { locale: 'es-MX' });
+    expect(es.locale).toBe('es');
+    expect(es.resources[0]!.caption).toBe('Un mapa.');
+    // The primary locale, and one the bundle does not carry, keep the
+    // shared wording — and say so.
+    const en = await openBundle(bytes);
+    expect(en.locale).toBe('en');
+    expect(en.resources[0]!.caption).toBe('A map.');
+    const de = await openBundle(bytes, { locale: 'de' });
+    expect(de.locale).toBe('en');
+    expect(de.resources[0]!.caption).toBe('A map.');
+  });
+
+  it('never gives the primary locale the wording of a regional variant', async () => {
+    // Shared chapters: pt-PT is the primary, pt-BR only rewords.
+    const shared = await createBundle({
+      name: 'Variants',
+      locale: 'pt-PT',
+      markdown: '# Um\n\n::resource{id=fig-map}',
+      resources: [{ ...svgResource, caption: 'Um mapa.' }],
+      files: { 'map-upload': SVG },
+      localized: { 'pt-BR': { resources: [{ id: 'fig-map', caption: 'Um mapa (BR).' }] } },
+    });
+    const read = async (locale?: string) => {
+      const b = await openBundle(shared.bytes, locale ? { locale } : {});
+      return `${b.locale}:${b.resources[0]!.caption}`;
+    };
+    expect(await read()).toBe('pt-PT:Um mapa.');
+    expect(await read('pt-PT')).toBe('pt-PT:Um mapa.');
+    expect(await read('pt')).toBe('pt-PT:Um mapa.');
+    expect(await read('pt-BR')).toBe('pt-BR:Um mapa (BR).');
+
+    // Chapter map: en is the primary, en-GB brings chapters, a config key
+    // and wording of its own. Reading en (or en-US) must not mix the en
+    // chapters with the en-GB overrides.
+    const mapped = await createBundle({
+      name: 'Colours',
+      locale: 'en',
+      chapters: [{ markdown: '# Color\n\n::resource{id=fig-map}' }],
+      config: { layout: { layoutType: 'single' } },
+      resources: [svgResource],
+      files: { 'map-upload': SVG },
+      localized: {
+        'en-GB': {
+          chapters: [{ markdown: '# Colour\n\n::resource{id=fig-map}' }],
+          config: { layout: {} },
+          resources: [{ id: 'fig-map', caption: 'A map (GB).' }],
+        },
+      },
+    });
+    for (const locale of ['en', 'en-US']) {
+      const b = await openBundle(mapped.bytes, { locale });
+      expect(b.locale).toBe('en');
+      expect(b.chapters.map((c) => c.title)).toEqual(['Color']);
+      expect(b.config.layout).toEqual({ layoutType: 'single' });
+      expect(b.resources[0]!.caption).toBe('A map.');
+    }
+    const gb = await openBundle(mapped.bytes, { locale: 'en-GB' });
+    expect(gb.locale).toBe('en-GB');
+    expect(gb.chapters.map((c) => c.title)).toEqual(['Colour']);
+    expect(gb.config.layout).toEqual({});
+    expect(gb.resources[0]!.caption).toBe('A map (GB).');
+  });
+
+  it('keeps a locale on the shared artwork when its own picture is missing', async () => {
+    const { manifest, warnings } = await createBundle({
+      name: 'Missing',
+      locale: 'en',
+      markdown: '# One',
+      resources: [svgResource],
+      files: { 'map-upload': SVG },
+      localized: { es: { resources: [{ id: 'fig-map', caption: 'Un mapa.', svg: { fileId: 'gone' } }] } },
+    });
+    expect(warnings).toEqual(['fig-map: missing es file, the shared one is used']);
+    expect(manifest.localized).toEqual({ es: { resources: [{ id: 'fig-map', caption: 'Un mapa.' }] } });
+  });
+
+  it('needs the primary locale to write a bilingual bundle', async () => {
+    await expect(createBundle({ name: 'x', markdown: '# X', localized: { es: {} } })).rejects.toThrow(/locale/);
+    await expect(createBundle({ name: 'x', locale: 'es', markdown: '# X', localized: { es: {} } })).rejects.toThrow(/locale/);
+  });
+});
+
+describe('locale resolution', () => {
+  const chapters = [{ title: 'One', file: 'one.md' }];
+  const manifestOf = (locale: string, localized: Record<string, object>, map = false): BundleManifestV2 => ({
+    version: 2,
+    id: 'b',
+    name: 'B',
+    locale,
+    chapters: map ? Object.fromEntries([locale, ...Object.keys(localized)].map((l) => [l, chapters])) : chapters,
+    localized,
+  });
+
+  it('rewords the primary locale only with an entry naming it exactly', () => {
+    const own = { config: {} };
+    const bare = { config: {} };
+    const br = { config: {} };
+    for (const map of [false, true]) {
+      expect(pickLocaleOverrides(manifestOf('pt-PT', { 'pt-BR': br }, map), 'pt-PT')).toBeNull();
+      expect(pickLocaleOverrides(manifestOf('pt-PT', { pt: bare, 'pt-BR': br }, map), 'pt-PT')).toBeNull();
+      expect(pickLocaleOverrides(manifestOf('pt-PT', { 'pt-PT': own, 'pt-BR': br }, map), 'pt-PT')).toBe(own);
+      expect(pickLocaleOverrides(manifestOf('pt-PT', { pt: bare, 'pt-BR': br }, map), 'pt-BR')).toBe(br);
+    }
+    // Another language takes its bare base entry, else a regional variant,
+    // before the wording of the primary.
+    const shared = manifestOf('en', { pt: bare, 'pt-BR': br });
+    expect(pickLocaleOverrides({ ...shared, chapters: { en: chapters, 'pt-AO': chapters } }, 'pt-AO')).toBe(bare);
+    const gb = { config: {} };
+    const mapped: BundleManifestV2 = { ...manifestOf('es', { 'en-GB': gb }), chapters: { es: chapters, en: chapters } };
+    expect(resolveBundleLocale(mapped, 'en-US')).toBe('en');
+    expect(pickLocaleOverrides(mapped, 'en-US')).toBe(gb);
+    expect(pickLocaleOverrides(mapped, 'es')).toBeNull();
+  });
+
+  it('reports the locale whose wording shared chapters are read with', () => {
+    const m = manifestOf('en', { es: {}, 'pt-BR': {} });
+    expect(resolveBundleLocale(m, 'es-AR')).toBe('es');
+    expect(resolveBundleLocale(m, 'PT-br')).toBe('pt-BR');
+    expect(resolveBundleLocale(m, 'de')).toBe('en');
+    // A single-language bundle keeps its own locale.
+    expect(resolveBundleLocale({ ...m, localized: undefined }, 'es')).toBe('en');
   });
 });
 
@@ -206,6 +451,79 @@ describe('buildBundle', () => {
     expect(docs[1]!.pages[0]!.pageNumberValue).toBe(docs[0]!.pages.at(-1)!.pageNumberValue + 1);
   });
 
+  it('carries the book metadata — the first chapter\'s front matter — to every chapter', () => {
+    const docs = buildBundle({
+      config: withHeader('{title}|{author}'),
+      resources: [],
+      chapters: [
+        { markdown: `---\ntitle: The Lantern\nauthor: A. Author\n---\n# Dusk\n\n${filler(6)}` },
+        { markdown: `# Night\n\n${filler(6)}` },
+        // A later chapter's front matter is not the book's: ignored, as in
+        // the Sandbox.
+        { markdown: `---\ntitle: Elsewhere\n---\n# Dawn\n\n${filler(2)}` },
+      ],
+    });
+    expect(docs).toHaveLength(3);
+    for (const doc of docs) {
+      expect(doc.metadata.title).toBe('The Lantern');
+      expect(doc.pages.map(headerText)).toEqual(doc.pages.map(() => 'The Lantern|A. Author'));
+    }
+  });
+
+  it('blanks a later chapter\'s front matter without parsing it, as the Sandbox does', () => {
+    // YAML that gray-matter rejects: the block is not the book's, so it is
+    // blanked by its `---` lines and never read.
+    const later = '---\ntitle: [unclosed\n---\n# Night\n\nText.';
+    const docs = buildBundle({
+      config: withHeader('{title}'),
+      resources: [],
+      chapters: [{ markdown: '---\ntitle: The Lantern\n---\n# Dusk\n\nText.' }, { markdown: later }],
+    });
+    expect(docs).toHaveLength(2);
+    expect(headerText(docs[1]!.pages.at(-1)!)).toBe('The Lantern');
+    const heading = docs[1]!.blocks.find((b) => b.type === 'heading')!;
+    expect(heading.lines[0]!.text).toContain('Night');
+    // Offsets still point into the chapter's own text.
+    expect(later.slice(heading.sourceStart, heading.sourceEnd)).toContain('Night');
+  });
+
+  it('takes book metadata from the options, under the first chapter\'s front matter', () => {
+    const docs = buildBundle(
+      {
+        config: withHeader('{title}|{subtitle}'),
+        resources: [],
+        chapters: [{ markdown: '---\ntitle: The Lantern\n---\n# Dusk\n\nText.' }, { markdown: '# Night\n\nText.' }],
+      },
+      { metadata: { title: 'Overridden', subtitle: 'A Tale' } },
+    );
+    expect(docs.map((d) => headerText(d.pages[0]!))).toEqual(['The Lantern|A Tale', 'The Lantern|A Tale']);
+  });
+
+  it('counts the whole book in {bookTotalPages} and the chapter in {totalPages}', () => {
+    const docs = buildBundle({
+      config: withHeader('{pageNumber}|{totalPages}|{bookTotalPages}'),
+      resources: [],
+      chapters: [{ markdown: `# Dusk\n\n${filler(80)}` }, { markdown: `# Night\n\n${filler(40)}` }, { markdown: `# Dawn\n\n${filler(60)}` }],
+    });
+    const total = docs.reduce((n, d) => n + d.pages.length, 0);
+    expect(docs.every((d) => d.pages.length > 1)).toBe(true);
+    for (const doc of docs) {
+      expect(doc.bookPageCount).toBe(total);
+      for (const page of doc.pages) {
+        if (!page.header) continue;
+        expect(headerText(page)).toBe(`${page.pageLabel}|${doc.pages.length}|${total}`);
+      }
+    }
+    // A document laid out on its own counts its own pages, continued ones
+    // the pages before them too, unless the host names the book's total.
+    const alone = buildDocument({ markdown: `# Dusk\n\n${filler(80)}` }, withHeader('{bookTotalPages}'));
+    expect(headerText(alone.pages[0]!)).toBe(String(alone.pages.length));
+    const later = buildDocument({ markdown: `# Night\n\n${filler(40)}`, continuation: { pageIndexOffset: 5 } }, withHeader('{bookTotalPages}'));
+    expect(headerText(later.pages[0]!)).toBe(String(5 + later.pages.length));
+    const told = buildDocument({ markdown: `# Night\n\n${filler(40)}`, continuation: { pageIndexOffset: 5, bookPageCount: 40 } }, withHeader('{bookTotalPages}'));
+    expect(headerText(told.pages[0]!)).toBe('40');
+  });
+
   it('gives a chapter with a table of contents the whole book outline', async () => {
     const docs = buildBundle({
       config,
@@ -219,6 +537,26 @@ describe('buildBundle', () => {
     const text = JSON.stringify(docs[0]!.blocks);
     expect(text).toContain('Dusk');
     expect(text).toContain('Night');
+  });
+
+  it('labels a part row with the next chapter\'s first page when the part closes its chapter without a page', () => {
+    // `parts.page: false`: the fence closing chapter 2 reaches no page of
+    // it; the part starts with chapter 3 (after an empty chapter), where its
+    // running heads switch.
+    const docs = buildBundle({
+      config: { ...config, parts: { page: false } },
+      resources: [],
+      chapters: [
+        { markdown: ':::toc\n:::\n' },
+        { markdown: '# Dusk\n\nText.\n\n:::part{number="I" title="Mud"}\n:::' },
+        { markdown: '' },
+        { markdown: '# Night\n\nText.' },
+      ],
+    });
+    const night = docs[3]!.blocks.find((b) => b.type === 'heading')!;
+    const nightPage = docs[3]!.pages[night.pageIndex]!;
+    const row = docs[0]!.blocks.find((b) => b.tocPart)!;
+    expect(row.tocPart).toMatchObject({ number: 'I', title: 'Mud', pageLabel: nightPage.pageLabel, pageIndex: (docs[3]!.pageIndexOffset ?? 0) + night.pageIndex });
   });
 });
 
@@ -236,5 +574,102 @@ describe('intrinsic sizes', () => {
     const jpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0, 4, 0, 0, 0xff, 0xc0, 0, 11, 8, 0, 9, 0, 12, 3, 0, 0]);
     expect(bitmapSize(jpeg)).toEqual({ width: 12, height: 9 });
     expect(bitmapSize(new Uint8Array([1, 2, 3]))).toBeUndefined();
+  });
+});
+
+// EF-05: up to postext 1.4 any `headings` object turned the H1 page break
+// off, and stripping the defaults dropped an H1 `enabled: false`, so the
+// bundles 1.4 wrote carry `headings` with no H1 break — laid out with none.
+// The engine now keeps H1's `always-odd`; a manifest written before the
+// `configVersion` stamp is read with the breaks it laid out then.
+describe('bundles written by postext 1.4 or earlier', () => {
+  // docs/examples/open-bundle/lantern.postext as postext 1.4 wrote it (its
+  // config and chapters; fonts and pictures left out).
+  const lantern14 = {
+    version: 2,
+    id: 'the-lantern',
+    name: 'The Lantern',
+    locale: 'en',
+    chapters: [{ title: 'Dusk', file: 'chapters/01-dusk.md' }, { title: 'Night', file: 'chapters/02-night.md' }],
+    config: {
+      bodyText: { fontSize: { value: 10.5, unit: 'pt' } },
+      headings: { fontFamily: 'EB Garamond', levels: [{ level: 1, numberingTemplate: 'Chapter {1}' }] },
+    },
+  };
+  const para = 'The lantern hung from a nail by the door, and every evening someone lit it. Nobody remembered who had put the nail there.';
+  const chapterFiles = {
+    'chapters/01-dusk.md': enc.encode(`# Dusk\n\n${para}\n\n${para}\n`),
+    'chapters/02-night.md': enc.encode(`# Night\n\n${para}\n\n${para}\n`),
+  };
+  const zipManifest = (manifest: object) => zipSync({ 'preset.json': enc.encode(JSON.stringify(manifest)), ...chapterFiles });
+  const h1Break = (c: PostextConfig) => resolveHeadingsConfig(c.headings).levels.find((l) => l.level === 1)!.breakBefore;
+  const pageCounts = (docs: { pages: unknown[] }[]) => docs.map((d) => d.pages.length);
+
+  it('stamps every manifest it writes with the configuration rules', async () => {
+    const { manifest } = await sample();
+    expect(CONFIG_VERSION).toBe(8);
+    expect(manifest.configVersion).toBe(CONFIG_VERSION);
+  });
+
+  it('reads a 1.4 bundle with the H1 break it laid out, and lays it out as 1.4 did', async () => {
+    const old = await openBundle(zipManifest(lantern14));
+    expect(old.config.headings?.levels?.[0]).toEqual({ level: 1, numberingTemplate: 'Chapter {1}', breakBefore: { enabled: false } });
+    expect(h1Break(old.config)).toMatchObject({ enabled: false });
+    // 1.4's layout: the chapters run on, no recto break, no blank verso.
+    const asIn14 = buildBundle({
+      ...old,
+      config: { ...old.config, headings: { fontFamily: 'EB Garamond', levels: [{ level: 1, numberingTemplate: 'Chapter {1}', breakBefore: { enabled: false } }] } },
+    });
+    const docs = buildBundle(old);
+    expect(pageCounts(docs)).toEqual(pageCounts(asIn14));
+    expect(docs[1]!.pageIndexOffset).toBe(docs[0]!.pages.length);
+    expect(docs[1]!.blocks.find((b) => b.type === 'heading')!.pageIndex).toBe(0);
+    // The same manifest stamped for today's rules keeps H1's always-odd;
+    // so does one stamped 3 (a 1.5 prerelease, heading rules already
+    // today's). The lantern sets no maths: its config gains no maths size.
+    const v3 = await openBundle(zipManifest({ ...lantern14, configVersion: 3 }));
+    // (a version-8 pin keeps its split under a heading as it was)
+    expect(v3.config.headings).toEqual({ ...lantern14.config.headings, keepWithNextSplit: 'fill' });
+    expect(v3.config.math).toBeUndefined();
+    const today = await openBundle(zipManifest({ ...lantern14, configVersion: CONFIG_VERSION }));
+    expect(today.config.headings).toEqual(lantern14.config.headings);
+    expect(h1Break(today.config)).toEqual({ enabled: true, parity: 'always-odd' });
+    const todayDocs = buildBundle(today);
+    const pages = (list: { pages: unknown[] }[]) => list.reduce((n, d) => n + d.pages.length, 0);
+    expect(pages(todayDocs)).toBeGreaterThan(pages(docs));
+  });
+
+  it('pins a locale\'s own configuration and heading-style breaks too', async () => {
+    const manifest = {
+      ...lantern14,
+      config: { ...lantern14.config, headingStyles: [{ id: 'part', breakBefore: { enabled: true } }] },
+      localized: { es: { config: { headings: { levels: [{ level: 1, numberingTemplate: 'Capítulo {1}' }] } } } },
+    };
+    const es = await openBundle(zipManifest(manifest), { locale: 'es' });
+    expect(es.config.headings?.levels?.[0]).toEqual({ level: 1, numberingTemplate: 'Capítulo {1}', breakBefore: { enabled: false } });
+    expect(es.config.headingStyles?.[0]?.breakBefore).toEqual({ enabled: true, parity: 'any' });
+  });
+
+  it('writes a bundle that reads back as written: nothing is pinned', async () => {
+    const { bytes } = await createBundle({ name: 'Now', chapters: [{ markdown: '# One\n\nText.' }], config: { headings: { fontFamily: 'Georgia' } } });
+    const bundle = await openBundle(bytes);
+    expect(bundle.config.headings).toEqual({ fontFamily: 'Georgia' });
+    expect(h1Break(bundle.config)).toEqual({ enabled: true, parity: 'always-odd' });
+  });
+
+  it('migrates a configuration by its version, and leaves one that needs nothing as it is', () => {
+    // (No maths in the content: only the heading rules are at stake here;
+    // the maths size has tests of its own in mathSizeMigration.test.ts.)
+    const prose = { content: 'Prose.' };
+    const old: PostextConfig = { headings: { levels: [{ level: 1, breakBefore: { parity: 'odd' } }] } };
+    expect(migrateConfig(old, CONFIG_VERSION)).toBe(old);
+    expect(migrateConfig(old, 99)).toBe(old);
+    expect(migrateConfig(old, 3, prose)).toBe(old);
+    expect(migrateConfig(old, undefined, prose).headings?.levels?.[0]?.breakBefore).toEqual({ parity: 'odd', enabled: false });
+    expect(migrateConfig(old, '3', prose).headings?.levels?.[0]?.breakBefore).toEqual({ parity: 'odd', enabled: false });
+    const plain: PostextConfig = { bodyText: { fontFamily: 'Georgia' } };
+    expect(migrateConfig(plain, undefined, prose)).toBe(plain);
+    const full: PostextConfig = { headings: { levels: [{ level: 1, breakBefore: { enabled: true, parity: 'odd' } }] } };
+    expect(migrateConfig(full, undefined, prose)).toBe(full);
   });
 });

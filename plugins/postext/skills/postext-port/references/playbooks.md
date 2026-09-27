@@ -317,9 +317,10 @@ numbers" panels, grey boxes, badges. In Markdown write
 
 ### C4. Long boxes
 Set `keepTogether: false` to let a box split between children or lines, with
-at least `splitMinLines` (default 2) lines per side. The continuation drops
-the title and the in-box icon but keeps the stripe, border and marker. Boxes
-taller than a column split anyway. Set `snapToGrid: false` for an exact
+at least `splitMinLines` (default 2) lines per side, and never a lone line of
+a paragraph or list item (`layout.boxChildSplitMinLines`, default 2). The continuation drops the title and the in-box
+icon (the text keeps the icon's column, empty) but keeps the stripe, border
+and marker. Boxes taller than a column split anyway. Set `snapToGrid: false` for an exact
 `marginBottom` (stacked worksheet boxes).
 
 ### C5. Nested boxes
@@ -442,7 +443,8 @@ with a list, or a "stats" callout with `:::columns{count=3}`. Detect the
 pages by drawing count (`inventory.py` → `vector_heavy_pages`).
 
 ### D14. Pictures you may not reproduce
-Replace them with licensed ones (CC0 or public-domain collections, Wikimedia
+Only for third-party pictures the user does not control (their own titles
+keep every picture). Replace them with licensed ones (CC0 or public-domain collections, Wikimedia
 Commons), checking the licence of each file before downloading. Credit them
 in `note` and in a credits chapter.
 

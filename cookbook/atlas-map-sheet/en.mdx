@@ -1,0 +1,71 @@
+---
+title: "Atlas sheet: numbered maps and a rotated overview"
+summary: "Maps with a numbering of their own and captions on a blue bar, a key of swatches in the maps' colours, and a sea chart turned sideways on page 3."
+description: "Four pages of an invented atlas set with Postext: numbered maps captioned on a bar, a swatch key in the maps' palette, a gazetteer and a chart set landscape."
+question: "How do I number maps as their own kind of figure, caption them on a bar and cite them in the text?"
+aliases: ["atlas", "maps", "map figures", "gazetteer", "legend", "colour key", "landscape figure", "rotated figure", "caption bar", "sea chart", "mapa", "nomenclátor"]
+pageNotes: { "1": "The opener: a deep blue band across the head of the page with the kicker Sheet 1 · The islands and their waters, the title The Solan Isles and a compass rose; two short columns of text; then Map 1 across the foot of the page, a relief map of four islands in sand and ochre tints on light and darker blue water, with red roads and a key of swatches under it that begins In metres.", "2": "Map 2, the north end of Brannay with contours, the three Hool Stacks off its north-west point and red numbered discs, and Map 3, the harbour plan of Kirkwick with soundings and a key of ringed numbers, head the two columns; the text runs on under them.", "3": "Map 4, a sea chart of the whole group and the mainland coast, turned a quarter so that its top faces the spine, with a grid lettered A to H and numbered 1 to 6 in its margin, soundings in the open water and seventeen red discs.", "4": "Table 1, the gazetteer: seventeen rows with a red numbered disc, the place, what it is, its island and its square, every other row tinted blue; two columns of closing text and the colophon below, and an imprint line under a hairline at the foot of the page." }
+---
+
+## What you'll build
+
+The first sheet of an atlas of the Solan Isles, an archipelago invented for this recipe and drawn in code from one height field. Page 1 opens on a deep-sea blue band with the atlas's name at 56 pt and a compass rose, and Map 1, the relief of the whole group, fills the foot of the page. The north end of the main island and the plan of its harbour head the two columns of page 2. On page 3 the chart of the islands is turned a quarter so that its grid of 8 km squares fills the page. Page 4 holds the gazetteer, seventeen places in red discs with the chart square of each, and an imprint at the foot. Each map is captioned above the drawing on a blue bar, and Map 1's key is a line of swatches in the map's colours.
+
+## Method
+
+### 1 · One palette for the page and the maps
+
+<Excerpt region="palette" />
+
+The six map tints are keys of the same object as the page's colours, so `colorPalette` lists them as palette entries and the drawings take their SVG fills from `palette[id]`. Paper-white type on `band`, the blue of the opener, the caption bars and the table's header row, has a contrast of 9.2:1; `road`, the only red, is kept for roads, lights and place numbers and has 5.4:1 against the paper. `main-color` takes the hex of `band`, and the defaults link headings, caption bars and list markers to that id, so any of them the configuration leaves unset prints in the atlas's blue.
+
+### 2 · Where each map goes
+
+The code is [the short answer](#the-short-answer) above. Map 1 is a `bottom` float because a page-wide `top` float never lands on the page that cites it. Maps 2 and 3 are `top` column floats cited on page 1, so they take the heads of the two columns of page 2 ([Placement](/en/docs/document-format#placement)). `rotate: 'ccw'` puts the chart's top at the left edge and gives it page 3 to itself. Turned, the drawing runs 247.6 mm along the page, the text area's 53 grid lines less one for the float gap, and 182.2 mm across it, what is left of the 196 mm measure after the caption bar and the note. A taller drawing would be scaled down and leave bare paper at the head of the page.
+
+### 3 · A key drawn from the same ids
+
+<Excerpt region="legend" />
+
+`RELIEF` lists the bands with their palette ids and the heights where they start. The art fills each band with `palette[id]` and the key under Map 1 writes a `:swatch` with the same id, so a new hex in the palette changes the drawing and the key at once. The key names the unit once, in words, because the note is set in Alegreya Sans SC, which prints a lowercase *m* as a small capital M. On <PageRef page={2}>page 2</PageRef> the text puts the same swatches beside the two depths of water.
+
+### 4 · Maps are resources, numbered and placed by their citations
+
+<Excerpt region="resources" />
+
+A resource takes its number from the text's first citation of it, and `:ref{id="north"}` prints the type's short label and that number, Map 2, in the running text or in a caption note. The chart and the gazetteer are first cited on page 2, in that order, so the chart takes page 3 and the gazetteer the head of page 4. The compass rose is a resource of the same type, but only the opener draws it and the text never cites it, so the maps still count from 1 to 4. Each entry of the harbour key is one chip with no fill, border or padding, so its number, its name and the dot after it stay on one line; with no-break spaces instead, 1.4.1 breaks the English key between 3 and *harbour office*.
+
+### 5 · Numbers the maps and the gazetteer share
+
+<Excerpt region="gazetteer" />
+
+`PLACES` is sorted from north to south and numbered in that order, and the maps print the numbers in red discs and the table in red chips. `square()` works out the chart square from the same kilometre coordinates that place each mark on the maps, so Kirkwick, number 6, is in D3 on the chart and in the table. A table style has one body fill, so every other row is filled cell by cell with `setCellBackground`.
+
+### 6 · The atlas's name on a band of its own blue
+
+<Excerpt region="opener" />
+
+The band is a box anchored to `'bleed'` and given no width, so it runs from edge to edge. The large title is `{title}`, the atlas's name from the frontmatter, and the heading's own text follows the sheet number in the kicker. On its own the band reserves space down to its foot, and the text would start 3.9 mm under it; `minHeight` raises the reservation to 14 grid lines below the top margin, which starts the text 8.7 mm under the band.
+
+## Variations
+
+### Turn the chart the other way
+
+Turned clockwise, the chart has its top and its caption bar at the fore-edge of page 3, and the reader turns the book the opposite way to the usual convention, which `'ccw'` follows.
+
+```diff
+-  chart: { rotate: 'ccw' }, // turned a quarter, top to the left, on a page of its own
++  chart: { rotate: 'cw' }, // turned a quarter, top to the right, on a page of its own
+```
+
+### Turn a table instead
+
+A table turns with the same setting and, when it is too wide for one page, continues turned on the next under a repeated header row: see <RecipeLink slug="garden-almanac">the garden almanac</RecipeLink>.
+
+### Put a map in the margin
+
+In a column-and-a-half layout the outer column can hold figures and their captions and no text: see <RecipeLink slug="textbook-margin-column">the textbook with a margin column</RecipeLink>.
+
+## Pitfalls
+
+- The closing text on <PageRef page={4}>page 4</PageRef> is split by hand with a `:::columnbreak`. Postext 1.4.1 does not level the columns of a closing page that follows a page given whole to a float, here the turned chart, and without the break every paragraph goes into the left-hand column and only the colophon starts the right-hand one. Move the break when the text changes.

@@ -412,6 +412,71 @@ describe('accessible (tagged) PDF output', () => {
     expect(unmarkedPainting(pageContent(out, 0))).toEqual([]);
   });
 
+  it('marks the continuation marks of a split callout as artifacts', async () => {
+    const md = [
+      ':::callout{type="speech"}',
+      ...Array.from({ length: 30 }, (_, i) => `- Line ${i + 1} of a long speech that goes on.`),
+      ':::',
+    ].join('\n');
+    const cfg: PostextConfig = {
+      ...config,
+      calloutStyles: [{
+        id: 'speech',
+        title: 'Hamlet',
+        keepTogether: false,
+        repeatTitle: true,
+        continuedSuffix: "(CONT'D)",
+        continuesMarkerEnabled: true,
+        continuesMarker: '(MORE)',
+      }],
+    };
+    const doc = buildDocument({ markdown: md }, cfg);
+    const frames = doc.blocks.filter((b) => b.type === 'callout');
+    expect(frames.length).toBeGreaterThan(1);
+    const out = await PDFDocument.load(await renderToPdf(doc, { fontProvider }));
+    const div = structRoot(out).kids.find((k) => k.type === 'Div')!;
+    // The title paragraph holds the head's title only: the repeats and the
+    // "(MORE)" markers are artifacts, read nowhere.
+    const title = div.kids[0]!;
+    expect(title.type).toBe('P');
+    expect(title.mcids).toBe(1);
+    for (let i = 0; i < out.getPageCount(); i++) expect(unmarkedPainting(pageContent(out, i))).toEqual([]);
+  });
+
+  it('keeps a reference set in small capitals one link', async () => {
+    // `:smallcaps[…]` paints the label as several case runs ("F" + "IG. 1.1"),
+    // in the body and in a caption: still one Link, one annotation each.
+    const md = 'See :smallcaps[the :ref{id=f1}] now.\n\n::resource{id=f1}';
+    const res: Resource[] = [{ ...resources[0]!, caption: 'A :smallcaps[square, see :ref{id=f1}].' }];
+    const doc = buildDocument({ markdown: md, resources: res }, config);
+    const out = await PDFDocument.load(await renderToPdf(doc, {
+      fontProvider,
+      resourceBytes: (fileId) => (fileId === 'f1.png' ? PNG : undefined),
+    }));
+    const links: Elem[] = [];
+    walk(structRoot(out), (e) => { if (e.type === 'Link') links.push(e); });
+    expect(links).toHaveLength(2);
+    for (const link of links) {
+      expect(link.mcids).toBe(1);
+      expect(link.objrs).toBe(1);
+    }
+    const annots = out.getPage(0).node.Annots()!.asArray().map((r) => out.context.lookup(r, PDFDict));
+    expect(annots).toHaveLength(2);
+    // The whole label, all its runs ("FIG." + no-break space + "1").
+    for (const annot of annots) expect(textOf(annot.get(PDFName.of('Contents')))).toMatch(/^FIG\.\s1$/);
+    // The body link's rectangle spans every run of the label.
+    const bodyRuns = doc.blocks.find((b) => b.type === 'paragraph')!.lines
+      .flatMap((l) => l.segments ?? []).filter((s) => s.refResourceId === 'f1');
+    expect(bodyRuns.length).toBeGreaterThan(1);
+    const scale = out.getPage(0).getWidth() / doc.pages[0]!.width;
+    const widths = annots.map((a) => {
+      const [x1, , x2] = a.lookup(PDFName.of('Rect'), PDFArray).asArray().map((n) => (n as PDFNumber).asNumber());
+      return (x2! - x1!) / scale;
+    });
+    expect(widths.some((w) => Math.abs(w - bodyRuns.reduce((sum, s) => sum + s.width, 0)) < 0.01)).toBe(true);
+    expect(unmarkedPainting(pageContent(out, 0))).toEqual([]);
+  });
+
   it('falls back to the first heading as the title', async () => {
     const doc = buildDocument({ markdown: '# Untitled chapter\n\nText.' }, config);
     const out = await PDFDocument.load(await renderToPdf(doc, { fontProvider }));

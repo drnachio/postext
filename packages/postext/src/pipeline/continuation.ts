@@ -1,13 +1,15 @@
 // What a document laid out after another one inherits from it — the
-// counter half of `PostextContent.continuation`, plus the part left open.
-// Pure over the parsed
+// counter half of `PostextContent.continuation`, plus the part left open
+// and whether the content ended on it (`afterPartPage`). Pure over the parsed
 // markdown: no layout is involved, so the page half (`pageIndexOffset`,
 // `pageNumbering`) is left to the caller, which knows how many pages the
 // preceding content produced and how its last page was numbered.
 
 import { extractFrontmatter } from '../frontmatter';
 import { parseMarkdownMemo } from '../parse';
+import type { ContentBlock } from '../parse';
 import { defaultResourceTypes } from '../defaults';
+import { documentLocale } from '../defaults/resourceTypes';
 import type { HeadingCounters, LayoutContinuation, OutlineEntry, PartState, PostextConfig, PostextContent } from '../types';
 import { computeHeadingContext, computeResourceNumberingState } from './resourceNumbering';
 import { planParts } from './parts';
@@ -33,7 +35,7 @@ export function continuationAfter(
   const headings = headingContext.length > 0
     ? headingContext[headingContext.length - 1]!
     : before?.headings ?? NO_HEADINGS;
-  const resourceTypes = config?.resourceTypes ?? defaultResourceTypes();
+  const resourceTypes = config?.resourceTypes ?? defaultResourceTypes(documentLocale(config));
   const { map, counters } = computeResourceNumberingState(
     blocks,
     resourceTypes,
@@ -44,14 +46,31 @@ export function continuationAfter(
   // The last part opened in `content` (its fence may well have closed —
   // a part stays in effect until the next one), else the inherited one.
   let part: PartState | undefined = before?.part;
-  for (const planned of planParts(blocks).byStart.values()) {
+  const parts = planParts(blocks);
+  for (const planned of parts.byStart.values()) {
     part = {
       number: planned.number,
       title: planned.title,
       ...(Object.keys(planned.palette).length > 0 ? { palette: planned.palette } : {}),
     };
   }
-  return { headings, resourceCounters: counters, resourceNumbers: map, ...(part ? { part } : {}) };
+  const afterPartPage = resolved.parts.page && endsWithPart(blocks, parts.byEnd.keys());
+  return { headings, resourceCounters: counters, resourceNumbers: map, ...(part ? { part } : {}), ...(afterPartPage ? { afterPartPage } : {}) };
+}
+
+/** Whether a part's closing fence ends `blocks`: nothing after it but
+ *  directives that neither place anything nor break a column or page
+ *  (`:::numbering`, `:::space`). The part's pages are then the last of
+ *  the content, and the break the part owes falls to what follows. */
+function endsWithPart(blocks: readonly ContentBlock[], partEnds: Iterable<number>): boolean {
+  let last = -1;
+  for (const end of partEnds) last = Math.max(last, end);
+  if (last < 0) return false;
+  for (let i = last + 1; i < blocks.length; i++) {
+    const b = blocks[i]!;
+    if (b.type !== 'directive' || b.directiveName === 'pagebreak' || b.directiveName === 'columnbreak') return false;
+  }
+  return true;
 }
 
 /** The outline of `content` on its own — every heading and part, numbered

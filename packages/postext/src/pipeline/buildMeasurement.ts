@@ -101,7 +101,9 @@ export function runMeasurement(input: MeasurementInput): MeasurementResult {
     // isn't initialised yet — no need to gate the call here. When the
     // real engine lands later, `CanvasPreview` bumps `resizeKey` and the
     // pipeline rebuilds with the genuine render.
-    const render = renderMath(tex, true, style.fontSizePx, { color: style.color });
+    // The measure is the width a numbered equation (`\tag`) spans, its
+    // number flush right; other formulas keep their own width.
+    const render = renderMath(tex, true, style.fontSizePx, { color: style.color, containerWidthPx: measureMaxWidth });
     const width = Math.min(render.widthPx, measureMaxWidth);
     const height = render.heightPx;
     const measured: MeasuredBlock = {
@@ -118,7 +120,9 @@ export function runMeasurement(input: MeasurementInput): MeasurementResult {
     return { measured, mathDisplayRender: render };
   }
 
-  const measured = cache
+  // Kept breaks and later measures are not part of the cache key: such a
+  // measurement goes around the cache.
+  const measured = cache && !measureOptions?.keepBreaks && !measureOptions?.restWidths
     ? (useRich
         ? cachedMeasureRichBlock(contentBlock.spans, style.fontString, style.boldFontString!, style.italicFontString!, style.boldItalicFontString!, measureMaxWidth, style.lineHeightPx, measureOptions, cache)
         : cachedMeasureBlock(contentBlock.text, style.fontString, measureMaxWidth, style.lineHeightPx, measureOptions, cache))

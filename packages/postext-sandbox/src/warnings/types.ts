@@ -16,10 +16,12 @@ export type WarningKind =
   | 'headerFooterUnknownPlaceholder'
   | 'headerFooterMetadataMissing'
   | 'unknownDirective'
+  | 'malformedEmbed'
   | 'unclosedContainer'
   | 'unknownParagraphStyle'
   | 'unknownCalloutType'
   | 'unknownChipStyle'
+  | 'unknownHeadingStyle'
   | 'chipOverlap'
   | 'numberingInvalidFormat'
   | 'numberingInvalidStartAt'
@@ -29,6 +31,8 @@ export type WarningKind =
   | 'parityCascade'
   | 'alphaPdfOverflow'
   | 'calloutOverflow'
+  | 'headingDesignCut'
+  | 'sideColumnPercentClamped'
   | 'designCyclicAnchor'
   | 'designDanglingAnchor'
   | 'designTextClipAlwaysTruncates'
@@ -38,8 +42,15 @@ export type WarningKind =
   | 'duplicateResourceId'
   | 'danglingTypeRef'
   | 'bitmapTooSmall'
+  | 'unknownTableStyle'
+  | 'raggedTableGrid'
+  | 'missingImage'
   | 'storageUnavailable'
-  | 'chapterFrontmatterIgnored';
+  | 'chapterFrontmatterIgnored'
+  | 'fontFamilyStack'
+  | 'unknownNumberFormat'
+  | 'unknownConfigKey'
+  | 'unsupportedHyphenationLocale';
 
 export type WarningPayload =
   | { kind: 'missingFont'; family: string }
@@ -72,6 +83,12 @@ export type WarningPayload =
       kind: 'headerFooterUnknownPlaceholder';
       slot: WarningSlotKind;
       level?: number;
+      /** Set when the slot belongs to a heading style: its design
+       *  (`slot: 'heading'`) or its section's running heads. */
+      styleId?: string;
+      /** Set for a part slot other than the opener: the blank verso after
+       *  a part page, or the part rows of the contents. */
+      configPath?: 'parts.versoDesign' | 'toc.parts.design';
       elementIndex: number;
       name: string;
     }
@@ -79,10 +96,15 @@ export type WarningPayload =
       kind: 'headerFooterMetadataMissing';
       slot: WarningSlotKind;
       level?: number;
+      styleId?: string;
+      configPath?: 'parts.versoDesign' | 'toc.parts.design';
       elementIndex: number;
       name: string;
     }
   | { kind: 'unknownDirective'; name: string }
+  /** A `::name` line that is not a well-formed embed on its own (after a
+   *  blank line, `::resource{id="…"}`): it prints as text. */
+  | { kind: 'malformedEmbed'; name: string }
   /** A `:::name` container fence was still open at the end of the document;
    *  the parser auto-closed it. Points at the opening fence. */
   | { kind: 'unclosedContainer'; name: string }
@@ -93,8 +115,12 @@ export type WarningPayload =
    *  `config.calloutStyles`. */
   | { kind: 'unknownCalloutType'; type: string }
   /** A `:chip[…]{style="…"}` names a style that is not in
-   *  `config.chipStyles`; the chip takes the first style. */
-  | { kind: 'unknownChipStyle'; style: string }
+   *  `config.chipStyles`; the chip takes the first style. `inResource`
+   *  names the resource whose caption, note or cell holds the chip. */
+  | { kind: 'unknownChipStyle'; style: string; inResource?: string }
+  /** A heading's `{style="…"}` names no heading style; the heading keeps
+   *  its level's settings. */
+  | { kind: 'unknownHeadingStyle'; style: string; level: number }
   /** Chips of this style are taller than the line pitch (by `overlapPt`),
    *  so chips on consecutive lines touch. */
   | { kind: 'chipOverlap'; style: string; overlapPt: number }
@@ -106,16 +132,32 @@ export type WarningPayload =
   | { kind: 'parityCascade'; runLength: number }
   | { kind: 'alphaPdfOverflow' }
   | { kind: 'calloutOverflow'; page: number; overflowMm: number }
+  /** A heading design taller than its page can hold: text of the design
+   *  laid out past the foot of the page (an opener) or of its column (an
+   *  in-column design, clipped there by canvas and PDF), by `overflowMm`.
+   *  The heading claims the rest of its page or column (the text after it
+   *  starts on the next one), but that part of the design is cut off. */
+  | { kind: 'headingDesignCut'; level: number; page: number; overflowMm: number }
+  /** A one-and-a-half layout's side column that leaves a column with no
+   *  width (`collectConfigWarnings`): `path` names the setting, `used`
+   *  the percentage the engine cuts the columns at instead. */
+  | { kind: 'sideColumnPercentClamped'; path: string; value: string; used: string }
   | {
       kind: 'designCyclicAnchor';
       slot: WarningSlotKind;
       level?: number;
+      /** Set when the slot belongs to a heading style, or is a part slot
+       *  other than the opener (see `headerFooterUnknownPlaceholder`). */
+      styleId?: string;
+      configPath?: 'parts.versoDesign' | 'toc.parts.design';
       elementId: string;
     }
   | {
       kind: 'designDanglingAnchor';
       slot: WarningSlotKind;
       level?: number;
+      styleId?: string;
+      configPath?: 'parts.versoDesign' | 'toc.parts.design';
       elementId: string;
       referencedId: string;
     }
@@ -127,10 +169,11 @@ export type WarningPayload =
     }
   | { kind: 'headingSpanWithoutBreak'; level: number }
   | { kind: 'headingAdvancedWithoutTitleText'; level: number }
-  /** A `::resource{id=…}` block or `:ref{id=…}` inline reference points at a
-   *  resource id that does not exist in the resources list. `usage` records
-   *  whether it came from an embed block or an inline reference. */
-  | { kind: 'unknownResourceId'; resourceId: string; usage: 'embed' | 'ref' }
+  /** A `::resource{id=…}` block, a `:ref{id=…}` inline reference or a table
+   *  cell's image points at a resource id that does not exist in the
+   *  resources list. `usage` records which; `inResource` names the resource
+   *  whose caption, note or cell holds the reference. */
+  | { kind: 'unknownResourceId'; resourceId: string; usage: 'embed' | 'ref' | 'cellImage'; inResource?: string }
   /** Two or more resources share the same id. Only one of them resolves at
    *  render time; the warning names the colliding id and how many share it. */
   | { kind: 'duplicateResourceId'; resourceId: string; count: number }
@@ -145,12 +188,38 @@ export type WarningPayload =
       renderedWidth: number;
       bitmapWidth: number;
     }
+  /** A table resource's `table.styleId` names no table style; the table is
+   *  set in the document's table style. */
+  | { kind: 'unknownTableStyle'; resourceId: string; styleId: string }
+  /** A table's grid is not rectangular once its merges are counted (a cell
+   *  a merge covers was left out instead of kept with `hiddenBy`, or a row
+   *  ends short): the cells after it shift. Locates the first issue. */
+  | { kind: 'raggedTableGrid'; resourceId: string; reason: 'spanOverlap' | 'missingCells'; row: number; col: number; count: number }
+  /** An image the document shows has no payload the previews can read (the
+   *  file is missing from storage or does not decode): it is painted as a
+   *  placeholder. */
+  | { kind: 'missingImage'; resourceId: string; fileId: string }
   /** IndexedDB is unavailable (private browsing / storage disabled), so
    *  uploaded bitmaps and SVGs cannot be persisted or resolved. */
   | { kind: 'storageUnavailable' }
   /** A chapter other than the first starts with a front-matter block; only
    *  the first chapter's front matter is the book's. */
-  | { kind: 'chapterFrontmatterIgnored'; chapterTitle: string };
+  | { kind: 'chapterFrontmatterIgnored'; chapterTitle: string }
+  /** A font-family field of the config holds a CSS font stack; the engine
+   *  sets the text in its first family (`used`). `path` locates the field
+   *  (`bodyText.fontFamily`). */
+  | { kind: 'fontFamilyStack'; path: string; value: string; used: string }
+  /** A list `numberFormat`, page-numbering `format` or resource-type
+   *  `counterFormat` the engine does not know; it numbers in decimal
+   *  (`used` is the decimal spelling of that field). */
+  | { kind: 'unknownNumberFormat'; path: string; value: string; used: string }
+  /** A key the heading settings do not have (`headings`, its `balancing`
+   *  and `levels`, `headingStyles`): the engine ignores it. `value` is the
+   *  key; `suggestion` names the setting it is closest to, when one is. */
+  | { kind: 'unknownConfigKey'; path: string; value: string; used: string; suggestion?: string }
+  /** The document's language (its hyphenation locale, else `locale`) has
+   *  no bundled hyphenation patterns: the engine hyphenates it with en-us. */
+  | { kind: 'unsupportedHyphenationLocale'; locale: string };
 
 export interface Warning {
   id: string;

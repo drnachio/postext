@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import type { PostextConfig } from 'postext';
+import type { DesignElement, PostextConfig } from 'postext';
 import { buildHtmlConfigOverride, partTitlesOf } from './configOverride';
 
 // No canvas under node: every glyph measures 10px.
@@ -157,6 +157,42 @@ describe('buildHtmlConfigOverride', () => {
     const k = (852 * 0.95) / px144(225);
     expect(design.minHeight!.value).toBeCloseTo(852 * 0.95, 5);
     expect((design.slot.elements[1]!.placement.size!.width as { value: number }).value).toBeCloseTo(122 * k, 5);
+  });
+
+  it('scales type once: lengths relative to the type size keep their value', () => {
+    const pt = (value: number) => ({ value, unit: 'pt' as const });
+    const em = (value: number) => ({ value, unit: 'em' as const });
+    const text = (id: string, extra: Record<string, unknown>) => ({
+      kind: 'text' as const, id, content: '{titleText}', fontSize: pt(20), overflow: 'wrap' as const,
+      placement: { anchor: { to: 'page' as const, edge: 'top-left' as const }, offset: { x: mm(15), y: mm(90) }, size: { width: mm(120), height: 'auto' as const } },
+      ...extra,
+    });
+    const cover = coverStyle.advancedDesign!;
+    const style: typeof coverStyle = {
+      ...coverStyle,
+      advancedDesign: {
+        ...cover,
+        enabled: true,
+        slot: {
+          elements: [
+            ...cover.slot!.elements,
+            text('em', { lineHeight: em(1.3), letterSpacing: em(0.05), stroke: { width: { value: 0.02, unit: 'rem' as const } } }),
+            text('abs', { lineHeight: pt(24) }),
+          ] as DesignElement[],
+        },
+      },
+    };
+    const out = buildHtmlConfigOverride({ ...withCover, headingStyles: [style] }, { ...opts, columnMode: 'single', layoutType: 'single', pageWidthPx: 800 });
+    const k = 800 / px144(150);
+    const [, , relative, absolute] = out.headingStyles![0]!.advancedDesign!.slot.elements as unknown as Record<string, { value: number; unit: string }>[];
+    // The type size shrinks with the design ...
+    expect(relative!.fontSize!.value).toBeCloseTo(20 * k, 5);
+    // ... and what is set in em / rem follows it without shrinking again.
+    expect(relative!.lineHeight).toEqual(em(1.3));
+    expect(relative!.letterSpacing).toEqual(em(0.05));
+    expect((relative!.stroke as unknown as { width: unknown }).width).toEqual({ value: 0.02, unit: 'rem' });
+    // An absolute leading shrinks like the type.
+    expect(absolute!.lineHeight).toEqual({ value: 24 * k, unit: 'pt' });
   });
 
   const photoOpener: PostextConfig = {

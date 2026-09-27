@@ -1,0 +1,97 @@
+---
+title: "Apertura de capítulo sobre banda a sangre"
+summary: "Apertura advancedDesign del título de nivel 1: banda a sangre con el número de capítulo sobre su filete, y antetítulo y entradilla tomados de sus atributos."
+description: "Apertura de capítulo de manual en Postext: banda a sangre, número de 168 pt, antetítulo y entradilla del propio título y un estilo que recolorea el capítulo 4."
+question: "¿Cómo hago una apertura de capítulo con banda de color a sangre, un número grande y el título en dos líneas?"
+aliases: ["apertura de capítulo", "banda de color", "número de capítulo grande", "número de capítulo", "entradilla", "antetítulo", "libro de texto", "colores por capítulo", "uñero", "pestaña"]
+pageNotes: { "1": "Una banda terracota ocupa la parte alta de la página con el antetítulo «Capítulo 3 · Tectónica de placas», el título «La corteza inquieta» en dos líneas, una entradilla en cursiva y un 3 blanco apoyado en el filete oscuro de la banda; al pie de la página, un corte de una placa que se hunde.", "3": "El capítulo 4, «Fuego desde abajo», se abre con el mismo diseño en verde azulado.", "4": "El capítulo 4 se cierra con las preguntas de repaso, el colofón y, a lo ancho del pie de la página, un corte en verde azulado de un volcán en escudo y un estratovolcán." }
+---
+
+## Lo que vas a componer
+
+Las aperturas de capítulo de *La Tierra en movimiento*, un manual de introducción a la geología en página de 210 × 280 mm. El capítulo 3 se abre bajo una banda terracota a sangre por arriba. En ella van un antetítulo espaciado, el título partido donde quiso el autor, una entradilla en cursiva y un número de 168 puntos apoyado en el filete oscuro de la banda, junto al borde exterior. Debajo arrancan dos columnas justificadas, y el corte de una placa que se hunde ocupa el pie de la página. El capítulo 4 repite el diseño en verde azulado, incluidos el uñero, los números de sección, las remisiones y la etiqueta de su figura. El diseño se define una vez, en el título de nivel 1. Cada capítulo pone como atributos en su línea de título el tema del antetítulo, la entradilla y, si cambia de color, un estilo.
+
+## Elaboración
+
+### 1 · Cuelga la banda y el número de la página
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. La banda y su filete cuelgan de la esquina superior izquierda del sangrado. Como toda caja o filete sin anchura propia, se estiran hasta el otro borde de ese marco, así que llegan al corte, y al sangrado en cuanto `BLEED` pasa de 0. El número cuelga de la esquina superior derecha de la página: `y: BAND - 0.8 * NUMERAL * PT` apoya su línea de base en el filete, y `BEARING` desplaza su caja 2 mm hacia el borde de la página para compensar el margen lateral de la cifra, de modo que la tinta queda más o menos a ras del texto. El antetítulo cuelga del contenedor. El título cuelga debajo del antetítulo y la entradilla debajo del título, con anclajes `below` y `overflow: 'wrap'`, así que un título más largo empuja la entradilla hacia abajo. La entradilla es un elemento de texto que toma su contenido del atributo `lead` del título; una línea de autor sería otro más, `{attr.author}`, encadenado del mismo modo. `minHeight: BAND - TOP + AIR` fija dónde empieza el texto. La caja del número baja 0,2 veces su cuerpo (11,9 mm) por debajo del filete, y una apertura reserva sitio hasta su elemento más bajo, así que `AIR` tiene que medir al menos 11,9 mm; con menos, sería la caja del número la que marcara dónde empieza el texto.
+
+### 2 · Dale la página al título de capítulo
+
+<Excerpt region="levels" />
+
+`span: 'page'` abre cada capítulo en una página nueva y extiende el título de primer nivel sobre las dos columnas; luego lo dibuja `advancedDesign`, así que el texto del título queda oculto y el cuerpo empieza bajo la altura reservada. Por sí solo, `span` toma la página siguiente, sea par o impar, y cualquier objeto `headings` desactiva el salto a página impar que el nivel 1 trae por defecto. Por eso el salto se vuelve a declarar con `parity: 'odd'`, que lleva cada apertura a una página impar, donde el borde derecho al que se ancla el número es el exterior. En el nivel 2, `numberingTemplate: '{1}.{2}'` numera las secciones 3.1, 3.2… en el color de la banda; un nivel 3 con `'{1}.{2}.{3}'` seguiría con 3.1.1.
+
+### 3 · Nombra una sola vez el color del capítulo
+
+<Excerpt region="palette" />
+
+Cada color de la configuración enlaza con una de estas entradas. Los valores por defecto del motor enlazan con `main-color`, así que, al apuntar esa entrada al color de la banda, cambian también los que la configuración no fija. El título del capítulo 4, `# Fuego \\ desde abajo {style="teal" topic="Volcanes" lead="…"}`, elige el estilo, que cambia `band` hasta el siguiente título de nivel 1. Las ranuras de diseño siguen el cambio a través de su enlace con la paleta, y se repintan los colores de texto iguales al `band` de base, de modo que en <PageRef page={3}>las páginas 43 y 44</PageRef> se vuelven verde azulado el uñero, los números de sección y de lista, las remisiones, la etiqueta «Figura 4.1» y el folio al pie. La misma línea rellena `{attr.topic}` y `{attr.lead}`, y su `\\` parte `{titleText}` donde quiere el autor ([atributos de encabezado](/es/docs/document-format#atributos-de-encabezado), [saltos de línea en los títulos](/es/docs/document-format#saltos-de-línea-en-los-títulos)).
+
+### 4 · Deja que la primera cita coloque cada figura
+
+<Excerpt region="figure" />
+
+Un `:ref` numera su figura y la coloca en el primer hueco libre a partir del párrafo que la cita. La figura 3.1 es `auto`. Se cita en la apertura cuando las dos columnas aún tienen sitio, así que ocupa el pie de esa página; como flotante `top` habría abierto la página 42, porque un flotante nunca sube por encima de su referencia. La figura 4.1 se cita en la parte baja de la segunda columna de la página 43, donde ya no cabe una banda a todo el ancho, y `bottom` la manda a la página 44. Es la última página del capítulo, y en una última página el motor sube los flotantes del pie hasta dejarlos justo debajo de las últimas líneas de texto, sin hueco encima.
+
+### 5 · Cabeceras, un uñero y un folio al pie
+
+<Excerpt region="heads" />
+
+Cada elemento de la cabecera cuelga de una esquina superior de la página y se filtra por `parity`, de modo que el folio y el uñero quedan siempre en el borde exterior. La caja del uñero cuelga de la esquina del sangrado y se ensancha con `BLEED`, para que siga sangrando después del corte. `pages: 'body'` aparta todos estos elementos de las aperturas, que llevan en su lugar un folio al pie definido en `footer`. La página par lleva el título del capítulo, `{chapterTitle}`, en una sola línea, porque la `\\` solo parte el título en la apertura. Los libros de texto suelen llevar la sección en la impar. Postext 1.4.1 no tiene marcador para la sección, así que la cabecera impar lleva el título del libro, `{title}`; en estas cuatro páginas no llega a verse, porque las dos impares son aperturas.
+
+### 6 · Empieza el libro en el capítulo 3
+
+<Excerpt region="build" />
+
+Estas páginas son los capítulos 3 y 4 de un libro más largo, así que `buildDocument` recibe una `continuation` con los contadores tal como los dejaron los capítulos 1 y 2. Con `h1: 2` en sus `headings`, el siguiente `#` es el capítulo 3: `{chapterNumber}` imprime 3, las secciones se numeran desde 3.1 y la primera figura pasa a ser la 3.1. `pageNumbering.startAt: 41` hace que los folios empiecen en el 41. La primera página sigue siendo impar sea cual sea su folio, porque la paridad se cuenta sobre la página física y `pageIndexOffset` se queda en 0; el primer folio, 41, es impar para que concuerde con ella.
+
+## Variantes
+
+### Haz la banda más alta
+
+`BAND` fija la altura de la banda, la posición del número y el espacio reservado sobre el texto. Con una banda más alta, parte del texto pasa a la página siguiente, así que tendrás que ajustar cada capítulo (mira el último error frecuente) o dejar que los capítulos vayan seguidos.
+
+```diff
+-const BAND = 100; // mm from the trim to the foot of the band
++const BAND = 128; // mm from the trim to the foot of the band
+```
+
+### Imprime con sangrado
+
+Con un sangrado de 3 mm, la banda, su filete y el uñero rebasan el corte en 3 mm, el número sigue apoyado en el filete y `page.cutLines` se activa con el mismo valor.
+
+```diff
+-const BLEED = 0; // mm: 0 on screen; about 3 for print, which also switches on page.cutLines
++const BLEED = 3; // mm: 0 on screen; about 3 for print, which also switches on page.cutLines
+```
+
+### Añade un color para otro capítulo
+
+Cada color de capítulo es una entrada más en la paleta y un estilo más; escribe `{style="slate"}` en el título de ese capítulo.
+
+```diff
+   band2: '#2e6f73', // the second chapter colour, a teal; the sea in Figure 3.1
++  band3: '#3d4f6b', // a third chapter colour, a slate blue
+@@
+-const headingStyles = [{ id: 'teal', palette: { band: palette.band2 } }];
++const headingStyles = [{ id: 'teal', palette: { band: palette.band2 } },
++  { id: 'slate', palette: { band: palette.band3 } }];
+```
+
+### Deja que los capítulos vayan seguidos
+
+Con `'any'` cada capítulo empieza en la página siguiente. Tras un capítulo que acaba en impar, el siguiente empieza en la par, sin página en blanco delante, y su número queda junto al lomo, porque cuelga del borde derecho de la página. Estas páginas quedan igual, ya que el capítulo 3 acaba en una par.
+
+```diff
+-      { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
++      { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
+```
+
+## Errores frecuentes
+
+- La banda tiene una altura fija, mientras que el antetítulo, el título y la entradilla cuelgan del margen superior y crecen hacia abajo, así que una entradilla más larga o un título de tres líneas chocan con el filete. Limita las entradillas a unas cinco líneas, como en las dos ediciones, o calcula `BAND` a partir de la apertura más larga.
+- La fórmula de la `y` del número da por hecho `lineHeight: 1`. La línea de base de un texto de diseño está al 80 % de la altura de su caja de línea, y `0.8 * NUMERAL` solo mide esa distancia cuando la caja es tan alta como el cuerpo. Si cambias el interlineado o el anclaje, cambia también la fórmula. `BEARING` se ajusta a ojo, porque cada cifra tiene su propio margen lateral (aquí el 3 y el 4 terminan a 0,8 mm uno del otro).
+- La paleta de un estilo recolorea los elementos de diseño y el texto. Una imagen conserva los colores con los que se dibujó: la figura 4.1 es verde azulada porque el código la dibuja a partir de `band2`, y una figura terracota colocada en el capítulo 4 seguiría siendo terracota.
+- Con `parity: 'odd'`, un capítulo que se pasa unas líneas de su última página deja una página casi vacía y una par en blanco antes de la siguiente apertura, y postext 1.4.1 compone esa página con una columna más corta que su texto, así que se pierde la última línea del capítulo. Ajusta el texto, como hacen aquí las dos ediciones, y revisa la última página de cada capítulo siempre que cambien el texto o `BAND`.

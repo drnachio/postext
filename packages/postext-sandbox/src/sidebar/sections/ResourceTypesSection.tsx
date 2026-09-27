@@ -11,7 +11,6 @@ import type {
 } from 'postext';
 import {
   defaultResourceTypes,
-  formatNumeral,
   mergeCaptionStyle,
   resolveBodyTextConfig,
   resolveCaptionStyleConfig,
@@ -28,6 +27,7 @@ import { Button, ConfirmPopover, IconButton } from '../../ui';
 import { FieldRow } from '../../controls/FieldRow';
 import { SearchScope } from '../search/SearchScope';
 import { CaptionStyleFields } from './CaptionStyleFields';
+import { renderResourceTypePreview, resourceCounterFormat } from './resourceTypePreview';
 
 function newTypeId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -35,16 +35,6 @@ function newTypeId(): string {
   }
   return `restype-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
-
-/** Sample heading numbers used solely to render the live preview. */
-const PREVIEW_HEADING: Record<string, number> = {
-  h1: 1,
-  h2: 2,
-  h3: 3,
-  h4: 4,
-  h5: 5,
-  h6: 6,
-};
 
 function counterFormatOptions(labels: SandboxLabels): { value: ResourceCounterFormat; label: string }[] {
   return [
@@ -66,42 +56,6 @@ function resetOnOptions(labels: SandboxLabels): { value: ResourceCounterReset; l
     { value: 'h5', label: labels.resetOnH5 },
     { value: 'h6', label: labels.resetOnH6 },
   ];
-}
-
-function counterFormatToNumeralStyle(format: ResourceCounterFormat) {
-  switch (format) {
-    case 'decimal':
-      return 'decimal' as const;
-    case 'roman-lower':
-      return 'lower-roman' as const;
-    case 'roman-upper':
-      return 'upper-roman' as const;
-    case 'alpha-lower':
-      return 'lower-alpha' as const;
-    case 'alpha-upper':
-      return 'upper-alpha' as const;
-  }
-}
-
-/** Render a sample number for a type using a fixed sample counter (7) and the
- *  sample heading context above. Mirrors the runtime template syntax (`{n}`,
- *  `{h1}`..`{h6}`) but is intentionally lightweight for preview purposes. */
-function renderPreviewNumber(type: ResourceType): string {
-  const style = counterFormatToNumeralStyle(type.counterFormat);
-  return type.numberingTemplate.replace(/\{([^}]+)\}/g, (_match, body: string) => {
-    const key = body.trim();
-    if (key === 'n') return formatNumeral(7, style);
-    const h = PREVIEW_HEADING[key];
-    if (h !== undefined) return formatNumeral(h, 'decimal');
-    return _match;
-  });
-}
-
-/** Builds the full preview string, e.g. "Fig. 1.7" or "Figure 1.7". */
-function renderPreview(type: ResourceType): string {
-  const number = renderPreviewNumber(type);
-  const prefix = type.shortLabel || type.captionPrefix || type.name;
-  return [prefix, number].filter(Boolean).join(' ');
 }
 
 const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-1.5 py-1 text-xs';
@@ -314,7 +268,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
               </Field>
               <Field label={labels.resourceTypeCounterFormatLabel}>
                 <select
-                  value={type.counterFormat}
+                  value={resourceCounterFormat(type.counterFormat)}
                   onChange={(e) =>
                     updateType(type.id, { counterFormat: e.target.value as ResourceCounterFormat })
                   }
@@ -467,7 +421,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                 className="rounded px-1.5 py-0.5"
                 style={{ backgroundColor: 'var(--surface)', color: 'var(--foreground)' }}
               >
-                {renderPreview(type)}
+                {renderResourceTypePreview(type)}
               </span>
             </div>
           </div>

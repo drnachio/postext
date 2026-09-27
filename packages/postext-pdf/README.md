@@ -12,7 +12,7 @@
 npm install postext postext-pdf
 ```
 
-`postext` is a peer dependency. Or import both straight from a CDN:
+`postext` is a peer dependency. Each `postext-pdf` release needs the `postext` it was released with, or a later one of the same major (its peer range is `^` that version), so upgrade the two together. Or import both straight from a CDN:
 
 ```js
 import { buildDocument } from 'https://esm.sh/postext';
@@ -46,9 +46,9 @@ In the browser, load the web fonts (`document.fonts.load(...)`) before calling `
 
 ## API
 
-- `renderToPdf(doc | doc[], options)` — renders one document or a whole book (an array of chapters) to PDF bytes. Options: `fontProvider` (required), `resourceBytes` (images, SVGs and single-page PDF masters by file id), `outlines`, `accessible`, `colorSpace`, `pageNegative`, `onProgress`, `rasterizeSvg`.
+- `renderToPdf(doc | doc[], options)` — renders one document or a whole book (an array of chapters) to PDF bytes. Options: `fontProvider` (required; asked only for the faces the pages paint), `resourceBytes` (images, SVGs and single-page PDF masters by file id; an SVG figure's `svg.pdfFileId` master is asked for first), `outlines`, `accessible`, `colorSpace` (each one, when left out, from the first document's `config.pdfGeneration`, `colorSpace` only while its `forceColorSpace` is on; else bookmarks on, tagged, RGB), `pageNegative`, `onProgress`, `onWarning` (a face the provider rejects is set in another cut of its family — the nearest standard weight in CSS font-matching order, same style first, then the other style — and reported here, `console.warn` by default; the render fails only when the provider has no cut of the family at all), `rasterizeSvg`.
 - `decompressWoff2(bytes)` — WOFF2 → TTF/OTF, for font providers that fetch web fonts.
-- `postext-pdf/worker` — `createPdfWorker()` renders off the main thread; fonts and SVG rasters are still resolved on the caller's thread when the worker asks for them. `postext-pdf/worker/entry` is the worker script for bundlers that want to control the worker URL.
+- `postext-pdf/worker` — `createPdfWorker()` renders off the main thread; fonts and SVG rasters are still resolved on the caller's thread when the worker asks for them. `postext-pdf/worker/entry` is the worker script for bundlers that want to control the worker URL. From a CDN such as esm.sh, start the worker yourself from a same-origin blob that imports the entry — `createPdfWorker({ worker: new Worker(URL.createObjectURL(new Blob(["import 'https://esm.sh/postext-pdf/worker/entry';"], { type: 'text/javascript' })), { type: 'module' }) })` — because a page cannot start a worker script from another origin.
 - Helpers: `svgToVectorDrawing`, `sniffBytes`, `rasterizeSvgWithDom`.
 
 ## WOFF2 decoding and bundlers

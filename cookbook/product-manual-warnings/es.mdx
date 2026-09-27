@@ -1,0 +1,64 @@
+---
+title: "Manual de producto con avisos de seguridad"
+summary: "Manual de un hervidor en alemán: los recuadros WARNUNG y VORSICHT llevan el triángulo en una franja del color de aviso, y los pies dicen Abbildung y Tabelle."
+description: "Manual en alemán de un electrodoméstico, compuesto con Postext: avisos con triángulo en una franja de color, teclas en chips, dibujo de piezas y tabla partida."
+question: "¿Cómo hago recuadros de aviso con un icono sobre una franja de color, en un idioma que Postext no rotula?"
+aliases: ["aviso de seguridad", "recuadro de advertencia", "recuadro de precaución", "palabra de advertencia", "palabra de señal", "triángulo de peligro", "manual de instrucciones", "manual de usuario", "alemán", "Bedienungsanleitung", "WARNUNG", "VORSICHT", "tecla", "tabla de averías"]
+pageNotes: { "1": "La cubierta: Verra W1 en blanco sobre una pared verde azulado, encima de un hervidor blanco dibujado con trazo verde azulado que se apoya en el tercio inferior blanco de la página, con Bedienungsanleitung, una pestaña DE y la línea del modelo.", "2": "La sección 1, Sicherheitshinweise, bajo una pestaña verde azulado con un 1 blanco. Tres párrafos, el último con las palabras de advertencia en chips rojo, ámbar y verde azulado, y dos recuadros: WARNUNG · STROMSCHLAG, con un triángulo blanco sobre una franja roja dentro de un marco fino rojo, y VORSICHT · VERBRÜHUNGSGEFAHR, con un triángulo negro sobre una franja ámbar.", "3": "La sección 2: el hervidor de perfil con ocho líneas de referencia numeradas en verde azulado, Abbildung 1, y la Tabelle 1, una leyenda de cuatro filas cuyos números son chips redondos y cuya fila del panel de mandos muestra tres teclas perfiladas; después, dos párrafos breves y una lista de comprobación de tres casillas.", "4": "La sección 3: pasos con números grandes en verde azulado y teclas en chips perfilados, guiones anidados en dos niveles bajo el último paso, un recuadro HINWEIS verde azulado con esquinas redondeadas y un icono de información, y una lista de cuatro temperaturas.", "5": "La sección 4, Reinigung und Entkalken: dos párrafos, tres pasos para descalcificar con números grandes en verde azulado y un recuadro HINWEIS; después, la sección 5, Störungen beheben, cuyo párrafo cita la Tabelle 2.", "6": "La Tabelle 2, la tabla de averías: una fila de cabecera negra, cada avería en negrita en una celda que abarca todas sus causas y «Fortsetzung auf der nächsten Seite» bajo la última fila.", "7": "La Tabelle 2 continúa bajo su cabecera repetida y con «(Fortsetzung)» en el pie; después, Technische Daten en una tabla de cuatro columnas y Entsorgung con un colofón." }
+---
+
+## Lo que vas a componer
+
+Un manual de siete páginas para el Verra W1, un hervidor inventado, en alemán y en A5. En la página de seguridad, los dos niveles de peligro van en recuadros: a la izquierda baja una franja del color de aviso con el triángulo de advertencia, y un marco fino del mismo color cierra el recuadro, rojo en WARNUNG y ámbar en VORSICHT. HINWEIS, que avisa de daños en el aparato, cambia franja y triángulo por un fondo verde azulado de esquinas redondeadas. Antes de los recuadros, un párrafo presenta las tres palabras de advertencia en chips rellenos. En la página 3, un dibujo con líneas de referencia numeradas va sobre su leyenda, y en la 4 las teclas son chips perfilados junto a números de paso grandes. La tabla de averías ocupa las páginas 6 y 7. Los pies dicen Abbildung y Tabelle, y la tabla partida, Fortsetzung.
+
+## Elaboración
+
+### 1 · Una franja que lleva el triángulo
+
+El código es el de [la respuesta corta](#la-respuesta-corta), más arriba. `stripe` pinta la franja por el borde izquierdo. Cuando un recuadro lleva franja lateral, 1.4.1 centra el icono sobre ella en lugar de darle una columna propia ([estilos de aviso](/es/docs/configuration#estilos-de-aviso)), y `align: 'top'` alinea el borde superior del icono con el del título. El `border` del mismo color convierte la franja en el lado grueso de un marco; sin él, el texto del recuadro quedaría suelto en la página, al lado de una barra de color. `PAD_Y` está calculado para que el título, su separación y los rellenos superior e inferior sumen dos líneas de la rejilla de 12,8 pt. El cuerpo mantiene el interlineado de la rejilla, así que cada recuadro mide un número entero de líneas (10 el de WARNUNG, 8 el de VORSICHT), y `marginTop: pt(LEAD)` deja exactamente una línea entre los dos recuadros de la página 2. En VORSICHT, el ámbar se queda en la franja y el marco, y el título y las viñetas van en el color del texto: el ámbar sobre blanco da un contraste de 2,0:1, y la letra pequeña necesita 4,5:1. HINWEIS parte de la misma base (`...notice(…)`) y desactiva la franja y el marco, de modo que su icono de información ocupa una columna propia y `borderRadius` redondea un fondo liso.
+
+### 2 · Nombres alemanes para figuras y tablas
+
+<Excerpt region="types" />
+
+Con `locale: 'de'`, la separación silábica es la alemana, pero 1.4.1 solo trae en inglés y en español los nombres de los tipos de recurso y los avisos de continuación de una tabla partida. Sin estas líneas, los pies dirían Figure 2.1 y Table 5.1, y bajo la primera parte de la tabla partida se leería Continued. Un tipo de recurso escrito a mano tiene que dar todos sus campos, también los de la numeración, y de eso se encarga `counted`: `{n}` con `resetOn: 'never'` numera de corrido todo el manual (Abbildung 1, Tabelle 1 a 3) en lugar de volver a empezar en cada sección. Solo el tipo de tabla fija `captionStyle.position: 'above'`, así que las tablas llevan el pie encima de la cabecera y el dibujo lo mantiene debajo.
+
+### 3 · Teclas, palabras de advertencia y números de pieza como chips
+
+<Excerpt region="chips" />
+
+`taste` rodea con un filete el nombre de una tecla, en Red Hat Mono y sin relleno, como lo lleva impreso el botón. Los chips de las palabras de advertencia van rellenos del color de su recuadro, y el ámbar lleva la palabra en el color del texto, igual que el título de VORSICHT. `nr` da a los números de pieza un radio mayor que la mitad de su altura, así que salen redondos, como los círculos numerados del dibujo. El tamaño de los chips se da en em del texto que los rodea: una tecla mide 8,6 pt en el texto corrido y 7,5 pt en una celda de tabla ([estilos de chip](/es/docs/configuration#estilos-de-chip)).
+
+### 4 · Números de paso sobre la línea base
+
+<Excerpt region="steps" />
+
+Los pasos son una lista numerada con las cifras en Red Hat Display 800 a 15 pt, en verde azulado y sin separador. 1.4.1 centra el número de una lista en su primera línea en vez de apoyarlo en la línea base, así que una cifra de 15 pt junto a texto de 9,3 pt queda cerca de 1 pt por debajo de la línea. `numberVerticalOffset: pt(-1)`, un valor medido en la captura, sube su pie hasta la línea base. `itemSpacing` separa los pasos 5 pt para dejar sitio a las cifras grandes. Las viñetas anidadas bajo un paso empiezan a 6,5 mm, a la altura del texto del paso; son guiones verde azulado, y los del tercer nivel, grises ([listas ordenadas](/es/docs/configuration#listas-ordenadas)).
+
+### 5 · Números de sección en una pestaña invertida
+
+<Excerpt region="section" />
+
+Cada sección es un título de primer nivel dentro de la columna, dibujado con una ranura de elementos. La pestaña imprime `{number}` (lo rellena `numberingTemplate: '{1}'`) en blanco sobre un cuadrado verde azulado, y el título empieza 3 mm a su derecha. Número y título comparten cuerpo e interlineado, así que el mismo relleno superior los asienta en la misma línea base. La pestaña es un cuadrado de 22 pt, 3,6 pt menos que dos líneas de la rejilla de 12,8 pt, de modo que pestaña y título caben en dos líneas de rejilla. La cubierta también es un título de primer nivel, con un estilo de título sin número, así que Sicherheitshinweise es la sección 1.
+
+### 6 · Una tabla de averías con celdas combinadas que se parte
+
+<Excerpt region="tables" />
+
+Cada tabla es un TSV en un archivo de contenido propio. En los datos de averías, una línea con la primera celda vacía pertenece a la avería anterior; `mergeCells` une esas primeras celdas en una sola celda alta y marca como ocultas las que cubre. `parseTSV` no fija ninguna fila de cabecera, así que la declara `headerRowCount: 1`, y esa es la fila que se repite en la página 7. La tabla es más alta que una página, y en 1.4.1 solo se parte una tabla flotante; por eso `position: 'top'` la convierte en flotante. El corte cae entre dos filas y nunca atraviesa una celda combinada, así que cada avería queda en la misma página que sus causas ([tablas más altas que la página](/es/docs/configuration#tablas-más-altas-que-la-página)). Se cita en la página 5 y encabeza la 6, la primera página tras la cita que puede ocupar un flotante `top`. `fold` coloca las dos mitades de una lista una al lado de la otra, en la leyenda y en los datos técnicos, y la leyenda centra sus chips de número con `align: 'center'`.
+
+## Variantes
+
+### Numera figuras y tablas por sección
+
+Con el número de sección en la plantilla y un reinicio en cada sección, el dibujo pasa a ser Abbildung 2.1 y la tabla de averías, Tabelle 5.1.
+
+```diff
+-const counted = { numberingTemplate: '{n}', resetOn: 'never', counterFormat: 'decimal' }; // 1, 2…
++const counted = { numberingTemplate: '{h1}.{n}', resetOn: 'h1', counterFormat: 'decimal' };
+```
+
+## Errores frecuentes
+
+- En 1.4.1, el elemento que sigue a una lista anidada toma el `itemSpacing` de la lista anidada, no el de su propia lista. Con 5 pt entre pasos y ninguno entre viñetas, un paso que siguiera a una lista de viñetas quedaría 5 pt más cerca que los demás; por eso aquí solo el último paso lleva viñetas.
+- El equilibrado de columnas baja un recuadro que cierra una página hasta la última línea de la rejilla, así que el espacio que sobra en la página se abre encima de él ([equilibrado de columnas](/es/docs/configuration#equilibrado-de-columnas)). El texto de la página 2 está ajustado para llenar la columna sin que sobre ninguna línea. Si borras una viñeta de VORSICHT, el recuadro sigue acabando al pie y la separación entre los dos recuadros pasa de 4,5 a 13,6 mm; con `headings: { balancing: { enabled: false } }` el recuadro se queda una línea por debajo de WARNUNG y la página termina dos líneas antes del pie.

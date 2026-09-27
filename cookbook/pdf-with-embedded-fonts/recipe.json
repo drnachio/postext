@@ -1,0 +1,159 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 25,
+  "status": "published",
+  "chapter": "output",
+  "order": 40,
+  "level": 2,
+  "genres": ["ephemera"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["pdf-fonts", "pdf-export", "pdf-outlines"],
+    "also": [
+      "font-loading",
+      "body-typography",
+      "frontmatter",
+      "covers",
+      "opener-design",
+      "heading-styles",
+      "heading-attributes",
+      "section-running-heads",
+      "title-line-breaks",
+      "running-heads",
+      "design-images",
+      "page-background",
+      "resource-types",
+      "inline-embeds",
+      "table-style",
+      "paragraph-styles",
+      "canvas-rendering"
+    ]
+  },
+  "answers": ["Q02", "Q03"],
+  "gotchas": [
+    "fonts-first",
+    "pdf-provider-all-styles",
+    "faked-font-styles",
+    "latin-subset",
+    "quote-frontmatter",
+    "headings-drop-h1-break",
+    "style-inherits-break",
+    "palette-skips-designs",
+    "design-lineheight-multiple",
+    "overflow-ellipsis-default",
+    "config-cache-identity"
+  ],
+  "workarounds": [
+    {
+      "followup": "EF-20",
+      "package": "postext-pdf",
+      "note": "renderToPdf asks for the bold and italic of every family, set or not: FONTS lists every one Crimson Text and Fraunces can be asked for, and the provider answers Tenor Sans's missing styles with its one face and logs each stand-in"
+    },
+    {
+      "followup": "EF-11",
+      "package": "postext",
+      "note": "every frontmatter value is quoted: the cover prints {author} and {subtitle}, and the PDF takes its title and author from them"
+    },
+    {
+      "followup": "EF-05",
+      "package": "postext",
+      "note": "level 1's breakBefore (parity 'any') is restated because a headings object drops it"
+    },
+    {
+      "followup": "EF-60",
+      "package": "postext",
+      "note": "the performers' heading style sets breakBefore: { enabled: false }, or it would inherit level 1's page break"
+    },
+    {
+      "followup": "EF-71",
+      "package": "postext",
+      "note": "col() writes the hex beside each paletteId: 1.4.1 paints the cover, opener and footer elements from the hex (gotcha palette-skips-designs)"
+    },
+    {
+      "followup": "EF-56",
+      "package": "postext",
+      "note": "the design titles take lineHeight as a multiple (1, 0.95, 1.25), never a Dimension"
+    }
+  ],
+  "related": [
+    "brand-fonts-identity-manual",
+    "bundle-round-trip",
+    "book-from-chapters",
+    "front-matter-roman-to-arabic"
+  ],
+  "engine": { "postext": "1.4.1", "postextPdf": "1.4.1" },
+  "kit": ["core", "fonts", "viewer", "pdf", "images"],
+  "sample": {
+    "locales": ["en"]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "crop",
+    "focus": { "page": 1, "x": 0, "y": 0.075, "w": 1, "h": 0.5286 },
+    "expect": {
+      "pages": [4, 4]
+    }
+  },
+  "downloads": { "pdf": true },
+  "credits": {
+    "authors": [
+      { "name": "Ignacio Ferro", "github": "drnachio" }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "“The Tide Rises, the Tide Falls”, with its indents, as printed in The Complete Poetical Works of Henry Wadsworth Longfellow",
+          "es": "«The Tide Rises, the Tide Falls», con sus sangrías, tal como se imprimió en The Complete Poetical Works of Henry Wadsworth Longfellow"
+        },
+        "who": "Henry Wadsworth Longfellow",
+        "source": "https://www.gutenberg.org/ebooks/1365",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "“Requiem”, with the indents and italics of the first edition of Underwoods (1887)",
+          "es": "«Requiem», con las sangrías y las cursivas de la primera edición de Underwoods (1887)"
+        },
+        "who": "Robert Louis Stevenson",
+        "source": "https://www.gutenberg.org/ebooks/438",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "“Crossing the Bar”, with its indented short lines, from the first edition of Demeter and Other Poems (1889), in the proofread Wikisource transcription",
+          "es": "«Crossing the Bar», con sus versos cortos sangrados, de la primera edición de Demeter and Other Poems (1889), en la transcripción revisada de Wikisource"
+        },
+        "who": "Alfred Tennyson",
+        "source": "https://en.wikisource.org/wiki/Demeter_and_other_poems/Crossing_the_Bar",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The programme, the notes on the music, the performers and the colophon",
+          "es": "El programa, las notas sobre la música, los intérpretes y el colofón"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "The seigaiha waves on the cover, drawn in code in the page’s palette",
+          "es": "Las olas seigaiha de la cubierta, dibujadas en código con la paleta de la página"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "fonts": [
+      { "family": "Crimson Text", "license": "OFL-1.1" },
+      { "family": "Fraunces", "license": "OFL-1.1" },
+      { "family": "Tenor Sans", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-25",
+  "updated": "2026-09-25"
+}

@@ -1,0 +1,188 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 27,
+  "status": "published",
+  "chapter": "page",
+  "order": 30,
+  "level": 3,
+  "genres": [
+    "newsletter"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "span-boxes",
+      "callout-columns",
+      "floated-callouts"
+    ],
+    "also": [
+      "opener-design",
+      "opener-band",
+      "heading-styles",
+      "heading-attributes",
+      "design-anchoring",
+      "design-elements",
+      "running-heads",
+      "column-rule",
+      "callout-styles",
+      "chips",
+      "paragraph-styles",
+      "float-placement",
+      "inline-embeds",
+      "credit-notes",
+      "table-styles",
+      "resource-types",
+      "cell-images"
+    ]
+  },
+  "answers": [
+    "Q78",
+    "Q59",
+    "Q64",
+    "Q27"
+  ],
+  "gaps": [
+    "three-columns",
+    "text-wrap"
+  ],
+  "gotchas": [
+    "callout-columns",
+    "column-rule-through-opener",
+    "box-embed-no-gap",
+    "top-float-next-page",
+    "bitmap-print-size",
+    "headings-drop-h1-break",
+    "palette-skips-designs",
+    "design-lineheight-multiple",
+    "overflow-ellipsis-default",
+    "runt-tracking-unpainted",
+    "fonts-first"
+  ],
+  "explainsWarnings": [],
+  "related": [
+    "boxes-split-float-pin",
+    "magazine-cover-and-contents",
+    "research-poster",
+    "annual-report-flush-columns"
+  ],
+  "workarounds": [
+    {
+      "followup": "EF-101",
+      "package": "postext",
+      "note": "each opener design starts with an empty box a whole number of grid lines deep (7 for the nameplate, 2 for the section flag) and hangs its rules from the box's foot. The opener then ends on a grid line and leaves no sliver of column beside it for 1.4.1 to rule down through (gotcha column-rule-through-opener). With the nameplate box 6.6 lines deep, the rule crosses the nameplate and the dateline"
+    },
+    {
+      "followup": "EF-117",
+      "package": "postext",
+      "note": "a :::space{lines=0.5} sits between the deck and the ::resource line in the front-page banner box, because a picture set inline inside a box gets no space above it in 1.4.1 (gotcha box-embed-no-gap)"
+    },
+    {
+      "followup": "EF-71",
+      "package": "postext",
+      "note": "col() writes each colour's hex beside its paletteId, because 1.4.1 does not apply colorPalette to design elements (gotcha palette-skips-designs). bodyText.boldColor is set to the ink too: referenceColor falls back to it and never gets the palette, and each callout body copies it before the palette is applied. Without it the two :ref labels on page 2 and the bold lead-ins of the four briefs print in #295AA3 blue"
+    },
+    {
+      "followup": "EF-05",
+      "package": "postext",
+      "note": "the H1 breakBefore is restated because any headings object drops it (gotcha headings-drop-h1-break). The present text fills page 1, so Town & Valley opens page 2 without it (same layout); the restatement guards edited copy"
+    },
+    {
+      "followup": "EF-56",
+      "package": "postext",
+      "note": "design text lineHeight is a multiple of the size (1 for the nameplate, 1.25 for the ears): a pt() value silently drops an opener's reserved height in 1.4.1 (gotcha design-lineheight-multiple)"
+    },
+    {
+      "followup": "EF-111",
+      "package": "postext",
+      "note": "bodyText.maxRuntTracking is 0, so a runt fix never gives a paragraph the negative tracking 1.4.1 measures but does not paint (gotcha runt-tracking-unpainted). The present text triggers no runt fix; the setting guards edited copy"
+    },
+    {
+      "followup": "EF-130",
+      "package": "postext",
+      "note": "bodyText.boldColor is set to the ink, not left to main-color: each callout style copies bodyText.boldColor (or the default linked to main-color, #295AA3) into its body before the palette is applied, and the palette never recolours it, so the bold lead-ins of the four briefs would print blue"
+    }
+  ],
+  "engine": {
+    "postext": "1.4.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "crop",
+    "focus": {
+      "page": 1,
+      "x": 0,
+      "y": 0,
+      "w": 1,
+      "h": 0.5625
+    },
+    "expect": {
+      "pages": [
+        2,
+        2
+      ]
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [
+      {
+        "what": {
+          "en": "Wind turbines on a snowy ridge (the front-page photograph, cropped to a band)",
+          "es": "Aerogeneradores en una loma nevada (la foto de portada, recortada en banda)"
+        },
+        "who": "Jason Blackeye",
+        "source": "https://commons.wikimedia.org/wiki/File:Wind_Turbines_(Unsplash).jpg",
+        "license": "CC0-1.0",
+        "file": "ridge-2400.jpg"
+      },
+      {
+        "what": {
+          "en": "The bridge drawing and the bars in the ward table, drawn in code in the page's palette",
+          "es": "El dibujo del puente y las barras de la tabla de barrios, dibujados en código con la paleta de la página"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Grenze Gotisch",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "PT Serif",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Libre Franklin",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-09-25",
+  "updated": "2026-09-26"
+}

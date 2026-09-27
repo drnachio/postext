@@ -10,10 +10,12 @@ export function createDefaultConfig(locale = 'en'): PostextConfig {
 }
 
 /** Ensure `config.resourceTypes` is populated, falling back to the built-in
- *  defaults (localised to `locale`) when unset (e.g. configs persisted before
- *  the feature existed). Returns a new config object only when a change is
- *  needed. */
+ *  defaults when unset (e.g. configs persisted before the feature existed),
+ *  localised like the engine localises them: to the document's language
+ *  (`locale`, else its hyphenation locale), else to `locale`. Returns a new
+ *  config object only when a change is needed. */
 export function withDefaultResourceTypes(config: PostextConfig, locale = 'en'): PostextConfig {
   if (config.resourceTypes && config.resourceTypes.length > 0) return config;
-  return { ...config, resourceTypes: defaultResourceTypes(locale) };
+  const language = config.locale ?? config.bodyText?.hyphenation?.locale ?? locale;
+  return { ...config, resourceTypes: defaultResourceTypes(language) };
 }
