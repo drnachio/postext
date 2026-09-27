@@ -118,6 +118,10 @@
         "bytes": 94940,
         "pages": 4
       },
+      "sandbox": {
+        "file": "pdf-with-embedded-fonts.postext",
+        "bytes": 30236
+      },
       "detected": {
         "apis": [
           "buildDocument",

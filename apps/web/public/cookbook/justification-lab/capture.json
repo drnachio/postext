@@ -98,6 +98,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "justification-lab.postext",
+        "bytes": 34507
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -410,6 +414,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "justification-lab.postext",
+        "bytes": 35149
       },
       "detected": {
         "apis": [

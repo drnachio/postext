@@ -63,9 +63,48 @@ const RECORDER = `// The capture's record of what the pen did with the engine.
 export const cb = (window.__cb ??= {
   builds: [], images: [], engines: {}, pending: 0, lastBuildAt: 0, importedAt: 0,
   pdf: null, pdfError: null, pdfMs: 0, fontFailures: [],
+  // For the Sandbox bundle (probe sandboxBundle): what each registered
+  // fileId was drawn from, the files handed to createBundle, the blob each
+  // ImageBitmap was decoded from and the faces built from bytes.
+  imageSources: new Map(), bundleFiles: new Map(), bitmapBlobs: new WeakMap(), faces: [],
 });
 cb.importedAt ||= performance.now();
 const known = (cb.known ??= new WeakSet());
+
+// A photo reaches registerResourceImage as an ImageBitmap: remember the
+// blob it came from, so the bundle carries the original bytes.
+if (typeof window.createImageBitmap === 'function' && !window.createImageBitmap.__cb) {
+  const decode = window.createImageBitmap.bind(window);
+  const wrapped = function (source, ...rest) {
+    return decode(source, ...rest).then((bitmap) => {
+      if (typeof Blob !== 'undefined' && source instanceof Blob) cb.bitmapBlobs.set(bitmap, source);
+      return bitmap;
+    });
+  };
+  wrapped.__cb = true;
+  window.createImageBitmap = wrapped;
+}
+
+// A face built from bytes (a recipe's own font files, not Fontsource URLs).
+if (typeof window.FontFace === 'function' && !window.FontFace.__cb) {
+  const RealFontFace = window.FontFace;
+  const Recorded = function FontFace(family, source, descriptors) {
+    const face = new RealFontFace(family, source, descriptors);
+    if (source && typeof source !== 'string') {
+      try {
+        const bytes = ArrayBuffer.isView(source)
+          ? new Uint8Array(source.buffer.slice(source.byteOffset, source.byteOffset + source.byteLength))
+          : new Uint8Array(source.slice(0));
+        cb.faces.push({ family: String(family).replace(/^['"]|['"]$/g, ''), weight: String(descriptors?.weight ?? '400'),
+          style: String(descriptors?.style ?? 'normal'), bytes });
+      } catch { /* not bytes we can copy */ }
+    }
+    return face;
+  };
+  Recorded.prototype = RealFontFace.prototype;
+  Recorded.__cb = true;
+  window.FontFace = Recorded;
+}
 
 /** A finished build: { kind, shim, content, config, docs, ms, at }. */
 export function record(entry) {
@@ -120,7 +159,16 @@ export function buildBundle(bundle, options) {
 
 export function registerResourceImage(fileId, image, options) {
   cb.images.push(fileId);
+  cb.imageSources.set(fileId, image);
   return real.registerResourceImage(fileId, image, options);
+}
+
+export function createBundle(input, ...rest) {
+  try {
+    const files = input?.files instanceof Map ? input.files : Object.entries(input?.files ?? {});
+    for (const [fileId, data] of files) cb.bundleFiles.set(fileId, data);
+  } catch { /* the engine reports a bad input itself */ }
+  return real.createBundle(input, ...rest);
 }
 
 export function renderPageToCanvas(page, doc, canvas, options) { seen(doc, SHIM); return real.renderPageToCanvas(page, doc, canvas, options); }

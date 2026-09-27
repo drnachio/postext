@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { ArrowUpRight, Copy, Download, FileDown, Play } from "lucide-react";
+import { AppWindow, ArrowUpRight, Copy, Download, FileDown, Play } from "lucide-react";
 import { defineData, pageHtml } from "@/lib/cookbook/compose";
 import type { ComposedPen, Locale, PenJson } from "@/lib/cookbook/types";
 import { openInCodePen } from "@/lib/codepenClient";
@@ -28,7 +28,23 @@ export interface RecipeActionsData {
   description: string;
   tags: string[];
   pdf: { href: string; size: string; pages: number } | null;
+  /** The Sandbox URL that opens the recipe's `.postext` bundle; `live` when
+   *  the recipe is an interactive page, of which the Sandbox gets the
+   *  document only. */
+  sandbox: { href: string; live: boolean } | null;
   githubUrl: string;
+}
+
+/** Open in Sandbox, as a band action or a bar action. */
+function SandboxAction({ sandbox, short }: { sandbox: NonNullable<RecipeActionsData["sandbox"]>; short?: boolean }) {
+  const t = useTranslations("CookbookRecipe");
+  const title = t(sandbox.live ? "openInSandboxTitleLive" : "openInSandboxTitle");
+  return (
+    <a href={sandbox.href} className="cb-action" title={title} aria-label={short ? title : undefined}>
+      <AppWindow aria-hidden="true" className="size-3.5" />
+      {t(short ? "openInSandboxShort" : "openInSandbox")}
+    </a>
+  );
 }
 
 /** The composed files of an edition, read at click time from the page:
@@ -83,8 +99,8 @@ export function useRecipeActions(data: RecipeActionsData) {
   };
 }
 
-/** The band's actions: Open in CodePen (primary), Copy code, the `.html`
- *  and PDF downloads and the GitHub folder. */
+/** The band's actions: Open in CodePen (primary), Open in Sandbox, Copy
+ *  code, the `.html` and PDF downloads and the GitHub folder. */
 export function RecipeActions({ data, className }: { data: RecipeActionsData; className?: string }) {
   const { t, codepen, copy, download } = useRecipeActions(data);
   return (
@@ -93,6 +109,7 @@ export function RecipeActions({ data, className }: { data: RecipeActionsData; cl
         <Play aria-hidden="true" className="size-3.5 fill-current" />
         {t("openInCodePen")}
       </button>
+      {data.sandbox && <SandboxAction sandbox={data.sandbox} />}
       <button type="button" className="cb-action" title={t("copyCodeTitle")} onClick={copy}>
         <Copy aria-hidden="true" className="size-3.5" />
         {t("copyCode")}
@@ -126,8 +143,8 @@ export function RecipeActions({ data, className }: { data: RecipeActionsData; cl
   );
 }
 
-/** Below `sm` the band drops its actions; CodePen, Copy and PDF sit in a
- *  bar fixed to the foot of the screen instead. */
+/** Below `sm` the band drops its actions; CodePen, Sandbox, Copy and PDF
+ *  sit in a bar fixed to the foot of the screen instead. */
 export function RecipeActionBar({ data }: { data: RecipeActionsData }) {
   const { t, codepen, copy } = useRecipeActions(data);
   return (
@@ -137,6 +154,7 @@ export function RecipeActionBar({ data }: { data: RecipeActionsData }) {
           <Play aria-hidden="true" className="size-3.5 fill-current" />
           {t("openInCodePenShort")}
         </button>
+        {data.sandbox && <SandboxAction sandbox={data.sandbox} short />}
         <button type="button" className="cb-action" onClick={copy} title={t("copyCodeTitle")}>
           <Copy aria-hidden="true" className="size-3.5" />
           {t("copyShort")}

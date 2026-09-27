@@ -143,3 +143,24 @@ export function pdfDownload(recipe: RecipeMedia, locale: Locale): { href: string
   const { file, bytes, pages } = hit.data.pdf;
   return { href: mediaUrl(recipe.slug, hit.variant, file, hit.data.hash8), bytes, pages };
 }
+
+/** The Sandbox link of a recipe: the edition in the page's language when it
+ *  has a `.postext` bundle, else another edition's. The Sandbox reads
+ *  `#recipe=<slug>&lang=<variant>` and fetches `bundle` itself. */
+export function sandboxLink(
+  recipe: RecipeMedia,
+  locale: Locale,
+): { href: string; variant: Locale; bundle: string } | null {
+  const capture = recipe.capture;
+  if (!capture) return null;
+  const first = variantFor(recipe.meta, locale);
+  const order = [first, ...recipe.meta.sample.locales.filter((l) => l !== first)];
+  const variant = order.find((l) => capture.variants[l]?.sandbox);
+  const data = variant && capture.variants[variant];
+  if (!variant || !data?.sandbox) return null;
+  return {
+    href: `/${locale}/sandbox#recipe=${recipe.slug}&lang=${variant}`,
+    variant,
+    bundle: mediaUrl(recipe.slug, variant, data.sandbox.file),
+  };
+}

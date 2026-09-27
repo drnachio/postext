@@ -103,6 +103,10 @@
         "bytes": 710600,
         "pages": 3
       },
+      "sandbox": {
+        "file": "certificate-single-page.postext",
+        "bytes": 30096
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -326,6 +330,10 @@
         "file": "certificate-single-page.pdf",
         "bytes": 686473,
         "pages": 3
+      },
+      "sandbox": {
+        "file": "certificate-single-page.postext",
+        "bytes": 28596
       },
       "detected": {
         "apis": [

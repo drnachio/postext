@@ -175,6 +175,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "photo-essay-full-bleed.postext",
+        "bytes": 112222
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -505,6 +509,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "photo-essay-full-bleed.postext",
+        "bytes": 112315
       },
       "detected": {
         "apis": [

@@ -139,6 +139,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "conference-programme.postext",
+        "bytes": 32582
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -536,6 +540,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "conference-programme.postext",
+        "bytes": 32584
       },
       "detected": {
         "apis": [

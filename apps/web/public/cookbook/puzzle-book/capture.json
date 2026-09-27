@@ -123,6 +123,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "puzzle-book.postext",
+        "bytes": 23081
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -472,6 +476,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "puzzle-book.postext",
+        "bytes": 23890
       },
       "detected": {
         "apis": [

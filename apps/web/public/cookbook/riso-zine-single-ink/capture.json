@@ -118,6 +118,10 @@
         "bytes": 301675,
         "pages": 4
       },
+      "sandbox": {
+        "file": "riso-zine-single-ink.postext",
+        "bytes": 68596
+      },
       "detected": {
         "apis": [
           "applySingleInkToSvg",

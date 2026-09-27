@@ -190,6 +190,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "parts-in-colour.postext",
+        "bytes": 54891
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -667,6 +671,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "parts-in-colour.postext",
+        "bytes": 54729
       },
       "detected": {
         "apis": [

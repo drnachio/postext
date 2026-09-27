@@ -113,6 +113,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "magazine-feature-opener.postext",
+        "bytes": 768059
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -494,6 +498,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "magazine-feature-opener.postext",
+        "bytes": 768047
       },
       "detected": {
         "apis": [

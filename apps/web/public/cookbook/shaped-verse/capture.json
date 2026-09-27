@@ -112,6 +112,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "shaped-verse.postext",
+        "bytes": 19295
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -327,6 +331,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "shaped-verse.postext",
+        "bytes": 19193
       },
       "detected": {
         "apis": [

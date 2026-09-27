@@ -98,6 +98,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "textbook-box-family.postext",
+        "bytes": 45352
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -475,6 +479,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "textbook-box-family.postext",
+        "bytes": 43969
       },
       "detected": {
         "apis": [

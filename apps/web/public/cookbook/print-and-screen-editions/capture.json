@@ -113,6 +113,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "print-and-screen-editions.postext",
+        "bytes": 29225
+      },
       "detected": {
         "apis": [
           "applyHtmlViewerOverrides",
@@ -442,6 +446,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "print-and-screen-editions.postext",
+        "bytes": 29914
       },
       "detected": {
         "apis": [

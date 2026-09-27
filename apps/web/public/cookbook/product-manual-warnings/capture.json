@@ -149,6 +149,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "product-manual-warnings.postext",
+        "bytes": 35756
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -620,6 +624,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "product-manual-warnings.postext",
+        "bytes": 35779
       },
       "detected": {
         "apis": [

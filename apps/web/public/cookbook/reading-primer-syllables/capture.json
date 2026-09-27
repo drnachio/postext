@@ -97,6 +97,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "reading-primer-syllables.postext",
+        "bytes": 28194
+      },
       "detected": {
         "apis": [
           "buildDocument",

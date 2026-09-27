@@ -123,6 +123,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "spanish-pocket-novel.postext",
+        "bytes": 43009
+      },
       "detected": {
         "apis": [
           "buildDocument",

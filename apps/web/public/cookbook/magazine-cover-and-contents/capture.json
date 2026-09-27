@@ -139,6 +139,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "magazine-cover-and-contents.postext",
+        "bytes": 1736598
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -569,6 +573,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "magazine-cover-and-contents.postext",
+        "bytes": 1737305
       },
       "detected": {
         "apis": [

@@ -87,6 +87,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "community-newsletter.postext",
+        "bytes": 81150
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -399,6 +403,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "community-newsletter.postext",
+        "bytes": 81833
       },
       "detected": {
         "apis": [

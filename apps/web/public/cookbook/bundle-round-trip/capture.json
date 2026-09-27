@@ -92,6 +92,10 @@
         "bytes": 40282,
         "pages": 2
       },
+      "sandbox": {
+        "file": "bundle-round-trip.postext",
+        "bytes": 147497
+      },
       "detected": {
         "apis": [
           "buildBundle",
@@ -398,6 +402,10 @@
         "file": "bundle-round-trip.pdf",
         "bytes": 42550,
         "pages": 2
+      },
+      "sandbox": {
+        "file": "bundle-round-trip.postext",
+        "bytes": 149360
       },
       "detected": {
         "apis": [

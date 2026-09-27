@@ -123,6 +123,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "storybook-chapter-vignettes.postext",
+        "bytes": 28206
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -433,6 +437,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "storybook-chapter-vignettes.postext",
+        "bytes": 28244
       },
       "detected": {
         "apis": [

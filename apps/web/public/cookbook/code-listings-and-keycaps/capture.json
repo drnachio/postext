@@ -98,6 +98,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "code-listings-and-keycaps.postext",
+        "bytes": 24485
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -440,6 +444,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "code-listings-and-keycaps.postext",
+        "bytes": 24815
       },
       "detected": {
         "apis": [

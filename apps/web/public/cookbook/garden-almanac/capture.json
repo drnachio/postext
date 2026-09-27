@@ -113,6 +113,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "garden-almanac.postext",
+        "bytes": 39854
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -490,6 +494,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "garden-almanac.postext",
+        "bytes": 39854
       },
       "detected": {
         "apis": [

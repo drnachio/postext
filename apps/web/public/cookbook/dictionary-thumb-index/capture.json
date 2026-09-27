@@ -113,6 +113,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "dictionary-thumb-index.postext",
+        "bytes": 82147
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -388,6 +392,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "dictionary-thumb-index.postext",
+        "bytes": 83282
       },
       "detected": {
         "apis": [

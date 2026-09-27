@@ -14,7 +14,7 @@ import { FEATURE_KEYS, featureDocPath } from "@/lib/featureDocs";
 import { GUIDE_BUNDLE_FILE, GUIDE_BUNDLE_PATH } from "@/lib/guideBundle";
 import { catalogRecipe } from "@/lib/cookbook/catalog";
 import { docAnchorPath } from "@/lib/cookbook/docLinks";
-import { captureVariantFor, pageImages, pdfDownload } from "@/lib/cookbook/images";
+import { captureVariantFor, pageImages, pdfDownload, sandboxLink } from "@/lib/cookbook/images";
 import { getAllRecipes, getComposed, getRecipe, getVisibleRecipes, recipeHref, writeupFor } from "@/lib/cookbook/recipes";
 import { loadRegistry } from "@/lib/cookbook/registry";
 import { relatedRecipes } from "@/lib/cookbook/related";
@@ -70,6 +70,7 @@ const LABELS = {
     testedOn: "on",
     pages: "Pages",
     pdf: "PDF",
+    openInSandbox: "Open in Sandbox",
     answers: "This recipe answers",
     teaches: "Teaches",
     alsoUses: "Also uses",
@@ -138,6 +139,7 @@ const LABELS = {
     testedOn: "el",
     pages: "Páginas",
     pdf: "PDF",
+    openInSandbox: "Abrir en el Sandbox",
     answers: "Esta receta responde a",
     teaches: "Enseña",
     alsoUses: "También usa",
@@ -973,6 +975,11 @@ export function recipeMarkdown(slug: string, locale: string): string | null {
     facts.push(`${labels.pages}: ${pages.map((p) => `[${p.label || p.n}](${SITE_URL}${p.src})`).join(", ")}`);
   }
   if (pdf) facts.push(`${labels.pdf}: ${SITE_URL}${pdf.href}`);
+  const sandbox = sandboxLink(recipe, lang);
+  if (sandbox) {
+    const hash = `#recipe=${slug}&lang=${sandbox.variant}`;
+    facts.push(`${labels.openInSandbox}: ${localizedUrl(locale, "/sandbox")}${hash} (.postext: ${SITE_URL}${sandbox.bundle})`);
+  }
   facts.push(`${labels.lastUpdated}: ${meta.updated}`);
 
   const out: string[] = [

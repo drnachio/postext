@@ -207,6 +207,10 @@
         "bytes": 132211,
         "pages": 11
       },
+      "sandbox": {
+        "file": "book-from-chapters.postext",
+        "bytes": 46736
+      },
       "detected": {
         "apis": [
           "buildBundle",
@@ -658,6 +662,10 @@
         "file": "book-from-chapters.pdf",
         "bytes": 141755,
         "pages": 11
+      },
+      "sandbox": {
+        "file": "book-from-chapters.postext",
+        "bytes": 47189
       },
       "detected": {
         "apis": [

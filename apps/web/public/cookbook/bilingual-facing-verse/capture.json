@@ -123,6 +123,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "bilingual-facing-verse.postext",
+        "bytes": 23079
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -425,6 +429,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "bilingual-facing-verse.postext",
+        "bytes": 23556
       },
       "detected": {
         "apis": [
