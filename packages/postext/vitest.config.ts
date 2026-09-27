@@ -7,5 +7,7 @@ export default defineConfig({
     environment: "node",
     include: ["src/**/*.test.{ts,tsx}"],
     exclude: ["**/node_modules/**", "**/dist/**"],
+    // Whole-book layouts take several seconds on CI runners.
+    testTimeout: 30_000,
   },
 });
