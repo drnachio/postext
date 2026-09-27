@@ -8,7 +8,7 @@
 // consistent regardless of which module opens the DB first.
 
 export const DB_NAME = 'postext-sandbox';
-export const DB_VERSION = 4;
+export const DB_VERSION = 5;
 
 export const BLOBS_STORE = 'blobs';
 export const RESOURCES_STORE = 'resources';
@@ -20,6 +20,10 @@ export const LAYOUTS_STORE = 'layouts';
 /** Saved working copies of edited presets (see presetDrafts.ts), keyed by
  *  preset id and content locale. Added in DB version 4. */
 export const PRESET_DRAFTS_STORE = 'presetDrafts';
+/** Covers taken from the first page of sample books that ship none (see
+ *  presetCovers.ts), keyed by preset id and content locale. Added in DB
+ *  version 5. */
+export const PRESET_COVERS_STORE = 'presetCovers';
 
 export interface BlobRecord {
   fileId: string;
@@ -83,6 +87,10 @@ function openSandboxDbFresh(): Promise<IDBDatabase> {
       // by the first save after the upgrade.
       if (!db.objectStoreNames.contains(PRESET_DRAFTS_STORE)) {
         db.createObjectStore(PRESET_DRAFTS_STORE, { keyPath: 'key' });
+      }
+      // Version 5: generated covers of sample books. Nothing to migrate.
+      if (!db.objectStoreNames.contains(PRESET_COVERS_STORE)) {
+        db.createObjectStore(PRESET_COVERS_STORE, { keyPath: 'key' });
       }
     };
     req.onsuccess = () => resolve(req.result);

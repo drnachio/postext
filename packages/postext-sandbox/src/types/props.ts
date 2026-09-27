@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import type { SandboxLabels } from './labels';
 import type { PresetSourceSpec } from '../presets/types';
 
-export type PanelId = 'projects' | 'markdown' | 'config' | 'resources' | 'fonts' | 'warnings';
+export type PanelId = 'projects' | 'chapters' | 'markdown' | 'config' | 'resources' | 'fonts' | 'warnings';
 export type ViewportTab = 'canvas' | 'html' | 'pdf';
 
 /** Resolves a book a link names by a host key (`#recipe=ID&lang=L`) to the

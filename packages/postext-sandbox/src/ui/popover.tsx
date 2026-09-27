@@ -71,6 +71,8 @@ export function Popover({
             style={{
               ...POPUP_SURFACE,
               width,
+              // A fixed width never runs past a phone's screen.
+              maxWidth: 'calc(100vw - 16px)',
               maxHeight: 'var(--available-height)',
               overflowY: 'auto',
               padding: 10,

@@ -231,9 +231,15 @@ export function attachSlotClickHandler(
   let dragging = false;
   let lastHead: number | null = null;
   let suppressNextClick = false;
+  // On a touch screen a finger dragging over a page scrolls it, and a
+  // single tap only follows links (refs, contents rows): opening the source
+  // on every tap would cover the pages with the editor on a phone. A
+  // double tap goes to the source.
+  let touchTap = false;
 
   slot.addEventListener('pointerdown', (ev) => {
-    if (ev.button !== 0) return;
+    touchTap = ev.pointerType === 'touch';
+    if (ev.button !== 0 || touchTap) return;
     const resourceHit = resolveResourceHit(ev);
     const offset = resourceHit ? resourceHit.offset : resolveOffset(ev);
     if (offset === null) return;
@@ -324,6 +330,7 @@ export function attachSlotClickHandler(
     }
     // A cover picture or logo drawn by a design slot: open its resource so
     // the image can be replaced.
+    if (touchTap) return;
     const designImageId = resolveDesignImage(ev);
     if (designImageId !== null) {
       ev.preventDefault();
@@ -342,6 +349,12 @@ export function attachSlotClickHandler(
   });
 
   slot.addEventListener('dblclick', (ev) => {
+    const designImageId = touchTap ? resolveDesignImage(ev) : null;
+    if (designImageId !== null) {
+      ev.preventDefault();
+      openResource(designImageId);
+      return;
+    }
     const resourceHit = resolveResourceHit(ev);
     if (resourceHit) {
       ev.preventDefault();

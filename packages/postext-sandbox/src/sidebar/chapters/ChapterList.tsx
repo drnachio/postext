@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowDown, ArrowUp, GripVertical, MoreHorizontal, Pencil, Plus, Scissors, Trash2, Merge } from 'lucide-react';
 import { useBookContent, useBookPlan, useSandboxDispatch, useSandboxLabels } from '../../context/SandboxContext';
 import { h1Count, newChapter, wordCount } from '../../book/chapterOps';
@@ -10,12 +10,24 @@ import { generateChapterId } from '../../storage/projects';
 import { ConfirmPopover, IconButton, ListRow, Menu, MenuItem, MenuSeparator, cn } from '../../ui';
 import { useRowDrag, type RowDragHandleProps } from './useRowDrag';
 
+/** Adds a chapter at the end of the book (the Chapters panel's header). */
+export function AddChapterButton() {
+  const labels = useSandboxLabels();
+  const dispatch = useSandboxDispatch();
+  const count = useBookContent().chapters.length;
+  const add = () => {
+    const chapter = newChapter(generateChapterId(), labels.chapterUntitled.replace('__n__', String(count + 1)));
+    dispatch({ type: 'ADD_CHAPTER', payload: { chapter } });
+  };
+  return <IconButton label={labels.chapterAdd} icon={<Plus size={14} />} onClick={add} />;
+}
+
 /** The book's chapters: order, active one, page ranges, and the chapter
- *  operations (add, rename, move, split, merge, delete). Fills the open
- *  book's pane of the Books panel, under the book's name, and scrolls on
- *  its own. Rows reorder by dragging the grip at their left (or with the
- *  arrow keys on it); the menu's move up/down stays for one-step moves. */
-export function ChapterList({ title }: { title: ReactNode }) {
+ *  operations (rename, move, split, merge, delete). Fills the Chapters
+ *  panel under the book's name and scrolls on its own. Rows reorder by
+ *  dragging the grip at their left (or with the arrow keys on it); the
+ *  menu's move up/down stays for one-step moves. */
+export function ChapterList() {
   const labels = useSandboxLabels();
   const dispatch = useSandboxDispatch();
   const { chapters, activeChapterId } = useBookContent();
@@ -44,24 +56,12 @@ export function ChapterList({ title }: { title: ReactNode }) {
   // carried by parts) would show a column of dashes: drop it.
   const anyNumbered = chapters.some((c) => plan.byId[c.id]?.number != null);
 
-  const add = () => {
-    const chapter = newChapter(generateChapterId(), labels.chapterUntitled.replace('__n__', String(chapters.length + 1)));
-    dispatch({ type: 'ADD_CHAPTER', payload: { chapter } });
-  };
-
   return (
     <section
       aria-label={labels.chapters}
       className="flex min-h-0 flex-1 flex-col px-2 pt-1.5"
       style={{ backgroundColor: 'var(--background)' }}
     >
-      <div className="mb-1 flex h-7 shrink-0 items-center justify-between gap-2 pl-1">
-        <h4 className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--slate)' }}>
-          {title}
-          <span className="normal-case tracking-normal" style={{ fontVariantNumeric: 'tabular-nums' }}>{chapters.length}</span>
-        </h4>
-        <IconButton label={labels.chapterAdd} icon={<Plus size={14} />} onClick={add} />
-      </div>
       {/* The rows' own scroll container (the drag auto-scroll finds it). */}
       <div ref={scrollerRef} className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden pb-2">
         <ul ref={listRef} className="relative m-0 list-none p-0" aria-label={labels.chapters}>

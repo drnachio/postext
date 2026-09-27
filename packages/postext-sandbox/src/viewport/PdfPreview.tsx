@@ -1,8 +1,9 @@
 'use client';
 
 import { memo, useMemo, useRef } from 'react';
-import { FileText } from 'lucide-react';
+import { ExternalLink, FileText } from 'lucide-react';
 import { useSandboxLabels } from '../context/SandboxContext';
+import { useCompactLayout } from '../hooks/useCompactLayout';
 import { pdfPageFragment } from '../storage/viewHash';
 import type { BuildProgress } from '../worker/useLayoutWorker';
 import type { RenderProgress } from 'postext-pdf/worker';
@@ -21,8 +22,23 @@ interface PdfPreviewProps {
   error: string | null;
 }
 
+/** Whether the browser can show a PDF inside the page. Android browsers
+ *  cannot (`pdfViewerEnabled` is false), and iOS draws only the first page
+ *  of an embedded PDF, with no scrolling: phones and touch-only tablets
+ *  open the file instead. */
+function useInlinePdf(): boolean {
+  const compact = useCompactLayout();
+  return useMemo(() => {
+    if (compact) return false;
+    if (typeof window === 'undefined') return true;
+    if (navigator.pdfViewerEnabled === false) return false;
+    return !window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  }, [compact]);
+}
+
 export const PdfPreview = memo(function PdfPreview({ bytesUrl, openPage, generating, progress, renderProgress = null, phase, error }: PdfPreviewProps) {
   const labels = useSandboxLabels();
+  const inline = useInlinePdf();
   // Open the viewer at the reader's page, resolved by the viewport for
   // each new document (a change of `openPage` alone must not reload it).
   const openPageRef = useRef(openPage);
@@ -61,7 +77,25 @@ export const PdfPreview = memo(function PdfPreview({ bytesUrl, openPage, generat
       className="relative h-full w-full"
       style={{ backgroundColor: 'var(--surface)' }}
     >
-      {src && (
+      {src && !inline && !generating && (
+        <div className="flex h-full w-full flex-col items-center justify-center gap-4 p-6 pb-20 text-center">
+          <FileText size={48} aria-hidden="true" style={{ color: 'var(--rule)' }} />
+          <p className="max-w-xs text-sm" style={{ color: 'var(--slate)' }}>
+            {labels.pdfInlineUnavailable}
+          </p>
+          <a
+            href={bytesUrl!}
+            target="_blank"
+            rel="noopener"
+            className="inline-flex h-10 items-center gap-2 rounded-md px-4 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 outline-(--brand)"
+            style={{ backgroundColor: 'var(--brand)', color: 'var(--brand-contrast, var(--background))' }}
+          >
+            <ExternalLink size={16} aria-hidden="true" />
+            {labels.pdfOpen}
+          </a>
+        </div>
+      )}
+      {src && inline && (
         <iframe
           data-postext-pdf="true"
           title={labels.pdf}

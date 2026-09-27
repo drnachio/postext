@@ -25,6 +25,7 @@ import {
   type ViewMode,
 } from './layoutUtils';
 import { findCaretBlockIdx } from './caret';
+import { useAutoCover, type FirstChapterDoc } from '../../covers/useAutoCover';
 
 const NO_SELECTION: EditorSelection = { from: -1, to: -1, head: -1 };
 /** Painted page bitmaps kept at once (~16 pages of 21×28 cm at 300 dpi);
@@ -216,6 +217,10 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   // in view and marks the rest stale, exactly as for a new docVersion.
   const [paintKey, setPaintKey] = useState(0);
   const lastPaintedPaintKeyRef = useRef(0);
+  // The book's first chapter as last laid out here, for its cover (a book
+  // without one gets a picture of its first page once it is painted).
+  const firstChapterDocRef = useRef<FirstChapterDoc | null>(null);
+  useAutoCover(firstChapterDocRef, `${docVersion}:${paintKey}`);
   // The rebuildKey whose build last reached the pages: a whole-book build
   // that keeps every chapter document (nothing it depends on changed) still
   // owes a repaint when a rebuild-invalidating event triggered it.
@@ -463,6 +468,9 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
         }
         if (cancelled) return;
         heldDocsRef.current = next;
+        const firstChapter = snapshotChapters[0];
+        const firstDoc = firstChapter ? next.get(firstChapter.id)?.doc : undefined;
+        if (firstChapter && firstDoc) firstChapterDocRef.current = { chapterId: firstChapter.id, markdown: firstChapter.markdown, doc: firstDoc };
         chapterDocsRef.current = new Map([...next].map(([id, h]) => [id, { doc: h.doc, source: h.source }]));
         pageSourceRef.current = (pageIndex) => {
           const id = stitchedRef.current?.pageChapterIds[pageIndex];
@@ -557,6 +565,9 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
       .then((doc) => {
         if (cancelled) return;
         lastBuiltChapterRef.current = deferredSource.chapterId;
+        if (deferredSource.plan.index === 0) {
+          firstChapterDocRef.current = { chapterId: deferredSource.chapterId, markdown: deferredSource.chapterMarkdown, doc };
+        }
         stitchedRef.current = null;
         lastStitchedDocsRef.current = [];
         chapterOfPageRef.current = null;

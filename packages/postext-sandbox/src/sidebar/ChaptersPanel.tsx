@@ -3,18 +3,20 @@
 import { Copy, Download, Pencil, RotateCcw } from 'lucide-react';
 import { useRef, useState } from 'react';
 import {
+  useBookContent,
   useSandboxLabels,
   useSandboxPresets,
   useSandboxProjects,
 } from '../context/SandboxContext';
-import { MenuItem, MenuSeparator, RowTag } from '../ui';
-import { ChapterList } from './chapters/ChapterList';
+import { MenuItem, MenuSeparator, PanelHeader, RowTag } from '../ui';
+import { AddChapterButton, ChapterList } from './chapters/ChapterList';
 import { RowActionsMenu } from './RowActionsMenu';
 
-/** The book on screen, under the library: its name and kind (your book,
- *  or a sample book in a language, edited or not), the actions on it, and
- *  its chapters with every chapter operation, scrolling on their own. */
-export function BookPane() {
+/** The Chapters panel: the book on screen — its name and kind (your book,
+ *  or a sample book in a language, edited or not) and the actions on it —
+ *  and its chapters with every chapter operation, scrolling on their own.
+ *  The books themselves are listed in the Books panel. */
+export function ChaptersPanel() {
   const labels = useSandboxLabels();
   const { presets, activePresetId, activeLocale, edited, reload } = useSandboxPresets();
   const { projects, activeProjectId, status, create, duplicate, rename, exportProject } = useSandboxProjects();
@@ -23,6 +25,7 @@ export function BookPane() {
   const name = project?.name ?? preset?.name ?? labels.projectUntitled;
   const locale = project ? project.locale : activeLocale;
   const busy = status === 'busy';
+  const chapterCount = useBookContent().chapters.length;
 
   const [renaming, setRenaming] = useState(false);
   const [draft, setDraft] = useState(name);
@@ -55,6 +58,7 @@ export function BookPane() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
+      <PanelHeader title={labels.navChapters} count={chapterCount} actions={<AddChapterButton />} />
       <div
         className="flex shrink-0 items-start gap-2 border-b px-3 py-2"
         style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--background)' }}
@@ -112,7 +116,7 @@ export function BookPane() {
           )}
         </RowActionsMenu>
       </div>
-      <ChapterList title={labels.chapters} />
+      <ChapterList />
     </div>
   );
 }

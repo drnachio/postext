@@ -3,6 +3,7 @@
 import { Check, ChevronDown, ChevronRight, Copy, Download, Eye, EyeOff, FilePlus, Files, ImagePlus, Pencil, Plus, RotateCcw, Trash2, Upload, X } from 'lucide-react';
 import { useRef, useState, type ReactNode } from 'react';
 import {
+  useSandboxDispatch,
   useSandboxLabels,
   useSandboxPresets,
   useSandboxProjects,
@@ -14,9 +15,8 @@ import { isPresetHideable, partitionPresets } from '../presets/hidden';
 import { choosePresetOpen, presetLocales, sameLanguage } from '../presets/locale';
 import { useBlobObjectUrl } from '../panels/resources/ResourcePreview';
 import type { PresetSummary } from '../presets';
-import { ResizableHandle } from '../panels/ResizableHandle';
-import { loadBooksSplit, saveBooksSplit } from '../storage/persistence';
-import { BookPane } from './BookPane';
+import { presetCoverFor } from '../covers/autoCover';
+import { openBookThenShowChapters } from './openBook';
 import { RowActionsMenu } from './RowActionsMenu';
 
 function GroupTitle({ children, actions }: { children: ReactNode; actions?: ReactNode }) {
@@ -30,97 +30,13 @@ function GroupTitle({ children, actions }: { children: ReactNode; actions?: Reac
   );
 }
 
-/** Library pane limits: its share of the panel's height (percent), and the
- *  least either pane keeps (px) — a header and a couple of rows. */
-const SPLIT_MIN = 15;
-const SPLIT_MAX = 85;
-const SPLIT_DEFAULT = 50;
-const PANE_MIN_PX = 96;
-
-/** The Books panel: the library (your books and the sample books) on top,
- *  the open book (its name, its actions, its chapters) below, each
- *  scrolling on its own, with a splitter between them whose position is
- *  remembered. */
+/** The Books panel: your books and the sample books, with the New /
+ *  Import menu and the status of the last operation. A row click opens the
+ *  book and moves to the Chapters panel, where the open book is managed;
+ *  the open one stays marked here. */
 export function ProjectsPanel() {
   const labels = useSandboxLabels();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [split, setSplit] = useState<number>(() => loadBooksSplit() ?? SPLIT_DEFAULT);
-  const splitRef = useRef(split);
-  splitRef.current = split;
-
-  // Keep both panes their minimum height whatever the split says.
-  const clampSplit = (percent: number): number => {
-    const height = containerRef.current?.getBoundingClientRect().height ?? 0;
-    let lo = SPLIT_MIN;
-    let hi = SPLIT_MAX;
-    if (height > PANE_MIN_PX * 2) {
-      lo = Math.max(lo, (PANE_MIN_PX / height) * 100);
-      hi = Math.min(hi, 100 - (PANE_MIN_PX / height) * 100);
-    }
-    return Math.min(hi, Math.max(lo, percent));
-  };
-  const commit = (percent: number) => {
-    const next = clampSplit(percent);
-    setSplit(next);
-    saveBooksSplit(next);
-  };
-
-  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const target = e.currentTarget;
-    target.setPointerCapture(e.pointerId);
-    document.body.style.cursor = 'row-resize';
-    document.body.style.userSelect = 'none';
-    const onMove = (ev: PointerEvent) => {
-      const box = containerRef.current?.getBoundingClientRect();
-      if (!box || box.height <= 0) return;
-      setSplit(clampSplit(((ev.clientY - box.top) / box.height) * 100));
-    };
-    const onUp = () => {
-      try { target.releasePointerCapture(e.pointerId); } catch { /* released */ }
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-      document.removeEventListener('pointermove', onMove);
-      document.removeEventListener('pointerup', onUp);
-      saveBooksSplit(splitRef.current);
-    };
-    document.addEventListener('pointermove', onMove);
-    document.addEventListener('pointerup', onUp);
-  };
-
-  return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div ref={containerRef} className="flex min-h-0 flex-1 flex-col">
-        <section
-          aria-label={labels.booksLibrary}
-          className="flex min-h-0 shrink-0 flex-col overflow-hidden"
-          style={{ height: `${split}%` }}
-        >
-          <LibraryPane />
-        </section>
-        <ResizableHandle
-          orientation="horizontal"
-          label={labels.booksSplitResize}
-          value={split}
-          min={SPLIT_MIN}
-          max={SPLIT_MAX}
-          onPointerDown={onPointerDown}
-          onValueChange={commit}
-        />
-        <section aria-label={labels.bookOpenLabel} className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <BookPane />
-        </section>
-      </div>
-    </div>
-  );
-}
-
-/** Your books and the sample books, with the New / Import menu and the
- *  status of the last operation. A row click opens the book; the open one
- *  is marked, its chapters are in the pane below. */
-function LibraryPane() {
-  const labels = useSandboxLabels();
-  const { presets, activePresetId, status, error, stale, updatedAt, hiddenIds, activeLocale, edited, drafts, load, reload, restoreOriginal, hide, unhide } = useSandboxPresets();
+  const { presets, activePresetId, status, error, stale, updatedAt, hiddenIds, activeLocale, edited, drafts, covers, load, reload, restoreOriginal, hide, unhide } = useSandboxPresets();
   const projectsValue = useSandboxProjects();
   const {
     projects,
@@ -139,6 +55,15 @@ function LibraryPane() {
     setThumbnail,
   } = projectsValue;
   const viewerLocale = useSandboxSelector((s) => s.locale);
+  const dispatch = useSandboxDispatch();
+  const activePanel = useSandboxSelector((s) => s.activePanel);
+  const activePanelRef = useRef(activePanel);
+  activePanelRef.current = activePanel;
+  const showChapters = () => dispatch({ type: 'SET_PANEL', payload: 'chapters' });
+  // A book picked here opens, then the sidebar shows its chapters.
+  const openThenShow = (open: () => Promise<unknown>) => {
+    void openBookThenShowChapters(open, { getPanel: () => activePanelRef.current, showChapters });
+  };
   const importRef = useRef<HTMLInputElement>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [hiddenOpen, setHiddenOpen] = useState(false);
@@ -179,8 +104,10 @@ function LibraryPane() {
         activeLocale={isActive ? activeLocale : null}
         editedLocales={presetDrafts.map((d) => d.locale)}
         disabled={busy || !preset.available}
-        onLoad={() => { void load(preset.id); }}
-        onLoadLocale={(l) => { void load(preset.id, l); }}
+        coverUrl={preset.thumbnailUrl ?? presetCoverFor(covers, preset.id, isActive && activeLocale ? activeLocale : choice.locale)}
+        onLoad={() => openThenShow(() => load(preset.id))}
+        onLoadLocale={(l) => openThenShow(() => load(preset.id, l))}
+        onShowChapters={showChapters}
         onRestore={() => { void restoreOriginal(preset.id); }}
         onDuplicate={() => {
           if (isActive && edited) void create({ from: 'current' });
@@ -196,7 +123,7 @@ function LibraryPane() {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <PanelHeader
-        title={labels.booksLibrary}
+        title={labels.navBooks}
         actions={
           <>
             <Menu
@@ -297,7 +224,8 @@ function LibraryPane() {
                 project={project}
                 isActive={project.id === activeProjectId}
                 disabled={busy}
-                onActivate={() => { void activate(project.id); }}
+                onActivate={() => openThenShow(() => activate(project.id))}
+                onShowChapters={showChapters}
                 onRename={(name, description) => { void rename(project.id, name, description); }}
                 onDuplicate={() => { void duplicate({ kind: 'project', id: project.id }); }}
                 onExport={() => { void exportProject({ kind: 'project', id: project.id }); }}
@@ -337,6 +265,8 @@ interface ProjectRowProps {
   isActive: boolean;
   disabled: boolean;
   onActivate: () => void;
+  /** A click on the open book: the Chapters panel. */
+  onShowChapters: () => void;
   onRename: (name: string, description: string) => void;
   onDuplicate: () => void;
   onExport: () => void;
@@ -350,6 +280,7 @@ function ProjectRow({
   isActive,
   disabled,
   onActivate,
+  onShowChapters,
   onRename,
   onDuplicate,
   onExport,
@@ -507,8 +438,7 @@ function ProjectRow({
     <ListRow
       selected={isActive}
       disabled={disabled}
-      onSelect={editing || isActive || disabled ? undefined : onActivate}
-      onDoubleClick={isActive && !editing ? startRename : undefined}
+      onSelect={editing || disabled ? undefined : isActive ? onShowChapters : onActivate}
       ariaLabel={isActive ? `${project.name} (${labels.presetActive})` : `${labels.projectActivate}: ${project.name}`}
       handle={editing ? coverEditor : undefined}
       leading={editing ? undefined : leading}
@@ -552,8 +482,13 @@ interface PresetRowProps {
   activeLocale: string | null;
   /** Locales of this preset with a saved draft (the reader's edits). */
   editedLocales: string[];
+  /** The cover: the one the preset ships, else the one taken from its
+   *  first page. */
+  coverUrl: string | undefined;
   disabled: boolean;
   onLoad: () => void;
+  /** A click on the open book: the Chapters panel. */
+  onShowChapters: () => void;
   /** Open the preset in one of its locales (its draft there, if any). */
   onLoadLocale: (locale: string) => void;
   /** Drop every draft of the preset (asked first). */
@@ -569,8 +504,10 @@ function PresetRow({
   isActive,
   activeLocale,
   editedLocales,
+  coverUrl,
   disabled,
   onLoad,
+  onShowChapters,
   onLoadLocale,
   onRestore,
   onDuplicate,
@@ -626,14 +563,14 @@ function PresetRow({
         </>
       )
       : preset.description;
-  // Showcase presets carry a page thumbnail; the check mark of the active
-  // preset sits over it.
-  const leading = preset.thumbnailUrl ? (
+  // Showcase presets carry a page thumbnail (the others get one from their
+  // first page once opened); the check mark of the active preset sits over it.
+  const leading = coverUrl ? (
     <span
       className="relative flex h-12 w-9 shrink-0 items-center justify-center overflow-hidden rounded-sm border"
       style={{ borderColor: 'var(--rule)', background: 'var(--surface)' }}
     >
-      <img src={preset.thumbnailUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+      <img src={coverUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
       {isActive && (
         <span className="absolute inset-0 flex items-center justify-center" style={{ color: 'var(--brand)', background: 'color-mix(in srgb, var(--background) 60%, transparent)' }}>
           <Check size={13} aria-hidden="true" />
@@ -651,7 +588,7 @@ function PresetRow({
       <ListRow
         selected={isActive}
         disabled={disabled}
-        onSelect={isActive || disabled ? undefined : onLoad}
+        onSelect={disabled ? undefined : isActive ? onShowChapters : onLoad}
         ariaLabel={isActive ? `${preset.name} (${labels.presetActive})` : `${labels.presetLoad}: ${preset.name}`}
         leading={leading}
         title={preset.name}

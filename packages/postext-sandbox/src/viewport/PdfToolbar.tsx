@@ -3,12 +3,12 @@
 import { memo, type FocusEventHandler } from 'react';
 import { ArrowRight, Download, Printer, RefreshCw } from 'lucide-react';
 import { useSandboxLabels } from '../context/SandboxContext';
+import { useCompactLayout } from '../hooks/useCompactLayout';
 import {
   PinToolbarButton,
-  TOOLBAR_STYLE_BASE,
   ToolbarButton,
   ToolbarSeparator,
-  toolbarHiddenStyle,
+  useToolbarRootProps,
 } from './CanvasToolbar';
 
 interface PdfToolbarProps {
@@ -45,13 +45,16 @@ export const PdfToolbar = memo(function PdfToolbar({
   onBlur,
 }: PdfToolbarProps) {
   const labels = useSandboxLabels();
-  const showDirtyArrow = dirty && !generating && !hidden;
+  const rootProps = useToolbarRootProps(hidden);
+  // The arrow points at the toolbar from its left, which the docked phone
+  // toolbar does not have room for.
+  const compact = useCompactLayout();
+  const showDirtyArrow = dirty && !generating && !hidden && !compact;
   return (
     <div
       role="toolbar"
       aria-label={labels.pdfToolbar}
-      className="flex flex-col items-center"
-      style={{ ...TOOLBAR_STYLE_BASE, ...toolbarHiddenStyle(hidden) }}
+      {...rootProps}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onFocus={onFocus}

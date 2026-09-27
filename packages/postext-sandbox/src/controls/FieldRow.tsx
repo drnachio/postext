@@ -97,7 +97,8 @@ export const FieldRow = forwardRef<HTMLDivElement, FieldRowProps>(function Field
         aria-controls={ids.descriptionId}
         onClick={() => setHelpToggle(!helpOpen)}
         className={cn(
-          'inline-flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors',
+          // The hit area reaches past the 16px icon, for a finger.
+          'relative inline-flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors after:absolute after:-inset-2',
           'focus-visible:outline-2 focus-visible:outline-offset-1 outline-(--brand)',
           helpOpen ? 'text-(--brand)' : 'text-(--slate) opacity-60 hover:opacity-100',
         )}

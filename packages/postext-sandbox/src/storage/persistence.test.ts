@@ -27,6 +27,19 @@ describe('loadPanel', () => {
     installStorage();
     expect(loadPanel()).toBeUndefined();
   });
+
+  it('accepts the Chapters panel and ignores unknown ids', () => {
+    installStorage({ 'postext-sandbox-panel': 'chapters' });
+    expect(loadPanel()).toBe('chapters');
+    installStorage({ 'postext-sandbox-panel': 'library' });
+    expect(loadPanel()).toBeUndefined();
+  });
+
+  it('drops the stored split of the former library/open-book divider', () => {
+    const map = installStorage({ 'postext-sandbox-books-split': '40', 'postext-sandbox-panel': 'projects' });
+    expect(loadPanel()).toBe('projects');
+    expect(map.has('postext-sandbox-books-split')).toBe(false);
+  });
 });
 
 describe('project id', () => {
