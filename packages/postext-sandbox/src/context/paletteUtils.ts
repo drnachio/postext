@@ -108,10 +108,10 @@ const BODY_STYLE_FIELDS: Fields = {
   color: (l) => l.partsBodyColor,
   bulletColor: (l) => l.partsBodyBulletColor,
   numberColor: (l) => l.partsBodyNumberColor,
-  'orderedLists.color': (l) => l.orderedListsColor,
-  'orderedLists.separatorColor': (l) => l.orderedListsSeparatorColor,
-  'unorderedLists.color': (l) => l.unorderedListsColor,
-  'unorderedLists.taskCompletedColor': (l) => l.taskCompletedColor,
+  'orderedLists.color': (l) => join(l.orderedLists, l.orderedListsColor),
+  'orderedLists.separatorColor': (l) => join(l.orderedLists, l.orderedListsSeparatorColor),
+  'unorderedLists.color': (l) => join(l.unorderedLists, l.unorderedListsColor),
+  'unorderedLists.taskCompletedColor': (l) => join(l.unorderedLists, l.taskCompletedColor),
 };
 
 /** A table style's colours (`tableStyle` or an entry of `tableStyles`). */
