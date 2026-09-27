@@ -5,6 +5,7 @@ export { BUILTIN_PRESET_ID } from './presets';
 export type { PresetSourceSpec, PresetManifest, PresetIndex } from './presets';
 export type {
   PostextSandboxProps,
+  HashBundleResolver,
   SandboxLabels,
   PanelId,
   ViewportTab,

@@ -981,3 +981,207 @@ export async function composeCard({ select = 'last', mode = 'spread', hero = [1]
     return { error: `${error?.name ?? 'Error'}: ${error?.message ?? error}`, taint: error?.name === 'SecurityError' };
   }
 }
+
+// ─── The Sandbox bundle ─────────────────────────────────────────────────────
+
+/** 1980-01-01 00:00 local time, the earliest date a zip holds: every file
+ *  of the bundle carries it, so the same input gives the same bytes. */
+const ZIP_EPOCH = new Date(1980, 0, 1, 0, 0, 0);
+
+function base64Of(bytes) {
+  let text = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) text += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(text);
+}
+
+function bytesOfBase64(base64) {
+  const text = atob(base64);
+  const out = new Uint8Array(text.length);
+  for (let i = 0; i < text.length; i++) out[i] = text.charCodeAt(i);
+  return out;
+}
+
+/** A data: URL as SVG markup (a string) or bytes. */
+function dataUrlFile(url) {
+  const comma = url.indexOf(',');
+  const head = url.slice(5, comma);
+  const payload = url.slice(comma + 1);
+  const svg = /^image\/svg\+xml/i.test(head);
+  if (/;base64$/i.test(head)) {
+    const bytes = bytesOfBase64(payload);
+    return svg ? new TextDecoder().decode(bytes) : bytes;
+  }
+  const text = decodeURIComponent(payload);
+  return svg ? text : new TextEncoder().encode(text);
+}
+
+/** The picture a fileId was registered with, as a file: SVG markup from a
+ *  data: URL, the blob an ImageBitmap was decoded from, the bytes of the
+ *  image's URL, else the pixels re-encoded (`format`: png or jpeg). */
+async function imageFile(image, format) {
+  const cb = record();
+  if (!image) return null;
+  const src = typeof image.currentSrc === 'string' && image.currentSrc ? image.currentSrc
+    : typeof image.src === 'string' ? image.src
+      : image.href?.baseVal ?? '';
+  if (src.startsWith('data:')) return dataUrlFile(src);
+  const blob = cb.bitmapBlobs?.get(image);
+  if (blob) return new Uint8Array(await blob.arrayBuffer());
+  if (/^(https?|blob):/.test(src)) {
+    try {
+      const res = await fetch(src);
+      if (res.ok) {
+        const bytes = new Uint8Array(await res.arrayBuffer());
+        return /svg/i.test(res.headers.get('content-type') ?? '') ? new TextDecoder().decode(bytes) : bytes;
+      }
+    } catch { /* fall back to the pixels */ }
+  }
+  const w = image.naturalWidth || image.videoWidth || image.width;
+  const h = image.naturalHeight || image.videoHeight || image.height;
+  if (!w || !h) return null;
+  const canvas = canvasOf(w, h);
+  canvas.getContext('2d').drawImage(image, 0, 0, w, h);
+  const type = format === 'jpeg' || format === 'jpg' ? 'image/jpeg' : format === 'webp' ? 'image/webp' : 'image/png';
+  const out = await new Promise((resolve) => canvas.toBlob(resolve, type, 0.92));
+  return out ? new Uint8Array(await out.arrayBuffer()) : null;
+}
+
+/** The plain text of a document's first `# ` heading, or ''. */
+function headingTitle(markdown) {
+  let inFence = false;
+  for (const line of markdown.split('\n')) {
+    if (/^\s*(```|~~~)/.test(line)) inFence = !inFence;
+    if (inFence) continue;
+    const m = /^#\s+(.+?)\s*#*\s*$/.exec(line);
+    if (!m) continue;
+    const text = m[1]
+      .replace(/\{[^}]*\}\s*$/, '')
+      .replace(/\s*\\\\\s*/g, ' ')
+      .replace(/[*_`]/g, '')
+      .replace(/\\([\\`*_{}[\]()#+\-.!])/g, '$1')
+      .trim();
+    if (text) return text;
+  }
+  return '';
+}
+
+/**
+ * The document `select` picks, as a `.postext` file for the Sandbox,
+ * written by the pen's own engine (`createBundle`): its markdown (or its
+ * chapters, for a buildBundle book), its configuration as JSON, its
+ * resources and every file they name, plus `thumbnail` (base64 WebP, the
+ * card). A continuation cannot travel in a bundle: its page numbering goes
+ * into `page.pageNumbering`, the rest is reported in `notes`. Returns the
+ * bundle as base64, or `error` when a resource's file cannot be found.
+ */
+export async function sandboxBundle({ select = 'last', id, name, description, locale, thumbnail = null } = {}) {
+  const cb = record();
+  const build = pick(select);
+  if (!build) return { error: 'no recorded build' };
+  const engine = engineOf(build);
+  if (typeof engine?.createBundle !== 'function' || typeof engine?.zipBundle !== 'function') {
+    return { error: 'the engine has no createBundle / zipBundle' };
+  }
+  const source = sourceOf(build);
+  if (!source.known) return { error: `a ${build.kind} build records no source` };
+  const notes = [];
+  const content = build.content ?? {};
+  const config = plain(source.config ?? {}) ?? {};
+
+  const cont = build.kind === 'bundle' ? null : content.continuation;
+  if (cont && typeof cont === 'object') {
+    if (cont.pageNumbering) {
+      config.page = { ...config.page, pageNumbering: { ...config.page?.pageNumbering, ...plain(cont.pageNumbering) } };
+    }
+    if (cont.pageIndexOffset) {
+      notes.push(cont.pageIndexOffset % 2
+        ? `continuation.pageIndexOffset ${cont.pageIndexOffset}: page 1 is a verso in the recipe, a recto in the Sandbox`
+        : `continuation.pageIndexOffset ${cont.pageIndexOffset} dropped (even: same page sides)`);
+    }
+    if (cont.headings) notes.push(`continuation.headings ${JSON.stringify(plain(cont.headings))} dropped (chapter numbers restart)`);
+    for (const key of Object.keys(cont)) {
+      if (!['pageNumbering', 'pageIndexOffset', 'headings'].includes(key)) notes.push(`continuation.${key} dropped`);
+    }
+  }
+
+  const resources = source.resources.map((r) => plain(r));
+  // `styleId: null` means the house style; postext 1.5 reads only a missing one so.
+  for (const r of resources) if (r.table && r.table.styleId === null) delete r.table.styleId;
+  const own = content.files instanceof Map ? content.files : null;
+  const files = new Map();
+  const missing = [];
+  const find = async (fileId, format) => {
+    if (own?.has(fileId)) return own.get(fileId);
+    if (cb.bundleFiles?.has(fileId)) return cb.bundleFiles.get(fileId);
+    if (cb.imageSources?.has(fileId)) return imageFile(cb.imageSources.get(fileId), format);
+    return null;
+  };
+  for (const r of resources) {
+    const wanted = [[r.svg?.fileId, 'svg'], [r.svg?.pdfFileId, 'pdf'], [r.bitmap?.fileId, r.bitmap?.format]];
+    for (const [fileId, format] of wanted) {
+      if (!fileId || files.has(fileId)) continue;
+      const data = await find(fileId, format);
+      if (data != null) files.set(fileId, data);
+      else if (format === 'pdf') {
+        // A print master the pen hands renderToPdf only: the SVG stays.
+        delete r.svg.pdfFileId;
+        notes.push(`${r.id}: print master ${fileId} left out (the SVG stays)`);
+      } else missing.push(`${r.id}: ${fileId}`);
+    }
+  }
+  // Fonts built from bytes: the recipe's own files, matched by face.
+  const weightOf = (w) => String(parseInt(String(w), 10) || 400);
+  for (const family of config.customFonts ?? []) {
+    if (family.redistributable === false) continue; // createBundle leaves its files out
+    for (const v of family.variants ?? []) {
+      if (!v.fileId || files.has(v.fileId)) continue;
+      let data = await find(v.fileId, v.format);
+      if (data == null) {
+        data = (cb.faces ?? []).find((f) => f.family === family.name && weightOf(f.weight) === weightOf(v.weight)
+          && (f.style === 'italic') === (v.style === 'italic'))?.bytes ?? null;
+      }
+      if (data == null) missing.push(`font ${family.name} ${v.weight} ${v.style}: ${v.fileId}`);
+      else files.set(v.fileId, data);
+    }
+  }
+  if (missing.length) return { error: `no file for ${missing.join(', ')}`, notes };
+
+  const input = {
+    id,
+    name,
+    ...(description ? { description } : {}),
+    locale,
+    config,
+    resources,
+    files,
+    ...(thumbnail ? { thumbnail: { data: bytesOfBase64(thumbnail), mime: 'image/webp' } } : {}),
+  };
+  if (build.kind === 'bundle') {
+    input.chapters = (content.chapters ?? []).map((c) => ({
+      ...(typeof c?.title === 'string' && c.title ? { title: c.title } : {}),
+      markdown: String(c?.markdown ?? ''),
+    }));
+    input.canvasScope = 'book';
+  } else {
+    // One chapter named after its first heading: the pinned engine keeps a
+    // `\\` line break of the heading in the name it derives itself.
+    const markdown = source.markdowns[0] ?? '';
+    input.chapters = [{ title: headingTitle(markdown) || name, markdown }];
+  }
+  try {
+    const created = await engine.createBundle(input);
+    // Zip again with a fixed date: createBundle before 1.5 stamps the time
+    // of the call, and fflate reads it from Date.now().
+    const now = Date.now;
+    let bytes;
+    try {
+      Date.now = () => ZIP_EPOCH.getTime();
+      bytes = engine.zipBundle(created.files, { mtime: ZIP_EPOCH });
+    } finally {
+      Date.now = now;
+    }
+    return { base64: base64Of(bytes), warnings: created.warnings ?? [], notes, files: Object.keys(created.files).sort() };
+  } catch (error) {
+    return { error: `createBundle: ${error?.message ?? error}`, notes };
+  }
+}

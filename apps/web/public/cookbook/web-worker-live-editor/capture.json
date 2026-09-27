@@ -123,6 +123,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "web-worker-live-editor.postext",
+        "bytes": 37298
+      },
       "detected": {
         "apis": [
           "buildDocument",

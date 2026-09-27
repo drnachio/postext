@@ -119,6 +119,10 @@
         "bytes": 283478,
         "pages": 4
       },
+      "sandbox": {
+        "file": "journal-article-with-maths.postext",
+        "bytes": 44961
+      },
       "detected": {
         "apis": [
           "buildDocument",

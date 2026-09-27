@@ -113,6 +113,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "figures-float-where-cited.postext",
+        "bytes": 328550
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -423,6 +427,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "figures-float-where-cited.postext",
+        "bytes": 328459
       },
       "detected": {
         "apis": [

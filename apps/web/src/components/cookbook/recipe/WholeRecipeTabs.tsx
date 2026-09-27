@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Copy, Download, Play } from "lucide-react";
+import { AppWindow, Copy, Download, Play } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { readSources, useRecipeActions, type RecipeActionsData } from "./RecipeActions";
 import { copyText } from "./toast";
@@ -48,7 +48,7 @@ function revealLines(from: number, to: number, show: () => void) {
 
 /** The whole recipe: one tab per file (script.js, then index.html and
  *  style.css when the recipe ships them), collapsed to its first lines
- *  until "Show all", with Copy (the tab's file), CodePen and `.html`. Links
+ *  until "Show all", with Copy (the tab's file), CodePen, Sandbox and `.html`. Links
  *  to `#L<n>` anywhere on the page reveal that line here. */
 export function WholeRecipeTabs({ panels, data }: { panels: WholeRecipePanel[]; data: RecipeActionsData }) {
   const t = useTranslations("CookbookRecipe");
@@ -133,6 +133,16 @@ export function WholeRecipeTabs({ panels, data }: { panels: WholeRecipePanel[]; 
             <Play aria-hidden="true" className="size-3.5 fill-current" />
             {t("openInCodePenShort")}
           </button>
+          {data.sandbox && (
+            <a
+              href={data.sandbox.href}
+              className="cb-code-button"
+              title={t(data.sandbox.live ? "openInSandboxTitleLive" : "openInSandboxTitle")}
+            >
+              <AppWindow aria-hidden="true" className="size-3.5" />
+              {t("openInSandboxShort")}
+            </a>
+          )}
           <button type="button" className="cb-code-button" onClick={download} title={t("downloadHtmlTitle")}>
             <Download aria-hidden="true" className="size-3.5" />
             {t("downloadHtml")}

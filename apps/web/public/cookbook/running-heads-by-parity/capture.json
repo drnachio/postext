@@ -123,6 +123,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "running-heads-by-parity.postext",
+        "bytes": 23952
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -417,6 +421,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "running-heads-by-parity.postext",
+        "bytes": 22392
       },
       "detected": {
         "apis": [

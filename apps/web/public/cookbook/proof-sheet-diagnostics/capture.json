@@ -87,6 +87,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "proof-sheet-diagnostics.postext",
+        "bytes": 32397
+      },
       "detected": {
         "apis": [
           "KNOWN_CONTAINERS",
@@ -413,6 +417,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "proof-sheet-diagnostics.postext",
+        "bytes": 34685
       },
       "detected": {
         "apis": [

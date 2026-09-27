@@ -118,6 +118,10 @@
         "bytes": 200002,
         "pages": 4
       },
+      "sandbox": {
+        "file": "lab-report-formulas.postext",
+        "bytes": 36355
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -536,6 +540,10 @@
         "file": "lab-report-formulas.pdf",
         "bytes": 212171,
         "pages": 4
+      },
+      "sandbox": {
+        "file": "lab-report-formulas.postext",
+        "bytes": 37731
       },
       "detected": {
         "apis": [

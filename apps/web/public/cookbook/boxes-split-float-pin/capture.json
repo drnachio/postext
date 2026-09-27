@@ -112,6 +112,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "boxes-split-float-pin.postext",
+        "bytes": 34703
+      },
       "detected": {
         "apis": [
           "buildDocument",

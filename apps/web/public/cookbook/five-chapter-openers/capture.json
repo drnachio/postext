@@ -150,6 +150,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "five-chapter-openers.postext",
+        "bytes": 28464
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -533,6 +537,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "five-chapter-openers.postext",
+        "bytes": 28113
       },
       "detected": {
         "apis": [

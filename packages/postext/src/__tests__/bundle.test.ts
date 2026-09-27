@@ -393,6 +393,13 @@ describe('openBundle', () => {
     expect(bundle.chapters[0]!.title).toBe('Chapter 1');
   });
 
+  it('names an untitled chapter after its heading, with line breaks read as spaces', async () => {
+    const manifest = { version: 2, id: 'b', name: 'B', chapters: [{ title: '', file: 'a.md' }] };
+    const md = '# Tortilla \\\\ de *patatas* {#t}\n\nText.';
+    const bundle = await openBundle(zipSync({ 'preset.json': enc.encode(JSON.stringify(manifest)), 'a.md': enc.encode(md) }));
+    expect(bundle.chapters[0]!.title).toBe('Tortilla de patatas');
+  });
+
   it('picks the locale of a bilingual bundle and its overrides', async () => {
     const manifest = {
       version: 2, id: 'bi', name: 'Bi', locale: 'en',

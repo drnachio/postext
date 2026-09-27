@@ -72,6 +72,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "research-poster.postext",
+        "bytes": 94119
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -351,6 +355,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "research-poster.postext",
+        "bytes": 94800
       },
       "detected": {
         "apis": [

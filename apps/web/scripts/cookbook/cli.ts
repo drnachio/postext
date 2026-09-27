@@ -43,7 +43,11 @@ const CAPTURE_USAGE = `pnpm cookbook capture [slug…] [options]
   --concurrency <n>      Recipes captured at once (default 3)
   --refresh-net          Bypass the on-disk network cache
   --engine <spec>        npm (default: packages/postext's version) or npm@x.y.z
-  --preview-dir <dir>    Also write every page image here for inspection`;
+  --preview-dir <dir>    Also write every page image here for inspection
+  --sandbox-only         Write only each edition's <slug>.postext (and its entry
+                         in capture.json), with the engine capture.json records;
+                         pages, card, OG image and PDF stay as they are. With no
+                         slugs: every captured recipe`;
 
 type CaptureState = "fresh" | "missing" | "stale" | "incomplete" | "unreadable";
 
@@ -89,6 +93,7 @@ async function runCaptureCommand(argv: readonly string[]): Promise<number> {
       "refresh-net": { type: "boolean" },
       engine: { type: "string", value: "spec" },
       "preview-dir": { type: "string", value: "dir" },
+      "sandbox-only": { type: "boolean" },
     },
     "capture",
   );
@@ -99,6 +104,10 @@ async function runCaptureCommand(argv: readonly string[]): Promise<number> {
   }
   const all = flag(args, "all");
   if (all && args.positionals.length) throw new UsageError("name recipes or pass --all, not both", "capture");
+  const sandboxOnly = flag(args, "sandbox-only");
+  if (sandboxOnly && (engine || flag(args, "force") || str(args, "sheet") || str(args, "preview-dir"))) {
+    throw new UsageError("--sandbox-only uses the engine capture.json records and writes no images: drop --engine, --force, --sheet and --preview-dir", "capture");
+  }
 
   const entries = loadRecipes();
   const bySlug = new Map(entries.map((entry) => [entry.slug, entry]));
@@ -107,7 +116,9 @@ async function runCaptureCommand(argv: readonly string[]): Promise<number> {
 
   let selected: RecipeEntry[];
   const reasons = new Map<string, string>();
-  if (args.positionals.length) {
+  if (sandboxOnly && !args.positionals.length) {
+    selected = entries.filter((entry) => entry.meta?.status !== "retired" && fs.existsSync(path.join(captureDir(entry.slug), "capture.json")));
+  } else if (args.positionals.length) {
     selected = args.positionals.map((slug) => bySlug.get(slug) as RecipeEntry);
   } else {
     const live = entries.filter((entry) => entry.meta?.status !== "retired");
@@ -135,7 +146,7 @@ async function runCaptureCommand(argv: readonly string[]): Promise<number> {
   }
 
   const langs = list(args, "lang") as Locale[] | undefined;
-  const mode = flag(args, "check") ? " · check only, nothing written" : "";
+  const mode = (sandboxOnly ? " · Sandbox bundles only" : "") + (flag(args, "check") ? " · check only, nothing written" : "");
   const names = selected.map((entry) => {
     const reason = reasons.get(entry.slug);
     return reason ? `${entry.slug} ${c.dim(`(${reason})`)}` : entry.slug;
@@ -145,13 +156,13 @@ async function runCaptureCommand(argv: readonly string[]): Promise<number> {
   console.log(`  ${names.join(c.dim(", "))}\n`);
 
   // The harness pulls in puppeteer: load it only for this command.
-  const { runCapture } = await import("./capture.ts");
+  const { runCapture, runSandboxOnly } = await import("./capture.ts");
   const { printResults } = await import("./report.ts");
 
   const sheet = str(args, "sheet");
   const reportFile = str(args, "report");
   const previewDir = str(args, "preview-dir");
-  const results = await runCapture({
+  const results = await (sandboxOnly ? runSandboxOnly : runCapture)({
     slugs: selected.map((entry) => entry.slug),
     all,
     langs,

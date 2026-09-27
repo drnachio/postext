@@ -1361,7 +1361,17 @@
   }
   .cb-action-bar .cb-action {
     flex: 1;
+    min-width: 0;
     min-height: 2.75rem;
+    padding-inline: 0.6rem;
+  }
+  /* Four actions (CodePen, Sandbox, Copy, PDF) do not fit at 375 px: the
+     secondary ones keep their icons only (the text stays in the DOM as the
+     buttons' names). */
+  .cb-action-bar-row:has(> :nth-child(4)) .cb-action:not(.cb-action-primary) {
+    flex: 0 0 3rem;
+    font-size: 0;
+    gap: 0;
   }
   .cb-action-bar .cb-action-primary {
     border-color: var(--brand-gilt);

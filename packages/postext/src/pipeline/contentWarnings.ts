@@ -197,7 +197,8 @@ export function collectContentWarnings(
     scanSnippet(r.note);
     if (r.kind !== 'table' || !r.table) continue;
     const styleId = r.table.styleId;
-    if (styleId !== undefined && styleId.length > 0 && !tableStyles.has(styleId)) {
+    // JSON documents may carry `styleId: null` for "no named style".
+    if (typeof styleId === 'string' && styleId.length > 0 && !tableStyles.has(styleId)) {
       out.push({ kind: 'unknownTableStyle', styleId, resourceId: id, ...where });
     }
     const model = r.table.model;

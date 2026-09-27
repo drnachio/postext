@@ -124,6 +124,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "side-heads-hanging-numbers.postext",
+        "bytes": 27339
+      },
       "detected": {
         "apis": [
           "buildDocument",

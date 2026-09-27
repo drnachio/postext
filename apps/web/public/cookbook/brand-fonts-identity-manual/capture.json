@@ -119,6 +119,10 @@
         "bytes": 51885,
         "pages": 4
       },
+      "sandbox": {
+        "file": "brand-fonts-identity-manual.postext",
+        "bytes": 106175
+      },
       "detected": {
         "apis": [
           "buildDocument",

@@ -11,12 +11,10 @@ import { ConfirmPopover, IconButton, ListRow, Menu, MenuItem, MenuSeparator, cn 
 import { useRowDrag, type RowDragHandleProps } from './useRowDrag';
 
 /** The book's chapters: order, active one, page ranges, and the chapter
- *  operations (add, rename, move, split, merge, delete). Rendered inside
- *  the card of the active project/preset row, so it reads as *its*
- *  structure. Rows reorder by dragging the grip at their left (or with
- *  the arrow keys on it); the menu's move up/down stays for one-step
- *  moves. A long book scrolls inside the list rather than stretching the
- *  card past the panel. */
+ *  operations (add, rename, move, split, merge, delete). Fills the open
+ *  book's pane of the Books panel, under the book's name, and scrolls on
+ *  its own. Rows reorder by dragging the grip at their left (or with the
+ *  arrow keys on it); the menu's move up/down stays for one-step moves. */
 export function ChapterList({ title }: { title: ReactNode }) {
   const labels = useSandboxLabels();
   const dispatch = useSandboxDispatch();
@@ -54,20 +52,18 @@ export function ChapterList({ title }: { title: ReactNode }) {
   return (
     <section
       aria-label={labels.chapters}
-      className="border-t px-2 pt-1.5 pb-2"
-      style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--background)' }}
+      className="flex min-h-0 flex-1 flex-col px-2 pt-1.5"
+      style={{ backgroundColor: 'var(--background)' }}
     >
-      <div className="mb-1 flex h-7 items-center justify-between gap-2 pl-1">
+      <div className="mb-1 flex h-7 shrink-0 items-center justify-between gap-2 pl-1">
         <h4 className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--slate)' }}>
           {title}
           <span className="normal-case tracking-normal" style={{ fontVariantNumeric: 'tabular-nums' }}>{chapters.length}</span>
         </h4>
         <IconButton label={labels.chapterAdd} icon={<Plus size={14} />} onClick={add} />
       </div>
-      {/* Roughly nine rows before the list scrolls on its own, so a long
-          book does not stretch the card past the panel; the drag
-          auto-scroll finds this as the rows' scroll container. */}
-      <div ref={scrollerRef} className="overflow-y-auto overflow-x-hidden" style={{ maxHeight: 'min(45vh, 26rem)' }}>
+      {/* The rows' own scroll container (the drag auto-scroll finds it). */}
+      <div ref={scrollerRef} className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden pb-2">
         <ul ref={listRef} className="relative m-0 list-none p-0" aria-label={labels.chapters}>
           {chapters.map((c, i) => (
             <ChapterRow

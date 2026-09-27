@@ -98,6 +98,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "annotated-classic-glosses.postext",
+        "bytes": 29608
+      },
       "detected": {
         "apis": [
           "buildDocument",

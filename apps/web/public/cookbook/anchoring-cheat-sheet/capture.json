@@ -83,6 +83,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "anchoring-cheat-sheet.postext",
+        "bytes": 42689
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -321,6 +325,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "anchoring-cheat-sheet.postext",
+        "bytes": 42264
       },
       "detected": {
         "apis": [

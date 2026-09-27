@@ -7,8 +7,9 @@
  *              and Fontsource, nothing else)
  *   here       wait for `__done`, the fonts, a quiet settle window (H10)
  *              and two frames; build the PDF when the recipe keeps one;
- *              read the facts and paint the pages and the card in the page
- *              (lib/probe.js)
+ *              read the facts and paint the pages and the card in the page,
+ *              then write the document as a `.postext` bundle for the
+ *              Sandbox (lib/probe.js)
  *
  * Run by Node's type stripping: erasable TypeScript, relative `.ts` imports.
  */
@@ -141,6 +142,26 @@ export interface VariantRun {
   passive: boolean;
   /** postext versions a worker imported (workers ignore the import map). */
   workerEngines: string[];
+  /** The selected document as a `.postext` file for the Sandbox. */
+  sandbox: SandboxBundle | null;
+}
+
+export interface SandboxBundle {
+  bytes: Buffer | null;
+  error: string | null;
+  /** createBundle's warnings (a family left out, a skipped face). */
+  warnings: string[];
+  /** What the bundle cannot carry (a continuation's page sides, counters). */
+  notes: string[];
+}
+
+/** What the bundle is called: `recipe-<slug>`, the write-up's title. */
+export interface SandboxMeta {
+  id: string;
+  name: string;
+  description?: string;
+  /** The card (480 px WebP), used as the bundle's thumbnail. */
+  thumbnail?: Buffer | null;
 }
 
 export interface RunOptions {
@@ -152,6 +173,10 @@ export interface RunOptions {
   refreshNet?: boolean;
   /** Also encode PNG copies (for --previewDir). */
   png?: boolean;
+  /** Write the Sandbox bundle (the card becomes its thumbnail). */
+  sandbox?: SandboxMeta;
+  /** Only the facts and the Sandbox bundle: no PDF, pages or card. */
+  sandboxOnly?: boolean;
 }
 
 const PROBE = "/__cb/probe.js";
@@ -211,6 +236,7 @@ export async function runVariant(opts: RunOptions): Promise<VariantRun> {
     netStats,
     passive,
     workerEngines: [],
+    sandbox: null,
   };
   const flagged = new Set<string>();
   const t0 = Date.now();
@@ -269,7 +295,7 @@ export async function runVariant(opts: RunOptions): Promise<VariantRun> {
     run.timings.runMs = Date.now() - t0;
     run.kit = await probe(page, "kitState");
 
-    if (meta.downloads?.pdf) {
+    if (meta.downloads?.pdf && !opts.sandboxOnly) {
       const button = await page.$("[data-postext-pdf]");
       const pdf: NonNullable<VariantRun["pdf"]> = {
         wanted: true, button: !!button, timedOut: false, error: null, fontFailures: [], ms: 0, bytes: null,
@@ -302,6 +328,10 @@ export async function runVariant(opts: RunOptions): Promise<VariantRun> {
     run.facts = await probe<ProbeFacts>(page, "facts", { select, hero });
     const all = (run.facts.pages ?? []).map((p) => p.n);
     if (run.facts.selected < 0 || all.length === 0) return run;
+    if (opts.sandboxOnly) {
+      if (opts.sandbox) run.sandbox = await sandboxBundle(page, select, opts.variant, opts.sandbox, opts.sandbox.thumbnail ?? null);
+      return run;
+    }
 
     run.tainted = await probe<number[]>(page, "taintedPages", { select });
     const published = publishedPages(meta, all);
@@ -342,6 +372,7 @@ export async function runVariant(opts: RunOptions): Promise<VariantRun> {
         };
       }
     }
+    if (opts.sandbox) run.sandbox = await sandboxBundle(page, select, opts.variant, opts.sandbox, run.card?.card480 ?? null);
     return run;
   } finally {
     run.timings.totalMs = Date.now() - t0;
@@ -350,6 +381,35 @@ export async function runVariant(opts: RunOptions): Promise<VariantRun> {
     await sleep(20);
     await page.close().catch(() => {});
     await server.close();
+  }
+}
+
+/** The selected document as a `.postext` file, written in the page by the
+ *  pen's engine (lib/probe.js `sandboxBundle`). */
+async function sandboxBundle(
+  page: Page,
+  select: string | number,
+  locale: Locale,
+  meta: SandboxMeta,
+  thumbnail: Buffer | null,
+): Promise<SandboxBundle> {
+  try {
+    const out = await probe<{ base64?: string; error?: string; warnings?: string[]; notes?: string[] }>(page, "sandboxBundle", {
+      select,
+      id: meta.id,
+      name: meta.name,
+      description: meta.description,
+      locale,
+      thumbnail: thumbnail ? thumbnail.toString("base64") : null,
+    });
+    return {
+      bytes: out.base64 ? Buffer.from(out.base64, "base64") : null,
+      error: out.error ?? (out.base64 ? null : "no bundle"),
+      warnings: out.warnings ?? [],
+      notes: out.notes ?? [],
+    };
+  } catch (error) {
+    return { bytes: null, error: String((error as Error).message ?? error), warnings: [], notes: [] };
   }
 }
 

@@ -92,6 +92,10 @@
         "bytes": 44368,
         "pages": 2
       },
+      "sandbox": {
+        "file": "din-business-letter.postext",
+        "bytes": 23031
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -351,6 +355,10 @@
         "file": "din-business-letter.pdf",
         "bytes": 44368,
         "pages": 2
+      },
+      "sandbox": {
+        "file": "din-business-letter.postext",
+        "bytes": 23054
       },
       "detected": {
         "apis": [

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useSandboxBookActions, useSandboxDispatch, useSandboxSelector } from '../context/SandboxContext';
-import { readViewHash, sameBook, writeViewHash, type ViewHash, type ViewHashBook } from '../storage/viewHash';
+import { parseHashBundle, readViewHash, sameBook, writeViewHash, type ViewHash, type ViewHashBook } from '../storage/viewHash';
 
 /**
  * Keep the book on screen, the viewer tab and the active chapter in step
@@ -35,7 +35,9 @@ import { readViewHash, sameBook, writeViewHash, type ViewHash, type ViewHashBook
  */
 export function useChapterHashSync(): void {
   const dispatch = useSandboxDispatch();
-  const { loadPreset, activateProject } = useSandboxBookActions();
+  const { loadPreset, activateProject, openHashBundle, hashBundleKeys } = useSandboxBookActions();
+  const hashBundleKeysRef = useRef(hashBundleKeys);
+  hashBundleKeysRef.current = hashBundleKeys;
   const chapters = useSandboxSelector((s) => s.chapters);
   const activeChapterId = useSandboxSelector((s) => s.activeChapterId);
   const storeReady = useSandboxSelector((s) => s.storeReady);
@@ -149,6 +151,17 @@ export function useChapterHashSync(): void {
     const onHashChange = () => {
       const hash = readViewHash();
       if (hash.view !== null && hash.view !== viewRef.current) dispatch({ type: 'SET_VIEWPORT', payload: hash.view });
+      // A host bundle link (`#recipe=…`): its project, or a fresh import;
+      // the fragment is rewritten to name the project once it is open.
+      const bundle = parseHashBundle(window.location.hash, hashBundleKeysRef.current);
+      if (bundle) {
+        linkRef.current = { chapter: hash.chapter, page: hash.page };
+        userNavigatedRef.current = true;
+        void openHashBundle(bundle).then((opened) => {
+          if (!opened) linkRef.current = null;
+        });
+        return;
+      }
       if (sameBook(hash, bookRef.current)) {
         selectRef.current(hash.chapter);
         return;

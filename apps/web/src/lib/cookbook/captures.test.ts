@@ -8,7 +8,7 @@ import { getCapture, getVisibleRecipes } from "./recipes.ts";
 import type { Recipe } from "./types.ts";
 import { compareSemVer } from "./validate.ts";
 
-/** Variant weight without the PDF: warning at 0.9 MB, failure at 1.4 MB (spec §8.3). */
+/** Variant weight without the PDF and the .postext: warning at 0.9 MB, failure at 1.4 MB (spec §8.3). */
 const VARIANT_BUDGET = 1.4 * 1024 * 1024;
 const PDF_BUDGET = 2 * 1024 * 1024;
 const MAX_PAGES = 12;
@@ -61,12 +61,13 @@ describe("captures (public/cookbook/<slug>/capture.json)", () => {
           variant.card.file480,
           variant.og.file,
           ...(variant.pdf ? [variant.pdf.file] : []),
+          ...(variant.sandbox ? [variant.sandbox.file] : []),
         ];
         let bytes = 0;
         for (const file of files) {
           const full = path.join(dir, file);
           if (!fs.existsSync(full)) out.push(`${slug}: ${locale}/${file} is missing: ${capture(slug)}`);
-          else if (file !== variant.pdf?.file) bytes += fs.statSync(full).size;
+          else if (file !== variant.pdf?.file && file !== variant.sandbox?.file) bytes += fs.statSync(full).size;
         }
         if (bytes > VARIANT_BUDGET) out.push(`${slug}: the ${locale} images weigh ${Math.round(bytes / 1024)} KB (at most 1.4 MB)`);
         if (variant.pdf && variant.pdf.bytes > PDF_BUDGET) out.push(`${slug}: the ${locale} PDF weighs over 2 MB`);

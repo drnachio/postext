@@ -119,6 +119,10 @@
         "bytes": 60224,
         "pages": 4
       },
+      "sandbox": {
+        "file": "accessible-tagged-pdf.postext",
+        "bytes": 36179
+      },
       "detected": {
         "apis": [
           "buildDocument",

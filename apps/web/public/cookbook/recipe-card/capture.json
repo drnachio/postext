@@ -82,6 +82,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "recipe-card.postext",
+        "bytes": 32241
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -379,6 +383,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "recipe-card.postext",
+        "bytes": 32514
       },
       "detected": {
         "apis": [

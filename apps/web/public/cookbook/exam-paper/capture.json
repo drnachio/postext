@@ -111,6 +111,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "exam-paper.postext",
+        "bytes": 23221
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -513,6 +517,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "exam-paper.postext",
+        "bytes": 23670
       },
       "detected": {
         "apis": [

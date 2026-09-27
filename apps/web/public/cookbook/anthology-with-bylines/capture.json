@@ -175,6 +175,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "anthology-with-bylines.postext",
+        "bytes": 22930
+      },
       "detected": {
         "apis": [
           "buildDocument",

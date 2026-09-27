@@ -113,6 +113,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "seed-catalogue.postext",
+        "bytes": 52648
+      },
       "detected": {
         "apis": [
           "buildDocument",

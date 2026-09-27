@@ -118,6 +118,10 @@
         "bytes": 360523,
         "pages": 4
       },
+      "sandbox": {
+        "file": "print-ready-pdf.postext",
+        "bytes": 101864
+      },
       "detected": {
         "apis": [
           "buildDocument",

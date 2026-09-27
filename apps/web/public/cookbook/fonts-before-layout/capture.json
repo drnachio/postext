@@ -112,6 +112,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "fonts-before-layout.postext",
+        "bytes": 417278
+      },
       "detected": {
         "apis": [
           "buildDocument",

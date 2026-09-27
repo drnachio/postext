@@ -112,6 +112,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "textbook-margin-column.postext",
+        "bytes": 29300
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -475,6 +479,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "textbook-margin-column.postext",
+        "bytes": 29701
       },
       "detected": {
         "apis": [

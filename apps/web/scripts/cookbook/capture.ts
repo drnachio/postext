@@ -8,6 +8,7 @@
  *     <variant>/pNN.webp, pNN.s.webp    pages at 1000 and 240 px wide
  *     <variant>/card.webp, card.480.webp, og.jpg
  *     <variant>/<slug>.pdf              when downloads.pdf
+ *     <variant>/<slug>.postext          the document, for the Sandbox
  *
  * A recipe writes only when every edition passes, and atomically (a temp
  * folder renamed over the old one). Images are kept, bytes and all, when
@@ -15,7 +16,8 @@
  * unchanged, unless --force; the rest of the manifest (detection,
  * diagnostics, alt text, spreads) always comes from the new run,
  * and capture.json alone is rewritten when only that changed. --check
- * verifies and writes nothing.
+ * verifies and writes nothing. --sandbox-only writes the `.postext` files
+ * alone, with the engine each capture.json records (runSandboxOnly).
  *
  * Run by Node's type stripping: erasable TypeScript, relative `.ts` imports.
  */
@@ -23,8 +25,9 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { styleText } from "node:util";
+import matter from "gray-matter";
 import { hash8, sourceHash } from "../../src/lib/cookbook/hash.ts";
-import { captureDir, WEB_DIR } from "../../src/lib/cookbook/paths.ts";
+import { captureDir, recipeDir, WEB_DIR } from "../../src/lib/cookbook/paths.ts";
 import { loadRegistry } from "../../src/lib/cookbook/registry.ts";
 import { listRecipeSlugs, readRecipeMeta, readRecipeSources } from "../../src/lib/cookbook/sources.ts";
 import type { CaptureManifest, CaptureVariant, Locale, RecipeMeta, Registry } from "../../src/lib/cookbook/types.ts";
@@ -32,7 +35,7 @@ import { LOCALES } from "../../src/lib/cookbook/types.ts";
 import { altText, spreadsOf } from "./cards.ts";
 import { detect, pdfPageCount, runChecks } from "./checks.ts";
 import type { Finding } from "./checks.ts";
-import type { HarnessBrowser, VariantRun } from "./harness.ts";
+import type { HarnessBrowser, SandboxMeta, VariantRun } from "./harness.ts";
 import { launchBrowser, runVariant } from "./harness.ts";
 import { writeSheet } from "./sheet.ts";
 import type { SheetEntry } from "./sheet.ts";
@@ -54,6 +57,8 @@ export interface CaptureOptions {
   engine?: string;
   /** Also write PNG copies of every page, card and OG image here, for reviewers. */
   previewDir?: string;
+  /** Write only the Sandbox bundles, with the engine capture.json records. */
+  sandboxOnly?: boolean;
 }
 
 export interface CaptureResult {
@@ -160,6 +165,18 @@ function failed(slug: string, variant: Locale, check: string, detail: string): C
 }
 
 const pad = (n: number) => String(n).padStart(2, "0");
+
+/** The bundle's file name inside an edition's folder. */
+export const sandboxFile = (slug: string) => `${slug}.postext`;
+
+/** The bundle's id and name: `recipe-<slug>` and the write-up's title in the
+ *  edition's language (its summary as the description). */
+function sandboxMeta(slug: string, variant: Locale): SandboxMeta {
+  const file = path.join(recipeDir(slug), `${variant}.mdx`);
+  const data = fs.existsSync(file) ? (matter(fs.readFileSync(file, "utf-8"), {}).data as Record<string, unknown>) : {};
+  const text = (value: unknown) => (typeof value === "string" ? value.trim() : "");
+  return { id: `recipe-${slug}`, name: text(data.title) || slug, ...(text(data.summary) ? { description: text(data.summary) } : {}) };
+}
 const sha1 = (text: string) => crypto.createHash("sha1").update(text).digest("hex");
 
 /** Turns a run into its checks and, when it passed, its outputs. */
@@ -192,6 +209,8 @@ function evaluate(
   const pdfBytes = run.pdf?.bytes ?? null;
   const pdfPages = pdfBytes ? pdfPageCount(pdfBytes) : null;
   if (pdfBytes) files.set(`${slug}.pdf`, pdfBytes);
+  const bundle = run.sandbox?.bytes ?? null;
+  if (bundle) files.set(sandboxFile(slug), bundle);
   const vdtHash = facts?.vdt ? sha1(facts.vdt) : "";
   const detected = facts && facts.selected >= 0 ? detect(meta, facts, run.pen, registry) : null;
   const previous = task.previous;
@@ -235,6 +254,7 @@ function evaluate(
     sourceHash: task.sourceHash,
   });
   const fails = findings.filter((f) => f.severity === "fail").map(({ check, detail }) => ({ check, detail }));
+  if (run.sandbox?.error) fails.push({ check: "sandbox", detail: `no .postext bundle: ${run.sandbox.error}` });
   const warns = findings
     .filter((f): f is Finding & { severity: "warn" | "info" } => f.severity !== "fail")
     .map(({ check, severity, detail }) => ({ check, severity, detail }));
@@ -294,6 +314,7 @@ function evaluate(
     card: { file: "card.webp", file480: "card.480.webp", w: 960, h: 720, mode: meta.capture.card },
     og: { file: "og.jpg", w: 580, h: 622 },
     ...(pdfBytes ? { pdf: { file: `${slug}.pdf`, bytes: pdfBytes.length, pages: pdfPages ?? 0 } } : {}),
+    ...(bundle ? { sandbox: { file: sandboxFile(slug), bytes: bundle.length } } : {}),
     detected: {
       apis: detected.apis,
       configKeys: detected.configKeys,
@@ -318,11 +339,18 @@ function evaluate(
       findings: warns,
     },
   };
+  // What the bundle cannot carry: reported, not kept in capture.json.
+  for (const detail of [...(run.sandbox?.notes ?? []), ...(run.sandbox?.warnings ?? [])]) {
+    result.warns.push({ check: "sandbox", severity: "info", detail });
+  }
   return { result, output: { variant: capture, files, previews, sheet } };
 }
 
 function variantFilesExist(dir: string, v: CaptureVariant): boolean {
-  const names = [...v.pages.flatMap((p) => [p.file, p.strip]), v.card.file, v.card.file480, v.og.file, ...(v.pdf ? [v.pdf.file] : [])];
+  const names = [
+    ...v.pages.flatMap((p) => [p.file, p.strip]), v.card.file, v.card.file480, v.og.file,
+    ...(v.pdf ? [v.pdf.file] : []), ...(v.sandbox ? [v.sandbox.file] : []),
+  ];
   return names.every((name) => fs.existsSync(path.join(dir, name)));
 }
 
@@ -348,6 +376,22 @@ function keptVariant(old: CaptureVariant, next: CaptureVariant): CaptureVariant 
     og: old.og,
     ...(old.pdf ? { pdf: old.pdf } : {}),
   };
+}
+
+/** Writes `bytes` to `file` through a temporary file, unless they are there already. */
+function writeIfChanged(file: string, bytes: Buffer): boolean {
+  if (fs.existsSync(file) && fs.readFileSync(file).equals(bytes)) return false;
+  const tmp = `${file}.tmp-${process.pid}`;
+  fs.writeFileSync(tmp, bytes);
+  fs.renameSync(tmp, file);
+  return true;
+}
+
+/** A kept edition's bundle is written again: it follows the tooling, like
+ *  the rest of capture.json, and weighs little. */
+function keptBundle(dir: string, slug: string, output: Output | undefined): boolean {
+  const bytes = output?.files.get(sandboxFile(slug));
+  return bytes ? writeIfChanged(path.join(dir, sandboxFile(slug)), bytes) : false;
 }
 
 /** The manifest minus what a rewrite always changes. */
@@ -407,7 +451,9 @@ function writeRecipe(
   // No image changed: rewrite capture.json alone (keeping capturedAt, the
   // time of the images) when the tooling changed what describes them.
   if (!fresh.size && !dropped.length) {
-    if (!prev || manifestKey(manifest) === manifestKey(prev)) return null;
+    let bundles = false;
+    for (const locale of kept) bundles = keptBundle(path.join(finalDir, locale), task.slug, outputs.get(locale)) || bundles;
+    if (!prev || (manifestKey(manifest) === manifestKey(prev) && !bundles)) return null;
     const file = path.join(finalDir, "capture.json");
     const tmpFile = `${file}.tmp-${process.pid}`;
     fs.writeFileSync(tmpFile, `${JSON.stringify({ ...manifest, capturedAt: prev.capturedAt }, null, 2)}\n`);
@@ -420,7 +466,10 @@ function writeRecipe(
   const tmp = fs.mkdtempSync(path.join(tmpRoot, `${task.slug}-`));
   const old = `${finalDir}.old-${process.pid}`;
   try {
-    for (const locale of kept) fs.cpSync(path.join(finalDir, locale), path.join(tmp, locale), { recursive: true, preserveTimestamps: true });
+    for (const locale of kept) {
+      fs.cpSync(path.join(finalDir, locale), path.join(tmp, locale), { recursive: true, preserveTimestamps: true });
+      keptBundle(path.join(tmp, locale), task.slug, outputs.get(locale));
+    }
     for (const locale of fresh) {
       const dir = path.join(tmp, locale);
       fs.mkdirSync(dir, { recursive: true });
@@ -479,6 +528,7 @@ export async function runCapture(opts: CaptureOptions): Promise<CaptureResult[]>
         try {
           const run = await runVariant({
             hb, slug: task.slug, variant, meta: task.meta, engine: opts.engine, refreshNet: opts.refreshNet, png: !!opts.previewDir,
+            sandbox: sandboxMeta(task.slug, variant),
           });
           return { task, variant, ...evaluate(task, run, hb, engine, registry) };
         } catch (error) {
@@ -529,6 +579,116 @@ export async function runCapture(opts: CaptureOptions): Promise<CaptureResult[]>
     await hb.browser.close().catch(() => {});
   }
   if (opts.report) writeReport(opts.report, results, engine, hb.chrome);
+  return results;
+}
+
+// ─── --sandbox-only ─────────────────────────────────────────────────────────
+
+/**
+ * Writes the Sandbox bundles of recipes already captured, without touching
+ * their pictures: each edition runs again on the engine its capture.json
+ * records, and only `<variant>/<slug>.postext` and the edition's `sandbox`
+ * entry in capture.json are written (capturedAt stays). A capture whose
+ * sources changed since is refused: capture it again instead. The run's
+ * VDT hash is compared with the recorded one, so a bundle of another
+ * layout than the published pages shows up as a warning.
+ */
+export async function runSandboxOnly(opts: CaptureOptions): Promise<CaptureResult[]> {
+  const langs = opts.langs?.length ? opts.langs : LOCALES;
+  const slugs = opts.slugs.length ? opts.slugs : listRecipeSlugs();
+  const results: CaptureResult[] = [];
+  const tasks: { slug: string; meta: RecipeMeta; manifest: CaptureManifest; variants: Locale[] }[] = [];
+  for (const slug of slugs) {
+    let meta: RecipeMeta;
+    try {
+      meta = readRecipeMeta(slug);
+    } catch (error) {
+      results.push(failed(slug, "en", "recipe", (error as Error).message));
+      continue;
+    }
+    if (!opts.slugs.length && meta.status === "retired") continue;
+    const manifest = readManifest(slug);
+    if (!manifest) {
+      results.push(failed(slug, meta.sample.locales[0] ?? "en", "sandbox", "no capture.json: capture the recipe first"));
+      continue;
+    }
+    if (manifest.sourceHash !== sourceHash(slug, meta)) {
+      results.push(failed(slug, meta.sample.locales[0] ?? "en", "sandbox", "the recipe changed since its capture: capture it again, which writes the bundle too"));
+      continue;
+    }
+    const variants = LOCALES.filter((l) => manifest.variants[l] && langs.includes(l));
+    if (variants.length) tasks.push({ slug, meta, manifest, variants });
+  }
+  if (!tasks.length) return results;
+
+  const hb = await launchBrowser({ headed: opts.headed });
+  try {
+    const jobs = tasks.flatMap((task) => task.variants.map((variant) => async () => {
+      const old = task.manifest.variants[variant]!;
+      const engine = `npm@${task.manifest.engine.postext}`;
+      const dir = path.join(captureDir(task.slug), variant);
+      const card = path.join(dir, old.card.file480);
+      const result: CaptureResult = {
+        slug: task.slug, variant, ok: false, fails: [], warns: [], pages: old.pages.length, totalMs: 0, written: false,
+        outDir: dir, engine: task.manifest.engine.postext,
+      };
+      process.stderr.write(dim(`  bundling ${task.slug} ${variant} · postext ${task.manifest.engine.postext}
+`));
+      let bytes: Buffer | null = null;
+      try {
+        const run = await runVariant({
+          hb, slug: task.slug, variant, meta: task.meta, engine, refreshNet: opts.refreshNet, sandboxOnly: true,
+          sandbox: { ...sandboxMeta(task.slug, variant), thumbnail: fs.existsSync(card) ? fs.readFileSync(card) : null },
+        });
+        result.totalMs = run.timings.totalMs;
+        if (run.done !== "ok") result.fails.push({ check: "run", detail: run.done === "error" ? `the pen failed: ${run.err ?? ""}` : "the pen timed out" });
+        if (run.pageErrors.length) result.fails.push({ check: "run", detail: `page errors: ${run.pageErrors.slice(0, 3).join(" · ")}` });
+        if (!run.facts || run.facts.selected < 0) result.fails.push({ check: "run", detail: "no build recorded" });
+        if (run.sandbox?.error || !run.sandbox?.bytes) result.fails.push({ check: "sandbox", detail: `no .postext bundle: ${run.sandbox?.error ?? "not written"}` });
+        const vdtHash = run.facts?.vdt ? sha1(run.facts.vdt) : "";
+        if (vdtHash && vdtHash !== old.vdtHash) {
+          result.warns.push({ check: "vdt", severity: "warn", detail: "the layout differs from the published pages (fonts or network?)" });
+        }
+        for (const detail of [...(run.sandbox?.notes ?? []), ...(run.sandbox?.warnings ?? [])]) {
+          result.warns.push({ check: "sandbox", severity: "info", detail });
+        }
+        bytes = run.sandbox?.bytes ?? null;
+        result.bytes = bytes?.length;
+      } catch (error) {
+        result.fails.push({ check: "harness", detail: String((error as Error).stack ?? error).split("\n").slice(0, 3).join(" ⏎ ") });
+      }
+      result.ok = result.fails.length === 0;
+      return { task, variant, result, bytes };
+    }));
+    const done = await pool(jobs, opts.concurrency ?? 3);
+
+    for (const task of tasks) {
+      const mine = done.filter((d) => d.task === task);
+      results.push(...mine.map((d) => d.result));
+      if (!mine.every((d) => d.result.ok)) {
+        for (const d of mine) d.result.note = d.result.ok ? "not written: another edition failed" : "not written";
+        continue;
+      }
+      if (opts.check) {
+        for (const d of mine) d.result.note = "check only";
+        continue;
+      }
+      // Re-read capture.json: only the `sandbox` entries change.
+      const manifest = readManifest(task.slug)!;
+      for (const d of mine) {
+        const file = sandboxFile(task.slug);
+        d.result.written = writeIfChanged(path.join(captureDir(task.slug), d.variant, file), d.bytes!);
+        // Where a fresh capture puts it: after the PDF, before `detected`.
+        const { detected, diagnostics, ...head } = manifest.variants[d.variant]!;
+        manifest.variants[d.variant] = { ...head, sandbox: { file, bytes: d.bytes!.length }, detected, diagnostics };
+        if (!d.result.written) d.result.note = "unchanged";
+      }
+      const target = path.join(captureDir(task.slug), "capture.json");
+      writeIfChanged(target, Buffer.from(`${JSON.stringify(manifest, null, 2)}\n`));
+    }
+  } finally {
+    await hb.browser.close().catch(() => {});
+  }
   return results;
 }
 

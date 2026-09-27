@@ -155,6 +155,10 @@
         "bytes": 112359,
         "pages": 7
       },
+      "sandbox": {
+        "file": "thesis-back-matter.postext",
+        "bytes": 19848
+      },
       "detected": {
         "apis": [
           "buildDocument",

@@ -19,7 +19,7 @@ import { WriteUp } from "@/components/cookbook/recipe/WriteUp";
 import { routing } from "@/i18n/routing";
 import { docAnchor } from "@/lib/cookbook/docLinks";
 import { highlightCss } from "@/lib/cookbook/highlight";
-import { cardImage } from "@/lib/cookbook/images";
+import { cardImage, sandboxLink } from "@/lib/cookbook/images";
 import { getRecipe, getVisibleRecipes, writeupFor } from "@/lib/cookbook/recipes";
 import type { Locale } from "@/lib/cookbook/types";
 import { SITE_NAME, SITE_URL, buildMetadata, localizedUrl } from "@/lib/seo";
@@ -128,6 +128,15 @@ function jsonLd(view: RecipeView, t: Awaited<ReturnType<typeof getTranslations>>
   };
 }
 
+/** Open in Sandbox: an interactive recipe (a live page, a screenshot card)
+ *  hands the Sandbox its document only, which the tooltip says. */
+function sandboxAction(recipe: NonNullable<ReturnType<typeof getRecipe>>, locale: Locale): RecipeActionsData["sandbox"] {
+  const link = sandboxLink(recipe, locale);
+  if (!link) return null;
+  const { meta } = recipe;
+  return { href: link.href, live: meta.outputs.includes("live") || meta.capture.card === "screenshot" };
+}
+
 export default async function RecipePage({ params }: { params: Params }) {
   const { locale, slug } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
@@ -151,6 +160,7 @@ export default async function RecipePage({ params }: { params: Params }) {
     description: `${view.summary}\n\n${view.url}`,
     tags: [view.chapter.id],
     pdf: view.pdf ? { href: view.pdf.href, size: formatKb(view.pdf.bytes, locale), pages: view.pdf.pages } : null,
+    sandbox: sandboxAction(recipe, locale),
     githubUrl: view.githubUrl,
   };
   // Only pen.json travels as JSON: Copy, CodePen and the .html download

@@ -98,6 +98,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "section-heads-field-manual.postext",
+        "bytes": 31219
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -419,6 +423,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "section-heads-field-manual.postext",
+        "bytes": 31419
       },
       "detected": {
         "apis": [

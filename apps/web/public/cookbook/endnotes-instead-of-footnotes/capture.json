@@ -123,6 +123,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "endnotes-instead-of-footnotes.postext",
+        "bytes": 27898
+      },
       "detected": {
         "apis": [
           "buildDocument",

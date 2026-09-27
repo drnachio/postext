@@ -123,6 +123,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "letters-edition.postext",
+        "bytes": 25937
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -391,6 +395,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "letters-edition.postext",
+        "bytes": 25965
       },
       "detected": {
         "apis": [

@@ -71,6 +71,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "cv-with-sidebar.postext",
+        "bytes": 29075
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -317,6 +321,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "cv-with-sidebar.postext",
+        "bytes": 31400
       },
       "detected": {
         "apis": [

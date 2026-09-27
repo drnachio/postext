@@ -150,6 +150,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "critical-edition-line-numbers.postext",
+        "bytes": 38309
+      },
       "detected": {
         "apis": [
           "buildDocument",

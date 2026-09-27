@@ -124,6 +124,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "annual-report-flush-columns.postext",
+        "bytes": 88370
+      },
       "detected": {
         "apis": [
           "buildDocument",

@@ -87,6 +87,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "newspaper-front-page.postext",
+        "bytes": 199600
+      },
       "detected": {
         "apis": [
           "buildDocument",

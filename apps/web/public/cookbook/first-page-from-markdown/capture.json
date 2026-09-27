@@ -87,6 +87,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "first-page-from-markdown.postext",
+        "bytes": 19595
+      },
       "detected": {
         "apis": [
           "buildDocument",
@@ -357,6 +361,10 @@
         "file": "og.jpg",
         "w": 580,
         "h": 622
+      },
+      "sandbox": {
+        "file": "first-page-from-markdown.postext",
+        "bytes": 20021
       },
       "detected": {
         "apis": [

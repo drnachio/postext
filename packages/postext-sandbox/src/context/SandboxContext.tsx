@@ -13,16 +13,44 @@ import {
   type MutableRefObject,
 } from 'react';
 import type { PostextConfig, VDTDocument, Resource, LayoutContinuation } from 'postext';
-import { stripConfigDefaults } from 'postext';
+import { clearMeasurementCache, stripConfigDefaults } from 'postext';
+import { PROJECT_RECORD_VERSION } from '../storage/projectMigration';
 import type { PanelId, ViewportTab, SandboxLabels } from '../types';
+import type { HashBundleResolver } from '../types/props';
 import { DEFAULT_LABELS } from '../types';
-import { EMPTY_VIEW_HASH, readViewHash, sameBook, type ViewHash, type ViewHashBook } from '../storage/viewHash';
-import { loadConfig, loadStoredConfig, loadBook, loadViewport, loadSidebarPercent, loadPanel, loadPresetApplied, loadPresetId, loadProjectId, loadHiddenPresetIds, saveConfig, saveBook, saveViewport, saveSidebarPercent, savePanel, savePresetApplied, saveProjectId, saveHiddenPresetIds } from '../storage/persistence';
+import {
+  EMPTY_VIEW_HASH,
+  hashNamesOtherBook,
+  parseHashBundle,
+  readViewHash,
+  sameBook,
+  writeViewHash,
+  type HashBundleRef,
+  type ViewHash,
+  type ViewHashBook,
+} from '../storage/viewHash';
+import { loadConfig, loadStoredConfig, loadBook, loadViewport, loadSidebarPercent, loadPanel, loadPresetApplied, loadPresetId, loadProjectId, loadHiddenPresetIds, saveConfig, saveBook, saveViewport, saveSidebarPercent, savePanel, savePresetApplied, savePresetId, saveProjectId, saveHiddenPresetIds } from '../storage/persistence';
 import { loadResources, saveResource, deleteResource } from '../storage/resources';
 import { customFontsSignature, setCustomFonts } from '../controls/fontLoader';
 import { pruneFontFiles } from '../storage/fontStorage';
 import { pruneBlobs } from '../storage/blobStore';
 import { collectProjectFileIds, generateChapterId, listProjects, referencedFileIds, toSummary, updateProject } from '../storage/projects';
+import {
+  decideDraftSave,
+  deletePresetDraft,
+  getPresetDraft,
+  listPresetDrafts,
+  preserveDraftBlobs,
+  presetDraftKey,
+  putPresetDraft,
+  toDraftSummary,
+  type PresetDraftRecord,
+  type PresetDraftSummary,
+} from '../storage/presetDrafts';
+import { createSaveScheduler, type SaveScheduler } from '../storage/saveScheduler';
+import { getBlob, putBlobAt } from '../storage/blobStore';
+import { choosePresetOpen, sameLanguage } from '../presets/locale';
+import { fetchBundleBytes, openHashBundle } from './hashBundle';
 import { getChapterLayouts, pruneChapterLayoutStore, putChapterLayouts } from '../storage/layouts';
 import type { ProjectSummary } from '../storage/projects';
 import type { BookContent, BookPages, BookPlan, Chapter, ChapterLayout, ChapterPlan, ComposedBook, LayoutScope } from '../book/types';
@@ -162,6 +190,16 @@ export interface SandboxState {
    *  `:ref` as unresolved; viewports that do not rebuild on their own (PDF)
    *  wait for it. */
   storeReady: boolean;
+  /** The page was opened on a link to another book than the one stored as
+   *  open (`#preset=…`, `#project=…`, a host bundle key): the stored book is
+   *  not shown at all — the sandbox shows its loading state until the
+   *  linked book is on screen (cleared with `storeReady`). */
+  booting: boolean;
+  /** Another book is being opened (a row click, a link): the viewport
+   *  shows a loading state instead of the book that is being left. */
+  bookLoading: boolean;
+  /** Presets with a saved draft (their edited copy), per content locale. */
+  presetDrafts: PresetDraftSummary[];
   activePanel: PanelId | null;
   sidebarPercent: number;
   sidebarDragging: boolean;
@@ -261,8 +299,14 @@ export type SandboxAction =
   | { type: 'BUMP_DOC_VERSION' }
   | { type: 'SET_RESOURCES'; payload: Resource[] }
   | { type: 'SET_STORE_READY' }
+  | { type: 'SET_BOOK_LOADING'; payload: boolean }
+  | { type: 'SET_PRESET_DRAFTS'; payload: PresetDraftSummary[] }
+  | { type: 'UPSERT_PRESET_DRAFT'; payload: PresetDraftSummary }
+  | { type: 'REMOVE_PRESET_DRAFT'; payload: string }
   | { type: 'UPSERT_RESOURCE'; payload: Resource }
   | { type: 'DELETE_RESOURCE'; payload: string }
+  /** `config`, when the key is present (even undefined), replaces the
+   *  preset's baseline configuration; without the key it is kept. */
   | { type: 'SET_PRESET'; payload: { id: string; config?: PostextConfig } }
   | { type: 'SET_PRESET_STATUS'; payload: { status: 'idle' | 'loading' | 'error'; error?: string } }
   | { type: 'SET_PRESET_LIST'; payload: PresetSummary[] }
@@ -496,7 +540,21 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
     case 'BUMP_DOC_VERSION':
       return { ...state, docVersion: state.docVersion + 1 };
     case 'SET_STORE_READY':
-      return state.storeReady ? state : { ...state, storeReady: true };
+      return state.storeReady && !state.booting ? state : { ...state, storeReady: true, booting: false };
+    case 'SET_BOOK_LOADING':
+      return state.bookLoading === action.payload ? state : { ...state, bookLoading: action.payload };
+    case 'SET_PRESET_DRAFTS':
+      return { ...state, presetDrafts: action.payload };
+    case 'UPSERT_PRESET_DRAFT': {
+      const idx = state.presetDrafts.findIndex((d) => d.key === action.payload.key);
+      const presetDrafts = idx === -1
+        ? [...state.presetDrafts, action.payload]
+        : state.presetDrafts.map((d) => (d.key === action.payload.key ? action.payload : d));
+      return { ...state, presetDrafts };
+    }
+    case 'REMOVE_PRESET_DRAFT':
+      if (!state.presetDrafts.some((d) => d.key === action.payload)) return state;
+      return { ...state, presetDrafts: state.presetDrafts.filter((d) => d.key !== action.payload) };
     case 'SET_RESOURCES': {
       const ids = new Set(action.payload.map((r) => r.id));
       return {
@@ -529,7 +587,7 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
       return {
         ...state,
         activePresetId: action.payload.id,
-        presetConfig: action.payload.config ?? state.presetConfig,
+        presetConfig: 'config' in action.payload ? action.payload.config : state.presetConfig,
         presetStatus: 'idle',
         presetError: undefined,
       };
@@ -617,8 +675,17 @@ interface SandboxStore {
    *  the viewer locale applies. Resolves to whether the preset was
    *  applied. */
   loadPreset: (id: string, locale?: string) => Promise<boolean>;
-  /** Re-fetch the active preset and re-apply the given parts. */
+  /** Re-fetch the active preset and re-apply the given parts. `all`
+   *  restores the original (its draft is dropped). */
   reloadPreset: (parts: PresetApplyParts) => Promise<void>;
+  /** Drop every draft of a preset; when it is on screen, its original
+   *  replaces the edited book. */
+  restorePresetOriginal: (presetId: string) => Promise<void>;
+  /** Open the book a host bundle link names (see `hashBundles`). Resolves
+   *  to whether it opened. */
+  openHashBundle: (ref: HashBundleRef) => Promise<boolean>;
+  /** The fragment keys the host resolves to bundles. */
+  hashBundleKeys: readonly string[];
   projectActions: ProjectActions;
 }
 
@@ -717,10 +784,20 @@ export interface SandboxPresetsValue {
    *  bundle's second language stays active across reloads); null in
    *  project mode or when unknown. */
   activeLocale: string | null;
+  /** The book on screen is a preset with edits (a saved draft). */
+  edited: boolean;
+  /** Saved drafts of presets, per content locale. */
+  drafts: PresetDraftSummary[];
   load: (id: string, locale?: string) => Promise<boolean>;
   reload: (parts: PresetApplyParts) => Promise<void>;
+  restoreOriginal: (presetId: string) => Promise<void>;
   hide: (id: string) => void;
   unhide: (id: string) => void;
+}
+
+/** Whether the book on screen still is what the active preset applied. */
+function untouchedOf(s: SandboxState): boolean {
+  return isDocumentUntouched(s, s.presetApplied);
 }
 
 /** Preset list plus load/reload actions. Re-renders on preset state changes
@@ -736,6 +813,8 @@ export function useSandboxPresets(): SandboxPresetsValue {
   const stale = useSandboxSelector((s) => s.presetStale);
   const updatedAt = useSandboxSelector((s) => s.presetUpdatedAt);
   const hiddenIds = useSandboxSelector((s) => s.hiddenPresetIds);
+  const edited = useSandboxSelector((s) => s.storeReady && s.activeProjectId === null && !untouchedOf(s));
+  const drafts = useSandboxSelector((s) => s.presetDrafts);
   const activeLocale = useSandboxSelector((s) =>
     s.activeProjectId === null && s.presetApplied?.presetId === s.activePresetId
       ? s.presetApplied.locale ?? null
@@ -750,8 +829,11 @@ export function useSandboxPresets(): SandboxPresetsValue {
     updatedAt,
     hiddenIds,
     activeLocale,
+    edited,
+    drafts,
     load: store.loadPreset,
     reload: store.reloadPreset,
+    restoreOriginal: store.restorePresetOriginal,
     hide: (id) => store.dispatch({ type: 'HIDE_PRESET', payload: id }),
     unhide: (id) => store.dispatch({ type: 'UNHIDE_PRESET', payload: id }),
   };
@@ -807,9 +889,19 @@ export function useSandboxActiveProjectId(): string | null {
 
 /** The actions that open another book — a preset (in a locale) or a local
  *  project — without subscribing to any state. */
-export function useSandboxBookActions(): { loadPreset: SandboxStore['loadPreset']; activateProject: ProjectActions['activate'] } {
+export function useSandboxBookActions(): {
+  loadPreset: SandboxStore['loadPreset'];
+  activateProject: ProjectActions['activate'];
+  openHashBundle: SandboxStore['openHashBundle'];
+  hashBundleKeys: readonly string[];
+} {
   const store = useStore();
-  return { loadPreset: store.loadPreset, activateProject: store.projectActions.activate };
+  return {
+    loadPreset: store.loadPreset,
+    activateProject: store.projectActions.activate,
+    openHashBundle: store.openHashBundle,
+    hashBundleKeys: store.hashBundleKeys,
+  };
 }
 
 /** Stable ref to the most recently built VDT document. Does not subscribe
@@ -933,6 +1025,8 @@ interface SandboxProviderProps {
   /** Remote preset sources (index.json base URLs), tried in order after the
    *  built-in preset. Defaults to none. */
   presetSources?: PresetSourceSpec[];
+  /** Books linked by a host fragment key (see `PostextSandboxProps`). */
+  hashBundles?: Record<string, HashBundleResolver>;
   onConfigChange?: (config: PostextConfig) => void;
   onMarkdownChange?: (markdown: string) => void;
 }
@@ -960,6 +1054,7 @@ export function SandboxProvider({
   labels,
   locale,
   presetSources = NO_SOURCES,
+  hashBundles,
   onConfigChange,
   onMarkdownChange,
 }: SandboxProviderProps) {
@@ -997,6 +1092,15 @@ export function SandboxProvider({
   // rewrite the fragment before then.
   const initialHashRef = useRef<ViewHash | null>(null);
   if (initialHashRef.current === null) initialHashRef.current = readViewHash();
+  // Host bundle links (`#recipe=…`): the resolvers are read live, the keys
+  // and the link the page was opened with once.
+  const hashBundlesRef = useRef(hashBundles);
+  hashBundlesRef.current = hashBundles;
+  const hashBundleKeys = useMemo(() => Object.keys(hashBundles ?? {}), [hashBundles]);
+  const initialBundleRef = useRef<HashBundleRef | null | undefined>(undefined);
+  if (initialBundleRef.current === undefined) {
+    initialBundleRef.current = typeof window === 'undefined' ? null : parseHashBundle(window.location.hash, hashBundleKeys);
+  }
   const [state, dispatch] = useReducer(sandboxReducer, undefined, () => {
     const savedBook = loadBook(migration);
     const loadedBook = savedBook ?? sampleBook(defaultMd, generateChapterId, mergedLabels.presetPostextGuideName);
@@ -1030,6 +1134,14 @@ export function SandboxProvider({
       );
       if (presetApplied !== savedSnapshot) savePresetApplied(presetApplied);
     }
+    // A link to another book than the stored one: the stored book is not
+    // shown, not even for a moment (see `booting`).
+    const storedPresetId = loadPresetId() ?? BUILTIN_PRESET_ID;
+    const booting = hashNamesOtherBook(initialHash, {
+      projectId: loadProjectId(),
+      presetId: storedPresetId,
+      presetLocale: presetApplied?.presetId === storedPresetId ? presetApplied.locale ?? null : null,
+    }, initialBundleRef.current ?? null);
 
     return {
       markdown: activeChapter(book).markdown,
@@ -1042,6 +1154,9 @@ export function SandboxProvider({
       config,
       resources: [],
       storeReady: false,
+      booting,
+      bookLoading: false,
+      presetDrafts: [],
       activePanel: savedPanel !== undefined ? savedPanel : ('markdown' as PanelId),
       sidebarPercent: savedPercent ?? 25,
       sidebarDragging: false,
@@ -1097,10 +1212,82 @@ export function SandboxProvider({
   const projectsLoadedRef = useRef(false);
   const gcSuspendedRef = useRef(0);
   const gcTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  // Open book switches in flight: the working-copy save stands still while
+  // the state is being swapped (see `persistWorking`).
+  const switchingRef = useRef(0);
+  // The draft the book on screen was opened from or last saved to (see
+  // `decideDraftSave`): only that one may be dropped by an undo.
+  const liveDraftKeyRef = useRef<string | null>(null);
+  // The drafts as listed, readable before a dispatch has rendered (the
+  // mount seeding opens books right after listing them).
+  const draftsRef = useRef<PresetDraftSummary[]>([]);
+  const setDraftSummaries = (list: PresetDraftSummary[]): void => {
+    draftsRef.current = list;
+    dispatch({ type: 'SET_PRESET_DRAFTS', payload: list });
+  };
+  const upsertDraftSummary = (summary: PresetDraftSummary): void => {
+    draftsRef.current = [...draftsRef.current.filter((d) => d.key !== summary.key), summary];
+    dispatch({ type: 'UPSERT_PRESET_DRAFT', payload: summary });
+  };
+  const removeDraftSummary = (key: string): void => {
+    draftsRef.current = draftsRef.current.filter((d) => d.key !== key);
+    dispatch({ type: 'REMOVE_PRESET_DRAFT', payload: key });
+  };
+
+  /** Open another book: the one on screen is written to its own record
+   *  first, the viewport shows the loading state while `fn` runs, and the
+   *  working-copy save waits until the new book is in. */
+  const switchBook = async <T,>(fn: () => Promise<T>): Promise<T> => {
+    await saverRef.current!.flush();
+    switchingRef.current++;
+    if (switchingRef.current === 1) dispatch({ type: 'SET_BOOK_LOADING', payload: true });
+    try {
+      return await fn();
+    } finally {
+      switchingRef.current--;
+      if (switchingRef.current === 0) dispatch({ type: 'SET_BOOK_LOADING', payload: false });
+    }
+  };
+  const switchBookRef = useRef(switchBook);
+  switchBookRef.current = switchBook;
+
+  /** Put a preset's saved draft on screen, in one synchronous batch. */
+  const applyDraft = (draft: PresetDraftRecord): void => {
+    // Any preset still loading would land over it.
+    presetLoadSeqRef.current++;
+    const loc = stateRef.current.locale;
+    const config = withDefaultResourceTypes(draft.config, loc);
+    setCustomFonts(config.customFonts);
+    const book: BookContent = {
+      chapters: draft.chapters,
+      activeChapterId: draft.activeChapterId,
+      ...(draft.canvasScope ? { canvasScope: draft.canvasScope } : {}),
+    };
+    dispatch({ type: 'SET_ACTIVE_PROJECT', payload: { id: null } });
+    dispatch({ type: 'SET_PRESET', payload: { id: draft.presetId, config: draft.baseConfig ? withDefaultResourceTypes(draft.baseConfig, loc) : undefined } });
+    dispatch({ type: 'SET_CONFIG', payload: config });
+    dispatch({ type: 'SET_RESOURCES', payload: draft.resources });
+    dispatch({ type: 'SET_BOOK', payload: book });
+    dispatch({ type: 'SET_PRESET_APPLIED', payload: draft.snapshot });
+    clearMeasurementCache();
+    saveProjectId(null);
+    savePresetId(draft.presetId);
+    savePresetApplied(draft.snapshot);
+    saveBook(book);
+    saveConfig(config);
+    liveDraftKeyRef.current = draft.key;
+  };
 
   /** Resolves to whether the preset was applied (false: superseded by a
-   *  newer load, or failed). */
-  const runPreset = async (provider: PresetProvider, parts: PresetApplyParts, locale?: string): Promise<boolean> => {
+   *  newer load, or failed). `leaveProject` switches out of project mode in
+   *  the same commit as the preset lands; `discardKey` names the draft this
+   *  apply replaces (its payloads need no preserving). */
+  const runPreset = async (
+    provider: PresetProvider,
+    parts: PresetApplyParts,
+    locale?: string,
+    opts: { leaveProject?: boolean; discardKey?: string } = {},
+  ): Promise<boolean> => {
     const seq = ++presetLoadSeqRef.current;
     dispatch({ type: 'SET_PRESET_STATUS', payload: { status: 'loading' } });
     try {
@@ -1115,8 +1302,31 @@ export function SandboxProvider({
       const keep = applied?.presetId === provider.summary.id ? applied.locale : undefined;
       const loaded = await provider.load(locale ?? keep ?? stateRef.current.locale);
       if (seq !== presetLoadSeqRef.current) return false;
+      // Drafts of this preset (another locale, an older version) keep the
+      // payloads they were edited with when this apply brings other bytes.
+      if (parts !== 'config') {
+        await preserveDraftBlobs(loaded.blobs, {
+          listDrafts: listPresetDrafts,
+          getBlob,
+          putBlobAt,
+          putDraft: putPresetDraft,
+        }, opts.discardKey).catch(() => []);
+        if (seq !== presetLoadSeqRef.current) return false;
+      }
       const { chapters, config, resources } = stateRef.current;
-      await applyPreset(loaded, dispatch, { parts, fingerprint, current: { chapters, config, resources } });
+      await applyPreset(loaded, dispatch, {
+        parts,
+        fingerprint,
+        current: { chapters, config, resources },
+        before: () => {
+          if (opts.leaveProject && stateRef.current.activeProjectId !== null) {
+            dispatch({ type: 'SET_ACTIVE_PROJECT', payload: { id: null } });
+            saveProjectId(null);
+          }
+        },
+      });
+      // The original is on screen: no draft is live until it is edited.
+      if (parts === 'all') liveDraftKeyRef.current = null;
       return true;
     } catch (err) {
       if (seq !== presetLoadSeqRef.current) return false;
@@ -1128,6 +1338,98 @@ export function SandboxProvider({
   const runPresetRef = useRef(runPreset);
   runPresetRef.current = runPreset;
 
+  /** Open a preset: its saved draft when there is one for the locale it
+   *  opens in (see `choosePresetOpen`), else its original. The book on
+   *  screen is written to its own record first. */
+  const openPreset = async (id: string, locale?: string): Promise<boolean> => {
+    const provider = presetProvidersRef.current.find((p) => p.summary.id === id);
+    if (!provider) return false;
+    const s = stateRef.current;
+    const onScreen = s.activeProjectId === null && s.activePresetId === id;
+    const current = onScreen && s.presetApplied?.presetId === id ? s.presetApplied.locale ?? null : null;
+    const choice = choosePresetOpen({ summary: provider.summary, requested: locale, current, viewer: s.locale, drafts: draftsRef.current });
+    if (current !== null && sameLanguage(choice.locale, current) && s.presetStatus !== 'loading') return true;
+    return switchBookRef.current(async () => {
+      if (choice.draft) {
+        const draft = await getPresetDraft(choice.draft.key);
+        if (draft) {
+          applyDraft(draft);
+          return true;
+        }
+        removeDraftSummary(choice.draft.key);
+      }
+      return runPresetRef.current(provider, 'all', choice.locale, { leaveProject: true });
+    });
+  };
+  const openPresetRef = useRef(openPreset);
+  openPresetRef.current = openPreset;
+
+  /** Drop the drafts of a preset (of one locale, or all of them); when the
+   *  preset is on screen in a dropped locale, its original replaces it. */
+  const restorePresetOriginal = async (presetId: string, locale?: string): Promise<void> => {
+    const s = stateRef.current;
+    const onScreen = s.activeProjectId === null && s.activePresetId === presetId;
+    const screenLocale = onScreen && s.presetApplied?.presetId === presetId ? s.presetApplied.locale : undefined;
+    const keys = draftsRef.current
+      .filter((d) => d.presetId === presetId && (locale === undefined || d.locale === locale))
+      .map((d) => d.key);
+    const screenKey = onScreen ? presetDraftKey(presetId, screenLocale) : null;
+    const reapply = onScreen && (locale === undefined || locale === (screenLocale ?? ''));
+    if (reapply) {
+      // The pending edits go with the draft.
+      saverRef.current!.discard();
+      liveDraftKeyRef.current = null;
+      if (screenKey && !keys.includes(screenKey)) keys.push(screenKey);
+    }
+    await Promise.all(keys.map((k) => deletePresetDraft(k).catch(() => undefined)));
+    for (const k of keys) removeDraftSummary(k);
+    if (!reapply) return;
+    const provider = presetProvidersRef.current.find((p) => p.summary.id === presetId) ?? builtinPresetRef.current;
+    await switchBookRef.current(() => runPresetRef.current(provider, 'all', screenLocale, { discardKey: screenKey ?? undefined }));
+  };
+  const restorePresetOriginalRef = useRef(restorePresetOriginal);
+  restorePresetOriginalRef.current = restorePresetOriginal;
+
+  /** Open the book a host bundle link names (`hashBundles`): the project
+   *  imported from it before, else a fresh import; then the fragment names
+   *  the project. `known` lists the projects when the state does not hold
+   *  them yet (the mount); `keep` is a project already on screen. */
+  const openLinkedBundle = async (
+    ref: HashBundleRef,
+    known?: readonly { id: string; origin?: string }[],
+    keep?: string | null,
+  ): Promise<string | null> => {
+    const resolver = hashBundlesRef.current?.[ref.key];
+    if (!resolver || typeof window === 'undefined') return null;
+    const labels = stateRef.current.labels;
+    try {
+      const list = known ?? stateRef.current.projects;
+      const opened = await openHashBundle(ref, {
+        resolve: resolver,
+        findProject: (origin) => list.find((p) => p.origin === origin)?.id ?? null,
+        activate: (id) => (id === keep ? Promise.resolve() : projectActions.activate(id)),
+        fetchBytes: fetchBundleBytes,
+        importBytes: (bytes, name, origin) => projectActions.importBundleBytes(bytes, name, { origin }),
+        pageOrigin: window.location.origin,
+      });
+      writeViewHash({ project: opened.projectId });
+      return opened.projectId;
+    } catch (err) {
+      const reason = (err as { reason?: string } | null)?.reason;
+      const message = reason === 'unknown' || reason === 'not-found'
+        ? labels.hashBundleNotFound
+        : labels.hashBundleError.replace('__error__', err instanceof Error ? err.message : String(err));
+      dispatch({ type: 'SET_PROJECT_STATUS', payload: { status: 'idle' } });
+      dispatch({ type: 'SET_PROJECT_NOTICE', payload: message });
+      dispatch({ type: 'SET_PANEL', payload: 'projects' });
+      // The fragment goes back to naming the book on screen.
+      writeViewHash({});
+      return null;
+    }
+  };
+  const openLinkedBundleRef = useRef(openLinkedBundle);
+  openLinkedBundleRef.current = openLinkedBundle;
+
   useEffect(() => {
     let cancelled = false;
     const loc = locale ?? 'en';
@@ -1137,15 +1439,18 @@ export function SandboxProvider({
         () => [builtinPresetRef.current],
       ),
       listProjects(),
+      listPresetDrafts(),
     ])
-      .then(async ([loaded, providers, projects]) => {
+      .then(async ([loaded, providers, projects, drafts]) => {
         if (cancelled) return;
         presetProvidersRef.current = providers;
         dispatch({ type: 'SET_PROJECT_LIST', payload: projects.map(toSummary) });
+        setDraftSummaries(drafts.map(toDraftSummary));
         projectsLoadedRef.current = true;
         // Layout records of chapters no book holds any more are dropped.
         void pruneChapterLayoutStore(new Set([
           ...projects.flatMap((p) => p.chapters.map((c) => c.id)),
+          ...drafts.flatMap((d) => d.chapters.map((c) => c.id)),
           ...stateRef.current.chapters.map((c) => c.id),
         ])).catch(() => undefined);
 
@@ -1178,6 +1483,33 @@ export function SandboxProvider({
         prevResourcesRef.current = loaded;
         resourcesLoadedRef.current = true;
 
+        const before = stateRef.current;
+        // The stored book is a preset with a draft: it was opened from (or
+        // saved to) that draft, so undoing every edit drops it.
+        if (before.activeProjectId === null && before.presetApplied?.presetId === before.activePresetId) {
+          const key = presetDraftKey(before.activePresetId, before.presetApplied.locale);
+          if (drafts.some((d) => d.key === key)) liveDraftKeyRef.current = key;
+        }
+        // Leaving the stored book for the one a link names: write it to its
+        // own record first — with the resources just read, as the state
+        // does not hold them yet. (A project whose working resources are
+        // gone keeps the ones its record has.)
+        const saveOutgoing = () => persistWorkingRef.current(
+          loaded.length > 0 || before.activeProjectId === null ? loaded : undefined,
+        );
+
+        // A host bundle link (`#recipe=…`): the project imported from it,
+        // or a fresh import. A failure leaves the stored book open.
+        const bundleRef = initialBundleRef.current;
+        if (bundleRef && hashBundlesRef.current?.[bundleRef.key]) {
+          await saveOutgoing();
+          const opened = await openLinkedBundleRef.current(bundleRef, projects, before.activeProjectId);
+          if (cancelled) return;
+          // Another project is on screen now; when the link named the
+          // stored one, the seeding below opens it as any visit would.
+          if (opened !== null && opened !== before.activeProjectId) return;
+        }
+
         // A permalink names the book to open (`#preset=P&lang=L` or
         // `#project=ID`, see `viewHash.ts`): it wins over the book last
         // open — unless it is that book already, in the locale asked for. A
@@ -1185,7 +1517,6 @@ export function SandboxProvider({
         // preset no source lists) is passed over. The chapter and page it
         // names are applied once the store is ready (`useChapterHashSync`).
         const wanted = initialHashRef.current ?? EMPTY_VIEW_HASH;
-        const before = stateRef.current;
         const onScreen: ViewHashBook = {
           project: before.activeProjectId,
           preset: before.activeProjectId === null ? before.activePresetId : null,
@@ -1193,19 +1524,16 @@ export function SandboxProvider({
             ? before.presetApplied.locale ?? null
             : null,
         };
-        if (!sameBook(wanted, onScreen)) {
+        if (!bundleRef && !sameBook(wanted, onScreen)) {
           if (wanted.project !== null && projects.some((p) => p.id === wanted.project)) {
+            await saveOutgoing();
             await projectActions.activate(wanted.project).catch(() => undefined);
             return;
           }
           const provider = wanted.preset === null ? undefined : providers.find((p) => p.summary.id === wanted.preset);
           if (provider) {
-            if (before.activeProjectId !== null) {
-              await flushWorkingSaveRef.current();
-              dispatch({ type: 'SET_ACTIVE_PROJECT', payload: { id: null } });
-              saveProjectId(null);
-            }
-            await runPresetRef.current(provider, 'all', wanted.lang ?? loc);
+            await saveOutgoing();
+            await openPresetRef.current(provider.summary.id, wanted.lang ?? undefined);
             return;
           }
         }
@@ -1230,14 +1558,22 @@ export function SandboxProvider({
         // the permalink asked for the book on screen by name.
         const privateDefault = findDefaultPrivatePreset(providers, loc);
         if (pristine && onBuiltin && privateDefault && wanted.preset === null && wanted.project === null) {
-          await runPresetRef.current(privateDefault, 'all');
+          await saveOutgoing();
+          await openPresetRef.current(privateDefault.summary.id);
           return;
         }
-        if (loaded.length === 0 || pristineOtherLocale) {
-          // First entry (empty store) or locale switch: seed the built-in
-          // preset. A pristine document takes the sample markdown too (and a
-          // fresh config only when none was ever saved); an edited document
-          // with an emptied store just gets its example resources back.
+        if (pristineOtherLocale) {
+          // The untouched guide in the other language: the guide in this
+          // one (its draft, if it was edited here before).
+          await saveOutgoing();
+          await openPresetRef.current(BUILTIN_PRESET_ID, loc);
+          return;
+        }
+        if (loaded.length === 0) {
+          // First entry (empty store): seed the built-in preset. A pristine
+          // document takes the sample markdown too (and a fresh config only
+          // when none was ever saved); an edited document with an emptied
+          // store just gets its example resources back.
           const parts: PresetApplyParts = !pristine
             ? 'resources'
             : loadConfig() === null ? 'all' : 'document';
@@ -1379,34 +1715,70 @@ export function SandboxProvider({
     prevResourcesRef.current = next;
   }, [state.resources]);
 
-  // Auto-save the working state (debounced, skip until hydrated): markdown and
-  // config to localStorage always, and the three slices into the active
-  // project when there is one. Reads the live state so a flush before a
-  // switch writes exactly what is on screen.
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const persistWorking = (): Promise<void> => {
+  // Auto-save the working state (debounced, skip until hydrated): the book
+  // and config to localStorage always (the working copy the next visit
+  // starts from), and into the book's own record — the active project, or
+  // the draft of an edited preset. Reads the live state, so a flush before
+  // a switch writes exactly what is on screen. `resourcesOverride` stands
+  // in for the resource set while the state does not hold it yet (the
+  // mount, before the store has loaded): without either, only the working
+  // copy is written.
+  const persistWorking = async (resourcesOverride?: Resource[]): Promise<void> => {
+    // A book is being swapped in: the state is neither the old book nor
+    // the new one. The switch flushed the old one before it started.
+    if (switchingRef.current > 0) return;
     const s = stateRef.current;
     saveBook(bookOf(s));
     saveConfig(s.config);
-    if (!s.activeProjectId) return Promise.resolve();
-    return updateProject(s.activeProjectId, {
-      chapters: s.chapters,
-      activeChapterId: s.activeChapterId,
-      canvasScope: s.canvasScope,
-      config: stripConfigDefaults(s.config),
-      resources: s.resources,
-    }).then(() => undefined, () => undefined);
+    const resources = resourcesOverride ?? (s.storeReady ? s.resources : null);
+    if (!resources) return;
+    if (s.activeProjectId) {
+      await updateProject(s.activeProjectId, {
+        chapters: s.chapters,
+        activeChapterId: s.activeChapterId,
+        canvasScope: s.canvasScope,
+        config: stripConfigDefaults(s.config),
+        resources,
+      }).catch(() => undefined);
+      return;
+    }
+    const decision = decideDraftSave({
+      activeProjectId: s.activeProjectId,
+      activePresetId: s.activePresetId,
+      snapshot: s.presetApplied,
+      content: { chapters: s.chapters, config: s.config, resources },
+      liveDraftKey: liveDraftKeyRef.current,
+    });
+    if (decision.action === 'put' && s.presetApplied) {
+      const record: PresetDraftRecord = {
+        version: PROJECT_RECORD_VERSION,
+        key: decision.key,
+        presetId: s.presetApplied.presetId,
+        locale: s.presetApplied.locale ?? '',
+        snapshot: s.presetApplied,
+        ...(s.presetConfig ? { baseConfig: s.presetConfig } : {}),
+        chapters: s.chapters,
+        activeChapterId: s.activeChapterId,
+        ...(s.canvasScope === 'book' ? { canvasScope: s.canvasScope } : {}),
+        config: s.config,
+        resources,
+        updatedAt: Date.now(),
+      };
+      liveDraftKeyRef.current = decision.key;
+      await putPresetDraft(record).then(() => upsertDraftSummary(toDraftSummary(record)), () => undefined);
+    } else if (decision.action === 'delete') {
+      liveDraftKeyRef.current = null;
+      await deletePresetDraft(decision.key).then(() => removeDraftSummary(decision.key), () => undefined);
+    }
   };
-  const flushWorkingSave = (): Promise<void> => {
-    if (saveTimerRef.current === undefined) return Promise.resolve();
-    clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = undefined;
-    return persistWorking();
-  };
-  const discardWorkingSave = (): void => {
-    clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = undefined;
-  };
+  const persistWorkingRef = useRef(persistWorking);
+  persistWorkingRef.current = persistWorking;
+  const saverRef = useRef<SaveScheduler | null>(null);
+  if (saverRef.current === null) {
+    saverRef.current = createSaveScheduler(() => persistWorkingRef.current(), WORKING_SAVE_MS);
+  }
+  const flushWorkingSave = (): Promise<void> => saverRef.current!.flush();
+  const discardWorkingSave = (): void => saverRef.current!.discard();
   const flushWorkingSaveRef = useRef(flushWorkingSave);
   flushWorkingSaveRef.current = flushWorkingSave;
   const discardWorkingSaveRef = useRef(discardWorkingSave);
@@ -1414,13 +1786,24 @@ export function SandboxProvider({
 
   useEffect(() => {
     if (!hydratedRef.current) return;
-    clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => {
-      saveTimerRef.current = undefined;
-      void persistWorking();
-    }, WORKING_SAVE_MS);
-    return () => clearTimeout(saveTimerRef.current);
-  }, [state.chapters, state.activeChapterId, state.config, state.resources, state.activeProjectId]);
+    saverRef.current!.schedule();
+  }, [state.chapters, state.activeChapterId, state.canvasScope, state.config, state.resources, state.activeProjectId, state.presetApplied, state.storeReady]);
+
+  // Leaving the page — closing the tab, following a link out (the logo),
+  // switching apps on a phone — writes the pending edits at once instead
+  // of dropping the last second of them; so does the sandbox unmounting
+  // (a client-side navigation away).
+  useEffect(() => {
+    const flush = () => { void saverRef.current!.flush(); };
+    const onVisibility = () => { if (document.visibilityState === 'hidden') flush(); };
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('pagehide', flush);
+      document.removeEventListener('visibilitychange', onVisibility);
+      flush();
+    };
+  }, []);
 
   // Hidden presets are a UI preference: saved immediately.
   useEffect(() => {
@@ -1515,6 +1898,13 @@ export function SandboxProvider({
     const stored = await collectProjectFileIds();
     for (const id of stored.blobIds) live.blobIds.add(id);
     for (const id of stored.fontIds) live.fontIds.add(id);
+    // Edited presets keep their payloads too (they point at the preset's
+    // own files, or at copies of their own).
+    for (const draft of await listPresetDrafts()) {
+      const refs = referencedFileIds(draft);
+      for (const id of refs.blobIds) live.blobIds.add(id);
+      for (const id of refs.fontIds) live.fontIds.add(id);
+    }
     if (gcSuspendedRef.current > 0) return;
     await Promise.all([pruneFontFiles(live.fontIds), pruneBlobs(live.blobIds)]);
   };
@@ -1647,6 +2037,8 @@ export function SandboxProvider({
     getProviders: () => presetProvidersRef.current,
     getBuiltin: () => builtinPresetRef.current,
     runPreset: (provider, parts) => runPresetRef.current(provider, parts),
+    openPreset: (id) => openPresetRef.current(id),
+    switchBook: (fn) => switchBookRef.current(fn),
     cancelPresetLoads: () => { presetLoadSeqRef.current++; },
     flushWorkingSave: () => flushWorkingSaveRef.current(),
     currentLayouts: () => {
@@ -1681,33 +2073,29 @@ export function SandboxProvider({
     chapterDocsRef,
     getWarnings: (s) => getWarningsRef.current(s),
     getPlan: (s) => getPlanRef.current(s),
-    loadPreset: async (id, locale) => {
-      const provider = presetProvidersRef.current.find((p) => p.summary.id === id);
-      if (!provider) return false;
-      // Leaving a project: its last edits are written first, then the
-      // working state stops mirroring anything.
-      if (stateRef.current.activeProjectId !== null) {
-        await flushWorkingSaveRef.current();
-        dispatch({ type: 'SET_ACTIVE_PROJECT', payload: { id: null } });
-        saveProjectId(null);
-      }
-      // A fresh load (not a reload of the active preset) of a bundle that
-      // was applied in another language earlier must not inherit it.
-      const fresh = stateRef.current.activePresetId !== id || stateRef.current.activeProjectId !== null;
-      return runPresetRef.current(provider, 'all', locale ?? (fresh ? stateRef.current.locale : undefined));
-    },
+    loadPreset: (id, locale) => openPresetRef.current(id, locale),
     reloadPreset: async (parts) => {
       if (stateRef.current.activeProjectId !== null) {
         await projectActions.resetToSource(parts);
         return;
       }
       const activeId = stateRef.current.activePresetId;
+      // The whole preset back: the original replaces the draft.
+      if (parts === 'all') {
+        const s = stateRef.current;
+        const locale = s.presetApplied?.presetId === activeId ? s.presetApplied.locale ?? '' : undefined;
+        await restorePresetOriginalRef.current(activeId, locale);
+        return;
+      }
       const provider =
         presetProvidersRef.current.find((p) => p.summary.id === activeId) ?? builtinPresetRef.current;
       await runPresetRef.current(provider, parts);
     },
+    restorePresetOriginal: (presetId) => restorePresetOriginalRef.current(presetId),
+    openHashBundle: (ref) => switchBookRef.current(async () => (await openLinkedBundleRef.current(ref)) !== null),
+    hashBundleKeys,
     projectActions,
-  }), [dispatch, projectActions]);
+  }), [dispatch, projectActions, hashBundleKeys]);
 
   return (
     <SandboxStoreContext.Provider value={store}>

@@ -739,8 +739,18 @@ const TABLE_SPECS: TableSpec[] = [
 /** A pure description of every example resource in both languages — the
  *  SVG markup, captions, alt texts, placements and table models — for the
  *  built-in preset's fingerprint (no blob is written). */
+/** The blob id a figure's SVG is stored under in one language. Each
+ *  language keeps its own copy: the Spanish and the English guide can be
+ *  open (and edited, as drafts) side by side without one's figures
+ *  overwriting the other's. The bare ids of earlier versions are no longer
+ *  written, so a book saved with them keeps the figures it had. */
+function figureBlobId(fileId: string, es: boolean): string {
+  return `${fileId}-${es ? 'es' : 'en'}`;
+}
+
 export function defaultResourcesSignature(): string {
-  const parts: unknown[] = [];
+  // `blob-ids-by-locale`: each language's figures moved to ids of their own.
+  const parts: unknown[] = ['blob-ids-by-locale'];
   for (const es of [false, true]) {
     for (const [fileId, fig] of Object.entries(SVG_FIGURES)) parts.push(fileId, fig.generate(es));
     for (const f of FIGURE_SPECS) parts.push(f.id, f.fileId, f.placement, f.caption(es), f.altText(es));
@@ -765,10 +775,12 @@ export async function buildDefaultResources(locale = 'en'): Promise<Resource[]> 
     Object.entries(SVG_FIGURES).map(async ([fileId, fig]) => {
       try {
         const bytes = new TextEncoder().encode(fig.generate(es)).buffer;
-        await putBlobAt(fileId, bytes, 'image/svg+xml');
-        // The blob may replace an earlier seed under the same fileId (reset,
-        // locale switch) — drop any cached decode so viewers re-register it.
-        invalidateResourceImage(fileId);
+        const blobId = figureBlobId(fileId, es);
+        await putBlobAt(blobId, bytes, 'image/svg+xml');
+        // The blob may replace an earlier seed under the same fileId (a new
+        // version of the guide) — drop any cached decode so viewers
+        // re-register it.
+        invalidateResourceImage(blobId);
       } catch {
         // ignore — see note above
       }
@@ -781,7 +793,7 @@ export async function buildDefaultResources(locale = 'en'): Promise<Resource[]> 
       id: spec.id,
       typeId: 'figure',
       kind: 'svg',
-      svg: { fileId: spec.fileId, width: fig.width, height: fig.height },
+      svg: { fileId: figureBlobId(spec.fileId, es), width: fig.width, height: fig.height },
       placement: spec.placement,
       caption: spec.caption(es),
       altText: spec.altText(es),

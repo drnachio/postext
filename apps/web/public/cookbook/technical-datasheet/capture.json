@@ -119,6 +119,10 @@
         "bytes": 137141,
         "pages": 4
       },
+      "sandbox": {
+        "file": "technical-datasheet.postext",
+        "bytes": 108613
+      },
       "detected": {
         "apis": [
           "buildDocument",

@@ -422,6 +422,9 @@ export interface CaptureVariant {
   card: { file: string; file480: string; w: number; h: number; mode: CardMode };
   og: { file: string; w: number; h: number };
   pdf?: { file: string; bytes: number; pages: number };
+  /** The document as a `.postext` bundle, which the Sandbox opens
+   *  (`/<locale>/sandbox#recipe=<slug>&lang=<variant>`). */
+  sandbox?: { file: string; bytes: number };
   detected: {
     apis: string[];
     configKeys: string[];

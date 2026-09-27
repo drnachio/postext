@@ -164,6 +164,10 @@
         "w": 580,
         "h": 622
       },
+      "sandbox": {
+        "file": "poetry-collection.postext",
+        "bytes": 220946
+      },
       "detected": {
         "apis": [
           "buildDocument",
