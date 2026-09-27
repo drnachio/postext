@@ -2,6 +2,7 @@ import type { PostextConfig } from 'postext';
 import { stripConfigDefaults } from 'postext';
 import type { AppliedPresetSnapshot } from '../presets/types';
 import type { BookContent } from '../book/types';
+import type { PanelId } from '../types/props';
 import { PROJECT_RECORD_VERSION, migrateConfig, normalizeBookContent, type MigrationDeps } from './projectMigration';
 
 const CONFIG_KEY = 'postext-sandbox-config';
@@ -13,7 +14,9 @@ const MARKDOWN_KEY = 'postext-sandbox-markdown';
 const BOOK_KEY = 'postext-sandbox-book';
 const VIEWPORT_KEY = 'postext-sandbox-viewport';
 const SIDEBAR_WIDTH_KEY = 'postext-sandbox-sidebar-width';
-const BOOKS_SPLIT_KEY = 'postext-sandbox-books-split';
+/** The Books panel's library/open-book divider (1.5.1), gone since the
+ *  open book has a panel of its own: dropped on the next read. */
+const LEGACY_BOOKS_SPLIT_KEY = 'postext-sandbox-books-split';
 const PANEL_KEY = 'postext-sandbox-panel';
 const PRESET_KEY = 'postext-sandbox-preset';
 const PRESET_APPLIED_KEY = 'postext-sandbox-preset-applied';
@@ -149,13 +152,23 @@ export function savePanel(panel: string | null): void {
   getStorage()?.setItem(PANEL_KEY, panel ?? '__closed__');
 }
 
-export function loadPanel(): string | null | undefined {
-  const raw = getStorage()?.getItem(PANEL_KEY);
+const PANEL_IDS: readonly PanelId[] = ['projects', 'chapters', 'markdown', 'resources', 'fonts', 'config', 'warnings'];
+
+/** The side panel left open: a panel id, null when the sidebar was closed,
+ *  undefined when nothing (or nothing known) is stored. */
+export function loadPanel(): PanelId | null | undefined {
+  const storage = getStorage();
+  try {
+    storage?.removeItem(LEGACY_BOOKS_SPLIT_KEY);
+  } catch {
+    // Nothing to clean up in a blocked storage.
+  }
+  const raw = storage?.getItem(PANEL_KEY);
   if (raw == null) return undefined;
   if (raw === '__closed__') return null;
   // The Presets panel became the Projects panel.
   if (raw === 'presets') return 'projects';
-  return raw;
+  return (PANEL_IDS as readonly string[]).includes(raw) ? (raw as PanelId) : undefined;
 }
 
 /** Remember which preset the current document came from, so Reset restores
@@ -223,27 +236,6 @@ export function loadSidebarPercent(): number | null {
   if (!raw) return null;
   const n = Number(raw);
   return Number.isFinite(n) && n >= 5 && n <= 90 ? n : null;
-}
-
-/** Share of the Books panel's height the library pane takes (percent);
- *  the open book's chapters get the rest. */
-export function saveBooksSplit(percent: number): void {
-  try {
-    getStorage()?.setItem(BOOKS_SPLIT_KEY, String(Math.round(percent * 10) / 10));
-  } catch {
-    // A full or blocked storage only loses the preference.
-  }
-}
-
-export function loadBooksSplit(): number | null {
-  try {
-    const raw = getStorage()?.getItem(BOOKS_SPLIT_KEY);
-    if (!raw) return null;
-    const n = Number(raw);
-    return Number.isFinite(n) && n >= 10 && n <= 90 ? n : null;
-  } catch {
-    return null;
-  }
 }
 
 export function saveSectionState(sectionId: string, open: boolean): void {

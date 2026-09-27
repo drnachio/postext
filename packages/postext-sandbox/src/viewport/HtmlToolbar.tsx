@@ -13,10 +13,9 @@ import {
 import { useSandbox } from '../context/SandboxContext';
 import {
   PinToolbarButton,
-  TOOLBAR_STYLE_BASE,
   ToolbarButton,
   ToolbarSeparator,
-  toolbarHiddenStyle,
+  useToolbarRootProps,
 } from './CanvasToolbar';
 
 type ColumnMode = 'single' | 'multi';
@@ -62,6 +61,7 @@ export function HtmlToolbar({
 }: HtmlToolbarProps) {
   const { state } = useSandbox();
   const { labels } = state;
+  const rootProps = useToolbarRootProps(hidden);
   const prevDisabled = columnMode !== 'multi' || !canScrollPrev;
   const nextDisabled = columnMode !== 'multi' || !canScrollNext;
 
@@ -69,8 +69,7 @@ export function HtmlToolbar({
     <div
       role="toolbar"
       aria-label={labels.htmlToolbar}
-      className="flex flex-col items-center"
-      style={{ ...TOOLBAR_STYLE_BASE, ...toolbarHiddenStyle(hidden) }}
+      {...rootProps}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onFocus={onFocus}

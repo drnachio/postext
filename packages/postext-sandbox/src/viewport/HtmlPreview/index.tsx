@@ -322,7 +322,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     // measure, but a one-and-a-half book keeps its structure: the half
     // column is where its glosses and figures live, and it reads beside the
     // text here as it does on the leaf (at the right, per the override).
-    const docLayoutType = currentColumnMode === 'single'
+    let docLayoutType = currentColumnMode === 'single'
       ? (layoutResolved.layoutType === 'oneAndHalf' ? 'oneAndHalf' : 'single')
       : layoutResolved.layoutType;
     const gutterPx = dimensionToPx(layoutResolved.gutterWidth, viewerDpi);
@@ -332,23 +332,40 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     // Multi mode shows the number of text columns closest to the target
     // measure — three columns of a double layout when three is the nearest
     // fit, rather than two stretched or four squeezed (see pickPageGeometry).
-    const pageWidthPx =
-      currentColumnMode === 'single'
-        ? singleScrollPageWidthPx({
-            innerViewportW,
-            targetColumnPx,
-            gutterPx,
-            layoutType: docLayoutType,
-            sideFraction,
-          })
-        : pickPageGeometry({
-            innerViewportW,
-            columnGapPx,
-            gutterPx,
-            targetColumnPx,
-            layoutType: docLayoutType,
-            sideFraction,
-          }).pageWidthPx;
+    let pageWidthPx: number;
+    if (currentColumnMode === 'single') {
+      pageWidthPx = singleScrollPageWidthPx({
+        innerViewportW,
+        targetColumnPx,
+        gutterPx,
+        layoutType: docLayoutType,
+        sideFraction,
+      });
+    } else {
+      let geometry = pickPageGeometry({
+        innerViewportW,
+        columnGapPx,
+        gutterPx,
+        targetColumnPx,
+        layoutType: docLayoutType,
+        sideFraction,
+      });
+      // A viewer with room for one column only (a phone) would show half of
+      // each two-column page, cutting whatever spans both columns (openers,
+      // wide figures) at its edge: the pages there hold one column.
+      if (docLayoutType === 'double' && geometry.visibleColumns === 1) {
+        docLayoutType = 'single';
+        geometry = pickPageGeometry({
+          innerViewportW,
+          columnGapPx,
+          gutterPx,
+          targetColumnPx,
+          layoutType: docLayoutType,
+          sideFraction,
+        });
+      }
+      pageWidthPx = geometry.pageWidthPx;
+    }
     columnGeomRef.current = { pageWidthPx, columnGapPx };
 
     const configOverride = buildHtmlConfigOverride(currentConfig, {

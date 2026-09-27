@@ -8,7 +8,7 @@
 import type { PostextConfig, Resource } from 'postext';
 import { stripConfigDefaults } from 'postext';
 import type { BookContent } from '../book/types';
-import { PROJECTS_STORE, hasIndexedDB, runInStore } from './blobStore';
+import { PROJECTS_STORE, hasIndexedDB, runInStore, withTransaction } from './blobStore';
 import { generateId } from './ids';
 import { PROJECT_RECORD_VERSION, migrateProjectRecord, type MigrationDeps } from './projectMigration';
 
@@ -104,17 +104,31 @@ export function putProject(record: ProjectRecord): Promise<void> {
   ).then(() => undefined);
 }
 
-/** Merge `patch` into a stored record and bump `updatedAt`. Two transactions
- *  (get, then put): the sandbox is the only writer, so no interleaving. */
-export async function updateProject(
+export type ProjectPatch = Partial<Omit<ProjectRecord, 'id' | 'createdAt'>>;
+
+/** Merge `patch` into a stored record and bump `updatedAt`, in one
+ *  transaction: the autosave and a background write (a cover captured
+ *  from the first page) may update the same record at once, and neither
+ *  may drop what the other wrote. `patch` may be a function of the stored
+ *  record; returning null leaves it untouched (and resolves to it). */
+export function updateProject(
   id: string,
-  patch: Partial<Omit<ProjectRecord, 'id' | 'createdAt'>>,
+  patch: ProjectPatch | ((existing: ProjectRecord) => ProjectPatch | null),
 ): Promise<ProjectRecord | null> {
-  const existing = await getProject(id);
-  if (!existing) return null;
-  const next: ProjectRecord = { ...existing, ...patch, id, createdAt: existing.createdAt, updatedAt: Date.now() };
-  await putProject(next);
-  return next;
+  return withTransaction(PROJECTS_STORE, 'readwrite', async (store) => {
+    const raw = await new Promise<unknown>((resolve, reject) => {
+      const req = store.get(id);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error ?? new Error('IndexedDB request failed'));
+    });
+    const existing = raw === undefined ? null : migrateProjectRecord(raw, DEFAULT_MIGRATION);
+    if (!existing) return null;
+    const changes = typeof patch === 'function' ? patch(existing) : patch;
+    if (!changes) return existing;
+    const next: ProjectRecord = { ...existing, ...changes, id, createdAt: existing.createdAt, updatedAt: Date.now() };
+    store.put({ ...next, version: PROJECT_RECORD_VERSION, config: stripConfigDefaults(next.config) });
+    return next;
+  });
 }
 
 export function deleteProject(id: string): Promise<void> {

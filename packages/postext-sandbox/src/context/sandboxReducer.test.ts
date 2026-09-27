@@ -22,6 +22,7 @@ function baseState(over: Partial<SandboxState> = {}): SandboxState {
     booting: false,
     bookLoading: false,
     presetDrafts: [],
+    presetCovers: {},
     activePanel: null,
     sidebarPercent: 25,
     sidebarDragging: false,

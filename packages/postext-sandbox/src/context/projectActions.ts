@@ -52,6 +52,8 @@ import type { SandboxAction, SandboxState } from './SandboxContext';
 import type { ChapterLayout } from '../book/types';
 import { deleteChapterLayouts, getChapterLayouts } from '../storage/layouts';
 import { getPresetDraft } from '../storage/presetDrafts';
+import { getPresetCover } from '../storage/presetCovers';
+import { coverTargetKey, sessionCoverAttempts, thumbnailIfMissing } from '../covers/autoCover';
 
 export interface ProjectActionDeps {
   dispatch: Dispatch<SandboxAction>;
@@ -105,6 +107,9 @@ export interface ProjectActions {
   exportProject: (target?: DuplicateSource) => Promise<void>;
   /** Replace a project's cover picture with `file`, or drop it with null. */
   setThumbnail: (id: string, file: File | null) => Promise<void>;
+  /** Give a project without a cover the picture taken from its first page
+   *  (never replaces one; no busy state). Resolves to whether it was set. */
+  adoptGeneratedThumbnail: (id: string, bytes: ArrayBuffer, mime: string) => Promise<boolean>;
   /** Reset the active project (or parts of it) to the preset it came from. */
   resetToSource: (parts: PresetApplyParts) => Promise<void>;
 }
@@ -131,10 +136,13 @@ async function copyThumbnail(from: ProjectThumbnail | undefined, projectId: stri
 }
 
 /** A showcase preset's cover picture, fetched from its source and copied
- *  into the project cloned from it. A failure only costs the picture. */
-async function presetThumbnailBytes(summary: PresetSummary): Promise<{ bytes: ArrayBuffer; mime: string } | null> {
+ *  into the project cloned from it — or, for a preset that ships none, the
+ *  cover taken from its first page in `locale` (see covers/autoCover.ts).
+ *  A failure only costs the picture. */
+async function presetThumbnailBytes(summary: PresetSummary, locale?: string): Promise<{ bytes: ArrayBuffer; mime: string } | null> {
   const url = summary.thumbnailUrl;
-  if (!url || typeof fetch === 'undefined') return null;
+  if (!url) return getPresetCover(summary.id, locale).catch(() => null);
+  if (typeof fetch === 'undefined') return null;
   try {
     const res = await fetch(url);
     if (!res.ok) return null;
@@ -147,8 +155,8 @@ async function presetThumbnailBytes(summary: PresetSummary): Promise<{ bytes: Ar
   }
 }
 
-async function adoptPresetThumbnail(summary: PresetSummary, projectId: string): Promise<ProjectThumbnail | undefined> {
-  const fetched = await presetThumbnailBytes(summary);
+async function adoptPresetThumbnail(summary: PresetSummary, projectId: string, locale?: string): Promise<ProjectThumbnail | undefined> {
+  const fetched = await presetThumbnailBytes(summary, locale);
   if (!fetched) return undefined;
   return (await storeThumbnail(projectId, fetched.bytes, fetched.mime)) ?? undefined;
 }
@@ -337,7 +345,7 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       // showcase preset's when the working book is still a preset.
       const thumbnail = active
         ? await copyThumbnail(active.thumbnail, id)
-        : preset ? await adoptPresetThumbnail(preset, id) : undefined;
+        : preset ? await adoptPresetThumbnail(preset, id, cur.presetApplied?.presetId === preset.id ? cur.presetApplied.locale : undefined) : undefined;
       return persistNew(newRecord(content, {
         name: name ?? (active ? copyName(active.name) : preset?.name ?? deps.labels().projectUntitled),
         description: active?.description ?? preset?.description,
@@ -364,7 +372,7 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
             locale: draft.locale || summary?.locale,
             bundleId: source.id,
             sourcePresetId: source.id,
-            thumbnail: summary ? await adoptPresetThumbnail(summary, id) : undefined,
+            thumbnail: summary ? await adoptPresetThumbnail(summary, id, draft.locale) : undefined,
           }, id));
         }
       }
@@ -393,7 +401,7 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
         bundleId: loaded.summary.id,
         sourcePresetId: loaded.summary.id,
         // A showcase bundle's cover picture becomes the project's own.
-        thumbnail: await adoptPresetThumbnail(provider.summary, id),
+        thumbnail: await adoptPresetThumbnail(provider.summary, id, loaded.locale),
       }, id));
     });
 
@@ -489,7 +497,7 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
         const fonts = new Map(loaded.fonts.map((f) => [f.fileId, f.buffer]));
         // The showcase cover picture: fetched from the source, handed to the
         // bundle under an id of its own (it is no resource of the book).
-        const cover = await presetThumbnailBytes(loaded.summary);
+        const cover = await presetThumbnailBytes(loaded.summary, loaded.locale);
         if (cover) blobs.set(PRESET_THUMBNAIL_ID, cover.bytes);
         const fromIdb = { readBlob, readFont };
         readBlob = async (fileId) => blobs.get(fileId) ?? fromIdb.readBlob(fileId);
@@ -527,12 +535,23 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
           description: active?.description ?? preset?.description,
           locale: active?.locale ?? preset?.locale ?? cur.locale,
         };
+        // The cover: the project's own, or the preset's (shipped, or taken
+        // from its first page) for an edited preset on screen.
+        let thumbnail = active?.thumbnail;
+        if (!active && preset) {
+          const cover = await presetThumbnailBytes(preset, cur.presetApplied?.presetId === preset.id ? cur.presetApplied.locale : undefined);
+          if (cover) {
+            const fromIdb = readBlob;
+            readBlob = async (fileId) => (fileId === PRESET_THUMBNAIL_ID ? cover.bytes : fromIdb(fileId));
+            thumbnail = { fileId: PRESET_THUMBNAIL_ID, mime: cover.mime };
+          }
+        }
         content = {
           ...bookOfState(cur),
           config: cur.config,
           resources: cur.resources,
           layouts: deps.currentLayouts(),
-          ...(active?.thumbnail ? { thumbnail: active.thumbnail } : {}),
+          ...(thumbnail ? { thumbnail } : {}),
         };
       }
 
@@ -546,6 +565,9 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
 
   const setThumbnail: ProjectActions['setThumbnail'] = (id, file) =>
     run(async () => {
+      // The reader's choice: no cover is taken from the first page in its
+      // place during this visit.
+      sessionCoverAttempts.add(coverTargetKey({ kind: 'project', id }));
       let thumbnail: ProjectThumbnail | undefined;
       if (file) {
         const mime = extensionForImageMime(file.type) ? file.type : mimeForFile(file.name);
@@ -559,6 +581,20 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       const updated = await updateProject(id, { thumbnail });
       if (updated) dispatch({ type: 'UPSERT_PROJECT_SUMMARY', payload: toSummary(updated) });
     });
+
+  const adoptGeneratedThumbnail: ProjectActions['adoptGeneratedThumbnail'] = (id, bytes, mime) =>
+    // Off the busy path (the Books panel stays usable) but with the sweep
+    // held, so the bytes are not collected before the record points at them.
+    deps.withGcSuspended(async () => {
+      const current = await getProject(id).catch(() => null);
+      if (!current || current.thumbnail) return false;
+      const stored = await storeThumbnail(id, bytes, mime);
+      if (!stored) return false;
+      const updated = await updateProject(id, (existing) => thumbnailIfMissing(existing, stored)).catch(() => null);
+      if (!updated || updated.thumbnail?.fileId !== stored.fileId) return false;
+      dispatch({ type: 'UPSERT_PROJECT_SUMMARY', payload: toSummary(updated) });
+      return true;
+    }).catch(() => false);
 
   const resetToSource: ProjectActions['resetToSource'] = (parts) =>
     run(async () => {
@@ -586,5 +622,5 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       applyRecord({ ...merged, config }, parts);
     });
 
-  return { activate, create, duplicate, rename, remove, importBundle, importBundleBytes, exportProject, setThumbnail, resetToSource };
+  return { activate, create, duplicate, rename, remove, importBundle, importBundleBytes, exportProject, setThumbnail, adoptGeneratedThumbnail, resetToSource };
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { FileCode, Settings2, FolderOpen, AlertTriangle, Type, Files } from 'lucide-react';
+import { BookOpen, FileCode, Settings2, FolderOpen, AlertTriangle, Type, Files, Eye } from 'lucide-react';
 import { useRef, useLayoutEffect, useEffect, useCallback, useState, type ReactNode } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxPresetStale, useSandboxSelector, useSandboxWarnings } from '../context/SandboxContext';
 import type { PanelId } from '../types';
@@ -13,14 +13,15 @@ interface ActivityBarProps {
   homeLink?: ReactNode;
 }
 
-type NavLabelKey = 'navBooks' | 'navManuscript' | 'navResources' | 'navFonts' | 'navDesign' | 'navWarnings';
-type NavHintKey = 'navBooksHint' | 'navManuscriptHint' | 'navResourcesHint' | 'navFontsHint' | 'navDesignHint' | 'navWarningsHint';
+type NavLabelKey = 'navBooks' | 'navChapters' | 'navManuscript' | 'navResources' | 'navFonts' | 'navDesign' | 'navWarnings';
+type NavHintKey = 'navBooksHint' | 'navChaptersHint' | 'navManuscriptHint' | 'navResourcesHint' | 'navFontsHint' | 'navDesignHint' | 'navWarningsHint';
 
-/** Workflow order: pick a book, write, add figures and fonts, design,
+/** Workflow order: pick a book, arrange its chapters, write, add figures and fonts, design,
  *  then check. Each entry has a one-word label (shown under the icon) and a
  *  longer hint (tooltip + accessible description). */
 const PANEL_ICONS: { id: PanelId; Icon: typeof FileCode; labelKey: NavLabelKey; hintKey: NavHintKey }[] = [
   { id: 'projects', Icon: Files, labelKey: 'navBooks', hintKey: 'navBooksHint' },
+  { id: 'chapters', Icon: BookOpen, labelKey: 'navChapters', hintKey: 'navChaptersHint' },
   { id: 'markdown', Icon: FileCode, labelKey: 'navManuscript', hintKey: 'navManuscriptHint' },
   { id: 'resources', Icon: FolderOpen, labelKey: 'navResources', hintKey: 'navResourcesHint' },
   { id: 'fonts', Icon: Type, labelKey: 'navFonts', hintKey: 'navFontsHint' },
@@ -219,5 +220,83 @@ export function ActivityBar({ themeToggle, languageSwitcher, homeUrl, homeLink }
         )}
       </div>
     </div>
+  );
+}
+
+/** The phone layout's panel bar, along the bottom of the window: the
+ *  preview first (an open panel covers it there), then the panels in the
+ *  same order as the side bar. One tap opens a panel, and Preview (or the
+ *  open panel's own entry) goes back to the pages. */
+export function MobileNavBar() {
+  const dispatch = useSandboxDispatch();
+  const labels = useSandboxLabels();
+  const activePanel = useSandboxSelector((s) => s.activePanel);
+  const presetStale = useSandboxPresetStale();
+  const warningCount = useSandboxWarnings().length;
+  const items: { id: PanelId | null; Icon: typeof FileCode; label: string; hint: string }[] = [
+    { id: null, Icon: Eye, label: labels.navPreview, hint: labels.navPreviewHint },
+    ...PANEL_ICONS.map(({ id, Icon, labelKey, hintKey }) => ({ id, Icon, label: labels[labelKey], hint: labels[hintKey] })),
+  ];
+
+  return (
+    <nav
+      className="flex shrink-0 items-stretch overflow-x-auto border-t"
+      style={{
+        borderColor: 'var(--rule)',
+        backgroundColor: 'var(--background)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        scrollbarWidth: 'none',
+      }}
+      aria-label={labels.panelsNav}
+    >
+      {items.map(({ id, Icon, label, hint }) => {
+        const isActive = activePanel === id;
+        const showBadge = id === 'warnings' && warningCount > 0;
+        const showDot = id === 'projects' && presetStale;
+        const ariaLabel = showBadge
+          ? `${label} (${warningCount})`
+          : showDot
+            ? `${label} (${labels.presetStaleBanner})`
+            : label;
+        return (
+          <button
+            key={id ?? 'preview'}
+            type="button"
+            onClick={() => dispatch({ type: 'SET_PANEL', payload: id === null || isActive ? null : id })}
+            aria-label={ariaLabel}
+            aria-description={hint}
+            aria-pressed={isActive}
+            className={cn(
+              'relative flex min-w-[40px] flex-1 basis-0 cursor-pointer flex-col items-center justify-center gap-0.5 pt-1.5 pb-1 transition-colors',
+              'focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
+              isActive ? 'text-(--brand)' : 'text-(--slate)',
+            )}
+          >
+            {isActive && (
+              <span aria-hidden="true" className="absolute inset-x-2 top-0 h-[3px] bg-(--brand)" />
+            )}
+            <Icon size={20} aria-hidden="true" />
+            <span aria-hidden="true" className={cn('max-w-full truncate px-0.5 text-[0.6rem] leading-[1.2]', isActive && 'font-semibold text-(--foreground)')}>
+              {label}
+            </span>
+            {showBadge && (
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute top-0.5 left-1/2 ml-1 box-border h-4 min-w-4 rounded-full bg-(--brand) px-1 text-center text-[10px] leading-4 font-bold text-(--brand-contrast,var(--background)) tabular-nums"
+              >
+                {warningCount > 99 ? '99+' : String(warningCount)}
+              </span>
+            )}
+            {showDot && (
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1.5 left-1/2 ml-2 h-2 w-2 rounded-full bg-(--brand)"
+                style={{ boxShadow: '0 0 0 2px var(--background)' }}
+              />
+            )}
+          </button>
+        );
+      })}
+    </nav>
   );
 }

@@ -45,6 +45,9 @@ export interface SandboxLabels {
   /** Progress line while the laid-out document is rendered to PDF bytes. */
   pdfProgressRender: string;
   pdfError: string;
+  /** Shown instead of the embedded PDF where the browser cannot show one inside the page (phones). */
+  pdfInlineUnavailable: string;
+  pdfOpen: string;
 
   // Page section
   page: string;
@@ -723,11 +726,7 @@ export interface SandboxLabels {
   presetEditedHint: string;
   /** Before a preset's draft is dropped: `__name__` is the preset. */
   presetRestoreConfirm: string;
-  /** The Books panel's two panes: the library (projects and presets) and
-   *  the book on screen (its chapters). */
-  booksLibrary: string;
-  bookOpenLabel: string;
-  booksSplitResize: string;
+  /** The Chapters panel's book header: what kind of book is open. */
   bookKindProject: string;
   bookKindPreset: string;
   /** Over the viewport while another book is being opened. */
@@ -1743,8 +1742,13 @@ export interface SandboxLabels {
   pageSize17x24: string;
   pageSize21x28: string;
   pageSizeCustomDescription: string;
+  /** Phone layout: the panel-bar entry that closes the open panel and shows the preview. */
+  navPreview: string;
+  navPreviewHint: string;
   navBooks: string;
   navBooksHint: string;
+  navChapters: string;
+  navChaptersHint: string;
   navManuscript: string;
   navManuscriptHint: string;
   navResources: string;

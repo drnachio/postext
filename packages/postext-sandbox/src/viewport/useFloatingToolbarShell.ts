@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CSSProperties, FocusEvent as ReactFocusEvent } from 'react';
 import { loadToolbarPinned, saveToolbarPinned } from '../storage/persistence';
+import { useCompactLayout } from '../hooks/useCompactLayout';
 
 // Width of the invisible hover strip anchored to the right edge of the
 // viewport. Narrow enough to not steal meaningful interaction space (PDF
@@ -47,6 +48,7 @@ export function useFloatingToolbarShell(
   storageId: string,
   forceVisible: boolean,
 ): FloatingToolbarShell {
+  const compact = useCompactLayout();
   const [pinned, setPinned] = useState(true);
   const [hovered, setHovered] = useState(false);
   const [focusWithin, setFocusWithin] = useState(false);
@@ -117,7 +119,9 @@ export function useFloatingToolbarShell(
     [],
   );
 
-  const hidden = !pinned && !hovered && !focusWithin && !forceVisible;
+  // The phone layout docks the toolbar for good: there is no hover to
+  // bring it back.
+  const hidden = !compact && !pinned && !hovered && !focusWithin && !forceVisible;
 
   return {
     pinned,
@@ -143,6 +147,7 @@ export function useFloatingToolbarShell(
         // back to hidden. When pinned, the strip is inert so the rightmost
         // content (e.g. PDF scrollbar) stays clickable.
         pointerEvents: pinned ? 'none' : 'auto',
+        display: compact ? 'none' : undefined,
       },
     },
     toolbarHoverProps: {

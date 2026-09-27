@@ -23,17 +23,17 @@ export function DocsMobileNav({ docs, toc }: DocsMobileNavProps) {
         type="button"
         onClick={() => setOpen(!open)}
         aria-label={open ? t("closeMenu") : t("openMenu")}
-        className="flex items-center gap-2 rounded-md border border-rule px-3 py-1.5 font-sans text-sm font-medium text-slate transition-colors hover:text-foreground"
+        className="flex min-h-10 items-center gap-2 rounded-md border border-rule px-3 py-1.5 font-sans text-sm font-medium text-slate transition-colors hover:text-foreground"
       >
         {open ? <X className="size-4" /> : <Menu className="size-4" />}
         {t("menu")}
       </button>
-      <div className="flex-1">
-        <DocsSearchTrigger />
+      <div className="min-w-0 flex-1">
+        <DocsSearchTrigger className="min-h-10" />
       </div>
 
       {open && (
-        <div className="fixed inset-x-0 top-auto z-40 max-h-[70vh] overflow-y-auto border-b border-rule bg-background p-4 shadow-lg">
+        <div className="absolute inset-x-0 top-full z-40 mt-2 max-h-[70vh] overflow-y-auto overscroll-contain rounded-md border border-rule bg-background p-4 shadow-lg">
           <div className="mb-5">
             <DocsPartsNav docs={docs} onNavigate={() => setOpen(false)} />
           </div>
@@ -49,7 +49,7 @@ export function DocsMobileNav({ docs, toc }: DocsMobileNavProps) {
                     <a
                       href={`#${item.id}`}
                       onClick={() => setOpen(false)}
-                      className={`block rounded-md py-1 font-sans text-sm text-slate hover:text-foreground ${
+                      className={`block rounded-md py-2 font-sans text-sm text-slate hover:text-foreground ${
                         item.level === 3 ? "pl-6" : "pl-3"
                       }`}
                     >

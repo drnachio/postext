@@ -76,7 +76,7 @@ export default async function DocsIndexPage({
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="flex items-baseline gap-3">
-                        <span className="font-display text-xl font-semibold tracking-[-0.01em] transition-colors group-hover:text-(--part-ink) md:text-2xl">
+                        <span className="min-w-0 font-display text-xl font-semibold tracking-[-0.01em] transition-colors group-hover:text-(--part-ink) md:text-2xl">
                           {it.title}
                         </span>
                         <span aria-hidden="true" className="mb-1.5 min-w-8 flex-1 border-b-2 border-dotted border-rule-strong" />

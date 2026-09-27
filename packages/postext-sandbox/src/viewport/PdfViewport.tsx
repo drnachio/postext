@@ -336,7 +336,11 @@ export function PdfViewport() {
   const handlePrint = useCallback(() => {
     if (!bytesUrl) return;
     const iframe = document.querySelector<HTMLIFrameElement>('iframe[data-postext-pdf="true"]');
-    if (!iframe?.contentWindow) return;
+    // No embedded viewer (a phone): the browser's own viewer prints it.
+    if (!iframe?.contentWindow) {
+      window.open(bytesUrl, '_blank');
+      return;
+    }
     try {
       iframe.contentWindow.focus();
       iframe.contentWindow.print();

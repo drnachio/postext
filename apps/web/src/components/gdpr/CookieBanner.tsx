@@ -62,22 +62,22 @@ export function CookieBanner() {
                 ),
               })}
             </p>
-            <div className="flex shrink-0 gap-3">
+            <div className="flex shrink-0 flex-wrap gap-3">
               <button
                 onClick={rejectAll}
-                className="cursor-pointer rounded border border-rule px-4 py-2 text-sm text-foreground transition-colors hover:bg-foreground/5 2xl:text-base"
+                className="flex-1 cursor-pointer whitespace-nowrap sm:flex-none rounded border border-rule px-4 py-2 text-sm text-foreground transition-colors hover:bg-foreground/5 2xl:text-base"
               >
                 {t("rejectAll")}
               </button>
               <button
                 onClick={() => setShowCustomize(true)}
-                className="cursor-pointer rounded border border-rule px-4 py-2 text-sm text-foreground transition-colors hover:bg-foreground/5 2xl:text-base"
+                className="flex-1 cursor-pointer whitespace-nowrap sm:flex-none rounded border border-rule px-4 py-2 text-sm text-foreground transition-colors hover:bg-foreground/5 2xl:text-base"
               >
                 {t("customize")}
               </button>
               <button
                 onClick={acceptAll}
-                className="cursor-pointer rounded-md bg-brand px-4 py-2 font-sans text-sm font-semibold text-brand-contrast transition-colors hover:bg-brand-hover 2xl:text-base"
+                className="flex-1 cursor-pointer whitespace-nowrap sm:flex-none rounded-md bg-brand px-4 py-2 font-sans text-sm font-semibold text-brand-contrast transition-colors hover:bg-brand-hover 2xl:text-base"
               >
                 {t("acceptAll")}
               </button>
@@ -134,16 +134,16 @@ export function CookieBanner() {
               />
             </div>
 
-            <div className="flex justify-end gap-3 pt-2">
+            <div className="flex flex-wrap justify-end gap-3 pt-2">
               <button
                 onClick={rejectAll}
-                className="cursor-pointer rounded border border-rule px-4 py-2 text-sm text-foreground transition-colors hover:bg-foreground/5 2xl:text-base"
+                className="cursor-pointer whitespace-nowrap rounded border border-rule px-4 py-2 text-sm text-foreground transition-colors hover:bg-foreground/5 2xl:text-base"
               >
                 {t("rejectAll")}
               </button>
               <button
                 onClick={savePreferences}
-                className="cursor-pointer rounded-md bg-brand px-4 py-2 font-sans text-sm font-semibold text-brand-contrast transition-colors hover:bg-brand-hover 2xl:text-base"
+                className="cursor-pointer whitespace-nowrap rounded-md bg-brand px-4 py-2 font-sans text-sm font-semibold text-brand-contrast transition-colors hover:bg-brand-hover 2xl:text-base"
               >
                 {t("savePreferences")}
               </button>

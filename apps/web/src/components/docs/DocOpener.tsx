@@ -34,7 +34,7 @@ export function DocOpener({
         <span aria-hidden="true" className="relative mt-3 block h-[3px] w-10 bg-current" />
         <h1
           id={id}
-          className="docs-heading display relative mt-4 max-w-[80%] text-[2rem] md:text-[2.6rem]"
+          className="docs-heading display relative mt-4 text-[min(2rem,8.5vw)] sm:max-w-[80%] md:text-[2.6rem]"
           style={{ scrollMarginTop: "var(--docs-nav-h, 5rem)", textWrap: "balance" }}
         >
           {title}

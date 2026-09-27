@@ -79,6 +79,8 @@ import { withDefaultResourceTypes } from './defaultConfig';
 import { createPostextGuideConfig } from './guideConfig';
 import { createProjectActions } from './projectActions';
 import type { ProjectActions } from './projectActions';
+import { presetCoverKey, type CoverTarget } from '../covers/autoCover';
+import { bytesToDataUrl, listPresetCovers, putPresetCoverIfMissing } from '../storage/presetCovers';
 import {
   BUILTIN_PRESET_ID,
   applyPreset,
@@ -200,6 +202,9 @@ export interface SandboxState {
   bookLoading: boolean;
   /** Presets with a saved draft (their edited copy), per content locale. */
   presetDrafts: PresetDraftSummary[];
+  /** Covers taken from the first page of presets that ship none, as data
+   *  URLs by preset id and content locale (`presetCoverKey`). */
+  presetCovers: Record<string, string>;
   activePanel: PanelId | null;
   sidebarPercent: number;
   sidebarDragging: boolean;
@@ -297,6 +302,8 @@ export type SandboxAction =
   | { type: 'SET_PENDING_RESOURCE_FOCUS'; payload: PendingResourceFocus | null }
   | { type: 'SET_RESOURCE_SELECTION'; payload: ResourceSelection | null }
   | { type: 'BUMP_DOC_VERSION' }
+  | { type: 'SET_PRESET_COVERS'; payload: Record<string, string> }
+  | { type: 'ADD_PRESET_COVER'; payload: { key: string; url: string } }
   | { type: 'SET_RESOURCES'; payload: Resource[] }
   | { type: 'SET_STORE_READY' }
   | { type: 'SET_BOOK_LOADING'; payload: boolean }
@@ -545,6 +552,13 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
       return state.bookLoading === action.payload ? state : { ...state, bookLoading: action.payload };
     case 'SET_PRESET_DRAFTS':
       return { ...state, presetDrafts: action.payload };
+    case 'SET_PRESET_COVERS':
+      // Covers stored meanwhile (a capture that landed before the listing)
+      // are kept: a cover is never replaced.
+      return { ...state, presetCovers: { ...action.payload, ...state.presetCovers } };
+    case 'ADD_PRESET_COVER':
+      if (state.presetCovers[action.payload.key] !== undefined) return state;
+      return { ...state, presetCovers: { ...state.presetCovers, [action.payload.key]: action.payload.url } };
     case 'UPSERT_PRESET_DRAFT': {
       const idx = state.presetDrafts.findIndex((d) => d.key === action.payload.key);
       const presetDrafts = idx === -1
@@ -687,6 +701,9 @@ interface SandboxStore {
   /** The fragment keys the host resolves to bundles. */
   hashBundleKeys: readonly string[];
   projectActions: ProjectActions;
+  /** Give a book without a cover the picture taken from its first page
+   *  (never replaces one). Resolves to whether it was stored. */
+  saveBookCover: (target: CoverTarget, bytes: ArrayBuffer, mime: string) => Promise<boolean>;
 }
 
 export interface SandboxContextValue {
@@ -788,6 +805,9 @@ export interface SandboxPresetsValue {
   edited: boolean;
   /** Saved drafts of presets, per content locale. */
   drafts: PresetDraftSummary[];
+  /** Covers taken from the first page of presets that ship none, by
+   *  `presetCoverKey`. */
+  covers: Record<string, string>;
   load: (id: string, locale?: string) => Promise<boolean>;
   reload: (parts: PresetApplyParts) => Promise<void>;
   restoreOriginal: (presetId: string) => Promise<void>;
@@ -815,6 +835,7 @@ export function useSandboxPresets(): SandboxPresetsValue {
   const hiddenIds = useSandboxSelector((s) => s.hiddenPresetIds);
   const edited = useSandboxSelector((s) => s.storeReady && s.activeProjectId === null && !untouchedOf(s));
   const drafts = useSandboxSelector((s) => s.presetDrafts);
+  const covers = useSandboxSelector((s) => s.presetCovers);
   const activeLocale = useSandboxSelector((s) =>
     s.activeProjectId === null && s.presetApplied?.presetId === s.activePresetId
       ? s.presetApplied.locale ?? null
@@ -831,12 +852,24 @@ export function useSandboxPresets(): SandboxPresetsValue {
     activeLocale,
     edited,
     drafts,
+    covers,
     load: store.loadPreset,
     reload: store.reloadPreset,
     restoreOriginal: store.restorePresetOriginal,
     hide: (id) => store.dispatch({ type: 'HIDE_PRESET', payload: id }),
     unhide: (id) => store.dispatch({ type: 'UNHIDE_PRESET', payload: id }),
   };
+}
+
+/** The live state, read on demand without subscribing (for work that runs
+ *  later, e.g. in an idle callback, and must see the state of then). */
+export function useSandboxStateGetter(): () => SandboxState {
+  return useStore().getSnapshot;
+}
+
+/** Stores a cover taken from a book's first page (see covers/useAutoCover). */
+export function useSandboxCoverSaver(): SandboxStore['saveBookCover'] {
+  return useStore().saveBookCover;
 }
 
 /** Whether the active preset changed on its source while local edits exist
@@ -1157,6 +1190,7 @@ export function SandboxProvider({
       booting,
       bookLoading: false,
       presetDrafts: [],
+      presetCovers: {},
       activePanel: savedPanel !== undefined ? savedPanel : ('markdown' as PanelId),
       sidebarPercent: savedPercent ?? 25,
       sidebarDragging: false,
@@ -1429,6 +1463,15 @@ export function SandboxProvider({
   };
   const openLinkedBundleRef = useRef(openLinkedBundle);
   openLinkedBundleRef.current = openLinkedBundle;
+
+  // The covers taken from the first page of presets that ship none.
+  useEffect(() => {
+    let cancelled = false;
+    listPresetCovers().then((covers) => {
+      if (!cancelled && Object.keys(covers).length > 0) dispatch({ type: 'SET_PRESET_COVERS', payload: covers });
+    }, () => undefined);
+    return () => { cancelled = true; };
+  }, [dispatch]);
 
   useEffect(() => {
     let cancelled = false;
@@ -2095,6 +2138,12 @@ export function SandboxProvider({
     openHashBundle: (ref) => switchBookRef.current(async () => (await openLinkedBundleRef.current(ref)) !== null),
     hashBundleKeys,
     projectActions,
+    saveBookCover: async (target, bytes, mime) => {
+      if (target.kind === 'project') return projectActions.adoptGeneratedThumbnail(target.id, bytes, mime);
+      const stored = await putPresetCoverIfMissing(target.id, target.locale, bytes, mime).catch(() => false);
+      if (stored) dispatch({ type: 'ADD_PRESET_COVER', payload: { key: presetCoverKey(target.id, target.locale), url: bytesToDataUrl(bytes, mime) } });
+      return stored;
+    },
   }), [dispatch, projectActions, hashBundleKeys]);
 
   return (
