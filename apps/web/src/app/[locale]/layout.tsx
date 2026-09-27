@@ -18,6 +18,7 @@ import { CookieBanner } from "@/components/gdpr/CookieBanner";
 import { Analytics } from "@vercel/analytics/next";
 import { cn } from "@/lib/utils";
 import { SITE_NAME, SITE_URL, buildMetadata, localizedUrl } from "@/lib/seo";
+import { PREPAINT_SCRIPT } from "@/components/cookbook/gallery/prepaint";
 import "../globals.css";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
@@ -161,6 +162,9 @@ export default async function LocaleLayout({
       )}
     >
       <body className="min-h-full flex flex-col font-body">
+        {/* The Cookbook gallery's filtered flag, before any of its book view
+            paints. Here because the root layout never renders on the client. */}
+        <script dangerouslySetInnerHTML={{ __html: PREPAINT_SCRIPT }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

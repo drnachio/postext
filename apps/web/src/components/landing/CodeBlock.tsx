@@ -19,7 +19,7 @@ interface CodeBlockProps {
 }
 
 const buttonClass =
-  "flex items-center gap-1.5 rounded-md border border-rule bg-background/80 px-2.5 py-1 font-sans text-xs font-medium text-slate backdrop-blur hover:text-foreground";
+  "flex items-center gap-1.5 rounded-md border border-rule bg-background/80 px-2.5 py-1 font-sans text-xs font-medium text-slate backdrop-blur hover:text-foreground max-sm:size-8 max-sm:justify-center max-sm:p-0";
 
 export function CodeBlock({ code, copyable = true, title, className, codepen, children }: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
@@ -68,7 +68,7 @@ export function CodeBlock({ code, copyable = true, title, className, codepen, ch
               style={{ touchAction: "manipulation" }}
             >
               <SquareArrowOutUpRight className="size-3.5" />
-              {t("openInCodePen")}
+              <span className="max-sm:sr-only">{t("openInCodePen")}</span>
             </button>
           )}
           {copyable && (
@@ -81,7 +81,7 @@ export function CodeBlock({ code, copyable = true, title, className, codepen, ch
               style={{ touchAction: "manipulation" }}
             >
               {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-              {copied ? t("copied") : t("copy")}
+              <span className="max-sm:sr-only">{copied ? t("copied") : t("copy")}</span>
             </button>
           )}
         </div>

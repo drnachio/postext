@@ -3,7 +3,7 @@ import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/brand/Logo";
 import { Kicker } from "@/components/brand/Kicker";
 
-const LINK = "font-sans text-sm text-mist/80 transition-colors hover:text-gold 2xl:text-base";
+const LINK = "max-md:inline-block max-md:py-1 font-sans text-sm text-mist/80 transition-colors hover:text-gold 2xl:text-base";
 
 /** The colophon: night, the three part colours along the head, the mark
  *  and the typefaces the site is set in. */
@@ -34,7 +34,7 @@ export async function Footer() {
             </p>
           </div>
 
-          <nav aria-label="Footer navigation" className="grid grid-cols-3 gap-8 md:col-span-7">
+          <nav aria-label="Footer navigation" className="grid grid-cols-2 gap-8 sm:grid-cols-3 md:col-span-7">
             <div>
               <Kicker className="text-gold">{t("product")}</Kicker>
               <ul className="mt-5 space-y-3">

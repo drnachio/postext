@@ -162,7 +162,7 @@ export default async function DocPage({
                   key={l}
                   href={`/${l}/docs/${slug}`}
                   aria-current={l === locale ? "true" : undefined}
-                  className={`rounded px-1.5 py-0.5 font-sans text-[0.68rem] font-semibold tracking-[0.12em] uppercase transition-colors ${
+                  className={`rounded px-2 py-1.5 font-sans text-[0.68rem] lg:px-1.5 lg:py-0.5 font-semibold tracking-[0.12em] uppercase transition-colors ${
                     l === locale
                       ? "bg-(--part) text-(--part-on)"
                       : "text-slate hover:text-foreground"

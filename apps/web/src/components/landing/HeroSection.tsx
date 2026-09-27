@@ -31,7 +31,7 @@ export async function HeroSection() {
           </Kicker>
           <h1
             id="hero-heading"
-            className="display hero-title mt-5 text-[2.6rem] text-foreground dark:text-white sm:text-[3.2rem] lg:text-[3.5rem] xl:text-[3.9rem] 2xl:text-[4.1rem]"
+            className="display hero-title mt-5 text-[clamp(1.9rem,calc((100vw_-_3rem)/8.2),2.6rem)] text-foreground dark:text-white sm:text-[3.2rem] lg:text-[3.5rem] xl:text-[3.9rem] 2xl:text-[4.1rem]"
             style={{ textWrap: "balance" }}
           >
             {t.rich("title", {

@@ -11,7 +11,6 @@ import { getGalleryData } from "@/components/cookbook/gallery/data";
 import { EditorsPicks } from "@/components/cookbook/gallery/EditorsPicks";
 import { plateLabels } from "@/components/cookbook/gallery/labels";
 import { askRecipeUrl } from "@/components/cookbook/gallery/links";
-import { PREPAINT_SCRIPT } from "@/components/cookbook/gallery/prepaint";
 import type { Locale } from "@/lib/cookbook/types";
 import { buildMetadata, localizedUrl, SITE_NAME, SITE_URL } from "@/lib/seo";
 
@@ -81,8 +80,6 @@ export default async function CookbookPage({ params }: { params: Promise<{ local
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
-      {/* Before any of the book view: a deep link never paints it. */}
-      <script dangerouslySetInnerHTML={{ __html: PREPAINT_SCRIPT }} />
       <noscript dangerouslySetInnerHTML={{ __html: "<style>.cb-bar{display:none!important}</style>" }} />
       <main id="main-content" className="min-w-0 flex-1">
         <CookbookFrontispiece data={data} locale={locale} />
