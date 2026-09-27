@@ -151,6 +151,14 @@ describe('doc.contentWarnings — unknown ids and markup', () => {
     expect(md.slice(w!.sourceStart, w!.sourceEnd)).toBe(':ref{id="t1"}');
   });
 
+  it('treats a null table style id as no named style', () => {
+    const md = 'Text :ref{id="t1"}.\n\n::resource{id="t1"}\n';
+    const model = { model: square, styleId: null } as unknown as NonNullable<Resource['table']>;
+    const resources = [table('t1', square, { table: model })];
+    const doc = buildDocument({ markdown: md, resources }, { tableStyles: [{ id: 'plain' }] });
+    expect(doc.contentWarnings?.filter((w) => w.kind === 'unknownTableStyle') ?? []).toEqual([]);
+  });
+
   it('reports a ragged merged grid once per table', () => {
     const ragged: TableModel = {
       rows: [

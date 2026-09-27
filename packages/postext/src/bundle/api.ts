@@ -92,7 +92,12 @@ function chapterTitle(markdown: string, n: number): string {
     if (inFence) continue;
     const m = /^#\s+(.+?)\s*#*\s*$/.exec(line);
     if (m) {
-      const text = m[1]!.replace(/\{[^}]*\}\s*$/, '').replace(/[*_`]/g, '').trim();
+      const text = m[1]!
+        .replace(/\{[^}]*\}\s*$/, '')
+        .replace(/\s*\\\\\s*/g, ' ') // a `\\` line break reads as a space
+        .replace(/[*_`]/g, '')
+        .replace(/\\([\\`*_{}[\]()#+\-.!])/g, '$1')
+        .trim();
       if (text) return text;
     }
   }
