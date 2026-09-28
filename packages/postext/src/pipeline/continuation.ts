@@ -16,6 +16,7 @@ import { planParts } from './parts';
 import { resolveAllConfig } from './config';
 import { headingIsNumbered } from './headingStyles';
 import { computeOutline, hasTocDirective } from './outline';
+import { lastFootnoteNumber, numberFootnotes, splitFootnoteDefinitions } from './footnotes';
 
 const NO_HEADINGS: HeadingCounters = { h1: 0, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0 };
 
@@ -55,7 +56,20 @@ export function continuationAfter(
     };
   }
   const afterPartPage = resolved.parts.page && endsWithPart(blocks, parts.byEnd.keys());
-  return { headings, resourceCounters: counters, resourceNumbers: map, ...(part ? { part } : {}), ...(afterPartPage ? { afterPartPage } : {}) };
+  // Notes numbered through the book go on from the last one printed.
+  let footnoteNumber = before?.footnoteNumber ?? 0;
+  if (resolved.footnotes.numbering === 'document') {
+    const numbering = numberFootnotes(splitFootnoteDefinitions(blocks).blocks, 'document', footnoteNumber);
+    footnoteNumber = Math.max(footnoteNumber, lastFootnoteNumber(numbering));
+  }
+  return {
+    headings,
+    resourceCounters: counters,
+    resourceNumbers: map,
+    ...(footnoteNumber > 0 ? { footnoteNumber } : {}),
+    ...(part ? { part } : {}),
+    ...(afterPartPage ? { afterPartPage } : {}),
+  };
 }
 
 /** Whether a part's closing fence ends `blocks`: nothing after it but

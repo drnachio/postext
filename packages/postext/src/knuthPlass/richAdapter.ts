@@ -47,6 +47,7 @@ interface RichToken {
   hyphenWidth?: number;
   mathRender?: import('../math/types').MathRender;
   refResourceId?: string;
+  footnoteId?: string;
   /** An inline colour swatch (atomic square; see `measure/rich.ts`). */
   swatch?: { color?: string };
   /** An inline chip (atomic box; see `measure/rich.ts`). */
@@ -251,6 +252,7 @@ export function reconstructRichLines(
           ...(token.swatch ? { swatch: token.swatch } : {}),
           ...(token.chip ? { chip: token.chip } : {}),
           ...(token.refResourceId !== undefined ? { refResourceId: token.refResourceId } : {}),
+          ...(token.footnoteId !== undefined ? { footnoteId: token.footnoteId } : {}),
           ...(token.script ? { script: token.script, fontString: token.scriptFont, baselineShift: token.baselineShift } : {}),
           ...(token.stacked === 'first' ? { stacked: true } : {}),
           ...(token.smallCaps ? { smallCaps: true } : {}),
@@ -289,7 +291,7 @@ export function reconstructRichLines(
       const hyphenW = breakToken?.hyphenWidth ?? 0;
       const lastIdx = lineSegments.length - 1;
       const last = lineSegments[lastIdx]!;
-      if (last.kind === 'text' && last.refResourceId === undefined) {
+      if (last.kind === 'text' && last.refResourceId === undefined && last.footnoteId === undefined) {
         lineSegments[lastIdx] = {
           ...last,
           text: last.text + '-',

@@ -15,7 +15,7 @@ import {
   type PDFRef,
 } from 'pdf-lib';
 import type { VDTDocument, VDTPage, VDTColumn, BoundingBox } from 'postext';
-import { dimensionToPx, columnRuleSegments, cropMarkSegments } from 'postext';
+import { dimensionToPx, columnRuleSegments, cropMarkSegments, footnoteRuleSegments } from 'postext';
 import { type PageCtx, drawLinePx, colorFromHex } from './primitives';
 
 export function renderBaselineGrid(
@@ -48,11 +48,12 @@ export function renderColumnRule(
   columns: VDTColumn[],
   colorHex: string,
   lineWidthPx: number,
+  footnoteAreas?: VDTPage['footnoteAreas'],
 ): void {
   if (columns.length < 2) return;
   // One segment per gutter of each column band; span columns interrupt the
   // rule (mirrors the canvas backend via `columnRuleSegments`).
-  const segments = columnRuleSegments(columns);
+  const segments = columnRuleSegments(columns, footnoteAreas);
   if (segments.length === 0) return;
   const color = colorFromHex(colorHex, ctx.colorSpace);
   for (const seg of segments) {
@@ -137,4 +138,12 @@ export function computeContentArea(page: VDTPage, doc: VDTDocument): BoundingBox
     };
   }
   return { x: marginLeft, y: marginTop, width: 0, height: 0 };
+}
+
+/** The separator rules above the footnotes of a page's columns (mirrors the
+ *  canvas backend). */
+export function renderFootnoteRules(ctx: PageCtx, page: VDTPage): void {
+  for (const r of footnoteRuleSegments(page)) {
+    drawLinePx(ctx, r.x, r.y, r.x + r.width, r.y, colorFromHex(r.color, ctx.colorSpace), r.lineWidthPx);
+  }
 }

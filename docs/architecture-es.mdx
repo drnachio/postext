@@ -70,7 +70,7 @@ desdibujado.
     </tr>
     <tr>
       <td><strong>Note</strong></td>
-      <td>Nota al pie, nota final o nota al margen, definida por <code>PostextNote</code>. Prevista, pero aún no implementada: el modelo de contenido acepta notas, pero el motor no las lee, así que ni se componen ni se renderizan.</td>
+      <td>Nota al pie o de final de capítulo, escrita en el markdown como una llamada <code>[^id]</code> y una definición <code>[^id]:</code> (ver <a href="/es/docs/document-format#notas-al-pie">Notas al pie</a>). Las notas al margen, y la lista <code>PostextNote</code> que acepta el modelo de contenido, no están implementadas: el motor no lee <code>notes</code>.</td>
     </tr>
     <tr>
       <td><strong>Baseline Grid</strong></td>
@@ -136,7 +136,7 @@ interface PostextContent {
   markdown: string;            // markdown enriquecido con marcadores :ref / ::resource
   metadata?: DocumentMetadata; // título, subtítulo, autoría, fecha de publicación, …
   resources?: Resource[];      // bitmaps, SVGs, tablas — referenciados por id
-  notes?: PostextNote[];       // notas al pie, finales y al margen (aún no se componen)
+  notes?: PostextNote[];       // no se lee: las notas al pie se escriben como [^id] en el markdown
 }
 
 interface Resource {
@@ -586,7 +586,7 @@ Algunos elementos rompen la rejilla porque su altura no es múltiplo de `baselin
 - **Imágenes:** altura arbitraria en píxeles
 - **Tablas:** altura variable
 - **Citas:** pueden usar tamaño de fuente o padding diferente
-- **Separadores de notas al pie:** filete de altura fija (las notas al pie están previstas, pero aún no implementadas)
+- **Áreas de notas al pie:** las notas al pie de una columna y su filete; el área de texto de la columna termina encima
 
 ### Algoritmo de ajuste de espaciado
 
@@ -815,7 +815,7 @@ Así se relacionan los tipos principales definidos en `packages/postext/src/type
     </tr>
     <tr>
       <td><code>PostextNote</code></td>
-      <td>Prevista, pero aún no implementada: el motor no lee <code>notes</code>. Cuando lo esté, cada nota se convertirá en un bloque de nota al pie, nota final o nota al margen en la Pasada 1</td>
+      <td>El motor no la lee. Las notas al pie se escriben en el markdown (<code>[^id]</code>) y se componen al pie de la columna que las cita o tras el capítulo; las notas al margen no están implementadas</td>
     </tr>
     <tr>
       <td><code>PostextResource</code></td>

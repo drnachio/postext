@@ -394,6 +394,10 @@ export interface LayoutContinuation {
    *  floated resource listed here is not floated again, and a
    *  `::resource` embed of one is just another reference. */
   resourceNumbers?: Record<string, ResourceNumberEntry>;
+  /** The last footnote number the preceding content printed, so notes
+   *  numbered through the book (`footnotes.numbering: 'document'`) go on
+   *  from it. */
+  footnoteNumber?: number;
   /** The `:::part` in effect at the end of the preceding content — the last
    *  part opened, whether or not its fence has closed — so a chapter laid
    *  out on its own keeps `{partTitle}` / `{partNumber}` and the part's
@@ -2642,6 +2646,92 @@ export interface ResolvedMathConfig {
   keepWithLeadIn: boolean;
 }
 
+/** Where footnotes (`[^id]` markers) are set:
+ *  - `'column'`: at the foot of the column that holds the line citing the
+ *    note, under a separator rule, above the column's bottom float band. In
+ *    a one-column layout that is the foot of the page;
+ *  - `'chapterEnd'`: every note of the chapter after its last block. */
+export type FootnotePlacement = 'column' | 'chapterEnd';
+
+/** When the note numbers start again at 1: at each chapter (a heading
+ *  that opens a page, `breakBefore`, and the start of each document of a
+ *  book), or never within the document. */
+export type FootnoteNumbering = 'chapter' | 'document';
+
+/** The rule set between the text and the notes of a column. */
+export interface FootnoteSeparatorConfig {
+  /** Draw the rule. Default `true`. With `false` the space stays. */
+  enabled?: boolean;
+  /** Length of the rule as a fraction of the column width (0–1). Default
+   *  `0.3`. */
+  width?: number;
+  /** Thickness. Default `0.5pt`. */
+  lineWidth?: Dimension;
+  /** Rule colour. Defaults to the notes' text colour. */
+  color?: ColorValue;
+}
+
+export interface ResolvedFootnoteSeparatorConfig {
+  enabled: boolean;
+  width: number;
+  lineWidth: Dimension;
+  color?: ColorValue;
+}
+
+/** Footnotes: `[^id]` in the text cites the note `[^id]: text` defined in a
+ *  paragraph of its own anywhere in the chapter. The marker prints as a
+ *  superscript number; the note prints at the foot of the column (see
+ *  {@link FootnotePlacement}), in citation order. */
+export interface FootnotesConfig {
+  /** Default `'column'`. */
+  placement?: FootnotePlacement;
+  /** Default `'chapter'`. */
+  numbering?: FootnoteNumbering;
+  /** `'chapterEnd'` placement: where the notes stand in the columns that
+   *  close the chapter. `'foot'` sets them at the foot of the column, the
+   *  room left over staying between the text and them (as notes at the
+   *  column foot stand); `'text'` sets them right under the text. Default
+   *  `'foot'`. */
+  chapterEndAlign?: 'foot' | 'text';
+  /** Size of the note text. Default `0.8em` of the body size. `em` / `rem`
+   *  are relative to the body size. */
+  fontSize?: Dimension;
+  /** Leading of the note text; `em` / `rem` relative to the note size.
+   *  Default `1.25em`. */
+  lineHeight?: Dimension;
+  /** Note text colour. Defaults to the body colour. */
+  color?: ColorValue;
+  /** Alignment of the note text. Defaults to the body alignment. */
+  textAlign?: TextAlign;
+  /** Indent of the turnover lines of a note, so they align past its
+   *  number. Default `0` (the lines run flush under the number). */
+  hangingIndent?: Dimension;
+  /** Space between two notes. Default `0`. */
+  spaceBetween?: Dimension;
+  /** Space between the last line of text and the separator rule (or the
+   *  first note without a rule). Default `0.5em` of the body size. The
+   *  rule sits in the middle of `spaceAbove` + `spaceBelowRule`. */
+  spaceAbove?: Dimension;
+  /** Space between the rule and the first note. Default `0.4em`. */
+  spaceBelowRule?: Dimension;
+  separator?: FootnoteSeparatorConfig;
+}
+
+export interface ResolvedFootnotesConfig {
+  placement: FootnotePlacement;
+  numbering: FootnoteNumbering;
+  chapterEndAlign: 'foot' | 'text';
+  fontSize: Dimension;
+  lineHeight: Dimension;
+  color?: ColorValue;
+  textAlign?: TextAlign;
+  hangingIndent: Dimension;
+  spaceBetween: Dimension;
+  spaceAbove: Dimension;
+  spaceBelowRule: Dimension;
+  separator: ResolvedFootnoteSeparatorConfig;
+}
+
 export type PdfColorSpace = 'rgb' | 'cmyk' | 'grayscale';
 
 /** How postext-pdf writes the file. Layout ignores it; the VDT carries it
@@ -3475,6 +3565,8 @@ export interface PostextConfig {
   unorderedLists?: UnorderedListsConfig;
   orderedLists?: OrderedListsConfig;
   math?: MathConfig;
+  /** Footnotes (`[^id]` markers and `[^id]: …` definitions). */
+  footnotes?: FootnotesConfig;
   header?: HeaderFooterSlot;
   footer?: HeaderFooterSlot;
 

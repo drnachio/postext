@@ -97,11 +97,18 @@ export function collectContentWarnings(
     if (byId.has(id) && !firstUse.has(id)) firstUse.set(id, range);
   };
 
-  /** Refs and chips of a block's spans. */
+  /** Footnote markers (first one of each id) and definitions. */
+  const footnoteCites = new Map<string, SourceRange>();
+  const footnoteDefs = new Map<string, SourceRange>();
+
+  /** Refs, chips and footnote markers of a block's spans. */
   const scanSpans = (b: ContentBlock): void => {
     let plain = 0;
     for (const span of b.spans) {
       const at = b.sourceMap[plain] ?? b.sourceStart;
+      if (span.footnote && !footnoteCites.has(span.footnote.id)) {
+        footnoteCites.set(span.footnote.id, { start: at, end: at + span.footnote.id.length + 3 });
+      }
       if (span.ref) {
         const range = inlineRange(body, at, b.sourceEnd);
         use(span.ref.resourceId, range);
@@ -147,6 +154,11 @@ export function collectContentWarnings(
         break;
       }
       case 'paragraph': {
+        if (b.footnoteDef !== undefined && !footnoteDefs.has(b.footnoteDef)) {
+          // The definition's `[^id]:` sits before its text, on its line.
+          const lineStart = body.lastIndexOf('\n', b.sourceStart - 1) + 1;
+          footnoteDefs.set(b.footnoteDef, { start: lineStart, end: b.sourceEnd });
+        }
         // A `:::name` line the parser did not take as a directive or a
         // container is set as text: it opens its paragraph, or sits in one
         // when text follows the name on the line. So is a `::name` line that
@@ -167,6 +179,14 @@ export function collectContentWarnings(
         break;
     }
     scanSpans(b);
+  }
+
+  // Footnotes cited with no definition, and definitions never cited.
+  for (const [id, at] of footnoteCites) {
+    if (!footnoteDefs.has(id)) out.push({ kind: 'undefinedFootnote', id, ...abs(at) });
+  }
+  for (const [id, at] of footnoteDefs) {
+    if (!footnoteCites.has(id)) out.push({ kind: 'unusedFootnote', id, ...abs(at) });
   }
 
   // The resources the text uses: their style ids, grids, and the refs and
@@ -321,6 +341,12 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
       break;
     case 'unknownChipStyle':
       text = `Unknown chip style "${w.style}"${inRes} — the chip takes the first chip style`;
+      break;
+    case 'undefinedFootnote':
+      text = `Footnote [^${w.id}] has no definition — write [^${w.id}]: text on a line of its own`;
+      break;
+    case 'unusedFootnote':
+      text = `Footnote definition [^${w.id}]: is never cited — it is not set`;
       break;
     case 'unknownHeadingStyle':
       text = `Unknown heading style "${w.style}" on an H${w.level} — the level's own settings apply`;

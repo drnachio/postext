@@ -164,7 +164,9 @@ export class StructureFlow {
           elem = this.calloutTitle(block, parent);
           break;
         default:
-          elem = parent.child('P');
+          elem = block.footnoteNote !== undefined
+            ? parent.child('Note', { id: `note-${block.footnoteNote}` })
+            : parent.child('P');
       }
     }
     this.byId.set(key, elem);

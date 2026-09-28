@@ -2763,6 +2763,161 @@ document.body.append(renderPage(doc.pages[0], doc));
 For the document-side grammar (`$...$`, `$$...$$`, escaping a literal dollar), see [Document format](/en/docs/document-format#mathematical-formulas).
 
 
+## Footnotes
+
+The `footnotes` property sets where the notes cited with `[^id]` go, how they are numbered and how they look. The markup is described in [Document format](/en/docs/document-format#footnotes).
+
+```ts
+interface FootnotesConfig {
+  placement?: 'column' | 'chapterEnd'; // Foot of the citing column, or after the chapter.
+  numbering?: 'chapter' | 'document';  // Start again at each chapter, or run on.
+  chapterEndAlign?: 'foot' | 'text';   // chapterEnd: notes at the column foot, or under the text.
+  fontSize?: Dimension;       // Note size; em is the body size.
+  lineHeight?: Dimension;     // Note leading; em is the note size.
+  color?: ColorValue;         // Note colour; the body colour when unset.
+  textAlign?: TextAlign;      // The body alignment when unset.
+  hangingIndent?: Dimension;  // Indent of a note's turnover lines.
+  spaceBetween?: Dimension;   // Space between two notes.
+  spaceAbove?: Dimension;     // Space between the text and the rule; em is the body size.
+  spaceBelowRule?: Dimension; // Space between the rule and the first note.
+  separator?: {
+    enabled?: boolean;        // Draw the rule.
+    width?: number;           // Rule length, a fraction of the column width.
+    lineWidth?: Dimension;    // Rule thickness.
+    color?: ColorValue;       // The note colour when unset.
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'column' | 'chapterEnd'</code></td>
+      <td><code>'column'</code></td>
+      <td><code>'column'</code> sets each note at the foot of the column that holds the line citing it, under a short rule; in a one-column layout that is the foot of the page. <code>'chapterEnd'</code> sets every note of a chapter after its last block, in citation order.</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>'chapter' | 'document'</code></td>
+      <td><code>'chapter'</code></td>
+      <td><code>'chapter'</code> starts again at 1 under each level-1 heading and at the start of each document. <code>'document'</code> runs on through the document and, in a book laid out chapter by chapter, from one chapter to the next (<code>continuationAfter</code> carries the last number as <code>continuation.footnoteNumber</code>).</td>
+    </tr>
+    <tr>
+      <td><code>chapterEndAlign</code></td>
+      <td><code>'foot' | 'text'</code></td>
+      <td><code>'foot'</code></td>
+      <td>With <code>placement: 'chapterEnd'</code>: <code>'foot'</code> sets the notes that close a column at its foot, the lines left over staying between the text and the notes, as notes at the column foot stand. <code>'text'</code> sets them right under the text.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>Size of the note text. <code>em</code> and <code>rem</code> are the body size. The notes use the body family and weights.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.25em</code></td>
+      <td>Leading of the note text; <code>em</code> is the note size. The notes are off the baseline grid: they stack up from the foot of the column, and the text above them stays on the grid.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>body colour</td>
+      <td>Colour of the note text.</td>
+    </tr>
+    <tr>
+      <td><code>textAlign</code></td>
+      <td><code>TextAlign</code></td>
+      <td>body alignment</td>
+      <td>Alignment of the note text.</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Indent of a note's second and later lines, so they align past its number.</td>
+    </tr>
+    <tr>
+      <td><code>spaceBetween</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Space between two notes.</td>
+    </tr>
+    <tr>
+      <td><code>spaceAbove</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>Space between the last line of text and the rule; <code>em</code> is the body size. With <code>'chapterEnd'</code> and <code>chapterEndAlign: 'text'</code>, <code>spaceAbove</code> + <code>spaceBelowRule</code> is the space between the text and the first note.</td>
+    </tr>
+    <tr>
+      <td><code>spaceBelowRule</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.4em</code></td>
+      <td>Space between the rule and the first note.</td>
+    </tr>
+    <tr>
+      <td><code>separator.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Draw the rule above the notes of each column. With <code>false</code> the spaces above stay.</td>
+    </tr>
+    <tr>
+      <td><code>separator.width</code></td>
+      <td><code>number</code></td>
+      <td><code>0.3</code></td>
+      <td>Length of the rule as a fraction of the column width (0–1), from the column's left edge.</td>
+    </tr>
+    <tr>
+      <td><code>separator.lineWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5pt</code></td>
+      <td>Thickness of the rule.</td>
+    </tr>
+    <tr>
+      <td><code>separator.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>note colour</td>
+      <td>Colour of the rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+footnotes: {
+  fontSize: { value: 7.5, unit: 'pt' },
+  lineHeight: { value: 9.5, unit: 'pt' },
+  hangingIndent: { value: 0.8, unit: 'em' },
+  separator: { width: 0.25, lineWidth: { value: 0.4, unit: 'pt' } },
+}
+```
+
+How the notes are laid out at the column foot:
+
+- **Note and citation share a column.** Before it places a line, the layout adds the height of the notes that line cites for the first time (and the rule, for the first note of the column). A line whose notes do not fit under it goes to the next column with the rest of its paragraph, under the orphan and widow rules. The column's text area shrinks by the notes' height, so the column balancing and the closing band of a chapter count only the text.
+- **Several notes** in one column stack in citation order under one rule. A note cited again later keeps its number and is not set again.
+- **Bottom floats.** A figure that takes the foot of a column after its notes were set goes above them; notes set after the figure go above it.
+- **Boxes.** A note cited inside a callout (inline, floated or fixed) goes to the foot of the column where the text after the box goes on, usually the same column. A box that closes the document leaves its notes at the foot of the column the text ended in.
+- **Limits.** A note is never split: one taller than a column overflows it. Markers in captions, table cells and headings are not read (they print as written).
+- **Output.** Canvas, HTML and PDF paint the notes, the markers (a superscript number) and the rule. In the PDF each marker links to its note, and a tagged PDF sets each note as a `Note` element with a unique `/ID` listed in the structure tree's `/IDTree` (PDF/UA-1). The notes are `VDTBlock`s with `footnoteNote` set, in `page.floats`; the rules are in `page.footnoteAreas`.
+- **Warnings.** `undefinedFootnote` (a marker with no definition: the number prints over an empty note) and `unusedFootnote` (a definition no marker cites: it is not set).
+
+Resolver and stripper match the other sections:
+
+```ts
+import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults } from 'postext';
+```
+
+
 ## Resource types
 
 A **resource type** is a user-definable category — *Figure*, *Table*, *Diagram*, *Listing*… — that drives how the resources of that kind are numbered, captioned, and referenced. The list lives on `config.resourceTypes`; the Sandbox edits it in **Design → Figures & tables → Numbering & placement**.
@@ -5341,6 +5496,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>unknownChipStyle</code></td>
       <td><code>:chip[…]{'{'}style{'}'}</code> names no chip style.</td>
       <td>The chip takes the first chip style.</td>
+    </tr>
+    <tr>
+      <td><code>undefinedFootnote</code></td>
+      <td>A footnote marker <code>[^id]</code> that no <code>[^id]:</code> paragraph defines (<code>id</code> is the note's).</td>
+      <td>The number prints; the note is empty.</td>
+    </tr>
+    <tr>
+      <td><code>unusedFootnote</code></td>
+      <td>A footnote definition <code>[^id]:</code> that no marker cites.</td>
+      <td>The note is not set.</td>
     </tr>
     <tr>
       <td><code>unknownHeadingStyle</code></td>

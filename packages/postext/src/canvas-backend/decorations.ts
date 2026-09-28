@@ -1,6 +1,6 @@
 import type { VDTDocument, VDTPage, VDTColumn, BoundingBox } from '../vdt';
 import { dimensionToPx } from '../units';
-import { columnRuleSegments } from '../columnRule';
+import { columnRuleSegments, footnoteRuleSegments } from '../columnRule';
 import { cropMarkSegments } from '../cropMarks';
 
 export function renderBaselineGrid(
@@ -45,12 +45,13 @@ export function renderColumnRule(
   columns: VDTColumn[],
   color: string,
   lineWidth: number,
+  footnoteAreas?: VDTPage['footnoteAreas'],
 ): void {
   if (columns.length < 2) return;
 
   // One segment per gutter of each column band; span columns interrupt the
   // rule (see `columnRuleSegments`).
-  const segments = columnRuleSegments(columns);
+  const segments = columnRuleSegments(columns, footnoteAreas);
   if (segments.length === 0) return;
 
   ctx.save();
@@ -116,4 +117,20 @@ export function computeContentArea(page: VDTPage, doc: VDTDocument): BoundingBox
   }
 
   return { x: marginLeft, y: marginTop, width: 0, height: 0 };
+}
+
+/** The separator rules above the footnotes of a page's columns. */
+export function renderFootnoteRules(ctx: CanvasRenderingContext2D, page: VDTPage): void {
+  const rules = footnoteRuleSegments(page);
+  if (rules.length === 0) return;
+  ctx.save();
+  for (const r of rules) {
+    ctx.strokeStyle = r.color;
+    ctx.lineWidth = r.lineWidthPx;
+    ctx.beginPath();
+    ctx.moveTo(r.x, r.y);
+    ctx.lineTo(r.x + r.width, r.y);
+    ctx.stroke();
+  }
+  ctx.restore();
 }

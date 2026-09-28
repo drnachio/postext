@@ -21,6 +21,7 @@ import {
   computeContentArea,
   renderBaselineGrid,
   renderColumnRule,
+  renderFootnoteRules,
   renderCutLines,
 } from './pageDecorations';
 import { renderBlock, type ResourceRenderContext } from './blockRender';
@@ -279,7 +280,7 @@ function renderPage(
   // (mirrors the canvas backend via `pageColumnRule`).
   const columnRule = pageColumnRule(vdtPage, doc);
   if (columnRule.enabled && vdtPage.columns.length > 1) {
-    renderColumnRule(ctx, vdtPage.columns, columnRule.color, columnRule.lineWidthPx);
+    renderColumnRule(ctx, vdtPage.columns, columnRule.color, columnRule.lineWidthPx, vdtPage.footnoteAreas);
   }
 
   // Opener / part bands go under the columns so their backgrounds sit
@@ -332,6 +333,12 @@ function renderPage(
       if (structure) structure.readFloat(fb, paint);
       else paint();
     }
+  }
+
+  // The footnote separators are layout.
+  if (vdtPage.footnoteAreas?.some((a) => a.rule)) {
+    tagArtifact(ctx, { type: 'Layout' });
+    renderFootnoteRules(ctx, vdtPage);
   }
 
   // Running headers and footers are pagination artifacts.
@@ -449,6 +456,7 @@ export async function renderToPdf(
       linkRegistry,
       structure: tree ? new StructureFlow(tree) : undefined,
     };
+    linkRegistry.documentIndex = documentIndex;
     for (const page of doc.pages) {
       const onMissingImage = onWarning
         ? (fileId: string, resourceId?: string) => {

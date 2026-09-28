@@ -59,6 +59,9 @@ export interface StructAttrs {
   actualText?: string;
   /** Language override (`/Lang`, BCP 47). */
   lang?: string;
+  /** Element identifier (`/ID`), listed in the tree's `/IDTree`: a `Note`
+   *  carries one (PDF/UA-1). Made unique across the file on write. */
+  id?: string;
   /** Attribute dictionaries (`/A`): owner → entries. */
   attributes?: Array<{ owner: 'Layout' | 'List' | 'Table'; entries: Record<string, PDFObject | number | string> }>;
 }
@@ -290,6 +293,8 @@ export class StructTree {
     if (el.attrs.alt !== undefined) dict.Alt = PDFHexString.fromText(el.attrs.alt);
     if (el.attrs.actualText !== undefined) dict.ActualText = PDFHexString.fromText(el.attrs.actualText);
     if (el.attrs.lang !== undefined) dict.Lang = PDFString.of(el.attrs.lang);
+    const id = this.elemIds.get(el);
+    if (id !== undefined) dict.ID = PDFString.of(id);
     if (el.attrs.attributes && el.attrs.attributes.length > 0) {
       const dicts = el.attrs.attributes.map((a) => this.attrDict(a.owner, a.entries));
       dict.A = dicts.length === 1 ? dicts[0]! : ctx.obj(dicts);
@@ -298,6 +303,21 @@ export class StructTree {
   }
 
   private structTreeRootRef!: PDFRef;
+  /** The unique `/ID` of each element that asked for one. */
+  private readonly elemIds = new Map<StructElem, string>();
+
+  /** A name tree of the element ids (one leaf, keys sorted). */
+  private idTree(): PDFRef {
+    const ctx = this.pdfDoc.context;
+    const pairs = [...this.elemIds].map(([el, id]) => ({ id, ref: el.ref }))
+      .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    const names = PDFArray.withContext(ctx);
+    for (const { id, ref } of pairs) {
+      names.push(PDFString.of(id));
+      names.push(ref);
+    }
+    return ctx.register(ctx.obj({ Names: names }));
+  }
 
   /** Write the structure elements, the parent tree, the catalog entries
    *  (`/StructTreeRoot`, `/MarkInfo`, `/Lang`, `/ViewerPreferences`) and the
@@ -307,6 +327,17 @@ export class StructTree {
     for (const tagger of this.pages) tagger.close();
 
     this.structTreeRootRef = ctx.nextRef();
+    // Element ids, unique across the file (a book repeats a chapter's
+    // note ids): a repeated one takes a suffix.
+    const taken = new Set<string>();
+    for (const el of this.elems) {
+      const base = el.attrs.id;
+      if (base === undefined) continue;
+      let id = base;
+      for (let n = 2; taken.has(id); n++) id = `${base}-${n}`;
+      taken.add(id);
+      this.elemIds.set(el, id);
+    }
     for (const el of this.elems) this.writeElem(el);
 
     // Parent tree: page keys → array indexed by MCID; annotation keys → element.
@@ -333,6 +364,7 @@ export class StructTree {
       K: ctx.obj([this.root.ref]),
       ParentTree: parentTreeRef,
       ParentTreeNextKey: PDFNumber.of(this.nextParentKey),
+      ...(this.elemIds.size > 0 ? { IDTree: this.idTree() } : {}),
     }));
 
     const catalog = this.pdfDoc.catalog;

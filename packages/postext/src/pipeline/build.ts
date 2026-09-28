@@ -44,7 +44,7 @@ import {
 import { computeOutline, hasTocDirective, headingNumberingOptions, headingTemplatesOf, outlineFromDoc, sameOutline } from './outline';
 import { expandTocDirectives } from './toc';
 import type { ResolvedHeadingStyleConfig } from '../types';
-import { resolveBodyStyle, resolveBlockquoteStyle, type BlockStyle } from './styles';
+import { resolveBodyStyle, resolveBlockquoteStyle, resolveParagraphStyle, type BlockStyle } from './styles';
 import {
   computeLevelIndentsPx,
   computeOrderedLevelIndentsPx,
@@ -88,6 +88,15 @@ import {
 } from './buildHelpers';
 import { measureContentBlock, type BlockMeasureContext, type MeasureContentBlockOptions, type MeasuredContentBlock } from './measureContentBlock';
 import { planParagraphContainers } from './paragraphContainers';
+import {
+  appendChapterEndNotes,
+  footnoteIdsOfLines,
+  footnoteParagraphStyle,
+  noteContentBlock,
+  numberFootnotes,
+  splitFootnoteDefinitions,
+  withFootnoteStyle,
+} from './footnotes';
 import { planParts, derivePartMeasureContext } from './parts';
 import {
   layoutCallout,
@@ -446,7 +455,20 @@ export function buildDocumentPass(
   if (fieldSources) doc.metadataSources = fieldSources;
   // A configuration that leaves headings' inline marks off sets their
   // spans plain here, for the outline and the layout alike (EF-122).
-  const parsedBlocks = headingMarksFor(parseMarkdownMemo(markdownBody), resolved);
+  // Footnote definitions (`[^id]: …`) leave the flow; the markers are
+  // numbered in citation order. With `placement: 'chapterEnd'` the notes
+  // come back as paragraphs after each chapter's last block.
+  const footnoteSplit = splitFootnoteDefinitions(headingMarksFor(parseMarkdownMemo(markdownBody), resolved));
+  const footnoteDefs = footnoteSplit.defs;
+  const footnoteNumbering = numberFootnotes(
+    footnoteSplit.blocks,
+    resolved.footnotes.numbering,
+    resolved.footnotes.numbering === 'document' ? Math.max(0, Math.floor(continuation?.footnoteNumber ?? 0)) : 0,
+  );
+  const chapterEndNotes = resolved.footnotes.placement === 'chapterEnd' && footnoteNumbering.numbers.size > 0;
+  const parsedBlocks = chapterEndNotes
+    ? appendChapterEndNotes(footnoteSplit.blocks, footnoteNumbering, footnoteDefs)
+    : footnoteSplit.blocks;
   const headingStart = continuation?.headings;
   // `:::toc` expands into the entries of the book's outline — the one the
   // host supplied, else this document's own (page labels unknown on the
@@ -505,7 +527,7 @@ export function buildDocumentPass(
     orderedMetrics.maxWidthByDepth,
   );
   // `:::paragraphs{style="…"}` containers, resolved per content-block index.
-  const paragraphContainers = planParagraphContainers(contentBlocks, resolved);
+  const paragraphContainers = planParagraphContainers(contentBlocks, chapterEndNotes ? withFootnoteStyle(resolved) : resolved);
   // `:::callout` ranges keyed by their start marker index (same rationale).
   const calloutPlan = planCallouts(contentBlocks);
   // `:::part` ranges: start/end marker indices and the enclosed blocks.
@@ -667,6 +689,7 @@ export function buildDocumentPass(
    *  past it does), and a rollback that replays the heading gates it on the
    *  heading again (`gateCitedFloats`). */
   const citedLinesPlaced = (blockIdx: number, placed: VDTBlock): void => {
+    reserveCitedNotes(placed);
     // Side boxes waiting for the text after their fence stand beside it
     // before the floats this text cites take the side column.
     settleAwaitingSideBoxes(false);
@@ -1735,6 +1758,266 @@ export function buildDocumentPass(
     resourceNumbering,
     floatedIds,
     leftFlow: calloutsOutOfFlow,
+    ...(footnoteNumbering.numbers.size > 0 ? { footnoteNumbers: footnoteNumbering.numbers } : {}),
+  };
+
+  // --- Footnotes at the column foot (`footnotes.placement: 'column'`) ------
+  // A text block placed in a column reserves, at the column's foot, the
+  // notes its lines cite for the first time: the column's box shrinks by
+  // their height (as a bottom float band shrinks it), so the text above
+  // keeps its positions and the grid. The flow counts that height before it
+  // places lines (`notesPrefixCost`), so the line citing a note and the note
+  // share a column. The notes are set in their reserved room once the pass
+  // is placed (`setColumnNotes`).
+  const columnNotes = resolved.footnotes.placement === 'column' && footnoteNumbering.numbers.size > 0;
+  const noteStyle = columnNotes ? resolveParagraphStyle(footnoteParagraphStyle(resolved), resolved) : bodyStyle;
+  const noteSpaceAbovePx = dimensionToPx(resolved.footnotes.spaceAbove, dpi, bodyStyle.fontSizePx);
+  const noteSpaceBelowRulePx = dimensionToPx(resolved.footnotes.spaceBelowRule, dpi, bodyStyle.fontSizePx);
+  const noteRulePx = resolved.footnotes.separator.enabled ? dimensionToPx(resolved.footnotes.separator.lineWidth, dpi) : 0;
+  /** The separator zone above a column's first note. */
+  const noteHeadPx = noteSpaceAbovePx + noteRulePx + noteSpaceBelowRulePx;
+  /** Space between two notes. */
+  const noteGapPx = Math.max(0, noteStyle.marginBottomPx);
+  /** Notes set (reserved) in this pass: a note is set once, where it is
+   *  first cited. */
+  const placedNotes = new Set<string>();
+  const noteMeasures = new Map<string, MeasuredContentBlock | null>();
+  const measureNote = (id: string, width: number): MeasuredContentBlock | null => {
+    const key = `${id}@${width.toFixed(2)}`;
+    let m = noteMeasures.get(key);
+    if (m === undefined) {
+      const number = footnoteNumbering.numbers.get(id) ?? '?';
+      m = measureContentBlock(noteContentBlock(footnoteDefs.get(id), id, number), 0, width, measureCtx, { styleOverride: noteStyle });
+      noteMeasures.set(key, m);
+    }
+    return m;
+  };
+  const noteHeight = (id: string, width: number): number =>
+    Math.max(1, measureNote(id, width)?.measured.lines.length ?? 1) * noteStyle.lineHeightPx;
+  /** The notes of a column: ids in order, and the room reserved for them,
+   *  one slot per reservation (page coordinates). */
+  const columnNotesOf = new Map<VDTColumn, { ids: string[]; slots: { top: number; height: number; ids: string[] }[] }>();
+  const columnOfNotes = new Map<VDTColumn, VDTPage>();
+  /** Height `ids` (not yet set) add to `col`'s foot: the separator zone
+   *  when the column has no note yet, the notes and the gaps between. */
+  const notesCost = (col: VDTColumn, ids: readonly string[]): number => {
+    if (ids.length === 0) return 0;
+    const first = !columnNotesOf.has(col);
+    let h = first ? noteHeadPx : 0;
+    ids.forEach((id, i) => {
+      if (!first || i > 0) h += noteGapPx;
+      h += noteHeight(id, col.bbox.width);
+    });
+    return h;
+  };
+  /** Notes cited by blocks set outside the flow (the paragraphs of a box,
+   *  inline, floated or fixed): they wait for the next text the flow
+   *  places, and go to the foot of its column, in citation order. */
+  const pendingNotes: string[] = [];
+  /** How far `doc.blocks` was read for such citations. */
+  let notesScanned = 0;
+  const collectPendingNotes = (): void => {
+    for (; notesScanned < doc.blocks.length; notesScanned++) {
+      for (const id of footnoteIdsOfLines(doc.blocks[notesScanned]!.lines)) {
+        if (!placedNotes.has(id) && !pendingNotes.includes(id)) pendingNotes.push(id);
+      }
+    }
+  };
+  /** `cost[k]`: the notes the first `k` of `lines` cite for the first time
+   *  (after the pending ones) would add to `col`'s foot. Undefined when
+   *  there are none. */
+  const notesPrefixCost = (col: VDTColumn, lines: readonly VDTLine[]): number[] | undefined => {
+    if (!columnNotes) return undefined;
+    collectPendingNotes();
+    const ids: string[] = [...pendingNotes];
+    let any = ids.length > 0;
+    const cost = [notesCost(col, ids)];
+    for (const line of lines) {
+      for (const seg of line.segments ?? []) {
+        const id = seg.footnoteId;
+        if (id !== undefined && !placedNotes.has(id) && !ids.includes(id)) { ids.push(id); any = true; }
+      }
+      cost.push(notesCost(col, ids));
+    }
+    return any ? cost : undefined;
+  };
+  /** Reserve at the placed block's column foot the pending notes and the
+   *  ones the block cites first. */
+  const reserveCitedNotes = (placed: VDTBlock): void => {
+    if (!columnNotes || placed.pageIndex < 0) return;
+    collectPendingNotes();
+    const cited = footnoteIdsOfLines(placed.lines).filter((id) => !placedNotes.has(id) && !pendingNotes.includes(id));
+    if (cited.length === 0 && pendingNotes.length === 0) return;
+    const page = doc.pages[placed.pageIndex];
+    const col = page?.columns[placed.columnIndex];
+    if (!page || !col) return;
+    reserveNotes(page, col, [...pendingNotes.splice(0), ...cited], placed.contentIndex ?? 0);
+  };
+  /** Reserve `ids` at `col`'s foot. */
+  const reserveNotes = (page: VDTPage, col: VDTColumn, ids: string[], anchor: number): void => {
+    const h = notesCost(col, ids);
+    let bottom: number;
+    const capped = uncappedBottoms.get(col);
+    if (capped !== undefined) {
+      // A column a band cap cut: the notes go under the cut, at the true
+      // foot, as a bottom float does; the cut moves up only when they reach
+      // above it.
+      bottom = capped;
+      uncappedBottoms.set(col, capped - h);
+      const overlap = col.bbox.y + col.bbox.height - (capped - h);
+      if (overlap > 0) {
+        col.bbox.height = Math.max(0, col.bbox.height - overlap);
+        col.availableHeight = Math.max(0, col.availableHeight - overlap);
+      }
+    } else {
+      bottom = col.bbox.y + col.bbox.height;
+      col.bbox.height = Math.max(0, col.bbox.height - h);
+      col.availableHeight = Math.max(0, col.availableHeight - h);
+    }
+    let entry = columnNotesOf.get(col);
+    if (!entry) {
+      entry = { ids: [], slots: [] };
+      columnNotesOf.set(col, entry);
+      columnOfNotes.set(col, page);
+    }
+    entry.ids.push(...ids);
+    entry.slots.push({ top: bottom - h, height: h, ids });
+    for (const id of ids) placedNotes.add(id);
+    for (const id of ids) noteAnchor.set(id, anchor);
+  };
+  /** Notes still pending when the flow ends (a box closes the document):
+   *  the foot of the column the flow ended in takes them. */
+  const reserveLeftoverNotes = (): void => {
+    if (!columnNotes) return;
+    collectPendingNotes();
+    if (pendingNotes.length === 0) return;
+    const page = doc.pages[cursor.pageIndex];
+    const col = page?.columns[cursor.columnIndex];
+    if (page && col) reserveNotes(page, col, pendingNotes.splice(0), contentBlocks.length - 1);
+  };
+  /** `chapterEnd`: move the run of note paragraphs that closes a column
+   *  down to the column's true foot (under a band cap's cut, above any
+   *  bottom float band). */
+  const dropChapterEndNotes = (): void => {
+    for (const page of doc.pages) {
+      for (const col of page.columns) {
+        const blocks = col.blocks;
+        let first = blocks.length;
+        while (first > 0 && blocks[first - 1]!.footnoteNote !== undefined) first--;
+        if (first === blocks.length) continue;
+        const run = blocks.slice(first);
+        const last = run[run.length - 1]!;
+        const lastLine = last.lines[last.lines.length - 1];
+        const foot = lastLine ? lastLine.bbox.y + lastLine.bbox.height : last.bbox.y + last.bbox.height;
+        const d = trueBottom(col, uncappedBottoms) - foot;
+        if (d < 0.5) continue;
+        for (const b of run) {
+          b.bbox = createBoundingBox(b.bbox.x, b.bbox.y + d, b.bbox.width, b.bbox.height);
+          for (const line of b.lines) {
+            line.bbox = createBoundingBox(line.bbox.x, line.bbox.y + d, line.bbox.width, line.bbox.height);
+            line.baseline += d;
+          }
+        }
+      }
+    }
+  };
+  /** `chapterEnd`: the separator rule over the notes of each column, set
+   *  in the space above them (`spaceBelowRule` over the first note). */
+  const ruleChapterEndNotes = (): void => {
+    const sep = resolved.footnotes.separator;
+    if (!sep.enabled || sep.width <= 0 || noteRulePx <= 0) return;
+    const color = sep.color?.hex ?? resolved.footnotes.color?.hex ?? bodyStyle.color;
+    for (const page of doc.pages) {
+      for (const col of page.columns) {
+        const at = col.blocks.findIndex((b, i) => b.footnoteNote !== undefined && col.blocks[i - 1]?.footnoteNote === undefined);
+        if (at < 0) continue;
+        const notes = col.blocks.slice(at).filter((b) => b.footnoteNote !== undefined);
+        const firstLine = notes[0]!.lines[0];
+        if (!firstLine) continue;
+        const top = firstLine.bbox.y - noteSpaceBelowRulePx - noteRulePx;
+        const last = notes[notes.length - 1]!;
+        (page.footnoteAreas ??= []).push({
+          columnIndex: col.index,
+          bbox: createBoundingBox(col.bbox.x, top, col.bbox.width, last.bbox.y + last.bbox.height - top),
+          noteIds: notes.map((b) => b.footnoteNote!),
+          rule: { x: col.bbox.x, y: top + noteRulePx / 2, width: col.bbox.width * sep.width, lineWidthPx: noteRulePx, color },
+        });
+      }
+    }
+  };
+  /** Content index of the block citing each note (reading order). */
+  const noteAnchor = new Map<string, number>();
+  /** Set the notes in the room reserved for them: the reservations of a
+   *  column that touch (the usual case) make one stack in citation order
+   *  under the separator; a float band set between two leaves each its own
+   *  room. */
+  const setColumnNotes = (): void => {
+    for (const [col, entry] of columnNotesOf) {
+      const page = columnOfNotes.get(col)!;
+      const regions: { top: number; bottom: number; ids: string[] }[] = [];
+      for (const slot of entry.slots) {
+        const last = regions[regions.length - 1];
+        if (last && Math.abs(slot.top + slot.height - last.top) < 0.5) {
+          last.top = slot.top;
+          last.ids.push(...slot.ids);
+        } else {
+          regions.push({ top: slot.top, bottom: slot.top + slot.height, ids: [...slot.ids] });
+        }
+      }
+      const x = col.bbox.x;
+      const width = col.bbox.width;
+      regions.forEach((region, r) => {
+        let y = region.top;
+        if (r === 0) {
+          const sep = resolved.footnotes.separator;
+          const rule = sep.enabled && sep.width > 0 && noteRulePx > 0
+            ? {
+                x,
+                y: y + noteSpaceAbovePx + noteRulePx / 2,
+                width: width * sep.width,
+                lineWidthPx: noteRulePx,
+                color: sep.color?.hex ?? noteStyle.color,
+              }
+            : undefined;
+          (page.footnoteAreas ??= []).push({
+            columnIndex: col.index,
+            bbox: createBoundingBox(x, region.top, width, region.bottom - region.top),
+            noteIds: entry.ids,
+            ...(rule ? { rule } : {}),
+          });
+          y += noteHeadPx;
+        }
+        region.ids.forEach((id, i) => {
+          if (r > 0 || i > 0) y += noteGapPx;
+          const m = measureNote(id, width);
+          if (!m) return;
+          const blk = createVDTBlock(`fn-${id}`, 'paragraph', noteStyle.fontString, noteStyle.color, noteStyle.textAlign);
+          applyStyleAttrs(blk, noteStyle);
+          blk.lines = resetLinePositions(raggedLooseLines(m.measured.lines, noteStyle.textAlign), noteStyle.lineHeightPx).map((line) => ({
+            ...line,
+            bbox: createBoundingBox(line.bbox.x + x, line.bbox.y + y, line.bbox.width, line.bbox.height),
+            baseline: line.baseline + y,
+          }));
+          const h = blk.lines.length * noteStyle.lineHeightPx;
+          blk.bbox = createBoundingBox(x, y, width, h);
+          blk.pageIndex = page.index;
+          blk.columnIndex = col.index;
+          blk.contentIndex = noteAnchor.get(id) ?? 0;
+          blk.footnoteNote = id;
+          blk.dirty = false;
+          blk.snappedToGrid = false;
+          if (blk.lines.length > 0) {
+            blk.sourceStart = blk.lines[0]!.sourceStart;
+            blk.sourceEnd = blk.lines[blk.lines.length - 1]!.sourceEnd;
+          }
+          blk.sourceMap = m.absoluteSourceMap;
+          blk.plainPrefixLen = m.prefixLen;
+          (page.floats ??= []).push(blk);
+          doc.blocks.push(blk);
+          y += h;
+        });
+      });
+    }
   };
   // Blocks inside a `:::part` measure with the part body typography.
   const partMeasureCtx: BlockMeasureContext = partPlan.byStart.size > 0
@@ -1792,6 +2075,7 @@ export function buildDocumentPass(
         blk.sourceTitle = flattenTitleBreaks(raw.text);
       }
     }
+    if (raw.footnoteNote !== undefined) blk.footnoteNote = raw.footnoteNote;
     if (raw.toc?.kind === 'entry') {
       blk.tocEntry = raw.toc.pageIndex !== undefined ? { pageIndex: raw.toc.pageIndex } : {};
     }
@@ -4308,11 +4592,21 @@ export function buildDocumentPass(
         };
       }
 
-      const effectiveAvailable = curCol.availableHeight - spacingBefore;
+      // Footnotes the lines cite take room at the column's foot: the whole
+      // block fits when its lines and all their notes do, and a split
+      // keeps the lines whose notes fit under them.
+      const noteCosts = vdtType === 'mathDisplay' ? undefined : notesPrefixCost(curCol, remainingLines);
+      const effectiveAvailable = curCol.availableHeight - spacingBefore - (noteCosts ? noteCosts[noteCosts.length - 1]! : 0);
       // A hair of tolerance: room of exactly N lines (grid arithmetic in
       // floats — a column cut by a band cap, a balancing extra line) must
       // hold N lines, not N - 1.
-      const linesPerAvailable = Math.floor((effectiveAvailable + 0.01) / style.lineHeightPx);
+      let linesPerAvailable = Math.floor((curCol.availableHeight - spacingBefore + 0.01) / style.lineHeightPx);
+      if (noteCosts) {
+        const costOf = (k: number): number => noteCosts[Math.min(k, noteCosts.length - 1)]!;
+        while (linesPerAvailable > 0 && linesPerAvailable * style.lineHeightPx + costOf(linesPerAvailable) > curCol.availableHeight - spacingBefore + 0.01) {
+          linesPerAvailable--;
+        }
+      }
       // Math display blocks carry their natural pixel height on the single
       // VDTLine; text blocks use the uniform body lineHeightPx per line.
       const totalRemainHeight = vdtType === 'mathDisplay'
@@ -5052,6 +5346,13 @@ export function buildDocumentPass(
   // End of the document: level the closing band and place any floats still
   // pending (referenced on the last page) on pages appended after it.
   closeFlowSegment(contentBlocks.length);
+  // The notes, in the room the flow reserved for them.
+  reserveLeftoverNotes();
+  setColumnNotes();
+  // After the chapter (`chapterEnd`), the notes that close a column drop
+  // to its foot: the room left over stays between the text and them.
+  if (chapterEndNotes && resolved.footnotes.chapterEndAlign === 'foot') dropChapterEndNotes();
+  if (chapterEndNotes) ruleChapterEndNotes();
 
   // A band that is still cut at the end of the pass (a trailing cap: the
   // closing band of a chapter or of the document) must hold what it took,

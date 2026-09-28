@@ -259,6 +259,14 @@ function applyPaletteToListedResolvedColors(
         ...applyPaletteToPartListOverrides(resolved.parts.bodyStyle, palette),
       },
     },
+    footnotes: {
+      ...resolved.footnotes,
+      ...(resolved.footnotes.color ? { color: resolveRequired(resolved.footnotes.color, palette) } : {}),
+      separator: {
+        ...resolved.footnotes.separator,
+        ...(resolved.footnotes.separator.color ? { color: resolveRequired(resolved.footnotes.separator.color, palette) } : {}),
+      },
+    },
   };
 }
 
@@ -450,6 +458,16 @@ function applyPaletteToListedColors(config: PostextConfig, palette: ColorPalette
         numberColor: resolveColor(config.parts.bodyStyle.numberColor, palette),
         ...applyPaletteToPartListOverrides(config.parts.bodyStyle, palette),
       },
+    };
+  }
+
+  if (config.footnotes) {
+    next.footnotes = {
+      ...config.footnotes,
+      color: resolveColor(config.footnotes.color, palette),
+      separator: config.footnotes.separator
+        ? { ...config.footnotes.separator, color: resolveColor(config.footnotes.separator.color, palette) }
+        : config.footnotes.separator,
     };
   }
 
