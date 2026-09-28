@@ -42,6 +42,15 @@ function inkInterval(g: string, region: CjkRegion, vertical: boolean, start: num
   return [start, start + full];
 }
 
+/** The marks Latin text shares with Chinese, which horizontal Chinese text
+ *  sets in a Chinese box when their glyphs are not an em wide. */
+const SHARED_MARKS = new Set([...'“”‘’…⋯—―·‧']);
+/** Where such a glyph starts in its one-em box. */
+function sharedPlace(g: string, adv: number): number {
+  const cls = cjkClassOf(g);
+  return cls === 'opening' ? EM - adv : cls === 'closing' ? 0 : (EM - adv) / 2;
+}
+
 /**
  * What the painter walks through a segment — its full boxes, before any
  * blank the composition cut: in vertical text the runs of `verticalRuns`
@@ -97,10 +106,25 @@ function checkLine(line: VDTLine, region: CjkRegion, vertical: boolean, justify:
       expect(gs.length, `${at}: a mark that gave up blank is a segment of its own`).toBe(1);
       const g = gs[0]!;
       const t = s.tracking ?? 0;
-      const box = full - t;
+      // A mark Latin shares with Chinese whose glyph is not an em wide
+      // (· here) is set in a one-em Chinese box in horizontal text (#185),
+      // its glyph where a Chinese font puts it.
+      const adv = stubWidth(g, EM);
+      const shared = !vertical && SHARED_MARKS.has(g) && Math.abs(adv - EM) > EPS;
+      if (shared) {
+        expect(s.inkOffset, `${at}: glyph inside its box`).toBeGreaterThanOrEqual(-EPS);
+        expect(s.inkOffset + adv, `${at}: glyph inside its box`).toBeLessThanOrEqual(s.width + EPS);
+      }
+      const box = shared ? EM : full - t;
       const side = punctuationSide(g, cjkClassOf(g), region, vertical);
+      if (shared && side === 'none') {
+        if (!s.hangs) painted += s.width;
+        x += s.width;
+        continue;
+      }
       expect(side, `${at}: only an adjustable mark gives up blank`).not.toBe('none');
-      const cutStart = -s.inkOffset;
+      const place = shared ? sharedPlace(g, adv) : 0;
+      const cutStart = place - s.inkOffset;
       const cutEnd = box + t - s.width - cutStart;
       expect(cutStart, at).toBeGreaterThanOrEqual(-EPS);
       expect(cutEnd, at).toBeGreaterThanOrEqual(-EPS);
@@ -113,7 +137,7 @@ function checkLine(line: VDTLine, region: CjkRegion, vertical: boolean, justify:
       }
       // The glyph's ink, painted from `x + inkOffset` across its full box,
       // stays inside the segment.
-      const [a, b] = inkInterval(g, region, vertical, x + s.inkOffset, box);
+      const [a, b] = shared ? [x + s.inkOffset, x + s.inkOffset + adv] : inkInterval(g, region, vertical, x + s.inkOffset, box);
       expect(a, at).toBeGreaterThanOrEqual(x - EPS);
       expect(b, at).toBeLessThanOrEqual(x + s.width + EPS);
     }

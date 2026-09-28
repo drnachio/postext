@@ -230,15 +230,19 @@ export interface VDTLineSegment {
    *  segment carrying it is never painted with the rest of its line in one
    *  run. Absent on lines that are not CJK. */
   tracking?: number;
-  /** Paint-only shift of the segment's glyphs, px (0 or negative: to the
-   *  left). Set on a full-width CJK mark that gave up blank (see
-   *  `cjk.punctuationWidth`): its `width` is narrower than its glyph's
-   *  advance, so it is always painted on its own, at `x + inkOffset`. A
-   *  mark that gave up the blank before its glyph (an opening bracket at a
-   *  line start, one compressed after another mark) is painted that far
-   *  before its box, so its ink stays inside `width`; one that gave up only
-   *  the blank after its glyph has 0. The layout never reads it. Absent on
-   *  every other segment. */
+  /** Paint-only shift of the segment's glyphs, px. Set on a full-width CJK
+   *  mark that gave up blank (see `cjk.punctuationWidth`): its `width` is
+   *  narrower than its glyph's advance, so it is always painted on its own,
+   *  at `x + inkOffset`. A mark that gave up the blank before its glyph (an
+   *  opening bracket at a line start, one compressed after another mark)
+   *  is painted that far before its box (negative), so its ink stays inside
+   *  `width`; one that gave up only the blank after its glyph has 0. Also
+   *  set on a mark Latin text shares with Chinese (“ ” ‘ ’ … — ·) whose
+   *  glyph is narrower or wider than the Chinese box it takes in Chinese
+   *  text: where its glyph starts in the box (an opening quote at the
+   *  box's end, an ellipsis centred), less any blank given up before it —
+   *  positive or negative. The layout never reads it. Absent on every other
+   *  segment. */
   inkOffset?: number;
   /** A pause or stop mark hung past the end of its line
    *  (`cjk.hangingPunctuation`): the line's measure and `bbox.width` leave

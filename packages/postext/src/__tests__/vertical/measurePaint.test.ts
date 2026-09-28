@@ -146,9 +146,17 @@ describe('vertical text: what stands upright on the sheet is measured horizontal
     table: { model: { rows: [[{ content: '名' }, { content: '字' }], [{ content: '約翰·史密斯' }, { content: '約翰' }]] } },
   };
 
-  /** Each non-space segment is as wide as its text measured horizontally. */
+  /** Each non-space segment is as wide as its text measured horizontally;
+   *  a mark Latin shares with Chinese (· here, half an em in the stub) takes the one-em box of a Taiwan mark (#185), its glyph centred
+   *  in it. */
   const horizontalWidths = (segments: VDTLineSegment[], em: number): Array<[number, number]> =>
-    segments.filter((s) => s.kind === 'text' && s.text.trim() !== '').map((s) => [s.width, stubWidth(s.text, em) + (s.tracking ?? 0) * graphemesOf(s.text).length]);
+    segments.filter((s) => s.kind === 'text' && s.text.trim() !== '').map((s) => {
+      if (s.text === '·') {
+        expect(s.inkOffset).toBeCloseTo((em - stubWidth('·', em)) / 2);
+        return [s.width, em + (s.tracking ?? 0)];
+      }
+      return [s.width, stubWidth(s.text, em) + (s.tracking ?? 0) * graphemesOf(s.text).length];
+    });
 
   it('measures the caption of an upright figure and the cells of an upright table as horizontal text', () => {
     const doc = buildDocument(

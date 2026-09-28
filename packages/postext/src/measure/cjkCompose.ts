@@ -186,6 +186,11 @@ interface Unit {
   /** A space between Han and Latin (`cjk.latinSpacing`): inserted (`text`
    *  empty) or replacing the space the author typed. */
   auto?: boolean;
+  /** A mark Latin text shares with Chinese (“ ” ‘ ’ … — ·) set in a
+   *  Chinese mark's box (see {@link routeSharedMarks}): where each of its
+   *  graphemes' glyph starts in its one-em cell, px. Set only when a glyph
+   *  is not one em wide, so its box and its advance differ. */
+  place?: number[];
 }
 
 interface Fonts {
@@ -225,7 +230,7 @@ function pairable(g: string): boolean {
  * block's tracking) is measured into every width, per grapheme. In
  * `vertical` text a CJK character advances by its cell (`cellAdvance`).
  */
-function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx: number, vertical = false): Unit[] {
+function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx: number, vertical = false, route = false): Unit[] {
   const units: Unit[] = [];
   const track = (n: number): number => (letterSpacingPx === 0 ? 0 : letterSpacingPx * n);
   let zwsp = false;
@@ -418,7 +423,82 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
       b.glueBefore = true;
     }
   }
+  if (route && !vertical) routeSharedMarks(units, letterSpacingPx);
   return units;
+}
+
+/** The marks Latin text shares with Chinese (East Asian Width ambiguous):
+ *  quotes, the ellipsis, the em dash and horizontal bar, interpuncts. */
+const SHARED_MARKS = new Set(['\u201C', '\u201D', '\u2018', '\u2019', '\u2026', '\u22EF', '\u2014', '\u2015', '\u00B7', '\u2027']);
+
+/** Whether a unit is one shared mark, or a pair of them (—— ……). */
+function isSharedMarkUnit(u: Unit): boolean {
+  if (u.kind !== 'text' || u.run || u.stacked || u.style.script || u.style.smallCaps) return false;
+  if (u.graphemes === 1) return SHARED_MARKS.has(u.text);
+  return u.graphemes === 2 && SHARED_MARKS.has(u.text[0]!) && u.text[0] === u.text[1];
+}
+
+/** The script the text next to unit `k` is in, looking one way (`step`)
+ *  past other shared marks and inline boxes: Chinese (a CJK character or
+ *  mark), Western (a Latin run or a word space), or undefined at the
+ *  paragraph's edge. */
+function sideScript(units: readonly Unit[], k: number, step: 1 | -1): 'cjk' | 'western' | undefined {
+  for (let j = k + step; j >= 0 && j < units.length; j += step) {
+    const v = units[j]!;
+    if (v.kind === 'space') return 'western';
+    if (v.kind === 'atomic' || isSharedMarkUnit(v)) continue;
+    return !v.run && v.firstCjk ? 'cjk' : 'western';
+  }
+  return undefined;
+}
+
+/**
+ * The marks Latin text shares with Chinese (“ ” ‘ ’ … — ·, East Asian
+ * Width ambiguous) take the box of a Chinese mark when they stand in
+ * Chinese text (clreq §3.1; research note on context routing): a text on
+ * either side is Chinese, or none is Western. A font whose glyphs for them
+ * are proportional (LXGW WenKai sets “ ” at 0.35 em, Noto Serif SC the em
+ * dash at 0.89 em and · at a third) would otherwise crowd them against the
+ * characters they belong to. Each grapheme advances one em (with the
+ * block's tracking) whatever its font's advance, and its glyph sits where
+ * a Chinese font puts it: an opening quote at the end of its box, a
+ * closing one at its start, an interpunct, an ellipsis and a single dash
+ * centred; a pair (—— ……) is set as the font sets the two together and
+ * centred in its two ems, so a 破折号 reads as one line and the six dots
+ * of an ellipsis keep one spacing. The composition then adjusts the box as it does any
+ * mark's (`cjk.punctuationWidth`). A glyph one em wide already changes
+ * nothing. Next to Western text on both sides (`He said “yes”`) they keep
+ * their own advance.
+ */
+function routeSharedMarks(units: Unit[], letterSpacingPx: number): void {
+  for (let k = 0; k < units.length; k++) {
+    const u = units[k]!;
+    if (!isSharedMarkUnit(u)) continue;
+    const before = sideScript(units, k, -1);
+    const after = sideScript(units, k, 1);
+    if (before !== 'cjk' && after !== 'cjk' && (before !== undefined || after !== undefined)) continue;
+    const em = emOfFont(u.style.font);
+    const font = u.style.font;
+    let place: number[];
+    if (u.graphemes === 2) {
+      // —— ……: the pair as the font sets it (a face may kern the dashes
+      // into one line), centred in its two ems.
+      const g = u.text[0]!;
+      const adv = measureTextWidth(g, font);
+      const pair = measureTextWidth(u.text, font);
+      if (Math.abs(adv - em) < 1e-6 && Math.abs(pair - 2 * em) < 1e-6) continue;
+      const start = em - pair / 2;
+      place = [start, start + pair - adv - em];
+    } else {
+      const adv = measureTextWidth(u.text, font);
+      if (Math.abs(adv - em) < 1e-6) continue;
+      const slack = em - adv;
+      const cls = cjkClassOf(u.text);
+      place = [cls === 'opening' ? slack : cls === 'closing' ? 0 : slack / 2];
+    }
+    u.width = u.graphemes * (em + letterSpacingPx);
+    u.place = place;
+  }
 }
 
 /** The em (px) of a font shorthand: its size. */
@@ -1045,6 +1125,17 @@ function fitLine(us: Unit[], units: readonly Unit[], range: LineRange, lastK: nu
   return hang;
 }
 
+/** Where a unit's glyph (its `grapheme`th) is painted from its segment's
+ *  start, px (`VDTLineSegment.inkOffset`): a shared mark's place in its
+ *  box, less the blank its box gave up before it. Undefined for a unit
+ *  painted at its own advances. */
+function inkOffsetOf(u: Unit, grapheme = 0): number | undefined {
+  const cutStart = u.punct?.cutStart ?? 0;
+  if (u.place) return u.place[grapheme]! - cutStart;
+  if (u.punct && boxCut(u.punct) > 0) return cutStart > 0 ? -cutStart : 0;
+  return undefined;
+}
+
 /** The segments, text and flags of one line (see the module comment for
  *  the spreading). */
 function composeLine(units: readonly Unit[], range: LineRange, li: number, isLast: boolean, ctx: ComposeContext): VDTLine {
@@ -1140,7 +1231,7 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
     // painted before its box (`inkOffset`), and the caret spreads a
     // segment's width evenly over its characters.
     const cut = u.punct ? boxCut(u.punct) : 0;
-    const key = u.stacked || u.run || u.graphemes !== 1 || cut > 0 ? undefined : `${u.style.key}|${u.link ?? ''}|${t ?? ''}`;
+    const key = u.stacked || u.run || u.graphemes !== 1 || cut > 0 || u.place ? undefined : `${u.style.key}|${u.link ?? ''}|${t ?? ''}`;
     const last = pieces[pieces.length - 1];
     if (key !== undefined && last && last.key === key && last.cell !== undefined && Math.abs(last.cell - width) < 1e-3) {
       last.parts.push(text);
@@ -1149,8 +1240,9 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
     }
     pieces.push({ seg: segmentOf(u, width, t), parts: [text], key, ...(key !== undefined ? { cell: width } : {}) });
   };
-  const segmentOf = (u: Unit, width: number, t: number | undefined): PendingSegment => {
+  const segmentOf = (u: Unit, width: number, t: number | undefined, grapheme = 0): PendingSegment => {
     const s = u.style;
+    const ink = inkOffsetOf(u, grapheme);
     return {
       kind: 'text',
       text: '',
@@ -1163,9 +1255,10 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
       ...(s.smallCaps ? { smallCaps: true } : {}),
       ...(t !== undefined ? { tracking: t } : {}),
       // Every mark that gave up blank carries its ink offset (0 when only
-      // the blank after its glyph went), so no renderer paints its line in
-      // one run at the glyphs' own advances.
-      ...(u.punct && boxCut(u.punct) > 0 ? { inkOffset: u.punct.cutStart > 0 ? -u.punct.cutStart : 0 } : {}),
+      // the blank after its glyph went), and so does a shared mark set in
+      // a Chinese box, so no renderer paints its line in one run at the
+      // glyphs' own advances.
+      ...(ink !== undefined ? { inkOffset: ink } : {}),
     };
   };
   for (let j = 0; j < us.length; j++) {
@@ -1184,7 +1277,13 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
       continue;
     }
     const gap = tracking > 0 && stretches[j] ? tracking : 0;
-    if (gap === 0) {
+    if (u.place && u.graphemes === 2) {
+      // A pair (—— ……) set in Chinese boxes: one segment per grapheme,
+      // each glyph placed in its own em.
+      const cell = u.width / 2;
+      pieces.push({ seg: { ...segmentOf(u, cell, undefined, 0), text: u.text[0]! }, parts: [u.text[0]!], key: undefined });
+      pieces.push({ seg: { ...segmentOf(u, cell + gap, gap > 0 ? gap : undefined, 1), text: u.text[1]! }, parts: [u.text[1]!], key: undefined });
+    } else if (gap === 0) {
       addText(u, u.text, u.width, undefined);
     } else if (ctx.vertical && u.run) {
       // In vertical text a run is painted whole, its cells and sideways
@@ -1263,7 +1362,7 @@ export function composeCjkParagraph(
   // The composition works along the line in either writing mode; vertical
   // text keeps ：；？！ at one em (`CjkComposition.vertical`).
   const composition = compositionFor(options?.cjkComposition ?? getCjkComposition(), vertical);
-  const units = prepareUnits(buildUnits(spans, fonts, letterSpacingPx, vertical), composition, letterSpacingPx);
+  const units = prepareUnits(buildUnits(spans, fonts, letterSpacingPx, vertical, true), composition, letterSpacingPx);
   if (!units.some((u) => u.kind !== 'space')) return { lines: [], totalHeight: 0 };
   const fit = lineFitOf(composition);
   const level = options?.cjkLineBreak ?? getCjkLineBreak();

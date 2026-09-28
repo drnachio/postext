@@ -71,6 +71,26 @@ describe('CJK punctuation in the PDF', () => {
     expect(xs).toContain(line.bbox.x - 8);
   }, 60_000);
 
+  it('paints a Latin-shared quote in its Chinese box, the glyph where the layout placed it (#185)', async () => {
+    // The stub sets “ ” at half an em: in Chinese text each takes a one-em
+    // box, the opening glyph at its end, the closing one at its start.
+    const doc = buildDocument({ markdown: '说“你”好' }, config({ punctuationWidth: 'fullwidth', compressAdjacent: false }, 'left'));
+    const line = doc.blocks.find((b) => b.type === 'paragraph')!.lines[0]!;
+    const open = line.segments!.find((s) => s.text === '“')!;
+    const close = line.segments!.find((s) => s.text === '”')!;
+    expect(open).toMatchObject({ width: 16, inkOffset: 8 });
+    expect(close).toMatchObject({ width: 16, inkOffset: 0 });
+    const content = await contentOf(doc);
+    const xs = [...content.matchAll(/1 0 0 1 (-?[\d.]+) (-?[\d.]+) Tm/g)].map((m) => Number(m[1]));
+    // 说 then the quote's box, its glyph 8 px into it; ” after 你.
+    expect(line.text).toBe('说“你”好');
+    expect(xs).toContain(line.bbox.x + 16 + 8);
+    expect(xs).toContain(line.bbox.x + 48);
+    // Each quote is shown with the spacing that ends its advance where its
+    // box ends (its glyph is narrower than the box).
+    expect(content).toMatch(/[\d.]+ Tc/);
+  }, 60_000);
+
   it('reads a line with Han–Latin spaces as written', async () => {
     for (const accessible of [false, true]) {
       const doc = buildDocument({ markdown: '我们用iPhone拍照，1999年的iPhone 15售价为¥5,999。' }, config({}));

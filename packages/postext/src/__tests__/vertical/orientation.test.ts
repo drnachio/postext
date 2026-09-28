@@ -129,8 +129,10 @@ describe('vertical measurement', () => {
     // 他說——賈·寶玉: 7 one-em cells and the interpunct's.
     expect(withMeasureWritingMode('horizontal-tb', () => lineWidths('他說——賈·寶玉', 'vertical-rl')[0], 'taiwan')).toBeCloseTo(80);
     expect(withMeasureWritingMode('horizontal-tb', () => lineWidths('他說——賈·寶玉', 'vertical-rl')[0], 'mainland')).toBeCloseTo(75);
-    // Horizontal: the dash and the interpunct keep their own widths.
-    expect(lineWidths('他說——賈·寶玉')[0]).toBeCloseTo(10 * 5 + 2 * 8.9 + 3.3);
+    // Horizontal: the dash and the interpunct are set in Chinese boxes of
+    // one em whatever their glyphs' widths (#185), the interpunct full
+    // width here (no composition: every mark at its full box).
+    expect(lineWidths('他說——賈·寶玉')[0]).toBeCloseTo(80);
   });
 
   it('keeps the horizontal advance of a Latin word set sideways', () => {
@@ -140,7 +142,7 @@ describe('vertical measurement', () => {
   it('keys cached measurements by writing mode', () => {
     const cache = createMeasurementCache();
     const measure = (writingMode?: 'vertical-rl') =>
-      cachedMeasureRichBlock([span('他說——我不去')], FONT, FONT, FONT, FONT, 1000, 16, writingMode ? { writingMode } : undefined, cache)
+      cachedMeasureRichBlock([span('他說·我不去')], FONT, FONT, FONT, FONT, 1000, 16, writingMode ? { writingMode } : undefined, cache)
         .lines[0]!.segments!.reduce((s, seg) => s + seg.width, 0);
     const h = measure();
     const v = measure('vertical-rl');
