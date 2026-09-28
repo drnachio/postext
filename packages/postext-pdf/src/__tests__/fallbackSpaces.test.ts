@@ -5,7 +5,7 @@ import fontkit from '@pdf-lib/fontkit';
 import { buildDocument } from 'postext';
 import type { PostextConfig } from 'postext';
 import { showTextShaped } from '../pdf-backend/primitives';
-import { renderToPdf } from '../pdf-backend';
+import { renderToPdf, type PdfWarning } from '../pdf-backend';
 
 // EF-66: a no-break space glues its words, and the docs recommend the
 // narrow no-break space (10 %) and the figure space (225 000). Most shipped
@@ -121,6 +121,62 @@ describe('spaces and invisible characters the face has no glyph for (EF-66)', ()
     const op = showTextShaped(font, 'plain words') as unknown as { name: string };
     expect(['Tj', 'TJ']).toContain(op.name);
     expect(glyphIds(font, 'plain words')).not.toContain(0);
+  });
+});
+
+describe('a non-breaking hyphen the face has no glyph for (#196)', () => {
+  // HarfBuzz sets U+2011 with the face's U+2010 when the face lacks it, and
+  // the browser takes a hyphen from another font when it lacks both. Lora
+  // has U+2010 only; Open Sans (the senales showcase) has neither.
+  const LORA = face('fonts/Lora-Regular.ttf');
+  const OPEN_SANS = face('presets/senales/fonts/OpenSans-Regular.ttf');
+
+  it('draws it as the hyphen, else as the hyphen-minus', async () => {
+    const lora = await embed(LORA, false);
+    expect(lora.face.hasGlyphForCodePoint(0x2011)).toBe(false);
+    expect(glyphIds(lora.font, 'non\u2011breaking')).toEqual(glyphIds(lora.font, 'non\u2010breaking'));
+    const open = await embed(OPEN_SANS, false);
+    expect(open.face.hasGlyphForCodePoint(0x2011) || open.face.hasGlyphForCodePoint(0x2010)).toBe(false);
+    expect(glyphIds(open.font, 'non\u2011breaking')).toEqual(glyphIds(open.font, 'non-breaking'));
+    expect(glyphIds(open.font, 'self\u2010made')).toEqual(glyphIds(open.font, 'self-made'));
+    for (const subset of [true, false]) {
+      const { font } = await embed(OPEN_SANS, subset);
+      expect(glyphIds(font, 'non\u2011breaking')).not.toContain(0);
+    }
+  });
+
+  it('keeps the face\'s own U+2011 when it has one', async () => {
+    const { font, face: f } = await embed(EB_GARAMOND_BOLD, false);
+    expect(f.hasGlyphForCodePoint(0x2011)).toBe(true);
+    expect(glyphIds(font, 'a\u2011b')).toContain(f.glyphForCodePoint(0x2011).id);
+  });
+
+  it('is not reported as a missing glyph', async () => {
+    class StubCtx {
+      font = '';
+      measureText(s: string): { width: number } {
+        return { width: s.length * 7 };
+      }
+    }
+    (globalThis as unknown as { OffscreenCanvas: unknown }).OffscreenCanvas = class {
+      getContext(): StubCtx {
+        return new StubCtx();
+      }
+    };
+    const pt = (value: number) => ({ value, unit: 'pt' as const });
+    const doc = buildDocument(
+      { markdown: 'A right\u2011of\u2011way, a self\u2010made man.' },
+      {
+        page: { width: pt(300), height: pt(300), dpi: 72, margins: { top: pt(10), bottom: pt(10), left: pt(10), right: pt(10) } },
+        layout: { layoutType: 'single' },
+        header: { elements: [] },
+        footer: { elements: [] },
+        bodyText: { fontFamily: 'Open Sans', fontSize: pt(12), lineHeight: pt(16), hyphenation: { enabled: false } },
+      },
+    );
+    const warnings: PdfWarning[] = [];
+    await renderToPdf(doc, { fontProvider: async () => new Uint8Array(OPEN_SANS), onWarning: (w) => warnings.push(w), accessible: false });
+    expect(warnings.filter((w) => w.kind === 'missingGlyph')).toEqual([]);
   });
 });
 

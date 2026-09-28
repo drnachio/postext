@@ -1187,5 +1187,71 @@
         "es": "Índice analítico"
       }
     }
+  },
+  "missingGlyph": {
+    "source": "sandbox",
+    "label": {
+      "en": "Characters missing from a PDF font",
+      "es": "Caracteres sin glifo en una fuente del PDF"
+    },
+    "cause": {
+      "en": "The last PDF set characters that no file of a face has a glyph for, such as a Chinese family served only as its Latin file, or Fontsource's chinese-traditional subset of Noto Serif TC, which has no full-width ，！？（）. They print as the font's empty box. postext-pdf reports it through onWarning as a missingGlyph warning.",
+      "es": "El último PDF compuso caracteres para los que ningún archivo de una variante tiene glifo, como una familia china servida solo con su archivo latino, o el subconjunto chinese-traditional de Noto Serif TC en Fontsource, que no tiene ，！？（） de ancho completo. Se imprimen como la caja vacía de la fuente. postext-pdf lo notifica por onWarning como aviso missingGlyph."
+    },
+    "fix": {
+      "en": "Give the PDF the files that hold those characters (the numbered unicode-range slices of a Fontsource CJK family), or choose a family that covers them.",
+      "es": "Da al PDF los archivos que contienen esos caracteres (los fragmentos numerados por unicode-range de una familia CJK de Fontsource) o elige una familia que los incluya."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Chinese, Japanese and Korean fonts",
+        "es": "Fuentes chinas, japonesas y coreanas"
+      }
+    }
+  },
+  "variableFontDefaultInstance": {
+    "source": "sandbox",
+    "label": {
+      "en": "Variable font in the PDF",
+      "es": "Fuente variable en el PDF"
+    },
+    "cause": {
+      "en": "A face of the last PDF came from a variable font asked for at a weight other than its default instance. pdf-lib embeds the default instance only, so that text prints at the default weight (a bold set from NotoSerifSC[wght].ttf prints regular).",
+      "es": "Una variante del último PDF salió de una fuente variable pedida con un peso distinto del de su instancia por defecto. pdf-lib solo incrusta la instancia por defecto, así que ese texto se imprime con el peso por defecto (una negrita compuesta con NotoSerifSC[wght].ttf sale redonda)."
+    },
+    "fix": {
+      "en": "Provide one static file per weight (fontTools varLib.instancer cuts them), or use Fontsource, which serves static weights.",
+      "es": "Da un archivo estático por peso (fontTools varLib.instancer los saca) o usa Fontsource, que sirve pesos estáticos."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Chinese, Japanese and Korean fonts",
+        "es": "Fuentes chinas, japonesas y coreanas"
+      }
+    }
+  },
+  "cffEmbeddedWhole": {
+    "source": "sandbox",
+    "label": {
+      "en": "Large CFF font embedded whole",
+      "es": "Fuente CFF grande incrustada entera"
+    },
+    "cause": {
+      "en": "The last PDF embedded a CFF-flavoured OpenType file (.otf) over 2 MB whole, since postext-pdf does not subset CFF outlines. Source Han Serif adds 8 to 25 MB per weight.",
+      "es": "El último PDF incrustó entero un archivo OpenType con contornos CFF (.otf) de más de 2 MB, porque postext-pdf no reduce los contornos CFF. Source Han Serif añade de 8 a 25 MB por peso."
+    },
+    "fix": {
+      "en": "Use the TrueType build of the face (Noto Serif CJK from Google Fonts or Fontsource), which is subset to the glyphs used.",
+      "es": "Usa la versión TrueType de la fuente (Noto Serif CJK de Google Fonts o Fontsource), que se reduce a los glifos usados."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Chinese, Japanese and Korean fonts",
+        "es": "Fuentes chinas, japonesas y coreanas"
+      }
+    }
   }
 }

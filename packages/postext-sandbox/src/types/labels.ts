@@ -220,6 +220,13 @@ export interface SandboxLabels {
   warningsRaggedTableGridMissingDetail: string;
   warningsMissingImageTitle: string;
   warningsMissingImageDetail: string;
+  warningsMissingGlyphTitle: string;
+  warningsMissingGlyphDetail: string;
+  warningsVariableFontTitle: string;
+  warningsVariableFontDetail: string;
+  warningsCffEmbeddedWholeTitle: string;
+  warningsCffEmbeddedWholeDetail: string;
+  warningsPdfFontStale: string;
   warningsStorageUnavailableTitle: string;
   warningsStorageUnavailableDetail: string;
   headingSpan: string;

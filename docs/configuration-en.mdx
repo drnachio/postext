@@ -6372,9 +6372,9 @@ npm install postext postext-pdf
 The package exposes a single entry point and a handful of types:
 
 - **`renderToPdf(doc, options): Promise<Uint8Array>`** — takes a `VDTDocument` (or a book's chapters as an array of them) and returns the raw PDF bytes.
-- **`PdfFontProvider`** — the callback signature `(family, weight, style) => Promise<Uint8Array>` that `renderToPdf` uses to request font bytes when it needs to embed a new family/weight/style combination.
+- **`PdfFontProvider`** — the callback signature `(family, weight, style, request?) => Promise<Uint8Array | Uint8Array[]>` that `renderToPdf` uses to request font bytes when it needs to embed a new family/weight/style combination. `request.codePoints` holds the characters the pages set in that face; the answer is one file, or several that make the face together (see [Chinese, Japanese and Korean fonts](#chinese-japanese-and-korean-fonts)).
 - **`RenderToPdfOptions`** — `{ fontProvider, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, onProgress?, onWarning?, rasterizeSvg? }`. `outlines`, `accessible` and `colorSpace` fall back to the document's `pdfGeneration` when left out (see [PDF generation (config)](#pdf-generation-config)). `resourceBytes` is described in [Resource bytes and print masters](#resource-bytes-and-print-masters); `onWarning` in [Which faces the provider is asked for](#which-faces-the-provider-is-asked-for) and [Warnings in the document](#warnings-in-the-document).
-- **`PdfWarning`** — a non-fatal problem reported through `onWarning`; narrow on `kind`: `'fontFallback'` (`PdfFontFallbackWarning`), a face set in another cut of its family, or `'missingImage'`, an image with no bytes drawn as a placeholder (reported only to an `onWarning` you pass; a font fallback without one goes to `console.warn`).
+- **`PdfWarning`** — a non-fatal problem reported through `onWarning`; narrow on `kind`: `'fontFallback'` (`PdfFontFallbackWarning`), a face set in another cut of its family; `'missingGlyph'` (`PdfMissingGlyphWarning`), characters no file of a face has a glyph for; `'variableFontDefaultInstance'` (`PdfVariableFontWarning`), a variable font asked for at a weight other than its default instance; `'cffEmbeddedWhole'` (`PdfCffEmbeddedWholeWarning`), a CFF face over 2 MB embedded whole; or `'missingImage'`, an image with no bytes drawn as a placeholder (reported only to an `onWarning` you pass; the font warnings without one go to `console.warn`).
 - **`decompressWoff2(bytes): Uint8Array`** — helper that turns a WOFF2 file into TTF bytes, which is the format `pdf-lib` can embed directly.
 - **`createPdfWorker(options?)`**, from `postext-pdf/worker` — the same render on a Web Worker; see [Rendering the PDF on a worker](#rendering-the-pdf-on-a-worker).
 
@@ -6410,11 +6410,11 @@ window.open(url);
 
 ### Why a font provider?
 
-`pdf-lib` embeds real font files into the PDF — the browser's installed fonts are not available at render time, and a font you only loaded for on-screen measurement is not, on its own, enough to produce a self-contained PDF. `renderToPdf` scans the pages for every face they paint (one per `family|weight|style` combination — see [Which faces the provider is asked for](#which-faces-the-provider-is-asked-for)) and calls your provider once per unique combination. The provider returns a `Uint8Array` of **TTF or OTF** bytes; `pdf-lib` subsets and embeds them. Faces the provider answers with the same file, such as a regular cut standing in for the bold a family lacks, share one embedded font. A face no page ends up drawing with, such as the face of an SVG figure's text when the figure is drawn as a picture, is left out of the file.
+`pdf-lib` embeds real font files into the PDF — the browser's installed fonts are not available at render time, and a font you only loaded for on-screen measurement is not, on its own, enough to produce a self-contained PDF. `renderToPdf` scans the pages for every face they paint (one per `family|weight|style` combination — see [Which faces the provider is asked for](#which-faces-the-provider-is-asked-for)) and calls your provider once per unique combination. The provider returns a `Uint8Array` of **TTF or OTF** bytes, or a list of them for a face served as several files (see [Chinese, Japanese and Korean fonts](#chinese-japanese-and-korean-fonts)); `pdf-lib` subsets TrueType outlines and embeds CFF (`.otf`) files whole. Faces the provider answers with the same file, such as a regular cut standing in for the bold a family lacks, share one embedded font. A face no page ends up drawing with, such as the face of an SVG figure's text when the figure is drawn as a picture, is left out of the file.
 
-**Use per-weight static fonts, not a single variable font.** Google Fonts often serves one variable WOFF2 per family covering the whole weight axis. `pdf-lib` can only embed the default instance from a variable file, so a bold paragraph would render at regular weight. Fontsource publishes per-weight static WOFF2 files that solve this cleanly — this is the pattern the sandbox uses.
+**Use per-weight static fonts, not a single variable font.** Google Fonts often serves one variable WOFF2 per family covering the whole weight axis. `pdf-lib` can only embed the default instance from a variable file, so a bold paragraph would render at regular weight. Fontsource publishes per-weight static WOFF2 files that solve this cleanly — this is the pattern the sandbox uses. A variable file asked for at a weight other than its default instance is reported as a `variableFontDefaultInstance` warning.
 
-**Every word of the text lands where the layout put it.** In paragraphs, list items, quotes, boxes and other flowing text, each word starts at the position the VDT measured, so a difference between the browser's widths and the embedded face's never builds up along a line. A line with no inline formatting is painted as one text object that moves the pen between words; justified lines, centred ones and lines with formatting are painted word by word. A character the face has no glyph for, which the browser measured in another font and the PDF paints as the face's missing-glyph box, moves none of the words after it. A space the face lacks, such as a narrow no-break space or a figure space, takes the width the browser gave it, and invisible characters such as the word joiner and the zero-width space are not drawn. There are two exceptions. A line with right-to-left letters is still painted as one run (see [Languages and scripts](#languages-and-scripts)). Text placed by a design (running heads and footers, openers, box titles and other design elements) is set with the embedded face's own widths, so a glyph the face lacks there still moves the rest of its line.
+**Every word of the text lands where the layout put it.** In paragraphs, list items, quotes, boxes and other flowing text, each word starts at the position the VDT measured, so a difference between the browser's widths and the embedded face's never builds up along a line. A line with no inline formatting is painted as one text object that moves the pen between words; justified lines, centred ones and lines with formatting are painted word by word. A character the face has no glyph for, which the browser measured in another font and the PDF paints as the face's missing-glyph box, moves none of the words after it, and is reported once per face as a `missingGlyph` warning. A space the face lacks, such as a narrow no-break space or a figure space, takes the width the browser gave it, and invisible characters such as the word joiner and the zero-width space are not drawn. A non-breaking hyphen (U+2011) the face lacks is drawn with the face's hyphen (U+2010), or its hyphen-minus when it has no hyphen either, as the browser shows it; Open Sans and Outfit, among others, lack both. Neither case counts as a missing glyph. There are two exceptions. A line with right-to-left letters is still painted as one run (see [Languages and scripts](#languages-and-scripts)). Text placed by a design (running heads and footers, openers, box titles and other design elements) is set with the embedded face's own widths, so a glyph the face lacks there still moves the rest of its line.
 
 ### Which faces the provider is asked for
 
@@ -6495,6 +6495,61 @@ A production version should also:
 - **Query the available weights** (via `https://api.fontsource.org/v1/fonts/{id}`) and snap the requested weight to the nearest one the family actually ships, so a request for `weight: 600` on a family that only has `{400, 700}` still succeeds.
 - **Fall back from italic to normal** when a family has no italic cut for the requested weight, rather than failing the whole render.
 - **Reuse the cache across renders** (keep the `bytesCache` module-scoped, not per-call) so regenerating the PDF after a config change is effectively free.
+
+### Chinese, Japanese and Korean fonts
+
+A CJK face does not come as one small file. Fontsource ships Noto Serif SC as about a hundred files per weight, each holding part of the characters and declared in the family's stylesheet with its `unicode-range` (`@fontsource/noto-serif-sc/400.css`); the browser downloads the files a page's text touches. The `latin` file that the provider above fetches holds no Han at all, and the named subsets are incomplete: `chinese-simplified` of Noto Serif SC lacks 釵, and `chinese-traditional` of Noto Serif TC has none of the full-width marks （），！？：；.
+
+So a provider may answer a face with several files. `renderToPdf` passes it the characters the pages set in that face (`request.codePoints`), collected from every chapter before anything is drawn, and the provider returns the files that hold them, in the order the browser looks them up. Each file is embedded as a subset of its own and each character is drawn from the first file that has a glyph for it: a chapter that touches 60 slices embeds 60 small subsets. A face asked for again, for the text of an SVG figure say, is asked only for the characters its files lack. A provider that returns one `Uint8Array` works as before. The sandbox provider reads the Fontsource stylesheet of the weight and style and fetches the files whose ranges hold the text; the core of it:
+
+```ts
+import type { PdfFontProvider } from 'postext-pdf';
+import { decompressWoff2 } from 'postext-pdf';
+
+type Slice = { url: string; ranges: Array<[number, number]> };
+
+async function fontsourceSlices(family: string, weight: number, style: 'normal' | 'italic'): Promise<Slice[]> {
+  const id = family.toLowerCase().replace(/\s+/g, '-');
+  const cssUrl = `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/${weight}${style === 'italic' ? '-italic' : ''}.css`;
+  const css = await (await fetch(cssUrl)).text();
+  return [...css.matchAll(/@font-face\s*{([^}]*)}/g)].map(([, rule]) => ({
+    url: new URL(/url\(\.?\/?([^)]+\.woff2)\)/.exec(rule)![1], cssUrl).href,
+    ranges: /unicode-range:\s*([^;]+);/.exec(rule)![1].split(',').map((part) => {
+      const [lo, hi = lo] = part.trim().slice(2).split('-');
+      return [parseInt(lo, 16), parseInt(hi, 16)] as [number, number];
+    }),
+  }));
+}
+
+export const sliceFontProvider: PdfFontProvider = async (family, weight, style, request) => {
+  // Where ranges overlap, the browser tries the last rule first.
+  const slices = (await fontsourceSlices(family, weight, style)).reverse();
+  const picked = new Set<Slice>();
+  for (const cp of request?.codePoints ?? []) {
+    const slice = slices.find((s) => s.ranges.some(([lo, hi]) => cp >= lo && cp <= hi));
+    if (slice) picked.add(slice);
+  }
+  if (picked.size === 0) picked.add(slices[0]!);
+  return Promise.all(slices.filter((s) => picked.has(s)).map(async (s) =>
+    decompressWoff2(new Uint8Array(await (await fetch(s.url)).arrayBuffer()))));
+};
+```
+
+A Latin family goes through the same code: English text gets its `latin` file alone, Czech gets `latin` and `latin-ext`.
+
+Characters that no file of the face has a glyph for are drawn as the font's `.notdef` glyph (an empty box in most fonts), and `renderToPdf` reports them once per face after the pages are drawn:
+
+```ts
+// { kind: 'missingGlyph', family: 'Noto Serif TC', weight: 400, style: 'normal',
+//   characters: ['，', '！', '？'], message: '…' }
+```
+
+The Sandbox lists these, and the two warnings below, in its Checks panel after each PDF it generates. When the book, its settings or its resources change, they are marked as coming from an earlier PDF until the next one replaces them; opening another book clears them.
+
+- **Bold needs a static file per weight.** Fontsource serves each weight of Noto Serif SC and TC as separate static files, so bold works in the Sandbox. The Google Fonts files (`NotoSerifSC[wght].ttf`, 25 MB) are variable fonts: pdf-lib embeds their default instance, so a 700 face prints at 400, and `renderToPdf` reports it as `variableFontDefaultInstance`. For a bundle, cut one static instance per weight with fontTools (`fonttools varLib.instancer NotoSerifSC[wght].ttf wght=700`) and subset it to the book's characters with `pyftsubset`.
+- **Use TrueType builds.** Source Han Serif and the Noto Serif CJK `.otf` files have CFF outlines, which postext-pdf embeds whole, 8 to 25 MB per weight; a CFF face over 2 MB is reported as `cffEmbeddedWhole`. The TrueType builds (Google Fonts, Fontsource) are subset to the glyphs used.
+
+A character missing from one family is not taken from another: Noto Serif TC does not borrow from Noto Serif SC. Settle coverage when you build the font files; the 红楼梦 showcase copies the glyphs its TC subsets lack from the SC face.
 
 ### Server-side font provider (Node, local files)
 
@@ -6744,7 +6799,7 @@ Four helpers connect an opened bundle to the engine and the backends:
 - **`loadBundleFonts(bundle)`** registers the bundle's faces with `document.fonts`. Await it before laying out, because layout measures text with the fonts the browser has. Families the bundle names but does not carry (Google Fonts) still have to be loaded by you, as in any other document.
 - **`registerBundleImages(bundle)`** decodes the pictures for the canvas backend (`renderPage`, `renderToCanvas`). **`bundleImageUrl(bundle)`** is the `resourceImageUrl` resolver for `renderToHtml`. Both recolour SVG figures when `diagramStyle.singleInk` is on, once: they recolour the markup and flag the pictures so that no backend tints them again (see [Single ink on canvas and in HTML](#single-ink-on-canvas-and-in-html)).
 - **`buildBundle(bundle)`** lays the chapters out in order and returns one `VDTDocument` per chapter. Each chapter continues the one before it: heading and resource counters, the open part, page parity and page numbering. A chapter that prints the contents (`:::toc`) or the index (`:::index`) receives the whole book's outline. It takes the same options as `buildDocument`, plus `config` to override the bundle's configuration, `cache` to share a measurement cache and `metadata` (see below).
-- **`bundleResourceBytes(bundle)`** and **`bundleFontProvider(bundle, { decodeWoff2, fallback })`** are the `resourceBytes` and `fontProvider` options of `postext-pdf`'s `renderToPdf`. The font provider picks the nearest weight of the requested style from the bundle. For a `.woff2` face it needs `decompressWoff2`, and for a family the bundle does not carry it calls `fallback`.
+- **`bundleResourceBytes(bundle)`** and **`bundleFontProvider(bundle, { decodeWoff2, fallback })`** are the `resourceBytes` and `fontProvider` options of `postext-pdf`'s `renderToPdf`. The font provider picks the nearest weight of the requested style from the bundle. For a `.woff2` face it needs `decompressWoff2`, and for a family the bundle does not carry it calls `fallback` with the renderer's arguments, `request` included, and passes on whatever it returns. A fallback that fetches only a family's `latin` file prints a Chinese family the bundle does not embed as empty boxes; one that answers with slices, such as `sliceFontProvider` in [Chinese, Japanese and Korean fonts](#chinese-japanese-and-korean-fonts), prints it whole.
 
 ```ts
 import { openBundle, loadBundleFonts, registerBundleImages, buildBundle, renderPage,

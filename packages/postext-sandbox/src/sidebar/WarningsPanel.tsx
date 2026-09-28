@@ -91,6 +91,9 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'unknownConfigKey':
       return FileWarning;
     case 'unsupportedHyphenationLocale':
+    case 'missingGlyph':
+    case 'variableFontDefaultInstance':
+    case 'cffEmbeddedWhole':
       return Type;
     default:
       return AlertTriangle;
@@ -204,7 +207,28 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsUnknownConfigKeyTitle;
     case 'unsupportedHyphenationLocale':
       return labels.warningsUnsupportedHyphenationLocaleTitle;
+    case 'missingGlyph':
+      return labels.warningsMissingGlyphTitle;
+    case 'variableFontDefaultInstance':
+      return labels.warningsVariableFontTitle;
+    case 'cffEmbeddedWhole':
+      return labels.warningsCffEmbeddedWholeTitle;
   }
+}
+
+/** How many missing characters a warning lists before "…". */
+const LISTED_GLYPHS = 12;
+
+/** `"Noto Serif TC" 700 italic`: the face a PDF font warning is about. */
+function faceLabel(payload: { family: string; weight: number; style: 'normal' | 'italic' }): string {
+  return `"${payload.family}" ${payload.weight}${payload.style === 'italic' ? ' italic' : ''}`;
+}
+
+/** A PDF font warning's detail: the face, what happened, and a note when
+ *  the book has changed since that PDF. */
+function pdfFontDetail(payload: { family: string; weight: number; style: 'normal' | 'italic'; stale?: true }, labels: SandboxLabels, detail: string): string {
+  const text = `${faceLabel(payload)} — ${detail}`;
+  return payload.stale ? `${text} ${labels.warningsPdfFontStale}` : text;
 }
 
 /** `pagebreak`, `numbering`, `callout`, … — every fence name the parser
@@ -360,6 +384,17 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsUnsupportedHyphenationLocaleDetail
         .replace('__locale__', payload.locale)
         .replace('__locales__', HYPHENATION_LOCALES.join(', '));
+    case 'missingGlyph': {
+      // The first few, then how many more: `a b c … +38`.
+      const shown = payload.characters.slice(0, LISTED_GLYPHS).join(' ');
+      const rest = payload.characters.length - LISTED_GLYPHS;
+      const chars = rest > 0 ? `${shown} … +${rest}` : shown;
+      return pdfFontDetail(payload, labels, labels.warningsMissingGlyphDetail.replace('__chars__', chars));
+    }
+    case 'variableFontDefaultInstance':
+      return pdfFontDetail(payload, labels, labels.warningsVariableFontDetail.replace('__default__', String(payload.defaultWeight)).replace('__weight__', String(payload.weight)));
+    case 'cffEmbeddedWhole':
+      return pdfFontDetail(payload, labels, labels.warningsCffEmbeddedWholeDetail.replace('__size__', (payload.bytes / (1024 * 1024)).toFixed(1)));
   }
 }
 
@@ -368,7 +403,10 @@ function isFontWarning(kind: WarningPayload['kind']): boolean {
     kind === 'missingFont' ||
     kind === 'missingFontFamily' ||
     kind === 'missingFontVariant' ||
-    kind === 'duplicateFontVariant'
+    kind === 'duplicateFontVariant' ||
+    kind === 'missingGlyph' ||
+    kind === 'variableFontDefaultInstance' ||
+    kind === 'cffEmbeddedWhole'
   );
 }
 

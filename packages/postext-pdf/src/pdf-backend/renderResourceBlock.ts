@@ -38,6 +38,7 @@ import type {
 import { applySingleInkToSvg, resolveColorValue, tableCellFillRects, tableFrameOutline } from 'postext';
 import { parseFontString } from '../fontString';
 import { FontCache, type PdfFontProvider } from '../fontCache';
+import { widthOfTextAtSize } from '../faceFiles';
 import {
   type PageCtx,
   type PdfMatrix,
@@ -186,6 +187,30 @@ function svgFontString(family: string, weight: number, italic: boolean): string 
   return `${italic ? 'italic ' : ''}${weight} 16px ${family}`;
 }
 
+/** The character of a numeric reference; nothing for one out of range. */
+function charOf(cp: number): string {
+  return Number.isInteger(cp) && cp >= 0 && cp <= 0x10ffff ? String.fromCodePoint(cp) : '';
+}
+
+/** The characters an SVG's text may set: those of its markup outside tags,
+ *  entities decoded — more than its text nodes (a `<style>` sheet counts
+ *  too), which only asks a sliced face for a file more. */
+function svgCodePoints(svgText: string): Set<number> {
+  const text = svgText
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => charOf(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, dec: string) => charOf(parseInt(dec, 10)))
+    .replace(/&(lt|gt|amp|quot|apos);/g, (_, name: string) => ({ lt: '<', gt: '>', amp: '&', quot: '"', apos: "'" })[name] ?? '');
+  const out = new Set<number>();
+  for (const ch of text) {
+    const cp = ch.codePointAt(0)!;
+    if (cp > 0x20) out.add(cp);
+  }
+  out.add(0x20);
+  return out;
+}
+
 /** Fonts an SVG's text would need, as font strings the {@link FontCache}
  *  can preload: every named (non-generic) family of each run, so the
  *  resolver can fall through the `font-family` list in order. */
@@ -210,7 +235,7 @@ function fontResolverFor(fontCache: FontCache): VectorFontResolver {
       if (!pdfFont) continue;
       let vf = fonts.get(pdfFont);
       if (!vf) {
-        vf = { pdfFont, widthOf: (text, size) => pdfFont.widthOfTextAtSize(text, size) };
+        vf = { pdfFont, widthOf: (text, size) => widthOfTextAtSize(pdfFont, text, size) };
         fonts.set(pdfFont, vf);
       }
       return vf;
@@ -249,13 +274,18 @@ export async function inlineSvgFontsForRaster(
   provider: PdfFontProvider,
 ): Promise<string> {
   let css = '';
+  const codePoints = svgCodePoints(svgText);
   for (const fs of fontStrings) {
     const parsed = parseFontString(fs);
     if (!parsed) continue;
-    const bytes = await provider(parsed.family, parsed.weight, parsed.style).catch(() => null);
-    if (!bytes || bytes.length === 0) continue;
-    const format = sniffFontFormat(bytes);
-    css += `@font-face{font-family:"${parsed.family.replace(/["\\]/g, '')}";font-weight:${parsed.weight};font-style:${parsed.style};src:url(data:${FONT_MIME[format]};base64,${toBase64(bytes)})}`;
+    const answer = await provider(parsed.family, parsed.weight, parsed.style, { codePoints }).catch(() => null);
+    // A face of several files is one @font-face per file: the browser
+    // looks each character up in them in turn.
+    for (const bytes of Array.isArray(answer) ? answer : answer ? [answer] : []) {
+      if (bytes.length === 0) continue;
+      const format = sniffFontFormat(bytes);
+      css += `@font-face{font-family:"${parsed.family.replace(/["\\]/g, '')}";font-weight:${parsed.weight};font-style:${parsed.style};src:url(data:${FONT_MIME[format]};base64,${toBase64(bytes)})}`;
+    }
   }
   if (!css) return svgText;
   const m = /<svg\b[^>]*?>/i.exec(svgText);
@@ -389,7 +419,10 @@ export async function preloadResourceImages(
         if (fontCache) {
           // Text runs need their fonts embedded before the sync conversion.
           wanted = collectSvgFontStrings(svgText);
-          if (wanted.length > 0) await fontCache.preloadFontStrings(wanted);
+          if (wanted.length > 0) {
+            const codePoints = svgCodePoints(svgText);
+            await fontCache.preloadFontStrings(new Map(wanted.map((fs) => [fs, codePoints])));
+          }
           fonts = fontResolverFor(fontCache);
         }
         const drawing = svgToVectorDrawing(svgText, { fonts });

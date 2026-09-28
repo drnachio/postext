@@ -131,7 +131,7 @@ The TypeScript source of truth is `RecipeMeta` in `apps/web/src/lib/cookbook/typ
 | `related` | Up to four hand-picked sibling slugs; the rest are computed. |
 | `workarounds` | Engine bugs the recipe routes around: `{ followup?, issue?, package, note }`, revisited when fixed. |
 | `engine` | `postext` minimum version (≤ the released one); `postextPdf` for PDF recipes; `math`, `worker` flags. |
-| `kit` | Blocks to inline: always `core`, `fonts`, `viewer`; plus `pdf` and `images` when used. |
+| `kit` | Blocks to inline: always `core`, `fonts`, `viewer`; plus `pdf`, `images` and `cjk` when used. |
 | `sample.locales` | Languages with a `content.<lang>.md`; `[0]` is the fallback edition. |
 | `capture` | `hero` (a page, or a spread `[verso, recto]`; page 1 is a recto on its own), `card` (`spread`, `page`, `loupe`, `crop`, `screenshot`), `focus` for loupe and crop, `pages`, `expect`. Page numbers count from 1 at the document's first page, whatever its printed folio (`continuation.pageNumbering.startAt`) or its place in the book (`continuation.pageIndexOffset`). Versos and rectos follow the physical book page (`pageIndexOffset` + index + 1), not the folio: the capture checks that a spread's verso is an even book page. |
 | `downloads.pdf` | Keep and serve the PDF the pen builds. |
@@ -204,7 +204,7 @@ CodePen, Copy, the `.html` download and the capture all run, so they are identic
 | `const LANG = 'en'; // @lang` | the edition's language |
 | `/* @content */ ''` | a literal of `content.<lang>.md` (falling back to `sample.locales[0]`) |
 | `/* @content:<slot> */ ''` | a literal of `content.<slot>.<lang>.md` |
-| `// @kit` (last line) | the kit blocks listed in `recipe.json` `kit`, in the order core, fonts, viewer, pdf, images |
+| `// @kit` (last line) | the kit blocks listed in `recipe.json` `kit`, in the order core, fonts, viewer, pdf, images, cjk |
 | `// #region <id>: <title>` … `// #endregion` | kept as is; the write-up excerpts regions by id |
 
 The banner's four lines, the section banners `1 · Design`, `2 · Content`, `3 · Fonts`,
@@ -254,6 +254,8 @@ Its functions are hoisted declarations you can call from anywhere in the script:
 | `fontsourceProvider` | pdf | The PDF font provider: snaps to shipped weights, falls back from missing italics. |
 | `loadImage(id, url)`, `loadSvg(id, svg)` | images | Register pictures for the canvas and keep their bytes. |
 | `imageBytes`, `imageUrl` | images | The `resourceBytes` of `renderToPdf` and the `resourceImageUrl` of `renderToHtml`. |
+| `loadCjkFonts(FACES, text)` | cjk | Chinese, Japanese and Korean faces: one `FontFace` per Fontsource unicode-range file, loading the files the sample touches; fails on a character no file has. |
+| `cjkPdfProvider` | cjk | The PDF font provider for such faces: the files that hold each face's characters (other families go to `fontsourceProvider`, so list `pdf` too). |
 
 A change to the kit changes every recipe's source hash, so every capture goes stale and the
 whole Cookbook is verified again.

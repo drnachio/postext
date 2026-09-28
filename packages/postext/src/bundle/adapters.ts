@@ -130,26 +130,36 @@ export function bundleResourceBytes(bundle: BundleSource): (fileId: string) => U
   return (fileId) => bytes.get(fileId);
 }
 
-export interface BundleFontProviderOptions {
+/** What `postext-pdf` tells a font provider about a face: the characters
+ *  the pages set in it (its `PdfFontRequest`). */
+export interface BundleFontRequest {
+  codePoints: ReadonlySet<number>;
+}
+
+export interface BundleFontProviderOptions<Fallback extends Uint8Array | Uint8Array[] = Uint8Array> {
   /** Turns WOFF2 into the TrueType/OpenType bytes a PDF embeds — pass
    *  `decompressWoff2` from `postext-pdf`. Required when the bundle carries
    *  `.woff2` faces. */
   decodeWoff2?: (bytes: Uint8Array) => Promise<Uint8Array> | Uint8Array;
   /** Where a family the bundle does not carry comes from (Google Fonts
-   *  families such as the default heading face). */
-  fallback?: (family: string, weight: number, style: 'normal' | 'italic') => Promise<Uint8Array>;
+   *  families such as the default heading face). It is handed the
+   *  renderer's `request` and may answer with several files, like any
+   *  `postext-pdf` font provider: a Chinese family served as Fontsource's
+   *  unicode-range slices needs the files that hold the text's characters. */
+  fallback?: (family: string, weight: number, style: 'normal' | 'italic', request?: BundleFontRequest) => Promise<Fallback>;
 }
 
 /** A `fontProvider` for `postext-pdf`'s `renderToPdf`: the bundle's own
- *  faces (nearest weight, same style first), else `fallback`. */
-export function bundleFontProvider(
+ *  faces (nearest weight, same style first), else `fallback`, which gets
+ *  the renderer's `request` (see {@link BundleFontProviderOptions}). */
+export function bundleFontProvider<Fallback extends Uint8Array | Uint8Array[] = Uint8Array>(
   bundle: Pick<PostextBundle, 'fonts'>,
-  options: BundleFontProviderOptions = {},
-): (family: string, weight: number, style: 'normal' | 'italic') => Promise<Uint8Array> {
-  return async (family, weight, style) => {
+  options: BundleFontProviderOptions<Fallback> = {},
+): (family: string, weight: number, style: 'normal' | 'italic', request?: BundleFontRequest) => Promise<Uint8Array | Fallback> {
+  return async (family, weight, style, request) => {
     const faces = bundle.fonts.filter((f) => f.family.toLowerCase() === family.toLowerCase());
     if (faces.length === 0) {
-      if (options.fallback) return options.fallback(family, weight, style);
+      if (options.fallback) return options.fallback(family, weight, style, request);
       throw new Error(`Font family "${family}" is not in the bundle and no fallback was given`);
     }
     const sameStyle = faces.filter((f) => f.style === style);

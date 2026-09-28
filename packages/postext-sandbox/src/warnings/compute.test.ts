@@ -599,3 +599,26 @@ describe('heading designs cut off (EF-91)', () => {
     expect(cut(docWith({ partInfo: { number: 'I', title: 'Part' }, openerBand: band([900]) }))).toHaveLength(0);
   });
 });
+
+describe('PDF font warnings (#196)', () => {
+  it('lists the last PDF\'s font warnings once per face and kind, in the fonts group', () => {
+    const warnings = computeWarnings({
+      markdown: '此開卷第一回也。',
+      config: {},
+      doc: null,
+      pdfFontChecks: [
+        { kind: 'missingGlyph', family: 'Noto Serif TC', weight: 400, style: 'normal', characters: ['，', '！'], message: '' },
+        { kind: 'missingGlyph', family: 'Noto Serif TC', weight: 400, style: 'normal', characters: ['，'], message: '' },
+        { kind: 'variableFontDefaultInstance', family: 'Noto Serif SC', weight: 700, style: 'normal', defaultWeight: 400, message: '' },
+        { kind: 'cffEmbeddedWhole', family: 'Source Han Serif TW', weight: 400, style: 'normal', bytes: 7_936_412, message: '' },
+      ],
+    });
+    const pdf = warnings.filter((w) => w.id.startsWith('pdf-'));
+    expect(pdf.map((w) => w.payload)).toEqual([
+      { kind: 'missingGlyph', family: 'Noto Serif TC', weight: 400, style: 'normal', characters: ['，', '！'] },
+      { kind: 'variableFontDefaultInstance', family: 'Noto Serif SC', weight: 700, style: 'normal', defaultWeight: 400 },
+      { kind: 'cffEmbeddedWhole', family: 'Source Han Serif TW', weight: 400, style: 'normal', bytes: 7_936_412 },
+    ]);
+    expect(pdf.every((w) => w.sourceStart === undefined)).toBe(true);
+  });
+});

@@ -6374,9 +6374,9 @@ npm install postext postext-pdf
 El paquete expone un único punto de entrada y un puñado de tipos:
 
 - **`renderToPdf(doc, options): Promise<Uint8Array>`** — toma un `VDTDocument` (o los capítulos de un libro, como una lista de ellos) y devuelve los bytes crudos del PDF.
-- **`PdfFontProvider`** — la firma de callback `(family, weight, style) => Promise<Uint8Array>` que `renderToPdf` usa para pedir los bytes de una fuente cuando necesita incrustar una combinación family/weight/style nueva.
+- **`PdfFontProvider`** — la firma de callback `(family, weight, style, request?) => Promise<Uint8Array | Uint8Array[]>` que `renderToPdf` usa para pedir los bytes de una fuente cuando necesita incrustar una combinación family/weight/style nueva. `request.codePoints` contiene los caracteres que las páginas componen en esa variante; la respuesta es un archivo, o varios que juntos forman la variante (consulta [Fuentes chinas, japonesas y coreanas](#fuentes-chinas-japonesas-y-coreanas)).
 - **`RenderToPdfOptions`** — `{ fontProvider, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, onProgress?, onWarning?, rasterizeSvg? }`. `outlines`, `accessible` y `colorSpace` toman el valor del `pdfGeneration` del documento cuando no se pasan (ver [Generación de PDF (configuración)](#generación-de-pdf-configuración)). `resourceBytes` se describe en [Bytes de recursos y másteres de impresión](#bytes-de-recursos-y-másteres-de-impresión); `onWarning`, en [Qué variantes se piden al proveedor](#qué-variantes-se-piden-al-proveedor) y en [Avisos del documento](#avisos-del-documento).
-- **`PdfWarning`** — un problema no fatal que se notifica por `onWarning`; se distingue por `kind`: `'fontFallback'` (`PdfFontFallbackWarning`), una variante compuesta con otro corte de su familia, o `'missingImage'`, una imagen sin bytes dibujada como marcador de posición (esta solo se notifica a un `onWarning` propio; sin él, una sustitución de fuente va a `console.warn`).
+- **`PdfWarning`** — un problema no fatal que se notifica por `onWarning`; se distingue por `kind`: `'fontFallback'` (`PdfFontFallbackWarning`), una variante compuesta con otro corte de su familia; `'missingGlyph'` (`PdfMissingGlyphWarning`), caracteres para los que ningún archivo de una variante tiene glifo; `'variableFontDefaultInstance'` (`PdfVariableFontWarning`), una fuente variable pedida con un peso distinto del de su instancia por defecto; `'cffEmbeddedWhole'` (`PdfCffEmbeddedWholeWarning`), una fuente CFF de más de 2 MB incrustada entera; o `'missingImage'`, una imagen sin bytes dibujada como marcador de posición (esta solo se notifica a un `onWarning` propio; sin él, los avisos de fuentes van a `console.warn`).
 - **`decompressWoff2(bytes): Uint8Array`** — helper que convierte un archivo WOFF2 en bytes TTF, que es el formato que `pdf-lib` puede incrustar directamente.
 - **`createPdfWorker(options?)`**, de `postext-pdf/worker` — el mismo render en un Web Worker; consulta [Renderizar el PDF en un worker](#renderizar-el-pdf-en-un-worker).
 
@@ -6412,11 +6412,11 @@ window.open(url);
 
 ### ¿Por qué un proveedor de fuentes?
 
-`pdf-lib` incrusta archivos de fuente reales dentro del PDF — las fuentes instaladas en el navegador no están disponibles en el momento del render, y una fuente que solo cargaste para medición en pantalla no basta, por sí sola, para producir un PDF autocontenido. `renderToPdf` recorre las páginas buscando cada variante que pintan (una por cada combinación `family|weight|style`; consulta [Qué variantes se piden al proveedor](#qué-variantes-se-piden-al-proveedor)) e invoca tu proveedor una sola vez por combinación única. El proveedor devuelve un `Uint8Array` con bytes **TTF u OTF**; `pdf-lib` los subsetea y los incrusta. Las variantes a las que el proveedor responde con el mismo archivo, como una redonda que sustituye a la negrita que falta en una familia, comparten una sola fuente incrustada. Una variante con la que ninguna página llega a dibujar, como la del texto de una figura SVG que acaba dibujada como imagen, no se escribe en el archivo.
+`pdf-lib` incrusta archivos de fuente reales dentro del PDF — las fuentes instaladas en el navegador no están disponibles en el momento del render, y una fuente que solo cargaste para medición en pantalla no basta, por sí sola, para producir un PDF autocontenido. `renderToPdf` recorre las páginas buscando cada variante que pintan (una por cada combinación `family|weight|style`; consulta [Qué variantes se piden al proveedor](#qué-variantes-se-piden-al-proveedor)) e invoca tu proveedor una sola vez por combinación única. El proveedor devuelve un `Uint8Array` con bytes **TTF u OTF**, o una lista de ellos para una variante servida en varios archivos (consulta [Fuentes chinas, japonesas y coreanas](#fuentes-chinas-japonesas-y-coreanas)); `pdf-lib` reduce los contornos TrueType a los glifos usados e incrusta enteros los archivos CFF (`.otf`). Las variantes a las que el proveedor responde con el mismo archivo, como una redonda que sustituye a la negrita que falta en una familia, comparten una sola fuente incrustada. Una variante con la que ninguna página llega a dibujar, como la del texto de una figura SVG que acaba dibujada como imagen, no se escribe en el archivo.
 
-**Usa fuentes estáticas por peso, no una única fuente variable.** Google Fonts a menudo sirve un único WOFF2 variable por familia que cubre todo el eje de pesos. `pdf-lib` solo puede incrustar la instancia por defecto de un archivo variable, por lo que un párrafo en negrita se renderizaría con peso regular. Fontsource publica archivos WOFF2 estáticos por peso que resuelven esto limpiamente — es el patrón que usa el sandbox.
+**Usa fuentes estáticas por peso, no una única fuente variable.** Google Fonts a menudo sirve un único WOFF2 variable por familia que cubre todo el eje de pesos. `pdf-lib` solo puede incrustar la instancia por defecto de un archivo variable, por lo que un párrafo en negrita se renderizaría con peso regular. Fontsource publica archivos WOFF2 estáticos por peso que resuelven esto limpiamente — es el patrón que usa el sandbox. Un archivo variable pedido con un peso distinto del de su instancia por defecto se notifica con un aviso `variableFontDefaultInstance`.
 
-**Cada palabra del texto cae donde la puso la maquetación.** En los párrafos, los elementos de lista, las citas, los recuadros y el resto del texto corrido, cada palabra empieza en la posición que midió el VDT, así que una diferencia entre los anchos del navegador y los de la fuente incrustada nunca se acumula a lo largo de una línea. Una línea sin formato en línea se pinta como un solo objeto de texto que mueve el punto de escritura entre palabra y palabra; las líneas justificadas, las centradas y las que llevan formato se pintan palabra a palabra. Un carácter para el que la fuente no tiene glifo, que el navegador midió con otra fuente y que el PDF pinta como la caja de glifo ausente de la fuente, no mueve ninguna de las palabras que le siguen. Un espacio que la fuente no tiene, como el espacio fino de no separación o el espacio de cifra, toma el ancho que le dio el navegador, y los caracteres invisibles, como la unión de palabras y el espacio de anchura cero, no se dibujan. Hay dos excepciones. Una línea con letras de derecha a izquierda se sigue pintando como un solo tramo (consulta [Idiomas y escrituras](#idiomas-y-escrituras)). El texto que coloca un diseño (encabezados y pies corridos, aperturas, títulos de recuadro y otros elementos de diseño) se compone con los anchos propios de la fuente incrustada, así que allí un glifo que falta en la fuente sigue moviendo el resto de su línea.
+**Cada palabra del texto cae donde la puso la maquetación.** En los párrafos, los elementos de lista, las citas, los recuadros y el resto del texto corrido, cada palabra empieza en la posición que midió el VDT, así que una diferencia entre los anchos del navegador y los de la fuente incrustada nunca se acumula a lo largo de una línea. Una línea sin formato en línea se pinta como un solo objeto de texto que mueve el punto de escritura entre palabra y palabra; las líneas justificadas, las centradas y las que llevan formato se pintan palabra a palabra. Un carácter para el que la fuente no tiene glifo, que el navegador midió con otra fuente y que el PDF pinta como la caja de glifo ausente de la fuente, no mueve ninguna de las palabras que le siguen, y se notifica una vez por variante con un aviso `missingGlyph`. Un espacio que la fuente no tiene, como el espacio fino de no separación o el espacio de cifra, toma el ancho que le dio el navegador, y los caracteres invisibles, como la unión de palabras y el espacio de anchura cero, no se dibujan. Un guion de no separación (U+2011) que la fuente no tiene se dibuja con el guion de la fuente (U+2010), o con su guion-menos si tampoco tiene guion, como lo muestra el navegador; Open Sans y Outfit, entre otras, carecen de los dos. Ninguno de estos casos cuenta como glifo ausente. Hay dos excepciones. Una línea con letras de derecha a izquierda se sigue pintando como un solo tramo (consulta [Idiomas y escrituras](#idiomas-y-escrituras)). El texto que coloca un diseño (encabezados y pies corridos, aperturas, títulos de recuadro y otros elementos de diseño) se compone con los anchos propios de la fuente incrustada, así que allí un glifo que falta en la fuente sigue moviendo el resto de su línea.
 
 ### Qué variantes se piden al proveedor
 
@@ -6497,6 +6497,61 @@ Una versión de producción debería además:
 - **Consultar los pesos disponibles** (vía `https://api.fontsource.org/v1/fonts/{id}`) y ajustar el peso pedido al más cercano que la familia realmente distribuye, para que una petición de `weight: 600` sobre una familia que solo tiene `{400, 700}` siga funcionando.
 - **Caer de italic a normal** cuando una familia no tenga cortada la itálica para el peso solicitado, en lugar de fallar todo el render.
 - **Reutilizar la caché entre renders** (mantén `bytesCache` a nivel de módulo, no por llamada) para que regenerar el PDF tras un cambio de configuración sea prácticamente gratis.
+
+### Fuentes chinas, japonesas y coreanas
+
+Una fuente CJK no viene en un solo archivo pequeño. Fontsource distribuye Noto Serif SC en un centenar de archivos por peso, cada uno con una parte de los caracteres y declarado en la hoja de estilos de la familia con su `unicode-range` (`@fontsource/noto-serif-sc/400.css`); el navegador descarga los archivos que toca el texto de la página. El archivo `latin` que pide el proveedor de arriba no tiene ni un solo carácter han, y los subconjuntos con nombre están incompletos: al `chinese-simplified` de Noto Serif SC le falta 釵, y el `chinese-traditional` de Noto Serif TC no tiene ninguno de los signos de ancho completo （），！？：；.
+
+Por eso un proveedor puede responder a una variante con varios archivos. `renderToPdf` le pasa los caracteres que las páginas componen en esa variante (`request.codePoints`), reunidos de todos los capítulos antes de dibujar nada, y el proveedor devuelve los archivos que los contienen, en el orden en que el navegador los consulta. Cada archivo se incrusta como un subconjunto propio y cada carácter se dibuja con el primer archivo que tiene glifo para él: un capítulo que toca 60 fragmentos incrusta 60 subconjuntos pequeños. Si se vuelve a pedir la variante, por ejemplo para el texto de una figura SVG, solo se piden los caracteres que faltan en sus archivos. Un proveedor que devuelve un solo `Uint8Array` funciona como antes. El proveedor del sandbox lee la hoja de estilos de Fontsource del peso y el estilo y descarga los archivos cuyos intervalos contienen el texto; su núcleo:
+
+```ts
+import type { PdfFontProvider } from 'postext-pdf';
+import { decompressWoff2 } from 'postext-pdf';
+
+type Slice = { url: string; ranges: Array<[number, number]> };
+
+async function fontsourceSlices(family: string, weight: number, style: 'normal' | 'italic'): Promise<Slice[]> {
+  const id = family.toLowerCase().replace(/\s+/g, '-');
+  const cssUrl = `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/${weight}${style === 'italic' ? '-italic' : ''}.css`;
+  const css = await (await fetch(cssUrl)).text();
+  return [...css.matchAll(/@font-face\s*{([^}]*)}/g)].map(([, rule]) => ({
+    url: new URL(/url\(\.?\/?([^)]+\.woff2)\)/.exec(rule)![1], cssUrl).href,
+    ranges: /unicode-range:\s*([^;]+);/.exec(rule)![1].split(',').map((part) => {
+      const [lo, hi = lo] = part.trim().slice(2).split('-');
+      return [parseInt(lo, 16), parseInt(hi, 16)] as [number, number];
+    }),
+  }));
+}
+
+export const sliceFontProvider: PdfFontProvider = async (family, weight, style, request) => {
+  // Where ranges overlap, the browser tries the last rule first.
+  const slices = (await fontsourceSlices(family, weight, style)).reverse();
+  const picked = new Set<Slice>();
+  for (const cp of request?.codePoints ?? []) {
+    const slice = slices.find((s) => s.ranges.some(([lo, hi]) => cp >= lo && cp <= hi));
+    if (slice) picked.add(slice);
+  }
+  if (picked.size === 0) picked.add(slices[0]!);
+  return Promise.all(slices.filter((s) => picked.has(s)).map(async (s) =>
+    decompressWoff2(new Uint8Array(await (await fetch(s.url)).arrayBuffer()))));
+};
+```
+
+Una familia latina pasa por el mismo código: un texto en inglés recibe solo su archivo `latin`, uno en checo recibe `latin` y `latin-ext`.
+
+Los caracteres para los que ningún archivo de la variante tiene glifo se dibujan con el glifo `.notdef` de la fuente (una caja vacía en la mayoría), y `renderToPdf` los notifica una vez por variante cuando termina de dibujar las páginas:
+
+```ts
+// { kind: 'missingGlyph', family: 'Noto Serif TC', weight: 400, style: 'normal',
+//   characters: ['，', '！', '？'], message: '…' }
+```
+
+El Sandbox muestra estos avisos, y los dos siguientes, en su panel Revisión tras cada PDF que genera. Si cambian el libro, sus ajustes o sus recursos, se marcan como de un PDF anterior hasta que el siguiente los sustituye; abrir otro libro los retira.
+
+- **La negrita necesita un archivo estático por peso.** Fontsource sirve cada peso de Noto Serif SC y TC en archivos estáticos propios, así que la negrita funciona en el Sandbox. Los archivos de Google Fonts (`NotoSerifSC[wght].ttf`, 25 MB) son fuentes variables: pdf-lib incrusta su instancia por defecto, así que una variante 700 se imprime con peso 400, y `renderToPdf` lo notifica como `variableFontDefaultInstance`. Para un paquete, saca una instancia estática por peso con fontTools (`fonttools varLib.instancer NotoSerifSC[wght].ttf wght=700`) y redúcela a los caracteres del libro con `pyftsubset`.
+- **Usa las versiones TrueType.** Source Han Serif y los archivos `.otf` de Noto Serif CJK tienen contornos CFF, que postext-pdf incrusta enteros, de 8 a 25 MB por peso; una fuente CFF de más de 2 MB se notifica como `cffEmbeddedWhole`. Las versiones TrueType (Google Fonts, Fontsource) se reducen a los glifos usados.
+
+Un carácter que falta en una familia no se toma de otra: Noto Serif TC no toma prestado de Noto Serif SC. Resuelve la cobertura al preparar los archivos de fuente; el ejemplo de 红楼梦 copia en sus subconjuntos TC los glifos que les faltan desde la fuente SC.
 
 ### Proveedor de fuentes en el servidor (Node, archivos locales)
 
@@ -6746,7 +6801,7 @@ Cuatro utilidades conectan un paquete abierto con el motor y los backends:
 - **`loadBundleFonts(bundle)`** registra las fuentes del paquete en `document.fonts`. Espérala antes de componer, porque la composición mide el texto con las fuentes que tiene el navegador. Las familias que el paquete nombra pero no incluye (Google Fonts) tienes que cargarlas tú, como en cualquier otro documento.
 - **`registerBundleImages(bundle)`** decodifica las imágenes para el backend canvas (`renderPage`, `renderToCanvas`). **`bundleImageUrl(bundle)`** es el resolvedor `resourceImageUrl` de `renderToHtml`. Las dos recolorean las figuras SVG cuando `diagramStyle.singleInk` está activo, una sola vez: recolorean el marcado y marcan las imágenes para que ningún backend vuelva a teñirlas (consulta [Tinta única en canvas y en HTML](#tinta-única-en-canvas-y-en-html)).
 - **`buildBundle(bundle)`** compone los capítulos en orden y devuelve un `VDTDocument` por capítulo. Cada capítulo continúa al anterior: contadores de encabezados y de recursos, la parte abierta, la paridad de página y la numeración. Un capítulo que imprime el índice de contenidos (`:::toc`) o el analítico (`:::index`) recibe el esquema del libro entero. Admite las mismas opciones que `buildDocument`, más `config` para sustituir la configuración del paquete, `cache` para compartir una caché de medidas y `metadata` (ver más abajo).
-- **`bundleResourceBytes(bundle)`** y **`bundleFontProvider(bundle, { decodeWoff2, fallback })`** son las opciones `resourceBytes` y `fontProvider` de `renderToPdf` de `postext-pdf`. El proveedor de fuentes elige del paquete el peso más cercano del estilo pedido. Para una variante `.woff2` necesita `decompressWoff2`, y para una familia que el paquete no incluye llama a `fallback`.
+- **`bundleResourceBytes(bundle)`** y **`bundleFontProvider(bundle, { decodeWoff2, fallback })`** son las opciones `resourceBytes` y `fontProvider` de `renderToPdf` de `postext-pdf`. El proveedor de fuentes elige del paquete el peso más cercano del estilo pedido. Para una variante `.woff2` necesita `decompressWoff2`, y para una familia que el paquete no incluye llama a `fallback` con los argumentos del renderizador, `request` incluido, y entrega lo que devuelva. Un `fallback` que solo descarga el archivo `latin` de la familia imprime como cajas vacías una familia china que el paquete no incrusta; uno que responde con los fragmentos, como `sliceFontProvider` en [Fuentes chinas, japonesas y coreanas](#fuentes-chinas-japonesas-y-coreanas), la imprime completa.
 
 ```ts
 import { openBundle, loadBundleFonts, registerBundleImages, buildBundle, renderPage,

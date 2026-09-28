@@ -55,7 +55,10 @@ export type WarningKind =
   | 'fontFamilyStack'
   | 'unknownNumberFormat'
   | 'unknownConfigKey'
-  | 'unsupportedHyphenationLocale';
+  | 'unsupportedHyphenationLocale'
+  | 'missingGlyph'
+  | 'variableFontDefaultInstance'
+  | 'cffEmbeddedWhole';
 
 export type WarningPayload =
   | { kind: 'missingFont'; family: string }
@@ -235,7 +238,17 @@ export type WarningPayload =
   | { kind: 'unknownConfigKey'; path: string; value: string; used: string; suggestion?: string }
   /** The document's language (its hyphenation locale, else `locale`) has
    *  no bundled hyphenation patterns: the engine hyphenates it with en-us. */
-  | { kind: 'unsupportedHyphenationLocale'; locale: string };
+  | { kind: 'unsupportedHyphenationLocale'; locale: string }
+  /** The last PDF generated set characters no file of a face has a glyph
+   *  for (postext-pdf's `missingGlyph`): they print as the font's empty
+   *  box. `characters` in the order the pages first set them. `stale` (on
+   *  the three PDF font kinds): the book has changed since that PDF. */
+  | { kind: 'missingGlyph'; family: string; weight: number; style: 'normal' | 'italic'; characters: string[]; stale?: true }
+  /** The last PDF generated set a face from a variable font at a weight
+   *  other than its default instance, which is the one embedded. */
+  | { kind: 'variableFontDefaultInstance'; family: string; weight: number; style: 'normal' | 'italic'; defaultWeight: number; stale?: true }
+  /** The last PDF generated embedded a CFF (.otf) face over 2 MB whole. */
+  | { kind: 'cffEmbeddedWhole'; family: string; weight: number; style: 'normal' | 'italic'; bytes: number; stale?: true };
 
 export interface Warning {
   id: string;
