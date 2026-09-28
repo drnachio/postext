@@ -119,7 +119,7 @@ const framed = design([ // array order is paint order: the boxes first, the type
   text('title', '{titleText}', 'Fraunces', 34, at('#kicker', 'below', 0, 3.5, 'fill'),
     { fontWeight: 600, lineHeight: 1.05, align: 'center' }),
   // An image element draws a registered resource, never numbered or captioned. Its resourceId
-  // is a fixed id: a style that names a photo here gives its chapters that photo.
+  // may be '{attr.photo}' (postext ≥ 1.8): then each heading names its own photo.
   { kind: 'image', id: 'fleuron', resourceId: 'fleuron',
     placement: at('#title', 'below', (MEASURE - FLEURON) / 2, 4.5, FLEURON) },
   // The section's palette does not reach dropCap.color: name the blue (gotcha: drop-cap-palette).

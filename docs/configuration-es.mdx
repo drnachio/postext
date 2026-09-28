@@ -998,6 +998,8 @@ Un elemento `image` dibuja un recurso de mapa de bits o SVG del documento — el
 }
 ```
 
+`resourceId` admite los mismos marcadores que el `content` de un elemento de texto, así que un mismo diseño puede dibujar una imagen distinta en cada encabezado. Con `resourceId: '{attr.vineta}'` en un estilo de encabezado, `# Capítulo I {style="apertura" vineta="tronco"}` dibuja el recurso `tronco` y `# Capítulo II {style="apertura" vineta="peluca"}` dibuja `peluca`: los capítulos comparten el estilo en lugar de clonarlo para cada imagen. Una cabecera o un pie leen los atributos del capítulo de la página, como `{attr.<clave>}` en un titulillo, y sirven también los demás marcadores (`'mapa-{chapterNumber}'`). Un id que queda vacío, como el de un encabezado sin el atributo, no dibuja nada. Desde postext 1.8.
+
 <table>
   <thead>
     <tr>
@@ -1018,7 +1020,7 @@ Un elemento `image` dibuja un recurso de mapa de bits o SVG del documento — el
       <td><code>resourceId</code></td>
       <td><code>string</code></td>
       <td>—</td>
-      <td>Id de un <code>Resource</code> de mapa de bits o SVG del documento.</td>
+      <td>Id de un <code>Resource</code> de mapa de bits o SVG del documento. Puede llevar marcadores, entre ellos <code>&#123;attr.&lt;clave&gt;&#125;</code>, que se rellenan en cada encabezado, parte o página.</td>
     </tr>
     <tr>
       <td><code>placement</code></td>

@@ -15,11 +15,11 @@ We stop at the pass to eat. There is a spring that is not on the map, an iron sp
 
 Solar noon falls after two here, on summer time. By then the shadows have gone under the stones, and the lake, seen from the pass, looks like a sheet of tin someone has left behind between the walls.
 
-# Noon {style="mediodia" n="II" hora="14:06"}
+# Noon {style="lamina" art="mediodia" n="II" hora="14:06"}
 
-# Storm {style="tormenta" n="III" hora="16:40"}
+# Storm {style="pliego" art="tormenta" n="III" hora="16:40"}
 
-# Storm {style="tormenta-recto"}
+# Storm {style="pliego-recto" art="tormenta"}
 
 # Eleven seconds {hora="15:00–19:50 · 2180–1950 m"}
 
@@ -29,7 +29,7 @@ We take shelter under the overhang of a boulder as big as a house. First small h
 
 Around half past seven the storm drifts away down the valley and leaves the sky broken into strips. For a moment the sun comes out below the cloud, low in the west, and turns the whole crest a colour that lasts less than three minutes (:ref{id="atardecer" text="plate IV"}). We go down to the refuge soaked through, beside the stream, which is running full.
 
-# Night {style="noche" n="V" hora="22:10"}
+# Night {style="lamina" art="noche" n="V" hora="22:10"}
 
 # First snow {hora="22:10–09:00 · 1950 m"}
 

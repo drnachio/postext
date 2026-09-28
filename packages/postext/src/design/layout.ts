@@ -26,6 +26,7 @@ import { buildFontString, measureTextWidth } from '../measure';
 import { hyphenateText, withoutSlashJoints } from '../hyphenate';
 import { BREAKING_SPACE_RUNS_SPLIT_RE, NO_BREAK_SPACES, isBreakingSpaceRun } from '../measure/spaces';
 import {
+  resolveDesignResourceId,
   resolveDesignText,
   type DesignPlaceholderContext,
 } from './placeholders';
@@ -890,7 +891,7 @@ export function layoutDesignSlot(
         anchorY,
         pinX: anchor.pinX,
         pinY: anchor.pinY,
-      }, fillRef, context.dpi, context.resourceById);
+      }, fillRef, context.dpi, context.resourceById, resolveDesignResourceId(el.resourceId, context.placeholders));
       if (prim) {
         resolvedGeo.set(el.id, prim);
         primsByElement.set(el, [prim]);
@@ -1361,7 +1362,8 @@ function layoutRuleElement(
   };
 }
 
-/** An image element: the box its `placement.size` describes, with an
+/** An image element: the resource its `resourceId` names once its
+ *  placeholders are filled in (`{attr.<key>}`…), in the box its `placement.size` describes, with an
  *  `'auto'` side following the image's aspect ratio (both auto = the
  *  image's own pixel size) and the image fitted inside a fully sized box,
  *  centred. Nothing without a resolvable resource image. */
@@ -1371,8 +1373,10 @@ function layoutImageElement(
   container: AnchorReference,
   dpi: number,
   resourceById: ReadonlyMap<string, Resource> | undefined,
+  /** `el.resourceId` with its placeholders filled in. */
+  resourceId: string,
 ): ResolvedImagePrimitive | undefined {
-  const resource = resourceById?.get(el.resourceId);
+  const resource = resourceId ? resourceById?.get(resourceId) : undefined;
   const payload = resource?.bitmap ?? resource?.svg;
   const fileId = payload?.fileId;
   if (!fileId) return undefined;

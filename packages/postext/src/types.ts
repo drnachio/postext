@@ -3060,7 +3060,11 @@ export interface DesignImageElement {
    *  `true`. */
   reserve?: boolean;
   placement: ElementPlacement;
-  /** `Resource.id` of a bitmap or SVG resource. */
+  /** `Resource.id` of a bitmap or SVG resource. Takes the placeholders a
+   *  design text's `content` takes, so a heading design can draw the
+   *  picture each heading names: `resourceId: '{attr.vignette}'` with
+   *  `# Chapter I {style="opener" vignette="log"}`. An id that resolves
+   *  empty or to no resource draws nothing. */
   resourceId: string;
 }
 
