@@ -148,10 +148,12 @@ export function sameContentLocale(a: string, b: string): boolean {
   return !SCRIPT_DISTINCT_LANGUAGES.has(pa.language) || pa.script === pb.script;
 }
 
-/** How well `candidate` serves `wanted`: 0 not at all, then language only
- *  (a language whose script does not tell editions apart), the same script
- *  in a region of its own, the same script and no region, the same script
- *  and the region `wanted` names (once maximised), and the same tag. */
+/** How well `candidate` serves `wanted`: 0 not at all, then 1 for the
+ *  language only (in another script: a Taiwanese reader of a book keyed by
+ *  bare `zh` reads the Chinese rather than the manifest's own language), the
+ *  same script in a region of its own, the same script and no region, the
+ *  same script and the region `wanted` names (once maximised), and the same
+ *  tag. */
 function localeMatchScore(candidate: string, wanted: string): number {
   const pc = isTag(candidate) ? localeParts(candidate) : null;
   const pw = isTag(wanted) ? localeParts(wanted) : null;
@@ -173,7 +175,7 @@ function localeMatchScore(candidate: string, wanted: string): number {
     if (pw.hasRegion && pc.region === pw.region) return 4;
     return pc.hasRegion ? 2 : 3;
   }
-  return SCRIPT_DISTINCT_LANGUAGES.has(pc.language) ? 0 : 1;
+  return 1;
 }
 
 /**
@@ -181,9 +183,12 @@ function localeMatchScore(candidate: string, wanted: string): number {
  * in its language. An exact tag (case aside) wins; then, for a tag naming
  * a region, the one that maximises to the same language, script and region
  * (`zh-TW` finds `zh-Hant`, `en-US` finds `en`); then one in the same
- * script (a tag with no region first: `zh` finds `zh-Hans`); then, for a
- * language not told apart by script, any tag of the language. `zh-Hant`
- * never finds `zh-Hans`. Ties keep the order of `candidates`.
+ * script (a tag with no region first: `zh` finds `zh-Hans`); then any tag
+ * of the language, in another script too: `zh-Hant` finds `zh-Hans` (or a
+ * bare `zh`) only when no candidate is written in Traditional characters.
+ * Ties keep the order of `candidates`. Whether two tags are the same
+ * edition is {@link sameContentLocale}'s question, which the script
+ * always answers.
  */
 export function matchContentLocale(candidates: readonly string[], wanted: string): string | undefined {
   let best: string | undefined;

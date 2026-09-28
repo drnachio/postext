@@ -2,7 +2,7 @@
 // naming, and conversion of manifest entries into engine resources and
 // custom fonts. No DOM or storage access.
 
-import { canonicalLocaleTag, matchContentLocale, presentTag } from '../locale';
+import { canonicalLocaleTag, matchContentLocale, presentTag, sameContentLocale } from '../locale';
 import type { CustomFontFamily, CustomFontFormat, Resource } from '../types';
 import type {
   BundleChapterSpec,
@@ -118,8 +118,10 @@ export function isBundleManifest(data: unknown): data is BundleManifest {
 
 /** The key of a locale → value map that serves `locale`: the one
  *  `matchContentLocale` picks (exact tag, then the same language and
- *  script, so `zh-TW` finds `zh-Hant` and never `zh-Hans`), else the one
- *  serving the manifest's own locale, then the first key. */
+ *  script, so `zh-TW` finds `zh-Hant` before `zh-Hans`, then the language
+ *  in another script: `zh-TW` reads a bare `zh` rather than the manifest's
+ *  English), else the one serving the manifest's own locale, then the
+ *  first key. */
 function pickLocaleKey(keys: string[], locale: string, manifestLocale?: string): string {
   return matchContentLocale(keys, locale)
     ?? (manifestLocale ? matchContentLocale(keys, manifestLocale) : undefined)
@@ -180,8 +182,10 @@ export function pickLocaleOverrides(manifest: BundleManifest, locale: string): B
   const exact = keys.find((k) => sameTag(k, key));
   if (exact) return localized[exact]!;
   if (manifest.locale && sameTag(manifest.locale, key)) return null;
+  // Wording in the script of the text served: Simplified labels never
+  // reword a Traditional edition.
   const found = matchContentLocale(keys, key);
-  return found ? localized[found]! : null;
+  return found && sameContentLocale(found, key) ? localized[found]! : null;
 }
 
 /** The locale a bundle actually serves for `locale`: the key of its

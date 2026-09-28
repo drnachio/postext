@@ -36,16 +36,28 @@ describe('sameContentLocale', () => {
 
 describe('matchContentLocale', () => {
   const chinese = ['zh-Hans', 'zh-Hant', 'en'];
-  it('prefers the exact tag, then language + script, never the other script', () => {
+  it('prefers the exact tag, then language + script, then the other script', () => {
     expect(matchContentLocale(chinese, 'zh-hant')).toBe('zh-Hant');
     expect(matchContentLocale(chinese, 'zh-TW')).toBe('zh-Hant');
     expect(matchContentLocale(chinese, 'zh-HK')).toBe('zh-Hant');
     expect(matchContentLocale(chinese, 'zh-Hant-TW')).toBe('zh-Hant');
     expect(matchContentLocale(chinese, 'zh')).toBe('zh-Hans');
     expect(matchContentLocale(chinese, 'zh-SG')).toBe('zh-Hans');
-    expect(matchContentLocale(['zh-Hans', 'en'], 'zh-Hant')).toBeUndefined();
     expect(matchContentLocale(chinese, 'es')).toBeUndefined();
     expect(matchContentLocale(chinese, 'EN-us')).toBe('en');
+  });
+
+  it('falls back on the language in the other script, below every same-script tag', () => {
+    // A book keyed by bare `zh` (Simplified once maximised): a Taiwanese
+    // reader still reads Chinese, not the English next to it.
+    expect(matchContentLocale(['en', 'zh'], 'zh-TW')).toBe('zh');
+    expect(matchContentLocale(['en', 'zh'], 'zh-Hant')).toBe('zh');
+    expect(matchContentLocale(['zh-Hans', 'en'], 'zh-Hant')).toBe('zh-Hans');
+    expect(matchContentLocale(['zh-Hant', 'en'], 'zh-CN')).toBe('zh-Hant');
+    // The same script always wins, wherever it is listed.
+    expect(matchContentLocale(['zh', 'zh-Hant'], 'zh-HK')).toBe('zh-Hant');
+    expect(matchContentLocale(['zh-Hans', 'zh-Hant-HK'], 'zh-TW')).toBe('zh-Hant-HK');
+    expect(matchContentLocale(['sr-Latn', 'en'], 'sr')).toBe('sr-Latn');
   });
 
   it('keeps the old preferences of the other languages', () => {
@@ -101,6 +113,22 @@ describe('bundle locale resolution in a Chinese book (#198)', () => {
     const shared: BundleManifestV2 = { ...hlm, chapters: [{ title: '', file: 'a.md' }], localized: { 'zh-Hans': { config: {} } } };
     expect(pickLocaleOverrides(shared, 'zh-TW')).toBeNull();
     expect(pickLocaleOverrides(shared, 'zh')).toBe(shared.localized!['zh-Hans']);
+    // Nor a Traditional edition served from a chapter map.
+    const mapped: BundleManifestV2 = { ...hlm, locale: 'en', chapters: chapterMap('en', 'zh-Hant'), localized: { 'zh-Hans': { config: {} } } };
+    expect(pickLocaleOverrides(mapped, 'zh-TW')).toBeNull();
+  });
+
+  it('serves a bundle keyed by bare `zh` to a Traditional reader (#198 review)', () => {
+    // develop served `zh` here; the script-aware matcher must not fall back
+    // on the manifest's own English.
+    const bare: BundleManifestV2 = { version: 2, id: 'bare', name: 'Bare', locale: 'en', chapters: chapterMap('en', 'zh') };
+    for (const wanted of ['zh-TW', 'zh-Hant', 'zh-HK', 'zh', 'zh-CN']) {
+      expect(resolveBundleLocale(bare, wanted)).toBe('zh');
+      expect(pickChapterSpecs(bare, wanted)[0]!.file).toBe('chapters/zh/01.md');
+    }
+    expect(resolveBundleLocale(bare, 'es')).toBe('en');
+    // With both scripts on offer the reader's own still wins.
+    expect(resolveBundleLocale({ ...bare, chapters: chapterMap('en', 'zh', 'zh-Hant') }, 'zh-TW')).toBe('zh-Hant');
   });
 });
 
