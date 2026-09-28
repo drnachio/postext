@@ -3,6 +3,8 @@ import { buildDocument, renderPageToCanvas, columnClipRect } from '../../index';
 import { renderToHtml } from '../../html-backend';
 import type { PostextConfig } from '../../types';
 import type { VDTBlock, VDTDocument, VDTLine } from '../../vdt';
+import { cjkMarkPieces } from '../../measure/cjkClasses';
+import { graphemeCount } from '../../measure/graphemes';
 
 // CJK characters 16 px (1 em at 16 px), a space 4 px, anything else 8 px.
 const adv = (s: string): number => {
@@ -56,13 +58,23 @@ const paragraph = (doc: VDTDocument): VDTBlock => doc.blocks.find((b) => b.type 
 /** Where each text segment of a line is painted: its box's x plus its ink
  *  offset. The composer's widths are final on every CJK line. A line with
  *  nothing set apart (no tracking, no compressed or hung mark, no Han–Latin
- *  space) is painted in one run. */
+ *  space) is painted in one run. Two marks that meet (`。”`) are painted
+ *  apart, the second where the first ends. */
 function expectedPaint(line: VDTLine): { text: string; x: number }[] {
-  if (!line.segments!.some((s) => s.tracking !== undefined || s.inkOffset !== undefined || s.hangs || s.autospace)) return [{ text: line.text, x: line.bbox.x }];
   const out: { text: string; x: number }[] = [];
+  const put = (text: string, x: number, tracking = 0): void => {
+    for (const piece of cjkMarkPieces(text, true)) {
+      out.push({ text: piece, x });
+      x += adv(piece) + tracking * graphemeCount(piece);
+    }
+  };
+  if (!line.segments!.some((s) => s.tracking !== undefined || s.inkOffset !== undefined || s.hangs || s.autospace)) {
+    put(line.text, line.bbox.x);
+    return out;
+  }
   let x = line.bbox.x;
   for (const seg of line.segments!) {
-    if (seg.kind === 'text') out.push({ text: seg.text, x: x + (seg.inkOffset ?? 0) });
+    if (seg.kind === 'text') put(seg.text, x + (seg.inkOffset ?? 0), seg.tracking);
     x += seg.width;
   }
   return out;

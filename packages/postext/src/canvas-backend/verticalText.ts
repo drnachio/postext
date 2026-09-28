@@ -27,7 +27,10 @@
 import type { CjkRegion } from '../types';
 import { DEFAULT_CENTRAL_BASELINE } from '../vdt';
 import { verticalRuns, CORNER_OFFSET_EM, type VerticalGlyph } from '../writingMode';
-import { graphemesOf } from '../measure/graphemes';
+import { graphemeCount, graphemesOf } from '../measure/graphemes';
+import { cjkMarkPieces } from '../measure/cjkClasses';
+import { hasCJK } from '../measure/cjk';
+import { measureTextWidth } from '../measure/canvas';
 
 /** What the painter needs while a vertical flow paints. */
 export interface VerticalPaintState {
@@ -212,13 +215,51 @@ function put(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, 
 }
 
 /**
+ * {@link put} for horizontal text that may hold two CJK marks side by side
+ * (`）》`, `”“`, see `cjkMarkCuts`): Chrome would set the first half width
+ * in one run, where the layout measured each at its own advance. Such text
+ * is painted piece by piece, each piece where the layout's measurer
+ * (`measureTextWidth`, the context's tracking and word spacing on top)
+ * ends the one before — for a line of the CJK composer, where its
+ * characters are. Any other text is one call, as before.
+ */
+function putHorizontal(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, mode: TextPaintMode, shared: boolean): void {
+  const pieces = cjkMarkPieces(text, shared);
+  if (pieces.length === 1) {
+    put(ctx, text, x, y, mode);
+    return;
+  }
+  const font = ctx.font;
+  const spacing = parseFloat(ctx.letterSpacing) || 0;
+  const wordSpacing = parseFloat((ctx as { wordSpacing?: string }).wordSpacing ?? '') || 0;
+  const widths = pieces.map((piece) => measureTextWidth(piece, font)
+    + (spacing === 0 ? 0 : spacing * graphemeCount(piece))
+    + (wordSpacing === 0 ? 0 : wordSpacing * (piece.split(' ').length - 1)));
+  const align = ctx.textAlign;
+  let px = x;
+  if (align === 'center' || align === 'right' || align === 'end') {
+    const total = widths.reduce((a, b) => a + b, 0);
+    px -= align === 'center' ? total / 2 : total;
+    ctx.textAlign = 'left';
+  }
+  for (let i = 0; i < pieces.length; i++) {
+    put(ctx, pieces[i]!, px, y, mode);
+    px += widths[i]!;
+  }
+  if (ctx.textAlign !== align) ctx.textAlign = align;
+}
+
+/**
  * Paint `text` from `x` on `baseline`, as `ctx.fillText` would (and
  * `ctx.strokeText` for `mode` `'stroke'` / `'fillStroke'`). On a
- * horizontal page it is exactly those calls. In a vertical flow (see the
- * module comment) it sets the text vertically: `tracking` (px after every
- * character, default the context's `letterSpacing`) is added after each
- * cell and inside each sideways run. Returns nothing; the caller advances
- * by the width the layout measured.
+ * horizontal page it is exactly those calls, except that two CJK marks
+ * side by side are painted apart (see `putHorizontal`); `chinese` says the
+ * text is Chinese, so the marks Latin text shares with it (“ ” ‘ ’ ·)
+ * count as its marks (default: the text holds CJK characters). In a
+ * vertical flow (see the module comment) it sets the text vertically:
+ * `tracking` (px after every character, default the context's
+ * `letterSpacing`) is added after each cell and inside each sideways run.
+ * Returns nothing; the caller advances by the width the layout measured.
  */
 export function fillFlowText(
   ctx: CanvasRenderingContext2D,
@@ -227,10 +268,11 @@ export function fillFlowText(
   baseline: number,
   mode: TextPaintMode = 'fill',
   tracking?: number,
+  chinese?: boolean,
 ): void {
   const state = paintState;
   if (!state) {
-    put(ctx, text, x, baseline, mode);
+    putHorizontal(ctx, text, x, baseline, mode, chinese ?? hasCJK(text));
     return;
   }
   paintVertical(ctx, state, text, x, baseline, mode, tracking);

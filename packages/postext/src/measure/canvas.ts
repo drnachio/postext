@@ -1,3 +1,6 @@
+import { cjkMarkPieces } from './cjkClasses';
+import { hasCJK } from './cjk';
+
 let _measureCtx: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D | null = null;
 /** Font string currently set on the measure context, to skip redundant
  *  `ctx.font` assignments (each assignment re-parses the shorthand). */
@@ -38,7 +41,12 @@ export function measureTextWidth(text: string, font: string): number {
     ctx.font = font;
     _currentFont = font;
   }
-  const width = ctx.measureText(text).width;
+  // Two CJK marks side by side (`）》`, `”“`) are measured apart: the
+  // browser would set the first half width in one run (see
+  // `cjkMarkCuts`), and the renderers paint them apart.
+  const pieces = cjkMarkPieces(text, hasCJK(text));
+  let width = 0;
+  for (const piece of pieces) width += ctx.measureText(piece).width;
 
   if (_widthCacheEntries >= MAX_WIDTH_CACHE_ENTRIES) {
     _widthCaches = new Map();

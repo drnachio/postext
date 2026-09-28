@@ -253,3 +253,60 @@ export function isWesternWordChar(grapheme: string | undefined): boolean {
 export function isWordInnerMark(grapheme: string, prev: string | undefined, next: string | undefined): boolean {
   return (grapheme === '\u2019' || grapheme === '\u00B7') && isWesternWordChar(prev) && isWesternWordChar(next);
 }
+
+/** Whether a code point is a mark a browser sets half width when it meets
+ *  another (CSS `text-spacing-trim`, OpenType `chws`/`halt`): an opening or
+ *  closing bracket or quote, a pause or stop mark, an interpunct, the
+ *  ideographic space. The marks of the CJK blocks always; the marks Latin
+ *  text shares with Chinese (“ ” ‘ ’ · ‧ « »…) only when `shared` is set
+ *  (the text is Chinese). ASCII never. */
+function isTrimmableMark(cp: number, shared: boolean): boolean {
+  if (cp < 0xAB) return false;
+  if (cp < 0x2E80 && !shared) return false;
+  switch (cjkClassOf(String.fromCodePoint(cp))) {
+    case 'opening': case 'closing': case 'pause': case 'stop': case 'interpunct': case 'ideoSpace':
+      return true;
+    default:
+      return false;
+  }
+}
+
+/**
+ * Where to cut `text` so that no piece holds two CJK marks side by side:
+ * the offsets (UTF-16) between each such pair. Chrome (CSS
+ * `text-spacing-trim: normal`, and fonts with `chws`) sets the first of
+ * `）》`, `”“`, `》。` or `。《` half width when a run is measured or painted
+ * whole — `本）》录` in Noto Serif SC is 3.5 em as one run and 4 em
+ * character by character — while the CJK composer measures every
+ * character alone and adjusts the marks itself (`cjk.punctuationWidth`).
+ * Measuring and painting such text piece by piece keeps the browser out of
+ * it. `shared` counts the marks Latin text shares with Chinese (“ ” ‘ ’ ·):
+ * set it for Chinese text only, so a Latin `’”` is never cut. Empty for
+ * text with no such pair.
+ */
+export function cjkMarkCuts(text: string, shared: boolean): number[] {
+  let cuts: number[] | undefined;
+  let prev = false;
+  for (let i = 0; i < text.length; i++) {
+    const cp = text.codePointAt(i)!;
+    const mark = isTrimmableMark(cp, shared);
+    if (mark && prev) (cuts ??= []).push(i);
+    prev = mark;
+    if (cp > 0xFFFF) i++;
+  }
+  return cuts ?? [];
+}
+
+/** `text` cut at {@link cjkMarkCuts}: one piece when there is no cut. */
+export function cjkMarkPieces(text: string, shared: boolean): string[] {
+  const cuts = cjkMarkCuts(text, shared);
+  if (cuts.length === 0) return [text];
+  const out: string[] = [];
+  let from = 0;
+  for (const at of cuts) {
+    out.push(text.slice(from, at));
+    from = at;
+  }
+  out.push(text.slice(from));
+  return out;
+}
