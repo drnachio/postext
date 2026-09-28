@@ -64,7 +64,7 @@ const FONT_SIZE_RE = /(\d*\.?\d+)px/;
 
 /** Letters of the scripts set without spaces (Han, kana, bopomofo, hangul),
  *  as {@link isCjkParagraph} counts them. */
-const CJK_LETTER_RE = /[々-〇぀-ゟァ-ヺー-ヿ㄀-ㄯㆠ-ㆿ㐀-䶿一-鿿가-힯豈-﫿ｦ-ﾟ\u{20000}-\u{3FFFF}]/u;
+const CJK_LETTER_RE = /[\u3005-\u3007\u3040-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3100-\u312F\u31A0-\u31BF\u3400-\u4DBF\u4E00-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF\uFF66-\uFF9F\u{20000}-\u{3FFFF}]/u;
 
 /**
  * Whether a paragraph is set by the CJK composer: it holds more CJK letters
@@ -164,13 +164,13 @@ function styleOf(span: InlineSpan, fonts: Fonts): UnitStyle {
  *  is the apostrophe or the interpunct of a Latin word ("don’t", "l·l"). */
 function isCjkHere(g: string, prev: string | undefined, next: string | undefined): boolean {
   if (!isCjkGrapheme(g)) return false;
-  if ((g === '’' || g === '·') && isWesternWordChar(prev) && isWesternWordChar(next)) return false;
+  if ((g === '\u2019' || g === '\u00B7') && isWesternWordChar(prev) && isWesternWordChar(next)) return false; // ’ ·
   return true;
 }
 
 /** Marks that pair up into one 2-em unit (破折号, 省略号). */
 function pairable(g: string): boolean {
-  return g === '—' || g === '―' || g === '…' || g === '⋯';
+  return g === '\u2014' || g === '\u2015' || g === '\u2026' || g === '\u22EF'; // — ― … ⋯
 }
 
 /**
@@ -280,7 +280,7 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
         continue;
       }
       flushSpace();
-      if (g === '​') {
+      if (g === '\u200B') {
         flushRun();
         zwsp = true;
         pairOpen = -1;
@@ -288,7 +288,7 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
       }
       // A soft hyphen: the composer breaks Western words only when they are
       // wider than the line, so it is left out, and the word stays whole.
-      if (g === '­') continue;
+      if (g === '\u00AD') continue;
       if (!isCjkHere(g, graphemes[i - 1], graphemes[i + 1])) {
         if (run.length === 0) runAt = gAt;
         run.push(g);
@@ -301,14 +301,14 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
         u.text += g;
         u.width += measureTextWidth(g, style.font) + track(1);
         u.graphemes = 2;
-        u.first = u.last = g === '…' || g === '⋯' ? 'ellipsis' : 'dash';
+        u.first = u.last = g === '\u2026' || g === '\u22EF' ? 'ellipsis' : 'dash';
         pairOpen = -1;
         continue;
       }
       let cls = cjkClassOf(g);
       // A single em dash (or horizontal bar) joins two words as a connector
       // (clreq §6.1.1): never at a line start.
-      if (g === '—' || g === '―') cls = 'connector';
+      if (g === '\u2014' || g === '\u2015') cls = 'connector';
       push({
         kind: 'text',
         text: g,

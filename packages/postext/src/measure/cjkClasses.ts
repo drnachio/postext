@@ -197,14 +197,14 @@ export function cjkClassOf(grapheme: string): CjkClass {
  *  Latin word, which the unit builder keeps in it. */
 export function isCjkGrapheme(grapheme: string): boolean {
   const cp = grapheme.codePointAt(0)!;
-  if (cp < 0x80) return cp === 0x200B;
+  if (cp < 0x80) return false;
   if (isCjkCodePoint(cp)) return true;
   switch (grapheme[0]) {
-    case '—': case '―': case '⸺': case '⸻':
-    case '…': case '‥': case '⋯':
-    case '·': case '‧':
-    case '“': case '”': case '‘': case '’':
-    case '–':
+    case '\u2014': case '\u2015': case '\u2E3A': case '\u2E3B': // — ― ⸺ ⸻
+    case '\u2026': case '\u2025': case '\u22EF': // … ‥ ⋯
+    case '\u00B7': case '\u2027': // · ‧
+    case '\u201C': case '\u201D': case '\u2018': case '\u2019': // “ ” ‘ ’
+    case '\u2013': // –
     case '\u200B':
       return true;
   }
