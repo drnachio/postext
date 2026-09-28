@@ -1,0 +1,64 @@
+---
+title: "Footnotes at the foot of the column that cites them"
+summary: "Markdown [^id] markers become numbered notes at the foot of the citing column, with switches for one column, chapter-end notes and continuous numbers."
+description: "A school edition of Lazarillo de Tormes in two columns: each note at the foot of the column that cites it, under a short rule, with the full Postext code."
+question: "How do I set footnotes at the foot of the column where they are cited?"
+aliases: ["footnotes", "notes at the foot of the page", "[^1]", "note references", "endnotes", "annotated edition", "school edition"]
+---
+
+## What you'll build
+
+A school edition of *Lazarillo de Tormes*, 210 × 280 mm in two columns of EB Garamond: the prologue and the start of the first treatise, where Lázaro is born in a mill on the Tormes and goes out into the world with a blind man. The notes explain what a reader of 1554 knew and a reader today does not: the village of Tejares, the expedition to the island of Los Gelves, the stone bull on the bridge of Salamanca. Each one sits at the foot of the column that cites it, set smaller under a short oxblood rule, so the eye drops from the number to the note and back without turning a page. The English edition carries Clements Markham's own notes from his 1908 translation.
+
+## Method
+
+### 1 · Cite the note where it belongs, define it anywhere
+
+The configuration is [the short answer](#the-short-answer) above; the rest is Markdown. `natives of Tejares,[^9]` prints a superscript number glued to the comma, and a paragraph that opens with `[^9]:` holds the note. Definitions leave the flow wherever you write them, so this sample keeps them all at the end of the chapter, the way Markham's notes stood in the source file. The numbers follow the order of citation, so the Markdown ids can be words (`[^tejares]` in the Spanish edition) and renumbering a chapter never means editing the notes.
+
+### 2 · Leave the column room for its notes
+
+Before it sets a line, the layout adds the height of the notes that line cites for the first time, and the rule when it is the column's first note. A line whose note does not fit under it goes to the next column with its paragraph, under the widow and orphan rules, so a number never points at a note on another column. The notes stack up from the foot at their own size and leading, off the baseline grid, while the text above them stays on it; column balancing counts only the text.
+
+### 3 · Sink every opener to the same line
+
+<Excerpt region="opener" />
+
+The opener spans both columns and draws the chapter kicker from the heading's `kicker` attribute. `minHeight` reserves ten grid lines, enough for a two-line Bodoni title and its rule, so the text of every chapter starts on the same line and the rule never lands on the first line of text.
+
+### 4 · Put the book on the verso and the chapter on the recto
+
+<Excerpt region="running-heads" />
+
+The heads are anchored to the page by parity, with the folio on the outer edge; `pages: 'body'` keeps them off the openers, which get a centred drop folio. A long chapter title ends in an ellipsis at 120 mm instead of running into the folio.
+
+### 5 · Try the other placements
+
+<Excerpt region="live" />
+
+Each switch builds the chapter again with one option changed. **One column** sets the notes at the foot of the page, which is the column there. **End of chapter** sets them after the chapter's last paragraph and drops them to the foot of the column they close, under the same rule. **Continuous** runs the numbers on from the prologue into the first chapter instead of starting again at 1.
+
+## Variations
+
+### Keep chapter-end notes under the text
+
+With `placement: 'chapterEnd'` the notes stand at the foot of the last column by default; `chapterEndAlign: 'text'` sets them right under the last paragraph.
+
+```diff
+   placement: options.placement,
++  chapterEndAlign: 'text',
+```
+
+### Drop the rule
+
+Without the rule the notes still stand off the text by `spaceAbove` and `spaceBelowRule`.
+
+```diff
+-  separator: { width: 0.25, lineWidth: pt(0.5), color: col('oxblood') },
++  separator: { enabled: false },
+```
+
+## Pitfalls
+
+- A marker in a caption, a table cell or a heading prints as written: notes are read in paragraphs, list items, quotations and boxes.
+- A note is never split across columns: one taller than its column runs past the foot. Keep notes to a few lines, as editors do.

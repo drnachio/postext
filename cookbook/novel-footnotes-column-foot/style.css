@@ -1,0 +1,16 @@
+/* The option bar over the pages: three pairs of choices, each a segmented switch. */
+#options {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 18px;
+  max-width: 1120px; margin: 0 auto; padding: 18px 16px 6px;
+  font: 600 12px/1.2 "IBM Plex Sans Condensed", system-ui, sans-serif;
+  letter-spacing: .06em; text-transform: uppercase;
+}
+#options fieldset {
+  display: flex; margin: 0; padding: 2px; border: 1px solid #4a433d; border-radius: 999px;
+}
+#options label {
+  display: block; padding: 7px 14px; border-radius: 999px; color: #c9bdae; cursor: pointer;
+}
+#options input { position: absolute; opacity: 0; pointer-events: none; }
+#options label:has(input:checked) { background: #7d2b1f; color: #fbf8f2; }
+#options label:has(input:focus-visible) { outline: 2px solid #c9bdae; outline-offset: 2px; }

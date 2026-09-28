@@ -537,11 +537,10 @@
       "es": "¿Cómo hago notas al pie?"
     },
     "index": {
-      "en": "Footnotes, workarounds for",
-      "es": "Notas al pie, alternativas a las"
+      "en": "Footnotes",
+      "es": "Notas al pie"
     },
-    "theme": "boxes",
-    "gap": "footnotes"
+    "theme": "boxes"
   },
   "Q46": {
     "kind": "how",
