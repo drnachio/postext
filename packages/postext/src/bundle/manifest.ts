@@ -217,14 +217,15 @@ export function pickChapterSpecs(manifest: BundleManifest, locale: string): Bund
 // ---------------------------------------------------------------------------
 // File names
 
-/** Lowercase, hyphen-separated slug: diacritics stripped, runs of anything
- *  else collapsed to one hyphen. '' for symbol-only input. */
+/** Lowercase, hyphen-separated slug: diacritics stripped, letters and
+ *  digits of every script kept (`第一回-甄士隐梦幻识通灵`, #181), runs of
+ *  anything else collapsed to one hyphen. '' for symbol-only input. */
 export function slugify(input: string): string {
   return input
     .normalize('NFKD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/\p{M}/gu, '')
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/[^\p{L}\p{N}]+/gu, '-')
     .replace(/^-+|-+$/g, '');
 }
 

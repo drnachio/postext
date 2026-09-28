@@ -1268,6 +1268,16 @@ export type ContentWarning = ContentWarningBase & (
    *  (`missingCells`). `row` / `col` locate the first issue; `count` is
    *  how many the table has. */
   | { kind: 'raggedTableGrid'; resourceId: string; reason: 'spanOverlap' | 'missingCells'; row: number; col: number; count: number }
+  /** Markup typed with fullwidth characters, as a Chinese or Japanese
+   *  input method types it: a `：：：` fence, a `＃` heading, a `［＾…］`
+   *  footnote marker, `｛…｝` attributes after a fence or heading, or
+   *  `＊＊…＊＊` bold. The parser reads only the ASCII forms, so the line
+   *  is set as text. `typed` is the markup as written, `ascii` the form
+   *  to type (#181). One per line. */
+  | { kind: 'fullwidthMarkup'; typed: string; ascii: string }
+  /** An attribute key with letters outside ASCII (`作者=曹雪芹`): keys are
+   *  ASCII, so the attribute is not read. Points at the key (#181). */
+  | { kind: 'attributeKeyInvalid'; key: string }
 );
 
 /** What a build reports in `VDTDocument.warnings`: a construct the layout

@@ -6,11 +6,12 @@
  */
 
 import type { ContainerName, ContentBlock, DirectiveName, ListKind, ParseIssue } from './types';
-import { parseDirectiveAttrs } from './attrs';
+import { parseAttrBlobStrict, parseDirectiveAttrs } from './attrs';
 import { extractInlineMath, fixMathSourceMap, injectMathSpans } from './inlineMath';
 import { BREAK_PLACEHOLDER, TITLE_BREAK_RE, extractInlineChips, extractInlineFootnotes, extractInlineRefs, injectFootnoteSpans, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, protectCodeSpans, titleBreakIndices, trimSpans } from './inlineFormatting';
 import { buildBlockMapping } from './sourceMapping';
 import { attachIndexMarks, extractIndexMarks, remapParseOffsets } from './indexMarks';
+import { joinEastAsianLines } from './softBreaks';
 
 export { parseDirectiveAttrs, spaceDirectiveLines, MAX_SPACE_LINES } from './attrs';
 
@@ -25,9 +26,24 @@ const CONTAINER_CLOSE_RE = /^:::\s*$/;
 export const KNOWN_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'numbering', 'columnbreak', 'space', 'toc', 'index']);
 /** Trailing `{key="value" …}` attribute block on a heading line, e.g.
  *  `# Title {author="I. Zango"}`. The braces must be balanced (no nested
- *  braces) and be the last thing on the line; a lone `{}` or a blob that
- *  parses to no attribute keys is left in the heading text verbatim. */
-const HEADING_ATTRS_RE = /\s+\{([^{}]*)\}\s*$/;
+ *  braces) and be the last thing on the line, after a space — or right
+ *  after a Chinese or Japanese character, since those titles are written
+ *  without one (`# 回目{style="x"}`, #181). The block is taken only when
+ *  the attribute grammar reads all of it (see `headingAttrTokens`);
+ *  anything else is left in the heading text verbatim. */
+const HEADING_ATTRS_RE = /(?:\s+|(?<=[\p{sc=Han}\p{sc=Hira}\p{sc=Kana}\u3000-\u303F\uFF00-\uFFEF]))\{([^{}]*)\}\s*$/u;
+
+/** The attributes of a heading's trailing `{…}` block, or `undefined` when
+ *  the braces stay in the title: the grammar must read the whole blob
+ *  (`{x, y}` and `{紅樓|hóng lóu}` stay text), and it must set a value —
+ *  flags alone count only after a space (`# Title {draft}`), not glued to
+ *  the title (`# 第一回{draft}` stays text). */
+function headingAttrTokens(blob: string, spaced: boolean): ReturnType<typeof parseAttrBlobStrict> {
+  const tokens = parseAttrBlobStrict(blob);
+  if (!tokens || tokens.length === 0) return undefined;
+  if (!spaced && tokens.every((t) => t.flag)) return undefined;
+  return tokens;
+}
 /** Set of fenced-container names recognized today. A `:::name` line whose
  *  name is a known container opens a block that runs until a bare `:::`. */
 export const KNOWN_CONTAINERS: ReadonlySet<ContainerName> = new Set(['callout', 'paragraphs', 'part', 'columns']);
@@ -116,6 +132,17 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
   attachIndexMarks(result.blocks, marks.marks);
   remapParseOffsets(result, marks.toOriginal);
   return result;
+}
+
+/** A multi-line block's mapping with its maths placeholders aligned and
+ *  the spaces that joined two lines between East Asian characters taken
+ *  out (CSS Text 3 §4.1.3, see `softBreaks.ts`). */
+function joinedLines(
+  markdown: string,
+  mapping: { text: string; spans: ContentBlock['spans']; sourceMap: number[] },
+): { text: string; spans: ContentBlock['spans']; sourceMap: number[] } {
+  fixMathSourceMap(mapping.text, mapping.spans, mapping.sourceMap);
+  return joinEastAsianLines(markdown, mapping.text, mapping.spans, mapping.sourceMap) ?? mapping;
 }
 
 function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseIssue[] } {
@@ -345,23 +372,21 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
       let attrs: ReturnType<typeof parseDirectiveAttrs> | undefined;
       let attrSources: Record<string, { start: number; end: number }> | undefined;
       const attrsMatch = headingRawContent.match(HEADING_ATTRS_RE);
-      if (attrsMatch && attrsMatch.index !== undefined) {
-        const parsed = parseDirectiveAttrs(attrsMatch[1]!);
-        if (Object.keys(parsed).length > 0) {
-          attrs = parsed;
-          // Where each quoted value sits in the source (for `{attr.<key>}`).
-          const attrsRaw = attrsMatch[1]!;
-          const attrsAbsStart = contentAbsStart + attrsMatch.index + attrsMatch[0].indexOf('{') + 1;
-          const valueRe = /([A-Za-z_][A-Za-z0-9_-]*)\s*=\s*(["'])(.*?)\2/g;
-          let vm: RegExpExecArray | null;
-          while ((vm = valueRe.exec(attrsRaw)) !== null) {
-            const valueStart = attrsAbsStart + vm.index + vm[0].indexOf(vm[2]!) + 1;
-            attrSources ??= {};
-            attrSources[vm[1]!] = { start: valueStart, end: valueStart + vm[3]!.length };
-          }
-          headingRawContent = headingRawContent.slice(0, attrsMatch.index);
-          srcEnd = contentAbsStart + headingRawContent.length;
+      const tokens = attrsMatch && attrsMatch.index !== undefined
+        ? headingAttrTokens(attrsMatch[1]!, attrsMatch[0][0] !== '{')
+        : undefined;
+      if (attrsMatch && attrsMatch.index !== undefined && tokens) {
+        attrs = {};
+        for (const t of tokens) attrs[t.key] = t.value;
+        // Where each quoted value sits in the source (for `{attr.<key>}`).
+        const attrsAbsStart = contentAbsStart + attrsMatch.index + attrsMatch[0].indexOf('{') + 1;
+        for (const t of tokens) {
+          if (!t.quoted || t.valueStart === undefined || t.valueEnd === undefined) continue;
+          attrSources ??= {};
+          attrSources[t.key] = { start: attrsAbsStart + t.valueStart, end: attrsAbsStart + t.valueEnd };
         }
+        headingRawContent = headingRawContent.slice(0, attrsMatch.index);
+        srcEnd = contentAbsStart + headingRawContent.length;
       }
       // `\\` marks a forced line break in the title (see BREAK_PLACEHOLDER).
       headingRawContent = headingRawContent.replace(TITLE_BREAK_RE, BREAK_PLACEHOLDER);
@@ -516,8 +541,9 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
         injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches),
         refExtract.refs,
       ), fnExtract.markers), chipExtract.chips);
-      const mapping = buildBlockMapping(markdown, srcStart, srcEnd, rawSpans);
-      fixMathSourceMap(mapping.text, mapping.spans, mapping.sourceMap);
+      // Lines join with a space, except between Chinese or Japanese
+      // characters (#181).
+      const mapping = joinedLines(markdown, buildBlockMapping(markdown, srcStart, srcEnd, rawSpans));
       blocks.push({
         type: 'blockquote',
         text: mapping.text,
@@ -579,8 +605,7 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
         injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches),
         refExtract.refs,
       ), fnExtract.markers), chipExtract.chips);
-      const mapping = buildBlockMapping(markdown, srcStart, srcEnd, rawSpans);
-      fixMathSourceMap(mapping.text, mapping.spans, mapping.sourceMap);
+      const mapping = joinedLines(markdown, buildBlockMapping(markdown, srcStart, srcEnd, rawSpans));
       blocks.push({
         type: 'paragraph',
         text: mapping.text,

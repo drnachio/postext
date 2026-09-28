@@ -57,19 +57,21 @@ describe('attribute values', () => {
     }
   });
 
-  it('a `{` after a space starts a heading block over', () => {
-    // The block is the last `{…}` after a space: the title keeps the start
-    // of the value, and only what follows the inner brace is read.
+  it('a `{` inside a value leaves the whole block in the title', () => {
+    // The last `{…}` after a space is `{b"}`, which the attribute grammar
+    // does not read whole: the braces stay text (#181; up to 1.7 the title
+    // kept `Title {note="a` and a flag `b` was read).
     const [h] = parseMarkdown('# Title {note="a {b"}');
-    expect(h!.text).toBe('Title {note="a');
-    expect(h!.attrs).toEqual({ b: '' });
+    expect(h!.text).toBe('Title {note="a {b"}');
+    expect(h!.attrs).toBeUndefined();
     const [hEs] = parseMarkdown('# Título {nota="a {b"}');
-    expect(hEs!.text).toBe('Título {nota="a');
-    expect(hEs!.attrs).toEqual({ b: '' });
+    expect(hEs!.text).toBe('Título {nota="a {b"}');
+    expect(hEs!.attrs).toBeUndefined();
   });
 
-  it('a heading block needs a space before it and must end the line', () => {
+  it('a heading block needs a space before it (or a Chinese character) and must end the line', () => {
     expect(parseMarkdown('# Title{a="1"}')[0]!.attrs).toBeUndefined();
+    expect(parseMarkdown('# 标题{a="1"}')[0]!.attrs).toEqual({ a: '1' });
     expect(parseMarkdown('# Title {a="1"} tail')[0]!.attrs).toBeUndefined();
     expect(parseMarkdown('# Title {}')[0]!.text).toBe('Title {}');
   });
