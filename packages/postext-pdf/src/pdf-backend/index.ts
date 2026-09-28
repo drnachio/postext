@@ -5,7 +5,7 @@ import {
 import type { ResourceImageMap, SvgRasterizer } from './renderResourceBlock';
 import fontkit from '@pdf-lib/fontkit';
 import type { HyphenationLocale, PdfColorSpace, RenderWarning, VDTBlock, VDTDocument, VDTPage } from 'postext';
-import { columnClipRect, computePageTextExtent, dimensionToPx, pageColumnRule } from 'postext';
+import { canonicalLocaleTag, columnClipRect, computePageTextExtent, dimensionToPx, pageColumnRule } from 'postext';
 import { FontCache, type FontFallback, type PdfFontProvider } from '../fontCache';
 import {
   type PageCtx,
@@ -131,10 +131,14 @@ export interface RenderProgress {
 export type { PdfFontProvider };
 export type { ResourceBytesProvider } from './renderResourceBlock';
 
-/** BCP 47 tag of a postext locale (`/Lang`): the tag the document named
- *  (`'es-ES'`, `'sv'`) when its hyphenation patterns are another locale's,
- *  else the patterns' own (`'en-us'` → `'en-US'`). */
-function languageTag(hyphenation: { locale?: HyphenationLocale; tag?: string } | undefined): string | undefined {
+/** BCP 47 tag of a document (`/Lang`): its `locale` (`'zh-Hant-TW'`,
+ *  script and region kept), else the tag its hyphenation was asked for
+ *  (`'es-ES'`, `'sv'`) when the patterns are another locale's, else the
+ *  patterns' own (`'en-us'` → `'en-US'`). */
+function languageTag(config: { locale?: string; bodyText?: { hyphenation?: { locale?: HyphenationLocale; tag?: string } } } | undefined): string | undefined {
+  const declared = canonicalLocaleTag(config?.locale);
+  if (declared) return declared;
+  const hyphenation = config?.bodyText?.hyphenation;
   const locale = hyphenation?.tag?.trim() || hyphenation?.locale;
   if (!locale) return undefined;
   // Canonical case: language lower, a two-letter region upper, the script
@@ -175,7 +179,7 @@ function documentTitle(docs: readonly VDTDocument[]): string {
     if (best && (best.headingLevel ?? 1) === 1) break;
   }
   const text = best?.lines.map((l) => l.text).join(' ').replace(/\s+/g, ' ').trim();
-  if (text) return best?.numberPrefix && !text.startsWith(best.numberPrefix) ? `${best.numberPrefix} ${text}` : text;
+  if (text) return best?.numberPrefix && !text.startsWith(best.numberPrefix) ? `${best.numberPrefix}${best.numberSeparator ?? ' '}${text}` : text;
   return 'Document';
 }
 
@@ -426,7 +430,7 @@ export async function renderToPdf(
     ? new StructTree(pdfDoc, {
         title: documentTitle(docs),
         author: metaAuthor,
-        lang: languageTag(first.config.bodyText.hyphenation),
+        lang: languageTag(first.config),
         producer: 'postext-pdf',
         creatorTool: 'postext',
       })
@@ -481,6 +485,11 @@ export async function renderToPdf(
   addPageLabels(pdfDoc, docs);
 
   tree?.finalize();
+  // Untagged output declares its language too (the tagged one did above).
+  if (!tree) {
+    const lang = languageTag(first.config);
+    if (lang) pdfDoc.setLanguage(lang);
+  }
 
   // A face asked for but never drawn with is not written.
   fontCache.dropUnusedFonts();

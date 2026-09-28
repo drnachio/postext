@@ -74,6 +74,16 @@ export function PartsOrderedListsOverrides({
         onReset={() => onReset('numberFormat')}
       />
       <TextInput
+        label={labels.orderedListsPrefix}
+        value={raw?.prefix ?? base.prefix}
+        onChange={(v) => onUpdate({ prefix: v })}
+        placeholder={labels.orderedListsPrefixPlaceholder}
+        tooltip={labels.orderedListsPrefixTooltip}
+        isDefault={isDefault('prefix')}
+        onReset={() => onReset('prefix')}
+        widthCh={6}
+      />
+      <TextInput
         label={labels.orderedListsSeparator}
         value={raw?.separator ?? base.separator}
         onChange={(v) => onUpdate({ separator: v })}

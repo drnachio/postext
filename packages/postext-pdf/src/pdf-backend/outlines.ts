@@ -19,17 +19,24 @@ interface OutlineEntry {
  *  letter-case transform (`textTransform: 'uppercase'`) is how the page
  *  prints the heading, not its name — as with CSS `text-transform`, the
  *  bookmark keeps the source's case (EF-81). */
+/** Runs of white space as one space; the ideographic space (U+3000) of a
+ *  Chinese title stays. */
+const SPACES = /[^\S\u3000]+/g;
+
 function extractBlockText(block: VDTBlock): string {
-  const written = block.sourceTitle?.replace(/\s+/g, ' ').trim();
-  if (written) return block.numberPrefix ? `${block.numberPrefix} ${written}` : written;
+  // The number and the title joined as the heading joins them (`'　'` or
+  // nothing in a Chinese heading).
+  const sep = block.numberSeparator ?? ' ';
+  const written = block.sourceTitle?.replace(SPACES, ' ').trim();
+  if (written) return block.numberPrefix ? `${block.numberPrefix}${sep}${written}` : written;
   const raw = block.lines
     .map((line) => line.text)
     .join(' ')
-    .replace(/\s+/g, ' ')
+    .replace(SPACES, ' ')
     .trim();
   if (!raw) return '';
   if (block.numberPrefix && !raw.startsWith(block.numberPrefix)) {
-    return `${block.numberPrefix} ${raw}`;
+    return `${block.numberPrefix}${sep}${raw}`;
   }
   return raw;
 }

@@ -172,6 +172,9 @@ export function resolveRefLabel(
   resourceNumbering: ResourceNumberingMap,
   resourceTypes: ResourceType[],
   resources: Resource[],
+  /** Between the label and the number (`captionStyle.labelNumberGap`); a
+   *  type's own caption style may set another. */
+  labelNumberGap: string = NBSP,
 ): string {
   if (ref.text !== undefined && ref.text.length > 0) return ref.text;
   const entry = resourceNumbering[ref.resourceId];
@@ -179,30 +182,33 @@ export function resolveRefLabel(
   if (ref.style === 'number') return number;
   const resource = resources.find((r) => r.id === ref.resourceId);
   const type = resource ? resourceTypes.find((t) => t.id === resource.typeId) : undefined;
+  const gap = typeof type?.captionStyle?.labelNumberGap === 'string' ? type.captionStyle.labelNumberGap : labelNumberGap;
   if (ref.style === 'full') {
-    return labelWithNumber(applyRefCase(type?.name ?? type?.shortLabel ?? '', ref.case), number);
+    return labelWithNumber(applyRefCase(type?.name ?? type?.shortLabel ?? '', ref.case), number, gap);
   }
   // default: short label + number (e.g. "Fig. 1.7")
-  return labelWithNumber(applyRefCase(type?.shortLabel ?? type?.name ?? '', ref.case), number);
+  return labelWithNumber(applyRefCase(type?.shortLabel ?? type?.name ?? '', ref.case), number, gap);
 }
 
-/** "Fig. 1.7": a type's label and a number, glued by a no-break space. A
- *  type whose `numberingTemplate` is empty has no number, and its label
- *  stands alone (EF-149). */
-function labelWithNumber(label: string, number: string): string {
+/** "Fig. 1.7": a type's label and a number, glued by a no-break space (or
+ *  the caption style's `labelNumberGap`: 图1-1). A type whose
+ *  `numberingTemplate` is empty has no number, and its label stands alone
+ *  (EF-149). */
+function labelWithNumber(label: string, number: string, gap: string = NBSP): string {
   if (!label) return number;
-  return number ? `${label}${NBSP}${number}` : label;
+  return number ? `${label}${gap}${number}` : label;
 }
 
 /** The label that opens a caption: "Figure 1.7. " — or, for a type
  *  numbered with an empty template, "Figure. ". Without a number, spaces at
  *  the prefix's end are dropped, and a prefix that already ends in a stop
  *  (`.`, `:`, `!`, `?`, `…` or a full-width form, as in "Pl.") takes no
- *  second one. Empty without a prefix. */
+ *  second one. Empty without a prefix. With a number, the caption style's
+ *  `labelNumberGap` and `labelSeparator` stand around it ("图1-1　"). */
 const CAPTION_STOP_RE = /[.:!?…。．：！？]$/;
-function captionLabelText(captionPrefix: string, number: string): string {
+function captionLabelText(captionPrefix: string, number: string, cs?: Pick<ResolvedCaptionStyleConfig, 'labelNumberGap' | 'labelSeparator'>): string {
   if (captionPrefix.length === 0) return '';
-  if (number) return `${captionPrefix}${NBSP}${number}. `;
+  if (number) return `${captionPrefix}${cs?.labelNumberGap ?? NBSP}${number}${cs?.labelSeparator ?? '. '}`;
   const label = captionPrefix.trimEnd();
   if (label.length === 0) return '';
   return CAPTION_STOP_RE.test(label) ? `${label} ` : `${label}. `;
@@ -233,14 +239,14 @@ export function resolveRefSpans(
   resourceNumbering: ResourceNumberingMap,
   resourceTypes: ResourceType[],
   resources: Resource[],
-  refStyle?: { bold: boolean; italic: boolean },
+  refStyle?: { bold: boolean; italic: boolean; labelNumberGap?: string },
 ): InlineSpan[] {
   if (!spans.some((s) => s.ref)) return spans;
   return spans.map((span) => {
     if (!span.ref) return span;
     return {
       ...span,
-      text: resolveRefLabel(span.ref, resourceNumbering, resourceTypes, resources),
+      text: resolveRefLabel(span.ref, resourceNumbering, resourceTypes, resources, refStyle?.labelNumberGap),
       // Reference labels carry their own emphasis (bold/italic) so the measurer
       // selects the matching font; colour is applied by renderers via
       // `refResourceId`.
@@ -689,7 +695,7 @@ function layoutTable(
   resourceNumbering: ResourceNumberingMap,
   resourceTypes: ResourceType[],
   resources: Resource[],
-  refStyle: { bold: boolean; italic: boolean },
+  refStyle: { bold: boolean; italic: boolean; labelNumberGap?: string },
   selection?: readonly number[],
 ): { layout: VDTResourceTableLayout; height: number; metrics?: TableRowMetrics } {
   const { body, header, borderColor, borderWidthPx, cellPaddingPx } = style;
@@ -975,7 +981,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   // previous heights exactly when the size is left at the body default).
   const lineHeightRatio = bodyStyle.lineHeightPx / bodyStyle.fontSizePx;
   // Inline `:ref` emphasis (bold/italic), applied to refs in captions + cells.
-  const refStyle = { bold: resolved.bodyText.referenceBold, italic: resolved.bodyText.referenceItalic };
+  const refStyle = { bold: resolved.bodyText.referenceBold, italic: resolved.bodyText.referenceItalic, labelNumberGap: resolved.captionStyle.labelNumberGap };
 
   // --- Figure body -------------------------------------------------------
   let bodyWidth = columnWidth;
@@ -1094,7 +1100,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   const hasCaption = captionText.trim().length > 0 || captionPrefix.length > 0;
   if (hasCaption) {
     // Prefix span: "<captionPrefix> <number>. " (non-breaking inside the label).
-    const prefixText = captionLabelText(captionPrefix, number);
+    const prefixText = captionLabelText(captionPrefix, number, cs);
     const resolvedSpans = resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
       parseRefAwareSpans(captionText),
       resourceNumbering,

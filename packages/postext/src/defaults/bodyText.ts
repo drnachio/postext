@@ -1,5 +1,5 @@
 import type { BlockquoteConfig, BodyTextConfig, ResolvedBlockquoteConfig, ResolvedBodyTextConfig, HyphenationConfig, LocaleTag } from '../types';
-import { hyphenationLocaleFor, presentTag } from '../locale';
+import { hyphenationLocaleFor, isCjkLanguage, presentTag } from '../locale';
 import { dimensionsEqual, colorsEqual, DEFAULT_MAIN_COLOR } from './shared';
 
 export const DEFAULT_HYPHENATION_CONFIG: ResolvedBodyTextConfig['hyphenation'] = {
@@ -91,11 +91,18 @@ export function hyphenationEqual(a: HyphenationConfig | undefined, b: Hyphenatio
  *  document language; a blank tag counts as unset — becomes the bundled
  *  patterns it names (`'es-ES'` → `'es'`), keeping the original tag when it
  *  differs. A language without patterns is reported only when hyphenation
- *  is on: switching it off is the remedy. */
+ *  is on: switching it off is the remedy.
+ *
+ *  Chinese, Japanese and Korean have no patterns and need none: a document
+ *  in one of them is set without hyphenation unless `enabled` says
+ *  otherwise, and hyphenation only runs when its language (the explicit
+ *  `locale`) has patterns, for the Latin words quoted in the text. */
 function resolveHyphenation(partial: HyphenationConfig | undefined, documentLocale: LocaleTag | undefined): ResolvedBodyTextConfig['hyphenation'] {
   const D = DEFAULT_HYPHENATION_CONFIG;
   const requested = presentTag(partial?.locale) ?? presentTag(documentLocale) ?? D.locale;
-  const enabled = partial?.enabled ?? D.enabled;
+  const enabled = isCjkLanguage(requested)
+    ? false
+    : partial?.enabled ?? (isCjkLanguage(documentLocale) ? false : D.enabled);
   const locale = hyphenationLocaleFor(requested, enabled);
   return {
     enabled,
@@ -195,7 +202,10 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
   };
 }
 
-export function stripBodyTextDefaults(bodyText?: BodyTextConfig): BodyTextConfig | undefined {
+/** `bodyText` without the fields that hold their default. `documentLocale`
+ *  (the config's `locale`) matters to hyphenation only: in a Chinese,
+ *  Japanese or Korean document its default is off. */
+export function stripBodyTextDefaults(bodyText?: BodyTextConfig, documentLocale?: LocaleTag): BodyTextConfig | undefined {
   if (!bodyText) return undefined;
 
   const result: BodyTextConfig = {};
@@ -253,7 +263,9 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig): BodyTextConfig
     result.boldFontWeight = bodyText.boldFontWeight;
     hasOverride = true;
   }
-  if (bodyText.hyphenation && !hyphenationEqual(bodyText.hyphenation, DEFAULT_BODY_TEXT_CONFIG.hyphenation)) {
+  // In a Chinese, Japanese or Korean document hyphenation defaults to off,
+  // so settings equal to the Latin defaults (`enabled: true`) are kept.
+  if (bodyText.hyphenation && (isCjkLanguage(documentLocale) || !hyphenationEqual(bodyText.hyphenation, DEFAULT_BODY_TEXT_CONFIG.hyphenation))) {
     result.hyphenation = bodyText.hyphenation;
     hasOverride = true;
   }

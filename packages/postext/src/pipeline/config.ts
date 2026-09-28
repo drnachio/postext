@@ -52,8 +52,8 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
   const bodyText = resolveBodyTextConfig(config?.bodyText, config?.locale);
   const headings = resolveHeadingsConfig(config?.headings);
   const unorderedLists = resolveUnorderedListsConfig(config?.unorderedLists, bodyText);
-  const orderedLists = resolveOrderedListsConfig(config?.orderedLists, bodyText);
-  const page = resolvePageConfig(config?.page);
+  const orderedLists = resolveOrderedListsConfig(config?.orderedLists, bodyText, config?.locale);
+  const page = resolvePageConfig(config?.page, config?.locale);
   const layout = resolveLayoutConfig(config?.layout);
   const resolved: ResolvedConfig = {
     page,
@@ -93,12 +93,13 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
   return applyPaletteToResolvedConfig(resolved, rawConfig?.colorPalette);
 }
 
-/** The document language: `locale`, else the hyphenation locale (which the
- *  Sandbox fills from the app language) — the same rule the table
+/** The document language: `locale`, else the hyphenation locale as written
+ *  (which the Sandbox fills from the app language) — the same rule the table
  *  continuation strings and `documentLocale` follow; a blank tag counts as
  *  unset. */
 export function resolvedLocale(resolved: ResolvedConfig): string {
-  return presentTag(resolved.locale) ?? presentTag(resolved.bodyText.hyphenation.locale) ?? 'en-us';
+  const h = resolved.bodyText.hyphenation;
+  return presentTag(resolved.locale) ?? presentTag(h.tag) ?? presentTag(h.locale) ?? 'en-us';
 }
 
 /** Index heading-level configs by level so per-block lookups in the

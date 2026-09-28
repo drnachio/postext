@@ -3982,9 +3982,9 @@ export function buildDocumentPass(
         }
       } else if (name === 'numbering') {
         const change: { format?: NumeralStyle; startAt?: number } = {};
-        // Any spelling of a format (`roman-lower`, `arabic`, `i`…); an
-        // unknown one keeps the current format.
-        const fmt = parseNumberFormat(attrs.format);
+        // Any spelling of a format (`roman-lower`, `arabic`, `i`…, `一` in
+        // the document's script); an unknown one keeps the current format.
+        const fmt = parseNumberFormat(attrs.format, resolvedLocale(resolved));
         if (fmt) change.format = fmt;
         if (attrs.startAt !== undefined) {
           const n = Number(attrs.startAt);
@@ -4254,7 +4254,7 @@ export function buildDocumentPass(
     /** Tracking the block's lines are set with; a paragraph moved whole into
      *  a column of another width is measured again, and may change it. */
     let { letterSpacingPx } = measuredBlock;
-    const { vdtType, headingLevel, numberPrefix, headingNumber, listBullet, listDepth, listKind, bulletXOffsetInColumn, strikethroughText } = kind;
+    const { vdtType, headingLevel, numberPrefix, numberSeparator, headingNumber, listBullet, listDepth, listKind, bulletXOffsetInColumn, strikethroughText } = kind;
     // A structural heading (`hidden`) is placed like any heading — its
     // break, keep-with-next and grid snap apply — but with no line height
     // and no margins: it takes no room, and renderers skip it.
@@ -4345,6 +4345,10 @@ export function buildDocumentPass(
         blk.separatorFontString = listBullet.separatorFontString;
         blk.separatorColor = listBullet.separatorColor;
         blk.separatorX = blk.bulletOffsetX + (listBullet.separatorOffsetPx ?? 0);
+        if (listBullet.prefixText !== undefined) {
+          blk.prefixText = listBullet.prefixText;
+          blk.prefixX = blk.bulletOffsetX + (listBullet.prefixOffsetPx ?? 0);
+        }
       }
       if (strikethroughText) blk.strikethroughText = true;
       // Bullet Y = x-height midpoint of the item's first text line.
@@ -4633,7 +4637,7 @@ export function buildDocumentPass(
           const pref = numberPrefix ?? '';
           // The lines joined back into the title (EF-162), as the design is
           // painted (`buildHeadersAndFooters`).
-          const title = headingTitleText(remainingLines, pref, rawBlock.titleBreaks, rawBlock.text.length);
+          const title = headingTitleText(remainingLines, pref, rawBlock.titleBreaks, rawBlock.text.length, lvl.numberSeparator);
           // Span-page openers lay out across the full content area (both
           // columns); in-column headings use just the column width.
           const pageArea = doc.pages[cursor.pageIndex]!.contentArea;
@@ -4668,7 +4672,7 @@ export function buildDocumentPass(
             const painted = measureDefaultOpenerHeight(
               lvl,
               resolved.headings.textAlign,
-              defaultOpenerTitle(remainingLines, pref, rawBlock.titleBreaks, rawBlock.text.length),
+              defaultOpenerTitle(remainingLines, pref, rawBlock.titleBreaks, rawBlock.text.length, lvl.numberSeparator),
               pref,
               pageArea.width,
               resolved.page.dpi,
@@ -4732,7 +4736,7 @@ export function buildDocumentPass(
             blk.contentIndex = blockIdx;
             stampBlockExtras(blk, rawBlock);
             blk.headingLevel = headingLevel;
-            if (numberPrefix) blk.numberPrefix = numberPrefix;
+            if (numberPrefix) { blk.numberPrefix = numberPrefix; if (numberSeparator !== undefined) blk.numberSeparator = numberSeparator; }
             blk.lines = resetLinePositions(splitLines, style.lineHeightPx);
             blk.dirty = false;
             blk.snappedToGrid = false;
@@ -4930,7 +4934,7 @@ export function buildDocumentPass(
             if (letterSpacingPx !== undefined) blk.letterSpacing = letterSpacingPx;
         blk.contentIndex = blockIdx;
         stampBlockExtras(blk, rawBlock);
-        if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; if (headingNumber !== undefined) blk.headingNumber = headingNumber; }
+        if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) { blk.numberPrefix = numberPrefix; if (numberSeparator !== undefined) blk.numberSeparator = numberSeparator; } if (headingNumber !== undefined) blk.headingNumber = headingNumber; }
         if (hiddenHeading) blk.hidden = true;
         if (partIndex === 0 && vdtType === 'heading' && rawBlock.attrs) blk.attrs = rawBlock.attrs;
         if (partIndex === 0 && vdtType === 'heading' && rawBlock.attrSources) {
@@ -5193,7 +5197,7 @@ export function buildDocumentPass(
             if (letterSpacingPx !== undefined) blk.letterSpacing = letterSpacingPx;
           blk.contentIndex = blockIdx;
           stampBlockExtras(blk, rawBlock);
-          if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; if (headingNumber !== undefined) blk.headingNumber = headingNumber; }
+          if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) { blk.numberPrefix = numberPrefix; if (numberSeparator !== undefined) blk.numberSeparator = numberSeparator; } if (headingNumber !== undefined) blk.headingNumber = headingNumber; }
           blk.lines = resetLinePositions(splitLines, style.lineHeightPx);
           blk.dirty = false;
           blk.snappedToGrid = false;
@@ -5293,7 +5297,7 @@ export function buildDocumentPass(
       // Stamp the prefix as the other placement branches do: a full-page
       // opener lands here, and paint and running heads read its
       // `{chapterNumber}` from `numberPrefix`, as the measure did (EF-59).
-      if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; if (headingNumber !== undefined) blk.headingNumber = headingNumber; }
+      if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) { blk.numberPrefix = numberPrefix; if (numberSeparator !== undefined) blk.numberSeparator = numberSeparator; } if (headingNumber !== undefined) blk.headingNumber = headingNumber; }
       if (hiddenHeading) blk.hidden = true;
       if (partIndex === 0 && vdtType === 'heading' && rawBlock.attrs) blk.attrs = rawBlock.attrs;
         if (partIndex === 0 && vdtType === 'heading' && rawBlock.attrSources) {

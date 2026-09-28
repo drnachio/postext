@@ -7,6 +7,7 @@ import { renderBaselineGrid, renderColumnRule, renderCutLines, renderFootnoteRul
 import { renderBlock } from './blockRender';
 import { renderHeaderFooterSlot } from './headerFooter';
 import { documentInkHex } from '../svg/singleInk';
+import { renderLangOf } from '../locale';
 import { setMissingImageSink, setTintUnflagged } from './renderResourceBlock';
 export {
   registerResourceImage,
@@ -80,6 +81,10 @@ function paintPage(
 
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
+  // A Chinese, Japanese or Korean document paints in its language, so the
+  // browser picks the region's glyph forms (`ctx.lang`, Chrome 136+).
+  const lang = renderLangOf(doc.config);
+  if (lang && 'lang' in ctx) (ctx as CanvasRenderingContext2D & { lang: string }).lang = lang;
   // The bitmap is a whole number of pixels; the page rarely is. Drawing at
   // `scale` would leave the last column (and row) of pixels only partly
   // covered — a light hairline at the edge of a dark or coloured page — so

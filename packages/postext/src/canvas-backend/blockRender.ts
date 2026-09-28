@@ -257,6 +257,8 @@ function renderBullet(ctx: CanvasRenderingContext2D, block: VDTBlock): void {
     ctx.fillStyle = block.separatorColor ?? block.bulletColor ?? block.color;
     ctx.font = block.separatorFontString ?? block.bulletFontString;
     ctx.fillText(block.separatorText, block.separatorX, y);
+    // The prefix run before the number, in the separator's style.
+    if (block.prefixText && block.prefixX !== undefined) ctx.fillText(block.prefixText, block.prefixX, y);
   }
   ctx.restore();
 }

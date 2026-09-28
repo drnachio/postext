@@ -140,6 +140,7 @@ export const OrderedListsSection = memo(function OrderedListsSection() {
   const isItalicDefault = lists.italic === D.italic;
   const isNumberFormatDefault = lists.numberFormat === D.numberFormat;
   const isSeparatorDefault = lists.separator === D.separator;
+  const isPrefixDefault = lists.prefix === D.prefix;
   const isNumberFontSizeDefault = dimensionsEqual(lists.numberFontSize, D.numberFontSize);
   const isGapDefault = dimensionsEqual(lists.gap, D.gap);
   const isIndentDefault = dimensionsEqual(lists.indent, D.indent);
@@ -166,6 +167,16 @@ export const OrderedListsSection = memo(function OrderedListsSection() {
         tooltip={labels.orderedListsNumberFormatTooltip}
         isDefault={isNumberFormatDefault}
         onReset={() => resetField('numberFormat')}
+      />
+      <TextInput
+        label={labels.orderedListsPrefix}
+        value={lists.prefix}
+        onChange={(v) => updateLists({ prefix: v })}
+        placeholder={labels.orderedListsPrefixPlaceholder}
+        tooltip={labels.orderedListsPrefixTooltip}
+        isDefault={isPrefixDefault}
+        onReset={() => resetField('prefix')}
+        widthCh={6}
       />
       <TextInput
         label={labels.orderedListsSeparator}
@@ -388,6 +399,7 @@ export const OrderedListsSection = memo(function OrderedListsSection() {
           raw={raw?.levels?.find((l) => l.level === resolved.level)}
           generalNumberFormat={lists.numberFormat}
           generalSeparator={lists.separator}
+          generalPrefix={lists.prefix}
           generalFont={lists.fontFamily}
           generalFontSize={lists.numberFontSize}
           generalColor={lists.color}

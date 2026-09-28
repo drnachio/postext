@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { LOCALE_OPTIONS, localeOptionsFor } from './constants';
+import { DOCUMENT_LANGUAGES } from 'postext';
+import { DOCUMENT_LOCALE_OPTIONS, LOCALE_OPTIONS, documentLocaleOptionsFor, localeOptionsFor } from './constants';
 
 describe('localeOptionsFor', () => {
   it('offers the bundled languages when the value is one of them', () => {
@@ -14,5 +15,23 @@ describe('localeOptionsFor', () => {
     // A language without patterns, as written.
     expect(localeOptionsFor('sv').at(-1)).toEqual({ value: 'sv', label: 'sv' });
     expect(localeOptionsFor('sv')).toHaveLength(LOCALE_OPTIONS.length + 1);
+  });
+});
+
+describe('documentLocaleOptionsFor', () => {
+  it('offers the hyphenation languages and Chinese in both scripts', () => {
+    expect(DOCUMENT_LOCALE_OPTIONS.map((o) => o.value)).toEqual(['en-us', 'es', 'fr', 'de', 'it', 'pt', 'ca', 'nl', 'zh-Hans', 'zh-Hant', 'zh-Hant-HK']);
+    expect(DOCUMENT_LOCALE_OPTIONS.slice(-3).map((o) => o.label)).toEqual(['中文（简体）', '中文（繁體）', '中文（香港）']);
+    expect(documentLocaleOptionsFor('zh-Hant')).toBe(DOCUMENT_LOCALE_OPTIONS);
+    // The engine's list, name for name.
+    expect(DOCUMENT_LOCALE_OPTIONS).toEqual(DOCUMENT_LANGUAGES.map((l) => ({ value: l.tag, label: l.name })));
+  });
+
+  it('names a stored tag after the language it reads as', () => {
+    expect(documentLocaleOptionsFor('zh-TW').at(-1)).toEqual({ value: 'zh-TW', label: '中文（繁體） (zh-TW)' });
+    expect(documentLocaleOptionsFor('zh-MO').at(-1)).toEqual({ value: 'zh-MO', label: '中文（香港） (zh-MO)' });
+    expect(documentLocaleOptionsFor('zh-CN').at(-1)).toEqual({ value: 'zh-CN', label: '中文（简体） (zh-CN)' });
+    expect(documentLocaleOptionsFor('es-ES').at(-1)).toEqual({ value: 'es-ES', label: 'Español (es-ES)' });
+    expect(documentLocaleOptionsFor('sv').at(-1)).toEqual({ value: 'sv', label: 'sv' });
   });
 });

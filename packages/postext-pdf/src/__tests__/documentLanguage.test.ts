@@ -24,10 +24,11 @@ class StubCtx {
 const textOf = (obj: unknown): string | undefined =>
   obj instanceof PDFString || obj instanceof PDFHexString ? obj.decodeText() : undefined;
 
-/** The `/Lang` an accessible PDF of a one-line document declares. */
-async function lang(config: PostextConfig): Promise<string | undefined> {
+/** The `/Lang` an accessible (or, with `accessible: false`, untagged) PDF
+ *  of a one-line document declares. */
+async function lang(config: PostextConfig, accessible = true): Promise<string | undefined> {
   const doc = buildDocument({ markdown: '# Title\n\nText.' }, { bodyText: { fontFamily: 'Lora' }, ...config });
-  const pdf = await PDFDocument.load(await renderToPdf(doc, { fontProvider }));
+  const pdf = await PDFDocument.load(await renderToPdf(doc, { fontProvider, accessible }));
   return textOf(pdf.catalog.get(PDFName.of('Lang')));
 }
 
@@ -49,5 +50,16 @@ describe('document language (/Lang)', () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     expect(await lang({ locale: 'sv' })).toBe('sv');
     expect(await lang({ locale: 'zh-Hant-TW' })).toBe('zh-Hant-TW');
+  });
+
+  it('takes the document locale first, script and region kept, in canonical case', async () => {
+    expect(await lang({ locale: 'zh-hant-tw' })).toBe('zh-Hant-TW');
+    expect(await lang({ locale: 'zh-Hans', bodyText: { fontFamily: 'Lora', hyphenation: { locale: 'en-us' } } })).toBe('zh-Hans');
+    expect(await lang({ locale: 'zh_HK' })).toBe('zh-HK');
+  });
+
+  it('declares it in untagged output too', async () => {
+    expect(await lang({ locale: 'zh-Hant-TW' }, false)).toBe('zh-Hant-TW');
+    expect(await lang({ locale: 'es' }, false)).toBe('es');
   });
 });

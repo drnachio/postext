@@ -23,6 +23,7 @@ import { tableCellFillRects, tableFrameOutline } from './vdt';
 import { dimensionToPx } from './units';
 import { documentInkHex, isSingleInkSvgUrl, singleInkColorMatrix } from './svg/singleInk';
 import { lineTrailingTracking } from './lineInk';
+import { renderLangOf } from './locale';
 
 export interface RenderHtmlOptions {
   /** Layout mode: single vertical column or many columns laid out horizontally. */
@@ -512,6 +513,11 @@ function renderBullet(block: VDTBlock): string {
   if (block.separatorText && block.separatorX !== undefined) {
     const separatorFont = quoteFontString(block.separatorFontString ?? block.bulletFontString ?? block.fontString);
     const separatorColor = block.separatorColor ?? bulletColor;
+    // The prefix run before the number, in the separator's style, first in
+    // the markup so a copy reads （一）.
+    if (block.prefixText && block.prefixX !== undefined) {
+      html = markerDiv('pt-separator', block.prefixX, separatorFont, separatorColor, block.prefixText) + html;
+    }
     html += markerDiv('pt-separator', block.separatorX, separatorFont, separatorColor, block.separatorText);
   }
   return html;
@@ -1177,9 +1183,12 @@ export function renderToHtmlIndexed(
     });
   }
 
-  // The host's inherited text properties are reset first (EF-96).
+  // The host's inherited text properties are reset first (EF-96). A
+  // Chinese, Japanese or Korean document declares its language, so the
+  // browser picks the region's glyph forms (see `renderLangOf`).
+  const docLang = renderLangOf(doc.config);
   const html =
-    `<div class="pt-doc" data-mode="${mode}" style="${HTML_TEXT_RESET}${docStyle}">` +
+    `<div class="pt-doc"${docLang ? ` lang="${docLang}"` : ''} data-mode="${mode}" style="${HTML_TEXT_RESET}${docStyle}">` +
     pageHtmlParts.join('') +
     `</div>`;
 

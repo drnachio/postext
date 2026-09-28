@@ -190,6 +190,7 @@ export function measureContentBlock(
     const spans = resolveRefSpans(contentBlock.spans, ctx.resourceNumbering, ctx.resourceTypes, ctx.resources, {
       bold: bodyStyle.referenceBold ?? true,
       italic: bodyStyle.referenceItalic ?? false,
+      labelNumberGap: resolved.captionStyle.labelNumberGap,
     });
     contentBlock = {
       ...contentBlock,

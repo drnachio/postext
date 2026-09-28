@@ -1,4 +1,4 @@
-import { flattenTitleBreaks } from '../parse/inlineFormatting';
+import { flattenTitleBreaks, flattenTitleBreakSpans } from '../parse/inlineFormatting';
 /**
  * Resolve a parsed markdown block into its placement-ready metadata:
  * style, VDT type, heading/list attributes, and a `contentBlock` that may
@@ -22,6 +22,9 @@ export interface BlockKind {
   vdtType: VDTBlock['type'];
   headingLevel?: number;
   numberPrefix?: string;
+  /** What joins the number to the title, when it is not one space (see
+   *  `VDTBlock.numberSeparator`). */
+  numberSeparator?: string;
   /** A numbered heading's counter value (see `VDTBlock.headingNumber`). */
   headingNumber?: number;
   contentBlock: ContentBlock;
@@ -135,11 +138,12 @@ export function resolveBlockKind(
         contentBlock = {
           ...contentBlock,
           text: flattenTitleBreaks(contentBlock.text),
-          spans: contentBlock.spans.map((s) => (s.math ? s : { ...s, text: flattenTitleBreaks(s.text) })),
+          spans: flattenTitleBreakSpans(contentBlock.text, contentBlock.spans),
         };
       }
+      const numberSeparator = levelCfg?.numberSeparator ?? ' ';
       if (numberPrefix) {
-        const sep = `${numberPrefix} `;
+        const sep = `${numberPrefix}${numberSeparator}`;
         const firstSpan = contentBlock.spans[0];
         // A title that opens with a marked run (EF-122) keeps the number in
         // the heading's own style: the number is a span of its own.
@@ -156,6 +160,7 @@ export function resolveBlockKind(
         vdtType: 'heading',
         headingLevel: rawBlock.level,
         numberPrefix,
+        ...(numberPrefix && numberSeparator !== ' ' ? { numberSeparator } : {}),
         ...(headingNumber !== undefined ? { headingNumber } : {}),
         contentBlock,
         bulletXOffsetInColumn: 0,

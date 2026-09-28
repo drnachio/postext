@@ -355,16 +355,21 @@ function renderBullet(ctx: PageCtx, block: VDTBlock, fontCache: FontCache, elem:
   const midY = block.bulletY ?? firstLine.baseline;
   const baselinePx = onBaseline ? baselineY : midY + size * 0.3;
   tagContent(ctx, elem);
+  // Ordered-list separator styled apart from the number (own font/colour),
+  // with the prefix run before the number in the same style: drawn in
+  // reading order, prefix, number, separator, so text extraction reads
+  // （一） and not 一）（.
+  const sepFontString = block.separatorText && block.separatorX !== undefined ? block.separatorFontString ?? block.bulletFontString : undefined;
+  const sepFont = sepFontString !== undefined ? fontCache.get(sepFontString) : undefined;
+  const sepSize = sepFontString !== undefined ? parseFontString(sepFontString)?.sizePx ?? size : size;
+  const sepColor = colorFromHex(block.separatorColor ?? colorHex, ctx.colorSpace);
+  const sepY = onBaseline ? baselineY : midY + sepSize * 0.3;
+  if (sepFont && block.prefixText && block.prefixX !== undefined) {
+    drawTextPx(ctx, block.prefixText, block.prefixX, sepY, sepFont, sepSize, sepColor);
+  }
   drawTextPx(ctx, block.bulletText, block.bulletOffsetX, baselinePx, font, size, color);
-
-  // Ordered-list separator styled apart from the number (own font/colour).
-  if (block.separatorText && block.separatorX !== undefined) {
-    const sepFontString = block.separatorFontString ?? block.bulletFontString;
-    const sepFont = fontCache.get(sepFontString);
-    if (!sepFont) return;
-    const sepSize = parseFontString(sepFontString)?.sizePx ?? size;
-    const sepColor = colorFromHex(block.separatorColor ?? colorHex, ctx.colorSpace);
-    drawTextPx(ctx, block.separatorText, block.separatorX, onBaseline ? baselineY : midY + sepSize * 0.3, sepFont, sepSize, sepColor);
+  if (sepFont && block.separatorText && block.separatorX !== undefined) {
+    drawTextPx(ctx, block.separatorText, block.separatorX, sepY, sepFont, sepSize, sepColor);
   }
 }
 

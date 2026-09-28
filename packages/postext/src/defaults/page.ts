@@ -46,12 +46,13 @@ export const DEFAULT_PAGE_CONFIG: ResolvedPageConfig = {
   pageNumbering: { ...DEFAULT_PAGE_NUMBERING },
 };
 
-function resolvePageNumbering(raw?: PageNumberingConfig): ResolvedPageNumberingConfig {
+function resolvePageNumbering(raw?: PageNumberingConfig, locale?: string): ResolvedPageNumberingConfig {
   if (!raw) return { ...DEFAULT_PAGE_NUMBERING };
   return {
-    // Any spelling of a format is read (`roman-lower`, `arabic`, `i`…); an
-    // unknown one numbers in decimal (`collectConfigWarnings` reports it).
-    format: parseNumberFormat(raw.format) ?? DEFAULT_PAGE_NUMBERING.format,
+    // Any spelling of a format is read (`roman-lower`, `arabic`, `i`…, `一`
+    // in the document's script); an unknown one numbers in decimal
+    // (`collectConfigWarnings` reports it).
+    format: parseNumberFormat(raw.format, locale) ?? DEFAULT_PAGE_NUMBERING.format,
     startAt: raw.startAt ?? DEFAULT_PAGE_NUMBERING.startAt,
   };
 }
@@ -70,7 +71,9 @@ function resolveCutLines(raw?: CutLinesConfig | boolean): ResolvedPageConfig['cu
   };
 }
 
-export function resolvePageConfig(partial?: PageConfig): ResolvedPageConfig {
+/** A page config in full. `locale` (the document language) decides the
+ *  script of a page-number format written `一` or `壹`. */
+export function resolvePageConfig(partial?: PageConfig, locale?: string): ResolvedPageConfig {
   if (!partial) return { ...DEFAULT_PAGE_CONFIG };
   const sizePreset = partial.sizePreset ?? DEFAULT_PAGE_CONFIG.sizePreset;
   const presetSize = sizePreset === 'custom' ? undefined : PAGE_SIZE_PRESETS[sizePreset];
@@ -101,7 +104,7 @@ export function resolvePageConfig(partial?: PageConfig): ResolvedPageConfig {
           lineWidth: partial.baselineGrid.lineWidth ?? DEFAULT_PAGE_CONFIG.baselineGrid.lineWidth,
         }
       : { ...DEFAULT_PAGE_CONFIG.baselineGrid },
-    pageNumbering: resolvePageNumbering(partial.pageNumbering),
+    pageNumbering: resolvePageNumbering(partial.pageNumbering, locale),
   };
 }
 

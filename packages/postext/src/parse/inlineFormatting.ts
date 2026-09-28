@@ -99,9 +99,38 @@ export function titleBreakIndices(text: string): number[] {
   return out;
 }
 
-/** Replace the break placeholder with a space (single-line contexts). */
+/** Han, kana, CJK punctuation and fullwidth forms: text set without
+ *  spaces between words (Hangul excluded, Korean spaces its words). */
+const CJK_WIDE_RE = /[\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}\u3000-\u303f\uff00-\uffef]/u;
+
+/** Replace the break placeholder with a space (single-line contexts): an
+ *  ideographic space (U+3000) between two Chinese or Japanese characters,
+ *  so a couplet title `甄士隱夢幻識通靈 \\ 賈雨村風塵懷閨秀` reads
+ *  `甄士隱夢幻識通靈　賈雨村風塵懷閨秀` in the column, the contents and the
+ *  running heads; one space anywhere else. One character for one, so the
+ *  source map holds. */
 export function flattenTitleBreaks(text: string): string {
-  return text.replace(/\u2028/g, ' ');
+  if (!text.includes('\u2028')) return text;
+  return text.replace(/\u2028/g, (_m, at: number) => {
+    const before = text[at - 1];
+    const after = text[at + 1];
+    return before !== undefined && after !== undefined && CJK_WIDE_RE.test(before) && CJK_WIDE_RE.test(after) ? '\u3000' : ' ';
+  });
+}
+
+/** {@link flattenTitleBreaks} over a block's spans, read against the whole
+ *  `text` (the spans' texts joined): a break at a span's edge sees both of
+ *  its neighbours. Maths spans are kept as they are. */
+export function flattenTitleBreakSpans<T extends { text: string; math?: unknown }>(text: string, spans: readonly T[]): T[] {
+  const flat = flattenTitleBreaks(text);
+  const aligned = spans.map((s) => s.text).join('') === text;
+  let at = 0;
+  return spans.map((s) => {
+    const from = at;
+    at += s.text.length;
+    if (s.math) return s;
+    return { ...s, text: aligned ? flat.slice(from, at) : flattenTitleBreaks(s.text) };
+  });
 }
 
 /** Insert `\n` at the recorded break indices when the (possibly uppercased

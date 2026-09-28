@@ -1,6 +1,7 @@
 import {
   PDFArray,
   PDFDict,
+  PDFHexString,
   PDFName,
   PDFNumber,
   PDFString,
@@ -26,10 +27,18 @@ const STYLE_CODE: Record<string, 'D' | 'R' | 'r' | 'A' | 'a' | null> = {
   'lower-alpha': 'a',
 };
 
+/** A page label as PDF text: a literal string when it is printable ASCII
+ *  (`AA`), else UTF-16 hex (一, 〇, ①), which a literal cannot carry. */
+function labelText(label: string): PDFString | PDFHexString {
+  return /^[\x20-\x7e]*$/.test(label) ? PDFString.of(label) : PDFHexString.fromText(label);
+}
+
 /** Emit a `/PageLabels` number tree on the PDF catalog. No-op when
  *  `doc.pages` is empty. Alpha runs whose max value exceeds 26 fall back
  *  to per-page `/P` prefix entries so PDF viewers show the exact postext
- *  label (`AA`, `AB`, …) rather than the PDF repeated-letter scheme. */
+ *  label (`AA`, `AB`, …) rather than the PDF repeated-letter scheme; so do
+ *  the styles PDF has no code for (Chinese numerals, circled and fullwidth
+ *  digits), each page's label written out. */
 export function addPageLabels(pdfDoc: PDFDocument, input: VDTDocument | VDTDocument[]): void {
   const docs = Array.isArray(input) ? input : [input];
   // One page list for the whole PDF: a book is several documents in a row.
@@ -50,11 +59,11 @@ export function addPageLabels(pdfDoc: PDFDocument, input: VDTDocument | VDTDocum
     const code = STYLE_CODE[run.format] ?? null;
     const isAlpha = run.format === 'upper-alpha' || run.format === 'lower-alpha';
 
-    if (isAlpha && run.maxValue > 26) {
+    if (!code || (isAlpha && run.maxValue > 26)) {
       for (let i = run.startPageIndex; i <= run.endPageIndex; i++) {
         const page = pages[i]!;
         const dict = PDFDict.withContext(ctx);
-        dict.set(PDFName.of('P'), PDFString.of(page.pageLabel));
+        dict.set(PDFName.of('P'), labelText(page.pageLabel));
         nums.push(PDFNumber.of(i));
         nums.push(dict);
       }
@@ -62,7 +71,7 @@ export function addPageLabels(pdfDoc: PDFDocument, input: VDTDocument | VDTDocum
     }
 
     const dict = PDFDict.withContext(ctx);
-    if (code) dict.set(PDFName.of('S'), PDFName.of(code));
+    dict.set(PDFName.of('S'), PDFName.of(code));
     if (run.startAt !== 1) dict.set(PDFName.of('St'), PDFNumber.of(run.startAt));
     nums.push(PDFNumber.of(run.startPageIndex));
     nums.push(dict);

@@ -64,3 +64,17 @@ describe('bookmarks of headings set in capitals (EF-81)', () => {
     expect(await outlineTitles('# The sea\n\nText.', cfg)).toEqual(['Part I The sea']);
   }, 60_000);
 });
+
+describe('bookmarks of Chinese chapter heads', () => {
+  it('join the number and the title with the level\'s separator', async () => {
+    const cfg = (numberSeparator?: string): PostextConfig => ({
+      ...config,
+      locale: 'zh-Hant',
+      headings: { levels: [{ level: 1, breakBefore: { enabled: false }, numberingTemplate: '第{1:一}回', ...(numberSeparator !== undefined ? { numberSeparator } : {}) }] },
+    });
+    const markdown = '# 甄士隱夢幻識通靈 \\\\ 賈雨村風塵懷閨秀\n\n此開卷第一回也。';
+    expect(await outlineTitles(markdown, cfg('\u3000'))).toEqual(['第一回\u3000甄士隱夢幻識通靈\u3000賈雨村風塵懷閨秀']);
+    expect(await outlineTitles(markdown, cfg(''))).toEqual(['第一回甄士隱夢幻識通靈\u3000賈雨村風塵懷閨秀']);
+    expect(await outlineTitles(markdown, cfg())).toEqual(['第一回 甄士隱夢幻識通靈\u3000賈雨村風塵懷閨秀']);
+  }, 60_000);
+});

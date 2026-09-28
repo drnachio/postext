@@ -2,13 +2,23 @@ import type { NumberFormatStyle, ResourceCounterFormat, ResourceType } from 'pos
 import { formatNumeral, parseNumberFormat } from 'postext';
 
 /** The resource spelling of each numeral style: `counterFormat` says
- *  `roman-lower` where page labels say `lower-roman`. */
+ *  `roman-lower` where page labels say `lower-roman`; the East Asian styles
+ *  keep their CSS names everywhere. */
 const RESOURCE_COUNTER_FORMATS: Record<NumberFormatStyle, ResourceCounterFormat> = {
   decimal: 'decimal',
   'lower-roman': 'roman-lower',
   'upper-roman': 'roman-upper',
   'lower-alpha': 'alpha-lower',
   'upper-alpha': 'alpha-upper',
+  'simp-chinese-informal': 'simp-chinese-informal',
+  'trad-chinese-informal': 'trad-chinese-informal',
+  'simp-chinese-formal': 'simp-chinese-formal',
+  'trad-chinese-formal': 'trad-chinese-formal',
+  'cjk-decimal': 'cjk-decimal',
+  'cjk-heavenly-stem': 'cjk-heavenly-stem',
+  'cjk-earthly-branch': 'cjk-earthly-branch',
+  'circled-decimal': 'circled-decimal',
+  'fullwidth-decimal': 'fullwidth-decimal',
 };
 
 /** A type's `counterFormat` in the resource spelling, read as the engine

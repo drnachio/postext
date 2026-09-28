@@ -62,7 +62,7 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   } else {
     delete result.layout;
   }
-  const strippedBodyText = stripBodyTextDefaults(config.bodyText);
+  const strippedBodyText = stripBodyTextDefaults(config.bodyText, config.locale);
   if (strippedBodyText) {
     result.bodyText = strippedBodyText;
   } else {

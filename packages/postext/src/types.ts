@@ -1,4 +1,4 @@
-import type { NumeralStyle } from './numbering';
+import type { EastAsianNumeralStyle, NumeralStyle } from './numbering';
 
 /** @deprecated Legacy content-model resource used by the VDT renderer
  *  (`VDTBlock.resource`). The Resources-panel feature uses the newer
@@ -20,13 +20,15 @@ export interface PostextResource {
 // (images, SVGs, HTML tables) that can be referenced inline.
 // ---------------------------------------------------------------------------
 
-/** How a counter renders for a given resource type. */
+/** How a counter renders for a given resource type. The East Asian styles
+ *  keep their CSS names (`simp-chinese-informal`, `circled-decimal`…). */
 export type ResourceCounterFormat =
   | 'decimal'
   | 'roman-lower'
   | 'roman-upper'
   | 'alpha-lower'
-  | 'alpha-upper';
+  | 'alpha-upper'
+  | EastAsianNumeralStyle;
 
 /** When the per-type counter resets back to its starting value. `'never'`
  *  yields a single document-wide running count; `'h1'..'h6'` resets the
@@ -539,7 +541,8 @@ export type PageNumberFormat =
   | 'lower-roman'
   | 'upper-roman'
   | 'lower-alpha'
-  | 'upper-alpha';
+  | 'upper-alpha'
+  | EastAsianNumeralStyle;
 
 export interface PageNumberingConfig {
   /** Format for page labels. Default: `'decimal'`. The list and resource
@@ -1299,6 +1302,15 @@ export interface CaptionStyleConfig {
   padding?: Dimension;
   /** Styling of the optional resource note (`Resource.note`). */
   note?: CaptionNoteStyleConfig;
+  /** What stands between the label and the number: in the caption
+   *  ("Figure 1.7") and in an inline `:ref` ("Fig. 1.7"). Default a no-break
+   *  space (U+00A0); `''` sets them solid, as Chinese does (图1-1). */
+  labelNumberGap?: string;
+  /** What follows the number in the caption, before the description.
+   *  Default `'. '` ("Figure 1.7. A caption"); Chinese sets an ideographic
+   *  space (`'　'`: 图1-1　标题). A label without a number keeps its own rule
+   *  (a stop unless the prefix ends in one). */
+  labelSeparator?: string;
 }
 
 export interface ResolvedCaptionStyleConfig {
@@ -1316,6 +1328,8 @@ export interface ResolvedCaptionStyleConfig {
   background: ColorValue;
   padding: Dimension;
   note: ResolvedCaptionNoteStyleConfig;
+  labelNumberGap: string;
+  labelSeparator: string;
 }
 
 /** Styling for embedded SVG diagrams (`kind: 'svg'` resources). When
@@ -2087,6 +2101,13 @@ export interface HeadingLevelConfig {
    *  with `{1:words}` / `{1:ordinal}` — see `numberingTemplate` in the
    *  configuration docs). Default `''`: no number. */
   numberingTemplate?: string;
+  /** What stands between the number and the title (`第一回` + `'　'` +
+   *  `甄士隱夢幻識通靈`): in the column, in the default opener of a
+   *  `span: 'page'` level, in the running heads that print the heading
+   *  line and in the PDF bookmarks. Default `' '`; Chinese sets U+3000
+   *  (`'　'`) or nothing (`''`). The contents keep their own number column
+   *  (`toc.levels[].numberGap`). */
+  numberSeparator?: string;
   italic?: boolean;
   /** Tracking after every glyph of the heading (spaces and the numbering
    *  prefix included), as CSS `letter-spacing`: positive spreads the
@@ -2145,6 +2166,8 @@ export interface ResolvedHeadingLevelConfig {
   marginTop: Dimension;
   marginBottom: Dimension;
   numberingTemplate: string;
+  /** The level's own separator, else `' '`. */
+  numberSeparator: string;
   italic: boolean;
   /** The level's own tracking, else `0`. */
   letterSpacing: Dimension;
@@ -2421,12 +2444,15 @@ export type OrderedListNumberFormat =
   | 'lower-alpha'
   | 'upper-alpha'
   | 'lower-roman'
-  | 'upper-roman';
+  | 'upper-roman'
+  | EastAsianNumeralStyle;
 
 export interface OrderedListLevelConfig {
   level: number;
   /** Number style of this level (see `OrderedListsConfig.numberFormat`). */
   numberFormat?: OrderedListNumberFormat;
+  /** Text before this level's number (see `OrderedListsConfig.prefix`). */
+  prefix?: string;
   separator?: string;
   fontFamily?: string;
   fontSize?: Dimension;
@@ -2447,6 +2473,7 @@ export interface OrderedListLevelConfig {
 export interface ResolvedOrderedListLevelConfig {
   level: number;
   numberFormat: OrderedListNumberFormat;
+  prefix: string;
   separator: string;
   fontFamily: string;
   fontSize: Dimension;
@@ -2473,6 +2500,10 @@ export interface OrderedListsConfig {
    *  `parseNumberFormat`) and resolve to the list spelling; an unknown
    *  value numbers in arabic and is reported by `collectConfigWarnings`. */
   numberFormat?: OrderedListNumberFormat;
+  /** Text set before the number, styled like the separator: with
+   *  `prefix: '（'` and `separator: '）'` a Chinese list reads （一）（二）.
+   *  Default `''`. A level may set its own. */
+  prefix?: string;
   separator?: string;
   numberFontSize?: Dimension;
   gap?: Dimension;
@@ -2521,6 +2552,7 @@ export interface ResolvedOrderedListsConfig {
   fontWeight: number;
   italic: boolean;
   numberFormat: OrderedListNumberFormat;
+  prefix: string;
   separator: string;
   numberFontSize: Dimension;
   gap: Dimension;
