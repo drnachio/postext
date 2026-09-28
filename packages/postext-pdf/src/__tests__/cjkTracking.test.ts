@@ -58,8 +58,12 @@ describe('CJK justification in the PDF', () => {
     for (const line of block.lines) {
       let x = line.bbox.x;
       for (const seg of line.segments!) {
-        // A compressed mark is painted before its box (`inkOffset`).
-        if (seg.tracking !== undefined) expected.push({ x: x + (seg.inkOffset ?? 0), tc: seg.tracking });
+        // A compressed mark is painted before its box (`inkOffset`), with
+        // the spacing that ends its advance where its box (tracking
+        // included) ends: Lora has none of these glyphs and advances the
+        // missing glyph one em, 16 px.
+        if (seg.inkOffset !== undefined) expected.push({ x: x + seg.inkOffset, tc: seg.width - seg.inkOffset - 16 });
+        else if (seg.tracking !== undefined) expected.push({ x, tc: seg.tracking });
         x += seg.width;
       }
     }

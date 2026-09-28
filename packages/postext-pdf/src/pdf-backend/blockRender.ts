@@ -3,7 +3,7 @@ import type { Color, PDFFont } from 'pdf-lib';
 import type { VDTBlock, VDTLine, VDTLineSegment, MathRender } from 'postext';
 import { parseFontString } from '../fontString';
 import { FontCache } from '../fontCache';
-import { type PageCtx, alphaOf, alphaStateOp, beginActualTextSpan, cjkLineText, drawLinePx, drawMeasuredTextPx, drawSwatchPx, drawTextPx, colorFromHex, endActualTextSpan, type LineTextState } from './primitives';
+import { type PageCtx, alphaOf, alphaStateOp, beginActualTextSpan, cjkLineText, compressedMarkSpacingPx, drawLinePx, drawMeasuredTextPx, drawSwatchPx, drawTextPx, colorFromHex, endActualTextSpan, type LineTextState } from './primitives';
 import { paintChip } from './chip';
 import { pickSegmentColor, pickSegmentFont } from './fontHelpers';
 import { renderHeaderFooterSlot } from './headerFooter';
@@ -175,10 +175,13 @@ function renderSegments(
     tagContent(ctx, link ?? pageElem ?? uriElem ?? elem);
     // The hyphen repeated from the line before is painted but not read.
     const actualText = i === repeatedAt ? seg.text.slice(1) : undefined;
-    if (seg.tracking !== undefined) ctx.page.pushOperators(setCharacterSpacing((tracking + seg.tracking) * ctx.scale));
-    // A compressed CJK mark is painted before its box (`inkOffset`).
+    // A compressed CJK mark is painted before its box (`inkOffset`) and
+    // advances to its box's end.
+    const markSpacing = compressedMarkSpacingPx(font, seg, size);
+    if (markSpacing !== undefined) ctx.page.pushOperators(setCharacterSpacing(markSpacing * ctx.scale));
+    else if (seg.tracking !== undefined) ctx.page.pushOperators(setCharacterSpacing((tracking + seg.tracking) * ctx.scale));
     drawTextPx(ctx, seg.text, x + (seg.inkOffset ?? 0), baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText);
-    if (seg.tracking !== undefined) ctx.page.pushOperators(setCharacterSpacing(tracking * ctx.scale));
+    if (markSpacing !== undefined || seg.tracking !== undefined) ctx.page.pushOperators(setCharacterSpacing(tracking * ctx.scale));
     if (seg.pageLink !== undefined && linkRegistry) {
       const { scale, pageHeightPt } = ctx;
       linkRegistry.addPageLink(

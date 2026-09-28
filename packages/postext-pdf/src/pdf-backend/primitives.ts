@@ -815,9 +815,40 @@ function lineTextState(ctx: PageCtx, state: LineTextState): PDFOperator[] {
 
 /** The text a composed CJK line is read as when its segments are painted
  *  apart (see {@link beginActualTextSpan}): the segments' text, when one
- *  of them carries tracking or is a Han–Latin space; else undefined. */
-export function cjkLineText(segments: readonly { text: string; tracking?: number; autospace?: boolean }[]): string | undefined {
-  return segments.some((s) => s.autospace || s.tracking !== undefined) ? segments.map((s) => s.text).join('') : undefined;
+ *  of them carries tracking, is a Han–Latin space, is a mark that gave up
+ *  blank (its glyph painted over its neighbour's box, `inkOffset`) or
+ *  hangs; else undefined. */
+export function cjkLineText(segments: readonly { text: string; tracking?: number; autospace?: boolean; inkOffset?: number; hangs?: boolean }[]): string | undefined {
+  return segments.some((s) => s.autospace || s.tracking !== undefined || s.inkOffset !== undefined || s.hangs)
+    ? segments.map((s) => s.text).join('')
+    : undefined;
+}
+
+/**
+ * The character spacing (`Tc`, px) a CJK mark that gave up blank is shown
+ * with (`inkOffset` set): painted `-inkOffset` before its box, its glyph
+ * then advances to where its segment ends, so the box a reader gives the
+ * glyph (its advance plus `Tc`) never runs over the next character's —
+ * poppler read a compressed `：` over the `「` after it as a line break.
+ * Undefined for any other segment, or when the font cannot measure it.
+ */
+export function compressedMarkSpacingPx(
+  font: PDFFont,
+  seg: { text: string; width: number; inkOffset?: number },
+  sizePx: number,
+): number | undefined {
+  if (seg.inkOffset === undefined || !(sizePx > 0)) return undefined;
+  let advance = 0;
+  let glyphs = 0;
+  for (const { font: file, text } of fileRuns(font, seg.text)) {
+    const run = shownRun(file, text);
+    if (!run) return undefined;
+    advance += run.advance;
+    glyphs += run.glyphs;
+  }
+  // Character spacing follows every glyph: only a mark shown as one.
+  if (glyphs !== 1) return undefined;
+  return seg.width - seg.inkOffset - (advance / 1000) * sizePx;
 }
 
 /** Close the span {@link beginActualTextSpan} opened, with the line's text

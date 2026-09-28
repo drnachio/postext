@@ -86,6 +86,31 @@ describe('CJK punctuation in the PDF', () => {
     }
   }, 60_000);
 
+  it('reads a line with compressed marks as written, each mark advancing to its box end', async () => {
+    // Kaiming, set solid (left aligned): no tracking, no Han–Latin space;
+    // the half-width ：， and the trimmed 「 are what the line holds.
+    for (const accessible of [false, true]) {
+      const doc = buildDocument({ markdown: '他说：「你来了吗？」她笑道，来了' }, config({}, 'left'));
+      const lines = doc.blocks.find((b) => b.type === 'paragraph')!.lines;
+      const marked = lines.filter((l) => l.segments!.some((s) => s.inkOffset !== undefined));
+      expect(marked.length).toBeGreaterThan(0);
+      expect(marked.every((l) => l.segments!.every((s) => s.tracking === undefined && !s.autospace))).toBe(true);
+      const content = await contentOf(doc, accessible);
+      const texts = actualTexts(content);
+      for (const l of marked) expect(texts).toContain(l.text);
+      // The ： (8 px, painted at its box) is shown with -8 px of character
+      // spacing: Lora has no ： and advances the missing glyph one em, so the
+      // glyph's advance ends where its 8 px box does. The spacing is reset
+      // after it.
+      const colon = lines.flatMap((l) => l.segments!).find((s) => s.text === '：')!;
+      expect(colon).toMatchObject({ width: 8, inkOffset: 0 });
+      expect(content).toMatch(/-8 Tc[\s\S]*?TJ|-8 Tc[\s\S]*?Tj/);
+      const ops = [...content.matchAll(/(-?[\d.]+) Tc/g)].map((m) => Number(m[1]));
+      expect(ops).toContain(-8);
+      expect(ops[ops.length - 1]).toBe(0);
+    }
+  }, 60_000);
+
   it('widens the column clip for a hung mark', async () => {
     const doc = buildDocument({ markdown: '此开卷第一，回也作者自云' }, config({ hangingPunctuation: 'allow' }));
     const page = doc.pages[0]!;

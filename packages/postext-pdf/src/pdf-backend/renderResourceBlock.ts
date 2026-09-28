@@ -44,6 +44,7 @@ import {
   type PdfMatrix,
   beginActualTextSpan,
   cjkLineText,
+  compressedMarkSpacingPx,
   drawTextPx,
   endActualTextSpan,
   type LineTextState,
@@ -633,9 +634,12 @@ function paintLineRuns(
       const link = refId !== undefined ? refRun.enter(seg, x, elem, refId) : undefined;
       tagContent(ctx, link ?? uriElem ?? elem);
       // A justified CJK line spreads its characters per segment.
-      if (seg.tracking !== undefined) ctx.page.pushOperators(setCharacterSpacing((tracking + seg.tracking) * ctx.scale));
+      // A compressed CJK mark advances to its box's end (see blockRender).
+      const markSpacing = compressedMarkSpacingPx(font, seg, size);
+      if (markSpacing !== undefined) ctx.page.pushOperators(setCharacterSpacing(markSpacing * ctx.scale));
+      else if (seg.tracking !== undefined) ctx.page.pushOperators(setCharacterSpacing((tracking + seg.tracking) * ctx.scale));
       drawTextPx(ctx, seg.text, x + (seg.inkOffset ?? 0), line.baseline + (seg.baselineShift ?? 0), font, size, segColor);
-      if (seg.tracking !== undefined) ctx.page.pushOperators(setCharacterSpacing(tracking * ctx.scale));
+      if (markSpacing !== undefined || seg.tracking !== undefined) ctx.page.pushOperators(setCharacterSpacing(tracking * ctx.scale));
       const ref = refId !== undefined ? refRun.leave(seg, segs[i + 1], refId) : undefined;
       if (ref && linkRegistry) {
         const { scale, pageHeightPt } = ctx;
