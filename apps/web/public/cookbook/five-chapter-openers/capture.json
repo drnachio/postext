@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "five-chapter-openers",
-  "sourceHash": "f1a2938afdee3c50fe2ee4e74bd4eba82df852aa62b934b1903df55a0ff46ffa",
+  "sourceHash": "7a991a7d44316e708c989ac90d223ecb9db0458698622f70278c326c65e85c00",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.8.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:13:31.128Z",
+  "capturedAt": "2026-09-28T13:54:04.083Z",
   "variants": {
     "en": {
-      "hash8": "ed54efb5",
-      "vdtHash": "bd6ff8ff016e5c0d029e795388521037764cb591",
+      "hash8": "13cc5237",
+      "vdtHash": "d3ca5795d2de5c0ffbb1f843d8ececf3f187c2e5",
       "timings": {
-        "importMs": 205,
-        "fontsMs": 1250,
-        "buildMs": 88,
-        "totalMs": 2287,
+        "importMs": 449,
+        "fontsMs": 47,
+        "buildMs": 154,
+        "totalMs": 1517,
         "builds": 2
       },
       "specimen": {
@@ -50,7 +50,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 101144,
+          "bytes": 101138,
           "alt": "Opening page 1: The Voice."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 32412,
+          "bytes": 32372,
           "alt": "Page 3."
         },
         {
@@ -83,7 +83,7 @@
           "h": 1333,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 95002,
+          "bytes": 95060,
           "alt": "Opening page 4: The Frame."
         },
         {
@@ -105,7 +105,7 @@
           "h": 1333,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 137278,
+          "bytes": 137896,
           "alt": "Opening page 6: Number Everything."
         },
         {
@@ -152,7 +152,7 @@
       },
       "sandbox": {
         "file": "five-chapter-openers.postext",
-        "bytes": 28464
+        "bytes": 28486
       },
       "detected": {
         "apis": [
@@ -394,17 +394,23 @@
           "share": 0.0143,
           "worst": 1.62
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "5def9088",
-      "vdtHash": "4520b2ed33c7eb6338f33b2bba4432e91900b0fa",
+      "hash8": "9cbabe9a",
+      "vdtHash": "463172280380e8471d29bd1270fda4670df8753c",
       "timings": {
-        "importMs": 164,
-        "fontsMs": 31,
-        "buildMs": 15,
-        "totalMs": 846,
+        "importMs": 194,
+        "fontsMs": 77,
+        "buildMs": 30,
+        "totalMs": 1030,
         "builds": 2
       },
       "specimen": {
@@ -438,7 +444,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 105436,
+          "bytes": 105360,
           "alt": "Página de apertura 1: La voz."
         },
         {
@@ -460,7 +466,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 36120,
+          "bytes": 36062,
           "alt": "Página 3."
         },
         {
@@ -471,7 +477,7 @@
           "h": 1333,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 88146,
+          "bytes": 88286,
           "alt": "Página de apertura 4: El marco."
         },
         {
@@ -482,7 +488,7 @@
           "h": 1333,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 71392,
+          "bytes": 71394,
           "alt": "Página de apertura 5: Salta a la vista."
         },
         {
@@ -493,7 +499,7 @@
           "h": 1333,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 136088,
+          "bytes": 136078,
           "alt": "Página de apertura 6: Numéralo todo."
         },
         {
@@ -540,7 +546,7 @@
       },
       "sandbox": {
         "file": "five-chapter-openers.postext",
-        "bytes": 28113
+        "bytes": 28175
       },
       "detected": {
         "apis": [
@@ -782,7 +788,13 @@
           "share": 0.0143,
           "worst": 1.61
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }
