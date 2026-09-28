@@ -16,6 +16,7 @@ import {
 } from '../../controls';
 import { HighlightZone } from '../settings/previewHighlight';
 import { eastAsianNumberFormatOptions } from '../settings/eastAsianOptions';
+import { gridMarginsText, useCjkGrid } from './cjkGridReadout';
 
 const PAGE_SIZE_OPTIONS = [
   { value: '11x17', label: '11 \u00d7 17 cm' },
@@ -32,6 +33,9 @@ export const PageSection = memo(function PageSection() {
   const labels = useSandboxLabels();
   const raw = useSandboxSelector((s) => s.config.page);
   const page = resolvePageConfig(raw);
+  // The character grid sets the margins the pages use; the ones here are
+  // its minimums.
+  const grid = useCjkGrid();
 
   const updatePage = (partial: Partial<PageConfig>) => {
     dispatch({
@@ -275,6 +279,11 @@ export const PageSection = memo(function PageSection() {
             onReset={() => resetMargin('right')}
           />
         </HighlightZone>
+        {grid && (
+          <p className="mt-1 text-[0.66rem] leading-[1.35] text-(--slate) [text-wrap:pretty]">
+            {gridMarginsText(labels.pageMarginsFromGrid, grid)}
+          </p>
+        )}
       </FieldGroup>
 
       <FieldGroup title={labels.pageGroupPaper}>

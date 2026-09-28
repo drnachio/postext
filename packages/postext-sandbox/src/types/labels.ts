@@ -193,6 +193,8 @@ export interface SandboxLabels {
    *  another value. `__used__` is that value, in percent. */
   warningsSideColumnPercentClampedTitle: string;
   warningsSideColumnPercentClampedDetail: string;
+  warningsCjkGridClampedTitle: string;
+  warningsCjkGridClampedDetail: string;
   warningsInvalidMathTitle: string;
   warningsUnclosedMathTitle: string;
   warningsUnclosedContainerTitle: string;
@@ -337,6 +339,38 @@ export interface SandboxLabels {
   cjkLineBreakBasic: string;
   cjkLineBreakGb: string;
   cjkLineBreakStrict: string;
+  cjkPunctuationWidth: string;
+  cjkPunctuationWidthTooltip: string;
+  cjkPunctuationWidthKaiming: string;
+  cjkPunctuationWidthFull: string;
+  cjkPunctuationWidthLineEndHalf: string;
+  cjkPunctuationWidthHalf: string;
+  cjkOn: string;
+  cjkOff: string;
+  cjkCompressAdjacent: string;
+  cjkCompressAdjacentTooltip: string;
+  cjkTrimLineStart: string;
+  cjkTrimLineStartTooltip: string;
+  cjkHanging: string;
+  cjkHangingTooltip: string;
+  cjkHangingNone: string;
+  cjkHangingAllow: string;
+  cjkHangingForce: string;
+  cjkLatinSpacing: string;
+  cjkLatinSpacingTooltip: string;
+  cjkGrid: string;
+  cjkGridDescription: string;
+  cjkGridEnabled: string;
+  cjkGridEnabledTooltip: string;
+  cjkGridChars: string;
+  cjkGridCharsTooltip: string;
+  cjkGridLines: string;
+  cjkGridLinesTooltip: string;
+  cjkGridShow: string;
+  cjkGridShowTooltip: string;
+  cjkGridReadout: string;
+  cjkGridMargins: string;
+  pageMarginsFromGrid: string;
 
   // Body text section
   bodyText: string;
