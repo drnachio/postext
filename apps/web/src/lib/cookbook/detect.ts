@@ -15,7 +15,7 @@ import type { ComposedPen, Level } from "./types.ts";
 export const CONFIG_KEYS: readonly string[] = [
   "page", "layout", "bodyText", "headings", "tableStyle", "tableStyles", "captionStyle",
   "diagramStyle", "paragraphStyles", "calloutStyles", "chipStyles", "parts", "headingStyles", "toc",
-  "unorderedLists", "orderedLists", "math", "header", "footer", "locale", "debug", "htmlViewer",
+  "unorderedLists", "orderedLists", "math", "footnotes", "header", "footer", "locale", "debug", "htmlViewer",
   "pdfGeneration", "colorPalette", "customFonts", "resourceTypes",
 ];
 
