@@ -7,7 +7,7 @@ import type {
   VDTDesignBoxStyle,
 } from '../vdt';
 import { drawResourceImage, roundedOutlinePath } from './renderResourceBlock';
-import { fillFlowText, drawUprightInBox } from './verticalText';
+import { fillFlowText, drawUprightInBox, setVerticalPaint } from './verticalText';
 
 /** Adds a rounded rectangle to the current path, as a closed subpath. */
 function traceRoundedRect(
@@ -122,13 +122,24 @@ function renderTextBlock(ctx: CanvasRenderingContext2D, block: VDTDesignTextBloc
   }
   const mode = stroke?.hollow ? 'stroke' : stroke ? 'fillStroke' : 'fill';
   const paint = (text: string, x: number, y: number) => fillFlowText(ctx, text, x, y, mode);
+  // A vertical block (`VDTDesignTextBlock.vertical`) paints its lines in
+  // its own frame, turned a quarter turn clockwise about the box's top
+  // right corner, with the vertical painter on.
+  const vertical = block.vertical;
+  let outerPaint: ReturnType<typeof setVerticalPaint> = null;
+  if (vertical) {
+    ctx.translate(block.bbox.x + block.bbox.width, block.bbox.y);
+    ctx.rotate(Math.PI / 2);
+    outerPaint = setVerticalPaint({ region: vertical.region, uprightDigits: vertical.uprightDigits, axes: vertical.centralBaselines });
+  }
+  const originX = vertical ? 0 : block.bbox.x;
   for (const line of block.lines) {
     if (!line.runs) {
-      paint(line.text, block.bbox.x + line.xOffset, line.baselineY);
+      paint(line.text, originX + line.xOffset, line.baselineY);
       continue;
     }
     // Inline marks: each run in its own font, one after another.
-    let x = block.bbox.x + line.xOffset;
+    let x = originX + line.xOffset;
     for (const run of line.runs) {
       ctx.font = run.fontString;
       paint(run.text, x, line.baselineY + (run.baselineShift ?? 0));
@@ -136,6 +147,7 @@ function renderTextBlock(ctx: CanvasRenderingContext2D, block: VDTDesignTextBloc
     }
     ctx.font = block.fontString;
   }
+  if (vertical) setVerticalPaint(outerPaint);
   if (tracked) ctx.letterSpacing = '0px';
   ctx.restore();
 }

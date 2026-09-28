@@ -30,6 +30,7 @@ import type {
   ResolvedIndexConfig,
   ResolvedFootnotesConfig,
   ResolvedCjkConfig,
+  CjkRegion,
   PageRole,
   PartState,
   PostextConfig,
@@ -1167,6 +1168,26 @@ export interface VDTDesignTextBlock {
    *  PDF marks it an artifact and the HTML hides it from assistive
    *  technology, so the text is read once. */
   artifact?: boolean;
+  /** Set vertically on a page or a slot whose text is horizontal
+   *  (`DesignTextElement.writingMode: 'vertical-rl'`): the lines are laid
+   *  out in the block's own frame, turned a quarter turn clockwise about
+   *  its box's top right corner — a line's `xOffset` runs down from the
+   *  box's top edge, its `baselineY` leftward from the box's right edge
+   *  (0 there) — and painted through that frame with the vertical glyph
+   *  painter. `bbox` is where the box stands. Absent on every other
+   *  block. */
+  vertical?: VDTVerticalText;
+}
+
+/** How the text of a vertical design block ({@link VDTDesignTextBlock.vertical})
+ *  is set: the Chinese region whose punctuation it takes, how many digits a
+ *  number set in one cell may have (`cjk.uprightDigits`), and the central
+ *  axis of each family it is set in (em above the baseline, as
+ *  {@link VDTFlowFrame.centralBaselines}). */
+export interface VDTVerticalText {
+  region: CjkRegion;
+  uprightDigits: number;
+  centralBaselines: Record<string, number>;
 }
 
 /** Rendered rule inside a design slot. */

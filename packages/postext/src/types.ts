@@ -3067,8 +3067,14 @@ export interface ElementAnchor {
    *  enabled, otherwise the trim box) or `'#elementId'` — a reference to
    *  another element in the slot. Page/bleed anchoring also makes that frame
    *  the reference for `size: 'fill'` and auto-width clamping, so a band can
-   *  run edge to edge regardless of the page margins. */
-  to: 'container' | 'page' | 'bleed' | `#${string}`;
+   *  run edge to edge regardless of the page margins. `'outer'` (header
+   *  and footer only) is the outer margin of the page — between the type
+   *  area and the trim edge on the side away from the spine, from the type
+   *  area's head to its foot — on the right of a recto and the left of a
+   *  verso in a left-bound book, the other way round in a right-bound one
+   *  (`page.binding`), so one element serves both pages of a spread: a
+   *  running head down the fore-edge. Elsewhere it reads as `'container'`. */
+  to: 'container' | 'page' | 'bleed' | 'outer' | `#${string}`;
   edge: AnchorEdge;
 }
 
@@ -3211,6 +3217,16 @@ export interface DesignTextElement {
   inlineMarks?: boolean;
   /** Outline drawn around the glyphs (see `DesignTextStroke`). */
   stroke?: DesignTextStroke;
+  /** `'vertical-rl'`: the text is set vertically, top to bottom, lines
+   *  right to left, with the characters upright (a running head down the
+   *  fore-edge of a vertical book, a vertical title beside a horizontal
+   *  chapter). The element's box stays as placed on the page: its height
+   *  is the length of a line, its width the lines side by side; `align`
+   *  places the lines along it (`'left'` at the top), `verticalAlign` in
+   *  the box across (`'top'` at the right), and `size.maxWidth` caps a
+   *  line's length. In the flow of a vertical page text already runs so,
+   *  and the setting changes nothing there. Default `'horizontal-tb'`. */
+  writingMode?: 'horizontal-tb' | 'vertical-rl';
 }
 
 export interface DesignRuleElement {

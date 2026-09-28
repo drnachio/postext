@@ -38,6 +38,9 @@ import {
   colorFromHex,
   drawTextPx,
   setTrackingPx,
+  pushFrame,
+  popFrame,
+  quarterTurnMatrix,
   fillRectPx,
   pushClipOutline,
   pushClipRect,
@@ -183,19 +186,35 @@ function renderTextBlock(
     ? { color: colorFromHex(block.stroke.color, ctx.colorSpace), widthPx: block.stroke.widthPx, hollow: block.stroke.hollow }
     : undefined;
   tagSlotText(ctx, mark, block);
+  // A vertical block (`VDTDesignTextBlock.vertical`) paints its lines in
+  // its own frame, turned a quarter turn clockwise about the box's top
+  // right corner, set down the column.
+  const vertical = block.vertical;
+  const outerVertical = ctx.vertical;
+  if (vertical) {
+    pushFrame(ctx, quarterTurnMatrix({ direction: 'cw', originX: block.bbox.x + block.bbox.width, originY: block.bbox.y }, ctx.scale, ctx.pageHeightPt));
+    ctx.vertical = { region: vertical.region, uprightDigits: vertical.uprightDigits, axes: vertical.centralBaselines };
+    tagSlotText(ctx, mark, block);
+  }
+  const originX = vertical ? 0 : block.bbox.x;
   for (const line of block.lines) {
     if (!line.runs) {
-      drawTextPx(ctx, line.text, block.bbox.x + line.xOffset, line.baselineY, font, size, color, outline);
+      drawTextPx(ctx, line.text, originX + line.xOffset, line.baselineY, font, size, color, outline);
       continue;
     }
     // Inline marks: each run in its own font, one after another.
-    let x = block.bbox.x + line.xOffset;
+    let x = originX + line.xOffset;
     for (const run of line.runs) {
       const runFont = fontCache.get(run.fontString) ?? font;
       const runSize = parseFontString(run.fontString)?.sizePx ?? size;
       drawTextPx(ctx, run.text, x, line.baselineY + (run.baselineShift ?? 0), runFont, runSize, color, outline);
       x += run.width;
     }
+  }
+  if (vertical) {
+    popFrame(ctx);
+    if (outerVertical) ctx.vertical = outerVertical;
+    else delete ctx.vertical;
   }
   if (tracked) setTrackingPx(ctx, 0);
   if (clip) popClip(ctx);

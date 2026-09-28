@@ -1153,6 +1153,7 @@ function renderDesignTextBlock(block: VDTDesignTextBlock, options?: HtmlPaint): 
   const parts: string[] = [];
   if (block.box) parts.push(renderBoxAt(block.bbox, block.box));
   if (options?.vertical) return parts.join('') + renderVerticalDesignText(block, options.vertical);
+  if (block.vertical) return parts.join('') + renderTurnedDesignText(block);
   const font = quoteFontString(block.fontString);
   const fontSize = extractFontSizePx(block.fontString);
   const lineParts: string[] = [];
@@ -1227,6 +1228,28 @@ function renderVerticalDesignText(block: VDTDesignTextBlock, v: VerticalHtml): s
     `<div${hidden} style="position:absolute;left:${block.bbox.x}px;top:${block.bbox.y}px;width:${block.bbox.width}px;height:${block.bbox.height}px;${clipDecl}${trackingDecl}${strokeDecl}">` +
     verticalDesignLines(block, v, -block.bbox.x, -block.bbox.y) +
     `</div>`
+  );
+}
+
+/** A design text set vertically on a page or slot whose text is
+ *  horizontal (`VDTDesignTextBlock.vertical`): its lines in the block's own
+ *  frame, turned a quarter turn clockwise about the box's top right corner,
+ *  each line turned back upright and set vertically. */
+function renderTurnedDesignText(block: VDTDesignTextBlock): string {
+  const vt = block.vertical!;
+  const v: VerticalHtml = { region: vt.region, uprightDigits: vt.uprightDigits, axes: vt.centralBaselines };
+  const clipDecl = block.clip ? 'overflow:hidden;' : '';
+  const trackingDecl = block.letterSpacingPx ? `letter-spacing:${block.letterSpacingPx}px;` : '';
+  const strokeDecl = block.stroke && block.stroke.widthPx > 0
+    ? `-webkit-text-stroke:${block.stroke.widthPx}px ${block.stroke.color};` + (block.stroke.hollow ? '-webkit-text-fill-color:transparent;' : '')
+    : '';
+  const hidden = block.artifact ? ' aria-hidden="true"' : '';
+  const { x, y, width, height } = block.bbox;
+  return (
+    `<div${hidden} style="position:absolute;left:${x}px;top:${y}px;width:${width}px;height:${height}px;${clipDecl}${trackingDecl}${strokeDecl}">` +
+    `<div style="position:absolute;left:${width}px;top:0;width:${height}px;height:${width}px;transform:rotate(90deg);transform-origin:0 0;">` +
+    verticalDesignLines(block, v, 0, 0) +
+    `</div></div>`
   );
 }
 
