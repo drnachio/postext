@@ -27,6 +27,7 @@ export const CjkSection = memo(function CjkSection() {
   const raw = useSandboxSelector((s) => s.config.cjk);
   const locale = useSandboxSelector((s) => s.config.locale ?? s.config.bodyText?.hyphenation?.locale);
   const grid = useCjkGrid();
+  const uiLocale = useSandboxSelector((s) => s.locale);
 
   const write = (next: CjkConfig | undefined) => {
     const empty = !next || Object.keys(next).length === 0;
@@ -85,8 +86,8 @@ export const CjkSection = memo(function CjkSection() {
     ? labels.cjkGridReadout
       .replace('__chars__', String(grid.charsPerLine))
       .replace('__lines__', String(grid.linesPerPage))
-      .replace('__width__', mmText(grid.vertical ? grid.block : grid.inline, grid.dpi))
-      .replace('__height__', mmText(grid.vertical ? grid.inline : grid.block, grid.dpi))
+      .replace('__width__', mmText(grid.vertical ? grid.block : grid.inline, grid.dpi, uiLocale))
+      .replace('__height__', mmText(grid.vertical ? grid.inline : grid.block, grid.dpi, uiLocale))
     : '';
 
   return (
@@ -235,7 +236,7 @@ export const CjkSection = memo(function CjkSection() {
               <p className="mt-1 text-[0.66rem] leading-[1.35] text-(--slate) [text-wrap:pretty]">
                 <span className="font-semibold">{readout}</span>
                 <br />
-                {gridMarginsText(labels.cjkGridMargins, grid)}
+                {gridMarginsText(labels.cjkGridMargins, grid, uiLocale)}
               </p>
             )}
           </>

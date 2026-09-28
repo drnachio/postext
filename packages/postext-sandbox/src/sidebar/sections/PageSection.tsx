@@ -36,6 +36,7 @@ export const PageSection = memo(function PageSection() {
   // The character grid sets the margins the pages use; the ones here are
   // its minimums.
   const grid = useCjkGrid();
+  const uiLocale = useSandboxSelector((s) => s.locale);
 
   const updatePage = (partial: Partial<PageConfig>) => {
     dispatch({
@@ -281,7 +282,7 @@ export const PageSection = memo(function PageSection() {
         </HighlightZone>
         {grid && (
           <p className="mt-1 text-[0.66rem] leading-[1.35] text-(--slate) [text-wrap:pretty]">
-            {gridMarginsText(labels.pageMarginsFromGrid, grid)}
+            {gridMarginsText(labels.pageMarginsFromGrid, grid, uiLocale)}
           </p>
         )}
       </FieldGroup>
