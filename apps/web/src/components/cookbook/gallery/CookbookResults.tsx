@@ -218,7 +218,7 @@ function ContentsView({
   });
   if (!grouped) {
     return (
-      <ol className="mt-6 max-w-4xl">
+      <ol className="mt-6">
         {items.map((item) => (
           <ContentsRow key={item.recipe.slug} item={row(item)} labels={labels} />
         ))}
@@ -226,7 +226,7 @@ function ContentsView({
     );
   }
   return (
-    <div className="mt-7 max-w-4xl space-y-10">
+    <div className="mt-7 space-y-10">
       {parts.map((part) => {
         const chapters = facets.chapters.filter((c) => c.part === part.id);
         const inPart = items.filter((item) => chapters.some((c) => c.id === item.recipe.chapter));
@@ -417,7 +417,7 @@ export function ResultsSkeleton({ view = "plates", chips = 0 }: { view?: ViewId;
         </div>
       )}
       {view === "contents" ? (
-        <div className="mt-7 max-w-4xl space-y-4">
+        <div className="mt-7 space-y-4">
           {Array.from({ length: 6 }, (_, i) => (
             <div key={i} className="grid grid-cols-[3.4rem_minmax(0,1fr)] gap-x-3 py-2.5 sm:grid-cols-[4rem_minmax(0,1fr)]">
               <span className="mt-1.5 h-3 rounded bg-surface" />

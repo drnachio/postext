@@ -18,14 +18,17 @@ import argparse
 import json
 import re
 import sys
+from collections import Counter, defaultdict
 from pathlib import Path
 
 KNOWN_CONTAINERS = {"callout", "paragraphs", "part", "columns"}
-KNOWN_DIRECTIVES = {"pagebreak", "numbering", "columnbreak", "space", "toc"}
+KNOWN_DIRECTIVES = {"pagebreak", "numbering", "columnbreak", "space", "toc", "index"}
 FENCE_RE = re.compile(r"^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$")
 ATTR_RE = re.compile(r"([A-Za-z_][A-Za-z0-9_-]*)(?:\s*=\s*(?:\"([^\"]*)\"|'([^']*)'|([^\s]+)))?")
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+)$")
 HEADING_ATTRS_RE = re.compile(r"\s+\{([^{}]*)\}\s*$")
+INDEX_MARK_RE = re.compile(r"(?<![:\\]):index(?:\[((?:\\.|[^\]\\\n])*)\])?(?:\{([^}\n]*)\})?")
+INDEX_AFTER_COLON_RE = re.compile(r"(?<=[^\s:])::index[\[{]")
 FOOTNOTE_MARK_RE = re.compile(r"\[\^([\w.:-]+)\]")
 FOOTNOTE_DEF_RE = re.compile(r"^\[\^([\w.:-]+)\]:")
 RESOURCE_RE = re.compile(r'^::resource\s*\{id="([^"]+)"\}\s*$')
@@ -149,8 +152,69 @@ def _fence_closes(lines: list[str], i: int) -> bool:
     return False
 
 
+def index_levels(value: str | None) -> list[str]:
+    return [x.strip() for x in (value or "").split("!") if x.strip()]
+
+
+def index_key(levels: list[str]) -> tuple[str, ...]:
+    """Levels compared the way readers see them: no marks, no case."""
+    return tuple(re.sub(r"[*_^~\\]", "", x).casefold() for x in levels)
+
+
+def collect_index_marks(line: str, where: str, rep: Report, index: dict) -> None:
+    """Record the :index marks of one text line in `index` (book-level)."""
+    if INDEX_AFTER_COLON_RE.search(line):
+        rep.error(where, "a mark right after a colon (word::index{…}) is not read: put it before the colon")
+    for m in INDEX_MARK_RE.finditer(line):
+        if m.group(1) is None and m.group(2) is None:
+            continue  # a bare ":index" word
+        a = parse_attrs(m.group(2))
+        path = index_levels(a.get("term"))
+        if not path and m.group(1):
+            plain = re.sub(r"[*_^~]|\\(.)", r"\1", m.group(1)).strip()
+            path = [plain] if plain else []
+        path += index_levels(a.get("sub"))
+        name = a.get("index", "").strip()
+        if not path:
+            rep.warn(where, ":index mark with no term indexes nothing (indexMarkInvalid)")
+            continue
+        index["marks"].append((name, path, a, where))
+
+
+def check_index(index: dict, rep: Report, lang: str) -> None:
+    """Book-level checks of the index marks and :::index directives."""
+    entries: dict[str, set[tuple]] = defaultdict(set)
+    ranges: Counter = Counter()
+    first: dict[tuple, str] = {}
+    for name, path, a, where in index["marks"]:
+        k = index_key(path)
+        for n in range(1, len(k) + 1):
+            entries[name].add(k[:n])
+        r = a.get("range")
+        if r in ("start", "end"):
+            ranges[(name, k)] += 1 if r == "start" else -1
+            first.setdefault((name, k), where)
+        elif r is not None:
+            rep.warn(where, f'range={r!r}: use range="start" / range="end"')
+    for (name, k), n in ranges.items():
+        if n:
+            rep.warn(first[(name, k)], f"index range for {'!'.join(k)!r} has {abs(n)} unmatched {'start' if n > 0 else 'end'} mark(s) (indexRangeUnclosed)")
+    for name, path, a, where in index["marks"]:
+        for kind in ("see", "seealso"):
+            if a.get(kind) and index_key(index_levels(a[kind])) not in entries[name]:
+                rep.warn(where, f"{kind}={a[kind]!r} is not an entry of the index (indexSeeUnknown)")
+    names = {n for n, *_ in index["marks"]}
+    for n in sorted(names - index["printed"]):
+        rep.warn(f"index {n or 'main'}", f"{sum(1 for x in index['marks'] if x[0] == n)} marks but no :::index"
+                 + (f'{{index="{n}"}}' if n else "") + f" prints them ({lang})")
+    for n in sorted(index["printed"] - names):
+        rep.warn(f"index {n or 'main'}", f":::index prints an index with no marks ({lang})")
+
+
 def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res_ids: set[str], rep: Report,
-                   embedded: set[str], referenced: set[str]) -> None:
+                   embedded: set[str], referenced: set[str], index: dict | None = None) -> None:
+    if index is None:
+        index = {"marks": [], "printed": set()}
     lines = text.split("\n")
     n = 0
     if lines and lines[0].strip() == "---":
@@ -177,6 +241,8 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
         if not line:
             prev_nonblank, prev_kind = False, ""
             continue
+        if not line.startswith((":::", "::resource")) and ":index" in line:
+            collect_index_marks(re.sub(r"`[^`\n]+`", "", line), where, rep, index)
         # CommonMark habits
         if line.startswith("```") or line.startswith("~~~"):
             rep.error(where, "code fences are not supported (they print literally): use :::paragraphs{style=\"code\"}")
@@ -261,6 +327,8 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                         rep.warn(where, f"space lines {attrs['lines']!r} is not a number in (0, 20]; one line is used")
                 if fname == "pagebreak" and "parity" in attrs and attrs["parity"] not in ("odd", "even", "always-odd", "always-even"):
                     rep.warn(where, f"pagebreak parity {attrs['parity']!r} means no parity")
+                if fname == "index":
+                    index["printed"].add(attrs.get("index", "").strip())
                 if fname == "numbering" and "format" in attrs and attrs["format"] not in ("decimal", "lower-roman", "upper-roman", "lower-alpha", "upper-alpha"):
                     rep.error(where, f"numbering format {attrs['format']!r} is invalid")
             else:
@@ -271,7 +339,7 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
         # headings
         hm = HEADING_RE.match(line)
         if hm:
-            title = hm.group(2)
+            title = INDEX_MARK_RE.sub("", hm.group(2))
             am = HEADING_ATTRS_RE.search(title)
             if am:
                 attrs = parse_attrs(am.group(1))
@@ -355,6 +423,8 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
 def check_snippet(where: str, text: str, res_ids: set[str], rep: Report) -> None:
     if re.search(r"(?<!\\)\$[^$]+\$", text or ""):
         rep.warn(where, "inline $math$ is not supported in captions, notes and table cells")
+    if INDEX_MARK_RE.search(text or ""):
+        rep.warn(where, ":index marks in captions and table cells print as written: mark the text that cites them")
     if re.search(r"\[\^[\w.:-]+\]", text or ""):
         rep.warn(where, "[^id] in captions and table cells prints as written: cite the note from the text")
     for m in re.finditer(r":ref\{[^}]*id=\"([^\"]+)\"", text or ""):
@@ -479,6 +549,7 @@ def main() -> None:
                 rep.error(f"resource {r.get('id')}", f"typeId {r['typeId']!r} is not in resourceTypes {sorted(ids['types'])} ({lang})")
         embedded: set[str] = set()
         referenced: set[str] = set()
+        index: dict = {"marks": [], "printed": set()}
         if not specs:
             rep.error("preset.json", f"no chapters for {lang}")
         for i, c in enumerate(specs):
@@ -486,7 +557,8 @@ def main() -> None:
             if not p.exists():
                 rep.error("preset.json", f"missing chapter file {c.get('file')}")
                 continue
-            check_markdown(c["file"], p.read_text(encoding="utf-8"), i, ids, res_ids, rep, embedded, referenced)
+            check_markdown(c["file"], p.read_text(encoding="utf-8"), i, ids, res_ids, rep, embedded, referenced, index)
+        check_index(index, rep, lang)
         # placement sanity
         types = {t.get("id"): t for t in cfg.get("resourceTypes", []) if isinstance(t, dict)} if isinstance(cfg.get("resourceTypes"), list) else {}
         design_refs = set(re.findall(r'"resourceId":\s*"([^"]+)"', json.dumps(cfg)))

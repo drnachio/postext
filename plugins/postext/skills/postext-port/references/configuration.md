@@ -99,6 +99,7 @@ Conversion at `page.dpi` (default 300):
 | `diagramStyle` | DiagramStyleConfig | `{singleInk:false}` | §18 |
 | `math` | MathConfig | §19 | |
 | `footnotes` | FootnotesConfig | §19a | `[^id]` notes: placement, numbering, type, rule |
+| `index` | IndexConfig | §19b | what `:::index` prints: type, indents, separators, ranges, letter heads |
 | `colorPalette` | ColorPaletteEntry[] | `[main-color #295AA3]` | §0 |
 | `locale` | LocaleTag (any BCP 47 tag: `'es'`, `'es-ES'`, `'pt-BR'`) | `'en-us'` | document language: hyphenation fallback, built-in resource types and table continuation strings, PDF `/Lang` |
 | `customFonts` | CustomFontFamily[] | — | §20 **do not write in preset.json config** |
@@ -871,6 +872,39 @@ Notes cited with `[^id]` (document-format.md §10.4).
 "footnotes": { "fontSize": {"value": 7.5, "unit": "pt"}, "lineHeight": {"value": 9.5, "unit": "pt"},
   "hangingIndent": {"value": 0.8, "unit": "em"}, "separator": {"width": 0.25, "lineWidth": {"value": 0.4, "unit": "pt"}} }
 ```
+
+## 19b. `index` — IndexConfig (postext ≥ 1.7)
+
+What `:::index` prints from the `:index` marks (document-format.md §10.5). An entry = term +
+`separator` + pages; sub-entries indent one `indent` per level; wrapped lines hang by `turnoverIndent`.
+
+| key | default | notes |
+|---|---|---|
+| `fontFamily` / `fontSize` / `lineHeight` / `fontWeight` / `color` | body | every index line (letter heads too) sits on `lineHeight`, **off the baseline grid** |
+| `indent` | `1em` | per sub-entry level |
+| `turnoverIndent` | `2em` | wrapped lines, beyond the entry's own level |
+| `entrySpacing` | `0` | above each main entry |
+| `separator` / `locatorSeparator` / `rangeSeparator` | `', '` / `', '` / `'–'` | term→first page, page→page, range ends |
+| `mergeRanges` | `true` | 12, 13, 14 → 12–14 (main pages never joined) |
+| `rangeFormat` | `'full'` | `'chicago'` drops shared digits: 234–37, 101–8 (roman always full) |
+| `main` | `{bold:true}` | `{bold?, italic?}` for `main` pages |
+| `see` | by language, italic | `{label?, alsoLabel?, italic?}`: "See"/"See also", "Véase"/"Véase también"… |
+| `locale` | the document's | collation (Intl.Collator) |
+| `groups.enabled` | `true` | letter heads (A, B…, `0–9`, Symbols) |
+| `groups.fontFamily/fontSize/fontWeight/italic/color` | entries', 700 | set on the entries' pitch |
+| `groups.marginTop` | one index line | above each group; none above the first or at a column top |
+| `groups.symbolsLabel` / `numbersLabel` | by language / `'0–9'` | |
+
+Two columns come from the **heading style** of the index chapter, not from `index`:
+
+```json
+"headingStyles": [{ "id": "index", "numbered": false, "layout": { "layoutType": "double", "gutterWidth": {"value": 6, "unit": "mm"} } }],
+"index": { "fontSize": {"value": 8.5, "unit": "pt"}, "lineHeight": {"value": 11, "unit": "pt"}, "rangeFormat": "chicago",
+  "groups": { "fontWeight": 700, "color": {"hex": "#8a1c1c", "model": "hex"} } }
+```
+
+Measure the source index like body text: size, leading, indent per level, hanging indent, separators
+(comma, en dash), letter-head face and the space above each group.
 
 ---------------------------------------------------------------------------------
 

@@ -107,6 +107,7 @@ Full references (load the one you need):
   them to config.
 - [references/playbooks.md](references/playbooks.md): the unusual cases
   already solved (parts with palettes, openers, verse, glosses, footnotes,
+  back-of-book indexes,
   floated/split/nested boxes, print masters, live-text figures, cell
   pictures, rotated tables, translated editions…) and which public preset
   shows each.
@@ -211,6 +212,10 @@ Read each chapter against the source pages and apply
 - ornaments and inline tables with `::resource`;
 - footnotes as `[^n]` markers + `[^n]: text` definitions (not in headings,
   captions or cells), margin notes as side callouts;
+- a back-of-book index as `:index` marks plus a closing `:::index` chapter,
+  rebuilt from the source's markup or, for a printed index,
+  `scripts/index_marks.py parse|place` once the text is final
+  (playbooks A10);
 - verse one line per paragraph.
 
 Resources get descriptive ids, captions without the number, `note` credit
