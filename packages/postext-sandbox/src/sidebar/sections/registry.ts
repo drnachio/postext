@@ -29,6 +29,7 @@ export type SettingsSectionId =
   | 'headings'
   | 'headingStyles'
   | 'toc'
+  | 'index'
   | 'paragraphStyles'
   | 'chipStyles'
   | 'unordered-lists'
@@ -89,6 +90,7 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionEntry[] = [
   { id: 'headings', group: 'headings', labelKey: 'headings', configKeys: ['headings'] },
   { id: 'headingStyles', group: 'headings', labelKey: 'headingStylesSection', configKeys: ['headingStyles'] },
   { id: 'toc', group: 'headings', labelKey: 'tocSection', configKeys: ['toc'] },
+  { id: 'index', group: 'headings', labelKey: 'indexSection', configKeys: ['index'] },
   { id: 'unordered-lists', group: 'lists', labelKey: 'unorderedLists', configKeys: ['unorderedLists'] },
   { id: 'ordered-lists', group: 'lists', labelKey: 'orderedLists', configKeys: ['orderedLists'] },
   { id: 'resource-types', group: 'figures', labelKey: 'resourceTypesSection', configKeys: ['resourceTypes'] },

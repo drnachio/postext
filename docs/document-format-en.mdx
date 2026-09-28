@@ -185,16 +185,20 @@ Directives are single-line control tags written as `:::name` or `:::name{attrs}`
       <td><code>:::toc</code></td>
       <td>Print the table of contents here: one entry per heading of the listed levels (title, number, page number, optionally the chapter authors) and one row per part divider, typeset per the <code>toc</code> configuration. The entries follow the document — rename, move or renumber a chapter and the contents follow.</td>
     </tr>
+    <tr>
+      <td><code>:::index</code></td>
+      <td>Print the back-of-book index here: every term marked with <code>:index</code> in the book, sorted and grouped by letter, with the pages it falls on, typeset per the <code>index</code> configuration. <code>:::index&#123;index="names"&#125;</code> prints a named index. See <a href="#back-of-book-index">Back-of-book index</a>.</td>
+    </tr>
   </tbody>
 </table>
 
 Attribute values may be double-quoted (<code>"…"</code>), single-quoted (<code>'…'</code>), or bare (<code>startAt=17</code>). A bare key without `=` is treated as a present-but-empty flag.
 
-Only `pagebreak`, `numbering`, `columnbreak`, `space` and `toc` are recognized as single-line directives today — any other `:::name` line that is not a container (below) is parsed as a paragraph and surfaces an **Unknown directive** warning in the sandbox. The engine records it too, as an `unknownDirective` entry in the document's `contentWarnings` (see [Configuration › Warnings in the document](/en/docs/configuration#warnings-in-the-document)).
+Only `pagebreak`, `numbering`, `columnbreak`, `space`, `toc` and `index` are recognized as single-line directives today — any other `:::name` line that is not a container (below) is parsed as a paragraph and surfaces an **Unknown directive** warning in the sandbox. The engine records it too, as an `unknownDirective` entry in the document's `contentWarnings` (see [Configuration › Warnings in the document](/en/docs/configuration#warnings-in-the-document)).
 
 ### Attribute values
 
-The same `key="value"` syntax is read by heading attributes, directive and container fences (`:::name{…}`), inline references (`:ref{…}`), chips (`:chip[…]{…}`) and swatches (`:swatch{…}`). Its rules:
+The same `key="value"` syntax is read by heading attributes, directive and container fences (`:::name{…}`), inline references (`:ref{…}`), chips (`:chip[…]{…}`), swatches (`:swatch{…}`) and index marks (`:index[…]{…}`). Its rules:
 
 - **Keys** start with a letter or `_` and go on with letters, digits, `_` or `-`. Spaces around `=` are fine, a repeated key keeps its last value, and a key without `=` is a flag with an empty value.
 - **Quoted values.** A double-quoted value may hold anything but `"`, single quotes included; a single-quoted one anything but `'`. So a value with double quotes goes in single quotes: `lead='He said "hi"'`. There are no escapes — a backslash is an ordinary character — so a value that needs both ASCII quotes takes typographic ones (`“…”`, `’`).
@@ -443,6 +447,16 @@ For a fixed break rather than space, use `:::columnbreak` or `:::pagebreak`.
 
 The page numbers are the ones the document actually prints. A document laid out on its own is laid out again with the labels of the previous pass until they no longer move — with the numbering restarting after the front matter (the `:::numbering` recipe above) one extra pass settles it. A chapter laid out on its own (the sandbox previews) receives the whole book's outline from its host instead. See [Table of contents](/en/docs/configuration#table-of-contents) in the configuration reference.
 
+### `:::index`
+
+`:::index` prints the back-of-book index where it stands: the terms marked with `:index[…]` or `:index{term="…"}` across the book, with their pages, which follow the text as it moves. It is described with the marks in [Back-of-book index](#back-of-book-index).
+
+```md
+# Index {style="index"}
+
+:::index
+```
+
 ### Line breaks in titles
 
 Write `\\` inside a heading (or inside a part's `title` attribute) to force a line break where the title is displayed as a title: the in-column heading keeps flowing and shows a space there, while an opener design's `{titleText}` breaks the line at that point (in every `overflow` mode of the text element). Running heads, `{chapterTitle}`, `{partTitle}` and the PDF outline always render the title on one line.
@@ -609,6 +623,93 @@ so he learned to count the steps in the dark.
 - **Numbers.** Notes are numbered in the order they are first cited, starting again at each chapter (a level-1 heading, and each document of a book); a note cited twice keeps its first number and is set once. `footnotes.numbering: 'document'` runs the numbers on through the book.
 - **Where the note goes.** By default at the foot of the column that holds the line citing it, under a short rule: the line and its note always share a column, and a line whose note does not fit moves on with it. In a one-column layout that is the foot of the page. `footnotes.placement: 'chapterEnd'` sets all the notes of a chapter after its last block instead, by default at the foot of the column they close. See [Footnotes](/en/docs/configuration#footnotes) in the configuration reference for the sizes, the rule and the spacing.
 - **Checks.** A marker with no definition (`undefinedFootnote`) prints its number over an empty note; a definition no marker cites (`unusedFootnote`) is not set. The Sandbox lists both in the Checks panel.
+
+
+## Back-of-book index
+
+A back-of-book index lists the terms of a book with the pages they appear on. Mark each term where the text discusses it and print the index with `:::index` where it belongs, usually in a chapter of its own at the end. The engine finds the page of every mark after layout, so the numbers follow the text: add a paragraph, move a chapter or change the trim, and the index prints the new pages.
+
+```md
+Iron-deficiency :index[anaemia] is the most common kind.
+The pulse is taken at the wrist.:index{term="Pulse!radial" main}
+
+# Index {style="index"}
+
+:::index
+```
+
+### Index marks
+
+- **`:index[text]`** prints `text` and files it under its own words. Inline marks inside it print and are dropped from the entry. Attributes after the bracket file it elsewhere: `:index[iron deficiency]{term="Anaemia!iron-deficiency"}`.
+- **`:index{term="…"}`** prints nothing. The mark takes the page of the word written just before it on its line, or, when it opens a line, of the word after it. A line that holds only marks is removed, so a mark on a line of its own never splits a paragraph or adds space.
+- **Where.** Paragraphs, headings, list items, blockquotes, callouts and footnote definitions. In captions, table cells and design elements a mark prints as written. Inside inline code, and after a backslash (`\:index`), it is text.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Attribute</th>
+      <th>Effect</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>term</code></td>
+      <td>The entry, its levels separated by <code>!</code>: <code>term="Heart!valves!mitral"</code> files the page under <em>mitral</em>, a sub-entry of <em>valves</em> under <em>Heart</em>. A level may carry inline marks (<code>term="&#42;Escherichia coli&#42;"</code>); it is sorted without them. Without <code>term</code>, <code>:index[text]</code> uses its text.</td>
+    </tr>
+    <tr>
+      <td><code>sub</code></td>
+      <td>A level added after <code>term</code>: <code>term="Heart" sub="valves"</code> is <code>term="Heart!valves"</code>.</td>
+    </tr>
+    <tr>
+      <td><code>sort</code></td>
+      <td>The sort key of the last level when it should sort by other letters: <code>:index[St Kilda]&#123;sort="Saint Kilda"&#125;</code>, <code>term="20th century" sort="twentieth century"</code>.</td>
+    </tr>
+    <tr>
+      <td><code>main</code></td>
+      <td>A flag: the principal discussion of the term. Its page number is set bold (<code>index.main</code>). A page marked both ways is bold.</td>
+    </tr>
+    <tr>
+      <td><code>range</code></td>
+      <td><code>range="start"</code> and <code>range="end"</code>, with the same term, bound a discussion that runs over several pages: the entry prints <code>34–37</code>. A start with no end, or an end with no start, prints its one page and raises <code>indexRangeUnclosed</code>.</td>
+    </tr>
+    <tr>
+      <td><code>see</code></td>
+      <td>A cross-reference instead of a page number: <code>:index&#123;term="Cardiac insufficiency" see="Heart failure"&#125;</code> prints <em>Cardiac insufficiency. See Heart failure</em>. Levels of the target are separated by <code>!</code> and print with a colon (<em>See Heart: valves</em>). A target that is no entry of the index raises <code>indexSeeUnknown</code>.</td>
+    </tr>
+    <tr>
+      <td><code>seealso</code></td>
+      <td>A cross-reference after the entry's page numbers: <em>Heart, 12, 40. See also Circulation</em>. The mark's own page counts like any other mark's, so one mark can index a passage and point to a related entry; a <code>see</code> mark adds no page.</td>
+    </tr>
+    <tr>
+      <td><code>index</code></td>
+      <td>The name of a separate index: <code>index="names"</code> files the mark in the index that <code>:::index&#123;index="names"&#125;</code> prints, not in the main one.</td>
+    </tr>
+  </tbody>
+</table>
+
+A mark with no term (`:index{}` or `:index{see="…"}` alone) indexes nothing and raises `indexMarkInvalid`.
+
+### Printing the index
+
+`:::index` prints the main index where it stands, and `:::index{index="names"}` a named one. The directive expands into ordinary blocks, one per entry, that flow through columns and pages like text: under a heading whose [heading style](/en/docs/configuration#heading-styles) sets a two-column `layout`, it gives the usual two-column index. A click on an entry lands on the directive line.
+
+```md
+# Index of names {style="index"}
+
+:::index{index="names"}
+
+# Index of subjects {style="index"}
+
+:::index
+```
+
+- **Order.** Entries sort in the alphabetical order of the document language (`locale`, or `index.locale`): an accented letter files with its base letter (*Árbol* under A), and in Spanish *ñ* comes after *n*, under a head of its own. Entries that start with a symbol come first, then those that start with a digit, then the letters. Sub-entries sort the same way under their entry, indented one step per level.
+- **Groups.** Each new first letter opens a group: a letter head (`index.groups`) and one line of space above it (none above the first group). The head is set in one block with the group's first entry, so it never ends a column alone; an entry with no page of its own (one that only heads its sub-entries) is set with its first sub-entry for the same reason.
+- **Page numbers.** The labels the pages print, roman ones in the front matter included. An entry's pages are sorted and each is listed once; consecutive pages join into a range (`12–14`, `index.mergeRanges`), a page that falls inside a range of the same entry folds into it (a main page there makes the range bold), and `index.rangeFormat: 'chicago'` shortens the second number (`234–37`). Bold (main) pages stay apart. In the PDF each number links to its page.
+- **Cross-references** close the entry: *Term. See Target* when the entry has no pages, *Term, 12. See also Target* when it has. The labels follow the document language (*See*, *Véase*…) and can be set in `index.see`.
+- **Books.** In a book laid out chapter by chapter (the Sandbox, `buildBundle`) the chapter printing the index receives every chapter's marks with their pages, and it is laid out again only when one of them moves. A document holding both its marks and its index is laid out again until the numbers settle, as with `:::toc`.
+
+See [Back-of-book index](/en/docs/configuration#back-of-book-index) in the configuration reference for the typography, the indents and the separators.
 
 
 ## Mathematical formulas

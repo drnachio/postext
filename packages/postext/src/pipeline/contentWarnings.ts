@@ -122,6 +122,10 @@ export function collectContentWarnings(
       }
       plain += span.text.length;
     }
+    // Index marks that name no term index nothing.
+    for (const mark of b.indexMarks ?? []) {
+      if (mark.path.length === 0) out.push({ kind: 'indexMarkInvalid', ...abs({ start: mark.sourceStart, end: mark.sourceEnd }) });
+    }
   };
 
   for (const b of blocks) {
@@ -347,6 +351,15 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
       break;
     case 'unusedFootnote':
       text = `Footnote definition [^${w.id}]: is never cited — it is not set`;
+      break;
+    case 'indexMarkInvalid':
+      text = 'An index mark names no term — write :index[word] or :index{term="…"}; it indexes nothing';
+      break;
+    case 'indexSeeUnknown':
+      text = `The index${w.index ? ` "${w.index}"` : ''} has no entry "${w.target}" for a see / see also reference — the reference still prints`;
+      break;
+    case 'indexRangeUnclosed':
+      text = `The index range of "${w.term}" has no range="${w.missing}" mark — it prints a single page`;
       break;
     case 'unknownHeadingStyle':
       text = `Unknown heading style "${w.style}" on an H${w.level} — the level's own settings apply`;

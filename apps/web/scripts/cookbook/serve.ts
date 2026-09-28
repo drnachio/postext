@@ -31,7 +31,7 @@ import { readKit, readRecipeMeta, readRecipeSources, resetKitCache } from "../..
 import type { ComposedPen, Locale, RecipeMeta } from "../../src/lib/cookbook/types.ts";
 import { contentType, safeFile } from "./net.ts";
 import type { EngineSpec } from "./shim.ts";
-import { importMapTag, resolveEngine, shimModules } from "./shim.ts";
+import { importMapTag, LOCAL_PREFIX, resolveEngine, shimModules } from "./shim.ts";
 
 const PROBE_FILE = path.join(path.dirname(fileURLToPath(import.meta.url)), "lib", "probe.js");
 
@@ -105,11 +105,11 @@ import('/__pen/script.js').then(
 export function capturePageHtml(
   pen: ComposedPen,
   meta: RecipeMeta,
-  { live = false, rewriteFetch = false }: { live?: boolean; rewriteFetch?: boolean } = {},
+  { live = false, rewriteFetch = false, engine }: { live?: boolean; rewriteFetch?: boolean; engine?: EngineSpec } = {},
 ): string {
   return pageHtml(pen, {
     title: `Nº ${String(meta.number).padStart(3, "0")} · ${pen.slug}`,
-    head: `${importMapTag()}\n${loaderTag({ live, rewriteFetch })}`,
+    head: `${importMapTag(engine)}\n${loaderTag({ live, rewriteFetch })}`,
     script: "none",
   });
 }
@@ -120,6 +120,23 @@ function errorPage(message: string): string {
 <body style="margin:0;background:#0e1014;color:#f4f1ea;font:14px/1.5 system-ui,sans-serif;padding:32px">
 <h1 style="font-size:18px;color:#e5484d">The pen does not compose</h1><pre style="white-space:pre-wrap">${text}</pre>
 <script>new EventSource('/__cb/events').addEventListener('message', (e) => { if (e.data === 'reload') location.reload(); });</script>`;
+}
+
+/** A module of the local engine: `postext/pipeline` → the file in
+ *  `packages/postext/dist` (tsc keeps the imports extensionless, so the
+ *  server tries `.js` and `/index.js`). */
+function localModule(rel: string): { file: string; path: string } | null {
+  const match = /^(postext|postext-pdf)\/(.+)$/.exec(rel);
+  if (!match) return null;
+  const dist = path.join(REPO_DIR, "packages", match[1]!, "dist");
+  const asked = match[2]!;
+  const base = asked.replace(/\.js$/, "");
+  const candidates = asked.endsWith(".js") ? [asked, `${base}/index.js`] : [`${base}.js`, `${base}/index.js`];
+  for (const candidate of candidates) {
+    const file = safeFile(dist, candidate);
+    if (file) return { file, path: `${match[1]}/${candidate}` };
+  }
+  return null;
 }
 
 export async function startPenServer(opts: PenServerOptions): Promise<PenServer> {
@@ -150,7 +167,7 @@ export async function startPenServer(opts: PenServerOptions): Promise<PenServer>
         let page: string;
         try {
           const { pen, meta } = fresh();
-          page = capturePageHtml(pen, meta, { live, rewriteFetch: opts.rewriteFetch });
+          page = capturePageHtml(pen, meta, { live, rewriteFetch: opts.rewriteFetch, engine });
         } catch (error) {
           if (!live) throw error;
           page = errorPage((error as Error).message);
@@ -172,6 +189,17 @@ export async function startPenServer(opts: PenServerOptions): Promise<PenServer>
         const file = safeFile(local[1] === "repo" ? REPO_DIR : path.join(WEB_DIR, "public"), local[2]);
         if (!file) return send(res, 404, "text/plain", `not found: ${local[2]}`);
         return send(res, 200, contentType(file), fs.readFileSync(file));
+      }
+      if (engine.source === "local" && route.startsWith(LOCAL_PREFIX)) {
+        const found = localModule(route.slice(LOCAL_PREFIX.length));
+        if (!found) return send(res, 404, "text/plain", `not built: ${route} (run tsc in the package)`);
+        // Relative imports resolve against the module's URL: send an
+        // extensionless one to the file's own path first.
+        if (found.path !== route.slice(LOCAL_PREFIX.length)) {
+          res.writeHead(302, { location: LOCAL_PREFIX + found.path, "cache-control": "no-store" });
+          return res.end();
+        }
+        return send(res, 200, "text/javascript; charset=utf-8", fs.readFileSync(found.file));
       }
       if (route === "/favicon.ico") return send(res, 204, "text/plain", "");
       return send(res, 404, "text/plain", `not found: ${route}`);

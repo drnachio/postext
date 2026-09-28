@@ -15,7 +15,7 @@ import { computeHeadingContext, computeResourceNumberingState } from './resource
 import { planParts } from './parts';
 import { resolveAllConfig } from './config';
 import { headingIsNumbered } from './headingStyles';
-import { computeOutline, hasTocDirective } from './outline';
+import { computeOutline, hasIndexDirective, hasTocDirective } from './outline';
 import { lastFootnoteNumber, numberFootnotes, splitFootnoteDefinitions } from './footnotes';
 
 const NO_HEADINGS: HeadingCounters = { h1: 0, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0 };
@@ -83,6 +83,8 @@ function endsWithPart(blocks: readonly ContentBlock[], partEnds: Iterable<number
   for (let i = last + 1; i < blocks.length; i++) {
     const b = blocks[i]!;
     if (b.type !== 'directive' || b.directiveName === 'pagebreak' || b.directiveName === 'columnbreak') return false;
+    // The contents and the index expand into text.
+    if (b.directiveName === 'toc' || b.directiveName === 'index') return false;
   }
   return true;
 }
@@ -96,9 +98,13 @@ export function contentOutline(
   content: Pick<PostextContent, 'markdown'>,
   config?: PostextConfig,
   before?: LayoutContinuation,
-): { outline: OutlineEntry[]; hasToc: boolean } {
+): { outline: OutlineEntry[]; hasToc: boolean; hasIndex: boolean } {
   const body = extractFrontmatter(content.markdown).content;
   const blocks = parseMarkdownMemo(body);
   const resolved = resolveAllConfig(config);
-  return { outline: computeOutline(blocks, resolved, before?.headings), hasToc: hasTocDirective(blocks) };
+  return {
+    outline: computeOutline(blocks, resolved, before?.headings),
+    hasToc: hasTocDirective(blocks),
+    hasIndex: hasIndexDirective(blocks),
+  };
 }

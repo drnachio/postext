@@ -1012,5 +1012,29 @@
       "es": "Guiones de cine y de teatro, formato"
     },
     "theme": "type"
+  },
+  "Q85": {
+    "kind": "how",
+    "text": {
+      "en": "How do I build a back-of-book index whose page numbers change by themselves when the text moves?",
+      "es": "¿Cómo hago un índice analítico cuyos números de página cambien solos cuando el texto se mueve?"
+    },
+    "index": {
+      "en": "Index, back-of-book, page numbers that follow the text",
+      "es": "Índice analítico, números de página que siguen al texto"
+    },
+    "theme": "structure"
+  },
+  "Q86": {
+    "kind": "how",
+    "text": {
+      "en": "How do I print two indexes, one of names and one of subjects, from the same marked text?",
+      "es": "¿Cómo imprimo dos índices, uno onomástico y otro de materias, a partir del mismo texto marcado?"
+    },
+    "index": {
+      "en": "Indexes of names and of subjects",
+      "es": "Índices onomástico y de materias"
+    },
+    "theme": "structure"
   }
 }

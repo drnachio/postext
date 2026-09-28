@@ -6,6 +6,7 @@ import { useCodeMirror } from './useCodeMirror';
 import { EditorToolbar } from './EditorToolbar';
 import { useSandbox, useSandboxEditorStateRef } from '../context/SandboxContext';
 import type { RefCompletionContext } from './refCompletion';
+import { indexTermsOf } from './indexSyntax';
 
 interface MarkdownEditorProps {
   isDark?: boolean;
@@ -25,10 +26,18 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
     [state.config.resourceTypes, state.locale],
   );
   const refContextRef = useRef<RefCompletionContext>({ resources: [], types: [] });
+  // The book's index terms, read when the completion opens: every
+  // chapter's text, the active one as typed.
+  const bookTextRef = useRef({ chapters: state.chapters, activeId: state.activeChapterId, markdown: state.markdown });
+  bookTextRef.current = { chapters: state.chapters, activeId: state.activeChapterId, markdown: state.markdown };
   refContextRef.current = {
     resources: state.resources,
     types,
     chipStyles: state.config.chipStyles ?? DEFAULT_CHIP_STYLES,
+    indexTerms: () => {
+      const { chapters, activeId, markdown } = bookTextRef.current;
+      return indexTermsOf(chapters.map((c) => (c.id === activeId ? markdown : c.markdown)));
+    },
   };
 
   const { containerRef, viewRef } = useCodeMirror({

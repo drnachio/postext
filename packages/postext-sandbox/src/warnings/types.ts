@@ -23,6 +23,9 @@ export type WarningKind =
   | 'unknownChipStyle'
   | 'undefinedFootnote'
   | 'unusedFootnote'
+  | 'indexMarkInvalid'
+  | 'indexSeeUnknown'
+  | 'indexRangeUnclosed'
   | 'unknownHeadingStyle'
   | 'chipOverlap'
   | 'numberingInvalidFormat'
@@ -124,6 +127,13 @@ export type WarningPayload =
   | { kind: 'undefinedFootnote'; id: string }
   /** A footnote definition `[^id]: …` no marker cites. */
   | { kind: 'unusedFootnote'; id: string }
+  /** An index mark (`:index{…}`) with no term: it indexes nothing. */
+  | { kind: 'indexMarkInvalid' }
+  /** A `see` / `seealso` target that is no entry of its index. */
+  | { kind: 'indexSeeUnknown'; target: string; index: string }
+  /** A page range of the index opened and never closed (or closed with no
+   *  opening): it prints as a single page. */
+  | { kind: 'indexRangeUnclosed'; term: string; missing: 'start' | 'end'; index: string }
   /** A heading's `{style="…"}` names no heading style; the heading keeps
    *  its level's settings. */
   | { kind: 'unknownHeadingStyle'; style: string; level: number }

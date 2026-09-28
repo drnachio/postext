@@ -27,6 +27,7 @@ import type {
   ResolvedPartsConfig,
   ResolvedHeadingStyleConfig,
   ResolvedTocConfig,
+  ResolvedIndexConfig,
   ResolvedFootnotesConfig,
   PageRole,
   PartState,
@@ -76,6 +77,8 @@ export interface ResolvedConfig {
   headingStyles: ResolvedHeadingStyleConfig[];
   /** The table of contents `:::toc` prints. */
   toc: ResolvedTocConfig;
+  /** The back-of-book index `:::index` prints. */
+  index: ResolvedIndexConfig;
   /** Footnotes (`[^id]`): placement, numbering, style. */
   footnotes: ResolvedFootnotesConfig;
   /** The document language (`PostextConfig.locale`) when the config sets
@@ -180,6 +183,10 @@ export interface VDTLineSegment {
    *  Renderers recolour it (link colour) and the PDF backend emits a link
    *  annotation to the resource's named destination. */
   refResourceId?: string;
+  /** Physical book page index this segment links to: a page number of an
+   *  expanded `:::index`. The PDF backend makes it a link to that page (when
+   *  the page is in the document), as it does a contents row. */
+  pageLink?: number;
   /** Present when this segment is a footnote marker (`[^id]`): the note's
    *  id. The layout sets the note at the foot of the column holding the
    *  line; the PDF backend links the marker to it. */
@@ -1237,6 +1244,16 @@ export type ContentWarning = ContentWarningBase & (
   | { kind: 'undefinedFootnote'; id: string }
   /** A footnote definition `[^id]: …` no marker cites: it is not set. */
   | { kind: 'unusedFootnote'; id: string }
+  /** An index mark (`:index{…}`) with no term — no `term` attribute and no
+   *  bracketed text: it indexes nothing. */
+  | { kind: 'indexMarkInvalid' }
+  /** A `see` / `seealso` of an index mark names no entry of its index: the
+   *  cross-reference still prints. Points at the `:::index` line. */
+  | { kind: 'indexSeeUnknown'; target: string; index: string }
+  /** A page range of the index opened (`range="start"`) and never closed,
+   *  or closed with no opening (`missing: 'start'`): it prints as a single
+   *  page. Points at the `:::index` line. */
+  | { kind: 'indexRangeUnclosed'; term: string; missing: 'start' | 'end'; index: string }
   /** A heading's `{style}` attribute names no heading style: the heading
    *  and its section keep the level's own settings. */
   | { kind: 'unknownHeadingStyle'; style: string; level: number }
@@ -1295,6 +1312,11 @@ export interface VDTDocument {
    *  fallback (see {@link ContentWarning}), located on the pages of the
    *  finished layout. Absent when the source is clean. */
   contentWarnings?: ContentWarning[];
+  /** Where each index mark (`:index…`) of the document landed: the mark's
+   *  source offset in the markdown body (front matter excluded) and the
+   *  index of its page in `pages`. Marks whose text reached no page are
+   *  left out. Absent when the document has no marks. */
+  indexMarks?: { sourceStart: number; pageIndex: number }[];
   /** Configuration values the engine replaced (see {@link ConfigWarning});
    *  absent when the config is clean. */
   configWarnings?: ConfigWarning[];

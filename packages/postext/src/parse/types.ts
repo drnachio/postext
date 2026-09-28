@@ -16,7 +16,7 @@ export type DirectiveAttrs = Record<string, string>;
 
 /** Recognized directive names. Unknown names are not parsed as directives —
  *  they fall through to the paragraph branch and surface via warnings. */
-export type DirectiveName = 'pagebreak' | 'numbering' | 'columnbreak' | 'space' | 'toc';
+export type DirectiveName = 'pagebreak' | 'numbering' | 'columnbreak' | 'space' | 'toc' | 'index';
 
 /** Recognized fenced-container names. A container opens with a
  *  `:::name{attrs}` line and closes with a bare `:::` line; the blocks in
@@ -209,6 +209,53 @@ export interface TocBlockInfo {
   palette?: Record<string, string>;
 }
 
+/** An index mark (`:index[text]{…}` / `:index{…}`, #165): one term the
+ *  back-of-book index lists, at the place it was marked. */
+export interface IndexMark {
+  /** Name of the index (`index="names"`); `''` for the main index. */
+  index: string;
+  /** The entry's levels, main term first (`term="Heart!valves"`). Empty
+   *  for a mark without a term (it indexes nothing). */
+  path: string[];
+  /** Sort key of the last level (`sort="…"`), when it differs from it. */
+  sort?: string;
+  /** Cross-references: the entry prints *See* / *See also* the target
+   *  instead of a page number for this mark. */
+  see?: string;
+  seeAlso?: string;
+  /** The principal reference (`main`): its page number is set bold. */
+  main?: boolean;
+  /** Opens or closes a page range (`range="start"` / `range="end"`). */
+  range?: 'start' | 'end';
+  /** Source range of the whole mark in the original markdown. */
+  sourceStart: number;
+  sourceEnd: number;
+  /** Source offset of the character the mark is attached to — the last
+   *  one before it on its line (`attach: 'before'`), else the first one
+   *  after it; `-1` when there is none. The mark lands on that character's
+   *  page. */
+  anchor: number;
+  attach: 'before' | 'after';
+}
+
+/** What one block of an expanded `:::index` prints: an entry (a term with
+ *  its page numbers), under the letter head of its group when it opens
+ *  one. */
+export interface IndexBlockInfo {
+  /** Entry depth (0 = main entry). */
+  level: number;
+  /** The entry opens a group of the index (a new first letter) other than
+   *  the first: the space above groups applies. */
+  groupStart?: boolean;
+  /** The letter head printed above the entry, in the same block so it
+   *  never ends a column alone. */
+  group?: string;
+  /** Entries with no page of their own that head this one (a main entry
+   *  and its sub-entry above a sub-sub-entry), printed above it in the
+   *  same block for the same reason, outermost first. */
+  leads?: { level: number; spans: InlineSpan[] }[];
+}
+
 export interface ContentBlock {
   type: ContentBlockType;
   text: string;
@@ -256,6 +303,11 @@ export interface ContentBlock {
    *  `'paragraph'` and its text the entry title, so it flows and maps back
    *  to the directive line like ordinary content. */
   toc?: TocBlockInfo;
+  /** Present on the blocks a `:::index` directive expands into (see
+   *  `pipeline/indexDirective.ts`). */
+  index?: IndexBlockInfo;
+  /** The index marks set in this block's text, in source order. */
+  indexMarks?: IndexMark[];
   /** For `resourceBlock` blocks: the referenced `Resource.id`. */
   resourceId?: string;
   /** For `containerStart` / `containerEnd` marker blocks: the container

@@ -8,6 +8,7 @@ import { BodyTextSection } from './BodyTextSection';
 import { HeadingsSection } from './HeadingsSection';
 import { HeadingStylesSection } from './HeadingStylesSection';
 import { TocSection } from './TocSection';
+import { IndexSection } from './IndexSection';
 import { PartsSection } from './PartsSection';
 import { UnorderedListsSection } from './UnorderedListsSection';
 import { OrderedListsSection } from './OrderedListsSection';
@@ -38,6 +39,7 @@ export const SECTION_COMPONENTS: Record<SettingsSectionId, ComponentType> = {
   'headings': HeadingsSection,
   'headingStyles': HeadingStylesSection,
   'toc': TocSection,
+  'index': IndexSection,
   'paragraphStyles': ParagraphStylesSection,
   'unordered-lists': UnorderedListsSection,
   'ordered-lists': OrderedListsSection,

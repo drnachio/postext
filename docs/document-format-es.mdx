@@ -185,16 +185,20 @@ Las directivas son etiquetas de control de una sola línea escritas como `:::nom
       <td><code>:::toc</code></td>
       <td>Imprime aquí el índice de contenidos: una entrada por encabezado de los niveles indicados (título, número, número de página y, opcionalmente, los autores del capítulo) y una fila por separador de parte, compuestas según la configuración <code>toc</code>. Las entradas siguen al documento — renombra, mueve o renumera un capítulo y el índice le sigue.</td>
     </tr>
+    <tr>
+      <td><code>:::index</code></td>
+      <td>Imprime aquí el índice analítico: todos los términos marcados con <code>:index</code> en el libro, ordenados y agrupados por inicial, con las páginas en que caen, compuestos según la configuración <code>index</code>. <code>:::index&#123;index="nombres"&#125;</code> imprime un índice con nombre. Ver <a href="#índice-analítico">Índice analítico</a>.</td>
+    </tr>
   </tbody>
 </table>
 
 Los valores de los atributos pueden ir entre comillas dobles (<code>"…"</code>), comillas simples (<code>'…'</code>) o sin comillas (<code>startAt=17</code>). Una clave sin `=` se trata como una bandera presente con valor vacío.
 
-Hoy solo se reconocen `pagebreak`, `numbering`, `columnbreak`, `space` y `toc` como directivas de una sola línea — cualquier otra línea `:::nombre` que no sea un contenedor (más abajo) se parsea como párrafo y genera un aviso **Directiva desconocida** en el sandbox. El motor también lo registra, como una entrada `unknownDirective` en los `contentWarnings` del documento (véase [Configuración › Avisos del documento](/es/docs/configuration#avisos-del-documento)).
+Hoy solo se reconocen `pagebreak`, `numbering`, `columnbreak`, `space`, `toc` e `index` como directivas de una sola línea — cualquier otra línea `:::nombre` que no sea un contenedor (más abajo) se parsea como párrafo y genera un aviso **Directiva desconocida** en el sandbox. El motor también lo registra, como una entrada `unknownDirective` en los `contentWarnings` del documento (véase [Configuración › Avisos del documento](/es/docs/configuration#avisos-del-documento)).
 
 ### Valores de los atributos
 
-La misma sintaxis `clave="valor"` la leen los atributos de encabezado, las vallas de directivas y contenedores (`:::nombre{…}`), las referencias en línea (`:ref{…}`), los chips (`:chip[…]{…}`) y las muestras de color (`:swatch{…}`). Sus reglas:
+La misma sintaxis `clave="valor"` la leen los atributos de encabezado, las vallas de directivas y contenedores (`:::nombre{…}`), las referencias en línea (`:ref{…}`), los chips (`:chip[…]{…}`), las muestras de color (`:swatch{…}`) y las marcas de índice (`:index[…]{…}`). Sus reglas:
 
 - **Claves.** Empiezan por una letra o `_` y siguen con letras, dígitos, `_` o `-`. Se admiten espacios alrededor del `=`, una clave repetida se queda con su último valor y una clave sin `=` es una bandera con valor vacío.
 - **Valores entre comillas.** Un valor entre comillas dobles puede contener cualquier cosa salvo `"`, comillas simples incluidas; uno entre comillas simples, cualquier cosa salvo `'`. Así, un valor con comillas dobles va entre simples: `lead='Dijo "hola"'`. No hay escapes —la barra invertida es un carácter normal—, así que un valor que necesite los dos tipos de comillas ASCII usa comillas tipográficas (`«…»`, `“…”`, `’`).
@@ -443,6 +447,16 @@ Para un salto fijo en lugar de espacio, usa `:::columnbreak` o `:::pagebreak`.
 
 Los números de página son los que el documento imprime realmente. Un documento compuesto por sí solo se vuelve a componer con las etiquetas de la pasada anterior hasta que dejan de moverse — con la numeración reiniciada tras los preliminares (la receta de `:::numbering` de más arriba) basta una pasada adicional. Un capítulo compuesto por separado (las vistas previas del sandbox) recibe en su lugar el esquema del libro entero desde su anfitrión. Ver [Índice de contenidos](/es/docs/configuration#índice-de-contenidos) en la referencia de configuración.
 
+### `:::index`
+
+`:::index` imprime el índice analítico en el punto donde está: los términos marcados con `:index[…]` o `:index{term="…"}` en todo el libro, con sus páginas, que siguen al texto cuando se mueve. Se describe junto con las marcas en [Índice analítico](#índice-analítico).
+
+```md
+# Índice analítico {style="indice"}
+
+:::index
+```
+
 ### Saltos de línea en los títulos
 
 Escribe `\\` dentro de un encabezado (o dentro del atributo `title` de una parte) para forzar un salto de línea allí donde el título se muestra como tal: el encabezado en columna sigue fluyendo y muestra un espacio, mientras que el `{titleText}` de un diseño de apertura salta de línea en ese punto (en cualquier modo de `overflow` del elemento de texto). Las cabeceras de página, `{chapterTitle}`, `{partTitle}` y el índice del PDF siempre componen el título en una sola línea.
@@ -609,6 +623,93 @@ así que aprendió a contar los escalones a oscuras.
 - **Números.** Las notas se numeran en el orden en que se citan por primera vez, y la numeración vuelve a empezar en cada capítulo (un título de nivel 1, y cada documento de un libro); una nota citada dos veces conserva su primer número y se compone una sola vez. `footnotes.numbering: 'document'` sigue la numeración por todo el libro.
 - **Dónde va la nota.** Por defecto, al pie de la columna que contiene la línea que la cita, bajo un filete corto: la línea y su nota comparten siempre columna, y una línea cuya nota no cabe pasa con ella a la siguiente. En una maqueta de una columna es el pie de la página. `footnotes.placement: 'chapterEnd'` compone en cambio todas las notas de un capítulo tras su último bloque, por defecto al pie de la columna que cierran. Los cuerpos, el filete y los espacios están en [Notas al pie](/es/docs/configuration#notas-al-pie), en la referencia de configuración.
 - **Comprobaciones.** Una llamada sin definición (`undefinedFootnote`) imprime su número sobre una nota vacía; una definición que ninguna llamada cita (`unusedFootnote`) no se compone. El Sandbox muestra ambas en el panel Revisión.
+
+
+## Índice analítico
+
+Un índice analítico recoge los términos de un libro con las páginas en que aparecen. Marca cada término donde el texto lo trata e imprime el índice con `:::index` donde corresponda, normalmente en un capítulo propio al final. El motor busca la página de cada marca después de componer, así que los números siguen al texto: añade un párrafo, mueve un capítulo o cambia el formato de página, y el índice imprime las páginas nuevas.
+
+```md
+La :index[anemia] ferropénica es la más frecuente.
+El pulso se toma en la muñeca.:index{term="Pulso!radial" main}
+
+# Índice analítico {style="indice"}
+
+:::index
+```
+
+### Marcas de índice
+
+- **`:index[texto]`** imprime `texto` y lo registra con sus propias palabras. Las marcas de formato que lleve dentro se imprimen y no pasan a la entrada. Los atributos tras el corchete lo registran en otra entrada: `:index[déficit de hierro]{term="Anemia!ferropénica"}`.
+- **`:index{term="…"}`** no imprime nada. La marca toma la página de la palabra escrita justo antes en su línea o, si abre la línea, de la palabra siguiente. Una línea que solo contiene marcas desaparece, así que una marca en una línea propia nunca parte un párrafo ni añade espacio.
+- **Dónde.** Párrafos, encabezados, elementos de lista, citas, recuadros y definiciones de notas al pie. En pies de figura, celdas de tabla y elementos de diseño la marca se imprime tal cual. Dentro de código en línea, y tras una barra invertida (`\:index`), es texto.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Atributo</th>
+      <th>Efecto</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>term</code></td>
+      <td>La entrada, con sus niveles separados por <code>!</code>: <code>term="Corazón!válvulas!mitral"</code> registra la página en <em>mitral</em>, subentrada de <em>válvulas</em> dentro de <em>Corazón</em>. Un nivel admite marcas de formato (<code>term="&#42;Escherichia coli&#42;"</code>) y se ordena sin ellas. Sin <code>term</code>, <code>:index[texto]</code> usa su texto.</td>
+    </tr>
+    <tr>
+      <td><code>sub</code></td>
+      <td>Un nivel que se añade tras <code>term</code>: <code>term="Corazón" sub="válvulas"</code> equivale a <code>term="Corazón!válvulas"</code>.</td>
+    </tr>
+    <tr>
+      <td><code>sort</code></td>
+      <td>La clave de ordenación del último nivel, cuando debe ordenarse por otras letras: <code>:index[S. Juan de la Cruz]&#123;sort="San Juan de la Cruz"&#125;</code>, <code>term="siglo XX" sort="siglo 20"</code>.</td>
+    </tr>
+    <tr>
+      <td><code>main</code></td>
+      <td>Una bandera: el lugar donde el término se trata a fondo. Su número de página se imprime en negrita (<code>index.main</code>). Una página marcada de las dos maneras sale en negrita.</td>
+    </tr>
+    <tr>
+      <td><code>range</code></td>
+      <td><code>range="start"</code> y <code>range="end"</code>, con el mismo término, acotan una explicación que ocupa varias páginas: la entrada imprime <code>34–37</code>. Un inicio sin final, o un final sin inicio, imprime su única página y genera <code>indexRangeUnclosed</code>.</td>
+    </tr>
+    <tr>
+      <td><code>see</code></td>
+      <td>Una remisión en lugar de un número de página: <code>:index&#123;term="Insuficiencia cardiaca congestiva" see="Insuficiencia cardiaca"&#125;</code> imprime <em>Insuficiencia cardiaca congestiva. Véase Insuficiencia cardiaca</em>. Los niveles del destino se separan con <code>!</code> y se imprimen con dos puntos (<em>Véase Corazón: válvulas</em>). Un destino que no es una entrada del índice genera <code>indexSeeUnknown</code>.</td>
+    </tr>
+    <tr>
+      <td><code>seealso</code></td>
+      <td>Una remisión tras los números de página de la entrada: <em>Corazón, 12, 40. Véase también Circulación</em>. La página de la propia marca cuenta como la de cualquier otra, así que una marca puede indexar un pasaje y remitir a una entrada afín; una marca <code>see</code> no añade página.</td>
+    </tr>
+    <tr>
+      <td><code>index</code></td>
+      <td>El nombre de un índice aparte: <code>index="nombres"</code> registra la marca en el índice que imprime <code>:::index&#123;index="nombres"&#125;</code>, no en el principal.</td>
+    </tr>
+  </tbody>
+</table>
+
+Una marca sin término (`:index{}` o `:index{see="…"}` a secas) no indexa nada y genera `indexMarkInvalid`.
+
+### Imprimir el índice
+
+`:::index` imprime el índice principal en el punto donde está, y `:::index{index="nombres"}` uno con nombre. La directiva se expande en bloques ordinarios, uno por entrada, que fluyen por columnas y páginas como el texto: bajo un encabezado cuyo [estilo de encabezado](/es/docs/configuration#estilos-de-encabezado) fija un `layout` a dos columnas, da el índice habitual a dos columnas. Un clic sobre una entrada lleva a la línea de la directiva.
+
+```md
+# Índice onomástico {style="indice"}
+
+:::index{index="nombres"}
+
+# Índice de materias {style="indice"}
+
+:::index
+```
+
+- **Orden.** Las entradas siguen el orden alfabético del idioma del documento (`locale`, o `index.locale`): una letra acentuada se ordena con su letra base (*Árbol* en la A) y, en español, la *ñ* va tras la *n*, con una cabeza propia. Primero van las entradas que empiezan por un símbolo, después las que empiezan por una cifra y luego las letras. Las subentradas se ordenan igual dentro de su entrada, con una sangría por nivel.
+- **Grupos.** Cada nueva inicial abre un grupo: una letra de cabeza (`index.groups`) y una línea de espacio encima (ninguna sobre el primer grupo). La letra se compone en el mismo bloque que la primera entrada del grupo, así que nunca cierra una columna sola; una entrada sin página propia (la que solo encabeza sus subentradas) se compone con su primera subentrada por lo mismo.
+- **Números de página.** Las etiquetas que imprimen las páginas, incluidas las romanas de los preliminares. Las páginas de una entrada se ordenan y cada una aparece una vez; las consecutivas se unen en un intervalo (`12–14`, `index.mergeRanges`), una página que cae dentro de un intervalo de la misma entrada se funde con él (si es principal, el intervalo sale en negrita) e `index.rangeFormat: 'chicago'` abrevia el segundo número (`234–37`). Las páginas principales, en negrita, no se unen. En el PDF cada número enlaza con su página.
+- **Las remisiones** cierran la entrada: *Término. Véase Destino* cuando la entrada no tiene páginas, y *Término, 12. Véase también Destino* cuando las tiene. Los textos siguen el idioma del documento (*Véase*, *See*…) y se cambian en `index.see`.
+- **Libros.** En un libro compuesto capítulo a capítulo (el sandbox, `buildBundle`), el capítulo que imprime el índice recibe las marcas de todos los capítulos con sus páginas, y solo se vuelve a componer cuando alguna se mueve. Un documento que contiene sus marcas y su índice se vuelve a componer hasta que los números se estabilizan, como con `:::toc`.
+
+Ver [Índice analítico](/es/docs/configuration#índice-analítico) en la referencia de configuración para la tipografía, las sangrías y los separadores.
 
 
 ## Fórmulas matemáticas

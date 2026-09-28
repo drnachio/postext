@@ -21,7 +21,9 @@ export interface EngineSpec {
   postext: string;
   /** Pinned postext-pdf version. */
   postextPdf: string;
-  source: "npm";
+  /** `local`: the workspace packages' `dist`, served by the pen server
+   *  (previews of unreleased features; never written as a capture). */
+  source: "npm" | "local";
 }
 
 const VERSION = /^\d+\.\d+\.\d+$/;
@@ -42,8 +44,10 @@ export function resolveEngine(spec: string = "npm"): EngineSpec {
   }
   const match = /^npm@(\d+\.\d+\.\d+)$/.exec(spec);
   if (match) return { postext: match[1], postextPdf: match[1], source: "npm" };
-  if (spec === "local") throw new Error("--engine local is not available yet: capture against a released version");
-  throw new Error(`--engine expects npm or npm@x.y.z, not "${spec}"`);
+  if (spec === "local") {
+    return { postext: releasedVersion("postext"), postextPdf: releasedVersion("postext-pdf"), source: "local" };
+  }
+  throw new Error(`--engine expects npm, npm@x.y.z or local, not "${spec}"`);
 }
 
 /** Specifiers a pen may import → the shim that serves them. */
@@ -54,8 +58,34 @@ export const SHIM_PATHS = {
   "https://esm.sh/postext-pdf": "/__shim/postext-pdf.js",
 } as const;
 
-export function importMapTag(): string {
-  return `<script type="importmap">${JSON.stringify({ imports: SHIM_PATHS })}</script>`;
+/** Where the local engine's modules are served (`packages/<name>/dist`). */
+export const LOCAL_PREFIX = "/__local/";
+
+/** The version of `dep` a workspace package installed. */
+function installedVersion(pkg: string, dep: string): string {
+  const file = path.join(REPO_DIR, "packages", pkg, "node_modules", dep, "package.json");
+  return (JSON.parse(fs.readFileSync(file, "utf-8")) as { version: string }).version;
+}
+
+/** The local engine's bare imports: the workspace packages to the pen
+ *  server, their dependencies to esm.sh at the installed versions. */
+function localImports(): Record<string, string> {
+  const esm = (pkg: string, dep: string) => `https://esm.sh/${dep}@${installedVersion(pkg, dep)}`;
+  const imports: Record<string, string> = {
+    postext: `${LOCAL_PREFIX}postext/index.js`,
+    "postext/bundle": `${LOCAL_PREFIX}postext/bundle/index.js`,
+    "postext/worker": `${LOCAL_PREFIX}postext/worker/client.js`,
+    "mathjax-full/": `${esm("postext", "mathjax-full")}/`,
+  };
+  for (const dep of ["@chenglou/pretext", "fflate", "gray-matter", "hypher", "react"]) imports[dep] = esm("postext", dep);
+  for (const lang of ["ca", "de", "en-us", "es", "fr", "it", "nl", "pt"]) imports[`hyphenation.${lang}`] = esm("postext", `hyphenation.${lang}`);
+  for (const dep of ["@pdf-lib/fontkit", "pdf-lib", "wawoff2"]) imports[dep] = esm("postext-pdf", dep);
+  return imports;
+}
+
+export function importMapTag(engine?: EngineSpec): string {
+  const imports = engine?.source === "local" ? { ...localImports(), ...SHIM_PATHS } : SHIM_PATHS;
+  return `<script type="importmap">${JSON.stringify({ imports })}</script>`;
 }
 
 /** Shared by every shim: the record in `window.__cb`. */
@@ -233,6 +263,16 @@ export async function renderToPdf(input, options = {}) {
 export function shimModules(engine: EngineSpec): Record<string, string> {
   const V = engine.postext;
   const P = engine.postextPdf;
+  if (engine.source === "local") {
+    const local = (file: string) => `${LOCAL_PREFIX}${file}`;
+    return {
+      "/__shim/recorder.js": RECORDER,
+      "/__shim/postext.js": engineShim("postext", local("postext/index.js")),
+      "/__shim/postext-bundle.js": engineShim("postext-bundle", local("postext/index.js")),
+      "/__shim/postext-worker.js": workerShim(local("postext/worker/client.js")),
+      "/__shim/postext-pdf.js": pdfShim(local("postext-pdf/index.js")),
+    };
+  }
   return {
     "/__shim/recorder.js": RECORDER,
     "/__shim/postext.js": engineShim("postext", `https://esm.sh/postext@${V}`),

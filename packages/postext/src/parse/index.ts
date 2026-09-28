@@ -16,6 +16,8 @@ export type {
   ParseIssue,
   ContentBlock,
   TocBlockInfo,
+  IndexBlockInfo,
+  IndexMark,
   ChipBox,
 } from './types';
 export { MATH_PLACEHOLDER } from './inlineMath';
@@ -34,3 +36,4 @@ export {
 export { computeSourceMap } from './sourceMapping';
 export { parseInlineSnippetSpans, mapInlineSnippet } from './inlineSnippet';
 export type { InlineSnippetMapping } from './inlineSnippet';
+export { extractIndexMarks } from './indexMarks';

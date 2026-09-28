@@ -10,6 +10,7 @@ import { parseDirectiveAttrs } from './attrs';
 import { extractInlineMath, fixMathSourceMap, injectMathSpans } from './inlineMath';
 import { BREAK_PLACEHOLDER, TITLE_BREAK_RE, extractInlineChips, extractInlineFootnotes, extractInlineRefs, injectFootnoteSpans, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, protectCodeSpans, titleBreakIndices, trimSpans } from './inlineFormatting';
 import { buildBlockMapping } from './sourceMapping';
+import { attachIndexMarks, extractIndexMarks, remapParseOffsets } from './indexMarks';
 
 export { parseDirectiveAttrs, spaceDirectiveLines, MAX_SPACE_LINES } from './attrs';
 
@@ -21,7 +22,7 @@ const DIRECTIVE_RE = /^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$/;
 const CONTAINER_CLOSE_RE = /^:::\s*$/;
 /** Set of directive names recognized today. Unknown names fall through to
  *  paragraph-parsing and downstream warnings flag them. */
-export const KNOWN_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'numbering', 'columnbreak', 'space', 'toc']);
+export const KNOWN_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'numbering', 'columnbreak', 'space', 'toc', 'index']);
 /** Trailing `{key="value" …}` attribute block on a heading line, e.g.
  *  `# Title {author="I. Zango"}`. The braces must be balanced (no nested
  *  braces) and be the last thing on the line; a lone `{}` or a blob that
@@ -103,9 +104,21 @@ export function parseMarkdown(markdown: string): ContentBlock[] {
 
 /**
  * Merge consecutive blockquote lines into a single block, and consecutive
- * non-blank, non-special lines into paragraphs.
+ * non-blank, non-special lines into paragraphs. Index marks (`:index…`)
+ * are taken out first and attached to the blocks holding them
+ * (`ContentBlock.indexMarks`); every source offset still points into
+ * `markdown`.
  */
 export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBlock[]; issues: ParseIssue[] } {
+  const marks = extractIndexMarks(markdown);
+  if (!marks) return parseBlocks(markdown);
+  const result = parseBlocks(marks.text);
+  attachIndexMarks(result.blocks, marks.marks);
+  remapParseOffsets(result, marks.toOriginal);
+  return result;
+}
+
+function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseIssue[] } {
   const blocks: ContentBlock[] = [];
   const issues: ParseIssue[] = [];
   const rawLines = markdown.split('\n');

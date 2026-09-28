@@ -42,7 +42,8 @@ const CAPTURE_USAGE = `pnpm cookbook capture [slug…] [options]
   --headed               Show the browser
   --concurrency <n>      Recipes captured at once (default 3)
   --refresh-net          Bypass the on-disk network cache
-  --engine <spec>        npm (default: packages/postext's version) or npm@x.y.z
+  --engine <spec>        npm (default: packages/postext's version), npm@x.y.z, or local
+                         (the workspace packages' dist; checks only, writes no capture)
   --preview-dir <dir>    Also write every page image here for inspection
   --sandbox-only         Write only each edition's <slug>.postext (and its entry
                          in capture.json), with the engine capture.json records;
@@ -98,9 +99,8 @@ async function runCaptureCommand(argv: readonly string[]): Promise<number> {
     "capture",
   );
   const engine = str(args, "engine");
-  if (engine === "local") throw new UsageError("--engine local is not supported yet: capture against npm", "capture");
   if (engine && !ENGINE_PATTERN.test(engine)) {
-    throw new UsageError(`--engine expects npm or npm@x.y.z, not "${engine}"`, "capture");
+    throw new UsageError(`--engine expects npm, npm@x.y.z or local, not "${engine}"`, "capture");
   }
   const all = flag(args, "all");
   if (all && args.positionals.length) throw new UsageError("name recipes or pass --all, not both", "capture");
