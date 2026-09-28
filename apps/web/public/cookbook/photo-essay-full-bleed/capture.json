@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "photo-essay-full-bleed",
-  "sourceHash": "25c1e75c086a53c5d9a82617dc40406ddb561040bf41d0dfa69c967e876f0708",
+  "sourceHash": "c12c90f6fef7500c30eec3c01190c6fcefaf9e262c3cf56680bda9acb2c961e1",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.8.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T22:19:23.702Z",
+  "capturedAt": "2026-09-28T13:54:04.058Z",
   "variants": {
     "en": {
-      "hash8": "42ca79d1",
-      "vdtHash": "8e07a9bba9a206319218e2e9e6d04fcc6306710c",
+      "hash8": "a93bc7c8",
+      "vdtHash": "b4757d61b68f22213e3f235ae6d977ce735116e8",
       "timings": {
-        "importMs": 334,
-        "fontsMs": 60,
-        "buildMs": 9,
-        "totalMs": 1435,
+        "importMs": 386,
+        "fontsMs": 65,
+        "buildMs": 8,
+        "totalMs": 1129,
         "builds": 2
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Syne Mono"
         ],
         "pages": 9,
-        "ownLines": 179
+        "ownLines": 180
       },
       "pages": [
         {
@@ -60,7 +60,7 @@
           "h": 750,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 42876,
+          "bytes": 42886,
           "alt": "Page 2: The climb."
         },
         {
@@ -104,7 +104,7 @@
           "h": 750,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 35854,
+          "bytes": 35872,
           "alt": "Page 6: Eleven seconds. IV · Dusk · 19:41."
         },
         {
@@ -126,7 +126,7 @@
           "h": 750,
           "file": "p08.webp",
           "strip": "p08.s.webp",
-          "bytes": 37868,
+          "bytes": 37876,
           "alt": "Page 8: First snow."
         },
         {
@@ -137,7 +137,7 @@
           "h": 750,
           "file": "p09.webp",
           "strip": "p09.s.webp",
-          "bytes": 13756,
+          "bytes": 13752,
           "alt": "Opening page 9: Snow."
         }
       ],
@@ -177,7 +177,7 @@
       },
       "sandbox": {
         "file": "photo-essay-full-bleed.postext",
-        "bytes": 112222
+        "bytes": 112217
       },
       "detected": {
         "apis": [
@@ -280,8 +280,8 @@
           "page",
           "resourceTypes"
         ],
-        "configLeaves": 383,
-        "designElements": 24,
+        "configLeaves": 342,
+        "designElements": 21,
         "directives": [],
         "inline": [
           "{attrs}",
@@ -345,13 +345,13 @@
       }
     },
     "es": {
-      "hash8": "64c8cf64",
-      "vdtHash": "e2089d5d4547636e8d910d09cb56bcbbfa25f499",
+      "hash8": "8d33c808",
+      "vdtHash": "fd820b49b0a2b0d0b144f19aae3baee64c6c1b82",
       "timings": {
-        "importMs": 1670,
-        "fontsMs": 205,
-        "buildMs": 10,
-        "totalMs": 2643,
+        "importMs": 404,
+        "fontsMs": 117,
+        "buildMs": 12,
+        "totalMs": 1267,
         "builds": 2
       },
       "specimen": {
@@ -373,7 +373,7 @@
           "Syne Mono"
         ],
         "pages": 9,
-        "ownLines": 179
+        "ownLines": 180
       },
       "pages": [
         {
@@ -395,7 +395,7 @@
           "h": 750,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 41418,
+          "bytes": 41430,
           "alt": "Página 2: La subida."
         },
         {
@@ -439,7 +439,7 @@
           "h": 750,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 35286,
+          "bytes": 35318,
           "alt": "Página 6: Once segundos. IV · Atardecer · 19:41."
         },
         {
@@ -461,7 +461,7 @@
           "h": 750,
           "file": "p08.webp",
           "strip": "p08.s.webp",
-          "bytes": 39016,
+          "bytes": 39026,
           "alt": "Página 8: Primera nieve."
         },
         {
@@ -472,7 +472,7 @@
           "h": 750,
           "file": "p09.webp",
           "strip": "p09.s.webp",
-          "bytes": 14066,
+          "bytes": 14002,
           "alt": "Página de apertura 9: Nieve."
         }
       ],
@@ -512,7 +512,7 @@
       },
       "sandbox": {
         "file": "photo-essay-full-bleed.postext",
-        "bytes": 112315
+        "bytes": 112310
       },
       "detected": {
         "apis": [
@@ -615,8 +615,8 @@
           "page",
           "resourceTypes"
         ],
-        "configLeaves": 383,
-        "designElements": 24,
+        "configLeaves": 342,
+        "designElements": 21,
         "directives": [],
         "inline": [
           "{attrs}",
