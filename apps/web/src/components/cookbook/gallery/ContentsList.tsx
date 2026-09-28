@@ -43,7 +43,7 @@ export function ContentsRow({ item, labels }: { item: ContentsItem; labels: Plat
             </span>
           </span>
           {recipe.summary && (
-            <span className="mt-0.5 block font-body text-[0.86rem] leading-snug text-slate italic">{recipe.summary}</span>
+            <span className="mt-0.5 block max-w-[80ch] font-body text-[0.86rem] leading-snug text-slate italic">{recipe.summary}</span>
           )}
           {reason && (
             <span className="mt-1 block truncate font-mono text-[0.68rem] text-slate">
