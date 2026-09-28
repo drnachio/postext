@@ -170,6 +170,29 @@ describe('footnote warnings', () => {
   });
 });
 
+describe('notes cited in a box', () => {
+  it('sets them at the foot of the column the text goes on in', () => {
+    const md = [
+      filler(1),
+      ':::callout{title="Recuerda"}',
+      'Dentro del recuadro.[^caja]',
+      ':::',
+      `${filler(1)} Fuera.[^fuera]`,
+      '[^caja]: Nota citada en el recuadro.',
+      '[^fuera]: Nota citada en el texto.',
+    ].join('\n\n');
+    const doc = build(md);
+    const ns = notes(doc);
+    expect(ns.map((n) => n.footnoteNote)).toEqual(['caja', 'fuera']);
+    const col = doc.pages[ns[0]!.pageIndex]!.columns[ns[0]!.columnIndex]!;
+    for (const b of col.blocks) expect(b.bbox.y + b.bbox.height).toBeLessThanOrEqual(ns[0]!.bbox.y + 0.5);
+  });
+  it('sets a box note when a box closes the document', () => {
+    const md = [filler(1), ':::callout', 'Última.[^fin]', ':::', '[^fin]: Nota final.'].join('\n\n');
+    expect(notes(build(md)).map((n) => n.footnoteNote)).toEqual(['fin']);
+  });
+});
+
 describe('chapterEnd alignment', () => {
   const md = [`${filler(2)} Cita.[^a]`, '[^a]: Nota al final.', filler(1)].join('\n\n');
   const foot = (doc: VDTDocument): number => doc.pages[0]!.contentArea.y + doc.pages[0]!.contentArea.height;

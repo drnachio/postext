@@ -1810,13 +1810,28 @@ export function buildDocumentPass(
     });
     return h;
   };
+  /** Notes cited by blocks set outside the flow (the paragraphs of a box,
+   *  inline, floated or fixed): they wait for the next text the flow
+   *  places, and go to the foot of its column, in citation order. */
+  const pendingNotes: string[] = [];
+  /** How far `doc.blocks` was read for such citations. */
+  let notesScanned = 0;
+  const collectPendingNotes = (): void => {
+    for (; notesScanned < doc.blocks.length; notesScanned++) {
+      for (const id of footnoteIdsOfLines(doc.blocks[notesScanned]!.lines)) {
+        if (!placedNotes.has(id) && !pendingNotes.includes(id)) pendingNotes.push(id);
+      }
+    }
+  };
   /** `cost[k]`: the notes the first `k` of `lines` cite for the first time
-   *  would add to `col`'s foot. Undefined when they cite none. */
+   *  (after the pending ones) would add to `col`'s foot. Undefined when
+   *  there are none. */
   const notesPrefixCost = (col: VDTColumn, lines: readonly VDTLine[]): number[] | undefined => {
     if (!columnNotes) return undefined;
-    const cost = [0];
-    const ids: string[] = [];
-    let any = false;
+    collectPendingNotes();
+    const ids: string[] = [...pendingNotes];
+    let any = ids.length > 0;
+    const cost = [notesCost(col, ids)];
     for (const line of lines) {
       for (const seg of line.segments ?? []) {
         const id = seg.footnoteId;
@@ -1826,14 +1841,20 @@ export function buildDocumentPass(
     }
     return any ? cost : undefined;
   };
-  /** Reserve at `col`'s foot the notes the placed block cites first. */
+  /** Reserve at the placed block's column foot the pending notes and the
+   *  ones the block cites first. */
   const reserveCitedNotes = (placed: VDTBlock): void => {
     if (!columnNotes || placed.pageIndex < 0) return;
-    const ids = footnoteIdsOfLines(placed.lines).filter((id) => !placedNotes.has(id));
-    if (ids.length === 0) return;
+    collectPendingNotes();
+    const cited = footnoteIdsOfLines(placed.lines).filter((id) => !placedNotes.has(id) && !pendingNotes.includes(id));
+    if (cited.length === 0 && pendingNotes.length === 0) return;
     const page = doc.pages[placed.pageIndex];
     const col = page?.columns[placed.columnIndex];
     if (!page || !col) return;
+    reserveNotes(page, col, [...pendingNotes.splice(0), ...cited], placed.contentIndex ?? 0);
+  };
+  /** Reserve `ids` at `col`'s foot. */
+  const reserveNotes = (page: VDTPage, col: VDTColumn, ids: string[], anchor: number): void => {
     const h = notesCost(col, ids);
     let bottom: number;
     const capped = uncappedBottoms.get(col);
@@ -1862,7 +1883,17 @@ export function buildDocumentPass(
     entry.ids.push(...ids);
     entry.slots.push({ top: bottom - h, height: h, ids });
     for (const id of ids) placedNotes.add(id);
-    for (const id of ids) noteAnchor.set(id, placed.contentIndex ?? 0);
+    for (const id of ids) noteAnchor.set(id, anchor);
+  };
+  /** Notes still pending when the flow ends (a box closes the document):
+   *  the foot of the column the flow ended in takes them. */
+  const reserveLeftoverNotes = (): void => {
+    if (!columnNotes) return;
+    collectPendingNotes();
+    if (pendingNotes.length === 0) return;
+    const page = doc.pages[cursor.pageIndex];
+    const col = page?.columns[cursor.columnIndex];
+    if (page && col) reserveNotes(page, col, pendingNotes.splice(0), contentBlocks.length - 1);
   };
   /** `chapterEnd`: move the run of note paragraphs that closes a column
    *  down to the column's true foot (under a band cap's cut, above any
@@ -5316,6 +5347,7 @@ export function buildDocumentPass(
   // pending (referenced on the last page) on pages appended after it.
   closeFlowSegment(contentBlocks.length);
   // The notes, in the room the flow reserved for them.
+  reserveLeftoverNotes();
   setColumnNotes();
   // After the chapter (`chapterEnd`), the notes that close a column drop
   // to its foot: the room left over stays between the text and them.
