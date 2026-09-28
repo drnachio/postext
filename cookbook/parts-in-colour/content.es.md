@@ -15,7 +15,7 @@ subtitle: "Guía de bolsillo de los fangales y los carrizales"
 Las aves se agrupan por hábitat: el fango de la boca del estuario y los carrizales de su parte alta. Cada hábitat tiene un color, y en ese color van la pestaña del borde de la página, los rasgos de identificación de sus especies y su fila en la lista de arriba. El tamaño es la longitud total, de la punta del pico a la de la cola.
 
 :::paragraphs{style="colophon"}
-Compuesto en Alegreya, Zilla Slab y Barlow Condensed (SIL OFL) · Texto y dibujos: originales, CC BY 4.0.
+Compuesto en Alegreya, Zilla Slab y Barlow Condensed (SIL OFL) · Texto: CC BY 4.0 · Láminas: modelos de difusión.
 :::
 :::
 
