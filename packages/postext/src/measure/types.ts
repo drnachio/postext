@@ -1,5 +1,5 @@
 import type { VDTLine } from '../vdt';
-import type { TextAlign } from '../types';
+import type { TextAlign, WritingMode } from '../types';
 import type { CjkLineBreakLevel } from './cjkClasses';
 
 /** Where the Knuth–Plass breaker broke a paragraph: the path it ran on
@@ -157,6 +157,11 @@ export interface MeasureBlockOptions {
    *  `CjkLineBreakLevel`. Unset: the document's level, which the build sets
    *  (`setCjkLineBreak`); `gb` outside a build. Only CJK text reads it. */
   cjkLineBreak?: CjkLineBreakLevel;
+  /** The writing mode the text is measured in: `'vertical-rl'` gives every
+   *  CJK character a 1 em cell (see `cellAdvance`). Unset: the build's
+   *  (`setMeasureWritingMode`), horizontal outside a build. Only CJK text
+   *  reads it. */
+  writingMode?: WritingMode;
 }
 
 export const SOFT_HYPHEN = '\u00AD';

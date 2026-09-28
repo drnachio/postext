@@ -844,13 +844,17 @@ export function renderResourceBlock(
   // structure bounding boxes) go through the same matrix.
   const rot = rb.rotation;
   let matrix: PdfMatrix | undefined;
+  let outerMapRect: PageCtx['mapRectPt'];
   if (rot) {
     matrix = rot.direction === 'ccw'
       ? [0, 1, -1, 0, rot.originX * scale + pageHeightPt, pageHeightPt - rot.originY * scale]
       : [0, -1, 1, 0, rot.originX * scale - pageHeightPt, pageHeightPt - rot.originY * scale];
     pushTransform(ctx, matrix);
     const m = matrix;
-    ctx.mapRectPt = (r) => mapRectThrough(m, r);
+    // Inside a vertical page's frame the block's rects go through both.
+    const outer = ctx.mapRectPt;
+    ctx.mapRectPt = outer ? (r) => outer(mapRectThrough(m, r)) : (r) => mapRectThrough(m, r);
+    outerMapRect = outer;
   }
   const bx = (rot ? 0 : block.bbox.x) + rb.bodyRect.x;
   const by = (rot ? 0 : block.bbox.y) + rb.bodyRect.y;
@@ -942,6 +946,7 @@ export function renderResourceBlock(
   }
   if (matrix) {
     popTransform(ctx);
-    delete ctx.mapRectPt;
+    if (outerMapRect) ctx.mapRectPt = outerMapRect;
+    else delete ctx.mapRectPt;
   }
 }

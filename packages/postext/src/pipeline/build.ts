@@ -31,6 +31,8 @@ import { extractFrontmatter, normalizeMetadata } from '../frontmatter';
 import { collectConfigWarnings } from '../configWarnings';
 import { initHyphenator } from '../measure';
 import { setCjkLineBreak } from '../measure/cjkClasses';
+import { setMeasureWritingMode } from '../measure/vertical';
+import { stampCentralBaselines } from './verticalMetrics';
 import type { MeasurementCache } from '../measure';
 import { resolveAllConfig, computeBaselineGrid, resolvedLocale } from './config';
 import {
@@ -417,6 +419,8 @@ export function buildDocumentPass(
   // CJK text breaks at the document's level wherever it is measured (body,
   // captions, cells, notes, boxes), as it hyphenates in its language.
   setCjkLineBreak(resolved.cjk.lineBreak);
+  // CJK characters of a vertical flow advance by whole cells.
+  setMeasureWritingMode(resolved.layout.writingMode);
 
   // Compute baseline grid
   const baselineGrid = computeBaselineGrid(resolved);
@@ -2083,6 +2087,7 @@ export function buildDocumentPass(
     currentSection = style;
     geomResolved = style ? deriveSectionGeometryConfig(resolved, style) : resolved;
     contentArea = geomResolved === resolved ? pageMetrics.contentArea : computePageMetrics(geomResolved).contentArea;
+    setMeasureWritingMode(geomResolved.layout.writingMode);
     // A page still empty takes the geometry right away — the document (or
     // a chapter laid out on its own) opening with a styled heading.
     const page = doc.pages[cursor.pageIndex];
@@ -5478,6 +5483,9 @@ export function buildDocumentPass(
       return text.length > 0 ? { styleId, text } : undefined;
     },
   });
+
+  // Vertical pages: the axis each font's upright characters turn about.
+  if (doc.pages.some((p) => p.flow)) stampCentralBaselines(doc);
 
   doc.converged = true;
   doc.iterationCount = 1;

@@ -1143,9 +1143,10 @@ export function renderToHtmlIndexed(
   const background =
     options.background ?? doc.config.page.backgroundColor.hex ?? 'transparent';
 
+  // A right-bound book lays its pages out right to left in a row.
   const docStyle =
     mode === 'multi'
-      ? `display:flex;flex-direction:row;gap:${gap}px;align-items:flex-start;padding:${padding}px;box-sizing:border-box;width:max-content;`
+      ? `display:flex;flex-direction:${doc.binding === 'right' ? 'row-reverse' : 'row'};gap:${gap}px;align-items:flex-start;padding:${padding}px;box-sizing:border-box;width:max-content;`
       : `display:flex;flex-direction:column;align-items:center;padding:${padding}px 0;box-sizing:border-box;`;
 
   // Single-ink diagrams: SVG pictures are filtered to the ink when the host

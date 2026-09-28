@@ -6,6 +6,7 @@ import { renderResourceBlock } from './renderResourceBlock';
 import { paintSwatch } from './swatch';
 import { paintChip } from './chip';
 import { lineTrailingTracking } from '../lineInk';
+import { fillFlowText } from './verticalText';
 
 function pickSegmentFont(
   bold: boolean,
@@ -172,7 +173,7 @@ function renderSegments(
       ctx.letterSpacing = `${segSpacing}px`;
       spacing = segSpacing;
     }
-    ctx.fillText(seg.text, x, baseline + (seg.baselineShift ?? 0));
+    fillFlowText(ctx, seg.text, x, baseline + (seg.baselineShift ?? 0));
     x += seg.width;
   }
   if (spacing !== tracking) ctx.letterSpacing = `${tracking}px`;
@@ -248,7 +249,7 @@ function renderLine(
   ctx.fillStyle = style.color;
   const plainSlack = Math.max(0, effectiveWidth - (line.bbox.width - trailing));
   const plainX = line.bbox.x + (textAlign === 'right' ? plainSlack : textAlign === 'center' ? plainSlack / 2 : 0);
-  ctx.fillText(line.text, plainX, line.baseline);
+  fillFlowText(ctx, line.text, plainX, line.baseline);
 }
 
 function renderBullet(ctx: CanvasRenderingContext2D, block: VDTBlock): void {
@@ -263,14 +264,14 @@ function renderBullet(ctx: CanvasRenderingContext2D, block: VDTBlock): void {
   ctx.textBaseline = onBaseline ? 'alphabetic' : 'middle';
   ctx.font = block.bulletFontString;
   const y = block.bulletBaselineY ?? block.bulletY ?? firstLine.baseline;
-  ctx.fillText(block.bulletText, block.bulletOffsetX, y);
+  fillFlowText(ctx, block.bulletText, block.bulletOffsetX, y);
   // Ordered-list separator styled apart from the number (own font/colour).
   if (block.separatorText && block.separatorX !== undefined) {
     ctx.fillStyle = block.separatorColor ?? block.bulletColor ?? block.color;
     ctx.font = block.separatorFontString ?? block.bulletFontString;
-    ctx.fillText(block.separatorText, block.separatorX, y);
+    fillFlowText(ctx, block.separatorText, block.separatorX, y);
     // The prefix run before the number, in the separator's style.
-    if (block.prefixText && block.prefixX !== undefined) ctx.fillText(block.prefixText, block.prefixX, y);
+    if (block.prefixText && block.prefixX !== undefined) fillFlowText(ctx, block.prefixText, block.prefixX, y);
   }
   ctx.restore();
 }

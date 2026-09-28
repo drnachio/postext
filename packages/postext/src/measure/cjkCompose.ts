@@ -66,6 +66,7 @@ import { hasCJK } from './cjk';
 import { graphemeCount, graphemesOf, lastGrapheme } from './graphemes';
 import { isBreakingSpace } from './spaces';
 import { trimChipLineEdges } from './chipEdges';
+import { cellAdvance, getMeasureWritingMode } from './vertical';
 
 /** Fit tolerance of the breaker (px): running sums of many widths may
  *  land a hair past a measure they fill exactly. */
@@ -197,9 +198,10 @@ function pairable(g: string): boolean {
 
 /**
  * The units of a paragraph's spans, in order. `letterSpacingPx` (the
- * block's tracking) is measured into every width, per grapheme.
+ * block's tracking) is measured into every width, per grapheme. In
+ * `vertical` text a CJK character advances by its cell (`cellAdvance`).
  */
-function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx: number): Unit[] {
+function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx: number, vertical = false): Unit[] {
   const units: Unit[] = [];
   const track = (n: number): number => (letterSpacingPx === 0 ? 0 : letterSpacingPx * n);
   let zwsp = false;
@@ -342,7 +344,7 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
       if (pairOpen >= 0 && units[pairOpen]!.text === g && !zwsp && units[pairOpen]!.link === link) {
         const u = units[pairOpen]!;
         u.text += g;
-        u.width += measureTextWidth(g, style.font) + track(1);
+        u.width += cellAdvance(g, style.font, vertical) + track(1);
         u.graphemes = 2;
         u.first = u.last = g === '\u2026' || g === '\u22EF' ? 'ellipsis' : 'dash';
         pairOpen = -1;
@@ -355,7 +357,7 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
       push({
         kind: 'text',
         text: g,
-        width: (style.smallCaps ? textWidth(g, style.font, true) : measureTextWidth(g, style.font)) + track(1),
+        width: (style.smallCaps && !vertical ? textWidth(g, style.font, true) : cellAdvance(g, style.font, vertical)) + track(1),
         graphemes: 1,
         first: cls,
         last: cls,
@@ -881,7 +883,8 @@ export function composeCjkParagraph(
 ): MeasuredBlock {
   const fonts: Fonts = { normal: normalFont, bold: boldFont, italic: italicFont, boldItalic: boldItalicFont };
   const letterSpacingPx = options?.letterSpacingPx ?? 0;
-  const units = buildUnits(spans, fonts, letterSpacingPx);
+  const vertical = (options?.writingMode ?? getMeasureWritingMode()) === 'vertical-rl';
+  const units = buildUnits(spans, fonts, letterSpacingPx, vertical);
   if (!units.some((u) => u.kind !== 'space')) return { lines: [], totalHeight: 0 };
   const level = options?.cjkLineBreak ?? getCjkLineBreak();
   const breaks = breakOpportunities(units, level);
@@ -951,7 +954,7 @@ export interface CjkWordBreaks {
  */
 export function cjkWordBreaks(word: string, font: string, smallCaps: boolean | undefined, letterSpacingPx: number, level: CjkLineBreakLevel = getCjkLineBreak()): CjkWordBreaks {
   const span: InlineSpan = { text: word, bold: false, italic: false, ...(smallCaps ? { smallCaps: true } : {}) };
-  const units = buildUnits([span], { normal: font, bold: font, italic: font, boldItalic: font }, letterSpacingPx);
+  const units = buildUnits([span], { normal: font, bold: font, italic: font, boldItalic: font }, letterSpacingPx, getMeasureWritingMode() === 'vertical-rl');
   const opportunities = breakOpportunities(units, level);
   const starts: number[] = [];
   const sums: number[] = [0];

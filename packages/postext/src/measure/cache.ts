@@ -5,6 +5,7 @@ import { measureRichBlock } from './rich';
 import { getHyphenationLocale } from '../hyphenate';
 import { hasCJK } from './cjk';
 import { getCjkLineBreak } from './cjkClasses';
+import { getMeasureWritingMode } from './vertical';
 
 /** Options that change a block's lines, joined into its cache key. The
  *  active hyphenation dictionary is one: soft hyphens (and the syllables an
@@ -14,9 +15,12 @@ function optionsKey(options: MeasureBlockOptions | undefined): string {
 }
 
 /** The CJK line-break level, joined to the key of a text that holds CJK
- *  only, so every other key is unchanged. */
+ *  only, so every other key is unchanged; and the vertical writing mode,
+ *  which gives CJK characters their cells (`cellAdvance`). */
 function cjkKey(text: string, options: MeasureBlockOptions | undefined): string {
-  return hasCJK(text) ? `\x00cjk:${options?.cjkLineBreak ?? getCjkLineBreak()}` : '';
+  if (!hasCJK(text)) return '';
+  const vertical = (options?.writingMode ?? getMeasureWritingMode()) === 'vertical-rl';
+  return `\x00cjk:${options?.cjkLineBreak ?? getCjkLineBreak()}${vertical ? ':v' : ''}`;
 }
 
 function buildPlainCacheKey(

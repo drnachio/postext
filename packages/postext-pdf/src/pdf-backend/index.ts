@@ -1,6 +1,8 @@
 import {
   PDFDocument,
+  PDFName,
   BlendMode,
+  ReadingDirection,
 } from 'pdf-lib';
 import type { ResourceImageMap, SvgRasterizer } from './renderResourceBlock';
 import fontkit from '@pdf-lib/fontkit';
@@ -9,11 +11,15 @@ import { canonicalLocaleTag, columnClipRect, computePageTextExtent, dimensionToP
 import { FontCache, type FontFallback, type FontFileIssue, type FontMissingGlyphs, type PdfFontProvider, type PdfFontRequest } from '../fontCache';
 import {
   type PageCtx,
+  type PdfMatrix,
   colorFromHex,
   fillRectPx,
   makeScale,
+  mapRectThrough,
   popClip,
+  popTransform,
   pushClipRect,
+  pushTransform,
   whiteColor,
 } from './primitives';
 import { collectFontText, type FontText } from './fontHelpers';
@@ -353,6 +359,20 @@ function renderPage(
     pushClipRect(ctx, inset, inset, vdtPage.width - inset * 2, vdtPage.height - inset * 2);
   }
 
+  // A vertical page (`VDTPage.flow`) paints its flow through the page's
+  // frame, a quarter turn clockwise (the `'cw'` resource matrix with its
+  // origin at the sheet's right edge), and maps the rects that live outside
+  // the content stream through it. Running heads, folios and the marks
+  // stay on the sheet. Characters are not stood upright here yet: the
+  // flow reads turned until the PDF learns vertical glyphs (#191).
+  let flowMatrix: PdfMatrix | undefined;
+  if (vdtPage.flow) {
+    flowMatrix = [0, -1, 1, 0, vdtPage.flow.rotation.originX * scale - pageHeightPt, pageHeightPt - vdtPage.flow.rotation.originY * scale];
+    pushTransform(ctx, flowMatrix);
+    const m = flowMatrix;
+    ctx.mapRectPt = (r) => mapRectThrough(m, r);
+  }
+
   tagArtifact(ctx, { type: 'Layout' });
   if (doc.config.page.baselineGrid.enabled) {
     // Bound the grid to the page's actual text: from the first text line to
@@ -440,6 +460,11 @@ function renderPage(
     renderFootnoteRules(ctx, vdtPage);
   }
 
+  if (flowMatrix) {
+    popTransform(ctx);
+    delete ctx.mapRectPt;
+  }
+
   // Running headers and footers are pagination artifacts.
   const pagination = (subtype: 'Header' | 'Footer') =>
     structure ? { artifact: { type: 'Pagination' as const, subtype } } : undefined;
@@ -486,6 +511,13 @@ function pdfSettings(
  * tree; page indices in contents links are book-absolute already, so they
  * resolve across chapters.
  */
+/** `/ViewerPreferences << /Direction /R2L >>` and `/PageLayout
+ *  /TwoPageRight` (page 1 alone, then pairs), for a right-bound book. */
+export function setRightToLeft(pdfDoc: PDFDocument): void {
+  pdfDoc.catalog.getOrCreateViewerPreferences().setReadingDirection(ReadingDirection.R2L);
+  pdfDoc.catalog.set(PDFName.of('PageLayout'), PDFName.of('TwoPageRight'));
+}
+
 export async function renderToPdf(
   input: VDTDocument | VDTDocument[],
   options: RenderToPdfOptions,
@@ -587,6 +619,10 @@ export async function renderToPdf(
   addPageLabels(pdfDoc, docs);
 
   tree?.finalize();
+  // A right-bound book (`VDTDocument.binding`) tells viewers to lay its
+  // spreads out right to left, page 1 alone (Acrobat and Foxit follow it;
+  // Chrome's viewer does not).
+  if (first.binding === 'right') setRightToLeft(pdfDoc);
   // Untagged output declares its language too (the tagged one did above).
   if (!tree) {
     const lang = languageTag(first.config);

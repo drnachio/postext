@@ -56,6 +56,31 @@ export function measureTextWidth(text: string, font: string): number {
 export function clearTextWidthCache(): void {
   _widthCaches = new Map();
   _widthCacheEntries = 0;
+  for (const listener of _fontChangeListeners) listener();
+}
+
+const _fontChangeListeners = new Set<() => void>();
+
+/** Called whenever {@link clearTextWidthCache} drops the widths (fonts
+ *  changed): other font-dependent caches clear with it. */
+export function onTextWidthCacheClear(listener: () => void): void {
+  _fontChangeListeners.add(listener);
+}
+
+/** The ink box of `text` in `font` above and below the alphabetic
+ *  baseline (px), or null when the measurer gives no ink metrics. Not
+ *  cached. */
+export function measureInkBox(text: string, font: string): { ascent: number; descent: number } | null {
+  const ctx = getMeasureCtx();
+  if (font !== _currentFont) {
+    ctx.font = font;
+    _currentFont = font;
+  }
+  const m = ctx.measureText(text) as Partial<TextMetrics>;
+  const ascent = m.actualBoundingBoxAscent;
+  const descent = m.actualBoundingBoxDescent;
+  if (typeof ascent !== 'number' || typeof descent !== 'number' || !Number.isFinite(ascent) || !Number.isFinite(descent)) return null;
+  return { ascent, descent };
 }
 
 /** Measure a short glyph (e.g. a list bullet) in the given font. */

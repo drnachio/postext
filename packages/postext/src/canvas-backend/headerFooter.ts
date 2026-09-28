@@ -7,6 +7,7 @@ import type {
   VDTDesignBoxStyle,
 } from '../vdt';
 import { drawResourceImage, roundedOutlinePath } from './renderResourceBlock';
+import { fillFlowText, drawUprightInBox } from './verticalText';
 
 /** Adds a rounded rectangle to the current path, as a closed subpath. */
 function traceRoundedRect(
@@ -119,10 +120,8 @@ function renderTextBlock(ctx: CanvasRenderingContext2D, block: VDTDesignTextBloc
     ctx.strokeStyle = stroke.color;
     ctx.lineWidth = stroke.widthPx;
   }
-  const paint = (text: string, x: number, y: number) => {
-    if (!stroke?.hollow) ctx.fillText(text, x, y);
-    if (stroke) ctx.strokeText(text, x, y);
-  };
+  const mode = stroke?.hollow ? 'stroke' : stroke ? 'fillStroke' : 'fill';
+  const paint = (text: string, x: number, y: number) => fillFlowText(ctx, text, x, y, mode);
   for (const line of block.lines) {
     if (!line.runs) {
       paint(line.text, block.bbox.x + line.xOffset, line.baselineY);
@@ -177,13 +176,16 @@ function renderImageBlock(ctx: CanvasRenderingContext2D, block: VDTDesignImageBl
   // Single ink tints an SVG picture, never a bitmap; a VDT without the
   // kind leaves it to the registry.
   const svg = block.imageKind === undefined ? undefined : block.imageKind === 'svg';
-  if (!drawResourceImage(ctx, block.fileId, x, y, width, height, { inkHex, svg })) {
-    ctx.fillStyle = 'rgba(160,160,160,0.12)';
-    ctx.fillRect(x, y, width, height);
-    ctx.strokeStyle = 'rgba(160,160,160,0.5)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(x + 0.5, y + 0.5, width - 1, height - 1);
-  }
+  // In a vertical flow the picture stands upright in its box.
+  drawUprightInBox(ctx, x, y, width, height, (bx, by, bw, bh) => {
+    if (!drawResourceImage(ctx, block.fileId, bx, by, bw, bh, { inkHex, svg })) {
+      ctx.fillStyle = 'rgba(160,160,160,0.12)';
+      ctx.fillRect(bx, by, bw, bh);
+      ctx.strokeStyle = 'rgba(160,160,160,0.5)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, bh - 1);
+    }
+  });
   ctx.restore();
 }
 

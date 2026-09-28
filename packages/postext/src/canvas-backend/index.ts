@@ -9,6 +9,7 @@ import { renderHeaderFooterSlot } from './headerFooter';
 import { documentInkHex } from '../svg/singleInk';
 import { renderLangOf } from '../locale';
 import { setMissingImageSink, setTintUnflagged } from './renderResourceBlock';
+import { setVerticalPaint } from './verticalText';
 export {
   registerResourceImage,
   unregisterResourceImage,
@@ -16,6 +17,8 @@ export {
   getResourceImage,
 } from './renderResourceBlock';
 export type { ResourceImageSource, RegisterResourceImageOptions } from './renderResourceBlock';
+export { registerVerticalAlternates, unregisterVerticalAlternates, loadVerticalAlternates, verticalTwinName, VERTICAL_ALTERNATE_SAMPLE } from './verticalText';
+export type { VerticalAlternatesFace } from './verticalText';
 
 export interface RenderPageOptions {
   pageNegative?: boolean;
@@ -131,6 +134,17 @@ function paintPage(
     ctx.clip();
   }
 
+  // A vertical page paints its flow through the page's frame — a quarter
+  // turn clockwise — with the vertical text painter on; the running heads,
+  // folios, background and crop marks stay on the sheet.
+  const flow = page.flow;
+  let outerVertical: ReturnType<typeof setVerticalPaint> = null;
+  if (flow) {
+    ctx.save();
+    ctx.transform(0, 1, -1, 0, page.width, 0);
+    outerVertical = setVerticalPaint({ region: doc.config.cjk?.region ?? 'mainland', ...(flow.centralBaselines ? { axes: flow.centralBaselines } : {}) });
+  }
+
   if (doc.config.page.baselineGrid.enabled) {
     // Bound the grid to the page's actual text: from the first text line to
     // the last. Pages with no text (blank parity pages) draw no grid, and
@@ -189,6 +203,11 @@ function paintPage(
     for (const fb of page.floats) renderBlock(ctx, fb, fb.bbox.width, fb.bbox.x, inkHex);
   }
   renderFootnoteRules(ctx, page);
+
+  if (flow) {
+    setVerticalPaint(outerVertical);
+    ctx.restore();
+  }
 
   if (page.header) renderHeaderFooterSlot(ctx, page.header, inkHex);
   if (page.footer) renderHeaderFooterSlot(ctx, page.footer, inkHex);
