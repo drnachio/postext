@@ -1670,7 +1670,7 @@ export const DEFAULT_LABELS: SandboxLabels = {
   settingsGroupColors: 'Colours',
   settingsGroupColorsDescription: 'The named colours the whole design uses. Change one and it changes everywhere it is used.',
   settingsGroupText: 'Typography',
-  settingsGroupTextDescription: 'Body typeface, size and leading, justification, hyphenation, paragraph styles and formulas.',
+  settingsGroupTextDescription: 'Body typeface, size and leading, justification, hyphenation, paragraph styles, formulas and footnotes.',
   settingsGroupHeadings: 'Headings & contents',
   settingsGroupHeadingsDescription: 'Heading levels, chapter openers and the table of contents.',
   settingsGroupLists: 'Lists',

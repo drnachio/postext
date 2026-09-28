@@ -2208,7 +2208,7 @@
     "settingsGroupColors": "Colores",
     "settingsGroupColorsDescription": "Los colores con nombre que usa todo el diseño. Cambia uno y cambia en todos los sitios donde se usa.",
     "settingsGroupText": "Tipografía",
-    "settingsGroupTextDescription": "Letra del texto, cuerpo e interlineado, justificación, partición de palabras, estilos de párrafo y fórmulas.",
+    "settingsGroupTextDescription": "Letra del texto, cuerpo e interlineado, justificación, partición de palabras, estilos de párrafo, fórmulas y notas al pie.",
     "settingsGroupHeadings": "Títulos e índice",
     "settingsGroupHeadingsDescription": "Niveles de título, aperturas de capítulo y el índice.",
     "settingsGroupLists": "Listas",

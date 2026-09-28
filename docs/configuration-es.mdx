@@ -2763,6 +2763,161 @@ document.body.append(renderPage(doc.pages[0], doc));
 Para la gramática del documento (`$...$`, `$$...$$`, cómo escapar un dólar literal), consulta [Formato del documento](/es/docs/document-format#fórmulas-matemáticas).
 
 
+## Notas al pie
+
+La propiedad `footnotes` fija dónde van las notas citadas con `[^id]`, cómo se numeran y qué aspecto tienen. El marcado se describe en [Formato del documento](/es/docs/document-format#notas-al-pie).
+
+```ts
+interface FootnotesConfig {
+  placement?: 'column' | 'chapterEnd'; // Pie de la columna que cita, o tras el capítulo.
+  numbering?: 'chapter' | 'document';  // Reiniciar en cada capítulo, o seguir.
+  chapterEndAlign?: 'foot' | 'text';   // chapterEnd: notas al pie de la columna, o bajo el texto.
+  fontSize?: Dimension;       // Cuerpo de la nota; em es el cuerpo del texto.
+  lineHeight?: Dimension;     // Interlineado de la nota; em es el cuerpo de la nota.
+  color?: ColorValue;         // Color de la nota; sin valor, el del cuerpo.
+  textAlign?: TextAlign;      // Sin valor, la alineación del cuerpo.
+  hangingIndent?: Dimension;  // Sangría de las líneas siguientes de una nota.
+  spaceBetween?: Dimension;   // Espacio entre dos notas.
+  spaceAbove?: Dimension;     // Espacio entre el texto y el filete; em es el cuerpo del texto.
+  spaceBelowRule?: Dimension; // Espacio entre el filete y la primera nota.
+  separator?: {
+    enabled?: boolean;        // Dibujar el filete.
+    width?: number;           // Longitud del filete, fracción del ancho de columna.
+    lineWidth?: Dimension;    // Grosor del filete.
+    color?: ColorValue;       // Sin valor, el color de las notas.
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '160px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'column' | 'chapterEnd'</code></td>
+      <td><code>'column'</code></td>
+      <td><code>'column'</code> compone cada nota al pie de la columna que contiene la línea que la cita, bajo un filete corto; en una maqueta de una columna es el pie de la página. <code>'chapterEnd'</code> compone todas las notas de un capítulo tras su último bloque, en el orden en que se citan.</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>'chapter' | 'document'</code></td>
+      <td><code>'chapter'</code></td>
+      <td><code>'chapter'</code> vuelve a empezar en 1 bajo cada título de nivel 1 y al principio de cada documento. <code>'document'</code> sigue por todo el documento y, en un libro maquetado capítulo a capítulo, de un capítulo al siguiente (<code>continuationAfter</code> lleva el último número en <code>continuation.footnoteNumber</code>).</td>
+    </tr>
+    <tr>
+      <td><code>chapterEndAlign</code></td>
+      <td><code>'foot' | 'text'</code></td>
+      <td><code>'foot'</code></td>
+      <td>Con <code>placement: 'chapterEnd'</code>: <code>'foot'</code> compone las notas que cierran una columna al pie de esta, con las líneas sobrantes entre el texto y las notas, igual que las notas al pie de columna. <code>'text'</code> las compone justo debajo del texto.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>Cuerpo del texto de las notas. <code>em</code> y <code>rem</code> son el cuerpo del texto. Las notas usan la familia y los pesos del cuerpo.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.25em</code></td>
+      <td>Interlineado de las notas; <code>em</code> es el cuerpo de la nota. Las notas quedan fuera de la retícula de líneas base: se apilan desde el pie de la columna y el texto de encima sigue en la retícula.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color del cuerpo</td>
+      <td>Color del texto de las notas.</td>
+    </tr>
+    <tr>
+      <td><code>textAlign</code></td>
+      <td><code>TextAlign</code></td>
+      <td>alineación del cuerpo</td>
+      <td>Alineación del texto de las notas.</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Sangría de la segunda línea y siguientes de una nota, para alinearlas tras su número.</td>
+    </tr>
+    <tr>
+      <td><code>spaceBetween</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Espacio entre dos notas.</td>
+    </tr>
+    <tr>
+      <td><code>spaceAbove</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>Espacio entre la última línea de texto y el filete; <code>em</code> es el cuerpo del texto. Con <code>'chapterEnd'</code> y <code>chapterEndAlign: 'text'</code>, <code>spaceAbove</code> + <code>spaceBelowRule</code> es el espacio entre el texto y la primera nota.</td>
+    </tr>
+    <tr>
+      <td><code>spaceBelowRule</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.4em</code></td>
+      <td>Espacio entre el filete y la primera nota.</td>
+    </tr>
+    <tr>
+      <td><code>separator.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Dibujar el filete sobre las notas de cada columna. Con <code>false</code> los espacios de encima se mantienen.</td>
+    </tr>
+    <tr>
+      <td><code>separator.width</code></td>
+      <td><code>number</code></td>
+      <td><code>0.3</code></td>
+      <td>Longitud del filete como fracción del ancho de la columna (0–1), desde su borde izquierdo.</td>
+    </tr>
+    <tr>
+      <td><code>separator.lineWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5pt</code></td>
+      <td>Grosor del filete.</td>
+    </tr>
+    <tr>
+      <td><code>separator.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color de las notas</td>
+      <td>Color del filete.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+footnotes: {
+  fontSize: { value: 7.5, unit: 'pt' },
+  lineHeight: { value: 9.5, unit: 'pt' },
+  hangingIndent: { value: 0.8, unit: 'em' },
+  separator: { width: 0.25, lineWidth: { value: 0.4, unit: 'pt' } },
+}
+```
+
+Cómo se componen las notas al pie de columna:
+
+- **La nota y su llamada comparten columna.** Antes de colocar una línea, la maquetación suma la altura de las notas que esa línea cita por primera vez (y la del filete, en la primera nota de la columna). Una línea cuyas notas no caben debajo pasa a la columna siguiente con el resto de su párrafo, según las reglas de viudas y huérfanas. El área de texto de la columna se acorta en la altura de las notas, así que el equilibrado de columnas y la banda de cierre de un capítulo solo cuentan el texto.
+- **Varias notas** en una columna se apilan en el orden de cita bajo un único filete. Una nota citada de nuevo más adelante conserva su número y no se vuelve a componer.
+- **Flotantes al pie.** Una figura que ocupa el pie de una columna después de que sus notas se hayan compuesto queda encima de ellas; las notas compuestas después de la figura quedan encima de ella.
+- **Recuadros.** Una nota citada dentro de un recuadro (en línea, flotante o fijo) va al pie de la columna donde sigue el texto tras el recuadro, normalmente la misma. Un recuadro que cierra el documento deja sus notas al pie de la columna donde terminó el texto.
+- **Límites.** Una nota nunca se parte: una más alta que la columna la desborda. Las llamadas en pies de figura, celdas de tabla y títulos no se leen (se imprimen tal cual).
+- **Salida.** El canvas, el HTML y el PDF pintan las notas, las llamadas (un número volado) y el filete. En el PDF cada llamada enlaza con su nota, y un PDF etiquetado marca cada nota como elemento `Note` con un `/ID` único listado en el `/IDTree` del árbol de estructura (PDF/UA-1). Las notas son `VDTBlock` con `footnoteNote`, en `page.floats`; los filetes están en `page.footnoteAreas`.
+- **Avisos.** `undefinedFootnote` (una llamada sin definición: el número se imprime sobre una nota vacía) y `unusedFootnote` (una definición que ninguna llamada cita: no se compone).
+
+El resolutor y el depurador siguen el patrón de las demás secciones:
+
+```ts
+import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults } from 'postext';
+```
+
+
 ## Tipos de recurso
 
 Un **tipo de recurso** es una categoría definible por el usuario — *Figura*, *Tabla*, *Diagrama*, *Listado*… — que determina cómo se numeran, cómo se rotula su pie y cómo se referencian los recursos de esa clase. La lista vive en `config.resourceTypes`; el Sandbox la edita en **Diseño → Figuras y tablas → Numeración y colocación**.
@@ -5341,6 +5496,16 @@ console.log(`El documento tiene ${vdt.pages.length} páginas`);
       <td><code>unknownChipStyle</code></td>
       <td><code>:chip[…]{'{'}style{'}'}</code> no nombra ningún estilo de chip.</td>
       <td>El chip toma el primer estilo de chip.</td>
+    </tr>
+    <tr>
+      <td><code>undefinedFootnote</code></td>
+      <td>Una llamada de nota <code>[^id]</code> que ningún párrafo <code>[^id]:</code> define (<code>id</code> es el de la nota).</td>
+      <td>Se imprime el número; la nota queda vacía.</td>
+    </tr>
+    <tr>
+      <td><code>unusedFootnote</code></td>
+      <td>Una definición de nota <code>[^id]:</code> que ninguna llamada cita.</td>
+      <td>La nota no se compone.</td>
     </tr>
     <tr>
       <td><code>unknownHeadingStyle</code></td>
