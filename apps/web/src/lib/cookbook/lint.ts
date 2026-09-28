@@ -89,6 +89,8 @@ export const KIT_IMPORTS: Record<KitBlock, { module: "postext" | "postext-pdf"; 
   viewer: { module: "postext", name: "renderPageToCanvas" },
   pdf: { module: "postext-pdf", name: "decompressWoff2" },
   images: { module: "postext", name: "registerResourceImage" },
+  // loadCjkFonts needs no engine symbol; cjkPdfProvider uses the pdf block's.
+  cjk: null,
 };
 
 /** Namespace URIs in inline SVG, never fetched. */

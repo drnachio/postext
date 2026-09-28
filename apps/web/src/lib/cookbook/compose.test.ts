@@ -13,6 +13,7 @@ const KIT: Record<KitBlock, string> = {
   viewer: "// ─── Kit · viewer\nfunction showPages() {}",
   pdf: "// ─── Kit · pdf\nfunction offerPdf() {}",
   images: "// ─── Kit · images\nfunction loadImage() {}",
+  cjk: "// ─── Kit · cjk\nfunction loadCjkFonts() {}",
 };
 
 const SCRIPT = [
@@ -126,10 +127,14 @@ describe("composePen", () => {
 
   it("composes against the real kit", () => {
     const kit = readKit();
-    expect(Object.keys(kit).sort()).toEqual(["core", "fonts", "images", "pdf", "viewer"]);
-    const pen = composePen(sources(), { sample: { locales: ["en"] }, kit: ["core", "fonts", "viewer", "pdf", "images"] }, "en", { kit });
+    expect(Object.keys(kit).sort()).toEqual(["cjk", "core", "fonts", "images", "pdf", "viewer"]);
+    const pen = composePen(sources(), { sample: { locales: ["en"] }, kit: ["core", "fonts", "viewer", "pdf", "images", "cjk"] }, "en", { kit });
     expect(pen.js).toContain("function buildWithFonts(");
     expect(pen.js).toContain("function offerPdf(");
+    expect(pen.js).toContain("async function loadCjkFonts(");
+    expect(pen.js).toContain("async function cjkPdfProvider(");
+    // The cjk block comes last, after the pdf block it leans on.
+    expect(pen.js.indexOf("// ─── Kit · cjk")).toBeGreaterThan(pen.js.indexOf("// ─── Kit · images"));
   });
 });
 

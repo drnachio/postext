@@ -249,7 +249,8 @@
           "fonts",
           "viewer",
           "pdf",
-          "images"
+          "images",
+          "cjk"
         ]
       },
       "minItems": 3,
