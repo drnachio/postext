@@ -41,6 +41,8 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
       return 'design';
     case 'looseLine':
     case 'cjkLooseLine':
+    case 'cjkMarksExceedLeading':
+    case 'rubyExceedsLeading':
     case 'calloutOverflow':
     case 'alphaPdfOverflow':
     case 'chipOverlap':

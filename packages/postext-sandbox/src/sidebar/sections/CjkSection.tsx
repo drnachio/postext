@@ -5,19 +5,24 @@ import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../
 import {
   DEFAULT_CJK_CONFIG,
   cjkRegionOf,
+  defaultCjkBookTitleMark,
   defaultCjkCompression,
+  defaultCjkEmphasis,
   defaultCjkLineBreak,
   defaultCjkPunctuationWidth,
   dimensionsEqual,
+  resolveBodyTextConfig,
 } from 'postext';
-import type { CjkConfig, CjkGridConfig, LayoutConfig, PageConfig } from 'postext';
-import { CollapsibleSection, DimensionInput, FieldGroup, NumberInput, SelectInput, ToggleSwitch } from '../../controls';
+import type { CjkConfig, CjkGridConfig, CjkRubyConfig, CjkWarichuConfig, LayoutConfig, PageConfig } from 'postext';
+import { CollapsibleSection, ColorPicker, DimensionInput, FieldGroup, FontPicker, NumberInput, SelectInput, TextInput, ToggleSwitch } from '../../controls';
 import { gridMarginsText, mmText, useCjkGrid } from './cjkGridReadout';
 
 /**
  * East Asian typography (`cjk`): the regional conventions Chinese text
  * follows, where its lines may break, how wide its marks are set, whether
- * they hang, the space between Han and Latin, and the character grid.
+ * they hang, the space between Han and Latin, what emphasis and book-title
+ * markup print, the look of ruby readings and warichu notes, and the
+ * character grid.
  * `Auto` follows the document language; the option shows what it resolves
  * to. Also the writing mode (`layout.writingMode`) and the binding
  * (`page.binding`), which a vertical Chinese book sets with them.
@@ -53,6 +58,8 @@ export const CjkSection = memo(function CjkSection() {
   };
   const grid = useCjkGrid();
   const uiLocale = useSandboxSelector((s) => s.locale);
+  const rawBody = useSandboxSelector((s) => s.config.bodyText);
+  const body = resolveBodyTextConfig(rawBody);
 
   const write = (next: CjkConfig | undefined) => {
     const empty = !next || Object.keys(next).length === 0;
@@ -64,6 +71,16 @@ export const CjkSection = memo(function CjkSection() {
     delete next[field];
     write(next);
   };
+  /** Merge `partial` into `cjk[key]`, dropping fields set back to unset. */
+  const writeNested = <K extends 'ruby' | 'warichu'>(key: K, partial: Partial<NonNullable<CjkConfig[K]>>) => {
+    const next = { ...raw?.[key], ...partial } as Record<string, unknown>;
+    for (const k of Object.keys(next)) if (next[k] === undefined) delete next[k];
+    const cjk: CjkConfig = { ...raw, [key]: next };
+    if (Object.keys(next).length === 0) delete cjk[key];
+    write(cjk);
+  };
+  const writeRuby = (partial: Partial<CjkRubyConfig>) => writeNested('ruby', partial);
+  const writeWarichu = (partial: Partial<CjkWarichuConfig>) => writeNested('warichu', partial);
   const writeGrid = (partial: Partial<CjkGridConfig>) => {
     const next: CjkGridConfig = { ...raw?.grid, ...partial };
     for (const key of Object.keys(next) as (keyof CjkGridConfig)[]) if (next[key] === undefined) delete next[key];
@@ -101,6 +118,15 @@ export const CjkSection = memo(function CjkSection() {
   const autoLineBreak = defaultCjkLineBreak(resolvedRegion);
   const autoWidth = defaultCjkPunctuationWidth(resolvedRegion);
   const autoCompression = defaultCjkCompression(resolvedRegion);
+  const emphasis = raw?.emphasis ?? DEFAULT_CJK_CONFIG.emphasis;
+  const autoEmphasis = defaultCjkEmphasis(locale);
+  const emphasisNames = { italic: labels.cjkEmphasisItalic, dots: labels.cjkEmphasisDots };
+  const bookTitleMark = raw?.bookTitleMark ?? DEFAULT_CJK_CONFIG.bookTitleMark;
+  const autoBookTitle = defaultCjkBookTitleMark(resolvedRegion);
+  const bookTitleNames = { brackets: labels.cjkBookTitleBrackets, wavy: labels.cjkBookTitleWavy, none: labels.cjkBookTitleNone };
+  const markColor = raw?.annotationColor ?? body.color;
+  const ruby = raw?.ruby;
+  const warichu = raw?.warichu;
   const auto = (name: string) => labels.cjkAuto.replace('__value__', name);
   const onOff = (v: boolean) => (v ? labels.cjkOn : labels.cjkOff);
   const tri = (v: 'auto' | boolean) => (v === 'auto' ? 'auto' : v ? 'on' : 'off');
@@ -247,6 +273,130 @@ export const CjkSection = memo(function CjkSection() {
         isDefault={dimensionsEqual(latinSpacing, DEFAULT_CJK_CONFIG.latinSpacing)}
         onReset={() => resetField('latinSpacing')}
       />
+      <SelectInput
+        label={labels.cjkEmphasis}
+        value={emphasis}
+        options={[
+          { value: 'auto', label: auto(emphasisNames[autoEmphasis]) },
+          { value: 'dots', label: emphasisNames.dots },
+          { value: 'italic', label: emphasisNames.italic },
+        ]}
+        onChange={(v) => write({ ...raw, emphasis: v as CjkConfig['emphasis'] })}
+        tooltip={labels.cjkEmphasisTooltip}
+        isDefault={emphasis === DEFAULT_CJK_CONFIG.emphasis}
+        onReset={() => resetField('emphasis')}
+      />
+      <SelectInput
+        label={labels.cjkBookTitleMark}
+        value={bookTitleMark}
+        options={[
+          { value: 'auto', label: auto(bookTitleNames[autoBookTitle]) },
+          { value: 'brackets', label: bookTitleNames.brackets },
+          { value: 'wavy', label: bookTitleNames.wavy },
+          { value: 'none', label: bookTitleNames.none },
+        ]}
+        onChange={(v) => write({ ...raw, bookTitleMark: v as CjkConfig['bookTitleMark'] })}
+        tooltip={labels.cjkBookTitleMarkTooltip}
+        isDefault={bookTitleMark === DEFAULT_CJK_CONFIG.bookTitleMark}
+        onReset={() => resetField('bookTitleMark')}
+      />
+      <ColorPicker
+        label={labels.cjkAnnotationColor}
+        value={markColor}
+        onChange={(v) => write({ ...raw, annotationColor: v })}
+        tooltip={labels.cjkAnnotationColorTooltip}
+        isDefault={raw?.annotationColor === undefined}
+        onReset={() => resetField('annotationColor')}
+        fieldId="cjk-annotationColor"
+      />
+      <FieldGroup title={labels.cjkRuby} description={labels.cjkRubyDescription}>
+        <FontPicker
+          label={labels.cjkRubyFont}
+          value={ruby?.fontFamily ?? body.fontFamily}
+          onChange={(v) => writeRuby({ fontFamily: v })}
+          tooltip={labels.cjkRubyFontTooltip}
+          isDefault={ruby?.fontFamily === undefined}
+          onReset={() => writeRuby({ fontFamily: undefined })}
+          searchPlaceholder={labels.bodyFontSearch}
+          noResultsLabel={labels.bodyFontNoResults}
+        />
+        <DimensionInput
+          label={labels.cjkRubySize}
+          value={ruby?.fontSize ?? DEFAULT_CJK_CONFIG.ruby.fontSize!}
+          onChange={(dim) => writeRuby({ fontSize: dim })}
+          min={0.1}
+          step={0.05}
+          units={['em', 'pt', 'mm']}
+          tooltip={labels.cjkRubySizeTooltip}
+          isDefault={ruby?.fontSize === undefined || dimensionsEqual(ruby.fontSize, DEFAULT_CJK_CONFIG.ruby.fontSize!)}
+          onReset={() => writeRuby({ fontSize: undefined })}
+        />
+        <ColorPicker
+          label={labels.cjkRubyColor}
+          value={ruby?.color ?? markColor}
+          onChange={(v) => writeRuby({ color: v })}
+          tooltip={labels.cjkRubyColorTooltip}
+          isDefault={ruby?.color === undefined}
+          onReset={() => writeRuby({ color: undefined })}
+          fieldId="cjk-ruby-color"
+        />
+        <SelectInput
+          label={labels.cjkRubyPosition}
+          value={ruby?.position ?? 'auto'}
+          options={[
+            { value: 'auto', label: labels.cjkRubyPositionAuto },
+            { value: 'over', label: labels.cjkRubyOver },
+            { value: 'under', label: labels.cjkRubyUnder },
+            { value: 'right', label: labels.cjkRubyRight },
+          ]}
+          onChange={(v) => writeRuby({ position: v === 'auto' ? undefined : (v as CjkRubyConfig['position']) })}
+          tooltip={labels.cjkRubyPositionTooltip}
+          isDefault={(ruby?.position ?? 'auto') === 'auto'}
+          onReset={() => writeRuby({ position: undefined })}
+        />
+      </FieldGroup>
+      <FieldGroup title={labels.cjkWarichu} description={labels.cjkWarichuDescription}>
+        <DimensionInput
+          label={labels.cjkWarichuSize}
+          value={warichu?.fontSize ?? DEFAULT_CJK_CONFIG.warichu.fontSize!}
+          onChange={(dim) => writeWarichu({ fontSize: dim })}
+          min={0.1}
+          step={0.05}
+          units={['em', 'pt', 'mm']}
+          tooltip={labels.cjkWarichuSizeTooltip}
+          isDefault={warichu?.fontSize === undefined || dimensionsEqual(warichu.fontSize, DEFAULT_CJK_CONFIG.warichu.fontSize!)}
+          onReset={() => writeWarichu({ fontSize: undefined })}
+        />
+        <ColorPicker
+          label={labels.cjkWarichuColor}
+          value={warichu?.color ?? markColor}
+          onChange={(v) => writeWarichu({ color: v })}
+          tooltip={labels.cjkWarichuColorTooltip}
+          isDefault={warichu?.color === undefined}
+          onReset={() => writeWarichu({ color: undefined })}
+          fieldId="cjk-warichu-color"
+        />
+        <TextInput
+          label={labels.cjkWarichuOpen}
+          value={warichu?.open ?? ''}
+          onChange={(v) => writeWarichu({ open: v === '' ? undefined : v })}
+          placeholder="〔"
+          widthCh={4}
+          tooltip={labels.cjkWarichuOpenTooltip}
+          isDefault={!warichu?.open}
+          onReset={() => writeWarichu({ open: undefined })}
+        />
+        <TextInput
+          label={labels.cjkWarichuClose}
+          value={warichu?.close ?? ''}
+          onChange={(v) => writeWarichu({ close: v === '' ? undefined : v })}
+          placeholder="〕"
+          widthCh={4}
+          tooltip={labels.cjkWarichuCloseTooltip}
+          isDefault={!warichu?.close}
+          onReset={() => writeWarichu({ close: undefined })}
+        />
+      </FieldGroup>
       <FieldGroup title={labels.cjkGrid} description={labels.cjkGridDescription}>
         <ToggleSwitch
           label={labels.cjkGridEnabled}

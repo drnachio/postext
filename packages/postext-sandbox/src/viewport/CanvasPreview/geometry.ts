@@ -18,7 +18,9 @@ type VDTSegment = NonNullable<VDTLine['segments']>[number];
  * see {@link opensWithRepeatedHyphen}).
  */
 export function segmentPlainLength(seg: VDTSegment, dropTrailingHyphen: boolean, dropLeadingHyphen = false): number {
-  if (seg.refContinues) return 0;
+  // Brackets the layout added (a book title's 《》, a warichu note's) are
+  // no plain text (#193, #195).
+  if (seg.refContinues || seg.inserted) return 0;
   if (seg.refResourceId !== undefined) return 1;
   if (seg.kind === 'swatch') return 1;
   let len = seg.text.length;
@@ -92,12 +94,42 @@ export function segmentGraphemeStarts(seg: Pick<VDTSegment, 'text' | 'tracking'>
  *  `plainLen`) over a segment `rendered` px wide: grapheme by grapheme when
  *  {@link segmentGraphemeStarts} gives its boundaries, else linearly. */
 function xWithinSegment(seg: VDTSegment, within: number, plainLen: number, rendered: number): number {
+  // A warichu note's part: the offset falls in its upper row, or past it in
+  // the lower one (#195); both rows advance by the same cell.
+  if (seg.warichu) {
+    const w = seg.warichu;
+    const cell = warichuCell(seg);
+    return within <= w.upper.length ? within * cell : (within - w.upper.length) * cell;
+  }
   const starts = seg.kind === 'text' ? segmentGraphemeStarts(seg) : null;
   if (!starts || starts.length < 2) return plainLen > 0 ? (within / plainLen) * rendered : 0;
   const n = starts.length - 1;
   let k = 0;
   while (k < n && starts[k + 1]! <= within) k++;
   return (k / n) * rendered;
+}
+
+/** The advance of one character of a warichu part's rows: the part's
+ *  width (its tracking left out) over the longer row. */
+function warichuCell(seg: VDTSegment): number {
+  const w = seg.warichu!;
+  const n = Math.max(1, w.upper.length, w.lower.length);
+  return (seg.width - (seg.tracking ?? 0)) / n;
+}
+
+/**
+ * The plain offset (UTF-16 units into the segment) of a click `dx` px along
+ * a warichu note's part and `dy` px from the line's baseline (flow frame):
+ * above the line's axis the upper row, below it the lower one, whose
+ * characters follow the upper row's in the plain text (#195).
+ */
+export function warichuOffset(seg: VDTSegment, dx: number, dy: number): number {
+  const w = seg.warichu!;
+  const noteEm = w.lowerDy - w.upperDy;
+  const axis = (w.upperDy + w.lowerDy) / 2 - 0.38 * noteEm;
+  const cell = warichuCell(seg);
+  const k = (n: number) => Math.max(0, Math.min(n, Math.round(dx / (cell || 1))));
+  return dy < axis ? k(w.upper.length) : w.upper.length + k(w.lower.length);
 }
 
 /** The plain offset (UTF-16 units into the segment, at most `plainLen`) of
@@ -512,7 +544,9 @@ export function pixelToSourceOffset(
       const segPlainLen = segmentPlainLength(seg, isLastSeg && addsHyphen(hitLine), opensWithRepeatedHyphen(hitLine, i));
       const segRendered = seg.width + (seg.kind === 'space' ? extraPerSpace : 0);
       if (clampedX <= x + segRendered) {
-        result = cum + offsetWithinSegment(seg, clampedX - x, segPlainLen, segRendered);
+        result = cum + (seg.warichu
+          ? Math.min(segPlainLen, warichuOffset(seg, clampedX - x, yPage - hitLine.baseline))
+          : offsetWithinSegment(seg, clampedX - x, segPlainLen, segRendered));
         resolved = true;
         break;
       }

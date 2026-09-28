@@ -323,6 +323,8 @@ export { flowToPage, pageToFlow, flowRectToPage, pageRectToFlow, pageIsVertical,
 export { verticalOrientation, verticalRuns, uaxVerticalOrientation, isVerticalCell, verticalCellEms, CORNER_OFFSET_EM } from './writingMode';
 export type { VerticalGlyph, VerticalOrientationKind, VerticalRun, UaxVerticalOrientation } from './writingMode';
 export { computeColumnEdges } from './pipeline/resourceLayout';
+export { findAnnotations } from './parse/annotations';
+export type { FoundAnnotation, AnnotationName } from './parse/annotations';
 export type { ContentBlock, ContentBlockType, DirectiveAttrs, DirectiveName, ContainerName, RefCase, InlineSpan, InlineLink, TextSpan, MathSpan, MathMeta, ListKind, ParseIssue, ParseIssueKind, UnclosedMathIssue, UnclosedContainerIssue, TocBlockInfo, IndexBlockInfo, IndexMark, ChipBox, EmphasisMark, InlineRuby, InlineWarichu } from './parse';
 export { parseMarkdownWithIssues, MATH_PLACEHOLDER, SWATCH_PLACEHOLDER, CHIP_PLACEHOLDER, KNOWN_DIRECTIVES, KNOWN_CONTAINERS, spaceDirectiveLines, MAX_SPACE_LINES } from './parse';
 export { computeSourceMap, parseInlineSnippetSpans, mapInlineSnippet } from './parse';

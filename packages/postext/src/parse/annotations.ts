@@ -114,7 +114,7 @@ function compactRubyAt(text: string, at: number, end: number = text.length): { b
 
 /** One annotation found in a text: where its opener, content and closer
  *  (its attribute blob included) sit. */
-interface FoundAnnotation {
+export interface FoundAnnotation {
   name: AnnotationName;
   /** `[start, contentStart)`: `:name[` or a compact ruby's `{`. */
   start: number;
@@ -447,4 +447,25 @@ export function annotationSourceSkips(markdown: string, from: number, end: numbe
   };
   walk(from, end);
   return out.sort((a, b) => a[0] - b[0]);
+}
+
+/**
+ * Every annotation of a line of source, nested ones included, in order of
+ * their openers (for an editor's highlighting): its kind, the opener
+ * (`[start, contentStart)`), the text (`[contentStart, contentEnd)`) and the
+ * closer with its attributes or readings (`[contentEnd, end)`).
+ */
+export function findAnnotations(text: string): FoundAnnotation[] {
+  const out: FoundAnnotation[] = [];
+  const walk = (at: number, stop: number): void => {
+    for (;;) {
+      const found = nextAnnotation(text, at, stop);
+      if (!found) return;
+      out.push(found);
+      walk(found.contentStart, found.contentEnd);
+      at = found.end;
+    }
+  };
+  walk(0, text.length);
+  return out;
 }

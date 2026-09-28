@@ -294,6 +294,7 @@ describe("package exports", () => {
       "verticalCellEms",
       "CORNER_OFFSET_EM",
       "computeColumnEdges",
+      "findAnnotations",
       "parseMarkdownWithIssues",
       "MATH_PLACEHOLDER",
       "SWATCH_PLACEHOLDER",

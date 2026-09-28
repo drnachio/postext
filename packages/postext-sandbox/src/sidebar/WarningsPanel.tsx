@@ -29,6 +29,8 @@ function iconFor(kind: WarningPayload['kind']) {
       return Type;
     case 'looseLine':
     case 'cjkLooseLine':
+    case 'cjkMarksExceedLeading':
+    case 'rubyExceedsLeading':
       return FileWarning;
     case 'headingHierarchy':
       return Heading;
@@ -118,6 +120,10 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsLooseLineTitle;
     case 'cjkLooseLine':
       return labels.warningsCjkLooseLineTitle;
+    case 'cjkMarksExceedLeading':
+      return labels.warningsCjkMarksLeadingTitle;
+    case 'rubyExceedsLeading':
+      return labels.warningsRubyLeadingTitle;
     case 'headingHierarchy':
       return labels.warningsHeadingHierarchyTitle;
     case 'consecutiveHeadings':
@@ -279,6 +285,16 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `${payload.ratio.toFixed(2)}× · ${labels.warningsThresholdLabel} ${payload.threshold.toFixed(2)}×`;
     case 'cjkLooseLine':
       return labels.warningsCjkLooseLineDetail.replace('__text__', payload.text);
+    case 'cjkMarksExceedLeading':
+      return labels.warningsCjkMarksLeadingDetail
+        .replace('__text__', payload.text)
+        .replace('__need__', String(payload.neededEm))
+        .replace('__gap__', String(payload.gapEm));
+    case 'rubyExceedsLeading':
+      return labels.warningsRubyLeadingDetail
+        .replace('__text__', payload.text)
+        .replace('__need__', String(payload.neededEm))
+        .replace('__gap__', String(payload.gapEm));
     case 'headingHierarchy':
       return `H${payload.from} → H${payload.to} · ${labels.warningsHeadingHierarchyDetail}`;
     case 'consecutiveHeadings':
