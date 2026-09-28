@@ -134,14 +134,76 @@ describe('punctuation widths (clreq §6.3.2)', () => {
     expect(lineWidth(full[0]!)).toBeCloseTo(592, 6);
   });
 
-  it('shrinks word spaces before marks, and never a mark past half an em', () => {
-    // lineEndHalf: a line one em too wide takes a character in by giving up
-    // the blank of its two commas.
-    const text = `${HAN.slice(0, 3)}，${HAN.slice(3, 6)}，${HAN.slice(6, 9)}`;
-    const ls = lines(text, 9 * 16 + 16, comp({ punctuationWidth: 'lineEndHalf' }));
-    expect(ls[0]!.text).toBe(text);
+  it('shrinks marks to take in a mark that may not open a line, sharing alike', () => {
+    // lineEndHalf: 甲乙丙丁戊，己庚辛 fill a 144 px line; the 。 after them
+    // (half an em at the line end) may not open the next line, so the comma
+    // gives up its half em to take it in.
+    const one = `${HAN.slice(0, 5)}，${HAN.slice(5, 8)}。`;
+    const ls = lines(one, 144, comp({ punctuationWidth: 'lineEndHalf' }), { textAlign: 'justify' });
+    expect(ls[0]!.text).toBe(one);
     expect(pairWidth(ls[0]!, '，')).toBe(8);
-    expect(lineWidth(ls[0]!)).toBeCloseTo(160, 6);
+    expect(lineWidth(ls[0]!)).toBeCloseTo(144, 6);
+    // Two commas share the 8 px the line is short of.
+    const two = `${HAN.slice(0, 3)}，${HAN.slice(3, 6)}，${HAN.slice(6, 8)}。`;
+    const ls2 = lines(two, 160, comp({ punctuationWidth: 'lineEndHalf' }), { textAlign: 'justify' });
+    expect(ls2[0]!.text).toBe(two);
+    expect(advances(ls2[0]!).filter((a) => a.ch === '，').map((a) => a.w)).toEqual([12, 12]);
+    expect(lineWidth(ls2[0]!)).toBeCloseTo(160, 6);
+  });
+
+  it('spreads a line that falls short rather than narrow its marks to take a character that may open the next', () => {
+    // 37 units of 36 px short of a character: 35 Han, a mid-line 。 and a
+    // Kaiming comma (half an em) make 584 px; the next 甄 (16 px) overflows
+    // a 592 px measure by 8 px. It may open a line, so it goes down and the
+    // line is spread; the 。 inside keeps its full em (Kaiming).
+    const head = `${HAN.slice(0, 7)}。${HAN.slice(7, 20)}，${HAN.slice(20, 35)}`;
+    expect([...head].length).toBe(37);
+    const text = `${head}${HAN.slice(35, 44)}`;
+    for (const style of ['kaiming', 'lineEndHalf'] as const) {
+      const ls = lines(text, 592, comp({ punctuationWidth: style }), { textAlign: 'justify' });
+      expect(ls[0]!.text).toBe(head);
+      const stop = advances(ls[0]!).find((a) => a.ch === '。')!;
+      expect(stop.w - (stop.seg.tracking ?? 0)).toBeCloseTo(16, 9);
+      expect(lineWidth(ls[0]!)).toBeCloseTo(592, 6);
+    }
+  });
+
+  it('gives a compressed pair its blank back when the line breaks between the two', () => {
+    // Full width, compressAdjacent, no edge trims: ，「 inside a line take
+    // 1.5 em, the comma giving up its half em.
+    const c = comp({ punctuationWidth: 'fullwidth', compressAdjacent: true, trimLineStart: false });
+    expect(pairWidth(lines(`${HAN.slice(0, 3)}，「${HAN.slice(3, 6)}`, 2000, c)[0]!, '，「')).toBe(24);
+    // Split by the break, the comma ends its line a full em and nothing is
+    // spread; the bracket opens the next one a full em.
+    const text = `${HAN.slice(0, 9)}，「${HAN.slice(9, 16)}`;
+    const ls = lines(text, 160, c, { textAlign: 'justify' });
+    expect(ls[0]!.text).toBe(`${HAN.slice(0, 9)}，`);
+    expect(pairWidth(ls[0]!, '，')).toBe(16);
+    expect(ls[0]!.segments!.every((s) => s.tracking === undefined && s.inkOffset === undefined)).toBe(true);
+    expect(lineWidth(ls[0]!)).toBe(160);
+    expect(pairWidth(ls[1]!, '「')).toBe(16);
+    // A line one pixel short breaks before the comma's character instead:
+    // the comma at its full em no longer fits.
+    expect(lines(text, 159, c, { textAlign: 'justify' })[0]!.text).toBe(HAN.slice(0, 8));
+    // 」「 split the same way: 」 ends its line a full em.
+    const close = lines(`${HAN.slice(0, 8)}「${HAN.slice(8, 9)}」「${HAN.slice(9, 14)}」`, 176, c, { textAlign: 'justify' });
+    expect(close[0]!.text.endsWith('」')).toBe(true);
+    expect(pairWidth(close[0]!, '」')).toBe(16);
+    // Hong Kong centres its comma, so the bracket gave the blank; opening
+    // the next line it is a full em again, painted where its box starts.
+    const hk = comp({ trimLineStart: false }, 'zh-HK');
+    expect(hk).toMatchObject({ region: 'hongkong', punctuationWidth: 'fullwidth', compressAdjacent: true });
+    const hkText = `此開卷第一回也作者，「${HAN.slice(9, 16)}`;
+    expect(pairWidth(lines(hkText, 2000, hk)[0]!, '，「')).toBe(24);
+    const hkLines = lines(hkText, 160, hk, { textAlign: 'justify' });
+    expect(hkLines[1]!.text.startsWith('「')).toBe(true);
+    expect(hkLines[1]!.segments![0]!.inkOffset).toBeUndefined();
+    expect(pairWidth(hkLines[1]!, '「')).toBe(16);
+    // With trimLineStart the edge trims take the blank anyway: a closing
+    // bracket ends its line half an em, as without the pair.
+    const trimmed = lines(`${HAN.slice(0, 8)}「${HAN.slice(8, 9)}」「${HAN.slice(9, 14)}」`, 176, comp({ punctuationWidth: 'fullwidth', compressAdjacent: true, trimLineStart: true }), { textAlign: 'justify' });
+    const endMark = trimmed[0]!.segments!.find((s) => s.text === '」')!;
+    expect(endMark.width - (endMark.tracking ?? 0)).toBe(8);
   });
 
   it('trims an opening bracket at a line start and paints it half an em early', () => {
@@ -276,12 +338,18 @@ describe('Han–Latin spacing (clreq §6.3.3)', () => {
     expect(lineWidth(first)).toBeCloseTo(114, 6);
   });
 
-  it('shrinks to an eighth of an em to take one more character in', () => {
-    // 我用iPhone拍照 = 120 px on a 116 px line: the two spaces give 2 px each.
-    const first = lines('我用iPhone拍照了', 116, c, { textAlign: 'justify' })[0]!;
-    expect(first.text).toBe('我用iPhone拍照');
+  it('shrinks to an eighth of an em to take in a mark that may not open a line', () => {
+    // 我用iPhone拍， = 104 + 8 = 112 px on a 108 px line: the comma may not
+    // open the next line, so the two spaces give 2 px each to take it in.
+    const first = lines('我用iPhone拍，照了', 108, c, { textAlign: 'justify' })[0]!;
+    expect(first.text).toBe('我用iPhone拍，');
     expect(first.segments!.filter((s) => s.autospace).map((s) => s.width)).toEqual([2, 2]);
-    expect(lineWidth(first)).toBeCloseTo(116, 6);
+    expect(lineWidth(first)).toBeCloseTo(108, 6);
+    // A character that may open the next line goes down instead, and the
+    // spaces grow.
+    const spread = lines('我用iPhone拍照了', 116, c, { textAlign: 'justify' })[0]!;
+    expect(spread.text).toBe('我用iPhone拍');
+    for (const s of spread.segments!.filter((seg) => seg.autospace)) expect(s.width).toBeGreaterThan(4);
   });
 
   it('is off at 0', () => {

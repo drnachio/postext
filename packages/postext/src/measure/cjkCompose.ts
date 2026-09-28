@@ -67,7 +67,7 @@ import { graphemeCount, graphemesOf, lastGrapheme } from './graphemes';
 import { isBreakingSpace } from './spaces';
 import { trimChipLineEdges } from './chipEdges';
 import {
-  applyLineTrim,
+  applyLineEdges,
   boxCut,
   compressPair,
   getCjkComposition,
@@ -75,8 +75,7 @@ import {
   isLatinSpacingLatin,
   isPlainComposition,
   latinSpacingPx,
-  lineEndTrim,
-  lineStartTrim,
+  lineEdgeCut,
   mayHang,
   punctuationBox,
   punctuationShrink,
@@ -605,15 +604,20 @@ interface LineRange {
 
 /**
  * What the breaker asks of a composition (see `cjkPunctuation.ts`): the
- * blank a mark gives up at a line start (`lead`) or end (`tail`), and what
- * a unit gives when its line is compressed to take one more character
- * (`give`): a mark down to half an em as its style allows, a word space
- * down to a quarter em, a Han–Latin space down to an eighth.
+ * blank a mark gives up at a line start (`lead`) or end (`tail`) — less
+ * the blank it gave to a mark across the break, which comes back, so
+ * either may be negative —, and what a unit gives when its line is
+ * compressed to take one more character (`give`, at the line's start or
+ * end or inside it): a mark down to half an em as its style allows, a word
+ * space down to a quarter em, a Han–Latin space down to an eighth. `edge`
+ * sets a mark as it stands at a line edge (its `punct` must be the line's
+ * own copy) and returns what it gave up.
  */
 interface LineFit {
   lead(u: Unit): number;
   tail(u: Unit): number;
-  give(u: Unit, lead: number, tail: number): number;
+  give(u: Unit, atStart: boolean, atEnd: boolean): number;
+  edge(u: Unit, start: boolean, end: boolean): number;
   /** Whether unit `k` may hang when it ends a line: a pause or stop mark
    *  the composition lets hang, with no other mark before or after it. */
   hangs(units: readonly Unit[], k: number, unitAt: (k: number) => Unit): boolean;
@@ -623,15 +627,20 @@ interface LineFit {
 function lineFitOf(c: CjkComposition): LineFit | undefined {
   if (isPlainComposition(c)) return undefined;
   return {
-    lead: (u) => (u.punct ? lineStartTrim(u.punct, c) : 0),
-    tail: (u) => (u.punct ? lineEndTrim(u.punct, c) : 0),
-    give(u, lead, tail) {
+    lead: (u) => (u.punct ? lineEdgeCut(u.punct, c, true, false) : 0),
+    tail: (u) => (u.punct ? lineEdgeCut(u.punct, c, false, true) : 0),
+    give(u, atStart, atEnd) {
       if (u.kind === 'space') {
         const em = emOfFont(u.style.font);
         return Math.max(0, u.width - (u.auto ? em / 8 : em / 4));
       }
-      return u.punct ? Math.max(0, punctuationShrink(u.punct, c) - lead - tail) : 0;
+      if (!u.punct) return 0;
+      if (!atStart && !atEnd) return punctuationShrink(u.punct, c);
+      const box = { ...u.punct };
+      applyLineEdges(box, c, atStart, atEnd);
+      return punctuationShrink(box, c);
     },
+    edge: (u, start, end) => (u.punct ? applyLineEdges(u.punct, c, start, end) : 0),
     hangs(units, k, unitAt) {
       const u = unitAt(k);
       if (u.kind !== 'text' || u.run || u.graphemes !== 1 || !mayHang(u.text, u.first, c)) return false;
@@ -765,7 +774,8 @@ function divideRun(u: Unit, room: number, letterSpacingPx: number): { head: Unit
 /**
  * Break the units into lines, first fit with push-out: a line takes units
  * while they fit its measure less `reserve`; the unit that does not fit
- * opens the next line when a break before it is allowed, else the line ends
+ * opens the next line when a break before it is allowed, else (when the
+ * composition cannot push it in or hang it) the line ends
  * at the last allowed break (the characters after it go down with the
  * unit). A space never overflows: the line ends before it, when the line
  * may break after it. A unit wider
@@ -806,22 +816,26 @@ function breakUnits(
       const lead = fit && k === i ? fit.lead(u) : 0;
       if (w + u.width - lead - (fit ? fit.tail(u) : 0) <= max + FIT_EPS) {
         w += u.width - lead;
-        if (fit) give += fit.give(u, lead, 0);
+        if (fit) give += fit.give(u, k === i, false);
         continue;
       }
       if (fit && k > i && u.kind !== 'space') {
         // A pause or stop mark that does not fit hangs past the measure:
         // at once under 'force', after compressing the line failed under
-        // 'allow'. Else the line gives up blank to take the unit and what
+        // 'allow'. Else, when the unit may not open the next line (no
+        // break before it), the line gives up blank to take it and what
         // must stay with it (push-in, clreq §6.2.2.3), before it would
-        // push characters down.
+        // push characters down. A unit that may open a line goes down and
+        // the line is spread: compressing marks to take one more
+        // character there would narrow Kaiming's stop marks inside the
+        // line.
         const canHang = fit.hanging !== 'none' && groupEnd(units, breaks, k) === k && fit.hangs(units, k, unitAt);
         if (canHang && fit.hanging === 'force') {
           end = k + 1;
           hang = true;
           break;
         }
-        const m = groupEnd(units, breaks, k);
+        const m = breaks[k] ? -1 : groupEnd(units, breaks, k);
         if (m >= k) {
           let width = w;
           let room = give;
@@ -829,7 +843,7 @@ function breakUnits(
             const uq = unitAt(q);
             const t = q === m ? fit.tail(uq) : 0;
             width += uq.width - t;
-            room += fit.give(uq, 0, t);
+            room += fit.give(uq, false, q === m);
           }
           if (width - room <= max + FIT_EPS) {
             end = m + 1;
@@ -957,8 +971,10 @@ function spread(amount: number, caps: readonly number[]): number[] {
 /**
  * A line's units as its edges and its measure set them (see
  * `cjkPunctuation.ts`): the first mark gives up its lead and the last its
- * tail; a mark that hangs is taken out and returned apart; and a line wider
- * than its measure (it took one more character, clreq §6.2.2.3) gives up
+ * tail, each taking back the blank it gave to a mark on the other side of
+ * the break (the two no longer meet); a mark that hangs is taken out and
+ * returned apart; and a line wider than its measure (it took one more
+ * character that may not open a line, clreq §6.2.2.3) gives up
  * blank in clreq's order — word spaces to a quarter em, interpuncts,
  * brackets, pause marks, Han–Latin spaces to an eighth of an em, stop marks
  * last — each step shared equally, until it fits. `us` holds the line's
@@ -979,28 +995,20 @@ function fitLine(us: Unit[], units: readonly Unit[], range: LineRange, lastK: nu
     if (range.hang || forced) {
       hang = copy(us.length - 1);
       us.pop();
-      const t = fit.tail(hang);
-      if (hang.punct && t > 0) {
-        applyLineTrim(hang.punct, 0, t);
-        hang.width -= t;
-      }
+      hang.width -= fit.edge(hang, false, true);
       while (us.length > 0 && us[us.length - 1]!.kind === 'space') us.pop();
     }
   }
   if (us.length === 0) return hang;
-  const first = us[0]!;
-  const lead = fit.lead(first);
-  if (lead > 0) {
+  // The marks at the edges: what they gave to a mark across the break
+  // comes back, then the edge trims.
+  if (fit.lead(us[0]!) !== 0) {
     const c = copy(0);
-    applyLineTrim(c.punct!, lead, 0);
-    c.width -= lead;
+    c.width -= fit.edge(c, true, false);
   }
-  const last = us[us.length - 1]!;
-  const tail = fit.tail(last);
-  if (tail > 0) {
+  if (fit.tail(us[us.length - 1]!) !== 0) {
     const c = copy(us.length - 1);
-    applyLineTrim(c.punct!, 0, tail);
-    c.width -= tail;
+    c.width -= fit.edge(c, false, true);
   }
   let over = -measure;
   for (const u of us) over += u.width;
@@ -1015,7 +1023,7 @@ function fitLine(us: Unit[], units: readonly Unit[], range: LineRange, lastK: nu
       const u = us[j]!;
       if (stepOf(u) !== step) continue;
       // The marks at the edges already gave up their lead and tail.
-      const cap = fit.give(u, 0, 0);
+      const cap = fit.give(u, false, false);
       if (cap <= 0) continue;
       members.push(j);
       caps.push(cap);

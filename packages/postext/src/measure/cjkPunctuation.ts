@@ -154,6 +154,11 @@ export interface PunctuationBox {
   /** Blank given up before the glyph and after it (px). */
   cutStart: number;
   cutEnd: number;
+  /** Of `cutStart` and `cutEnd`, the blank given up to the mark before it
+   *  and after it ({@link compressPair}): it comes back when a line breaks
+   *  between the two ({@link applyLineEdges}). */
+  pairStart?: number;
+  pairEnd?: number;
 }
 
 /** A mark's advance now: its full advance less the blank it gave up. */
@@ -256,11 +261,13 @@ export function compressPair(a: PunctuationBox, b: PunctuationBox): void {
   const takeEnd = (box: PunctuationBox, n: number): number => {
     const t = Math.min(n, Math.max(0, blankEnd(box)));
     box.cutEnd += t;
+    if (t > 0) box.pairEnd = (box.pairEnd ?? 0) + t;
     return t;
   };
   const takeStart = (box: PunctuationBox, n: number): number => {
     const t = Math.min(n, Math.max(0, blankStart(box)));
     box.cutStart += t;
+    if (t > 0) box.pairStart = (box.pairStart ?? 0) + t;
     return t;
   };
   if (a.side === 'end' || a.side === 'start') {
@@ -307,12 +314,53 @@ export function applyLineTrim(box: PunctuationBox, start: number, end: number): 
 }
 
 /**
+ * A mark at a line edge — it opens the line (`start`), ends it (`end`) or
+ * both: the blank it gave up to the mark across the break comes back, as
+ * the two no longer meet (clreq §6.3.2.2 compresses marks that meet on a
+ * line), then the edge trims apply ({@link lineStartTrim},
+ * {@link lineEndTrim}). Changes `box`; returns the blank given up at the
+ * edges less the blank that came back, px (negative when the mark grows:
+ * a full-width `，` whose `「` went to the next line is one em again).
+ */
+export function applyLineEdges(box: PunctuationBox, c: CjkComposition, start: boolean, end: boolean): number {
+  const before = boxCut(box);
+  if (start) {
+    if (box.pairStart) {
+      box.cutStart -= box.pairStart;
+      box.pairStart = 0;
+    }
+    applyLineTrim(box, lineStartTrim(box, c), 0);
+  }
+  if (end) {
+    if (box.pairEnd) {
+      box.cutEnd -= box.pairEnd;
+      box.pairEnd = 0;
+    }
+    applyLineTrim(box, 0, lineEndTrim(box, c));
+  }
+  return boxCut(box) - before;
+}
+
+/** What {@link applyLineEdges} would give up at the edges, leaving `box`
+ *  as it is. */
+export function lineEdgeCut(box: PunctuationBox, c: CjkComposition, start: boolean, end: boolean): number {
+  if (!(start && box.pairStart) && !(end && box.pairEnd)) {
+    // Nothing comes back: the trims alone (an opening mark's start trim and
+    // an end trim never touch the same blank).
+    return (start ? lineStartTrim(box, c) : 0) + (end ? lineEndTrim(box, c) : 0);
+  }
+  return applyLineEdges({ ...box }, c, start, end);
+}
+
+/**
  * The blank a mark may still give up when its line is compressed to take
- * one more character (push-in, clreq §6.2.2.3), after its style, its
- * neighbours and the line edges took theirs. `fullwidth` marks give up
- * nothing (a full-width book keeps its grid); `halfwidth` marks have
- * nothing left; `kaiming` lets its stop marks go down to half an em, last;
- * `lineEndHalf` lets every mark go down to half an em.
+ * one more character that may not open the next line (push-in, clreq
+ * §6.2.2.3), after its style, its neighbours and the line edges took
+ * theirs. `fullwidth` marks give up nothing (a full-width book keeps its
+ * grid); `halfwidth` marks have nothing left; `kaiming` lets its stop marks
+ * go down to half an em, last (only to resolve a prohibition: a line that
+ * merely falls short is spread, so Kaiming keeps 。？！ one em inside the
+ * line); `lineEndHalf` lets every mark go down to half an em.
  */
 export function punctuationShrink(box: PunctuationBox | undefined, c: CjkComposition): number {
   if (!box) return 0;
