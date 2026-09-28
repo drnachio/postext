@@ -3,7 +3,8 @@
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext';
 import { resolveBodyTextConfig, DEFAULT_BODY_TEXT_CONFIG, dimensionsEqual, colorsEqual, isCjkLanguage } from 'postext';
-import type { BodyTextConfig, ColonListRoom, HyphenationConfig, LocaleTag } from 'postext';
+import type { BodyTextConfig, ColonListRoom, HyphenationConfig } from 'postext';
+import { ChevronRight } from 'lucide-react';
 import {
   CollapsibleSection,
   FieldGroup,
@@ -13,9 +14,11 @@ import {
   NumberInput,
   SelectInput,
   ToggleSwitch,
+  FieldRow,
+  useFieldIds,
 } from '../../../controls';
-import { LOCALE_TO_HYPHENATION, documentLocaleOptionsFor, TEXT_SIZE_UNITS, LINE_HEIGHT_UNITS, INDENT_UNITS } from './constants';
-import { relocalizedResourceTypes } from '../../../context/defaultConfig';
+import { LOCALE_TO_HYPHENATION, documentLocaleLabel, TEXT_SIZE_UNITS, LINE_HEIGHT_UNITS, INDENT_UNITS } from './constants';
+import { useOpenSettingsGroup } from '../../../context/settingsNavigation';
 import { JustificationSubsection, RaggedBreakingSubsection } from './JustificationSubsection';
 import { BlockquoteSubsection } from './BlockquoteSubsection';
 import { RaggedHyphenationSubsection } from './HyphenationFields';
@@ -31,7 +34,6 @@ export const BodyTextSection = memo(function BodyTextSection() {
   const raw = useSandboxSelector((s) => s.config.bodyText);
   const locale = useSandboxSelector((s) => s.locale);
   const documentLocale = useSandboxSelector((s) => s.config.locale);
-  const resourceTypes = useSandboxSelector((s) => s.config.resourceTypes);
   const bodyText = resolveBodyTextConfig(raw, documentLocale);
   const defaultLocale = LOCALE_TO_HYPHENATION[locale] ?? 'en-us';
 
@@ -40,19 +42,6 @@ export const BodyTextSection = memo(function BodyTextSection() {
   const effectiveHyphenationLocale = raw?.hyphenation?.locale ?? documentLocale ?? defaultLocale;
   const effectiveDocumentLocale = documentLocale ?? defaultLocale;
 
-  // Built-in resource types still in the language the document was in (or
-  // the interface's, which seeds a new book) follow the new one: "Figura"
-  // becomes "Figure"; renamed types stay as they are.
-  const relocalized = (next: string) => {
-    const previous = documentLocale ?? raw?.hyphenation?.locale ?? locale;
-    const types = relocalizedResourceTypes(resourceTypes, [previous, locale], next);
-    return types ? { resourceTypes: types } : {};
-  };
-
-  const updateDocumentLocale = (value: LocaleTag | undefined) => {
-    dispatch({ type: 'UPDATE_CONFIG', payload: { locale: value, ...relocalized(value ?? raw?.hyphenation?.locale ?? locale) } });
-  };
-
   const updateBodyText = (partial: Partial<BodyTextConfig>) => {
     dispatch({
       type: 'UPDATE_CONFIG',
@@ -60,10 +49,11 @@ export const BodyTextSection = memo(function BodyTextSection() {
     });
   };
 
+  // The document language is kept: it is set under Writing system.
   const resetBodyText = () => {
     dispatch({
       type: 'UPDATE_CONFIG',
-      payload: { bodyText: undefined, locale: undefined, ...relocalized(locale) },
+      payload: { bodyText: undefined },
     });
   };
 
@@ -104,7 +94,7 @@ export const BodyTextSection = memo(function BodyTextSection() {
     }
   };
 
-  const hasOverrides = (raw !== undefined && Object.keys(raw).length > 0) || documentLocale !== undefined;
+  const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
   const isFontDefault = bodyText.fontFamily === D.fontFamily;
   const isSizeDefault = dimensionsEqual(bodyText.fontSize, D.fontSize);
   const isLineHeightDefault = dimensionsEqual(bodyText.lineHeight, D.lineHeight);
@@ -365,15 +355,10 @@ export const BodyTextSection = memo(function BodyTextSection() {
         />
       </FieldGroup>
       <FieldGroup title={labels.bodyGroupLanguage}>
-        <SelectInput
-          label={labels.documentLocale}
-          value={effectiveDocumentLocale}
-          options={documentLocaleOptionsFor(effectiveDocumentLocale)}
-          onChange={(v) => updateDocumentLocale(v)}
-          tooltip={labels.documentLocaleTooltip}
-          isDefault={documentLocale === undefined}
-          onReset={() => updateDocumentLocale(undefined)}
-        />
+        {/* Moved to Writing system; the row says where, and opens it. */}
+        <FieldRow label={labels.documentLocale} tooltip={labels.bodyDocumentLocaleMoved} isDefault>
+          <DocumentLocalePointer tag={effectiveDocumentLocale} />
+        </FieldRow>
       </FieldGroup>
       <CollapsibleSection title={labels.bodyGroupLineControl} sectionId="bodyText-lineControl" variant="subsection">
         <ToggleSwitch
@@ -495,3 +480,27 @@ export const BodyTextSection = memo(function BodyTextSection() {
     </CollapsibleSection>
   );
 });
+
+/** The document language, named in its own language: a link to Writing
+ *  system, where it is set. Plain text outside the Design panel. */
+function DocumentLocalePointer({ tag }: { tag: string }) {
+  const labels = useSandboxLabels();
+  const openGroup = useOpenSettingsGroup();
+  const ids = useFieldIds();
+  const name = documentLocaleLabel(tag);
+  if (!openGroup) return <span lang={tag} className="text-[0.8rem] text-(--foreground)">{name}</span>;
+  return (
+    <button
+      id={ids?.controlId}
+      type="button"
+      onClick={() => openGroup('writing')}
+      aria-describedby={ids?.descriptionId}
+      title={labels.settingsOpenGroup.replace('__group__', labels.settingsGroupWriting)}
+      className="inline-flex h-7 max-w-[10.5rem] cursor-pointer items-center gap-1 rounded-md px-1.5 text-[0.8rem] text-(--foreground) transition-colors hover:bg-(--surface) focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)"
+    >
+      <span lang={tag} className="min-w-0 truncate">{name}</span>
+      <span className="sr-only"> — {labels.settingsOpenGroup.replace('__group__', labels.settingsGroupWriting)}</span>
+      <ChevronRight size={12} aria-hidden="true" className="shrink-0 text-(--slate)" />
+    </button>
+  );
+}

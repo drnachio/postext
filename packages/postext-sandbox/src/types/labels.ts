@@ -327,6 +327,7 @@ export interface SandboxLabels {
   footnotesSeparatorColor: string;
   footnotesSeparatorColorTooltip: string;
   cjkSection: string;
+  writingSection: string;
   cjkAuto: string;
   cjkRegion: string;
   cjkRegionTooltip: string;
@@ -337,8 +338,10 @@ export interface SandboxLabels {
   cjkLineBreakTooltip: string;
   writingMode: string;
   writingModeHorizontal: string;
-  writingModeVertical: string;
   writingModeTooltip: string;
+  writingModeHorizontalDescription: string;
+  writingModeVerticalShort: string;
+  writingModeVerticalDescription: string;
   binding: string;
   bindingLeft: string;
   bindingRight: string;
@@ -378,6 +381,35 @@ export interface SandboxLabels {
   cjkGridShowTooltip: string;
   cjkGridReadout: string;
   cjkGridMargins: string;
+  cjkGroupLineEdges: string;
+  cjkGroupPunctuation: string;
+  cjkGroupSpacing: string;
+  cjkNotCjkHint: string;
+  cjkShowSettings: string;
+  chineseDefaults: string;
+  chineseDefaultsTooltip: string;
+  chineseDefaultsReview: string;
+  chineseDefaultsScript: string;
+  chineseDefaultsSimplified: string;
+  chineseDefaultsTraditional: string;
+  chineseDefaultsDirection: string;
+  chineseDefaultsChanges: string;
+  chineseDefaultsNothing: string;
+  chineseDefaultsOwn: string;
+  chineseDefaultsFollowsLanguage: string;
+  chineseDefaultsApply: string;
+  chineseDefaultsApplyOne: string;
+  chineseDefaultsApplied: string;
+  chineseDefaultsAppliedOne: string;
+  chineseDefaultsUndone: string;
+  chineseDefaultsBodyFont: string;
+  chineseDefaultsHeadingFont: string;
+  chineseDefaultsResourceTypes: string;
+  chineseDefaultsCaptionLabel: string;
+  chineseDefaultsChapterNumbers: string;
+  chineseDefaultsListNumbers: string;
+  chineseDefaultsNoNumber: string;
+  chineseDefaultsBecomes: string;
   pageMarginsFromGrid: string;
 
   // Body text section
@@ -831,6 +863,8 @@ export interface SandboxLabels {
   fontPickerNoResults: string;
   fontPickerCustomGroup: string;
   fontPickerGoogleGroup: string;
+  fontPickerChineseSimplifiedGroup: string;
+  fontPickerChineseTraditionalGroup: string;
   resetConfigConfirm: string;
   resetSectionConfirm: string;
   resetMarkdownConfirm: string;
@@ -901,6 +935,7 @@ export interface SandboxLabels {
   chapterPartGo: string;
   chapterPaginating: string;
   chapterWords: string;
+  chapterCharacters: string;
   chapterCountTag: string;
   /** Scope selectors in the viewport tab bar: the active chapter on its
    *  own, or every chapter as one continuous document — one for the PDF
@@ -1689,6 +1724,8 @@ export interface SandboxLabels {
   debugWarningsDesignIssuesTooltip: string;
   documentLocale: string;
   documentLocaleTooltip: string;
+  bodyDocumentLocaleMoved: string;
+  settingsOpenGroup: string;
   headerFooterElementSizeAuto: string;
   headerFooterElementSizeFill: string;
   headerFooterElementTextWidthTooltip: string;
@@ -1888,8 +1925,12 @@ export interface SandboxLabels {
   settingsSummaryOneColumn: string;
   settingsSummaryTwoColumns: string;
   settingsSummaryOneAndHalf: string;
+  settingsSummaryBoundLeft: string;
+  settingsSummaryBoundRight: string;
   settingsGroupPage: string;
   settingsGroupPageDescription: string;
+  settingsGroupWriting: string;
+  settingsGroupWritingDescription: string;
   settingsGroupColors: string;
   settingsGroupColorsDescription: string;
   settingsGroupText: string;
@@ -1934,6 +1975,8 @@ export interface SandboxLabels {
   pageMarginsOuterTooltip: string;
   pagePreviewPageCaption: string;
   pagePreviewSpreadCaption: string;
+  pagePreviewBoundRight: string;
+  pagePreviewVertical: string;
   pageSize11x17: string;
   pageSize12x19: string;
   pageSize17x24: string;

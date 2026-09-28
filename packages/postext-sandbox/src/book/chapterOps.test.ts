@@ -33,6 +33,10 @@ describe('counts', () => {
   it('counts H1s and words', () => {
     expect(h1Count('# a\n## b\n# c\n```\n# d\n```')).toBe(2);
     expect(wordCount('---\ntitle: x y z\n---\nHello, world! It\'s 3 words')).toBe(5);
+    // Chinese counts characters (字数); punctuation does not count.
+    expect(wordCount('此開卷第一回也。作者自云：因曾歷過一番夢幻之後')).toBe(21);
+    expect(wordCount('用iPhone拍照，共3張。')).toBe(7);
+    expect(wordCount('# 第一回\n\n甄士隱夢幻識通靈 Chapter one')).toBe(13);
   });
 });
 

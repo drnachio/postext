@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, useId, useSyncExternalStore, type RefObject } from 'react';
-import { useSandboxLabels } from '../context/SandboxContext';
+import { chineseScriptOf, cjkRegionOf } from 'postext';
+import { useSandboxLabels, useSandboxSelector } from '../context/SandboxContext';
 import { Popover, type PopoverCloseReason } from '../ui';
 import { FieldRow } from './FieldRow';
 import { useFieldIds } from './fieldContext';
@@ -42,8 +43,17 @@ function getCustomFontSnapshot(): readonly string[] {
   return customSnapshot;
 }
 
+/** A Google family and the character subsets Fontsource lists for it
+ *  (`latin`, `chinese-simplified`, `chinese-traditional`…). */
+export interface FontEntry {
+  family: string;
+  subsets: readonly string[];
+}
+
+const LATIN = ['latin'] as const;
+
 // Fallback list in case API is unavailable
-const FALLBACK_FONTS = [
+const FALLBACK_FONTS: FontEntry[] = [
   'EB Garamond', 'Alegreya', 'Bitter', 'Cormorant Garamond', 'Crimson Text',
   'Domine', 'Gentium Book Plus', 'IBM Plex Serif', 'Libre Baskerville', 'Lora',
   'Merriweather', 'Noto Serif', 'Playfair Display', 'PT Serif', 'Source Serif 4',
@@ -52,12 +62,21 @@ const FALLBACK_FONTS = [
   'Open Sans', 'Outfit', 'Poppins', 'PT Sans', 'Raleway', 'Roboto', 'Rubik',
   'Source Sans 3', 'Work Sans', 'Fira Code', 'IBM Plex Mono', 'JetBrains Mono',
   'Roboto Mono', 'Source Code Pro', 'Space Mono',
-];
+].map((family) => ({ family, subsets: LATIN }));
+FALLBACK_FONTS.push(
+  { family: 'Noto Serif SC', subsets: ['chinese-simplified', 'latin'] },
+  { family: 'Noto Sans SC', subsets: ['chinese-simplified', 'latin'] },
+  { family: 'Noto Serif TC', subsets: ['chinese-traditional', 'latin'] },
+  { family: 'Noto Sans TC', subsets: ['chinese-traditional', 'latin'] },
+  { family: 'Noto Serif HK', subsets: ['chinese-hongkong', 'latin'] },
+  { family: 'Noto Sans HK', subsets: ['chinese-hongkong', 'latin'] },
+  { family: 'LXGW WenKai TC', subsets: ['chinese-traditional', 'latin'] },
+);
 
-let cachedFonts: string[] | null = null;
-let fetchPromise: Promise<string[]> | null = null;
+let cachedFonts: FontEntry[] | null = null;
+let fetchPromise: Promise<FontEntry[]> | null = null;
 
-async function fetchGoogleFonts(): Promise<string[]> {
+async function fetchGoogleFonts(): Promise<FontEntry[]> {
   if (cachedFonts) return cachedFonts;
   if (fetchPromise) return fetchPromise;
 
@@ -66,8 +85,8 @@ async function fetchGoogleFonts(): Promise<string[]> {
       if (!res.ok) throw new Error('Failed to fetch fonts');
       return res.json();
     })
-    .then((data: { family: string }[]) => {
-      cachedFonts = data.map((item) => item.family);
+    .then((data: { family: string; subsets?: string[] }[]) => {
+      cachedFonts = data.map((item) => ({ family: item.family, subsets: item.subsets ?? [] }));
       return cachedFonts;
     })
     .catch(() => {
@@ -76,6 +95,30 @@ async function fetchGoogleFonts(): Promise<string[]> {
     });
 
   return fetchPromise;
+}
+
+/** The Fontsource subsets that hold a Chinese document's characters, best
+ *  first: `chinese-simplified` for zh-Hans; `chinese-traditional` (then
+ *  Hong Kong's) for zh-Hant; Hong Kong's first for zh-HK. None otherwise. */
+export function chineseSubsetsFor(locale: string | undefined): string[] {
+  const script = chineseScriptOf(locale);
+  if (!script) return [];
+  if (script === 'Hans') return ['chinese-simplified'];
+  return cjkRegionOf(locale) === 'hongkong'
+    ? ['chinese-hongkong', 'chinese-traditional']
+    : ['chinese-traditional', 'chinese-hongkong'];
+}
+
+/** The families first that cover the document's Chinese characters (in
+ *  the order of `subsets`, then by name as listed), and the rest. */
+export function rankFontsForScript(fonts: readonly FontEntry[], subsets: readonly string[]): { script: FontEntry[]; other: FontEntry[] } {
+  if (subsets.length === 0) return { script: [], other: [...fonts] };
+  const rank = (f: FontEntry) => {
+    const i = subsets.findIndex((s) => f.subsets.includes(s));
+    return i === -1 ? Infinity : i;
+  };
+  const script = fonts.filter((f) => rank(f) !== Infinity).sort((a, b) => rank(a) - rank(b));
+  return { script, other: fonts.filter((f) => rank(f) === Infinity) };
 }
 
 function FontListItem({
@@ -156,7 +199,10 @@ export function FontPicker({
   const muted = isDefault ?? false;
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const [fonts, setFonts] = useState<string[]>(cachedFonts ?? FALLBACK_FONTS);
+  const [fonts, setFonts] = useState<FontEntry[]>(cachedFonts ?? FALLBACK_FONTS);
+  // A Chinese document lists the families with its characters first.
+  const documentLocale = useSandboxSelector((s) => s.config.locale);
+  const scriptSubsets = chineseSubsetsFor(documentLocale);
   const customFonts = useSyncExternalStore(
     subscribeCustomFonts,
     getCustomFontSnapshot,
@@ -189,8 +235,13 @@ export function FontPicker({
   // collision doesn't render the same family twice.
   const customSet = new Set(customFonts);
   const filteredCustom = customFonts.filter(matches);
-  const filteredGoogle = fonts.filter((f) => !customSet.has(f) && matches(f));
-  const hasAny = filteredCustom.length > 0 || filteredGoogle.length > 0;
+  const ranked = rankFontsForScript(fonts.filter((f) => !customSet.has(f.family) && matches(f.family)), scriptSubsets);
+  const filteredScript = ranked.script.map((f) => f.family);
+  const filteredGoogle = ranked.other.map((f) => f.family);
+  const hasAny = filteredCustom.length > 0 || filteredScript.length > 0 || filteredGoogle.length > 0;
+  const scriptGroupLabel = scriptSubsets[0] === 'chinese-simplified'
+    ? labels.fontPickerChineseSimplifiedGroup
+    : labels.fontPickerChineseTraditionalGroup;
 
   const pick = (font: string) => {
     onChange(font);
@@ -240,7 +291,7 @@ export function FontPicker({
                 e.preventDefault();
                 listRef.current?.querySelector<HTMLButtonElement>('[role="option"]')?.focus();
               } else if (e.key === 'Enter') {
-                const first = filteredCustom[0] ?? filteredGoogle[0];
+                const first = filteredCustom[0] ?? filteredScript[0] ?? filteredGoogle[0];
                 if (first) { e.preventDefault(); pick(first); }
               }
             }}
@@ -269,9 +320,17 @@ export function FontPicker({
               ))}
             </>
           )}
+          {filteredScript.length > 0 && (
+            <>
+              <GroupHeader>{scriptGroupLabel}</GroupHeader>
+              {filteredScript.map((font) => (
+                <FontListItem key={`script-${font}`} font={font} selected={font === value} onClick={() => pick(font)} />
+              ))}
+            </>
+          )}
           {filteredGoogle.length > 0 && (
             <>
-              {filteredCustom.length > 0 && (
+              {(filteredCustom.length > 0 || filteredScript.length > 0) && (
                 <GroupHeader>{googleGroupLabel ?? labels.fontPickerGoogleGroup}</GroupHeader>
               )}
               {filteredGoogle.map((font) => (

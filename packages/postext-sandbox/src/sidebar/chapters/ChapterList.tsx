@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowDown, ArrowUp, GripVertical, MoreHorizontal, Pencil, Plus, Scissors, Trash2, Merge } from 'lucide-react';
-import { useBookContent, useBookPlan, useSandboxDispatch, useSandboxLabels } from '../../context/SandboxContext';
+import { isCjkLanguage } from 'postext';
+import { useBookContent, useBookPlan, useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { h1Count, newChapter, wordCount } from '../../book/chapterOps';
 import { chapterPageLabels } from '../../book/pagination';
 import { chapterMenuEntries, partLabel } from '../../book/chapterMenu';
@@ -142,12 +143,14 @@ function ChapterRow({ chapter, index, total, isActive, number, pages, part, drag
 
   const headings = h1Count(chapter.markdown);
   const words = wordCount(chapter.markdown);
+  // A Chinese, Japanese or Korean book counts characters (字数).
+  const cjk = useSandboxSelector((s) => isCjkLanguage(s.config.locale));
   const range = pages ? chapterPageLabels(pages) : null;
   const pagesText = range
     ? labels.chapterPages.replace('__from__', range.from).replace('__to__', range.to)
     : labels.chapterPagesUnknown;
   const numberText = number === null ? '–' : number === undefined ? '' : String(number);
-  const subtitle = `${pagesText} · ${labels.chapterWords.replace('__n__', words.toLocaleString())}`;
+  const subtitle = `${pagesText} · ${(cjk ? labels.chapterCharacters : labels.chapterWords).replace('__n__', words.toLocaleString())}`;
 
   const ask = (message: string, action: () => void) => {
     setConfirm({ message, action });

@@ -15,6 +15,7 @@ import { OrderedListsSection } from './OrderedListsSection';
 import { MathSection } from './MathSection';
 import { FootnotesSection } from './FootnotesSection';
 import { CjkSection } from './CjkSection';
+import { WritingSection } from './WritingSection';
 import { TableStyleSection } from './TableStyleSection';
 import { TableStylesSection } from './TableStylesSection';
 import { CaptionStyleSection } from './CaptionStyleSection';
@@ -33,6 +34,7 @@ import { WarningsConfigSection } from './WarningsConfigSection';
 export const SECTION_COMPONENTS: Record<SettingsSectionId, ComponentType> = {
   'page': PageSection,
   'layout': LayoutSection,
+  'writing': WritingSection,
   'color-palette': ColorPaletteSection,
   'headerFooter': HeaderFooterSection,
   'parts': PartsSection,

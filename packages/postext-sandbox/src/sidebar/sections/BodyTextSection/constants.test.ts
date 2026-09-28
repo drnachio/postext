@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { DOCUMENT_LANGUAGES } from 'postext';
-import { DOCUMENT_LOCALE_OPTIONS, LOCALE_OPTIONS, documentLocaleOptionsFor, localeOptionsFor } from './constants';
+import { DOCUMENT_LOCALE_OPTIONS, LOCALE_OPTIONS, documentLocaleLabel, documentLocaleOptionsFor, localeOptionsFor } from './constants';
 
 describe('localeOptionsFor', () => {
   it('offers the bundled languages when the value is one of them', () => {
@@ -33,5 +33,17 @@ describe('documentLocaleOptionsFor', () => {
     expect(documentLocaleOptionsFor('zh-CN').at(-1)).toEqual({ value: 'zh-CN', label: '中文（简体） (zh-CN)' });
     expect(documentLocaleOptionsFor('es-ES').at(-1)).toEqual({ value: 'es-ES', label: 'Español (es-ES)' });
     expect(documentLocaleOptionsFor('sv').at(-1)).toEqual({ value: 'sv', label: 'sv' });
+  });
+});
+
+describe('documentLocaleLabel', () => {
+  it('names a document language in its own language', () => {
+    expect(documentLocaleLabel('es')).toBe('Español');
+    expect(documentLocaleLabel('en')).toBe('English');
+    expect(documentLocaleLabel('zh-Hans')).toBe('中文（简体）');
+    expect(documentLocaleLabel('zh-TW')).toBe('中文（繁體）');
+    expect(documentLocaleLabel('zh-HK')).toBe('中文（香港）');
+    expect(documentLocaleLabel('zh-CN')).toBe('中文（简体）');
+    expect(documentLocaleLabel('sv')).toBe('sv');
   });
 });

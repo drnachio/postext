@@ -79,11 +79,27 @@ export function h1Count(markdown: string): number {
   return scanHeadings(markdown).h1Offsets.length;
 }
 
+/** Han characters, kana and hangul: each one counts on its own. */
+const CJK_CHARACTER = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u;
+
+/** The words of a chapter (its frontmatter left out). Chinese, Japanese
+ *  and Korean characters count one each, as a Chinese word count (字数)
+ *  does, and the Latin words among them count as words. */
 export function wordCount(markdown: string): number {
   const fm = frontmatterRange(markdown);
   const body = fm ? markdown.slice(fm.end) : markdown;
   const words = body.match(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu);
-  return words ? words.length : 0;
+  if (!words) return 0;
+  let n = 0;
+  for (const w of words) {
+    if (!CJK_CHARACTER.test(w)) { n++; continue; }
+    // A run mixing scripts (`用iPhone拍照`): each CJK character, plus
+    // each stretch of other letters and digits between them.
+    for (const part of w.split(/([\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}])/u)) {
+      if (part && /[\p{L}\p{N}]/u.test(part)) n++;
+    }
+  }
+  return n;
 }
 
 function withChapters(book: BookContent, chapters: Chapter[], activeChapterId = book.activeChapterId): BookContent {
