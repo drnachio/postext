@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
-import { PDFArray, PDFDocument, PDFRawStream, decodePDFRawStream } from 'pdf-lib';
+import { PDFArray, PDFDict, PDFDocument, PDFName, PDFNumber, PDFRawStream, decodePDFRawStream } from 'pdf-lib';
 import { buildDocument } from 'postext';
 import type { PostextConfig, VDTDocument } from 'postext';
 import { renderToPdf } from '../pdf-backend';
@@ -74,5 +74,24 @@ describe('CJK justification in the PDF', () => {
       expect(s.x).toBeCloseTo(expected[i]!.x, 2);
       expect(s.reset).toBe(0);
     });
+  }, 60_000);
+
+  it('makes only the linked characters of a Chinese line a live link', async () => {
+    const doc = buildDocument({ markdown: '请点击[这里](https://example.org)查看详情，然后返回首页继续阅读本书的其他章节。' }, config);
+    const pdf = await PDFDocument.load(await renderToPdf(doc, { fontProvider, accessible: false }));
+    const annots = pdf.getPage(0).node.lookup(PDFName.of('Annots'));
+    expect(annots).toBeInstanceOf(PDFArray);
+    const rects: number[][] = [];
+    for (let i = 0; i < (annots as PDFArray).size(); i++) {
+      const a = (annots as PDFArray).lookup(i);
+      if (!(a instanceof PDFDict)) continue;
+      const rect = a.lookup(PDFName.of('Rect'));
+      if (rect instanceof PDFArray) rects.push(rect.asArray().map((n) => (n as PDFNumber).asNumber()));
+    }
+    expect(rects.length).toBe(1);
+    // 这里: two 16 px characters and their share of the spread, not the line.
+    const w = rects[0]![2]! - rects[0]![0]!;
+    expect(w).toBeGreaterThanOrEqual(32);
+    expect(w).toBeLessThan(3 * 16);
   }, 60_000);
 });

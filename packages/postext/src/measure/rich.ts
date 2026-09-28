@@ -15,8 +15,8 @@ import { isRuntLastLine } from './runts';
 import { computeJustifiedSpaceRatio, hasOverfullLine } from './plain';
 import { quoteFamily } from './font';
 import { trimChipLineEdges } from './chipEdges';
-import { cjkJoinBreaks, hasCJK, hasCJKRun } from './cjk';
-import { composeCjkParagraph, cjkWordBreaks, isCjkParagraph, type CjkWordBreaks } from './cjkCompose';
+import { cjkJoinBreaks, hasCJK } from './cjk';
+import { composeCjkParagraph, cjkWordBreaks, composesAsCjk, type CjkWordBreaks } from './cjkCompose';
 import { graphemeCount } from './graphemes';
 import { NO_BREAK_SPACES, WORDS_AND_SPACES_RE, isBlankText, isBreakingSpace, isBreakingSpaceRun } from './spaces';
 import { breaksAfterDash, breaksAfterHardHyphen, hasCompound, isDash, raggedStretchPx } from './breakRules';
@@ -634,17 +634,35 @@ export function emergencySplit(
   const afterHyphen = (idx: number): boolean => text[idx - 1] === '-';
   const markW = (idx: number): number => (afterHyphen(idx) || hasCJK(text.slice(idx - 1, idx + 1)) ? 0 : hyphenW);
   const fits = (idx: number): boolean => widthBefore(idx) + markW(idx) <= lineMaxWidth;
+  // The longest prefix that fits without its mark, found by doubling then
+  // halving (prefix widths grow with their length): no cut past it fits,
+  // so a word many lines long costs what one line of it does, not a
+  // measurement of every prefix.
+  let reach = 0;
+  let over = text.length;
+  for (let step = 1; reach + step < text.length; step *= 2) {
+    if (widthBefore(reach + step) > lineMaxWidth) {
+      over = reach + step;
+      break;
+    }
+    reach += step;
+  }
+  while (over - reach > 1) {
+    const mid = (reach + over) >> 1;
+    if (widthBefore(mid) <= lineMaxWidth) reach = mid;
+    else over = mid;
+  }
   let at = 0;
   // The dictionary's syllables, as offsets into the text: `syllabify` maps
   // them past anything else the dictionary might put in.
   const { clean, soft } = syllabify(text, true);
   if (clean === text) {
     for (const s of soft) {
-      if (s.index > 0 && s.index < text.length && fits(s.index)) at = s.index;
+      if (s.index > 0 && s.index <= reach && fits(s.index)) at = s.index;
     }
   }
   if (at === 0 && !syllablesOnly) {
-    for (let idx = text.length - 1; idx >= 1; idx--) {
+    for (let idx = reach; idx >= 1; idx--) {
       // Not right before a hyphen of the text: the next line would open
       // on it.
       if (text[idx] === '-') continue;
@@ -1149,9 +1167,10 @@ function measureRichText(
 ): MeasuredBlock {
   // Chinese, Japanese or Korean text: its own composer, which breaks
   // between characters under the document's line-break rules and spreads
-  // justified lines between them. A Latin paragraph that only quotes a few
-  // CJK words stays here, with a break allowed next to their characters.
-  if (hasCJKRun(plainText) && isCjkParagraph(plainText)) {
+  // justified lines between them — also text with no two CJK letters in a
+  // row (价¥5,999。好, 第1条、第2条). A Latin paragraph that only quotes a
+  // few CJK words stays here, with a break allowed next to their characters.
+  if (composesAsCjk(plainText)) {
     return composeCjkParagraph(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options);
   }
 

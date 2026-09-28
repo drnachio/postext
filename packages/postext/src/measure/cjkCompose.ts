@@ -20,7 +20,13 @@
  * Western run or a dash pair that a gap follows gives its last grapheme a
  * segment of its own. A line that needs more than the cap (½ em, or
  * `bodyText.maxJustifyTracking` when set) is set with the cap and flagged
- * `cjkLoose` and `ragged`.
+ * `cjkLoose` and `ragged`; a line with no CJK character on it (the head of
+ * a long web address) is set `ragged` without the flag.
+ *
+ * Segments: a Western run keeps one of its own, and single characters
+ * share one only when they have one style, link and spacing and advance
+ * alike, so a caret spread evenly over a segment lands on its characters
+ * and a Markdown link covers only its own.
  */
 
 import type { InlineSpan } from '../parse';
@@ -48,10 +54,15 @@ import {
   cjkClassOf,
   getCjkLineBreak,
   isCjkGrapheme,
+  isFullwidthAlnum,
+  isFullwidthDigit,
+  isLineEndProhibited,
+  isLineStartProhibited,
   isWesternWordChar,
   type CjkClass,
   type CjkLineBreakLevel,
 } from './cjkClasses';
+import { hasCJK } from './cjk';
 import { graphemeCount, graphemesOf, lastGrapheme } from './graphemes';
 import { isBreakingSpace } from './spaces';
 import { trimChipLineEdges } from './chipEdges';
@@ -87,6 +98,14 @@ export function isCjkParagraph(text: string): boolean {
     if (CJK_LETTER_RE.test(ch)) letters++;
   }
   return letters > spaces;
+}
+
+/** Whether the CJK composer sets a paragraph of this text: it holds CJK
+ *  text (not only unit squares or marks Latin shares with Chinese) and more
+ *  CJK letters than word spaces (see {@link isCjkParagraph}). Both
+ *  measuring paths ask this, so they agree. */
+export function composesAsCjk(text: string): boolean {
+  return hasCJK(text) && isCjkParagraph(text);
 }
 
 /** The style a unit is painted in: every unit of a span shares it, and
@@ -137,6 +156,9 @@ interface Unit {
   url?: boolean;
   /** One of a subscript and a superscript set over each other. */
   stacked?: 'first' | 'second';
+  /** The Markdown link the unit is part of (its span and range), so a
+   *  segment never holds linked and unlinked characters. */
+  link?: string;
 }
 
 interface Fonts {
@@ -185,7 +207,8 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
   // scripts), by index.
   const wholeSpan = new Set<number>();
 
-  for (const span of spans) {
+  for (let si = 0; si < spans.length; si++) {
+    const span = spans[si]!;
     const atomic = atomicSpanToken(span, fonts.normal, fonts.bold, fonts.italic, fonts.boldItalic, letterSpacingPx);
     if (atomic) {
       const style = styleOf(span, fonts);
@@ -217,11 +240,23 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
     const spanFirst = units.length;
     let run: string[] = [];
     let runAt = 0;
+    let runLink: string | undefined;
     let space = '';
     let spaceAt = 0;
     // A lone mark that may pair with the next one (—, …), by unit index.
     let pairOpen = -1;
     let at = 0;
+    // The link a character at `offset` of the span is part of: its span and
+    // range, so two links to one target stay apart.
+    const links = span.links;
+    const linkAt = (offset: number): string | undefined => {
+      if (!links || links.length === 0) return undefined;
+      for (let li = 0; li < links.length; li++) {
+        const l = links[li]!;
+        if (offset >= l.start && offset < l.end) return `${si}:${li}`;
+      }
+      return undefined;
+    };
     const push = (u: Omit<Unit, 'style' | 'glueBefore' | 'zwspBefore'>): void => {
       units.push({
         ...u,
@@ -248,6 +283,7 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
         at: runAt,
         run: true,
         ...(URL_LIKE_RE.test(text) ? { url: true } : {}),
+        ...(runLink !== undefined ? { link: runLink } : {}),
       });
       run = [];
       pairOpen = -1;
@@ -289,14 +325,21 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
       // A soft hyphen: the composer breaks Western words only when they are
       // wider than the line, so it is left out, and the word stays whole.
       if (g === '\u00AD') continue;
+      const link = linkAt(gAt);
       if (!isCjkHere(g, graphemes[i - 1], graphemes[i + 1])) {
-        if (run.length === 0) runAt = gAt;
+        // A link that starts or ends inside a run cuts it: the two parts
+        // still never part (neither is CJK) and take no space between them.
+        if (run.length > 0 && link !== runLink) flushRun();
+        if (run.length === 0) {
+          runAt = gAt;
+          runLink = link;
+        }
         run.push(g);
         continue;
       }
       flushRun();
       // —— and …… are one unit of two ems; a third mark opens another.
-      if (pairOpen >= 0 && units[pairOpen]!.text === g && !zwsp) {
+      if (pairOpen >= 0 && units[pairOpen]!.text === g && !zwsp && units[pairOpen]!.link === link) {
         const u = units[pairOpen]!;
         u.text += g;
         u.width += measureTextWidth(g, style.font) + track(1);
@@ -319,6 +362,7 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
         firstCjk: true,
         lastCjk: true,
         at: gAt,
+        ...(link !== undefined ? { link } : {}),
       });
       pairOpen = pairable(g) ? units.length - 1 : -1;
     }
@@ -351,18 +395,63 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
   return units;
 }
 
-/** Whether a line may break before each unit (index 0 is never a break). */
+const isDigitCode = (c: number): boolean => (c >= 0x30 && c <= 0x39) || isFullwidthDigit(c);
+
+/** Whether a number keeps to the sign or unit next to it (`50 %`, `50％`,
+ *  `￥５９９`, `−3 ℃`): a unit ending in a digit before a unit sign, or a
+ *  currency or plus-minus sign before a digit. At every level. */
+function numberGlue(a: Unit, b: Unit): boolean {
+  if (a.kind !== 'text' || b.kind !== 'text') return false;
+  if (b.first === 'postfix' && isDigitCode(a.text.charCodeAt(a.text.length - 1))) return true;
+  return a.last === 'prefix' && isDigitCode(b.text.charCodeAt(0));
+}
+
+/** A fullwidth character unit (one grapheme, not a Western run) whose code
+ *  point passes `test`. */
+function fullwidthUnit(u: Unit | undefined, test: (cp: number) => boolean): boolean {
+  return u !== undefined && u.kind === 'text' && !u.run && u.graphemes === 1 && test(u.text.charCodeAt(0));
+}
+
+/** Marks that join fullwidth digits into one number: a decimal point, a
+ *  thousands separator, the colon of a time, the solidus of a fraction
+ *  (３．１４, １２：３０, １／２). */
+const isFullwidthNumberJoin = (cp: number): boolean => cp === 0xFF0E || cp === 0xFF0C || cp === 0xFF1A || cp === 0xFF0F;
+
+/** Whether units `k - 1` and `k` belong to one fullwidth number or word
+ *  (１２３, ＡＢＣ, ３．１４): each character is a unit of its own, spread
+ *  like Han when the line is justified, but the line never breaks inside. */
+function fullwidthGlue(units: readonly Unit[], k: number): boolean {
+  const a = units[k - 1];
+  const b = units[k];
+  if (fullwidthUnit(a, isFullwidthAlnum) && fullwidthUnit(b, isFullwidthAlnum)) return true;
+  if (fullwidthUnit(a, isFullwidthDigit) && fullwidthUnit(b, isFullwidthNumberJoin) && fullwidthUnit(units[k + 1], isFullwidthDigit)) return true;
+  return fullwidthUnit(a, isFullwidthNumberJoin) && fullwidthUnit(b, isFullwidthDigit) && fullwidthUnit(units[k - 2], isFullwidthDigit);
+}
+
+/** Whether a line may break before each unit (index 0 is never a break).
+ *  A word space is a break unless the unit after it may not open a line,
+ *  the last one before it may not close one, or they are a number and its
+ *  sign; a zero-width space is a break at every level. */
 function breakOpportunities(units: readonly Unit[], level: CjkLineBreakLevel): Uint8Array {
   const out = new Uint8Array(units.length);
+  // The last unit before `k` that is not a space.
+  let ink = -1;
   for (let k = 1; k < units.length; k++) {
     const a = units[k - 1]!;
     const b = units[k]!;
+    if (a.kind !== 'space') ink = k - 1;
     if (b.kind === 'space') continue;
-    if (a.kind === 'space' || b.zwspBefore) {
+    if (b.zwspBefore) {
       out[k] = 1;
       continue;
     }
+    if (a.kind === 'space') {
+      const p = ink >= 0 ? units[ink]! : undefined;
+      if (!p || (!numberGlue(p, b) && !isLineStartProhibited(b.first, level) && !isLineEndProhibited(p.last, level))) out[k] = 1;
+      continue;
+    }
     if (b.glueBefore) continue;
+    if (numberGlue(a, b) || fullwidthGlue(units, k)) continue;
     if (cjkBreakAllowed(a.last, a.lastCjk, b.first, b.firstCjk, level)) out[k] = 1;
   }
   return out;
@@ -394,19 +483,71 @@ interface LineRange {
   hardHyphen?: boolean;
 }
 
+/** The advance of the first `idx` UTF-16 units of a Western run, the
+ *  block's tracking included. */
+function prefixWidth(u: Unit, idx: number, letterSpacingPx: number): number {
+  const head = u.text.slice(0, idx);
+  return textWidth(head, u.style.font, u.style.smallCaps) + (letterSpacingPx === 0 ? 0 : letterSpacingPx * graphemeCount(head));
+}
+
+/** Characters of a run kept past the first that does not fit when it is
+ *  cut: enough for the dictionary and the joints of a web address to read
+ *  the text around every cut that fits as they read the whole run. */
+const CUT_CONTEXT = 32;
+
+/** The shortest prefix of a Western run (in UTF-16 units) wider than
+ *  `room`, or its length when all of it fits: found by doubling, then
+ *  halving, so a run many lines long costs what one line of it does. */
+function overflowAt(u: Unit, room: number, letterSpacingPx: number): number {
+  const len = u.text.length;
+  let fit = 0;
+  let over = len;
+  for (let step = 1; fit + step < len; step *= 2) {
+    if (prefixWidth(u, fit + step, letterSpacingPx) > room + FIT_EPS) {
+      over = fit + step;
+      break;
+    }
+    fit += step;
+  }
+  if (over === len && u.width <= room + FIT_EPS) return len;
+  while (over - fit > 1) {
+    const mid = (fit + over) >> 1;
+    if (prefixWidth(u, mid, letterSpacingPx) > room + FIT_EPS) over = mid;
+    else fit = mid;
+  }
+  return over;
+}
+
+/** The rest of a run after its first `from` UTF-16 units (`cutWidth` px). */
+function runTail(u: Unit, from: number, cutWidth: number): Unit {
+  const tail = u.text.slice(from);
+  return {
+    ...u,
+    text: tail,
+    width: u.width - cutWidth,
+    graphemes: u.graphemes - graphemeCount(u.text.slice(0, from)),
+    first: cjkClassOf(tail),
+    at: u.at + from,
+    glueBefore: false,
+    zwspBefore: false,
+  };
+}
+
 /** Cut a web address at its last joint (after a slash, before a dot…)
- *  whose head fits `room`: nothing is added at the break. */
+ *  whose head fits `room`: nothing is added at the break. Only the joints
+ *  before the first character that does not fit are tried. */
 function cutAtJoint(u: Unit, room: number, letterSpacingPx: number): { head: Unit; tail: Unit } | null {
-  const joints = urlBreakIndices(u.text);
+  const over = overflowAt(u, room, letterSpacingPx);
+  const joints = urlBreakIndices(u.text.slice(0, Math.min(u.text.length, over + CUT_CONTEXT)));
   for (let j = joints.length - 1; j >= 0; j--) {
     const idx = joints[j]!;
+    if (idx >= over) continue;
     const head = u.text.slice(0, idx);
-    const w = textWidth(head, u.style.font, u.style.smallCaps) + (letterSpacingPx === 0 ? 0 : letterSpacingPx * graphemeCount(head));
+    const w = prefixWidth(u, idx, letterSpacingPx);
     if (w > room + FIT_EPS) continue;
-    const tail = u.text.slice(idx);
     return {
       head: { ...u, text: head, width: w, graphemes: graphemeCount(head), last: cjkClassOf(lastGrapheme(head)), url: false },
-      tail: { ...u, text: tail, width: u.width - w, graphemes: graphemeCount(tail), first: cjkClassOf(tail), at: u.at + idx, glueBefore: false, zwspBefore: false },
+      tail: runTail(u, idx, w),
     };
   }
   return null;
@@ -414,24 +555,31 @@ function cutAtJoint(u: Unit, room: number, letterSpacingPx: number): { head: Uni
 
 /** Divide a Western run wider than the whole line (see `emergencySplit`):
  *  at a dictionary syllable with a hyphen, else at the last character that
- *  fits. */
+ *  fits. Only the run up to a little past the first character that does not
+ *  fit is handed to the divider, so each line of a long run costs what the
+ *  line holds. */
 function divideRun(u: Unit, room: number, letterSpacingPx: number): { head: Unit; tail: Unit; hyphen: boolean; hard: boolean } | null {
+  const end = Math.min(u.text.length, overflowAt(u, room, letterSpacingPx) + CUT_CONTEXT);
+  const text = end === u.text.length ? u.text : u.text.slice(0, end);
+  const width = end === u.text.length ? u.width : prefixWidth(u, end, letterSpacingPx);
   const token: RichToken = {
-    text: u.text,
+    text,
     bold: u.style.bold,
     italic: u.style.italic,
     kind: 'text',
-    width: u.width,
+    width,
     ...(u.style.smallCaps ? { smallCaps: true } : {}),
   };
   const split = emergencySplit(token, u.style.font, letterSpacingPx, room);
   if (!split) return null;
   const headText = split.head.text;
   const hyphen = headText.length > 0 && headText.endsWith('-') && !u.text.startsWith(headText);
-  const tailText = split.tail.text;
+  // Where the rest starts (past a no-break space the divider parted at)
+  // and the advance of what comes before it.
+  const from = text.length - split.tail.text.length;
   return {
     head: { ...u, text: headText, width: split.head.width, graphemes: graphemeCount(headText), last: cjkClassOf(lastGrapheme(headText)), url: false },
-    tail: { ...u, text: tailText, width: split.tail.width, graphemes: graphemeCount(tailText), first: cjkClassOf(tailText), at: u.at + (u.text.length - tailText.length), glueBefore: false, zwspBefore: false },
+    tail: runTail(u, from, width - split.tail.width),
     hyphen,
     hard: split.hard === true,
   };
@@ -442,7 +590,8 @@ function divideRun(u: Unit, room: number, letterSpacingPx: number): { head: Unit
  * while they fit its measure less `reserve`; the unit that does not fit
  * opens the next line when a break before it is allowed, else the line ends
  * at the last allowed break (the characters after it go down with the
- * unit). A space never overflows: the line ends before it. A unit wider
+ * unit). A space never overflows: the line ends before it, when the line
+ * may break after it. A unit wider
  * than the whole line is divided when it is a Western run (a web address
  * at a joint first), else set on a line of its own.
  */
@@ -478,8 +627,14 @@ function breakUnits(
         continue;
       }
       if (u.kind === 'space') {
-        end = k;
-        break;
+        // The line ends before the space when it may break after it; else
+        // it gives up characters to the next line, as for any other unit.
+        let m = k + 1;
+        while (m < n && units[m]!.kind === 'space') m++;
+        if (m >= n || breaks[m]) {
+          end = k;
+          break;
+        }
       }
       if (u.url) {
         const cut = cutAtJoint(u, max - w, letterSpacingPx);
@@ -544,8 +699,12 @@ function breakUnits(
 interface Piece {
   seg: PendingSegment;
   parts: string[];
-  /** Consecutive text units of this style and tracking may join it. */
+  /** Consecutive text units of this style, link and tracking may join it. */
   key: string | undefined;
+  /** The advance of each character of a piece others may join: only
+   *  characters that advance alike share a segment, so the Sandbox's caret
+   *  can spread a segment's width evenly over its characters. */
+  cell?: number;
 }
 
 interface ComposeContext {
@@ -574,6 +733,7 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
   let tracking = 0;
   let loose = false;
   let spaceRatio: number | undefined;
+  let ragged = false;
   const stretches: boolean[] = [];
   if (justify) {
     let content = 0;
@@ -613,17 +773,24 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
         // No gap between characters: the spaces take it all, as in a Latin
         // line (the renderers stretch them).
         if (ctx.normalSpace > 0) spaceRatio = (natural + slack) / spaces / ctx.normalSpace;
-      } else {
+      } else if (us.some((u) => u.kind === 'text' && (u.firstCjk || u.lastCjk))) {
+        // A CJK character with nothing to spread against.
         loose = true;
+      } else {
+        // Western text only (the head of a web address, a divided word): set
+        // ragged, as a Latin line of one word is, and not reported.
+        ragged = true;
       }
     }
   }
 
   const pieces: Piece[] = [];
   const addText = (u: Unit, text: string, width: number, t: number | undefined): void => {
-    const key = u.stacked ? undefined : `${u.style.key}|${t ?? ''}`;
+    // Single characters (not Western runs, which keep a segment each) of
+    // one style, link and spacing that advance alike share a segment.
+    const key = u.stacked || u.run || u.graphemes !== 1 ? undefined : `${u.style.key}|${u.link ?? ''}|${t ?? ''}`;
     const last = pieces[pieces.length - 1];
-    if (key !== undefined && last && last.key === key) {
+    if (key !== undefined && last && last.key === key && last.cell !== undefined && Math.abs(last.cell - width) < 1e-3) {
       last.parts.push(text);
       last.seg.width += width;
       return;
@@ -641,7 +808,7 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
       ...(s.smallCaps ? { smallCaps: true } : {}),
       ...(t !== undefined ? { tracking: t } : {}),
     };
-    pieces.push({ seg, parts: [text], key });
+    pieces.push({ seg, parts: [text], key, ...(key !== undefined ? { cell: width } : {}) });
   };
   for (let j = 0; j < us.length; j++) {
     const u = us[j]!;
@@ -688,7 +855,7 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
     segments: trimmed,
     isLastLine: isLast,
     ...(spaceRatio !== undefined && !loose ? { justifiedSpaceRatio: spaceRatio } : {}),
-    ...(loose ? { ragged: true, cjkLoose: true } : {}),
+    ...(loose ? { ragged: true, cjkLoose: true } : ragged ? { ragged: true } : {}),
   };
 }
 

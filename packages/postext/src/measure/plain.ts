@@ -19,6 +19,7 @@ import { cleanSoftHyphens, measureTextWidth, normalSpaceWidthFor } from './canva
 import { isRuntLastLine } from './runts';
 import { measureRichBlock } from './rich';
 import { hasCJKRun } from './cjk';
+import { composesAsCjk } from './cjkCompose';
 import { WORDS_AND_SPACES_RE } from './spaces';
 import { breaksAfterHardHyphen, hasCompound, raggedStretchPx } from './breakRules';
 
@@ -201,7 +202,7 @@ export function measureBlock(
   // inter-character justification) and breaks a Latin one that quotes CJK
   // words next to their characters. The same text gives the same lines on
   // both paths.
-  if (hasCJKRun(text)) {
+  if (hasCJKRun(text) || composesAsCjk(text)) {
     return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
   }
   const shouldHyphenate = options?.hyphenate ?? false;

@@ -342,7 +342,7 @@ A justified line of such a paragraph, except its last, is spread to the measure 
 
 The last line of a paragraph is set solid. The spacing is recorded per segment of the line (`VDTLineSegment.tracking`), so the canvas, HTML and PDF paint the same positions, and the sandbox places the cursor on the character clicked.
 
-A line that would need more than half an em between its characters — or more than `bodyText.maxJustifyTracking`, when that is set — is set with that much, short of the measure, and reported as a `cjkLooseLine` content warning (in the Sandbox, **CJK line set short**). The usual cause is a long Latin word or web address that could not come up to it.
+A line that would need more than half an em between its characters — or more than `bodyText.maxJustifyTracking`, when that is set — is set with that much, short of the measure, and reported as a `cjkLooseLine` content warning (in the Sandbox, **CJK line set short**). The usual cause is a long Latin word or web address that could not come up to it. A line with no CJK character on it, such as the head of a long web address, is set ragged without the warning.
 
 For the loose-line highlight, a CJK line counts as loose by its spacing: its ratio is 1 plus its spacing in eighths of an em, so at the default threshold of 3 a line whose characters are spread by more than a quarter of an em is flagged (`lineLooseness(line, fontSizePx)` gives the ratio). Column balancing can run a CJK paragraph one line longer: it breaks the lines a little short of the measure, an eighth of an em at a time up to two ems, and spreads them back to it.
 

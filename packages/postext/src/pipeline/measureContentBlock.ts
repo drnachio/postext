@@ -23,6 +23,7 @@ import {
 import { resolveBlockKind, uppercasePreservingLength, type BlockKind, type BlockKindContext } from './buildBlockKind';
 import { runMeasurement } from './buildMeasurement';
 import { linkSegments } from '../measure/links';
+import { composesAsCjk } from '../measure/cjkCompose';
 import { resolveRefSpans, resolveSwatchSpans, shiftResourceBlockX } from './resourceLayout';
 import { chipContextOf, resolveChipSpans } from './chips';
 import type { ResourceNumberingMap } from './resourceNumbering';
@@ -347,7 +348,12 @@ export function measureContentBlock(
   // and so does a hyphenation zone (the rich greedy breaker weighs it).
   const hasUrl = /(?:^|\s)(?:(?:https?|ftp):\/\/|www\.|10\.\d{4,}\/)\S/i.test(contentBlock.text);
   const zoned = style.hyphenationZonePx !== undefined;
-  const useRich = hasRichFonts && (hasRichSpans || letterSpacingPx !== 0 || hasUrl || zoned);
+  // A Markdown link in a paragraph the CJK composer sets: on the formatted
+  // path the composer sees the link's range and gives its characters
+  // segments of their own, so the link covers them and nothing else (the
+  // lines are the same on both paths).
+  const cjkLinks = contentBlock.spans.some((s) => s.links !== undefined && s.links.length > 0) && composesAsCjk(contentBlock.text);
+  const useRich = hasRichFonts && (hasRichSpans || letterSpacingPx !== 0 || hasUrl || zoned || cjkLinks);
 
   const first = runMeasurement({
     vdtType, rawBlock, contentBlock, style, measureMaxWidth, measureOptions, mathEnabled, useRich, cache,
@@ -380,7 +386,7 @@ export function measureContentBlock(
           looseness: -1,
           letterSpacingPx: spacing !== 0 ? spacing : undefined,
         },
-        useRich: hasRichFonts && (hasRichSpans || spacing !== 0 || hasUrl || zoned),
+        useRich: hasRichFonts && (hasRichSpans || spacing !== 0 || hasUrl || zoned || cjkLinks),
       });
       if (attempt.measured.lines.length !== target || attempt.measured.lastLineRunt) continue;
       const profile = wordSpacingProfile(attempt.measured.lines);

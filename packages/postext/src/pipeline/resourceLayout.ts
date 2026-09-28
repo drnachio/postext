@@ -60,6 +60,7 @@ import type { MeasureBlockOptions } from '../measure';
 import { isSwatchFill, measureRichSnippet } from '../measure/rich';
 import { isBlankText } from '../measure/spaces';
 import { linkSegments } from '../measure/links';
+import { graphemeCount } from '../measure/graphemes';
 import { dimensionToPx } from '../units';
 // Caption / table-cell / note content is parsed with the shared snippet
 // parser so measurement and the sandbox's glyph→snippet mapping agree on
@@ -466,7 +467,7 @@ function measureCellContent(
       y += m.lines.length * set.lineHeightPx;
       continue;
     }
-    const markerWidth = measureTextWidth(item.marker.text, set.fontString) + tracking * item.marker.text.length;
+    const markerWidth = measureTextWidth(item.marker.text, set.fontString) + tracking * graphemeCount(item.marker.text);
     const indentPx = markerWidth + listGapPx;
     const levelOffset = (item.marker.level - 1) * indentPx;
     const textX = levelOffset + indentPx;

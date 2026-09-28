@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { VDTDocument } from 'postext';
+import { measureBlock, type VDTDocument } from 'postext';
 import { pixelToSourceOffset, segmentGraphemeStarts, xForPlainInLine } from './geometry';
 
 type VDTBlock = VDTDocument['blocks'][number];
@@ -57,5 +57,37 @@ describe('caret on a tracked CJK line', () => {
     expect(xForPlainInLine(block, block.lines[0]!, 4)).toBe(54);
     expect(xForPlainInLine(block, block.lines[0]!, 5)).toBe(72);
     expect(xForPlainInLine(block, block.lines[0]!, 6)).toBe(88);
+  });
+});
+
+// The composer on a mixed Han–Latin line: a stub font sets CJK characters
+// 16 px wide, spaces 4 px and everything else 8 px.
+const stubWidth = (ch: string): number => (ch === ' ' ? 4 : ch.codePointAt(0)! >= 0x2e80 ? 16 : 8);
+(globalThis as unknown as { OffscreenCanvas: unknown }).OffscreenCanvas = class {
+  getContext() {
+    return {
+      font: '',
+      letterSpacing: '0px',
+      measureText(t: string) {
+        let w = 0;
+        for (const ch of t) w += stubWidth(ch);
+        return { width: w };
+      },
+    };
+  }
+};
+
+describe('caret on a ragged line of Chinese and Latin', () => {
+  it('lands on every character of what the composer set', () => {
+    const text = '1999年的iPhone 15售价为¥5,999。我们买了';
+    const measured = measureBlock(text, '16px Stub', 400, 20, { textAlign: 'left' }).lines;
+    expect(measured.length).toBe(1);
+    const line = { ...measured[0]!, plainStart: 0, plainEnd: text.length, isLastLine: true };
+    const mixed = { ...block, textAlign: 'left', bbox: { x: 0, y: 0, width: 400, height: 20 }, lines: [line] } as unknown as VDTBlock;
+    let x = 0;
+    for (let i = 0; i < text.length; i++) {
+      expect(xForPlainInLine(mixed, line, i)).toBeCloseTo(x, 6);
+      x += stubWidth(text[i]!);
+    }
   });
 });

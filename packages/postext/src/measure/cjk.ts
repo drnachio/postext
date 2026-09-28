@@ -5,9 +5,10 @@ import { lastGrapheme } from './graphemes';
  * Chinese, Japanese and Korean: scripts set without spaces between words.
  * The Han, kana and hangul ranges, the CJK punctuation and symbol blocks,
  * and the halfwidth and fullwidth forms — never the marks Latin text shares
- * with Chinese (— … · “ ”), which alone say nothing about the language.
+ * with Chinese (— … · “ ”), nor the unit squares (㎡ ㎏ ㏄, see
+ * `isUnitSquare`), which alone say nothing about the language.
  */
-const CJK_RE = /[\u1100-\u11FF\u2E80-\u2FDF\u2FF0-\u2FFF\u3000-\u33FF\u3400-\u4DBF\u4E00-\u9FFF\uA960-\uA97F\uAC00-\uD7FF\uF900-\uFAFF\uFE10-\uFE1F\uFE30-\uFE6F\uFF00-\uFFEF\u{16FE0}-\u{16FFF}\u{1B000}-\u{1B16F}\u{1F200}-\u{1F2FF}\u{20000}-\u{3FFFF}]/u;
+const CJK_RE = /[\u1100-\u11FF\u2E80-\u2FDF\u2FF0-\u2FFF\u3000-\u3370\u337B-\u337F\u33E0-\u33FE\u3400-\u4DBF\u4E00-\u9FFF\uA960-\uA97F\uAC00-\uD7FF\uF900-\uFAFF\uFE10-\uFE1F\uFE30-\uFE6F\uFF00-\uFFEF\u{16FE0}-\u{16FFF}\u{1B000}-\u{1B16F}\u{1F200}-\u{1F2FF}\u{20000}-\u{3FFFF}]/u;
 
 /** Whether the text holds any CJK character. */
 export function hasCJK(text: string): boolean {

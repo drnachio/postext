@@ -342,7 +342,7 @@ Una línea justificada de un párrafo así, salvo la última, se ensancha hasta 
 
 La última línea de un párrafo se compone sin ensanchar. El espaciado se guarda por segmento de la línea (`VDTLineSegment.tracking`), de modo que el canvas, el HTML y el PDF pintan las mismas posiciones, y el Sandbox coloca el cursor en el carácter pulsado.
 
-Una línea que necesitaría más de medio cuadratín entre sus caracteres —o más que `bodyText.maxJustifyTracking`, si está definido— se compone con ese máximo, corta, y se señala con un aviso de contenido `cjkLooseLine` (en el Sandbox, **Línea CJK corta**). Suele deberse a una palabra latina larga o a una dirección web que no pudo subir a ella.
+Una línea que necesitaría más de medio cuadratín entre sus caracteres —o más que `bodyText.maxJustifyTracking`, si está definido— se compone con ese máximo, corta, y se señala con un aviso de contenido `cjkLooseLine` (en el Sandbox, **Línea CJK corta**). Suele deberse a una palabra latina larga o a una dirección web que no pudo subir a ella. Una línea sin ningún carácter CJK, como el comienzo de una dirección web larga, queda en bandera sin el aviso.
 
 Para el resaltado de líneas flojas, una línea CJK es floja según su espaciado: su proporción es 1 más su espaciado en octavos de cuadratín, así que con el umbral por defecto de 3 se señala una línea cuyos caracteres se separan más de un cuarto de cuadratín (`lineLooseness(line, fontSizePx)` da la proporción). El equilibrado de columnas puede alargar un párrafo CJK una línea: corta las líneas un poco antes de la medida, un octavo de cuadratín cada vez hasta dos cuadratines, y las vuelve a ensanchar hasta ella.
 

@@ -28,7 +28,9 @@ export const CJK_LINE_BREAK_LEVELS: readonly CjkLineBreakLevel[] = ['none', 'bas
 
 export type CjkClass =
   /** Han, kana, hangul, bopomofo, fullwidth letters and digits, 〇, emoji
-   *  and the CJK symbols: a line may break before and after each. */
+   *  and the CJK symbols: a line may break before and after each (the
+   *  composer keeps a run of fullwidth digits or letters together, see
+   *  {@link isFullwidthAlnum}). */
   | 'ideograph'
   /** Opening brackets and quotes: （〔［｛【〖《〈「『“‘ and ASCII ( [ {. */
   | 'opening'
@@ -56,7 +58,9 @@ export type CjkClass =
   /** Signs a number takes before it: ¥ $ € £ ₩ ￥ ＄ ￡ ± − ＋ (the ASCII
    *  plus is Western text: `C++` may end a line). */
   | 'prefix'
-  /** Signs a number takes after it: % ‰ ‱ ° ℃ ℉ ′ ″ ％ */
+  /** Signs a number takes after it: % ‰ ‱ ° ℃ ℉ ′ ″ ％ and the unit
+   *  squares ㎡ ㎏ ㎞ ㏄ (U+3371–337A, U+3380–33DF, U+33FF), which are set
+   *  in the Western run of their number. */
   | 'postfix'
   /** Latin, Greek, Cyrillic letters, digits and everything else: set in
    *  runs a line never breaks inside. */
@@ -138,9 +142,29 @@ const SOLIDUS = new Set('/／');
 const PREFIX = new Set('¥$€£₩￥＄￡￦±−＋﹩₽₹');
 const POSTFIX = new Set('%‰‱°℃℉′″％￠﹪');
 
+/** The squared Latin abbreviations of units in the CJK compatibility
+ *  block: ㍱ hPa to ㍺ IU, ㎀ pA to ㏟ A∕m, ㏿ gal. They follow a number as
+ *  % does, in any script, and are no CJK text. */
+export function isUnitSquare(cp: number): boolean {
+  return (cp >= 0x3371 && cp <= 0x337A) || (cp >= 0x3380 && cp <= 0x33DF) || cp === 0x33FF;
+}
+
+/** Fullwidth digits ０–９. */
+export function isFullwidthDigit(cp: number): boolean {
+  return cp >= 0xFF10 && cp <= 0xFF19;
+}
+
+/** Fullwidth digits and Latin letters (０–９, Ａ–Ｚ, ａ–ｚ): set one em
+ *  wide like ideographs, but a number or a word a line never breaks
+ *  inside. */
+export function isFullwidthAlnum(cp: number): boolean {
+  return (cp >= 0xFF10 && cp <= 0xFF19) || (cp >= 0xFF21 && cp <= 0xFF3A) || (cp >= 0xFF41 && cp <= 0xFF5A);
+}
+
 /** Code points of the CJK scripts and their symbol blocks, classed
  *  `ideograph` unless a punctuation set above names them. */
 function isCjkCodePoint(cp: number): boolean {
+  if (cp >= 0x3371 && cp <= 0x33FF && isUnitSquare(cp)) return false;
   return (cp >= 0x1100 && cp <= 0x11FF) // Hangul Jamo
     || (cp >= 0x2E80 && cp <= 0x2FDF) // CJK and Kangxi radicals
     || (cp >= 0x2FF0 && cp <= 0x2FFF) // ideographic description characters
@@ -184,6 +208,7 @@ export function cjkClassOf(grapheme: string): CjkClass {
   if (PREFIX.has(ch)) return 'prefix';
   if (POSTFIX.has(ch)) return 'postfix';
   const cp = ch.codePointAt(0)!;
+  if (isUnitSquare(cp)) return 'postfix';
   if (isCjkCodePoint(cp)) return 'ideograph';
   if (cp >= 0x2190 && PICTOGRAPHIC_RE.test(ch)) return 'ideograph';
   return 'western';
