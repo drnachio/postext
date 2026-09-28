@@ -104,6 +104,7 @@ describe("package exports", () => {
       "sameContentLocale",
       "canonicalLocaleTag",
       "renderLangOf",
+      "stringsFor",
       "parseMarkdown",
       "addRow",
       "addColumn",

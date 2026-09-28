@@ -119,6 +119,17 @@ export function renderLangOf(config: {
   return isCjkLanguage(tag) ? canonicalLocaleTag(tag) : undefined;
 }
 
+/**
+ * The entry of a built-in string table for `tag`, keyed by
+ * {@link stringsKeyOf}: the tag's own, then — for Traditional Chinese — the
+ * Simplified one, then English (`en`). A table only lists the languages it
+ * has strings for.
+ */
+export function stringsFor<T>(table: Readonly<Record<string, T>>, tag: unknown): T {
+  const key = stringsKeyOf(tag);
+  return table[key] ?? (key === 'zh-hant' ? table['zh-hans'] : undefined) ?? table.en!;
+}
+
 /** Languages whose script decides the content (Serbian in Cyrillic or
  *  Latin, Chinese in Simplified or Traditional characters…). */
 const SCRIPT_DISTINCT_LANGUAGES = new Set(['zh', 'sr', 'uz', 'pa', 'az', 'bs', 'mn']);

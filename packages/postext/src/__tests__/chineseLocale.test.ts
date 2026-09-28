@@ -8,6 +8,7 @@ import {
   localeScript,
   renderLangOf,
   sameContentLocale,
+  stringsFor,
   stringsKeyOf,
 } from '../locale';
 import { defaultResourceTypes } from '../defaults/resourceTypes';
@@ -94,6 +95,14 @@ describe('Chinese locale tags', () => {
     expect(sameContentLocale('es', 'es-MX')).toBe(true);
     expect(sameContentLocale('es', 'en')).toBe(false);
     expect(sameContentLocale('sr-Latn', 'sr-Cyrl')).toBe(false);
+  });
+
+  it('falls back from Traditional to Simplified, then to English', () => {
+    const table = { en: 'Figure', 'zh-hans': '图' };
+    expect(stringsFor(table, 'zh-Hant')).toBe('图');
+    expect(stringsFor(table, 'zh-CN')).toBe('图');
+    expect(stringsFor(table, 'ja')).toBe('Figure');
+    expect(stringsFor({ en: 'Figure', 'zh-hant': '圖' }, 'zh-Hans')).toBe('Figure');
   });
 
   it('writes tags in canonical case', () => {

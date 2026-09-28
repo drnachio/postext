@@ -7,7 +7,7 @@ import type {
   ColorValue,
 } from '../types';
 import { dimensionsEqual, colorsEqual } from './shared';
-import { presentTag, stringsKeyOf } from '../locale';
+import { presentTag, stringsFor } from '../locale';
 
 /** Default header fill — a neutral light grey. */
 const DEFAULT_HEADER_BACKGROUND: ColorValue = { hex: '#f0f0f0', model: 'hex' };
@@ -63,7 +63,7 @@ const CONTINUATION_STRINGS: Record<string, { continuedSuffix: string; continuesM
 /** Default continuation strings for a (possibly regional) locale tag such
  *  as `es-ES` or `pt_BR`, falling back to English. */
 export function defaultTableContinuationStrings(locale = 'en'): { continuedSuffix: string; continuesMarker: string } {
-  return { ...(CONTINUATION_STRINGS[stringsKeyOf(locale)] ?? CONTINUATION_STRINGS.en!) };
+  return { ...stringsFor(CONTINUATION_STRINGS, locale) };
 }
 
 /** Resolve a partial table-style config into a fully-specified one. Font

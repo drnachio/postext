@@ -20,7 +20,7 @@ import type { BlockStyle } from './styles';
 import type { BlockMeasureContext, MeasuredContentBlock } from './measureContentBlock';
 import { stampSourceRanges } from './buildHelpers';
 import { resolvedLocale } from './config';
-import { stringsKeyOf } from '../locale';
+import { stringsFor } from '../locale';
 
 /** A page number's link target, carried as a Markdown link while the entry
  *  is measured and turned into `VDTLineSegment.pageLink` after. */
@@ -74,7 +74,7 @@ const LABELS: Record<string, { see: string; seeAlso: string; symbols: string; nu
 };
 
 function labelsFor(locale: string): { see: string; seeAlso: string; symbols: string; numbers?: string } {
-  return LABELS[stringsKeyOf(locale)] ?? LABELS.en!;
+  return stringsFor(LABELS, locale);
 }
 
 /** The locale the index sorts in: its own, else the document's. */

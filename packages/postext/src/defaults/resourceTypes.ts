@@ -1,5 +1,5 @@
 import type { PostextConfig, ResourceType } from '../types';
-import { presentTag, stringsKeyOf } from '../locale';
+import { presentTag, stringsFor } from '../locale';
 
 /** Localised display strings for a built-in resource type. The numbering
  *  behaviour (template, reset, counter format) is language-independent and
@@ -65,7 +65,7 @@ const BUILTIN_TYPE_STRINGS: Record<string, { figure: ResourceTypeStrings; table:
 /** Resolve a (possibly regional) locale tag like `es-ES` or `pt_BR` to a
  *  strings entry, falling back to English. */
 function stringsForLocale(locale: string): { figure: ResourceTypeStrings; table: ResourceTypeStrings; numberingTemplate?: string } {
-  return BUILTIN_TYPE_STRINGS[stringsKeyOf(locale)] ?? BUILTIN_TYPE_STRINGS.en!;
+  return stringsFor(BUILTIN_TYPE_STRINGS, locale);
 }
 
 /** The document language the built-in strings follow: `config.locale`, else
