@@ -12,6 +12,7 @@
  */
 
 import type { WritingMode } from '../types';
+import type { CjkClass } from './cjkClasses';
 import { measureTextWidth, measureInkBox, onTextWidthCacheClear } from './canvas';
 import { isVerticalCell } from '../writingMode';
 import { DEFAULT_CENTRAL_BASELINE } from '../vdt';
@@ -39,12 +40,14 @@ export function fontEm(font: string): number {
 }
 
 /**
- * The advance of one CJK grapheme along its line (`class` is its line-break
- * class, unused for now: a hook for punctuation widths). Horizontal: its
- * measured width. Vertical: one em for every character that stands in a
- * cell of its own; a character set sideways keeps its horizontal width.
+ * The advance of one CJK grapheme along its line. Horizontal: its measured
+ * width. Vertical: one em for every character that stands in a cell of its
+ * own; a character set sideways keeps its horizontal width. `cls`, the
+ * grapheme's line-break class, is not read yet: it is the hook for
+ * punctuation widths (half-width marks), which apply along either axis.
  */
-export function cellAdvance(grapheme: string, font: string, vertical: boolean): number {
+export function cellAdvance(grapheme: string, font: string, vertical: boolean, cls?: CjkClass): number {
+  void cls;
   if (vertical && isVerticalCell(grapheme)) return fontEm(font);
   return measureTextWidth(grapheme, font);
 }

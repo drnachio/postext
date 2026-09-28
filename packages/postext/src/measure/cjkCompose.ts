@@ -344,7 +344,7 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
       if (pairOpen >= 0 && units[pairOpen]!.text === g && !zwsp && units[pairOpen]!.link === link) {
         const u = units[pairOpen]!;
         u.text += g;
-        u.width += cellAdvance(g, style.font, vertical) + track(1);
+        u.width += cellAdvance(g, style.font, vertical, u.first) + track(1);
         u.graphemes = 2;
         u.first = u.last = g === '\u2026' || g === '\u22EF' ? 'ellipsis' : 'dash';
         pairOpen = -1;
@@ -357,7 +357,7 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
       push({
         kind: 'text',
         text: g,
-        width: (style.smallCaps && !vertical ? textWidth(g, style.font, true) : cellAdvance(g, style.font, vertical)) + track(1),
+        width: (style.smallCaps && !vertical ? textWidth(g, style.font, true) : cellAdvance(g, style.font, vertical, cls)) + track(1),
         graphemes: 1,
         first: cls,
         last: cls,
