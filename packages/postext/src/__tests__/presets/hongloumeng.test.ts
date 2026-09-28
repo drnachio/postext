@@ -11,9 +11,11 @@ import fontkit from '../../../../postext-pdf/node_modules/@pdf-lib/fontkit/dist/
 import { buildDocument } from '../../pipeline';
 import { contentOutline } from '../../pipeline/continuation';
 import { readBundle } from '../../bundle/codec';
+import { extractFrontmatter } from '../../frontmatter';
 import type { VDTDocument } from '../../index';
 
 const BUNDLE = join(__dirname, '../../../../../apps/web/public/presets/hongloumeng');
+const EDITORIAL = join(__dirname, '../../../../../scripts/presets/showcase/hongloumeng/editorial.py');
 const manifest = JSON.parse(readFileSync(join(BUNDLE, 'preset.json'), 'utf8'));
 const readFile = async (file: string): Promise<ArrayBuffer> => {
   const b = readFileSync(join(BUNDLE, file));
@@ -62,6 +64,51 @@ function layout(book: Awaited<ReturnType<typeof open>>, index: number): VDTDocum
 
 function bodyLines(doc: VDTDocument, page: number): string[] {
   return doc.pages[page]!.columns.flatMap((c) => c.blocks.flatMap((b) => b.lines.map((l) => l.text)));
+}
+
+/** Each edition's config as the Sandbox opens it: the edition's top-level
+ *  keys replace the base ones. */
+const configOf = (lang: string): any => ({ ...manifest.config, ...(manifest.localized[lang]?.config ?? {}) });
+
+/** The chapter (回) a chapter file holds, `null` for the front and back matter. */
+const chapterNumber = (file: string): number | null => {
+  const m = /\/(\d{3})-(?:hui|chapter)\.md$/.exec(file);
+  return m ? Number(m[1]) : null;
+};
+
+/** Index term → chapter of its mark, for one edition. */
+async function markChapters(lang: string): Promise<Map<string, number>> {
+  const book = await open(lang);
+  const out = new Map<string, number>();
+  book.chapters.forEach((c, i) => {
+    const n = chapterNumber(manifest.chapters[lang][i].file);
+    for (const e of contentOutline({ markdown: c.markdown }, book.config).outline) {
+      if (e.kind === 'indexMark' && n !== null) out.set(e.indexMark!.path[0]!, n);
+    }
+  });
+  return out;
+}
+
+const DIGITS = '〇一二三四五六七八九';
+/** Informal Chinese numerals, as `第{1:一}回` prints them: 十二, 一百一十九. */
+function cn(n: number): string {
+  if (n < 10) return DIGITS[n]!;
+  if (n < 20) return '十' + (n % 10 ? DIGITS[n % 10] : '');
+  if (n < 100) return DIGITS[Math.floor(n / 10)] + '十' + (n % 10 ? DIGITS[n % 10] : '');
+  const rest = n % 100;
+  const tens = rest === 0 ? '' : rest < 10 ? '零' + DIGITS[rest] : DIGITS[Math.floor(rest / 10)] + '十' + (rest % 10 ? DIGITS[rest % 10] : '');
+  return DIGITS[Math.floor(n / 100)] + '百' + tens;
+}
+function roman(n: number): string {
+  let out = '';
+  for (const [v, r] of [[50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']] as const) {
+    while (n >= v) { out += r; n -= v; }
+  }
+  return out;
+}
+/** A dimension in points (`em` against `emPt`). */
+function toPt(d: { value: number; unit: string }, emPt: number): number {
+  return d.unit === 'pt' ? d.value : d.unit === 'mm' ? (d.value * 72) / 25.4 : d.unit === 'em' ? d.value * emPt : NaN;
 }
 
 // --- the bundle ------------------------------------------------------------------------------
@@ -137,6 +184,119 @@ describe('hongloumeng bundle', () => {
       expect(marks, lang).toBe(count);
       expect(terms.has(sample)).toBe(true);
       expect(book.chapters.at(-2)!.markdown).toContain(':::index');
+    }
+  });
+
+  it('marks each character in the same chapter of Joly’s text as of the Chinese one', async () => {
+    // The characters as editorial.py lists them, and the ones where Joly's
+    // text differs (EN_CHAPTER_DIFFERS).
+    const source = readFileSync(EDITORIAL, 'utf8');
+    const pairs = [...source.matchAll(/\{"hant": "([^"]+)", "hans": "[^"]+", "en": (?:None|"([^"]+)")/g)]
+      .filter((m) => m[2] !== undefined)
+      .map((m) => [m[1]!, m[2]!] as const);
+    const block = /EN_CHAPTER_DIFFERS = \{([\s\S]*?)\n\}/.exec(source)![1]!;
+    const differs = new Set([...block.matchAll(/^\s+"([^"]+)":/gm)].map((m) => m[1]!));
+    expect(pairs).toHaveLength(40);
+    expect([...differs].sort()).toEqual(['李紈', '紫鵑']);
+
+    const zh = await markChapters('zh-Hant');
+    const en = await markChapters('en');
+    for (const [hant, english] of pairs) {
+      const z = zh.get(hant);
+      const e = en.get(english);
+      expect(z, hant).toBeDefined();
+      expect(e, english).toBeDefined();
+      if (differs.has(hant)) expect(e, `${english}: listed as differing`).not.toBe(z);
+      else expect(e, `${english} (${hant})`).toBe(z);
+    }
+    // 賈環 is Chia Huan, first named in chapter 18; Chia Huang (賈璜) of
+    // chapter 10 is another man.
+    expect(en.get('Chia Huan')).toBe(18);
+    const joly = manifest.chapters.en.map((c: any) => readFileSync(join(BUNDLE, c.file), 'utf8')).join('\n');
+    expect(joly).not.toContain(':index[Chia Huang]');
+    // Joly's names with the diaeresis the transcription dropped in places.
+    for (const slip of ['She Yueh', 'Hsiang-yun', 'Tai yue', 'Pao yue', 'Tzu Chuan']) expect(joly, slip).not.toContain(slip);
+  });
+
+  it('says the index points at the first mention', () => {
+    const index = (lang: string) => readFileSync(join(BUNDLE, manifest.chapters[lang].at(-2).file), 'utf8');
+    expect(index('zh-Hans')).toContain('首次提到');
+    expect(index('zh-Hant')).toContain('首次提到');
+    expect(index('en')).toContain('first mentioned');
+    for (const lang of ['zh-Hans', 'zh-Hant', 'en']) expect(index(lang)).not.toMatch(/出場|出场|first appears/);
+  });
+
+  it('opens each edition with its metadata and lower-roman front matter, then Arabic folios from chapter 1', async () => {
+    for (const [lang, title, author] of [['zh-Hant', '紅樓夢', '曹雪芹'], ['zh-Hans', '红楼梦', '曹雪芹'], ['en', 'Hung Lou Meng', 'Cao Xueqin']] as const) {
+      const book = await open(lang);
+      // The base format is Arabic: a chapter the Sandbox lays out before
+      // the background pagination reaches it does not show roman folios.
+      expect(book.config.page.pageNumbering.format, lang).toBe('decimal');
+      const first = book.chapters[0]!.markdown;
+      const { metadata, content } = extractFrontmatter(first);
+      expect(metadata).toMatchObject({ title, author });
+      expect(content.trimStart().startsWith(':::numbering{format="lower-roman" startAt=1}'), lang).toBe(true);
+      const one = book.chapters.find((_, i) => chapterNumber(manifest.chapters[lang][i].file) === 1)!;
+      expect(one.markdown.startsWith(':::numbering{format="decimal" startAt=1}'), lang).toBe(true);
+    }
+  });
+
+  it('centres the opener’s elements on the container', () => {
+    for (const lang of ['zh-Hant', 'zh-Hans', 'en']) {
+      const config = configOf(lang);
+      const front = config.headingStyles.find((s: any) => s.id === 'front');
+      for (const design of [config.headings.levels[0].advancedDesign, front.advancedDesign]) {
+        const onContainer = design.slot.elements.filter((e: any) => e.placement.anchor.to === 'container');
+        expect(onContainer.length, lang).toBeGreaterThan(0);
+        for (const e of onContainer) expect(`${lang} ${e.id} ${e.placement.anchor.edge}`).toBe(`${lang} ${e.id} top`);
+      }
+    }
+  });
+
+  it('gives the zh parts no design, so no {title} slot, and ships EB Garamond bold', () => {
+    for (const lang of ['zh-Hant', 'zh-Hans']) expect(configOf(lang).parts).toEqual({ page: false, design: { elements: [] } });
+    const garamond = manifest.fonts.find((f: any) => f.name === 'EB Garamond').variants.map((v: any) => `${v.weight} ${v.style}`);
+    expect(garamond.sort()).toEqual(['400 italic', '400 normal', '600 normal', '700 italic', '700 normal']);
+  });
+
+  it('sets the poem heads of chapter 38 as headings: the title, the author set right, kept with the poem', async () => {
+    for (const lang of ['zh-Hant', 'zh-Hans']) {
+      const files = manifest.chapters[lang].map((c: any) => c.file as string);
+      const hui38 = readFileSync(join(BUNDLE, files.find((f: string) => f.endsWith('/038-hui.md'))!), 'utf8');
+      expect(hui38.match(/^## \S+\u3000\S+ \{style="poem" title="[^"]+" by="[^"]+"\}$/gm), lang).toHaveLength(12);
+      for (const f of files) expect(readFileSync(join(BUNDLE, f), 'utf8'), f).not.toMatch(/\u3000{3,}/);
+      const config = configOf(lang);
+      const poem = config.headingStyles.find((s: any) => s.id === 'poem');
+      expect(poem).toMatchObject({ numbered: false, toc: false });
+      const [title, author] = poem.advancedDesign.slot.elements;
+      expect([title.content, title.align, author.content, author.align, author.placement.anchor.edge]).toEqual(['{attr.title}', 'left', '{attr.by}', 'right', 'top-right']);
+      expect(config.headings.keepWithNext).toBe(true);
+    }
+    expect(readFileSync(join(BUNDLE, 'chapters/zh-Hans/038-hui.md'), 'utf8')).toContain('## 忆菊　蘅芜君 {style="poem" title="忆菊" by="蘅芜君"}\n\n:::paragraphs{style="verse"}\n怅望西风抱闷思');
+    // Laid out, each head stands on the page of its poem's first line.
+    const book = await open('zh-Hans');
+    const doc = layout(book, manifest.chapters['zh-Hans'].findIndex((c: any) => c.file.endsWith('/038-hui.md')));
+    const heads = doc.pages.flatMap((p) => p.columns.flatMap((c) => c.blocks.map((b, i, all) => ({ b, next: all[i + 1] }))))
+      .filter(({ b }) => b.type === 'heading' && (b as any).headingStyleId === 'poem');
+    expect(heads).toHaveLength(12);
+    for (const { b, next } of heads) expect(next?.type, JSON.stringify((b as any).text)).toBe('paragraph');
+  });
+
+  it('fits the widest chapter number in the contents’ number column', () => {
+    const labels: Record<string, string[]> = {
+      'zh-Hans': Array.from({ length: 120 }, (_, i) => `第${cn(i + 1)}回`),
+      'zh-Hant': Array.from({ length: 120 }, (_, i) => `第${cn(i + 1)}回`),
+      en: Array.from({ length: 56 }, (_, i) => roman(i + 1)),
+    };
+    expect(cn(119)).toBe('一百一十九');
+    expect(cn(101)).toBe('一百零一');
+    for (const [lang, list] of Object.entries(labels)) {
+      const level = configOf(lang).toc.levels[0];
+      const size = toPt(level.numberFontSize, 0);
+      expect(level.numberFontWeight, lang).toBe(700);
+      const font = fontFor(level.numberFontFamily, level.numberFontWeight, false);
+      const widest = Math.max(...list.map((s) => (font.layout(s).advanceWidth / font.unitsPerEm) * size));
+      expect(widest, `${lang}: ${list.reduce((a, b) => (a.length >= b.length ? a : b))}`).toBeLessThanOrEqual(toPt(level.numberWidth, size));
     }
   });
 });

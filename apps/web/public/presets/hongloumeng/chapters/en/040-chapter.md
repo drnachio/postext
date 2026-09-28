@@ -62,7 +62,7 @@ This reprimand was still being uttered when goody Liu had already crawled up. Sh
 
 “What an idea!” retorted goody Liu, “am I so delicate? What day ever goes by without my tumbling down a couple of times? And if I had to be patted every time wouldn’t it be dreadful!”
 
-Tzu Chuan had at an early period raised the speckled bamboo portiere. Dowager lady Chia and her companions entered and seated themselves. Lin Tai-yü with her own hands took a small tray and came to present a covered cup of tea to her grandmother.
+Tzu Chüan had at an early period raised the speckled bamboo portiere. Dowager lady Chia and her companions entered and seated themselves. Lin Tai-yü with her own hands took a small tray and came to present a covered cup of tea to her grandmother.
 
 “We won’t have any tea!” Madame Wang interposed, “so, miss, you needn’t pour any.”
 
@@ -230,7 +230,7 @@ Yüan Yang readily seated herself. The matrons came up and added to the number o
 
 At these words, a matron lost no time in selecting two sorts of eatables, and, taking the box, she went to take them over.
 
-“Where’s Su Yun gone to?” Yüan Yang asked.
+“Where’s Su Yün gone to?” Yüan Yang asked.
 
 “They’re all in here having their meal together.” Li Wan replied. “What do you want her for again?”
 

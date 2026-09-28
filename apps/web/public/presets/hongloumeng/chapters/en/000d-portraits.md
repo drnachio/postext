@@ -1,7 +1,7 @@
 # Portraits {style="gallery"}
 
 :::paragraphs{style="note"}
-Twenty-four portraits from Gai Qi’s *Honglou meng tuyong* (1879): first the Stone and the Crimson Pearl Flower, then the Twelve Beauties of Chin Ling, then Pao-yü, the Monitory Vision Fairy and others of the household.
+Twenty-four portraits from Gai Qi’s *Honglou meng tuyong* (1879): first the Stone and the Crimson Pearl Flower, then the Twelve Beauties of Chin Ling, then Pao-yü, the Monitory Vision Fairy and nine other characters of the novel.
 :::
 
 ::resource{id="portrait-stone-and-flower"}

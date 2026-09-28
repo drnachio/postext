@@ -1,4 +1,4 @@
-# Lin Hsiao-Hsiang carries the first prize in the poems on chrysanthemums. \\ Hsueh Heng-wu chaffs Pao-yü by composing verses in the same style as his on the crabs. {plate="plate-038" zh="林瀟湘魁奪菊花詩　薛蘅蕪諷和螃蟹詠"}
+# Lin Hsiao-Hsiang carries the first prize in the poems on chrysanthemums. \\ Hsüeh Heng-wu chaffs Pao-yü by composing verses in the same style as his on the crabs. {plate="plate-038" zh="林瀟湘魁奪菊花詩　薛蘅蕪諷和螃蟹詠"}
 
 After Pao-ch’ai and Hsiang-yün, we will now explain, settled everything in their deliberations, nothing memorable occurred, the whole night, which deserves to be put on record.
 

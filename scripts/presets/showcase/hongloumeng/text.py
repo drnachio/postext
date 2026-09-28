@@ -856,6 +856,30 @@ def english_names(chapters: list[dict]) -> dict[str, str]:
 # Misplaced apostrophes in single occurrences of a name.
 EN_FIXES = {"Yü-’ts’un": "Yü-ts’un", "Yü-t’sun": "Yü-ts’un"}
 
+# Names the transcription spells, in a few places, without the diaeresis,
+# hyphen or aspirate apostrophe they carry everywhere else (counts: this
+# spelling / the usual one, after the `ue` dictionary). Whole names only: a
+# bare syllable is ambiguous (Mrs. Yu is 尤氏, Yü another name).
+EN_NAME_FORMS = {
+    "She Yueh": "She Yüeh",  # 8 / 102
+    "Hsiang-yun": "Hsiang-yün",  # 2 / 248
+    "Tai-yu": "Tai-yü",  # 4 / 670
+    "Tai yue": "Tai-yü",  # 2
+    "Pao yue": "Pao-yü",  # 1
+    "Tzu Chuan": "Tzu Chüan",  # 4 / 37
+    "Tzu-Chüan": "Tzu Chüan",  # 1 / 37
+    "Hsueh": "Hsüeh",  # 6 / 466, always 薛
+    "Yuan Ch’un": "Yüan Ch’un",  # 8 / 6: the index and gallery spelling
+    "Yuan-ch’un": "Yüan-ch’un",  # 1 / 1
+    "Chia Yun": "Chia Yün",  # 5 / 85 (賈芸)
+    "Chia Chun": "Chia Chün",  # 1 / 7 (賈菌)
+    "Ts’ai Yun": "Ts’ai Yün",  # 2 / 6
+    "Su Yun": "Su Yün",  # 1 / 6
+    "Yun Erh": "Yün Erh",  # 1 / 23
+    "Hsüeh Pan": "Hsüeh P’an",  # 4 / 166
+}
+EN_NAME_PATTERN = re.compile(r"(?<![A-Za-zü’'-])(" + "|".join(sorted(map(re.escape, EN_NAME_FORMS), key=len, reverse=True)) + r")(?![A-Za-zü])")
+
 
 def apply_names(s: str, mapping: dict[str, str]) -> str:
     if mapping:
@@ -863,7 +887,7 @@ def apply_names(s: str, mapping: dict[str, str]) -> str:
         s = pat.sub(lambda m: mapping[m.group(1)], s)
     for bad, good in EN_FIXES.items():
         s = s.replace(bad, good)
-    return s
+    return EN_NAME_PATTERN.sub(lambda m: EN_NAME_FORMS[m.group(1)], s)
 
 
 def english_closing(n: int, paras: list[dict]) -> str | None:

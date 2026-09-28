@@ -198,7 +198,7 @@ Tai-yü was bent upon cracking melon seeds, saying nothing but simply pursing up
 
 “Who told you to bring it?” ascertained Tai-yü grinningly. “I’m sorry to have given whoever it is the trouble; I’m obliged to her. But did she ever imagine that I would freeze to death?”
 
-“Tzu Chuan was afraid,” replied Hsüeh Yen, “that you would, miss, feel cold, and she asked me to bring it over.”
+“Tzu Chüan was afraid,” replied Hsüeh Yen, “that you would, miss, feel cold, and she asked me to bring it over.”
 
 Tai-yü took it over and held it in her lap. “How is it,” she smiled, “that you listen to what she tells you, but that you treat what I say, day after day, as so much wind blowing past your ears! How is it that you at once do what she bids you, with even greater alacrity than you would an imperial edict?”
 

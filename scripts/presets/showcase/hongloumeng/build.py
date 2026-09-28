@@ -24,9 +24,9 @@ One bundle, three editions:
 Each edition: a cover and title page, the edition note, the prefaces (程偉元's
 序, 高鶚's 敘 and the 1792 引言 in Chinese; Joly's preface in English), a gallery
 of Gai Qi's portraits, the contents, the chapters (a plate at the head of every
-opener, the 回目 couplet on two lines, verse in Kai, the ch. 5 song titles and
-the closing formula in styles of their own), an index of the principal
-characters at their first appearance, and the credits.
+opener, the 回目 couplet on two lines, verse in Kai, the ch. 5 song titles, the
+ch. 38 poem heads and the closing formula in styles of their own), an index
+of the principal characters at their first mention, and the credits.
 
 The chapter plate is drawn by the opener design (`resourceId: "{attr.plate}"`):
 the couplet printed under it is the plate's own inscription, so it takes no
@@ -36,6 +36,7 @@ line) is in the resources, for alt text and the Resources panel.
 from __future__ import annotations
 
 import json
+import math
 import os
 import re
 import shutil
@@ -155,7 +156,10 @@ class Geometry:
             "width": mm(self.width),
             "height": mm(self.height),
             "margins": {"top": mm(self.top), "bottom": mm(self.bottom), "left": mm(self.inner), "right": mm(self.outer), "mirror": True},
-            "pageNumbering": {"format": "lower-roman", "startAt": 1},
+            # Decimal: a chapter the Sandbox lays out before the background
+            # pagination reaches it shows Arabic folios. The front matter
+            # switches to lower-roman in its first file (`:::numbering`).
+            "pageNumbering": {"format": "decimal", "startAt": 1},
         }
 
 
@@ -174,6 +178,9 @@ class ZhFaces:
 
 
 PLATE_H = 86.0  # the chapter plate at the head of an opener
+# The contents print chapter numbers in the bold of their face (the engine's
+# default, set explicitly so the English column can be measured for it).
+TOC_NUMBER_WEIGHT = 700
 
 
 def zh_running_heads(lang: str, f: ZhFaces, recto: str = "{chapterNumber}　{chapterTitle}") -> dict:
@@ -203,7 +210,8 @@ def zh_folios(f: ZhFaces) -> dict:
 
 def zh_opener(f: ZhFaces) -> dict:
     """The plate at the head of the page, 第N回 under it, then the couplet on
-    two centred lines and a short vermilion rule."""
+    two centred lines and a short vermilion rule. Every element is centred on
+    the container (`top`), which the HTML view makes wider than the measure."""
     w = ZH.text_w
     y_number = PLATE_H + 6.5
     y_couplet = y_number + 8.5
@@ -212,8 +220,8 @@ def zh_opener(f: ZhFaces) -> dict:
         "slot": {
             "elements": [
                 {"kind": "image", "id": "plate", "resourceId": "{attr.plate}", "placement": {"anchor": at("container", "top"), "offset": {"x": mm(0), "y": mm(0)}, "size": {"width": "auto", "height": mm(PLATE_H)}}},
-                text("hui", "{number}", anchor=at("container", "top-left"), offset=(0, y_number), width=w, size_pt=14, family=f.serif, weight=700, align="center", overflow="clip", letterSpacing=pt(1.5)),
-                text("couplet", "{titleText}", anchor=at("container", "top-left"), offset=(0, y_couplet), width=w, size_pt=12.5, family=f.kai, align="center", line_height=1.6),
+                text("hui", "{number}", anchor=at("container", "top"), offset=(0, y_number), width=w, size_pt=14, family=f.serif, weight=700, align="center", overflow="clip", letterSpacing=pt(1.5)),
+                text("couplet", "{titleText}", anchor=at("container", "top"), offset=(0, y_couplet), width=w, size_pt=12.5, family=f.kai, align="center", line_height=1.6),
                 rule("couplet-rule", anchor=at("#couplet", "below"), offset=((w - 12) / 2, 3.5), width=12, color="vermilion", thickness=0.6),
             ]
         },
@@ -229,7 +237,7 @@ def zh_front_opener(f: ZhFaces) -> dict:
         "minHeight": mm(pt_to_mm(ZH.lead_pt * 4)),
         "slot": {
             "elements": [
-                text("front-title", "{titleText}", anchor=at("container", "top-left"), offset=(0, pt_to_mm(ZH.lead_pt * 1)), width=w, size_pt=16, family=f.kai, align="center", overflow="wrap", letterSpacing=pt(2)),
+                text("front-title", "{titleText}", anchor=at("container", "top"), offset=(0, pt_to_mm(ZH.lead_pt * 1)), width=w, size_pt=16, family=f.kai, align="center", overflow="wrap", letterSpacing=pt(2)),
                 rule("front-rule", anchor=at("#front-title", "below"), offset=((w - 12) / 2, 4), width=12, color="vermilion", thickness=0.6),
             ]
         },
@@ -285,6 +293,26 @@ def zh_title_page(lang: str, f: ZhFaces) -> dict:
     }
 
 
+def zh_poem_head(f: ZhFaces) -> dict:
+    """A poem's title and its author on one line (ch. 38: 憶菊 … 蘅蕪君):
+    the title four ems in, the name set right. A heading, so it keeps with
+    the poem under it; its text (title　name) is what the contents, the
+    bookmarks and a reader of the tagged PDF get."""
+    lead_mm = pt_to_mm(ZH.lead_pt)
+    em_mm = pt_to_mm(ZH.body_pt)
+    lh = ZH.lead_pt / ZH.body_pt
+    return {
+        "enabled": True,
+        "minHeight": mm(lead_mm),
+        "slot": {
+            "elements": [
+                text("poem-title", "{attr.title}", anchor=at("container", "top-left"), offset=(4 * em_mm, 0), width=ZH.text_w / 2, size_pt=ZH.body_pt, family=f.kai, align="left", line_height=lh, overflow="clip"),
+                text("poem-author", "{attr.by}", anchor=at("container", "top-right"), offset=(0, 0), width=ZH.text_w / 3, size_pt=ZH.body_pt, family=f.kai, align="right", line_height=lh, overflow="clip"),
+            ]
+        },
+    }
+
+
 def zh_heading_styles(lang: str, f: ZhFaces) -> list[dict]:
     b = ed.BOOK[lang]
     empty = {"elements": []}
@@ -323,6 +351,8 @@ def zh_heading_styles(lang: str, f: ZhFaces) -> list[dict]:
         {"id": "contents", "name": names[5], **front, "toc": False},
         {"id": "back", "name": names[6], **front, "layout": {"layoutType": "double", "gutterWidth": mm(6)}},
         {"id": "credits", "name": names[7], **front},
+        # `## 憶菊　蘅蕪君 {style="poem" title="憶菊" by="蘅蕪君"}`
+        {"id": "poem", "name": "詩題" if lang == "zh-Hant" else "诗题", "numbered": False, "toc": False, "fontFamily": f.kai, "fontSize": pt(ZH.body_pt), "lineHeight": pt(ZH.lead_pt), "marginTop": pt(ZH.lead_pt), "marginBottom": pt(0), "advancedDesign": zh_poem_head(f)},
     ]
 
 
@@ -409,8 +439,9 @@ def zh_config(lang: str) -> dict:
         },
         "headingStyles": zh_heading_styles(lang, f),
         "paragraphStyles": zh_paragraph_styles(lang, f),
-        # 卷一 … 卷十二 group the contents and the chapter menu; no divider page.
-        "parts": {"page": False},
+        # 卷一 … 卷十二 group the contents and the chapter menu; no divider
+        # page, so no design either.
+        "parts": {"page": False, "design": {"elements": []}},
         "toc": {
             "levels": [
                 {
@@ -419,10 +450,12 @@ def zh_config(lang: str) -> dict:
                     "fontSize": pt(10),
                     "lineHeight": lead,
                     "color": col("ink"),
-                    "numberWidth": {"value": 6, "unit": "em"},
+                    # 第一百一十一回 … 第一百一十九回 are seven characters.
+                    "numberWidth": {"value": 7, "unit": "em"},
                     "numberGap": {"value": 1, "unit": "em"},
                     "numberFontFamily": f.serif,
                     "numberFontSize": pt(10),
+                    "numberFontWeight": TOC_NUMBER_WEIGHT,
                     "numberColor": col("ink"),
                 }
             ],
@@ -470,6 +503,21 @@ def zh_hant_placeholder_config() -> dict:
 SERIF_EN = "EB Garamond"
 KAI_TC = "LXGW WenKai TC"
 EN_PLATE_H = 84.0
+EN_TOC_PT = 9.5
+
+
+def toc_number_width_mm() -> float:
+    """The contents' number column in the English edition: the widest roman
+    numeral of chapters I–LVI (XXXVIII) in EB Garamond Bold at the contents
+    size, plus a hair, rounded up to half a millimetre."""
+    from fontTools.ttLib import TTFont
+    from fontTools.varLib import instancer
+
+    font = TTFont(os.path.join(fontkit.FONTS, "ebgaramond", "EBGaramond[wght].ttf"))
+    font = instancer.instantiateVariableFont(font, {"wght": TOC_NUMBER_WEIGHT})
+    cmap, hmtx, upm = font.getBestCmap(), font["hmtx"], font["head"].unitsPerEm
+    widest = max(sum(hmtx[cmap[ord(ch)]][0] for ch in roman(n)) for n in range(1, 57))
+    return math.ceil((pt_to_mm(widest / upm * EN_TOC_PT) + 0.3) * 2) / 2
 
 
 def en_running_heads() -> dict:
@@ -511,7 +559,7 @@ def en_opener() -> dict:
         "slot": {
             "elements": [
                 {"kind": "image", "id": "plate", "resourceId": "{attr.plate}", "placement": {"anchor": at("container", "top"), "offset": {"x": mm(0), "y": mm(0)}, "size": {"width": "auto", "height": mm(EN_PLATE_H)}}},
-                text("label", ed.BOOK["en"]["chapter_label"] + " {number}", anchor=at("container", "top-left"), offset=(0, y_label), width=w, size_pt=9, family=SERIF_EN, weight=600, align="center", color="vermilion", letterSpacing=pt(2), overflow="clip"),
+                text("label", ed.BOOK["en"]["chapter_label"] + " {number}", anchor=at("container", "top"), offset=(0, y_label), width=w, size_pt=9, family=SERIF_EN, weight=600, align="center", color="vermilion", letterSpacing=pt(2), overflow="clip"),
                 text("couplet-zh", "{attr.zh}", anchor=at("#label", "below"), offset=(0, 3), width=w, size_pt=10.5, family=KAI_TC, align="center", color="muted", overflow="clip"),
                 text("title", "{titleText}", anchor=at("#couplet-zh", "below"), offset=(6, 3.5), width=w - 12, size_pt=11.5, family=SERIF_EN, italic=True, align="center", line_height=1.3),
             ]
@@ -526,7 +574,7 @@ def en_front_opener() -> dict:
         "minHeight": mm(pt_to_mm(EN.lead_pt * 6)),
         "slot": {
             "elements": [
-                text("front-title", "{titleText}", anchor=at("container", "top-left"), offset=(0, pt_to_mm(EN.lead_pt * 2)), width=w, size_pt=15, family=SERIF_EN, italic=True, align="center", overflow="wrap"),
+                text("front-title", "{titleText}", anchor=at("container", "top"), offset=(0, pt_to_mm(EN.lead_pt * 2)), width=w, size_pt=15, family=SERIF_EN, italic=True, align="center", overflow="wrap"),
                 rule("front-rule", anchor=at("#front-title", "below"), offset=((w - 12) / 2, 4), width=12, color="vermilion", thickness=0.6),
             ]
         },
@@ -639,13 +687,14 @@ def en_config() -> dict:
                 {
                     "level": 1,
                     "fontFamily": SERIF_EN,
-                    "fontSize": pt(9.5),
+                    "fontSize": pt(EN_TOC_PT),
                     "lineHeight": pt(12.5),
                     "color": col("ink"),
-                    "numberWidth": mm(9),
+                    "numberWidth": mm(toc_number_width_mm()),
                     "numberGap": mm(2.5),
                     "numberFontFamily": SERIF_EN,
-                    "numberFontSize": pt(9.5),
+                    "numberFontSize": pt(EN_TOC_PT),
+                    "numberFontWeight": TOC_NUMBER_WEIGHT,
                     "numberColor": col("vermilion"),
                     "marginTop": pt(3),
                 }
@@ -708,10 +757,16 @@ def block(style: str, lines: list[str]) -> str:
     return f':::paragraphs{{style="{style}"}}\n{body}\n:::\n'
 
 
+# A poem's title and its author, which the transcription spaces apart with
+# ideographic spaces on one line (ch. 38: 憶菊　　…　　蘅蕪君): a level-2
+# heading in the `poem` style.
+POEM_HEAD = re.compile("^([^\u3000\\s]{1,8})\u3000{2,}([^\u3000\\s]{2,8})$")
+
+
 def chapter_body(lang: str, c: dict, marks: dict[int, list]) -> str:
     """The paragraphs of a 回: prose, verse (consecutive verse paragraphs as
-    one block, their stanzas without a gap), the 曲 titles of chapter 5 and
-    the closing formula."""
+    one block, their stanzas without a gap), the 曲 titles of chapter 5, a
+    poem's title and author (a `poem` heading) and the closing formula."""
     table: dict[str, str] = {}
     out: list[str] = []
     verse: list[str] = []
@@ -727,8 +782,12 @@ def chapter_body(lang: str, c: dict, marks: dict[int, list]) -> str:
             verse.extend(l for l in t.split("\n") if l.strip())
             continue
         flush()
+        head = POEM_HEAD.match(p["text"]) if p["kind"] == "prose" and i not in marks else None
         if p["kind"] == "song-title":
             out.append(block("song", [f"【{t}】"]))
+        elif head:
+            title, by = head.group(1), head.group(2)
+            out.append(f'## {md_escape(title)}\u3000{md_escape(by)} {{style="poem" title="{attr(title)}" by="{attr(by)}"}}\n')
         else:
             out.append(md_escape(t) + "\n")
     flush()
@@ -740,22 +799,44 @@ def chapter_body(lang: str, c: dict, marks: dict[int, list]) -> str:
 # --- index marks: first appearances ------------------------------------------------------------------
 
 
+def search_start(value) -> tuple[int, int]:
+    """`from` / `en_from`: a chapter, or a (chapter, paragraph) pair."""
+    return (value, 0) if isinstance(value, int) else (value[0], value[1])
+
+
+def en_name_pattern(forms: list[str]) -> re.Pattern:
+    """Joly's name forms, whole words, with a hyphen or a space between the
+    syllables and either case of each syllable's first letter (Pao Ch’ai and
+    Pao-ch’ai, goody Liu and Goody Liu); ’ and ' alike."""
+
+    def syllable(s: str) -> str:
+        head = f"[{s[0].upper()}{s[0].lower()}]" if s[0].isalpha() else re.escape(s[0])
+        return head + re.escape(s[1:]).replace("’", "['’]")
+
+    alternatives = ["[-\\s]".join(syllable(x) for x in re.split(r"[-\s]+", f)) for f in forms]
+    return re.compile("(?<![\\w’'-])(" + "|".join(alternatives) + ")(?![\\w’'-])")
+
+
 def first_appearances(data: dict) -> dict[str, dict[tuple[int, int], list]]:
     """For each edition, `{(chapter, paragraph): [(start, end, term)]}`: the
-    first occurrence of any form of each character's name. The Simplified
-    positions are the Traditional ones (the conversion keeps lengths; checked)."""
+    first mention of any form of each character's name. The Simplified
+    positions are the Traditional ones (the conversion keeps lengths; checked).
+    The English mark must fall in the chapter of the Chinese one, save for
+    the characters `EN_CHAPTER_DIFFERS` explains."""
     hant = data["editions"]["zh-Hant"]["chapters"]
     hans = data["editions"]["zh-Hans"]["chapters"]
     en = data["editions"]["en"]["chapters"]
     out: dict[str, dict] = {lang: {} for lang in LANGS}
     missing: list[str] = []
+    elsewhere: list[str] = []
     for ch in ed.CHARACTERS:
         best = None
+        start = search_start(ch["from"])
         for c in hant:
-            if c["n"] < ch["from"]:
+            if c["n"] < start[0]:
                 continue
             for i, p in enumerate(c["paragraphs"]):
-                if ch.get("prose") and p["kind"] != "prose":
+                if (c["n"], i) < start or (ch.get("prose") and p["kind"] != "prose"):
                     continue
                 # The earliest form; at one place the longest (警幻仙子, not 警幻).
                 hits = [(p["text"].find(f), -len(f), f) for f in ch["forms"] if f in p["text"]]
@@ -776,23 +857,31 @@ def first_appearances(data: dict) -> dict[str, dict[tuple[int, int], list]]:
         out["zh-Hans"].setdefault((n, i), []).append((s, e, ch["hans"]))
         if not ch["en"]:
             continue
-        pattern = re.compile("(?<![\\w’'-])(" + "|".join(re.escape(f) for f in ch["en_forms"]) + ")(?![\\w’'-])")
+        pattern = en_name_pattern(ch["en_forms"])
+        # By default Joly's text is searched from the Chinese start chapter:
+        # the same homographs occur in it (Pao Yü for the jade in chapter 1).
+        en_start = search_start(ch.get("en_from", start[0]))
         found = None
         for c in en:
-            for i, p in enumerate(c["paragraphs"]):
+            for j, p in enumerate(c["paragraphs"]):
+                if (c["n"], j) < en_start:
+                    continue
                 m = pattern.search(p["text"])
                 if m:
-                    found = (c["n"], i, m.start(), m.end())
+                    found = (c["n"], j, m.start(), m.end())
                     break
             if found:
                 break
         if not found:
             missing.append(f"en {ch['en']}")
             continue
-        n, i, s, e = found
-        out["en"].setdefault((n, i), []).append((s, e, ch["en"]))
+        if found[0] != n and ch["hant"] not in ed.EN_CHAPTER_DIFFERS:
+            elsewhere.append(f"{ch['hant']}: zh chapter {n}, en chapter {found[0]} ({ch['en']})")
+        out["en"].setdefault(found[:2], []).append((found[2], found[3], ch["en"]))
     if missing:
         raise SystemExit("index: names not found:\n  " + "\n  ".join(missing))
+    if elsewhere:
+        raise SystemExit("index: English marks in another chapter than the Chinese ones:\n  " + "\n  ".join(elsewhere))
     # Two characters first named in one sentence must not overlap.
     for lang, by_para in out.items():
         for key, marks in by_para.items():
@@ -813,6 +902,14 @@ def emit(out: str, lang: str, specs: list[dict], name: str, title: str, md: str)
     specs.append({"title": title, "file": rel})
 
 
+def front_matter(lang: str) -> str:
+    """The head of an edition's first file: the book's metadata, then the
+    front matter's lower-roman folios (the chapters switch to Arabic at 第一回
+    / chapter I)."""
+    meta = "".join(f"{k}: {json.dumps(v, ensure_ascii=False)}\n" for k, v in ed.BOOK[lang]["metadata"].items())
+    return f"---\n{meta}---\n\n" + ':::numbering{format="lower-roman" startAt=1}\n\n'
+
+
 def para_block(style: str, paragraphs: list[str]) -> str:
     return f':::paragraphs{{style="{style}"}}\n' + "\n\n".join(paragraphs) + "\n:::\n"
 
@@ -823,7 +920,7 @@ def write_zh(out: str, lang: str, data: dict, front: dict, pictures: dict, marks
     chapters = data["editions"][lang]["chapters"]
     count = cn(len(ed.CHARACTERS))
 
-    emit(out, lang, specs, "000a-cover", b["cover"], f'# {b["title"]} {{style="cover"}}\n\n# {b["title"]} {{style="titlepage"}}\n\n:::pagebreak\n\n' + para_block("colophon", ed.COLOPHON[lang]))
+    emit(out, lang, specs, "000a-cover", b["cover"], front_matter(lang) + f'# {b["title"]} {{style="cover"}}\n\n# {b["title"]} {{style="titlepage"}}\n\n:::pagebreak\n\n' + para_block("colophon", ed.COLOPHON[lang]))
     emit(out, lang, specs, "000b-edition", b["edition_title"], f'# {b["edition_title"]} {{style="front"}}\n\n' + "\n\n".join(ed.EDITION_NOTE[lang]) + "\n")
     for k, key in enumerate(("cheng", "gao", "yinyan")):
         e = next(x for x in front[lang] if x["key"] == key)
@@ -860,7 +957,7 @@ def write_en(out: str, data: dict, pictures: dict, marks: dict) -> list[dict]:
     hant = {c["n"]: c for c in data["editions"]["zh-Hant"]["chapters"]}
     chapters = data["editions"]["en"]["chapters"]
 
-    emit(out, lang, specs, "000a-title", b["cover"], f'# {b["title"]} {{style="cover" toc="false"}}\n\n:::pagebreak\n\n' + para_block("colophon", ed.COLOPHON[lang]))
+    emit(out, lang, specs, "000a-title", b["cover"], front_matter(lang) + f'# {b["title"]} {{style="cover" toc="false"}}\n\n:::pagebreak\n\n' + para_block("colophon", ed.COLOPHON[lang]))
     emit(out, lang, specs, "000b-note", b["edition_title"], f'# {b["edition_title"]} {{style="front"}}\n\n' + "\n\n".join(ed.EDITION_NOTE[lang]) + "\n")
     preface = [md_escape(p) for p in data["editions"]["en"]["preface"]]
     sig = re.match(r"^H\. BENCRAFT JOLY, (H\.B\.M\. Vice-Consulate), (Macao), (.+?)\.?$", preface[-1])
@@ -978,7 +1075,7 @@ def write_manifest(out: str, chapters: dict, shared: list[dict], wording: dict, 
     meta = {
         "id": PRESET_ID,
         "name": "紅樓夢 · Dream of the Red Chamber",
-        "description": "Novela clásica china en 120 capítulos: el texto de 1792 en chino tradicional y simplificado, con las láminas de 1884, y la traducción inglesa de Joly · A classic Chinese novel in 120 chapters: the 1792 text in Traditional and Simplified Chinese with the 1884 plates, and Joly’s English translation",
+        "description": "Novela clásica china en 120 capítulos: el texto de 1792 en chino tradicional y simplificado, con las láminas de 1884, y la traducción inglesa de Joly de los 56 primeros capítulos · A classic Chinese novel in 120 chapters: the 1792 text in Traditional and Simplified Chinese with the 1884 plates, and Joly’s English translation of the first 56 chapters",
         "locale": "zh-Hant",
         "locales": list(LANGS),
         "thumbnail": "thumbnail.jpg",

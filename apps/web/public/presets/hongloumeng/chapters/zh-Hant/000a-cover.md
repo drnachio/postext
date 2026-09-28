@@ -1,3 +1,10 @@
+---
+title: "紅樓夢"
+author: "曹雪芹"
+---
+
+:::numbering{format="lower-roman" startAt=1}
+
 # 紅樓夢 {style="cover"}
 
 # 紅樓夢 {style="titlepage"}

@@ -40,11 +40,11 @@ Chou Jui’s wife nodded her head, as she heard these words. “What do you feel
 
 Mrs. Chou was bent upon making some further remark, when madame Wang was suddenly heard to enquire, “Who is in here?”
 
-Mrs. Chou went out hurriedly and answered; and forthwith told her all about old goody Liu’s visit. Having waited for a while, and seeing that madame Wang had nothing to say, she was on the point of retiring, when “aunt” Hsueh unexpectedly remarked smiling: “Wait a bit! I’ve something to give you to take along with you.”
+Mrs. Chou went out hurriedly and answered; and forthwith told her all about old goody Liu’s visit. Having waited for a while, and seeing that madame Wang had nothing to say, she was on the point of retiring, when “aunt” Hsüeh unexpectedly remarked smiling: “Wait a bit! I’ve something to give you to take along with you.”
 
 And as she spoke, she called for Hsiang Ling. The sound of the screen-board against the sides of the door was heard, and in walked the waiting-maid, who had been playing with Chin Ch’uan-erh. “Did my lady call?” she asked.
 
-“Bring that box of flowers,” said Mrs. Hsueh.
+“Bring that box of flowers,” said Mrs. Hsüeh.
 
 Hsiang Ling assented, and brought from the other side a small embroidered silk box.
 
@@ -118,7 +118,7 @@ Chou Jui’s wife thereupon came over to dowager lady Chia’s room on this side
 
 “Have you been well of late, mother?” asked her daughter. “I’ve been waiting for ever so long at home, but you never come out! What’s there so pressing that has prevented you from returning home? I waited till I was tired, and then went on all alone, and paid my respects to our venerable lady; I’m now, on my way to inquire about our lady Wang. What errand haven’t you delivered as yet, ma; and what is it you’re holding?”
 
-“Ai! as luck would have it,” rejoined Chou Jui’s wife smilingly, “old goody Liu came over to-day, so that besides my own hundred and one duties, I’ve had to run about here and there ever so long, and all for her! While attending to these, Mrs. Hsueh came across me, and asked me to take these flowers to the young ladies, and I’ve been at it up to this very moment, and haven’t done yet! But coming at this time, you must surely have something or other that you want me to do for you! what’s it?”
+“Ai! as luck would have it,” rejoined Chou Jui’s wife smilingly, “old goody Liu came over to-day, so that besides my own hundred and one duties, I’ve had to run about here and there ever so long, and all for her! While attending to these, Mrs. Hsüeh came across me, and asked me to take these flowers to the young ladies, and I’ve been at it up to this very moment, and haven’t done yet! But coming at this time, you must surely have something or other that you want me to do for you! what’s it?”
 
 “Really ma, you’re quick at guessing!” exclaimed her daughter with a smile; “I’ll tell you what it’s all about. The day before yesterday, your son-in-law had a glass of wine too many, and began altercating with some person or other; and some one, I don’t know why, spread some evil report, saying that his antecedents were not clear, and lodged a charge against him at the Yamen, pressing the authorities to deport him to his native place. That’s why I’ve come over to consult with you, as to whom we should appeal to, to do us this favour of helping us out of our dilemma!”
 

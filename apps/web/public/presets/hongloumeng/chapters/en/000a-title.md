@@ -1,3 +1,11 @@
+---
+title: "Hung Lou Meng"
+subtitle: "or, The Dream of the Red Chamber"
+author: "Cao Xueqin"
+---
+
+:::numbering{format="lower-roman" startAt=1}
+
 # Hung Lou Meng {style="cover" toc="false"}
 
 :::pagebreak

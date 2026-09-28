@@ -122,7 +122,7 @@ To this Chin Ch’uan-erh said not a word.
 
 “If that won’t do,” Pao-yü continued, “I’ll wait for your mistress to wake and appeal to her at once.”
 
-Chin Ch’uan-erh distended her eyes wide, and pushed Pao-yü off. “What’s the hurry?” she laughed. “‘A gold hair-pin may fall into the well; but if it’s yours it will remain yours only.’ Is it possible that you don’t even see the spirit of this proverb? But I’ll tell you a smart thing. Just you go into the small court, on the east side, and you’ll find for yourself what Mr. Chia Huau and Ts’ai Yun are up to!”
+Chin Ch’uan-erh distended her eyes wide, and pushed Pao-yü off. “What’s the hurry?” she laughed. “‘A gold hair-pin may fall into the well; but if it’s yours it will remain yours only.’ Is it possible that you don’t even see the spirit of this proverb? But I’ll tell you a smart thing. Just you go into the small court, on the east side, and you’ll find for yourself what Mr. Chia Huau and Ts’ai Yün are up to!”
 
 “Let them be up to whatever they like,” smiled Pao-yü, “I shall simply stick to your side!”
 

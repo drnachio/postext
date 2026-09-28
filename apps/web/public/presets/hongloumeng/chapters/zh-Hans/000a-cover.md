@@ -1,3 +1,10 @@
+---
+title: "红楼梦"
+author: "曹雪芹"
+---
+
+:::numbering{format="lower-roman" startAt=1}
+
 # 红楼梦 {style="cover"}
 
 # 红楼梦 {style="titlepage"}

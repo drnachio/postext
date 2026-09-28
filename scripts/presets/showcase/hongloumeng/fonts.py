@@ -57,8 +57,10 @@ FACES: dict[str, list[dict]] = {
         {"family": "Noto Sans SC", "src": "notosanssc/NotoSansSC[wght].ttf", "weights": [500], "donors": ["notosanstc/NotoSansTC[wght].ttf", JIGMO], "stem": "NotoSansSC"},
     ],
     "en": [
-        {"family": "EB Garamond", "src": "ebgaramond/EBGaramond[wght].ttf", "weights": [400, 600], "donors": [], "stem": "EBGaramond", "latin": True},
-        {"family": "EB Garamond", "src": "ebgaramond/EBGaramond-Italic[wght].ttf", "weights": [400], "donors": [], "stem": "EBGaramond", "italic": True, "latin": True},
+        # 700 and 700 italic are not printed by the design; they are the bold
+        # faces of the body family, which markdown **bold** would ask for.
+        {"family": "EB Garamond", "src": "ebgaramond/EBGaramond[wght].ttf", "weights": [400, 600, 700], "donors": [], "stem": "EBGaramond", "latin": True},
+        {"family": "EB Garamond", "src": "ebgaramond/EBGaramond-Italic[wght].ttf", "weights": [400, 700], "donors": [], "stem": "EBGaramond", "italic": True, "latin": True},
     ],
 }
 

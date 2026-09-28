@@ -14,7 +14,7 @@ While Hsi Jen gave utterance to a sentence, Pao-yü nodded his head in sign of a
 
 While saying this, he had completed his toilette, and Hsi Jen pressed him to go and wish good morning to dowager lady Chia, Chia Cheng, madame Wang, and the other members of the family.
 
-Pao-yü, after having gone on to give a few orders to Ch’ing Wen and She Yueh, at length left his apartments, and coming over, paid his obeisance to dowager lady Chia. Her venerable Ladyship had likewise, as a matter of course, a few recommendations to make to him, which ended, he next went and greeted madame Wang; and leaving again her quarters, he came into the library to wish Chia Cheng good morning.
+Pao-yü, after having gone on to give a few orders to Ch’ing Wen and She Yüeh, at length left his apartments, and coming over, paid his obeisance to dowager lady Chia. Her venerable Ladyship had likewise, as a matter of course, a few recommendations to make to him, which ended, he next went and greeted madame Wang; and leaving again her quarters, he came into the library to wish Chia Cheng good morning.
 
 As it happened, Chia Cheng had on this day returned home at an early hour, and was, at this moment, in the library, engaged in a friendly chat with a few gentlemen, who were family companions. Suddenly perceiving Pao-yü come in to pay his respects, and report that he was about to go to school, Chia Cheng gave a sardonic smile. “If you do again,” he remarked, “make allusions to the words going to school, you’ll make even me blush to death with shame! My advice to you is that you should after all go your own way and play; that’s the best thing for you; and mind you don’t pollute with dirt this floor by standing here, and soil this door of mine by leaning against it!”
 

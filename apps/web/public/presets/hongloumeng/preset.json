@@ -3,7 +3,7 @@
  "configVersion": 8,
  "id": "hongloumeng",
  "name": "紅樓夢 · Dream of the Red Chamber",
- "description": "Novela clásica china en 120 capítulos: el texto de 1792 en chino tradicional y simplificado, con las láminas de 1884, y la traducción inglesa de Joly · A classic Chinese novel in 120 chapters: the 1792 text in Traditional and Simplified Chinese with the 1884 plates, and Joly’s English translation",
+ "description": "Novela clásica china en 120 capítulos: el texto de 1792 en chino tradicional y simplificado, con las láminas de 1884, y la traducción inglesa de Joly de los 56 primeros capítulos · A classic Chinese novel in 120 chapters: the 1792 text in Traditional and Simplified Chinese with the 1884 plates, and Joly’s English translation of the first 56 chapters",
  "locale": "zh-Hant",
  "locales": [
   "zh-Hant",
@@ -1141,7 +1141,7 @@
     "file": "chapters/en/015-chapter.md"
    },
    {
-    "title": "XVI. Chia Yuan-ch’un is, on account of her talents, selected to enter the Feng Ts’ao Palace.",
+    "title": "XVI. Chia Yüan-ch’un is, on account of her talents, selected to enter the Feng Ts’ao Palace.",
     "file": "chapters/en/016-chapter.md"
    },
    {
@@ -1346,7 +1346,7 @@
     "mirror": true
    },
    "pageNumbering": {
-    "format": "lower-roman",
+    "format": "decimal",
     "startAt": 1
    }
   },
@@ -1456,7 +1456,7 @@
          "placement": {
           "anchor": {
            "to": "container",
-           "edge": "top-left"
+           "edge": "top"
           },
           "offset": {
            "x": {
@@ -1504,7 +1504,7 @@
          "placement": {
           "anchor": {
            "to": "container",
-           "edge": "top-left"
+           "edge": "top"
           },
           "offset": {
            "x": {
@@ -2300,7 +2300,7 @@
         "placement": {
          "anchor": {
           "to": "container",
-          "edge": "top-left"
+          "edge": "top"
          },
          "offset": {
           "x": {
@@ -2581,7 +2581,7 @@
         "placement": {
          "anchor": {
           "to": "container",
-          "edge": "top-left"
+          "edge": "top"
          },
          "offset": {
           "x": {
@@ -2874,7 +2874,7 @@
         "placement": {
          "anchor": {
           "to": "container",
-          "edge": "top-left"
+          "edge": "top"
          },
          "offset": {
           "x": {
@@ -3162,7 +3162,7 @@
         "placement": {
          "anchor": {
           "to": "container",
-          "edge": "top-left"
+          "edge": "top"
          },
          "offset": {
           "x": {
@@ -3444,7 +3444,7 @@
         "placement": {
          "anchor": {
           "to": "container",
-          "edge": "top-left"
+          "edge": "top"
          },
          "offset": {
           "x": {
@@ -3732,7 +3732,7 @@
         "placement": {
          "anchor": {
           "to": "container",
-          "edge": "top-left"
+          "edge": "top"
          },
          "offset": {
           "x": {
@@ -3989,6 +3989,128 @@
      "value": 0,
      "unit": "pt"
     }
+   },
+   {
+    "id": "poem",
+    "name": "詩題",
+    "numbered": false,
+    "toc": false,
+    "fontFamily": "LXGW WenKai TC",
+    "fontSize": {
+     "value": 10.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 16,
+     "unit": "pt"
+    },
+    "marginTop": {
+     "value": 16,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 5.644,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "text",
+        "id": "poem-title",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 14.817,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 51.86,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.title}",
+        "fontFamily": "LXGW WenKai TC",
+        "fontSize": {
+         "value": 10.5,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.5238095238095237,
+        "overflow": "clip",
+        "color": {
+         "hex": "#1f1b16",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "poem-author",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-right"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 34.573,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.by}",
+        "fontFamily": "LXGW WenKai TC",
+        "fontSize": {
+         "value": 10.5,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "right",
+        "verticalAlign": "middle",
+        "lineHeight": 1.5238095238095237,
+        "overflow": "clip",
+        "color": {
+         "hex": "#1f1b16",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       }
+      ]
+     }
+    }
    }
   ],
   "paragraphStyles": [
@@ -4167,7 +4289,10 @@
    }
   ],
   "parts": {
-   "page": false
+   "page": false,
+   "design": {
+    "elements": []
+   }
   },
   "toc": {
    "levels": [
@@ -4188,7 +4313,7 @@
       "paletteId": "ink"
      },
      "numberWidth": {
-      "value": 6,
+      "value": 7,
       "unit": "em"
      },
      "numberGap": {
@@ -4200,6 +4325,7 @@
       "value": 10,
       "unit": "pt"
      },
+     "numberFontWeight": 700,
      "numberColor": {
       "hex": "#1f1b16",
       "model": "hex",
@@ -5646,7 +5772,7 @@
            "placement": {
             "anchor": {
              "to": "container",
-             "edge": "top-left"
+             "edge": "top"
             },
             "offset": {
              "x": {
@@ -5694,7 +5820,7 @@
            "placement": {
             "anchor": {
              "to": "container",
-             "edge": "top-left"
+             "edge": "top"
             },
             "offset": {
              "x": {
@@ -6490,7 +6616,7 @@
           "placement": {
            "anchor": {
             "to": "container",
-            "edge": "top-left"
+            "edge": "top"
            },
            "offset": {
             "x": {
@@ -6771,7 +6897,7 @@
           "placement": {
            "anchor": {
             "to": "container",
-            "edge": "top-left"
+            "edge": "top"
            },
            "offset": {
             "x": {
@@ -7064,7 +7190,7 @@
           "placement": {
            "anchor": {
             "to": "container",
-            "edge": "top-left"
+            "edge": "top"
            },
            "offset": {
             "x": {
@@ -7352,7 +7478,7 @@
           "placement": {
            "anchor": {
             "to": "container",
-            "edge": "top-left"
+            "edge": "top"
            },
            "offset": {
             "x": {
@@ -7634,7 +7760,7 @@
           "placement": {
            "anchor": {
             "to": "container",
-            "edge": "top-left"
+            "edge": "top"
            },
            "offset": {
             "x": {
@@ -7922,7 +8048,7 @@
           "placement": {
            "anchor": {
             "to": "container",
-            "edge": "top-left"
+            "edge": "top"
            },
            "offset": {
             "x": {
@@ -8179,6 +8305,128 @@
        "value": 0,
        "unit": "pt"
       }
+     },
+     {
+      "id": "poem",
+      "name": "诗题",
+      "numbered": false,
+      "toc": false,
+      "fontFamily": "LXGW WenKai",
+      "fontSize": {
+       "value": 10.5,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 16,
+       "unit": "pt"
+      },
+      "marginTop": {
+       "value": 16,
+       "unit": "pt"
+      },
+      "marginBottom": {
+       "value": 0,
+       "unit": "pt"
+      },
+      "advancedDesign": {
+       "enabled": true,
+       "minHeight": {
+        "value": 5.644,
+        "unit": "mm"
+       },
+       "slot": {
+        "elements": [
+         {
+          "kind": "text",
+          "id": "poem-title",
+          "placement": {
+           "anchor": {
+            "to": "container",
+            "edge": "top-left"
+           },
+           "offset": {
+            "x": {
+             "value": 14.817,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 0,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 51.86,
+             "unit": "mm"
+            },
+            "height": "auto"
+           }
+          },
+          "content": "{attr.title}",
+          "fontFamily": "LXGW WenKai",
+          "fontSize": {
+           "value": 10.5,
+           "unit": "pt"
+          },
+          "fontWeight": 400,
+          "italic": false,
+          "align": "left",
+          "verticalAlign": "middle",
+          "lineHeight": 1.5238095238095237,
+          "overflow": "clip",
+          "color": {
+           "hex": "#1f1b16",
+           "model": "hex",
+           "paletteId": "ink"
+          }
+         },
+         {
+          "kind": "text",
+          "id": "poem-author",
+          "placement": {
+           "anchor": {
+            "to": "container",
+            "edge": "top-right"
+           },
+           "offset": {
+            "x": {
+             "value": 0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 0,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 34.573,
+             "unit": "mm"
+            },
+            "height": "auto"
+           }
+          },
+          "content": "{attr.by}",
+          "fontFamily": "LXGW WenKai",
+          "fontSize": {
+           "value": 10.5,
+           "unit": "pt"
+          },
+          "fontWeight": 400,
+          "italic": false,
+          "align": "right",
+          "verticalAlign": "middle",
+          "lineHeight": 1.5238095238095237,
+          "overflow": "clip",
+          "color": {
+           "hex": "#1f1b16",
+           "model": "hex",
+           "paletteId": "ink"
+          }
+         }
+        ]
+       }
+      }
      }
     ],
     "paragraphStyles": [
@@ -8375,7 +8623,7 @@
         "paletteId": "ink"
        },
        "numberWidth": {
-        "value": 6,
+        "value": 7,
         "unit": "em"
        },
        "numberGap": {
@@ -8387,6 +8635,7 @@
         "value": 10,
         "unit": "pt"
        },
+       "numberFontWeight": 700,
        "numberColor": {
         "hex": "#1f1b16",
         "model": "hex",
@@ -9755,7 +10004,7 @@
       "mirror": true
      },
      "pageNumbering": {
-      "format": "lower-roman",
+      "format": "decimal",
       "startAt": 1
      }
     },
@@ -9867,7 +10116,7 @@
            "placement": {
             "anchor": {
              "to": "container",
-             "edge": "top-left"
+             "edge": "top"
             },
             "offset": {
              "x": {
@@ -10425,7 +10674,7 @@
           "placement": {
            "anchor": {
             "to": "container",
-            "edge": "top-left"
+            "edge": "top"
            },
            "offset": {
             "x": {
@@ -10636,7 +10885,7 @@
           "placement": {
            "anchor": {
             "to": "container",
-            "edge": "top-left"
+            "edge": "top"
            },
            "offset": {
             "x": {
@@ -10854,7 +11103,7 @@
           "placement": {
            "anchor": {
             "to": "container",
-            "edge": "top-left"
+            "edge": "top"
            },
            "offset": {
             "x": {
@@ -11066,7 +11315,7 @@
           "placement": {
            "anchor": {
             "to": "container",
-            "edge": "top-left"
+            "edge": "top"
            },
            "offset": {
             "x": {
@@ -11284,7 +11533,7 @@
           "placement": {
            "anchor": {
             "to": "container",
-            "edge": "top-left"
+            "edge": "top"
            },
            "offset": {
             "x": {
@@ -11768,7 +12017,7 @@
         "paletteId": "ink"
        },
        "numberWidth": {
-        "value": 9,
+        "value": 14.0,
         "unit": "mm"
        },
        "numberGap": {
@@ -11780,6 +12029,7 @@
         "value": 9.5,
         "unit": "pt"
        },
+       "numberFontWeight": 700,
        "numberColor": {
         "hex": "#b23a2e",
         "model": "hex",
@@ -12393,8 +12643,8 @@
     },
     {
      "id": "plate-016",
-     "caption": "Chia Yuan-ch’un is, on account of her talents, selected to enter the Feng Ts’ao Palace.",
-     "altText": "Chia Yuan-ch’un is, on account of her talents, selected to enter the Feng Ts’ao Palace."
+     "caption": "Chia Yüan-ch’un is, on account of her talents, selected to enter the Feng Ts’ao Palace.",
+     "altText": "Chia Yüan-ch’un is, on account of her talents, selected to enter the Feng Ts’ao Palace."
     },
     {
      "id": "plate-017",
@@ -14246,9 +14496,19 @@
      "file": "fonts/EBGaramond-SemiBold.woff2"
     },
     {
+     "weight": 700,
+     "style": "normal",
+     "file": "fonts/EBGaramond-Bold.woff2"
+    },
+    {
      "weight": 400,
      "style": "italic",
      "file": "fonts/EBGaramond-Italic.woff2"
+    },
+    {
+     "weight": 700,
+     "style": "italic",
+     "file": "fonts/EBGaramond-BoldItalic.woff2"
     }
    ]
   }

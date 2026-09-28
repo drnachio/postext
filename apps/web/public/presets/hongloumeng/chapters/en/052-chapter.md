@@ -30,7 +30,7 @@ But so concerned was Pao-yü about Ch’ing Wen and other matters that he was th
 
 Speaking the while, he, in point of fact, sauntered out of the back door; and getting below the window, he lent an ear to their confidences.
 
-“How did you manage to get it?” She Yueh inquired with gentle voice.
+“How did you manage to get it?” She Yüeh inquired with gentle voice.
 
 “When I lost sight of it on that day that I washed my hands,” P’ing Erh answered, “our lady Secunda wouldn’t let us make a fuss. But the moment she left the garden, she there and then sent word to the nurses, stationed in the various places, to institute careful search. Our suspicions, however, fell upon Miss Hsing’s maid, who has ever also been poverty-stricken; surmising that a young girl of her age, who had never set eyes upon anything of the kind, may possibly have picked it up and taken it. But never did we positively believe that it could be some one from this place of yours! Happily, our lady Secunda wasn’t in the room, when that nurse Sung who is with you here went over, and said, producing the bracelet, ‘that the young maid, Chui Erh, had stolen it, and that she had detected her, and come to lay the matter before our lady Secunda. I promptly took over the bracelet from her; and recollecting how imperious and exacting Pao-yü is inclined to be, fond and devoted as he is to each and all of you; how the jade which was prigged the other year by a certain Liang Erh, is still, just as the matter has cooled down for the last couple of years, canvassed at times by some people eager to serve their own ends; how some one has now again turned up to purloin this gold trinket; how it was filched, to make matters worse, from a neighbour’s house; how as luck would have it, she took this of all things; and how it happened to be his own servant to give him a slap on his mouth, I hastened to enjoin nurse Sung to, on no account whatever, let Pao-yü know anything about it, but simply pretend that nothing of the kind had transpired, and to make no mention of it to any single soul. In the second place,’ (I said), ‘our dowager lady and Madame Wang would get angry, if they came to hear anything. Thirdly, Hsi Jen as well as yourselves would not also cut a very good figure.’ Hence it was that in telling our lady Secunda, I merely explained ‘that on my way to our senior mistress,’ the bracelet got unclasped, without my knowing it; that it fell among the roots of the grass; that there was no chance of seeing it while the snow was deep, but that when the snow completely disappeared to-day there it glistened, so yellow and bright, in the rays of the sun, in precisely the very place where it had dropped, and that I then picked it up.’ Our lady Secunda at once credited my version. So here I come to let you all know so as to be henceforward a little on your guard with her, and not get her a job anywhere else. Wait until Hsi Jen’s return, and then devise means to pack her off, and finish with her.”
 
@@ -198,13 +198,13 @@ Tai-yü readily guessed that this was an attention extended to her merely as she
 
 Hastily also bidding a servant pour the tea, she simultaneously winked at Pao-yü.
 
-Pao-yü grasped her meaning, and forthwith quitted the apartment. As this happened to be about dinner time, and he had been enjoined as well by Madame Wang to be back at an early hour, Pao-yü returned to his quarters, and looked on while Ch’ing Wen took her medicine. Pao-yü did not desire Ch’ing Wen this evening to move into the winter apartment, but stayed with Ch’ing Wen outside; and, giving orders to bring the warming-frame near the winter apartment, She Yueh slept on it.
+Pao-yü grasped her meaning, and forthwith quitted the apartment. As this happened to be about dinner time, and he had been enjoined as well by Madame Wang to be back at an early hour, Pao-yü returned to his quarters, and looked on while Ch’ing Wen took her medicine. Pao-yü did not desire Ch’ing Wen this evening to move into the winter apartment, but stayed with Ch’ing Wen outside; and, giving orders to bring the warming-frame near the winter apartment, She Yüeh slept on it.
 
-Nothing of any interest worth putting on record transpired during the night. On the morrow, before the break of day, Ch’ing Wen aroused She Yueh.
+Nothing of any interest worth putting on record transpired during the night. On the morrow, before the break of day, Ch’ing Wen aroused She Yüeh.
 
 “You should awake,” she said. “The only thing is that you haven’t had enough sleep. If you go out and tell them to get the water for tea ready for him, while I wake him, it will be all right.”
 
-She Yueh immediately jumped up and threw something over her. “Let’s call him to get up and dress in his fine clothes.” she said. “We can summon them in, after this fire-box has been removed. The old nurses told us not to allow him to stay in this room for fear the virus of the disease should pass on to him; so now if they see us bundled up together in one place, they’re bound to kick up another row.”
+She Yüeh immediately jumped up and threw something over her. “Let’s call him to get up and dress in his fine clothes.” she said. “We can summon them in, after this fire-box has been removed. The old nurses told us not to allow him to stay in this room for fear the virus of the disease should pass on to him; so now if they see us bundled up together in one place, they’re bound to kick up another row.”
 
 “That’s my idea too,” Ch’ing Wen replied.
 
@@ -280,7 +280,7 @@ Chui Erh was under the necessity of advancing a few steps nearer to her. But, al
 
 “What’s the use of such paws?” she railed at her. “They don’t ply a needle, and they don’t touch any thread! All you’re good for is to prig things to stuff that mouth of yours with! The skin of your phiz is shallow and those paws of yours are light! But with the shame you bring upon yourself before the world, isn’t it right that I should prick you, and make mincemeat of you?”
 
-Chui Erh shouted so wildly from pain that She Yueh stepped forward and immediately drew them apart. She then pressed Ch’ing Wen, until she induced her to lie down.
+Chui Erh shouted so wildly from pain that She Yüeh stepped forward and immediately drew them apart. She then pressed Ch’ing Wen, until she induced her to lie down.
 
 “You’re just perspiring,” she remarked, “and here you are once more bent upon killing yourself. Wait until you are yourself again! Won’t you then be able to give her as many blows as you may like? What’s the use of kicking up all this fuss just now?”
 
