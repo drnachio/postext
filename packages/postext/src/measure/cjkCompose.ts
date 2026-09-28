@@ -66,7 +66,8 @@ import { hasCJK } from './cjk';
 import { graphemeCount, graphemesOf, lastGrapheme } from './graphemes';
 import { isBreakingSpace } from './spaces';
 import { trimChipLineEdges } from './chipEdges';
-import { cellAdvance, getMeasureWritingMode, withMeasureWritingMode } from './vertical';
+import { cellAdvance, fontEm, getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, verticalTrackCount, withMeasureWritingMode } from './vertical';
+import { verticalRuns } from '../writingMode';
 import {
   applyLineEdges,
   boxCut,
@@ -192,6 +193,16 @@ interface Unit {
    *  graphemes' glyph starts in its one-em cell, px. Set only when a glyph
    *  is not one em wide, so its box and its advance differ. */
   place?: number[];
+  /** Vertical text: the author set the unit apart (`:tcy[…]` one upright
+   *  cell, `:upright[…]` one upright cell per character, `:sideways[…]`
+   *  turned). Such a unit keeps a segment of its own. */
+  orient?: 'tcy' | 'upright' | 'sideways';
+  /** Vertical text: a Western run that opens (`cellStart`) or ends
+   *  (`cellEnd`) with a short number set in one upright cell
+   *  (`cjk.uprightDigits`). On that side it breaks and spreads like a
+   *  Chinese character and takes no Han–Latin space. */
+  cellStart?: boolean;
+  cellEnd?: boolean;
 }
 
 interface Fonts {
@@ -226,6 +237,82 @@ function pairable(g: string): boolean {
   return g === '\u2014' || g === '\u2015' || g === '\u2026' || g === '\u22EF'; // — ― … ⋯
 }
 
+/** Whether a vertical Western run opens and ends with a short number set
+ *  in one upright cell (`cjk.uprightDigits`, see `verticalRuns`);
+ *  undefined when neither. */
+function numberCellEdges(run: readonly string[]): { start: boolean; end: boolean } | undefined {
+  const digits = getMeasureUprightDigits();
+  if (digits === 0 || !run.some((g) => g >= '0' && g <= '9' && g.length === 1)) return undefined;
+  const runs = verticalRuns(run, getMeasureRegion(), digits);
+  const start = runs[0]?.glyph.orient === 'tcy';
+  const end = runs[runs.length - 1]?.glyph.orient === 'tcy';
+  return start || end ? { start, end } : undefined;
+}
+
+/**
+ * The units of a span the author set apart in vertical text (see
+ * `Unit.orient`): `:tcy[…]` one upright cell of one em, `:upright[…]` one
+ * cell per character (a line never breaks between them), `:sideways[…]`
+ * one Western run at its horizontal width. The cells break and spread like
+ * Chinese characters and take no Han–Latin space; the block's tracking
+ * follows each cell once.
+ */
+function orientedUnits(span: InlineSpan, style: UnitStyle, letterSpacingPx: number, zwsp: boolean, units: Unit[]): void {
+  const track = (n: number): number => (letterSpacingPx === 0 ? 0 : letterSpacingPx * n);
+  const em = fontEm(style.font);
+  const base = { style, at: 0, ...(zwsp ? { zwspBefore: true } : {}) };
+  if (span.orientation === 'sideways' && !span.combineUpright) {
+    const graphemes = graphemesOf(span.text);
+    units.push({
+      ...base,
+      kind: 'text',
+      text: span.text,
+      width: measureTextWidth(span.text, style.font) + track(graphemes.length),
+      graphemes: graphemes.length,
+      first: 'western',
+      last: 'western',
+      firstCjk: false,
+      lastCjk: false,
+      run: true,
+      orient: 'sideways',
+    });
+    return;
+  }
+  if (span.combineUpright) {
+    units.push({
+      ...base,
+      kind: 'text',
+      text: span.text,
+      width: em + track(1),
+      graphemes: 1,
+      first: 'ideograph',
+      last: 'ideograph',
+      firstCjk: true,
+      lastCjk: true,
+      orient: 'tcy',
+    });
+    return;
+  }
+  let offset = 0;
+  graphemesOf(span.text).forEach((g, i) => {
+    units.push({
+      ...base,
+      ...(i > 0 ? { glueBefore: true, zwspBefore: undefined } : {}),
+      kind: 'text',
+      text: g,
+      width: em + track(1),
+      graphemes: 1,
+      first: 'ideograph',
+      last: 'ideograph',
+      firstCjk: true,
+      lastCjk: true,
+      at: offset,
+      orient: 'upright',
+    });
+    offset += g.length;
+  });
+}
+
 /**
  * The units of a paragraph's spans, in order. `letterSpacingPx` (the
  * block's tracking) is measured into every width, per grapheme. In
@@ -241,6 +328,11 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
 
   for (let si = 0; si < spans.length; si++) {
     const span = spans[si]!;
+    if (vertical && (span.combineUpright || span.orientation) && span.text.length > 0) {
+      orientedUnits(span, styleOf(span, fonts), letterSpacingPx, zwsp, units);
+      zwsp = false;
+      continue;
+    }
     const atomic = atomicSpanToken(span, fonts.normal, fonts.bold, fonts.italic, fonts.boldItalic, letterSpacingPx);
     if (atomic) {
       const style = styleOf(span, fonts);
@@ -303,17 +395,23 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
       const text = run.join('');
       const firstG = run[0]!;
       const lastG = run[run.length - 1]!;
+      // Vertical text: a short number at either end stands in one upright
+      // cell (`cjk.uprightDigits`), and the run is Chinese on that side;
+      // tracking follows the cell once.
+      const cells = vertical ? numberCellEdges(run) : undefined;
       push({
         kind: 'text',
         text,
-        width: textWidth(text, style.font, style.smallCaps) + track(run.length),
+        width: textWidth(text, style.font, style.smallCaps) + track(vertical && letterSpacingPx !== 0 ? verticalTrackCount(text) : run.length),
         graphemes: run.length,
-        first: cjkClassOf(firstG),
-        last: cjkClassOf(lastG),
-        firstCjk: false,
-        lastCjk: false,
+        first: cells?.start ? 'ideograph' : cjkClassOf(firstG),
+        last: cells?.end ? 'ideograph' : cjkClassOf(lastG),
+        firstCjk: cells?.start === true,
+        lastCjk: cells?.end === true,
         at: runAt,
         run: true,
+        ...(cells?.start ? { cellStart: true } : {}),
+        ...(cells?.end ? { cellEnd: true } : {}),
         ...(URL_LIKE_RE.test(text) ? { url: true } : {}),
         ...(runLink !== undefined ? { link: runLink } : {}),
       });
@@ -552,7 +650,7 @@ function prepareUnits(units: Unit[], c: CjkComposition, letterSpacingPx: number)
   if (plain && (c.region !== 'mainland' || c.vertical)) return units;
   const full = new Map<Unit, number>();
   for (const u of units) {
-    if (u.kind !== 'text' || u.run || u.graphemes !== 1 || !u.firstCjk || u.style.script || u.stacked) continue;
+    if (u.kind !== 'text' || u.run || u.graphemes !== 1 || !u.firstCjk || u.style.script || u.stacked || u.orient) continue;
     if (plain && u.first !== 'interpunct') continue;
     const box = punctuationBox(u.text, u.first, u.width - letterSpacingPx, emOfFont(u.style.font), c);
     if (!box) continue;
@@ -575,8 +673,12 @@ function prepareUnits(units: Unit[], c: CjkComposition, letterSpacingPx: number)
   const out: Unit[] = [];
   const han = (u: Unit | undefined, edge: 'first' | 'last'): boolean =>
     !!u && u.kind === 'text' && !u.run && u.firstCjk && u[edge] === 'ideograph' && !u.style.script && isLatinSpacingHan(u.text);
+  // A run whose edge is a number set in one upright cell (vertical text)
+  // takes no Han–Latin space on that side; neither does a unit the author
+  // set upright or in one cell.
   const latin = (u: Unit | undefined, edge: 'first' | 'last'): boolean =>
-    !!u && u.kind === 'text' && !!u.run && !u.style.script && isLatinSpacingLatin(edge === 'first' ? String.fromCodePoint(u.text.codePointAt(0)!) : lastGrapheme(u.text));
+    !!u && u.kind === 'text' && !!u.run && !u.style.script && !(edge === 'first' ? u.cellStart : u.cellEnd)
+    && isLatinSpacingLatin(edge === 'first' ? String.fromCodePoint(u.text.codePointAt(0)!) : lastGrapheme(u.text));
   const spaceOf = (h: Unit): number => latinSpacingPx(c, emOfFont(h.style.font));
   for (let k = 0; k < units.length; k++) {
     const u = units[k]!;
@@ -1250,7 +1352,8 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
     // painted before its box (`inkOffset`), and the caret spreads a
     // segment's width evenly over its characters.
     const cut = u.punct ? boxCut(u.punct) : 0;
-    const key = u.stacked || u.run || u.graphemes !== 1 || cut > 0 || u.place ? undefined : `${u.style.key}|${u.link ?? ''}|${t ?? ''}`;
+    // Upright letters (`:upright[…]`) share a segment with each other only.
+    const key = u.stacked || u.run || u.graphemes !== 1 || cut > 0 || u.place || u.orient === 'tcy' ? undefined : `${u.style.key}|${u.link ?? ''}|${t ?? ''}${u.orient ? `|${u.orient}` : ''}`;
     const last = pieces[pieces.length - 1];
     if (key !== undefined && last && last.key === key && last.cell !== undefined && Math.abs(last.cell - width) < 1e-3) {
       last.parts.push(text);
@@ -1278,6 +1381,7 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
       // a Chinese box, so no renderer paints its line in one run at the
       // glyphs' own advances.
       ...(ink !== undefined ? { inkOffset: ink } : {}),
+      ...(u.orient === 'tcy' ? { tcy: true as const } : u.orient ? { orientation: u.orient } : {}),
     };
   };
   for (let j = 0; j < us.length; j++) {

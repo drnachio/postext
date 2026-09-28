@@ -5,7 +5,7 @@ import { measureRichBlock } from './rich';
 import { getHyphenationLocale } from '../hyphenate';
 import { hasCJK } from './cjk';
 import { getCjkLineBreak } from './cjkClasses';
-import { getMeasureRegion, getMeasureWritingMode } from './vertical';
+import { getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode } from './vertical';
 import { cjkCompositionKey, getCjkComposition } from './cjkPunctuation';
 
 /** Options that change a block's lines, joined into its cache key. The
@@ -22,7 +22,10 @@ function optionsKey(options: MeasureBlockOptions | undefined): string {
  *  in a cell its cell (`verticalTextWidth`) — CJK or not. */
 function cjkKey(text: string, options: MeasureBlockOptions | undefined): string {
   const vertical = (options?.writingMode ?? getMeasureWritingMode()) === 'vertical-rl';
-  const v = vertical ? `:v:${getMeasureRegion()}` : '';
+  // Short numbers set in one cell (`cjk.uprightDigits`) join the key only
+  // when they are not the default two digits.
+  const digits = getMeasureUprightDigits();
+  const v = vertical ? `:v:${getMeasureRegion()}${digits !== 2 ? `:d${digits}` : ''}` : '';
   if (!hasCJK(text)) return vertical ? `\x00${v}` : '';
   return `\x00cjk:${options?.cjkLineBreak ?? getCjkLineBreak()}:${cjkCompositionKey(options?.cjkComposition ?? getCjkComposition())}${v}`;
 }
@@ -62,7 +65,7 @@ function buildRichCacheKey(
   // Script and small-caps marks change the measure of the same text, and a
   // formula or a swatch colour what a placeholder paints: they join the key
   // only when set, so the common keys are unchanged.
-  const spanKey = spans.map((s) => `${s.text}|${s.bold}|${s.italic}|${s.ref?.resourceId ?? ''}${s.footnote ? `|fn:${s.footnote.id}` : ''}${s.chip ? chipCacheKey(s.chip) : ''}${s.math ? mathCacheKey(s) : ''}${s.swatch ? `|sw:${s.swatch.color}` : ''}${s.script ? `|${s.script}` : ''}${s.smallCaps ? '|sc' : ''}`).join('\x01');
+  const spanKey = spans.map((s) => `${s.text}|${s.bold}|${s.italic}|${s.ref?.resourceId ?? ''}${s.footnote ? `|fn:${s.footnote.id}` : ''}${s.chip ? chipCacheKey(s.chip) : ''}${s.math ? mathCacheKey(s) : ''}${s.swatch ? `|sw:${s.swatch.color}` : ''}${s.script ? `|${s.script}` : ''}${s.smallCaps ? '|sc' : ''}${s.combineUpright ? '|tcy' : ''}${s.orientation === 'upright' ? '|up' : s.orientation === 'sideways' ? '|side' : ''}`).join('\x01');
   return `R\x00${spanKey}\x00${fonts[0]}\x00${fonts[1]}\x00${fonts[2]}\x00${fonts[3]}\x00${maxWidthPx}\x00${lineHeightPx}\x00${optionsKey(options)}${cjkKey(spanKey, options)}${cjkLinkKey(spans, spanKey)}`;
 }
 

@@ -479,7 +479,9 @@ describe('the canvas paints every character where the composer measured it', () 
             header: { elements: [] },
             footer: { elements: [] },
             locale: locales[region],
-            cjk: { compressAdjacent: true, trimLineStart: true, hangingPunctuation: region === 'mainland' ? 'force' : 'allow' },
+            // Short numbers stay sideways here: tate-chu-yoko has its own
+            // tests (tateChuYoko.test.ts).
+            cjk: { compressAdjacent: true, trimLineStart: true, hangingPunctuation: region === 'mainland' ? 'force' : 'allow', uprightDigits: 0 },
           };
           const doc = buildDocument({ markdown: PASSAGE }, config);
           const want = expectedChars(doc, region, vertical);

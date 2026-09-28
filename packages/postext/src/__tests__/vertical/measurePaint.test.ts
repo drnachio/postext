@@ -51,7 +51,8 @@ function paintedAdvance(seg: VDTLineSegment, font: string, region: 'mainland' | 
   const em = Number(/(\d*\.?\d+)px/.exec(f)![1]);
   const t = seg.tracking ?? 0;
   let adv = 0;
-  for (const run of verticalRuns(graphemesOf(seg.text), region)) {
+  // Short numbers stand in one cell (`cjk.uprightDigits`, 2 by default).
+  for (const run of verticalRuns(graphemesOf(seg.text), region, 2)) {
     adv += run.cell === undefined ? stubWidth(run.text, em) + t * graphemesOf(run.text).length : run.cell * em + t;
   }
   return adv;
@@ -104,11 +105,16 @@ describe('vertical text: the painter advances what the measurer measured (#188 r
   }
 
   it('gives an upright sign inside a number its cell: 3×4 advances 3, one em, 4', () => {
-    const doc = buildDocument({ markdown: '價格3×4元' }, config('zh-Hant', 'left'));
+    const noCells = config('zh-Hant', 'left');
+    noCells.cjk = { ...noCells.cjk, uprightDigits: 0 };
+    const doc = buildDocument({ markdown: '價格3×4元' }, noCells);
     const segs = flowLines(doc)[0]!.line.segments!;
     const run = segs.find((s) => s.text === '3×4')!;
     // 10 px em: the digits ½ em each (the stub), × a whole cell.
     expect(run.width).toBeCloseTo(5 + 10 + 5);
+    // With the default two upright digits each digit is a cell too (#190).
+    const cells = buildDocument({ markdown: '價格3×4元' }, config('zh-Hant', 'left'));
+    expect(flowLines(cells)[0]!.line.segments!.find((s) => s.text === '3×4')!.width).toBeCloseTo(30);
   });
 
   it('measures a Latin paragraph of a vertical book with the cells its Chinese marks and upright signs are painted in', () => {

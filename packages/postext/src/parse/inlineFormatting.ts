@@ -1,3 +1,4 @@
+import { applyOrientationMarks, markOrientation, stripOrientationMarks } from './orientationMarks';
 import type { InlineLink, InlineSpan, RefCase } from './types';
 import { injectPlaceholderSpans } from './injectSpans';
 import { sliceSpan } from './links';
@@ -554,9 +555,11 @@ export function plainSpans(spans: readonly InlineSpan[]): InlineSpan[] {
     const { script, smallCaps, links, bold, italic, ...rest } = span;
     if (script || smallCaps || links || bold || italic) changed = true;
     const plain: InlineSpan = { ...rest, bold: false, italic: false };
-    const special = plain.math || plain.mathRender || plain.swatch || plain.ref || plain.chip || plain.captionLabel || plain.footnote;
+    // A run set upright or sideways in vertical text keeps its span: the
+    // mark is about how it stands, not a style.
+    const special = plain.math || plain.mathRender || plain.swatch || plain.ref || plain.chip || plain.captionLabel || plain.footnote || plain.combineUpright || plain.orientation;
     const last = out[out.length - 1];
-    const lastSpecial = last && (last.math || last.mathRender || last.swatch || last.ref || last.chip || last.captionLabel || last.footnote);
+    const lastSpecial = last && (last.math || last.mathRender || last.swatch || last.ref || last.chip || last.captionLabel || last.footnote || last.combineUpright || last.orientation);
     if (!special && last && !lastSpecial) {
       out[out.length - 1] = { ...last, text: last.text + plain.text };
       changed = true;
@@ -574,7 +577,7 @@ export function plainSpans(spans: readonly InlineSpan[]): InlineSpan[] {
 export function stripInlineFormatting(text: string): string {
   const b = MARKUP_BOUNDARY;
   const wrap = (_: string, inner: string): string => b + inner + b;
-  return restoreEscapes(replaceLinkSyntax(replaceLinkSyntax(protectEscapes(text), true, () => b), false, (label) => b + label + b)
+  return restoreEscapes(stripOrientationMarks(replaceLinkSyntax(replaceLinkSyntax(protectEscapes(text), true, () => b), false, (label) => b + label + b), b)
     .replace(INLINE_SMALLCAPS_RE, (_, inner: string) => b + unescapeBrackets(inner) + b) // small caps
     .replace(/`(.+?)`/g, wrap)               // inline code
     .replace(/\*\*(.+?)\*\*/g, wrap)          // bold
@@ -910,7 +913,7 @@ export function parseInlineFormatting(text: string): InlineSpan[] {
   // run — so a link inside, across or around emphasis never changes how
   // the text splits into spans — and become ranges once the spans exist.
   const hrefs: string[] = [];
-  const cleaned = stripNonEmphasisFormatting(markSmallCaps(protectEscapes(text)), hrefs);
+  const cleaned = stripNonEmphasisFormatting(markOrientation(markSmallCaps(protectEscapes(text))), hrefs);
   const spans: InlineSpan[] = [];
 
   // Triple markers (bold+italic) first, then double (bold) — longest first.
@@ -949,6 +952,6 @@ export function parseInlineFormatting(text: string): InlineSpan[] {
   for (const s of spans) if (ESCAPED_RE.test(s.text)) s.text = restoreEscapes(s.text);
   // Small caps first: its marks split spans without moving link ranges,
   // which are taken from the finished spans.
-  const marked = applySmallCapsMarks(dropMarkupBoundaries(spans));
+  const marked = applyOrientationMarks(applySmallCapsMarks(dropMarkupBoundaries(spans)));
   return hrefs.length > 0 ? takeLinkMarks(marked, hrefs) : marked;
 }

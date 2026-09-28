@@ -24,7 +24,13 @@ export function injectPlaceholderSpans<T>(
       out.push(span);
       continue;
     }
-    const sc = span.smallCaps ? { smallCaps: true } : {};
+    // Small capitals and the orientation marks of vertical text stay on
+    // every piece, the placeholder's span included.
+    const sc = {
+      ...(span.smallCaps ? { smallCaps: true } : {}),
+      ...(span.combineUpright ? { combineUpright: true } : {}),
+      ...(span.orientation ? { orientation: span.orientation } : {}),
+    };
     let last = 0;
     while (from >= 0) {
       if (from > last) {

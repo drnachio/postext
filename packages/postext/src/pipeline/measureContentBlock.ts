@@ -24,6 +24,7 @@ import { resolveBlockKind, uppercasePreservingLength, type BlockKind, type Block
 import { runMeasurement } from './buildMeasurement';
 import { linkSegments } from '../measure/links';
 import { composesAsCjk } from '../measure/cjkCompose';
+import { measuringVertically } from '../measure/vertical';
 import { resolveRefSpans, resolveSwatchSpans, shiftResourceBlockX } from './resourceLayout';
 import { chipContextOf, resolveChipSpans } from './chips';
 import type { ResourceNumberingMap } from './resourceNumbering';
@@ -234,7 +235,10 @@ export function measureContentBlock(
     contentBlock = { ...contentBlock, spans: contentBlock.spans.map((s) => (s.smallCaps ? s : { ...s, smallCaps: true })) };
   }
 
-  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.swatch || s.chip || s.script || s.smallCaps);
+  // The orientation marks of vertical text change nothing in horizontal
+  // text, which is measured as before them.
+  const vertical = measuringVertically();
+  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.swatch || s.chip || s.script || s.smallCaps || (vertical && (s.combineUpright || s.orientation)));
 
   // List items reserve horizontal space for indent + bullet + gap.
   const {

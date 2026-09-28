@@ -59,6 +59,16 @@ export interface InlineSpan {
    *  reduced size (see `SMALL_CAPS_SIZE_RATIO`), capitals keep the full
    *  size. */
   smallCaps?: boolean;
+  /** Tate-chu-yoko (`:tcy[12]`): in vertical text
+   *  (`layout.writingMode: 'vertical-rl'`) the span's characters are set
+   *  side by side in one upright cell of one em, squeezed across when
+   *  wider. No effect in horizontal text. */
+  combineUpright?: boolean;
+  /** How the span's characters stand in vertical text: `'upright'`
+   *  (`:upright[GDP]`), each in an upright cell of its own; `'sideways'`
+   *  (`:sideways[12]`), the whole run turned with the line. No effect in
+   *  horizontal text. */
+  orientation?: 'upright' | 'sideways';
   /** Marks this span as a resource caption's numbered label (e.g. "Figure 1.")
    *  so renderers can paint it in the configured label colour. Flows span →
    *  token → segment, mirroring {@link ref}. */

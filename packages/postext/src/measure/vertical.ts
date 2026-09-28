@@ -18,7 +18,7 @@
 import type { CjkRegion, WritingMode } from '../types';
 import type { CjkClass } from './cjkClasses';
 import { measureTextWidth, measureInkBox, onTextWidthCacheClear } from './canvas';
-import { isVerticalCell, verticalCellEms, verticalRuns } from '../writingMode';
+import { isVerticalCell, verticalCellEms, verticalRuns, type UprightDigits } from '../writingMode';
 import { graphemesOf } from './graphemes';
 import { DEFAULT_CENTRAL_BASELINE } from '../vdt';
 
@@ -26,6 +26,7 @@ const FONT_SIZE_RE = /(\d*\.?\d+)px/;
 
 let measureWritingMode: WritingMode = 'horizontal-tb';
 let measureRegion: CjkRegion = 'mainland';
+let measureUprightDigits: UprightDigits = 2;
 
 /** Set the writing mode text is measured in, and the Chinese region whose
  *  cells it uses (the mainland interpunct takes half a cell). The build
@@ -40,6 +41,18 @@ export function setMeasureWritingMode(mode: WritingMode, region: CjkRegion = mea
  *  horizontal outside a build. */
 export function getMeasureWritingMode(): WritingMode {
   return measureWritingMode;
+}
+
+/** Set how many ASCII digits a number may have to be set in one upright
+ *  cell in vertical text (`cjk.uprightDigits`; 0: none). The build does,
+ *  from the document's configuration, and puts back what it found. */
+export function setMeasureUprightDigits(digits: UprightDigits): void {
+  measureUprightDigits = digits;
+}
+
+/** See {@link setMeasureUprightDigits}; 2 outside a build. */
+export function getMeasureUprightDigits(): UprightDigits {
+  return measureUprightDigits;
 }
 
 /** The Chinese region vertical cells are measured for. */
@@ -96,10 +109,21 @@ export function cellAdvance(grapheme: string, font: string, vertical: boolean, c
  */
 export function verticalTextWidth(text: string, font: string, measureRun: (run: string) => number = (run) => measureTextWidth(run, font)): number {
   let width = 0;
-  for (const run of verticalRuns(graphemesOf(text), measureRegion)) {
-    width += run.cell === undefined ? measureRun(run.text) : cellAdvance(run.text, font, true);
+  for (const run of verticalRuns(graphemesOf(text), measureRegion, measureUprightDigits)) {
+    width += run.cell === undefined ? measureRun(run.text) : run.glyph.orient === 'tcy' ? fontEm(font) : cellAdvance(run.text, font, true);
   }
   return width;
+}
+
+/** How many times tracking follows the characters of `text` in a vertical
+ *  line: once per grapheme, a number set in one cell (tate-chu-yoko)
+ *  counting as one. */
+export function verticalTrackCount(text: string): number {
+  let n = 0;
+  for (const run of verticalRuns(graphemesOf(text), measureRegion, measureUprightDigits)) {
+    n += run.glyph.orient === 'tcy' ? 1 : graphemesOf(run.text).length;
+  }
+  return n;
 }
 
 /**
@@ -111,7 +135,7 @@ export function verticalTextWidth(text: string, font: string, measureRun: (run: 
  */
 export function flowTextWidth(text: string, font: string): number {
   // eslint-disable-next-line no-control-regex
-  if (measureWritingMode === 'vertical-rl' && /[^\u0000-\u007F]/.test(text)) return verticalTextWidth(text, font);
+  if (measureWritingMode === 'vertical-rl' && (/[^\u0000-\u007F]/.test(text) || (measureUprightDigits > 0 && /[0-9]/.test(text)))) return verticalTextWidth(text, font);
   return measureTextWidth(text, font);
 }
 

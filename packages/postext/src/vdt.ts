@@ -255,6 +255,18 @@ export interface VDTLineSegment {
    *  word spaces leave it as it is. Its `text` is empty, or the space the
    *  author typed there (which it replaces). */
   autospace?: boolean;
+  /** Vertical text: the segment is one tate-chu-yoko cell set by
+   *  `:tcy[…]`: its characters side by side in one upright cell, `width`
+   *  one em (and the segment's `tracking`, after the cell), squeezed
+   *  across when their natural width exceeds the em. Short numbers set in
+   *  one cell by `cjk.uprightDigits` carry no flag: the renderers find
+   *  them as the measurer does (`verticalRuns`). Absent elsewhere. */
+  tcy?: true;
+  /** Vertical text: the author's orientation for the segment's text
+   *  (`:upright[…]`: every character upright in a one-em cell;
+   *  `:sideways[…]`: the whole text turned with the line, at its
+   *  horizontal width). Absent elsewhere. */
+  orientation?: 'upright' | 'sideways';
 }
 
 export interface VDTLine {

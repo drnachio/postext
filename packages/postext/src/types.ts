@@ -2890,6 +2890,15 @@ export interface CjkConfig {
    *  before characters are spread, and shrinks down to ⅛ em when the line
    *  takes one more character. */
   latinSpacing?: Dimension;
+  /** Tate-chu-yoko (縱中橫) in vertical text: a number of at most this many
+   *  ASCII digits is set side by side in one upright cell (`2026年9月28日`:
+   *  `9` and `28` upright, `2026` sideways). `0` turns it off; default
+   *  `2`. The whole number or none of it: under `2` a three-digit number
+   *  stays sideways. A number touching a Latin letter (`A4`, `mp3`) or
+   *  written with a decimal point or digit grouping (`3.14`, `10,000`)
+   *  stays sideways. `:tcy[…]`, `:upright[…]` and `:sideways[…]` set a
+   *  run apart by hand. No effect in horizontal text. */
+  uprightDigits?: 0 | 2 | 3 | 4;
   /** The character grid (字格): a type area authored in characters per line
    *  and lines per page (see {@link CjkGridConfig}). Off by default. */
   grid?: CjkGridConfig;
@@ -2951,6 +2960,7 @@ export interface ResolvedCjkConfig {
   trimLineStart: boolean;
   hangingPunctuation: CjkHangingPunctuation;
   latinSpacing: Dimension;
+  uprightDigits: 0 | 2 | 3 | 4;
   grid: ResolvedCjkGridConfig;
 }
 

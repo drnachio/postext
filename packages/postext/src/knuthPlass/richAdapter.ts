@@ -60,6 +60,10 @@ interface RichToken {
   /** Ends on a closed dash the next, touching token follows: a free break
    *  after it (see `markDashJoins` in `measure/rich.ts`). */
   dashJoin?: boolean;
+  /** Vertical text: a `:tcy[…]` cell, a `:upright[…]` or `:sideways[…]`
+   *  run (see `measure/rich.ts`). */
+  tcy?: true;
+  orientation?: 'upright' | 'sideways';
 }
 
 export function richTokensToItems(
@@ -261,6 +265,8 @@ export function reconstructRichLines(
           ...(token.script ? { script: token.script, fontString: token.scriptFont, baselineShift: token.baselineShift } : {}),
           ...(token.stacked === 'first' ? { stacked: true } : {}),
           ...(token.smallCaps ? { smallCaps: true } : {}),
+          ...(token.tcy ? { tcy: true as const } : {}),
+          ...(token.orientation ? { orientation: token.orientation } : {}),
         });
         textParts.push(cleanText);
       } else if (it.type === 'glue' && meta) {

@@ -26,7 +26,7 @@
 
 import type { CjkRegion } from '../types';
 import { DEFAULT_CENTRAL_BASELINE } from '../vdt';
-import { verticalRuns, CORNER_OFFSET_EM, type VerticalGlyph } from '../writingMode';
+import { forcedVerticalRuns, verticalRuns, CORNER_OFFSET_EM, type ForcedOrientation, type VerticalGlyph } from '../writingMode';
 import { graphemeCount, graphemesOf } from '../measure/graphemes';
 import { markPieces, type MarkCutRule } from '../measure/markCuts';
 import { measureRunWidth } from '../measure/canvas';
@@ -36,6 +36,9 @@ export interface VerticalPaintState {
   region: CjkRegion;
   /** `VDTFlowFrame.centralBaselines` of the page. */
   axes?: Record<string, number>;
+  /** `cjk.uprightDigits`: a number of at most this many digits stands in
+   *  one upright cell (as the measurer found it, `verticalRuns`). */
+  uprightDigits?: number;
 }
 
 let paintState: VerticalPaintState | null = null;
@@ -270,13 +273,16 @@ export function fillFlowText(
   mode: TextPaintMode = 'fill',
   tracking?: number,
   cuts: MarkCutRule = 'text',
+  /** The orientation the author gave the text (`VDTLineSegment.tcy` /
+   *  `orientation`); vertical text only. */
+  orient?: ForcedOrientation,
 ): void {
   const state = paintState;
   if (!state) {
     putHorizontal(ctx, text, x, baseline, mode, cuts);
     return;
   }
-  paintVertical(ctx, state, text, x, baseline, mode, tracking);
+  paintVertical(ctx, state, text, x, baseline, mode, tracking, orient);
 }
 
 function paintVertical(
@@ -287,6 +293,7 @@ function paintVertical(
   y: number,
   mode: TextPaintMode,
   trackingArg: number | undefined,
+  orient?: ForcedOrientation,
 ): void {
   const font = ctx.font;
   const { em, family, prefix } = parseFont(font);
@@ -303,11 +310,17 @@ function paintVertical(
   const twin = twins.get(family);
   const twinFont = twin ? `${prefix}${JSON.stringify(twin)}` : undefined;
   let cx = x;
-  for (const run of verticalRuns(graphemesOf(text), state.region)) {
+  const graphemes = graphemesOf(text);
+  const runs = orient ? forcedVerticalRuns(graphemes, orient) : verticalRuns(graphemes, state.region, state.uprightDigits ?? 0);
+  for (const run of runs) {
     if (run.cell === undefined) {
       // The frame turns it sideways: painted as it is, the letters tracked.
       put(ctx, run.text, cx, baseline, mode);
       cx += ctx.measureText(run.text).width;
+      continue;
+    }
+    if (run.glyph.orient === 'tcy') {
+      cx += paintCombined(ctx, run.text, cx, axis, em, central, mode) + tracking;
       continue;
     }
     cx += paintCell(ctx, run.text, run.glyph, cx, axis, em * run.cell, em, central, mode, twinFont, tracking !== 0) + tracking;
@@ -369,6 +382,34 @@ function paintCell(
   if (baseFont !== undefined) ctx.font = baseFont;
   if (spacing !== undefined) ctx.letterSpacing = spacing;
   return cell;
+}
+
+/** Tate-chu-yoko: `text` side by side in one upright cell of one em
+ *  (`em` px along the line) centred on `(x + em / 2, axis)`, squeezed
+ *  across to the em when wider; no tracking inside. Returns the cell's
+ *  advance. */
+function paintCombined(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  axis: number,
+  em: number,
+  central: number,
+  mode: TextPaintMode,
+): number {
+  const spacing = ctx.letterSpacing;
+  const tracked = spacing !== '' && spacing !== '0px';
+  if (tracked) ctx.letterSpacing = '0px';
+  const w = ctx.measureText(text).width;
+  const k = w > em ? em / w : 1;
+  ctx.save();
+  ctx.translate(x + em / 2, axis);
+  ctx.rotate(-Math.PI / 2);
+  if (k !== 1) ctx.scale(k, 1);
+  put(ctx, text, -w / 2, central, mode);
+  ctx.restore();
+  if (tracked) ctx.letterSpacing = spacing;
+  return em;
 }
 
 /**
