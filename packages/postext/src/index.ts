@@ -48,6 +48,7 @@ export type {
   TocConfig,
   IndexConfig,
   IndexGroupsConfig,
+  IndexGroupBy,
   ResolvedIndexConfig,
   OutlineIndexMark,
   TocLevelConfig,

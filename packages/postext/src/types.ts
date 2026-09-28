@@ -3617,8 +3617,29 @@ export interface IndexConfig {
   /** Language whose alphabetical order sorts the entries (a BCP 47 tag).
    *  Default: the document language. */
   locale?: string;
+  /** What the group heads are (#182):
+   *  - `'letter'`: the first letter of the sort key (up to postext 1.7 the
+   *    only grouping);
+   *  - `'pinyin'`: an entry starting with a Han character files under the
+   *    Latin initial of its pinyin reading (A–Z; 贾宝玉 under J), a Latin
+   *    sort key under its letter (`sort="jia bao yu"` joins J);
+   *  - `'stroke'`: under the stroke count of its first character (一畫,
+   *    二畫 …; 一画 … in Simplified Chinese);
+   *  - `'none'`: no heads; symbols, numbers and words are set apart by the
+   *    groups' `marginTop` only;
+   *  - `'auto'` (default): `'pinyin'` in Simplified Chinese (`zh`,
+   *    `zh-Hans`, `zh-CN`), `'stroke'` in Traditional Chinese (`zh-Hant`,
+   *    `zh-TW`, `zh-HK`), `'letter'` in any other language.
+   *
+   *  The entries sort in the collation the heads come from (a
+   *  `zh-Hant` index grouped by pinyin sorts by pinyin). A browser without
+   *  Chinese collation data sets a pinyin or stroke index with no heads. */
+  groupBy?: IndexGroupBy;
   groups?: IndexGroupsConfig;
 }
+
+/** See {@link IndexConfig.groupBy}. */
+export type IndexGroupBy = 'auto' | 'letter' | 'pinyin' | 'stroke' | 'none';
 
 export interface ResolvedIndexConfig {
   fontFamily: string;
@@ -3638,6 +3659,7 @@ export interface ResolvedIndexConfig {
   /** Unset labels follow the document language. */
   see: { label?: string; alsoLabel?: string; italic: boolean };
   locale?: string;
+  groupBy: IndexGroupBy;
   groups: {
     enabled: boolean;
     fontFamily: string;
