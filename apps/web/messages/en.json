@@ -313,6 +313,10 @@
     "figure": "Figure",
     "part": "Part"
   },
+  "Showreel": {
+    "kicker": "Showreel · 2 min",
+    "title": "Postext in two minutes"
+  },
   "About": {
     "eyebrow": "Why Postext",
     "titleLine1": "Editorial layout,",

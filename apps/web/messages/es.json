@@ -313,6 +313,10 @@
     "figure": "Figura",
     "part": "Parte"
   },
+  "Showreel": {
+    "kicker": "Vídeo · 2 min",
+    "title": "Postext en dos minutos"
+  },
   "About": {
     "eyebrow": "Por qué Postext",
     "titleLine1": "Maquetación editorial,",

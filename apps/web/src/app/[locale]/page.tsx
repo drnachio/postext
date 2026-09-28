@@ -1,6 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 import { Navbar } from "@/components/landing/Navbar";
 import { HeroSection } from "@/components/landing/HeroSection";
+import { ShowreelSection } from "@/components/landing/ShowreelSection";
 import { AboutSection } from "@/components/landing/AboutSection";
 import { FiguresSection } from "@/components/landing/FiguresSection";
 import { FeaturesSection } from "@/components/landing/FeaturesSection";
@@ -27,6 +28,7 @@ export default async function Home({
       <Navbar />
       <main id="main-content" role="main">
         <HeroSection />
+        <ShowreelSection />
         <AboutSection />
         <FiguresSection />
         <div className="h-14 md:h-20" aria-hidden="true" />
