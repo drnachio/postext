@@ -2,7 +2,7 @@
 title: "Sal y aceite"
 ---
 
-# Tortilla \\ de patatas {style="receta" art="tortilla" kicker="Huevos y patatas" time="45 min" level="Dificultad media" season="Todo el año" note="¡con cebolla, siempre!" lead="La de casa: patata pochada despacio en mucho aceite de oliva, huevo apenas cuajado y diez minutos de reposo para que la patata se empape. Con cebolla, como la de la abuela; sin ella, si en tu casa se discute."}
+# Tortilla \\ de patatas {style="tortilla" kicker="Huevos y patatas" time="45 min" level="Dificultad media" season="Todo el año" note="¡con cebolla, siempre!" lead="La de casa: patata pochada despacio en mucho aceite de oliva, huevo apenas cuajado y diez minutos de reposo para que la patata se empape. Con cebolla, como la de la abuela; sin ella, si en tu casa se discute."}
 
 :::callout{type="card" label="PARA 4"}
 :::columns{count=2}
@@ -34,7 +34,7 @@ title: "Sal y aceite"
 
 **Guarda el aceite.** Colado y en un tarro, sirve para freír la próxima tortilla.
 
-# Gazpacho \\ andaluz {style="receta" art="gazpacho" kicker="Sopas frías" time="25 min + 2 h de nevera" level="Fácil" season="De junio a septiembre" note="¡bien frío!" lead="En muchas casas andaluzas se bebe en vaso, recién sacado de la nevera. Pide tomates maduros de verdad y el aceite en hilo con la batidora en marcha, que lo deja cremoso y anaranjado."}
+# Gazpacho \\ andaluz {style="gazpacho" kicker="Sopas frías" time="25 min + 2 h de nevera" level="Fácil" season="De junio a septiembre" note="¡bien frío!" lead="En muchas casas andaluzas se bebe en vaso, recién sacado de la nevera. Pide tomates maduros de verdad y el aceite en hilo con la batidora en marcha, que lo deja cremoso y anaranjado."}
 
 :::callout{type="card" label="PARA 6"}
 :::columns{count=2}

@@ -35,7 +35,7 @@
     { "followup": "EF-111", "package": "postext", "note": "bodyText.maxRuntTracking is 0: a runt fix's negative tracking is measured but never painted (gotcha runt-tracking-unpainted)" },
     { "followup": "EF-14", "package": "postext", "note": "locale is 'es' or 'en-us', the exact codes: any other tag falls back to American English patterns (gotcha hyphenation-locales)" }
   ],
-  "engine": { "postext": "1.8.0" },
+  "engine": { "postext": "1.4.1" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["es", "en"] },
   "capture": {
@@ -66,5 +66,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-26",
-  "updated": "2026-09-28"
+  "updated": "2026-09-27"
 }

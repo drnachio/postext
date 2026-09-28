@@ -15,11 +15,11 @@ En el collado paramos a comer. Hay una fuente que no sale en el mapa, un caño d
 
 El mediodía solar cae aquí pasadas las dos, por el horario de verano. A esa hora las sombras se esconden debajo de las piedras y la laguna, vista desde el collado, parece una chapa que alguien ha dejado olvidada entre las paredes.
 
-# Mediodía {style="lamina" art="mediodia" n="II" hora="14:06"}
+# Mediodía {style="mediodia" n="II" hora="14:06"}
 
-# Tormenta {style="pliego" art="tormenta" n="III" hora="16:40"}
+# Tormenta {style="tormenta" n="III" hora="16:40"}
 
-# Tormenta {style="pliego-recto" art="tormenta"}
+# Tormenta {style="tormenta-recto"}
 
 # Once segundos {hora="15:00–19:50 · 2180–1950 m"}
 
@@ -29,7 +29,7 @@ Nos metemos bajo el voladizo de un bloque del tamaño de una casa. Primero cae g
 
 Hacia las siete y media la tormenta se va valle abajo y deja el cielo roto en franjas. El sol asoma un momento por debajo de las nubes, ya pegado al horizonte, y enciende la cresta de un color que no dura ni tres minutos (:ref{id="atardecer" text="lámina IV"}). Bajamos al refugio empapados, junto al arroyo, que ahora baja lleno.
 
-# Noche {style="lamina" art="noche" n="V" hora="22:10"}
+# Noche {style="noche" n="V" hora="22:10"}
 
 # Primera nieve {hora="22:10–09:00 · 1950 m"}
 

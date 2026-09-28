@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 033 · Recipe card: ingredients beside the method ═══════
 // https://postext.dev/en/cookbook/recipe-card
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Young Serif, Figtree, Caveat (SIL OFL 1.1) · Needs postext ≥ 1.8.0
+// Fonts: Young Serif, Figtree, Caveat (SIL OFL 1.1) · Needs postext ≥ 1.4.1
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
   from 'https://esm.sh/postext';
 
@@ -95,9 +95,9 @@ const pill = (id, after) => text(id, `{attr.${id}}`, TEXT, 8.4, after ? { anchor
   { to: `#${after}`, edge: 'right-of' }, offset: { x: mm(1.8) } } : at(0, BAND - 13), {
   fontWeight: 600, box: { backgroundColor: col('card'), borderRadius: mm(3),
     padding: { top: mm(1.1), right: mm(2.8), bottom: mm(1.1), left: mm(2.8) } } });
-// One heading style for every recipe; each heading names its drawing: art="tortilla".
-const opener = { id: 'receta', advancedDesign: { enabled: true, slot: { elements: [
-    { kind: 'image', id: 'art', resourceId: '{attr.art}', // filled in per heading, like a text
+// One heading style per recipe: the same design, each with its own drawing.
+const opener = (art) => ({ id: art, advancedDesign: { enabled: true, slot: { elements: [
+    { kind: 'image', id: 'art', resourceId: art,
       placement: { anchor: { to: 'page', edge: 'top-left' },
         size: { width: mm(PAGE.w), height: mm(BAND) } } },
     text('note', '{attr.note}', HAND, 19, { anchor: { to: 'page', edge: 'top-left' },
@@ -113,7 +113,7 @@ const opener = { id: 'receta', advancedDesign: { enabled: true, slot: { elements
     // so the card starts below the lead without a minHeight.
     text('lead', '{attr.lead}', TEXT, 10.5, at(0, BAND + 6, { width: mm(122) }),
       { italic: true, lineHeight: 1.45 }),
-  ] } } };
+  ] } } });
 // #endregion
 
 // Folios at the foot of the outer corner: the book on versos, the recipe on rectos.
@@ -145,7 +145,7 @@ const config = () => ({ // a factory, never a shared object (gotcha: config-cach
     // opener outside the column's clip: kept in the column, the drawing is cut at the top margin.
     { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' } },
   ] },
-  headingStyles: [opener],
+  headingStyles: [opener('tortilla'), opener('gazpacho')],
   // Olive dashes for the whole document: an olive lists.color on the column style would turn
   // the step numbers olive too (gotcha: box-list-colour-numbers).
   unorderedLists: { bulletChar: '–', color: col('olive'),
