@@ -12,6 +12,8 @@ const slicesCache = new Map<string, Promise<FontSlice[] | null>>();
 /** Files fetched at once for one face: a Chinese chapter touches 50 to 90
  *  slices of about 50 KB each. */
 const FETCH_CONCURRENCY = 6;
+/** Times a file that failed is fetched again before it is left out. */
+const FETCH_RETRIES = 1;
 
 function fontsourceId(family: string): string {
   return family.toLowerCase().replace(/\s+/g, '-');
@@ -71,25 +73,48 @@ function fetchAndDecompress(url: string): Promise<Uint8Array> {
 }
 
 /** The files of a Fontsource face, or null when its stylesheet cannot be
- *  had (no such weight or style, offline). */
+ *  had. A stylesheet the CDN does not have (the italic of a family with no
+ *  italics, a weight it lacks) is remembered as null; a failed fetch
+ *  (offline, a dropped connection) is tried again next time. */
 function fetchSlices(family: string, weight: number, style: 'normal' | 'italic'): Promise<FontSlice[] | null> {
   const url = fontsourceCssUrl(family, weight, style);
   const cached = slicesCache.get(url);
   if (cached) return cached;
   const promise = (async (): Promise<FontSlice[] | null> => {
+    let res: Response;
     try {
-      const res = await fetch(url, { mode: 'cors' });
-      if (!res.ok) return null;
-      const slices = parseFontsourceCss(await res.text(), url);
-      return slices.length > 0 ? slices : null;
+      res = await fetch(url, { mode: 'cors' });
     } catch {
+      slicesCache.delete(url);
       return null;
     }
+    if (!res.ok) return null;
+    const slices = parseFontsourceCss(await res.text(), url);
+    return slices.length > 0 ? slices : null;
   })();
   slicesCache.set(url, promise);
-  // A network failure is not remembered.
-  void promise.then((slices) => { if (!slices) slicesCache.delete(url); });
   return promise;
+}
+
+/** Each file of a face, fetched with one retry; a file that still fails is
+ *  left out, so a CDN hiccup costs the characters of that file (reported as
+ *  missing glyphs), not the face. Rejects only when every file failed. */
+async function fetchFaceFiles(slices: readonly FontSlice[]): Promise<Uint8Array[]> {
+  const files = await mapLimit(slices, FETCH_CONCURRENCY, async (slice) => {
+    for (let attempt = 0; ; attempt++) {
+      try {
+        return await fetchAndDecompress(slice.url);
+      } catch (err) {
+        if (attempt >= FETCH_RETRIES) {
+          console.warn(`[pdfFontProvider] left out ${slice.url}: ${err instanceof Error ? err.message : String(err)}`);
+          return null;
+        }
+      }
+    }
+  });
+  const got = files.filter((file): file is Uint8Array => file !== null);
+  if (got.length === 0) throw new Error(`font fetch failed: none of the ${slices.length} file(s) of the face could be had`);
+  return got;
 }
 
 /** `jobs` run at most `limit` at a time, results in order. */
@@ -183,8 +208,7 @@ export function createPdfFontProvider(): PdfFontProvider {
     const slices = (await fetchSlices(family, targetWeight, style))
       ?? (style === 'italic' ? await fetchSlices(family, targetWeight, 'normal') : null);
     if (slices) {
-      const picked = pickSlices(slices, request?.codePoints);
-      return mapLimit(picked, FETCH_CONCURRENCY, (slice) => fetchAndDecompress(slice.url));
+      return fetchFaceFiles(pickSlices(slices, request?.codePoints));
     }
 
     try {
