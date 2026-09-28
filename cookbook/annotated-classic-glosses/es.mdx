@@ -15,7 +15,7 @@ El comienzo del capítulo VII de *Alice’s Adventures in Wonderland*, la merien
 
 ### 1 · Deja el corte exterior para las glosas
 
-El código es [la respuesta corta](#la-respuesta-corta) de arriba. En una [disposición en columna y media](/es/docs/configuration#tipos-de-disposición), `sideColumnPercent: 26` da a la columna lateral 33 de los 127 mm que hay entre márgenes, y al texto le quedan 89,5 mm después del medianil de 4,5 mm. Con `sideColumnRole: 'floats'` el texto de Carroll no entra en la columna lateral, que solo recibe lo que se coloca en ella con `span: 'side'`. Postext 1.4.1 no compone notas al pie ([qué no se soporta](/es/docs/document-format#qué-no-se-soporta)); en el margen, cada glosa queda a la altura de la línea que explica y las notas no le quitan líneas al pie de la columna de texto. Los dos estilos de glosa solo se diferencian en el color del filete y del título, así que el lector distingue una glosa sobre una palabra de otra sobre historia antes de leerla.
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. En una [disposición en columna y media](/es/docs/configuration#tipos-de-disposición), `sideColumnPercent: 26` da a la columna lateral 33 de los 127 mm que hay entre márgenes, y al texto le quedan 89,5 mm después del medianil de 4,5 mm. Con `sideColumnRole: 'floats'` el texto de Carroll no entra en la columna lateral, que solo recibe lo que se coloca en ella con `span: 'side'`. Una [nota al pie](/es/docs/document-format#notas-al-pie) espera al pie de la columna, bajo un filete; en el margen, cada glosa queda a la altura de la línea que explica y las glosas no le quitan líneas a la columna de texto. Los dos estilos de glosa solo se diferencian en el color del filete y del título, así que el lector distingue una glosa sobre una palabra de otra sobre historia antes de leerla.
 
 ### 2 · Refleja la página para que el canal siga al corte exterior
 
@@ -66,9 +66,9 @@ Para una edición que se lee página a página en pantalla, desactiva los márge
 +    mirror: false } };
 ```
 
-### Lleva las notas largas al final del capítulo
+### Lleva las notas largas al pie de la página
 
-Una nota más larga que el párrafo que explica puede escribirse como nota al pie de Markdown: <RecipeLink slug="endnotes-instead-of-footnotes">Notas finales a dos columnas en lugar de notas al pie</RecipeLink> convierte cada `[^1]` en un número volado y reúne las notas en una página aparte, tras el capítulo.
+Escribe como nota al pie la que no quepa en el margen, con `[^1]` en el texto y su definición `[^1]:` bajo el párrafo: Postext la compone al pie de la columna de texto, a 89,5 mm de ancho y bajo un filete corto, y las glosas conservan el canal. <RecipeLink slug="novel-footnotes-column-foot">Notas al pie de la columna que las cita</RecipeLink> muestra cómo dar estilo a esas notas.
 
 ## Errores frecuentes
 

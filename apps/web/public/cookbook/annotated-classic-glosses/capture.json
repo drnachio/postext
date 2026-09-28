@@ -3,20 +3,20 @@
   "slug": "annotated-classic-glosses",
   "sourceHash": "28574bc8aeb39a35a36793cb563045e1c9f8e7be5713b4c422056c5f10a008c3",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.6.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T08:39:27.349Z",
+  "capturedAt": "2026-09-28T07:57:56.103Z",
   "variants": {
     "en": {
-      "hash8": "dc7bd3ad",
-      "vdtHash": "a13eb839b124e92a062b3862d7e0cc183f1dc1d4",
+      "hash8": "2468fb05",
+      "vdtHash": "049a0a0d8b1d507eb126c2b88daebb95f4deb600",
       "timings": {
-        "importMs": 83,
-        "fontsMs": 13,
-        "buildMs": 27,
-        "totalMs": 793,
+        "importMs": 771,
+        "fontsMs": 4017,
+        "buildMs": 44,
+        "totalMs": 6224,
         "builds": 2
       },
       "specimen": {
@@ -50,7 +50,7 @@
           "h": 1500,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 117978,
+          "bytes": 117914,
           "alt": "Opening page 81: A Mad Tea-Party."
         },
         {
@@ -61,7 +61,7 @@
           "h": 1500,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 142066,
+          "bytes": 142120,
           "alt": "Page 82."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1500,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 116258,
+          "bytes": 116244,
           "alt": "Page 83."
         }
       ],
@@ -100,7 +100,7 @@
       },
       "sandbox": {
         "file": "annotated-classic-glosses.postext",
-        "bytes": 29608
+        "bytes": 29617
       },
       "detected": {
         "apis": [
@@ -274,6 +274,7 @@
           "chips",
           "column-and-a-half",
           "drop-caps",
+          "footnotes",
           "heading-attributes",
           "opener-band",
           "opener-design",

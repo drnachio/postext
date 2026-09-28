@@ -15,7 +15,7 @@ The opening of chapter VII of *Alice’s Adventures in Wonderland*, the mad tea-
 
 ### 1 · Give the fore-edge to the glosses
 
-The code is [the short answer](#the-short-answer) above. In a [column-and-a-half layout](/en/docs/configuration#layout-types), `sideColumnPercent: 26` gives the side column 33 mm of the 127 mm between the margins, and the text keeps 89.5 mm after the 4.5 mm gutter. `sideColumnRole: 'floats'` keeps Carroll out of the side column, which holds only what is placed there with `span: 'side'`. Postext 1.4.1 sets no footnotes ([what is not supported](/en/docs/document-format#what-is-not-supported)); in the margin each gloss stands level with the line it explains, and the notes take no lines from the foot of the text column. The two gloss styles differ only in the colour of the hairline and the title, so the reader can tell a gloss on a word from a gloss on history before reading it.
+The code is [the short answer](#the-short-answer) above. In a [column-and-a-half layout](/en/docs/configuration#layout-types), `sideColumnPercent: 26` gives the side column 33 mm of the 127 mm between the margins, and the text keeps 89.5 mm after the 4.5 mm gutter. `sideColumnRole: 'floats'` keeps Carroll out of the side column, which holds only what is placed there with `span: 'side'`. A [footnote](/en/docs/document-format#footnotes) waits at the foot of the column, under a rule; in the margin each gloss stands level with the line it explains, and the glosses take no lines from the text column. The two gloss styles differ only in the colour of the hairline and the title, so the reader can tell a gloss on a word from a gloss on history before reading it.
 
 ### 2 · Mirror the page so the channel follows the fore-edge
 
@@ -66,9 +66,9 @@ For an edition read one page at a time on screen, turn mirroring off: `'outer'` 
 +    mirror: false } };
 ```
 
-### Send the long notes to the end of the chapter
+### Send the long notes to the foot of the page
 
-Write a note longer than the paragraph it explains as a Markdown footnote: <RecipeLink slug="endnotes-instead-of-footnotes">Endnotes in two columns instead of footnotes</RecipeLink> turns each `[^1]` into a raised number and sets the notes on a page of their own after the chapter.
+Write a note too long for the margin as a footnote, `[^1]` in the text and its `[^1]:` definition under the paragraph: Postext sets it at the foot of the text column, 89.5 mm wide under a short rule, and the glosses keep the channel. <RecipeLink slug="novel-footnotes-column-foot">Footnotes at the foot of the column that cites them</RecipeLink> styles those notes.
 
 ## Pitfalls
 

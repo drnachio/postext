@@ -25,7 +25,7 @@ guide needs a fix.
   and correct.
 - **Runs on its own.** The composed `script.js` runs in CodePen, in a downloaded `.html`
   file or pasted into any `<script type="module">`, with no build step.
-- **Honest about gaps.** When Postext cannot do something (footnotes, pipe tables, three
+- **Honest about gaps.** When Postext cannot do something (line numbers, pipe tables, three
   body columns), the recipe shows the workaround and says so; it never fakes the feature.
 - **Permanent.** A recipe has a catalogue number (Nº) that is never reused and an English
   slug that never changes (renames go through `formerSlugs`).
