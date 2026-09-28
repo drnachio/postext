@@ -276,7 +276,7 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
     case 'indexSeeUnknown':
       return `${payload.index ? `:::index{index="${payload.index}"} · ` : ''}"${payload.target}" — ${labels.warningsIndexSeeUnknownDetail}`;
     case 'indexRangeUnclosed':
-      return `"${payload.term}" range="${payload.missing}" — ${labels.warningsIndexRangeUnclosedDetail}`;
+      return `:index{term="${payload.term}" range="${payload.missing}"} — ${labels.warningsIndexRangeUnclosedDetail}`;
     case 'unknownHeadingStyle':
       return `H${payload.level} {style="${payload.style}"} — ${labels.warningsUnknownHeadingStyleDetail}`;
     case 'chipOverlap':
