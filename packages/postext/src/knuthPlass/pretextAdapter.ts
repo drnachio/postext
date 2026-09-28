@@ -4,6 +4,7 @@
  * optimal breakpoint sequence.
  */
 
+import { graphemeCount } from '../measure/graphemes';
 import type { PreparedTextWithSegments } from '@chenglou/pretext';
 import type { VDTLine, VDTLineSegment } from '../vdt';
 import { createBoundingBox } from '../vdt';
@@ -94,7 +95,7 @@ export function pretextSegmentsToItems(
 
     switch (kind) {
       case 'text': {
-        items.push({ type: 'box', width: w, sourceIndex: i, chars: segments[i]!.length });
+        items.push({ type: 'box', width: w, sourceIndex: i, chars: graphemeCount(segments[i]!) });
         const seg = segments[i]!;
         const last = seg[seg.length - 1];
         if (kinds[i + 1] !== 'text') break;
@@ -158,10 +159,10 @@ export function pretextSegmentsToItems(
         break;
       case 'preserved-space':
       case 'tab':
-        items.push({ type: 'box', width: w, sourceIndex: i, chars: segments[i]!.length });
+        items.push({ type: 'box', width: w, sourceIndex: i, chars: graphemeCount(segments[i]!) });
         break;
       default:
-        items.push({ type: 'box', width: w, sourceIndex: i, chars: segments[i]!.length });
+        items.push({ type: 'box', width: w, sourceIndex: i, chars: graphemeCount(segments[i]!) });
         break;
     }
   }

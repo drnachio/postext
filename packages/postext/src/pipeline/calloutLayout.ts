@@ -61,6 +61,7 @@ import {
   type VDTDesignTextBlock,
 } from '../vdt';
 import { buildFontString, measureBlock, measureRichBlock, measureTextWidth } from '../measure';
+import { graphemeCount } from '../measure/graphemes';
 import { applyStyleAttrs, isMarkerBlock } from './buildHelpers';
 import { resetLinePositions } from './placement';
 import { raggedLooseLines } from './raggedLines';
@@ -524,7 +525,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   const cornerLeftRoom = hasIcon && cornerIcon && !cornerRight ? Math.max(0, cornerIconW / 2 + gapPx - padL) : 0;
   const titleIndentPx = Math.max(cornerLeftRoom, dimensionToPx(style.titleStyle.indent, dpi, titleFontPx));
   const hasTitle = (!input.continuation || repeatedTitle) && titleText.trim().length > 0;
-  const titleWidthOf = (t: string): number => measureTextWidth(t, titleFont) + titleTrackingPx * t.length;
+  const titleWidthOf = (t: string): number => measureTextWidth(t, titleFont) + titleTrackingPx * graphemeCount(t);
 
   // Box width: `fill` uses the given width less the marker column; `auto`
   // shrink-wraps the title.

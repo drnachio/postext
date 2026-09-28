@@ -1,5 +1,6 @@
 import type { VDTLine } from '../vdt';
 import type { TextAlign } from '../types';
+import type { CjkLineBreakLevel } from './cjkClasses';
 
 /** Where the Knuth–Plass breaker broke a paragraph: the path it ran on
  *  (the plain and the rich path number their items differently) and the
@@ -152,6 +153,10 @@ export interface MeasureBlockOptions {
    *  flagged `repeatedHyphen`. Plain text holding a compound is then
    *  measured by the formatted-text breaker. Unset: off. */
   repeatHyphen?: boolean;
+  /** Where lines of CJK text may break (`cjk.lineBreak`, resolved): see
+   *  `CjkLineBreakLevel`. Unset: the document's level, which the build sets
+   *  (`setCjkLineBreak`); `gb` outside a build. Only CJK text reads it. */
+  cjkLineBreak?: CjkLineBreakLevel;
 }
 
 export const SOFT_HYPHEN = '\u00AD';

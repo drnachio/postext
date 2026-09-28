@@ -109,6 +109,9 @@ interface BlockTextStyle {
  * `justifiedSpaceWidth` is set, spaces advance by it instead of their
  * measured width. Tracks the current canvas font/fillStyle to skip
  * redundant state changes (segments overwhelmingly share styling).
+ * `tracking` is the block's and the line's (the context's `letterSpacing`
+ * on entry); a segment's own tracking (a justified CJK line) is painted on
+ * top of it and the context is left as it was found.
  */
 function renderSegments(
   ctx: CanvasRenderingContext2D,
@@ -117,10 +120,12 @@ function renderSegments(
   baseline: number,
   style: BlockTextStyle,
   justifiedSpaceWidth?: number,
+  tracking = 0,
 ): void {
   let x = startX;
   let currentFont = '';
   let currentFill = '';
+  let spacing = tracking;
   for (const seg of segments) {
     if (seg.kind === 'space') {
       x += justifiedSpaceWidth ?? seg.width;
@@ -162,15 +167,21 @@ function renderSegments(
       ctx.fillStyle = fill;
       currentFill = fill;
     }
+    const segSpacing = tracking + (seg.tracking ?? 0);
+    if (segSpacing !== spacing) {
+      ctx.letterSpacing = `${segSpacing}px`;
+      spacing = segSpacing;
+    }
     ctx.fillText(seg.text, x, baseline + (seg.baselineShift ?? 0));
     x += seg.width;
   }
+  if (spacing !== tracking) ctx.letterSpacing = `${tracking}px`;
 }
 
 /** Whether a segment paints differently from the block's plain text. */
 function segmentIsStyled(s: VDTLineSegment): boolean {
   return !!s.bold || !!s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined
-    || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined;
+    || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined || s.tracking !== undefined;
 }
 
 function renderLine(
@@ -181,6 +192,7 @@ function renderLine(
   columnWidth: number,
   columnX: number,
   trailing = 0,
+  tracking = 0,
 ): void {
   ctx.textBaseline = 'alphabetic';
 
@@ -205,7 +217,7 @@ function renderLine(
     }
     if (spaceCount > 0 && ((!line.isLastLine && !line.ragged) || naturalWidth > effectiveWidth)) {
       const justifiedSpaceWidth = (effectiveWidth - wordWidth) / spaceCount;
-      renderSegments(ctx, segments, line.bbox.x, line.baseline, style, justifiedSpaceWidth);
+      renderSegments(ctx, segments, line.bbox.x, line.baseline, style, justifiedSpaceWidth, tracking);
       return;
     }
   }
@@ -219,7 +231,7 @@ function renderLine(
     for (const seg of segments) contentWidth += seg.width;
     const slack = Math.max(0, effectiveWidth - (contentWidth - trailing));
     const startX = line.bbox.x + (textAlign === 'center' ? slack / 2 : slack);
-    renderSegments(ctx, segments, startX, line.baseline, style);
+    renderSegments(ctx, segments, startX, line.baseline, style, undefined, tracking);
     return;
   }
 
@@ -228,7 +240,7 @@ function renderLine(
   // block (bold/italic/math/ref/own font or colour); otherwise one fillText
   // paints the line.
   if (segments && segments.some(segmentIsStyled)) {
-    renderSegments(ctx, segments, line.bbox.x, line.baseline, style);
+    renderSegments(ctx, segments, line.bbox.x, line.baseline, style, undefined, tracking);
     return;
   }
 
@@ -319,7 +331,7 @@ export function renderBlock(
   for (const line of block.lines) {
     const tracking = (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0);
     if (tracking !== 0) ctx.letterSpacing = `${tracking}px`;
-    renderLine(ctx, line, style, block.textAlign, block.bbox.width, block.bbox.x, lineTrailingTracking(line, tracking));
+    renderLine(ctx, line, style, block.textAlign, block.bbox.width, block.bbox.x, lineTrailingTracking(line, tracking), tracking);
     if (tracking !== 0) ctx.letterSpacing = '0px';
   }
   if (block.strikethroughText) {

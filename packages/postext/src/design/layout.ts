@@ -23,6 +23,7 @@ import { dimensionToPx } from '../units';
 import { resolveDesignLineHeight } from '../defaults/headerFooter';
 import { createBoundingBox, pictureTraits, type BoundingBox } from '../vdt';
 import { buildFontString, measureTextWidth } from '../measure';
+import { graphemeCount } from '../measure/graphemes';
 import { hyphenateText, withoutSlashJoints } from '../hyphenate';
 import { BREAKING_SPACE_RUNS_SPLIT_RE, NO_BREAK_SPACES, isBreakingSpaceRun } from '../measure/spaces';
 import {
@@ -1090,7 +1091,7 @@ function layoutTextElement(
   // below zero, however tight.
   const trackingPx = dimPx(el.letterSpacing, dpi, fontSizePx);
   const letterSpacingPx = Number.isFinite(trackingPx) ? trackingPx : 0;
-  const measure: TextMeasure = (t) => Math.max(0, measureTextWidth(t, fontString) + letterSpacingPx * t.length);
+  const measure: TextMeasure = (t) => Math.max(0, measureTextWidth(t, fontString) + letterSpacingPx * graphemeCount(t));
   const box = resolveBox(el.box, dpi, fontSizePx);
   const padding: ResolvedPadding = box?.padding ?? { top: 0, right: 0, bottom: 0, left: 0 };
   // Inline marks: a text that carries any is laid out in runs; one that
@@ -1188,7 +1189,7 @@ function layoutTextElement(
     // Justified lines fill their room by stretching their word spaces, and
     // a word that does not fit may be cut at a syllable to fill (EF-109).
     const fill = justify && (el.hyphenate ?? false);
-    const measureIn = (t: string, font: string): number => Math.max(0, measureTextWidth(t, font) + letterSpacingPx * t.length);
+    const measureIn = (t: string, font: string): number => Math.max(0, measureTextWidth(t, font) + letterSpacingPx * graphemeCount(t));
     let lineNo = 0;
     paragraphs.forEach((para, p) => {
       const offsetOf = (i: number): number => {

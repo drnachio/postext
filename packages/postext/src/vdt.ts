@@ -29,6 +29,7 @@ import type {
   ResolvedTocConfig,
   ResolvedIndexConfig,
   ResolvedFootnotesConfig,
+  ResolvedCjkConfig,
   PageRole,
   PartState,
   PostextConfig,
@@ -81,6 +82,9 @@ export interface ResolvedConfig {
   index: ResolvedIndexConfig;
   /** Footnotes (`[^id]`): placement, numbering, style. */
   footnotes: ResolvedFootnotesConfig;
+  /** East Asian typography (`cjk`), with `'auto'` resolved from the
+   *  document language. */
+  cjk: ResolvedCjkConfig;
   /** The document language (`PostextConfig.locale`) when the config sets
    *  one; `resolvedLocale()` falls back to the hyphenation locale. Spelled-
    *  out heading numbers follow it. */
@@ -219,6 +223,13 @@ export interface VDTLineSegment {
    *  stacked as it is; one that flows text (HTML inline runs) gives this
    *  segment a box that takes no room. */
   stacked?: boolean;
+  /** Tracking of this segment alone, px added after every grapheme of its
+   *  text and already counted in `width`: the inter-character spacing of a
+   *  justified CJK line (see `measure/cjkCompose.ts`). Renderers paint the
+   *  segment with it on top of the block's and the line's tracking; a
+   *  segment carrying it is never painted with the rest of its line in one
+   *  run. Absent on lines that are not CJK. */
+  tracking?: number;
 }
 
 export interface VDTLine {
@@ -230,7 +241,9 @@ export interface VDTLine {
    *  its text runs from `bbox.x` to the right edge of its block,
    *  `block.bbox.x + block.bbox.width`. So does a last line wider than that
    *  edge, whose spaces are narrowed to fit. An overlay or a hit test on the
-   *  painted text widens or narrows such a line to that edge. */
+   *  painted text widens or narrows such a line to that edge. A justified
+   *  CJK line is set to the measure in its segments (their `tracking`, its
+   *  word spaces at their final width), so its `width` is the measure. */
   bbox: BoundingBox;
   baseline: number;
   /** The line ends inside a word, or at least not at a space. Mostly the
@@ -241,7 +254,9 @@ export interface VDTLine {
    *  run, and on Knuth–Plass for ragged text), after an em or en dash set
    *  closed between words (`bodyText.breakAfterDashes`, on every breaker but
    *  pretext's first-fit one; no `hardHyphen`, the line ends on the dash),
-   *  at a URL joint, between ideographs. Pretext's first-fit breaker (a
+   *  at a URL joint. A break next to a CJK character (between ideographs,
+   *  before a Latin word in Chinese text) adds nothing and leaves it false,
+   *  so the column-end hyphen rules never retry it. Pretext's first-fit breaker (a
    *  heading, a paragraph set line by line without formatting) leaves it
    *  false after a hyphen or a dash of the text. Whether a final `-` is the
    *  text's own is read from `hardHyphen`. */
@@ -264,8 +279,15 @@ export interface VDTLine {
   /** Whether this is the last line of the paragraph (ragged even when justified) */
   isLastLine?: boolean;
   /** Set ragged inside a justified paragraph: a line a URL made unfillable
-   *  (its few word spaces would stretch past the loose-line threshold). */
+   *  (its few word spaces would stretch past the loose-line threshold), or
+   *  a CJK line flagged {@link cjkLoose}. */
   ragged?: boolean;
+  /** A justified CJK line that needed more inter-character spacing than the
+   *  cap (½ em, or `bodyText.maxJustifyTracking` when it is set): it is set
+   *  with the cap, short of the measure and {@link ragged}, and reported as
+   *  a `cjkLooseLine` content warning. Typically the line before a long
+   *  Latin word or web address that cannot break. Absent otherwise. */
+  cjkLoose?: boolean;
   /** Approximate character offset in the original markdown source where this line begins.
    *  A line that opens with a backslash escape (`\$40`) begins at its backslash. */
   sourceStart?: number;
@@ -1268,6 +1290,13 @@ export type ContentWarning = ContentWarningBase & (
    *  (`missingCells`). `row` / `col` locate the first issue; `count` is
    *  how many the table has. */
   | { kind: 'raggedTableGrid'; resourceId: string; reason: 'spanOverlap' | 'missingCells'; row: number; col: number; count: number }
+  /** A justified line of CJK text that would need more space between its
+   *  characters than the cap (½ em, or `bodyText.maxJustifyTracking` when
+   *  set) to reach the measure: it is set with the cap and ends short
+   *  (`VDTLine.cjkLoose`). Usually the line before a long Latin word or web
+   *  address that cannot break. `text` is the line's text. Found by the
+   *  layout, so `collectContentWarnings` never returns it. */
+  | { kind: 'cjkLooseLine'; text: string }
 );
 
 /** What a build reports in `VDTDocument.warnings`: a construct the layout

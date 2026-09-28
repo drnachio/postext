@@ -259,8 +259,12 @@ function renderTextSegment(
   fontDecl: string,
   colorDecl: string,
   color: string,
+  /** The tracking the line box already carries (block + line); a segment's
+   *  own (a justified CJK line) is added to it. */
+  tracking = 0,
 ): string {
-  const pos = `position:absolute;left:${x.toFixed(3)}px;top:${top};white-space:pre;`;
+  const spacingDecl = seg.tracking !== undefined ? `letter-spacing:${tracking + seg.tracking}px;` : '';
+  const pos = `position:absolute;left:${x.toFixed(3)}px;top:${top};white-space:pre;${spacingDecl}`;
   const text = esc(seg.text);
   if (seg.refResourceId !== undefined) {
     // Anchors carry an explicit color so the UA link blue never leaks in.
@@ -331,7 +335,8 @@ function segmentHref(seg: VDTLineSegment): string | undefined {
 function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<string>): string {
   // The tracking after the last glyph is advance, not ink: centring and
   // right alignment leave it out (EF-153), as the canvas does.
-  const trailing = lineTrailingTracking(line, (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0));
+  const lineTracking = (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0);
+  const trailing = lineTrailingTracking(line, lineTracking);
   if (!line.segments || line.segments.length === 0) {
     const plainIndent = line.bbox.x - block.bbox.x;
     const plainWidth = line.bbox.width - trailing;
@@ -381,7 +386,7 @@ function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<st
     const fontDecl = font !== quoteFontString(block.fontString) ? `font:${font};` : '';
     const colorDecl = color !== block.color ? `color:${color};` : '';
     const top = seg.baselineShift ? `${seg.baselineShift.toFixed(3)}px` : '0';
-    return renderTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, color);
+    return renderTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, color, lineTracking);
   };
   for (let i = 0; i < segs.length; i++) {
     const seg = segs[i]!;
@@ -587,7 +592,7 @@ function renderResourceLine(
       const fontDecl = font !== baseFont ? `font:${font};` : '';
       const colorDecl = segColor !== color ? `color:${segColor};` : '';
       const top = seg.baselineShift ? `${seg.baselineShift.toFixed(3)}px` : '0';
-      return renderTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, segColor);
+      return renderTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, segColor, line.letterSpacing ?? 0);
     };
     const links = linkRuns();
     let x = 0;

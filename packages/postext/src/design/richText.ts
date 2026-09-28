@@ -7,6 +7,7 @@
 import { parseInlineFormatting } from '../parse/inlineFormatting';
 import { buildFontString, measureTextWidth } from '../measure';
 import { scriptMetrics, stackedScriptPairs } from '../measure/rich';
+import { graphemeCount } from '../measure/graphemes';
 import { hyphenateText } from '../hyphenate';
 import { NO_BREAK_SPACES, isBreakingSpace } from '../measure/spaces';
 import type { TextOverflow } from '../types';
@@ -123,7 +124,7 @@ export class RichMeasurer {
   constructor(readonly rt: RichDesignText, readonly letterSpacingPx: number) {}
 
   private widthOf(text: string, style: number): number {
-    return Math.max(0, measureTextWidth(text, this.rt.styles[style]!.font) + this.letterSpacingPx * text.length);
+    return Math.max(0, measureTextWidth(text, this.rt.styles[style]!.font) + this.letterSpacingPx * graphemeCount(text));
   }
 
   /** The pieces of `[a, b)`, one per change of style. */

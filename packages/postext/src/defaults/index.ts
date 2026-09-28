@@ -21,6 +21,7 @@ import { stripHeadingStylesDefaults } from './headingStyles';
 import { stripTocDefaults } from './toc';
 import { stripFootnotesDefaults } from './footnotes';
 import { stripIndexDefaults } from './indexConfig';
+import { stripCjkDefaults } from './cjk';
 
 export { dimensionsEqual, colorsEqual, resolveColorValue, applyPaletteToConfig, applyPaletteToResolvedConfig, DEFAULT_COLOR_PALETTE, DEFAULT_MAIN_COLOR, DEFAULT_MAIN_COLOR_ID, DEFAULT_MAIN_COLOR_NAME, DEFAULT_MAIN_COLOR_HEX, cloneDefaultColorPalette, isDefaultColorPalette } from './shared';
 export { PAGE_SIZE_PRESETS, DEFAULT_CUT_LINES, DEFAULT_PAGE_CONFIG, DEFAULT_PAGE_NUMBERING, resolvePageConfig, stripPageDefaults } from './page';
@@ -47,6 +48,7 @@ export { DEFAULT_HEADING_STYLES, resolveHeadingStylesConfig, stripHeadingStylesD
 export { DEFAULT_TOC_CONFIG, resolveTocConfig, stripTocDefaults } from './toc';
 export { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults } from './footnotes';
 export { DEFAULT_INDEX_CONFIG, resolveIndexConfig, stripIndexDefaults } from './indexConfig';
+export { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOfLocale, defaultCjkLineBreak } from './cjk';
 
 export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   const result: PostextConfig = { ...config };
@@ -181,6 +183,12 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
     result.footnotes = strippedFootnotes;
   } else {
     delete result.footnotes;
+  }
+  const strippedCjk = stripCjkDefaults(config.cjk);
+  if (strippedCjk) {
+    result.cjk = strippedCjk;
+  } else {
+    delete result.cjk;
   }
   const strippedToc = stripTocDefaults(config.toc);
   if (strippedToc) {

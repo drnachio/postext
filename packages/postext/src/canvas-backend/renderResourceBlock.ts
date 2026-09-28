@@ -319,7 +319,7 @@ function paintLine(
 ): void {
   const tracking = line.letterSpacing ?? 0;
   if (tracking !== 0) ctx.letterSpacing = `${tracking}px`;
-  paintLineRuns(ctx, line, font, boldFont, italicFont, boldItalicFont, color, linkColor, labelColor);
+  paintLineRuns(ctx, line, font, boldFont, italicFont, boldItalicFont, color, linkColor, labelColor, tracking);
   if (tracking !== 0) ctx.letterSpacing = '0px';
 }
 
@@ -333,6 +333,7 @@ function paintLineRuns(
   color: string,
   linkColor: string,
   labelColor: string,
+  tracking = 0,
 ): void {
   ctx.textBaseline = 'alphabetic';
   if (line.segments && line.segments.length > 0) {
@@ -358,7 +359,10 @@ function paintLineRuns(
         : seg.captionLabel
           ? labelColor
           : color;
+      // A justified CJK line spreads its characters per segment.
+      if (seg.tracking !== undefined) ctx.letterSpacing = `${tracking + seg.tracking}px`;
       ctx.fillText(seg.text, x, line.baseline + (seg.baselineShift ?? 0));
+      if (seg.tracking !== undefined) ctx.letterSpacing = `${tracking}px`;
       x += seg.width;
     }
     return;

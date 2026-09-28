@@ -293,6 +293,25 @@ export function locateContentWarnings(doc: VDTDocument, warnings: readonly Conte
   });
 }
 
+/** A `cjkLooseLine` warning for each justified CJK line set short with the
+ *  capped tracking (`VDTLine.cjkLoose`), on the page it was placed on. */
+export function cjkLooseLineWarnings(doc: VDTDocument): ContentWarning[] {
+  const out: ContentWarning[] = [];
+  for (const block of doc.blocks) {
+    for (const line of block.lines) {
+      if (!line.cjkLoose) continue;
+      out.push({
+        kind: 'cjkLooseLine',
+        text: line.text,
+        ...(line.sourceStart !== undefined ? { sourceStart: line.sourceStart } : {}),
+        ...(line.sourceEnd !== undefined ? { sourceEnd: line.sourceEnd } : {}),
+        ...(block.pageIndex >= 0 ? { pageIndex: block.pageIndex } : {}),
+      });
+    }
+  }
+  return out;
+}
+
 /** Where a warning sits, for a message: `page 3` / `offset 120`. A
  *  configuration warning names its setting in the text instead. */
 function where(w: LayoutWarning | ContentWarning | ConfigWarning | RenderWarning | HeadingDesignCut): string {
@@ -375,6 +394,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
       break;
     case 'missingImage':
       text = `No image for file "${w.fileId}"${w.resourceId !== undefined ? ` (resource "${w.resourceId}")` : ''} — painted as a placeholder`;
+      break;
+    case 'cjkLooseLine':
+      text = `The justified line "${w.text}" needs more space between its characters than the cap allows — it is set short of the measure`;
       break;
     case 'unknownNumberFormat':
       text = `${w.path}: unknown number format "${w.value}" — numbered as ${w.used}`;

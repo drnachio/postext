@@ -331,6 +331,21 @@ La propiedad `bodyText.optimalLineBreaking` (por defecto: `true`) controla qué 
 Cuando Knuth-Plass está activo y no produce cortes válidos (algo que puede ocurrir con columnas extremadamente estrechas o palabras más largas que el ancho de columna), el motor recurre automáticamente al corte voraz para ese párrafo.
 
 
+### Chino, japonés y coreano
+
+Un párrafo con más caracteres CJK que espacios entre palabras lo compone el compositor CJK, no Knuth-Plass. Cada hueco entre dos caracteres es un sitio donde la línea puede cortarse (salvo donde lo impiden las reglas de `cjk.lineBreak`), así que una búsqueda óptima no tiene nada que sopesar; las líneas se llenan una tras otra, y un carácter que no puede abrir línea se lleva consigo el anterior. Las reglas están en [Tipografía de Asia oriental](/es/docs/configuration#tipografía-de-asia-oriental).
+
+Una línea justificada de un párrafo así, salvo la última, se ensancha hasta la medida en el orden que fija clreq (§6.2.2.4):
+
+1. Los espacios entre palabras occidentales, por igual, hasta medio cuadratín cada uno.
+2. Todos los huecos entre caracteres, por igual: entre caracteres han, entre un han y un signo de puntuación, entre un han y una palabra latina. Nunca dentro de una palabra latina, de un número o de una raya o unos puntos suspensivos de dos cuadratines, y nunca junto a un conector (～, –, una raya — sola) o una barra.
+
+La última línea de un párrafo se compone sin ensanchar. El espaciado se guarda por segmento de la línea (`VDTLineSegment.tracking`), de modo que el canvas, el HTML y el PDF pintan las mismas posiciones, y el Sandbox coloca el cursor en el carácter pulsado.
+
+Una línea que necesitaría más de medio cuadratín entre sus caracteres —o más que `bodyText.maxJustifyTracking`, si está definido— se compone con ese máximo, corta, y se señala con un aviso de contenido `cjkLooseLine` (en el Sandbox, **Línea CJK corta**). Suele deberse a una palabra latina larga o a una dirección web que no pudo subir a ella. Una línea sin ningún carácter CJK, como el comienzo de una dirección web larga, queda en bandera sin el aviso.
+
+Para el resaltado de líneas flojas, una línea CJK es floja según su espaciado: su proporción es 1 más su espaciado en octavos de cuadratín, así que con el umbral por defecto de 3 se señala una línea cuyos caracteres se separan más de un cuarto de cuadratín (`lineLooseness(line, fontSizePx)` da la proporción). El equilibrado de columnas puede alargar un párrafo CJK una línea: corta las líneas un poco antes de la medida, un octavo de cuadratín cada vez hasta dos cuadratines, y las vuelve a ensanchar hasta ella.
+
 ## Depuración de líneas flojas
 
 Incluso con Knuth-Plass y separación silábica, algunas líneas serán más flojas de lo ideal — especialmente en columnas estrechas con palabras largas, o en idiomas con pocas oportunidades de separación silábica. La función de depuración **resaltado de líneas flojas** te ayuda a encontrar estas líneas problemáticas al instante.

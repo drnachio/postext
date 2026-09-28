@@ -3,12 +3,20 @@ import type { MeasuredBlock, MeasurementCache, MeasureBlockOptions } from './typ
 import { measureBlock } from './plain';
 import { measureRichBlock } from './rich';
 import { getHyphenationLocale } from '../hyphenate';
+import { hasCJK } from './cjk';
+import { getCjkLineBreak } from './cjkClasses';
 
 /** Options that change a block's lines, joined into its cache key. The
  *  active hyphenation dictionary is one: soft hyphens (and the syllables an
  *  overlong word is divided at) depend on it. */
 function optionsKey(options: MeasureBlockOptions | undefined): string {
   return `${options?.textAlign ?? ''}\x00${options?.hyphenate ?? ''}\x00${options?.firstLineIndentPx ?? ''}\x00${options?.hangingIndent ?? ''}\x00${options?.optimal ?? ''}\x00${options?.maxStretchRatio ?? ''}\x00${options?.minShrinkRatio ?? ''}\x00${options?.runtPenalty ?? ''}\x00${options?.runtMinCharacters ?? ''}\x00${options?.looseness ?? ''}\x00${options?.letterSpacingPx ?? ''}\x00${options?.hyphenationZonePx ?? ''}\x00${getHyphenationLocale()}${options?.justifyTrackingPx ? `\x00${options.justifyTrackingPx}` : ''}${options?.runtGraded ? '\x00rg' : ''}${options?.avoidHyphenAtLines?.length ? `\x00ah${options.avoidHyphenAtLines.join(',')}` : ''}`;
+}
+
+/** The CJK line-break level, joined to the key of a text that holds CJK
+ *  only, so every other key is unchanged. */
+function cjkKey(text: string, options: MeasureBlockOptions | undefined): string {
+  return hasCJK(text) ? `\x00cjk:${options?.cjkLineBreak ?? getCjkLineBreak()}` : '';
 }
 
 function buildPlainCacheKey(
@@ -18,7 +26,7 @@ function buildPlainCacheKey(
   lineHeightPx: number,
   options: MeasureBlockOptions | undefined,
 ): string {
-  return `${text}\x00${font}\x00${maxWidthPx}\x00${lineHeightPx}\x00${optionsKey(options)}`;
+  return `${text}\x00${font}\x00${maxWidthPx}\x00${lineHeightPx}\x00${optionsKey(options)}${cjkKey(text, options)}`;
 }
 
 /** A chip is one placeholder char in the span text: its words and resolved
@@ -47,7 +55,15 @@ function buildRichCacheKey(
   // formula or a swatch colour what a placeholder paints: they join the key
   // only when set, so the common keys are unchanged.
   const spanKey = spans.map((s) => `${s.text}|${s.bold}|${s.italic}|${s.ref?.resourceId ?? ''}${s.footnote ? `|fn:${s.footnote.id}` : ''}${s.chip ? chipCacheKey(s.chip) : ''}${s.math ? mathCacheKey(s) : ''}${s.swatch ? `|sw:${s.swatch.color}` : ''}${s.script ? `|${s.script}` : ''}${s.smallCaps ? '|sc' : ''}`).join('\x01');
-  return `R\x00${spanKey}\x00${fonts[0]}\x00${fonts[1]}\x00${fonts[2]}\x00${fonts[3]}\x00${maxWidthPx}\x00${lineHeightPx}\x00${optionsKey(options)}`;
+  return `R\x00${spanKey}\x00${fonts[0]}\x00${fonts[1]}\x00${fonts[2]}\x00${fonts[3]}\x00${maxWidthPx}\x00${lineHeightPx}\x00${optionsKey(options)}${cjkKey(spanKey, options)}${cjkLinkKey(spans, spanKey)}`;
+}
+
+/** The ranges of the Markdown links of a text that holds CJK: the CJK
+ *  composer gives linked characters segments of their own. Empty for any
+ *  other text, so its key is unchanged. */
+function cjkLinkKey(spans: InlineSpan[], spanKey: string): string {
+  if (!spans.some((s) => s.links !== undefined && s.links.length > 0) || !hasCJK(spanKey)) return '';
+  return `\x00ln:${spans.map((s) => (s.links ?? []).map((l) => `${l.start}-${l.end}`).join(',')).join(';')}`;
 }
 
 /** A cached result must read exactly like a fresh measure: the block's own

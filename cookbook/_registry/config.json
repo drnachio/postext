@@ -119,6 +119,13 @@
       "es": "Matemáticas"
     }
   },
+  "cjk": {
+    "slug": "configuration",
+    "heading": {
+      "en": "East Asian typography",
+      "es": "Tipografía de Asia oriental"
+    }
+  },
   "header": {
     "slug": "configuration",
     "heading": {

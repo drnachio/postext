@@ -8,6 +8,7 @@
 import type { VDTLineSegment } from '../vdt';
 import type { KPItem } from './types';
 import { adjustLine } from './breakpoints';
+import { graphemeCount } from '../measure/graphemes';
 
 /**
  * Tracking (px after every character; negative tightens) of the line made
@@ -49,7 +50,7 @@ export function lineTracking(items: readonly KPItem[], lineStart: number, breakA
   return adjustLine(lineWidth - width, stretch, shrink, chars, trackingPerChar, spaces > 0 && !noTracking).tracking;
 }
 
-/** Add `tracking` px a character to the width of every text segment (word,
+/** Add `tracking` px a grapheme to the width of every text segment (word,
  *  reference, script run) of a line; spaces, formulas, swatches and chips
  *  keep theirs. Two stacked scripts advance as far as the longer run: the
  *  first keeps its zero width, the second takes the tracking of the longer
@@ -63,13 +64,13 @@ export function trackSegments(segments: VDTLineSegment[], tracking: number): num
     if (seg.kind !== 'text') continue;
     const next = segments[i + 1];
     if (seg.stacked && next?.kind === 'text') {
-      const delta = tracking * Math.max(seg.text.length, next.text.length);
+      const delta = tracking * Math.max(graphemeCount(seg.text), graphemeCount(next.text));
       next.width += delta;
       added += delta;
       i++;
       continue;
     }
-    const delta = tracking * seg.text.length;
+    const delta = tracking * graphemeCount(seg.text);
     seg.width += delta;
     added += delta;
   }
