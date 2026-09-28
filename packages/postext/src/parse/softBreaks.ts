@@ -14,6 +14,7 @@
 
 import type { InlineSpan } from './types';
 import { sliceLinks } from './links';
+import { FOOTNOTE_PLACEHOLDER } from './inlineFormatting';
 
 /** Hangul syllables and jamo, in every width. */
 function isHangul(cp: number): boolean {
@@ -138,7 +139,11 @@ export function joinEastAsianLines(
   let drop: number[] | undefined;
   for (let k = 1; k < text.length - 1; k++) {
     if (text.charCodeAt(k) !== 0x20) continue;
-    if (!removesSegmentBreak(codePointBefore(text, k), text.codePointAt(k + 1))) continue;
+    // A footnote marker ending the line belongs to the text before it:
+    // `他说[^1]⏎然后` joins like `他说⏎然后`.
+    let b = k;
+    while (b > 1 && text[b - 1] === FOOTNOTE_PLACEHOLDER) b--;
+    if (!removesSegmentBreak(codePointBefore(text, b), text.codePointAt(k + 1))) continue;
     const from = sourceMap[k];
     const to = sourceMap[k + 1];
     if (from === undefined || to === undefined) continue;

@@ -64,9 +64,14 @@ export function fullwidthMarkupIn(line: string): { typed: string; ascii: string;
   const text = line.slice(lead);
   let found: { typed: string; ascii: string; at: number } | undefined;
   for (const { re, ascii } of FULLWIDTH_MARKUP) {
-    const m = re.exec(text);
-    if (!m || !HAS_FULLWIDTH_RE.test(m[0])) continue;
-    if (!found || m.index < found.at) found = { typed: m[0], ascii: ascii(m[0]), at: m.index };
+    // The first match that holds a fullwidth character (`[^1]` before a
+    // `［＾2］` is ordinary markup).
+    const all = new RegExp(re.source, 'gu');
+    let m: RegExpExecArray | null;
+    while ((m = all.exec(text)) !== null && !HAS_FULLWIDTH_RE.test(m[0])) {
+      if (m[0].length === 0) all.lastIndex++;
+    }
+    if (m && (!found || m.index < found.at)) found = { typed: m[0], ascii: ascii(m[0]), at: m.index };
   }
   if (!found && /^(?:[#＃]{1,6}[ \t\u3000]|[:：]{3})/u.test(text)) {
     const m = FULLWIDTH_ATTRS_RE.exec(text);

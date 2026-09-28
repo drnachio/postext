@@ -75,6 +75,12 @@ describe('a line end between Chinese characters sets no space', () => {
     expect(parseMarkdown('long​\nword')[0]!.text).toBe('long​word');
   });
 
+  it('joins across a footnote marker that ends the line', () => {
+    const md = '士隐道：“善哉！”[^1]\n遂别去。\n\n[^1]: 甲戌侧批。';
+    const [p] = parseMarkdown(md);
+    expect(p!.text).toBe('士隐道：“善哉！”\uE1A6遂别去。');
+  });
+
   it('keeps a space typed inside a line', () => {
     expect(parseMarkdown('甄士隐 贾雨村')[0]!.text).toBe('甄士隐 贾雨村');
   });
@@ -226,6 +232,8 @@ describe('content warnings for Chinese markup', () => {
       '# 第二回｛style="x"｝',
       '',
       '这是＊＊强调＊＊和＊＊另一个＊＊。',
+      '',
+      '见[^1]与［＾2］。',
     ].join('\n');
     const found = kinds(md, 'fullwidthMarkup') as { typed: string; ascii: string; sourceStart?: number; sourceEnd?: number }[];
     expect(found.map((w) => [w.typed, w.ascii])).toEqual([
@@ -235,6 +243,7 @@ describe('content warnings for Chinese markup', () => {
       ['＃', '#'],
       ['｛style="x"｝', '{…}'],
       ['＊＊强调＊＊', '**…**'],
+      ['［＾2］', '[^…]'],
     ]);
     for (const w of found) expect(md.slice(w.sourceStart, w.sourceEnd)).toBe(w.typed);
   });
