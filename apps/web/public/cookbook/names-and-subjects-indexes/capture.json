@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "names-and-subjects-indexes",
-  "sourceHash": "ee7035ca73bcf11090357783a6d0c66442ee56e957a756813c5814d768bd7eee",
+  "sourceHash": "7d6a3f8726a6063853f41ea48439e00bf8521e6dc07ea9aa6a673b6e644541ec",
   "engine": {
     "postext": "1.7.0",
     "postextPdf": "1.7.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-28T09:49:09.266Z",
+  "capturedAt": "2026-09-28T09:58:55.414Z",
   "variants": {
     "en": {
-      "hash8": "c23d5941",
+      "hash8": "e57b1277",
       "vdtHash": "abc2b6e55e034adc2d9612c30c36cc1d0b6a5e84",
       "timings": {
-        "importMs": 7214,
-        "fontsMs": 74,
-        "buildMs": 72,
-        "totalMs": 8224,
+        "importMs": 243,
+        "fontsMs": 62,
+        "buildMs": 76,
+        "totalMs": 1174,
         "builds": 2
       },
       "specimen": {
@@ -390,13 +390,13 @@
       }
     },
     "es": {
-      "hash8": "1e43c5cf",
+      "hash8": "7d751274",
       "vdtHash": "b48ac6ef8eac5e87e51db729d46c10bd1c1c3a7b",
       "timings": {
-        "importMs": 115,
-        "fontsMs": 50,
-        "buildMs": 61,
-        "totalMs": 928,
+        "importMs": 129,
+        "fontsMs": 51,
+        "buildMs": 68,
+        "totalMs": 949,
         "builds": 2
       },
       "specimen": {

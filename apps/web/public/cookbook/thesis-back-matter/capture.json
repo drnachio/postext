@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "thesis-back-matter",
-  "sourceHash": "98ae6e694841173560147487eb4e1ea9146e0af6695ce7072ee9c8943e55af36",
+  "sourceHash": "706ce88e2fefbaa34331d7e3d4dc013398a49fbc2e5207ff51aabd73ba8303ed",
   "engine": {
     "postext": "1.7.0",
     "postextPdf": "1.7.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-28T09:49:09.269Z",
+  "capturedAt": "2026-09-28T09:58:55.423Z",
   "variants": {
     "en": {
-      "hash8": "5331b470",
+      "hash8": "ca82c0ba",
       "vdtHash": "e9d60ef100984eb6334908fe197d3daf771f2b26",
       "timings": {
-        "importMs": 105,
-        "fontsMs": 56,
-        "buildMs": 56,
-        "totalMs": 923,
+        "importMs": 141,
+        "fontsMs": 49,
+        "buildMs": 63,
+        "totalMs": 970,
         "builds": 2
       },
       "specimen": {
@@ -72,7 +72,7 @@
           "h": 1420,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 81938,
+          "bytes": 81948,
           "alt": "Opening page 173: Interview guide. Table A.1. Timing of an interview session."
         },
         {
@@ -422,11 +422,6 @@
           "worst": 1.56
         },
         "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          },
           {
             "check": "sandbox",
             "severity": "info",

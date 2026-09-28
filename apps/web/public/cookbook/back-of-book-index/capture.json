@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "back-of-book-index",
-  "sourceHash": "7e5ef69103b5926c53296c74663fe56973d3c731b64dd898d199bc1f4ce5f3e3",
+  "sourceHash": "2fc65028c8b80777c956586a9f4aece60180fe1283014393fa3aa42984129d89",
   "engine": {
     "postext": "1.7.0",
     "postextPdf": "1.7.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-28T09:49:09.262Z",
+  "capturedAt": "2026-09-28T09:58:55.403Z",
   "variants": {
     "en": {
-      "hash8": "c7a8cd8a",
+      "hash8": "a50f38fd",
       "vdtHash": "c7f1e624bf90550bed5b62f69b3d301932919a12",
       "timings": {
-        "importMs": 7285,
-        "fontsMs": 6451,
-        "buildMs": 58,
-        "totalMs": 14557,
+        "importMs": 495,
+        "fontsMs": 6244,
+        "buildMs": 59,
+        "totalMs": 7533,
         "builds": 2
       },
       "specimen": {
@@ -193,7 +193,7 @@
       },
       "pdf": {
         "file": "back-of-book-index.pdf",
-        "bytes": 200790,
+        "bytes": 200792,
         "pages": 10
       },
       "sandbox": {
@@ -517,13 +517,13 @@
       }
     },
     "es": {
-      "hash8": "ebec96a9",
+      "hash8": "dbd4142c",
       "vdtHash": "9d1482384dc3a95e72c83b7edb688a3adeff615f",
       "timings": {
-        "importMs": 7241,
-        "fontsMs": 1747,
-        "buildMs": 174,
-        "totalMs": 12657,
+        "importMs": 474,
+        "fontsMs": 1481,
+        "buildMs": 198,
+        "totalMs": 5650,
         "builds": 2
       },
       "specimen": {
