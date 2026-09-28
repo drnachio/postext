@@ -378,9 +378,11 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
         .replace('__locale__', payload.locale)
         .replace('__locales__', HYPHENATION_LOCALES.join(', '));
     case 'missingGlyph': {
+      // The first few, then how many more: `a b c … +38`.
       const shown = payload.characters.slice(0, LISTED_GLYPHS).join(' ');
-      const chars = payload.characters.length > LISTED_GLYPHS ? `${shown} …` : shown;
-      return `${faceLabel(payload)} — ${labels.warningsMissingGlyphDetail.replace('__chars__', chars).replace('__count__', String(payload.characters.length))}`;
+      const rest = payload.characters.length - LISTED_GLYPHS;
+      const chars = rest > 0 ? `${shown} … +${rest}` : shown;
+      return `${faceLabel(payload)} — ${labels.warningsMissingGlyphDetail.replace('__chars__', chars)}`;
     }
     case 'variableFontDefaultInstance':
       return `${faceLabel(payload)} — ${labels.warningsVariableFontDetail.replace('__default__', String(payload.defaultWeight)).replace('__weight__', String(payload.weight))}`;

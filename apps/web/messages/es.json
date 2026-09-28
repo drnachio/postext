@@ -2208,7 +2208,7 @@
     "warningsMissingImageTitle": "Imagen no disponible",
     "warningsMissingImageDetail": "falta el archivo de la imagen en el almacenamiento o no se puede decodificar; en su lugar se muestra un marcador de posición",
     "warningsMissingGlyphTitle": "Caracteres sin glifo en una fuente del PDF",
-    "warningsMissingGlyphDetail": "en el último PDF, ningún archivo de esta fuente tenía glifo para __chars__ (__count__ en total); se imprimen como cajas vacías. Elige una familia que los incluya.",
+    "warningsMissingGlyphDetail": "en el último PDF, ningún archivo de esta fuente tenía glifo para __chars__; se imprimen como cajas vacías. Elige una familia que los incluya.",
     "warningsVariableFontTitle": "Fuente variable en el PDF",
     "warningsVariableFontDetail": "el archivo es una fuente variable y el PDF incrusta su instancia por defecto, así que este texto se imprime con peso __default__. Sube un archivo estático para el peso __weight__.",
     "warningsCffEmbeddedWholeTitle": "Fuente CFF grande incrustada entera",

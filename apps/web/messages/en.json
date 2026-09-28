@@ -2208,7 +2208,7 @@
     "warningsMissingImageTitle": "Image not available",
     "warningsMissingImageDetail": "the image file is missing from storage or cannot be decoded; a placeholder is shown instead",
     "warningsMissingGlyphTitle": "Characters missing from a PDF font",
-    "warningsMissingGlyphDetail": "in the last PDF, no file of this font had a glyph for __chars__ (__count__ in all); they print as empty boxes. Choose a family that covers them.",
+    "warningsMissingGlyphDetail": "in the last PDF, no file of this font had a glyph for __chars__; they print as empty boxes. Choose a family that covers them.",
     "warningsVariableFontTitle": "Variable font in the PDF",
     "warningsVariableFontDetail": "the file is a variable font and the PDF embeds its default instance, so this text prints at weight __default__. Upload a static file for weight __weight__.",
     "warningsCffEmbeddedWholeTitle": "Large CFF font embedded whole",
