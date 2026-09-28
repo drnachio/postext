@@ -361,6 +361,46 @@ export function objectKeys(scan: JsScan, open: number): string[] {
   return keys;
 }
 
+/** The offset where `key`'s value starts at the top level of the object
+ *  literal whose `{` is at `open` (the first such key), or -1. */
+export function objectValueAt(scan: JsScan, open: number, key: string): number {
+  const { code, bare } = scan;
+  let depth = 0;
+  let expectKey = true;
+  for (let k = open + 1; k < bare.length; k++) {
+    const c = bare[k];
+    if (depth === 0 && expectKey && !/\s/.test(c)) {
+      expectKey = false;
+      const m = /^(?:([A-Za-z_$][\w$]*)|(['"])((?:\\.|[^\\])*?)\2)\s*:\s*/.exec(code.slice(k, k + 200));
+      if (m && (m[1] ?? m[3]) === key) return k + m[0].length;
+    }
+    if (c === "(" || c === "[" || c === "{") depth++;
+    else if (c === ")" || c === "]" || c === "}") {
+      if (depth === 0) break;
+      depth--;
+    } else if (c === "," && depth === 0) expectKey = true;
+  }
+  return -1;
+}
+
+/** The string a config path holds in `const config = () => ({ … })`
+ *  (`configString(scan, "page.binding")` → "right"), through nested object
+ *  literals only; undefined when it is not a plain string there. */
+export function configString(scan: JsScan, dotted: string): string | undefined {
+  const range = configObjectRange(scan);
+  if (!range) return undefined;
+  let open = range[0];
+  const keys = dotted.split(".");
+  for (const [i, key] of keys.entries()) {
+    const at = objectValueAt(scan, open, key);
+    if (at === -1) return undefined;
+    if (i === keys.length - 1) return /^(['"`])([^'"`\n]*)\1/.exec(scan.code.slice(at, at + 200))?.[2];
+    if (scan.bare[at] !== "{") return undefined;
+    open = at;
+  }
+  return undefined;
+}
+
 /** Top-level keys of `const config = () => ({ … })`, unique, in source order. */
 export function configKeys(js: string, scan: JsScan = scanJs(js)): string[] {
   const range = configObjectRange(scan);

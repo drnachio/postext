@@ -36,22 +36,27 @@ function cjkSliceFor(slices, cp) {
 }
 
 /** Whether Fontsource serves `family` as a Chinese, Japanese or Korean
- *  family (its subsets name the script). */
+ *  family (its subsets name the script). Fails when the API does not
+ *  answer: a CJK face taken for a Latin one would paint in a system face. */
 async function isCjkFamily(family) {
   const meta = await fontsourceMeta(family);
-  return !!meta?.subsets?.some((subset) => /^(chinese|japanese|korean)/.test(subset));
+  if (!meta) throw new Error(`api.fontsource.org did not describe ${family}: reload to try again`);
+  return !!meta.subsets?.some((subset) => /^(chinese|japanese|korean)/.test(subset));
 }
 
 /** faces = { 'Noto Serif TC': ['400', '700'] }, as for loadFonts: the
  *  whole FONTS object may be passed, its other families are left to
  *  loadFonts. Adds one FontFace per file of each CJK face with its
- *  unicodeRange, then loads the files `text` (the sample) touches. Fails
- *  when a character of the sample is in no file. List every weight the
- *  pages use: a weight left to buildWithFonts gets the latin file only.
- *  With { vertical: true } it also loads each family's vertical forms
- *  (brackets, quotes, pause marks) for the canvas, which needs
- *  loadVerticalAlternates imported from postext. Resolves to the number
- *  of files loaded. */
+ *  unicodeRange, then loads the files `text` touches. `text` is what the
+ *  faces set: the sample for the text face; a book in several voices calls
+ *  it once per voice (loadCjkFonts({ 'LXGW WenKai TC': ['400'] }, quotes)),
+ *  so the heading and quotation faces fetch and check only their own
+ *  characters. Fails when a character of `text` is in no file of a face.
+ *  List every weight the pages use: a weight left to buildWithFonts gets
+ *  the latin file only. With { vertical: true } it also loads each
+ *  family's vertical forms (brackets, quotes, pause marks) for the canvas,
+ *  which needs loadVerticalAlternates imported from postext. Resolves to
+ *  the number of files loaded. */
 async function loadCjkFonts(faces, text, { vertical = false } = {}) {
   kitStatus('Loading fonts…');
   let loaded = 0;
@@ -67,7 +72,10 @@ async function loadCjkFonts(faces, text, { vertical = false } = {}) {
         const style = spec.endsWith('i') ? 'italic' : 'normal';
         const slices = await cjkSlices(family, weight, style);
         const missing = [...new Set(text)].filter((ch) => /\S/.test(ch) && !cjkSliceFor(slices, ch.codePointAt(0)));
-        if (missing.length) throw new Error(`${family} ${spec} has no file for ${missing.slice(0, 12).join(' ')}`);
+        if (missing.length) {
+          throw new Error(`${family} ${spec} has no file for ${missing.slice(0, 12).join(' ')}: `
+            + `give each face the text it sets (loadCjkFonts({ '${family}': ['${spec}'] }, text))`);
+        }
         for (const slice of slices) {
           document.fonts.add(new FontFace(family, `url(${slice.url}) format('woff2')`,
             { weight: String(weight), style, unicodeRange: slice.range }));

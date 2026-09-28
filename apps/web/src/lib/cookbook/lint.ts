@@ -18,6 +18,7 @@ import {
   POSTEXT_WORKER_URL,
   configKeys,
   configObjectRange,
+  configString,
   fontFamilies,
   isEngineUrl,
   lineLookup,
@@ -416,13 +417,14 @@ export function lintPen(
 
   // Content files.
   const cjkKit = meta.kit?.includes("cjk") ?? false;
+  let cjkText = false;
   for (const [key, text] of Object.entries(sources.content)) {
     const file = `content.${key}.md`;
-    // Chinese has no spaces: its characters count, 1.7 to the word.
+    // Chinese and Japanese have no spaces: their characters count, 1.7 to the word.
     const length = textLength(text);
     if (length.total > LIMITS.contentWords) {
       fails.push(length.cjk
-        ? `${file}: ${thousands(length.cjk)} Chinese, Japanese or Korean characters${length.words ? ` and ${thousands(length.words)} words` : ""}, ` +
+        ? `${file}: ${thousands(length.cjk)} Chinese or Japanese characters${length.words ? ` and ${thousands(length.words)} words` : ""}, ` +
           `about ${thousands(length.total)} words (at most ${thousands(LIMITS.contentWords)}; ${CJK_CHARS_PER_WORD} characters count as a word)`
         : `${file}: ${length.words} words (at most ${LIMITS.contentWords})`);
     }
@@ -438,6 +440,7 @@ export function lintPen(
       warns.push(...style.warns);
     }
     const odd = nonLatin(text);
+    if (odd.cjk.length) cjkText = true;
     // CJK text is set in faces the cjk block loads by slices, on screen and
     // in the PDF; without it, the kit loads the latin file of every face.
     if (odd.cjk.length && !cjkKit) {
@@ -451,7 +454,14 @@ export function lintPen(
         : `${file}: characters outside Fontsource latin (${shown}) need latin-ext faces in the PDF`);
     }
   }
-  if (cjkKit) lintCjk(ownCode, ownBare, postextNames, pdfOutput, fails, warns);
+  if (cjkKit) lintCjk(ownCode, ownBare, postextNames, pdfOutput && cjkText, cjkText, fails, warns);
+  // A book bound on its right edge (page.binding, or vertical text with no
+  // binding said) lies open mirrored; the cjk block's showBook shows it so.
+  const binding = configString(scan, "page.binding");
+  const rightBound = binding === "right" || (binding === undefined && configString(scan, "layout.writingMode") === "vertical-rl");
+  if (rightBound && /\bshowPages\s*\(/.test(ownBare) && !/\bshowBook\s*\(/.test(ownBare)) {
+    warns.push("script.js: a right-bound book shows its spreads mirrored with showBook(…) from the cjk block (gotcha cjk-spread-order)");
+  }
 
   // Size.
   if (composed.ownLines > LIMITS.ownLines) fails.push(`script.js: ${composed.ownLines} lines of recipe code (at most ${LIMITS.ownLines})`);
@@ -475,27 +485,24 @@ export function lintPen(
   return { fails: [...new Set(fails)], warns: [...new Set(warns)] };
 }
 
-/** What a recipe listing the `cjk` kit block must do: hand the PDF the
- *  faces' files, tag the document with its language, show a right-bound
- *  book mirrored, import what the vertical forms need. */
+/** What a recipe listing the `cjk` kit block must do: when its text is
+ *  Chinese, Japanese or Korean, hand the PDF the faces' files and tag the
+ *  document with its language (a Latin book may list the block for
+ *  showBook alone); import what the vertical forms need. */
 function lintCjk(
   ownCode: string,
   ownBare: string,
   postextNames: Set<string>,
-  pdfOutput: boolean,
+  cjkPdf: boolean,
+  cjkText: boolean,
   fails: string[],
   warns: string[],
 ): void {
-  if (pdfOutput && !/\bcjkPdfProvider\b/.test(ownBare)) {
+  if (cjkPdf && !/\bcjkPdfProvider\b/.test(ownBare)) {
     fails.push("script.js: renderToPdf takes fontProvider: cjkPdfProvider (fontsourceProvider embeds only the latin file of a CJK face; gotcha cjk-fonts-slices)");
   }
-  if (!/\blocale\s*:\s*(['"`])(zh|ja|ko)([-_][A-Za-z]+)*\1/.test(ownCode)) {
+  if (cjkText && !/\blocale\s*:\s*(['"`])(zh|ja|ko)([-_][A-Za-z]+)*\1/.test(ownCode)) {
     warns.push("script.js: set config.locale to the text's language ('zh-Hans', 'zh-Hant'…), not LANG: the tag picks the regional conventions and turns hyphenation off (gotcha cjk-locale-tag)");
-  }
-  const rightBound = /\bbinding\s*:\s*['"`]right['"`]/.test(ownCode)
-    || (/\bwritingMode\s*:\s*['"`]vertical-rl['"`]/.test(ownCode) && !/\bbinding\s*:\s*['"`]left['"`]/.test(ownCode));
-  if (rightBound && /\bshowPages\s*\(/.test(ownBare) && !/\bshowBook\s*\(/.test(ownBare)) {
-    warns.push("script.js: a right-bound book shows its spreads mirrored with showBook(…) from the cjk block (gotcha cjk-spread-order)");
   }
   if (/\bloadCjkFonts\s*\([^;]*\bvertical\s*:\s*true/.test(ownBare) && !postextNames.has("loadVerticalAlternates")) {
     fails.push("script.js: loadCjkFonts(…, { vertical: true }) needs `loadVerticalAlternates` imported from postext");
@@ -604,6 +611,15 @@ export function readReleasedEngine(): { postext?: string; postextPdf?: string } 
     }
   };
   return { postext: version("postext"), postextPdf: version("postext-pdf") };
+}
+
+/** Whether the repository tests take a draft pinned to the next release
+ *  as a preview, the way `pnpm cookbook lint --engine local` does
+ *  (`COOKBOOK_PREVIEW=1`, on the branch that writes the recipe). Off by
+ *  default: a draft in develop pins a released engine and has its capture,
+ *  so a recipe for a new feature lands in a PR after the release (#201). */
+export function previewDraftsAllowed(env: Record<string, string | undefined> = process.env): boolean {
+  return env.COOKBOOK_PREVIEW === "1";
 }
 
 export interface LintRecipeOptions {

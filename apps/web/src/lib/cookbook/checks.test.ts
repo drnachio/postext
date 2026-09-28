@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { sidesOf, spreadsOf } from "../../../scripts/cookbook/cards.ts";
-import { runChecks } from "../../../scripts/cookbook/checks.ts";
+import { detect, detectFeatures, runChecks } from "../../../scripts/cookbook/checks.ts";
 import type { CheckInput, ProbeFacts } from "../../../scripts/cookbook/checks.ts";
-import type { RecipeMeta } from "./types.ts";
+import { loadRegistry } from "./registry.ts";
+import type { ComposedPen, RecipeMeta } from "./types.ts";
 
 // The capture's checks, judged in Node from what lib/probe.js returns.
 
@@ -89,6 +90,19 @@ describe("C25: characters the PDF cannot set", () => {
   });
 });
 
+describe("C12: CJK files loaded after the layout", () => {
+  it("fails a face that set characters it had not loaded", () => {
+    const late = [{ family: "Noto Sans TC", weight: 700, style: "normal" as const, where: "p3 heading", chars: "章回" }];
+    const faces = { used: [], loaded: [], missing: [], late };
+    expect(of("C12", runChecks(input({ facts: facts({ faces }) })))).toEqual([{
+      check: "C12",
+      severity: "fail",
+      detail: "Noto Sans TC 700 sets 章 回 (p3 heading) from files not loaded when the layout ran: give loadCjkFonts the text this face sets, and list the weight in FONTS",
+    }]);
+    expect(of("C12", runChecks(input({ facts: facts({ faces: { used: [], loaded: [], missing: [] } }) })))).toEqual([]);
+  });
+});
+
 describe("spreads of a right-bound book", () => {
   it("keeps [verso, recto] and lays them out mirrored", () => {
     const spreads = spreadsOf([1, 2, 3, 4]);
@@ -96,5 +110,24 @@ describe("spreads of a right-bound book", () => {
     expect(spreads.map((pair) => sidesOf(pair, "left"))).toEqual([[null, 0], [1, 2], [3, null]]);
     // Page 1 alone on the left of the spine, then [3 | 2].
     expect(spreads.map((pair) => sidesOf(pair, "right"))).toEqual([[0, null], [2, 1], [null, 3]]);
+  });
+});
+
+describe("right-binding detection", () => {
+  const registry = loadRegistry();
+  const found = (paths: string[]) => detectFeatures(registry, { paths, markdown: "", apis: [] }).detected;
+
+  it("comes from the binding, not from any writing mode", () => {
+    expect(found(["page.binding"])).toContain("right-binding");
+    // An explicit horizontal-tb, or a vertical heading in a left-bound book.
+    expect(found(["layout.writingMode"])).not.toContain("right-binding");
+    expect(found(["layout.writingMode"])).toContain("vertical-writing");
+  });
+
+  it("follows the document when vertical text binds it on the right", () => {
+    const pen = { js: "" } as ComposedPen;
+    const userConfig = { layout: { writingMode: "vertical-rl" } };
+    expect(detect(meta(), facts({ userConfig, binding: "right" }), pen, registry).features).toContain("right-binding");
+    expect(detect(meta(), facts({ userConfig }), pen, registry).features).not.toContain("right-binding");
   });
 });

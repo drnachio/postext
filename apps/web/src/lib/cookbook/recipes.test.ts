@@ -4,7 +4,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { composePen, variantFor } from "./compose.ts";
 import { docLinkExists } from "./docLinks.ts";
 import { fontFamilies, penFonts } from "./detect.ts";
-import { readReleasedEngine } from "./lint.ts";
+import { previewDraftsAllowed, readReleasedEngine } from "./lint.ts";
 import { COOKBOOK_DIR } from "./paths.ts";
 import { getAllRecipes, getRecipe, getVisibleRecipes, neighbours, neighboursIn, recipeHref, showDrafts, sortContents } from "./recipes.ts";
 import { loadRegistry } from "./registry.ts";
@@ -176,6 +176,11 @@ describe("validateRecipeMeta (fixture)", () => {
     expect(previewDraft(draft, released)).toBe(true);
     expect(previewDraft({ ...draft, engine: { postext: "1.8.4", postextPdf: "1.8.4" } }, released)).toBe(false);
     expect(previewDraft({ ...draft, status: "published" }, released)).toBe(false);
+    // The repository tests take such a draft only on request: in develop a
+    // draft pins a released engine and has its capture (#201).
+    expect(previewDraftsAllowed({})).toBe(false);
+    expect(previewDraftsAllowed({ COOKBOOK_PREVIEW: "true" })).toBe(false);
+    expect(previewDraftsAllowed({ COOKBOOK_PREVIEW: "1" })).toBe(true);
   });
 
   it("checks the capture settings", () => {
@@ -380,8 +385,8 @@ describe("recipe folders", () => {
 
   it("have valid recipe.json files", () => {
     const errors = metas.flatMap(({ slug, meta }) =>
-      // Drafts may preview the next release (captured once it is out).
-      validateRecipeMeta(meta, slug, registry, { knownSlugs: slugs, released, preview: true }).map((e) => `${slug}: ${e}`),
+      // Only with COOKBOOK_PREVIEW=1 may a draft preview the next release.
+      validateRecipeMeta(meta, slug, registry, { knownSlugs: slugs, released, preview: previewDraftsAllowed() }).map((e) => `${slug}: ${e}`),
     );
     expect([...errors, ...validateRecipeSet(metas)]).toEqual([]);
   });

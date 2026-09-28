@@ -114,10 +114,13 @@ The capture skips rewriting images when the layout and the card inputs did not c
 **Recipes for the next release.** A recipe that shows a feature not yet on npm is written as a
 draft that pins the version the feature will ship in (`engine.postext` newer than
 `packages/postext/package.json`, at most the next major). Such a *preview draft* passes
-`pnpm cookbook lint <slug> --engine local` and the tests, and runs with `dev` and `capture`
-`--engine local`; a capture from npm refuses it, and the captures test asks for its capture
-as soon as the release is out. Then pin nothing new: run `pnpm cookbook capture <slug>` and
-publish it.
+`pnpm cookbook lint <slug> --engine local`, and runs with `dev` and `capture`
+`--engine local`; a capture from npm refuses it. It stays on its feature branch: the
+repository tests take it only with `COOKBOOK_PREVIEW=1` (`COOKBOOK_PREVIEW=1 pnpm test` in
+`apps/web`), and without it they fail its engine pin and ask for its capture, as plain
+`pnpm cookbook lint` does. A draft in `develop` pins a released engine and has its capture, so
+the recipe lands in a PR after the release: pin nothing new, run
+`pnpm cookbook capture <slug>` and publish it.
 
 ## 4. `recipe.json`
 
@@ -262,7 +265,7 @@ Its functions are hoisted declarations you can call from anywhere in the script:
 | `fontsourceProvider` | pdf | The PDF font provider: snaps to shipped weights, falls back from missing italics. |
 | `loadImage(id, url)`, `loadSvg(id, svg)` | images | Register pictures for the canvas and keep their bytes. |
 | `imageBytes`, `imageUrl` | images | The `resourceBytes` of `renderToPdf` and the `resourceImageUrl` of `renderToHtml`. |
-| `loadCjkFonts(FONTS, text, { vertical })` | cjk | Chinese, Japanese and Korean faces (the other families of `FONTS` are left to `loadFonts`): one `FontFace` per Fontsource unicode-range file, loading the files the sample touches; fails on a character no file has. `vertical: true` also loads each family's vertical punctuation for the canvas (import `loadVerticalAlternates`). |
+| `loadCjkFonts(faces, text, { vertical })` | cjk | Chinese, Japanese and Korean faces (the other families of `faces` are left to `loadFonts`): one `FontFace` per Fontsource unicode-range file, loading the files `text` touches; fails on a character no file has, or when api.fontsource.org does not answer. One face: `loadCjkFonts(FONTS, markdown)`. Several voices: one call per voice with the text it sets, `loadCjkFonts({ 'LXGW WenKai TC': ['400'] }, quotes)`, so the Kai and Hei faces do not fetch a file for every character of the book (C12 fails a character set from a file that was not loaded). `vertical: true` also loads each family's vertical punctuation for the canvas (import `loadVerticalAlternates`). |
 | `cjkPdfProvider` | cjk | The PDF font provider for such faces: the files that hold each face's characters (other families go to `fontsourceProvider`, so list `pdf` too). |
 | `showBook(doc \| docs, { title, binding })` | cjk | `showPages` for a book bound on either edge: a right-bound document (`doc.binding`, set by `page.binding: 'right'` or vertical text) lies mirrored, page 1 alone on the left of the spine, then `[3 \| 2]`. |
 
@@ -293,7 +296,7 @@ whole Cookbook is verified again.
 |---|---|
 | Recipe code (lines outside the content, the kit and `#region art…` artwork) | ≤ 300; aim for ≤ 120 (level 1), ≤ 180 (level 2), ≤ 250 (level 3) |
 | Composed script / CodePen prefill | ≤ 60 KB / ≤ 96 KB |
-| Each content file | ≤ 2,500 words; Chinese, Japanese and Korean characters count 1.7 to the word (about 4,250 characters of Chinese) |
+| Each content file | ≤ 2,500 words; Chinese and Japanese characters count 1.7 to the word (about 4,250 characters of Chinese); Korean counts its spaced words, fullwidth Ａ１ counts as A1 |
 | Captured pages | 2–12 |
 | Each asset / all assets | ≤ 400 KB / ≤ 2 MB; images ≤ 2400 px on the long side, JPEG q80 |
 | Captured media per edition (PDF excluded) | warning at 0.9 MB (0.1 MB per published page past 9), failure at 1.4 MB |
@@ -377,9 +380,10 @@ showcase's 红楼梦. The Latin rules on hyphenation, italics and Spanish conven
 to the Chinese text.
 
 **Page and grid**
-- [ ] The type area in characters (`cjk.grid`): a measure of 17–40 characters per line, 25–40
-      in a single-column book, 17–25 in a column of a magazine or a newspaper, and a whole
-      number of ems in every case. Lines per page stated, not left to the margins.
+- [ ] The type area in characters (`cjk.grid`): a measure of 17–45 characters per line, 25–40
+      in a single-column horizontal book, 30–45 in a vertical one, 17–25 in a column of a
+      magazine or a newspaper, and a whole number of ems in every case. Lines per page stated,
+      not left to the margins.
 - [ ] A trim from Chinese practice: 大32开 140 × 203 mm, 32开 130 × 184 mm, 16开 184 × 260 mm;
       天头 (head margin) larger than 地脚 (foot).
 - [ ] Vertical text bound on the right (`layout.writingMode: 'vertical-rl'`, which sets
@@ -391,7 +395,8 @@ to the Chinese text.
       size; a line gap large enough for any ruby or marks the page sets.
 - [ ] Three voices from the Chinese styles: 宋/明 (Song or Ming) for the text, 黑 (Hei) for
       heads and labels, 楷 (Kai) for quotations, prefaces and notes. Noto Serif SC/TC,
-      Noto Sans SC/TC and LXGW WenKai TC are on Fontsource.
+      Noto Sans SC/TC and LXGW WenKai TC are on Fontsource. Each voice loads with the text
+      it sets (`loadCjkFonts`, one call per voice).
 - [ ] Justified, with a 2-character first-line indent (`em(2)`) and no space between
       paragraphs; no hyphenation.
 - [ ] One punctuation style chosen for the region: Kaiming on the mainland (the `'auto'`
@@ -641,7 +646,8 @@ longer matches the published pages.
 `expect.console` (C2), failed or disallowed network requests (C3), nothing built (C4), layout
 warnings not in `expect.warnings` (C5), a layout that did not converge (C6), parse issues
 (C7), unknown directives (C8), unknown style ids (C9), unknown references that print "?"
-(C10), unregistered images (C11), faces used but not loaded (C12), `FONTS` incomplete (C13),
+(C10), unregistered images (C11), faces used but not loaded, or a CJK face setting characters
+whose files were not loaded when the layout ran (C12), `FONTS` incomplete (C13),
 PDF errors (C14), a tainted canvas (C15), "undefined" or "NaN" printed (C16), the default
 skin (C17), empty pages (C18), missing credits (C19), over budget (C20), a warm build over
 4 s (C21).
@@ -710,7 +716,8 @@ Follow this procedure exactly; do not skip steps because the output "looks right
    regions in the same order; native Spanish with the vocabulary in §9.
 8. **Self-review** against §6 box by box, and against §7.
 9. **A Chinese, Japanese or Korean recipe** also lists the `cjk` kit block, loads its faces
-   with `loadCjkFonts(FONTS, markdown)` after `loadFonts`, gives `renderToPdf`
+   with `loadCjkFonts` after `loadFonts` (the text face with the sample, each other voice
+   with the text it sets: headings, quotations), gives `renderToPdf`
    `cjkPdfProvider`, writes `config.locale` out, shows a right-bound book with `showBook`,
    and meets §6's CJK variant. When it needs an unreleased feature it is a preview draft
    (§3): `pnpm cookbook lint <slug> --engine local`, `pnpm cookbook dev <slug> --engine local`.

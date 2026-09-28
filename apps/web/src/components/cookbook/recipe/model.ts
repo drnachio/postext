@@ -9,7 +9,7 @@ import GithubSlugger from "github-slugger";
 import type { getTranslations } from "next-intl/server";
 import { detectPen } from "@/lib/cookbook/detect";
 import { highlightLines, type HighlightedLine } from "@/lib/cookbook/highlight";
-import { captureVariantFor, pageImages, pdfDownload, type PageImage } from "@/lib/cookbook/images";
+import { captureVariantFor, pageImages, pdfDownload, spreadBinding, type PageImage } from "@/lib/cookbook/images";
 import { getComposed, writeupFor } from "@/lib/cookbook/recipes";
 import { loadRegistry } from "@/lib/cookbook/registry";
 import type {
@@ -153,7 +153,7 @@ export async function recipeView(recipe: Recipe, locale: Locale): Promise<Recipe
     engine: recipe.capture?.engine ?? null,
     pages,
     spreads,
-    binding: hit?.data.binding === "right" ? "right" : "left",
+    binding: spreadBinding(recipe, locale),
     heroSpread,
     pdf: pdfDownload(recipe, locale),
     detected: detectedFor(pen, hit?.data ?? null),

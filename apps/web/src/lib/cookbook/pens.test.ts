@@ -15,7 +15,7 @@ import {
   staticLevel,
   usedApis,
 } from "./detect.ts";
-import { KIT_IMPORTS, imageSize, isAllowedUrl, lintPen, lintRecipe } from "./lint.ts";
+import { KIT_IMPORTS, imageSize, isAllowedUrl, lintPen, lintRecipe, previewDraftsAllowed } from "./lint.ts";
 import { REPO_DIR } from "./paths.ts";
 import { listRecipeSlugs, readKit } from "./sources.ts";
 import type { KitBlock, Locale, RecipeMeta, RecipeSources } from "./types.ts";
@@ -297,7 +297,7 @@ describe("lintPen (a Chinese recipe)", () => {
   it("counts Chinese characters, 1.7 to the word", () => {
     const long = { en: `# 一\n\n${"天".repeat(4300)}\n`, es: "# 一\n" };
     expect(lintCjk(undefined, long).fails).toContain(
-      "content.en.md: 4,301 Chinese, Japanese or Korean characters, about 2,530 words (at most 2,500; 1.7 characters count as a word)",
+      "content.en.md: 4,301 Chinese or Japanese characters, about 2,530 words (at most 2,500; 1.7 characters count as a word)",
     );
     const fits = { en: `# 一\n\n${"天".repeat(4000)}\n`, es: "# 一\n" };
     expect(lintCjk(undefined, fits).fails.filter((f) => f.includes("words"))).toEqual([]);
@@ -336,6 +336,35 @@ describe("lintPen (a Chinese recipe)", () => {
         .replace("defaultResourceTypes,\n}", "defaultResourceTypes, loadVerticalAlternates,\n}"),
     ).fails;
     expect(imported).toEqual([]);
+  });
+
+  it("asks for the CJK faces and locale only when the text is Chinese, and reads the binding off the config", () => {
+    // A Latin book bound on the right lists the block for showBook alone.
+    const latin = { en: "# One\n\nA page of Latin text.\n", es: "# Uno\n\nUna página de texto latino.\n" };
+    const rightBound = (s: string) =>
+      s.replace("  page: {\n", "  page: {\n    binding: 'right',\n")
+        .replace("fontProvider: cjkPdfProvider", "fontProvider: fontsourceProvider")
+        .replace("  locale: 'zh-Hant',", "  locale: LANG,");
+    const latinBook = lintCjk(rightBound, latin);
+    expect(latinBook.fails).toEqual([]);
+    expect(latinBook.warns.filter((w) => /cjk|CJK|showBook/.test(w))).toEqual([]);
+    // Without the block, showPages still gets the advice.
+    const noBlock = lint((s) => s.replace("  page: {\n", "  page: {\n    binding: 'right',\n"), { sources: { content: latin } }).warns;
+    expect(noBlock).toContain("script.js: a right-bound book shows its spreads mirrored with showBook(…) from the cjk block (gotcha cjk-spread-order)");
+    // A vertical heading style does not bind a horizontal book on the right.
+    const verticalHead = (s: string) =>
+      s.replace("  locale: 'zh-Hant',", "  locale: 'zh-Hant',\n  headingStyles: [{ id: 'side', layout: { writingMode: 'vertical-rl' } }],")
+        .replace("showBook(doc,", "showPages(doc,");
+    expect(lintCjk(verticalHead).warns.filter((w) => w.includes("showBook"))).toEqual([]);
+    // page.binding 'left' keeps a vertical book left-bound.
+    const leftVertical = (s: string) =>
+      s.replace("  locale: 'zh-Hant',", "  locale: 'zh-Hant',\n  layout: { columns: { count: 1 }, writingMode: 'vertical-rl' },")
+        .replace("  page: {\n", "  page: {\n    binding: 'left',\n")
+        .replace("showBook(doc,", "showPages(doc,");
+    expect(lintCjk(leftVertical).warns.filter((w) => w.includes("showBook"))).toEqual([]);
+    expect(lintCjk((s) => leftVertical(s).replace("binding: 'left'", "binding: 'right'")).warns).toContain(
+      "script.js: a right-bound book shows its spreads mirrored with showBook(…) from the cjk block (gotcha cjk-spread-order)",
+    );
   });
 });
 
@@ -445,8 +474,10 @@ describe("engine vocabularies", () => {
 
 describe("recipe pens", () => {
   it("pass the lint in every edition", () => {
-    // As `pnpm cookbook lint --engine local`: a draft may preview the next release.
-    const failures = listRecipeSlugs().flatMap((slug) => lintRecipe(slug, { preview: true }).fails.map((f) => `${slug}: ${f}`));
+    // As `pnpm cookbook lint`; with COOKBOOK_PREVIEW=1, as `--engine local`
+    // (a draft may preview the next release).
+    const preview = previewDraftsAllowed();
+    const failures = listRecipeSlugs().flatMap((slug) => lintRecipe(slug, { preview }).fails.map((f) => `${slug}: ${f}`));
     expect(failures).toEqual([]);
   });
 });

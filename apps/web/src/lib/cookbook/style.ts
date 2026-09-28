@@ -118,23 +118,31 @@ const HARD_ZH: Rule[] = [
   rule("[让讓]我[们們]一起(?:来[看探]|[来來]?探索|走[进進]|深入)", "让我们一起"),
   rule("深入探[讨討]", "深入探讨"),
   rule("扮演[着著][^，。！？]{0,8}?(?:重要|[关關][键鍵]|至[关關]重要)的?角色", "扮演着重要的角色"),
-  rule("[无無][缝縫](?:衔接|銜接|集成|对接|對接)?", "无缝"),
-  rule("[赋賦]能", "赋能"),
+  // 无缝 only with the verb it props up: 天衣无缝 is an idiom and 毫无缝隙
+  // reads 毫无 + 缝隙. 赋能 is not 天赋 + 能力 or 禀赋 + 能力.
+  rule("[无無][缝縫](?:衔接|銜接|集成|对接|對接|切换|切換|连接|連接|整合|体验|體驗)", "无缝"),
+  rule("(?<![天禀稟])[赋賦]能(?!力)", "赋能"),
 ];
 
 const SOFT_ZH: Rule[] = [
   rule("至[关關]重要|不可或缺", "至关重要"),
   rule("[随隨][着著][^，。！？]{0,16}?的?(?:不[断斷]|飞速|飛速|迅速|快速)?(?:[发發]展|普及|[进進]步)", "随着…的发展"),
-  rule("精心打造|打造|助力", "打造/助力"),
+  // Not 借助 + 力量 or 辅助 + 力.
+  rule("精心打造|打造|(?<![借辅輔])助力(?!量)", "打造/助力"),
   rule("独特的魅力|獨特的魅力|璀璨|[画畫]卷", "独特的魅力/画卷"),
   rule("(?:^|[。！？]\\s*)此外，", "此外，"),
 ];
 
-/** Letters of Chinese, Japanese and Korean writing (Han, kana, hangul,
- *  bopomofo): what a Chinese reader counts as characters. */
-const CJK_LETTER = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\p{Script=Bopomofo}]/gu;
-/** CJK letters and the punctuation and fullwidth forms set with them. */
-const CJK_TEXT = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\p{Script=Bopomofo}\u3000-\u303f\uff00-\uffef\ufe10-\ufe1f\ufe30-\ufe4f]/gu;
+/** Letters of Chinese and Japanese writing (Han, kana with the long-vowel
+ *  mark ー, bopomofo): what a Chinese reader counts as characters. Korean
+ *  spaces its words, so hangul is counted in words like Latin text. */
+const CJK_LETTER = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Bopomofo}\u30fc\uff70]/gu;
+/** Fullwidth digits and Latin letters (Ａ, １): words, set wide. */
+const FULLWIDTH_ALNUM = /[\uff10-\uff19\uff21-\uff3a\uff41-\uff5a]/gu;
+const HANGUL = /\p{Script=Hangul}/u;
+/** CJK letters and the punctuation and fullwidth forms set with them
+ *  (hangul included: an em dash against it is Korean punctuation). */
+const CJK_TEXT = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\p{Script=Bopomofo}\u30fc\u3000-\u303f\uff00-\uffef\ufe10-\ufe1f\ufe30-\ufe4f]/gu;
 
 /** How many CJK characters a text of one English word runs to: a Chinese
  *  translation takes about 1.7 characters for each English word, so the
@@ -142,12 +150,16 @@ const CJK_TEXT = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script
 export const CJK_CHARS_PER_WORD = 1.7;
 
 /** The length of a text for the Cookbook's caps: `words` counts the
- *  whitespace-separated tokens holding a letter or a digit once CJK text
- *  is taken out, `cjk` the CJK letters, and `total` both in words
- *  (`cjk / 1.7`, rounded). */
+ *  whitespace-separated tokens holding a letter or a digit once Chinese and
+ *  Japanese text is taken out (fullwidth Ａ１ read as A1, Korean by its
+ *  spaced words), `cjk` the Han, kana and bopomofo characters, and `total`
+ *  both in words (`cjk / 1.7`, rounded). */
 export function textLength(text: string): { words: number; cjk: number; total: number } {
   const cjk = (text.match(CJK_LETTER) ?? []).length;
-  const words = text.replace(CJK_TEXT, " ").split(/\s+/).filter((token) => /[\p{L}\p{N}]/u.test(token)).length;
+  const latin = text
+    .replace(FULLWIDTH_ALNUM, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xfee0))
+    .replace(CJK_TEXT, (ch) => (HANGUL.test(ch) ? ch : " "));
+  const words = latin.split(/\s+/).filter((token) => /[\p{L}\p{N}]/u.test(token)).length;
   return { words, cjk, total: Math.round(words + cjk / CJK_CHARS_PER_WORD) };
 }
 

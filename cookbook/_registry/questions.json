@@ -1088,12 +1088,12 @@
   "Q91": {
     "kind": "how",
     "text": {
-      "en": "How do I set Chinese punctuation half width, as mainland books do?",
-      "es": "¿Cómo compongo la puntuación china a medio ancho, como los libros de la China continental?"
+      "en": "How do I set Chinese punctuation Kaiming, as mainland books do, or half width?",
+      "es": "¿Cómo compongo la puntuación china en Kaiming, como los libros de la China continental, o a medio ancho?"
     },
     "index": {
-      "en": "Chinese punctuation, half-width and Kaiming",
-      "es": "Puntuación china de medio ancho y Kaiming"
+      "en": "Chinese punctuation: Kaiming, full and half width",
+      "es": "Puntuación china: Kaiming, ancho completo y medio ancho"
     },
     "theme": "type"
   },

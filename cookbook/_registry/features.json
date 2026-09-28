@@ -4683,8 +4683,7 @@
     "since": "1.9.0",
     "detect": {
       "config": [
-        "page.binding",
-        "layout.writingMode"
+        "page.binding"
       ]
     }
   },

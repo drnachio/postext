@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { sourceHash } from "./hash.ts";
-import { readReleasedEngine } from "./lint.ts";
+import { previewDraftsAllowed, readReleasedEngine } from "./lint.ts";
 import { captureDir } from "./paths.ts";
 import { getCapture, getVisibleRecipes } from "./recipes.ts";
 import type { Recipe } from "./types.ts";
@@ -13,11 +13,12 @@ const VARIANT_BUDGET = 1.4 * 1024 * 1024;
 const PDF_BUDGET = 2 * 1024 * 1024;
 const MAX_PAGES = 12;
 
-// A draft that pins the next release previews it on the local engine and
-// cannot be captured from npm yet: it needs its capture once the release
-// is out (lib/cookbook/validate.ts previewDraft).
+// Every visible recipe needs its capture. With COOKBOOK_PREVIEW=1 (the
+// branch that writes recipes for the next release), a draft that pins it
+// previews it on the local engine and waits for the release instead
+// (lib/cookbook/validate.ts previewDraft).
 const released = readReleasedEngine();
-const recipes = getVisibleRecipes().filter((recipe) => !previewDraft(recipe.meta, released));
+const recipes = getVisibleRecipes().filter((recipe) => !(previewDraftsAllowed() && previewDraft(recipe.meta, released)));
 const capture = (slug: string) => `run \`pnpm cookbook capture ${slug}\``;
 
 /** Runs `check` on every visible recipe that has a capture and collects its problems. */

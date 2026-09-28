@@ -513,6 +513,18 @@ export function facts({ select = 'last', hero = [] } = {}) {
   const used = new Map();
   const garbage = [];
   const outside = new Map();
+  // C12: a character set in a CJK face from a file that was not loaded when
+  // the layout ran was measured in a fallback face (loadCjkFonts was not
+  // given it). The shim notes the faces loaded as each build starts.
+  const atLayout = new Map();
+  for (const [family, weight, style, range] of build.fonts ?? []) {
+    if (!sliced.has(family)) continue;
+    const list = atLayout.get(family) ?? [];
+    list.push({ weight, style, ranges: rangesOf(range) });
+    atLayout.set(family, list);
+  }
+  const late = new Map();
+  const judged = new Set();
   const placeholders = new Set([engine.MATH_PLACEHOLDER, engine.SWATCH_PLACEHOLDER, engine.CHIP_PLACEHOLDER, '￼'].filter(Boolean));
   walkPainted(pages, (font, text, where) => {
     const face = font ? parseFont(font) : null;
@@ -530,12 +542,31 @@ export function facts({ select = 'last', hero = [] } = {}) {
       if (covered?.some(([a, b]) => cp >= a && cp <= b)) continue;
       outside.set(ch, where);
     }
+    if (!face || !build.fonts || !atLayout.has(face.family)) return;
+    const key = `${face.family}|${face.weight}|${face.style}`;
+    for (const ch of new Set(text)) {
+      if (!/\S/.test(ch) || placeholders.has(ch) || judged.has(`${key}|${ch}`)) continue;
+      judged.add(`${key}|${ch}`);
+      const cp = ch.codePointAt(0);
+      // A character no file of the family has is C25's (nonLatin).
+      if (!covered?.some(([a, b]) => cp >= a && cp <= b)) continue;
+      const ready = atLayout.get(face.family).some((f) => {
+        if (f.style !== face.style) return false;
+        const [low, high = low] = String(f.weight).split(' ').map(Number);
+        return face.weight >= low && face.weight <= high && f.ranges.some(([a, b]) => cp >= a && cp <= b);
+      });
+      if (ready) continue;
+      const entry = late.get(key) ?? { family: face.family, weight: face.weight, style: face.style, chars: '', where };
+      if ([...entry.chars].length < 12) entry.chars += ch;
+      late.set(key, entry);
+    }
   });
   out.faces = {
     used: [...used.values()].sort((a, b) => `${a.family}${a.weight}${a.style}`.localeCompare(`${b.family}${b.weight}${b.style}`)),
     loaded,
   };
   out.faces.missing = out.faces.used.filter((f) => !hasFace(loaded, f.family, f.weight, f.style));
+  if (late.size) out.faces.late = [...late.values()];
   out.garbage = garbage;
   out.nonLatin = [...outside].slice(0, 40).map(([ch, where]) => ({
     ch, code: `U+${ch.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`, where,

@@ -70,7 +70,13 @@ export interface ProbeFacts {
   directives?: string[];
   inline?: string[];
   unregistered?: { fileId: string; page: number }[];
-  faces?: { used: ProbeFace[]; loaded: { family: string; weight: string; style: string }[]; missing: ProbeFace[] };
+  faces?: {
+    used: ProbeFace[];
+    loaded: { family: string; weight: string; style: string }[];
+    missing: ProbeFace[];
+    /** Characters a CJK face set from files not loaded when the layout ran. */
+    late?: (ProbeFace & { chars: string })[];
+  };
   garbage?: { text: string; where: string }[];
   nonLatin?: { ch: string; code: string; where: string }[];
   defaultSkin?: {
@@ -250,7 +256,10 @@ export function detect(meta: RecipeMeta, facts: ProbeFacts, pen: ComposedPen, re
   const resources = { svg: 0, bitmap: 0, table: 0 };
   for (const r of facts.resources ?? []) if (r.kind in resources) resources[r.kind as keyof typeof resources]++;
   const fonts = (facts.faces?.used ?? []).map(({ family, weight, style }) => ({ family, weight, style }));
-  const { detected } = detectFeatures(registry, { paths: stats.paths, markdown: (facts.markdowns ?? []).join("\n"), apis });
+  // Vertical text binds a book on the right without saying page.binding:
+  // the document's binding counts as the key.
+  const paths = facts.binding === "right" && !stats.paths.includes("page.binding") ? [...stats.paths, "page.binding"] : stats.paths;
+  const { detected } = detectFeatures(registry, { paths, markdown: (facts.markdowns ?? []).join("\n"), apis });
   const directives = new Set<string>();
   const inline = new Set<string>();
   for (const markdown of facts.markdowns ?? []) {
@@ -446,9 +455,15 @@ function collect(input: CheckInput): Finding[] {
     add("C11", "fail", `image "${u.fileId}" (page ${u.page}) is placed but never registered: a grey placeholder`);
   }
 
-  // C12: faces the pages use that no FontFace covers.
+  // C12: faces the pages use that no FontFace covers, and characters a CJK
+  // face set from files that loaded after the layout (measured in another face).
+  const faceName = (face: ProbeFace) => `${face.family} ${face.weight}${face.style === "italic" ? " italic" : ""}`;
   for (const face of facts.faces?.missing ?? []) {
-    add("C12", "fail", `${face.family} ${face.weight}${face.style === "italic" ? " italic" : ""} is used (${face.where}) but not loaded`);
+    add("C12", "fail", `${faceName(face)} is used (${face.where}) but not loaded`);
+  }
+  for (const face of facts.faces?.late ?? []) {
+    add("C12", "fail", `${faceName(face)} sets ${[...face.chars].join(" ")} (${face.where}) from files not loaded when the layout ran: ` +
+      `give loadCjkFonts the text this face sets, and list the weight in FONTS`);
   }
 
   // C14: the PDF.
