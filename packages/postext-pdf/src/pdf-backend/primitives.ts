@@ -765,6 +765,71 @@ function withActualText(ctx: PageCtx, text: string, shows: readonly PDFOperator[
   ];
 }
 
+/**
+ * Open a `/Span` marked-content sequence whose `/ActualText` is `text`
+ * around everything painted until {@link endActualTextSpan}: a whole line
+ * set in pieces. A composed CJK line is painted segment by segment with
+ * gaps between them — characters spread for justification, the space
+ * between Han and Latin — which text extraction reads as word spaces
+ * ("我 们 用 iPhone"); the span gives it the line as written. The tagger's
+ * open sequence is closed first, and again before the span ends, so the
+ * structure's sequences nest inside it.
+ */
+export function beginActualTextSpan(ctx: PageCtx, text: string, state: LineTextState): void {
+  ctx.tags?.close();
+  const props = ctx.page.doc.context.obj({ ActualText: PDFHexString.fromText(text) }) as unknown as OperatorArg;
+  ctx.page.pushOperators(
+    ...lineTextState(ctx, state),
+    PDFOperator.of(PDFOperatorNames.BeginMarkedContentSequence, [PDFName.of('Span'), props]),
+  );
+}
+
+/** Where a line's text starts and what it is set in: the face and size of
+ *  its first text, and that text (which file of a face made of several
+ *  draws it). */
+export interface LineTextState {
+  font: PDFFont;
+  text: string;
+  sizePx: number;
+  xPx: number;
+  baselinePx: number;
+}
+
+/** A text object that shows nothing and leaves the line's font, size and
+ *  position as the text state: every piece of a line restores the
+ *  graphics state it painted in, and a reader that places an
+ *  `/ActualText` with the text state in force where the span begins or
+ *  ends (poppler) would otherwise give the line no height and misplace it
+ *  in reading order. The font is the file the line's first text is drawn
+ *  from, so nothing is embedded for it. */
+function lineTextState(ctx: PageCtx, state: LineTextState): PDFOperator[] {
+  const { scale, pageHeightPt } = ctx;
+  const font = fileRuns(state.font, state.text)[0]?.font ?? state.font;
+  return [
+    beginText(),
+    setFontAndSize(fontKeyOn(ctx.page, font), state.sizePx * scale),
+    setTextMatrix(1, 0, 0, 1, state.xPx * scale, pageHeightPt - state.baselinePx * scale),
+    endText(),
+  ];
+}
+
+/** The text a composed CJK line is read as when its segments are painted
+ *  apart (see {@link beginActualTextSpan}): the segments' text, when one
+ *  of them carries tracking or is a Han–Latin space; else undefined. */
+export function cjkLineText(segments: readonly { text: string; tracking?: number; autospace?: boolean }[]): string | undefined {
+  return segments.some((s) => s.autospace || s.tracking !== undefined) ? segments.map((s) => s.text).join('') : undefined;
+}
+
+/** Close the span {@link beginActualTextSpan} opened, with the line's text
+ *  state in force (see `lineTextState`). */
+export function endActualTextSpan(ctx: PageCtx, state: LineTextState): void {
+  ctx.tags?.close();
+  ctx.page.pushOperators(
+    ...lineTextState(ctx, state),
+    PDFOperator.of(PDFOperatorNames.EndMarkedContent),
+  );
+}
+
 export function pushClipRect(
   ctx: PageCtx,
   xPx: number,

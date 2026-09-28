@@ -3,7 +3,7 @@ import type { Color, PDFFont } from 'pdf-lib';
 import type { VDTBlock, VDTLine, VDTLineSegment, MathRender } from 'postext';
 import { parseFontString } from '../fontString';
 import { FontCache } from '../fontCache';
-import { type PageCtx, alphaOf, alphaStateOp, drawLinePx, drawMeasuredTextPx, drawSwatchPx, drawTextPx, colorFromHex } from './primitives';
+import { type PageCtx, alphaOf, alphaStateOp, beginActualTextSpan, cjkLineText, drawLinePx, drawMeasuredTextPx, drawSwatchPx, drawTextPx, colorFromHex, endActualTextSpan, type LineTextState } from './primitives';
 import { paintChip } from './chip';
 import { pickSegmentColor, pickSegmentFont } from './fontHelpers';
 import { renderHeaderFooterSlot } from './headerFooter';
@@ -104,6 +104,22 @@ function renderSegments(
   const refRun = new RefRun();
   const uris = new UriRuns(ctx, line, linkRegistry, elem);
   const repeatedAt = repeatedHyphenSegment(line, segments);
+  // A composed CJK line (spread characters, Han–Latin spaces) reads as
+  // written, not with the gaps between its pieces.
+  const actualLine = cjkLineText(segments);
+  let lineState: LineTextState | undefined;
+  if (actualLine !== undefined) {
+    const first = segments.find((s) => s.kind === 'text' && !s.chip && s.text !== '');
+    const fontStr = first ? first.fontString ?? pickSegmentFont(!!first.bold, !!first.italic, block) : block.fontString;
+    lineState = {
+      font: fontCache.get(fontStr) ?? blockFont,
+      text: first?.text ?? '',
+      sizePx: parseFontString(fontStr)?.sizePx ?? blockSize,
+      xPx: startX,
+      baselinePx: baseline,
+    };
+    beginActualTextSpan(ctx, actualLine, lineState);
+  }
   for (let i = 0; i < segments.length; i++) {
     const seg = segments[i]!;
     if (seg.kind === 'space') {
@@ -184,7 +200,9 @@ function renderSegments(
     x += seg.width;
   }
   uris.end();
+  if (lineState) endActualTextSpan(ctx, lineState);
 }
+
 
 /** Tracking: the block (column balancing; negative for a runt set short)
  *  and the line (justification tracking) were measured with extra advance

@@ -42,7 +42,11 @@ import { widthOfTextAtSize } from '../faceFiles';
 import {
   type PageCtx,
   type PdfMatrix,
+  beginActualTextSpan,
+  cjkLineText,
   drawTextPx,
+  endActualTextSpan,
+  type LineTextState,
   drawLinePx,
   drawSwatchPx,
   fillRectPx,
@@ -579,6 +583,21 @@ function paintLineRuns(
     const refRun = new RefRun();
     let x = line.bbox.x;
     const uris = new UriRuns(ctx, line, linkRegistry, elem);
+    // A composed CJK line reads as written, not with its gaps.
+    const actualLine = cjkLineText(segs);
+    let lineState: LineTextState | undefined;
+    if (actualLine !== undefined) {
+      const first = segs.find((s) => s.kind === 'text' && !s.chip && s.text !== '');
+      const fontStr = first ? first.fontString ?? pickFont(!!first.bold, !!first.italic, fonts) : fonts.normal;
+      lineState = {
+        font: fontCache.get(fontStr) ?? baseFont,
+        text: first?.text ?? '',
+        sizePx: parseFontString(fontStr)?.sizePx ?? baseSize,
+        xPx: line.bbox.x,
+        baselinePx: line.baseline,
+      };
+      beginActualTextSpan(ctx, actualLine, lineState);
+    }
     for (let i = 0; i < segs.length; i++) {
       const seg = segs[i]!;
       if (seg.kind === 'space') {
@@ -630,6 +649,7 @@ function paintLineRuns(
       x += seg.width;
     }
     uris.end();
+    if (lineState) endActualTextSpan(ctx, lineState);
     return;
   }
   tagContent(ctx, elem);

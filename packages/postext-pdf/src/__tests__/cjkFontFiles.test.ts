@@ -113,7 +113,8 @@ async function shownText(bytes: Uint8Array): Promise<{ text: string; notdef: num
       else if (stream instanceof PDFStream) content += new TextDecoder('latin1').decode(stream.getContents());
     }
     let current = '';
-    for (const m of content.matchAll(/(\/[^\s/]+)\s+[\d.]+\s+Tf|<([0-9A-Fa-f]*)>|\]\s*TJ/g)) {
+    // The `/ActualText` of a composed line is no shown text.
+    for (const m of content.replace(/\/ActualText\s*<[0-9A-Fa-f]*>/g, '').matchAll(/(\/[^\s/]+)\s+[\d.]+\s+Tf|<([0-9A-Fa-f]*)>|\]\s*TJ/g)) {
       if (m[1]) {
         current = m[1];
         fonts.add(current);

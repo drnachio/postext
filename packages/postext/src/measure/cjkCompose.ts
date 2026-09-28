@@ -1151,7 +1151,10 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
       ...(u.stacked === 'first' ? { stacked: true } : {}),
       ...(s.smallCaps ? { smallCaps: true } : {}),
       ...(t !== undefined ? { tracking: t } : {}),
-      ...(u.punct && u.punct.cutStart > 0 ? { inkOffset: -u.punct.cutStart } : {}),
+      // Every mark that gave up blank carries its ink offset (0 when only
+      // the blank after its glyph went), so no renderer paints its line in
+      // one run at the glyphs' own advances.
+      ...(u.punct && boxCut(u.punct) > 0 ? { inkOffset: u.punct.cutStart > 0 ? -u.punct.cutStart : 0 } : {}),
     };
   };
   for (let j = 0; j < us.length; j++) {

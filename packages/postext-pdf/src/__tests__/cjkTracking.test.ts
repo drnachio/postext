@@ -58,7 +58,8 @@ describe('CJK justification in the PDF', () => {
     for (const line of block.lines) {
       let x = line.bbox.x;
       for (const seg of line.segments!) {
-        if (seg.tracking !== undefined) expected.push({ x, tc: seg.tracking });
+        // A compressed mark is painted before its box (`inkOffset`).
+        if (seg.tracking !== undefined) expected.push({ x: x + (seg.inkOffset ?? 0), tc: seg.tracking });
         x += seg.width;
       }
     }
