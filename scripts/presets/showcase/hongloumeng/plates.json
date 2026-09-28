@@ -1,0 +1,978 @@
+{
+ "source": "《增評補圖石頭記》 (Shanghai 同文書局 1884), CADAL scan of the 民國叢書 reprint, Wikimedia Commons",
+ "renderWidth": 1280,
+ "volumes": {
+  "u": {
+   "file": "CADAL07015047 增評補圖石頭記 （上冊）.djvu"
+  },
+  "l": {
+   "file": "CADAL07018893 增評補圖石頭記 （下冊）.djvu"
+  }
+ },
+ "plates": [
+  {
+   "id": "plate-001",
+   "chapter": 1,
+   "volume": "u",
+   "page": 92,
+   "half": 0,
+   "otherHalf": 93
+  },
+  {
+   "id": "plate-002",
+   "chapter": 2,
+   "volume": "u",
+   "page": 106,
+   "half": 0,
+   "otherHalf": 107
+  },
+  {
+   "id": "plate-003",
+   "chapter": 3,
+   "volume": "u",
+   "page": 118,
+   "half": 0,
+   "otherHalf": 119
+  },
+  {
+   "id": "plate-004",
+   "chapter": 4,
+   "volume": "u",
+   "page": 132,
+   "half": 0,
+   "otherHalf": 133
+  },
+  {
+   "id": "plate-005",
+   "chapter": 5,
+   "volume": "u",
+   "page": 142,
+   "half": 0,
+   "otherHalf": 143
+  },
+  {
+   "id": "plate-006",
+   "chapter": 6,
+   "volume": "u",
+   "page": 158,
+   "half": 0,
+   "otherHalf": 159
+  },
+  {
+   "id": "plate-007",
+   "chapter": 7,
+   "volume": "u",
+   "page": 170,
+   "half": 0,
+   "otherHalf": 171
+  },
+  {
+   "id": "plate-008",
+   "chapter": 8,
+   "volume": "u",
+   "page": 182,
+   "half": 0,
+   "otherHalf": 183
+  },
+  {
+   "id": "plate-009",
+   "chapter": 9,
+   "volume": "u",
+   "page": 194,
+   "half": 0,
+   "otherHalf": 195
+  },
+  {
+   "id": "plate-010",
+   "chapter": 10,
+   "volume": "u",
+   "page": 204,
+   "half": 0,
+   "otherHalf": 205
+  },
+  {
+   "id": "plate-011",
+   "chapter": 11,
+   "volume": "u",
+   "page": 214,
+   "half": 0,
+   "otherHalf": 215
+  },
+  {
+   "id": "plate-012",
+   "chapter": 12,
+   "volume": "u",
+   "page": 224,
+   "half": 0,
+   "otherHalf": 225
+  },
+  {
+   "id": "plate-013",
+   "chapter": 13,
+   "volume": "u",
+   "page": 232,
+   "half": 0,
+   "otherHalf": 233
+  },
+  {
+   "id": "plate-014",
+   "chapter": 14,
+   "volume": "u",
+   "page": 242,
+   "half": 0,
+   "otherHalf": 243
+  },
+  {
+   "id": "plate-015",
+   "chapter": 15,
+   "volume": "u",
+   "page": 252,
+   "half": 0,
+   "otherHalf": 253
+  },
+  {
+   "id": "plate-016",
+   "chapter": 16,
+   "volume": "u",
+   "page": 262,
+   "half": 0,
+   "otherHalf": 263
+  },
+  {
+   "id": "plate-017",
+   "chapter": 17,
+   "volume": "u",
+   "page": 276,
+   "half": 0,
+   "otherHalf": 277
+  },
+  {
+   "id": "plate-018",
+   "chapter": 18,
+   "volume": "u",
+   "page": 292,
+   "half": 0,
+   "otherHalf": 293
+  },
+  {
+   "id": "plate-019",
+   "chapter": 19,
+   "volume": "u",
+   "page": 304,
+   "half": 0,
+   "otherHalf": 305
+  },
+  {
+   "id": "plate-020",
+   "chapter": 20,
+   "volume": "u",
+   "page": 318,
+   "half": 0,
+   "otherHalf": 319
+  },
+  {
+   "id": "plate-021",
+   "chapter": 21,
+   "volume": "u",
+   "page": 328,
+   "half": 0,
+   "otherHalf": 329
+  },
+  {
+   "id": "plate-022",
+   "chapter": 22,
+   "volume": "u",
+   "page": 340,
+   "half": 0,
+   "otherHalf": 341
+  },
+  {
+   "id": "plate-023",
+   "chapter": 23,
+   "volume": "u",
+   "page": 352,
+   "half": 0,
+   "otherHalf": 353
+  },
+  {
+   "id": "plate-024",
+   "chapter": 24,
+   "volume": "u",
+   "page": 362,
+   "half": 0,
+   "otherHalf": 363
+  },
+  {
+   "id": "plate-025",
+   "chapter": 25,
+   "volume": "u",
+   "page": 376,
+   "half": 0,
+   "otherHalf": 377
+  },
+  {
+   "id": "plate-026",
+   "chapter": 26,
+   "volume": "u",
+   "page": 388,
+   "half": 0,
+   "otherHalf": 389
+  },
+  {
+   "id": "plate-027",
+   "chapter": 27,
+   "volume": "u",
+   "page": 400,
+   "half": 0,
+   "otherHalf": 401
+  },
+  {
+   "id": "plate-028",
+   "chapter": 28,
+   "volume": "u",
+   "page": 412,
+   "half": 0,
+   "otherHalf": 413
+  },
+  {
+   "id": "plate-029",
+   "chapter": 29,
+   "volume": "u",
+   "page": 428,
+   "half": 0,
+   "otherHalf": 429
+  },
+  {
+   "id": "plate-030",
+   "chapter": 30,
+   "volume": "u",
+   "page": 442,
+   "half": 0,
+   "otherHalf": 443
+  },
+  {
+   "id": "plate-031",
+   "chapter": 31,
+   "volume": "u",
+   "page": 452,
+   "half": 0,
+   "otherHalf": null
+  },
+  {
+   "id": "plate-032",
+   "chapter": 32,
+   "volume": "u",
+   "page": 464,
+   "half": 0,
+   "otherHalf": 465
+  },
+  {
+   "id": "plate-033",
+   "chapter": 33,
+   "volume": "u",
+   "page": 476,
+   "half": 0,
+   "otherHalf": 477
+  },
+  {
+   "id": "plate-034",
+   "chapter": 34,
+   "volume": "u",
+   "page": 486,
+   "half": 0,
+   "otherHalf": 487
+  },
+  {
+   "id": "plate-035",
+   "chapter": 35,
+   "volume": "u",
+   "page": 498,
+   "half": 0,
+   "otherHalf": 499
+  },
+  {
+   "id": "plate-036",
+   "chapter": 36,
+   "volume": "u",
+   "page": 510,
+   "half": 0,
+   "otherHalf": 511
+  },
+  {
+   "id": "plate-037",
+   "chapter": 37,
+   "volume": "u",
+   "page": 522,
+   "half": 0,
+   "otherHalf": 523
+  },
+  {
+   "id": "plate-038",
+   "chapter": 38,
+   "volume": "u",
+   "page": 538,
+   "half": 0,
+   "otherHalf": 539
+  },
+  {
+   "id": "plate-039",
+   "chapter": 39,
+   "volume": "u",
+   "page": 550,
+   "half": 0,
+   "otherHalf": 551
+  },
+  {
+   "id": "plate-040",
+   "chapter": 40,
+   "volume": "u",
+   "page": 562,
+   "half": 0,
+   "otherHalf": 563
+  },
+  {
+   "id": "plate-041",
+   "chapter": 41,
+   "volume": "u",
+   "page": 576,
+   "half": 0,
+   "otherHalf": 577
+  },
+  {
+   "id": "plate-042",
+   "chapter": 42,
+   "volume": "u",
+   "page": 588,
+   "half": 0,
+   "otherHalf": 589
+  },
+  {
+   "id": "plate-043",
+   "chapter": 43,
+   "volume": "u",
+   "page": 600,
+   "half": 0,
+   "otherHalf": 601
+  },
+  {
+   "id": "plate-044",
+   "chapter": 44,
+   "volume": "u",
+   "page": 612,
+   "half": 0,
+   "otherHalf": 613
+  },
+  {
+   "id": "plate-045",
+   "chapter": 45,
+   "volume": "u",
+   "page": 624,
+   "half": 0,
+   "otherHalf": 625
+  },
+  {
+   "id": "plate-046",
+   "chapter": 46,
+   "utokyo": {
+    "file": "IOC.UTokyo-010415 增評補圖大觀瑣錄一百二十卷首一卷據悼紅軒本排印 卷四十六.pdf",
+    "image": 1,
+    "side": "left"
+   },
+   "half": 0
+  },
+  {
+   "id": "plate-047",
+   "chapter": 47,
+   "volume": "u",
+   "page": 652,
+   "half": 0,
+   "otherHalf": 653
+  },
+  {
+   "id": "plate-048",
+   "chapter": 48,
+   "volume": "u",
+   "page": 664,
+   "half": 0,
+   "otherHalf": 665
+  },
+  {
+   "id": "plate-049",
+   "chapter": 49,
+   "volume": "u",
+   "page": 676,
+   "half": 0,
+   "otherHalf": 677
+  },
+  {
+   "id": "plate-050",
+   "chapter": 50,
+   "volume": "u",
+   "page": 688,
+   "half": 0,
+   "otherHalf": 689
+  },
+  {
+   "id": "plate-051",
+   "chapter": 51,
+   "volume": "u",
+   "page": 700,
+   "half": 0,
+   "otherHalf": 701
+  },
+  {
+   "id": "plate-052",
+   "chapter": 52,
+   "utokyo": {
+    "file": "IOC.UTokyo-010421 增評補圖大觀瑣錄一百二十卷首一卷據悼紅軒本排印 卷五十二.pdf",
+    "image": 1,
+    "side": "left"
+   },
+   "half": 0
+  },
+  {
+   "id": "plate-053",
+   "chapter": 53,
+   "volume": "u",
+   "page": 724,
+   "half": 0,
+   "otherHalf": 725
+  },
+  {
+   "id": "plate-054",
+   "chapter": 54,
+   "volume": "u",
+   "page": 738,
+   "half": 0,
+   "otherHalf": 739
+  },
+  {
+   "id": "plate-055",
+   "chapter": 55,
+   "volume": "u",
+   "page": 752,
+   "half": 0,
+   "otherHalf": 753
+  },
+  {
+   "id": "plate-056",
+   "chapter": 56,
+   "volume": "u",
+   "page": 766,
+   "half": 0,
+   "otherHalf": 767
+  },
+  {
+   "id": "plate-057",
+   "chapter": 57,
+   "volume": "u",
+   "page": 780,
+   "half": 0,
+   "otherHalf": 781
+  },
+  {
+   "id": "plate-058",
+   "chapter": 58,
+   "volume": "u",
+   "page": 794,
+   "half": 0,
+   "otherHalf": 795
+  },
+  {
+   "id": "plate-059",
+   "chapter": 59,
+   "volume": "u",
+   "page": 806,
+   "half": 0,
+   "otherHalf": 807
+  },
+  {
+   "id": "plate-060",
+   "chapter": 60,
+   "volume": "u",
+   "page": 816,
+   "half": 0,
+   "otherHalf": 817
+  },
+  {
+   "id": "plate-061",
+   "chapter": 61,
+   "volume": "l",
+   "page": 2,
+   "half": 0,
+   "otherHalf": 3
+  },
+  {
+   "id": "plate-062",
+   "chapter": 62,
+   "volume": "l",
+   "page": 14,
+   "half": 0,
+   "otherHalf": 15
+  },
+  {
+   "id": "plate-063",
+   "chapter": 63,
+   "volume": "l",
+   "page": 32,
+   "half": 0,
+   "otherHalf": 33
+  },
+  {
+   "id": "plate-064",
+   "chapter": 64,
+   "volume": "l",
+   "page": 48,
+   "half": 0,
+   "otherHalf": 49
+  },
+  {
+   "id": "plate-065",
+   "chapter": 65,
+   "volume": "l",
+   "page": 64,
+   "half": 0,
+   "otherHalf": 65
+  },
+  {
+   "id": "plate-066",
+   "chapter": 66,
+   "volume": "l",
+   "page": 76,
+   "half": 0,
+   "otherHalf": 77
+  },
+  {
+   "id": "plate-067",
+   "chapter": 67,
+   "volume": "l",
+   "page": 86,
+   "half": 0,
+   "otherHalf": 87
+  },
+  {
+   "id": "plate-068",
+   "chapter": 68,
+   "volume": "l",
+   "page": 100,
+   "half": 0,
+   "otherHalf": 101
+  },
+  {
+   "id": "plate-069",
+   "chapter": 69,
+   "volume": "l",
+   "page": 114,
+   "half": 0,
+   "otherHalf": 115
+  },
+  {
+   "id": "plate-070",
+   "chapter": 70,
+   "volume": "l",
+   "page": 126,
+   "half": 0,
+   "otherHalf": 127
+  },
+  {
+   "id": "plate-071",
+   "chapter": 71,
+   "volume": "l",
+   "page": 136,
+   "half": 0,
+   "otherHalf": 137
+  },
+  {
+   "id": "plate-072",
+   "chapter": 72,
+   "volume": "l",
+   "page": 150,
+   "half": 0,
+   "otherHalf": 151
+  },
+  {
+   "id": "plate-073",
+   "chapter": 73,
+   "volume": "l",
+   "page": 162,
+   "half": 0,
+   "otherHalf": 163
+  },
+  {
+   "id": "plate-074",
+   "chapter": 74,
+   "volume": "l",
+   "page": 174,
+   "half": 0,
+   "otherHalf": 175
+  },
+  {
+   "id": "plate-075",
+   "chapter": 75,
+   "volume": "l",
+   "page": 190,
+   "half": 0,
+   "otherHalf": 191
+  },
+  {
+   "id": "plate-076",
+   "chapter": 76,
+   "volume": "l",
+   "page": 204,
+   "half": 0,
+   "otherHalf": 205
+  },
+  {
+   "id": "plate-077",
+   "chapter": 77,
+   "volume": "l",
+   "page": 216,
+   "half": 0,
+   "otherHalf": 217
+  },
+  {
+   "id": "plate-078",
+   "chapter": 78,
+   "volume": "l",
+   "page": 232,
+   "half": 0,
+   "otherHalf": 233
+  },
+  {
+   "id": "plate-079",
+   "chapter": 79,
+   "volume": "l",
+   "page": 246,
+   "half": 0,
+   "otherHalf": 247
+  },
+  {
+   "id": "plate-080",
+   "chapter": 80,
+   "volume": "l",
+   "page": 256,
+   "half": 0,
+   "otherHalf": 257
+  },
+  {
+   "id": "plate-081",
+   "chapter": 81,
+   "volume": "l",
+   "page": 268,
+   "half": 0,
+   "otherHalf": 269
+  },
+  {
+   "id": "plate-082",
+   "chapter": 82,
+   "volume": "l",
+   "page": 280,
+   "half": 0,
+   "otherHalf": 281
+  },
+  {
+   "id": "plate-083",
+   "chapter": 83,
+   "volume": "l",
+   "page": 294,
+   "half": 0,
+   "otherHalf": 295
+  },
+  {
+   "id": "plate-084",
+   "chapter": 84,
+   "volume": "l",
+   "page": 308,
+   "half": 0,
+   "otherHalf": 309
+  },
+  {
+   "id": "plate-085",
+   "chapter": 85,
+   "volume": "l",
+   "page": 320,
+   "half": 0,
+   "otherHalf": 321
+  },
+  {
+   "id": "plate-086",
+   "chapter": 86,
+   "volume": "l",
+   "page": 334,
+   "half": 0,
+   "otherHalf": 335
+  },
+  {
+   "id": "plate-087",
+   "chapter": 87,
+   "volume": "l",
+   "page": 346,
+   "half": 0,
+   "otherHalf": 347
+  },
+  {
+   "id": "plate-088",
+   "chapter": 88,
+   "volume": "l",
+   "page": 358,
+   "half": 0,
+   "otherHalf": 359
+  },
+  {
+   "id": "plate-089",
+   "chapter": 89,
+   "volume": "l",
+   "page": 370,
+   "half": 0,
+   "otherHalf": 371
+  },
+  {
+   "id": "plate-090",
+   "chapter": 90,
+   "volume": "l",
+   "page": 380,
+   "half": 0,
+   "otherHalf": 381
+  },
+  {
+   "id": "plate-091",
+   "chapter": 91,
+   "volume": "l",
+   "page": 392,
+   "half": 0,
+   "otherHalf": 393
+  },
+  {
+   "id": "plate-092",
+   "chapter": 92,
+   "volume": "l",
+   "page": 402,
+   "half": 0,
+   "otherHalf": 403
+  },
+  {
+   "id": "plate-093",
+   "chapter": 93,
+   "volume": "l",
+   "page": 414,
+   "half": 0,
+   "otherHalf": 415
+  },
+  {
+   "id": "plate-094",
+   "chapter": 94,
+   "volume": "l",
+   "page": 426,
+   "half": 0,
+   "otherHalf": 427
+  },
+  {
+   "id": "plate-095",
+   "chapter": 95,
+   "volume": "l",
+   "page": 440,
+   "half": 0,
+   "otherHalf": 441
+  },
+  {
+   "id": "plate-096",
+   "chapter": 96,
+   "volume": "l",
+   "page": 452,
+   "half": 0,
+   "otherHalf": 453
+  },
+  {
+   "id": "plate-097",
+   "chapter": 97,
+   "volume": "l",
+   "page": 464,
+   "half": 0,
+   "otherHalf": 465
+  },
+  {
+   "id": "plate-098",
+   "chapter": 98,
+   "volume": "l",
+   "page": 480,
+   "half": 0,
+   "otherHalf": 481
+  },
+  {
+   "id": "plate-099",
+   "chapter": 99,
+   "volume": "l",
+   "page": 492,
+   "half": 0,
+   "otherHalf": 493
+  },
+  {
+   "id": "plate-100",
+   "chapter": 100,
+   "volume": "l",
+   "page": 502,
+   "half": 0,
+   "otherHalf": 503
+  },
+  {
+   "id": "plate-101",
+   "chapter": 101,
+   "volume": "l",
+   "page": 512,
+   "half": 0,
+   "otherHalf": 513
+  },
+  {
+   "id": "plate-102",
+   "chapter": 102,
+   "volume": "l",
+   "page": 526,
+   "half": 0,
+   "otherHalf": 527
+  },
+  {
+   "id": "plate-103",
+   "chapter": 103,
+   "volume": "l",
+   "page": 536,
+   "half": 0,
+   "otherHalf": 537
+  },
+  {
+   "id": "plate-104",
+   "chapter": 104,
+   "volume": "l",
+   "page": 548,
+   "half": 0,
+   "otherHalf": 549
+  },
+  {
+   "id": "plate-105",
+   "chapter": 105,
+   "volume": "l",
+   "page": 560,
+   "half": 0,
+   "otherHalf": 561
+  },
+  {
+   "id": "plate-106",
+   "chapter": 106,
+   "volume": "l",
+   "page": 570,
+   "half": 0,
+   "otherHalf": 571
+  },
+  {
+   "id": "plate-107",
+   "chapter": 107,
+   "volume": "l",
+   "page": 582,
+   "half": 0,
+   "otherHalf": 583
+  },
+  {
+   "id": "plate-108",
+   "chapter": 108,
+   "volume": "l",
+   "page": 594,
+   "half": 0,
+   "otherHalf": 595
+  },
+  {
+   "id": "plate-109",
+   "chapter": 109,
+   "volume": "l",
+   "page": 606,
+   "half": 0,
+   "otherHalf": 607
+  },
+  {
+   "id": "plate-110",
+   "chapter": 110,
+   "volume": "l",
+   "page": 622,
+   "half": 0,
+   "otherHalf": 623
+  },
+  {
+   "id": "plate-111",
+   "chapter": 111,
+   "volume": "l",
+   "page": 634,
+   "half": 0,
+   "otherHalf": 635
+  },
+  {
+   "id": "plate-112",
+   "chapter": 112,
+   "volume": "l",
+   "page": 646,
+   "half": 0,
+   "otherHalf": 647
+  },
+  {
+   "id": "plate-113",
+   "chapter": 113,
+   "volume": "l",
+   "page": 658,
+   "half": 0,
+   "otherHalf": 659
+  },
+  {
+   "id": "plate-114",
+   "chapter": 114,
+   "volume": "l",
+   "page": 670,
+   "half": 0,
+   "otherHalf": 671
+  },
+  {
+   "id": "plate-115",
+   "chapter": 115,
+   "volume": "l",
+   "page": 680,
+   "half": 0,
+   "otherHalf": 681
+  },
+  {
+   "id": "plate-116",
+   "chapter": 116,
+   "volume": "l",
+   "page": 692,
+   "half": 0,
+   "otherHalf": 693
+  },
+  {
+   "id": "plate-117",
+   "chapter": 117,
+   "volume": "l",
+   "page": 704,
+   "half": 0,
+   "otherHalf": 705
+  },
+  {
+   "id": "plate-118",
+   "chapter": 118,
+   "volume": "l",
+   "page": 718,
+   "half": 0,
+   "otherHalf": 719
+  },
+  {
+   "id": "plate-119",
+   "chapter": 119,
+   "volume": "l",
+   "page": 732,
+   "half": 0,
+   "otherHalf": 733
+  },
+  {
+   "id": "plate-120",
+   "chapter": 120,
+   "volume": "l",
+   "page": 748,
+   "half": 0,
+   "otherHalf": 749
+  }
+ ]
+}
