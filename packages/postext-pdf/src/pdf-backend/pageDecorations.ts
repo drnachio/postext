@@ -53,14 +53,15 @@ export function renderCharacterGrid(ctx: PageCtx, cells: CjkGridCells): void {
   const line = (x1: number, y1: number, x2: number, y2: number): void => {
     ops.push(moveTo(x1 * scale, pageHeightPt - y1 * scale), lineTo(x2 * scale, pageHeightPt - y2 * scale));
   };
-  const { cell, chars } = cells;
-  for (const x0 of cells.columns) {
+  const { cell } = cells;
+  cells.columns.forEach((x0, c) => {
+    const chars = cells.columnChars[c] ?? cells.chars;
     for (const y of cells.rows) {
       line(x0, y, x0 + chars * cell, y);
       line(x0, y + cell, x0 + chars * cell, y + cell);
       for (let i = 0; i <= chars; i++) line(x0 + i * cell, y, x0 + i * cell, y + cell);
     }
-  }
+  });
   ctx.page.pushOperators(
     pushGraphicsState(),
     setStrokingColor(colorFromHex('#bfbfbf', ctx.colorSpace)),

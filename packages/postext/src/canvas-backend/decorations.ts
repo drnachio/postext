@@ -49,8 +49,9 @@ export function renderCharacterGrid(ctx: CanvasRenderingContext2D, cells: CjkGri
   ctx.strokeStyle = CHARACTER_GRID_COLOR;
   ctx.lineWidth = 0.5;
   ctx.beginPath();
-  const { cell, chars } = cells;
-  for (const x0 of cells.columns) {
+  const { cell } = cells;
+  cells.columns.forEach((x0, c) => {
+    const chars = cells.columnChars[c] ?? cells.chars;
     const x1 = x0 + chars * cell;
     for (const y of cells.rows) {
       ctx.moveTo(x0, y);
@@ -62,7 +63,7 @@ export function renderCharacterGrid(ctx: CanvasRenderingContext2D, cells: CjkGri
         ctx.lineTo(x0 + i * cell, y + cell);
       }
     }
-  }
+  });
   ctx.stroke();
   ctx.restore();
 }

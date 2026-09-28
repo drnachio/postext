@@ -1103,16 +1103,17 @@ function renderPageDetailed(
 /** The character grid (稿纸) as one SVG path over the page, under the
  *  text (see `cjkGridCells`). */
 function renderCharacterGridSvg(cells: CjkGridCells, width: number, height: number): string {
-  const { cell, chars } = cells;
+  const { cell } = cells;
   const d: string[] = [];
   const n = (v: number): string => String(Math.round(v * 1000) / 1000);
-  for (const x0 of cells.columns) {
+  cells.columns.forEach((x0, c) => {
+    const chars = cells.columnChars[c] ?? cells.chars;
     const w = chars * cell;
     for (const y of cells.rows) {
       d.push(`M${n(x0)} ${n(y)}h${n(w)}M${n(x0)} ${n(y + cell)}h${n(w)}`);
       for (let i = 0; i <= chars; i++) d.push(`M${n(x0 + i * cell)} ${n(y)}v${n(cell)}`);
     }
-  }
+  });
   return `<svg class="pt-char-grid" aria-hidden="true" width="${width}" height="${height}" style="position:absolute;left:0;top:0;pointer-events:none;">` +
     `<path d="${d.join('')}" fill="none" stroke="${CHARACTER_GRID_COLOR}" stroke-width="0.5"/></svg>`;
 }
@@ -1202,7 +1203,7 @@ export function renderToHtmlIndexed(
           },
         }
       : { ...options, linkTargets };
-    const gridCells = doc.config.cjk?.grid?.show ? cjkGridCells(doc.config, p.contentArea, doc.baselineGrid) : undefined;
+    const gridCells = doc.config.cjk?.grid?.show ? cjkGridCells(doc.config, p.contentArea, doc.baselineGrid, p.columns) : undefined;
     const detail = renderPageDetailed(p, background, pageOptions, ink, bleedInset, gridCells);
     pageHtmlParts.push(detail.outerHtml);
     indexedPages.push({

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument, renderPageToCanvas, collectConfigWarnings, formatWarning } from '../../index';
 import { renderToHtml } from '../../html-backend';
 import { resolveAllConfig } from '../../pipeline/config';
-import { applyCjkGrid, cjkGridGeometry } from '../../pipeline/cjkGrid';
+import { applyCjkGrid, cjkGridCells, cjkGridGeometry } from '../../pipeline/cjkGrid';
 import { computePageMetrics } from '../../pipeline/buildHelpers';
 import type { PostextConfig } from '../../types';
 
@@ -102,6 +102,44 @@ describe('character grid (cjk.grid)', () => {
     expect(cols.length).toBe(2);
     expect(cols[0]!.bbox.width).toBeCloseTo(207, 9);
     expect(cols[1]!.bbox.x - (cols[0]!.bbox.x + cols[0]!.bbox.width)).toBeCloseTo(18, 9);
+  });
+
+  it('cuts a oneAndHalf page into columns of whole characters and draws the grid on each', () => {
+    // 大32开 as above, mirrored, the side column outside: 30 % of the 104 mm
+    // inside the margins is 88.4 pt, 8 characters; the 6 mm gutter 2; the
+    // main column 18. The type area is 28 characters wide, as before.
+    const base = bookConfig({ enabled: true, charsPerLine: 18, linesPerPage: 28, show: true }, {
+      layout: { layoutType: 'oneAndHalf', sideColumnPercent: 30, gutterWidth: mm(6), sideColumnRole: 'text', sideColumnSide: 'outer' },
+      cjk: { punctuationWidth: 'fullwidth', compressAdjacent: false, trimLineStart: false, grid: { enabled: true, charsPerLine: 18, linesPerPage: 28, show: true } },
+    });
+    const config: PostextConfig = { ...base, page: { ...base.page!, margins: { ...base.page!.margins!, mirror: true } } };
+    const g = cjkGridGeometry(config)!;
+    expect(g).toMatchObject({ charsPerLine: 18, sideChars: 8, gutterEm: 2, clamped: {} });
+    expect(g.inline).toBeCloseTo(294, 9);
+    // Han text alone: every full line is 18 or 8 characters, set solid.
+    const han = PASSAGE.replace(/[^一-鿿]/g, '');
+    const doc = buildDocument({ markdown: `${han.repeat(14)}\n\n${han.repeat(14)}` }, config);
+    expect(doc.pages.length).toBeGreaterThan(1);
+    for (const page of doc.pages.slice(0, 2)) {
+      expect(page.columns.map((c) => c.bbox.width).map((w) => Math.round(w * 1e6) / 1e6)).toEqual([189, 84]);
+      const recto = page.index % 2 === 0;
+      const [main, side] = page.columns;
+      // The side column outside: right on a recto, left on a verso.
+      expect(side!.bbox.x > main!.bbox.x).toBe(recto);
+      for (const col of page.columns) {
+        for (const block of col.blocks) {
+          for (const line of block.lines.slice(0, -1)) {
+            expect(line.segments!.every((s) => s.tracking === undefined)).toBe(true);
+            expect(line.bbox.x - block.bbox.x + line.bbox.width).toBeCloseTo(col.bbox.width, 6);
+          }
+        }
+      }
+      // The overlay: a set of cells on each column, as many as it holds.
+      const cells = cjkGridCells(doc.config, page.contentArea, doc.baselineGrid, page.columns)!;
+      const byX = [...page.columns].sort((a, b) => a.bbox.x - b.bbox.x);
+      expect(cells.columns).toEqual(byX.map((c) => c.bbox.x));
+      expect(cells.columnChars).toEqual(byX.map((c) => (c === main ? 18 : 8)));
+    }
   });
 
   it('reduces a grid larger than the page and warns', () => {
