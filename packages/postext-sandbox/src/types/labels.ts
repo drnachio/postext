@@ -366,6 +366,9 @@ export interface SandboxLabels {
   cjkHangingForce: string;
   cjkLatinSpacing: string;
   cjkLatinSpacingTooltip: string;
+  cjkUprightDigits: string;
+  cjkUprightDigitsTooltip: string;
+  cjkUprightDigitsCount: string;
   cjkGrid: string;
   cjkGridDescription: string;
   cjkGridEnabled: string;
@@ -1023,6 +1026,8 @@ export interface SandboxLabels {
   /** Image elements of a design slot (a logo on a title page). */
   headerFooterElementImage: string;
   headerFooterAddImage: string;
+  headerFooterAddForeEdge: string;
+  headerFooterAddForeEdgeTooltip: string;
   headerFooterImageResource: string;
   headerFooterImageResourceTooltip: string;
   /** Resource picker of an image element: empty choice, an id no resource
@@ -1077,6 +1082,7 @@ export interface SandboxLabels {
   headerFooterElementPagesBlank: string;
   headerFooterAnchorToPage: string;
   headerFooterAnchorToBleed: string;
+  headerFooterAnchorToOuter: string;
   headerFooterFrameEdge: string;
   headerFooterFrameEdgeTooltip: string;
   headerFooterFrameEdgeTopLeft: string;
@@ -1132,6 +1138,8 @@ export interface SandboxLabels {
   headerFooterElementOffsetXTooltip: string;
   headerFooterElementOffsetYTooltip: string;
   headerFooterElementOverflow: string;
+  headerFooterElementWritingMode: string;
+  headerFooterElementWritingModeTooltip: string;
   headerFooterElementOverflowWrap: string;
   headerFooterElementOverflowEllipsisEnd: string;
   headerFooterElementOverflowEllipsisMiddle: string;

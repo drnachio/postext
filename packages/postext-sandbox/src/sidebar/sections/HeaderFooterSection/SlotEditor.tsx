@@ -94,6 +94,35 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
     commit([...currentRaw, template]);
   };
 
+  /** The fore-edge heads of a vertical book: the chapter title down the
+   *  outer margin four characters below the head of the type area, the
+   *  folio five above its foot, at 80 % of the body size (JLREQ §2.6; the
+   *  Taiwan and mainland rules for vertical books). */
+  const addForeEdge = () => {
+    const size = { value: 8, unit: 'pt' as const };
+    const head: DesignTextElement = {
+      ...DEFAULT_TEXT_ELEMENT,
+      id: generateId('text', existingIds),
+      content: '{chapterTitle}',
+      writingMode: 'vertical-rl',
+      fontSize: size,
+      overflow: 'clip',
+      align: 'left',
+      placement: { anchor: { to: 'outer', edge: 'top' }, offset: { x: { value: 0, unit: 'pt' }, y: { value: 4, unit: 'em' } }, size: { width: 'auto', height: 'auto' } },
+    };
+    const folio: DesignTextElement = {
+      ...DEFAULT_TEXT_ELEMENT,
+      id: generateId('text', new Set([...existingIds, head.id])),
+      content: '{pageNumber}',
+      writingMode: 'vertical-rl',
+      fontSize: size,
+      overflow: 'clip',
+      align: 'left',
+      placement: { anchor: { to: 'outer', edge: 'bottom' }, offset: { x: { value: 0, unit: 'pt' }, y: { value: -5, unit: 'em' } }, size: { width: 'auto', height: 'auto' } },
+    };
+    commit([...currentRaw, head, folio]);
+  };
+
   const updateAt = (index: number, next: DesignElement) => {
     const arr = currentRaw.slice();
     arr[index] = next;
@@ -233,6 +262,13 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
         <AddButton label={labels.headerFooterAddBox} onClick={addBox} />
         <AddButton label={labels.headerFooterAddImage} onClick={addImage} />
       </div>
+      {slotKey === 'header' && (
+        <div className="mt-2 flex gap-2">
+          <Button variant="outline" size="xs" icon={<Plus size={12} />} onClick={addForeEdge} title={labels.headerFooterAddForeEdgeTooltip}>
+            {labels.headerFooterAddForeEdge}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
