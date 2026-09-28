@@ -2,7 +2,7 @@
 
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
-import { DEFAULT_CJK_CONFIG, cjkRegionOfLocale, defaultCjkLineBreak } from 'postext';
+import { DEFAULT_CJK_CONFIG, cjkRegionOf, defaultCjkLineBreak } from 'postext';
 import type { CjkConfig } from 'postext';
 import { CollapsibleSection, SelectInput } from '../../controls';
 
@@ -41,7 +41,7 @@ export const CjkSection = memo(function CjkSection() {
   };
   const region = raw?.region ?? DEFAULT_CJK_CONFIG.region;
   const lineBreak = raw?.lineBreak ?? DEFAULT_CJK_CONFIG.lineBreak;
-  const autoRegion = cjkRegionOfLocale(locale) ?? 'mainland';
+  const autoRegion = cjkRegionOf(locale) ?? 'mainland';
   const resolvedRegion = region === 'auto' ? autoRegion : region;
   const autoLineBreak = defaultCjkLineBreak(resolvedRegion);
   const auto = (name: string) => labels.cjkAuto.replace('__value__', name);

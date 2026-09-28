@@ -386,7 +386,7 @@ export interface SlotLayoutExtras {
   metadata?: Record<string, unknown>;
 }
 
-const HEADING_LINE_PLACEHOLDER = /\{(number|numberDecimal|numberRoman|numberRomanLower|numberAlpha|numberAlphaLower|numberWords|numberWordsLower|numberOrdinalWords|numberOrdinalWordsLower|chapterNumber|chapterTitle)\}/;
+const HEADING_LINE_PLACEHOLDER = /\{(number|numberDecimal|numberRoman|numberRomanLower|numberAlpha|numberAlphaLower|numberWords|numberWordsLower|numberOrdinalWords|numberOrdinalWordsLower|numberHan|chapterNumber|chapterTitle)\}/;
 const METADATA_ELEMENT = /^\s*\{(title|subtitle|author|publishDate)\}\s*$/;
 
 /** The source a text element maps back to, from what its content renders:
@@ -531,7 +531,7 @@ function findOpenerHeading(
       // A structural heading prints nothing, not even an opener.
       if (headingIsHidden(block, lvl)) continue;
       const pref = block.numberPrefix ?? '';
-      const title = defaultOpenerTitle(block.lines, pref, block.titleBreaks, block.titleLength ?? -1);
+      const title = defaultOpenerTitle(block.lines, pref, block.titleBreaks, block.titleLength ?? -1, block.numberSeparator);
       return { block, level: block.headingLevel, title, numberPrefix: pref };
     }
   }
@@ -570,8 +570,9 @@ export function headingTitleText(
   numberPrefix: string,
   titleBreaks: readonly number[] | undefined,
   titleLength: number,
+  numberSeparator = ' ',
 ): string {
-  return defaultOpenerTitle(lines, numberPrefix, titleBreaks, titleLength).titleText;
+  return defaultOpenerTitle(lines, numberPrefix, titleBreaks, titleLength, numberSeparator).titleText;
 }
 
 type TitleRunFlags = { bold: boolean; italic: boolean; script?: 'sup' | 'sub' };
@@ -590,6 +591,9 @@ export function defaultOpenerTitle(
   numberPrefix: string,
   titleBreaks: readonly number[] | undefined,
   titleLength: number,
+  /** What joins the number to the title in the lines
+   *  (`HeadingLevelConfig.numberSeparator`). */
+  numberSeparator = ' ',
 ): DefaultOpenerTitle {
   const chars: string[] = [];
   const flags: TitleRunFlags[] = [];
@@ -643,7 +647,7 @@ export function defaultOpenerTitle(
     }
   }
   const full = chars.join('');
-  const drop = numberPrefix && full.startsWith(`${numberPrefix} `) ? numberPrefix.length + 1 : 0;
+  const drop = numberPrefix && full.startsWith(`${numberPrefix}${numberSeparator}`) ? numberPrefix.length + numberSeparator.length : 0;
   const title = full.slice(drop);
   const titleText = applyTitleBreaks(title, titleBreaks, titleLength);
   if (!hasMarks) return { titleText };
@@ -757,8 +761,8 @@ export function measureDefaultOpenerHeight(
  *  text element, anchored to fill the full-page-width container, using the
  *  heading level's resolved typography and `headings.textAlign` (justified
  *  sets flush left, like the last line of a justified heading). Emits
- *  `{number} {titleText}` when the heading carries a numberPrefix, otherwise
- *  `{titleText}`. With `marked`, `{titleText}` holds the title as inline
+ *  `{number} {titleText}` (the level's `numberSeparator` between them) when
+ *  the heading carries a numberPrefix, otherwise `{titleText}`. With `marked`, `{titleText}` holds the title as inline
  *  Markdown (see {@link DefaultOpenerTitle}) and the element reads it so. */
 function synthesiseDefaultOpenerSlot(
   level: ResolvedHeadingLevelConfig,
@@ -768,7 +772,8 @@ function synthesiseDefaultOpenerSlot(
 ): ResolvedDesignSlot {
   // `{number}` is the heading placeholder for the formatted number;
   // `{formattedNumber}` is not one, and left the title with a leading space.
-  const content = hasNumberPrefix ? '{number} {titleText}' : '{titleText}';
+  // The level's separator joins them, as in the column (`'　'` in Chinese).
+  const content = hasNumberPrefix ? `{number}${level.numberSeparator ?? ' '}{titleText}` : '{titleText}';
   const textEl: ResolvedDesignTextElement = {
     kind: 'text',
     id: 'defaultHeadingOpener',
@@ -1201,7 +1206,7 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
         // The lines joined back into the title (EF-162), with a forced break
         // (`\\`) as a newline, as the block's height was measured
         // (`build.ts`) and as an opener prints it (EF-152).
-        const title = headingTitleText(block.lines, pref, block.titleBreaks, block.titleLength ?? -1);
+        const title = headingTitleText(block.lines, pref, block.titleBreaks, block.titleLength ?? -1, block.numberSeparator);
         const placeholders: DesignPlaceholderContext = {
           kind: 'heading',
           page,

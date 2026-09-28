@@ -1,26 +1,29 @@
 import { describe, it, expect } from 'vitest';
-import { resolveCjkConfig, stripCjkDefaults, cjkRegionOfLocale } from '../../defaults/cjk';
+import { resolveCjkConfig, stripCjkDefaults } from '../../defaults/cjk';
+import { cjkRegionOf } from '../../locale';
 import { stripConfigDefaults } from '../../defaults';
 import { resolveAllConfig } from '../../pipeline/config';
 
 describe('cjk config', () => {
   it('reads the region from the locale', () => {
-    expect(cjkRegionOfLocale('zh')).toBe('mainland');
-    expect(cjkRegionOfLocale('zh-Hans')).toBe('mainland');
-    expect(cjkRegionOfLocale('zh-CN')).toBe('mainland');
-    expect(cjkRegionOfLocale('zh-SG')).toBe('mainland');
-    expect(cjkRegionOfLocale('zh-Hans-CN')).toBe('mainland');
-    expect(cjkRegionOfLocale('zh-Hant')).toBe('taiwan');
-    expect(cjkRegionOfLocale('zh-TW')).toBe('taiwan');
-    expect(cjkRegionOfLocale('zh-Hant-TW')).toBe('taiwan');
-    expect(cjkRegionOfLocale('zh-HK')).toBe('hongkong');
-    expect(cjkRegionOfLocale('zh-Hant-HK')).toBe('hongkong');
-    expect(cjkRegionOfLocale('zh-MO')).toBe('hongkong');
-    expect(cjkRegionOfLocale('zh_TW')).toBe('taiwan');
-    expect(cjkRegionOfLocale('ja')).toBeUndefined();
-    expect(cjkRegionOfLocale('es')).toBeUndefined();
-    expect(cjkRegionOfLocale('not a tag!')).toBeUndefined();
-    expect(cjkRegionOfLocale(undefined)).toBeUndefined();
+    expect(cjkRegionOf('zh')).toBe('mainland');
+    expect(cjkRegionOf('zh-Hans')).toBe('mainland');
+    expect(cjkRegionOf('zh-CN')).toBe('mainland');
+    expect(cjkRegionOf('zh-SG')).toBe('mainland');
+    expect(cjkRegionOf('zh-Hans-CN')).toBe('mainland');
+    expect(cjkRegionOf('zh-Hant')).toBe('taiwan');
+    expect(cjkRegionOf('zh-TW')).toBe('taiwan');
+    expect(cjkRegionOf('zh-Hant-TW')).toBe('taiwan');
+    expect(cjkRegionOf('zh-HK')).toBe('hongkong');
+    expect(cjkRegionOf('zh-Hant-HK')).toBe('hongkong');
+    expect(cjkRegionOf('zh-MO')).toBe('hongkong');
+    expect(cjkRegionOf('zh-MY')).toBe('mainland');
+    expect(cjkRegionOf('zh-Hant-MY')).toBe('mainland');
+    expect(cjkRegionOf('zh_TW')).toBe('taiwan');
+    expect(cjkRegionOf('ja')).toBeUndefined();
+    expect(cjkRegionOf('es')).toBeUndefined();
+    expect(cjkRegionOf('not a tag!')).toBeUndefined();
+    expect(cjkRegionOf(undefined)).toBeUndefined();
   });
 
   it('resolves auto per region: gb on the mainland, basic in Taiwan and Hong Kong', () => {

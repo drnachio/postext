@@ -20,6 +20,7 @@ import type { BlockStyle } from './styles';
 import type { BlockMeasureContext, MeasuredContentBlock } from './measureContentBlock';
 import { stampSourceRanges } from './buildHelpers';
 import { resolvedLocale } from './config';
+import { stringsFor } from '../locale';
 
 /** A page number's link target, carried as a Markdown link while the entry
  *  is measured and turned into `VDTLineSegment.pageLink` after. */
@@ -56,8 +57,10 @@ const newNode = (text: string): IndexNode => ({
   seeAlso: [],
 });
 
-/** Labels in the document language (English otherwise). */
-const LABELS: Record<string, { see: string; seeAlso: string; symbols: string }> = {
+/** Labels in the document language (English otherwise), keyed by
+ *  `stringsKeyOf`. `numbers` is the head of the entries that open with a
+ *  digit, `0–9` where not given. */
+const LABELS: Record<string, { see: string; seeAlso: string; symbols: string; numbers?: string }> = {
   en: { see: 'See', seeAlso: 'See also', symbols: 'Symbols' },
   es: { see: 'Véase', seeAlso: 'Véase también', symbols: 'Símbolos' },
   ca: { see: 'Vegeu', seeAlso: 'Vegeu també', symbols: 'Símbols' },
@@ -66,11 +69,12 @@ const LABELS: Record<string, { see: string; seeAlso: string; symbols: string }> 
   fr: { see: 'Voir', seeAlso: 'Voir aussi', symbols: 'Symboles' },
   it: { see: 'Vedi', seeAlso: 'Vedi anche', symbols: 'Simboli' },
   de: { see: 'Siehe', seeAlso: 'Siehe auch', symbols: 'Symbole' },
+  'zh-hans': { see: '见', seeAlso: '另见', symbols: '符号', numbers: '数字' },
+  'zh-hant': { see: '見', seeAlso: '另見', symbols: '符號', numbers: '數字' },
 };
 
-function labelsFor(locale: string): { see: string; seeAlso: string; symbols: string } {
-  const lang = locale.toLowerCase().split(/[-_]/)[0] ?? 'en';
-  return LABELS[lang] ?? LABELS.en!;
+function labelsFor(locale: string): { see: string; seeAlso: string; symbols: string; numbers?: string } {
+  return stringsFor(LABELS, locale);
 }
 
 /** The locale the index sorts in: its own, else the document's. */
@@ -260,7 +264,7 @@ function indexBlocksFor(
     see: cfg.see.label ?? localized.see,
     seeAlso: cfg.see.alsoLabel ?? localized.seeAlso,
     symbols: cfg.groups.symbolsLabel ?? localized.symbols,
-    numbers: cfg.groups.numbersLabel ?? '0–9',
+    numbers: cfg.groups.numbersLabel ?? localized.numbers ?? '0–9',
   };
   const bySort = (a: IndexNode, b: IndexNode): number =>
     base.compare(a.sort, b.sort) || fine.compare(a.sort, b.sort) || fine.compare(a.text, b.text);

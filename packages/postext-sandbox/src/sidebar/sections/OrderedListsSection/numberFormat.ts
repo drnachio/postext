@@ -1,6 +1,7 @@
 import type { OrderedListNumberFormat } from 'postext';
 import { parseNumberFormat } from 'postext';
 import type { useSandboxLabels } from '../../../context/SandboxContext';
+import { eastAsianNumberFormatOptions } from '../../settings/eastAsianOptions';
 
 export function numberFormatOptions(labels: ReturnType<typeof useSandboxLabels>) {
   return [
@@ -9,6 +10,7 @@ export function numberFormatOptions(labels: ReturnType<typeof useSandboxLabels>)
     { label: labels.orderedListsNumberFormatUpperAlpha, value: 'upper-alpha' },
     { label: labels.orderedListsNumberFormatLowerRoman, value: 'lower-roman' },
     { label: labels.orderedListsNumberFormatUpperRoman, value: 'upper-roman' },
+    ...eastAsianNumberFormatOptions(labels),
   ];
 }
 

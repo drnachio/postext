@@ -24,6 +24,8 @@ const STATIC_DEFAULTS = {
   backgroundEnabled: false,
   background: DEFAULT_MAIN_COLOR,
   padding: { value: 0.35, unit: 'em' as const },
+  labelNumberGap: '\u00a0',
+  labelSeparator: '. ',
 } satisfies Partial<ResolvedCaptionStyleConfig>;
 
 /** Static note defaults (size and colour derive from the caption). */
@@ -78,6 +80,8 @@ export function resolveCaptionStyleConfig(
     background: p.background ?? STATIC_DEFAULTS.background,
     padding: p.padding ?? STATIC_DEFAULTS.padding,
     note: resolveNote(p.note, fontSize, color),
+    labelNumberGap: typeof p.labelNumberGap === 'string' ? p.labelNumberGap : STATIC_DEFAULTS.labelNumberGap,
+    labelSeparator: typeof p.labelSeparator === 'string' ? p.labelSeparator : STATIC_DEFAULTS.labelSeparator,
   };
 }
 
@@ -125,6 +129,8 @@ export function mergeCaptionStyle(
       gap: n.gap ?? base.note.gap,
       align: n.align ?? base.note.align,
     },
+    labelNumberGap: typeof o.labelNumberGap === 'string' ? o.labelNumberGap : base.labelNumberGap,
+    labelSeparator: typeof o.labelSeparator === 'string' ? o.labelSeparator : base.labelSeparator,
   };
 }
 
@@ -166,6 +172,8 @@ export function stripCaptionStyleDefaults(
   if (captionStyle.padding !== undefined && !dimensionsEqual(captionStyle.padding, STATIC_DEFAULTS.padding)) { r.padding = captionStyle.padding; has = true; }
   const note = stripNoteDefaults(captionStyle.note);
   if (note) { r.note = note; has = true; }
+  if (captionStyle.labelNumberGap !== undefined && captionStyle.labelNumberGap !== STATIC_DEFAULTS.labelNumberGap) { r.labelNumberGap = captionStyle.labelNumberGap; has = true; }
+  if (captionStyle.labelSeparator !== undefined && captionStyle.labelSeparator !== STATIC_DEFAULTS.labelSeparator) { r.labelSeparator = captionStyle.labelSeparator; has = true; }
 
   return has ? r : undefined;
 }

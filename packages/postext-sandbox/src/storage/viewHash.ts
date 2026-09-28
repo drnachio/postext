@@ -50,7 +50,7 @@ const LANG_RE = /^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]{1,8})*$/;
  *  `pt-BR`); null when it is not a well-formed tag. */
 function readLang(hash: string): string | null {
   const raw = readParam(hash, 'lang');
-  return raw !== null && LANG_RE.test(raw) ? canonicalLocaleTag(raw) : null;
+  return raw !== null && LANG_RE.test(raw) ? canonicalLocaleTag(raw) ?? null : null;
 }
 
 /** Two `lang` parts naming the same tag, case aside (null only matches

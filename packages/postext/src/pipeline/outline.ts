@@ -7,8 +7,8 @@
  */
 
 import type { ContentBlock, InlineSpan } from '../parse';
-import { flattenTitleBreaks, TITLE_BREAK_RE } from '../parse/inlineFormatting';
-import { collapseBreakingSpaces } from '../measure/spaces';
+import { flattenTitleBreaks, flattenTitleBreakSpans, TITLE_BREAK_RE } from '../parse/inlineFormatting';
+import { collapseTitleSpaces } from '../measure/spaces';
 import { computeHeadingNumbering, type HeadingNumberingOptions, type HeadingTemplates } from '../numbering';
 import type { HeadingCounters, OutlineEntry, PostextConfig } from '../types';
 import type { ResolvedConfig, VDTDocument } from '../vdt';
@@ -59,11 +59,11 @@ export function indexOutline(entries: readonly OutlineEntry[]): OutlineEntry[] {
   return entries.filter((e) => e.kind === 'indexMark');
 }
 
-function titleSpans(spans: readonly InlineSpan[]): OutlineEntry['spans'] {
+function titleSpans(blockText: string, spans: readonly InlineSpan[]): OutlineEntry['spans'] {
   const out: NonNullable<OutlineEntry['spans']> = [];
-  for (const s of spans) {
+  for (const s of flattenTitleBreakSpans(blockText, spans)) {
     if (s.math || s.ref) continue; // formulas and references do not carry into the contents
-    const text = flattenTitleBreaks(s.text);
+    const text = s.text;
     if (text.length === 0) continue;
     const last = out[out.length - 1];
     if (last && last.bold === s.bold && last.italic === s.italic) last.text += text;
@@ -145,9 +145,11 @@ export function computeOutline(
     out.push({
       kind: 'heading',
       level: b.level,
-      // No-break spaces stay: a running head or contents entry keeps them.
-      title: collapseBreakingSpaces(flattenTitleBreaks(b.text)).trim(),
-      spans: titleSpans(b.spans),
+      // No-break spaces stay: a running head or contents entry keeps them,
+      // and so does the ideographic space between the halves of a Chinese
+      // couplet title.
+      title: collapseTitleSpaces(flattenTitleBreaks(b.text)).trim(),
+      spans: titleSpans(b.text, b.spans),
       number,
       ...(numbered && values[i] !== undefined ? { counter: values[i] } : {}),
       numbered,

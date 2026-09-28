@@ -2,8 +2,7 @@
 
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext';
-import { relocalizedResourceTypes } from '../../../context/defaultConfig';
-import { resolveBodyTextConfig, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_HYPHENATION_CONFIG, dimensionsEqual, colorsEqual } from 'postext';
+import { resolveBodyTextConfig, DEFAULT_BODY_TEXT_CONFIG, dimensionsEqual, colorsEqual, isCjkLanguage } from 'postext';
 import type { BodyTextConfig, ColonListRoom, HyphenationConfig, LocaleTag } from 'postext';
 import {
   CollapsibleSection,
@@ -15,7 +14,8 @@ import {
   SelectInput,
   ToggleSwitch,
 } from '../../../controls';
-import { LOCALE_TO_HYPHENATION, localeOptionsFor, TEXT_SIZE_UNITS, LINE_HEIGHT_UNITS, INDENT_UNITS } from './constants';
+import { LOCALE_TO_HYPHENATION, documentLocaleOptionsFor, TEXT_SIZE_UNITS, LINE_HEIGHT_UNITS, INDENT_UNITS } from './constants';
+import { relocalizedResourceTypes } from '../../../context/defaultConfig';
 import { JustificationSubsection, RaggedBreakingSubsection } from './JustificationSubsection';
 import { BlockquoteSubsection } from './BlockquoteSubsection';
 import { RaggedHyphenationSubsection } from './HyphenationFields';
@@ -79,7 +79,12 @@ export const BodyTextSection = memo(function BodyTextSection() {
   };
 
   const updateHyphenation = (partial: Partial<HyphenationConfig>) => {
-    updateBodyText({ hyphenation: { ...raw?.hyphenation, ...partial } });
+    const next: HyphenationConfig = { ...raw?.hyphenation, ...partial };
+    // Chinese, Japanese and Korean have no patterns: turning hyphenation on
+    // in such a document names the language of its Latin words, English
+    // until the author picks another.
+    if (partial.enabled === true && isCjkLanguage(next.locale ?? effectiveDocumentLocale)) next.locale = 'en-us';
+    updateBodyText({ hyphenation: next });
   };
 
   const handleTextAlignChange = (value: string) => {
@@ -116,7 +121,8 @@ export const BodyTextSection = memo(function BodyTextSection() {
   const isTextAlignDefault = bodyText.textAlign === D.textAlign;
   const isFontWeightDefault = bodyText.fontWeight === D.fontWeight;
   const isBoldFontWeightDefault = bodyText.boldFontWeight === D.boldFontWeight;
-  const isHyphenationEnabledDefault = bodyText.hyphenation.enabled === DEFAULT_HYPHENATION_CONFIG.enabled;
+  // Off by default in a Chinese, Japanese or Korean document.
+  const isHyphenationEnabledDefault = bodyText.hyphenation.enabled === resolveBodyTextConfig(undefined, documentLocale).hyphenation.enabled;
   const isHyphenationLocaleDefault = effectiveHyphenationLocale === defaultLocale;
   const isFirstLineIndentDefault = dimensionsEqual(bodyText.firstLineIndent, D.firstLineIndent);
   const isHangingIndentDefault = bodyText.hangingIndent === D.hangingIndent;
@@ -362,7 +368,7 @@ export const BodyTextSection = memo(function BodyTextSection() {
         <SelectInput
           label={labels.documentLocale}
           value={effectiveDocumentLocale}
-          options={localeOptionsFor(effectiveDocumentLocale)}
+          options={documentLocaleOptionsFor(effectiveDocumentLocale)}
           onChange={(v) => updateDocumentLocale(v)}
           tooltip={labels.documentLocaleTooltip}
           isDefault={documentLocale === undefined}

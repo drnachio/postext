@@ -1,5 +1,5 @@
-import { TITLE_BREAK_RE } from '../parse/inlineFormatting';
-import { collapseBreakingSpaces } from '../measure/spaces';
+import { charBefore, charFrom, flattenTitleBreaks, joinsWide, TITLE_BREAK_RE } from '../parse/inlineFormatting';
+import { collapseBreakingSpaces, collapseTitleSpaces } from '../measure/spaces';
 import type { InlineSpan } from '../parse';
 import type { DocumentMetadata } from '../types';
 import { metadataText } from '../frontmatter';
@@ -530,24 +530,51 @@ export function lineJoin(
  *  parted), so it stays. */
 const BREAKING_EDGES_RE = /^[^\S\u00A0\u2007\u202F\uFEFF]+|[^\S\u00A0\u2007\u202F\uFEFF]+$/g;
 
-function plainTextOfBlock(block: VDTBlock): string {
-  // Wrapped lines keep their trailing space token and hyphenated lines end
-  // with the break mark, so rejoin them the way the paragraph read before
-  // wrapping (see `lineJoin`). `\u2028` is the title-break placeholder.
-  let text = '';
-  block.lines.forEach((line, i) => {
+/** A block's lines read back as the text they were broken from, the way
+ *  the paragraph read before wrapping (see {@link lineJoin}): wrapped lines
+ *  keep their trailing space token and hyphenated lines end with the break
+ *  mark. A line of Chinese broken between two characters joins the next
+ *  with nothing, and one broken at an ideographic space (U+3000, the space
+ *  of a couplet title or of `numberSeparator: '　'`) gets it back, whichever
+ *  of the two lines holds it. Whitespace inside the lines is kept as it is;
+ *  the ends are trimmed. `\u2028` is the title-break placeholder. The
+ *  running heads read a heading this way, and so do the PDF bookmarks and
+ *  document title. */
+export function blockLinesText(block: VDTBlock): string {
+  const lines = block.lines.map((line) => {
     // The hyphen repeated from the line before (`repeatHyphen`) is not text.
     const own = line.repeatedHyphen && line.text.startsWith('-') ? line.text.slice(1) : line.text;
-    const raw = own.replace(/\u2028/g, ' ');
-    const t = raw.replace(BREAKING_EDGES_RE, '');
+    const raw = flattenTitleBreaks(own);
+    return { raw, t: raw.replace(BREAKING_EDGES_RE, '') };
+  });
+  let text = '';
+  block.lines.forEach((line, i) => {
+    const { raw, t } = lines[i]!;
     if (t.length === 0) return;
     const next = block.lines[i + 1];
     const { drop, separator } = lineJoin(t, line, next, /[ \t]$/.test(raw));
-    // The last line takes a space as before; the result is trimmed below.
-    text += t.slice(0, t.length - drop) + (next === undefined ? ' ' : separator);
+    let sep: string = separator;
+    if (next !== undefined && !line.hyphenated && !line.hardHyphen) {
+      const after = lines[i + 1]!;
+      const broken = BREAKING_TAIL_RE.exec(raw)![0] + BREAKING_HEAD_RE.exec(after.raw)![0];
+      if (broken.includes('\u3000')) sep = '\u3000';
+      // Two Chinese characters with no space between them on either line
+      // were never apart, whatever the offsets say.
+      else if (broken.length === 0 && joinsWide(charBefore(t, t.length), charFrom(after.t, 0))) sep = '';
+    }
+    text += t.slice(0, t.length - drop) + (next === undefined ? '' : sep);
   });
-  // No-break spaces stay, so the running head never breaks at one.
-  text = collapseBreakingSpaces(text).trim();
+  return text.trim();
+}
+
+/** The breaking whitespace a line ends / starts with. */
+const BREAKING_TAIL_RE = /[^\S\u00A0\u2007\u202F\uFEFF]*$/;
+const BREAKING_HEAD_RE = /^[^\S\u00A0\u2007\u202F\uFEFF]*/;
+
+function plainTextOfBlock(block: VDTBlock): string {
+  // No-break spaces stay, so the running head never breaks at one, and so
+  // does the ideographic space of a Chinese title.
+  const text = collapseTitleSpaces(blockLinesText(block)).trim();
   // Strip any numbering prefix that was prepended during build.
   if (block.numberPrefix && text.startsWith(block.numberPrefix)) {
     return text.slice(block.numberPrefix.length).trimStart();

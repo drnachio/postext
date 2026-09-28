@@ -1,6 +1,6 @@
 import type { DocumentMetadata, PostextConfig } from '../types';
 import type { VDTPage } from '../vdt';
-import { formatCounter, formatNumeral } from '../numbering';
+import { chineseInformalStyle, formatCounter, formatNumeral } from '../numbering';
 import { metadataText } from '../frontmatter';
 import {
   resolvePlaceholders as legacyResolvePlaceholders,
@@ -110,6 +110,7 @@ const HEADING_PLACEHOLDERS = new Set([
   'numberWordsLower',
   'numberOrdinalWords',
   'numberOrdinalWordsLower',
+  'numberHan',
 ]);
 
 export function allowedPlaceholdersFor(kind: DesignContextKind): Set<string> {
@@ -167,6 +168,9 @@ function resolveHeadingName(name: string, ctx: DesignPlaceholderContext): string
       return h?.numericValue !== undefined ? formatCounter(h.numericValue, 'Ordinal', h.locale) : '';
     case 'numberOrdinalWordsLower':
       return h?.numericValue !== undefined ? formatCounter(h.numericValue, 'ordinal', h.locale) : '';
+    case 'numberHan':
+      // Chinese numerals in the document's script: 第{numberHan}回.
+      return h?.numericValue !== undefined ? formatNumeral(h.numericValue, chineseInformalStyle(h.locale)) : '';
     case 'chapterNumber':
       return h?.chapterNumber ?? ctx.chapterNumberByPageIndex?.[ctx.page.index] ?? '';
     case 'chapterTitle':

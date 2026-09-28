@@ -75,14 +75,14 @@ const BALANCING_KEYS = {
 } satisfies Record<keyof ColumnBalancingConfig, true>;
 const HEADING_LEVEL_KEYS = {
   level: true, fontSize: true, lineHeight: true, fontFamily: true, color: true, fontWeight: true,
-  marginTop: true, marginBottom: true, numberingTemplate: true, italic: true, letterSpacing: true,
+  marginTop: true, marginBottom: true, numberingTemplate: true, numberSeparator: true, italic: true, letterSpacing: true,
   breakBefore: true, span: true, advancedDesign: true, textTransform: true, hidden: true, snapToGrid: true,
 } satisfies Record<keyof HeadingLevelConfig, true>;
 const HEADING_STYLE_KEYS = {
   id: true, name: true, numberingTemplate: true, numbered: true, toc: true, runningChapter: true, header: true, footer: true,
   margins: true, layout: true, bodyStyle: true, palette: true,
   fontSize: true, lineHeight: true, fontFamily: true, color: true, fontWeight: true, marginTop: true,
-  marginBottom: true, italic: true, letterSpacing: true, breakBefore: true, span: true,
+  marginBottom: true, numberSeparator: true, italic: true, letterSpacing: true, breakBefore: true, span: true,
   advancedDesign: true, textTransform: true, hidden: true, snapToGrid: true,
 } satisfies Record<keyof HeadingStyleConfig, true>;
 const PARAGRAPH_STYLE_KEYS = {

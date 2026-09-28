@@ -118,7 +118,7 @@ function resolveCalloutStyleConfig(
   const d = DEFAULT_CALLOUT_STYLE_STATIC;
   // Continuation strings follow the document language, as a table's do
   // (a blank `locale` is unset).
-  const strings = defaultTableContinuationStrings(presentTag(locale) ?? bodyText.hyphenation.locale);
+  const strings = defaultTableContinuationStrings(presentTag(locale) ?? bodyText.hyphenation.tag ?? bodyText.hyphenation.locale);
   return {
     id: partial.id,
     name: partial.name ?? partial.id,

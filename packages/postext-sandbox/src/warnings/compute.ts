@@ -27,6 +27,7 @@ import {
   collectConfigWarnings,
   collectHeadingDesignCuts,
   parseNumberFormat,
+  isCjkLanguage,
   matchHyphenationLocale,
   findLooseLines,
 } from 'postext';
@@ -1129,11 +1130,12 @@ function computeDocumentWarnings(params: {
 /** The document's hyphenation language — its hyphenation locale, else its
  *  `locale` — when no patterns ship for it: the engine falls back to en-us
  *  (and says so only on the console). Not while hyphenation is switched
- *  off, which is the remedy. */
+ *  off, which is the remedy, nor for Chinese, Japanese or Korean, which are
+ *  set without hyphenation (the engine switches it off for them). */
 export function collectHyphenationLocaleWarnings(config: PostextConfig): Warning[] {
   if (config.bodyText?.hyphenation?.enabled === false) return [];
   const tag = config.bodyText?.hyphenation?.locale?.trim() || config.locale?.trim();
-  if (!tag || matchHyphenationLocale(tag)) return [];
+  if (!tag || matchHyphenationLocale(tag) || isCjkLanguage(tag)) return [];
   return [{ id: `unsupported-hyphenation-locale-${tag}`, payload: { kind: 'unsupportedHyphenationLocale', locale: tag } }];
 }
 

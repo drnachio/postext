@@ -284,9 +284,9 @@ El bloque `page.pageNumbering` controla cómo se formatean las etiquetas de pág
   <tbody>
     <tr>
       <td><code>format</code></td>
-      <td><code>'decimal' | 'lower-roman' | 'upper-roman' | 'lower-alpha' | 'upper-alpha'</code></td>
+      <td><code>'decimal' | 'lower-roman' | 'upper-roman' | 'lower-alpha' | 'upper-alpha'</code>, o un estilo de Asia oriental</td>
       <td><code>'decimal'</code></td>
-      <td>Estilo numérico utilizado para renderizar las etiquetas de página.</td>
+      <td>Estilo numérico utilizado para renderizar las etiquetas de página. Los estilos de Asia oriental (<code>'trad-chinese-informal'</code> numera las páginas 一, 二, 三) figuran en <a href="#grafías-de-los-formatos-de-numeración">Grafías de los formatos de numeración</a>.</td>
     </tr>
     <tr>
       <td><code>startAt</code></td>
@@ -297,7 +297,7 @@ El bloque `page.pageNumbering` controla cómo se formatean las etiquetas de pág
   </tbody>
 </table>
 
-La etiqueta calculada se almacena en cada `VDTPage` como `pageLabel` y es el valor que resuelve el marcador <code>\{pageNumber\}</code> en encabezados y pies. Los PDFs emiten un árbol `/PageLabels` de modo que el indicador de página y la navegación «Ir a la página» de Preview / Acrobat coinciden exactamente con las etiquetas impresas.
+La etiqueta calculada se almacena en cada `VDTPage` como `pageLabel` y es el valor que resuelve el marcador <code>\{pageNumber\}</code> en encabezados y pies. Los PDFs emiten un árbol `/PageLabels` de modo que el indicador de página y la navegación «Ir a la página» de Preview / Acrobat coinciden exactamente con las etiquetas impresas. Un estilo sin código en PDF (los numerales chinos, las cifras en círculo y las de ancho completo) se escribe página a página, de modo que el lector muestra también 一, 二, 三.
 
 #### Grafías de los formatos de numeración
 
@@ -317,10 +317,21 @@ Tres ajustes eligen un formato de numeración, y cada uno creció con su propia 
     <tr><td>Romano en mayúsculas</td><td><code>I, II, III</code></td><td><code>upper-roman</code>, <code>roman-upper</code>, <code>I</code></td></tr>
     <tr><td>Alfabético en minúsculas</td><td><code>a, b, c</code></td><td><code>lower-alpha</code>, <code>alpha-lower</code>, <code>lower-latin</code>, <code>a</code></td></tr>
     <tr><td>Alfabético en mayúsculas</td><td><code>A, B, C</code></td><td><code>upper-alpha</code>, <code>alpha-upper</code>, <code>upper-latin</code>, <code>A</code></td></tr>
+    <tr><td>Numerales chinos, simplificado</td><td>一, 十二, 一百零一</td><td><code>simp-chinese-informal</code>, <code>一</code> en un documento en chino simplificado</td></tr>
+    <tr><td>Numerales chinos, tradicional</td><td>一, 十二, 一萬</td><td><code>trad-chinese-informal</code>, <code>cjk-ideographic</code>, <code>一</code> en un documento en chino tradicional</td></tr>
+    <tr><td>Numerales chinos financieros, simplificado</td><td>壹, 壹拾贰, 壹佰贰拾</td><td><code>simp-chinese-formal</code>, <code>壹</code> en un documento en chino simplificado</td></tr>
+    <tr><td>Numerales chinos financieros, tradicional</td><td>壹, 壹拾貳, 壹佰貳拾</td><td><code>trad-chinese-formal</code>, <code>壹</code> en un documento en chino tradicional</td></tr>
+    <tr><td>Cifras chinas</td><td>一二〇, 二〇二六</td><td><code>cjk-decimal</code>, <code>〇</code></td></tr>
+    <tr><td>Troncos celestes</td><td>甲, 乙, 丙 … 癸</td><td><code>cjk-heavenly-stem</code>, <code>甲</code></td></tr>
+    <tr><td>Ramas terrestres</td><td>子, 丑, 寅 … 亥</td><td><code>cjk-earthly-branch</code>, <code>子</code></td></tr>
+    <tr><td>En círculo</td><td>①, ②, ③ … ㊿</td><td><code>circled-decimal</code>, <code>①</code></td></tr>
+    <tr><td>Cifras de ancho completo</td><td>１, ２, ３</td><td><code>fullwidth-decimal</code>, <code>１</code></td></tr>
   </tbody>
 </table>
 
-Las demás grafías son para las configuraciones que nada comprueba en tipos: los presets en JSON y el JavaScript sin tipos. Los tipos de TypeScript siguen nombrando solo la grafía propia de cada ajuste —la que escribe el Sandbox y devuelve `resolveAllConfig`—, así que un `PostextConfig` tipado se ciñe a ella, y otra grafía necesita una conversión de tipo (*cast*).
+Los estilos de Asia oriental conservan su nombre de [CSS Counter Styles](https://www.w3.org/TR/css-counter-styles-3/#limited-chinese) en los tres ajustes. Los numerales chinos informales escriben 十 del 10 al 19 sin un 一 delante (十二, pero 一百一十), un solo 零 por cada tramo de ceros dentro del número (一百零一, 一千零五十), y 万 o 萬 para la decena de millar, 亿 o 億 para los cien millones (一万零一十). Solo `cjk-decimal` usa 〇, cifra a cifra, como se escriben los años (二〇二六, GB/T 15835—2011). Los troncos llegan al 10, las ramas al 12 y las cifras en círculo al 50; más allá, el número se imprime en cifras. `一` y `壹` siguen la escritura del `locale` del documento: tradicional para `zh-Hant`, `zh-TW` o `zh-HK`, simplificada en los demás casos. Algunas ediciones antiguas escriben 101 como 一百一, sin 零; Postext no imprime esa forma.
+
+Las demás grafías son para las configuraciones que nada comprueba en tipos: los presets en JSON y el JavaScript sin tipos. Los tipos de TypeScript siguen nombrando solo la grafía propia de cada ajuste —la que escribe el Sandbox y devuelve `resolveAllConfig`, con los nombres de Asia oriental incluidos—, así que un `PostextConfig` tipado se ciñe a ella, y otra grafía necesita una conversión de tipo (*cast*).
 
 ```js
 // JavaScript o un preset en JSON (en TypeScript, la grafía propia de cada ajuste)
@@ -1382,7 +1393,7 @@ Cuando la alineación del texto está configurada como `'justify'`, la separaci�
 
 **Idiomas soportados:** `'en-us'` (inglés), `'es'` (español), `'fr'` (francés), `'de'` (alemán), `'it'` (italiano), `'pt'` (portugués), `'ca'` (catalán), `'nl'` (neerlandés).
 
-Para elegir los patrones se ignoran las subetiquetas de región, escritura y variante, las mayúsculas y los separadores `_`: `'es-ES'`, `'es-MX'` y `'es_419'` se dividen con `'es'`, `'pt-BR'` con `'pt'` y cualquier etiqueta inglesa (`'en'`, `'en-GB'`) con `'en-us'`, los únicos patrones ingleses incluidos, de modo que el texto británico recibe los cortes estadounidenses. Un idioma sin patrones incluidos (`'sv'`, `'pl'`, `'ja'`…) se divide con los de `'en-us'`, lo que da cortes equivocados en lugar de ninguno; el motor lo avisa una vez por etiqueta con un `console.warn`, y el Sandbox lo muestra en su panel de revisión. Para un documento así, fija `enabled: false`; eso también acalla el aviso. `matchHyphenationLocale(tag)` devuelve el idioma incluido al que corresponde una etiqueta (`undefined` si no hay ninguno), y `HYPHENATION_LOCALES` enumera los incluidos. La configuración resuelta (`doc.config.bodyText.hyphenation`) nombra en `locale` los patrones que se usan de verdad y conserva en `tag` la etiqueta que diste cuando es distinta; el backend PDF declara esa etiqueta como idioma del documento.
+Para elegir los patrones se ignoran las subetiquetas de región, escritura y variante, las mayúsculas y los separadores `_`: `'es-ES'`, `'es-MX'` y `'es_419'` se dividen con `'es'`, `'pt-BR'` con `'pt'` y cualquier etiqueta inglesa (`'en'`, `'en-GB'`) con `'en-us'`, los únicos patrones ingleses incluidos, de modo que el texto británico recibe los cortes estadounidenses. Un idioma sin patrones incluidos (`'sv'`, `'pl'`, `'fi'`…) se divide con los de `'en-us'`, lo que da cortes equivocados en lugar de ninguno; el motor lo avisa una vez por etiqueta con un `console.warn`, y el Sandbox lo muestra en su panel de revisión. Para un documento así, fija `enabled: false`; eso también acalla el aviso. El chino, el japonés y el coreano (`zh`, `ja`, `ko`, con cualquier región o escritura) no necesitan patrones ni imprimen aviso: un documento en uno de ellos se compone sin separación silábica. Para dividir las palabras latinas que cita, fija `enabled: true` y nombra su idioma en `locale` (`'en-us'` para el inglés). Con `enabled: true` sin `locale`, o con uno chino, japonés o coreano, la separación sigue desactivada y la consola lo avisa una vez. `matchHyphenationLocale(tag)` devuelve el idioma incluido al que corresponde una etiqueta (`undefined` si no hay ninguno), y `HYPHENATION_LOCALES` enumera los incluidos. La configuración resuelta (`doc.config.bodyText.hyphenation`) nombra en `locale` los patrones que se usan de verdad y conserva en `tag` la etiqueta que diste cuando es distinta. El backend PDF declara el idioma del documento a partir de `locale`, en la raíz de la configuración, y solo usa esta etiqueta cuando `locale` falta (consulta [Idioma del documento](#idioma-del-documento)).
 
 ```ts
 import { matchHyphenationLocale } from 'postext';
@@ -1425,7 +1436,9 @@ El `locale` de primer nivel es el idioma del documento en su conjunto. Admite lo
 
 También elige los tipos de recurso integrados. Cuando `resourceTypes` no está definido, `buildDocument` numera y rotula con `defaultResourceTypes(locale)`, así que `locale: 'de'` basta para obtener *Abbildung 1.1* y *Tabelle 1.1*. Si `locale` no está definido, lo sustituye el idioma de la separación silábica, tanto para los tipos de recurso como para las cadenas de las tablas. Una lista `resourceTypes` explícita siempre manda. Las versiones anteriores usaban los tipos en inglés fuera cual fuera el `locale`, salvo que pasaras tú mismo `defaultResourceTypes(locale)`; un documento que fija `locale` y quiere conservar las etiquetas inglesas pasa `resourceTypes: defaultResourceTypes('en')`. Los libros del Sandbox y los paquetes llevan su propia lista, así que no les afecta.
 
-Aquí vale cualquier etiqueta BCP 47, igual que en `hyphenation.locale`: `'de-AT'` recibe las cadenas alemanas. Las cadenas integradas existen en los ocho idiomas que admite la separación silábica; cualquier otro idioma recibe las inglesas.
+Aquí vale cualquier etiqueta BCP 47, igual que en `hyphenation.locale`: `'de-AT'` recibe las cadenas alemanas. Las cadenas integradas existen en los ocho idiomas que admite la separación silábica y en chino, en caracteres simplificados y tradicionales; cualquier otro idioma recibe las inglesas.
+
+El chino admite `zh`, `zh-Hans`, `zh-Hant`, `zh-CN`, `zh-SG`, `zh-TW`, `zh-HK`, `zh-MO` y las formas largas (`zh-Hant-TW`), en mayúsculas o minúsculas y con `-` o `_`. Las cadenas siguen la escritura, leída con `Intl.Locale(tag).maximize()`: `zh`, `zh-CN` y `zh-SG` son chino simplificado; `zh-TW`, `zh-HK` y `zh-MO`, tradicional. Los valores tipográficos que dependen del idioma siguen en cambio la región, como recomienda [clreq §1.2](https://www.w3.org/TR/clreq/#x1-2-basic-features-of-chinese-script): CN, SG y MY cuentan como China continental, TW como Taiwán, HK y MO como Hong Kong, y una etiqueta sin región se rige por su escritura (`zh-Hant` es Taiwán; `zh` y `zh-Hans`, la China continental). `localeScript(tag)`, `cjkRegionOf(tag)`, `stringsKeyOf(tag)` y `sameContentLocale(a, b)` devuelven estas lecturas, y `DOCUMENT_LANGUAGES` enumera los idiomas con cadenas integradas, cada uno con su nombre en su propia lengua, tal como los muestra el selector de idioma del documento del Sandbox.
 
 <table>
   <thead>
@@ -1445,10 +1458,14 @@ Aquí vale cualquier etiqueta BCP 47, igual que en `hyphenation.locale`: `'de-AT
     <tr><td>Portugués (<code>pt</code>)</td><td>Figura, Figuras, Fig.</td><td>Tabela, Tabelas, Tab.</td><td>(cont.), Continua</td></tr>
     <tr><td>Catalán (<code>ca</code>)</td><td>Figura, Figures, Fig.</td><td>Taula, Taules, Taula</td><td>(cont.), Continua</td></tr>
     <tr><td>Neerlandés (<code>nl</code>)</td><td>Figuur, Figuren, Fig.</td><td>Tabel, Tabellen, Tab.</td><td>(vervolg), Wordt vervolgd</td></tr>
+    <tr><td>Chino simplificado (<code>zh-Hans</code>, <code>zh</code>, <code>zh-CN</code>)</td><td>图, 图, 图</td><td>表, 表, 表</td><td>（续）, 接下页</td></tr>
+    <tr><td>Chino tradicional (<code>zh-Hant</code>, <code>zh-TW</code>, <code>zh-HK</code>)</td><td>圖, 圖, 圖</td><td>表, 表, 表</td><td>（續）, 接下頁</td></tr>
   </tbody>
 </table>
 
-El prefijo del pie es el nombre del tipo (*Figura 1.1.*).
+El prefijo del pie es el nombre del tipo (*Figura 1.1.*). Los tipos chinos numeran dentro del capítulo con un guion, `{h1}-{n}` (图 1-1); con los ajustes de pie `labelNumberGap: ''` y `labelSeparator: '　'` el pie se lee 图1-1　标题 (ver [Estilo de pies de recurso](#estilo-de-pies-de-recurso)). El índice alfabético sigue también el idioma: 见 y 另见 ante una remisión, 符号 y 数字 sobre los símbolos y los números en chino simplificado; 見, 另見, 符號 y 數字 en tradicional.
+
+Un documento en chino, japonés o coreano declara su idioma en la salida HTML (`lang` en la raíz `.pt-doc`, con `zh-Hant-TW` completo) y en el canvas que pinta (`ctx.lang`, en Chrome 136 y posteriores), de modo que el navegador dibuja las formas de glifo de su región: Unicode unifica los caracteres han, y un mismo punto de código se ve distinto en una fuente taiwanesa y en una japonesa. Los demás documentos no llevan `lang`, como antes. El PDF declara `/Lang` a partir de `locale` para todo documento, etiquetado o no, con su escritura y su región.
 
 ```ts
 const config: PostextConfig = {
@@ -1464,7 +1481,7 @@ Postext compone escrituras alfabéticas que se escriben de izquierda a derecha. 
 - **Escrituras de derecha a izquierda** (árabe, hebreo, persa, urdu…). No hay algoritmo bidireccional: las líneas se cortan y se alinean como si el texto corriera de izquierda a derecha, contra el margen izquierdo, y lo que muestra cada línea depende de cómo se pinta. En la salida canvas y PDF, una línea alineada a la izquierda y sin formato en línea se dibuja como un solo tramo de texto, que el navegador o el motor tipográfico del PDF vuelven de derecha a izquierda por su cuenta, así que ahí una línea toda en una escritura de derecha a izquierda puede leerse bien, pero no una que mezcle direcciones, cifras o puntuación. La salida HTML, las líneas justificadas, centradas o alineadas a la derecha y las que llevan formato en línea se dibujan palabra a palabra de izquierda a derecha: cada palabra se lee bien, pero las palabras salen en orden de lectura invertido.
 - **El chino, el japonés y el coreano** se componen en horizontal. Un párrafo con más caracteres CJK que espacios entre palabras se corta entre caracteres con las reglas de principio y final de línea de clreq que fija `cjk.lineBreak` (ninguna línea empieza por 。、」 o ー, ninguna termina en 「 o （), mantiene enteros —— y ……, un número con sus signos y una palabra latina, y una línea justificada se ensancha entre sus caracteres hasta la medida: ver [Tipografía de Asia oriental](#tipografía-de-asia-oriental). Un párrafo latino que cita unas pocas palabras CJK conserva la división óptima de líneas y puede cortarse junto a ellas; un signo de apertura o cierre CJK, el punto medio o un signo de ancho completo citados en texto latino (〈h〉, ％) no cambian nada. Todavía no hay compresión de la puntuación, espacio entre han y latín, escritura vertical ni ruby. El coreano se corta entre sílabas además de en sus espacios.
 
-Hay patrones de separación silábica para ocho idiomas (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`), y en esos mismos ocho existen los tipos de recurso integrados y las cadenas de continuación de tablas. Cualquier otro idioma se divide con los patrones del inglés de EE. UU., con un aviso en la consola, y recibe las cadenas inglesas. Para un documento así, fija `hyphenation.enabled: false` y pasa `resourceTypes` y las cadenas de continuación de `tableStyle` en su idioma.
+Hay patrones de separación silábica para ocho idiomas (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`); los tipos de recurso integrados y las cadenas de continuación existen en esos ocho y en chino. El chino, el japonés y el coreano se componen sin separación silábica. Cualquier otro idioma se divide con los patrones del inglés de EE. UU., con un aviso en la consola, y recibe las cadenas inglesas. Para un documento así, fija `hyphenation.enabled: false` y pasa `resourceTypes` y las cadenas de continuación de `tableStyle` en su idioma.
 
 ### Huérfanas, viudas, *runts* y reglas de cohesión
 
@@ -1965,7 +1982,13 @@ Las configuraciones por nivel soportan las mismas propiedades que los valores ge
       <td><code>numberingTemplate</code></td>
       <td><code>string</code></td>
       <td><code>''</code></td>
-      <td>Plantilla del número automático del nivel. Un token <code>{'{1}'}</code> … <code>{'{6}'}</code> imprime el contador acumulado de ese nivel de encabezado, opcionalmente formateado con un sufijo — <code>{'{1:I}'}</code> romanos en mayúscula, <code>{'{1:i}'}</code> romanos en minúscula, <code>{'{1:A}'}</code> / <code>{'{1:a}'}</code> alfabético, <code>{'{1:01}'}</code> con cero a la izquierda, <code>{'{1:words}'}</code> con letras (<em>veintiuno</em>) y <code>{'{1:ordinal}'}</code> como ordinal (<em>vigesimoprimero</em>) — y el resto del texto es literal (<code>'Capítulo {'{1}'}. '</code>, <code>'{'{1}'}.{'{2}'}'</code>; una barra invertida escapa una llave literal). Un token cuyo contador aún está vacío se pliega junto con el separador contiguo. Vacía (el valor por defecto) significa sin número automático. El número resultante se antepone al título en el flujo, alimenta el marcador <code>{'{number}'}</code> de una ranura de diseño avanzado (donde el prefijo no se antepone) y se imprime en el índice de contenidos. Ver <a href="#números-con-letras">Números con letras</a> para las palabras, y <a href="#estilos-de-encabezado">Estilos de encabezado</a> para dar a algunos encabezados de un nivel una plantilla propia.</td>
+      <td>Plantilla del número automático del nivel. Un token <code>{'{1}'}</code> … <code>{'{6}'}</code> imprime el contador acumulado de ese nivel de encabezado, opcionalmente formateado con un sufijo — <code>{'{1:I}'}</code> romanos en mayúscula, <code>{'{1:i}'}</code> romanos en minúscula, <code>{'{1:A}'}</code> / <code>{'{1:a}'}</code> alfabético, <code>{'{1:01}'}</code> con cero a la izquierda, <code>{'{1:words}'}</code> con letras (<em>veintiuno</em>), <code>{'{1:ordinal}'}</code> como ordinal (<em>vigesimoprimero</em>), <code>{'{1:一}'}</code> en numerales chinos, <code>{'{1:〇}'}</code> cifra a cifra, <code>{'{1:壹}'}</code> en numerales financieros y <code>{'{1:①}'}</code> en círculo, o cualquier nombre de <a href="#grafías-de-los-formatos-de-numeración">Grafías de los formatos de numeración</a> — y el resto del texto es literal (<code>'Capítulo {'{1}'}. '</code>, <code>'{'{1}'}.{'{2}'}'</code>, <code>'第{'{1:一}'}回'</code> para 第一百二十回; una barra invertida escapa una llave literal). Un token cuyo contador aún está vacío se pliega junto con el separador contiguo. Vacía (el valor por defecto) significa sin número automático. El número resultante se antepone al título en el flujo, alimenta el marcador <code>{'{number}'}</code> de una ranura de diseño avanzado (donde el prefijo no se antepone) y se imprime en el índice de contenidos. Ver <a href="#números-con-letras">Números con letras</a> para las palabras, y <a href="#estilos-de-encabezado">Estilos de encabezado</a> para dar a algunos encabezados de un nivel una plantilla propia.</td>
+    </tr>
+    <tr>
+      <td><code>numberSeparator</code></td>
+      <td><code>string</code></td>
+      <td><code>' '</code></td>
+      <td>Lo que separa el número del título: en la columna, en la apertura por defecto de un nivel <code>span: 'page'</code>, en los titulillos que imprimen la línea del encabezado y en los marcadores del PDF. Los capítulos chinos llevan un espacio ideográfico o nada (<code>'　'</code>: 第一回　甄士隱夢幻識通靈). El índice de contenidos conserva su propia columna de números (<code>toc.levels[].numberGap</code>). Un <a href="#estilos-de-encabezado">estilo de encabezado</a> puede fijar el suyo. Cuando un título se parte en dos con <code>{'\\\\'}</code>, como los títulos pareados de las novelas chinas, las formas de una sola línea (la columna, el índice de contenidos, los titulillos) unen las dos mitades con un espacio ideográfico si a ambos lados hay caracteres chinos o japoneses, y con un espacio en los demás casos.</td>
     </tr>
     <tr>
       <td><code>breakBefore</code></td>
@@ -2151,6 +2174,7 @@ Marcadores disponibles dentro de una ranura de diseño de encabezado:
 - `{number}` — número formateado según `numberingTemplate`.
 - `{numberDecimal}`, `{numberRoman}`, `{numberRomanLower}`, `{numberAlpha}`, `{numberAlphaLower}` — el contador del encabezado (la cuenta acumulada de su nivel, imprima lo que imprima la plantilla) en otros formatos de numeración: el tercer capítulo da `3`, `III`, `iii`, `C`, `c`, con o sin `numberingTemplate`. Un encabezado sin numerar (un estilo con `numbered: false`) los deja vacíos.
 - `{numberWords}`, `{numberWordsLower}`, `{numberOrdinalWords}`, `{numberOrdinalWordsLower}` — el mismo contador con letras, con mayúscula inicial o en minúscula: *Tres* / *tres*, *Tercero* / *tercero* (ver [Números con letras](#números-con-letras)).
+- `{numberHan}` — el mismo contador en numerales chinos, en la escritura del `locale` del documento: una apertura compuesta con `第{numberHan}回` imprime 第十二回 en el duodécimo capítulo mientras el índice muestra `12`.
 - `{chapterNumber}`, `{chapterTitle}`, `{pageNumber}`, `{totalPages}`, `{bookTotalPages}`, `{title}`, `{subtitle}`, `{author}`, `{publishDate}` — metadatos compartidos.
 - `{attr.<clave>}` — un atributo escrito en la propia línea del encabezado (`# Título {author="I. Zango Martín"}`), con el atributo del H1 del capítulo actual como respaldo. Los atributos ausentes se resuelven como cadena vacía sin aviso.
 
@@ -2231,19 +2255,20 @@ Dos sufijos de las plantillas de numeración escriben un contador con letras, en
       <th style={{ width: '160px' }}>Token</th>
       <th>Inglés (21)</th>
       <th>Español (21)</th>
+      <th>Chino (21)</th>
     </tr>
   </thead>
   <tbody>
-    <tr><td><code>{'{1:words}'}</code></td><td>twenty-one</td><td>veintiuno</td></tr>
-    <tr><td><code>{'{1:Words}'}</code></td><td>Twenty-one</td><td>Veintiuno</td></tr>
-    <tr><td><code>{'{1:WORDS}'}</code></td><td>TWENTY-ONE</td><td>VEINTIUNO</td></tr>
-    <tr><td><code>{'{1:ordinal}'}</code></td><td>twenty-first</td><td>vigesimoprimero</td></tr>
-    <tr><td><code>{'{1:Ordinal}'}</code></td><td>Twenty-first</td><td>Vigesimoprimero</td></tr>
-    <tr><td><code>{'{1:ORDINAL}'}</code></td><td>TWENTY-FIRST</td><td>VIGESIMOPRIMERO</td></tr>
+    <tr><td><code>{'{1:words}'}</code></td><td>twenty-one</td><td>veintiuno</td><td>二十一</td></tr>
+    <tr><td><code>{'{1:Words}'}</code></td><td>Twenty-one</td><td>Veintiuno</td><td>二十一</td></tr>
+    <tr><td><code>{'{1:WORDS}'}</code></td><td>TWENTY-ONE</td><td>VEINTIUNO</td><td>二十一</td></tr>
+    <tr><td><code>{'{1:ordinal}'}</code></td><td>twenty-first</td><td>vigesimoprimero</td><td>第二十一</td></tr>
+    <tr><td><code>{'{1:Ordinal}'}</code></td><td>Twenty-first</td><td>Vigesimoprimero</td><td>第二十一</td></tr>
+    <tr><td><code>{'{1:ORDINAL}'}</code></td><td>TWENTY-FIRST</td><td>VIGESIMOPRIMERO</td><td>第二十一</td></tr>
   </tbody>
 </table>
 
-Se escriben con letras el inglés y el español; cualquier otro idioma toma las palabras en inglés, como hacen las cadenas integradas de continuación de tablas. El inglés sigue el uso estadounidense (*one hundred five*, sin *and*). El español usa las formas masculinas, como se numera un *capítulo* o un *libro* (*capítulo primero*, *tercero*, *veintiuno*), y escribe los ordinales del 13 al 29 en una sola palabra, como prefiere la RAE (*decimotercero*, *vigesimoprimero*). Los cardinales se escriben hasta 999 999 y los ordinales españoles hasta 999; los números mayores se imprimen en cifras.
+Se escriben con letras el inglés, el español y el chino; cualquier otro idioma toma las palabras en inglés, como hacen las cadenas integradas de continuación de tablas. El chino escribe los numerales informales de `simp-chinese-informal` o `trad-chinese-informal`, según la escritura de `locale` (一万 / 一萬), con 第 delante del ordinal; los caracteres han no tienen caja, así que las tres grafías de un sufijo imprimen lo mismo. El inglés sigue el uso estadounidense (*one hundred five*, sin *and*). El español usa las formas masculinas, como se numera un *capítulo* o un *libro* (*capítulo primero*, *tercero*, *veintiuno*), y escribe los ordinales del 13 al 29 en una sola palabra, como prefiere la RAE (*decimotercero*, *vigesimoprimero*). Los cardinales se escriben hasta 999 999 y los ordinales españoles hasta 999; los números mayores se imprimen en cifras.
 
 En un diseño de encabezado, `{numberWords}` / `{numberWordsLower}` y `{numberOrdinalWords}` / `{numberOrdinalWordsLower}` escriben el contador del encabezado del mismo modo, así la apertura puede decir *Capítulo uno* mientras el índice muestra `1`. El `textTransform: 'uppercase'` de un elemento de texto da las mayúsculas:
 
@@ -2487,6 +2512,12 @@ La propiedad `orderedLists` controla las listas numeradas (`1.`, `2)`, etc.). Se
       <td>Estilo de numeración: <code>'arabic'</code>, <code>'lower-alpha'</code>, <code>'upper-alpha'</code>, <code>'lower-roman'</code>, <code>'upper-roman'</code>. También valen las grafías de los otros ajustes (<code>'decimal'</code>, <code>'roman-lower'</code>, <code>'i'</code>…; ver <a href="#grafías-de-los-formatos-de-numeración">Grafías de los formatos de numeración</a>); un valor desconocido numera en arábigos y se notifica.</td>
     </tr>
     <tr>
+      <td><code>prefix</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>Texto que precede al número, con el estilo del separador: con <code>'（'</code> aquí y <code>'）'</code> como separador, una lista china se numera （一）, （二）. Cuando el separador se dibuja como un tramo propio, el prefijo también, justo antes del número.</td>
+    </tr>
+    <tr>
       <td><code>separator</code></td>
       <td><code>string</code></td>
       <td><code>'.'</code></td>
@@ -2587,7 +2618,7 @@ La propiedad `orderedLists` controla las listas numeradas (`1.`, `2)`, etc.). Se
 
 ### Sobrescrituras por nivel (listas ordenadas)
 
-Cada entrada de `levels` puede sobrescribir `numberFormat`, `separator`, `fontFamily`, `fontSize`, `color`, `fontWeight`, `italic`, `indent`, `verticalOffset` y el estilo del separador (`separatorFontFamily`, `separatorFontWeight`, `separatorItalic`, `separatorColor`, `separatorGap`) — se aplica el mismo encadenamiento de sangrías que en las listas no ordenadas. El estilo del separador de un nivel hereda el estilo de su propio número salvo que se indique el ajuste general del separador.
+Cada entrada de `levels` puede sobrescribir `numberFormat`, `prefix`, `separator`, `fontFamily`, `fontSize`, `color`, `fontWeight`, `italic`, `indent`, `verticalOffset` y el estilo del separador (`separatorFontFamily`, `separatorFontWeight`, `separatorItalic`, `separatorColor`, `separatorGap`) — se aplica el mismo encadenamiento de sangrías que en las listas no ordenadas. El estilo del separador de un nivel hereda el estilo de su propio número salvo que se indique el ajuste general del separador.
 
 **Alineación a la derecha.** El pipeline mide el número formateado más ancho dentro de cada recorrido e indenta todos los elementos de ese recorrido para que los marcadores queden alineados por su borde derecho. Una lista de diez elementos renderizada como `1.` – `10.` desplaza los números de un dígito a la derecha para que el separador caiga siempre en la misma columna.
 
@@ -2610,6 +2641,20 @@ Esto produce la clásica combinación anidada:
       i) Nota profunda
    b. Subelemento
 2. Segundo elemento
+```
+
+La jerarquía de los documentos chinos (GB/T 15834—2011, anexo B.3) tiene cinco niveles: 一、, luego （一）, luego 1., luego （1） y luego ①:
+
+```ts
+orderedLists: {
+  levels: [
+    { level: 1, numberFormat: 'simp-chinese-informal', separator: '、' },
+    { level: 2, numberFormat: 'simp-chinese-informal', prefix: '（', separator: '）' },
+    { level: 3, numberFormat: 'arabic', separator: '.' },
+    { level: 4, numberFormat: 'arabic', prefix: '（', separator: '）' },
+    { level: 5, numberFormat: 'circled-decimal', separator: '' },
+  ],
+}
 ```
 
 
@@ -2990,7 +3035,7 @@ Una línea CJK justificada que no es la última de su párrafo se ensancha hasta
 El resolutor y el depurador siguen el patrón de las demás secciones; `setCjkLineBreak` fija el nivel para las mediciones hechas fuera de `buildDocument`, que lo toma de la configuración:
 
 ```ts
-import { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOfLocale, setCjkLineBreak } from 'postext';
+import { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOf, setCjkLineBreak } from 'postext';
 
 resolveCjkConfig(undefined, 'zh-HK'); // { region: 'hongkong', lineBreak: 'basic' }
 ```
@@ -3349,7 +3394,7 @@ const config: PostextConfig = {
       <td><code>continuedSuffix</code></td>
       <td><code>string</code></td>
       <td><code>'(cont.)'</code></td>
-      <td>Se añade, en cursiva, al pie de cada parte continuada de una tabla dividida.</td>
+      <td>Se añade, en cursiva, al pie de cada parte continuada de una tabla dividida, tras un espacio; un sufijo que empieza por un carácter chino o de ancho completo (<code>'（续）'</code>) va pegado al pie.</td>
     </tr>
     <tr>
       <td><code>continuesMarkerEnabled</code></td>
@@ -3579,6 +3624,18 @@ const config: PostextConfig = {
       <td><code>object</code></td>
       <td>—</td>
       <td>Estilo de la nota del recurso — ver la subtabla siguiente.</td>
+    </tr>
+    <tr>
+      <td><code>labelNumberGap</code></td>
+      <td><code>string</code></td>
+      <td>espacio de no separación</td>
+      <td>Lo que separa la etiqueta del número, en el pie y en un <code>:ref</code> en línea: <em>Figura 1.7</em>, <em>Fig. 1.7</em>. El chino los compone juntos: <code>''</code> da 图1-1.</td>
+    </tr>
+    <tr>
+      <td><code>labelSeparator</code></td>
+      <td><code>string</code></td>
+      <td><code>'. '</code></td>
+      <td>Lo que sigue al número, antes de la descripción: <em>Figura 1.7. Un pie</em>. Los pies chinos llevan un espacio ideográfico, <code>'　'</code> (图1-1　标题). Una etiqueta sin número conserva su propia regla: un punto, salvo que el prefijo ya termine en uno.</td>
     </tr>
   </tbody>
 </table>
@@ -4335,7 +4392,7 @@ El cristal sigue caliente una hora después de apagar la llama.
       <td><code>continuedSuffix</code></td>
       <td><code>string</code></td>
       <td><code>'(cont.)'</code></td>
-      <td>Texto tras el título repetido, en el idioma del documento (<code>locale</code> o, si no, el de la separación silábica), como el de una tabla partida.</td>
+      <td>Texto tras el título repetido, en el idioma del documento (<code>locale</code> o, si no, el de la separación silábica), como el de una tabla partida, y unido al título igual que en ella.</td>
     </tr>
     <tr>
       <td><code>continuesMarkerEnabled</code></td>
@@ -4562,7 +4619,7 @@ const config: PostextConfig = {
 
 ### Marcadores del diseño de parte
 
-El diseño resuelve el conjunto de marcadores de encabezado con los valores propios de la parte: `{titleText}` es el `title` de la valla; `{number}` el `number` tal como se escribió; `{numberDecimal}`, `{numberRoman}`, `{numberRomanLower}`, `{numberAlpha}`, `{numberAlphaLower}` lo reformatean — el número se interpreta como decimal o como numeral romano (`"IV"`, `"iv"` y `"4"` dan `{numberDecimal}` = `4`) y resuelven a `''` para cualquier otra cosa. También están disponibles `{partTitle}` / `{partNumber}`, `{chapterTitle}` / `{chapterNumber}` (el capítulo anterior a la parte), `{pageNumber}`, `{totalPages}`, `{bookTotalPages}` y los marcadores de metadatos. `{attr.<key>}` lee los atributos del H1 del capítulo actual.
+El diseño resuelve el conjunto de marcadores de encabezado con los valores propios de la parte: `{titleText}` es el `title` de la valla; `{number}` el `number` tal como se escribió; `{numberDecimal}`, `{numberRoman}`, `{numberRomanLower}`, `{numberAlpha}`, `{numberAlphaLower}` lo reformatean — el número se interpreta como decimal, como numeral romano o como numerales chinos, con o sin las palabras que los rodean (`"IV"`, `"iv"`, `"4"`, `"４"`, `"四"`, `"卷四"` y `"第四卷"` dan `{numberDecimal}` = `4`) y resuelven a `''` para cualquier otra cosa. También están disponibles `{partTitle}` / `{partNumber}`, `{chapterTitle}` / `{chapterNumber}` (el capítulo anterior a la parte), `{pageNumber}`, `{totalPages}`, `{bookTotalPages}` y los marcadores de metadatos. `{attr.<key>}` lee los atributos del H1 del capítulo actual.
 
 ### El diseño del verso
 

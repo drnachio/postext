@@ -100,6 +100,22 @@ export interface SandboxLabels {
   pageNumberingFormatUpperRoman: string;
   pageNumberingFormatLowerAlpha: string;
   pageNumberingFormatUpperAlpha: string;
+  numberFormatSimpChineseInformal: string;
+  numberFormatTradChineseInformal: string;
+  numberFormatSimpChineseFormal: string;
+  numberFormatTradChineseFormal: string;
+  numberFormatCjkDecimal: string;
+  numberFormatCjkHeavenlyStem: string;
+  numberFormatCjkEarthlyBranch: string;
+  numberFormatCircledDecimal: string;
+  numberFormatFullwidthDecimal: string;
+  separatorSpace: string;
+  separatorIdeographicSpace: string;
+  separatorNone: string;
+  separatorNoBreakSpace: string;
+  separatorFullStop: string;
+  separatorColon: string;
+  separatorCustom: string;
   pageNumberingStartAt: string;
   pageNumberingStartAtTooltip: string;
 
@@ -480,6 +496,8 @@ export interface SandboxLabels {
   headingNumberingTemplate: string;
   headingNumberingTemplateTooltip: string;
   headingNumberingTemplatePlaceholder: string;
+  headingNumberSeparator: string;
+  headingNumberSeparatorTooltip: string;
   headingLevelSnapToGrid: string;
   headingLevelSnapToGridTooltip: string;
   headingItalic: string;
@@ -590,6 +608,9 @@ export interface SandboxLabels {
   orderedListsSeparator: string;
   orderedListsSeparatorTooltip: string;
   orderedListsSeparatorPlaceholder: string;
+  orderedListsPrefix: string;
+  orderedListsPrefixTooltip: string;
+  orderedListsPrefixPlaceholder: string;
   orderedListsNumberFontSize: string;
   orderedListsNumberFontSizeTooltip: string;
   orderedListsGap: string;
@@ -1320,6 +1341,10 @@ export interface SandboxLabels {
   captionStyleSection: string;
   captionGap: string;
   captionLabelGroup: string;
+  captionLabelNumberGap: string;
+  captionLabelNumberGapTooltip: string;
+  captionLabelSeparator: string;
+  captionLabelSeparatorTooltip: string;
   captionDescriptionGroup: string;
   captionPosition: string;
   captionPositionTooltip: string;
@@ -1603,6 +1628,7 @@ export interface SandboxLabels {
   headerFooterPlaceholderNumberWordsLower: string;
   headerFooterPlaceholderNumberOrdinalWords: string;
   headerFooterPlaceholderNumberOrdinalWordsLower: string;
+  headerFooterPlaceholderNumberHan: string;
   headerFooterPlaceholderAttrHint: string;
   headerFooterPlaceholderBookTotalPages: string;
   headerFooterPlaceholderMarkHint: string;

@@ -99,9 +99,81 @@ export function titleBreakIndices(text: string): number[] {
   return out;
 }
 
-/** Replace the break placeholder with a space (single-line contexts). */
+/** Han (every plane: `𠀀` is one character in two UTF-16 units), kana, CJK
+ *  punctuation and fullwidth forms: text set without spaces between words
+ *  (Hangul excluded, Korean spaces its words). */
+const CJK_WIDE_RE = /^[\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}\u3000-\u303f\uff00-\uffef]$/u;
+
+/** The dashes and the ellipsis Chinese writes doubled (——, ……): wide next to
+ *  a Chinese character, and nothing of the kind next to Latin text. */
+const CJK_DASH_RE = /^[\u2014\u2015\u2026]$/;
+
+/** Whether `ch` (one character, a surrogate pair included) is Han, kana,
+ *  CJK punctuation or a fullwidth form. */
+export function isCjkWideChar(ch: string | undefined): boolean {
+  return ch !== undefined && CJK_WIDE_RE.test(ch);
+}
+
+/** The character that ends at `at` (exclusive), a surrogate pair whole. */
+export function charBefore(text: string, at: number): string | undefined {
+  if (at <= 0) return undefined;
+  const low = text.charCodeAt(at - 1);
+  if (low >= 0xdc00 && low <= 0xdfff && at >= 2) {
+    const high = text.charCodeAt(at - 2);
+    if (high >= 0xd800 && high <= 0xdbff) return text.slice(at - 2, at);
+  }
+  return text[at - 1];
+}
+
+/** The character that starts at `at`, a surrogate pair whole. */
+export function charFrom(text: string, at: number): string | undefined {
+  const cp = text.codePointAt(at);
+  return cp === undefined ? undefined : String.fromCodePoint(cp);
+}
+
+/** What goes between a text and a suffix set after it (a continued
+ *  caption's or box title's `continuedSuffix`): nothing when the suffix
+ *  opens with a wide character, since Chinese sets `（续）` solid against the
+ *  text and the fullwidth bracket carries its own space; one space
+ *  otherwise (`(cont.)`, after Chinese text too, which keeps a gap before
+ *  Latin). */
+export function suffixJoiner(suffix: string): '' | ' ' {
+  return isCjkWideChar(charFrom(suffix, 0)) ? '' : ' ';
+}
+
+/** Whether two characters meet as Chinese or Japanese text does: both wide,
+ *  or a Chinese dash or ellipsis beside a wide one. */
+export function joinsWide(before: string | undefined, after: string | undefined): boolean {
+  if (before === undefined || after === undefined) return false;
+  const a = isCjkWideChar(before);
+  const b = isCjkWideChar(after);
+  return (a && b) || (a && CJK_DASH_RE.test(after)) || (b && CJK_DASH_RE.test(before));
+}
+
+/** Replace the break placeholder with a space (single-line contexts): an
+ *  ideographic space (U+3000) between two Chinese or Japanese characters,
+ *  so a couplet title `甄士隱夢幻識通靈 \\ 賈雨村風塵懷閨秀` reads
+ *  `甄士隱夢幻識通靈　賈雨村風塵懷閨秀` in the column, the contents and the
+ *  running heads (and `「紅樓夢」 \\ ——序` reads `「紅樓夢」　——序`); one
+ *  space anywhere else. One character for one, so the source map holds. */
 export function flattenTitleBreaks(text: string): string {
-  return text.replace(/\u2028/g, ' ');
+  if (!text.includes('\u2028')) return text;
+  return text.replace(/\u2028/g, (_m, at: number) => (joinsWide(charBefore(text, at), charFrom(text, at + 1)) ? '\u3000' : ' '));
+}
+
+/** {@link flattenTitleBreaks} over a block's spans, read against the whole
+ *  `text` (the spans' texts joined): a break at a span's edge sees both of
+ *  its neighbours. Maths spans are kept as they are. */
+export function flattenTitleBreakSpans<T extends { text: string; math?: unknown }>(text: string, spans: readonly T[]): T[] {
+  const flat = flattenTitleBreaks(text);
+  const aligned = spans.map((s) => s.text).join('') === text;
+  let at = 0;
+  return spans.map((s) => {
+    const from = at;
+    at += s.text.length;
+    if (s.math) return s;
+    return { ...s, text: aligned ? flat.slice(from, at) : flattenTitleBreaks(s.text) };
+  });
 }
 
 /** Insert `\n` at the recorded break indices when the (possibly uppercased

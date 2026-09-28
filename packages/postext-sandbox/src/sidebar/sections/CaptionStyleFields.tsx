@@ -9,6 +9,7 @@ import type {
   TextAlign,
 } from 'postext';
 import { useSandboxLabels } from '../../context/SandboxContext';
+import { separatorFromOption, separatorOption, separatorOptions, type SeparatorChoice } from '../settings/eastAsianOptions';
 import {
   CollapsibleSection,
   ColorPicker,
@@ -19,6 +20,10 @@ import {
 } from '../../controls';
 
 const FONT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em'];
+/** Between the label and the number: 图 1-1 or 图1-1. */
+const LABEL_NUMBER_GAPS: readonly SeparatorChoice[] = ['nbsp', 'none'];
+/** After the number: "Figure 1.7. Title", "Figure 1.7: Title", "图1-1　标题". */
+const LABEL_SEPARATORS: readonly SeparatorChoice[] = ['stop', 'colon', 'space', 'ideographic'];
 const GAP_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 
 export interface CaptionStyleFieldsProps {
@@ -174,6 +179,30 @@ export function CaptionStyleFields({
           isDefault={unset('labelColor')}
           onReset={() => resetField('labelColor')}
           fieldId={`${fieldIdPrefix}-labelColor`}
+        />
+        <SelectInput
+          label={labels.captionLabelNumberGap}
+          value={separatorOption(cs.labelNumberGap, LABEL_NUMBER_GAPS)}
+          options={separatorOptions(labels, LABEL_NUMBER_GAPS, cs.labelNumberGap)}
+          onChange={(v) => {
+            const gap = separatorFromOption(v);
+            if (gap !== undefined) update({ labelNumberGap: gap });
+          }}
+          tooltip={labels.captionLabelNumberGapTooltip}
+          isDefault={unset('labelNumberGap')}
+          onReset={() => resetField('labelNumberGap')}
+        />
+        <SelectInput
+          label={labels.captionLabelSeparator}
+          value={separatorOption(cs.labelSeparator, LABEL_SEPARATORS)}
+          options={separatorOptions(labels, LABEL_SEPARATORS, cs.labelSeparator)}
+          onChange={(v) => {
+            const sep = separatorFromOption(v);
+            if (sep !== undefined) update({ labelSeparator: sep });
+          }}
+          tooltip={labels.captionLabelSeparatorTooltip}
+          isDefault={unset('labelSeparator')}
+          onReset={() => resetField('labelSeparator')}
         />
       </CollapsibleSection>
 

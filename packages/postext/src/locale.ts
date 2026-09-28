@@ -1,4 +1,4 @@
-import type { HyphenationLocale, LocaleTag } from './types';
+import type { CjkRegion, HyphenationLocale, LocaleTag } from './types';
 
 /** The languages whose hyphenation patterns ship with the engine. */
 export const HYPHENATION_LOCALES: readonly HyphenationLocale[] = Object.freeze([
@@ -9,7 +9,7 @@ const BUNDLED = new Set<string>(HYPHENATION_LOCALES);
 
 /** The primary language subtag of a BCP 47 tag, lower-cased (`'pt_BR'` →
  *  `'pt'`, `'en-us'` → `'en'`). The key of the built-in string tables. */
-export function languageOf(tag: string): string {
+export function languageOf(tag: unknown): string {
   return isTag(tag) ? tag.trim().toLowerCase().split(/[-_]/)[0] ?? '' : '';
 }
 
@@ -24,6 +24,135 @@ function isTag(tag: unknown): tag is string {
 export function presentTag(tag: unknown): string | undefined {
   return isTag(tag) ? tag.trim() : undefined;
 }
+
+/** Languages set without hyphenation: Chinese, Japanese and Korean break
+ *  lines between characters, and no patterns ship for them. */
+const CJK_LANGUAGES = new Set(['zh', 'ja', 'ko']);
+
+/** Whether `tag` names Chinese, Japanese or Korean (`'zh-Hant'`, `'ja-JP'`,
+ *  `'ko'`, in any case, with `-` or `_`). Such a document needs no
+ *  hyphenation patterns: hyphenation is off unless the author turns it on
+ *  and names a language for the Latin words. */
+export function isCjkLanguage(tag: unknown): boolean {
+  return isTag(tag) && CJK_LANGUAGES.has(languageOf(tag));
+}
+
+/** `Intl.Locale(tag).maximize()`, memoised; `undefined` for a tag the
+ *  runtime rejects (or a runtime without `Intl.Locale`). */
+const maximized = new Map<string, Intl.Locale | null>();
+function maximize(tag: string): Intl.Locale | undefined {
+  const key = tag.trim().replace(/_/g, '-');
+  let hit = maximized.get(key);
+  if (hit === undefined) {
+    try {
+      hit = typeof Intl.Locale === 'function' ? new Intl.Locale(key).maximize() : null;
+    } catch {
+      hit = null;
+    }
+    maximized.set(key, hit);
+  }
+  return hit ?? undefined;
+}
+
+/** The script of a tag, as `Intl.Locale(tag).maximize()` reads it: `'Hans'`
+ *  for `zh`, `zh-CN`, `zh-SG`; `'Hant'` for `zh-TW`, `zh-HK`, `zh-MO` and
+ *  `zh-Hant`; `'Latn'` for `en`. `undefined` for a missing or invalid tag. */
+export function localeScript(tag: unknown): string | undefined {
+  return isTag(tag) ? maximize(tag)?.script : undefined;
+}
+
+/** The typographic region of a Chinese tag, which decides its typographic
+ *  defaults (clreq §1.2: rules follow the region, not the script): CN, SG
+ *  and MY are `'mainland'`, TW `'taiwan'`, HK and MO `'hongkong'`; a tag
+ *  without a region follows its script (`zh-Hant` → `'taiwan'`, `zh` and
+ *  `zh-Hans` → `'mainland'`). `undefined` for any other language. */
+export function cjkRegionOf(tag: unknown): CjkRegion | undefined {
+  if (!isTag(tag) || languageOf(tag) !== 'zh') return undefined;
+  const loc = maximize(tag);
+  switch (loc?.region) {
+    case 'CN': case 'SG': case 'MY': return 'mainland';
+    case 'TW': return 'taiwan';
+    case 'HK': case 'MO': return 'hongkong';
+    default: return loc?.script === 'Hant' ? 'taiwan' : 'mainland';
+  }
+}
+
+/** The key of the built-in string tables for a tag: `'zh-hans'` or
+ *  `'zh-hant'` for Chinese (Simplified and Traditional need different
+ *  characters: 图/圖, 续/續, 见/見), else the bare language
+ *  ({@link languageOf}). */
+export function stringsKeyOf(tag: unknown): string {
+  if (!isTag(tag)) return '';
+  const lang = languageOf(tag);
+  if (lang !== 'zh') return lang;
+  return localeScript(tag) === 'Hant' ? 'zh-hant' : 'zh-hans';
+}
+
+/** A BCP 47 tag in its canonical case (`'zh-hant-tw'` → `'zh-Hant-TW'`,
+ *  `'PT-br'` → `'pt-BR'`, `'en_us'` → `'en-US'`), script and region kept;
+ *  `undefined` for a missing, blank or malformed tag. The form HTML `lang`,
+ *  PDF `/Lang` and a Sandbox permalink's `lang=` carry. */
+export function canonicalLocaleTag(tag: unknown): string | undefined {
+  if (!isTag(tag)) return undefined;
+  try {
+    return Intl.getCanonicalLocales(tag.trim().replace(/_/g, '-'))[0];
+  } catch {
+    return undefined;
+  }
+}
+
+/** The `lang` a renderer declares for a resolved document (the HTML root,
+ *  the canvas context): its language in canonical form (`zh-Hant-TW`),
+ *  from `locale`, else the hyphenation tag. Only Chinese, Japanese and
+ *  Korean documents declare one — there the browser picks regional glyph
+ *  forms from it (Han characters unified in Unicode, punctuation set in the
+ *  corner or the centre of the em box) — so the output of every other
+ *  document is unchanged. */
+export function renderLangOf(config: {
+  locale?: string;
+  bodyText?: { hyphenation?: { tag?: string; locale?: string } };
+} | undefined): string | undefined {
+  const h = config?.bodyText?.hyphenation;
+  const tag = presentTag(config?.locale) ?? presentTag(h?.tag) ?? presentTag(h?.locale);
+  return isCjkLanguage(tag) ? canonicalLocaleTag(tag) : undefined;
+}
+
+/**
+ * The entry of a built-in string table for `tag`, keyed by
+ * {@link stringsKeyOf}: the tag's own, then — for Traditional Chinese — the
+ * Simplified one, then English (`en`). A table only lists the languages it
+ * has strings for.
+ */
+export function stringsFor<T>(table: Readonly<Record<string, T>>, tag: unknown): T {
+  const key = stringsKeyOf(tag);
+  return table[key] ?? (key === 'zh-hant' ? table['zh-hans'] : undefined) ?? table.en!;
+}
+
+/** A document language the engine has built-in strings for (figure and
+ *  table names, continuation marks, index labels), with its name in the
+ *  language itself. */
+export interface DocumentLanguage {
+  tag: string;
+  name: string;
+}
+
+/** The document languages with built-in strings, in the order a language
+ *  picker lists them: the eight hyphenation languages, then Chinese in
+ *  Simplified characters, in Traditional characters (Taiwan) and in
+ *  Traditional characters as set in Hong Kong. */
+export const DOCUMENT_LANGUAGES: readonly DocumentLanguage[] = Object.freeze([
+  { tag: 'en-us', name: 'English' },
+  { tag: 'es', name: 'Español' },
+  { tag: 'fr', name: 'Français' },
+  { tag: 'de', name: 'Deutsch' },
+  { tag: 'it', name: 'Italiano' },
+  { tag: 'pt', name: 'Português' },
+  { tag: 'ca', name: 'Català' },
+  { tag: 'nl', name: 'Nederlands' },
+  { tag: 'zh-Hans', name: '中文（简体）' },
+  { tag: 'zh-Hant', name: '中文（繁體）' },
+  { tag: 'zh-Hant-HK', name: '中文（香港）' },
+].map((l) => Object.freeze(l)));
 
 /**
  * The bundled hyphenation locale for a BCP 47 language tag, or `undefined`
@@ -48,7 +177,8 @@ const warnedTags = new Set<string>();
 /**
  * {@link matchHyphenationLocale}, falling back to `'en-us'` for a language
  * with no bundled patterns. The fallback is reported once per tag on the
- * console, since the text is then hyphenated with another language's rules;
+ * console, since the text is then hyphenated with another language's rules
+ * (Chinese, Japanese and Korean excepted: they are set without hyphenation);
  * `warn: false` skips the report (hyphenation is off, so no text uses the
  * patterns). A missing or blank tag gives `'en-us'` silently.
  */
@@ -56,6 +186,9 @@ export function hyphenationLocaleFor(tag: LocaleTag, warn = true): HyphenationLo
   if (!isTag(tag)) return 'en-us';
   const match = matchHyphenationLocale(tag);
   if (match) return match;
+  // Chinese, Japanese and Korean need no patterns: nothing to report. The
+  // body text resolves hyphenation off for them (see `resolveHyphenation`).
+  if (isCjkLanguage(tag)) return 'en-us';
   if (warn && !warnedTags.has(tag)) {
     warnedTags.add(tag);
     console.warn(
@@ -73,19 +206,6 @@ export function hyphenationLocaleFor(tag: LocaleTag, warn = true): HyphenationLo
  *  editions apart: a Traditional Chinese book is not a Simplified one,
  *  whatever the language subtag says. */
 const SCRIPT_DISTINCT_LANGUAGES = new Set(['zh', 'sr', 'uz', 'pa', 'az', 'bs', 'mn', 'ks', 'sd', 'ku']);
-
-/**
- * A BCP 47 tag in canonical case (`zh-hant` → `zh-Hant`, `PT-br` →
- * `pt-BR`, `_` read as `-`), or null when it is not a well-formed tag.
- */
-export function canonicalLocaleTag(tag: unknown): string | null {
-  if (!isTag(tag)) return null;
-  try {
-    return Intl.getCanonicalLocales(tag.trim().replace(/_/g, '-'))[0] ?? null;
-  } catch {
-    return null;
-  }
-}
 
 interface LocaleParts {
   /** The canonical tag, lower-cased (the key of an exact match). */
@@ -108,12 +228,8 @@ function localeParts(tag: string): LocaleParts | null {
   if (canonical) {
     try {
       const locale = new Intl.Locale(canonical);
-      let max = locale;
-      try {
-        max = locale.maximize();
-      } catch {
-        // No likely-subtags data: the tag as written.
-      }
+      // No likely-subtags data: the tag as written.
+      const max = maximize(canonical) ?? locale;
       parts = {
         tag: canonical.toLowerCase(),
         language: locale.language.toLowerCase(),
@@ -135,9 +251,10 @@ function localeParts(tag: string): LocaleParts | null {
  * language, and for a language written in several scripts (Chinese,
  * Serbian…) the same script once the tags are maximised. `zh-TW` is
  * `zh-Hant`, `zh` is `zh-Hans`, `es-ES` is `es`; `zh-Hans` is never
- * `zh-Hant`. Case and `_` separators are ignored.
+ * `zh-Hant`. Case and `_` separators are ignored; a missing or blank tag
+ * matches nothing.
  */
-export function sameContentLocale(a: string, b: string): boolean {
+export function sameContentLocale(a: unknown, b: unknown): boolean {
   const pa = isTag(a) ? localeParts(a) : null;
   const pb = isTag(b) ? localeParts(b) : null;
   if (!pa || !pb) {

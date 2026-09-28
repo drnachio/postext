@@ -15,6 +15,7 @@ import {
   NestedGroup,
 } from '../../controls';
 import { HighlightZone } from '../settings/previewHighlight';
+import { eastAsianNumberFormatOptions } from '../settings/eastAsianOptions';
 
 const PAGE_SIZE_OPTIONS = [
   { value: '11x17', label: '11 \u00d7 17 cm' },
@@ -153,6 +154,7 @@ export const PageSection = memo(function PageSection() {
     { value: 'upper-roman', label: labels.pageNumberingFormatUpperRoman },
     { value: 'lower-alpha', label: labels.pageNumberingFormatLowerAlpha },
     { value: 'upper-alpha', label: labels.pageNumberingFormatUpperAlpha },
+    ...eastAsianNumberFormatOptions(labels),
   ];
 
   const sizeReset = () => {

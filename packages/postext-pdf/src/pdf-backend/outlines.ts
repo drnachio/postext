@@ -6,6 +6,7 @@ import {
   PDFRef,
   type PDFContext,
 } from 'pdf-lib';
+import { blockLinesText } from 'postext';
 import type { VDTBlock, VDTDocument } from 'postext';
 
 interface OutlineEntry {
@@ -15,21 +16,32 @@ interface OutlineEntry {
   y: number;
 }
 
+/** Runs of white space as one space; the ideographic space (U+3000) of a
+ *  Chinese title stays. */
+const SPACES = /[^\S\u3000]+/g;
+
+/** A heading's printed lines as one line of text: joined back as they were
+ *  broken (`blockLinesText`: nothing between two Chinese characters, the
+ *  word a hyphen divided whole again), white space collapsed but for the
+ *  ideographic space. */
+export function headingLinesText(block: VDTBlock): string {
+  return blockLinesText(block).replace(SPACES, ' ').trim();
+}
+
 /** A heading's bookmark title: its number and its title as written. A
  *  letter-case transform (`textTransform: 'uppercase'`) is how the page
  *  prints the heading, not its name — as with CSS `text-transform`, the
  *  bookmark keeps the source's case (EF-81). */
 function extractBlockText(block: VDTBlock): string {
-  const written = block.sourceTitle?.replace(/\s+/g, ' ').trim();
-  if (written) return block.numberPrefix ? `${block.numberPrefix} ${written}` : written;
-  const raw = block.lines
-    .map((line) => line.text)
-    .join(' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+  // The number and the title joined as the heading joins them (`'　'` or
+  // nothing in a Chinese heading).
+  const sep = block.numberSeparator ?? ' ';
+  const written = block.sourceTitle?.replace(SPACES, ' ').trim();
+  if (written) return block.numberPrefix ? `${block.numberPrefix}${sep}${written}` : written;
+  const raw = headingLinesText(block);
   if (!raw) return '';
   if (block.numberPrefix && !raw.startsWith(block.numberPrefix)) {
-    return `${block.numberPrefix} ${raw}`;
+    return `${block.numberPrefix}${sep}${raw}`;
   }
   return raw;
 }

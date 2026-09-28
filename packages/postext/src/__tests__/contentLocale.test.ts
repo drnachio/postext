@@ -13,9 +13,9 @@ describe('canonicalLocaleTag', () => {
     expect(canonicalLocaleTag('pt_br')).toBe('pt-BR');
     expect(canonicalLocaleTag(' es ')).toBe('es');
     expect(canonicalLocaleTag('zh-hant-hk')).toBe('zh-Hant-HK');
-    expect(canonicalLocaleTag('e s')).toBeNull();
-    expect(canonicalLocaleTag('')).toBeNull();
-    expect(canonicalLocaleTag(undefined)).toBeNull();
+    expect(canonicalLocaleTag('e s')).toBeUndefined();
+    expect(canonicalLocaleTag('')).toBeUndefined();
+    expect(canonicalLocaleTag(undefined)).toBeUndefined();
   });
 });
 

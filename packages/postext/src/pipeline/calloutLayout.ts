@@ -40,6 +40,7 @@
  */
 
 import type { ContentBlock, DirectiveAttrs } from '../parse';
+import { suffixJoiner } from '../parse/inlineFormatting';
 import { spaceDirectiveLines } from '../parse/attrs';
 import type {
   CalloutPlacement,
@@ -393,6 +394,7 @@ function offsetBlock(blk: VDTBlock, ox: number, oy: number): void {
   }
   if (blk.bulletOffsetX !== undefined) blk.bulletOffsetX += ox;
   if (blk.separatorX !== undefined) blk.separatorX += ox;
+  if (blk.prefixX !== undefined) blk.prefixX += ox;
   if (blk.bulletY !== undefined) blk.bulletY += oy;
   if (blk.bulletBaselineY !== undefined) blk.bulletBaselineY += oy;
   if (blk.resourceBlock) offsetResourceBlock(blk.resourceBlock, ox, oy);
@@ -501,7 +503,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   // asks for it (`repeatTitle`); the repeat is pagination furniture.
   const repeatedTitle = !!input.continuation && style.repeatTitle && rawTitle.trim().length > 0;
   const suffix = repeatedTitle ? style.continuedSuffix.trim() : '';
-  const shownTitle = suffix.length > 0 ? `${rawTitle} ${suffix}` : rawTitle;
+  const shownTitle = suffix.length > 0 ? `${rawTitle}${suffixJoiner(suffix)}${suffix}` : rawTitle;
   const titleText = style.titleStyle.textTransform === 'uppercase'
     ? uppercasePreservingLength(shownTitle)
     : shownTitle;
@@ -707,7 +709,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       ?? measureContentBlock(raw, blockIdx, width, derivedCtx, { styleOverride });
     if (!measuredBlock) return undefined;
     const { kind, measured, prefixLen, absoluteSourceMap, mathDisplayRender, resourceBlock, letterSpacingPx } = measuredBlock;
-    const { vdtType, headingLevel, numberPrefix, headingNumber, listBullet, listDepth, listKind, bulletXOffsetInColumn, strikethroughText } = kind;
+    const { vdtType, headingLevel, numberPrefix, numberSeparator, headingNumber, listBullet, listDepth, listKind, bulletXOffsetInColumn, strikethroughText } = kind;
     // A structural heading (`hidden`) keeps its lines' text but prints
     // nothing and takes no room: no line height, no margins, and the
     // spacing around it collapses as if it were not there.
@@ -753,7 +755,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     blk.snappedToGrid = false;
     blk.headingLevel = headingLevel;
     if (nestPath) blk.calloutPath = [...nestPath];
-    if (numberPrefix) blk.numberPrefix = numberPrefix;
+    if (numberPrefix) { blk.numberPrefix = numberPrefix; if (numberSeparator !== undefined) blk.numberSeparator = numberSeparator; }
     if (headingNumber !== undefined) blk.headingNumber = headingNumber;
     if (hiddenHeading) blk.hidden = true;
     blk.sourceMap = absoluteSourceMap;
@@ -825,6 +827,10 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
         blk.separatorFontString = listBullet.separatorFontString;
         blk.separatorColor = listBullet.separatorColor;
         blk.separatorX = blk.bulletOffsetX + (listBullet.separatorOffsetPx ?? 0);
+        if (listBullet.prefixText !== undefined) {
+          blk.prefixText = listBullet.prefixText;
+          blk.prefixX = blk.bulletOffsetX + (listBullet.prefixOffsetPx ?? 0);
+        }
       }
       if (strikethroughText) blk.strikethroughText = true;
       const firstLine = blk.lines[0];
@@ -974,6 +980,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     delete tail.bulletText; delete tail.bulletFontString; delete tail.bulletColor;
     delete tail.bulletOffsetX; delete tail.bulletY; delete tail.bulletBaselineY;
     delete tail.separatorText; delete tail.separatorFontString; delete tail.separatorColor; delete tail.separatorX;
+    delete tail.prefixText; delete tail.prefixX;
     tail.bbox = createBoundingBox(blk.bbox.x, 0, blk.bbox.width, tail.lines.length * lh);
     tail.sourceStart = tail.lines[0]?.sourceStart ?? blk.sourceStart;
     return tail;

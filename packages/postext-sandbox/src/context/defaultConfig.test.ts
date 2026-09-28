@@ -37,4 +37,16 @@ describe('relocalizedResourceTypes', () => {
     expect(relocalizedResourceTypes(defaultResourceTypes('en'), ['en'], 'en-us')).toBeNull();
     expect(relocalizedResourceTypes(undefined, ['es'], 'en')).toBeNull();
   });
+
+  // #179: Chinese built-in types, and back from Chinese to the interface's.
+  it('follows a Chinese document language and back', () => {
+    const zh = relocalizedResourceTypes(defaultResourceTypes('es'), ['es'], 'zh-Hant')!;
+    expect(zh.map((t) => t.name)).toEqual(['圖', '表']);
+    expect(zh[0]!.numberingTemplate).toBe('{h1}-{n}');
+    expect(relocalizedResourceTypes(defaultResourceTypes('zh-Hans'), ['zh-Hans', 'en'], 'en')!.map((t) => t.name)).toEqual(['Figure', 'Table']);
+    // The same strings in another region: nothing to change.
+    expect(relocalizedResourceTypes(defaultResourceTypes('es'), ['es'], 'es-MX')).toBeNull();
+    const custom = defaultResourceTypes('es').map((t, i) => (i === 0 ? { ...t, name: 'Lámina' } : t));
+    expect(relocalizedResourceTypes(custom, ['es'], 'zh-Hans')).toBeNull();
+  });
 });

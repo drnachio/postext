@@ -51,10 +51,14 @@ export function resolveAllConfig(rawConfig?: PostextConfig): ResolvedConfig {
 function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
   const config = applyPaletteToConfig(rawConfig);
   const bodyText = resolveBodyTextConfig(config?.bodyText, config?.locale);
+  // The document language as `resolvedLocale` reads it: the script of the
+  // numeral tokens 一 and 壹 in list and page formats follows it, as it does
+  // in heading templates and `:::numbering`, and so does the `cjk` region.
+  const documentLocale = documentLocaleOf(config?.locale, bodyText.hyphenation);
   const headings = resolveHeadingsConfig(config?.headings);
   const unorderedLists = resolveUnorderedListsConfig(config?.unorderedLists, bodyText);
-  const orderedLists = resolveOrderedListsConfig(config?.orderedLists, bodyText);
-  const page = resolvePageConfig(config?.page);
+  const orderedLists = resolveOrderedListsConfig(config?.orderedLists, bodyText, documentLocale);
+  const page = resolvePageConfig(config?.page, documentLocale);
   const layout = resolveLayoutConfig(config?.layout);
   const resolved: ResolvedConfig = {
     page,
@@ -78,7 +82,7 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
     toc: resolveTocConfig(config?.toc, bodyText),
     index: resolveIndexConfig(config?.index, bodyText),
     footnotes: resolveFootnotesConfig(config?.footnotes),
-    cjk: resolveCjkConfig(config?.cjk, config?.locale ?? config?.bodyText?.hyphenation?.locale),
+    cjk: resolveCjkConfig(config?.cjk, documentLocale),
     ...(config?.locale ? { locale: config.locale } : {}),
     // Kept for per-resource-type caption overrides, which resolve their
     // palette colours at layout time (see `mergeCaptionStyle`). A copy: the
@@ -95,12 +99,16 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
   return applyPaletteToResolvedConfig(resolved, rawConfig?.colorPalette);
 }
 
-/** The document language: `locale`, else the hyphenation locale (which the
- *  Sandbox fills from the app language) — the same rule the table
+/** The document language: `locale`, else the hyphenation locale as written
+ *  (which the Sandbox fills from the app language) — the same rule the table
  *  continuation strings and `documentLocale` follow; a blank tag counts as
  *  unset. */
 export function resolvedLocale(resolved: ResolvedConfig): string {
-  return presentTag(resolved.locale) ?? presentTag(resolved.bodyText.hyphenation.locale) ?? 'en-us';
+  return documentLocaleOf(resolved.locale, resolved.bodyText.hyphenation);
+}
+
+function documentLocaleOf(locale: string | undefined, h: ResolvedConfig['bodyText']['hyphenation']): string {
+  return presentTag(locale) ?? presentTag(h.tag) ?? presentTag(h.locale) ?? 'en-us';
 }
 
 /** Index heading-level configs by level so per-block lookups in the

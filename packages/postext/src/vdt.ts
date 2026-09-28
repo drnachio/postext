@@ -739,6 +739,10 @@ export interface VDTBlock {
    *  column-balancing stretch points. */
   tocEntry?: { pageIndex?: number };
   numberPrefix?: string;
+  /** What joins {@link numberPrefix} to the title
+   *  (`HeadingLevelConfig.numberSeparator`), when it is not one space:
+   *  `'　'` or `''` in a Chinese heading. Absent means `' '`. */
+  numberSeparator?: string;
   /** A numbered heading's counter: its level's running count (the `3` of
    *  a third chapter, whatever its template prints). Backs `{numberDecimal}`,
    *  `{numberRoman}`, `{numberWords}`… in heading designs. Absent on
@@ -805,6 +809,13 @@ export interface VDTBlock {
   /** Absolute page X coordinate where the separator run starts (shares the
    *  bullet's `bulletY`, or its `bulletBaselineY` when set) */
   separatorX?: number;
+  /** Ordered-list prefix drawn as its own run before the number (`（` of
+   *  （一）), in the separator run's font and colour; set only with a
+   *  separator run (otherwise `bulletText` carries it). */
+  prefixText?: string;
+  /** Absolute page X coordinate where the prefix run starts (on the
+   *  bullet's `bulletY` / `bulletBaselineY`, as the separator). */
+  prefixX?: number;
   /** List kind for `listItem` blocks — drives bullet shape and text decoration. */
   listKind?: 'unordered' | 'ordered' | 'task';
   /** When true, the canvas backend draws a strikethrough through the block's lines (completed tasks). */

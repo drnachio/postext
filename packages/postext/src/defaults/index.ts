@@ -48,7 +48,7 @@ export { DEFAULT_HEADING_STYLES, resolveHeadingStylesConfig, stripHeadingStylesD
 export { DEFAULT_TOC_CONFIG, resolveTocConfig, stripTocDefaults } from './toc';
 export { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults } from './footnotes';
 export { DEFAULT_INDEX_CONFIG, resolveIndexConfig, stripIndexDefaults } from './indexConfig';
-export { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOfLocale, defaultCjkLineBreak } from './cjk';
+export { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, defaultCjkLineBreak } from './cjk';
 
 export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   const result: PostextConfig = { ...config };
@@ -64,7 +64,7 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   } else {
     delete result.layout;
   }
-  const strippedBodyText = stripBodyTextDefaults(config.bodyText);
+  const strippedBodyText = stripBodyTextDefaults(config.bodyText, config.locale);
   if (strippedBodyText) {
     result.bodyText = strippedBodyText;
   } else {
