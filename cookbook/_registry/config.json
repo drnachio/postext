@@ -181,5 +181,12 @@
       "en": "Resource types",
       "es": "Tipos de recurso"
     }
+  },
+  "index": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Back-of-book index",
+      "es": "Índice analítico"
+    }
   }
 }

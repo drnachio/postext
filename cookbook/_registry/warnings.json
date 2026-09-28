@@ -1121,5 +1121,71 @@
         "es": "Avisos de configuración"
       }
     }
+  },
+  "indexMarkInvalid": {
+    "source": "engine",
+    "label": {
+      "en": "Index mark without a term",
+      "es": "Marca de índice sin término"
+    },
+    "cause": {
+      "en": "An :index{…} mark has no term attribute and no bracketed text, so it files nothing.",
+      "es": "Una marca :index{…} no tiene atributo term ni texto entre corchetes, así que no registra nada."
+    },
+    "fix": {
+      "en": "Write :index[word] to index a word of the text, or :index{term=\"…\"} to name the entry.",
+      "es": "Escribe :index[palabra] para indexar una palabra del texto, o :index{term=\"…\"} para nombrar la entrada."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Back-of-book index",
+        "es": "Índice analítico"
+      }
+    }
+  },
+  "indexSeeUnknown": {
+    "source": "engine",
+    "label": {
+      "en": "Index cross-reference to a missing entry",
+      "es": "Remisión del índice a una entrada que no existe"
+    },
+    "cause": {
+      "en": "A see or seealso mark points at a term no mark of that index files, so the reader is sent to an entry that is not there.",
+      "es": "Una marca see o seealso remite a un término que ninguna marca de ese índice registra, así que el lector va a una entrada que no está."
+    },
+    "fix": {
+      "en": "Write the target exactly as its entry's term (levels joined with !), or mark the target term somewhere in the text.",
+      "es": "Escribe el destino igual que el término de su entrada (con los niveles unidos por !), o marca ese término en algún lugar del texto."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Back-of-book index",
+        "es": "Índice analítico"
+      }
+    }
+  },
+  "indexRangeUnclosed": {
+    "source": "engine",
+    "label": {
+      "en": "Index range not closed",
+      "es": "Intervalo del índice sin cerrar"
+    },
+    "cause": {
+      "en": "A range=\"start\" mark has no range=\"end\" mark with the same term (or the reverse), so the entry prints one page instead of the range.",
+      "es": "Una marca range=\"start\" no tiene su range=\"end\" con el mismo término (o al revés), así que la entrada imprime una página en lugar del intervalo."
+    },
+    "fix": {
+      "en": "Close the range with :index{term=\"…\" range=\"end\"} where the discussion ends, spelling the term the same way.",
+      "es": "Cierra el intervalo con :index{term=\"…\" range=\"end\"} donde termina la explicación, escribiendo el término igual."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Back-of-book index",
+        "es": "Índice analítico"
+      }
+    }
   }
 }
