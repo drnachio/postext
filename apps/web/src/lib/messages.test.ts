@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { createTranslator } from "next-intl";
 import en from "../../messages/en.json";
 import es from "../../messages/es.json";
 
@@ -30,4 +31,25 @@ describe("messages", () => {
       expect(enKeys.filter((k) => !esKeys.includes(k)), `only in en.${ns}`).toEqual([]);
     });
   }
+});
+
+/** Keys whose messages next-intl cannot parse: a `{` or `}` that is not an
+ *  ICU argument must be quoted as `'{'` / `'}'`, or the UI shows the key. */
+function malformed(messages: Tree, locale: string): string[] {
+  const bad: string[] = [];
+  const t = createTranslator({
+    locale,
+    messages,
+    onError: (error) => bad.push(error.message),
+    getMessageFallback: ({ key }) => key,
+  });
+  // A message with arguments reports the missing values (FORMATTING_ERROR);
+  // only a message that does not parse is INVALID_MESSAGE.
+  for (const key of leafKeys(messages)) t(key as never);
+  return bad.filter((m) => m.includes("INVALID_MESSAGE"));
+}
+
+describe("messages parse as ICU", () => {
+  it("en", () => expect(malformed(en as unknown as Tree, "en")).toEqual([]));
+  it("es", () => expect(malformed(es as unknown as Tree, "es")).toEqual([]));
 });
