@@ -457,6 +457,22 @@ describe('engine content warnings', () => {
     // They belong to no place in the text.
     expect(found.every((w) => w.sourceStart === undefined)).toBe(true);
   });
+
+  it('expands an {attr.<key>} image id with the values the headings give it', () => {
+    const pic = (id: string): Resource => ({ ...photo, id, bitmap: { ...photo.bitmap!, fileId: `file-${id}` } });
+    const config: PostextConfig = {
+      headingStyles: [{ id: 'opener', advancedDesign: { enabled: true, slot: { elements: [{
+        kind: 'image', id: 'art', resourceId: 'art-{attr.art}',
+        placement: { anchor: { to: 'container', edge: 'top-left' }, size: { width: { value: 10, unit: 'pt' } } },
+      }] } } }],
+    };
+    const ids = ['art-log', 'art-wig', 'art-unused'];
+    const found = computeWarnings({
+      markdown: '# One {style="opener" art="log"}\n\nA.\n\n# Two {style="opener" art="wig"}\n\nB.',
+      config, doc: null, resources: ids.map(pic), unavailableImages: new Set(ids.map((id) => `file-${id}`)),
+    }).filter((w) => w.payload.kind === 'missingImage');
+    expect(found.map((w) => w.payload.kind === 'missingImage' && w.payload.resourceId).sort()).toEqual(['art-log', 'art-wig']);
+  });
 });
 
 describe(':::space warnings', () => {

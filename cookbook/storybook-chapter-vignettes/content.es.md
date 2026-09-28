@@ -6,7 +6,7 @@ author: "Carlo Collodi"
 
 # Pinocchio {style="frontespizio" kicker="Le avventure di"}
 
-# Capitolo I {style="ceppo" summary="Come andò che Maestro Ciliegia, falegname, trovò un pezzo di legno che piangeva e rideva come un bambino."}
+# Capitolo I {style="capitolo" vignetta="ceppo" summary="Come andò che Maestro Ciliegia, falegname, trovò un pezzo di legno che piangeva e rideva come un bambino."}
 
 — C’era una volta…
 
@@ -60,7 +60,7 @@ Il suo viso pareva trasfigurito, e perfino la punta del naso, di paonazza come e
 
 ::resource{id="ciliegie"}
 
-# Capitolo II {style="polenta" summary="Maestro Ciliegia regala il pezzo di legno al suo amico Geppetto, il quale lo prende per fabbricarsi un burattino maraviglioso, che sappia ballare, tirar di scherma e fare i salti mortali."}
+# Capitolo II {style="capitolo" vignetta="polenta" summary="Maestro Ciliegia regala il pezzo di legno al suo amico Geppetto, il quale lo prende per fabbricarsi un burattino maraviglioso, che sappia ballare, tirar di scherma e fare i salti mortali."}
 
 In quel punto fu bussato alla porta.
 
@@ -71,5 +71,5 @@ Allora entrò in bottega un vecchietto tutto arzillo, il quale aveva nome Geppet
 Geppetto era bizzosissimo. Guai a chiamarlo Polendina! Diventava subito una bestia, e non c’era più verso di tenerlo.
 
 :::paragraphs{style="colofon"}
-Composto in Averia Serif Libre, Fredericka the Great e Quicksand (SIL Open Font License). Testo di Carlo Collodi (1883) secondo l’edizione Bemporad del 1902, Project Gutenberg n. 52484. Disegni realizzati in codice.
+Composto in Averia Serif Libre, Fredericka the Great e Quicksand (SIL Open Font License). Testo di Carlo Collodi (1883) secondo l’edizione Bemporad del 1902, Project Gutenberg n. 52484. Illustrazioni generate con modelli di diffusione.
 :::

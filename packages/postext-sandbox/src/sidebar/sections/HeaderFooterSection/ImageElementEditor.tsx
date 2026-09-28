@@ -53,7 +53,8 @@ function ImageResourceField({ value, onChange }: { value: string; onChange: (id:
     { value: '', label: labels.headerFooterImageNone },
     // An id no resource carries (a deleted one, a typo) stays selectable so
     // the element is not silently rewired.
-    ...(value && !selected ? [{ value, label: labels.headerFooterImageMissing.replace('__id__', value) }] : []),
+    // A templated id (`{attr.art}`) is resolved per heading: shown as written.
+    ...(value && !selected ? [{ value, label: value.includes('{') ? value : labels.headerFooterImageMissing.replace('__id__', value) }] : []),
     ...images.map((r) => ({ value: r.id, label: r.id })),
   ];
 

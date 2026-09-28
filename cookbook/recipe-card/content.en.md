@@ -2,7 +2,7 @@
 title: "Salt & Olive Oil"
 ---
 
-# Tortilla \\ de patatas {style="tortilla" kicker="Spanish potato omelette" time="45 min" level="Intermediate" season="All year" note="onion, always!" lead="Our house version: potatoes poached slowly in plenty of oil, eggs barely set and ten minutes’ rest so the potato soaks up the egg. With onion, as my grandmother made it; without, if your family argues about it."}
+# Tortilla \\ de patatas {style="receta" art="tortilla" kicker="Spanish potato omelette" time="45 min" level="Intermediate" season="All year" note="onion, always!" lead="Our house version: potatoes poached slowly in plenty of oil, eggs barely set and ten minutes’ rest so the potato soaks up the egg. With onion, as my grandmother made it; without, if your family argues about it."}
 
 :::callout{type="card" label="SERVES 4"}
 :::columns{count=2}
@@ -34,7 +34,7 @@ title: "Salt & Olive Oil"
 
 **Keep the oil.** Strained into a jar, it will fry the next tortilla.
 
-# Gazpacho \\ andaluz {style="gazpacho" kicker="Andalusian cold soup" time="25 min + 2 h chilling" level="Easy" season="June to September" note="serve it ice cold!" lead="In many Andalusian homes it is drunk from a glass, straight from the fridge. It needs truly ripe tomatoes, and oil poured in a thin stream while the blender runs, which leaves it creamy and orange."}
+# Gazpacho \\ andaluz {style="receta" art="gazpacho" kicker="Andalusian cold soup" time="25 min + 2 h chilling" level="Easy" season="June to September" note="serve it ice cold!" lead="In many Andalusian homes it is drunk from a glass, straight from the fridge. It needs truly ripe tomatoes, and oil poured in a thin stream while the blender runs, which leaves it creamy and orange."}
 
 :::callout{type="card" label="SERVES 6"}
 :::columns{count=2}

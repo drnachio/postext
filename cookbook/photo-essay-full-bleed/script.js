@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 068 · Photo essay with full-bleed plates ═══════════════
 // https://postext.dev/en/cookbook/photo-essay-full-bleed
 // Code: MIT · Text: original (CC BY 4.0) · Plates: drawn in code (CC BY 4.0)
-// Fonts: Andada Pro, Syne, Syne Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Andada Pro, Syne, Syne Mono (SIL OFL 1.1) · Needs postext ≥ 1.8.0
 // Sierra, a landscape photobook: one day in a mountain range in six plates, each on a page of
 // its own and one across the gutter of a spread, with three short texts between them.
 import {
@@ -31,13 +31,14 @@ const LEAD = 15; // body leading in pt
 const at = (to, edge, x = 0, y = 0, size) => ({ anchor: { to, edge },
   offset: { x: mm(x), y: mm(y) }, ...(size && { size }) });
 
-// #region answer: one heading style per plate, generated from a list
+// #region answer: the plates' heading styles, generated from a list
+// '{attr.art}' is filled in per heading, so a plain plate names its picture on its line:
+// # Noon {style="lamina" art="mediodia" …}. Only the cover and the last plate draw extras.
 const PLATES = [ // the style id, its picture, the ink of its caption, anything extra it draws
   { id: 'alba', art: 'alba', extra: (colour) => cover(colour) }, // an arrow: cover() is below
-  { id: 'mediodia', art: 'mediodia' },
-  { id: 'tormenta', art: 'tormenta', half: 'verso' }, // one picture across a spread:
-  { id: 'tormenta-recto', art: 'tormenta', half: 'recto' }, // the left half, then the right
-  { id: 'noche', art: 'noche' },
+  { id: 'lamina', art: '{attr.art}' }, // any plate on a page of its own
+  { id: 'pliego', art: '{attr.art}', half: 'verso' }, // one picture across a spread:
+  { id: 'pliego-recto', art: '{attr.art}', half: 'recto' }, // the left half, then the right
   { id: 'nieve', art: 'nieve', ink: 'ink', extra: (colour) => colophon(colour) },
 ];
 const plate = ({ id, art, half, ink = 'white', extra = () => [] }) => ({

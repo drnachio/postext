@@ -698,10 +698,24 @@ function imageFileId(r: Resource): string | undefined {
  * contents' part rows —, every callout icon of `kind: 'resource'` and every
  * callout label-tab icon. Walked generically, like the font collector, so a
  * new design slot is covered without a change here. A subtree switched off
- * (`enabled: false`) draws nothing and is skipped.
+ * (`enabled: false`) draws nothing and is skipped. An image id with
+ * `{attr.<key>}` placeholders stands for every id the `blocks`' attributes
+ * fill it with.
  */
-export function configImageResourceIds(config: PostextConfig): Set<string> {
+export function configImageResourceIds(config: PostextConfig, blocks: readonly ContentBlock[] = []): Set<string> {
   const ids = new Set<string>();
+  // A templated id (`'{attr.art}'`, `'map-{attr.n}'`) names the pictures
+  // the document's headings and parts give it: one id per attribute value.
+  const ATTR = /\{attr\.([A-Za-z_][A-Za-z0-9_-]*)\}/g;
+  const addTemplated = (template: string): void => {
+    const keys = [...template.matchAll(ATTR)].map((m) => m[1]!);
+    for (const b of blocks) {
+      const attrs = b.attrs;
+      if (!attrs || !keys.some((k) => attrs[k] !== undefined)) continue;
+      const id = template.replace(ATTR, (_, k: string) => attrs[k] ?? '').trim();
+      if (id && !id.includes('{')) ids.add(id);
+    }
+  };
   const visit = (node: unknown, key: string, parentKey: string): void => {
     if (!node || typeof node !== 'object') return;
     if (Array.isArray(node)) {
@@ -714,7 +728,8 @@ export function configImageResourceIds(config: PostextConfig): Set<string> {
     if (typeof id === 'string' && id.length > 0) {
       // A design image element, a callout icon set to a resource, or a
       // label tab's icon (which has no kind).
-      if (rec.kind === 'image' || rec.kind === 'resource' || (rec.kind === undefined && key === 'icon' && parentKey === 'label')) {
+      if (rec.kind === 'image' && id.includes('{')) addTemplated(id);
+      else if (rec.kind === 'image' || rec.kind === 'resource' || (rec.kind === undefined && key === 'icon' && parentKey === 'label')) {
         ids.add(id);
       }
     }
@@ -1081,7 +1096,7 @@ function computeDocumentWarnings(params: {
       resources,
       config.resourceTypes ?? [],
       doc,
-      configImageResourceIds(config),
+      configImageResourceIds(config, blocks),
       // With no storage every payload is unreadable: `storageUnavailable`
       // says so once instead.
       storageUnavailable ? undefined : unavailableImages,
