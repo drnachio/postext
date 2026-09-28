@@ -26,6 +26,7 @@ import { createBoundingBox, pictureTraits, type BoundingBox } from '../vdt';
 import { buildFontString } from '../measure';
 import { graphemeCount } from '../measure/graphemes';
 import { parseInlineSnippetSpans } from '../parse/inlineSnippet';
+import type { InlineSpan } from '../parse/types';
 import { hyphenateText, withoutSlashJoints } from '../hyphenate';
 import { BREAKING_SPACE_RUNS_SPLIT_RE, NO_BREAK_SPACES, isBreakingSpaceRun } from '../measure/spaces';
 import {
@@ -152,16 +153,39 @@ export interface ResolvedImagePrimitive extends ResolvedElementGeometry {
   altText?: string;
 }
 
+/** Placeholder characters the snippet parser leaves in span text (private
+ *  use, the object replacement character, the invisible separator and
+ *  plus of references and swatches): nothing a reader can read. */
+const PLACEHOLDER_RE = /[\uE000-\uF8FF\uFFFC\u2063\u2064]/g;
+
+/** The words of caption spans as a reader reads them: a chip's label, a
+ *  reference's own text (`:ref{… text="…"}`; its number is not known
+ *  here), nothing for a swatch or a note marker. */
+function spansReadText(spans: readonly InlineSpan[]): string {
+  let out = '';
+  for (const s of spans) {
+    if (s.chip) out += spansReadText(s.chip.spans);
+    else if (s.ref) out += s.ref.text ?? '';
+    else if (s.swatch || s.footnote) continue;
+    else out += s.text;
+  }
+  return out.replace(PLACEHOLDER_RE, '');
+}
+
 /** The alternative text of a resource drawn by a design (#213): its
  *  `altText`, else its caption as plain text (inline formatting read,
- *  forced line breaks as spaces). Undefined when it has neither. */
+ *  a chip by its label, forced line breaks as spaces, placeholders left
+ *  out). Captions are not parsed for maths, so a `$` in one is read as
+ *  it is printed. Undefined when it has neither. */
 export function designImageAltText(resource: Resource | undefined): string | undefined {
   const alt = resource?.altText?.trim();
   if (alt) return alt;
   const caption = resource?.caption?.trim();
   if (!caption) return undefined;
-  const text = parseInlineSnippetSpans(caption).map((s) => s.text).join('')
-    .replace(/\u2028/g, ' ').replace(/\s+/g, ' ').trim();
+  // Runs of breaking whitespace become one space; an ideographic space
+  // stays.
+  const text = spansReadText(parseInlineSnippetSpans(caption))
+    .replace(/\u2028/g, ' ').replace(/[^\S\u3000]+/g, ' ').trim();
   return text || undefined;
 }
 

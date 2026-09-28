@@ -154,7 +154,8 @@ interface Props {
 
 /** An image drawn from a bitmap / SVG resource (a publisher logo on a title
  *  page, a cover picture): the resource, whether it is decoration only (no
- *  alternative text in the output), the box it is fitted in (one side
+ *  alternative text in the output; heading and part designs only, since a
+ *  running head's picture always is), the box it is fitted in (one side
  *  `auto` keeps the image's aspect ratio) and the shared placement fields. */
 export function ImageElementEditor({ raw, resolved, slotKind, siblings = [], onChange }: Props) {
   const labels = useSandboxLabels();
@@ -189,7 +190,9 @@ export function ImageElementEditor({ raw, resolved, slotKind, siblings = [], onC
   return (
     <>
       <ImageResourceField value={raw.resourceId} onChange={(id) => update({ resourceId: id })} />
-      <ToggleSwitch
+      {/* A running head's or footer's picture repeats on every page: always
+          decoration, so the switch only shows in heading and part designs. */}
+      {slotKind !== 'header' && slotKind !== 'footer' && <ToggleSwitch
         label={labels.headerFooterImageDecorative}
         checked={raw.decorative ?? false}
         onChange={(v) => {
@@ -205,7 +208,7 @@ export function ImageElementEditor({ raw, resolved, slotKind, siblings = [], onC
           onChange(next);
         }}
         tooltip={labels.headerFooterImageDecorativeTooltip}
-      />
+      />}
       <DimensionInput
         label={labels.headerFooterElementWidth}
         value={width}

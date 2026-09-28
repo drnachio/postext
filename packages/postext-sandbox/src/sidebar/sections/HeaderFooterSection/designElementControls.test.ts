@@ -44,7 +44,10 @@ describe('design element controls', () => {
     } as DesignElement);
     const label = DEFAULT_LABELS.headerFooterImageDecorative;
     expect(render('heading', [image()])).toContain(label);
-    expect(render('header', [image()])).toContain(label);
+    expect(render('part', [image()])).toContain(label);
+    // A running head's or footer's picture is always decoration.
+    expect(render('header', [image()])).not.toContain(label);
+    expect(render('footer', [image()])).not.toContain(label);
     expect(render('heading', [text(), box])).not.toContain(label);
     // Set, the row reads as changed from its default.
     const changed = (html: string) => html.includes(`${label}<span class="sr-only"> (`);

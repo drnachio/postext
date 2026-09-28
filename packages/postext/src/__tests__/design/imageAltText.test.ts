@@ -96,11 +96,40 @@ describe('design images carry alternative text (#213)', () => {
     expect(renderToHtml(doc, urls)).toContain('alt="A &quot;log&quot; &amp; &lt;river&gt;"');
   });
 
-  it('reaches a running head’s picture too', () => {
-    const header = [{ ...plate(), placement: { anchor: { to: 'container', edge: 'top-left' }, size: { width: pt(40) } } } as DesignElement];
-    const doc = buildDocument({ markdown: md, resources }, config([title], header));
-    const alts = doc.pages.map((p) => p.header?.blocks.find((b): b is VDTDesignImageBlock => b.kind === 'image')?.altText);
-    expect(alts).toEqual(['A log on a riverbank', 'A powdered wig, worn at court', undefined]);
+  it('keeps a running head’s or footer’s picture as furniture, as the tagged PDF does', () => {
+    // It repeats on every page: a screen reader would read it on each.
+    const logo = { ...plate(), placement: { anchor: { to: 'container', edge: 'top-left' }, size: { width: pt(40) } } } as DesignElement;
+    const cfg = config([title], [logo]);
+    const doc = buildDocument({ markdown: md, resources }, { ...cfg, footer: { elements: [{ ...logo, id: 'foot' } as DesignElement] } });
+    const images = doc.pages.flatMap((p) => [p.header, p.footer].flatMap((slot) => (slot?.blocks ?? []).filter((b): b is VDTDesignImageBlock => b.kind === 'image')));
+    expect(images).toHaveLength(6);
+    for (const img of images) expect('altText' in img).toBe(false);
+    const html = renderToHtml(doc, urls);
+    expect(html).toContain('<img src="https://example.org/log.png" alt="" role="presentation" style=');
+    expect(html).not.toContain('riverbank');
+    expect(html).not.toContain('powdered');
+    // The same pictures in an opener keep their text.
+    expect(plates(buildDocument({ markdown: md, resources }, config([plate(), title], [logo]))).map((p) => p.altText))
+      .toEqual(['A log on a riverbank', 'A powdered wig, worn at court', undefined]);
+  });
+
+  it('reads a caption’s chips by their label and leaves no placeholder in the text', () => {
+    const captioned = (caption: string): string | undefined => {
+      const doc = buildDocument({ markdown: '# Chapter I {style="opener" art="p"}\n\nOne.', resources: [picture('p', { caption })] }, config([plate(), title]));
+      return plates(doc)[0]!.altText;
+    };
+    expect(captioned('A :chip[tag]{style="x"} chip')).toBe('A tag chip');
+    expect(captioned('Key :swatch{color="#ff0000"} red')).toBe('Key red');
+    expect(captioned('See :ref{id="p" text="the plate"} again')).toBe('See the plate again');
+    expect(captioned('See :ref{id="p"}, again')).toBe('See , again');
+    // Captions are not parsed for maths: the dollar signs are printed, and
+    // read.
+    expect(captioned('Energy $E=mc^2$')).toBe('Energy $E=mc^2$');
+    // An ideographic space stays; runs of other spaces become one.
+    expect(captioned('第二回　賈夫人仙逝揚州城')).toBe('第二回　賈夫人仙逝揚州城');
+    for (const c of ['A :chip[tag]{style="x"} chip', 'Key :swatch{color="#ff0000"} red', 'See :ref{id="p"} again']) {
+      expect(captioned(c)).not.toMatch(/[\uE000-\uF8FF\uFFFC\u2063\u2064]/);
+    }
   });
 
   it('lays out and paints a document whose design pictures have no text as before', () => {

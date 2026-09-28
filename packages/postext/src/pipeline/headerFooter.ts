@@ -475,6 +475,25 @@ export function layoutSlotToVdt(
   };
 }
 
+/**
+ * A running head or footer as page furniture: the pictures it repeats on
+ * every page keep no alternative text, so HTML gives them `alt=""` and
+ * `role="presentation"` and a screen reader skips them, as the tagged PDF
+ * does (a pagination artifact). The pictures of an opener, a part page or a
+ * heading design keep theirs.
+ */
+function asFurniture(slot: VDTDesignSlot | undefined): VDTDesignSlot | undefined {
+  if (!slot || !slot.blocks.some((b) => b.kind === 'image' && b.altText !== undefined)) return slot;
+  return {
+    ...slot,
+    blocks: slot.blocks.map((b) => {
+      if (b.kind !== 'image' || b.altText === undefined) return b;
+      const { altText: _alt, ...rest } = b;
+      return rest;
+    }),
+  };
+}
+
 /** The source of a heading block's title text: its per-character map when
  *  the block has one, else its whole range. */
 function headingTitleSource(block: VDTBlock, titleText: string): SlotLayoutExtras['titleSource'] {
@@ -1031,14 +1050,14 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
         partNumberByPageIndex,
         partPaletteByPageIndex,
       };
-      page.header = withMeasureWritingMode('horizontal-tb', () => layoutSlotToVdt(
+      page.header = asFurniture(withMeasureWritingMode('horizontal-tb', () => layoutSlotToVdt(
         headerSlot,
         headerContainerBbox(sheetArea, metrics.physical.trimBox),
         page.index + pageIndexOffset,
         placeholders,
         dpi,
         sheetExtras,
-      ));
+      )));
     }
     // Back of a part divider: a blank page right after a part page takes the
     // part's verso design (the model book tints the whole leaf). The part
@@ -1295,14 +1314,14 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
         partNumberByPageIndex,
         partPaletteByPageIndex,
       };
-      page.footer = withMeasureWritingMode('horizontal-tb', () => layoutSlotToVdt(
+      page.footer = asFurniture(withMeasureWritingMode('horizontal-tb', () => layoutSlotToVdt(
         footerSlot,
         footerContainerBbox(sheetArea, metrics.physical.trimBox),
         page.index + pageIndexOffset,
         placeholders,
         dpi,
         sheetExtras,
-      ));
+      )));
     }
   }
 }

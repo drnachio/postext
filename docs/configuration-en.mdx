@@ -1103,7 +1103,7 @@ An `image` element draws a bitmap or SVG resource of the document — a publishe
 
 The PDF backend embeds the resource like a figure (an SVG with a print master uses it); the HTML viewer resolves it through <code>resourceImageUrl</code>.
 
-A picture a design draws is content when its resource describes it: the resource's `altText`, else its caption as plain text, goes into the VDT (`VDTDesignImageBlock.altText`), becomes the `alt` of its `<img>` in HTML and a `Figure` with `/Alt` in a tagged PDF, read right after the text of its design (a chapter's plate after the chapter's heading). A picture whose resource has neither, and one marked `decorative`, is decoration: `alt=""` with `role="presentation"`, and an artifact in the PDF. A running head's or footer's picture is an artifact of the page in the PDF whatever its text, since it repeats on every page; the HTML still gives its `alt`.
+A picture a design draws is content when its resource describes it: the resource's `altText`, else its caption as plain text (a chip read by its label, a `:ref` by its `text` when it has one), goes into the VDT (`VDTDesignImageBlock.altText`), becomes the `alt` of its `<img>` in HTML and a `Figure` with `/Alt` in a tagged PDF, read right after the text of its design (a chapter's plate after the chapter's heading). A picture whose resource has neither, and one marked `decorative`, is decoration: `alt=""` with `role="presentation"`, and an artifact in the PDF. A running head's or footer's picture repeats on every page, so it is furniture whatever its resource says: no `altText` in the VDT, `alt=""` with `role="presentation"` in HTML, an artifact of the page in the PDF.
 
 ### Element placement
 
