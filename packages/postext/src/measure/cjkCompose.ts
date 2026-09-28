@@ -207,6 +207,9 @@ interface Unit {
    *  note size; a line folds the note's characters it holds into two rows
    *  ({@link foldNotes}). */
   note?: InlineWarichu;
+  /** A word space inside a warichu note: a character of the note, after
+   *  which a line may break (between the words of a Latin note). */
+  noteSpace?: boolean;
   /** A line's part of a warichu note folded into its rows. */
   warichu?: VDTWarichu;
 }
@@ -378,6 +381,7 @@ function noteUnits(spans: readonly InlineSpan[], note: InlineWarichu, fonts: Fon
     if (u.kind === 'space') {
       u.kind = 'text';
       u.firstCjk = u.lastCjk = false;
+      u.noteSpace = true;
     }
   }
   const bracket = (text: string): Unit => {
@@ -848,6 +852,8 @@ function breakOpportunities(units: readonly Unit[], level: CjkLineBreakLevel): U
     const b = units[k]!;
     if (a.kind !== 'space') ink = k - 1;
     if (b.kind === 'space') continue;
+    // A line never opens with a warichu note's word space.
+    if (b.noteSpace) continue;
     if (b.zwspBefore) {
       out[k] = 1;
       continue;
@@ -855,6 +861,14 @@ function breakOpportunities(units: readonly Unit[], level: CjkLineBreakLevel): U
     if (a.kind === 'space') {
       const p = ink >= 0 ? units[ink]! : undefined;
       if (!p || (!numberGlue(p, b) && !isLineStartProhibited(b.first, level) && !isLineEndProhibited(p.last, level))) out[k] = 1;
+      continue;
+    }
+    if (a.noteSpace) {
+      // A word space inside a warichu note: the note's words part there.
+      let q = k - 1;
+      while (q > 0 && units[q]!.noteSpace) q--;
+      const p = units[q]!;
+      if (!p.noteSpace && !numberGlue(p, b) && !isLineStartProhibited(b.first, level) && !isLineEndProhibited(p.last, level)) out[k] = 1;
       continue;
     }
     if (b.glueBefore) continue;
@@ -1094,13 +1108,15 @@ function breakUnits(
   let noteBase = 0;
   const foldOf = (from: number, to: number): number => {
     const widths: number[] = [];
-    const prohibited: boolean[] = [];
+    const startProhibited: boolean[] = [];
+    const endProhibited: boolean[] = [];
     for (let q = from; q <= to; q++) {
       const uq = unitAt(q);
       widths.push(uq.width);
-      prohibited.push(isLineStartProhibited(uq.first, level));
+      startProhibited.push(noteRowStartProhibited(uq, level));
+      endProhibited.push(isLineEndProhibited(uq.last, level));
     }
-    return foldWidth(widths, splitNote(widths, prohibited));
+    return foldWidth(widths, splitNote(widths, startProhibited, endProhibited));
   };
   for (let li = 0; ; li++) {
     while (i < n && unitAt(i).kind === 'space') i++;
@@ -1129,9 +1145,13 @@ function breakUnits(
           w = folded;
           continue;
         }
+        // The part no longer folds into the line: the line ends here or at
+        // the last break before, never taking the character at its own
+        // advance (the fold of a part is not monotonic, so every part the
+        // line may end with was one that folded).
       }
       const lead = fit && k === i ? fit.lead(u) : 0;
-      if (w + u.width - lead - (fit ? fit.tail(u) : 0) <= max + FIT_EPS) {
+      if (!u.note && w + u.width - lead - (fit ? fit.tail(u) : 0) <= max + FIT_EPS) {
         w += u.width - lead;
         if (fit) give += fit.give(u, k === i, false);
         continue;
@@ -1274,6 +1294,12 @@ interface ComposeContext {
   level: CjkLineBreakLevel;
 }
 
+/** Whether a note's unit may not open its lower row: a mark that may not
+ *  start a line, or a word space (it ends the upper row instead). */
+function noteRowStartProhibited(u: Unit, level: CjkLineBreakLevel): boolean {
+  return u.noteSpace === true || isLineStartProhibited(u.first, level);
+}
+
 /** Replace each run of a warichu note's characters on a line by the part
  *  folded into its two rows (see `cjkAnnotate.ts`). `us` is changed in
  *  place. */
@@ -1300,7 +1326,7 @@ function foldNotes(us: Unit[], level: CjkLineBreakLevel, em: number): void {
 function noteFragment(part: readonly Unit[], level: CjkLineBreakLevel, em: number): Unit {
   const note = part[0]!.note!;
   const widths = part.map((u) => u.width);
-  const at = splitNote(widths, part.map((u) => isLineStartProhibited(u.first, level)));
+  const at = splitNote(widths, part.map((u) => noteRowStartProhibited(u, level)), part.map((u) => isLineEndProhibited(u.last, level)));
   const noteFont = note.fontString ?? part[0]!.style.font;
   const rows = noteRowBaselines(em, fontEm(noteFont));
   const runs: VDTAnnotationRun[] = [];
@@ -1346,6 +1372,41 @@ function noteFragment(part: readonly Unit[], level: CjkLineBreakLevel, em: numbe
       runs,
     },
   };
+}
+
+/**
+ * A ruby base that opens or closes a line (clreq §5.5.4): base and reading
+ * align to that edge. The base gives up its inset on that side, and the
+ * box keeps only what the reading needs past its other side (less what it
+ * may pass the box by there), never more than it was, so the line the
+ * breaker set never grows. A base alone on its line stays centred.
+ * Units that change are replaced by copies in `us`.
+ */
+function alignEdgeRubies(us: Unit[]): void {
+  if (us.length < 2) return;
+  const align = (j: number, start: boolean): void => {
+    const u = us[j]!;
+    const g = u.ruby?.geometry;
+    if (!g || u.ruby!.position === 'right' || g.runs.length === 0) return;
+    const base = u.width - 2 * g.inset;
+    const rt = g.rtWidth;
+    const wide = rt > base;
+    // How far the reading reaches from the edge: its advance, or to the
+    // far side of the base it is centred on.
+    const reach = wide ? rt : (base + rt) / 2;
+    const width = Math.min(u.width, Math.max(base, reach - (start ? g.allowRight : g.allowLeft)));
+    const inset = start ? 0 : width - base;
+    const readingAt = wide ? (start ? 0 : width - rt) : inset + (base - rt) / 2;
+    const shift = readingAt - g.runs[0]!.dx;
+    if (Math.abs(width - u.width) < 1e-9 && Math.abs(inset - g.inset) < 1e-9 && Math.abs(shift) < 1e-9) return;
+    us[j] = {
+      ...u,
+      width,
+      ruby: { ...u.ruby!, geometry: { ...g, width, inset, runs: g.runs.map((r) => ({ ...r, dx: r.dx + shift })) } },
+    };
+  };
+  align(0, true);
+  align(us.length - 1, false);
 }
 
 /** Keep the readings of a line's ruby bases inside the line: a reading
@@ -1485,6 +1546,8 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
   const measure = ctx.measureOf(li);
   // A warichu note's characters fold into their two rows (#195).
   if (us.some((u) => u.note)) foldNotes(us, ctx.level, ctx.em);
+  // A ruby base at either edge aligns to it with its reading (#194).
+  alignEdgeRubies(us);
   const hang = ctx.fit ? fitLine(us, units, range, lastK, isLast, measure, ctx.fit) : undefined;
   const justify = ctx.textAlign === 'justify' && !isLast;
   let spaceWidth: number | undefined;

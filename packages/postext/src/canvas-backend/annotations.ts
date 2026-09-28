@@ -9,8 +9,11 @@
  */
 
 import type { VDTAnnotationRun, VDTLine, VDTLineMark, VDTRuby, VDTWarichu } from '../vdt';
-import { fillFlowText, type TextPaintMode } from './verticalText';
+import { DEFAULT_CENTRAL_BASELINE } from '../vdt';
+import { fillFlowText, verticalPaintActive, type TextPaintMode } from './verticalText';
 import type { MarkCutRule } from '../measure/markCuts';
+import { graphemesOf } from '../measure/graphemes';
+import { fontEm } from '../measure/vertical';
 
 type Ctx = CanvasRenderingContext2D;
 
@@ -98,15 +101,35 @@ export function paintLineMarks(ctx: Ctx, line: VDTLine, color: string): void {
   ctx.restore();
 }
 
+/** A run whose characters stand upright on a vertical line
+ *  (`VDTAnnotationRun.upright`): each in a cell one em long from `x`,
+ *  turned back about the cell's centre on the font's central axis. */
+function paintUpright(ctx: Ctx, text: string, x: number, baseline: number, font: string): void {
+  const em = fontEm(font);
+  const central = DEFAULT_CENTRAL_BASELINE * em;
+  let at = x;
+  for (const g of graphemesOf(text)) {
+    const w = ctx.measureText(g).width;
+    ctx.save();
+    ctx.translate(at + em / 2, baseline - central);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText(g, -w / 2, central);
+    ctx.restore();
+    at += em;
+  }
+}
+
 function paintRuns(ctx: Ctx, runs: readonly VDTAnnotationRun[], x: number, baseline: number, color: string, cuts: MarkCutRule, mode: TextPaintMode = 'fill'): void {
   ctx.save();
   ctx.letterSpacing = '0px';
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
+  const vertical = verticalPaintActive();
   for (const run of runs) {
     ctx.font = run.fontString;
     ctx.fillStyle = run.color ?? color;
-    fillFlowText(ctx, run.text, x + run.dx, baseline + run.dy, mode, 0, cuts);
+    if (run.upright && vertical) paintUpright(ctx, run.text, x + run.dx, baseline + run.dy, run.fontString);
+    else fillFlowText(ctx, run.text, x + run.dx, baseline + run.dy, mode, 0, cuts);
   }
   ctx.restore();
 }

@@ -29,22 +29,24 @@ export function injectPlaceholderSpans<T>(
     const sc = span.smallCaps ? { smallCaps: true } : {};
     // The Chinese marks of the run (#193–#195) go on with every piece; a
     // warichu note or a mark holds the placeholder's span too (a `:ref`
-    // inside a note is part of the note), a ruby only its text.
-    const marks = annotationFields(span);
+    // inside a note is part of the note), a ruby only its text: the first
+    // piece of it, which carries the reading once.
     const placeholderMarks = annotationFields(span, false);
+    let marks = annotationFields(span);
+    const piece = (from: number, to: number): InlineSpan => {
+      const out: InlineSpan = { text: span.text.slice(from, to), bold: span.bold, italic: span.italic, ...sc, ...marks, ...sliceLinks(span.links, from, to) };
+      marks = placeholderMarks;
+      return out;
+    };
     let last = 0;
     while (from >= 0) {
-      if (from > last) {
-        out.push({ text: span.text.slice(last, from), bold: span.bold, italic: span.italic, ...sc, ...marks, ...sliceLinks(span.links, last, from) });
-      }
+      if (from > last) out.push(piece(last, from));
       const item = items[idx++];
       if (item) out.push({ ...makeSpan(item, span.bold, span.italic), ...sc, ...placeholderMarks });
       last = from + placeholder.length;
       from = span.text.indexOf(placeholder, last);
     }
-    if (last < span.text.length) {
-      out.push({ text: span.text.slice(last), bold: span.bold, italic: span.italic, ...sc, ...marks, ...sliceLinks(span.links, last, span.text.length) });
-    }
+    if (last < span.text.length) out.push(piece(last, span.text.length));
   }
   return out;
 }

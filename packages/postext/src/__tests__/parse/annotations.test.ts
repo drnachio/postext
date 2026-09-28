@@ -174,3 +174,26 @@ describe('source mapping skips the annotation markup', () => {
     expect(p!.spans.some((s) => s.ref && s.warichu)).toBe(true);
   });
 });
+
+describe('escaping a compact ruby (T8 review)', () => {
+  it('\\{ and \\| keep the braces as text, the backslash dropped, the source map aligned', () => {
+    for (const md of ['讀\\{紅|hóng}樓', '讀{紅\\|hóng}樓']) {
+      const [p] = parseMarkdown(md).filter((b) => b.type === 'paragraph');
+      expect(p!.spans.some((s) => s.ruby)).toBe(false);
+      expect(p!.text).toBe(md.replace(/\\/g, ''));
+      expectAligned(md, p!);
+    }
+    // Only a would-be ruby loses its backslash: other text keeps it.
+    expect(text(parseInlineFormatting('\\{x|y} and {a\\|b}'))).toBe('\\{x|y} and {a\\|b}');
+    // An escaped bar in a base or a reading is a bar of it.
+    const spans = parseInlineFormatting('{紅\\|樓|hóng}');
+    expect(spans.find((s) => s.ruby)).toMatchObject({ text: '紅|樓', ruby: { text: 'hóng', group: true } });
+    // An escaped backslash does not escape the brace.
+    expect(parseInlineFormatting('\\\\{紅|hóng}').some((s) => s.ruby)).toBe(true);
+  });
+
+  it('stripInlineFormatting reads an escaped ruby as its text', () => {
+    expect(stripInlineFormatting('第\\{紅|hóng}回')).toBe('第{紅|hóng}回');
+    expect(stripInlineFormatting('第{紅|hóng}回')).toBe('第紅回');
+  });
+});

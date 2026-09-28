@@ -21,6 +21,7 @@
 import type { InlineSpan, InlineWarichu } from '../parse';
 import type { ResolvedCjkConfig } from '../types';
 import { sliceSpan } from '../parse/links';
+import { withBookBrackets } from '../parse/annotations';
 import { graphemesOf } from '../measure/graphemes';
 import { buildFontString } from '../measure/font';
 import { dimensionToPx } from '../units';
@@ -82,38 +83,43 @@ function emphasisAsDots(span: InlineSpan): InlineSpan[] {
   return out;
 }
 
-/** 《》 around the titles of `:book[…]` (〈〉 for a title inside one). */
-function bookBrackets(spans: readonly InlineSpan[]): InlineSpan[] {
-  const out: InlineSpan[] = [];
-  // Open titles, by depth (index 0 = depth 1): their run ids.
-  const open: number[] = [];
-  const bracket = (text: string): InlineSpan => ({ text, bold: false, italic: false, inserted: true });
-  const close = (toDepth: number): void => {
-    while (open.length > toDepth) {
-      out.push(bracket(open.length > 1 ? '〉' : '》'));
-      open.pop();
-    }
-  };
-  for (const span of spans) {
-    const book = span.bookTitle;
-    if (!book) {
-      close(0);
-      out.push(span);
-      continue;
-    }
-    if (open.length >= book.depth && open[book.depth - 1] === book.id) close(book.depth);
-    else {
-      close(book.depth - 1);
-      while (open.length < book.depth) {
-        out.push(bracket(open.length > 0 ? '〈' : '《'));
-        open.push(open.length === book.depth - 1 ? book.id : -1);
-      }
-    }
-    const { bookTitle: _b, ...rest } = span;
-    out.push(rest);
+/**
+ * A block's text and spans with the 《》 of its book titles in them, when
+ * they are the document's book-title mark (`cjk.bookTitleMark:
+ * 'brackets'`): for what reads a heading from its source rather than from
+ * its lines (contents rows, bookmarks). The brackets are spans flagged
+ * `inserted` (they may be there already: a heading set plain). The same
+ * text and spans otherwise, and when the spans do not spell the text.
+ */
+export function withBookTitleBrackets(
+  text: string,
+  spans: readonly InlineSpan[],
+  cjk: Pick<ResolvedCjkConfig, 'bookTitleMark'>,
+): { text: string; spans: readonly InlineSpan[] } {
+  if (cjk.bookTitleMark !== 'brackets') return { text, spans };
+  const bracketed = spans.some((s) => s.bookTitle) ? withBookBrackets(spans) : spans;
+  if (!bracketed.some((s) => s.inserted)) return { text, spans };
+  let plain = '';
+  let out = '';
+  for (const s of bracketed) {
+    out += s.text;
+    if (!s.inserted) plain += s.text;
   }
-  close(0);
-  return out;
+  return plain === text ? { text: out, spans: bracketed } : { text, spans };
+}
+
+/** Book titles as `cjk.bookTitleMark` sets them, for a text measured
+ *  outside the paragraph path (an index entry): 《》 added, the titles left
+ *  for the wavy line, or plain. The same array when nothing changes. */
+export function bookTitlesAsConfigured(spans: InlineSpan[], cjk: Pick<ResolvedCjkConfig, 'bookTitleMark'>): InlineSpan[] {
+  if (!spans.some((s) => s.bookTitle)) return spans;
+  if (cjk.bookTitleMark === 'brackets') return withBookBrackets(spans);
+  if (cjk.bookTitleMark !== 'none') return spans;
+  return spans.map((s) => {
+    if (!s.bookTitle) return s;
+    const { bookTitle: _b, ...rest } = s;
+    return rest;
+  });
 }
 
 /** The hex of a resolved colour, if any. */
@@ -138,16 +144,7 @@ export function resolveAnnotationSpans(spans: InlineSpan[], ctx: AnnotationConte
   } else out = [...spans];
 
   // Book titles.
-  if (out.some((s) => s.bookTitle)) {
-    if (cjk.bookTitleMark === 'brackets') out = bookBrackets(out);
-    else if (cjk.bookTitleMark === 'none') {
-      out = out.map((s) => {
-        if (!s.bookTitle) return s;
-        const { bookTitle: _b, ...rest } = s;
-        return rest;
-      });
-    }
-  }
+  out = bookTitlesAsConfigured(out, cjk);
 
   // Ruby readings and warichu notes: font and colour.
   if (out.some((s) => s.ruby || s.warichu)) {

@@ -167,6 +167,7 @@ import {
 import { raggedLooseLines } from './raggedLines';
 import { cjkLooseLineWarnings, collectContentWarnings, locateContentWarnings } from './contentWarnings';
 import { annotateDocument } from '../cjkMarks';
+import { withBookTitleBrackets } from './annotations';
 
 /** Tolerance for "does this block fit" checks against a column's free
  *  height, absorbing floating-point drift between grid multiples. */
@@ -2160,7 +2161,7 @@ function placeDocumentPass(
       // a resource keeps the printed text, whose `:ref` label the source
       // does not hold.
       if (headingLevels.forBlock(raw)?.textTransform === 'uppercase' && !raw.spans.some((s) => s.ref)) {
-        blk.sourceTitle = flattenTitleBreaks(raw.text);
+        blk.sourceTitle = flattenTitleBreaks(withBookTitleBrackets(raw.text, raw.spans, resolved.cjk).text);
       }
     }
     if (raw.footnoteNote !== undefined) blk.footnoteNote = raw.footnoteNote;

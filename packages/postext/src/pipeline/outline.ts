@@ -15,6 +15,7 @@ import type { ResolvedConfig, VDTDocument } from '../vdt';
 import { resolvedLocale, resolveAllConfig } from './config';
 import { headingIsListed, headingIsNumbered, headingMarksFor, headingStyleOf } from './headingStyles';
 import { partMarkPages, planParts } from './parts';
+import { withBookTitleBrackets } from './annotations';
 
 /** Whether the parsed content holds a `:::toc` directive. */
 export function hasTocDirective(blocks: readonly ContentBlock[]): boolean {
@@ -142,14 +143,16 @@ export function computeOutline(
     // A style whose own template is empty prints no number at all.
     const ordinal = b.level === 1 && style?.numberingTemplate !== '';
     const number = numbered ? (prefix.length > 0 ? prefix : ordinal ? String(values[i] ?? '') : '') : '';
+    // A book title's 《》 are text of the title where they are its mark.
+    const titled = withBookTitleBrackets(b.text, b.spans, resolved.cjk);
     out.push({
       kind: 'heading',
       level: b.level,
       // No-break spaces stay: a running head or contents entry keeps them,
       // and so does the ideographic space between the halves of a Chinese
       // couplet title.
-      title: collapseTitleSpaces(flattenTitleBreaks(b.text)).trim(),
-      spans: titleSpans(b.text, b.spans),
+      title: collapseTitleSpaces(flattenTitleBreaks(titled.text)).trim(),
+      spans: titleSpans(titled.text, titled.spans),
       number,
       ...(numbered && values[i] !== undefined ? { counter: values[i] } : {}),
       numbered,

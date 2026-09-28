@@ -89,14 +89,27 @@ function attrBlobEnd(text: string, at: number, end: number = text.length): numbe
   return -1;
 }
 
+/** Whether the character at `at` follows an odd run of backslashes. */
+function escapedAt(text: string, at: number): boolean {
+  let n = 0;
+  for (let i = at - 1; i >= 0 && text[i] === '\\'; i--) n++;
+  return n % 2 === 1;
+}
+
 /** A compact ruby `{base|reading…}` starting at `at`: the index of its `|`
  *  and its end (past the `}`), or undefined. The base holds a Han, kana or
- *  bopomofo letter, no brace, no line end. */
+ *  bopomofo letter, no brace, no line end. A backslash escapes the `{`
+ *  (`\{紅|hóng}`) or a bar (`{紅\|hóng}`): a literal brace or bar, no ruby. */
 function compactRubyAt(text: string, at: number, end: number = text.length): { bar: number; end: number } | undefined {
-  if (text[at] !== '{') return undefined;
+  if (text[at] !== '{' || escapedAt(text, at)) return undefined;
   let bar = -1;
   for (let i = at + 1; i < end; i++) {
     const c = text[i]!;
+    if (c === '\\') {
+      if (text[i + 1] === '\n') return undefined;
+      i++;
+      continue;
+    }
     if (c === '\n' || c === '{') return undefined;
     if (c === '|' && bar < 0) {
       bar = i;
@@ -161,6 +174,26 @@ function nextAnnotation(text: string, from: number, end: number): FoundAnnotatio
 
 const unescapeBrackets = (s: string): string => s.replace(/\\([[\]])/g, '$1');
 
+/** A brace group that a backslash kept from being a compact ruby
+ *  (`\{紅|hóng}`, `{紅\|hóng}`): `\{` and `\|` in it print as `{` and `|`.
+ *  Text without a backslash is returned as is. */
+const ESCAPED_RUBY_RE = /(\\?)\{((?:\\.|[^{}\n\\])*)\}/g;
+function unescapeRubyGroups(s: string): string {
+  if (!s.includes('\\')) return s;
+  return s.replace(ESCAPED_RUBY_RE, (m: string, slash: string, inner: string) => {
+    if (!slash && !inner.includes('\\|')) return m;
+    const plain = inner.replace(/\\\|/g, '|');
+    const bar = plain.indexOf('|');
+    if (bar <= 0 || bar >= plain.length - 1 || !RUBY_BASE_RE.test(plain.slice(0, bar))) return m;
+    return `{${plain}}`;
+  });
+}
+
+/** `s` split at its bars that no backslash escapes, `\|` read as `|`. */
+function splitReadings(s: string): string[] {
+  return s.split(/(?<!\\)\|/).map((r) => r.replace(/\\\|/g, '|'));
+}
+
 /**
  * Replace every annotation of `text` by its content between the private-use
  * marks, pushing each one's attributes on `queue` in text order. A
@@ -177,21 +210,22 @@ export function markAnnotations(text: string, queue: QueuedAnnotation[], restore
       const found = nextAnnotation(text, at, end);
       if (!found) break;
       const between = text.slice(at, found.start);
-      out += inside ? unescapeBrackets(between) : between;
+      out += unescapeRubyGroups(inside ? unescapeBrackets(between) : between);
       const entry: QueuedAnnotation = { name: found.name, attrs: {} };
       if (found.compact) {
-        entry.readings = text.slice(found.contentEnd + 1, found.end - 1).split('|').map((r) => restore(r).trim());
+        entry.readings = splitReadings(text.slice(found.contentEnd + 1, found.end - 1)).map((r) => restore(r).trim());
       } else if (found.attrs !== undefined) {
         const attrs = parseDirectiveAttrs(found.attrs);
         for (const key of Object.keys(attrs)) attrs[key] = restore(attrs[key]!);
         entry.attrs = attrs;
       }
       queue.push(entry);
-      out += OPEN[found.name] + mark(found.contentStart, found.contentEnd, true) + CLOSE;
+      const content = mark(found.contentStart, found.contentEnd, true);
+      out += OPEN[found.name] + (found.compact ? content.replace(/\\\|/g, '|') : content) + CLOSE;
       at = found.end;
     }
     const rest = text.slice(at, end);
-    return out + (inside ? unescapeBrackets(rest) : rest);
+    return out + unescapeRubyGroups(inside ? unescapeBrackets(rest) : rest);
   };
   return mark(0, text.length, false);
 }
@@ -470,10 +504,49 @@ export function findAnnotations(text: string): FoundAnnotation[] {
   return out;
 }
 
+/** 《》 around the titles of `:book[…]` (〈〉 for a title inside one), as
+ *  spans flagged `inserted` (they take no character of the plain text);
+ *  the titles lose their `bookTitle`. `cjk.bookTitleMark: 'brackets'`. */
+export function withBookBrackets(spans: readonly InlineSpan[]): InlineSpan[] {
+  const out: InlineSpan[] = [];
+  // Open titles, by depth (index 0 = depth 1): their run ids.
+  const open: number[] = [];
+  const bracket = (text: string): InlineSpan => ({ text, bold: false, italic: false, inserted: true });
+  const close = (toDepth: number): void => {
+    while (open.length > toDepth) {
+      out.push(bracket(open.length > 1 ? '〉' : '》'));
+      open.pop();
+    }
+  };
+  for (const span of spans) {
+    const book = span.bookTitle;
+    if (!book) {
+      close(0);
+      out.push(span);
+      continue;
+    }
+    if (open.length >= book.depth && open[book.depth - 1] === book.id) close(book.depth);
+    else {
+      close(book.depth - 1);
+      while (open.length < book.depth) {
+        out.push(bracket(open.length > 0 ? '〈' : '《'));
+        open.push(open.length === book.depth - 1 ? book.id : -1);
+      }
+    }
+    const { bookTitle: _b, ...rest } = span;
+    out.push(rest);
+  }
+  close(0);
+  return out;
+}
+
 /** `spans` without their Chinese annotations: the text as written, set
  *  plain (captions, table cells and notes, which do not draw them). The
- *  same array when none has one. */
-export function dropAnnotations(spans: InlineSpan[]): InlineSpan[] {
+ *  same array when none has one. With `bookBrackets` (`cjk.bookTitleMark:
+ *  'brackets'`) a book title keeps its 《》, which are then punctuation of
+ *  the text, not a mark. */
+export function dropAnnotations(spans: InlineSpan[], bookBrackets = false): InlineSpan[] {
+  if (bookBrackets && spans.some((s) => s.bookTitle)) spans = withBookBrackets(spans);
   if (!spans.some((s) => s.emphasisMark || s.properName !== undefined || s.bookTitle || s.ruby || s.warichu)) return spans;
   return spans.map((s) => {
     if (!s.emphasisMark && s.properName === undefined && !s.bookTitle && !s.ruby && !s.warichu) return s;

@@ -92,6 +92,20 @@ describe('annotations on the canvas', () => {
   });
 });
 
+describe('zhuyin tone marks on a vertical page', () => {
+  it('paints them upright: turned back about their cell, never sideways', () => {
+    const doc = buildDocument({ markdown: ':ruby[滿]{rt="ㄇㄢˇ"}紙:ruby[唐]{rt="ㄊㄤˊ"}' }, config({ layout: { layoutType: 'single', writingMode: 'vertical-rl' } }));
+    const { canvas, calls } = recordingCanvas();
+    renderPageToCanvas(doc.pages[0]!, doc, canvas);
+    for (const tone of ['ˇ', 'ˊ']) {
+      const at = calls.findIndex((c) => c.op === 'fillText' && c.args[0] === tone);
+      expect(at).toBeGreaterThan(0);
+      expect(calls[at - 1]).toMatchObject({ op: 'rotate', args: [-Math.PI / 2] });
+      expect(calls[at]!.font).toContain('6px');
+    }
+  });
+});
+
 describe('annotations in HTML', () => {
   it('writes the marks, the readings and the note as positioned boxes', () => {
     const doc = buildDocument({ markdown: MD }, config());

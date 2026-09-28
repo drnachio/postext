@@ -548,7 +548,8 @@ export function trimSpans(spans: InlineSpan[]): InlineSpan[] {
  *  Chinese marks (emphasis dots, proper-name and book-title marks) dropped,
  *  adjacent text spans merged — a heading's spans as they were built before
  *  headings read inline marks (`headings.inlineMarks: false`). Formulas,
- *  references, swatches, ruby and warichu notes keep their own spans. */
+ *  references, swatches, ruby and warichu notes keep their own spans, and
+ *  so do characters the layout added (a book title's 《》). */
 export function plainSpans(spans: readonly InlineSpan[]): InlineSpan[] {
   const out: InlineSpan[] = [];
   let changed = false;
@@ -556,9 +557,9 @@ export function plainSpans(spans: readonly InlineSpan[]): InlineSpan[] {
     const { script, smallCaps, links, bold, italic, emphasisMark, properName, bookTitle, ...rest } = span;
     if (script || smallCaps || links || bold || italic || emphasisMark || properName !== undefined || bookTitle) changed = true;
     const plain: InlineSpan = { ...rest, bold: false, italic: false };
-    const special = plain.math || plain.mathRender || plain.swatch || plain.ref || plain.chip || plain.captionLabel || plain.footnote || plain.ruby || plain.warichu;
+    const special = plain.math || plain.mathRender || plain.swatch || plain.ref || plain.chip || plain.captionLabel || plain.footnote || plain.ruby || plain.warichu || plain.inserted;
     const last = out[out.length - 1];
-    const lastSpecial = last && (last.math || last.mathRender || last.swatch || last.ref || last.chip || last.captionLabel || last.footnote || last.ruby || last.warichu);
+    const lastSpecial = last && (last.math || last.mathRender || last.swatch || last.ref || last.chip || last.captionLabel || last.footnote || last.ruby || last.warichu || last.inserted);
     if (!special && last && !lastSpecial) {
       out[out.length - 1] = { ...last, text: last.text + plain.text };
       changed = true;

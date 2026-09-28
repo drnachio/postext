@@ -251,17 +251,82 @@ function rubyNeed(line: VDTLine, em: number): number {
   return need;
 }
 
+/** How far a line's marks and readings reach out of its em box, px: over
+ *  it (`head`: above in horizontal text, right in vertical text) and
+ *  under it (`foot`), and whether readings reach that far on each side. */
+interface LineReach {
+  head: number;
+  foot: number;
+  headRuby: boolean;
+  footRuby: boolean;
+}
+
+/** The {@link LineReach} of a line whose text is `em` px (its em box
+ *  centred on the central axis): marks by their drawn extent, readings by
+ *  their em box (an upright tone mark by its advance across the line). */
+function lineReach(line: VDTLine, em: number): LineReach {
+  const top = -(CENTRAL + 0.5) * em;
+  const bottom = (0.5 - CENTRAL) * em;
+  const reach: LineReach = { head: 0, foot: 0, headRuby: false, footRuby: false };
+  const extend = (lo: number, hi: number, ruby: boolean): void => {
+    if (top - lo > reach.head + 1e-9) {
+      reach.head = top - lo;
+      reach.headRuby = ruby;
+    } else if (ruby && top - lo > 1e-9) reach.headRuby = true;
+    if (hi - bottom > reach.foot + 1e-9) {
+      reach.foot = hi - bottom;
+      reach.footRuby = ruby;
+    } else if (ruby && hi - bottom > 1e-9) reach.footRuby = true;
+  };
+  for (const m of line.marks ?? []) {
+    const half = m.kind === 'line' ? m.thickness / 2 : m.kind === 'wavy' ? (m.amplitude ?? 0) / 2 + m.thickness / 2 : (m.size ?? 0) / 2;
+    extend(m.y - half, m.y + half, false);
+  }
+  for (const seg of line.segments ?? []) {
+    const r = seg.ruby;
+    if (!r || r.position === 'right') continue;
+    for (const run of r.runs) {
+      const runEm = fontEm(run.fontString);
+      if (run.upright) {
+        const axis = run.dy - CENTRAL * runEm;
+        let w = 0;
+        for (const g of graphemesOf(run.text)) w = Math.max(w, measureTextWidth(g, run.fontString));
+        extend(axis - w / 2, axis + w / 2, true);
+      } else {
+        extend(run.dy - (CENTRAL + 0.5) * runEm, run.dy + (0.5 - CENTRAL) * runEm, true);
+      }
+    }
+  }
+  return reach;
+}
+
 /**
  * Set `VDTLine.marks` on every line of the document that holds Chinese
  * marks, and report the paragraphs whose line gap is narrower than their
  * marks or readings need (`cjkMarksExceedLeading`, `rubyExceedsLeading`),
  * once per paragraph. `cjk` is the resolved configuration (its
  * `annotationColor`).
+ *
+ * The gap between two lines of a column is shared: what the upper line
+ * sets under it and the lower one over it (dots under one line and the
+ * readings over the next, in one paragraph or across two) must fit in it
+ * together. Where they do not, the lower line's paragraph is reported
+ * (`rubyExceedsLeading` when readings take part, else
+ * `cjkMarksExceedLeading`).
  */
 export function annotateDocument(doc: VDTDocument, cjk: ResolvedCjkConfig | undefined): ContentWarning[] {
   const warnings: ContentWarning[] = [];
   const color = cjk?.annotationColor?.hex;
   const reported = new Set<string>();
+  const whereOf = (block: VDTBlock): string => `${block.sourceStart ?? block.lines[0]?.sourceStart ?? block.id}`;
+  const atOf = (block: VDTBlock) => ({
+    ...(block.sourceStart !== undefined ? { sourceStart: block.sourceStart } : block.lines[0]?.sourceStart !== undefined ? { sourceStart: block.lines[0].sourceStart } : {}),
+    ...(block.sourceEnd !== undefined ? { sourceEnd: block.sourceEnd } : {}),
+    ...(block.pageIndex >= 0 ? { pageIndex: block.pageIndex } : {}),
+  });
+  /** The lines of each column's annotated paragraphs, in order, with
+   *  their reach. */
+  const columns = new Map<string, { line: VDTLine; block: VDTBlock; em: number; reach: LineReach }[]>();
   for (const block of doc.blocks) {
     if (block.type === 'resource' || block.designOverlay) continue;
     let marked = false;
@@ -280,13 +345,17 @@ export function annotateDocument(doc: VDTDocument, cjk: ResolvedCjkConfig | unde
     const em = fontEm(block.fontString);
     const first = block.lines[0];
     if (!first || em <= 0) continue;
+    if (block.pageIndex >= 0) {
+      // Lines of plain paragraphs between two annotated ones are left
+      // out: the gap is then measured across them, and is wide.
+      const key = `${block.pageIndex}:${block.columnIndex}`;
+      let column = columns.get(key);
+      if (!column) columns.set(key, (column = []));
+      for (const line of block.lines) column.push({ line, block, em, reach: lineReach(line, em) });
+    }
     const gapEm = (first.bbox.height - em) / em;
-    const at = {
-      ...(block.sourceStart !== undefined ? { sourceStart: block.sourceStart } : first.sourceStart !== undefined ? { sourceStart: first.sourceStart } : {}),
-      ...(block.sourceEnd !== undefined ? { sourceEnd: block.sourceEnd } : {}),
-      ...(block.pageIndex >= 0 ? { pageIndex: block.pageIndex } : {}),
-    };
-    const where = `${block.sourceStart ?? first.sourceStart ?? block.id}`;
+    const at = atOf(block);
+    const where = whereOf(block);
     if (marked) {
       const need = Math.max(...block.lines.map(marksNeed));
       if (need > 0 && gapEm < need - 1e-6 && !reported.has(`m${where}`)) {
@@ -300,6 +369,28 @@ export function annotateDocument(doc: VDTDocument, cjk: ResolvedCjkConfig | unde
         reported.add(`r${where}`);
         warnings.push({ kind: 'rubyExceedsLeading', text: first.text, gapEm: round(gapEm), neededEm: round(need), ...at });
       }
+    }
+  }
+  // The gaps two lines of a column share.
+  for (const column of columns.values()) {
+    for (let i = 1; i < column.length; i++) {
+      const a = column[i - 1]!;
+      const b = column[i]!;
+      const need = a.reach.foot + b.reach.head;
+      if (need <= 0) continue;
+      const gap = (b.line.baseline - (CENTRAL + 0.5) * b.em) - (a.line.baseline + (0.5 - CENTRAL) * a.em);
+      if (need <= gap + 1e-6) continue;
+      const ruby = a.reach.footRuby || b.reach.headRuby;
+      const key = `${ruby ? 'r' : 'm'}${whereOf(b.block)}`;
+      if (reported.has(key)) continue;
+      reported.add(key);
+      warnings.push({
+        kind: ruby ? 'rubyExceedsLeading' : 'cjkMarksExceedLeading',
+        text: b.line.text,
+        gapEm: round(gap / b.em),
+        neededEm: round(need / b.em),
+        ...atOf(b.block),
+      });
     }
   }
   return warnings;

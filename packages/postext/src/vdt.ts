@@ -303,6 +303,12 @@ export interface VDTAnnotationRun {
   fontString: string;
   /** Colour (hex); unset: the annotation's. */
   color?: string;
+  /** On a vertical line, every character of the run stands upright in a
+   *  cell one em of its font long, from `dx`, centred across the line on
+   *  `dy` less the font's central axis — the zhuyin tone marks and the
+   *  neutral-tone dot, which Unicode would turn sideways (UAX #50 `R`).
+   *  Ignored on a horizontal line. */
+  upright?: true;
 }
 
 /** A ruby base's reading (see {@link VDTLineSegment.ruby}). */

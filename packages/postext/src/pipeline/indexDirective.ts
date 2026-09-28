@@ -19,6 +19,7 @@ import { linkSegments } from '../measure/links';
 import type { BlockStyle } from './styles';
 import type { BlockMeasureContext, MeasuredContentBlock } from './measureContentBlock';
 import { stampSourceRanges } from './buildHelpers';
+import { bookTitlesAsConfigured } from './annotations';
 import { resolvedLocale } from './config';
 import { chineseScriptOf, stringsFor } from '../locale';
 import type { IndexGrouping } from './indexGroups';
@@ -499,7 +500,9 @@ export function measureIndexBlock(
 
   const turnoverPx = dimensionToPx(cfg.turnoverIndent, dpi, fontSizePx);
   /** The lines of one entry at its level's indent, turnover lines hung. */
-  const entryLines = (spans: InlineSpan[], level: number): VDTLine[] => {
+  const entryLines = (written: InlineSpan[], level: number): VDTLine[] => {
+    // A book title in a term takes the document's book-title mark (#193).
+    const spans = bookTitlesAsConfigured(written, resolved.cjk);
     const indentPx = level * dimensionToPx(cfg.indent, dpi, fontSizePx);
     const measured = measureRichBlock(
       spans, fontString, boldFontString, italicFontString, boldItalicFontString,
