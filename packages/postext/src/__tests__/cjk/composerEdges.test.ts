@@ -6,6 +6,7 @@ import { buildDocument, cachedMeasureRichBlock, createMeasurementCache } from '.
 import type { PostextConfig } from '../../types';
 import { hasCJK } from '../../measure/cjk';
 import { cjkClassOf, setCjkLineBreak, type CjkLineBreakLevel } from '../../measure/cjkClasses';
+import { setCjkComposition } from '../../measure/cjkPunctuation';
 import type { InlineSpan } from '../../parse';
 import type { MeasureBlockOptions } from '../../measure/types';
 import type { VDTLine } from '../../vdt';
@@ -45,7 +46,10 @@ const texts = (lines: VDTLine[]): string[] => lines.map((l) => l.text);
 const width = (l: VDTLine): number => l.segments!.reduce((s, seg) => s + seg.width, 0);
 const LEVELS: CjkLineBreakLevel[] = ['none', 'basic', 'gb', 'strict'];
 
-afterEach(() => setCjkLineBreak('gb'));
+afterEach(() => {
+  setCjkLineBreak('gb');
+  setCjkComposition(undefined);
+});
 
 function both(text: string, w: number, options: MeasureBlockOptions = {}): string[] {
   const plain = texts(measureBlock(text, FONT, w, 20, options).lines);

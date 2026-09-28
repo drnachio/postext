@@ -16,10 +16,14 @@ const stubWidth = (text: string, em: number): number => {
   return w;
 };
 
+// Every mark at its full cell, no Han–Latin space: the cells and runs
+// alone (the punctuation widths along the vertical axis are checked in
+// `compositionPaint.test.ts`).
 const config = (locale: string, textAlign: 'left' | 'justify', extra: Partial<PostextConfig> = {}): PostextConfig => ({
   page: { width: pt(300), height: pt(420), dpi: 72, margins: { top: pt(30), right: pt(30), bottom: pt(30), left: pt(30) } },
   bodyText: { fontFamily: 'Test Serif', fontSize: pt(10), lineHeight: pt(16), textAlign },
   layout: { writingMode: 'vertical-rl', layoutType: 'single' },
+  cjk: { punctuationWidth: 'fullwidth', compressAdjacent: false, trimLineStart: false, latinSpacing: { value: 0, unit: 'em' } },
   locale,
   ...extra,
 });

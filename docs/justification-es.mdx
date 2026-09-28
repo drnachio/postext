@@ -333,12 +333,13 @@ Cuando Knuth-Plass está activo y no produce cortes válidos (algo que puede ocu
 
 ### Chino, japonés y coreano
 
-Un párrafo con más caracteres CJK que espacios entre palabras lo compone el compositor CJK, no Knuth-Plass. Cada hueco entre dos caracteres es un sitio donde la línea puede cortarse (salvo donde lo impiden las reglas de `cjk.lineBreak`), así que una búsqueda óptima no tiene nada que sopesar; las líneas se llenan una tras otra, y un carácter que no puede abrir línea se lleva consigo el anterior. Las reglas están en [Tipografía de Asia oriental](/es/docs/configuration#tipografía-de-asia-oriental).
+Un párrafo con más caracteres CJK que espacios entre palabras lo compone el compositor CJK, no Knuth-Plass. Cada hueco entre dos caracteres es un sitio donde la línea puede cortarse (salvo donde lo impiden las reglas de `cjk.lineBreak`), así que una búsqueda óptima no tiene nada que sopesar; las líneas se llenan una tras otra. Cuando un carácter no cabe, la línea intenta primero admitirlo cediendo blanco de la puntuación y de los espacios (*push-in*: los espacios entre palabras hasta un cuarto de cuadratín, después los puntos medios, los paréntesis, los signos de pausa, los espacios entre chino y latín hasta un octavo de cuadratín y los signos de cierre de oración, según lo permita `cjk.punctuationWidth`); solo si no basta, un carácter que no puede abrir línea se lleva consigo el anterior. Las reglas están en [Tipografía de Asia oriental](/es/docs/configuration#tipografía-de-asia-oriental).
 
 Una línea justificada de un párrafo así, salvo la última, se ensancha hasta la medida en el orden que fija clreq (§6.2.2.4):
 
 1. Los espacios entre palabras occidentales, por igual, hasta medio cuadratín cada uno.
-2. Todos los huecos entre caracteres, por igual: entre caracteres han, entre un han y un signo de puntuación, entre un han y una palabra latina. Nunca dentro de una palabra latina, de un número o de una raya o unos puntos suspensivos de dos cuadratines, y nunca junto a un conector (～, –, una raya — sola) o una barra.
+2. Los espacios entre chino y latín (`cjk.latinSpacing`), por igual, hasta medio cuadratín cada uno.
+3. Todos los huecos entre caracteres, por igual, también los espacios entre chino y latín: entre caracteres han, entre un han y un signo de puntuación, entre un han y una palabra latina. Nunca dentro de una palabra latina, de un número o de una raya o unos puntos suspensivos de dos cuadratines, y nunca junto a un conector (～, –, una raya — sola) o una barra. Un signo colgado fuera del final de la línea (`cjk.hangingPunctuation`) queda fuera de la medida.
 
 La última línea de un párrafo se compone sin ensanchar. El espaciado se guarda por segmento de la línea (`VDTLineSegment.tracking`), de modo que el canvas, el HTML y el PDF pintan las mismas posiciones, y el Sandbox coloca el cursor en el carácter pulsado.
 

@@ -1,5 +1,6 @@
 import type { BoundingBox, VDTBlock, VDTColumn } from './vdt';
 import { dimensionToPx } from './units';
+import { lineInkExtent } from './lineInk';
 
 /** How far the design overlays of `blocks` reach past `x0` on the left and
  *  `x1` on the right, in px (0 when they stay inside). */
@@ -14,6 +15,23 @@ export function designOverlayOverhang(blocks: readonly VDTBlock[], x0: number, x
     }
   }
   return [left, right];
+}
+
+/** How far the marks hung past the end of their lines
+ *  (`cjk.hangingPunctuation`) in `blocks` reach past `x1`, in px (0 when
+ *  none does). */
+export function hangingPunctuationOverhang(blocks: readonly VDTBlock[], x1: number): number {
+  let right = 0;
+  for (const block of blocks) {
+    if (block.hidden || !block.lines) continue;
+    for (const line of block.lines) {
+      const segments = line.segments;
+      if (!segments || !segments[segments.length - 1]?.hangs) continue;
+      const { hang } = lineInkExtent(line, 0);
+      right = Math.max(right, line.bbox.x + line.bbox.width + hang - x1);
+    }
+  }
+  return right;
 }
 
 /** How far the design overlays of the heading blocks among `blocks` reach
@@ -50,7 +68,8 @@ function firstBlockAbove(blocks: readonly VDTBlock[], y0: number): number {
  * design may also reach above the column — a band anchored to the top of
  * the page or of the bleed — and the clip grows up to take that in too
  * (EF-113), and so does the first block of a column under a page-span
- * opener set a little above the column's top (EF-139). The column's foot
+ * opener set a little above the column's top (EF-139). A CJK mark hung
+ * past the end of its line widens it on the right (`cjk.hangingPunctuation`). The column's foot
  * stays the edge: the flow ends there, and a design reaching past it is cut
  * and reported (`collectHeadingDesignCuts`).
  * A box frame (a callout) is cut at the column's top as well, with the text
@@ -59,7 +78,9 @@ function firstBlockAbove(blocks: readonly VDTBlock[], y0: number): number {
  */
 export function columnClipRect(col: VDTColumn, dpi: number): BoundingBox {
   const overhang = dimensionToPx({ value: 2, unit: 'pt' }, dpi);
-  const [left, right] = designOverlayOverhang(col.blocks, col.bbox.x, col.bbox.x + col.bbox.width);
+  const [left, overlayRight] = designOverlayOverhang(col.blocks, col.bbox.x, col.bbox.x + col.bbox.width);
+  // A mark hung past the measure is shown whole.
+  const right = Math.max(overlayRight, hangingPunctuationOverhang(col.blocks, col.bbox.x + col.bbox.width));
   const above = Math.max(headingDesignOverhangAbove(col.blocks, col.bbox.y), firstBlockAbove(col.blocks, col.bbox.y));
   return {
     x: col.bbox.x - overhang - left,

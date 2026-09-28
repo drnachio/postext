@@ -7,7 +7,7 @@ import {
 import type { ResourceImageMap, SvgRasterizer } from './renderResourceBlock';
 import fontkit from '@pdf-lib/fontkit';
 import type { HyphenationLocale, PdfColorSpace, RenderWarning, VDTBlock, VDTDocument, VDTPage } from 'postext';
-import { canonicalLocaleTag, columnClipRect, computePageTextExtent, dimensionToPx, pageColumnRule } from 'postext';
+import { canonicalLocaleTag, cjkGridCells, columnClipRect, computePageTextExtent, dimensionToPx, pageColumnRule } from 'postext';
 import { FontCache, type FontFallback, type FontFileIssue, type FontMissingGlyphs, type PdfFontProvider, type PdfFontRequest } from '../fontCache';
 import {
   type PageCtx,
@@ -26,6 +26,7 @@ import { collectFontText, type FontText } from './fontHelpers';
 import {
   computeContentArea,
   renderBaselineGrid,
+  renderCharacterGrid,
   renderColumnRule,
   renderFootnoteRules,
   renderCutLines,
@@ -72,6 +73,10 @@ export interface RenderToPdfOptions {
    *  flagged as artifacts. When omitted, the first document's
    *  `config.pdfGeneration.accessible`, else true. */
   accessible?: boolean;
+  /** Draw the character grid (`cjk.grid.show`) over the type area, as
+   *  the canvas and HTML do on screen. Default false: the grid is a
+   *  screen aid and stays out of a file meant for print. */
+  characterGrid?: boolean;
   /** Called as the render advances: after the fonts and resources are
    *  embedded, after every page, and before the file is written. */
   onProgress?: (progress: RenderProgress) => void;
@@ -313,6 +318,7 @@ function renderPage(
   resourceCtx: ResourceRenderContext,
   tree: StructTree | undefined,
   onMissingImage?: PageCtx['onMissingImage'],
+  characterGrid = false,
 ): void {
   const scale = makeScale(doc.config.page.dpi);
   const pageWidthPt = vdtPage.width * scale;
@@ -396,6 +402,12 @@ function renderPage(
         textExtent,
       );
     }
+  }
+
+  // The character grid, only when the render asks for it.
+  if (characterGrid && doc.config.cjk?.grid?.show) {
+    const cells = cjkGridCells(doc.config, vdtPage.contentArea ?? computeContentArea(vdtPage, doc), doc.baselineGrid, vdtPage.columns);
+    if (cells) renderCharacterGrid(ctx, cells);
   }
 
   // The page's own rule on a styled section's pages, else the document's
@@ -606,7 +618,7 @@ export async function renderToPdf(
             onWarning({ kind: 'missingImage', fileId, ...(resourceId !== undefined ? { resourceId } : {}), pageIndex: page.index, documentIndex });
           }
         : undefined;
-      renderPage(pdfDoc, page, doc, fontCache, options.pageNegative ?? false, colorSpace, resourceCtx, tree, onMissingImage);
+      renderPage(pdfDoc, page, doc, fontCache, options.pageNegative ?? false, colorSpace, resourceCtx, tree, onMissingImage, options.characterGrid ?? false);
       rendered++;
       options.onProgress?.({ phase: 'pages', pages: rendered, totalPages });
     }

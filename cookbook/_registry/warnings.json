@@ -1034,6 +1034,28 @@
       }
     }
   },
+  "cjkGridClamped": {
+    "source": "engine",
+    "label": {
+      "en": "Character grid too large",
+      "es": "Retícula de caracteres demasiado grande"
+    },
+    "cause": {
+      "en": "`cjk.grid` asks for more characters per line or lines per page than the page margins leave room for at the body size and line height, so the grid is set with the most that fit.",
+      "es": "`cjk.grid` pide más caracteres por línea o más líneas por página de los que caben entre los márgenes con ese cuerpo e interlineado, así que la retícula se compone con los que caben."
+    },
+    "fix": {
+      "en": "Lower `charsPerLine` or `linesPerPage`, narrow the margins (they are minimums), or set a smaller `bodyText.fontSize` or `lineHeight`.",
+      "es": "Baja `charsPerLine` o `linesPerPage`, estrecha los márgenes (son mínimos) o reduce `bodyText.fontSize` o `lineHeight`."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Character grid",
+        "es": "Retícula de caracteres"
+      }
+    }
+  },
   "unknownTableStyle": {
     "source": "engine",
     "label": {

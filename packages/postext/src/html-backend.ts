@@ -22,7 +22,8 @@ import type {
 import { tableCellFillRects, tableFrameOutline } from './vdt';
 import { dimensionToPx } from './units';
 import { documentInkHex, isSingleInkSvgUrl, singleInkColorMatrix } from './svg/singleInk';
-import { lineTrailingTracking } from './lineInk';
+import { lineInkExtent, lineTrailingTracking } from './lineInk';
+import { CHARACTER_GRID_COLOR, cjkGridCells, type CjkGridCells } from './pipeline/cjkGrid';
 import { renderLangOf } from './locale';
 
 export interface RenderHtmlOptions {
@@ -265,7 +266,9 @@ function renderTextSegment(
   tracking = 0,
 ): string {
   const spacingDecl = seg.tracking !== undefined ? `letter-spacing:${tracking + seg.tracking}px;` : '';
-  const pos = `position:absolute;left:${x.toFixed(3)}px;top:${top};white-space:pre;${spacingDecl}`;
+  // A compressed CJK mark is painted before its box (`inkOffset`).
+  const left = seg.inkOffset !== undefined ? x + seg.inkOffset : x;
+  const pos = `position:absolute;left:${left.toFixed(3)}px;top:${top};white-space:pre;${spacingDecl}`;
   const text = esc(seg.text);
   if (seg.refResourceId !== undefined) {
     // Anchors carry an explicit color so the UA link blue never leaks in.
@@ -356,10 +359,13 @@ function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<st
   let wordWidth = 0;
   let spaceCount = 0;
   for (const seg of line.segments) {
-    if (seg.kind === 'space') spaceCount++;
+    // A hung mark is outside the measure; a Han–Latin space keeps its
+    // width.
+    if (seg.hangs) continue;
+    if (seg.kind === 'space' && !seg.autospace) spaceCount++;
     else wordWidth += seg.width;
   }
-  const contentWidth = line.segments.reduce((s, seg) => s + seg.width, 0);
+  const contentWidth = lineInkExtent(line, 0).width;
 
   // Last lines render ragged at natural width — except when overfull:
   // Knuth-Plass may accept a final line wider than the measure on the
@@ -392,7 +398,7 @@ function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<st
   for (let i = 0; i < segs.length; i++) {
     const seg = segs[i]!;
     if (seg.kind === 'space') {
-      x += useJustify ? justifiedSpaceWidth : seg.width;
+      x += useJustify && !seg.autospace ? justifiedSpaceWidth : seg.width;
       continue;
     }
     parts.push(links.at(segmentHref(seg)));
@@ -1040,6 +1046,8 @@ function renderPageDetailed(
   /** With cut lines, how far the bleed box lies inside the sheet (px); 0
    *  without them. */
   bleedInset = 0,
+  /** The character grid drawn over the type area (`cjk.grid.show`). */
+  gridCells?: CjkGridCells,
 ): PageRenderResult {
   const bgDecl = background && background !== 'transparent' ? `background:${background};` : '';
   // With cut lines nothing the page paints shows past the bleed box, as on
@@ -1077,8 +1085,9 @@ function renderPageDetailed(
   const footnoteRulesHtml = footnoteRuleSegments(page).map((r) =>
     `<div class="pt-footnote-rule" style="position:absolute;left:${r.x}px;top:${r.y - r.lineWidthPx / 2}px;width:${r.width}px;height:${r.lineWidthPx}px;background:${r.color};"></div>`,
   ).join('');
-  const decorationHtml = defsHtml + openerHtml + footnoteRulesHtml + slotParts.join('');
-  const innerHtml = defsHtml + openerHtml + blocksHtml + footnoteRulesHtml + slotParts.join('');
+  const gridHtml = gridCells ? renderCharacterGridSvg(gridCells, page.width, page.height) : '';
+  const decorationHtml = defsHtml + gridHtml + openerHtml + footnoteRulesHtml + slotParts.join('');
+  const innerHtml = defsHtml + gridHtml + openerHtml + blocksHtml + footnoteRulesHtml + slotParts.join('');
   const outerHtml =
     `<div class="pt-page" data-page="${page.index}" style="` +
     `position:relative;` +
@@ -1089,6 +1098,24 @@ function renderPageDetailed(
     clipDecl +
     `">${innerHtml}</div>`;
   return { outerHtml, innerHtml, blocks, decorationHtml };
+}
+
+/** The character grid (稿纸) as one SVG path over the page, under the
+ *  text (see `cjkGridCells`). */
+function renderCharacterGridSvg(cells: CjkGridCells, width: number, height: number): string {
+  const { cell } = cells;
+  const d: string[] = [];
+  const n = (v: number): string => String(Math.round(v * 1000) / 1000);
+  cells.columns.forEach((x0, c) => {
+    const chars = cells.columnChars[c] ?? cells.chars;
+    const w = chars * cell;
+    for (const y of cells.rows) {
+      d.push(`M${n(x0)} ${n(y)}h${n(w)}M${n(x0)} ${n(y + cell)}h${n(w)}`);
+      for (let i = 0; i <= chars; i++) d.push(`M${n(x0 + i * cell)} ${n(y)}v${n(cell)}`);
+    }
+  });
+  return `<svg class="pt-char-grid" aria-hidden="true" width="${width}" height="${height}" style="position:absolute;left:0;top:0;pointer-events:none;">` +
+    `<path d="${d.join('')}" fill="none" stroke="${CHARACTER_GRID_COLOR}" stroke-width="0.5"/></svg>`;
 }
 
 export interface HtmlRenderIndexPage {
@@ -1177,7 +1204,8 @@ export function renderToHtmlIndexed(
           },
         }
       : { ...options, linkTargets };
-    const detail = renderPageDetailed(p, background, pageOptions, ink, bleedInset);
+    const gridCells = doc.config.cjk?.grid?.show ? cjkGridCells(doc.config, p.contentArea, doc.baselineGrid, p.columns) : undefined;
+    const detail = renderPageDetailed(p, background, pageOptions, ink, bleedInset, gridCells);
     pageHtmlParts.push(detail.outerHtml);
     indexedPages.push({
       index: p.index,

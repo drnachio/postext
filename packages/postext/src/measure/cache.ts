@@ -6,6 +6,7 @@ import { getHyphenationLocale } from '../hyphenate';
 import { hasCJK } from './cjk';
 import { getCjkLineBreak } from './cjkClasses';
 import { getMeasureRegion, getMeasureWritingMode } from './vertical';
+import { cjkCompositionKey, getCjkComposition } from './cjkPunctuation';
 
 /** Options that change a block's lines, joined into its cache key. The
  *  active hyphenation dictionary is one: soft hyphens (and the syllables an
@@ -14,15 +15,16 @@ function optionsKey(options: MeasureBlockOptions | undefined): string {
   return `${options?.textAlign ?? ''}\x00${options?.hyphenate ?? ''}\x00${options?.firstLineIndentPx ?? ''}\x00${options?.hangingIndent ?? ''}\x00${options?.optimal ?? ''}\x00${options?.maxStretchRatio ?? ''}\x00${options?.minShrinkRatio ?? ''}\x00${options?.runtPenalty ?? ''}\x00${options?.runtMinCharacters ?? ''}\x00${options?.looseness ?? ''}\x00${options?.letterSpacingPx ?? ''}\x00${options?.hyphenationZonePx ?? ''}\x00${getHyphenationLocale()}${options?.justifyTrackingPx ? `\x00${options.justifyTrackingPx}` : ''}${options?.runtGraded ? '\x00rg' : ''}${options?.avoidHyphenAtLines?.length ? `\x00ah${options.avoidHyphenAtLines.join(',')}` : ''}`;
 }
 
-/** The CJK line-break level, joined to the key of a text that holds CJK
- *  only, so every other key is unchanged; and the vertical writing mode
- *  (with the region whose cells it measures), which gives every character
- *  that stands in a cell its cell (`verticalTextWidth`) — CJK or not. */
+/** The CJK line-break level and composition (punctuation widths, hanging,
+ *  the Han–Latin space), joined to the key of a text that holds CJK only,
+ *  so every other key is unchanged; and the vertical writing mode (with the
+ *  region whose cells it measures), which gives every character that stands
+ *  in a cell its cell (`verticalTextWidth`) — CJK or not. */
 function cjkKey(text: string, options: MeasureBlockOptions | undefined): string {
   const vertical = (options?.writingMode ?? getMeasureWritingMode()) === 'vertical-rl';
   const v = vertical ? `:v:${getMeasureRegion()}` : '';
   if (!hasCJK(text)) return vertical ? `\x00${v}` : '';
-  return `\x00cjk:${options?.cjkLineBreak ?? getCjkLineBreak()}${v}`;
+  return `\x00cjk:${options?.cjkLineBreak ?? getCjkLineBreak()}:${cjkCompositionKey(options?.cjkComposition ?? getCjkComposition())}${v}`;
 }
 
 function buildPlainCacheKey(

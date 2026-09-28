@@ -39,7 +39,7 @@ This reference is long. These are the main blocks:
 - [Headers & footers](#headers--footers) — per-page text and rule elements with placeholders, parity, and alignment.
 - [Body text](#body-text) — typography, hyphenation, orphans and widows.
 - [Document language](#document-language) — the top-level `locale`: hyphenation fallback, built-in resource types and the continuation strings of tables and split callouts, the language tagged into an accessible PDF; and the [languages and scripts](#languages-and-scripts) Postext sets.
-- [East Asian typography](#east-asian-typography) — `cjk`: the regional conventions and line breaking of Chinese, Japanese and Korean text, and how their justified lines are spread.
+- [East Asian typography](#east-asian-typography) — `cjk`: the regional conventions and line breaking of Chinese, Japanese and Korean text, how their justified lines are spread, punctuation widths and hanging, the space between Han and Latin, and the character grid.
 - [Headings](#headings) — shared defaults and H1–H6 overrides.
 - [Unordered lists](#unordered-lists) and [Ordered lists](#ordered-lists) — bullets, numbering, nesting.
 - [Math](#math) — LaTeX rendering, scale, colour, margins.
@@ -1519,7 +1519,7 @@ const config: PostextConfig = {
 Postext sets alphabetic scripts written left to right. Two families of writing systems are not fully supported yet:
 
 - **Right-to-left scripts** (Arabic, Hebrew, Persian, Urdu…). There is no bidirectional algorithm: lines are broken and aligned as if the text ran left to right, against the left margin, and what each line shows depends on how it is painted. In the canvas and PDF output a left-aligned line without inline formatting is drawn as one run of text, which the browser or the PDF's font engine turns right to left by itself, so there a line all in one right-to-left script can read correctly, but one that mixes directions, numbers or punctuation does not. The HTML output, justified, centred and right-aligned lines, and lines with inline formatting are drawn word by word from left to right: each word reads correctly, but the words come out in reverse reading order.
-- **Chinese, Japanese and Korean** are set horizontally. A paragraph that holds more CJK characters than word spaces is broken between characters under the clreq line-start and line-end rules of `cjk.lineBreak` (no line starts with 。、」 or ー, none ends with 「 or （), keeps —— and …… whole, a number with its signs and a Latin word whole, and a justified line is spread between its characters to the measure: see [East Asian typography](#east-asian-typography). A Latin paragraph that quotes a few CJK words keeps optimal line breaking and may break next to them; a CJK bracket, the middle dot or a fullwidth sign quoted in Latin text (〈h〉, ％) changes nothing. There is no punctuation compression, Han–Latin spacing, vertical writing or ruby yet. Korean text breaks between syllables as well as at its spaces.
+- **Chinese, Japanese and Korean** are set horizontally, or down the page with `layout.writingMode: 'vertical-rl'` (see [Vertical writing](#vertical-writing)). A paragraph that holds more CJK characters than word spaces is broken between characters under the clreq line-start and line-end rules of `cjk.lineBreak` (no line starts with 。、」 or ー, none ends with 「 or （), keeps —— and …… whole, a number with its signs and a Latin word whole, and a justified line is spread between its characters to the measure: see [East Asian typography](#east-asian-typography). A Latin paragraph that quotes a few CJK words keeps optimal line breaking and may break next to them; a CJK bracket, the middle dot or a fullwidth sign quoted in Latin text (〈h〉, ％) changes nothing. Punctuation widths, hanging punctuation, the space between Han and Latin and the character grid are set as in [East Asian typography](#east-asian-typography), along the line in either writing mode; there is no ruby yet. Korean text breaks between syllables as well as at its spaces.
 
 Hyphenation patterns ship for eight languages (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`); the built-in resource types and continuation strings exist in those eight and in Chinese. Chinese, Japanese and Korean are set without hyphenation. Any other language is hyphenated with the US English patterns, with a console warning, and gets the English strings. For such a document, set `hyphenation.enabled: false` and pass `resourceTypes` and the `tableStyle` continuation strings in its language.
 
@@ -3007,12 +3007,18 @@ import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefault
 
 ## East Asian typography
 
-The `cjk` property sets how Chinese, Japanese and Korean text is composed: which regional conventions it follows and where its lines may break. Every field is optional, and `'auto'` follows the region of the document language (`locale`), so a book with `locale: 'zh-Hant'` breaks its lines the Taiwan way without setting anything else.
+The `cjk` property sets how Chinese, Japanese and Korean text is composed: which regional conventions it follows, where its lines may break, how wide its punctuation is set and whether it hangs, the space between Han and Latin, and the character grid of the type area. Every field is optional, and `'auto'` follows the region of the document language (`locale`), so a book with `locale: 'zh-Hant'` breaks its lines and sets its punctuation the Taiwan way without setting anything else.
 
 ```ts
 interface CjkConfig {
   region?: 'auto' | 'mainland' | 'taiwan' | 'hongkong';   // Regional conventions.
   lineBreak?: 'auto' | 'none' | 'basic' | 'gb' | 'strict'; // Which marks may not open or close a line.
+  punctuationWidth?: 'auto' | 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'halfwidth';
+  compressAdjacent?: 'auto' | boolean;      // Two marks that meet take 1.5 em.
+  trimLineStart?: 'auto' | boolean;         // Brackets at a line edge lose their outer half.
+  hangingPunctuation?: 'none' | 'allow' | 'force';
+  latinSpacing?: Dimension;                 // Between Han and Latin; default 0.25 em.
+  grid?: { enabled?: boolean; charsPerLine?: number; linesPerPage?: number; show?: boolean };
 }
 ```
 
@@ -3030,13 +3036,49 @@ interface CjkConfig {
       <td><code>region</code></td>
       <td><code>'auto' | 'mainland' | 'taiwan' | 'hongkong'</code></td>
       <td><code>'auto'</code></td>
-      <td>The conventions the text follows, after the regions the W3C <a href="https://www.w3.org/TR/clreq/">Requirements for Chinese Text Layout</a> (clreq) describes. <code>'auto'</code> reads the region from <code>locale</code>, or from <code>bodyText.hyphenation.locale</code> when <code>locale</code> is unset: <code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code> and <code>zh-SG</code> give <code>'mainland'</code>; <code>zh-Hant</code> and <code>zh-TW</code> give <code>'taiwan'</code>; <code>zh-HK</code> and <code>zh-MO</code> give <code>'hongkong'</code>; any other language gives <code>'mainland'</code>. For now the region only picks the default line-break level; punctuation widths will follow it too.</td>
+      <td>The conventions the text follows, after the regions the W3C <a href="https://www.w3.org/TR/clreq/">Requirements for Chinese Text Layout</a> (clreq) describes. <code>'auto'</code> reads the region from <code>locale</code>, or from <code>bodyText.hyphenation.locale</code> when <code>locale</code> is unset: <code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code> and <code>zh-SG</code> give <code>'mainland'</code>; <code>zh-Hant</code> and <code>zh-TW</code> give <code>'taiwan'</code>; <code>zh-HK</code> and <code>zh-MO</code> give <code>'hongkong'</code>; any other language gives <code>'mainland'</code>. The region picks the defaults of <code>lineBreak</code>, <code>punctuationWidth</code>, <code>compressAdjacent</code> and <code>trimLineStart</code>.</td>
     </tr>
     <tr>
       <td><code>lineBreak</code></td>
       <td><code>'auto' | 'none' | 'basic' | 'gb' | 'strict'</code></td>
       <td><code>'auto'</code></td>
       <td>Which marks may not open or close a line (clreq §6.1.1; see the table below). <code>'auto'</code>: <code>'gb'</code> for the mainland, <code>'basic'</code> for Taiwan and Hong Kong.</td>
+    </tr>
+    <tr>
+      <td><code>punctuationWidth</code></td>
+      <td><code>'auto' | 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'halfwidth'</code></td>
+      <td><code>'auto'</code></td>
+      <td>How wide the full-width marks are set (see <a href="#punctuation-widths">Punctuation widths</a>). <code>'auto'</code>: <code>'kaiming'</code> for the mainland, <code>'fullwidth'</code> for Taiwan and Hong Kong.</td>
+    </tr>
+    <tr>
+      <td><code>compressAdjacent</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>Two marks that meet (<code>。」</code>, <code>》（</code>, <code>：“</code>) give up the half em of blank between them, so the pair takes 1.5 em instead of 2. <code>'auto'</code>: on for the mainland and Hong Kong, off for Taiwan.</td>
+    </tr>
+    <tr>
+      <td><code>trimLineStart</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>An opening bracket or quote that starts a line gives up its leading half em, and a closing one that ends a line its trailing half. <code>'auto'</code>: on for the mainland and Hong Kong, off for Taiwan.</td>
+    </tr>
+    <tr>
+      <td><code>hangingPunctuation</code></td>
+      <td><code>'none' | 'allow' | 'force'</code></td>
+      <td><code>'none'</code></td>
+      <td>Whether a pause or stop mark may hang past the end of the line (see <a href="#hanging-punctuation">Hanging punctuation</a>).</td>
+    </tr>
+    <tr>
+      <td><code>latinSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>&#123; value: 0.25, unit: 'em' &#125;</code></td>
+      <td>The space between a Han character and a Latin letter or digit next to it, in em of the CJK text's size or any length; <code>0</code> turns it off (see <a href="#space-between-han-and-latin">Space between Han and Latin</a>).</td>
+    </tr>
+    <tr>
+      <td><code>grid</code></td>
+      <td><code>&#123; enabled?, charsPerLine?, linesPerPage?, show? &#125;</code></td>
+      <td>off</td>
+      <td>The type area in characters per line and lines per page (see <a href="#character-grid">Character grid</a>).</td>
     </tr>
   </tbody>
 </table>
@@ -3066,18 +3108,74 @@ At every level:
 - A footnote marker, a `:ref` and a superscript or subscript stay with the character before them.
 - The ideographic space U+3000 is a character one em wide: a line may break after it, never before; it is never stretched and never dropped at the start of a line. For the two-character indent of Chinese paragraphs set `bodyText.firstLineIndent: { value: 2, unit: 'em' }` rather than typing two U+3000 (the parser drops the ones a paragraph opens with).
 
-When the character that does not fit the line may not open the next one, the line gives up characters to it (push-out): the break moves back to the last place the rules allow, and a justified line spreads what is left. In a line narrower than a number with its full stop, nothing may end the line, and it breaks before the full stop after all.
+When a character does not fit the line and may open the next one, it goes down and a justified line spreads what is left. When it may not open the next line (a comma, a closing bracket, the character after an opening one), the line first tries to take it by compressing (push-in, clreq §6.2.2.3): if the blank it may give up — see [Punctuation widths](#punctuation-widths) — covers the overflow, the character (with the marks that must stay with it, a closing quote after a full stop) goes on the line and the line is set to the measure. Otherwise the line gives up characters to it (push-out): the break moves back to the last place the rules allow, and a justified line spreads what is left. In a line narrower than a number with its full stop, nothing may end the line, and it breaks before the full stop after all.
 
 Which paragraphs this applies to: those that hold more CJK characters (Han, kana, bopomofo, hangul) than word spaces, even with no two of them in a row (`第1条、第2条`, `价¥5,999。好`). They are set line by line, on the plain and the formatted path alike, so a paragraph with a bold word breaks exactly as the same text without it. A Latin paragraph that quotes a Chinese title or name has more spaces than characters: it keeps optimal line breaking, and a line may break next to its CJK characters under the same rules. Captions, table cells, notes and boxes break at the document's level too. Dictionary hyphenation does not reach the Latin words of a CJK paragraph.
 
-A justified CJK line that is not the last of its paragraph is spread to the measure, in this order (clreq §6.2.2.4): the spaces between Western words, up to half an em each; then every gap between characters, equally. No space goes inside a Latin word, a number or a two-em mark, nor next to a connector or a solidus. The spacing is set per segment of the line (`VDTLineSegment.tracking`, px after each character, part of the segment's `width`), which the canvas, HTML and PDF output paint as letter spacing; a Latin word followed by a gap gives its last letter a segment of its own. A segment holds one Western run, or characters of one style, link and spacing that advance alike, so the Sandbox spreads its width evenly over them when it places the cursor, and a link covers only its own characters. When a line would need more than half an em between its characters (or more than `bodyText.maxJustifyTracking`, when that is set), it is set with that much and ends short of the measure: the line is flagged `cjkLoose` and `ragged`, and the build reports a `cjkLooseLine` content warning with the line's text. A long Latin word or web address that cannot come up is the usual cause. A line with no CJK character on it (the head of a long web address) is set ragged without the warning, as a Latin line of one word is. See [Hyphenation &amp; Justification](/en/docs/justification#chinese-japanese-and-korean).
+A justified CJK line that is not the last of its paragraph is spread to the measure, in this order (clreq §6.2.2.4): the spaces between Western words, up to half an em each; the spaces between Han and Latin, up to half an em each; then every gap between characters, and those spaces, equally. No space goes inside a Latin word, a number or a two-em mark, nor next to a connector or a solidus. The spacing is set per segment of the line (`VDTLineSegment.tracking`, px after each character, part of the segment's `width`), which the canvas, HTML and PDF output paint as letter spacing; a Latin word followed by a gap gives its last letter a segment of its own. A segment holds one Western run, or characters of one style, link and spacing that advance alike, so the Sandbox spreads its width evenly over them when it places the cursor, and a link covers only its own characters. When a line would need more than half an em between its characters (or more than `bodyText.maxJustifyTracking`, when that is set), it is set with that much and ends short of the measure: the line is flagged `cjkLoose` and `ragged`, and the build reports a `cjkLooseLine` content warning with the line's text. A long Latin word or web address that cannot come up is the usual cause. A line with no CJK character on it (the head of a long web address) is set ragged without the warning, as a Latin line of one word is. See [Hyphenation &amp; Justification](/en/docs/justification#chinese-japanese-and-korean).
 
-Resolver and stripper match the other sections; `setCjkLineBreak` sets the level for measurements made outside `buildDocument`, which sets it from the config:
+### Punctuation widths
+
+A full-width Chinese mark is half an em of glyph and half an em of blank, and what the settings adjust is the blank, never the glyph (clreq §6.3.2). The blank sits before the glyph of an opening bracket or quote, after the glyph of a closing one, and after the glyph of the mainland's pause and stop marks 、，。．；：？！, which sit in the corner of their box; the marks Taiwan and Hong Kong centre (、，。．；：) and interpuncts keep a quarter em on each side. `？！` stay one em in horizontal Taiwan and Hong Kong text, and `：；？！` in vertical text everywhere.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '130px' }}>Style</th>
+      <th>Inside the line</th>
+      <th>At the end of the line</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fullwidth</code> (全角式)</td><td>Every mark one em.</td><td>One em; a closing bracket half, with <code>trimLineStart</code>.</td></tr>
+    <tr><td><code>kaiming</code> (开明式)</td><td>。．？！ one em; ，、；：, brackets, quotes and interpuncts half an em. Most mainland books.</td><td>Every mark half an em.</td></tr>
+    <tr><td><code>lineEndHalf</code> (行末半角)</td><td>Every mark one em.</td><td>Every mark half an em (GB/T 15834—2011 §5.1.10 read literally).</td></tr>
+    <tr><td><code>halfwidth</code> (半角式)</td><td>Every mark half an em, as in dictionaries.</td><td>Half an em.</td></tr>
+  </tbody>
+</table>
+
+With `compressAdjacent`, two marks that meet give up the blank between them (the eight rules of the earlier clreq drafts): a closing bracket after another closing one or after a mainland pause or stop mark (`。」`, not after the centred marks of Taiwan and Hong Kong), a pause or stop mark after a closing bracket (`」，`), an opening bracket after any of them or after another opening one (`，「`, `》（`, `「『`), and a quarter em between an interpunct and a closing bracket before it or an opening one after it. Never more than takes the pair to 1.5 em: under Kaiming `。”` already takes 1.5 em and keeps it, `》（` takes one em. With `trimLineStart`, an opening bracket that starts a line gives up its leading blank, so its ink lines up with the text edge (on the first line of a paragraph it sits half an em into the indent), and a closing one that ends a line its trailing blank. A centred mark gives up a quarter em on each side, never half on one. When a line breaks between two marks, neither keeps the compression: each is set as a mark at a line edge (a full-width `，` whose `「` opens the next line ends its own line a full em).
+
+A line takes in a character that may not open the next line (push-in) when the blank it may still give up covers the overflow, in clreq's order: word spaces down to a quarter em, then interpuncts, brackets, pause marks, the spaces between Han and Latin down to an eighth of an em, and stop marks last, each step shared equally. `kaiming` lets only its stop marks go down to half an em, and only in this case: a line that is merely short of one more character is spread, so 。？！ keep their em inside the line. `lineEndHalf` lets every mark go down to half an em; `fullwidth` marks give up nothing (a full-width book keeps its grid), and `halfwidth` marks have nothing left.
+
+In the VDT a mark that gave up blank is a segment of its own, its `width` the advance it keeps, with `inkOffset` (px, 0 or negative) set: the renderers paint its glyph at `x + inkOffset`, so a mark that gave up the blank before its glyph (an opening bracket at a line start) is drawn that far before its box. The PDF shows such a glyph with a character spacing that ends its advance where its box ends, so a reader never sees it run over the next character, and puts its line in an `/ActualText` span (see [Space between Han and Latin](#space-between-han-and-latin)). The region decides which side a mark's blank is on, not the font: set a book in a face of its region (Noto Serif SC for the mainland, TC for Taiwan, HK for Hong Kong); a Traditional font under a mainland tag compresses the wrong side of its centred marks.
+
+### Hanging punctuation
+
+`hangingPunctuation: 'allow'` lets one of 、，。． (on the mainland, whose marks sit at the start of their box, also ；：？！) hang past the end of the line when it would otherwise open the next one and compressing the line cannot take it in; never in horizontal Taiwan and Hong Kong text. `'force'` hangs such a mark whenever it ends a line (but the last line of a paragraph), and at once when it does not fit. A mark never hangs when another mark touches it (`。」`, `，「`). The hung segment is flagged `hangs`; the line's `bbox.width`, its justification and its alignment leave it out, and the canvas and PDF widen the column clip by the widest hung mark (`hangingPunctuationOverhang`), so it is never cut. Most Chinese books do not hang punctuation; clreq recommends it only with a character grid.
+
+### Space between Han and Latin
+
+`latinSpacing` (default a quarter em) sets a space between a Han character (or kana) and a Latin letter or European digit next to it: `用iPhone拍照` and `1999年` are set `用 iPhone 拍照` and `1999 年`. There is none at the start or end of a line, none between a Latin character and a Chinese mark (`用iPhone，` sets nothing before the comma), none inside Chinese brackets (`（iPhone）`), and none next to a sign that is no letter or digit (`为¥5,999`). A space the author typed at such a boundary (`用 iPhone 拍照`, as many web texts carry it) is replaced by the Han–Latin space, not added to, so the two spellings set alike; a no-break space or an ideographic space is left as it is. On a justified line it grows up to half an em before the characters are spread; on a line taking in a character that may not open the next line it shrinks down to an eighth of an em. A length in any unit other than em is converted at the page's dpi. `0` turns it off, and a space typed there stays a word space.
+
+The space is a segment of `kind: 'space'` flagged `autospace`, with empty `text` (or the space the author typed); its `width` is final, and the renderers' own space justification leaves it as it is. It is never in the plain text, so search, copy and paste and source ranges read the text as written. The PDF puts every line set in pieces (spread characters, Han–Latin spaces, marks that gave up blank or hang) in a `/Span` whose `/ActualText` is the line's text, so text extraction reads `用iPhone拍照`, not `用 iPhone 拍 照`, and reads a line with half-width marks as one line.
+
+### Character grid
+
+A Chinese type area is specified in characters (clreq §7.1.1): the body size × characters per line × lines per page, plus the line gap and, with two columns, the gutter. `grid` sets it that way:
 
 ```ts
-import { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOf, setCjkLineBreak } from 'postext';
+cjk: { grid: { enabled: true, charsPerLine: 28, linesPerPage: 28, show: true } }
+```
 
-resolveCjkConfig(undefined, 'zh-HK'); // { region: 'hongkong', lineBreak: 'basic' }
+When `enabled`, the configuration is rewritten before anything reads it: each column is `charsPerLine` ems of `bodyText.fontSize` wide, and the type area `linesPerPage` lines of `bodyText.lineHeight` tall; with `layoutType: 'double'` the gutter is `layout.gutterWidth` rounded to a whole number of ems, at least one. The margins in `page.margins` act as minimums: the type area is placed in the middle of the area they leave, each margin grown by half the room left over along its axis (a mirrored book keeps its inner and outer margins apart, both grown by the same amount). Left unset, `charsPerLine` and `linesPerPage` take as many as fit. A number larger than fits is reduced to what fits and reported as a `cjkGridClamped` config warning. The font size and line height stay as written. In a `oneAndHalf` layout `charsPerLine` is the main column's; the side column takes the whole number of ems nearest the width `sideColumnPercent` gives it inside the configured margins (at least one), the gutter is rounded like a two-column one, and `sideColumnPercent` is rewritten so both columns are cut in whole ems. In vertical text (`layout.writingMode: 'vertical-rl'`) the characters of a line run down the page and the lines across it, so `charsPerLine` measures the page's height.
+
+Two layouts from Chinese practice, at 五号 (10.5 pt) with a 6 pt line gap (`lineHeight: 16.5pt`):
+
+- 大32开, 140 × 203 mm, 28 × 28: a 294 pt measure (103.7 mm) and a 462 pt type area (163 mm); `page.margins` of 16/20 mm inside and outside and 18/20 mm top and bottom leave room for it.
+- 16开, 184 × 260 mm, two columns of 23 characters at 小五 (9 pt, 13.5 pt lines) with a two-character gutter: 2 × 207 pt + 18 pt.
+
+`show` draws the grid (稿纸) over the type area, one light grey square per character position on each line (the character's em box around its baseline), on each column of the page (a `oneAndHalf` side column on the side the page's parity puts it), on the canvas and in the HTML. The PDF draws it only when `renderToPdf` is given `characterGrid: true`: it is a screen aid. `cjkGridGeometry(config)` returns the grid a config sets (numbers in use, margins, type area) and `applyCjkGrid(config)` the rewritten config.
+
+Resolver and stripper match the other sections; `setCjkLineBreak` and `setCjkComposition` set the level and the composition (punctuation widths, hanging, the Han–Latin space; `cjkCompositionOf(resolved.cjk, dpi)`) for measurements made outside `buildDocument`, which sets them from the config. Outside a build, marks keep their full advance and no Han–Latin space is set:
+
+```ts
+import { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOf, setCjkLineBreak, setCjkComposition, cjkCompositionOf } from 'postext';
+
+resolveCjkConfig(undefined, 'zh-HK');
+// { region: 'hongkong', lineBreak: 'basic', punctuationWidth: 'fullwidth', compressAdjacent: true,
+//   trimLineStart: true, hangingPunctuation: 'none', latinSpacing: { value: 0.25, unit: 'em' },
+//   grid: { enabled: false, charsPerLine: 0, linesPerPage: 0, show: false } }
 ```
 
 In the Sandbox these settings are in **Design › Typography › East Asian typography**.
@@ -5703,6 +5801,7 @@ Four mistakes in the configuration itself are never silent, and no toggle hides 
 - **Unknown number format** — an ordered-list `numberFormat`, a `page.pageNumbering.format` or a resource type's `counterFormat` that is none of the [numbering format spellings](#numbering-format-spellings). It numbers in decimal.
 - **Font stack in a font family** — a `fontFamily` (or any `…FontFamily`) that holds a CSS font stack. The text is set in the stack's first family (see [One family per `fontFamily`](#one-family-per-fontfamily)).
 - **Side column with no room** — a `'oneAndHalf'` layout's `sideColumnPercent` (the document's, or a heading style's own `layout`) that would leave one of the columns under 1% of the content width, or that is not a number. The columns are cut at the nearest value both can take, and `used` names it (`sideColumnPercentClamped`; see the [`'oneAndHalf'` layout](#layout-types)).
+- **Character grid too large** — a `cjk.grid` with more characters per line or lines per page than the margins leave room for. The grid is set with the most that fit, and `used` names the number (`cjkGridClamped`; see [Character grid](#character-grid)).
 - **Unknown heading setting** — a key that `headings`, `headings.balancing`, a heading level, a heading style or a paragraph style does not have: a misspelt `letterSpacng`, a `tracking` borrowed from another tool, a `level` on a heading style, a `fontStyle: 'italic'` on a paragraph style (which takes `italic: true`). The engine ignores it (up to postext 1.4 it did so without a word). `value` is the key, `used` is empty, and `suggestion` names the setting it is closest to, when one is a letter or two away or differs only in case (`unknownConfigKey`).
 
 The Sandbox lists them in the **Checks** panel with the path of the setting. In code, `buildDocument` puts them on the document as `configWarnings` (absent when the configuration is clean), and `collectConfigWarnings(config)` returns them without laying anything out:

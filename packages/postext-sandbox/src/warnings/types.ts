@@ -41,6 +41,7 @@ export type WarningKind =
   | 'calloutOverflow'
   | 'headingDesignCut'
   | 'sideColumnPercentClamped'
+  | 'cjkGridClamped'
   | 'designCyclicAnchor'
   | 'designDanglingAnchor'
   | 'designTextClipAlwaysTruncates'
@@ -173,6 +174,10 @@ export type WarningPayload =
    *  width (`collectConfigWarnings`): `path` names the setting, `used`
    *  the percentage the engine cuts the columns at instead. */
   | { kind: 'sideColumnPercentClamped'; path: string; value: string; used: string }
+  /** A character grid (`cjk.grid`) with more characters per line or lines
+   *  per page than the margins leave room for (`collectConfigWarnings`):
+   *  the grid is set with `used`. */
+  | { kind: 'cjkGridClamped'; path: string; value: string; used: string }
   | {
       kind: 'designCyclicAnchor';
       slot: WarningSlotKind;

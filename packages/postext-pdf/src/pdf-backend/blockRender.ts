@@ -3,7 +3,7 @@ import type { Color, PDFFont } from 'pdf-lib';
 import type { VDTBlock, VDTLine, VDTLineSegment, MathRender } from 'postext';
 import { parseFontString } from '../fontString';
 import { FontCache } from '../fontCache';
-import { type PageCtx, alphaOf, alphaStateOp, drawLinePx, drawMeasuredTextPx, drawSwatchPx, drawTextPx, colorFromHex } from './primitives';
+import { type PageCtx, alphaOf, alphaStateOp, beginActualTextSpan, cjkLineText, compressedMarkSpacingPx, drawLinePx, drawMeasuredTextPx, drawSwatchPx, drawTextPx, colorFromHex, endActualTextSpan, type LineTextState } from './primitives';
 import { paintChip } from './chip';
 import { pickSegmentColor, pickSegmentFont } from './fontHelpers';
 import { renderHeaderFooterSlot } from './headerFooter';
@@ -104,6 +104,22 @@ function renderSegments(
   const refRun = new RefRun();
   const uris = new UriRuns(ctx, line, linkRegistry, elem);
   const repeatedAt = repeatedHyphenSegment(line, segments);
+  // A composed CJK line (spread characters, Han–Latin spaces) reads as
+  // written, not with the gaps between its pieces.
+  const actualLine = cjkLineText(segments);
+  let lineState: LineTextState | undefined;
+  if (actualLine !== undefined) {
+    const first = segments.find((s) => s.kind === 'text' && !s.chip && s.text !== '');
+    const fontStr = first ? first.fontString ?? pickSegmentFont(!!first.bold, !!first.italic, block) : block.fontString;
+    lineState = {
+      font: fontCache.get(fontStr) ?? blockFont,
+      text: first?.text ?? '',
+      sizePx: parseFontString(fontStr)?.sizePx ?? blockSize,
+      xPx: startX,
+      baselinePx: baseline,
+    };
+    beginActualTextSpan(ctx, actualLine, lineState);
+  }
   for (let i = 0; i < segments.length; i++) {
     const seg = segments[i]!;
     if (seg.kind === 'space') {
@@ -112,7 +128,8 @@ function renderSegments(
         tagContent(ctx, inLink ?? elem);
         drawTextPx(ctx, seg.text, x, baseline, blockFont, blockSize, blockColor);
       }
-      x += justifiedSpaceWidth ?? seg.width;
+      // A Han–Latin space keeps the width the composer set.
+      x += seg.autospace ? seg.width : justifiedSpaceWidth ?? seg.width;
       continue;
     }
     if (seg.kind !== 'text' || seg.chip) uris.other();
@@ -158,9 +175,13 @@ function renderSegments(
     tagContent(ctx, link ?? pageElem ?? uriElem ?? elem);
     // The hyphen repeated from the line before is painted but not read.
     const actualText = i === repeatedAt ? seg.text.slice(1) : undefined;
-    if (seg.tracking !== undefined) ctx.page.pushOperators(setCharacterSpacing((tracking + seg.tracking) * ctx.scale));
-    drawTextPx(ctx, seg.text, x, baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText);
-    if (seg.tracking !== undefined) ctx.page.pushOperators(setCharacterSpacing(tracking * ctx.scale));
+    // A compressed CJK mark is painted before its box (`inkOffset`) and
+    // advances to its box's end.
+    const markSpacing = compressedMarkSpacingPx(font, seg, size);
+    if (markSpacing !== undefined) ctx.page.pushOperators(setCharacterSpacing(markSpacing * ctx.scale));
+    else if (seg.tracking !== undefined) ctx.page.pushOperators(setCharacterSpacing((tracking + seg.tracking) * ctx.scale));
+    drawTextPx(ctx, seg.text, x + (seg.inkOffset ?? 0), baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText);
+    if (markSpacing !== undefined || seg.tracking !== undefined) ctx.page.pushOperators(setCharacterSpacing(tracking * ctx.scale));
     if (seg.pageLink !== undefined && linkRegistry) {
       const { scale, pageHeightPt } = ctx;
       linkRegistry.addPageLink(
@@ -182,7 +203,9 @@ function renderSegments(
     x += seg.width;
   }
   uris.end();
+  if (lineState) endActualTextSpan(ctx, lineState);
 }
+
 
 /** Tracking: the block (column balancing; negative for a runt set short)
  *  and the line (justification tracking) were measured with extra advance
@@ -212,7 +235,10 @@ function trailingTracking(line: VDTLine, tracking: number): number {
   if (tracking === 0) return 0;
   const segments = line.segments;
   if (segments && segments.length > 0) {
-    const last = segments[segments.length - 1]!;
+    let i = segments.length - 1;
+    // A mark hung past the line's end is outside it (CJK only).
+    while (i > 0 && segments[i]!.hangs) i--;
+    const last = segments[i]!;
     return last.kind === 'text' && last.text.length > 0 ? tracking : 0;
   }
   return /\S$/.test(line.text) ? tracking : 0;
@@ -248,7 +274,10 @@ function renderLineText(
     let naturalWidth = 0;
     let spaceCount = 0;
     for (const seg of segments) {
-      if (seg.kind === 'space') spaceCount++;
+      // A hung mark is outside the measure; a Han–Latin space keeps its
+      // width.
+      if (seg.hangs) continue;
+      if (seg.kind === 'space' && !seg.autospace) spaceCount++;
       else wordWidth += seg.width;
       naturalWidth += seg.width;
     }
@@ -260,8 +289,9 @@ function renderLineText(
   }
 
   if ((block.textAlign === 'center' || block.textAlign === 'right') && segments) {
+    // Hung marks stay out of the alignment, as trailing tracking does.
     let contentWidth = 0;
-    for (const seg of segments) contentWidth += seg.width;
+    for (const seg of segments) if (!seg.hangs) contentWidth += seg.width;
     const slack = Math.max(0, effectiveWidth - (contentWidth - trailing));
     const startX = line.bbox.x + (block.textAlign === 'center' ? slack / 2 : slack);
     renderSegments(ctx, segments, startX, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem, undefined, tracking);
@@ -272,7 +302,7 @@ function renderLineText(
   // blocks. Segments are needed when any of them styles differently from the
   // block (bold/italic/math/ref/own font or colour); otherwise one text
   // object paints the line.
-  if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined || s.href !== undefined || s.pageLink !== undefined || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined || s.tracking !== undefined)) {
+  if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined || s.href !== undefined || s.pageLink !== undefined || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined || s.tracking !== undefined || s.inkOffset !== undefined || s.hangs !== undefined || s.autospace !== undefined)) {
     renderSegments(ctx, segments, line.bbox.x, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem, undefined, tracking);
     return;
   }

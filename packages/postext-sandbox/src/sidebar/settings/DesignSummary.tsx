@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { resolveBodyTextConfig, resolveColorValue, resolveLayoutConfig, resolvePageConfig } from 'postext';
 import type { Dimension } from 'postext';
@@ -8,6 +8,7 @@ import { useSandboxLabels, useSandboxSelector } from '../../context/SandboxConte
 import { formatNumber, toPt } from '../../controls/units';
 import { cn } from '../../ui';
 import type { SettingsGroupId } from '../sections/registry';
+import { pageDrawingConfig } from '../sections/cjkGridReadout';
 import { PagePreview } from './PagePreview';
 
 interface DesignSummaryProps {
@@ -21,8 +22,10 @@ export function DesignSummary({ onOpenGroup }: DesignSummaryProps) {
   const labels = useSandboxLabels();
   const config = useSandboxSelector((s) => s.config);
   const uiLocale = useSandboxSelector((s) => s.locale);
-  const page = resolvePageConfig(config.page);
-  const layout = resolveLayoutConfig(config.layout);
+  // The page as it is set: the character grid's margins when it is on.
+  const drawn = useMemo(() => pageDrawingConfig(config), [config]);
+  const page = resolvePageConfig(drawn.page);
+  const layout = resolveLayoutConfig(drawn.layout);
   const body = resolveBodyTextConfig(config.bodyText, config.locale);
   const ink = resolveColorValue(body.color, config.colorPalette, { hex: '#000000', model: 'hex' }).hex;
   const palette = config.colorPalette ?? [];

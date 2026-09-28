@@ -108,8 +108,9 @@ describe('canvas: a vertical line', () => {
     expect([word.ax, word.ay]).toEqual([0, 1]);
     const yong = painted.find((p) => p.text === '用')!;
     const pai = painted.find((p) => p.text === '拍')!;
-    // 用 (10 px), then iPhone (6 × 5 px), then 拍.
-    expect(near(pai.y - yong.y, 10 + 30)).toBe(true);
+    // 用 (10 px), a Han–Latin space (¼ em), iPhone (6 × 5 px), another
+    // space, then 拍: the spaces run down the line too.
+    expect(near(pai.y - yong.y, 10 + 2.5 + 30 + 2.5)).toBe(true);
   });
 
   it('moves a mainland full stop to the top-right quadrant and leaves a Taiwan one centred', () => {

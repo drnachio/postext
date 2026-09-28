@@ -31,6 +31,7 @@ import { extractFrontmatter, normalizeMetadata } from '../frontmatter';
 import { collectConfigWarnings } from '../configWarnings';
 import { initHyphenator } from '../measure';
 import { getCjkLineBreak, setCjkLineBreak } from '../measure/cjkClasses';
+import { cjkCompositionOf, getCjkComposition, setCjkComposition } from '../measure/cjkPunctuation';
 import { getMeasureRegion, getMeasureWritingMode, setMeasureWritingMode } from '../measure/vertical';
 import { stampCentralBaselines } from './verticalMetrics';
 import type { MeasurementCache } from '../measure';
@@ -385,17 +386,19 @@ export function buildDocumentPass(
   options?: BuildDocumentOptions,
   hints: PassHints = {},
 ): PassResult {
-  // A pass sets the CJK line-break level and the writing mode text is
-  // measured in for its own measuring; what the caller had in force is put
+  // A pass sets the CJK line-break level, the CJK composition and the
+  // writing mode text is measured in for its own measuring; what the caller had in force is put
   // back when it ends, also when it throws (a cancelled build), so text
   // measured outside a build reads as it did before it.
   const lineBreak = getCjkLineBreak();
+  const composition = getCjkComposition();
   const writingMode = getMeasureWritingMode();
   const region = getMeasureRegion();
   try {
     return placeDocumentPass(content, config, cache, options, hints);
   } finally {
     setCjkLineBreak(lineBreak);
+    setCjkComposition(composition);
     setMeasureWritingMode(writingMode, region);
   }
 }
@@ -442,6 +445,9 @@ function placeDocumentPass(
   // CJK text breaks at the document's level wherever it is measured (body,
   // captions, cells, notes, boxes), as it hyphenates in its language.
   setCjkLineBreak(resolved.cjk.lineBreak);
+  // And is composed with the document's punctuation widths, hanging and
+  // Han–Latin space (along the line in either writing mode).
+  setCjkComposition(cjkCompositionOf(resolved.cjk, resolved.page.dpi));
   // Characters of a vertical flow that stand in a cell advance by it (half
   // an em for the mainland interpunct).
   setMeasureWritingMode(resolved.layout.writingMode, resolved.cjk.region);

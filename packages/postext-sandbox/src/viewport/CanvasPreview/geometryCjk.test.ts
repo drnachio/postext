@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { measureBlock, type VDTDocument } from 'postext';
+import { cjkCompositionOf, measureBlock, resolveCjkConfig, type VDTDocument } from 'postext';
 import { pixelToSourceOffset, segmentGraphemeStarts, xForPlainInLine } from './geometry';
 
 type VDTBlock = VDTDocument['blocks'][number];
@@ -88,6 +88,44 @@ describe('caret on a ragged line of Chinese and Latin', () => {
     for (let i = 0; i < text.length; i++) {
       expect(xForPlainInLine(mixed, line, i)).toBeCloseTo(x, 6);
       x += stubWidth(text[i]!);
+    }
+  });
+});
+
+describe('caret on a line with compressed marks and Han–Latin spaces', () => {
+  it('lands on every character, and a click on a character maps to it', () => {
+    // A mainland book (Kaiming marks, a quarter em between Han and Latin),
+    // with a space typed between 用 and iPhone that turns into one.
+    const composition = cjkCompositionOf(resolveCjkConfig(undefined, 'zh-Hans'), 96);
+    const text = '他说：“用 iPhone拍照了吗？”1999年的。';
+    const measured = measureBlock(text, '16px Stub', 600, 20, { textAlign: 'left', cjkComposition: composition }).lines;
+    expect(measured.length).toBe(1);
+    const segs = measured[0]!.segments!;
+    expect(segs.some((s) => s.autospace)).toBe(true);
+    expect(segs.some((s) => s.inkOffset !== undefined)).toBe(true);
+    const line = { ...measured[0]!, plainStart: 0, plainEnd: text.length, isLastLine: true };
+    const map = Array.from({ length: text.length }, (_, i) => 200 + i);
+    const mixed = {
+      ...block, textAlign: 'left', bbox: { x: 0, y: 0, width: 600, height: 20 },
+      sourceStart: 200, sourceEnd: 200 + text.length, sourceMap: map, lines: [line],
+    } as unknown as VDTBlock;
+    const mixedDoc = { pages: [{}], blocks: [mixed] } as unknown as VDTDocument;
+    // Each character's box, from the segments (evenly within a segment).
+    const boxes: { start: number; end: number }[] = [];
+    let x = 0;
+    for (const s of segs) {
+      const n = s.text.length;
+      for (let k = 0; k < n; k++) boxes.push({ start: x + (k * s.width) / n, end: x + ((k + 1) * s.width) / n });
+      x += s.width;
+    }
+    expect(boxes.length).toBe(text.length);
+    for (let i = 0; i < text.length; i++) {
+      const caret = xForPlainInLine(mixed, line, i);
+      // At the character's box, or before the Han–Latin space in front of it.
+      expect(caret).toBeLessThanOrEqual(boxes[i]!.start + 1e-6);
+      if (i > 0) expect(caret).toBeGreaterThanOrEqual(boxes[i - 1]!.end - 1e-6);
+      expect(pixelToSourceOffset(mixedDoc, 0, (boxes[i]!.start + boxes[i]!.end) / 2, 10)).toBeGreaterThanOrEqual(200 + i);
+      expect(pixelToSourceOffset(mixedDoc, 0, (boxes[i]!.start + boxes[i]!.end) / 2, 10)).toBeLessThanOrEqual(201 + i);
     }
   });
 });

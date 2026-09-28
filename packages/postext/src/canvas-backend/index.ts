@@ -3,7 +3,8 @@ import { computePageTextExtent } from '../vdt';
 import { dimensionToPx } from '../units';
 import { columnClipRect } from '../columnClip';
 import { pageColumnRule } from '../columnRule';
-import { renderBaselineGrid, renderColumnRule, renderCutLines, renderFootnoteRules, computeContentArea } from './decorations';
+import { renderBaselineGrid, renderCharacterGrid, renderColumnRule, renderCutLines, renderFootnoteRules, computeContentArea } from './decorations';
+import { cjkGridCells } from '../pipeline/cjkGrid';
 import { renderBlock } from './blockRender';
 import { renderHeaderFooterSlot } from './headerFooter';
 import { documentInkHex } from '../svg/singleInk';
@@ -163,6 +164,10 @@ function paintPage(
       );
     }
   }
+
+  // The character grid (稿纸), a screen aid (`cjk.grid.show`).
+  const gridCells = doc.config.cjk?.grid?.show ? cjkGridCells(doc.config, page.contentArea ?? computeContentArea(page, doc), doc.baselineGrid, page.columns) : undefined;
+  if (gridCells) renderCharacterGrid(ctx, gridCells);
 
   // The page's own rule on a styled section's pages, else the document's.
   const columnRule = pageColumnRule(page, doc);

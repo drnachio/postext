@@ -230,6 +230,27 @@ export interface VDTLineSegment {
    *  segment carrying it is never painted with the rest of its line in one
    *  run. Absent on lines that are not CJK. */
   tracking?: number;
+  /** Paint-only shift of the segment's glyphs, px (0 or negative: to the
+   *  left). Set on a full-width CJK mark that gave up blank (see
+   *  `cjk.punctuationWidth`): its `width` is narrower than its glyph's
+   *  advance, so it is always painted on its own, at `x + inkOffset`. A
+   *  mark that gave up the blank before its glyph (an opening bracket at a
+   *  line start, one compressed after another mark) is painted that far
+   *  before its box, so its ink stays inside `width`; one that gave up only
+   *  the blank after its glyph has 0. The layout never reads it. Absent on
+   *  every other segment. */
+  inkOffset?: number;
+  /** A pause or stop mark hung past the end of its line
+   *  (`cjk.hangingPunctuation`): the line's measure and `bbox.width` leave
+   *  it out, and the column clip is widened to show it. Painted after the
+   *  segment before it like any other. */
+  hangs?: boolean;
+  /** A space between a Han character and a Latin letter or digit
+   *  (`cjk.latinSpacing`), `kind: 'space'`: its `width` is final (the
+   *  composer spread or compressed it), and renderers justifying the line's
+   *  word spaces leave it as it is. Its `text` is empty, or the space the
+   *  author typed there (which it replaces). */
+  autospace?: boolean;
 }
 
 export interface VDTLine {
@@ -243,7 +264,9 @@ export interface VDTLine {
    *  edge, whose spaces are narrowed to fit. An overlay or a hit test on the
    *  painted text widens or narrows such a line to that edge. A justified
    *  CJK line is set to the measure in its segments (their `tracking`, its
-   *  word spaces at their final width), so its `width` is the measure. */
+   *  word spaces at their final width), so its `width` is the measure. A
+   *  mark hung past the line's end (a segment flagged `hangs`) is left out
+   *  of `width`. */
   bbox: BoundingBox;
   baseline: number;
   /** The line ends inside a word, or at least not at a space. Mostly the
@@ -1303,13 +1326,16 @@ export interface ConfigWarning {
    *  `sideColumnPercentClamped`: a `oneAndHalf` layout's
    *  `sideColumnPercent` that would leave one of its columns with no width
    *  (or is not a number); the columns are cut at `used` percent instead.
+   *  `cjkGridClamped`: a character grid (`cjk.grid`) with more characters
+   *  per line or lines per page than the margins leave room for; the grid
+   *  is reduced to `used`.
    *  `unknownConfigKey`: a key the heading settings or a paragraph style do
    *  not have (`headings`, `headings.balancing`, a heading level, a heading
    *  style, a paragraph style — and the same under
    *  `htmlViewer.overrides`), such as a misspelt `letterSpacng`; the
    *  engine ignores it. `value` is the key, `used` is empty, and
    *  `suggestion` names the key it is closest to, when one is close. */
-  kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'unknownConfigKey';
+  kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'unknownConfigKey' | 'cjkGridClamped';
   /** Where the value sits in the config, e.g.
    *  `orderedLists.levels[1].numberFormat`, `header.elements[0].fontFamily`,
    *  `headingStyles[2].layout.sideColumnPercent`. */

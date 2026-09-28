@@ -362,7 +362,7 @@ function paintLineRuns(
           : color;
       // A justified CJK line spreads its characters per segment.
       if (seg.tracking !== undefined) ctx.letterSpacing = `${tracking + seg.tracking}px`;
-      fillFlowText(ctx, seg.text, x, line.baseline + (seg.baselineShift ?? 0));
+      fillFlowText(ctx, seg.text, x + (seg.inkOffset ?? 0), line.baseline + (seg.baselineShift ?? 0));
       if (seg.tracking !== undefined) ctx.letterSpacing = `${tracking}px`;
       x += seg.width;
     }

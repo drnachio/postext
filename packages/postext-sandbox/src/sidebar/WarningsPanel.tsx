@@ -65,6 +65,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'alphaPdfOverflow':
     case 'calloutOverflow':
     case 'sideColumnPercentClamped':
+    case 'cjkGridClamped':
       return FileWarning;
     case 'designCyclicAnchor':
     case 'designDanglingAnchor':
@@ -180,6 +181,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsHeadingDesignCutTitle;
     case 'sideColumnPercentClamped':
       return labels.warningsSideColumnPercentClampedTitle;
+    case 'cjkGridClamped':
+      return labels.warningsCjkGridClampedTitle;
     case 'designCyclicAnchor':
       return labels.warningsDesignCyclicAnchorTitle;
     case 'designDanglingAnchor':
@@ -346,6 +349,8 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
         .replace('__mm__', payload.overflowMm.toFixed(1))}`;
     case 'sideColumnPercentClamped':
       return `${payload.path}: ${payload.value} — ${labels.warningsSideColumnPercentClampedDetail.replace('__used__', payload.used)}`;
+    case 'cjkGridClamped':
+      return `${payload.path}: ${payload.value} — ${labels.warningsCjkGridClampedDetail.replace('__used__', payload.used)}`;
     case 'designCyclicAnchor': {
       const where = slotWhere(payload);
       return `${where} · #${payload.elementId} — ${labels.warningsDesignCyclicAnchorDetail}`;

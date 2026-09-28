@@ -5,7 +5,7 @@ import { renderHeaderFooterSlot } from './headerFooter';
 import { renderResourceBlock } from './renderResourceBlock';
 import { paintSwatch } from './swatch';
 import { paintChip } from './chip';
-import { lineTrailingTracking } from '../lineInk';
+import { lineInkExtent, lineTrailingTracking } from '../lineInk';
 import { fillFlowText } from './verticalText';
 
 function pickSegmentFont(
@@ -129,7 +129,8 @@ function renderSegments(
   let spacing = tracking;
   for (const seg of segments) {
     if (seg.kind === 'space') {
-      x += justifiedSpaceWidth ?? seg.width;
+      // A Han–Latin space keeps the width the composer set.
+      x += seg.autospace ? seg.width : justifiedSpaceWidth ?? seg.width;
       continue;
     }
     if (seg.kind === 'math') {
@@ -173,7 +174,9 @@ function renderSegments(
       ctx.letterSpacing = `${segSpacing}px`;
       spacing = segSpacing;
     }
-    fillFlowText(ctx, seg.text, x, baseline + (seg.baselineShift ?? 0));
+    // A compressed CJK mark is painted before its box (`inkOffset`), along
+    // the line in either writing mode.
+    fillFlowText(ctx, seg.text, x + (seg.inkOffset ?? 0), baseline + (seg.baselineShift ?? 0));
     x += seg.width;
   }
   if (spacing !== tracking) ctx.letterSpacing = `${tracking}px`;
@@ -182,7 +185,8 @@ function renderSegments(
 /** Whether a segment paints differently from the block's plain text. */
 function segmentIsStyled(s: VDTLineSegment): boolean {
   return !!s.bold || !!s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined
-    || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined || s.tracking !== undefined;
+    || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined || s.tracking !== undefined
+    || s.inkOffset !== undefined || s.hangs !== undefined || s.autospace !== undefined;
 }
 
 function renderLine(
@@ -212,7 +216,10 @@ function renderLine(
     let naturalWidth = 0;
     let spaceCount = 0;
     for (const seg of segments) {
-      if (seg.kind === 'space') spaceCount++;
+      // A hung mark is outside the measure; a Han–Latin space keeps its
+      // width.
+      if (seg.hangs) continue;
+      if (seg.kind === 'space' && !seg.autospace) spaceCount++;
       else wordWidth += seg.width;
       naturalWidth += seg.width;
     }
@@ -226,10 +233,9 @@ function renderLine(
   // Centred / right alignment — math display blocks, and paragraph styles
   // set ragged from the left. Distribute the remaining space. The tracking
   // after the last glyph (`trailing`) is advance, not ink: left out, so the
-  // letters are centred or end on the edge (EF-153).
+  // letters are centred or end on the edge (EF-153); so are hung marks.
   if ((textAlign === 'center' || textAlign === 'right') && segments) {
-    let contentWidth = 0;
-    for (const seg of segments) contentWidth += seg.width;
+    const contentWidth = lineInkExtent(line, 0).width;
     const slack = Math.max(0, effectiveWidth - (contentWidth - trailing));
     const startX = line.bbox.x + (textAlign === 'center' ? slack / 2 : slack);
     renderSegments(ctx, segments, startX, line.baseline, style, undefined, tracking);
