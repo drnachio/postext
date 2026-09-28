@@ -13,7 +13,7 @@ import {
 import { Button, Collapsible, ConfirmPopover, EmptyState, IconButton, ListRow, Menu, MenuItem, MenuSeparator, PanelBody, PanelHeader, RowTag } from '../ui';
 import { isPresetHideable, partitionPresets } from '../presets/hidden';
 import { activeLocaleTag, bundleContentLocales, choosePresetOpen, presetLocales } from '../presets/locale';
-import { openBundleZip } from '../presets/zip';
+import { readBundleZipManifest } from '../presets/zip';
 import { localeDisplayName, localeShortTag } from '../presets/localeNames';
 import { useBlobObjectUrl } from '../panels/resources/ResourcePreview';
 import type { PresetSummary } from '../presets';
@@ -95,10 +95,11 @@ export function ProjectsPanel() {
     setPendingImport(null);
     const bytes = new Uint8Array(await file.arrayBuffer());
     // A bundle in several languages asks which one to open, starting from
-    // the one it is written in; any other opens as it is.
+    // the one it is written in; any other opens as it is. Only its
+    // manifest is inflated here: the import opens the archive once.
     let choice: ReturnType<typeof bundleContentLocales> = { locales: [], own: null };
     try {
-      choice = bundleContentLocales(openBundleZip(bytes).manifest);
+      choice = bundleContentLocales(readBundleZipManifest(bytes));
     } catch {
       // Not a zip: the import reports it.
     }
