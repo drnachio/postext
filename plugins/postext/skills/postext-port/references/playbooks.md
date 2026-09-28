@@ -183,6 +183,47 @@ Generate it from the metadata you kept while fetching each asset (link,
 author, licence), in a small paragraph style. Also give each resource a `note`
 credit line under its caption.
 
+### A10. Back-of-book index (analytical index, index of names)
+Port it whenever the source has one (`inventory.py` reports `index_pages`,
+`index_entries` or `index_page_references`); don't add one the source lacks
+unless asked. Postext computes the page numbers, so the port places marks in
+the text and never copies the printed numbers (document-format.md §10.5).
+
+- **Word XE fields, LaTeX `\index`:** `pandoc_to_postext.py` writes the marks
+  (levels, sort keys, bold = `main`, `see`/`seealso`, `|(`…`|)` ranges).
+- **IDML:** `idml_extract.py` turns page references into marks and writes
+  the topics' See / See also cross-references to `index-crossrefs.md`.
+  Page references that span (to end of story, next N paragraphs) come out as
+  one page: add the `range="end"` mark by hand.
+- **PDF with a printed index only** (the usual case):
+  1. `index_marks.py parse book.pdf --pages <index pages> > index.json`.
+     Levels come from leading dashes (`– sub`, `--sub`) or indents; bold
+     numbers become `main`, `34–37` a range, `f`/`t` suffixes (figure,
+     table) are kept as page refs. Check the entry count against the index
+     and fix odd paths in the JSON (a source typo shows up here).
+  2. Extract and curate the chapters first; marking comes last, because
+     it matches the final text.
+  3. `index_marks.py place index.json book.pdf my-book/chapters/es/*.md --in-place --page-fallback --crossrefs xrefs.md --report index-report.md`.
+     Each page reference is looked up on its PDF page (through the PDF's
+     page labels, or `--offset`) and placed after the same words in the
+     Markdown. On a real textbook chapter: ~80 % of references placed from
+     the term alone, ~97 % with `--page-fallback` (the page's first words
+     when the page does not contain the term), none on the wrong page.
+     Terms inside figures and tables cannot be marked: they stay in the
+     report.
+  4. Paste `xrefs.md` under the index heading, above `:::index`.
+  5. Work through `index-report.md`: mark the rest by hand or drop them.
+- **EPUB / HTML indexes** (entries linking to anchors): a small script that
+  puts `:index{term=…}` at each anchor's position.
+- **Layout:** an index chapter `# Índice analítico {style="index"}` +
+  `:::index` at the end, a heading style with a two-column `layout`, and
+  `index` typography measured from the source (configuration.md §19b). A
+  separate index of names: `index="names"` on its marks and its own chapter
+  with `:::index{index="names"}`.
+- **Check:** `lint_project.py` (unpaired ranges, unknown See targets, marks
+  after a colon or in captions, an index never printed), then render and
+  compare a few entries with the printed index.
+
 ---
 
 ## B. Text

@@ -55,6 +55,7 @@ y [muchos otros agentes](https://skills.sh).
   - un método de análisis del diseño;
   - un catálogo de casos de maquetación ya resueltos: partes con color
     propio, aperturas de capítulo, verso, glosas al margen, notas al pie,
+    índices analíticos,
     recuadros flotantes, partidos y anidados, originales vectoriales para
     imprenta, figuras con texto vivo, imágenes en celdas, tablas apaisadas,
     ediciones bilingües y más.
@@ -77,6 +78,7 @@ y [muchos otros agentes](https://skills.sh).
     <tr><td><code>extract_tables.py</code></td><td>Tablas de PDF → <code>TableModel</code> de Postext</td></tr>
     <tr><td><code>pandoc_to_postext.py</code></td><td>DOCX, PPTX, ODT, EPUB, HTML, LaTeX, Markdown, JATS, DocBook → capítulos en borrador, con los estilos de Word asignados a recuadros y estilos de párrafo</td></tr>
     <tr><td><code>idml_extract.py</code></td><td>IDML de InDesign → capítulos en borrador por estilo de párrafo, tablas e imágenes ancladas</td></tr>
+    <tr><td><code>index_marks.py</code></td><td>Reconstruye un índice analítico impreso como marcas <code>:index</code>: lee las páginas del índice en el PDF, busca cada término en su página y marca las mismas palabras en los capítulos</td></tr>
     <tr><td><code>fonts.py</code>, <code>images.py</code>, <code>convert_assets.py</code></td><td>Instanciar, subconjuntar, escalar y separar fuentes; pasar imágenes a sRGB, recortarlas y unirlas; convertir ilustraciones <code>.ai</code>/<code>.pdf</code> en SVG</td></tr>
     <tr><td><code>preset_kit.py</code></td><td>Crea el proyecto y su script generador, construye <code>preset.json</code> y empaqueta el <code>.postext</code></td></tr>
     <tr><td><code>lint_project.py</code></td><td>Detecta todo lo que el parser y el cargador hacen mal en silencio</td></tr>

@@ -23,7 +23,7 @@ geometry, media and scan pages, and names the next command.
 | EPUB | `pandoc_to_postext.py` | CSS + a rendered PDF, if one exists | chapters follow the spine |
 | HTML / web pages | `pandoc_to_postext.py`, or a small parser for one site's markup | screenshots / print CSS | strip navigation, boilerplate and embeds |
 | InDesign (.indd) | export **IDML** + print PDF, then `idml_extract.py` | the print PDF | IDML has styles and text but not the final positions |
-| LaTeX | `pandoc_to_postext.py` (keeps `$…$` math; a display in mid-paragraph stays glued to it, so the "where …" after it continues the paragraph) | the compiled PDF | custom macros need a pandoc Lua filter or manual care |
+| LaTeX | `pandoc_to_postext.py` (keeps `$…$` math and turns `\index{…}` into `:index` marks; a display in mid-paragraph stays glued to it, so the "where …" after it continues the paragraph) | the compiled PDF | custom macros need a pandoc Lua filter or manual care |
 | Markdown (GitHub/pandoc) | `pandoc_to_postext.py SOURCE --from markdown` | — | never copy CommonMark as is: tables, fences, `---` are not Postext (`[^n]` footnotes are) |
 | XML (JATS, DocBook, CNXML, TEI) | pandoc (`jats`, `docbook`) or a small ElementTree walker | the publisher's PDF | two passes: register ids, then write |
 | Plain text (Gutenberg…) | a small script: slice by heading regex, blank-line paragraphs | — | `_it_` → `*it*`; verse detection |
@@ -66,6 +66,9 @@ geometry, media and scan pages, and names the next command.
    continued over pages ("(cont.)"), dropping the repeated header.
 6. Read every chapter against the page images and correct it. The extractor
    gives a draft; the curated Markdown is the product.
+7. A printed back-of-book index (`inventory.py` lists `index_pages`): once
+   the chapters are final, `index_marks.py parse` the index pages and
+   `index_marks.py place` the marks into the chapters (playbooks A10).
 
 Gotchas:
 
@@ -117,6 +120,8 @@ Gotchas:
   `--notes inline` or `--notes drop` to change that. For real footnotes
   rewrite them as `[^n]` / `[^n]:` (playbooks B3). Alternatively, move them
   into side callouts in a `oneAndHalf` layout.
+- Word index entries (XE fields) become `:index` marks; add the index
+  chapter (`:::index`) yourself (playbooks A10).
 - Equations (OMML) arrive as TeX `$…$`. Check the output.
 - EMF/WMF images must be converted (Inkscape, LibreOffice):
   `soffice --headless --convert-to png file.emf`.
@@ -156,7 +161,8 @@ Gotchas:
 - `idml_extract.py markdown book.idml --map map.json --out draft`. You get
   text in story order with bold, italic, superscript and subscript runs,
   tables with spans and header rows as table resources, anchored images as
-  stubs with their link, and footnotes as endnotes.
+  stubs with their link, footnotes as endnotes, and index page references as
+  `:index` marks (See / See also cross-references in `index-crossrefs.md`).
 - IDML does not say where text lands on the printed page. Decide where boxes,
   side notes and figures go from the PDF: find each paragraph's first and last
   printed line there. A side box goes before the first paragraph that starts

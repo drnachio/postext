@@ -503,6 +503,29 @@ The keeper climbed the tower every evening.[^steps] The wind put out his candle.
 [^steps]: The cast-iron staircase has 112 steps; the tower was built in 1861.
 ```
 
+### 10.5 Back-of-book index: `:index[…]`, `:index{…}` (postext ≥ 1.7)
+
+**Regex:** `(?<![:\\]):index(?:\[((?:\\.|[^\]\\\n])*)\])?(?:\{([^}\n]*)\})?`. Marks are taken out of the Markdown before parsing, so they never change spans, line breaks or layout.
+- **`:index[text]`** prints `text` and indexes it under its own words (inline marks print, and are dropped from the entry). `:index[iron deficiency]{term="Anaemia!iron-deficiency"}` files it elsewhere.
+- **`:index{term="…"}`** prints nothing. It takes the page of the word **just before it on its line** (or, opening a line, the word after it). Glue it to the word: `valves:index{term="Heart!valves"}`. A line holding only marks is removed, so a marks-only line never splits a paragraph or adds space.
+- **Not after a colon:** `word::index{…}` is not read (the lookbehind guards `:::index`); write `word:index{…}:`.
+- **Where:** paragraphs, headings, list items, blockquotes, callouts, footnote definitions. In captions, table cells and design elements a mark prints as written; inside inline code, and after `\`, it is text.
+- **Attributes:** `term` levels split at `!` (`term="Heart!valves!mitral"`; a level may carry `*italics*`, sorted without them) · `sub` = one more level · `sort` = sort key of the last level (`sort="Saint Kilda"`) · `main` flag = principal page, set bold · `range="start"` / `range="end"` with the same term = `34–37` · `see="Target!level"` = cross-reference instead of a page (adds no page) · `seealso="…"` = after the pages (the mark's page counts) · `index="names"` = a separate index.
+- **Warnings:** `indexMarkInvalid` (no term), `indexRangeUnclosed` (start without end or vice versa: prints its one page), `indexSeeUnknown` (target is no entry).
+- **Printing:** `:::index` (main) / `:::index{index="names"}` where the index goes, usually a chapter of its own under a heading whose style sets a two-column `layout`. It expands into ordinary blocks: letter groups in the `locale`'s alphabetical order (accents file with the base letter, Spanish ñ after n), symbols then digits first, page labels (roman front matter included), consecutive pages joined (`12–14`), bold main pages kept apart, PDF links. It converges like `:::toc`; in a book laid out chapter by chapter the index chapter receives every chapter's marks. Styling: config `index` (configuration.md §19b).
+- **See marks with no text of their own:** put them on lines under the index heading, above `:::index`. A file or block of marks alone, with no text block to attach to, is dropped.
+
+```md
+Iron-deficiency :index[anaemia] is the most common kind.
+The pulse is taken at the wrist.:index{term="Pulse!radial" main}
+Heart failure:index{term="Heart!failure" range="start"} … :index{term="Heart!failure" range="end"}
+
+# Index {style="index"}
+
+:index{term="Cardiac insufficiency" see="Heart!failure"}
+:::index
+```
+
 ---
 
 ## 11. Math (MathJax TeX, `AllPackages`, so amsmath, mhchem etc.; )
@@ -640,7 +663,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 | Extra vertical space (scene break, room above a signature) | `:::space` or `:::space{lines=2}` on its own line. Extra blank lines do nothing. |
 | Front-matter roman page numbers | `:::numbering{format="lower-roman" startAt=1}` at the start, then `:::pagebreak{parity="odd"}` + `:::numbering{format="decimal" startAt=1}` before chapter 1. |
 | Table of contents | `# Contents {style="…" toc="false"}` then `:::toc`. |
-| Back-of-book index | Mark each indexed passage: `:index[word]` (prints the word, indexes it) or `:index{term="Main!sub"}` right after the word it refers to (prints nothing); `main` bolds the principal page, `range="start"`/`range="end"` span pages, `see="…"`/`seealso="…"` cross-refer, `index="names"` files a separate index. Then `# Index {style="…"}` and `:::index` (`:::index{index="names"}`). Never retype the source's page numbers. |
+| Back-of-book index | Mark each indexed passage: `:index[word]` (prints the word, indexes it) or `:index{term="Main!sub"}` right after the word it refers to (prints nothing); `main` bolds the principal page, `range="start"`/`range="end"` span pages, `see="…"`/`seealso="…"` cross-refer, `index="names"` files a separate index. Then `# Index {style="…"}` and `:::index` (`:::index{index="names"}`). Never retype the source's page numbers. Word XE fields and LaTeX `\index` convert automatically; IDML page references too; a printed index is rebuilt with `index_marks.py` (playbooks A10). |
 | Part divider | `:::part{number="I" title="…" palette="band=#hex"}` … `:::` at the top of the part's first chapter file. |
 | Keyboard keys, tags, word bank | `:chip[…]{style="…"}`. |
 | Colour legend | `:swatch{color="…"}`. |
@@ -663,3 +686,4 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 8. No headings end in brace text unless it is meant as attributes. No `:chip` in headings.
 9. Frontmatter appears only in the book's first chapter.
 10. No GFM tables, code fences, HTML, or `---` rules remain. Every `[^id]` marker has one `[^id]:` definition in its chapter, and none sits in a heading, caption or cell.
+11. Index marks sit in running text (not captions or cells), never right after a colon; ranges are paired; every `see`/`seealso` target is an entry; each index that has marks has its `:::index`.

@@ -53,7 +53,7 @@ with Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot, OpenCode and
   - a playbook per source format;
   - a design-analysis method;
   - a catalogue of solved layout cases: parts with their own colours,
-    chapter openers, verse, margin glosses, footnotes, floated/split/nested
+    chapter openers, verse, margin glosses, footnotes, back-of-book indexes, floated/split/nested
     boxes, vector print masters, live-text figures, pictures in table
     cells, landscape tables, bilingual editions, and more.
 - **Scripts** (Python and Node), described in the next section.
@@ -75,6 +75,7 @@ with Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot, OpenCode and
     <tr><td><code>extract_tables.py</code></td><td>PDF tables → Postext <code>TableModel</code></td></tr>
     <tr><td><code>pandoc_to_postext.py</code></td><td>DOCX, PPTX, ODT, EPUB, HTML, LaTeX, Markdown, JATS, DocBook → draft chapters, with Word styles mapped to callouts and paragraph styles</td></tr>
     <tr><td><code>idml_extract.py</code></td><td>InDesign IDML → draft chapters by paragraph style, tables and anchored images</td></tr>
+    <tr><td><code>index_marks.py</code></td><td>Rebuilds a printed back-of-book index as <code>:index</code> marks: reads the index pages of the PDF, finds each term on its page and marks the same words in the chapters</td></tr>
     <tr><td><code>fonts.py</code>, <code>images.py</code>, <code>convert_assets.py</code></td><td>Instance, subset, scale and split fonts; convert images to sRGB, trim and join them; turn <code>.ai</code>/<code>.pdf</code> artwork into SVG</td></tr>
     <tr><td><code>preset_kit.py</code></td><td>Scaffolds the project and its generator script, builds <code>preset.json</code>, packs the <code>.postext</code> file</td></tr>
     <tr><td><code>lint_project.py</code></td><td>Catches everything the parser and loader silently get wrong</td></tr>
