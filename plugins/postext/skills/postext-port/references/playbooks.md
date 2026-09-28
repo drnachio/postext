@@ -213,13 +213,23 @@ Insert the callout right after the paragraph it glosses. Anchor it on a text
 fragment of that paragraph and fail loudly when a fragment is not found.
 
 ### B3. Footnotes
-Postext has no footnotes. Choose one:
+Postext ≥ 1.6 sets real footnotes (document-format.md §10.4,
+configuration.md §19a):
 
-- endnotes: `^1^` markers plus `:::paragraphs{style="notes"}` at the end of
-  the section or chapter (the converters' default);
-- side notes in a `oneAndHalf` layout (a `span: "side"` callout after the
-  paragraph);
-- short notes set inline in parentheses.
+- write a `[^n]` marker after the cited word or punctuation and a
+  `[^n]: text` definition paragraph in the same chapter, under the citing
+  paragraph or all at the chapter's end. Numbers follow citation order;
+- markers work only in paragraphs, list items, blockquotes and callouts. A
+  note cited from a heading, caption or table cell: move the marker into
+  the text, or keep the note in the caption or cell itself;
+- a note never splits across columns. Long notes: `footnotes.placement:
+  'chapterEnd'`, or a callout;
+- match the source's size, leading, hanging indent and rule in `footnotes`;
+- the converters still emit endnotes (`^n^` markers plus
+  `:::paragraphs{style="notes"}`). Rewrite them as `[^n]` / `[^n]:` unless
+  the source really sets endnotes as a styled list;
+- margin notes stay side callouts in a `oneAndHalf` layout (a
+  `span: "side"` callout after the paragraph).
 
 Drop reference-number superscripts when the notes themselves are dropped.
 

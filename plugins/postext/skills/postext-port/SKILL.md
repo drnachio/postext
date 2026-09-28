@@ -54,7 +54,7 @@ public-domain or openly licensed sample instead.
 
 Postext Markdown is **not CommonMark**. These habits break a port:
 
-- **No pipe tables, code fences, footnotes, raw HTML, `---` rules or inline
+- **No pipe tables, code fences, raw HTML, `---` rules or inline
   images.** They print literally or vanish. Tables and figures are
   *resources* (JSON), cited with `:ref{id="…"}` or placed with
   `::resource{id="…"}`.
@@ -209,7 +209,8 @@ Read each chapter against the source pages and apply
 - figures cited with `:ref` in the sentence that first mentions them
   (`style="full"`, `case="lower"` to keep the authored form);
 - ornaments and inline tables with `::resource`;
-- footnotes as endnotes or side notes;
+- footnotes as `[^n]` markers + `[^n]: text` definitions (not in headings,
+  captions or cells), margin notes as side callouts;
 - verse one line per paragraph.
 
 Resources get descriptive ids, captions without the number, `note` credit

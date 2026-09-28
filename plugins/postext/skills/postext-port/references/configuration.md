@@ -98,6 +98,7 @@ Conversion at `page.dpi` (default 300):
 | `captionStyle` | CaptionStyleConfig | §17 | + per-type overrides |
 | `diagramStyle` | DiagramStyleConfig | `{singleInk:false}` | §18 |
 | `math` | MathConfig | §19 | |
+| `footnotes` | FootnotesConfig | §19a | `[^id]` notes: placement, numbering, type, rule |
 | `colorPalette` | ColorPaletteEntry[] | `[main-color #295AA3]` | §0 |
 | `locale` | LocaleTag (any BCP 47 tag: `'es'`, `'es-ES'`, `'pt-BR'`) | `'en-us'` | document language: hyphenation fallback, built-in resource types and table continuation strings, PDF `/Lang` |
 | `customFonts` | CustomFontFamily[] | — | §20 **do not write in preset.json config** |
@@ -105,8 +106,8 @@ Conversion at `page.dpi` (default 300):
 | `pdfGeneration` | PdfGenerationConfig | §21 | outlines, tagging, colour space |
 | `debug` | DebugConfig | §21 | editor overlays + warning toggles; no effect on output |
 
-Not configurable (no config exists — don't look for it): footnotes / endnotes / margin notes
-(`[^1]` unsupported; emulate with callouts or `span:'side'`), a blockquote's own family, size,
+Not configurable (no config exists — don't look for it): margin notes (emulate with
+`span:'side'` callouts; footnotes and endnotes are `footnotes`, §19a), a blockquote's own family, size,
 leading or alignment (quotes take the body's; colour, italics and indents are `bodyText.blockquote`),
 body drop caps (only design text elements have `dropCap`),
 table line height (= body leading ratio × table font size), heading hyphenation (off),
@@ -839,6 +840,37 @@ One em of a formula = surrounding text size × `fontSizeScale` (body size for di
 `pinLegacyMathSize(config)` from `postext/bundle` reproduces it, i.e. `fontSizeScale: 1.131` plus
 `marginTop`/`marginBottom` `0.7072em` for the default margins: em margins grow with the scale, so the scale alone
 moves the text after each display formula). Measure a source's maths against its body text before setting it.
+
+## 19a. `footnotes` — FootnotesConfig (postext ≥ 1.6)
+
+Notes cited with `[^id]` (document-format.md §10.4).
+
+| key | default | notes |
+|---|---|---|
+| `placement` | `'column'` | `'column'` = foot of the column holding the citing line (one-column: page foot); `'chapterEnd'` = every note of the chapter after its last block, in citation order |
+| `numbering` | `'chapter'` | restarts under each level-1 heading and each document; `'document'` runs on (book chapters carry it as `continuation.footnoteNumber`) |
+| `chapterEndAlign` | `'foot'` | `chapterEnd` only: `'foot'` = the notes that close a column sit at its foot; `'text'` = right under the text |
+| `fontSize` | `0.8em` | em/rem = body size; body family and weights |
+| `lineHeight` | `1.25em` | em = note size; notes are **off the baseline grid** (stack up from the column foot) |
+| `color` / `textAlign` | body | |
+| `hangingIndent` | `0` | turnover lines align past the number |
+| `spaceBetween` | `0` | between two notes |
+| `spaceAbove` | `0.5em` | text → rule; em = body size |
+| `spaceBelowRule` | `0.4em` | rule → first note |
+| `separator` | `{enabled:true, width:0.3, lineWidth:0.5pt, color:note colour}` | `width` = fraction of the column, from its left edge; `enabled:false` keeps the spaces |
+
+- The citing line and its notes share a column: a line whose notes do not fit moves on (orphan/widow
+  rules apply). The column's text area shrinks by the notes, so balancing counts only the text.
+- Several notes in a column stack in citation order under one rule. A bottom float placed after
+  the notes goes above them.
+- A note is **never split**; one taller than a column overflows it (`chapterEnd` for long notes).
+- Output: canvas, HTML, PDF (marker links to note; tagged PDF sets `Note` elements with `/ID`).
+  VDT: notes are `VDTBlock`s with `footnoteNote` in `page.floats`, rules in `page.footnoteAreas`.
+
+```json
+"footnotes": { "fontSize": {"value": 7.5, "unit": "pt"}, "lineHeight": {"value": 9.5, "unit": "pt"},
+  "hangingIndent": {"value": 0.8, "unit": "em"}, "separator": {"width": 0.25, "lineWidth": {"value": 0.4, "unit": "pt"}} }
+```
 
 ---------------------------------------------------------------------------------
 

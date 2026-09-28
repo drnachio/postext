@@ -1,0 +1,778 @@
+{
+  "schemaVersion": 1,
+  "slug": "names-and-subjects-indexes",
+  "sourceHash": "7d6a3f8726a6063853f41ea48439e00bf8521e6dc07ea9aa6a673b6e644541ec",
+  "engine": {
+    "postext": "1.7.0",
+    "postextPdf": "1.7.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-28T09:58:55.414Z",
+  "variants": {
+    "en": {
+      "hash8": "e57b1277",
+      "vdtHash": "abc2b6e55e034adc2d9612c30c36cc1d0b6a5e84",
+      "timings": {
+        "importMs": 243,
+        "fontsMs": 62,
+        "buildMs": 76,
+        "totalMs": 1174,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          155,
+          235
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Crimson Pro",
+          "sizePt": 10.600000000000001,
+          "leadingPt": 13.600000000000001
+        },
+        "families": [
+          "Bodoni Moda",
+          "Crimson Pro",
+          "Libre Franklin"
+        ],
+        "pages": 7,
+        "ownLines": 143
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1516,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 134572,
+          "alt": "Opening page 1: From Textura to Bodoni."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1516,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 161756,
+          "alt": "Page 2: Paris and Antwerp."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1516,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 165156,
+          "alt": "Page 3: Measuring type."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1516,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 157306,
+          "alt": "Page 4: Bodoni’s moderns."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "body",
+          "w": 1000,
+          "h": 1516,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 80348,
+          "alt": "Page 5."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "opener",
+          "w": 1000,
+          "h": 1516,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 40404,
+          "alt": "Opening page 6: Index of Names."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1516,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 41444,
+          "alt": "Opening page 7: Index of Subjects."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "names-and-subjects-indexes.pdf",
+        "bytes": 116574,
+        "pages": 7
+      },
+      "sandbox": {
+        "file": "names-and-subjects-indexes.postext",
+        "bytes": 16921
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].id",
+          "headingStyles[].layout",
+          "headingStyles[].layout.gutterWidth",
+          "headingStyles[].layout.layoutType",
+          "headingStyles[].marginBottom",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].italic",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "index",
+          "index.fontSize",
+          "index.groups",
+          "index.groups.color",
+          "index.groups.fontFamily",
+          "index.groups.fontSize",
+          "index.groups.fontWeight",
+          "index.indent",
+          "index.lineHeight",
+          "index.main",
+          "index.main.bold",
+          "index.rangeFormat",
+          "index.turnoverIndent",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "paragraphStyles[].textTransform"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "index",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 252,
+        "designElements": 11,
+        "directives": [
+          ":::paragraphs",
+          ":::index"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Bodoni Moda",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Bodoni Moda",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "back-of-book-index",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "section-geometry",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 4,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.81
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "7d751274",
+      "vdtHash": "b48ac6ef8eac5e87e51db729d46c10bd1c1c3a7b",
+      "timings": {
+        "importMs": 129,
+        "fontsMs": 51,
+        "buildMs": 68,
+        "totalMs": 949,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          155,
+          235
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Crimson Pro",
+          "sizePt": 10.600000000000001,
+          "leadingPt": 13.600000000000001
+        },
+        "families": [
+          "Bodoni Moda",
+          "Crimson Pro",
+          "Libre Franklin"
+        ],
+        "pages": 7,
+        "ownLines": 143
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1516,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 140986,
+          "alt": "Página de apertura 1: De la textura a Bodoni."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1516,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 162776,
+          "alt": "Página 2: París y Amberes."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1516,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 169368,
+          "alt": "Página 3: Medir la letra."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1516,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 164390,
+          "alt": "Página 4: Los modernos de Bodoni."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "body",
+          "w": 1000,
+          "h": 1516,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 101006,
+          "alt": "Página 5."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "opener",
+          "w": 1000,
+          "h": 1516,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 42884,
+          "alt": "Página de apertura 6: Índice onomástico."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1516,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 45032,
+          "alt": "Página de apertura 7: Índice de materias."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "names-and-subjects-indexes.pdf",
+        "bytes": 130360,
+        "pages": 7
+      },
+      "sandbox": {
+        "file": "names-and-subjects-indexes.postext",
+        "bytes": 17373
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].id",
+          "headingStyles[].layout",
+          "headingStyles[].layout.gutterWidth",
+          "headingStyles[].layout.layoutType",
+          "headingStyles[].marginBottom",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].italic",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "index",
+          "index.fontSize",
+          "index.groups",
+          "index.groups.color",
+          "index.groups.fontFamily",
+          "index.groups.fontSize",
+          "index.groups.fontWeight",
+          "index.indent",
+          "index.lineHeight",
+          "index.main",
+          "index.main.bold",
+          "index.rangeFormat",
+          "index.turnoverIndent",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "paragraphStyles[].textTransform"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "index",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 252,
+        "designElements": 11,
+        "directives": [
+          ":::paragraphs",
+          ":::index"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Bodoni Moda",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Bodoni Moda",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "back-of-book-index",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "section-geometry",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.73
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "the edition's images weigh 0.91 MB (warning at 0.9 MB for 7 pages)"
+          }
+        ]
+      }
+    }
+  }
+}

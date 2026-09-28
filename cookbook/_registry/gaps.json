@@ -213,37 +213,6 @@
       }
     }
   },
-  "automatic-index": {
-    "label": {
-      "en": "Automatic index",
-      "es": "Índice alfabético automático"
-    },
-    "aliases": {
-      "en": [
-        "index",
-        "back-of-book index",
-        "keyword index",
-        "page references"
-      ],
-      "es": [
-        "índice alfabético",
-        "índice analítico",
-        "índice de materias",
-        "referencias de página"
-      ]
-    },
-    "explanation": {
-      "en": "There is no index generator. Write the index by hand in a two-column paragraph style; the table of contents, by contrast, comes from :::toc.",
-      "es": "No hay generador de índices alfabéticos. Escribe el índice a mano en un estilo de párrafo a dos columnas; el índice de contenidos, en cambio, lo genera :::toc."
-    },
-    "docs": {
-      "slug": "document-format",
-      "heading": {
-        "en": "What is NOT supported",
-        "es": "Qué NO se soporta"
-      }
-    }
-  },
   "tab-stops": {
     "label": {
       "en": "Tab stops",

@@ -4,7 +4,7 @@
     lint_project.py <project> [--lang es] [--strict]
 
 Catches what the Postext parser and loader silently get wrong: CommonMark
-habits that print literally (pipe tables, code fences, footnotes, HTML,
+habits that print literally (pipe tables, code fences, HTML,
 `---` rules), blocks swallowed into the previous paragraph, line-start traps,
 unknown style/resource ids, malformed `::resource`, unbalanced fences, config
 keys that crash or silently reset (em units, H1 page breaks, `main-color`),
@@ -26,6 +26,8 @@ FENCE_RE = re.compile(r"^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$")
 ATTR_RE = re.compile(r"([A-Za-z_][A-Za-z0-9_-]*)(?:\s*=\s*(?:\"([^\"]*)\"|'([^']*)'|([^\s]+)))?")
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+)$")
 HEADING_ATTRS_RE = re.compile(r"\s+\{([^{}]*)\}\s*$")
+FOOTNOTE_MARK_RE = re.compile(r"\[\^([\w.:-]+)\]")
+FOOTNOTE_DEF_RE = re.compile(r"^\[\^([\w.:-]+)\]:")
 RESOURCE_RE = re.compile(r'^::resource\s*\{id="([^"]+)"\}\s*$')
 ORDERED_RE = re.compile(r"^\s*\d+[.)]\s+")
 UNORDERED_RE = re.compile(r"^\s*[-*+]\s+")
@@ -161,6 +163,8 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
     prev_nonblank = False
     prev_kind = ""
     in_math = False
+    fn_cited: dict[str, str] = {}
+    fn_defined: dict[str, str] = {}
     for i in range(n, len(lines)):
         raw = lines[i]
         line = raw.strip()
@@ -180,8 +184,6 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
             rep.error(where, "pipe tables are not supported: tables are resources (kind \"table\") cited with :ref / ::resource")
         if re.fullmatch(r"(-{3,}|\*{3,}|_{3,})", line):
             rep.error(where, "horizontal rules are not supported: use a paragraph style (asterism) or an ornament resource")
-        if re.search(r"\[\^[^\]]+\]", line):
-            rep.error(where, "footnotes are not supported: use ^n^ markers + a notes paragraph style, or side callouts")
         if re.search(r"</?[a-zA-Z][a-zA-Z0-9]*(\s[^>]*)?>", line) or re.search(r"&[a-z]+;|&#\d+;", line):
             rep.warn(where, "HTML tags/entities print literally: write the Unicode characters")
         if re.search(r"!\[[^\]]*\]\([^)]*\)", line):
@@ -281,6 +283,8 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                         rep.warn(where, "{numbered=…} is not a heading attribute: use a headingStyles entry with numbered:false")
             elif re.search(r"\{[^{}]*\}\s*$", title):
                 rep.warn(where, "trailing {…} that does not parse as attributes (a value holding } or a stray brace?)")
+            if FOOTNOTE_MARK_RE.search(title):
+                rep.warn(where, "[^id] in a heading prints as written: cite the note from the text")
             if ":chip[" in title:
                 rep.warn(where, ":chip is not processed in headings (prints literally)")
             if re.search(r"\*\*|(?<!\\)\*\w|(?<!\\)_\w", re.sub(r"\{[^{}]*\}\s*$", "", title)):
@@ -305,6 +309,13 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
             prev_nonblank, prev_kind = True, "para" if prev_kind != "list" else "para"
         # inline checks (lists, quotes, paragraphs)
         body = re.sub(r"\\.", "", line)
+        dm = FOOTNOTE_DEF_RE.match(body) if prev_kind == "para" else None
+        if dm:
+            if dm.group(1) in fn_defined:
+                rep.warn(where, f"footnote {dm.group(1)!r} is defined twice (the first definition wins)")
+            fn_defined.setdefault(dm.group(1), where)
+        for m in FOOTNOTE_MARK_RE.finditer(body[dm.end():] if dm else body):
+            fn_cited.setdefault(m.group(1), where)
         body_nomath = re.sub(r"\$[^$]*\$", "", body)
         if body.count("$") % 2 == 1:
             rep.warn(where, "odd number of unescaped $: a lone $ opens math (write \\$ for currency)")
@@ -333,11 +344,19 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                 rep.warn(where, f"swatch colour {col!r} is neither #hex nor a palette id (draws an empty outline)")
     for fname, ln in stack:
         rep.error(f"{name}:{ln}", f":::{fname} is never closed")
+    for fid, w in fn_cited.items():
+        if fid not in fn_defined:
+            rep.warn(w, f"footnote [^{fid}] has no [^{fid}]: definition in this chapter (prints over an empty note)")
+    for fid, w in fn_defined.items():
+        if fid not in fn_cited:
+            rep.warn(w, f"footnote [^{fid}]: is never cited (not set)")
 
 
 def check_snippet(where: str, text: str, res_ids: set[str], rep: Report) -> None:
     if re.search(r"(?<!\\)\$[^$]+\$", text or ""):
         rep.warn(where, "inline $math$ is not supported in captions, notes and table cells")
+    if re.search(r"\[\^[\w.:-]+\]", text or ""):
+        rep.warn(where, "[^id] in captions and table cells prints as written: cite the note from the text")
     for m in re.finditer(r":ref\{[^}]*id=\"([^\"]+)\"", text or ""):
         if m.group(1) not in res_ids:
             rep.error(where, f":ref to unknown resource {m.group(1)!r}")

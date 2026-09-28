@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 031 · Thesis back matter: appendix, glossary and index ═══
 // https://postext.dev/en/cookbook/thesis-back-matter
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Libertinus Serif, Serif Display and Sans (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Libertinus Serif, Serif Display and Sans (SIL OFL 1.1) · Needs postext ≥ 1.7.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, defaultResourceTypes,
 } from 'https://esm.sh/postext';
@@ -41,13 +41,12 @@ const headingStyles = () => [
 ];
 // One paragraph per entry, in :::paragraphs{style="…"}: the turnover lines hang, so the
 // first word of every entry stands clear at the left. Ragged, as APA asks of references,
-// and so never hyphenated (gotcha: ragged-no-hyphenation).
+// and so never hyphenated (gotcha: ragged-no-hyphenation). The index has its own settings.
 const entries = (id, size, lead, hang, extra) => ({ id, fontSize: pt(size),
   lineHeight: pt(lead), textAlign: 'left', hangingIndent: em(hang), ...extra });
 const paragraphStyles = () => [
   entries('term', 9.3, 12.4, 1), // the glossary: a bold term, then its definition
   entries('reference', 9.3, 12.4, 1.5, { spaceBetween: pt(2.4) }),
-  entries('entry', 9, 11.6, 2), // the index, written by writeIndex()
 ];
 // #endregion
 
@@ -113,6 +112,16 @@ const appendixTables = { ...defaultResourceTypes(LANG).find((type) => type.id ==
   id: 'table-a', numberingTemplate: 'A.{n}' }; // a copy of 'table'
 // #endregion
 
+// #region index: the pages of the :index marks, sorted under letters in the display face
+// Glossary definitions carry 'main' (bold numbers); runs of pages join as 171–72 (Chicago).
+// The heads stand on the entries' 11.6 pt pitch, 7.5 pt of space above them: 19 pt from the
+// last entry of a letter to the next letter's baseline, 11.6 pt from a letter to its first entry.
+const index = { fontFamily: TEXT, fontSize: pt(9), lineHeight: pt(11.6), color: col('ink'),
+  indent: em(1), turnoverIndent: em(2), rangeFormat: 'chicago',
+  groups: { fontFamily: DISPLAY, fontSize: pt(13), fontWeight: 400, color: col('ink'),
+    marginTop: pt(7.5) } };
+// #endregion
+
 const config = () => ({ // a factory, never a shared object (gotcha: config-cache-identity)
   colorPalette, header: chapterHeads, footer, layout: { layoutType: 'single' },
   page: { sizePreset: 'custom', width: mm(176), height: mm(250), dpi: 150, // B5
@@ -121,8 +130,8 @@ const config = () => ({ // a factory, never a shared object (gotcha: config-cach
     // 'Table 6.1' in roman and in ink, outside the palette's reach (gotcha: palette-skips-designs)
     referenceColor: col('ink'), referenceBold: false,
     firstLineIndent: mm(4.5), indentAfterHeading: false, minWordSpacing: 0.8, maxWordSpacing: 1.8 },
-  // Exact heading margins (snapToGrid: false) keep the index's letters close to their entries,
-  // and no lines are added above them; the chapter's heads measure whole grid lines.
+  // Exact heading margins (snapToGrid: false), no lines added above them; the chapter's heads
+  // measure whole grid lines.
   headings: { fontFamily: DISPLAY, fontWeight: 400, color: col('ink'), snapToGrid: false,
     balancing: { maxLinesPerHeading: 0 }, levels: [
       // The H1 break restated (gotcha: headings-drop-h1-break). span: 'page' (the styles inherit
@@ -131,10 +140,8 @@ const config = () => ({ // a factory, never a shared object (gotcha: config-cach
         advancedDesign: opener('Chapter'), breakBefore: { enabled: true, parity: 'odd' } },
       { level: 2, numberingTemplate: '{1}.{2}', fontSize: pt(14), lineHeight: pt(LEAD),
         marginTop: pt(LEAD * 1.5), marginBottom: pt(LEAD / 2) }, // three lines in all
-      // The index's letters carry their space in their own line, so both columns start level.
-      { level: 3, fontSize: pt(13), lineHeight: pt(21), marginTop: pt(0), marginBottom: pt(0) },
     ] },
-  headingStyles: headingStyles(), paragraphStyles: paragraphStyles(),
+  headingStyles: headingStyles(), paragraphStyles: paragraphStyles(), index,
   orderedLists: { marginTop: pt(LEAD / 2), marginBottom: pt(LEAD / 2) },
   unorderedLists: { bulletChar: '–' },
   resourceTypes: [...defaultResourceTypes(LANG), appendixTables], // tables 6.1… and A.1…
@@ -149,80 +156,6 @@ const config = () => ({ // a factory, never a shared object (gotcha: config-cach
     padding: { top: mm(2.5), right: mm(0), bottom: mm(0), left: mm(0) },
     body: { fontSize: pt(8), lineHeight: pt(10.5), firstLineIndent: pt(0), textAlign: 'left' } }],
 });
-
-// #region index: the index's page numbers, read off the laid-out pages
-// The Markdown lists the entries in :::paragraphs{style="index-terms"}, one a line, as 'term:
-// pattern' (a regular expression, in any case, from a word's start); two spaces: a sub-entry.
-const TERMS = /^:::paragraphs\{style="index-terms"\}\n([\s\S]*?)\n:::$/m;
-const KIND = { glossary: 'term', references: 'skip', index: 'skip' }; // other sections: 'text'
-// Every searched line in one string (of the glossary, only the bold terms), with the page and
-// kind of each character. A line ending in '-' runs into the next without it, a hard hyphen too
-// ('meta-' + 'analyses' reads 'metaanalyses'), so every hyphen in a pattern is optional.
-function pagesText(doc) {
-  let text = ''; const at = [];
-  const termOf = (line) => line.segments.filter((s) => s.bold).map((s) => s.text).join('');
-  const read = (lines, page, kind) => (lines ?? []).forEach((line) => {
-    const words = kind === 'term' ? termOf(line) : line.text; // the glossary: the term defined
-    const part = words.endsWith('-') ? words.slice(0, -1) : `${words} `; // 'expos-' + 'itory'
-    text += part;
-    at.push(...Array(part.length).fill({ page, kind }));
-  });
-  let kind = 'text';
-  for (const block of doc.blocks) {
-    if (block.headingLevel === 1) kind = KIND[block.headingStyleId] ?? 'text'; // a new section
-    if (kind !== 'skip') read(block.lines, doc.pages[block.pageIndex], kind);
-  }
-  for (const page of doc.pages) { // tables float: they hang on their page, not in doc.blocks
-    page.floats?.flatMap((float) => float.resourceBlock?.table?.cells ?? [])
-      .forEach((cell) => read(cell.lines, page, 'table'));
-  }
-  return { text, at };
-}
-// 'look-backs, *171*, 172, **174**': runs of text pages join (171–72, Chicago's short form); a
-// page that names the term only in a table is set in italics, the glossary's page in bold.
-const MARK = { text: '', table: '*', term: '**' };
-function locators(pattern, { text, at }) {
-  const pages = new Map(); // page number → 'text', 'table' or 'term'
-  const start = new RegExp(`(?<![\\p{L}\\p{N}])(?:${pattern.replaceAll('-', '-?')})`, 'giu');
-  for (const m of text.matchAll(start)) { // from the start of a word: 'índice' too
-    const { page: { pageNumberValue: n }, kind } = at[m.index];
-    if (pages.get(n) !== 'text') pages.set(n, kind); // the text outranks a table on its page
-  }
-  const runs = [];
-  for (const [n, kind] of [...pages].sort(([a], [b]) => a - b)) {
-    const run = runs.at(-1);
-    if (run?.kind === 'text' && kind === 'text' && n === run.to + 1) run.to = n;
-    else runs.push({ from: n, to: n, kind });
-  }
-  return runs.map(({ from, to, kind }) => {
-    const last = from % 100 && Math.trunc(from / 100) === Math.trunc(to / 100) ? to % 100 : to;
-    return `${MARK[kind]}${from === to ? from : `${from}–${last}`}${MARK[kind]}`;
-  }).join(', ');
-}
-// Sorts the entries, heads each letter and adds the numbers (none on the first pass).
-function writeIndex(markdown, found) {
-  const tree = [];
-  for (const line of TERMS.exec(markdown)[1].split('\n').filter((row) => row.trim())) {
-    const [, indent, term, pattern] = /^( *)(.+?): (.+)$/.exec(line);
-    (indent ? tree.at(-1).subs : tree).push({ term, pattern, subs: [] });
-  }
-  const byTerm = (a, b) => a.term.localeCompare(b.term, LANG);
-  const entry = ({ term, pattern }, lead = '') => {
-    const pages = found && locators(pattern, found);
-    if (found && !pages) console.warn(`Index: no page mentions “${term}”`);
-    return `${lead}${term}${pages ? `, ${pages}` : ''}`;
-  };
-  const out = []; let letter = '';
-  for (const main of tree.sort(byTerm)) {
-    const initial = main.term.normalize('NFD')[0].toUpperCase(); // 'Á' files under A
-    if (initial !== letter) out.push(`### ${(letter = initial)}`); // an H3 among the entries
-    // Two en spaces behind a zero-width space indent a sub-entry (gotcha: latin-subset): the
-    // font lacks an em space, which a plain PDF line sets at no width; a bare space is trimmed.
-    out.push(entry(main), ...main.subs.sort(byTerm).map((sub) => entry(sub, '\u200B\u2002\u2002')));
-  }
-  return markdown.replace(TERMS, () => `:::paragraphs{style="entry"}\n${out.join('\n\n')}\n:::`);
-}
-// #endregion
 
 // ─── 2 · Content ────────────────────────────────────────────────────────────
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
@@ -253,12 +186,10 @@ const FONTS = { 'Libertinus Serif': ['400', '400i', '700'], 'Libertinus Serif Di
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 // The thesis's sixth and last chapter opens on page 171, a recto.
 const continuation = { pageIndexOffset: 170, pageNumbering: { startAt: 171 }, headings: { h1: 5 } };
-const build = (source) => buildDocument({ markdown: source, resources, continuation }, config());
 await loadFonts(FONTS, markdown);
-// Two passes: the first lays the index out without numbers, the second writes them in. The
-// index is the last section and opens a page, so no page before it moves between passes.
-const draft = await buildWithFonts(() => build(writeIndex(markdown, null)), markdown);
-const doc = build(writeIndex(markdown, pagesText(draft)));
+// The index is laid out again until its page numbers settle, inside this one call.
+const doc = await buildWithFonts(
+  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
 showPages(doc, { title: 'Reading on Screens and Paper: the back matter' });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider }), `${RECIPE}.pdf`);
 
