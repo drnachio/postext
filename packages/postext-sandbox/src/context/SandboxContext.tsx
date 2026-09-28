@@ -74,6 +74,7 @@ import { computeWarnings } from '../warnings/compute';
 import type { Warning } from '../warnings/types';
 import { hasIndexedDB } from '../storage/blobStore';
 import { onUnavailableResourceImagesChange, unavailableResourceImages } from '../controls/resourceImages';
+import { onPdfFontChecksChange, pdfFontChecks } from '../controls/pdfFontWarnings';
 import { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES } from '../defaultMarkdown';
 import { withDefaultResourceTypes } from './defaultConfig';
 import { createPostextGuideConfig } from './guideConfig';
@@ -1984,10 +1985,11 @@ export function SandboxProvider({
   const chapterDocsRef = useRef<Map<string, ChapterDocument>>(new Map());
   const warningsCacheRef = useRef<{ key: unknown[]; value: Warning[] } | null>(null);
   /** Bumped whenever the set of unreadable image payloads changes (the
-   *  previews decode them after the layout): part of the warnings key. */
+   *  previews decode them after the layout), or a PDF generation brings
+   *  its font warnings: part of the warnings key. */
   const imageStatusRef = useRef(0);
   const getWarnings = (s: SandboxState): Warning[] => {
-    const key = [s.chapters, s.activeChapterId, s.config, s.resources, s.docVersion, s.canvasScope, s.activeViewport, imageStatusRef.current];
+    const key = [s.chapters, s.activeChapterId, s.config, s.resources, s.docVersion, s.canvasScope, s.activeViewport, imageStatusRef.current, pdfFontChecks()];
     const cached = warningsCacheRef.current;
     if (cached && cached.key.every((k, i) => k === key[i])) return cached.value;
     const chapterBook = composeBookMemo(s.chapters, s.activeChapterId);
@@ -2011,6 +2013,7 @@ export function SandboxProvider({
       unavailableImages: unavailableResourceImages(),
       book,
       chapterTitles: new Map(s.chapters.map((c) => [c.id, c.title])),
+      pdfFontChecks: pdfFontChecks(),
     });
     const value = whole ? all.filter((w) => w.chapterId === undefined || w.chapterId === s.activeChapterId) : all;
     warningsCacheRef.current = { key, value };
@@ -2058,18 +2061,23 @@ export function SandboxProvider({
 
   // An image payload found missing or undecodable (or readable again) after
   // the previews decoded it: list the change without waiting for an edit.
+  // A PDF generated with characters its fonts lack (and the like) lists
+  // them the same way.
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const off = onUnavailableResourceImagesChange(() => {
+    const refresh = () => {
       imageStatusRef.current++;
       clearTimeout(timer);
       timer = setTimeout(() => {
         warningsRef.current = getWarningsRef.current(stateRef.current);
         for (const cb of listenersRef.current) cb();
       }, WARNINGS_DEBOUNCE_MS);
-    });
+    };
+    const offImages = onUnavailableResourceImagesChange(refresh);
+    const offPdf = onPdfFontChecksChange(refresh);
     return () => {
-      off();
+      offImages();
+      offPdf();
       clearTimeout(timer);
     };
   }, []);

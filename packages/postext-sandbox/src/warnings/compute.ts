@@ -39,6 +39,7 @@ import {
   isRemovedCustomFontFamily,
 } from '../controls/fontLoader';
 import type { Warning, WarningPayload } from './types';
+import type { PdfFontCheck } from '../controls/pdfFontWarnings';
 import type { ComposedBook } from '../book/types';
 import { fromBookLine, fromBookOffset } from '../book/compose';
 import { frontmatterRange } from '../book/frontmatter';
@@ -858,11 +859,35 @@ export function computeWarnings(params: {
   book?: ComposedBook;
   /** Chapter titles by id (for `chapterFrontmatterIgnored`). */
   chapterTitles?: ReadonlyMap<string, string>;
+  /** The font warnings of the last PDF generated (see `pdfFontChecks`):
+   *  `missingGlyph`, `variableFontDefaultInstance`, `cffEmbeddedWhole`. */
+  pdfFontChecks?: readonly PdfFontCheck[];
 }): Warning[] {
-  const { markdown, config, doc, resources = [], storageUnavailable = false, unavailableImages, book, chapterTitles } = params;
+  const { markdown, config, doc, resources = [], storageUnavailable = false, unavailableImages, book, chapterTitles, pdfFontChecks = [] } = params;
   const warnings = computeDocumentWarnings({ markdown, config, doc, resources, storageUnavailable, unavailableImages, bookMetadata: book?.metadata });
+  warnings.push(...pdfFontWarnings(pdfFontChecks));
   if (!book) return warnings;
   return attributeToChapters(warnings, book, chapterTitles);
+}
+
+/** The Checks-panel entries of the last PDF's font warnings, one per face
+ *  and kind. They point at no place in the text. */
+export function pdfFontWarnings(checks: readonly PdfFontCheck[]): Warning[] {
+  const out: Warning[] = [];
+  const seen = new Set<string>();
+  for (const check of checks) {
+    const id = `pdf-${check.kind}-${check.family}-${check.weight}-${check.style}`;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    const face = { family: check.family, weight: check.weight, style: check.style };
+    const payload: WarningPayload = check.kind === 'missingGlyph'
+      ? { kind: 'missingGlyph', ...face, characters: [...check.characters] }
+      : check.kind === 'variableFontDefaultInstance'
+        ? { kind: 'variableFontDefaultInstance', ...face, defaultWeight: check.defaultWeight }
+        : { kind: 'cffEmbeddedWhole', ...face, bytes: check.bytes };
+    out.push({ id, payload });
+  }
+  return out;
 }
 
 /** Add chapter attribution to every located warning and flag later chapters

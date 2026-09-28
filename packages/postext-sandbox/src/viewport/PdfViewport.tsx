@@ -27,6 +27,7 @@ import { buildPdfResourceBytes } from './pdfResourceBytes';
 import { PdfPreview } from './PdfPreview';
 import { PdfToolbar } from './PdfToolbar';
 import { createPdfFontProvider } from './pdfFontProvider';
+import { isPdfFontCheck, setPdfFontChecks, type PdfFontCheck } from '../controls/pdfFontWarnings';
 import { useFloatingToolbarShell } from './useFloatingToolbarShell';
 
 /** The PDF tab is the one place the whole book can be rendered as one
@@ -210,6 +211,8 @@ export function PdfViewport() {
       bytesSpan.end({ resources: resourceBytes.size });
       renderPhaseRef.current = null;
       const renderSpan = perfSpan('pdf.render', { pages: pageCount });
+      // Characters a face lacks, and the like, go to the Checks panel.
+      const fontChecks: PdfFontCheck[] = [];
       const bytes = await pdfWorker().render(docs, {
         fontProvider: providerRef.current,
         pageNegative: debug.pageNegative.enabled,
@@ -217,6 +220,10 @@ export function PdfViewport() {
         colorSpace: pdfGen.forceColorSpace ? pdfGen.colorSpace : 'rgb',
         accessible: pdfGen.accessible,
         resourceBytes,
+        onWarning: (w) => {
+          if (isPdfFontCheck(w)) fontChecks.push(w);
+          else if (w.kind === 'fontFallback') console.warn(w.message);
+        },
         onProgress: (p) => {
           setRenderProgress(p);
           if (p.phase !== renderPhaseRef.current) {
@@ -226,6 +233,7 @@ export function PdfViewport() {
         },
       });
       renderSpan.end({ kb: Math.round(bytes.byteLength / 1024) });
+      setPdfFontChecks(fontChecks);
       total.end({ pages: pageCount, kb: Math.round(bytes.byteLength / 1024) });
       bytesRef.current = bytes;
       const copy = bytes.slice();
