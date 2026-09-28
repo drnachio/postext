@@ -988,8 +988,11 @@ function renderDesignBoxBlock(block: VDTDesignBoxBlock): string {
   return block.clip ? clipToOutline(html, block.clip) : html;
 }
 
-/** Image block (e.g. a callout icon): `<img>` from `resourceImageUrl`, or a
- *  neutral placeholder box when the host cannot supply the image. */
+/** Image block (a callout icon, a picture a design draws): `<img>` from
+ *  `resourceImageUrl` — with its alternative text when it is content
+ *  (`VDTDesignImageBlock.altText`), else `alt=""` and
+ *  `role="presentation"` — or a neutral placeholder box when the host
+ *  cannot supply the image. */
 function renderDesignImageBlock(block: VDTDesignImageBlock, options?: HtmlPaint): string {
   const { x, y, width, height } = block.bbox;
   if (width <= 0 || height <= 0) return '';
@@ -997,8 +1000,9 @@ function renderDesignImageBlock(block: VDTDesignImageBlock, options?: HtmlPaint)
   if (url) {
     const svg = block.imageKind === undefined ? undefined : block.imageKind === 'svg';
     const filter = options ? inkFilterDecl(options, svg, url) : '';
+    const alt = block.altText ? `alt="${esc(block.altText)}"` : 'alt="" role="presentation"';
     return (
-      `<img src="${esc(url)}" alt="" style="position:absolute;` +
+      `<img src="${esc(url)}" ${alt} style="position:absolute;` +
       `left:${x}px;top:${y}px;width:${width}px;height:${height}px;${filter}" />`
     );
   }

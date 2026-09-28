@@ -427,6 +427,7 @@ function resolveImageElement(el: DesignImageElement, idx: number): ResolvedDesig
     },
     resourceId: el.resourceId,
     ...(el.reserve === false ? { reserve: false } : {}),
+    ...(el.decorative ? { decorative: true } : {}),
   };
 }
 

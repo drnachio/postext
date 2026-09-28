@@ -7,18 +7,23 @@ import type {
   VDTDesignBoxStyle,
 } from 'postext';
 import { setCharacterSpacing } from 'pdf-lib';
-import { drawEmbeddedResource, type ResourceImageMap } from './renderResourceBlock';
-import { tagArtifact, tagContent, type ArtifactSpec, type StructElem } from './tagging';
+import { drawEmbeddedResource, figureLayout, type ResourceImageMap } from './renderResourceBlock';
+import { tagArtifact, tagContent, type ArtifactSpec, type StructAttrs, type StructElem } from './tagging';
 
 /** How an accessible render tags a design slot: its text goes to the
  *  element `text()` returns (created on first use), or counts as an
  *  artifact when `text` is absent (running headers / footers) or the text
  *  block is pagination furniture (`artifact`: a split callout's repeated
- *  title and continuation marker); rules, boxes and images are always
- *  artifacts of class `artifact`. */
+ *  title and continuation marker). A picture with alternative text
+ *  (`VDTDesignImageBlock.altText`, #213) is a `Figure` that `figure`
+ *  creates — read after the slot's text element, `after`, when the slot
+ *  has text; without `figure` (running heads) it stays an artifact. Rules,
+ *  boxes and pictures without alternative text are artifacts of class
+ *  `artifact`. */
 export interface SlotMark {
   text?: () => StructElem;
   artifact: ArtifactSpec;
+  figure?: (alt: string, attributes: StructAttrs['attributes'], after: StructElem | undefined) => StructElem;
 }
 
 function tagSlotText(ctx: PageCtx, mark: SlotMark | undefined, block: VDTDesignTextBlock): void {
@@ -233,6 +238,16 @@ export function renderHeaderFooterSlot(
   for (const block of slot.blocks) {
     if (block.kind === 'text') {
       renderTextBlock(ctx, block, fontCache, mark);
+      continue;
+    }
+    if (block.kind === 'image' && block.altText && mark?.figure) {
+      // A picture that is content: a `Figure` with its alternative text,
+      // read after the slot's own text (a chapter's plate after its
+      // heading).
+      const hasText = !!mark.text && slot.blocks.some((b) => b.kind === 'text' && !b.artifact);
+      const { x, y, width, height } = block.bbox;
+      tagContent(ctx, mark.figure(block.altText, figureLayout(ctx, x, y, width, height), hasText ? mark.text!() : undefined));
+      renderImageBlock(ctx, block, images);
       continue;
     }
     if (block.kind === 'box' && block.clip) {

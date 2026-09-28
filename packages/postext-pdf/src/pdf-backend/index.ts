@@ -426,7 +426,13 @@ function renderPage(
       vdtPage.openerBand,
       fontCache,
       resourceCtx.images,
-      structure ? { text: openerTextElem(vdtPage, structure), artifact: { type: 'Layout' } } : undefined,
+      structure
+        ? {
+            text: openerTextElem(vdtPage, structure),
+            artifact: { type: 'Layout' },
+            figure: (alt, attributes, after) => structure.designFigure(alt, attributes, after),
+          }
+        : undefined,
     );
   }
 

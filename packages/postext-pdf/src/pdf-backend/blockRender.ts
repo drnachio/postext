@@ -463,7 +463,9 @@ export function renderBlock(
       block.designOverlay,
       fontCache,
       resourceCtx?.images,
-      textElem ? { text: textElem, artifact: { type: 'Layout' } } : undefined,
+      textElem && structure
+        ? { text: textElem, artifact: { type: 'Layout' }, figure: (alt, attributes, after) => structure.designFigure(alt, attributes, after) }
+        : undefined,
     );
     if (targetPage !== undefined && linkRegistry) {
       const contents = block.tocPart ? `${block.tocPart.number} ${block.tocPart.title}`.trim() : block.lines.map((l) => l.text).join(' ');

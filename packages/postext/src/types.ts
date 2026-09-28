@@ -3262,6 +3262,12 @@ export interface DesignImageElement {
    *  `# Chapter I {style="opener" vignette="log"}`. An id that resolves
    *  empty or to no resource draws nothing. */
   resourceId: string;
+  /** A picture that is decoration only (an ornament, a band): it carries
+   *  no alternative text into the output even when its resource has one.
+   *  Otherwise the resource's `altText`, else its caption, becomes the
+   *  picture's `alt` in HTML and a `Figure` with `/Alt` in a tagged PDF.
+   *  Default `false`. */
+  decorative?: boolean;
 }
 
 export type DesignElement = DesignTextElement | DesignRuleElement | DesignBoxElement | DesignImageElement;

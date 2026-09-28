@@ -1031,6 +1031,9 @@ export interface SandboxLabels {
   headerFooterImageMissing: string;
   headerFooterImageUpload: string;
   headerFooterImageEdit: string;
+  /** An image element that is decoration only (`decorative`, #213). */
+  headerFooterImageDecorative: string;
+  headerFooterImageDecorativeTooltip: string;
   headerFooterElementBoxBackgroundColor: string;
   headerFooterElementBoxBorderColor: string;
   headerFooterElementBoxBorderWidth: string;

@@ -105,6 +105,7 @@ function imagePrimitiveToBlock(prim: ResolvedImagePrimitive): VDTDesignImageBloc
     ...(prim.imageKind ? { imageKind: prim.imageKind } : {}),
     ...(prim.pdfFileId ? { pdfFileId: prim.pdfFileId } : {}),
     ...(prim.upright ? { upright: true } : {}),
+    ...(prim.altText ? { altText: prim.altText } : {}),
   };
 }
 

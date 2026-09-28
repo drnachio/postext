@@ -662,7 +662,7 @@ function paintLineRuns(
 
 /** Layout attributes of a figure: its bounding box on the page (PDF user
  *  space, bottom-up) and block placement. */
-function figureLayout(ctx: PageCtx, xPx: number, yPx: number, wPx: number, hPx: number): StructAttrs['attributes'] {
+export function figureLayout(ctx: PageCtx, xPx: number, yPx: number, wPx: number, hPx: number): StructAttrs['attributes'] {
   const { scale, pageHeightPt } = ctx;
   const rect: [number, number, number, number] = [
     xPx * scale,

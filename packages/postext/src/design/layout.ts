@@ -25,6 +25,7 @@ import { resolveDesignLineHeight } from '../defaults/headerFooter';
 import { createBoundingBox, pictureTraits, type BoundingBox } from '../vdt';
 import { buildFontString } from '../measure';
 import { graphemeCount } from '../measure/graphemes';
+import { parseInlineSnippetSpans } from '../parse/inlineSnippet';
 import { hyphenateText, withoutSlashJoints } from '../hyphenate';
 import { BREAKING_SPACE_RUNS_SPLIT_RE, NO_BREAK_SPACES, isBreakingSpaceRun } from '../measure/spaces';
 import {
@@ -145,6 +146,23 @@ export interface ResolvedImagePrimitive extends ResolvedElementGeometry {
    *  it was sized for the picture turned back upright (see
    *  `DesignFrames.upright`). */
   upright?: true;
+  /** The picture's alternative text: its resource's `altText`, else its
+   *  caption as plain text; absent for a `decorative` element or a
+   *  resource with neither. */
+  altText?: string;
+}
+
+/** The alternative text of a resource drawn by a design (#213): its
+ *  `altText`, else its caption as plain text (inline formatting read,
+ *  forced line breaks as spaces). Undefined when it has neither. */
+export function designImageAltText(resource: Resource | undefined): string | undefined {
+  const alt = resource?.altText?.trim();
+  if (alt) return alt;
+  const caption = resource?.caption?.trim();
+  if (!caption) return undefined;
+  const text = parseInlineSnippetSpans(caption).map((s) => s.text).join('')
+    .replace(/\u2028/g, ' ').replace(/\s+/g, ' ').trim();
+  return text || undefined;
 }
 
 export type ResolvedPrimitive =
@@ -1427,7 +1445,16 @@ function layoutImageElement(
     ...(resource?.bitmap?.format ? { format: resource.bitmap.format } : {}),
     ...pictureTraits(resource, fileId),
     ...(upright ? { upright: true as const } : {}),
+    ...altTextOf(el, resource),
   };
+}
+
+/** The `altText` field of an image primitive: none for a decorative
+ *  element (see `DesignImageElement.decorative`). */
+function altTextOf(el: ResolvedDesignImageElement, resource: Resource | undefined): { altText?: string } {
+  if (el.decorative) return {};
+  const altText = designImageAltText(resource);
+  return altText ? { altText } : {};
 }
 
 function layoutBoxElement(

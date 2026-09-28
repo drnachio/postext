@@ -1938,6 +1938,8 @@
     "headerFooterImageMissing": "__id__ (no existe)",
     "headerFooterImageUpload": "Subir una imagen",
     "headerFooterImageEdit": "Abrir en el panel de recursos",
+    "headerFooterImageDecorative": "Decorativa",
+    "headerFooterImageDecorativeTooltip": "Solo adorno: la imagen no aporta texto alternativo al HTML ni al PDF etiquetado, aunque su recurso lo tenga. Si no, el texto alternativo del recurso, o su pie cuando no lo tiene, describe la imagen a un lector de pantalla.",
     "headerFooterElementBoxBackgroundColor": "Fondo",
     "headerFooterElementBoxBorderColor": "Color del borde",
     "headerFooterElementBoxBorderWidth": "Grosor del borde",

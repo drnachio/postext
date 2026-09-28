@@ -1075,6 +1075,12 @@ An `image` element draws a bitmap or SVG resource of the document — a publishe
       <td>Id of a bitmap or SVG <code>Resource</code> of the document. It may hold placeholders, <code>&#123;attr.&lt;key&gt;&#125;</code> among them, filled in per heading, part or page.</td>
     </tr>
     <tr>
+      <td><code>decorative</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>The picture is decoration only (an ornament, a band): it gives no alternative text to the output even when its resource has one (see below).</td>
+    </tr>
+    <tr>
       <td><code>placement</code></td>
       <td><code>ElementPlacement</code></td>
       <td>—</td>
@@ -1096,6 +1102,8 @@ An `image` element draws a bitmap or SVG resource of the document — a publishe
 </table>
 
 The PDF backend embeds the resource like a figure (an SVG with a print master uses it); the HTML viewer resolves it through <code>resourceImageUrl</code>.
+
+A picture a design draws is content when its resource describes it: the resource's `altText`, else its caption as plain text, goes into the VDT (`VDTDesignImageBlock.altText`), becomes the `alt` of its `<img>` in HTML and a `Figure` with `/Alt` in a tagged PDF, read right after the text of its design (a chapter's plate after the chapter's heading). A picture whose resource has neither, and one marked `decorative`, is decoration: `alt=""` with `role="presentation"`, and an artifact in the PDF. A running head's or footer's picture is an artifact of the page in the PDF whatever its text, since it repeats on every page; the HTML still gives its `alt`.
 
 ### Element placement
 

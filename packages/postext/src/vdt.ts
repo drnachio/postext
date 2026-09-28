@@ -1189,6 +1189,13 @@ export interface VDTDesignImageBlock {
    *  height there, its `height` the picture's width. Renderers draw the
    *  picture turned back upright, filling the box. */
   upright?: true;
+  /** The picture's alternative text, for a picture that is content (#213):
+   *  its resource's `altText`, else its caption as plain text. HTML gives
+   *  it as the `<img>`'s `alt`, a tagged PDF as the `/Alt` of a `Figure`.
+   *  Absent for a `decorative` design element, for a resource with neither
+   *  text, and for callout icons: such a picture is decoration (`alt=""`,
+   *  an artifact). */
+  altText?: string;
 }
 
 export type VDTDesignBlock =

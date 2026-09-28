@@ -926,6 +926,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     headerFooterImageMissing: t("headerFooterImageMissing"),
     headerFooterImageUpload: t("headerFooterImageUpload"),
     headerFooterImageEdit: t("headerFooterImageEdit"),
+    headerFooterImageDecorative: t("headerFooterImageDecorative"),
+    headerFooterImageDecorativeTooltip: t("headerFooterImageDecorativeTooltip"),
     headerFooterElementBoxBackgroundColor: t("headerFooterElementBoxBackgroundColor"),
     headerFooterElementBoxBorderColor: t("headerFooterElementBoxBorderColor"),
     headerFooterElementBoxBorderWidth: t("headerFooterElementBoxBorderWidth"),

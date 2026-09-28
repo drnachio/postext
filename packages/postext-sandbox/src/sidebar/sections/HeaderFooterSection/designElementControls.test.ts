@@ -38,6 +38,20 @@ describe('design element controls', () => {
     expect(render('part', [box])).not.toContain(DEFAULT_LABELS.headerFooterElementReserve);
   });
 
+  it('offers the decorative switch on image elements, on when the element says so (#213)', () => {
+    const image = (extra: Partial<DesignElement> = {}): DesignElement => ({
+      kind: 'image', id: 'i', resourceId: 'plate', placement: { anchor: { to: 'container', edge: 'top-left' } }, ...extra,
+    } as DesignElement);
+    const label = DEFAULT_LABELS.headerFooterImageDecorative;
+    expect(render('heading', [image()])).toContain(label);
+    expect(render('header', [image()])).toContain(label);
+    expect(render('heading', [text(), box])).not.toContain(label);
+    // Set, the row reads as changed from its default.
+    const changed = (html: string) => html.includes(`${label}<span class="sr-only"> (`);
+    expect(changed(render('heading', [image()]))).toBe(false);
+    expect(changed(render('heading', [image({ decorative: true } as Partial<DesignElement>)]))).toBe(true);
+  });
+
   it('shows the inline-marks switch and the outline width, and the outline details once it is set', () => {
     const plain = render('header', [text()]);
     expect(plain).toContain(DEFAULT_LABELS.headerFooterElementInlineMarks);

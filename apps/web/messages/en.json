@@ -1475,6 +1475,8 @@
     "headerFooterImageMissing": "__id__ (not found)",
     "headerFooterImageUpload": "Upload an image",
     "headerFooterImageEdit": "Open in the Resources panel",
+    "headerFooterImageDecorative": "Decorative",
+    "headerFooterImageDecorativeTooltip": "Decoration only: the picture gives no alternative text to HTML or a tagged PDF, even when its resource has one. Otherwise the resource's alt text, else its caption, describes the picture to a screen reader.",
     "headerFooterElementBoxBackgroundColor": "Background",
     "headerFooterElementBoxBorderColor": "Border color",
     "headerFooterElementBoxBorderWidth": "Border width",
