@@ -26,6 +26,11 @@ import { lineInkExtent, lineTrailingTracking } from './lineInk';
 import { CHARACTER_GRID_COLOR, cjkGridCells, type CjkGridCells } from './pipeline/cjkGrid';
 import { renderLangOf } from './locale';
 import { hasCJK } from './measure/cjk';
+import { DEFAULT_CENTRAL_BASELINE } from './vdt';
+import type { CjkRegion } from './types';
+import { segmentOrientation, verticalRuns, type ForcedOrientation } from './writingMode';
+import { graphemesOf } from './measure/graphemes';
+import { fontFamilyOf } from './measure/vertical';
 
 /**
  * Declarations of every box of CJK text measured with no punctuation
@@ -132,6 +137,17 @@ interface HtmlPaint extends RenderHtmlOptions {
    *  rendered on its own — is set as plain text in its link colour, not as
    *  a link to nowhere (the PDF backend drops such a link the same way). */
   linkTargets?: ReadonlySet<string>;
+  /** Set while a vertical page's flow is rendered: its text lines are
+   *  set down the column (see {@link renderVerticalLine}). */
+  vertical?: VerticalHtml;
+}
+
+/** What vertical lines need: the Chinese region, the central axis of each
+ *  family (`VDTFlowFrame.centralBaselines`), and `cjk.uprightDigits`. */
+interface VerticalHtml {
+  region: CjkRegion;
+  axes?: Record<string, number>;
+  uprightDigits: number;
 }
 
 /**
@@ -601,6 +617,207 @@ function renderLine(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<string
 }
 
 // ---------------------------------------------------------------------------
+// Vertical text (`VDTPage.flow`)
+//
+// A vertical page's flow is rendered in a box turned a quarter turn
+// clockwise (`pt-flow`, see `renderPageDetailed`), so boxes, rules,
+// pictures, turned resource blocks and everything else of the flow land on
+// the sheet as the canvas paints them. Each text line is turned back
+// upright inside it — one box per line, the line's physical rectangle — and
+// set with `writing-mode: vertical-rl`: the browser stands Chinese
+// characters upright, takes the fonts' vertical forms and sets Latin words
+// sideways. Every segment is placed where the layout put it along the line
+// (`top`), its em boxes centred on the column's central axis; tate-chu-yoko
+// cells are `text-combine-upright: all`, `:upright` and `:sideways` runs
+// `text-orientation`.
+// ---------------------------------------------------------------------------
+
+/** The central axis of a font (em above the baseline). */
+function centralOf(v: VerticalHtml, fontString: string): number {
+  return v.axes?.[fontFamilyOf(fontString)] ?? DEFAULT_CENTRAL_BASELINE;
+}
+
+/** Escaped text of a vertical run, with its tate-chu-yoko cells and the
+ *  orientation its author forced. */
+function verticalTextHtml(text: string, v: VerticalHtml, orient?: ForcedOrientation): string {
+  if (orient === 'tcy') return `<span style="text-combine-upright:all;">${esc(text)}</span>`;
+  if (orient === 'upright') return `<span style="text-orientation:upright;">${esc(text)}</span>`;
+  if (orient === 'sideways') return `<span style="text-orientation:sideways;">${esc(text)}</span>`;
+  if (v.uprightDigits === 0 || !/[0-9]/.test(text)) return esc(text);
+  const runs = verticalRuns(graphemesOf(text), v.region, v.uprightDigits);
+  if (!runs.some((r) => r.glyph.orient === 'tcy')) return esc(text);
+  return runs.map((r) => (r.glyph.orient === 'tcy' ? `<span style="text-combine-upright:all;">${esc(r.text)}</span>` : esc(r.text))).join('');
+}
+
+/**
+ * A box of the turned flow (`left`, `top`, `width` along the line,
+ * `height` across it) holding a box turned back upright, set vertically:
+ * `content` is placed inside that one with physical `top` (along the line)
+ * and `right` (from the box's physical right edge, the flow's top).
+ */
+function uprightBox(left: number, top: number, width: number, height: number, decl: string, content: string, attrs = ''): string {
+  return (
+    `<div${attrs ? ` ${attrs}` : ''} style="position:absolute;left:${left.toFixed(3)}px;top:${top.toFixed(3)}px;width:${Math.max(0, width).toFixed(3)}px;height:${height.toFixed(3)}px;">` +
+    uprightInner(width, height, decl, content) +
+    `</div>`
+  );
+}
+
+/** The box of {@link uprightBox} turned back upright: `height` wide on the
+ *  sheet, `width` tall, set vertically. */
+function uprightInner(width: number, height: number, decl: string, content: string): string {
+  return (
+    `<div style="position:absolute;left:0;top:0;width:${height.toFixed(3)}px;height:${Math.max(0, width).toFixed(3)}px;` +
+    `transform:translate(0,${height.toFixed(3)}px) rotate(-90deg);transform-origin:0 0;` +
+    `writing-mode:vertical-rl;text-orientation:mixed;${decl}">${content}</div>`
+  );
+}
+
+/** A run of vertical text at `at` along its box, its em boxes centred
+ *  `axis` px from the box's flow top (the physical right edge). */
+function verticalSpan(at: number, axis: number, inner: string, decl = ''): string {
+  const lh = Math.max(0, 2 * axis);
+  return `<span style="position:absolute;top:${at.toFixed(3)}px;right:0;line-height:${lh.toFixed(3)}px;white-space:pre;${decl}">${inner}</span>`;
+}
+
+/** A body line of a vertical page: its text segments down an upright box,
+ *  its formulas, swatches and chips sideways where the canvas paints them
+ *  (see the section comment). */
+function renderVerticalLine(line: VDTLine, block: VDTBlock, v: VerticalHtml, targets?: ReadonlySet<string>): string {
+  const lineTracking = (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0);
+  const trailing = lineTrailingTracking(line, lineTracking);
+  const lineIndent = line.bbox.x - block.bbox.x;
+  const effectiveWidth = block.bbox.width - lineIndent;
+  const baseline = line.baseline - line.bbox.y;
+  const blockFont = quoteFontString(block.fontString);
+  const axisOf = (fontString: string, shift = 0): number => baseline + shift - centralOf(v, fontString) * extractFontSizePx(fontString);
+  const inner: string[] = [];
+  const sideways: string[] = [];
+  const segs = line.segments && line.segments.length > 0
+    ? line.segments
+    : [{ kind: 'text', text: line.text, width: line.bbox.width } as VDTLineSegment];
+  let wordWidth = 0;
+  let spaceCount = 0;
+  for (const seg of segs) {
+    if (seg.hangs) continue;
+    if (seg.kind === 'space' && !seg.autospace) spaceCount++;
+    else wordWidth += seg.width;
+  }
+  const contentWidth = line.segments && line.segments.length > 0 ? lineInkExtent(line, 0).width : line.bbox.width;
+  const useJustify = block.textAlign === 'justify' && spaceCount > 0
+    && ((!line.isLastLine && !line.ragged) || contentWidth > effectiveWidth);
+  const justifiedSpaceWidth = useJustify ? (effectiveWidth - wordWidth) / spaceCount : 0;
+  const slack = Math.max(0, effectiveWidth - (contentWidth - trailing));
+  let x = block.textAlign === 'center' ? slack / 2 : block.textAlign === 'right' ? slack : 0;
+  for (const seg of segs) {
+    if (seg.kind === 'space') {
+      x += useJustify && !seg.autospace ? justifiedSpaceWidth : seg.width;
+      continue;
+    }
+    if (seg.kind === 'math') {
+      sideways.push(renderMathSegmentSvg(seg, x, line, block));
+      x += seg.width;
+      continue;
+    }
+    if (seg.kind === 'swatch') {
+      sideways.push(renderSwatch(x, line.baseline - line.bbox.y, seg.width, seg.swatch?.color, block.color));
+      x += seg.width;
+      continue;
+    }
+    if (seg.chip) {
+      sideways.push(renderChip(seg.chip, x, line.baseline - line.bbox.y, blockFont, block.color, (run) =>
+        pickSegmentColor({ kind: 'text', text: run.text, width: run.width, bold: run.bold, italic: run.italic }, block)));
+      x += seg.width;
+      continue;
+    }
+    const fontString = pickSegmentFont(seg, block);
+    const font = quoteFontString(fontString);
+    const color = pickSegmentColor(seg, block);
+    const decl = (font !== blockFont ? `font:${font};` : '')
+      + (color !== block.color ? `color:${color};` : '')
+      + (seg.tracking !== undefined ? `letter-spacing:${lineTracking + seg.tracking}px;` : '');
+    let text = verticalTextHtml(seg.text, v, segmentOrientation(seg));
+    const href = seg.refResourceId !== undefined
+      ? (refLinks(seg.refResourceId, targets) ? refAnchorHref(seg.refResourceId) : undefined)
+      : seg.href;
+    if (href !== undefined) text = `<a href="${esc(href)}" style="color:inherit;text-decoration:none;"${seg.href !== undefined && seg.refResourceId === undefined ? ' rel="noopener noreferrer"' : ''}>${text}</a>`;
+    inner.push(verticalSpan(x + (seg.inkOffset ?? 0), axisOf(fontString, seg.baselineShift ?? 0), text, decl));
+    x += seg.width;
+  }
+  const width = Math.max(line.bbox.width, effectiveWidth);
+  const decl = `font:${blockFont};color:${block.color};`
+    + (block.strikethroughText ? 'text-decoration:line-through;' : '')
+    + (lineTracking !== 0 ? `letter-spacing:${lineTracking}px;` : '')
+    + (lineCjkDecl(line) || hasCJK(line.text) ? CJK_TEXT_DECL : '');
+  return (
+    `<div class="pt-line" data-block="${esc(block.id)}" style="position:absolute;left:${line.bbox.x}px;top:${line.bbox.y}px;width:${width}px;height:${line.bbox.height}px;">` +
+    uprightInner(width, line.bbox.height, decl, inner.join('')) +
+    sideways.join('') +
+    `</div>`
+  );
+}
+
+/** A list marker of a vertical line (the bullet, the number, its prefix
+ *  and separator), set down the column from `x`. */
+function renderVerticalMarker(cls: string, x: number, block: VDTBlock, v: VerticalHtml, fontString: string, color: string, text: string): string {
+  const line = block.lines[0]!;
+  const size = extractFontSizePx(fontString);
+  const lineTop = line.bbox.y;
+  const h = line.bbox.height;
+  // A marker set as text sits on its baseline; a bullet is centred on
+  // `bulletY` (its axis).
+  const axis = block.bulletBaselineY !== undefined
+    ? block.bulletBaselineY - lineTop - centralOf(v, fontString) * size
+    : (block.bulletY ?? line.baseline) - lineTop;
+  const width = size * graphemesOf(text).length;
+  const decl = `font:${quoteFontString(fontString)};color:${color};${hasCJK(text) ? CJK_TEXT_DECL : ''}`;
+  return uprightBox(x, lineTop, width, h, decl, verticalSpan(0, axis, verticalTextHtml(text, v)), `class="${cls}" aria-hidden="true"`);
+}
+
+function renderVerticalBullet(block: VDTBlock, v: VerticalHtml): string {
+  if (block.type !== 'listItem' || !block.bulletText || block.bulletOffsetX === undefined || !block.lines[0]) return '';
+  const bulletFont = block.bulletFontString ?? block.fontString;
+  const bulletColor = block.bulletColor ?? block.color;
+  let html = renderVerticalMarker('pt-bullet', block.bulletOffsetX, block, v, bulletFont, bulletColor, block.bulletText);
+  if (block.separatorText && block.separatorX !== undefined) {
+    const sepFont = block.separatorFontString ?? bulletFont;
+    const sepColor = block.separatorColor ?? bulletColor;
+    if (block.prefixText && block.prefixX !== undefined) html = renderVerticalMarker('pt-separator', block.prefixX, block, v, sepFont, sepColor, block.prefixText) + html;
+    html += renderVerticalMarker('pt-separator', block.separatorX, block, v, sepFont, sepColor, block.separatorText);
+  }
+  return html;
+}
+
+/** The lines of a design text set vertically: in the flow of a vertical
+ *  page (an opener, a box title), or on its own (a running head set down
+ *  the fore-edge, `VDTDesignTextBlock.writingMode`) inside the block's own
+ *  turned frame. Each line's box runs from its baseline's line top. */
+function verticalDesignLines(block: VDTDesignTextBlock, v: VerticalHtml, originX: number, originY: number): string {
+  const size = extractFontSizePx(block.fontString);
+  const font = quoteFontString(block.fontString);
+  const parts: string[] = [];
+  const h = size * 2;
+  for (const line of block.lines) {
+    const top = line.baselineY - size * 1.5;
+    const axisOf = (fontString: string, shift = 0): number => size * 1.5 + shift - centralOf(v, fontString) * extractFontSizePx(fontString);
+    const runs = line.runs ?? [{ text: line.text, fontString: block.fontString, width: line.width }];
+    let x = 0;
+    const inner: string[] = [];
+    for (const run of runs) {
+      const runFont = quoteFontString(run.fontString);
+      const decl = runFont !== font ? `font:${runFont};` : '';
+      inner.push(verticalSpan(x, axisOf(run.fontString, run.baselineShift ?? 0), verticalTextHtml(run.text, v), decl));
+      x += run.width;
+    }
+    const width = Math.max(line.width, x);
+    const decl = `font:${font};color:${block.color};${hasCJK(line.text) ? CJK_TEXT_DECL : ''}`
+      + (line.wordSpacingPx ? `word-spacing:${line.wordSpacingPx.toFixed(3)}px;` : '');
+    parts.push(uprightBox(originX + line.xOffset, originY + top, width, h, decl, inner.join('')));
+  }
+  return parts.join('');
+}
+
+// ---------------------------------------------------------------------------
 // Resource blocks (image / svg / table + caption) — mirrors the canvas
 // renderer: geometry is pre-measured and absolute (page coords), so cells,
 // borders, and text lines emit as absolutely positioned elements.
@@ -837,9 +1054,12 @@ function renderResourceTable(rb: ResolvedResourceBlock, bx: number, by: number, 
   return parts.join('');
 }
 
-function renderResourceBlockHtml(block: VDTBlock, options: HtmlPaint): string {
+function renderResourceBlockHtml(block: VDTBlock, paint: HtmlPaint): string {
   const rb = block.resourceBlock;
   if (!rb) return '';
+  // Its caption, notes and cells are horizontal text, in its own frame
+  // (upright on a vertical page).
+  const options: HtmlPaint = paint.vertical ? { ...paint, vertical: undefined } : paint;
   const parts: string[] = [];
   // A rotated block: its geometry is in the upright frame, emitted inside a
   // wrapper turned a quarter turn about the frame's origin on the page.
@@ -929,9 +1149,10 @@ function renderBoxAt(bbox: BoundingBox, style: VDTDesignBoxStyle): string {
   );
 }
 
-function renderDesignTextBlock(block: VDTDesignTextBlock): string {
+function renderDesignTextBlock(block: VDTDesignTextBlock, options?: HtmlPaint): string {
   const parts: string[] = [];
   if (block.box) parts.push(renderBoxAt(block.bbox, block.box));
+  if (options?.vertical) return parts.join('') + renderVerticalDesignText(block, options.vertical);
   const font = quoteFontString(block.fontString);
   const fontSize = extractFontSizePx(block.fontString);
   const lineParts: string[] = [];
@@ -993,6 +1214,22 @@ function renderDesignTextBlock(block: VDTDesignTextBlock): string {
   return parts.join('');
 }
 
+/** A design text of a vertical page's flow: its lines set down the
+ *  column, clipped, tracked and outlined as a horizontal one. */
+function renderVerticalDesignText(block: VDTDesignTextBlock, v: VerticalHtml): string {
+  const clipDecl = block.clip ? 'overflow:hidden;' : '';
+  const trackingDecl = block.letterSpacingPx ? `letter-spacing:${block.letterSpacingPx}px;` : '';
+  const strokeDecl = block.stroke && block.stroke.widthPx > 0
+    ? `-webkit-text-stroke:${block.stroke.widthPx}px ${block.stroke.color};` + (block.stroke.hollow ? '-webkit-text-fill-color:transparent;' : '')
+    : '';
+  const hidden = block.artifact ? ' aria-hidden="true"' : '';
+  return (
+    `<div${hidden} style="position:absolute;left:${block.bbox.x}px;top:${block.bbox.y}px;width:${block.bbox.width}px;height:${block.bbox.height}px;${clipDecl}${trackingDecl}${strokeDecl}">` +
+    verticalDesignLines(block, v, -block.bbox.x, -block.bbox.y) +
+    `</div>`
+  );
+}
+
 function renderDesignRuleBlock(block: VDTDesignRuleBlock): string {
   const w = block.direction === 'vertical' ? block.thicknessPx : block.bbox.width;
   const h = block.direction === 'vertical' ? block.bbox.height : block.thicknessPx;
@@ -1025,6 +1262,22 @@ function renderDesignImageBlock(block: VDTDesignImageBlock, options?: HtmlPaint)
     const svg = block.imageKind === undefined ? undefined : block.imageKind === 'svg';
     const filter = options ? inkFilterDecl(options, svg, url) : '';
     const alt = block.altText ? `alt="${esc(block.altText)}"` : 'alt="" role="presentation"';
+    if (options?.vertical) {
+      // A picture of a vertical page's flow stands upright on the sheet:
+      // turned back inside its box, which runs `width` down the sheet and
+      // `height` across it (sized for that when `upright`, else fitted
+      // keeping its proportions, as the canvas draws it).
+      const k = block.upright ? 1 : Math.min(height / width, width / height);
+      const dw = block.upright ? height : width * k;
+      const dh = block.upright ? width : height * k;
+      const ox = block.upright ? 0 : (height - dw) / 2;
+      const oy = block.upright ? 0 : (width - dh) / 2;
+      return (
+        `<div style="position:absolute;left:${x}px;top:${y}px;width:${width}px;height:${height}px;">` +
+        `<img src="${esc(url)}" ${alt} style="position:absolute;left:0;top:0;width:${dw}px;height:${dh}px;` +
+        `transform:translate(0,${height}px) rotate(-90deg) translate(${ox}px,${oy}px);transform-origin:0 0;${filter}" /></div>`
+      );
+    }
     return (
       `<img src="${esc(url)}" ${alt} style="position:absolute;` +
       `left:${x}px;top:${y}px;width:${width}px;height:${height}px;${filter}" />`
@@ -1039,7 +1292,7 @@ function renderDesignImageBlock(block: VDTDesignImageBlock, options?: HtmlPaint)
 }
 
 function renderDesignBlock(block: VDTDesignBlock, options?: HtmlPaint): string {
-  if (block.kind === 'text') return renderDesignTextBlock(block);
+  if (block.kind === 'text') return renderDesignTextBlock(block, options);
   if (block.kind === 'rule') return renderDesignRuleBlock(block);
   if (block.kind === 'image') return renderDesignImageBlock(block, options);
   return renderDesignBoxBlock(block);
@@ -1058,9 +1311,10 @@ function renderBlockInner(block: VDTBlock, options: HtmlPaint): string {
   // the block's single placeholder line renders nothing useful.
   if (block.resourceBlock) return renderResourceBlockHtml(block, options);
   const parts: string[] = [];
-  parts.push(renderBullet(block));
+  const v = options.vertical;
+  parts.push(v ? renderVerticalBullet(block, v) : renderBullet(block));
   for (const line of block.lines) {
-    parts.push(renderLine(line, block, options.linkTargets));
+    parts.push(v ? renderVerticalLine(line, block, v, options.linkTargets) : renderLine(line, block, options.linkTargets));
   }
   return parts.join('');
 }
@@ -1103,6 +1357,9 @@ function renderPageDetailed(
   bleedInset = 0,
   /** The character grid drawn over the type area (`cjk.grid.show`). */
   gridCells?: CjkGridCells,
+  /** `cjk.region` and `cjk.uprightDigits`, for a vertical page. */
+  verticalRegion?: CjkRegion,
+  verticalDigits?: number,
 ): PageRenderResult {
   const bgDecl = background && background !== 'transparent' ? `background:${background};` : '';
   // With cut lines nothing the page paints shows past the bleed box, as on
@@ -1111,9 +1368,13 @@ function renderPageDetailed(
   // A filter id local to the page and its ink, so every page is
   // self-contained (a patcher may replace pages one by one) and two
   // documents on one page never share a filter.
-  const options: HtmlPaint = ink
+  const inked: HtmlPaint = ink
     ? { ...pageOptions, ink: { id: `pt-ink-${ink.hex.replace(/[^0-9a-z]/gi, '')}-${page.index}`, matrix: ink.matrix } }
     : pageOptions;
+  // A vertical page's flow sets its text down the column.
+  const options: HtmlPaint = page.flow
+    ? { ...inked, vertical: { region: verticalRegion ?? 'mainland', uprightDigits: verticalDigits ?? 2, ...(page.flow.centralBaselines ? { axes: page.flow.centralBaselines } : {}) } }
+    : inked;
   const blocks: Array<{ id: string; html: string }> = [];
   for (const col of page.columns) {
     for (const block of col.blocks) {
@@ -1130,9 +1391,11 @@ function renderPageDetailed(
   // under the body (a part page's full-bleed background must not cover its
   // chapter list); header and footer paint on top.
   const openerHtml = page.openerBand ? renderDesignSlot(page.openerBand, options) : '';
+  // Running heads and folios stay on the sheet, horizontal.
+  const sheetOptions: HtmlPaint = options.vertical ? { ...options, vertical: undefined } : options;
   const slotParts: string[] = [];
-  if (page.header) slotParts.push(renderDesignSlot(page.header, options));
-  if (page.footer) slotParts.push(renderDesignSlot(page.footer, options));
+  if (page.header) slotParts.push(renderDesignSlot(page.header, sheetOptions));
+  if (page.footer) slotParts.push(renderDesignSlot(page.footer, sheetOptions));
   // Whether or not a picture on the page uses it: a host patching blocks
   // one by one may bring in an SVG image the first render did not have.
   const defsHtml = options.ink ? inkFilterDefs(options.ink) : '';
@@ -1140,9 +1403,14 @@ function renderPageDetailed(
   const footnoteRulesHtml = footnoteRuleSegments(page).map((r) =>
     `<div class="pt-footnote-rule" style="position:absolute;left:${r.x}px;top:${r.y - r.lineWidthPx / 2}px;width:${r.width}px;height:${r.lineWidthPx}px;background:${r.color};"></div>`,
   ).join('');
-  const gridHtml = gridCells ? renderCharacterGridSvg(gridCells, page.width, page.height) : '';
+  const gridHtml = gridCells ? renderCharacterGridSvg(gridCells, page.flow ? page.height : page.width, page.flow ? page.width : page.height) : '';
   const decorationHtml = defsHtml + gridHtml + openerHtml + footnoteRulesHtml + slotParts.join('');
-  const innerHtml = defsHtml + gridHtml + openerHtml + blocksHtml + footnoteRulesHtml + slotParts.join('');
+  // A vertical page's flow: one box turned a quarter turn clockwise, its
+  // text lines turned back and set vertically (see `renderVerticalLine`).
+  const flowHtml = gridHtml + openerHtml + blocksHtml + footnoteRulesHtml;
+  const innerHtml = defsHtml + (page.flow
+    ? `<div class="pt-flow" style="position:absolute;left:0;top:0;width:${page.height}px;height:${page.width}px;transform:translate(${page.width}px,0) rotate(90deg);transform-origin:0 0;">${flowHtml}</div>`
+    : flowHtml) + slotParts.join('');
   const outerHtml =
     `<div class="pt-page" data-page="${page.index}" style="` +
     `position:relative;` +
@@ -1260,7 +1528,7 @@ export function renderToHtmlIndexed(
         }
       : { ...options, linkTargets };
     const gridCells = doc.config.cjk?.grid?.show ? cjkGridCells(doc.config, p.contentArea, doc.baselineGrid, p.columns, p.flow) : undefined;
-    const detail = renderPageDetailed(p, background, pageOptions, ink, bleedInset, gridCells);
+    const detail = renderPageDetailed(p, background, pageOptions, ink, bleedInset, gridCells, doc.config.cjk?.region, doc.config.cjk?.uprightDigits);
     pageHtmlParts.push(detail.outerHtml);
     indexedPages.push({
       index: p.index,
