@@ -58,7 +58,7 @@ import {
   isFullwidthDigit,
   isLineEndProhibited,
   isLineStartProhibited,
-  isWesternWordChar,
+  isWordInnerMark,
   type CjkClass,
   type CjkLineBreakLevel,
 } from './cjkClasses';
@@ -66,7 +66,7 @@ import { hasCJK } from './cjk';
 import { graphemeCount, graphemesOf, lastGrapheme } from './graphemes';
 import { isBreakingSpace } from './spaces';
 import { trimChipLineEdges } from './chipEdges';
-import { cellAdvance, getMeasureWritingMode } from './vertical';
+import { cellAdvance, getMeasureWritingMode, withMeasureWritingMode } from './vertical';
 
 /** Fit tolerance of the breaker (px): running sums of many widths may
  *  land a hair past a measure they fill exactly. */
@@ -186,9 +186,7 @@ function styleOf(span: InlineSpan, fonts: Fonts): UnitStyle {
 /** A grapheme set as a Chinese character here: a CJK grapheme, unless it
  *  is the apostrophe or the interpunct of a Latin word ("don’t", "l·l"). */
 function isCjkHere(g: string, prev: string | undefined, next: string | undefined): boolean {
-  if (!isCjkGrapheme(g)) return false;
-  if ((g === '\u2019' || g === '\u00B7') && isWesternWordChar(prev) && isWesternWordChar(next)) return false; // ’ ·
-  return true;
+  return isCjkGrapheme(g) && !isWordInnerMark(g, prev, next);
 }
 
 /** Marks that pair up into one 2-em unit (破折号, 省略号). */
@@ -719,6 +717,8 @@ interface ComposeContext {
   lineHeightPx: number;
   indentOf: (line: number) => number;
   measureOf: (line: number) => number;
+  /** Vertical text: a Western run keeps the gap after it in its width. */
+  vertical?: boolean;
 }
 
 /** The segments, text and flags of one line (see the module comment for
@@ -826,6 +826,12 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
     const gap = tracking > 0 && stretches[j] ? tracking : 0;
     if (gap === 0) {
       addText(u, u.text, u.width, undefined);
+    } else if (ctx.vertical && u.run) {
+      // In vertical text a run is painted whole, its cells and sideways
+      // letters as it was measured: the gap after it is advance only, and
+      // cutting its last letter off would lose the neighbour an apostrophe
+      // or an interpunct inside it is read with (`verticalRuns`).
+      addText(u, u.text, u.width + gap, undefined);
     } else if (u.graphemes <= 1) {
       addText(u, u.text, u.width + gap, gap);
     } else {
@@ -881,9 +887,15 @@ export function composeCjkParagraph(
   lineHeightPx: number,
   options: MeasureBlockOptions | undefined,
 ): MeasuredBlock {
+  // A writing mode asked for this paragraph alone: the Latin runs' widths
+  // (`textWidth`) read it too.
+  if (options?.writingMode !== undefined && options.writingMode !== getMeasureWritingMode()) {
+    const opts = options;
+    return withMeasureWritingMode(opts.writingMode!, () => composeCjkParagraph(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, opts));
+  }
   const fonts: Fonts = { normal: normalFont, bold: boldFont, italic: italicFont, boldItalic: boldItalicFont };
   const letterSpacingPx = options?.letterSpacingPx ?? 0;
-  const vertical = (options?.writingMode ?? getMeasureWritingMode()) === 'vertical-rl';
+  const vertical = getMeasureWritingMode() === 'vertical-rl';
   const units = buildUnits(spans, fonts, letterSpacingPx, vertical);
   if (!units.some((u) => u.kind !== 'space')) return { lines: [], totalHeight: 0 };
   const level = options?.cjkLineBreak ?? getCjkLineBreak();
@@ -906,6 +918,7 @@ export function composeCjkParagraph(
     lineHeightPx,
     indentOf,
     measureOf,
+    ...(vertical ? { vertical: true } : {}),
   };
   const compose = (ranges: LineRange[]): VDTLine[] => ranges.map((r, li) => composeLine(units, r, li, li === ranges.length - 1, ctx));
 

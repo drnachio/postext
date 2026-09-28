@@ -275,6 +275,7 @@ describe("package exports", () => {
       "verticalRuns",
       "uaxVerticalOrientation",
       "isVerticalCell",
+      "verticalCellEms",
       "CORNER_OFFSET_EM",
       "computeColumnEdges",
       "parseMarkdownWithIssues",

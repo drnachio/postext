@@ -142,6 +142,25 @@ describe('upright resources in a vertical flow', () => {
     expect(doc.contentWarnings?.some((w) => w.kind === 'rotateIgnoredVertical' && w.resourceId === 'f3')).toBe(true);
   });
 
+  it('turns a figure as asked in a horizontal appendix of a vertical book, and warns only for the vertical part', () => {
+    const doc = buildDocument(
+      {
+        markdown: `${text(1)}見圖:ref{id="f3"}。\n\n${text(2)}\n\n# Appendix {style="appendix"}\n\nSee the map:ref{id="f4"}.\n\n${text(2)}`,
+        resources: [figure('f3', 800, 600, { position: 'top', rotate: 'cw' }), figure('f4', 800, 600, { position: 'top', rotate: 'cw' })],
+      },
+      { ...config(), headingStyles: [{ id: 'appendix', breakBefore: { enabled: true, parity: 'any' }, layout: { layoutType: 'single', writingMode: 'horizontal-tb' } }] },
+    );
+    const blocks = resourceBlocks(doc);
+    const f3 = blocks.find((b) => b.blk.resourceBlock!.resource.id === 'f3')!;
+    const f4 = blocks.find((b) => b.blk.resourceBlock!.resource.id === 'f4')!;
+    expect(f3.page.flow).toBeDefined();
+    expect(f3.blk.resourceBlock!.rotation!.direction).toBe('ccw');
+    expect(f4.page.flow).toBeUndefined();
+    expect(f4.blk.resourceBlock!.rotation!.direction).toBe('cw');
+    const warned = (doc.contentWarnings ?? []).filter((w) => w.kind === 'rotateIgnoredVertical').map((w) => (w as { resourceId: string }).resourceId);
+    expect(warned).toEqual(['f3']);
+  });
+
   it('keeps a turn in a horizontal flow, with no warning', () => {
     const doc = buildDocument(
       { markdown: `${text(1)}見圖:ref{id="f3"}。\n\n${text(3)}`, resources: [figure('f3', 800, 600, { position: 'top', rotate: 'cw' })] },

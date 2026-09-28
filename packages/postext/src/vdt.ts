@@ -1157,6 +1157,11 @@ export interface VDTDesignImageBlock {
   /** For an SVG with a print master (`Resource.svg.pdfFileId`): the
    *  master's id, which the PDF backend embeds in place of the SVG. */
   pdfFileId?: string;
+  /** A picture of a vertical page's flow, sized to stand upright on the
+   *  sheet: the box's `width` runs down the sheet and is the picture's
+   *  height there, its `height` the picture's width. Renderers draw the
+   *  picture turned back upright, filling the box. */
+  upright?: true;
 }
 
 export type VDTDesignBlock =

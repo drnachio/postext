@@ -185,7 +185,7 @@ function renderImageBlock(ctx: CanvasRenderingContext2D, block: VDTDesignImageBl
       ctx.lineWidth = 1;
       ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, bh - 1);
     }
-  });
+  }, block.upright === true);
   ctx.restore();
 }
 

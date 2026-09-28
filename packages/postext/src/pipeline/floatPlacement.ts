@@ -117,9 +117,13 @@ export function computeFloatPlan(
   resources: Resource[],
   resourceTypes: ResourceType[],
   incorporated?: ReadonlySet<string>,
-  /** A vertical flow: no resource is turned (see `resolveResourcePlacement`). */
-  noRotation = false,
+  /** A vertical flow: no resource is turned (see `resolveResourcePlacement`).
+   *  Either for the whole document or per content block (the block a
+   *  resource is first referred to in: a styled section may set its own
+   *  writing mode). */
+  noRotation: boolean | ((blockIdx: number) => boolean) = false,
 ): PlannedFloat[] {
+  const noRotationAt = typeof noRotation === 'function' ? noRotation : () => noRotation;
   const resourceById = new Map<string, Resource>();
   for (const r of resources) resourceById.set(r.id, r);
   const typeById = new Map<string, ResourceType>();
@@ -134,7 +138,8 @@ export function computeFloatPlan(
     const resource = resourceById.get(resourceId);
     if (!resource) return;
     const type = typeById.get(resource.typeId);
-    const { position, span, rotate, widthFraction, align, captionSide } = resolveResourcePlacement(resource, type, noRotation);
+    const upright = noRotationAt(blockIdx);
+    const { position, span, rotate, widthFraction, align, captionSide } = resolveResourcePlacement(resource, type, upright);
     if (position === 'here') return;
     plan.push({
       resourceId, firstBlockIdx: blockIdx, position, span,
@@ -142,7 +147,7 @@ export function computeFloatPlan(
       ...(widthFraction < 1 && !rotate
         ? { widthFraction, align }
         // A vertical flow's upright figure keeps its alignment along the tier.
-        : noRotation && align !== 'left' ? { align } : {}),
+        : upright && align !== 'left' ? { align } : {}),
       ...(captionSide && span === 'column' ? { captionSide } : {}),
     });
   };

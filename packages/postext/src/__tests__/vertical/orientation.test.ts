@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { verticalOrientation, verticalRuns, uaxVerticalOrientation, isVerticalCell } from '../../writingMode';
 import { composeCjkParagraph } from '../../measure/cjkCompose';
 import { cachedMeasureRichBlock, createMeasurementCache } from '../../measure';
-import { fontFamilyOf, measureCentralBaseline } from '../../measure/vertical';
+import { fontFamilyOf, measureCentralBaseline, withMeasureWritingMode } from '../../measure/vertical';
 import { graphemesOf } from '../../measure/graphemes';
 
 // Proportional marks, as Noto CJK draws them without `fwid`: — 0.89 em,
@@ -40,12 +40,17 @@ describe('verticalOrientation (UAX #50 with the Chinese rules)', () => {
     }
   });
 
-  it('never turns the pause and stop marks: mainland to the top-right corner, Taiwan and Hong Kong centred as they are', () => {
+  it('never turns the pause and stop marks: mainland to the upper right, Taiwan and Hong Kong centred as they are', () => {
     for (const ch of ['、', '。', '，', '．', '！', '？', '：', '；']) {
-      expect(o(ch, 'mainland')).toEqual({ orient: 'alternate', fallback: 'corner' });
       expect(o(ch, 'taiwan')).toEqual({ orient: 'upright' });
       expect(o(ch, 'hongkong')).toEqual({ orient: 'upright' });
     }
+    // 、。，． in the top-right corner (CORNER_OFFSET_EM); ！？ and ：； in the
+    // right half, as Noto Serif SC's `vert` glyphs sit: they must not climb
+    // into the cell above.
+    for (const ch of ['、', '。', '，', '．']) expect(o(ch)).toEqual({ orient: 'alternate', fallback: 'corner' });
+    for (const ch of ['！', '？']) expect(o(ch)).toEqual({ orient: 'alternate', fallback: 'corner', offset: { x: 0.5, y: -0.08 } });
+    for (const ch of ['：', '；']) expect(o(ch)).toEqual({ orient: 'alternate', fallback: 'corner', offset: { x: 0.52, y: -0.22 } });
     // UAX #50 alone would turn ：； (Tr, the Japanese convention).
     expect(uaxVerticalOrientation('：'.codePointAt(0)!)).toBe('Tr');
     expect(uaxVerticalOrientation('。'.codePointAt(0)!)).toBe('Tu');
@@ -72,6 +77,25 @@ describe('verticalOrientation (UAX #50 with the Chinese rules)', () => {
     expect(o('–')).toEqual({ orient: 'rotate', stretch: true });
     for (const ch of ['…', '⋯', '～', '〜', '·', '‧']) expect(o(ch)).toEqual({ orient: 'rotate' });
     expect(uaxVerticalOrientation('—'.codePointAt(0)!)).toBe('R');
+  });
+
+  it('keeps the Latin hyphens ‐ ‑ ‒ sideways with the word they join', () => {
+    for (const ch of ['‐', '‑', '‒']) expect(o(ch).orient).toBe('sideways');
+    expect(verticalRuns(graphemesOf('e‑mail'), 'mainland').map((r) => r.text)).toEqual(['e‑mail']);
+  });
+
+  it('runs an apostrophe or an interpunct inside a Latin word sideways with it, as the composer measures it', () => {
+    expect(verticalRuns(graphemesOf('他的iPhone’s'), 'mainland').map((r) => r.text)).toEqual(['他', '的', 'iPhone’s']);
+    expect(verticalRuns(graphemesOf('col·lecció'), 'taiwan').map((r) => r.text)).toEqual(['col·lecció']);
+    // Between Chinese characters, or at an edge, they are Chinese marks.
+    expect(verticalRuns(graphemesOf('賈·寶'), 'taiwan').map((r) => r.text)).toEqual(['賈', '·', '寶']);
+    expect(verticalRuns(graphemesOf('好’'), 'taiwan').map((r) => r.text)).toEqual(['好', '’']);
+  });
+
+  it('sizes the cells of a run: half an em for the mainland interpunct', () => {
+    expect(verticalRuns(graphemesOf('賈·寶'), 'mainland').map((r) => r.cell)).toEqual([1, 0.5, 1]);
+    expect(verticalRuns(graphemesOf('賈·寶'), 'taiwan').map((r) => r.cell)).toEqual([1, 1, 1]);
+    expect(verticalRuns(graphemesOf('3×4'), 'taiwan').map((r) => [r.text, r.cell])).toEqual([['3', undefined], ['×', 1], ['4', undefined]]);
   });
 
   it('sets Latin, ASCII digits and most symbols sideways', () => {
@@ -101,9 +125,10 @@ describe('vertical measurement', () => {
     composeCjkParagraph([span(text)], FONT, FONT, FONT, FONT, 1000, 16, mode ? { writingMode: mode } : undefined)
       .lines.map((l) => l.segments!.reduce((s, seg) => s + seg.width, 0));
 
-  it('gives every character that stands in a cell one em, dashes and the interpunct included', () => {
-    // 他說——賈·寶玉: 8 cells in vertical text.
-    expect(lineWidths('他說——賈·寶玉', 'vertical-rl')[0]).toBeCloseTo(80);
+  it('gives every character that stands in a cell its cell, dashes included, the interpunct half an em in mainland text', () => {
+    // 他說——賈·寶玉: 7 one-em cells and the interpunct's.
+    expect(withMeasureWritingMode('horizontal-tb', () => lineWidths('他說——賈·寶玉', 'vertical-rl')[0], 'taiwan')).toBeCloseTo(80);
+    expect(withMeasureWritingMode('horizontal-tb', () => lineWidths('他說——賈·寶玉', 'vertical-rl')[0], 'mainland')).toBeCloseTo(75);
     // Horizontal: the dash and the interpunct keep their own widths.
     expect(lineWidths('他說——賈·寶玉')[0]).toBeCloseTo(10 * 5 + 2 * 8.9 + 3.3);
   });

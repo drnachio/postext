@@ -1,3 +1,4 @@
+import { flowTextWidth } from '../measure/vertical';
 import type {
   AnchorEdge,
   ColorValue,
@@ -22,7 +23,7 @@ import type {
 import { dimensionToPx } from '../units';
 import { resolveDesignLineHeight } from '../defaults/headerFooter';
 import { createBoundingBox, pictureTraits, type BoundingBox } from '../vdt';
-import { buildFontString, measureTextWidth } from '../measure';
+import { buildFontString } from '../measure';
 import { graphemeCount } from '../measure/graphemes';
 import { hyphenateText, withoutSlashJoints } from '../hyphenate';
 import { BREAKING_SPACE_RUNS_SPLIT_RE, NO_BREAK_SPACES, isBreakingSpaceRun } from '../measure/spaces';
@@ -140,6 +141,10 @@ export interface ResolvedImagePrimitive extends ResolvedElementGeometry {
   /** Bitmap or SVG, and an SVG's print master (see `pictureTraits`). */
   imageKind?: 'bitmap' | 'svg';
   pdfFileId?: string;
+  /** Laid out in a vertical flow: the box's width runs down the sheet, and
+   *  it was sized for the picture turned back upright (see
+   *  `DesignFrames.upright`). */
+  upright?: true;
 }
 
 export type ResolvedPrimitive =
@@ -171,6 +176,10 @@ export interface LayoutIssue {
 export interface DesignFrames {
   page: { x: number; y: number; width: number; height: number };
   bleed: { x: number; y: number; width: number; height: number };
+  /** The frames of a vertical page's flow (`VDTPage.flow`): a picture
+   *  stands upright on the sheet, so its box in the flow is sized with the
+   *  picture's width and height swapped (`ResolvedImagePrimitive.upright`). */
+  upright?: boolean;
 }
 
 export interface LayoutContext {
@@ -892,7 +901,7 @@ export function layoutDesignSlot(
         anchorY,
         pinX: anchor.pinX,
         pinY: anchor.pinY,
-      }, fillRef, context.dpi, context.resourceById, resolveDesignResourceId(el.resourceId, context.placeholders));
+      }, fillRef, context.dpi, context.resourceById, resolveDesignResourceId(el.resourceId, context.placeholders), context.frames?.upright === true);
       if (prim) {
         resolvedGeo.set(el.id, prim);
         primsByElement.set(el, [prim]);
@@ -1092,7 +1101,7 @@ function layoutTextElement(
   // below zero, however tight.
   const trackingPx = dimPx(el.letterSpacing, dpi, fontSizePx);
   const letterSpacingPx = Number.isFinite(trackingPx) ? trackingPx : 0;
-  const measure: TextMeasure = (t) => Math.max(0, measureTextWidth(t, fontString) + letterSpacingPx * graphemeCount(t));
+  const measure: TextMeasure = (t) => Math.max(0, flowTextWidth(t, fontString) + letterSpacingPx * graphemeCount(t));
   const box = resolveBox(el.box, dpi, fontSizePx);
   const padding: ResolvedPadding = box?.padding ?? { top: 0, right: 0, bottom: 0, left: 0 };
   // Inline marks: a text that carries any is laid out in runs; one that
@@ -1183,14 +1192,14 @@ function layoutTextElement(
       const letter = paragraphs[0]!.slice(0, 1);
       paragraphs[0] = paragraphs[0]!.slice(1).trimStart();
       paraRanges[0]![0] = paraRanges[0]![1] - paragraphs[0].length;
-      const capW = measureTextWidth(letter, capFont);
+      const capW = flowTextWidth(letter, capFont);
       capRoom = capW + Math.max(0, dimPx(dropCap.gap, dpi, fontSizePx));
       cap = { text: letter, font: capFont, fontPx: capFontPx, width: capW, lines: capLines, color: colorHex(dropCap.color ?? el.color) };
     }
     // Justified lines fill their room by stretching their word spaces, and
     // a word that does not fit may be cut at a syllable to fill (EF-109).
     const fill = justify && (el.hyphenate ?? false);
-    const measureIn = (t: string, font: string): number => Math.max(0, measureTextWidth(t, font) + letterSpacingPx * graphemeCount(t));
+    const measureIn = (t: string, font: string): number => Math.max(0, flowTextWidth(t, font) + letterSpacingPx * graphemeCount(t));
     let lineNo = 0;
     paragraphs.forEach((para, p) => {
       const offsetOf = (i: number): number => {
@@ -1376,13 +1385,19 @@ function layoutImageElement(
   resourceById: ReadonlyMap<string, Resource> | undefined,
   /** `el.resourceId` with its placeholders filled in. */
   resourceId: string,
+  /** In a vertical flow: the picture stands upright on the sheet, where the
+   *  box's width runs down the page, so the box takes the picture's height
+   *  as its width and its width as its height. */
+  upright = false,
 ): ResolvedImagePrimitive | undefined {
   const resource = resourceId ? resourceById?.get(resourceId) : undefined;
   const payload = resource?.bitmap ?? resource?.svg;
   const fileId = payload?.fileId;
   if (!fileId) return undefined;
-  const natW = payload?.width && payload.width > 0 ? payload.width : 1;
-  const natH = payload?.height && payload.height > 0 ? payload.height : 1;
+  const picW = payload?.width && payload.width > 0 ? payload.width : 1;
+  const picH = payload?.height && payload.height > 0 ? payload.height : 1;
+  const natW = upright ? picH : picW;
+  const natH = upright ? picW : picH;
   const widthSize = resolveFixedSize(el.placement.size?.width, dpi);
   const heightSize = resolveFixedSize(el.placement.size?.height, dpi);
   const fixedW = typeof widthSize === 'number' ? widthSize
@@ -1411,6 +1426,7 @@ function layoutImageElement(
     fileId,
     ...(resource?.bitmap?.format ? { format: resource.bitmap.format } : {}),
     ...pictureTraits(resource, fileId),
+    ...(upright ? { upright: true as const } : {}),
   };
 }
 

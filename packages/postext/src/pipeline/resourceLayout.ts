@@ -31,6 +31,7 @@
  * row metrics the full-table layout reports.
  */
 
+import { measuringVertically, withMeasureWritingMode } from '../measure/vertical';
 import type { InlineSpan, RefCase } from '../parse';
 import { suffixJoiner } from '../parse/inlineFormatting';
 import type {
@@ -954,6 +955,10 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
    *  {@link planTableSlice}. */
   tableRows?: TableRowMetrics;
 } {
+  // Captions, notes and table cells are set horizontally on every page: a
+  // resource of a vertical flow stands upright, its text read as on a
+  // horizontal page.
+  if (measuringVertically()) return withMeasureWritingMode('horizontal-tb', () => layoutResourceBlock(input));
   if (input.upright) return layoutUprightResourceBlock(input, input.upright.maxLength);
   const {
     resource,

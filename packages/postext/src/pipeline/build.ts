@@ -30,14 +30,15 @@ import {
 import { extractFrontmatter, normalizeMetadata } from '../frontmatter';
 import { collectConfigWarnings } from '../configWarnings';
 import { initHyphenator } from '../measure';
-import { setCjkLineBreak } from '../measure/cjkClasses';
-import { setMeasureWritingMode } from '../measure/vertical';
+import { getCjkLineBreak, setCjkLineBreak } from '../measure/cjkClasses';
+import { getMeasureRegion, getMeasureWritingMode, setMeasureWritingMode } from '../measure/vertical';
 import { stampCentralBaselines } from './verticalMetrics';
 import type { MeasurementCache } from '../measure';
 import { resolveAllConfig, computeBaselineGrid, resolvedLocale } from './config';
 import {
   createHeadingLevelResolver,
   deriveSectionGeometryConfig,
+  sectionWritingMode,
   deriveSectionMeasureContext,
   headingIsHidden,
   headingIsNumbered,
@@ -384,6 +385,28 @@ export function buildDocumentPass(
   options?: BuildDocumentOptions,
   hints: PassHints = {},
 ): PassResult {
+  // A pass sets the CJK line-break level and the writing mode text is
+  // measured in for its own measuring; what the caller had in force is put
+  // back when it ends, also when it throws (a cancelled build), so text
+  // measured outside a build reads as it did before it.
+  const lineBreak = getCjkLineBreak();
+  const writingMode = getMeasureWritingMode();
+  const region = getMeasureRegion();
+  try {
+    return placeDocumentPass(content, config, cache, options, hints);
+  } finally {
+    setCjkLineBreak(lineBreak);
+    setMeasureWritingMode(writingMode, region);
+  }
+}
+
+function placeDocumentPass(
+  content: PostextContent,
+  config: PostextConfig | undefined,
+  cache: MeasurementCache | undefined,
+  options: BuildDocumentOptions | undefined,
+  hints: PassHints,
+): PassResult {
   const { balanceExtraPx, balanceLooseness, balanceLooseBudget, bandCaps, captionUnder } = hints;
   const captionUnderProposals = new Set<string>();
   /** Side columns whose foot a figure's side caption has cut, by the figure. */
@@ -419,8 +442,9 @@ export function buildDocumentPass(
   // CJK text breaks at the document's level wherever it is measured (body,
   // captions, cells, notes, boxes), as it hyphenates in its language.
   setCjkLineBreak(resolved.cjk.lineBreak);
-  // CJK characters of a vertical flow advance by whole cells.
-  setMeasureWritingMode(resolved.layout.writingMode);
+  // Characters of a vertical flow that stand in a cell advance by it (half
+  // an em for the mainland interpunct).
+  setMeasureWritingMode(resolved.layout.writingMode, resolved.cjk.region);
 
   // Compute baseline grid
   const baselineGrid = computeBaselineGrid(resolved);
@@ -458,8 +482,9 @@ export function buildDocumentPass(
   const verticalFrames = {
     page: sheetRectToFlow(pageMetrics.physical.trimBox, pageWidthPx),
     bleed: sheetRectToFlow(pageMetrics.physical.bleedBox, pageWidthPx),
+    upright: true,
   };
-  const designFramesOn = (page: VDTPage | undefined): { page: BoundingBox; bleed: BoundingBox } =>
+  const designFramesOn = (page: VDTPage | undefined): { page: BoundingBox; bleed: BoundingBox; upright?: boolean } =>
     (page?.flow ? verticalFrames : physicalFrames);
   doc.trimOffset = trimOffset;
   // A right-bound book (`page.binding`): hosts show its spreads mirrored.
@@ -575,7 +600,12 @@ export function buildDocumentPass(
   // chapter already numbered (`continuation.resourceNumbers`) was placed
   // there: here it is only referred to, never floated again.
   const incorporated = new Set(Object.keys(continuation?.resourceNumbers ?? {}));
-  const floatPlan = computeFloatPlan(contentBlocks, resources, resourceTypes, incorporated, resolved.layout.writingMode === 'vertical-rl');
+  // A resource first referred to in a vertical flow stands upright: a turn
+  // it asks for is not applied there. Decided per block, by the writing
+  // mode of the styled section the reference sits in (a horizontal
+  // appendix of a vertical book turns its figures as asked).
+  const floatPlan = computeFloatPlan(contentBlocks, resources, resourceTypes, incorporated,
+    (blockIdx) => sectionWritingMode(sectionPlan, resolved, blockIdx) === 'vertical-rl');
   const floatedIds = floatedResourceIds(floatPlan, incorporated, resources, resourceTypes);
   const floatsByFirstBlock = new Map<number, PlannedFloat[]>();
   for (const f of floatPlan) {

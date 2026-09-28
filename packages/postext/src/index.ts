@@ -300,7 +300,7 @@ export type {
 } from './vdt';
 export { resourceBlockToPage, resourceBlockToLocal, resourceBlockRectToPage, tableFrameOutline, tableCellFill, tableCellFillRects } from './vdt';
 export { flowToPage, pageToFlow, flowRectToPage, pageRectToFlow, pageIsVertical, DEFAULT_CENTRAL_BASELINE } from './vdt';
-export { verticalOrientation, verticalRuns, uaxVerticalOrientation, isVerticalCell, CORNER_OFFSET_EM } from './writingMode';
+export { verticalOrientation, verticalRuns, uaxVerticalOrientation, isVerticalCell, verticalCellEms, CORNER_OFFSET_EM } from './writingMode';
 export type { VerticalGlyph, VerticalOrientationKind, VerticalRun, UaxVerticalOrientation } from './writingMode';
 export { computeColumnEdges } from './pipeline/resourceLayout';
 export type { ContentBlock, ContentBlockType, DirectiveAttrs, DirectiveName, ContainerName, RefCase, InlineSpan, InlineLink, TextSpan, MathSpan, MathMeta, ListKind, ParseIssue, ParseIssueKind, UnclosedMathIssue, UnclosedContainerIssue, TocBlockInfo, IndexBlockInfo, IndexMark, ChipBox } from './parse';

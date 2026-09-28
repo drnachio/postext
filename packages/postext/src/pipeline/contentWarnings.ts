@@ -20,6 +20,8 @@ import type { HeadingDesignCut } from './headingDesignCuts';
 import { DEFAULT_CHIP_STYLES } from '../defaults/chipStyles';
 import { DEFAULT_PARAGRAPH_STYLES } from '../defaults/paragraphStyles';
 import { DEFAULT_HEADING_STYLES } from '../defaults/headingStyles';
+import { resolveAllConfig } from './config';
+import { planHeadingSections, sectionWritingMode } from './headingStyles';
 
 /** A `:::name` line: the name starts it, whatever follows (a line the parser
  *  does not take as a fence — an unknown name, or text after the name — is
@@ -150,12 +152,28 @@ export function collectContentWarnings(
   const chipStyles = new Set((config?.chipStyles ?? DEFAULT_CHIP_STYLES).map((s) => s.id));
   const headingStyles = new Set((config?.headingStyles ?? DEFAULT_HEADING_STYLES).map((s) => s.id));
   const tableStyles = new Set((config?.tableStyles ?? []).map((s) => s.id));
-  const vertical = config?.layout?.writingMode === 'vertical-rl';
+  // Whether a content block is laid out in a vertical flow: the document's
+  // writing mode, or its styled section's (a horizontal appendix of a
+  // vertical book, a vertical chapter of a horizontal one).
+  const anyVertical = config?.layout?.writingMode === 'vertical-rl'
+    || (config?.headingStyles ?? []).some((s) => s.layout?.writingMode === 'vertical-rl');
+  let verticalAt: (blockIdx: number) => boolean = () => false;
+  if (anyVertical) {
+    const resolved = resolveAllConfig(config);
+    const sections = planHeadingSections(blocks, resolved);
+    verticalAt = (blockIdx) => sectionWritingMode(sections, resolved, blockIdx) === 'vertical-rl';
+  }
 
-  /** First embed or reference of every known resource, in reading order. */
+  /** First embed or reference of every known resource, in reading order,
+   *  and the content block it sits in. */
   const firstUse = new Map<string, SourceRange>();
+  const firstUseBlock = new Map<string, number>();
+  let blockIdx = -1;
   const use = (id: string, range: SourceRange): void => {
-    if (byId.has(id) && !firstUse.has(id)) firstUse.set(id, range);
+    if (byId.has(id) && !firstUse.has(id)) {
+      firstUse.set(id, range);
+      firstUseBlock.set(id, blockIdx);
+    }
   };
 
   /** Footnote markers (first one of each id) and definitions. */
@@ -190,6 +208,7 @@ export function collectContentWarnings(
   };
 
   for (const b of blocks) {
+    blockIdx++;
     const range = { start: b.sourceStart, end: b.sourceEnd };
     switch (b.type) {
       case 'resourceBlock': {
@@ -324,8 +343,8 @@ export function collectContentWarnings(
     scanSnippet(r.caption);
     scanSnippet(r.note);
     // A vertical flow sets every resource upright: a turn asked for it is
-    // not applied (#188).
-    if (vertical && r.placement?.rotate && r.placement.position !== 'here') {
+    // not applied where the resource is first used in one (#188).
+    if (r.placement?.rotate && r.placement.position !== 'here' && verticalAt(firstUseBlock.get(id) ?? -1)) {
       out.push({ kind: 'rotateIgnoredVertical', resourceId: id, ...where });
     }
     if (r.kind !== 'table' || !r.table) continue;

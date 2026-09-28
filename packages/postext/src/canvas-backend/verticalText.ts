@@ -8,17 +8,20 @@
  * `ctx.fillText`: on a horizontal page it IS `ctx.fillText`, with the same
  * arguments; inside a vertical flow it cuts the text into sideways runs
  * (Latin, numbers: painted as they are, which the frame turns sideways) and
- * cells (Han, punctuation, dashes), each cell one em down the line, the
+ * cells (Han, punctuation, dashes, upright symbols), each cell its length
+ * down the line (one em; half an em for the mainland interpunct), the
  * character turned back to stand upright about the cell's centre on the
- * font's central axis (`VDTFlowFrame.centralBaselines`).
+ * font's central axis (`VDTFlowFrame.centralBaselines`). The runs are the
+ * ones the text was measured with (`verticalRuns`), so each segment paints
+ * within the width the layout gave it.
  *
  * Punctuation takes the font's vertical form (OpenType `vert`) through a
  * twin face the host registers with {@link registerVerticalAlternates} —
  * the same font file loaded under another family name with
  * `featureSettings: '"vert" 1'`, which Chrome 140+ applies to canvas text.
  * Without a twin, the fallbacks of `verticalOrientation` apply: brackets and
- * quotes turned about the em box's centre, mainland pause marks moved to
- * the top-right quadrant of the cell.
+ * quotes turned about the em box's centre, mainland pause and stop marks
+ * moved to the upper right of the cell (each by its glyph's `offset`).
  */
 
 import type { CjkRegion } from '../types';
@@ -53,6 +56,11 @@ export function verticalPaintActive(): boolean {
 // ---------------------------------------------------------------------------
 
 const twins = new Map<string, string>();
+/** The faces {@link loadVerticalAlternates} added for a family's twin. */
+const twinFaces = new Map<string, FontFace[]>();
+/** Per family, how many times its twin was loaded or dropped: a load that
+ *  another one (or an unregister) overtook while it waited is stale. */
+const twinGeneration = new Map<string, number>();
 
 /**
  * Paint the vertical forms of `family`'s punctuation (brackets, quotes,
@@ -65,10 +73,29 @@ export function registerVerticalAlternates(family: string, twinFamily: string): 
   twins.set(family, twinFamily);
 }
 
-/** Forget the twin of `family` (or of every family). */
+function removeFaces(faces: readonly FontFace[] | undefined): void {
+  if (!faces || typeof document === 'undefined' || !document.fonts) return;
+  for (const ff of faces) {
+    try {
+      document.fonts.delete(ff);
+    } catch {
+      // Already gone.
+    }
+  }
+}
+
+/** Forget the twin of `family` (or of every family), removing the faces
+ *  {@link loadVerticalAlternates} added for it: the family's font changed
+ *  (a file uploaded again under the same name), so its twin must be loaded
+ *  again from the new sources. A load still under way for it is dropped. */
 export function unregisterVerticalAlternates(family?: string): void {
-  if (family === undefined) twins.clear();
-  else twins.delete(family);
+  const families = family === undefined ? [...new Set([...twins.keys(), ...twinFaces.keys(), ...twinGeneration.keys()])] : [family];
+  for (const f of families) {
+    twins.delete(f);
+    removeFaces(twinFaces.get(f));
+    twinFaces.delete(f);
+    twinGeneration.set(f, (twinGeneration.get(f) ?? 0) + 1);
+  }
 }
 
 /** The twin family registered for `family`, if any. */
@@ -115,7 +142,11 @@ function inkKey(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2
 export async function loadVerticalAlternates(family: string, faces: readonly VerticalAlternatesFace[]): Promise<boolean> {
   if (typeof document === 'undefined' || !document.fonts || typeof FontFace === 'undefined' || faces.length === 0) return false;
   if (twins.has(family)) return true;
-  const twin = verticalTwinName(family);
+  const generation = (twinGeneration.get(family) ?? 0) + 1;
+  twinGeneration.set(family, generation);
+  // A family loaded again (after `unregisterVerticalAlternates`) takes a
+  // fresh name, so no face or glyph cache of the old file answers for it.
+  const twin = generation > 1 ? `${verticalTwinName(family)} ${generation}` : verticalTwinName(family);
   const loaded: FontFace[] = [];
   for (const face of faces) {
     try {
@@ -134,20 +165,23 @@ export async function loadVerticalAlternates(family: string, faces: readonly Ver
   }
   if (loaded.length === 0) return false;
   const q = (f: string) => JSON.stringify(f);
+  const current = () => twinGeneration.get(family) === generation;
   try {
     await Promise.all([
       document.fonts.load(`16px ${q(twin)}`, VERTICAL_ALTERNATE_SAMPLE),
       document.fonts.load(`16px ${q(family)}`, PROBE),
     ]);
   } catch {
+    removeFaces(loaded);
     return false;
   }
   const canvas = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(8, 8) : document.createElement('canvas');
   const ctx = canvas.getContext('2d') as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
-  if (!ctx) return false;
-  const applied = inkKey(ctx, `100px ${q(twin)}`, PROBE) !== inkKey(ctx, `100px ${q(family)}`, PROBE);
-  if (applied) twins.set(family, twin);
-  else for (const ff of loaded) document.fonts.delete(ff);
+  const applied = !!ctx && current() && inkKey(ctx, `100px ${q(twin)}`, PROBE) !== inkKey(ctx, `100px ${q(family)}`, PROBE);
+  if (applied) {
+    twins.set(family, twin);
+    twinFaces.set(family, loaded);
+  } else removeFaces(loaded);
   return applied;
 }
 
@@ -227,33 +261,36 @@ function paintVertical(
   const twinFont = twin ? `${prefix}${JSON.stringify(twin)}` : undefined;
   let cx = x;
   for (const run of verticalRuns(graphemesOf(text), state.region)) {
-    if (run.glyph.orient === 'sideways') {
+    if (run.cell === undefined) {
       // The frame turns it sideways: painted as it is, the letters tracked.
       put(ctx, run.text, cx, baseline, mode);
       cx += ctx.measureText(run.text).width;
       continue;
     }
-    cx += paintCell(ctx, run.text, run.glyph, cx, axis, em, central, mode, twinFont, tracking !== 0) + tracking;
+    cx += paintCell(ctx, run.text, run.glyph, cx, axis, em * run.cell, em, central, mode, twinFont, tracking !== 0) + tracking;
   }
   if (middle) ctx.textBaseline = 'middle';
   if (align !== 'left' && align !== 'start') ctx.textAlign = align;
 }
 
-/** Paint one cell (one em along the line) centred on `(x + em / 2,
- *  axis)`; returns its advance. */
+/** Paint one cell (`cell` px along the line: an em, or half of one)
+ *  centred on `(x + cell / 2, axis)`; returns its advance. */
 function paintCell(
   ctx: CanvasRenderingContext2D,
   g: string,
   glyph: VerticalGlyph,
   x: number,
   axis: number,
+  cell: number,
+  /** The font's em: the glyph's own box, whole across the column even
+   *  where the cell is shorter along it. */
   em: number,
   central: number,
   mode: TextPaintMode,
   twinFont: string | undefined,
   tracked: boolean,
 ): number {
-  const cx = x + em / 2;
+  const cx = x + cell / 2;
   const spacing = tracked ? ctx.letterSpacing : undefined;
   if (spacing !== undefined) ctx.letterSpacing = '0px';
   let kind: 'upright' | 'rotate' | 'corner' = 'upright';
@@ -275,27 +312,30 @@ function paintCell(
   if (kind === 'rotate') {
     // Turned with the frame, about the em box's centre; a dash stretched
     // to fill its cell.
-    if (glyph.stretch && w > 0 && w < em) ctx.scale(em / w, 1);
+    if (glyph.stretch && w > 0 && w < cell) ctx.scale(cell / w, 1);
     put(ctx, char, -w / 2, central, mode);
   } else {
     // Stood upright again about the cell's centre.
     ctx.rotate(-Math.PI / 2);
-    const dx = kind === 'corner' ? CORNER_OFFSET_EM.x * em : 0;
-    const dy = kind === 'corner' ? CORNER_OFFSET_EM.y * em : 0;
+    const offset = kind === 'corner' ? glyph.offset ?? CORNER_OFFSET_EM : undefined;
+    const dx = offset ? offset.x * em : 0;
+    const dy = offset ? offset.y * em : 0;
     put(ctx, char, -w / 2 + dx, central + dy, mode);
   }
   ctx.restore();
   if (baseFont !== undefined) ctx.font = baseFont;
   if (spacing !== undefined) ctx.letterSpacing = spacing;
-  return em;
+  return cell;
 }
 
 /**
  * Draw an image (or anything `draw` paints in a `w` × `h` box) inside a
  * box of the current frame: as is on a horizontal page; turned back to
  * stand upright on a vertical one, where the box's `w` runs down the sheet
- * and `h` across it. The box was sized for the picture's own proportions,
- * so upright it keeps them: scaled to fit the turned box, centred in it.
+ * and `h` across it. A box `sized` for that (`VDTDesignImageBlock.upright`:
+ * its width is the picture's height) is filled; any other box was sized
+ * for the picture's own proportions as if horizontal, which upright keep
+ * them: scaled to fit the turned box, centred in it.
  */
 export function drawUprightInBox(
   ctx: CanvasRenderingContext2D,
@@ -304,6 +344,7 @@ export function drawUprightInBox(
   w: number,
   h: number,
   draw: (x: number, y: number, w: number, h: number) => void,
+  sized = false,
 ): void {
   if (!paintState) {
     draw(x, y, w, h);
@@ -313,9 +354,12 @@ export function drawUprightInBox(
   ctx.translate(x, y + h);
   ctx.rotate(-Math.PI / 2);
   // The box on the sheet is `h` wide and `w` tall.
-  const k = w > 0 && h > 0 ? Math.min(h / w, w / h) : 1;
-  const dw = w * k;
-  const dh = h * k;
-  draw((h - dw) / 2, (w - dh) / 2, dw, dh);
+  if (sized) draw(0, 0, h, w);
+  else {
+    const k = w > 0 && h > 0 ? Math.min(h / w, w / h) : 1;
+    const dw = w * k;
+    const dh = h * k;
+    draw((h - dw) / 2, (w - dh) / 2, dw, dh);
+  }
   ctx.restore();
 }

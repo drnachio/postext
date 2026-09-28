@@ -2,35 +2,67 @@
  * Measurement in vertical text (`layout.writingMode: 'vertical-rl'`).
  *
  * A vertical line is measured as a horizontal one in the turned flow frame
- * (see `VDTPage.flow`): a Latin word or number set sideways keeps its
- * horizontal advance, and every character that stands in a cell of its
- * own (Han, punctuation, dashes, ellipses: see `verticalOrientation`)
- * advances one em down the line, whatever its horizontal width — a
- * proportional dash or interpunct included. {@link cellAdvance} is the one
- * place the composer asks for a character's advance, per writing mode, so
- * other width rules (punctuation compression) can feed it later.
+ * (see `VDTPage.flow`), cut into the runs the renderers paint
+ * (`verticalRuns`): a Latin word or number set sideways keeps its
+ * horizontal advance, and every character that stands in a cell of its own
+ * (Han, Chinese punctuation, dashes, ellipses, and the symbols Unicode sets
+ * upright — × © ± ℃ ① —, inside a Latin word or number too) advances its
+ * cell down the line, whatever its horizontal width. {@link cellAdvance} is
+ * the one place a cell's advance is decided, so other width rules
+ * (punctuation compression) can feed it later; {@link verticalTextWidth}
+ * measures any run of text with it.
  */
 
-import type { WritingMode } from '../types';
+import type { CjkRegion, WritingMode } from '../types';
 import type { CjkClass } from './cjkClasses';
 import { measureTextWidth, measureInkBox, onTextWidthCacheClear } from './canvas';
-import { isVerticalCell } from '../writingMode';
+import { isVerticalCell, verticalCellEms, verticalRuns } from '../writingMode';
+import { graphemesOf } from './graphemes';
 import { DEFAULT_CENTRAL_BASELINE } from '../vdt';
 
 const FONT_SIZE_RE = /(\d*\.?\d+)px/;
 
 let measureWritingMode: WritingMode = 'horizontal-tb';
+let measureRegion: CjkRegion = 'mainland';
 
-/** Set the writing mode text is measured in (the build does, from the
- *  layout of the pages it is placing; a styled section may change it). */
-export function setMeasureWritingMode(mode: WritingMode): void {
+/** Set the writing mode text is measured in, and the Chinese region whose
+ *  cells it uses (the mainland interpunct takes half a cell). The build
+ *  does, from the layout of the pages it is placing (a styled section may
+ *  change it), and puts back what it found when it is done. */
+export function setMeasureWritingMode(mode: WritingMode, region: CjkRegion = measureRegion): void {
   measureWritingMode = mode === 'vertical-rl' ? 'vertical-rl' : 'horizontal-tb';
+  measureRegion = region;
 }
 
 /** The writing mode text is measured in (see {@link setMeasureWritingMode});
- *  horizontal until a build sets another. */
+ *  horizontal outside a build. */
 export function getMeasureWritingMode(): WritingMode {
   return measureWritingMode;
+}
+
+/** The Chinese region vertical cells are measured for. */
+export function getMeasureRegion(): CjkRegion {
+  return measureRegion;
+}
+
+/** Whether text is measured vertically now. */
+export function measuringVertically(): boolean {
+  return measureWritingMode === 'vertical-rl';
+}
+
+/** Run `fn` with text measured in `mode` (and `region`), then put back the
+ *  mode in force before — also when `fn` throws. */
+export function withMeasureWritingMode<T>(mode: WritingMode, fn: () => T, region: CjkRegion = measureRegion): T {
+  const prevMode = measureWritingMode;
+  const prevRegion = measureRegion;
+  if (prevMode === mode && prevRegion === region) return fn();
+  setMeasureWritingMode(mode, region);
+  try {
+    return fn();
+  } finally {
+    measureWritingMode = prevMode;
+    measureRegion = prevRegion;
+  }
 }
 
 /** The em of a font string (its size in px), 16 when it names none. */
@@ -41,15 +73,43 @@ export function fontEm(font: string): number {
 
 /**
  * The advance of one CJK grapheme along its line. Horizontal: its measured
- * width. Vertical: one em for every character that stands in a cell of its
- * own; a character set sideways keeps its horizontal width. `cls`, the
- * grapheme's line-break class, is not read yet: it is the hook for
- * punctuation widths (half-width marks), which apply along either axis.
+ * width. Vertical: its cell for every character that stands in one (one
+ * em; half an em for the mainland interpunct, `verticalCellEms`); a
+ * character set sideways keeps its horizontal width. `cls` is the
+ * grapheme's line-break class: the hook for punctuation widths
+ * (half-width marks), which apply along either axis.
  */
 export function cellAdvance(grapheme: string, font: string, vertical: boolean, cls?: CjkClass): number {
-  void cls;
-  if (vertical && isVerticalCell(grapheme)) return fontEm(font);
+  if (vertical && isVerticalCell(grapheme)) return fontEm(font) * verticalCellEms(grapheme, measureRegion, cls);
   return measureTextWidth(grapheme, font);
+}
+
+/**
+ * The advance of `text` along a vertical line: its sideways runs at
+ * `measureRun`'s width (the horizontal one), each cell at
+ * {@link cellAdvance}. The same runs the renderers paint
+ * (`verticalRuns`), so what is measured is what is painted. Text with no
+ * cell is one sideways run: `measureRun(text)`.
+ */
+export function verticalTextWidth(text: string, font: string, measureRun: (run: string) => number = (run) => measureTextWidth(run, font)): number {
+  let width = 0;
+  for (const run of verticalRuns(graphemesOf(text), measureRegion)) {
+    width += run.cell === undefined ? measureRun(run.text) : cellAdvance(run.text, font, true);
+  }
+  return width;
+}
+
+/**
+ * The advance of text painted in the page's flow (design text, list
+ * markers, contents rows, box titles): `measureTextWidth`, except in
+ * vertical text, where what stands in a cell advances its cell
+ * ({@link verticalTextWidth}), as the renderers paint it. ASCII text reads
+ * the same either way.
+ */
+export function flowTextWidth(text: string, font: string): number {
+  // eslint-disable-next-line no-control-regex
+  if (measureWritingMode === 'vertical-rl' && /[^\u0000-\u007F]/.test(text)) return verticalTextWidth(text, font);
+  return measureTextWidth(text, font);
 }
 
 /** A font string's first family, unquoted: the key of

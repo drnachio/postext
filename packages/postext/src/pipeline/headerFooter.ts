@@ -1,3 +1,4 @@
+import { getMeasureWritingMode, setMeasureWritingMode, withMeasureWritingMode } from '../measure/vertical';
 import type { PartPageInfo } from './placeholders';
 import { applyPartPalettesToFlow, type FlowColorValues } from './partPalette';
 import { TITLE_BREAK_RE, applyTitleBreaks, parseInlineFormatting } from '../parse/inlineFormatting';
@@ -103,6 +104,7 @@ function imagePrimitiveToBlock(prim: ResolvedImagePrimitive): VDTDesignImageBloc
     fileId: prim.fileId,
     ...(prim.imageKind ? { imageKind: prim.imageKind } : {}),
     ...(prim.pdfFileId ? { pdfFileId: prim.pdfFileId } : {}),
+    ...(prim.upright ? { upright: true } : {}),
   };
 }
 
@@ -324,7 +326,7 @@ export function measureHeadingDesign(
     const ox = origin?.x ?? frames.page.x;
     const oy = origin?.y ?? frames.page.y;
     const shift = (f: DesignFrames['page']) => ({ x: f.x - ox, y: f.y - oy, width: f.width, height: f.height });
-    stubFrames = { page: shift(frames.page), bleed: shift(frames.bleed) };
+    stubFrames = { page: shift(frames.page), bleed: shift(frames.bleed), ...(frames.upright ? { upright: true } : {}) };
   }
   const layoutAt = (height: number) => layoutDesignSlot(
     level.advancedDesign.slot,
@@ -902,6 +904,17 @@ export interface HeaderFooterInputs {
 }
 
 export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: ReadonlyMap<string, Resource>, inputs: HeaderFooterInputs = {}): void {
+  // Each page's slots measure their text in the writing mode they are set
+  // in (see the loop); the mode in force before is put back.
+  const measureMode = getMeasureWritingMode();
+  try {
+    layoutHeadersAndFooters(doc, resourceById, inputs);
+  } finally {
+    setMeasureWritingMode(measureMode);
+  }
+}
+
+function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<string, Resource> | undefined, inputs: HeaderFooterInputs): void {
   const resolved = doc.config;
   const dpi = resolved.page.dpi;
   const metrics = computePageMetrics(resolved);
@@ -912,6 +925,7 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
   const verticalFrames: DesignFrames = {
     page: sheetRectToFlow(metrics.physical.trimBox, metrics.pageWidthPx),
     bleed: sheetRectToFlow(metrics.physical.bleedBox, metrics.pageWidthPx),
+    upright: true,
   };
 
   // Page roles drive the per-element `pages` filter of every slot below.
@@ -981,6 +995,10 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
   applyPartPalettesToFlow(doc, partPaletteByPageIndex, resolved.colorPalette, inputs.flowColorValues);
 
   for (const page of doc.pages) {
+    // Text in the flow (openers, part pages, in-column designs) reads as the
+    // page's flow does; running heads and folios are horizontal on the
+    // sheet, whatever the flow (see below).
+    setMeasureWritingMode(page.flow ? 'vertical-rl' : 'horizontal-tb');
     // Per-page content area: mirrored margins swap inner/outer on even pages.
     const contentArea = page.contentArea;
     const frames = page.flow ? verticalFrames : physicalFrames;
@@ -1012,14 +1030,14 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
         partNumberByPageIndex,
         partPaletteByPageIndex,
       };
-      page.header = layoutSlotToVdt(
+      page.header = withMeasureWritingMode('horizontal-tb', () => layoutSlotToVdt(
         headerSlot,
         headerContainerBbox(sheetArea, metrics.physical.trimBox),
         page.index + pageIndexOffset,
         placeholders,
         dpi,
         sheetExtras,
-      );
+      ));
     }
     // Back of a part divider: a blank page right after a part page takes the
     // part's verso design (the model book tints the whole leaf). The part
@@ -1276,14 +1294,14 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
         partNumberByPageIndex,
         partPaletteByPageIndex,
       };
-      page.footer = layoutSlotToVdt(
+      page.footer = withMeasureWritingMode('horizontal-tb', () => layoutSlotToVdt(
         footerSlot,
         footerContainerBbox(sheetArea, metrics.physical.trimBox),
         page.index + pageIndexOffset,
         placeholders,
         dpi,
         sheetExtras,
-      );
+      ));
     }
   }
 }

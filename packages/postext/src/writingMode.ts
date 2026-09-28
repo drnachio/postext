@@ -14,9 +14,10 @@
  * Classes follow Unicode's `Vertical_Orientation` (UAX #50, data 18.0),
  * with the Chinese rules on top (clreq Appendix A, GB/T 15834—2011 §5.2):
  * - pause and stop marks (、。，．！？) and ：； are never turned. A
- *   Simplified (mainland) font sets them in the top-right quadrant of the
- *   cell through `vert`; Taiwan and Hong Kong fonts centre them and have no
- *   such form (their U+FE10–FE16 are the mainland shapes, so the vertical
+ *   Simplified (mainland) font sets them in the upper right of the cell
+ *   through `vert` (、。，． in the top-right corner, ！？：； in the right
+ *   half); Taiwan and Hong Kong fonts centre them and have no such form
+ *   (their U+FE10–FE16 are the mainland shapes, so the vertical
  *   presentation forms must not be substituted there).
  * - brackets and quotes take the vertical form, which is the horizontal
  *   glyph turned about the em box's centre when the font gives none;
@@ -24,10 +25,19 @@
  *   (UAX #50 §3.2.4, the Hans vertical convention).
  * - dashes, ellipses, the wave dash and the interpunct are turned about
  *   the em box's centre (Noto CJK gives —— a vertical form only with
- *   `fwid`): a dash is stretched to fill its cell.
+ *   `fwid`): a dash is stretched to fill its cell. The mainland interpunct
+ *   takes half a cell (clreq §5.1), the Taiwan and Hong Kong one
+ *   a whole cell.
+ * - an apostrophe or an interpunct inside a Latin word ("don’t", "l·l")
+ *   runs sideways with the word, as the composer keeps it in the word.
+ *
+ * The measurer and every renderer read the same runs ({@link
+ * verticalRuns}): what stands in a cell advances its cell (one em, half an
+ * em for the mainland interpunct), what runs sideways its horizontal width.
  */
 
 import type { CjkRegion } from './types';
+import { cjkClassOf, isWordInnerMark } from './measure/cjkClasses';
 
 /** How a character is set in a vertical line.
  *  - `upright`: standing, centred in its cell (Han, kana, hangul,
@@ -52,6 +62,10 @@ export interface VerticalGlyph {
   /** `rotate`: stretch the turned glyph along the line to fill its cell
    *  (a dash narrower than its em). */
   stretch?: boolean;
+  /** `corner` fallback: where the upright glyph moves in its cell, in ems
+   *  (`x` across the column, to the right; `y` along it, negative up).
+   *  {@link CORNER_OFFSET_EM} when absent. */
+  offset?: { x: number; y: number };
 }
 
 /** Unicode `Vertical_Orientation` (UAX #50): `U` upright, `R` rotated,
@@ -111,8 +125,12 @@ export function uaxVerticalOrientation(cp: number): UaxVerticalOrientation {
   return 'R';
 }
 
-/** Pause and stop marks (标点 of GB/T 15834 §5.2.1): never turned. */
-const PAUSE_STOP = new Set(['、', '。', '，', '．', '！', '？', '：', '；', '﹐', '﹑', '﹒', '﹔', '﹕', '﹖', '﹗']);
+/** Pause and stop marks (标点 of GB/T 15834 §5.2.1): never turned. The
+ *  first group sits in the top-right corner of a mainland cell, the second
+ *  in the right half, a little above the middle. */
+const CORNER_MARKS = new Set(['、', '。', '，', '．', '﹐', '﹑', '﹒']);
+const EXCLAIM_MARKS = new Set(['！', '？', '﹖', '﹗']);
+const COLON_MARKS = new Set(['：', '；', '﹔', '﹕']);
 
 /** Marks turned about their em box in every Chinese region: dashes,
  *  ellipses, the interpunct, connectors and the wave dash. */
@@ -120,13 +138,14 @@ const TURNED = new Set([
   '—', '―', '⸺', '⸻', // — ― ⸺ ⸻
   '…', '‥', '⋯', // … ‥ ⋯
   '·', '‧', // · ‧
-  '–', '‒', '‐', '‑', // – ‒ ‐ ‑
+  '–', // –
   '～', '〜', '〰', // ～ 〜 〰
   '－', // －
 ]);
 
-/** Dashes stretched to their cell when turned. */
-const STRETCHED = new Set(['—', '―', '⸺', '⸻', '–', '‒', '－']);
+/** Dashes stretched to their cell when turned. (The Latin hyphens ‐ ‑ ‒
+ *  are Unicode's `R`: sideways with the word they join.) */
+const STRETCHED = new Set(['—', '―', '⸺', '⸻', '–', '－']);
 
 /** Mainland vertical quotes: the corner brackets (UAX #50 §3.2.4). */
 const HANS_QUOTES: Record<string, string> = {
@@ -142,6 +161,8 @@ const ROTATE: VerticalGlyph = { orient: 'rotate' };
 const ROTATE_STRETCH: VerticalGlyph = { orient: 'rotate', stretch: true };
 const ALT_ROTATE: VerticalGlyph = { orient: 'alternate', fallback: 'rotate' };
 const ALT_CORNER: VerticalGlyph = { orient: 'alternate', fallback: 'corner' };
+const ALT_EXCLAIM: VerticalGlyph = { orient: 'alternate', fallback: 'corner', offset: { x: 0.5, y: -0.08 } };
+const ALT_COLON: VerticalGlyph = { orient: 'alternate', fallback: 'corner', offset: { x: 0.52, y: -0.22 } };
 
 /**
  * How a grapheme is set in a vertical line of `region`'s Chinese (see the
@@ -153,7 +174,9 @@ export function verticalOrientation(grapheme: string, region: CjkRegion = 'mainl
   if (cp === undefined) return SIDEWAYS;
   if (cp < 0x80) return SIDEWAYS;
   const ch = String.fromCodePoint(cp);
-  if (PAUSE_STOP.has(ch)) return region === 'mainland' ? ALT_CORNER : UPRIGHT;
+  if (CORNER_MARKS.has(ch)) return region === 'mainland' ? ALT_CORNER : UPRIGHT;
+  if (EXCLAIM_MARKS.has(ch)) return region === 'mainland' ? ALT_EXCLAIM : UPRIGHT;
+  if (COLON_MARKS.has(ch)) return region === 'mainland' ? ALT_COLON : UPRIGHT;
   if (TURNED.has(ch)) return STRETCHED.has(ch) ? ROTATE_STRETCH : ROTATE;
   const hans = HANS_QUOTES[ch];
   if (hans !== undefined) return region === 'mainland' ? { orient: 'alternate', fallback: 'rotate', substitute: hans } : ALT_ROTATE;
@@ -171,27 +194,42 @@ export function isVerticalCell(grapheme: string, region: CjkRegion = 'mainland')
   return verticalOrientation(grapheme, region).orient !== 'sideways';
 }
 
-/** Where a mainland pause or stop mark moves when the font gives no
- *  vertical form, in ems of the cell: right and up (a horizontal 。 sits in
- *  the bottom-left quadrant; the vertical one in the top-right; measured
- *  on Noto Serif SC, within 0.05 em for 。、，). */
+/** Where a mainland 、。，． moves when the font gives no vertical form, in
+ *  ems of the cell: right and up (a horizontal 。 sits in the bottom-left
+ *  quadrant, the vertical one in the top-right). Measured against the
+ *  `vert` glyphs of Noto Serif SC: within 0.07 em for 、。，．. ！？ and ：；
+ *  carry their own `offset` (half an em to the right, 0.08 and 0.22 em up),
+ *  within 0.02 em of the font's. */
 export const CORNER_OFFSET_EM = { x: 0.6, y: -0.62 };
+
+/** The size of a character's cell in a vertical line, in ems: half an em
+ *  for the mainland interpunct (· ・, clreq §5.1), one em for
+ *  every other character that stands in a cell. `cls`, when the caller has
+ *  it, is the grapheme's `cjkClassOf`. */
+export function verticalCellEms(grapheme: string, region: CjkRegion = 'mainland', cls = cjkClassOf(grapheme)): number {
+  return region === 'mainland' && cls === 'interpunct' ? 0.5 : 1;
+}
 
 /** One run of a vertical line: consecutive graphemes set alike. A
  *  `sideways` run holds a whole Latin word or number; every other run is
- *  one grapheme (one cell). */
+ *  one grapheme in a cell `cell` ems long. */
 export interface VerticalRun {
   text: string;
   glyph: VerticalGlyph;
+  /** The cell's length along the line, in ems (not on a sideways run). */
+  cell?: number;
 }
 
-/** Cut `text` into the runs a vertical line paints: sideways graphemes
- *  joined into runs, every other grapheme a cell of its own. */
+/** Cut `text` into the runs a vertical line paints and measures: sideways
+ *  graphemes joined into runs, every other grapheme a cell of its own. An
+ *  apostrophe or interpunct between two letters of a Latin word runs
+ *  sideways with it (see `isWordInnerMark`), as the composer measures it. */
 export function verticalRuns(graphemes: readonly string[], region: CjkRegion = 'mainland'): VerticalRun[] {
   const out: VerticalRun[] = [];
   let side = '';
-  for (const g of graphemes) {
-    const glyph = verticalOrientation(g, region);
+  for (let i = 0; i < graphemes.length; i++) {
+    const g = graphemes[i]!;
+    const glyph = isWordInnerMark(g, graphemes[i - 1], graphemes[i + 1]) ? SIDEWAYS : verticalOrientation(g, region);
     if (glyph.orient === 'sideways') {
       side += g;
       continue;
@@ -200,8 +238,20 @@ export function verticalRuns(graphemes: readonly string[], region: CjkRegion = '
       out.push({ text: side, glyph: SIDEWAYS });
       side = '';
     }
-    out.push({ text: g, glyph });
+    out.push({ text: g, glyph, cell: verticalCellEms(g, region) });
   }
   if (side) out.push({ text: side, glyph: SIDEWAYS });
   return out;
+}
+
+/** Whether `text` holds a character that stands in a cell of its own in
+ *  vertical text (see {@link verticalRuns}). ASCII never does. */
+export function holdsVerticalCell(text: string): boolean {
+  // eslint-disable-next-line no-control-regex
+  if (!/[^\u0000-\u007F]/.test(text)) return false;
+  for (const ch of text) {
+    if (ch.charCodeAt(0) < 0x80) continue;
+    if (verticalOrientation(ch).orient !== 'sideways') return true;
+  }
+  return false;
 }

@@ -2,7 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument, renderPageToCanvas } from '../../index';
 import type { PostextConfig, Dimension } from '../../types';
 import { installSizedStub, stubCharWidth } from './stub';
-import { registerVerticalAlternates, unregisterVerticalAlternates } from '../../canvas-backend/verticalText';
+import { registerVerticalAlternates, unregisterVerticalAlternates, drawUprightInBox, setVerticalPaint } from '../../canvas-backend/verticalText';
+import type { Resource } from '../../types';
+import type { VDTDocument } from '../../vdt';
 
 installSizedStub();
 
@@ -126,6 +128,36 @@ describe('canvas: a vertical line', () => {
     expect(near(stop(hans).y - cell(hans).y, 10 - 6.2)).toBe(true);
   });
 
+  it('moves mainland ！？：； into the right half of their own cell, never into the cell above, when the font gives no vertical form', () => {
+    const p = paint('問？答！甲：乙；', 'zh-Hans').painted;
+    const at = (ch: string) => p.find((x) => x.text === ch)!;
+    for (const [mark, before, dx, dy] of [['？', '問', 5, -0.8], ['！', '答', 5, -0.8], ['：', '甲', 5.2, -2.2], ['；', '乙', 5.2, -2.2]] as const) {
+      expect([at(mark).ax, at(mark).ay]).toEqual([1, 0]);
+      // One cell (10 px) below the character before it, moved by its offset.
+      expect(near(at(mark).x - at(before).x, dx)).toBe(true);
+      expect(near(at(mark).y - at(before).y, 10 + dy)).toBe(true);
+    }
+    // Taiwan: centred as they are.
+    const t = paint('問？答', 'zh-Hant').painted;
+    expect(near(t.find((x) => x.text === '？')!.x, t.find((x) => x.text === '問')!.x)).toBe(true);
+  });
+
+  it('paints the mainland interpunct in half a cell and the Taiwan one in a whole cell', () => {
+    for (const [locale, next] of [['zh-Hans', 25], ['zh-Hant', 30]] as const) {
+      const p = paint('約翰·史密斯', locale).painted;
+      const yue = p.find((x) => x.text === '約')!;
+      const shi = p.find((x) => x.text === '史')!;
+      expect(near(shi.y - yue.y, next)).toBe(true);
+    }
+  });
+
+  it('keeps a Latin word with an apostrophe or a symbol inside it in one sideways run', () => {
+    const p = paint('他的don’t與l·l。', 'zh-Hans').painted;
+    expect(p.some((x) => x.text === 'don’t' && x.ay === 1)).toBe(true);
+    expect(p.some((x) => x.text === 'l·l' && x.ay === 1)).toBe(true);
+    expect(p.some((x) => x.text === '」')).toBe(false);
+  });
+
   it('turns a bracket about its em box when the font gives no vertical form, and paints it with the twin face when one is registered', () => {
     const turned = paint('「紅」', 'zh-Hant').painted.find((p) => p.text === '「')!;
     expect([turned.ax, turned.ay]).toEqual([0, 1]);
@@ -163,5 +195,60 @@ describe('canvas: a vertical line', () => {
     expect(rec.calls.some((c) => c.startsWith('transform('))).toBe(false);
     expect(rec.painted.every((p) => p.ax === 1 && p.ay === 0)).toBe(true);
     expect(rec.painted.map((p) => p.text).join('')).toContain('紅樓夢');
+  });
+});
+
+describe('canvas: design pictures in a vertical flow', () => {
+  const picture: Resource = {
+    id: 'art', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0,
+    bitmap: { fileId: 'art.png', format: 'png', width: 400, height: 200 },
+  };
+  const withOpener = (layout: PostextConfig['layout']): PostextConfig => ({
+    ...config('zh-Hant'),
+    layout,
+    headings: { levels: [{ level: 1, breakBefore: { enabled: false } }] },
+    headingStyles: [{
+      id: 'opener',
+      advancedDesign: {
+        enabled: true,
+        slot: { elements: [{ kind: 'image', id: 'art', resourceId: 'art', placement: { anchor: { to: 'container', edge: 'top-left' }, size: { width: pt(100) } } }] },
+      },
+    }],
+  });
+  const artOf = (doc: VDTDocument) => doc.blocks.flatMap((b) => b.designOverlay?.blocks ?? []).find((d) => d.kind === 'image')!;
+
+  it('sizes the box of a picture that stands upright with its width and height swapped, so it keeps its size on the sheet', () => {
+    const vertical = buildDocument({ markdown: '# 第一回 {style="opener"}\n\n正文。', resources: [picture] }, withOpener({ writingMode: 'vertical-rl', layoutType: 'single' }));
+    const art = artOf(vertical);
+    expect(art.kind).toBe('image');
+    if (art.kind !== 'image') return;
+    // 100 px down the column (the flow's width) is the picture's height on
+    // the sheet; its width there, 200 px, is the box's flow height.
+    expect(art.bbox.width).toBeCloseTo(100);
+    expect(art.bbox.height).toBeCloseTo(200);
+    expect(art.upright).toBe(true);
+    // A horizontal page keeps the picture's own proportions and no flag.
+    const horizontal = artOf(buildDocument({ markdown: '# 第一回 {style="opener"}\n\n正文。', resources: [picture] }, withOpener({ layoutType: 'single' })));
+    if (horizontal.kind !== 'image') return;
+    expect(horizontal.bbox.width).toBeCloseTo(100);
+    expect(horizontal.bbox.height).toBeCloseTo(50);
+    expect(horizontal.upright).toBeUndefined();
+  });
+
+  it('fills a box sized upright with the picture, turned back to stand on the sheet', () => {
+    const calls: number[][] = [];
+    const ctx = { save() {}, restore() {}, translate() {}, rotate() {} } as unknown as CanvasRenderingContext2D;
+    const previous = setVerticalPaint({ region: 'taiwan' });
+    try {
+      drawUprightInBox(ctx, 0, 0, 100, 200, (x, y, w, h) => calls.push([x, y, w, h]), true);
+      drawUprightInBox(ctx, 0, 0, 100, 200, (x, y, w, h) => calls.push([x, y, w, h]));
+    } finally {
+      setVerticalPaint(previous);
+    }
+    // Sized upright: the whole turned box, 200 wide and 100 tall on the sheet.
+    expect(calls[0]).toEqual([0, 0, 200, 100]);
+    // A box sized as if horizontal (a callout icon) keeps its proportions
+    // (1 : 2), fitted inside and centred.
+    expect(calls[1]).toEqual([75, 0, 50, 100]);
   });
 });

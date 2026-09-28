@@ -158,9 +158,11 @@ export interface MeasureBlockOptions {
    *  (`setCjkLineBreak`); `gb` outside a build. Only CJK text reads it. */
   cjkLineBreak?: CjkLineBreakLevel;
   /** The writing mode the text is measured in: `'vertical-rl'` gives every
-   *  CJK character a 1 em cell (see `cellAdvance`). Unset: the build's
-   *  (`setMeasureWritingMode`), horizontal outside a build. Only CJK text
-   *  reads it. */
+   *  character that stands in a cell of its own in vertical text its cell
+   *  (CJK characters, Chinese marks, the signs Unicode sets upright: see
+   *  `verticalRuns`), and runs the rest sideways at its horizontal width.
+   *  Unset: the build's (`setMeasureWritingMode`), horizontal outside a
+   *  build. ASCII text measures the same either way. */
   writingMode?: WritingMode;
 }
 
