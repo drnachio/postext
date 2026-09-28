@@ -23,7 +23,6 @@ import {
   hashNamesOtherBook,
   parseHashBundle,
   readViewHash,
-  sameBook,
   writeViewHash,
   type HashBundleRef,
   type ViewHash,
@@ -50,7 +49,7 @@ import {
 import { createSaveScheduler, type SaveScheduler } from '../storage/saveScheduler';
 import { getBlob, putBlobAt } from '../storage/blobStore';
 import { effectiveCanvasScope, wholeBookAllowed } from '../book/scope';
-import { choosePresetOpen, presetLocales, sameContentLocale, sameLocaleTag } from '../presets/locale';
+import { choosePresetOpen, isEditionOnScreen, linkNamesBookOnScreen } from '../presets/locale';
 import { fetchBundleBytes, openHashBundle } from './hashBundle';
 import { getChapterLayouts, pruneChapterLayoutStore, putChapterLayouts } from '../storage/layouts';
 import type { ProjectSummary } from '../storage/projects';
@@ -1385,15 +1384,11 @@ export function SandboxProvider({
     const s = stateRef.current;
     const onScreen = s.activeProjectId === null && s.activePresetId === id;
     const current = onScreen && s.presetApplied?.presetId === id ? s.presetApplied.locale ?? null : null;
+    // Already open in that edition (Simplified ↔ Traditional Chinese, one
+    // language in two editions, switch; `zh-TW` asks for the `zh-Hant` on
+    // screen). The hash sync asks the same question before it calls here.
+    if (isEditionOnScreen(provider.summary, locale, current) && s.presetStatus !== 'loading') return true;
     const choice = choosePresetOpen({ summary: provider.summary, requested: locale, current, viewer: s.locale, drafts: draftsRef.current });
-    // Already open in that edition. A preset listing its locales names the
-    // edition by its own tag, so Simplified ↔ Traditional Chinese (one
-    // language, two editions) switch; one listing none is compared by
-    // language.
-    const sameEdition = presetLocales(provider.summary).length > 0
-      ? sameLocaleTag(choice.locale, current ?? '')
-      : current !== null && sameContentLocale(choice.locale, current);
-    if (current !== null && sameEdition && s.presetStatus !== 'loading') return true;
     return switchBookRef.current(async () => {
       if (choice.draft) {
         const draft = await getPresetDraft(choice.draft.key);
@@ -1578,7 +1573,9 @@ export function SandboxProvider({
             ? before.presetApplied.locale ?? null
             : null,
         };
-        if (!bundleRef && !sameBook(wanted, onScreen)) {
+        // `lang=zh-TW` names the `zh-Hant` edition on screen: it stays, and
+        // is seeded below as any visit's book.
+        if (!bundleRef && !linkNamesBookOnScreen(wanted, onScreen, summaries)) {
           if (wanted.project !== null && projects.some((p) => p.id === wanted.project)) {
             await saveOutgoing();
             await projectActions.activate(wanted.project).catch(() => undefined);

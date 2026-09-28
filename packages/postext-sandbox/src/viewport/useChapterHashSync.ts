@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useSandboxBookActions, useSandboxDispatch, useSandboxSelector } from '../context/SandboxContext';
+import { linkNamesBookOnScreen } from '../presets/locale';
 import { parseHashBundle, readViewHash, sameBook, writeViewHash, type ViewHash, type ViewHashBook } from '../storage/viewHash';
 
 /**
@@ -32,6 +33,12 @@ import { parseHashBundle, readViewHash, sameBook, writeViewHash, type ViewHash, 
  * the canvas or the HTML preview shows the whole book, a switch changes no
  * document: the viewer keeps the fragment itself (it jumps to the chapter,
  * or stays where the reader clicked), so nothing is written here.
+ *
+ * A preset's `lang=` names the edition it opens, not a tag to match
+ * letter for letter: `lang=zh-TW` names the `zh-Hant` edition (and a
+ * language the book lacks its `openLocale`), so such a link applies its
+ * chapter and page to that edition and the fragment then names it by its
+ * own tag.
  */
 export function useChapterHashSync(): void {
   const dispatch = useSandboxDispatch();
@@ -51,6 +58,9 @@ export function useChapterHashSync(): void {
   bookRef.current = book;
   const viewRef = useRef(view);
   viewRef.current = view;
+  const summaries = useSandboxSelector((s) => s.presetSummaries);
+  const summariesRef = useRef(summaries);
+  summariesRef.current = summaries;
   const projectIds = useSandboxSelector((s) => s.projects.map((p) => p.id).join('\n'));
   const projectIdsRef = useRef(projectIds);
   projectIdsRef.current = projectIds;
@@ -64,8 +74,13 @@ export function useChapterHashSync(): void {
   if (initialRef.current === null) initialRef.current = readViewHash();
   const initialPendingRef = useRef(true);
   // The chapter and page a fragment named along with another book: applied
-  // once that book has replaced the one on screen (null: none pending).
-  const linkRef = useRef<Pick<ViewHash, 'chapter' | 'page'> | null>(null);
+  // once that book has replaced the one on screen, and only to it (`book`
+  // null: whichever book a bundle link opens). Null: none pending.
+  const linkRef = useRef<(Pick<ViewHash, 'chapter' | 'page'> & { book: ViewHashBook | null }) | null>(null);
+  // Whether a fragment's book is the one on screen, its `lang=` read as
+  // the edition it opens.
+  const namesBookOnScreen = (hash: ViewHashBook): boolean =>
+    linkNamesBookOnScreen(hash, bookRef.current, summariesRef.current);
   // Set right before a fragment-driven switch; cleared when it lands.
   const hashDrivenRef = useRef<string | null>(null);
   const userNavigatedRef = useRef(false);
@@ -95,10 +110,14 @@ export function useChapterHashSync(): void {
     // names, not by timing.
     if (prev.bookVersion !== bookVersion) {
       hashDrivenRef.current = null;
-      let link = linkRef.current;
+      const pending = linkRef.current;
       linkRef.current = null;
+      // A link for another book than the one that landed (superseded by a
+      // later switch) is dropped, not applied to this one.
+      let link: Pick<ViewHash, 'chapter' | 'page'> | null =
+        pending && (pending.book === null || namesBookOnScreen(pending.book)) ? pending : null;
       const initial = initialRef.current;
-      if (!link && initialPendingRef.current && initial && sameBook(initial, bookRef.current)) {
+      if (!pending && initialPendingRef.current && initial && namesBookOnScreen(initial)) {
         initialPendingRef.current = false;
         link = initial;
       }
@@ -129,7 +148,7 @@ export function useChapterHashSync(): void {
       initialPendingRef.current = false;
       // A book the fragment named that could not be opened (passed over by
       // the seeding) keeps its chapter and page to itself.
-      if (sameBook(initial, bookRef.current)) selectRef.current(initial.chapter, initial);
+      if (namesBookOnScreen(initial)) selectRef.current(initial.chapter, initial);
     }
     // No viewer keeping the fragment (the PDF tab): name the chapter anyway.
     if (readViewHash().chapter === null) {
@@ -155,14 +174,17 @@ export function useChapterHashSync(): void {
       // the fragment is rewritten to name the project once it is open.
       const bundle = parseHashBundle(window.location.hash, hashBundleKeysRef.current);
       if (bundle) {
-        linkRef.current = { chapter: hash.chapter, page: hash.page };
+        linkRef.current = { chapter: hash.chapter, page: hash.page, book: null };
         userNavigatedRef.current = true;
         void openHashBundle(bundle).then((opened) => {
           if (!opened) linkRef.current = null;
         });
         return;
       }
-      if (sameBook(hash, bookRef.current)) {
+      if (namesBookOnScreen(hash)) {
+        // Named by another tag (`zh-TW` for the `zh-Hant` on screen): the
+        // fragment names it by its own; the page stays for the viewer.
+        if (!sameBook(hash, bookRef.current)) writeViewHash({ ...bookRef.current });
         selectRef.current(hash.chapter);
         return;
       }
@@ -180,7 +202,8 @@ export function useChapterHashSync(): void {
         writeViewHash({ ...bookRef.current });
         return;
       }
-      linkRef.current = { chapter: hash.chapter, page: hash.page };
+      const link = { chapter: hash.chapter, page: hash.page, book: { preset: hash.preset, project: hash.project, lang: hash.lang } };
+      linkRef.current = link;
       userNavigatedRef.current = true;
       open.then((opened) => opened !== false, () => false).then((opened) => {
         // The book is not going to change (an unavailable preset, a lost
@@ -188,7 +211,7 @@ export function useChapterHashSync(): void {
         // one on screen. An opened book is applied by the effect above once
         // it is committed — which is after this promise settles.
         if (opened) return;
-        linkRef.current = null;
+        if (linkRef.current === link) linkRef.current = null;
         writeViewHash({ ...bookRef.current });
       });
     };

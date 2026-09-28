@@ -3,6 +3,7 @@
 
 import { matchContentLocale, sameContentLocale } from 'postext';
 import type { PresetDraftSummary } from '../storage/presetDrafts';
+import { sameBook, type ViewHashBook } from '../storage/viewHash';
 import type { PresetSummary } from './types';
 
 /** Same content language (see `postext`'s `sameContentLocale`): region and
@@ -23,8 +24,8 @@ export function presetLocales(summary: Pick<PresetSummary, 'locale' | 'locales'>
 
 /** The locale key a preset serves for `requested`: the one of its locales
  *  that serves that language (exact tag first; for Chinese, the edition
- *  in the same script), the only one it has, or null when the summary
- *  cannot tell (the bundle decides on load). */
+ *  in the same script before the other one), the only one it has, or null
+ *  when the summary cannot tell (the bundle decides on load). */
 export function resolvePresetLocale(summary: Pick<PresetSummary, 'locale' | 'locales'>, requested: string): string | null {
   const locales = presetLocales(summary);
   const match = matchContentLocale(locales, requested);
@@ -46,6 +47,44 @@ export function presetOpenLocale(summary: Pick<PresetSummary, 'locale' | 'locale
 export function activeLocaleTag(locales: readonly string[], active: string | null): string | null {
   if (active === null) return null;
   return matchContentLocale(locales, active) ?? null;
+}
+
+type LocaleSummary = Pick<PresetSummary, 'locale' | 'locales' | 'openLocale'>;
+
+/** The locale a preset opens in when `requested` is asked for (a locale
+ *  tag, a `lang=` link): the one of its locales serving it; for a language
+ *  a book in several locales lacks, its `openLocale` when it names one;
+ *  else the tag itself (the bundle decides on load). */
+export function presetLocaleFor(summary: LocaleSummary, requested: string): string {
+  const carried = presetLocales(summary).length > 1;
+  return resolvePresetLocale(summary, requested) ?? (carried ? presetOpenLocale(summary) : null) ?? requested;
+}
+
+/** Whether a preset on screen in `current` is already the edition a
+ *  request for `requested` opens (no request: whatever is open), so that
+ *  opening it again changes nothing. A preset listing its locales names
+ *  each edition by its own tag (`zh-TW` asks for its `zh-Hant`, and
+ *  Simplified ↔ Traditional switch); one listing none, or unknown, is
+ *  compared by content language. */
+export function isEditionOnScreen(summary: LocaleSummary | undefined, requested: string | null | undefined, current: string | null): boolean {
+  if (current === null) return false;
+  if (!requested) return true;
+  if (summary && presetLocales(summary).length > 0) return sameLocaleTag(presetLocaleFor(summary, requested), current);
+  return sameContentLocale(requested, current);
+}
+
+/** Whether a permalink's book is the one on screen (see `sameBook`), a
+ *  preset's `lang=` read as the edition it opens: `lang=zh-TW` names the
+ *  `zh-Hant` edition on screen, a language the book lacks its
+ *  `openLocale`. */
+export function linkNamesBookOnScreen(
+  link: ViewHashBook,
+  book: ViewHashBook,
+  summaries: readonly (LocaleSummary & Pick<PresetSummary, 'id'>)[],
+): boolean {
+  if (link.project !== null || link.preset === null || link.lang === null) return sameBook(link, book);
+  if (book.project !== null || book.preset !== link.preset) return false;
+  return isEditionOnScreen(summaries.find((p) => p.id === link.preset), link.lang, book.lang);
 }
 
 export interface PresetOpenChoice {
@@ -80,8 +119,7 @@ export function choosePresetOpen(input: {
   const opening = presetOpenLocale(input.summary);
   let locale: string;
   if (input.requested) {
-    const carried = presetLocales(input.summary).length > 1;
-    locale = resolvePresetLocale(input.summary, input.requested) ?? (carried ? opening : null) ?? input.requested;
+    locale = presetLocaleFor(input.summary, input.requested);
   } else if (input.current) {
     locale = input.current;
   } else {

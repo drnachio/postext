@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { activeLocaleTag, bundleContentLocales, choosePresetOpen, presetOpenLocale, resolvePresetLocale, sameContentLocale } from './locale';
+import { activeLocaleTag, bundleContentLocales, choosePresetOpen, isEditionOnScreen, linkNamesBookOnScreen, presetLocaleFor, presetOpenLocale, resolvePresetLocale, sameContentLocale } from './locale';
 
 const bilingual = { id: 'guide', locales: ['es', 'en'] };
 const spanish = { id: 'emp', locale: 'es' };
@@ -79,6 +79,39 @@ describe('Chinese editions', () => {
     expect(choosePresetOpen({ summary: hlm, requested: 'zh-Hant', viewer: 'es', drafts })).toEqual({ locale: 'zh-Hant', draft: null });
     expect(choosePresetOpen({ summary: hlm, requested: 'zh-CN', viewer: 'es', drafts }).draft?.key).toBe('hlm::zh-Hans');
     expect(choosePresetOpen({ summary: hlm, requested: 'ZH-hans', viewer: 'es', drafts }).draft?.key).toBe('hlm::zh-Hans');
+  });
+
+  it('serves the other script when the book has only that one', () => {
+    const simplified = { id: 'sgz', locale: 'en', locales: ['en', 'zh-Hans'] };
+    expect(resolvePresetLocale(simplified, 'zh-TW')).toBe('zh-Hans');
+    expect(choosePresetOpen({ summary: simplified, requested: 'zh-Hant', viewer: 'es', drafts: [] }).locale).toBe('zh-Hans');
+  });
+
+  it('knows which edition a link asks for, and whether it is on screen (review of #198)', () => {
+    expect(presetLocaleFor(hlm, 'zh-TW')).toBe('zh-Hant');
+    expect(presetLocaleFor(hlm, 'zh-SG')).toBe('zh-Hans');
+    expect(presetLocaleFor(hlm, 'es')).toBe('zh-Hant');
+    expect(presetLocaleFor(bilingual, 'fr')).toBe('fr');
+    expect(isEditionOnScreen(hlm, 'zh-TW', 'zh-Hant')).toBe(true);
+    expect(isEditionOnScreen(hlm, 'es', 'zh-Hant')).toBe(true);
+    expect(isEditionOnScreen(hlm, 'zh-Hans', 'zh-Hant')).toBe(false);
+    expect(isEditionOnScreen(hlm, undefined, 'zh-Hans')).toBe(true);
+    expect(isEditionOnScreen(hlm, 'zh-Hant', null)).toBe(false);
+    // Regional editions listed apart still switch.
+    expect(isEditionOnScreen({ locales: ['pt-PT', 'pt-BR'] }, 'pt-BR', 'pt-PT')).toBe(false);
+    // Nothing listed: the bundle decided, compared by content language.
+    expect(isEditionOnScreen(undefined, 'zh-TW', 'zh-Hant')).toBe(true);
+    expect(isEditionOnScreen({}, 'zh-CN', 'zh-Hant')).toBe(false);
+
+    const book = { preset: 'hlm', project: null, lang: 'zh-Hant' };
+    const summaries = [hlm];
+    expect(linkNamesBookOnScreen({ preset: 'hlm', project: null, lang: 'zh-TW' }, book, summaries)).toBe(true);
+    expect(linkNamesBookOnScreen({ preset: 'hlm', project: null, lang: 'zh-hant' }, book, summaries)).toBe(true);
+    expect(linkNamesBookOnScreen({ preset: 'hlm', project: null, lang: null }, book, summaries)).toBe(true);
+    expect(linkNamesBookOnScreen({ preset: 'hlm', project: null, lang: 'zh' }, book, summaries)).toBe(false);
+    expect(linkNamesBookOnScreen({ preset: 'other', project: null, lang: 'zh-TW' }, book, summaries)).toBe(false);
+    expect(linkNamesBookOnScreen({ preset: 'hlm', project: null, lang: 'zh-TW' }, { preset: null, project: 'p1', lang: null }, summaries)).toBe(false);
+    expect(linkNamesBookOnScreen({ preset: null, project: 'p1', lang: null }, { preset: null, project: 'p1', lang: null }, summaries)).toBe(true);
   });
 
   it('marks the row tag the active locale is served as', () => {
