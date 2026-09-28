@@ -469,3 +469,15 @@ export function findAnnotations(text: string): FoundAnnotation[] {
   walk(0, text.length);
   return out;
 }
+
+/** `spans` without their Chinese annotations: the text as written, set
+ *  plain (captions, table cells and notes, which do not draw them). The
+ *  same array when none has one. */
+export function dropAnnotations(spans: InlineSpan[]): InlineSpan[] {
+  if (!spans.some((s) => s.emphasisMark || s.properName !== undefined || s.bookTitle || s.ruby || s.warichu)) return spans;
+  return spans.map((s) => {
+    if (!s.emphasisMark && s.properName === undefined && !s.bookTitle && !s.ruby && !s.warichu) return s;
+    const { emphasisMark: _e, properName: _p, bookTitle: _b, ruby: _r, warichu: _w, ...rest } = s;
+    return rest;
+  });
+}

@@ -511,6 +511,21 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
       <td>Lowercase letters set as capitals at 70% of the text size — a character's name in a play, an acronym in running text. Takes other marks inside and around it; see <a href="#small-capitals">Small capitals</a>.</td>
     </tr>
     <tr>
+      <td>Chinese marks</td>
+      <td><code>:dots[不可]</code>, <code>:name[賈寶玉]</code>, <code>:book[石頭記]</code></td>
+      <td>Emphasis dots (着重号), the proper-name line (专名号) and the book-title mark (书名号: 《》 or a wavy line, per <code>cjk.bookTitleMark</code>). The text stays as written; see <a href="#chinese-marks-ruby-and-warichu">Chinese marks, ruby and warichu</a>.</td>
+    </tr>
+    <tr>
+      <td>Ruby</td>
+      <td><code>:ruby[紅樓]&#123;rt="hóng lóu"&#125;</code> or <code>&#123;紅樓|hóng|lóu&#125;</code></td>
+      <td>Pinyin or zhuyin readings over (or beside) the base characters. The compact form needs a Han, kana or bopomofo base, so <code>&#123;x|x&gt;0&#125;</code> stays text.</td>
+    </tr>
+    <tr>
+      <td>Warichu</td>
+      <td><code>:warichu[note]&#123;open="〔" close="〕"&#125;</code></td>
+      <td>A note set in two half-size rows inside the line (双行夹注), broken across lines and pages.</td>
+    </tr>
+    <tr>
       <td>Inline code</td>
       <td><code>`code`</code></td>
       <td>Backticks are stripped; the span is rendered as plain text, exactly as written: a <code>{':ref{…}'}</code>, a chip, maths, a link or an emphasis marker inside it prints literally, which is how a text shows the syntax. Distinct code styling is on the roadmap.</td>
@@ -605,6 +620,26 @@ The :smallcaps[unesco] report and the :smallcaps[who] guidelines.
 - **Where.** Paragraphs, list items, blockquotes, callouts, table cells, captions and notes, and headings while `headings.inlineMarks` is on (the default); with it off, the markup is removed from a heading and the text prints as written.
 - **Whole paragraphs.** A paragraph style or a callout body with `smallCaps: true` sets all its text this way (see [Paragraph styles](/en/docs/configuration#paragraph-styles)).
 - **Text.** The canvas, the HTML and the PDF carry the letters as painted: copying `:smallcaps[Hamlet]` gives "HAMLET".
+
+
+### Chinese marks, ruby and warichu
+
+Chinese editions mark text between the lines rather than with italics or underlining, gloss characters with their readings, and set commentary inside the line. Five directives do it. They keep their text: the characters between the brackets stay in the paragraph (search, the contents, index anchors and copied text read them as written), and the directives take the other inline marks inside and around them, nested ones included. Write `\]` for a literal bracket.
+
+```markdown
+此事:dots[不可]輕忽。:name[賈寶玉]與:name[林黛玉]讀:book[西廂記]。
+
+{滿紙|mǎn|zhǐ}荒唐言，:ruby[一把]{rt="yì bǎ"}辛酸淚！:ruby[都]{rt="ㄉㄡ"}云作者痴。
+
+寶玉:warichu[甲戌側批：此是第一首標題詩。]{open="〔" close="〕"}道：……
+```
+
+- **`:dots[text]`** sets an emphasis dot (着重号) under each character in horizontal text, right of it in vertical text, and none on punctuation or spaces. `style="dot|circle|sesame"` (default `dot`), `fill="open"` for an outline, `pos="over|under"` for the other side. Markdown emphasis `*…*` on Chinese characters does the same under `cjk.emphasis: 'dots'`, the default in a Chinese document; Latin letters in the same emphasis stay italic.
+- **`:name[text]`** draws the proper-name line (专名号) under the text (left of it in vertical text), and **`:book[text]`** the book-title mark (书名号): 《》 around the title (〈〉 for a title inside another), the wavy line of classical and Taiwan editions, or nothing, as `cjk.bookTitleMark` says (by default brackets on the mainland, the wavy line in Taiwan and Hong Kong). One source serves a modern mainland edition and a classical one. Two names or titles side by side keep their lines apart.
+- **`:ruby[base]{rt="…"}`** sets readings over the base (pinyin), or right of each character (zhuyin, the default for bopomofo readings). With as many readings as characters, split on spaces or `|`, each character gets its own and a line may break between them (mono ruby); `group`, or a count that does not match, sets one reading centred over the whole base, which never breaks. `pos="over|under|right"` picks the side. The compact form `{紅樓|hóng|lóu}` (one reading per `|`) or `{紅樓|hónglóu}` (one reading for the whole base) reads the same, only when the base holds a Han, kana or bopomofo character, outside maths, code and attributes, so `{x|x>0}` in Latin prose stays text.
+- **`:warichu[note]`** sets a note (双行夹注) in two rows at half the text size inside the line, the upper row read first (the right one in vertical text). A long note fills what is left of the line and goes on with the next line, column or page. `open` and `close` wrap it in brackets at the text size; `cjk.warichu` sets the size, colour and default brackets.
+
+The line pitch never changes: marks and readings live in the leading, and the build warns when a paragraph's line gap is too narrow for them (`cjkMarksExceedLeading`, `rubyExceedsLeading`). Give annotated paragraphs a paragraph style with more leading. Marks, readings and notes are drawn in paragraphs, headings, list items, blockquotes and boxes; in captions, table cells and notes, and in running heads and designs, the text prints without them. See [Configuration › Marks, ruby and warichu](/en/docs/configuration#marks-ruby-and-warichu).
 
 
 ## Footnotes

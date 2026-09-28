@@ -67,7 +67,8 @@ import { dimensionToPx } from '../units';
 // Caption / table-cell / note content is parsed with the shared snippet
 // parser so measurement and the sandbox's glyph→snippet mapping agree on
 // one span list (`:ref{…}` becomes a one-char placeholder span).
-import { parseInlineSnippetSpans as parseRefAwareSpans } from '../parse/inlineSnippet';
+import { parseInlineSnippetSpans } from '../parse/inlineSnippet';
+import { dropAnnotations } from '../parse/annotations';
 import { sliceSpan } from '../parse/links';
 import { chipContextOf, fontSizePxOf, resolveChipSpans, type ChipContext } from './chips';
 import { mergeCaptionStyle } from '../defaults/captionStyle';
@@ -77,6 +78,11 @@ import { resolveBodyStyle } from './styles';
 import { uppercasePreservingLength } from './buildBlockKind';
 import { lineTrailingTracking } from '../lineInk';
 import type { ResourceNumberingMap } from './resourceNumbering';
+
+/** A caption's, a note's or a cell's spans. The Chinese annotations
+ *  (#193–#195) are set as plain text there: resource lines draw no marks,
+ *  readings or warichu rows. */
+const parseRefAwareSpans = (text: string) => dropAnnotations(parseInlineSnippetSpans(text));
 
 /** Non-breaking space used to glue a resolved `:ref` label into a single
  *  atomic text token, so a post-measurement pass can tag it reliably. */

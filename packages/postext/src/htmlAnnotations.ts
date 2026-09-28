@@ -15,7 +15,8 @@ const HTML_ESCAPE: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&
 const esc = (s: string): string => s.replace(/[&<>"']/g, (c) => HTML_ESCAPE[c]!);
 const n = (v: number): string => v.toFixed(3);
 
-/** A mark as markup, in its line's box (`baseline` px from its top). */
+/** A mark as markup, placed from a point `baseline` px above the line's
+ *  text baseline (0: on it). */
 function markHtml(m: VDTLineMark, baseline: number, color: string): string {
   const ink = m.color ?? color;
   const cx = m.x;
@@ -46,11 +47,15 @@ function markHtml(m: VDTLineMark, baseline: number, color: string): string {
   }
 }
 
-/** The marks of a line as markup inside its box; '' when it has none. */
+/** The marks of a line as markup inside its box; '' when it has none.
+ *  They hang from a box of no size set on the line's text baseline (a box
+ *  in the line's font, as the text spans are), so they follow the text
+ *  wherever the browser puts its baseline. */
 export function lineMarksHtml(line: VDTLine, color: string): string {
   if (!line.marks || line.marks.length === 0) return '';
-  const baseline = line.baseline - line.bbox.y;
-  return line.marks.map((m) => markHtml(m, baseline, color)).join('');
+  const marks = line.marks.map((m) => markHtml(m, 0, color)).join('');
+  return `<span aria-hidden="true" style="position:absolute;left:0;top:0;white-space:pre;">`
+    + `<span style="display:inline-block;position:relative;width:0;height:0;vertical-align:baseline;">${marks}</span></span>`;
 }
 
 /** Quotes the family of a CSS font shorthand for a `style` attribute (the

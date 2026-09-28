@@ -14,11 +14,11 @@ import type { MarkCutRule } from '../measure/markCuts';
 
 type Ctx = CanvasRenderingContext2D;
 
-/** A sesame dot (﹅): a lens `size` long, a little over half as wide,
+/** A sesame dot (﹅): a lens `size` long and 0.3 of it wide,
  *  leaning a third of a right angle, centred on the origin. */
 export function sesamePath(size: number): { x: number; y: number }[][] {
   const l = size / 2;
-  const w = size * 0.28;
+  const w = size * 0.6;
   const a = -Math.PI / 6;
   const rot = (x: number, y: number) => ({ x: x * Math.cos(a) - y * Math.sin(a), y: x * Math.sin(a) + y * Math.cos(a) });
   // Two quadratic curves: [start, control, end] each.

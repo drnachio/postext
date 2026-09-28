@@ -84,7 +84,7 @@ export function segmentFont(seg: VDTLineSegment, block: BlockLike): string {
 const NO_DOT_RE = /^[\p{P}\p{Z}\p{Cc}\p{Cf}]/u;
 
 /** Mark sizes, in em of the text they mark. */
-const DOT = { dot: 0.16, circle: 0.2, sesame: 0.22 } as const;
+const DOT = { dot: 0.16, circle: 0.2, sesame: 0.3 } as const;
 const GAP = 0.06;
 const STROKE = 0.05;
 const OUTLINE = 0.035;

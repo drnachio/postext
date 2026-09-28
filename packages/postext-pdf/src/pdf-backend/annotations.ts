@@ -31,12 +31,12 @@ import type { FontCache } from '../fontCache';
 import { type PageCtx, alphaOf, alphaStateOp, colorFromHex, drawTextPx } from './primitives';
 import { tagArtifact, tagContent, type StructElem } from './tagging';
 
-/** A sesame dot (﹅): a lens `size` long, a little over half as wide,
+/** A sesame dot (﹅): a lens `size` long and 0.3 of it wide,
  *  leaning a third of a right angle (as the canvas draws it). Two
  *  quadratic curves, each `[start, control, end]`. */
 function sesameCurves(size: number): { x: number; y: number }[][] {
   const l = size / 2;
-  const w = size * 0.28;
+  const w = size * 0.6;
   const a = -Math.PI / 6;
   const rot = (x: number, y: number) => ({ x: x * Math.cos(a) - y * Math.sin(a), y: x * Math.sin(a) + y * Math.cos(a) });
   return [

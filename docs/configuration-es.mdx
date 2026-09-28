@@ -1529,7 +1529,7 @@ const config: PostextConfig = {
 Postext compone escrituras alfabéticas que se escriben de izquierda a derecha. Dos familias de sistemas de escritura todavía no están del todo soportadas:
 
 - **Escrituras de derecha a izquierda** (árabe, hebreo, persa, urdu…). No hay algoritmo bidireccional: las líneas se cortan y se alinean como si el texto corriera de izquierda a derecha, contra el margen izquierdo, y lo que muestra cada línea depende de cómo se pinta. En la salida canvas y PDF, una línea alineada a la izquierda y sin formato en línea se dibuja como un solo tramo de texto, que el navegador o el motor tipográfico del PDF vuelven de derecha a izquierda por su cuenta, así que ahí una línea toda en una escritura de derecha a izquierda puede leerse bien, pero no una que mezcle direcciones, cifras o puntuación. La salida HTML, las líneas justificadas, centradas o alineadas a la derecha y las que llevan formato en línea se dibujan palabra a palabra de izquierda a derecha: cada palabra se lee bien, pero las palabras salen en orden de lectura invertido.
-- **El chino, el japonés y el coreano** se componen en horizontal, o de arriba abajo con `layout.writingMode: 'vertical-rl'` (ver [Escritura vertical](#escritura-vertical)). Un párrafo con más caracteres CJK que espacios entre palabras se corta entre caracteres con las reglas de principio y final de línea de clreq que fija `cjk.lineBreak` (ninguna línea empieza por 。、」 o ー, ninguna termina en 「 o （), mantiene enteros —— y ……, un número con sus signos y una palabra latina, y una línea justificada se ensancha entre sus caracteres hasta la medida: ver [Tipografía de Asia oriental](#tipografía-de-asia-oriental). Un párrafo latino que cita unas pocas palabras CJK conserva la división óptima de líneas y puede cortarse junto a ellas; un signo de apertura o cierre CJK, el punto medio o un signo de ancho completo citados en texto latino (〈h〉, ％) no cambian nada. Los anchos de la puntuación, la puntuación colgada, el espacio entre chino y latín y la retícula de caracteres se componen como explica [Tipografía de Asia oriental](#tipografía-de-asia-oriental), a lo largo de la línea en cualquiera de los dos sentidos de escritura; todavía no hay ruby. El coreano se corta entre sílabas además de en sus espacios.
+- **El chino, el japonés y el coreano** se componen en horizontal, o de arriba abajo con `layout.writingMode: 'vertical-rl'` (ver [Escritura vertical](#escritura-vertical)). Un párrafo con más caracteres CJK que espacios entre palabras se corta entre caracteres con las reglas de principio y final de línea de clreq que fija `cjk.lineBreak` (ninguna línea empieza por 。、」 o ー, ninguna termina en 「 o （), mantiene enteros —— y ……, un número con sus signos y una palabra latina, y una línea justificada se ensancha entre sus caracteres hasta la medida: ver [Tipografía de Asia oriental](#tipografía-de-asia-oriental). Un párrafo latino que cita unas pocas palabras CJK conserva la división óptima de líneas y puede cortarse junto a ellas; un signo de apertura o cierre CJK, el punto medio o un signo de ancho completo citados en texto latino (〈h〉, ％) no cambian nada. Los anchos de la puntuación, la puntuación colgada, el espacio entre chino y latín y la retícula de caracteres se componen como explica [Tipografía de Asia oriental](#tipografía-de-asia-oriental), a lo largo de la línea en cualquiera de los dos sentidos de escritura, y lo mismo los puntos de énfasis, las marcas de nombre propio y de título, el ruby y las notas warichu (ver [Marcas, ruby y warichu](#marcas-ruby-y-warichu)). El coreano se corta entre sílabas además de en sus espacios.
 
 Hay patrones de separación silábica para ocho idiomas (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`); los tipos de recurso integrados y las cadenas de continuación existen en esos ocho y en chino. El chino, el japonés y el coreano se componen sin separación silábica. Cualquier otro idioma se divide con los patrones del inglés de EE. UU., con un aviso en la consola, y recibe las cadenas inglesas. Para un documento así, fija `hyphenation.enabled: false` y pasa `resourceTypes` y las cadenas de continuación de `tableStyle` en su idioma.
 
@@ -3017,7 +3017,7 @@ import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefault
 
 ## Tipografía de Asia oriental
 
-La propiedad `cjk` fija cómo se compone el texto en chino, japonés y coreano: qué convenciones regionales sigue, dónde pueden cortarse sus líneas, qué ancho ocupa su puntuación y si cuelga, el espacio entre chino y latín, y la retícula de caracteres de la caja de texto. Todos los campos son opcionales, y `'auto'` sigue la región del idioma del documento (`locale`), de modo que un libro con `locale: 'zh-Hant'` corta sus líneas y compone su puntuación a la manera de Taiwán sin fijar nada más.
+La propiedad `cjk` fija cómo se compone el texto en chino, japonés y coreano: qué convenciones regionales sigue, dónde pueden cortarse sus líneas, qué ancho ocupa su puntuación y si cuelga, el espacio entre chino y latín, la retícula de caracteres de la caja de texto, y cómo se imprimen las marcas chinas, las lecturas ruby y las notas warichu del texto. Todos los campos son opcionales, y `'auto'` sigue la región del idioma del documento (`locale`), de modo que un libro con `locale: 'zh-Hant'` corta sus líneas y compone su puntuación a la manera de Taiwán sin fijar nada más.
 
 ```ts
 interface CjkConfig {
@@ -3029,6 +3029,11 @@ interface CjkConfig {
   hangingPunctuation?: 'none' | 'allow' | 'force';
   latinSpacing?: Dimension;                 // Entre chino y latín; por defecto 0,25 em.
   grid?: { enabled?: boolean; charsPerLine?: number; linesPerPage?: number; show?: boolean };
+  emphasis?: 'auto' | 'italic' | 'dots';    // Qué hace *…* con los caracteres chinos.
+  bookTitleMark?: 'auto' | 'brackets' | 'wavy' | 'none'; // Qué imprime :book[…].
+  annotationColor?: ColorValue;             // Puntos y líneas de nombre y título; por defecto, el color del texto.
+  ruby?: { fontFamily?: string; fontSize?: Dimension; color?: ColorValue; position?: 'auto' | 'over' | 'under' | 'right' };
+  warichu?: { fontSize?: Dimension; color?: ColorValue; open?: string; close?: string };
 }
 ```
 
@@ -3089,6 +3094,36 @@ interface CjkConfig {
       <td><code>&#123; enabled?, charsPerLine?, linesPerPage?, show? &#125;</code></td>
       <td>desactivada</td>
       <td>La caja de texto en caracteres por línea y líneas por página (ver <a href="#retícula-de-caracteres">Retícula de caracteres</a>).</td>
+    </tr>
+    <tr>
+      <td><code>emphasis</code></td>
+      <td><code>'auto' | 'italic' | 'dots'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Qué hace el énfasis de Markdown (<code>*…*</code>) con los caracteres chinos: <code>'dots'</code> pone un punto de énfasis bajo cada uno (a su derecha en texto vertical), como <code>:dots[…]</code>, y las letras latinas del mismo énfasis conservan la cursiva; <code>'italic'</code> los inclina, algo que una fuente china solo puede simular. <code>'auto'</code>: <code>'dots'</code> cuando el idioma del documento es el chino, <code>'italic'</code> en los demás casos (ver <a href="#marcas-ruby-y-warichu">Marcas, ruby y warichu</a>).</td>
+    </tr>
+    <tr>
+      <td><code>bookTitleMark</code></td>
+      <td><code>'auto' | 'brackets' | 'wavy' | 'none'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Qué imprime <code>:book[…]</code>: 《》 alrededor del título (〈〉 dentro de otro título), la línea ondulada de título bajo él, o el título solo. <code>'auto'</code>: signos en la China continental, línea ondulada en Taiwán y Hong Kong.</td>
+    </tr>
+    <tr>
+      <td><code>annotationColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>el color del texto</td>
+      <td>Color de los puntos de énfasis y de las líneas de nombre propio y de título; el que toman por defecto las lecturas ruby y las notas warichu.</td>
+    </tr>
+    <tr>
+      <td><code>ruby</code></td>
+      <td><code>&#123; fontFamily?, fontSize?, color?, position? &#125;</code></td>
+      <td>medio cuerpo, <code>'auto'</code></td>
+      <td>Las lecturas de <code>:ruby[…]</code> y <code>&#123;紅樓|hóng|lóu&#125;</code>: fuente (por defecto, la del texto), tamaño (por defecto <code>&#123; value: 0.5, unit: 'em' &#125;</code> del texto; el zhuyin al 60 % de él), color, y dónde van cuando un ruby no lo dice (<code>'auto'</code>: el zhuyin a la derecha de cada carácter, el pinyin encima del texto en horizontal y a su derecha en vertical).</td>
+    </tr>
+    <tr>
+      <td><code>warichu</code></td>
+      <td><code>&#123; fontSize?, color?, open?, close? &#125;</code></td>
+      <td>medio cuerpo, sin signos</td>
+      <td>Las notas en dos filas de <code>:warichu[…]</code>: el tamaño de la nota (por defecto medio em, de modo que las dos filas llenan el em de la línea), su color y los signos que se componen al tamaño del texto antes de la primera fila y tras la última (mandan los <code>open</code> / <code>close</code> de cada nota).</td>
     </tr>
   </tbody>
 </table>
@@ -3181,6 +3216,19 @@ Dos cajas de la práctica china, en 五号 (10,5 pt) con 6 pt de interlínea (`l
 
 `show` dibuja la retícula (稿纸) sobre la caja de texto, un cuadrado gris claro por posición de carácter en cada línea (la caja de cuadratín del carácter alrededor de su línea de base), en cada columna de la página (la lateral de una disposición `oneAndHalf`, en el lado que le toca según la paridad de la página), en el canvas y en el HTML. El PDF solo la dibuja cuando `renderToPdf` recibe `characterGrid: true`: es una ayuda de pantalla. `cjkGridGeometry(config)` devuelve la retícula que fija una configuración (los números en uso, los márgenes, la caja de texto) y `applyCjkGrid(config)` la configuración reescrita.
 
+### Marcas, ruby y warichu
+
+El marcado de [marcas chinas, ruby y warichu](/es/docs/document-format#marcas-chinas-ruby-y-warichu) conserva su texto en el párrafo: la búsqueda, el índice general, las anclas del índice analítico y el texto copiado leen los caracteres tal como se escribieron, y de estos ajustes solo depende lo que se dibuja alrededor.
+
+- **Puntos de énfasis** (着重号, `:dots[…]`, y `*…*` sobre caracteres chinos con `emphasis: 'dots'`): un punto por carácter, centrado en él (sin contar el espaciado de una línea justificada), nunca en la puntuación ni en los espacios; bajo el carácter en texto horizontal y a su derecha en vertical (clreq §5.3.1). `style` elige punto relleno, círculo o punto sésamo, `fill="open"` dibuja el contorno y `pos="over|under"` el lado.
+- **Líneas de nombre propio y de título** (专名号 `:name[…]`, 书名号 `:book[…]` con `bookTitleMark: 'wavy'`): corren bajo la caja de los caracteres (a su izquierda en vertical) y atraviesan los espacios de la secuencia. Donde se tocan dos secuencias, cada extremo cede un octavo de em, de modo que `:name[賈寶玉]:name[林黛玉]` se lee como dos nombres. Si unos puntos y una línea marcan el mismo texto por el mismo lado, la línea va más cerca del texto. Con `'brackets'`, los 《》 son texto con el que se cortan las líneas, se pintan y se copian como cualquier carácter; no ocupan ningún carácter del texto plano ni del mapa de fuente (los segmentos llevan `inserted`).
+- **Ruby**: las lecturas ocupan el hueco entre líneas junto a la caja de la base, centradas en ella; una lectura más ancha que su base ensancha la caja de la base, menos el cuarto de em de ruby que puede invadir un vecino sin lectura, y dos lecturas guardan un cuarto de em de ruby entre sí. Un ruby mono (una lectura por carácter) puede cortarse entre sus caracteres; un ruby de grupo, nunca. El zhuyin en texto horizontal forma una columna a la derecha de cada carácter, con la marca de tono junto al último símbolo, y la caja del carácter crece lo que mide la columna.
+- **Notas warichu** (双行夹注): se pliegan en dos filas al tamaño de la nota, centradas en la línea y sin hueco entre ellas. La fila de arriba toma caracteres hasta tener al menos la mitad del fragmento, así que la segunda nunca es la más larga, y uno más mientras la de abajo empezaría con un signo que no puede abrir línea. Una nota más larga que el sitio que queda en la línea la llena y sigue en la línea, la columna o la página siguientes; sus signos van solo antes de la primera fila y tras la última. En texto vertical la fila de arriba es la de la derecha, que se lee primero.
+
+El paso de línea no cambia nunca: marcas y lecturas viven en el interlineado. Un párrafo cuyo hueco entre líneas (la altura de línea menos el cuerpo) mide menos de medio em con marcas por un lado, o cinco octavos con marcas por los dos (clreq §5.6.1), se avisa con `cjkMarksExceedLeading`; uno cuyas lecturas miden más que el hueco, con `rubyExceedsLeading`. Dales a esos párrafos un estilo de párrafo con más interlineado.
+
+En el VDT un segmento marcado lleva `cjkMarks`, y la composición coloca los puntos y las líneas de sus líneas en `VDTLine.marks` (puntos, círculos, sésamos, líneas rectas y onduladas, en el marco de flujo de la línea), que el canvas, el HTML y el PDF dibujan tal cual (PDF: `Artifact /Layout`; HTML: cajas `aria-hidden` y el texto con puntos en `<em>`). El segmento de la base de un ruby lleva `ruby` (la lectura y sus trozos) y pinta la base en `inkOffset` cuando la lectura la ensanchó; el fragmento de una nota warichu en una línea es un segmento cuyo `text` es la fila de arriba y luego la de abajo, y cuyo `warichu` guarda las filas que los renderizadores pintan en su lugar. El PDF etiquetado pone la lectura en el `RT` del `Ruby` de su base y la nota en un `Warichu`, y el `/ActualText` de la línea lee el texto de la base y la nota una sola vez. Las marcas, lecturas y notas se dibujan en el texto, los títulos, las listas y los recuadros; los pies de figura, las celdas de tabla y el texto de diseño conservan el texto sin ellas.
+
 El resolutor y el depurador siguen el patrón de las demás secciones; `setCjkLineBreak` y `setCjkComposition` fijan el nivel y la composición (anchos de la puntuación, puntuación colgada, espacio entre chino y latín; `cjkCompositionOf(resolved.cjk, dpi)`) para las mediciones hechas fuera de `buildDocument`, que los toma de la configuración. Fuera de una composición, los signos conservan todo su avance y no se pone espacio entre chino y latín:
 
 ```ts
@@ -3189,7 +3237,10 @@ import { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOf, se
 resolveCjkConfig(undefined, 'zh-HK');
 // { region: 'hongkong', lineBreak: 'basic', punctuationWidth: 'fullwidth', compressAdjacent: true,
 //   trimLineStart: true, hangingPunctuation: 'none', latinSpacing: { value: 0.25, unit: 'em' },
-//   grid: { enabled: false, charsPerLine: 0, linesPerPage: 0, show: false } }
+//   grid: { enabled: false, charsPerLine: 0, linesPerPage: 0, show: false },
+//   emphasis: 'dots', bookTitleMark: 'wavy',
+//   ruby: { fontSize: { value: 0.5, unit: 'em' }, position: 'auto' },
+//   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '', close: '' } }
 ```
 
 En el Sandbox estos ajustes están en **Diseño › Tipografía › Tipografía de Asia oriental**.
