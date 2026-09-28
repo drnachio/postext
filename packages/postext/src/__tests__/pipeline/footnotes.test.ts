@@ -169,3 +169,20 @@ describe('footnote warnings', () => {
     expect(found.filter((w) => w.kind === 'undefinedFootnote' || w.kind === 'unusedFootnote')).toHaveLength(2);
   });
 });
+
+describe('chapterEnd alignment', () => {
+  const md = [`${filler(2)} Cita.[^a]`, '[^a]: Nota al final.', filler(1)].join('\n\n');
+  const foot = (doc: VDTDocument): number => doc.pages[0]!.contentArea.y + doc.pages[0]!.contentArea.height;
+  it('sets the chapter\'s notes at the foot of the column by default, under a rule', () => {
+    const doc = build(md, { ...TWO_COL, footnotes: { placement: 'chapterEnd' } });
+    const n = notes(doc)[0]!;
+    const line = n.lines.at(-1)!;
+    expect(Math.abs(line.bbox.y + line.bbox.height - foot(doc))).toBeLessThan(1);
+    expect(doc.pages[n.pageIndex]!.footnoteAreas?.[0]?.rule).toBeDefined();
+  });
+  it('keeps them under the text with chapterEndAlign: text', () => {
+    const doc = build(md, { ...TWO_COL, footnotes: { placement: 'chapterEnd', chapterEndAlign: 'text' } });
+    const line = notes(doc)[0]!.lines.at(-1)!;
+    expect(line.bbox.y + line.bbox.height).toBeLessThan(foot(doc) - 20);
+  });
+});

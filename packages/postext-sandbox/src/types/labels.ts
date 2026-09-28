@@ -263,6 +263,10 @@ export interface SandboxLabels {
   footnotesNumberingTooltip: string;
   footnotesNumberingChapter: string;
   footnotesNumberingDocument: string;
+  footnotesChapterEndAlign: string;
+  footnotesChapterEndAlignTooltip: string;
+  footnotesChapterEndAlignFoot: string;
+  footnotesChapterEndAlignText: string;
   footnotesFontSize: string;
   footnotesFontSizeTooltip: string;
   footnotesLineHeight: string;

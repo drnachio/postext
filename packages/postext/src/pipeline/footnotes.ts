@@ -8,7 +8,7 @@
  */
 
 import type { ContentBlock, InlineSpan } from '../parse';
-import type { ResolvedParagraphStyleConfig } from '../types';
+import type { Dimension, ResolvedParagraphStyleConfig } from '../types';
 import type { ResolvedConfig, VDTLine } from '../vdt';
 
 /** Id of the paragraph style the notes are set in (not a user style). */
@@ -99,9 +99,18 @@ export function lastFootnoteNumber(numbering: FootnoteNumbering): number {
 export function footnoteParagraphStyle(resolved: ResolvedConfig): ResolvedParagraphStyleConfig {
   const f = resolved.footnotes;
   const body = resolved.bodyText;
-  const fontSize = f.fontSize.unit === 'em' || f.fontSize.unit === 'rem'
-    ? { value: f.fontSize.value * body.fontSize.value, unit: body.fontSize.unit }
-    : f.fontSize;
+  /** A length in body `em` as a length in the body size's unit. */
+  const inBody = (d: Dimension): Dimension => (d.unit === 'em' || d.unit === 'rem'
+    ? { value: d.value * body.fontSize.value, unit: body.fontSize.unit }
+    : d);
+  const fontSize = inBody(f.fontSize);
+  // After the chapter the notes stand off the text by the separator's
+  // spaces (there is no rule there).
+  const above = inBody(f.spaceAbove);
+  const belowRule = inBody(f.spaceBelowRule);
+  const marginTop = above.unit === belowRule.unit
+    ? { value: above.value + belowRule.value, unit: above.unit }
+    : above;
   return {
     id: FOOTNOTE_STYLE_ID,
     name: FOOTNOTE_STYLE_ID,
@@ -121,7 +130,7 @@ export function footnoteParagraphStyle(resolved: ResolvedConfig): ResolvedParagr
     firstLineIndent: { value: 0, unit: 'em' },
     hangingIndent: f.hangingIndent,
     spaceBetween: f.spaceBetween,
-    marginTop: { value: 0, unit: 'em' },
+    marginTop,
     marginBottom: { value: 0, unit: 'em' },
     snapToGrid: true,
     textTransform: 'none',

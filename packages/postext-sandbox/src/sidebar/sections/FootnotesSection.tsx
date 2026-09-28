@@ -68,6 +68,7 @@ export const FootnotesSection = memo(function FootnotesSection() {
         label={labels.footnotesPlacement}
         value={fn.placement}
         variant="segmented"
+        stacked
         options={[
           { value: 'column', label: labels.footnotesPlacementColumn },
           { value: 'chapterEnd', label: labels.footnotesPlacementChapterEnd },
@@ -77,10 +78,27 @@ export const FootnotesSection = memo(function FootnotesSection() {
         isDefault={fn.placement === D.placement}
         onReset={() => resetField('placement')}
       />
+      {!columnFoot && (
+        <SelectInput
+          label={labels.footnotesChapterEndAlign}
+          value={fn.chapterEndAlign}
+          variant="segmented"
+          stacked
+          options={[
+            { value: 'foot', label: labels.footnotesChapterEndAlignFoot },
+            { value: 'text', label: labels.footnotesChapterEndAlignText },
+          ]}
+          onChange={(v) => update({ chapterEndAlign: v as FootnotesConfig['chapterEndAlign'] })}
+          tooltip={labels.footnotesChapterEndAlignTooltip}
+          isDefault={fn.chapterEndAlign === D.chapterEndAlign}
+          onReset={() => resetField('chapterEndAlign')}
+        />
+      )}
       <SelectInput
         label={labels.footnotesNumbering}
         value={fn.numbering}
         variant="segmented"
+        stacked
         options={[
           { value: 'chapter', label: labels.footnotesNumberingChapter },
           { value: 'document', label: labels.footnotesNumberingDocument },
@@ -154,74 +172,70 @@ export const FootnotesSection = memo(function FootnotesSection() {
         onReset={() => resetField('spaceBetween')}
         units={SPACE_UNITS}
       />
-      {columnFoot && (
-        <>
+      <DimensionInput
+        label={labels.footnotesSpaceAbove}
+        value={fn.spaceAbove}
+        onChange={(dim) => update({ spaceAbove: dim })}
+        min={0}
+        step={0.1}
+        tooltip={labels.footnotesSpaceAboveTooltip}
+        isDefault={dimensionsEqual(fn.spaceAbove, D.spaceAbove)}
+        onReset={() => resetField('spaceAbove')}
+        units={SPACE_UNITS}
+      />
+      <DimensionInput
+        label={labels.footnotesSpaceBelowRule}
+        value={fn.spaceBelowRule}
+        onChange={(dim) => update({ spaceBelowRule: dim })}
+        min={0}
+        step={0.1}
+        tooltip={labels.footnotesSpaceBelowRuleTooltip}
+        isDefault={dimensionsEqual(fn.spaceBelowRule, D.spaceBelowRule)}
+        onReset={() => resetField('spaceBelowRule')}
+        units={SPACE_UNITS}
+      />
+      <ToggleSwitch
+        label={labels.footnotesSeparator}
+        checked={fn.separator.enabled}
+        onChange={(v) => updateSeparator({ enabled: v })}
+        tooltip={labels.footnotesSeparatorTooltip}
+        isDefault={fn.separator.enabled === D.separator.enabled}
+        onReset={() => resetSeparatorField('enabled')}
+      />
+      {fn.separator.enabled && (
+        <NestedGroup>
+          <NumberInput
+            label={labels.footnotesSeparatorWidth}
+            value={fn.separator.width}
+            onChange={(v) => updateSeparator({ width: v })}
+            min={0}
+            max={1}
+            step={0.05}
+            tooltip={labels.footnotesSeparatorWidthTooltip}
+            isDefault={fn.separator.width === D.separator.width}
+            onReset={() => resetSeparatorField('width')}
+          />
           <DimensionInput
-            label={labels.footnotesSpaceAbove}
-            value={fn.spaceAbove}
-            onChange={(dim) => update({ spaceAbove: dim })}
+            label={labels.footnotesSeparatorLineWidth}
+            value={fn.separator.lineWidth}
+            onChange={(dim) => updateSeparator({ lineWidth: dim })}
             min={0}
             step={0.1}
-            tooltip={labels.footnotesSpaceAboveTooltip}
-            isDefault={dimensionsEqual(fn.spaceAbove, D.spaceAbove)}
-            onReset={() => resetField('spaceAbove')}
-            units={SPACE_UNITS}
+            tooltip={labels.footnotesSeparatorLineWidthTooltip}
+            isDefault={dimensionsEqual(fn.separator.lineWidth, D.separator.lineWidth)}
+            onReset={() => resetSeparatorField('lineWidth')}
+            units={RULE_UNITS}
           />
-          <DimensionInput
-            label={labels.footnotesSpaceBelowRule}
-            value={fn.spaceBelowRule}
-            onChange={(dim) => update({ spaceBelowRule: dim })}
-            min={0}
-            step={0.1}
-            tooltip={labels.footnotesSpaceBelowRuleTooltip}
-            isDefault={dimensionsEqual(fn.spaceBelowRule, D.spaceBelowRule)}
-            onReset={() => resetField('spaceBelowRule')}
-            units={SPACE_UNITS}
+          <ColorPicker
+            label={labels.footnotesSeparatorColor}
+            value={fn.separator.color ?? fn.color ?? bodyColor ?? FALLBACK_COLOR}
+            onChange={(color) => updateSeparator({ color })}
+            tooltip={labels.footnotesSeparatorColorTooltip}
+            isDefault={raw?.separator?.color === undefined}
+            onReset={() => resetSeparatorField('color')}
+            fieldId="footnotes-separator-color"
           />
-          <ToggleSwitch
-            label={labels.footnotesSeparator}
-            checked={fn.separator.enabled}
-            onChange={(v) => updateSeparator({ enabled: v })}
-            tooltip={labels.footnotesSeparatorTooltip}
-            isDefault={fn.separator.enabled === D.separator.enabled}
-            onReset={() => resetSeparatorField('enabled')}
-          />
-          {fn.separator.enabled && (
-            <NestedGroup>
-              <NumberInput
-                label={labels.footnotesSeparatorWidth}
-                value={fn.separator.width}
-                onChange={(v) => updateSeparator({ width: v })}
-                min={0}
-                max={1}
-                step={0.05}
-                tooltip={labels.footnotesSeparatorWidthTooltip}
-                isDefault={fn.separator.width === D.separator.width}
-                onReset={() => resetSeparatorField('width')}
-              />
-              <DimensionInput
-                label={labels.footnotesSeparatorLineWidth}
-                value={fn.separator.lineWidth}
-                onChange={(dim) => updateSeparator({ lineWidth: dim })}
-                min={0}
-                step={0.1}
-                tooltip={labels.footnotesSeparatorLineWidthTooltip}
-                isDefault={dimensionsEqual(fn.separator.lineWidth, D.separator.lineWidth)}
-                onReset={() => resetSeparatorField('lineWidth')}
-                units={RULE_UNITS}
-              />
-              <ColorPicker
-                label={labels.footnotesSeparatorColor}
-                value={fn.separator.color ?? fn.color ?? bodyColor ?? FALLBACK_COLOR}
-                onChange={(color) => updateSeparator({ color })}
-                tooltip={labels.footnotesSeparatorColorTooltip}
-                isDefault={raw?.separator?.color === undefined}
-                onReset={() => resetSeparatorField('color')}
-                fieldId="footnotes-separator-color"
-              />
-            </NestedGroup>
-          )}
-        </>
+        </NestedGroup>
       )}
     </CollapsibleSection>
   );

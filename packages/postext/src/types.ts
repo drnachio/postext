@@ -2687,6 +2687,12 @@ export interface FootnotesConfig {
   placement?: FootnotePlacement;
   /** Default `'chapter'`. */
   numbering?: FootnoteNumbering;
+  /** `'chapterEnd'` placement: where the notes stand in the columns that
+   *  close the chapter. `'foot'` sets them at the foot of the column, the
+   *  room left over staying between the text and them (as notes at the
+   *  column foot stand); `'text'` sets them right under the text. Default
+   *  `'foot'`. */
+  chapterEndAlign?: 'foot' | 'text';
   /** Size of the note text. Default `0.8em` of the body size. `em` / `rem`
    *  are relative to the body size. */
   fontSize?: Dimension;
@@ -2714,6 +2720,7 @@ export interface FootnotesConfig {
 export interface ResolvedFootnotesConfig {
   placement: FootnotePlacement;
   numbering: FootnoteNumbering;
+  chapterEndAlign: 'foot' | 'text';
   fontSize: Dimension;
   lineHeight: Dimension;
   color?: ColorValue;

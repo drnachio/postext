@@ -1864,6 +1864,56 @@ export function buildDocumentPass(
     for (const id of ids) placedNotes.add(id);
     for (const id of ids) noteAnchor.set(id, placed.contentIndex ?? 0);
   };
+  /** `chapterEnd`: move the run of note paragraphs that closes a column
+   *  down to the column's true foot (under a band cap's cut, above any
+   *  bottom float band). */
+  const dropChapterEndNotes = (): void => {
+    for (const page of doc.pages) {
+      for (const col of page.columns) {
+        const blocks = col.blocks;
+        let first = blocks.length;
+        while (first > 0 && blocks[first - 1]!.footnoteNote !== undefined) first--;
+        if (first === blocks.length) continue;
+        const run = blocks.slice(first);
+        const last = run[run.length - 1]!;
+        const lastLine = last.lines[last.lines.length - 1];
+        const foot = lastLine ? lastLine.bbox.y + lastLine.bbox.height : last.bbox.y + last.bbox.height;
+        const d = trueBottom(col, uncappedBottoms) - foot;
+        if (d < 0.5) continue;
+        for (const b of run) {
+          b.bbox = createBoundingBox(b.bbox.x, b.bbox.y + d, b.bbox.width, b.bbox.height);
+          for (const line of b.lines) {
+            line.bbox = createBoundingBox(line.bbox.x, line.bbox.y + d, line.bbox.width, line.bbox.height);
+            line.baseline += d;
+          }
+        }
+      }
+    }
+  };
+  /** `chapterEnd`: the separator rule over the notes of each column, set
+   *  in the space above them (`spaceBelowRule` over the first note). */
+  const ruleChapterEndNotes = (): void => {
+    const sep = resolved.footnotes.separator;
+    if (!sep.enabled || sep.width <= 0 || noteRulePx <= 0) return;
+    const color = sep.color?.hex ?? resolved.footnotes.color?.hex ?? bodyStyle.color;
+    for (const page of doc.pages) {
+      for (const col of page.columns) {
+        const at = col.blocks.findIndex((b, i) => b.footnoteNote !== undefined && col.blocks[i - 1]?.footnoteNote === undefined);
+        if (at < 0) continue;
+        const notes = col.blocks.slice(at).filter((b) => b.footnoteNote !== undefined);
+        const firstLine = notes[0]!.lines[0];
+        if (!firstLine) continue;
+        const top = firstLine.bbox.y - noteSpaceBelowRulePx - noteRulePx;
+        const last = notes[notes.length - 1]!;
+        (page.footnoteAreas ??= []).push({
+          columnIndex: col.index,
+          bbox: createBoundingBox(col.bbox.x, top, col.bbox.width, last.bbox.y + last.bbox.height - top),
+          noteIds: notes.map((b) => b.footnoteNote!),
+          rule: { x: col.bbox.x, y: top + noteRulePx / 2, width: col.bbox.width * sep.width, lineWidthPx: noteRulePx, color },
+        });
+      }
+    }
+  };
   /** Content index of the block citing each note (reading order). */
   const noteAnchor = new Map<string, number>();
   /** Set the notes in the room reserved for them: the reservations of a
@@ -5267,6 +5317,10 @@ export function buildDocumentPass(
   closeFlowSegment(contentBlocks.length);
   // The notes, in the room the flow reserved for them.
   setColumnNotes();
+  // After the chapter (`chapterEnd`), the notes that close a column drop
+  // to its foot: the room left over stays between the text and them.
+  if (chapterEndNotes && resolved.footnotes.chapterEndAlign === 'foot') dropChapterEndNotes();
+  if (chapterEndNotes) ruleChapterEndNotes();
 
   // A band that is still cut at the end of the pass (a trailing cap: the
   // closing band of a chapter or of the document) must hold what it took,
