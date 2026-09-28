@@ -233,6 +233,7 @@ describe("package exports", () => {
       "isMetadataPlaceholder",
       "computeChapterAttrs",
       "computePartValues",
+      "blockLinesText",
       "resolveDesignPlaceholders",
       "allowedPlaceholdersFor",
       "isAllowedPlaceholder",

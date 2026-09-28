@@ -50,10 +50,14 @@ export function resolveAllConfig(rawConfig?: PostextConfig): ResolvedConfig {
 function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
   const config = applyPaletteToConfig(rawConfig);
   const bodyText = resolveBodyTextConfig(config?.bodyText, config?.locale);
+  // The document language as `resolvedLocale` reads it: the script of the
+  // numeral tokens 一 and 壹 in list and page formats follows it, as it does
+  // in heading templates and `:::numbering`.
+  const documentLocale = documentLocaleOf(config?.locale, bodyText.hyphenation);
   const headings = resolveHeadingsConfig(config?.headings);
   const unorderedLists = resolveUnorderedListsConfig(config?.unorderedLists, bodyText);
-  const orderedLists = resolveOrderedListsConfig(config?.orderedLists, bodyText, config?.locale);
-  const page = resolvePageConfig(config?.page, config?.locale);
+  const orderedLists = resolveOrderedListsConfig(config?.orderedLists, bodyText, documentLocale);
+  const page = resolvePageConfig(config?.page, documentLocale);
   const layout = resolveLayoutConfig(config?.layout);
   const resolved: ResolvedConfig = {
     page,
@@ -98,8 +102,11 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
  *  continuation strings and `documentLocale` follow; a blank tag counts as
  *  unset. */
 export function resolvedLocale(resolved: ResolvedConfig): string {
-  const h = resolved.bodyText.hyphenation;
-  return presentTag(resolved.locale) ?? presentTag(h.tag) ?? presentTag(h.locale) ?? 'en-us';
+  return documentLocaleOf(resolved.locale, resolved.bodyText.hyphenation);
+}
+
+function documentLocaleOf(locale: string | undefined, h: ResolvedConfig['bodyText']['hyphenation']): string {
+  return presentTag(locale) ?? presentTag(h.tag) ?? presentTag(h.locale) ?? 'en-us';
 }
 
 /** Index heading-level configs by level so per-block lookups in the

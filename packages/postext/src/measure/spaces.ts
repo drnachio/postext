@@ -46,3 +46,12 @@ export function isBlankText(text: string): boolean {
 export function collapseBreakingSpaces(text: string): string {
   return text.replace(/[^\S\u00A0\u2007\u202F\uFEFF]+/g, ' ').replace(/^ | $/g, '');
 }
+
+/** {@link collapseBreakingSpaces}, keeping the ideographic space (U+3000):
+ *  in a Chinese title (`甄士隱夢幻識通靈　賈雨村風塵懷閨秀`, `第一回　…`) it is
+ *  a character of the title, not a gap between words. */
+export function collapseTitleSpaces(text: string): string {
+  return text.includes('\u3000')
+    ? text.split('\u3000').map(collapseBreakingSpaces).join('\u3000')
+    : collapseBreakingSpaces(text);
+}

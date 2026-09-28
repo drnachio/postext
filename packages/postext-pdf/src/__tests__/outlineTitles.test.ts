@@ -77,4 +77,36 @@ describe('bookmarks of Chinese chapter heads', () => {
     expect(await outlineTitles(markdown, cfg(''))).toEqual(['第一回甄士隱夢幻識通靈\u3000賈雨村風塵懷閨秀']);
     expect(await outlineTitles(markdown, cfg())).toEqual(['第一回 甄士隱夢幻識通靈\u3000賈雨村風塵懷閨秀']);
   }, 60_000);
+
+  // A heading that wraps is read back the way it was broken: nothing
+  // between two Chinese characters (賈 | 雨村), the ideographic space back
+  // where a line ends or starts with it, in the bookmark and in the tagged
+  // document title alike.
+  it('read a wrapped heading back without a space inside the title', async () => {
+    const markdown = '# 甄士隱夢幻識通靈 \\\\ 賈雨村風塵懷閨秀\n\n此開卷第一回也。';
+    const expected = '第一回\u3000甄士隱夢幻識通靈\u3000賈雨村風塵懷閨秀';
+    // 140 pt breaks after 賈; 125 pt starts the second line with the
+    // couplet's ideographic space, 135 pt ends the first line with it.
+    for (const width of [140, 125, 135]) {
+      const cfg: PostextConfig = {
+        ...config,
+        locale: 'zh-Hant',
+        page: { ...config.page, width: pt(width) },
+        headings: { levels: [{ level: 1, breakBefore: { enabled: false }, numberingTemplate: '第{1:一}回', numberSeparator: '\u3000' }] },
+      };
+      const doc = buildDocument({ markdown }, cfg);
+      expect(doc.blocks.find((b) => b.type === 'heading')!.lines.length, String(width)).toBeGreaterThan(1);
+      const pdf = await PDFDocument.load(await renderToPdf(doc, { fontProvider, accessible: true }));
+      expect(pdf.getTitle(), String(width)).toBe(expected);
+      expect(await outlineTitles(markdown, cfg), String(width)).toEqual([expected]);
+    }
+  }, 60_000);
+});
+
+describe('bookmarks of wrapped headings', () => {
+  it('rejoin a word the line cut, and keep a hard hyphen', async () => {
+    const cfg: PostextConfig = { ...config, page: { ...config.page, width: pt(150) } };
+    expect(await outlineTitles('# The incomprehensibilities of the sea\n\nText.', cfg)).toEqual(['The incomprehensibilities of the sea']);
+    expect(await outlineTitles('# A well-known and oft-quoted opening line\n\nText.', cfg)).toEqual(['A well-known and oft-quoted opening line']);
+  }, 60_000);
 });

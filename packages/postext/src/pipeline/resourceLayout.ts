@@ -32,6 +32,7 @@
  */
 
 import type { InlineSpan, RefCase } from '../parse';
+import { suffixJoiner } from '../parse/inlineFormatting';
 import type {
   ColorPaletteEntry,
   ResolvedCaptionStyleConfig,
@@ -1113,10 +1114,11 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       ? resolvedSpans.map((s) => ({ ...s, italic: s.italic || true }))
       : resolvedSpans;
     // A continued table slice: "Table 6-4. Title (cont.)" — the suffix is
-    // set in italics after the description, glued to it by a plain space.
+    // set in italics after the description, glued to it by a plain space,
+    // or solid when it opens with a wide character (表1-1　标题（续）).
     const suffix = slice?.continued ? tableStyle.continuedSuffix.trim() : '';
     const suffixSpans: InlineSpan[] = suffix.length > 0
-      ? [{ text: `${descSpans.length > 0 ? ' ' : ''}${suffix}`, bold: false, italic: true }]
+      ? [{ text: `${descSpans.length > 0 ? suffixJoiner(suffix) : ''}${suffix}`, bold: false, italic: true }]
       : [];
     const allSpans: InlineSpan[] = prefixText.length > 0
       ? [{ text: prefixText, bold: cs.labelBold, italic: cs.labelItalic, captionLabel: true }, ...descSpans, ...suffixSpans]

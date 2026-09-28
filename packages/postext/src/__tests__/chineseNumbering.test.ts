@@ -19,7 +19,8 @@ import { computeOutlineFor } from '../pipeline/outline';
 import { collectConfigWarnings } from '../configWarnings';
 import { stripConfigDefaults } from '../defaults';
 import { renderToHtml } from '../html-backend';
-import type { PostextConfig, Resource } from '../types';
+import { computeChapterTitles } from '../pipeline/placeholders';
+import type { OrderedListNumberFormat, PageNumberFormat, PostextConfig, Resource } from '../types';
 import type { VDTDesignTextBlock, VDTDocument } from '../vdt';
 
 // Deterministic text measurement stub (no DOM in the node test env).
@@ -246,6 +247,33 @@ describe('ordered lists', () => {
     expect(formatListNumber(12, 'trad-chinese-informal')).toBe('十二');
   });
 
+  it('read 壹 in the document language, the hyphenation tag included, and so do page numbers and part lists', () => {
+    // No `locale`: the document language is the hyphenation tag as written,
+    // as for heading templates. `壹` is a format spelling the types leave out.
+    const TOKEN = '壹' as OrderedListNumberFormat & PageNumberFormat;
+    const doc = buildDocument({ markdown: '# 甲\n\n乙。\n\n# 丙\n\n1. 一\n2. 二\n' }, {
+      bodyText: { hyphenation: { locale: 'zh-Hant' } },
+      page: { ...base.page, pageNumbering: { format: TOKEN, startAt: 2 } },
+      headings: { levels: [{ level: 1, numberingTemplate: '第{1:壹}回' }] },
+      orderedLists: { numberFormat: TOKEN, separator: '、' },
+    });
+    expect(doc.blocks.filter((b) => b.type === 'heading').map((b) => b.numberPrefix)).toEqual(['第壹回', '第貳回']);
+    expect(markers(doc)).toEqual(['壹、', '貳、']);
+    expect(doc.pages[0]!.pageLabel).toBe('貳');
+    expect([doc.config.orderedLists.numberFormat, doc.config.page.pageNumbering.format]).toEqual(['trad-chinese-formal', 'trad-chinese-formal']);
+    // A part's list override, list-wide or per level.
+    const overrides: NonNullable<PostextConfig['orderedLists']>[] = [{ numberFormat: TOKEN }, { levels: [{ level: 1, numberFormat: TOKEN }] }];
+    for (const orderedLists of overrides) {
+      const part = buildDocument({ markdown: ':::part{number="一" title="卷"}\n1. 甲\n2. 乙\n:::\n' }, {
+        ...base,
+        locale: 'zh-Hant',
+        orderedLists: { numberFormat: 'arabic' },
+        parts: { bodyStyle: { orderedLists } },
+      });
+      expect(part.blocks.filter((b) => b.type === 'listItem').map((b) => b.bulletText), JSON.stringify(orderedLists)).toEqual(['壹.', '貳.']);
+    }
+  });
+
   it('strips a default prefix and keeps a set one', () => {
     expect(stripConfigDefaults({ orderedLists: { prefix: '' } })?.orderedLists).toBeUndefined();
     expect(stripConfigDefaults({ orderedLists: { prefix: '（', levels: [{ level: 2, prefix: '(' }] } })?.orderedLists).toEqual({ prefix: '（', levels: [{ level: 2, prefix: '(' }] });
@@ -266,6 +294,13 @@ describe('headings: number separator and couplet titles', () => {
     expect(flattenTitleBreaks('甄士隱夢幻識通靈 賈雨村風塵懷閨秀')).toBe('甄士隱夢幻識通靈　賈雨村風塵懷閨秀');
     expect(flattenTitleBreaks('Part one the storm')).toBe('Part one the storm');
     expect(flattenTitleBreaks('Chapter 甄士隱')).toBe('Chapter 甄士隱');
+    // Characters outside the BMP (two UTF-16 units), the Chinese dash and
+    // ellipsis; the same marks between Latin words stay a space.
+    expect(flattenTitleBreaks('𠀀𠀁\u2028𠀂𠀃')).toBe('𠀀𠀁\u3000𠀂𠀃');
+    expect(flattenTitleBreaks('「红楼梦」\u2028——序')).toBe('「红楼梦」\u3000——序');
+    expect(flattenTitleBreaks('卷一……\u2028甄士隱')).toBe('卷一……\u3000甄士隱');
+    expect(flattenTitleBreaks('Wait…\u2028…what')).toBe('Wait… …what');
+    expect(flattenTitleBreaks('One—\u2028two')).toBe('One— two');
   });
 
   it('sets the separator between number and title in the column', () => {
@@ -275,6 +310,20 @@ describe('headings: number separator and couplet titles', () => {
       expect(heading.lines.map((l) => l.text).join(''), String(sep)).toBe(expected);
       expect(heading.numberPrefix).toBe('第一回');
       expect(heading.numberSeparator).toBe(sep === undefined ? undefined : sep);
+    }
+  });
+
+  it('the running head keeps the couplet\'s ideographic space, however the heading wraps', () => {
+    // 400 pt sets the heading on one line; 111 pt breaks it after 賈, 105 pt
+    // ends a line with the couplet's ideographic space and 102 pt starts one
+    // with it; 63 pt sets one character a line.
+    for (const [width, sep] of [[400, undefined], [400, '　'], [120, ''], [111, '　'], [105, '　'], [102, '　'], [63, '　']] as const) {
+      const cfg = config(sep);
+      const doc = buildDocument({ markdown: md }, { ...cfg, page: { ...cfg.page!, width: pt(width) } });
+      if (width < 400) expect(doc.blocks.find((b) => b.type === 'heading')!.lines.length, String(width)).toBeGreaterThan(1);
+      const header = (doc.pages[0]!.header?.blocks ?? []).filter((b): b is VDTDesignTextBlock => b.kind === 'text');
+      expect(computeChapterTitles(doc.blocks, doc.pages.length)[0], `${width} ${JSON.stringify(sep)}`).toBe('甄士隱夢幻識通靈\u3000賈雨村風塵懷閨秀');
+      if (width === 400) expect(header.flatMap((b) => b.lines.map((l) => l.text)).join('')).toBe('第一回|甄士隱夢幻識通靈\u3000賈雨村風塵懷閨秀');
     }
   });
 

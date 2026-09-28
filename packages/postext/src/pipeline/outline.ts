@@ -8,7 +8,7 @@
 
 import type { ContentBlock, InlineSpan } from '../parse';
 import { flattenTitleBreaks, flattenTitleBreakSpans, TITLE_BREAK_RE } from '../parse/inlineFormatting';
-import { collapseBreakingSpaces } from '../measure/spaces';
+import { collapseTitleSpaces } from '../measure/spaces';
 import { computeHeadingNumbering, type HeadingNumberingOptions, type HeadingTemplates } from '../numbering';
 import type { HeadingCounters, OutlineEntry, PostextConfig } from '../types';
 import type { ResolvedConfig, VDTDocument } from '../vdt';
@@ -70,14 +70,6 @@ function titleSpans(blockText: string, spans: readonly InlineSpan[]): OutlineEnt
     else out.push({ text, bold: s.bold, italic: s.italic });
   }
   return out;
-}
-
-/** {@link collapseBreakingSpaces}, keeping the ideographic space (U+3000):
- *  in Chinese it is a character of the title, not a gap between words. */
-function collapseTitleSpaces(text: string): string {
-  return text.includes('\u3000')
-    ? text.split('\u3000').map(collapseBreakingSpaces).join('\u3000')
-    : collapseBreakingSpaces(text);
 }
 
 /** The heading templates of the resolved config (level → template). */

@@ -87,6 +87,10 @@ export function hyphenationEqual(a: HyphenationConfig | undefined, b: Hyphenatio
     && (a.compounds ?? D.compounds) === (b.compounds ?? D.compounds);
 }
 
+/** Chinese, Japanese and Korean tags already reported for hyphenation
+ *  switched on without a pattern language: each is reported once. */
+const warnedCjkTags = new Set<string>();
+
 /** Resolve the hyphenation settings. The locale — the explicit one, else the
  *  document language; a blank tag counts as unset — becomes the bundled
  *  patterns it names (`'es-ES'` → `'es'`), keeping the original tag when it
@@ -94,12 +98,21 @@ export function hyphenationEqual(a: HyphenationConfig | undefined, b: Hyphenatio
  *  is on: switching it off is the remedy.
  *
  *  Chinese, Japanese and Korean have no patterns and need none: a document
- *  in one of them is set without hyphenation unless `enabled` says
- *  otherwise, and hyphenation only runs when its language (the explicit
- *  `locale`) has patterns, for the Latin words quoted in the text. */
+ *  in one of them is set without hyphenation by default, and hyphenation
+ *  only runs, for the Latin words quoted in the text, when `enabled` is
+ *  `true` and `locale` names a language with patterns (`'en-us'`). Switched
+ *  on with a Chinese, Japanese or Korean `locale`, or with none in such a
+ *  document, it stays off, and the console says so once per tag. */
 function resolveHyphenation(partial: HyphenationConfig | undefined, documentLocale: LocaleTag | undefined): ResolvedBodyTextConfig['hyphenation'] {
   const D = DEFAULT_HYPHENATION_CONFIG;
   const requested = presentTag(partial?.locale) ?? presentTag(documentLocale) ?? D.locale;
+  if (partial?.enabled === true && isCjkLanguage(requested) && !warnedCjkTags.has(requested)) {
+    warnedCjkTags.add(requested);
+    console.warn(
+      `[postext] Hyphenation is on, but "${requested}" has no patterns, so the text is set without it. `
+      + 'Name the language of the Latin words to divide in bodyText.hyphenation.locale (for example \'en-us\').',
+    );
+  }
   const enabled = isCjkLanguage(requested)
     ? false
     : partial?.enabled ?? (isCjkLanguage(documentLocale) ? false : D.enabled);

@@ -20,8 +20,8 @@ import { expandIndexDirectives } from '../pipeline/indexDirective';
 import { buildDocument } from '../pipeline';
 import { parseMarkdown } from '../parse';
 import { renderToHtml } from '../html-backend';
-import type { OutlineEntry, PostextConfig } from '../types';
-import type { VDTDocument } from '../vdt';
+import type { OutlineEntry, PostextConfig, Resource } from '../types';
+import type { VDTDesignTextBlock, VDTDocument } from '../vdt';
 
 // Deterministic text measurement stub (no DOM in the node test env).
 class StubCtx {
@@ -140,6 +140,45 @@ describe('Chinese built-in strings', () => {
     expect(hant.calloutStyles.find((c) => c.id === 'note')!.continuesMarker).toBe('接下頁');
   });
 
+  it('a continued caption or box title takes （续） solid, and (cont.) after a space', () => {
+    const pt = (value: number) => ({ value, unit: 'pt' as const });
+    const page = { width: pt(400), height: pt(400), margins: { top: pt(20), bottom: pt(20), left: pt(20), right: pt(20) } };
+    const cell = (content: string) => ({ content });
+    const table: Resource = {
+      id: 'tab', typeId: 'table', kind: 'table', caption: '大觀園諸景', createdAt: 0, updatedAt: 0,
+      table: { model: { headerRowCount: 1, rows: [[cell('景'), cell('題')], ...Array.from({ length: 60 }, (_, i) => [cell(`景${i + 1}`), cell('有')])] } },
+      placement: { span: 'page' },
+    };
+    const captions = (locale: string): string[] => {
+      const doc = buildDocument({ markdown: `見 :ref{id="tab"}。\n\n${HLM_HANT}`, resources: [table] }, {
+        locale, page, headings: { balancing: { enabled: false } },
+      });
+      return doc.pages.flatMap((p) => p.floats ?? []).map((b) => b.resourceBlock!.captionLines.map((l) => l.text).join(''));
+    };
+    const hans = captions('zh-Hans');
+    expect(hans.length).toBeGreaterThan(1);
+    expect(hans[1]!.endsWith('大觀園諸景（续）')).toBe(true);
+    expect(captions('zh-Hant')[1]!.endsWith('大觀園諸景（續）')).toBe(true);
+    expect(captions('en')[1]!.endsWith('大觀園諸景 (cont.)')).toBe(true);
+
+    const mm = (value: number) => ({ value, unit: 'mm' as const });
+    const md = [HLM_HANT, '', ':::callout{type="note"}', ...Array.from({ length: 12 }, (_, i) => `- 第${i + 1}條：${HLM_HANT}`), ':::'].join('\n');
+    const titles = (locale: string): string[] => {
+      const doc = buildDocument({ markdown: md }, {
+        locale,
+        headings: { balancing: { enabled: false } },
+        page: { width: mm(120), height: mm(70), margins: { top: mm(10), bottom: mm(10), left: mm(10), right: mm(10) } },
+        layout: { layoutType: 'single' },
+        calloutStyles: [{ id: 'note', title: '凡例', keepTogether: false, repeatTitle: true }],
+      });
+      return doc.blocks.filter((b) => b.type === 'callout').flatMap((f) => (f.designOverlay?.blocks ?? [])
+        .filter((b): b is VDTDesignTextBlock => b.kind === 'text' && b.lines.some((l) => l.text.startsWith('凡例')))
+        .map((b) => b.lines.map((l) => l.text).join('')));
+    };
+    expect(titles('zh-Hans').slice(0, 2)).toEqual(['凡例', '凡例（续）']);
+    expect(titles('en').slice(0, 2)).toEqual(['凡例', '凡例 (cont.)']);
+  });
+
   it('the document language falls back to the hyphenation tag as written', () => {
     const resolved = resolveAllConfig({ bodyText: { hyphenation: { locale: 'zh-Hant' } } });
     expect(resolvedLocale(resolved)).toBe('zh-Hant');
@@ -183,10 +222,22 @@ describe('hyphenation in Chinese, Japanese and Korean documents', () => {
       expect(body.hyphenation.enabled, tag).toBe(false);
       expect(hyphenationLocaleFor(tag)).toBe('en-us');
     }
-    // A Chinese hyphenation language, even switched on, has no patterns.
+    buildDocument({ markdown: HLM_HANT }, { locale: 'zh-Hant' });
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('switched on with no language that has patterns, stays off and says so once', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    // A Chinese hyphenation language, or none in a Chinese document.
     expect(resolveBodyTextConfig({ hyphenation: { enabled: true, locale: 'zh' } }).hyphenation.enabled).toBe(false);
     expect(resolveBodyTextConfig({ hyphenation: { enabled: true } }, 'zh-Hans').hyphenation.enabled).toBe(false);
-    buildDocument({ markdown: HLM_HANT }, { locale: 'zh-Hant' });
+    expect(resolveBodyTextConfig({ hyphenation: { enabled: true } }, 'zh-Hans').hyphenation.enabled).toBe(false);
+    expect(warn).toHaveBeenCalledTimes(2);
+    expect(String(warn.mock.calls[1]![0])).toContain('"zh-Hans" has no patterns');
+    expect(String(warn.mock.calls[1]![0])).toContain('bodyText.hyphenation.locale');
+    // Named, it runs: no report.
+    warn.mockClear();
+    expect(resolveBodyTextConfig({ hyphenation: { enabled: true, locale: 'en-us' } }, 'zh-Hant').hyphenation.enabled).toBe(true);
     expect(warn).not.toHaveBeenCalled();
   });
 

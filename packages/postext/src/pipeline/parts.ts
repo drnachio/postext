@@ -6,7 +6,9 @@
  */
 
 import type { ContentBlock } from '../parse';
-import type { ColorValue, Dimension } from '../types';
+import type { ColorValue, Dimension, OrderedListsConfig } from '../types';
+import { listNumberFormat } from '../defaults/orderedLists';
+import { resolvedLocale } from './config';
 import type { ResolvedConfig, VDTDocument } from '../vdt';
 import { dimensionsEqual } from '../defaults/shared';
 import { parseChineseNumeral } from '../chineseNumerals';
@@ -272,6 +274,17 @@ function applyListOverrides<B extends { levels: L[] }, L extends { level: number
   return out as unknown as B;
 }
 
+/** A part's ordered-list override with its number formats read in the
+ *  document language, as the document's own lists are: `壹` in a
+ *  Traditional Chinese document is `trad-chinese-formal`. A spelling the
+ *  list vocabulary does not know is left for the list to fall back on. */
+function withListNumberFormats(lists: OrderedListsConfig | undefined, locale: string): OrderedListsConfig | undefined {
+  if (!lists) return lists;
+  const read = <T extends { numberFormat?: OrderedListsConfig['numberFormat'] }>(o: T): T =>
+    o.numberFormat === undefined ? o : { ...o, numberFormat: listNumberFormat(o.numberFormat, locale) ?? o.numberFormat };
+  return { ...read(lists), ...(lists.levels ? { levels: lists.levels.map(read) } : {}) };
+}
+
 /** Shallow copy of `resolved` whose `bodyText` and list configs carry the
  *  `parts.bodyStyle` overrides, so the body/list resolvers yield the part
  *  typography without any part-specific branches (the callout approach).
@@ -289,7 +302,7 @@ export function derivePartResolvedConfig(resolved: ResolvedConfig): ResolvedConf
   );
   const orderedLists = applyListOverrides(
     applyListOverrides(resolved.orderedLists, { color: bodyStyle.numberColor, fontWeight: bold }, ORDERED_FIELDS),
-    bodyStyle.orderedLists,
+    withListNumberFormats(bodyStyle.orderedLists, resolvedLocale(resolved)),
     ORDERED_FIELDS,
   );
   return {

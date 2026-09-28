@@ -40,6 +40,7 @@
  */
 
 import type { ContentBlock, DirectiveAttrs } from '../parse';
+import { suffixJoiner } from '../parse/inlineFormatting';
 import { spaceDirectiveLines } from '../parse/attrs';
 import type {
   CalloutPlacement,
@@ -501,7 +502,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   // asks for it (`repeatTitle`); the repeat is pagination furniture.
   const repeatedTitle = !!input.continuation && style.repeatTitle && rawTitle.trim().length > 0;
   const suffix = repeatedTitle ? style.continuedSuffix.trim() : '';
-  const shownTitle = suffix.length > 0 ? `${rawTitle} ${suffix}` : rawTitle;
+  const shownTitle = suffix.length > 0 ? `${rawTitle}${suffixJoiner(suffix)}${suffix}` : rawTitle;
   const titleText = style.titleStyle.textTransform === 'uppercase'
     ? uppercasePreservingLength(shownTitle)
     : shownTitle;

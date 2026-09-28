@@ -26,7 +26,7 @@ import {
 } from './pageDecorations';
 import { renderBlock, type ResourceRenderContext } from './blockRender';
 import { renderHeaderFooterSlot } from './headerFooter';
-import { addOutlines } from './outlines';
+import { addOutlines, headingLinesText } from './outlines';
 import { addPageLabels } from './pageLabels';
 import {
   preloadResourceImages,
@@ -178,7 +178,7 @@ function documentTitle(docs: readonly VDTDocument[]): string {
     }
     if (best && (best.headingLevel ?? 1) === 1) break;
   }
-  const text = best?.lines.map((l) => l.text).join(' ').replace(/\s+/g, ' ').trim();
+  const text = best ? headingLinesText(best) : '';
   if (text) return best?.numberPrefix && !text.startsWith(best.numberPrefix) ? `${best.numberPrefix}${best.numberSeparator ?? ' '}${text}` : text;
   return 'Document';
 }
