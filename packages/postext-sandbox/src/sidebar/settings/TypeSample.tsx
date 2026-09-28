@@ -51,15 +51,7 @@ export function TypeSample({ body, lang }: TypeSampleProps) {
   // True size (1 pt = 4/3 px), capped so a display size still fits.
   const sizePx = Math.min(sizePt * (4 / 3), 22);
 
-  const emphasis: CSSProperties = dots
-    ? {
-      fontStyle: 'normal',
-      textEmphasis: 'filled dot',
-      // Under the characters in horizontal Chinese, to their right in vertical.
-      textEmphasisPosition: 'under right',
-      color: hex(body.italicColor, ink),
-    }
-    : { fontStyle: 'italic', color: hex(body.italicColor, ink) };
+  const emphasis: CSSProperties = { fontStyle: dots ? 'normal' : 'italic', color: hex(body.italicColor, ink) };
 
   return (
     <figure className="mb-3 overflow-hidden rounded-md border border-(--rule)">
@@ -92,7 +84,7 @@ export function TypeSample({ body, lang }: TypeSampleProps) {
         {renderSample(text, {
           bold: { fontWeight: body.boldFontWeight, color: hex(body.boldColor, ink) },
           italic: emphasis,
-        })}
+        }, dots ? (vertical ? 'right' : 'under') : null)}
       </div>
       <figcaption className="border-t border-(--rule) bg-(--surface) px-2 py-1 text-[0.62rem] text-(--slate)">
         {labels.bodyTypeSampleCaption}
@@ -101,12 +93,56 @@ export function TypeSample({ body, lang }: TypeSampleProps) {
   );
 }
 
-/** `**bold**` and `*italic*` runs of the sample text. */
-function renderSample(text: string, styles: { bold: CSSProperties; italic: CSSProperties }) {
+/** `**bold**` and `*italic*` runs of the sample text; `dots` sets the
+ *  italic runs with emphasis dots instead, under the characters or to
+ *  their right. */
+function renderSample(text: string, styles: { bold: CSSProperties; italic: CSSProperties }, dots: 'under' | 'right' | null) {
   const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
   return parts.map((p, i) => {
     if (p.startsWith('**')) return <strong key={i} style={styles.bold}>{p.slice(2, -2)}</strong>;
-    if (p.startsWith('*') && p.length > 1) return <em key={i} style={styles.italic}>{p.slice(1, -1)}</em>;
+    if (p.startsWith('*') && p.length > 1) {
+      const run = p.slice(1, -1);
+      return <em key={i} style={styles.italic}>{dots ? dotted(run, dots) : run}</em>;
+    }
     return <Fragment key={i}>{p}</Fragment>;
+  });
+}
+
+const DOT: CSSProperties = {
+  position: 'absolute',
+  width: '0.18em',
+  height: '0.18em',
+  borderRadius: '50%',
+  backgroundColor: 'currentColor',
+};
+
+/** Emphasis dots (着重号), one per character and none on punctuation.
+ *  Drawn apart from the text, so they take no room: CSS `text-emphasis`
+ *  would open the line they sit on (the sample would misstate the
+ *  leading), and its dot comes out a speck in the Noto faces. Under the
+ *  character a dot hangs from the baseline (a box of no size set just
+ *  before the character, which the line cannot break from), clear of the
+ *  ideographic em box that ends 0.12 em below it; to its right in a
+ *  vertical line, it sits past the em box from the middle of the
+ *  character, which is the middle of its line there. */
+function dotted(run: string, side: 'under' | 'right') {
+  return Array.from(run).map((ch, i) => {
+    if (!/[\p{L}\p{N}]/u.test(ch)) return <Fragment key={i}>{ch}</Fragment>;
+    if (side === 'right') {
+      return (
+        <span key={i} style={{ position: 'relative' }}>
+          {ch}
+          <span style={{ ...DOT, top: '50%', left: 'calc(50% + 0.68em)', transform: 'translate(-50%, -50%)' }} />
+        </span>
+      );
+    }
+    return (
+      <span key={i} style={{ whiteSpace: 'nowrap' }}>
+        <span style={{ display: 'inline-block', width: 0, height: 0, position: 'relative' }}>
+          <span style={{ ...DOT, left: '0.5em', top: '0.24em', transform: 'translateX(-50%)' }} />
+        </span>
+        {ch}
+      </span>
+    );
   });
 }

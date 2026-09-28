@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { PostextConfig } from 'postext';
-import { defaultResourceTypes, resolveBodyTextConfig, resolveLayoutConfig, resolveOrderedListsConfig, resolvePageConfig } from 'postext';
+import { defaultResourceTypes, resolveBodyTextConfig, resolveHeadingsConfig, resolveLayoutConfig, resolveOrderedListsConfig, resolvePageConfig } from 'postext';
 import { createDefaultConfig } from './defaultConfig';
-import { chineseDefaults, chineseFontsFor, undoChineseDefaults, type ChineseDefaultId } from './chineseDefaults';
+import {
+  chineseDefaults, chineseFontsFor, forgetChineseDefaults, recallChineseDefaults, rememberChineseDefaults, undoChineseDefaults,
+  type ChineseDefaultId,
+} from './chineseDefaults';
 
 const ids = (r: ReturnType<typeof chineseDefaults>) => r.changes.map((c) => c.id);
 const change = (r: ReturnType<typeof chineseDefaults>, id: ChineseDefaultId) => r.changes.find((c) => c.id === id);
@@ -92,7 +95,7 @@ describe('chineseDefaults', () => {
   it('lists the author\'s own settings unticked and leaves them alone', () => {
     const base: PostextConfig = {
       ...createDefaultConfig('en'),
-      bodyText: { fontFamily: 'Lora', textAlign: 'left', paragraphSpacing: true, hyphenation: { enabled: true } },
+      bodyText: { fontFamily: 'Lora', textAlign: 'left', paragraphSpacing: true, hyphenation: { enabled: true, locale: 'en-us' } },
       headings: { levels: [{ level: 1, numberingTemplate: 'Chapter {1}', breakBefore: { enabled: true, parity: 'any' } }] },
       captionStyle: { labelSeparator: ': ' },
       page: { binding: 'left' },
@@ -101,7 +104,7 @@ describe('chineseDefaults', () => {
     const own = r.changes.filter((c) => c.customised).map((c) => c.id);
     expect(own).toEqual(['binding', 'bodyFont', 'paragraphSpacing', 'textAlign', 'hyphenation', 'captionLabel', 'chapterNumbering']);
     expect(r.changes.filter((c) => c.customised).every((c) => !c.applied)).toBe(true);
-    expect(r.config.bodyText).toMatchObject({ fontFamily: 'Lora', textAlign: 'left', paragraphSpacing: true, hyphenation: { enabled: true } });
+    expect(r.config.bodyText).toMatchObject({ fontFamily: 'Lora', textAlign: 'left', paragraphSpacing: true, hyphenation: { enabled: true, locale: 'en-us' } });
     expect(r.config.page).toEqual({ binding: 'left' });
     expect(r.config.headings?.levels?.[0]?.numberingTemplate).toBe('Chapter {1}');
     expect(r.config.captionStyle).toEqual({ labelSeparator: ': ' });
@@ -168,6 +171,72 @@ describe('chineseDefaults', () => {
     expect(r.config.page).toBeUndefined();
     expect(change(r, 'binding')).toMatchObject({ customised: true, from: { kind: 'binding', value: 'right' }, to: { kind: 'binding', value: 'left', auto: true } });
   });
+
+  it('sets every heading level in the Chinese face, naming the levels and styles that had their own', () => {
+    const base: PostextConfig = {
+      ...createDefaultConfig('en'),
+      headings: {
+        fontFamily: 'Fraunces',
+        levels: [
+          { level: 1, fontSize: { value: 28, unit: 'pt' } },
+          { level: 2, fontFamily: 'Bricolage Grotesque' },
+          { level: 3, fontFamily: 'Bricolage Grotesque' },
+          { level: 4, fontFamily: 'Bricolage Grotesque' },
+          { level: 5, fontFamily: 'Noto Serif SC' },
+          { level: 6, fontFamily: 'Noto Serif TC' },
+        ],
+      },
+      headingStyles: [{ id: 'preface', name: 'Preface', fontFamily: 'Geist' }, { id: 'plain' }],
+    };
+    const listed = chineseDefaults(base, { locale: 'zh-Hant', include: [] });
+    // Fraunces and Bricolage have no Han glyphs: the author's own, unticked.
+    expect(change(listed, 'headingFont')).toMatchObject({
+      customised: true,
+      applied: false,
+      from: { kind: 'text', text: 'Fraunces; H2–H4: Bricolage Grotesque; H5: Noto Serif SC; Preface: Geist' },
+      to: { kind: 'text', text: 'Noto Sans TC' },
+    });
+    expect(listed.config.headings).toBe(base.headings);
+    const r = chineseDefaults(base, { locale: 'zh-Hant', include: ['headingFont'] });
+    const fonts = resolveHeadingsConfig(r.config.headings).levels.map((l) => l.fontFamily);
+    // A Chinese serif of the other script becomes this script's serif; a
+    // face of the right script stays; the rest follow the headings' face.
+    expect(fonts).toEqual(['Noto Sans TC', 'Noto Sans TC', 'Noto Sans TC', 'Noto Sans TC', 'Noto Serif TC', 'Noto Serif TC']);
+    expect(r.config.headings?.levels?.[0]).toEqual({ level: 1, fontSize: { value: 28, unit: 'pt' } });
+    expect(r.config.headings?.levels?.[1]).toEqual({ level: 2 });
+    expect(r.config.headingStyles).toEqual([{ id: 'preface', name: 'Preface' }, { id: 'plain' }]);
+    expect(chineseDefaults(r.config, { locale: 'zh-Hant', include: ['headingFont'] }).changes.map((c) => c.id)).not.toContain('headingFont');
+  });
+
+  it('lists a level typeface even when the headings are already in the Chinese face', () => {
+    const base: PostextConfig = {
+      ...createDefaultConfig('en'),
+      locale: 'zh-Hans',
+      headings: { fontFamily: 'Noto Sans SC', levels: [{ level: 2, fontFamily: 'Bricolage Grotesque' }] },
+    };
+    const r = chineseDefaults(base, { locale: 'zh-Hans', include: ['headingFont'] });
+    expect(change(r, 'headingFont')).toMatchObject({
+      customised: true,
+      from: { kind: 'text', text: 'Noto Sans SC; H2: Bricolage Grotesque' },
+      to: { kind: 'text', text: 'Noto Sans SC' },
+    });
+    expect(resolveHeadingsConfig(r.config.headings).levels[1]?.fontFamily).toBe('Noto Sans SC');
+  });
+
+  it('turns hyphenation off when the author turned it on without naming its language', () => {
+    // No `hyphenation.locale`: the text's language (Chinese) is the one
+    // to divide, which has no patterns. The engine sets it off anyway.
+    const base: PostextConfig = { ...createDefaultConfig('en'), locale: 'en', bodyText: { hyphenation: { enabled: true } } };
+    const r = chineseDefaults(base, { locale: 'zh-Hans', include: [] });
+    expect(change(r, 'hyphenation')).toMatchObject({ required: true, applied: true, customised: false });
+    expect(r.config.bodyText?.hyphenation).toBeUndefined();
+    expect(resolveBodyTextConfig(r.config.bodyText, r.config.locale).hyphenation.enabled).toBe(false);
+    // A named Latin language keeps the author's "on" unless ticked.
+    const latin: PostextConfig = { ...base, bodyText: { hyphenation: { enabled: true, locale: 'en-us' } } };
+    const kept = chineseDefaults(latin, { locale: 'zh-Hans', include: [] });
+    expect(change(kept, 'hyphenation')).toMatchObject({ required: false, applied: false, customised: true });
+    expect(resolveBodyTextConfig(kept.config.bodyText, kept.config.locale).hyphenation.enabled).toBe(true);
+  });
 });
 
 describe('undoChineseDefaults', () => {
@@ -175,18 +244,107 @@ describe('undoChineseDefaults', () => {
     const before = createDefaultConfig('en');
     const after = chineseDefaults(before, { locale: 'zh-Hant', vertical: true }).config;
     const undone = undoChineseDefaults(after, before, after);
-    expect(undone).toEqual(before);
+    expect(undone.config).toEqual(before);
+    expect(undone.kept).toEqual([]);
   });
 
   it('keeps the edits made after the action', () => {
     const before = createDefaultConfig('en');
     const after = chineseDefaults(before, { locale: 'zh-Hans' }).config;
     const edited: PostextConfig = { ...after, bodyText: { ...after.bodyText, fontSize: { value: 11, unit: 'pt' } }, math: { enabled: false } };
-    const undone = undoChineseDefaults(edited, before, after);
+    const { config: undone, kept } = undoChineseDefaults(edited, before, after);
     expect(undone.locale).toBeUndefined();
     expect(undone.resourceTypes).toEqual(before.resourceTypes);
-    // Body text was edited since: it stays as it is now.
-    expect(undone.bodyText).toBe(edited.bodyText);
+    // The body text size was set since: it stays; what the action wrote
+    // in the same group goes back.
+    expect(undone.bodyText).toEqual({ fontSize: { value: 11, unit: 'pt' } });
     expect(undone.math).toEqual({ enabled: false });
+    expect(kept).toEqual([]);
+  });
+
+  it('restores each setting the action wrote, inside groups edited since', () => {
+    const before: PostextConfig = {
+      ...createDefaultConfig('en'),
+      bodyText: { fontFamily: 'Lora', textAlign: 'left', firstLineIndent: { value: 1, unit: 'em' } },
+      headings: { fontFamily: 'Fraunces', levels: [{ level: 1, fontSize: { value: 28, unit: 'pt' } }, { level: 2, fontFamily: 'Bricolage Grotesque' }] },
+    };
+    const first = chineseDefaults(before, { locale: 'zh-Hant', vertical: true });
+    const after = chineseDefaults(before, { locale: 'zh-Hant', vertical: true, include: first.changes.map((c) => c.id) }).config;
+    const levels = after.headings!.levels!.map((l) => (l.level === 1 ? { ...l, color: { hex: '#aa0000', model: 'hex' as const } } : l));
+    const edited: PostextConfig = {
+      ...after,
+      bodyText: { ...after.bodyText, fontSize: { value: 11, unit: 'pt' } },
+      headings: { ...after.headings, levels },
+    };
+    const { config: undone, kept } = undoChineseDefaults(edited, before, after);
+    expect(kept).toEqual([]);
+    expect(undone.locale).toBeUndefined();
+    expect(undone.layout).toBeUndefined();
+    expect(undone.bodyText).toEqual({ ...before.bodyText, fontSize: { value: 11, unit: 'pt' } });
+    expect(undone.headings).toEqual({
+      fontFamily: 'Fraunces',
+      levels: [
+        { level: 1, fontSize: { value: 28, unit: 'pt' }, color: { hex: '#aa0000', model: 'hex' } },
+        { level: 2, fontFamily: 'Bricolage Grotesque' },
+      ],
+    });
+    expect(undone.orderedLists).toBeUndefined();
+    expect(undone.captionStyle).toBeUndefined();
+    expect(undone.resourceTypes).toEqual(before.resourceTypes);
+  });
+
+  it('keeps a setting the author changed again, whole, and names it', () => {
+    const before: PostextConfig = { ...createDefaultConfig('en'), bodyText: { firstLineIndent: { value: 1, unit: 'em' } } };
+    const after = chineseDefaults(before, { locale: 'zh-Hans', include: ['firstLineIndent', 'bodyFont'] }).config;
+    // Only the unit changed: a measure is one setting, not two.
+    const edited: PostextConfig = { ...after, bodyText: { ...after.bodyText, firstLineIndent: { value: 2, unit: 'pt' }, fontFamily: 'Noto Serif TC' } };
+    const { config: undone, kept } = undoChineseDefaults(edited, before, after);
+    expect(undone.bodyText).toEqual({ firstLineIndent: { value: 2, unit: 'pt' }, fontFamily: 'Noto Serif TC' });
+    expect([...kept].sort()).toEqual(['bodyText.firstLineIndent', 'bodyText.fontFamily']);
+    expect(undone.locale).toBeUndefined();
+  });
+
+  it('keeps a list the action created and the author edited since whole', () => {
+    const before: PostextConfig = { colorPalette: createDefaultConfig('en').colorPalette };
+    const after = chineseDefaults(before, { locale: 'zh-Hans' }).config;
+    expect(before.resourceTypes).toBeUndefined();
+    const types = after.resourceTypes!.map((t) => (t.id === 'figure' ? { ...t, name: '插图' } : t));
+    const { config: undone, kept } = undoChineseDefaults({ ...after, resourceTypes: types }, before, after);
+    // Dropping the table type (or half a figure type) would break the book.
+    expect(undone.resourceTypes).toBe(types);
+    expect(kept).toEqual(['resourceTypes']);
+  });
+
+  it('leaves the config alone when nothing it wrote is left', () => {
+    const before = createDefaultConfig('en');
+    const after = chineseDefaults(before, { locale: 'zh-Hans', include: [] }).config;
+    const rewritten: PostextConfig = { ...before, locale: 'ja', bodyText: { hyphenation: { enabled: false } } };
+    const r = undoChineseDefaults(rewritten, before, after);
+    expect(r.config).toBe(rewritten);
+    expect(r.kept).toEqual(['locale']);
+  });
+});
+
+describe('Chinese defaults memory', () => {
+  const before = createDefaultConfig('en');
+  const after = chineseDefaults(before, { locale: 'zh-Hant' }).config;
+
+  it('offers Undo only in the book the action ran on', () => {
+    forgetChineseDefaults();
+    rememberChineseDefaults({ book: 'preset:guide', at: 1000, status: { kind: 'applied', count: 5 }, undo: { before, after } });
+    expect(recallChineseDefaults('preset:guide', 2000)?.undo?.after).toBe(after);
+    expect(recallChineseDefaults('preset:hongloumeng', 2000)).toBeNull();
+    // Another book was opened: the guide's action is forgotten.
+    expect(recallChineseDefaults('preset:guide', 3000)).toBeNull();
+  });
+
+  it('lets the messages lapse', () => {
+    forgetChineseDefaults();
+    rememberChineseDefaults({ book: 'b', at: 0, status: { kind: 'undone', partial: false }, undo: null });
+    expect(recallChineseDefaults('b', 5_000)?.status.kind).toBe('undone');
+    expect(recallChineseDefaults('b', 11_000)).toBeNull();
+    rememberChineseDefaults({ book: 'b', at: 0, status: { kind: 'applied', count: 3 }, undo: { before, after } });
+    expect(recallChineseDefaults('b', 60_000)?.status.kind).toBe('applied');
+    expect(recallChineseDefaults('b', 11 * 60_000)).toBeNull();
   });
 });

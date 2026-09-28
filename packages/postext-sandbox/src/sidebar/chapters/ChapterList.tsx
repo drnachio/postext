@@ -141,8 +141,9 @@ function ChapterRow({ chapter, index, total, isActive, number, pages, part, drag
     if (next && next !== chapter.title) dispatch({ type: 'RENAME_CHAPTER', payload: { id: chapter.id, title: next } });
   };
 
-  const headings = h1Count(chapter.markdown);
-  const words = wordCount(chapter.markdown);
+  // The list re-renders while pages are counted: count once per text.
+  const headings = useMemo(() => h1Count(chapter.markdown), [chapter.markdown]);
+  const words = useMemo(() => wordCount(chapter.markdown), [chapter.markdown]);
   // A Chinese, Japanese or Korean book counts characters (字数).
   const cjk = useSandboxSelector((s) => isCjkLanguage(s.config.locale));
   const range = pages ? chapterPageLabels(pages) : null;

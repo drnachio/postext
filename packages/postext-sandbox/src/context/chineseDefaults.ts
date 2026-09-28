@@ -8,6 +8,7 @@ import type {
   Dimension,
   TextAlign,
   HeadingLevelConfig,
+  HeadingStyleConfig,
   OrderedListLevelConfig,
   OrderedListNumberFormat,
   PostextConfig,
@@ -23,6 +24,7 @@ import {
   defaultResourceTypes,
   dimensionsEqual,
   formatNumeral,
+  isCjkLanguage,
   parseNumberFormat,
   resolveBodyTextConfig,
   resolveLayoutConfig,
@@ -181,6 +183,32 @@ function typeNames(types: readonly ResourceType[]): string {
   return types.map((t) => t.name).join(', ');
 }
 
+/** `2, 3, 4` → `H2–H4`; `2, 4` → `H2, H4`. */
+function levelRanges(levels: readonly number[]): string {
+  const sorted = [...levels].sort((a, b) => a - b);
+  const out: string[] = [];
+  for (let i = 0; i < sorted.length;) {
+    let j = i;
+    while (j + 1 < sorted.length && sorted[j + 1] === sorted[j]! + 1) j++;
+    if (j - i >= 2) out.push(`H${sorted[i]}–H${sorted[j]}`);
+    else for (let k = i; k <= j; k++) out.push(`H${sorted[k]}`);
+    i = j + 1;
+  }
+  return out.join(', ');
+}
+
+/** The headings' typeface and the ones levels and styles set for
+ *  themselves: `Fraunces; H2–H4: Bricolage Grotesque; Preface: Geist`. */
+function headingFacesText(general: string, levels: readonly HeadingLevelConfig[], styles: readonly HeadingStyleConfig[]): string {
+  const byFace = new Map<string, number[]>();
+  for (const l of levels) byFace.set(l.fontFamily!, [...(byFace.get(l.fontFamily!) ?? []), l.level]);
+  return [
+    general,
+    ...[...byFace].map(([face, lv]) => `${levelRanges(lv)}: ${face}`),
+    ...styles.map((st) => `${st.name ?? st.id}: ${st.fontFamily}`),
+  ].join('; ');
+}
+
 function figureOf(types: readonly ResourceType[]): ResourceType | undefined {
   return types.find((t) => t.id === 'figure') ?? types[0];
 }
@@ -301,15 +329,42 @@ export function chineseDefaults(config: PostextConfig, options: ChineseDefaultsO
       apply: (c) => ({ ...c, bodyText: { ...c.bodyText, fontFamily: fonts.body } }),
     });
   }
+  // The headings' typeface, and the ones levels and named styles set for
+  // themselves (they win over it): a Chinese face of the other script
+  // becomes this script's, any other face goes and the heading follows the
+  // headings' typeface.
   const fromHeadingFont = config.headings?.fontFamily ?? DEFAULT_HEADINGS_CONFIG.fontFamily;
-  if (fromHeadingFont !== fonts.headings) {
-    const raw = config.headings?.fontFamily;
+  const headingFace = (f: string): string | undefined =>
+    f === fonts.headings || f === fonts.body ? f
+      : CHINESE_BODY_FONTS.has(f) ? fonts.body
+        : CHINESE_HEADING_FONTS.has(f) ? fonts.headings
+          : undefined;
+  const moves = (item: { fontFamily?: string }) => item.fontFamily !== undefined && headingFace(item.fontFamily) !== item.fontFamily;
+  const levelFaces = (config.headings?.levels ?? []).filter(moves);
+  const styleFaces = (config.headingStyles ?? []).filter(moves);
+  if (fromHeadingFont !== fonts.headings || levelFaces.length > 0 || styleFaces.length > 0) {
+    const own = (f: string | undefined) => f !== undefined && f !== DEFAULT_HEADINGS_CONFIG.fontFamily
+      && !CHINESE_BODY_FONTS.has(f) && !CHINESE_HEADING_FONTS.has(f);
+    const retarget = <T extends { fontFamily?: string }>(item: T): T => {
+      if (!moves(item)) return item;
+      const face = headingFace(item.fontFamily!);
+      if (face !== undefined) return { ...item, fontFamily: face };
+      const next = { ...item };
+      delete next.fontFamily;
+      return next;
+    };
     rows.push({
       id: 'headingFont',
-      from: { kind: 'text', text: fromHeadingFont },
+      from: { kind: 'text', text: headingFacesText(fromHeadingFont, levelFaces, styleFaces) },
       to: { kind: 'text', text: fonts.headings },
-      customised: raw !== undefined && raw !== DEFAULT_HEADINGS_CONFIG.fontFamily && !CHINESE_HEADING_FONTS.has(raw),
-      apply: (c) => ({ ...c, headings: { ...c.headings, fontFamily: fonts.headings } }),
+      customised: own(config.headings?.fontFamily) || levelFaces.some((l) => own(l.fontFamily)) || styleFaces.some((st) => own(st.fontFamily)),
+      apply: (c) => {
+        const headings = { ...c.headings, fontFamily: fonts.headings };
+        if (c.headings?.levels?.some(moves)) headings.levels = c.headings.levels.map(retarget);
+        const next: PostextConfig = { ...c, headings };
+        if (c.headingStyles?.some(moves)) next.headingStyles = c.headingStyles.map(retarget);
+        return next;
+      },
     });
   }
 
@@ -350,15 +405,20 @@ export function chineseDefaults(config: PostextConfig, options: ChineseDefaultsO
   }
 
   // Hyphenation: a Chinese document is not hyphenated. Off by itself once
-  // the language is Chinese, unless the author turned it on.
+  // the language is Chinese, unless the author turned it on for a Latin
+  // language they named (the words of that language in the text); turned
+  // on with no language named, it would divide Chinese, which the engine
+  // sets without it whatever the switch says.
   if (fromBody.hyphenation.enabled) {
     const explicit = body?.hyphenation?.enabled === true;
+    const named = body?.hyphenation?.locale;
+    const own = explicit && typeof named === 'string' && named.trim() !== '' && !isCjkLanguage(named);
     rows.push({
       id: 'hyphenation',
       from: { kind: 'switch', on: true },
       to: { kind: 'switch', on: false },
-      customised: explicit,
-      required: !explicit,
+      customised: own,
+      required: !own,
       apply: (c) => {
         if (c.bodyText?.hyphenation?.enabled !== true) return c;
         const hyphenation = without(c.bodyText.hyphenation, 'enabled');
@@ -466,20 +526,149 @@ export function chineseDefaults(config: PostextConfig, options: ChineseDefaultsO
   return { locale, changes, config: next };
 }
 
-/**
- * Takes the action back: every top-level setting it changed returns to
- * what it was before, unless the author has changed that setting again
- * since (it then stays as it is now). `before` and `after` are the configs
- * the action went from and to.
- */
-export function undoChineseDefaults(current: PostextConfig, before: PostextConfig, after: PostextConfig): PostextConfig {
-  const keys = new Set([...Object.keys(before), ...Object.keys(after)] as (keyof PostextConfig)[]);
-  let next: PostextConfig | null = null;
-  for (const key of keys) {
-    if (before[key] === after[key] || current[key] !== after[key]) continue;
-    next ??= { ...current };
-    if (before[key] === undefined) delete next[key];
-    else (next as Record<string, unknown>)[key] = before[key];
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null && !Array.isArray(v);
+}
+
+/** A measure (`{ value, unit }`) is one setting: restored or kept whole. */
+function isMeasure(v: Record<string, unknown>): boolean {
+  return 'unit' in v && Object.keys(v).every((k) => k === 'value' || k === 'unit');
+}
+
+/** Structural equality, as JSON sees it (an `undefined` field is no field). */
+function same(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (Array.isArray(a) || Array.isArray(b)) {
+    if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+    return a.every((v, i) => same(v, b[i]));
   }
-  return next ?? current;
+  if (!isRecord(a) || !isRecord(b)) return false;
+  const ka = Object.keys(a).filter((k) => a[k] !== undefined);
+  const kb = Object.keys(b).filter((k) => b[k] !== undefined);
+  return ka.length === kb.length && ka.every((k) => same(a[k], b[k]));
+}
+
+/** The entries of a list by their key (`level`, else `id`), or null when
+ *  some entry has none or two share one. */
+function keyedEntries(list: readonly unknown[]): Map<string, unknown> | null {
+  const map = new Map<string, unknown>();
+  for (const v of list) {
+    const key = !isRecord(v) ? undefined
+      : typeof v.level === 'number' ? `level=${v.level}`
+        : typeof v.id === 'string' ? `id=${v.id}`
+          : undefined;
+    if (key === undefined || map.has(key)) return null;
+    map.set(key, v);
+  }
+  return map;
+}
+
+/**
+ * `current` with each setting that went from `before` to `after` back to
+ * `before`, unless it no longer reads `after` (the author changed it since:
+ * it is kept, and its path pushed onto `kept`). Groups of settings are
+ * walked setting by setting; lists whose entries carry a `level` or an
+ * `id` (heading levels, list levels, resource types) entry by entry. A
+ * measure, a list of any other kind, and a group or entry the action
+ * created (`fresh` false) are restored or kept whole.
+ */
+function revert(current: unknown, before: unknown, after: unknown, path: string, kept: string[], fresh = true): unknown {
+  if (same(before, after)) return current;
+  if (same(current, after)) return before;
+  if (isRecord(current) && isRecord(after) && !isMeasure(current) && !isMeasure(after)
+    && ((fresh && before === undefined) || (isRecord(before) && !isMeasure(before)))) {
+    const was = (before ?? {}) as Record<string, unknown>;
+    let out: Record<string, unknown> | null = null;
+    for (const key of new Set([...Object.keys(was), ...Object.keys(after)])) {
+      const value = revert(current[key], was[key], after[key], path ? `${path}.${key}` : key, kept);
+      if (value === current[key]) continue;
+      out ??= { ...current };
+      if (value === undefined) delete out[key];
+      else out[key] = value;
+    }
+    if (!out) return current;
+    return before === undefined && Object.keys(out).length === 0 ? undefined : out;
+  }
+  if (Array.isArray(current) && Array.isArray(after) && Array.isArray(before)) {
+    const was = keyedEntries(before);
+    const now = keyedEntries(after);
+    const cur = keyedEntries(current);
+    if (was && now && cur) {
+      let changed = false;
+      const out: unknown[] = [];
+      for (const key of new Set([...cur.keys(), ...was.keys(), ...now.keys()])) {
+        const entry = cur.get(key);
+        const value = revert(entry, was.get(key), now.get(key), `${path}[${key}]`, kept, false);
+        if (value !== entry) changed = true;
+        if (value !== undefined) out.push(value);
+      }
+      return changed ? out : current;
+    }
+  }
+  kept.push(path);
+  return current;
+}
+
+export interface ChineseDefaultsUndo {
+  /** The config with the action taken back (`current` itself when there
+   *  is nothing left to take back). */
+  config: PostextConfig;
+  /** The settings the action wrote that the author has changed since,
+   *  left as they are now (`bodyText.fontFamily`). */
+  kept: string[];
+}
+
+/**
+ * Takes the action back: every setting it wrote returns to what it was
+ * before, down to the single field (`bodyText.fontFamily`, level 1's
+ * numbering), unless the author has changed that setting again since (it
+ * then stays as it is now, and `kept` names it). Other edits made since,
+ * in the same groups or elsewhere, stay. `before` and `after` are the
+ * configs the action went from and to.
+ */
+export function undoChineseDefaults(current: PostextConfig, before: PostextConfig, after: PostextConfig): ChineseDefaultsUndo {
+  const kept: string[] = [];
+  const config = revert(current, before, after, '', kept) as PostextConfig | undefined;
+  return { config: config ?? {}, kept };
+}
+
+/** The message under the button: applied (how many changes) or undone
+ *  (`partial`: some settings had been changed since and stayed). */
+export type ChineseDefaultsStatus = { kind: 'applied'; count: number } | { kind: 'undone'; partial: boolean };
+
+/** What the section remembers between mounts (while the author looks at
+ *  another group of the panel): the last application, for Undo, and its
+ *  message, tied to the book they were made in. */
+export interface ChineseDefaultsMemory {
+  /** The book (project, or preset and language, and load) on screen. */
+  book: string;
+  /** When it happened (ms). */
+  at: number;
+  status: ChineseDefaultsStatus;
+  undo: { before: PostextConfig; after: PostextConfig } | null;
+}
+
+/** How long a remounted section still shows the message (and Undo): the
+ *  application's for a while, the undo's for a few seconds. */
+const APPLIED_LIFETIME = 10 * 60_000;
+const UNDONE_LIFETIME = 10_000;
+
+let memory: ChineseDefaultsMemory | null = null;
+
+export function rememberChineseDefaults(entry: ChineseDefaultsMemory): void {
+  memory = entry;
+}
+
+export function forgetChineseDefaults(): void {
+  memory = null;
+}
+
+/** The memory, if it belongs to `book` and has not lapsed. Asking for
+ *  another book forgets it: Undo is offered only in the book the action
+ *  ran on. */
+export function recallChineseDefaults(book: string, now = Date.now()): ChineseDefaultsMemory | null {
+  if (!memory) return null;
+  const lifetime = memory.status.kind === 'applied' ? APPLIED_LIFETIME : UNDONE_LIFETIME;
+  if (memory.book !== book || now - memory.at >= lifetime) memory = null;
+  return memory;
 }

@@ -1353,6 +1353,7 @@
     "chineseDefaultsApplied": "Ajustes para chino aplicados: __count__ cambios.",
     "chineseDefaultsAppliedOne": "Ajustes para chino aplicados: 1 cambio.",
     "chineseDefaultsUndone": "Ajustes para chino deshechos.",
+    "chineseDefaultsUndonePartial": "Ajustes para chino deshechos, salvo los que has cambiado después.",
     "chineseDefaultsBodyFont": "Fuente del texto",
     "chineseDefaultsHeadingFont": "Fuente de los títulos",
     "chineseDefaultsResourceTypes": "Nombres de figuras y tablas",

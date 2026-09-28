@@ -359,6 +359,7 @@ export const DEFAULT_LABELS: SandboxLabels = {
   chineseDefaultsApplied: 'Chinese defaults applied: __count__ changes.',
   chineseDefaultsAppliedOne: 'Chinese defaults applied: 1 change.',
   chineseDefaultsUndone: 'Chinese defaults undone.',
+  chineseDefaultsUndonePartial: 'Chinese defaults undone, except the settings you have changed since.',
   chineseDefaultsBodyFont: 'Body typeface',
   chineseDefaultsHeadingFont: 'Heading typeface',
   chineseDefaultsResourceTypes: 'Figure and table names',

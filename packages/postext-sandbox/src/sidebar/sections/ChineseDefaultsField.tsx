@@ -3,13 +3,17 @@
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { chineseScriptOf, resolveLayoutConfig } from 'postext';
 import type { PostextConfig } from 'postext';
-import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
+import { useSandboxDispatch, useSandboxLabels, useSandboxSelector, type SandboxState } from '../../context/SandboxContext';
 import {
   chineseDefaults,
+  forgetChineseDefaults,
+  recallChineseDefaults,
+  rememberChineseDefaults,
   undoChineseDefaults,
   type ChineseDefaultChange,
   type ChineseDefaultId,
   type ChineseDefaultValue,
+  type ChineseDefaultsMemory,
 } from '../../context/chineseDefaults';
 import { FieldRow } from '../../controls';
 import { formatNumber } from '../../controls/units';
@@ -37,27 +41,24 @@ const ITEM_LABELS: Record<ChineseDefaultId, keyof SandboxLabels> = {
   listNumbers: 'chineseDefaultsListNumbers',
 };
 
-type Status = { kind: 'applied'; count: number } | { kind: 'undone' };
-
-/** The last application, for Undo, and the message that goes with it.
- *  Module scope, so they outlive the section while the author looks at
- *  another group of the panel (or while the book behind it reloads). The
- *  "undone" message is shown again for a few seconds only. */
-let lastApplied: { before: PostextConfig; after: PostextConfig } | null = null;
-let lastStatus: { status: Status; at: number } | null = null;
-
-function initialStatus(): Status | null {
-  if (!lastStatus) return null;
-  return lastStatus.status.kind === 'applied' || Date.now() - lastStatus.at < 10_000 ? lastStatus.status : null;
+/** The book on screen: the project, or the preset and its language, and
+ *  the load (a book opened again is another book). Undo belongs to it. */
+function bookKeyOf(s: SandboxState): string {
+  return [s.activeProjectId ?? '', s.activePresetId, s.presetApplied?.locale ?? '', s.bookVersion].join('\u0000');
 }
 
-function valueText(v: ChineseDefaultValue, labels: SandboxLabels, uiLocale: string): string {
+/** A value of the review list as the interface shows it. */
+export function valueText(v: ChineseDefaultValue, labels: SandboxLabels, uiLocale: string): string {
   switch (v.kind) {
     case 'locale': return documentLocaleLabel(v.tag);
     case 'text': return v.text;
     case 'switch': return v.on ? labels.cjkOn : labels.cjkOff;
     case 'dimension': return `${formatNumber(v.value.value, uiLocale)} ${v.value.unit}`;
-    case 'align': return v.value === 'justify' ? labels.bodyTextAlignJustify : labels.bodyTextAlignLeft;
+    case 'align':
+      return v.value === 'justify' ? labels.bodyTextAlignJustify
+        : v.value === 'center' ? labels.headingsTextAlignCenter
+          : v.value === 'right' ? labels.headingsTextAlignRight
+            : labels.bodyTextAlignLeft;
     case 'writingMode':
       return `${v.value === 'vertical-rl' ? labels.writingModeVerticalShort : labels.writingModeHorizontal}, ${
         v.binding === 'right' ? labels.settingsSummaryBoundRight : labels.settingsSummaryBoundLeft}`;
@@ -91,12 +92,23 @@ export function ChineseDefaultsField() {
   const [script, setScript] = useState<Script>('zh-Hans');
   const [verticalPick, setVerticalPick] = useState<boolean | null>(null);
   const [ticks, setTicks] = useState<ReadonlyMap<ChineseDefaultId, boolean>>(new Map());
-  const [status, setStatusState] = useState<Status | null>(initialStatus);
-  const setStatus = (s: Status | null) => {
-    lastStatus = s ? { status: s, at: Date.now() } : null;
-    setStatusState(s);
+  const book = useSandboxSelector(bookKeyOf);
+  const [memory, setMemoryState] = useState(() => recallChineseDefaults(book));
+  const setMemory = (m: ChineseDefaultsMemory | null) => {
+    if (m) rememberChineseDefaults(m);
+    else forgetChineseDefaults();
+    setMemoryState(m);
   };
-  const [undoable, setUndoable] = useState(() => lastApplied);
+  // Another book on screen: what was done in the last one is forgotten.
+  const mine = memory?.book === book ? memory : null;
+  useEffect(() => {
+    if (memory && memory.book !== book) {
+      recallChineseDefaults(book);
+      setMemoryState(null);
+    }
+  }, [book, memory]);
+  const status = mine?.status ?? null;
+  const undoable = mine?.undo ?? null;
   const panelId = useId();
   const statusRef = useRef<HTMLParagraphElement>(null);
   const reviewRef = useRef<HTMLButtonElement>(null);
@@ -118,8 +130,11 @@ export function ChineseDefaultsField() {
     return chineseDefaults(config, { ...options, include });
   }, [open, config, script, vertical, uiLocale, ticks]);
 
-  const undone = undoable ? undoChineseDefaults(config, undoable.before, undoable.after) : config;
-  const canUndo = undoable !== null && undone !== config;
+  const undone = useMemo(
+    () => (undoable ? undoChineseDefaults(config, undoable.before, undoable.after) : null),
+    [config, undoable],
+  );
+  const canUndo = undone !== null && undone.config !== config;
 
   useEffect(() => {
     if (open) firstControlRef.current?.querySelector<HTMLElement>('[role="radio"][tabindex="0"]')?.focus();
@@ -129,7 +144,7 @@ export function ChineseDefaultsField() {
     setScript(docScript === 'Hant' ? 'zh-Hant' : 'zh-Hans');
     setVerticalPick(null);
     setTicks(new Map());
-    setStatus(null);
+    setMemory(null);
     setOpen(true);
   };
   const close = () => {
@@ -139,27 +154,27 @@ export function ChineseDefaultsField() {
   const apply = () => {
     if (!preview) return;
     const count = preview.changes.filter((c) => c.applied).length;
-    if (count > 0) {
-      lastApplied = { before: config, after: preview.config };
-      setUndoable(lastApplied);
-      dispatch({ type: 'SET_CONFIG', payload: preview.config });
-    }
-    setStatus({ kind: 'applied', count });
+    if (count > 0) dispatch({ type: 'SET_CONFIG', payload: preview.config });
+    setMemory({
+      book,
+      at: Date.now(),
+      status: { kind: 'applied', count },
+      undo: count > 0 ? { before: config, after: preview.config } : null,
+    });
     setOpen(false);
     requestAnimationFrame(() => statusRef.current?.focus());
   };
   const undo = () => {
-    dispatch({ type: 'SET_CONFIG', payload: undone });
-    lastApplied = null;
-    setUndoable(null);
-    setStatus({ kind: 'undone' });
+    if (!undone) return;
+    dispatch({ type: 'SET_CONFIG', payload: undone.config });
+    setMemory({ book, at: Date.now(), status: { kind: 'undone', partial: undone.kept.length > 0 }, undo: null });
     requestAnimationFrame(() => reviewRef.current?.focus());
   };
 
   const appliedCount = preview?.changes.filter((c) => c.applied).length ?? 0;
   const statusText = status?.kind === 'applied'
     ? (status.count === 1 ? labels.chineseDefaultsAppliedOne : labels.chineseDefaultsApplied.replace('__count__', String(status.count)))
-    : status?.kind === 'undone' ? labels.chineseDefaultsUndone : '';
+    : status?.kind === 'undone' ? (status.partial ? labels.chineseDefaultsUndonePartial : labels.chineseDefaultsUndone) : '';
 
   return (
     <FieldRow label={labels.chineseDefaults} tooltip={labels.chineseDefaultsTooltip} isDefault stacked>

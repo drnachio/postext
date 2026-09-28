@@ -402,6 +402,7 @@ export interface SandboxLabels {
   chineseDefaultsApplied: string;
   chineseDefaultsAppliedOne: string;
   chineseDefaultsUndone: string;
+  chineseDefaultsUndonePartial: string;
   chineseDefaultsBodyFont: string;
   chineseDefaultsHeadingFont: string;
   chineseDefaultsResourceTypes: string;

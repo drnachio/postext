@@ -18,6 +18,7 @@ import { buildSectionSearchIndex, planSettingsSearch } from '../search/sectionIn
 import { BodyTextSection } from './BodyTextSection';
 import { CjkSection } from './CjkSection';
 import { WritingSection } from './WritingSection';
+import { valueText } from './ChineseDefaultsField';
 
 const spanish = (await import(/* @vite-ignore */ new URL('../../../../../apps/web/messages/es.json', import.meta.url).href)) as {
   default: { Sandbox: Record<string, string> };
@@ -116,5 +117,16 @@ describe('East Asian typography', () => {
       expect(plan.find((g) => g.sections.includes('cjk'))?.id).toBe('writing');
       expect(render(CjkSection, config, { labels, search: searching(query) })).toContain(row);
     }
+  });
+});
+
+describe('Chinese defaults review values', () => {
+  it('names every alignment a body can have', () => {
+    const align = (value: 'left' | 'justify' | 'center' | 'right') => valueText({ kind: 'align', value }, DEFAULT_LABELS, 'en');
+    expect([align('left'), align('justify'), align('center'), align('right')]).toEqual([
+      DEFAULT_LABELS.bodyTextAlignLeft, DEFAULT_LABELS.bodyTextAlignJustify,
+      DEFAULT_LABELS.headingsTextAlignCenter, DEFAULT_LABELS.headingsTextAlignRight,
+    ]);
+    expect(valueText({ kind: 'align', value: 'center' }, ES, 'es')).toBe('Centrado');
   });
 });

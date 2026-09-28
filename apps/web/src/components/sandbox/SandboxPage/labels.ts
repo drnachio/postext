@@ -341,6 +341,7 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     chineseDefaultsApplied: t("chineseDefaultsApplied"),
     chineseDefaultsAppliedOne: t("chineseDefaultsAppliedOne"),
     chineseDefaultsUndone: t("chineseDefaultsUndone"),
+    chineseDefaultsUndonePartial: t("chineseDefaultsUndonePartial"),
     chineseDefaultsBodyFont: t("chineseDefaultsBodyFont"),
     chineseDefaultsHeadingFont: t("chineseDefaultsHeadingFont"),
     chineseDefaultsResourceTypes: t("chineseDefaultsResourceTypes"),
