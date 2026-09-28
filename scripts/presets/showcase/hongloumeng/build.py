@@ -31,7 +31,9 @@ of the principal characters at their first mention, and the credits.
 The chapter plate is drawn by the opener design (`resourceId: "{attr.plate}"`):
 the couplet printed under it is the plate's own inscription, so it takes no
 caption and no number. Its wording in every edition (the couplet half, Joly's
-line) is in the resources, for alt text and the Resources panel.
+line) is the resource's caption in the Resources panel; its alt text names the
+chapter and the line the plate illustrates, and the opener design hands it to
+the HTML `alt` and to a tagged PDF's `Figure` (#213).
 """
 from __future__ import annotations
 
@@ -1006,7 +1008,8 @@ def resources(out: str, pictures: dict) -> tuple[list[dict], dict[str, list[dict
             caption = p["caption"]
             if not caption.get("zh-Hant") or not caption.get("zh-Hans"):
                 raise SystemExit(f"resource {p['id']}: no Chinese caption")
-            entry = {"id": p["id"], "typeId": "plate" if kind == "plates" else "portrait", "kind": "bitmap", "file": rel, "width": p["width"], "height": p["height"], "caption": caption["zh-Hant"], "altText": caption["zh-Hant"]}
+            alt = (lambda lang, cap: plate_alt(p["chapter"], lang, cap)) if kind == "plates" else (lambda lang, cap: cap)
+            entry = {"id": p["id"], "typeId": "plate" if kind == "plates" else "portrait", "kind": "bitmap", "file": rel, "width": p["width"], "height": p["height"], "caption": caption["zh-Hant"], "altText": alt("zh-Hant", caption["zh-Hant"])}
             shared.append(entry)
             for lang in LANGS:
                 cap = caption.get(lang)
@@ -1014,8 +1017,19 @@ def resources(out: str, pictures: dict) -> tuple[list[dict], dict[str, list[dict
                     cap = ed.EN_PORTRAIT_NAMES.get(p["id"], cap)
                 if not cap:
                     continue  # no English after chapter 56: the Chinese wording stands
-                wording[lang].append({"id": p["id"], "caption": cap, "altText": cap})
+                wording[lang].append({"id": p["id"], "caption": cap, "altText": alt(lang, cap)})
     return shared, wording
+
+
+def plate_alt(chapter: int, lang: str, line: str) -> str:
+    """The alt text of a chapter plate: the chapter and the line of its
+    couplet the plate illustrates (written on the picture itself)."""
+    if lang == "zh-Hant":
+        return f"第{cn(chapter)}回回首插圖，畫「{line}」"
+    if lang == "zh-Hans":
+        return f"第{cn(chapter)}回回首插图，画“{line}”"
+    return f"Plate of chapter {chapter}, lithographed in 1884: {line}"
+
 
 
 # --- fonts ------------------------------------------------------------------------------------------
