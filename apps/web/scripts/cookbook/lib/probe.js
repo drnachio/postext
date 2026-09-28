@@ -144,6 +144,36 @@ function loadedFaces() {
   }));
 }
 
+/** The code-point ranges of a FontFace's `unicodeRange` ("U+4E00-4FFF, U+3001"). */
+function rangesOf(unicodeRange) {
+  return String(unicodeRange ?? 'U+0-10FFFF').split(',').map((part) => {
+    const [lo, hi = lo] = part.trim().replace(/^U\+/i, '').split('-');
+    if (lo.includes('?')) return [parseInt(lo.replace(/\?/g, '0'), 16), parseInt(lo.replace(/\?/g, 'F'), 16)];
+    return [parseInt(lo, 16), parseInt(hi, 16)];
+  });
+}
+
+/** Families served by unicode-range slices that reach the Han ideographs
+ *  (the cjk kit block adds every file of such a face, loaded or not), with
+ *  the code points their files cover: the PDF's cjkPdfProvider hands over
+ *  whichever of those files the pages need. */
+function slicedFamilies() {
+  const out = new Map();
+  for (const face of document.fonts) {
+    const family = face.family.replace(/^["']|["']$/g, '');
+    const ranges = rangesOf(face.unicodeRange);
+    const list = out.get(family) ?? [];
+    list.push(...ranges);
+    out.set(family, list);
+  }
+  for (const [family, ranges] of out) {
+    if (!ranges.some(([lo, hi]) => lo <= 0x4e00 && hi >= 0x4e00) || ranges.some(([lo, hi]) => lo === 0 && hi >= 0x10ffff)) {
+      out.delete(family);
+    }
+  }
+  return out;
+}
+
 /** A loaded FontFace covers exactly this family, weight and style. */
 function hasFace(faces, family, weight, style) {
   return faces.some((face) => {
@@ -479,6 +509,7 @@ export function facts({ select = 'last', hero = [] } = {}) {
 
   // C12, C16, C25: the faces and text the renderer paints.
   const loaded = loadedFaces();
+  const sliced = slicedFamilies();
   const used = new Map();
   const garbage = [];
   const outside = new Map();
@@ -490,10 +521,14 @@ export function facts({ select = 'last', hero = [] } = {}) {
       if (!used.has(key)) used.set(key, { family: face.family, weight: face.weight, style: face.style, where });
     }
     if (/\bundefined\b|\bNaN\b/.test(text) && garbage.length < 10) garbage.push({ text: text.slice(0, 80), where });
+    const covered = face ? sliced.get(face.family) : null;
     for (const ch of text) {
       if (placeholders.has(ch)) continue;
       const cp = ch.codePointAt(0);
-      if (!LATIN.some(([a, b]) => cp >= a && cp <= b) && !outside.has(ch)) outside.set(ch, where);
+      if (LATIN.some(([a, b]) => cp >= a && cp <= b) || outside.has(ch)) continue;
+      // A CJK face loaded by slices takes the character from its own files.
+      if (covered?.some(([a, b]) => cp >= a && cp <= b)) continue;
+      outside.set(ch, where);
     }
   });
   out.faces = {
@@ -553,9 +588,28 @@ export function facts({ select = 'last', hero = [] } = {}) {
   let justified = 0;
   let worst = 0;
   const looseLines = [];
+  // Lines of the CJK composer are justified between their characters (the
+  // segments' tracking, capped at half an em or bodyText.maxJustifyTracking);
+  // one past the cap is set short and flagged cjkLoose.
+  let cjkJustified = 0;
+  let cjkWorst = 0;
+  const cjkShort = [];
+  const trackingCap = (doc) => {
+    const max = Number(doc.config.bodyText.maxJustifyTracking) || 0;
+    return max > 0 ? Math.min(0.5, max / 1000) : 0.5;
+  };
   for (const { block, doc, n } of all) {
     const max = doc.config.bodyText.maxWordSpacing ?? 2;
+    const emPx = parseFont(block.fontString ?? '')?.px ?? 0;
     for (const line of block.lines ?? []) {
+      if (line.cjkComposed || line.cjkLoose) {
+        if (line.isLastLine || block.textAlign !== 'justify' || (line.ragged && !line.cjkLoose)) continue;
+        cjkJustified++;
+        const tracking = Math.max(0, ...(line.segments ?? []).map((seg) => seg.tracking ?? 0));
+        if (emPx > 0) cjkWorst = Math.max(cjkWorst, tracking / emPx);
+        if (line.cjkLoose) cjkShort.push({ page: n, tracking: emPx > 0 ? round(tracking / emPx, 0.01) : 0, text: (line.text ?? '').trim() });
+        continue;
+      }
       const ratio = line.justifiedSpaceRatio;
       if (ratio === undefined || line.isLastLine || line.ragged) continue;
       justified++;
@@ -567,6 +621,11 @@ export function facts({ select = 'last', hero = [] } = {}) {
   const loosest = [...looseLines].sort((a, b) => b.ratio - a.ratio).slice(0, 5);
   out.loose = { count: looseLines.length, total: justified, share: justified ? looseLines.length / justified : 0,
     worst: round(worst, 0.01), threshold: bt.maxWordSpacing ?? 2, lines: loosest };
+  if (cjkJustified) {
+    out.cjkLoose = { count: cjkShort.length, total: cjkJustified, share: cjkShort.length / cjkJustified,
+      worst: round(cjkWorst, 0.01), threshold: trackingCap(docs[0]), lines: cjkShort.slice(0, 5) };
+  }
+  if (docs[0].binding === 'right') out.binding = 'right';
 
   // Pages: roles, emptiness, coverage, hero legibility, alt-text material.
   const heroSet = new Set(hero);
@@ -857,7 +916,10 @@ function heroPair(hero, byN) {
   return [p, byN.get(n + 1) ?? null];                        // a verso
 }
 
-function drawSpread(ctx, engine, pair) {
+/** The hero pair on the stage, [verso, recto] laid out as the book opens:
+ *  a right-bound book (doc.binding) has its recto on the left. */
+function drawSpread(ctx, engine, [verso, recto], right = false) {
+  const pair = right ? [recto, verso] : [verso, recto];
   const present = pair.filter(Boolean);
   let h = 0.8 * H;
   let widths = present.map((p) => (p.page.width * h) / p.page.height);
@@ -977,7 +1039,7 @@ export async function composeCard({ select = 'last', mode = 'spread', hero = [1]
   let magnification = null;
   try {
     if (mode === 'screenshot') await drawScreenshot(ctx, screenshot);
-    else if (mode === 'spread') drawSpread(ctx, engine, heroPair(hero, byN));
+    else if (mode === 'spread') drawSpread(ctx, engine, heroPair(hero, byN), build.docs[0]?.binding === 'right');
     else if (mode === 'page') drawPage(ctx, engine, byN.get(hero[0]), { x: 0.05 * W, w: 0.9 * W, h: 0.86 * H, cy: 0.46 * H });
     else if (mode === 'loupe') magnification = drawLoupe(ctx, engine, byN.get(focus.page) ?? byN.get(hero[0]), focus);
     else if (mode === 'crop') drawCrop(ctx, engine, byN.get(focus.page) ?? byN.get(hero[0]), focus);

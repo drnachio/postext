@@ -4,7 +4,11 @@
  * crucial", "¿El resultado?"). The owner does not want them in the
  * Cookbook: `hard` phrases fail the lint, `soft` ones warn, since they
  * can be fine in context (a literal journey, a bustling market in a
- * novel). Code, excerpts and MDX tags are ignored.
+ * novel). Code, excerpts and MDX tags are ignored. Chinese prose, in a
+ * write-up or in an original sample, is checked against a Chinese list
+ * whatever the file's language (值得一提的是, 众所周知, 总而言之); quoted
+ * classics are left alone, since sample files are only checked when the
+ * text is the recipe's own.
  *
  * Isomorphic and pure.
  */
@@ -101,6 +105,52 @@ const SOFT: Record<Locale, Rule[]> = {
   ],
 };
 
+/** Stock phrases of Chinese prose written by machine, in Simplified and
+ *  Traditional characters. Chinese has no word boundaries, so the rules
+ *  match characters, not words. */
+const HARD_ZH: Rule[] = [
+  rule("值得一提的是", "值得一提的是"),
+  rule("[众眾]所周知", "众所周知"),
+  rule("不言而喻", "不言而喻"),
+  rule("[总總]而言之|[总總]的[来來][说說]", "总而言之"),
+  rule("[综綜]上所述", "综上所述"),
+  rule("在[当當]今[^，。！？、\\s]{0,12}?(?:[时時]代|世界|社[会會])", "在当今…时代"),
+  rule("[让讓]我[们們]一起(?:来[看探]|[来來]?探索|走[进進]|深入)", "让我们一起"),
+  rule("深入探[讨討]", "深入探讨"),
+  rule("扮演[着著][^，。！？]{0,8}?(?:重要|[关關][键鍵]|至[关關]重要)的?角色", "扮演着重要的角色"),
+  rule("[无無][缝縫](?:衔接|銜接|集成|对接|對接)?", "无缝"),
+  rule("[赋賦]能", "赋能"),
+];
+
+const SOFT_ZH: Rule[] = [
+  rule("至[关關]重要|不可或缺", "至关重要"),
+  rule("[随隨][着著][^，。！？]{0,16}?的?(?:不[断斷]|飞速|飛速|迅速|快速)?(?:[发發]展|普及|[进進]步)", "随着…的发展"),
+  rule("精心打造|打造|助力", "打造/助力"),
+  rule("独特的魅力|獨特的魅力|璀璨|[画畫]卷", "独特的魅力/画卷"),
+  rule("(?:^|[。！？]\\s*)此外，", "此外，"),
+];
+
+/** Letters of Chinese, Japanese and Korean writing (Han, kana, hangul,
+ *  bopomofo): what a Chinese reader counts as characters. */
+const CJK_LETTER = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\p{Script=Bopomofo}]/gu;
+/** CJK letters and the punctuation and fullwidth forms set with them. */
+const CJK_TEXT = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\p{Script=Bopomofo}\u3000-\u303f\uff00-\uffef\ufe10-\ufe1f\ufe30-\ufe4f]/gu;
+
+/** How many CJK characters a text of one English word runs to: a Chinese
+ *  translation takes about 1.7 characters for each English word, so the
+ *  Cookbook's 2,500-word sample holds about 4,250 characters. */
+export const CJK_CHARS_PER_WORD = 1.7;
+
+/** The length of a text for the Cookbook's caps: `words` counts the
+ *  whitespace-separated tokens holding a letter or a digit once CJK text
+ *  is taken out, `cjk` the CJK letters, and `total` both in words
+ *  (`cjk / 1.7`, rounded). */
+export function textLength(text: string): { words: number; cjk: number; total: number } {
+  const cjk = (text.match(CJK_LETTER) ?? []).length;
+  const words = text.replace(CJK_TEXT, " ").split(/\s+/).filter((token) => /[\p{L}\p{N}]/u.test(token)).length;
+  return { words, cjk, total: Math.round(words + cjk / CJK_CHARS_PER_WORD) };
+}
+
 /** Prose only: drops fenced code, inline code, MDX/HTML tags, frontmatter
  *  delimiters and Postext directives, so identifiers never trigger a rule. */
 export function proseOf(text: string): string {
@@ -115,12 +165,21 @@ export function proseOf(text: string): string {
     .replace(/\$\$[\s\S]*?\$\$|\$[^$\n]*\$/g, " ");
 }
 
+/** Where sentences end: a full stop, a line break, or a Chinese stop mark. */
+const SENTENCE_END = [".", "\n", "。", "！", "？"];
+
 function sentenceAround(text: string, index: number): string {
-  const start = Math.max(text.lastIndexOf(".", index), text.lastIndexOf("\n", index)) + 1;
-  const endDot = text.indexOf(".", index);
-  const endLine = text.indexOf("\n", index);
-  const end = [endDot, endLine].filter((n) => n >= 0).reduce((a, b) => Math.min(a, b), text.length);
+  const start = Math.max(...SENTENCE_END.map((mark) => text.lastIndexOf(mark, index))) + 1;
+  const end = SENTENCE_END.map((mark) => text.indexOf(mark, index)).filter((n) => n >= 0).reduce((a, b) => Math.min(a, b), text.length);
   return text.slice(start, end + 1).trim().slice(0, 160);
+}
+
+/** Em dashes that are not Chinese punctuation: the 破折号 is two of them
+ *  (——), and one set against a CJK character belongs to that text. */
+function latinDashes(prose: string): number {
+  const cjk = CJK_TEXT.source;
+  const chinese = new RegExp(`—{2,}|(?<=${cjk})—|—(?=${cjk})`, "gu");
+  return (prose.replace(chinese, "").match(/—/g) ?? []).length;
 }
 
 /** Findings for one text in one language. `emDashLimit` warns when the
@@ -133,15 +192,17 @@ export function styleFindings(text: string, locale: Locale, { emDashLimit = 90 }
     for (const { re, label } of rules) {
       re.lastIndex = 0;
       for (const match of prose.matchAll(re)) {
-        findings.push({ severity, phrase: match[0].replace(/^[.!?\s]+/, "").trim(), rule: label, context: sentenceAround(prose, match.index ?? 0) });
+        findings.push({ severity, phrase: match[0].replace(/^[.!?。！？\s]+/, "").trim(), rule: label, context: sentenceAround(prose, match.index ?? 0) });
       }
     }
   };
   scan(HARD[locale], "fail");
+  scan(HARD_ZH, "fail");
   scan(SOFT[locale], "warn");
+  scan(SOFT_ZH, "warn");
   if (emDashLimit > 0) {
-    const words = prose.split(/\s+/).filter(Boolean).length;
-    const dashes = (prose.match(/—/g) ?? []).length;
+    const words = textLength(prose).total;
+    const dashes = latinDashes(prose);
     if (dashes > 2 && dashes > words / emDashLimit) {
       findings.push({ severity: "warn", phrase: `${dashes} em dashes in ${words} words`, rule: "em dashes", context: "use commas, colons, parentheses or full stops instead of most em dashes" });
     }

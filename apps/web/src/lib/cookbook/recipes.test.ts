@@ -15,6 +15,7 @@ import { LOCALES } from "./types.ts";
 import {
   RECIPE_SCHEMA,
   compareSemVer,
+  previewDraft,
   recipeSchemaJson,
   schemaErrors,
   unquotedFrontmatter,
@@ -155,6 +156,26 @@ describe("validateRecipeMeta (fixture)", () => {
     const meta = fixtureMeta();
     meta.engine.postext = "1.5.0";
     expect(validate(meta)[0]).toMatch(/^engine\.postext: 1\.5\.0 is newer than the released postext 1\.4\.1/);
+  });
+
+  it("lets a draft preview the next release on the local engine", () => {
+    const released = { postext: "1.8.4", postextPdf: "1.8.4" };
+    const draft = { ...fixtureMeta(), status: "draft" as const, engine: { postext: "1.9.0" as const, postextPdf: "1.9.0" as const } };
+    const check = (meta: RecipeMeta, preview: boolean) =>
+      validateRecipeMeta(meta, "magazine-photo-opener", REGISTRY, { knownSlugs: ["magazine-photo-opener"], released, preview });
+    expect(check(draft, true)).toEqual([]);
+    expect(check(draft, false)).toEqual([
+      "engine.postext: 1.9.0 is newer than the released postext 1.8.4 (keep the recipe a draft and preview it with --engine local until the release)",
+      "engine.postextPdf: 1.9.0 is newer than the released postext-pdf 1.8.4 (keep the recipe a draft and preview it with --engine local until the release)",
+    ]);
+    // A published recipe is captured from npm: never ahead of the release.
+    expect(check({ ...draft, status: "published" }, true)[0]).toMatch(/^engine\.postext: 1\.9\.0 is newer than the released postext 1\.8\.4/);
+    // The next release, not any version: 2.0.0 is the furthest a preview reaches.
+    expect(check({ ...draft, engine: { postext: "2.0.0", postextPdf: "1.9.0" } }, true)).toEqual([]);
+    expect(check({ ...draft, engine: { postext: "2.1.0", postextPdf: "1.9.0" } }, true)[0]).toMatch(/^engine\.postext: 2\.1\.0 is past the next release/);
+    expect(previewDraft(draft, released)).toBe(true);
+    expect(previewDraft({ ...draft, engine: { postext: "1.8.4", postextPdf: "1.8.4" } }, released)).toBe(false);
+    expect(previewDraft({ ...draft, status: "published" }, released)).toBe(false);
   });
 
   it("checks the capture settings", () => {
@@ -359,7 +380,8 @@ describe("recipe folders", () => {
 
   it("have valid recipe.json files", () => {
     const errors = metas.flatMap(({ slug, meta }) =>
-      validateRecipeMeta(meta, slug, registry, { knownSlugs: slugs, released }).map((e) => `${slug}: ${e}`),
+      // Drafts may preview the next release (captured once it is out).
+      validateRecipeMeta(meta, slug, registry, { knownSlugs: slugs, released, preview: true }).map((e) => `${slug}: ${e}`),
     );
     expect([...errors, ...validateRecipeSet(metas)]).toEqual([]);
   });

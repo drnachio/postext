@@ -1,8 +1,10 @@
-// ─── Kit · cjk v1 ── Chinese, Japanese and Korean faces · postext.dev/cookbook ─
+// ─── Kit · cjk v1 ── Chinese, Japanese and Korean books · postext.dev/cookbook ─
 // Fontsource ships a CJK family as about a hundred files per weight, each
 // declared in its stylesheet with the unicode-range it covers. The screen
 // loads the files the sample touches; the PDF gets the same files for the
 // characters its pages set in each face, and embeds each as a subset.
+// A book bound on the right (vertical text) is shown with its spreads
+// mirrored: page 1 alone on the left of the spine, then [3 | 2].
 
 /** The files of a Fontsource face, read from its stylesheet: { url, range,
  *  ranges }, the last declared first (the order the browser tries them in). */
@@ -33,17 +35,33 @@ function cjkSliceFor(slices, cp) {
   return slices.find((slice) => slice.ranges.some(([lo, hi]) => cp >= lo && cp <= hi));
 }
 
-/** faces = { 'Noto Serif TC': ['400', '700'] }, as for loadFonts. Adds one
- *  FontFace per file of each face with its unicodeRange, then loads the
- *  files `text` (the sample) touches. Fails when a character of the
- *  sample is in no file. List every weight the pages use: a weight left
- *  to buildWithFonts gets the latin file only. Resolves to the number of
- *  files loaded. */
-async function loadCjkFonts(faces, text) {
+/** Whether Fontsource serves `family` as a Chinese, Japanese or Korean
+ *  family (its subsets name the script). */
+async function isCjkFamily(family) {
+  const meta = await fontsourceMeta(family);
+  return !!meta?.subsets?.some((subset) => /^(chinese|japanese|korean)/.test(subset));
+}
+
+/** faces = { 'Noto Serif TC': ['400', '700'] }, as for loadFonts: the
+ *  whole FONTS object may be passed, its other families are left to
+ *  loadFonts. Adds one FontFace per file of each CJK face with its
+ *  unicodeRange, then loads the files `text` (the sample) touches. Fails
+ *  when a character of the sample is in no file. List every weight the
+ *  pages use: a weight left to buildWithFonts gets the latin file only.
+ *  With { vertical: true } it also loads each family's vertical forms
+ *  (brackets, quotes, pause marks) for the canvas, which needs
+ *  loadVerticalAlternates imported from postext. Resolves to the number
+ *  of files loaded. */
+async function loadCjkFonts(faces, text, { vertical = false } = {}) {
   kitStatus('Loading fonts…');
   let loaded = 0;
   try {
+    if (vertical && typeof loadVerticalAlternates !== 'function') {
+      throw new Error('loadCjkFonts(…, { vertical: true }) needs loadVerticalAlternates imported from postext');
+    }
     for (const [family, specs] of Object.entries(faces)) {
+      if (!(await isCjkFamily(family))) continue;
+      const twin = [];
       for (const spec of new Set(specs)) {
         const weight = parseInt(spec, 10);
         const style = spec.endsWith('i') ? 'italic' : 'normal';
@@ -53,11 +71,15 @@ async function loadCjkFonts(faces, text) {
         for (const slice of slices) {
           document.fonts.add(new FontFace(family, `url(${slice.url}) format('woff2')`,
             { weight: String(weight), style, unicodeRange: slice.range }));
+          twin.push({ source: slice.url, weight: String(weight), style, unicodeRange: slice.range });
         }
         const font = `${style === 'italic' ? 'italic ' : ''}${weight} 16px "${family}"`;
         loaded += (await document.fonts.load(font, text)).length;
         if (!document.fonts.check(font, text)) throw new Error(`${family} ${spec} did not load for the sample`);
       }
+      // The same files under a twin name with the `vert` feature on: the
+      // canvas paints the punctuation of vertical lines with it.
+      if (vertical && twin.length) await loadVerticalAlternates(family, twin);
     }
   } catch (error) {
     kitFail(error);
@@ -71,10 +93,8 @@ async function loadCjkFonts(faces, text) {
  *  hold the characters its pages set (`request.codePoints`); any other
  *  family goes to fontsourceProvider (the "pdf" block). */
 async function cjkPdfProvider(family, weight, style, request) {
+  if (!(await isCjkFamily(family))) return fontsourceProvider(family, weight, style);
   const meta = await fontsourceMeta(family);
-  if (!meta?.subsets?.some((subset) => /^(chinese|japanese|korean)/.test(subset))) {
-    return fontsourceProvider(family, weight, style);
-  }
   const weights = meta.weights?.length ? meta.weights : [400, 700];
   const w = weights.reduce((a, b) => (Math.abs(b - weight) < Math.abs(a - weight) ? b : a));
   const s = style === 'italic' && !meta.styles.includes('italic') ? 'normal' : style;
@@ -90,4 +110,25 @@ async function cjkPdfProvider(family, weight, style, request) {
     if (!res.ok) throw new Error(`Fontsource file ${slice.url} (${res.status})`);
     return decompressWoff2(new Uint8Array(await res.arrayBuffer()));
   }));
+}
+
+/** showPages for a book bound on either edge. A right-bound book (the
+ *  document says so: doc.binding is 'right' for page.binding 'right' and
+ *  for vertical text) lies on the desk as it opens: page 1 alone on the
+ *  left of the spine, then [3 | 2], the spine shade on each page's inner
+ *  edge. `binding` ('left' | 'right') overrides the document's. */
+function showBook(docs, { binding, ...options } = {}) {
+  const count = showPages(docs, options);
+  const right = (binding ?? [docs].flat()[0]?.binding) === 'right';
+  if (!document.getElementById('pt-kit-cjk')) {
+    document.head.insertAdjacentHTML('beforeend', `<style id="pt-kit-cjk">
+      .pt-spread[dir="rtl"] figure:first-child canvas { box-shadow: inset 14px 0 14px -14px rgb(0 0 0 / .18),
+        0 1px 2px rgb(0 0 0 / .5), 0 22px 44px -16px rgb(0 0 0 / .8); }
+    </style>`);
+  }
+  // Each pair stays [verso, recto] in the page; right to left, the verso
+  // sits on the right. Phones stack the pages in reading order either way.
+  for (const spread of document.querySelectorAll('#pages > .pt-spread')) spread.dir = right ? 'rtl' : 'ltr';
+  document.getElementById('pages').dataset.binding = right ? 'right' : 'left';
+  return count;
 }

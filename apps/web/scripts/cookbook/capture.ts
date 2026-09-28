@@ -29,10 +29,11 @@ import matter from "gray-matter";
 import { hash8, sourceHash } from "../../src/lib/cookbook/hash.ts";
 import { captureDir, recipeDir, WEB_DIR } from "../../src/lib/cookbook/paths.ts";
 import { loadRegistry } from "../../src/lib/cookbook/registry.ts";
+import { compareSemVer } from "../../src/lib/cookbook/validate.ts";
 import { listRecipeSlugs, readRecipeMeta, readRecipeSources } from "../../src/lib/cookbook/sources.ts";
 import type { CaptureManifest, CaptureVariant, Locale, RecipeMeta, Registry } from "../../src/lib/cookbook/types.ts";
 import { LOCALES } from "../../src/lib/cookbook/types.ts";
-import { altText, spreadsOf } from "./cards.ts";
+import { altText, sidesOf, spreadsOf } from "./cards.ts";
 import { detect, pdfPageCount, runChecks } from "./checks.ts";
 import type { Finding } from "./checks.ts";
 import type { HarnessBrowser, SandboxMeta, VariantRun } from "./harness.ts";
@@ -129,8 +130,10 @@ function prepare(slug: string, langs: readonly Locale[]): Prepared {
   };
 }
 
-/** The recipes to capture: the named ones, --all, or the stale ones. */
-function selectRecipes(opts: CaptureOptions, langs: readonly Locale[]): { prepared: Prepared[]; broken: CaptureResult[] } {
+/** The recipes to capture: the named ones, --all, or the stale ones. A
+ *  recipe that needs a newer postext than the engine the run pins (a draft
+ *  previewing the next release) is reported instead of run. */
+function selectRecipes(opts: CaptureOptions, langs: readonly Locale[], engine: EngineSpec): { prepared: Prepared[]; broken: CaptureResult[] } {
   const known = listRecipeSlugs();
   for (const slug of opts.slugs) {
     if (!known.includes(slug)) throw new Error(`no recipe "${slug}" in cookbook/`);
@@ -151,6 +154,12 @@ function selectRecipes(opts: CaptureOptions, langs: readonly Locale[]): { prepar
       const prev = task.previous;
       const stale = !prev || prev.sourceHash !== task.sourceHash || task.variants.some((v) => !prev.variants?.[v]);
       if (!stale) continue;
+    }
+    if (engine.source === "npm" && compareSemVer(task.meta.engine.postext, engine.postext) > 0) {
+      const why = `needs postext ${task.meta.engine.postext}; this run pins ${engine.postext}: preview it with --engine local until the release`;
+      if (named) broken.push(failed(slug, task.variants[0] ?? "en", "engine", why));
+      else process.stderr.write(dim(`  skipping ${slug}: ${why}\n`));
+      continue;
     }
     if (task.variants.length) prepared.push(task);
   }
@@ -275,7 +284,7 @@ function evaluate(
   };
   const spreads = spreadsOf(run.published, facts?.pages?.[0]?.book ?? 1);
   const strips = run.pages.map((p) => p.strip);
-  const pick = spreads.find(([a, b]) => a !== null && b !== null) ?? spreads[0] ?? [null, null];
+  const pick = sidesOf(spreads.find(([a, b]) => a !== null && b !== null) ?? spreads[0] ?? [null, null], facts?.binding);
   const sheet: SheetEntry = {
     slug, variant, ok: result.ok, card: run.card?.card480 ?? null,
     spread: [pick[0] === null ? null : strips[pick[0]], pick[1] === null ? null : strips[pick[1]]],
@@ -311,6 +320,7 @@ function evaluate(
       };
     }),
     spreads,
+    ...(facts.binding === "right" ? { binding: "right" as const } : {}),
     card: { file: "card.webp", file480: "card.480.webp", w: 960, h: 720, mode: meta.capture.card },
     og: { file: "og.jpg", w: 580, h: 622 },
     ...(pdfBytes ? { pdf: { file: `${slug}.pdf`, bytes: pdfBytes.length, pages: pdfPages ?? 0 } } : {}),
@@ -336,6 +346,15 @@ function evaluate(
         share: Math.round((facts.loose?.share ?? 0) * 10000) / 10000,
         worst: facts.loose?.worst ?? 0,
       },
+      ...(facts.cjkLoose?.total
+        ? {
+            cjkLooseLines: {
+              count: facts.cjkLoose.count,
+              share: Math.round(facts.cjkLoose.share * 10000) / 10000,
+              worst: facts.cjkLoose.worst,
+            },
+          }
+        : {}),
       findings: warns,
     },
   };
@@ -506,7 +525,7 @@ async function pool<T>(jobs: (() => Promise<T>)[], limit: number): Promise<T[]> 
 export async function runCapture(opts: CaptureOptions): Promise<CaptureResult[]> {
   const engine = resolveEngine(opts.engine ?? "npm");
   const langs = opts.langs?.length ? opts.langs : LOCALES;
-  const { prepared, broken } = selectRecipes(opts, langs);
+  const { prepared, broken } = selectRecipes(opts, langs, engine);
   const results: CaptureResult[] = [...broken];
   if (!prepared.length) {
     if (opts.report) writeReport(opts.report, results, engine, null);
@@ -550,6 +569,10 @@ export async function runCapture(opts: CaptureOptions): Promise<CaptureResult[]>
           // An earlier, longer run's pages would linger among the new ones.
           for (const name of fs.readdirSync(dir)) if (/^(p\d+|card|og)\.png$/.test(name)) fs.rmSync(path.join(dir, name));
           for (const [name, bytes] of d.output.previews) fs.writeFileSync(path.join(dir, name), bytes);
+          // What capture.json would record for the edition (a local-engine
+          // preview writes no capture): diagnostics, detection, binding.
+          if (d.output.variant) fs.writeFileSync(path.join(dir, "capture.json"), `${JSON.stringify(d.output.variant, null, 2)}\n`);
+          else fs.rmSync(path.join(dir, "capture.json"), { force: true });
         }
         if (d.result.ok && d.output?.variant) outputs.set(d.variant, d.output);
       }

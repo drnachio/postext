@@ -97,10 +97,10 @@ findings; they exit 0 when green, 1 on any failure, 2 on a usage error.
 |---|---|
 | `pnpm cookbook new <slug> --chapter <id> [--from <slug>]` | Copies `_template/` (or another recipe) to `cookbook/<slug>/` as a **draft**: a planned slug keeps its Nº, chapter and order from `_roadmap.json`, any other takes the next free Nº and the last place in the chapter; today's dates, and the slug and Nº written into `script.js`. |
 | `pnpm cookbook dev <slug> [--lang es] [--port 4400]` | Serves exactly the page the capture runs, and reloads it whenever you save a file of the recipe or the kit. Open it next to your editor. |
-| `pnpm cookbook lint [slug…]` | The static checks: `recipe.json`, both write-ups, every composed edition of the pen, assets, credits. Run it until it is silent. |
+| `pnpm cookbook lint [slug…] [--engine local]` | The static checks: `recipe.json`, both write-ups, every composed edition of the pen, assets, credits. Run it until it is silent. With `--engine local`, a draft may pin the next release (see below). |
 | `pnpm cookbook capture [slug…]` | Runs the pen in Chrome against the released engine, verifies it (§11) and writes the pages, card, social image, PDF and `capture.json`. With no slug: every recipe whose capture is missing or stale. |
 | `pnpm cookbook capture <slug> --check` | Runs and verifies, writes nothing (a regression run). |
-| `pnpm cookbook capture <slug> --preview-dir <dir>` | Also writes PNG copies of every page, the card and the social image to `<dir>/<slug>/<lang>/`. |
+| `pnpm cookbook capture <slug> --preview-dir <dir>` | Also writes PNG copies of every page, the card and the social image to `<dir>/<slug>/<lang>/`, with the `capture.json` entry the edition would get. |
 | `pnpm cookbook dev <slug> --engine local`, `pnpm cookbook capture <slug> --engine local --preview-dir <dir>` | Run the pen on the workspace engine (`packages/postext/dist` and `packages/postext-pdf/dist`; run `npx tsc` in both first) instead of the released one, to preview a recipe that needs an unreleased feature. The capture only checks: a published recipe is captured from npm once the engine is released. |
 | `pnpm cookbook capture [slug…] --sandbox-only` | Writes only each edition's `<slug>.postext` and its `sandbox` entry in `capture.json`, running the pen on the engine version `capture.json` records. Pages, card, social image and PDF are left alone. With no slug: every captured recipe. |
 | `pnpm cookbook capture --all --sheet <out.webp>` | A contact sheet of every card and first spread, for the design review. |
@@ -110,6 +110,14 @@ findings; they exit 0 when green, 1 on any failure, 2 on a usage error.
 The capture skips rewriting images when the layout and the card inputs did not change; pass
 `--force` to rewrite them anyway. Drafts show on the site in development
 (`next dev`) or with `COOKBOOK_DRAFTS=1`; production lists published recipes only.
+
+**Recipes for the next release.** A recipe that shows a feature not yet on npm is written as a
+draft that pins the version the feature will ship in (`engine.postext` newer than
+`packages/postext/package.json`, at most the next major). Such a *preview draft* passes
+`pnpm cookbook lint <slug> --engine local` and the tests, and runs with `dev` and `capture`
+`--engine local`; a capture from npm refuses it, and the captures test asks for its capture
+as soon as the release is out. Then pin nothing new: run `pnpm cookbook capture <slug>` and
+publish it.
 
 ## 4. `recipe.json`
 
@@ -125,15 +133,15 @@ The TypeScript source of truth is `RecipeMeta` in `apps/web/src/lib/cookbook/typ
 | `genres` | 1–3 of `novel poetry textbook workbook manual paper report magazine newsletter catalogue photobook ephemera any`. |
 | `outputs` | 1–4 of `canvas html pdf bundle live`. `pdf` ⇔ the `pdf` kit block ⇔ an import from `https://esm.sh/postext-pdf` ⇔ `engine.postextPdf`. |
 | `features` | `primary`: 1–3 features the recipe **teaches**; `also`: up to 17 others it uses. Ids from `_registry/features.json`. |
-| `answers` | Question ids (`Q01`…`Q80`); `answers[0]` is the question the recipe page leads with. |
+| `answers` | Question ids (`Q01`…`Q97`); `answers[0]` is the question the recipe page leads with. |
 | `gaps` | Unsupported features the recipe works around (gives the Workaround badge). |
 | `gotchas`, `explainsWarnings` | Shared pitfalls and warning kinds shown under Pitfalls. |
 | `related` | Up to four hand-picked sibling slugs; the rest are computed. |
 | `workarounds` | Engine bugs the recipe routes around: `{ followup?, issue?, package, note }`, revisited when fixed. |
-| `engine` | `postext` minimum version (≤ the released one); `postextPdf` for PDF recipes; `math`, `worker` flags. |
+| `engine` | `postext` minimum version (≤ the released one, or the next release in a preview draft, §3); `postextPdf` for PDF recipes; `math`, `worker` flags. |
 | `kit` | Blocks to inline: always `core`, `fonts`, `viewer`; plus `pdf`, `images` and `cjk` when used. |
 | `sample.locales` | Languages with a `content.<lang>.md`; `[0]` is the fallback edition. |
-| `capture` | `hero` (a page, or a spread `[verso, recto]`; page 1 is a recto on its own), `card` (`spread`, `page`, `loupe`, `crop`, `screenshot`), `focus` for loupe and crop, `pages`, `expect`. Page numbers count from 1 at the document's first page, whatever its printed folio (`continuation.pageNumbering.startAt`) or its place in the book (`continuation.pageIndexOffset`). Versos and rectos follow the physical book page (`pageIndexOffset` + index + 1), not the folio: the capture checks that a spread's verso is an even book page. |
+| `capture` | `hero` (a page, or a spread `[verso, recto]`; page 1 is a recto on its own), `card` (`spread`, `page`, `loupe`, `crop`, `screenshot`), `focus` for loupe and crop, `pages`, `expect`. Page numbers count from 1 at the document's first page, whatever its printed folio (`continuation.pageNumbering.startAt`) or its place in the book (`continuation.pageIndexOffset`). Versos and rectos follow the physical book page (`pageIndexOffset` + index + 1), not the folio: the capture checks that a spread's verso is an even book page. A spread is named in reading order, `[verso, recto]`, also in a book bound on the right, which the light table and the card lay out mirrored (`[3 \| 2]`). |
 | `downloads.pdf` | Keep and serve the PDF the pen builds. |
 | `credits` | Authors; text, image and font credits (§8). |
 | `license` | `{ "code": "MIT", "content": "MIT" \| "CC-BY-4.0" }` for your own code and prose. |
@@ -254,8 +262,9 @@ Its functions are hoisted declarations you can call from anywhere in the script:
 | `fontsourceProvider` | pdf | The PDF font provider: snaps to shipped weights, falls back from missing italics. |
 | `loadImage(id, url)`, `loadSvg(id, svg)` | images | Register pictures for the canvas and keep their bytes. |
 | `imageBytes`, `imageUrl` | images | The `resourceBytes` of `renderToPdf` and the `resourceImageUrl` of `renderToHtml`. |
-| `loadCjkFonts(FACES, text)` | cjk | Chinese, Japanese and Korean faces: one `FontFace` per Fontsource unicode-range file, loading the files the sample touches; fails on a character no file has. |
+| `loadCjkFonts(FONTS, text, { vertical })` | cjk | Chinese, Japanese and Korean faces (the other families of `FONTS` are left to `loadFonts`): one `FontFace` per Fontsource unicode-range file, loading the files the sample touches; fails on a character no file has. `vertical: true` also loads each family's vertical punctuation for the canvas (import `loadVerticalAlternates`). |
 | `cjkPdfProvider` | cjk | The PDF font provider for such faces: the files that hold each face's characters (other families go to `fontsourceProvider`, so list `pdf` too). |
+| `showBook(doc \| docs, { title, binding })` | cjk | `showPages` for a book bound on either edge: a right-bound document (`doc.binding`, set by `page.binding: 'right'` or vertical text) lies mirrored, page 1 alone on the left of the spine, then `[3 \| 2]`. |
 
 A change to the kit changes every recipe's source hash, so every capture goes stale and the
 whole Cookbook is verified again.
@@ -284,11 +293,11 @@ whole Cookbook is verified again.
 |---|---|
 | Recipe code (lines outside the content, the kit and `#region art…` artwork) | ≤ 300; aim for ≤ 120 (level 1), ≤ 180 (level 2), ≤ 250 (level 3) |
 | Composed script / CodePen prefill | ≤ 60 KB / ≤ 96 KB |
-| Each content file | ≤ 2,500 words |
+| Each content file | ≤ 2,500 words; Chinese, Japanese and Korean characters count 1.7 to the word (about 4,250 characters of Chinese) |
 | Captured pages | 2–12 |
 | Each asset / all assets | ≤ 400 KB / ≤ 2 MB; images ≤ 2400 px on the long side, JPEG q80 |
 | Captured media per edition (PDF excluded) | warning at 0.9 MB (0.1 MB per published page past 9), failure at 1.4 MB |
-| PDF text | inside Fontsource's `latin` range (the lint warns otherwise) |
+| PDF text | inside Fontsource's `latin` range, or set in a CJK face loaded by the `cjk` block (the lint and C25 warn otherwise) |
 
 A pen may fetch from `esm.sh`, `cdn.jsdelivr.net/npm/@fontsource/*`,
 `cdn.jsdelivr.net/gh/drnachio/postext@main/cookbook/*`, `api.fontsource.org` and
@@ -361,6 +370,45 @@ every box before you ask for a review. The ranges come from the showcase books.
       grey mush at card size.
 - [ ] No 1 px hairline patterns or ruled baseline grids on the hero: they alias into noise.
 
+### Chinese, Japanese and Korean pages
+
+A recipe set in Chinese meets the bar above with these changes, taken from clreq and the
+showcase's 红楼梦. The Latin rules on hyphenation, italics and Spanish conventions do not apply
+to the Chinese text.
+
+**Page and grid**
+- [ ] The type area in characters (`cjk.grid`): a measure of 17–40 characters per line, 25–40
+      in a single-column book, 17–25 in a column of a magazine or a newspaper, and a whole
+      number of ems in every case. Lines per page stated, not left to the margins.
+- [ ] A trim from Chinese practice: 大32开 140 × 203 mm, 32开 130 × 184 mm, 16开 184 × 260 mm;
+      天头 (head margin) larger than 地脚 (foot).
+- [ ] Vertical text bound on the right (`layout.writingMode: 'vertical-rl'`, which sets
+      `page.binding` to `'right'`), shown with `showBook`; its `capture.hero` in reading order.
+
+**Typography**
+- [ ] `config.locale` written out: `'zh-Hans'` or `'zh-Hant'` (`'zh-HK'`), never `LANG`.
+- [ ] Body 9–12 pt (五号 10.5 pt in books, 小五 9 pt in two columns), leading 1.5–2 × the
+      size; a line gap large enough for any ruby or marks the page sets.
+- [ ] Three voices from the Chinese styles: 宋/明 (Song or Ming) for the text, 黑 (Hei) for
+      heads and labels, 楷 (Kai) for quotations, prefaces and notes. Noto Serif SC/TC,
+      Noto Sans SC/TC and LXGW WenKai TC are on Fontsource.
+- [ ] Justified, with a 2-character first-line indent (`em(2)`) and no space between
+      paragraphs; no hyphenation.
+- [ ] One punctuation style chosen for the region: Kaiming on the mainland (the `'auto'`
+      default for `zh-Hans`), full width and centred in Taiwan and Hong Kong; quotation marks
+      “ ” ‘ ’ in horizontal mainland text, 「」『』 in Taiwan and in vertical text.
+- [ ] No italics in Chinese: emphasis in bold or in the Kai face; italics only for Latin
+      words.
+- [ ] No `cjkLooseLine` in the capture (C24): a long Latin word or web address may not leave
+      a justified line short.
+
+**Content**
+- [ ] The text from a public-domain Chinese source (zh.wikisource, Project Gutenberg), cited
+      with its edition; both editions (`en`, `es`) carry the Chinese text, and the chrome,
+      captions and any translation change with the edition.
+- [ ] The recipe's write-up names the Latin-script recipe it pairs with (the same technique
+      in a European book), so a reader can compare.
+
 ## 7. Never the default skin
 
 The engine's defaults exist so that a first `buildDocument` shows something. Nobody chose
@@ -414,7 +462,11 @@ thumbnails travel without their credits. Host downscaled copies in `assets/`; ne
 
 **Fonts**: SIL OFL or Apache families served by Fontsource. Every family in `FONTS` needs a
 `credits.fonts` entry, and families differ in what they ship (Outfit and Bricolage Grotesque
-have no italic; Alegreya SC has no 600).
+have no italic; Alegreya SC has no 600). Chinese, Japanese and Korean families are the
+exception to "the same static files": Fontsource splits each weight into about a hundred
+unicode-range files, so a recipe lists them in `FONTS` as usual and loads them through the
+`cjk` kit block (`loadCjkFonts`, `cjkPdfProvider`), which fetch only the files the text
+needs. They ship no italic.
 
 **Credits in three places:** `recipe.json` `credits` (text, every asset with its `file`,
 fonts), a `note` under every picture whose licence requires attribution, and a one-line
@@ -467,7 +519,10 @@ turns that make text read as machine-written, in the write-ups *or* in the sampl
 you write yourself (quoted public-domain text stays as its author wrote it). `pnpm cookbook
 lint` enforces the clearest ones (lint FAIL) and flags the rest (WARN; fix them unless the
 word is literal, like a real journey on foot). The rules live in
-`apps/web/src/lib/cookbook/style.ts`.
+`apps/web/src/lib/cookbook/style.ts`. Chinese prose you write yourself (a caption, a
+colophon, an editorial note) is checked against a Chinese list in either write-up: 值得一提的是,
+众所周知, 不言而喻, 总而言之, 综上所述, 在当今…时代 and 赋能 fail; 至关重要, 随着…的发展 and 打造
+warn. Quoted classical text is left as its author wrote it.
 
 - **Stock phrases (FAIL).** English: *delve, tapestry, a testament to, in today's … world,
   ever-evolving, seamless(ly), unlock/unleash the power/potential, game-changer, look no
@@ -592,10 +647,17 @@ skin (C17), empty pages (C18), missing credits (C19), over budget (C20), a warm 
 4 s (C21).
 
 **Warnings** go into `capture.json` for the reviewer: blank-page cascades (C22), near-empty
-pages not listed in `expect.nearEmptyPages` (C23), loose lines over 2 % (C24), characters
-outside Fontsource latin in a PDF recipe (C25), a hero with too little picture or display
-type (C26), a primary feature whose detect rule did not fire (C27), a level two steps from
-the suggested one (C28), a page count outside `expect.pages` (C29).
+pages not listed in `expect.nearEmptyPages` (C23), loose lines over 2 % (C24; a Chinese,
+Japanese or Korean line is loose when it needed more than half an em between its characters
+and ends short, `cjkLoose`, and one is enough), characters a PDF recipe's faces cannot set
+(C25: outside Fontsource latin and not covered by a CJK face the `cjk` block loaded, or
+reported missing by postext-pdf), a hero with too little picture or display type (C26), a
+primary feature whose detect rule did not fire (C27), a level two steps from the suggested
+one (C28), a page count outside `expect.pages` (C29).
+
+A right-bound book (`doc.binding: 'right'`) records `binding: "right"` in `capture.json`:
+the card, the light table, its lightbox and the contact sheet lay each spread out mirrored,
+and ← turns to the next spread.
 
 Treat warnings as questions the reviewer will ask. Fix them, or explain in the pull request
 why they are right.
@@ -647,6 +709,11 @@ Follow this procedure exactly; do not skip steps because the output "looks right
 7. **Write `en.mdx` and `es.mdx`** last, from what the pages show; same excerpt
    regions in the same order; native Spanish with the vocabulary in §9.
 8. **Self-review** against §6 box by box, and against §7.
+9. **A Chinese, Japanese or Korean recipe** also lists the `cjk` kit block, loads its faces
+   with `loadCjkFonts(FONTS, markdown)` after `loadFonts`, gives `renderToPdf`
+   `cjkPdfProvider`, writes `config.locale` out, shows a right-bound book with `showBook`,
+   and meets §6's CJK variant. When it needs an unreleased feature it is a preview draft
+   (§3): `pnpm cookbook lint <slug> --engine local`, `pnpm cookbook dev <slug> --engine local`.
 
 **Never:** leave the default skin; pin engine versions; fetch from hosts outside the
 allowlist; use NC/ND content or unlicensed pictures; use `Math.random()` or the clock; put

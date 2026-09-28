@@ -98,6 +98,21 @@ export interface ProbeFacts {
     /** The loosest lines past the threshold, loosest first (at most 5). */
     lines?: { page: number; ratio: number; text: string }[];
   };
+  /** Justified lines of the CJK composer (`VDTLine.cjkComposed`), judged by
+   *  the space between their characters (`VDTLineSegment.tracking`, in em)
+   *  instead of their word spaces: `count` lines past the cap, set short
+   *  (`cjkLoose`), `worst` the widest spacing, `threshold` the cap. */
+  cjkLoose?: {
+    count: number;
+    total: number;
+    share: number;
+    worst: number;
+    threshold: number;
+    /** The lines set short, in page order (at most 5). */
+    lines?: { page: number; tracking: number; text: string }[];
+  };
+  /** `"right"` when the document is bound on its right edge (`doc.binding`). */
+  binding?: "right";
   pages?: ProbePage[];
   specimen?: {
     trimMm: [number, number];
@@ -550,17 +565,35 @@ function collect(input: CheckInput): Finding[] {
     if (p.coverage < 0.25) add("C23", "warn", `page ${p.n} is only ${pct(p.coverage)} filled (not a chapter's last page)`);
   });
 
-  // C24: loose lines.
+  // C24: loose lines. Latin lines by their word spaces; Chinese, Japanese
+  // and Korean lines by the space between their characters, which is how
+  // they are justified: only a line past the cap, set short, is loose.
+  const clipText = (text: string) => (text.length > 48 ? `${text.slice(0, 47).trimEnd()}…` : text);
   const loose = facts.loose;
   if (loose && loose.total && loose.share > 0.02) {
-    const clipText = (text: string) => (text.length > 48 ? `${text.slice(0, 47).trimEnd()}…` : text);
     const where = (loose.lines ?? []).slice(0, 3).map((l) => `p. ${l.page} ${l.ratio}× “${clipText(l.text)}”`);
     add("C24", "warn", `${loose.count} of ${loose.total} justified lines (${pct(loose.share)}) stretch past ${loose.threshold}× (worst ${loose.worst}×)${where.length ? `; loosest: ${where.join(", ")}` : ""}`);
   }
+  const cjkLoose = facts.cjkLoose;
+  if (cjkLoose && cjkLoose.count > 0) {
+    const where = (cjkLoose.lines ?? []).slice(0, 3).map((l) => `p. ${l.page} “${clipText(l.text)}”`);
+    add("C24", "warn", `${cjkLoose.count} of ${cjkLoose.total} justified Chinese, Japanese or Korean lines needed more than ${cjkLoose.threshold} em between characters and end short (cjkLooseLine)${where.length ? `; ${where.join(", ")}` : ""}`);
+  }
 
-  // C25: characters outside Fontsource's latin subset in a PDF recipe.
-  if ((meta.outputs.includes("pdf") || meta.downloads?.pdf) && facts.nonLatin?.length) {
+  // C25: characters a PDF recipe's fonts cannot set: those outside
+  // Fontsource's latin subset that no loaded face covers (a CJK face the
+  // cjk block loads by slices covers its own), and what postext-pdf drew
+  // with no glyph (its missingGlyph warning, printed to the console).
+  const pdfRecipe = meta.outputs.includes("pdf") || !!meta.downloads?.pdf;
+  if (pdfRecipe && facts.nonLatin?.length) {
     add("C25", "warn", `outside the latin subset: ${facts.nonLatin.map((c) => `${c.ch} ${c.code}`).join(", ")}`);
+  }
+  if (pdfRecipe) {
+    const MISSING = /^postext-pdf: "(.+?)" (\d+(?: italic)?) has no glyph for [^(]*\((.+?)\); the PDF draws them/;
+    for (const m of input.console) {
+      const hit = MISSING.exec(m.text);
+      if (hit) add("C25", "warn", `the PDF has no glyph for "${hit[1]}" ${hit[2]}: ${hit[3]}`);
+    }
   }
 
   // C26: hero legibility.

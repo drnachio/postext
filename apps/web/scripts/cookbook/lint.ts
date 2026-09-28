@@ -11,14 +11,19 @@ import { loadRegistry } from "../../src/lib/cookbook/registry.ts";
 import type { RecipeMeta, Registry } from "../../src/lib/cookbook/types.ts";
 import { LOCALES } from "../../src/lib/cookbook/types.ts";
 import { lintRecipe, readReleasedEngine } from "../../src/lib/cookbook/lint.ts";
-import { recipeSchemaJson, validateRecipeSet, validateRegistry } from "../../src/lib/cookbook/validate.ts";
+import { previewDraft, recipeSchemaJson, validateRecipeSet, validateRegistry } from "../../src/lib/cookbook/validate.ts";
 import { UsageError, c, loadRecipes, mark, parseArgs, plural } from "./args.ts";
 import { SCHEMA_FILE } from "./schema.ts";
 
-export const LINT_USAGE = `pnpm cookbook lint [slug…]
+export const LINT_USAGE = `pnpm cookbook lint [slug…] [--engine local]
 
   Static checks of recipe.json, the write-ups and every composed pen,
-  grouped by recipe (default: every recipe). Exits 1 on any failure.`;
+  grouped by recipe (default: every recipe). Exits 1 on any failure.
+
+  --engine local     The recipes are previewed on the workspace engine: a
+                     draft may pin the next release (engine.postext newer
+                     than packages/postext/package.json), as it does until
+                     that release is out and the recipe is captured`;
 
 // ─── Findings ───────────────────────────────────────────────────────────────
 
@@ -107,7 +112,8 @@ function printGroup(group: Group): void {
 // ─── The command ────────────────────────────────────────────────────────────
 
 export async function runLint(argv: readonly string[]): Promise<number> {
-  const args = parseArgs(argv, {}, "lint");
+  const args = parseArgs(argv, { engine: { type: "string", value: "local", choices: ["local"] } }, "lint");
+  const preview = args.options.engine === "local";
   const entries = loadRecipes();
   const slugs = entries.map((entry) => entry.slug);
   const unknown = args.positionals.filter((slug) => !slugs.includes(slug));
@@ -149,8 +155,15 @@ export async function runLint(argv: readonly string[]): Promise<number> {
       // recipe.json against the schema and the registries, every composed
       // edition, the assets and both write-ups (lib/cookbook/lint.ts).
       try {
-        const report = lintRecipe(slug, { registry: registry ?? undefined, knownSlugs: slugs, released });
+        const report = lintRecipe(slug, { registry: registry ?? undefined, knownSlugs: slugs, released, preview });
         findings.push(...collectFindings(report));
+        if (preview && previewDraft(meta, released)) {
+          findings.push({
+            level: "warn",
+            text: `a preview of postext ${meta.engine.postext} (released: ${released.postext}): capture it from npm once that release is out`,
+            variants: [],
+          });
+        }
       } catch (err) {
         findings.push(fail(`lint crashed: ${(err as Error).message}`));
       }
