@@ -12,8 +12,12 @@ import { useEffect, useRef, useState } from "react";
 export const MEDIA_BASE = process.env.NEXT_PUBLIC_MEDIA_BASE?.replace(/\/+$/, "");
 const VERSION = "v1";
 
-/** iOS Safari only puts a video element full screen through this. */
-type IOSVideo = HTMLVideoElement & { webkitEnterFullscreen?: () => void };
+/** iOS Safari only puts a video element full screen (and back) through these. */
+type IOSVideo = HTMLVideoElement & {
+  webkitEnterFullscreen?: () => void;
+  webkitExitFullscreen?: () => void;
+  webkitDisplayingFullscreen?: boolean;
+};
 
 export function ShowreelVideo({
   lang,
@@ -114,6 +118,13 @@ export function ShowreelVideo({
     else video.webkitEnterFullscreen?.();
   };
 
+  // At the end the reader comes back to the page, whichever full screen it was.
+  const ended = () => {
+    const video: IOSVideo | null = ref.current;
+    if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
+    else if (video?.webkitDisplayingFullscreen) video.webkitExitFullscreen?.();
+  };
+
   return (
     <div ref={frame} className="group/player relative bg-night">
       <video
@@ -124,6 +135,7 @@ export function ShowreelVideo({
         poster={`${base}/poster.jpg`}
         aria-label={title}
         onPlay={() => setStarted(true)}
+        onEnded={ended}
         className="block aspect-video w-full bg-night group-[:fullscreen]/player:h-full group-[:fullscreen]/player:aspect-auto"
       />
       {!started && (
