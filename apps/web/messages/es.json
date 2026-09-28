@@ -315,7 +315,9 @@
   },
   "Showreel": {
     "kicker": "Vídeo · 2 min",
-    "title": "Postext en dos minutos"
+    "title": "Postext en dos minutos",
+    "play": "Reproducir el vídeo a pantalla completa",
+    "watch": "Ver · 2:10"
   },
   "About": {
     "eyebrow": "Por qué Postext",
