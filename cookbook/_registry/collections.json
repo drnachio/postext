@@ -85,5 +85,13 @@
       "technical-datasheet", "bistro-menu", "newspaper-front-page", "spanish-pocket-novel",
       "poetry-collection", "code-listings-and-keycaps", "figures-float-where-cited", "journal-article-with-maths"
     ]
+  },
+  "chinese-layout": {
+    "title": { "en": "Chinese layout", "es": "Composición china" },
+    "summary": {
+      "en": "Chinese set as Chinese books set it: line breaking and punctuation, the character grid, vertical text bound on the right, annotations and fonts, from a horizontal novel page to a vertical edition.",
+      "es": "El chino compuesto como lo componen los libros chinos: corte de líneas y puntuación, la retícula de caracteres, el texto vertical encuadernado por la derecha, las anotaciones y las fuentes, de una página de novela horizontal a una edición vertical."
+    },
+    "recipes": []
   }
 }

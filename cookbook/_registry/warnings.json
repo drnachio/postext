@@ -1341,5 +1341,27 @@
         "es": "Fuentes chinas, japonesas y coreanas"
       }
     }
+  },
+  "rotateIgnoredVertical": {
+    "source": "engine",
+    "label": {
+      "en": "Rotation ignored in vertical text",
+      "es": "Giro ignorado en texto vertical"
+    },
+    "cause": {
+      "en": "A figure or table asks for a quarter turn (placement.rotate) in a document set vertically. Every figure and table of a vertical flow already stands upright, so the turn is not applied and the resource floats in its own span.",
+      "es": "Una figura o una tabla pide un cuarto de vuelta (placement.rotate) en un documento compuesto en vertical. Todas las figuras y tablas de un flujo vertical ya están en pie, así que el giro no se aplica y el recurso flota en su propio espacio."
+    },
+    "fix": {
+      "en": "Drop placement.rotate, or set the passage in a horizontal section (a heading style whose layout sets writingMode 'horizontal-tb'), where the figure turns as asked.",
+      "es": "Quita placement.rotate o compón ese pasaje en una sección horizontal (un estilo de título cuyo layout fije writingMode 'horizontal-tb'), donde la figura gira como se pide."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Vertical writing",
+        "es": "Escritura vertical"
+      }
+    }
   }
 }

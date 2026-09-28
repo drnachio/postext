@@ -1,5 +1,5 @@
 {
-  "$comment": "The questions users ask (research: understand/user-doubts.md §4), Q01–Q80, permanent ids. recipe.json answers lists them, answers[0] being the question the recipe's band shows. kind: 'how' or 'why'; text: the question as a reader asks it; index: its back-of-book form (\"Footnotes, workarounds for\"); theme: the chapter id it belongs to; gap: set when the honest answer is a workaround for an unsupported feature.",
+  "$comment": "The questions users ask (research: understand/user-doubts.md §4), Q01–Q97, permanent ids. recipe.json answers lists them, answers[0] being the question the recipe's band shows. kind: 'how' or 'why'; text: the question as a reader asks it; index: its back-of-book form (\"Footnotes, workarounds for\"); theme: the chapter id it belongs to; gap: set when the honest answer is a workaround for an unsupported feature.",
   "Q01": {
     "kind": "how",
     "text": {
@@ -1034,6 +1034,138 @@
     "index": {
       "en": "Indexes of names and of subjects",
       "es": "Índices onomástico y de materias"
+    },
+    "theme": "structure"
+  },
+  "Q87": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set a Chinese book vertically, bound on the right?",
+      "es": "¿Cómo compongo un libro chino en vertical, encuadernado por la derecha?"
+    },
+    "index": {
+      "en": "Chinese, vertical and right-bound",
+      "es": "Chino vertical, encuadernado por la derecha"
+    },
+    "theme": "page"
+  },
+  "Q88": {
+    "kind": "how",
+    "text": {
+      "en": "How do I keep 。 and ， off the start of a line?",
+      "es": "¿Cómo evito que 。 y ， empiecen una línea?"
+    },
+    "index": {
+      "en": "Chinese punctuation at line starts",
+      "es": "Puntuación china a principio de línea"
+    },
+    "theme": "type"
+  },
+  "Q89": {
+    "kind": "how",
+    "text": {
+      "en": "How do I add pinyin above Chinese characters?",
+      "es": "¿Cómo pongo pinyin sobre los caracteres chinos?"
+    },
+    "index": {
+      "en": "Pinyin over Chinese characters",
+      "es": "Pinyin sobre caracteres chinos"
+    },
+    "theme": "type"
+  },
+  "Q90": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set the type area in characters, so many to the line and so many lines to the page?",
+      "es": "¿Cómo defino la mancha en caracteres, tantos por línea y tantas líneas por página?"
+    },
+    "index": {
+      "en": "Character grid (版心)",
+      "es": "Retícula de caracteres (版心)"
+    },
+    "theme": "page"
+  },
+  "Q91": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set Chinese punctuation half width, as mainland books do?",
+      "es": "¿Cómo compongo la puntuación china a medio ancho, como los libros de la China continental?"
+    },
+    "index": {
+      "en": "Chinese punctuation, half-width and Kaiming",
+      "es": "Puntuación china de medio ancho y Kaiming"
+    },
+    "theme": "type"
+  },
+  "Q92": {
+    "kind": "how",
+    "text": {
+      "en": "How do I number chapters 第一回, 第二回 in Chinese numerals?",
+      "es": "¿Cómo numero los capítulos 第一回, 第二回 con numerales chinos?"
+    },
+    "index": {
+      "en": "Chinese numerals in headings and folios",
+      "es": "Numerales chinos en títulos y folios"
+    },
+    "theme": "headings"
+  },
+  "Q93": {
+    "kind": "how",
+    "text": {
+      "en": "How do I put a space between Chinese and Latin words without typing it?",
+      "es": "¿Cómo dejo espacio entre palabras chinas y latinas sin teclearlo?"
+    },
+    "index": {
+      "en": "Chinese and Latin, space between",
+      "es": "Chino y latín, espacio entre"
+    },
+    "theme": "type"
+  },
+  "Q94": {
+    "kind": "how",
+    "text": {
+      "en": "How do I get Chinese characters into the PDF without empty boxes?",
+      "es": "¿Cómo llevo los caracteres chinos al PDF sin cajas vacías?"
+    },
+    "index": {
+      "en": "Chinese fonts in the PDF",
+      "es": "Fuentes chinas en el PDF"
+    },
+    "theme": "output"
+  },
+  "Q95": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set dates and numbers upright inside vertical text?",
+      "es": "¿Cómo pongo en pie fechas y números dentro de un texto vertical?"
+    },
+    "index": {
+      "en": "Vertical text, upright numbers in",
+      "es": "Texto vertical, números en pie en"
+    },
+    "theme": "type"
+  },
+  "Q96": {
+    "kind": "why",
+    "text": {
+      "en": "Why does my Chinese emphasis print in a slanted face, and what should I use instead?",
+      "es": "¿Por qué el énfasis de mi texto chino sale inclinado y qué debo usar en su lugar?"
+    },
+    "index": {
+      "en": "Chinese emphasis without italics",
+      "es": "Énfasis chino sin cursiva"
+    },
+    "theme": "type"
+  },
+  "Q97": {
+    "kind": "how",
+    "text": {
+      "en": "How do I group an index of Chinese names by pinyin or by stroke count?",
+      "es": "¿Cómo agrupo un índice de nombres chinos por pinyin o por número de trazos?"
+    },
+    "index": {
+      "en": "Chinese index, grouped by pinyin or strokes",
+      "es": "Índice chino agrupado por pinyin o por trazos"
     },
     "theme": "structure"
   }

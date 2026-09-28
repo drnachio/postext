@@ -4397,5 +4397,371 @@
         "index"
       ]
     }
+  },
+  "cjk-line-breaking": {
+    "label": {
+      "en": "Chinese line breaking",
+      "es": "Corte de líneas en chino"
+    },
+    "definition": {
+      "en": "Lines of Chinese, Japanese and Korean text break between characters, and the marks that may not open or close a line (。，」 and 「《) stay where they belong, at the level cjk.lineBreak sets or the locale's region implies.",
+      "es": "Las líneas de texto chino, japonés y coreano se cortan entre caracteres, y los signos que no pueden abrir ni cerrar una línea (。，」 y 「《) se quedan donde deben, con el nivel que fija cjk.lineBreak o que implica la región del locale."
+    },
+    "aliases": {
+      "en": [
+        "kinsoku",
+        "CJK line breaking",
+        "Chinese text",
+        "line-start prohibition",
+        "禁则",
+        "避头尾"
+      ],
+      "es": [
+        "kinsoku",
+        "corte CJK",
+        "texto chino",
+        "signos prohibidos a principio de línea",
+        "禁则",
+        "避头尾"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "East Asian typography",
+        "es": "Tipografía de Asia oriental"
+      }
+    },
+    "since": "1.9.0",
+    "detect": {
+      "config": [
+        "cjk.lineBreak",
+        "cjk.region"
+      ],
+      "markdown": [
+        "[\\u3400-\\u4dbf\\u4e00-\\u9fff]"
+      ]
+    }
+  },
+  "cjk-justification": {
+    "label": {
+      "en": "Justification between characters",
+      "es": "Justificación entre caracteres"
+    },
+    "definition": {
+      "en": "A justified Chinese line reaches the measure by spacing its characters, after the spaces between Western words and between Han and Latin; a line that would need more than half an em between characters is set short and reported.",
+      "es": "Una línea china justificada llega a la medida espaciando sus caracteres, después de los espacios entre palabras occidentales y entre chino y latín; la que necesitaría más de medio cuadratín entre caracteres se compone corta y se avisa."
+    },
+    "aliases": {
+      "en": [
+        "inter-character spacing",
+        "Chinese justification",
+        "tracking",
+        "cjkLoose",
+        "letter spacing"
+      ],
+      "es": [
+        "espaciado entre caracteres",
+        "justificación china",
+        "tracking",
+        "cjkLoose",
+        "interletraje"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "justification",
+      "heading": {
+        "en": "Chinese, Japanese and Korean",
+        "es": "Chino, japonés y coreano"
+      }
+    },
+    "since": "1.9.0"
+  },
+  "cjk-punctuation": {
+    "label": {
+      "en": "Chinese punctuation widths",
+      "es": "Anchura de la puntuación china"
+    },
+    "definition": {
+      "en": "Full-width, Kaiming, line-end-half and half-width punctuation (cjk.punctuationWidth), with adjacent marks compressed, brackets trimmed at the line edge and, where the house style wants it, punctuation hung past the measure.",
+      "es": "Puntuación de ancho completo, Kaiming, media al final de línea y de medio ancho (cjk.punctuationWidth), con los signos contiguos comprimidos, los paréntesis recortados en el borde de la línea y, si el libro de estilo lo pide, la puntuación colgada fuera de la medida."
+    },
+    "aliases": {
+      "en": [
+        "Kaiming",
+        "full-width punctuation",
+        "punctuation compression",
+        "hanging punctuation",
+        "标点挤压",
+        "开明式"
+      ],
+      "es": [
+        "Kaiming",
+        "puntuación de ancho completo",
+        "compresión de la puntuación",
+        "puntuación colgada",
+        "标点挤压",
+        "开明式"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Punctuation widths",
+        "es": "Anchos de la puntuación"
+      }
+    },
+    "since": "1.9.0",
+    "detect": {
+      "config": [
+        "cjk.punctuationWidth",
+        "cjk.compressAdjacent",
+        "cjk.trimLineStart",
+        "cjk.hangingPunctuation"
+      ]
+    }
+  },
+  "han-latin-spacing": {
+    "label": {
+      "en": "Space between Chinese and Latin",
+      "es": "Espacio entre chino y latín"
+    },
+    "definition": {
+      "en": "A quarter-em space (cjk.latinSpacing) between a Han character and a Latin word or a number, which replaces a space typed there and is never copied with the text.",
+      "es": "Un espacio de un cuarto de cuadratín (cjk.latinSpacing) entre un carácter chino y una palabra latina o un número, que sustituye al espacio tecleado ahí y nunca se copia con el texto."
+    },
+    "aliases": {
+      "en": [
+        "autospace",
+        "Chinese English spacing",
+        "mixed text",
+        "中西文间距"
+      ],
+      "es": [
+        "espaciado automático",
+        "espacio entre chino e inglés",
+        "texto mixto",
+        "中西文间距"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Space between Han and Latin",
+        "es": "Espacio entre chino y latín"
+      }
+    },
+    "since": "1.9.0",
+    "detect": {
+      "config": [
+        "cjk.latinSpacing"
+      ]
+    }
+  },
+  "character-grid": {
+    "label": {
+      "en": "Character grid",
+      "es": "Retícula de caracteres"
+    },
+    "definition": {
+      "en": "The type area specified the Chinese way, as characters per line by lines per page (cjk.grid): the measure is a whole number of ems, the margins grow to centre it, and the grid can be drawn on screen.",
+      "es": "La mancha especificada a la manera china, en caracteres por línea y líneas por página (cjk.grid): la medida es un número entero de cuadratines, los márgenes crecen para centrarla y la retícula puede dibujarse en pantalla."
+    },
+    "aliases": {
+      "en": [
+        "layout grid",
+        "characters per line",
+        "版心",
+        "字数 × 行数",
+        "genkō yōshi",
+        "manuscript grid"
+      ],
+      "es": [
+        "retícula de maquetación",
+        "caracteres por línea",
+        "版心",
+        "字数 × 行数",
+        "papel pautado",
+        "cuadrícula de manuscrito"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Character grid",
+        "es": "Retícula de caracteres"
+      }
+    },
+    "since": "1.9.0",
+    "detect": {
+      "config": [
+        "cjk.grid"
+      ]
+    }
+  },
+  "vertical-writing": {
+    "label": {
+      "en": "Vertical text",
+      "es": "Texto vertical"
+    },
+    "definition": {
+      "en": "Chinese and Japanese set top to bottom in lines read from the right (layout.writingMode 'vertical-rl'), with columns as tiers, figures and tables standing upright and punctuation in its vertical forms.",
+      "es": "Chino y japonés compuestos de arriba abajo en líneas que se leen desde la derecha (layout.writingMode 'vertical-rl'), con las columnas como pisos, figuras y tablas en pie y la puntuación en sus formas verticales."
+    },
+    "aliases": {
+      "en": [
+        "vertical writing",
+        "tategaki",
+        "top to bottom",
+        "vertical-rl",
+        "竖排",
+        "直排"
+      ],
+      "es": [
+        "escritura vertical",
+        "tategaki",
+        "de arriba abajo",
+        "vertical-rl",
+        "竖排",
+        "直排"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Vertical writing",
+        "es": "Escritura vertical"
+      }
+    },
+    "since": "1.9.0",
+    "detect": {
+      "config": [
+        "layout.writingMode",
+        "headingStyles[].layout.writingMode"
+      ]
+    }
+  },
+  "right-binding": {
+    "label": {
+      "en": "Books bound on the right",
+      "es": "Libros encuadernados por la derecha"
+    },
+    "definition": {
+      "en": "page.binding 'right' (the default for vertical text) puts the recto on the left of the spine: mirrored margins swap, spreads read [3 | 2], and the PDF opens right to left.",
+      "es": "page.binding 'right' (lo predeterminado con texto vertical) pone la página impar a la izquierda del lomo: los márgenes simétricos se intercambian, los pliegos se leen [3 | 2] y el PDF se abre de derecha a izquierda."
+    },
+    "aliases": {
+      "en": [
+        "right-to-left page order",
+        "binding",
+        "page progression",
+        "R2L",
+        "右翻"
+      ],
+      "es": [
+        "orden de páginas de derecha a izquierda",
+        "encuadernación",
+        "progresión de páginas",
+        "R2L",
+        "右翻"
+      ]
+    },
+    "group": "page",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Binding",
+        "es": "Encuadernación"
+      }
+    },
+    "since": "1.9.0",
+    "detect": {
+      "config": [
+        "page.binding",
+        "layout.writingMode"
+      ]
+    }
+  },
+  "chinese-numerals": {
+    "label": {
+      "en": "Chinese numerals",
+      "es": "Numeración china"
+    },
+    "definition": {
+      "en": "Page numbers, lists, headings and figure counters in Chinese numerals (simp-chinese-informal, trad-chinese-informal, cjk-decimal…), and heading templates such as 第{1:一}回 for 第一回, 第二回.",
+      "es": "Folios, listas, títulos y contadores de figuras en numerales chinos (simp-chinese-informal, trad-chinese-informal, cjk-decimal…) y plantillas de título como 第{1:一}回 para 第一回, 第二回."
+    },
+    "aliases": {
+      "en": [
+        "Chinese numbers",
+        "第一章",
+        "CJK numbering",
+        "counter styles",
+        "汉字数字"
+      ],
+      "es": [
+        "números chinos",
+        "第一章",
+        "numeración CJK",
+        "estilos de contador",
+        "汉字数字"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Numbering",
+        "es": "Numeración"
+      }
+    },
+    "since": "1.9.0"
+  },
+  "cjk-fonts": {
+    "label": {
+      "en": "Chinese, Japanese and Korean fonts",
+      "es": "Fuentes chinas, japonesas y coreanas"
+    },
+    "definition": {
+      "en": "CJK faces loaded by the Fontsource slices the text touches, on screen and in the PDF, which embeds each slice as a subset and reports a character no file has.",
+      "es": "Fuentes CJK cargadas por los fragmentos de Fontsource que toca el texto, en pantalla y en el PDF, que incrusta cada fragmento como subconjunto y avisa de un carácter que no está en ningún archivo."
+    },
+    "aliases": {
+      "en": [
+        "Noto Serif SC",
+        "Noto Serif TC",
+        "Source Han",
+        "font slices",
+        "unicode-range",
+        "missing glyph",
+        "宋体",
+        "楷体"
+      ],
+      "es": [
+        "Noto Serif SC",
+        "Noto Serif TC",
+        "Source Han",
+        "fragmentos de fuente",
+        "unicode-range",
+        "glifo ausente",
+        "宋体",
+        "楷体"
+      ]
+    },
+    "group": "fonts",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Chinese, Japanese and Korean fonts",
+        "es": "Fuentes chinas, japonesas y coreanas"
+      }
+    },
+    "since": "1.9.0"
   }
 }
