@@ -1,4 +1,4 @@
-import type { VDTColumn, VDTColumnRule, VDTDocument, VDTPage } from './vdt';
+import type { VDTColumn, VDTColumnRule, VDTDocument, VDTFootnoteArea, VDTPage } from './vdt';
 import { dimensionToPx } from './units';
 
 /** The column rule `page` draws: its own (a styled section's, see
@@ -42,7 +42,19 @@ function ruleTop(col: VDTColumn): number {
  * band it starts where the text does. Bands are visited in column order,
  * which is band order because bands are always appended.
  */
-export function columnRuleSegments(columns: readonly VDTColumn[]): ColumnRuleSegment[] {
+export function columnRuleSegments(
+  columns: readonly VDTColumn[],
+  /** The page's footnote areas: the rule runs on beside the notes set at a
+   *  column's foot (which the column's box no longer covers). */
+  footnoteAreas?: readonly VDTFootnoteArea[],
+): ColumnRuleSegment[] {
+  const footOf = (col: VDTColumn): number => {
+    let bottom = col.bbox.y + col.bbox.height;
+    for (const a of footnoteAreas ?? []) {
+      if (a.columnIndex === col.index) bottom = Math.max(bottom, a.bbox.y + a.bbox.height);
+    }
+    return bottom;
+  };
   const byBand = new Map<number, VDTColumn[]>();
   for (const col of columns) {
     if (col.kind === 'span' || col.bbox.height <= 0.5) continue;
@@ -62,9 +74,26 @@ export function columnRuleSegments(columns: readonly VDTColumn[]): ColumnRuleSeg
       segments.push({
         x: (left.x + left.width + right.x) / 2,
         top: Math.min(ruleTop(cols[i]!), ruleTop(cols[i + 1]!)),
-        bottom: Math.max(left.y + left.height, right.y + right.height),
+        bottom: Math.max(footOf(cols[i]!), footOf(cols[i + 1]!)),
       });
     }
   }
   return segments;
+}
+
+/** A horizontal footnote separator rule: its left end, the y of its centre
+ *  line, length, thickness (px) and colour. */
+export interface FootnoteRuleSegment {
+  x: number;
+  y: number;
+  width: number;
+  lineWidthPx: number;
+  color: string;
+}
+
+/** The footnote separator rules of a page (one per column holding notes). */
+export function footnoteRuleSegments(page: Pick<VDTPage, 'footnoteAreas'>): FootnoteRuleSegment[] {
+  const out: FootnoteRuleSegment[] = [];
+  for (const area of page.footnoteAreas ?? []) if (area.rule) out.push(area.rule);
+  return out;
 }

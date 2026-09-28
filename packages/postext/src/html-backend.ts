@@ -1,3 +1,4 @@
+import { footnoteRuleSegments } from './columnRule';
 import type {
   VDTDocument,
   VDTPage,
@@ -1061,8 +1062,12 @@ function renderPageDetailed(
   // Whether or not a picture on the page uses it: a host patching blocks
   // one by one may bring in an SVG image the first render did not have.
   const defsHtml = options.ink ? inkFilterDefs(options.ink) : '';
-  const decorationHtml = defsHtml + openerHtml + slotParts.join('');
-  const innerHtml = defsHtml + openerHtml + blocksHtml + slotParts.join('');
+  // The separators above the footnotes of the columns.
+  const footnoteRulesHtml = footnoteRuleSegments(page).map((r) =>
+    `<div class="pt-footnote-rule" style="position:absolute;left:${r.x}px;top:${r.y - r.lineWidthPx / 2}px;width:${r.width}px;height:${r.lineWidthPx}px;background:${r.color};"></div>`,
+  ).join('');
+  const decorationHtml = defsHtml + openerHtml + footnoteRulesHtml + slotParts.join('');
+  const innerHtml = defsHtml + openerHtml + blocksHtml + footnoteRulesHtml + slotParts.join('');
   const outerHtml =
     `<div class="pt-page" data-page="${page.index}" style="` +
     `position:relative;` +

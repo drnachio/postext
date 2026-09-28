@@ -70,7 +70,7 @@ has gone fuzzy.
     </tr>
     <tr>
       <td><strong>Note</strong></td>
-      <td>A footnote, endnote, or margin note, defined by <code>PostextNote</code>. Planned, not implemented yet: the content model accepts notes, but the engine does not read them, so they are neither laid out nor rendered.</td>
+      <td>A footnote or a chapter-end note, written in the markdown as a <code>[^id]</code> marker and a <code>[^id]:</code> definition (see <a href="/en/docs/document-format#footnotes">Footnotes</a>). Margin notes, and the <code>PostextNote</code> list the content model accepts, are not implemented: the engine does not read <code>notes</code>.</td>
     </tr>
     <tr>
       <td><strong>Baseline Grid</strong></td>
@@ -136,7 +136,7 @@ interface PostextContent {
   markdown: string;            // enriched markdown with :ref / ::resource markers
   metadata?: DocumentMetadata; // title, subtitle, author, publishDate, …
   resources?: Resource[];      // bitmaps, SVGs, tables — referenced by id
-  notes?: PostextNote[];       // footnotes, endnotes, margin notes (not laid out yet)
+  notes?: PostextNote[];       // not read: footnotes are written as [^id] in the markdown
 }
 
 interface Resource {
@@ -586,7 +586,7 @@ Some elements inevitably break the grid because their height is not a multiple o
 - **Images** (arbitrary pixel height)
 - **Tables** (variable height)
 - **Block quotes** (may use different font size or padding)
-- **Footnote separators** (fixed height rule; footnotes are planned, not implemented yet)
+- **Footnote areas** (the notes at a column's foot and their rule: the column's text area ends above them)
 
 ### Spacing Adjustment Algorithm
 
@@ -811,7 +811,7 @@ Here is how the main types defined in `packages/postext/src/types.ts` map to the
     </tr>
     <tr>
       <td><code>PostextNote</code></td>
-      <td>Planned, not implemented yet: the engine does not read <code>notes</code>. Once implemented, a note becomes a footnote, endnote, or margin note block in Pass 1</td>
+      <td>Not read by the engine. Footnotes are written in the markdown (<code>[^id]</code>) and set at the foot of the citing column or after the chapter; margin notes are not implemented</td>
     </tr>
     <tr>
       <td><code>PostextResource</code></td>

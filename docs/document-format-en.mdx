@@ -593,6 +593,24 @@ The :smallcaps[unesco] report and the :smallcaps[who] guidelines.
 - **Text.** The canvas, the HTML and the PDF carry the letters as painted: copying `:smallcaps[Hamlet]` gives "HAMLET".
 
 
+## Footnotes
+
+A footnote has two parts: the marker `[^id]` where the note is cited, and the definition, a paragraph of its own that opens with `[^id]:` anywhere in the chapter.
+
+```md
+The keeper climbed the tower every evening.[^steps] The wind put out his candle,
+so he learned to count the steps in the dark.
+
+[^steps]: The cast-iron staircase has 112 steps; the tower was built in 1861.
+```
+
+- **Marker.** `[^id]` prints the note's number as a superscript, glued to the word before it (write it after the punctuation, as above). The id takes letters, digits, `-`, `_`, `.` and `:`. The marker works in paragraphs, list items, blockquotes and callouts; in headings, captions and table cells it prints as written.
+- **Definition.** A paragraph that starts with `[^id]:`; its text runs to the next blank line and takes the usual inline marks (bold, italics, links, `:ref`, formulas, chips). Definitions leave the flow wherever they are written, so they can sit under the paragraph that cites them or all together at the end of the chapter. The first definition of an id wins.
+- **Numbers.** Notes are numbered in the order they are first cited, starting again at each chapter (a level-1 heading, and each document of a book); a note cited twice keeps its first number and is set once. `footnotes.numbering: 'document'` runs the numbers on through the book.
+- **Where the note goes.** By default at the foot of the column that holds the line citing it, under a short rule: the line and its note always share a column, and a line whose note does not fit moves on with it. In a one-column layout that is the foot of the page. `footnotes.placement: 'chapterEnd'` sets all the notes of a chapter after its last block instead, by default at the foot of the column they close. See [Footnotes](/en/docs/configuration#footnotes) in the configuration reference for the sizes, the rule and the spacing.
+- **Checks.** A marker with no definition (`undefinedFootnote`) prints its number over an empty note; a definition no marker cites (`unusedFootnote`) is not set. The Sandbox lists both in the Checks panel.
+
+
 ## Mathematical formulas
 
 Math support is a first-class part of the document format. Postext parses `$…$` for inline formulas and `$$…$$` for display (block) formulas, and renders them via [MathJax](https://www.mathjax.org/) in SVG mode. The same vector paths drive all three backends, so the canvas preview, the HTML export, and the PDF output are pixel-for-pixel consistent — and the PDF stays fully vectorial regardless of the zoom level.
@@ -835,7 +853,7 @@ Postext does not recognise the following CommonMark features. They are either tr
 - **Reference-style links** — `[text][id]` plus a definition block.
 - **Autolinks** — `<https://example.com>`.
 - **Strikethrough** — `~~text~~`. The strikethrough renderer is currently reserved for completed task items.
-- **Footnote markers in markdown** — `[^1]`. Footnotes, endnotes and margin notes are not implemented yet: there is no reference syntax, and `PostextContent.notes`, which the types accept, is ignored by the engine. Until they are, set notes as text: a superscript marker in the body (`^1^`) and the notes gathered at the end of the section or chapter in a `:::paragraphs{style="notes"}` block with a small paragraph style.
+- **Margin notes** — not implemented, and `PostextContent.notes`, which the types accept, is ignored by the engine. Footnotes and chapter-end notes are written with `[^id]` (see [Footnotes](#footnotes)); up to postext 1.5 they had to be set as text.
 
 This list will shrink over time. Until then, anything not explicitly listed in the supported section above should be assumed to be literal text.
 

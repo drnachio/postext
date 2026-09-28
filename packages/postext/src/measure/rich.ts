@@ -71,6 +71,9 @@ export interface RichToken {
    *  already carries the resolved label; the token is atomic (never wraps
    *  apart) and the id flows onto the segment so renderers can colour/link it. */
   refResourceId?: string;
+  /** A footnote marker (`[^id]`): atomic like a reference; the id flows
+   *  onto the segment. */
+  footnoteId?: string;
   /** True when this token belongs to a caption's numbered label. Flows to the
    *  segment so renderers can apply the label colour. */
   captionLabel?: boolean;
@@ -444,7 +447,7 @@ function applyChipGaps(tokens: RichToken[], noBreakWidth: (token: RichToken, run
   }
   for (let i = 0; i < tokens.length; i++) {
     const word = tokens[i]!;
-    if (word.kind !== 'text' || word.chip || word.mathRender || word.swatch || word.refResourceId !== undefined) continue;
+    if (word.kind !== 'text' || word.chip || word.mathRender || word.swatch || word.refResourceId !== undefined || word.footnoteId !== undefined) continue;
     const lead = LEADING_NO_BREAK_RE.exec(word.text)?.[0];
     const trail = TRAILING_NO_BREAK_RE.exec(word.text)?.[0];
     const left = lead && tokens[i - 1]?.chip ? tokens[i - 1]! : undefined;
@@ -725,7 +728,7 @@ function tokenizeSpans(
     // is one non-breaking box so it never wraps apart. Kind 'text' keeps the
     // generic layout/renderers treating it like a word; `refResourceId` flows
     // onto the segment for link colouring / PDF link annotations.
-    if (span.ref) {
+    if (span.ref || span.footnote) {
       const refFont = spanFont(span);
       tokens.push({
         text: span.text,
@@ -736,7 +739,8 @@ function tokenizeSpans(
         ...(span.smallCaps ? { smallCaps: true } : {}),
         kind: 'text',
         width: textWidth(span.text, refFont, span.smallCaps) + track(span.text),
-        refResourceId: span.ref.resourceId,
+        ...(span.ref ? { refResourceId: span.ref.resourceId } : {}),
+        ...(span.footnote ? { footnoteId: span.footnote.id } : {}),
       });
       continue;
     }
@@ -896,7 +900,7 @@ function stackScriptTokens(
   boldItalicFont: string,
 ): void {
   const scripts = tokens.map((t) => (
-    t.kind === 'text' && t.script && !t.smallCaps && t.refResourceId === undefined && !t.chip && !t.mathRender && !t.swatch
+    t.kind === 'text' && t.script && !t.smallCaps && t.refResourceId === undefined && t.footnoteId === undefined && !t.chip && !t.mathRender && !t.swatch
       ? t.script
       : undefined
   ));
@@ -939,7 +943,7 @@ function gluedTailLength(tokens: RichToken[]): number {
 /** A token the emergency division may cut: a word, not an atomic box nor
  *  one of two stacked scripts. */
 function isDivisible(token: RichToken): boolean {
-  return token.kind === 'text' && !token.mathRender && !token.swatch && !token.chip && token.refResourceId === undefined && !token.stacked;
+  return token.kind === 'text' && !token.mathRender && !token.swatch && !token.chip && token.refResourceId === undefined && token.footnoteId === undefined && !token.stacked;
 }
 
 /** Cut a word at one of its break points: the head ends the line (with
@@ -1394,6 +1398,7 @@ function measureRichText(
       ...(t.swatch ? { swatch: t.swatch } : {}),
       ...(t.chip ? { chip: t.chip } : {}),
       ...(t.refResourceId !== undefined ? { refResourceId: t.refResourceId } : {}),
+      ...(t.footnoteId !== undefined ? { footnoteId: t.footnoteId } : {}),
       ...(t.captionLabel ? { captionLabel: true } : {}),
       ...(t.script ? { script: t.script, fontString: t.scriptFont, baselineShift: t.baselineShift } : {}),
       ...(t.stacked === 'first' ? { stacked: true } : {}),

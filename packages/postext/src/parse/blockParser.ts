@@ -8,7 +8,7 @@
 import type { ContainerName, ContentBlock, DirectiveName, ListKind, ParseIssue } from './types';
 import { parseDirectiveAttrs } from './attrs';
 import { extractInlineMath, fixMathSourceMap, injectMathSpans } from './inlineMath';
-import { BREAK_PLACEHOLDER, TITLE_BREAK_RE, extractInlineChips, extractInlineRefs, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, protectCodeSpans, titleBreakIndices, trimSpans } from './inlineFormatting';
+import { BREAK_PLACEHOLDER, TITLE_BREAK_RE, extractInlineChips, extractInlineFootnotes, extractInlineRefs, injectFootnoteSpans, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, protectCodeSpans, titleBreakIndices, trimSpans } from './inlineFormatting';
 import { buildBlockMapping } from './sourceMapping';
 
 export { parseDirectiveAttrs, spaceDirectiveLines, MAX_SPACE_LINES } from './attrs';
@@ -36,6 +36,8 @@ export const KNOWN_CONTAINERS: ReadonlySet<ContainerName> = new Set(['callout', 
 function isFenceLine(trimmed: string): boolean {
   return DIRECTIVE_RE.test(trimmed) || CONTAINER_CLOSE_RE.test(trimmed);
 }
+/** A footnote definition: `[^id]:` opening a paragraph. */
+const FOOTNOTE_DEF_RE = /^\[\^([\p{L}\p{N}_.:-]+)\]:[ \t]*/u;
 const TASK_ITEM_RE = /^(\s*)([-*+])\s+\[([ xX])\]\s+(.*)$/;
 const ORDERED_LIST_ITEM_RE = /^(\s*)(\d+)([.)])\s+(.*)$/;
 const LIST_ITEM_RE = /^(\s*)([-*+])\s+(.*)$/;
@@ -434,14 +436,15 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
           const contentOffset = leading + markerLength;
           const itemSrcStart = srcStart + contentOffset;
           const chipExtract = extractInlineChips(protectCodeSpans(itemText), itemSrcStart);
-          const refExtract = extractInlineRefs(chipExtract.cleaned, itemSrcStart);
+          const fnExtract = extractInlineFootnotes(chipExtract.cleaned, itemSrcStart);
+          const refExtract = extractInlineRefs(fnExtract.cleaned, itemSrcStart);
           const swExtract = extractInlineSwatches(refExtract.cleaned, itemSrcStart);
           const mathExtract = extractInlineMath(swExtract.cleaned, null, itemSrcStart, srcEnd);
           issues.push(...mathExtract.issues);
-          const rawSpans = injectChipSpans(injectRefSpans(injectSwatchSpans(
+          const rawSpans = injectChipSpans(injectFootnoteSpans(injectRefSpans(injectSwatchSpans(
             injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches),
             refExtract.refs,
-          ), chipExtract.chips);
+          ), fnExtract.markers), chipExtract.chips);
           const mapping = buildBlockMapping(markdown, itemSrcStart, srcEnd, rawSpans);
           fixMathSourceMap(mapping.text, mapping.spans, mapping.sourceMap);
           const block: ContentBlock = {
@@ -491,14 +494,15 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
       const srcStart = lineOffsets[startIdx]!;
       const srcEnd = lineEndOffset(lastIdx);
       const chipExtract = extractInlineChips(protectCodeSpans(quoteLines.join(' ')), srcStart);
-      const refExtract = extractInlineRefs(chipExtract.cleaned, srcStart);
+      const fnExtract = extractInlineFootnotes(chipExtract.cleaned, srcStart);
+      const refExtract = extractInlineRefs(fnExtract.cleaned, srcStart);
       const swExtract = extractInlineSwatches(refExtract.cleaned, srcStart);
       const mathExtract = extractInlineMath(swExtract.cleaned, null, srcStart, srcEnd);
       issues.push(...mathExtract.issues);
-      const rawSpans = injectChipSpans(injectRefSpans(injectSwatchSpans(
+      const rawSpans = injectChipSpans(injectFootnoteSpans(injectRefSpans(injectSwatchSpans(
         injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches),
         refExtract.refs,
-      ), chipExtract.chips);
+      ), fnExtract.markers), chipExtract.chips);
       const mapping = buildBlockMapping(markdown, srcStart, srcEnd, rawSpans);
       fixMathSourceMap(mapping.text, mapping.spans, mapping.sourceMap);
       blocks.push({
@@ -524,6 +528,8 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
       const pl = rawLine.trim();
       if (pl === '' || pl.match(HEADING_RE) || pl.startsWith('>') || rawLine.match(LIST_ITEM_RE)) break;
       if (i > startIdx && isFenceLine(pl)) break;
+      // A footnote definition opens a paragraph of its own.
+      if (i > startIdx && FOOTNOTE_DEF_RE.test(pl)) break;
       // A display formula on its own line interrupts the paragraph, blank
       // line or not: the text before it is a paragraph that leads into it,
       // the text right after it continues that paragraph (EF-85). Only a
@@ -541,24 +547,33 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
       i++;
     }
     if (paraLines.length > 0) {
-      const srcStart = lineOffsets[startIdx]!;
+      let srcStart = lineOffsets[startIdx]!;
+      // `[^id]: text`: the definition of a footnote. The marker is left out
+      // of the text, which starts past it.
+      const def = FOOTNOTE_DEF_RE.exec(paraLines[0]!);
+      if (def) {
+        paraLines[0] = paraLines[0]!.slice(def[0].length);
+        srcStart += rawLines[startIdx]!.indexOf(def[0]) + def[0].length;
+      }
       const srcEnd = lineEndOffset(lastIdx);
       const chipExtract = extractInlineChips(protectCodeSpans(paraLines.join(' ')), srcStart);
-      const refExtract = extractInlineRefs(chipExtract.cleaned, srcStart);
+      const fnExtract = extractInlineFootnotes(chipExtract.cleaned, srcStart);
+      const refExtract = extractInlineRefs(fnExtract.cleaned, srcStart);
       const swExtract = extractInlineSwatches(refExtract.cleaned, srcStart);
       const mathExtract = extractInlineMath(swExtract.cleaned, null, srcStart, srcEnd);
       issues.push(...mathExtract.issues);
-      const rawSpans = injectChipSpans(injectRefSpans(injectSwatchSpans(
+      const rawSpans = injectChipSpans(injectFootnoteSpans(injectRefSpans(injectSwatchSpans(
         injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches),
         refExtract.refs,
-      ), chipExtract.chips);
+      ), fnExtract.markers), chipExtract.chips);
       const mapping = buildBlockMapping(markdown, srcStart, srcEnd, rawSpans);
       fixMathSourceMap(mapping.text, mapping.spans, mapping.sourceMap);
       blocks.push({
         type: 'paragraph',
         text: mapping.text,
         spans: mapping.spans,
-        ...(startIdx === lastDisplayEnd + 1 ? { continuesParagraph: true } : {}),
+        ...(startIdx === lastDisplayEnd + 1 && !def ? { continuesParagraph: true } : {}),
+        ...(def ? { footnoteDef: def[1]! } : {}),
         sourceStart: srcStart,
         sourceEnd: srcEnd,
         sourceMap: mapping.sourceMap,

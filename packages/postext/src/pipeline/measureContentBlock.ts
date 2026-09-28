@@ -53,6 +53,8 @@ export interface BlockMeasureContext
    *  by the placement pass as it sets them. A paragraph after a heading
    *  looks past them (`bodyText.indentAfterHeading`). */
   leftFlow?: ReadonlySet<number>;
+  /** Footnote id → printed number (`[^id]` markers print it). */
+  footnoteNumbers?: ReadonlyMap<string, string>;
 }
 
 /** Index of the `containerStart` marker that the `containerEnd` at `endIdx`
@@ -192,6 +194,17 @@ export function measureContentBlock(
       spans: style.uppercase
         ? spans.map((s) => (s.ref ? { ...s, text: uppercasePreservingLength(s.text) } : s))
         : spans,
+    };
+  }
+
+  // Footnote markers print their note's number as a superscript: one
+  // atomic token tagged with the note id (`VDTLineSegment.footnoteId`).
+  if (contentBlock.spans.some((s) => s.footnote)) {
+    contentBlock = {
+      ...contentBlock,
+      spans: contentBlock.spans.map((s) => (s.footnote
+        ? { ...s, text: ctx.footnoteNumbers?.get(s.footnote.id) ?? '?', script: 'sup' as const, bold: false, italic: false }
+        : s)),
     };
   }
 

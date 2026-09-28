@@ -3,7 +3,7 @@ import { computePageTextExtent } from '../vdt';
 import { dimensionToPx } from '../units';
 import { columnClipRect } from '../columnClip';
 import { pageColumnRule } from '../columnRule';
-import { renderBaselineGrid, renderColumnRule, renderCutLines, computeContentArea } from './decorations';
+import { renderBaselineGrid, renderColumnRule, renderCutLines, renderFootnoteRules, computeContentArea } from './decorations';
 import { renderBlock } from './blockRender';
 import { renderHeaderFooterSlot } from './headerFooter';
 import { documentInkHex } from '../svg/singleInk';
@@ -148,7 +148,7 @@ function paintPage(
   // The page's own rule on a styled section's pages, else the document's.
   const columnRule = pageColumnRule(page, doc);
   if (columnRule.enabled && page.columns.length > 1) {
-    renderColumnRule(ctx, page.columns, columnRule.color, columnRule.lineWidthPx);
+    renderColumnRule(ctx, page.columns, columnRule.color, columnRule.lineWidthPx, page.footnoteAreas);
   }
 
   // Opener / part bands are painted before the columns so their backgrounds
@@ -183,6 +183,7 @@ function paintPage(
   if (page.floats) {
     for (const fb of page.floats) renderBlock(ctx, fb, fb.bbox.width, fb.bbox.x, inkHex);
   }
+  renderFootnoteRules(ctx, page);
 
   if (page.header) renderHeaderFooterSlot(ctx, page.header, inkHex);
   if (page.footer) renderHeaderFooterSlot(ctx, page.footer, inkHex);

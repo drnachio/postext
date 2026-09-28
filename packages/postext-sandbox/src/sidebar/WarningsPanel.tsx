@@ -47,6 +47,8 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'unknownParagraphStyle':
     case 'unknownCalloutType':
     case 'unknownChipStyle':
+    case 'undefinedFootnote':
+    case 'unusedFootnote':
     case 'chipOverlap':
     case 'numberingInvalidFormat':
     case 'numberingInvalidStartAt':
@@ -130,6 +132,10 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsUnknownCalloutTypeTitle;
     case 'unknownChipStyle':
       return labels.warningsUnknownChipStyleTitle;
+    case 'undefinedFootnote':
+      return labels.warningsUndefinedFootnoteTitle;
+    case 'unusedFootnote':
+      return labels.warningsUnusedFootnoteTitle;
     case 'unknownHeadingStyle':
       return labels.warningsUnknownHeadingStyleTitle;
     case 'chipOverlap':
@@ -252,6 +258,10 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `:::callout{type="${payload.type}"} — ${labels.warningsUnknownCalloutTypeDetail}`;
     case 'unknownChipStyle':
       return `${inResource(payload.inResource)}:chip[…]{style="${payload.style}"} — ${labels.warningsUnknownChipStyleDetail}`;
+    case 'undefinedFootnote':
+      return `[^${payload.id}] — ${labels.warningsUndefinedFootnoteDetail}`;
+    case 'unusedFootnote':
+      return `[^${payload.id}]: — ${labels.warningsUnusedFootnoteDetail}`;
     case 'unknownHeadingStyle':
       return `H${payload.level} {style="${payload.style}"} — ${labels.warningsUnknownHeadingStyleDetail}`;
     case 'chipOverlap':

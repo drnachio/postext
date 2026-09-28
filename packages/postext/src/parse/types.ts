@@ -98,6 +98,13 @@ export interface InlineSpan {
    *  (`VDTLineSegment.href`). Only safe targets are kept: `http:`,
    *  `https:`, `mailto:`, `tel:`, `ftp:` and relative URLs. */
   links?: InlineLink[];
+  /** Present when this span is a footnote marker (`[^id]`): the `text` is a
+   *  single placeholder char until the pipeline replaces it with the note's
+   *  number, set as a superscript. */
+  footnote?: {
+    /** The note's id as written between `[^` and `]`. */
+    id: string;
+  };
   /** Present when this span is an inline reference to a `Resource`. The
    *  `text` carries placeholder/fallback content; the pipeline resolves the
    *  reference to its computed number/label. */
@@ -233,6 +240,13 @@ export interface ContentBlock {
    *  closing `$$`, with no blank line on either side — so it is set with no
    *  first-line indent, as TeX sets the text after a display. */
   continuesParagraph?: boolean;
+  /** For `paragraph` blocks: the block is the definition of the footnote
+   *  with this id (`[^id]: text`, the `[^id]:` left out of `text`). The
+   *  layout takes it out of the flow and sets it as a note. */
+  footnoteDef?: string;
+  /** Set on the paragraphs the layout builds to set a note (`chapterEnd`
+   *  placement): the id of the note. */
+  footnoteNote?: string;
   /** For `directive` blocks: the directive name (e.g. `'pagebreak'`). */
   directiveName?: DirectiveName;
   /** For `directive` blocks: parsed attributes. */
