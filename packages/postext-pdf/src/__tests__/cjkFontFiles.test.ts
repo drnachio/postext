@@ -2,11 +2,12 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import { PDFArray, PDFDict, PDFDocument, PDFName, PDFRawStream, PDFRef, PDFStream, decodePDFRawStream } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
-import { buildDocument } from 'postext';
+import { buildDocument, bundleFontProvider } from 'postext';
 import type { PostextConfig } from 'postext';
 import { renderToPdf, type PdfWarning } from '../pdf-backend';
-import { FontCache, type FontFileIssue, type PdfFontRequest } from '../fontCache';
+import { FontCache, type FontFileIssue, type PdfFontProvider, type PdfFontRequest } from '../fontCache';
 import { parseFontString } from '../fontString';
+import { textShows } from '../pdf-backend/primitives';
 
 // Issue #196: a face made of several files (Fontsource's unicode-range
 // slices of Noto Serif TC), picked per character, each embedded as a subset
@@ -216,6 +217,37 @@ describe('faces made of several files (#196)', () => {
     await cache.preloadFontStrings(new Map([[fs, cps('第一回')]]));
     expect(asked.map((a) => a.codePoints.map((cp) => String.fromCodePoint(cp)).join(''))).toEqual(['紅樓夢', '第一回']);
     expect(cache.get(fs)).not.toBeNull();
+  });
+
+  it('lists the missing characters in the order they were set, whichever file drew them', async () => {
+    // 𠀀 follows ： (slice 123) and is drawn as that file's .notdef; 𪚥
+    // opens the next line and is drawn in the face's first file (latin).
+    // Listed file by file, 𪚥 came first.
+    const pdfDoc = await PDFDocument.create();
+    pdfDoc.registerFontkit(fontkit);
+    const cache = new FontCache(pdfDoc, async () => ['noto-serif-tc-latin.ttf', 'noto-serif-tc-123.ttf'].map(read));
+    const fs = '400 16px "Noto Serif TC"';
+    await cache.preloadFontStrings([fs]);
+    const font = cache.get(fs)!;
+    expect(textShows(font, '一：\u{20000}').map((show) => show.font)).not.toContain(font);
+    expect(textShows(font, '\u{2A6A5}').map((show) => show.font)).toEqual([font]);
+    expect(cache.missingGlyphs()).toEqual([
+      { family: 'Noto Serif TC', weight: 400, style: 'normal', characters: ['\u{20000}', '\u{2A6A5}'] },
+    ]);
+  });
+
+  it('reaches a bundle\'s fallback through bundleFontProvider, request and all', async () => {
+    // A bundle that does not embed its Chinese family: the fallback gets the
+    // face's characters and answers with slices, as a PdfFontProvider does.
+    const fallback: PdfFontProvider = sliceProvider([]);
+    const fontProvider: PdfFontProvider = bundleFontProvider({ fonts: [] }, { fallback });
+    const doc = buildDocument({ markdown: `${PARAGRAPH}\n` }, config);
+    const warnings: PdfWarning[] = [];
+    const bytes = await renderToPdf(doc, { fontProvider, onWarning: (w) => warnings.push(w), accessible: false });
+    const shown = await shownText(bytes);
+    expect(shown.notdef).toBe(0);
+    expect(shown.text.replace(/\s/g, '')).toBe(PARAGRAPH);
+    expect(warnings.filter((w) => w.kind === 'missingGlyph')).toEqual([]);
   });
 
   it('asks a single-file face once, whatever the characters', async () => {

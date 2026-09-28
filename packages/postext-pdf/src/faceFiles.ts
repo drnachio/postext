@@ -16,7 +16,7 @@
  * ({@link noteMissingGlyphs}), for the `missingGlyph` warning.
  */
 import type { PDFFont } from 'pdf-lib';
-import { isDefaultIgnorable, isFallbackHandled } from './pdf-backend/fallbackSpaces';
+import { isDefaultIgnorable, isFallbackHandled, substituteGlyph } from './pdf-backend/fallbackSpaces';
 
 /** The fontkit face of an embedded font, as far as coverage needs it. */
 interface CoverageFace {
@@ -147,29 +147,34 @@ export function widthOfTextAtSize(font: PDFFont, text: string, size: number): nu
   return width;
 }
 
-const missingByFont = new WeakMap<PDFFont, Set<number>>();
+/** Characters each font lacks, with the order they were first met in:
+ *  one count for every font, so the characters a face lacks in several of
+ *  its files still sort in the order the pages set them. */
+const missingByFont = new WeakMap<PDFFont, Map<number, number>>();
+let missingSeq = 0;
 
 /** Record the characters of `text` that `font` has no glyph for (it draws
  *  them as `.notdef`). Called once per shaped text, from the caches of the
- *  text primitives. */
+ *  text primitives. A character the fallbacks draw with another glyph of
+ *  the face (U+2011 as a hyphen, see `fallbackSpaces.ts`) is not missing. */
 export function noteMissingGlyphs(font: PDFFont, text: string): void {
   const face = coverageFace(font);
   if (!face) return;
   for (const ch of text) {
     const cp = ch.codePointAt(0)!;
-    if (neverMissing(cp) || face.hasGlyphForCodePoint(cp)) continue;
-    let set = missingByFont.get(font);
-    if (!set) {
-      set = new Set();
-      missingByFont.set(font, set);
+    if (neverMissing(cp) || face.hasGlyphForCodePoint(cp) || substituteGlyph(face, cp) !== undefined) continue;
+    let seen = missingByFont.get(font);
+    if (!seen) {
+      seen = new Map();
+      missingByFont.set(font, seen);
     }
-    set.add(cp);
+    if (!seen.has(cp)) seen.set(cp, missingSeq++);
   }
 }
 
-/** The characters drawn in `font` that it has no glyph for, in the order
- *  they were first met. */
-export function missingGlyphsOf(font: PDFFont): ReadonlySet<number> | undefined {
+/** The characters drawn in `font` that it has no glyph for, each with its
+ *  place in the order every font's missing characters were first met. */
+export function missingGlyphsOf(font: PDFFont): ReadonlyMap<number, number> | undefined {
   return missingByFont.get(font);
 }
 

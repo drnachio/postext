@@ -10,6 +10,12 @@
  * draws glyph 0, the notdef box, at its own width — a visible box one em wide
  * in some faces, which also pushes the rest of the word. The PDF backend
  * paints them as the canvas did: {@link fallbackPieces} tells it where.
+ *
+ * The same goes for the non-breaking hyphen: HarfBuzz sets U+2011 with the
+ * face's U+2010 when the face lacks it, and the browser takes a hyphen from
+ * another font when it lacks both. Open Sans and Outfit have neither in
+ * their `latin` files; the PDF draws the face's own hyphen instead of a
+ * box ({@link substituteGlyph}).
  */
 
 /** How HarfBuzz sizes a space the face has no glyph for: a fraction of the
@@ -60,6 +66,24 @@ export function isDefaultIgnorable(cp: number): boolean {
   return (cp >= 0x1bca0 && cp <= 0x1bca3) || (cp >= 0x1d173 && cp <= 0x1d17a) || (cp >= 0xe0000 && cp <= 0xe0fff);
 }
 
+/** Characters drawn with another glyph of the face when it has none of
+ *  their own, in the order the stand-ins are tried: the non-breaking hyphen
+ *  as the hyphen (HarfBuzz's own fallback), then as the hyphen-minus, whose
+ *  glyph is the hyphen in Latin faces; the hyphen as the hyphen-minus. */
+const GLYPH_SUBSTITUTES = new Map<number, readonly number[]>([
+  [0x2011, [0x2010, 0x002d]],
+  [0x2010, [0x002d]],
+]);
+
+/** The character whose glyph stands in for `cp` in a face that has no
+ *  glyph for it (see {@link GLYPH_SUBSTITUTES}); undefined when the face
+ *  has the glyph, or `cp` has no stand-in the face holds. */
+export function substituteGlyph(face: { hasGlyphForCodePoint(codePoint: number): boolean }, cp: number): number | undefined {
+  const options = GLYPH_SUBSTITUTES.get(cp);
+  if (!options || face.hasGlyphForCodePoint(cp)) return undefined;
+  return options.find((alt) => face.hasGlyphForCodePoint(alt));
+}
+
 /** Whether {@link fallbackPieces} paints `cp` without the face's glyph for
  *  it: a space set from the face's space glyph, or a default-ignorable
  *  character left out. A face lacking one of these is not missing it. */
@@ -67,9 +91,10 @@ export function isFallbackHandled(cp: number): boolean {
   return FALLBACK_SPACES.has(cp) || isDefaultIgnorable(cp);
 }
 
-/** Quick test for a character {@link fallbackPieces} may have to handle:
- *  most text holds none, and skips the per-character walk. */
-const CANDIDATE_RE = /[ ­͏؜឴឵᠋-᠎ -‏‪-  -⁯　︀-️﻿￰-￸\uD82F\uD834\uDB40-\uDB43]/;
+/** Quick test for a character {@link fallbackPieces} may have to handle
+ *  (the spaces, the invisible characters, the two hyphens): most text holds
+ *  none, and skips the per-character walk. */
+const CANDIDATE_RE = /[\u2010\u2011 ­͏؜឴឵᠋-᠎ -‏‪-  -⁯　︀-️﻿￰-￸\uD82F\uD834\uDB40-\uDB43]/;
 
 /** The fontkit face of an embedded font, as far as the fallbacks need it. */
 export interface FallbackFace {
@@ -109,8 +134,9 @@ function spaceAdvance(face: FallbackFace, kind: SpaceKind): number {
  * `text` split for painting with `face`: runs of text to shape as they are,
  * and between them the spaces the face has no glyph for, each with the
  * advance the browser's shaper would give it; invisible characters are
- * dropped (see {@link ALWAYS_HIDDEN}). Undefined when the text needs none of
- * this, which is the common case.
+ * dropped (see {@link ALWAYS_HIDDEN}), and a hyphen the face lacks is set
+ * as its stand-in ({@link substituteGlyph}). Undefined when the text needs
+ * none of this, which is the common case.
  */
 export function fallbackPieces(face: FallbackFace, text: string): TextPiece[] | undefined {
   if (!CANDIDATE_RE.test(text)) return undefined;
@@ -129,6 +155,12 @@ export function fallbackPieces(face: FallbackFace, text: string): TextPiece[] | 
     }
     if (ALWAYS_HIDDEN.has(cp) || (isDefaultIgnorable(cp) && !face.hasGlyphForCodePoint(cp))) {
       // Dropped from the run, so its neighbours still kern and ligate.
+      changed = true;
+      continue;
+    }
+    const stand = substituteGlyph(face, cp);
+    if (stand !== undefined) {
+      run += String.fromCodePoint(stand);
       changed = true;
       continue;
     }

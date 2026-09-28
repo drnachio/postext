@@ -488,19 +488,21 @@ export class FontCache {
     const out: FontMissingGlyphs[] = [];
     const seen = new Set<PDFFont>();
     for (const face of this.faces) {
-      const characters: string[] = [];
-      const listed = new Set<number>();
+      // Code point → when it was first met, over every file of the face.
+      const firstMet = new Map<number, number>();
       for (const file of face.files.files) {
         if (seen.has(file)) continue;
         seen.add(file);
-        for (const cp of missingGlyphsOf(file) ?? []) {
+        for (const [cp, order] of missingGlyphsOf(file) ?? []) {
           // A character another file of the face has was drawn from it.
-          if (listed.has(cp) || face.files.fileFor(cp)) continue;
-          listed.add(cp);
-          characters.push(String.fromCodePoint(cp));
+          if (face.files.fileFor(cp)) continue;
+          const known = firstMet.get(cp);
+          if (known === undefined || order < known) firstMet.set(cp, order);
         }
       }
-      if (characters.length > 0) out.push({ ...face.spec, characters });
+      if (firstMet.size === 0) continue;
+      const characters = [...firstMet].sort((a, b) => a[1] - b[1]).map(([cp]) => String.fromCodePoint(cp));
+      out.push({ ...face.spec, characters });
     }
     return out;
   }
