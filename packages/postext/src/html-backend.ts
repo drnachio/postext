@@ -22,7 +22,7 @@ import type {
 import { tableCellFillRects, tableFrameOutline } from './vdt';
 import { dimensionToPx } from './units';
 import { documentInkHex, isSingleInkSvgUrl, singleInkColorMatrix } from './svg/singleInk';
-import { lineTrailingTracking } from './lineInk';
+import { lineInkExtent, lineTrailingTracking } from './lineInk';
 import { renderLangOf } from './locale';
 
 export interface RenderHtmlOptions {
@@ -265,7 +265,9 @@ function renderTextSegment(
   tracking = 0,
 ): string {
   const spacingDecl = seg.tracking !== undefined ? `letter-spacing:${tracking + seg.tracking}px;` : '';
-  const pos = `position:absolute;left:${x.toFixed(3)}px;top:${top};white-space:pre;${spacingDecl}`;
+  // A compressed CJK mark is painted before its box (`inkOffset`).
+  const left = seg.inkOffset !== undefined ? x + seg.inkOffset : x;
+  const pos = `position:absolute;left:${left.toFixed(3)}px;top:${top};white-space:pre;${spacingDecl}`;
   const text = esc(seg.text);
   if (seg.refResourceId !== undefined) {
     // Anchors carry an explicit color so the UA link blue never leaks in.
@@ -356,10 +358,13 @@ function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<st
   let wordWidth = 0;
   let spaceCount = 0;
   for (const seg of line.segments) {
-    if (seg.kind === 'space') spaceCount++;
+    // A hung mark is outside the measure; a Han–Latin space keeps its
+    // width.
+    if (seg.hangs) continue;
+    if (seg.kind === 'space' && !seg.autospace) spaceCount++;
     else wordWidth += seg.width;
   }
-  const contentWidth = line.segments.reduce((s, seg) => s + seg.width, 0);
+  const contentWidth = lineInkExtent(line, 0).width;
 
   // Last lines render ragged at natural width — except when overfull:
   // Knuth-Plass may accept a final line wider than the measure on the
@@ -392,7 +397,7 @@ function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<st
   for (let i = 0; i < segs.length; i++) {
     const seg = segs[i]!;
     if (seg.kind === 'space') {
-      x += useJustify ? justifiedSpaceWidth : seg.width;
+      x += useJustify && !seg.autospace ? justifiedSpaceWidth : seg.width;
       continue;
     }
     parts.push(links.at(segmentHref(seg)));

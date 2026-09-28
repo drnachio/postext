@@ -50,6 +50,9 @@ const config: PostextConfig = {
   header: { elements: [] },
   footer: { elements: [] },
   bodyText: { fontSize: pt(16), lineHeight: pt(24), textAlign: 'justify', firstLineIndent: pt(0), hyphenation: { enabled: false } },
+  // Every mark a full em, no Han–Latin space: justification alone (the
+  // punctuation widths are tested in punctuation.test.ts).
+  cjk: { punctuationWidth: 'fullwidth', compressAdjacent: false, trimLineStart: false, latinSpacing: { value: 0, unit: 'em' } },
 };
 const TEXT = '此开卷第一回也。作者自云：因曾历过一番梦幻之后，故将真事隐去，而借「通灵」之说，撰此《石头记》一书也。故曰「甄士隐」云云。';
 

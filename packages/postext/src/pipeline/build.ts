@@ -31,6 +31,7 @@ import { extractFrontmatter, normalizeMetadata } from '../frontmatter';
 import { collectConfigWarnings } from '../configWarnings';
 import { initHyphenator } from '../measure';
 import { setCjkLineBreak } from '../measure/cjkClasses';
+import { cjkCompositionOf, setCjkComposition } from '../measure/cjkPunctuation';
 import type { MeasurementCache } from '../measure';
 import { resolveAllConfig, computeBaselineGrid, resolvedLocale } from './config';
 import {
@@ -415,6 +416,9 @@ export function buildDocumentPass(
   // CJK text breaks at the document's level wherever it is measured (body,
   // captions, cells, notes, boxes), as it hyphenates in its language.
   setCjkLineBreak(resolved.cjk.lineBreak);
+  // And is composed with the document's punctuation widths, hanging and
+  // Han–Latin space.
+  setCjkComposition(cjkCompositionOf(resolved.cjk, resolved.page.dpi));
 
   // Compute baseline grid
   const baselineGrid = computeBaselineGrid(resolved);

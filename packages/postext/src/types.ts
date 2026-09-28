@@ -2826,11 +2826,99 @@ export interface CjkConfig {
   /** Where lines may break (see {@link CjkLineBreak}). `'auto'` (the
    *  default): `gb` for the mainland, `basic` for Taiwan and Hong Kong. */
   lineBreak?: 'auto' | CjkLineBreak;
+  /** How wide the full-width marks are set (see
+   *  {@link CjkPunctuationWidth}). `'auto'` (the default): `kaiming` for
+   *  the mainland, `fullwidth` for Taiwan and Hong Kong. */
+  punctuationWidth?: 'auto' | CjkPunctuationWidth;
+  /** Two marks that meet (`。」`, `》（`, `：“`) give up the half em of
+   *  blank between them, so the pair takes 1.5 em instead of 2 (clreq
+   *  §6.3.2.2). `'auto'` (the default): on for the mainland and Hong
+   *  Kong, off for Taiwan. */
+  compressAdjacent?: 'auto' | boolean;
+  /** An opening bracket or quote that starts a line gives up its leading
+   *  half em, so its ink lines up with the text edge, and a closing one
+   *  that ends a line its trailing half (clreq §6.3.2.3). `'auto'` (the
+   *  default): on for the mainland and Hong Kong, off for Taiwan. */
+  trimLineStart?: 'auto' | boolean;
+  /** Whether a pause or stop mark may hang past the end of the line
+   *  (clreq §6.1.3). `'none'` (the default): never. `'allow'`: one of
+   *  、，。． (on the mainland also ；：？！) hangs when it would otherwise
+   *  open the next line and compressing the line cannot take it in; never
+   *  in horizontal Taiwan and Hong Kong text. `'force'`: such a mark hangs
+   *  whenever it ends a line (but the paragraph's last). Never after or
+   *  before another mark. */
+  hangingPunctuation?: CjkHangingPunctuation;
+  /** The space set between a Han character (or kana) and a Latin letter or
+   *  a European digit next to it (`用 iPhone 拍照`), in em of the CJK
+   *  text's size or any length. Default `{ value: 0.25, unit: 'em' }`; `0`
+   *  turns it off. None at a line start or end, none next to a Chinese
+   *  mark or inside Chinese brackets; a space the author typed there is
+   *  replaced, not added to. On a justified line it grows up to ½ em
+   *  before characters are spread, and shrinks down to ⅛ em when the line
+   *  takes one more character. */
+  latinSpacing?: Dimension;
+  /** The character grid (字格): a type area authored in characters per line
+   *  and lines per page (see {@link CjkGridConfig}). Off by default. */
+  grid?: CjkGridConfig;
+}
+
+/** Punctuation width styles (clreq §6.3.2.1): each full-width mark is
+ *  half a glyph and half an em of blank that may be set or removed.
+ *  - `fullwidth` (全角式): every mark one em; only a pair of adjacent marks
+ *    (`compressAdjacent`) and a bracket at a line edge (`trimLineStart`)
+ *    lose blank;
+ *  - `kaiming` (开明式): 。？！ one em (half at a line end), ，、；：,
+ *    brackets and quotes half an em;
+ *  - `lineEndHalf` (行末半角): one em inside the line, half at its end
+ *    (GB/T 15834—2011 §5.1.10 read literally);
+ *  - `halfwidth` (半角式): every mark half an em (dictionaries).
+ *  Marks set in the middle of their box (Taiwan, Hong Kong: 。，、；：) lose
+ *  a quarter em on each side; ？！ stay one em in horizontal Taiwan and
+ *  Hong Kong text. */
+export type CjkPunctuationWidth = 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'halfwidth';
+
+/** See {@link CjkConfig.hangingPunctuation}. */
+export type CjkHangingPunctuation = 'none' | 'allow' | 'force';
+
+/** The character grid of `cjk.grid`: the type area is derived from the
+ *  body size, not authored as margins. Each column is `charsPerLine` ems
+ *  wide and holds `linesPerPage` lines of the body's line height; with two
+ *  columns the gutter is rounded to a whole number of ems (at least one).
+ *  The grid is centred inside the configured margins, which act as
+ *  minimums; a grid that does not fit is reduced to what fits and reported
+ *  (`cjkGridClamped`). In vertical text (`layout.writingMode:
+ *  'vertical-rl'`) characters run down the page and lines across it. */
+export interface CjkGridConfig {
+  /** Default `false`. */
+  enabled?: boolean;
+  /** Characters per line of one column. Unset: as many as the margins
+   *  leave room for. */
+  charsPerLine?: number;
+  /** Lines per column. Unset: as many as the margins leave room for. */
+  linesPerPage?: number;
+  /** Draw the grid (稿纸) over the type area on screen. Default `false`. */
+  show?: boolean;
+}
+
+export interface ResolvedCjkGridConfig {
+  enabled: boolean;
+  /** The characters per line in use (after the pre-pass: what the
+   *  margins leave room for when unset or too many); 0 when off. */
+  charsPerLine: number;
+  /** The lines per column in use; 0 when off. */
+  linesPerPage: number;
+  show: boolean;
 }
 
 export interface ResolvedCjkConfig {
   region: CjkRegion;
   lineBreak: CjkLineBreak;
+  punctuationWidth: CjkPunctuationWidth;
+  compressAdjacent: boolean;
+  trimLineStart: boolean;
+  hangingPunctuation: CjkHangingPunctuation;
+  latinSpacing: Dimension;
+  grid: ResolvedCjkGridConfig;
 }
 
 export type PdfColorSpace = 'rgb' | 'cmyk' | 'grayscale';

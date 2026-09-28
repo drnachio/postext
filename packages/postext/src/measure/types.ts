@@ -1,6 +1,7 @@
 import type { VDTLine } from '../vdt';
 import type { TextAlign } from '../types';
 import type { CjkLineBreakLevel } from './cjkClasses';
+import type { CjkComposition } from './cjkPunctuation';
 
 /** Where the Knuth–Plass breaker broke a paragraph: the path it ran on
  *  (the plain and the rich path number their items differently) and the
@@ -157,6 +158,12 @@ export interface MeasureBlockOptions {
    *  `CjkLineBreakLevel`. Unset: the document's level, which the build sets
    *  (`setCjkLineBreak`); `gb` outside a build. Only CJK text reads it. */
   cjkLineBreak?: CjkLineBreakLevel;
+  /** How CJK text is composed: punctuation widths, adjacent marks, line
+   *  edges, hanging, the Han–Latin space (`cjk`, resolved; see
+   *  `cjkPunctuation.ts`). Unset: the document's, which the build sets
+   *  (`setCjkComposition`); outside a build, none (every mark at its full
+   *  advance). Only CJK text reads it. */
+  cjkComposition?: CjkComposition;
 }
 
 export const SOFT_HYPHEN = '\u00AD';

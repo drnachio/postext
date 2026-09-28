@@ -230,6 +230,24 @@ export interface VDTLineSegment {
    *  segment carrying it is never painted with the rest of its line in one
    *  run. Absent on lines that are not CJK. */
   tracking?: number;
+  /** Paint-only shift of the segment's glyphs, px (negative: to the left):
+   *  a full-width mark that gave up the blank before its glyph (an opening
+   *  bracket at a line start, a mark compressed next to another; see
+   *  `cjk.punctuationWidth`) is painted this far before its box, so its
+   *  ink stays inside `width`. The layout never reads it. Absent unless a
+   *  CJK mark was compressed on its start side. */
+  inkOffset?: number;
+  /** A pause or stop mark hung past the end of its line
+   *  (`cjk.hangingPunctuation`): the line's measure and `bbox.width` leave
+   *  it out, and the column clip is widened to show it. Painted after the
+   *  segment before it like any other. */
+  hangs?: boolean;
+  /** A space between a Han character and a Latin letter or digit
+   *  (`cjk.latinSpacing`), `kind: 'space'`: its `width` is final (the
+   *  composer spread or compressed it), and renderers justifying the line's
+   *  word spaces leave it as it is. Its `text` is empty, or the space the
+   *  author typed there (which it replaces). */
+  autospace?: boolean;
 }
 
 export interface VDTLine {
@@ -243,7 +261,9 @@ export interface VDTLine {
    *  edge, whose spaces are narrowed to fit. An overlay or a hit test on the
    *  painted text widens or narrows such a line to that edge. A justified
    *  CJK line is set to the measure in its segments (their `tracking`, its
-   *  word spaces at their final width), so its `width` is the measure. */
+   *  word spaces at their final width), so its `width` is the measure. A
+   *  mark hung past the line's end (a segment flagged `hangs`) is left out
+   *  of `width`. */
   bbox: BoundingBox;
   baseline: number;
   /** The line ends inside a word, or at least not at a space. Mostly the

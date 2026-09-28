@@ -66,6 +66,25 @@ import { hasCJK } from './cjk';
 import { graphemeCount, graphemesOf, lastGrapheme } from './graphemes';
 import { isBreakingSpace } from './spaces';
 import { trimChipLineEdges } from './chipEdges';
+import {
+  applyLineTrim,
+  boxCut,
+  compressPair,
+  getCjkComposition,
+  isLatinSpacingHan,
+  isLatinSpacingLatin,
+  isPlainComposition,
+  latinSpacingPx,
+  lineEndTrim,
+  lineStartTrim,
+  mayHang,
+  punctuationBox,
+  punctuationShrink,
+  shrinkPunctuation,
+  shrinkStep,
+  type CjkComposition,
+  type PunctuationBox,
+} from './cjkPunctuation';
 
 /** Fit tolerance of the breaker (px): running sums of many widths may
  *  land a hair past a measure they fill exactly. */
@@ -159,6 +178,13 @@ interface Unit {
   /** The Markdown link the unit is part of (its span and range), so a
    *  segment never holds linked and unlinked characters. */
   link?: string;
+  /** A full-width mark whose blank the composition adjusts (see
+   *  `cjkPunctuation.ts`): `width` is its advance less the blank it gave
+   *  up. */
+  punct?: PunctuationBox;
+  /** A space between Han and Latin (`cjk.latinSpacing`): inserted (`text`
+   *  empty) or replacing the space the author typed. */
+  auto?: boolean;
 }
 
 interface Fonts {
@@ -395,6 +421,98 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
   return units;
 }
 
+/** The em (px) of a font shorthand: its size. */
+function emOfFont(font: string): number {
+  const m = FONT_SIZE_RE.exec(font);
+  return m ? parseFloat(m[1]!) : 16;
+}
+
+/** Whether a unit is a single CJK mark (a bracket, a pause, stop or
+ *  interpunct mark, a dash or an ellipsis): two of them in a row never
+ *  hang. */
+function isMarkUnit(u: Unit | undefined): boolean {
+  if (!u || u.kind !== 'text' || u.run || !u.firstCjk) return false;
+  switch (u.first) {
+    case 'opening': case 'closing': case 'pause': case 'stop': case 'interpunct': case 'dash': case 'ellipsis':
+      return true;
+    default:
+      return false;
+  }
+}
+
+/**
+ * The punctuation widths and Han–Latin spaces of a paragraph's units, as
+ * the composition sets them (see `cjkPunctuation.ts`): each full-width mark
+ * takes the width its style gives it (`Unit.punct`), two marks that meet
+ * give up the blank between them (`compressAdjacent`), and a space unit
+ * (`Unit.auto`) goes between each Han character and a Latin letter or digit
+ * it touches — the space the author typed there turns into one. The line
+ * edges (and the reduction a line makes to take one more character) are
+ * the breaker's and the line's business. A plain composition changes
+ * nothing.
+ */
+function prepareUnits(units: Unit[], c: CjkComposition, letterSpacingPx: number): Unit[] {
+  if (isPlainComposition(c)) return units;
+  const full = new Map<Unit, number>();
+  for (const u of units) {
+    if (u.kind !== 'text' || u.run || u.graphemes !== 1 || !u.firstCjk || u.style.script || u.stacked) continue;
+    const box = punctuationBox(u.text, u.first, u.width - letterSpacingPx, emOfFont(u.style.font), c);
+    if (!box) continue;
+    full.set(u, u.width);
+    u.punct = box;
+    u.width -= boxCut(box);
+  }
+  if (c.compressAdjacent && full.size > 1) {
+    for (let k = 1; k < units.length; k++) {
+      const a = units[k - 1]!;
+      const b = units[k]!;
+      if (!a.punct || !b.punct || b.zwspBefore) continue;
+      compressPair(a.punct, b.punct);
+      a.width = full.get(a)! - boxCut(a.punct);
+      b.width = full.get(b)! - boxCut(b.punct);
+    }
+  }
+  if ((c.latinSpacing.px ?? c.latinSpacing.em ?? 0) <= 0) return units;
+  const out: Unit[] = [];
+  const han = (u: Unit | undefined, edge: 'first' | 'last'): boolean =>
+    !!u && u.kind === 'text' && !u.run && u.firstCjk && u[edge] === 'ideograph' && !u.style.script && isLatinSpacingHan(u.text);
+  const latin = (u: Unit | undefined, edge: 'first' | 'last'): boolean =>
+    !!u && u.kind === 'text' && !!u.run && !u.style.script && isLatinSpacingLatin(edge === 'first' ? String.fromCodePoint(u.text.codePointAt(0)!) : lastGrapheme(u.text));
+  const spaceOf = (h: Unit): number => latinSpacingPx(c, emOfFont(h.style.font));
+  for (let k = 0; k < units.length; k++) {
+    const u = units[k]!;
+    const prev = out[out.length - 1];
+    if (u.kind === 'space' && /^ +$/.test(u.text)) {
+      // A space typed between Han and Latin is replaced by the Han–Latin
+      // space (CSS `text-autospace: replace`).
+      const next = units[k + 1];
+      const h = han(prev, 'last') && latin(next, 'first') && !next!.glueBefore ? prev
+        : latin(prev, 'last') && han(next, 'first') && !next!.glueBefore ? next : undefined;
+      if (h) {
+        out.push({ ...u, width: spaceOf(h), auto: true });
+        continue;
+      }
+    } else if (prev && !u.glueBefore && ((han(prev, 'last') && latin(u, 'first')) || (latin(prev, 'last') && han(u, 'first')))) {
+      const h = han(prev, 'last') ? prev : u;
+      out.push({
+        kind: 'space',
+        text: '',
+        width: spaceOf(h),
+        graphemes: 0,
+        first: 'western',
+        last: 'western',
+        firstCjk: false,
+        lastCjk: false,
+        style: h.style,
+        at: u.at,
+        auto: true,
+      });
+    }
+    out.push(u);
+  }
+  return out;
+}
+
 const isDigitCode = (c: number): boolean => (c >= 0x30 && c <= 0x39) || isFullwidthDigit(c);
 
 /** Whether a number keeps to the sign or unit next to it (`50 %`, `50％`,
@@ -481,6 +599,65 @@ interface LineRange {
   head?: Unit;
   hyphenated: boolean;
   hardHyphen?: boolean;
+  /** The line's last unit hangs past its end (`cjk.hangingPunctuation`). */
+  hang?: boolean;
+}
+
+/**
+ * What the breaker asks of a composition (see `cjkPunctuation.ts`): the
+ * blank a mark gives up at a line start (`lead`) or end (`tail`), and what
+ * a unit gives when its line is compressed to take one more character
+ * (`give`): a mark down to half an em as its style allows, a word space
+ * down to a quarter em, a Han–Latin space down to an eighth.
+ */
+interface LineFit {
+  lead(u: Unit): number;
+  tail(u: Unit): number;
+  give(u: Unit, lead: number, tail: number): number;
+  /** Whether unit `k` may hang when it ends a line: a pause or stop mark
+   *  the composition lets hang, with no other mark before or after it. */
+  hangs(units: readonly Unit[], k: number, unitAt: (k: number) => Unit): boolean;
+  hanging: 'none' | 'allow' | 'force';
+}
+
+function lineFitOf(c: CjkComposition): LineFit | undefined {
+  if (isPlainComposition(c)) return undefined;
+  return {
+    lead: (u) => (u.punct ? lineStartTrim(u.punct, c) : 0),
+    tail: (u) => (u.punct ? lineEndTrim(u.punct, c) : 0),
+    give(u, lead, tail) {
+      if (u.kind === 'space') {
+        const em = emOfFont(u.style.font);
+        return Math.max(0, u.width - (u.auto ? em / 8 : em / 4));
+      }
+      return u.punct ? Math.max(0, punctuationShrink(u.punct, c) - lead - tail) : 0;
+    },
+    hangs(units, k, unitAt) {
+      const u = unitAt(k);
+      if (u.kind !== 'text' || u.run || u.graphemes !== 1 || !mayHang(u.text, u.first, c)) return false;
+      if (k > 0 && isMarkUnit(unitAt(k - 1))) return false;
+      return k + 1 >= units.length || !isMarkUnit(units[k + 1]);
+    },
+    hanging: c.hangingPunctuation,
+  };
+}
+
+/** The last unit that must share a line with unit `k` when `k` ends one:
+ *  the units after it up to the next break (a closing quote after a
+ *  full stop). -1 when that is more than a few units away or crosses a
+ *  space the line may not break after. */
+function groupEnd(units: readonly Unit[], breaks: Uint8Array, k: number): number {
+  const n = units.length;
+  for (let q = k; q < k + 6; q++) {
+    if (q + 1 >= n) return q;
+    if (units[q + 1]!.kind === 'space') {
+      let r = q + 1;
+      while (r < n && units[r]!.kind === 'space') r++;
+      return r >= n || breaks[r] ? q : -1;
+    }
+    if (breaks[q + 1]) return q;
+  }
+  return -1;
 }
 
 /** The advance of the first `idx` UTF-16 units of a Western run, the
@@ -601,6 +778,7 @@ function breakUnits(
   measureOf: (line: number) => number,
   reserve: number,
   letterSpacingPx: number,
+  fit?: LineFit,
 ): LineRange[] {
   const out: LineRange[] = [];
   const n = units.length;
@@ -619,12 +797,50 @@ function breakUnits(
     let tail: Unit | undefined;
     let hyphenated = false;
     let hardHyphen = false;
+    let hang = false;
+    // What the line could give up to take one more character (push-in).
+    let give = 0;
     for (let k = i; k < n; k++) {
       const u = unitAt(k);
       if (k > i && breaks[k]) lastBreak = k;
-      if (w + u.width <= max + FIT_EPS) {
-        w += u.width;
+      const lead = fit && k === i ? fit.lead(u) : 0;
+      if (w + u.width - lead - (fit ? fit.tail(u) : 0) <= max + FIT_EPS) {
+        w += u.width - lead;
+        if (fit) give += fit.give(u, lead, 0);
         continue;
+      }
+      if (fit && k > i && u.kind !== 'space') {
+        // A pause or stop mark that does not fit hangs past the measure:
+        // at once under 'force', after compressing the line failed under
+        // 'allow'. Else the line gives up blank to take the unit and what
+        // must stay with it (push-in, clreq §6.2.2.3), before it would
+        // push characters down.
+        const canHang = fit.hanging !== 'none' && groupEnd(units, breaks, k) === k && fit.hangs(units, k, unitAt);
+        if (canHang && fit.hanging === 'force') {
+          end = k + 1;
+          hang = true;
+          break;
+        }
+        const m = groupEnd(units, breaks, k);
+        if (m >= k) {
+          let width = w;
+          let room = give;
+          for (let q = k; q <= m; q++) {
+            const uq = unitAt(q);
+            const t = q === m ? fit.tail(uq) : 0;
+            width += uq.width - t;
+            room += fit.give(uq, 0, t);
+          }
+          if (width - room <= max + FIT_EPS) {
+            end = m + 1;
+            break;
+          }
+        }
+        if (canHang) {
+          end = k + 1;
+          hang = true;
+          break;
+        }
       }
       if (u.kind === 'space') {
         // The line ends before the space when it may break after it; else
@@ -682,6 +898,7 @@ function breakUnits(
       ...(head ? { head } : {}),
       hyphenated,
       ...(hardHyphen ? { hardHyphen: true } : {}),
+      ...(hang ? { hang: true } : {}),
     });
     if (tail) {
       carried = tail;
@@ -717,6 +934,104 @@ interface ComposeContext {
   lineHeightPx: number;
   indentOf: (line: number) => number;
   measureOf: (line: number) => number;
+  /** The composition's line edges, push-in and hanging; undefined for a
+   *  plain one. */
+  fit?: LineFit;
+}
+
+/** Share `amount` among `caps` equally, none past its cap: what each
+ *  takes. */
+function spread(amount: number, caps: readonly number[]): number[] {
+  const takes = caps.map(() => 0);
+  const order = caps.map((_, i) => i).sort((a, b) => caps[a]! - caps[b]!);
+  let rest = amount;
+  for (let o = 0; o < order.length && rest > 1e-12; o++) {
+    const i = order[o]!;
+    const take = Math.min(caps[i]!, rest / (order.length - o));
+    takes[i] = take;
+    rest -= take;
+  }
+  return takes;
+}
+
+/**
+ * A line's units as its edges and its measure set them (see
+ * `cjkPunctuation.ts`): the first mark gives up its lead and the last its
+ * tail; a mark that hangs is taken out and returned apart; and a line wider
+ * than its measure (it took one more character, clreq §6.2.2.3) gives up
+ * blank in clreq's order — word spaces to a quarter em, interpuncts,
+ * brackets, pause marks, Han–Latin spaces to an eighth of an em, stop marks
+ * last — each step shared equally, until it fits. `us` holds the line's
+ * units and is changed in place; a unit that changes is replaced by a copy,
+ * since the paragraph's units serve every attempt at breaking it.
+ */
+function fitLine(us: Unit[], units: readonly Unit[], range: LineRange, lastK: number, isLast: boolean, measure: number, fit: LineFit): Unit | undefined {
+  const copy = (j: number): Unit => {
+    const u = us[j]!;
+    const c: Unit = { ...u, ...(u.punct ? { punct: { ...u.punct } } : {}) };
+    us[j] = c;
+    return c;
+  };
+  let hang: Unit | undefined;
+  if (us.length > 1) {
+    const unitAt = (k: number): Unit => (k === range.start && range.first ? range.first : units[k]!);
+    const forced = fit.hanging === 'force' && !isLast && !range.head && fit.hangs(units, lastK, unitAt);
+    if (range.hang || forced) {
+      hang = copy(us.length - 1);
+      us.pop();
+      const t = fit.tail(hang);
+      if (hang.punct && t > 0) {
+        applyLineTrim(hang.punct, 0, t);
+        hang.width -= t;
+      }
+      while (us.length > 0 && us[us.length - 1]!.kind === 'space') us.pop();
+    }
+  }
+  if (us.length === 0) return hang;
+  const first = us[0]!;
+  const lead = fit.lead(first);
+  if (lead > 0) {
+    const c = copy(0);
+    applyLineTrim(c.punct!, lead, 0);
+    c.width -= lead;
+  }
+  const last = us[us.length - 1]!;
+  const tail = fit.tail(last);
+  if (tail > 0) {
+    const c = copy(us.length - 1);
+    applyLineTrim(c.punct!, 0, tail);
+    c.width -= tail;
+  }
+  let over = -measure;
+  for (const u of us) over += u.width;
+  if (over <= FIT_EPS) return hang;
+  // Steps of the reduction order: word spaces (1), interpuncts (2),
+  // brackets (3), pause marks (4), Han–Latin spaces (5), stop marks (6).
+  const stepOf = (u: Unit): number => (u.kind === 'space' ? (u.auto ? 5 : 1) : u.punct ? shrinkStep(u.punct) : 0);
+  for (let step = 1; step <= 6 && over > FIT_EPS; step++) {
+    const members: number[] = [];
+    const caps: number[] = [];
+    for (let j = 0; j < us.length; j++) {
+      const u = us[j]!;
+      if (stepOf(u) !== step) continue;
+      // The marks at the edges already gave up their lead and tail.
+      const cap = fit.give(u, 0, 0);
+      if (cap <= 0) continue;
+      members.push(j);
+      caps.push(cap);
+    }
+    if (members.length === 0) continue;
+    const takes = spread(over, caps);
+    for (let m = 0; m < members.length; m++) {
+      const take = takes[m]!;
+      if (take <= 0) continue;
+      const c = copy(members[m]!);
+      const given = c.punct ? shrinkPunctuation(c.punct, take) : take;
+      c.width -= given;
+      over -= given;
+    }
+  }
+  return hang;
 }
 
 /** The segments, text and flags of one line (see the module comment for
@@ -725,9 +1040,14 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
   const us: Unit[] = [];
   for (let k = range.start; k < range.end; k++) us.push(k === range.start && range.first ? range.first : units[k]!);
   if (range.head) us.push(range.head);
-  while (us.length > 0 && us[us.length - 1]!.kind === 'space') us.pop();
+  let lastK = range.end - 1;
+  while (us.length > 0 && us[us.length - 1]!.kind === 'space') {
+    us.pop();
+    lastK--;
+  }
 
   const measure = ctx.measureOf(li);
+  const hang = ctx.fit ? fitLine(us, units, range, lastK, isLast, measure, ctx.fit) : undefined;
   const justify = ctx.textAlign === 'justify' && !isLast;
   let spaceWidth: number | undefined;
   let tracking = 0;
@@ -741,10 +1061,14 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
     let natural = 0;
     let widest = 0;
     let gaps = 0;
+    // Han–Latin spaces (`cjk.latinSpacing`): they flex apart from word
+    // spaces, and the renderers leave them as set.
+    const autos: number[] = [];
     for (let j = 0; j < us.length; j++) {
       const u = us[j]!;
       content += u.width;
-      if (u.kind === 'space') {
+      if (u.kind === 'space' && u.auto) autos.push(j);
+      else if (u.kind === 'space') {
         spaces++;
         natural += u.width;
         widest = Math.max(widest, u.width);
@@ -755,19 +1079,32 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
     }
     let slack = measure - content;
     if (slack > FIT_EPS) {
-      if (gaps > 0) {
+      if (gaps > 0 || autos.length > 0) {
         if (spaces > 0) {
           // Word spaces first, up to half an em each, all set alike.
           spaceWidth = Math.max(widest, Math.min((natural + slack) / spaces, Math.max(ctx.em / 2, widest)));
           slack -= spaceWidth * spaces - natural;
           if (ctx.normalSpace > 0) spaceRatio = spaceWidth / ctx.normalSpace;
         }
+        if (autos.length > 0 && slack > FIT_EPS) {
+          // Then the Han–Latin spaces, up to half an em each (clreq
+          // §6.2.2.4).
+          const caps = autos.map((j) => Math.max(0, emOfFont(us[j]!.style.font) / 2 - us[j]!.width));
+          const takes = spread(slack, caps);
+          autos.forEach((j, m) => {
+            if (takes[m]! <= 0) return;
+            us[j] = { ...us[j]!, width: us[j]!.width + takes[m]! };
+            slack -= takes[m]!;
+          });
+        }
         if (slack > FIT_EPS) {
-          tracking = slack / gaps;
+          // Then every gap between characters, the Han–Latin spaces too.
+          tracking = slack / (gaps + autos.length);
           if (tracking > ctx.cap + 1e-9) {
             tracking = ctx.cap;
             loose = true;
           }
+          for (const j of autos) us[j] = { ...us[j]!, width: us[j]!.width + tracking };
         }
       } else if (spaces > 0) {
         // No gap between characters: the spaces take it all, as in a Latin
@@ -788,15 +1125,22 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
   const addText = (u: Unit, text: string, width: number, t: number | undefined): void => {
     // Single characters (not Western runs, which keep a segment each) of
     // one style, link and spacing that advance alike share a segment.
-    const key = u.stacked || u.run || u.graphemes !== 1 ? undefined : `${u.style.key}|${u.link ?? ''}|${t ?? ''}`;
+    // A mark that gave up blank is a segment of its own: its glyph may be
+    // painted before its box (`inkOffset`), and the caret spreads a
+    // segment's width evenly over its characters.
+    const cut = u.punct ? boxCut(u.punct) : 0;
+    const key = u.stacked || u.run || u.graphemes !== 1 || cut > 0 ? undefined : `${u.style.key}|${u.link ?? ''}|${t ?? ''}`;
     const last = pieces[pieces.length - 1];
     if (key !== undefined && last && last.key === key && last.cell !== undefined && Math.abs(last.cell - width) < 1e-3) {
       last.parts.push(text);
       last.seg.width += width;
       return;
     }
+    pieces.push({ seg: segmentOf(u, width, t), parts: [text], key, ...(key !== undefined ? { cell: width } : {}) });
+  };
+  const segmentOf = (u: Unit, width: number, t: number | undefined): PendingSegment => {
     const s = u.style;
-    const seg: PendingSegment = {
+    return {
       kind: 'text',
       text: '',
       width,
@@ -807,11 +1151,15 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
       ...(u.stacked === 'first' ? { stacked: true } : {}),
       ...(s.smallCaps ? { smallCaps: true } : {}),
       ...(t !== undefined ? { tracking: t } : {}),
+      ...(u.punct && u.punct.cutStart > 0 ? { inkOffset: -u.punct.cutStart } : {}),
     };
-    pieces.push({ seg, parts: [text], key, ...(key !== undefined ? { cell: width } : {}) });
   };
   for (let j = 0; j < us.length; j++) {
     const u = us[j]!;
+    if (u.kind === 'space' && u.auto) {
+      pieces.push({ seg: { kind: 'space', text: u.text, width: u.width, autospace: true }, parts: [u.text], key: undefined });
+      continue;
+    }
     if (u.kind === 'space') {
       pieces.push({ seg: { kind: 'space', text: u.text, width: spaceWidth ?? u.width }, parts: [u.text], key: undefined });
       continue;
@@ -844,6 +1192,10 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
   const trimmed = trimChipLineEdges(segments);
   let width = 0;
   for (const s of trimmed) width += s.width;
+  if (hang) {
+    // The hung mark follows the line, outside its measure and its width.
+    trimmed.push({ ...segmentOf(hang, hang.width, undefined), text: hang.text, hangs: true });
+  }
   const text = trimmed.map((s) => s.text).join('');
   const y = li * ctx.lineHeightPx;
   return {
@@ -881,8 +1233,10 @@ export function composeCjkParagraph(
 ): MeasuredBlock {
   const fonts: Fonts = { normal: normalFont, bold: boldFont, italic: italicFont, boldItalic: boldItalicFont };
   const letterSpacingPx = options?.letterSpacingPx ?? 0;
-  const units = buildUnits(spans, fonts, letterSpacingPx);
+  const composition = options?.cjkComposition ?? getCjkComposition();
+  const units = prepareUnits(buildUnits(spans, fonts, letterSpacingPx), composition, letterSpacingPx);
   if (!units.some((u) => u.kind !== 'space')) return { lines: [], totalHeight: 0 };
+  const fit = lineFitOf(composition);
   const level = options?.cjkLineBreak ?? getCjkLineBreak();
   const breaks = breakOpportunities(units, level);
   const indentPx = options?.firstLineIndentPx ?? 0;
@@ -903,10 +1257,11 @@ export function composeCjkParagraph(
     lineHeightPx,
     indentOf,
     measureOf,
+    ...(fit ? { fit } : {}),
   };
   const compose = (ranges: LineRange[]): VDTLine[] => ranges.map((r, li) => composeLine(units, r, li, li === ranges.length - 1, ctx));
 
-  let lines = compose(breakUnits(units, breaks, measureOf, 0, letterSpacingPx));
+  let lines = compose(breakUnits(units, breaks, measureOf, 0, letterSpacingPx, fit));
   // Column balancing asks for a paragraph one line longer: break each line
   // a little short of its measure, in eighths of an em, until the paragraph
   // gains the lines without a line past the tracking cap.
@@ -914,7 +1269,7 @@ export function composeCjkParagraph(
   if (looseness > 0) {
     const target = lines.length + looseness;
     for (let step = 1; step <= 16; step++) {
-      const ranges = breakUnits(units, breaks, measureOf, (step * em) / 8, letterSpacingPx);
+      const ranges = breakUnits(units, breaks, measureOf, (step * em) / 8, letterSpacingPx, fit);
       if (ranges.length < target) continue;
       if (ranges.length > target) break;
       const loose = compose(ranges);
