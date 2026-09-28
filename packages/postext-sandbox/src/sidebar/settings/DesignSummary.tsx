@@ -74,9 +74,9 @@ export function DesignSummary({ onOpenGroup }: DesignSummaryProps) {
         <SummaryLine onClick={() => onOpenGroup('page')} group={labels.settingsGroupPage}>
           {columns}
         </SummaryLine>
-        <SummaryLine onClick={() => onOpenGroup('writing')} group={labels.settingsGroupWriting}>
+        <SummaryLine onClick={() => onOpenGroup('writing')} group={labels.settingsGroupWriting} wrap>
           {writing.map((w) => `${w} · `).join('')}
-          <span lang={language}>{documentLocaleLabel(language)}</span>
+          <span lang={language} className="whitespace-nowrap">{documentLocaleLabel(language)}</span>
         </SummaryLine>
         <SummaryLine onClick={() => onOpenGroup('text')} group={labels.settingsGroupText}>
           <span style={{ fontFamily: `"${body.fontFamily}", serif` }}>{type}</span>
@@ -101,7 +101,10 @@ export function DesignSummary({ onOpenGroup }: DesignSummaryProps) {
   );
 }
 
-function SummaryLine({ onClick, group, children }: { onClick: () => void; group: string; children: ReactNode }) {
+/** One line of the card; `wrap` lets a line whose end matters (the
+ *  language after the direction and the binding) run on to a second one
+ *  instead of being cut. */
+function SummaryLine({ onClick, group, wrap, children }: { onClick: () => void; group: string; wrap?: boolean; children: ReactNode }) {
   return (
     <button
       type="button"
@@ -111,7 +114,7 @@ function SummaryLine({ onClick, group, children }: { onClick: () => void; group:
         'hover:bg-(--surface-2,var(--background)) focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)',
       )}
     >
-      <span className="min-w-0 truncate">{children}</span>
+      <span className={cn('min-w-0', wrap ? '[text-wrap:pretty]' : 'truncate')}>{children}</span>
       <span className="sr-only">— {group}</span>
       <ChevronRight size={12} aria-hidden="true" className="shrink-0 text-(--slate) opacity-0 transition-opacity group-hover/line:opacity-100 group-focus-visible/line:opacity-100" />
     </button>
