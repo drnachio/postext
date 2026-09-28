@@ -8,6 +8,12 @@ const EQUALS = '[=\\uFF1D]';
  *  Chinese input method types (#181), or bare up to the next space. */
 const VALUE = `"([^"]*)"|'([^']*)'|\\u201C([^\\u201D]*)\\u201D|\\u300C([^\\u300D]*)\\u300D|([^\\s]+)`;
 const TOKEN = `(${KEY})(?:\\s*${EQUALS}\\s*(?:${VALUE}))?`;
+/** A key in any script (`作者`), which the grammar recognises only to
+ *  report it and drop it (see {@link parseAttrBlobStrict}). */
+const ANY_KEY = '[\\p{L}_][\\p{L}\\p{N}_-]*';
+const NON_ASCII = /[^\x00-\x7F]/;
+/** A `key=value` token whose key is written outside ASCII. */
+const FOREIGN_TOKEN = `(${ANY_KEY})\\s*${EQUALS}\\s*(?:${VALUE})`;
 
 /** One `key`, `key=value` or `key="value"` of an attribute blob, with where
  *  its value sits in the blob. */
@@ -24,6 +30,10 @@ export interface AttrToken {
   quoted: boolean;
   /** A key without `=`: a flag with an empty value. */
   flag: boolean;
+  /** The key holds letters outside ASCII (`作者=曹雪芹`): read so the blob
+   *  parses whole, then dropped; `attributeKeyInvalid` reports it. Set by
+   *  {@link parseAttrBlobStrict} only. */
+  invalidKey?: true;
 }
 
 function tokenAt(m: RegExpExecArray): AttrToken {
@@ -68,10 +78,14 @@ export function parseDirectiveAttrs(raw: string): DirectiveAttrs {
  * The tokens of a blob the attribute grammar reads whole: tokens separated
  * by whitespace (none needed after a quoted value), nothing else. `undefined`
  * when anything in it is not a token (`{x, y}`, `{紅樓|hóng lóu}`), so a
- * heading keeps such braces in its title.
+ * heading keeps such braces in its title. A `key=value` whose key is
+ * written outside ASCII (`作者=曹雪芹`) counts as a token, marked
+ * `invalidKey`, so the other keys of the blob are still read; a flag
+ * outside ASCII (`{風月寶鑑}`) is not a token.
  */
 export function parseAttrBlobStrict(raw: string): AttrToken[] | undefined {
   const re = new RegExp(TOKEN, 'y');
+  const foreign = new RegExp(FOREIGN_TOKEN, 'uy');
   const out: AttrToken[] = [];
   let at = 0;
   const skipSpace = (): void => {
@@ -79,10 +93,19 @@ export function parseAttrBlobStrict(raw: string): AttrToken[] | undefined {
   };
   skipSpace();
   while (at < raw.length) {
-    re.lastIndex = at;
-    const m = re.exec(raw);
-    if (!m) return undefined;
-    const token = tokenAt(m);
+    // A foreign key first: the ASCII grammar would read `author作者=x`
+    // as a flag `author` followed by junk.
+    foreign.lastIndex = at;
+    const f = foreign.exec(raw);
+    let token: AttrToken;
+    if (f && NON_ASCII.test(f[1]!)) {
+      token = { ...tokenAt(f), invalidKey: true };
+    } else {
+      re.lastIndex = at;
+      const m = re.exec(raw);
+      if (!m) return undefined;
+      token = tokenAt(m);
+    }
     at = token.end;
     const before = at;
     skipSpace();
@@ -94,7 +117,7 @@ export function parseAttrBlobStrict(raw: string): AttrToken[] | undefined {
 }
 
 /** A key written with letters outside ASCII (`作者=曹雪芹`): the grammar
- *  does not read it, so the attribute is lost. Offsets into the blob. */
+ *  does not read it, so the attribute is dropped. Offsets into the blob. */
 export interface InvalidAttrKey {
   key: string;
   start: number;
@@ -109,7 +132,7 @@ export interface InvalidAttrKey {
 export function invalidAttributeKeys(raw: string): InvalidAttrKey[] {
   const out: InvalidAttrKey[] = [];
   const closers: Record<string, string> = { '"': '"', "'": "'", '“': '”', '「': '」' };
-  const keyRe = /[\p{L}_][\p{L}\p{N}_-]*/uy;
+  const keyRe = new RegExp(ANY_KEY, 'uy');
   let i = 0;
   while (i < raw.length) {
     const ch = raw[i]!;
@@ -128,7 +151,7 @@ export function invalidAttributeKeys(raw: string): InvalidAttrKey[] {
     const key = m[0];
     let j = i + key.length;
     while (j < raw.length && /\s/.test(raw[j]!)) j++;
-    if ((raw[j] === '=' || raw[j] === '＝') && /[^\x00-\x7F]/.test(key)) {
+    if ((raw[j] === '=' || raw[j] === '＝') && NON_ASCII.test(key)) {
       out.push({ key, start: i, end: i + key.length });
     }
     i += key.length;

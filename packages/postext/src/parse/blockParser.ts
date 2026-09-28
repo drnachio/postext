@@ -37,7 +37,9 @@ const HEADING_ATTRS_RE = /(?:\s+|(?<=[\p{sc=Han}\p{sc=Hira}\p{sc=Kana}\u3000-\u3
  *  the braces stay in the title: the grammar must read the whole blob
  *  (`{x, y}` and `{紅樓|hóng lóu}` stay text), and it must set a value —
  *  flags alone count only after a space (`# Title {draft}`), not glued to
- *  the title (`# 第一回{draft}` stays text). */
+ *  the title (`# 第一回{draft}` stays text). A key written outside ASCII
+ *  (`作者=曹雪芹`) is read, so the block still leaves the title and its
+ *  other keys apply, and then dropped (`attributeKeyInvalid`). */
 function headingAttrTokens(blob: string, spaced: boolean): ReturnType<typeof parseAttrBlobStrict> {
   const tokens = parseAttrBlobStrict(blob);
   if (!tokens || tokens.length === 0) return undefined;
@@ -376,11 +378,11 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
         ? headingAttrTokens(attrsMatch[1]!, attrsMatch[0][0] !== '{')
         : undefined;
       if (attrsMatch && attrsMatch.index !== undefined && tokens) {
-        attrs = {};
-        for (const t of tokens) attrs[t.key] = t.value;
+        const read = tokens.filter((t) => !t.invalidKey);
+        if (read.length > 0) attrs = Object.fromEntries(read.map((t) => [t.key, t.value]));
         // Where each quoted value sits in the source (for `{attr.<key>}`).
         const attrsAbsStart = contentAbsStart + attrsMatch.index + attrsMatch[0].indexOf('{') + 1;
-        for (const t of tokens) {
+        for (const t of read) {
           if (!t.quoted || t.valueStart === undefined || t.valueEnd === undefined) continue;
           attrSources ??= {};
           attrSources[t.key] = { start: attrsAbsStart + t.valueStart, end: attrsAbsStart + t.valueEnd };

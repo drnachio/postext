@@ -610,6 +610,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 - `unknownResourceId` (embed or ref), `duplicateResourceId`, `danglingTypeRef`
 - `headingHierarchy`, `consecutiveHeadings`, `listAfterHeading`
 - `chapterFrontmatterIgnored`, `calloutOverflow`
+- `fullwidthMarkup` (`：：：`, `＃`, `［＾…］`, `｛…｝`, `＊＊` typed with a Chinese input method: set as text), `attributeKeyInvalid` (a key outside ASCII, `作者=曹雪芹`: dropped, the block's other keys still apply)
 
 ---
 

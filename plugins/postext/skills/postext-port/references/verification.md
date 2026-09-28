@@ -44,6 +44,10 @@ node scripts/render.mjs my-book --lang es --out /tmp/my-book.pdf --png /tmp/page
   line or style id the engine could not resolve, or a table whose merged cells
   left the grid irregular. Each line says what the output does instead; fix the
   source at the reported file and line.
+- `WARN fullwidthMarkup|attributeKeyInvalid` (Chinese sources): markup typed with a
+  Chinese input method (`：：：` fence, `＃` heading, `［＾…］` footnote, `｛…｝` attributes,
+  `＊＊…＊＊`) is set as text, and an attribute key outside ASCII (`作者=曹雪芹`) is
+  dropped. Retype the ASCII form the warning names; keys are ASCII, values any script.
 - `PROBLEM font families used but not bundled`: add the files to `fonts[]`.
 - `NOTE preset.json has no "configVersion"` (or an older one): the config is
   laid out, as in the Sandbox, with the postext 1.4 rules the line names

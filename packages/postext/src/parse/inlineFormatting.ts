@@ -335,8 +335,15 @@ export function injectRefSpans(spans: InlineSpan[], refs: RefMeta[]): InlineSpan
 const ESCAPE_RE = /\\([*_^~`])/g;
 const ESCAPE_BASE = 0xe100;
 const ESCAPED_RE = /[\ue100-\ue17f]/g;
+/** The faces `^_^` and `^o^` (#181) stay text, protected like escapes so
+ *  that no marker scanner reads their carets or underscore: two `^_^` on a
+ *  line must not pair their underscores into italics. `^o^` after a letter,
+ *  a digit or a full stop is a superscript (`n.^o^`, `1^o^`). */
+const CARET_FACE_RE = /\^_\^|(?<![A-Za-z0-9.])\^[oO]\^/g;
+const protectChar = (c: string): string => String.fromCharCode(ESCAPE_BASE + c.charCodeAt(0));
 export function protectEscapes(text: string): string {
-  return text.replace(ESCAPE_RE, (_, c: string) => String.fromCharCode(ESCAPE_BASE + c.charCodeAt(0)));
+  const escaped = text.replace(ESCAPE_RE, (_, c: string) => protectChar(c));
+  return escaped.includes('^') ? escaped.replace(CARET_FACE_RE, (face) => face.replace(/./g, protectChar)) : escaped;
 }
 export function restoreEscapes(text: string): string {
   return text.replace(ESCAPED_RE, (m) => String.fromCharCode(m.charCodeAt(0) - ESCAPE_BASE));
@@ -502,29 +509,32 @@ export function stripInlineFormatting(text: string): string {
     .replace(UNDERSCORE_BOLD_RE, wrap)        // bold alt
     .replace(/\*(.+?)\*/g, wrap)              // italic
     .replace(UNDERSCORE_ITALIC_RE, wrap)      // italic alt
-    .replace(SUPERSCRIPT_RE, (all: string, face: string | undefined, inner: string | undefined) => face ?? inner ?? all) // superscript
+    .replace(SUPERSCRIPT_RE, '$1')           // superscript
     .replace(SUBSCRIPT_RE, '$1')             // subscript
     .split(b).join('')
     .trim());
 }
 
-/** The faces `^_^` and `^o^` (after anything but a letter, a digit or a
- *  full stop: `n.^o^` and `1^o^` stay superscripts), which stay text. */
-const CARET_FACE = '\\^_\\^|(?<![A-Za-z0-9.])\\^[oO]\\^';
 const SUPERSCRIPT = '\\^(\\S(?:[^^\\n]*?\\S)?)\\^';
+/** Chinese and Japanese characters (Han, kana, CJK punctuation, fullwidth
+ *  forms), in a class that needs no `u` flag. */
+const EAST_ASIAN_CHAR = '(?:[\\u3000-\\u30ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uf900-\\ufaff\\uff01-\\uff60]|[\\ud840-\\ud8bf][\\udc00-\\udfff])';
 /** A `~` with an ASCII digit on both sides is a range (`3~5天`, `10~20`):
  *  it neither opens nor closes a subscript (#181). */
 const TILDE = '(?!(?<=[0-9])~[0-9])~';
-const SUBSCRIPT = `${TILDE}(\\S(?:[^~\\n]*?\\S)?)${TILDE}`;
+/** A `~` between two Chinese words is a range too (`周一~周五`, `北京~上海`):
+ *  it does not open a subscript. It may close one, so a Han subscript
+ *  still ends before a Han character (`F~合~等于`). */
+const TILDE_OPEN = `(?!(?<=${EAST_ASIAN_CHAR})~${EAST_ASIAN_CHAR})${TILDE}`;
+const SUBSCRIPT = `${TILDE_OPEN}(\\S(?:[^~\\n]*?\\S)?)${TILDE}`;
 
 /** `^text^` (superscript) and `~text~` (subscript): the marked text starts
  *  and ends with a non-space character and carries no other marker of the
- *  same kind, so a stray caret or tilde in prose stays literal. In
- *  {@link SUPERSCRIPT_RE} group 1 is a face left as text, group 2 the
- *  superscript. */
-export const SUPERSCRIPT_RE = new RegExp(`(${CARET_FACE})|${SUPERSCRIPT}`, 'g');
+ *  same kind, so a stray caret or tilde in prose stays literal. The faces
+ *  `^_^` and `^o^` never reach them (see `protectEscapes`). */
+export const SUPERSCRIPT_RE = new RegExp(SUPERSCRIPT, 'g');
 export const SUBSCRIPT_RE = new RegExp(SUBSCRIPT, 'g');
-const SCRIPT_RE = new RegExp(`(${CARET_FACE})|${SUPERSCRIPT}|${SUBSCRIPT}`, 'g');
+const SCRIPT_RE = new RegExp(`${SUPERSCRIPT}|${SUBSCRIPT}`, 'g');
 
 /** Split a bold / italic run into plain and script spans: `^…^` becomes a
  *  superscript span, `~…~` a subscript one (the markers are dropped). */
@@ -533,11 +543,9 @@ function splitScriptSpans(text: string, bold: boolean, italic: boolean, out: Inl
   let last = 0;
   let m: RegExpExecArray | null;
   while ((m = re.exec(text)) !== null) {
-    // A face stays in the text around it.
-    if (m[1] !== undefined) continue;
     if (m.index > last) out.push({ text: text.slice(last, m.index), bold, italic });
-    if (m[2] !== undefined) out.push({ text: m[2], bold, italic, script: 'sup' });
-    else out.push({ text: m[3]!, bold, italic, script: 'sub' });
+    if (m[1] !== undefined) out.push({ text: m[1], bold, italic, script: 'sup' });
+    else out.push({ text: m[2]!, bold, italic, script: 'sub' });
     last = m.index + m[0].length;
   }
   if (last < text.length) out.push({ text: text.slice(last), bold, italic });

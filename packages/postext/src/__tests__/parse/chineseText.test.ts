@@ -71,6 +71,27 @@ describe('a line end between Chinese characters sets no space', () => {
     expect(parseMarkdown('言毕……\n遂去')[0]!.text).toBe('言毕……遂去');
   });
 
+  it('removes it between two ambiguous marks inside Chinese text', () => {
+    // CSS Text 3 §4.1.3, second rule: in Chinese both sides may be
+    // ambiguous-width marks; the characters past them tell the script.
+    expect(parseMarkdown('他说……\n“好”')[0]!.text).toBe('他说……“好”');
+    expect(parseMarkdown('“你好”\n“再见”')[0]!.text).toBe('“你好”“再见”');
+    expect(parseMarkdown('他说：“你好”\n——然后走了。')[0]!.text).toBe('他说：“你好”——然后走了。');
+    expect(parseMarkdown('言毕⸺\n遂去')[0]!.text).toBe('言毕⸺遂去');
+    const md = '士隐道：“善哉！”\n“去罢。”';
+    const [p] = parseMarkdown(md);
+    expect(p!.text).toBe('士隐道：“善哉！”“去罢。”');
+    expectAligned(md, p!);
+    expect(text(parseInlineSnippetSpans('“你好”\n“再见”'))).toBe('“你好”“再见”');
+  });
+
+  it('keeps it between two ambiguous marks in Latin or Korean text', () => {
+    expect(parseMarkdown('He said “hello”\n“bye”')[0]!.text).toBe('He said “hello” “bye”');
+    expect(parseMarkdown('“Wait…”\n“No.”')[0]!.text).toBe('“Wait…” “No.”');
+    expect(parseMarkdown('“안녕”\n“잘 가”')[0]!.text).toBe('“안녕” “잘 가”');
+    expect(parseMarkdown('——\n——')[0]!.text).toBe('—— ——');
+  });
+
   it('removes it beside a zero-width space', () => {
     expect(parseMarkdown('long​\nword')[0]!.text).toBe('long​word');
   });
@@ -79,6 +100,20 @@ describe('a line end between Chinese characters sets no space', () => {
     const md = '士隐道：“善哉！”[^1]\n遂别去。\n\n[^1]: 甲戌侧批。';
     const [p] = parseMarkdown(md);
     expect(p!.text).toBe('士隐道：“善哉！”\uE1A6遂别去。');
+  });
+
+  it('keeps link ranges over many joined lines', () => {
+    const line = '[宝玉](https://a.example)道：好[黛玉](https://b.example)笑。';
+    const md = Array.from({ length: 40 }, () => line).join('\n');
+    const [p] = parseMarkdown(md);
+    expect(p!.text).toBe('宝玉道：好黛玉笑。'.repeat(40));
+    const links = p!.spans.flatMap((s) => (s.links ?? []).map((l) => s.text.slice(l.start, l.end)));
+    expect(links).toEqual(Array.from({ length: 40 }, () => ['宝玉', '黛玉']).flat());
+    // One link over several joined lines.
+    const [q] = parseMarkdown('见[满纸荒唐言，\n一把辛酸泪。\n都云作者痴](https://c.example)。');
+    expect(q!.text).toBe('见满纸荒唐言，一把辛酸泪。都云作者痴。');
+    const span = q!.spans.find((s) => s.links)!;
+    expect(span.links!.map((l) => span.text.slice(l.start, l.end))).toEqual(['满纸荒唐言，一把辛酸泪。都云作者痴']);
   });
 
   it('keeps a space typed inside a line', () => {
@@ -136,6 +171,17 @@ describe('a tilde between digits is a range', () => {
     expect(stripInlineFormatting('3~5天，10~20岁')).toBe('3~5天，10~20岁');
   });
 
+  it('leaves a tilde between Han words as text', () => {
+    const spans = parseInlineFormatting('周一~周五，周六~周日休息。');
+    expect(text(spans)).toBe('周一~周五，周六~周日休息。');
+    expect(scripts(spans)).toEqual([]);
+    expect(scripts(parseInlineFormatting('北京~上海~广州'))).toEqual([]);
+    expect(scripts(parseInlineFormatting('好的~谢谢~'))).toEqual([]);
+    expect(stripInlineFormatting('周一~周五，周六~周日')).toBe('周一~周五，周六~周日');
+    // A Han subscript still closes before a Han character: F合, P额.
+    expect(scripts(parseInlineFormatting('合力F~合~等于ma，P~额~=U~额~I~额~'))).toEqual(['sub:合', 'sub:额', 'sub:额', 'sub:额']);
+  });
+
   it('keeps chemical subscripts', () => {
     expect(scripts(parseInlineFormatting('H~2~O'))).toEqual(['sub:2']);
     expect(scripts(parseInlineFormatting('C~6~H~12~O~6~'))).toEqual(['sub:6', 'sub:12', 'sub:6']);
@@ -148,6 +194,25 @@ describe('a tilde between digits is a range', () => {
     expect(scripts(spans)).toEqual([]);
     expect(stripInlineFormatting('开心^_^哈哈')).toBe('开心^_^哈哈');
     expect(scripts(parseInlineFormatting('el n.^o^ 5 y el 1^er^ piso'))).toEqual(['sup:o', 'sup:er']);
+  });
+
+  it('leaves two faces on one line as text', () => {
+    for (const line of ['好的^_^，谢谢^_^', 'ok ^_^ and ^_^ fine', '他笑道：“好^_^。”她也笑^o^^_^']) {
+      const spans = parseInlineFormatting(line);
+      expect(text(spans)).toBe(line);
+      expect(italic(spans)).toEqual([]);
+      expect(scripts(spans)).toEqual([]);
+      expect(stripInlineFormatting(line)).toBe(line);
+      expect(text(parseInlineSnippetSpans(line))).toBe(line);
+    }
+    const [h] = parseMarkdown('# 标题^_^与^_^');
+    expect(h!.text).toBe('标题^_^与^_^');
+    expect(italic(h!.spans)).toEqual([]);
+    // Emphasis around a face still works.
+    const spans = parseInlineFormatting('_好_^_^，**谢谢**^_^');
+    expect(italic(spans)).toEqual(['好']);
+    expect(bold(spans)).toEqual(['谢谢']);
+    expect(text(spans)).toBe('好^_^，谢谢^_^');
   });
 });
 
@@ -170,6 +235,25 @@ describe('heading attributes after a Chinese title', () => {
     }
     // A flag after a space is read, as before.
     expect(parseMarkdown('# Title {draft}')[0]!.attrs).toEqual({ draft: '' });
+  });
+
+  it('reads the other keys of a block that holds a key outside ASCII', () => {
+    for (const md of ['# 回目{style="x" 作者=曹雪芹}', '# 回目 {style="x" 作者=曹雪芹}', '# 回目{作者＝“曹雪芹” style=「x」}']) {
+      const [h] = parseMarkdown(md);
+      expect(h!.text).toBe('回目');
+      expect(h!.attrs).toEqual({ style: 'x' });
+      expect(md.slice(h!.attrSources!.style!.start, h!.attrSources!.style!.end)).toBe('x');
+      const found = collectContentWarnings(md).filter((w) => w.kind === 'attributeKeyInvalid');
+      expect(found.map((w) => md.slice(w.sourceStart, w.sourceEnd))).toEqual(['作者']);
+    }
+    // Only such keys: the block is still taken, with no attributes.
+    const [h] = parseMarkdown('# 回目{作者=曹雪芹}');
+    expect(h!.text).toBe('回目');
+    expect(h!.attrs).toBeUndefined();
+    // A word in braces is no key: it stays in the title.
+    expect(parseMarkdown('# 红楼梦 {風月寶鑑}')[0]!.text).toBe('红楼梦 {風月寶鑑}');
+    expect(parseAttrBlobStrict('style="x" 作者=曹雪芹')!.map((t) => [t.key, !!t.invalidKey])).toEqual([['style', false], ['作者', true]]);
+    expect(parseAttrBlobStrict('風月寶鑑')).toBeUndefined();
   });
 
   it('reads values in curly and corner quotes, and a fullwidth equals sign', () => {

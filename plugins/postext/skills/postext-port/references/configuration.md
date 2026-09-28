@@ -890,7 +890,8 @@ What `:::index` prints from the `:index` marks (document-format.md §10.5). An e
 | `main` | `{bold:true}` | `{bold?, italic?}` for `main` pages |
 | `see` | by language, italic | `{label?, alsoLabel?, italic?}`: "See"/"See also", "Véase"/"Véase también"… |
 | `locale` | the document's | collation (Intl.Collator) |
-| `groups.enabled` | `true` | letter heads (A, B…, `0–9`, Symbols) |
+| `groupBy` | `'auto'` | `'letter'` \| `'pinyin'` (Han under the pinyin initial, 贾宝玉 → J) \| `'stroke'` (一畫, 二畫…; 一画… in zh-Hans) \| `'none'` (no heads); `auto` = pinyin for zh / zh-Hans / zh-CN, stroke for zh-Hant / zh-TW / zh-HK, letter otherwise (releases after 1.8). A polyphonic character read wrongly takes a Han `sort` key with the wanted reading (`sort="崇阳"` for 重阳); a pinyin key sorts after its letter's Han entries |
+| `groups.enabled` | `true` | letter heads (A, B…, `0–9`, Symbols; 符号 / 符號 in Chinese) |
 | `groups.fontFamily/fontSize/fontWeight/italic/color` | entries', 700 | set on the entries' pitch |
 | `groups.marginTop` | one index line | above each group; none above the first or at a column top |
 | `groups.symbolsLabel` / `numbersLabel` | by language / `'0–9'` | |

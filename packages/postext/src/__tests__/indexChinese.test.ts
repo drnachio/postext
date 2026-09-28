@@ -184,6 +184,27 @@ describe('index.groupBy', () => {
       .toEqual(['[贾] 贾宝玉, 2', '[林] 林黛玉, 3']);
   });
 
+  it('sorts a Han homophone sort key in place, a Latin one after the Han entries of its letter', () => {
+    const cGroup = (key: string) => build({ locale: 'zh-Hans' }, [
+      markEntry(['曹雪芹'], 1), markEntry(['陈也俊'], 2), markEntry(['程日兴'], 3), markEntry(['崔莺莺'], 4),
+      markEntry(['重阳'], 5, { sort: key }),
+    ]);
+    // 崇 is read chóng only: 重阳 files between 程 and 崔.
+    expect(cGroup('崇阳')).toEqual(['[C] 曹雪芹, 2', '陈也俊, 3', '程日兴, 4', '重阳, 6', '崔莺莺, 5']);
+    // The collator sets Latin after Han: the pinyin key reaches C, at its end.
+    expect(cGroup('chong yang')).toEqual(['[C] 曹雪芹, 2', '陈也俊, 3', '程日兴, 4', '崔莺莺, 5', '重阳, 6']);
+  });
+
+  it('files fullwidth Latin letters and Han numerals with their kin', () => {
+    expect(build({ locale: 'zh-Hans' }, [markEntry(['Ｑ版'], 1), markEntry(['Q版'], 2), markEntry(['秦可卿'], 3)]))
+      .toEqual(['[Q] 秦可卿, 4', 'Q版, 3', 'Ｑ版, 2']);
+    expect(build({ locale: 'zh', index: { groupBy: 'letter' } }, [markEntry(['Ｑ版'], 1)])).toEqual(['[Q] Ｑ版, 2']);
+    // 〇 is a Han numeral read líng: it files with 零, not under 0–9.
+    expect(build({ locale: 'zh-Hans' }, [markEntry(['〇号'], 1), markEntry(['零号'], 2), markEntry(['1号'], 3)]))
+      .toEqual(['[0–9] 1号, 4', '[L] 〇号, 2', '零号, 3']);
+    expect(build({ locale: 'zh-Hant' }, [markEntry(['〇號'], 1), markEntry(['1號'], 2)])[1]).toMatch(/^\[[一二三四五六七八九十]+畫\] 〇號/);
+  });
+
   it('labels symbols and cross-references in the document script', () => {
     const hans = build({ locale: 'zh-Hans' }, [markEntry(['《石头记》'], 1), markEntry(['贾琏'], 2, { see: '贾政' }), markEntry(['贾政'], 3)]);
     expect(hans).toEqual(['[符号] 《石头记》, 2', '[J] 贾琏。见贾政', '贾政, 4']);

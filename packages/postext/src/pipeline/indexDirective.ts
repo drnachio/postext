@@ -260,10 +260,13 @@ function groupOf(
   labels: { symbols: string; numbers: string },
   grouping: IndexGrouping,
 ): EntryGroup {
-  const first = [...node.sort.trim()][0] ?? '';
-  if (/\p{L}/u.test(first)) {
+  const lead = [...node.sort.trim()][0] ?? '';
+  // A fullwidth letter or digit files with its ASCII form (`Ｑ版` under Q).
+  const first = /[\uff01-\uffee]/.test(lead) ? lead.normalize('NFKC') : lead;
+  // A Han numeral (〇, read líng) files with the characters, not the digits.
+  const han = /\p{sc=Han}/u.test(first);
+  if (han || /\p{L}/u.test(first)) {
     if (grouping === 'none') return { rank: 2, label: '' };
-    const han = /\p{sc=Han}/u.test(first);
     if (han && grouping === 'pinyin') {
       const initial = pinyinInitial(base, first);
       if (initial) return { rank: 2, label: initial, order: LATIN_INITIALS.indexOf(initial) };
@@ -278,8 +281,8 @@ function groupOf(
     const label = plain.length > 0 && base.compare(plain, upper) === 0 ? plain : upper;
     if (grouping === 'letter') return { rank: 2, label };
     // Pinyin groups: a Latin sort key (`sort="jia bao yu"`) files under
-    // its letter, with the Han entries read that way; other letters
-    // follow Z.
+    // its letter, after the Han entries read that way (the collator sorts
+    // Latin after Han); other letters follow Z.
     const at = LATIN_INITIALS.indexOf(label);
     return { rank: 2, label, order: at >= 0 ? at : LATIN_INITIALS.length };
   }

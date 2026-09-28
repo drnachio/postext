@@ -59,7 +59,7 @@ describe('attribute values', () => {
 
   it('a `{` inside a value leaves the whole block in the title', () => {
     // The last `{…}` after a space is `{b"}`, which the attribute grammar
-    // does not read whole: the braces stay text (#181; up to 1.7 the title
+    // does not read whole: the braces stay text (#181; up to 1.8 the title
     // kept `Title {note="a` and a flag `b` was read).
     const [h] = parseMarkdown('# Title {note="a {b"}');
     expect(h!.text).toBe('Title {note="a {b"}');

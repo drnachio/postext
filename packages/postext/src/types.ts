@@ -3618,11 +3618,13 @@ export interface IndexConfig {
    *  Default: the document language. */
   locale?: string;
   /** What the group heads are (#182):
-   *  - `'letter'`: the first letter of the sort key (up to postext 1.7 the
+   *  - `'letter'`: the first letter of the sort key (up to postext 1.8 the
    *    only grouping);
    *  - `'pinyin'`: an entry starting with a Han character files under the
    *    Latin initial of its pinyin reading (A–Z; 贾宝玉 under J), a Latin
-   *    sort key under its letter (`sort="jia bao yu"` joins J);
+   *    sort key under its letter, after the Han entries (`sort="jia mu"`
+   *    ends J); a Han key read as wanted sorts in place (`sort="崇阳"`
+   *    for 重阳);
    *  - `'stroke'`: under the stroke count of its first character (一畫,
    *    二畫 …; 一画 … in Simplified Chinese);
    *  - `'none'`: no heads; symbols, numbers and words are set apart by the

@@ -7,9 +7,12 @@
  * between two ideographs must vanish instead: CSS Text 3 §4.1.3 ("segment
  * break transformation") removes a segment break when the characters on both
  * sides are East Asian Wide, Fullwidth or Halfwidth and neither is Hangul,
- * when one side is such a character and the other an ambiguous-width
- * punctuation mark or symbol (`“`, `”`, `…`, `—`), and when either side is a
- * zero-width space. Korean keeps its spaces.
+ * and when either side is a zero-width space. Its second rule, for Chinese
+ * and Japanese text, also lets either side be an ambiguous-width punctuation
+ * mark or symbol (`“`, `”`, `…`, `—`); the parser does not know the
+ * document's language, so a run of such marks is looked through to the
+ * characters around it (see {@link removesLineEndAt}). Korean keeps its
+ * spaces.
  */
 
 import type { InlineSpan } from './types';
@@ -59,6 +62,7 @@ const AMBIGUOUS_PUNCTUATION = new Set<number>([
   0x2020, 0x2021, 0x2022, 0x2025, 0x2026, 0x2027, 0x2030, 0x2032, 0x2033, 0x203b,
   0x2103, 0x2116, 0x2160, 0x2190, 0x2191, 0x2192, 0x2193,
   0x25a0, 0x25a1, 0x25b2, 0x25b3, 0x25c6, 0x25c7, 0x25cb, 0x25ce, 0x25cf, 0x2605, 0x2606,
+  0x2e3a, 0x2e3b, // two- and three-em dashes
 ]);
 
 /** The code point that ends `text` before `index` (a surrogate pair read
@@ -84,6 +88,44 @@ export function removesSegmentBreak(before: number | undefined, after: number | 
   if (a) return AMBIGUOUS_PUNCTUATION.has(after);
   if (b) return AMBIGUOUS_PUNCTUATION.has(before);
   return false;
+}
+
+/** How far a run of ambiguous marks is looked through (a longer run is
+ *  read as having nothing beyond it). */
+const AMBIGUOUS_RUN_LIMIT = 32;
+
+/** The first code point of `text` walking from `index` in `step` (-1 back,
+ *  +1 on) that is neither an ambiguous mark nor `skip`; `undefined` at the
+ *  edge of the text or past {@link AMBIGUOUS_RUN_LIMIT} marks. */
+function pastAmbiguousRun(text: string, index: number, step: -1 | 1, skip: string | undefined): number | undefined {
+  let at = index;
+  for (let n = 0; n < AMBIGUOUS_RUN_LIMIT; n++) {
+    const cp = step < 0 ? codePointBefore(text, at) : text.codePointAt(at);
+    if (cp === undefined) return undefined;
+    if (!AMBIGUOUS_PUNCTUATION.has(cp) && (skip === undefined || cp !== skip.charCodeAt(0))) return cp;
+    at += step * (cp > 0xffff ? 2 : 1);
+  }
+  return undefined;
+}
+
+/**
+ * Whether a line end between `text[…before)` and `text[after…]` is removed.
+ * Beside the rules of {@link removesSegmentBreak}, a line end between two
+ * ambiguous marks (`”⏎“`, `……⏎“`, `”⏎——`) goes when the nearest character
+ * past the marks on either side is East Asian wide and neither is Hangul:
+ * `“你好”⏎“再见”` joins, `“hello”⏎“bye”` and `“안녕”⏎“잘 가”` keep their space.
+ * `skip` (a placeholder such as a footnote marker's) is looked through too.
+ */
+export function removesLineEndAt(text: string, before: number, after: number, skip?: string): boolean {
+  const a = codePointBefore(text, before);
+  const b = text.codePointAt(after);
+  if (removesSegmentBreak(a, b)) return true;
+  if (a === undefined || b === undefined) return false;
+  if (!AMBIGUOUS_PUNCTUATION.has(a) || !AMBIGUOUS_PUNCTUATION.has(b)) return false;
+  const left = pastAmbiguousRun(text, before, -1, skip);
+  const right = pastAmbiguousRun(text, after, 1, skip);
+  if ((left !== undefined && isHangul(left)) || (right !== undefined && isHangul(right))) return false;
+  return (left !== undefined && isEastAsianWide(left)) || (right !== undefined && isEastAsianWide(right));
 }
 
 /** `spans` with the characters at the sorted offsets `drop` (into their
@@ -114,7 +156,18 @@ function dropCharacters(spans: InlineSpan[], drop: readonly number[]): InlineSpa
     text += span.text.slice(from);
     if (text.length === 0) continue;
     const { links, ...rest } = span;
-    const shift = (i: number): number => i - local.filter((at) => at < i).length;
+    // `i` less the dropped offsets before it (binary search: a span may
+    // hold thousands of links and joined lines).
+    const shift = (i: number): number => {
+      let lo = 0;
+      let hi = local.length;
+      while (lo < hi) {
+        const mid = (lo + hi) >> 1;
+        if (local[mid]! < i) lo = mid + 1;
+        else hi = mid;
+      }
+      return i - lo;
+    };
     const moved = (links ?? [])
       .map((l) => ({ start: shift(l.start), end: shift(l.end), href: l.href }))
       .filter((l) => l.end > l.start);
@@ -143,7 +196,7 @@ export function joinEastAsianLines(
     // `他说[^1]⏎然后` joins like `他说⏎然后`.
     let b = k;
     while (b > 1 && text[b - 1] === FOOTNOTE_PLACEHOLDER) b--;
-    if (!removesSegmentBreak(codePointBefore(text, b), text.codePointAt(k + 1))) continue;
+    if (!removesLineEndAt(text, b, k + 1, FOOTNOTE_PLACEHOLDER)) continue;
     const from = sourceMap[k];
     const to = sourceMap[k + 1];
     if (from === undefined || to === undefined) continue;
@@ -157,13 +210,13 @@ export function joinEastAsianLines(
     if (lineEnd) (drop ??= []).push(k);
   }
   if (!drop) return undefined;
-  const dropped = new Set(drop);
   let joined = '';
   const map: number[] = [];
-  for (let k = 0; k < text.length; k++) {
-    if (dropped.has(k)) continue;
-    joined += text[k];
-    map.push(sourceMap[k]!);
+  let from = 0;
+  for (const at of [...drop, text.length]) {
+    joined += text.slice(from, at);
+    for (let k = from; k < at; k++) map.push(sourceMap[k]!);
+    from = at + 1;
   }
   return { text: joined, spans: dropCharacters(spans, drop), sourceMap: map };
 }
@@ -188,7 +241,7 @@ export function joinEastAsianSnippetLines(spans: InlineSpan[]): InlineSpan[] {
     const start = m.index;
     const end = start + m[0].length;
     if (text[end] === '\n' || text[start - 1] === '\n') continue;
-    if (!removesSegmentBreak(codePointBefore(text, start), text.codePointAt(end))) continue;
+    if (!removesLineEndAt(text, start, end)) continue;
     for (let k = start; k < end; k++) (drop ??= []).push(k);
   }
   return drop ? dropCharacters(spans, drop) : spans;
