@@ -11,6 +11,7 @@ import { frontmatterHighlight, frontmatterParser, frontmatterTheme } from './fro
 import { mathHighlight, mathTheme } from './mathHighlight';
 import { chipHighlight, chipTheme } from './chipSyntax';
 import { smallCapsHighlight, smallCapsTheme } from './smallCapsSyntax';
+import { indexHighlight, indexTheme } from './indexSyntax';
 import { refCompletion, type RefCompletionContext } from './refCompletion';
 
 interface UseCodeMirrorOptions {
@@ -73,6 +74,8 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
       chipHighlight,
       smallCapsTheme,
       smallCapsHighlight,
+      indexTheme,
+      indexHighlight,
       refCompletion(() => getRefContextRef.current?.() ?? { resources: [], types: [] }),
       keymap.of([...defaultKeymap, ...historyKeymap]),
       themeCompartment.current.of(getEditorTheme(isDark)),

@@ -47,6 +47,7 @@ export function sectionHasOverrides(config: PostextConfig, section: SettingsSect
     case 'parts':
     case 'headings':
     case 'toc':
+    case 'index':
     case 'unordered-lists':
     case 'ordered-lists':
     case 'math':

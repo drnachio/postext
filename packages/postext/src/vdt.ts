@@ -185,7 +185,7 @@ export interface VDTLineSegment {
   refResourceId?: string;
   /** Physical book page index this segment links to: a page number of an
    *  expanded `:::index`. The PDF backend makes it a link to that page (when
-   *  the page is in the document), the HTML backend an anchor. */
+   *  the page is in the document), as it does a contents row. */
   pageLink?: number;
   /** Present when this segment is a footnote marker (`[^id]`): the note's
    *  id. The layout sets the note at the foot of the column holding the

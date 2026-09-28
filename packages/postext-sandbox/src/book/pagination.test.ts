@@ -455,3 +455,27 @@ describe('createBookPlanner counter cache', () => {
     expect(second.byId.c!.continuation?.headings).not.toBe(first.byId.c!.continuation?.headings);
   });
 });
+
+describe('createBookPlanner: the index', () => {
+  const book = (mark: string) => [
+    newChapter('front', 'Front', '# Contents {style="front"}\n\n:::toc', 1),
+    newChapter('a', 'A', `# One\n\nThe :index[heart] beats.${mark}`, 1),
+    newChapter('ix', 'Index', '# Index {style="front"}\n\n:::index', 1),
+  ];
+  const cfg: PostextConfig = { headingStyles: [{ id: 'front', numbered: false }] };
+
+  it('hands the index chapter the marks and the contents the headings', () => {
+    const plan = createBookPlanner().plan(book(''), cfg, resources, {});
+    expect(plan.byId.ix!.outline!.map((e) => e.kind)).toEqual(['indexMark']);
+    expect(plan.byId.front!.outline!.every((e) => e.kind !== 'indexMark')).toBe(true);
+    expect(plan.byId.a!.outline).toBeUndefined();
+  });
+
+  it('moves the index key, not the contents key, when only a mark changes', () => {
+    const planner = createBookPlanner();
+    const before = planner.plan(book(''), cfg, resources, {});
+    const after = planner.plan(book(' :index{term="Pulse"}'), cfg, resources, {});
+    expect(after.byId.front!.outlineKey).toBe(before.byId.front!.outlineKey);
+    expect(after.byId.ix!.outlineKey).not.toBe(before.byId.ix!.outlineKey);
+  });
+});

@@ -100,6 +100,22 @@ function collectLooseLineWarnings(
  *  {@link collectEngineContentWarnings} — before the layout exists, too. */
 function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warning[] {
   const out: Warning[] = [];
+  // What `:::index` raised: cross-references and ranges are only known
+  // once the whole book's marks reach the index chapter.
+  (doc.contentWarnings ?? []).forEach((w, i) => {
+    if (w.kind !== 'indexSeeUnknown' && w.kind !== 'indexRangeUnclosed') return;
+    const payload: Record<string, unknown> = { ...w };
+    delete payload.sourceStart;
+    delete payload.sourceEnd;
+    delete payload.pageIndex;
+    out.push({
+      id: `index-${w.kind}-${i}`,
+      payload: payload as unknown as WarningPayload,
+      sourceStart: w.sourceStart,
+      sourceEnd: w.sourceEnd,
+      line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,
+    });
+  });
   const pxPerMm = doc.config.page.dpi / 25.4;
   let idx = 0;
   for (const w of doc.warnings ?? []) {

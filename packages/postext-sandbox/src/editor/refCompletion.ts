@@ -13,6 +13,7 @@ import { Prec, StateEffect, StateField, type EditorState, type Extension } from 
 import type { Resource, ResourceKind, ResourceType } from 'postext';
 import { chipCompletionSource, type ChipStyleOption } from './chipSyntax';
 import { smallCapsCompletionSource } from './smallCapsSyntax';
+import { indexCompletionSource } from './indexSyntax';
 
 /** What the `@` picker needs from the sandbox: the current resources and the
  *  resource types that name them (figure/table/…) in the document locale.
@@ -23,6 +24,8 @@ export interface RefCompletionContext {
   types: readonly ResourceType[];
   /** The chip styles offered inside `:chip[…]{style="…"}`. */
   chipStyles?: readonly ChipStyleOption[];
+  /** The book's index terms, offered inside `:index{term="…"}`. */
+  indexTerms?: () => readonly string[];
 }
 
 /** `@` followed by an optional query, ending at the caret. Ids are slugs
@@ -267,7 +270,12 @@ export function refCompletion(getContext: () => RefCompletionContext): Extension
     autocompletion({
       // One completion config per editor: the chip directive and style ids
       // and the small-caps directive share it with the `@` picker.
-      override: [refSource(getContext), chipCompletionSource(() => getContext().chipStyles ?? []), smallCapsCompletionSource],
+      override: [
+        refSource(getContext),
+        chipCompletionSource(() => getContext().chipStyles ?? []),
+        smallCapsCompletionSource,
+        indexCompletionSource(() => getContext().indexTerms?.() ?? []),
+      ],
       activateOnTyping: true,
       icons: false,
       tooltipClass: () => 'cm-refPicker',

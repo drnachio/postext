@@ -164,7 +164,8 @@ export interface ChapterPlan {
   continuationKey: string;
   /** The book's outline, handed to the engine as `content.outline` — only
    *  for a chapter printing the contents (`:::toc`), which depends on the
-   *  headings and pages of every chapter. */
+   *  headings and pages of every chapter, or the index (`:::index`), which
+   *  depends on the index marks and pages of every chapter. */
   outline?: OutlineEntry[];
   /** Fingerprint of `outline` (`''` when the chapter prints no contents). */
   outlineKey: string;

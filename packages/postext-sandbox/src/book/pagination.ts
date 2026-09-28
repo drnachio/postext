@@ -5,7 +5,7 @@
 // preceding chapter, recorded as a `ChapterLayout`). Page numbers thus run
 // on across chapters without ever laying out the whole book in a preview.
 
-import { configUsesPlaceholder, contentOutline, continuationAfter, formatNumeral, outlineFromDoc, outlineKey, resolvePageConfig } from 'postext';
+import { configUsesPlaceholder, contentOutline, continuationAfter, formatNumeral, indexOutline, outlineFromDoc, outlineKey, resolvePageConfig, tocOutline } from 'postext';
 import type { LayoutContinuation, NumeralStyle, OutlineEntry, PostextConfig, Resource, VDTDocument } from 'postext';
 import type { BookPages, BookPlan, Chapter, ChapterLayout, ChapterPageNumber, ChapterPages, ChapterPlan, OutlinePage } from './types';
 import { ENGINE_KEY, configKeyOf, resourcesKeyOf } from './layoutKeys';
@@ -48,7 +48,13 @@ function placeOutline(text: readonly OutlineEntry[], pages: readonly (OutlinePag
   return text.map((entry, i) => {
     const page = pages[i];
     if (!page) return entry;
-    return { ...entry, pageLabel: formatNumeral(resolvePageNumber(page.number, start.number), page.format), pageIndex: start.physical + page.index };
+    return {
+      ...entry,
+      pageLabel: formatNumeral(resolvePageNumber(page.number, start.number), page.format),
+      pageIndex: start.physical + page.index,
+      // An index merges consecutive pages of one format into a range.
+      ...(entry.kind === 'indexMark' ? { pageFormat: page.format } : {}),
+    };
   });
 }
 
@@ -77,6 +83,8 @@ interface CountersEntry {
   outline: OutlineEntry[];
   /** Whether the chapter prints the contents (`:::toc`). */
   hasToc: boolean;
+  /** Whether the chapter prints the index (`:::index`). */
+  hasIndex: boolean;
 }
 
 export interface BookPlanner {
@@ -224,7 +232,7 @@ export function createBookPlanner(): BookPlanner {
       return hit;
     }
     const after = continuationAfter({ markdown: chapter.markdown, resources }, config, before);
-    const { outline, hasToc } = contentOutline({ markdown: chapter.markdown }, config, before);
+    const { outline, hasToc, hasIndex } = contentOutline({ markdown: chapter.markdown }, config, before);
     const entry: CountersEntry = {
       markdown: chapter.markdown,
       config,
@@ -235,6 +243,7 @@ export function createBookPlanner(): BookPlanner {
       key: countersKey(after),
       outline,
       hasToc,
+      hasIndex,
     };
     cache.set(chapter.id, entry);
     return entry;
@@ -299,10 +308,11 @@ export function createBookPlanner(): BookPlanner {
 
       // The book's outline: every chapter's headings and parts, with the
       // page labels of the chapters the chain places (their records say
-      // where each entry landed within the chapter). A chapter printing the
-      // contents (`:::toc`) is laid out with it; when it changes, that
+      // where each entry landed within the chapter), and their index marks.
+      // A chapter printing the contents (`:::toc`) or the index
+      // (`:::index`) is laid out with it; when what it prints changes, that
       // chapter's record goes stale — its pages hold, its rows do not.
-      const anyToc = entries.some((e) => e.hasToc);
+      const anyToc = entries.some((e) => e.hasToc || e.hasIndex);
       /** The first content page of the chapters from `index` on (an empty
        *  chapter holds none), while the chain places them. */
       const firstContentPageFrom = (index: number): { pageLabel: string; pageIndex: number } | null => {
@@ -336,7 +346,22 @@ export function createBookPlanner(): BookPlanner {
           });
         })
         : [];
-      const bookOutlineKey = anyToc ? outlineKey(bookOutline) : '';
+      // The contents read the headings and parts, the index the index
+      // marks: a chapter printing one goes stale only when what it prints
+      // moves.
+      const outlines = anyToc
+        ? { toc: tocOutline(bookOutline), index: indexOutline(bookOutline) }
+        : { toc: [], index: [] };
+      const printedKeys = { toc: '', index: '' };
+      if (entries.some((e) => e.hasToc)) printedKeys.toc = outlineKey(outlines.toc);
+      if (entries.some((e) => e.hasIndex)) printedKeys.index = outlineKey(outlines.index);
+      /** The outline a chapter is laid out with, and its key. */
+      const chapterOutline = (entry: CountersEntry): { outline?: OutlineEntry[]; key: string } => {
+        if (entry.hasToc && entry.hasIndex) return { outline: bookOutline, key: `${printedKeys.toc}\n\n${printedKeys.index}` };
+        if (entry.hasToc) return { outline: outlines.toc, key: printedKeys.toc };
+        if (entry.hasIndex) return { outline: outlines.index, key: printedKeys.index };
+        return { key: '' };
+      };
 
       const plans: ChapterPlan[] = [];
       const byId: Record<string, ChapterPlan> = {};
@@ -355,8 +380,7 @@ export function createBookPlanner(): BookPlanner {
             ...(pages ? { pageIndexOffset: pages.physical, pageNumbering: { format: pages.format, startAt: pages.number } } : {}),
             ...total,
           };
-        const hasToc = entries[index]!.hasToc;
-        const chapterOutlineKey = hasToc ? bookOutlineKey : '';
+        const { outline: printedOutline, key: chapterOutlineKey } = chapterOutline(entries[index]!);
         const layout = records[index]!;
         const outlineStale = layout !== null && layout.outlineKey !== chapterOutlineKey;
         if (outlineStale && stalePendingId === null) stalePendingId = chapter.id;
@@ -369,7 +393,7 @@ export function createBookPlanner(): BookPlanner {
           continuationKey: keys[index]!,
           layout,
           outlineStale,
-          ...(hasToc ? { outline: bookOutline } : {}),
+          ...(printedOutline ? { outline: printedOutline } : {}),
           outlineKey: chapterOutlineKey,
         };
         plans.push(plan);
