@@ -6,9 +6,10 @@
 Prints what the design analysis needs, per format:
   PDF   page count, trim/media boxes (mm), fonts (embedded/subset), the most used
         font/size/colour styles with samples, images and vector-heavy pages,
-        text-less pages (scans -> OCR), outline (bookmarks)
+        text-less pages (scans -> OCR), outline (bookmarks), printed index pages
   DOCX  page size, margins, columns (per section), paragraph/character styles in
-        use with counts, fonts, tables, images, footnotes, equations, headers
+        use with counts, fonts, tables, images, footnotes, equations, headers,
+        index entries (XE fields)
   PPTX  slide size, slide count, layouts, fonts, pictures, tables, notes
   ODT   styles in use, fonts, images
   EPUB  spine (reading order), nav, CSS fonts and @font-face, images
@@ -116,7 +117,28 @@ def inv_pdf(path: Path, pages_spec: str | None) -> dict:
     toc = doc.get_toc()
     if toc:
         out["outline"] = [{"level": l, "title": t, "page": p} for l, t, p in toc[:120]]
+    idx = index_pages(doc)
+    if idx:
+        out["index_pages"] = idx
+        out["note_index"] = ("a printed back-of-book index: rebuild it as :index marks with "
+                             f"index_marks.py parse SOURCE --pages {idx[0]}-{idx[-1]} (playbooks A10)")
     return out
+
+
+def index_pages(doc) -> list[int]:
+    """1-based pages in the last fifth of the book that read like an index:
+    short lines, most of them ending in page numbers."""
+    loc = re.compile(r"(?:,|\s)\s*\d{1,4}[a-z]{0,2}(?:\s*[–-]\s*\d{1,4})?\.?$")
+    found = []
+    for i in range(int(doc.page_count * 0.8), doc.page_count):
+        lines = [l.strip() for l in doc[i].get_text().splitlines() if l.strip()]
+        if len(lines) < 15:
+            continue
+        ends = sum(1 for l in lines if loc.search(l))
+        short = sorted(len(l) for l in lines)[len(lines) // 2] < 45
+        if short and ends > len(lines) * 0.4:
+            found.append(i + 1)
+    return found
 
 
 # ---------------------------------------------------------------------------
@@ -186,6 +208,7 @@ def inv_docx(path: Path) -> dict:
         "images": len([n for n in names_list if n.startswith("word/media/")]),
         "media_types": dict(Counter(Path(n).suffix.lower() for n in names_list if n.startswith("word/media/"))),
         "footnotes": max(0, len(re.findall(r"<w:footnote ", z.read("word/footnotes.xml").decode("utf8", "ignore"))) - 2) if "word/footnotes.xml" in names_list else 0,
+        "index_entries": len(re.findall(r"<w:instrText[^>]*>\s*XE\b", z.read("word/document.xml").decode("utf8", "ignore"))),
         "equations": sum(1 for el in doc.iter() if local(el.tag) == "oMath"),
         "headers_footers": [n for n in names_list if re.match(r"word/(header|footer)\d+\.xml", n)],
         "next": "pandoc_to_postext.py SOURCE --dump-styles, then a --style-map for the styles above",
@@ -336,6 +359,7 @@ def inv_idml(path: Path) -> dict:
     out["tables"] = tables
     out["largest_stories"] = [{"story": k, "chars": v} for k, v in chars.most_common(8)]
     out["links"] = len([el for s in spreads for el in ET.fromstring(z.read(s)).iter() if local(el.tag) == "Link"])
+    out["index_page_references"] = sum(z.read(s).count(b"<PageReference ") for s in stories)
     out["next"] = "idml_extract.py roles SOURCE, then idml_extract.py markdown SOURCE --map map.json; positions come from the printed PDF"
     return out
 
@@ -355,6 +379,7 @@ def inv_text(path: Path) -> dict:
         out["figures"] = text.count("\\begin{figure")
         out["tables"] = text.count("\\begin{table")
         out["equations"] = len(re.findall(r"\\begin\{(equation|align|gather)", text))
+        out["index_entries"] = len(re.findall(r"\\index\s*(?:\[[^\]]*\])?\{", text))
     else:
         heads = re.findall(r"^(#{1,6})\s+(.+)$", text, re.M)
         out["outline"] = [{"level": len(h), "title": t[:70]} for h, t in heads][:150]

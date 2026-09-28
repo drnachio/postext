@@ -12,6 +12,7 @@ Fix every ERROR. Common ones:
 
 - pipe tables, code fences or `---` left over from CommonMark;
 - a `[^id]` marker with no `[^id]:` definition, or a marker in a heading (prints as written);
+- index marks: no term, an unpaired `range`, a `see`/`seealso` target that is no entry, a mark right after a colon or in a caption/cell, marks with no `:::index` to print them;
 - a `::resource` or ordered list glued to the paragraph above, or a `$$` fence glued there that does not close before the next blank line;
 - unknown callout types, paragraph styles, heading styles or resource ids;
 - a bitmap without `width`/`height`;

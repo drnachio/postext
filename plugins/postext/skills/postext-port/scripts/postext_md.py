@@ -298,6 +298,43 @@ def ref(rid: str, style: str | None = None, case: str | None = None) -> str:
     return f':ref{{id="{rid}"{extra}}}'
 
 
+def index_mark(path: list[str], *, sort: str | None = None, main: bool = False, see: list[str] | None = None,
+               seealso: list[str] | None = None, range_: str | None = None, index: str | None = None) -> str:
+    """`:index{term="A!b" …}`: a back-of-book index mark that prints nothing
+    (postext >= 1.7). `path` holds the entry's levels; `!` inside a level
+    would start a new one, so it becomes `ǃ` (U+01C3). `see`/`seealso` are
+    target paths; `range_` is "start" or "end". Empty string when `path` has
+    no text."""
+    def levels(p: list[str]) -> str:
+        return "!".join(attr_value(x).replace("!", "ǃ").strip() for x in p if x and x.strip())
+    term = levels(path)
+    if not term:
+        return ""
+    out = f'term="{term}"'
+    if sort:
+        out += f' sort="{attr_value(sort)}"'
+    if see:
+        out += f' see="{levels(see)}"'
+    if seealso:
+        out += f' seealso="{levels(seealso)}"'
+    if range_ in ("start", "end"):
+        out += f' range="{range_}"'
+    if index:
+        out += f' index="{attr_value(index)}"'
+    if main:
+        out += " main"
+    return f":index{{{out}}}"
+
+
+_MARKS_AFTER_COLON_RE = re.compile(r"(?<=[^\s:]):((?::index\{[^}\n]*\})+)")
+
+
+def fix_index_marks(text: str) -> str:
+    """Move `:index{…}` marks written right after a colon (`word::index{…}`,
+    which the parser does not read as a mark) in front of it."""
+    return _MARKS_AFTER_COLON_RE.sub(r"\1:", text)
+
+
 _LINK_SCHEMES = ("http:", "https:", "mailto:", "tel:", "ftp:")
 
 
