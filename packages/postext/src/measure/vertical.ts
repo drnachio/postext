@@ -158,17 +158,20 @@ export function clearCentralBaselineCache(): void {
 /**
  * Where the ideographic em box's centre sits above the alphabetic baseline
  * of `family`, in ems: the axis upright characters are centred on. Read
- * from the ink of 國 (a character that fills its em box) at 100 px — the
- * centre of its ink is the centre of the em box within a few hundredths of
- * an em in every CJK face tried — and kept between 0.25 and 0.5 em; a
- * measurer with no ink metrics, or a face without the character, gives
- * {@link DEFAULT_CENTRAL_BASELINE}.
+ * from the ink of 中 at 100 px, whose long stroke runs the height of the
+ * em box: the centre of its ink is the centre of the box within a few
+ * hundredths of an em (0.380 in Noto Serif and Sans SC and TC, whose box
+ * centre is 0.38; 0.357 in LXGW WenKai) — and every Chinese, Japanese and
+ * Korean face has the character, where a face for one script lacks the
+ * other's (國 is not in a Simplified Chinese font: the canvas measured a
+ * fallback face's, 0.04 em off). Kept between 0.25 and 0.5 em; a measurer
+ * with no ink metrics gives {@link DEFAULT_CENTRAL_BASELINE}.
  */
 export function measureCentralBaseline(family: string): number {
   const hit = centralCache.get(family);
   if (hit !== undefined) return hit;
   let value = DEFAULT_CENTRAL_BASELINE;
-  const box = measureInkBox('國', `100px ${/^[\w -]+$/.test(family) && !/^\d/.test(family) ? family : JSON.stringify(family)}`);
+  const box = measureInkBox('中', `100px ${/^[\w -]+$/.test(family) && !/^\d/.test(family) ? family : JSON.stringify(family)}`);
   if (box && box.ascent + box.descent > 60) {
     const centre = (box.ascent - box.descent) / 2 / 100;
     if (centre >= 0.25 && centre <= 0.5) value = Math.round(centre * 1000) / 1000;

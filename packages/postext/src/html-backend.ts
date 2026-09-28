@@ -643,11 +643,21 @@ function verticalTextHtml(text: string, v: VerticalHtml, orient?: ForcedOrientat
   if (orient === 'tcy') return `<span style="text-combine-upright:all;">${esc(text)}</span>`;
   if (orient === 'upright') return `<span style="text-orientation:upright;">${esc(text)}</span>`;
   if (orient === 'sideways') return `<span style="text-orientation:sideways;">${esc(text)}</span>`;
-  if (v.uprightDigits === 0 || !/[0-9]/.test(text)) return esc(text);
+  const digits = v.uprightDigits > 0 && /[0-9]/.test(text);
+  const dashes = DASH_RE.test(text);
+  if (!digits && !dashes) return esc(text);
   const runs = verticalRuns(graphemesOf(text), v.region, v.uprightDigits);
-  if (!runs.some((r) => r.glyph.orient === 'tcy')) return esc(text);
-  return runs.map((r) => (r.glyph.orient === 'tcy' ? `<span style="text-combine-upright:all;">${esc(r.text)}</span>` : esc(r.text))).join('');
+  if (!runs.some((r) => r.glyph.orient === 'tcy' || r.glyph.stretch)) return esc(text);
+  // A number in one cell combined upright; a dash turned at the full width
+  // of its cell (the font's full-width form, as the canvas stretches it:
+  // Noto's — is 0.89 em).
+  return runs.map((r) => (r.glyph.orient === 'tcy'
+    ? `<span style="text-combine-upright:all;">${esc(r.text)}</span>`
+    : r.glyph.stretch ? `<span style="font-variant-east-asian:full-width;">${esc(r.text)}</span>` : esc(r.text))).join('');
 }
+
+/** Dashes a vertical line sets turned at the full width of their cell. */
+const DASH_RE = /[\u2013\u2014\u2015\u2E3A\u2E3B]/;
 
 /**
  * A box of the turned flow (`left`, `top`, `width` along the line,

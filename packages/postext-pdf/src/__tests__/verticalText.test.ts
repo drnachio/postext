@@ -164,6 +164,23 @@ describe('vertical text in the PDF (#191)', () => {
     }
   });
 
+  it('sets a dash in its vertical form, one per cell (vert with fwid)', async () => {
+    const { pdf } = await render('此——也', config('zh-Hant'));
+    const fonts = pageFonts(pdf);
+    const shows = uprightShows(pageOps(pdf), fonts);
+    const embedded = embeddedFace(pdf, fonts.get(shows[0]!.font)!);
+    const rule = (cid: number) => {
+      const b = embedded.getGlyph(cid).bbox;
+      return b.maxY - b.minY > 700 && b.maxX - b.minX < 100;
+    };
+    const dashes = shows.filter((s) => s.cids.length === 1 && rule(s.cids[0]!));
+    // Two shows of one glyph each: a rule down the middle of its cell.
+    expect(dashes).toHaveLength(2);
+    const bbox = embedded.getGlyph(dashes[0]!.cids[0]!).bbox;
+    expect((bbox.minX + bbox.maxX) / 2).toBeCloseTo(500, -1);
+    expect(dashes[1]!.tm[4]! - dashes[0]!.tm[4]!).toBeCloseTo(16, 3);
+  });
+
   it('places the pen so every em box is centred on the column axis, one em apart', async () => {
     const { doc, pdf } = await render('此開卷也', config('zh-Hant'));
     const page = doc.pages[0]!;

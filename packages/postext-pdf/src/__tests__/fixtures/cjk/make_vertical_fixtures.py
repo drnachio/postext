@@ -2,7 +2,7 @@
 """Rebuild the fonts of the vertical-text tests (#191).
 
 Noto Serif TC and Noto Serif SC 400 (SIL OFL 1.1, see OFL.txt), cut down to
-the characters of TEXT with their OpenType `vert` forms (and `vhea`, `vmtx`)
+the characters of TEXT with their OpenType `vert` and `fwid` forms (and `vhea`, `vmtx`)
 kept, so a test can check that a PDF sets brackets, quotes and the mainland
 pause marks in their vertical forms.
 
@@ -25,7 +25,7 @@ TEXT = ('此開卷第一回也作者自云因曾歷過一番夢幻之後故將�
 
 def build(src, dst):
     opts = subset.Options()
-    opts.layout_features = ['vert', 'vrt2', 'kern', 'liga', 'ccmp', 'locl']
+    opts.layout_features = ['vert', 'vrt2', 'fwid', 'kern', 'liga', 'ccmp', 'locl']
     opts.drop_tables += ['DSIG']
     opts.name_IDs = ['*']
     opts.notdef_outline = True

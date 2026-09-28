@@ -99,7 +99,8 @@ interface UprightShow {
   file: PDFFont;
   twin: VerticalTwin;
   text: string;
-  vert: boolean;
+  /** Shaped in the font's vertical forms (else as it is). */
+  vertical: boolean;
 }
 
 /**
@@ -168,7 +169,7 @@ export function drawVerticalTextPx(
       useFont(twinKeyOn(ctx.page, show.file, show.twin));
       useTc(0);
       noteMissingGlyphs(show.file, show.text);
-      const { hex } = show.twin.encode(show.text, show.vert);
+      const { hex } = show.twin.encode(show.text, show.vertical);
       body.push(setTextMatrix(0, 1, -1, 0, X(cellStart + penOffset), Y(axis)));
       const count = hex.length / 4;
       if (trackTj === 0 || count === 1) {
@@ -185,14 +186,14 @@ export function drawVerticalTextPx(
     }
     pending = [];
   };
-  const queueUpright = (g: string, at: number, vert: boolean): void => {
+  const queueUpright = (g: string, at: number, vertical: boolean): void => {
     if (pending.length === 0) pendingStart = at;
     for (const { font: file, text: part } of fileRuns(font, g)) {
       const twin = verticalTwinOf(file);
       if (!twin) continue;
       const last = pending[pending.length - 1];
-      if (last && last.file === file && last.vert === vert) last.text += part;
-      else pending.push({ file, twin, text: part, vert });
+      if (last && last.file === file && last.vertical === vertical) last.text += part;
+      else pending.push({ file, twin, text: part, vertical });
     }
   };
 
@@ -221,10 +222,15 @@ export function drawVerticalTextPx(
     }
     const cell = em * run.cell;
     const kind = cellKind(run.glyph, run.text, font);
-    if (kind === 'upright' || kind === 'alternate') {
+    if (kind === 'upright' || kind === 'alternate' || kind === 'dash') {
       // A character that stands upright as it is keeps its horizontal
-      // glyph, as on the canvas; a vertical form comes from `vert`.
-      queueUpright(run.text, cx, kind === 'alternate');
+      // glyph, as on the canvas; a vertical form comes from `vert` (with
+      // `fwid` for a dash whose form Noto keys to both).
+      // A dash is shaped alone: `fwid` with `vert` would join two of them
+      // into one long glyph where the canvas sets one per cell.
+      if (kind === 'dash') flushUpright();
+      queueUpright(run.text, cx, kind !== 'upright');
+      if (kind === 'dash') flushUpright();
       cx += cell + tracking;
       continue;
     }
@@ -235,12 +241,15 @@ export function drawVerticalTextPx(
       const k = w > em ? em / w : 1;
       drawHorizontal(run.text, [0, k, -1, 0, X(cx + em / 2) + centralPx * scale, Y(axis) - (k * w * scale) / 2], 0);
     } else if (kind === 'rotate') {
-      // Turned with the frame about the em box's centre; a dash stretched
-      // to fill its cell.
+      // Turned with the frame; a dash stretched to fill its cell. A bracket
+      // or a quote turns about the em box's centre, so it hugs the character
+      // it belongs to; a dash, an ellipsis, an interpunct is centred on the
+      // axis by its ink, as on the canvas.
       const char = run.glyph.orient === 'alternate' && run.glyph.substitute ? run.glyph.substitute : run.text;
       const w = textAdvancePx(font, char, sizePx).advance;
       const k = run.glyph.stretch && w > 0 && w < cell ? cell / w : 1;
-      drawHorizontal(char, [k, 0, 0, 1, X(cx + cell / 2 - (k * w) / 2), Y(axis + centralPx)], 0);
+      const lift = run.glyph.orient === 'rotate' ? inkLiftPx(font, char, sizePx) ?? centralPx : centralPx;
+      drawHorizontal(char, [k, 0, 0, 1, X(cx + cell / 2 - (k * w) / 2), Y(axis + lift)], 0);
     } else {
       // A mainland pause mark the font has no vertical form for: the
       // upright glyph moved to the top right of its cell.
@@ -280,13 +289,27 @@ export function drawVerticalTextPx(
   );
 }
 
+/** How far above the baseline the ink of `ch` is centred, px, as the face
+ *  of `font` that has it draws it (undefined when it has no ink). */
+function inkLiftPx(font: PDFFont, ch: string, sizePx: number): number | undefined {
+  const file = fileRuns(font, ch)[0]?.font ?? font;
+  const face = (file as unknown as { embedder?: { font?: { unitsPerEm: number; layout(t: string): { glyphs: Array<{ bbox?: { minY: number; maxY: number } }> } } } }).embedder?.font;
+  const bbox = face?.layout(ch).glyphs[0]?.bbox;
+  if (!face || !bbox || !Number.isFinite(bbox.minY) || !(bbox.maxY > bbox.minY)) return undefined;
+  return ((bbox.minY + bbox.maxY) / 2 / face.unitsPerEm) * sizePx;
+}
+
 /** How a cell is drawn: upright through the vertical twin, as it is
- *  (`upright`) or in the font's vertical form (`alternate`); turned about
- *  its em box; moved to the corner of its cell (a mainland pause mark the
- *  font has no vertical form for); or as a number set in one cell. */
-function cellKind(glyph: VerticalGlyph, ch: string, font: PDFFont): 'upright' | 'alternate' | 'rotate' | 'corner' | 'tcy' {
+ *  (`upright`), in the font's vertical form (`alternate`), or a dash, an
+ *  ellipsis or a wave dash in its vertical form (`dash`); turned; moved to
+ *  the corner of its cell (a mainland pause mark the font has no vertical
+ *  form for); or as a number set in one cell. */
+function cellKind(glyph: VerticalGlyph, ch: string, font: PDFFont): 'upright' | 'alternate' | 'dash' | 'rotate' | 'corner' | 'tcy' {
   if (glyph.orient === 'tcy') return 'tcy';
-  if (glyph.orient === 'rotate') return 'rotate';
+  if (glyph.orient === 'rotate') {
+    const file = fileRuns(font, ch)[0]?.font ?? font;
+    return verticalTwinOf(file)?.hasVerticalForm(ch) ? 'dash' : 'rotate';
+  }
   if (glyph.orient === 'alternate') {
     const file = fileRuns(font, ch)[0]?.font ?? font;
     if (verticalTwinOf(file)?.hasVerticalForm(ch)) return 'alternate';

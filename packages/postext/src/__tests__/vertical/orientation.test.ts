@@ -20,7 +20,7 @@ class Ctx {
       else if (ch === ' ') w += 0.25 * em;
       else w += cp >= 0x2e80 || ch === '…' ? em : 0.5 * em;
     }
-    // The ink of 國 in a face whose em box runs from −0.1 to 0.9 em.
+    // The ink of 中 in a face whose em box runs from −0.1 to 0.9 em.
     return { width: w, actualBoundingBoxAscent: em * 0.86, actualBoundingBoxDescent: em * 0.06 } as TextMetrics;
   }
 }
@@ -151,7 +151,7 @@ describe('vertical measurement', () => {
     expect(measure()).toBeCloseTo(h);
   });
 
-  it('measures the central baseline of a family from the ink of 國', () => {
+  it('measures the central baseline of a family from the ink of 中', () => {
     // (0.86 − 0.06) / 2 = 0.4 em above the baseline.
     expect(measureCentralBaseline('Test Serif')).toBeCloseTo(0.4);
     expect(fontFamilyOf('bold italic 12.5px "Noto Serif TC", serif')).toBe('Noto Serif TC');

@@ -56,11 +56,14 @@ interface Embedder {
  *  upright text into the shared glyph ids. */
 export interface VerticalTwin {
   ref: PDFRef;
-  /** The hex glyph codes of `text`, shaped with `vert` (the font's
-   *  vertical forms) unless `vert` is false, and the shaped glyphs (their
-   *  ids in the face). */
-  encode(text: string, vert?: boolean): { hex: string; glyphs: ShapedGlyph[] };
-  /** Whether `vert` gives `ch` a glyph of its own (a vertical form). */
+  /** The hex glyph codes of `text` and the shaped glyphs (their ids in the
+   *  face): in the font's vertical forms (OpenType `vert` with `fwid`, as
+   *  the canvas's twin face sets them: Noto CJK keys the vertical form of
+   *  its dashes to both, and the marks are full-width already), or as it
+   *  is when `vertical` is false. */
+  encode(text: string, vertical?: boolean): { hex: string; glyphs: ShapedGlyph[] };
+  /** Whether the font has a vertical form for `ch`: a glyph `vert` gives
+   *  on top of what `fwid` alone gives. */
   hasVerticalForm(ch: string): boolean;
 }
 
@@ -109,12 +112,16 @@ export function verticalTwinOf(font: PDFFont): VerticalTwin | undefined {
     }));
     return written;
   };
-  const features = verticalFeatures(embedder.fontFeatures);
+  const plain = embedder.fontFeatures;
+  const withFwid = (f: unknown): unknown => (Array.isArray(f) ? [...new Set([...f, 'fwid'])] : { ...((f as Record<string, boolean> | undefined) ?? {}), fwid: true });
+  const vertical = withFwid(verticalFeatures(plain));
+  const fullWidth = withFwid(plain);
+  const idsOf = (ch: string, features: unknown): string => embedder.font.layout(ch, features).glyphs.map((g) => g.id).join(',');
   const formCache = new Map<string, boolean>();
   const twin: VerticalTwin = {
     ref,
-    encode(text, vert = true) {
-      const glyphs = embedder.font.layout(text, vert ? features : embedder.fontFeatures).glyphs;
+    encode(text, upright = true) {
+      const glyphs = embedder.font.layout(text, upright ? vertical : plain).glyphs;
       let hex = '';
       for (const g of glyphs) {
         let id = g.id;
@@ -133,11 +140,10 @@ export function verticalTwinOf(font: PDFFont): VerticalTwin | undefined {
     hasVerticalForm(ch) {
       const hit = formCache.get(ch);
       if (hit !== undefined) return hit;
-      const v = embedder.font.layout(ch, features).glyphs.map((g) => g.id).join(',');
-      const h = embedder.font.layout(ch, embedder.fontFeatures).glyphs.map((g) => g.id).join(',');
-      const differs = v !== h;
-      formCache.set(ch, differs);
-      return differs;
+      const v = idsOf(ch, vertical);
+      const has = v !== idsOf(ch, plain) && v !== idsOf(ch, fullWidth);
+      formCache.set(ch, has);
+      return has;
     },
   };
   twins.set(font, twin);
