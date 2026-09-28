@@ -1392,7 +1392,7 @@ When text alignment is set to `'justify'`, hyphenation prevents excessive word s
 
 **Supported locales:** `'en-us'` (English), `'es'` (Spanish), `'fr'` (French), `'de'` (German), `'it'` (Italian), `'pt'` (Portuguese), `'ca'` (Catalan), `'nl'` (Dutch).
 
-Region, script and variant subtags are ignored when the patterns are picked, and so are letter case and `_` separators: `'es-ES'`, `'es-MX'` and `'es_419'` hyphenate with `'es'`, `'pt-BR'` with `'pt'`, and every English tag (`'en'`, `'en-GB'`) with `'en-us'` — the only English patterns bundled, so British text gets American breaks. A language with no bundled patterns (`'sv'`, `'pl'`, `'ja'`…) is hyphenated with the `'en-us'` patterns, which gives wrong breaks rather than none; the engine reports it once per tag with a `console.warn`, and the Sandbox lists it in its Checks panel. Set `enabled: false` for such a document; that silences the warning too. Chinese, Japanese and Korean (`zh`, `ja`, `ko`, whatever the region or script) need no patterns and print no warning: a document in one of them is set without hyphenation unless `enabled` is `true`, and then only the Latin words quoted in it are divided, with the patterns `locale` names here (`'en-us'` for English). `matchHyphenationLocale(tag)` returns the bundled locale a tag maps to (`undefined` when there is none), and `HYPHENATION_LOCALES` lists the bundled ones. The resolved configuration (`doc.config.bodyText.hyphenation`) names the patterns actually used in `locale`, and keeps the tag you gave in `tag` when it differs; the PDF backend declares that tag as the document language.
+Region, script and variant subtags are ignored when the patterns are picked, and so are letter case and `_` separators: `'es-ES'`, `'es-MX'` and `'es_419'` hyphenate with `'es'`, `'pt-BR'` with `'pt'`, and every English tag (`'en'`, `'en-GB'`) with `'en-us'` — the only English patterns bundled, so British text gets American breaks. A language with no bundled patterns (`'sv'`, `'pl'`, `'fi'`…) is hyphenated with the `'en-us'` patterns, which gives wrong breaks rather than none; the engine reports it once per tag with a `console.warn`, and the Sandbox lists it in its Checks panel. Set `enabled: false` for such a document; that silences the warning too. Chinese, Japanese and Korean (`zh`, `ja`, `ko`, whatever the region or script) need no patterns and print no warning: a document in one of them is set without hyphenation. To divide the Latin words quoted in it, set `enabled: true` and name their language in `locale` (`'en-us'` for English). `enabled: true` with no `locale`, or with a Chinese, Japanese or Korean one, leaves hyphenation off and says so once on the console. `matchHyphenationLocale(tag)` returns the bundled locale a tag maps to (`undefined` when there is none), and `HYPHENATION_LOCALES` lists the bundled ones. The resolved configuration (`doc.config.bodyText.hyphenation`) names the patterns actually used in `locale`, and keeps the tag you gave in `tag` when it differs. The PDF backend declares the document language from the top-level `locale`, and from this tag only when `locale` is unset (see [Document language](#document-language)).
 
 ```ts
 import { matchHyphenationLocale } from 'postext';
@@ -3315,7 +3315,7 @@ const config: PostextConfig = {
       <td><code>continuedSuffix</code></td>
       <td><code>string</code></td>
       <td><code>'(cont.)'</code></td>
-      <td>Appended, in italics, to the caption of every continued part of a split table.</td>
+      <td>Appended, in italics, to the caption of every continued part of a split table, after a space; a suffix that opens with a Chinese or fullwidth character (<code>'（续）'</code>) is set solid against the caption.</td>
     </tr>
     <tr>
       <td><code>continuesMarkerEnabled</code></td>
@@ -4313,7 +4313,7 @@ The glass stays hot for an hour after the flame is out.
       <td><code>continuedSuffix</code></td>
       <td><code>string</code></td>
       <td><code>'(cont.)'</code></td>
-      <td>Text after the repeated title, in the document language (<code>locale</code>, else the hyphenation locale), like a split table's.</td>
+      <td>Text after the repeated title, in the document language (<code>locale</code>, else the hyphenation locale), like a split table's, and joined to the title as a table's is.</td>
     </tr>
     <tr>
       <td><code>continuesMarkerEnabled</code></td>

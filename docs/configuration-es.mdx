@@ -1392,7 +1392,7 @@ Cuando la alineación del texto está configurada como `'justify'`, la separaci�
 
 **Idiomas soportados:** `'en-us'` (inglés), `'es'` (español), `'fr'` (francés), `'de'` (alemán), `'it'` (italiano), `'pt'` (portugués), `'ca'` (catalán), `'nl'` (neerlandés).
 
-Para elegir los patrones se ignoran las subetiquetas de región, escritura y variante, las mayúsculas y los separadores `_`: `'es-ES'`, `'es-MX'` y `'es_419'` se dividen con `'es'`, `'pt-BR'` con `'pt'` y cualquier etiqueta inglesa (`'en'`, `'en-GB'`) con `'en-us'`, los únicos patrones ingleses incluidos, de modo que el texto británico recibe los cortes estadounidenses. Un idioma sin patrones incluidos (`'sv'`, `'pl'`, `'ja'`…) se divide con los de `'en-us'`, lo que da cortes equivocados en lugar de ninguno; el motor lo avisa una vez por etiqueta con un `console.warn`, y el Sandbox lo muestra en su panel de revisión. Para un documento así, fija `enabled: false`; eso también acalla el aviso. El chino, el japonés y el coreano (`zh`, `ja`, `ko`, con cualquier región o escritura) no necesitan patrones ni imprimen aviso: un documento en uno de ellos se compone sin separación silábica salvo que `enabled` sea `true`, y entonces solo se dividen las palabras latinas que cita, con los patrones que nombra aquí `locale` (`'en-us'` para el inglés). `matchHyphenationLocale(tag)` devuelve el idioma incluido al que corresponde una etiqueta (`undefined` si no hay ninguno), y `HYPHENATION_LOCALES` enumera los incluidos. La configuración resuelta (`doc.config.bodyText.hyphenation`) nombra en `locale` los patrones que se usan de verdad y conserva en `tag` la etiqueta que diste cuando es distinta; el backend PDF declara esa etiqueta como idioma del documento.
+Para elegir los patrones se ignoran las subetiquetas de región, escritura y variante, las mayúsculas y los separadores `_`: `'es-ES'`, `'es-MX'` y `'es_419'` se dividen con `'es'`, `'pt-BR'` con `'pt'` y cualquier etiqueta inglesa (`'en'`, `'en-GB'`) con `'en-us'`, los únicos patrones ingleses incluidos, de modo que el texto británico recibe los cortes estadounidenses. Un idioma sin patrones incluidos (`'sv'`, `'pl'`, `'fi'`…) se divide con los de `'en-us'`, lo que da cortes equivocados en lugar de ninguno; el motor lo avisa una vez por etiqueta con un `console.warn`, y el Sandbox lo muestra en su panel de revisión. Para un documento así, fija `enabled: false`; eso también acalla el aviso. El chino, el japonés y el coreano (`zh`, `ja`, `ko`, con cualquier región o escritura) no necesitan patrones ni imprimen aviso: un documento en uno de ellos se compone sin separación silábica. Para dividir las palabras latinas que cita, fija `enabled: true` y nombra su idioma en `locale` (`'en-us'` para el inglés). Con `enabled: true` sin `locale`, o con uno chino, japonés o coreano, la separación sigue desactivada y la consola lo avisa una vez. `matchHyphenationLocale(tag)` devuelve el idioma incluido al que corresponde una etiqueta (`undefined` si no hay ninguno), y `HYPHENATION_LOCALES` enumera los incluidos. La configuración resuelta (`doc.config.bodyText.hyphenation`) nombra en `locale` los patrones que se usan de verdad y conserva en `tag` la etiqueta que diste cuando es distinta. El backend PDF declara el idioma del documento a partir de `locale`, en la raíz de la configuración, y solo usa esta etiqueta cuando `locale` falta (consulta [Idioma del documento](#idioma-del-documento)).
 
 ```ts
 import { matchHyphenationLocale } from 'postext';
@@ -3315,7 +3315,7 @@ const config: PostextConfig = {
       <td><code>continuedSuffix</code></td>
       <td><code>string</code></td>
       <td><code>'(cont.)'</code></td>
-      <td>Se añade, en cursiva, al pie de cada parte continuada de una tabla dividida.</td>
+      <td>Se añade, en cursiva, al pie de cada parte continuada de una tabla dividida, tras un espacio; un sufijo que empieza por un carácter chino o de ancho completo (<code>'（续）'</code>) va pegado al pie.</td>
     </tr>
     <tr>
       <td><code>continuesMarkerEnabled</code></td>
@@ -4313,7 +4313,7 @@ El cristal sigue caliente una hora después de apagar la llama.
       <td><code>continuedSuffix</code></td>
       <td><code>string</code></td>
       <td><code>'(cont.)'</code></td>
-      <td>Texto tras el título repetido, en el idioma del documento (<code>locale</code> o, si no, el de la separación silábica), como el de una tabla partida.</td>
+      <td>Texto tras el título repetido, en el idioma del documento (<code>locale</code> o, si no, el de la separación silábica), como el de una tabla partida, y unido al título igual que en ella.</td>
     </tr>
     <tr>
       <td><code>continuesMarkerEnabled</code></td>
