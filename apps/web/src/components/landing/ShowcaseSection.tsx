@@ -28,7 +28,17 @@ function bundleVersion(dir: string): string {
   }
 }
 
-/** Bundle descriptions are written "Spanish · English". */
+/** The cover for the page locale: `thumbnail-<lang>.jpg` next to the
+ *  default thumbnail when the bundle has one (the default cover is set in
+ *  the bundle's own language), else the default. */
+function localizedThumbnail(dir: string, thumbnail: string, lang: string): string {
+  const localized = thumbnail.replace(/(\.[a-z]+)$/i, `-${lang}$1`);
+  return fs.existsSync(path.join(process.cwd(), "public/presets", dir, localized)) ? localized : thumbnail;
+}
+
+/** Bundle descriptions are written "Spanish · English". Book titles are
+ *  in the `Showcase.books` messages, keyed by preset id (the index `name`
+ *  mixes both languages); a preset without one shows its index name. */
 function localizedDescription(description: string, locale: string): string {
   const [es, ...en] = description.split(" · ");
   return locale.startsWith("es") ? es! : en.join(" · ") || es!;
@@ -85,11 +95,11 @@ export async function ShowcaseSection() {
           <Book
             key={p.id}
             href={`/${locale}/sandbox#preset=${p.id}&lang=${lang}&view=canvas`}
-            name={p.name}
+            name={t.has(`books.${p.id}`) ? t(`books.${p.id}`) : p.name}
             description={localizedDescription(p.description, locale)}
           >
             <Image
-              src={`/presets/${p.dir}/${p.thumbnail ?? "thumbnail.jpg"}?v=${bundleVersion(p.dir)}`}
+              src={`/presets/${p.dir}/${localizedThumbnail(p.dir, p.thumbnail ?? "thumbnail.jpg", lang)}?v=${bundleVersion(p.dir)}`}
               alt=""
               width={544}
               height={720}

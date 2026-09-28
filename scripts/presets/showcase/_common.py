@@ -197,11 +197,17 @@ def write_fingerprint(out: str) -> None:
 
 
 def copy_thumbnail(here: str, out: str) -> None:
+    """Copy `thumbnail.jpg` (the default-locale cover) and any per-locale
+    `thumbnail-<lang>.jpg` (e.g. the English cover the home page shows on
+    /en) from next to build.py into the bundle."""
     thumb = os.path.join(here, "thumbnail.jpg")
     if os.path.exists(thumb):
         shutil.copyfile(thumb, os.path.join(out, "thumbnail.jpg"))
     else:
         print("note: no thumbnail.jpg next to build.py (render the cover page and drop it there)", file=sys.stderr)
+    for f in sorted(os.listdir(here)):
+        if f.startswith("thumbnail-") and f.endswith(".jpg"):
+            shutil.copyfile(os.path.join(here, f), os.path.join(out, f))
 
 
 def register(preset_id: str, meta: dict) -> None:
