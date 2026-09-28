@@ -250,6 +250,10 @@ export interface IndexBlockInfo {
   /** The letter head printed above the entry, in the same block so it
    *  never ends a column alone. */
   group?: string;
+  /** Entries with no page of their own that head this one (a main entry
+   *  and its sub-entry above a sub-sub-entry), printed above it in the
+   *  same block for the same reason, outermost first. */
+  leads?: { level: number; spans: InlineSpan[] }[];
 }
 
 export interface ContentBlock {

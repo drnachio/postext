@@ -85,6 +85,8 @@ export interface ProbeFacts {
     palette: boolean | null;
   };
   warnings?: { kind: string; page: number; overflowPx: number }[];
+  /** Warnings `:::index` raised (#172): `doc.contentWarnings` of the index kinds. */
+  indexWarnings?: { kind: string; page: number | null; detail: string }[];
   converged?: boolean;
   iterationCount?: number;
   loose?: {
@@ -404,8 +406,12 @@ function collect(input: CheckInput): Finding[] {
   for (const w of facts.warnings ?? []) {
     if (!expected.has(w.kind)) add("C5", "fail", `${w.kind} on page ${w.page} (${w.overflowPx} px over)`);
   }
+  for (const w of facts.indexWarnings ?? []) {
+    if (!expected.has(w.kind)) add("C5", "fail", `${w.kind}${w.detail ? ` "${w.detail}"` : ""}${w.page ? ` on page ${w.page}` : ""}`);
+  }
   for (const kind of expected) {
-    if (!(facts.warnings ?? []).some((w) => w.kind === kind)) add("C5", "info", `expect.warnings lists ${kind}, which did not occur`);
+    const seen = [...(facts.warnings ?? []), ...(facts.indexWarnings ?? [])];
+    if (!seen.some((w) => w.kind === kind)) add("C5", "info", `expect.warnings lists ${kind}, which did not occur`);
   }
 
   // C6: convergence.
