@@ -511,6 +511,11 @@ El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezado
       <td>Las minúsculas se componen como mayúsculas al 70 % del cuerpo — el nombre de un personaje en una obra de teatro, una sigla en el texto corrido. Admite otras marcas dentro y alrededor; ver <a href="#versalitas">Versalitas</a>.</td>
     </tr>
     <tr>
+      <td>Orientación en texto vertical</td>
+      <td><code>:tcy[12]</code>, <code>:upright[GDP]</code>, <code>:sideways[12]</code></td>
+      <td>En texto vertical: una casilla de pie (tate-chu-yoko), cada carácter de pie en su propia casilla, o el tramo entero tumbado. No cambian nada en texto horizontal; ver <a href="#orientación-en-texto-vertical">Orientación en texto vertical</a>.</td>
+    </tr>
+    <tr>
       <td>Código en línea</td>
       <td><code>`código`</code></td>
       <td>Las comillas invertidas se eliminan; el tramo se renderiza como texto plano, tal cual se escribió: un <code>{':ref{…}'}</code>, un chip, una fórmula, un enlace o un signo de marca dentro de él se imprimen literalmente, que es como un texto muestra la sintaxis. El estilo diferenciado para código está en el roadmap.</td>
@@ -605,6 +610,20 @@ El informe de la :smallcaps[unesco] y las pautas de la :smallcaps[oms].
 - **Dónde.** Párrafos, elementos de lista, citas, recuadros, celdas de tabla, leyendas y notas, y encabezados mientras `headings.inlineMarks` esté activado (lo está por defecto); si se desactiva, el marcado se elimina del encabezado y el texto se imprime tal cual.
 - **Párrafos enteros.** Un estilo de párrafo o el cuerpo de un recuadro con `smallCaps: true` componen así todo su texto (ver [Estilos de párrafo](/es/docs/configuration#estilos-de-párrafo)).
 - **Texto.** El canvas, el HTML y el PDF llevan las letras tal como se pintan: al copiar `:smallcaps[Hamlet]` se obtiene «HAMLET».
+
+### Orientación en texto vertical
+
+En texto vertical (`layout.writingMode: 'vertical-rl'`) los caracteres chinos quedan de pie, las palabras latinas y los números largos van tumbados, y un número de dos cifras como mucho queda de pie en una sola casilla (ver [Configuración › Números en texto vertical](/es/docs/configuration#números-en-texto-vertical)). Tres marcas separan un tramo a mano:
+
+```markdown
+第:tcy[120]回，:upright[GDP]增長:sideways[12]倍。
+```
+
+- `:tcy[…]` (tate-chu-yoko, 縱中橫) compone su texto con los caracteres uno al lado de otro en una casilla de pie de un cuadratín, estrechado si es más ancho: `:tcy[120]`, `:tcy[3.0]`, `:tcy[A+]`. Hasta unos cuatro caracteres se leen bien.
+- `:upright[…]` pone de pie cada carácter en su propia casilla, las letras latinas centradas en ella: una sigla que se lee letra a letra columna abajo. Una línea nunca se corta dentro.
+- `:sideways[…]` tumba el tramo entero con la línea, también los caracteres chinos: un número de dos cifras que el autor quiere de lado.
+- El texto sigue en el texto plano; las marcas admiten otras marcas en línea dentro (`:tcy[**12**]`) y `\]` para un corchete literal. En texto horizontal no cambian nada.
+- Para cortar y justificar, una casilla `:tcy` y cada carácter de `:upright` cuentan como caracteres chinos, y no llevan espacio entre chino y latín al lado.
 
 
 ## Notas al pie

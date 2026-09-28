@@ -511,6 +511,11 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
       <td>Lowercase letters set as capitals at 70% of the text size — a character's name in a play, an acronym in running text. Takes other marks inside and around it; see <a href="#small-capitals">Small capitals</a>.</td>
     </tr>
     <tr>
+      <td>Orientation in vertical text</td>
+      <td><code>:tcy[12]</code>, <code>:upright[GDP]</code>, <code>:sideways[12]</code></td>
+      <td>In vertical text: one upright cell (tate-chu-yoko), each character upright in a cell of its own, or the whole run turned. No effect in horizontal text; see <a href="#orientation-in-vertical-text">Orientation in vertical text</a>.</td>
+    </tr>
+    <tr>
       <td>Inline code</td>
       <td><code>`code`</code></td>
       <td>Backticks are stripped; the span is rendered as plain text, exactly as written: a <code>{':ref{…}'}</code>, a chip, maths, a link or an emphasis marker inside it prints literally, which is how a text shows the syntax. Distinct code styling is on the roadmap.</td>
@@ -605,6 +610,20 @@ The :smallcaps[unesco] report and the :smallcaps[who] guidelines.
 - **Where.** Paragraphs, list items, blockquotes, callouts, table cells, captions and notes, and headings while `headings.inlineMarks` is on (the default); with it off, the markup is removed from a heading and the text prints as written.
 - **Whole paragraphs.** A paragraph style or a callout body with `smallCaps: true` sets all its text this way (see [Paragraph styles](/en/docs/configuration#paragraph-styles)).
 - **Text.** The canvas, the HTML and the PDF carry the letters as painted: copying `:smallcaps[Hamlet]` gives "HAMLET".
+
+### Orientation in vertical text
+
+In vertical text (`layout.writingMode: 'vertical-rl'`) Chinese characters stand upright, Latin words and long numbers are turned sideways, and a number of at most two digits stands upright in one cell (see [Configuration › Numbers in vertical text](/en/docs/configuration#numbers-in-vertical-text)). Three marks set a run apart by hand:
+
+```markdown
+第:tcy[120]回，:upright[GDP]增長:sideways[12]倍。
+```
+
+- `:tcy[…]` (tate-chu-yoko, 縱中橫) sets its text side by side in one upright cell of one em, squeezed across when it is wider: `:tcy[120]`, `:tcy[3.0]`, `:tcy[A+]`. Up to about four characters read well.
+- `:upright[…]` stands each character upright in a cell of its own, Latin letters centred in it: an acronym read letter by letter down the column. A line never breaks inside it.
+- `:sideways[…]` turns the whole run with the line, Chinese characters too: a two-digit number the author wants on its side.
+- The text stays in the plain text; the marks take other inline marks inside (`:tcy[**12**]`) and write `\]` for a literal bracket. In horizontal text they change nothing.
+- For breaking and justifying, a `:tcy` cell and each `:upright` character count as Chinese characters, and no Han–Latin space is set next to them.
 
 
 ## Footnotes

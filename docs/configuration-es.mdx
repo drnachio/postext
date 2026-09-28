@@ -463,12 +463,12 @@ Con `writingMode: 'vertical-rl'` una página se compone como una página horizon
 - Los encabezados, los folios, las marcas de corte y el fondo de página siguen en el pliego, en horizontal, como describe clreq para los libros verticales.
 - **Las figuras y las tablas se mantienen derechas.** Una figura ocupa la altura de su piso hasta donde lo permite su pie, y como mucho el ancho de la página; el ancho que toma es el espacio que ocupa en el flujo. Su pie se compone en horizontal debajo de ella, igual que las celdas de una tabla: ambos se miden como texto horizontal. Una tabla se compone derecha a lo ancho de la página y, si es más alta que el piso, sus filas se reparten entre pisos. `placement.align` coloca la figura arriba (`'left'`), en medio o al pie de su piso. Un `placement.rotate` no se aplica cuando la figura se cita por primera vez en texto vertical: la composición avisa con `rotateIgnoredVertical`. Una sección horizontal del libro (un estilo de título cuyo `layout` fija `'horizontal-tb'`) gira sus figuras como se le pide.
 - Las imágenes de un diseño (la ilustración de una apertura o de una página de parte) también quedan derechas. Su caja en el flujo se dimensiona con el ancho y el alto de la imagen intercambiados, de modo que `size.width` es lo que la imagen ocupa a lo largo de la columna, y su ancho en el pliego sale de sus proporciones.
-- Caracteres: los hanzi, los kana y las formas de ancho completo quedan derechos, a un cuadratín cada uno; las palabras latinas y los números se tumban con su ancho horizontal; la puntuación toma la forma vertical de la fuente. Los signos de pausa y de final nunca se giran: una fuente de China continental pone 、。，． en la esquina superior derecha de la celda y ！？：； en su mitad derecha, y una de Taiwán o Hong Kong los centra (`cjk.region`). Los paréntesis y las comillas toman su forma vertical, las rayas y los puntos suspensivos se giran, y “ ” ‘ ’ se leen como 『』「」 en texto de China continental. El punto medio (·) ocupa media celda en texto de China continental y una celda entera en el de Taiwán y Hong Kong. Los signos que Unicode pone derechos (× © ± § ℃ ① y parecidos) ocupan una celda propia, también dentro de un número: `3×4` son el 3 y el 4 tumbados con el × derecho entre ellos. Un apóstrofo o un punto medio entre dos letras de una palabra latina (`don’t`, `l·l`) sigue en la palabra, tumbado. Un párrafo latino dentro de un flujo vertical sigue las mismas reglas. Las fórmulas en línea, las fichas y las muestras de color se tumban con la línea.
+- Caracteres: los hanzi, los kana y las formas de ancho completo quedan derechos, a un cuadratín cada uno; las palabras latinas y los números se tumban con su ancho horizontal; la puntuación toma la forma vertical de la fuente. Los signos de pausa y de final nunca se giran: una fuente de China continental pone 、。，． en la esquina superior derecha de la celda y ！？：； en su mitad derecha, y una de Taiwán o Hong Kong los centra (`cjk.region`). Los paréntesis y las comillas toman su forma vertical, y “ ” ‘ ’ se leen como 『』「」 en texto de China continental. Las rayas, los puntos suspensivos y la tilde de onda toman la forma vertical de la fuente cuando la tiene (Noto CJK liga la de —— a `vert` junto con `fwid`: un filete por el centro de la celda); si no, se giran con su tinta centrada en el eje de la columna. Un número de dos cifras como mucho queda de pie en una sola celda (ver [Números en texto vertical](#números-en-texto-vertical)). El punto medio (·) ocupa media celda en texto de China continental y una celda entera en el de Taiwán y Hong Kong. Los signos que Unicode pone derechos (× © ± § ℃ ① y parecidos) ocupan una celda propia, también dentro de un número: `3×4` son el 3 y el 4 tumbados con el × derecho entre ellos. Un apóstrofo o un punto medio entre dos letras de una palabra latina (`don’t`, `l·l`) sigue en la palabra, tumbado. Un párrafo latino dentro de un flujo vertical sigue las mismas reglas. Las fórmulas en línea, las fichas y las muestras de color se tumban con la línea.
 - Cada carácter se mide como se pinta: una celda avanza su celda a lo largo de la línea, un tramo tumbado su ancho horizontal. El texto que queda horizontal en el pliego (titulillos, folios, pies, celdas de tabla) se mide en horizontal.
 - Los [anchos de la puntuación](#anchos-de-la-puntuación), la [puntuación colgada](#puntuación-colgada) y el [espacio entre chino y latín](#espacio-entre-chino-y-latín) se aplican a lo largo de la línea vertical igual que en la horizontal. El blanco que va delante de un dibujo queda encima y el que va detrás, debajo: un 、 kaiming ocupa media celda, `」「` se comprimen a celda y media, un paréntesis de apertura recortado a la cabeza de una línea empieza media celda más arriba, un 。 colgado queda bajo el pie de su línea, y el espacio entre chino y latín es un cuarto de cuadratín de columna encima y debajo de una palabra tumbada. `：；？！` conservan la celda entera en texto vertical en todas las regiones.
 - La [retícula de caracteres](#retícula-de-caracteres) cuenta los caracteres a lo largo de la línea y las líneas a lo ancho de la página: `charsPerLine` fija lo que mide un piso, `linesPerPage` cuántas líneas lleva una página, y `layoutType: 'double'` da dos pisos de caracteres enteros con un medianil de cuadratines enteros entre ellos.
 
-Para quien lee la composición: una página vertical lleva `VDTPage.flow`. Su `contentArea`, sus columnas, bloques, líneas, flotantes, áreas de notas, banda de apertura y superposiciones de diseño de los bloques están en coordenadas del flujo; `width`, `height`, `header` y `footer` están en el pliego. `flowToPage`, `pageToFlow`, `flowRectToPage` y `pageRectToFlow` pasan de unas a otras, y `verticalOrientation(char, region)` dice cómo queda un carácter. `flow.centralBaselines` da, por familia tipográfica, el eje sobre el que la composición centró los caracteres derechos. El canvas pinta la página vertical por su cuenta; para pintar la puntuación con las formas verticales propias de la fuente, un anfitrión en el navegador carga, una vez por familia, una fuente gemela con ellas activadas: `loadVerticalAlternates(family, faces)`, donde `faces` son los orígenes de la familia (URL o bytes) y sus descriptores. El Sandbox lo hace con todas las familias de un documento vertical. Sin gemela, los paréntesis se giran sobre el centro de su cuadratín y los signos de pausa y de final de China continental se desplazan dentro de su celda adonde los ponen las formas verticales de la fuente: 、。，． a la esquina superior derecha (a menos de 0,07 cuadratines de las formas verticales de Noto Serif SC) y ！？：； medio cuadratín a la derecha y un poco hacia arriba (a menos de 0,02). El PDF dibuja el flujo girado pero todavía no pone derechos los caracteres, y la salida HTML aún no compone líneas verticales.
+Para quien lee la composición: una página vertical lleva `VDTPage.flow`. Su `contentArea`, sus columnas, bloques, líneas, flotantes, áreas de notas, banda de apertura y superposiciones de diseño de los bloques están en coordenadas del flujo; `width`, `height`, `header` y `footer` están en el pliego. `flowToPage`, `pageToFlow`, `flowRectToPage` y `pageRectToFlow` pasan de unas a otras, y `verticalOrientation(char, region)` dice cómo queda un carácter. `flow.centralBaselines` da, por familia tipográfica, el eje sobre el que la composición centró los caracteres derechos: el centro de la tinta de 中, cuyo trazo largo ocupa el alto del cuadratín (0,38 cuadratines sobre la línea de base en Noto Serif y Noto Sans, SC y TC por igual), y que tienen todas las fuentes chinas, japonesas y coreanas. El canvas pinta la página vertical por su cuenta; para pintar la puntuación con las formas verticales propias de la fuente, un anfitrión en el navegador carga, una vez por familia, una fuente gemela con ellas activadas: `loadVerticalAlternates(family, faces)`, donde `faces` son los orígenes de la familia (URL o bytes) y sus descriptores. El Sandbox lo hace con todas las familias de un documento vertical. Sin gemela, los paréntesis se giran sobre el centro de su cuadratín y los signos de pausa y de final de China continental se desplazan dentro de su celda adonde los ponen las formas verticales de la fuente: 、。，． a la esquina superior derecha (a menos de 0,07 cuadratines de las formas verticales de Noto Serif SC) y ！？：； medio cuadratín a la derecha y un poco hacia arriba (a menos de 0,02). El PDF y el HTML componen la misma página: ver [Texto vertical en el PDF](#texto-vertical-en-el-pdf) y la tabla de [En qué se diferencia la salida HTML del canvas y del PDF](#en-qué-se-diferencia-la-salida-html-del-canvas-y-del-pdf). Comparados celda a celda con HarfBuzz (composición vertical con `vert`) en Noto Serif TC y SC, todos los caracteres de 「賈雨村」云云，宜乎？故曰！；：、。“引”‘單’…… quedan a menos de 0,02 cuadratines de él en el canvas y en el PDF, y a menos de 0,05 en el HTML (Chrome centra un glifo girado en el medio del ascendente y el descendente de la fuente, que en Noto queda 0,05 cuadratines por encima del centro del cuadratín). Las cabeceras y los folios también pueden ir en vertical: ver [Elementos de texto verticales](#elementos-de-texto-verticales).
 
 ### Filete de columna
 
@@ -703,6 +703,12 @@ Los valores por defecto de la tabla siguiente son los de un elemento de texto qu
       <td>Contorno trazado alrededor de las letras: <code>width</code> (un <code>Dimension</code>, centrado en los bordes de los glifos), <code>color</code> (por defecto, el del texto; la letra capital toma su propio color) y <code>hollow</code> (<code>true</code> pinta solo el contorno). Ver <a href="#marcas-en-línea-y-contornos">Marcas en línea y contornos</a>.</td>
     </tr>
     <tr>
+      <td><code>writingMode</code></td>
+      <td><code>'horizontal-tb' | 'vertical-rl'</code></td>
+      <td><code>'horizontal-tb'</code></td>
+      <td><code>'vertical-rl'</code> compone el texto de arriba abajo, las líneas de derecha a izquierda y los caracteres de pie: una cabecera por el margen exterior, un título vertical junto a un capítulo horizontal. Ver <a href="#elementos-de-texto-verticales">Elementos de texto verticales</a>.</td>
+    </tr>
+    <tr>
       <td><code>reserve</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
@@ -866,6 +872,49 @@ Un elemento sin `placement.size.width` (o con `'auto'`) toma el tamaño de su te
 - anclarlo al borde opuesto del contenedor.
 
 El contenedor de la cabecera va del borde superior de corte al cuerpo, y el del pie, del cuerpo al borde inferior de corte: en la cabecera, los anclajes `top-*` se miden desde el borde de corte y los `bottom-*` desde el cuerpo, y al revés en el pie (ver **Marco del contenedor** más arriba). Una cabecera o un pie nunca desplazan el texto de cuerpo y se pintan encima de él, así que un elemento empujado al área del cuerpo tapa el texto. Una banda de apertura, en cambio, se pinta debajo del texto de cuerpo; el espacio que ocupa en el flujo se describe en [Altura reservada](#altura-reservada).
+
+### Elementos de texto verticales
+
+Un elemento de texto con `writingMode: 'vertical-rl'` se compone en vertical en un bloque cuyo texto es horizontal: las cabeceras y los folios de cualquier libro, que se quedan en el pliego, y cualquier diseño de una página horizontal. Se compone como un texto horizontal en un marco propio girado un cuarto de vuelta en el sentido de las agujas del reloj, y se devuelve girado a la página:
+
+- Su caja queda donde la pone la colocación. Su alto es el largo de una línea: lo fija `size.height` (o `'auto'`, lo que mide el texto; `'fill'`, hasta el borde del contenedor), `size.width` fija cuántas líneas caben a lo ancho y `size.maxWidth` limita el largo de una línea.
+- `align` coloca las líneas a lo largo de la caja (`'left'` arriba), `verticalAlign` a lo ancho (`'top'` a la derecha, donde va la primera línea), y el relleno de una caja se queda en el lado para el que está escrito.
+- Los caracteres se miden y se pintan como en una página vertical: los hanzi de pie, a un cuadratín cada uno; la puntuación, en su forma vertical; las palabras latinas, tumbadas; los números cortos, en una casilla (`cjk.uprightDigits`). El canvas, el PDF y el HTML lo ponen en el mismo rectángulo.
+- Un elemento vertical no lleva letra capital.
+- En el flujo de una página vertical (una apertura, una página de parte, el título de un recuadro) el texto ya va hacia abajo y `writingMode` no cambia nada.
+
+Los libros chinos verticales ponen cabeceras y folios en uno de tres sitios ([clreq §7.2](https://www.w3.org/TR/clreq/#x7-2-page-headers-footers-etc); para el japonés, [JLREQ §2.6](https://www.w3.org/TR/jlreq/#running_heads_and_page_numbers)):
+
+<table>
+  <thead>
+    <tr><th style={{ width: '170px' }}>Convención</th><th>Dónde</th><th>Cómo se configura</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Cabecera y pie horizontales</td><td>Encima y debajo de la caja de texto, como en los libros horizontales; es lo más habitual.</td><td>La cabecera y el pie tal como están.</td></tr>
+    <tr><td>Margen exterior (estilo 中缝; 邊峰 en Taiwán)</td><td>A lo largo del margen exterior: el título del capítulo o del libro desde unos cuatro caracteres por debajo de la cabeza de la caja, y el folio hasta unos cinco por encima del pie, en números chinos, a un 80 % del cuerpo del texto.</td><td>Dos elementos verticales anclados a <code>'outer'</code>, abajo.</td></tr>
+    <tr><td>Esquina exterior del pie</td><td>El folio al pie de la página, en la esquina exterior (las normas de Taiwán para libros 中式).</td><td>Un elemento horizontal en el pie en <code>'bottom-left'</code> con <code>parity: 'odd'</code> y otro en <code>'bottom-right'</code> con <code>parity: 'even'</code> en un libro encuadernado por la derecha (al revés en uno por la izquierda).</td></tr>
+  </tbody>
+</table>
+
+Las cabeceras del margen exterior, tal como las añade el Sandbox (**Encabezado › Cabeceras en el margen exterior (vertical)**):
+
+```json
+{
+  "page": { "pageNumbering": { "format": "trad-chinese-informal" } },
+  "header": { "elements": [
+    { "kind": "text", "id": "head", "content": "{chapterTitle}", "writingMode": "vertical-rl",
+      "fontSize": { "value": 8, "unit": "pt" }, "overflow": "clip", "align": "left",
+      "placement": { "anchor": { "to": "outer", "edge": "top" }, "offset": { "y": { "value": 4, "unit": "em" } } } },
+    { "kind": "text", "id": "folio", "content": "{pageNumber}", "writingMode": "vertical-rl",
+      "fontSize": { "value": 8, "unit": "pt" }, "overflow": "clip", "align": "left",
+      "placement": { "anchor": { "to": "outer", "edge": "bottom" }, "offset": { "y": { "value": -5, "unit": "em" } } } }
+  ] }
+}
+```
+
+`anchor.to: 'outer'` (ver [Posicionamiento de elementos](#posicionamiento-de-elementos)) es el margen exterior de cada página, así que los dos elementos bajan por el borde izquierdo de una página impar y por el derecho de una par en un libro encuadernado por la derecha (`page.binding`). `{pageNumber}` sale en el formato de la numeración: `trad-chinese-informal` da 一百零三 en la página 103, y `cjk-decimal`, 一〇三. Las reglas de cada bloque siguen valiendo: `pages: 'body'` quita una cabecera de las aperturas de capítulo. Un adorno corto entre cabecera y folio (una cola de pez ︻, un filete) es un elemento más anclado al mismo marco.
+
+En el VDT un bloque vertical lleva `vertical` (`VDTDesignTextBlock.vertical`: la región, las cifras de pie y el eje central de cada familia); sus líneas están en el marco girado del propio bloque: `xOffset` hacia abajo desde el borde superior de la caja y `baselineY` hacia la izquierda desde su borde derecho.
 
 ### Elementos de línea
 
@@ -1113,7 +1162,7 @@ Una imagen que dibuja un diseño es contenido cuando su recurso la describe: el 
 interface ElementPlacement {
   /** A qué ancla este elemento y a qué borde de ese destino. */
   anchor: {
-    to: 'container' | 'page' | 'bleed' | `#${string}`; // container = el bloque; page = caja de corte; bleed = caja de corte + sangre; #id = otro elemento
+    to: 'container' | 'page' | 'bleed' | 'outer' | `#${string}`; // container = el bloque; page = caja de corte; bleed = caja de corte + sangre; outer = el margen exterior (cabecera, pie); #id = otro elemento
     edge: AnchorEdge;
   };
   /** Distancia desde el punto de anclaje. */
@@ -1149,6 +1198,8 @@ Un borde relativo a otro elemento usado con `'container'`, `'page'` o `'bleed'`,
 ```
 
 Con las marcas de corte activadas, lo que un elemento pinta fuera de la caja de sangrado se recorta (véase [Marcas de corte](#marcas-de-corte)).
+
+`anchor.to: 'outer'` (bloques de cabecera y pie) ancla el elemento al **margen exterior** de la página: del borde de la caja de texto al borde de corte en el lado contrario al lomo, y de la cabeza de la caja de texto a su pie. Queda a la derecha de una página impar y a la izquierda de una par en un libro encuadernado por la izquierda, y al revés en uno encuadernado por la derecha (`page.binding`), de modo que un solo elemento sirve para las dos páginas de un pliego: una cabecera por el margen exterior (ver [Elementos de texto verticales](#elementos-de-texto-verticales)). En cualquier otro bloque se lee como `'container'`. El `offset` de un elemento de texto puede ir en `em`, cuadratines de su propio `fontSize`: cuatro caracteres por debajo de la cabeza de la caja de texto es `{ "y": { "value": 4, "unit": "em" } }`.
 
 Dentro de la ranura de diseño avanzado de un encabezado, los elementos anclados a la página o a la sangre no aumentan la altura reservada para el encabezado salvo que se extiendan por debajo de su borde superior (una banda en la parte superior de la página queda detrás de la apertura; una banda que baje más allá del encabezado empuja el cuerpo hacia abajo). Usa `advancedDesign.minHeight` para reservar una altura fija de apertura en cualquier caso, y `reserve: false` en un elemento que no deba empujar el texto en absoluto. Las reglas completas están en [Altura reservada](#altura-reservada).
 
@@ -3028,6 +3079,7 @@ interface CjkConfig {
   trimLineStart?: 'auto' | boolean;         // Los paréntesis en el borde de una línea pierden su mitad exterior.
   hangingPunctuation?: 'none' | 'allow' | 'force';
   latinSpacing?: Dimension;                 // Entre chino y latín; por defecto 0,25 em.
+  uprightDigits?: 0 | 2 | 3 | 4;            // Texto vertical: números en una casilla; por defecto 2.
   grid?: { enabled?: boolean; charsPerLine?: number; linesPerPage?: number; show?: boolean };
 }
 ```
@@ -3083,6 +3135,12 @@ interface CjkConfig {
       <td><code>Dimension</code></td>
       <td><code>&#123; value: 0.25, unit: 'em' &#125;</code></td>
       <td>El espacio entre un carácter chino y la letra latina o la cifra que tiene al lado, en cuadratines del cuerpo del texto CJK o en cualquier medida; <code>0</code> lo quita (ver <a href="#espacio-entre-chino-y-latín">Espacio entre chino y latín</a>).</td>
+    </tr>
+    <tr>
+      <td><code>uprightDigits</code></td>
+      <td><code>0 | 2 | 3 | 4</code></td>
+      <td><code>2</code></td>
+      <td>Texto vertical: un número de hasta tantas cifras queda de pie en una sola casilla (tate-chu-yoko); <code>0</code> lo desactiva (ver <a href="#números-en-texto-vertical">Números en texto vertical</a>).</td>
     </tr>
     <tr>
       <td><code>grid</code></td>
@@ -3164,6 +3222,25 @@ En el VDT un signo que cedió blanco es un segmento propio, cuyo `width` es el a
 
 El espacio es un segmento de `kind: 'space'` con `autospace`, `text` vacío (o el espacio que escribió el autor); su `width` es definitivo, y la justificación de espacios de los renderizadores lo deja como está. Nunca está en el texto plano, así que la búsqueda, el copiar y pegar y los rangos de origen leen el texto tal como se escribió. El PDF mete cada línea compuesta en piezas (caracteres espaciados, espacios entre chino y latín, signos que cedieron blanco o que cuelgan) en un `/Span` cuyo `/ActualText` es el texto de la línea, de modo que la extracción de texto lee `用iPhone拍照` y no `用 iPhone 拍 照`, y lee como una sola línea una que lleva signos de medio cuadratín.
 
+### Números en texto vertical
+
+En texto vertical una palabra latina o un número largo se tumban, y un número corto queda de pie, con sus cifras una al lado de otra en una casilla de un cuadratín: el tate-chu-yoko (縱中橫, [clreq §2.1.3](https://www.w3.org/TR/clreq/#x2-1-3-mixed-text-composition-in-vertical-writing-mode), [`text-combine-upright` de CSS](https://www.w3.org/TR/css-writing-modes-4/#text-combine-upright)). `uprightDigits` fija cuántas cifras puede tener ese número: `2` (por defecto), `3`, `4`, o `0` para ninguno. `2026年9月28日` con `2` es el 2026 tumbado, el 9 de pie y el 28 de pie en una casilla.
+
+- El número entero o nada: con `2` un número de tres cifras va tumbado, nunca partido.
+- Un número pegado a una letra latina (`A4`, `mp3`, `3D`) se queda en su palabra, tumbado; igual un número con decimales o separador de millares (`3.14`, `10,000`).
+- Junto a un signo que Unicode pone de pie, cada número ocupa su propia casilla: `30×40` son 30, × y 40, todos de pie.
+- Una casilla con más caracteres de los que caben en un cuadratín se estrecha hasta el cuadratín; el espaciado y la justificación nunca entran en ella, solo van detrás.
+- Para cortar y justificar, la casilla cuenta como un carácter chino, y no lleva espacio entre chino y latín a ningún lado.
+- El medidor y todos los motores de pintado ven las mismas casillas: el canvas pinta las cifras enderezadas y estrechadas, el PDF igual con la fuente horizontal, y el HTML las envuelve en `text-combine-upright: all`.
+
+A mano, tres marcas en línea mandan sobre el ajuste en texto vertical y no cambian nada en texto horizontal (ver [Formato del documento › Orientación en texto vertical](/es/docs/document-format#orientación-en-texto-vertical)):
+
+```markdown
+第:tcy[120]回、:upright[GDP]與:sideways[12]
+```
+
+`:tcy[…]` compone su texto en una casilla de pie, `:upright[…]` pone de pie cada carácter en su propia casilla (las letras latinas centradas en ella) y `:sideways[…]` tumba el tramo entero, también los caracteres chinos. En el VDT, un tramo `:tcy` es un segmento con `tcy: true` de un cuadratín de ancho; uno `:upright` o `:sideways` lleva `orientation`. Los números que `uprightDigits` compone en una casilla no llevan marca: los encuentra `verticalRuns(graphemes, region, uprightDigits)`.
+
 ### Retícula de caracteres
 
 Una caja de texto china se especifica en caracteres (clreq §7.1.1): el cuerpo × caracteres por línea × líneas por página, más la interlínea y, a dos columnas, el medianil. `grid` la fija así:
@@ -3188,7 +3265,7 @@ import { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOf, se
 
 resolveCjkConfig(undefined, 'zh-HK');
 // { region: 'hongkong', lineBreak: 'basic', punctuationWidth: 'fullwidth', compressAdjacent: true,
-//   trimLineStart: true, hangingPunctuation: 'none', latinSpacing: { value: 0.25, unit: 'em' },
+//   trimLineStart: true, hangingPunctuation: 'none', latinSpacing: { value: 0.25, unit: 'em' }, uprightDigits: 2,
 //   grid: { enabled: false, charsPerLine: 0, linesPerPage: 0, show: false } }
 ```
 
@@ -6635,6 +6712,12 @@ El componente `HtmlPreview` del sandbox (`packages/postext-sandbox/src/viewport/
       <td>Fuentes incrustadas desde tu <code>fontProvider</code>; seleccionable, buscable y etiquetado.</td>
     </tr>
     <tr>
+      <td>Texto vertical (<code>layout.writingMode: 'vertical-rl'</code>)</td>
+      <td>Caracteres pintados casilla a casilla y enderezados; formas verticales mediante una fuente gemela (<code>loadVerticalAlternates</code>).</td>
+      <td>El flujo en una caja girada un cuarto de vuelta; cada línea enderezada y compuesta con <code>writing-mode: vertical-rl</code>, así que el navegador toma las formas verticales y pone los caracteres de pie; los números cortos, en <code>text-combine-upright: all</code>.</td>
+      <td>Caracteres de pie mediante una gemela <code>Identity-V</code> de cada fuente; ver <a href="#texto-vertical-en-el-pdf">Texto vertical en el PDF</a>.</td>
+    </tr>
+    <tr>
       <td>Imágenes</td>
       <td><code>registerResourceImage</code></td>
       <td>La opción <code>resourceImageUrl(fileId)</code>; sin ella, una caja gris provisional.</td>
@@ -6912,6 +6995,20 @@ const pdf = await renderToPdf(buildDocument({ markdown, resources }, config), {
 ```
 
 Un anfitrión también puede devolver los bytes del máster para el identificador del propio SVG, como hace `bundleResourceBytes`; las dos formas funcionan.
+
+### Texto vertical en el PDF
+
+Una página vertical (`layout.writingMode: 'vertical-rl'`) se dibuja a través de un marco girado un cuarto de vuelta, como la pinta el canvas, y su texto se compone columna abajo:
+
+- **Los caracteres de pie** se muestran con una segunda fuente Type0 del mismo archivo incrustado: la misma CIDFont, los mismos anchos y el mismo mapa ToUnicode, con `Encoding /Identity-V` (modo vertical). Un tramo de caracteres es un solo objeto de texto cuyos glifos bajan un cuadratín por la columna por sí mismos (`DW2 [880 −1000]`), así que los lectores seleccionan y extraen una columna como una línea. Los glifos se conforman con `vert` y `fwid` de OpenType, que dan su forma vertical a los paréntesis, las comillas, los signos de pausa de China continental, los puntos suspensivos y las rayas; un carácter que queda de pie tal cual conserva su glifo horizontal. Nada de la fuente se incrusta dos veces.
+- **Las palabras latinas y los números largos** van tumbados con la fuente horizontal; **un número en una casilla** queda de pie, estrechado hasta el cuadratín si es más ancho; un signo sin forma vertical en la fuente se gira o se desplaza, como en el canvas.
+- **El espaciado** entre caracteres se escribe como números de `TJ`, que en modo vertical bajan el punto de escritura por la columna.
+- **Cada línea vertical** lleva un `/ActualText` con su texto, de modo que copiar y extraer el texto la leen tal como se escribió. `pdftotext` y pdf.js leen las columnas de arriba abajo y de derecha a izquierda; pdf.js empieza una línea nueva en un número compuesto en una casilla.
+- **Los enlaces, los marcadores y los destinos** se llevan al pliego: un enlace sobre una línea vertical es un rectángulo alto y estrecho, y un marcador abre la página en lo alto de la columna de su encabezado.
+- **Un PDF etiquetado** declara el sentido de escritura en su elemento `Document` (el atributo de maquetación `WritingMode /TbRl`, que heredan todos los elementos); la validación PDF/UA-1 (veraPDF) pasa en un capítulo vertical.
+- **Visores:** Acrobat, Vista Previa, Chrome (PDFium), pdf.js y Poppler pintan las fuentes verticales. Un libro encuadernado por la derecha (`page.binding`) pide además a los visores que muestren los pliegos de derecha a izquierda (`/Direction /R2L`, `/PageLayout /TwoPageRight`); Acrobat y Foxit lo siguen, Chrome no.
+
+Un capítulo de 43 páginas compuesto en Noto Serif TC (los caracteres del libro, TrueType) ocupa unos 820 KB, casi todo de los dos subconjuntos de la fuente.
 
 ### Enlaces en el PDF
 
