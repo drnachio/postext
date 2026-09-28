@@ -1,0 +1,65 @@
+---
+title: "An index of names and an index of subjects"
+summary: "Marks with index=\"names\" feed an index of people and the rest an index of subjects; :::index prints each in two columns, and the build settles the pages."
+description: "A monograph chapter on printing types that ends with an index of names and an index of subjects, both built from :index marks in one Markdown document."
+question: "How do I print an index of names and an index of subjects from the same text?"
+aliases: ["index of names", "index of persons", "subject index", "onomastic index", "índice onomástico", "índice de materias", "back-of-book index", ":index", ":::index"]
+pageNotes: { "6": "The index of names: inverted surnames under Bodoni letter heads, principal pages in bold.", "7": "The index of subjects: sub-entries, See and See also cross-references, the 42-line Bible filed under F." }
+---
+
+## What you'll build
+
+Chapter four of *Letters of Metal*, a scholarly monograph on printing types set at 155 × 235 mm: one column of Crimson Pro, Bodoni italic for the titles, a brick-red accent. The essay runs from Gutenberg's textura through Jenson, Aldus and Griffo, Garamond and Plantin, Caslon and Baskerville, Fournier's points and the Spanish types that Pradell and Gil cut and Ibarra printed, to Bodoni's moderns. It ends as such books do, with two indexes on facing pages: the printers, punchcutters and patrons on the verso, the types, tools and books on the recto. Both come from the same marked text, and every page number in them is the page where the mark landed.
+
+## Method
+
+### 1 · Mark each person for the names index, and each subject for the main one
+
+The code is [the short answer](#the-short-answer) above; the rest is in the Markdown. A mark with `index="names"` goes to the index that `:::index{index="names"}` prints, and every other mark goes to the main index that a bare `:::index` prints. So `:index[Aldus Manutius]{term="Manutius, Aldus" index="names" main}` prints the name in the text and files a bold page under *Manutius* in the names index, while `:index[italic]{term="Italic" main}` two lines further on files the same page under *Italic* in the subjects. A person who is a subject of the chapter can carry both marks.
+
+### 2 · Invert the names, and sort by the letters the reader will look under
+
+Names are filed surname first: `term="Garamond, Claude"`, `term="Dall’Aglio, Margherita"`. The comma is part of the term, so the collator sorts *Didot, Firmin* before *Didot, François-Ambroise* as an indexer would. When the printed form would file under the wrong letter, `sort` gives the key: the English edition marks `term="42-line Bible" sort="Forty-two-line Bible"`, so the Bible stands under F instead of opening a 0–9 group. Sub-entries (`term="Foundries!Plantin-Moretus"`), bold principal pages (`main`), `range="start"` and `range="end"` around the Bodoni section, and cross-references (`see="Italic"`, `seealso="Matrices"`) do the rest; a `see` target with levels prints with a colon, as in *Humanist type. See Roman type: Venetian*.
+
+### 3 · Build once; the document settles its own numbers
+
+<Excerpt region="build" />
+
+The index prints page numbers that only exist after layout, and printing it takes pages of its own. `buildDocument()` handles that: it lays the chapter out, reads the page of every mark, prints both indexes and lays out again whenever a number changed. Here the indexes follow the text, so a second pass confirms the first; an index set before the text would shift every page after it, and the passes would go on until they agree. Add a paragraph to the Bodoni section and the index of names gives Whittingham his new page by itself.
+
+### 4 · Give each index an opener over two columns
+
+<Excerpt region="opener" />
+
+The heading style in the short answer does three things for `# Index of Names {style="index"}`: it opens a page (`parity: 'any'`, so the two indexes follow each other without a blank), it sets the section after it in two columns 7 mm apart, and with `numbered: false` it leaves the chapter count alone. The style reuses the chapter opener with a six-line sink and a 20 pt title, and the letter heads repeat its Bodoni in the accent, one index line high so the columns keep their pitch.
+
+### 5 · Name the index on the recto
+
+<Excerpt region="running-heads" />
+
+The recto head prints `{chapterTitle}`, and an index heading is a level-one heading like any chapter, so the pages after it read *Index of Subjects* at the top. `pages: 'body'` keeps the heads off both index openers, which carry a drop folio instead.
+
+## Variations
+
+### Print one combined index
+
+Drop `index="names"` from the marks of people and the second heading: every mark then lands in the main index, names and subjects in one alphabet.
+
+```diff
+-:index[Aldus Manutius]{term="Manutius, Aldus" index="names" main}
++:index[Aldus Manutius]{term="Manutius, Aldus" main}
+```
+
+### Drop the letter heads
+
+A names index this short reads well without them. `groups.enabled: false` removes the heads and keeps one line of space between letters; the setting applies to both indexes.
+
+```diff
+-  groups: { fontFamily: 'Bodoni Moda', fontSize: pt(11), fontWeight: 600, color: col('brick') },
++  groups: { enabled: false },
+```
+
+## Pitfalls
+
+- The `index` configuration is shared: both indexes take the same face, leading and letter heads.
+- A mark in a caption or a table cell prints as written. Mark the person in the paragraph that cites the figure.

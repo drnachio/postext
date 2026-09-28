@@ -1,0 +1,51 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 72,
+  "status": "published",
+  "chapter": "structure",
+  "order": 60,
+  "level": 3,
+  "genres": ["textbook"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["back-of-book-index", "multi-chapter-books", "heading-styles"],
+    "also": [
+      "opener-design",
+      "heading-attributes",
+      "heading-numbering",
+      "running-heads",
+      "page-role-filters",
+      "mirrored-margins",
+      "side-column-floats", "side-boxes", "side-captions", "unnumbered-headings", "floated-callouts",
+      "callout-styles",
+      "figure-numbering",
+      "pdf-export"
+    ]
+  },
+  "answers": ["Q85"],
+  "gotchas": ["headings-drop-h1-break", "resource-types-locale", "svg-no-webfonts", "merged-cells-hiddenby", "fonts-first"],
+  "engine": { "postext": "1.7.0", "postextPdf": "1.7.0" },
+  "kit": ["core", "fonts", "viewer", "pdf", "images"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": {
+    "hero": [8, 9],
+    "card": "crop",
+    "focus": { "page": 9, "x": 0, "y": 0, "w": 1, "h": 0.5625 },
+    "pages": "all",
+    "expect": { "pages": [10, 10] }
+  },
+  "downloads": { "pdf": true },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [],
+    "images": [],
+    "fonts": [
+      { "family": "Literata", "license": "OFL-1.1" },
+      { "family": "Libre Franklin", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-28",
+  "updated": "2026-09-28"
+}

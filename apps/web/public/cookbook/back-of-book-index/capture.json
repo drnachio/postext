@@ -1,0 +1,1026 @@
+{
+  "schemaVersion": 1,
+  "slug": "back-of-book-index",
+  "sourceHash": "7e5ef69103b5926c53296c74663fe56973d3c731b64dd898d199bc1f4ce5f3e3",
+  "engine": {
+    "postext": "1.7.0",
+    "postextPdf": "1.7.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-28T09:49:09.262Z",
+  "variants": {
+    "en": {
+      "hash8": "c7a8cd8a",
+      "vdtHash": "c7f1e624bf90550bed5b62f69b3d301932919a12",
+      "timings": {
+        "importMs": 7285,
+        "fontsMs": 6451,
+        "buildMs": 58,
+        "totalMs": 14557,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          277
+        ],
+        "dpi": 150,
+        "layoutType": "oneAndHalf",
+        "gutterMm": 7,
+        "mirror": true,
+        "body": {
+          "family": "Literata",
+          "sizePt": 9.600000000000001,
+          "leadingPt": 13.600000000000001
+        },
+        "families": [
+          "Libre Franklin",
+          "Literata"
+        ],
+        "pages": 10,
+        "ownLines": 212
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "297",
+          "role": "opener",
+          "w": 1000,
+          "h": 1319,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 127838,
+          "alt": "Opening page 297: 14 The heart as a pump."
+        },
+        {
+          "n": 2,
+          "label": "298",
+          "role": "body",
+          "w": 1000,
+          "h": 1319,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 117926,
+          "alt": "Page 298: 14.2 The pressure–volume loop. Figure 14.1. Pressure–volume loop of the left ventricle at rest: volume from 0 to 150 mL across, pressure from 0 to 140 mmHg up. The dots, anticlockwise from bottom right: mitral valve closes (120 mL), aortic valve opens (80 mmHg), aort…"
+        },
+        {
+          "n": 3,
+          "label": "299",
+          "role": "body",
+          "w": 1000,
+          "h": 1319,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 153882,
+          "alt": "Page 299: 14.4 The sinoatrial node and the conduction system."
+        },
+        {
+          "n": 4,
+          "label": "300",
+          "role": "body",
+          "w": 1000,
+          "h": 1319,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 136572,
+          "alt": "Page 300: 14.6 Listening to the heart."
+        },
+        {
+          "n": 5,
+          "label": "301",
+          "role": "opener",
+          "w": 1000,
+          "h": 1319,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 96108,
+          "alt": "Opening page 301: 15 Vessels and blood pressure. Table 15.1. Blood volume and mean pressure along the circulation of a resting adult."
+        },
+        {
+          "n": 6,
+          "label": "302",
+          "role": "body",
+          "w": 1000,
+          "h": 1319,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 152188,
+          "alt": "Page 302: 15.2 Flow, pressure and resistance."
+        },
+        {
+          "n": 7,
+          "label": "303",
+          "role": "body",
+          "w": 1000,
+          "h": 1319,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 164824,
+          "alt": "Page 303: 15.4 Capillary exchange."
+        },
+        {
+          "n": 8,
+          "label": "304",
+          "role": "body",
+          "w": 1000,
+          "h": 1319,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 92248,
+          "alt": "Page 304: 15.6 Venous return."
+        },
+        {
+          "n": 9,
+          "label": "305",
+          "role": "opener",
+          "w": 1000,
+          "h": 1319,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 76796,
+          "alt": "Opening page 305: Index."
+        },
+        {
+          "n": 10,
+          "label": "306",
+          "role": "body",
+          "w": 1000,
+          "h": 1319,
+          "file": "p10.webp",
+          "strip": "p10.s.webp",
+          "bytes": 74982,
+          "alt": "Page 306."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          9,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "back-of-book-index.pdf",
+        "bytes": 200790,
+        "pages": 10
+      },
+      "sandbox": {
+        "file": "back-of-book-index.postext",
+        "bytes": 29605
+      },
+      "detected": {
+        "apis": [
+          "buildBundle",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "defaultResourceTypes",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.boldColor",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.italicColor",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].placement",
+          "calloutStyles[].span",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.gap",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "captionStyle",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].layout",
+          "headingStyles[].layout.gutterWidth",
+          "headingStyles[].layout.layoutType",
+          "headingStyles[].numbered",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberingTemplate",
+          "headings.levels[].span",
+          "index",
+          "index.fontFamily",
+          "index.fontSize",
+          "index.groups",
+          "index.groups.color",
+          "index.groups.fontFamily",
+          "index.groups.fontSize",
+          "index.groups.fontWeight",
+          "index.groups.letterSpacing",
+          "index.groups.textTransform",
+          "index.indent",
+          "index.lineHeight",
+          "index.main",
+          "index.main.bold",
+          "index.rangeFormat",
+          "index.rangeSeparator",
+          "index.see",
+          "index.see.italic",
+          "index.turnoverIndent",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "layout.sideColumnPercent",
+          "layout.sideColumnRole",
+          "layout.sideColumnSide",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.startAt",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].id",
+          "paragraphStyles[].italic",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].defaultPlacement",
+          "resourceTypes[].defaultPlacement.captionSide",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].namePlural",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyle",
+          "tableStyle.bodyColor",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.rules"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "index",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle"
+        ],
+        "configLeaves": 420,
+        "designElements": 17,
+        "directives": [
+          ":::callout",
+          ":::paragraphs",
+          ":::index"
+        ],
+        "inline": [
+          "{attrs}",
+          ":ref",
+          "~…~",
+          "^…^"
+        ],
+        "resources": {
+          "svg": 1,
+          "bitmap": 0,
+          "table": 1
+        },
+        "fonts": [
+          {
+            "family": "Libre Franklin",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 800,
+            "style": "normal"
+          },
+          {
+            "family": "Literata",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Literata",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Literata",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "back-of-book-index",
+          "callout-styles",
+          "citations",
+          "column-and-a-half",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "localised-labels",
+          "multi-chapter-books",
+          "opener-band",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "resources",
+          "roman-front-matter",
+          "section-geometry",
+          "section-running-heads",
+          "side-column-floats",
+          "super-subscripts",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 2,
+          "share": 0.0092,
+          "worst": 2.0100000000000002
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "the edition's images weigh 1.30 MB (warning at 1.0 MB for 10 pages)"
+          },
+          {
+            "check": "C26",
+            "severity": "warn",
+            "detail": "the hero is 10.3 % colour, pictures or display type (aim for 25 %+)"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "ebec96a9",
+      "vdtHash": "9d1482384dc3a95e72c83b7edb688a3adeff615f",
+      "timings": {
+        "importMs": 7241,
+        "fontsMs": 1747,
+        "buildMs": 174,
+        "totalMs": 12657,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          277
+        ],
+        "dpi": 150,
+        "layoutType": "oneAndHalf",
+        "gutterMm": 7,
+        "mirror": true,
+        "body": {
+          "family": "Literata",
+          "sizePt": 9.600000000000001,
+          "leadingPt": 13.600000000000001
+        },
+        "families": [
+          "Libre Franklin",
+          "Literata"
+        ],
+        "pages": 10,
+        "ownLines": 212
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "297",
+          "role": "opener",
+          "w": 1000,
+          "h": 1319,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 125948,
+          "alt": "Página de apertura 297: 14 El corazón como bomba."
+        },
+        {
+          "n": 2,
+          "label": "298",
+          "role": "body",
+          "w": 1000,
+          "h": 1319,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 115050,
+          "alt": "Página 298: 14.2 El bucle presión-volumen. Figura 14.1. Bucle presión-volumen del ventrículo izquierdo en reposo: volumen de 0 a 150 mL en horizontal, presión de 0 a 140 mmHg en vertical. Los puntos, en sentido antihorario desde abajo a la derecha: cierre de la válvula mitral…"
+        },
+        {
+          "n": 3,
+          "label": "299",
+          "role": "body",
+          "w": 1000,
+          "h": 1319,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 144516,
+          "alt": "Página 299: 14.4 El nódulo sinoauricular y el sistema de conducción."
+        },
+        {
+          "n": 4,
+          "label": "300",
+          "role": "body",
+          "w": 1000,
+          "h": 1319,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 152256,
+          "alt": "Página 300: 14.6 La auscultación del corazón."
+        },
+        {
+          "n": 5,
+          "label": "301",
+          "role": "opener",
+          "w": 1000,
+          "h": 1319,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 96658,
+          "alt": "Página de apertura 301: 15 Los vasos y la presión arterial. Tabla 15.1. Volumen de sangre y presión media a lo largo de la circulación de un adulto en reposo."
+        },
+        {
+          "n": 6,
+          "label": "302",
+          "role": "body",
+          "w": 1000,
+          "h": 1319,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 145848,
+          "alt": "Página 302: 15.2 Flujo, presión y resistencia."
+        },
+        {
+          "n": 7,
+          "label": "303",
+          "role": "body",
+          "w": 1000,
+          "h": 1319,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 165058,
+          "alt": "Página 303: 15.4 El intercambio capilar."
+        },
+        {
+          "n": 8,
+          "label": "304",
+          "role": "body",
+          "w": 1000,
+          "h": 1319,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 69018,
+          "alt": "Página 304: 15.6 El retorno venoso."
+        },
+        {
+          "n": 9,
+          "label": "305",
+          "role": "opener",
+          "w": 1000,
+          "h": 1319,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 84850,
+          "alt": "Página de apertura 305: Índice analítico."
+        },
+        {
+          "n": 10,
+          "label": "306",
+          "role": "body",
+          "w": 1000,
+          "h": 1319,
+          "file": "p10.webp",
+          "strip": "p10.s.webp",
+          "bytes": 82822,
+          "alt": "Página 306."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          9,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "back-of-book-index.pdf",
+        "bytes": 218646,
+        "pages": 10
+      },
+      "sandbox": {
+        "file": "back-of-book-index.postext",
+        "bytes": 30190
+      },
+      "detected": {
+        "apis": [
+          "buildBundle",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "defaultResourceTypes",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.boldColor",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.italicColor",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].placement",
+          "calloutStyles[].span",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.gap",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "captionStyle",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].layout",
+          "headingStyles[].layout.gutterWidth",
+          "headingStyles[].layout.layoutType",
+          "headingStyles[].numbered",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberingTemplate",
+          "headings.levels[].span",
+          "index",
+          "index.fontFamily",
+          "index.fontSize",
+          "index.groups",
+          "index.groups.color",
+          "index.groups.fontFamily",
+          "index.groups.fontSize",
+          "index.groups.fontWeight",
+          "index.groups.letterSpacing",
+          "index.groups.textTransform",
+          "index.indent",
+          "index.lineHeight",
+          "index.main",
+          "index.main.bold",
+          "index.rangeFormat",
+          "index.rangeSeparator",
+          "index.see",
+          "index.see.italic",
+          "index.turnoverIndent",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "layout.sideColumnPercent",
+          "layout.sideColumnRole",
+          "layout.sideColumnSide",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.startAt",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].id",
+          "paragraphStyles[].italic",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].defaultPlacement",
+          "resourceTypes[].defaultPlacement.captionSide",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].namePlural",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyle",
+          "tableStyle.bodyColor",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.rules"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "index",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle"
+        ],
+        "configLeaves": 420,
+        "designElements": 17,
+        "directives": [
+          ":::callout",
+          ":::paragraphs",
+          ":::index"
+        ],
+        "inline": [
+          "{attrs}",
+          ":ref",
+          "~…~",
+          "^…^"
+        ],
+        "resources": {
+          "svg": 1,
+          "bitmap": 0,
+          "table": 1
+        },
+        "fonts": [
+          {
+            "family": "Libre Franklin",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 800,
+            "style": "normal"
+          },
+          {
+            "family": "Literata",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Literata",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Literata",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "back-of-book-index",
+          "callout-styles",
+          "citations",
+          "column-and-a-half",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "localised-labels",
+          "multi-chapter-books",
+          "opener-band",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "resources",
+          "roman-front-matter",
+          "section-geometry",
+          "section-running-heads",
+          "side-column-floats",
+          "super-subscripts",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 1,
+          "share": 0.0046,
+          "worst": 2
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "the edition's images weigh 1.30 MB (warning at 1.0 MB for 10 pages)"
+          },
+          {
+            "check": "C26",
+            "severity": "warn",
+            "detail": "the hero is 10.3 % colour, pictures or display type (aim for 25 %+)"
+          }
+        ]
+      }
+    }
+  }
+}
