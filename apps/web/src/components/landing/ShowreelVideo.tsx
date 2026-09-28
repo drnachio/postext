@@ -20,14 +20,19 @@ export function ShowreelVideo({
   title,
   playLabel,
   watchLabel,
+  subtitlesLabel,
 }: {
   lang: "en" | "es";
   title: string;
   playLabel: string;
   watchLabel: string;
+  subtitlesLabel: string;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
+  const frame = useRef<HTMLDivElement>(null);
   const [started, setStarted] = useState(false);
+  const [hasSubs, setHasSubs] = useState(false);
+  const [subsOn, setSubsOn] = useState(false);
   const base = `${MEDIA_BASE}/showreel/${VERSION}/${lang}`;
   const src = `${base}/master.m3u8`;
 
@@ -67,19 +72,50 @@ export function ShowreelVideo({
     };
   }, [src]);
 
+  // The subtitles come from the master playlist (hls.js, or Safari itself)
+  // and start off; the CC button and the browser's own menu stay in step.
+  useEffect(() => {
+    const tracks = ref.current?.textTracks;
+    if (!tracks) return;
+    const sync = () => {
+      const subs = [...tracks].filter((t) => t.kind === "subtitles" || t.kind === "captions");
+      setHasSubs(subs.length > 0);
+      setSubsOn(subs.some((t) => t.mode === "showing"));
+    };
+    sync();
+    tracks.addEventListener("addtrack", sync);
+    tracks.addEventListener("removetrack", sync);
+    tracks.addEventListener("change", sync);
+    return () => {
+      tracks.removeEventListener("addtrack", sync);
+      tracks.removeEventListener("removetrack", sync);
+      tracks.removeEventListener("change", sync);
+    };
+  }, []);
+
+  const toggleSubs = () => {
+    const tracks = ref.current?.textTracks;
+    if (!tracks) return;
+    const subs = [...tracks].filter((t) => t.kind === "subtitles" || t.kind === "captions");
+    const pick = subs.find((t) => t.language === lang) ?? subs[0];
+    for (const t of subs) t.mode = !subsOn && t === pick ? "showing" : "disabled";
+  };
+
   // Both calls stay inside the click so the browser counts them as the
   // reader's gesture; a refused full screen still leaves the video playing.
+  // The frame goes full screen, not the video, so the CC button comes along;
+  // the iPhone has no element full screen and uses its own player instead.
   const start = () => {
     const video: IOSVideo | null = ref.current;
     if (!video) return;
     setStarted(true);
     void video.play().catch(() => {});
-    if (video.requestFullscreen) void video.requestFullscreen().catch(() => {});
+    if (document.fullscreenEnabled && frame.current) void frame.current.requestFullscreen().catch(() => {});
     else video.webkitEnterFullscreen?.();
   };
 
   return (
-    <div className="relative">
+    <div ref={frame} className="group/player relative bg-night">
       <video
         ref={ref}
         controls={started}
@@ -88,7 +124,7 @@ export function ShowreelVideo({
         poster={`${base}/poster.jpg`}
         aria-label={title}
         onPlay={() => setStarted(true)}
-        className="block aspect-video w-full bg-night"
+        className="block aspect-video w-full bg-night group-[:fullscreen]/player:h-full group-[:fullscreen]/player:aspect-auto"
       />
       {!started && (
         <button
@@ -106,6 +142,22 @@ export function ShowreelVideo({
             </span>
             {watchLabel}
           </span>
+        </button>
+      )}
+      {started && hasSubs && (
+        <button
+          type="button"
+          onClick={toggleSubs}
+          aria-pressed={subsOn}
+          aria-label={subtitlesLabel}
+          title={subtitlesLabel}
+          className={`absolute top-3 right-3 rounded-md border px-2 py-0.5 font-sans text-xs font-bold tracking-wider transition-[opacity,background-color,color] duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand md:top-4 md:right-4 md:text-sm ${
+            subsOn
+              ? "border-brand bg-brand text-brand-contrast opacity-100"
+              : "border-white/60 bg-night/60 text-white opacity-70 hover:opacity-100"
+          }`}
+        >
+          CC
         </button>
       )}
     </div>

@@ -28,6 +28,7 @@ export async function ShowreelSection() {
           title={t("title")}
           playLabel={t("play")}
           watchLabel={t("watch")}
+          subtitlesLabel={t("subtitles")}
         />
       </div>
     </section>
