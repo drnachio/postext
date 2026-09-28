@@ -100,6 +100,9 @@ export interface MeasureContentBlockOptions {
   /** Resource blocks: the widest a figure's image may be set, its caption
    *  keeping the column's width (`layout.fitFiguresToPage`). */
   figureMaxBodyWidth?: number;
+  /** Resource blocks on a vertical page: set upright, the frame at most
+   *  this wide (see `ResourceLayoutInput.upright`). */
+  uprightMaxLength?: number;
   /** Lines (1-based) a column or a page ends on, which should not end on
    *  a hyphen (`bodyText.hyphenateAcrossColumns: false`). */
   avoidHyphenAtLines?: readonly number[];
@@ -171,11 +174,14 @@ export function measureContentBlock(
       resourceType: kind.resourceType,
       resourceNumber: kind.resourceNumber,
       ...(opts?.figureMaxBodyWidth !== undefined ? { maxBodyWidth: opts.figureMaxBodyWidth } : {}),
+      ...(opts?.uprightMaxLength !== undefined ? { upright: { maxLength: opts.uprightMaxLength } } : {}),
     });
     if (!resourceBlock) return null;
     if (frac < 1) {
       const dx = (columnWidth - embedWidth) * (align === 'center' ? 0.5 : align === 'right' ? 1 : 0);
-      shiftResourceBlockX(resourceBlock, dx);
+      // An upright block (a vertical page) moves its frame along the flow.
+      if (resourceBlock.rotation) resourceBlock.rotation.originX += dx;
+      else shiftResourceBlockX(resourceBlock, dx);
     }
     return { kind, contentBlock, measured, prefixLen: 0, absoluteSourceMap: [], resourceBlock };
   }

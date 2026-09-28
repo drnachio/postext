@@ -99,6 +99,8 @@ export type {
   HeadingBreakBeforeConfig,
   ResolvedHeadingBreakBeforeConfig,
   LayoutType,
+  WritingMode,
+  PageBinding,
   ColumnRuleConfig,
   ColumnBalancingConfig,
   ClosingBoxLever,
@@ -293,9 +295,11 @@ export type {
   VDTResourceTableLayout,
   RoundedOutline,
   VDTResourceRotation,
+  VDTFlowFrame,
   TableCellFillRects,
 } from './vdt';
 export { resourceBlockToPage, resourceBlockToLocal, resourceBlockRectToPage, tableFrameOutline, tableCellFill, tableCellFillRects } from './vdt';
+export { flowToPage, pageToFlow, flowRectToPage, pageRectToFlow, pageIsVertical, DEFAULT_CENTRAL_BASELINE } from './vdt';
 export { computeColumnEdges } from './pipeline/resourceLayout';
 export type { ContentBlock, ContentBlockType, DirectiveAttrs, DirectiveName, ContainerName, RefCase, InlineSpan, InlineLink, TextSpan, MathSpan, MathMeta, ListKind, ParseIssue, ParseIssueKind, UnclosedMathIssue, UnclosedContainerIssue, TocBlockInfo, IndexBlockInfo, IndexMark, ChipBox } from './parse';
 export { parseMarkdownWithIssues, MATH_PLACEHOLDER, SWATCH_PLACEHOLDER, CHIP_PLACEHOLDER, KNOWN_DIRECTIVES, KNOWN_CONTAINERS, spaceDirectiveLines, MAX_SPACE_LINES } from './parse';

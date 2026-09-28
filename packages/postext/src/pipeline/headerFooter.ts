@@ -4,6 +4,7 @@ import { TITLE_BREAK_RE, applyTitleBreaks, parseInlineFormatting } from '../pars
 import type { DesignTextAlign, DocumentMetadata, Resource, ResolvedDesignSlot, ResolvedDesignTextElement, ResolvedHeadingLevelConfig, TextAlign } from '../types';
 import {
   createBoundingBox,
+  flowRectToPage,
   type VDTBlock,
   type VDTDocument,
   type VDTDesignSlot,
@@ -16,7 +17,7 @@ import {
 } from '../vdt';
 import { computeChapterTitles, computeChapterTitlesAtTop, computeChapterNumbers, computeChapterNumbersAtTop, computeChapterNumbersByBlock, computeChapterAttrs, computePageMarks, computePartValues, lineJoin, markSourceOf, type JoinedLine, type PageMarks } from './placeholders';
 import { parsePartNumber, partMarkPages } from './parts';
-import { computePageMetrics } from './buildHelpers';
+import { computePageMetrics, sheetRectToFlow } from './buildHelpers';
 import { resolvedLocale } from './config';
 import { classifyPages } from './pageRoles';
 import { computeSectionStyles, createHeadingLevelResolver, headingIsHidden, type HeadingLevelResolver } from './headingStyles';
@@ -904,7 +905,14 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
   const resolved = doc.config;
   const dpi = resolved.page.dpi;
   const metrics = computePageMetrics(resolved);
-  const frames: DesignFrames = { page: metrics.trimBox, bleed: metrics.bleedBox };
+  // Header and footer are laid out on the sheet on every page; every other
+  // slot (openers, part pages, overlays) in the page's flow frame, so on a
+  // vertical page their text reads vertically.
+  const physicalFrames: DesignFrames = { page: metrics.physical.trimBox, bleed: metrics.physical.bleedBox };
+  const verticalFrames: DesignFrames = {
+    page: sheetRectToFlow(metrics.physical.trimBox, metrics.pageWidthPx),
+    bleed: sheetRectToFlow(metrics.physical.bleedBox, metrics.pageWidthPx),
+  };
 
   // Page roles drive the per-element `pages` filter of every slot below.
   classifyPages(doc, resolved);
@@ -975,10 +983,15 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
   for (const page of doc.pages) {
     // Per-page content area: mirrored margins swap inner/outer on even pages.
     const contentArea = page.contentArea;
+    const frames = page.flow ? verticalFrames : physicalFrames;
     const extras: SlotLayoutExtras = {
       frames, pageRole: page.role, resourceById,
       metadataSources: doc.metadataSources, metadata: doc.metadata as Record<string, unknown>,
     };
+    // Running heads and folios stay on the sheet: the physical content
+    // area and trim box.
+    const sheetArea = flowRectToPage(page, contentArea);
+    const sheetExtras: SlotLayoutExtras = page.flow ? { ...extras, frames: physicalFrames } : extras;
     const section = sectionByPage[page.index];
     const headerSlot = section?.header ?? resolved.header;
     const footerSlot = section?.footer ?? resolved.footer;
@@ -1001,11 +1014,11 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
       };
       page.header = layoutSlotToVdt(
         headerSlot,
-        headerContainerBbox(contentArea, metrics.trimBox),
+        headerContainerBbox(sheetArea, metrics.physical.trimBox),
         page.index + pageIndexOffset,
         placeholders,
         dpi,
-        extras,
+        sheetExtras,
       );
     }
     // Back of a part divider: a blank page right after a part page takes the
@@ -1265,11 +1278,11 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
       };
       page.footer = layoutSlotToVdt(
         footerSlot,
-        footerContainerBbox(contentArea, metrics.trimBox),
+        footerContainerBbox(sheetArea, metrics.physical.trimBox),
         page.index + pageIndexOffset,
         placeholders,
         dpi,
-        extras,
+        sheetExtras,
       );
     }
   }

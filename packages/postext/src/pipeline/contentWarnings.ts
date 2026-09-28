@@ -150,6 +150,7 @@ export function collectContentWarnings(
   const chipStyles = new Set((config?.chipStyles ?? DEFAULT_CHIP_STYLES).map((s) => s.id));
   const headingStyles = new Set((config?.headingStyles ?? DEFAULT_HEADING_STYLES).map((s) => s.id));
   const tableStyles = new Set((config?.tableStyles ?? []).map((s) => s.id));
+  const vertical = config?.layout?.writingMode === 'vertical-rl';
 
   /** First embed or reference of every known resource, in reading order. */
   const firstUse = new Map<string, SourceRange>();
@@ -322,6 +323,11 @@ export function collectContentWarnings(
     };
     scanSnippet(r.caption);
     scanSnippet(r.note);
+    // A vertical flow sets every resource upright: a turn asked for it is
+    // not applied (#188).
+    if (vertical && r.placement?.rotate && r.placement.position !== 'here') {
+      out.push({ kind: 'rotateIgnoredVertical', resourceId: id, ...where });
+    }
     if (r.kind !== 'table' || !r.table) continue;
     const styleId = r.table.styleId;
     // JSON documents may carry `styleId: null` for "no named style".

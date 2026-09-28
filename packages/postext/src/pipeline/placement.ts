@@ -9,10 +9,11 @@ import {
   type VDTLine,
   type VDTPage,
   type VDTColumn,
+  verticalFlowFrame,
 } from '../vdt';
 import type { HeadingBreakParity } from '../types';
 import { computeColumnBboxes, hasFloatSideColumn } from './config';
-import { contentAreaForPage, mirrorContentArea, type PageMetrics } from './buildHelpers';
+import { contentAreaForPage, mirrorFlowArea, pageMirrored, type PageMetrics } from './buildHelpers';
 import { dimensionToPx } from '../units';
 
 export interface PlacementCursor {
@@ -49,13 +50,15 @@ export function createPageWithColumns(
   pageIndexOffset = 0,
 ): VDTPage {
   // `contentArea` is the recto (odd-page) area; mirrored margins swap the
-  // inner/outer margins on even pages. `pageIndex` is the page's position in
-  // `doc.pages`, so page number = index + 1 (+ the pages before a continued
-  // document).
+  // inner/outer margins on the pages facing the other way (`pageMirrored`).
+  // `pageIndex` is the page's position in `doc.pages`, so page number =
+  // index + 1 (+ the pages before a continued document). `pageWidthPx` /
+  // `pageHeightPx` are the sheet's; a vertical layout's `contentArea` is in
+  // the flow frame, and the page carries that frame (`page.flow`).
   const pageArea = contentAreaForPage({ contentArea, pageWidthPx }, resolved, pageIndex, pageIndexOffset);
   const page = createVDTPage(pageIndex, pageWidthPx, pageHeightPx, pageArea);
-  const isEvenPage = (pageIndex + pageIndexOffset + 1) % 2 === 0;
-  const colBboxes = computeColumnBboxes(pageArea, resolved, isEvenPage);
+  if (resolved.layout.writingMode === 'vertical-rl') page.flow = verticalFlowFrame(pageWidthPx, pageHeightPx);
+  const colBboxes = computeColumnBboxes(pageArea, resolved, pageMirrored(resolved, pageIndex, pageIndexOffset));
   const sideIndex = hasFloatSideColumn(resolved) ? colBboxes.length - 1 : -1;
   for (let i = 0; i < colBboxes.length; i++) {
     const col = createVDTColumn(i, colBboxes[i]!);
@@ -67,14 +70,16 @@ export function createPageWithColumns(
 }
 
 /** Turn a freshly opened (empty) page into a part-divider page: a single
- *  body column inset from the trim box by `parts.margins` (mirrored on even
- *  pages when `parts.margins.mirror` is on), `page.contentArea` set to that
- *  area, `partInfo` stamped and the role fixed to `'part'`. The opener
- *  design is laid out later by `buildHeadersAndFooters` against the full
- *  trim box and never reserves body space. */
+ *  body column inset from the trim box by `parts.margins` (mirrored on the
+ *  pages `pageMirrored` names when `parts.margins.mirror` is on),
+ *  `page.contentArea` set to that area, `partInfo` stamped and the role
+ *  fixed to `'part'`. The opener design is laid out later by
+ *  `buildHeadersAndFooters` against the full trim box and never reserves
+ *  body space. `metrics.trimBox` is in the flow frame of the document; a
+ *  vertical document's part page is vertical too. */
 export function createPartPage(
   page: VDTPage,
-  metrics: Pick<PageMetrics, 'trimBox' | 'pageWidthPx'>,
+  metrics: Pick<PageMetrics, 'trimBox' | 'pageWidthPx'> & Partial<Pick<PageMetrics, 'vertical' | 'pageHeightPx'>>,
   resolved: ResolvedConfig,
   info: { number: string; title: string; palette?: Record<string, string>; titleSourceStart?: number; titleSourceEnd?: number },
   pageIndexOffset = 0,
@@ -92,9 +97,11 @@ export function createPartPage(
     Math.max(0, trim.width - left - right),
     Math.max(0, trim.height - top - bottom),
   );
-  const isEvenPage = (page.index + pageIndexOffset + 1) % 2 === 0;
-  if (m.mirror && isEvenPage) area = mirrorContentArea(area, metrics.pageWidthPx);
+  const vertical = metrics.vertical === true;
+  if (pageMirrored(resolved, page.index, pageIndexOffset, m.mirror)) area = mirrorFlowArea(area, metrics.pageWidthPx, vertical);
   page.contentArea = area;
+  if (vertical) page.flow = verticalFlowFrame(page.width, page.height);
+  else delete page.flow;
   page.columns = [createVDTColumn(0, area)];
   page.partInfo = {
     number: info.number,

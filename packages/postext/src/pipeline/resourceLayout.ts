@@ -113,6 +113,17 @@ export interface ResourceLayoutInput {
   /** Widest a figure's image (bitmap or SVG) may be set; the caption and
    *  note keep `columnWidth`. Defaults to `columnWidth`. */
   maxBodyWidth?: number;
+  /** Set the block upright on a vertical page (`VDTPage.flow`): laid out
+   *  in an upright frame counter-rotated in the flow (`rotation.direction:
+   *  'ccw'`, which the page's clockwise frame turns back), so the picture
+   *  and its caption read as on a horizontal page. `columnWidth` (the
+   *  column's width in the flow: the tier's height on the sheet) bounds
+   *  the frame's height; its width is the picture's (a bitmap at its size,
+   *  an SVG as tall as the tier leaves room for with its caption), at most
+   *  `maxLength` px, and the block reports that width as its height in the
+   *  flow. A table is laid out `maxLength` wide, its rows cut to the tier
+   *  by the placer. `rotate` and `rotatedLength` are ignored. */
+  upright?: { maxLength: number };
 }
 
 /** The rows a table slice carries. `startRow > 0` makes it a continuation:
@@ -943,6 +954,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
    *  {@link planTableSlice}. */
   tableRows?: TableRowMetrics;
 } {
+  if (input.upright) return layoutUprightResourceBlock(input, input.upright.maxLength);
   const {
     resource,
     resourceType,
@@ -1330,6 +1342,34 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   };
 }
 
+
+/**
+ * A resource set upright on a vertical page (see `ResourceLayoutInput.
+ * upright`): a counter-clockwise rotated block whose upright frame is as
+ * wide as its picture. The frame is first tried `maxLength` wide; a
+ * picture the tier's height shrinks (or a bitmap narrower than that) gives
+ * its width back, and the block is laid out again at the picture's width
+ * so the caption wraps under the picture, a few rounds until the width
+ * holds. The origin is block-relative (`originX` 0, `originY` the block's
+ * height in the flow), as `offsetResourceBlockToAbsolute` expects.
+ */
+function layoutUprightResourceBlock(input: ResourceLayoutInput, maxLength: number): ReturnType<typeof layoutResourceBlock> {
+  const base: ResourceLayoutInput = { ...input, upright: undefined, rotate: 'ccw' };
+  let length = Math.max(1, maxLength);
+  let out = layoutResourceBlock({ ...base, rotatedLength: length });
+  if (input.resource.kind === 'bitmap' || input.resource.kind === 'svg') {
+    for (let round = 0; round < 4; round++) {
+      const used = out.block.bodyRect.width;
+      if (!(used > 0) || used >= length - 0.5) break;
+      length = Math.max(1, used);
+      out = layoutResourceBlock({ ...base, rotatedLength: length });
+    }
+  }
+  const rotation = out.block.rotation!;
+  rotation.originX = 0;
+  rotation.originY = out.totalHeight;
+  return out;
+}
 
 /** Shift a resolved resource block's geometry right by `dx` (an inline
  *  resource narrower than its column, set per `placement.align`). */

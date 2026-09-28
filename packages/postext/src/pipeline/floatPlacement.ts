@@ -80,14 +80,16 @@ export interface PlannedFloat {
 /** Resolve a resource's placement: own `placement` → its type's
  *  `defaultPlacement` → the built-in default (`auto` / `column`). A rotated
  *  resource is always a page-span float; an inline (`here`) embed is never
- *  rotated. */
+ *  rotated, and neither is any resource of a vertical flow (`noRotation`:
+ *  every resource there stands upright, in its own span). */
 export function resolveResourcePlacement(
   resource: Resource,
   type: ResourceType | undefined,
+  noRotation = false,
 ): ResolvedPlacement {
   const position =
     resource.placement?.position ?? type?.defaultPlacement?.position ?? 'auto';
-  const rotate = position === 'here'
+  const rotate = position === 'here' || noRotation
     ? undefined
     : (resource.placement?.rotate ?? type?.defaultPlacement?.rotate);
   const span = rotate ? 'page' : (resource.placement?.span ?? type?.defaultPlacement?.span ?? 'column');
@@ -115,6 +117,8 @@ export function computeFloatPlan(
   resources: Resource[],
   resourceTypes: ResourceType[],
   incorporated?: ReadonlySet<string>,
+  /** A vertical flow: no resource is turned (see `resolveResourcePlacement`). */
+  noRotation = false,
 ): PlannedFloat[] {
   const resourceById = new Map<string, Resource>();
   for (const r of resources) resourceById.set(r.id, r);
@@ -130,7 +134,7 @@ export function computeFloatPlan(
     const resource = resourceById.get(resourceId);
     if (!resource) return;
     const type = typeById.get(resource.typeId);
-    const { position, span, rotate, widthFraction, align, captionSide } = resolveResourcePlacement(resource, type);
+    const { position, span, rotate, widthFraction, align, captionSide } = resolveResourcePlacement(resource, type, noRotation);
     if (position === 'here') return;
     plan.push({
       resourceId, firstBlockIdx: blockIdx, position, span,
