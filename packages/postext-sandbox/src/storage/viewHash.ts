@@ -18,6 +18,7 @@
  * keeps the one last open, no page lands on the chapter's first page.
  */
 
+import { canonicalLocaleTag } from 'postext';
 import type { ViewportTab } from '../types/props';
 
 export interface ViewHash {
@@ -26,7 +27,8 @@ export interface ViewHash {
   preset: string | null;
   /** Storage id of the local project on screen, or null. */
   project: string | null;
-  /** Content locale the preset was opened in (`es`, `en`…), or null. */
+  /** Content locale the preset was opened in (`es`, `en`, `zh-Hant`…),
+   *  as a canonical BCP 47 tag (`zh-hant` reads `zh-Hant`), or null. */
   lang: string | null;
   /** Viewer tab, or null. */
   view: ViewportTab | null;
@@ -41,8 +43,21 @@ export interface ViewHash {
 export const EMPTY_VIEW_HASH: ViewHash = { preset: null, project: null, lang: null, view: null, chapter: null, page: null };
 
 const VIEWS: readonly ViewportTab[] = ['canvas', 'html', 'pdf'];
-/** A BCP 47-ish tag: `es`, `en-US`, `pt-BR`. */
+/** A BCP 47-ish tag: `es`, `en-US`, `pt-BR`, `zh-Hant`. */
 const LANG_RE = /^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]{1,8})*$/;
+
+/** A `lang=` value as a canonical tag (`zh-hant` → `zh-Hant`, `PT-br` →
+ *  `pt-BR`); null when it is not a well-formed tag. */
+function readLang(hash: string): string | null {
+  const raw = readParam(hash, 'lang');
+  return raw !== null && LANG_RE.test(raw) ? canonicalLocaleTag(raw) : null;
+}
+
+/** Two `lang` parts naming the same tag, case aside (null only matches
+ *  null). */
+function sameLang(a: string | null, b: string | null): boolean {
+  return a === b || (a !== null && b !== null && a.toLowerCase() === b.toLowerCase());
+}
 /** Ids are what a manifest or the id generator produced: no separators of
  *  the fragment's own syntax, nothing unreasonably long. */
 const ID_RE = /^[^&#=\s]{1,128}$/;
@@ -75,13 +90,13 @@ function readId(hash: string, key: string): string | null {
 export function parseViewHash(hash: string): ViewHash {
   const project = readId(hash, 'project');
   const preset = project === null ? readId(hash, 'preset') : null;
-  const lang = readParam(hash, 'lang');
+  const lang = readLang(hash);
   const view = readParam(hash, 'view');
   const chapter = readNumber(hash, 'chapter');
   return {
     preset,
     project,
-    lang: preset !== null && lang !== null && LANG_RE.test(lang) ? lang.toLowerCase() : null,
+    lang: preset !== null ? lang : null,
     view: VIEWS.includes(view as ViewportTab) ? (view as ViewportTab) : null,
     chapter: chapter === null ? null : chapter - 1,
     page: readNumber(hash, 'page'),
@@ -127,12 +142,13 @@ export function writeViewHash(patch: Partial<ViewHash>): void {
 export type ViewHashBook = Pick<ViewHash, 'preset' | 'project' | 'lang'>;
 
 /** Whether two views name the same book. A view without a book names
- *  whatever is open; a preset without a locale names it in any locale. */
+ *  whatever is open; a preset without a locale names it in any locale.
+ *  Locale tags compare case aside. */
 export function sameBook(wanted: ViewHashBook, actual: ViewHashBook): boolean {
   if (wanted.project !== null) return wanted.project === actual.project;
   if (wanted.preset !== null) {
     if (actual.project !== null || wanted.preset !== actual.preset) return false;
-    return wanted.lang === null || wanted.lang === actual.lang;
+    return wanted.lang === null || sameLang(wanted.lang, actual.lang);
   }
   return true;
 }
@@ -162,16 +178,16 @@ export function parseHashBundle(hash: string, keys: readonly string[]): HashBund
     if (RESERVED_KEYS.has(key) || !BUNDLE_KEY_RE.test(key)) continue;
     const id = readId(hash, key);
     if (id === null) continue;
-    const lang = readParam(hash, 'lang');
-    return { key, id, lang: lang !== null && LANG_RE.test(lang) ? lang.toLowerCase() : null };
+    return { key, id, lang: readLang(hash) };
   }
   return null;
 }
 
 /** The stable origin a project imported from a hash bundle is recorded
- *  with: the same link finds it again. */
+ *  with: the same link finds it again. The locale is lower-cased, as the
+ *  links read before tags were canonicalised recorded it. */
 export function hashBundleOrigin(ref: HashBundleRef): string {
-  return `${ref.key}:${ref.id}:${ref.lang ?? ''}`;
+  return `${ref.key}:${ref.id}:${ref.lang?.toLowerCase() ?? ''}`;
 }
 
 /** The book last open, as storage remembers it. */
@@ -190,7 +206,7 @@ export function hashNamesOtherBook(view: ViewHashBook, stored: StoredBook, bundl
   if (view.project !== null) return view.project !== stored.projectId;
   if (view.preset !== null) {
     if (stored.projectId !== null || view.preset !== stored.presetId) return true;
-    return view.lang !== null && view.lang !== stored.presetLocale;
+    return view.lang !== null && !sameLang(view.lang, stored.presetLocale);
   }
   return false;
 }

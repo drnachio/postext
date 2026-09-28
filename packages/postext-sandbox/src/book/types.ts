@@ -138,6 +138,12 @@ export interface ChapterLayout {
   outlineKey: string;
 }
 
+/** The part a chapter belongs to (`:::part{number="…" title="…"}`). */
+export interface ChapterPart {
+  number: string;
+  title: string;
+}
+
 /** How one chapter is laid out on its own, continued after the chapters
  *  before it. */
 export interface ChapterPlan {
@@ -148,6 +154,12 @@ export interface ChapterPlan {
    *  chapter — the front matter (headings styled `numbered: false`) or a
    *  chapter without a level-1 heading. */
   number: number | null;
+  /** The part the chapter belongs to: the one open at its first level-1
+   *  heading (a part fence at its start, else the part inherited from the
+   *  chapters before it; a chapter without a heading, the last part it
+   *  opens). Absent in a book without parts, and for the chapters before
+   *  the first part. */
+  part?: ChapterPart;
   /** What the engine inherits. `undefined` for the first chapter (a
    *  self-contained document); the counters alone while the pages of a
    *  preceding chapter are still unknown. When the configuration prints

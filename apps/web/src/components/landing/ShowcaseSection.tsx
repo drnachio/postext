@@ -13,6 +13,9 @@ interface PresetEntry {
   description: string;
   thumbnail?: string;
   tags?: string[];
+  /** The content locale the book opens in from the shelf (a Chinese
+   *  original rather than the translation in the site's language). */
+  openLocale?: string;
 }
 
 /** The bundle's content hash (`fingerprint.json`, rewritten by every build),
@@ -84,7 +87,7 @@ export async function ShowcaseSection() {
         {presets.map((p) => (
           <Book
             key={p.id}
-            href={`/${locale}/sandbox#preset=${p.id}&lang=${lang}&view=canvas`}
+            href={`/${locale}/sandbox#preset=${p.id}&lang=${p.openLocale ?? lang}&view=canvas`}
             name={p.name}
             description={localizedDescription(p.description, locale)}
           >

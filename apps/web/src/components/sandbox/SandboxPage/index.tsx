@@ -27,7 +27,7 @@ const RECIPE_SLUG = /^[a-z0-9-]+$/;
 const HASH_BUNDLES = {
   recipe: (slug: string, lang: string | null) => {
     if (!RECIPE_SLUG.test(slug)) return null;
-    const first = lang === "es" ? "es" : "en";
+    const first = lang !== null && /^es(-|$)/i.test(lang) ? "es" : "en";
     const second = first === "es" ? "en" : "es";
     return [first, second].map((variant) => `/cookbook/${slug}/${variant}/${slug}.postext`);
   },

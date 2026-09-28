@@ -58,6 +58,7 @@ export async function fetchPresetIndexEntries(baseUrl: string): Promise<PresetIn
 export function summaryFromEntry(entry: PresetIndexEntry, source: PresetSource, baseUrl?: string): PresetSummary {
   const meta: PresetShowcaseMeta = {
     ...(entry.locales ? { locales: entry.locales } : {}),
+    ...(entry.openLocale ? { openLocale: entry.openLocale } : {}),
     ...(entry.thumbnail ? { thumbnail: entry.thumbnail } : {}),
     ...(entry.license ? { license: entry.license } : {}),
     ...(entry.credits ? { credits: entry.credits } : {}),

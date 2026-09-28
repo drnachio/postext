@@ -8,6 +8,8 @@ export interface SegmentedOption<T extends string> {
   label: ReactNode;
   /** Tooltip / accessible name when `label` is an icon. */
   title?: string;
+  /** Not selectable (shown dimmed; the tooltip says why). */
+  disabled?: boolean;
 }
 
 interface SegmentedControlProps<T extends string> {
@@ -38,6 +40,7 @@ export function SegmentedControl<T extends string>({ value, onValueChange, optio
     else if (e.key === 'End') next = options.length - 1;
     if (next === null) return;
     e.preventDefault();
+    if (options[next]!.disabled) return;
     onValueChange(options[next]!.value);
     (e.currentTarget.querySelectorAll<HTMLButtonElement>('[role="radio"]')[next])?.focus();
   };
@@ -68,7 +71,8 @@ export function SegmentedControl<T extends string>({ value, onValueChange, optio
             aria-label={o.title && typeof o.label !== 'string' ? o.title : undefined}
             title={o.title}
             tabIndex={selected ? 0 : -1}
-            onClick={() => { if (!selected) onValueChange(o.value); }}
+            aria-disabled={o.disabled || undefined}
+            onClick={() => { if (!selected && !o.disabled) onValueChange(o.value); }}
             className={cn(
               'inline-flex cursor-pointer items-center justify-center gap-1 whitespace-nowrap transition-colors',
               fill && 'min-w-0 flex-1',
@@ -76,7 +80,9 @@ export function SegmentedControl<T extends string>({ value, onValueChange, optio
               'focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
               selected
                 ? 'bg-(--brand-soft,var(--surface)) font-medium text-(--foreground)'
-                : 'bg-transparent text-(--slate) hover:bg-(--surface) hover:text-(--foreground)',
+                : o.disabled
+                  ? 'cursor-default bg-transparent text-(--slate) opacity-50'
+                  : 'bg-transparent text-(--slate) hover:bg-(--surface) hover:text-(--foreground)',
             )}
             style={i > 0 ? { borderLeft: '1px solid var(--rule)' } : undefined}
           >

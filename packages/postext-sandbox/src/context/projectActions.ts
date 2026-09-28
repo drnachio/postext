@@ -102,8 +102,9 @@ export interface ProjectActions {
   remove: (id: string) => Promise<void>;
   importBundle: (file: File) => Promise<string>;
   /** Import a bundle's bytes as a new project and open it. `origin` marks
-   *  a book opened from a host link (see `ProjectRecord.origin`). */
-  importBundleBytes: (bytes: ArrayBuffer | Uint8Array, fileName: string, opts?: { origin?: string }) => Promise<string>;
+   *  a book opened from a host link (see `ProjectRecord.origin`); `locale`
+   *  picks the language of a bundle in several (the viewer's otherwise). */
+  importBundleBytes: (bytes: ArrayBuffer | Uint8Array, fileName: string, opts?: { origin?: string; locale?: string }) => Promise<string>;
   exportProject: (target?: DuplicateSource) => Promise<void>;
   /** Replace a project's cover picture with `file`, or drop it with null. */
   setThumbnail: (id: string, file: File | null) => Promise<void>;
@@ -441,7 +442,10 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       const manifestId = (opened.manifest as { id?: unknown } | null)?.id;
       const summaryId = typeof manifestId === 'string' ? manifestId : slugify(fileName) || 'project';
       const loaded = await parseBundle(opened.manifest, opened.readFile, {
-        locale: s.locale,
+        // The content locale picked on import (a bundle in several
+        // languages), else the viewer's: a bundle in one language is read
+        // in its own whatever is asked.
+        locale: opts.locale ?? s.locale,
         summary: { id: summaryId, name: summaryId, source: 'private', available: true },
         ids: { blob: (f) => projectFileId(id, f), font: (f) => projectFontFileId(id, f) },
         chapterIds: generateChapterId,
