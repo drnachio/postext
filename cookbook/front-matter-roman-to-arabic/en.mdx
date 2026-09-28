@@ -9,7 +9,7 @@ pageNotes: { "3": "The half title, page iii. Its style breaks to a right-hand pa
 
 ## What you'll build
 
-The first leaves of *Frankenstein* as a pocket classic, 129 × 198 mm: a cover with lightning on Mont Blanc, its back left blank, a half title, a frontispiece of Walton’s ship beset in the ice facing the title page, the imprint low on its verso, the dedication to Godwin over Milton’s epigraph, a contents page and the Preface of 1818. Those ten pages are numbered i to x, but only the contents and the Preface print their numbers. Letter I starts the novel on a right-hand page, under the northern lights, and its folio reads 1 in the same place as the x on the facing page. The letter runs on to Walton’s signature. The ix beside the Preface in the contents and the 1 beside the letter come from the finished pages, and a PDF viewer labels the pages the same way.
+The first leaves of *Frankenstein* as a pocket classic, 129 × 198 mm: a cover with lightning on Mont Blanc, its back left blank, a half title, a frontispiece of Walton’s ship beset in the ice facing the title page, the imprint low on its verso, the dedication to Godwin over Milton’s epigraph, a contents page and the Preface of 1818. Those ten pages are numbered i to x, but only the contents and the Preface print their numbers. Letter I starts the novel on a right-hand page, under the northern lights, and its folio reads 1 in the same place as the x on the facing page. The letter runs on to Walton’s signature. The ix beside the Preface in the contents and the 1 beside the letter come from the finished pages, and a PDF viewer labels the pages the same way. The cover, the frontispiece and the northern lights are paintings generated with diffusion models, loaded as JPEG bitmaps; the publisher’s mark and the ice crystal are drawn in code.
 
 ## Method
 
@@ -17,7 +17,7 @@ The first leaves of *Frankenstein* as a pocket classic, 129 × 198 mm: a cover w
 
 <Excerpt region="leaves" />
 
-A heading opens a page of its own and becomes a PDF bookmark; the design in its style places the leaf’s type and drawings. With `numbered: false` and `toc: false` the leaves stay out of the chapter count and the contents. An empty header and footer give them what printers call blind folios: the title page prints no number but is still page v, which is why the Preface can be ix. Only the half title keeps an odd break, and that leaves the back of the cover blank. The imprint, the dedication, the epigraph and Walton’s close are `:::paragraphs` blocks set in the styles at the end of the excerpt.
+A heading opens a page of its own and becomes a PDF bookmark; the design in its style places the leaf’s type and pictures. With `numbered: false` and `toc: false` the leaves stay out of the chapter count and the contents. An empty header and footer give them what printers call blind folios: the title page prints no number but is still page v, which is why the Preface can be ix. Only the half title keeps an odd break, and that leaves the back of the cover blank. The imprint, the dedication, the epigraph and Walton’s close are `:::paragraphs` blocks set in the styles at the end of the excerpt.
 
 ### 2 · The contents take their numbers from the layout
 
@@ -29,7 +29,7 @@ A heading opens a page of its own and becomes a PDF bookmark; the design in its 
 
 <Excerpt region="letter" />
 
-The drawing bleeds off the head of the page and fades into the paper at its foot, where the letter begins. In Postext 1.4.1 an image never counts towards the room an opener reserves (its texts, rules and boxes do, even anchored to the page), so `minHeight` alone puts the first line below the drawing ([span and advanced design](/en/docs/configuration#span-and-advanced-design)). The kicker and the dateline come from the heading’s `to` and `dateline` attributes. Letter I also carries `{style="letter"}`, a style whose only setting is `numbered: false`, because Walton’s letters come before Chapter I and have no chapter number.
+The painting bleeds off the head of the page and fades into the paper at its foot, where the letter begins. In Postext 1.4.1 an image never counts towards the room an opener reserves (its texts, rules and boxes do, even anchored to the page), so `minHeight` alone puts the first line below the painting ([span and advanced design](/en/docs/configuration#span-and-advanced-design)). The kicker and the dateline come from the heading’s `to` and `dateline` attributes. Letter I also carries `{style="letter"}`, a style whose only setting is `numbered: false`, because Walton’s letters come before Chapter I and have no chapter number.
 
 ### 4 · The running heads come back with the novel
 

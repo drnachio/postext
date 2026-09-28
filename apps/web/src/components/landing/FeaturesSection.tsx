@@ -45,26 +45,34 @@ export async function FeaturesSection() {
             <li key={key} className="reveal">
               <Link
                 href={featureDocPath(key, locale)}
-                className="group relative flex h-full flex-col overflow-hidden rounded-md border-l-[4px] border-gold bg-tint/70 p-5 pl-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-24px_rgba(14,16,20,0.45)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gilt dark:bg-surface"
+                className="group flex h-full flex-col overflow-hidden rounded-lg border border-rule bg-background transition-[border-color,box-shadow] duration-300 hover:border-gilt/50 hover:shadow-[0_18px_40px_-28px_rgba(14,16,20,0.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gilt dark:bg-surface"
               >
-                <div className="flex items-start justify-between gap-4">
-                  <span className="font-sans text-xs font-bold tracking-[0.18em] text-gilt uppercase">2.{i + 1}</span>
-                  <span className="text-gilt transition-transform duration-300 group-hover:scale-105 dark:text-gold">
+                {/* A figure plate: the glyph numbered like a figure in the guide. */}
+                <div className="relative flex h-32 items-center justify-center border-b border-rule bg-tint/60 dark:bg-surface-2/60">
+                  <span className="absolute top-3 left-4 font-sans text-[0.7rem] font-bold tracking-[0.18em] text-gilt tabular-nums">
+                    2.{i + 1}
+                  </span>
+                  <span className="text-gilt transition-transform duration-300 group-hover:scale-105 dark:text-gold [&_svg]:h-[4.5rem] [&_svg]:w-[7.75rem]">
                     <Glyph />
                   </span>
                 </div>
-                <h3 className="mt-3 font-head text-lg font-bold tracking-[-0.01em] text-foreground md:text-xl">
-                  {t(`${key}Title`)}
-                </h3>
-                <p className="mt-2 font-body text-[0.92rem] leading-[1.65] text-foreground/75">
-                  {t(`${key}Description`)}
-                </p>
-                <span className="mt-auto pt-4 font-sans text-xs font-bold tracking-[0.12em] text-gilt uppercase dark:text-gold">
-                  {t("docsLink")}{" "}
-                  <span aria-hidden className="inline-block transition-transform duration-300 group-hover:translate-x-1">
-                    →
+                <div className="flex flex-1 flex-col p-5 pt-4">
+                  <h3 className="font-head text-lg font-bold tracking-[-0.01em] text-foreground md:text-xl">
+                    {t(`${key}Title`)}
+                  </h3>
+                  <p className="mt-2 font-body text-[0.92rem] leading-[1.65] text-foreground/75">
+                    {t(`${key}Description`)}
+                  </p>
+                  <span className="mt-auto pt-4 font-sans text-xs font-bold tracking-[0.12em] text-gilt uppercase dark:text-gold">
+                    {t("docsLink")}{" "}
+                    <span
+                      aria-hidden
+                      className="inline-block transition-transform duration-300 group-hover:translate-x-1"
+                    >
+                      →
+                    </span>
                   </span>
-                </span>
+                </div>
               </Link>
             </li>
           ))}

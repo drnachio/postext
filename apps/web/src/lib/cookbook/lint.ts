@@ -311,7 +311,8 @@ export function lintPen(
   }
   for (const m of ownBare.matchAll(/\bbitmap\s*:\s*\{/g)) {
     const open = (m.index ?? 0) + m[0].length - 1;
-    const body = scan.bare.slice(open, matchBracket(scan.bare, open) + 1);
+    // ownBare, not scan.bare: blanking the content and kit lines shifts every offset after them.
+    const body = ownBare.slice(open, matchBracket(ownBare, open) + 1);
     if (!/\bwidth\s*:/.test(body) || !/\bheight\s*:/.test(body)) {
       fails.push(`${at(open)}: bitmaps declare width and height at print size`);
     }

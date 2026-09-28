@@ -6,47 +6,159 @@
   "chapter": "figures",
   "order": 50,
   "level": 2,
-  "genres": ["photobook"],
-  "outputs": ["canvas"],
+  "genres": [
+    "photobook"
+  ],
+  "outputs": [
+    "canvas"
+  ],
   "features": {
-    "primary": ["design-images", "heading-styles", "opener-design"],
+    "primary": [
+      "design-images",
+      "heading-styles",
+      "opener-design"
+    ],
     "also": [
-      "design-anchoring", "section-geometry", "heading-attributes", "chapter-breaks",
-      "page-role-filters", "citations", "resource-types", "captions", "covers",
-      "page-background", "mirrored-margins", "design-elements", "hyphenation-languages",
-      "color-palette", "resources", "canvas-rendering"
+      "design-anchoring",
+      "section-geometry",
+      "heading-attributes",
+      "chapter-breaks",
+      "page-role-filters",
+      "citations",
+      "resource-types",
+      "captions",
+      "covers",
+      "page-background",
+      "mirrored-margins",
+      "design-elements",
+      "hyphenation-languages",
+      "color-palette",
+      "resources",
+      "canvas-rendering"
     ]
   },
-  "answers": ["Q29", "Q39", "Q31", "Q73"],
+  "answers": [
+    "Q29",
+    "Q39",
+    "Q31",
+    "Q73"
+  ],
   "gotchas": [
-    "opener-image-no-reserve", "opener-taller-than-column", "parity-page1-recto",
-    "headings-drop-h1-break", "palette-skips-designs", "design-lineheight-multiple",
-    "svg-no-marker-filters", "runt-tracking-unpainted", "hyphenation-locales", "fonts-first"
+    "opener-image-no-reserve",
+    "opener-taller-than-column",
+    "parity-page1-recto",
+    "headings-drop-h1-break",
+    "palette-skips-designs",
+    "design-lineheight-multiple",
+    "svg-no-marker-filters",
+    "runt-tracking-unpainted",
+    "hyphenation-locales",
+    "fonts-first"
   ],
-  "related": ["five-chapter-openers", "catalogue-facing-plates", "magazine-feature-opener", "chapter-opener-bleed-band"],
+  "related": [
+    "five-chapter-openers",
+    "catalogue-facing-plates",
+    "magazine-feature-opener",
+    "chapter-opener-bleed-band"
+  ],
   "workarounds": [
-    { "followup": "EF-90", "package": "postext", "note": "each plate style sets minHeight to the page's 210 mm, because a design's images reserve no height: without it the storm's right half, which draws no text, keeps only its heading's own 7.6 mm line and the next text starts on that page (gotcha opener-image-no-reserve)" },
-    { "followup": "EF-91", "package": "postext", "note": "the plate styles set zero margins, so the column is as tall as minHeight: in the text pages' 158 mm column, 1.4.1 drops a 210 mm reservation whole and the three texts print over the plates before them (gotcha opener-taller-than-column)" },
-    { "followup": "EF-05", "package": "postext", "note": "level 1 states breakBefore { enabled: false }, which changes nothing in 1.4.1 (it already drops the H1 break once a headings object exists); when the default always-odd break comes back, the setting stops the texts from breaking, so their pages stay body pages with a folio (gotcha headings-drop-h1-break)" },
-    { "followup": "EF-71", "package": "postext", "note": "col() writes the hex beside each paletteId, because 1.4.1 paints design elements (the captions, the cover title, the folio) and bodyText.referenceColor from the hex (gotcha palette-skips-designs)" },
-    { "followup": "EF-56", "package": "postext", "note": "design text lineHeight is a multiple of the size (1 for the cover title, 1.05 for the text titles, 1.5 for the colophon): a Dimension silently drops the opener's reservation (gotcha design-lineheight-multiple)" },
-    { "followup": "EF-149", "package": "postext", "note": "plate IV's type has an empty numberingTemplate, so a bare :ref would print 'lámina' (or 'plate') and a no-break space; the citation gives its own words with :ref's text" },
-    { "followup": "EF-94", "package": "postext", "note": "page 6 is the last page of text before the night plate, where 1.4.1 lifts a float below the text to one float gap under it (build.ts hugClosingText) and placement.position 'bottom' changes nothing; plate IV is set there on purpose, one line under the paragraph, and each text is fitted to one page so the plate and its caption end above the folio" },
-    { "followup": "EF-111", "package": "postext", "note": "bodyText.maxRuntTracking is 0: a runt fix's negative tracking is measured but never painted (gotcha runt-tracking-unpainted)" },
-    { "followup": "EF-14", "package": "postext", "note": "locale is 'es' or 'en-us', the exact codes: any other tag falls back to American English patterns (gotcha hyphenation-locales)" }
+    {
+      "followup": "EF-90",
+      "package": "postext",
+      "note": "each plate style sets minHeight to the page's 210 mm, because a design's images reserve no height: without it the storm's right half, which draws no text, keeps only its heading's own 7.6 mm line and the next text starts on that page (gotcha opener-image-no-reserve)"
+    },
+    {
+      "followup": "EF-91",
+      "package": "postext",
+      "note": "the plate styles set zero margins, so the column is as tall as minHeight: in the text pages' 158 mm column, 1.4.1 drops a 210 mm reservation whole and the three texts print over the plates before them (gotcha opener-taller-than-column)"
+    },
+    {
+      "followup": "EF-05",
+      "package": "postext",
+      "note": "level 1 states breakBefore { enabled: false }, which changes nothing in 1.4.1 (it already drops the H1 break once a headings object exists); when the default always-odd break comes back, the setting stops the texts from breaking, so their pages stay body pages with a folio (gotcha headings-drop-h1-break)"
+    },
+    {
+      "followup": "EF-71",
+      "package": "postext",
+      "note": "col() writes the hex beside each paletteId, because 1.4.1 paints design elements (the captions, the cover title, the folio) and bodyText.referenceColor from the hex (gotcha palette-skips-designs)"
+    },
+    {
+      "followup": "EF-56",
+      "package": "postext",
+      "note": "design text lineHeight is a multiple of the size (1 for the cover title, 1.05 for the text titles, 1.5 for the colophon): a Dimension silently drops the opener's reservation (gotcha design-lineheight-multiple)"
+    },
+    {
+      "followup": "EF-149",
+      "package": "postext",
+      "note": "plate IV's type has an empty numberingTemplate, so a bare :ref would print 'lámina' (or 'plate') and a no-break space; the citation gives its own words with :ref's text"
+    },
+    {
+      "followup": "EF-94",
+      "package": "postext",
+      "note": "page 6 is the last page of text before the night plate, where 1.4.1 lifts a float below the text to one float gap under it (build.ts hugClosingText) and placement.position 'bottom' changes nothing; plate IV is set there on purpose, one line under the paragraph, and each text is fitted to one page so the plate and its caption end above the folio"
+    },
+    {
+      "followup": "EF-111",
+      "package": "postext",
+      "note": "bodyText.maxRuntTracking is 0: a runt fix's negative tracking is measured but never painted (gotcha runt-tracking-unpainted)"
+    },
+    {
+      "followup": "EF-14",
+      "package": "postext",
+      "note": "locale is 'es' or 'en-us', the exact codes: any other tag falls back to American English patterns (gotcha hyphenation-locales)"
+    }
   ],
-  "engine": { "postext": "1.8.0" },
-  "kit": ["core", "fonts", "viewer", "images"],
-  "sample": { "locales": ["es", "en"] },
+  "engine": {
+    "postext": "1.8.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "es",
+      "en"
+    ]
+  },
   "capture": {
-    "hero": [4, 5],
+    "hero": [
+      4,
+      5
+    ],
     "card": "crop",
-    "focus": { "page": 1, "x": 0, "y": 0, "w": 1, "h": 1 },
+    "focus": {
+      "page": 1,
+      "x": 0,
+      "y": 0,
+      "w": 1,
+      "h": 1
+    },
     "pages": "all",
-    "expect": { "pages": [9, 9], "nearEmptyPages": [1, 3, 4, 5, 7, 9] }
+    "expect": {
+      "pages": [
+        9,
+        9
+      ],
+      "nearEmptyPages": [
+        1,
+        3,
+        4,
+        5,
+        7,
+        9
+      ]
+    }
   },
   "credits": {
-    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
     "text": [
       {
         "what": {
@@ -57,14 +169,81 @@
         "license": "CC-BY-4.0"
       }
     ],
-    "images": [],
+    "images": [
+      {
+        "what": {
+          "en": "Plate I, dawn: ridges fading into a peach haze under a dark blue sky",
+          "es": "Lámina I, alba: crestas que se pierden en una bruma melocotón bajo un cielo azul oscuro"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "alba-1600.jpg"
+      },
+      {
+        "what": {
+          "en": "Plate II, noon: a granite cirque and its lake",
+          "es": "Lámina II, mediodía: un circo de granito y su laguna"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "mediodia-1600.jpg"
+      },
+      {
+        "what": {
+          "en": "Plate III, storm: rain, lightning and a break of sun across a spread",
+          "es": "Lámina III, tormenta: lluvia, un rayo y un claro de sol a doble página"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "tormenta-2400.jpg"
+      },
+      {
+        "what": {
+          "en": "Plate IV, dusk: the crest lit orange under a violet sky",
+          "es": "Lámina IV, atardecer: la cresta encendida de naranja bajo un cielo violeta"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "atardecer-2000.jpg"
+      },
+      {
+        "what": {
+          "en": "Plate V, night: stars over the ridges and a lit refuge",
+          "es": "Lámina V, noche: estrellas sobre las crestas y un refugio iluminado"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "noche-1600.jpg"
+      },
+      {
+        "what": {
+          "en": "Plate VI, snow: the cirque of plate II the morning after",
+          "es": "Lámina VI, nieve: el circo de la lámina II a la mañana siguiente"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "nieve-1600.jpg"
+      }
+    ],
     "fonts": [
-      { "family": "Andada Pro", "license": "OFL-1.1" },
-      { "family": "Syne", "license": "OFL-1.1" },
-      { "family": "Syne Mono", "license": "OFL-1.1" }
+      {
+        "family": "Andada Pro",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Syne",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Syne Mono",
+        "license": "OFL-1.1"
+      }
     ]
   },
-  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
   "created": "2026-09-26",
   "updated": "2026-09-28"
 }

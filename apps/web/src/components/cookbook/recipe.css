@@ -183,15 +183,57 @@
   width: min(calc(100vw - 11rem), 68rem, calc(var(--lt-h) * var(--ar)));
   aspect-ratio: var(--ar);
 }
+.cb-lt-spread {
+  position: relative;
+  /* Page images (z 1) and their spine shading (z 2) paint above every
+     page's drop shadow, as the canvas draws them: otherwise the recto's
+     shadow falls on the verso along the spine. */
+  isolation: isolate;
+}
+/* While a leaf turns the canvas draws the spread. */
+.cb-lt-spread.is-turning > .cb-lt-page {
+  visibility: hidden;
+}
+/* Pages taken by hand and dragged over. */
+.cb-lt-spread.is-by-hand > .cb-lt-page:not(.is-empty) {
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.cb-lt-spread.is-held,
+.cb-lt-spread.is-held > .cb-lt-page {
+  cursor: grabbing !important;
+}
+/* A one-page document lies centred. */
+.cb-lt-spread.is-solo {
+  grid-template-columns: 1fr;
+}
+/* The page turn (pageFlip.ts): drawn over the spread with room for the
+   lifted leaf; transparent at rest. */
+.cb-lt-flip {
+  position: absolute;
+  top: -18%;
+  left: -6%;
+  width: 112%;
+  height: 136%;
+  z-index: 3;
+  pointer-events: none;
+}
 .cb-lt-page {
   position: relative;
   margin: 0;
 }
 .cb-lt-page img {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
   height: auto;
   background: #fff;
+}
+/* A blank page left out of the capture: the book's paper. */
+.cb-lt-page.is-blank {
+  background: var(--lt-paper, #fff);
 }
 .cb-lt-page:not(.is-empty) {
   box-shadow:
@@ -202,6 +244,7 @@
 .cb-lt-page:not(.is-empty)::after {
   content: "";
   position: absolute;
+  z-index: 2;
   inset: 0;
   pointer-events: none;
 }

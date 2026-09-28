@@ -377,7 +377,7 @@
     "mathTitle": "LaTeX math",
     "mathDescription": "Inline and display equations written in LaTeX, measured and typeset by the engine so they sit on the baseline grid alongside the text.",
     "outputTitle": "Web & print-ready PDF",
-    "outputDescription": "One layout engine, three renderers. The same computed pages render to HTML, canvas, or print-ready PDF — with bookmarks and CMYK colour.",
+    "outputDescription": "One layout engine, three renderers. The same computed pages render to HTML, canvas, or print-ready PDF — with bookmarks, CMYK colour and tagged, accessible PDF/UA output.",
     "docsLink": "Read in the docs",
     "lead": "Six things a page needs that CSS was never designed to decide — computed by the engine, the same way every time."
   },
@@ -392,7 +392,15 @@
     "open": "Open in the Sandbox",
     "guideName": "The Postext guide",
     "guideDescription": "The built-in guide: 12 chapters, three parts, a cover",
-    "all": "Browse every preset"
+    "all": "Browse every preset",
+    "books": {
+      "bioquimica-feduchi": "Feduchi Biochemistry · Chapter 1",
+      "deep-sky": "Deep Sky",
+      "don-quijote": "Don Quixote · Gustave Doré",
+      "openstax-fisica": "Physics (OpenStax)",
+      "pintura-espanola": "Spanish Painting",
+      "senales": "Signals 2020"
+    }
   },
   "ApiPreview": {
     "eyebrow": "API",
