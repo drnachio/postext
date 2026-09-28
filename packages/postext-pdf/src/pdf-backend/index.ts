@@ -362,9 +362,12 @@ function renderPage(
   // A vertical page (`VDTPage.flow`) paints its flow through the page's
   // frame, a quarter turn clockwise (the `'cw'` resource matrix with its
   // origin at the sheet's right edge), and maps the rects that live outside
-  // the content stream through it. Running heads, folios and the marks
-  // stay on the sheet. Characters are not stood upright here yet: the
-  // flow reads turned until the PDF learns vertical glyphs (#191).
+  // the content stream through it (`ctx.mapRectPt`): link annotations of
+  // the text, contents rows, `:ref`s and page links, the named
+  // destinations of resources and notes, structure bounding boxes. Running
+  // heads, folios and the marks stay on the sheet. Characters are not stood
+  // upright here yet: the flow reads turned until the PDF learns vertical
+  // glyphs (#191).
   let flowMatrix: PdfMatrix | undefined;
   if (vdtPage.flow) {
     flowMatrix = [0, -1, 1, 0, vdtPage.flow.rotation.originX * scale - pageHeightPt, pageHeightPt - vdtPage.flow.rotation.originY * scale];

@@ -896,8 +896,15 @@ export function renderResourceBlock(
   // Named destination for inline refs: top-left of the placed block (the
   // first slice of a split table; continuations are not targets).
   if (linkRegistry && rb.resource.id && !rb.slice?.continued) {
-    const destTop = pageHeightPt - block.bbox.y * scale;
-    linkRegistry.addDestination(rb.resource.id, ctx.page, block.bbox.x * scale, destTop);
+    // On the sheet: the block's box is in the page's frame, which a vertical
+    // page turns (not the block's own turned frame).
+    const pageMap = rot ? outerMapRect : ctx.mapRectPt;
+    const box: [number, number, number, number] = [
+      block.bbox.x * scale, pageHeightPt - (block.bbox.y + block.bbox.height) * scale,
+      (block.bbox.x + block.bbox.width) * scale, pageHeightPt - block.bbox.y * scale,
+    ];
+    const [left, , , top] = pageMap ? pageMap(box) : box;
+    linkRegistry.addDestination(rb.resource.id, ctx.page, left, top);
   }
 
   // Caption bar (behind the caption lines).
