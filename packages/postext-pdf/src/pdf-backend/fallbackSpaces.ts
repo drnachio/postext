@@ -45,7 +45,7 @@ const FALLBACK_SPACES = new Map<number, SpaceKind>([
 const ALWAYS_HIDDEN = new Set([0x00ad, 0x200b, 0x2060, 0xfeff]);
 
 /** Unicode's Default_Ignorable_Code_Point, as HarfBuzz and fontkit list it. */
-function isDefaultIgnorable(cp: number): boolean {
+export function isDefaultIgnorable(cp: number): boolean {
   if (cp < 0x10000) {
     return cp === 0x00ad || cp === 0x034f || cp === 0x061c
       || (cp >= 0x17b4 && cp <= 0x17b5)
@@ -58,6 +58,13 @@ function isDefaultIgnorable(cp: number): boolean {
       || (cp >= 0xfff0 && cp <= 0xfff8);
   }
   return (cp >= 0x1bca0 && cp <= 0x1bca3) || (cp >= 0x1d173 && cp <= 0x1d17a) || (cp >= 0xe0000 && cp <= 0xe0fff);
+}
+
+/** Whether {@link fallbackPieces} paints `cp` without the face's glyph for
+ *  it: a space set from the face's space glyph, or a default-ignorable
+ *  character left out. A face lacking one of these is not missing it. */
+export function isFallbackHandled(cp: number): boolean {
+  return FALLBACK_SPACES.has(cp) || isDefaultIgnorable(cp);
 }
 
 /** Quick test for a character {@link fallbackPieces} may have to handle:

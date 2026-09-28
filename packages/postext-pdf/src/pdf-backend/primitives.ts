@@ -40,6 +40,7 @@ import { colorAlpha, hexToRgb, rgbToCmyk, rgbToGrayscale } from '../colors';
 import type { PdfColorSpace, RoundedOutline, VDTChip } from 'postext';
 import type { PageTagger } from './tagging';
 import { fallbackPieces, type FallbackFace, type TextPiece } from './fallbackSpaces';
+import { fileRuns, noteMissingGlyphs } from '../faceFiles';
 
 export interface PageCtx {
   page: PDFPage;
@@ -340,10 +341,24 @@ export function showTextShaped(font: PDFFont, text: string): PDFOperator {
   }
   const hit = cache.get(text);
   if (hit) return hit;
+  noteMissingGlyphs(font, text);
   const op = fallbackOperator(font, text) ?? shapedTextOperator(font, text);
   if (cache.size >= ENCODE_CACHE_SLOTS) cache.clear();
   cache.set(text, op);
   return op;
+}
+
+/** A show-text operator and the font (a file of the face) it shows in. */
+export interface TextShow {
+  font: PDFFont;
+  op: PDFOperator;
+}
+
+/** The show-text operators of `text` in `font`'s face: one
+ *  ({@link showTextShaped}) for a face of one file, else one per run of
+ *  characters set in the same file (see `faceFiles.ts`). */
+export function textShows(font: PDFFont, text: string): TextShow[] {
+  return fileRuns(font, text).map((run) => ({ font: run.font, op: showTextShaped(run.font, run.text) }));
 }
 
 function shapingFace(font: PDFFont): { face: ShapingFace & FallbackFace; features: unknown } | undefined {
@@ -523,6 +538,7 @@ function shownRun(font: PDFFont, text: string): ShownRun | undefined {
   if (hit) return hit;
   const shaping = shapingFace(font);
   if (!shaping) return undefined;
+  noteMissingGlyphs(font, text);
   const pieces = fallbackPieces(shaping.face, text);
   let run: ShownRun;
   if (pieces) {
@@ -561,24 +577,54 @@ export function measuredTextOperator(
   sizePx: number,
   trackingPx = 0,
 ): PDFOperator | undefined {
+  const shows = measuredTextShows(font, pieces, sizePx, trackingPx);
+  return shows && shows.length === 1 ? shows[0]!.op : undefined;
+}
+
+/**
+ * {@link measuredTextOperator} for a face of any number of files: the
+ * pieces cut into runs by file (see `faceFiles.ts`), one show-text
+ * operator per stretch set in the same file. The pen carries across the
+ * font switches, so every piece still starts where the layout put it.
+ */
+export function measuredTextShows(
+  font: PDFFont,
+  pieces: readonly { text: string; width: number }[],
+  sizePx: number,
+  trackingPx = 0,
+): TextShow[] | undefined {
   if (!(sizePx > 0)) return undefined;
-  const parts: Array<string | number> = [];
+  const groups: Array<{ font: PDFFont; parts: Array<string | number> }> = [];
+  let group: { font: PDFFont; parts: Array<string | number> } | undefined;
   const tracking = (trackingPx / sizePx) * 1000;
   // How far the pen is right of where the layout wants it, in thousandths.
   let ahead = 0;
   for (let i = 0; i < pieces.length; i++) {
     const piece = pieces[i]!;
-    const run = shownRun(font, piece.text);
-    if (!run) return undefined;
-    for (const part of run.parts) pushPart(parts, part);
-    ahead += run.advance + run.glyphs * tracking - (piece.width / sizePx) * 1000;
+    let advance = 0;
+    for (const { font: file, text } of fileRuns(font, piece.text)) {
+      const run = shownRun(file, text);
+      if (!run) return undefined;
+      if (!group || group.font !== file) {
+        group = { font: file, parts: [] };
+        groups.push(group);
+      }
+      for (const part of run.parts) pushPart(group.parts, part);
+      advance += run.advance + run.glyphs * tracking;
+    }
+    ahead += advance - (piece.width / sizePx) * 1000;
     if (i < pieces.length - 1 && Math.abs(ahead) >= MEASURED_TOLERANCE) {
       const n = tjNumber(ahead);
-      pushPart(parts, n);
+      if (!group) {
+        group = { font, parts: [] };
+        groups.push(group);
+      }
+      pushPart(group.parts, n);
       ahead -= n;
     }
   }
-  return partsOperator(font, parts);
+  if (groups.length === 0) groups.push({ font, parts: [] });
+  return groups.map((g) => ({ font: g.font, op: partsOperator(g.font, g.parts) }));
 }
 
 const fontKeysByPage = new WeakMap<PDFPage, Map<PDFFont, PDFName>>();
@@ -619,7 +665,7 @@ export function drawTextPx(
   actualText?: string,
 ): void {
   if (!text) return;
-  pushTextObject(ctx, showTextShaped(font, text), xPx, baselinePx, font, sizePx, color, outline, actualText);
+  pushTextObject(ctx, textShows(font, text), xPx, baselinePx, font, sizePx, color, outline, actualText);
 }
 
 /**
@@ -641,23 +687,25 @@ export function drawMeasuredTextPx(
   trackingPx = 0,
   actualText?: string,
 ): boolean {
-  const op = measuredTextOperator(font, pieces, sizePx, trackingPx);
-  if (!op) return false;
-  pushTextObject(ctx, op, xPx, baselinePx, font, sizePx, color, undefined, actualText);
+  const shows = measuredTextShows(font, pieces, sizePx, trackingPx);
+  if (!shows) return false;
+  pushTextObject(ctx, shows, xPx, baselinePx, font, sizePx, color, undefined, actualText);
   return true;
 }
 
 /**
- * The operators pdf-lib's `drawText` emits, around a show-text operator.
- * With `actualText` the show-text operator sits in a `/Span` marked-content
- * sequence whose `/ActualText` is that text (PDF 1.7 §14.9.4), inside the
- * text object, where readers expect it: copying, text extraction and
- * assistive technology read it instead of the glyphs. The span has no MCID,
- * so in a tagged PDF it nests in the structure sequence open around it.
+ * The operators pdf-lib's `drawText` emits, around the show-text operators
+ * of a text: one, or one per file of a face made of several (each after
+ * its own `Tf`; the pen carries over). With `actualText` the show-text
+ * operators sit in a `/Span` marked-content sequence whose `/ActualText` is
+ * that text (PDF 1.7 §14.9.4), inside the text object, where readers expect
+ * it: copying, text extraction and assistive technology read it instead of
+ * the glyphs. The span has no MCID, so in a tagged PDF it nests in the
+ * structure sequence open around it.
  */
 function pushTextObject(
   ctx: PageCtx,
-  show: PDFOperator,
+  shows: readonly TextShow[],
   xPx: number,
   baselinePx: number,
   font: PDFFont,
@@ -675,6 +723,18 @@ function pushTextObject(
         setTextRenderingMode(outline.hollow ? TextRenderingMode.Outline : TextRenderingMode.FillAndOutline),
       ]
     : [];
+  // The first show's font is set with the text matrix; each later show in
+  // another file of the face switches to it.
+  const first = shows[0]?.font ?? font;
+  const body: PDFOperator[] = [];
+  let current = first;
+  for (const show of shows) {
+    if (show.font !== current) {
+      body.push(setFontAndSize(fontKeyOn(ctx.page, show.font), sizePx * scale));
+      current = show.font;
+    }
+    body.push(show.op);
+  }
   // The operators pdf-lib's `drawText` emits, with the encoding cached.
   ctx.page.pushOperators(
     pushGraphicsState(),
@@ -683,9 +743,9 @@ function pushTextObject(
     ...outlineOps,
     beginText(),
     setFillingColor(color),
-    setFontAndSize(fontKeyOn(ctx.page, font), sizePx * scale),
+    setFontAndSize(fontKeyOn(ctx.page, first), sizePx * scale),
     setTextMatrix(1, 0, 0, 1, xPx * scale, pageHeightPt - baselinePx * scale),
-    ...(actualText === undefined ? [show] : withActualText(ctx, actualText, show)),
+    ...(actualText === undefined ? body : withActualText(ctx, actualText, body)),
     endText(),
     popGraphicsState(),
   );
@@ -693,14 +753,14 @@ function pushTextObject(
 
 type OperatorArg = Parameters<typeof PDFOperator.of>[1] extends (infer A)[] | undefined ? A : never;
 
-/** `show` inside a `/Span` whose `/ActualText` is `text`. */
-function withActualText(ctx: PageCtx, text: string, show: PDFOperator): PDFOperator[] {
+/** `shows` inside a `/Span` whose `/ActualText` is `text`. */
+function withActualText(ctx: PageCtx, text: string, shows: readonly PDFOperator[]): PDFOperator[] {
   // A property list (`<< /ActualText … >>`) is an inline dictionary operand
   // of `BDC`; pdf-lib types operator arguments narrowly but serialises it.
   const props = ctx.page.doc.context.obj({ ActualText: PDFHexString.fromText(text) }) as unknown as OperatorArg;
   return [
     PDFOperator.of(PDFOperatorNames.BeginMarkedContentSequence, [PDFName.of('Span'), props]),
-    show,
+    ...shows,
     PDFOperator.of(PDFOperatorNames.EndMarkedContent),
   ];
 }
