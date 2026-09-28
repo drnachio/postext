@@ -10,6 +10,7 @@ export { buildFontString, initHyphenator, clearMeasurementCache, createMeasureme
 export { measureGlyphWidth, measureTextWidth } from './canvas';
 export { measureBlock } from './plain';
 export { measureRichBlock } from './rich';
+export { setCjkLineBreak, getCjkLineBreak } from './cjkClasses';
 
 /** The caches that hold measurements made with the line-breaking options
  *  added after postext 1.4 (`breakAfterDashes`, `optimalRagged`,

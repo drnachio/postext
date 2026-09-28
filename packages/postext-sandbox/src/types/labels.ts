@@ -140,6 +140,8 @@ export interface SandboxLabels {
   warningsMissingFontTitle: string;
   warningsMissingFontDetail: string;
   warningsLooseLineTitle: string;
+  warningsCjkLooseLineTitle: string;
+  warningsCjkLooseLineDetail: string;
   warningsHeadingHierarchyTitle: string;
   warningsHeadingHierarchyDetail: string;
   warningsConsecutiveHeadingsTitle: string;
@@ -295,6 +297,19 @@ export interface SandboxLabels {
   footnotesSeparatorLineWidthTooltip: string;
   footnotesSeparatorColor: string;
   footnotesSeparatorColorTooltip: string;
+  cjkSection: string;
+  cjkAuto: string;
+  cjkRegion: string;
+  cjkRegionTooltip: string;
+  cjkRegionMainland: string;
+  cjkRegionTaiwan: string;
+  cjkRegionHongKong: string;
+  cjkLineBreak: string;
+  cjkLineBreakTooltip: string;
+  cjkLineBreakNone: string;
+  cjkLineBreakBasic: string;
+  cjkLineBreakGb: string;
+  cjkLineBreakStrict: string;
 
   // Body text section
   bodyText: string;

@@ -8,6 +8,7 @@ export type WarningKind =
   | 'missingFontVariant'
   | 'duplicateFontVariant'
   | 'looseLine'
+  | 'cjkLooseLine'
   | 'headingHierarchy'
   | 'consecutiveHeadings'
   | 'listAfterHeading'
@@ -79,6 +80,7 @@ export type WarningPayload =
       variants: Array<{ weight: number; style: 'normal' | 'italic'; count: number }>;
     }
   | { kind: 'looseLine'; ratio: number; threshold: number }
+  | { kind: 'cjkLooseLine'; text: string }
   | { kind: 'headingHierarchy'; from: number; to: number }
   | { kind: 'consecutiveHeadings' }
   | { kind: 'listAfterHeading' }

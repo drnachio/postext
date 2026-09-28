@@ -30,6 +30,7 @@ import {
 import { extractFrontmatter, normalizeMetadata } from '../frontmatter';
 import { collectConfigWarnings } from '../configWarnings';
 import { initHyphenator } from '../measure';
+import { setCjkLineBreak } from '../measure/cjkClasses';
 import type { MeasurementCache } from '../measure';
 import { resolveAllConfig, computeBaselineGrid, resolvedLocale } from './config';
 import {
@@ -158,7 +159,7 @@ import {
   type BandCapZone,
 } from './bandCaps';
 import { raggedLooseLines } from './raggedLines';
-import { collectContentWarnings, locateContentWarnings } from './contentWarnings';
+import { cjkLooseLineWarnings, collectContentWarnings, locateContentWarnings } from './contentWarnings';
 
 /** Tolerance for "does this block fit" checks against a column's free
  *  height, absorbing floating-point drift between grid multiples. */
@@ -338,8 +339,10 @@ function measureLooseParagraph(
   const optimum = measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, { styleOverride, looseness: 0 });
   const looseness = optimum ? target - optimum.measured.lines.length : extraLines;
   const maxWordSpacing = ctx.resolved.bodyText.maxWordSpacing + 1e-9;
+  // A CJK line spread past its tracking cap (`cjkLoose`) is past the
+  // limit too.
   const withinLimit = (lines: readonly VDTLine[]): boolean =>
-    lines.every((l) => l.isLastLine || l.justifiedSpaceRatio === undefined || l.justifiedSpaceRatio <= maxWordSpacing);
+    lines.every((l) => l.isLastLine || ((l.justifiedSpaceRatio === undefined || l.justifiedSpaceRatio <= maxWordSpacing) && !l.cjkLoose));
   for (const tracking of trackingLadder) {
     const loose = measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, {
       styleOverride,
@@ -409,6 +412,9 @@ export function buildDocumentPass(
   // syllable even in ragged text. Left unset, a build would hyphenate with
   // whichever dictionary the previous one (or the default, en-us) chose.
   initHyphenator(resolved.bodyText.hyphenation.locale);
+  // CJK text breaks at the document's level wherever it is measured (body,
+  // captions, cells, notes, boxes), as it hyphenates in its language.
+  setCjkLineBreak(resolved.cjk.lineBreak);
 
   // Compute baseline grid
   const baselineGrid = computeBaselineGrid(resolved);
@@ -5507,7 +5513,10 @@ export function* buildDocumentGen(
   // once, located on the pages of the finished layout. Kept apart from
   // `doc.warnings`, whose entries keep their postext 1.4 shape.
   const found = [...collectContentWarnings(content.markdown, config, content.resources ?? []), ...(indexWarnings.get(doc) ?? [])];
-  if (found.length > 0) doc.contentWarnings = locateContentWarnings(doc, found);
+  const located = found.length > 0 ? locateContentWarnings(doc, found) : [];
+  // Justified CJK lines the composer could not fill within its tracking cap.
+  const loose = cjkLooseLineWarnings(doc);
+  if (located.length > 0 || loose.length > 0) doc.contentWarnings = [...located, ...loose];
   // Config values the build replaced (an unknown number format, a font
   // stack, a side column no column width can take): walked once per build,
   // not per pass — they belong to no page.

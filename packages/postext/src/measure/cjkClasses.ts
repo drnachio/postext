@@ -1,0 +1,221 @@
+import type { CjkLineBreak } from '../types';
+
+/**
+ * Character classes of Chinese (and Japanese) text layout, after the W3C
+ * "Requirements for Chinese Text Layout" (clreq §3.1 and §6.1) and GB/T
+ * 15834—2011: what a line may not start or end with at each strictness
+ * level, which marks never part (—— ……), and which characters take no
+ * inter-character space when a justified line is spread.
+ *
+ * A class is read from the first code point of a grapheme. The marks Latin
+ * text shares with Chinese (— … · “ ” ‘ ’) are classed as Chinese marks
+ * here: the table is only consulted for paragraphs set by the CJK composer
+ * (`cjkCompose.ts`) and for the joints of words that hold CJK, where they
+ * are Chinese punctuation. The apostrophe of a Latin word ("don’t") and the
+ * interpunct inside one ("l·l") are kept in their word by the unit builder.
+ */
+
+/** How strictly lines avoid starting or ending with punctuation (clreq
+ *  §6.1.1). `none`: anywhere between characters (Taiwan and Hong Kong
+ *  newspapers). `basic`: no pause or stop mark, closing bracket or quote,
+ *  connector, interpunct or iteration mark opens a line, and no opening
+ *  bracket or quote closes one. `gb`: `basic` plus the solidus at either
+ *  end (GB/T 15834—2011 §5.1.9). `strict`: `gb` plus the two-em dash and
+ *  the ellipsis at the start of a line. */
+export type CjkLineBreakLevel = CjkLineBreak;
+
+export const CJK_LINE_BREAK_LEVELS: readonly CjkLineBreakLevel[] = ['none', 'basic', 'gb', 'strict'];
+
+export type CjkClass =
+  /** Han, kana, hangul, bopomofo, fullwidth letters and digits, 〇, emoji
+   *  and the CJK symbols: a line may break before and after each. */
+  | 'ideograph'
+  /** Opening brackets and quotes: （〔［｛【〖《〈「『“‘ and ASCII ( [ {. */
+  | 'opening'
+  /** Closing brackets and quotes: ）〕］｝】〗》〉」』”’ and ASCII ) ] }. */
+  | 'closing'
+  /** Pause marks: 、，；： and ASCII , ; : */
+  | 'pause'
+  /** Stop marks: 。．！？‼⁇⁈⁉ and ASCII . ! ? */
+  | 'stop'
+  /** Interpuncts: · ‧ ・ ･ */
+  | 'interpunct'
+  /** Iteration marks and the prolonged sound mark: 々〻ゝゞヽヾー */
+  | 'iteration'
+  /** Dashes: — ― ⸺ ⸻ (two U+2014 in a row are one unit, 破折号). */
+  | 'dash'
+  /** Ellipses: … ‥ ⋯ (two in a row are one unit, 省略号). */
+  | 'ellipsis'
+  /** Connectors: – ～ 〜 ~ 〰 ゠ */
+  | 'connector'
+  /** Solidus: / ／ */
+  | 'solidus'
+  /** The ideographic space U+3000: a fixed character one em wide; a line
+   *  may break after it, never before. */
+  | 'ideoSpace'
+  /** Signs a number takes before it: ¥ $ € £ ₩ ￥ ＄ ￡ ± − ＋ (the ASCII
+   *  plus is Western text: `C++` may end a line). */
+  | 'prefix'
+  /** Signs a number takes after it: % ‰ ‱ ° ℃ ℉ ′ ″ ％ */
+  | 'postfix'
+  /** Latin, Greek, Cyrillic letters, digits and everything else: set in
+   *  runs a line never breaks inside. */
+  | 'western'
+  /** U+200B, the zero-width space: a break opportunity, not printed. */
+  | 'zwsp';
+
+/** The level lines of CJK text break at when a measurement names none:
+ *  the document's `cjk.lineBreak`, which the build sets before it lays the
+ *  document out (as it sets the hyphenation language), so captions, table
+ *  cells, notes and boxes break like the body. */
+let documentLineBreak: CjkLineBreakLevel = 'gb';
+
+/** Set the level {@link getCjkLineBreak} returns (the build does, from the
+ *  resolved `cjk.lineBreak`). */
+export function setCjkLineBreak(level: CjkLineBreakLevel): void {
+  documentLineBreak = level;
+}
+
+/** The document's line-break level for CJK text (see
+ *  {@link setCjkLineBreak}); `gb` until a build sets another. */
+export function getCjkLineBreak(): CjkLineBreakLevel {
+  return documentLineBreak;
+}
+
+/** Whether a line may break between two graphemes that touch: `a` (class
+ *  `aCls`, a CJK grapheme when `aCjk`) and `b` after it. Only next to a CJK
+ *  grapheme — two Western graphemes never part here — and never before the
+ *  ideographic space; at `level`, no prohibited mark opens or closes a
+ *  line. */
+export function cjkBreakAllowed(aCls: CjkClass, aCjk: boolean, bCls: CjkClass, bCjk: boolean, level: CjkLineBreakLevel): boolean {
+  if (aCls === 'zwsp' || bCls === 'zwsp') return true;
+  if (!aCjk && !bCjk) return false;
+  if (bCls === 'ideoSpace') return false;
+  return !isLineStartProhibited(bCls, level) && !isLineEndProhibited(aCls, level);
+}
+
+/** Whether a grapheme of `cls` may not open a line at `level`. */
+export function isLineStartProhibited(cls: CjkClass, level: CjkLineBreakLevel): boolean {
+  switch (level) {
+    case 'none':
+      return false;
+    case 'strict':
+      if (cls === 'dash' || cls === 'ellipsis') return true;
+    // falls through
+    case 'gb':
+      if (cls === 'solidus') return true;
+    // falls through
+    case 'basic':
+      return cls === 'pause' || cls === 'stop' || cls === 'closing' || cls === 'connector'
+        || cls === 'interpunct' || cls === 'iteration' || cls === 'postfix';
+  }
+}
+
+/** Whether a grapheme of `cls` may not close a line at `level`. */
+export function isLineEndProhibited(cls: CjkClass, level: CjkLineBreakLevel): boolean {
+  switch (level) {
+    case 'none':
+      return false;
+    case 'strict':
+    case 'gb':
+      if (cls === 'solidus') return true;
+    // falls through
+    case 'basic':
+      return cls === 'opening' || cls === 'prefix';
+  }
+}
+
+const OPENING = new Set('（〔［｛【〖《〈「『〘〚〝“‘([{«‹︵︷︹︻︽︿﹁﹃﹇﹙﹛﹝︗｟｢⦅');
+const CLOSING = new Set('）〕］｝】〗》〉」』〙〛〞〟”’)]}»›︶︸︺︼︾﹀﹂﹄﹈﹚﹜﹞︘｠｣⦆');
+const PAUSE = new Set('、，；：,;:﹐﹑﹔﹕︐︑︓︔､');
+const STOP = new Set('。．！？.!?‼⁇⁈⁉﹒﹖﹗︒︕︖｡');
+const INTERPUNCT = new Set('·‧・･');
+const ITERATION = new Set('々〻ゝゞヽヾーｰ〱〲〳〴〵');
+const DASH = new Set('—―⸺⸻︱︲﹘');
+const ELLIPSIS = new Set('…‥⋯︙︰');
+const CONNECTOR = new Set('–～〜~〰゠');
+const SOLIDUS = new Set('/／');
+const PREFIX = new Set('¥$€£₩￥＄￡￦±−＋﹩₽₹');
+const POSTFIX = new Set('%‰‱°℃℉′″％￠﹪');
+
+/** Code points of the CJK scripts and their symbol blocks, classed
+ *  `ideograph` unless a punctuation set above names them. */
+function isCjkCodePoint(cp: number): boolean {
+  return (cp >= 0x1100 && cp <= 0x11FF) // Hangul Jamo
+    || (cp >= 0x2E80 && cp <= 0x2FDF) // CJK and Kangxi radicals
+    || (cp >= 0x2FF0 && cp <= 0x2FFF) // ideographic description characters
+    || (cp >= 0x3000 && cp <= 0x303F) // CJK symbols and punctuation
+    || (cp >= 0x3040 && cp <= 0x30FF) // kana
+    || (cp >= 0x3100 && cp <= 0x312F) // bopomofo
+    || (cp >= 0x3130 && cp <= 0x318F) // Hangul compatibility Jamo
+    || (cp >= 0x3190 && cp <= 0x31FF) // kanbun, bopomofo extended, CJK strokes, katakana extension
+    || (cp >= 0x3200 && cp <= 0x33FF) // enclosed CJK, CJK compatibility
+    || (cp >= 0x3400 && cp <= 0x4DBF) // Extension A
+    || (cp >= 0x4E00 && cp <= 0x9FFF) // unified ideographs
+    || (cp >= 0xA960 && cp <= 0xA97F) // Hangul Jamo extended A
+    || (cp >= 0xAC00 && cp <= 0xD7FF) // Hangul syllables, Jamo extended B
+    || (cp >= 0xF900 && cp <= 0xFAFF) // compatibility ideographs
+    || (cp >= 0xFE10 && cp <= 0xFE1F) // vertical forms
+    || (cp >= 0xFE30 && cp <= 0xFE6F) // CJK compatibility forms, small form variants
+    || (cp >= 0xFF00 && cp <= 0xFFEF) // halfwidth and fullwidth forms
+    || (cp >= 0x16FE0 && cp <= 0x16FFF) // ideographic symbols (small 儿)
+    || (cp >= 0x1B000 && cp <= 0x1B16F) // kana supplement and extended
+    || (cp >= 0x1F200 && cp <= 0x1F2FF) // enclosed ideographic supplement
+    || (cp >= 0x20000 && cp <= 0x3FFFF); // Extensions B and later
+}
+
+const PICTOGRAPHIC_RE = /\p{Extended_Pictographic}/u;
+
+/** The class of a grapheme, read from its first code point. */
+export function cjkClassOf(grapheme: string): CjkClass {
+  const ch = grapheme.length === 1 ? grapheme : String.fromCodePoint(grapheme.codePointAt(0)!);
+  if (ch === '\u3000') return 'ideoSpace';
+  if (ch === '\u200B') return 'zwsp';
+  if (OPENING.has(ch)) return 'opening';
+  if (CLOSING.has(ch)) return 'closing';
+  if (PAUSE.has(ch)) return 'pause';
+  if (STOP.has(ch)) return 'stop';
+  if (INTERPUNCT.has(ch)) return 'interpunct';
+  if (ITERATION.has(ch)) return 'iteration';
+  if (DASH.has(ch)) return 'dash';
+  if (ELLIPSIS.has(ch)) return 'ellipsis';
+  if (CONNECTOR.has(ch)) return 'connector';
+  if (SOLIDUS.has(ch)) return 'solidus';
+  if (PREFIX.has(ch)) return 'prefix';
+  if (POSTFIX.has(ch)) return 'postfix';
+  const cp = ch.codePointAt(0)!;
+  if (isCjkCodePoint(cp)) return 'ideograph';
+  if (cp >= 0x2190 && PICTOGRAPHIC_RE.test(ch)) return 'ideograph';
+  return 'western';
+}
+
+/** Whether a grapheme is set as a Chinese character in a CJK paragraph: it
+ *  opens a unit of its own instead of joining a Western run. The ASCII
+ *  marks (`,` `.` `(` `%`…) and the signs of numbers stay in the Western
+ *  run they touch; the marks Chinese shares with Latin text (— … · “ ” ‘ ’
+ *  – ~) are Chinese marks, except the apostrophe or the interpunct of a
+ *  Latin word, which the unit builder keeps in it. */
+export function isCjkGrapheme(grapheme: string): boolean {
+  const cp = grapheme.codePointAt(0)!;
+  if (cp < 0x80) return cp === 0x200B;
+  if (isCjkCodePoint(cp)) return true;
+  switch (grapheme[0]) {
+    case '—': case '―': case '⸺': case '⸻':
+    case '…': case '‥': case '⋯':
+    case '·': case '‧':
+    case '“': case '”': case '‘': case '’':
+    case '–':
+    case '\u200B':
+      return true;
+  }
+  return cp >= 0x2190 && PICTOGRAPHIC_RE.test(grapheme);
+}
+
+/** Whether a grapheme is a letter or digit of Western text (the neighbours
+ *  of an apostrophe or an interpunct kept inside a word). */
+export function isWesternWordChar(grapheme: string | undefined): boolean {
+  if (grapheme === undefined) return false;
+  const cp = grapheme.codePointAt(0)!;
+  if (isCjkCodePoint(cp)) return false;
+  return /[\p{L}\p{N}]/u.test(grapheme);
+}

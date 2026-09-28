@@ -62,6 +62,56 @@ export function foldRefRuns(segs: readonly VDTSegment[]): VDTSegment[] {
   return out;
 }
 
+const graphemeSegmenter = typeof Intl !== 'undefined' && 'Segmenter' in Intl
+  ? new Intl.Segmenter(undefined, { granularity: 'grapheme' })
+  : undefined;
+
+/**
+ * Where the graphemes of a segment start, as offsets into its text, with
+ * the text's length last — or null when every UTF-16 unit is a grapheme and
+ * the segment is not tracked, so the linear mapping over units is exact.
+ * A tracked segment (a justified CJK line) spreads its characters evenly,
+ * one share of its width per grapheme; a supplementary-plane ideograph (𠺕)
+ * is one grapheme of two units, which the caret never lands inside.
+ */
+export function segmentGraphemeStarts(seg: Pick<VDTSegment, 'text' | 'tracking'>): number[] | null {
+  const text = seg.text;
+  const complex = /[\uD800-\uDFFF\u0300-\u036F\u200D\uFE00-\uFE0F]/.test(text);
+  if (!complex && seg.tracking === undefined) return null;
+  const starts: number[] = [];
+  if (graphemeSegmenter && complex) {
+    for (const g of graphemeSegmenter.segment(text)) starts.push(g.index);
+  } else {
+    for (let i = 0; i < text.length; i++) starts.push(i);
+  }
+  starts.push(text.length);
+  return starts;
+}
+
+/** The x of plain offset `within` (UTF-16 units into the segment, up to
+ *  `plainLen`) over a segment `rendered` px wide: grapheme by grapheme when
+ *  {@link segmentGraphemeStarts} gives its boundaries, else linearly. */
+function xWithinSegment(seg: VDTSegment, within: number, plainLen: number, rendered: number): number {
+  const starts = seg.kind === 'text' ? segmentGraphemeStarts(seg) : null;
+  if (!starts || starts.length < 2) return plainLen > 0 ? (within / plainLen) * rendered : 0;
+  const n = starts.length - 1;
+  let k = 0;
+  while (k < n && starts[k + 1]! <= within) k++;
+  return (k / n) * rendered;
+}
+
+/** The plain offset (UTF-16 units into the segment, at most `plainLen`) of
+ *  the grapheme boundary nearest to `dx` px into a segment `rendered` px
+ *  wide (see {@link xWithinSegment}). */
+function offsetWithinSegment(seg: VDTSegment, dx: number, plainLen: number, rendered: number): number {
+  const ratio = rendered > 0 ? dx / rendered : 0;
+  const starts = seg.kind === 'text' ? segmentGraphemeStarts(seg) : null;
+  if (!starts || starts.length < 2) return Math.round(ratio * plainLen);
+  const n = starts.length - 1;
+  const k = Math.max(0, Math.min(n, Math.round(ratio * n)));
+  return Math.min(plainLen, starts[k]!);
+}
+
 /** Page-space position of a resource embed (inline block or float band). */
 export interface ResourceLocation {
   pageIndex: number;
@@ -122,7 +172,7 @@ function refInBlockLine(
   const segs = line.segments;
   if (!segs || segs.length === 0) return null;
   const blockRight = block.bbox.x + block.bbox.width;
-  const justifyFill = block.textAlign === 'justify' && line.isLastLine === false;
+  const justifyFill = block.textAlign === 'justify' && line.isLastLine === false && !line.ragged;
   let naturalWidth = 0;
   let spaceCount = 0;
   for (const seg of segs) {
@@ -298,7 +348,9 @@ export function xForPlainInLine(
 ): number {
   const blockRight = block.bbox.x + block.bbox.width;
   const lineLen = Math.max(0, (line.plainEnd ?? 0) - (line.plainStart ?? 0));
-  const justifyFill = block.textAlign === 'justify' && line.isLastLine === false;
+  // A line set ragged inside a justified paragraph (a loose CJK line, a
+  // line a URL left unfillable) is painted at its natural width.
+  const justifyFill = block.textAlign === 'justify' && line.isLastLine === false && !line.ragged;
   const segs = line.segments && foldRefRuns(line.segments);
 
   if (!segs || segs.length === 0) {
@@ -331,9 +383,7 @@ export function xForPlainInLine(
     const segPlainLen = segmentPlainLength(seg, isLastSeg && addsHyphen(line), opensWithRepeatedHyphen(line, i));
     const segRendered = seg.width + (seg.kind === 'space' ? extraPerSpace : 0);
     if (inLineOffset <= cum + segPlainLen) {
-      const within = inLineOffset - cum;
-      const ratio = segPlainLen > 0 ? within / segPlainLen : 0;
-      return x + ratio * segRendered;
+      return x + xWithinSegment(seg, inLineOffset - cum, segPlainLen, segRendered);
     }
     x += segRendered;
     cum += segPlainLen;
@@ -418,7 +468,7 @@ export function pixelToSourceOffset(
   // 3. Walk segments to find the plain-char offset within the line. Mirror the
   //    justify-fill math from xForPlainInLine.
   const blockRight = hitBlock.bbox.x + hitBlock.bbox.width;
-  const justifyFill = hitBlock.textAlign === 'justify' && hitLine.isLastLine === false;
+  const justifyFill = hitBlock.textAlign === 'justify' && hitLine.isLastLine === false && !hitLine.ragged;
   const segs = hitLine.segments && foldRefRuns(hitLine.segments);
   const lineLen = Math.max(0, hitLine.plainEnd - hitLine.plainStart);
   let inLineOffset: number;
@@ -457,9 +507,7 @@ export function pixelToSourceOffset(
       const segPlainLen = segmentPlainLength(seg, isLastSeg && addsHyphen(hitLine), opensWithRepeatedHyphen(hitLine, i));
       const segRendered = seg.width + (seg.kind === 'space' ? extraPerSpace : 0);
       if (clampedX <= x + segRendered) {
-        const within = clampedX - x;
-        const ratio = segRendered > 0 ? within / segRendered : 0;
-        result = cum + Math.round(ratio * segPlainLen);
+        result = cum + offsetWithinSegment(seg, clampedX - x, segPlainLen, segRendered);
         resolved = true;
         break;
       }

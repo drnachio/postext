@@ -2758,6 +2758,49 @@ export interface ResolvedFootnotesConfig {
   separator: ResolvedFootnoteSeparatorConfig;
 }
 
+/** The conventions Chinese text follows, after the regions clreq
+ *  describes: `mainland` (China and Singapore: simplified characters,
+ *  GB/T 15834—2011), `taiwan` and `hongkong` (traditional characters). */
+export type CjkRegion = 'mainland' | 'taiwan' | 'hongkong';
+
+/** How strictly lines of CJK text avoid starting or ending with a mark
+ *  (clreq §6.1.1):
+ *  - `none`: a line may break between any two characters (Taiwan and Hong
+ *    Kong newspapers);
+ *  - `basic`: no line starts with a pause or stop mark (、，；：。！？), a
+ *    closing bracket or quote, a connector (– ～, a single —), an
+ *    interpunct (·) or an iteration mark (々), and none ends with an
+ *    opening bracket or quote;
+ *  - `gb`: `basic`, and the solidus (/ ／) at neither end (GB/T
+ *    15834—2011 §5.1.9);
+ *  - `strict`: `gb`, and no line starts with a two-em dash (——) or an
+ *    ellipsis (……).
+ *  At every level —— and …… never split, a number keeps its signs and its
+ *  unit (¥5,999, 50%), a Latin word stays whole unless it is wider than the
+ *  line, and a footnote marker stays with the character it follows. */
+export type CjkLineBreak = 'none' | 'basic' | 'gb' | 'strict';
+
+/** East Asian typography: how Chinese, Japanese and Korean text is
+ *  composed. Every field is optional; `'auto'` follows the region of the
+ *  document language (`locale`). A paragraph is composed this way when it
+ *  holds more CJK characters than word spaces; a Latin paragraph quoting a
+ *  few characters keeps Knuth–Plass, with a break allowed next to them. */
+export interface CjkConfig {
+  /** The regional conventions to follow. `'auto'` (the default) reads them
+   *  from `locale`: `zh`, `zh-Hans`, `zh-CN` and `zh-SG` → `mainland`;
+   *  `zh-Hant` and `zh-TW` → `taiwan`; `zh-HK` and `zh-MO` → `hongkong`;
+   *  any other language → `mainland`. */
+  region?: 'auto' | CjkRegion;
+  /** Where lines may break (see {@link CjkLineBreak}). `'auto'` (the
+   *  default): `gb` for the mainland, `basic` for Taiwan and Hong Kong. */
+  lineBreak?: 'auto' | CjkLineBreak;
+}
+
+export interface ResolvedCjkConfig {
+  region: CjkRegion;
+  lineBreak: CjkLineBreak;
+}
+
 export type PdfColorSpace = 'rgb' | 'cmyk' | 'grayscale';
 
 /** How postext-pdf writes the file. Layout ignores it; the VDT carries it
@@ -3691,6 +3734,9 @@ export interface PostextConfig {
   math?: MathConfig;
   /** Footnotes (`[^id]` markers and `[^id]: …` definitions). */
   footnotes?: FootnotesConfig;
+  /** East Asian typography: line breaking and justification of Chinese,
+   *  Japanese and Korean text (see {@link CjkConfig}). */
+  cjk?: CjkConfig;
   header?: HeaderFooterSlot;
   footer?: HeaderFooterSlot;
 

@@ -110,6 +110,28 @@
       }
     }
   },
+  "cjkLooseLine": {
+    "source": "engine",
+    "label": {
+      "en": "CJK line set short",
+      "es": "Línea CJK corta"
+    },
+    "cause": {
+      "en": "A justified line of Chinese, Japanese or Korean text would need more space between its characters than half an em (or `bodyText.maxJustifyTracking`) to reach the measure, usually because a long Latin word or web address on the next line cannot break.",
+      "es": "Una línea justificada de texto chino, japonés o coreano necesitaría más de medio cuadratín entre sus caracteres (o más que `bodyText.maxJustifyTracking`) para llegar a la medida, casi siempre porque una palabra latina larga o una dirección web de la línea siguiente no se puede cortar."
+    },
+    "fix": {
+      "en": "Break the long word or address yourself (a zero-width space, U+200B, where a line may end), move it, or widen the measure.",
+      "es": "Corta tú la palabra o la dirección larga (un espacio de anchura cero, U+200B, donde puede acabar la línea), muévela o ensancha la medida."
+    },
+    "docs": {
+      "slug": "justification",
+      "heading": {
+        "en": "Chinese, Japanese and Korean",
+        "es": "Chino, japonés y coreano"
+      }
+    }
+  },
   "headingHierarchy": {
     "source": "sandbox",
     "label": {

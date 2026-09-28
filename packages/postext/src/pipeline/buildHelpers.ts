@@ -321,7 +321,9 @@ export function stampSourceRanges(
     // group is wider than the line, and the second line keeps the space.
     const after = plain[line.plainEnd];
     const opensNext = after !== undefined && NO_BREAK_SPACES.includes(after) && nextUnits[0] === after;
-    const skipSeparator = li !== lastLineIdx && after !== undefined && (/\s/.test(after) || isUnprinted(after)) && !opensNext ? 1 : 0;
+    // The ideographic space (U+3000) is a character of CJK text: a line
+    // that ends before one leaves it to the next.
+    const skipSeparator = li !== lastLineIdx && after !== undefined && ((/\s/.test(after) && after !== '\u3000') || isUnprinted(after)) && !opensNext ? 1 : 0;
     cumPlain = line.plainEnd + skipSeparator;
     line.sourceStart = plainToSrcStart(line.plainStart);
     line.sourceEnd = plainToSrcStart(line.plainEnd);

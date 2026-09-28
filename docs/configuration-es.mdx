@@ -39,6 +39,7 @@ Esta referencia es larga. Estos son los bloques principales:
 - [Encabezados y pies](#encabezados-y-pies) — elementos de texto y línea por página con marcadores, paridad y alineación.
 - [Texto de cuerpo](#texto-de-cuerpo) — tipografía, separación silábica, viudas y huérfanas.
 - [Idioma del documento](#idioma-del-documento) — el `locale` de primer nivel: respaldo de la separación silábica, tipos de recurso integrados y cadenas de continuación de tablas y de avisos partidos, lengua etiquetada en un PDF accesible; y los [idiomas y escrituras](#idiomas-y-escrituras) que Postext compone.
+- [Tipografía de Asia oriental](#tipografía-de-asia-oriental) — `cjk`: las convenciones regionales y el corte de línea del texto en chino, japonés y coreano, y cómo se ensanchan sus líneas justificadas.
 - [Encabezados](#encabezados) — valores generales y sobrescrituras H1–H6.
 - [Listas no ordenadas](#listas-no-ordenadas) y [Listas ordenadas](#listas-ordenadas) — viñetas, numeración, anidamiento.
 - [Matemáticas](#matemáticas) — renderizado LaTeX, escala, color, márgenes.
@@ -1236,7 +1237,7 @@ La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
       <td><code>optimalLineBreaking</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Usar ruptura óptima de líneas Knuth-Plass en lugar de voraz de primer ajuste. Produce un espaciado entre palabras más uniforme en todo el párrafo. Un párrafo con palabras en chino, japonés o coreano (ver <a href="#idiomas-y-escrituras">Idiomas y escrituras</a>), o con una palabra más ancha que la columna, se compone igualmente de primer ajuste. El texto en bandera también la usa con <code>optimalRagged</code>. Ver <a href="/es/docs/justification">Separación silábica y justificación</a>.</td>
+      <td>Usar ruptura óptima de líneas Knuth-Plass en lugar de voraz de primer ajuste. Produce un espaciado entre palabras más uniforme en todo el párrafo. Un párrafo en chino, japonés o coreano (ver <a href="#tipografía-de-asia-oriental">Tipografía de Asia oriental</a>), o con una palabra más ancha que la columna, se compone igualmente línea a línea; un párrafo latino que cita unas pocas palabras CJK la conserva. El texto en bandera también la usa con <code>optimalRagged</code>. Ver <a href="/es/docs/justification">Separación silábica y justificación</a>.</td>
     </tr>
     <tr>
       <td><code>optimalRagged</code></td>
@@ -1461,7 +1462,7 @@ const config: PostextConfig = {
 Postext compone escrituras alfabéticas que se escriben de izquierda a derecha. Dos familias de sistemas de escritura todavía no están del todo soportadas:
 
 - **Escrituras de derecha a izquierda** (árabe, hebreo, persa, urdu…). No hay algoritmo bidireccional: las líneas se cortan y se alinean como si el texto corriera de izquierda a derecha, contra el margen izquierdo, y lo que muestra cada línea depende de cómo se pinta. En la salida canvas y PDF, una línea alineada a la izquierda y sin formato en línea se dibuja como un solo tramo de texto, que el navegador o el motor tipográfico del PDF vuelven de derecha a izquierda por su cuenta, así que ahí una línea toda en una escritura de derecha a izquierda puede leerse bien, pero no una que mezcle direcciones, cifras o puntuación. La salida HTML, las líneas justificadas, centradas o alineadas a la derecha y las que llevan formato en línea se dibujan palabra a palabra de izquierda a derecha: cada palabra se lee bien, pero las palabras salen en orden de lectura invertido.
-- **El chino, el japonés y el coreano** se componen solo en parte. El texto con ideogramas se corta entre caracteres, sin guion, con las reglas básicas de *kinsoku* de pretext: ninguna línea empieza por una puntuación de cierre como 。、」 o por la marca de sonido largo ー, y ninguna termina en un signo de apertura como 「 o （. Los dos divisores de líneas siguen las mismas reglas, y dos tramos de ideogramas seguidos (`**日本**語`) pueden cortarse donde se juntan. Un párrafo con palabras escritas así —dos ideogramas, kana o sílabas hangul seguidos— no se compone con la división óptima de líneas: se corta línea a línea, aunque esté justificado. Un signo de apertura o cierre CJK, el punto medio o un signo de ancho completo citados en texto latino (〈h〉, ％) dejan el párrafo a la división óptima. Para justificar una línea solo se estiran los espacios, así que una línea de ideogramas conserva su ancho natural, algo más corta que la columna; no hay justificación entre caracteres, ni compresión de la puntuación, ni escritura vertical, ni ruby. El coreano se corta entre sílabas además de en sus espacios.
+- **El chino, el japonés y el coreano** se componen en horizontal. Un párrafo con más caracteres CJK que espacios entre palabras se corta entre caracteres con las reglas de principio y final de línea de clreq que fija `cjk.lineBreak` (ninguna línea empieza por 。、」 o ー, ninguna termina en 「 o （), mantiene enteros —— y ……, un número con sus signos y una palabra latina, y una línea justificada se ensancha entre sus caracteres hasta la medida: ver [Tipografía de Asia oriental](#tipografía-de-asia-oriental). Un párrafo latino que cita unas pocas palabras CJK conserva la división óptima de líneas y puede cortarse junto a ellas; un signo de apertura o cierre CJK, el punto medio o un signo de ancho completo citados en texto latino (〈h〉, ％) no cambian nada. Todavía no hay compresión de la puntuación, espacio entre han y latín, escritura vertical ni ruby. El coreano se corta entre sílabas además de en sus espacios.
 
 Hay patrones de separación silábica para ocho idiomas (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`), y en esos mismos ocho existen los tipos de recurso integrados y las cadenas de continuación de tablas. Cualquier otro idioma se divide con los patrones del inglés de EE. UU., con un aviso en la consola, y recibe las cadenas inglesas. Para un documento así, fija `hyphenation.enabled: false` y pasa `resourceTypes` y las cadenas de continuación de `tableStyle` en su idioma.
 
@@ -2917,6 +2918,82 @@ El resolutor y el depurador siguen el patrón de las demás secciones:
 ```ts
 import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults } from 'postext';
 ```
+
+
+## Tipografía de Asia oriental
+
+La propiedad `cjk` fija cómo se compone el texto en chino, japonés y coreano: qué convenciones regionales sigue y dónde pueden cortarse sus líneas. Todos los campos son opcionales, y `'auto'` sigue la región del idioma del documento (`locale`), de modo que un libro con `locale: 'zh-Hant'` corta sus líneas a la manera de Taiwán sin fijar nada más.
+
+```ts
+interface CjkConfig {
+  region?: 'auto' | 'mainland' | 'taiwan' | 'hongkong';   // Convenciones regionales.
+  lineBreak?: 'auto' | 'none' | 'basic' | 'gb' | 'strict'; // Qué signos no pueden abrir ni cerrar una línea.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '120px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>region</code></td>
+      <td><code>'auto' | 'mainland' | 'taiwan' | 'hongkong'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Las convenciones que sigue el texto, según las regiones que describen los <a href="https://www.w3.org/TR/clreq/">Requisitos de composición del texto chino</a> del W3C (clreq). <code>'auto'</code> toma la región de <code>locale</code>, o de <code>bodyText.hyphenation.locale</code> si <code>locale</code> no está definido: <code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code> y <code>zh-SG</code> dan <code>'mainland'</code> (China continental); <code>zh-Hant</code> y <code>zh-TW</code> dan <code>'taiwan'</code>; <code>zh-HK</code> y <code>zh-MO</code> dan <code>'hongkong'</code>; cualquier otro idioma da <code>'mainland'</code>. Por ahora la región solo elige el nivel de corte por defecto; los anchos de la puntuación también la seguirán.</td>
+    </tr>
+    <tr>
+      <td><code>lineBreak</code></td>
+      <td><code>'auto' | 'none' | 'basic' | 'gb' | 'strict'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Qué signos no pueden abrir ni cerrar una línea (clreq §6.1.1; ver la tabla siguiente). <code>'auto'</code>: <code>'gb'</code> en China continental, <code>'basic'</code> en Taiwán y Hong Kong.</td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '90px' }}>Nivel</th>
+      <th>Nunca al principio de una línea</th>
+      <th>Nunca al final de una línea</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>none</code></td><td>Nada: una línea puede cortarse entre dos caracteres cualesquiera, como hace la prensa de Taiwán y Hong Kong.</td><td>Nada.</td></tr>
+    <tr><td><code>basic</code></td><td>Los signos de pausa y de cierre de oración 、，；：。！？．‼⁇⁈⁉; las comillas de cierre ” ’ 」 』 y los paréntesis y corchetes de cierre ）〕］｝】〗》〉; los conectores – ～ ~ y una raya — sola entre dos palabras; los puntos medios · ‧ ・; las marcas de iteración 々〻ゝゞヽヾ y ー; las unidades de un número % ‰ ° ℃.</td><td>Las comillas de apertura “ ‘ 「 『 y los paréntesis y corchetes de apertura （〔［｛【〖《〈; los signos de moneda ¥ $ € £.</td></tr>
+    <tr><td><code>gb</code></td><td><code>basic</code>, y la barra / ／ (GB/T 15834—2011 §5.1.9).</td><td><code>basic</code>, y la barra.</td></tr>
+    <tr><td><code>strict</code></td><td><code>gb</code>, y la raya doble —— ⸺ y los puntos suspensivos …… ⋯⋯.</td><td><code>gb</code>.</td></tr>
+  </tbody>
+</table>
+
+En todos los niveles:
+
+- —— y …… forman una unidad de dos cuadratines que nunca se separa; dos unidades así seguidas pueden separarse entre sí.
+- Un número conserva sus signos y su unidad (¥5,999, 50 %, −3 ℃) y una palabra latina se mantiene entera: el texto occidental entre caracteres CJK se compone como un tramo que ninguna línea corta por dentro, salvo que el tramo solo sea más ancho que la línea (entonces se divide por una sílaba con guion, o por el último carácter que cabe; una dirección web, por sus uniones).
+- Una llamada de nota, un `:ref` y un superíndice o subíndice van con el carácter que los precede.
+- El espacio ideográfico U+3000 es un carácter de un cuadratín: una línea puede cortarse después de él, nunca antes; nunca se estira ni desaparece al principio de una línea. Para la sangría de dos caracteres de los párrafos chinos fija `bodyText.firstLineIndent: { value: 2, unit: 'em' }` en lugar de escribir dos U+3000 (el analizador descarta los que abren un párrafo).
+
+Cuando el carácter que no cabe en la línea no puede abrir la siguiente, la línea le cede caracteres (el llamado *push-out*): el corte retrocede hasta el último punto que las reglas permiten, y una línea justificada reparte lo que sobra. En una línea más estrecha que un número con su punto final nada puede cerrar la línea, y se corta antes del punto de todos modos.
+
+A qué párrafos se aplica: a los que tienen más caracteres CJK (han, kana, bopomofo, hangul) que espacios entre palabras. Se componen línea a línea, igual en la vía sin formato que en la de formato, así que un párrafo con una palabra en negrita se corta exactamente como el mismo texto sin ella. Un párrafo latino que cita un título o un nombre chino tiene más espacios que caracteres: conserva la división óptima de líneas, y una línea puede cortarse junto a sus caracteres CJK con las mismas reglas. Los pies de figura, las celdas de tabla, las notas y los recuadros se cortan también al nivel del documento. La partición por diccionario no alcanza las palabras latinas de un párrafo CJK.
+
+Una línea CJK justificada que no es la última de su párrafo se ensancha hasta la medida en este orden (clreq §6.2.2.4): los espacios entre palabras occidentales, hasta medio cuadratín cada uno; después todos los huecos entre caracteres, por igual. No se añade espacio dentro de una palabra latina, de un número o de un signo de dos cuadratines, ni junto a un conector o una barra. El espaciado se fija por segmento de la línea (`VDTLineSegment.tracking`, px tras cada carácter, incluidos en el `width` del segmento), que el canvas, el HTML y el PDF pintan como espaciado entre letras; una palabra latina seguida de un hueco da a su última letra un segmento propio. Cuando una línea necesitaría más de medio cuadratín entre sus caracteres (o más que `bodyText.maxJustifyTracking`, si está definido), se compone con ese máximo y queda corta: la línea lleva `cjkLoose` y `ragged`, y la composición da un aviso de contenido `cjkLooseLine` con el texto de la línea. Suele deberse a una palabra latina larga o a una dirección web que no puede subir a ella. Ver [Separación silábica y justificación](/es/docs/justification#chino-japonés-y-coreano).
+
+El resolutor y el depurador siguen el patrón de las demás secciones; `setCjkLineBreak` fija el nivel para las mediciones hechas fuera de `buildDocument`, que lo toma de la configuración:
+
+```ts
+import { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOfLocale, setCjkLineBreak } from 'postext';
+
+resolveCjkConfig(undefined, 'zh-HK'); // { region: 'hongkong', lineBreak: 'basic' }
+```
+
+En el Sandbox estos ajustes están en **Diseño › Tipografía › Tipografía de Asia oriental**.
 
 
 ## Tipos de recurso

@@ -28,6 +28,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'duplicateFontVariant':
       return Type;
     case 'looseLine':
+    case 'cjkLooseLine':
       return FileWarning;
     case 'headingHierarchy':
       return Heading;
@@ -109,6 +110,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsDuplicateFontVariantTitle;
     case 'looseLine':
       return labels.warningsLooseLineTitle;
+    case 'cjkLooseLine':
+      return labels.warningsCjkLooseLineTitle;
     case 'headingHierarchy':
       return labels.warningsHeadingHierarchyTitle;
     case 'consecutiveHeadings':
@@ -241,6 +244,8 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
     }
     case 'looseLine':
       return `${payload.ratio.toFixed(2)}× · ${labels.warningsThresholdLabel} ${payload.threshold.toFixed(2)}×`;
+    case 'cjkLooseLine':
+      return labels.warningsCjkLooseLineDetail.replace('__text__', payload.text);
     case 'headingHierarchy':
       return `H${payload.from} → H${payload.to} · ${labels.warningsHeadingHierarchyDetail}`;
     case 'consecutiveHeadings':

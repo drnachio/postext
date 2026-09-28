@@ -521,7 +521,7 @@ function paintLine(
 ): void {
   const tracking = line.letterSpacing ?? 0;
   if (tracking !== 0) ctx.page.pushOperators(setCharacterSpacing(tracking * ctx.scale));
-  paintLineRuns(ctx, line, fonts, fontCache, color, linkColor, linkRegistry, resolveRefId, labelColor, elem);
+  paintLineRuns(ctx, line, fonts, fontCache, color, linkColor, linkRegistry, resolveRefId, labelColor, elem, tracking);
   if (tracking !== 0) ctx.page.pushOperators(setCharacterSpacing(0));
 }
 
@@ -536,6 +536,7 @@ function paintLineRuns(
   resolveRefId: ((seg: { refResourceId?: string }) => string | undefined),
   labelColor: Color,
   elem: StructElem | undefined,
+  tracking = 0,
 ): void {
   const baseFont = fontCache.get(fonts.normal);
   if (!baseFont) return;
@@ -579,7 +580,10 @@ function paintLineRuns(
       const uriElem = uris.word(refId === undefined ? seg.href : undefined, x, seg.width, seg.text);
       const link = refId !== undefined ? refRun.enter(seg, x, elem, refId) : undefined;
       tagContent(ctx, link ?? uriElem ?? elem);
+      // A justified CJK line spreads its characters per segment.
+      if (seg.tracking !== undefined) ctx.page.pushOperators(setCharacterSpacing((tracking + seg.tracking) * ctx.scale));
       drawTextPx(ctx, seg.text, x, line.baseline + (seg.baselineShift ?? 0), font, size, segColor);
+      if (seg.tracking !== undefined) ctx.page.pushOperators(setCharacterSpacing(tracking * ctx.scale));
       const ref = refId !== undefined ? refRun.leave(seg, segs[i + 1], refId) : undefined;
       if (ref && linkRegistry) {
         const { scale, pageHeightPt } = ctx;

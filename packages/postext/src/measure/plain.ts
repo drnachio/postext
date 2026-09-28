@@ -196,6 +196,14 @@ export function measureBlock(
     return { lines: [], totalHeight: 0 };
   }
 
+  // Words set without spaces (Chinese, Japanese, Korean): the formatted
+  // path's breaker, which composes a CJK paragraph (clreq line breaking,
+  // inter-character justification) and breaks a Latin one that quotes CJK
+  // words next to their characters. The same text gives the same lines on
+  // both paths.
+  if (hasCJKRun(text)) {
+    return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
+  }
   const shouldHyphenate = options?.hyphenate ?? false;
   const indentPx = options?.firstLineIndentPx ?? 0;
   const hanging = options?.hangingIndent ?? false;
@@ -235,15 +243,13 @@ export function measureBlock(
   const prepared = prepareWithSegments(processedText, font);
   const normalSpaceWidth = textAlign === 'justify' ? normalSpaceWidthFor(font) : 0;
 
-  // Knuth-Plass optimal line breaking path. Not for words set without
-  // spaces (a run of ideographs or kana): its item stream breaks only at
-  // spaces and hyphenation points, so such a run would run past the column.
-  // Pretext's own breaker below breaks between them, with its kinsoku
-  // rules. A lone CJK bracket or fullwidth sign in Latin text is no reason.
-  // Ragged text takes it too with `optimalRagged`: its word spaces keep
-  // their width and each line gets the ragged stretch instead.
+  // Knuth-Plass optimal line breaking path (text with words set without
+  // spaces went to the formatted path above; a lone CJK bracket or
+  // fullwidth sign in Latin text is no reason). Ragged text takes it too
+  // with `optimalRagged`: its word spaces keep their width and each line
+  // gets the ragged stretch instead.
   const ragged = textAlign !== 'justify';
-  if (options?.optimal && (!ragged || options.optimalRagged) && !hasCJKRun(text)) {
+  if (options?.optimal && (!ragged || options.optimalRagged)) {
     const maxStretchRatio = ragged ? 1 : options.maxStretchRatio ?? 1.5;
     const minShrinkRatio = ragged ? 1 : options.minShrinkRatio ?? 0.8;
     // The runt threshold counts word spaces on ragged text too.

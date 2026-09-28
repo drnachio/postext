@@ -52,6 +52,7 @@ export function sectionHasOverrides(config: PostextConfig, section: SettingsSect
     case 'ordered-lists':
     case 'math':
     case 'footnotes':
+    case 'cjk':
     case 'captionStyle':
     case 'tableStyle':
     case 'diagramStyle':

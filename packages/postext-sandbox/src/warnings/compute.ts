@@ -80,6 +80,9 @@ function collectLooseLineWarnings(
   const out: Warning[] = [];
   let idx = 0;
   for (const { block, line, ratio } of findLooseLines(doc, { threshold })) {
+    // A CJK line set short at its tracking cap has a warning of its own
+    // (`cjkLooseLine`, from the layout).
+    if (line.cjkLoose) continue;
     const sourceStart = line.sourceStart ?? block.sourceStart;
     const sourceEnd = line.sourceEnd ?? block.sourceEnd;
     out.push({
@@ -103,7 +106,8 @@ function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warning[] {
   // What `:::index` raised: cross-references and ranges are only known
   // once the whole book's marks reach the index chapter.
   (doc.contentWarnings ?? []).forEach((w, i) => {
-    if (w.kind !== 'indexSeeUnknown' && w.kind !== 'indexRangeUnclosed') return;
+    // …and the justified CJK lines set short at their tracking cap.
+    if (w.kind !== 'indexSeeUnknown' && w.kind !== 'indexRangeUnclosed' && w.kind !== 'cjkLooseLine') return;
     const payload: Record<string, unknown> = { ...w };
     delete payload.sourceStart;
     delete payload.sourceEnd;

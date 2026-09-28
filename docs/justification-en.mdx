@@ -331,6 +331,21 @@ The `bodyText.optimalLineBreaking` property (default: `true`) controls which lin
 When Knuth-Plass is active and produces no valid breaks (which can happen with extremely narrow columns or words longer than the column width), the engine automatically falls back to greedy breaking for that paragraph.
 
 
+### Chinese, Japanese and Korean
+
+A paragraph that holds more CJK characters than word spaces is set by the CJK composer, not by Knuth-Plass. Every gap between two characters is a place a line may break (except where the line-break rules of `cjk.lineBreak` forbid it), so there is nothing for an optimal search to weigh; the lines are filled one after the other, and a character that may not open a line takes the one before it down with it. See [East Asian typography](/en/docs/configuration#east-asian-typography) for the rules.
+
+A justified line of such a paragraph, except its last, is spread to the measure in the order clreq sets (§6.2.2.4):
+
+1. The spaces between Western words, equally, up to half an em each.
+2. Every gap between characters, equally: between Han characters, between Han and punctuation, between Han and a Latin word. Never inside a Latin word, a number or a two-em dash or ellipsis, and never next to a connector (～, –, a single —) or a solidus.
+
+The last line of a paragraph is set solid. The spacing is recorded per segment of the line (`VDTLineSegment.tracking`), so the canvas, HTML and PDF paint the same positions, and the sandbox places the cursor on the character clicked.
+
+A line that would need more than half an em between its characters — or more than `bodyText.maxJustifyTracking`, when that is set — is set with that much, short of the measure, and reported as a `cjkLooseLine` content warning (in the Sandbox, **CJK line set short**). The usual cause is a long Latin word or web address that could not come up to it.
+
+For the loose-line highlight, a CJK line counts as loose by its spacing: its ratio is 1 plus its spacing in eighths of an em, so at the default threshold of 3 a line whose characters are spread by more than a quarter of an em is flagged (`lineLooseness(line, fontSizePx)` gives the ratio). Column balancing can run a CJK paragraph one line longer: it breaks the lines a little short of the measure, an eighth of an em at a time up to two ems, and spreads them back to it.
+
 ## Loose-Line Debugging
 
 Even with Knuth-Plass and hyphenation, some lines will be looser than ideal — especially in narrow columns with long words, or in languages with few hyphenation opportunities. The **loose-line highlight** debug feature helps you find these problem lines instantly.

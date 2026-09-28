@@ -12,6 +12,7 @@ import { HYPHEN_PENALTY, KP_INFINITY, MAX_STRETCH } from './constants';
 import { cleanSoftHyphens } from './utils';
 import { trimChipLineEdges } from '../measure/chipEdges';
 import { lineTracking, trackSegments } from './tracking';
+import { graphemeCount } from '../measure/graphemes';
 
 interface RichBreakPoint {
   charIndex: number;
@@ -25,6 +26,8 @@ interface RichBreakPoint {
   /** A soft hyphen typed in the text: never held back by a hyphenation
    *  zone. */
   author?: boolean;
+  /** A free break next to a CJK character: the line is not hyphenated. */
+  cjk?: boolean;
 }
 
 interface RichToken {
@@ -100,9 +103,9 @@ export function richTokensToItems(
     const atomic = token.mathRender !== undefined || token.swatch !== undefined || token.chip !== undefined;
     const stackedChars = token.stacked === 'first'
       ? 0
-      : token.stacked === 'second' ? Math.max(token.text.length, tokens[t - 1]?.text.length ?? 0) : undefined;
+      : token.stacked === 'second' ? Math.max(graphemeCount(token.text), graphemeCount(tokens[t - 1]?.text ?? '')) : undefined;
     const tracking = (from: number, to: number): { chars: number; noTracking?: true } => (
-      token.chip ? { chars: 0, noTracking: true } : { chars: atomic ? 0 : stackedChars ?? to - from }
+      token.chip ? { chars: 0, noTracking: true } : { chars: atomic ? 0 : stackedChars ?? graphemeCount(token.text.slice(from, to)) }
     );
 
     // Text token — may have soft-hyphen break points (the greedy breaker's
@@ -130,7 +133,7 @@ export function richTokensToItems(
         // word carries ends the line as it is, and a break between
         // ideographs costs nothing and adds nothing.
         items.push(breakPoint.free
-          ? { type: 'penalty', width: 0, penalty: 0, flagged: false, sourceIndex: t, meta: { ...meta, free: true } }
+          ? { type: 'penalty', width: 0, penalty: 0, flagged: false, sourceIndex: t, meta: { ...meta, free: true, ...(breakPoint.cjk ? { cjk: true } : {}) } }
           : {
             type: 'penalty',
             width: breakPoint.bare ? 0 : hyphenW,
@@ -226,7 +229,9 @@ export function reconstructRichLines(
     // A break between ideographs ends the line inside a run, like a
     // hyphenation point, but adds no hyphen.
     const freeBreak = breakItem.type === 'penalty' && (breakItem.meta as RichTokenMeta | undefined)?.free === true;
-    const hyphenated = breakItem.type === 'penalty' && (breakItem.flagged || freeBreak);
+    // …but one next to a CJK character is no hyphenation point at all.
+    const cjkBreak = freeBreak && (breakItem.meta as RichTokenMeta | undefined)?.cjk === true;
+    const hyphenated = breakItem.type === 'penalty' && (breakItem.flagged || (freeBreak && !cjkBreak));
 
     const lineSegments: (VDTLineSegment & { smallCaps?: boolean })[] = [];
     const textParts: string[] = [];

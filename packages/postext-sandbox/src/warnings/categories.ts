@@ -36,6 +36,7 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'headingDesignCut':
       return 'design';
     case 'looseLine':
+    case 'cjkLooseLine':
     case 'calloutOverflow':
     case 'alphaPdfOverflow':
     case 'chipOverlap':

@@ -20,6 +20,7 @@ import {
   resolveTocConfig,
   resolveIndexConfig,
   resolveFootnotesConfig,
+  resolveCjkConfig,
   resolvePdfGenerationConfig,
   applyPaletteToConfig,
   applyPaletteToResolvedConfig,
@@ -77,6 +78,7 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
     toc: resolveTocConfig(config?.toc, bodyText),
     index: resolveIndexConfig(config?.index, bodyText),
     footnotes: resolveFootnotesConfig(config?.footnotes),
+    cjk: resolveCjkConfig(config?.cjk, config?.locale ?? config?.bodyText?.hyphenation?.locale),
     ...(config?.locale ? { locale: config.locale } : {}),
     // Kept for per-resource-type caption overrides, which resolve their
     // palette colours at layout time (see `mergeCaptionStyle`). A copy: the
