@@ -221,8 +221,11 @@ export function interceptor(opts: InterceptorOptions): (request: HTTPRequest) =>
       }
       if (opts.stats) opts.stats[res.fromCache ? "cached" : "fetched"]++;
       if (res.status >= 400) {
-        // The kit tolerates a missing latin-ext subset; anything else broke.
-        const tolerated = /\/@fontsource\/.+-latin-ext-/.test(url);
+        // A missing font file is the kit's business: it asks for the bold
+        // and italic faces Fontsource lists, and the list is not always right
+        // (Libre Caslon Text 700 italic has no latin file, #168). A face the
+        // pages do use and could not load fails C12; anything else broke.
+        const tolerated = /\/@fontsource\/.+\.woff2$/.test(url);
         opts.onIssue({ severity: tolerated ? "warn" : "fail", url, detail: `HTTP ${res.status}: ${url}` });
       }
       await request.respond({

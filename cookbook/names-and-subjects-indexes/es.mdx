@@ -1,0 +1,65 @@
+---
+title: "Un índice onomástico y un índice de materias"
+summary: "Las marcas con index=\"names\" van al índice de personas y las demás al de materias; :::index imprime cada uno a dos columnas y la maquetación fija las páginas."
+description: "Un capítulo de monografía sobre tipos de imprenta que acaba con un índice onomástico y otro de materias, ambos sacados de marcas :index en un solo Markdown."
+question: "¿Cómo imprimo un índice onomástico y otro de materias a partir del mismo texto?"
+aliases: ["índice onomástico", "índice de nombres", "índice de materias", "índice analítico", "index of names", "subject index", ":index", ":::index"]
+pageNotes: { "6": "El índice onomástico: apellidos invertidos bajo letras en Bodoni y páginas principales en negrita.", "7": "El índice de materias: subentradas y remisiones con «Véase» y «Véase también»." }
+---
+
+## Lo que vas a componer
+
+El capítulo cuarto de *Letras de metal*, una monografía sobre tipos de imprenta de 155 × 235 mm: una columna de Crimson Pro, títulos en Bodoni cursiva y un solo color de acento, rojo ladrillo. El ensayo va de la textura de Gutenberg a los modernos de Bodoni, pasando por Jenson, Aldo y Griffo, Garamond y Plantin, Caslon y Baskerville, los puntos de Fournier y los tipos españoles que tallaron Pradell y Gil e imprimió Ibarra. Termina como terminan estos libros, con dos índices en páginas enfrentadas: impresores, grabadores y mecenas en la par; tipos, útiles y libros en la impar. Los dos salen del mismo texto marcado, y cada número de página es la página donde cayó la marca.
+
+## Elaboración
+
+### 1 · Marca cada persona para el índice onomástico y cada materia para el principal
+
+La configuración es [la respuesta corta](#la-respuesta-corta) de arriba; lo demás está en el Markdown. Una marca con `index="names"` va al índice que imprime `:::index{index="names"}`, y todas las demás al índice principal, el que imprime `:::index` sin atributos. Así, `:index[Aldo Manucio]{term="Manucio, Aldo" index="names" main}` imprime el nombre en el texto y anota una página en negrita bajo *Manucio* en el onomástico, mientras que `:index[cursiva]{term="Cursiva" main}`, dos líneas más abajo, anota la misma página bajo *Cursiva* en el de materias. Una persona que además es materia del capítulo puede llevar las dos marcas.
+
+### 2 · Invierte los nombres y ordena por la letra donde buscará el lector
+
+Los nombres van con el apellido delante: `term="Garamond, Claude"`, `term="Dall’Aglio, Margherita"`. La coma forma parte del término, de modo que la ordenación pone *Didot, Firmin* antes de *Didot, François-Ambroise*, como haría un indizador. Cuando la forma impresa caería en la letra equivocada, `sort` da la clave: la edición inglesa marca `term="42-line Bible" sort="Forty-two-line Bible"` para que la Biblia quede bajo la F y no abra un grupo 0–9. Las subentradas (`term="Fundiciones!Plantin-Moretus"`), las páginas principales en negrita (`main`), `range="start"` y `range="end"` alrededor del apartado de Bodoni y las remisiones (`see="Cursiva"`, `seealso="Matrices"`) hacen el resto. Un destino con niveles se imprime con dos puntos: *Humana, letra. Véase Letra romana: veneciana*.
+
+### 3 · Compón una sola vez; el documento fija sus propios números
+
+<Excerpt region="build" />
+
+El índice imprime números de página que solo existen después de maquetar, e imprimirlo ocupa páginas. `buildDocument()` lo resuelve: maqueta el capítulo, lee la página de cada marca, imprime los dos índices y vuelve a maquetar cada vez que un número cambia. Aquí los índices van detrás del texto, así que la segunda pasada confirma la primera; un índice colocado antes del texto desplazaría todas las páginas siguientes, y las pasadas seguirían hasta coincidir. Añade un párrafo al apartado de Bodoni y el índice onomástico dará a Whittingham su nueva página sin que toques nada.
+
+### 4 · Da a cada índice una apertura sobre dos columnas
+
+<Excerpt region="opener" />
+
+El estilo de título de la respuesta corta hace tres cosas por `# Índice onomástico {style="index"}`: abre página (`parity: 'any'`, para que los dos índices se sigan sin una página en blanco), compone a dos columnas separadas 7 mm la sección que empieza tras él y, con `numbered: false`, no cuenta como capítulo. El estilo reutiliza la apertura del capítulo con un hundido de seis líneas y un título de 20 pt, y las letras de cada grupo repiten su Bodoni en el color de acento, con la altura de una línea del índice para que las columnas no pierdan el paso.
+
+### 5 · Pon el nombre del índice en la página impar
+
+<Excerpt region="running-heads" />
+
+La cabecera de la página impar imprime `{chapterTitle}`, y el título de un índice es de primer nivel como el de cualquier capítulo, así que las páginas que lo siguen dicen *Índice de materias* arriba. `pages: 'body'` quita las cabeceras de las dos aperturas de índice, que llevan un folio al pie.
+
+## Variantes
+
+### Imprime un único índice
+
+Quita `index="names"` de las marcas de personas y el segundo título: todas las marcas van entonces al índice principal, nombres y materias en un solo alfabeto.
+
+```diff
+-:index[Aldo Manucio]{term="Manucio, Aldo" index="names" main}
++:index[Aldo Manucio]{term="Manucio, Aldo" main}
+```
+
+### Quita las letras de grupo
+
+Un onomástico tan corto se lee bien sin ellas. `groups.enabled: false` las quita y deja una línea de espacio entre letras; el ajuste vale para los dos índices.
+
+```diff
+-  groups: { fontFamily: 'Bodoni Moda', fontSize: pt(11), fontWeight: 600, color: col('brick') },
++  groups: { enabled: false },
+```
+
+## Errores frecuentes
+
+- La configuración `index` es común: los dos índices comparten letra, interlineado y letras de grupo.
+- Una marca en un pie de figura o en una celda de tabla se imprime tal cual. Marca a la persona en el párrafo que cita la figura.

@@ -1,0 +1,69 @@
+---
+title: "A textbook index that follows the text"
+summary: "Terms marked where the text discusses them, printed by :::index in two columns with the pages buildBundle finds for them, ranges and cross-references."
+description: "Two chapters of a physiology textbook and their back-of-book index, set with Postext: marks in the text, main pages, ranges, see and see also, two columns."
+question: "How do I build a back-of-book index whose page numbers follow the text wherever it moves?"
+aliases: ["back-of-book index", "subject index", "index of terms", "see also", "page ranges", "Chicago page ranges", "analytical index", "índice analítico", ":::index"]
+pageNotes: { "9": "The index opens on page 305 under the same red band as the chapters: letter heads in the accent, sub-entries one em in, principal pages in bold, and cross-references in italic.", "10": "The index runs on to page 306, where a sub-entry list that began on page 305 continues at the head of the first column, and the colophon floats to the foot of the page." }
+---
+
+## What you'll build
+
+Part IV of *Principles of Human Physiology*, a textbook on a 210 × 277 mm page: chapter 14, *The heart as a pump*, and chapter 15, *Vessels and blood pressure*, open on rectos under a red band and set their clinical notes and captions in an outer channel. The part closes with an index of about ninety entries and thirty sub-entries in two columns, the way a medical textbook sets one: lower-case entries, letter heads in the accent, sub-entries one em in, the defining page in bold, *see* and *see also* in italic. No page number in it was typed. Each term is marked in the chapter where the text explains it, and the index reads the pages those marks landed on, folios 297 to 304.
+
+## Method
+
+### 1 · Mark the passage, not the word
+
+<Excerpt region="answer" />
+
+An indexer marks the places where a term is explained, not every place the word appears. The two chapters use *stroke volume* twelve times, and the index sends the reader to two places: page 298, where the term is defined, and 299–300, where the text explains what regulates it. A visible mark, `:index[cardiac output]{main}`, prints its words and files them. An invisible one, `mitral:index{term="heart!valves!mitral"}`, prints nothing and takes the page of the word before it, which is how the passage on the four valves files *mitral*, *tricuspid*, *aortic* and *pulmonary* under *heart* without rewording the sentence. The `!` separates levels, so *heart* gets three: valves, then each valve. A mark also works in a heading (the ranges of 14.1 and 15.6 start there) and in a callout (*heart failure* is defined in the side note on page 300).
+
+### 2 · Main pages, ranges and cross-references
+
+<Excerpt region="answer" />
+
+`main` sets the page that defines a term in bold, so a student looking up *preload* goes to page 299 first. `range="start"` and `range="end"`, with the same term, bound a discussion that runs over a page break: *stroke volume, regulation, 299–300*, *baroreceptor reflex, 303–4*. A `main` on the start makes the whole range bold. A page marked again inside its own range folds into it, and a `main` there makes the range bold. `see` stands in for the page numbers (*inotropy. See contractility*), and `seealso` follows them (*heart failure, 300. See also ejection fraction*). A target with levels is written with `!` and printed with a colon: *See blood pressure: mean arterial*.
+
+### 3 · An index chapter in two columns
+
+<Excerpt region="answer" />
+
+The index is the last Markdown document of the book, `# Index {style="index"}` followed by `:::index`. The heading style swaps the column and a half of the chapters for two columns 6 mm apart, only in its own section, and gives the index its own opener and running head. The index is set in the text face at 8.6/11.4 pt, one em per sub-level, and a turnover line hangs two ems, so a wrapped line never lines up with a sub-entry. `rangeFormat: 'chicago'` drops the digits a range repeats (*303–4*, but *299–300*). The Spanish edition writes ranges in full with a hyphen (*303-304*), the usual practice in Spanish books.
+
+### 4 · Why the numbers follow the text
+
+<Excerpt region="build" />
+
+`buildBundle` lays out the chapters in order and finds that the third one holds `:::index`. After the first pass it collects every mark of every chapter with the page it landed on, and hands that list to the index chapter as its outline. Then it lays the book out again, up to three passes, until no page number moves. Rewrite a paragraph of chapter 14, change the trim or the body size, and the index reprints with the new pages. In the PDF each page number links to its page.
+
+### 5 · Openers and running heads
+
+<Excerpt region="opener" />
+
+The chapters and the index share one opener: a band from the trim to 62 mm (46 mm for the index), the title set on its foot by a bottom-aligned box, so a two-line title and a one-line title end on the same line. The kicker prints `{chapterNumber}`, which the heading attribute `{startAt=14}` sets to 14, and `page.pageNumbering.startAt: 297` places the part where it would sit in the book. The index style is `numbered: false`, so it does not become chapter 16.
+
+## Variations
+
+### Write every range in full
+
+Some house styles print both numbers of a range in full.
+
+```diff
+-  rangeFormat: t({ en: 'chicago', es: 'full' }), rangeSeparator: t({ en: '–', es: '-' }),
++  rangeFormat: 'full', rangeSeparator: t({ en: '–', es: '-' }),
+```
+
+### An index without letter heads
+
+A short index often runs its groups together, separated only by a blank line.
+
+```diff
+-  groups: { ...label, fontSize: pt(9.5), letterSpacing: pt(0), color: col('accent') },
++  groups: { enabled: false },
+```
+
+## Pitfalls
+
+- The capture of this recipe does not report `indexSeeUnknown`: a cross-reference whose target is spelled differently from the entry (*Reynolds number* against *number, Reynolds*) prints without complaint. Read every *See* in the finished index against its target.
+- A sub-entry list that breaks across columns does not repeat its main heading as a *heart (cont.)* line; an entry with no page of its own always stays with its first sub-entry, so a heading never ends a column alone.

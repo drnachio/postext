@@ -1,15 +1,15 @@
 ---
 title: "Thesis back matter: appendix, glossary and index"
-summary: "The last pages of a thesis in black and white: a lettered appendix, a two-column glossary, APA references and an index whose page numbers the pen computes."
-description: "Heading styles set the end of a thesis in Postext: appendix A, a glossary in two columns, references with hanging indents and an index built from the pages."
+summary: "The last pages of a thesis in black and white: a lettered appendix, a two-column glossary, APA references and an index built from marks in the text."
+description: "Heading styles set the end of a thesis in Postext: appendix A, a glossary in two columns, references with hanging indents and an index built from :index marks."
 question: "How do I set a thesis's glossary, references and index, with hanging indents and smaller type?"
 aliases: ["thesis", "dissertation", "back matter", "end matter", "appendix", "appendices", "lettered appendix", "glossary", "bibliography", "references", "APA style", "index", "back-of-book index", "hanging indent", "black and white"]
-pageNotes: { "1": "Page 171 opens chapter 6, Conclusion, under a black band 62 mm deep: the title and a 118 pt numeral in white, the kicker CHAPTER above them. Table 6.1 stands at the foot between horizontal rules.", "3": "Page 173, Appendix A, Interview guide: the band carries the letter A where the chapter had its numeral. Below it, seven numbered questions with two follow-up prompts, then Table A.1.", "4": "Page 174, the glossary: the kicker BACK MATTER and an italic note in the band, then two ragged columns of bold terms whose definitions hang 1 em.", "5": "Page 175, the references: one column of seventeen APA entries in 9.3 pt, each hanging 1.5 em.", "6": "Page 176, the index: letters in the display face over two columns of entries and indented sub-entries. Some page numbers are bold (the glossary) or italic (tables).", "7": "Page 177: the index ends in two columns of nearly equal length under the running head INDEX, and a colophon follows it." }
+pageNotes: { "1": "Page 171 opens chapter 6, Conclusion, under a black band 62 mm deep: the title and a 118 pt numeral in white, the kicker CHAPTER above them. Table 6.1 stands at the foot between horizontal rules.", "3": "Page 173, Appendix A, Interview guide: the band carries the letter A where the chapter had its numeral. Below it, seven numbered questions with two follow-up prompts, then Table A.1.", "4": "Page 174, the glossary: the kicker BACK MATTER and an italic note in the band, then two ragged columns of bold terms whose definitions hang 1 em.", "5": "Page 175, the references: one column of seventeen APA entries in 9.3 pt, each hanging 1.5 em.", "6": "Page 176, the index: letters in the display face over two columns of entries and indented sub-entries. Bold page numbers point to the definitions in the glossary.", "7": "Page 177: the index ends in two columns of nearly equal length under the running head INDEX, and a colophon follows it." }
 ---
 
 ## What you'll build
 
-The last seven pages of a doctoral thesis on reading from screens and paper, set on a B5 page in black and white. Chapter 6, appendix A, the glossary, the references and the index each open under the same black band, 62 mm deep, with the title reversed out of it. The chapter shows its numeral in the band and the appendix its letter; the back-matter sections carry the kicker BACK MATTER and a short note in italics. The chapter runs in one justified column. The glossary and the index switch to two ragged columns and the references return to one, with the turnover lines of every entry indented. The pen reads the index's page numbers off the laid-out pages and joins consecutive ones into runs such as 171–73. Italic numbers point to a table, bold ones to the glossary.
+The last seven pages of a doctoral thesis on reading from screens and paper, set on a B5 page in black and white. Chapter 6, appendix A, the glossary, the references and the index each open under the same black band, 62 mm deep, with the title reversed out of it. The chapter shows its numeral in the band and the appendix its letter; the back-matter sections carry the kicker BACK MATTER and a short note in italics. The chapter runs in one justified column. The glossary and the index switch to two ragged columns and the references return to one, with the turnover lines of every entry indented. The index comes from marks in the text: the engine sorts the terms under their letters, finds the page of every mark and joins consecutive pages into runs such as 171–73. Bold numbers point to the glossary's definitions.
 
 ## Method
 
@@ -35,11 +35,11 @@ In postext 1.4.1 a heading style cannot change its level's numbering, so the app
 
 The four text elements are anchored to the page and filtered by `parity`, which keeps the folio on the outer edge of both pages; each is placed by its top, `above()` over a baseline 17.5 mm below the trim, so the 9.5 pt folio and the 7.5 pt capitals stand on one line. The verso carries the thesis's title (`{title}`, from the frontmatter) and the recto the section's (`{chapterTitle}`), such as INDEX on <PageRef page={7}>page 177</PageRef>. `pages: 'body'` keeps them off the openers, whose only folio is the footer's, centred under the text block. The chapter's recto would read *Chapter 6. Conclusion* and the appendix's *Appendix A. Interview guide*, but in this sample only the index runs on to a recto.
 
-### 5 · Read the index's page numbers off the pages
+### 5 · Mark the terms where the text discusses them
 
 <Excerpt region="index" />
 
-Postext has no index generator, but the laid-out document holds every line with its text and its page. The pen builds once with the entries unnumbered, joins the lines into one string (only the bold terms of the glossary, nothing from the references or the index), finds each entry's pattern in it and builds again with the numbers written in; the index is the last section and opens a page, so nothing before it moves between the two builds. Table cells, read from `page.floats`, give italic numbers and the glossary bold ones, as the note in the index's band says. A line that ends in a hyphen runs into the next without it, and every hyphen in a pattern is optional, because a justified line that breaks *meta-analyses* at its own hyphen is flagged as hyphenated, like one that breaks *expository* after *expos-*.
+`:index[tablet]` prints its word and files it under the same word; `Rayner:index{term="Rayner, Keith"}` prints nothing and files the page of *Rayner* under the full name; `term="interviews!timing of"` makes a sub-entry. The glossary's terms carry `main`, so their page is set bold, as the note in the index's band says. `:::index` under `# Index {style="index"}` prints the entries in the style's two columns, and `buildDocument` lays the document out again until the page numbers stop moving. The entries are 9 on 11.6 pt, with turnover lines hanging 2 em and sub-entries indented 1 em; the letters are 13 pt in the display face. Marks do not work in table cells, so the rows of Table 6.1 add no pages: *look-backs* lists the paragraph that reports them, not the table.
 
 ### 6 · Keep every default in ink
 
@@ -47,7 +47,7 @@ Postext has no index generator, but the laid-out document holds every line with 
 
 The engine's defaults for bold, italic and list markers follow the palette entry `main-color`, so pointing it at the ink prints them black instead of blue ([color palette](/en/docs/configuration#color-palette)). The palette does not reach `bodyText.referenceColor` in 1.4.1, so the config restates it: without that line, *Table 6.1* in the text prints in #295AA3 blue. `referenceBold: false` sets the reference in roman, like the author–year citations around it.
 
-<Note>Three things stay manual: a list of tables, a cross-reference to a page of text (*see p. 172*) and, in 1.4.1, a lettered counter for appendices. The pen looks for the index's terms on pages 171 to 174, everything before the references; in a whole thesis built as one document it would search from the first page.</Note>
+<Note>Three things stay manual: a list of tables, a cross-reference to a page of text (*see p. 172*) and, in 1.4.1, a lettered counter for appendices. In a whole thesis laid out chapter by chapter with `buildBundle`, the chapter that holds `:::index` receives the marks of every chapter.</Note>
 
 ## Variations
 

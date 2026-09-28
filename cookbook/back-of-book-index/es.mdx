@@ -1,0 +1,69 @@
+---
+title: "Un índice analítico que sigue al texto"
+summary: "Términos marcados donde el texto los explica, impresos por :::index a dos columnas con las páginas que les da buildBundle, intervalos y remisiones."
+description: "Dos capítulos de un manual de fisiología y su índice analítico compuestos con Postext: marcas en el texto, páginas principales, intervalos y remisiones."
+question: "¿Cómo hago un índice analítico cuyos números de página sigan al texto cuando este se mueve?"
+aliases: ["índice analítico", "índice alfabético", "índice de materias", "véase también", "intervalos de páginas", "back-of-book index", ":::index"]
+pageNotes: { "9": "El índice se abre en la página 305 bajo la misma banda roja que los capítulos: letras de grupo en el color de acento, subentradas a un cuadratín, páginas principales en negrita y remisiones en cursiva.", "10": "El índice sigue en la página 306, de la I a la W, y el colofón flota al pie de la página." }
+---
+
+## Lo que vas a componer
+
+La parte IV de *Principios de fisiología humana*, un manual en página de 210 × 277 mm: el capítulo 14, *El corazón como bomba*, y el 15, *Los vasos y la presión arterial*, se abren en página impar bajo una banda roja y llevan los recuadros clínicos y los pies en una columna lateral exterior. La parte se cierra con un índice analítico de unas noventa entradas y treinta subentradas a dos columnas, como lo compone un manual de medicina: entradas en minúscula, letras de grupo en el color de acento, subentradas a un cuadratín, la página que define el término en negrita, *véase* y *véase también* en cursiva. Ningún número de página se ha tecleado. Cada término está marcado en el capítulo, donde el texto lo explica, y el índice lee las páginas en que han caído esas marcas, de la 297 a la 304.
+
+## Elaboración
+
+### 1 · Marca el pasaje, no la palabra
+
+<Excerpt region="answer" />
+
+Quien hace un índice marca los lugares donde se explica un término, no cada vez que aparece la palabra. Los dos capítulos dicen *volumen sistólico* una docena de veces, y el índice manda al lector a dos sitios: la página 298, donde se define, y la 299-300, donde se explica qué lo regula. Una marca visible, `:index[gasto cardíaco]{main}`, imprime sus palabras y las archiva. Una invisible, `mitral:index{term="corazón!válvulas!mitral"}`, no imprime nada y toma la página de la palabra anterior; así el pasaje de las cuatro válvulas archiva *mitral*, *tricúspide*, *aórtica* y *pulmonar* bajo *corazón* sin tocar la frase. El `!` separa niveles: *corazón* tiene tres, válvulas y luego cada válvula. Una marca funciona también en un título (los intervalos de 14.1 y 15.6 empiezan ahí) y en un recuadro (*insuficiencia cardíaca* se define en la nota lateral de la página 300).
+
+### 2 · Páginas principales, intervalos y remisiones
+
+<Excerpt region="answer" />
+
+`main` pone en negrita la página que define un término, de modo que quien busca *precarga* va primero a la 299. `range="start"` y `range="end"`, con el mismo término, acotan una explicación que cruza un salto de página: *volumen sistólico, regulación, 299-300*. Un `main` en el inicio pone en negrita todo el intervalo. Una página marcada otra vez dentro de su propio intervalo se funde con él, y un `main` ahí pone el intervalo en negrita. `see` sustituye a los números de página (*inotropismo. Véase contractilidad*) y `seealso` va detrás de ellos (*insuficiencia cardíaca, 300. Véase también fracción de eyección*). Un destino con niveles se escribe con `!` y se imprime con dos puntos: *Véase presión arterial: media*.
+
+### 3 · Un capítulo de índice a dos columnas
+
+<Excerpt region="answer" />
+
+El índice es el último documento Markdown del libro: `# Índice analítico {style="index"}` y, debajo, `:::index`. El estilo de título cambia la columna y media de los capítulos por dos columnas separadas 6 mm, solo en su sección, y le da al índice su propia apertura y su cabecera. Se compone en la letra del texto a 8,6/11,4 pt, un cuadratín por nivel de subentrada, y las líneas que se parten sangran dos cuadratines, para que nunca queden alineadas con una subentrada. En español los intervalos se escriben completos y con guion (*303-304*), como en los libros en castellano; la edición inglesa usa `rangeFormat: 'chicago'`, que suprime las cifras que se repiten (*303–4*, pero *299–300*).
+
+### 4 · Por qué los números siguen al texto
+
+<Excerpt region="build" />
+
+`buildBundle` compone los capítulos en orden y ve que el tercero contiene `:::index`. Tras la primera pasada reúne las marcas de todos los capítulos con la página en que ha caído cada una y se las da al capítulo del índice como esquema. Después vuelve a componer el libro, tres pasadas como mucho, hasta que ningún número se mueve. Reescribe un párrafo del capítulo 14, cambia el formato o el cuerpo de letra, y el índice se reimprime con las páginas nuevas. En el PDF cada número de página es un enlace a su página.
+
+### 5 · Aperturas y cabeceras
+
+<Excerpt region="opener" />
+
+Capítulos e índice comparten una apertura: una banda desde el corte hasta 62 mm (46 mm en el índice), con el título apoyado en su pie mediante una caja alineada abajo, de modo que un título de dos líneas y uno de una acaban en la misma línea. El antetítulo imprime `{chapterNumber}`, que el atributo `{startAt=14}` del título fija en 14, y `page.pageNumbering.startAt: 297` coloca la parte donde estaría en el libro. El estilo del índice lleva `numbered: false`, así que no se convierte en el capítulo 16.
+
+## Variantes
+
+### Escribe todos los intervalos completos
+
+Algunos libros ingleses también escriben completos los dos números de un intervalo.
+
+```diff
+-  rangeFormat: t({ en: 'chicago', es: 'full' }), rangeSeparator: t({ en: '–', es: '-' }),
++  rangeFormat: 'full', rangeSeparator: t({ en: '–', es: '-' }),
+```
+
+### Un índice sin letras de grupo
+
+Un índice corto suele encadenar sus grupos, separados solo por una línea en blanco.
+
+```diff
+-  groups: { ...label, fontSize: pt(9.5), letterSpacing: pt(0), color: col('accent') },
++  groups: { enabled: false },
+```
+
+## Errores frecuentes
+
+- La captura de esta receta no avisa de `indexSeeUnknown`: una remisión cuyo destino está escrito de otra forma que la entrada (*número de Reynolds* frente a *Reynolds, número de*) se imprime sin queja. Coteja cada *Véase* del índice terminado con su destino.
+- Una lista de subentradas que se parte entre columnas no repite su entrada principal en una línea *corazón (cont.)*; una entrada sin página propia va siempre con su primera subentrada, así que un encabezado nunca cierra una columna solo.

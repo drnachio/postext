@@ -20,6 +20,7 @@
       "unnumbered-headings"
     ],
     "also": [
+      "back-of-book-index",
       "section-running-heads",
       "heading-styles",
       "heading-numbering",
@@ -35,19 +36,18 @@
       "captions",
       "color-palette",
       "emphasis-colours",
-      "column-balancing",
       "pdf-export"
     ]
   },
   "answers": [
     "Q40",
+    "Q85",
     "Q25",
     "Q32",
     "Q30",
     "Q24"
   ],
   "gaps": [
-    "automatic-index",
     "ragged-hyphenation"
   ],
   "gotchas": [
@@ -55,7 +55,6 @@
     "headings-drop-h1-break",
     "palette-skips-designs",
     "ragged-no-hyphenation",
-    "latin-subset",
     "pdf-provider-all-styles",
     "parity-page1-recto",
     "quote-frontmatter",
@@ -103,22 +102,12 @@
     {
       "followup": "EF-21",
       "package": "postext",
-      "note": "the glossary, references and index are set ragged, and ragged text is never hyphenated; their entries are short enough that the rag stays shallow"
+      "note": "the glossary and the references are set ragged, and ragged text is never hyphenated; their entries are short enough that the rag stays shallow"
     },
     {
       "followup": "EF-11",
       "package": "postext",
       "note": "every frontmatter value is quoted"
-    },
-    {
-      "followup": "EF-137",
-      "package": "postext-pdf",
-      "note": "the index’s sub-entries open with two en spaces behind a zero-width space, not an em space: Libertinus’s latin file has no em space, which the canvas measures in a fallback font and postext-pdf 1.4.1 sets with no width on a line without bold or italic runs, so those sub-entries printed flush left"
-    },
-    {
-      "followup": "EF-139",
-      "package": "postext",
-      "note": "the index’s letters carry their space in a 21 pt line instead of a marginTop: under a page-span opener, the first heading of the first column keeps its marginTop while the heading at the top of the second column drops it, so the two columns would start at different heights"
     },
     {
       "followup": "EF-138",
@@ -129,16 +118,11 @@
       "followup": "EF-27",
       "package": "postext",
       "note": "the appendix is lettered by hand: in 1.4.1 a heading style cannot change its level's numberingTemplate, so the heading is unnumbered, its letter is an attribute and its tables use a type numbered 'A.{n}'; the working tree's '{1:A}' templates and startAt attribute would replace this once released"
-    },
-    {
-      "followup": "EF-140",
-      "package": "postext",
-      "note": "the index joins a line ending in a hyphen to the next without it, and every hyphen in an index pattern is optional: 1.4.1 flags a justified line broken after a hard hyphen as hyphenated, like a line broken inside a word, so the pen cannot tell 'meta-' + 'analyses' from 'expos-' + 'itory'"
     }
   ],
   "engine": {
-    "postext": "1.4.1",
-    "postextPdf": "1.4.1"
+    "postext": "1.7.0",
+    "postextPdf": "1.7.0"
   },
   "kit": [
     "core",
@@ -204,5 +188,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-25",
-  "updated": "2026-09-26"
+  "updated": "2026-09-28"
 }
