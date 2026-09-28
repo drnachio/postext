@@ -20,6 +20,7 @@ import { isRuntLastLine } from './runts';
 import { measureRichBlock } from './rich';
 import { hasCJKRun } from './cjk';
 import { composesAsCjk } from './cjkCompose';
+import { markCuts } from './markCuts';
 import { getMeasureWritingMode, measuringVertically, withMeasureWritingMode } from './vertical';
 import { holdsVerticalCell } from '../writingMode';
 import { WORDS_AND_SPACES_RE } from './spaces';
@@ -210,8 +211,10 @@ export function measureBlock(
   // words next to their characters. The same text gives the same lines on
   // both paths. In vertical text so does any text with a character that
   // stands in a cell of its own (— … © ×): pretext would measure it at its
-  // horizontal width.
-  if (hasCJKRun(text) || composesAsCjk(text) || (measuringVertically() && holdsVerticalCell(text))) {
+  // horizontal width. And so does a word holding CJK text and two marks
+  // that meet (`本）》录`): pretext would measure it with the browser's
+  // trimming, where the renderers paint such marks apart (`markCuts`).
+  if (hasCJKRun(text) || composesAsCjk(text) || (measuringVertically() && holdsVerticalCell(text)) || markCuts(text, 'words').length > 0) {
     return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
   }
   const shouldHyphenate = options?.hyphenate ?? false;

@@ -15,7 +15,7 @@
 
 import type { VDTBlock, VDTLine, ResolvedResourceBlock, RoundedOutline } from '../vdt';
 import { fillFlowText, setVerticalPaint } from './verticalText';
-import { hasCJK } from '../measure/cjk';
+import { lineMarkCuts } from '../measure/markCuts';
 import { tableCellFill, tableFrameOutline } from '../vdt';
 import { paintSwatch } from './swatch';
 import { paintChip } from './chip';
@@ -340,9 +340,9 @@ function paintLineRuns(
   ctx.textBaseline = 'alphabetic';
   if (line.segments && line.segments.length > 0) {
     let x = line.bbox.x;
-    // A Chinese line: the marks it shares with Latin text are its marks
-    // (painted apart when two meet, see `fillFlowText`).
-    const chinese = hasCJK(line.text);
+    // Two marks that meet are painted apart where the line's measurer set
+    // them apart (see `fillFlowText`).
+    const cuts = lineMarkCuts(line);
     for (const seg of line.segments) {
       if (seg.kind === 'space') {
         x += seg.width;
@@ -366,7 +366,7 @@ function paintLineRuns(
           : color;
       // A justified CJK line spreads its characters per segment.
       if (seg.tracking !== undefined) ctx.letterSpacing = `${tracking + seg.tracking}px`;
-      fillFlowText(ctx, seg.text, x + (seg.inkOffset ?? 0), line.baseline + (seg.baselineShift ?? 0), 'fill', undefined, chinese);
+      fillFlowText(ctx, seg.text, x + (seg.inkOffset ?? 0), line.baseline + (seg.baselineShift ?? 0), 'fill', undefined, cuts);
       if (seg.tracking !== undefined) ctx.letterSpacing = `${tracking}px`;
       x += seg.width;
     }
@@ -374,7 +374,7 @@ function paintLineRuns(
   }
   ctx.font = font;
   ctx.fillStyle = color;
-  fillFlowText(ctx, line.text, line.bbox.x, line.baseline);
+  fillFlowText(ctx, line.text, line.bbox.x, line.baseline, 'fill', undefined, lineMarkCuts(line));
 }
 
 function drawPlaceholder(

@@ -260,7 +260,7 @@ export function isWordInnerMark(grapheme: string, prev: string | undefined, next
  *  ideographic space. The marks of the CJK blocks always; the marks Latin
  *  text shares with Chinese (“ ” ‘ ’ · ‧ « »…) only when `shared` is set
  *  (the text is Chinese). ASCII never. */
-function isTrimmableMark(cp: number, shared: boolean): boolean {
+export function isTrimmableMark(cp: number, shared: boolean): boolean {
   if (cp < 0xAB) return false;
   if (cp < 0x2E80 && !shared) return false;
   switch (cjkClassOf(String.fromCodePoint(cp))) {

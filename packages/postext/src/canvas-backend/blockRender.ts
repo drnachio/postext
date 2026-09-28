@@ -7,7 +7,7 @@ import { paintSwatch } from './swatch';
 import { paintChip } from './chip';
 import { lineInkExtent, lineTrailingTracking } from '../lineInk';
 import { fillFlowText } from './verticalText';
-import { hasCJK } from '../measure/cjk';
+import { lineMarkCuts, type MarkCutRule } from '../measure/markCuts';
 
 function pickSegmentFont(
   bold: boolean,
@@ -123,9 +123,9 @@ function renderSegments(
   style: BlockTextStyle,
   justifiedSpaceWidth?: number,
   tracking = 0,
-  /** The line is Chinese: two marks that meet are painted apart, those
-   *  Latin text shares with Chinese too (see `fillFlowText`). */
-  chinese = false,
+  /** How the line was measured: two marks that meet are painted apart
+   *  where the measurer set them apart (see `fillFlowText`). */
+  cuts: MarkCutRule = 'words',
 ): void {
   let x = startX;
   let currentFont = '';
@@ -180,7 +180,7 @@ function renderSegments(
     }
     // A compressed CJK mark is painted before its box (`inkOffset`), along
     // the line in either writing mode.
-    fillFlowText(ctx, seg.text, x + (seg.inkOffset ?? 0), baseline + (seg.baselineShift ?? 0), 'fill', undefined, chinese);
+    fillFlowText(ctx, seg.text, x + (seg.inkOffset ?? 0), baseline + (seg.baselineShift ?? 0), 'fill', undefined, cuts);
     x += seg.width;
   }
   if (spacing !== tracking) ctx.letterSpacing = `${tracking}px`;
@@ -209,7 +209,10 @@ function renderLine(
   const lineIndent = line.bbox.x - columnX;
   const effectiveWidth = columnWidth - lineIndent;
   const segments = line.segments;
-  const chinese = hasCJK(line.text);
+  // A line of the CJK composer was measured character by character, any
+  // other word by word: two marks that meet are painted apart where they
+  // were measured apart.
+  const cuts = lineMarkCuts(line);
 
   // Justified rendering with per-segment spacing. Last lines render ragged at
   // natural width — except when overfull: Knuth-Plass may accept a final line
@@ -230,7 +233,7 @@ function renderLine(
     }
     if (spaceCount > 0 && ((!line.isLastLine && !line.ragged) || naturalWidth > effectiveWidth)) {
       const justifiedSpaceWidth = (effectiveWidth - wordWidth) / spaceCount;
-      renderSegments(ctx, segments, line.bbox.x, line.baseline, style, justifiedSpaceWidth, tracking, chinese);
+      renderSegments(ctx, segments, line.bbox.x, line.baseline, style, justifiedSpaceWidth, tracking, cuts);
       return;
     }
   }
@@ -243,7 +246,7 @@ function renderLine(
     const contentWidth = lineInkExtent(line, 0).width;
     const slack = Math.max(0, effectiveWidth - (contentWidth - trailing));
     const startX = line.bbox.x + (textAlign === 'center' ? slack / 2 : slack);
-    renderSegments(ctx, segments, startX, line.baseline, style, undefined, tracking, chinese);
+    renderSegments(ctx, segments, startX, line.baseline, style, undefined, tracking, cuts);
     return;
   }
 
@@ -252,7 +255,7 @@ function renderLine(
   // block (bold/italic/math/ref/own font or colour); otherwise one fillText
   // paints the line.
   if (segments && segments.some(segmentIsStyled)) {
-    renderSegments(ctx, segments, line.bbox.x, line.baseline, style, undefined, tracking, chinese);
+    renderSegments(ctx, segments, line.bbox.x, line.baseline, style, undefined, tracking, cuts);
     return;
   }
 
@@ -260,7 +263,7 @@ function renderLine(
   ctx.fillStyle = style.color;
   const plainSlack = Math.max(0, effectiveWidth - (line.bbox.width - trailing));
   const plainX = line.bbox.x + (textAlign === 'right' ? plainSlack : textAlign === 'center' ? plainSlack / 2 : 0);
-  fillFlowText(ctx, line.text, plainX, line.baseline, 'fill', undefined, chinese);
+  fillFlowText(ctx, line.text, plainX, line.baseline, 'fill', undefined, cuts);
 }
 
 function renderBullet(ctx: CanvasRenderingContext2D, block: VDTBlock): void {

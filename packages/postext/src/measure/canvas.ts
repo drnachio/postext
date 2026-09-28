@@ -59,11 +59,48 @@ export function measureTextWidth(text: string, font: string): number {
   return width;
 }
 
+// Widths of runs as the browser sets them (see `measureRunWidth`).
+let _runCaches = new Map<string, Map<string, number>>();
+let _runCacheEntries = 0;
+
+/**
+ * The width of `text` set in one run, as the browser paints it: two CJK
+ * marks that meet are not measured apart (see {@link measureTextWidth}).
+ * For the pieces a renderer paints apart (`markPieces`), each of which
+ * holds only pairs the layout measured whole.
+ */
+export function measureRunWidth(text: string, font: string): number {
+  let byText = _runCaches.get(font);
+  if (byText === undefined) {
+    byText = new Map();
+    _runCaches.set(font, byText);
+  }
+  const cached = byText.get(text);
+  if (cached !== undefined) return cached;
+  const ctx = getMeasureCtx();
+  if (font !== _currentFont) {
+    ctx.font = font;
+    _currentFont = font;
+  }
+  const width = ctx.measureText(text).width;
+  if (_runCacheEntries >= MAX_WIDTH_CACHE_ENTRIES) {
+    _runCaches = new Map();
+    _runCacheEntries = 0;
+    byText = new Map();
+    _runCaches.set(font, byText);
+  }
+  byText.set(text, width);
+  _runCacheEntries++;
+  return width;
+}
+
 /** Drop all cached text widths. Must be called whenever font faces are
  *  (un)registered: widths measured against fallback glyphs are stale. */
 export function clearTextWidthCache(): void {
   _widthCaches = new Map();
   _widthCacheEntries = 0;
+  _runCaches = new Map();
+  _runCacheEntries = 0;
   for (const listener of _fontChangeListeners) listener();
 }
 

@@ -28,19 +28,38 @@ import { renderLangOf } from './locale';
 import { hasCJK } from './measure/cjk';
 
 /**
- * Declarations of every box that holds CJK text (a line, a caption line, a
- * design text block, a list marker): the browser adds and removes nothing.
- * Chrome's `text-spacing-trim: normal` (and fonts' `chws`) would set the
- * first of two marks that meet half width (`）》`, `”“`), and
- * `text-autospace` would add space between Han and Latin, where the CJK
- * composer set every character at its own advance and adjusted the marks
- * itself; the renderers position what it set. Absent from any other box,
- * so the output of other documents is unchanged.
+ * Declarations of every box of CJK text measured with no punctuation
+ * trimming: the browser adds and removes nothing. Chrome's
+ * `text-spacing-trim: normal` (and fonts' `chws`) would set the first of
+ * two marks that meet half width (`）》`, `”“`), and `text-autospace` would
+ * add space between Han and Latin, where the layout measured them apart
+ * (`measureTextWidth`, `markCuts`) and the CJK composer adjusted the marks
+ * itself; the renderers position what it set. Set on a line of the CJK
+ * composer (`VDTLine.cjkComposed`), on each word of another line that holds
+ * CJK text (each was measured alone), on a design text line or run and a
+ * list marker that holds CJK text. Absent from any other box, so the
+ * output of other documents is unchanged.
  */
 const CJK_TEXT_DECL = "text-spacing-trim:space-all;text-autospace:no-autospace;font-feature-settings:'chws' 0,'halt' 0,'vchw' 0;";
 /** The part of {@link CJK_TEXT_DECL} a `font` shorthand resets: repeated
  *  after it on an inner box in another face. */
 const CJK_FEATURES_DECL = "font-feature-settings:'chws' 0,'halt' 0,'vchw' 0;";
+
+/** Whether a line box carries {@link CJK_TEXT_DECL}: a line of the CJK
+ *  composer, which it measured character by character, or a line with no
+ *  segments (one span) holding CJK text. A word-by-word line holding CJK
+ *  text sets it on the words that hold some (`segmentCjk`). */
+function lineCjkDecl(line: VDTLine): boolean {
+  return line.cjkComposed === true || ((!line.segments || line.segments.length === 0) && hasCJK(line.text));
+}
+
+/** How a text segment's box takes {@link CJK_TEXT_DECL}: from its line
+ *  (`'line'`), on its own box (`'own'`), or not at all. */
+type SegmentCjk = 'line' | 'own' | false;
+
+function segmentCjk(seg: VDTLineSegment, lineDecl: boolean): SegmentCjk {
+  return lineDecl ? 'line' : hasCJK(seg.text) ? 'own' : false;
+}
 
 export interface RenderHtmlOptions {
   /** Layout mode: single vertical column or many columns laid out horizontally. */
@@ -280,14 +299,15 @@ function renderTextSegment(
   /** The tracking the line box already carries (block + line); a segment's
    *  own (a justified CJK line) is added to it. */
   tracking = 0,
-  /** The line holds CJK text: a box in another face keeps the browser's
-   *  punctuation spacing off (see {@link CJK_TEXT_DECL}). */
-  cjk = false,
+  /** Whether the browser's punctuation spacing is off for the segment
+   *  (see {@link CJK_TEXT_DECL}): set by its line (`'line'`) or on its own
+   *  box (`'own'`); a box in another face repeats the features either way. */
+  cjk: SegmentCjk = false,
 ): string {
   const spacingDecl = seg.tracking !== undefined ? `letter-spacing:${tracking + seg.tracking}px;` : '';
   // A compressed CJK mark is painted before its box (`inkOffset`).
   const left = seg.inkOffset !== undefined ? x + seg.inkOffset : x;
-  const pos = `position:absolute;left:${left.toFixed(3)}px;top:${top};white-space:pre;${spacingDecl}`;
+  const pos = `position:absolute;left:${left.toFixed(3)}px;top:${top};white-space:pre;${spacingDecl}${cjk === 'own' ? CJK_TEXT_DECL : ''}`;
   const text = esc(seg.text);
   const featuresDecl = cjk && fontDecl ? CJK_FEATURES_DECL : '';
   if (seg.refResourceId !== undefined) {
@@ -407,14 +427,14 @@ function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<st
   const links = linkRuns();
   let x = leadingGap;
   const segs = line.segments;
-  const cjk = hasCJK(line.text);
+  const lineDecl = lineCjkDecl(line);
   const paintText = (seg: VDTLineSegment, at: number, inLink = false): string => {
     const font = quoteFontString(pickSegmentFont(seg, block));
     const color = pickSegmentColor(seg, block);
     const fontDecl = font !== quoteFontString(block.fontString) ? `font:${font};` : '';
     const colorDecl = color !== block.color ? `color:${color};` : '';
     const top = seg.baselineShift ? `${seg.baselineShift.toFixed(3)}px` : '0';
-    return renderTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, color, lineTracking, cjk);
+    return renderTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, color, lineTracking, segmentCjk(seg, lineDecl));
   };
   for (let i = 0; i < segs.length; i++) {
     const seg = segs[i]!;
@@ -497,7 +517,8 @@ function renderChip(
     const fontDecl = font !== lineFont ? `font:${font};` : '';
     const colorDecl = color !== lineColor ? `color:${color};` : '';
     const top = run.baselineShift ? `${run.baselineShift.toFixed(3)}px` : '0';
-    parts.push(renderTextSegment({ kind: 'text', text: run.text, width: run.width }, tx, top, fontDecl, colorDecl, color));
+    // A chip's runs were measured one by one, as a whole each.
+    parts.push(renderTextSegment({ kind: 'text', text: run.text, width: run.width }, tx, top, fontDecl, colorDecl, color, 0, hasCJK(run.text) ? 'own' : false));
     tx += run.width;
   }
   return parts.join('');
@@ -574,7 +595,7 @@ function renderLine(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<string
     `color:${block.color};` +
     strikethroughDecl +
     trackingDecl +
-    (hasCJK(line.text) ? CJK_TEXT_DECL : '') +
+    (lineCjkDecl(line) ? CJK_TEXT_DECL : '') +
     `">${renderSegments(line, block, targets)}</div>`
   );
 }
@@ -614,7 +635,7 @@ function renderResourceLine(
 ): string {
   const baseFont = quoteFontString(fonts.normal);
   const parts: string[] = [];
-  const cjk = hasCJK(line.text);
+  const lineDecl = lineCjkDecl(line);
   if (line.segments && line.segments.length > 0) {
     const segs = line.segments;
     const segColorOf = (seg: VDTLineSegment): string => (seg.refResourceId !== undefined
@@ -628,7 +649,7 @@ function renderResourceLine(
       const fontDecl = font !== baseFont ? `font:${font};` : '';
       const colorDecl = segColor !== color ? `color:${segColor};` : '';
       const top = seg.baselineShift ? `${seg.baselineShift.toFixed(3)}px` : '0';
-      return renderTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, segColor, line.letterSpacing ?? 0, cjk);
+      return renderTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, segColor, line.letterSpacing ?? 0, segmentCjk(seg, lineDecl));
     };
     const links = linkRuns();
     let x = 0;
@@ -674,7 +695,7 @@ function renderResourceLine(
     // A tracked line (a table header set with `headerLetterSpacing`) was
     // measured with the tracking in its widths.
     (line.letterSpacing ? `letter-spacing:${line.letterSpacing}px;` : '') +
-    (cjk ? CJK_TEXT_DECL : '') +
+    (lineDecl ? CJK_TEXT_DECL : '') +
     `">${parts.join('')}</div>`
   );
 }
@@ -914,24 +935,27 @@ function renderDesignTextBlock(block: VDTDesignTextBlock): string {
   const font = quoteFontString(block.fontString);
   const fontSize = extractFontSizePx(block.fontString);
   const lineParts: string[] = [];
-  const cjk = block.lines.some((line) => hasCJK(line.text));
   for (const line of block.lines) {
     const top = line.baselineY - block.bbox.y - fontSize * 0.8;
     // Inline marks: the runs as inline spans on the line's baseline, each
     // in its own font; a script is shifted off the baseline. Of a subscript
     // and a superscript set over each other, the first sits in a box that
     // takes no room and the second in one as wide as the pair (EF-80).
+    // Each run was measured whole, and so was a line without runs: the
+    // browser's punctuation trimming is off on those that hold CJK text.
     const inner = line.runs
       ? line.runs.map((run, i) => {
           const runFont = quoteFontString(run.fontString);
-          const fontDecl = runFont !== font ? `font:${runFont};${cjk ? CJK_FEATURES_DECL : ''}` : '';
+          const cjkDecl = hasCJK(run.text) ? CJK_TEXT_DECL : '';
+          const fontDecl = runFont !== font ? `font:${runFont};` : '';
           const stackDecl = run.stacked
             ? 'display:inline-block;width:0;'
             : line.runs![i - 1]?.stacked ? `display:inline-block;min-width:${run.width.toFixed(3)}px;` : '';
           const shiftDecl = run.baselineShift ? `position:relative;top:${run.baselineShift.toFixed(3)}px;` : '';
-          return fontDecl || stackDecl || shiftDecl ? `<span style="${fontDecl}${stackDecl}${shiftDecl}">${esc(run.text)}</span>` : esc(run.text);
+          return fontDecl || cjkDecl || stackDecl || shiftDecl ? `<span style="${fontDecl}${cjkDecl}${stackDecl}${shiftDecl}">${esc(run.text)}</span>` : esc(run.text);
         }).join('')
       : esc(line.text);
+    const lineDecl = !line.runs && hasCJK(line.text) ? CJK_TEXT_DECL : '';
     // A justified line: its word spaces widened as the canvas and the PDF
     // advance its runs (EF-109).
     const wordSpacingDecl = line.wordSpacingPx ? `word-spacing:${line.wordSpacingPx.toFixed(3)}px;` : '';
@@ -942,6 +966,7 @@ function renderDesignTextBlock(block: VDTDesignTextBlock): string {
       `top:${top.toFixed(3)}px;` +
       `line-height:1;white-space:pre;` +
       wordSpacingDecl +
+      lineDecl +
       `">${inner}</span>`,
     );
   }
@@ -963,7 +988,6 @@ function renderDesignTextBlock(block: VDTDesignTextBlock): string {
     `width:${block.bbox.width}px;height:${block.bbox.height}px;` +
     `font:${font};color:${block.color};` +
     clipDecl + trackingDecl + strokeDecl +
-    (cjk ? CJK_TEXT_DECL : '') +
     `">${lineParts.join('')}</div>`,
   );
   return parts.join('');

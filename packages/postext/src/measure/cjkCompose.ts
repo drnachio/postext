@@ -1346,6 +1346,7 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
     isLastLine: isLast,
     ...(spaceRatio !== undefined && !loose ? { justifiedSpaceRatio: spaceRatio } : {}),
     ...(loose ? { ragged: true, cjkLoose: true } : ragged ? { ragged: true } : {}),
+    cjkComposed: true,
   };
 }
 

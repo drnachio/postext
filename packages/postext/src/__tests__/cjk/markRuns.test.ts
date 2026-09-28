@@ -3,6 +3,7 @@ import { buildDocument, renderPageToCanvas } from '../../index';
 import { renderToHtml } from '../../html-backend';
 import { clearTextWidthCache, measureTextWidth } from '../../measure/canvas';
 import { cjkMarkCuts } from '../../measure/cjkClasses';
+import { markCuts } from '../../measure/markCuts';
 import { graphemesOf } from '../../measure/graphemes';
 import type { Dimension, PostextConfig, WritingMode } from '../../types';
 import type { VDTDocument, VDTLine } from '../../vdt';
@@ -239,6 +240,105 @@ describe('two CJK marks that meet: measured and painted apart', () => {
       expect(trimmed.glyphs.map((g) => g.ch).join('')).toBe(want.map((g) => g.ch).join(''));
       const moved = want.flatMap((w, i) => (Math.abs(trimmed.glyphs[i]!.x - w.x) > 1e-6 ? [`${i} ${w.ch}: painted ${trimmed.glyphs[i]!.x}, set ${w.x}`] : []));
       expect(moved).toEqual([]);
+    });
+  }
+
+  it('cuts painted text where its measurer cut it', () => {
+    // Measured whole: the shared marks count when the text holds CJK.
+    expect(markCuts('他说：”“好', 'text')).toEqual([3, 4]);
+    expect(markCuts('“end.”“Yes”', 'text')).toEqual([]);
+    // Word by word: a word without CJK keeps the browser's trimming even
+    // when another word of the line holds some.
+    expect(markCuts('a 楼 “end.”“Yes” 本）》录', 'words')).toEqual([18]);
+    expect(markCuts('a 楼”“ “end.”“Yes”', 'words')).toEqual([4]);
+    // Character by character (the CJK composer): every two marks that
+    // meet, Han or not on the line; not two inside a Western run.
+    expect(markCuts('hungry.”“Stay', 'composed')).toEqual([8]);
+    expect(markCuts('本）》录', 'composed')).toEqual([2]);
+    expect(markCuts('«»', 'composed')).toEqual([]);
+    expect(markCuts('Stay hungry.', 'composed')).toEqual([]);
+  });
+
+  it('paints a line of the CJK composer apart where it holds no Han character', () => {
+    // 他說：“Stay hungry.”“Stay foolish.”“Go.” at eight ems: the line
+    // `hungry.”“Stay` holds no Han, its ” and “ were measured apart.
+    const text = '此開卷第一回也，作者自云因曾歷過一番夢幻之後故將真事隱去。他說：“Stay hungry.”“Stay foolish.”“Go.”然後就走了，作者自云因曾歷過一番夢幻之後故將真事隱去而借通靈之說。';
+    const setups: Array<[string, PostextConfig['cjk']]> = [
+      ['zh-Hant', {}],
+      ['zh-Hans', { punctuationWidth: 'fullwidth', compressAdjacent: false, trimLineStart: false }],
+    ];
+    for (const [locale, cjk] of setups) {
+      const cfg = config(locale, 'horizontal-tb', 'left', cjk);
+      cfg.page!.width = pt(8 * EM + 60);
+      const plain = run(text, cfg, false);
+      const trimmed = run(text, cfg, true);
+      const lines = trimmed.doc.pages.flatMap((p) => p.columns.flatMap((c) => c.blocks.flatMap((b) => b.lines ?? [])));
+      const hanFree = lines.find((l) => l.text.includes('”“') && !/[一-鿿]/.test(l.text));
+      expect(hanFree?.text, locale).toBe('hungry.”“Stay');
+      expect(lines.every((l) => l.cjkComposed)).toBe(true);
+      expect(JSON.stringify(trimmed.doc.pages)).toBe(JSON.stringify(plain.doc.pages));
+      const moved = plain.glyphs.flatMap((g, i) => (Math.abs(trimmed.glyphs[i]!.x - g.x) > 1e-6 ? [`${g.ch}: ${trimmed.glyphs[i]!.x} for ${g.x}`] : []));
+      expect(moved, locale).toEqual([]);
+      expect(trimmed.runs.filter(hasPair)).toEqual([]);
+      const want = composerGlyphs(lines);
+      expect(want.flatMap((w, i) => (Math.abs(trimmed.glyphs[i]!.x - w.x) > 1e-6 ? [w.ch] : []))).toEqual([]);
+      // HTML: the browser's trimming is off on the whole line.
+      const html = renderToHtml(trimmed.doc);
+      const div = html.split('<div class="pt-line"').slice(1).find((d) => d.includes('hungry.'))!;
+      expect(div).toContain('text-spacing-trim:space-all');
+    }
+  });
+
+  for (const textAlign of ['left', 'justify'] as const) {
+    it(`paints a word of a Latin paragraph as it was measured, whole, next to Han on its line (${textAlign})`, () => {
+      // A Latin paragraph (more word spaces than CJK letters) in a Chinese
+      // document: its words are measured one by one, `“end.”“Yes”` with
+      // the browser's trimming (no CJK in it) and 楼 alone.
+      const text = 'In 1791 a 楼 “end.”“Yes” and the rest of the sentence runs on in English words for a while longer, 本）》录 said.';
+      const cfg = config('zh-Hans', 'horizontal-tb', textAlign);
+      const t = run(text, cfg, true);
+      const lines = t.doc.pages.flatMap((p) => p.columns.flatMap((c) => c.blocks.flatMap((b) => b.lines ?? [])));
+      const word = lines.flatMap((l) => l.segments ?? []).find((s) => s.text === '“end.”“Yes”')!;
+      // 7.5 em, less the half em the browser takes from ” before “.
+      expect(word.width).toBe(7 * EM);
+      expect(lines.some((l) => l.cjkComposed)).toBe(false);
+      // Every word starts where the layout put it and ends where its width
+      // says: the glyphs of the line, in order, word after word.
+      let k = 0;
+      const off: string[] = [];
+      for (const line of lines) {
+        const segs = line.segments ?? [];
+        const spaces = segs.filter((s) => s.kind === 'space').length;
+        const natural = segs.reduce((a, s) => a + s.width, 0);
+        const blockWidth = t.doc.pages[0]!.columns[0]!.blocks[0]!.bbox.width - (line.bbox.x - t.doc.pages[0]!.columns[0]!.blocks[0]!.bbox.x);
+        const stretch = textAlign === 'justify' && !line.isLastLine && spaces > 0 ? (blockWidth - natural) / spaces : 0;
+        let x = line.bbox.x;
+        for (const s of segs) {
+          const n = graphemesOf(s.text).length;
+          if (s.kind === 'text') {
+            const first = t.glyphs[k]!;
+            const last = t.glyphs[k + n - 1]!;
+            if (first.ch !== graphemesOf(s.text)[0]) off.push(`order at ${s.text}`);
+            if (Math.abs(first.x - x) > 1e-6) off.push(`${s.text} starts at ${first.x}, set at ${x}`);
+            if (Math.abs(last.x + charWidth(last.ch, EM) - (x + s.width)) > 1e-6) off.push(`${s.text} ends at ${last.x + charWidth(last.ch, EM)}, set at ${x + s.width}`);
+            k += n;
+          } else {
+            // A line painted in one run paints its spaces; a justified one
+            // paints word by word.
+            while (t.glyphs[k]?.ch === ' ') k++;
+          }
+          x += s.width + (s.kind === 'space' ? stretch : 0);
+        }
+      }
+      expect(off).toEqual([]);
+      // HTML: the words holding CJK text turn the trimming off, the others
+      // and the line keep the browser's.
+      const html = renderToHtml(t.doc);
+      const div = html.split('<div class="pt-line"').slice(1).find((d) => d.includes('“end.”“Yes”'))!;
+      expect(div.slice(0, div.indexOf('>'))).not.toContain('text-spacing-trim');
+      const spans = div.split('<span').slice(1);
+      expect(spans.find((sp) => sp.includes('>“end.”“Yes”<'))).not.toContain('text-spacing-trim');
+      expect(spans.find((sp) => sp.includes('>楼<'))).toContain('text-spacing-trim:space-all');
     });
   }
 

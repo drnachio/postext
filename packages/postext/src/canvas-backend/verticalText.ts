@@ -28,9 +28,8 @@ import type { CjkRegion } from '../types';
 import { DEFAULT_CENTRAL_BASELINE } from '../vdt';
 import { verticalRuns, CORNER_OFFSET_EM, type VerticalGlyph } from '../writingMode';
 import { graphemeCount, graphemesOf } from '../measure/graphemes';
-import { cjkMarkPieces } from '../measure/cjkClasses';
-import { hasCJK } from '../measure/cjk';
-import { measureTextWidth } from '../measure/canvas';
+import { markPieces, type MarkCutRule } from '../measure/markCuts';
+import { measureRunWidth } from '../measure/canvas';
 
 /** What the painter needs while a vertical flow paints. */
 export interface VerticalPaintState {
@@ -217,14 +216,15 @@ function put(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, 
 /**
  * {@link put} for horizontal text that may hold two CJK marks side by side
  * (`）》`, `”“`, see `cjkMarkCuts`): Chrome would set the first half width
- * in one run, where the layout measured each at its own advance. Such text
- * is painted piece by piece, each piece where the layout's measurer
- * (`measureTextWidth`, the context's tracking and word spacing on top)
- * ends the one before — for a line of the CJK composer, where its
+ * in one run, where the layout may have measured each at its own advance.
+ * Such text is cut where the layout's measurer cut it (`rule`, see
+ * `markCuts`) and painted piece by piece, each piece where the one before
+ * ends as the browser sets it (`measureRunWidth`, the context's tracking
+ * and word spacing on top) — for a line of the CJK composer, where its
  * characters are. Any other text is one call, as before.
  */
-function putHorizontal(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, mode: TextPaintMode, shared: boolean): void {
-  const pieces = cjkMarkPieces(text, shared);
+function putHorizontal(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, mode: TextPaintMode, rule: MarkCutRule): void {
+  const pieces = markPieces(text, rule);
   if (pieces.length === 1) {
     put(ctx, text, x, y, mode);
     return;
@@ -232,7 +232,7 @@ function putHorizontal(ctx: CanvasRenderingContext2D, text: string, x: number, y
   const font = ctx.font;
   const spacing = parseFloat(ctx.letterSpacing) || 0;
   const wordSpacing = parseFloat((ctx as { wordSpacing?: string }).wordSpacing ?? '') || 0;
-  const widths = pieces.map((piece) => measureTextWidth(piece, font)
+  const widths = pieces.map((piece) => measureRunWidth(piece, font)
     + (spacing === 0 ? 0 : spacing * graphemeCount(piece))
     + (wordSpacing === 0 ? 0 : wordSpacing * (piece.split(' ').length - 1)));
   const align = ctx.textAlign;
@@ -253,9 +253,10 @@ function putHorizontal(ctx: CanvasRenderingContext2D, text: string, x: number, y
  * Paint `text` from `x` on `baseline`, as `ctx.fillText` would (and
  * `ctx.strokeText` for `mode` `'stroke'` / `'fillStroke'`). On a
  * horizontal page it is exactly those calls, except that two CJK marks
- * side by side are painted apart (see `putHorizontal`); `chinese` says the
- * text is Chinese, so the marks Latin text shares with it (“ ” ‘ ’ ·)
- * count as its marks (default: the text holds CJK characters). In a
+ * side by side that the layout measured apart are painted apart (see
+ * `putHorizontal`); `cuts` says how the layout measured the text
+ * (`MarkCutRule`: whole by default; word by word for a line of a Latin
+ * paragraph; character by character for a line of the CJK composer). In a
  * vertical flow (see the module comment) it sets the text vertically:
  * `tracking` (px after every character, default the context's
  * `letterSpacing`) is added after each cell and inside each sideways run.
@@ -268,11 +269,11 @@ export function fillFlowText(
   baseline: number,
   mode: TextPaintMode = 'fill',
   tracking?: number,
-  chinese?: boolean,
+  cuts: MarkCutRule = 'text',
 ): void {
   const state = paintState;
   if (!state) {
-    putHorizontal(ctx, text, x, baseline, mode, chinese ?? hasCJK(text));
+    putHorizontal(ctx, text, x, baseline, mode, cuts);
     return;
   }
   paintVertical(ctx, state, text, x, baseline, mode, tracking);

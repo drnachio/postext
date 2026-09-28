@@ -315,6 +315,15 @@ export interface VDTLine {
    *  a `cjkLooseLine` content warning. Typically the line before a long
    *  Latin word or web address that cannot break. Absent otherwise. */
   cjkLoose?: boolean;
+  /** Set by the CJK composer (a paragraph set as Chinese, Japanese or
+   *  Korean text, `composesAsCjk`): its characters were measured one by
+   *  one, so a renderer paints two CJK marks that meet apart — the marks
+   *  Latin text shares with Chinese (“ ” ‘ ’ ·) too — whether or not the
+   *  line holds a Han character, and HTML turns the browser's punctuation
+   *  trimming off on the whole line. Lines of the word-by-word breakers
+   *  were measured word by word and are cut word by word (`MarkCutRule`).
+   *  Absent otherwise. */
+  cjkComposed?: boolean;
   /** Approximate character offset in the original markdown source where this line begins.
    *  A line that opens with a backslash escape (`\$40`) begins at its backslash. */
   sourceStart?: number;
