@@ -1,0 +1,57 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 73,
+  "status": "published",
+  "chapter": "structure",
+  "order": 70,
+  "level": 2,
+  "genres": ["textbook"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["back-of-book-index", "heading-styles"],
+    "also": [
+      "unnumbered-headings",
+      "opener-design",
+      "heading-attributes",
+      "running-heads",
+      "mirrored-margins",
+      "page-role-filters",
+      "paragraph-styles",
+      "color-palette",
+      "page-background",
+      "widows-orphans-runts",
+      "pdf-export"
+    ]
+  },
+  "answers": ["Q86", "Q85"],
+  "gotchas": [
+    "headings-drop-h1-break", "fonts-first", "palette-skips-designs", "overflow-ellipsis-default",
+    "hyphenation-locales", "config-cache-identity"
+  ],
+  "related": ["back-of-book-index", "thesis-back-matter", "book-from-chapters"],
+  "engine": { "postext": "1.7.0", "postextPdf": "1.7.0" },
+  "kit": ["core", "fonts", "viewer", "pdf"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": {
+    "hero": [6, 7],
+    "card": "spread",
+    "pages": "all"
+  },
+  "downloads": { "pdf": true },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      { "what": { "en": "“From Textura to Bodoni”, an essay on the history of printing types written for this recipe, in English and Spanish", "es": "«De la textura a Bodoni», ensayo sobre la historia de los tipos de imprenta escrito para esta receta, en inglés y en español" }, "who": "Ignacio Ferro", "license": "CC-BY-4.0" }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Crimson Pro", "license": "OFL-1.1" },
+      { "family": "Bodoni Moda", "license": "OFL-1.1" },
+      { "family": "Libre Franklin", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-28",
+  "updated": "2026-09-28"
+}

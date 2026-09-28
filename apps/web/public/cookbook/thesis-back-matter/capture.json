@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "thesis-back-matter",
-  "sourceHash": "75ddec01ca127894f666f5c37dc228553329ca118d82b51f448a25bed6e716e1",
+  "sourceHash": "706ce88e2fefbaa34331d7e3d4dc013398a49fbc2e5207ff51aabd73ba8303ed",
   "engine": {
-    "postext": "1.4.1",
-    "postextPdf": "1.4.1",
+    "postext": "1.7.0",
+    "postextPdf": "1.7.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:31:30.403Z",
+  "capturedAt": "2026-09-28T09:58:55.423Z",
   "variants": {
     "en": {
-      "hash8": "1edadd62",
-      "vdtHash": "3a7551b07d45451f65965aabeffcc7c76901d863",
+      "hash8": "ca82c0ba",
+      "vdtHash": "e9d60ef100984eb6334908fe197d3daf771f2b26",
       "timings": {
-        "importMs": 208,
-        "fontsMs": 64,
-        "buildMs": 24,
-        "totalMs": 1099,
-        "builds": 3
+        "importMs": 141,
+        "fontsMs": 49,
+        "buildMs": 63,
+        "totalMs": 970,
+        "builds": 2
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Libertinus Serif Display"
         ],
         "pages": 7,
-        "ownLines": 250
+        "ownLines": 181
       },
       "pages": [
         {
@@ -72,7 +72,7 @@
           "h": 1420,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 77722,
+          "bytes": 81948,
           "alt": "Opening page 173: Interview guide. Table A.1. Timing of an interview session."
         },
         {
@@ -83,7 +83,7 @@
           "h": 1420,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 124718,
+          "bytes": 124724,
           "alt": "Opening page 174: Glossary."
         },
         {
@@ -94,7 +94,7 @@
           "h": 1420,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 119464,
+          "bytes": 119542,
           "alt": "Opening page 175: References."
         },
         {
@@ -105,7 +105,7 @@
           "h": 1420,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 58448,
+          "bytes": 59230,
           "alt": "Opening page 176: Index."
         },
         {
@@ -116,8 +116,8 @@
           "h": 1420,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 31792,
-          "alt": "Page 177: R."
+          "bytes": 29584,
+          "alt": "Page 177."
         }
       ],
       "spreads": [
@@ -152,12 +152,12 @@
       },
       "pdf": {
         "file": "thesis-back-matter.pdf",
-        "bytes": 112359,
+        "bytes": 116193,
         "pages": 7
       },
       "sandbox": {
         "file": "thesis-back-matter.postext",
-        "bytes": 19848
+        "bytes": 20282
       },
       "detected": {
         "apis": [
@@ -271,6 +271,20 @@
           "headings.levels[].numberingTemplate",
           "headings.levels[].span",
           "headings.snapToGrid",
+          "index",
+          "index.color",
+          "index.fontFamily",
+          "index.fontSize",
+          "index.groups",
+          "index.groups.color",
+          "index.groups.fontFamily",
+          "index.groups.fontSize",
+          "index.groups.fontWeight",
+          "index.groups.marginTop",
+          "index.indent",
+          "index.lineHeight",
+          "index.rangeFormat",
+          "index.turnoverIndent",
           "layout",
           "layout.layoutType",
           "orderedLists",
@@ -323,6 +337,7 @@
           "header",
           "headingStyles",
           "headings",
+          "index",
           "layout",
           "orderedLists",
           "page",
@@ -331,10 +346,11 @@
           "tableStyle",
           "unorderedLists"
         ],
-        "configLeaves": 855,
+        "configLeaves": 857,
         "designElements": 51,
         "directives": [
           ":::paragraphs",
+          ":::index",
           ":::callout"
         ],
         "inline": [
@@ -374,6 +390,7 @@
           }
         ],
         "features": [
+          "back-of-book-index",
           "bibliography",
           "callout-styles",
           "citations",
@@ -398,7 +415,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 3,
+        "iterationCount": 4,
         "looseLines": {
           "count": 0,
           "share": 0,
@@ -406,9 +423,14 @@
         },
         "findings": [
           {
-            "check": "vdt",
+            "check": "sandbox",
             "severity": "info",
-            "detail": "the layout changed since the committed capture"
+            "detail": "continuation.pageIndexOffset 170 dropped (even: same page sides)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.headings {\"h1\":5} dropped (chapter numbers restart)"
           }
         ]
       }
