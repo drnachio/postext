@@ -241,3 +241,28 @@ The pulse:index{term="Pulse!radial"} is taken at the wrist.:index{term="Circulat
 
 // Keep the helper referenced (used while debugging layouts).
 void indexLines;
+
+describe('index: the first group (#166)', () => {
+  it('takes no space above it, and later groups do', () => {
+    const outline = [markEntry(['apple'], 1), markEntry(['banana'], 2)];
+    const { blocks } = expandIndexDirectives(parseMarkdown(':::index'), outline, resolveAllConfig(base));
+    expect(blocks.map((b) => [b.index!.group, b.index!.groupStart ?? false])).toEqual([['A', false], ['B', true]]);
+  });
+
+  it('starts level in both columns under a page-span opener', () => {
+    const config: PostextConfig = {
+      ...base,
+      headings: { levels: [{ level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' } }] },
+      headingStyles: [{ id: 'index', numbered: false, layout: { layoutType: 'double', gutterWidth: pt(12) } }],
+      index: { groups: { marginTop: pt(7.5) } },
+    };
+    const letters = 'abcdefghijklmnopqrstuvw'.split('');
+    const marks = letters.map((l) => `:index{term="${l}${l}${l} term" }`).join(' ');
+    const doc = buildDocument({ markdown: `# Text\n\nSome words ${marks}.\n\n# Index {style="index"}\n\n:::index` }, config);
+    const indexPage = doc.blocks.find((b) => b.lines.some((l) => l.text === 'A'))!.pageIndex;
+    const cols = doc.pages[indexPage]!.columns.filter((c) => c.blocks.some((b) => b.lines.length > 0 && b.type !== 'heading'));
+    expect(cols.length).toBe(2);
+    const firstLineY = (col: (typeof cols)[number]) => col.blocks.find((b) => b.type !== 'heading')!.bbox.y;
+    expect(Math.abs(firstLineY(cols[0]!) - firstLineY(cols[1]!))).toBeLessThan(0.5);
+  });
+});

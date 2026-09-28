@@ -244,8 +244,8 @@ export interface IndexMark {
 export interface IndexBlockInfo {
   /** Entry depth (0 = main entry). */
   level: number;
-  /** The entry opens a group of the index (a new first letter): the space
-   *  above groups applies. */
+  /** The entry opens a group of the index (a new first letter) other than
+   *  the first: the space above groups applies. */
   groupStart?: boolean;
   /** The letter head printed above the entry, in the same block so it
    *  never ends a column alone. */

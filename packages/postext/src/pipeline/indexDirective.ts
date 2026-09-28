@@ -272,12 +272,14 @@ function indexBlocksFor(
 
   const out: ContentBlock[] = [];
   const baseBlock = { sourceStart: directive.sourceStart, sourceEnd: directive.sourceEnd };
-  const push = (node: IndexNode, level: number, group?: { label: string; start: boolean }): void => {
+  const push = (node: IndexNode, level: number, group?: { label: string; start: boolean; first: boolean }): void => {
     const spans = entrySpans(node, cfg, labels);
     const text = spans.map((s) => s.text).join('');
     const info: IndexBlockInfo = {
       level,
-      ...(group?.start ? { groupStart: true } : {}),
+      // The first group takes no space above it: what precedes the
+      // directive (the index's heading) sets that distance (#166).
+      ...(group?.start && !group.first ? { groupStart: true } : {}),
       ...(group?.start && cfg.groups.enabled ? { group: group.label } : {}),
     };
     out.push({
@@ -295,8 +297,9 @@ function indexBlocksFor(
   let lastGroup: string | undefined;
   for (const { node, group } of sortedRoots) {
     const start = group.label !== lastGroup;
+    const first = lastGroup === undefined;
     lastGroup = group.label;
-    push(node, 0, { label: group.label, start });
+    push(node, 0, { label: group.label, start, first });
   }
   return { blocks: out, warnings };
 }
