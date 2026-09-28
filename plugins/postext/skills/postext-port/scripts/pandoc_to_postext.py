@@ -28,6 +28,11 @@ Style map (JSON), keys are the source style names:
   }
 Consecutive paragraphs mapped to the same callout become one box.
 
+Index entries become `:index{term="…"}` marks (postext >= 1.7): Word XE fields
+(levels split at `:`, `\\b` -> main, `\\t "See X"` -> see) and LaTeX `\\index{}`
+(makeindex syntax: `a!b`, `sort@shown`, `|textbf`, `|see{…}`, `|seealso{…}`,
+`|(` / `|)` ranges). Add `# Index {style="…"}` + `:::index` yourself.
+
 Requires pandoc >= 3 on PATH (`brew install pandoc`); Pillow is optional
 (bitmap sizes). Output is a draft: review it against the source.
 """
@@ -53,7 +58,9 @@ from postext_md import (  # noqa: E402
     escape,
     fence,
     guard_line_start,
+    fix_index_marks,
     heading,
+    index_mark,
     join_blocks,
     ref,
     render_runs,
@@ -233,6 +240,15 @@ class Converter:
                     # display math inside a paragraph: kept inline, flagged
                     self.report["display math inside a paragraph set inline"] += 1
                 out.append(Run("$" + tex.replace("$", "\\$") + "$", raw=True))
+            elif k == "RawInline" and _raw_format(v[0]) in ("latex", "tex"):
+                marks = self.latex_index_marks(v[1])
+                if marks:
+                    out.append(Run("".join(marks), raw=True))
+                else:
+                    txt = _latex_plain(v[1], marks=False)
+                    if txt:
+                        out.append(Run(txt, bold, italic, sup, sub))
+                    self.report["raw LaTeX commands reduced to their text (raw_tex kept for \\index)"] += 1
             elif k == "RawInline":
                 txt = re.sub(r"<br\s*/?>", " ", v[1], flags=re.I)
                 txt = re.sub(r"<[^>]+>", "", txt)
@@ -286,8 +302,77 @@ class Converter:
                 if "smallcaps" in classes:
                     out += self.small_caps(inner, bold, italic, sup, sub)
                     continue
+                if "indexref" in classes:
+                    mark = self.word_index_mark(kv)
+                    if mark:
+                        out.append(Run(mark, raw=True))
+                    out += self.runs(inner, bold, italic, sup, sub)
+                    continue
                 out += self.runs(inner, bold, italic, sup, sub)
         return out
+
+    # ----- index marks -------------------------------------------------------
+
+    _SEE_WORDS_RE = re.compile(r"^\s*(see also|see|véase también|véase|ver también|ver|voir aussi|voir|siehe auch|siehe|vedi anche|vedi)\b[:\s]*", re.I)
+
+    def word_index_mark(self, kv: dict) -> str:
+        """A Word XE field (pandoc Span.indexref): `entry` levels split at `:`,
+        `crossref` (\\t) a cross-reference, `bold` (\\b) the main page,
+        `yomi` (\\y) the sort key."""
+        path = [x for x in (kv.get("entry") or "").split(":") if x.strip()]
+        if not path:
+            return ""
+        see = seealso = None
+        cross = (kv.get("crossref") or "").strip()
+        if cross:
+            m = self._SEE_WORDS_RE.match(cross)
+            target = [x for x in cross[m.end():].split(":") if x.strip()] if m else [x for x in cross.split(":") if x.strip()]
+            if m and len(m.group(1).split()) > 1:  # "see also", "véase también"…
+                seealso = target
+            else:
+                see = target
+        self.report["index entries (Word XE) -> :index marks"] += 1
+        return index_mark(path, sort=kv.get("yomi") or None, main="bold" in kv and not see, see=see, seealso=seealso)
+
+    def latex_index_marks(self, raw: str) -> list[str]:
+        """`\\index{…}` commands in a raw LaTeX run, in makeindex syntax:
+        `a!b` levels, `sort@shown`, `|textbf` main, `|see{x}` / `|seealso{x}`,
+        `|(` / `|)` a range. Quoted characters (`"!`) stay literal."""
+        marks: list[str] = []
+        for body in _latex_index_args(raw):
+            index = None
+            head, _, enc = _split_unquoted(body, "|")
+            path, sort = [], None
+            for level in _split_all_unquoted(head, "!"):
+                key, at, shown = _split_unquoted(level, "@")
+                shown = shown if at else key
+                shown = re.sub(r'"(.)', r"\1", shown)
+                path.append(_latex_plain(shown))
+                sort = _latex_plain(re.sub(r'"(.)', r"\1", key), marks=False) if at else None
+                if sort and sort == _latex_plain(shown, marks=False):
+                    sort = None
+            see = seealso = None
+            rng = None
+            main = False
+            enc = enc.strip()
+            m = re.match(r"(see|seealso|seeonly)\s*\{(.*)\}\s*$", enc)
+            if m:
+                target = [_latex_plain(x) for x in _split_all_unquoted(m.group(2), "!") if x.strip()]
+                if m.group(1) == "seealso":
+                    seealso = target
+                else:
+                    see = target
+            elif enc.startswith("("):
+                rng, enc = "start", enc[1:]
+            elif enc.startswith(")"):
+                rng, enc = "end", enc[1:]
+            if enc.strip() in ("textbf", "bf", "main", "idxbf", "bfit"):
+                main = True
+            mark = index_mark(path, sort=sort, main=main, see=see, seealso=seealso, range_=rng, index=index)
+            if mark:
+                marks.append(mark)
+                self.report["index entries (LaTeX \\index) -> :index marks"] += 1
+        return marks
 
     def small_caps(self, inlines, bold, italic, sup, sub) -> list[Run]:
         """`:smallcaps[…]` around the rendered runs (their emphasis kept
@@ -695,6 +780,9 @@ class Converter:
             self.report["code blocks -> :::paragraphs{style=\"code\"} (one paragraph per line)"] += 1
             body = [guard_line_start(l) if l.strip() else "⁠" for l in lines]
             return [fence("paragraphs", body, style="code")]
+        if k == "RawBlock" and _raw_format(v[0]) in ("latex", "tex") and "\\index" in v[1]:
+            marks = self.latex_index_marks(v[1])
+            return ["".join(marks)] if marks else []
         if k == "RawBlock":
             fmt, txt = v
             txt = re.sub(r"<[^>]+>", " ", txt)
@@ -770,6 +858,68 @@ class Converter:
                 spec["placement"]["position"] = "auto"
 
         return link_mentions(text, self.label_to_id, float_it)
+
+
+def _raw_format(f) -> str:
+    """The format of a RawInline/RawBlock (a bare string in pandoc JSON)."""
+    return (f if isinstance(f, str) else c(f) or t(f) or "").lower()
+
+
+def _latex_index_args(raw: str) -> list[str]:
+    """The brace-balanced argument of every `\\index[opt]{…}` in `raw`."""
+    out = []
+    for m in re.finditer(r"\\index\s*(?:\[[^\]]*\])?\s*\{", raw):
+        depth, i = 1, m.end()
+        while i < len(raw) and depth:
+            if raw[i] == "\\":
+                i += 2
+                continue
+            depth += {"{": 1, "}": -1}.get(raw[i], 0)
+            i += 1
+        if depth == 0:
+            out.append(raw[m.end():i - 1])
+    return out
+
+
+def _split_unquoted(s: str, ch: str) -> tuple[str, str, str]:
+    """Split at the first `ch` not quoted with `"` (makeindex) nor inside braces."""
+    parts = _split_all_unquoted(s, ch, 1)
+    return (parts[0], ch, parts[1]) if len(parts) == 2 else (s, "", "")
+
+
+def _split_all_unquoted(s: str, ch: str, maxsplit: int = -1) -> list[str]:
+    out, cur, depth, i = [], "", 0, 0
+    while i < len(s):
+        x = s[i]
+        if x == '"' and i + 1 < len(s):
+            cur += s[i:i + 2]
+            i += 2
+            continue
+        if x == "\\" and i + 1 < len(s):
+            cur += s[i:i + 2]
+            i += 2
+            continue
+        depth += {"{": 1, "}": -1}.get(x, 0)
+        if x == ch and depth == 0 and maxsplit != 0:
+            out.append(cur)
+            cur = ""
+            maxsplit -= 1
+        else:
+            cur += x
+        i += 1
+    out.append(cur)
+    return out
+
+
+def _latex_plain(s: str, marks: bool = True) -> str:
+    """LaTeX as Postext text: `\\emph{x}` -> `*x*`, `\\textbf{x}` -> `**x**`
+    (plain with marks=False), other commands dropped, their arguments kept."""
+    s = re.sub(r"\\(?:emph|textit|textsl)\s*\{([^{}]*)\}", r"*\1*" if marks else r"\1", s)
+    s = re.sub(r"\\textbf\s*\{([^{}]*)\}", r"**\1**" if marks else r"\1", s)
+    s = re.sub(r"\\(?:textsc|textrm|mathrm|text)\s*\{([^{}]*)\}", r"\1", s)
+    s = re.sub(r"\\[a-zA-Z]+\*?\s*", "", s)
+    s = s.replace("{", "").replace("}", "").replace("~", " ")
+    return collapse_spaces(s).strip()
 
 
 def para_inlines(blocks):
@@ -905,7 +1055,7 @@ def main() -> None:
     ap.add_argument("--shift-headings", type=int, default=0, help="add N to every heading level (e.g. -1 when the source's title is H1 and chapters are H2)")
     ap.add_argument("--style-map", help="JSON map from source style names to Postext constructs")
     ap.add_argument("--lang", default="en", help="content language (chapters/<lang>/, quote marks)")
-    ap.add_argument("--notes", choices=["endnotes", "inline", "drop"], default="endnotes", help="what to do with footnotes (Postext has none)")
+    ap.add_argument("--notes", choices=["endnotes", "inline", "drop"], default="endnotes", help="what to do with footnotes")
     ap.add_argument("--speaker-notes", choices=["drop", "keep", "callout"], default="drop", help="PPTX speaker notes: drop, keep as body text, or wrap in a callout of type 'notes'")
     ap.add_argument("--keep-urls", action="store_true", help="also print (url) after the link text, for print output (links are kept as live [text](url) links either way)")
     ap.add_argument("--link-refs", action="store_true", help="turn 'Figure 1.2' / 'Table 3' mentions into :ref and float those resources")
@@ -918,6 +1068,8 @@ def main() -> None:
     fmt = args.fmt or FORMAT_BY_EXT.get(src.suffix.lower())
     if not fmt:
         sys.exit(f"cannot guess the pandoc format of {src.name}; pass --from")
+    if fmt.split("+")[0] == "latex" and "raw_tex" not in fmt and "\\index" in src.read_text(encoding="utf-8", errors="ignore"):
+        fmt += "+raw_tex"  # keep \index{…} (pandoc drops it otherwise)
     media = out / "_media"
     doc = run_pandoc(src, fmt, media)
     conv = Converter(args, out, media)
@@ -952,7 +1104,7 @@ def main() -> None:
         parts = conv.blocks(ch)
         if conv.notes:
             parts.append(fence("paragraphs", conv.notes, style="notes"))
-        body = join_blocks(parts)
+        body = fix_index_marks(join_blocks(parts))
         if args.link_refs:
             body = conv.link_mentions(body)
         title = next((plain_text(c(b)[2]) for b in ch if t(b) == "Header"), f"Chapter {n}")

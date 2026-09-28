@@ -17,7 +17,11 @@ paragraphs:<style>, callout:<type>, callout-title:<type>, list, list:ordered.
 Character runs keep bold/italic (from FontStyle), superscript/subscript
 (Position); tables become table resources (TableModel with spans and header
 rows); anchored images become resource stubs with their link; footnotes become
-chapter endnotes.
+chapter endnotes; index page references (Window > Type & Tables > Index) become
+`:index{term="…"}` marks (postext >= 1.7): topic levels, sort order, a bold
+page-number style as `main`, ranged references as range start/end, and See /
+See also cross-references gathered in the report as marks to paste above
+`:::index`.
 
 Export IDML from InDesign with File > Export > InDesign Markup (IDML).
 Standard library only.
@@ -43,7 +47,9 @@ from postext_md import (  # noqa: E402
     collapse_spaces,
     fence,
     guard_line_start,
+    fix_index_marks,
     heading,
+    index_mark,
     join_blocks,
     link_mentions,
     render_runs,
@@ -55,6 +61,7 @@ PT = 72 / 25.4
 ITEM_TAGS = {"TextFrame", "Rectangle", "Group", "Polygon", "Oval", "GraphicLine"}
 TABLE_MARK = "￰"
 OBJECT_MARK = "￱"
+INDEX_MARK = "￳"  # prefix of a run holding a ready :index{…} mark
 
 
 def short(name: str | None) -> str:
@@ -136,6 +143,7 @@ class Idml:
     def __init__(self, path: Path) -> None:
         self.z = zipfile.ZipFile(path)
         self._styles()
+        self._topics()
         self._spreads()
         self._stories()
 
@@ -182,6 +190,53 @@ class Idml:
         else:
             return ""
         return "#%02x%02x%02x" % tuple(round(v) for v in rgb)
+
+    def _topics(self) -> None:
+        """The index topics: Self -> (levels, sort key), plus the See / See
+        also cross-references as ready marks."""
+        self.topics: dict[str, tuple[list[str], str]] = {}
+        self.index_crossrefs: list[str] = []
+        self.index_report: Counter = Counter()
+        cross: list[tuple[list[str], str, str]] = []
+
+        def walk(el, path):
+            for tp in el.findall("Topic"):
+                here = path + [tp.get("Name", "")]
+                self.topics[tp.get("Self")] = (here, tp.get("SortOrder", ""))
+                for cr in tp.findall("CrossReference"):
+                    cross.append((here, cr.get("ReferencedTopic", ""), cr.get("CrossReferenceType", "See")))
+                walk(tp, here)
+
+        for name in self.z.namelist():
+            if not name.endswith(".xml"):
+                continue
+            raw = self.z.read(name)
+            if b"<Topic " not in raw:
+                continue
+            for ix in ET.fromstring(raw).iter("Index"):
+                walk(ix, [])
+        for path, target, kind in cross:
+            tgt = self.topics.get(target, ([], ""))[0]
+            if not tgt:
+                continue
+            also = "Also" in kind
+            self.index_crossrefs.append(index_mark(path, seealso=tgt) if also else index_mark(path, see=tgt))
+
+    def page_reference(self, e) -> str:
+        """A PageReference as an :index mark ('' when its topic is unknown)."""
+        path, sort = self.topics.get(e.get("ReferencedTopic", ""), ([], ""))
+        if not path:
+            self.index_report["index page references with an unknown topic (dropped)"] += 1
+            return ""
+        kind = e.get("PageReferenceType", "CurrentPage")
+        if kind == "SuppressPageNumbers":
+            return ""
+        style = short(e.get("PageNumberStyleOverride", "")).lower()
+        main = any(w in style for w in ("bold", "negrita", "fett", "gras", "grassetto"))
+        self.index_report["index page references -> :index marks"] += 1
+        if kind != "CurrentPage":
+            self.index_report[f"index page references of type {kind} set as one page (add range=\"end\" by hand)"] += 1
+        return index_mark(path, sort=sort or None, main=main)
 
     def _spreads(self) -> None:
         dm = self.z.read("designmap.xml").decode("utf8")
@@ -274,6 +329,10 @@ class Idml:
                     elif e.tag == "Footnote":
                         cur.notes.append(self.paras(e))
                         cur.runs.append(mk(a, "￲"))
+                    elif e.tag == "PageReference":
+                        mark = self.page_reference(e)
+                        if mark:
+                            cur.runs.append(mk(a, INDEX_MARK + mark))
                     elif e.tag == "Properties":
                         continue
                     else:
@@ -403,10 +462,16 @@ def cmd_markdown(args) -> None:
     callout: list | None = None
     list_run: list[str] = []
 
-    def render(p: IPara, plain: bool = False) -> str:
+    def render(p: IPara, plain: bool = False, marks: bool = True) -> str:
         runs = []
         for r in p.runs:
             if r.text in (TABLE_MARK, OBJECT_MARK, "￲"):
+                continue
+            if r.text.startswith(INDEX_MARK):
+                if marks and not plain:
+                    runs.append(Run(r.text[1:], raw=True))
+                elif not marks:
+                    report["index marks in table cells or captions dropped (they print as written there)"] += 1
                 continue
             t = r.text.replace(" ", " ").replace("\t", " ")
             runs.append(Run(t, r.bold, r.italic, r.position in ("Superscript", "OTSuperscript"),
@@ -446,7 +511,7 @@ def cmd_markdown(args) -> None:
             if role == "skip":
                 continue
             for tbl in p.tables:
-                model = table_model(doc, tbl, render)
+                model = table_model(doc, tbl, lambda q: render(q, marks=False))
                 rid = slug(text_plain or f"table {len(resources) + 1}", "table")
                 resources.append({"id": rid, "typeId": "table", "kind": "table", "caption": "",
                                   "placement": {"position": "here", "span": "column"}, "table": {"model": model}})
@@ -478,9 +543,11 @@ def cmd_markdown(args) -> None:
                 flush_list()
                 if role == args.split_role and not chapters[-1][0]:
                     chapters[-1][0] = text_plain
-                chapters[-1][1].append(heading(int(role[1:]), text_plain))
+                marks = "".join(r.text[1:] for r in p.runs if r.text.startswith(INDEX_MARK))
+                chapters[-1][1].append(heading(int(role[1:]), text_plain) + marks)
                 continue
             if role == "caption":
+                text = render(p, marks=False)
                 m = CAPTION_LABEL_RE.match(text_plain)
                 last = resources[-1] if resources and not resources[-1].get("caption") else None
                 if last is None:
@@ -535,7 +602,7 @@ def cmd_markdown(args) -> None:
     for n, (title, blocks, notes) in enumerate(chapters, 1):
         if notes:
             blocks.append(fence("paragraphs", notes, style="notes"))
-        body = join_blocks(blocks)
+        body = fix_index_marks(join_blocks(blocks))
         if args.link_refs:
             body = link_mentions(body, label_to_id)
         name = f"{n:02d}-{slugify(title or f'chapter {n}')}.md"
@@ -547,6 +614,10 @@ def cmd_markdown(args) -> None:
            f"- stories used: {len(order)}; chapters: {len(manifest)}; resources: {len(resources)}", ""]
     if unmapped:
         rep += ["## Styles missing from the map (set as body)", ""] + [f"- `{k}`: {v}" for k, v in unmapped.most_common()] + [""]
+    report.update(doc.index_report)
+    if doc.index_crossrefs:
+        (out / "index-crossrefs.md").write_text("\n".join(doc.index_crossrefs) + "\n", encoding="utf-8")
+        report["index See / See also cross-references -> index-crossrefs.md (paste above :::index)"] += len(doc.index_crossrefs)
     if report:
         rep += ["## Decisions to review", ""] + [f"- {k}: {v}" for k, v in report.most_common()] + [""]
     rep += ["Paragraph order follows the stories; where boxes, figures and side notes sit on the printed page "
