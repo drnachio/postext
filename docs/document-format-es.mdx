@@ -622,7 +622,9 @@ En texto vertical (`layout.writingMode: 'vertical-rl'`) los caracteres chinos qu
 - `:tcy[…]` (tate-chu-yoko, 縱中橫) compone su texto con los caracteres uno al lado de otro en una casilla de pie de un cuadratín, estrechado si es más ancho: `:tcy[120]`, `:tcy[3.0]`, `:tcy[A+]`. Hasta unos cuatro caracteres se leen bien.
 - `:upright[…]` pone de pie cada carácter en su propia casilla, las letras latinas centradas en ella: una sigla que se lee letra a letra columna abajo. Una línea nunca se corta dentro.
 - `:sideways[…]` tumba el tramo entero con la línea, también los caracteres chinos: un número de dos cifras que el autor quiere de lado.
-- El texto sigue en el texto plano; las marcas admiten otras marcas en línea dentro (`:tcy[**12**]`) y `\]` para un corchete literal. En texto horizontal no cambian nada.
+- El texto sigue en el texto plano; las marcas admiten otras marcas en línea dentro (`:tcy[**12**]`), un enlace (`:sideways[[iPhone](https://…)]`) y unas a otras, y gana la más interna (`:tcy[:upright[AB]]` pone A y B de pie), y `\]` para un corchete literal. En texto horizontal no cambian nada.
+- Una referencia, una llamada de nota, una fórmula, un chip o una muestra de color dentro de una marca conserva su propia composición: `:sideways[iPhone[^1]]` tumba iPhone y deja la llamada como se componen todas; el número de una referencia queda en una casilla por `cjk.uprightDigits` como cualquier número corto.
+- Un elemento de texto de diseño con `inlineMarks: true` también las admite cuando se compone en vertical (ver [Configuración › Elementos de texto verticales](/es/docs/configuration#elementos-de-texto-verticales)).
 - Para cortar y justificar, una casilla `:tcy` y cada carácter de `:upright` cuentan como caracteres chinos, y no llevan espacio entre chino y latín al lado.
 
 

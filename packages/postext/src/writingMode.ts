@@ -317,8 +317,9 @@ export function segmentOrientation(seg: { tcy?: boolean; orientation?: 'upright'
 
 /** Whether `text` holds a character that stands in a cell of its own in
  *  vertical text (see {@link verticalRuns}), a short number included when
- *  `uprightDigits` sets it in a cell. ASCII letters never do. */
-export function holdsVerticalCell(text: string, uprightDigits = 0): boolean {
+ *  `uprightDigits` sets it in a cell (the measurer passes the document's
+ *  `cjk.uprightDigits`, as the painters do). ASCII letters never do. */
+export function holdsVerticalCell(text: string, uprightDigits: number): boolean {
   if (uprightDigits > 0 && /[0-9]/.test(text) && uprightDigitRuns([...text], uprightDigits).size > 0) return true;
   // eslint-disable-next-line no-control-regex
   if (!/[^\u0000-\u007F]/.test(text)) return false;

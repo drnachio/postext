@@ -745,6 +745,13 @@ export function spanScriptFields(
   return { script: span.script, scriptFont: m.font, baselineShift: m.baselineShift };
 }
 
+/** Whether a span sets something other than its text: a `:ref` or a
+ *  note marker (its label), a chip, a swatch or a formula. The orientation
+ *  marks of vertical text leave such a span as it is. */
+export function setsObject(span: InlineSpan): boolean {
+  return span.ref !== undefined || span.footnote !== undefined || span.chip !== undefined || span.swatch !== undefined || span.math !== undefined || span.mathRender !== undefined;
+}
+
 /**
  * The one token of a span that is set as a whole, or undefined for text:
  * - an inline `:ref` or a footnote marker: the resolved label (already in
@@ -766,8 +773,9 @@ export function atomicSpanToken(
 ): RichToken | undefined {
   // Vertical text: a run the author set upright or sideways is one unit a
   // line never breaks inside (tate-chu-yoko one em, upright letters one em
-  // each, a sideways run its horizontal width).
-  if ((span.combineUpright || span.orientation) && measuringVertically() && span.text.length > 0) {
+  // each, a sideways run its horizontal width). A reference, a note
+  // marker, a chip, a swatch or a formula keeps its own setting.
+  if ((span.combineUpright || span.orientation) && measuringVertically() && span.text.length > 0 && !setsObject(span)) {
     const font = pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont);
     const em = fontEm(font);
     const count = span.combineUpright ? 1 : graphemeCount(span.text);

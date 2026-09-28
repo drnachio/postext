@@ -2,6 +2,7 @@
 
 import { ViewPlugin, Decoration, EditorView, type DecorationSet, type ViewUpdate } from '@codemirror/view';
 import { Prec, RangeSetBuilder } from '@codemirror/state';
+import { orientationMarkAt } from 'postext';
 
 /**
  * Editor support for the orientation marks of vertical text (`:tcy[12]`,
@@ -9,27 +10,36 @@ import { Prec, RangeSetBuilder } from '@codemirror/state';
  * directive's brackets and underlines its text.
  */
 
-/** The engine's `ORIENTATION_MARK_RE` (one line, non-empty text, `\]` for
- *  a literal bracket). */
-const MARK_RE = /:(tcy|upright|sideways)\[((?:\\.|[^\]\\\n])+)\]/g;
-
 const delimMark = Decoration.mark({ class: 'cm-orientation-delim' });
 const textMark = Decoration.mark({ class: 'cm-orientation-text' });
 
-/** The decoration ranges of every orientation mark on a line, relative to
- *  the line. */
-export function orientationRanges(text: string): Array<{ from: number; to: number; kind: 'delim' | 'text' }> {
-  const out: Array<{ from: number; to: number; kind: 'delim' | 'text' }> = [];
-  MARK_RE.lastIndex = 0;
-  let m: RegExpExecArray | null;
-  while ((m = MARK_RE.exec(text)) !== null) {
-    const start = m.index;
-    const textStart = start + m[1]!.length + 2;
-    const textEnd = textStart + m[2]!.length;
-    out.push({ from: start, to: textStart, kind: 'delim' });
-    out.push({ from: textStart, to: textEnd, kind: 'text' });
-    out.push({ from: textEnd, to: textEnd + 1, kind: 'delim' });
+type OrientationRange = { from: number; to: number; kind: 'delim' | 'text' };
+
+/** The ranges of the marks in `[from, to)` of `text`, in order; `inside`
+ *  when the range is a mark's text, whose pieces between inner marks are
+ *  text. The engine's rule (`orientationMarkAt`): one line, non-empty
+ *  text, balanced brackets inside, `\]` for a literal bracket. */
+function collect(text: string, from: number, to: number, inside: boolean, out: OrientationRange[]): void {
+  let last = from;
+  for (let i = text.indexOf(':', from); i >= 0 && i < to; i = text.indexOf(':', i + 1)) {
+    const mark = orientationMarkAt(text, i, to);
+    if (!mark) continue;
+    if (inside && i > last) out.push({ from: last, to: i, kind: 'text' });
+    out.push({ from: i, to: mark.start, kind: 'delim' });
+    collect(text, mark.start, mark.close, true, out);
+    out.push({ from: mark.close, to: mark.close + 1, kind: 'delim' });
+    last = mark.close + 1;
+    i = mark.close;
   }
+  if (inside && to > last) out.push({ from: last, to, kind: 'text' });
+}
+
+/** The decoration ranges of every orientation mark on a line, relative to
+ *  the line, in order and apart: a mark inside another one splits its
+ *  text. */
+export function orientationRanges(text: string): OrientationRange[] {
+  const out: OrientationRange[] = [];
+  collect(text, 0, text.length, false, out);
   return out;
 }
 

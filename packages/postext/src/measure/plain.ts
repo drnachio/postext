@@ -21,7 +21,7 @@ import { measureRichBlock } from './rich';
 import { hasCJKRun } from './cjk';
 import { composesAsCjk } from './cjkCompose';
 import { markCuts } from './markCuts';
-import { getMeasureWritingMode, measuringVertically, withMeasureWritingMode } from './vertical';
+import { getMeasureUprightDigits, getMeasureWritingMode, measuringVertically, withMeasureWritingMode } from './vertical';
 import { holdsVerticalCell } from '../writingMode';
 import { WORDS_AND_SPACES_RE } from './spaces';
 import { breaksAfterHardHyphen, hasCompound, raggedStretchPx } from './breakRules';
@@ -210,11 +210,12 @@ export function measureBlock(
   // inter-character justification) and breaks a Latin one that quotes CJK
   // words next to their characters. The same text gives the same lines on
   // both paths. In vertical text so does any text with a character that
-  // stands in a cell of its own (— … © ×): pretext would measure it at its
-  // horizontal width. And so does a word holding CJK text and two marks
+  // stands in a cell of its own (— … © ×) or a short number set in one
+  // (`cjk.uprightDigits`): pretext would measure it at its horizontal
+  // width. And so does a word holding CJK text and two marks
   // that meet (`本）》录`): pretext would measure it with the browser's
   // trimming, where the renderers paint such marks apart (`markCuts`).
-  if (hasCJKRun(text) || composesAsCjk(text) || (measuringVertically() && holdsVerticalCell(text)) || markCuts(text, 'words').length > 0) {
+  if (hasCJKRun(text) || composesAsCjk(text) || (measuringVertically() && holdsVerticalCell(text, getMeasureUprightDigits())) || markCuts(text, 'words').length > 0) {
     return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
   }
   const shouldHyphenate = options?.hyphenate ?? false;

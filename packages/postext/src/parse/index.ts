@@ -34,6 +34,8 @@ export {
   MAX_SPACE_LINES,
 } from './blockParser';
 export { computeSourceMap } from './sourceMapping';
+export { orientationMarkAt } from './orientationMarks';
+export type { OrientationMark } from './orientationMarks';
 export { parseInlineSnippetSpans, mapInlineSnippet } from './inlineSnippet';
 export type { InlineSnippetMapping } from './inlineSnippet';
 export { extractIndexMarks } from './indexMarks';

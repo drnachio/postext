@@ -14,38 +14,88 @@
 
 import type { InlineSpan } from './types';
 
-/** `:tcy[…]`, `:upright[…]` or `:sideways[…]`: one line, not empty, other
- *  inline marks allowed inside, `\]` for a literal bracket. */
-export const ORIENTATION_MARK_RE = /:(tcy|upright|sideways)\[((?:\\.|[^\]\\\n])+)\]/g;
-
-/** The openers of the marks in the source (see `computeSourceMap`). */
+/** The openers of `:tcy[…]`, `:upright[…]` and `:sideways[…]` (one line,
+ *  not empty, other inline marks allowed inside, `\]` for a literal
+ *  bracket; see {@link orientationMarkAt}). */
 export const ORIENTATION_OPENERS: readonly string[] = [':tcy[', ':upright[', ':sideways['];
 
-type Mark = 'tcy' | 'upright' | 'sideways';
+/** The kind of an orientation mark. */
+export type OrientationMark = 'tcy' | 'upright' | 'sideways';
+type Mark = OrientationMark;
+
+const MARKS: readonly Mark[] = ['tcy', 'upright', 'sideways'];
+
+/** An orientation mark opened at `at`: its kind, the start of its text
+ *  and the index of its closing `]` (before `end`, on the same line), or
+ *  undefined when `at` opens none. The closing bracket is the one that
+ *  balances the opener, so a mark may hold another mark or a link
+ *  (`:tcy[:upright[AB]]`, `:sideways[[iPhone](…)]`); when the brackets
+ *  inside never balance on the line, the first `]` closes it. `\]` is a
+ *  literal bracket. The text is never empty. */
+export function orientationMarkAt(text: string, at: number, end = text.length): { kind: Mark; start: number; close: number } | undefined {
+  if (text[at] !== ':') return undefined;
+  for (const kind of MARKS) {
+    if (!text.startsWith(`:${kind}[`, at)) continue;
+    const start = at + kind.length + 2;
+    let depth = 0;
+    let first = -1;
+    for (let j = start; j < end; j++) {
+      const c = text[j]!;
+      if (c === '\n') break;
+      if (c === '\\') {
+        j++;
+        continue;
+      }
+      if (c === '[') depth++;
+      else if (c === ']') {
+        if (first < 0) first = j;
+        if (depth === 0) return j > start ? { kind, start, close: j } : undefined;
+        depth--;
+      }
+    }
+    return first > start ? { kind, start, close: first } : undefined;
+  }
+  return undefined;
+}
+
+/** `text` with every orientation mark replaced by `wrap(kind, inner)`,
+ *  the marks inside a mark's text replaced first. */
+function replaceOrientationMarks(text: string, wrap: (kind: Mark, inner: string) => string): string {
+  if (!ORIENTATION_OPENERS.some((o) => text.includes(o))) return text;
+  let out = '';
+  let last = 0;
+  for (let i = text.indexOf(':'); i >= 0 && i < text.length; i = text.indexOf(':', i + 1)) {
+    const mark = orientationMarkAt(text, i);
+    if (!mark) continue;
+    out += text.slice(last, i) + wrap(mark.kind, replaceOrientationMarks(text.slice(mark.start, mark.close), wrap));
+    last = mark.close + 1;
+    i = mark.close;
+  }
+  return out + text.slice(last);
+}
 
 /** Private-use marks bracketing each kind while the emphasis regexes run
  *  (outside the escape range and the other marks of `inlineFormatting.ts`). */
-const OPEN: Record<Mark, string> = { tcy: '', upright: '', sideways: '' };
-const CLOSE: Record<Mark, string> = { tcy: '', upright: '', sideways: '' };
+const OPEN: Record<Mark, string> = { tcy: '\uE1B0', upright: '\uE1B2', sideways: '\uE1B4' };
+const CLOSE: Record<Mark, string> = { tcy: '\uE1B1', upright: '\uE1B3', sideways: '\uE1B5' };
 const MARK_OF = new Map<string, { mark: Mark; open: boolean }>([
   ...(Object.keys(OPEN) as Mark[]).map((m): [string, { mark: Mark; open: boolean }] => [OPEN[m], { mark: m, open: true }]),
   ...(Object.keys(CLOSE) as Mark[]).map((m): [string, { mark: Mark; open: boolean }] => [CLOSE[m], { mark: m, open: false }]),
 ]);
-const ANY_MARK_RE = /[-]/;
+const ANY_MARK_RE = /[\uE1B0-\uE1B5]/;
 
 const unescapeBrackets = (inner: string): string => inner.replace(/\\([[\]])/g, '$1');
 
 /** Replace every orientation mark by its text between its private-use
- *  marks. */
+ *  marks (a mark inside another one too). */
 export function markOrientation(text: string): string {
-  if (!text.includes(':tcy[') && !text.includes(':upright[') && !text.includes(':sideways[')) return text;
-  return text.replace(ORIENTATION_MARK_RE, (_, kind: Mark, inner: string) => `${OPEN[kind]}${unescapeBrackets(inner)}${CLOSE[kind]}`);
+  return replaceOrientationMarks(text, (kind, inner) => `${OPEN[kind]}${unescapeBrackets(inner)}${CLOSE[kind]}`);
 }
 
 /** The text of every orientation mark without its markup, each wrapped in
  *  `boundary` (the plain text `stripInlineFormatting` gives). */
 export function stripOrientationMarks(text: string, boundary: string): string {
-  return text.replace(ORIENTATION_MARK_RE, (_, _kind: string, inner: string) => boundary + unescapeBrackets(inner) + boundary);
+  return replaceOrientationMarks(text, (_kind, inner) => boundary + unescapeBrackets(inner) + boundary);
 }
 
 /** Split the spans at the orientation marks, setting `combineUpright` or
@@ -83,19 +133,9 @@ export function applyOrientationMarks(spans: InlineSpan[]): InlineSpan[] {
 }
 
 /** An orientation mark's opener at `r` that the parser took as markup: its
- *  closing `]` comes later on the same line. The length of the opener, or
- *  0. */
+ *  closing `]` comes later on the same line (see {@link orientationMarkAt}).
+ *  The length of the opener, or 0. */
 export function orientationOpenerAt(markdown: string, r: number, end: number): number {
-  if (markdown[r] !== ':') return 0;
-  for (const opener of ORIENTATION_OPENERS) {
-    if (!markdown.startsWith(opener, r)) continue;
-    for (let j = r + opener.length; j < end; j++) {
-      const c = markdown[j]!;
-      if (c === '\n') return 0;
-      if (c === '\\') { j++; continue; }
-      if (c === ']') return j > r + opener.length ? opener.length : 0;
-    }
-    return 0;
-  }
-  return 0;
+  const mark = orientationMarkAt(markdown, r, end);
+  return mark ? mark.start - r : 0;
 }

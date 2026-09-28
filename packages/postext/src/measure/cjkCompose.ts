@@ -40,6 +40,7 @@ import {
   expandSmallCaps,
   pickSpanFont,
   scriptMetrics,
+  setsObject,
   spanScriptFields,
   stackedScriptPairs,
   textWidth,
@@ -328,7 +329,7 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
 
   for (let si = 0; si < spans.length; si++) {
     const span = spans[si]!;
-    if (vertical && (span.combineUpright || span.orientation) && span.text.length > 0) {
+    if (vertical && (span.combineUpright || span.orientation) && span.text.length > 0 && !setsObject(span)) {
       orientedUnits(span, styleOf(span, fonts), letterSpacingPx, zwsp, units);
       zwsp = false;
       continue;

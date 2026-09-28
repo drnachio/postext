@@ -307,6 +307,7 @@ describe("package exports", () => {
       "computeSourceMap",
       "parseInlineSnippetSpans",
       "mapInlineSnippet",
+      "orientationMarkAt",
       "buildPageLabels",
       "collectPageLabelRuns",
       "formatNumeral",

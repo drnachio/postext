@@ -622,7 +622,9 @@ In vertical text (`layout.writingMode: 'vertical-rl'`) Chinese characters stand 
 - `:tcy[…]` (tate-chu-yoko, 縱中橫) sets its text side by side in one upright cell of one em, squeezed across when it is wider: `:tcy[120]`, `:tcy[3.0]`, `:tcy[A+]`. Up to about four characters read well.
 - `:upright[…]` stands each character upright in a cell of its own, Latin letters centred in it: an acronym read letter by letter down the column. A line never breaks inside it.
 - `:sideways[…]` turns the whole run with the line, Chinese characters too: a two-digit number the author wants on its side.
-- The text stays in the plain text; the marks take other inline marks inside (`:tcy[**12**]`) and write `\]` for a literal bracket. In horizontal text they change nothing.
+- The text stays in the plain text; the marks take other inline marks inside (`:tcy[**12**]`), a link (`:sideways[[iPhone](https://…)]`) and each other, the innermost winning (`:tcy[:upright[AB]]` stands A and B upright), and write `\]` for a literal bracket. In horizontal text they change nothing.
+- A reference, a note marker, a formula, a chip or a swatch inside a mark keeps its own setting: `:sideways[iPhone[^1]]` turns iPhone and leaves the note number as every note number is set; a reference's number stands in one cell by `cjk.uprightDigits` like any short number.
+- A design text element with `inlineMarks: true` takes them too when it is set vertically (see [Configuration › Vertical text elements](/en/docs/configuration#vertical-text-elements)).
 - For breaking and justifying, a `:tcy` cell and each `:upright` character count as Chinese characters, and no Han–Latin space is set next to them.
 
 

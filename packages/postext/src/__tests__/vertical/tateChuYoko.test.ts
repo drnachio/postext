@@ -3,7 +3,9 @@ import { buildDocument, renderPageToCanvas } from '../../index';
 import { parseInlineFormatting, stripInlineFormatting } from '../../parse/inlineFormatting';
 import { verticalRuns, uprightDigitRuns } from '../../writingMode';
 import { graphemesOf } from '../../measure/graphemes';
-import type { PostextConfig, Dimension } from '../../types';
+import { atomicSpanToken } from '../../measure/rich';
+import { withMeasureWritingMode } from '../../measure/vertical';
+import type { PostextConfig, Dimension, Resource } from '../../types';
 import type { VDTDocument, VDTLine, VDTLineSegment } from '../../vdt';
 import { installSizedStub, stubCharWidth } from './stub';
 
@@ -62,6 +64,31 @@ describe('orientation marks in the parser (#190)', () => {
     expect(spans.find((s) => s.text === 'GDP')?.orientation).toBe('upright');
     expect(spans.find((s) => s.text === '34')?.orientation).toBe('sideways');
     expect(stripInlineFormatting('第:tcy[12]回')).toBe('第12回');
+  });
+
+  it('reads a mark inside another one, the innermost winning, and a link inside a mark', () => {
+    const nested = parseInlineFormatting(':tcy[:upright[AB]]');
+    expect(nested).toEqual([{ text: 'AB', bold: false, italic: false, orientation: 'upright' }]);
+    const around = parseInlineFormatting('第:tcy[x:upright[AB]y]回');
+    expect(around.map((s) => [s.text, s.combineUpright, s.orientation])).toEqual([
+      ['第', undefined, undefined], ['x', true, undefined], ['AB', undefined, 'upright'], ['y', true, undefined], ['回', undefined, undefined],
+    ]);
+    expect(stripInlineFormatting(':tcy[:upright[AB]]')).toBe('AB');
+    const link = parseInlineFormatting('用:sideways[[iPhone](https://example.com)]拍');
+    const phone = link.find((s) => s.text === 'iPhone')!;
+    expect(phone.orientation).toBe('sideways');
+    expect(phone.links?.[0]?.href).toBe('https://example.com');
+    // Brackets that never balance close at the first one, as before.
+    expect(parseInlineFormatting(':tcy[a[b]').map((s) => [s.text, s.combineUpright])).toEqual([['a[b', true]]);
+  });
+
+  it('maps the text of a nested mark to its source', () => {
+    const md = '第:tcy[:upright[AB]]回';
+    const doc = buildDocument({ markdown: md }, config('zh-Hant'));
+    const block = doc.pages[0]!.columns[0]!.blocks[0]!;
+    expect(block.sourceMap?.[1]).toBe(md.indexOf('AB'));
+    expect(block.sourceMap?.[2]).toBe(md.indexOf('AB') + 1);
+    expect(block.sourceMap?.[3]).toBe(md.indexOf('回'));
   });
 
   it('keeps emphasis inside a mark', () => {
@@ -143,6 +170,74 @@ describe('tate-chu-yoko in vertical lines (#190)', () => {
     expect(block.sourceMap?.[1]).toBe(md.indexOf('12'));
     expect(block.sourceMap?.[2]).toBe(md.indexOf('12') + 1);
     expect(block.sourceMap?.[3]).toBe(md.indexOf('回'));
+  });
+});
+
+describe('orientation marks leave references, notes and objects as they are (#190 review)', () => {
+  const flagsOf = (doc: VDTDocument) => segments(doc).map((s) => ({
+    kind: s.kind,
+    text: s.text,
+    width: Math.round(s.width * 1000) / 1000,
+    tcy: s.tcy,
+    orientation: s.orientation,
+    footnoteId: s.footnoteId,
+    refResourceId: s.refResourceId,
+    chip: s.chip !== undefined,
+    math: s.mathRender !== undefined,
+  }));
+
+  it('keeps a formula inside :tcy, :upright and :sideways a formula', () => {
+    for (const [marked, plain] of [
+      ['正:tcy[$x^2$]文', '正$x^2$文'],
+      ['正文:sideways[$x$]', '正文$x$'],
+    ] as const) {
+      expect(flagsOf(buildDocument({ markdown: marked }, config('zh-Hant'))), marked).toEqual(flagsOf(buildDocument({ markdown: plain }, config('zh-Hant'))));
+    }
+    // The letters around the formula keep their mark.
+    const doc = buildDocument({ markdown: '正:upright[A$x$B]文' }, config('zh-Hant'));
+    const segs = segments(doc);
+    expect(segs.filter((s) => s.orientation === 'upright').map((s) => s.text)).toEqual(['A', 'B']);
+    expect(segs.some((s) => s.text.includes('\uFFFC') && (s.tcy || s.orientation))).toBe(false);
+  });
+
+  it('keeps a note marker inside :sideways a note marker', () => {
+    const marked = flagsOf(buildDocument({ markdown: '正文:sideways[iPhone[^a]]。\n\n[^a]: 注。' }, config('zh-Hant')));
+    const plain = flagsOf(buildDocument({ markdown: '正文iPhone[^a]。\n\n[^a]: 注。' }, config('zh-Hant')));
+    const note = marked.find((s) => s.footnoteId === 'a');
+    expect(note).toBeDefined();
+    expect(note!.orientation).toBeUndefined();
+    expect(note).toEqual(plain.find((s) => s.footnoteId === 'a'));
+    expect(marked.find((s) => s.text === 'iPhone')?.orientation).toBe('sideways');
+  });
+
+  it('keeps a reference inside :tcy a reference', () => {
+    const table: Resource = {
+      id: 't1', typeId: 'table', kind: 'table', caption: '人物', createdAt: 0, updatedAt: 0,
+      table: { model: { rows: [[{ content: '名' }], [{ content: '字' }]] } },
+    };
+    const doc = buildDocument({ markdown: '見表:tcy[:ref{id="t1"}]。', resources: [table] }, config('zh-Hant'));
+    const ref = segments(doc).find((s) => s.refResourceId === 't1');
+    expect(ref).toBeDefined();
+    expect(ref!.tcy).toBeUndefined();
+  });
+
+  it('measures a flagged note marker as a note marker, whatever the parser left on it', () => {
+    const F = '10px "Test Serif"';
+    const token = withMeasureWritingMode('vertical-rl', () => atomicSpanToken(
+      { text: '1', bold: false, italic: false, footnote: { id: 'a' }, orientation: 'sideways', combineUpright: true },
+      F, F, F, F, 0,
+    ));
+    expect(token?.footnoteId).toBe('a');
+    expect(token?.tcy).toBeUndefined();
+    expect(token?.orientation).toBeUndefined();
+  });
+
+  it('keeps a chip inside :tcy a chip', () => {
+    const doc = buildDocument({ markdown: '正:tcy[:chip[新]]文' }, config('zh-Hant'));
+    const chip = segments(doc).find((s) => s.chip !== undefined);
+    expect(chip).toBeDefined();
+    expect(chip!.tcy).toBeUndefined();
+    expect(segments(doc).some((s) => s.tcy)).toBe(false);
   });
 });
 
