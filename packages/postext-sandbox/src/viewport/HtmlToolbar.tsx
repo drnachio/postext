@@ -28,6 +28,9 @@ interface HtmlToolbarProps {
   hidden: boolean;
   canScrollPrev: boolean;
   canScrollNext: boolean;
+  /** The pages run right to left (a right-bound book): the left arrow
+   *  goes to the next page. */
+  rightToLeft?: boolean;
   onRegenerate: () => void;
   onTogglePin: () => void;
   onFontScaleUp: () => void;
@@ -48,6 +51,7 @@ export function HtmlToolbar({
   hidden,
   canScrollPrev,
   canScrollNext,
+  rightToLeft = false,
   onRegenerate,
   onTogglePin,
   onFontScaleUp,
@@ -118,15 +122,15 @@ export function HtmlToolbar({
       <ToolbarSeparator />
       <ToolbarButton
         icon={<ChevronLeft size={16} aria-hidden="true" />}
-        label={labels.previousColumn}
-        onClick={() => onScrollColumn(-1)}
-        disabled={prevDisabled}
+        label={rightToLeft ? labels.nextColumn : labels.previousColumn}
+        onClick={() => onScrollColumn(rightToLeft ? 1 : -1)}
+        disabled={rightToLeft ? nextDisabled : prevDisabled}
       />
       <ToolbarButton
         icon={<ChevronRight size={16} aria-hidden="true" />}
-        label={labels.nextColumn}
-        onClick={() => onScrollColumn(1)}
-        disabled={nextDisabled}
+        label={rightToLeft ? labels.previousColumn : labels.nextColumn}
+        onClick={() => onScrollColumn(rightToLeft ? -1 : 1)}
+        disabled={rightToLeft ? prevDisabled : nextDisabled}
       />
     </div>
   );

@@ -333,6 +333,14 @@ export interface SandboxLabels {
   cjkRegionHongKong: string;
   cjkLineBreak: string;
   cjkLineBreakTooltip: string;
+  writingMode: string;
+  writingModeHorizontal: string;
+  writingModeVertical: string;
+  writingModeTooltip: string;
+  binding: string;
+  bindingLeft: string;
+  bindingRight: string;
+  bindingTooltip: string;
   cjkLineBreakNone: string;
   cjkLineBreakBasic: string;
   cjkLineBreakGb: string;

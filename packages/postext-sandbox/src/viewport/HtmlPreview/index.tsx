@@ -49,7 +49,9 @@ interface HtmlPreviewProps {
   // Emits whether the viewer can scroll further in each direction. Scroll
   // bounds rather than column indices — the viewer may show several columns
   // per viewport, so reporting a single "current column" is ambiguous.
-  onScrollBoundsChange?: (info: { canPrev: boolean; canNext: boolean }) => void;
+  /** `rtl`: the pages run right to left (a right-bound book in multi
+   *  mode): the next page is to the left. */
+  onScrollBoundsChange?: (info: { canPrev: boolean; canNext: boolean; rtl?: boolean }) => void;
   /** Page count of the last laid-out document. */
   /** After every layout: the page count, the first page with content
    *  (the ones before it are parity padding), the book page number of
@@ -132,6 +134,8 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   // trying to patch.
   const lastRenderSigRef = useRef<string | null>(null);
   const [docVersion, setDocVersion] = useState(0);
+  /** The pages run right to left (see `onScrollBoundsChange`). */
+  const rtlRef = useRef(false);
 
   // Latest-value refs so the stable ResizeObserver / font-loader callbacks
   // don't capture stale values via closure.
@@ -487,8 +491,14 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
         }
       }
 
+      // A right-bound book in multi mode lays its pages out right to left
+      // (`renderToHtml`): the reader starts at the right end.
+      const rtl = mode === 'multi' && doc.binding === 'right';
+      const rtlChanged = rtl !== rtlRef.current;
+      rtlRef.current = rtl;
       if (!canPatch) {
         scroll.innerHTML = indexed.html;
+        if (rtl && (prev === null || rtlChanged)) scroll.scrollLeft = scroll.scrollWidth;
         overlayMapRef.current.clear();
         const pageEls = scroll.querySelectorAll<HTMLDivElement>('.pt-page');
         pageEls.forEach((pageEl) => {
@@ -677,7 +687,8 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
       const pageRect = pageEl.getBoundingClientRect();
       const scrollRect = scroll.getBoundingClientRect();
       if (columnModeRef.current === 'multi') {
-        scroll.scrollLeft += pageRect.left - scrollRect.left - PADDING_PX;
+        if (rtlRef.current) scroll.scrollLeft += pageRect.right - scrollRect.right + PADDING_PX;
+        else scroll.scrollLeft += pageRect.left - scrollRect.left - PADDING_PX;
       } else {
         scroll.scrollTop += pageRect.top - scrollRect.top - PADDING_PX;
       }
@@ -689,7 +700,8 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
         const { pageWidthPx, columnGapPx } = columnGeomRef.current;
         if (pageWidthPx <= 0) return;
         const step = pageWidthPx + columnGapPx;
-        scroll.scrollBy({ left: delta * step, behavior: 'smooth' });
+        // Right to left, the next page is to the left.
+        scroll.scrollBy({ left: (rtlRef.current ? -delta : delta) * step, behavior: 'smooth' });
       } else {
         scroll.scrollBy({ top: delta * scroll.clientHeight, behavior: 'smooth' });
       }
@@ -712,10 +724,11 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
         return;
       }
       const tolerance = 4;
-      const canPrev = scroll.scrollLeft > tolerance;
-      const canNext =
+      const canLeft = scroll.scrollLeft > tolerance;
+      const canRight =
         scroll.scrollLeft + scroll.clientWidth < scroll.scrollWidth - tolerance;
-      onScrollBoundsChangeRef.current?.({ canPrev, canNext });
+      const rtl = rtlRef.current;
+      onScrollBoundsChangeRef.current?.(rtl ? { canPrev: canRight, canNext: canLeft, rtl } : { canPrev: canLeft, canNext: canRight });
     };
     const onScroll = () => {
       if (rafId !== 0) return;
@@ -754,7 +767,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
       pages.forEach((pageEl) => {
         const r = pageEl.getBoundingClientRect();
         const dist = multi
-          ? Math.abs(r.left - sRect.left - PADDING_PX)
+          ? (rtlRef.current ? Math.abs(sRect.right - r.right - PADDING_PX) : Math.abs(r.left - sRect.left - PADDING_PX))
           : Math.abs(r.top + r.height / 2 - viewportCenter);
         if (dist < bestDist) {
           bestDist = dist;

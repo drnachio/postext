@@ -11,7 +11,7 @@ import type { LayoutContinuation, NumeralStyle, VDTDocument, PostextConfig, Rend
 import { clearOverlay, drawOverlay } from './overlay';
 import { findResourceLocation } from './geometry';
 import type { BookPageMap } from '../usePageHashSync';
-import { ensureConfigFontsLoaded, getConfigFontSpecs } from '../../controls/fontLoader';
+import { ensureConfigFontsLoaded, getConfigFontSpecs, loadVerticalTwins, verticalTwinsSettled } from '../../controls/fontLoader';
 import { ensureResourceImages } from '../../controls/resourceImages';
 import { useLayoutWorker } from '../../worker/useLayoutWorker';
 import { layoutCacheKey, stableStringify } from '../../book/layoutKeys';
@@ -399,6 +399,15 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
           cancelled = true;
         };
       }
+    }
+
+    // Vertical text: the canvas paints brackets and punctuation with the
+    // fonts' vertical forms, through twin faces loaded once per family; the
+    // pages are painted again when they land (with the fallbacks meanwhile).
+    if (!verticalTwinsSettled(deferredConfig)) {
+      loadVerticalTwins(deferredConfig).then((added) => {
+        if (added && !cancelled) setRebuildKey((k) => k + 1);
+      });
     }
 
     // Track rebuildKey so worker fonts are re-registered when main-thread

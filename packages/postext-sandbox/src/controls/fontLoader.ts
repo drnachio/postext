@@ -1,7 +1,8 @@
-import type { CustomFontFamily, CustomFontVariant, PostextConfig } from 'postext';
+import type { CustomFontFamily, CustomFontVariant, PostextConfig, VerticalAlternatesFace } from 'postext';
 import type { FontPayload } from 'postext/worker';
 import {
   DEFAULT_TEXT_ELEMENT,
+  loadVerticalAlternates,
   primaryFontFamily,
   resolveBodyTextConfig,
   resolveHeaderFooterConfig,
@@ -689,4 +690,71 @@ export function collectFontUsage(config: PostextConfig): Map<string, FontVariant
 export function missingUsedVariants(family: CustomFontFamily, config: PostextConfig): FontVariantUse[] {
   const wanted = collectFontUsage(config).get(family.name) ?? [];
   return missingVariants(family, wanted);
+}
+
+// ---------------------------------------------------------------------------
+// Vertical forms for vertical text (canvas)
+// ---------------------------------------------------------------------------
+
+/** Whether a config sets any text vertically (`layout.writingMode`, or a
+ *  heading style's own layout). */
+export function configIsVertical(config: PostextConfig): boolean {
+  if (config.layout?.writingMode === 'vertical-rl') return true;
+  return (config.headingStyles ?? []).some((s) => s.layout?.writingMode === 'vertical-rl');
+}
+
+const verticalTwins = new Map<string, Promise<boolean>>();
+const verticalTwinsDone = new Set<string>();
+
+async function verticalFacesOf(family: string): Promise<VerticalAlternatesFace[]> {
+  const custom = getCustomFontFamily(family);
+  if (custom) {
+    const faces: VerticalAlternatesFace[] = [];
+    await Promise.all(custom.variants.map(async (variant) => {
+      const buffer = await loadVariantBuffer(variant);
+      if (buffer) faces.push({ source: buffer, weight: String(variant.weight), style: variant.style });
+    }));
+    return faces;
+  }
+  const meta = await fetchFontMetadata(family);
+  const res = await fetch(buildFontUrl(family, meta), { credentials: 'omit' });
+  if (!res.ok) return [];
+  return parseFontFaceCss(await res.text()).map((face) => ({
+    source: face.url,
+    weight: face.weight,
+    style: face.style,
+    ...(face.unicodeRange ? { unicodeRange: face.unicodeRange } : {}),
+  }));
+}
+
+/**
+ * For a config that sets text vertically: load, for every family it uses, a
+ * twin with the font's vertical forms (OpenType `vert`) that the canvas
+ * paints brackets and punctuation with (see `loadVerticalAlternates` in
+ * postext). Once per family; resolves when every family is settled, to
+ * whether any family has its twin (the preview repaints then).
+ */
+export async function loadVerticalTwins(config: PostextConfig): Promise<boolean> {
+  if (typeof document === 'undefined' || !configIsVertical(config)) return false;
+  const results = await Promise.all(getConfigFontFamilies(config).map((family) => {
+    let p = verticalTwins.get(family);
+    if (!p) {
+      p = verticalFacesOf(family)
+        .then((faces) => loadVerticalAlternates(family, faces))
+        .catch(() => false)
+        .then((ok) => {
+          verticalTwinsDone.add(family);
+          return ok;
+        });
+      verticalTwins.set(family, p);
+    }
+    return p;
+  }));
+  return results.some(Boolean);
+}
+
+/** Whether every family of a vertical config has had its twin tried. */
+export function verticalTwinsSettled(config: PostextConfig): boolean {
+  if (!configIsVertical(config)) return true;
+  return getConfigFontFamilies(config).every((f) => verticalTwinsDone.has(f));
 }

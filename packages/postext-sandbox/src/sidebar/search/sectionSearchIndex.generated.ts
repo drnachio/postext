@@ -2305,6 +2305,10 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
     sources: [],
     literals: [],
     keys: [
+      'binding',
+      'bindingLeft',
+      'bindingRight',
+      'bindingTooltip',
       'cjkAuto',
       'cjkLineBreak',
       'cjkLineBreakBasic',
@@ -2320,6 +2324,10 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
       'cjkSection',
       'reset',
       'resetSectionConfirm',
+      'writingMode',
+      'writingModeHorizontal',
+      'writingModeTooltip',
+      'writingModeVertical',
     ],
   },
   'resource-types': {
