@@ -50,6 +50,7 @@ Esta referencia es larga. Estos son los bloques principales:
 - [Partes](#partes) — páginas separadoras de parte para contenedores `:::part`: paridad, área de cuerpo, diseño de apertura, tipografía del cuerpo.
 - [Estilos de encabezado](#estilos-de-encabezado) — estilos con nombre para encabezados `{style="…"}`: capítulos sin numerar, preliminares con sus propias cabeceras, geometría y paleta.
 - [Índice de contenidos](#índice-de-contenidos) — lo que imprime `:::toc`: tipografía de las entradas, líneas de puntos, números de página, líneas de autores, filas de parte.
+- [Índice analítico](#índice-analítico) — lo que imprime `:::index`: tipografía de las entradas, sangrías, separadores e intervalos de páginas, grupos por inicial, idioma de ordenación.
 - [Unidades y colores](#unidades-y-colores) + [Paleta de colores](#paleta-de-colores) — `Dimension`, `ColorValue`, colores con nombre.
 - [Fuentes personalizadas](#fuentes-personalizadas) — declarar familias tipográficas subidas por el usuario junto con Google Fonts.
 - [Visor HTML](#visor-html) — ancho objetivo de columna y cortes para el backend HTML.
@@ -4795,6 +4796,124 @@ const config: PostextConfig = {
 
 Las etiquetas de página son las que el documento imprime. `buildDocument()` vuelve a componer un documento con `:::toc` con las etiquetas de la pasada anterior hasta que se estabilizan (tres pasadas adicionales como máximo); un anfitrión que compone un libro capítulo a capítulo suministra en su lugar el esquema del libro entero como `PostextContent.outline`, ensamblado con `contentOutline()` (encabezados y partes a partir del texto) y `outlineFromDoc()` (las mismas entradas con las etiquetas de página de una composición), y vuelve a componer el capítulo del índice cada vez que cambia el `outlineKey()` de ese esquema. Cada entrada de encabezado lleva el `number` que imprime el índice y, en un encabezado numerado, su `counter`: la cuenta acumulada del nivel tras cualquier `startAt`, imprima lo que imprima la plantilla — lo que un anfitrión muestra junto a un capítulo en sus propias listas.
 
+## Índice analítico
+
+La propiedad `index` configura lo que imprime una directiva `:::index` (ver [Formato del documento](/es/docs/document-format#índice-analítico)): los términos marcados con `:index[…]` e `:index{term="…"}` en el texto, ordenados, agrupados por inicial y cada uno con las páginas en que cae. Una entrada es su término, un separador y sus números de página; detrás van sus subentradas, con un paso de sangría por nivel, y las líneas que continúan una entrada cuelgan `turnoverIndent` para no alinearse nunca con una subentrada.
+
+```ts
+const config: PostextConfig = {
+  headingStyles: [
+    // El índice a dos columnas, bajo su propio encabezado.
+    { id: 'indice', numbered: false, layout: { layoutType: 'double', gutterWidth: { value: 6, unit: 'mm' } } },
+  ],
+  index: {
+    fontSize: { value: 8.5, unit: 'pt' },
+    lineHeight: { value: 11, unit: 'pt' },
+    rangeFormat: 'chicago',
+    groups: { fontFamily: 'Source Sans 3', fontWeight: 700, color: { hex: '#8a1c1c', model: 'hex' } },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>color</code></td>
+      <td>—</td>
+      <td>el texto de cuerpo</td>
+      <td>Tipografía de las entradas. Todas las líneas del índice, letras de grupo incluidas, se componen sobre <code>lineHeight</code>; el índice lleva su propio ritmo y no se ajusta a la rejilla base.</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>Sangría de cada nivel de subentrada.</td>
+    </tr>
+    <tr>
+      <td><code>turnoverIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code></td>
+      <td>Sangría adicional de las líneas que continúan una entrada, más allá de su nivel.</td>
+    </tr>
+    <tr>
+      <td><code>entrySpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Espacio sobre cada entrada principal.</td>
+    </tr>
+    <tr>
+      <td><code>separator</code>, <code>locatorSeparator</code>, <code>rangeSeparator</code></td>
+      <td><code>string</code></td>
+      <td><code>', '</code>, <code>', '</code>, <code>'–'</code></td>
+      <td>Lo que se imprime entre el término y su primera página, entre dos páginas y entre los extremos de un intervalo.</td>
+    </tr>
+    <tr>
+      <td><code>mergeRanges</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Une en un intervalo las páginas consecutivas de un mismo formato de numeración: <code>12, 13, 14</code> se imprime <code>12–14</code>. Las páginas principales no se unen nunca.</td>
+    </tr>
+    <tr>
+      <td><code>rangeFormat</code></td>
+      <td><code>'full' | 'chicago'</code></td>
+      <td><code>'full'</code></td>
+      <td>Cómo se escribe el segundo número de un intervalo: completo (<code>234–237</code>) o sin las cifras que comparte con el primero, como pide el <em>Manual de estilo de Chicago</em> (9.64): <code>71–72</code>, <code>100–104</code>, <code>101–8</code>, <code>321–28</code>, <code>1496–500</code>. Las etiquetas romanas se escriben siempre completas.</td>
+    </tr>
+    <tr>
+      <td><code>main</code></td>
+      <td><code>{'{ bold?, italic? }'}</code></td>
+      <td>negrita</td>
+      <td>Cómo se compone una página principal (<code>main</code> en la marca).</td>
+    </tr>
+    <tr>
+      <td><code>see</code></td>
+      <td><code>{'{ label?, alsoLabel?, italic? }'}</code></td>
+      <td>según el idioma, en cursiva</td>
+      <td>Las palabras que preceden a una remisión. Sin fijar, siguen el idioma del documento: <em>Véase</em> / <em>Véase también</em>, <em>See</em> / <em>See also</em>, <em>Voir</em> / <em>Voir aussi</em>…</td>
+    </tr>
+    <tr>
+      <td><code>locale</code></td>
+      <td><code>string</code></td>
+      <td>el del documento</td>
+      <td>El idioma cuyo orden alfabético ordena las entradas (una etiqueta BCP 47, que lee <code>Intl.Collator</code>). En español la <em>ñ</em> va tras la <em>n</em> y encabeza un grupo propio; los acentos no alteran el orden.</td>
+    </tr>
+    <tr>
+      <td><code>groups.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Imprime una letra de cabeza sobre cada grupo de entradas (<code>A</code>, <code>B</code>…, <code>0–9</code> para las cifras, <code>Símbolos</code> para el resto).</td>
+    </tr>
+    <tr>
+      <td><code>groups.fontFamily</code>, <code>fontSize</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code></td>
+      <td>—</td>
+      <td>las de las entradas, peso <code>700</code></td>
+      <td>La tipografía de la letra de cabeza. Se compone sobre el interlineado de las entradas.</td>
+    </tr>
+    <tr>
+      <td><code>groups.marginTop</code></td>
+      <td><code>Dimension</code></td>
+      <td>una línea del índice</td>
+      <td>Espacio sobre cada grupo, con letra de cabeza o sin ella; ninguno en lo alto de una columna.</td>
+    </tr>
+    <tr>
+      <td><code>groups.symbolsLabel</code>, <code>numbersLabel</code></td>
+      <td><code>string</code></td>
+      <td>según el idioma, <code>'0–9'</code></td>
+      <td>Las cabezas de las entradas que empiezan por un símbolo y por una cifra.</td>
+    </tr>
+  </tbody>
+</table>
+
+Los números de página salen del esquema del libro, como los del índice de contenidos: `computeOutline()` y `contentOutline()` enumeran las marcas de un texto como entradas de tipo `'indexMark'` (con `indexMark.path`, `sort`, `see`, `seeAlso`, `main`, `range` e `index`), y `outlineFromDoc()` da a cada una la página en que cayó, que la composición registra en `doc.indexMarks` (`{ sourceStart, pageIndex }` por marca). `buildDocument()` vuelve a componer un documento que imprime su propio índice hasta que los números se estabilizan; un anfitrión que compone un libro capítulo a capítulo pasa al capítulo que contiene `:::index` el esquema del libro entero como `PostextContent.outline`. `tocOutline()` e `indexOutline()` separan un esquema en lo que leen el índice de contenidos y el analítico, para que el anfitrión asocie cada capítulo a lo que imprime: el sandbox vuelve a componer el capítulo del índice analítico solo cuando se mueve una marca, y el del índice de contenidos solo cuando se mueve un encabezado. `contentOutline()` indica además si un texto imprime un índice analítico (`hasIndex`).
+
 ## Unidades y colores
 
 ### Dimensiones
@@ -5506,6 +5625,21 @@ console.log(`El documento tiene ${vdt.pages.length} páginas`);
       <td><code>unusedFootnote</code></td>
       <td>Una definición de nota <code>[^id]:</code> que ninguna llamada cita.</td>
       <td>La nota no se compone.</td>
+    </tr>
+    <tr>
+      <td><code>indexMarkInvalid</code></td>
+      <td>Una marca de índice sin término: <code>:index{'{}'}</code>, o atributos sin <code>term</code> en una marca sin texto entre corchetes.</td>
+      <td>La marca no indexa nada.</td>
+    </tr>
+    <tr>
+      <td><code>indexSeeUnknown</code></td>
+      <td>El destino de un <code>see</code> o un <code>seealso</code> (<code>target</code>) no es una entrada de su índice (<code>index</code>, <code>''</code> para el principal). Señala la línea <code>:::index</code>.</td>
+      <td>La remisión se imprime igualmente.</td>
+    </tr>
+    <tr>
+      <td><code>indexRangeUnclosed</code></td>
+      <td>Una marca <code>range="start"</code> sin su <code>range="end"</code>, o al revés (<code>missing</code> indica qué extremo falta; <code>term</code>, la entrada). Señala la línea <code>:::index</code>.</td>
+      <td>El intervalo imprime su única página.</td>
     </tr>
     <tr>
       <td><code>unknownHeadingStyle</code></td>
@@ -6611,7 +6745,7 @@ Cuatro utilidades conectan un paquete abierto con el motor y los backends:
 
 - **`loadBundleFonts(bundle)`** registra las fuentes del paquete en `document.fonts`. Espérala antes de componer, porque la composición mide el texto con las fuentes que tiene el navegador. Las familias que el paquete nombra pero no incluye (Google Fonts) tienes que cargarlas tú, como en cualquier otro documento.
 - **`registerBundleImages(bundle)`** decodifica las imágenes para el backend canvas (`renderPage`, `renderToCanvas`). **`bundleImageUrl(bundle)`** es el resolvedor `resourceImageUrl` de `renderToHtml`. Las dos recolorean las figuras SVG cuando `diagramStyle.singleInk` está activo, una sola vez: recolorean el marcado y marcan las imágenes para que ningún backend vuelva a teñirlas (consulta [Tinta única en canvas y en HTML](#tinta-única-en-canvas-y-en-html)).
-- **`buildBundle(bundle)`** compone los capítulos en orden y devuelve un `VDTDocument` por capítulo. Cada capítulo continúa al anterior: contadores de encabezados y de recursos, la parte abierta, la paridad de página y la numeración. Un capítulo que imprime el índice (`:::toc`) recibe el esquema del libro entero. Admite las mismas opciones que `buildDocument`, más `config` para sustituir la configuración del paquete, `cache` para compartir una caché de medidas y `metadata` (ver más abajo).
+- **`buildBundle(bundle)`** compone los capítulos en orden y devuelve un `VDTDocument` por capítulo. Cada capítulo continúa al anterior: contadores de encabezados y de recursos, la parte abierta, la paridad de página y la numeración. Un capítulo que imprime el índice de contenidos (`:::toc`) o el analítico (`:::index`) recibe el esquema del libro entero. Admite las mismas opciones que `buildDocument`, más `config` para sustituir la configuración del paquete, `cache` para compartir una caché de medidas y `metadata` (ver más abajo).
 - **`bundleResourceBytes(bundle)`** y **`bundleFontProvider(bundle, { decodeWoff2, fallback })`** son las opciones `resourceBytes` y `fontProvider` de `renderToPdf` de `postext-pdf`. El proveedor de fuentes elige del paquete el peso más cercano del estilo pedido. Para una variante `.woff2` necesita `decompressWoff2`, y para una familia que el paquete no incluye llama a `fallback`.
 
 ```ts

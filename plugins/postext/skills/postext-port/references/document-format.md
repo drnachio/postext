@@ -515,7 +515,7 @@ $$
 
 ## 12. Single-line directives `:::name{attrs}`
 
-Known directives: `pagebreak`, `numbering`, `columnbreak`, `space`, `toc`. Execution: . They must be alone on their line (same fence regex as §7).
+Known directives: `pagebreak`, `numbering`, `columnbreak`, `space`, `toc`, `index`. Execution: . They must be alone on their line (same fence regex as §7).
 
 | Directive | Attributes | Effect |
 |---|---|---|
@@ -524,6 +524,7 @@ Known directives: `pagebreak`, `numbering`, `columnbreak`, `space`, `toc`. Execu
 | `:::space` | `lines`: body lines (baseline grid), default `1`; fractions allowed; > 0 and ≤ 20, else one line and the sandbox warns `spaceInvalidLines`. | Vertical space between two blocks, **added** to their margin (not collapsed into a heading's top margin); repeated lines add up. Dropped at a column/page top; one that does not fit ends the column without carrying over. A paragraph right after it loses its first-line indent when `indentAfterHeading` is off. Keep-with-next counts it. The only directive honoured inside a `:::callout`/`:::columns` (measured in the box's body lines). Before a box's first block it is dropped, **except** right under the title or in a box holding nothing else (answer box sized in lines: `:::callout{type="answer" title="Q1"}` + `:::space{lines=4}` + `:::`). Always dropped at the top of a `:::columns` group, at each of its column heads, and at the top of a split box's continuation. Works inside `:::paragraphs`. Extra blank lines in the Markdown never add space. |
 | `:::numbering` | `format`: `decimal` \| `lower-roman` \| `upper-roman` \| `lower-alpha` \| `upper-alpha`. `startAt`: integer ≥ 1. Both optional; invalid values are ignored, with `numberingInvalidFormat`/`numberingInvalidStartAt` warnings. | Switches the page-number format and/or restarts the counter **at the next page boundary** (or at the current page if it has no numbered content yet). Canonical form: `:::pagebreak{parity="odd"}` followed by `:::numbering{format="decimal" startAt=1}` before chapter 1. |
 | `:::toc` | none | Expands, before layout, into one entry per listed heading (levels in `toc.levels`, default level 1) and one row per part. Page labels converge over passes. In the sandbox the book outline is supplied, so chapter files work. Exclude the contents heading itself with `{toc="false"}`. |
+| `:::index` | `index`: name of a separate index (default: the main one) | Expands into the back-of-book index: every `:index` mark of the book (all chapters in the sandbox and `buildBundle`), sorted in the `locale`'s alphabetical order, grouped by first letter, with its page labels, which converge like `:::toc`. Put it under a heading style with a two-column `layout`. Styling: config `index`. |
 
 **Directives inside a `:::callout` are ignored** (except `:::space`). An unknown `:::word` is literal text (`unknownDirective`).
 
@@ -621,6 +622,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 | Extra vertical space (scene break, room above a signature) | `:::space` or `:::space{lines=2}` on its own line. Extra blank lines do nothing. |
 | Front-matter roman page numbers | `:::numbering{format="lower-roman" startAt=1}` at the start, then `:::pagebreak{parity="odd"}` + `:::numbering{format="decimal" startAt=1}` before chapter 1. |
 | Table of contents | `# Contents {style="…" toc="false"}` then `:::toc`. |
+| Back-of-book index | Mark each indexed passage: `:index[word]` (prints the word, indexes it) or `:index{term="Main!sub"}` right after the word it refers to (prints nothing); `main` bolds the principal page, `range="start"`/`range="end"` span pages, `see="…"`/`seealso="…"` cross-refer, `index="names"` files a separate index. Then `# Index {style="…"}` and `:::index` (`:::index{index="names"}`). Never retype the source's page numbers. |
 | Part divider | `:::part{number="I" title="…" palette="band=#hex"}` … `:::` at the top of the part's first chapter file. |
 | Keyboard keys, tags, word bank | `:chip[…]{style="…"}`. |
 | Colour legend | `:swatch{color="…"}`. |

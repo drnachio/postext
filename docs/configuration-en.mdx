@@ -50,6 +50,7 @@ This reference is long. These are the main blocks:
 - [Parts](#parts) — part-divider pages for `:::part` containers: parity, body area, opener design, body typography.
 - [Heading styles](#heading-styles) — named styles for `{style="…"}` headings: unnumbered chapters, front matter with its own running heads, geometry and palette.
 - [Table of contents](#table-of-contents) — what `:::toc` prints: entry typography, leaders, page numbers, author lines, part rows.
+- [Back-of-book index](#back-of-book-index) — what `:::index` prints: entry typography, indents, page-number separators and ranges, letter groups, sorting language.
 - [Units and colors](#units-and-colors) + [Color palette](#color-palette) — `Dimension`, `ColorValue`, named colors.
 - [Custom fonts](#custom-fonts) — declare user-uploaded font families alongside Google Fonts.
 - [HTML viewer](#html-viewer) — target column width and line-breaking for the HTML backend.
@@ -4795,6 +4796,124 @@ const config: PostextConfig = {
 
 The page labels are the ones the document prints. `buildDocument()` lays a document with a `:::toc` out again with the labels of the previous pass until they settle (at most three extra passes); a host laying a book out chapter by chapter supplies the whole book's outline as `PostextContent.outline` instead, assembled from `contentOutline()` (headings and parts from the text alone) and `outlineFromDoc()` (the same entries with the page labels of a layout), and lays the contents chapter out again whenever `outlineKey()` of that outline changes. Each heading entry carries the `number` the contents print and, for a numbered heading, its `counter`: the level's running count after any `startAt`, whatever the template prints — what a host shows beside a chapter in its own lists.
 
+## Back-of-book index
+
+The `index` property configures what a `:::index` directive prints (see [Document format](/en/docs/document-format#back-of-book-index)): the terms marked with `:index[…]` and `:index{term="…"}` in the text, sorted, grouped by first letter, each with the pages it falls on. An entry is its term, a separator and its page numbers; its sub-entries follow, one indent step per level, and wrapped lines hang by `turnoverIndent` so they never line up with a sub-entry.
+
+```ts
+const config: PostextConfig = {
+  headingStyles: [
+    // The index in two columns, under its own heading.
+    { id: 'index', numbered: false, layout: { layoutType: 'double', gutterWidth: { value: 6, unit: 'mm' } } },
+  ],
+  index: {
+    fontSize: { value: 8.5, unit: 'pt' },
+    lineHeight: { value: 11, unit: 'pt' },
+    rangeFormat: 'chicago',
+    groups: { fontFamily: 'Source Sans 3', fontWeight: 700, color: { hex: '#8a1c1c', model: 'hex' } },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>color</code></td>
+      <td>—</td>
+      <td>the body text</td>
+      <td>Entry typography. Every line of the index, letter heads included, is set on <code>lineHeight</code>; the index keeps its own rhythm and does not snap to the baseline grid.</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>Indent of each sub-entry level.</td>
+    </tr>
+    <tr>
+      <td><code>turnoverIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code></td>
+      <td>Extra indent of an entry's wrapped lines, beyond its own level.</td>
+    </tr>
+    <tr>
+      <td><code>entrySpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Space above each main entry.</td>
+    </tr>
+    <tr>
+      <td><code>separator</code>, <code>locatorSeparator</code>, <code>rangeSeparator</code></td>
+      <td><code>string</code></td>
+      <td><code>', '</code>, <code>', '</code>, <code>'–'</code></td>
+      <td>What is printed between the term and its first page, between two pages, and between the ends of a range.</td>
+    </tr>
+    <tr>
+      <td><code>mergeRanges</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Join consecutive pages of one numbering format into a range: <code>12, 13, 14</code> prints <code>12–14</code>. Main pages are never joined.</td>
+    </tr>
+    <tr>
+      <td><code>rangeFormat</code></td>
+      <td><code>'full' | 'chicago'</code></td>
+      <td><code>'full'</code></td>
+      <td>How the second number of a range is written: in full (<code>234–237</code>) or with the digits it shares with the first dropped, as <em>The Chicago Manual of Style</em> (9.64) asks: <code>71–72</code>, <code>100–104</code>, <code>101–8</code>, <code>321–28</code>, <code>1496–500</code>. Roman labels are always written in full.</td>
+    </tr>
+    <tr>
+      <td><code>main</code></td>
+      <td><code>{'{ bold?, italic? }'}</code></td>
+      <td>bold</td>
+      <td>How a principal page (<code>main</code> on the mark) is set.</td>
+    </tr>
+    <tr>
+      <td><code>see</code></td>
+      <td><code>{'{ label?, alsoLabel?, italic? }'}</code></td>
+      <td>by language, italic</td>
+      <td>The words before a cross-reference. Unset, they follow the document language: <em>See</em> / <em>See also</em>, <em>Véase</em> / <em>Véase también</em>, <em>Voir</em> / <em>Voir aussi</em>…</td>
+    </tr>
+    <tr>
+      <td><code>locale</code></td>
+      <td><code>string</code></td>
+      <td>the document's</td>
+      <td>The language whose alphabetical order sorts the entries (a BCP 47 tag, read by <code>Intl.Collator</code>). In Spanish <em>ñ</em> sorts after <em>n</em> and heads a group of its own; accents never change the order.</td>
+    </tr>
+    <tr>
+      <td><code>groups.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Print a letter head above each group of entries (<code>A</code>, <code>B</code>…, <code>0–9</code> for numbers, <code>Symbols</code> for the rest).</td>
+    </tr>
+    <tr>
+      <td><code>groups.fontFamily</code>, <code>fontSize</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code></td>
+      <td>—</td>
+      <td>the entries', weight <code>700</code></td>
+      <td>The letter head's face. It is set on the entries' line pitch.</td>
+    </tr>
+    <tr>
+      <td><code>groups.marginTop</code></td>
+      <td><code>Dimension</code></td>
+      <td>one line of the index</td>
+      <td>Space above each group, with or without a head; none at the top of a column.</td>
+    </tr>
+    <tr>
+      <td><code>groups.symbolsLabel</code>, <code>numbersLabel</code></td>
+      <td><code>string</code></td>
+      <td>by language, <code>'0–9'</code></td>
+      <td>The heads of the entries that start with a symbol and with a digit.</td>
+    </tr>
+  </tbody>
+</table>
+
+The page numbers come from the book's outline, as the contents' do: `computeOutline()` and `contentOutline()` list the index marks of a text as entries of kind `'indexMark'` (with `indexMark.path`, `sort`, `see`, `seeAlso`, `main`, `range` and `index`), and `outlineFromDoc()` gives each the page it landed on, which the build records in `doc.indexMarks` (`{ sourceStart, pageIndex }` per mark). `buildDocument()` lays a document that prints its own index out again until the numbers settle; a host laying out a book chapter by chapter hands the chapter holding `:::index` the whole book's outline as `PostextContent.outline`. `tocOutline()` and `indexOutline()` split an outline into what the contents and the index read, so a host can key each chapter to the part it prints: the Sandbox lays the index chapter out again only when a mark moves, and the contents chapter only when a heading does. `contentOutline()` also says whether a text prints an index (`hasIndex`).
+
 ## Units and colors
 
 ### Dimensions
@@ -5506,6 +5625,21 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>unusedFootnote</code></td>
       <td>A footnote definition <code>[^id]:</code> that no marker cites.</td>
       <td>The note is not set.</td>
+    </tr>
+    <tr>
+      <td><code>indexMarkInvalid</code></td>
+      <td>An index mark with no term: <code>:index{'{}'}</code>, or attributes without <code>term</code> on a mark with no bracketed text.</td>
+      <td>The mark indexes nothing.</td>
+    </tr>
+    <tr>
+      <td><code>indexSeeUnknown</code></td>
+      <td>A <code>see</code> or <code>seealso</code> target (<code>target</code>) that is no entry of its index (<code>index</code>, <code>''</code> for the main one). Points at the <code>:::index</code> line.</td>
+      <td>The cross-reference prints anyway.</td>
+    </tr>
+    <tr>
+      <td><code>indexRangeUnclosed</code></td>
+      <td>A <code>range="start"</code> mark with no matching <code>range="end"</code>, or the reverse (<code>missing</code> says which end is missing; <code>term</code> names the entry). Points at the <code>:::index</code> line.</td>
+      <td>The range prints its one page.</td>
     </tr>
     <tr>
       <td><code>unknownHeadingStyle</code></td>
@@ -6609,7 +6743,7 @@ Four helpers connect an opened bundle to the engine and the backends:
 
 - **`loadBundleFonts(bundle)`** registers the bundle's faces with `document.fonts`. Await it before laying out, because layout measures text with the fonts the browser has. Families the bundle names but does not carry (Google Fonts) still have to be loaded by you, as in any other document.
 - **`registerBundleImages(bundle)`** decodes the pictures for the canvas backend (`renderPage`, `renderToCanvas`). **`bundleImageUrl(bundle)`** is the `resourceImageUrl` resolver for `renderToHtml`. Both recolour SVG figures when `diagramStyle.singleInk` is on, once: they recolour the markup and flag the pictures so that no backend tints them again (see [Single ink on canvas and in HTML](#single-ink-on-canvas-and-in-html)).
-- **`buildBundle(bundle)`** lays the chapters out in order and returns one `VDTDocument` per chapter. Each chapter continues the one before it: heading and resource counters, the open part, page parity and page numbering. A chapter that prints the contents (`:::toc`) receives the whole book's outline. It takes the same options as `buildDocument`, plus `config` to override the bundle's configuration, `cache` to share a measurement cache and `metadata` (see below).
+- **`buildBundle(bundle)`** lays the chapters out in order and returns one `VDTDocument` per chapter. Each chapter continues the one before it: heading and resource counters, the open part, page parity and page numbering. A chapter that prints the contents (`:::toc`) or the index (`:::index`) receives the whole book's outline. It takes the same options as `buildDocument`, plus `config` to override the bundle's configuration, `cache` to share a measurement cache and `metadata` (see below).
 - **`bundleResourceBytes(bundle)`** and **`bundleFontProvider(bundle, { decodeWoff2, fallback })`** are the `resourceBytes` and `fontProvider` options of `postext-pdf`'s `renderToPdf`. The font provider picks the nearest weight of the requested style from the bundle. For a `.woff2` face it needs `decompressWoff2`, and for a family the bundle does not carry it calls `fallback`.
 
 ```ts
