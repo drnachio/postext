@@ -12,6 +12,12 @@ import { useEffect, useRef, useState } from "react";
 export const MEDIA_BASE = process.env.NEXT_PUBLIC_MEDIA_BASE?.replace(/\/+$/, "");
 const VERSION = "v1";
 
+/** The corner buttons over the player (subtitles, full screen). */
+const TOOL =
+  "flex h-8 items-center rounded-md border font-sans text-sm font-bold tracking-wider shadow-[0_4px_16px_rgba(0,0,0,0.45)] transition-[opacity,background-color,color] duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand md:h-9";
+const TOOL_ON = "border-brand bg-brand text-brand-contrast opacity-100";
+const TOOL_OFF = "border-white/85 bg-night/80 text-white hover:border-brand hover:text-brand";
+
 /** iOS Safari only puts a video element full screen (and back) through these. */
 type IOSVideo = HTMLVideoElement & {
   webkitEnterFullscreen?: () => void;
@@ -25,20 +31,28 @@ export function ShowreelVideo({
   playLabel,
   watchLabel,
   subtitlesLabel,
+  fullscreenLabel,
+  exitFullscreenLabel,
 }: {
   lang: "en" | "es";
   title: string;
   playLabel: string;
   watchLabel: string;
   subtitlesLabel: string;
+  fullscreenLabel: string;
+  exitFullscreenLabel: string;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
   const frame = useRef<HTMLDivElement>(null);
   const [started, setStarted] = useState(false);
   const [hasSubs, setHasSubs] = useState(false);
   const [subsOn, setSubsOn] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
+  // Element full screen (not the iPhone): our button replaces the native one
+  const [frameFs, setFrameFs] = useState(false);
   const base = `${MEDIA_BASE}/showreel/${VERSION}/${lang}`;
   const src = `${base}/master.m3u8`;
+  const poster = `${base}/poster.jpg`;
 
   useEffect(() => {
     const video = ref.current;
@@ -97,6 +111,29 @@ export function ShowreelVideo({
     };
   }, []);
 
+  // The frame is what goes full screen. The native button (where the browser
+  // keeps it) would stack the video on top instead of leaving, so a switch
+  // to the video means "exit" and the page leaves full screen altogether.
+  useEffect(() => {
+    const change = () => {
+      const el = document.fullscreenElement;
+      if (el && el === ref.current) {
+        void document.exitFullscreen().then(() => {
+          if (document.fullscreenElement) return document.exitFullscreen();
+        }).catch(() => {});
+        return;
+      }
+      setFullscreen(!!el && el === frame.current);
+    };
+    document.addEventListener("fullscreenchange", change);
+    return () => document.removeEventListener("fullscreenchange", change);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
+    else void frame.current?.requestFullscreen().catch(() => {});
+  };
+
   const toggleSubs = () => {
     const tracks = ref.current?.textTracks;
     if (!tracks) return;
@@ -113,16 +150,20 @@ export function ShowreelVideo({
     const video: IOSVideo | null = ref.current;
     if (!video) return;
     setStarted(true);
+    setFrameFs(document.fullscreenEnabled);
     void video.play().catch(() => {});
     if (document.fullscreenEnabled && frame.current) void frame.current.requestFullscreen().catch(() => {});
     else video.webkitEnterFullscreen?.();
   };
 
-  // At the end the reader comes back to the page, whichever full screen it was.
+  // At the end the reader comes back to the page, whichever full screen it
+  // was, and finds the player as it started: poster, pill, from the top.
   const ended = () => {
     const video: IOSVideo | null = ref.current;
     if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
     else if (video?.webkitDisplayingFullscreen) video.webkitExitFullscreen?.();
+    if (video) video.currentTime = 0;
+    setStarted(false);
   };
 
   return (
@@ -130,9 +171,10 @@ export function ShowreelVideo({
       <video
         ref={ref}
         controls={started}
+        controlsList={frameFs ? "nofullscreen" : undefined}
         playsInline
         preload="none"
-        poster={`${base}/poster.jpg`}
+        poster={poster}
         aria-label={title}
         onPlay={() => setStarted(true)}
         onEnded={ended}
@@ -143,7 +185,10 @@ export function ShowreelVideo({
           type="button"
           onClick={start}
           aria-label={playLabel}
-          className="group absolute inset-0 flex cursor-pointer items-start justify-start p-2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:items-end sm:p-4 md:p-6"
+          // the video shows its poster only until the first play; after the
+          // end the button carries it
+          style={{ backgroundImage: `url(${poster})` }}
+          className="group absolute inset-0 flex cursor-pointer bg-cover bg-center items-start justify-start p-2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:items-end sm:p-4 md:p-6"
         >
           {/* where the poster leaves room (its centre carries the title): bottom-left, or top-left on phones, where its foot line sits too close */}
           <span className="flex items-center gap-1.5 rounded-full bg-brand py-0.5 pr-2.5 pl-0.5 font-sans text-[0.7rem] font-semibold text-brand-contrast shadow-[0_12px_40px_-10px_rgba(14,16,20,0.7)] transition-transform duration-300 group-hover:scale-105 sm:gap-2.5 sm:py-2 sm:pr-5 sm:pl-2 sm:text-sm md:text-base">
@@ -156,21 +201,34 @@ export function ShowreelVideo({
           </span>
         </button>
       )}
-      {started && hasSubs && (
-        <button
-          type="button"
-          onClick={toggleSubs}
-          aria-pressed={subsOn}
-          aria-label={subtitlesLabel}
-          title={subtitlesLabel}
-          className={`absolute top-3 right-3 rounded-md border px-2 py-0.5 font-sans text-xs font-bold tracking-wider transition-[opacity,background-color,color] duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand md:top-4 md:right-4 md:text-sm ${
-            subsOn
-              ? "border-brand bg-brand text-brand-contrast opacity-100"
-              : "border-white/60 bg-night/60 text-white opacity-70 hover:opacity-100"
-          }`}
-        >
-          CC
-        </button>
+      {started && (hasSubs || frameFs) && (
+        <div className="absolute top-3 right-3 flex gap-2 md:top-4 md:right-4">
+          {hasSubs && (
+            <button
+              type="button"
+              onClick={toggleSubs}
+              aria-pressed={subsOn}
+              aria-label={subtitlesLabel}
+              title={subtitlesLabel}
+              className={`${TOOL} px-2.5 ${subsOn ? TOOL_ON : TOOL_OFF}`}
+            >
+              CC
+            </button>
+          )}
+          {frameFs && (
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              aria-label={fullscreen ? exitFullscreenLabel : fullscreenLabel}
+              title={fullscreen ? exitFullscreenLabel : fullscreenLabel}
+              className={`${TOOL} w-8 justify-center md:w-9 ${TOOL_OFF}`}
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="size-4 md:size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d={fullscreen ? "M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" : "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"} />
+              </svg>
+            </button>
+          )}
+        </div>
       )}
     </div>
   );

@@ -318,7 +318,9 @@
     "title": "Postext in two minutes",
     "play": "Play the video full screen",
     "watch": "Watch · 2:04",
-    "subtitles": "Subtitles"
+    "subtitles": "Subtitles",
+    "fullscreen": "Full screen",
+    "exitFullscreen": "Exit full screen"
   },
   "About": {
     "eyebrow": "Why Postext",
