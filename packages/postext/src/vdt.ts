@@ -1231,6 +1231,12 @@ export type ContentWarning = ContentWarningBase & (
   /** `:chip[…]{style}` names no chip style: the chip takes the first one.
    *  `inResource` names the resource whose caption, note or cell holds it. */
   | { kind: 'unknownChipStyle'; style: string; inResource?: string }
+  /** A footnote marker `[^id]` with no `[^id]: …` definition in the
+   *  document: the number prints, the note is empty. Points at the first
+   *  such marker. */
+  | { kind: 'undefinedFootnote'; id: string }
+  /** A footnote definition `[^id]: …` no marker cites: it is not set. */
+  | { kind: 'unusedFootnote'; id: string }
   /** A heading's `{style}` attribute names no heading style: the heading
    *  and its section keep the level's own settings. */
   | { kind: 'unknownHeadingStyle'; style: string; level: number }

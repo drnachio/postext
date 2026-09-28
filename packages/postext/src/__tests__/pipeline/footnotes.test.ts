@@ -154,3 +154,18 @@ describe('footnotes with balancing and closing bands', () => {
     expect(ids.length).toBeGreaterThan(5);
   });
 });
+
+describe('footnote warnings', () => {
+  it('reports a marker with no definition and a definition never cited', async () => {
+    const { collectContentWarnings } = await import('../../pipeline/contentWarnings');
+    const md = 'Texto.[^falta] Más texto.[^ok]\n\n[^ok]: Bien.\n\n[^sobra]: Nadie la cita.';
+    const found = collectContentWarnings(md, undefined, []);
+    const undef = found.find((w) => w.kind === 'undefinedFootnote');
+    const unused = found.find((w) => w.kind === 'unusedFootnote');
+    expect(undef && 'id' in undef ? undef.id : undefined).toBe('falta');
+    expect(md.slice(undef!.sourceStart, undef!.sourceEnd)).toBe('[^falta]');
+    expect(unused && 'id' in unused ? unused.id : undefined).toBe('sobra');
+    expect(md.slice(unused!.sourceStart, unused!.sourceStart! + 10)).toBe('[^sobra]: ');
+    expect(found.filter((w) => w.kind === 'undefinedFootnote' || w.kind === 'unusedFootnote')).toHaveLength(2);
+  });
+});

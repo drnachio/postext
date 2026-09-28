@@ -21,6 +21,8 @@ export type WarningKind =
   | 'unknownParagraphStyle'
   | 'unknownCalloutType'
   | 'unknownChipStyle'
+  | 'undefinedFootnote'
+  | 'unusedFootnote'
   | 'unknownHeadingStyle'
   | 'chipOverlap'
   | 'numberingInvalidFormat'
@@ -118,6 +120,10 @@ export type WarningPayload =
    *  `config.chipStyles`; the chip takes the first style. `inResource`
    *  names the resource whose caption, note or cell holds the chip. */
   | { kind: 'unknownChipStyle'; style: string; inResource?: string }
+  /** A footnote marker `[^id]` no `[^id]: …` paragraph defines. */
+  | { kind: 'undefinedFootnote'; id: string }
+  /** A footnote definition `[^id]: …` no marker cites. */
+  | { kind: 'unusedFootnote'; id: string }
   /** A heading's `{style="…"}` names no heading style; the heading keeps
    *  its level's settings. */
   | { kind: 'unknownHeadingStyle'; style: string; level: number }

@@ -396,6 +396,50 @@
       }
     }
   },
+  "undefinedFootnote": {
+    "source": "engine",
+    "label": {
+      "en": "Footnote without a definition",
+      "es": "Nota sin definición"
+    },
+    "cause": {
+      "en": "A [^id] marker cites a note that no [^id]: paragraph defines, so the number prints over an empty note.",
+      "es": "Una marca [^id] cita una nota que ningún párrafo [^id]: define, así que el número se imprime sobre una nota vacía."
+    },
+    "fix": {
+      "en": "Add a [^id]: paragraph with the note, or correct the id of the marker.",
+      "es": "Añade un párrafo [^id]: con la nota o corrige el id de la marca."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Footnotes",
+        "es": "Notas al pie"
+      }
+    }
+  },
+  "unusedFootnote": {
+    "source": "engine",
+    "label": {
+      "en": "Footnote never cited",
+      "es": "Nota sin citar"
+    },
+    "cause": {
+      "en": "A [^id]: definition has no marker in the text, so the note is not set.",
+      "es": "Una definición [^id]: no tiene marca en el texto, así que la nota no se compone."
+    },
+    "fix": {
+      "en": "Cite it with [^id] where it belongs, or delete the definition.",
+      "es": "Cítala con [^id] donde corresponda o borra la definición."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Footnotes",
+        "es": "Notas al pie"
+      }
+    }
+  },
   "chipOverlap": {
     "source": "sandbox",
     "label": {
