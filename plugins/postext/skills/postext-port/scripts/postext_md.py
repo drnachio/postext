@@ -94,7 +94,9 @@ def guard_line_start(line: str) -> str:
 def slugify(text: str, max_words: int = 4, max_len: int = 48) -> str:
     text = unicodedata.normalize("NFKD", text)
     text = "".join(c for c in text if not unicodedata.combining(c))
-    words = re.findall(r"[a-zA-Z0-9]+", text.lower())
+    # Letters and digits of every script: a Chinese title gives a Chinese
+    # slug (第一回-甄士隐梦幻识通灵), as the engine's slugify does.
+    words = re.findall(r"[^\W_]+", text.lower())
     words = [w for w in words if w not in _STOPWORDS] or words
     slug = "-".join(words[:max_words])[:max_len].strip("-")
     return slug or "item"

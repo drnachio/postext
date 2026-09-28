@@ -17,6 +17,8 @@ export type WarningKind =
   | 'headerFooterMetadataMissing'
   | 'unknownDirective'
   | 'malformedEmbed'
+  | 'fullwidthMarkup'
+  | 'attributeKeyInvalid'
   | 'unclosedContainer'
   | 'unknownParagraphStyle'
   | 'unknownCalloutType'
@@ -110,6 +112,14 @@ export type WarningPayload =
   /** A `::name` line that is not a well-formed embed on its own (after a
    *  blank line, `::resource{id="…"}`): it prints as text. */
   | { kind: 'malformedEmbed'; name: string }
+  /** Markup typed with fullwidth characters (`：：：`, `＃`, `［＾…］`,
+   *  `｛…｝`, `＊＊…＊＊`): the parser reads only the ASCII forms, so the
+   *  line prints as text. `typed` is what was written, `ascii` the form to
+   *  type. */
+  | { kind: 'fullwidthMarkup'; typed: string; ascii: string }
+  /** An attribute key with letters outside ASCII (`作者=曹雪芹`): the
+   *  attribute is ignored. */
+  | { kind: 'attributeKeyInvalid'; key: string }
   /** A `:::name` container fence was still open at the end of the document;
    *  the parser auto-closed it. Points at the opening fence. */
   | { kind: 'unclosedContainer'; name: string }

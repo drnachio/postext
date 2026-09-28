@@ -4798,7 +4798,7 @@ Las etiquetas de página son las que el documento imprime. `buildDocument()` vue
 
 ## Índice analítico
 
-La propiedad `index` configura lo que imprime una directiva `:::index` (ver [Formato del documento](/es/docs/document-format#índice-analítico)): los términos marcados con `:index[…]` e `:index{term="…"}` en el texto, ordenados, agrupados por inicial y cada uno con las páginas en que cae. Una entrada es su término, un separador y sus números de página; detrás van sus subentradas, con un paso de sangría por nivel, y las líneas que continúan una entrada cuelgan `turnoverIndent` para no alinearse nunca con una subentrada.
+La propiedad `index` configura lo que imprime una directiva `:::index` (ver [Formato del documento](/es/docs/document-format#índice-analítico)): los términos marcados con `:index[…]` e `:index{term="…"}` en el texto, ordenados, agrupados por inicial (en chino, por la inicial del pinyin o por trazos; véase `groupBy`) y cada uno con las páginas en que cae. Una entrada es su término, un separador y sus números de página; detrás van sus subentradas, con un paso de sangría por nivel, y las líneas que continúan una entrada cuelgan `turnoverIndent` para no alinearse nunca con una subentrada.
 
 ```ts
 const config: PostextConfig = {
@@ -4877,7 +4877,7 @@ const config: PostextConfig = {
       <td><code>see</code></td>
       <td><code>{'{ label?, alsoLabel?, italic? }'}</code></td>
       <td>según el idioma, en cursiva</td>
-      <td>Las palabras que preceden a una remisión. Sin fijar, siguen el idioma del documento: <em>Véase</em> / <em>Véase también</em>, <em>See</em> / <em>See also</em>, <em>Voir</em> / <em>Voir aussi</em>…</td>
+      <td>Las palabras que preceden a una remisión. Sin fijar, siguen el idioma del documento: <em>Véase</em> / <em>Véase también</em>, <em>See</em> / <em>See also</em>, <em>Voir</em> / <em>Voir aussi</em>, 见 / 另见 (見 / 另見 en chino tradicional)… Un índice en chino pone la remisión tras un punto y sin espacio: <code>贾琏 12。见贾政</code>.</td>
     </tr>
     <tr>
       <td><code>locale</code></td>
@@ -4886,10 +4886,16 @@ const config: PostextConfig = {
       <td>El idioma cuyo orden alfabético ordena las entradas (una etiqueta BCP 47, que lee <code>Intl.Collator</code>). En español la <em>ñ</em> va tras la <em>n</em> y encabeza un grupo propio; los acentos no alteran el orden.</td>
     </tr>
     <tr>
+      <td><code>groupBy</code></td>
+      <td><code>'auto' | 'letter' | 'pinyin' | 'stroke' | 'none'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Qué encabeza cada grupo. <code>'letter'</code>: la primera letra de la clave de orden. <code>'pinyin'</code>: una entrada que empieza por un carácter han va bajo la inicial latina de su lectura en pinyin (贾宝玉 bajo <code>J</code>), y una clave de orden latina bajo su letra, así que <code>sort="jia mu"</code> se suma a esa misma <code>J</code>. <code>'stroke'</code>: bajo el número de trazos del primer carácter, <code>一畫</code>, <code>二畫</code>… (<code>一画</code>… en chino simplificado). <code>'none'</code>: sin cabeceras; los símbolos, las cifras y las palabras solo se separan por <code>groups.marginTop</code>. <code>'auto'</code> agrupa un índice en chino simplificado (<code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code>) por pinyin, uno en chino tradicional (<code>zh-Hant</code>, <code>zh-TW</code>, <code>zh-HK</code>) por trazos y cualquier otro idioma por letra. Las entradas se ordenan con la colación de la que salen las cabeceras: un índice <code>zh-Hant</code> agrupado por pinyin se ordena por pinyin. Las lecturas y los trazos son los del ordenador de cadenas (CLDR); si lee mal un carácter (重 como <em>zhòng</em> en 重阳, 行 como <em>xíng</em> en 行业), da a la marca una clave <code>sort</code>. Un navegador sin datos de colación china imprime un índice por pinyin o por trazos sin cabeceras.</td>
+    </tr>
+    <tr>
       <td><code>groups.enabled</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Imprime una letra de cabeza sobre cada grupo de entradas (<code>A</code>, <code>B</code>…, <code>0–9</code> para las cifras, <code>Símbolos</code> para el resto).</td>
+      <td>Imprime una cabecera sobre cada grupo de entradas (<code>A</code>, <code>B</code>…, o el número de trazos, <code>0–9</code> para las cifras, <code>Símbolos</code> para el resto; <code>符号</code> / <code>符號</code> en chino).</td>
     </tr>
     <tr>
       <td><code>groups.fontFamily</code>, <code>fontSize</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code></td>
@@ -5600,6 +5606,16 @@ console.log(`El documento tiene ${vdt.pages.length} páginas`);
       <td><code>malformedEmbed</code></td>
       <td>Una línea <code>::nombre</code> que no es una inserción bien formada y aislada: <code>::resource</code> con un id sin comillas o entre comillas simples o con otro atributo, o una línea pegada bajo un párrafo sin línea en blanco.</td>
       <td>La línea se compone como texto.</td>
+    </tr>
+    <tr>
+      <td><code>fullwidthMarkup</code></td>
+      <td>Una línea lleva marcas escritas con un método de entrada chino o japonés: una valla <code>：：：</code>, un encabezado <code>＃</code>, una llamada de nota <code>［＾…］</code>, atributos <code>｛…｝</code> tras una valla o un encabezado, o negrita <code>＊＊…＊＊</code>. <code>typed</code> es la marca tal como se escribió y <code>ascii</code>, la forma que hay que escribir. Uno por línea.</td>
+      <td>La línea se compone como texto; no se convierte nada.</td>
+    </tr>
+    <tr>
+      <td><code>attributeKeyInvalid</code></td>
+      <td>Una clave de atributo lleva letras fuera del ASCII (<code>作者=曹雪芹</code>); señala la clave.</td>
+      <td>El atributo se ignora.</td>
     </tr>
     <tr>
       <td><code>unknownParagraphStyle</code></td>

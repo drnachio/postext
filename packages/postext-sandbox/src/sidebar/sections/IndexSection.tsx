@@ -1,7 +1,7 @@
 'use client';
 
 import { memo } from 'react';
-import type { DimensionUnit, IndexConfig, IndexGroupsConfig } from 'postext';
+import type { DimensionUnit, IndexConfig, IndexGroupBy, IndexGroupsConfig } from 'postext';
 import { DEFAULT_INDEX_CONFIG, resolveBodyTextConfig, resolveIndexConfig } from 'postext';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import {
@@ -290,11 +290,26 @@ export const IndexSection = memo(function IndexSection() {
       <CollapsibleSection
         title={labels.indexGroups}
         sectionId="index-groups"
-        onReset={() => setGroup('groups', undefined)}
-        hasOverrides={raw?.groups !== undefined && Object.keys(raw.groups).length > 0}
+        onReset={() => commit(omit(omit(raw, 'groups'), 'groupBy'))}
+        hasOverrides={!unset('groupBy') || (raw?.groups !== undefined && Object.keys(raw.groups).length > 0)}
         resetLabel={labels.reset}
         resetConfirmMessage={labels.resetSectionConfirm}
       >
+        <SelectInput
+          label={labels.indexGroupBy}
+          value={resolved.groupBy}
+          options={[
+            { value: 'auto', label: labels.indexGroupByAuto },
+            { value: 'letter', label: labels.indexGroupByLetter },
+            { value: 'pinyin', label: labels.indexGroupByPinyin },
+            { value: 'stroke', label: labels.indexGroupByStroke },
+            { value: 'none', label: labels.indexGroupByNone },
+          ]}
+          onChange={(v) => update({ groupBy: v as IndexGroupBy })}
+          tooltip={labels.indexGroupByTooltip}
+          isDefault={unset('groupBy')}
+          onReset={() => resetField('groupBy')}
+        />
         <ToggleSwitch
           label={labels.indexGroupsEnabled}
           checked={g.enabled}

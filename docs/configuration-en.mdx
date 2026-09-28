@@ -4798,7 +4798,7 @@ The page labels are the ones the document prints. `buildDocument()` lays a docum
 
 ## Back-of-book index
 
-The `index` property configures what a `:::index` directive prints (see [Document format](/en/docs/document-format#back-of-book-index)): the terms marked with `:index[…]` and `:index{term="…"}` in the text, sorted, grouped by first letter, each with the pages it falls on. An entry is its term, a separator and its page numbers; its sub-entries follow, one indent step per level, and wrapped lines hang by `turnoverIndent` so they never line up with a sub-entry.
+The `index` property configures what a `:::index` directive prints (see [Document format](/en/docs/document-format#back-of-book-index)): the terms marked with `:index[…]` and `:index{term="…"}` in the text, sorted, grouped by first letter (by pinyin initial or stroke count in Chinese, see `groupBy`), each with the pages it falls on. An entry is its term, a separator and its page numbers; its sub-entries follow, one indent step per level, and wrapped lines hang by `turnoverIndent` so they never line up with a sub-entry.
 
 ```ts
 const config: PostextConfig = {
@@ -4877,7 +4877,7 @@ const config: PostextConfig = {
       <td><code>see</code></td>
       <td><code>{'{ label?, alsoLabel?, italic? }'}</code></td>
       <td>by language, italic</td>
-      <td>The words before a cross-reference. Unset, they follow the document language: <em>See</em> / <em>See also</em>, <em>Véase</em> / <em>Véase también</em>, <em>Voir</em> / <em>Voir aussi</em>…</td>
+      <td>The words before a cross-reference. Unset, they follow the document language: <em>See</em> / <em>See also</em>, <em>Véase</em> / <em>Véase también</em>, <em>Voir</em> / <em>Voir aussi</em>, 见 / 另见 (見 / 另見 in Traditional Chinese)… A Chinese index sets the reference after a full stop, with no space: <code>贾琏 12。见贾政</code>.</td>
     </tr>
     <tr>
       <td><code>locale</code></td>
@@ -4886,10 +4886,16 @@ const config: PostextConfig = {
       <td>The language whose alphabetical order sorts the entries (a BCP 47 tag, read by <code>Intl.Collator</code>). In Spanish <em>ñ</em> sorts after <em>n</em> and heads a group of its own; accents never change the order.</td>
     </tr>
     <tr>
+      <td><code>groupBy</code></td>
+      <td><code>'auto' | 'letter' | 'pinyin' | 'stroke' | 'none'</code></td>
+      <td><code>'auto'</code></td>
+      <td>What the group heads are. <code>'letter'</code>: the first letter of the sort key. <code>'pinyin'</code>: an entry that starts with a Han character files under the Latin initial of its pinyin reading (贾宝玉 under <code>J</code>), and a Latin sort key under its letter, so <code>sort="jia mu"</code> joins the same <code>J</code>. <code>'stroke'</code>: under the stroke count of the first character, <code>一畫</code>, <code>二畫</code>… (<code>一画</code>… in Simplified Chinese). <code>'none'</code>: no heads; symbols, numbers and words are set apart by <code>groups.marginTop</code> only. <code>'auto'</code> groups a Simplified Chinese index (<code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code>) by pinyin, a Traditional one (<code>zh-Hant</code>, <code>zh-TW</code>, <code>zh-HK</code>) by strokes, and every other language by letter. The entries sort in the collation the heads come from: a <code>zh-Hant</code> index grouped by pinyin sorts by pinyin. The readings and stroke counts are the collator's (CLDR); where it reads a character wrongly (重 as <em>zhòng</em> in 重阳, 行 as <em>xíng</em> in 行业), give the mark a <code>sort</code> key. A browser without Chinese collation data prints a pinyin or stroke index with no heads.</td>
+    </tr>
+    <tr>
       <td><code>groups.enabled</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Print a letter head above each group of entries (<code>A</code>, <code>B</code>…, <code>0–9</code> for numbers, <code>Symbols</code> for the rest).</td>
+      <td>Print a head above each group of entries (<code>A</code>, <code>B</code>…, or the stroke count, <code>0–9</code> for numbers, <code>Symbols</code> for the rest; <code>符号</code> / <code>符號</code> in Chinese).</td>
     </tr>
     <tr>
       <td><code>groups.fontFamily</code>, <code>fontSize</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code></td>
@@ -5600,6 +5606,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>malformedEmbed</code></td>
       <td>A <code>::name</code> line that is not a well-formed embed standing alone: <code>::resource</code> with an unquoted or single-quoted id or another attribute, or a line glued under a paragraph without a blank line.</td>
       <td>The line is set as text.</td>
+    </tr>
+    <tr>
+      <td><code>fullwidthMarkup</code></td>
+      <td>A line holds markup typed with a Chinese or Japanese input method: a <code>：：：</code> fence, a <code>＃</code> heading, a <code>［＾…］</code> footnote marker, <code>｛…｝</code> attributes after a fence or heading, or <code>＊＊…＊＊</code> bold. <code>typed</code> is the markup as written, <code>ascii</code> the form to type. One per line.</td>
+      <td>The line is set as text; nothing is converted.</td>
+    </tr>
+    <tr>
+      <td><code>attributeKeyInvalid</code></td>
+      <td>An attribute key holds letters outside ASCII (<code>作者=曹雪芹</code>); points at the key.</td>
+      <td>The attribute is ignored.</td>
     </tr>
     <tr>
       <td><code>unknownParagraphStyle</code></td>

@@ -150,6 +150,10 @@ export interface SandboxLabels {
   warningsUnknownDirectiveDetail: string;
   warningsMalformedEmbedTitle: string;
   warningsMalformedEmbedDetail: string;
+  warningsFullwidthMarkupTitle: string;
+  warningsFullwidthMarkupDetail: string;
+  warningsAttributeKeyInvalidTitle: string;
+  warningsAttributeKeyInvalidDetail: string;
   warningsNumberingInvalidFormatTitle: string;
   warningsNumberingInvalidFormatDetail: string;
   warningsNumberingInvalidStartAtTitle: string;
@@ -1696,6 +1700,13 @@ export interface SandboxLabels {
   indexSeeItalic: string;
   indexLocale: string;
   indexLocaleTooltip: string;
+  indexGroupBy: string;
+  indexGroupByTooltip: string;
+  indexGroupByAuto: string;
+  indexGroupByLetter: string;
+  indexGroupByPinyin: string;
+  indexGroupByStroke: string;
+  indexGroupByNone: string;
   indexGroups: string;
   indexGroupsEnabled: string;
   indexGroupsEnabledTooltip: string;

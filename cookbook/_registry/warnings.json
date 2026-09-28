@@ -924,6 +924,50 @@
       }
     }
   },
+  "fullwidthMarkup": {
+    "source": "engine",
+    "label": {
+      "en": "Fullwidth markup",
+      "es": "Marcas en ancho completo"
+    },
+    "cause": {
+      "en": "A line holds markup typed with a Chinese or Japanese input method: a `：：：` fence, a `＃` heading, a `［＾…］` footnote marker, `｛…｝` attributes or `＊＊…＊＊` bold. The parser reads only the ASCII forms, so the line prints as text.",
+      "es": "Una línea lleva marcas escritas con un método de entrada chino o japonés: una valla `：：：`, un encabezado `＃`, una llamada de nota `［＾…］`, atributos `｛…｝` o negrita `＊＊…＊＊`. El analizador solo lee las formas ASCII, así que la línea se imprime como texto."
+    },
+    "fix": {
+      "en": "Switch the input method to half-width (or English) for the markup and type `:::`, `#`, `[^…]`, `{…}` or `**…**`; the text between them stays Chinese.",
+      "es": "Pasa el método de entrada a ancho medio (o al inglés) para las marcas y escribe `:::`, `#`, `[^…]`, `{…}` o `**…**`; el texto entre ellas sigue en chino."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Warnings in the document",
+        "es": "Avisos del documento"
+      }
+    }
+  },
+  "attributeKeyInvalid": {
+    "source": "engine",
+    "label": {
+      "en": "Attribute key not read",
+      "es": "Clave de atributo no leída"
+    },
+    "cause": {
+      "en": "An attribute key holds letters outside ASCII (`作者=曹雪芹`). Keys are ASCII, so the attribute is ignored.",
+      "es": "Una clave de atributo lleva letras fuera del ASCII (`作者=曹雪芹`). Las claves son ASCII, así que el atributo se ignora."
+    },
+    "fix": {
+      "en": "Write the key in ASCII letters, digits, `_` and `-` (`author=曹雪芹`); the value may stay in any script.",
+      "es": "Escribe la clave con letras ASCII, cifras, `_` y `-` (`author=曹雪芹`); el valor puede seguir en cualquier escritura."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Attribute values",
+        "es": "Valores de los atributos"
+      }
+    }
+  },
   "unknownHeadingStyle": {
     "source": "engine",
     "label": {
