@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { chapterMatches, chapterMenuEntries, partLabel, type ChapterMenuSource } from './chapterMenu';
+import { chapterFilterKey, chapterMatches, chapterMenuEntries, partLabel, type ChapterMenuSource } from './chapterMenu';
 
 const CN = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二'];
 
@@ -64,5 +64,25 @@ describe('chapterMatches / partLabel', () => {
     expect(partLabel({ number: 'I', title: 'Sistema solar' })).toBe('I · Sistema solar');
     expect(partLabel({ number: '', title: '卷一' })).toBe('卷一');
     expect(partLabel({ number: 'II', title: '' })).toBe('II');
+  });
+});
+
+// #199 review: Zhuyin, Cangjie and Japanese input confirm a conversion with
+// Enter; with 埋 half-typed that Enter must not open the first match.
+describe('chapterFilterKey', () => {
+  it('leaves every key to an IME while it composes', () => {
+    for (const key of ['Enter', 'ArrowDown', 'ArrowUp', 'Escape', 'Tab', 'a']) {
+      expect(chapterFilterKey(key, { composing: true, empty: false })).toBe('compose');
+      expect(chapterFilterKey(key, { composing: true, empty: true })).toBe('compose');
+    }
+  });
+
+  it('opens the first match, moves into the list or edits the field otherwise', () => {
+    expect(chapterFilterKey('Enter', { composing: false, empty: false })).toBe('open');
+    expect(chapterFilterKey('ArrowDown', { composing: false, empty: true })).toBe('active');
+    expect(chapterFilterKey('ArrowDown', { composing: false, empty: false })).toBe('menu');
+    expect(chapterFilterKey('ArrowUp', { composing: false, empty: true })).toBe('menu');
+    expect(chapterFilterKey('Escape', { composing: false, empty: false })).toBe('menu');
+    expect(chapterFilterKey('埋', { composing: false, empty: false })).toBe('field');
   });
 });

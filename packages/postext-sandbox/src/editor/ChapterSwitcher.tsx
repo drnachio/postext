@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useBookContent, useBookPlan, useSandboxDispatch, useSandboxLabels } from '../context/SandboxContext';
 import { chapterPageLabels } from '../book/pagination';
-import { CHAPTER_FILTER_MIN_CHAPTERS, chapterMenuEntries, partLabel, type ChapterMenuSource } from '../book/chapterMenu';
+import { CHAPTER_FILTER_MIN_CHAPTERS, chapterFilterKey, chapterMenuEntries, partLabel, type ChapterMenuSource } from '../book/chapterMenu';
 import { IconButton, Menu, MenuItem, cn } from '../ui';
 
 /** Header widget of the Markdown panel: previous/next chapter and a menu to
@@ -89,19 +89,24 @@ export function ChapterSwitcher() {
         onKeyDown={(e) => {
           // The arrows move into the list (from the active chapter while
           // nothing is typed) and Escape closes the menu; every other key
-          // edits the field (the menu's type-ahead would take it).
-          if (e.key === 'ArrowDown' && query.trim() === '') {
+          // edits the field (the menu's type-ahead would take it). While an
+          // IME composes, Enter and the arrows are its own.
+          const action = chapterFilterKey(e.key, {
+            composing: e.nativeEvent.isComposing || e.keyCode === 229,
+            empty: query.trim() === '',
+          });
+          if (action === 'active') {
             const item = popupRef.current?.querySelector<HTMLElement>('[aria-current="true"]');
             if (item) {
               e.preventDefault();
               e.stopPropagation();
               item.focus();
-              return;
             }
+            return;
           }
-          if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Escape' || e.key === 'Tab') return;
+          if (action === 'menu') return;
           e.stopPropagation();
-          if (e.key === 'Enter' && firstMatch?.kind === 'chapter') {
+          if (action === 'open' && firstMatch?.kind === 'chapter') {
             e.preventDefault();
             go(firstMatch.index);
             onOpenChange(false);

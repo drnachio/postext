@@ -74,3 +74,26 @@ export function partLabel(part: ChapterPart): string {
   const title = part.title.trim();
   return number && title ? `${number} · ${title}` : number || title;
 }
+
+/** What a key pressed in the chapter filter does:
+ *
+ *  - `compose`: an input method is composing (Zhuyin, Cangjie, pinyin,
+ *    kana: Enter confirms the conversion, the arrows pick a candidate,
+ *    Escape cancels it), so the key is the IME's alone;
+ *  - `active`: ArrowDown from an empty field lands on the active chapter;
+ *  - `menu`: the arrows, Escape and Tab go to the menu;
+ *  - `open`: Enter opens the first match;
+ *  - `field`: anything else edits the field (the menu's type-ahead must not
+ *    take it).
+ *
+ *  `composing` is `KeyboardEvent.isComposing`, or keyCode 229, which some
+ *  browsers send for the keydown that ends a composition. */
+export type ChapterFilterKey = 'compose' | 'active' | 'menu' | 'open' | 'field';
+
+export function chapterFilterKey(key: string, opts: { composing: boolean; empty: boolean }): ChapterFilterKey {
+  if (opts.composing) return 'compose';
+  if (key === 'ArrowDown' && opts.empty) return 'active';
+  if (key === 'ArrowDown' || key === 'ArrowUp' || key === 'Escape' || key === 'Tab') return 'menu';
+  if (key === 'Enter') return 'open';
+  return 'field';
+}
