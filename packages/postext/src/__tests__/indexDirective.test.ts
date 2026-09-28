@@ -307,3 +307,34 @@ describe('index: seealso keeps its page (#167)', () => {
     expect(blocks[1]!.spans.find((s) => s.text === '1')!.bold).toBe(true);
   });
 });
+
+describe('index: a main page inside a range (#170)', () => {
+  it('folds into the range, which becomes main', () => {
+    const outline = [
+      markEntry(['cycle'], 0, { range: 'start' }), markEntry(['cycle'], 0, { main: true }), markEntry(['cycle'], 1, { range: 'end' }),
+      markEntry(['valve'], 4, { range: 'start', main: true }), markEntry(['valve'], 5), markEntry(['valve'], 6, { range: 'end' }),
+    ];
+    const { blocks } = expandIndexDirectives(parseMarkdown(':::index'), outline, resolveAllConfig(base));
+    expect(expanded(blocks)).toEqual(['[C] cycle, 1–2', '[V] valve, 5–7']);
+    expect(blocks.every((b) => b.spans.some((s) => /–/.test(s.text) && s.bold))).toBe(true);
+  });
+});
+
+describe('index: an entry with no page travels with its first sub-entry (#171)', () => {
+  it('sets page-less heads in the block of their first descendant with pages', () => {
+    const outline = [
+      markEntry(['heart', 'valves', 'aortic'], 1), markEntry(['heart', 'valves', 'mitral'], 2), markEntry(['heart', 'wall'], 3),
+    ];
+    const { blocks } = expandIndexDirectives(parseMarkdown(':::index'), outline, resolveAllConfig(base));
+    expect(blocks.map((b) => [b.index!.level, b.index!.group ?? '', (b.index!.leads ?? []).map((l) => l.spans.map((s) => s.text).join('')), b.text])).toEqual([
+      [2, 'H', ['heart', 'valves'], 'heart valves aortic, 2'],
+      [2, '', [], 'mitral, 3'],
+      [1, '', [], 'wall, 4'],
+    ]);
+    const doc = buildDocument({ markdown: '# I\n\n:::index', outline }, base);
+    const block = doc.blocks.find((b) => b.lines.some((l) => l.text === 'heart'))!;
+    expect(block.lines.map((l) => l.text)).toEqual(['H', 'heart', 'valves', 'aortic, 2']);
+    expect(block.lines[1]!.bbox.x).toBeLessThan(block.lines[2]!.bbox.x);
+    expect(block.lines[2]!.bbox.x).toBeLessThan(block.lines[3]!.bbox.x);
+  });
+});

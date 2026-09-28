@@ -113,16 +113,14 @@ function compactLocators(locators: readonly Locator[], mergeRanges: boolean): Lo
   const out: Locator[] = [];
   for (const loc of sorted) {
     const last = out[out.length - 1];
-    if (last && last.main === loc.main && loc.from <= last.to) {
-      // Inside or overlapping the one before.
+    if (last && loc.from <= last.to) {
+      // Inside or overlapping the one before: one locator, main when either
+      // was (a main page inside a range makes the range the principal
+      // discussion, #170).
       if (loc.to > last.to) {
         last.to = loc.to;
         last.toLabel = loc.toLabel;
       }
-      continue;
-    }
-    if (last && loc.from === last.from && loc.to === last.to) {
-      // The same page marked twice, once as the main one: bold wins.
       last.main ||= loc.main;
       continue;
     }
@@ -272,15 +270,30 @@ function indexBlocksFor(
 
   const out: ContentBlock[] = [];
   const baseBlock = { sourceStart: directive.sourceStart, sourceEnd: directive.sourceEnd };
-  const push = (node: IndexNode, level: number, group?: { label: string; start: boolean; first: boolean }): void => {
+  const push = (
+    node: IndexNode,
+    level: number,
+    group?: { label: string; start: boolean; first: boolean },
+    leads: NonNullable<IndexBlockInfo['leads']> = [],
+  ): void => {
     const spans = entrySpans(node, cfg, labels);
-    const text = spans.map((s) => s.text).join('');
+    const children = [...node.children.values()].sort(bySort);
+    // An entry with no page and no cross-reference only heads its
+    // sub-entries: it is set in one block with the first of them, so it
+    // never ends a column alone (#171).
+    if (children.length > 0 && node.locators.length === 0 && node.see.length === 0 && node.seeAlso.length === 0) {
+      push(children[0]!, level + 1, group, [...leads, { level, spans }]);
+      for (const child of children.slice(1)) push(child, level + 1);
+      return;
+    }
+    const text = [...leads.map((l) => l.spans), spans].map((list) => list.map((s) => s.text).join('')).join(' ');
     const info: IndexBlockInfo = {
       level,
       // The first group takes no space above it: what precedes the
       // directive (the index's heading) sets that distance (#166).
       ...(group?.start && !group.first ? { groupStart: true } : {}),
       ...(group?.start && cfg.groups.enabled ? { group: group.label } : {}),
+      ...(leads.length > 0 ? { leads } : {}),
     };
     out.push({
       ...baseBlock,
@@ -292,7 +305,7 @@ function indexBlocksFor(
       sourceMap: new Array<number>(text.length).fill(directive.sourceStart),
       index: info,
     });
-    for (const child of [...node.children.values()].sort(bySort)) push(child, level + 1);
+    for (const child of children) push(child, level + 1);
   };
   let lastGroup: string | undefined;
   for (const { node, group } of sortedRoots) {
@@ -412,7 +425,8 @@ export function measureIndexBlock(
   const italicFontString = buildFontString(cfg.fontFamily, fontSizePx, weight, 'italic');
   const boldItalicFontString = buildFontString(cfg.fontFamily, fontSizePx, boldWeight, 'italic');
   const color = cfg.color.hex;
-  const marginTop = info.groupStart ? cfg.groups.marginTop : info.level === 0 ? cfg.entrySpacing : undefined;
+  const topLevel = info.leads?.[0]?.level ?? info.level;
+  const marginTop = info.groupStart ? cfg.groups.marginTop : topLevel === 0 ? cfg.entrySpacing : undefined;
   const style: BlockStyle = {
     fontString, boldFontString, italicFontString, boldItalicFontString,
     fontSizePx, lineHeightPx, color, boldColor: color, italicColor: color,
@@ -422,16 +436,23 @@ export function measureIndexBlock(
     firstLineIndentPx: 0, hangingIndent: false,
   };
 
-  const indentPx = info.level * dimensionToPx(cfg.indent, dpi, fontSizePx);
   const turnoverPx = dimensionToPx(cfg.turnoverIndent, dpi, fontSizePx);
-  const measured = measureRichBlock(
-    rawBlock.spans, fontString, boldFontString, italicFontString, boldItalicFontString,
-    Math.max(1, columnWidth - indentPx), lineHeightPx,
-    { textAlign: 'left', hyphenate: false, firstLineIndentPx: turnoverPx, hangingIndent: true },
-  );
-  if (measured.lines.length === 0) return null;
-  const lines = pageLinks(linkSegments(measured.lines, rawBlock.spans));
-  for (const line of lines) line.bbox.x += indentPx;
+  /** The lines of one entry at its level's indent, turnover lines hung. */
+  const entryLines = (spans: InlineSpan[], level: number): VDTLine[] => {
+    const indentPx = level * dimensionToPx(cfg.indent, dpi, fontSizePx);
+    const measured = measureRichBlock(
+      spans, fontString, boldFontString, italicFontString, boldItalicFontString,
+      Math.max(1, columnWidth - indentPx), lineHeightPx,
+      { textAlign: 'left', hyphenate: false, firstLineIndentPx: turnoverPx, hangingIndent: true },
+    );
+    const out = pageLinks(linkSegments(measured.lines, spans));
+    for (const line of out) line.bbox.x += indentPx;
+    return out;
+  };
+  const own = entryLines(rawBlock.spans, info.level);
+  if (own.length === 0) return null;
+  // The entries this one's first line heads (see `leads`), above it.
+  const lines = [...(info.leads ?? []).flatMap((lead) => entryLines(lead.spans, lead.level)), ...own];
 
   if (info.group) {
     // The letter head: a line of its own above the entry, in the head's

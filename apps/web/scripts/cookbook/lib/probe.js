@@ -520,6 +520,15 @@ export function facts({ select = 'last', hero = [] } = {}) {
   out.warnings = docs.flatMap((doc) => (doc.warnings ?? []).map((w) => ({
     kind: w.kind, page: (doc.pageIndexOffset ?? 0) - base + w.pageIndex + 1, overflowPx: round(w.overflowPx ?? 0, 0.1),
   })));
+  // The index's own warnings are content warnings the source checks (C7–C10)
+  // cannot see: the expansion raises them with the whole book's marks (#172).
+  out.indexWarnings = docs.flatMap((doc) => (doc.contentWarnings ?? [])
+    .filter((w) => /^index[A-Z]/.test(w.kind))
+    .map((w) => ({
+      kind: w.kind,
+      page: w.pageIndex === undefined ? null : (doc.pageIndexOffset ?? 0) - base + w.pageIndex + 1,
+      detail: w.target ?? w.term ?? '',
+    })));
   out.converged = docs.every((doc) => doc.converged !== false);
   out.iterationCount = Math.max(...docs.map((doc) => doc.iterationCount ?? 0));
   let justified = 0;
