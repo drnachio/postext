@@ -44,6 +44,8 @@ function iconFor(kind: WarningPayload['kind']) {
       return FileText;
     case 'unknownDirective':
     case 'malformedEmbed':
+    case 'fullwidthMarkup':
+    case 'attributeKeyInvalid':
     case 'unclosedContainer':
     case 'unknownParagraphStyle':
     case 'unknownCalloutType':
@@ -133,6 +135,10 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsUnknownDirectiveTitle;
     case 'malformedEmbed':
       return labels.warningsMalformedEmbedTitle;
+    case 'fullwidthMarkup':
+      return labels.warningsFullwidthMarkupTitle;
+    case 'attributeKeyInvalid':
+      return labels.warningsAttributeKeyInvalidTitle;
     case 'unclosedContainer':
       return labels.warningsUnclosedContainerTitle;
     case 'unknownParagraphStyle':
@@ -290,6 +296,10 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `:::${payload.name} — ${labels.warningsUnclosedContainerDetail}`;
     case 'malformedEmbed':
       return `::${payload.name} — ${labels.warningsMalformedEmbedDetail}`;
+    case 'fullwidthMarkup':
+      return `${payload.typed} → ${payload.ascii} — ${labels.warningsFullwidthMarkupDetail}`;
+    case 'attributeKeyInvalid':
+      return `${payload.key}= — ${labels.warningsAttributeKeyInvalidDetail}`;
     case 'unknownParagraphStyle':
       return `:::paragraphs{style="${payload.style}"} — ${labels.warningsUnknownParagraphStyleDetail}`;
     case 'unknownCalloutType':

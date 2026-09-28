@@ -3,7 +3,7 @@
 // Chinese", "chino tradicional"), and a short tag for the library rows
 // (繁 / 简 for the two Chinese scripts, EN / ES otherwise). Pure.
 
-import { canonicalLocaleTag, localeScript, stringsKeyOf } from 'postext';
+import { canonicalLocaleTag, chineseScriptOf } from 'postext';
 
 /** `tag`'s language name in `uiLocale` (`zh-Hant` in `es`: "chino
  *  tradicional"), else the tag as written. */
@@ -20,8 +20,7 @@ export function localeDisplayName(tag: string, uiLocale: string): string {
 /** The script of a Chinese tag once maximised (`Hant` for `zh-TW`), else
  *  null. */
 function chineseScript(tag: string): 'Hans' | 'Hant' | null {
-  const script = stringsKeyOf(tag).startsWith('zh-') ? localeScript(tag) : undefined;
-  return script === 'Hant' || script === 'Hans' ? script : null;
+  return chineseScriptOf(tag) ?? null;
 }
 
 export interface LocaleShortTag {

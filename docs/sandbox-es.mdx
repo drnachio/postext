@@ -365,6 +365,8 @@ Diagnósticos en vivo, recalculados a partir del texto, el diseño, las figuras 
   - una valla de contenedor `:::` sin cerrar al final del documento (al hacer clic se enfoca su línea de apertura);
   - un `:::paragraphs{style="…"}`, `:::callout{type="…"}`, `:chip[…]{style="…"}` o un `{style="…"}` de título cuyo estilo no está configurado;
   - una línea `::resource` que se imprime como texto, por estar mal formada o pegada bajo un párrafo sin línea en blanco;
+  - *Marcas en ancho completo*: marcas escritas con un método de entrada chino o japonés (`：：：`, `＃`, `［＾…］`, `｛…｝`, `＊＊…＊＊`), que se imprimen como texto; el aviso muestra la forma ASCII que hay que escribir;
+  - *Clave de atributo no leída*: una clave de atributo escrita fuera del ASCII (`作者=曹雪芹`), que el analizador ignora;
   - *Metadatos ignorados*: un capítulo distinto del primero que empieza con un bloque de metadatos (solo los metadatos del primer capítulo son los del libro).
 - **Diseño**:
   - nombres de marcador de cabeceras y pies fuera de la lista permitida del motor (se aceptan `{attr.…}` y los marcadores de parte), y marcadores cuyos metadatos del documento faltan;

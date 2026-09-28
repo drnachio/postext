@@ -102,6 +102,7 @@ describe("package exports", () => {
       "DOCUMENT_LANGUAGES",
       "isCjkLanguage",
       "localeScript",
+      "chineseScriptOf",
       "cjkRegionOf",
       "stringsKeyOf",
       "sameContentLocale",

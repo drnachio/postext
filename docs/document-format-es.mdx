@@ -71,12 +71,12 @@ Postext reconoce siete tipos de bloque de prosa, además de las directivas y las
     <tr>
       <td>Párrafo</td>
       <td>Texto plano en una o más líneas</td>
-      <td>Las líneas no vacías y no especiales consecutivas se unen con un único espacio y se emiten como un solo párrafo. Los saltos de línea manuales dentro de un párrafo no se conservan — usa una línea en blanco para empezar un nuevo párrafo.</td>
+      <td>Las líneas no vacías y no especiales consecutivas se unen con un único espacio y se emiten como un solo párrafo. Entre dos caracteres chinos o japoneses (ideogramas, kana, puntuación de ancho completo, y comillas tipográficas, rayas o puntos suspensivos junto a ellos) el fin de línea desaparece, como en CSS, así que un párrafo chino puede cortarse en cualquier punto del fuente. Entre dos de esos signos (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>) deciden los caracteres que hay más allá: el fin de línea desaparece si uno de ellos es chino o japonés, y <code>“hello”⏎“bye”</code> conserva su espacio. El coreano conserva su espacio. Los saltos de línea manuales dentro de un párrafo no se conservan — usa una línea en blanco para empezar un nuevo párrafo.</td>
     </tr>
     <tr>
       <td>Cita (blockquote)</td>
       <td><code>&gt; texto citado</code></td>
-      <td>Cada línea de la cita debe comenzar con <code>&gt;</code> (seguido de un espacio opcional). Las líneas consecutivas de cita se combinan en un único bloque. Se compone como dice <code>bodyText.blockquote</code>: en cursiva gris con la sangría de primera línea del cuerpo, salvo que lo cambies (ver <a href="/es/docs/configuration#citas">Configuración › Citas</a>).</td>
+      <td>Cada línea de la cita debe comenzar con <code>&gt;</code> (seguido de un espacio opcional). Las líneas consecutivas de cita se combinan en un único bloque y se unen como las de un párrafo. Se compone como dice <code>bodyText.blockquote</code>: en cursiva gris con la sangría de primera línea del cuerpo, salvo que lo cambies (ver <a href="/es/docs/configuration#citas">Configuración › Citas</a>).</td>
     </tr>
     <tr>
       <td>Lista no ordenada</td>
@@ -115,7 +115,7 @@ Una línea de encabezado puede terminar con un bloque de atributos entre llaves 
 # El largo camino {author="I. Zango Martín" year=1998}
 ```
 
-Las llaves y su contenido se eliminan del texto del encabezado (el título anterior se renderiza como *El largo camino*) y se guardan en el encabezado como `attrs`. Se exponen a las ranuras de diseño como marcadores `{attr.<clave>}`: en la ranura de diseño avanzado del propio encabezado, y en los encabezados y pies de página, donde se resuelven a partir del H1 del capítulo actual. Solo se reconoce un bloque equilibrado y sin llaves anidadas al final de la línea; un `{}` suelto o una llave sin cerrar permanece en el texto. Ver **Configuración → Encabezados y pies**.
+Las llaves y su contenido se eliminan del texto del encabezado (el título anterior se renderiza como *El largo camino*) y se guardan en el encabezado como `attrs`. Se exponen a las ranuras de diseño como marcadores `{attr.<clave>}`: en la ranura de diseño avanzado del propio encabezado, y en los encabezados y pies de página, donde se resuelven a partir del H1 del capítulo actual. Solo se reconoce un bloque equilibrado y sin llaves anidadas al final de la línea, tras un espacio o, como los títulos chinos se escriben sin él, justo después de un carácter chino o japonés (`# 回目{style="x"}`). El bloque se toma solo si la sintaxis de atributos de más abajo lo lee entero: `{x, y}`, `{紅樓|hóng lóu}` y un `{}` suelto se quedan en el título, igual que unas banderas sueltas pegadas al título (`# 第一回{draft}`). Los atributos se separan con espacios, así que un bloque con comas (`{a="1", b="2"}`) y los `{#id}` y `{.clase}` de Pandoc también se quedan en el título; hasta postext 1.8 se leían y desaparecían de él. Una clave escrita en otra escritura se lee y se descarta con un aviso (ver más abajo), así que `# 回目{style="x" 作者=曹雪芹}` sigue tomando `style`. Ver **Configuración → Encabezados y pies**.
 
 Un valor que imprime un texto de diseño puede ocupar varias líneas: los dos caracteres `\n` empiezan ahí una línea nueva, sea cual sea el `overflow` del elemento (`to="Firma X\nStrasse 1\n10115 Berlin"` imprime una dirección de tres líneas). Si el elemento tiene `inlineMarks`, las marcas en línea del valor también se aplican: `authors="Ana Ruiz^1^, Luis Gil^2^"` compone los números de filiación como superíndices. El escape es propio de los valores de atributo (y de las plantillas del propio diseño): los caracteres `\n` en el texto de un encabezado (dentro de código en línea, por ejemplo) se imprimen tal cual.
 
@@ -200,10 +200,10 @@ Hoy solo se reconocen `pagebreak`, `numbering`, `columnbreak`, `space`, `toc` e 
 
 La misma sintaxis `clave="valor"` la leen los atributos de encabezado, las vallas de directivas y contenedores (`:::nombre{…}`), las referencias en línea (`:ref{…}`), los chips (`:chip[…]{…}`), las muestras de color (`:swatch{…}`) y las marcas de índice (`:index[…]{…}`). Sus reglas:
 
-- **Claves.** Empiezan por una letra o `_` y siguen con letras, dígitos, `_` o `-`. Se admiten espacios alrededor del `=`, una clave repetida se queda con su último valor y una clave sin `=` es una bandera con valor vacío.
-- **Valores entre comillas.** Un valor entre comillas dobles puede contener cualquier cosa salvo `"`, comillas simples incluidas; uno entre comillas simples, cualquier cosa salvo `'`. Así, un valor con comillas dobles va entre simples: `lead='Dijo "hola"'`. No hay escapes —la barra invertida es un carácter normal—, así que un valor que necesite los dos tipos de comillas ASCII usa comillas tipográficas (`«…»`, `“…”`, `’`).
+- **Claves.** Empiezan por una letra ASCII o `_` y siguen con letras ASCII, dígitos, `_` o `-`. Se admiten espacios alrededor del `=`, el `＝` de ancho completo que escribe un método de entrada chino vale como `=`, una clave repetida se queda con su último valor y una clave sin `=` es una bandera con valor vacío. Una clave en otra escritura (`作者=曹雪芹`) no se lee y genera un aviso `attributeKeyInvalid`; las demás claves del bloque se aplican igual. Los valores admiten cualquier escritura.
+- **Valores entre comillas.** Un valor entre comillas dobles puede contener cualquier cosa salvo `"`, comillas simples incluidas; uno entre comillas simples, cualquier cosa salvo `'`. Así, un valor con comillas dobles va entre simples: `lead='Dijo "hola"'`. No hay escapes —la barra invertida es un carácter normal—, así que un valor que necesite los dos tipos de comillas ASCII usa comillas tipográficas (`«…»`, `“…”`, `’`). Un valor también puede abrirse con la comilla `“` o el corchete de esquina `「` que escribe un método de entrada chino, y llega entonces hasta su `”` o `」`, espacios incluidos: `title=“甲戌本 眉批”`, `title=「脂批」`.
 - **Valores sin comillas** (`startAt=17`, `year=1998`) llegan hasta el siguiente espacio: `title=Hola mundo` es `title="Hola"` más una bandera `mundo`.
-- **Sin llaves.** `{` y `}` nunca van en un valor. La primera `}` cierra el bloque: una valla cuyo valor contenga una deja de ser una directiva y pasa a ser un párrafo, y en línea el resto del valor se derrama en el texto. En un encabezado, una `}` en un valor deja todo el bloque en el título, y una `{` tras un espacio empieza el bloque de nuevo: `# Título {nota="a {b"}` se queda con `Título {nota="a` como título y solo lee una bandera `b`.
+- **Sin llaves.** `{` y `}` nunca van en un valor. La primera `}` cierra el bloque: una valla cuyo valor contenga una deja de ser una directiva y pasa a ser un párrafo, y en línea el resto del valor se derrama en el texto. En un encabezado, una llave en un valor deja todo el bloque en el título: `# Título {nota="a {b"}` se compone tal cual. (Hasta postext 1.8 una `{` tras un espacio empezaba el bloque de nuevo y `b` se leía como bandera.)
 - **El signo `$` es texto.** Los atributos se leen antes que las fórmulas en línea, así que `lead="de 5 $ a 6 $"` es solo texto.
 - **Una línea.** Un bloque de atributos nunca ocupa más de una línea.
 
@@ -488,7 +488,7 @@ El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezado
     <tr>
       <td>Cursiva</td>
       <td><code>*cursiva*</code> o <code>_cursiva_</code></td>
-      <td>Se renderiza con la variante cursiva de la fuente actual. Un <code>bodyText.italicColor</code> opcional anula el color general del cuerpo para los tramos en cursiva. Un guion bajo marca énfasis solo en un límite de palabra, como en CommonMark: uno entre dos letras o cifras —<code>nombre_con_guiones</code>, el <code>SR_AIR_EN.pdf</code> de una URL— es texto (también para <code>__negrita__</code>); dentro de una palabra, usa asteriscos (<code>in*creí*ble</code>).</td>
+      <td>Se renderiza con la variante cursiva de la fuente actual. Un <code>bodyText.italicColor</code> opcional anula el color general del cuerpo para los tramos en cursiva. Un guion bajo marca énfasis solo en un límite de palabra, como en CommonMark: uno entre dos letras o cifras —<code>nombre_con_guiones</code>, el <code>SR_AIR_EN.pdf</code> de una URL— es texto (también para <code>__negrita__</code>); dentro de una palabra, usa asteriscos (<code>in*creí*ble</code>). Las letras chinas, japonesas y coreanas no cuentan aquí, porque esas escrituras no separan palabras con espacios: <code>中文_斜体_中文</code> y <code>中文__粗体__中文</code> salen en cursiva y en negrita. Un <code>__</code> que no llega a negrita nunca se convierte en cursiva: <code>foo__bar__baz</code> se queda como texto.</td>
     </tr>
     <tr>
       <td>Negrita cursiva</td>
@@ -498,12 +498,12 @@ El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezado
     <tr>
       <td>Superíndice</td>
       <td><code>^texto^</code></td>
-      <td>Se compone al 58 % del cuerpo y elevado un tercio de él — un exponente (<code>10^-8^</code>), la carga de un ion (<code>Na^+^</code>). El texto marcado empieza y termina en un carácter que no es un espacio; un acento circunflejo suelto en la prosa se mantiene literal.</td>
+      <td>Se compone al 58 % del cuerpo y elevado un tercio de él — un exponente (<code>10^-8^</code>), la carga de un ion (<code>Na^+^</code>). El texto marcado empieza y termina en un carácter que no es un espacio; un acento circunflejo suelto en la prosa se mantiene literal, igual que las caritas <code>^_^</code> y <code>^o^</code> (<code>n.^o^</code> y <code>1^o^</code> siguen siendo superíndices).</td>
     </tr>
     <tr>
       <td>Subíndice</td>
       <td><code>~texto~</code></td>
-      <td>Mismo tamaño, bajado 0,15 del cuerpo, de modo que no pasa de los descendentes — un índice químico (<code>H~2~O</code>, <code>p<em>K</em>~a~</code>). Se combina con negrita y cursiva (<code>**H~2~O**</code>). Un subíndice y un superíndice escritos juntos, sin nada entre ellos, se apilan como en una fórmula: <code>*T*~0~^2^</code> compone el 2 sobre el 0, vaya primero el que vaya, con el subíndice bajado 0,25 del cuerpo para dejar sitio al superíndice, y el par ocupa lo que el más ancho de los dos. Un espacio o una letra entre ellos los compone uno detrás de otro; también una unión de palabras (U+2060), sin que se vea nada entre ellos. Un par apilado nunca se separa en un cambio de línea: una palabra que no cabe en la línea se corta antes del par.</td>
+      <td>Mismo tamaño, bajado 0,15 del cuerpo, de modo que no pasa de los descendentes — un índice químico (<code>H~2~O</code>, <code>p<em>K</em>~a~</code>). Una tilde con una cifra a cada lado es un intervalo y se mantiene literal: <code>3~5 días</code>, <code>需要3~5天</code>. También la que va entre dos palabras chinas, que no abre subíndice: <code>周一~周五</code>, <code>北京~上海</code>; un subíndice sí se cierra delante de un carácter chino (<code>F~合~等于</code>). Se combina con negrita y cursiva (<code>**H~2~O**</code>). Un subíndice y un superíndice escritos juntos, sin nada entre ellos, se apilan como en una fórmula: <code>*T*~0~^2^</code> compone el 2 sobre el 0, vaya primero el que vaya, con el subíndice bajado 0,25 del cuerpo para dejar sitio al superíndice, y el par ocupa lo que el más ancho de los dos. Un espacio o una letra entre ellos los compone uno detrás de otro; también una unión de palabras (U+2060), sin que se vea nada entre ellos. Un par apilado nunca se separa en un cambio de línea: una palabra que no cabe en la línea se corta antes del par.</td>
     </tr>
     <tr>
       <td>Versalitas</td>
@@ -662,7 +662,7 @@ El pulso se toma en la muñeca.:index{term="Pulso!radial" main}
     </tr>
     <tr>
       <td><code>sort</code></td>
-      <td>La clave de ordenación del último nivel, cuando debe ordenarse por otras letras: <code>:index[S. Juan de la Cruz]&#123;sort="San Juan de la Cruz"&#125;</code>, <code>term="siglo XX" sort="siglo 20"</code>.</td>
+      <td>La clave de ordenación del último nivel, cuando debe ordenarse por otras letras: <code>:index[S. Juan de la Cruz]&#123;sort="San Juan de la Cruz"&#125;</code>, <code>term="siglo XX" sort="siglo 20"</code>. Un índice en chino ordena y agrupa por la lectura que el ordenador de cadenas da a cada carácter. Si un carácter con varias lecturas se lee de otro modo, la clave se escribe con caracteres que solo tengan la lectura buscada: <code>:index[重阳]&#123;sort="崇阳"&#125;</code> pone 重阳 bajo la C, entre 程 y 崔, y no bajo la Z. Una clave en pinyin (<code>sort="chong yang"</code>) también llega a la C, pero se ordena detrás de todas sus entradas chinas, porque el ordenador de cadenas pone las letras latinas después de los caracteres chinos (ver <a href="/es/docs/configuration#índice-analítico">Configuración › Índice analítico</a>, <code>groupBy</code>).</td>
     </tr>
     <tr>
       <td><code>main</code></td>

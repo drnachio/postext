@@ -407,8 +407,15 @@ export function injectRefSpans(spans: InlineSpan[], refs: RefMeta[]): InlineSpan
 const ESCAPE_RE = /\\([*_^~`])/g;
 const ESCAPE_BASE = 0xe100;
 const ESCAPED_RE = /[\ue100-\ue17f]/g;
+/** The faces `^_^` and `^o^` (#181) stay text, protected like escapes so
+ *  that no marker scanner reads their carets or underscore: two `^_^` on a
+ *  line must not pair their underscores into italics. `^o^` after a letter,
+ *  a digit or a full stop is a superscript (`n.^o^`, `1^o^`). */
+const CARET_FACE_RE = /\^_\^|(?<![A-Za-z0-9.])\^[oO]\^/g;
+const protectChar = (c: string): string => String.fromCharCode(ESCAPE_BASE + c.charCodeAt(0));
 export function protectEscapes(text: string): string {
-  return text.replace(ESCAPE_RE, (_, c: string) => String.fromCharCode(ESCAPE_BASE + c.charCodeAt(0)));
+  const escaped = text.replace(ESCAPE_RE, (_, c: string) => protectChar(c));
+  return escaped.includes('^') ? escaped.replace(CARET_FACE_RE, (face) => face.replace(/./g, protectChar)) : escaped;
 }
 export function restoreEscapes(text: string): string {
   return text.replace(ESCAPED_RE, (m) => String.fromCharCode(m.charCodeAt(0) - ESCAPE_BASE));
@@ -469,13 +476,23 @@ function applySmallCapsMarks(spans: InlineSpan[]): InlineSpan[] {
   return out;
 }
 
+/** A letter or digit that keeps an `_` beside it from opening or closing
+ *  emphasis. Chinese, Japanese and Korean letters do not: they are written
+ *  without spaces, so `中文__粗体__中文` is bold (the CJK-friendly emphasis
+ *  rule, #181). A `_` does too, so a `__` that is not bold never turns into
+ *  a single-underscore italic (`foo__bar__baz` stays text). */
+const UNDERSCORE_BLOCKER = '(?:_|(?![\\p{sc=Han}\\p{sc=Hira}\\p{sc=Kana}\\p{sc=Hang}])[\\p{L}\\p{N}])';
 /** `_` opens or closes emphasis only at a word boundary (CommonMark): an
  *  underscore between two letters or digits — a URL's `SR_AIR_EN.pdf`, a
  *  `snake_case` name — is text. `*` still works inside a word. */
-const UNDERSCORE_OPEN = '(?<![\\p{L}\\p{N}])';
-const UNDERSCORE_CLOSE = '(?![\\p{L}\\p{N}])';
-const UNDERSCORE_BOLD_RE = new RegExp(`${UNDERSCORE_OPEN}__(.+?)__${UNDERSCORE_CLOSE}`, 'gu');
-const UNDERSCORE_ITALIC_RE = new RegExp(`${UNDERSCORE_OPEN}_(.+?)_${UNDERSCORE_CLOSE}`, 'gu');
+const UNDERSCORE_OPEN = `(?<!${UNDERSCORE_BLOCKER})`;
+const UNDERSCORE_CLOSE = `(?!${UNDERSCORE_BLOCKER})`;
+/** `n` underscores opening a run: not one of a longer row. */
+const underscores = (n: number): string => `${UNDERSCORE_OPEN}${'_'.repeat(n)}(?!_)`;
+/** `n` underscores closing a run. */
+const underscoresClose = (n: number): string => `(?<!_)${'_'.repeat(n)}${UNDERSCORE_CLOSE}`;
+const UNDERSCORE_BOLD_RE = new RegExp(`${underscores(2)}(.+?)${underscoresClose(2)}`, 'gu');
+const UNDERSCORE_ITALIC_RE = new RegExp(`${underscores(1)}(.+?)${underscoresClose(1)}`, 'gu');
 
 /** Left where markup was taken out — an image, the backticks of inline
  *  code, and here also a link, small caps or an emphasis marker — so that
@@ -570,16 +587,31 @@ export function stripInlineFormatting(text: string): string {
     .trim());
 }
 
+const SUPERSCRIPT = '\\^(\\S(?:[^^\\n]*?\\S)?)\\^';
+/** Chinese and Japanese characters (Han, kana, CJK punctuation, fullwidth
+ *  forms), in a class that needs no `u` flag. */
+const EAST_ASIAN_CHAR = '(?:[\\u3000-\\u30ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uf900-\\ufaff\\uff01-\\uff60]|[\\ud840-\\ud8bf][\\udc00-\\udfff])';
+/** A `~` with an ASCII digit on both sides is a range (`3~5天`, `10~20`):
+ *  it neither opens nor closes a subscript (#181). */
+const TILDE = '(?!(?<=[0-9])~[0-9])~';
+/** A `~` between two Chinese words is a range too (`周一~周五`, `北京~上海`):
+ *  it does not open a subscript. It may close one, so a Han subscript
+ *  still ends before a Han character (`F~合~等于`). */
+const TILDE_OPEN = `(?!(?<=${EAST_ASIAN_CHAR})~${EAST_ASIAN_CHAR})${TILDE}`;
+const SUBSCRIPT = `${TILDE_OPEN}(\\S(?:[^~\\n]*?\\S)?)${TILDE}`;
+
 /** `^text^` (superscript) and `~text~` (subscript): the marked text starts
  *  and ends with a non-space character and carries no other marker of the
- *  same kind, so a stray caret or tilde in prose stays literal. */
-export const SUPERSCRIPT_RE = /\^(\S(?:[^^\n]*?\S)?)\^/g;
-export const SUBSCRIPT_RE = /~(\S(?:[^~\n]*?\S)?)~/g;
+ *  same kind, so a stray caret or tilde in prose stays literal. The faces
+ *  `^_^` and `^o^` never reach them (see `protectEscapes`). */
+export const SUPERSCRIPT_RE = new RegExp(SUPERSCRIPT, 'g');
+export const SUBSCRIPT_RE = new RegExp(SUBSCRIPT, 'g');
+const SCRIPT_RE = new RegExp(`${SUPERSCRIPT}|${SUBSCRIPT}`, 'g');
 
 /** Split a bold / italic run into plain and script spans: `^…^` becomes a
  *  superscript span, `~…~` a subscript one (the markers are dropped). */
 function splitScriptSpans(text: string, bold: boolean, italic: boolean, out: InlineSpan[]): void {
-  const re = /\^(\S(?:[^^\n]*?\S)?)\^|~(\S(?:[^~\n]*?\S)?)~/g;
+  const re = new RegExp(SCRIPT_RE.source, 'g');
   let last = 0;
   let m: RegExpExecArray | null;
   while ((m = re.exec(text)) !== null) {
@@ -850,7 +882,7 @@ function splitItalicSpans(text: string, bold: boolean, forcedItalic: boolean, ou
     if (text.length > 0) splitScriptSpans(text, bold, true, out);
     return;
   }
-  const italicRe = new RegExp(`\\*(.+?)\\*|${UNDERSCORE_OPEN}_(.+?)_${UNDERSCORE_CLOSE}`, 'gu');
+  const italicRe = new RegExp(`\\*(.+?)\\*|${underscores(1)}(.+?)${underscoresClose(1)}`, 'gu');
   let last = 0;
   let m: RegExpExecArray | null;
   while ((m = italicRe.exec(text)) !== null) {
@@ -883,7 +915,7 @@ export function parseInlineFormatting(text: string): InlineSpan[] {
 
   // Triple markers (bold+italic) first, then double (bold) — longest first.
   const boldRe = new RegExp(
-    `\\*\\*\\*(.+?)\\*\\*\\*|${UNDERSCORE_OPEN}___(.+?)___${UNDERSCORE_CLOSE}|\\*\\*(.+?)\\*\\*|${UNDERSCORE_OPEN}__(.+?)__${UNDERSCORE_CLOSE}`,
+    `\\*\\*\\*(.+?)\\*\\*\\*|${underscores(3)}(.+?)${underscoresClose(3)}|\\*\\*(.+?)\\*\\*|${underscores(2)}(.+?)${underscoresClose(2)}`,
     'gu',
   );
   let lastIndex = 0;

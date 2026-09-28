@@ -19,7 +19,7 @@ export { primaryFontFamily } from './measure/font';
 export { buildFontString, measureBlock, measureRichBlock, measureGlyphWidth, initHyphenator, clearMeasurementCache, createMeasurementCache, cachedMeasureBlock, cachedMeasureRichBlock, setCjkLineBreak, getCjkLineBreak } from './measure';
 export type { BreakTrace, LineWidthStep, MeasuredBlock, MeasureBlockOptions, MeasurementCache } from './measure';
 export { hyphenateText, setHyphenationLocale, HYPHENATION_LOCALES, matchHyphenationLocale } from './hyphenate';
-export { DOCUMENT_LANGUAGES, isCjkLanguage, localeScript, cjkRegionOf, stringsKeyOf, sameContentLocale, matchContentLocale, canonicalLocaleTag, renderLangOf, stringsFor } from './locale';
+export { DOCUMENT_LANGUAGES, isCjkLanguage, localeScript, chineseScriptOf, cjkRegionOf, stringsKeyOf, sameContentLocale, matchContentLocale, canonicalLocaleTag, renderLangOf, stringsFor } from './locale';
 export type { DocumentLanguage } from './locale';
 export { parseMarkdown } from './parse';
 export { addRow, addColumn, removeRow, removeColumn, mergeCells, unmergeCell, setCellContent, setCellImage, setCellBackground, setAlignment, parseTSV, tableGridIssues } from './table/model';
@@ -50,6 +50,7 @@ export type {
   TocConfig,
   IndexConfig,
   IndexGroupsConfig,
+  IndexGroupBy,
   ResolvedIndexConfig,
   OutlineIndexMark,
   TocLevelConfig,

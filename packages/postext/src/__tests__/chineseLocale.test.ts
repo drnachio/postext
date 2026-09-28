@@ -201,12 +201,12 @@ describe('Chinese built-in strings', () => {
       markEntry(['#'], 4), markEntry(['1792'], 5),
     ];
     const hant = expanded({ locale: 'zh-Hant' }, outline);
-    expect(hant.some((t) => t.includes('見 賈寶玉'))).toBe(true);
-    expect(hant.some((t) => t.includes('另見 賈寶玉'))).toBe(true);
+    expect(hant.some((t) => t.includes('。見賈寶玉'))).toBe(true);
+    expect(hant.some((t) => t.includes('。另見賈寶玉'))).toBe(true);
     expect(hant.some((t) => t.startsWith('[符號]'))).toBe(true);
     expect(hant.some((t) => t.startsWith('[數字]'))).toBe(true);
     const hans = expanded({ locale: 'zh-Hans' }, [markEntry(['宝玉'], 2, { see: '贾宝玉' }), markEntry(['贾宝玉'], 1), markEntry(['#'], 4), markEntry(['1792'], 5)]);
-    expect(hans.some((t) => t.includes('见 贾宝玉'))).toBe(true);
+    expect(hans.some((t) => t.includes('。见贾宝玉'))).toBe(true);
     expect(hans.some((t) => t.startsWith('[符号]'))).toBe(true);
     expect(hans.some((t) => t.startsWith('[数字]'))).toBe(true);
     // Other languages keep 0–9.

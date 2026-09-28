@@ -77,15 +77,23 @@ export function cjkRegionOf(tag: unknown): CjkRegion | undefined {
   }
 }
 
+/** The script of a Chinese tag once maximised: `'Hant'` for `zh-TW`,
+ *  `zh-HK`, `zh-MO` and `zh-Hant`, `'Hans'` for every other Chinese tag
+ *  (`zh`, `zh-CN`, `zh-SG`, `zh-Hans`); `undefined` for any other
+ *  language. */
+export function chineseScriptOf(tag: unknown): 'Hans' | 'Hant' | undefined {
+  if (!isTag(tag) || languageOf(tag) !== 'zh') return undefined;
+  return localeScript(tag) === 'Hant' ? 'Hant' : 'Hans';
+}
+
 /** The key of the built-in string tables for a tag: `'zh-hans'` or
  *  `'zh-hant'` for Chinese (Simplified and Traditional need different
  *  characters: 图/圖, 续/續, 见/見), else the bare language
  *  ({@link languageOf}). */
 export function stringsKeyOf(tag: unknown): string {
-  if (!isTag(tag)) return '';
-  const lang = languageOf(tag);
-  if (lang !== 'zh') return lang;
-  return localeScript(tag) === 'Hant' ? 'zh-hant' : 'zh-hans';
+  const script = chineseScriptOf(tag);
+  if (script) return script === 'Hant' ? 'zh-hant' : 'zh-hans';
+  return languageOf(tag);
 }
 
 /** A BCP 47 tag in its canonical case (`'zh-hant-tw'` → `'zh-Hant-TW'`,

@@ -1,6 +1,7 @@
 import type { InlineSpan } from './types';
 import { extractInlineChips, extractInlineRefs, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, protectCodeSpans, protectDollarEscapes, replaceSnippetBreaks } from './inlineFormatting';
 import { computeSourceMap } from './sourceMapping';
+import { joinEastAsianSnippetLines } from './softBreaks';
 
 /**
  * Inline snippets — the self-contained rich-text runs held by a resource
@@ -26,12 +27,17 @@ import { computeSourceMap } from './sourceMapping';
  *  label (set on one line) it becomes a space. Snippets are not parsed for
  *  maths: a `$` prints as written, and `\$` prints a dollar sign, as it does
  *  in the body. A link destination reads its own escapes, and a directive's
- *  attributes (a ref's `text="…"`) are printed as written. */
+ *  attributes (a ref's `text="…"`) are printed as written. A line end
+ *  between two East Asian characters is taken out (see `softBreaks.ts`). */
 export function parseInlineSnippetSpans(content: string): InlineSpan[] {
   const chips = extractInlineChips(protectDollarEscapes(replaceSnippetBreaks(protectCodeSpans(content))), 0);
   const { cleaned, refs } = extractInlineRefs(chips.cleaned, 0);
   const sw = extractInlineSwatches(cleaned, 0);
-  return injectChipSpans(injectRefSpans(injectSwatchSpans(parseInlineFormatting(sw.cleaned), sw.swatches), refs), chips.chips);
+  // A line end between two Chinese or Japanese characters is no space
+  // (#181); elsewhere it stays whitespace.
+  return joinEastAsianSnippetLines(
+    injectChipSpans(injectRefSpans(injectSwatchSpans(parseInlineFormatting(sw.cleaned), sw.swatches), refs), chips.chips),
+  );
 }
 
 /** A parsed snippet with its plain text and per-character source map. */

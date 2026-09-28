@@ -365,6 +365,8 @@ Live diagnostics, recomputed from the text, the design, the figures and the last
   - a `:::` container fence left unclosed at the end of the document (clicking it focuses its opening line);
   - a `:::paragraphs{style="…"}`, `:::callout{type="…"}`, `:chip[…]{style="…"}` or heading `{style="…"}` whose style is not configured;
   - a `::resource` line that prints as text — malformed, or glued under a paragraph without a blank line;
+  - *Fullwidth markup*: markup typed with a Chinese or Japanese input method (`：：：`, `＃`, `［＾…］`, `｛…｝`, `＊＊…＊＊`), which prints as text; the entry shows the ASCII form to type;
+  - *Attribute key not read*: an attribute key written outside ASCII (`作者=曹雪芹`), which the parser ignores;
   - *Front matter ignored*: a chapter other than the first that starts with a front-matter block (only the first chapter's front matter belongs to the book).
 - **Design**:
   - header and footer placeholder names outside the engine allow-list (`{attr.…}` and the part placeholders are accepted), and placeholders whose document metadata is missing;

@@ -20,7 +20,9 @@ import type { BlockStyle } from './styles';
 import type { BlockMeasureContext, MeasuredContentBlock } from './measureContentBlock';
 import { stampSourceRanges } from './buildHelpers';
 import { resolvedLocale } from './config';
-import { stringsFor } from '../locale';
+import { chineseScriptOf, stringsFor } from '../locale';
+import type { IndexGrouping } from './indexGroups';
+import { canGroupBy, indexGrouping, pinyinInitial, sortLocaleFor, strokeGroup, strokeLabel } from './indexGroups';
 
 /** A page number's link target, carried as a Markdown link while the entry
  *  is measured and turned into `VDTLineSegment.pageLink` after. */
@@ -57,10 +59,24 @@ const newNode = (text: string): IndexNode => ({
   seeAlso: [],
 });
 
+interface IndexLabels {
+  see: string;
+  seeAlso: string;
+  symbols: string;
+  /** The head of the entries that open with a digit; `0–9` where not
+   *  given. */
+  numbers?: string;
+  /** Before a cross-reference, after the label, and between two targets.
+   *  Unset: `. `, a space and `; `. */
+  refPunctuation?: { lead: string; gap: string; join: string };
+}
+
+/** Chinese cross-references: 贾琏 12。见贾政；王熙凤 */
+const CHINESE_REF_PUNCTUATION = { lead: '。', gap: '', join: '；' };
+
 /** Labels in the document language (English otherwise), keyed by
- *  `stringsKeyOf`. `numbers` is the head of the entries that open with a
- *  digit, `0–9` where not given. */
-const LABELS: Record<string, { see: string; seeAlso: string; symbols: string; numbers?: string }> = {
+ *  `stringsKeyOf`. */
+const LABELS: Record<string, IndexLabels> = {
   en: { see: 'See', seeAlso: 'See also', symbols: 'Symbols' },
   es: { see: 'Véase', seeAlso: 'Véase también', symbols: 'Símbolos' },
   ca: { see: 'Vegeu', seeAlso: 'Vegeu també', symbols: 'Símbols' },
@@ -69,11 +85,11 @@ const LABELS: Record<string, { see: string; seeAlso: string; symbols: string; nu
   fr: { see: 'Voir', seeAlso: 'Voir aussi', symbols: 'Symboles' },
   it: { see: 'Vedi', seeAlso: 'Vedi anche', symbols: 'Simboli' },
   de: { see: 'Siehe', seeAlso: 'Siehe auch', symbols: 'Symbole' },
-  'zh-hans': { see: '见', seeAlso: '另见', symbols: '符号', numbers: '数字' },
-  'zh-hant': { see: '見', seeAlso: '另見', symbols: '符號', numbers: '數字' },
+  'zh-hans': { see: '见', seeAlso: '另见', symbols: '符号', numbers: '数字', refPunctuation: CHINESE_REF_PUNCTUATION },
+  'zh-hant': { see: '見', seeAlso: '另見', symbols: '符號', numbers: '數字', refPunctuation: CHINESE_REF_PUNCTUATION },
 };
 
-function labelsFor(locale: string): { see: string; seeAlso: string; symbols: string; numbers?: string } {
+function labelsFor(locale: string): IndexLabels {
   return stringsFor(LABELS, locale);
 }
 
@@ -229,19 +245,49 @@ function buildIndexTree(outline: readonly OutlineEntry[], name: string, mergeRan
   return { roots: [...top.values()], warnings };
 }
 
-/** Group of a main entry: rank (symbols, numbers, letters) and head. */
+/** Group of a main entry: rank (symbols, numbers, letters, and Han
+ *  characters grouped by strokes), head and, when the grouping orders its
+ *  groups itself, the group's place among those of its rank. */
+interface EntryGroup {
+  rank: number;
+  label: string;
+  order?: number;
+}
+
+const LATIN_INITIALS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
 function groupOf(
   node: IndexNode,
   locale: string,
   base: Intl.Collator,
   labels: { symbols: string; numbers: string },
-): { rank: number; label: string } {
-  const first = [...node.sort.trim()][0] ?? '';
-  if (/\p{L}/u.test(first)) {
+  grouping: IndexGrouping,
+): EntryGroup {
+  const lead = [...node.sort.trim()][0] ?? '';
+  // A fullwidth letter or digit files with its ASCII form (`Ｑ版` under Q).
+  const first = /[\uff01-\uffee]/.test(lead) ? lead.normalize('NFKC') : lead;
+  // A Han numeral (〇, read líng) files with the characters, not the digits.
+  const han = /\p{sc=Han}/u.test(first);
+  if (han || /\p{L}/u.test(first)) {
+    if (grouping === 'none') return { rank: 2, label: '' };
+    if (han && grouping === 'pinyin') {
+      const initial = pinyinInitial(base, first);
+      if (initial) return { rank: 2, label: initial, order: LATIN_INITIALS.indexOf(initial) };
+    }
+    if (han && grouping === 'stroke') {
+      const strokes = strokeGroup(base, first);
+      if (strokes !== undefined) return { rank: 3, label: strokeLabel(strokes, chineseScriptOf(locale) !== 'Hans'), order: strokes };
+    }
     const upper = first.toLocaleUpperCase(locale);
     const plain = upper.normalize('NFD').replace(/\p{M}/gu, '');
     // `Á` files under A; the Spanish Ñ, a letter of its own, under Ñ.
-    return { rank: 2, label: plain.length > 0 && base.compare(plain, upper) === 0 ? plain : upper };
+    const label = plain.length > 0 && base.compare(plain, upper) === 0 ? plain : upper;
+    if (grouping === 'letter') return { rank: 2, label };
+    // Pinyin groups: a Latin sort key (`sort="jia bao yu"`) files under
+    // its letter, after the Han entries read that way (the collator sorts
+    // Latin after Han); other letters follow Z.
+    const at = LATIN_INITIALS.indexOf(label);
+    return { rank: 2, label, order: at >= 0 ? at : LATIN_INITIALS.length };
   }
   if (/\p{N}/u.test(first)) return { rank: 1, label: labels.numbers };
   return { rank: 0, label: labels.symbols };
@@ -257,20 +303,27 @@ function indexBlocksFor(
   const name = directive.directiveAttrs?.index?.trim() ?? '';
   const { roots, warnings } = buildIndexTree(outline, name, cfg.mergeRanges);
   const locale = indexLocale(resolved);
-  const base = collatorFor(locale, { sensitivity: 'base', numeric: true });
-  const fine = collatorFor(locale, { sensitivity: 'variant', numeric: true });
+  // Chinese heads (#182): pinyin initials or stroke counts, sorted in the
+  // collation that orders them, so heads and order agree. A collator that
+  // cannot tell them (no Chinese collation data) sets no heads.
+  let grouping = indexGrouping(cfg.groupBy, locale);
+  const sortLocale = sortLocaleFor(locale, grouping);
+  const base = collatorFor(sortLocale, { sensitivity: 'base', numeric: true });
+  const fine = collatorFor(sortLocale, { sensitivity: 'variant', numeric: true });
+  if ((grouping === 'pinyin' || grouping === 'stroke') && !canGroupBy(base, grouping)) grouping = 'none';
   const localized = labelsFor(locale);
   const labels = {
     see: cfg.see.label ?? localized.see,
     seeAlso: cfg.see.alsoLabel ?? localized.seeAlso,
     symbols: cfg.groups.symbolsLabel ?? localized.symbols,
     numbers: cfg.groups.numbersLabel ?? localized.numbers ?? '0–9',
+    ...(localized.refPunctuation ? { refPunctuation: localized.refPunctuation } : {}),
   };
   const bySort = (a: IndexNode, b: IndexNode): number =>
     base.compare(a.sort, b.sort) || fine.compare(a.sort, b.sort) || fine.compare(a.text, b.text);
   const sortedRoots = roots
-    .map((node) => ({ node, group: groupOf(node, locale, base, labels) }))
-    .sort((a, b) => a.group.rank - b.group.rank || bySort(a.node, b.node));
+    .map((node) => ({ node, group: groupOf(node, locale, base, labels, grouping) }))
+    .sort((a, b) => a.group.rank - b.group.rank || (a.group.order ?? 0) - (b.group.order ?? 0) || bySort(a.node, b.node));
 
   const out: ContentBlock[] = [];
   const baseBlock = { sourceStart: directive.sourceStart, sourceEnd: directive.sourceEnd };
@@ -296,7 +349,7 @@ function indexBlocksFor(
       // The first group takes no space above it: what precedes the
       // directive (the index's heading) sets that distance (#166).
       ...(group?.start && !group.first ? { groupStart: true } : {}),
-      ...(group?.start && cfg.groups.enabled ? { group: group.label } : {}),
+      ...(group?.start && cfg.groups.enabled && grouping !== 'none' ? { group: group.label } : {}),
       ...(leads.length > 0 ? { leads } : {}),
     };
     out.push({
@@ -313,9 +366,12 @@ function indexBlocksFor(
   };
   let lastGroup: string | undefined;
   for (const { node, group } of sortedRoots) {
-    const start = group.label !== lastGroup;
+    // With no heads (`none`) the groups are the ranks: symbols, numbers,
+    // words.
+    const key = grouping === 'none' ? String(group.rank) : group.label;
+    const start = key !== lastGroup;
     const first = lastGroup === undefined;
-    lastGroup = group.label;
+    lastGroup = key;
     push(node, 0, { label: group.label, start, first });
   }
   return { blocks: out, warnings };
@@ -326,7 +382,7 @@ function indexBlocksFor(
 function entrySpans(
   node: IndexNode,
   cfg: ResolvedIndexConfig,
-  labels: { see: string; seeAlso: string },
+  labels: { see: string; seeAlso: string; refPunctuation?: IndexLabels['refPunctuation'] },
 ): InlineSpan[] {
   const spans: InlineSpan[] = parseInlineFormatting(node.text);
   const plain = (text: string): void => {
@@ -344,13 +400,14 @@ function entrySpans(
       links: [{ start: 0, end: label.length, href: `${PAGE_HREF}${loc.from}` }],
     });
   });
+  const punctuation = labels.refPunctuation ?? { lead: '. ', gap: ' ', join: '; ' };
   const refs = (label: string, targets: readonly string[]): void => {
     if (targets.length === 0) return;
-    plain('. ');
+    plain(punctuation.lead);
     spans.push({ text: label, bold: false, italic: cfg.see.italic });
-    plain(' ');
+    plain(punctuation.gap);
     targets.forEach((target, i) => {
-      if (i > 0) plain('; ');
+      if (i > 0) plain(punctuation.join);
       for (const s of parseInlineFormatting(targetLevels(target).join(': '))) spans.push(s);
     });
   };
