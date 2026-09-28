@@ -524,6 +524,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
         ? `${w.path}: a side column of ${w.value}% leaves a column with no width — cut at ${w.used}%`
         : `${w.path}: "${w.value}" is not a percentage — the side column is cut at ${w.used}%`;
       break;
+    case 'cjkGridClamped':
+      text = `${w.path}: ${w.value} ${w.path.endsWith('charsPerLine') ? 'characters per line' : 'lines'} do not fit inside the margins — the grid is set with ${w.used}`;
+      break;
     default:
       // A kind this build does not know (a VDT from a newer engine).
       text = `Warning "${(w as { kind: string }).kind}"`;

@@ -27,6 +27,7 @@ import {
   DEFAULT_LAYOUT_CONFIG,
 } from '../defaults';
 import { dimensionToPx } from '../units';
+import { applyCjkGrid } from './cjkGrid';
 import { presentTag } from '../locale';
 import { createBoundingBox, type BoundingBox, type ResolvedConfig } from '../vdt';
 
@@ -49,7 +50,9 @@ export function resolveAllConfig(rawConfig?: PostextConfig): ResolvedConfig {
 }
 
 function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
-  const config = applyPaletteToConfig(rawConfig);
+  // The character grid (`cjk.grid`) sets the margins and the gutter before
+  // anything reads them (see `cjkGrid.ts`).
+  const config = applyCjkGrid(applyPaletteToConfig(rawConfig));
   const bodyText = resolveBodyTextConfig(config?.bodyText, config?.locale);
   // The document language as `resolvedLocale` reads it: the script of the
   // numeral tokens 一 and 壹 in list and page formats follows it, as it does

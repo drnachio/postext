@@ -23,6 +23,7 @@ import { tableCellFillRects, tableFrameOutline } from './vdt';
 import { dimensionToPx } from './units';
 import { documentInkHex, isSingleInkSvgUrl, singleInkColorMatrix } from './svg/singleInk';
 import { lineInkExtent, lineTrailingTracking } from './lineInk';
+import { CHARACTER_GRID_COLOR, cjkGridCells, type CjkGridCells } from './pipeline/cjkGrid';
 import { renderLangOf } from './locale';
 
 export interface RenderHtmlOptions {
@@ -1045,6 +1046,8 @@ function renderPageDetailed(
   /** With cut lines, how far the bleed box lies inside the sheet (px); 0
    *  without them. */
   bleedInset = 0,
+  /** The character grid drawn over the type area (`cjk.grid.show`). */
+  gridCells?: CjkGridCells,
 ): PageRenderResult {
   const bgDecl = background && background !== 'transparent' ? `background:${background};` : '';
   // With cut lines nothing the page paints shows past the bleed box, as on
@@ -1082,8 +1085,9 @@ function renderPageDetailed(
   const footnoteRulesHtml = footnoteRuleSegments(page).map((r) =>
     `<div class="pt-footnote-rule" style="position:absolute;left:${r.x}px;top:${r.y - r.lineWidthPx / 2}px;width:${r.width}px;height:${r.lineWidthPx}px;background:${r.color};"></div>`,
   ).join('');
-  const decorationHtml = defsHtml + openerHtml + footnoteRulesHtml + slotParts.join('');
-  const innerHtml = defsHtml + openerHtml + blocksHtml + footnoteRulesHtml + slotParts.join('');
+  const gridHtml = gridCells ? renderCharacterGridSvg(gridCells, page.width, page.height) : '';
+  const decorationHtml = defsHtml + gridHtml + openerHtml + footnoteRulesHtml + slotParts.join('');
+  const innerHtml = defsHtml + gridHtml + openerHtml + blocksHtml + footnoteRulesHtml + slotParts.join('');
   const outerHtml =
     `<div class="pt-page" data-page="${page.index}" style="` +
     `position:relative;` +
@@ -1094,6 +1098,23 @@ function renderPageDetailed(
     clipDecl +
     `">${innerHtml}</div>`;
   return { outerHtml, innerHtml, blocks, decorationHtml };
+}
+
+/** The character grid (稿纸) as one SVG path over the page, under the
+ *  text (see `cjkGridCells`). */
+function renderCharacterGridSvg(cells: CjkGridCells, width: number, height: number): string {
+  const { cell, chars } = cells;
+  const d: string[] = [];
+  const n = (v: number): string => String(Math.round(v * 1000) / 1000);
+  for (const x0 of cells.columns) {
+    const w = chars * cell;
+    for (const y of cells.rows) {
+      d.push(`M${n(x0)} ${n(y)}h${n(w)}M${n(x0)} ${n(y + cell)}h${n(w)}`);
+      for (let i = 0; i <= chars; i++) d.push(`M${n(x0 + i * cell)} ${n(y)}v${n(cell)}`);
+    }
+  }
+  return `<svg class="pt-char-grid" aria-hidden="true" width="${width}" height="${height}" style="position:absolute;left:0;top:0;pointer-events:none;">` +
+    `<path d="${d.join('')}" fill="none" stroke="${CHARACTER_GRID_COLOR}" stroke-width="0.5"/></svg>`;
 }
 
 export interface HtmlRenderIndexPage {
@@ -1181,7 +1202,8 @@ export function renderToHtmlIndexed(
           },
         }
       : { ...options, linkTargets };
-    const detail = renderPageDetailed(p, background, pageOptions, ink, bleedInset);
+    const gridCells = doc.config.cjk?.grid?.show ? cjkGridCells(doc.config, p.contentArea, doc.baselineGrid) : undefined;
+    const detail = renderPageDetailed(p, background, pageOptions, ink, bleedInset, gridCells);
     pageHtmlParts.push(detail.outerHtml);
     indexedPages.push({
       index: p.index,

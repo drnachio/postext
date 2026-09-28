@@ -2,6 +2,7 @@ import type { VDTDocument, VDTPage, VDTColumn, BoundingBox } from '../vdt';
 import { dimensionToPx } from '../units';
 import { columnRuleSegments, footnoteRuleSegments } from '../columnRule';
 import { cropMarkSegments } from '../cropMarks';
+import { CHARACTER_GRID_COLOR, type CjkGridCells } from '../pipeline/cjkGrid';
 
 export function renderBaselineGrid(
   ctx: CanvasRenderingContext2D,
@@ -37,6 +38,32 @@ export function renderBaselineGrid(
     y += baselineIncrement;
   }
 
+  ctx.restore();
+}
+
+/** The character grid (稿纸) over the type area (`cjk.grid.show`): one
+ *  square per character position, drawn in a light grey (see
+ *  `cjkGridCells`). */
+export function renderCharacterGrid(ctx: CanvasRenderingContext2D, cells: CjkGridCells): void {
+  ctx.save();
+  ctx.strokeStyle = CHARACTER_GRID_COLOR;
+  ctx.lineWidth = 0.5;
+  ctx.beginPath();
+  const { cell, chars } = cells;
+  for (const x0 of cells.columns) {
+    const x1 = x0 + chars * cell;
+    for (const y of cells.rows) {
+      ctx.moveTo(x0, y);
+      ctx.lineTo(x1, y);
+      ctx.moveTo(x0, y + cell);
+      ctx.lineTo(x1, y + cell);
+      for (let i = 0; i <= chars; i++) {
+        ctx.moveTo(x0 + i * cell, y);
+        ctx.lineTo(x0 + i * cell, y + cell);
+      }
+    }
+  }
+  ctx.stroke();
   ctx.restore();
 }
 

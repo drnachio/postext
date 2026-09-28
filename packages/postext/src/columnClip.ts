@@ -23,7 +23,7 @@ export function designOverlayOverhang(blocks: readonly VDTBlock[], x0: number, x
 export function hangingPunctuationOverhang(blocks: readonly VDTBlock[], x1: number): number {
   let right = 0;
   for (const block of blocks) {
-    if (block.hidden) continue;
+    if (block.hidden || !block.lines) continue;
     for (const line of block.lines) {
       const segments = line.segments;
       if (!segments || !segments[segments.length - 1]?.hangs) continue;

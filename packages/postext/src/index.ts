@@ -13,6 +13,8 @@ export { cropMarkSegments } from './cropMarks';
 export type { CropMarkSegment } from './cropMarks';
 export { columnClipRect, designOverlayOverhang, headingDesignOverhangAbove, hangingPunctuationOverhang } from './columnClip';
 export { lineInkExtent } from './lineInk';
+export { applyCjkGrid, cjkGridGeometry, cjkGridCells, CHARACTER_GRID_COLOR } from './pipeline/cjkGrid';
+export type { CjkGridGeometry, CjkGridCells } from './pipeline/cjkGrid';
 export type { ColumnRuleSegment } from './columnRule';
 export { findLooseLines, drawLooseLines, lineLooseness } from './looseLines';
 export type { LooseLine, FindLooseLinesOptions, DrawLooseLinesOptions } from './looseLines';

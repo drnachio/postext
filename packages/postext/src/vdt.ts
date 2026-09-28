@@ -230,12 +230,15 @@ export interface VDTLineSegment {
    *  segment carrying it is never painted with the rest of its line in one
    *  run. Absent on lines that are not CJK. */
   tracking?: number;
-  /** Paint-only shift of the segment's glyphs, px (negative: to the left):
-   *  a full-width mark that gave up the blank before its glyph (an opening
-   *  bracket at a line start, a mark compressed next to another; see
-   *  `cjk.punctuationWidth`) is painted this far before its box, so its
-   *  ink stays inside `width`. The layout never reads it. Absent unless a
-   *  CJK mark was compressed on its start side. */
+  /** Paint-only shift of the segment's glyphs, px (0 or negative: to the
+   *  left). Set on a full-width CJK mark that gave up blank (see
+   *  `cjk.punctuationWidth`): its `width` is narrower than its glyph's
+   *  advance, so it is always painted on its own, at `x + inkOffset`. A
+   *  mark that gave up the blank before its glyph (an opening bracket at a
+   *  line start, one compressed after another mark) is painted that far
+   *  before its box, so its ink stays inside `width`; one that gave up only
+   *  the blank after its glyph has 0. The layout never reads it. Absent on
+   *  every other segment. */
   inkOffset?: number;
   /** A pause or stop mark hung past the end of its line
    *  (`cjk.hangingPunctuation`): the line's measure and `bbox.width` leave
@@ -1228,13 +1231,16 @@ export interface ConfigWarning {
    *  `sideColumnPercentClamped`: a `oneAndHalf` layout's
    *  `sideColumnPercent` that would leave one of its columns with no width
    *  (or is not a number); the columns are cut at `used` percent instead.
+   *  `cjkGridClamped`: a character grid (`cjk.grid`) with more characters
+   *  per line or lines per page than the margins leave room for; the grid
+   *  is reduced to `used`.
    *  `unknownConfigKey`: a key the heading settings or a paragraph style do
    *  not have (`headings`, `headings.balancing`, a heading level, a heading
    *  style, a paragraph style — and the same under
    *  `htmlViewer.overrides`), such as a misspelt `letterSpacng`; the
    *  engine ignores it. `value` is the key, `used` is empty, and
    *  `suggestion` names the key it is closest to, when one is close. */
-  kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'unknownConfigKey';
+  kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'unknownConfigKey' | 'cjkGridClamped';
   /** Where the value sits in the config, e.g.
    *  `orderedLists.levels[1].numberFormat`, `header.elements[0].fontFamily`,
    *  `headingStyles[2].layout.sideColumnPercent`. */
