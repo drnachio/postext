@@ -18,6 +18,7 @@ import {
   resolvePartsConfig,
   resolveHeadingStylesConfig,
   resolveTocConfig,
+  resolveIndexConfig,
   resolveFootnotesConfig,
   resolvePdfGenerationConfig,
   applyPaletteToConfig,
@@ -74,6 +75,7 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
     parts: resolvePartsConfig(config?.parts, page, bodyText, unorderedLists, orderedLists),
     headingStyles: resolveHeadingStylesConfig(config?.headingStyles, page, bodyText, unorderedLists, orderedLists, layout),
     toc: resolveTocConfig(config?.toc, bodyText),
+    index: resolveIndexConfig(config?.index, bodyText),
     footnotes: resolveFootnotesConfig(config?.footnotes),
     ...(config?.locale ? { locale: config.locale } : {}),
     // Kept for per-resource-type caption overrides, which resolve their

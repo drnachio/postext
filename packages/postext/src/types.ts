@@ -302,18 +302,39 @@ export interface PostextContent {
    *  chapters before it. Omit for a self-contained document. */
   continuation?: LayoutContinuation;
   /** The book's outline — every heading and part the `:::toc` directive
-   *  lists, with the page label each one landed on. A chapter laid out on
-   *  its own gets the whole book's outline from its host; when absent, the
-   *  engine derives it from the document itself, laying it out again until
-   *  the page labels the contents print no longer change. */
+   *  lists and every index mark `:::index` lists, with the page label each
+   *  one landed on. A chapter laid out on its own gets the whole book's
+   *  outline from its host; when absent, the engine derives it from the
+   *  document itself, laying it out again until the page labels the
+   *  contents and the index print no longer change. */
   outline?: OutlineEntry[];
 }
 
-/** One line of a book's outline: a heading of a listed level, or a part
- *  divider. Produced from the parsed markdown (page labels unknown) or from
- *  a laid-out document (page labels known); consumed by `:::toc`. */
+/** An index mark as the book outline carries it (see
+ *  {@link OutlineEntry.indexMark}). */
+export interface OutlineIndexMark {
+  /** Name of the index; `''` for the main one. */
+  index: string;
+  /** The entry's levels, main term first. */
+  path: string[];
+  sort?: string;
+  see?: string;
+  seeAlso?: string;
+  main?: boolean;
+  range?: 'start' | 'end';
+  /** Source offset of the mark in its chapter's markdown body (front
+   *  matter excluded): identifies the mark within the chapter. */
+  sourceStart: number;
+}
+
+/** One line of a book's outline: a heading of a listed level, a part
+ *  divider or an index mark. Produced from the parsed markdown (page labels
+ *  unknown) or from a laid-out document (page labels known); consumed by
+ *  `:::toc` and `:::index`. */
 export interface OutlineEntry {
-  kind: 'heading' | 'part';
+  /** `'indexMark'`: an index mark (`:index…`), listed by `:::index`, never
+   *  by `:::toc` (`listed` is false). */
+  kind: 'heading' | 'part' | 'indexMark';
   /** Heading level (1–6); `0` for a part. */
   level: number;
   /** Title as plain text (forced title breaks flattened to spaces). */
@@ -347,6 +368,11 @@ export interface OutlineEntry {
   /** Whether the entry appears in the contents (a heading style's `toc`
    *  or a `{toc="false"}` attribute may exclude it). */
   listed: boolean;
+  /** The mark of an `'indexMark'` entry. */
+  indexMark?: OutlineIndexMark;
+  /** The page-number format of the entry's page, once laid out (an index
+   *  merges consecutive pages of one format into a range). */
+  pageFormat?: string;
 }
 
 /** Heading counters (1-indexed by level) in effect at a point in a document. */
@@ -3530,6 +3556,101 @@ export interface ResolvedTocConfig {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Back-of-book index — what `:::index` prints (#165).
+// ---------------------------------------------------------------------------
+
+/** The letter heads of an index: the first letter of each group of
+ *  entries, set above them. */
+export interface IndexGroupsConfig {
+  /** Print a letter head above each group. Default `true`. */
+  enabled?: boolean;
+  fontFamily?: string;
+  fontSize?: Dimension;
+  /** Default `700`. */
+  fontWeight?: number;
+  italic?: boolean;
+  color?: ColorValue;
+  /** Space above each group (letter head or not), except at the top of a
+   *  column. Default one body line. */
+  marginTop?: Dimension;
+  /** Head of the entries that start with a symbol. Default `Symbols` /
+   *  `Símbolos` in the document language. */
+  symbolsLabel?: string;
+  /** Head of the entries that start with a digit. Default `0–9`. */
+  numbersLabel?: string;
+}
+
+export interface IndexConfig {
+  /** Entry typography; every field inherits the body text when unset. */
+  fontFamily?: string;
+  fontSize?: Dimension;
+  lineHeight?: Dimension;
+  fontWeight?: number;
+  color?: ColorValue;
+  /** Indent of each sub-entry level. Default `1em`. */
+  indent?: Dimension;
+  /** Extra indent of an entry's wrapped lines (turnover lines), beyond its
+   *  deepest level. Default `2em`. */
+  turnoverIndent?: Dimension;
+  /** Space above each main entry. Default `0`. */
+  entrySpacing?: Dimension;
+  /** Between the term and its first page number. Default `', '`. */
+  separator?: string;
+  /** Between two page numbers. Default `', '`. */
+  locatorSeparator?: string;
+  /** Between the ends of a page range. Default `'–'` (en dash). */
+  rangeSeparator?: string;
+  /** Join consecutive pages into a range (`12, 13, 14` → `12–14`).
+   *  Default `true`. */
+  mergeRanges?: boolean;
+  /** How the second number of a range is written: `'full'` (`234–237`)
+   *  or `'chicago'` (`234–37`, *The Chicago Manual of Style* 9.64).
+   *  Default `'full'`. */
+  rangeFormat?: 'full' | 'chicago';
+  /** Style of the principal page number (`main` on a mark). Default
+   *  bold. */
+  main?: { bold?: boolean; italic?: boolean };
+  /** Cross-references. The labels default to `See` / `See also` (Spanish
+   *  `Véase` / `Véase también`), in italics. */
+  see?: { label?: string; alsoLabel?: string; italic?: boolean };
+  /** Language whose alphabetical order sorts the entries (a BCP 47 tag).
+   *  Default: the document language. */
+  locale?: string;
+  groups?: IndexGroupsConfig;
+}
+
+export interface ResolvedIndexConfig {
+  fontFamily: string;
+  fontSize: Dimension;
+  lineHeight: Dimension;
+  fontWeight: number;
+  color: ColorValue;
+  indent: Dimension;
+  turnoverIndent: Dimension;
+  entrySpacing: Dimension;
+  separator: string;
+  locatorSeparator: string;
+  rangeSeparator: string;
+  mergeRanges: boolean;
+  rangeFormat: 'full' | 'chicago';
+  main: { bold: boolean; italic: boolean };
+  /** Unset labels follow the document language. */
+  see: { label?: string; alsoLabel?: string; italic: boolean };
+  locale?: string;
+  groups: {
+    enabled: boolean;
+    fontFamily: string;
+    fontSize: Dimension;
+    fontWeight: number;
+    italic: boolean;
+    color: ColorValue;
+    marginTop: Dimension;
+    symbolsLabel?: string;
+    numbersLabel?: string;
+  };
+}
+
 export interface PostextConfig {
   page?: PageConfig;
   layout?: LayoutConfig;
@@ -3562,6 +3683,9 @@ export interface PostextConfig {
   headingStyles?: HeadingStyleConfig[];
   /** The table of contents a `:::toc` directive prints. */
   toc?: TocConfig;
+  /** The back-of-book index a `:::index` directive prints from the
+   *  document's `:index` marks. */
+  index?: IndexConfig;
   unorderedLists?: UnorderedListsConfig;
   orderedLists?: OrderedListsConfig;
   math?: MathConfig;

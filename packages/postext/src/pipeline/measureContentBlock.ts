@@ -27,6 +27,7 @@ import { resolveRefSpans, resolveSwatchSpans, shiftResourceBlockX } from './reso
 import { chipContextOf, resolveChipSpans } from './chips';
 import type { ResourceNumberingMap } from './resourceNumbering';
 import { measureTocBlock } from './toc';
+import { measureIndexBlock } from './indexDirective';
 import { LINE_MAX_SPACE_RATIO } from './raggedLines';
 
 /** Everything `measureContentBlock` needs that is constant across one
@@ -128,6 +129,8 @@ export function measureContentBlock(
 
   // A block of an expanded `:::toc`: title, number, leader, page label.
   if (rawBlock.toc) return measureTocBlock(rawBlock, columnWidth, ctx);
+  // A block of an expanded `:::index`: an entry and its page numbers.
+  if (rawBlock.index) return measureIndexBlock(rawBlock, columnWidth, ctx);
 
   const kind = resolveBlockKind(rawBlock, {
     ...ctx,
