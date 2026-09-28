@@ -31,6 +31,7 @@
 import type { CjkHangingPunctuation, CjkPunctuationWidth, CjkRegion, Dimension, ResolvedCjkConfig } from '../types';
 import type { CjkClass } from './cjkClasses';
 import { dimensionToPx } from '../units';
+import { languageOf } from '../locale';
 
 /** How CJK text is composed: the resolved `cjk` settings, as the composer
  *  reads them. */
@@ -46,6 +47,11 @@ export interface CjkComposition {
   latinSpacing: { em: number; px?: undefined } | { px: number; em?: undefined };
   /** The text runs down the page (vertical-rl): ：；？！ keep one em. */
   vertical?: boolean;
+  /** The document's language, the primary subtag of its locale in lower
+   *  case (`zh`, `ja`, `ko`, `en`…); unset when unknown. Japanese and
+   *  Korean text keeps the marks it shares with Latin text at their own
+   *  advance (see {@link routesSharedMarks}). */
+  language?: string;
 }
 
 /** The composition outside a build: every mark at its full advance, no
@@ -76,9 +82,11 @@ export function getCjkComposition(): CjkComposition {
 }
 
 /** The composition of a resolved `cjk` config: `latinSpacing` in em when it
- *  is written in em (or rem), else converted to px at `dpi`. */
-export function cjkCompositionOf(cjk: ResolvedCjkConfig, dpi: number): CjkComposition {
+ *  is written in em (or rem), else converted to px at `dpi`. `locale` is
+ *  the document language (`language`). */
+export function cjkCompositionOf(cjk: ResolvedCjkConfig, dpi: number, locale?: string): CjkComposition {
   const ls: Dimension = cjk.latinSpacing;
+  const language = languageOf(locale);
   return {
     region: cjk.region,
     punctuationWidth: cjk.punctuationWidth,
@@ -86,7 +94,29 @@ export function cjkCompositionOf(cjk: ResolvedCjkConfig, dpi: number): CjkCompos
     trimLineStart: cjk.trimLineStart,
     hangingPunctuation: cjk.hangingPunctuation,
     latinSpacing: ls.unit === 'em' || ls.unit === 'rem' ? { em: Math.max(0, ls.value) } : { px: Math.max(0, dimensionToPx(ls, dpi)) },
+    ...(language ? { language } : {}),
   };
+}
+
+/** Kana and hangul: a paragraph holding them is Japanese or Korean. */
+const KANA_HANGUL_RE = /[ᄀ-ᇿ぀-ゟ゠-ヿ㄰-㆏ㇰ-ㇿꥠ-꥿가-힯ힰ-퟿ｦ-ﾟ]/;
+
+/** Whether the composition sets Japanese or Korean text. */
+function japaneseOrKorean(c: CjkComposition): boolean {
+  return c.language === 'ja' || c.language === 'ko';
+}
+
+/**
+ * Whether the marks Latin text shares with Chinese (“ ” ‘ ’ … — ·) may take
+ * a Chinese mark's box in a paragraph of `text` (clreq's context routing,
+ * `cjkCompose.ts`). They do in Chinese text: in a Chinese document, and in
+ * a CJK paragraph of a document in another language (or none) unless it
+ * holds kana or hangul. Never in a Japanese or Korean document, whose
+ * typography sets them otherwise (Korean at their proportional width).
+ */
+export function routesSharedMarks(c: CjkComposition, text: string): boolean {
+  if (japaneseOrKorean(c)) return false;
+  return c.language === 'zh' || !KANA_HANGUL_RE.test(text);
 }
 
 const verticalOf = new WeakMap<CjkComposition, CjkComposition>();
@@ -112,7 +142,11 @@ export function compositionFor(c: CjkComposition, vertical: boolean): CjkComposi
  *  under other settings never share an entry. */
 export function cjkCompositionKey(c: CjkComposition): string {
   const ls = c.latinSpacing.px !== undefined ? `${c.latinSpacing.px}px` : `${c.latinSpacing.em}em`;
-  return `${c.region}:${c.punctuationWidth}:${c.compressAdjacent ? 1 : 0}:${c.trimLineStart ? 1 : 0}:${c.hangingPunctuation}:${ls}${c.vertical ? ':v' : ''}`;
+  // The language counts where it changes a measurement: Japanese and
+  // Korean route no shared marks, and only a Chinese document routes them
+  // in a paragraph with kana.
+  const lang = japaneseOrKorean(c) ? ':jk' : c.language === 'zh' ? ':zh' : '';
+  return `${c.region}:${c.punctuationWidth}:${c.compressAdjacent ? 1 : 0}:${c.trimLineStart ? 1 : 0}:${c.hangingPunctuation}:${ls}${c.vertical ? ':v' : ''}${lang}`;
 }
 
 /** Whether a composition changes nothing: the text is set as without it. */

@@ -3,7 +3,7 @@ import { measureRichBlock } from '../../measure/rich';
 import { measureBlock } from '../../measure/plain';
 import { cachedMeasureRichBlock } from '../../measure/cache';
 import { createMeasurementCache } from '../../measure/font';
-import { cjkCompositionOf, punctuationAdvance, setCjkComposition, type CjkComposition } from '../../measure/cjkPunctuation';
+import { cjkCompositionKey, cjkCompositionOf, punctuationAdvance, setCjkComposition, type CjkComposition } from '../../measure/cjkPunctuation';
 import { resolveCjkConfig } from '../../defaults/cjk';
 import { cjkClassOf } from '../../measure/cjkClasses';
 import type { CjkConfig } from '../../types';
@@ -374,5 +374,19 @@ describe('composition in the measurement cache', () => {
     const a = cachedMeasureRichBlock([run(DIALOGUE)], FONT, FONT, FONT, FONT, 2000, 20, { cjkComposition: comp() }, cache);
     const b = cachedMeasureRichBlock([run(DIALOGUE)], FONT, FONT, FONT, FONT, 2000, 20, { cjkComposition: comp({ punctuationWidth: 'fullwidth', compressAdjacent: false }) }, cache);
     expect(a.lines[0]!.bbox.width).not.toBe(b.lines[0]!.bbox.width);
+  });
+
+  it('keys the document language where it changes a measurement', () => {
+    const cjk = resolveCjkConfig({}, 'zh-Hans');
+    expect(cjkCompositionOf(cjk, 96, 'ko').language).toBe('ko');
+    expect(cjkCompositionOf(cjk, 96).language).toBeUndefined();
+    const key = (locale?: string): string => cjkCompositionKey(cjkCompositionOf(cjk, 96, locale));
+    // Japanese and Korean route no shared marks; a Chinese document routes
+    // them in a paragraph with kana; other languages behave alike.
+    expect(key('ja')).toBe(key('ko'));
+    expect(key('ja')).not.toBe(key('zh-Hant'));
+    expect(key('zh-Hant')).not.toBe(key('en'));
+    expect(key('en')).toBe(key('es'));
+    expect(key('en')).toBe(key(undefined));
   });
 });

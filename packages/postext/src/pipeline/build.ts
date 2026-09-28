@@ -446,8 +446,9 @@ function placeDocumentPass(
   // captions, cells, notes, boxes), as it hyphenates in its language.
   setCjkLineBreak(resolved.cjk.lineBreak);
   // And is composed with the document's punctuation widths, hanging and
-  // Han–Latin space (along the line in either writing mode).
-  setCjkComposition(cjkCompositionOf(resolved.cjk, resolved.page.dpi));
+  // Han–Latin space (along the line in either writing mode), in its
+  // language.
+  setCjkComposition(cjkCompositionOf(resolved.cjk, resolved.page.dpi, resolvedLocale(resolved)));
   // Characters of a vertical flow that stand in a cell advance by it (half
   // an em for the mainland interpunct).
   setMeasureWritingMode(resolved.layout.writingMode, resolved.cjk.region);

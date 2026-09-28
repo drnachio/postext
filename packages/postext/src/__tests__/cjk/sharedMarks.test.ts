@@ -190,6 +190,74 @@ describe('marks shared with Latin text take a Chinese box in Chinese text', () =
     for (const s of ls.flatMap((l) => l.segments ?? [])) expect(s.inkOffset).toBeUndefined();
     expect(ls[0]!.bbox.width).toBeCloseTo(8 * EM);
   });
+
+  it('sets the mainland interpunct in half an em under a composition that changes nothing else, as vertical text does', () => {
+    // Full width, no compression, no trims, no Han–Latin space: the plain
+    // composition. GB/T 15834 sets · and ・ in half an em whatever the
+    // punctuation style, in both writing modes.
+    const plain = { punctuationWidth: 'fullwidth', compressAdjacent: false, trimLineStart: false, latinSpacing: { em: 0 } } as const;
+    for (const name of ['列夫·托尔斯泰', '列夫・托尔斯泰']) {
+      const across = lines(name, plain);
+      const down = withMeasureWritingMode('vertical-rl', () => lines(name, plain));
+      expect(across[0]!.bbox.width, name).toBeCloseTo(6.5 * EM);
+      expect(down[0]!.bbox.width, name).toBeCloseTo(6.5 * EM);
+    }
+    // The glyph centred in its half em: · (0.3 em) a tenth of an em in,
+    // ・ (one em) a quarter em before its box.
+    expect(segs(lines('列夫·托尔斯泰', plain), '·')[0]!.inkOffset).toBeCloseTo(0.1 * EM);
+    expect(segs(lines('列夫・托尔斯泰', plain), '・')[0]!.inkOffset).toBeCloseTo(-0.25 * EM);
+    // Taiwan keeps its one-em interpunct.
+    expect(lines('約翰・史密斯', { ...plain, region: 'taiwan' })[0]!.bbox.width).toBeCloseTo(6 * EM);
+  });
+
+  it('keeps their own advance in Japanese and Korean text', () => {
+    const ko = '그는 “안녕하세요”라고 말했다. 김철수·이영희 두 사람은 서울에서 부산까지…… 먼 길을 걸었다—정말로.';
+    const ja = '彼は“こんにちは”と言った。山田·田中の二人は東京から大阪まで……歩いた。';
+    const own = (ls: VDTLine[]): void => {
+      const marks = ls.flatMap((l) => l.segments ?? []).filter((s) => /[“”·…—]/.test(s.text));
+      expect(marks.length).toBeGreaterThan(3);
+      for (const s of marks) {
+        expect(s.width, s.text).toBeCloseTo(width(s.text, EM));
+        expect(s.inkOffset, s.text).toBeUndefined();
+      }
+    };
+    own(lines(ko, { language: 'ko' }));
+    own(lines(ja, { language: 'ja' }));
+    // A paragraph with kana or hangul in a document of another language.
+    own(lines(ja, { language: 'en' }));
+    own(lines(ja));
+    // Chinese text in such a document routes them.
+    expect(segs(lines('他说“你来了。”', { language: 'en', punctuationWidth: 'fullwidth', compressAdjacent: false }), '“')[0]!.width).toBeCloseTo(EM);
+    // The document language reaches the composer through the locale.
+    const ragged = (locale: string): PostextConfig => {
+      const cfg = config(locale);
+      return { ...cfg, bodyText: { ...cfg.bodyText, textAlign: 'left' } };
+    };
+    for (const locale of ['ko', 'ja']) {
+      const doc = buildDocument({ markdown: locale === 'ko' ? ko : ja }, ragged(locale));
+      own(doc.blocks.filter((b) => b.type === 'paragraph').flatMap((b) => b.lines));
+    }
+    const zh = buildDocument({ markdown: '他说“你来了。”山田·田中' }, ragged('zh-Hans'));
+    const zhMarks = zh.blocks.filter((b) => b.type === 'paragraph').flatMap((b) => b.lines.flatMap((l) => l.segments ?? [])).filter((s) => /[“·]/.test(s.text));
+    expect(zhMarks.map((s) => s.inkOffset !== undefined)).toEqual([true, true]);
+  });
+
+  it('routes a long run of shared marks in linear time', () => {
+    // Each mark looks past its neighbours for the nearest text: a run of
+    // n marks used to cost n² steps (16,000 quotes took three seconds).
+    const time = (n: number): number => {
+      const text = `他说${'“”'.repeat(n)}。`;
+      clearTextWidthCache();
+      const t0 = performance.now();
+      lines(text, {}, 30 * EM, 'justify');
+      return performance.now() - t0;
+    };
+    time(500);
+    const small = Math.max(time(1000), 1);
+    const large = time(8000);
+    // Eight times the marks: linear is ~8×, quadratic ~64×.
+    expect(large / small).toBeLessThan(30);
+  });
 });
 
 const pt = (value: number): Dimension => ({ value, unit: 'pt' });

@@ -79,8 +79,10 @@ describe('CJK line breaking (clreq)', () => {
   });
 
   it('never opens a line with an interpunct, except at the level none', () => {
-    expect(both('约翰约翰·史密斯', 72)).toEqual(['约翰约', '翰·史密', '斯']);
-    expect(both('约翰约翰·史密斯', 72, { cjkLineBreak: 'none' })).toEqual(['约翰约翰', '·史密斯']);
+    // The mainland interpunct takes half an em: 4 em hold 约翰约翰 and no
+    // more, and · may not open the next line.
+    expect(both('约翰约翰·史密斯', 64)).toEqual(['约翰约', '翰·史密', '斯']);
+    expect(both('约翰约翰·史密斯', 64, { cjkLineBreak: 'none' })).toEqual(['约翰约翰', '·史密斯']);
   });
 
   it('never ends a line with an opening bracket', () => {

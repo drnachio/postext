@@ -81,6 +81,7 @@ import {
   mayHang,
   punctuationBox,
   punctuationShrink,
+  routesSharedMarks,
   shrinkPunctuation,
   shrinkStep,
   type CjkComposition,
@@ -438,18 +439,13 @@ function isSharedMarkUnit(u: Unit): boolean {
   return u.graphemes === 2 && SHARED_MARKS.has(u.text[0]!) && u.text[0] === u.text[1];
 }
 
-/** The script the text next to unit `k` is in, looking one way (`step`)
- *  past other shared marks and inline boxes: Chinese (a CJK character or
- *  mark), Western (a Latin run or a word space), or undefined at the
- *  paragraph's edge. */
-function sideScript(units: readonly Unit[], k: number, step: 1 | -1): 'cjk' | 'western' | undefined {
-  for (let j = k + step; j >= 0 && j < units.length; j += step) {
-    const v = units[j]!;
-    if (v.kind === 'space') return 'western';
-    if (v.kind === 'atomic' || isSharedMarkUnit(v)) continue;
-    return !v.run && v.firstCjk ? 'cjk' : 'western';
-  }
-  return undefined;
+/** The script a unit sets for the shared marks next to it: Chinese (a CJK
+ *  character or mark), Western (a Latin run or a word space), or none for
+ *  one that is transparent to them (another shared mark, an inline box). */
+function unitScript(v: Unit): 'cjk' | 'western' | undefined {
+  if (v.kind === 'space') return 'western';
+  if (v.kind === 'atomic' || isSharedMarkUnit(v)) return undefined;
+  return !v.run && v.firstCjk ? 'cjk' : 'western';
 }
 
 /**
@@ -465,18 +461,36 @@ function sideScript(units: readonly Unit[], k: number, step: 1 | -1): 'cjk' | 'w
  * closing one at its start, an interpunct, an ellipsis and a single dash
  * centred; a pair (—— ……) is set as the font sets the two together and
  * centred in its two ems, so a 破折号 reads as one line and the six dots
- * of an ellipsis keep one spacing. The composition then adjusts the box as it does any
- * mark's (`cjk.punctuationWidth`). A glyph one em wide already changes
+ * of an ellipsis keep one spacing. The composition then adjusts the box as
+ * it does any mark's (`cjk.punctuationWidth`). A glyph one em wide already changes
  * nothing. Next to Western text on both sides (`He said “yes”`) they keep
- * their own advance.
+ * their own advance, and so do they in Japanese and Korean text (the
+ * composer calls this for Chinese text only, `routesSharedMarks`).
  */
 function routeSharedMarks(units: Unit[], letterSpacingPx: number): void {
-  for (let k = 0; k < units.length; k++) {
+  if (!units.some(isSharedMarkUnit)) return;
+  // The script of the nearest unit on each side that is not transparent
+  // (`unitScript`), past runs of shared marks and inline boxes: two
+  // linear passes, so a long run of marks costs no more than its length.
+  const n = units.length;
+  const before: ('cjk' | 'western' | undefined)[] = new Array(n);
+  const after: ('cjk' | 'western' | undefined)[] = new Array(n);
+  let seen: 'cjk' | 'western' | undefined;
+  for (let k = 0; k < n; k++) {
+    before[k] = seen;
+    seen = unitScript(units[k]!) ?? seen;
+  }
+  seen = undefined;
+  for (let k = n - 1; k >= 0; k--) {
+    after[k] = seen;
+    seen = unitScript(units[k]!) ?? seen;
+  }
+  for (let k = 0; k < n; k++) {
     const u = units[k]!;
     if (!isSharedMarkUnit(u)) continue;
-    const before = sideScript(units, k, -1);
-    const after = sideScript(units, k, 1);
-    if (before !== 'cjk' && after !== 'cjk' && (before !== undefined || after !== undefined)) continue;
+    const b = before[k];
+    const a = after[k];
+    if (b !== 'cjk' && a !== 'cjk' && (b !== undefined || a !== undefined)) continue;
     const em = emOfFont(u.style.font);
     const font = u.style.font;
     let place: number[];
@@ -529,19 +543,24 @@ function isMarkUnit(u: Unit | undefined): boolean {
  * it touches — the space the author typed there turns into one. The line
  * edges (and the reduction a line makes to take one more character) are
  * the breaker's and the line's business. A plain composition changes
- * nothing.
+ * nothing but the mainland interpunct, half an em under every style
+ * (`punctuationBox`), as its cell is in vertical text.
  */
 function prepareUnits(units: Unit[], c: CjkComposition, letterSpacingPx: number): Unit[] {
-  if (isPlainComposition(c)) return units;
+  const plain = isPlainComposition(c);
+  // Down the line the mainland interpunct's cell is half an em already.
+  if (plain && (c.region !== 'mainland' || c.vertical)) return units;
   const full = new Map<Unit, number>();
   for (const u of units) {
     if (u.kind !== 'text' || u.run || u.graphemes !== 1 || !u.firstCjk || u.style.script || u.stacked) continue;
+    if (plain && u.first !== 'interpunct') continue;
     const box = punctuationBox(u.text, u.first, u.width - letterSpacingPx, emOfFont(u.style.font), c);
     if (!box) continue;
     full.set(u, u.width);
     u.punct = box;
     u.width -= boxCut(box);
   }
+  if (plain) return units;
   if (c.compressAdjacent && full.size > 1) {
     for (let k = 1; k < units.length; k++) {
       const a = units[k - 1]!;
@@ -1362,7 +1381,10 @@ export function composeCjkParagraph(
   // The composition works along the line in either writing mode; vertical
   // text keeps ：；？！ at one em (`CjkComposition.vertical`).
   const composition = compositionFor(options?.cjkComposition ?? getCjkComposition(), vertical);
-  const units = prepareUnits(buildUnits(spans, fonts, letterSpacingPx, vertical, true), composition, letterSpacingPx);
+  // The marks Latin text shares with Chinese take Chinese boxes in Chinese
+  // text only (`routesSharedMarks`).
+  const route = routesSharedMarks(composition, spans.map((s) => s.text).join(''));
+  const units = prepareUnits(buildUnits(spans, fonts, letterSpacingPx, vertical, route), composition, letterSpacingPx);
   if (!units.some((u) => u.kind !== 'space')) return { lines: [], totalHeight: 0 };
   const fit = lineFitOf(composition);
   const level = options?.cjkLineBreak ?? getCjkLineBreak();
