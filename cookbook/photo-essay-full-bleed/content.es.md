@@ -41,4 +41,4 @@ La última foto la hace Andrés a las ocho y treinta y uno, desde el mismo bolo 
 
 Es la primera nevada del otoño, dos semanas antes de lo habitual, según el guarda. Salimos a las nueve. La calzada de losas no se ve, y bajamos buscando los hitos de piedra.
 
-# Nieve {style="nieve" n="VI" hora="08:31" colofon="Sierra. Ensayo en seis luces · Láminas dibujadas en código · Textos y láminas: CC BY 4.0" tipos="Compuesto en Andada Pro, Syne y Syne Mono (SIL OFL)"}
+# Nieve {style="nieve" n="VI" hora="08:31" colofon="Sierra. Ensayo en seis luces · Láminas generadas con modelos de difusión · Textos: CC BY 4.0" tipos="Compuesto en Andada Pro, Syne y Syne Mono (SIL OFL)"}

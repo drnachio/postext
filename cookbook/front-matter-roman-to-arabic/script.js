@@ -1,6 +1,6 @@
 // ═══ Postext Cookbook · Nº 006 · Front matter: roman folios, then page 1 ═══════════
 // https://postext.dev/en/cookbook/front-matter-roman-to-arabic
-// Code: MIT · Text: M. & P. B. Shelley, 1818 (PD) · Drawings: generated in code (CC BY 4.0)
+// Code: MIT · Text: M. & P. B. Shelley, 1818 (PD) · Pictures: diffusion models; marks drawn in code
 // Fonts: Fanwood Text, Playfair Display SC, Cinzel (SIL OFL 1.1) · Needs postext ≥ 1.4.1
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
@@ -234,236 +234,15 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 // ─── 2 · Content ────────────────────────────────────────────────────────────
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
-// #region art: a storm over the Alps, the brig in the ice, an aurora, a mark and a crystal
-let seed = 1818; // Mulberry32, a tiny seeded PRNG: never Math.random() in a recipe
-const rand = () => {
-  let r = Math.imul((seed = (seed + 0x6d2b79f5) | 0) ^ (seed >>> 15), 1 | seed);
-  r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
-  return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
-};
-const mix = (a, b, k) => `#${[1, 3, 5].map((i) => Math.round(parseInt(palette[a].slice(i, i + 2),
-  16) * (1 - k) + parseInt(palette[b].slice(i, i + 2), 16) * k).toString(16).padStart(2, '0'))
-  .join('')}`;
+// #region art: the publisher's mark and an ice crystal, drawn in the palette
 const f = (n) => n.toFixed(2);
 const poly = (pts, fill, a = 1) => `<path d="M${pts.map(([x, y]) => `${f(x)} ${f(y)}`).join('L')}Z"`
   + ` fill="${fill}" fill-opacity="${a}"/>`;
 const disk = (x, y, r, fill, a = 1) => `<circle cx="${f(x)}" cy="${f(y)}" r="${f(r)}" `
   + `fill="${fill}" fill-opacity="${a}"/>`;
-const rect = (x, y, w, h, fill, a = 1) => poly([[x, y], [x + w, y], [x + w, y + h], [x, y + h]],
-  fill, a);
-const floe = (cx, cy, rx, ry, fill) => poly(Array.from({ length: 9 }, (_, i) => { // broken ice
-  const a = (i / 9) * Math.PI * 2 + rand() * 0.5;
-  const r = 0.72 + rand() * 0.34;
-  return [cx + Math.cos(a) * rx * r, cy + Math.sin(a) * ry * r];
-}), fill);
 const PX = 10; // each drawing is w × h mm in its viewBox and declares w·PX × h·PX pixels
 const svgOf = (w, h, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="${w * PX}" `
   + `height="${h * PX}" viewBox="0 0 ${w} ${h}">${body}</svg>`;
-// [cx, cy, rx, ry]: an ellipse in mm; `clear` keeps the stars out of it.
-const inside = (e, x, y) => !!e && ((x - e[0]) / e[2]) ** 2 + ((y - e[1]) / e[3]) ** 2 < 1;
-
-function sky(w, horizon, glow = 1) { // night at the top, a steel glow at the horizon
-  const out = [];
-  for (let i = 0; i < 96; i++) {
-    const [y0, y1] = [horizon * i / 96, horizon * (i + 1) / 96 + 0.2];
-    out.push(rect(0, y0, w, y1 - y0, mix('night', 'accent', glow * (i / 95) ** 2.4)));
-  }
-  return out;
-}
-function stars(out, w, depth, n, clear) { // thinning towards the glow, none behind the type
-  for (let i = 0; i < n; i++) {
-    const y = rand() ** 1.7 * depth;
-    const [x, r, a] = [rand() * w, 0.12 + rand() ** 3 * 0.38, 0.3 + rand() * 0.6];
-    if (!inside(clear, x, y)) out.push(disk(x, y, r, palette.bone, a));
-  }
-}
-function fadeOut(out, w, h, depth) { // the foot of a drawing dissolves into the page
-  for (let y = h - depth; y < h; y += 0.8) out.push(rect(0, y, w, h - y, palette.paper, 0.15));
-}
-
-// "The sun is for ever visible; its broad disk just skirting the horizon" (Letter I).
-function arctic(w, h, { horizon, sun }) {
-  const out = sky(w, horizon);
-  stars(out, w, horizon * 0.72, 110, null);
-  const r = w * 0.14;
-  out.push(disk(sun * w, horizon, r * 2.3, palette.bone, 0.05),
-    disk(sun * w, horizon, r * 1.5, palette.bone, 0.08), disk(sun * w, horizon, r, palette.bone));
-  const ridge = [[0, horizon + 0.4]]; // a far ridge of pressure ice along the horizon
-  for (let x = 0; x <= w; x += 1 + rand() * 3) ridge.push([x, horizon - rand() ** 2 * 2.2]);
-  out.push(poly([...ridge, [w, horizon + 0.4]], mix('accent', 'ice', 0.35)));
-  out.push(rect(0, horizon, w, h - horizon, mix('night', 'accent', 0.55)));
-  const rows = 22; // floes: slivers at the horizon, broad plates near the reader
-  for (let k = 0; k < rows; k++) {
-    const t = (k + 0.5) / rows;
-    const y = horizon + 0.6 + (h - horizon) * t ** 1.9;
-    const ry = (h - horizon) * 1.9 * t ** 0.9 / rows * (0.55 + rand() * 0.3);
-    for (let x = -rand() * 8; x < w + 6;) {
-      const rx = ry * (2.2 + rand() * 4.5);
-      const glint = Math.max(0, 1 - Math.abs(x - sun * w) / (w * 0.2)) * 0.3;
-      out.push(floe(x, y + (rand() - 0.5) * ry, rx, ry,
-        mix('accent', 'paper', Math.min(1, 0.4 + t * 0.55 + glint + (rand() - 0.5) * 0.14))));
-      x += rx * (1.6 + rand() * 0.9) + 0.3 + t * 1.6;
-    }
-  }
-  const [sx, sy] = [w * 0.18, horizon + 1.2]; // half a mile off: dogs, the sledge, its driver
-  for (let i = 0; i < 6; i++) out.push(disk(sx + i * 0.8, sy, 0.3, palette.night));
-  out.push(poly([[sx - 2.6, sy - 0.3], [sx - 0.6, sy - 0.3], [sx - 0.5, sy + 0.4],
-    [sx - 2.7, sy + 0.4]], palette.night), poly([[sx - 2.2, sy - 0.3], [sx - 2.05, sy - 2.1],
-    [sx - 1.5, sy - 2.2], [sx - 1.35, sy - 0.3]], palette.night));
-  out.push(brig(w * 0.5, h - 16, 0.95)); // beset in the ice, heeled over
-  return svgOf(w, h, out.join(''));
-}
-
-function brig(x, y, s) { // a two-masted brig in silhouette, sails furled on the yards
-  const ink = palette.night;
-  const spar = (x1, y1, x2, y2, wd) => { // a straight spar or stay as a thin quadrilateral
-    const [dx, dy] = [x2 - x1, y2 - y1];
-    const [nx, ny] = [(-dy / Math.hypot(dx, dy)) * wd / 2, (dx / Math.hypot(dx, dy)) * wd / 2];
-    return poly([[x1 + nx, y1 + ny], [x2 + nx, y2 + ny], [x2 - nx, y2 - ny],
-      [x1 - nx, y1 - ny]], ink);
-  };
-  const parts = [poly([[-1, -2.5], [3, -1.2], [41, -1.6], [44, -3.2], [39.5, 5], [5, 5.6]], ink),
-    spar(41, -2, 55, -8.5, 0.7), spar(55, -8.5, 28.3, -44, 0.25), spar(0, -2, 13.4, -41, 0.25),
-    spar(14.2, -30, 27.6, -34, 0.25)]; // hull, bowsprit and the stays
-  for (const [mx, tall] of [[13.4, 41], [27.8, 44]]) {
-    parts.push(spar(mx, 0, mx, -tall, 0.9), poly([[mx, -tall - 3.6], [mx + 4, -tall - 2.6],
-      [mx, -tall - 1.6]], ink)); // mast and pennant
-    [17, 14, 11, 7].forEach((yard, i) => parts.push(spar(mx - yard / 2, -9 - i * 8.6,
-      mx + yard / 2, -9 - i * 8.6, 1.3 - i * 0.2)));
-  }
-  const floes = [[-8, 5], [2, 3.5], [16, 6.5], [29, 4], [42, 6.5]].map(([fx, fh]) =>
-    poly([[fx, 6.5], [fx + 4, 6.5 - fh], [fx + 9, 5.5], [fx + 13, 7.5]], palette.paper));
-  return `<g transform="translate(${f(x)} ${f(y)}) scale(${s}) rotate(-4)">${parts.join('')}`
-    + `${floes.join('')}</g>`;
-}
-
-// "I saw the lightnings playing on the summit of Mont Blânc in the most beautiful figures"
-// (vol. I, chapter VI): the cover, a storm over the Alps and the lake of Geneva.
-function storm(w, h) {
-  const shore = 150; // mm: the lake's far shore
-  const out = sky(w, shore, 0.75);
-  stars(out, w, 58, 46, [w / 2, 38, 58, 28]);
-  const [bx, peak] = [w * 0.57, 121]; // the bolt strikes the dome of Mont Blanc
-  const glow = (x, y, r, a, n = 10) => { // a soft light: many faint discs, no gradient
-    for (let i = 0; i < n; i++) out.push(disk(x, y, r * (1 - i / n), palette.bone, a));
-  };
-  const clouds = (top, depth, tone) => { // a bank with a scalloped crown and a ragged belly
-    const edge = [];
-    for (let x = -6; x < w + 6;) {
-      const r = 3 + rand() * 6;
-      for (let k = 0; k <= 6; k++) {
-        const t = (k / 6) * Math.PI;
-        edge.push([x + r * (1 - Math.cos(t)), top - r * 0.55 * Math.sin(t) + rand() * 0.4]);
-      }
-      x += 2 * r * (0.7 + rand() * 0.2);
-    }
-    const belly = [];
-    for (let x = w + 6; x > -6; x -= 3 + rand() * 4) belly.push([x, top + depth + rand() * 3]);
-    out.push(poly([...edge, ...belly], tone));
-  };
-  clouds(64, 12, mix('night', 'accent', 0.42));
-  clouds(72, 12, mix('night', 'accent', 0.28));
-  glow(bx + 2, 100, 46, 0.011, 24); // the flash, lighting the air and the clouds' bellies
-  clouds(80, 13, mix('night', 'accent', 0.16));
-  glow(bx + 4, 94, 18, 0.015, 16);
-  const bolt = [[bx + 11, 88]]; // from the cloud's belly down to the summit, in zigzags
-  for (let i = 1; i < 11; i++) {
-    const t = i / 11;
-    const kink = (i % 2 ? 1 : -1) * (1.5 + rand() * 2.5);
-    bolt.push([bx + 11 * (1 - t) + kink, 88 + (peak - 88) * t]);
-  }
-  bolt.push([bx, peak]);
-  const zig = (pts, wd, fill, a) => poly([...pts.map(([x, y], i) => [x - wd * (1 - i / pts.length),
-    y]), ...pts.slice().reverse().map(([x, y], i) => [x + wd * (i / pts.length) + 0.05, y])],
-  fill, a);
-  const fork = [bolt[4], ...[1, 2, 3, 4, 5].map((k) => [bolt[4][0] - k * 2.6
-    + (k % 2 ? 1 : -1) * rand() * 1.4, bolt[4][1] + k * 2.3])];
-  out.push(zig(bolt, 2.6, palette.bone, 0.18), zig(fork, 1.2, palette.bone, 0.14),
-    zig(bolt, 0.8, palette.bone, 1), zig(fork, 0.35, palette.bone, 0.9));
-  const dome = (x) => peak + (Math.abs(x - bx) / (x < bx ? 30 : 24)) ** 1.6 * 17; // the summit
-  const far = [];
-  for (let x = -2; x <= w + 2; x += 1.5 + rand() * 2.5) { // needles on the shoulders
-    far.push([x, Math.min(140 - rand() ** 1.5 * 9, dome(x) + rand() * 1.2)]);
-  }
-  out.push(poly([[-2, shore + 2], ...far, [w + 2, shore + 2]], mix('night', 'accent', 0.32)));
-  const cap = far.filter(([x]) => Math.abs(x - bx) < 24); // the snowfield, tapering to nothing
-  const foot = cap.slice().reverse().map(([x, y], i) => [x, y + 11 * (1 - ((x - bx) / 24) ** 2)
-    * (i % 2 ? 1 : 0.7) + rand()]);
-  const lit = [...cap.filter(([x]) => x <= bx), [bx + 3, peak + 9],
-    ...foot.filter(([x]) => x < bx)];
-  out.push(poly([...cap, ...foot], mix('accent', 'ice', 0.5)), // in shade, then the lit face
-    poly(lit, mix('ice', 'bone', 0.45)));
-  const near = [[-2, shore + 2]];
-  for (let x = -2; x <= w + 2; x += 3 + rand() * 4) near.push([x, 146 - 2 * rand()]);
-  out.push(poly([...near, [w + 2, shore + 2]], mix('night', 'accent', 0.16)));
-  out.push(rect(0, shore, w, h - shore, mix('night', 'accent', 0.34))); // the lake
-  for (let k = 0; k < 30; k++) { // the flash on the water, and the ripples
-    const y = shore + 1 + (h - shore - 3) * (k / 30) ** 1.4;
-    const spread = 2 + k * 0.9;
-    const row = [rect(bx - spread / 2 + (rand() - 0.5) * 3, y, spread * (0.5 + rand() * 0.5), 0.35,
-      palette.bone, 0.5 - k * 0.014)];
-    for (let i = 0; i < 3; i++) {
-      row.push(rect(rand() * w, y, 2 + rand() * 8, 0.25, palette.ice, 0.1));
-    }
-    // Calm water under the series line (168–171 mm): the row is drawn, and its random numbers
-    // spent, everywhere else, so the other drawings keep their seeded shapes.
-    if (y < 164 || y > 173) out.push(...row);
-  }
-  return svgOf(w, h, out.join(''));
-}
-
-// "I feel a cold northern breeze play upon my cheeks" (Letter I): the northern lights over the
-// Neva, St Petersburgh's spire on the far shore, and no ice yet.
-function aurora(w, h, { horizon, clear, fade }) {
-  const out = sky(w, horizon, 0.8);
-  stars(out, w, horizon * 0.8, 120, clear);
-  const floor = (x) => (Math.abs(x - clear[0]) < clear[2] // the light stops under the type
-    ? clear[1] + clear[3] * Math.sqrt(1 - ((x - clear[0]) / clear[2]) ** 2) : 0);
-  [[60, 4, 19, 0.075], [68, 2.5, 12, 0.1]].forEach(([base, amp, len, a], c) => {
-    const phase = 1 + c * 2.4;
-    const hem = (x) => base + amp * Math.sin(x / w * 6 + phase) + 1.2 * Math.sin(x / w * 17 + c);
-    const top = (x) => Math.max(hem(x) - len * (0.55 + 0.45 * Math.sin(x / w * 9 + phase * 2)),
-      floor(x));
-    const xs = Array.from({ length: 131 }, (_, i) => -1 + (w + 2) * i / 130);
-    for (let s = 0; s < 12; s++) { // a curtain: twelve veils, fainter towards its top
-      const at = (x, k) => hem(x) - (hem(x) - top(x)) * Math.min(1, k);
-      out.push(poly([...xs.map((x) => [x, at(x, (s + 1) / 12)]),
-        ...xs.slice().reverse().map((x) => [x, at(x, 0)])], palette.ice, a * (1 - s / 12)));
-    }
-    out.push(poly([...xs.map((x) => [x, hem(x) - 0.6]), ...xs.slice().reverse()
-      .map((x) => [x, hem(x) + 0.3])], palette.bone, 0.2)); // the bright lower hem
-    for (let x = rand() * 2; x < w; x += 0.6 + rand() * 2.2) { // fine rays
-      const y1 = hem(x);
-      const y0 = y1 - (y1 - top(x)) * (0.3 + rand() * 0.7);
-      if (y0 < y1) out.push(rect(x, y0, 0.18, y1 - y0, palette.bone, 0.06 + rand() * 0.1));
-    }
-  });
-  out.push(rect(0, horizon, w, h - horizon, mix('night', 'accent', 0.4))); // the Neva
-  const city = [[0, horizon + 0.3]]; // the far shore, low, with a spire and two domes
-  for (let x = 0; x < w * 0.42; x += 1 + rand() * 2.5) {
-    const y = horizon - 0.6 - rand() * 1.8;
-    city.push([x, y], [x + 1.2, y]);
-  }
-  city.push([w * 0.42 + 4, horizon + 0.3]);
-  const spire = w * 0.23;
-  const dome = (x, r) => rect(x - r, horizon - 3.4 - r, 2 * r, 3.4 + r, palette.night)
-    + disk(x, horizon - 3.4 - r, r, palette.night)
-    + rect(x - 0.1, horizon - 5.6 - 2 * r, 0.2, 2.4, palette.night);
-  out.push(poly(city, palette.night), poly([[spire - 1, horizon - 2], [spire, horizon - 15],
-    [spire + 1, horizon - 2]], palette.night), dome(w * 0.31, 1.5), dome(w * 0.12, 1.1));
-  for (let i = 0; i < 14; i++) {
-    out.push(disk(rand() * w * 0.4, horizon - 0.8 - rand(), 0.16, palette.bone, 0.8));
-  }
-  for (let k = 0; k < 22; k++) { // the lights' long reflections on the water
-    const y = horizon + 1 + (h - horizon) * (k / 22) ** 1.4;
-    for (let x = rand() * 6; x < w; x += 4 + rand() * 10) {
-      out.push(rect(x, y, 1.5 + rand() * 6, 0.3, palette.ice, 0.08 + rand() * 0.16));
-    }
-  }
-  fadeOut(out, w, h, fade);
-  return svgOf(w, h, out.join(''));
-}
-
 // The publisher's mark: a polar star in a double ring. The ornament: an ice crystal.
 const EMBLEM = 40; // mm: both are drawn on a 40 × 40 viewBox
 function mark() {
@@ -483,27 +262,28 @@ function crystal() {
   return svgOf(EMBLEM, EMBLEM, [0, 60, 120, 180, 240, 300].map((a) =>
     `<g transform="rotate(${a} 20 20)">${arm}</g>`).join('') + disk(20, 20, 2.4, palette.accent));
 }
-
-const art = {
-  cover: storm(TRIM_W, TRIM_H),
-  plate: arctic(MEASURE, PLATE_H, { horizon: 58, sun: 0.66 }),
-  // No stars or rays behind the kicker, title and dateline (19–48 mm down): an ellipse.
-  band: aurora(TRIM_W, BAND, { horizon: 76, clear: [TRIM_W / 2, 33, 50, 16], fade: 19 }),
-  mark: mark(), crystal: crystal(),
-};
-for (const [id, svg] of Object.entries(art)) await loadSvg(`${id}.svg`, svg);
-// #endregion
-
-// Resources only the designs use, nothing cites them; each declares svgOf's pixel size.
+for (const [id, svg] of Object.entries({ mark: mark(), crystal: crystal() })) {
+  await loadSvg(`${id}.svg`, svg);
+}
+// Each declares svgOf's pixel size.
 const svgResource = (id, w, h, altText) => ({ id, typeId: 'figure', kind: 'svg', altText,
   createdAt: 0, updatedAt: 0, svg: { fileId: `${id}.svg`, width: w * PX, height: h * PX } });
-const resources = [
-  svgResource('cover', TRIM_W, TRIM_H, 'Lightning strikes Mont Blanc over the lake of Geneva.'),
-  svgResource('plate', MEASURE, PLATE_H, 'A brig beset in pack ice, a sledge far off.'),
-  svgResource('band', TRIM_W, BAND, 'Northern lights over the Neva and St Petersburgh.'),
+const emblems = [
   svgResource('mark', EMBLEM, EMBLEM, 'Publisher’s mark: a polar star in a double ring.'),
   svgResource('crystal', EMBLEM, EMBLEM, 'Ornament: an ice crystal.'),
 ];
+// #endregion
+
+const painting = (id, w, h, altText) => ({ id, typeId: 'figure', kind: 'bitmap', altText,
+  createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: `${id}-${w}.jpg`, format: 'jpeg', width: w, height: h } });
+const paintings = [ // JPEGs in assets/; only the designs use them, nothing cites them
+  painting('cover', 1000, 1535, 'Lightning strikes Mont Blanc over the lake of Geneva.'),
+  painting('plate', 1000, 1299, 'A brig beset in pack ice, a sledge drawn by dogs far off.'),
+  painting('band', 1400, 1129, 'Northern lights over the frozen Neva and St Petersburgh.'),
+];
+await Promise.all(paintings.map(({ bitmap: b }) => loadImage(b.fileId, asset(b.fileId))));
+const resources = [...paintings, ...emblems];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 // Loaded before the first build (gotcha: fonts-first). The PDF asks for a bold Fanwood and an
