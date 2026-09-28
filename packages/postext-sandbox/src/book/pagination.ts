@@ -7,7 +7,7 @@
 
 import { configUsesPlaceholder, contentOutline, continuationAfter, formatNumeral, indexOutline, outlineFromDoc, outlineKey, resolvePageConfig, tocOutline } from 'postext';
 import type { LayoutContinuation, NumeralStyle, OutlineEntry, PostextConfig, Resource, VDTDocument } from 'postext';
-import type { BookPages, BookPlan, Chapter, ChapterLayout, ChapterPageNumber, ChapterPages, ChapterPlan, OutlinePage } from './types';
+import type { BookPages, BookPlan, Chapter, ChapterLayout, ChapterPageNumber, ChapterPages, ChapterPart, ChapterPlan, OutlinePage } from './types';
 import { ENGINE_KEY, configKeyOf, resourcesKeyOf } from './layoutKeys';
 
 /** The page number `n` resolves to when the chapter's first page is
@@ -189,6 +189,17 @@ function chapterNumber(outline: readonly OutlineEntry[], before: LayoutContinuat
   const first = outline.find((e) => e.kind === 'heading' && e.level === 1 && e.numbered);
   if (!first) return null;
   return first.counter ?? (before?.headings?.h1 ?? 0) + 1;
+}
+
+/** The part a chapter whose outline is `outline` belongs to, after the
+ *  counters `before` (see {@link ChapterPlan.part}). */
+function chapterPart(outline: readonly OutlineEntry[], before: LayoutContinuation | undefined): ChapterPart | undefined {
+  let part: ChapterPart | undefined = before?.part ? { number: before.part.number, title: before.part.title } : undefined;
+  for (const entry of outline) {
+    if (entry.kind === 'part') part = { number: entry.number, title: entry.title };
+    else if (entry.kind === 'heading' && entry.level === 1) break;
+  }
+  return part;
 }
 
 const continuationFingerprint = (c: LayoutContinuation | undefined): string => JSON.stringify(c ?? null);
@@ -384,10 +395,12 @@ export function createBookPlanner(): BookPlanner {
         const layout = records[index]!;
         const outlineStale = layout !== null && layout.outlineKey !== chapterOutlineKey;
         if (outlineStale && stalePendingId === null) stalePendingId = chapter.id;
+        const part = chapterPart(entries[index]!.outline, counters);
         const plan: ChapterPlan = {
           chapterId: chapter.id,
           index,
           number: chapterNumber(entries[index]!.outline, counters),
+          ...(part ? { part } : {}),
           continuation,
           paginated: pages !== null,
           continuationKey: keys[index]!,

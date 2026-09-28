@@ -2,6 +2,7 @@
 
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext';
+import { relocalizedResourceTypes } from '../../../context/defaultConfig';
 import { resolveBodyTextConfig, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_HYPHENATION_CONFIG, dimensionsEqual, colorsEqual } from 'postext';
 import type { BodyTextConfig, ColonListRoom, HyphenationConfig, LocaleTag } from 'postext';
 import {
@@ -30,6 +31,7 @@ export const BodyTextSection = memo(function BodyTextSection() {
   const raw = useSandboxSelector((s) => s.config.bodyText);
   const locale = useSandboxSelector((s) => s.locale);
   const documentLocale = useSandboxSelector((s) => s.config.locale);
+  const resourceTypes = useSandboxSelector((s) => s.config.resourceTypes);
   const bodyText = resolveBodyTextConfig(raw, documentLocale);
   const defaultLocale = LOCALE_TO_HYPHENATION[locale] ?? 'en-us';
 
@@ -38,8 +40,17 @@ export const BodyTextSection = memo(function BodyTextSection() {
   const effectiveHyphenationLocale = raw?.hyphenation?.locale ?? documentLocale ?? defaultLocale;
   const effectiveDocumentLocale = documentLocale ?? defaultLocale;
 
+  // Built-in resource types still in the language the document was in (or
+  // the interface's, which seeds a new book) follow the new one: "Figura"
+  // becomes "Figure"; renamed types stay as they are.
+  const relocalized = (next: string) => {
+    const previous = documentLocale ?? raw?.hyphenation?.locale ?? locale;
+    const types = relocalizedResourceTypes(resourceTypes, [previous, locale], next);
+    return types ? { resourceTypes: types } : {};
+  };
+
   const updateDocumentLocale = (value: LocaleTag | undefined) => {
-    dispatch({ type: 'UPDATE_CONFIG', payload: { locale: value } });
+    dispatch({ type: 'UPDATE_CONFIG', payload: { locale: value, ...relocalized(value ?? raw?.hyphenation?.locale ?? locale) } });
   };
 
   const updateBodyText = (partial: Partial<BodyTextConfig>) => {
@@ -52,7 +63,7 @@ export const BodyTextSection = memo(function BodyTextSection() {
   const resetBodyText = () => {
     dispatch({
       type: 'UPDATE_CONFIG',
-      payload: { bodyText: undefined, locale: undefined },
+      payload: { bodyText: undefined, locale: undefined, ...relocalized(locale) },
     });
   };
 

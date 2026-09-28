@@ -213,6 +213,23 @@ describe('book actions', () => {
     expect(sandboxReducer(s, { type: 'SET_BOOK', payload: { chapters: s.chapters, activeChapterId: 'a' } }).canvasScope).toBe('chapter');
     expect(sandboxReducer(baseState(), { type: 'SET_BOOK', payload: { chapters: s.chapters, activeChapterId: 'a', canvasScope: 'book' } }).canvasScope).toBe('book');
   });
+  // #199: a 120-chapter book (some 1,800 pages) is never laid out whole on
+  // the canvas or in HTML; the PDF may still take it whole.
+  it('keeps a book over the whole-book limit in chapter scope', () => {
+    const long = Array.from({ length: 120 }, (_, i) => ch(`c${i}`, `# ${i}`));
+    const opened = sandboxReducer(baseState(), { type: 'SET_BOOK', payload: { chapters: long, activeChapterId: 'c0', canvasScope: 'book' } });
+    expect(opened.canvasScope).toBe('chapter');
+    expect(opened.pdfScope).toBe('chapter');
+    expect(sandboxReducer(opened, { type: 'SET_CANVAS_SCOPE', payload: 'book' })).toBe(opened);
+    expect(sandboxReducer(opened, { type: 'SET_PDF_SCOPE', payload: 'book' }).pdfScope).toBe('book');
+    // A whole-book canvas that grows past the limit drops to chapter scope.
+    const whole = sandboxReducer(baseState(), { type: 'SET_CANVAS_SCOPE', payload: 'book' });
+    const grown = sandboxReducer(whole, { type: 'SET_BOOK', payload: { chapters: long, activeChapterId: 'c0', canvasScope: 'book' } });
+    expect(grown.canvasScope).toBe('chapter');
+    // Eighty chapters are still shown whole.
+    const eighty = long.slice(0, 80);
+    expect(sandboxReducer(baseState(), { type: 'SET_BOOK', payload: { chapters: eighty, activeChapterId: 'c0', canvasScope: 'book' } }).canvasScope).toBe('book');
+  });
   it('SET_PDF_SCOPE switches what the PDF tab renders', () => {
     const s = sandboxReducer(baseState(), { type: 'SET_PDF_SCOPE', payload: 'book' });
     expect(s.pdfScope).toBe('book');

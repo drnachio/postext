@@ -47,7 +47,7 @@ describe('view hash', () => {
     // Both named: the project wins.
     expect(parseViewHash('#preset=x&project=p1')).toEqual({ ...EMPTY_VIEW_HASH, project: 'p1' });
     // Locale tags are normalised; junk is dropped.
-    expect(parseViewHash('#preset=x&lang=PT-br')).toEqual({ ...EMPTY_VIEW_HASH, preset: 'x', lang: 'pt-br' });
+    expect(parseViewHash('#preset=x&lang=PT-br')).toEqual({ ...EMPTY_VIEW_HASH, preset: 'x', lang: 'pt-BR' });
     expect(parseViewHash('#preset=x&lang=e s&view=print')).toEqual({ ...EMPTY_VIEW_HASH, preset: 'x' });
     expect(parseViewHash('#preset=&view=html')).toEqual({ ...EMPTY_VIEW_HASH, view: 'html' });
     // Encoded ids come back decoded.
@@ -111,6 +111,20 @@ describe('view hash', () => {
     expect(sameBook({ preset: null, project: 'p1', lang: null }, onPreset)).toBe(false);
   });
 
+  // #198: a Chinese edition named by a mixed-case tag.
+  it('keeps the canonical case of a locale tag and compares tags case aside', () => {
+    expect(parseViewHash('#preset=hongloumeng&lang=zh-Hant').lang).toBe('zh-Hant');
+    expect(parseViewHash('#preset=hongloumeng&lang=zh-hant').lang).toBe('zh-Hant');
+    expect(parseViewHash('#preset=hongloumeng&lang=ZH-tw').lang).toBe('zh-TW');
+    expect(parseViewHash('#preset=hongloumeng&lang=zh-hans-cn').lang).toBe('zh-Hans-CN');
+    expect(parseViewHash('#preset=x&lang=zh-').lang).toBeNull();
+    const wanted = parseViewHash('#preset=hongloumeng&lang=zh-Hant');
+    expect(sameBook(wanted, { preset: 'hongloumeng', project: null, lang: 'zh-Hant' })).toBe(true);
+    expect(sameBook({ ...wanted, lang: 'zh-hant' }, { preset: 'hongloumeng', project: null, lang: 'zh-Hant' })).toBe(true);
+    expect(sameBook(wanted, { preset: 'hongloumeng', project: null, lang: 'zh-Hans' })).toBe(false);
+    expect(viewHashFragment(wanted)).toBe('#preset=hongloumeng&lang=zh-Hant');
+  });
+
   it('builds the PDF viewer fragment', () => {
     expect(pdfPageFragment(null)).toBe('');
     expect(pdfPageFragment(2)).toBe('#page=3');
@@ -123,6 +137,10 @@ describe('parseHashBundle / hashNamesOtherBook', () => {
     const ref = parseHashBundle('#recipe=magazine-feature-opener&lang=ES&view=pdf', ['recipe']);
     expect(ref).toEqual({ key: 'recipe', id: 'magazine-feature-opener', lang: 'es' });
     expect(hashBundleOrigin(ref!)).toBe('recipe:magazine-feature-opener:es');
+    // A regional tag keeps its canonical case; the origin stays lower-case.
+    const us = parseHashBundle('#recipe=x&lang=en-us', ['recipe']);
+    expect(us?.lang).toBe('en-US');
+    expect(hashBundleOrigin(us!)).toBe('recipe:x:en-us');
     expect(parseHashBundle('#recipe=x', ['recipe'])).toEqual({ key: 'recipe', id: 'x', lang: null });
     expect(parseHashBundle('#preset=x', ['recipe'])).toBeNull();
     // Reserved and malformed keys are never host keys.
@@ -143,5 +161,9 @@ describe('parseHashBundle / hashNamesOtherBook', () => {
     expect(hashNamesOtherBook({ preset: null, project: 'p1', lang: null }, { ...stored, projectId: 'p1' }, null)).toBe(false);
     expect(hashNamesOtherBook({ preset: 'guide', project: null, lang: null }, { ...stored, projectId: 'p1' }, null)).toBe(true);
     expect(hashNamesOtherBook({ preset: null, project: null, lang: null }, stored, { key: 'recipe', id: 'x', lang: null })).toBe(true);
+    // Tags compare case aside; another script is another book.
+    const chinese = { projectId: null, presetId: 'hlm', presetLocale: 'zh-Hant' };
+    expect(hashNamesOtherBook({ preset: 'hlm', project: null, lang: 'zh-hant' }, chinese, null)).toBe(false);
+    expect(hashNamesOtherBook({ preset: 'hlm', project: null, lang: 'zh-Hans' }, chinese, null)).toBe(true);
   });
 });

@@ -573,7 +573,7 @@ def cmd_index(args) -> None:
             continue
         m = json.loads(mf.read_text(encoding="utf-8"))
         entry = {"id": m["id"], "dir": mf.parent.relative_to(root).as_posix(), "name": m["name"]}
-        for k in ("description", "locale", "locales", "thumbnail", "license", "credits", "tags"):
+        for k in ("description", "locale", "locales", "openLocale", "thumbnail", "license", "credits", "tags"):
             if m.get(k):
                 entry[k] = m[k]
         presets.append(entry)

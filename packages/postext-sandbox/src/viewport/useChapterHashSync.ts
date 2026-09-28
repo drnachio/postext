@@ -208,5 +208,6 @@ function bookOnScreen(s: { activeProjectId: string | null; activePresetId: strin
 }
 
 function sameBookRecord(a: ViewHashBook, b: ViewHashBook): boolean {
-  return a.preset === b.preset && a.project === b.project && a.lang === b.lang;
+  return a.preset === b.preset && a.project === b.project
+    && (a.lang === b.lang || (a.lang !== null && b.lang !== null && a.lang.toLowerCase() === b.lang.toLowerCase()));
 }

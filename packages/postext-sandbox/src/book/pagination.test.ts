@@ -479,3 +479,25 @@ describe('createBookPlanner: the index', () => {
     expect(after.byId.ix!.outlineKey).not.toBe(before.byId.ix!.outlineKey);
   });
 });
+
+// #199: the part each chapter belongs to, for the chapter menu and list.
+describe('chapter parts in the plan', () => {
+  it('reads the part open at each chapter\'s first heading', () => {
+    const book = [
+      newChapter('front', 'Front', 'A title page.', 1),
+      newChapter('p1', 'One', ':::part{number="I" title="Mud"}\n:::\n\n# One', 1),
+      newChapter('c2', 'Two', '# Two', 1),
+      newChapter('p2', 'Opener', ':::part{number="II" title="Stone"}\n:::', 1),
+      newChapter('c3', 'Three', '# Three\n\nText.\n\n:::part{number="III" title="Jade"}\n:::', 1),
+      newChapter('c4', 'Four', '# Four', 1),
+    ];
+    const plan = createBookPlanner().plan(book, {}, [], {});
+    expect(plan.byId.front!.part).toBeUndefined();
+    expect(plan.byId.p1!.part).toEqual({ number: 'I', title: 'Mud' });
+    expect(plan.byId.c2!.part).toEqual({ number: 'I', title: 'Mud' });
+    expect(plan.byId.p2!.part).toEqual({ number: 'II', title: 'Stone' });
+    // A fence after the chapter's heading opens the part of the next one.
+    expect(plan.byId.c3!.part).toEqual({ number: 'II', title: 'Stone' });
+    expect(plan.byId.c4!.part).toEqual({ number: 'III', title: 'Jade' });
+  });
+});

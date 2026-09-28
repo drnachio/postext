@@ -49,7 +49,8 @@ import {
 } from '../storage/presetDrafts';
 import { createSaveScheduler, type SaveScheduler } from '../storage/saveScheduler';
 import { getBlob, putBlobAt } from '../storage/blobStore';
-import { choosePresetOpen, sameLanguage } from '../presets/locale';
+import { effectiveCanvasScope, wholeBookAllowed } from '../book/scope';
+import { choosePresetOpen, presetLocales, sameContentLocale, sameLocaleTag } from '../presets/locale';
 import { fetchBundleBytes, openHashBundle } from './hashBundle';
 import { getChapterLayouts, pruneChapterLayoutStore, putChapterLayouts } from '../storage/layouts';
 import type { ProjectSummary } from '../storage/projects';
@@ -332,7 +333,9 @@ const EMPTY_SELECTION: EditorSelection = { from: 0, to: 0, head: 0 };
 /** Adopt a book slice and re-derive the active-chapter mirror. Returns
  *  `state` itself when nothing changed. */
 function withBook(state: SandboxState, book: BookContent, resetSelection = false): SandboxState {
-  const canvasScope = book.canvasScope ?? 'chapter';
+  // A book too long to be shown whole (see `book/scope.ts`) is shown a
+  // chapter at a time, whatever it asks for.
+  const canvasScope = effectiveCanvasScope(book.canvasScope, book.chapters.length);
   if (
     book.chapters === state.chapters &&
     book.activeChapterId === state.activeChapterId &&
@@ -405,6 +408,7 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
       return { ...state, pdfScope: action.payload };
     case 'SET_CANVAS_SCOPE':
       if (action.payload === state.canvasScope) return state;
+      if (action.payload === 'book' && !wholeBookAllowed(state.chapters.length)) return state;
       // The PDF follows the canvas by default — a book laid out whole on
       // the canvas is exported whole — until the PDF scope is picked by
       // hand, which holds until the canvas scope moves again.
@@ -1180,8 +1184,8 @@ export function SandboxProvider({
       markdown: activeChapter(book).markdown,
       chapters: book.chapters,
       activeChapterId: book.activeChapterId,
-      pdfScope: book.canvasScope ?? 'chapter',
-      canvasScope: book.canvasScope ?? 'chapter',
+      pdfScope: effectiveCanvasScope(book.canvasScope, book.chapters.length),
+      canvasScope: effectiveCanvasScope(book.canvasScope, book.chapters.length),
       chapterLayouts: {},
       hiddenPresetIds: loadHiddenPresetIds(),
       config,
@@ -1382,7 +1386,14 @@ export function SandboxProvider({
     const onScreen = s.activeProjectId === null && s.activePresetId === id;
     const current = onScreen && s.presetApplied?.presetId === id ? s.presetApplied.locale ?? null : null;
     const choice = choosePresetOpen({ summary: provider.summary, requested: locale, current, viewer: s.locale, drafts: draftsRef.current });
-    if (current !== null && sameLanguage(choice.locale, current) && s.presetStatus !== 'loading') return true;
+    // Already open in that edition. A preset listing its locales names the
+    // edition by its own tag, so Simplified ↔ Traditional Chinese (one
+    // language, two editions) switch; one listing none is compared by
+    // language.
+    const sameEdition = presetLocales(provider.summary).length > 0
+      ? sameLocaleTag(choice.locale, current ?? '')
+      : current !== null && sameContentLocale(choice.locale, current);
+    if (current !== null && sameEdition && s.presetStatus !== 'loading') return true;
     return switchBookRef.current(async () => {
       if (choice.draft) {
         const draft = await getPresetDraft(choice.draft.key);
@@ -1612,11 +1623,13 @@ export function SandboxProvider({
           await openPresetRef.current(BUILTIN_PRESET_ID, loc);
           return;
         }
-        if (loaded.length === 0) {
+        if (loaded.length === 0 && onBuiltin) {
           // First entry (empty store): seed the built-in preset. A pristine
           // document takes the sample markdown too (and a fresh config only
           // when none was ever saved); an edited document with an emptied
-          // store just gets its example resources back.
+          // store just gets its example resources back. Another preset on
+          // screen may simply have no resources (a novel without figures):
+          // it stays what it is, not the guide's resources under its text.
           const parts: PresetApplyParts = !pristine
             ? 'resources'
             : loadConfig() === null ? 'all' : 'document';

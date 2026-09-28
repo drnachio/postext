@@ -807,6 +807,10 @@ export interface SandboxLabels {
   chapterPosition: string;
   chapterPages: string;
   chapterPagesUnknown: string;
+  chapterFilter: string;
+  chapterFilterEmpty: string;
+  chapterPartGo: string;
+  chapterPaginating: string;
   chapterWords: string;
   chapterCountTag: string;
   /** Scope selectors in the viewport tab bar: the active chapter on its
@@ -816,6 +820,7 @@ export interface SandboxLabels {
   pdfScopeChapter: string;
   pdfScopeBook: string;
   canvasScope: string;
+  canvasScopeBookTooLong: string;
   importFileChapter: string;
   exportFileChapter: string;
   warningsChapterLabel: string;
@@ -848,6 +853,7 @@ export interface SandboxLabels {
   projectBusy: string;
   projectImportError: string;
   projectImportInvalid: string;
+  projectImportLocale: string;
   projectExportWarnings: string;
   projectMissingFile: string;
   projectFontSkipped: string;
