@@ -129,3 +129,81 @@ describe('vertical running heads down the fore-edge (#192)', () => {
     expect(headOf(plain.pages[0]!).vertical).toBeUndefined();
   });
 });
+
+describe('orientation marks in vertical design text (#190, #192 review)', () => {
+  const marked = (content: string, extra: Partial<DesignTextElement> = {}): DesignTextElement => ({
+    kind: 'text', id: 'h', content, inlineMarks: true, writingMode: 'vertical-rl', fontSize: pt(8), overflow: 'clip',
+    placement: { anchor: { to: 'outer', edge: 'top' } },
+    ...extra,
+  });
+  const CONTENT = '第:tcy[3.0]回:upright[GDP]**粗**';
+
+  it('lays out :tcy as one cell and :upright as a cell per letter, the runs flagged', () => {
+    const doc = buildDocument({ markdown: HLM }, config({ header: { elements: [marked(CONTENT)] } }));
+    const head = headOf(doc.pages[0]!);
+    const runs = head.lines[0]!.runs!;
+    expect(runs.map((r) => [r.text, r.tcy, r.orientation])).toEqual([
+      ['第', undefined, undefined], ['3.0', true, undefined], ['回', undefined, undefined], ['GDP', undefined, 'upright'], ['粗', undefined, undefined],
+    ]);
+    expect(runs.find((r) => r.tcy)!.width).toBeCloseTo(8, 6);
+    expect(runs.find((r) => r.orientation)!.width).toBeCloseTo(24, 6);
+    // Seven cells down the fore-edge.
+    expect(head.bbox.height).toBeCloseTo(7 * 8, 6);
+  });
+
+  it('never breaks a line inside an oriented run', () => {
+    const doc = buildDocument({ markdown: HLM }, config({ header: { elements: [marked('第一:upright[GDP]回', { overflow: 'wrap', placement: { anchor: { to: 'outer', edge: 'top' }, size: { height: pt(32) } } })] } }));
+    expect(headOf(doc.pages[0]!).lines.map((l) => l.text)).toEqual(['第一', 'GDP回']);
+  });
+
+  it('paints the cell squeezed upright and the letters upright on the canvas', () => {
+    const doc = buildDocument({ markdown: HLM }, config({ header: { elements: [marked(CONTENT)] } }));
+    const page = doc.pages[0]!;
+    const painted: Array<{ text: string; a: number; b: number }> = [];
+    type M = [number, number, number, number, number, number];
+    let m: M = [1, 0, 0, 1, 0, 0];
+    const stack: M[] = [];
+    const mul = (a: M, b: M): M => [a[0] * b[0] + a[2] * b[1], a[1] * b[0] + a[3] * b[1], a[0] * b[2] + a[2] * b[3], a[1] * b[2] + a[3] * b[3], a[0] * b[4] + a[2] * b[5] + a[4], a[1] * b[4] + a[3] * b[5] + a[5]];
+    const state: Record<string, unknown> = { font: '8px Test', letterSpacing: '0px', textBaseline: 'alphabetic', textAlign: 'start' };
+    const api: Record<string, unknown> = {
+      save: () => stack.push(m),
+      restore: () => { m = stack.pop() ?? m; },
+      transform: (a: number, b: number, c: number, d: number, e: number, f: number) => { m = mul(m, [a, b, c, d, e, f]); },
+      translate: (x: number, y: number) => { m = mul(m, [1, 0, 0, 1, x, y]); },
+      scale: (x: number, y: number) => { m = mul(m, [x, 0, 0, y, 0, 0]); },
+      rotate: (t: number) => { m = mul(m, [Math.cos(t), Math.sin(t), -Math.sin(t), Math.cos(t), 0, 0]); },
+      fillText: (text: string) => painted.push({ text, a: Math.round(m[0] * 1000) / 1000, b: Math.round(m[1] * 1000) / 1000 }),
+      measureText: (s: string) => ({ width: [...s].reduce((w, ch) => w + stubCharWidth(ch, Number(/(\d*\.?\d+)px/.exec(String(state.font))?.[1] ?? 8)), 0) }),
+    };
+    const ctx = new Proxy(state, {
+      get: (t, k) => (typeof k === 'string' && k in api ? api[k] : k in t ? t[k as string] : () => undefined),
+      set: (t, k, v) => { t[k as string] = v; return true; },
+    });
+    renderPageToCanvas(page, doc, { width: 0, height: 0, getContext: () => ctx } as unknown as HTMLCanvasElement);
+    // 3.0 (a stub width of 1.5 em) squeezed across to one em, upright.
+    const cell = painted.find((p) => p.text === '3.0')!;
+    expect(cell.a).toBeCloseTo(8 / 12, 3);
+    expect(cell.b).toBeCloseTo(0, 6);
+    // G, D and P each upright in a cell of its own.
+    for (const letter of ['G', 'D', 'P']) {
+      const p = painted.find((q) => q.text === letter)!;
+      expect(p, letter).toBeDefined();
+      expect(p.a).toBeCloseTo(1, 6);
+    }
+  });
+
+  it('writes the cell and the upright letters in the HTML', () => {
+    const doc = buildDocument({ markdown: HLM }, config({ header: { elements: [marked(CONTENT)] } }));
+    const html = renderToHtml(doc, { mode: 'single' });
+    expect(html).toContain('<span style="text-combine-upright:all;">3.0</span>');
+    expect(html).toContain('<span style="text-orientation:upright;">GDP</span>');
+  });
+
+  it('ignores the marks in horizontal design text', () => {
+    const horizontal = (content: string) => {
+      const doc = buildDocument({ markdown: HLM }, config({ header: { elements: [marked(content, { writingMode: undefined })] } }));
+      return headOf(doc.pages[0]!).lines.map((l) => ({ text: l.text, width: l.width, runs: l.runs?.map((r) => [r.text, r.width, r.tcy, r.orientation]) }));
+    };
+    expect(horizontal(CONTENT)).toEqual(horizontal('第3.0回GDP**粗**'));
+  });
+});

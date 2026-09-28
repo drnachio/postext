@@ -816,7 +816,7 @@ function verticalDesignLines(block: VDTDesignTextBlock, v: VerticalHtml, originX
     for (const run of runs) {
       const runFont = quoteFontString(run.fontString);
       const decl = runFont !== font ? `font:${runFont};` : '';
-      inner.push(verticalSpan(x, axisOf(run.fontString, run.baselineShift ?? 0), verticalTextHtml(run.text, v), decl));
+      inner.push(verticalSpan(x, axisOf(run.fontString, run.baselineShift ?? 0), verticalTextHtml(run.text, v, segmentOrientation(run)), decl));
       x += run.width;
     }
     const width = Math.max(line.width, x);

@@ -8,6 +8,7 @@ import type {
 } from '../vdt';
 import { drawResourceImage, roundedOutlinePath } from './renderResourceBlock';
 import { fillFlowText, drawUprightInBox, setVerticalPaint } from './verticalText';
+import { segmentOrientation, type ForcedOrientation } from '../writingMode';
 
 /** Adds a rounded rectangle to the current path, as a closed subpath. */
 function traceRoundedRect(
@@ -121,7 +122,7 @@ function renderTextBlock(ctx: CanvasRenderingContext2D, block: VDTDesignTextBloc
     ctx.lineWidth = stroke.widthPx;
   }
   const mode = stroke?.hollow ? 'stroke' : stroke ? 'fillStroke' : 'fill';
-  const paint = (text: string, x: number, y: number) => fillFlowText(ctx, text, x, y, mode);
+  const paint = (text: string, x: number, y: number, orient?: ForcedOrientation) => fillFlowText(ctx, text, x, y, mode, undefined, 'text', orient);
   // A vertical block (`VDTDesignTextBlock.vertical`) paints its lines in
   // its own frame, turned a quarter turn clockwise about the box's top
   // right corner, with the vertical painter on.
@@ -142,7 +143,9 @@ function renderTextBlock(ctx: CanvasRenderingContext2D, block: VDTDesignTextBloc
     let x = originX + line.xOffset;
     for (const run of line.runs) {
       ctx.font = run.fontString;
-      paint(run.text, x, line.baselineY + (run.baselineShift ?? 0));
+      // A vertical line: the orientation its author gave the run
+      // (`:tcy`, `:upright`, `:sideways`).
+      paint(run.text, x, line.baselineY + (run.baselineShift ?? 0), segmentOrientation(run));
       x += run.width;
     }
     ctx.font = block.fontString;

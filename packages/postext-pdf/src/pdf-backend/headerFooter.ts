@@ -6,6 +6,7 @@ import type {
   VDTDesignImageBlock,
   VDTDesignBoxStyle,
 } from 'postext';
+import { segmentOrientation } from 'postext';
 import { drawEmbeddedResource, figureLayout, type ResourceImageMap } from './renderResourceBlock';
 import { tagArtifact, tagContent, type ArtifactSpec, type StructAttrs, type StructElem } from './tagging';
 
@@ -207,7 +208,8 @@ function renderTextBlock(
     for (const run of line.runs) {
       const runFont = fontCache.get(run.fontString) ?? font;
       const runSize = parseFontString(run.fontString)?.sizePx ?? size;
-      drawTextPx(ctx, run.text, x, line.baselineY + (run.baselineShift ?? 0), runFont, runSize, color, outline);
+      // A vertical line: the orientation its author gave the run.
+      drawTextPx(ctx, run.text, x, line.baselineY + (run.baselineShift ?? 0), runFont, runSize, color, outline, undefined, segmentOrientation(run));
       x += run.width;
     }
   }

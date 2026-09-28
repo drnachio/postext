@@ -880,6 +880,7 @@ Un elemento de texto con `writingMode: 'vertical-rl'` se compone en vertical en 
 - Su caja queda donde la pone la colocación. Su alto es el largo de una línea: lo fija `size.height` (o `'auto'`, lo que mide el texto; `'fill'`, hasta el borde del contenedor), `size.width` fija cuántas líneas caben a lo ancho y `size.maxWidth` limita el largo de una línea.
 - `align` coloca las líneas a lo largo de la caja (`'left'` arriba), `verticalAlign` a lo ancho (`'top'` a la derecha, donde va la primera línea), y el relleno de una caja se queda en el lado para el que está escrito.
 - Los caracteres se miden y se pintan como en una página vertical: los hanzi de pie, a un cuadratín cada uno; la puntuación, en su forma vertical; las palabras latinas, tumbadas; los números cortos, en una casilla (`cjk.uprightDigits`). El canvas, el PDF y el HTML lo ponen en el mismo rectángulo.
+- Con `inlineMarks: true` las marcas de orientación separan un tramo como en el cuerpo: `第:tcy[3.0]回` pone 3.0 en una casilla, `:upright[GDP]` pone las letras de pie una bajo otra, `:sideways[…]` tumba un tramo; una línea nunca se corta dentro de una de ellas. Un elemento horizontal las ignora.
 - Un elemento vertical no lleva letra capital.
 - En el flujo de una página vertical (una apertura, una página de parte, el título de un recuadro) el texto ya va hacia abajo y `writingMode` no cambia nada.
 
@@ -896,7 +897,7 @@ Los libros chinos verticales ponen cabeceras y folios en uno de tres sitios ([cl
   </tbody>
 </table>
 
-Las cabeceras del margen exterior, tal como las añade el Sandbox (**Encabezado › Cabeceras en el margen exterior (vertical)**):
+Las cabeceras del margen exterior, tal como las añade el Sandbox (**Encabezado › Cabeceras en el margen exterior (vertical)**), aquí para un cuerpo de 10 pt (el Sandbox las pone al 80 % del cuerpo del texto):
 
 ```json
 {
@@ -914,7 +915,7 @@ Las cabeceras del margen exterior, tal como las añade el Sandbox (**Encabezado 
 
 `anchor.to: 'outer'` (ver [Posicionamiento de elementos](#posicionamiento-de-elementos)) es el margen exterior de cada página, así que los dos elementos bajan por el borde izquierdo de una página impar y por el derecho de una par en un libro encuadernado por la derecha (`page.binding`). `{pageNumber}` sale en el formato de la numeración: `trad-chinese-informal` da 一百零三 en la página 103, y `cjk-decimal`, 一〇三. Las reglas de cada bloque siguen valiendo: `pages: 'body'` quita una cabecera de las aperturas de capítulo. Un adorno corto entre cabecera y folio (una cola de pez ︻, un filete) es un elemento más anclado al mismo marco.
 
-En el VDT un bloque vertical lleva `vertical` (`VDTDesignTextBlock.vertical`: la región, las cifras de pie y el eje central de cada familia); sus líneas están en el marco girado del propio bloque: `xOffset` hacia abajo desde el borde superior de la caja y `baselineY` hacia la izquierda desde su borde derecho.
+En el VDT un bloque vertical lleva `vertical` (`VDTDesignTextBlock.vertical`: la región, las cifras de pie y el eje central de cada familia); sus líneas están en el marco girado del propio bloque: `xOffset` hacia abajo desde el borde superior de la caja y `baselineY` hacia la izquierda desde su borde derecho. Un tramo de una línea con marcas lleva `tcy` u `orientation`, como un segmento del cuerpo.
 
 ### Elementos de línea
 

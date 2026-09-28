@@ -1105,7 +1105,8 @@ function justifyLine(
     natural = measure(text);
   }
   const pieces: DesignTextRun[] = runs ?? [{ text, fontString: font, width: natural }];
-  const splittable = (i: number): boolean => !pieces[i]!.stacked && !pieces[i - 1]?.stacked;
+  // A run the author oriented in vertical text is never cut at its spaces.
+  const splittable = (i: number): boolean => !pieces[i]!.stacked && !pieces[i - 1]?.stacked && !pieces[i]!.tcy && !pieces[i]!.orientation;
   let spaces = 0;
   pieces.forEach((r, i) => { if (splittable(i)) spaces += stretchableSpaces(r.text); });
   const room = width - natural;

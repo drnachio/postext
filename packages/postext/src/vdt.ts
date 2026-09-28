@@ -1097,6 +1097,12 @@ export interface VDTDesignTextRun {
    *  on {@link VDTLineSegment.stacked}: width 0, the next run painted at
    *  the same x. */
   stacked?: boolean;
+  /** Vertical text: set in one upright cell (`:tcy[…]`), as
+   *  {@link VDTLineSegment.tcy}. */
+  tcy?: true;
+  /** Vertical text: stood upright or turned by its author (`:upright[…]`,
+   *  `:sideways[…]`), as {@link VDTLineSegment.orientation}. */
+  orientation?: 'upright' | 'sideways';
 }
 
 /** Line of wrapped text inside a `VDTDesignTextBlock`. */

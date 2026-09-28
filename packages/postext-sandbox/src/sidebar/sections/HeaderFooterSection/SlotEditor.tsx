@@ -1,8 +1,8 @@
 'use client';
 
 import { Plus, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
-import { useSandboxLabels } from '../../../context/SandboxContext';
-import { DEFAULT_TEXT_ELEMENT, DEFAULT_RULE_ELEMENT, DEFAULT_BOX_ELEMENT } from 'postext';
+import { useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext';
+import { DEFAULT_TEXT_ELEMENT, DEFAULT_RULE_ELEMENT, DEFAULT_BOX_ELEMENT, resolveBodyTextConfig } from 'postext';
 import type {
   DesignSlot,
   DesignElement,
@@ -22,6 +22,7 @@ import { RuleElementEditor } from './RuleElementEditor';
 import { BoxElementEditor } from './BoxElementEditor';
 import { ImageElementEditor } from './ImageElementEditor';
 import { applyAlign, type SlotKind } from './placementAdapter';
+import { foreEdgeElements } from './foreEdge';
 
 interface SlotEditorProps {
   slotKey: SlotKind;
@@ -38,6 +39,7 @@ function generateId(kind: 'text' | 'rule' | 'box' | 'image', used: Set<string>):
 
 export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps) {
   const labels = useSandboxLabels();
+  const bodyTextRaw = useSandboxSelector((s) => s.config.bodyText);
 
   // When there's no override, show the resolved (library-default) elements
   // so the list is never mysteriously empty. Any edit then materialises the
@@ -94,33 +96,10 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
     commit([...currentRaw, template]);
   };
 
-  /** The fore-edge heads of a vertical book: the chapter title down the
-   *  outer margin four characters below the head of the type area, the
-   *  folio five above its foot, at 80 % of the body size (JLREQ §2.6; the
-   *  Taiwan and mainland rules for vertical books). */
+  /** The fore-edge heads of a vertical book, at 80 % of the body size
+   *  (see `foreEdgeElements`). */
   const addForeEdge = () => {
-    const size = { value: 8, unit: 'pt' as const };
-    const head: DesignTextElement = {
-      ...DEFAULT_TEXT_ELEMENT,
-      id: generateId('text', existingIds),
-      content: '{chapterTitle}',
-      writingMode: 'vertical-rl',
-      fontSize: size,
-      overflow: 'clip',
-      align: 'left',
-      placement: { anchor: { to: 'outer', edge: 'top' }, offset: { x: { value: 0, unit: 'pt' }, y: { value: 4, unit: 'em' } }, size: { width: 'auto', height: 'auto' } },
-    };
-    const folio: DesignTextElement = {
-      ...DEFAULT_TEXT_ELEMENT,
-      id: generateId('text', new Set([...existingIds, head.id])),
-      content: '{pageNumber}',
-      writingMode: 'vertical-rl',
-      fontSize: size,
-      overflow: 'clip',
-      align: 'left',
-      placement: { anchor: { to: 'outer', edge: 'bottom' }, offset: { x: { value: 0, unit: 'pt' }, y: { value: -5, unit: 'em' } }, size: { width: 'auto', height: 'auto' } },
-    };
-    commit([...currentRaw, head, folio]);
+    commit([...currentRaw, ...foreEdgeElements(existingIds, resolveBodyTextConfig(bodyTextRaw).fontSize)]);
   };
 
   const updateAt = (index: number, next: DesignElement) => {

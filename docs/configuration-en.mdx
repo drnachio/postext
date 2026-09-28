@@ -880,6 +880,7 @@ A text element with `writingMode: 'vertical-rl'` is set vertically in a slot who
 - Its box stays where the placement puts it. Its height is the length of a line: `size.height` sets it (or `'auto'`, the text's length; `'fill'`, down to the container's edge), `size.width` sets how many lines fit across, and `size.maxWidth` caps a line's length.
 - `align` places the lines along the box (`'left'` at the top), `verticalAlign` across it (`'top'` at the right, where the first line stands), and a box's padding stays on the side it is written for.
 - The characters are measured and painted as in a vertical page: Han upright one em each, punctuation in its vertical form, Latin words sideways, short numbers in one cell (`cjk.uprightDigits`). The canvas, the PDF and the HTML place it at the same rectangle.
+- With `inlineMarks: true` the orientation marks set a run apart as in the body: `第:tcy[3.0]回` sets 3.0 in one cell, `:upright[GDP]` stands the letters upright one under the other, `:sideways[…]` turns a run; a line never breaks inside one. A horizontal element ignores them.
 - A drop cap is not set on a vertical element.
 - In the flow of a vertical page (an opener, a part page, a box title) text already runs down, and `writingMode` changes nothing there.
 
@@ -896,7 +897,7 @@ Vertical Chinese books put their running heads and folios in one of three places
   </tbody>
 </table>
 
-The fore-edge heads, as the Sandbox adds them (**Header › Fore-edge heads (vertical)**):
+The fore-edge heads, as the Sandbox adds them (**Header › Fore-edge heads (vertical)**), here for a 10 pt body (the Sandbox sets them at 80 % of the body size):
 
 ```json
 {
@@ -914,7 +915,7 @@ The fore-edge heads, as the Sandbox adds them (**Header › Fore-edge heads (ver
 
 `anchor.to: 'outer'` (see [Element placement](#element-placement)) is the outer margin of each page, so the two elements run down the left edge of a recto and the right edge of a verso in a right-bound book (`page.binding`). `{pageNumber}` prints in the page numbering format: `trad-chinese-informal` gives 一百零三 on page 103, `cjk-decimal` 一〇三. The per-slot rules still apply: `pages: 'body'` keeps a head off the chapter openers. A short ornament between head and folio (a fish-tail ︻, a rule) is an ordinary element anchored to the same frame.
 
-In the VDT a vertical block carries `vertical` (`VDTDesignTextBlock.vertical`: the region, the upright digits and the central axis of each family); its lines are in the block's own turned frame, `xOffset` down from the box's top, `baselineY` leftward from its right edge.
+In the VDT a vertical block carries `vertical` (`VDTDesignTextBlock.vertical`: the region, the upright digits and the central axis of each family); its lines are in the block's own turned frame, `xOffset` down from the box's top, `baselineY` leftward from its right edge. A run of a marked line carries `tcy` or `orientation`, as a segment of the body does.
 
 ### Rule elements
 

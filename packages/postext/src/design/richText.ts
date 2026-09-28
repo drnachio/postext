@@ -1,10 +1,13 @@
 // Design text with inline marks (`inlineMarks: true`): the resolved text is
-// read as inline Markdown — bold, italic, superscript, subscript — and laid
-// out as runs, each in its own font. The plain path in `layout.ts` measures
-// whole strings; here every width is the sum of per-run widths, exactly as
-// the renderers paint the runs one after another.
+// read as inline Markdown — bold, italic, superscript, subscript, and in
+// vertical text the orientation marks `:tcy`, `:upright`, `:sideways` — and
+// laid out as runs, each in its own font. The plain path in `layout.ts`
+// measures whole strings; here every width is the sum of per-run widths,
+// exactly as the renderers paint the runs one after another.
 
-import { flowTextWidth } from '../measure/vertical';
+import { flowTextWidth, fontEm, measuringVertically } from '../measure/vertical';
+import { measureTextWidth } from '../measure/canvas';
+import type { ForcedOrientation } from '../writingMode';
 import { parseInlineFormatting } from '../parse/inlineFormatting';
 import { buildFontString } from '../measure';
 import { scriptMetrics, stackedScriptPairs } from '../measure/rich';
@@ -24,6 +27,11 @@ export interface DesignTextRun {
   /** The first of a subscript and a superscript set over each other: it
    *  advances nothing (width 0) and the next run is painted at its x. */
   stacked?: boolean;
+  /** Vertical text: a run the author set in one upright cell (`:tcy[…]`). */
+  tcy?: true;
+  /** Vertical text: a run the author stood upright (`:upright[…]`) or
+   *  turned (`:sideways[…]`). */
+  orientation?: 'upright' | 'sideways';
 }
 
 interface RunStyle {
@@ -33,6 +41,12 @@ interface RunStyle {
    *  `stackedShift` is a subscript's drop under a superscript. */
   script?: 'sup' | 'sub';
   stackedShift?: number;
+  /** Vertical text: the orientation the author forced. Each `:tcy` span
+   *  has a style of its own, so two never merge into one cell. */
+  orient?: ForcedOrientation;
+  /** The same style without the orientation (a hyphen or an ellipsis set
+   *  beside an oriented run takes it). */
+  base?: number;
 }
 
 /** A design text read for inline marks: its plain text (markers dropped)
@@ -60,14 +74,18 @@ const fontFor = (spec: RichFontSpec, weight: number, italic: boolean): string =>
 
 /** Read `text` for inline marks. Bold runs take weight 700 (the element's
  *  own weight when it is heavier); italic runs flip the element's slant;
- *  scripts use the body text's script size and shift. */
+ *  scripts use the body text's script size and shift. In vertical text
+ *  (`measuringVertically`) a run the author set with `:tcy`, `:upright` or
+ *  `:sideways` stands as the body sets it; horizontal text ignores the
+ *  marks. */
 export function parseRichDesignText(text: string, spec: RichFontSpec): RichDesignText {
   const styles: RunStyle[] = [{ font: fontFor(spec, spec.weight, spec.italic) }];
   const keys = new Map<string, number>([['0|0|', 0]]);
   let out = '';
   const styleAt: number[] = [];
   let hasMarks = false;
-  for (const span of parseInlineFormatting(text)) {
+  const vertical = measuringVertically();
+  const styleFor = (span: { bold: boolean; italic: boolean; script?: 'sup' | 'sub' }): number => {
     const key = `${span.bold ? 1 : 0}|${span.italic ? 1 : 0}|${span.script ?? ''}`;
     let idx = keys.get(key);
     if (idx === undefined) {
@@ -83,6 +101,25 @@ export function parseRichDesignText(text: string, spec: RichFontSpec): RichDesig
       idx = styles.length;
       styles.push(style);
       keys.set(key, idx);
+    }
+    return idx;
+  };
+  const spans = parseInlineFormatting(text);
+  for (let si = 0; si < spans.length; si++) {
+    const span = spans[si]!;
+    let idx = styleFor(span);
+    const orient: ForcedOrientation | undefined = vertical ? (span.combineUpright ? 'tcy' : span.orientation) : undefined;
+    if (orient && span.text.length > 0) {
+      // An oriented run: the style of its font with the orientation, one
+      // per `:tcy` span (two cells never merge), shared by the others.
+      const key = `${orient === 'tcy' ? `tcy${si}` : orient}|${idx}`;
+      let oriented = keys.get(key);
+      if (oriented === undefined) {
+        oriented = styles.length;
+        styles.push({ ...styles[idx]!, orient, base: idx });
+        keys.set(key, oriented);
+      }
+      idx = oriented;
     }
     if (idx !== 0) hasMarks = true;
     out += span.text;
@@ -125,7 +162,23 @@ export class RichMeasurer {
   constructor(readonly rt: RichDesignText, readonly letterSpacingPx: number) {}
 
   private widthOf(text: string, style: number): number {
-    return Math.max(0, flowTextWidth(text, this.rt.styles[style]!.font) + this.letterSpacingPx * graphemeCount(text));
+    const s = this.rt.styles[style]!;
+    // An oriented run, as the body measures it: one cell (tate-chu-yoko),
+    // a cell per character (upright), its horizontal width (sideways); the
+    // tracking follows a cell once.
+    if (s.orient === 'tcy') return fontEm(s.font) + this.letterSpacingPx;
+    const n = graphemeCount(text);
+    if (s.orient === 'upright') return (fontEm(s.font) + this.letterSpacingPx) * n;
+    if (s.orient === 'sideways') return Math.max(0, measureTextWidth(text, s.font) + this.letterSpacingPx * n);
+    return Math.max(0, flowTextWidth(text, s.font) + this.letterSpacingPx * n);
+  }
+
+  /** Whether `[k, k + 1)` lies inside a run the author oriented (a line
+   *  never breaks inside one, even at a space). */
+  insideOriented(k: number): boolean {
+    const style = this.rt.styleAt[k];
+    if (style === undefined || this.rt.styles[style]!.orient === undefined) return false;
+    return this.rt.styleAt[k - 1] === style && this.rt.styleAt[k + 1] === style;
   }
 
   /** The pieces of `[a, b)`, one per change of style. */
@@ -158,8 +211,10 @@ export class RichMeasurer {
     return w;
   }
 
-  /** Character ranges `[start, end)` of the subscripts and superscripts of
-   *  `[a, b)` that are set over each other: a line never ends inside one. */
+  /** Character ranges `[start, end)` of `[a, b)` a line never ends inside:
+   *  the subscripts and superscripts set over each other, and in vertical
+   *  text the runs the author oriented (a `:tcy` cell, an `:upright` or
+   *  `:sideways` run). */
   stackedRanges(a: number, b: number): [number, number][] {
     const pieces = this.pieces(a, b);
     const starts: number[] = [];
@@ -168,15 +223,20 @@ export class RichMeasurer {
       starts.push(k);
       k += p.text.length;
     }
-    return stackedScriptPairs(pieces.map((p) => this.rt.styles[p.style]!.script))
+    const ranges: [number, number][] = stackedScriptPairs(pieces.map((p) => this.rt.styles[p.style]!.script))
       .map((i) => [starts[i]!, starts[i + 1]! + pieces[i + 1]!.text.length]);
+    pieces.forEach((p, i) => {
+      if (this.rt.styles[p.style]!.orient !== undefined && p.text.length > 1) ranges.push([starts[i]!, starts[i]! + p.text.length]);
+    });
+    return ranges;
   }
 
   /** Style of the character at `i` (clamped to the text), for a hyphen or
-   *  an ellipsis set beside it. */
+   *  an ellipsis set beside it: an oriented run's without its orientation. */
   styleNear(i: number): number {
     if (this.rt.styleAt.length === 0) return 0;
-    return this.rt.styleAt[Math.max(0, Math.min(i, this.rt.styleAt.length - 1))]!;
+    const style = this.rt.styleAt[Math.max(0, Math.min(i, this.rt.styleAt.length - 1))]!;
+    return this.rt.styles[style]!.base ?? style;
   }
 
   /** A line from its pieces: adjacent pieces of one style merge into a run. */
@@ -188,9 +248,12 @@ export class RichMeasurer {
       const style = this.rt.styles[p.style]!;
       const w = this.widthOf(p.text, p.style);
       text += p.text;
-      return style.shift !== undefined
+      const run: DesignTextRun = style.shift !== undefined
         ? { text: p.text, fontString: style.font, width: w, baselineShift: style.shift }
         : { text: p.text, fontString: style.font, width: w };
+      if (style.orient === 'tcy') run.tcy = true;
+      else if (style.orient) run.orientation = style.orient;
+      return run;
     });
     // A subscript and a superscript that touch are set one over the other
     // (EF-80), as in the body.
@@ -306,11 +369,13 @@ export function wrapRich(
     out.push(m.rangeLine(a, hyphen ? b : trimmedEnd(a, b), hyphen));
     maxW = Math.max(1, widthFor(out.length));
   };
+  // A space inside a run the author oriented is not a place to break.
+  const breakingSpace = (k: number): boolean => isSpace(text[k]) && !m.insideOriented(k);
   let i = start;
   while (i < end) {
     let j = i + 1;
-    const space = isSpace(text[i]);
-    while (j < end && isSpace(text[j]) === space) j++;
+    const space = breakingSpace(i);
+    while (j < end && breakingSpace(j) === space) j++;
     if (space) {
       // A space never breaks a line by itself: the next word decides.
       if (lineStart >= 0 || out.length === 0) {

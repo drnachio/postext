@@ -256,6 +256,23 @@ describe('vertical text in the PDF (#191)', () => {
     expect(shows.flatMap((sh) => sh.cids)).toHaveLength(3);
   });
 
+  it('sets the orientation marks of a vertical running head (#190, #192 review)', async () => {
+    const cfg = config('zh-Hant', {
+      page: { width: pt(300), height: pt(420), dpi: 72, margins: { top: pt(40), bottom: pt(40), left: pt(30), right: pt(50), mirror: true } },
+      header: { elements: [{ kind: 'text', id: 'h', content: '第:tcy[12345]回:upright[GDP]', inlineMarks: true, writingMode: 'vertical-rl', fontFamily: 'Noto Serif TC', fontSize: pt(8), overflow: 'clip', placement: { anchor: { to: 'outer', edge: 'top' } } }] },
+    });
+    const { doc, pdf } = await render('此開卷第一回也。', cfg);
+    const head = doc.pages[0]!.header!.blocks.find((b) => b.kind === 'text')!;
+    expect(head.kind === 'text' && head.lines[0]!.runs?.some((r) => r.tcy)).toBe(true);
+    const ops = pageOps(pdf);
+    const after = ops.slice(ops.indexOf(' cm', ops.lastIndexOf('0 -1 1 0 ')));
+    // 12345 upright in one cell, squeezed across by its text matrix.
+    const cells = [...after.matchAll(/0 ([\d.]+) -1 0 [-\d.]+ [-\d.]+ Tm/g)].map((m) => Number(m[1]));
+    expect(cells.some((k) => k < 1)).toBe(true);
+    // 第, 回 and G, D, P upright through the twin, one glyph a cell.
+    expect(uprightShows(after, pageFonts(pdf)).flatMap((sh) => sh.cids)).toHaveLength(5);
+  });
+
   it('leaves horizontal Chinese text without a twin', async () => {
     const { pdf } = await render('此開卷第一回也。', config('zh-Hant', { layout: { writingMode: 'horizontal-tb', layoutType: 'single' } }));
     const fonts = pageFonts(pdf);
