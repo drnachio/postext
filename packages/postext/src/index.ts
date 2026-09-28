@@ -304,4 +304,4 @@ export { applySingleInkToSvg } from './svg/singleInk';
 // `.postext` bundles. The `postext/bundle` subpath carries the same API plus
 // the low-level manifest helpers.
 export { openBundle, createBundle, buildBundle, loadBundleFonts, registerBundleImages, bundleImageUrl, bundleResourceBytes, bundleFontProvider, readBundle, planBundle, resolveBundleFiles, openBundleZip, zipBundle, isBundleManifest, POSTEXT_EXTENSION } from './bundle';
-export type { PostextBundle, OpenBundleOptions, CreateBundleInput, CreateBundleLocale, CreatedBundle, BundleFileData, BuildBundleOptions, BundleSource, BundleFontProviderOptions, BundleManifest, BundleManifestV1, BundleManifestV2, BundleChapter, BundleFontFile, ReadBundleOptions, ReadBundleResult, ZipBundleOptions } from './bundle';
+export type { PostextBundle, OpenBundleOptions, CreateBundleInput, CreateBundleLocale, CreatedBundle, BundleFileData, BuildBundleOptions, BundleSource, BundleFontProviderOptions, BundleFontRequest, BundleManifest, BundleManifestV1, BundleManifestV2, BundleChapter, BundleFontFile, ReadBundleOptions, ReadBundleResult, ZipBundleOptions } from './bundle';
