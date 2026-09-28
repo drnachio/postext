@@ -129,7 +129,7 @@ describe('index: building the entries', () => {
       '[A] apple, 3',
       'Árbol, 2',
       '[C] Cardiac insufficiency. See heart: failure',
-      '[H] heart, 5–7, 10. See also Oedema',
+      '[H] heart, 4–7, 10. See also Oedema', // the seealso mark's page 4 counts (#167)
       '  failure, 8',
       '  valves, 6',
     ]);
@@ -264,5 +264,46 @@ describe('index: the first group (#166)', () => {
     expect(cols.length).toBe(2);
     const firstLineY = (col: (typeof cols)[number]) => col.blocks.find((b) => b.type !== 'heading')!.bbox.y;
     expect(Math.abs(firstLineY(cols[0]!) - firstLineY(cols[1]!))).toBeLessThan(0.5);
+  });
+});
+
+describe('index: marks in boxes and notes', () => {
+  const pageOfText = (doc: VDTDocument, text: string): number =>
+    doc.blocks.find((b) => b.lines.some((l) => l.text.includes(text)))!.pageIndex;
+
+  it('takes the page of a callout line and of a footnote', () => {
+    const markdown = `# Chapter
+
+${filler(8)}
+
+:::callout{title="Box"}
+A boxed word:index{term="Boxed"} here.
+:::
+
+${filler(8)}
+
+A cited line.[^n]
+
+[^n]: The note names a term:index{term="Noted"} too.`;
+    const doc = buildDocument({ markdown }, base);
+    const byTerm = new Map(computeOutline(parseMarkdown(markdown), resolveAllConfig(base))
+      .filter((e) => e.kind === 'indexMark').map((e) => [e.title, e.indexMark!.sourceStart]));
+    const pageOf = (term: string) => doc.indexMarks!.find((m) => m.sourceStart === byTerm.get(term))!.pageIndex;
+    expect(pageOf('Boxed')).toBe(pageOfText(doc, 'A boxed word'));
+    expect(pageOf('Noted')).toBe(pageOfText(doc, 'The note names'));
+    expect(pageOf('Noted')).toBeGreaterThan(pageOf('Boxed'));
+  });
+});
+
+describe('index: seealso keeps its page (#167)', () => {
+  it('lists the page of a seealso mark, not of a see mark', () => {
+    const outline = [
+      markEntry(['Punchcutting'], 0, { main: true, seeAlso: 'Matrices' }),
+      markEntry(['Matrices'], 1),
+      markEntry(['Punches'], 2, { see: 'Punchcutting' }),
+    ];
+    const { blocks } = expandIndexDirectives(parseMarkdown(':::index'), outline, resolveAllConfig(base));
+    expect(expanded(blocks)).toEqual(['[M] Matrices, 2', '[P] Punchcutting, 1. See also Matrices', 'Punches. See Punchcutting']);
+    expect(blocks[1]!.spans.find((s) => s.text === '1')!.bold).toBe(true);
   });
 });

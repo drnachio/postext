@@ -175,11 +175,11 @@ function buildIndexTree(outline: readonly OutlineEntry[], name: string, mergeRan
       node.sort = mark.sort;
       node.sortSet = true;
     }
-    if (mark.see || mark.seeAlso) {
-      if (mark.see && !node.see.includes(mark.see)) node.see.push(mark.see);
-      if (mark.seeAlso && !node.seeAlso.includes(mark.seeAlso)) node.seeAlso.push(mark.seeAlso);
-      continue;
-    }
+    if (mark.see && !node.see.includes(mark.see)) node.see.push(mark.see);
+    if (mark.seeAlso && !node.seeAlso.includes(mark.seeAlso)) node.seeAlso.push(mark.seeAlso);
+    // `see` sends the reader elsewhere: the mark has no page. A `seealso`
+    // mark is a passage on the term like any other (#167).
+    if (mark.see) continue;
     const key = mark.path.join('!');
     if (mark.range === 'start') {
       const list = open.get(key) ?? [];
