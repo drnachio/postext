@@ -139,7 +139,10 @@ export function computeFloatPlan(
     plan.push({
       resourceId, firstBlockIdx: blockIdx, position, span,
       ...(rotate ? { rotate } : {}),
-      ...(widthFraction < 1 && !rotate ? { widthFraction, align } : {}),
+      ...(widthFraction < 1 && !rotate
+        ? { widthFraction, align }
+        // A vertical flow's upright figure keeps its alignment along the tier.
+        : noRotation && align !== 'left' ? { align } : {}),
       ...(captionSide && span === 'column' ? { captionSide } : {}),
     });
   };

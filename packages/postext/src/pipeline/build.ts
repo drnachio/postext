@@ -967,8 +967,10 @@ export function buildDocumentPass(
     slice?: TableSliceSpec,
     rotated?: FloatRotation,
     /** A rotated block sits flush to the band's right edge (the spine of a
-     *  verso page) instead of its left. */
-    flushEnd = false,
+     *  verso page) instead of its left; a number is the share of the room
+     *  left over set before it (an upright block of a vertical page, set
+     *  per `placement.align` along its tier). */
+    flushEnd: boolean | number = false,
     aside?: CaptionAside,
     /** The page is a verso of mirrored margins (a floated box's `'outer'`
      *  corner icon hangs on the left there). */
@@ -996,7 +998,8 @@ export function buildDocumentPass(
       // top-left lands at the bottom-left of the block, for a clockwise one
       // at its top-right (see `resourceBlockToPage`).
       const used = Math.min(rb.rotation.height, width);
-      const left = x + (flushEnd ? Math.max(0, width - used) : 0);
+      const share = typeof flushEnd === 'number' ? flushEnd : flushEnd ? 1 : 0;
+      const left = x + (share > 0 ? Math.max(0, width - used) * share : 0);
       rb.rotation.originX = rb.rotation.direction === 'ccw' ? left : left + used;
       rb.rotation.originY = rb.rotation.direction === 'ccw' ? totalHeight : 0;
     } else {
@@ -1440,7 +1443,10 @@ export function buildDocumentPass(
       rest = { ...rest, notBefore: { pageIndex: page.index, columnIndex: targetCols[targetCols.length - 1]!.index } };
     }
 
-    const built = buildFloatBlock(f.resourceId, xLeft, width, slice, rotated, rotated ? rotatedFlushEnd(page) : false, aside, mirroredOf(page));
+    // An upright figure of a vertical page stands at the head of its tier
+    // (`placement.align`: `left` the top, `center`, `right` the foot).
+    const flush = rotated?.upright ? (f.align === 'center' ? 0.5 : f.align === 'right' ? 1 : 0) : rotated ? rotatedFlushEnd(page) : false;
+    const built = buildFloatBlock(f.resourceId, xLeft, width, slice, rotated, flush, aside, mirroredOf(page));
     if (!built) return 'skip';
 
     // The caption beside the figure takes its band of the side column: a
@@ -3044,14 +3050,16 @@ export function buildDocumentPass(
         if (f.span !== 'page' || f.callout || cols.length < 2 || heldBack(i) || !((capActiveHere && !placedAny) || levelForBox(cols))) { i++; continue; }
         const width = page.contentArea.width;
         const slice = sliceOf(f);
-        const measure = measureFloat(f.resourceId, width, slice);
+        // On a vertical page the figure stands upright.
+        const upright = page.flow ? uprightOn(page) : undefined;
+        const measure = measureFloat(f.resourceId, width, slice, upright);
         if (!measure) { i++; continue; }
         const cutY = gridUp(page, bandUsedBottomWithSide(page, cols));
         const spacing = cols.some((c) => c.blocks.length > 0) ? floatGapPx : 0;
         const need = needFor(spacing, measure.height, floatGapPx);
         const bandBottom = Math.min(...cols.map((c) => columnBottom(c, uncappedBottoms)));
         if (cutY + need > bandBottom + 0.01) { i++; continue; }
-        const built = buildFloatBlock(f.resourceId, page.contentArea.x, width, slice);
+        const built = buildFloatBlock(f.resourceId, page.contentArea.x, width, slice, upright);
         if (!built) { i++; continue; }
         if (capActiveHere && !placedAny) {
           // A band whose content ran past the cut did not deliver its cap
