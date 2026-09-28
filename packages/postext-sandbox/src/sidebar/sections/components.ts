@@ -12,6 +12,7 @@ import { PartsSection } from './PartsSection';
 import { UnorderedListsSection } from './UnorderedListsSection';
 import { OrderedListsSection } from './OrderedListsSection';
 import { MathSection } from './MathSection';
+import { FootnotesSection } from './FootnotesSection';
 import { TableStyleSection } from './TableStyleSection';
 import { TableStylesSection } from './TableStylesSection';
 import { CaptionStyleSection } from './CaptionStyleSection';
@@ -41,6 +42,7 @@ export const SECTION_COMPONENTS: Record<SettingsSectionId, ComponentType> = {
   'unordered-lists': UnorderedListsSection,
   'ordered-lists': OrderedListsSection,
   'math': MathSection,
+  'footnotes': FootnotesSection,
   'resource-types': ResourceTypesSection,
   'captionStyle': CaptionStyleSection,
   'tableStyle': TableStyleSection,

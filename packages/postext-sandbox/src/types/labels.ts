@@ -254,6 +254,37 @@ export interface SandboxLabels {
   mathIndentAfterDisplayTooltip: string;
   mathKeepWithLeadIn: string;
   mathKeepWithLeadInTooltip: string;
+  footnotesSection: string;
+  footnotesPlacement: string;
+  footnotesPlacementTooltip: string;
+  footnotesPlacementColumn: string;
+  footnotesPlacementChapterEnd: string;
+  footnotesNumbering: string;
+  footnotesNumberingTooltip: string;
+  footnotesNumberingChapter: string;
+  footnotesNumberingDocument: string;
+  footnotesFontSize: string;
+  footnotesFontSizeTooltip: string;
+  footnotesLineHeight: string;
+  footnotesLineHeightTooltip: string;
+  footnotesColor: string;
+  footnotesColorTooltip: string;
+  footnotesHangingIndent: string;
+  footnotesHangingIndentTooltip: string;
+  footnotesSpaceBetween: string;
+  footnotesSpaceBetweenTooltip: string;
+  footnotesSpaceAbove: string;
+  footnotesSpaceAboveTooltip: string;
+  footnotesSpaceBelowRule: string;
+  footnotesSpaceBelowRuleTooltip: string;
+  footnotesSeparator: string;
+  footnotesSeparatorTooltip: string;
+  footnotesSeparatorWidth: string;
+  footnotesSeparatorWidthTooltip: string;
+  footnotesSeparatorLineWidth: string;
+  footnotesSeparatorLineWidthTooltip: string;
+  footnotesSeparatorColor: string;
+  footnotesSeparatorColorTooltip: string;
 
   // Body text section
   bodyText: string;
