@@ -66,7 +66,9 @@ function collectHeadings(doc: VDTDocument, base = 0): OutlineEntry[] {
           title,
           level: block.headingLevel ?? 1,
           pageIndex: base + page.index,
-          y: block.bbox.y,
+          // A vertical page's heading runs down its column from the flow's
+          // x: the top of the column on the sheet, where reading starts.
+          y: page.flow ? block.bbox.x : block.bbox.y,
         });
       }
     }

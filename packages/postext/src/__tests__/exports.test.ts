@@ -294,6 +294,7 @@ describe("package exports", () => {
       "uprightDigitRuns",
       "forcedVerticalRuns",
       "segmentOrientation",
+      "graphemesOf",
       "computeColumnEdges",
       "parseMarkdownWithIssues",
       "MATH_PLACEHOLDER",

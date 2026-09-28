@@ -309,6 +309,7 @@ export type {
 export { resourceBlockToPage, resourceBlockToLocal, resourceBlockRectToPage, tableFrameOutline, tableCellFill, tableCellFillRects } from './vdt';
 export { flowToPage, pageToFlow, flowRectToPage, pageRectToFlow, pageIsVertical, DEFAULT_CENTRAL_BASELINE } from './vdt';
 export { verticalOrientation, verticalRuns, uaxVerticalOrientation, isVerticalCell, verticalCellEms, CORNER_OFFSET_EM, uprightDigitRuns, forcedVerticalRuns, segmentOrientation } from './writingMode';
+export { graphemesOf } from './measure/graphemes';
 export type { VerticalGlyph, VerticalOrientationKind, VerticalRun, UaxVerticalOrientation, UprightDigits, ForcedOrientation } from './writingMode';
 export { computeColumnEdges } from './pipeline/resourceLayout';
 export type { ContentBlock, ContentBlockType, DirectiveAttrs, DirectiveName, ContainerName, RefCase, InlineSpan, InlineLink, TextSpan, MathSpan, MathMeta, ListKind, ParseIssue, ParseIssueKind, UnclosedMathIssue, UnclosedContainerIssue, TocBlockInfo, IndexBlockInfo, IndexMark, ChipBox } from './parse';

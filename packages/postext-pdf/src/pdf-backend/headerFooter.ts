@@ -6,7 +6,6 @@ import type {
   VDTDesignImageBlock,
   VDTDesignBoxStyle,
 } from 'postext';
-import { setCharacterSpacing } from 'pdf-lib';
 import { drawEmbeddedResource, figureLayout, type ResourceImageMap } from './renderResourceBlock';
 import { tagArtifact, tagContent, type ArtifactSpec, type StructAttrs, type StructElem } from './tagging';
 
@@ -38,6 +37,7 @@ import {
   alphaOf,
   colorFromHex,
   drawTextPx,
+  setTrackingPx,
   fillRectPx,
   pushClipOutline,
   pushClipRect,
@@ -178,7 +178,7 @@ function renderTextBlock(
   }
   // Negative tracking tightens the letters (EF-82).
   const tracked = block.letterSpacingPx !== undefined && block.letterSpacingPx !== 0;
-  if (tracked) ctx.page.pushOperators(setCharacterSpacing(block.letterSpacingPx! * ctx.scale));
+  if (tracked) setTrackingPx(ctx, block.letterSpacingPx!);
   const outline: TextOutline | undefined = block.stroke && block.stroke.widthPx > 0
     ? { color: colorFromHex(block.stroke.color, ctx.colorSpace), widthPx: block.stroke.widthPx, hollow: block.stroke.hollow }
     : undefined;
@@ -197,7 +197,7 @@ function renderTextBlock(
       x += run.width;
     }
   }
-  if (tracked) ctx.page.pushOperators(setCharacterSpacing(0));
+  if (tracked) setTrackingPx(ctx, 0);
   if (clip) popClip(ctx);
 }
 
