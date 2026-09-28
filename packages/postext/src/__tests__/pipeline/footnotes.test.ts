@@ -103,3 +103,54 @@ describe('footnotes at the column foot', () => {
     expect(last.footnoteNote).toBe('a');
   });
 });
+
+/** Every note sits in the column of its citing line, under that column's
+ *  text, inside the content area, and clear of the other notes and floats. */
+function checkNotes(doc: VDTDocument): void {
+  const ns = notes(doc);
+  for (const n of ns) {
+    const cite = markerLine(doc, n.footnoteNote!);
+    expect(cite, `citation of ${n.footnoteNote}`).toBeDefined();
+    expect(n.pageIndex, `page of ${n.footnoteNote}`).toBe(cite!.block.pageIndex);
+    expect(n.columnIndex, `column of ${n.footnoteNote}`).toBe(cite!.block.columnIndex);
+    const page = doc.pages[n.pageIndex]!;
+    const col = page.columns[n.columnIndex]!;
+    for (const b of col.blocks) {
+      const overlaps = b.bbox.y < n.bbox.y + n.bbox.height - 0.5 && n.bbox.y < b.bbox.y + b.bbox.height - 0.5;
+      expect(overlaps, `${n.footnoteNote} overlaps ${b.id} on p${n.pageIndex}`).toBe(false);
+    }
+    for (const f of page.floats ?? []) {
+      if (f === n || f.bbox.x >= n.bbox.x + n.bbox.width - 0.5 || n.bbox.x >= f.bbox.x + f.bbox.width - 0.5) continue;
+      const overlaps = f.bbox.y < n.bbox.y + n.bbox.height - 0.5 && n.bbox.y < f.bbox.y + f.bbox.height - 0.5;
+      expect(overlaps, `${n.footnoteNote} overlaps float ${f.id}`).toBe(false);
+    }
+    const area = page.contentArea;
+    expect(n.bbox.y + n.bbox.height).toBeLessThanOrEqual(area.y + area.height + 0.5);
+  }
+}
+
+describe('footnotes with balancing and closing bands', () => {
+  const BALANCED: PostextConfig = { ...TWO_COL, headings: {} };
+  const words = ['uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez', 'once', 'doce'];
+  const doc = (noteLen: (i: number) => number, every: number, config: PostextConfig = BALANCED) => {
+    const parts: string[] = [];
+    let k = 0;
+    for (let i = 0; i < 30; i++) {
+      if (i % 7 === 3) parts.push(`## Sección ${i}`);
+      parts.push(i % every === 0 && k < words.length ? `${filler(1 + (i % 3))} Nota aquí.[^${words[k++]}] ${filler(1)}` : filler(1 + (i % 4)));
+    }
+    words.slice(0, k).forEach((w, i) => parts.push(`[^${w}]: ${filler(noteLen(i)).slice(0, 40 + 60 * noteLen(i))}`));
+    return build(parts.join('\n\n'), config);
+  };
+  it('keeps each note with its citation (short notes)', () => { checkNotes(doc(() => 1, 3)); });
+  it('keeps each note with its citation (long notes)', () => { checkNotes(doc((i) => 1 + (i % 4), 4)); });
+  it('keeps each note with its citation in one column', () => {
+    checkNotes(doc((i) => 1 + (i % 3), 3, { ...BALANCED, layout: { layoutType: 'single' } }));
+  });
+  it('numbers every cited note once', () => {
+    const d = doc(() => 1, 3);
+    const ids = notes(d).map((n) => n.footnoteNote);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids.length).toBeGreaterThan(5);
+  });
+});

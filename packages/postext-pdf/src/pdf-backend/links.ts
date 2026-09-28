@@ -82,6 +82,8 @@ function asciiHex(text: string): PDFHexString {
 export class LinkRegistry {
   private dests = new Map<string, DestRecord>();
   private pending: PendingLink[] = [];
+  /** The document of a book being drawn (keys its footnote destinations). */
+  documentIndex = 0;
 
   /** Physical pages before the document's first page. */
   constructor(private readonly pageIndexOffset = 0) {}

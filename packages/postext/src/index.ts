@@ -7,7 +7,8 @@ export { renderToHtml, renderToHtmlIndexed, anchoredResourceIds, HTML_TEXT_RESET
 export type { RenderHtmlOptions, HtmlRenderIndex, HtmlRenderIndexPage } from './html-backend';
 export { dimensionToPx } from './units';
 export { computePageTextExtent } from './vdt';
-export { columnRuleSegments, pageColumnRule } from './columnRule';
+export { columnRuleSegments, footnoteRuleSegments, pageColumnRule } from './columnRule';
+export type { FootnoteRuleSegment } from './columnRule';
 export { cropMarkSegments } from './cropMarks';
 export type { CropMarkSegment } from './cropMarks';
 export { columnClipRect, designOverlayOverhang, headingDesignOverhangAbove } from './columnClip';

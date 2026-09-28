@@ -23,6 +23,13 @@ export interface ResourceRenderContext {
   structure?: StructureFlow;
 }
 
+/** The link destination of a footnote of the document being drawn
+ *  (`LinkRegistry.documentIndex`: note ids repeat from chapter to chapter).
+ *  A key no resource id takes: it opens with a NUL. */
+function footnoteDestination(linkRegistry: LinkRegistry | undefined, id: string): string {
+  return `\u0000fn${linkRegistry?.documentIndex ?? 0}:${id}`;
+}
+
 function renderMathRender(
   ctx: PageCtx,
   render: MathRender,
@@ -140,12 +147,14 @@ function renderSegments(
     // A `:ref` links to its resource — one `Link` for all the runs of one
     // set in small capitals —, a Markdown link's words to its URL.
     const uriElem = uris.word(seg.refResourceId === undefined ? seg.href : undefined, x, seg.width, seg.text);
-    const link = refRun.enter(seg, x, elem);
+    // A footnote marker links to its note, like a `:ref` to its resource.
+    const target = seg.refResourceId ?? (seg.footnoteId !== undefined ? footnoteDestination(linkRegistry, seg.footnoteId) : undefined);
+    const link = refRun.enter(seg, x, elem, target);
     tagContent(ctx, link ?? uriElem ?? elem);
     // The hyphen repeated from the line before is painted but not read.
     const actualText = i === repeatedAt ? seg.text.slice(1) : undefined;
     drawTextPx(ctx, seg.text, x, baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText);
-    const ref = refRun.leave(seg, segments[i + 1]);
+    const ref = refRun.leave(seg, segments[i + 1], target);
     if (ref && linkRegistry) {
       const { scale, pageHeightPt } = ctx;
       const x1 = ref.startX * scale;
@@ -419,6 +428,15 @@ export function renderBlock(
   const elem = link ?? blockElem;
   if (block.type === 'listItem') {
     renderBullet(ctx, block, fontCache, structure?.bulletElem(block) ?? elem);
+  }
+  // A note is where its markers link to.
+  if (block.footnoteNote !== undefined && linkRegistry) {
+    linkRegistry.addDestination(
+      footnoteDestination(linkRegistry, block.footnoteNote),
+      ctx.page,
+      block.bbox.x * ctx.scale,
+      ctx.pageHeightPt - block.bbox.y * ctx.scale,
+    );
   }
   // Justify against the block's own measure (see the canvas backend): blocks
   // inside callouts are narrower than their column.
