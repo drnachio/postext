@@ -239,6 +239,23 @@ describe('vertical text in the PDF (#191)', () => {
     expect(Number(String(dest[3]))).toBeCloseTo(420 - heading.bbox.x, 3);
   });
 
+  it('sets a vertical running head down the fore-edge in its own turned frame (#192)', async () => {
+    const cfg = config('zh-Hant', {
+      page: { width: pt(300), height: pt(420), dpi: 72, margins: { top: pt(40), bottom: pt(40), left: pt(30), right: pt(50), mirror: true } },
+      header: { elements: [{ kind: 'text', id: 'h', content: '第一回', writingMode: 'vertical-rl', fontFamily: 'Noto Serif TC', fontSize: pt(8), overflow: 'clip', placement: { anchor: { to: 'outer', edge: 'top' }, offset: { y: { value: 4, unit: 'em' } } } }] },
+    });
+    const { doc, pdf } = await render('此開卷第一回也。', cfg);
+    const head = doc.pages[0]!.header!.blocks.find((b) => b.kind === 'text')!;
+    const { x, y, width } = head.bbox;
+    const ops = pageOps(pdf);
+    // The block's frame: a quarter turn clockwise about its box's top right.
+    const frame = `0 -1 1 0 ${+(x + width - 420).toFixed(4)} ${+(420 - y).toFixed(4)} cm`;
+    expect(ops.replace(/(\d+\.\d{4})\d+/g, '$1')).toContain(frame.replace(/(\d+\.\d{4})\d+/g, '$1'));
+    const after = ops.slice(ops.indexOf(' cm', ops.lastIndexOf('0 -1 1 0 ')));
+    const shows = uprightShows(after, pageFonts(pdf));
+    expect(shows.flatMap((sh) => sh.cids)).toHaveLength(3);
+  });
+
   it('leaves horizontal Chinese text without a twin', async () => {
     const { pdf } = await render('此開卷第一回也。', config('zh-Hant', { layout: { writingMode: 'horizontal-tb', layoutType: 'single' } }));
     const fonts = pageFonts(pdf);
