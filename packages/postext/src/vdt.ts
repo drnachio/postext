@@ -27,6 +27,7 @@ import type {
   ResolvedPartsConfig,
   ResolvedHeadingStyleConfig,
   ResolvedTocConfig,
+  ResolvedFootnotesConfig,
   PageRole,
   PartState,
   PostextConfig,
@@ -75,6 +76,8 @@ export interface ResolvedConfig {
   headingStyles: ResolvedHeadingStyleConfig[];
   /** The table of contents `:::toc` prints. */
   toc: ResolvedTocConfig;
+  /** Footnotes (`[^id]`): placement, numbering, style. */
+  footnotes: ResolvedFootnotesConfig;
   /** The document language (`PostextConfig.locale`) when the config sets
    *  one; `resolvedLocale()` falls back to the hyphenation locale. Spelled-
    *  out heading numbers follow it. */
@@ -177,6 +180,10 @@ export interface VDTLineSegment {
    *  Renderers recolour it (link colour) and the PDF backend emits a link
    *  annotation to the resource's named destination. */
   refResourceId?: string;
+  /** Present when this segment is a footnote marker (`[^id]`): the note's
+   *  id. The layout sets the note at the foot of the column holding the
+   *  line; the PDF backend links the marker to it. */
+  footnoteId?: string;
   /** Set on the second and later segments of one `:ref` painted as several
    *  runs (a label in small capitals: one run per case). Such a segment
    *  continues the previous one's reference: it takes no plain-text char of
@@ -679,6 +686,9 @@ export interface VDTBlock {
    *  of the block that first cites or embeds it, which is where a tagged
    *  PDF reads it. */
   contentIndex?: number;
+  /** Set on the paragraph a footnote is set as (at a column foot, or after
+   *  the chapter's last block): the note's id. */
+  footnoteNote?: string;
   /** Id of the heading style (`{style="…"}`) applied to this heading. */
   headingStyleId?: string;
   /** True for a heading whose style has `numbered: false`: it advances no
@@ -892,10 +902,21 @@ export interface VDTColumn {
   trailingCap?: boolean;
 }
 
+/** The notes set at the foot of one column (`footnotes.placement:
+ *  'column'`). The note paragraphs themselves are in `VDTPage.floats` (and
+ *  `doc.blocks`), so every renderer paints them as any block; the area
+ *  carries what else is painted: the separator rule. */
 export interface VDTFootnoteArea {
+  /** The column the notes belong to. */
+  columnIndex: number;
+  /** From the separator's top edge (its space above included) to the last
+   *  note's foot. */
   bbox: BoundingBox;
-  notes: VDTBlock[];
-  separator: boolean;
+  /** Ids of the notes, in order. */
+  noteIds: string[];
+  /** The separator rule, when drawn: its left end, the y of its centre
+   *  line, its length and thickness (px), and colour. */
+  rule?: { x: number; y: number; width: number; lineWidthPx: number; color: string };
 }
 
 /** One run of a design text line set with inline marks (`inlineMarks`):
@@ -1094,7 +1115,9 @@ export interface VDTPage {
    *  a single column so a `span: 'page'` float can cross the gutter. */
   floats?: VDTBlock[];
   marginNotes: VDTBlock[];
-  footnoteArea?: VDTFootnoteArea;
+  /** Footnote areas at the foot of the page's columns (one per column that
+   *  holds notes). */
+  footnoteAreas?: VDTFootnoteArea[];
   /** Numeric counter for this page from the active page-numbering sequence.
    *  Always set after placement — defaults to `index + 1` when no explicit
    *  numbering config applies. */

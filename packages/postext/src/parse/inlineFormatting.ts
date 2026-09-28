@@ -20,6 +20,61 @@ export const SWATCH_PLACEHOLDER = '⁤';
  *  painted from it (they live in the span's `chip.spans`). */
 export const CHIP_PLACEHOLDER = '\uE1A0';
 
+/** Atomic plain-text placeholder for a footnote marker (`[^id]`), one code
+ *  unit per marker. A private-use code point of its own. */
+export const FOOTNOTE_PLACEHOLDER = '\uE1A6';
+
+/** Metadata of an inline footnote marker `[^id]`. */
+export interface FootnoteMarkerMeta {
+  id: string;
+  /** Absolute source offset of the `[`. */
+  sourceStart: number;
+  /** Absolute source offset just past the `]`. */
+  sourceEnd: number;
+}
+
+/** `[^id]`: an id of letters, digits, `-`, `_`, `.` or `:`. */
+const INLINE_FOOTNOTE_RE = /\[\^([\p{L}\p{N}_.:-]+)\]/gu;
+
+/**
+ * Extract footnote markers (`[^id]`) from a line's text, replacing each by
+ * `FOOTNOTE_PLACEHOLDER` and returning their metadata in order. Runs right
+ * after {@link extractInlineChips}.
+ */
+export function extractInlineFootnotes(
+  text: string,
+  fallbackStart: number,
+): { cleaned: string; markers: FootnoteMarkerMeta[] } {
+  if (!text.includes('[^')) return { cleaned: text, markers: [] };
+  const markers: FootnoteMarkerMeta[] = [];
+  let out = '';
+  let last = 0;
+  INLINE_FOOTNOTE_RE.lastIndex = 0;
+  let m: RegExpExecArray | null;
+  while ((m = INLINE_FOOTNOTE_RE.exec(text)) !== null) {
+    out += text.slice(last, m.index);
+    markers.push({
+      id: m[1]!,
+      sourceStart: fallbackStart + m.index,
+      sourceEnd: fallbackStart + m.index + m[0].length,
+    });
+    out += FOOTNOTE_PLACEHOLDER;
+    last = m.index + m[0].length;
+  }
+  out += text.slice(last);
+  return { cleaned: out, markers };
+}
+
+/** Attach a `footnote` to each `FOOTNOTE_PLACEHOLDER` occurrence in order. */
+export function injectFootnoteSpans(spans: InlineSpan[], markers: FootnoteMarkerMeta[]): InlineSpan[] {
+  return injectPlaceholderSpans(spans, markers, FOOTNOTE_PLACEHOLDER, (meta, bold, italic) => ({
+    text: FOOTNOTE_PLACEHOLDER,
+    bold,
+    italic,
+    footnote: { id: meta.id },
+  }));
+}
+
 /** Forced line break inside a title: `\\` in a heading (or a part `title`)
  *  becomes this LINE SEPARATOR in the plain text. Opener designs render it
  *  as a real line break; the in-column heading, running heads, outlines and
@@ -410,9 +465,9 @@ export function plainSpans(spans: readonly InlineSpan[]): InlineSpan[] {
     const { script, smallCaps, links, bold, italic, ...rest } = span;
     if (script || smallCaps || links || bold || italic) changed = true;
     const plain: InlineSpan = { ...rest, bold: false, italic: false };
-    const special = plain.math || plain.mathRender || plain.swatch || plain.ref || plain.chip || plain.captionLabel;
+    const special = plain.math || plain.mathRender || plain.swatch || plain.ref || plain.chip || plain.captionLabel || plain.footnote;
     const last = out[out.length - 1];
-    const lastSpecial = last && (last.math || last.mathRender || last.swatch || last.ref || last.chip || last.captionLabel);
+    const lastSpecial = last && (last.math || last.mathRender || last.swatch || last.ref || last.chip || last.captionLabel || last.footnote);
     if (!special && last && !lastSpecial) {
       out[out.length - 1] = { ...last, text: last.text + plain.text };
       changed = true;

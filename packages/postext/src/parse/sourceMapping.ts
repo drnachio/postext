@@ -1,6 +1,6 @@
 import type { InlineSpan } from './types';
 import { MATH_PLACEHOLDER } from './inlineMath';
-import { BREAK_PLACEHOLDER, CHIP_PLACEHOLDER, REF_PLACEHOLDER, SMALLCAPS_OPENER, SWATCH_PLACEHOLDER } from './inlineFormatting';
+import { BREAK_PLACEHOLDER, CHIP_PLACEHOLDER, FOOTNOTE_PLACEHOLDER, REF_PLACEHOLDER, SMALLCAPS_OPENER, SWATCH_PLACEHOLDER } from './inlineFormatting';
 import { sliceSpan } from './links';
 
 /** A `:smallcaps[` at `r` that the parser took as markup: its closing `]`
@@ -75,6 +75,21 @@ export function computeSourceMap(
       let j = r;
       while (j < blockSrcEnd && markdown[j] !== '}') j++;
       if (j < blockSrcEnd) j++; // consume the closing `}`
+      r = j;
+      continue;
+    }
+    // Footnote placeholder: the plain char represents `[^id]`. Map to the
+    // `[`, skip past the `]`.
+    if (ch === FOOTNOTE_PLACEHOLDER) {
+      while (r < blockSrcEnd && !markdown.startsWith('[^', r)) r++;
+      if (r >= blockSrcEnd) {
+        map[p] = blockSrcEnd;
+        continue;
+      }
+      map[p] = r;
+      let j = r + 2;
+      while (j < blockSrcEnd && markdown[j] !== ']') j++;
+      if (j < blockSrcEnd) j++;
       r = j;
       continue;
     }
