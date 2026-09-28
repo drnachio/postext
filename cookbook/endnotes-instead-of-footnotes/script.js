@@ -1,4 +1,4 @@
-// ═══ Postext Cookbook · Nº 020 · Endnotes in two columns instead of footnotes ═════════
+// ═══ Postext Cookbook · Nº 020 · Endnotes on a page of their own, in two columns ═════
 // https://postext.dev/en/cookbook/endnotes-instead-of-footnotes
 // Code: MIT · Text: Faraday, ed. Crookes (PD, Gutenberg #14474) · Notes, drawings: CC BY 4.0
 // Fonts: Libre Bodoni, Besley, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.4.1

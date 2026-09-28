@@ -18,7 +18,7 @@
     ]
   },
   "answers": ["Q46", "Q45", "Q18", "Q28"],
-  "gaps": ["footnotes"],
+  "gaps": [],
   "gotchas": [
     "side-box-starts-at-fence", "side-box-after-heading", "heading-number-placeholders",
     "opener-image-no-reserve", "design-text-ragged", "design-lineheight-multiple",
@@ -77,5 +77,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-09-26"
+  "updated": "2026-09-28"
 }

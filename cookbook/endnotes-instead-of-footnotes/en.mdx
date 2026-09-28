@@ -1,8 +1,8 @@
 ---
-title: "Endnotes in two columns instead of footnotes"
-summary: "A short preprocessor turns Markdown footnotes into raised numbers and a Notes section, which a heading style sets on a page of its own in two columns."
+title: "Endnotes on a page of their own, in two columns"
+summary: "A short preprocessor numbers the [^1] notes and gathers them under a Notes heading, whose style sets them on a page of their own in two columns."
 description: "Faraday's first candle lecture set with six endnotes. Each [^1] marker prints as a raised figure, and the notes follow on a page of their own in two columns."
-question: "How do I turn [^1] footnotes into endnotes when Postext does not lay out notes?"
+question: "How do I set [^1] notes as endnotes, on a page of their own under a heading?"
 aliases: ["footnotes", "endnotes", "notes section", "note markers", "superscript numbers", "[^1]", "GFM footnotes", "hanging indent", "critical edition", "editor's notes", "reader's edition"]
 pageNotes: { "1": "The opener of Lecture I: a field of soot across the top half of the page, with a lit candle standing on its lower edge, the kicker LECTURE I in orange and the title A Candle in cream. The text starts below it, its first note marker a small raised 1 in dark orange.", "4": "A dark panel heads the page: two candle flames, one under a glass shade and one in section with arrows of rising air, captioned Figure 1. Below it the lecture runs to its end, with the raised 6 in the first paragraph.", "5": "The Notes: a band of soot with a blown-out candle trailing smoke, then six notes in two columns of smaller type, each number in bold dark orange hanging in the indent, and a colophon; both columns end on the same line." }
 ---
@@ -15,7 +15,7 @@ Lecture I of Michael Faraday's *The Chemical History of a Candle*, set as a smal
 
 ### 1 · Turn footnotes into endnotes before the build
 
-The preprocessor is [the short answer](#the-short-answer) above. Postext 1.4.1 does not lay out notes: [what is not supported](/en/docs/document-format#what-is-not-supported) lists the `[^1]` marker, and the engine ignores `PostextContent.notes`, although the types accept it. A lone `[^1]` prints as typed, and two in one paragraph pair their carets as a superscript that raises all the text between them. So the pen rewrites the Markdown before it calls `buildDocument`. It numbers the markers in the order the text first cites them and sets all the definitions, in that order, where the first of them stands, under `## Notes`. Each note starts with `**1**`, since `1. ` would open a numbered list. A word joiner (U+2060) opens each marker; without it, the `**` of the marker after `*Royal George*` would meet the italic's closing asterisk as `***`, and the asterisks would print.
+The preprocessor is [the short answer](#the-short-answer) above. Postext sets `[^1]` notes itself ([footnotes](/en/docs/document-format#footnotes)), at the foot of the citing column or, with `placement: 'chapterEnd'`, after the chapter's last block. Either way they stay in the chapter's column, in the text face, under a short rule. This edition gives the notes a heading, a band and a page in two columns, and a heading style does that only for a heading written in the Markdown. So the pen rewrites the Markdown before it calls `buildDocument`, and the engine never sees a `[^1]`. It numbers the markers in the order the text first cites them and sets all the definitions, in that order, where the first of them stands, under `## Notes`. Each note starts with `**1**`, since `1. ` would open a numbered list. A word joiner (U+2060) opens each marker; without it, the `**` of the marker after `*Royal George*` would meet the italic's closing asterisk as `***`, and the asterisks would print.
 
 ### 2 · Keep bold for the markers
 
@@ -50,6 +50,10 @@ The flame orange has a contrast of 6:1 on soot but only 2.6:1 on the paper. It c
 <Note>A short aside can stay in the text between parentheses. Glosses the reader needs beside the line can go in a side column, as in <RecipeLink slug="textbook-margin-column">Textbook with a margin column</RecipeLink>.</Note>
 
 ## Variations
+
+### Let Postext set the notes
+
+Drop `endnotes()` and the `## Notes` heading, put a blank line between the definitions (the engine reads a definition up to the next blank line) and add `footnotes: { placement: 'chapterEnd' }` to the config. The engine numbers the markers and sets the notes at the end of the lecture, after the colophon, in its one column; <RecipeLink slug="novel-footnotes-column-foot">Footnotes at the foot of the column that cites them</RecipeLink> styles notes the engine sets.
 
 ### Mark the notes in ink
 

@@ -77,11 +77,11 @@
   "workarounds": {
     "title": { "en": "Not supported yet, and what to do", "es": "Lo que aún no hay y cómo resolverlo" },
     "summary": {
-      "en": "What Postext does not do yet (footnotes, line numbers, pipe tables, tab stops, three columns, text wrap, body drop caps, an automatic index, code blocks) and the layouts that stand in for them.",
-      "es": "Lo que Postext aún no hace (notas al pie, números de línea, tablas con barras, tabuladores, tres columnas, contorneo, capitulares en el texto, un índice automático, bloques de código) y las maquetas que lo sustituyen."
+      "en": "What Postext does not do yet (line numbers, pipe tables, tab stops, three columns, text wrap, body drop caps, an automatic index, code blocks) and the layouts that stand in for them.",
+      "es": "Lo que Postext aún no hace (números de línea, tablas con barras, tabuladores, tres columnas, contorneo, capitulares en el texto, un índice automático, bloques de código) y las maquetas que lo sustituyen."
     },
     "recipes": [
-      "endnotes-instead-of-footnotes", "annotated-classic-glosses", "critical-edition-line-numbers",
+      "critical-edition-line-numbers",
       "technical-datasheet", "bistro-menu", "newspaper-front-page", "spanish-pocket-novel", "thesis-back-matter",
       "poetry-collection", "code-listings-and-keycaps", "figures-float-where-cited", "journal-article-with-maths"
     ]

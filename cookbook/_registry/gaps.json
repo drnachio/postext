@@ -1,36 +1,5 @@
 {
-  "$comment": "Honest gaps: things users ask for that Postext does not do (yet). Each has search aliases in both languages (so 'footnotes' or 'notas al pie' finds the workaround recipes), an explanation that names the workaround, and a docs anchor, usually 'What is NOT supported'. A recipe that routes around one lists it in recipe.json gaps and gets the Workaround badge; a question can point at one through its gap field.",
-  "footnotes": {
-    "label": {
-      "en": "Footnotes",
-      "es": "Notas al pie"
-    },
-    "aliases": {
-      "en": [
-        "footnote",
-        "[^1]",
-        "notes at the foot of the page",
-        "note references"
-      ],
-      "es": [
-        "nota al pie",
-        "notas a pie de página",
-        "[^1]",
-        "llamadas de nota"
-      ]
-    },
-    "explanation": {
-      "en": "Footnote markers ([^1]) are not parsed and notes are never set at the foot of the page. The recipes use other devices: endnotes in a paragraph style with superscript markers, margin notes in a column-and-a-half layout, or short notes in parentheses.",
-      "es": "Las llamadas [^1] no se interpretan y las notas nunca se componen al pie de la página. Las recetas recurren a otras soluciones: notas finales en un estilo de párrafo con llamadas en superíndice, notas al margen en columna y media o notas breves entre paréntesis."
-    },
-    "docs": {
-      "slug": "document-format",
-      "heading": {
-        "en": "What is NOT supported",
-        "es": "Qué NO se soporta"
-      }
-    }
-  },
+  "$comment": "Honest gaps: things users ask for that Postext does not do (yet). Each has search aliases in both languages (so 'line numbers' or 'números de línea' finds the workaround recipes), an explanation that names the workaround, and a docs anchor, usually 'What is NOT supported'. A recipe that routes around one lists it in recipe.json gaps and gets the Workaround badge; a question can point at one through its gap field.",
   "code-blocks": {
     "label": {
       "en": "Fenced code blocks",
