@@ -1128,6 +1128,49 @@
       ]
     }
   },
+  "footnotes": {
+    "label": {
+      "en": "Footnotes",
+      "es": "Notas al pie"
+    },
+    "definition": {
+      "en": "Notes cited with [^id] and set at the foot of the column that cites them, or after the chapter, numbered per chapter or through the book.",
+      "es": "Notas citadas con [^id] y compuestas al pie de la columna que las cita, o tras el capítulo, numeradas por capítulo o por todo el libro."
+    },
+    "aliases": {
+      "en": [
+        "footnote",
+        "[^1]",
+        "notes at the foot of the page",
+        "endnotes",
+        "note references"
+      ],
+      "es": [
+        "nota al pie",
+        "notas a pie de página",
+        "[^1]",
+        "notas finales",
+        "llamadas de nota"
+      ]
+    },
+    "group": "boxes",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Footnotes",
+        "es": "Notas al pie"
+      }
+    },
+    "research": [],
+    "detect": {
+      "markdown": [
+        "\\[\\^[^\\]\\s]+\\]"
+      ],
+      "config": [
+        "footnotes"
+      ]
+    }
+  },
   "markdown-basics": {
     "label": {
       "en": "Markdown essentials",
