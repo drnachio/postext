@@ -27,7 +27,7 @@ import { buildPdfResourceBytes } from './pdfResourceBytes';
 import { PdfPreview } from './PdfPreview';
 import { PdfToolbar } from './PdfToolbar';
 import { createPdfFontProvider } from './pdfFontProvider';
-import { isPdfFontCheck, setPdfFontChecks, type PdfFontCheck } from '../controls/pdfFontWarnings';
+import { isPdfFontCheck, pdfFontChecksSource, setPdfFontChecks, type PdfFontCheck } from '../controls/pdfFontWarnings';
 import { useFloatingToolbarShell } from './useFloatingToolbarShell';
 
 /** The PDF tab is the one place the whole book can be rendered as one
@@ -45,6 +45,7 @@ export function PdfViewport() {
   const resources = useSandboxSelector((s) => s.resources);
   const storeReady = useSandboxSelector((s) => s.storeReady);
   const locale = useSandboxSelector((s) => s.locale);
+  const bookVersion = useSandboxSelector((s) => s.bookVersion);
   const [bytesUrl, setBytesUrl] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -132,6 +133,15 @@ export function PdfViewport() {
     const snapshotResources = resources;
     const snapshotPlan = plan;
     const snapshotChapters = chapters;
+    // What the Checks panel compares its font warnings against later.
+    const checksSource = pdfFontChecksSource({
+      bookVersion,
+      pdfScope: scope,
+      activeChapterId: chapterSource.chapterId,
+      chapters,
+      config,
+      resources,
+    });
     const total = perfSpan('pdf.total', { scope });
     failedRef.current = false;
     try {
@@ -233,7 +243,7 @@ export function PdfViewport() {
         },
       });
       renderSpan.end({ kb: Math.round(bytes.byteLength / 1024) });
-      setPdfFontChecks(fontChecks);
+      setPdfFontChecks(fontChecks, checksSource);
       total.end({ pages: pageCount, kb: Math.round(bytes.byteLength / 1024) });
       bytesRef.current = bytes;
       const copy = bytes.slice();
@@ -253,12 +263,14 @@ export function PdfViewport() {
       setError(err instanceof Error ? err.message : String(err));
       bytesRef.current = null;
       failedRef.current = true;
+      // No PDF: nothing left to report about its fonts.
+      setPdfFontChecks([]);
     } finally {
       setGenerating(false);
       setPhase(null);
       setProgress(null);
     }
-  }, [book, scope, chapterSource, continuation, continuationSig, effectiveConfig, config, resources, plan, chapters, layoutWorker, dispatch]);
+  }, [book, scope, chapterSource, continuation, continuationSig, effectiveConfig, config, resources, plan, chapters, layoutWorker, dispatch, bookVersion]);
 
   // A scope switch (current chapter ↔ whole book) is a request for the
   // other document: regenerate right away instead of just flagging the

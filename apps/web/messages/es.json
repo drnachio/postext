@@ -2213,6 +2213,7 @@
     "warningsVariableFontDetail": "el archivo es una fuente variable y el PDF incrusta su instancia por defecto, así que este texto se imprime con peso __default__. Sube un archivo estático para el peso __weight__.",
     "warningsCffEmbeddedWholeTitle": "Fuente CFF grande incrustada entera",
     "warningsCffEmbeddedWholeDetail": "un archivo OpenType CFF (.otf) de __size__ MB entra entero en el PDF; una versión TrueType (.ttf) de la misma fuente se reduce a los glifos usados.",
+    "warningsPdfFontStale": "(De un PDF anterior: el libro ha cambiado desde entonces.)",
     "warningsDanglingTypeRefTitle": "Tipo de recurso desconocido",
     "warningsDanglingTypeRefDetail": "el tipo de recurso ya no existe; se usa uno por defecto",
     "warningsDesignCyclicAnchorTitle": "Referencia de anclaje cíclica",

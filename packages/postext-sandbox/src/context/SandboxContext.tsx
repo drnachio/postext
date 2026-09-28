@@ -74,7 +74,7 @@ import { computeWarnings } from '../warnings/compute';
 import type { Warning } from '../warnings/types';
 import { hasIndexedDB } from '../storage/blobStore';
 import { onUnavailableResourceImagesChange, unavailableResourceImages } from '../controls/resourceImages';
-import { onPdfFontChecksChange, pdfFontChecks } from '../controls/pdfFontWarnings';
+import { onPdfFontChecksChange, pdfFontChecks, pdfFontChecksFor } from '../controls/pdfFontWarnings';
 import { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES } from '../defaultMarkdown';
 import { withDefaultResourceTypes } from './defaultConfig';
 import { createPostextGuideConfig } from './guideConfig';
@@ -1989,7 +1989,7 @@ export function SandboxProvider({
    *  its font warnings: part of the warnings key. */
   const imageStatusRef = useRef(0);
   const getWarnings = (s: SandboxState): Warning[] => {
-    const key = [s.chapters, s.activeChapterId, s.config, s.resources, s.docVersion, s.canvasScope, s.activeViewport, imageStatusRef.current, pdfFontChecks()];
+    const key = [s.chapters, s.activeChapterId, s.config, s.resources, s.docVersion, s.canvasScope, s.activeViewport, imageStatusRef.current, pdfFontChecks(), s.bookVersion, s.pdfScope];
     const cached = warningsCacheRef.current;
     if (cached && cached.key.every((k, i) => k === key[i])) return cached.value;
     const chapterBook = composeBookMemo(s.chapters, s.activeChapterId);
@@ -2004,6 +2004,7 @@ export function SandboxProvider({
     const whole = wholeSource !== null && wholeSource.scope === 'book' ? wholeSource : null;
     const book = whole ?? chapterBook;
     const doc = stitched ? chapterDocsRef.current.get(s.activeChapterId)?.doc ?? null : docRef.current;
+    const fontChecks = pdfFontChecksFor(s);
     const all = computeWarnings({
       markdown: book.markdown,
       config: s.config,
@@ -2013,7 +2014,9 @@ export function SandboxProvider({
       unavailableImages: unavailableResourceImages(),
       book,
       chapterTitles: new Map(s.chapters.map((c) => [c.id, c.title])),
-      pdfFontChecks: pdfFontChecks(),
+      // Another book's are dropped; after an edit they are marked stale.
+      pdfFontChecks: fontChecks.checks,
+      pdfFontChecksStale: fontChecks.stale,
     });
     const value = whole ? all.filter((w) => w.chapterId === undefined || w.chapterId === s.activeChapterId) : all;
     warningsCacheRef.current = { key, value };
@@ -2050,14 +2053,14 @@ export function SandboxProvider({
   // Warnings parse the active chapter and walk the built document: not
   // on every keystroke, but once the inputs have settled.
   const warningsRef = useRef<Warning[]>([]);
-  const { chapters: warnChapters, activeChapterId: warnChapterId, config: warnConfig, resources: warnResources, docVersion: warnDocVersion } = state;
+  const { chapters: warnChapters, activeChapterId: warnChapterId, config: warnConfig, resources: warnResources, docVersion: warnDocVersion, bookVersion: warnBookVersion, pdfScope: warnPdfScope } = state;
   useEffect(() => {
     const timer = setTimeout(() => {
       warningsRef.current = getWarningsRef.current(stateRef.current);
       for (const cb of listenersRef.current) cb();
     }, WARNINGS_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [warnChapters, warnChapterId, warnConfig, warnResources, warnDocVersion]);
+  }, [warnChapters, warnChapterId, warnConfig, warnResources, warnDocVersion, warnBookVersion, warnPdfScope]);
 
   // An image payload found missing or undecodable (or readable again) after
   // the previews decoded it: list the change without waiting for an edit.

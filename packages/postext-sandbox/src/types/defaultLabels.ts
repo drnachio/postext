@@ -1685,6 +1685,7 @@ export const DEFAULT_LABELS: SandboxLabels = {
   warningsVariableFontDetail: 'the file is a variable font and the PDF embeds its default instance, so this text prints at weight __default__. Upload a static file for weight __weight__.',
   warningsCffEmbeddedWholeTitle: 'Large CFF font embedded whole',
   warningsCffEmbeddedWholeDetail: 'an OpenType CFF (.otf) file of __size__ MB goes into the PDF whole; a TrueType (.ttf) build of the same face is cut down to the glyphs used.',
+  warningsPdfFontStale: '(From an earlier PDF: the book has changed since.)',
   warningsDanglingTypeRefTitle: 'Unknown resource type',
   warningsDanglingTypeRefDetail: 'resource type no longer exists; a default is used',
   warningsDuplicateResourceIdTitle: 'Duplicate resource id',

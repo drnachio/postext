@@ -224,6 +224,13 @@ function faceLabel(payload: { family: string; weight: number; style: 'normal' | 
   return `"${payload.family}" ${payload.weight}${payload.style === 'italic' ? ' italic' : ''}`;
 }
 
+/** A PDF font warning's detail: the face, what happened, and a note when
+ *  the book has changed since that PDF. */
+function pdfFontDetail(payload: { family: string; weight: number; style: 'normal' | 'italic'; stale?: true }, labels: SandboxLabels, detail: string): string {
+  const text = `${faceLabel(payload)} — ${detail}`;
+  return payload.stale ? `${text} ${labels.warningsPdfFontStale}` : text;
+}
+
 /** `pagebreak`, `numbering`, `callout`, … — every fence name the parser
  *  accepts, for the unknown-directive detail string. */
 const KNOWN_FENCE_NAMES = [...KNOWN_DIRECTIVES, ...KNOWN_CONTAINERS]
@@ -382,12 +389,12 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       const shown = payload.characters.slice(0, LISTED_GLYPHS).join(' ');
       const rest = payload.characters.length - LISTED_GLYPHS;
       const chars = rest > 0 ? `${shown} … +${rest}` : shown;
-      return `${faceLabel(payload)} — ${labels.warningsMissingGlyphDetail.replace('__chars__', chars)}`;
+      return pdfFontDetail(payload, labels, labels.warningsMissingGlyphDetail.replace('__chars__', chars));
     }
     case 'variableFontDefaultInstance':
-      return `${faceLabel(payload)} — ${labels.warningsVariableFontDetail.replace('__default__', String(payload.defaultWeight)).replace('__weight__', String(payload.weight))}`;
+      return pdfFontDetail(payload, labels, labels.warningsVariableFontDetail.replace('__default__', String(payload.defaultWeight)).replace('__weight__', String(payload.weight)));
     case 'cffEmbeddedWhole':
-      return `${faceLabel(payload)} — ${labels.warningsCffEmbeddedWholeDetail.replace('__size__', (payload.bytes / (1024 * 1024)).toFixed(1))}`;
+      return pdfFontDetail(payload, labels, labels.warningsCffEmbeddedWholeDetail.replace('__size__', (payload.bytes / (1024 * 1024)).toFixed(1)));
   }
 }
 
