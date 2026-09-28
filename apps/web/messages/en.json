@@ -315,7 +315,10 @@
   },
   "Showreel": {
     "kicker": "Showreel · 2 min",
-    "title": "Postext in two minutes"
+    "title": "Postext in two minutes",
+    "play": "Play the video full screen",
+    "watch": "Watch · 2:02",
+    "subtitles": "Subtitles"
   },
   "About": {
     "eyebrow": "Why Postext",

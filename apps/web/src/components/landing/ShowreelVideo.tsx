@@ -1,17 +1,38 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /** The narrated showreel, streamed as HLS from Cloudflare R2 through the
  *  `postext-media` Worker. Safari and iOS play HLS natively; other browsers
  *  load hls.js on demand, once the player comes near the viewport. No
  *  autoplay (it is narrated) and `preload="none"`: nothing is fetched until
- *  the reader scrolls to it. A new cut ships under a new version path. */
+ *  the reader scrolls to it. A new cut ships under a new version path.
+ *  Until the first play the poster is one big button: a click plays the
+ *  video full screen, and the native controls take over from then on. */
 export const MEDIA_BASE = process.env.NEXT_PUBLIC_MEDIA_BASE?.replace(/\/+$/, "");
 const VERSION = "v1";
 
-export function ShowreelVideo({ lang, title }: { lang: "en" | "es"; title: string }) {
+/** iOS Safari only puts a video element full screen through this. */
+type IOSVideo = HTMLVideoElement & { webkitEnterFullscreen?: () => void };
+
+export function ShowreelVideo({
+  lang,
+  title,
+  playLabel,
+  watchLabel,
+  subtitlesLabel,
+}: {
+  lang: "en" | "es";
+  title: string;
+  playLabel: string;
+  watchLabel: string;
+  subtitlesLabel: string;
+}) {
   const ref = useRef<HTMLVideoElement>(null);
+  const frame = useRef<HTMLDivElement>(null);
+  const [started, setStarted] = useState(false);
+  const [hasSubs, setHasSubs] = useState(false);
+  const [subsOn, setSubsOn] = useState(false);
   const base = `${MEDIA_BASE}/showreel/${VERSION}/${lang}`;
   const src = `${base}/master.m3u8`;
 
@@ -51,15 +72,94 @@ export function ShowreelVideo({ lang, title }: { lang: "en" | "es"; title: strin
     };
   }, [src]);
 
+  // The subtitles come from the master playlist (hls.js, or Safari itself)
+  // and start off; the CC button and the browser's own menu stay in step.
+  useEffect(() => {
+    const tracks = ref.current?.textTracks;
+    if (!tracks) return;
+    const sync = () => {
+      const subs = [...tracks].filter((t) => t.kind === "subtitles" || t.kind === "captions");
+      setHasSubs(subs.length > 0);
+      setSubsOn(subs.some((t) => t.mode === "showing"));
+    };
+    sync();
+    tracks.addEventListener("addtrack", sync);
+    tracks.addEventListener("removetrack", sync);
+    tracks.addEventListener("change", sync);
+    return () => {
+      tracks.removeEventListener("addtrack", sync);
+      tracks.removeEventListener("removetrack", sync);
+      tracks.removeEventListener("change", sync);
+    };
+  }, []);
+
+  const toggleSubs = () => {
+    const tracks = ref.current?.textTracks;
+    if (!tracks) return;
+    const subs = [...tracks].filter((t) => t.kind === "subtitles" || t.kind === "captions");
+    const pick = subs.find((t) => t.language === lang) ?? subs[0];
+    for (const t of subs) t.mode = !subsOn && t === pick ? "showing" : "disabled";
+  };
+
+  // Both calls stay inside the click so the browser counts them as the
+  // reader's gesture; a refused full screen still leaves the video playing.
+  // The frame goes full screen, not the video, so the CC button comes along;
+  // the iPhone has no element full screen and uses its own player instead.
+  const start = () => {
+    const video: IOSVideo | null = ref.current;
+    if (!video) return;
+    setStarted(true);
+    void video.play().catch(() => {});
+    if (document.fullscreenEnabled && frame.current) void frame.current.requestFullscreen().catch(() => {});
+    else video.webkitEnterFullscreen?.();
+  };
+
   return (
-    <video
-      ref={ref}
-      controls
-      playsInline
-      preload="none"
-      poster={`${base}/poster.jpg`}
-      aria-label={title}
-      className="block aspect-video w-full bg-night"
-    />
+    <div ref={frame} className="group/player relative bg-night">
+      <video
+        ref={ref}
+        controls={started}
+        playsInline
+        preload="none"
+        poster={`${base}/poster.jpg`}
+        aria-label={title}
+        onPlay={() => setStarted(true)}
+        className="block aspect-video w-full bg-night group-[:fullscreen]/player:h-full group-[:fullscreen]/player:aspect-auto"
+      />
+      {!started && (
+        <button
+          type="button"
+          onClick={start}
+          aria-label={playLabel}
+          className="group absolute inset-0 flex cursor-pointer items-start justify-start p-2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:items-end sm:p-4 md:p-6"
+        >
+          {/* where the poster leaves room (its centre carries the title): bottom-left, or top-left on phones, where its foot line sits too close */}
+          <span className="flex items-center gap-1.5 rounded-full bg-brand py-0.5 pr-2.5 pl-0.5 font-sans text-[0.7rem] font-semibold text-brand-contrast shadow-[0_12px_40px_-10px_rgba(14,16,20,0.7)] transition-transform duration-300 group-hover:scale-105 sm:gap-2.5 sm:py-2 sm:pr-5 sm:pl-2 sm:text-sm md:text-base">
+            <span className="flex size-5 items-center justify-center rounded-full bg-brand-contrast/15 sm:size-8 md:size-9">
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="ml-px size-2.5 sm:ml-0.5 sm:size-4 md:size-5" fill="currentColor">
+                <path d="M7 4.5v15a1 1 0 0 0 1.52.85l12-7.5a1 1 0 0 0 0-1.7l-12-7.5A1 1 0 0 0 7 4.5Z" />
+              </svg>
+            </span>
+            {watchLabel}
+          </span>
+        </button>
+      )}
+      {started && hasSubs && (
+        <button
+          type="button"
+          onClick={toggleSubs}
+          aria-pressed={subsOn}
+          aria-label={subtitlesLabel}
+          title={subtitlesLabel}
+          className={`absolute top-3 right-3 rounded-md border px-2 py-0.5 font-sans text-xs font-bold tracking-wider transition-[opacity,background-color,color] duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand md:top-4 md:right-4 md:text-sm ${
+            subsOn
+              ? "border-brand bg-brand text-brand-contrast opacity-100"
+              : "border-white/60 bg-night/60 text-white opacity-70 hover:opacity-100"
+          }`}
+        >
+          CC
+        </button>
+      )}
+    </div>
   );
 }

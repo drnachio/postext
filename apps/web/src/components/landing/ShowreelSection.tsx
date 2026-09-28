@@ -23,7 +23,13 @@ export async function ShowreelSection() {
         >
           {t("title")}
         </h2>
-        <ShowreelVideo lang={lang} title={t("title")} />
+        <ShowreelVideo
+          lang={lang}
+          title={t("title")}
+          playLabel={t("play")}
+          watchLabel={t("watch")}
+          subtitlesLabel={t("subtitles")}
+        />
       </div>
     </section>
   );
