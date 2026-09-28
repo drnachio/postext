@@ -333,12 +333,13 @@ When Knuth-Plass is active and produces no valid breaks (which can happen with e
 
 ### Chinese, Japanese and Korean
 
-A paragraph that holds more CJK characters than word spaces is set by the CJK composer, not by Knuth-Plass. Every gap between two characters is a place a line may break (except where the line-break rules of `cjk.lineBreak` forbid it), so there is nothing for an optimal search to weigh; the lines are filled one after the other, and a character that may not open a line takes the one before it down with it. See [East Asian typography](/en/docs/configuration#east-asian-typography) for the rules.
+A paragraph that holds more CJK characters than word spaces is set by the CJK composer, not by Knuth-Plass. Every gap between two characters is a place a line may break (except where the line-break rules of `cjk.lineBreak` forbid it), so there is nothing for an optimal search to weigh; the lines are filled one after the other. When a character does not fit, the line first tries to take it in by giving up punctuation blank and space (push-in: word spaces down to a quarter em, then interpuncts, brackets, pause marks, Han–Latin spaces down to an eighth of an em, and stop marks, as `cjk.punctuationWidth` allows); only when that is not enough does a character that may not open a line take the one before it down with it. See [East Asian typography](/en/docs/configuration#east-asian-typography) for the rules.
 
 A justified line of such a paragraph, except its last, is spread to the measure in the order clreq sets (§6.2.2.4):
 
 1. The spaces between Western words, equally, up to half an em each.
-2. Every gap between characters, equally: between Han characters, between Han and punctuation, between Han and a Latin word. Never inside a Latin word, a number or a two-em dash or ellipsis, and never next to a connector (～, –, a single —) or a solidus.
+2. The spaces between Han and Latin (`cjk.latinSpacing`), equally, up to half an em each.
+3. Every gap between characters, equally, the Han–Latin spaces too: between Han characters, between Han and punctuation, between Han and a Latin word. Never inside a Latin word, a number or a two-em dash or ellipsis, and never next to a connector (～, –, a single —) or a solidus. A mark hung past the end of the line (`cjk.hangingPunctuation`) stays out of the measure.
 
 The last line of a paragraph is set solid. The spacing is recorded per segment of the line (`VDTLineSegment.tracking`), so the canvas, HTML and PDF paint the same positions, and the sandbox places the cursor on the character clicked.
 

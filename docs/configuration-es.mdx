@@ -39,7 +39,7 @@ Esta referencia es larga. Estos son los bloques principales:
 - [Encabezados y pies](#encabezados-y-pies) — elementos de texto y línea por página con marcadores, paridad y alineación.
 - [Texto de cuerpo](#texto-de-cuerpo) — tipografía, separación silábica, viudas y huérfanas.
 - [Idioma del documento](#idioma-del-documento) — el `locale` de primer nivel: respaldo de la separación silábica, tipos de recurso integrados y cadenas de continuación de tablas y de avisos partidos, lengua etiquetada en un PDF accesible; y los [idiomas y escrituras](#idiomas-y-escrituras) que Postext compone.
-- [Tipografía de Asia oriental](#tipografía-de-asia-oriental) — `cjk`: las convenciones regionales y el corte de línea del texto en chino, japonés y coreano, y cómo se ensanchan sus líneas justificadas.
+- [Tipografía de Asia oriental](#tipografía-de-asia-oriental) — `cjk`: las convenciones regionales y el corte de línea del texto en chino, japonés y coreano, cómo se ensanchan sus líneas justificadas, los anchos de la puntuación y la puntuación colgada, el espacio entre chino y latín y la retícula de caracteres.
 - [Encabezados](#encabezados) — valores generales y sobrescrituras H1–H6.
 - [Listas no ordenadas](#listas-no-ordenadas) y [Listas ordenadas](#listas-ordenadas) — viñetas, numeración, anidamiento.
 - [Matemáticas](#matemáticas) — renderizado LaTeX, escala, color, márgenes.
@@ -1481,7 +1481,7 @@ const config: PostextConfig = {
 Postext compone escrituras alfabéticas que se escriben de izquierda a derecha. Dos familias de sistemas de escritura todavía no están del todo soportadas:
 
 - **Escrituras de derecha a izquierda** (árabe, hebreo, persa, urdu…). No hay algoritmo bidireccional: las líneas se cortan y se alinean como si el texto corriera de izquierda a derecha, contra el margen izquierdo, y lo que muestra cada línea depende de cómo se pinta. En la salida canvas y PDF, una línea alineada a la izquierda y sin formato en línea se dibuja como un solo tramo de texto, que el navegador o el motor tipográfico del PDF vuelven de derecha a izquierda por su cuenta, así que ahí una línea toda en una escritura de derecha a izquierda puede leerse bien, pero no una que mezcle direcciones, cifras o puntuación. La salida HTML, las líneas justificadas, centradas o alineadas a la derecha y las que llevan formato en línea se dibujan palabra a palabra de izquierda a derecha: cada palabra se lee bien, pero las palabras salen en orden de lectura invertido.
-- **El chino, el japonés y el coreano** se componen en horizontal. Un párrafo con más caracteres CJK que espacios entre palabras se corta entre caracteres con las reglas de principio y final de línea de clreq que fija `cjk.lineBreak` (ninguna línea empieza por 。、」 o ー, ninguna termina en 「 o （), mantiene enteros —— y ……, un número con sus signos y una palabra latina, y una línea justificada se ensancha entre sus caracteres hasta la medida: ver [Tipografía de Asia oriental](#tipografía-de-asia-oriental). Un párrafo latino que cita unas pocas palabras CJK conserva la división óptima de líneas y puede cortarse junto a ellas; un signo de apertura o cierre CJK, el punto medio o un signo de ancho completo citados en texto latino (〈h〉, ％) no cambian nada. Todavía no hay compresión de la puntuación, espacio entre han y latín, escritura vertical ni ruby. El coreano se corta entre sílabas además de en sus espacios.
+- **El chino, el japonés y el coreano** se componen en horizontal. Un párrafo con más caracteres CJK que espacios entre palabras se corta entre caracteres con las reglas de principio y final de línea de clreq que fija `cjk.lineBreak` (ninguna línea empieza por 。、」 o ー, ninguna termina en 「 o （), mantiene enteros —— y ……, un número con sus signos y una palabra latina, y una línea justificada se ensancha entre sus caracteres hasta la medida: ver [Tipografía de Asia oriental](#tipografía-de-asia-oriental). Un párrafo latino que cita unas pocas palabras CJK conserva la división óptima de líneas y puede cortarse junto a ellas; un signo de apertura o cierre CJK, el punto medio o un signo de ancho completo citados en texto latino (〈h〉, ％) no cambian nada. Los anchos de la puntuación, la puntuación colgada, el espacio entre chino y latín y la retícula de caracteres se componen como explica [Tipografía de Asia oriental](#tipografía-de-asia-oriental); todavía no hay escritura vertical ni ruby. El coreano se corta entre sílabas además de en sus espacios.
 
 Hay patrones de separación silábica para ocho idiomas (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`); los tipos de recurso integrados y las cadenas de continuación existen en esos ocho y en chino. El chino, el japonés y el coreano se componen sin separación silábica. Cualquier otro idioma se divide con los patrones del inglés de EE. UU., con un aviso en la consola, y recibe las cadenas inglesas. Para un documento así, fija `hyphenation.enabled: false` y pasa `resourceTypes` y las cadenas de continuación de `tableStyle` en su idioma.
 
@@ -2969,12 +2969,18 @@ import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefault
 
 ## Tipografía de Asia oriental
 
-La propiedad `cjk` fija cómo se compone el texto en chino, japonés y coreano: qué convenciones regionales sigue y dónde pueden cortarse sus líneas. Todos los campos son opcionales, y `'auto'` sigue la región del idioma del documento (`locale`), de modo que un libro con `locale: 'zh-Hant'` corta sus líneas a la manera de Taiwán sin fijar nada más.
+La propiedad `cjk` fija cómo se compone el texto en chino, japonés y coreano: qué convenciones regionales sigue, dónde pueden cortarse sus líneas, qué ancho ocupa su puntuación y si cuelga, el espacio entre chino y latín, y la retícula de caracteres de la caja de texto. Todos los campos son opcionales, y `'auto'` sigue la región del idioma del documento (`locale`), de modo que un libro con `locale: 'zh-Hant'` corta sus líneas y compone su puntuación a la manera de Taiwán sin fijar nada más.
 
 ```ts
 interface CjkConfig {
   region?: 'auto' | 'mainland' | 'taiwan' | 'hongkong';   // Convenciones regionales.
   lineBreak?: 'auto' | 'none' | 'basic' | 'gb' | 'strict'; // Qué signos no pueden abrir ni cerrar una línea.
+  punctuationWidth?: 'auto' | 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'halfwidth';
+  compressAdjacent?: 'auto' | boolean;      // Dos signos seguidos ocupan 1,5 cuadratines.
+  trimLineStart?: 'auto' | boolean;         // Los paréntesis en el borde de una línea pierden su mitad exterior.
+  hangingPunctuation?: 'none' | 'allow' | 'force';
+  latinSpacing?: Dimension;                 // Entre chino y latín; por defecto 0,25 em.
+  grid?: { enabled?: boolean; charsPerLine?: number; linesPerPage?: number; show?: boolean };
 }
 ```
 
@@ -2992,13 +2998,49 @@ interface CjkConfig {
       <td><code>region</code></td>
       <td><code>'auto' | 'mainland' | 'taiwan' | 'hongkong'</code></td>
       <td><code>'auto'</code></td>
-      <td>Las convenciones que sigue el texto, según las regiones que describen los <a href="https://www.w3.org/TR/clreq/">Requisitos de composición del texto chino</a> del W3C (clreq). <code>'auto'</code> toma la región de <code>locale</code>, o de <code>bodyText.hyphenation.locale</code> si <code>locale</code> no está definido: <code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code> y <code>zh-SG</code> dan <code>'mainland'</code> (China continental); <code>zh-Hant</code> y <code>zh-TW</code> dan <code>'taiwan'</code>; <code>zh-HK</code> y <code>zh-MO</code> dan <code>'hongkong'</code>; cualquier otro idioma da <code>'mainland'</code>. Por ahora la región solo elige el nivel de corte por defecto; los anchos de la puntuación también la seguirán.</td>
+      <td>Las convenciones que sigue el texto, según las regiones que describen los <a href="https://www.w3.org/TR/clreq/">Requisitos de composición del texto chino</a> del W3C (clreq). <code>'auto'</code> toma la región de <code>locale</code>, o de <code>bodyText.hyphenation.locale</code> si <code>locale</code> no está definido: <code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code> y <code>zh-SG</code> dan <code>'mainland'</code> (China continental); <code>zh-Hant</code> y <code>zh-TW</code> dan <code>'taiwan'</code>; <code>zh-HK</code> y <code>zh-MO</code> dan <code>'hongkong'</code>; cualquier otro idioma da <code>'mainland'</code>. La región elige los valores por defecto de <code>lineBreak</code>, <code>punctuationWidth</code>, <code>compressAdjacent</code> y <code>trimLineStart</code>.</td>
     </tr>
     <tr>
       <td><code>lineBreak</code></td>
       <td><code>'auto' | 'none' | 'basic' | 'gb' | 'strict'</code></td>
       <td><code>'auto'</code></td>
       <td>Qué signos no pueden abrir ni cerrar una línea (clreq §6.1.1; ver la tabla siguiente). <code>'auto'</code>: <code>'gb'</code> en China continental, <code>'basic'</code> en Taiwán y Hong Kong.</td>
+    </tr>
+    <tr>
+      <td><code>punctuationWidth</code></td>
+      <td><code>'auto' | 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'halfwidth'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Qué ancho ocupan los signos de ancho completo (ver <a href="#anchos-de-la-puntuación">Anchos de la puntuación</a>). <code>'auto'</code>: <code>'kaiming'</code> en China continental, <code>'fullwidth'</code> en Taiwán y Hong Kong.</td>
+    </tr>
+    <tr>
+      <td><code>compressAdjacent</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>Dos signos seguidos (<code>。」</code>, <code>》（</code>, <code>：“</code>) ceden el medio cuadratín de blanco que queda entre ellos, y el par ocupa 1,5 cuadratines en vez de 2. <code>'auto'</code>: activado en China continental y Hong Kong, desactivado en Taiwán.</td>
+    </tr>
+    <tr>
+      <td><code>trimLineStart</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>Un paréntesis o unas comillas de apertura que empiezan una línea ceden el medio cuadratín que llevan delante, y los de cierre que la acaban, el de detrás. <code>'auto'</code>: activado en China continental y Hong Kong, desactivado en Taiwán.</td>
+    </tr>
+    <tr>
+      <td><code>hangingPunctuation</code></td>
+      <td><code>'none' | 'allow' | 'force'</code></td>
+      <td><code>'none'</code></td>
+      <td>Si un signo de pausa o de cierre de oración puede colgar fuera del final de la línea (ver <a href="#puntuación-colgada">Puntuación colgada</a>).</td>
+    </tr>
+    <tr>
+      <td><code>latinSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>&#123; value: 0.25, unit: 'em' &#125;</code></td>
+      <td>El espacio entre un carácter chino y la letra latina o la cifra que tiene al lado, en cuadratines del cuerpo del texto CJK o en cualquier medida; <code>0</code> lo quita (ver <a href="#espacio-entre-chino-y-latín">Espacio entre chino y latín</a>).</td>
+    </tr>
+    <tr>
+      <td><code>grid</code></td>
+      <td><code>&#123; enabled?, charsPerLine?, linesPerPage?, show? &#125;</code></td>
+      <td>desactivada</td>
+      <td>La caja de texto en caracteres por línea y líneas por página (ver <a href="#retícula-de-caracteres">Retícula de caracteres</a>).</td>
     </tr>
   </tbody>
 </table>
@@ -3028,18 +3070,74 @@ En todos los niveles:
 - Una llamada de nota, un `:ref` y un superíndice o subíndice van con el carácter que los precede.
 - El espacio ideográfico U+3000 es un carácter de un cuadratín: una línea puede cortarse después de él, nunca antes; nunca se estira ni desaparece al principio de una línea. Para la sangría de dos caracteres de los párrafos chinos fija `bodyText.firstLineIndent: { value: 2, unit: 'em' }` en lugar de escribir dos U+3000 (el analizador descarta los que abren un párrafo).
 
-Cuando el carácter que no cabe en la línea no puede abrir la siguiente, la línea le cede caracteres (el llamado *push-out*): el corte retrocede hasta el último punto que las reglas permiten, y una línea justificada reparte lo que sobra. En una línea más estrecha que un número con su punto final nada puede cerrar la línea, y se corta antes del punto de todos modos.
+Cuando un carácter no cabe en la línea, la línea intenta primero admitirlo comprimiéndose (el llamado *push-in*, clreq §6.2.2.3): si el blanco que puede ceder —ver [Anchos de la puntuación](#anchos-de-la-puntuación)— cubre lo que sobresale, el carácter (con los signos que deben ir con él, unas comillas de cierre tras un punto) entra en la línea y la línea se ajusta a la medida. Si no, y el carácter no puede abrir la línea siguiente, la línea le cede caracteres (el llamado *push-out*): el corte retrocede hasta el último punto que las reglas permiten, y una línea justificada reparte lo que sobra. En una línea más estrecha que un número con su punto final nada puede cerrar la línea, y se corta antes del punto de todos modos.
 
 A qué párrafos se aplica: a los que tienen más caracteres CJK (han, kana, bopomofo, hangul) que espacios entre palabras, aunque no haya dos seguidos (`第1条、第2条`, `价¥5,999。好`). Se componen línea a línea, igual en la vía sin formato que en la de formato, así que un párrafo con una palabra en negrita se corta exactamente como el mismo texto sin ella. Un párrafo latino que cita un título o un nombre chino tiene más espacios que caracteres: conserva la división óptima de líneas, y una línea puede cortarse junto a sus caracteres CJK con las mismas reglas. Los pies de figura, las celdas de tabla, las notas y los recuadros se cortan también al nivel del documento. La partición por diccionario no alcanza las palabras latinas de un párrafo CJK.
 
-Una línea CJK justificada que no es la última de su párrafo se ensancha hasta la medida en este orden (clreq §6.2.2.4): los espacios entre palabras occidentales, hasta medio cuadratín cada uno; después todos los huecos entre caracteres, por igual. No se añade espacio dentro de una palabra latina, de un número o de un signo de dos cuadratines, ni junto a un conector o una barra. El espaciado se fija por segmento de la línea (`VDTLineSegment.tracking`, px tras cada carácter, incluidos en el `width` del segmento), que el canvas, el HTML y el PDF pintan como espaciado entre letras; una palabra latina seguida de un hueco da a su última letra un segmento propio. Un segmento contiene un tramo occidental, o caracteres de un mismo estilo, enlace y espaciado que avanzan lo mismo, así que el Sandbox reparte su anchura por igual entre ellos al colocar el cursor, y un enlace cubre solo sus propios caracteres. Cuando una línea necesitaría más de medio cuadratín entre sus caracteres (o más que `bodyText.maxJustifyTracking`, si está definido), se compone con ese máximo y queda corta: la línea lleva `cjkLoose` y `ragged`, y la composición da un aviso de contenido `cjkLooseLine` con el texto de la línea. Suele deberse a una palabra latina larga o a una dirección web que no puede subir a ella. Una línea sin ningún carácter CJK (el comienzo de una dirección web larga) queda en bandera sin el aviso, como una línea latina de una sola palabra. Ver [Separación silábica y justificación](/es/docs/justification#chino-japonés-y-coreano).
+Una línea CJK justificada que no es la última de su párrafo se ensancha hasta la medida en este orden (clreq §6.2.2.4): los espacios entre palabras occidentales, hasta medio cuadratín cada uno; los espacios entre chino y latín, hasta medio cuadratín cada uno; después todos los huecos entre caracteres, y esos espacios, por igual. No se añade espacio dentro de una palabra latina, de un número o de un signo de dos cuadratines, ni junto a un conector o una barra. El espaciado se fija por segmento de la línea (`VDTLineSegment.tracking`, px tras cada carácter, incluidos en el `width` del segmento), que el canvas, el HTML y el PDF pintan como espaciado entre letras; una palabra latina seguida de un hueco da a su última letra un segmento propio. Un segmento contiene un tramo occidental, o caracteres de un mismo estilo, enlace y espaciado que avanzan lo mismo, así que el Sandbox reparte su anchura por igual entre ellos al colocar el cursor, y un enlace cubre solo sus propios caracteres. Cuando una línea necesitaría más de medio cuadratín entre sus caracteres (o más que `bodyText.maxJustifyTracking`, si está definido), se compone con ese máximo y queda corta: la línea lleva `cjkLoose` y `ragged`, y la composición da un aviso de contenido `cjkLooseLine` con el texto de la línea. Suele deberse a una palabra latina larga o a una dirección web que no puede subir a ella. Una línea sin ningún carácter CJK (el comienzo de una dirección web larga) queda en bandera sin el aviso, como una línea latina de una sola palabra. Ver [Separación silábica y justificación](/es/docs/justification#chino-japonés-y-coreano).
 
-El resolutor y el depurador siguen el patrón de las demás secciones; `setCjkLineBreak` fija el nivel para las mediciones hechas fuera de `buildDocument`, que lo toma de la configuración:
+### Anchos de la puntuación
+
+Un signo chino de ancho completo es medio cuadratín de dibujo y medio de blanco, y lo que ajustan estos ajustes es el blanco, nunca el dibujo (clreq §6.3.2). El blanco va delante del dibujo en un paréntesis o unas comillas de apertura, detrás en los de cierre, y detrás en los signos de pausa y de cierre de oración de China continental 、，。．；：？！, que van en la esquina de su caja; los signos que Taiwán y Hong Kong centran (、，。．；：) y los puntos medios guardan un cuarto de cuadratín a cada lado. `？！` ocupan siempre un cuadratín en texto horizontal de Taiwán y Hong Kong, y `：；？！` en texto vertical en todas partes.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '130px' }}>Estilo</th>
+      <th>Dentro de la línea</th>
+      <th>Al final de la línea</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fullwidth</code> (全角式)</td><td>Todos los signos, un cuadratín.</td><td>Un cuadratín; un paréntesis de cierre, medio, con <code>trimLineStart</code>.</td></tr>
+    <tr><td><code>kaiming</code> (开明式)</td><td>。．？！ un cuadratín; ，、；：, paréntesis, comillas y puntos medios, medio. La mayoría de los libros de China continental.</td><td>Todos los signos, medio cuadratín.</td></tr>
+    <tr><td><code>lineEndHalf</code> (行末半角)</td><td>Todos los signos, un cuadratín.</td><td>Todos los signos, medio cuadratín (la GB/T 15834—2011 §5.1.10 al pie de la letra).</td></tr>
+    <tr><td><code>halfwidth</code> (半角式)</td><td>Todos los signos, medio cuadratín, como en los diccionarios.</td><td>Medio cuadratín.</td></tr>
+  </tbody>
+</table>
+
+Con `compressAdjacent`, dos signos seguidos ceden el blanco que queda entre ellos (las ocho reglas de los borradores anteriores de clreq): un paréntesis de cierre tras otro de cierre o tras un signo de pausa o de cierre de oración de China continental (`。」`, no tras los signos centrados de Taiwán y Hong Kong), un signo de pausa o de cierre de oración tras un paréntesis de cierre (`」，`), un paréntesis de apertura tras cualquiera de ellos o tras otro de apertura (`，「`, `》（`, `「『`), y un cuarto de cuadratín entre un punto medio y un paréntesis de cierre anterior o uno de apertura posterior. Nunca más de lo que deja el par en 1,5 cuadratines: con Kaiming `。”` ya ocupa 1,5 y así se queda, y `》（` ocupa uno. Con `trimLineStart`, un paréntesis de apertura que empieza una línea cede el blanco que lleva delante, y su trazo queda alineado con el borde del texto (en la primera línea de un párrafo queda medio cuadratín dentro de la sangría), y uno de cierre que acaba una línea cede el de detrás. Un signo centrado cede un cuarto de cuadratín por cada lado, nunca medio por uno.
+
+Una línea admite un carácter más (*push-in*) cuando el blanco que aún puede ceder cubre lo que sobresale, en el orden de clreq: los espacios entre palabras hasta un cuarto de cuadratín, después los puntos medios, los paréntesis, los signos de pausa, los espacios entre chino y latín hasta un octavo de cuadratín y, al final, los signos de cierre de oración, cada paso repartido por igual. `kaiming` solo deja bajar a medio cuadratín sus signos de cierre de oración; `lineEndHalf` deja bajar a medio cuadratín todos los signos; los de `fullwidth` no ceden nada (un libro de ancho completo conserva su retícula) y a los de `halfwidth` no les queda nada que ceder.
+
+En el VDT un signo que cedió blanco es un segmento propio, cuyo `width` es el avance que conserva, con `inkOffset` (px, 0 o negativo): los renderizadores pintan su dibujo en `x + inkOffset`, de modo que un signo que cedió el blanco de delante (un paréntesis de apertura al principio de una línea) se dibuja esa distancia antes de su caja. Qué lado del signo lleva el blanco lo decide la región, no la fuente: compón un libro con una fuente de su región (Noto Serif SC para China continental, TC para Taiwán, HK para Hong Kong); una fuente tradicional con una etiqueta de China continental comprime el lado equivocado de sus signos centrados.
+
+### Puntuación colgada
+
+`hangingPunctuation: 'allow'` deja que uno de 、，。． (en China continental, cuyos signos van al principio de su caja, también ；：？！) cuelgue fuera del final de la línea cuando de otro modo abriría la siguiente y comprimir la línea no basta para meterlo; nunca en texto horizontal de Taiwán y Hong Kong. `'force'` hace colgar ese signo siempre que acaba una línea (salvo en la última de un párrafo), y en cuanto no cabe. Un signo nunca cuelga si lo toca otro signo (`。」`, `，「`). El segmento colgado lleva `hangs`; el `bbox.width` de la línea, su justificación y su alineación lo dejan fuera, y el canvas y el PDF ensanchan el recorte de la columna con el signo colgado más ancho (`hangingPunctuationOverhang`), así que nunca se corta. La mayoría de los libros chinos no cuelgan la puntuación; clreq solo la recomienda junto con una retícula de caracteres.
+
+### Espacio entre chino y latín
+
+`latinSpacing` (por defecto, un cuarto de cuadratín) pone un espacio entre un carácter chino (o kana) y la letra latina o la cifra europea que tiene al lado: `用iPhone拍照` y `1999年` se componen `用 iPhone 拍照` y `1999 年`. No se pone al principio ni al final de una línea, ni entre un carácter latino y un signo chino (`用iPhone，` no lleva nada antes de la coma), ni dentro de paréntesis chinos (`（iPhone）`), ni junto a un signo que no es letra ni cifra (`为¥5,999`). Un espacio que el autor escribió en ese punto (`用 iPhone 拍照`, como lo traen muchos textos de la web) se sustituye por el espacio entre chino y latín, no se suma, así que las dos grafías se componen igual; un espacio de no separación o un espacio ideográfico se quedan como están. En una línea justificada crece hasta medio cuadratín antes de repartir espacio entre los caracteres; en una línea que admite un carácter más se reduce hasta un octavo de cuadratín. Una medida en una unidad que no sea em se convierte con los ppp de la página. `0` lo quita, y un espacio escrito ahí sigue siendo un espacio entre palabras.
+
+El espacio es un segmento de `kind: 'space'` con `autospace`, `text` vacío (o el espacio que escribió el autor); su `width` es definitivo, y la justificación de espacios de los renderizadores lo deja como está. Nunca está en el texto plano, así que la búsqueda, el copiar y pegar y los rangos de origen leen el texto tal como se escribió. El PDF mete cada línea compuesta en piezas (caracteres espaciados, espacios entre chino y latín) en un `/Span` cuyo `/ActualText` es el texto de la línea, de modo que la extracción de texto lee `用iPhone拍照` y no `用 iPhone 拍 照`.
+
+### Retícula de caracteres
+
+Una caja de texto china se especifica en caracteres (clreq §7.1.1): el cuerpo × caracteres por línea × líneas por página, más la interlínea y, a dos columnas, el medianil. `grid` la fija así:
 
 ```ts
-import { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOf, setCjkLineBreak } from 'postext';
+cjk: { grid: { enabled: true, charsPerLine: 28, linesPerPage: 28, show: true } }
+```
 
-resolveCjkConfig(undefined, 'zh-HK'); // { region: 'hongkong', lineBreak: 'basic' }
+Con `enabled`, la configuración se reescribe antes de que nada la lea: cada columna mide `charsPerLine` cuadratines de `bodyText.fontSize`, y la caja de texto `linesPerPage` líneas de `bodyText.lineHeight`; con `layoutType: 'double'` el medianil es `layout.gutterWidth` redondeado a un número entero de cuadratines, al menos uno. Los márgenes de `page.margins` funcionan como mínimos: la caja de texto se coloca en el centro del área que dejan, y cada margen crece la mitad del sitio sobrante en su eje (un libro con márgenes espejados conserva la diferencia entre el interior y el exterior, y los dos crecen lo mismo). Sin valor, `charsPerLine` y `linesPerPage` toman los que quepan. Un número mayor de lo que cabe se reduce a lo que cabe y se avisa como `cjkGridClamped` en los avisos de configuración. El cuerpo y el interlineado se quedan como están escritos; una disposición `oneAndHalf` se ajusta como una sola columna de `charsPerLine` cuadratines y sus columnas se cortan de ese ancho. En texto vertical (`layout.writingMode: 'vertical-rl'`) los caracteres de una línea bajan por la página y las líneas la cruzan, así que `charsPerLine` mide la altura de la página.
+
+Dos cajas de la práctica china, en 五号 (10,5 pt) con 6 pt de interlínea (`lineHeight: 16.5pt`):
+
+- 大32开, 140 × 203 mm, 28 × 28: una medida de 294 pt (103,7 mm) y una caja de 462 pt (163 mm); unos `page.margins` de 16/20 mm interior y exterior y 18/20 mm superior e inferior le dejan sitio.
+- 16开, 184 × 260 mm, dos columnas de 23 caracteres en 小五 (9 pt, líneas de 13,5 pt) con un medianil de dos caracteres: 2 × 207 pt + 18 pt.
+
+`show` dibuja la retícula (稿纸) sobre la caja de texto, un cuadrado gris claro por posición de carácter en cada línea (la caja de cuadratín del carácter alrededor de su línea de base), en el canvas y en el HTML. El PDF solo la dibuja cuando `renderToPdf` recibe `characterGrid: true`: es una ayuda de pantalla. `cjkGridGeometry(config)` devuelve la retícula que fija una configuración (los números en uso, los márgenes, la caja de texto) y `applyCjkGrid(config)` la configuración reescrita.
+
+El resolutor y el depurador siguen el patrón de las demás secciones; `setCjkLineBreak` y `setCjkComposition` fijan el nivel y la composición (anchos de la puntuación, puntuación colgada, espacio entre chino y latín; `cjkCompositionOf(resolved.cjk, dpi)`) para las mediciones hechas fuera de `buildDocument`, que los toma de la configuración. Fuera de una composición, los signos conservan todo su avance y no se pone espacio entre chino y latín:
+
+```ts
+import { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOf, setCjkLineBreak, setCjkComposition, cjkCompositionOf } from 'postext';
+
+resolveCjkConfig(undefined, 'zh-HK');
+// { region: 'hongkong', lineBreak: 'basic', punctuationWidth: 'fullwidth', compressAdjacent: true,
+//   trimLineStart: true, hangingPunctuation: 'none', latinSpacing: { value: 0.25, unit: 'em' },
+//   grid: { enabled: false, charsPerLine: 0, linesPerPage: 0, show: false } }
 ```
 
 En el Sandbox estos ajustes están en **Diseño › Tipografía › Tipografía de Asia oriental**.
@@ -5665,6 +5763,7 @@ Cuatro errores de la propia configuración nunca pasan en silencio, y ningún in
 - **Formato de numeración desconocido**: un `numberFormat` de lista numerada, un `page.pageNumbering.format` o el `counterFormat` de un tipo de recurso que no es ninguna de las [grafías de los formatos de numeración](#grafías-de-los-formatos-de-numeración). Numera en decimal.
 - **Lista de fuentes en una familia**: un `fontFamily` (o cualquier `…FontFamily`) que contiene una lista de fuentes CSS. El texto se compone en la primera familia de la lista (ver [Una sola familia por `fontFamily`](#una-sola-familia-por-fontfamily)).
 - **Columna lateral sin sitio**: un `sideColumnPercent` de una disposición `'oneAndHalf'` (la del documento, o el `layout` propio de un estilo de encabezado) que dejaría alguna de las columnas por debajo del 1% del ancho del área de contenido, o que no es un número. Las columnas se cortan en el valor más cercano que admiten las dos, y `used` lo indica (`sideColumnPercentClamped`; ver la [disposición `'oneAndHalf'`](#tipos-de-disposición)).
+- **Retícula de caracteres demasiado grande**: un `cjk.grid` con más caracteres por línea o más líneas por página de los que caben entre los márgenes. La retícula se compone con los que caben, y `used` indica el número (`cjkGridClamped`; ver [Retícula de caracteres](#retícula-de-caracteres)).
 - **Ajuste de encabezado desconocido**: una clave que no existe en `headings`, `headings.balancing`, un nivel de encabezado, un estilo de encabezado o un estilo de párrafo: un `letterSpacng` mal escrito, un `tracking` tomado de otra herramienta, un `level` en un estilo de encabezado, un `fontStyle: 'italic'` en un estilo de párrafo (que lleva `italic: true`). El motor la ignora (hasta postext 1.4 lo hacía sin decir nada). `value` es la clave, `used` va vacío y `suggestion` nombra el ajuste al que más se parece, cuando dista una o dos letras o solo cambia en mayúsculas (`unknownConfigKey`).
 
 El Sandbox los muestra en el panel **Revisión** con la ruta del ajuste. En código, `buildDocument` los deja en el documento como `configWarnings` (ausente cuando la configuración está limpia), y `collectConfigWarnings(config)` los devuelve sin componer nada:
