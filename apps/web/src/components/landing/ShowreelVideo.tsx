@@ -39,6 +39,7 @@ export function ShowreelVideo({
   const [subsOn, setSubsOn] = useState(false);
   const base = `${MEDIA_BASE}/showreel/${VERSION}/${lang}`;
   const src = `${base}/master.m3u8`;
+  const poster = `${base}/poster.jpg`;
 
   useEffect(() => {
     const video = ref.current;
@@ -118,11 +119,14 @@ export function ShowreelVideo({
     else video.webkitEnterFullscreen?.();
   };
 
-  // At the end the reader comes back to the page, whichever full screen it was.
+  // At the end the reader comes back to the page, whichever full screen it
+  // was, and finds the player as it started: poster, pill, from the top.
   const ended = () => {
     const video: IOSVideo | null = ref.current;
     if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
     else if (video?.webkitDisplayingFullscreen) video.webkitExitFullscreen?.();
+    if (video) video.currentTime = 0;
+    setStarted(false);
   };
 
   return (
@@ -132,7 +136,7 @@ export function ShowreelVideo({
         controls={started}
         playsInline
         preload="none"
-        poster={`${base}/poster.jpg`}
+        poster={poster}
         aria-label={title}
         onPlay={() => setStarted(true)}
         onEnded={ended}
@@ -143,7 +147,10 @@ export function ShowreelVideo({
           type="button"
           onClick={start}
           aria-label={playLabel}
-          className="group absolute inset-0 flex cursor-pointer items-start justify-start p-2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:items-end sm:p-4 md:p-6"
+          // the video shows its poster only until the first play; after the
+          // end the button carries it
+          style={{ backgroundImage: `url(${poster})` }}
+          className="group absolute inset-0 flex cursor-pointer bg-cover bg-center items-start justify-start p-2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:items-end sm:p-4 md:p-6"
         >
           {/* where the poster leaves room (its centre carries the title): bottom-left, or top-left on phones, where its foot line sits too close */}
           <span className="flex items-center gap-1.5 rounded-full bg-brand py-0.5 pr-2.5 pl-0.5 font-sans text-[0.7rem] font-semibold text-brand-contrast shadow-[0_12px_40px_-10px_rgba(14,16,20,0.7)] transition-transform duration-300 group-hover:scale-105 sm:gap-2.5 sm:py-2 sm:pr-5 sm:pl-2 sm:text-sm md:text-base">
