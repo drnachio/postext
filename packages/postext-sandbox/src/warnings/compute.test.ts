@@ -537,6 +537,13 @@ describe('hyphenation locale warnings', () => {
     expect(find('Hej.', 'unsupportedHyphenationLocale', { bodyText: { hyphenation: { enabled: false, locale: 'fi' } } })).toHaveLength(0);
   });
 
+  it('says nothing for Chinese, Japanese or Korean, set without hyphenation', () => {
+    for (const locale of ['zh-Hans', 'zh-Hant-TW', 'ja', 'ko']) {
+      expect(kinds('此開卷第一回也。', { locale }), locale).not.toContain('unsupportedHyphenationLocale');
+    }
+    expect(kinds('Text.', { locale: 'es', bodyText: { hyphenation: { locale: 'zh' } } })).not.toContain('unsupportedHyphenationLocale');
+  });
+
   it('accepts bundled languages with any region subtag', () => {
     for (const locale of ['es', 'es-ES', 'pt-BR', 'en-GB', 'ca-ES-valencia', 'nl']) {
       expect(kinds('Text.', { locale }), locale).not.toContain('unsupportedHyphenationLocale');
