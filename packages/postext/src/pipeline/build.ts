@@ -30,12 +30,15 @@ import {
 import { extractFrontmatter, normalizeMetadata } from '../frontmatter';
 import { collectConfigWarnings } from '../configWarnings';
 import { initHyphenator } from '../measure';
-import { setCjkLineBreak } from '../measure/cjkClasses';
+import { getCjkLineBreak, setCjkLineBreak } from '../measure/cjkClasses';
+import { getMeasureRegion, getMeasureWritingMode, setMeasureWritingMode } from '../measure/vertical';
+import { stampCentralBaselines } from './verticalMetrics';
 import type { MeasurementCache } from '../measure';
 import { resolveAllConfig, computeBaselineGrid, resolvedLocale } from './config';
 import {
   createHeadingLevelResolver,
   deriveSectionGeometryConfig,
+  sectionWritingMode,
   deriveSectionMeasureContext,
   headingIsHidden,
   headingIsNumbered,
@@ -83,6 +86,8 @@ import { chooseParagraphSplit } from './orphanWidow';
 import {
   applyStyleAttrs,
   computePageMetrics,
+  pageMirrored,
+  sheetRectToFlow,
   isMarkerBlock,
   nextNonMarkerBlock,
   spaceLinesAfter,
@@ -380,6 +385,28 @@ export function buildDocumentPass(
   options?: BuildDocumentOptions,
   hints: PassHints = {},
 ): PassResult {
+  // A pass sets the CJK line-break level and the writing mode text is
+  // measured in for its own measuring; what the caller had in force is put
+  // back when it ends, also when it throws (a cancelled build), so text
+  // measured outside a build reads as it did before it.
+  const lineBreak = getCjkLineBreak();
+  const writingMode = getMeasureWritingMode();
+  const region = getMeasureRegion();
+  try {
+    return placeDocumentPass(content, config, cache, options, hints);
+  } finally {
+    setCjkLineBreak(lineBreak);
+    setMeasureWritingMode(writingMode, region);
+  }
+}
+
+function placeDocumentPass(
+  content: PostextContent,
+  config: PostextConfig | undefined,
+  cache: MeasurementCache | undefined,
+  options: BuildDocumentOptions | undefined,
+  hints: PassHints,
+): PassResult {
   const { balanceExtraPx, balanceLooseness, balanceLooseBudget, bandCaps, captionUnder } = hints;
   const captionUnderProposals = new Set<string>();
   /** Side columns whose foot a figure's side caption has cut, by the figure. */
@@ -415,6 +442,9 @@ export function buildDocumentPass(
   // CJK text breaks at the document's level wherever it is measured (body,
   // captions, cells, notes, boxes), as it hyphenates in its language.
   setCjkLineBreak(resolved.cjk.lineBreak);
+  // Characters of a vertical flow that stand in a cell advance by it (half
+  // an em for the mainland interpunct).
+  setMeasureWritingMode(resolved.layout.writingMode, resolved.cjk.region);
 
   // Compute baseline grid
   const baselineGrid = computeBaselineGrid(resolved);
@@ -444,9 +474,21 @@ export function buildDocumentPass(
   // styled section with its own margins / layout — the section's.
   let contentArea = pageMetrics.contentArea;
   let geomResolved = resolved;
-  // Page/bleed frames for design elements anchored to `'page'` / `'bleed'`.
-  const designFrames = { page: pageMetrics.trimBox, bleed: pageMetrics.bleedBox };
+  // Page/bleed frames for design elements anchored to `'page'` / `'bleed'`,
+  // in the frame of the page's flow: the sheet's, or on a vertical page
+  // (`page.flow`) the flow frame, where "the top of the page" is the
+  // sheet's right edge.
+  const physicalFrames = { page: pageMetrics.physical.trimBox, bleed: pageMetrics.physical.bleedBox };
+  const verticalFrames = {
+    page: sheetRectToFlow(pageMetrics.physical.trimBox, pageWidthPx),
+    bleed: sheetRectToFlow(pageMetrics.physical.bleedBox, pageWidthPx),
+    upright: true,
+  };
+  const designFramesOn = (page: VDTPage | undefined): { page: BoundingBox; bleed: BoundingBox; upright?: boolean } =>
+    (page?.flow ? verticalFrames : physicalFrames);
   doc.trimOffset = trimOffset;
+  // A right-bound book (`page.binding`): hosts show its spreads mirrored.
+  if (resolved.page.binding === 'right') doc.binding = 'right';
 
   // Create first page
   const firstPage = createPageWithColumns(0, resolved, contentArea, pageWidthPx, pageHeightPx, pageIndexOffset);
@@ -558,7 +600,12 @@ export function buildDocumentPass(
   // chapter already numbered (`continuation.resourceNumbers`) was placed
   // there: here it is only referred to, never floated again.
   const incorporated = new Set(Object.keys(continuation?.resourceNumbers ?? {}));
-  const floatPlan = computeFloatPlan(contentBlocks, resources, resourceTypes, incorporated);
+  // A resource first referred to in a vertical flow stands upright: a turn
+  // it asks for is not applied there. Decided per block, by the writing
+  // mode of the styled section the reference sits in (a horizontal
+  // appendix of a vertical book turns its figures as asked).
+  const floatPlan = computeFloatPlan(contentBlocks, resources, resourceTypes, incorporated,
+    (blockIdx) => sectionWritingMode(sectionPlan, resolved, blockIdx) === 'vertical-rl');
   const floatedIds = floatedResourceIds(floatPlan, incorporated, resources, resourceTypes);
   const floatsByFirstBlock = new Map<number, PlannedFloat[]>();
   for (const f of floatPlan) {
@@ -806,10 +853,13 @@ export function buildDocumentPass(
   };
 
   /** How a rotated float is set: turned `direction`, its upright frame
-   *  `length` px wide (its extent along the page's height). */
-  type FloatRotation = { direction: ResourceRotation; length: number };
+   *  `length` px wide (its extent along the page's height). `upright`: a
+   *  resource of a vertical flow, counter-rotated to stand upright on the
+   *  sheet, its frame at most `length` px wide (see
+   *  `ResourceLayoutInput.upright`). */
+  type FloatRotation = { direction: ResourceRotation; length: number; upright?: boolean };
   const rotationKey = (rotated: FloatRotation | undefined): string =>
-    rotated ? `:${rotated.direction}${rotated.length.toFixed(2)}` : '';
+    rotated ? `:${rotated.direction}${rotated.length.toFixed(2)}${rotated.upright ? 'u' : ''}` : '';
 
   /** A caption set beside the figure (`placement.captionSide`): the band
    *  in the side column, relative to the float's left edge. */
@@ -834,7 +884,7 @@ export function buildDocumentPass(
       resourceTypes,
       resources,
       ...(slice ? { slice } : {}),
-      ...(rotated ? { rotate: rotated.direction, rotatedLength: rotated.length } : {}),
+      ...(rotated ? (rotated.upright ? { upright: { maxLength: rotated.length } } : { rotate: rotated.direction, rotatedLength: rotated.length }) : {}),
       ...(aside ? { captionAside: aside } : {}),
     });
   };
@@ -842,10 +892,20 @@ export function buildDocumentPass(
   /** The rotation of a pending float on a band whose columns keep `avail`
    *  px: the upright frame is as long as the grid multiple within that
    *  room, less the float gap, so the band it takes is `avail` at most. */
-  const rotationFor = (f: PlannedFloat, avail: number): FloatRotation | undefined =>
-    f.rotate
-      ? { direction: f.rotate, length: Math.max(1, Math.floor((avail + 0.01) / baselineGrid) * baselineGrid - floatGapPx) }
-      : undefined;
+  const rotationFor = (f: PlannedFloat, avail: number, page?: VDTPage): FloatRotation | undefined =>
+    page?.flow
+      ? uprightOn(page)
+      : f.rotate
+        ? { direction: f.rotate, length: Math.max(1, Math.floor((avail + 0.01) / baselineGrid) * baselineGrid - floatGapPx) }
+        : undefined;
+  /** A resource on a vertical page stands upright: its frame at most as
+   *  wide as the page's flow is tall (the content area's width on the
+   *  sheet), the float gap kept. */
+  const uprightOn = (page: VDTPage): FloatRotation => ({
+    direction: 'ccw',
+    length: Math.max(1, Math.floor((page.contentArea.height + 0.01) / baselineGrid) * baselineGrid - floatGapPx),
+    upright: true,
+  });
 
   /** Row count of a table resource (0 for anything else). */
   const tableRowCount = (resourceId: string): number =>
@@ -937,8 +997,10 @@ export function buildDocumentPass(
     slice?: TableSliceSpec,
     rotated?: FloatRotation,
     /** A rotated block sits flush to the band's right edge (the spine of a
-     *  verso page) instead of its left. */
-    flushEnd = false,
+     *  verso page) instead of its left; a number is the share of the room
+     *  left over set before it (an upright block of a vertical page, set
+     *  per `placement.align` along its tier). */
+    flushEnd: boolean | number = false,
     aside?: CaptionAside,
     /** The page is a verso of mirrored margins (a floated box's `'outer'`
      *  corner icon hangs on the left there). */
@@ -966,7 +1028,8 @@ export function buildDocumentPass(
       // top-left lands at the bottom-left of the block, for a clockwise one
       // at its top-right (see `resourceBlockToPage`).
       const used = Math.min(rb.rotation.height, width);
-      const left = x + (flushEnd ? Math.max(0, width - used) : 0);
+      const share = typeof flushEnd === 'number' ? flushEnd : flushEnd ? 1 : 0;
+      const left = x + (share > 0 ? Math.max(0, width - used) * share : 0);
       rb.rotation.originX = rb.rotation.direction === 'ccw' ? left : left + used;
       rb.rotation.originY = rb.rotation.direction === 'ccw' ? totalHeight : 0;
     } else {
@@ -976,9 +1039,9 @@ export function buildDocumentPass(
   };
 
   /** Whether a rotated float on `page` sits flush to the band's right edge:
-   *  with mirrored margins the spine of a verso (even-numbered) page. */
-  const rotatedFlushEnd = (page: VDTPage): boolean =>
-    !!resolved.page.margins.mirror && (page.index + pageIndexOffset) % 2 === 1;
+   *  with mirrored margins the spine of a page whose spine is on its right
+   *  (a verso of a left-bound book, a recto of a right-bound one). */
+  const rotatedFlushEnd = (page: VDTPage): boolean => pageMirrored(resolved, page.index, pageIndexOffset);
 
   /** Float bands reserved per column in this pass (the fresh-page flush
    *  sends single-column floats to the least reserved column). */
@@ -1143,8 +1206,9 @@ export function buildDocumentPass(
     const alignK = f.align === 'center' ? 0.5 : f.align === 'right' ? 1 : 0;
     const xLeft = slotX + (slotWidth - width) * alignK;
     const slice = sliceOf(f);
-    // A side float never turns: it stacks upright in the side column.
-    const rotated = side ? undefined : rotationFor(f, Math.min(...targetCols.map((c) => c.availableHeight)));
+    // A side float never turns: it stacks upright in the side column (on a
+    // vertical page it is counter-rotated to stand upright there too).
+    const rotated = side && !page.flow ? undefined : rotationFor(f, Math.min(...targetCols.map((c) => c.availableHeight)), page);
     // The caption beside the figure, in the band's side column.
     let aside: CaptionAside | undefined;
     let sideCol: VDTColumn | undefined;
@@ -1303,7 +1367,7 @@ export function buildDocumentPass(
         const cutBy = asideCutBy.get(first);
         if (cutBy !== undefined) captionUnderProposals.add(cutBy);
       }
-      const built = buildFloatBlock(f.resourceId, xLeft, width, slice);
+      const built = buildFloatBlock(f.resourceId, xLeft, width, slice, rotated);
       if (!built) return 'skip';
       first.availableHeight = Math.max(0, first.availableHeight - need);
       commitFloatBlock(page, first, built, xLeft, y, width, f.firstBlockIdx);
@@ -1372,13 +1436,13 @@ export function buildDocumentPass(
         if (tableOverflow(f.resourceId) !== 'split') return 'defer';
         const split = splitTableFloat(
           f, width, position, targetCols, page.contentArea,
-          c.availableHeight - (hasBand ? minTextPx : 0), 'strict',
+          c.availableHeight - (hasBand ? minTextPx : 0), 'strict', rotated,
         );
         if (!split || split === 'none' || split === 'skip') return 'defer';
         slice = split.slice;
         rest = split.rest;
         cut = true;
-        const m = measureFloat(f.resourceId, width, slice);
+        const m = measureFloat(f.resourceId, width, slice, rotated);
         if (!m) return 'skip';
         measure = m;
         ({ need, y } = measureFloatBand(
@@ -1409,7 +1473,10 @@ export function buildDocumentPass(
       rest = { ...rest, notBefore: { pageIndex: page.index, columnIndex: targetCols[targetCols.length - 1]!.index } };
     }
 
-    const built = buildFloatBlock(f.resourceId, xLeft, width, slice, rotated, rotated ? rotatedFlushEnd(page) : false, aside, mirroredOf(page));
+    // An upright figure of a vertical page stands at the head of its tier
+    // (`placement.align`: `left` the top, `center`, `right` the foot).
+    const flush = rotated?.upright ? (f.align === 'center' ? 0.5 : f.align === 'right' ? 1 : 0) : rotated ? rotatedFlushEnd(page) : false;
+    const built = buildFloatBlock(f.resourceId, xLeft, width, slice, rotated, flush, aside, mirroredOf(page));
     if (!built) return 'skip';
 
     // The caption beside the figure takes its band of the side column: a
@@ -2056,6 +2123,7 @@ export function buildDocumentPass(
     currentSection = style;
     geomResolved = style ? deriveSectionGeometryConfig(resolved, style) : resolved;
     contentArea = geomResolved === resolved ? pageMetrics.contentArea : computePageMetrics(geomResolved).contentArea;
+    setMeasureWritingMode(geomResolved.layout.writingMode);
     // A page still empty takes the geometry right away — the document (or
     // a chapter laid out on its own) opening with a styled heading.
     const page = doc.pages[cursor.pageIndex];
@@ -2272,7 +2340,7 @@ export function buildDocumentPass(
     const side = sideColumnOf(page, currentBand(page, cursor));
     if (!side || side.bbox.height <= 0.5) return;
     const boxes = headingDesignBoxes(
-      design.lvl, design.info, blk.bbox, resolved.page.dpi, doc.metadata, cursor.pageIndex, designFrames, resourceById,
+      design.lvl, design.info, blk.bbox, resolved.page.dpi, doc.metadata, cursor.pageIndex, designFramesOn(page), resourceById,
     );
     const top = side.bbox.y;
     const foot = side.bbox.y + side.bbox.height;
@@ -2721,10 +2789,12 @@ export function buildDocumentPass(
     };
     return { children, childBase: startIdx + 1, realAt, end: { child: children.length, line: 0 }, layoutRange, groups };
   };
-  /** Whether a page is a verso of mirrored margins (an `'outer'` corner
-   *  icon hangs on the left there). */
+  /** Whether a page swaps its mirrored margins (a verso of a left-bound
+   *  book, a recto of a right-bound one: an `'outer'` corner icon hangs on
+   *  the left there). A vertical page has no outer side: a box's outer
+   *  corner stays where the style puts it. */
   const mirroredOf = (page: VDTPage): boolean =>
-    resolved.page.margins.mirror === true && (page.index + pageIndexOffset + 1) % 2 === 0;
+    !page.flow && pageMirrored(resolved, page.index, pageIndexOffset);
   /** Where a block's paint ends: its last line's foot (a list tail's box
    *  bakes its bottom margin in and may reach past a cut with every line
    *  inside it), else its box's. */
@@ -3010,14 +3080,16 @@ export function buildDocumentPass(
         if (f.span !== 'page' || f.callout || cols.length < 2 || heldBack(i) || !((capActiveHere && !placedAny) || levelForBox(cols))) { i++; continue; }
         const width = page.contentArea.width;
         const slice = sliceOf(f);
-        const measure = measureFloat(f.resourceId, width, slice);
+        // On a vertical page the figure stands upright.
+        const upright = page.flow ? uprightOn(page) : undefined;
+        const measure = measureFloat(f.resourceId, width, slice, upright);
         if (!measure) { i++; continue; }
         const cutY = gridUp(page, bandUsedBottomWithSide(page, cols));
         const spacing = cols.some((c) => c.blocks.length > 0) ? floatGapPx : 0;
         const need = needFor(spacing, measure.height, floatGapPx);
         const bandBottom = Math.min(...cols.map((c) => columnBottom(c, uncappedBottoms)));
         if (cutY + need > bandBottom + 0.01) { i++; continue; }
-        const built = buildFloatBlock(f.resourceId, page.contentArea.x, width, slice);
+        const built = buildFloatBlock(f.resourceId, page.contentArea.x, width, slice, upright);
         if (!built) { i++; continue; }
         if (capActiveHere && !placedAny) {
           // A band whose content ran past the cut did not deliver its cap
@@ -3392,8 +3464,8 @@ export function buildDocumentPass(
 
     /** The box laid out for `page` and the zone it takes there. */
     const zoneOn = (page: VDTPage) => {
-      const ref = anchor.to === 'page' ? designFrames.page
-        : anchor.to === 'bleed' ? designFrames.bleed
+      const ref = anchor.to === 'page' ? designFramesOn(page).page
+        : anchor.to === 'bleed' ? designFramesOn(page).bleed
         : page.contentArea;
       const band = cursor.pageIndex === page.index ? currentBand(page, cursor) : 0;
       const cols = bandColumns(page, band).filter((c) => c.bbox.height > 0.5);
@@ -4221,9 +4293,15 @@ export function buildDocumentPass(
     const measureWidth = rawBlock.type === 'heading' && opensDefaultOpener(rawBlock)
       ? doc.pages[cursor.pageIndex]!.contentArea.width
       : col.bbox.width;
+    // A resource on a vertical page stands upright, its frame at most as
+    // wide as the flow is tall (less the float gap it keeps).
+    const blockPage = doc.pages[cursor.pageIndex]!;
+    const upright = blockPage.flow && rawBlock.type === 'resourceBlock'
+      ? { uprightMaxLength: uprightOn(blockPage).length }
+      : {};
     let measuredBlock = tryLoose
       ? measureLooseParagraph(rawBlock, blockIdx, col.bbox.width, blockMeasureCtx, styleOverride, looseLines, trackingLadder, looseOutcome)
-      : measureContentBlock(rawBlock, blockIdx, measureWidth, blockMeasureCtx, { styleOverride });
+      : measureContentBlock(rawBlock, blockIdx, measureWidth, blockMeasureCtx, { styleOverride, ...upright });
     // Screen pages (`layout.fitFiguresToPage`): an inline figure a little
     // too tall for the room left in its column — under an opener band, say
     // — is set smaller to stay with its text rather than leave the rest of
@@ -4657,7 +4735,7 @@ export function buildDocumentPass(
             resolved.page.dpi,
             doc.metadata,
             cursor.pageIndex,
-            designFrames,
+            designFramesOn(doc.pages[cursor.pageIndex]),
             {
               x: lvl.span === 'page' ? pageArea.x : curCol.bbox.x,
               y: curCol.bbox.y + (curCol.bbox.height - curCol.availableHeight) + spacingBefore,
@@ -5444,6 +5522,9 @@ export function buildDocumentPass(
       return text.length > 0 ? { styleId, text } : undefined;
     },
   });
+
+  // Vertical pages: the axis each font's upright characters turn about.
+  if (doc.pages.some((p) => p.flow)) stampCentralBaselines(doc);
 
   doc.converged = true;
   doc.iterationCount = 1;

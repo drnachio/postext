@@ -20,6 +20,8 @@ import { isRuntLastLine } from './runts';
 import { measureRichBlock } from './rich';
 import { hasCJKRun } from './cjk';
 import { composesAsCjk } from './cjkCompose';
+import { getMeasureWritingMode, measuringVertically, withMeasureWritingMode } from './vertical';
+import { holdsVerticalCell } from '../writingMode';
 import { WORDS_AND_SPACES_RE } from './spaces';
 import { breaksAfterHardHyphen, hasCompound, raggedStretchPx } from './breakRules';
 
@@ -196,13 +198,20 @@ export function measureBlock(
   if (text.trim() === '') {
     return { lines: [], totalHeight: 0 };
   }
+  // A writing mode asked for this text alone (`options.writingMode`).
+  if (options?.writingMode !== undefined && options.writingMode !== getMeasureWritingMode()) {
+    const opts = options;
+    return withMeasureWritingMode(opts.writingMode!, () => measureBlock(text, font, maxWidthPx, lineHeightPx, opts));
+  }
 
   // Words set without spaces (Chinese, Japanese, Korean): the formatted
   // path's breaker, which composes a CJK paragraph (clreq line breaking,
   // inter-character justification) and breaks a Latin one that quotes CJK
   // words next to their characters. The same text gives the same lines on
-  // both paths.
-  if (hasCJKRun(text) || composesAsCjk(text)) {
+  // both paths. In vertical text so does any text with a character that
+  // stands in a cell of its own (— … © ×): pretext would measure it at its
+  // horizontal width.
+  if (hasCJKRun(text) || composesAsCjk(text) || (measuringVertically() && holdsVerticalCell(text))) {
     return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
   }
   const shouldHyphenate = options?.hyphenate ?? false;

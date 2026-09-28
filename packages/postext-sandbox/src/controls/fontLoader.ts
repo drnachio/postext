@@ -1,7 +1,9 @@
-import type { CustomFontFamily, CustomFontVariant, PostextConfig } from 'postext';
+import type { CustomFontFamily, CustomFontVariant, PostextConfig, VerticalAlternatesFace } from 'postext';
 import type { FontPayload } from 'postext/worker';
 import {
   DEFAULT_TEXT_ELEMENT,
+  loadVerticalAlternates,
+  unregisterVerticalAlternates,
   primaryFontFamily,
   resolveBodyTextConfig,
   resolveHeaderFooterConfig,
@@ -689,4 +691,89 @@ export function collectFontUsage(config: PostextConfig): Map<string, FontVariant
 export function missingUsedVariants(family: CustomFontFamily, config: PostextConfig): FontVariantUse[] {
   const wanted = collectFontUsage(config).get(family.name) ?? [];
   return missingVariants(family, wanted);
+}
+
+// ---------------------------------------------------------------------------
+// Vertical forms for vertical text (canvas)
+// ---------------------------------------------------------------------------
+
+/** Whether a config sets any text vertically (`layout.writingMode`, or a
+ *  heading style's own layout). */
+export function configIsVertical(config: PostextConfig): boolean {
+  if (config.layout?.writingMode === 'vertical-rl') return true;
+  return (config.headingStyles ?? []).some((s) => s.layout?.writingMode === 'vertical-rl');
+}
+
+/** The twin load of each family, keyed by where its faces come from
+ *  ({@link twinSourceKey}): a family whose sources change is loaded again. */
+const verticalTwins = new Map<string, { key: string; promise: Promise<boolean> }>();
+/** Per family, the source key whose twin load has settled. */
+const verticalTwinsDone = new Map<string, string>();
+
+/** Where a family's faces come from: the files of a custom family (a file
+ *  uploaded again under the same name is another source), else Google. */
+function twinSourceKey(family: string): string {
+  const custom = getCustomFontFamily(family);
+  return custom ? `custom:${familySignature(custom)}` : 'google';
+}
+
+async function verticalFacesOf(family: string): Promise<VerticalAlternatesFace[]> {
+  const custom = getCustomFontFamily(family);
+  if (custom) {
+    const faces: VerticalAlternatesFace[] = [];
+    await Promise.all(custom.variants.map(async (variant) => {
+      const buffer = await loadVariantBuffer(variant);
+      if (buffer) faces.push({ source: buffer, weight: String(variant.weight), style: variant.style });
+    }));
+    return faces;
+  }
+  const meta = await fetchFontMetadata(family);
+  const res = await fetch(buildFontUrl(family, meta), { credentials: 'omit' });
+  if (!res.ok) return [];
+  return parseFontFaceCss(await res.text()).map((face) => ({
+    source: face.url,
+    weight: face.weight,
+    style: face.style,
+    ...(face.unicodeRange ? { unicodeRange: face.unicodeRange } : {}),
+  }));
+}
+
+/**
+ * For a config that sets text vertically: load, for every family it uses, a
+ * twin with the font's vertical forms (OpenType `vert`) that the canvas
+ * paints brackets and punctuation with (see `loadVerticalAlternates` in
+ * postext). Once per family; resolves when every family is settled, to
+ * whether any family has its twin (the preview repaints then).
+ */
+export async function loadVerticalTwins(config: PostextConfig): Promise<boolean> {
+  if (typeof document === 'undefined' || !configIsVertical(config)) return false;
+  const results = await Promise.all(getConfigFontFamilies(config).map((family) => {
+    const key = twinSourceKey(family);
+    const entry = verticalTwins.get(family);
+    if (entry && entry.key === key) return entry.promise;
+    // New sources for a family (a custom font uploaded again, or a book
+    // whose font of that name is another file): the old twin's faces go,
+    // and the twin is loaded from the new ones.
+    if (entry) {
+      unregisterVerticalAlternates(family);
+      verticalTwinsDone.delete(family);
+    }
+    const promise = verticalFacesOf(family)
+      .then((faces) => loadVerticalAlternates(family, faces))
+      .catch(() => false)
+      .then((ok) => {
+        if (verticalTwins.get(family)?.key === key) verticalTwinsDone.set(family, key);
+        return ok;
+      });
+    verticalTwins.set(family, { key, promise });
+    return promise;
+  }));
+  return results.some(Boolean);
+}
+
+/** Whether every family of a vertical config has had its twin tried, from
+ *  the family's current sources. */
+export function verticalTwinsSettled(config: PostextConfig): boolean {
+  if (!configIsVertical(config)) return true;
+  return getConfigFontFamilies(config).every((f) => verticalTwinsDone.get(f) === twinSourceKey(f));
 }

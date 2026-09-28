@@ -1,8 +1,8 @@
 export { createLayout } from './createLayout';
 export { buildDocument, BuildCancelledError, continuationAfter, contentOutline, computeOutline, computeOutlineFor, outlineFromDoc, outlineKey, sameOutline, hasTocDirective, hasIndexDirective, tocOutline, indexOutline } from './pipeline';
 export type { BuildDocumentOptions } from './pipeline';
-export { renderToCanvas, renderPage, renderPageToCanvas, registerResourceImage, unregisterResourceImage, clearResourceImages, getResourceImage } from './canvas-backend';
-export type { RenderPageOptions, ResourceImageSource, RegisterResourceImageOptions } from './canvas-backend';
+export { renderToCanvas, renderPage, renderPageToCanvas, registerResourceImage, unregisterResourceImage, clearResourceImages, getResourceImage, registerVerticalAlternates, unregisterVerticalAlternates, loadVerticalAlternates, verticalTwinName, VERTICAL_ALTERNATE_SAMPLE } from './canvas-backend';
+export type { RenderPageOptions, ResourceImageSource, RegisterResourceImageOptions, VerticalAlternatesFace } from './canvas-backend';
 export { renderToHtml, renderToHtmlIndexed, anchoredResourceIds, HTML_TEXT_RESET } from './html-backend';
 export type { RenderHtmlOptions, HtmlRenderIndex, HtmlRenderIndexPage } from './html-backend';
 export { dimensionToPx } from './units';
@@ -99,6 +99,8 @@ export type {
   HeadingBreakBeforeConfig,
   ResolvedHeadingBreakBeforeConfig,
   LayoutType,
+  WritingMode,
+  PageBinding,
   ColumnRuleConfig,
   ColumnBalancingConfig,
   ClosingBoxLever,
@@ -293,9 +295,13 @@ export type {
   VDTResourceTableLayout,
   RoundedOutline,
   VDTResourceRotation,
+  VDTFlowFrame,
   TableCellFillRects,
 } from './vdt';
 export { resourceBlockToPage, resourceBlockToLocal, resourceBlockRectToPage, tableFrameOutline, tableCellFill, tableCellFillRects } from './vdt';
+export { flowToPage, pageToFlow, flowRectToPage, pageRectToFlow, pageIsVertical, DEFAULT_CENTRAL_BASELINE } from './vdt';
+export { verticalOrientation, verticalRuns, uaxVerticalOrientation, isVerticalCell, verticalCellEms, CORNER_OFFSET_EM } from './writingMode';
+export type { VerticalGlyph, VerticalOrientationKind, VerticalRun, UaxVerticalOrientation } from './writingMode';
 export { computeColumnEdges } from './pipeline/resourceLayout';
 export type { ContentBlock, ContentBlockType, DirectiveAttrs, DirectiveName, ContainerName, RefCase, InlineSpan, InlineLink, TextSpan, MathSpan, MathMeta, ListKind, ParseIssue, ParseIssueKind, UnclosedMathIssue, UnclosedContainerIssue, TocBlockInfo, IndexBlockInfo, IndexMark, ChipBox } from './parse';
 export { parseMarkdownWithIssues, MATH_PLACEHOLDER, SWATCH_PLACEHOLDER, CHIP_PLACEHOLDER, KNOWN_DIRECTIVES, KNOWN_CONTAINERS, spaceDirectiveLines, MAX_SPACE_LINES } from './parse';

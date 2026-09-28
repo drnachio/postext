@@ -1,8 +1,9 @@
+import { flowTextWidth } from '../measure/vertical';
 import type { ResolvedUnorderedListLevelConfig, ResolvedOrderedListLevelConfig, OrderedListNumberFormat, Dimension } from '../types';
 import type { ContentBlock, ListKind } from '../parse';
 import { dimensionToPx } from '../units';
 import type { ResolvedConfig } from '../vdt';
-import { buildFontString, measureGlyphWidth } from '../measure';
+import { buildFontString } from '../measure';
 import { formatNumeral, parseNumberFormat } from '../numbering';
 import type { BlockStyle } from './styles';
 import { resolveBodyStyle } from './styles';
@@ -211,7 +212,7 @@ export function computeLevelIndentsPx(resolved: ResolvedConfig, bodyFontSizePx: 
     dimensionToPx(lists.gap, dpi, bodyFontSizePx),
     dpi,
     bodyFontSizePx,
-    (prev, prevFontString) => measureGlyphWidth(prev.bulletChar, prevFontString),
+    (prev, prevFontString) => flowTextWidth(prev.bulletChar, prevFontString),
   );
 }
 
@@ -238,9 +239,9 @@ export function computeOrderedLevelIndentsPx(
       const measured = maxNumberWidthByDepth.get(prevIndex + 1);
       if (measured !== undefined) return measured;
       const sep = resolveSeparatorRun(prev, prevFontString, dpi, bodyFontSizePx);
-      if (!sep) return measureGlyphWidth(prev.prefix + '99' + prev.separator, prevFontString);
-      return (prev.prefix ? measureGlyphWidth(prev.prefix, sep.fontString) : 0)
-        + measureGlyphWidth('99', prevFontString) + sep.gapPx + measureGlyphWidth(prev.separator, sep.fontString);
+      if (!sep) return flowTextWidth(prev.prefix + '99' + prev.separator, prevFontString);
+      return (prev.prefix ? flowTextWidth(prev.prefix, sep.fontString) : 0)
+        + flowTextWidth('99', prevFontString) + sep.gapPx + flowTextWidth(prev.separator, sep.fontString);
     },
   );
 }
@@ -304,14 +305,14 @@ export function computeOrderedListRunMetrics(
     const prefix = lists.levels[levelIdx]!.prefix;
     // The separator (and prefix) is the same string in the same font for
     // the whole run.
-    const separatorWidthPx = sepRun ? measureGlyphWidth(separator, sepRun.fontString) : 0;
-    const prefixWidthPx = sepRun && prefix ? measureGlyphWidth(prefix, sepRun.fontString) : 0;
+    const separatorWidthPx = sepRun ? flowTextWidth(separator, sepRun.fontString) : 0;
+    const prefixWidthPx = sepRun && prefix ? flowTextWidth(prefix, sepRun.fontString) : 0;
     let maxWidth = 0;
     const widths = new Map<number, number>();
     for (const idx of run.itemIdxs) {
       const entry = perBlock.get(idx);
       if (!entry) continue;
-      const w = measureGlyphWidth(entry.numberText, fontString);
+      const w = flowTextWidth(entry.numberText, fontString);
       widths.set(idx, w);
       if (w > maxWidth) maxWidth = w;
     }
@@ -424,7 +425,7 @@ export function resolveUnorderedListItemStyle(
 
   const indentPx = levelIndentsPx[levelIdx] ?? 0;
   const gapPx = dimensionToPx(lists.gap, dpi, bodyStyle.fontSizePx);
-  const bulletWidthPx = measureGlyphWidth(bulletChar, bulletFontString);
+  const bulletWidthPx = flowTextWidth(bulletChar, bulletFontString);
   const itemSpacingPx = dimensionToPx(lists.itemSpacing, dpi, bodyStyle.fontSizePx);
   const verticalOffsetPx = dimensionToPx(levelConfig.verticalOffset, dpi, bodyStyle.fontSizePx);
   const marginTopPx = dimensionToPx(lists.marginTop, dpi, bodyStyle.fontSizePx);

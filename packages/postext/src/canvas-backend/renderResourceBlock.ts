@@ -14,6 +14,7 @@
  */
 
 import type { VDTBlock, VDTLine, ResolvedResourceBlock, RoundedOutline } from '../vdt';
+import { fillFlowText, setVerticalPaint } from './verticalText';
 import { tableCellFill, tableFrameOutline } from '../vdt';
 import { paintSwatch } from './swatch';
 import { paintChip } from './chip';
@@ -361,7 +362,7 @@ function paintLineRuns(
           : color;
       // A justified CJK line spreads its characters per segment.
       if (seg.tracking !== undefined) ctx.letterSpacing = `${tracking + seg.tracking}px`;
-      ctx.fillText(seg.text, x, line.baseline + (seg.baselineShift ?? 0));
+      fillFlowText(ctx, seg.text, x, line.baseline + (seg.baselineShift ?? 0));
       if (seg.tracking !== undefined) ctx.letterSpacing = `${tracking}px`;
       x += seg.width;
     }
@@ -369,7 +370,7 @@ function paintLineRuns(
   }
   ctx.font = font;
   ctx.fillStyle = color;
-  ctx.fillText(line.text, line.bbox.x, line.baseline);
+  fillFlowText(ctx, line.text, line.bbox.x, line.baseline);
 }
 
 function drawPlaceholder(
@@ -541,6 +542,9 @@ export function renderResourceBlock(
   // A rotated block: its geometry is in the upright frame, painted through
   // the quarter-turn transform that lands the frame on the page.
   const rot = rb.rotation;
+  // Inside a turned block the text reads along the block's own frame: on
+  // a vertical page that is the upright figure, set horizontally.
+  const outerVertical = rot ? setVerticalPaint(null) : null;
   if (rot) {
     ctx.save();
     ctx.translate(rot.originX, rot.originY);
@@ -586,5 +590,8 @@ export function renderResourceBlock(
     );
   }
   ctx.restore();
-  if (rot) ctx.restore();
+  if (rot) {
+    ctx.restore();
+    setVerticalPaint(outerVertical);
+  }
 }

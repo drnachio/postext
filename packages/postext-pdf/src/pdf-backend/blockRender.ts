@@ -165,7 +165,7 @@ function renderSegments(
       const { scale, pageHeightPt } = ctx;
       linkRegistry.addPageLink(
         ctx.page,
-        [x * scale, pageHeightPt - (line.bbox.y + line.bbox.height) * scale, (x + seg.width) * scale, pageHeightPt - line.bbox.y * scale],
+        sheetRect(ctx, [x * scale, pageHeightPt - (line.bbox.y + line.bbox.height) * scale, (x + seg.width) * scale, pageHeightPt - line.bbox.y * scale]),
         seg.pageLink,
         pageElem ? { elem: pageElem, contents: seg.text } : undefined,
       );
@@ -177,7 +177,7 @@ function renderSegments(
       const x2 = (x + seg.width) * scale;
       const y2 = pageHeightPt - line.bbox.y * scale;
       const y1 = pageHeightPt - (line.bbox.y + line.bbox.height) * scale;
-      linkRegistry.addLink(ctx.page, [x1, y1, x2, y2], ref.resourceId, link ? { elem: link, contents: ref.text } : undefined);
+      linkRegistry.addLink(ctx.page, sheetRect(ctx, [x1, y1, x2, y2]), ref.resourceId, link ? { elem: link, contents: ref.text } : undefined);
     }
     x += seg.width;
   }
@@ -392,11 +392,19 @@ function renderStrikethrough(ctx: PageCtx, block: VDTBlock): void {
   }
 }
 
-/** Annotation rectangle of a block's box, in PDF points. */
+/** A rect of the page's frame in PDF points, on the sheet: through the
+ *  flow frame of a vertical page (`PageCtx.mapRectPt`), as it is on any
+ *  other. Annotation rects and destinations live outside the content
+ *  stream, so the frame's `cm` does not reach them. */
+function sheetRect(ctx: PageCtx, rect: [number, number, number, number]): [number, number, number, number] {
+  return ctx.mapRectPt ? ctx.mapRectPt(rect) : rect;
+}
+
+/** Annotation rectangle of a block's box, in PDF points, on the sheet. */
 function rectOfBlock(ctx: PageCtx, block: VDTBlock): [number, number, number, number] {
   const { scale, pageHeightPt } = ctx;
   const { x, y, width, height } = block.bbox;
-  return [x * scale, pageHeightPt - (y + height) * scale, (x + width) * scale, pageHeightPt - y * scale];
+  return sheetRect(ctx, [x * scale, pageHeightPt - (y + height) * scale, (x + width) * scale, pageHeightPt - y * scale]);
 }
 
 export function renderBlock(
@@ -452,12 +460,9 @@ export function renderBlock(
   }
   // A note is where its markers link to.
   if (block.footnoteNote !== undefined && linkRegistry) {
-    linkRegistry.addDestination(
-      footnoteDestination(linkRegistry, block.footnoteNote),
-      ctx.page,
-      block.bbox.x * ctx.scale,
-      ctx.pageHeightPt - block.bbox.y * ctx.scale,
-    );
+    // The top left of the note's box on the sheet.
+    const [left, , , top] = rectOfBlock(ctx, block);
+    linkRegistry.addDestination(footnoteDestination(linkRegistry, block.footnoteNote), ctx.page, left, top);
   }
   // Justify against the block's own measure (see the canvas backend): blocks
   // inside callouts are narrower than their column.

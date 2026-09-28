@@ -253,7 +253,7 @@ The groups, in browsing order:
     - **Box**: fill, outline width and colour, corner radius, horizontal and vertical padding (with **Top padding** and **Bottom padding** to pad them apart, which centres a capital in a round chip), and the minimum gap to the neighbouring words.
   - *Formulas* (`math`), with **Indent after a display** (`math.indentAfterDisplay`) and **Keep with its lead-in line** (`math.keepWithLeadIn`).
   - *Footnotes* (`footnotes`): **Placement** (column foot or end of chapter), **Position in the column** at the end of a chapter, **Numbering** (per chapter or continuous), the note size, leading, colour, alignment and hanging indent, the spaces above and between the notes, and the **Separator rule** (length, thickness, colour). See [Footnotes](/en/docs/configuration#footnotes).
-  - *East Asian typography* (`cjk`): **Regional conventions** (mainland China, Taiwan, Hong Kong) and **Line breaking** (none, basic, GB, strict), each *Auto* by default, which follows the document language and names what it resolves to. See [East Asian typography](/en/docs/configuration#east-asian-typography).
+  - *East Asian typography* (`cjk`): **Writing mode** (horizontal, or vertical with lines running right to left: `layout.writingMode`), **Binding** (*Auto*, left or right edge: `page.binding`), **Regional conventions** (mainland China, Taiwan, Hong Kong) and **Line breaking** (none, basic, GB, strict), each *Auto* by default, which follows the document language (or, for the binding, the writing mode) and names what it resolves to. See [East Asian typography](/en/docs/configuration#east-asian-typography), [Vertical writing](/en/docs/configuration#vertical-writing) and [Binding](/en/docs/configuration#binding).
 - **Headings & contents**
   - *Headings*: general defaults plus per-level H1–H6 settings. They include:
     - letter case, **Letter spacing** (`levels[].letterSpacing`, negative to tighten), alignment (ragged right, justified, centred or ragged left), break-before with parity, and span;
@@ -404,7 +404,7 @@ A toolbar at the top of the canvas viewport provides:
 
 - **Zoom controls** — Zoom in and out (1.25x per step, range 0.25x–4x). Manual zooming disables fit mode.
 - **Fit modes** — Fit to page width or fit to page height. Toggles on/off; fitting recalculates automatically on window resize.
-- **View modes** — Single page (one page per row) or double-page spread (book-like layout where the first page appears on the right as a recto, and subsequent pages are paired as spreads).
+- **View modes** — Single page (one page per row) or double-page spread (book-like layout where the first page appears on the right as a recto, and subsequent pages are paired as spreads). A book bound on the right (`page.binding`, vertical Chinese) shows its spreads the other way round: page 1 alone on the left, then `[3 | 2]`, `[5 | 4]`. On a vertical page a click lands on the character under the pointer, and the caret is a bar across the column.
 
 Pages render lazily via `IntersectionObserver` — only visible pages (plus a 200px margin) are drawn to canvas, keeping GPU memory usage low for long documents.
 

@@ -1,5 +1,5 @@
 import type { VDTDocument } from 'postext';
-import { resourceBlockToLocal } from 'postext';
+import { pageToFlow, resourceBlockToLocal } from 'postext';
 import { bandCharAtX, bandLineBoxes, bandPlainToSource, bandTitleBlocks, isHiddenUnderBand } from './bandTitle';
 
 type VDTBlock = VDTDocument['blocks'][number];
@@ -225,7 +225,9 @@ type DesignSlotOf = NonNullable<VDTPageOf['openerBand']>;
  * picture, a header logo, an advanced heading design's plate — as the blob
  * id the block was resolved to, or null when none is there. Slots paint in
  * order (in-column overlays, then the opener band, header and footer) and
- * later blocks over earlier ones, so the last hit wins.
+ * later blocks over earlier ones, so the last hit wins. The point is on the
+ * sheet: on a vertical page it is turned into the flow frame for every slot
+ * but the header and the footer.
  */
 export function designImageFileIdAtPixel(
   doc: VDTDocument,
@@ -240,14 +242,17 @@ export function designImageFileIdAtPixel(
     if (b.pageIndex === pageIndex && b.designOverlay) slots.push(b.designOverlay);
   }
   if (page.openerBand) slots.push(page.openerBand);
-  if (page.header) slots.push(page.header);
-  if (page.footer) slots.push(page.footer);
+  const flow = pageToFlow(page, xPage, yPage);
+  const sheetSlots = new Set<DesignSlotOf>();
+  if (page.header) { slots.push(page.header); sheetSlots.add(page.header); }
+  if (page.footer) { slots.push(page.footer); sheetSlots.add(page.footer); }
   let hit: string | null = null;
   for (const slot of slots) {
+    const { x, y } = sheetSlots.has(slot) ? { x: xPage, y: yPage } : flow;
     for (const block of slot.blocks) {
       if (block.kind !== 'image') continue;
       const r = block.bbox;
-      if (xPage >= r.x && xPage <= r.x + r.width && yPage >= r.y && yPage <= r.y + r.height) hit = block.fileId;
+      if (x >= r.x && x <= r.x + r.width && y >= r.y && y <= r.y + r.height) hit = block.fileId;
     }
   }
   return hit;

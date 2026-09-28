@@ -10,7 +10,7 @@
 
 import type { ContentBlock } from '../parse';
 import { plainSpans } from '../parse/inlineFormatting';
-import type { ResolvedHeadingLevelConfig, ResolvedHeadingStyleConfig } from '../types';
+import type { ResolvedHeadingLevelConfig, ResolvedHeadingStyleConfig, WritingMode } from '../types';
 import type { ResolvedConfig, VDTBlock } from '../vdt';
 import { buildHeadingLevelMap } from './config';
 import { resolveBreakBefore } from '../defaults/headings';
@@ -199,6 +199,13 @@ export function computeSectionStyles(
     }
   }
   return out;
+}
+
+/** The writing mode content block `blockIdx` is laid out in: its styled
+ *  section's layout (which inherits the document's writing mode unless it
+ *  sets its own), else the document's. */
+export function sectionWritingMode(plan: HeadingSectionPlan, resolved: ResolvedConfig, blockIdx: number): WritingMode {
+  return (plan.byBlock[blockIdx]?.layout ?? resolved.layout).writingMode;
 }
 
 /** The resolved config a styled section's pages are laid out with: the

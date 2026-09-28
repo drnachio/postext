@@ -58,7 +58,7 @@ import {
   isFullwidthDigit,
   isLineEndProhibited,
   isLineStartProhibited,
-  isWesternWordChar,
+  isWordInnerMark,
   type CjkClass,
   type CjkLineBreakLevel,
 } from './cjkClasses';
@@ -66,6 +66,7 @@ import { hasCJK } from './cjk';
 import { graphemeCount, graphemesOf, lastGrapheme } from './graphemes';
 import { isBreakingSpace } from './spaces';
 import { trimChipLineEdges } from './chipEdges';
+import { cellAdvance, getMeasureWritingMode, withMeasureWritingMode } from './vertical';
 
 /** Fit tolerance of the breaker (px): running sums of many widths may
  *  land a hair past a measure they fill exactly. */
@@ -185,9 +186,7 @@ function styleOf(span: InlineSpan, fonts: Fonts): UnitStyle {
 /** A grapheme set as a Chinese character here: a CJK grapheme, unless it
  *  is the apostrophe or the interpunct of a Latin word ("don’t", "l·l"). */
 function isCjkHere(g: string, prev: string | undefined, next: string | undefined): boolean {
-  if (!isCjkGrapheme(g)) return false;
-  if ((g === '\u2019' || g === '\u00B7') && isWesternWordChar(prev) && isWesternWordChar(next)) return false; // ’ ·
-  return true;
+  return isCjkGrapheme(g) && !isWordInnerMark(g, prev, next);
 }
 
 /** Marks that pair up into one 2-em unit (破折号, 省略号). */
@@ -197,9 +196,10 @@ function pairable(g: string): boolean {
 
 /**
  * The units of a paragraph's spans, in order. `letterSpacingPx` (the
- * block's tracking) is measured into every width, per grapheme.
+ * block's tracking) is measured into every width, per grapheme. In
+ * `vertical` text a CJK character advances by its cell (`cellAdvance`).
  */
-function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx: number): Unit[] {
+function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx: number, vertical = false): Unit[] {
   const units: Unit[] = [];
   const track = (n: number): number => (letterSpacingPx === 0 ? 0 : letterSpacingPx * n);
   let zwsp = false;
@@ -342,7 +342,7 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
       if (pairOpen >= 0 && units[pairOpen]!.text === g && !zwsp && units[pairOpen]!.link === link) {
         const u = units[pairOpen]!;
         u.text += g;
-        u.width += measureTextWidth(g, style.font) + track(1);
+        u.width += cellAdvance(g, style.font, vertical, u.first) + track(1);
         u.graphemes = 2;
         u.first = u.last = g === '\u2026' || g === '\u22EF' ? 'ellipsis' : 'dash';
         pairOpen = -1;
@@ -355,7 +355,7 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
       push({
         kind: 'text',
         text: g,
-        width: (style.smallCaps ? textWidth(g, style.font, true) : measureTextWidth(g, style.font)) + track(1),
+        width: (style.smallCaps && !vertical ? textWidth(g, style.font, true) : cellAdvance(g, style.font, vertical, cls)) + track(1),
         graphemes: 1,
         first: cls,
         last: cls,
@@ -717,6 +717,8 @@ interface ComposeContext {
   lineHeightPx: number;
   indentOf: (line: number) => number;
   measureOf: (line: number) => number;
+  /** Vertical text: a Western run keeps the gap after it in its width. */
+  vertical?: boolean;
 }
 
 /** The segments, text and flags of one line (see the module comment for
@@ -824,6 +826,12 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
     const gap = tracking > 0 && stretches[j] ? tracking : 0;
     if (gap === 0) {
       addText(u, u.text, u.width, undefined);
+    } else if (ctx.vertical && u.run) {
+      // In vertical text a run is painted whole, its cells and sideways
+      // letters as it was measured: the gap after it is advance only, and
+      // cutting its last letter off would lose the neighbour an apostrophe
+      // or an interpunct inside it is read with (`verticalRuns`).
+      addText(u, u.text, u.width + gap, undefined);
     } else if (u.graphemes <= 1) {
       addText(u, u.text, u.width + gap, gap);
     } else {
@@ -879,9 +887,16 @@ export function composeCjkParagraph(
   lineHeightPx: number,
   options: MeasureBlockOptions | undefined,
 ): MeasuredBlock {
+  // A writing mode asked for this paragraph alone: the Latin runs' widths
+  // (`textWidth`) read it too.
+  if (options?.writingMode !== undefined && options.writingMode !== getMeasureWritingMode()) {
+    const opts = options;
+    return withMeasureWritingMode(opts.writingMode!, () => composeCjkParagraph(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, opts));
+  }
   const fonts: Fonts = { normal: normalFont, bold: boldFont, italic: italicFont, boldItalic: boldItalicFont };
   const letterSpacingPx = options?.letterSpacingPx ?? 0;
-  const units = buildUnits(spans, fonts, letterSpacingPx);
+  const vertical = getMeasureWritingMode() === 'vertical-rl';
+  const units = buildUnits(spans, fonts, letterSpacingPx, vertical);
   if (!units.some((u) => u.kind !== 'space')) return { lines: [], totalHeight: 0 };
   const level = options?.cjkLineBreak ?? getCjkLineBreak();
   const breaks = breakOpportunities(units, level);
@@ -903,6 +918,7 @@ export function composeCjkParagraph(
     lineHeightPx,
     indentOf,
     measureOf,
+    ...(vertical ? { vertical: true } : {}),
   };
   const compose = (ranges: LineRange[]): VDTLine[] => ranges.map((r, li) => composeLine(units, r, li, li === ranges.length - 1, ctx));
 
@@ -951,7 +967,7 @@ export interface CjkWordBreaks {
  */
 export function cjkWordBreaks(word: string, font: string, smallCaps: boolean | undefined, letterSpacingPx: number, level: CjkLineBreakLevel = getCjkLineBreak()): CjkWordBreaks {
   const span: InlineSpan = { text: word, bold: false, italic: false, ...(smallCaps ? { smallCaps: true } : {}) };
-  const units = buildUnits([span], { normal: font, bold: font, italic: font, boldItalic: font }, letterSpacingPx);
+  const units = buildUnits([span], { normal: font, bold: font, italic: font, boldItalic: font }, letterSpacingPx, getMeasureWritingMode() === 'vertical-rl');
   const opportunities = breakOpportunities(units, level);
   const starts: number[] = [];
   const sums: number[] = [0];

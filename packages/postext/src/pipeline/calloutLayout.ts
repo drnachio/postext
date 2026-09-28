@@ -39,6 +39,7 @@
  * children.
  */
 
+import { flowTextWidth } from '../measure/vertical';
 import type { ContentBlock, DirectiveAttrs } from '../parse';
 import { suffixJoiner } from '../parse/inlineFormatting';
 import { spaceDirectiveLines } from '../parse/attrs';
@@ -61,7 +62,7 @@ import {
   type VDTDesignSlot,
   type VDTDesignTextBlock,
 } from '../vdt';
-import { buildFontString, measureBlock, measureRichBlock, measureTextWidth } from '../measure';
+import { buildFontString, measureBlock, measureRichBlock } from '../measure';
 import { graphemeCount } from '../measure/graphemes';
 import { applyStyleAttrs, isMarkerBlock } from './buildHelpers';
 import { resetLinePositions } from './placement';
@@ -527,7 +528,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   const cornerLeftRoom = hasIcon && cornerIcon && !cornerRight ? Math.max(0, cornerIconW / 2 + gapPx - padL) : 0;
   const titleIndentPx = Math.max(cornerLeftRoom, dimensionToPx(style.titleStyle.indent, dpi, titleFontPx));
   const hasTitle = (!input.continuation || repeatedTitle) && titleText.trim().length > 0;
-  const titleWidthOf = (t: string): number => measureTextWidth(t, titleFont) + titleTrackingPx * graphemeCount(t);
+  const titleWidthOf = (t: string): number => flowTextWidth(t, titleFont) + titleTrackingPx * graphemeCount(t);
 
   // Box width: `fill` uses the given width less the marker column; `auto`
   // shrink-wraps the title.
@@ -1281,7 +1282,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     const tabH = dimensionToPx(lb.height, dpi, lbFontPx);
     const rise = px(lb.offset);
     const inset = px(lb.inset);
-    const textW = measureTextWidth(labelText, lbFont);
+    const textW = flowTextWidth(labelText, lbFont);
     const tabW = textW + 2 * padX;
     const onRight = lb.position === 'top-right';
     const tabX = onRight ? boxWidth - inset - tabW : inset;
@@ -1493,7 +1494,7 @@ function buildIconBlock(
     };
   }
   const font = buildFontString(spec.fontFamily, size, spec.fontWeight.toString());
-  const glyphW = measureTextWidth(spec.glyph, font);
+  const glyphW = flowTextWidth(spec.glyph, font);
   return {
     block: {
       kind: 'text',

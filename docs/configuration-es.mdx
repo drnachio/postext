@@ -34,8 +34,8 @@ Para una visión general de cómo el motor procesa esta configuración, consulta
 
 Esta referencia es larga. Estos son los bloques principales:
 
-- [Página](#página) — tamaño, márgenes, rejilla base, marcas de corte.
-- [Disposición](#disposición) — número de columnas, medianil, filetes.
+- [Página](#página) — tamaño, márgenes, rejilla base, marcas de corte, [encuadernación](#encuadernación).
+- [Disposición](#disposición) — número de columnas, medianil, filetes, [escritura vertical](#escritura-vertical).
 - [Encabezados y pies](#encabezados-y-pies) — elementos de texto y línea por página con marcadores, paridad y alineación.
 - [Texto de cuerpo](#texto-de-cuerpo) — tipografía, separación silábica, viudas y huérfanas.
 - [Idioma del documento](#idioma-del-documento) — el `locale` de primer nivel: respaldo de la separación silábica, tipos de recurso integrados y cadenas de continuación de tablas y de avisos partidos, lengua etiquetada en un PDF accesible; y los [idiomas y escrituras](#idiomas-y-escrituras) que Postext compone.
@@ -124,6 +124,12 @@ La propiedad `page` controla las dimensiones físicas y la apariencia de la pág
       <td>desactivado</td>
       <td>Dibujar la rejilla base sobre las páginas, para comprobar el ritmo vertical. La maquetación se ajusta a la rejilla tanto si se dibuja como si no. Ver más abajo.</td>
     </tr>
+    <tr>
+      <td><code>binding</code></td>
+      <td><code>'auto' | 'left' | 'right'</code></td>
+      <td><code>'auto'</code></td>
+      <td>El borde por el que se encuaderna el libro. <code>'auto'</code> es <code>'right'</code> cuando <code>layout.writingMode</code> es <code>'vertical-rl'</code>, y <code>'left'</code> en otro caso. Un libro encuadernado por la derecha empieza en una página izquierda y espeja los márgenes al revés. Vale para todo el libro: el <code>layout</code> propio de un estilo de título no lo cambia. Ver <a href="#encuadernación">Encuadernación</a>.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -146,6 +152,17 @@ Los libros se leen por pliegos, y el margen interior suele diferir del exterior.
 ```
 
 Con esta configuración toda página impar tiene 2,2 cm de margen a la izquierda (el lomo) y 1,4 cm a la derecha (el corte delantero); toda página par tiene 1,4 cm a la izquierda (el corte delantero) y 2,2 cm a la derecha (el lomo). Cada página compuesta lleva su propio `contentArea` en la `VDTPage`, así que todo lo que deriva de él — columnas, bandas de flotantes a todo el ancho, contenedores de encabezado y pie, y bandas de apertura con `span: 'page'` — sigue automáticamente la geometría espejada. Los marcos de página y sangre que usan los elementos de diseño anclados a `'page'` / `'bleed'` no se ven afectados: describen el pliego físico, no los márgenes.
+
+### Encuadernación
+
+«Los documentos chinos compuestos en vertical se encuadernan por el lado derecho, y los compuestos en horizontal por el izquierdo» ([clreq §7.1.1.1](https://www.w3.org/TR/clreq/#x7-1-1-1-basic-elements-of-page-formatting)). `page.binding: 'right'` compone un libro para el borde derecho:
+
+- La página 1 sigue siendo impar y sigue siendo la página impar del pliego (recto), así que `breakBefore.parity`, `:::pagebreak{parity}`, los elementos de diseño con `parity` y la cuenta de páginas conservan su sentido. Lo que cambia es el lado en que queda la impar: la página izquierda del pliego. Un capítulo que empieza en impar empieza en una página izquierda ([clreq §7.1.3.3](https://www.w3.org/TR/clreq/#x7-1-3-3-how-to-handle-headings-with-new-recto-and-page-break)).
+- Con `margins.mirror`, `left` sigue siendo el margen interior, pero son las páginas impares las que lo cambian de lado: la página 1 tiene el margen interior a su derecha y la 2 a su izquierda. La columna lateral de `oneAndHalf` en `'outer'` / `'inner'`, el flotante girado que se apoya en el lomo, los márgenes de las páginas de parte y los iconos de esquina `'outer'` / `'inner'` de las cajas siguen la misma regla.
+- El documento lo indica (`VDTDocument.binding: 'right'`), de modo que quien lo muestra no tiene que leer la configuración: el Sandbox enseña los pliegos como `[3 | 2]`, con la página 1 sola a la izquierda del lomo, y su visor HTML ordena las páginas de derecha a izquierda, se abre por el extremo derecho y la flecha izquierda pasa a la página siguiente. `renderToHtml` en modo múltiple ordena la fila de derecha a izquierda.
+- El PDF lleva `/ViewerPreferences << /Direction /R2L >>` y `/PageLayout /TwoPageRight` (la página 1 sola y luego por pares), etiquetado o no. Acrobat y Foxit los respetan; el visor integrado de Chrome no hace caso de ninguno.
+
+Los folios y los encabezados no cambian de lado por sí solos: una plantilla que pone el número de página en la esquina exterior necesita sus elementos de página par e impar preparados para el borde derecho (los elementos admiten `parity`).
 
 ### Tamaños de página predefinidos
 
@@ -427,8 +444,29 @@ La propiedad `layout` controla cómo se organizan las columnas dentro del área 
       <td><code>2</code></td>
       <td>Mínimo de líneas de un párrafo o de un elemento de lista que deja a cada lado un corte dentro de él cuando una caja se parte (<code>splitMinLines</code>, en <a href="#estilos-de-aviso">Estilos de aviso</a>, sigue contando todas las líneas de la caja a cada lado del corte). Un número entero, como mínimo 1. Con el valor por defecto, un corte nunca deja una línea sola de un párrafo o elemento al pie de una columna ni al principio de la siguiente; si el <code>splitMinLines</code> del estilo de la caja es menor, manda ese. Con <code>1</code> un corte puede dejar una línea del párrafo o elemento a un lado, como hasta postext 1.4. Las configuraciones guardadas por versiones anteriores cuyos capítulos tienen algún <code>:::callout</code> se leen con <code>1</code> (ver <a href="#paquetes-escritos-por-postext-14-o-anterior">Paquetes escritos por postext 1.4 o anterior</a>); en código, <code>pinLegacyBoxChildCut</code>, de <code>postext/bundle</code>, hace lo mismo.</td>
     </tr>
+    <tr>
+      <td><code>writingMode</code></td>
+      <td><code>'horizontal-tb' | 'vertical-rl'</code></td>
+      <td><code>'horizontal-tb'</code></td>
+      <td>Cómo corren las líneas. <code>'vertical-rl'</code> compone el texto chino o japonés en vertical: los caracteres de arriba abajo y cada línea a la izquierda de la anterior. El <code>layout</code> de un estilo de título lo hereda salvo que fije el suyo, así que un apéndice horizontal puede seguir a un libro vertical. Ver <a href="#escritura-vertical">Escritura vertical</a>.</td>
+    </tr>
   </tbody>
 </table>
+
+### Escritura vertical
+
+Con `writingMode: 'vertical-rl'` una página se compone como una página horizontal girada un cuarto de vuelta en el sentido de las agujas del reloj. El flujo se compone en un marco tan ancho como alto es el pliego; sus líneas son las columnas del texto vertical, que se leen desde la derecha, y todo lo que el motor hace con las líneas (cortes, justificación, flotantes, notas al pie, reglas de cohesión) funciona en ese marco. En el pliego, por tanto:
+
+- Una columna de la disposición es un **piso** (栏): `layoutType: 'double'` da dos pisos apilados de arriba abajo, que se llenan desde la esquina superior derecha; `gutterWidth` es el hueco entre ellos y el filete de columna, una línea horizontal entre ambos. Los pisos no se igualan al final de un capítulo ([clreq §7.1.3.4](https://www.w3.org/TR/clreq/#x7-1-3-4-handling-of-spaces-just-before-the-new-recto-page-breaks-and-new-edges)): el equilibrado de columnas está desactivado en un documento vertical salvo que se fije `headings.balancing.enabled`.
+- Lo que el flujo llama «arriba» es el borde **derecho** del pliego, donde empieza la lectura: un flotante superior queda a la derecha de la página, uno inferior a la izquierda, una apertura a toda la página es una franja a lo largo del borde derecho y las notas al pie caen en el extremo izquierdo de cada piso. Un elemento de diseño anclado a la parte superior de la página (un diseño de título, una caja fija) se ancla al borde derecho. En `sideColumnSide`, `'left'` es el piso de arriba y `'right'` el de abajo; `'outer'` e `'inner'` valen como `'right'` y `'left'`.
+- Los márgenes del flujo son los del pliego girados: el margen derecho es la parte superior del flujo y el superior su izquierda. `page.margins` conservan sus nombres en el pliego.
+- Los encabezados, los folios, las marcas de corte y el fondo de página siguen en el pliego, en horizontal, como describe clreq para los libros verticales.
+- **Las figuras y las tablas se mantienen derechas.** Una figura ocupa la altura de su piso hasta donde lo permite su pie, y como mucho el ancho de la página; el ancho que toma es el espacio que ocupa en el flujo. Su pie se compone en horizontal debajo de ella, igual que las celdas de una tabla: ambos se miden como texto horizontal. Una tabla se compone derecha a lo ancho de la página y, si es más alta que el piso, sus filas se reparten entre pisos. `placement.align` coloca la figura arriba (`'left'`), en medio o al pie de su piso. Un `placement.rotate` no se aplica cuando la figura se cita por primera vez en texto vertical: la composición avisa con `rotateIgnoredVertical`. Una sección horizontal del libro (un estilo de título cuyo `layout` fija `'horizontal-tb'`) gira sus figuras como se le pide.
+- Las imágenes de un diseño (la ilustración de una apertura o de una página de parte) también quedan derechas. Su caja en el flujo se dimensiona con el ancho y el alto de la imagen intercambiados, de modo que `size.width` es lo que la imagen ocupa a lo largo de la columna, y su ancho en el pliego sale de sus proporciones.
+- Caracteres: los hanzi, los kana y las formas de ancho completo quedan derechos, a un cuadratín cada uno; las palabras latinas y los números se tumban con su ancho horizontal; la puntuación toma la forma vertical de la fuente. Los signos de pausa y de final nunca se giran: una fuente de China continental pone 、。，． en la esquina superior derecha de la celda y ！？：； en su mitad derecha, y una de Taiwán o Hong Kong los centra (`cjk.region`). Los paréntesis y las comillas toman su forma vertical, las rayas y los puntos suspensivos se giran, y “ ” ‘ ’ se leen como 『』「」 en texto de China continental. El punto medio (·) ocupa media celda en texto de China continental y una celda entera en el de Taiwán y Hong Kong. Los signos que Unicode pone derechos (× © ± § ℃ ① y parecidos) ocupan una celda propia, también dentro de un número: `3×4` son el 3 y el 4 tumbados con el × derecho entre ellos. Un apóstrofo o un punto medio entre dos letras de una palabra latina (`don’t`, `l·l`) sigue en la palabra, tumbado. Un párrafo latino dentro de un flujo vertical sigue las mismas reglas. Las fórmulas en línea, las fichas y las muestras de color se tumban con la línea.
+- Cada carácter se mide como se pinta: una celda avanza su celda a lo largo de la línea, un tramo tumbado su ancho horizontal. El texto que queda horizontal en el pliego (titulillos, folios, pies, celdas de tabla) se mide en horizontal.
+
+Para quien lee la composición: una página vertical lleva `VDTPage.flow`. Su `contentArea`, sus columnas, bloques, líneas, flotantes, áreas de notas, banda de apertura y superposiciones de diseño de los bloques están en coordenadas del flujo; `width`, `height`, `header` y `footer` están en el pliego. `flowToPage`, `pageToFlow`, `flowRectToPage` y `pageRectToFlow` pasan de unas a otras, y `verticalOrientation(char, region)` dice cómo queda un carácter. `flow.centralBaselines` da, por familia tipográfica, el eje sobre el que la composición centró los caracteres derechos. El canvas pinta la página vertical por su cuenta; para pintar la puntuación con las formas verticales propias de la fuente, un anfitrión en el navegador carga, una vez por familia, una fuente gemela con ellas activadas: `loadVerticalAlternates(family, faces)`, donde `faces` son los orígenes de la familia (URL o bytes) y sus descriptores. El Sandbox lo hace con todas las familias de un documento vertical. Sin gemela, los paréntesis se giran sobre el centro de su cuadratín y los signos de pausa y de final de China continental se desplazan dentro de su celda adonde los ponen las formas verticales de la fuente: 、。，． a la esquina superior derecha (a menos de 0,07 cuadratines de las formas verticales de Noto Serif SC) y ！？：； medio cuadratín a la derecha y un poco hacia arriba (a menos de 0,02). El PDF dibuja el flujo girado pero todavía no pone derechos los caracteres, y la salida HTML aún no compone líneas verticales.
 
 ### Filete de columna
 

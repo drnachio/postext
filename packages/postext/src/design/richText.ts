@@ -4,8 +4,9 @@
 // whole strings; here every width is the sum of per-run widths, exactly as
 // the renderers paint the runs one after another.
 
+import { flowTextWidth } from '../measure/vertical';
 import { parseInlineFormatting } from '../parse/inlineFormatting';
-import { buildFontString, measureTextWidth } from '../measure';
+import { buildFontString } from '../measure';
 import { scriptMetrics, stackedScriptPairs } from '../measure/rich';
 import { graphemeCount } from '../measure/graphemes';
 import { hyphenateText } from '../hyphenate';
@@ -124,7 +125,7 @@ export class RichMeasurer {
   constructor(readonly rt: RichDesignText, readonly letterSpacingPx: number) {}
 
   private widthOf(text: string, style: number): number {
-    return Math.max(0, measureTextWidth(text, this.rt.styles[style]!.font) + this.letterSpacingPx * graphemeCount(text));
+    return Math.max(0, flowTextWidth(text, this.rt.styles[style]!.font) + this.letterSpacingPx * graphemeCount(text));
   }
 
   /** The pieces of `[a, b)`, one per change of style. */

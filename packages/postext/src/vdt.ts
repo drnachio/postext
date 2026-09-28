@@ -619,6 +619,81 @@ export function resourceBlockRectToPage(
   return createBoundingBox(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.abs(b.x - a.x), Math.abs(b.y - a.y));
 }
 
+/**
+ * The frame a vertical page's flow is laid out in (`VDTPage.flow`). The
+ * engine sets a `'vertical-rl'` page as a horizontal page turned a quarter
+ * turn clockwise: the flow is laid out in a frame `page.height` wide and
+ * `page.width` tall, whose x axis runs down the sheet (the direction of a
+ * vertical line) and whose y axis runs leftward (the direction lines
+ * advance). `rotation` maps that frame onto the page exactly as a `'cw'`
+ * resource rotation does: `{ direction: 'cw', originX: page.width,
+ * originY: 0, width: page.height, height: page.width }`, so a flow point
+ * `(x, y)` lands at page `(page.width − y, x)` (see {@link flowToPage}).
+ */
+export interface VDTFlowFrame {
+  writingMode: 'vertical-rl';
+  rotation: VDTResourceRotation;
+  /** Where the ideographic em box's centre sits above the alphabetic
+   *  baseline, in ems, per font family (the first family of a font string,
+   *  unquoted): the axis upright characters are centred on and turned
+   *  about. Measured once per family by the layout, so every renderer
+   *  turns a character about the same point. A family missing here takes
+   *  {@link DEFAULT_CENTRAL_BASELINE}. */
+  centralBaselines?: Record<string, number>;
+}
+
+/** Where the ideographic em box's centre sits above the alphabetic
+ *  baseline, in ems, when the font was not measured: the value of every
+ *  Source Han / Noto CJK face (em box from −0.12 to 0.88 em). */
+export const DEFAULT_CENTRAL_BASELINE = 0.38;
+
+/** Whether a page's flow is set vertically (`page.flow`). */
+export function pageIsVertical(page: Pick<VDTPage, 'flow'>): boolean {
+  return page.flow !== undefined;
+}
+
+/** Map a point of a page's flow frame to page coordinates: the identity on
+ *  a horizontal page, `(page.width − y, x)` on a vertical one. */
+export function flowToPage(page: Pick<VDTPage, 'flow'>, x: number, y: number): { x: number; y: number } {
+  const r = page.flow?.rotation;
+  if (!r) return { x, y };
+  return { x: r.originX - y, y: r.originY + x };
+}
+
+/** Map a page point into the page's flow frame (the inverse of
+ *  {@link flowToPage}). */
+export function pageToFlow(page: Pick<VDTPage, 'flow'>, x: number, y: number): { x: number; y: number } {
+  const r = page.flow?.rotation;
+  if (!r) return { x, y };
+  return { x: y - r.originY, y: r.originX - x };
+}
+
+/** Map an axis-aligned rect of a page's flow frame to the page: width and
+ *  height swap on a vertical page. */
+export function flowRectToPage(page: Pick<VDTPage, 'flow'>, rect: BoundingBox): BoundingBox {
+  if (!page.flow) return rect;
+  const a = flowToPage(page, rect.x, rect.y);
+  const b = flowToPage(page, rect.x + rect.width, rect.y + rect.height);
+  return createBoundingBox(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.abs(b.x - a.x), Math.abs(b.y - a.y));
+}
+
+/** Map an axis-aligned page rect into the page's flow frame (the inverse
+ *  of {@link flowRectToPage}). */
+export function pageRectToFlow(page: Pick<VDTPage, 'flow'>, rect: BoundingBox): BoundingBox {
+  if (!page.flow) return rect;
+  const a = pageToFlow(page, rect.x, rect.y);
+  const b = pageToFlow(page, rect.x + rect.width, rect.y + rect.height);
+  return createBoundingBox(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.abs(b.x - a.x), Math.abs(b.y - a.y));
+}
+
+/** The flow frame of a vertical page `width` × `height` px (physical). */
+export function verticalFlowFrame(width: number, height: number): VDTFlowFrame {
+  return {
+    writingMode: 'vertical-rl',
+    rotation: { direction: 'cw', originX: width, originY: 0, width: height, height: width },
+  };
+}
+
 export interface ResolvedResourceBlock {
   /** The source resource. */
   resource: Resource;
@@ -1082,6 +1157,11 @@ export interface VDTDesignImageBlock {
   /** For an SVG with a print master (`Resource.svg.pdfFileId`): the
    *  master's id, which the PDF backend embeds in place of the SVG. */
   pdfFileId?: string;
+  /** A picture of a vertical page's flow, sized to stand upright on the
+   *  sheet: the box's `width` runs down the sheet and is the picture's
+   *  height there, its `height` the picture's width. Renderers draw the
+   *  picture turned back upright, filling the box. */
+  upright?: true;
 }
 
 export type VDTDesignBlock =
@@ -1113,14 +1193,29 @@ export interface VDTColumnRule {
 
 export interface VDTPage {
   index: number;
+  /** The sheet's width and height (px), physical on every page. */
   width: number;
   height: number;
   /** The page's own content area (px, page coordinates): the trim box inset
    *  by the margins, mirrored on even pages when `margins.mirror` is on.
    *  Columns, float bands, header/footer containers and opener bands all
    *  derive from it — renderers read it instead of inferring the area from
-   *  the column bboxes. */
+   *  the column bboxes. On a vertical page it is in flow coordinates (see
+   *  {@link flow}); `flowRectToPage(page, page.contentArea)` is the
+   *  physical area. */
   contentArea: BoundingBox;
+  /** Present on a page whose flow is set vertically (`layout.writingMode:
+   *  'vertical-rl'`): the frame the flow was laid out in. On such a page
+   *  `contentArea`, the columns, blocks, lines, floats, margin notes,
+   *  footnote areas, the opener band and the design overlays of blocks are
+   *  in FLOW coordinates, mapped onto the sheet by `flow.rotation` (see
+   *  {@link flowToPage}, {@link flowRectToPage}); `width`, `height`, the
+   *  header and the footer are physical, as are crop marks and the page
+   *  background. Text painted in the flow is set vertically: upright CJK
+   *  characters, Latin turned sideways; resource blocks carry a `'ccw'`
+   *  rotation that composes with the frame to stand upright. Absent on
+   *  horizontal pages. */
+  flow?: VDTFlowFrame;
   /** Page classification (see `PageRole`), stamped after placement by
    *  `classifyPages`. Drives the per-element `pages` filter of design
    *  slots. Absent until headers/footers are built. */
@@ -1318,6 +1413,12 @@ export type ContentWarning = ContentWarningBase & (
   /** An attribute key with letters outside ASCII (`作者=曹雪芹`): keys are
    *  ASCII, so the attribute is not read. Points at the key (#181). */
   | { kind: 'attributeKeyInvalid'; key: string }
+  /** A resource whose `placement.rotate` asks for a quarter turn, in a
+   *  document set vertically (`layout.writingMode: 'vertical-rl'`): every
+   *  figure and table of a vertical flow stands upright, so the turn is
+   *  not applied, and the resource floats in its own `span` (#188). Points
+   *  at its first use. */
+  | { kind: 'rotateIgnoredVertical'; resourceId: string }
 );
 
 /** What a build reports in `VDTDocument.warnings`: a construct the layout
@@ -1354,6 +1455,11 @@ export type RenderWarning = MissingImageWarning;
 export interface VDTDocument {
   pages: VDTPage[];
   blocks: VDTBlock[];
+  /** `'right'` when the book is bound on its right edge (`page.binding`):
+   *  page 1 is still the recto, but the left page of a spread; viewers show
+   *  the pairs `[3 | 2]` and turn pages leftward. Absent for a left-bound
+   *  book. */
+  binding?: 'right';
   /** Layout warnings raised while placing the content: boxes the layout
    *  had to force (see {@link LayoutWarning}). Absent or empty when
    *  everything fit. */

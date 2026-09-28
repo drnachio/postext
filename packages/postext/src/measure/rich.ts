@@ -18,6 +18,7 @@ import { trimChipLineEdges } from './chipEdges';
 import { cjkJoinBreaks, hasCJK } from './cjk';
 import { composeCjkParagraph, cjkWordBreaks, composesAsCjk, type CjkWordBreaks } from './cjkCompose';
 import { graphemeCount } from './graphemes';
+import { getMeasureWritingMode, measuringVertically, verticalTextWidth, withMeasureWritingMode } from './vertical';
 import { NO_BREAK_SPACES, WORDS_AND_SPACES_RE, isBlankText, isBreakingSpace, isBreakingSpaceRun } from './spaces';
 import { breaksAfterDash, breaksAfterHardHyphen, hasCompound, isDash, raggedStretchPx } from './breakRules';
 
@@ -249,8 +250,15 @@ export function smallCapsWidth(text: string, font: string): number {
   return w;
 }
 
-/** Advance of `text` in `font`, set in small capitals when `smallCaps`. */
+/** Advance of `text` in `font`, set in small capitals when `smallCaps`.
+ *  In vertical text (`measuringVertically`) a character that stands in a
+ *  cell of its own advances its cell (`verticalTextWidth`), as the
+ *  renderers paint it; ASCII text never holds one. */
 export function textWidth(text: string, font: string, smallCaps: boolean | undefined): number {
+  // eslint-disable-next-line no-control-regex
+  if (measuringVertically() && /[^\u0000-\u007F]/.test(text)) {
+    return verticalTextWidth(text, font, (run) => (smallCaps ? smallCapsWidth(run, font) : measureTextWidth(run, font)));
+  }
   return smallCaps ? smallCapsWidth(text, font) : measureTextWidth(text, font);
 }
 
@@ -1165,6 +1173,12 @@ function measureRichText(
   lineHeightPx: number,
   options: MeasureBlockOptions | undefined,
 ): MeasuredBlock {
+  // A writing mode asked for this text alone (`options.writingMode`): every
+  // width below reads it.
+  if (options?.writingMode !== undefined && options.writingMode !== getMeasureWritingMode()) {
+    const opts = options;
+    return withMeasureWritingMode(opts.writingMode!, () => measureRichText(spans, plainText, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, opts));
+  }
   // Chinese, Japanese or Korean text: its own composer, which breaks
   // between characters under the document's line-break rules and spreads
   // justified lines between them — also text with no two CJK letters in a

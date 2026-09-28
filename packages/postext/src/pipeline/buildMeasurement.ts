@@ -37,6 +37,8 @@ export interface MeasurementInput {
   resourceNumber?: string;
   /** Widest the figure's image may be set (`ResourceLayoutInput.maxBodyWidth`). */
   maxBodyWidth?: number;
+  /** A resource on a vertical page: set upright (`ResourceLayoutInput.upright`). */
+  upright?: { maxLength: number };
 }
 
 export interface MeasurementResult {
@@ -67,11 +69,13 @@ export function runMeasurement(input: MeasurementInput): MeasurementResult {
       resourceTypes: input.resourceTypes ?? [],
       resources: input.resources ?? [],
       ...(input.maxBodyWidth !== undefined ? { maxBodyWidth: input.maxBodyWidth } : {}),
+      ...(input.upright ? { upright: input.upright } : {}),
     });
     const measured: MeasuredBlock = {
       lines: [{
         text: '',
-        bbox: { x: 0, y: 0, width: block.bodyRect.width, height: totalHeight },
+        // An upright block's width in the flow is its frame's height.
+        bbox: { x: 0, y: 0, width: block.rotation ? block.rotation.height : block.bodyRect.width, height: totalHeight },
         baseline: 0,
         hyphenated: false,
         segments: [],

@@ -244,3 +244,12 @@ export function isWesternWordChar(grapheme: string | undefined): boolean {
   if (isCjkCodePoint(cp)) return false;
   return /[\p{L}\p{N}]/u.test(grapheme);
 }
+
+/** Whether an apostrophe or an interpunct sits inside a Latin word
+ *  ("don’t", "l·l"): between two letters or digits of Western text. It
+ *  belongs to the word then — the composer keeps it in the word's run, and
+ *  vertical text sets it sideways with the word — not to the Chinese text
+ *  around it. */
+export function isWordInnerMark(grapheme: string, prev: string | undefined, next: string | undefined): boolean {
+  return (grapheme === '\u2019' || grapheme === '\u00B7') && isWesternWordChar(prev) && isWesternWordChar(next);
+}

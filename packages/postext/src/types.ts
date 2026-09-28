@@ -497,8 +497,11 @@ export interface PageMargins {
   right?: Dimension;
   /** Mirrored (facing-page) margins: `left` is the inner margin and `right`
    *  the outer one. Odd pages (page 1 = odd) keep them as written; even
-   *  pages swap them so the inner margin always faces the spine. Default
-   *  `false`. */
+   *  pages swap them so the inner margin always faces the spine. In a
+   *  right-bound book (`page.binding`) it is the other way round: the
+   *  recto (odd) is the left page of the spread, its spine on its right,
+   *  so odd pages swap and even pages keep the margins as written — `left`
+   *  is still the inner margin. Default `false`. */
   mirror?: boolean;
 }
 
@@ -561,6 +564,9 @@ export interface ResolvedPageNumberingConfig {
   startAt: number;
 }
 
+/** The edge a book is bound on (see `PageConfig.binding`). */
+export type PageBinding = 'auto' | 'left' | 'right';
+
 export interface PageConfig {
   backgroundColor?: ColorValue;
   sizePreset?: PageSizePreset;
@@ -571,6 +577,16 @@ export interface PageConfig {
   cutLines?: CutLinesConfig;
   baselineGrid?: BaselineGridConfig;
   pageNumbering?: PageNumberingConfig;
+  /** The edge the book is bound on. `'left'`: pages turn right to left, as
+   *  in any Western book. `'right'`: the book is bound on its right edge,
+   *  as vertical Chinese and Japanese books are (clreq §7.1.1.1): page 1 is
+   *  still the recto (odd), but it is the LEFT page of a spread, its inner
+   *  margin is on its right, and viewers show the pairs `[3 | 2]`. With
+   *  mirrored margins the recto therefore swaps `left` and `right`: `left`
+   *  stays the inner margin. `'auto'` (the default) is `'right'` when
+   *  `layout.writingMode` is `'vertical-rl'`, else `'left'`. Book-level:
+   *  a heading style's own `layout` never changes it. */
+  binding?: PageBinding;
 }
 
 export interface ResolvedPageConfig {
@@ -583,9 +599,14 @@ export interface ResolvedPageConfig {
   cutLines: { enabled: boolean; bleed: Dimension; markLength: Dimension; markOffset: Dimension; markWidth: Dimension; color: ColorValue };
   baselineGrid: { enabled: boolean; color: ColorValue; lineWidth: Dimension };
   pageNumbering: ResolvedPageNumberingConfig;
+  /** `binding` resolved: `'auto'` is `'right'` in a vertical document. */
+  binding: 'left' | 'right';
 }
 
 export type LayoutType = 'single' | 'double' | 'oneAndHalf';
+
+/** The direction lines run in (see `LayoutConfig.writingMode`). */
+export type WritingMode = 'horizontal-tb' | 'vertical-rl';
 
 /** What the narrow column of a `oneAndHalf` layout carries. `'text'` (the
  *  default): body text flows into it after the main column, as into any
@@ -671,6 +692,17 @@ export interface LayoutConfig {
    *  by an earlier version is read with 1 when its chapters hold a box (see
    *  `migrateConfig` in `postext/bundle`). */
   boxChildSplitMinLines?: number;
+  /** How lines run. `'horizontal-tb'` (the default): left to right, lines
+   *  stacked top to bottom. `'vertical-rl'`: Chinese and Japanese vertical
+   *  setting — characters top to bottom, lines advancing right to left
+   *  (clreq §2.1.2). The flow is laid out as a horizontal page turned a
+   *  quarter turn clockwise: columns become tiers (栏) stacked top to
+   *  bottom, a top float sits at the right edge where reading starts,
+   *  footnotes at the left end of each tier. Figures, tables and images stay
+   *  upright; running heads, folios, crop marks and the page background stay
+   *  physical. See `VDTPage.flow`. A heading style's `layout` inherits the
+   *  document's writing mode unless it sets its own. */
+  writingMode?: WritingMode;
 }
 
 /** Where an inline resource keeps the float gap (see
@@ -689,6 +721,7 @@ export interface ResolvedLayoutConfig {
   inlineResourceGap: InlineResourceGap;
   inlineResourceGapInBoxes: boolean;
   boxChildSplitMinLines: number;
+  writingMode: WritingMode;
 }
 
 export type TextAlign = 'left' | 'justify' | 'center' | 'right';
