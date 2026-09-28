@@ -227,12 +227,19 @@ describe('heading attributes after a Chinese title', () => {
   });
 
   it('keeps braces that the attribute grammar does not read whole', () => {
-    for (const md of ['# Title {x, y}', '# 红楼梦 {紅樓|hóng lóu}', '# 第一回{draft}', '# 石头记{風月寶鑑}']) {
+    for (const md of ['# Title {x, y}', '# 第一回{draft}', '# 石头记{風月寶鑑}']) {
       const [h] = parseMarkdown(md);
       expect(h!.attrs).toBeUndefined();
       expect(h!.text).toBe(md.slice(2));
       expectAligned(md, h!);
     }
+    // A compact ruby at the end of a title is the title's (#194).
+    const md = '# 红楼梦 {紅樓|hóng lóu}';
+    const [h] = parseMarkdown(md);
+    expect(h!.attrs).toBeUndefined();
+    expect(h!.text).toBe('红楼梦 紅樓');
+    expect(h!.spans.filter((s) => s.ruby).map((s) => s.ruby!.text)).toEqual(['hóng', 'lóu']);
+    expectAligned(md, h!);
     // A flag after a space is read, as before.
     expect(parseMarkdown('# Title {draft}')[0]!.attrs).toEqual({ draft: '' });
   });

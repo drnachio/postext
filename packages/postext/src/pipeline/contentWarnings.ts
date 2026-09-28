@@ -532,6 +532,12 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'cjkLooseLine':
       text = `The justified line "${w.text}" needs more space between its characters than the cap allows — it is set short of the measure`;
       break;
+    case 'cjkMarksExceedLeading':
+      text = `The paragraph "${w.text}" has emphasis dots or name and title lines in a line gap of ${w.gapEm} em — they need ${w.neededEm} em; set it with more leading`;
+      break;
+    case 'rubyExceedsLeading':
+      text = `The paragraph "${w.text}" has ruby readings ${w.neededEm} em high in a line gap of ${w.gapEm} em — they touch the next line; set it with more leading`;
+      break;
     case 'unknownNumberFormat':
       text = `${w.path}: unknown number format "${w.value}" — numbered as ${w.used}`;
       break;

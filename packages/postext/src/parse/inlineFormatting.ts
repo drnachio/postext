@@ -2,6 +2,7 @@ import type { InlineLink, InlineSpan, RefCase } from './types';
 import { injectPlaceholderSpans } from './injectSpans';
 import { sliceSpan } from './links';
 import { parseDirectiveAttrs } from './attrs';
+import { applyAnnotationMarks, markAnnotations, stripAnnotations, type QueuedAnnotation } from './annotations';
 
 /** Atomic plain-text placeholder for an inline reference span. One code unit
  *  per `:ref{…}` so `sourceMap` stays 1-to-1 (mirroring the inline-math
@@ -543,20 +544,21 @@ export function trimSpans(spans: InlineSpan[]): InlineSpan[] {
   return out;
 }
 
-/** `spans` set plain: bold, italic, scripts, small capitals and links
- *  dropped, adjacent text spans merged — a heading's spans as they were
- *  built before headings read inline marks (`headings.inlineMarks:
- *  false`). Formulas, references and swatches keep their own spans. */
+/** `spans` set plain: bold, italic, scripts, small capitals, links and the
+ *  Chinese marks (emphasis dots, proper-name and book-title marks) dropped,
+ *  adjacent text spans merged — a heading's spans as they were built before
+ *  headings read inline marks (`headings.inlineMarks: false`). Formulas,
+ *  references, swatches, ruby and warichu notes keep their own spans. */
 export function plainSpans(spans: readonly InlineSpan[]): InlineSpan[] {
   const out: InlineSpan[] = [];
   let changed = false;
   for (const span of spans) {
-    const { script, smallCaps, links, bold, italic, ...rest } = span;
-    if (script || smallCaps || links || bold || italic) changed = true;
+    const { script, smallCaps, links, bold, italic, emphasisMark, properName, bookTitle, ...rest } = span;
+    if (script || smallCaps || links || bold || italic || emphasisMark || properName !== undefined || bookTitle) changed = true;
     const plain: InlineSpan = { ...rest, bold: false, italic: false };
-    const special = plain.math || plain.mathRender || plain.swatch || plain.ref || plain.chip || plain.captionLabel || plain.footnote;
+    const special = plain.math || plain.mathRender || plain.swatch || plain.ref || plain.chip || plain.captionLabel || plain.footnote || plain.ruby || plain.warichu;
     const last = out[out.length - 1];
-    const lastSpecial = last && (last.math || last.mathRender || last.swatch || last.ref || last.chip || last.captionLabel || last.footnote);
+    const lastSpecial = last && (last.math || last.mathRender || last.swatch || last.ref || last.chip || last.captionLabel || last.footnote || last.ruby || last.warichu);
     if (!special && last && !lastSpecial) {
       out[out.length - 1] = { ...last, text: last.text + plain.text };
       changed = true;
@@ -574,7 +576,7 @@ export function plainSpans(spans: readonly InlineSpan[]): InlineSpan[] {
 export function stripInlineFormatting(text: string): string {
   const b = MARKUP_BOUNDARY;
   const wrap = (_: string, inner: string): string => b + inner + b;
-  return restoreEscapes(replaceLinkSyntax(replaceLinkSyntax(protectEscapes(text), true, () => b), false, (label) => b + label + b)
+  return restoreEscapes(replaceLinkSyntax(replaceLinkSyntax(stripAnnotations(protectEscapes(text), b), true, () => b), false, (label) => b + label + b)
     .replace(INLINE_SMALLCAPS_RE, (_, inner: string) => b + unescapeBrackets(inner) + b) // small caps
     .replace(/`(.+?)`/g, wrap)               // inline code
     .replace(/\*\*(.+?)\*\*/g, wrap)          // bold
@@ -787,8 +789,9 @@ function linkDestinationRanges(text: string): Array<readonly [number, number]> {
 }
 
 /** The `{…}` attributes of an inline directive — `:ref{…}`, `:swatch{…}`,
- *  a chip's `:chip[…]{…}` — in group 1: data, never text to break. */
-const DIRECTIVE_ATTRS_RE = /(?::ref|:swatch|:chip\[(?:\\.|[^\]\\\n])+\])(\{[^}\n]*\})/g;
+ *  a chip's `:chip[…]{…}`, an annotation's `:ruby[…]{…}` — in group 1:
+ *  data, never text to break. */
+const DIRECTIVE_ATTRS_RE = /(?::ref|:swatch|:(?:chip|dots|name|book|ruby|warichu)\[(?:\\.|[^\]\\\n])+\])(\{[^}\n]*\})/g;
 
 /**
  * Turn the forced line breaks of a resource snippet ({@link SNIPPET_BREAK_RE})
@@ -910,7 +913,11 @@ export function parseInlineFormatting(text: string): InlineSpan[] {
   // run — so a link inside, across or around emphasis never changes how
   // the text splits into spans — and become ranges once the spans exist.
   const hrefs: string[] = [];
-  const cleaned = stripNonEmphasisFormatting(markSmallCaps(protectEscapes(text)), hrefs);
+  // Chinese annotations (`:dots[…]`, `:ruby[…]{rt="…"}`, `{紅樓|hóng|lóu}`…)
+  // become marks around their text, their attributes queued, before the
+  // emphasis scanners run (#193, #194, #195).
+  const annotations: QueuedAnnotation[] = [];
+  const cleaned = stripNonEmphasisFormatting(markAnnotations(markSmallCaps(protectEscapes(text)), annotations, restoreEscapes), hrefs);
   const spans: InlineSpan[] = [];
 
   // Triple markers (bold+italic) first, then double (bold) — longest first.
@@ -949,6 +956,6 @@ export function parseInlineFormatting(text: string): InlineSpan[] {
   for (const s of spans) if (ESCAPED_RE.test(s.text)) s.text = restoreEscapes(s.text);
   // Small caps first: its marks split spans without moving link ranges,
   // which are taken from the finished spans.
-  const marked = applySmallCapsMarks(dropMarkupBoundaries(spans));
+  const marked = applyAnnotationMarks(applySmallCapsMarks(dropMarkupBoundaries(spans)), annotations);
   return hrefs.length > 0 ? takeLinkMarks(marked, hrefs) : marked;
 }

@@ -4,7 +4,7 @@
  * reconstruction of VDT lines from the optimal breakpoint sequence.
  */
 
-import type { VDTChip, VDTLine, VDTLineSegment } from '../vdt';
+import type { VDTChip, VDTLine, VDTLineSegment, VDTSegmentMarks } from '../vdt';
 import { createBoundingBox } from '../vdt';
 import type { TextAlign } from '../types';
 import type { KPItem, RichTokenMeta } from './types';
@@ -55,6 +55,10 @@ interface RichToken {
   swatch?: { color?: string };
   /** An inline chip (atomic box; see `measure/rich.ts`). */
   chip?: VDTChip;
+  /** Chinese marks on the token's text (#193). */
+  cjkMarks?: VDTSegmentMarks;
+  /** Characters the layout added (a book title's 《》). */
+  inserted?: boolean;
   /** Bare break points (URL joints): no hyphen is appended at the break. */
   bareBreaks?: boolean;
   /** Ends on a closed dash the next, touching token follows: a free break
@@ -261,6 +265,8 @@ export function reconstructRichLines(
           ...(token.script ? { script: token.script, fontString: token.scriptFont, baselineShift: token.baselineShift } : {}),
           ...(token.stacked === 'first' ? { stacked: true } : {}),
           ...(token.smallCaps ? { smallCaps: true } : {}),
+          ...(token.cjkMarks ? { cjkMarks: token.cjkMarks } : {}),
+          ...(token.inserted ? { inserted: true } : {}),
         });
         textParts.push(cleanText);
       } else if (it.type === 'glue' && meta) {

@@ -251,6 +251,8 @@ describe("package exports", () => {
       "defaultCjkLineBreak",
       "defaultCjkPunctuationWidth",
       "defaultCjkCompression",
+      "defaultCjkEmphasis",
+      "defaultCjkBookTitleMark",
       "resolvePlaceholders",
       "computeChapterTitles",
       "computeChapterTitlesAtTop",

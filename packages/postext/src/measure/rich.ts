@@ -1,4 +1,4 @@
-import type { VDTChip, VDTChipRun, VDTLine, VDTLineSegment } from '../vdt';
+import type { VDTChip, VDTChipRun, VDTLine, VDTLineSegment, VDTSegmentMarks } from '../vdt';
 import { createBoundingBox } from '../vdt';
 import type { MathRender } from '../math/types';
 import type { InlineSpan } from '../parse';
@@ -16,7 +16,7 @@ import { computeJustifiedSpaceRatio, hasOverfullLine } from './plain';
 import { quoteFamily } from './font';
 import { trimChipLineEdges } from './chipEdges';
 import { cjkJoinBreaks, hasCJK } from './cjk';
-import { composeCjkParagraph, cjkWordBreaks, composesAsCjk, type CjkWordBreaks } from './cjkCompose';
+import { composeCjkParagraph, cjkWordBreaks, composesAsCjk, spanMarks, type CjkWordBreaks } from './cjkCompose';
 import { graphemeCount } from './graphemes';
 import { getMeasureWritingMode, measuringVertically, verticalTextWidth, withMeasureWritingMode } from './vertical';
 import { NO_BREAK_SPACES, WORDS_AND_SPACES_RE, isBlankText, isBreakingSpace, isBreakingSpaceRun } from './spaces';
@@ -96,6 +96,10 @@ export interface RichToken {
    *  touches it: a run in another style, as in `riddles—*and*` (see
    *  {@link markDashJoins}). The line may break between the two. */
   dashJoin?: boolean;
+  /** Chinese marks on the token's text (#193), for the segment. */
+  cjkMarks?: VDTSegmentMarks;
+  /** Characters the layout added (a book title's 《》). */
+  inserted?: boolean;
 }
 
 /** Whether a resolved swatch colour can fill the square: a six- or
@@ -196,12 +200,14 @@ function tokenFont(
   return t.scriptFont ?? pickSpanFont(t.bold, t.italic, normalFont, boldFont, italicFont, boldItalicFont);
 }
 
-/** The script and small-caps fields a token derived from another (a split,
- *  a hyphenated head) carries on. */
-function scriptOf(t: { script?: 'sup' | 'sub'; scriptFont?: string; baselineShift?: number; smallCaps?: boolean }): Pick<RichToken, 'script' | 'scriptFont' | 'baselineShift' | 'smallCaps'> {
+/** The script, small-caps and Chinese-mark fields a token derived from
+ *  another (a split, a hyphenated head) carries on. */
+function scriptOf(t: { script?: 'sup' | 'sub'; scriptFont?: string; baselineShift?: number; smallCaps?: boolean; cjkMarks?: VDTSegmentMarks; inserted?: boolean }): Pick<RichToken, 'script' | 'scriptFont' | 'baselineShift' | 'smallCaps' | 'cjkMarks' | 'inserted'> {
   return {
     ...(t.script ? { script: t.script, scriptFont: t.scriptFont, baselineShift: t.baselineShift } : {}),
     ...(t.smallCaps ? { smallCaps: true } : {}),
+    ...(t.cjkMarks ? { cjkMarks: t.cjkMarks } : {}),
+    ...(t.inserted ? { inserted: true } : {}),
   };
 }
 
@@ -819,6 +825,8 @@ export function tokenSegment(t: RichToken): PendingSegment {
     ...(t.script ? { script: t.script, fontString: t.scriptFont, baselineShift: t.baselineShift } : {}),
     ...(t.stacked === 'first' ? { stacked: true } : {}),
     ...(t.smallCaps ? { smallCaps: true } : {}),
+    ...(t.cjkMarks ? { cjkMarks: t.cjkMarks } : {}),
+    ...(t.inserted ? { inserted: true } : {}),
   } as PendingSegment;
 }
 
@@ -864,7 +872,13 @@ function tokenizeSpans(
       continue;
     }
     const font = spanFont(span);
-    const scriptFields = scriptFieldsOf(span);
+    // Chinese marks (#193) ride on the span's words like its script.
+    const marks = spanMarks(span, getMeasureWritingMode() === 'vertical-rl');
+    const scriptFields = {
+      ...scriptFieldsOf(span),
+      ...(marks ? { cjkMarks: marks } : {}),
+      ...(span.inserted ? { inserted: true } : {}),
+    };
     // Small capitals: the words keep their case (hyphenation reads it) and
     // measure as they will be painted.
     const sc = !!span.smallCaps;
@@ -1184,7 +1198,9 @@ function measureRichText(
   // justified lines between them — also text with no two CJK letters in a
   // row (价¥5,999。好, 第1条、第2条). A Latin paragraph that only quotes a
   // few CJK words stays here, with a break allowed next to their characters.
-  if (composesAsCjk(plainText)) {
+  // So is a paragraph with ruby or a warichu note (#194, #195), which the
+  // composer alone lays out.
+  if (composesAsCjk(plainText) || spans.some((s) => s.ruby || s.warichu)) {
     return composeCjkParagraph(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options);
   }
 

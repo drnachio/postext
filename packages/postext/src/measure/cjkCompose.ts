@@ -29,8 +29,8 @@
  * and a Markdown link covers only its own.
  */
 
-import type { InlineSpan } from '../parse';
-import type { VDTLine, VDTLineSegment } from '../vdt';
+import type { InlineRuby, InlineSpan, InlineWarichu } from '../parse';
+import type { VDTAnnotationRun, VDTLine, VDTLineSegment, VDTSegmentMarks, VDTWarichu } from '../vdt';
 import { createBoundingBox } from '../vdt';
 import { lineMeasure, type MeasuredBlock, type MeasureBlockOptions } from './types';
 import { measureTextWidth, normalSpaceWidthFor } from './canvas';
@@ -66,7 +66,8 @@ import { hasCJK } from './cjk';
 import { graphemeCount, graphemesOf, lastGrapheme } from './graphemes';
 import { isBreakingSpace } from './spaces';
 import { trimChipLineEdges } from './chipEdges';
-import { cellAdvance, getMeasureWritingMode, withMeasureWritingMode } from './vertical';
+import { cellAdvance, fontEm, getMeasureWritingMode, withMeasureWritingMode } from './vertical';
+import { foldWidth, isZhuyin, noteRowBaselines, readingAdvance, rubyGeometry, splitNote, withFontSize, type RubyGeometry } from './cjkAnnotate';
 import {
   applyLineEdges,
   boxCut,
@@ -142,6 +143,13 @@ interface UnitStyle {
   smallCaps?: boolean;
   /** The font the unit is measured and painted with. */
   font: string;
+  /** Chinese marks on the unit (`:dots`, `:name`, `:book`, #193): the
+   *  segment carries them for the layout's marks pass. */
+  marks?: VDTSegmentMarks;
+  /** Characters the layout added (book-title and warichu brackets). */
+  inserted?: boolean;
+  /** Colour of the unit's text (a warichu note's brackets), hex. */
+  color?: string;
 }
 
 /** What the composer breaks and spreads. */
@@ -192,6 +200,15 @@ interface Unit {
    *  graphemes' glyph starts in its one-em cell, px. Set only when a glyph
    *  is not one em wide, so its box and its advance differ. */
   place?: number[];
+  /** A ruby base (#194): the span's reading and, once sized
+   *  ({@link sizeRubies}), its geometry; `width` is then the base's box. */
+  ruby?: { span: InlineRuby; position: 'over' | 'under' | 'right'; geometry?: RubyGeometry };
+  /** A character of a warichu note (#195): `width` is its advance at the
+   *  note size; a line folds the note's characters it holds into two rows
+   *  ({@link foldNotes}). */
+  note?: InlineWarichu;
+  /** A line's part of a warichu note folded into its rows. */
+  warichu?: VDTWarichu;
 }
 
 interface Fonts {
@@ -201,17 +218,46 @@ interface Fonts {
   boldItalic: string;
 }
 
-function styleOf(span: InlineSpan, fonts: Fonts): UnitStyle {
+/** The marks a span sets on its characters (#193), the emphasis dots'
+ *  defaults filled in: a filled dot (an open circle), under the text, or
+ *  right of it in vertical text. */
+export function spanMarks(span: InlineSpan, vertical: boolean): VDTSegmentMarks | undefined {
+  if (!span.emphasisMark && span.properName === undefined && !span.bookTitle) return undefined;
+  const marks: VDTSegmentMarks = {};
+  if (span.emphasisMark) {
+    const style = span.emphasisMark.style ?? 'dot';
+    marks.dots = {
+      style,
+      fill: span.emphasisMark.fill ?? (style === 'circle' ? 'open' : 'filled'),
+      position: span.emphasisMark.position ?? (vertical ? 'over' : 'under'),
+    };
+  }
+  if (span.properName !== undefined) marks.properName = span.properName;
+  if (span.bookTitle) marks.bookTitle = span.bookTitle.id;
+  return marks;
+}
+
+/** The part of a style key the marks and added characters make. */
+function marksKey(marks: VDTSegmentMarks | undefined, inserted: boolean | undefined): string {
+  if (!marks && !inserted) return '';
+  const d = marks?.dots;
+  return `|m:${d ? `${d.style}${d.fill}${d.position}` : ''}:${marks?.properName ?? ''}:${marks?.bookTitle ?? ''}${inserted ? ':ins' : ''}`;
+}
+
+function styleOf(span: InlineSpan, fonts: Fonts, vertical = false): UnitStyle {
   const script = spanScriptFields(span, fonts.normal, fonts.bold, fonts.italic, fonts.boldItalic);
   const font = script.scriptFont ?? pickSpanFont(span.bold, span.italic, fonts.normal, fonts.bold, fonts.italic, fonts.boldItalic);
+  const marks = spanMarks(span, vertical);
   return {
-    key: `${span.bold ? 'b' : ''}${span.italic ? 'i' : ''}${span.captionLabel ? 'c' : ''}${span.smallCaps ? 's' : ''}|${script.script ?? ''}|${font}|${script.baselineShift ?? ''}`,
+    key: `${span.bold ? 'b' : ''}${span.italic ? 'i' : ''}${span.captionLabel ? 'c' : ''}${span.smallCaps ? 's' : ''}|${script.script ?? ''}|${font}|${script.baselineShift ?? ''}${marksKey(marks, span.inserted)}`,
     bold: span.bold,
     italic: span.italic,
     ...(span.captionLabel ? { captionLabel: true } : {}),
     ...script,
     ...(span.smallCaps ? { smallCaps: true } : {}),
     font,
+    ...(marks ? { marks } : {}),
+    ...(span.inserted ? { inserted: true } : {}),
   };
 }
 
@@ -224,6 +270,143 @@ function isCjkHere(g: string, prev: string | undefined, next: string | undefined
 /** Marks that pair up into one 2-em unit (破折号, 省略号). */
 function pairable(g: string): boolean {
   return g === '\u2014' || g === '\u2015' || g === '\u2026' || g === '\u22EF'; // — ― … ⋯
+}
+
+/** The unit of a ruby base (#194): its characters as one box, measured as
+ *  the composer measures them (cells down a vertical line), the reading
+ *  laid out later (`sizeRubies`). Where the reading goes: `pos`, else
+ *  zhuyin right of each character and anything else over; in vertical text
+ *  `right` is the over side. */
+function rubyBaseUnit(span: InlineSpan, fonts: Fonts, letterSpacingPx: number, vertical: boolean): Unit {
+  const ruby = span.ruby!;
+  const style = styleOf(span, fonts, vertical);
+  const graphemes = graphemesOf(span.text);
+  let width = 0;
+  for (const g of graphemes) {
+    width += isCjkGrapheme(g) ? cellAdvance(g, style.font, vertical, cjkClassOf(g)) : textWidth(g, style.font, style.smallCaps);
+  }
+  width += letterSpacingPx * graphemes.length;
+  const firstG = graphemes[0] ?? '';
+  const lastG = graphemes[graphemes.length - 1] ?? '';
+  let position: 'over' | 'under' | 'right' = ruby.position ?? (isZhuyin(ruby.text) ? 'right' : 'over');
+  if (vertical && position === 'right') position = 'over';
+  return {
+    kind: 'text',
+    text: span.text,
+    width,
+    graphemes: graphemes.length,
+    first: cjkClassOf(firstG),
+    last: cjkClassOf(lastG),
+    firstCjk: isCjkGrapheme(firstG),
+    lastCjk: isCjkGrapheme(lastG),
+    style,
+    at: 0,
+    ruby: { span: ruby, position },
+  };
+}
+
+/**
+ * Lay out each ruby base's reading (see `cjkAnnotate.ts`): its box grows
+ * to the reading less what the reading may pass it by — a quarter of the
+ * ruby em onto a neighbour without ruby, and it keeps as much from a
+ * neighbour's reading on the same side. Run once the units are final.
+ */
+function sizeRubies(units: Unit[]): void {
+  for (let k = 0; k < units.length; k++) {
+    const u = units[k]!;
+    if (!u.ruby || u.ruby.geometry) continue;
+    const fontOf = (v: Unit): string => v.ruby!.span.fontString ?? withFontSize(v.style.font, emOfFont(v.style.font) / 2);
+    const font = fontOf(u);
+    const q = fontEm(font) / 4;
+    // How far the reading may pass its box towards a neighbour: a quarter
+    // of the ruby em onto one without a reading; next to a reading on the
+    // same side, what keeps the two a quarter em apart (the neighbour's
+    // box is at least its base).
+    const allow = (v: Unit | undefined): number => {
+      if (!v || v.kind !== 'text' || v.note) return 0;
+      if (!v.ruby) return q;
+      if (v.ruby.position !== u.ruby!.position || v.ruby.position === 'right') return q;
+      const theirs = v.ruby.geometry?.rtWidth ?? readingAdvance(v.ruby.span.text, fontOf(v), v.ruby.position);
+      return Math.min(q, (v.width - theirs) / 2 - q);
+    };
+    const geometry = rubyGeometry({
+      reading: u.ruby.span.text,
+      fontString: font,
+      position: u.ruby.position,
+      baseWidth: u.width,
+      em: emOfFont(u.style.font),
+      allowLeft: allow(units[k - 1]),
+      allowRight: allow(units[k + 1]),
+    });
+    u.ruby.geometry = geometry;
+    u.width = geometry.width;
+  }
+}
+
+/** The units of a paragraph's spans, the characters of each warichu note
+ *  (#195) measured at the note's size and flagged with it, between the
+ *  note's brackets (added text at the body size, in the note's colour). */
+function buildAllUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx: number, vertical: boolean, route: boolean): Unit[] {
+  if (!spans.some((s) => s.warichu)) return buildUnits(spans, fonts, letterSpacingPx, vertical, route);
+  const out: Unit[] = [];
+  let i = 0;
+  while (i < spans.length) {
+    const note = spans[i]!.warichu;
+    let j = i + 1;
+    while (j < spans.length && spans[j]!.warichu === note) j++;
+    const group = spans.slice(i, j);
+    if (!note) out.push(...buildUnits(group, fonts, letterSpacingPx, vertical, route));
+    else out.push(...noteUnits(group, note, fonts, vertical));
+    i = j;
+  }
+  return out;
+}
+
+/** The units of one warichu note: its characters at the note's size (a
+ *  word space inside it is a character of the note), its brackets. */
+function noteUnits(spans: readonly InlineSpan[], note: InlineWarichu, fonts: Fonts, vertical: boolean): Unit[] {
+  const size = note.fontString ? fontEm(note.fontString) : emOfFont(fonts.normal) / 2;
+  const noteFonts: Fonts = {
+    normal: withFontSize(fonts.normal, size),
+    bold: withFontSize(fonts.bold, size),
+    italic: withFontSize(fonts.italic, size),
+    boldItalic: withFontSize(fonts.boldItalic, size),
+  };
+  const inner = buildUnits(spans, noteFonts, 0, vertical, false);
+  for (const u of inner) {
+    u.note = note;
+    if (u.kind === 'space') {
+      u.kind = 'text';
+      u.firstCjk = u.lastCjk = false;
+    }
+  }
+  const bracket = (text: string): Unit => {
+    const g = graphemesOf(text);
+    const cls = cjkClassOf(g[0] ?? '');
+    const style: UnitStyle = {
+      key: `ins|${note.color ?? ''}|${fonts.normal}`,
+      bold: false,
+      italic: false,
+      font: fonts.normal,
+      inserted: true,
+      ...(note.color ? { color: note.color } : {}),
+    };
+    let width = 0;
+    for (const c of g) width += cellAdvance(c, fonts.normal, vertical, cjkClassOf(c));
+    return {
+      kind: 'text',
+      text,
+      width,
+      graphemes: g.length,
+      first: cls,
+      last: cjkClassOf(g[g.length - 1] ?? ''),
+      firstCjk: isCjkGrapheme(g[0] ?? ''),
+      lastCjk: isCjkGrapheme(g[g.length - 1] ?? ''),
+      style,
+      at: 0,
+    };
+  };
+  return [...(note.open ? [bracket(note.open)] : []), ...inner, ...(note.close ? [bracket(note.close)] : [])];
 }
 
 /**
@@ -241,9 +424,16 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
 
   for (let si = 0; si < spans.length; si++) {
     const span = spans[si]!;
+    // A ruby base: one unit, sized with its reading once its neighbours
+    // are known (`sizeRubies`).
+    if (span.ruby && span.text.length > 0) {
+      units.push({ ...rubyBaseUnit(span, fonts, letterSpacingPx, vertical), ...(zwsp ? { zwspBefore: true } : {}) });
+      zwsp = false;
+      continue;
+    }
     const atomic = atomicSpanToken(span, fonts.normal, fonts.bold, fonts.italic, fonts.boldItalic, letterSpacingPx);
     if (atomic) {
-      const style = styleOf(span, fonts);
+      const style = styleOf(span, fonts, vertical);
       const graphemes = graphemesOf(atomic.text);
       const object = atomic.chip !== undefined || atomic.mathRender !== undefined || atomic.swatch !== undefined;
       const firstG = graphemes[0] ?? '';
@@ -267,7 +457,7 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
       continue;
     }
     if (span.text.length === 0) continue;
-    const style = styleOf(span, fonts);
+    const style = styleOf(span, fonts, vertical);
     const graphemes = graphemesOf(span.text);
     const spanFirst = units.length;
     let run: string[] = [];
@@ -552,7 +742,7 @@ function prepareUnits(units: Unit[], c: CjkComposition, letterSpacingPx: number)
   if (plain && (c.region !== 'mainland' || c.vertical)) return units;
   const full = new Map<Unit, number>();
   for (const u of units) {
-    if (u.kind !== 'text' || u.run || u.graphemes !== 1 || !u.firstCjk || u.style.script || u.stacked) continue;
+    if (u.kind !== 'text' || u.run || u.graphemes !== 1 || !u.firstCjk || u.style.script || u.stacked || u.ruby || u.note) continue;
     if (plain && u.first !== 'interpunct') continue;
     const box = punctuationBox(u.text, u.first, u.width - letterSpacingPx, emOfFont(u.style.font), c);
     if (!box) continue;
@@ -574,9 +764,9 @@ function prepareUnits(units: Unit[], c: CjkComposition, letterSpacingPx: number)
   if ((c.latinSpacing.px ?? c.latinSpacing.em ?? 0) <= 0) return units;
   const out: Unit[] = [];
   const han = (u: Unit | undefined, edge: 'first' | 'last'): boolean =>
-    !!u && u.kind === 'text' && !u.run && u.firstCjk && u[edge] === 'ideograph' && !u.style.script && isLatinSpacingHan(u.text);
+    !!u && u.kind === 'text' && !u.run && !u.note && u.firstCjk && u[edge] === 'ideograph' && !u.style.script && isLatinSpacingHan(u.text);
   const latin = (u: Unit | undefined, edge: 'first' | 'last'): boolean =>
-    !!u && u.kind === 'text' && !!u.run && !u.style.script && isLatinSpacingLatin(edge === 'first' ? String.fromCodePoint(u.text.codePointAt(0)!) : lastGrapheme(u.text));
+    !!u && u.kind === 'text' && !!u.run && !u.note && !u.style.script && isLatinSpacingLatin(edge === 'first' ? String.fromCodePoint(u.text.codePointAt(0)!) : lastGrapheme(u.text));
   const spaceOf = (h: Unit): number => latinSpacingPx(c, emOfFont(h.style.font));
   for (let k = 0; k < units.length; k++) {
     const u = units[k]!;
@@ -743,7 +933,7 @@ function lineFitOf(c: CjkComposition): LineFit | undefined {
     edge: (u, start, end) => (u.punct ? applyLineEdges(u.punct, c, start, end) : 0),
     hangs(units, k, unitAt) {
       const u = unitAt(k);
-      if (u.kind !== 'text' || u.run || u.graphemes !== 1 || !mayHang(u.text, u.first, c)) return false;
+      if (u.kind !== 'text' || u.run || u.graphemes !== 1 || u.note || u.ruby || !mayHang(u.text, u.first, c)) return false;
       if (k > 0 && isMarkUnit(unitAt(k - 1))) return false;
       return k + 1 >= units.length || !isMarkUnit(units[k + 1]);
     },
@@ -889,6 +1079,7 @@ function breakUnits(
   reserve: number,
   letterSpacingPx: number,
   fit?: LineFit,
+  level: CjkLineBreakLevel = getCjkLineBreak(),
 ): LineRange[] {
   const out: LineRange[] = [];
   const n = units.length;
@@ -896,6 +1087,21 @@ function breakUnits(
   let carried: Unit | undefined;
   let carriedAt = -1;
   const unitAt = (k: number): Unit => (k === carriedAt && carried ? carried : units[k]!);
+  // A warichu note's characters on the line take the advance of their two
+  // rows (`foldWidth`), not their sum: where the note's part on this line
+  // starts, and the line's width before it.
+  let noteFrom = -1;
+  let noteBase = 0;
+  const foldOf = (from: number, to: number): number => {
+    const widths: number[] = [];
+    const prohibited: boolean[] = [];
+    for (let q = from; q <= to; q++) {
+      const uq = unitAt(q);
+      widths.push(uq.width);
+      prohibited.push(isLineStartProhibited(uq.first, level));
+    }
+    return foldWidth(widths, splitNote(widths, prohibited));
+  };
   for (let li = 0; ; li++) {
     while (i < n && unitAt(i).kind === 'space') i++;
     if (i >= n) break;
@@ -913,13 +1119,24 @@ function breakUnits(
     for (let k = i; k < n; k++) {
       const u = unitAt(k);
       if (k > i && breaks[k]) lastBreak = k;
+      if (u.note) {
+        if (k === i || unitAt(k - 1).note !== u.note) {
+          noteFrom = k;
+          noteBase = w;
+        }
+        const folded = noteBase + foldOf(noteFrom, k);
+        if (folded <= max + FIT_EPS) {
+          w = folded;
+          continue;
+        }
+      }
       const lead = fit && k === i ? fit.lead(u) : 0;
       if (w + u.width - lead - (fit ? fit.tail(u) : 0) <= max + FIT_EPS) {
         w += u.width - lead;
         if (fit) give += fit.give(u, k === i, false);
         continue;
       }
-      if (fit && k > i && u.kind !== 'space') {
+      if (fit && k > i && u.kind !== 'space' && !u.note) {
         // A pause or stop mark that does not fit hangs past the measure:
         // at once under 'force', after compressing the line failed under
         // 'allow'. Else, when the unit may not open the next line (no
@@ -1053,6 +1270,104 @@ interface ComposeContext {
   /** The composition's line edges, push-in and hanging; undefined for a
    *  plain one. */
   fit?: LineFit;
+  /** The line-break level (the rows of a warichu note split under it). */
+  level: CjkLineBreakLevel;
+}
+
+/** Replace each run of a warichu note's characters on a line by the part
+ *  folded into its two rows (see `cjkAnnotate.ts`). `us` is changed in
+ *  place. */
+function foldNotes(us: Unit[], level: CjkLineBreakLevel, em: number): void {
+  const out: Unit[] = [];
+  for (let j = 0; j < us.length;) {
+    const u = us[j]!;
+    if (!u.note) {
+      out.push(u);
+      j++;
+      continue;
+    }
+    let e = j + 1;
+    while (e < us.length && us[e]!.note === u.note) e++;
+    out.push(noteFragment(us.slice(j, e), level, em));
+    j = e;
+  }
+  us.splice(0, us.length, ...out);
+}
+
+/** A line's part of a warichu note: its characters split into an upper and
+ *  a lower row, each painted in runs of one font; the part's advance is the
+ *  wider row's. */
+function noteFragment(part: readonly Unit[], level: CjkLineBreakLevel, em: number): Unit {
+  const note = part[0]!.note!;
+  const widths = part.map((u) => u.width);
+  const at = splitNote(widths, part.map((u) => isLineStartProhibited(u.first, level)));
+  const noteFont = note.fontString ?? part[0]!.style.font;
+  const rows = noteRowBaselines(em, fontEm(noteFont));
+  const runs: VDTAnnotationRun[] = [];
+  const row = (units: readonly Unit[], dy: number): { text: string; width: number } => {
+    let dx = 0;
+    let text = '';
+    let run: VDTAnnotationRun | undefined;
+    for (const u of units) {
+      if (run && run.fontString === u.style.font) run.text += u.text;
+      else {
+        run = { text: u.text, dx, dy, fontString: u.style.font };
+        runs.push(run);
+      }
+      dx += u.width;
+      text += u.text;
+    }
+    return { text, width: dx };
+  };
+  const upper = row(part.slice(0, at), rows.upper);
+  const lower = row(part.slice(at), rows.lower);
+  const first = part[0]!;
+  const last = part[part.length - 1]!;
+  let graphemes = 0;
+  for (const u of part) graphemes += u.graphemes;
+  return {
+    kind: 'text',
+    text: upper.text + lower.text,
+    width: Math.max(upper.width, lower.width),
+    graphemes,
+    first: first.first,
+    last: last.last,
+    firstCjk: first.firstCjk,
+    lastCjk: last.lastCjk,
+    style: first.style,
+    at: first.at,
+    warichu: {
+      upper: upper.text,
+      lower: lower.text,
+      fontString: noteFont,
+      upperDy: rows.upper,
+      lowerDy: rows.lower,
+      ...(note.color ? { color: note.color } : {}),
+      runs,
+    },
+  };
+}
+
+/** Keep the readings of a line's ruby bases inside the line: a reading
+ *  that would pass the line's start or end is moved back to it (clreq
+ *  §5.5.4: at a line edge base and ruby align to the edge). */
+function clampReadings(segments: readonly VDTLineSegment[]): void {
+  if (!segments.some((s) => s.ruby)) return;
+  let lineWidth = 0;
+  for (const s of segments) if (!s.hangs) lineWidth += s.width;
+  let x = 0;
+  for (const s of segments) {
+    const ruby = s.ruby;
+    if (ruby && ruby.position !== 'right' && ruby.runs.length > 0) {
+      const lo = ruby.runs[0]!.dx;
+      const hi = lo + ruby.rtWidth;
+      let shift = 0;
+      if (x + lo < 0) shift = -(x + lo);
+      else if (x + hi > lineWidth + 1e-6) shift = lineWidth - (x + hi);
+      if (shift !== 0) ruby.runs = ruby.runs.map((r) => ({ ...r, dx: r.dx + shift }));
+    }
+    x += s.width;
+  }
 }
 
 /** Share `amount` among `caps` equally, none past its cap: what each
@@ -1168,6 +1483,8 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
   }
 
   const measure = ctx.measureOf(li);
+  // A warichu note's characters fold into their two rows (#195).
+  if (us.some((u) => u.note)) foldNotes(us, ctx.level, ctx.em);
   const hang = ctx.fit ? fitLine(us, units, range, lastK, isLast, measure, ctx.fit) : undefined;
   const justify = ctx.textAlign === 'justify' && !isLast;
   let spaceWidth: number | undefined;
@@ -1272,6 +1589,9 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
       ...(s.script ? { script: s.script, fontString: s.scriptFont, baselineShift: s.baselineShift } : {}),
       ...(u.stacked === 'first' ? { stacked: true } : {}),
       ...(s.smallCaps ? { smallCaps: true } : {}),
+      ...(s.marks ? { cjkMarks: s.marks } : {}),
+      ...(s.inserted ? { inserted: true } : {}),
+      ...(s.color ? { color: s.color } : {}),
       ...(t !== undefined ? { tracking: t } : {}),
       // Every mark that gave up blank carries its ink offset (0 when only
       // the blank after its glyph went), and so does a shared mark set in
@@ -1296,6 +1616,33 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
       continue;
     }
     const gap = tracking > 0 && stretches[j] ? tracking : 0;
+    if (u.warichu) {
+      // A warichu note's part: the rows are painted, not the text.
+      pieces.push({ seg: { kind: 'text', text: u.text, width: u.width + gap, warichu: u.warichu }, parts: [u.text], key: undefined });
+      continue;
+    }
+    if (u.ruby?.geometry) {
+      // A ruby base: centred in its box, its reading placed from the box's
+      // start (#194).
+      const g = u.ruby.geometry;
+      const seg: PendingSegment = {
+        ...segmentOf(u, u.width + gap, gap > 0 ? gap : undefined),
+        text: u.text,
+        ...(g.inset > 1e-9 ? { inkOffset: g.inset } : {}),
+        ruby: {
+          text: u.ruby.span.text,
+          fontString: u.ruby.span.fontString ?? g.runs[0]?.fontString ?? u.style.font,
+          baseWidth: u.width - g.inset * 2 - (u.ruby.position === 'right' ? g.rtWidth : 0),
+          rtWidth: g.rtWidth,
+          position: u.ruby.position,
+          ...(u.ruby.span.group ? { group: true } : {}),
+          ...(u.ruby.span.color ? { color: u.ruby.span.color } : {}),
+          runs: g.runs,
+        },
+      };
+      pieces.push({ seg, parts: [u.text], key: undefined });
+      continue;
+    }
     if (u.place && u.graphemes === 2) {
       // A pair (—— ……) set in Chinese boxes: one segment per grapheme,
       // each glyph placed in its own em.
@@ -1328,6 +1675,7 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
     segments.push(p.seg);
   }
   const trimmed = trimChipLineEdges(segments);
+  clampReadings(trimmed);
   let width = 0;
   for (const s of trimmed) width += s.width;
   if (hang) {
@@ -1385,7 +1733,9 @@ export function composeCjkParagraph(
   // The marks Latin text shares with Chinese take Chinese boxes in Chinese
   // text only (`routesSharedMarks`).
   const route = routesSharedMarks(composition, spans.map((s) => s.text).join(''));
-  const units = prepareUnits(buildUnits(spans, fonts, letterSpacingPx, vertical, route), composition, letterSpacingPx);
+  const units = prepareUnits(buildAllUnits(spans, fonts, letterSpacingPx, vertical, route), composition, letterSpacingPx);
+  // Ruby readings (#194), laid out once their neighbours are known.
+  if (units.some((u) => u.ruby)) sizeRubies(units);
   if (!units.some((u) => u.kind !== 'space')) return { lines: [], totalHeight: 0 };
   const fit = lineFitOf(composition);
   const level = options?.cjkLineBreak ?? getCjkLineBreak();
@@ -1410,10 +1760,11 @@ export function composeCjkParagraph(
     measureOf,
     ...(vertical ? { vertical: true } : {}),
     ...(fit ? { fit } : {}),
+    level,
   };
   const compose = (ranges: LineRange[]): VDTLine[] => ranges.map((r, li) => composeLine(units, r, li, li === ranges.length - 1, ctx));
 
-  let lines = compose(breakUnits(units, breaks, measureOf, 0, letterSpacingPx, fit));
+  let lines = compose(breakUnits(units, breaks, measureOf, 0, letterSpacingPx, fit, level));
   // Column balancing asks for a paragraph one line longer: break each line
   // a little short of its measure, in eighths of an em, until the paragraph
   // gains the lines without a line past the tracking cap.
@@ -1421,7 +1772,7 @@ export function composeCjkParagraph(
   if (looseness > 0) {
     const target = lines.length + looseness;
     for (let step = 1; step <= 16; step++) {
-      const ranges = breakUnits(units, breaks, measureOf, (step * em) / 8, letterSpacingPx, fit);
+      const ranges = breakUnits(units, breaks, measureOf, (step * em) / 8, letterSpacingPx, fit, level);
       if (ranges.length < target) continue;
       if (ranges.length > target) break;
       const loose = compose(ranges);
