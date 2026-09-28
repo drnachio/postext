@@ -24,7 +24,7 @@ geometry, media and scan pages, and names the next command.
 | HTML / web pages | `pandoc_to_postext.py`, or a small parser for one site's markup | screenshots / print CSS | strip navigation, boilerplate and embeds |
 | InDesign (.indd) | export **IDML** + print PDF, then `idml_extract.py` | the print PDF | IDML has styles and text but not the final positions |
 | LaTeX | `pandoc_to_postext.py` (keeps `$…$` math; a display in mid-paragraph stays glued to it, so the "where …" after it continues the paragraph) | the compiled PDF | custom macros need a pandoc Lua filter or manual care |
-| Markdown (GitHub/pandoc) | `pandoc_to_postext.py SOURCE --from markdown` | — | never copy CommonMark as is: tables, footnotes, fences, `---` are not Postext |
+| Markdown (GitHub/pandoc) | `pandoc_to_postext.py SOURCE --from markdown` | — | never copy CommonMark as is: tables, fences, `---` are not Postext (`[^n]` footnotes are) |
 | XML (JATS, DocBook, CNXML, TEI) | pandoc (`jats`, `docbook`) or a small ElementTree walker | the publisher's PDF | two passes: register ids, then write |
 | Plain text (Gutenberg…) | a small script: slice by heading regex, blank-line paragraphs | — | `_it_` → `*it*`; verse detection |
 | Pages / Keynote / .doc / .ppt | export to .docx / .pptx first (`soffice --headless --convert-to docx`) | PDF export | |
@@ -114,7 +114,8 @@ Gotchas:
   mapped to the same callout become one box.
 - Footnotes become chapter endnotes by default (`--notes endnotes`):
   `^n^` markers plus a `:::paragraphs{style="notes"}` block. Use
-  `--notes inline` or `--notes drop` to change that. Alternatively, move them
+  `--notes inline` or `--notes drop` to change that. For real footnotes
+  rewrite them as `[^n]` / `[^n]:` (playbooks B3). Alternatively, move them
   into side callouts in a `oneAndHalf` layout.
 - Equations (OMML) arrive as TeX `$…$`. Check the output.
 - EMF/WMF images must be converted (Inkscape, LibreOffice):

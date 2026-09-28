@@ -202,7 +202,9 @@ Earlier passes shield their content from later ones. Math is extracted before em
 - Patterns are non-greedy and can span what were separate source lines (lines are joined first).
 - Emphasis does not cross block boundaries.
 
-**Not supported:** strikethrough, underline, inline HTML, reference links `[a][b]`, autolinks `<http://…>`, footnote markers `[^1]`, emoji shortcodes, inline language spans. The PDF tagging `Lang` comes only from config. No per-span `lang` exists in the Markdown.
+**Footnotes:** `[^id]` markers (paragraphs, list items, blockquotes, callouts) and `[^id]:` definitions, §10.4.
+
+**Not supported:** strikethrough, underline, inline HTML, reference links `[a][b]`, autolinks `<http://…>`, emoji shortcodes, inline language spans. The PDF tagging `Lang` comes only from config. No per-span `lang` exists in the Markdown.
 
 ---
 
@@ -485,6 +487,22 @@ Classify: :chip[battery] :chip[cable] :chip[switch]
 Enter :smallcaps[Hamlet] and :smallcaps[Horatio], reading.
 ```
 
+### 10.4 Footnotes `[^id]` … `[^id]: text` (postext ≥ 1.6)
+
+**Regexes:** marker `\[\^([\p{L}\p{N}_.:-]+)\]` (body text); definition `^\[\^([\p{L}\p{N}_.:-]+)\]:[ \t]*` at the start of a paragraph.
+- **Marker** `[^id]` prints the note's number as a superscript glued to the word before it: write it after the punctuation (`evening.[^steps]`). Read in **paragraphs, list items, blockquotes and callouts only**. In headings, captions and table cells it prints as written.
+- **Definition** = a paragraph starting `[^id]:`. Its text runs to the next blank line and takes the usual inline marks (bold, italics, links, `:ref`, maths, chips). A definition line glued under a paragraph starts a paragraph of its own. Definitions leave the flow wherever they are written: under the citing paragraph or all at the chapter's end. First definition of an id wins.
+- **Numbers** follow first citation, restarting at each chapter (a level-1 heading, and each document of a book); a note cited twice keeps its first number and is set once. `footnotes.numbering: 'document'` runs on through the book.
+- **Placement** (config `footnotes`, configuration.md §19a): by default at the foot of the column holding the citing line, under a short rule; the line and its note always share a column (a line whose note does not fit moves on with it). One-column layout = foot of the page. `placement: 'chapterEnd'` sets all of a chapter's notes after its last block. A note cited in a callout goes to the foot of the column where the text after the box goes on.
+- **Never split:** a note taller than a column overflows it. Keep notes short; move long ones into a callout.
+- **Warnings:** `undefinedFootnote` (marker, no definition: the number prints over an empty note), `unusedFootnote` (definition no marker cites: not set).
+
+```md
+The keeper climbed the tower every evening.[^steps] The wind put out his candle.
+
+[^steps]: The cast-iron staircase has 112 steps; the tower was built in 1861.
+```
+
 ---
 
 ## 11. Math (MathJax TeX, `AllPackages`, so amsmath, mhchem etc.; )
@@ -584,7 +602,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 8. **Strikethrough:** the docs say it is not recognised. It is worse: `~~x~~` turns into a subscript with stray tildes.
 9. **Intraword `_`:** (Fixed) an underscore between two letters or digits is text now (CommonMark), so URLs and `snake_case` keep theirs. Older engines italicised between two of them.
 10. **Links:** resolved. A URL with balanced parentheses is read whole, an unbalanced one sets the text with no link, and the docs describe both (`document-format` › Links).
-11. **Footnotes:** unimplemented. `PostextContent.notes` and `PostextNote` exist in the types, but **nothing in the engine consumes `notes`**, and there is no reference syntax. The docs now say so; older copies claimed notes "ride on `PostextContent.notes`".
+11. **Footnotes:** (Fixed in 1.6) `[^id]` markers and `[^id]:` definitions, set at the column foot (§10.4). Engines before 1.6 printed `[^1]` literally; `PostextContent.notes` / `PostextNote` in the types are not the mechanism.
 12. **`:::pagebreak{parity="any"}`:** documented as the default value. It is accepted by being ignored (the same as no parity), and the sandbox may flag it.
 13. **Heading attrs eat any trailing `{word …}`** (e.g. `{a, b}`). Undocumented.
 14. **`::resource` glued under a paragraph** is swallowed, like an ordered-list line. The docs say a fence "does not need a blank line before it", which is true only for `:::` fences, not for `::resource`. (Fixed in 1.5 for display maths: a whole `$$` display under a paragraph line interrupts it, and the text right under its closing `$$` continues the paragraph flush, §11.)
@@ -613,7 +631,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 | Table | A table resource (`TableModel` JSON). Cite it with `:ref`. Math inside cells is impossible; use `^ ^`/`~ ~`/Unicode. |
 | Cross-reference "see Fig. 3.2" | `see :ref{id="fig-x"}`. For "Figure 3.2" use `style="full"`; for "figure 3.2" add `case="lower"`; for a bare number use `style="number"`. |
 | Cross-reference to a section or page | **Unsupported.** Write the text literally. |
-| Footnote | **Unsupported.** Options: an inline superscript marker `^1^` plus the notes gathered in a `:::paragraphs{style="notes"}` or callout at the end of the section or chapter. |
+| Footnote | Convert each to a `[^n]` marker after the cited word or punctuation plus a `[^n]: text` definition paragraph in the same chapter (under the paragraph, or all at the chapter's end). Numbers come from the order of citation, not the source. A note cited in a heading, caption or table cell: move the marker into the text, or set the note in the caption/cell itself. Endnotes: `footnotes.placement: 'chapterEnd'` (§10.4). |
 | Superscript / subscript / chemistry | `x^2^`, `H~2~O`, or `$\ce{H2O}$` (mhchem is available). |
 | Formula | `$…$` inline, `$$ … $$` display on its own lines with blank lines around; glue it under its lead-in line when the text after it continues the sentence ("where …", §11). Escape currency `$` as `\$`. |
 | Code listing | No code blocks. Use `:::paragraphs{style="code"}` with a mono style, one paragraph per line. Escape `* _ ^ ~ $` inside it. |
@@ -644,4 +662,4 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 7. Every opened `:::callout|paragraphs|part|columns` has its closing `:::`. `:::columns` appears only inside a callout.
 8. No headings end in brace text unless it is meant as attributes. No `:chip` in headings.
 9. Frontmatter appears only in the book's first chapter.
-10. No GFM tables, code fences, footnotes, HTML, or `---` rules remain.
+10. No GFM tables, code fences, HTML, or `---` rules remain. Every `[^id]` marker has one `[^id]:` definition in its chapter, and none sits in a heading, caption or cell.
