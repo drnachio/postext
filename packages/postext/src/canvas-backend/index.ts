@@ -166,7 +166,7 @@ function paintPage(
   }
 
   // The character grid (稿纸), a screen aid (`cjk.grid.show`).
-  const gridCells = doc.config.cjk?.grid?.show ? cjkGridCells(doc.config, page.contentArea ?? computeContentArea(page, doc), doc.baselineGrid, page.columns) : undefined;
+  const gridCells = doc.config.cjk?.grid?.show ? cjkGridCells(doc.config, page.contentArea ?? computeContentArea(page, doc), doc.baselineGrid, page.columns, page.flow) : undefined;
   if (gridCells) renderCharacterGrid(ctx, gridCells);
 
   // The page's own rule on a styled section's pages, else the document's.

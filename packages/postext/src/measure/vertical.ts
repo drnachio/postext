@@ -8,9 +8,11 @@
  * (Han, Chinese punctuation, dashes, ellipses, and the symbols Unicode sets
  * upright — × © ± ℃ ① —, inside a Latin word or number too) advances its
  * cell down the line, whatever its horizontal width. {@link cellAdvance} is
- * the one place a cell's advance is decided, so other width rules
- * (punctuation compression) can feed it later; {@link verticalTextWidth}
- * measures any run of text with it.
+ * the one place a cell's advance is decided; the composer then applies the
+ * punctuation widths (`cjkPunctuation.ts`: compression, line-edge trims,
+ * hanging, the Han–Latin space) to the cells as it does to horizontal
+ * advances, along the line. {@link verticalTextWidth} measures any run of
+ * text with it.
  */
 
 import type { CjkRegion, WritingMode } from '../types';
@@ -76,8 +78,9 @@ export function fontEm(font: string): number {
  * width. Vertical: its cell for every character that stands in one (one
  * em; half an em for the mainland interpunct, `verticalCellEms`); a
  * character set sideways keeps its horizontal width. `cls` is the
- * grapheme's line-break class: the hook for punctuation widths
- * (half-width marks), which apply along either axis.
+ * grapheme's line-break class, when the caller has it. This is a mark's
+ * full advance: the composition takes its blank off afterwards
+ * (`punctuationBox`), in either writing mode.
  */
 export function cellAdvance(grapheme: string, font: string, vertical: boolean, cls?: CjkClass): number {
   if (vertical && isVerticalCell(grapheme)) return fontEm(font) * verticalCellEms(grapheme, measureRegion, cls);

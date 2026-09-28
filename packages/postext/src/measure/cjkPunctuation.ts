@@ -230,15 +230,19 @@ function isStop(box: PunctuationBox): boolean {
  * A mark (`grapheme` of class `cls`, full advance `advance` px, font em
  * `em` px) with the blank its style sets aside (clreq §6.3.2.1): none under
  * `fullwidth` and `lineEndHalf`, all of it under `halfwidth`, and under
- * `kaiming` all but for the stop marks 。．？！. Undefined for a character
- * that is no adjustable mark.
+ * `kaiming` all but for the stop marks 。．？！. The mainland interpunct is
+ * half an em under every style (GB/T 15834, clreq §5.1), centred, in either
+ * writing mode: a full-width glyph gives up its blank here, and in vertical
+ * text its cell is half an em already (`verticalCellEms`), so it is no
+ * adjustable mark there. Undefined for a character that is no adjustable
+ * mark.
  */
 export function punctuationBox(grapheme: string, cls: CjkClass, advance: number, em: number, c: CjkComposition): PunctuationBox | undefined {
   const side = punctuationSide(grapheme, cls, c.region, c.vertical);
   if (side === 'none' || em <= 0 || advance < em * 0.75) return undefined;
   const box: PunctuationBox = { cls, grapheme, side, em, blank: Math.max(0, advance - em / 2), cutStart: 0, cutEnd: 0 };
   const style = c.punctuationWidth;
-  if (style === 'halfwidth' || (style === 'kaiming' && !isStop(box))) giveUp(box, box.blank);
+  if (style === 'halfwidth' || (style === 'kaiming' && !isStop(box)) || (cls === 'interpunct' && c.region === 'mainland')) giveUp(box, box.blank);
   return box;
 }
 

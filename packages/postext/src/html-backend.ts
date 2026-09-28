@@ -1204,7 +1204,7 @@ export function renderToHtmlIndexed(
           },
         }
       : { ...options, linkTargets };
-    const gridCells = doc.config.cjk?.grid?.show ? cjkGridCells(doc.config, p.contentArea, doc.baselineGrid, p.columns) : undefined;
+    const gridCells = doc.config.cjk?.grid?.show ? cjkGridCells(doc.config, p.contentArea, doc.baselineGrid, p.columns, p.flow) : undefined;
     const detail = renderPageDetailed(p, background, pageOptions, ink, bleedInset, gridCells);
     pageHtmlParts.push(detail.outerHtml);
     indexedPages.push({

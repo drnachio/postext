@@ -4,6 +4,7 @@ import { renderToHtml } from '../../html-backend';
 import { resolveAllConfig } from '../../pipeline/config';
 import { applyCjkGrid, cjkGridCells, cjkGridGeometry } from '../../pipeline/cjkGrid';
 import { computePageMetrics } from '../../pipeline/buildHelpers';
+import { flowRectToPage } from '../../index';
 import type { PostextConfig } from '../../types';
 
 // CJK characters one em wide, anything else half.
@@ -174,6 +175,71 @@ describe('character grid (cjk.grid)', () => {
     expect(148 * MM - g.margins.left - g.margins.right).toBeCloseTo(20 * 16.5, 9);
     // 180 mm of height hold 48 characters, 118 mm of width 20 lines.
     expect(cjkGridGeometry({ ...config, cjk: { grid: { enabled: true } } })!).toMatchObject({ charsPerLine: 48, linesPerPage: 20 });
+  });
+
+  it('lays a vertical page out on the grid: 38 characters down each line, 20 lines across', () => {
+    const config: PostextConfig = {
+      ...bookConfig({ enabled: true, charsPerLine: 38, linesPerPage: 20, show: true }),
+      page: { width: mm(148), height: mm(210), dpi: 72, margins: { top: mm(15), bottom: mm(15), left: mm(15), right: mm(15) } },
+      layout: { layoutType: 'single', writingMode: 'vertical-rl' },
+    };
+    config.cjk = { ...config.cjk, punctuationWidth: 'fullwidth', compressAdjacent: false, trimLineStart: false };
+    const doc = buildDocument({ markdown: PASSAGE.repeat(6) }, config);
+    const page = doc.pages[0]!;
+    expect(page.flow).toBeDefined();
+    // The flow frame: lines run down the sheet's height, 38 ems long; 20
+    // lines of 16.5 pt across its width.
+    expect(page.contentArea.width).toBeCloseTo(38 * 10.5, 9);
+    expect(page.contentArea.height).toBeCloseTo(20 * 16.5, 9);
+    const lines = page.columns.flatMap((c) => c.blocks.flatMap((b) => b.lines.map((l) => ({ l, b }))));
+    expect(lines).toHaveLength(20);
+    const block = page.columns[0]!.blocks[0]!;
+    for (const { l, b } of lines.slice(0, -1)) {
+      if (b !== block) continue;
+      expect(l.bbox.x - page.contentArea.x + l.bbox.width).toBeCloseTo(38 * 10.5, 6);
+      // Han characters one em (a cell) each down the line, set solid.
+      for (const s of l.segments ?? []) if (/^[一-鿿]+$/.test(s.text)) expect(s.width).toBeCloseTo(10.5 * [...s.text].length, 6);
+    }
+    // The overlay on a vertical page: one set of 38 cells, a row per line
+    // centred on the axis the characters stand on.
+    const cells = cjkGridCells(doc.config, page.contentArea, doc.baselineGrid, page.columns, page.flow)!;
+    expect(cells.columns).toEqual([page.contentArea.x]);
+    expect(cells.columnChars).toEqual([38]);
+    expect(cells.rows).toHaveLength(20);
+    const central = page.flow!.centralBaselines?.['Noto Serif SC'] ?? 0.38;
+    lines.forEach(({ l }, j) => expect(cells.rows[j]! + 10.5 / 2).toBeCloseTo(l.baseline - central * 10.5, 6));
+  });
+
+  it('cuts a vertical double page into two tiers of whole characters, a whole-em gutter between them', () => {
+    // 148 × 210 mm, 10.5 pt, 20 characters to a tier, 6 mm gutter (2 em).
+    const config: PostextConfig = {
+      ...bookConfig({ enabled: true, charsPerLine: 20, linesPerPage: 20, show: true }),
+      page: { width: mm(148), height: mm(210), dpi: 72, margins: { top: mm(15), bottom: mm(15), left: mm(15), right: mm(15) } },
+      layout: { layoutType: 'double', gutterWidth: mm(6), writingMode: 'vertical-rl' },
+    };
+    config.cjk = { ...config.cjk, punctuationWidth: 'fullwidth', compressAdjacent: false, trimLineStart: false };
+    const g = cjkGridGeometry(config)!;
+    expect(g).toMatchObject({ vertical: true, columns: 2, gutterEm: 2, charsPerLine: 20, linesPerPage: 20 });
+    const doc = buildDocument({ markdown: PASSAGE.repeat(8) }, config);
+    const page = doc.pages[0]!;
+    const [upper, lower] = page.columns;
+    expect(page.columns).toHaveLength(2);
+    expect(upper!.bbox.width).toBeCloseTo(210, 9);
+    expect(lower!.bbox.width).toBeCloseTo(210, 9);
+    expect(lower!.bbox.x - (upper!.bbox.x + upper!.bbox.width)).toBeCloseTo(21, 9);
+    // On the sheet the tiers stack top to bottom (the flow's x runs down).
+    const sheet = page.columns.map((c) => flowRectToPage(page, c.bbox));
+    expect(sheet[0]!.y + sheet[0]!.height).toBeLessThanOrEqual(sheet[1]!.y + 1e-9);
+    expect(sheet[1]!.y - (sheet[0]!.y + sheet[0]!.height)).toBeCloseTo(21, 9);
+    // Every full line of each tier is 20 ems.
+    for (const col of page.columns) {
+      for (const b of col.blocks) {
+        for (const l of b.lines.slice(0, -1)) expect(l.bbox.x - col.bbox.x + l.bbox.width).toBeCloseTo(210, 6);
+      }
+    }
+    const cells = cjkGridCells(doc.config, page.contentArea, doc.baselineGrid, page.columns, page.flow)!;
+    expect(cells.columns).toEqual([upper!.bbox.x, lower!.bbox.x]);
+    expect(cells.columnChars).toEqual([20, 20]);
   });
 
   it('draws the grid on screen when shown', () => {

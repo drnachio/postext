@@ -29,6 +29,8 @@ import { resolvePageConfig } from '../defaults/page';
 import { resolveBodyTextConfig } from '../defaults/bodyText';
 import { DEFAULT_LAYOUT_CONFIG, resolveLayoutConfig } from '../defaults/layout';
 import { dimensionToPx } from '../units';
+import { DEFAULT_CENTRAL_BASELINE } from '../vdt';
+import { fontFamilyOf } from '../measure/vertical';
 
 /** The grid of a config as the pre-pass sets it (px at the page's dpi). */
 export interface CjkGridGeometry {
@@ -86,9 +88,7 @@ export function cjkGridGeometry(config: PostextConfig | undefined): CjkGridGeome
   const bottom = px(m.bottom, dpi, em);
   const left = px(m.left, dpi, em);
   const right = px(m.right, dpi, em);
-  // The writing mode lives on the layout (vertical text is added by the
-  // vertical writing mode); read it without depending on its type.
-  const vertical = (config?.layout as { writingMode?: string } | undefined)?.writingMode === 'vertical-rl';
+  const vertical = layout.writingMode === 'vertical-rl';
   const availInline = vertical ? height - top - bottom : width - left - right;
   const availBlock = vertical ? width - left - right : height - top - bottom;
   const oneAndHalf = layout.layoutType === 'oneAndHalf';
@@ -182,9 +182,12 @@ export const CHARACTER_GRID_COLOR = 'rgba(128, 128, 128, 0.45)';
  *  (`cjk.grid.show`): each column's left edge and characters, the cell size
  *  (one em of the body size) and the top of each row's cells. A row's cell
  *  is the character's em box on the line: from 0.88 em above the line's
- *  baseline (set 0.8 of the line pitch down) to 0.12 em below it. Undefined
+ *  baseline (set 0.8 of the line pitch down) to 0.12 em below it; on a
+ *  vertical page, half an em either side of the axis the painter centres
+ *  the body's characters on (`VDTFlowFrame.centralBaselines`). Undefined
  *  when the grid is off or hidden. The geometry is the page's content area,
- *  in the frame its blocks are laid out in. */
+ *  in the frame its blocks are laid out in (the flow frame of a vertical
+ *  page, where a column is a tier and a row a line down the page). */
 export interface CjkGridCells {
   cell: number;
   /** Characters per line (of the main column in a oneAndHalf layout). */
@@ -203,10 +206,12 @@ export interface CjkGridCells {
  * puts it. Without them the columns are cut from the content area.
  */
 export function cjkGridCells(
-  resolved: { cjk?: { grid?: { show?: boolean; charsPerLine?: number; linesPerPage?: number } }; bodyText: { fontSize: Dimension }; layout: { layoutType: string; gutterWidth: Dimension }; page: { dpi: number } },
+  resolved: { cjk?: { grid?: { show?: boolean; charsPerLine?: number; linesPerPage?: number } }; bodyText: { fontSize: Dimension; fontFamily?: string }; layout: { layoutType: string; gutterWidth: Dimension }; page: { dpi: number } },
   contentArea: { x: number; y: number },
   pitch: number,
   pageColumns?: readonly { bbox: { x: number; width: number }; kind?: string }[],
+  /** The page's flow frame (`VDTPage.flow`), on a vertical page. */
+  pageFlow?: { centralBaselines?: Record<string, number> },
 ): CjkGridCells | undefined {
   const grid = resolved.cjk?.grid;
   if (!grid?.show || !grid.charsPerLine || !grid.linesPerPage) return undefined;
@@ -230,7 +235,11 @@ export function cjkGridCells(
       columnChars.push(grid.charsPerLine);
     }
   }
+  // How far the em box reaches above the baseline: 0.88 em, or on a
+  // vertical page the body family's central baseline plus half an em.
+  const central = pageFlow ? pageFlow.centralBaselines?.[fontFamilyOf(`1px ${resolved.bodyText.fontFamily ?? ''}`)] ?? DEFAULT_CENTRAL_BASELINE : undefined;
+  const above = central !== undefined ? (central + 0.5) * em : em * 0.88;
   const rows: number[] = [];
-  for (let j = 0; j < grid.linesPerPage; j++) rows.push(contentArea.y + j * pitch + pitch * 0.8 - em * 0.88);
+  for (let j = 0; j < grid.linesPerPage; j++) rows.push(contentArea.y + j * pitch + pitch * 0.8 - above);
   return { cell: em, chars: grid.charsPerLine, columns, columnChars, rows };
 }

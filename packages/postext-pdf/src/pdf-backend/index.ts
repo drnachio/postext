@@ -406,7 +406,7 @@ function renderPage(
 
   // The character grid, only when the render asks for it.
   if (characterGrid && doc.config.cjk?.grid?.show) {
-    const cells = cjkGridCells(doc.config, vdtPage.contentArea ?? computeContentArea(vdtPage, doc), doc.baselineGrid, vdtPage.columns);
+    const cells = cjkGridCells(doc.config, vdtPage.contentArea ?? computeContentArea(vdtPage, doc), doc.baselineGrid, vdtPage.columns, vdtPage.flow);
     if (cells) renderCharacterGrid(ctx, cells);
   }
 
