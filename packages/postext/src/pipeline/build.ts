@@ -4449,14 +4449,15 @@ export function buildDocumentPass(
       });
 
     // "Keep with next" for colon-introduced lists: a paragraph ending in `:`
-    // followed directly by a list acts as a lead-in title — the colon-bearing
+    // (or the full-width `：` of Chinese text and its presentation forms `︰`
+    // `﹕`, #211) followed directly by a list acts as a lead-in title — the colon-bearing
     // line must share a column with the first list item. Only checked for the
     // original, unsplit paragraph (partIndex === 0) on the iteration that is
     // about to place it.
     const endsWithColon = vdtType === 'paragraph'
       && resolved.bodyText.keepColonWithList
       && nextIsListItem
-      && /:\s*$/.test(contentBlock.text);
+      && /[:：︰﹕]\s*$/.test(contentBlock.text);
 
     while (remainingLines.length > 0) {
       enterBand(blockIdx, partIndex);

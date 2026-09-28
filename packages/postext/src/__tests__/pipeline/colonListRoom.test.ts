@@ -80,6 +80,29 @@ describe('keepColonWithList keeps room for the first item the list can start wit
   });
 });
 
+describe('keepColonWithList reads the full-width colon of Chinese text (#211)', () => {
+  const chinese = (fillers: number): string => [
+    ...Array.from({ length: fillers }, (_, i) => `填充文字第${i + 1}行。`),
+    '请注意以下几点：',
+    `- ${TWO_LINES}`,
+    '- 第二项',
+  ].join('\n\n');
+
+  it('moves a lead-in ending in ： on with the list it introduces', () => {
+    const doc = buildDocument({ markdown: chinese(8) }, { ...config(), locale: 'zh-Hans' }, createMeasurementCache());
+    const colon = blockWith(doc, '请注意以下几点：');
+    const item = blockWith(doc, 'a first item');
+    expect(item.lines).toHaveLength(2);
+    expect(colon.pageIndex).toBe(item.pageIndex);
+    expect(item.pageIndex).toBe(1);
+  });
+
+  it('leaves it alone with keepColonWithList off', () => {
+    const doc = buildDocument({ markdown: chinese(8) }, { ...config(false), locale: 'zh-Hans' }, createMeasurementCache());
+    expect(blockWith(doc, '请注意以下几点：').pageIndex).toBe(0);
+  });
+});
+
 describe('colonListRoom: \'line\' keeps the postext 1.4 room check (EF-110)', () => {
   it('leaves the colon line alone at the foot, as 1.4 did', () => {
     const doc = buildDocument({ markdown: markdown(8, TWO_LINES) }, config(true, 'line'), createMeasurementCache());
