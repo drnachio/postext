@@ -269,6 +269,16 @@ export function unescapeLineBreaks(text: string): string {
   return text.replace(/\\n/g, '\n');
 }
 
+/** The resource id a design image element draws: its `resourceId` with
+ *  the placeholders a design text takes filled in — `{attr.<key>}` for an
+ *  id the heading (or part, or the page's chapter) names, so one design
+ *  serves every chapter with its own picture. A fixed id is returned as
+ *  written; an empty result draws nothing. */
+export function resolveDesignResourceId(template: string, ctx: DesignPlaceholderContext): string {
+  if (!template.includes('{')) return template;
+  return resolveDesignPlaceholders(template, ctx).text.trim();
+}
+
 /** The text a design text element prints, before any case transform: its
  *  placeholders filled in, and the `\n` escape turned into a newline in the
  *  element's own template and in `{attr.<key>}` values. Text a placeholder

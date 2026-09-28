@@ -106,7 +106,7 @@
     }
   ],
   "engine": {
-    "postext": "1.4.1"
+    "postext": "1.8.0"
   },
   "kit": [
     "core",
@@ -155,11 +155,39 @@
     "images": [
       {
         "what": {
-          "en": "The jointed puppet on the title page, the two chapter vignettes and the cherry tailpiece, drawn in code from the page’s palette",
-          "es": "La marioneta articulada de la portada, las dos viñetas de capítulo y el remate de las cerezas, dibujados en código con la paleta de la página"
+          "en": "The frontispiece: Tuscan hills, a hill village and a donkey cart of firewood on its way to the carpenter’s workshop",
+          "es": "El frontispicio: colinas toscanas, un pueblo en lo alto y un carro de leña tirado por un asno camino del taller del carpintero"
         },
-        "who": "Ignacio Ferro",
-        "license": "MIT"
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "frontespizio-1400.jpg"
+      },
+      {
+        "what": {
+          "en": "Chapter I’s vignette: Maestro Ciliegia, axe raised over the talking log",
+          "es": "La viñeta del capítulo I: Maestro Ciliegia, con el hacha en alto sobre el tronco que habla"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "ceppo-1200.jpg"
+      },
+      {
+        "what": {
+          "en": "Chapter II’s vignette: Geppetto in his yellow wig receives the log, beside a pot of polenta",
+          "es": "La viñeta del capítulo II: Geppetto, con su peluca amarilla, recibe el tronco junto a una olla de polenta"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "polenta-1200.jpg"
+      },
+      {
+        "what": {
+          "en": "The cherry tailpiece",
+          "es": "El remate de las cerezas"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "ciliegie-600.jpg"
       }
     ],
     "fonts": [
@@ -182,5 +210,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-26",
-  "updated": "2026-09-26"
+  "updated": "2026-09-28"
 }

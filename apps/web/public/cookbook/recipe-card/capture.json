@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "recipe-card",
-  "sourceHash": "b3a81f32255373297fc14a27220ea3e7aa0bbc55ef09cdf04fe65585510e35cb",
+  "sourceHash": "00e6fc4ef125c373c84ed50d5a046048872e35dd56add845b1f24116b88916ed",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.8.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T07:58:22.070Z",
+  "capturedAt": "2026-09-28T13:54:04.047Z",
   "variants": {
     "en": {
-      "hash8": "6707f2d4",
-      "vdtHash": "80dc9b3ed70aa78f7a53040059bcca0848492007",
+      "hash8": "002c1e62",
+      "vdtHash": "9e14674772b4ca1aef134eb498d2066b80b20bf7",
       "timings": {
-        "importMs": 193,
-        "fontsMs": 33,
-        "buildMs": 6,
-        "totalMs": 939,
+        "importMs": 439,
+        "fontsMs": 24,
+        "buildMs": 13,
+        "totalMs": 1117,
         "builds": 2
       },
       "specimen": {
@@ -60,7 +60,7 @@
           "h": 1316,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 90496,
+          "bytes": 90506,
           "alt": "Opening page 59: Gazpacho andaluz."
         }
       ],
@@ -84,7 +84,7 @@
       },
       "sandbox": {
         "file": "recipe-card.postext",
-        "bytes": 32241
+        "bytes": 32120
       },
       "detected": {
         "apis": [
@@ -233,8 +233,8 @@
           "paragraphStyles",
           "unorderedLists"
         ],
-        "configLeaves": 429,
-        "designElements": 20,
+        "configLeaves": 308,
+        "designElements": 12,
         "directives": [
           ":::callout",
           ":::columns",
@@ -308,17 +308,28 @@
           "share": 0,
           "worst": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 57: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "8fcf7fc7",
-      "vdtHash": "64d0ae51a5fa7be808b94be20d7b6baf77ab4839",
+      "hash8": "2393e643",
+      "vdtHash": "efe5daa9bde252600bfd3cb7193febab6cd68865",
       "timings": {
-        "importMs": 287,
-        "fontsMs": 37,
-        "buildMs": 6,
-        "totalMs": 2155,
+        "importMs": 8101,
+        "fontsMs": 93,
+        "buildMs": 14,
+        "totalMs": 9135,
         "builds": 2
       },
       "specimen": {
@@ -362,7 +373,7 @@
           "h": 1316,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 92014,
+          "bytes": 92018,
           "alt": "Página de apertura 59: Gazpacho andaluz."
         }
       ],
@@ -386,7 +397,7 @@
       },
       "sandbox": {
         "file": "recipe-card.postext",
-        "bytes": 32514
+        "bytes": 32383
       },
       "detected": {
         "apis": [
@@ -535,8 +546,8 @@
           "paragraphStyles",
           "unorderedLists"
         ],
-        "configLeaves": 429,
-        "designElements": 20,
+        "configLeaves": 308,
+        "designElements": 12,
         "directives": [
           ":::callout",
           ":::columns",
@@ -610,7 +621,18 @@
           "share": 0,
           "worst": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 57: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
       }
     }
   }
