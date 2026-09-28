@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 019 · Parts in colour from one attribute ═══════════════════════
 // https://postext.dev/en/cookbook/parts-in-colour
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Alegreya, Zilla Slab, Barlow Condensed (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Alegreya, Zilla Slab, Barlow Condensed (SIL OFL 1.1) · Needs postext ≥ 1.7.0
 // A pocket field guide to two habitats. Each :::part names its own 'band' colour, and every
 // colour linked to 'band' takes it: the divider and its verso, the tab, the field marks.
 import {
@@ -516,7 +516,7 @@ const CAPTIONS = t({ en: {
 const drawing = (id, { width, height }, more) => ({ id, typeId: 'plate', kind: 'svg',
   createdAt: 0, updatedAt: 0, altText: CAPTIONS[id],
   svg: { fileId: `${id}.svg`, width: width * 10, height: height * 10 }, ...more });
-// Plates stand where ::resource{id="…"} is, a :::space after (gotcha: here-figure-no-space-after).
+// Plates stand where ::resource{id="…"} is; since 1.5 an inline figure keeps a line of space below it too.
 const resources = [drawing('cover', TRIM), drawing('strip', { width: TRIM.width, height: STRIP }),
   ...['curlew', 'redshank', 'reedling', 'warbler'].map((id) => drawing(id, PLATE,
     { caption: CAPTIONS[id], placement: { position: 'here' } }))];

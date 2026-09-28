@@ -32,8 +32,6 @@ Twice a day the tide drains out of the estuary and leaves a mile of shining mud.
 
 ::resource{id="curlew"}
 
-:::space{lines=1}
-
 Our largest wader, and the easiest to name: no other bird on the mud carries so long and so curved a bill. Curlews work the soft mud at low water, walking slowly and probing to the hilt for worms and small crabs.
 
 - **Bill** very long and down-curved, longest in the female.
@@ -49,8 +47,6 @@ Our largest wader, and the easiest to name: no other bird on the mud carries so 
 # Common Redshank {latin="Tringa totanus" size="27–29 cm" status="Resident"}
 
 ::resource{id="redshank"}
-
-:::space{lines=1}
 
 The noisiest bird on the marsh. A redshank sees you first and tells everything within half a mile, bobbing nervously and piping as it flies off; it has long been called the warden of the marshes.
 
@@ -75,8 +71,6 @@ Where the river meets the tide, the common reed grows in beds taller than a pers
 
 ::resource{id="reedling"}
 
-:::space{lines=1}
-
 A small, long-tailed bird that seldom leaves the reeds, and you will usually hear it first: a pinging call from deep in the reedbed, then a party of birds whirring low over the plumes on short, rounded wings.
 
 - **Male** head blue-grey, with a drooping black moustache (and no beard).
@@ -92,8 +86,6 @@ A small, long-tailed bird that seldom leaves the reeds, and you will usually hea
 # Eurasian Reed Warbler {latin="Acrocephalus scirpaceus" size="13 cm" status="Summer visitor"}
 
 ::resource{id="warbler"}
-
-:::space{lines=1}
 
 A plain brown warbler, heard far more often than seen. Its song runs on from inside the reeds all through a summer day: a slow, rhythmic chatter, *jit-jit-jit, churr-churr*, with phrases borrowed from other birds.
 

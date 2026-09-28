@@ -32,8 +32,6 @@ Dos veces al día la marea se retira del estuario y deja kilómetros de fango br
 
 ::resource{id="curlew"}
 
-:::space{lines=1}
-
 La mayor de nuestras limícolas, y la más fácil de reconocer: ninguna otra ave del fango lleva un pico tan largo y curvo. En bajamar camina despacio y lo hunde entero en el fango en busca de gusanos y cangrejos.
 
 - **Pico** muy largo y curvado hacia abajo; más largo en la hembra.
@@ -49,8 +47,6 @@ La mayor de nuestras limícolas, y la más fácil de reconocer: ninguna otra ave
 # Archibebe común {latin="Tringa totanus" size="27–29 cm" status="Residente"}
 
 ::resource{id="redshank"}
-
-:::space{lines=1}
 
 El ave más ruidosa de la marisma. El archibebe te ve antes que nadie y avisa a todos: cabecea nervioso y chilla al echar a volar. En inglés lo apodan «el guarda de las marismas».
 
@@ -75,8 +71,6 @@ Donde el río se encuentra con la marea crece el carrizo, en masas más altas qu
 
 ::resource{id="reedling"}
 
-:::space{lines=1}
-
 Un pájaro pequeño que rara vez sale del carrizal. Casi siempre se oye antes de verse: un reclamo metálico entre las cañas y luego un grupo que vuela bajo sobre los penachos, con alas cortas y redondeadas.
 
 - **Macho** con la cabeza de un gris azulado y un bigote negro caído.
@@ -92,8 +86,6 @@ Un pájaro pequeño que rara vez sale del carrizal. Casi siempre se oye antes de
 # Carricero común {latin="Acrocephalus scirpaceus" size="13 cm" status="Estival"}
 
 ::resource{id="warbler"}
-
-:::space{lines=1}
 
 Un pájaro pardo y liso, mucho más oído que visto. En verano, su canto sale del carrizal todo el día: un parloteo lento y rítmico, *chirr-chirr, cherr-cherr*, con frases tomadas de otras aves.
 
