@@ -37,10 +37,10 @@ const label = { fontFamily: 'IBM Plex Sans Condensed', fontWeight: 600,
 const options = { columns: 2, placement: 'column', numbering: 'chapter' };
 
 // #region answer: the notes at the foot of the column that cites them
-// In the Markdown: `Tejares,[^tejares]` cites a note, and a paragraph that opens with
-// `[^tejares]:` anywhere in the chapter defines it. The engine numbers the notes in order
-// of citation and keeps each note in the column of the line that cites it: a line whose
-// note does not fit under it moves on to the next column with the note.
+// In the Markdown: `Tejares,[^9]` cites a note (the id may be a word: `[^tejares]`), and
+// a paragraph that opens with `[^9]:` anywhere in the chapter defines it. The engine
+// numbers the notes in order of citation and keeps each note in the column of the line
+// that cites it: a line whose note does not fit under it moves on with the note.
 const footnotes = () => ({
   placement: options.placement, // 'column' (the foot of the citing column) or 'chapterEnd'
   numbering: options.numbering, // 'chapter': 1, 2, 3… again under every chapter heading
@@ -119,7 +119,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
       color: col('oxblood'), marginTop: pt(LEAD), marginBottom: pt(0) },
   ] },
   paragraphStyles: [
-    { id: 'colophon', ...label, fontSize: pt(7), lineHeight: pt(10), letterSpacing: pt(0.6),
+    { id: 'colophon', ...label, textTransform: 'none', fontSize: pt(7.5), lineHeight: pt(10),
       color: col('muted'), textAlign: 'left', firstLineIndent: pt(0), marginTop: pt(LEAD) },
   ],
   footnotes: footnotes(),
@@ -133,7 +133,7 @@ const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookboo
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 // Every face the design uses (gotcha: fonts-first).
 const FONTS = {
-  'EB Garamond': ['400', '400i', '600', '600i'],
+  'EB Garamond': ['400', '400i', '600', '600i', '700'],
   'Bodoni Moda': ['400i'],
   'IBM Plex Sans Condensed': ['600'],
 };
