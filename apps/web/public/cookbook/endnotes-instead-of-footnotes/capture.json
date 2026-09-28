@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "endnotes-instead-of-footnotes",
-  "sourceHash": "42dc931d9cda1d3311b07e1a9a8043356461de0c633c3dd94b422f28d7bc8963",
+  "sourceHash": "9e7076cb731508241b41c8cc12b9e62877d0af2779e1594daf62b633e28a7d58",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.6.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:14:24.689Z",
+  "capturedAt": "2026-09-28T07:57:56.095Z",
   "variants": {
     "en": {
-      "hash8": "c9003e3a",
-      "vdtHash": "b7d8365d3f1cf0b0505c166a285b9a9330252cdd",
+      "hash8": "17f9a1ea",
+      "vdtHash": "5de20703822b2a3f87d4e75bf6d838650c21f583",
       "timings": {
-        "importMs": 466,
-        "fontsMs": 25,
-        "buildMs": 21,
-        "totalMs": 1211,
+        "importMs": 806,
+        "fontsMs": 5784,
+        "buildMs": 42,
+        "totalMs": 9208,
         "builds": 2
       },
       "specimen": {
@@ -71,7 +71,7 @@
           "h": 1500,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 181508,
+          "bytes": 181436,
           "alt": "Page 17."
         },
         {
@@ -93,7 +93,7 @@
           "h": 1500,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 128010,
+          "bytes": 127890,
           "alt": "Opening page 19: Notes."
         }
       ],
@@ -125,7 +125,7 @@
       },
       "sandbox": {
         "file": "endnotes-instead-of-footnotes.postext",
-        "bytes": 27898
+        "bytes": 27804
       },
       "detected": {
         "apis": [
@@ -340,7 +340,13 @@
           "share": 0,
           "worst": 1.78
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 14 dropped (even: same page sides)"
+          }
+        ]
       }
     }
   }

@@ -1,0 +1,64 @@
+---
+title: "Notas al pie de la columna que las cita"
+summary: "Las llamadas [^id] pasan a notas numeradas al pie de la columna que las cita, con interruptores para una columna, notas finales y numeración continua."
+description: "Una edición escolar del Lazarillo de Tormes a dos columnas: cada nota al pie de la columna que la cita, bajo un filete corto, con el código completo de Postext."
+question: "¿Cómo compongo las notas al pie de la columna donde se citan?"
+aliases: ["notas al pie", "notas a pie de página", "[^1]", "llamadas de nota", "notas finales", "edición anotada", "edición escolar"]
+---
+
+## Lo que vas a componer
+
+Una edición escolar del *Lazarillo de Tormes*, de 210 × 280 mm y a dos columnas de EB Garamond: el prólogo y el comienzo del tratado primero, donde Lázaro nace en una aceña del Tormes y sale al mundo con un ciego. Las notas aclaran lo que un lector de 1554 sabía y uno de hoy ignora: la aldea de Tejares, la armada contra los Gelves, el toro de piedra del puente de Salamanca. Cada nota va al pie de la columna que la cita, en cuerpo menor y bajo un filete corto de color burdeos, de modo que la vista baja del número a la nota y vuelve sin pasar página. Las notas de la edición en español adaptan las de Clements Markham, de 1908, y añaden algunas glosas de vocabulario.
+
+## Elaboración
+
+### 1 · Cita la nota donde toca y defínela donde quieras
+
+La configuración es [la respuesta corta](#la-respuesta-corta) de arriba; lo demás es Markdown. `naturales de Tejares[^tejares]` imprime un número volado pegado a la palabra, y un párrafo que empieza por `[^tejares]:` contiene la nota. Las definiciones salen del flujo estén donde estén, así que esta muestra las reúne al final del capítulo. Los números siguen el orden de las llamadas: los ids del Markdown pueden ser palabras, y renumerar un capítulo nunca obliga a tocar las notas.
+
+### 2 · Deja sitio en la columna para sus notas
+
+Antes de colocar una línea, la maquetación suma la altura de las notas que esa línea cita por primera vez, y la del filete si es la primera nota de la columna. Una línea cuya nota no cabe debajo pasa a la columna siguiente con su párrafo, según las reglas de viudas y huérfanas, de modo que un número nunca remite a una nota de otra columna. Las notas se apilan desde el pie con su propio cuerpo e interlineado, fuera de la rejilla base, y el texto de encima sigue en ella; el equilibrado de columnas solo cuenta el texto.
+
+### 3 · Hunde todas las aperturas hasta la misma línea
+
+<Excerpt region="opener" />
+
+La apertura ocupa las dos columnas y toma el antetítulo del atributo `kicker` del título. `minHeight` reserva diez líneas de la rejilla, lo que cabe un título de dos líneas en Bodoni con su filete, así que el texto de cada capítulo empieza en la misma línea y el filete nunca cae sobre la primera línea de texto.
+
+### 4 · Pon el libro en la página par y el capítulo en la impar
+
+<Excerpt region="running-heads" />
+
+Las cabeceras se anclan a la página según su paridad, con el folio en el borde exterior; `pages: 'body'` las quita de las aperturas, que llevan un folio centrado al pie. Un título de capítulo largo acaba en puntos suspensivos a los 120 mm en vez de chocar con el folio.
+
+### 5 · Prueba las otras posiciones
+
+<Excerpt region="live" />
+
+Cada interruptor vuelve a componer el capítulo con una opción cambiada. **Una columna** pone las notas al pie de la página, que ahí es la columna. **Final del capítulo** las compone tras el último párrafo y las baja al pie de la columna que cierran, bajo el mismo filete. **Continua** sigue la numeración del prólogo en el tratado en lugar de volver a empezar en 1.
+
+## Variantes
+
+### Deja las notas finales bajo el texto
+
+Con `placement: 'chapterEnd'` las notas quedan por defecto al pie de la última columna; `chapterEndAlign: 'text'` las pone justo debajo del último párrafo.
+
+```diff
+   placement: options.placement,
++  chapterEndAlign: 'text',
+```
+
+### Quita el filete
+
+Sin filete, las notas siguen separadas del texto por `spaceAbove` y `spaceBelowRule`.
+
+```diff
+-  separator: { width: 0.25, lineWidth: pt(0.5), color: col('oxblood') },
++  separator: { enabled: false },
+```
+
+## Errores frecuentes
+
+- Una llamada en un pie de figura, una celda de tabla o un título se imprime tal cual: las notas se leen en párrafos, elementos de lista, citas y recuadros.
+- Una nota nunca se parte entre columnas: una más alta que su columna la desborda. Mantén las notas en pocas líneas, como hacen los editores.

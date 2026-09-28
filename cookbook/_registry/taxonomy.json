@@ -62,8 +62,8 @@
       "part": "book",
       "title": { "en": "Boxes & notes", "es": "Recuadros y notas" },
       "intro": {
-        "en": "Callout families, boxes that split, float or stay pinned, margin glosses, stand-ins for footnotes, worksheets, recipe cards and code listings.",
-        "es": "Familias de recuadros, cajas que se parten, flotan o se quedan fijas, glosas al margen, sustitutos de las notas al pie, fichas de ejercicios y de recetas, y listados de código."
+        "en": "Callout families, boxes that split, float or stay pinned, footnotes, endnotes and margin glosses, worksheets, recipe cards and code listings.",
+        "es": "Familias de recuadros, cajas que se parten, flotan o se quedan fijas, notas al pie, notas finales y glosas al margen, fichas de ejercicios y de recetas, y listados de código."
       }
     },
     {

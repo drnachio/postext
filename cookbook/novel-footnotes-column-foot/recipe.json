@@ -1,0 +1,59 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 71,
+  "status": "published",
+  "chapter": "boxes",
+  "order": 15,
+  "level": 2,
+  "genres": ["novel"],
+  "outputs": ["canvas", "pdf", "live"],
+  "features": {
+    "primary": ["footnotes"],
+    "also": [
+      "super-subscripts", "column-layouts", "opener-design", "heading-attributes",
+      "running-heads", "mirrored-margins", "page-role-filters", "paragraph-styles",
+      "color-palette", "page-background", "widows-orphans-runts", "pdf-export", "tagged-pdf"
+    ]
+  },
+  "answers": ["Q45"],
+  "gotchas": [
+    "headings-drop-h1-break", "fonts-first", "palette-skips-designs", "overflow-ellipsis-default",
+    "hyphenation-locales", "config-cache-identity", "opener-reserves-anchored"
+  ],
+  "explainsWarnings": ["undefinedFootnote", "unusedFootnote"],
+  "related": [
+    "endnotes-instead-of-footnotes",
+    "annotated-classic-glosses",
+    "critical-edition-line-numbers",
+    "book-from-chapters"
+  ],
+  "engine": { "postext": "1.6.0", "postextPdf": "1.6.0" },
+  "kit": ["core", "fonts", "viewer", "pdf"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": {
+    "hero": [2, 3],
+    "card": "crop",
+    "focus": { "page": 2, "x": 0, "y": 0.52, "w": 1, "h": 0.48 },
+    "pages": "all",
+    "expect": { "pages": [3, 3] }
+  },
+  "downloads": { "pdf": true },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      { "what": { "en": "La vida de Lazarillo de Tormes, Burgos edition of 1554: the prologue and the beginning of the first treatise", "es": "La vida de Lazarillo de Tormes, edición de Burgos de 1554: el prólogo y el comienzo del tratado primero" }, "who": "Anonymous", "source": "https://www.gutenberg.org/ebooks/320", "license": "PD" },
+      { "what": { "en": "The Life of Lazarillo de Tormes, translated by Clements Markham (1908), with his notes: the prologue and the first chapter, abridged", "es": "The Life of Lazarillo de Tormes, traducción de Clements Markham (1908), con sus notas: el prólogo y el primer capítulo, abreviados" }, "who": "Clements Markham", "source": "https://www.gutenberg.org/ebooks/53489", "license": "PD" },
+      { "what": { "en": "The Spanish notes, adapted from Markham's and written for this edition", "es": "Las notas en español, adaptadas de las de Markham y escritas para esta edición" }, "who": "Ignacio Ferro", "license": "CC-BY-4.0" }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "EB Garamond", "license": "OFL-1.1" },
+      { "family": "Bodoni Moda", "license": "OFL-1.1" },
+      { "family": "IBM Plex Sans Condensed", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-28",
+  "updated": "2026-09-28"
+}

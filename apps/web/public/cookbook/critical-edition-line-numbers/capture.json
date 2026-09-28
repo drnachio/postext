@@ -3,20 +3,20 @@
   "slug": "critical-edition-line-numbers",
   "sourceHash": "48f37eea27fac225beaf94824bf42bcdd9a28f2a04af127d5afc682bfeea2d9f",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.6.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:49:59.487Z",
+  "capturedAt": "2026-09-28T07:57:56.108Z",
   "variants": {
     "en": {
-      "hash8": "3142c41b",
-      "vdtHash": "a771a2aa2067e1ddfa42a84bc93cc0eea24d8f13",
+      "hash8": "6b42c034",
+      "vdtHash": "ff4ba0d9d6dc6bd177c17ae5b15e392a033b1a49",
       "timings": {
-        "importMs": 87,
-        "fontsMs": 25,
-        "buildMs": 15,
-        "totalMs": 727,
+        "importMs": 458,
+        "fontsMs": 1365,
+        "buildMs": 38,
+        "totalMs": 4033,
         "builds": 2
       },
       "specimen": {
@@ -72,7 +72,7 @@
           "h": 1565,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 98648,
+          "bytes": 98672,
           "alt": "Page 3."
         },
         {
@@ -94,7 +94,7 @@
           "h": 1565,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 56046,
+          "bytes": 56062,
           "alt": "Page 7."
         },
         {
@@ -105,7 +105,7 @@
           "h": 1565,
           "file": "p08.webp",
           "strip": "p08.s.webp",
-          "bytes": 120602,
+          "bytes": 120814,
           "alt": "Opening page 8: Notes."
         },
         {
@@ -116,7 +116,7 @@
           "h": 1565,
           "file": "p09.webp",
           "strip": "p09.s.webp",
-          "bytes": 125206,
+          "bytes": 125180,
           "alt": "Page 9."
         }
       ],
@@ -152,7 +152,7 @@
       },
       "sandbox": {
         "file": "critical-edition-line-numbers.postext",
-        "bytes": 38309
+        "bytes": 38317
       },
       "detected": {
         "apis": [

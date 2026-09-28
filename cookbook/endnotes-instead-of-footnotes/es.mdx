@@ -1,8 +1,8 @@
 ---
-title: "Notas finales a dos columnas en lugar de notas al pie"
-summary: "Un preprocesador breve pasa las notas al pie de Markdown a llamadas voladas y a una sección que un estilo de título compone en página propia, a dos columnas."
+title: "Notas finales en página propia, a dos columnas"
+summary: "Un preprocesador breve numera las notas [^1] y las reúne bajo un título Notes, cuyo estilo las compone en página propia, a dos columnas."
 description: "La primera conferencia de Faraday sobre la vela, con seis notas finales. Cada llamada [^1] sale volada, y las notas van en página propia a dos columnas."
-question: "¿Cómo convierto las notas [^1] en notas finales si Postext no compone notas al pie?"
+question: "¿Cómo compongo las notas [^1] como notas finales, en página propia y bajo su título?"
 aliases: ["notas al pie", "notas finales", "notas al final", "llamadas de nota", "números volados", "superíndices", "[^1]", "notas de GFM", "sangría francesa", "edición crítica", "notas del editor"]
 pageNotes: { "1": "La apertura de la conferencia I: un campo de hollín ocupa la mitad superior de la página, con una vela encendida apoyada en su borde inferior, el antetítulo LECTURE I en naranja y el título A Candle en crema. El texto empieza debajo; su primera llamada es un 1 pequeño y volado en naranja oscuro.", "4": "Un panel oscuro encabeza la página: dos llamas de vela, una bajo un tubo de cristal y otra en sección con flechas de aire que sube, con el pie Figure 1. Debajo sigue la conferencia hasta el final, con la llamada 6 en el primer párrafo.", "5": "Las notas: una banda de hollín con una vela recién apagada que echa humo y, debajo, seis notas en dos columnas de cuerpo menor, cada número en negrita naranja oscuro colgado en la sangría, y un colofón; las dos columnas terminan en la misma línea." }
 ---
@@ -15,7 +15,7 @@ La primera conferencia de *The Chemical History of a Candle*, de Michael Faraday
 
 ### 1 · Convierte las notas al pie en notas finales antes de componer
 
-El preprocesador es [la respuesta corta](#la-respuesta-corta) de arriba. Postext 1.4.1 no compone notas: la llamada `[^1]` figura entre [lo que el formato no admite](/es/docs/document-format#qué-no-se-soporta), y el motor ignora `PostextContent.notes`, aunque los tipos lo aceptan. Una llamada `[^1]` suelta se imprime tal cual; dos en un mismo párrafo emparejan sus circunflejos como un superíndice y elevan todo el texto que queda entre ellas. Por eso el pen reescribe el Markdown antes de pasárselo a `buildDocument`. Numera las llamadas por el orden en que el texto las cita por primera vez y coloca todas las definiciones, en ese orden, donde está la primera, bajo `## Notes`. Cada nota empieza por `**1**`, porque `1. ` abriría una lista numerada. Un unidor de palabras (U+2060) abre cada llamada; sin él, el `**` de la llamada que sigue a `*Royal George*` se juntaría con el asterisco que cierra la cursiva en un `***`, y los asteriscos saldrían impresos.
+El preprocesador es [la respuesta corta](#la-respuesta-corta) de arriba. Postext compone por sí mismo las notas `[^1]` ([notas al pie](/es/docs/document-format#notas-al-pie)): al pie de la columna que las cita o, con `placement: 'chapterEnd'`, detrás del último bloque del capítulo. En los dos casos se quedan en la columna del capítulo, con la letra del texto y bajo un filete corto. Esta edición quiere para las notas un título, una banda y una página a dos columnas, y eso un estilo de título solo lo da a un título escrito en el Markdown. Por eso el pen reescribe el Markdown antes de pasárselo a `buildDocument`, y el motor nunca ve una llamada `[^1]`. Numera las llamadas por el orden en que el texto las cita por primera vez y coloca todas las definiciones, en ese orden, donde está la primera, bajo `## Notes`. Cada nota empieza por `**1**`, porque `1. ` abriría una lista numerada. Un unidor de palabras (U+2060) abre cada llamada; sin él, el `**` de la llamada que sigue a `*Royal George*` se juntaría con el asterisco que cierra la cursiva en un `***`, y los asteriscos saldrían impresos.
 
 ### 2 · Reserva la negrita para las llamadas
 
@@ -50,6 +50,10 @@ El naranja de la llama da un contraste de 6:1 sobre el hollín, pero solo de 2,6
 <Note>Una aclaración breve puede quedarse en el texto, entre paréntesis. Las glosas que el lector necesita junto a la línea pueden ir en una columna lateral, como en <RecipeLink slug="textbook-margin-column">Libro de texto con columna al margen</RecipeLink>.</Note>
 
 ## Variantes
+
+### Deja que Postext componga las notas
+
+Quita `endnotes()` y el título `## Notes`, deja una línea en blanco entre las definiciones (el motor lee cada una hasta la siguiente línea en blanco) y añade `footnotes: { placement: 'chapterEnd' }` a la configuración. El motor numera las llamadas y compone las notas al final de la conferencia, detrás del colofón, en su única columna; <RecipeLink slug="novel-footnotes-column-foot">Notas al pie de la columna que las cita</RecipeLink> muestra cómo dar estilo a las notas que compone el motor.
 
 ### Imprime las llamadas en tinta
 
