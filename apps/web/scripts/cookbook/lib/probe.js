@@ -441,6 +441,25 @@ export function facts({ select = 'last', hero = [] } = {}) {
     ...collectKeys(source.config, /^resourceId$/).map((x) => ({ ...x, at: `config.${x.at}` })),
     ...collectKeys(source.resources, /^resourceId$/).map((x) => ({ ...x, at: `resources${x.at}` })),
   ]) {
+    if (typeof value === 'string' && value.includes('{')) {
+      // A templated design image id (postext ≥ 1.8): '{attr.art}' names the
+      // resource each heading or part gives it; check every value the
+      // document fills in. Other placeholders are resolved at layout only.
+      const ATTR = /\{attr\.([A-Za-z_][A-Za-z0-9_-]*)\}/g;
+      const keys = [...value.matchAll(ATTR)].map((m) => m[1]);
+      if (keys.length === 0) continue;
+      for (const { chapter, body, blocks } of parsed) {
+        for (const block of blocks) {
+          const attrs = block.attrs ?? block.containerAttrs;
+          if (!attrs || !keys.some((k) => attrs[k] !== undefined)) continue;
+          const id = value.replace(ATTR, (_, k) => attrs[k] ?? '').trim();
+          if (id && !id.includes('{') && !resourceIds.has(id)) {
+            unknownRefs.push({ usage: `resourceId ${value}`, id, at: `chapter ${chapter + 1}, line ${lineOf(body, block.sourceStart)}` });
+          }
+        }
+      }
+      continue;
+    }
     if (!resourceIds.has(value)) unknownRefs.push({ usage: 'resourceId', id: value, at });
   }
   const counts = new Map();

@@ -998,6 +998,8 @@ An `image` element draws a bitmap or SVG resource of the document — a publishe
 }
 ```
 
+`resourceId` takes the placeholders a text element's `content` takes, so one design can draw a different picture for each heading. With `resourceId: '{attr.vignette}'` in a heading style, `# Chapter I {style="opener" vignette="log"}` draws the resource `log` and `# Chapter II {style="opener" vignette="wig"}` draws `wig`: the chapters share the style instead of one clone per picture. A header or footer reads the attributes of the page's chapter, as `{attr.<key>}` does in a running head, and other placeholders work too (`'map-{chapterNumber}'`). An id that comes out empty, such as a heading without the attribute, draws nothing. Since postext 1.8.
+
 <table>
   <thead>
     <tr>
@@ -1018,7 +1020,7 @@ An `image` element draws a bitmap or SVG resource of the document — a publishe
       <td><code>resourceId</code></td>
       <td><code>string</code></td>
       <td>—</td>
-      <td>Id of a bitmap or SVG <code>Resource</code> of the document.</td>
+      <td>Id of a bitmap or SVG <code>Resource</code> of the document. It may hold placeholders, <code>&#123;attr.&lt;key&gt;&#125;</code> among them, filled in per heading, part or page.</td>
     </tr>
     <tr>
       <td><code>placement</code></td>
