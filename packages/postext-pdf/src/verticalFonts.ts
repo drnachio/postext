@@ -65,6 +65,12 @@ export interface VerticalTwin {
   /** Whether the font has a vertical form for `ch`: a glyph `vert` gives
    *  on top of what `fwid` alone gives. */
   hasVerticalForm(ch: string): boolean;
+  /** How many glyphs `text` (one grapheme) shapes to, as {@link encode}
+   *  would shape it, without adding them to the subset. In WMode 1 every
+   *  glyph of a show advances one em, so a cluster of more than one (a
+   *  combining mark the font does not compose, an emoji sequence it does
+   *  not ligate) cannot be shown in one cell of a run. */
+  glyphCount(text: string, vertical?: boolean): number;
 }
 
 const twins = new WeakMap<PDFFont, VerticalTwin>();
@@ -118,6 +124,7 @@ export function verticalTwinOf(font: PDFFont): VerticalTwin | undefined {
   const fullWidth = withFwid(plain);
   const idsOf = (ch: string, features: unknown): string => embedder.font.layout(ch, features).glyphs.map((g) => g.id).join(',');
   const formCache = new Map<string, boolean>();
+  const countCache = new Map<string, number>();
   const twin: VerticalTwin = {
     ref,
     encode(text, upright = true) {
@@ -136,6 +143,15 @@ export function verticalTwinOf(font: PDFFont): VerticalTwin | undefined {
       // pdf-lib writes a font only once text was encoded with it.
       (font as unknown as { modified: boolean }).modified = true;
       return { hex, glyphs };
+    },
+    glyphCount(text, upright = true) {
+      const key = `${upright ? 'v' : 'h'}${text}`;
+      let n = countCache.get(key);
+      if (n === undefined) {
+        n = embedder.font.layout(text, upright ? vertical : plain).glyphs.length;
+        countCache.set(key, n);
+      }
+      return n;
     },
     hasVerticalForm(ch) {
       const hit = formCache.get(ch);

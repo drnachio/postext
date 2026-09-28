@@ -222,6 +222,18 @@ export function drawVerticalTextPx(
     }
     const cell = em * run.cell;
     const kind = cellKind(run.glyph, run.text, font);
+    if ((kind === 'upright' || kind === 'alternate' || kind === 'dash') && shapesApart(font, run.text, kind !== 'upright')) {
+      // A cluster of several glyphs (a combining mark the font does not
+      // compose, an emoji sequence it does not ligate): in a show each
+      // glyph would advance one em down the column. Set as the canvas sets
+      // it: the cluster shaped horizontally, stood upright, centred on its
+      // cell.
+      flushUpright();
+      const w = textAdvancePx(font, run.text, sizePx).advance;
+      drawHorizontal(run.text, [0, 1, -1, 0, X(cx + cell / 2) + centralPx * scale, Y(axis) - (w * scale) / 2], 0);
+      cx += cell + tracking;
+      continue;
+    }
     if (kind === 'upright' || kind === 'alternate' || kind === 'dash') {
       // A character that stands upright as it is keeps its horizontal
       // glyph, as on the canvas; a vertical form comes from `vert` (with
@@ -297,6 +309,19 @@ function inkLiftPx(font: PDFFont, ch: string, sizePx: number): number | undefine
   const bbox = face?.layout(ch).glyphs[0]?.bbox;
   if (!face || !bbox || !Number.isFinite(bbox.minY) || !(bbox.maxY > bbox.minY)) return undefined;
   return ((bbox.minY + bbox.maxY) / 2 / face.unitsPerEm) * sizePx;
+}
+
+/** Whether the grapheme `g` cannot be shown as one glyph of a twin's run:
+ *  it shapes to more than one glyph (in its vertical forms when
+ *  `vertical`), or its characters come from different files of the face. */
+function shapesApart(font: PDFFont, g: string, vertical: boolean): boolean {
+  // A single UTF-16 unit maps to one glyph through the cmap; only a
+  // cluster can shape to more (fast path for Han and the marks).
+  if (g.length === 1) return false;
+  const runs = fileRuns(font, g);
+  if (runs.length !== 1) return runs.length > 1;
+  const twin = verticalTwinOf(runs[0]!.font);
+  return twin !== undefined && twin.glyphCount(g, vertical) > 1;
 }
 
 /** How a cell is drawn: upright through the vertical twin, as it is

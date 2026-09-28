@@ -195,6 +195,26 @@ describe('vertical text in the PDF (#191)', () => {
     expect(show.tm[4]).toBeCloseTo(line.bbox.x + 16 * (0.5 - (0.88 - central)), 3);
   });
 
+  it('sets a cluster of several glyphs in one cell, the characters after it where they were measured (#191 review)', async () => {
+    // 此 with a combining acute the font does not compose: two glyphs (the
+    // fixture has no acute: .notdef). In one show the second would push
+    // every glyph after it down one em.
+    const { doc, pdf } = await render('此\u0301開卷也', config('zh-Hant'));
+    const page = doc.pages[0]!;
+    const line = page.columns[0]!.blocks[0]!.lines[0]!;
+    expect(line.bbox.width).toBeCloseTo(4 * 16, 3);
+    const ops = pageOps(pdf);
+    const shows = uprightShows(ops, pageFonts(pdf));
+    // The twin shows only the three characters after the cluster, from the
+    // second cell on.
+    expect(shows.flatMap((s) => s.cids)).toHaveLength(3);
+    const central = page.flow!.centralBaselines?.['Noto Serif TC'] ?? 0.38;
+    expect(shows[0]!.tm[4]).toBeCloseTo(line.bbox.x + 16 + 16 * (0.5 - (0.88 - central)), 3);
+    // The cluster: shaped horizontally, stood upright in the first cell.
+    const cluster = [...ops.matchAll(/0 1 -1 0 ([-\d.]+) [-\d.]+ Tm/g)].map((m) => Number(m[1]));
+    expect(cluster.some((x) => Math.abs(x - (line.bbox.x + 8 + central * 16)) < 0.01)).toBe(true);
+  });
+
   it('spreads a justified vertical line with TJ numbers that move the pen down', async () => {
     const cfg = config('zh-Hant');
     cfg.bodyText = { ...cfg.bodyText, textAlign: 'justify' };
