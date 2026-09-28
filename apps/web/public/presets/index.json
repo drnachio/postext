@@ -64,6 +64,31 @@
       ]
     },
     {
+      "id": "hongloumeng",
+      "dir": "hongloumeng",
+      "name": "紅樓夢 · Dream of the Red Chamber",
+      "description": "Novela clásica china en 120 capítulos: el texto de 1792 en chino tradicional y simplificado, con las láminas de 1884, y la traducción inglesa de Joly · A classic Chinese novel in 120 chapters: the 1792 text in Traditional and Simplified Chinese with the 1884 plates, and Joly’s English translation",
+      "locale": "zh-Hant",
+      "locales": [
+        "zh-Hant",
+        "zh-Hans",
+        "en"
+      ],
+      "thumbnail": "thumbnail.jpg",
+      "license": "Public domain · CC BY-SA 4.0 (Wikisource text) · OFL fonts",
+      "credits": "曹雪芹 · 程偉元 · 高鶚 · zh.wikisource · H. Bencraft Joly · Project Gutenberg · 同文書局 1884 · 改琦 · Wikimedia Commons",
+      "tags": [
+        "book",
+        "chinese",
+        "single-column",
+        "plates",
+        "front-matter",
+        "index"
+      ],
+      "openLocale": "zh-Hant",
+      "binding": "right"
+    },
+    {
       "id": "openstax-fisica",
       "dir": "openstax-fisica",
       "name": "Física universitaria · Physics (OpenStax)",

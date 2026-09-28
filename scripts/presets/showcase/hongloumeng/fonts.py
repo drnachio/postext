@@ -231,6 +231,9 @@ def build_face(face: dict, weight: int, text: str, out_dir: str, woff2: bool = T
     path = os.path.join(out_dir, name)
     if woff2:
         font.flavor = "woff2"
+    # Keep the source's `head.modified`: a save stamps the current time by
+    # default, and the bundle's fingerprint must not change between builds.
+    font.recalcTimestamp = False
     buf = io.BytesIO()
     font.save(buf)
     with open(path, "wb") as f:

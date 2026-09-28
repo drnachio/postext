@@ -3,7 +3,8 @@
 (git-ignored):
 
 - zh.wikisource 《紅樓夢（程乙本）》 (1792), twelve pages of ten 回 each, as
-  wikitext: the base text of the Chinese editions;
+  wikitext: the base text of the Chinese editions; and its index page, which
+  holds the prefaces (程偉元's 序, 高鶚's 敘, the 1792 引言);
 - zh.wikisource 《紅樓夢》 (the main edition, 庚辰本 1–80 + 程甲本 81–120), 120
   pages as wikitext: only its `<poem>` blocks are used, to find the verse in
   the 程乙本 text, which has no verse markup;
@@ -204,6 +205,12 @@ def fetch_html(page: str, path: str) -> bool:
 def fetch_wikisource(chengjia: bool) -> None:
     ws = os.path.join(SOURCE, "wikisource")
     revs: dict[str, dict] = {}
+    # The index page of 程乙本 carries 程偉元's 序, 高鶚's 敘 and the 1792
+    # 引言 (text.py `front_matter`). Kept outside `chengyi/`, whose files
+    # are the ten-回 volumes.
+    if fetch_wikitext(CHENGYI, os.path.join(ws, "chengyi-index.wikitext")):
+        print("wikisource", CHENGYI)
+    revs["chengyi/index"] = {"page": CHENGYI}
     # 程乙本: twelve pages 「第一回　至第十回」…, saved under the first 回's number.
     for title in subpages(CHENGYI):
         first = re.search(r"/(第.+?回)", title)

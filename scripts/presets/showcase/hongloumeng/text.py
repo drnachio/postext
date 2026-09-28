@@ -982,7 +982,64 @@ def build_en() -> tuple[list[dict], list[str], dict[str, str]]:
     return chapters, preface, names
 
 
+# --- front matter: the prefaces of the 程 editions ----------------------------------------------
+
+FRONT = os.path.join(SOURCE, "front.json")
+# The three texts on the 程乙本 index page, in the order the 1792 print has them.
+FRONT_SECTIONS = (("cheng", "序", "程偉元"), ("gao", "敘", "高鶚"), ("yinyan", "引言", "程偉元　高鶚"))
+# Typing slips of the transcription, each checked against the 1791 程甲本
+# transcription on zh.wikisource (its index page renders the same two
+# prefaces from the scan) or, for 雲/云, against the pattern text.py fixes
+# in the chapters.
+FRONT_FIXES = [
+    ("凡我同人。或亦", "凡我同人，或亦"),
+    ("將付剞，", "將付剞劂，"),
+    ("子且閒憊矣，盍分認之", "子閒且憊矣，盍分任之"),
+    ("井識端末", "並識端末"),
+    ("非雲弁首", "非云弁首"),
+]
+
+
+def front_matter() -> dict:
+    """程偉元's 序, 高鶚's 敘 and the 引言 of 1792 from the 程乙本 index page:
+    `{zh-Hant: [{key, title, author, paragraphs, signature}], zh-Hans: …}`.
+    The signature is the short closing lines (name, date)."""
+    text = open(os.path.join(WS, "chengyi-index.wikitext"), encoding="utf-8").read()
+    for old, new in FRONT_FIXES:
+        if old not in text:
+            print(f"warning: front-matter fix not applied: {old}", file=sys.stderr)
+        text = text.replace(old, new)
+    out: dict[str, list] = {"zh-Hant": [], "zh-Hans": []}
+    for key, title, author in FRONT_SECTIONS:
+        m = re.search(rf"^=={re.escape(title)}==\s*$(.*?)(?=^==)", text, re.M | re.S)
+        if not m:
+            raise SystemExit(f"front matter: section {title} not found")
+        lines = [clean_inline(l).strip(" \t　") for l in m.group(1).split("\n")]
+        lines = [l for l in lines if l and not l.startswith("{{")]
+        # 引言: an item (「一、」) the transcription ran into the one before.
+        split: list[str] = []
+        for l in lines:
+            split.extend(p for p in re.split(r"(?<=[。」])(?=一、)", l) if p)
+        paragraphs = [l for l in split if "。" in l or "？" in l or len(l) > 16]
+        signature = [l for l in split if l not in paragraphs]
+        if split[: len(paragraphs)] != paragraphs:
+            raise SystemExit(f"front matter: signature lines inside {title}")
+        entry = {"key": key, "title": title, "author": author, "paragraphs": paragraphs, "signature": signature}
+        out["zh-Hant"].append(entry)
+        # OpenCC keeps the variant 敍 (高鶚's signature); Simplified writes 叙.
+        hans = lambda s: zh_hans(s).replace("敍", "叙")  # noqa: E731
+        out["zh-Hans"].append({**entry, "title": hans(title), "author": hans(author), "paragraphs": [hans(p) for p in paragraphs], "signature": [hans(s) for s in signature]})
+    with open(FRONT, "w", encoding="utf-8") as f:
+        json.dump(out, f, ensure_ascii=False, indent=1)
+        f.write("\n")
+    return out
+
+
 def main() -> None:
+    if "--front" in sys.argv:
+        front = front_matter()
+        print("wrote", FRONT, [(e["title"], len(e["paragraphs"]), e["signature"]) for e in front["zh-Hant"]])
+        return
     qa = "--qa" in sys.argv
     hant, hans = build_zh(qa)
     en, preface, names = build_en()
