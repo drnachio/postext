@@ -26,6 +26,7 @@ import { lineInkExtent, lineTrailingTracking } from './lineInk';
 import { CHARACTER_GRID_COLOR, cjkGridCells, type CjkGridCells } from './pipeline/cjkGrid';
 import { renderLangOf } from './locale';
 import { hasCJK } from './measure/cjk';
+import { lineMarksHtml, rubyHtml, warichuHtml } from './htmlAnnotations';
 
 /**
  * Declarations of every box of CJK text measured with no punctuation
@@ -308,7 +309,9 @@ function renderTextSegment(
   // A compressed CJK mark is painted before its box (`inkOffset`).
   const left = seg.inkOffset !== undefined ? x + seg.inkOffset : x;
   const pos = `position:absolute;left:${left.toFixed(3)}px;top:${top};white-space:pre;${spacingDecl}${cjk === 'own' ? CJK_TEXT_DECL : ''}`;
-  const text = esc(seg.text);
+  // Text set with emphasis dots is emphasis (#193); the dots are the
+  // line's marks.
+  const text = seg.cjkMarks?.dots ? `<em style="font-style:inherit;">${esc(seg.text)}</em>` : esc(seg.text);
   const featuresDecl = cjk && fontDecl ? CJK_FEATURES_DECL : '';
   if (seg.refResourceId !== undefined) {
     // Anchors carry an explicit color so the UA link blue never leaks in.
@@ -459,6 +462,12 @@ function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<st
       x += seg.width;
       continue;
     }
+    if (seg.warichu) {
+      // A warichu note's part: its two rows (#195).
+      parts.push(warichuHtml(seg.warichu, x, pickSegmentColor(seg, block), quoteFontString));
+      x += seg.width;
+      continue;
+    }
     if (seg.refResourceId !== undefined && segs[i + 1]?.refContinues) {
       const group = renderRefRuns(segs, i, x, pickSegmentColor(seg, block), (run, at) => paintText(run, at, true), refLinks(seg.refResourceId, targets));
       parts.push(group.html);
@@ -467,9 +476,13 @@ function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<st
       continue;
     }
     parts.push(paintText(seg, x, seg.refResourceId !== undefined && !refLinks(seg.refResourceId, targets)));
+    // A ruby base's reading (#194).
+    if (seg.ruby) parts.push(rubyHtml(seg.ruby, x, pickSegmentColor(seg, block), quoteFontString));
     x += seg.width;
   }
   parts.push(links.end());
+  // Emphasis dots, proper-name and book-title lines (#193).
+  if (line.marks) parts.push(lineMarksHtml(line, block.color));
   return parts.join('');
 }
 

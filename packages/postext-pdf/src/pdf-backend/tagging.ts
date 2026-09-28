@@ -43,7 +43,8 @@ export type StructType =
   | 'Document' | 'Div' | 'P' | 'H1' | 'H2' | 'H3' | 'H4' | 'H5' | 'H6'
   | 'L' | 'LI' | 'Lbl' | 'LBody' | 'BlockQuote' | 'Figure' | 'Formula'
   | 'Caption' | 'Table' | 'TR' | 'TH' | 'TD' | 'Link' | 'Note' | 'Span'
-  | 'TOC' | 'TOCI' | 'Reference';
+  | 'TOC' | 'TOCI' | 'Reference'
+  | 'Ruby' | 'RB' | 'RT' | 'Warichu' | 'WT';
 
 /** Artifact classes (PDF 1.7 §14.8.2.2). */
 export interface ArtifactSpec {

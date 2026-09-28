@@ -816,10 +816,12 @@ function lineTextState(ctx: PageCtx, state: LineTextState): PDFOperator[] {
 /** The text a composed CJK line is read as when its segments are painted
  *  apart (see {@link beginActualTextSpan}): the segments' text, when one
  *  of them carries tracking, is a Han–Latin space, is a mark that gave up
- *  blank (its glyph painted over its neighbour's box, `inkOffset`) or
- *  hangs; else undefined. */
-export function cjkLineText(segments: readonly { text: string; tracking?: number; autospace?: boolean; inkOffset?: number; hangs?: boolean }[]): string | undefined {
-  return segments.some((s) => s.autospace || s.tracking !== undefined || s.inkOffset !== undefined || s.hangs)
+ *  blank (its glyph painted over its neighbour's box, `inkOffset`), hangs,
+ *  is a ruby base (the line reads its base, not the reading painted over
+ *  it) or a warichu note's part (read once, upper row first); else
+ *  undefined. */
+export function cjkLineText(segments: readonly { text: string; tracking?: number; autospace?: boolean; inkOffset?: number; hangs?: boolean; ruby?: unknown; warichu?: unknown }[]): string | undefined {
+  return segments.some((s) => s.autospace || s.tracking !== undefined || s.inkOffset !== undefined || s.hangs || s.ruby || s.warichu)
     ? segments.map((s) => s.text).join('')
     : undefined;
 }
