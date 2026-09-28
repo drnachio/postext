@@ -71,8 +71,9 @@ Postext Markdown is **not CommonMark**. These habits break a port:
   Marks in headings print as in a paragraph (`headings.inlineMarks`, on by default
   since configVersion 6); an italic run in an italic heading comes out upright.
 - Only four containers exist (`:::callout`, `:::paragraphs`, `:::part`,
-  `:::columns`, the last only inside a callout) and five directives
-  (`:::pagebreak`, `:::numbering`, `:::columnbreak`, `:::space`, `:::toc`).
+  `:::columns`, the last only inside a callout) and six directives
+  (`:::pagebreak`, `:::numbering`, `:::columnbreak`, `:::space`, `:::toc`,
+  `:::index`), plus inline index marks (`:index[…]`, `:index{term="…"}`).
   Anything else prints literally.
 - **Extra blank lines add no space.** Where the source has deliberate
   vertical space (a scene break, room above a signature), write

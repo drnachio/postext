@@ -556,8 +556,9 @@ export async function runCapture(opts: CaptureOptions): Promise<CaptureResult[]>
       const allOk = mine.every((d) => d.result.ok);
       if (!allOk) {
         for (const d of mine) d.result.note = d.result.ok ? "not written: another edition failed" : "not written";
-      } else if (opts.check) {
-        for (const d of mine) d.result.note = "check only";
+      } else if (opts.check || engine.source === "local") {
+        // A published capture comes from npm: the local engine only previews.
+        for (const d of mine) d.result.note = engine.source === "local" ? "local engine: check only" : "check only";
       } else {
         const written = writeRecipe(task, outputs, engine, hb.chrome, !!opts.force);
         for (const d of mine) {

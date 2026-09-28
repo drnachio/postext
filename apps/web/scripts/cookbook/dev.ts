@@ -1,5 +1,5 @@
 /**
- * `pnpm cookbook dev <slug> [--lang es] [--port 4400] [--engine npm@x.y.z]`:
+ * `pnpm cookbook dev <slug> [--lang es] [--port 4400] [--engine npm@x.y.z|local]`:
  * serves the exact capture page of one recipe with live reload. Saving
  * anything under cookbook/<slug>/ or cookbook/_kit/ recomposes the pen and
  * reloads the browser.
@@ -14,16 +14,17 @@ import { LOCALES } from "../../src/lib/cookbook/types.ts";
 import { UsageError, c, int, loadRecipes, mark, parseArgs, shown, str } from "./args.ts";
 import type { PenServer } from "./serve.ts";
 
-export const DEV_USAGE = `pnpm cookbook dev <slug> [--lang es] [--port 4400] [--engine npm@x.y.z]
+export const DEV_USAGE = `pnpm cookbook dev <slug> [--lang es] [--port 4400] [--engine npm@x.y.z|local]
 
   Serves the page the capture runs, with live reload: saving a file under
   cookbook/<slug>/ or cookbook/_kit/ recomposes the pen and reloads it.
 
   --lang <en|es>     Sample edition (default: the recipe's first sample language)
   --port <n>         Port of the local server (default 4400)
-  --engine <spec>    npm (default: the released version) or npm@x.y.z`;
+  --engine <spec>    npm (default: the released version), npm@x.y.z, or local (the
+                     workspace packages' dist: run tsc in packages/postext and postext-pdf)`;
 
-export const ENGINE_PATTERN = /^npm(@\d+\.\d+\.\d+)?$/;
+export const ENGINE_PATTERN = /^(npm(@\d+\.\d+\.\d+)?|local)$/;
 
 /** Editor droppings that should not trigger a reload. */
 function ignored(file: string): boolean {
@@ -52,7 +53,7 @@ export async function runDev(argv: readonly string[]): Promise<number> {
   if (!entry) throw new UsageError(`no recipe "${slug}" in cookbook/`, "dev");
   const engine = str(args, "engine");
   if (engine && !ENGINE_PATTERN.test(engine)) {
-    throw new UsageError(`--engine expects npm or npm@x.y.z, not "${engine}"`, "dev");
+    throw new UsageError(`--engine expects npm, npm@x.y.z or local, not "${engine}"`, "dev");
   }
   const meta = entry.meta;
   if (!meta) {

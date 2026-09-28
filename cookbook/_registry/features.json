@@ -4350,5 +4350,52 @@
         "parseMarkdownWithIssues"
       ]
     }
+  },
+  "back-of-book-index": {
+    "label": {
+      "en": "Back-of-book index",
+      "es": "Índice analítico"
+    },
+    "definition": {
+      "en": "Terms marked in the text with :index and listed by :::index in alphabetical order, with sub-entries, ranges, cross-references and page numbers that follow the text.",
+      "es": "Términos marcados en el texto con :index y listados por :::index en orden alfabético, con subentradas, intervalos, remisiones y números de página que siguen al texto."
+    },
+    "aliases": {
+      "en": [
+        "index",
+        "subject index",
+        "index of names",
+        "keyword index",
+        "page references",
+        "see also",
+        "concordance"
+      ],
+      "es": [
+        "índice alfabético",
+        "índice de materias",
+        "índice onomástico",
+        "índice temático",
+        "remisiones",
+        "véase también"
+      ]
+    },
+    "group": "structure",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Back-of-book index",
+        "es": "Índice analítico"
+      }
+    },
+    "research": [],
+    "detect": {
+      "markdown": [
+        "^:::index",
+        "(?<![:\\\\]):index[\\[{]"
+      ],
+      "config": [
+        "index"
+      ]
+    }
   }
 }

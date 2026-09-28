@@ -150,10 +150,21 @@ function renderSegments(
     // A footnote marker links to its note, like a `:ref` to its resource.
     const target = seg.refResourceId ?? (seg.footnoteId !== undefined ? footnoteDestination(linkRegistry, seg.footnoteId) : undefined);
     const link = refRun.enter(seg, x, elem, target);
-    tagContent(ctx, link ?? uriElem ?? elem);
+    // A page number of the index links to its page.
+    const pageElem = seg.pageLink !== undefined && elem && !link ? elem.child('Link') : undefined;
+    tagContent(ctx, link ?? pageElem ?? uriElem ?? elem);
     // The hyphen repeated from the line before is painted but not read.
     const actualText = i === repeatedAt ? seg.text.slice(1) : undefined;
     drawTextPx(ctx, seg.text, x, baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText);
+    if (seg.pageLink !== undefined && linkRegistry) {
+      const { scale, pageHeightPt } = ctx;
+      linkRegistry.addPageLink(
+        ctx.page,
+        [x * scale, pageHeightPt - (line.bbox.y + line.bbox.height) * scale, (x + seg.width) * scale, pageHeightPt - line.bbox.y * scale],
+        seg.pageLink,
+        pageElem ? { elem: pageElem, contents: seg.text } : undefined,
+      );
+    }
     const ref = refRun.leave(seg, segments[i + 1], target);
     if (ref && linkRegistry) {
       const { scale, pageHeightPt } = ctx;
@@ -256,7 +267,7 @@ function renderLineText(
   // blocks. Segments are needed when any of them styles differently from the
   // block (bold/italic/math/ref/own font or colour); otherwise one text
   // object paints the line.
-  if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined || s.href !== undefined || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined)) {
+  if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined || s.href !== undefined || s.pageLink !== undefined || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined)) {
     renderSegments(ctx, segments, line.bbox.x, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem);
     return;
   }

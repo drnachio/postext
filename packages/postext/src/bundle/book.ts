@@ -89,7 +89,12 @@ export function buildBundle(
   const first = chapters[0];
   const metadata: DocumentMetadata = { ...(givenMetadata ?? {}), ...(first ? extractFrontmatter(first.markdown).metadata : {}) };
   const sources = chapters.map((c, index) => (index === 0 ? c.markdown : blankFrontmatter(c.markdown)));
-  const hasToc = sources.map((markdown) => contentOutline({ markdown }, config).hasToc);
+  // A chapter printing the contents (`:::toc`) or the index (`:::index`)
+  // reads the whole book's outline.
+  const hasToc = sources.map((markdown) => {
+    const { hasToc: toc, hasIndex } = contentOutline({ markdown }, config);
+    return toc || hasIndex;
+  });
   const anyToc = hasToc.some(Boolean);
   // `{bookTotalPages}` needs the page count of the whole book, known once
   // every chapter is laid out: the book goes round once more with it. It

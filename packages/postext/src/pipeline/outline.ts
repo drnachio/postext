@@ -21,6 +21,44 @@ export function hasTocDirective(blocks: readonly ContentBlock[]): boolean {
   return blocks.some((b) => b.type === 'directive' && b.directiveName === 'toc');
 }
 
+/** Whether the parsed content holds a `:::index` directive. */
+export function hasIndexDirective(blocks: readonly ContentBlock[]): boolean {
+  return blocks.some((b) => b.type === 'directive' && b.directiveName === 'index');
+}
+
+/** The outline entries of a block's index marks. */
+function indexMarkEntries(b: ContentBlock): OutlineEntry[] {
+  if (!b.indexMarks) return [];
+  return b.indexMarks.map((m): OutlineEntry => ({
+    kind: 'indexMark',
+    level: 0,
+    title: m.path.join('!'),
+    number: '',
+    numbered: false,
+    listed: false,
+    indexMark: {
+      index: m.index,
+      path: m.path,
+      ...(m.sort !== undefined ? { sort: m.sort } : {}),
+      ...(m.see !== undefined ? { see: m.see } : {}),
+      ...(m.seeAlso !== undefined ? { seeAlso: m.seeAlso } : {}),
+      ...(m.main ? { main: true } : {}),
+      ...(m.range !== undefined ? { range: m.range } : {}),
+      sourceStart: m.sourceStart,
+    },
+  }));
+}
+
+/** The entries `:::toc` reads (headings and parts). */
+export function tocOutline(entries: readonly OutlineEntry[]): OutlineEntry[] {
+  return entries.filter((e) => e.kind !== 'indexMark');
+}
+
+/** The entries `:::index` reads (index marks). */
+export function indexOutline(entries: readonly OutlineEntry[]): OutlineEntry[] {
+  return entries.filter((e) => e.kind === 'indexMark');
+}
+
 function titleSpans(spans: readonly InlineSpan[]): OutlineEntry['spans'] {
   const out: NonNullable<OutlineEntry['spans']> = [];
   for (const s of spans) {
@@ -83,6 +121,7 @@ export function computeOutline(
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i]!;
     const part = parts.byStart.get(i);
+    if (b.type !== 'heading' && b.indexMarks) out.push(...indexMarkEntries(b));
     if (part) {
       out.push({
         kind: 'part',
@@ -116,6 +155,7 @@ export function computeOutline(
       ...(style ? { styleId: style.id } : {}),
       ...(b.attrs ? { attrs: b.attrs } : {}),
     });
+    if (b.indexMarks) out.push(...indexMarkEntries(b));
   }
   return out;
 }
@@ -158,9 +198,19 @@ export function outlineFromDoc(doc: VDTDocument, parsedOutline: readonly Outline
     }
   }
   const headingIndices = [...headingPage.keys()].sort((a, b) => a - b);
+  // Index marks: the page the build found for each (`doc.indexMarks`).
+  const markPage = new Map<number, number>();
+  for (const m of doc.indexMarks ?? []) markPage.set(m.sourceStart, m.pageIndex);
   let h = 0;
   let p = 0;
   return parsedOutline.map((entry) => {
+    if (entry.kind === 'indexMark') {
+      const local = entry.indexMark ? markPage.get(entry.indexMark.sourceStart) : undefined;
+      const page = local !== undefined ? doc.pages[local] : undefined;
+      return page
+        ? { ...entry, pageLabel: page.pageLabel, pageIndex: offset + page.index, pageFormat: page.pageNumberFormat }
+        : { ...entry };
+    }
     if (entry.kind === 'part') {
       const page = partPages[p++];
       return page !== undefined ? { ...entry, ...page } : { ...entry };
@@ -173,6 +223,10 @@ export function outlineFromDoc(doc: VDTDocument, parsedOutline: readonly Outline
 
 const FIELD_SEP = '';
 
+function indexMarkKey(m: NonNullable<OutlineEntry['indexMark']>): string {
+  return [m.index, m.path.join(FIELD_SEP), m.sort ?? '', m.see ?? '', m.seeAlso ?? '', m.main ? 1 : 0, m.range ?? '', m.sourceStart].join(FIELD_SEP);
+}
+
 /** A stable fingerprint of an outline — what a contents page depends on. */
 export function outlineKey(entries: readonly OutlineEntry[] | undefined): string {
   if (!entries) return '';
@@ -181,6 +235,8 @@ export function outlineKey(entries: readonly OutlineEntry[] | undefined): string
     e.attrs ? Object.entries(e.attrs).sort().map(([k, v]) => `${k}=${v}`).join(';') : '',
     e.palette ? Object.entries(e.palette).sort().map(([k, v]) => `${k}=${v}`).join(';') : '',
     e.spans ? e.spans.map((s) => `${s.bold ? 'b' : ''}${s.italic ? 'i' : ''}:${s.text}`).join(FIELD_SEP) : '',
+    e.pageFormat ?? '',
+    e.indexMark ? indexMarkKey(e.indexMark) : '',
   ].join('|')).join('\n');
 }
 

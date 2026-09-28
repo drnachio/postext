@@ -49,6 +49,9 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'unknownChipStyle':
     case 'undefinedFootnote':
     case 'unusedFootnote':
+    case 'indexMarkInvalid':
+    case 'indexSeeUnknown':
+    case 'indexRangeUnclosed':
     case 'chipOverlap':
     case 'numberingInvalidFormat':
     case 'numberingInvalidStartAt':
@@ -136,6 +139,12 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsUndefinedFootnoteTitle;
     case 'unusedFootnote':
       return labels.warningsUnusedFootnoteTitle;
+    case 'indexMarkInvalid':
+      return labels.warningsIndexMarkInvalidTitle;
+    case 'indexSeeUnknown':
+      return labels.warningsIndexSeeUnknownTitle;
+    case 'indexRangeUnclosed':
+      return labels.warningsIndexRangeUnclosedTitle;
     case 'unknownHeadingStyle':
       return labels.warningsUnknownHeadingStyleTitle;
     case 'chipOverlap':
@@ -262,6 +271,12 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `[^${payload.id}] — ${labels.warningsUndefinedFootnoteDetail}`;
     case 'unusedFootnote':
       return `[^${payload.id}]: — ${labels.warningsUnusedFootnoteDetail}`;
+    case 'indexMarkInvalid':
+      return `:index{…} — ${labels.warningsIndexMarkInvalidDetail}`;
+    case 'indexSeeUnknown':
+      return `${payload.index ? `:::index{index="${payload.index}"} · ` : ''}"${payload.target}" — ${labels.warningsIndexSeeUnknownDetail}`;
+    case 'indexRangeUnclosed':
+      return `:index{term="${payload.term}" range="${payload.missing}"} — ${labels.warningsIndexRangeUnclosedDetail}`;
     case 'unknownHeadingStyle':
       return `H${payload.level} {style="${payload.style}"} — ${labels.warningsUnknownHeadingStyleDetail}`;
     case 'chipOverlap':

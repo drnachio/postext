@@ -16,6 +16,7 @@ import {
   type VDTBalancing,
   type VDTLine,
   type ResolvedConfig,
+  type ContentWarning,
 } from '../vdt';
 import { anchorBox } from '../design/layout';
 import { parseMarkdownMemo, spaceDirectiveLines } from '../parse';
@@ -41,8 +42,9 @@ import {
   headingStyleOf,
   planHeadingSections,
 } from './headingStyles';
-import { computeOutline, hasTocDirective, headingNumberingOptions, headingTemplatesOf, outlineFromDoc, sameOutline } from './outline';
+import { computeOutline, hasIndexDirective, hasTocDirective, headingNumberingOptions, headingTemplatesOf, outlineFromDoc, sameOutline } from './outline';
 import { expandTocDirectives } from './toc';
+import { expandIndexDirectives, locateIndexMarks } from './indexDirective';
 import type { ResolvedHeadingStyleConfig } from '../types';
 import { resolveBodyStyle, resolveBlockquoteStyle, resolveParagraphStyle, type BlockStyle } from './styles';
 import {
@@ -473,9 +475,13 @@ export function buildDocumentPass(
   // `:::toc` expands into the entries of the book's outline — the one the
   // host supplied, else this document's own (page labels unknown on the
   // first pass; `buildDocument` lays the document out again with them).
+  // `:::index` expands into the entries of the book's index marks, from
+  // the same outline.
   const outline = content.outline
-    ?? (hasTocDirective(parsedBlocks) ? computeOutline(parsedBlocks, resolved, headingStart) : undefined);
-  const contentBlocks = expandTocDirectives(parsedBlocks, outline, resolved);
+    ?? (hasTocDirective(parsedBlocks) || hasIndexDirective(parsedBlocks) ? computeOutline(parsedBlocks, resolved, headingStart) : undefined);
+  const indexExpanded = expandIndexDirectives(expandTocDirectives(parsedBlocks, outline, resolved), outline, resolved);
+  const contentBlocks = indexExpanded.blocks;
+  if (indexExpanded.warnings.length > 0) indexWarnings.set(doc, indexExpanded.warnings);
   const isNumbered = (b: ContentBlock): boolean => headingIsNumbered(b, resolved);
 
   const { prefixes: headingPrefixes, values: headingNumbers } = computeHeadingNumbering(
@@ -4378,7 +4384,7 @@ export function buildDocumentPass(
     // The contents (`:::toc`) keep their own rhythm: an entry set as a list
     // item is not a list tail to realign the text after it. A heading snaps
     // per its level (or style), which inherits `headings.snapToGrid`.
-    const shouldSnapToGrid = rawBlock.toc === undefined && (
+    const shouldSnapToGrid = rawBlock.toc === undefined && rawBlock.index === undefined && (
       (vdtType === 'heading' && !nextIsHeading
         && (headingLevels.forBlock(rawBlock)?.snapToGrid ?? resolved.headings.snapToGrid)) ||
       (vdtType === 'listItem' && !nextIsListItem) ||
@@ -4421,7 +4427,7 @@ export function buildDocumentPass(
      *  default opener paints across the page. */
     let brokenForWidth = measureWidth;
     let laterWidths: { fromLine: number; columnWidth: number }[] = [];
-    const rebreaksForColumn = !tryLoose && rawBlock.toc === undefined
+    const rebreaksForColumn = !tryLoose && rawBlock.toc === undefined && rawBlock.index === undefined
       && (canSplit || (vdtType === 'heading' && !opensDefaultOpener(rawBlock)));
     /** Measure the block again for the columns it is set in (see
      *  `laterWidths`), with `extra` options. */
@@ -4541,7 +4547,7 @@ export function buildDocumentPass(
               spacingBefore = top - usedHeight;
             }
           }
-        } else if (rawBlock.toc) {
+        } else if (rawBlock.toc || rawBlock.index) {
           // A part row or an unnumbered entry of the contents: its top
           // margin (`toc.parts.marginTop`, the level's `marginTop`) applies
           // like a heading's.
@@ -5500,13 +5506,26 @@ export function* buildDocumentGen(
   // References and markup the source names wrongly: read from the source
   // once, located on the pages of the finished layout. Kept apart from
   // `doc.warnings`, whose entries keep their postext 1.4 shape.
-  const found = collectContentWarnings(content.markdown, config, content.resources ?? []);
+  const found = [...collectContentWarnings(content.markdown, config, content.resources ?? []), ...(indexWarnings.get(doc) ?? [])];
   if (found.length > 0) doc.contentWarnings = locateContentWarnings(doc, found);
   // Config values the build replaced (an unknown number format, a font
   // stack, a side column no column width can take): walked once per build,
   // not per pass — they belong to no page.
   const configWarnings = collectConfigWarnings(config);
   if (configWarnings.length > 0) doc.configWarnings = configWarnings;
+  return doc;
+}
+
+/** Warnings the last pass's `:::index` raised, per document (read with
+ *  the content warnings once the build is done). */
+const indexWarnings = new WeakMap<VDTDocument, ContentWarning[]>();
+
+/** `doc` with the page of each of its index marks (`doc.indexMarks`). */
+function withIndexMarks(doc: VDTDocument, content: PostextContent): VDTDocument {
+  if (!content.markdown.includes(':index')) return doc;
+  const { content: body, contentOffset } = extractFrontmatter(content.markdown);
+  const marks = locateIndexMarks(doc, parseMarkdownMemo(body), contentOffset);
+  if (marks) doc.indexMarks = marks;
   return doc;
 }
 
@@ -5525,19 +5544,19 @@ function* buildDocumentRounds(
   // it in one extra round.
   if (content.outline === undefined) {
     const parsed = parseMarkdownMemo(extractFrontmatter(content.markdown).content);
-    if (hasTocDirective(parsed)) {
+    if (hasTocDirective(parsed) || hasIndexDirective(parsed)) {
       let outline = computeOutline(parsed, resolveAllConfig(config), content.continuation?.headings);
-      let doc = yield* buildDocumentBalanced({ ...content, outline }, config, cache, options, 0);
+      let doc = withIndexMarks(yield* buildDocumentBalanced({ ...content, outline }, config, cache, options, 0), content);
       for (let round = 0; round < MAX_TOC_ROUNDS; round++) {
         const after = outlineFromDoc(doc, outline);
         if (sameOutline(after, outline)) break;
         outline = after;
-        doc = yield* buildDocumentBalanced({ ...content, outline }, config, cache, options, round + 1);
+        doc = withIndexMarks(yield* buildDocumentBalanced({ ...content, outline }, config, cache, options, round + 1), content);
       }
       return doc;
     }
   }
-  return yield* buildDocumentBalanced(content, config, cache, options);
+  return withIndexMarks(yield* buildDocumentBalanced(content, config, cache, options), content);
 }
 
 const now = (): number => (typeof performance !== 'undefined' ? performance.now() : Date.now());
