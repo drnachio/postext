@@ -2,18 +2,23 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { sourceHash } from "./hash.ts";
-import { readReleasedEngine } from "./lint.ts";
+import { previewDraftsAllowed, readReleasedEngine } from "./lint.ts";
 import { captureDir } from "./paths.ts";
 import { getCapture, getVisibleRecipes } from "./recipes.ts";
 import type { Recipe } from "./types.ts";
-import { compareSemVer } from "./validate.ts";
+import { compareSemVer, previewDraft } from "./validate.ts";
 
 /** Variant weight without the PDF and the .postext: warning at 0.9 MB, failure at 1.4 MB (spec §8.3). */
 const VARIANT_BUDGET = 1.4 * 1024 * 1024;
 const PDF_BUDGET = 2 * 1024 * 1024;
 const MAX_PAGES = 12;
 
-const recipes = getVisibleRecipes();
+// Every visible recipe needs its capture. With COOKBOOK_PREVIEW=1 (the
+// branch that writes recipes for the next release), a draft that pins it
+// previews it on the local engine and waits for the release instead
+// (lib/cookbook/validate.ts previewDraft).
+const released = readReleasedEngine();
+const recipes = getVisibleRecipes().filter((recipe) => !(previewDraftsAllowed() && previewDraft(recipe.meta, released)));
 const capture = (slug: string) => `run \`pnpm cookbook capture ${slug}\``;
 
 /** Runs `check` on every visible recipe that has a capture and collects its problems. */
@@ -83,7 +88,6 @@ describe("captures (public/cookbook/<slug>/capture.json)", () => {
   });
 
   it("were made with a released engine the recipe accepts", () => {
-    const released = readReleasedEngine();
     const problems = each(({ slug, meta }, out) => {
       const { engine } = getCapture(slug)!;
       if (meta.status === "published" && engine.source !== "npm") {

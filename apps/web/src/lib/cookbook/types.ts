@@ -419,8 +419,14 @@ export interface CaptureVariant {
     ownLines: number;
   };
   pages: CapturePage[];
-  /** Indexes into `pages`: [verso, recto], page 1 alone on the right. */
+  /** Indexes into `pages`: [verso, recto] (page 1 alone), in reading order
+   *  whichever edge the book is bound on. */
   spreads: [number | null, number | null][];
+  /** `"right"` for a book bound on its right edge (the document's
+   *  `binding`: `page.binding` or vertical text): the light table, the
+   *  card and the contact sheet lay each pair out mirrored, the recto on
+   *  the left, and turn pages leftward. Absent for a left-bound book. */
+  binding?: "right";
   card: { file: string; file480: string; w: number; h: number; mode: CardMode };
   og: { file: string; w: number; h: number };
   pdf?: { file: string; bytes: number; pages: number };
@@ -444,6 +450,10 @@ export interface CaptureVariant {
     converged: boolean;
     iterationCount: number;
     looseLines: { count: number; share: number; worst: number };
+    /** Justified Chinese, Japanese or Korean lines: `count` set short past
+     *  the tracking cap (`cjkLoose`), `worst` the widest space between
+     *  characters, in em. Absent when the pages have no such line. */
+    cjkLooseLines?: { count: number; share: number; worst: number };
     findings: CaptureFinding[];
   };
 }

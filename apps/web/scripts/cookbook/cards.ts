@@ -78,7 +78,8 @@ export function cardProblems(meta: RecipeMeta, all: number[], bookOf: Map<number
 /** Facing pairs as indexes into `list` (page numbers counted from 1 at the
  *  build's first page, whose book page number is `first`). The recto rule:
  *  an even book page is a verso and pairs with the next page when both are
- *  published; book page 1 sits alone on the right. */
+ *  published; book page 1 stands alone. Pairs are [verso, recto] whichever
+ *  edge the book is bound on: {@link sidesOf} lays them out. */
 export function spreadsOf(list: number[], first = 1): [number | null, number | null][] {
   const spreads: [number | null, number | null][] = [];
   let verso: number | null = null;
@@ -95,6 +96,13 @@ export function spreadsOf(list: number[], first = 1): [number | null, number | n
   });
   if (verso !== null) spreads.push([verso, null]);
   return spreads;
+}
+
+/** A [verso, recto] pair as it lies open, left page first: a right-bound
+ *  book (vertical Chinese, `page.binding: 'right'`) has its recto on the
+ *  left of the spine, so page 1 stands on the left and pairs read [3 | 2]. */
+export function sidesOf<T>(pair: readonly [T, T], binding: "left" | "right" | undefined): [T, T] {
+  return binding === "right" ? [pair[1], pair[0]] : [pair[0], pair[1]];
 }
 
 const ROLE_WORDS: Record<Locale, Record<ProbePage["role"], string>> = {

@@ -14,10 +14,14 @@ const PAGE_HASH = /^#page-(\d+)$/;
  *  the recto rule (page 1 alone on the right), turned with ‹ ›, ←/→ or a
  *  swipe, a filmstrip of every spread, and a lightbox that `#page-N` links
  *  (and `<PageRef>`) open. Below `sm` the spreads give way to a
- *  scroll-snap strip of single pages. */
+ *  scroll-snap strip of single pages. A right-bound book lies mirrored
+ *  (`dir="rtl"` on the desk): page 1 alone on the left, pairs [3 | 2], the
+ *  strip and the filmstrip running leftward, ← and a leftward swipe to the
+ *  next spread. */
 export function LightTable({
   pages,
   spreads,
+  binding = "left",
   initial,
   total,
   title,
@@ -26,6 +30,8 @@ export function LightTable({
 }: {
   pages: PageImage[];
   spreads: Spread[];
+  /** The edge the book is bound on. */
+  binding?: "left" | "right";
   /** The spread shown first (the hero's). */
   initial: number;
   /** The document's page count (the published pages may be fewer). */
@@ -47,6 +53,11 @@ export function LightTable({
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const go = useCallback((delta: number) => setCurrent((c) => Math.min(spreads.length - 1, Math.max(0, c + delta))), [spreads.length]);
+  // Right to left: ← turns to the next spread, and so does a swipe to the right.
+  const rtl = binding === "right";
+  const dir = rtl ? "rtl" : undefined;
+  const forward = rtl ? "ArrowLeft" : "ArrowRight";
+  const back = rtl ? "ArrowRight" : "ArrowLeft";
   const spreadOf = useCallback((i: number) => Math.max(0, spreads.findIndex((s) => s.includes(i))), [spreads]);
 
   // `#page-N` deep links and links to them (`<PageRef>`, `<PageShot>`)
@@ -90,7 +101,13 @@ export function LightTable({
     // A single page: the hero spread's first page that is not blank.
     const heroPages = spreadPages(spreads[initial]);
     const hero = items[heroPages.find((i) => pages[i]?.role !== "blank") ?? heroPages[0] ?? 0];
-    if (hero && el.offsetParent) el.scrollLeft = hero.offsetLeft - (el.clientWidth - hero.clientWidth) / 2;
+    // Centre the hero page; measured on screen, so a right-to-left strip
+    // (negative scrollLeft) scrolls the same way.
+    if (hero && el.offsetParent) {
+      const box = el.getBoundingClientRect();
+      const page = hero.getBoundingClientRect();
+      el.scrollLeft += page.left + page.width / 2 - (box.left + box.width / 2);
+    }
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -161,8 +178,8 @@ export function LightTable({
           onFocus={() => setEngaged(true)}
           onKeyDown={(event) => {
             if (event.target !== event.currentTarget) return;
-            if (event.key === "ArrowLeft") go(-1);
-            else if (event.key === "ArrowRight") go(1);
+            if (event.key === back) go(-1);
+            else if (event.key === forward) go(1);
             else return;
             event.preventDefault();
           }}
@@ -174,11 +191,12 @@ export function LightTable({
             swipe.current = null;
             if (!start) return;
             const dx = event.clientX - start.x;
-            if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(event.clientY - start.y)) go(dx < 0 ? 1 : -1);
+            if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(event.clientY - start.y)) go((dx < 0) !== rtl ? 1 : -1);
           }}
+          dir={dir}
         >
           <button type="button" className="cb-lt-nav" onClick={() => go(-1)} disabled={current === 0} aria-label={t("prevSpread")}>
-            <ChevronLeft aria-hidden="true" className="size-5" />
+            {rtl ? <ChevronRight aria-hidden="true" className="size-5" /> : <ChevronLeft aria-hidden="true" className="size-5" />}
           </button>
           <div className="cb-lt-spread" style={{ "--ar": ar } as React.CSSProperties}>
             {spread.map((i, slot) => {
@@ -208,12 +226,12 @@ export function LightTable({
             disabled={current === spreads.length - 1}
             aria-label={t("nextSpread")}
           >
-            <ChevronRight aria-hidden="true" className="size-5" />
+            {rtl ? <ChevronLeft aria-hidden="true" className="size-5" /> : <ChevronRight aria-hidden="true" className="size-5" />}
           </button>
         </div>
 
         {/* Mobile: single pages in a scroll-snap strip. */}
-        <div ref={strip} className="cb-lt-snap" aria-label={t("stripLabel")} role="group">
+        <div ref={strip} className="cb-lt-snap" aria-label={t("stripLabel")} role="group" dir={dir}>
           {pages.map((page, i) => (
             <button
               key={page.n}
@@ -233,7 +251,7 @@ export function LightTable({
             </button>
           ))}
         </div>
-        <div className="cb-lt-dots" aria-hidden="true">
+        <div className="cb-lt-dots" aria-hidden="true" dir={dir}>
           {pages.map((page, i) => (
             <span key={page.n} data-active={i === visible ? "" : undefined} />
           ))}
@@ -261,8 +279,9 @@ export function LightTable({
             role="tablist"
             aria-label={t("spreads")}
             className="cb-lt-film"
+            dir={dir}
             onKeyDown={(event) => {
-              const delta = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
+              const delta = event.key === forward ? 1 : event.key === back ? -1 : 0;
               if (event.key === "Home") selectTab(0);
               else if (event.key === "End") selectTab(spreads.length - 1);
               else if (delta) selectTab(Math.min(spreads.length - 1, Math.max(0, current + delta)));
@@ -316,6 +335,7 @@ export function LightTable({
         <Lightbox
           pages={pages}
           spreads={spreads}
+          binding={binding}
           total={total}
           title={title}
           start={open.index}

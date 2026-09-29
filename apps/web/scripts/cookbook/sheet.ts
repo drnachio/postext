@@ -16,7 +16,8 @@ export interface SheetEntry {
   ok: boolean;
   /** card.480.webp */
   card: Buffer | null;
-  /** The first spread's 240-wide strips: [verso, recto], either may be null. */
+  /** The first spread's 240-wide strips, left page first ([verso, recto],
+   *  or [recto, verso] for a right-bound book); either may be null. */
   spread: [Buffer | null, Buffer | null];
 }
 

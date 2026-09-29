@@ -1133,5 +1133,49 @@
     },
     "feature": "table-style",
     "followup": "EF-64"
+  },
+  "cjk-fonts-slices": {
+    "title": {
+      "en": "Chinese faces load by slices, through the cjk block",
+      "es": "Las fuentes chinas se cargan por fragmentos, con el bloque cjk"
+    },
+    "body": {
+      "en": "Fontsource serves a Chinese, Japanese or Korean family as about a hundred files per weight, each covering a range of characters. loadFonts fetches only the latin file, so on screen the Han characters come from a system face and measure wrong, and fontsourceProvider hands the PDF that latin file, which prints them as empty boxes. List the cjk kit block, call loadCjkFonts(FONTS, markdown) after loadFonts (once per voice, with the text it sets, when the book uses several CJK faces) and give renderToPdf fontProvider: cjkPdfProvider: both take the files that hold the text's characters.",
+      "es": "Fontsource sirve una familia china, japonesa o coreana en un centenar de archivos por peso, cada uno con un intervalo de caracteres. loadFonts solo descarga el archivo latin, así que en pantalla los caracteres chinos salen de una fuente del sistema y se miden mal, y fontsourceProvider entrega al PDF ese archivo latin, que los imprime como cajas vacías. Añade el bloque cjk del kit, llama a loadCjkFonts(FONTS, markdown) después de loadFonts (una vez por voz, con el texto que compone, si el libro usa varias fuentes chinas) y pasa a renderToPdf fontProvider: cjkPdfProvider: ambos toman los archivos que contienen los caracteres del texto."
+    },
+    "feature": "cjk-fonts"
+  },
+  "cjk-no-italic": {
+    "title": {
+      "en": "Chinese has no italic",
+      "es": "El chino no tiene cursiva"
+    },
+    "body": {
+      "en": "The CJK families ship no italic, and Chinese typography marks emphasis with dots beside the characters, not with a slant. In a document tagged Chinese, *…* sets emphasis dots on the Chinese characters it holds and keeps italics for the Latin words (cjk.emphasis: 'dots', the default for Chinese); :dots[…] sets them anywhere. With cjk.emphasis: 'italic', or in a document tagged en or es, *…* makes the canvas slant the upright glyphs, a synthetic oblique that Chinese typography never uses (the PDF falls back to the upright face): keep the Chinese tag, or set emphasis in bold or in a Kai face (LXGW WenKai) through a paragraph or chip style.",
+      "es": "Las familias CJK no traen cursiva, y la tipografía china marca el énfasis con puntos junto a los caracteres, no inclinándolos. En un documento etiquetado como chino, *…* pone puntos de énfasis en los caracteres chinos que abarca y deja la cursiva para las palabras latinas (cjk.emphasis: 'dots', lo predeterminado en chino); :dots[…] los pone en cualquier sitio. Con cjk.emphasis: 'italic', o en un documento etiquetado en o es, *…* hace que el canvas incline los glifos redondos, una oblicua sintética que la tipografía china nunca usa (el PDF recurre a la redonda): conserva la etiqueta china, o marca el énfasis en negrita o en una fuente Kai (LXGW WenKai) con un estilo de párrafo o de chip."
+    },
+    "feature": "cjk-fonts"
+  },
+  "cjk-locale-tag": {
+    "title": {
+      "en": "Tag the document zh-Hans or zh-Hant, not with LANG",
+      "es": "Etiqueta el documento zh-Hans o zh-Hant, no con LANG"
+    },
+    "body": {
+      "en": "A recipe's editions are en and es, but a Chinese sample is Chinese in both: `locale: LANG` would tag it English or Spanish, hyphenate its Latin words, label its figures Figure or Figura and give the PDF the wrong language. Write the tag yourself: 'zh-Hans' (mainland conventions: GB line breaking, Kaiming punctuation) or 'zh-Hant' (Taiwan: full-width centred punctuation); 'zh-HK' for Hong Kong. A bare 'zh' reads as Simplified, mainland.",
+      "es": "Las ediciones de una receta son en y es, pero una muestra china es china en las dos: `locale: LANG` la etiquetaría como inglés o español, separaría sus palabras latinas, llamaría Figure o Figura a sus figuras y daría al PDF un idioma equivocado. Escribe tú la etiqueta: 'zh-Hans' (convenciones de la China continental: corte GB, puntuación Kaiming) o 'zh-Hant' (Taiwán: puntuación de ancho completo centrada); 'zh-HK' para Hong Kong. Un 'zh' a secas se lee como chino simplificado continental."
+    },
+    "feature": "cjk-line-breaking"
+  },
+  "cjk-spread-order": {
+    "title": {
+      "en": "A right-bound book shows its spreads with showBook",
+      "es": "Un libro encuadernado por la derecha muestra sus pliegos con showBook"
+    },
+    "body": {
+      "en": "In a book bound on the right (vertical Chinese, or page.binding 'right') page 1 is still the recto, but it lies on the left of the spine, and the pairs read [3 | 2]. showPages lays every book out left-bound; showBook from the cjk block reads doc.binding and mirrors the pairs. capture.hero still names a spread in reading order, [verso, recto]: [2, 3].",
+      "es": "En un libro encuadernado por la derecha (chino vertical, o page.binding 'right') la página 1 sigue siendo impar, pero queda a la izquierda del lomo, y los pliegos se leen [3 | 2]. showPages compone todos los libros como si se encuadernaran por la izquierda; showBook, del bloque cjk, lee doc.binding y refleja los pliegos. capture.hero sigue nombrando un pliego en orden de lectura, [par, impar]: [2, 3]."
+    },
+    "feature": "right-binding"
   }
 }

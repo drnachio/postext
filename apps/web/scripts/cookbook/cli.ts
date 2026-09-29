@@ -44,7 +44,7 @@ const CAPTURE_USAGE = `pnpm cookbook capture [slug…] [options]
   --refresh-net          Bypass the on-disk network cache
   --engine <spec>        npm (default: packages/postext's version), npm@x.y.z, or local
                          (the workspace packages' dist; checks only, writes no capture)
-  --preview-dir <dir>    Also write every page image here for inspection
+  --preview-dir <dir>    Also write every page image, the card and the edition's capture.json here for inspection
   --sandbox-only         Write only each edition's <slug>.postext (and its entry
                          in capture.json), with the engine capture.json records;
                          pages, card, OG image and PDF stay as they are. With no

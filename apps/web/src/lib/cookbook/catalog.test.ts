@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildCatalog, buildCatalogWire, catalogRecipe } from "./catalog.ts";
-import { cardImage, captureVariantFor, heroPages, heroSpread, ogImageFile, pageImages, pdfDownload, spreadImages } from "./images.ts";
+import { cardImage, captureVariantFor, heroPages, heroSpread, ogImageFile, pageImages, pdfDownload, spreadBinding, spreadImages } from "./images.ts";
 import { getVisibleRecipes } from "./recipes.ts";
 import { rankRelated, relatedRecipes, relatedScore, type RelatedCandidate } from "./related.ts";
 import { cookbookPaletteEntries } from "./search.ts";
@@ -201,6 +201,16 @@ describe("images (fixture)", () => {
     expect(heroSpread(recipe, "en")?.map((p) => p?.n)).toEqual([2, 3]);
     expect(ogImageFile(recipe, "en")).toMatch(/public\/cookbook\/fixture-opener\/en\/og\.jpg$/);
     expect(pdfDownload(recipe, "en")).toEqual({ href: "/cookbook/fixture-opener/en/fixture.pdf?v=abcd1234", bytes: 2048, pages: 3 });
+  });
+
+  it("says which edge the book is bound on", () => {
+    const recipe = fixtureRecipe();
+    expect(spreadBinding(recipe, "en")).toBe("left");
+    recipe.capture!.variants.en!.binding = "right";
+    // The pairs stay [verso, recto]; the light table lays them out mirrored.
+    expect(spreadBinding(recipe, "en")).toBe("right");
+    expect(spreadImages(recipe, "en").map((pair) => pair.map((p) => p?.n ?? null))).toEqual([[null, 1], [2, 3]]);
+    expect(spreadBinding(fixtureRecipe(false), "en")).toBe("left");
   });
 
   it("returns nothing before the first capture", () => {

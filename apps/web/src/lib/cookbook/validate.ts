@@ -416,6 +416,24 @@ export function compareSemVer(a: string, b: string): number {
   return 0;
 }
 
+/** The furthest version a draft may preview: the next major release
+ *  (1.8.4 → 2.0.0), which covers the next minor and patch too. */
+function nextRelease(released: string): string {
+  const major = parseInt(released.split(".")[0] ?? "0", 10) || 0;
+  return `${major + 1}.0.0`;
+}
+
+/** A draft that pins a postext newer than the released one: it previews
+ *  the next release on the workspace engine (`--engine local`) and is
+ *  captured from npm once that release is out. */
+export function previewDraft(
+  meta: Pick<RecipeMeta, "status" | "engine">,
+  released: { postext?: string; postextPdf?: string },
+): boolean {
+  if (meta.status !== "draft" || !released.postext || typeof meta.engine?.postext !== "string") return false;
+  return compareSemVer(meta.engine.postext, released.postext) > 0;
+}
+
 function isValidDate(value: unknown): value is string {
   if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const date = new Date(`${value}T00:00:00Z`);
@@ -458,6 +476,9 @@ export interface RecipeValidationOptions {
   knownSlugs?: Iterable<string>;
   /** Released package versions (packages/*\/package.json); unchecked when omitted. */
   released?: { postext?: string; postextPdf?: string };
+  /** Previewing on the workspace engine (`--engine local`): a draft may pin
+   *  a version newer than the released one, up to the next major. */
+  preview?: boolean;
 }
 
 /** Every problem with a recipe.json: the schema, then the semantic rules. */
@@ -465,7 +486,7 @@ export function validateRecipeMeta(
   meta: unknown,
   slug: string,
   registry: Registry,
-  { knownSlugs, released }: RecipeValidationOptions = {},
+  { knownSlugs, released, preview = false }: RecipeValidationOptions = {},
 ): string[] {
   const errors: string[] = validateSlug(slug).map((e) => `recipe folder: ${e}`);
   if (!isObject(meta)) return [...errors, "recipe.json must hold an object"];
@@ -551,12 +572,22 @@ export function validateRecipeMeta(
   for (const block of REQUIRED_KIT) if (!kit.includes(block)) errors.push(`kit: must include "${block}"`);
   const downloads = obj(m.downloads);
   if (downloads.pdf && !pdf) errors.push(`downloads.pdf: needs a "pdf" output`);
-  if (released?.postext && typeof engine.postext === "string" && compareSemVer(engine.postext, released.postext) > 0) {
-    errors.push(`engine.postext: ${engine.postext} is newer than the released postext ${released.postext} (keep the recipe a draft until the release)`);
-  }
-  if (released?.postextPdf && typeof engine.postextPdf === "string" && compareSemVer(engine.postextPdf, released.postextPdf) > 0) {
-    errors.push(`engine.postextPdf: ${engine.postextPdf} is newer than the released postext-pdf ${released.postextPdf}`);
-  }
+  // A draft previewing the next release may pin it; a recipe is captured
+  // from npm, so nothing else may be ahead of the release.
+  const ahead = (key: "postext" | "postextPdf", name: string) => {
+    const pinned = engine[key];
+    const out = released?.[key];
+    if (!out || typeof pinned !== "string" || compareSemVer(pinned, out) <= 0) return;
+    if (preview && m.status === "draft") {
+      if (compareSemVer(pinned, nextRelease(out)) > 0) {
+        errors.push(`engine.${key}: ${pinned} is past the next release of ${name} (${out} is out; a draft previews at most ${nextRelease(out)})`);
+      }
+      return;
+    }
+    errors.push(`engine.${key}: ${pinned} is newer than the released ${name} ${out} (keep the recipe a draft and preview it with --engine local until the release)`);
+  };
+  ahead("postext", "postext");
+  ahead("postextPdf", "postext-pdf");
 
   // Capture.
   const hero = capture.hero;

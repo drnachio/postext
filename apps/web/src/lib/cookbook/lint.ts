@@ -18,6 +18,7 @@ import {
   POSTEXT_WORKER_URL,
   configKeys,
   configObjectRange,
+  configString,
   fontFamilies,
   isEngineUrl,
   lineLookup,
@@ -39,7 +40,7 @@ import type { ComposedPen, KitBlock, Locale, RecipeMeta, RecipeSources, Registry
 import { KIT_ORDER, LOCALES } from "./types.ts";
 import { unquotedFrontmatter, validateRecipeMeta, validateRecipeSet } from "./validate.ts";
 import { readWriteup, writeupRefs } from "./writeup.ts";
-import { styleMessages } from "./style.ts";
+import { CJK_CHARS_PER_WORD, styleMessages, textLength } from "./style.ts";
 
 export interface LintReport {
   fails: string[];
@@ -109,27 +110,46 @@ export function isAllowedUrl(url: string): boolean {
   );
 }
 
-function words(text: string): number {
-  return text.split(/\s+/).filter(Boolean).length;
-}
-
 function bytes(text: string): number {
   return new TextEncoder().encode(text).length;
 }
 
-/** Characters outside Fontsource's `latin` subset (what a PDF recipe embeds). */
-function nonLatin(text: string): string[] {
-  const found = new Set<string>();
+const thousands = (n: number) => n.toLocaleString("en-US");
+
+/** Whether a code point is in Fontsource's `latin` subset (what the pdf
+ *  block's provider embeds). */
+function isLatin(code: number): boolean {
+  return code <= 0xff || code === 0x131 || code === 0x152 || code === 0x153 || code === 0x2bb || code === 0x2bc ||
+    code === 0x2c6 || code === 0x2da || code === 0x2dc || code === 0x304 || code === 0x308 || code === 0x329 ||
+    (code >= 0x2000 && code <= 0x206f) || code === 0x20ac || code === 0x2122 || code === 0x2191 ||
+    code === 0x2193 || code === 0x2212 || code === 0x2215 || code === 0xfeff || code === 0xfffd;
+}
+
+/** The Unicode blocks of Chinese, Japanese and Korean text: radicals,
+ *  CJK symbols and punctuation, kana, bopomofo, hangul, enclosed and
+ *  compatibility forms, the unified ideographs and their extensions,
+ *  vertical and fullwidth forms. A CJK face served by Fontsource slices
+ *  (the cjk kit block) covers them. */
+const CJK_BLOCKS: readonly [number, number][] = [
+  [0x2e80, 0x2fdf], [0x2ff0, 0x2fff], [0x3000, 0x33ff], [0x3400, 0x4dbf], [0x4e00, 0x9fff], [0xa960, 0xa97f],
+  [0xac00, 0xd7ff], [0xf900, 0xfaff], [0xfe10, 0xfe1f], [0xfe30, 0xfe4f], [0xff00, 0xffef], [0x20000, 0x3ffff],
+];
+
+function isCjk(code: number): boolean {
+  return CJK_BLOCKS.some(([lo, hi]) => code >= lo && code <= hi);
+}
+
+/** Characters outside Fontsource's `latin` subset (what a PDF recipe
+ *  embeds), and those of them in the CJK blocks. */
+function nonLatin(text: string): { other: string[]; cjk: string[] } {
+  const other = new Set<string>();
+  const cjk = new Set<string>();
   for (const ch of text) {
     const code = ch.codePointAt(0) ?? 0;
-    const latin =
-      code <= 0xff || code === 0x131 || code === 0x152 || code === 0x153 || code === 0x2bb || code === 0x2bc ||
-      code === 0x2c6 || code === 0x2da || code === 0x2dc || code === 0x304 || code === 0x308 || code === 0x329 ||
-      (code >= 0x2000 && code <= 0x206f) || code === 0x20ac || code === 0x2122 || code === 0x2191 ||
-      code === 0x2193 || code === 0x2212 || code === 0x2215 || code === 0xfeff || code === 0xfffd;
-    if (!latin) found.add(ch);
+    if (isLatin(code)) continue;
+    (isCjk(code) ? cjk : other).add(ch);
   }
-  return [...found];
+  return { other: [...other], cjk: [...cjk] };
 }
 
 // ─── lintPen ────────────────────────────────────────────────────────────────
@@ -396,10 +416,18 @@ export function lintPen(
   else if (!/\bloadFonts\s*\(\s*FONTS\b/.test(ownBare)) warns.push("script.js: load the faces with `await loadFonts(FONTS, markdown)` before the build");
 
   // Content files.
+  const cjkKit = meta.kit?.includes("cjk") ?? false;
+  let cjkText = false;
   for (const [key, text] of Object.entries(sources.content)) {
     const file = `content.${key}.md`;
-    const count = words(text);
-    if (count > LIMITS.contentWords) fails.push(`${file}: ${count} words (at most ${LIMITS.contentWords})`);
+    // Chinese and Japanese have no spaces: their characters count, 1.7 to the word.
+    const length = textLength(text);
+    if (length.total > LIMITS.contentWords) {
+      fails.push(length.cjk
+        ? `${file}: ${thousands(length.cjk)} Chinese or Japanese characters${length.words ? ` and ${thousands(length.words)} words` : ""}, ` +
+          `about ${thousands(length.total)} words (at most ${thousands(LIMITS.contentWords)}; ${CJK_CHARS_PER_WORD} characters count as a word)`
+        : `${file}: ${length.words} words (at most ${LIMITS.contentWords})`);
+    }
     for (const line of malformedResourceEmbeds(text)) fails.push(`${file}: "${line}" is not \`::resource{id="…"}\` (double quotes, id only)`);
     for (const name of markdownConstructs(text).unknown) fails.push(`${file}: ":::${name}" is not a Postext directive (it prints as text)`);
     fails.push(...unquotedFrontmatter(text, file));
@@ -411,10 +439,28 @@ export function lintPen(
       fails.push(...style.fails);
       warns.push(...style.warns);
     }
-    if (pdfOutput) {
-      const odd = nonLatin(text);
-      if (odd.length) warns.push(`${file}: characters outside Fontsource latin (${odd.slice(0, 8).join(" ")}) need latin-ext faces in the PDF`);
+    const odd = nonLatin(text);
+    if (odd.cjk.length) cjkText = true;
+    // CJK text is set in faces the cjk block loads by slices, on screen and
+    // in the PDF; without it, the kit loads the latin file of every face.
+    if (odd.cjk.length && !cjkKit) {
+      warns.push(`${file}: Chinese, Japanese or Korean text needs the cjk kit block: load its faces with loadCjkFonts(FONTS, markdown) (gotcha cjk-fonts-slices)`);
     }
+    if (pdfOutput && odd.other.length) {
+      const shown = odd.other.slice(0, 8).join(" ");
+      warns.push(cjkKit
+        ? `${file}: characters outside Fontsource latin and the CJK blocks (${shown}) reach the PDF only in a face that has them: ` +
+          "a CJK face (cjkPdfProvider takes every file it needs) or a latin-ext file"
+        : `${file}: characters outside Fontsource latin (${shown}) need latin-ext faces in the PDF`);
+    }
+  }
+  if (cjkKit) lintCjk(ownCode, ownBare, postextNames, pdfOutput && cjkText, cjkText, fails, warns);
+  // A book bound on its right edge (page.binding, or vertical text with no
+  // binding said) lies open mirrored; the cjk block's showBook shows it so.
+  const binding = configString(scan, "page.binding");
+  const rightBound = binding === "right" || (binding === undefined && configString(scan, "layout.writingMode") === "vertical-rl");
+  if (rightBound && /\bshowPages\s*\(/.test(ownBare) && !/\bshowBook\s*\(/.test(ownBare)) {
+    warns.push("script.js: a right-bound book shows its spreads mirrored with showBook(…) from the cjk block (gotcha cjk-spread-order)");
   }
 
   // Size.
@@ -437,6 +483,30 @@ export function lintPen(
     warns.push(`recipe.json: level ${meta.level}, but the code reads as level ${suggested} (rubric §2.3)`);
   }
   return { fails: [...new Set(fails)], warns: [...new Set(warns)] };
+}
+
+/** What a recipe listing the `cjk` kit block must do: when its text is
+ *  Chinese, Japanese or Korean, hand the PDF the faces' files and tag the
+ *  document with its language (a Latin book may list the block for
+ *  showBook alone); import what the vertical forms need. */
+function lintCjk(
+  ownCode: string,
+  ownBare: string,
+  postextNames: Set<string>,
+  cjkPdf: boolean,
+  cjkText: boolean,
+  fails: string[],
+  warns: string[],
+): void {
+  if (cjkPdf && !/\bcjkPdfProvider\b/.test(ownBare)) {
+    fails.push("script.js: renderToPdf takes fontProvider: cjkPdfProvider (fontsourceProvider embeds only the latin file of a CJK face; gotcha cjk-fonts-slices)");
+  }
+  if (cjkText && !/\blocale\s*:\s*(['"`])(zh|ja|ko)([-_][A-Za-z]+)*\1/.test(ownCode)) {
+    warns.push("script.js: set config.locale to the text's language ('zh-Hans', 'zh-Hant'…), not LANG: the tag picks the regional conventions and turns hyphenation off (gotcha cjk-locale-tag)");
+  }
+  if (/\bloadCjkFonts\s*\([^;]*\bvertical\s*:\s*true/.test(ownBare) && !postextNames.has("loadVerticalAlternates")) {
+    fails.push("script.js: loadCjkFonts(…, { vertical: true }) needs `loadVerticalAlternates` imported from postext");
+  }
 }
 
 /** True when some object literal in the recipe's own code has `level: 1`
@@ -543,10 +613,21 @@ export function readReleasedEngine(): { postext?: string; postextPdf?: string } 
   return { postext: version("postext"), postextPdf: version("postext-pdf") };
 }
 
+/** Whether the repository tests take a draft pinned to the next release
+ *  as a preview, the way `pnpm cookbook lint --engine local` does
+ *  (`COOKBOOK_PREVIEW=1`, on the branch that writes the recipe). Off by
+ *  default: a draft in develop pins a released engine and has its capture,
+ *  so a recipe for a new feature lands in a PR after the release (#201). */
+export function previewDraftsAllowed(env: Record<string, string | undefined> = process.env): boolean {
+  return env.COOKBOOK_PREVIEW === "1";
+}
+
 export interface LintRecipeOptions {
   registry?: Registry;
   knownSlugs?: string[];
   released?: { postext?: string; postextPdf?: string };
+  /** `--engine local`: a draft may pin the next release (validate.ts). */
+  preview?: boolean;
 }
 
 /** Everything `pnpm cookbook lint <slug>` checks: recipe.json, every
@@ -573,7 +654,7 @@ export function lintRecipe(slug: string, options: LintRecipeOptions = {}): Recip
   const knownSlugs = options.knownSlugs ?? listRecipeSlugs();
   fails.push(
     // Worded like scripts/cookbook/lint.ts, which also validates recipe.json and merges equal findings.
-    ...validateRecipeMeta(meta, slug, registry, { knownSlugs, released: options.released ?? readReleasedEngine() }).map(
+    ...validateRecipeMeta(meta, slug, registry, { knownSlugs, released: options.released ?? readReleasedEngine(), preview: options.preview }).map(
       (e) => `recipe.json › ${e}`,
     ),
   );
@@ -665,7 +746,7 @@ export function lintRecipe(slug: string, options: LintRecipeOptions = {}): Recip
 }
 
 /** Lints every recipe (or the given ones) plus the rules across recipes. */
-export function lintAll(slugs?: string[]): RecipeLintReport[] {
+export function lintAll(slugs?: string[], { preview = false }: { preview?: boolean } = {}): RecipeLintReport[] {
   const all = listRecipeSlugs();
   const released = readReleasedEngine();
   let registry: Registry | undefined;
@@ -674,7 +755,7 @@ export function lintAll(slugs?: string[]): RecipeLintReport[] {
   } catch {
     registry = undefined; // each report says the registry is missing
   }
-  const reports = (slugs ?? all).map((slug) => lintRecipe(slug, { registry, knownSlugs: all, released }));
+  const reports = (slugs ?? all).map((slug) => lintRecipe(slug, { registry, knownSlugs: all, released, preview }));
   const metas: { slug: string; meta: RecipeMeta }[] = [];
   for (const slug of all) {
     try {
