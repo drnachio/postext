@@ -1,0 +1,97 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 84,
+  "status": "draft",
+  "chapter": "page",
+  "order": 115,
+  "level": 2,
+  "genres": ["newsletter"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["column-layouts", "column-rule", "opener-design"],
+    "also": [
+      "vertical-writing", "right-binding", "character-grid", "callout-columns", "span-boxes",
+      "floated-callouts", "heading-styles", "heading-attributes", "design-elements",
+      "running-heads", "page-role-filters", "paragraph-styles", "cjk-fonts", "cjk-punctuation",
+      "color-palette", "pdf-export", "pdf-fonts"
+    ]
+  },
+  "answers": ["Q102", "Q27", "Q78", "Q90"],
+  "gaps": ["three-columns"],
+  "gotchas": [
+    "page-span-heading-new-page", "callout-columns", "cjk-fonts-slices", "cjk-locale-tag",
+    "cjk-spread-order", "headings-drop-h1-break", "config-cache-identity"
+  ],
+  "explainsWarnings": [],
+  "related": ["newspaper-front-page", "chinese-dates-upright", "vertical-novel-right-bound", "red-ink-commentary"],
+  "workarounds": [
+    {
+      "package": "postext",
+      "note": "renderPageToCanvas paints with the direction the canvas inherits (ctx.direction 'inherit'), and the cjk kit's showBook sets dir=\"rtl\" on each spread of a right-bound book, so every upright character of a vertical line is anchored from its right and the lines overlap in the live viewer (the capture paints outside the spread and is not affected). The pen sets #pages canvas { direction: ltr }, as Nº 075 does; the fix belongs in renderPageToCanvas (ctx.direction = 'ltr') or in showBook's style."
+    }
+  ],
+  "engine": { "postext": "1.9.0", "postextPdf": "1.9.0" },
+  "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": 1, "card": "page", "expect": { "pages": [2, 2] } },
+  "downloads": { "pdf": true },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "Shenbao (Shanghai), 11 December 1912: the banquet for Sun Yat-sen at West Lake, Hangzhou",
+          "es": "Shenbao (Shanghái), 11 de diciembre de 1912: el banquete a Sun Yat-sen en el Lago del Oeste, Hangzhou"
+        },
+        "who": "Shenbao; transcription by Wikisource editors",
+        "source": "https://zh.wikisource.org/wiki/西湖公宴孫中山紀事",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "Shenbao (Shanghai), 4 December 1912: the memorial for the Zhejiang soldiers killed at Nanjing",
+          "es": "Shenbao (Shanghái), 4 de diciembre de 1912: las honras a los soldados de Zhejiang caídos en Nankín"
+        },
+        "who": "Shenbao; transcription by Wikisource editors",
+        "source": "https://zh.wikisource.org/wiki/浙都督追祭攻寧陣亡將士",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "Shenbao (Shanghai), 17 July 1912: the victory monument at West Lake, with Tang Shouqian's inscription",
+          "es": "Shenbao (Shanghái), 17 de julio de 1912: el monumento a la victoria del Lago del Oeste, con la inscripción de Tang Shouqian"
+        },
+        "who": "Shenbao, Tang Shouqian; transcription and punctuation by Wikisource editors, revised for this recipe",
+        "source": "https://zh.wikisource.org/wiki/湯蟄仙之紀功碑",
+        "license": "CC-BY-SA-4.0"
+      },
+      {
+        "what": {
+          "en": "Four telegrams from Linshi zhengfu gongbao (Provisional Government Gazette) no. 1, 29 January 1912",
+          "es": "Cuatro telegramas del Linshi zhengfu gongbao (Boletín del Gobierno Provisional), n.º 1, 29 de enero de 1912"
+        },
+        "who": "Provisional Government, Nanjing; transcription and punctuation by Wikisource editors",
+        "source": "https://zh.wikisource.org/wiki/臨時政府公報_(民國元年1月29日)",
+        "license": "CC-BY-SA-4.0"
+      },
+      {
+        "what": {
+          "en": "Punctuation of the first two reports, the masthead, decks and datelines",
+          "es": "La puntuación de las dos primeras noticias, la cabecera, los sumarios y las datas"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Noto Serif TC", "license": "OFL-1.1" },
+      { "family": "Noto Sans TC", "license": "OFL-1.1" },
+      { "family": "LXGW WenKai TC", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-29",
+  "updated": "2026-09-29"
+}
