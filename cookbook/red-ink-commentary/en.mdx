@@ -1,0 +1,76 @@
+---
+title: "Commentary in red ink between the lines"
+summary: "A vertical Chinese commentary page: side comments folded into two red rows inside the line, head-margin comments in a tier above the text."
+description: "Chapter 1 of the Jiaxu Story of the Stone with Zhiyan Zhai's commentary, set vertically in Postext: warichu notes in the line, head-margin comments above."
+question: "How do I set a commentary edition, with two-line notes in the line and comments in the head margin?"
+aliases: ["commentary edition", "red ink commentary", "Zhiyan Zhai", "Story of the Stone", "Dream of the Red Chamber", "head-margin notes", "interlinear notes", "眉批", "雙行夾批", "脂批", "評點", "紅樓夢"]
+pageNotes: { "1": "Page 1, a recto bound on the right, opens with 脂硯齋重評石頭記 in small red type down the right edge of the text block, then 第一回 in large bold characters and the couplet 甄士隱夢幻識通靈 / 賈雨村風塵懷閨秀 in two columns. The text starts to their left. A red comment in the head margin stands above the second paragraph; the side comments show as pairs of tiny red rows inside the columns.", "4": "Page 4: the stone's long reply to the Taoist. A comment of eleven red columns (事則實事…) fills the left half of the head margin, moved two columns to the right so that it ends at the left edge of the text. Small red two-row notes interrupt the columns below.", "5": "Page 5: four head-margin comments over the text, two of them carried over from page 4 at the right, two over the quatrain 滿紙荒唐言，一把辛酸淚. The folio 五 stands at the foot of the left margin." }
+---
+
+## What you'll build
+
+The opening of chapter 1 of the Jiaxu manuscript of *The Story of the Stone*, the copy that carries Zhiyan Zhai's commentary, reset as six pages of a commentary edition on a 16开 page, 184 × 260 mm, set vertically and bound on the right. Cao Xueqin's text runs in Noto Serif TC, 36 characters down each column and 18 columns to the page. The excerpt's 61 side comments stay inside the columns, each folded into two vermilion rows at half the size, right after the words they gloss. Its ten head-margin comments (眉批) stand in red Kai in a 42 mm tier above the text, over the paragraph they discuss, so a reader follows the text and the commentary in one pass.
+
+## Method
+
+### 1 · Turn the side column into the head margin
+
+The code is [the short answer](#the-short-answer) above. A vertical page is a horizontal page turned a quarter turn, so the side column of a [column-and-a-half layout](/en/docs/configuration#layout-types) becomes a tier across the page, and `sideColumnSide: 'left'` puts that tier at the head ([Vertical writing](/en/docs/configuration#vertical-writing)). The [character grid](/en/docs/configuration#character-grid) rounds `sideColumnPercent: 19` to 10 characters of the body, 120 pt, and the gutter to two; the column rule becomes the hairline between the comments and the text. The comment style has no box: 8 pt Kai, 15 characters to a column, and `snapToGrid: false` so the comments stack at their own 11.5 pt pitch instead of the body's 21 pt.
+
+Both kinds of comment are marked where the manuscript has them. A side comment is a [`:warichu[…]`](/en/docs/document-format#chinese-marks-ruby-and-warichu) span, which `cjk.warichu` colours; a head-margin comment is a box fenced with `span="side"` just before the paragraph it discusses:
+
+```markdown
+:::callout{type="meipi" span="side"}
+妙！自謂落墮情根，故無補天之用。
+:::
+
+原來女媧氏煉石補天之時，:warichu[補天濟世，勿認真，用常言。]于大荒山:warichu[荒唐也。]…
+```
+
+### 2 · Set the chapter's number and couplet down the first columns
+
+<Excerpt region="opener" />
+
+On a vertical page an opener is laid out in the flow's frame, so its text runs down, `below` means to the left and an `x` offset moves an element down the column. The book's title comes first in red Hei, then 第一回 at 30 pt, lowered two of its own characters, then the two halves of the couplet from the [heading attributes](/en/docs/document-format#heading-attributes) `{a="…" b="…"}`, lowered again, so the number and the couplet step down the page as in a printed 回目. `minHeight: mm(46)` keeps a clear column between the couplet and the text.
+
+### 3 · Run the heads down the fore-edge
+
+<Excerpt region="fore-edge" />
+
+These are the fore-edge heads of [Vertical text elements](/en/docs/configuration#vertical-text-elements): `anchor.to: 'outer'` is the margin away from the spine, the left of a recto and the right of a verso in a right-bound book, and `writingMode: 'vertical-rl'` sets the text down the page. The type area here includes the comment tier, so "four characters below the head" is measured from the top of the red comments. `trad-chinese-informal` prints the folios 一 to 六.
+
+### 4 · Load each voice with the text it sets
+
+<Excerpt region="voices" />
+
+Fontsource serves each Chinese face as about a hundred files per weight. The Song face takes the whole sample, but Kai sets only the head-margin comments and the edition's note, and Hei only the heads, the folios and the colophon, so each call fetches the files its own characters need. `vertical: true` also loads each face's vertical punctuation for the canvas.
+
+### 5 · Two inks
+
+<Excerpt region="palette" />
+
+The page prints in two colours, as the manuscript was written: a warm black for the text and a vermilion for every comment, the chapter's kicker and nothing else. The vermilion reads at 5.5 : 1 on the paper, enough for the 6 pt rows of the side comments. `main-color` points at it, so a default the config does not restate prints red, never blue.
+
+## Variations
+
+### Print the comments in one ink
+
+For a single-colour printing, set the notes in black between brackets and the head-margin comments in the muted ink; the brackets are set at the text size before a note's first row and after its last.
+
+```diff
+-  warichu: { color: col('vermilion') },
++  warichu: { color: col('ink'), open: '〔', close: '〕' },
+-  body: { fontFamily: KAI, fontSize: pt(8), lineHeight: pt(11.5), color: col('vermilion'),
++  body: { fontFamily: KAI, fontSize: pt(8), lineHeight: pt(11.5), color: col('muted'),
+```
+
+### Compare it with a Latin edition
+
+The same technique on a horizontal page is <RecipeLink slug="annotated-classic-glosses">the annotated classic with margin glosses</RecipeLink>: the side column stands at the fore-edge (`sideColumnSide: 'outer'`), and each gloss sits beside the paragraph it explains instead of above it.
+
+## Pitfalls
+
+- A head-margin comment stands level with the start of the paragraph after its fence, never inside one. Where the manuscript comments on a phrase deep inside a long paragraph, this edition breaks the paragraph there: before 石頭聽了, before 廟傍住着, and once inside the stone's speech, where the new paragraph opens with 「 again as a quotation that runs over two paragraphs does.
+- A comment too long for the rest of the tier moves back to the right until its foot meets the left edge of the text; on <PageRef page={4}>page 4</PageRef> 事則實事… starts two text columns to the right of its paragraph. One that still does not fit waits for the next page with the comments after it, which is why <PageRef page={5}>page 5</PageRef> opens with two comments from page 4.
+- Two side comments written one after the other fold into rows that read as one note. The Markdown keeps an ideographic space (U+3000) between them.
+- Noto Serif TC has no glyph for some manuscript forms, such as 縂, 竒 and 数. The canvas fills them from a system face, and the PDF leaves them blank and lists them under C25. This edition sets their standard forms and keeps the variants the faces have.
