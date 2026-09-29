@@ -288,7 +288,19 @@ export const RECIPE_SCHEMA: JsonSchema = {
         pages: {
           anyOf: [{ const: "all" }, { type: "array", items: ref("page"), minItems: 1, maxItems: 12, uniqueItems: true }],
         },
-        doc: { anyOf: [{ enum: ["last", "first"] }, { type: "integer", minimum: 0 }] },
+        doc: {
+          anyOf: [
+            { enum: ["last", "first"] },
+            { type: "integer", minimum: 0 },
+            {
+              type: "array",
+              items: { anyOf: [{ enum: ["last", "first"] }, { type: "integer", minimum: 0 }] },
+              minItems: 1,
+              maxItems: 4,
+              uniqueItems: true,
+            },
+          ],
+        },
         selector: { type: "string", minLength: 1 },
         viewport: {
           type: "object",

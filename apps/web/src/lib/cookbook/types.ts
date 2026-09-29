@@ -179,8 +179,14 @@ export interface RecipeMeta {
     focus?: FocusRect;
     /** Published pages (1-based); default: all when ≤ 8, else hero + first 6; cap 12. */
     pages?: number[] | "all";
-    /** Which recorded build is the result (default "last"). */
-    doc?: "last" | "first" | number;
+    /** Which recorded build is the result (default "last"), or several, in
+     *  the order the light table shows them: a pen that builds two editions
+     *  publishes the pages of both. Their pages are numbered on from one
+     *  build to the next (`hero`, `pages`, `focus` and `expect.pages` count
+     *  them so), each build's first page opens a spread of its own, and the
+     *  checks, the detected features and the Sandbox bundle read the first
+     *  build's source. */
+    doc?: CaptureBuild | CaptureBuild[];
     /** "screenshot" mode: element to clip (default "#pages"). */
     selector?: string;
     /** "screenshot" mode viewport (default 1280×900 at DPR 2). */
@@ -457,6 +463,10 @@ export interface CaptureVariant {
     findings: CaptureFinding[];
   };
 }
+
+/** A recorded build of the pen (`capture.doc`): the first, the last, or
+ *  its index in build order from 0. */
+export type CaptureBuild = "last" | "first" | number;
 
 export interface CaptureManifest {
   schemaVersion: 1;

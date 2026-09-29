@@ -58,6 +58,8 @@ export function cardProblems(meta: RecipeMeta, all: number[], bookOf: Map<number
     const book = bookOf.get(hero[0]) ?? hero[0];
     if (book % 2 !== 0) {
       problems.push(`capture.hero [${hero.join(", ")}] is not a spread: page ${hero[0]} is book page ${book}, a recto (a spread starts on an even book page)`);
+    } else if (hero[1] !== hero[0] + 1 || (bookOf.get(hero[1]) ?? hero[1]) !== book + 1) {
+      problems.push(`capture.hero [${hero.join(", ")}] is not a spread: page ${hero[1]} does not face page ${hero[0]}`);
     }
   }
   const { card, focus } = meta.capture;
@@ -76,19 +78,22 @@ export function cardProblems(meta: RecipeMeta, all: number[], bookOf: Map<number
 }
 
 /** Facing pairs as indexes into `list` (page numbers counted from 1 at the
- *  build's first page, whose book page number is `first`). The recto rule:
- *  an even book page is a verso and pairs with the next page when both are
- *  published; book page 1 stands alone. Pairs are [verso, recto] whichever
- *  edge the book is bound on: {@link sidesOf} lays them out. */
-export function spreadsOf(list: number[], first = 1): [number | null, number | null][] {
+ *  build's first page, whose book page number is `first`; or, for several
+ *  builds (`capture.doc` as a list), the book page number of each page, which
+ *  starts again at each build's first page). The recto rule: an even book
+ *  page is a verso and pairs with the next page of the same book when both
+ *  are published; book page 1 stands alone. Pairs are [verso, recto]
+ *  whichever edge the book is bound on: {@link sidesOf} lays them out. */
+export function spreadsOf(list: number[], first: number | ReadonlyMap<number, number> = 1): [number | null, number | null][] {
+  const bookOf = (n: number): number => (typeof first === "number" ? n + first - 1 : first.get(n) ?? n);
   const spreads: [number | null, number | null][] = [];
   let verso: number | null = null;
   list.forEach((n, i) => {
-    if ((n + first - 1) % 2 === 0) {
+    if (bookOf(n) % 2 === 0) {
       if (verso !== null) spreads.push([verso, null]);
       verso = i;
     } else {
-      const pairs = verso !== null && list[verso] === n - 1;
+      const pairs = verso !== null && list[verso] === n - 1 && bookOf(n) === bookOf(n - 1) + 1;
       if (verso !== null && !pairs) spreads.push([verso, null]);
       spreads.push([pairs ? verso : null, i]);
       verso = null;

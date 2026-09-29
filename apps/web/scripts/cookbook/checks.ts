@@ -52,6 +52,9 @@ export interface ProbeFacts {
   builds: { kind: "document" | "bundle" | "worker" | "rendered"; shim: string; ms: number; at: number; pages: number }[];
   /** Index of the build that is the result, or -1 when nothing was built. */
   selected: number;
+  /** Every build that is the result, when `capture.doc` names several: their
+   *  pages are published one build after the other. */
+  selectedBuilds?: number[];
   importedAt: number;
   registered: string[];
   state: string | null;
@@ -477,7 +480,13 @@ function collect(input: CheckInput): Finding[] {
       if (!pdf.error && !pdf.timedOut && !pdf.bytes) add("C14", "fail", "no PDF bytes were produced");
       if (pdf.bytes && pdf.pages !== null) {
         if (pdf.pages === 0) add("C14", "warn", "could not count the PDF's pages");
-        else if (pdf.pages !== pages.length) add("C14", "fail", `the PDF has ${pdf.pages} pages, the document ${pages.length}`);
+        else {
+          // Of a capture of several builds, the PDF is one of them.
+          const counts = (facts.selectedBuilds ?? []).map((i) => facts.builds[i]?.pages ?? 0);
+          if (counts.length > 1) {
+            if (!counts.includes(pdf.pages)) add("C14", "fail", `the PDF has ${pdf.pages} pages, the documents ${counts.join(" and ")}`);
+          } else if (pdf.pages !== pages.length) add("C14", "fail", `the PDF has ${pdf.pages} pages, the document ${pages.length}`);
+        }
       }
       if (pdf.bytes > 2 * MB) add("C20", "fail", `the PDF weighs ${(pdf.bytes / MB).toFixed(2)} MB (limit 2 MB)`);
     }
@@ -551,9 +560,10 @@ function collect(input: CheckInput): Finding[] {
     if (size > cardLimits[key] * 1024) add("C20", "warn", `${cardNames[key]} weighs ${Math.round(size / 1024)} KB (aim for ≤ ${cardLimits[key]} KB)`);
   }
 
-  // C21: performance.
-  const build = facts.builds[facts.selected];
-  if (build) {
+  // C21: performance, of each build that is the result.
+  for (const i of facts.selectedBuilds ?? [facts.selected]) {
+    const build = facts.builds[i];
+    if (!build) continue;
     if (build.ms > 4000) add("C21", "fail", `the build took ${Math.round(build.ms)} ms (limit 4 s)`);
     else if (build.ms > 1500) add("C21", "warn", `the build took ${Math.round(build.ms)} ms (warning at 1.5 s)`);
   }

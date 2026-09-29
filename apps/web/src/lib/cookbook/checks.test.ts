@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sidesOf, spreadsOf } from "../../../scripts/cookbook/cards.ts";
+import { cardProblems, sidesOf, spreadsOf } from "../../../scripts/cookbook/cards.ts";
 import { detect, detectFeatures, runChecks } from "../../../scripts/cookbook/checks.ts";
 import type { CheckInput, ProbeFacts } from "../../../scripts/cookbook/checks.ts";
 import { loadRegistry } from "./registry.ts";
@@ -110,6 +110,26 @@ describe("spreads of a right-bound book", () => {
     expect(spreads.map((pair) => sidesOf(pair, "left"))).toEqual([[null, 0], [1, 2], [3, null]]);
     // Page 1 alone on the left of the spine, then [3 | 2].
     expect(spreads.map((pair) => sidesOf(pair, "right"))).toEqual([[0, null], [2, 1], [null, 3]]);
+  });
+});
+
+describe("spreads of a capture that takes two builds", () => {
+  it("starts each build's pages on a spread of their own", () => {
+    // Two editions of four pages: their book pages are 1–4 and 1–4 again.
+    const book = new Map([[1, 1], [2, 2], [3, 3], [4, 4], [5, 1], [6, 2], [7, 3], [8, 4]]);
+    expect(spreadsOf([1, 2, 3, 4, 5, 6, 7, 8], book)).toEqual([[null, 0], [1, 2], [3, null], [null, 4], [5, 6], [7, null]]);
+    // Book page 4 of the first edition does not face page 1 of the second.
+    expect(spreadsOf([4, 5], book)).toEqual([[0, null], [null, 1]]);
+    // One build, as before.
+    expect(spreadsOf([1, 2, 3, 4], new Map([[1, 1], [2, 2], [3, 3], [4, 4]]))).toEqual(spreadsOf([1, 2, 3, 4]));
+  });
+
+  it("does not take a hero pair across the two builds", () => {
+    const book = new Map([[1, 1], [2, 2], [3, 3], [4, 4], [5, 1], [6, 2]]);
+    const meta = { capture: { hero: [4, 5], card: "spread" } } as unknown as RecipeMeta;
+    expect(cardProblems(meta, [1, 2, 3, 4, 5, 6], book)).toEqual(["capture.hero [4, 5] is not a spread: page 5 does not face page 4"]);
+    const ok = { capture: { hero: [2, 3], card: "spread" } } as unknown as RecipeMeta;
+    expect(cardProblems(ok, [1, 2, 3, 4, 5, 6], book)).toEqual([]);
   });
 });
 

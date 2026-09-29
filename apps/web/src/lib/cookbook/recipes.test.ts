@@ -114,6 +114,19 @@ describe("validateRecipeMeta (fixture)", () => {
     expect(validate(sa)).toEqual([]);
   });
 
+  it("takes one recorded build or several for capture.doc", () => {
+    for (const doc of ["first", "last", 2, ["first", "last"], [0, 1, 3]] as const) {
+      const meta = fixtureMeta();
+      meta.capture.doc = doc as RecipeMeta["capture"]["doc"];
+      expect(validate(meta), JSON.stringify(doc)).toEqual([]);
+    }
+    for (const doc of [[], ["first", "first"], ["middle"], [-1]]) {
+      const meta = fixtureMeta() as unknown as { capture: { doc: unknown } };
+      meta.capture.doc = doc;
+      expect(validate(meta).some((e) => e.startsWith("capture.doc")), JSON.stringify(doc)).toBe(true);
+    }
+  });
+
   it("checks slugs", () => {
     expect(validateSlug("a-z")).toEqual(['slug "a-z" is reserved']);
     expect(validateSlug("ab")).toEqual(['slug "ab" must have 3–48 characters']);

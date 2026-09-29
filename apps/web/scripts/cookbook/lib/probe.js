@@ -31,12 +31,29 @@ function record() {
   return window.__cb ?? { builds: [], images: [], engines: {}, pending: 0, lastBuildAt: 0, importedAt: 0 };
 }
 
-/** The build that is "the result": capture.doc = 'last' | 'first' | index. */
+/** One recorded build: 'last' | 'first' | index. */
+function pickOne(builds, select) {
+  const i = select === 'first' ? 0 : typeof select === 'number' ? select : builds.length - 1;
+  return builds[Math.max(0, Math.min(builds.length - 1, i))];
+}
+
+/** The build that is "the result": capture.doc = 'last' | 'first' | index,
+ *  or a list of them (two editions). Several builds make one: the first's
+ *  source, config and engine, every build's documents, and `segments`, the
+ *  documents of each build, whose pages {@link pagesOf} numbers on from
+ *  one build to the next. */
 function pick(select = 'last') {
   const { builds } = record();
   if (!builds.length) return null;
-  const i = select === 'first' ? 0 : typeof select === 'number' ? select : builds.length - 1;
-  return builds[Math.max(0, Math.min(builds.length - 1, i))];
+  if (!Array.isArray(select)) return pickOne(builds, select);
+  const picked = [...new Set(select.map((s) => pickOne(builds, s)))];
+  if (picked.length === 1) return picked[0];
+  return { ...picked[0], docs: picked.flatMap((b) => b.docs ?? []), segments: picked.map((b) => b.docs ?? []), picked };
+}
+
+/** A build's index in the record (the first one, for several). */
+function indexOfBuild(build) {
+  return record().builds.indexOf(build?.picked?.[0] ?? build);
 }
 
 /** The engine module instance that built (or painted) a build. */
@@ -51,11 +68,26 @@ function engineOf(build) {
  *  1–4); `book` is the physical page number in the whole book, whose parity
  *  decides versos and rectos. */
 function pagesOf(build) {
-  const base = build.docs[0]?.pageIndexOffset ?? 0;
-  return build.docs.flatMap((doc, docIndex) => doc.pages.map((page) => {
-    const book = (doc.pageIndexOffset ?? 0) + page.index + 1;
-    return { doc, docIndex, page, n: book - base, book };
-  }));
+  const out = [];
+  let before = 0;
+  let docIndex = 0;
+  // Several builds (`capture.doc` as a list): each keeps its book page
+  // numbers, and `n` goes on from the pages of the builds before it.
+  for (const docs of build.segments ?? [build.docs]) {
+    const base = docs[0]?.pageIndexOffset ?? 0;
+    let last = before;
+    for (const doc of docs) {
+      for (const page of doc.pages) {
+        const book = (doc.pageIndexOffset ?? 0) + page.index + 1;
+        const n = before + book - base;
+        out.push({ doc, docIndex, page, n, book });
+        last = Math.max(last, n);
+      }
+      docIndex++;
+    }
+    before = last;
+  }
+  return out;
 }
 
 const round = (value, step = 1) => Math.round(value / step) * step;
@@ -345,7 +377,8 @@ export function facts({ select = 'last', hero = [] } = {}) {
   };
   const build = pick(select);
   if (!build || !build.docs?.length) return out;
-  out.selected = cb.builds.indexOf(build);
+  out.selected = indexOfBuild(build);
+  if (build.picked) out.selectedBuilds = build.picked.map((b) => cb.builds.indexOf(b));
   const engine = engineOf(build);
   const docs = build.docs;
   const resolved = docs[0].config;
@@ -601,9 +634,12 @@ export function facts({ select = 'last', hero = [] } = {}) {
   };
 
   // C5, C6, C24: the engine's own diagnostics.
-  const base = docs[0].pageIndexOffset ?? 0;
+  // A document's page `pageIndex` is page `nOf(doc) + pageIndex`.
+  const firstN = new Map();
+  for (const p of pages) if (!firstN.has(p.doc)) firstN.set(p.doc, p.n - p.page.index);
+  const nOf = (doc, pageIndex) => (firstN.get(doc) ?? 1) + pageIndex;
   out.warnings = docs.flatMap((doc) => (doc.warnings ?? []).map((w) => ({
-    kind: w.kind, page: (doc.pageIndexOffset ?? 0) - base + w.pageIndex + 1, overflowPx: round(w.overflowPx ?? 0, 0.1),
+    kind: w.kind, page: nOf(doc, w.pageIndex), overflowPx: round(w.overflowPx ?? 0, 0.1),
   })));
   // The index's own warnings are content warnings the source checks (C7–C10)
   // cannot see: the expansion raises them with the whole book's marks (#172).
@@ -611,7 +647,7 @@ export function facts({ select = 'last', hero = [] } = {}) {
     .filter((w) => /^index[A-Z]/.test(w.kind))
     .map((w) => ({
       kind: w.kind,
-      page: w.pageIndex === undefined ? null : (doc.pageIndexOffset ?? 0) - base + w.pageIndex + 1,
+      page: w.pageIndex === undefined ? null : nOf(doc, w.pageIndex),
       detail: w.target ?? w.term ?? '',
     })));
   out.converged = docs.every((doc) => doc.converged !== false);

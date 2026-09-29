@@ -282,7 +282,9 @@ function evaluate(
     buildMs: selected?.ms,
     bytes,
   };
-  const spreads = spreadsOf(run.published, facts?.pages?.[0]?.book ?? 1);
+  // Versos and rectos by book page number, which starts again with each
+  // build of a capture that takes several (`capture.doc` as a list).
+  const spreads = spreadsOf(run.published, new Map((facts?.pages ?? []).map((p) => [p.n, p.book])));
   const strips = run.pages.map((p) => p.strip);
   const pick = sidesOf(spreads.find(([a, b]) => a !== null && b !== null) ?? spreads[0] ?? [null, null], facts?.binding);
   const sheet: SheetEntry = {
