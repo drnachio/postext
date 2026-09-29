@@ -4,7 +4,7 @@ summary: "One set of :index marks in two editions of a 紅樓夢 reader: index.g
 description: "A Chinese name index in Postext: the same :index marks give A–Z pinyin heads in the Simplified edition and 三畫, 四畫 stroke heads in the Traditional one."
 question: "How do I group an index of Chinese names by pinyin, or by stroke count as Taiwan books do?"
 aliases: ["Chinese index", "name index", "人名索引", "pinyin index", "拼音索引", "stroke-count index", "笔画索引", "筆畫索引", "index.groupBy", "Chinese collation", "Dream of the Red Chamber", "紅樓夢", "Simplified and Traditional editions"]
-pageNotes: { "7": "The index opener of the Simplified edition: the kicker 按汉语拼音排列 in red, the title 人名索引 in a brush Kai, a note of three short sentences, one to a line, then two columns under the pinyin heads F, H, J, K, L and M; the J group lists sixteen members of the Jia family and Jia Yucun, who only shares their name.", "8": "The rest of the index, from the last M name to Z, and the English colophon, with the source's revision and the two changes made to its text, at the foot of the second column." }
+pageNotes: { "7": "The index opener of the Simplified edition: the kicker 按汉语拼音排列 in red, the title 人名索引 in a brush Kai, a note of three short sentences, one to a line, then two columns under the pinyin heads F, H, J, K, L and M; the J group lists sixteen members of the Jia family and Jia Yucun, who only shares their name.", "8": "The rest of the index, from the last M name to Z, and the English colophon, with the source's revision and the two changes made to its text, at the foot of the second column.", "15": "The index opener of the Traditional edition: the kicker 依筆畫排列 in red, 人名索引, the same note in Traditional characters, then two columns under stroke-count heads from 三畫 to 十三畫, where the Jia names begin, since 賈 has thirteen strokes.", "16": "The rest of the stroke index, from the Jia names to 二十八畫 (鸚哥), and the English colophon of the Traditional edition at the foot of the second column." }
 ---
 
 ## What you'll build
@@ -39,7 +39,7 @@ The note is an attribute of the heading, `# 人名索引 {style="index" kicker="
 
 <Excerpt region="side-by-side" />
 
-The pen builds both editions and shows the Simplified one on the desk. The 简体版 and 繁體版 buttons switch the desk, and each switch offers the PDF of the edition on it, `chinese-name-index-hans.pdf` or `chinese-name-index-hant.pdf`. The capture records the Simplified build only, so the pages above are that edition's, and the card is this strip with the first index page of each; the whole stroke index is in the pen, behind the 繁體版 button.
+The pen builds both editions and shows the Simplified one on the desk. The 简体版 and 繁體版 buttons switch the desk, and each switch offers the PDF of the edition on it, `chinese-name-index-hans.pdf` or `chinese-name-index-hant.pdf`. The capture records both builds (`capture.doc: ['first', 'last']`): the first eight pages above are the Simplified edition, and the four after them come from the Traditional one, its first page and its stroke index. The card is this strip, with the first index page of each, and the PDF offered with the recipe is the Simplified edition's.
 
 ## Variations
 

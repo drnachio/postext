@@ -4,7 +4,7 @@ summary: "Las mismas marcas :index en dos ediciones de una antología de 紅樓�
 description: "Un índice onomástico chino en Postext: las mismas marcas :index dan letras de pinyin A–Z en la edición simplificada y 三畫, 四畫 en la tradicional."
 question: "¿Cómo agrupo un índice de nombres chinos por pinyin, o por número de trazos como en los libros de Taiwán?"
 aliases: ["índice chino", "índice onomástico chino", "人名索引", "índice por pinyin", "拼音索引", "índice por trazos", "笔画索引", "筆畫索引", "index.groupBy", "ordenación china", "Sueño en el pabellón rojo", "紅樓夢", "chino simplificado y tradicional"]
-pageNotes: { "7": "La apertura del índice de la edición simplificada: el antetítulo 按汉语拼音排列 en rojo, el título 人名索引 en una Kai de pincel, una nota de tres frases cortas, una por línea, y debajo dos columnas con las letras F, H, J, K, L y M; en la J están dieciséis miembros de la familia Jia y Jia Yucun, que solo comparte con ellos el apellido.", "8": "El resto del índice, desde el último nombre de la M hasta la Z, y el colofón en español, con la revisión de la fuente y los dos cambios hechos a su texto, al pie de la segunda columna." }
+pageNotes: { "7": "La apertura del índice de la edición simplificada: el antetítulo 按汉语拼音排列 en rojo, el título 人名索引 en una Kai de pincel, una nota de tres frases cortas, una por línea, y debajo dos columnas con las letras F, H, J, K, L y M; en la J están dieciséis miembros de la familia Jia y Jia Yucun, que solo comparte con ellos el apellido.", "8": "El resto del índice, desde el último nombre de la M hasta la Z, y el colofón en español, con la revisión de la fuente y los dos cambios hechos a su texto, al pie de la segunda columna.", "15": "La apertura del índice de la edición tradicional: el antetítulo 依筆畫排列 en rojo, 人名索引, la misma nota en caracteres tradicionales y dos columnas con los encabezados por número de trazos, de 三畫 a 十三畫, donde empiezan los Jia, porque 賈 tiene trece trazos.", "16": "El resto del índice por trazos, desde los Jia hasta 二十八畫 (鸚哥), y el colofón en español de la edición tradicional al pie de la segunda columna." }
 ---
 
 ## Lo que vas a componer
@@ -39,7 +39,7 @@ La nota es un atributo del título, `# 人名索引 {style="index" kicker="按�
 
 <Excerpt region="side-by-side" />
 
-El código compone las dos ediciones y deja la simplificada en la mesa. Los botones 简体版 y 繁體版 cambian de edición, y con cada cambio se ofrece el PDF de la que está a la vista, `chinese-name-index-hans.pdf` o `chinese-name-index-hant.pdf`. La captura registra solo la edición simplificada, así que las páginas de arriba son las suyas, y la tarjeta es esta franja con la primera página de índice de cada una; el índice por trazos entero se ve en el código, con el botón 繁體版.
+El código compone las dos ediciones y deja la simplificada en la mesa. Los botones 简体版 y 繁體版 cambian de edición, y con cada cambio se ofrece el PDF de la que está a la vista, `chinese-name-index-hans.pdf` o `chinese-name-index-hant.pdf`. La captura registra las dos (`capture.doc: ['first', 'last']`): las ocho primeras páginas de arriba son de la edición simplificada, y las cuatro siguientes, de la tradicional, su primera página y su índice por trazos. La tarjeta es esta franja, con la primera página de índice de cada una, y el PDF que acompaña a la receta es el de la edición simplificada.
 
 ## Variantes
 
