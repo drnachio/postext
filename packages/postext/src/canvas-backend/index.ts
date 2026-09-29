@@ -85,6 +85,26 @@ function paintPage(
 
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
+  // Text is painted from where the layout measured it, left to right. A
+  // canvas inside a right-to-left container inherits `rtl`, which would
+  // set a line's 'start' at its right end and reorder mixed runs: the page
+  // paints with `ltr`, and the context gets its own direction back.
+  const direction = 'direction' in ctx ? ctx.direction : undefined;
+  if (direction !== undefined) ctx.direction = 'ltr';
+  try {
+    paintContext(ctx, canvas, page, doc, options);
+  } finally {
+    if (direction !== undefined) ctx.direction = direction;
+  }
+}
+
+function paintContext(
+  ctx: CanvasRenderingContext2D,
+  canvas: HTMLCanvasElement,
+  page: VDTPage,
+  doc: VDTDocument,
+  options?: RenderPageOptions,
+): void {
   // A Chinese, Japanese or Korean document paints in its language, so the
   // browser picks the region's glyph forms (`ctx.lang`, Chrome 136+).
   const lang = renderLangOf(doc.config);
