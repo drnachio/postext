@@ -1,10 +1,10 @@
-// ═══ Postext Cookbook · Nº 078 · Commentary in red ink between the lines ══════════
+// ═══ Postext Cookbook · Nº 078 · Red-ink commentary in the line and the head margin ═══
 // https://postext.dev/en/cookbook/red-ink-commentary
 // Code: MIT · Text: 脂硯齋重評石頭記, Jiaxu manuscript, Wikisource (CC BY-SA 4.0) · Pictures: none
 // Fonts: Noto Serif TC, LXGW WenKai TC, Noto Sans TC (SIL OFL 1.1) · Needs postext ≥ 1.9.0
 // The first chapter of the Stone as a commentary edition: the text set vertically, the
-// side comments folded into two small red rows inside the line, the head-margin comments
-// in red Kai above the columns they gloss.
+// comments the manuscript writes beside the columns folded into two small red rows inside
+// the line, the head-margin comments in red Kai above the columns they gloss.
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
@@ -51,15 +51,16 @@ const cjk = {
   warichu: { color: col('vermilion') },
 };
 // A 眉批 is :::callout{type="meipi" span="side"}: span="side" sends it to the head
-// margin, level with the first column of the block after its fence
-// (gotcha: side-box-starts-at-fence).
+// margin, level with the column the text has reached at its fence, so the fence goes
+// just before the passage it discusses (gotcha: side-box-starts-at-fence).
 const meipi = {
   id: 'meipi', backgroundEnabled: false,
   border: { enabled: false }, stripe: { enabled: false },
   padding: { top: pt(0), right: pt(0), bottom: pt(0), left: pt(0) },
-  // 15 characters of 8 pt down the 120 pt tier; one column of the comment between two.
-  snapToGrid: false, marginBottom: pt(11.5),
-  body: { fontFamily: KAI, fontSize: pt(8), lineHeight: pt(11.5), color: col('vermilion'),
+  // 17 characters of 7 pt down the 120 pt tier, a column every 10 pt. The next comment
+  // starts on a text column at least one body column (21 pt) further on, whatever the margin.
+  snapToGrid: false, marginBottom: pt(0),
+  body: { fontFamily: KAI, fontSize: pt(7), lineHeight: pt(10), color: col('vermilion'),
     textAlign: 'left', firstLineIndent: pt(0) },
 };
 // #endregion
@@ -111,6 +112,10 @@ const config = () => ({ // a factory: the engine caches resolved configs by iden
     fontFamily: SONG, fontSize: pt(BODY), lineHeight: pt(LEAD), color: col('ink'),
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'justify', firstLineIndent: em(2), indentAfterHeading: true,
+    // A paragraph may open in a page's last column, so every page sets its 18. The
+    // orphan rule stays on: a paragraph's last column never stands alone at the head of
+    // a page (孤行不成頁).
+    avoidWidows: false,
   },
   headings: {
     fontFamily: SONG, color: col('ink'),
@@ -137,21 +142,23 @@ const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookboo
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 const FONTS = {
-  'Noto Serif TC': ['400', '700'], // 宋: the text, the chapter number, the notes in the line
+  'Noto Serif TC': ['400', '700'], // 宋: the text and the notes in the line; bold 第一回
   'LXGW WenKai TC': ['400'], // 楷: the head-margin comments, the edition's note
   'Noto Sans TC': ['500'], // 黑: the book's title, the folios, the colophon
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 // #region voices: each face loads the files of the characters it sets
-// Song sets the whole sample, Kai only the head-margin comments and the edition's note,
-// Hei the running heads, the folios and the colophon (gotcha: cjk-fonts-slices).
+// Song sets the whole sample and its bold only 第一回, Kai the head-margin comments and
+// the edition's note, Hei the running heads, the folios and the colophon
+// (gotcha: cjk-fonts-slices).
 const blocks = (style) => [...markdown.matchAll(
   new RegExp(`:::(?:callout|paragraphs)\\{[^}]*"${style}"[^}]*\\}\\n([^]*?)\\n:::`, 'g'))]
   .map((m) => m[1]).join('');
 const numerals = '一二三四五六七八九十';
 await loadFonts(FONTS, markdown);
-await loadCjkFonts({ [SONG]: FONTS[SONG] }, markdown, { vertical: true });
+await loadCjkFonts({ [SONG]: ['400'] }, markdown, { vertical: true });
+await loadCjkFonts({ [SONG]: ['700'] }, '第一回'); // the bold weight sets three characters
 await loadCjkFonts({ [KAI]: FONTS[KAI] }, blocks('meipi') + blocks('note'), { vertical: true });
 await loadCjkFonts({ [HEI]: FONTS[HEI] }, `脂硯齋重評石頭記第一回${numerals}${blocks('colophon')}`,
   { vertical: true });
