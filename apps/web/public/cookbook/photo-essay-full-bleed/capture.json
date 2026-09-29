@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "photo-essay-full-bleed",
-  "sourceHash": "c12c90f6fef7500c30eec3c01190c6fcefaf9e262c3cf56680bda9acb2c961e1",
+  "sourceHash": "4a94176fda7be4b58f4b996f587d56b4bdafad45e5419837c965872c701ee7bc",
   "engine": {
-    "postext": "1.8.0",
+    "postext": "1.8.3",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-28T13:54:04.058Z",
+  "capturedAt": "2026-09-28T18:00:44.056Z",
   "variants": {
     "en": {
-      "hash8": "a93bc7c8",
-      "vdtHash": "b4757d61b68f22213e3f235ae6d977ce735116e8",
+      "hash8": "5a6adaf2",
+      "vdtHash": "06ae992e932298dabfe0bf8739364d0527d93c0d",
       "timings": {
-        "importMs": 386,
-        "fontsMs": 65,
+        "importMs": 622,
+        "fontsMs": 2004,
         "buildMs": 8,
-        "totalMs": 1129,
+        "totalMs": 3373,
         "builds": 2
       },
       "specimen": {
@@ -49,7 +49,7 @@
           "h": 750,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 13260,
+          "bytes": 46300,
           "alt": "Opening page 1: Dawn."
         },
         {
@@ -71,7 +71,7 @@
           "h": 750,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 10498,
+          "bytes": 188696,
           "alt": "Opening page 3: Noon."
         },
         {
@@ -82,7 +82,7 @@
           "h": 750,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 24252,
+          "bytes": 45866,
           "alt": "Opening page 4: Storm."
         },
         {
@@ -93,7 +93,7 @@
           "h": 750,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 10386,
+          "bytes": 52742,
           "alt": "Opening page 5: Storm."
         },
         {
@@ -104,7 +104,7 @@
           "h": 750,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 35872,
+          "bytes": 38452,
           "alt": "Page 6: Eleven seconds. IV · Dusk · 19:41."
         },
         {
@@ -115,7 +115,7 @@
           "h": 750,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 11100,
+          "bytes": 59526,
           "alt": "Opening page 7: Night."
         },
         {
@@ -137,7 +137,7 @@
           "h": 750,
           "file": "p09.webp",
           "strip": "p09.s.webp",
-          "bytes": 13752,
+          "bytes": 166770,
           "alt": "Opening page 9: Snow."
         }
       ],
@@ -177,7 +177,7 @@
       },
       "sandbox": {
         "file": "photo-essay-full-bleed.postext",
-        "bytes": 112217
+        "bytes": 1718422
       },
       "detected": {
         "apis": [
@@ -288,8 +288,8 @@
           ":ref"
         ],
         "resources": {
-          "svg": 6,
-          "bitmap": 0,
+          "svg": 0,
+          "bitmap": 6,
           "table": 0
         },
         "fonts": [
@@ -345,13 +345,13 @@
       }
     },
     "es": {
-      "hash8": "8d33c808",
-      "vdtHash": "fd820b49b0a2b0d0b144f19aae3baee64c6c1b82",
+      "hash8": "903762c8",
+      "vdtHash": "abac35841ff68aa65b21c2e5fc629d2386c01d45",
       "timings": {
-        "importMs": 404,
-        "fontsMs": 117,
-        "buildMs": 12,
-        "totalMs": 1267,
+        "importMs": 664,
+        "fontsMs": 3231,
+        "buildMs": 11,
+        "totalMs": 4581,
         "builds": 2
       },
       "specimen": {
@@ -384,7 +384,7 @@
           "h": 750,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 13234,
+          "bytes": 46278,
           "alt": "Página de apertura 1: Alba."
         },
         {
@@ -406,7 +406,7 @@
           "h": 750,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 10498,
+          "bytes": 188696,
           "alt": "Página de apertura 3: Mediodía."
         },
         {
@@ -417,7 +417,7 @@
           "h": 750,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 24252,
+          "bytes": 45866,
           "alt": "Página de apertura 4: Tormenta."
         },
         {
@@ -428,7 +428,7 @@
           "h": 750,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 10386,
+          "bytes": 52742,
           "alt": "Página de apertura 5: Tormenta."
         },
         {
@@ -439,7 +439,7 @@
           "h": 750,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 35318,
+          "bytes": 37626,
           "alt": "Página 6: Once segundos. IV · Atardecer · 19:41."
         },
         {
@@ -450,7 +450,7 @@
           "h": 750,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 11100,
+          "bytes": 59526,
           "alt": "Página de apertura 7: Noche."
         },
         {
@@ -472,7 +472,7 @@
           "h": 750,
           "file": "p09.webp",
           "strip": "p09.s.webp",
-          "bytes": 14002,
+          "bytes": 167066,
           "alt": "Página de apertura 9: Nieve."
         }
       ],
@@ -512,7 +512,7 @@
       },
       "sandbox": {
         "file": "photo-essay-full-bleed.postext",
-        "bytes": 112310
+        "bytes": 1718568
       },
       "detected": {
         "apis": [
@@ -623,8 +623,8 @@
           ":ref"
         ],
         "resources": {
-          "svg": 6,
-          "bitmap": 0,
+          "svg": 0,
+          "bitmap": 6,
           "table": 0
         },
         "fonts": [

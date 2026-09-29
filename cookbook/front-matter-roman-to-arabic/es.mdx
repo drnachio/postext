@@ -9,7 +9,7 @@ pageNotes: { "3": "La anteportada, página iii. Su estilo la manda a página imp
 
 ## Lo que vas a componer
 
-Las primeras hojas de *Frankenstein* en una edición de bolsillo de 129 × 198 mm: una cubierta con un rayo sobre el Mont Blanc y el dorso en blanco, la anteportada, un frontispicio con el barco de Walton atrapado en el hielo frente a la portada, los créditos al pie de su reverso, la dedicatoria a Godwin sobre el epígrafe de Milton, el índice y el prólogo de 1818. Esas diez páginas se cuentan de la i a la x, aunque solo el índice y el prólogo llevan número. La novela empieza con la Carta I en página impar, bajo la aurora boreal, y su folio, 1, ocupa el sitio de la x de enfrente. La carta sigue hasta la firma de Walton. En el índice, la ix del prólogo y la 1 de la carta salen de las páginas compuestas, y un visor de PDF numera igual.
+Las primeras hojas de *Frankenstein* en una edición de bolsillo de 129 × 198 mm: una cubierta con un rayo sobre el Mont Blanc y el dorso en blanco, la anteportada, un frontispicio con el barco de Walton atrapado en el hielo frente a la portada, los créditos al pie de su reverso, la dedicatoria a Godwin sobre el epígrafe de Milton, el índice y el prólogo de 1818. Esas diez páginas se cuentan de la i a la x, aunque solo el índice y el prólogo llevan número. La novela empieza con la Carta I en página impar, bajo la aurora boreal, y su folio, 1, ocupa el sitio de la x de enfrente. La carta sigue hasta la firma de Walton. En el índice, la ix del prólogo y la 1 de la carta salen de las páginas compuestas, y un visor de PDF numera igual. La cubierta, el frontispicio y la aurora boreal son pinturas generadas con modelos de difusión y cargadas como mapas de bits JPEG; la marca editorial y el cristal de hielo están dibujados en código.
 
 ## Elaboración
 
@@ -17,7 +17,7 @@ Las primeras hojas de *Frankenstein* en una edición de bolsillo de 129 × 198 m
 
 <Excerpt region="leaves" />
 
-Un título abre página y sale como marcador en el PDF; el diseño de su estilo coloca los textos y los dibujos de la hoja. Con `numbered: false` y `toc: false`, las hojas no cuentan como capítulo ni salen en el índice. Como la cabecera y el pie están vacíos, esas páginas cuentan pero no se folian: la portada no lleva número y sigue siendo la página v, y por eso el prólogo puede ser la ix. Solo la anteportada conserva el salto a impar, y eso deja en blanco el dorso de la cubierta. Los créditos, la dedicatoria, el epígrafe y la despedida de Walton son bloques `:::paragraphs` con los estilos del final del fragmento.
+Un título abre página y sale como marcador en el PDF; el diseño de su estilo coloca los textos y las imágenes de la hoja. Con `numbered: false` y `toc: false`, las hojas no cuentan como capítulo ni salen en el índice. Como la cabecera y el pie están vacíos, esas páginas cuentan pero no se folian: la portada no lleva número y sigue siendo la página v, y por eso el prólogo puede ser la ix. Solo la anteportada conserva el salto a impar, y eso deja en blanco el dorso de la cubierta. Los créditos, la dedicatoria, el epígrafe y la despedida de Walton son bloques `:::paragraphs` con los estilos del final del fragmento.
 
 ### 2 · El índice toma los números de la composición
 
@@ -29,7 +29,7 @@ Un título abre página y sale como marcador en el PDF; el diseño de su estilo 
 
 <Excerpt region="letter" />
 
-El dibujo sale a sangre por la cabeza de la página y se funde con el papel al pie, donde empieza la carta. En Postext 1.4.1 una imagen nunca cuenta para el espacio que reserva una apertura (sus textos, filetes y cajas sí, aunque estén anclados a la página), así que solo `minHeight` baja la primera línea por debajo del dibujo ([span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)). El antetítulo y la fecha salen de los atributos `to` y `dateline` del título. La Carta I añade `{style="letter"}`, un estilo que se limita a fijar `numbered: false`, porque las cartas de Walton van antes del capítulo I y no se numeran.
+La pintura sale a sangre por la cabeza de la página y se funde con el papel al pie, donde empieza la carta. En Postext 1.4.1 una imagen nunca cuenta para el espacio que reserva una apertura (sus textos, filetes y cajas sí, aunque estén anclados a la página), así que solo `minHeight` baja la primera línea por debajo de la pintura ([span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)). El antetítulo y la fecha salen de los atributos `to` y `dateline` del título. La Carta I añade `{style="letter"}`, un estilo que se limita a fijar `numbered: false`, porque las cartas de Walton van antes del capítulo I y no se numeran.
 
 ### 4 · Las cabeceras vuelven con la novela
 

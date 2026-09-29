@@ -64,5 +64,5 @@ Los glaciares que quedan en la península son pequeños y están todos en el Pir
 Cuando desaparezca el último, el macizo de la Maladeta se parecerá a la sierra de Gredos, que perdió sus glaciares hace más de diez mil años y conserva lagunas en los circos y morrenas que cierran los valles.
 
 :::paragraphs{style="colophon"}
-Compuesto en Faustina, Montserrat e IBM Plex Sans Condensed (SIL Open Font License) · Texto y figuras: originales, CC BY 4.0
+Compuesto en Faustina, Montserrat e IBM Plex Sans Condensed (SIL Open Font License) · Texto: CC BY 4.0 · Figuras: modelos de difusión
 :::

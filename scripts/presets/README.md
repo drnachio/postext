@@ -236,8 +236,9 @@ generated, never edited by hand. Each lives in `scripts/presets/showcase/<id>/`:
   files, part titles, credits) in Spanish and English;
 - `build.py` processes the images, instances the variable fonts, writes the
   chapters per locale, the manifest with its `localized` overrides, `CREDITS.md`,
-  `thumbnail.jpg` (a rendered cover kept next to the script) and
-  `fingerprint.json`, and registers the bundle in `index.json`.
+  `thumbnail.jpg` (a rendered cover kept next to the script, plus
+  `thumbnail-<lang>.jpg` for another locale's cover, which the home page shows
+  on that locale) and `fingerprint.json`, and registers the bundle in `index.json`.
 
 `_common.py` carries the shared helpers (units, design elements, font
 instancing, fingerprint, registration). Current bundles: `don-quijote`

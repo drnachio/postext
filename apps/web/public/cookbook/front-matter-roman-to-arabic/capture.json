@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "front-matter-roman-to-arabic",
-  "sourceHash": "835f85ef77d125ce262da640643c208aa557281d77eeef6cc7cec588ed5fcc4b",
+  "sourceHash": "628d401346f43d6baff8bf200dad5ce653c69358bc0727502436418b07e61f26",
   "engine": {
-    "postext": "1.4.1",
-    "postextPdf": "1.4.1",
+    "postext": "1.8.3",
+    "postextPdf": "1.8.3",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-25T18:36:04.909Z",
+  "capturedAt": "2026-09-28T18:00:44.071Z",
   "variants": {
     "en": {
-      "hash8": "d647fa52",
-      "vdtHash": "c88e2d34a6fbed5457285625368ef883524765b9",
+      "hash8": "f1cde812",
+      "vdtHash": "aa74dbade306e0cc15d98c918a8d36b8bce9c862",
       "timings": {
-        "importMs": 404,
-        "fontsMs": 125,
-        "buildMs": 91,
-        "totalMs": 1463,
+        "importMs": 304,
+        "fontsMs": 106,
+        "buildMs": 92,
+        "totalMs": 1431,
         "builds": 2
       },
       "specimen": {
@@ -50,7 +50,7 @@
           "h": 1535,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 26452,
+          "bytes": 142294,
           "alt": "Opening page i: Cover."
         },
         {
@@ -61,7 +61,7 @@
           "h": 1535,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 6732,
+          "bytes": 6746,
           "alt": "Opening page iii: Half title."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1535,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 46426,
+          "bytes": 110834,
           "alt": "Opening page iv: Frontispiece."
         },
         {
@@ -83,7 +83,7 @@
           "h": 1535,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 18994,
+          "bytes": 19038,
           "alt": "Opening page v: Title page."
         },
         {
@@ -116,7 +116,7 @@
           "h": 1535,
           "file": "p08.webp",
           "strip": "p08.s.webp",
-          "bytes": 11580,
+          "bytes": 11592,
           "alt": "Opening page viii: Contents."
         },
         {
@@ -127,7 +127,7 @@
           "h": 1535,
           "file": "p09.webp",
           "strip": "p09.s.webp",
-          "bytes": 114904,
+          "bytes": 114944,
           "alt": "Opening page ix: Preface."
         },
         {
@@ -138,7 +138,7 @@
           "h": 1535,
           "file": "p10.webp",
           "strip": "p10.s.webp",
-          "bytes": 126428,
+          "bytes": 126434,
           "alt": "Page x."
         },
         {
@@ -149,7 +149,7 @@
           "h": 1535,
           "file": "p11.webp",
           "strip": "p11.s.webp",
-          "bytes": 88076,
+          "bytes": 127056,
           "alt": "Opening page 1: Letter I."
         },
         {
@@ -160,7 +160,7 @@
           "h": 1535,
           "file": "p13.webp",
           "strip": "p13.s.webp",
-          "bytes": 163074,
+          "bytes": 163106,
           "alt": "Page 3."
         },
         {
@@ -171,7 +171,7 @@
           "h": 1535,
           "file": "p14.webp",
           "strip": "p14.s.webp",
-          "bytes": 136602,
+          "bytes": 136590,
           "alt": "Page 4."
         }
       ],
@@ -223,12 +223,12 @@
       },
       "pdf": {
         "file": "front-matter-roman-to-arabic.pdf",
-        "bytes": 217036,
+        "bytes": 814755,
         "pages": 14
       },
       "sandbox": {
         "file": "front-matter-roman-to-arabic.postext",
-        "bytes": 81418
+        "bytes": 713610
       },
       "detected": {
         "apis": [
@@ -391,8 +391,8 @@
           "{attrs}"
         ],
         "resources": {
-          "svg": 5,
-          "bitmap": 0,
+          "svg": 2,
+          "bitmap": 3,
           "table": 0
         },
         "fonts": [
@@ -460,7 +460,13 @@
           "share": 0,
           "worst": 1.71
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

@@ -19,3 +19,4 @@ plugins/**/__pycache__/
 
 # Cookbook capture network cache
 apps/web/.cache/
+.env

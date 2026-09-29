@@ -6,6 +6,7 @@ import { DocsSearchPalette, DocsSearchTrigger } from "@/components/docs/DocsSear
 import { Logo } from "@/components/brand/Logo";
 import { MobileMenu } from "./MobileMenu";
 import { NavLink } from "./NavLink";
+import { HomeLink } from "./HomeLink";
 
 const NAV_LINK =
   "rounded-md px-2 py-1 font-sans text-[0.8rem] font-medium text-slate transition-colors hover:text-foreground 2xl:text-sm 4xl:text-base";
@@ -20,9 +21,9 @@ export async function Navbar() {
     >
       <div aria-hidden="true" className="tri-stripe h-[3px] w-full" />
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-2.5 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
-        <Link href="/" aria-label={t("home")} className="rounded-md text-foreground">
+        <HomeLink label={t("home")} className="rounded-md text-foreground">
           <Logo className="text-[1.35rem] 2xl:text-2xl 4xl:text-3xl" />
-        </Link>
+        </HomeLink>
         <div className="hidden items-center gap-1.5 md:flex 2xl:gap-3 4xl:gap-4">
           <DocsSearchTrigger variant="compact" className="mr-2" />
           <NavLink href="/docs" className={NAV_LINK}>
@@ -33,8 +34,8 @@ export async function Navbar() {
           <NavLink href="/cookbook" className={NAV_LINK}>
             {t("cookbook")}
           </NavLink>
-          {/* Below lg, GitHub lives in the footer and the mobile menu: the
-              row would overflow at 768 px with it. */}
+          {/* Below lg (xl for YouTube), these live in the footer and the
+              mobile menu: the row would overflow at 768 px with them. */}
           <a
             href="https://github.com/drnachio/postext"
             target="_blank"
@@ -43,6 +44,15 @@ export async function Navbar() {
             className={`hidden lg:inline-flex ${NAV_LINK}`}
           >
             {t("github")}
+          </a>
+          <a
+            href="https://www.youtube.com/@Postext"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={t("youtubeAriaLabel")}
+            className={`hidden xl:inline-flex ${NAV_LINK}`}
+          >
+            {t("youtube")}
           </a>
           <span aria-hidden="true" className="mx-1.5 h-5 w-px bg-rule" />
           <LanguageSwitcher />

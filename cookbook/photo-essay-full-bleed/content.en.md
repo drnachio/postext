@@ -41,4 +41,4 @@ Andrés takes the last photograph at 8:31, from the same boulder as at noon yest
 
 It is the first snow of the autumn, two weeks early, the warden says. We set off at nine. The paved track is under the snow, so we go down from one cairn to the next.
 
-# Snow {style="nieve" n="VI" hora="08:31" colofon="Sierra. An essay in six lights · Plates drawn in code · Text and plates: CC BY 4.0" tipos="Set in Andada Pro, Syne and Syne Mono (SIL OFL)"}
+# Snow {style="nieve" n="VI" hora="08:31" colofon="Sierra. An essay in six lights · Plates generated with diffusion models · Text: CC BY 4.0" tipos="Set in Andada Pro, Syne and Syne Mono (SIL OFL)"}

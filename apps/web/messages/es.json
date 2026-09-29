@@ -20,6 +20,8 @@
     "sandbox": "Sandbox",
     "github": "GitHub",
     "githubAriaLabel": "Postext en GitHub (abre en nueva pestaña)",
+    "youtube": "YouTube",
+    "youtubeAriaLabel": "Postext en YouTube (abre en nueva pestaña)",
     "openMenu": "Abrir menú de navegación",
     "closeMenu": "Cerrar menú de navegación",
     "tryIt": "Abrir el Sandbox"
@@ -313,6 +315,22 @@
     "figure": "Figura",
     "part": "Parte"
   },
+  "Showreel": {
+    "title": "Postext en dos minutos",
+    "play": "Reproducir el vídeo a pantalla completa",
+    "watch": "Ver · 2:12",
+    "subtitles": "Subtítulos",
+    "fullscreen": "Pantalla completa",
+    "exitFullscreen": "Salir de pantalla completa"
+  },
+  "Tutorial": {
+    "title": "Convierte tu publicación en Postext con un agente de IA",
+    "play": "Reproducir el vídeo a pantalla completa",
+    "watch": "Ver el tutorial · 5:06",
+    "subtitles": "Subtítulos",
+    "fullscreen": "Pantalla completa",
+    "exitFullscreen": "Salir de pantalla completa"
+  },
   "About": {
     "eyebrow": "Por qué Postext",
     "titleLine1": "Maquetación editorial,",
@@ -368,7 +386,7 @@
     "mathTitle": "Matemáticas en LaTeX",
     "mathDescription": "Ecuaciones en línea y en bloque escritas en LaTeX, medidas y compuestas por el motor para que se asienten en la retícula base junto al texto.",
     "outputTitle": "Web y PDF para imprenta",
-    "outputDescription": "Un motor de maquetación, tres renderizadores. Las mismas páginas calculadas se renderizan a HTML, canvas o PDF listo para imprenta — con marcadores y color CMYK.",
+    "outputDescription": "Un motor de maquetación, tres renderizadores. Las mismas páginas calculadas se renderizan a HTML, canvas o PDF listo para imprenta — con marcadores, color CMYK y PDF etiquetado y accesible (PDF/UA).",
     "docsLink": "Leer en la documentación",
     "lead": "Seis cosas que una página necesita y que CSS nunca se diseñó para decidir — calculadas por el motor, igual cada vez."
   },
@@ -383,7 +401,16 @@
     "open": "Abrir en el Sandbox",
     "guideName": "Guía de Postext",
     "guideDescription": "La guía incluida: 12 capítulos, tres partes y cubierta",
-    "all": "Ver todos los presets"
+    "all": "Ver todos los presets",
+    "books": {
+      "bioquimica-feduchi": "Bioquímica Feduchi · Capítulo 1",
+      "deep-sky": "Cielo profundo",
+      "don-quijote": "Don Quijote · Gustave Doré",
+      "hongloumeng": "Sueño en el pabellón rojo · 紅樓夢",
+      "openstax-fisica": "Física universitaria (OpenStax)",
+      "pintura-espanola": "Pintura española",
+      "senales": "Señales 2020"
+    }
   },
   "ApiPreview": {
     "eyebrow": "API",
@@ -463,6 +490,7 @@
     "docs": "Documentación",
     "cookbook": "Recetario",
     "sandbox": "Sandbox",
+    "skill": "Skill para agentes",
     "product": "Postext"
   },
   "Theme": {
