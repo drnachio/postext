@@ -1,0 +1,87 @@
+---
+title: "A woodblock leaf: double frame, rules and centre strip"
+summary: "Zhu Xi's commentary on the Analects set as a woodblock printed it: a leaf to a spread, a double frame, a rule between columns and the centre strip on the spine."
+description: "Three leaves of Zhu Xi's Analects commentary set in Postext as a woodblock edition: vertical text, two-row notes, column rules and the fish-tail strip."
+question: "How do I lay out a woodblock leaf, with its double frame, column rules and centre strip across the spread?"
+aliases: ["woodblock print", "block-printed book", "thread-bound book", "title page", "Chinese classic", "Analects", "Zhu Xi", "fish tail", "column rules", "double frame", "half-leaf", "leaf number", "線裝書", "刻本", "內封", "版心", "魚尾", "界行", "四周雙邊", "半葉", "論語集註"]
+pageNotes: { "1": "Page 1, the title page, alone to the left of the spine: a double frame cut into three columns by two hairlines. The byline 宋 朱熹 集註 at the head of the right column, the title 論語集註 in large Kai characters down the middle, and at the foot of the left column three short red columns: the note on this edition. A two-line colophon in small grey type under the frame.", "2": "Page 2, the right half of the first leaf: nine columns inside a heavy outer line and a thin inner one, a hairline between every two columns. From the right: 論語卷一, the byline 宋 朱子 集註 low in the second column, 學而第一 with its note in two small rows, then 子曰學而時習之不亦說乎 and Zhu Xi's notes folded into the columns. At the left edge, on the fold, half of the centre strip: 論語集註, a black fish tail, 卷一 and the leaf number 一.", "3": "Page 3, the left half of the same leaf, the other half of the centre strip at its right edge, so that pages 2 and 3 side by side show the whole leaf with the strip in the middle.", "6": "Page 6, the right half of the third leaf. Its first column goes on with a note in two small rows, cut where the second leaf ended; the leaf number on the fold is 三.", "7": "Page 7, the left half of the third leaf. The text ends one column short of the frame." }
+---
+
+## What you'll build
+
+Three leaves of Zhu Xi's commentary on the *Analects* (論語集註), the opening of the book 學而, set as a woodblock printed them, after a title page. Each page is a half-leaf, 121 × 213 mm, and each spread is one whole leaf, read from the right: on each half nine columns of 17 characters in 20 pt Noto Serif TC, a double frame, a hairline between every two columns, and on the spine the centre strip (版心) with the title, a black fish tail, the juan and the leaf's number. Zhu Xi's notes fold into two rows of 10 pt characters inside the column, after the words they explain. The head margin is twice the foot.
+
+## Method
+
+### 1 · A half-leaf to a page, a leaf to a spread
+
+The code is [the short answer](#the-short-answer) above. A block printed a whole leaf (葉) at once, its two halves either side of the centre strip; the printer folded the sheet along the strip, printed side out, and sewed the open edges, so the strip became the book's fore-edge. These pages lie as the leaf came off the block. Each page is a half-leaf. In a [book bound on the right](/en/docs/configuration#binding) page 1 stands alone left of the spine and each later spread pairs an even page on the right with the odd page after it, so with the title on page 1 every spread holds one leaf. The [character grid](/en/docs/configuration#character-grid) sets the block's 行款, nine columns of 17 characters, and the margins it leaves are exact: the inner one is half the strip.
+
+Postext numbers pages, not leaves. Each leaf opens with a level-1 heading that is [hidden](/en/docs/configuration#per-level-overrides): it prints nothing and takes no room, but its `breakBefore` with `parity: 'even'` starts a right-hand page, and its number, 一, 二, 三 by `numberingTemplate: '{1:一}'`, is `{chapterNumber}` for the strip.
+
+### 2 · Break the text where each leaf ends
+
+The copyist who wrote out a text for the block cutter fitted it to the block, leaf by leaf. The Markdown does the same: a leaf's heading goes where the previous leaf's ninth column on its left half ends, even inside a sentence or a note. A note cut there is closed and opened again, and since each column folds its own share of a note into two rows, the rows come out as they were:
+
+```markdown
+子曰巧言令色鮮矣仁:warichu[巧好令善也好其言善其色致飾於]
+
+# 學而
+
+:warichu[外務以悦人則人欲肆而本心之德亡矣…]
+```
+
+The block has no punctuation, so no line-breaking rule moves a character, and every column ends on its 17th: the leaf breaks are counted once and stay put. Zhu Xi's notes are [`:warichu[…]`](/en/docs/document-format#chinese-marks-ruby-and-warichu) spans at the default half size, 34 small characters to a row, with a ○ between the reading and the gloss as in the block.
+
+### 3 · Draw the block from the grid's numbers
+
+<Excerpt region="frame" />
+
+The header is laid out on the sheet, so the frame, the rules and the strip are placed in points from the page's corner with the numbers that set the grid: a [rule element](/en/docs/configuration#rule-elements) every 29 pt across the type area, a [box](/en/docs/configuration#box-elements) 4.5 pt round the text for the thin line and another 4.5 pt further out for the heavy one. A vertical line hangs its characters on the face's central axis, which sits 1.1 pt left of the middle of the pitch, so every rule moves 1.1 pt left with them (`SHIFT`). The strip's text is set down the page by [vertical text elements](/en/docs/configuration#vertical-text-elements) and the fish tail is an SVG [image element](/en/docs/configuration#image-elements), both centred on the fold: each page draws them whole and shows the half on its side, and side by side the halves meet. The frames run past the fold for the same reason.
+
+### 4 · Give the title page a style of its own
+
+<Excerpt region="title" />
+
+The title page (內封) is a level-1 heading with a [heading style](/en/docs/configuration#heading-styles) that is hidden and unnumbered, so the leaves still count from 一. A style governs the pages of its section, and its `header` replaces the document's there: the title page gets a closed frame cut into three columns instead of a half-leaf's furniture. The byline, this edition's note in red Kai and the colophon come from the heading's [attributes](/en/docs/document-format#heading-attributes); the colophon is the one line that changes with the edition's language. `\n` in an attribute starts a new column.
+
+### 5 · Load each face with the characters it sets
+
+<Excerpt region="voices" />
+
+Fontsource serves each Chinese face as about a hundred files per weight. Song sets the leaves, the strip and the leaf numbers, so its call gets the sample and those characters; Kai sets only the title and the note. The block has no punctuation, so neither face needs the vertical forms of `loadCjkFonts(…, { vertical: true })`.
+
+### 6 · One ink on a warm paper
+
+<Excerpt region="palette" />
+
+The text and the block's lines print in one warm black, 14 : 1 on the paper. They are still two palette entries, `ink` and `rule`, so the rules can change colour without the text. The red is kept for what this edition adds.
+
+## Variations
+
+### Rule the columns in red
+
+The copies made for the 四庫全書 were written on paper ruled in red (朱絲欄). Change the rule colour; the fish tail follows it.
+
+```diff
+-  rule: '#1f1b17', // the frame, the column rules and the fish tail: the same block, same ink
++  rule: '#b3412e', // 朱絲欄: red rules under black text
+```
+
+### Cut a different block
+
+Blocks came in many counts, and 半葉十行，行二十字 is one of the commonest. The frames and the strip are drawn from these numbers, so they follow; the leaf breaks in the Markdown have to be counted again.
+
+```diff
+-const [BODY, PITCH, CHARS, LINES] = [20, 29, 17, 9];
++const [BODY, PITCH, CHARS, LINES] = [17, 24.5, 20, 10];
+```
+
+### Compare it with a European page on a grid
+
+<RecipeLink slug="baseline-grid-book-page">A book page on a baseline grid</RecipeLink> builds its type area from a count of lines, as this leaf builds its own from columns and characters; <RecipeLink slug="certificate-single-page">the certificate</RecipeLink> draws its border in the header of a heading style, as the title page does here.
+
+## Pitfalls
+
+- The leaf breaks live in the Markdown. Change the text, the size or the 行款 and a leaf that runs over pushes the next heading a page further, so the spreads stop matching the leaves; one that runs short leaves blank columns before the fold. Check the last column of every left-hand page.
+- The 四庫全書 transcription types 巳 for 已 and 己 alike; this sample reads each one from its sentence. It also carries forms Noto Serif TC has no glyph for (廹 徳 絶 逺 専 内). `loadCjkFonts` lets them through, because their Fontsource files cover the code points, but the canvas draws them from a system face and postext-pdf prints an empty box and warns. The sample sets 迫 德 絕 遠 專 內.
