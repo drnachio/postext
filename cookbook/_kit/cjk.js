@@ -129,7 +129,11 @@ function showBook(docs, { binding, ...options } = {}) {
   const count = showPages(docs, options);
   const right = (binding ?? [docs].flat()[0]?.binding) === 'right';
   if (!document.getElementById('pt-kit-cjk')) {
+    // The pages keep direction ltr: a canvas draws text in the direction its
+    // element inherits, and under rtl each run would end where the engine
+    // starts it, its brackets mirrored.
     document.head.insertAdjacentHTML('beforeend', `<style id="pt-kit-cjk">
+      .pt-spread[dir="rtl"] canvas { direction: ltr; }
       .pt-spread[dir="rtl"] figure:first-child canvas { box-shadow: inset 14px 0 14px -14px rgb(0 0 0 / .18),
         0 1px 2px rgb(0 0 0 / .5), 0 22px 44px -16px rgb(0 0 0 / .8); }
     </style>`);
