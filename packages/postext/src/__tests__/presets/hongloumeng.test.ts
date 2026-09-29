@@ -438,6 +438,41 @@ describe('hongloumeng pages', () => {
     for (const { b, next } of heads) expect(next?.type, JSON.stringify((b as any).text)).toBe('paragraph');
   });
 
+  it('sets the title page’s imprint at the foot of its last column', async () => {
+    const book = await open('zh-Hant');
+    const doc = layout(book, 0);
+    // The cover, its blank back, then the title page, a recto.
+    // The type area of the grid (the cover's page): the title page's own
+    // margins narrow its type area to the colophon's columns on the verso.
+    const area = doc.pages[0]!.columns[0]!.bbox;
+    const page = doc.pages[2]!;
+    const imprint = page.openerBand!.blocks.find((b: any) => b.kind === 'text' && b.lines[0]?.text === 'Postext') as any;
+    expect(imprint).toBeDefined();
+    // The last column of the type area (the flow's y grows leftwards), and
+    // the word ends where the column does (the flow's x runs down).
+    expect(imprint.bbox.y + imprint.bbox.height).toBeCloseTo(area.y + area.height, 1);
+    // A column is 38 characters of 10.5 pt; the word's 1 pt tracking
+    // trails its last letter.
+    const ptPx = area.width / 38 / 10.5;
+    const line = imprint.lines[0];
+    expect(Math.abs(imprint.bbox.x + line.xOffset + line.width - (area.x + area.width))).toBeLessThanOrEqual(1.01 * ptPx);
+  });
+
+  it('marks every proper name of the Traditional edition note, each time and whole', () => {
+    const note = readFileSync(join(BUNDLE, 'chapters/zh-Hant/000b-edition.md'), 'utf8');
+    // People, places, reigns and institutions (專名號, Taiwan usage).
+    const names = ['曹雪芹', '乾隆', '程偉元', '高鶚', '喬利', '光緒', '上海', '同文書局', '東京大學', '改琦', '維基文庫', '維基共享資源', '知識共享', '古騰堡計畫', '大學數字圖書館國際合作計劃', '臺灣'];
+    for (const name of names) {
+      const all = note.split(name).length - 1;
+      const marked = note.split(`:name[${name}]`).length - 1;
+      expect(all, name).toBeGreaterThan(0);
+      expect(marked, name).toBe(all);
+    }
+    // A name is marked whole: no mark covers part of one.
+    const marks = [...note.matchAll(/:name\[([^\]]+)\]/g)].map((m) => m[1]);
+    for (const m of marks) expect(names, m).toContain(m);
+  });
+
   it('opens an English chapter with the couplet and both of Joly’s title lines', async () => {
     const book = await open('en');
     const doc = layout(book, 5); // Chapter I, after its part page

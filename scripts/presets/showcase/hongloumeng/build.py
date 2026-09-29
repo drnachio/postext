@@ -689,8 +689,9 @@ def v_cover(lang: str, f: ZhFaces) -> dict:
     four-hole stitching down the spine edge (the right, the flow's top) and
     a paper title slip at the head of the free edge with 紅樓夢 set down it
     and 程乙本 small near its foot. Everything is placed from the bleed box
-    the cloth fills, so the cover holds together on a page of another size
-    (the HTML view)."""
+    the cloth fills. The design reserves the page's whole width, as the
+    horizontal covers reserve its height: the HTML view then takes it for a
+    cover and keeps the leaf's shape."""
     g = VG
     # Flow frame: x down from the head, y leftward from the spine.
     stitch = 9.0
@@ -710,7 +711,7 @@ def v_cover(lang: str, f: ZhFaces) -> dict:
         ftext("slip-title", ed.BOOK[lang]["title"], anchor=at("#slip", "top-left"), x=8, y=0, length=slip_h - 26, across=slip_w, size_pt=30, family=f.kai, letterSpacing=pt(16)),
         ftext("slip-note", ed.BOOK[lang]["slip_note"], anchor=at("#slip", "top-left"), x=slip_h - 22, y=slip_w - 7.5, length=18, across=5, size_pt=9, family=f.kai, letterSpacing=pt(1)),
     ]
-    return {"enabled": True, "minHeight": mm(g.type_w), "slot": {"elements": els}}
+    return {"enabled": True, "minHeight": mm(g.width), "slot": {"elements": els}}
 
 
 def v_title_page(lang: str, f: ZhFaces) -> dict:
@@ -742,7 +743,7 @@ def v_title_page(lang: str, f: ZhFaces) -> dict:
                 ftext("tp-author", b["author"], anchor=page, x=fx + 8, y=fy, length=fl - 16, across=1.5 * p, size_pt=11.5, family=f.kai, letterSpacing=pt(2)),
                 ftext("tp-title", b["title"], anchor=page, x=fx, y=fy + 1.5 * p, length=fl, across=3 * p, size_pt=40, family=f.kai, align="center", letterSpacing=pt(16)),
                 ftext("tp-editors", b["editors"], anchor=page, x=fx + 8, y=fy + fw - 1.5 * p, length=fl - 16, across=1.5 * p, size_pt=11.5, family=f.kai, align="right", letterSpacing=pt(1)),
-                ftext("tp-imprint", "Postext", anchor=page, x=x0, y=y0 + g.type_w - p, length=L, across=p, size_pt=9, family=f.serif, align="center", color="muted", letterSpacing=pt(1)),
+                ftext("tp-imprint", "Postext", anchor=page, x=x0, y=y0 + g.type_w - p, length=L, across=p, size_pt=9, family=f.serif, align="right", color="muted", letterSpacing=pt(1)),
             ]
         },
     }
@@ -843,7 +844,7 @@ def v_paragraph_styles(f: ZhFaces) -> list[dict]:
 
 def zh_hant_config() -> dict:
     """The vertical right-bound book (#188 #189): 38 characters down each
-    column, 14 columns a page, Taiwan punctuation (centred, full width, no
+    column, 15 columns a page, Taiwan punctuation (centred, full width, no
     compression) and basic line breaking from the locale; chapters open on
     a recto (the left page) facing their plate."""
     lang = "zh-Hant"
@@ -1581,13 +1582,13 @@ def write_manifest(out: str, chapters: dict, shared: list[dict], wording: dict, 
     meta = {
         "id": PRESET_ID,
         "name": "紅樓夢 · Dream of the Red Chamber",
-        "description": "Novela clásica china en 120 capítulos: el texto de 1792 en chino tradicional y simplificado, con las láminas de 1884, y la traducción inglesa de Joly de los 56 primeros capítulos · A classic Chinese novel in 120 chapters: the 1792 text in Traditional and Simplified Chinese with the 1884 plates, and Joly’s English translation of the first 56 chapters",
+        "description": "Novela clásica china en 120 capítulos, con las láminas de 1884: el texto de 1792 en chino tradicional, compuesto en vertical y con el lomo a la derecha, el mismo texto en chino simplificado y la traducción inglesa de Joly de los 56 primeros capítulos · A classic Chinese novel in 120 chapters, with the 1884 plates: the 1792 text in Traditional Chinese, set vertically and bound on the right, the same text in Simplified Chinese, and Joly’s English translation of the first 56 chapters",
         "locale": "zh-Hant",
         "locales": list(LANGS),
         "thumbnail": "thumbnail.jpg",
         "license": "Public domain · CC BY-SA 4.0 (Wikisource text) · OFL fonts",
         "credits": "曹雪芹 · 程偉元 · 高鶚 · zh.wikisource · H. Bencraft Joly · Project Gutenberg · 同文書局 1884 · 改琦 · Wikimedia Commons",
-        "tags": ["book", "chinese", "single-column", "plates", "front-matter", "index"],
+        "tags": ["book", "chinese", "vertical", "right-bound", "plates", "front-matter", "index"],
         "openLocale": "zh-Hant",
     }
     base = configs["zh-Hant"]

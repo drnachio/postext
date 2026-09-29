@@ -96,15 +96,17 @@ EDITION_NOTE: dict[str, list[str]] = {
     ],
     # The vertical edition writes its numbers in Chinese numerals (a year of
     # four Arabic digits would run sideways down the column) and marks the
-    # names of people, places and reigns with the proper-name line (專名號,
-    # `:name[…]`), left of the column.
+    # names of people, places, reigns and institutions with the proper-name
+    # line (專名號, `:name[…]`), left of the column: every occurrence, the
+    # whole name (東京大學, not 東京), two names that meet each marked apart
+    # (上海 同文書局).
     "zh-Hant": [
         "《紅樓夢》一百二十回。前八十回出自:name[曹雪芹]之手，:name[乾隆]年間以《石頭記》之名在抄本中流傳；:name[程偉元]、:name[高鶚]蒐集整理後四十回，與前八十回合為全帙，於:name[乾隆]五十六年（一七九一）用木活字排印，世稱「程甲本」。次年（一七九二）二人再加修訂重印，即「程乙本」。後四十回的作者是誰，學界至今沒有定論。",
-        "本書以程乙本為底本，文字據維基文庫《紅樓夢（程乙本）》錄入本。原書刊行於十八世紀，屬於公有領域；錄入本的文字與標點出自維基文庫編者，按知識共享「姓名標示—相同方式分享」4.0授權（CC BY-SA 4.0）釋出，本書正文沿用同一授權。",
-        "整理時作了以下處理：錄入本中簡繁轉換留下的錯字（如「巨集」「空雲」「泥幹」）逐一改正；系與係、繫，干與乾、幹，云與雲等容易混淆的字，凡錄入本與維基文庫所收程甲本在同一處用字不同的，依程甲本改定，共二百處；段首的空格一律刪去，縮排交由版式處理。詩詞韻語依維基文庫主本的分行標記，並參照五言、七言的句式單獨排出。",
-        "本書另有英文版，採用:name[喬利]（H. Bencraft Joly）的譯本。喬利譯本於一八九二年、一八九三年分兩冊出版，只譯到第五十六回，英文版也就到此為止；文字據古騰堡計畫（Project Gutenberg）的錄入本。",
-        "每回回目前一頁的插圖採自:name[光緒]十年（一八八四）:name[上海]同文書局石印本《增評補圖石頭記》。原書每回有圖兩幅，分題回目的上下句，本書取題上句的一幅，底本為大學數字圖書館國際合作計劃（CADAL）掃描、經維基共享資源釋出的影印本；第四十六回、第五十二回兩幅取自:name[東京]大學所藏《增評補圖大觀瑣錄》。卷首繡像二十四幅出自:name[改琦]繪《紅樓夢圖詠》（:name[光緒]五年，一八七九年刊）。圖版均屬公有領域，只作了裁切和灰度處理。",
-        "本書用 Postext 排版，開本一四八×二一〇毫米（二十五開），直排右翻。正文用思源宋體（Noto Serif TC），每行三十八字，每面十五行，標點依臺灣通行的體例置於字身正中；詩詞、回目用霞鶩文楷（LXGW WenKai TC）。",
+        "本書以程乙本為底本，文字據:name[維基文庫]《紅樓夢（程乙本）》錄入本。原書刊行於十八世紀，屬於公有領域；錄入本的文字與標點出自:name[維基文庫]編者，按:name[知識共享]「姓名標示—相同方式分享」4.0授權（CC BY-SA 4.0）釋出，本書正文沿用同一授權。",
+        "整理時作了以下處理：錄入本中簡繁轉換留下的錯字（如「巨集」「空雲」「泥幹」）逐一改正；系與係、繫，干與乾、幹，云與雲等容易混淆的字，凡錄入本與:name[維基文庫]所收程甲本在同一處用字不同的，依程甲本改定，共二百處；段首的空格一律刪去，縮排交由版式處理。詩詞韻語依:name[維基文庫]主本的分行標記，並參照五言、七言的句式單獨排出。",
+        "本書另有英文版，採用:name[喬利]（H. Bencraft Joly）的譯本。:name[喬利]譯本於一八九二年、一八九三年分兩冊出版，只譯到第五十六回，英文版也就到此為止；文字據:name[古騰堡計畫]（Project Gutenberg）的錄入本。",
+        "每回回目前一頁的插圖採自:name[光緒]十年（一八八四）:name[上海]:name[同文書局]石印本《增評補圖石頭記》。原書每回有圖兩幅，分題回目的上下句，本書取題上句的一幅，底本為:name[大學數字圖書館國際合作計劃]（CADAL）掃描、經:name[維基共享資源]釋出的影印本；第四十六回、第五十二回兩幅取自:name[東京大學]所藏《增評補圖大觀瑣錄》。卷首繡像二十四幅出自:name[改琦]繪《紅樓夢圖詠》（:name[光緒]五年，一八七九年刊）。圖版均屬公有領域，只作了裁切和灰度處理。",
+        "本書用 Postext 排版，開本一四八×二一〇毫米（二十五開），直排右翻。正文用思源宋體（Noto Serif TC），每行三十八字，每面十五行，標點依:name[臺灣]通行的體例置於字身正中；詩詞、回目用霞鶩文楷（LXGW WenKai TC）。",
     ],
     "en": [
         "*Hung Lou Meng*, the Dream of the Red Chamber, is a novel in 120 chapters. Cao Xueqin wrote the first eighty, which circulated in manuscript under the title *Shitou ji*, the Story of the Stone. Cheng Weiyuan and Gao E collected and edited the last forty and printed all 120 chapters with movable type in 1791; the next year they printed a revised text, known as the Cheng B edition (*Cheng yi ben*). Who wrote the last forty chapters is still debated.",

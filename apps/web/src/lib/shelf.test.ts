@@ -17,4 +17,13 @@ describe("the showcase shelf", () => {
     expect(last.binding).toBe("right");
     expect(last.openLocale).toBe("zh-Hant");
   });
+
+  it("describes 紅樓夢 by its vertical, right-bound edition", () => {
+    const entry = (presetIndex as { presets: { id: string; description: string; tags: string[] }[] }).presets.find((p) => p.id === "hongloumeng")!;
+    expect(entry.tags).toEqual(expect.arrayContaining(["vertical", "right-bound"]));
+    expect(entry.tags).not.toContain("single-column");
+    const [es, en] = entry.description.split(" · ");
+    expect(es).toContain("compuesto en vertical y con el lomo a la derecha");
+    expect(en).toContain("set vertically and bound on the right");
+  });
 });

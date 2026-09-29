@@ -1,8 +1,9 @@
 /* The 紅樓夢 showcase bundle (apps/web/public/presets/hongloumeng) as the
    Sandbox opens it: the Checks panel has nothing to say about its design. */
 import { describe, expect, it } from 'vitest';
-import { parseMarkdown, type PostextConfig } from 'postext';
+import { dimensionToPx, parseMarkdown, type Dimension, type PostextConfig } from 'postext';
 import { computeWarnings } from '../warnings/compute';
+import { buildHtmlConfigOverride } from '../viewport/HtmlPreview/configOverride';
 import { hasLatinEmphasis, missingUsedVariants } from '../controls/fontLoader';
 import { fontsToCustomFonts } from './manifest';
 import type { PresetFontFamilySpec } from './types';
@@ -55,6 +56,26 @@ describe('hongloumeng in the Sandbox', () => {
       }
     }
   }, 60_000);
+
+  it('keeps the vertical cover whole in the HTML view: four stitches on the cloth, the thread from the first to the last', () => {
+    // Pages of the paged view 844 px wide and 812 tall, and 473 wide and
+    // 1012 tall: the leaf's 210 mm run down the page.
+    for (const [pageWidthPx, viewportHeightPx] of [[844, 860], [473, 1060]] as const) {
+      const out = buildHtmlConfigOverride(configOf('zh-Hant'), { fontScale: 1, columnMode: 'multi', pageWidthPx, layoutType: 'single', viewportHeightPx, locale: 'en', optimalLineBreaking: false });
+      const els = out.headingStyles!.find((s) => s.id === 'cover')!.advancedDesign!.slot.elements;
+      const px = (d: unknown) => dimensionToPx(d as Dimension, 144);
+      const at = (id: string) => els.find((e) => e.id === id)!.placement;
+      const cloth = px(at('cloth').size!.width);
+      const holes = [0, 1, 2, 3].map((i) => px(at(`stitch-${i}`).offset!.x));
+      expect(holes[3]!, `${pageWidthPx}`).toBeLessThan(cloth);
+      expect(holes[3]! - holes[2]!).toBeCloseTo(holes[1]! - holes[0]!, 3);
+      const thread = at('stitch-line');
+      expect(px(thread.offset!.x)).toBeCloseTo(holes[0]!, 3);
+      expect(px(thread.offset!.x) + px(thread.size!.width)).toBeCloseTo(holes[3]!, 3);
+      // The cloth keeps the leaf's shape, 210 by 148.
+      expect(cloth / px(at('cloth').size!.height)).toBeCloseTo(210 / 148, 3);
+    }
+  });
 
   it('ships every variant the English design asks of EB Garamond', () => {
     const { families } = fontsToCustomFonts('hongloumeng', manifest.fonts);
