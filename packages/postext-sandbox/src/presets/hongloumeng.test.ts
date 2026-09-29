@@ -1,16 +1,21 @@
 /* The 紅樓夢 showcase bundle (apps/web/public/presets/hongloumeng) as the
    Sandbox opens it: the Checks panel has nothing to say about its design. */
 import { describe, expect, it } from 'vitest';
-import type { PostextConfig } from 'postext';
+import { parseMarkdown, type PostextConfig } from 'postext';
 import { computeWarnings } from '../warnings/compute';
-import { missingUsedVariants } from '../controls/fontLoader';
+import { hasLatinEmphasis, missingUsedVariants } from '../controls/fontLoader';
 import { fontsToCustomFonts } from './manifest';
 import type { PresetFontFamilySpec } from './types';
 
 // Loaded through a dynamic import (the package has no Node typings).
-const manifest = ((await import(/* @vite-ignore */ new URL('../../../../apps/web/public/presets/hongloumeng/preset.json', import.meta.url).href)) as {
-  default: { config: PostextConfig; localized: Record<string, { config?: PostextConfig }>; fonts: PresetFontFamilySpec[] };
+const BUNDLE = '../../../../apps/web/public/presets/hongloumeng/';
+const manifest = ((await import(/* @vite-ignore */ new URL(`${BUNDLE}preset.json`, import.meta.url).href)) as {
+  default: { config: PostextConfig; localized: Record<string, { config?: PostextConfig }>; fonts: PresetFontFamilySpec[]; chapters: Record<string, { file: string }[]> };
 }).default;
+
+/** The text of every chapter file of an edition. */
+const chaptersOf = (lang: string): Promise<string[]> => Promise.all(manifest.chapters[lang]!.map(async ({ file }) =>
+  ((await import(/* @vite-ignore */ `${new URL(`${BUNDLE}${file}`, import.meta.url).href}?raw`)) as { default: string }).default));
 
 /** An edition's config: its top-level keys replace the base ones. */
 const configOf = (lang: string): PostextConfig => ({ ...manifest.config, ...(manifest.localized[lang]?.config ?? {}) });
@@ -34,16 +39,22 @@ describe('hongloumeng in the Sandbox', () => {
     }
   });
 
-  it('ships every variant the Chinese designs ask of their faces', () => {
-    // The body family is asked for no italics where `*…*` sets dots.
+  it('ships every variant the Chinese designs ask of their faces', async () => {
+    // The body family is asked for no italics where `*…*` sets dots and
+    // holds no Latin: the Chinese editions emphasise none.
     const { families } = fontsToCustomFonts('hongloumeng', manifest.fonts);
     for (const [lang, names] of [['zh-Hant', ['Noto Serif TC', 'LXGW WenKai TC', 'Noto Sans TC']], ['zh-Hans', ['Noto Serif SC', 'LXGW WenKai', 'Noto Sans SC']]] as const) {
+      const chapters = await chaptersOf(lang);
+      expect(chapters.length).toBeGreaterThan(120);
+      // Emphasis needs a `*` or a `_`: only the files holding one are parsed.
+      const latinEmphasis = chapters.some((md) => /[*_]/.test(md) && hasLatinEmphasis(parseMarkdown(md)));
+      expect(latinEmphasis, lang).toBe(false);
       for (const name of names) {
         const family = families.find((f) => f.name === name)!;
-        expect(missingUsedVariants(family, configOf(lang)), `${lang} ${name}`).toEqual([]);
+        expect(missingUsedVariants(family, configOf(lang), { latinEmphasis }), `${lang} ${name}`).toEqual([]);
       }
     }
-  });
+  }, 60_000);
 
   it('ships every variant the English design asks of EB Garamond', () => {
     const { families } = fontsToCustomFonts('hongloumeng', manifest.fonts);

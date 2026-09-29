@@ -1,11 +1,12 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import type { CustomFontFamily, DesignTextElement } from 'postext';
-import { DEFAULT_FOOTER_SLOT, DEFAULT_HEADER_SLOT, DEFAULT_TEXT_ELEMENT } from 'postext';
+import { DEFAULT_FOOTER_SLOT, DEFAULT_HEADER_SLOT, DEFAULT_TEXT_ELEMENT, parseMarkdown } from 'postext';
 import {
   customFontsSignature,
   getConfigFontFamilies,
   setCustomFonts,
   collectFontUsage,
+  hasLatinEmphasis,
   missingUsedVariants,
 } from './fontLoader';
 
@@ -186,16 +187,38 @@ describe('collectFontUsage / missingUsedVariants', () => {
     expect(missingUsedVariants(family('Unused', []), config)).toEqual([]);
   });
 
-  it('asks no italics of the body family where emphasis is set as dots', () => {
-    const body = (extra: object) => collectFontUsage({ bodyText: { fontFamily: 'Noto Serif TC' }, ...extra } as unknown as import('postext').PostextConfig).get('Noto Serif TC');
-    const italics = (extra: object) => body(extra)!.filter((v) => v.style === 'italic');
-    // A Chinese document: `*…*` sets dots under Chinese text. Bold is asked.
-    expect(italics({ locale: 'zh-Hant' })).toEqual([]);
-    expect(body({ locale: 'zh-Hant' })).toContainEqual({ weight: 700, style: 'normal' });
-    expect(italics({ locale: 'en', cjk: { emphasis: 'dots' } })).toEqual([]);
+  it('asks no italics of the body family where emphasis is set as dots and no Latin is emphasised', () => {
+    const none = { latinEmphasis: false };
+    const body = (extra: object, doc?: { latinEmphasis?: boolean }) => collectFontUsage({ bodyText: { fontFamily: 'Noto Serif TC' }, ...extra } as unknown as import('postext').PostextConfig, doc).get('Noto Serif TC');
+    const italics = (extra: object, doc?: { latinEmphasis?: boolean }) => body(extra, doc)!.filter((v) => v.style === 'italic');
+    // A Chinese document whose `*…*` holds Chinese text only: dots. Bold is asked.
+    expect(italics({ locale: 'zh-Hant' }, none)).toEqual([]);
+    expect(body({ locale: 'zh-Hant' }, none)).toContainEqual({ weight: 700, style: 'normal' });
+    expect(italics({ locale: 'en', cjk: { emphasis: 'dots' } }, none)).toEqual([]);
+    // Latin in `*…*` keeps its italics, and a text not known may hold some.
+    expect(italics({ locale: 'zh-Hant' }, { latinEmphasis: true })).toHaveLength(2);
+    expect(italics({ locale: 'zh-Hant' })).toHaveLength(2);
     // Italic emphasis asks for both italics, as in any other document.
-    expect(italics({ locale: 'zh-Hans', cjk: { emphasis: 'italic' } })).toHaveLength(2);
-    expect(italics({ locale: 'en' })).toHaveLength(2);
+    expect(italics({ locale: 'zh-Hans', cjk: { emphasis: 'italic' } }, none)).toHaveLength(2);
+    expect(italics({ locale: 'en' }, none)).toHaveLength(2);
+  });
+
+  it('reports the missing italics of a Latin body face that emphasises Latin in a Chinese document', () => {
+    // `*…*` sets dots under 强调 and keeps *emphasis* italic, in EB Garamond.
+    const config = { locale: 'zh-Hant', bodyText: { fontFamily: '"EB Garamond", "Noto Serif TC"' } } as unknown as import('postext').PostextConfig;
+    const garamond = family('EB Garamond', [[400, 'normal'], [700, 'normal']]);
+    const latin = hasLatinEmphasis(parseMarkdown('這是*强调*與 *emphasis* 之別'));
+    expect(latin).toBe(true);
+    expect(missingUsedVariants(garamond, config, { latinEmphasis: latin })).toEqual([
+      { weight: 400, style: 'italic' },
+      { weight: 700, style: 'italic' },
+    ]);
+    expect(missingUsedVariants(garamond, config)).toHaveLength(2);
+    // Chinese text alone in emphasis, a Latin word outside it, a heading's
+    // own italics, a formula: none of them asks the body face for italics.
+    const chinese = hasLatinEmphasis(parseMarkdown('# *Title* 題\n\n這是*强调*，*「紅樓夢」*與 emphasis 之別 *$x$*'));
+    expect(chinese).toBe(false);
+    expect(missingUsedVariants(garamond, config, { latinEmphasis: chinese })).toEqual([]);
   });
 
   it('asks bold and the other slant of a design text set with inline marks', () => {
