@@ -1,6 +1,7 @@
 import {
   CustomBlending,
   DoubleSide,
+  Group,
   HalfFloatType,
   LinearMipmapLinearFilter,
   LinearSRGBColorSpace,
@@ -121,7 +122,8 @@ const SHADOW = /* glsl */ `
 // colour management) so a page at rest matches the <img> pixel for pixel,
 // spine gradient included (the CSS one, blended the way CSS blends it).
 // Lighting never brightens: a page facing the reader is as the <img> is,
-// turned from the light it darkens.
+// turned from the light it darkens. On a mirrored stage (a right-bound
+// book) the images are read back the right way round.
 const FRAGMENT = /* glsl */ `
   uniform sampler2D uFront;
   uniform sampler2D uBack;
@@ -131,6 +133,7 @@ const FRAGMENT = /* glsl */ `
   uniform vec3 uPaper;
   uniform float uBlank;
   uniform float uLit;
+  uniform float uMirror;
   varying vec2 vUv;
   varying vec3 vNormal;
   varying vec3 vPos;
@@ -150,7 +153,8 @@ const FRAGMENT = /* glsl */ `
     if (has < 0.5 || has > 1.5) {
       col = uPaper;
     } else {
-      col = front ? texture2D(uFront, vUv).rgb : texture2D(uBack, vec2(1.0 - vUv.x, vUv.y)).rgb;
+      float u = uMirror > 0.5 ? 1.0 - vUv.x : vUv.x;
+      col = front ? texture2D(uFront, vec2(u, vUv.y)).rgb : texture2D(uBack, vec2(1.0 - u, vUv.y)).rgb;
     }
     // uv.x is the distance from the spine on both faces.
     col *= 1.0 - (front ? spine(vUv.x, 0.18, 0.05) : spine(vUv.x, 0.16, 0.04));
@@ -233,7 +237,7 @@ const shadowUniforms = {
 /** The book's paper, for its blank pages (shared too). */
 const paperUniform = { uPaper: { value: new Vector3(1, 1, 1) } };
 
-function material(lit: boolean) {
+function material(lit: boolean, mirror: boolean) {
   return new ShaderMaterial({
     vertexShader: VERTEX,
     fragmentShader: FRAGMENT,
@@ -245,6 +249,7 @@ function material(lit: boolean) {
       uHasBack: { value: 0 },
       uBlank: { value: lit ? 1 : 0 },
       uLit: { value: lit ? 1 : 0 },
+      uMirror: { value: mirror ? 1 : 0 },
       ...shadowUniforms,
       ...paperUniform,
     },
@@ -377,6 +382,12 @@ interface Airborne {
  * it at a short remove, so several pages can be in the air at once. At
  * rest the canvas is transparent and the <img> pages show; while leaves
  * move it draws the spread, lit, with the lifted leaves' shadows.
+ *
+ * The book is modelled bound on the left. A right-bound one is the same
+ * book seen in a mirror (the DOM spread's `dir="rtl"`): the stage is
+ * mirrored, so the verso lies on the right and the leaves turn from left
+ * to right, while the page images, the pointer and the light are mirrored
+ * back to read as they are on the desk.
  */
 export class PageFlipper {
   private renderer: WebGLRenderer;
@@ -385,6 +396,13 @@ export class PageFlipper {
   private left: PageMesh;
   private right: PageMesh;
   private desk: PageMesh;
+  /** Everything on the desk, in the book's own coordinates (mirrored for a
+   *  right-bound book). */
+  private stage = new Group();
+  /** 1 for a left-bound book, −1 for a right-bound one. */
+  private sign: 1 | -1;
+  /** Towards the light, in the book's coordinates. */
+  private light: Vector3;
   private shadowScene = new Scene();
   private shadowCamera = new OrthographicCamera(-1, 1, 1, -1, 1, 1000);
   private shadowTarget: WebGLRenderTarget | null = null;
@@ -425,12 +443,18 @@ export class PageFlipper {
     private onSettle: (index: number) => void,
     /** The reader's hand turned the book to another spread. */
     private onTarget: (index: number) => void,
+    /** The edge the book is bound on. */
+    binding: "left" | "right" = "left",
   ) {
+    this.sign = binding === "right" ? -1 : 1;
+    this.light = new Vector3(this.sign * LIGHT.x, LIGHT.y, LIGHT.z);
+    this.casterMaterial.uniforms.uLd.value = this.light;
+    const mirror = this.sign < 0;
     this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true, premultipliedAlpha: true });
     this.renderer.outputColorSpace = LinearSRGBColorSpace;
     this.renderer.setClearColor(0x000000, 0);
-    this.left = new Mesh(new PlaneGeometry(1, 1, 1, 1), material(false));
-    this.right = new Mesh(new PlaneGeometry(1, 1, 1, 1), material(false));
+    this.left = new Mesh(new PlaneGeometry(1, 1, 1, 1), material(false, mirror));
+    this.right = new Mesh(new PlaneGeometry(1, 1, 1, 1), material(false, mirror));
     this.desk = new Mesh(
       new PlaneGeometry(1, 1),
       new ShaderMaterial({
@@ -459,7 +483,11 @@ export class PageFlipper {
         generateMipmaps: false,
       });
     }
-    this.scene.add(this.desk, this.left, this.right);
+    // A mirror turns three.js's face culling round with it (the front of a
+    // page stays its front).
+    this.stage.scale.x = this.sign;
+    this.stage.add(this.desk, this.left, this.right);
+    this.scene.add(this.stage);
     this.target = at;
     this.reported = at;
     this.turned = Array.from({ length: Math.max(0, book.length - 1) }, (_, k) => k < at);
@@ -561,7 +589,7 @@ export class PageFlipper {
   private leaf(k: number): PageMesh {
     let mesh = this.leaves.get(k);
     if (!mesh) {
-      mesh = new Mesh(new PlaneGeometry(1, 1, NX, NY), material(true));
+      mesh = new Mesh(new PlaneGeometry(1, 1, NX, NY), material(true, this.sign < 0));
       const caster = new Mesh(mesh.geometry, this.casterMaterial);
       caster.frustumCulled = false;
       this.shadowScene.add(caster);
@@ -671,10 +699,11 @@ export class PageFlipper {
 
   // ── The reader's hand ──
 
-  /** The pointer on the z = 0 plane, in world units. */
+  /** The pointer on the z = 0 plane, in the book's coordinates (x
+   *  mirrored for a right-bound book). */
   private toWorld(event: { clientX: number; clientY: number }) {
     const rect = this.canvas.getBoundingClientRect();
-    return { x: event.clientX - (rect.left + rect.width / 2), y: -(event.clientY - (rect.top + rect.height / 2)) };
+    return { x: this.sign * (event.clientX - (rect.left + rect.width / 2)), y: -(event.clientY - (rect.top + rect.height / 2)) };
   }
 
   /** Takes hold of the page under the pointer; false when there is none
@@ -752,7 +781,7 @@ export class PageFlipper {
       const side = forward ? q : 1 - q;
       layLeaf(mesh.geometry, fold, forward, W, H, 0.6 + 0.8 * ((1 - side) * (air.length - 1 - i) + side * i));
       mesh.visible = (mesh.userData.caster as Mesh).visible = true;
-      if (!mesh.parent) this.scene.add(mesh);
+      if (!mesh.parent) this.stage.add(mesh);
     });
 
     // The pages lying flat: the top leaf of each stack.
@@ -767,6 +796,7 @@ export class PageFlipper {
     this.desk.material.uniforms.uPages.value.set(Number(leftSrc !== null), Number(rightSrc !== null));
 
     // The height map the shadows are read from.
+    shadowUniforms.uLd.value = this.light;
     shadowUniforms.uShadowOn.value = this.shadowTarget && air.length ? 1 : 0;
     if (this.shadowTarget && air.length) {
       this.renderer.setRenderTarget(this.shadowTarget);

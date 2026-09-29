@@ -11,7 +11,7 @@ import type { PageFlipper, SpreadSrc } from "./pageFlip";
 
 const PAGE_HASH = /^#page-(\d+)$/;
 /** A press on a page that moves less than this (px) is a click: it turns
- *  the page (the right one forward, the left one back). */
+ *  the page (the recto forward, the verso back). */
 const CLICK_SLOP = 6;
 
 /** The captured pages on a night desk, as the book shows them: spreads by
@@ -115,7 +115,7 @@ export function LightTable({
       const book = spreads.map((pair) => pair.map((i, slot) => (i !== null ? pages[i].src : isBlank(pair, slot) ? "" : null)) as SpreadSrc);
       flipper.current = import("./pageFlip").then(({ PageFlipper, canFlip }) =>
         canvas.current && spreadEl.current && canFlip()
-          ? new PageFlipper(canvas.current, spreadEl.current, book, shownRef.current, setShown, setCurrent)
+          ? new PageFlipper(canvas.current, spreadEl.current, book, shownRef.current, setShown, setCurrent, binding)
           : null,
       ).then((f) => {
         hand.current = f;
@@ -124,7 +124,7 @@ export function LightTable({
       });
     }
     return flipper.current;
-  }, [isBlank, pages, spreads]);
+  }, [binding, isBlank, pages, spreads]);
   useEffect(() => {
     if (paper && byHand) hand.current?.setPaper(paper[0] / 255, paper[1] / 255, paper[2] / 255);
   }, [paper, byHand]);
@@ -375,9 +375,11 @@ export function LightTable({
               }
               press.current = null;
               if (click && (event.target as Element).closest(".cb-lt-page:not(.is-empty)")) {
-                // Pages already in the air: the click joins them.
+                // Pages already in the air: the click joins them (the
+                // recto turns forward: the right page, or the left one of
+                // a right-bound book).
                 const rect = event.currentTarget.getBoundingClientRect();
-                go(event.clientX > rect.left + rect.width / 2 ? 1 : -1);
+                go((event.clientX > rect.left + rect.width / 2) !== rtl ? 1 : -1);
                 event.stopPropagation();
               }
             }}
