@@ -44,7 +44,7 @@ const SIDE = (W - LINES * LEAD * PT) / 2; // mm: the side margins of a vertical 
 // #region answer: marks by the markup, their side by the writing mode
 // :name[項梁] draws the proper-name line, :book[史記] the book-title mark, :dots[…] dots.
 const cjk = {
-  bookTitleMark: 'wavy', // Taiwan's default; on the mainland, classics set with name lines
+  bookTitleMark: 'wavy', // zh-Hant's default; mainland editions of the classics use it too
   annotationColor: col('mark'), // unset, the marks print in the colour of the text
   grid: { enabled: true, charsPerLine: CHARS, linesPerPage: LINES },
 };
@@ -79,12 +79,12 @@ const opener = {
         size: { width: mm(H - FOOT), height: mm(BAND) } } },
     { kind: 'text', id: 'kicker', content: '{attr.kicker}', ...onBand, fontFamily: HEI,
       fontWeight: 700, fontSize: pt(8), letterSpacing: pt(1.6), color: col('tint'),
-      placement: { anchor: { to: 'container', edge: 'top-left' }, offset: { y: mm(7 - SIDE) } } },
+      placement: { anchor: { to: 'container', edge: 'top-left' }, offset: { y: mm(6 - SIDE) } } },
     { kind: 'text', id: 'title', content: '{titleText}', ...onBand, fontFamily: SONG,
-      fontWeight: 700, fontSize: pt(32), lineHeight: 1, letterSpacing: pt(3),
-      color: col('paper'), placement: next('kicker', 2.5) },
+      fontWeight: 700, fontSize: pt(46), lineHeight: 1, letterSpacing: pt(3),
+      color: col('paper'), placement: next('kicker', 2) },
     { kind: 'text', id: 'byline', content: '{attr.byline}', ...onBand, fontFamily: KAI,
-      fontSize: pt(10), color: col('tint'), placement: next('title', 2.5) },
+      fontSize: pt(10), color: col('tint'), placement: next('title', 2) },
   ] },
 };
 // #endregion
@@ -128,13 +128,16 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
       // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
       { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
         advancedDesign: opener, marginBottom: pt(0) },
+      // No space above: 題解 sits on the fifth line, where the other pages' text starts;
+      // a :::space line sets 凡例 apart from the headnote.
       { level: 2, fontSize: pt(SIZE), lineHeight: pt(LEAD), letterSpacing: pt(2),
-        marginTop: pt(LEAD), marginBottom: pt(0) },
+        marginTop: pt(0), marginBottom: pt(0) },
     ],
   },
   headingStyles: [front, across],
+  // No gap after 一、: the text starts two ems in, on the grid, like a paragraph's.
   orderedLists: { numberFormat: 'trad-chinese-informal', separator: '、', fontFamily: KAI,
-    fontWeight: 400, color: col('ink'), marginTop: pt(0), marginBottom: pt(0) },
+    fontWeight: 400, color: col('ink'), gap: em(0), marginTop: pt(0), marginBottom: pt(0) },
   paragraphStyles: [
     { id: 'colophon', fontFamily: HEI, fontSize: pt(7), lineHeight: pt(10), color: col('muted'),
       textAlign: 'left', firstLineIndent: pt(0), marginTop: pt(LEAD) },

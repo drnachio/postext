@@ -3,7 +3,7 @@ title: "Proper-name and book-title marks, down and across"
 summary: "The Basic Annals of Xiang Yu with :name and :book marks, set down a right-bound page and then across one: the lines stand left of the names, then under them."
 description: "Proper-name lines and wavy book-title lines in a classical Chinese text, set vertically and horizontally from one Markdown source with Postext."
 aliases: ["proper-name mark", "proper noun line", "book-title mark", "wavy underline", "專名號", "私名號", "書名號", "全式標點", "classical Chinese", "Shiji", "Xiang Yu", "specimen pages", "樣張"]
-pageNotes: { "1": "Page 1, set vertically: an indigo band down the right edge with 史記選讀 in large white characters, then the headnote and five numbered conventions in the Kai face, with red straight lines left of the names, red wavy lines left of the titles and three red dots right of 萬人敵.", "2": "Page 2, set vertically: the band with 項羽本紀 and the byline, then the passage in eleven columns read from the right, a red line left of every name.", "3": "Page 3, set horizontally: the band across the head with 項羽本紀, then the same passage in lines of 28 characters, every name underlined in red, and the colophon in small grey type." }
+pageNotes: { "1": "Page 1, set vertically: an indigo band down the right edge with 史記選讀 in large white characters, then the headnote and five numbered conventions in the Kai face, with red straight lines left of the names, red wavy lines left of the titles and three red dots right of 萬人敵.", "2": "Page 2, set vertically: the band with 項羽本紀 and the byline, then the passage in nine columns read from the right, a red line left of every name.", "3": "Page 3, set horizontally: the band across the head with 項羽本紀, then the same passage in lines of 28 characters, every name underlined in red, and the colophon in small grey type." }
 ---
 
 ## What you'll build
@@ -47,7 +47,7 @@ A classical edition prints its marks in the ink of the text. A reader for studen
 Mainland books outside the classics set titles in brackets: the Markdown stays as it is, and the brackets print as punctuation of the text.
 
 ```diff
--  bookTitleMark: 'wavy', // Taiwan's default; on the mainland, classics set with name lines
+-  bookTitleMark: 'wavy', // zh-Hant's default; mainland editions of the classics use it too
 +  bookTitleMark: 'brackets', // 《史記》《項羽本紀》
 ```
 
@@ -62,4 +62,4 @@ Leave `annotationColor` unset and each mark takes the colour of the block it mar
 ## Pitfalls
 
 - A heading drawn by a design prints its title through the design, and design text drops the marks: `# :book[項羽本紀]` would show no wavy line in the band. Running heads, captions and table cells print their text without marks too.
-- The capture of a recipe does not fail on `cjkMarksExceedLeading`: the build puts it in `doc.contentWarnings`, which the Sandbox’s Checks panel lists. When you change the leading, read that list; at 15 pt it holds every marked paragraph of these pages.
+- Postext does not stop on `cjkMarksExceedLeading`: the build lists it in `doc.contentWarnings` and the Sandbox’s Checks panel shows it, but the pages print anyway, with the marks crowding the next line. When you change the leading, read that list; at 15 pt it holds every marked paragraph of these pages.

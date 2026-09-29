@@ -1,9 +1,9 @@
 ---
 title: "Marcas de nombre y de título, en vertical y en horizontal"
-summary: "Los Anales básicos de Xiang Yu con marcas :name y :book, en vertical y en horizontal: la línea pasa de la izquierda de cada nombre a su pie."
+summary: "Los Anales básicos de Xiang Yu con marcas :name y :book, en vertical y en horizontal: las líneas van a la izquierda de los nombres y luego debajo de ellos."
 description: "Líneas de nombre propio y líneas onduladas de título en un texto chino clásico, compuesto en vertical y en horizontal desde un mismo Markdown con Postext."
 aliases: ["marca de nombre propio", "línea de nombre propio", "marca de título", "subrayado ondulado", "專名號", "私名號", "書名號", "全式標點", "chino clásico", "Shiji", "Xiang Yu", "páginas de muestra", "樣張"]
-pageNotes: { "1": "Página 1, en vertical: una banda añil baja por el borde derecho con 史記選讀 en caracteres blancos grandes; después, la presentación y cinco normas numeradas en letra Kai, con líneas rectas rojas a la izquierda de los nombres, líneas onduladas rojas a la izquierda de los títulos y tres puntos rojos a la derecha de 萬人敵.", "2": "Página 2, en vertical: la banda con 項羽本紀 y el autor; después, el pasaje en once columnas que se leen desde la derecha, con una línea roja a la izquierda de cada nombre.", "3": "Página 3, en horizontal: la banda cruza la cabeza de la página con 項羽本紀; después, el mismo pasaje en líneas de 28 caracteres, cada nombre subrayado en rojo, y el colofón en letra gris pequeña." }
+pageNotes: { "1": "Página 1, en vertical: una banda añil baja por el borde derecho con 史記選讀 en caracteres blancos grandes; después, la presentación y cinco normas numeradas en letra Kai, con líneas rectas rojas a la izquierda de los nombres, líneas onduladas rojas a la izquierda de los títulos y tres puntos rojos a la derecha de 萬人敵.", "2": "Página 2, en vertical: la banda con 項羽本紀 y el autor; después, el pasaje en nueve columnas que se leen desde la derecha, con una línea roja a la izquierda de cada nombre.", "3": "Página 3, en horizontal: la banda cruza la cabeza de la página con 項羽本紀; después, el mismo pasaje en líneas de 28 caracteres, cada nombre subrayado en rojo, y el colofón en letra gris pequeña." }
 ---
 
 ## Lo que vas a componer
@@ -47,7 +47,7 @@ Una edición de clásicos imprime las marcas con la tinta del texto. Una antolog
 Los libros de China continental que no son de clásicos ponen los títulos entre corchetes angulares: el Markdown no cambia y los corchetes se imprimen como puntuación del texto.
 
 ```diff
--  bookTitleMark: 'wavy', // Taiwan's default; on the mainland, classics set with name lines
+-  bookTitleMark: 'wavy', // zh-Hant's default; mainland editions of the classics use it too
 +  bookTitleMark: 'brackets', // 《史記》《項羽本紀》
 ```
 
@@ -62,4 +62,4 @@ Sin `annotationColor`, cada marca toma el color del bloque que marca.
 ## Errores frecuentes
 
 - Un título que dibuja un diseño imprime su texto a través del diseño, y el texto de diseño pierde las marcas: `# :book[項羽本紀]` no mostraría ninguna línea ondulada en la banda. Las cabeceras, los pies de figura y las celdas de tabla también imprimen su texto sin marcas.
-- La captura de una receta no falla por `cjkMarksExceedLeading`: la composición lo deja en `doc.contentWarnings`, que el panel Revisión del Sandbox muestra. Si cambias el interlineado, revisa esa lista; con 15 pt recoge todos los párrafos marcados de estas páginas.
+- Postext no se detiene por `cjkMarksExceedLeading`: la composición lo anota en `doc.contentWarnings` y el panel Revisión del Sandbox lo muestra, pero las páginas se imprimen igual, con las marcas pegadas a la línea vecina. Si cambias el interlineado, revisa esa lista; con 15 pt recoge todos los párrafos marcados de estas páginas.
