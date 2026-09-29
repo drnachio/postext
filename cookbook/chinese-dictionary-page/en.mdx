@@ -1,0 +1,64 @@
+---
+title: "A Chinese dictionary page with guide words"
+summary: "Four pages of a Kangxi Dictionary reader in pinyin order: {firstMark.h2} and {lastMark.h2} print each page’s first and last headword in its running head."
+description: "A two-column Chinese dictionary in Postext: headwords with pinyin over them, run-in senses numbered ① ②, and guide words in the running head, with the code."
+question: "How do I print the first and last headword of each page in a Chinese dictionary’s running head?"
+aliases: ["dictionary", "Chinese dictionary", "字典", "康熙字典", "Kangxi Dictionary", "guide words", "catchwords", "书眉", "書眉", "headwords", "pinyin order", "pinyin over headwords", "反切", "fanqie", "circled numbers", "sense numbers", "thumb tab"]
+pageNotes: { "1": "Page 634, a verso. The head reads 634 and 天—忝, over a hairline. Two columns of entries from 天 tiān to 忝 tiǎn: each headword in red Song Black with its pinyin above it, then the rhyme-book readings and the senses run in, numbered ① ② in red. A red tab with a T on the left edge.", "2": "Page 635, a recto: 殄—調 and the folio at the top right, the entries from 殄 tiǎn to 調 tiáo, the T tab on the right edge.", "3": "Page 636: the page opens with the end of the entry 調, and the head reads 髫—鐵, the first and last headwords that start on it; 挑 appears a second time under its reading tiǎo.", "4": "Page 637: 餮—庭, the entries from 餮 tiè to 庭 tíng, and a three-line colophon in the second column." }
+---
+
+## What you'll build
+
+Four pages from the middle of a reader’s edition of the Kangxi Dictionary (康熙字典, 1716), rearranged in pinyin order from 天 tiān to 庭 tíng. Each headword stands in red Song Black with its pinyin over it; the rhyme-book readings (反切) and the senses follow in one paragraph, the senses numbered ① ② in the same red. The page is 大32开, 140 × 203 mm, two columns of 17 characters of 小五 (9 pt) on a grid of 31 lines. At the outer corner of every page the running head names the first and the last headword on it, so a reader looking for 蜩 turns to the page headed 殄—調. <RecipeLink slug="dictionary-thumb-index">The Sailor’s Word-Book</RecipeLink> is the Latin-script dictionary to compare it with.
+
+## Method
+
+### 1 · Guide words from the headwords
+
+The code is [the short answer](#the-short-answer) above. Every headword is a level-2 heading, and `{firstMark.h2}` and `{lastMark.h2}` print the text of the first and the last level-2 heading that starts on the page ([Text elements](/en/docs/configuration#text-elements)). The mark is the heading’s characters: `## {天|tiān}` marks 天, and the reading stays over the headword. An entry that runs on from one page to the next counts only where its headword stands: <PageRef page={3}>page 636</PageRef> opens with the end of 調 and is headed 髫—鐵. Level 1 is kept for the letters: none opens in these four pages, but a letter head would not count as a guide word.
+
+### 2 · Pinyin over the headwords
+
+<Excerpt region="headwords" />
+
+`{天|tiān}` is the compact form of `:ruby[天]{rt="tiān"}`, one reading over one character ([Chinese marks, ruby and warichu](/en/docs/document-format#chinese-marks-ruby-and-warichu)). A heading with no design of its own sets its reading; a heading design would print 天 alone. The reading takes the heading’s own face, Black, unless `cjk.ruby.fontFamily` names one, so the regular Song is named. Half of 15 pt is 7.5 pt, and the heading’s 30 pt line leaves room for it over the headword, so the heading is two lines of the grid and the text under it stays on the 15 pt lines of both columns.
+
+### 3 · One paragraph to an entry
+
+<Excerpt region="senses" />
+
+The Kangxi Dictionary runs an entry together: the readings of the rhyme books, then each sense introduced by 又. Here the 又 became circled numbers, typed as `**②**`, and `boldColor` prints them in the cinnabar of the headwords; there is no other bold in the text. One paragraph to an entry lets a long entry break between columns, as <PageRef page={3}>page 636</PageRef> shows with 調, and the heading’s `keepWithNext` keeps a headword from ending a column without its text. The composer sets ① to ⑳ as Latin letters, so `cjk.latinSpacing` is 0 to keep a quarter em from opening after each number.
+
+### 4 · The tab of the letter T
+
+<Excerpt region="tab" />
+
+Pinyin syllables start with 23 of the 26 letters (none with I, U or V), so the type area’s height is cut into 23 steps of 7.13 mm, and T takes the 19th. The tab runs 3 mm past the trim into the bleed, and its letter is centred on the 6 mm inside it. All four pages are in T, so the tab stays at the same height; <RecipeLink slug="dictionary-thumb-index">the Sailor’s Word-Book</RecipeLink> moves it down the edge from one letter to the next.
+
+### 5 · Each face loads its own characters
+
+<Excerpt region="voices" />
+
+Fontsource cuts each Chinese face into about a hundred files by character range, and `loadCjkFonts` loads the files that hold the text it is given. The regular Song gets the whole sample. The Black gets the thirty headwords, the bold weight the sense numbers, the Hei the headwords and the digits of the running heads, and the Kai only the colophon. `cjkPdfProvider` embeds the same files in the PDF, each cut down to the characters its pages use.
+
+## Variations
+
+### First headword on the verso, last on the recto
+
+Some dictionaries print one guide word to a page, the first at the top of the verso and the last at the top of the recto, so the spread reads 天 … 調.
+
+```diff
+-  head('verso-guide', '{firstMark.h2}—{lastMark.h2}', 'even', SIDE + 8, GUIDE),
+-  head('recto-guide', '{firstMark.h2}—{lastMark.h2}', 'odd', SIDE + 8, GUIDE),
++  head('verso-guide', '{firstMark.h2}', 'even', SIDE + 8, GUIDE),
++  head('recto-guide', '{lastMark.h2}', 'odd', SIDE + 8, GUIDE),
+```
+
+### Headwords at text size
+
+A compact dictionary sets the headword in bold at the start of its paragraph. Put the entries in `:::paragraphs{style="entry"}`, open each with `**{天|tiān}**` and print `{firstMark.entry}`: a paragraph that opens with a bold run marks the page with it.
+
+## Pitfalls
+
+- The composer does not keep a paragraph from ending on a line of one character (孤字, as 添。 alone under the rest of its entry); it only avoids one when column balancing asks a paragraph for an extra line. Six entries of the sample were cut by a few characters, had two senses swapped or took one more citation from the Kangxi text, until no entry ended that way and no sense number was left at the end of a line.
+- A column that cannot take the next headword with a line of its text under it ends early, and column balancing gives the lines left over to the headwords above, one line each at most (`balancing.maxLinesPerHeading: 1`). On <PageRef page={1}>page 634</PageRef> the second column has three such lines, above 填, 闐 and 忝.

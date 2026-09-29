@@ -1,0 +1,145 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 86,
+  "status": "draft",
+  "chapter": "running-heads",
+  "order": 25,
+  "level": 2,
+  "genres": [
+    "manual"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "guide-words",
+      "ruby"
+    ],
+    "also": [
+      "character-grid",
+      "column-layouts",
+      "column-rule",
+      "column-balancing",
+      "cjk-fonts",
+      "cjk-line-breaking",
+      "cjk-punctuation",
+      "cjk-justification",
+      "han-latin-spacing",
+      "running-heads",
+      "bleed-bands",
+      "design-anchoring",
+      "emphasis-colours",
+      "paragraph-styles",
+      "mirrored-margins",
+      "color-palette",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q101",
+    "Q89",
+    "Q94"
+  ],
+  "gotchas": [
+    "circled-numbers-western",
+    "ruby-not-in-designs",
+    "cjk-fonts-slices",
+    "cjk-locale-tag",
+    "headings-drop-h1-break",
+    "fonts-first"
+  ],
+  "related": [
+    "dictionary-thumb-index",
+    "pinyin-primer",
+    "chinese-novel-horizontal"
+  ],
+  "engine": {
+    "postext": "1.9.0",
+    "postextPdf": "1.9.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "cjk"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 2,
+    "card": "loupe",
+    "focus": {
+      "page": 2,
+      "x": 0.505,
+      "y": 0.02,
+      "w": 0.47,
+      "h": 0.245
+    },
+    "pages": "all",
+    "expect": {
+      "pages": [
+        4,
+        4
+      ]
+    }
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "Thirty entries of the Kangxi Dictionary (康熙字典, 1716), 天 to 庭, cut to a few senses each, with variant forms written in today’s standard Traditional characters; Wikisource transcription, 29 pages by radical and stroke count, read on 29 September 2026",
+          "es": "Treinta entradas del Diccionario de Kangxi (康熙字典, 1716), de 天 a 庭, reducidas a unas pocas acepciones y con las variantes escritas en los caracteres tradicionales normalizados de hoy; transcripción de Wikisource, 29 páginas por radical y número de trazos, consultadas el 29 de septiembre de 2026"
+        },
+        "who": "Zhang Yushu, Chen Tingjing and others (1716); transcription by Wikisource editors",
+        "source": "https://zh.wikisource.org/wiki/康熙字典",
+        "license": "CC-BY-SA-4.0"
+      },
+      {
+        "what": {
+          "en": "The pinyin readings, the sense numbers, the order of the entries and the colophon",
+          "es": "Las lecturas en pinyin, los números de acepción, el orden de las entradas y el colofón"
+        },
+        "who": "Postext Cookbook",
+        "license": "original"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Noto Serif TC",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Sans TC",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "LXGW WenKai TC",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-09-29",
+  "updated": "2026-09-29"
+}
