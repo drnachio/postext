@@ -9,6 +9,7 @@ import { usePathname } from "@/i18n/navigation";
 import { cookbookPaletteEntries, makeProcessTerm, tokenize } from "@/lib/cookbook/search";
 import type { Catalog, PartColor } from "@/lib/cookbook/types";
 import { unpackCatalog, type PackedCatalog } from "@/lib/cookbook/wire";
+import { findPhrase, foldQuery, phraseTier, rankByPhrase } from "@/lib/searchPhrase";
 
 interface IndexPayload {
   locale: string;
@@ -19,6 +20,8 @@ interface Hit {
   section: SearchSection;
   score: number;
   terms: string[];
+  /** How literally it holds the query (`PHRASE_TIER`): ranks first. */
+  tier: number;
 }
 
 /** Both indexes, built on the first open. */
@@ -39,8 +42,15 @@ const MAX_RECIPES = 4;
 const SNIPPET_LEN = 160;
 const OPEN_EVENT = "docs-search:open";
 
-function buildSnippet(body: string, terms: string[]): string {
+function buildSnippet(body: string, terms: string[], phrase: string): string {
   if (!body) return "";
+  // A literal match centres the snippet on the phrase itself.
+  const literal = phrase.includes(" ") ? findPhrase(body, phrase) : null;
+  if (literal) {
+    const start = Math.max(0, literal[0] - 40);
+    const end = Math.min(body.length, Math.max(start + SNIPPET_LEN, literal[1]));
+    return (start > 0 ? "…" : "") + body.slice(start, end) + (end < body.length ? "…" : "");
+  }
   const lower = body.toLowerCase();
   let bestIdx = -1;
   for (const term of terms) {
@@ -53,7 +63,21 @@ function buildSnippet(body: string, terms: string[]): string {
   return (start > 0 ? "…" : "") + body.slice(start, end) + (end < body.length ? "…" : "");
 }
 
-function highlight(text: string, terms: string[]) {
+const MARK = "bg-brand/20 text-foreground rounded px-0.5";
+
+function highlight(text: string, terms: string[], phrase = "") {
+  // A literal match is marked as one run; the words elsewhere are not.
+  const literal = phrase.includes(" ") ? findPhrase(text, phrase) : null;
+  if (literal) {
+    const [start, end] = literal;
+    return [
+      <span key="a">{text.slice(0, start)}</span>,
+      <mark key="m" className={MARK}>
+        {text.slice(start, end)}
+      </mark>,
+      <span key="b">{text.slice(end)}</span>,
+    ];
+  }
   if (!terms.length) return text;
   // Marks whole words: the Cookbook index matches folded stems ("head" for
   // "heads"), so a match runs on to the end of its word.
@@ -63,7 +87,7 @@ function highlight(text: string, terms: string[]) {
   const parts = text.split(pattern);
   return parts.map((part, i) =>
     whole.test(part) ? (
-      <mark key={i} className="bg-brand/20 text-foreground rounded px-0.5">
+      <mark key={i} className={MARK}>
         {part}
       </mark>
     ) : (
@@ -216,23 +240,31 @@ export function DocsSearchPalette() {
   }, [handleOpenChange]);
 
   // Two groups, Docs and Cookbook; on the Cookbook's own pages recipes come
-  // first. Results derive from the query and the loaded indexes — no state.
+  // first, unless the other group holds a more literal match. Within a
+  // group, hits that contain the query as typed (the words in that order)
+  // rank above those that only share its words; the cut comes after that
+  // sort so a literal hit is never dropped for a scattered one. Results
+  // derive from the query and the loaded indexes — no state.
   const cookbookFirst = pathname === "/cookbook" || pathname.startsWith("/cookbook/");
+  const phrase = useMemo(() => foldQuery(query), [query]);
   const groups = useMemo(() => {
     if (!indexes || !query.trim()) return [];
     const run = (ms: MiniSearch<SearchSection> | null, max: number): Hit[] => {
       if (!ms) return [];
       const hits: Hit[] = [];
-      for (const r of ms.search(query).slice(0, max)) {
+      for (const r of ms.search(query)) {
         const section = indexes.byId.get(String(r.id));
-        if (section) hits.push({ section, score: r.score, terms: r.terms });
+        if (section) hits.push({ section, score: r.score, terms: r.terms, tier: phraseTier(section, phrase) });
       }
-      return hits;
+      return rankByPhrase(hits).slice(0, max);
     };
     const docs = { id: "docs", label: t("groupDocs"), hits: run(indexes.docs, MAX_DOCS) };
     const cookbook = { id: "cookbook", label: t("groupCookbook"), hits: run(indexes.cookbook, MAX_RECIPES) };
-    return (cookbookFirst ? [cookbook, docs] : [docs, cookbook]).filter((g) => g.hits.length > 0);
-  }, [query, indexes, cookbookFirst, t]);
+    const topTier = (g: { hits: Hit[] }) => g.hits[0]?.tier ?? -1;
+    const [first, second] = cookbookFirst ? [cookbook, docs] : [docs, cookbook];
+    const ordered = topTier(second) > topTier(first) ? [second, first] : [first, second];
+    return ordered.filter((g) => g.hits.length > 0);
+  }, [query, phrase, indexes, cookbookFirst, t]);
   const hits = useMemo(() => groups.flatMap((g) => g.hits), [groups]);
 
   const hrefFor = useCallback(
@@ -350,7 +382,7 @@ export function DocsSearchPalette() {
                       {group.hits.map((hit, j) => {
                         const i = offset + j;
                         const { section } = hit;
-                        const snippet = buildSnippet(section.body, hit.terms);
+                        const snippet = buildSnippet(section.body, hit.terms, phrase);
                         const isSel = i === selected;
                         const href = hrefFor(section);
                         const color = indexes?.colors.get(section.id);
@@ -391,11 +423,11 @@ export function DocsSearchPalette() {
                                 </div>
                               )}
                               <div className="font-display text-sm font-medium text-foreground">
-                                {highlight(section.sectionTitle, hit.terms)}
+                                {highlight(section.sectionTitle, hit.terms, phrase)}
                               </div>
                               {snippet && (
                                 <div className="font-body text-xs text-slate line-clamp-2">
-                                  {highlight(snippet, hit.terms)}
+                                  {highlight(snippet, hit.terms, phrase)}
                                 </div>
                               )}
                             </a>
