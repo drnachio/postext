@@ -252,3 +252,51 @@ describe('right binding (page.binding)', () => {
     expect((second!.pageIndex + 1) % 2).toBe(1);
   });
 });
+
+describe('a vertical part page (#188)', () => {
+  // The sheet margins of a page, top / right / bottom / left, from its
+  // content area turned back onto the sheet.
+  const sheetMargins = (p: VDTPage) => {
+    const s = flowRectToPage(p, p.contentArea);
+    return rounded([s.y, p.width - s.x - s.width, p.height - s.y - s.height, s.x]);
+  };
+  const book = (margins: NonNullable<PostextConfig['page']>['margins'], writingMode?: 'vertical-rl') => {
+    const md = `# 第一回\n\n${chapter(6)}\n\n:::part{number="卷二" title="第十一回至第二十回"}\n本卷所收。\n:::\n\n# 第十一回\n\n${chapter(6)}`;
+    return buildDocument({ markdown: md }, {
+      locale: 'zh-Hant',
+      page: { width: pt(300), height: pt(420), dpi: 72, margins },
+      bodyText: { fontSize: pt(10), lineHeight: pt(16) },
+      ...(writingMode ? { layout: { writingMode } } : {}),
+    });
+  };
+
+  for (const writingMode of [undefined, 'vertical-rl'] as const) {
+    for (const mirror of [false, true]) {
+      it(`keeps the page margins' names on the sheet (${writingMode ?? 'horizontal'}, mirror ${mirror})`, () => {
+        const doc = book({ top: pt(60), right: pt(20), bottom: pt(30), left: pt(45), mirror }, writingMode);
+        const part = doc.pages.find((p) => p.role === 'part');
+        expect(part).toBeDefined();
+        // A body page of the same parity as the part page.
+        const twin = doc.pages.find((p) => p.role !== 'part' && p.index !== part!.index && (p.index - part!.index) % 2 === 0);
+        expect(twin).toBeDefined();
+        expect(sheetMargins(part!)).toEqual(sheetMargins(twin!));
+        // The part's single column fills that area.
+        expect(rounded(flowRectToPage(part!, part!.columns[0]!.bbox))).toEqual(rounded(flowRectToPage(part!, part!.contentArea)));
+      });
+    }
+  }
+
+  it('reads parts.margins with the sheet names too', () => {
+    const doc = buildDocument(
+      { markdown: `# 第一回\n\n${chapter(2)}\n\n:::part{number="卷二" title="第十一回至第二十回"}\n:::\n\n# 第十一回\n\n${chapter(2)}` },
+      {
+        locale: 'zh-Hant',
+        page: { width: pt(300), height: pt(420), dpi: 72, margins: { top: pt(40), right: pt(40), bottom: pt(40), left: pt(40) } },
+        layout: { writingMode: 'vertical-rl' },
+        parts: { margins: { top: pt(10), right: pt(20), bottom: pt(40), left: pt(80) } },
+      },
+    );
+    const part = doc.pages.find((p) => p.role === 'part')!;
+    expect(sheetMargins(part)).toEqual([10, 20, 40, 80]);
+  });
+});

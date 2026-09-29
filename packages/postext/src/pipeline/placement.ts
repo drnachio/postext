@@ -13,7 +13,7 @@ import {
 } from '../vdt';
 import type { HeadingBreakParity } from '../types';
 import { computeColumnBboxes, hasFloatSideColumn } from './config';
-import { contentAreaForPage, mirrorFlowArea, pageMirrored, type PageMetrics } from './buildHelpers';
+import { contentAreaForPage, mirrorContentArea, pageMirrored, sheetRectToFlow, type PageMetrics } from './buildHelpers';
 import { dimensionToPx } from '../units';
 import { measuringVertically } from '../measure/vertical';
 
@@ -79,18 +79,21 @@ export function createPageWithColumns(
  *  `page.contentArea` set to that area, `partInfo` stamped and the role
  *  fixed to `'part'`. The opener design is laid out later by
  *  `buildHeadersAndFooters` against the full trim box and never reserves
- *  body space. `metrics.trimBox` is in the flow frame of the document; a
- *  vertical document's part page is vertical too. */
+ *  body space. The margins keep their names on the sheet, as the page
+ *  margins do: the area is cut from the physical trim box, mirrored there
+ *  and, on a vertical page, turned into the flow frame (a vertical
+ *  document's part page is vertical too). */
 export function createPartPage(
   page: VDTPage,
-  metrics: Pick<PageMetrics, 'trimBox' | 'pageWidthPx'> & Partial<Pick<PageMetrics, 'vertical' | 'pageHeightPx'>>,
+  metrics: Pick<PageMetrics, 'physical' | 'pageWidthPx'> & Partial<Pick<PageMetrics, 'vertical' | 'pageHeightPx'>>,
   resolved: ResolvedConfig,
   info: { number: string; title: string; palette?: Record<string, string>; titleSourceStart?: number; titleSourceEnd?: number },
   pageIndexOffset = 0,
 ): VDTPage {
   const dpi = resolved.page.dpi;
   const m = resolved.parts.margins;
-  const trim = metrics.trimBox;
+  const vertical = metrics.vertical === true;
+  const trim = metrics.physical.trimBox;
   const top = dimensionToPx(m.top, dpi);
   const bottom = dimensionToPx(m.bottom, dpi);
   const left = dimensionToPx(m.left, dpi);
@@ -101,8 +104,8 @@ export function createPartPage(
     Math.max(0, trim.width - left - right),
     Math.max(0, trim.height - top - bottom),
   );
-  const vertical = metrics.vertical === true;
-  if (pageMirrored(resolved, page.index, pageIndexOffset, m.mirror)) area = mirrorFlowArea(area, metrics.pageWidthPx, vertical);
+  if (pageMirrored(resolved, page.index, pageIndexOffset, m.mirror)) area = mirrorContentArea(area, metrics.pageWidthPx);
+  if (vertical) area = sheetRectToFlow(area, metrics.pageWidthPx);
   page.contentArea = area;
   if (vertical) page.flow = verticalFlowFrame(page.width, page.height);
   else delete page.flow;
