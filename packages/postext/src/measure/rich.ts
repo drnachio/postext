@@ -590,7 +590,7 @@ function wordBreakPoints(
 ): RichBreakPoint[] {
   const widthBefore = cjk
     ? cjk.widthBefore
-    : (idx: number): number => textWidth(clean.slice(0, idx), font, smallCaps) + letterSpacingPx * graphemeCount(clean.slice(0, idx));
+    : (idx: number): number => textWidth(clean.slice(0, idx), font, smallCaps) + (letterSpacingPx === 0 ? 0 : letterSpacingPx * graphemeCount(clean.slice(0, idx)));
   const byIndex = new Map<number, RichBreakPoint>();
   const add = (bp: Omit<RichBreakPoint, 'widthBefore'>): void => {
     if (bp.charIndex <= 0 || bp.charIndex >= clean.length) return;
@@ -636,7 +636,7 @@ export function emergencySplit(
   const text = token.text;
   if (text.length < 2) return null;
   const hyphenW = measureTextWidth('-', font) + letterSpacingPx;
-  const widthBefore = (idx: number): number => textWidth(text.slice(0, idx), font, token.smallCaps) + letterSpacingPx * graphemeCount(text.slice(0, idx));
+  const widthBefore = (idx: number): number => textWidth(text.slice(0, idx), font, token.smallCaps) + (letterSpacingPx === 0 ? 0 : letterSpacingPx * graphemeCount(text.slice(0, idx)));
   const flags = { bold: token.bold, italic: token.italic, captionLabel: token.captionLabel, ...scriptOf(token) };
   // A group glued by no-break spaces too wide for any line: the space is
   // the least bad place to part it (EF-66). The line ends before it and the
@@ -843,7 +843,7 @@ export function atomicSpanToken(
  *  (soft hyphens removed), width and every flag the renderers read. Small
  *  capitals stay flagged until {@link expandSmallCaps} splits them. */
 export function tokenSegment(t: RichToken): PendingSegment {
-  return {
+  const seg = {
     kind: t.mathRender ? 'math' : t.swatch ? 'swatch' : t.chip ? 'chip' : t.kind,
     text: cleanSoftHyphens(t.text),
     width: t.width,
@@ -858,11 +858,13 @@ export function tokenSegment(t: RichToken): PendingSegment {
     ...(t.script ? { script: t.script, fontString: t.scriptFont, baselineShift: t.baselineShift } : {}),
     ...(t.stacked === 'first' ? { stacked: true } : {}),
     ...(t.smallCaps ? { smallCaps: true } : {}),
-    ...(t.tcy ? { tcy: true } : {}),
-    ...(t.orientation ? { orientation: t.orientation } : {}),
-    ...(t.cjkMarks ? { cjkMarks: t.cjkMarks } : {}),
-    ...(t.inserted ? { inserted: true } : {}),
   } as PendingSegment;
+  // The fields of vertical and Chinese text, last, when set.
+  if (t.tcy) seg.tcy = true;
+  if (t.orientation) seg.orientation = t.orientation;
+  if (t.cjkMarks) seg.cjkMarks = t.cjkMarks;
+  if (t.inserted) seg.inserted = true;
+  return seg;
 }
 
 function tokenizeSpans(
@@ -878,6 +880,9 @@ function tokenizeSpans(
   /** `MeasureBlockOptions.hyphenateCompounds === false`: the dictionary
    *  leaves the words of a compound whole. */
   keepCompounds = false,
+  /** Whether the spans hold CJK characters (`hasCJK` of their text): only
+   *  then is each word looked into. */
+  cjkText = true,
 ): RichToken[] {
   const tokens: RichToken[] = [];
   // Which characters of the joined text sit in a compound, a word (across
@@ -936,7 +941,7 @@ function tokenizeSpans(
         const clean = part.replace(/\u00AD/g, '');
         const breakPoints: RichBreakPoint[] = urlBreakIndices(clean).map((charIndex) => ({
           charIndex,
-          widthBefore: textWidth(clean.slice(0, charIndex), font, sc) + letterSpacingPx * graphemeCount(clean.slice(0, charIndex)),
+          widthBefore: textWidth(clean.slice(0, charIndex), font, sc) + (letterSpacingPx === 0 ? 0 : letterSpacingPx * graphemeCount(clean.slice(0, charIndex))),
         }));
         tokens.push({
           text: clean,
@@ -960,7 +965,7 @@ function tokenizeSpans(
         ? before.text.slice(-2)
         : undefined;
       // A word that holds CJK characters: measured unit by unit, once each.
-      const cjk = !isSpace && hasCJK(clean) ? cjkWordBreaks(clean, font, sc, letterSpacingPx) : undefined;
+      const cjk = cjkText && !isSpace && hasCJK(clean) ? cjkWordBreaks(clean, font, sc, letterSpacingPx) : undefined;
       const breakPoints = isSpace ? [] : wordBreakPoints(clean, soft, font, letterSpacingPx, sc, dashBreaks, touching, cjk);
       if (breakPoints.length > 0) {
         tokens.push({
@@ -992,7 +997,7 @@ function tokenizeSpans(
 
   if (tokens.some((t) => t.script)) stackScriptTokens(tokens, normalFont, boldFont, italicFont, boldItalicFont);
   if (tokens.some((t) => t.chip)) {
-    applyChipGaps(tokens, (t, run) => measureTextWidth(run, tokenFont(t, normalFont, boldFont, italicFont, boldItalicFont)) + letterSpacingPx * graphemeCount(run));
+    applyChipGaps(tokens, (t, run) => measureTextWidth(run, tokenFont(t, normalFont, boldFont, italicFont, boldItalicFont)) + (letterSpacingPx === 0 ? 0 : letterSpacingPx * graphemeCount(run)));
   }
   if (dashBreaks) markDashJoins(tokens);
   return tokens;
@@ -1235,7 +1240,10 @@ function measureRichText(
   // few CJK words stays here, with a break allowed next to their characters.
   // So is a paragraph with ruby or a warichu note (#194, #195), which the
   // composer alone lays out.
-  if (composesAsCjk(plainText) || spans.some((s) => s.ruby || s.warichu)) {
+  // The paragraph is looked at for CJK text once (`cjkText`); a Latin one
+  // then never looks into its words.
+  const cjkText = hasCJK(plainText);
+  if ((cjkText && composesAsCjk(plainText)) || spans.some((s) => s.ruby || s.warichu)) {
     return composeCjkParagraph(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options);
   }
 
@@ -1245,7 +1253,7 @@ function measureRichText(
   const textAlign = options?.textAlign ?? 'left';
   const letterSpacingPx = options?.letterSpacingPx ?? 0;
   const hyphenationZonePx = shouldHyphenate ? options?.hyphenationZonePx : undefined;
-  const tokens = tokenizeSpans(spans, normalFont, boldFont, italicFont, boldItalicFont, shouldHyphenate, letterSpacingPx, options?.breakAfterDashes === true, options?.hyphenateCompounds === false);
+  const tokens = tokenizeSpans(spans, normalFont, boldFont, italicFont, boldItalicFont, shouldHyphenate, letterSpacingPx, options?.breakAfterDashes === true, options?.hyphenateCompounds === false, cjkText);
   const repeatHyphen = options?.repeatHyphen === true;
   const hasSmallCaps = tokens.some((t) => t.smallCaps);
   const normalSpaceWidth = textAlign === 'justify' ? normalSpaceWidthFor(normalFont) + letterSpacingPx : 0;

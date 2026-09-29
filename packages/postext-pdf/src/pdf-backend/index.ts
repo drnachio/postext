@@ -441,9 +441,11 @@ function renderPage(
 
   // Clip to column bounds, widened for glyph ink and for design overlays
   // that hang past the column on purpose — the same rectangle the canvas
-  // backend clips to (see `columnClipRect`).
+  // backend clips to (see `columnClipRect`). Only a document that hangs
+  // marks (`cjk.hangingPunctuation`) has lines whose marks reach past it.
+  const hanging = doc.config.cjk?.hangingPunctuation !== 'none';
   for (const col of vdtPage.columns) {
-    const clip = columnClipRect(col, doc.config.page.dpi);
+    const clip = columnClipRect(col, doc.config.page.dpi, hanging);
     pushClipRect(ctx, clip.x, clip.y, clip.width, clip.height);
     for (const block of col.blocks) {
       if (block.tocPart && block.designOverlay) {

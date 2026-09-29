@@ -18,7 +18,7 @@ import { lineMeasure, uniformMeasureFrom, type MeasuredBlock, type MeasureBlockO
 import { cleanSoftHyphens, measureTextWidth, normalSpaceWidthFor } from './canvas';
 import { isRuntLastLine } from './runts';
 import { measureRichBlock } from './rich';
-import { hasCJKRun } from './cjk';
+import { hasCJK, hasCJKRun } from './cjk';
 import { composesAsCjk } from './cjkCompose';
 import { markCuts } from './markCuts';
 import { getMeasureUprightDigits, getMeasureWritingMode, lineBaselineOffset, measuringVertically, withMeasureWritingMode } from './vertical';
@@ -215,7 +215,8 @@ export function measureBlock(
   // width. And so does a word holding CJK text and two marks
   // that meet (`本）》录`): pretext would measure it with the browser's
   // trimming, where the renderers paint such marks apart (`markCuts`).
-  if (hasCJKRun(text) || composesAsCjk(text) || (measuringVertically() && holdsVerticalCell(text, getMeasureUprightDigits())) || markCuts(text, 'words').length > 0) {
+  // Each of the three CJK tests needs CJK text (`hasCJK`), looked for once.
+  if ((hasCJK(text) && (hasCJKRun(text) || composesAsCjk(text) || markCuts(text, 'words').length > 0)) || (measuringVertically() && holdsVerticalCell(text, getMeasureUprightDigits()))) {
     return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
   }
   const shouldHyphenate = options?.hyphenate ?? false;

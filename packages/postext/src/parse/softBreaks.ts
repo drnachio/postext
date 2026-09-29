@@ -176,6 +176,12 @@ function dropCharacters(spans: InlineSpan[], drop: readonly number[]): InlineSpa
   return out;
 }
 
+/** A code unit only a text that may lose a line end holds: U+200B, or one
+ *  at or past U+2E80, where every East Asian wide character sits
+ *  ({@link isEastAsianWide}; a supplementary one's surrogates too). Each
+ *  rule of {@link removesLineEndAt} needs one of them. */
+const MAY_JOIN_RE = /[\u200B\u2E80-\uFFFF]/;
+
 /**
  * Take out of a paragraph's or blockquote's mapped text the spaces that
  * joined two source lines between East Asian characters. A joining space is
@@ -189,6 +195,9 @@ export function joinEastAsianLines(
   spans: InlineSpan[],
   sourceMap: number[],
 ): { text: string; spans: InlineSpan[]; sourceMap: number[] } | undefined {
+  // Text with no East Asian wide character (a Latin paragraph) keeps every
+  // space: one look at it, not one at each space.
+  if (!MAY_JOIN_RE.test(text)) return undefined;
   let drop: number[] | undefined;
   for (let k = 1; k < text.length - 1; k++) {
     if (text.charCodeAt(k) !== 0x20) continue;
@@ -234,6 +243,7 @@ const SNIPPET_LINE_END_RE = /[ \t\r]*\n[ \t]*/g;
 export function joinEastAsianSnippetLines(spans: InlineSpan[]): InlineSpan[] {
   if (!spans.some((s) => s.text.includes('\n'))) return spans;
   const text = spans.map((s) => s.text).join('');
+  if (!MAY_JOIN_RE.test(text)) return spans;
   let drop: number[] | undefined;
   SNIPPET_LINE_END_RE.lastIndex = 0;
   let m: RegExpExecArray | null;

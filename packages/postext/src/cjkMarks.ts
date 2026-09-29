@@ -376,7 +376,8 @@ export function annotateDocument(doc: VDTDocument, cjk: ResolvedCjkConfig | unde
         const marks = lineMarks(line, block, color, vertical);
         if (marks.length > 0) line.marks = marks;
       }
-      if (segs.some((s) => s.ruby && s.ruby.position !== 'right')) ruby = true;
+      // Only the CJK composer sets ruby (#194).
+      if (line.cjkComposed && segs.some((s) => s.ruby && s.ruby.position !== 'right')) ruby = true;
     }
     if (!marked && !ruby) continue;
     const em = fontEm(block.fontString);

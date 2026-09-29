@@ -139,9 +139,18 @@ export interface FoundAnnotation {
   compact?: boolean;
 }
 
-/** The next annotation of `text` at or after `from` (before `end`). */
+/** Where the next `:` or `{` of `text` at or after `from` is, -1 when
+ *  there is none: an annotation opens at one of them. */
+function nextOpening(text: string, from: number): number {
+  const colon = text.indexOf(':', from);
+  const brace = text.indexOf('{', from);
+  return colon < 0 ? brace : brace < 0 ? colon : Math.min(colon, brace);
+}
+
+/** The next annotation of `text` at or after `from` (before `end`). Only
+ *  a `:` or a `{` can open one: the text between them is passed over. */
 function nextAnnotation(text: string, from: number, end: number): FoundAnnotation | undefined {
-  for (let i = from; i < end; i++) {
+  for (let i = nextOpening(text, from); i >= 0 && i < end; i = nextOpening(text, i + 1)) {
     const c = text[i]!;
     if (c === ':') {
       OPENER_RE.lastIndex = i;

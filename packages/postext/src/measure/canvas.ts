@@ -43,10 +43,11 @@ export function measureTextWidth(text: string, font: string): number {
   }
   // Two CJK marks side by side (`）》`, `”“`) are measured apart: the
   // browser would set the first half width in one run (see
-  // `cjkMarkCuts`), and the renderers paint them apart.
-  const pieces = cjkMarkPieces(text, hasCJK(text));
+  // `cjkMarkCuts`), and the renderers paint them apart. Text with no CJK
+  // is never cut (`markCuts`): one measure, with no cut to look for.
   let width = 0;
-  for (const piece of pieces) width += ctx.measureText(piece).width;
+  if (!hasCJK(text)) width += ctx.measureText(text).width;
+  else for (const piece of cjkMarkPieces(text, true)) width += ctx.measureText(piece).width;
 
   if (_widthCacheEntries >= MAX_WIDTH_CACHE_ENTRIES) {
     _widthCaches = new Map();

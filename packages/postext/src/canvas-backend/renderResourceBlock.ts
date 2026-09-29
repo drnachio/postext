@@ -14,9 +14,10 @@
  */
 
 import type { VDTBlock, VDTLine, ResolvedResourceBlock, RoundedOutline } from '../vdt';
-import { fillFlowText, setVerticalPaint } from './verticalText';
-import { fillSegmentText } from './segmentText';
+import { fillFlowText, setVerticalPaint, verticalPaintActive } from './verticalText';
+import { fillSegmentText, fillWordsText } from './segmentText';
 import { lineMarkCuts } from '../measure/markCuts';
+import { hasCJK } from '../measure/cjk';
 import { tableCellFill, tableFrameOutline } from '../vdt';
 import { paintSwatch } from './swatch';
 import { paintChip } from './chip';
@@ -341,6 +342,13 @@ function paintLineRuns(
   ctx.textBaseline = 'alphabetic';
   if (line.segments && line.segments.length > 0) {
     let x = line.bbox.x;
+    // A line of the CJK composer, or any line down a vertical page, paints
+    // each segment through `fillSegmentText`; a line set word by word as
+    // the canvas always painted it, its text cut at the marks that meet
+    // only when it holds CJK characters (see `renderLine` in
+    // blockRender.ts).
+    const composed = line.cjkComposed === true || verticalPaintActive();
+    const cjk = !composed && hasCJK(line.text);
     // Two marks that meet are painted apart where the line's measurer set
     // them apart (see `fillFlowText`).
     const cuts = lineMarkCuts(line);
@@ -365,6 +373,12 @@ function paintLineRuns(
         : seg.captionLabel
           ? labelColor
           : color;
+      if (!composed) {
+        if (cjk) fillWordsText(ctx, seg.text, x, line.baseline + (seg.baselineShift ?? 0));
+        else ctx.fillText(seg.text, x, line.baseline + (seg.baselineShift ?? 0));
+        x += seg.width;
+        continue;
+      }
       // A justified CJK line spreads its characters per segment.
       if (seg.tracking !== undefined) ctx.letterSpacing = `${tracking + seg.tracking}px`;
       fillSegmentText(ctx, seg, x, line.baseline, cuts);
@@ -375,7 +389,9 @@ function paintLineRuns(
   }
   ctx.font = font;
   ctx.fillStyle = color;
-  fillFlowText(ctx, line.text, line.bbox.x, line.baseline, 'fill', undefined, lineMarkCuts(line));
+  if (line.cjkComposed || verticalPaintActive()) fillFlowText(ctx, line.text, line.bbox.x, line.baseline, 'fill', undefined, lineMarkCuts(line));
+  else if (hasCJK(line.text)) fillWordsText(ctx, line.text, line.bbox.x, line.baseline);
+  else ctx.fillText(line.text, line.bbox.x, line.baseline);
 }
 
 function drawPlaceholder(

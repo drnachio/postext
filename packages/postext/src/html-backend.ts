@@ -351,6 +351,65 @@ function renderTextSegment(
   return `<span style="${pos}${colorDecl}">${text}</span>`;
 }
 
+/**
+ * {@link renderTextSegment} for a segment of a line set word by word (not
+ * `VDTLine.cjkComposed`), which carries none of the composer's fields
+ * (`tracking`, `inkOffset`, `inkScale`): the markup every such segment had
+ * before the CJK features. One that holds CJK text (`cjk`) or carries
+ * Chinese marks goes to {@link renderMarkedWordSegment}: the browser's
+ * punctuation spacing off on its own box (see {@link CJK_TEXT_DECL}), its
+ * text in `<em>` when it is set with emphasis dots.
+ */
+function renderWordTextSegment(
+  seg: VDTLineSegment,
+  x: number,
+  top: string,
+  fontDecl: string,
+  colorDecl: string,
+  color: string,
+  cjk: boolean,
+): string {
+  if (cjk || seg.cjkMarks) return renderMarkedWordSegment(seg, x, top, fontDecl, colorDecl, color, cjk);
+  const pos = `position:absolute;left:${x.toFixed(3)}px;top:${top};white-space:pre;`;
+  const text = esc(seg.text);
+  if (seg.refResourceId !== undefined) {
+    // Anchors carry an explicit color so the UA link blue never leaks in.
+    const inner = `<a href="${refAnchorHref(seg.refResourceId)}" style="text-decoration:none;${fontDecl}${fontDecl ? 'line-height:0;' : ''}color:${color};">${text}</a>`;
+    return `<span style="${pos}">${inner}</span>`;
+  }
+  if (fontDecl) {
+    return `<span style="${pos}"><span style="${fontDecl}line-height:0;${colorDecl}">${text}</span></span>`;
+  }
+  return `<span style="${pos}${colorDecl}">${text}</span>`;
+}
+
+/** {@link renderWordTextSegment} for a segment that holds CJK text (`cjk`)
+ *  or carries Chinese marks. */
+function renderMarkedWordSegment(
+  seg: VDTLineSegment,
+  x: number,
+  top: string,
+  fontDecl: string,
+  colorDecl: string,
+  color: string,
+  cjk: boolean,
+): string {
+  const pos = `position:absolute;left:${x.toFixed(3)}px;top:${top};white-space:pre;${cjk ? CJK_TEXT_DECL : ''}`;
+  // Text set with emphasis dots is emphasis (#193); the dots are the
+  // line's marks.
+  const text = seg.cjkMarks?.dots ? `<em style="font-style:inherit;">${esc(seg.text)}</em>` : esc(seg.text);
+  const featuresDecl = fontDecl && cjk ? CJK_FEATURES_DECL : '';
+  if (seg.refResourceId !== undefined) {
+    // Anchors carry an explicit color so the UA link blue never leaks in.
+    const inner = `<a href="${refAnchorHref(seg.refResourceId)}" style="text-decoration:none;${fontDecl}${featuresDecl}${fontDecl ? 'line-height:0;' : ''}color:${color};">${text}</a>`;
+    return `<span style="${pos}">${inner}</span>`;
+  }
+  if (fontDecl) {
+    return `<span style="${pos}"><span style="${fontDecl}${featuresDecl}line-height:0;${colorDecl}">${text}</span></span>`;
+  }
+  return `<span style="${pos}${colorDecl}">${text}</span>`;
+}
+
 /** A `:ref` painted as several runs (a label in small capitals: one run per
  *  case) from `segs[start]` on. Every run is placed as measured, and all of
  *  them sit in one anchor, so the reference stays one link. `paint` renders
@@ -406,7 +465,117 @@ function segmentHref(seg: VDTLineSegment): string | undefined {
   return seg.refResourceId === undefined ? seg.href : undefined;
 }
 
+/**
+ * The segments of a horizontal line. A line of the CJK composer goes to
+ * {@link renderComposedSegments}. Any other line was set word by word and
+ * carries none of the composer's fields (a segment's `tracking`,
+ * `inkOffset`, `inkScale`, `hangs`, `autospace`, `ruby`, `warichu`): its
+ * markup is the one every line had before the CJK features, the browser's
+ * punctuation spacing turned off on each segment that holds CJK text. Only
+ * a line whose text holds CJK characters has its segments looked into: the
+ * line's `text` holds the text of every segment, except the leader of a
+ * contents entry (`tocEntry`).
+ */
 function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<string>): string {
+  if (line.cjkComposed) return renderComposedSegments(line, block, targets);
+  // The tracking after the last glyph is advance, not ink: centring and
+  // right alignment leave it out (EF-153), as the canvas does.
+  const trailing = lineTrailingTracking(line, (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0));
+  if (!line.segments || line.segments.length === 0) {
+    const plainIndent = line.bbox.x - block.bbox.x;
+    const plainWidth = line.bbox.width - trailing;
+    const plainLeft = block.textAlign === 'right'
+      ? Math.max(0, block.bbox.width - plainIndent - plainWidth)
+      : block.textAlign === 'center'
+        ? Math.max(0, (block.bbox.width - plainIndent - plainWidth) / 2)
+        : 0;
+    return `<span style="position:absolute;left:${plainLeft.toFixed(3)}px;top:0;white-space:pre;">${esc(line.text)}</span>`;
+  }
+
+  // Match canvas justification: stretch inter-word spaces to fill effective width.
+  const lineIndent = line.bbox.x - block.bbox.x;
+  const effectiveWidth = block.bbox.width - lineIndent;
+
+  let wordWidth = 0;
+  let spaceCount = 0;
+  for (const seg of line.segments) {
+    if (seg.kind === 'space') spaceCount++;
+    else wordWidth += seg.width;
+  }
+  const contentWidth = line.segments.reduce((s, seg) => s + seg.width, 0);
+
+  // Last lines render ragged at natural width — except when overfull:
+  // Knuth-Plass may accept a final line wider than the measure on the
+  // assumption that its inter-word glue shrinks (TeX glue-setting semantics),
+  // so honor that by compressing the spaces to fit the measure exactly.
+  const useJustify =
+    block.textAlign === 'justify' && spaceCount > 0 &&
+    ((!line.isLastLine && !line.ragged) || contentWidth > effectiveWidth);
+  const justifiedSpaceWidth = useJustify
+    ? (effectiveWidth - wordWidth) / spaceCount
+    : 0;
+
+  // Centred / right alignment — math display blocks, ragged-left paragraph
+  // styles. Distribute the leading gap.
+  const slack = Math.max(0, effectiveWidth - (contentWidth - trailing));
+  const leadingGap = block.textAlign === 'center' ? slack / 2 : block.textAlign === 'right' ? slack : 0;
+
+  const parts: string[] = [];
+  const links = linkRuns();
+  let x = leadingGap;
+  const segs = line.segments;
+  const cjk = block.tocEntry !== undefined || hasCJK(line.text);
+  const paintText = (seg: VDTLineSegment, at: number, inLink = false): string => {
+    const font = quoteFontString(pickSegmentFont(seg, block));
+    const color = pickSegmentColor(seg, block);
+    const fontDecl = font !== quoteFontString(block.fontString) ? `font:${font};` : '';
+    const colorDecl = color !== block.color ? `color:${color};` : '';
+    const top = seg.baselineShift ? `${seg.baselineShift.toFixed(3)}px` : '0';
+    return renderWordTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, color, cjk && hasCJK(seg.text));
+  };
+  for (let i = 0; i < segs.length; i++) {
+    const seg = segs[i]!;
+    if (seg.kind === 'space') {
+      x += useJustify ? justifiedSpaceWidth : seg.width;
+      continue;
+    }
+    parts.push(links.at(segmentHref(seg)));
+    if (seg.kind === 'math') {
+      parts.push(renderMathSegmentSvg(seg, x, line, block));
+      x += seg.width;
+      continue;
+    }
+    if (seg.kind === 'swatch') {
+      parts.push(renderSwatch(x, line.baseline - line.bbox.y, seg.width, seg.swatch?.color, block.color));
+      x += seg.width;
+      continue;
+    }
+    if (seg.chip) {
+      parts.push(renderChip(seg.chip, x, line.baseline - line.bbox.y, quoteFontString(block.fontString), block.color, (run) =>
+        pickSegmentColor({ kind: 'text', text: run.text, width: run.width, bold: run.bold, italic: run.italic }, block)));
+      x += seg.width;
+      continue;
+    }
+    if (seg.refResourceId !== undefined && segs[i + 1]?.refContinues) {
+      const group = renderRefRuns(segs, i, x, pickSegmentColor(seg, block), (run, at) => paintText(run, at, true), refLinks(seg.refResourceId, targets));
+      parts.push(group.html);
+      x = group.x;
+      i = group.end - 1;
+      continue;
+    }
+    parts.push(paintText(seg, x, seg.refResourceId !== undefined && !refLinks(seg.refResourceId, targets)));
+    x += seg.width;
+  }
+  parts.push(links.end());
+  // Emphasis dots, proper-name and book-title lines (#193).
+  if (line.marks) parts.push(lineMarksHtml(line, block.color));
+  return parts.join('');
+}
+
+/** {@link renderSegments} for a line of the CJK composer: hung marks and
+ *  Han–Latin spaces kept out of the justification, each segment with its
+ *  own tracking, ink offset and scale, warichu notes and ruby readings. */
+function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<string>): string {
   // The tracking after the last glyph is advance, not ink: centring and
   // right alignment leave it out (EF-153), as the canvas does.
   const lineTracking = (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0);
@@ -953,6 +1122,8 @@ function renderResourceLine(
   const lineDecl = lineCjkDecl(line);
   if (line.segments && line.segments.length > 0) {
     const segs = line.segments;
+    const composed = line.cjkComposed === true;
+    const cjk = !composed && hasCJK(line.text);
     const segColorOf = (seg: VDTLineSegment): string => (seg.refResourceId !== undefined
       ? linkColor
       : seg.captionLabel
@@ -964,7 +1135,11 @@ function renderResourceLine(
       const fontDecl = font !== baseFont ? `font:${font};` : '';
       const colorDecl = segColor !== color ? `color:${segColor};` : '';
       const top = seg.baselineShift ? `${seg.baselineShift.toFixed(3)}px` : '0';
-      return renderTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, segColor, line.letterSpacing ?? 0, segmentCjk(seg, lineDecl));
+      // A line set word by word as every line was before the CJK
+      // features (see `renderSegments`).
+      return composed
+        ? renderTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, segColor, line.letterSpacing ?? 0, segmentCjk(seg, lineDecl))
+        : renderWordTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, segColor, cjk && hasCJK(seg.text));
     };
     const links = linkRuns();
     let x = 0;

@@ -587,8 +587,12 @@ function paintLineRuns(
     const refRun = new RefRun();
     let x = line.bbox.x;
     const uris = new UriRuns(ctx, line, linkRegistry, elem);
+    // Only a line of the CJK composer carries its fields (a segment's
+    // tracking, ink offset and scale); any other is painted as every line
+    // was before them (see `renderSegments` in blockRender.ts).
+    const composed = line.cjkComposed === true || ctx.vertical !== undefined;
     // A composed CJK line reads as written, not with its gaps.
-    const actualLine = cjkLineText(segs);
+    const actualLine = composed ? cjkLineText(segs) : undefined;
     let lineState: LineTextState | undefined;
     if (actualLine !== undefined) {
       const first = segs.find((s) => s.kind === 'text' && !s.chip && s.text !== '');
@@ -636,16 +640,20 @@ function paintLineRuns(
       const uriElem = uris.word(refId === undefined ? seg.href : undefined, x, seg.width, seg.text);
       const link = refId !== undefined ? refRun.enter(seg, x, elem, refId) : undefined;
       tagContent(ctx, link ?? uriElem ?? elem);
-      // A justified CJK line spreads its characters per segment.
-      // A compressed CJK mark advances to its box's end (see blockRender).
-      const markSpacing = compressedMarkSpacingPx(font, seg, size);
-      if (markSpacing !== undefined) setTrackingPx(ctx, markSpacing);
-      else if (seg.tracking !== undefined) setTrackingPx(ctx, (tracking + seg.tracking));
-      const stretch = inkScaleOperators(seg.inkScale);
-      ctx.page.pushOperators(...stretch.before);
-      drawTextPx(ctx, seg.text, x + (seg.inkOffset ?? 0), line.baseline + (seg.baselineShift ?? 0), font, size, segColor);
-      ctx.page.pushOperators(...stretch.after);
-      if (markSpacing !== undefined || seg.tracking !== undefined) setTrackingPx(ctx, tracking);
+      if (!composed) {
+        drawTextPx(ctx, seg.text, x, line.baseline + (seg.baselineShift ?? 0), font, size, segColor);
+      } else {
+        // A justified CJK line spreads its characters per segment.
+        // A compressed CJK mark advances to its box's end (see blockRender).
+        const markSpacing = compressedMarkSpacingPx(font, seg, size);
+        if (markSpacing !== undefined) setTrackingPx(ctx, markSpacing);
+        else if (seg.tracking !== undefined) setTrackingPx(ctx, (tracking + seg.tracking));
+        const stretch = inkScaleOperators(seg.inkScale);
+        ctx.page.pushOperators(...stretch.before);
+        drawTextPx(ctx, seg.text, x + (seg.inkOffset ?? 0), line.baseline + (seg.baselineShift ?? 0), font, size, segColor);
+        ctx.page.pushOperators(...stretch.after);
+        if (markSpacing !== undefined || seg.tracking !== undefined) setTrackingPx(ctx, tracking);
+      }
       const ref = refId !== undefined ? refRun.leave(seg, segs[i + 1], refId) : undefined;
       if (ref && linkRegistry) {
         const { scale, pageHeightPt } = ctx;

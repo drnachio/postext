@@ -98,6 +98,16 @@ function paintPage(
   }
 }
 
+/** {@link renderLangOf} of each resolved config: every page of a document
+ *  asks for it. */
+const langByConfig = new WeakMap<object, string | undefined>();
+function langOf(config: VDTDocument['config']): string | undefined {
+  if (langByConfig.has(config)) return langByConfig.get(config);
+  const lang = renderLangOf(config);
+  langByConfig.set(config, lang);
+  return lang;
+}
+
 function paintContext(
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
@@ -107,7 +117,7 @@ function paintContext(
 ): void {
   // A Chinese, Japanese or Korean document paints in its language, so the
   // browser picks the region's glyph forms (`ctx.lang`, Chrome 136+).
-  const lang = renderLangOf(doc.config);
+  const lang = langOf(doc.config);
   if (lang && 'lang' in ctx) (ctx as CanvasRenderingContext2D & { lang: string }).lang = lang;
   // The bitmap is a whole number of pixels; the page rarely is. Drawing at
   // `scale` would leave the last column (and row) of pixels only partly
@@ -205,8 +215,11 @@ function paintContext(
 
   // Clip to column bounds, widened for glyph ink and for design overlays
   // that hang past the column on purpose (see `columnClipRect`).
+  // Only a document that hangs marks (`cjk.hangingPunctuation`) has lines
+  // whose marks reach past the column.
+  const hanging = doc.config.cjk?.hangingPunctuation !== 'none';
   for (const col of page.columns) {
-    const clip = columnClipRect(col, doc.config.page.dpi);
+    const clip = columnClipRect(col, doc.config.page.dpi, hanging);
     ctx.save();
     ctx.beginPath();
     ctx.rect(clip.x, clip.y, clip.width, clip.height);

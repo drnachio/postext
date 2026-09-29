@@ -34,6 +34,7 @@ import { forcedVerticalRuns, verticalRuns, CORNER_OFFSET_EM, type ForcedOrientat
 import { graphemeCount, graphemesOf } from '../measure/graphemes';
 import { markPieces, type MarkCutRule } from '../measure/markCuts';
 import { measureRunWidth } from '../measure/canvas';
+import { hasCJK } from '../measure/cjk';
 
 /** What the painter needs while a vertical flow paints. */
 export interface VerticalPaintState {
@@ -286,7 +287,10 @@ export function fillFlowText(
 ): void {
   const state = paintState;
   if (!state) {
-    putHorizontal(ctx, text, x, baseline, mode, cuts);
+    // Text with no CJK is cut only under the composer's rule (see
+    // `markCuts`): one call, with no cut to look for.
+    if (cuts !== 'composed' && !hasCJK(text)) put(ctx, text, x, baseline, mode);
+    else putHorizontal(ctx, text, x, baseline, mode, cuts);
     return;
   }
   paintVertical(ctx, state, text, x, baseline, mode, tracking, orient);
