@@ -74,7 +74,3 @@ Las antologías chinas anotadas (注釋本) imprimen las notas tras cada poema. 
 -const footnotes = { placement: 'column', // the foot of the column, here the foot of the page
 +const footnotes = { placement: 'chapterEnd', chapterEndAlign: 'text',
 ```
-
-## Errores frecuentes
-
-- Una fuente china compone ’ “ ” a ancho completo, también dentro de palabras latinas: en las notas, compuestas en Noto Serif TC, «Li Bai’s» salía con un hueco ancho tras el apóstrofo. Las notas inglesas se escriben sin apóstrofos, comillas ni cursivas (la fuente no tiene cursiva, y una cursiva simulada sale recta en el PDF). Las « » españolas son caracteres latinos y conservan su ancho.

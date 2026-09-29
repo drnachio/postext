@@ -43,6 +43,7 @@
   ],
   "gotchas": [
     "ruby-not-in-designs",
+    "vertical-side-column-top",
     "cjk-fonts-slices",
     "cjk-spread-order",
     "cjk-locale-tag"

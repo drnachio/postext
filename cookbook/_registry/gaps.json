@@ -395,35 +395,6 @@
       }
     }
   },
-  "running-head-marks": {
-    "label": {
-      "en": "First and last entry in running heads",
-      "es": "Primera y última entrada en la cabecera"
-    },
-    "aliases": {
-      "en": [
-        "dictionary running heads",
-        "guide words",
-        "marks"
-      ],
-      "es": [
-        "cabeceras de diccionario",
-        "palabras guía",
-        "reclamos"
-      ]
-    },
-    "explanation": {
-      "en": "There is no placeholder for the first or last entry on a page. A dictionary can show the current letter through a heading style's own running head.",
-      "es": "No hay marcador para la primera o la última entrada de una página. Un diccionario puede mostrar la letra en curso con la cabecera propia de un estilo de título."
-    },
-    "docs": {
-      "slug": "configuration",
-      "heading": {
-        "en": "Text elements",
-        "es": "Elementos de texto"
-      }
-    }
-  },
   "markdown-links": {
     "label": {
       "en": "Clickable Markdown links",
@@ -892,6 +863,116 @@
       "heading": {
         "en": "Character grid",
         "es": "Retícula de caracteres"
+      }
+    }
+  },
+  "interlinear-notes": {
+    "label": {
+      "en": "Notes between the lines",
+      "es": "Notas entre las líneas"
+    },
+    "aliases": {
+      "en": [
+        "interlinear notes",
+        "interlinear gloss",
+        "notes between the lines",
+        "notes beside the column",
+        "side comments",
+        "側批",
+        "旁批"
+      ],
+      "es": [
+        "notas interlineales",
+        "glosa interlineal",
+        "notas entre líneas",
+        "notas junto a la columna",
+        "comentarios laterales",
+        "側批",
+        "旁批"
+      ]
+    },
+    "explanation": {
+      "en": "Nothing is set between two lines or two columns of text: the gloss written over a word of a medieval manuscript, or the red comment (側批) a Chinese manuscript writes beside a column, has no place of its own. Ruby carries a reading of a few characters beside its base. A longer note goes into the line as warichu (:warichu[…], two rows at half the size), or into a side column as a box fenced with span=\"side\".",
+      "es": "No se compone nada entre dos líneas o dos columnas de texto: la glosa escrita sobre una palabra en un manuscrito medieval, o el comentario rojo (側批) que un manuscrito chino escribe junto a una columna, no tienen un sitio propio. El ruby lleva una lectura de pocos caracteres junto a su base. Una nota más larga entra en la línea como warichu (:warichu[…], dos filas a la mitad del cuerpo) o va a una columna lateral como recuadro con span=\"side\"."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Chinese marks, ruby and warichu",
+        "es": "Marcas chinas, ruby y warichu"
+      }
+    }
+  },
+  "leaf-folios": {
+    "label": {
+      "en": "One folio for a two-page leaf",
+      "es": "Un número por hoja de dos páginas"
+    },
+    "aliases": {
+      "en": [
+        "leaf numbers",
+        "folio per leaf",
+        "folio per spread",
+        "sheet numbers",
+        "number every other page",
+        "葉碼",
+        "頁碼"
+      ],
+      "es": [
+        "número de hoja",
+        "folio por hoja",
+        "folio por pliego",
+        "numerar cada dos páginas",
+        "葉碼",
+        "頁碼"
+      ]
+    },
+    "explanation": {
+      "en": "Page numbers count pages: no counter advances once per spread or per leaf, as the leaf numbers (葉碼) of a woodblock book do. Open each leaf with a hidden level-1 heading that breaks to the page the leaf starts on (parity 'even' in a book bound on the right) and print {chapterNumber} in the design; the text then has to be broken in the Markdown where each leaf ends.",
+      "es": "Los números de página cuentan páginas: ningún contador avanza una vez por pliego o por hoja, como el número de hoja (葉碼) de un libro xilográfico. Abre cada hoja con un título de nivel 1 oculto que salte a la página donde empieza la hoja (paridad 'even' en un libro encuadernado por la derecha) e imprime {chapterNumber} en el diseño; el texto hay que cortarlo en el Markdown donde acaba cada hoja."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Numbering",
+        "es": "Numeración"
+      }
+    }
+  },
+  "line-rules": {
+    "label": {
+      "en": "A rule between every two lines of text",
+      "es": "Un filete entre cada dos líneas de texto"
+    },
+    "aliases": {
+      "en": [
+        "rules between lines",
+        "ruled columns",
+        "ruled paper",
+        "lines between vertical columns",
+        "界行",
+        "朱絲欄",
+        "烏絲欄"
+      ],
+      "es": [
+        "filetes entre líneas",
+        "columnas pautadas",
+        "papel pautado",
+        "líneas entre columnas verticales",
+        "界行",
+        "朱絲欄",
+        "烏絲欄"
+      ]
+    },
+    "explanation": {
+      "en": "The column rule runs between columns, and the character grid's overlay (cjk.grid.show) is a light grey square for every character, a screen aid the PDF leaves out unless renderToPdf gets characterGrid: true. The rules of a woodblock page or of ruled manuscript paper, one between every two lines, are drawn as vertical rule elements in the header, placed from the grid's pitch.",
+      "es": "El filete de columna va entre columnas, y la cuadrícula de la retícula de caracteres (cjk.grid.show) es un cuadrado gris claro por carácter, una ayuda de pantalla que el PDF no imprime salvo que renderToPdf reciba characterGrid: true. Los filetes de una página xilográfica o del papel pautado de un manuscrito, uno entre cada dos líneas, se dibujan como elementos de línea verticales en la cabecera, colocados con el paso de la retícula."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Column rule",
+        "es": "Filete de columna"
       }
     }
   }

@@ -73,6 +73,5 @@ The canvas draws a light grey square for every character position of every line 
 
 ## Pitfalls
 
-- Fontsource has no Kai text face for Simplified Chinese. LXGW WenKai TC covers the characters but centres ，。 in their box, the Taiwan way, and the Kaiming widths then cut the blank on the wrong side: the note came out with commas jammed against the next character. The note is set in the Song face at 小五 (9 pt), as mainland books set notes, and the brush face is kept for the plate, where no punctuation rule applies.
 - The plate is a heading, so the PDF outline lists 月下的瓜地 as a first-level bookmark before 故乡, and the tagged PDF keeps it as an H1. No heading setting leaves a heading out of the outline yet.
 - The headings’ own face must be one that `FONTS` loads, even when a design paints every title: with the default weight 700 the kit found Noto Serif SC 700 in the layout and loaded its Latin file with a warning. `headings.fontWeight: 400` keeps the heading blocks in the text face.

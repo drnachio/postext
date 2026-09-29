@@ -48,6 +48,9 @@
     "cjk-locale-tag",
     "cjk-fonts-slices",
     "cjk-spread-order",
+    "cjk-source-script-mix",
+    "vertical-design-image-pdf",
+    "vertical-line-axis",
     "quote-frontmatter"
   ],
   "related": [

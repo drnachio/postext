@@ -74,7 +74,3 @@ Chinese annotated anthologies (注釋本) print the notes after each poem. Chapt
 -const footnotes = { placement: 'column', // the foot of the column, here the foot of the page
 +const footnotes = { placement: 'chapterEnd', chapterEndAlign: 'text',
 ```
-
-## Pitfalls
-
-- A Chinese face sets ’ “ ” full width, in Latin words as well: in the notes, set in Noto Serif TC, “Li Bai’s” came out with a wide gap after the apostrophe. The English notes are written without apostrophes, quotation marks or italics (the face has no italic, and a faked one prints upright in the PDF). The Spanish « » are Latin characters and keep their width.
