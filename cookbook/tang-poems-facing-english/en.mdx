@@ -4,7 +4,7 @@ summary: "Each Tang poem opens a tinted recto and Giles’s English the verso fa
 description: "A bilingual Tang poetry book in Postext: heading styles that break to the verso and the recto, the Chinese centred on the character grid, glosses as footnotes."
 question: "How do I set a poem and its translation on facing pages, with the original always on the recto?"
 aliases: ["facing translation", "parallel text", "en face", "bilingual poetry", "original on the right", "Tang poems", "唐詩", "Chinese poetry in English", "Li Bai", "Du Fu", "Wang Wei", "Herbert Giles", "glosses", "注釋", "verso and recto"]
-pageNotes: { "1": "The title page: the characters 唐詩 in black over a pale gold moon, TANG POEMS in red capitals under it, the three poets’ names, a line crediting Giles’s English verse, and a small red seal reading 明月 near the foot.", "3": "The recto facing Night Thoughts, on a pale gold tint: the title 靜夜思 in bold, 〔唐〕李白 in red under it, the poem in two rows of brush-style characters with small note numbers, and three notes at the foot of the page under a short red rule." }
+pageNotes: { "1": "The title page: the characters 唐詩 in black over a pale gold moon, TANG POEMS in red capitals under it, the three poets’ names, a line crediting Giles’s English verse, and a small red seal reading 明月 near the foot.", "3": "The recto facing Night Thoughts, on a pale gold tint: the title 靜夜思 in bold, 〔唐〕李白 in red under it, the poem in two rows of brush-style characters, each row ending in a small note number, and two notes at the foot of the page under a short red rule." }
 ---
 
 ## What you'll build
@@ -15,7 +15,7 @@ A small bilingual book of Tang poems, set the way parallel-text editions set a c
 
 ### 1 · A heading style for each side of the spread
 
-The code is [the short answer](#the-short-answer) above. Every poem is two level-1 headings: `# Night Thoughts {style="en" …}` with Giles’s verse, then `# 靜夜思 {style="zh" …}` with the poem. The `en` style breaks to the next even page, a verso; the `zh` style to the next odd page, the recto that faces it. While each poem fits its page no blank page goes in; an English version that ran over would push its original to the following recto, behind a blank verso, which is how you find out ([Break before](/en/docs/configuration#break-before)). Both designs reserve six lines of the grid, so the English and the Chinese start on the same line. The Chinese style has `span: 'page'` because its first element, a box the size of the page, is the tinted leaf, and a design kept in the column stops at the column’s foot ([Span and advanced design](/en/docs/configuration#span-and-advanced-design)).
+The code is [the short answer](#the-short-answer) above. Every poem is two level-1 headings: `# Night Thoughts {style="en" …}` with Giles’s verse, then `# 靜夜思 {style="zh" …}` with the poem. The `en` style breaks to the next even page, a verso; the `zh` style to the next odd page, the recto that faces it. While each poem fits its page no blank page goes in; an English version that ran over would push its original to the following recto, behind a blank verso ([Break before](/en/docs/configuration#break-before)). Both designs reserve six lines of the grid, so the English and the Chinese start on the same line. The Chinese style has `span: 'page'` because its first element, a box the size of the page, is the tinted leaf, and a design kept in the column stops at the column’s foot ([Span and advanced design](/en/docs/configuration#span-and-advanced-design)).
 
 <PageShot page={2} crop="0,0.05,1,0.28" caption="Page 2: the English opens the verso six lines down, on the grid line where the Chinese opens on page 3." />
 
@@ -23,13 +23,13 @@ The code is [the short answer](#the-short-answer) above. Every poem is two level
 
 <Excerpt region="verse" />
 
-The Chinese rows have twice the leading of the English lines, 32 pt against 16, so a row of two five-character lines faces the couplet Giles makes of it. In the moonlight poem on <PageRef page={4}>pages 4 and 5</PageRef> the same `:::space{lines=1}` goes into both texts, and its three stanzas stay level across the spread. The Chinese row starts 51 pt in, which centres its twelve ems in the 28 of the grid; centred lines would shift sideways each time a note number joins a row. The English indents come from measuring each poem’s longest line. Giles indents every other line; the Markdown keeps his two spaces, and `indentVerse` turns them into em spaces behind a word joiner, because a paragraph drops the spaces it starts with.
+The Chinese rows have twice the leading of the English lines, 32 pt against 16, so a row of two five-character lines faces the couplet Giles makes of it. In the moonlight poem on <PageRef page={4}>pages 4 and 5</PageRef> the same `:::space{lines=1}` goes into both texts, and its three stanzas stay level across the spread. The Chinese row starts 51 pt in, which centres its twelve ems in the 28 of the grid, and each note number stands after its row’s 。, outside the twelve: inside the row it would push every character after it a third of an em to the right, out of line with the row below. The English indents come from measuring each poem’s longest line. Giles indents every other line; the Markdown keeps his two spaces, and `indentVerse` turns them into em spaces behind a word joiner, because a paragraph drops the spaces it starts with.
 
 ### 3 · Glosses at the foot of the Chinese page
 
 <Excerpt region="notes" />
 
-The glosses are footnotes: `牀[^bed]` in the poem and `[^bed]: …` under it. Numbering starts again at every heading that opens a page, so each poem counts its notes from 1 ([Footnotes](/en/docs/document-format#footnotes)). Notes are set in the body face, and this book’s body face is Noto Serif TC because a gloss mixes characters and pinyin; the Latin letters of Noto Serif TC come from Source Serif, which is why the English pages are set in Source Serif 4. The notes are written in the edition’s language: with the verso’s running head and the note on the text, they are what the Spanish edition changes.
+The glosses are footnotes, one to a row: `疑是地上霜。[^bed]` closes the first row of the poem and `[^bed]: …` follows it, naming in bold each word it glosses, since the number no longer stands next to them. Numbering starts again at every heading that opens a page, so each poem counts its notes from 1 ([Footnotes](/en/docs/document-format#footnotes)). Notes are set in the body face, and this book’s body face is Noto Serif TC because a gloss mixes characters and pinyin; the Latin letters of Noto Serif TC come from Source Serif, which is why the English pages are set in Source Serif 4. The notes are written in the edition’s language: with the verso’s running head and the note on the text, they are what the Spanish edition changes.
 
 ### 4 · Running heads in the language of each page
 
@@ -53,13 +53,17 @@ Fontsource cuts each Chinese face into about a hundred files by character range,
 
 ### Put the original on the verso
 
-Loeb editions and many Chinese–English readers set the original on the left. Swap the two parities and write each Chinese heading and poem before its English in the Markdown.
+Loeb editions and many Chinese–English readers set the original on the left: swap the parities of the two heading styles and of the two running heads that name the book and the poet, and write each Chinese heading and poem before its English in the Markdown.
 
 ```diff
 -const english = { id: 'en', breakBefore: { enabled: true, parity: 'even' }, // a verso
 +const english = { id: 'en', breakBefore: { enabled: true, parity: 'odd' }, // a recto
 -const chinese = { id: 'zh', span: 'page', breakBefore: { enabled: true, parity: 'odd' },
 +const chinese = { id: 'zh', span: 'page', breakBefore: { enabled: true, parity: 'even' },
+-  head('verso-book', '{subtitle}', 'even', 'top-left', EDGE + 8,
++  head('verso-book', '{subtitle}', 'odd', 'top-right', -(EDGE + 8),
+-  head('recto-poet', '{attr.name}', 'odd', 'top-right', -(EDGE + 8),
++  head('recto-poet', '{attr.name}', 'even', 'top-left', EDGE + 8,
 ```
 
 ### Set the glosses right under the poem

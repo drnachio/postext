@@ -72,7 +72,7 @@ const verses = [['verse-long', 3], ['verse', 6], ['verse-short', 19]].map(([id, 
 const shi = { id: 'shi', fontFamily: KAI, fontSize: pt(SHI), lineHeight: pt(2 * LEAD),
   textAlign: 'left', firstLineIndent: pt(0), // two lines of verse to a row: 2 × LEAD
   // Five characters and a full-width mark, twice: 12 ems, centred in the 28 of the grid.
-  // A fixed left edge rather than centred lines, so a note number cannot push a row aside.
+  // A fixed left edge, and the note numbers after each row's 。: every character keeps its column.
   indent: pt((CHARS * BODY - 12 * SHI) / 2) };
 // A paragraph drops its leading spaces (gap: hard-line-breaks): the two spaces Giles indents
 // his rhyming lines by become two em spaces behind a word joiner, which nothing trims.
@@ -132,11 +132,11 @@ const header = { elements: [
 // #endregion
 
 const paragraphStyles = [shi, ...verses,
-  // Ragged: the document's language is Chinese, so no Latin text is hyphenated.
-  { id: 'prose', fontFamily: ROMAN, fontSize: pt(10), lineHeight: pt(LEAD), textAlign: 'left',
+  // Justified like the body, and divided by the patterns of the edition's language (bodyText).
+  { id: 'prose', fontFamily: ROMAN, fontSize: pt(10), lineHeight: pt(LEAD),
     firstLineIndent: mm(4) },
   { id: 'colophon', fontFamily: LABEL, fontSize: pt(7), lineHeight: pt(10), color: col('muted'),
-    textAlign: 'left', firstLineIndent: pt(0), marginTop: pt(LEAD) },
+    italicColor: col('muted'), textAlign: 'left', firstLineIndent: pt(0), marginTop: pt(LEAD) },
 ];
 
 const config = () => ({ // a factory: the engine caches resolved configs per object
@@ -151,7 +151,8 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   cjk: { grid: { enabled: true, charsPerLine: CHARS, linesPerPage: LINES } },
   bodyText: { fontFamily: SERIF, fontSize: pt(BODY), lineHeight: pt(LEAD), color: col('ink'),
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
-    textAlign: 'justify', firstLineIndent: em(2) },
+    textAlign: 'justify', firstLineIndent: em(2), indentAfterHeading: false,
+    hyphenation: { enabled: true, locale: LANG } }, // no Chinese patterns: the Latin's language
   // The designs paint the titles; weight 400 keeps the heading blocks in a loaded face.
   // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
   headings: { fontFamily: SERIF, fontWeight: 400, levels: [{ level: 1, marginTop: pt(0),

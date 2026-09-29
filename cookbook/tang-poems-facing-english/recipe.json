@@ -51,11 +51,20 @@
     "text": [
       {
         "what": {
-          "en": "Four Tang poems in traditional characters: Li Bai’s 靜夜思 and 月下獨酌 and Wang Wei’s 竹里館 as Three Hundred Tang Poems (1763) gives them, Du Fu’s 絕句 as the Complete Tang Poems (1705, juan 228) prints it",
-          "es": "Cuatro poemas Tang en caracteres tradicionales: 靜夜思 y 月下獨酌 de Li Bai y 竹里館 de Wang Wei como los dan los Trescientos poemas Tang (1763), y el 絕句 de Du Fu como lo imprime el Quan Tang shi, la poesía completa de los Tang (1705, juan 228)"
+          "en": "Three Tang poems in traditional characters, Li Bai’s 靜夜思 and 月下獨酌 and Wang Wei’s 竹里館, as Three Hundred Tang Poems (1763) gives them",
+          "es": "Tres poemas Tang en caracteres tradicionales, 靜夜思 y 月下獨酌 de Li Bai y 竹里館 de Wang Wei, como los dan los Trescientos poemas Tang (1763)"
         },
-        "who": "Li Bai, Du Fu, Wang Wei",
+        "who": "Li Bai, Wang Wei",
         "source": "https://zh.wikisource.org/wiki/唐詩三百首",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "Du Fu’s 絕句, the second of his 絕句二首, as the Complete Tang Poems (1705, juan 228) prints it",
+          "es": "El 絕句 de Du Fu, el segundo de sus 絕句二首, como lo imprime el Quan Tang shi, la poesía completa de los Tang (1705, juan 228)"
+        },
+        "who": "Du Fu",
+        "source": "https://zh.wikisource.org/wiki/全唐詩/卷228",
         "license": "PD"
       },
       {
