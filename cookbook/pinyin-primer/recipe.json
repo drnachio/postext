@@ -1,0 +1,82 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 76,
+  "status": "draft",
+  "chapter": "type",
+  "order": 120,
+  "level": 2,
+  "genres": ["textbook", "workbook"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["ruby", "cjk-fonts"],
+    "also": [
+      "character-grid",
+      "cjk-line-breaking",
+      "cjk-punctuation",
+      "body-typography",
+      "opener-design",
+      "heading-attributes",
+      "design-images",
+      "design-elements",
+      "callout-styles",
+      "color-palette",
+      "running-heads"
+    ]
+  },
+  "answers": ["Q89"],
+  "gotchas": [
+    "ruby-not-in-designs",
+    "cjk-fonts-slices",
+    "cjk-locale-tag",
+    "headings-drop-h1-break",
+    "svg-no-webfonts",
+    "fonts-first"
+  ],
+  "explainsWarnings": ["rubyExceedsLeading"],
+  "related": ["reading-primer-syllables", "zhuyin-vertical-reader", "chinese-novel-horizontal"],
+  "engine": { "postext": "1.9.0" },
+  "kit": ["core", "fonts", "viewer", "images", "cjk"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": [1, 2], "card": "spread", "pages": "all", "expect": { "pages": [4, 4] } },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "The Three Character Classic (三字經, 13th century), lines 1–32, from the Harvard-Yenching copy of the Xinkan Sanzijing, with today’s punctuation and 隣 written 鄰",
+          "es": "El Clásico de los tres caracteres (三字經, siglo XIII), versos 1-32, de la copia del Xinkan Sanzijing de Harvard-Yenching, con puntuación actual y 隣 escrito 鄰"
+        },
+        "who": "Attributed to Wang Yinglin; transcription by Wikisource editors",
+        "source": "https://zh.wikisource.org/wiki/新刊三字經",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The pinyin, the notes for families and the translations",
+          "es": "El pinyin, las notas para las familias y las traducciones"
+        },
+        "who": "Postext Cookbook",
+        "license": "original"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "The writing squares and the four lesson drawings, drawn in code in the page’s palette",
+          "es": "Las cuadrículas de escritura y los cuatro dibujos de las lecciones, dibujados en código con la paleta de la página"
+        },
+        "who": "Postext Cookbook",
+        "license": "MIT"
+      }
+    ],
+    "fonts": [
+      { "family": "LXGW WenKai TC", "license": "OFL-1.1" },
+      { "family": "Noto Sans TC", "license": "OFL-1.1" },
+      { "family": "Andika", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-29",
+  "updated": "2026-09-29"
+}
