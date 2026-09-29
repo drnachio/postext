@@ -257,12 +257,18 @@ describe('marks shared with Latin text take a Chinese box in Chinese text', () =
   it('routes a long run of shared marks in linear time', () => {
     // Each mark looks past its neighbours for the nearest text: a run of
     // n marks used to cost n² steps (16,000 quotes took three seconds).
+    // The fastest of five runs: a busy machine slows single runs by several
+    // times, which a ratio of two single timings cannot tell from n².
     const time = (n: number): number => {
       const text = `他说${'“”'.repeat(n)}。`;
-      clearTextWidthCache();
-      const t0 = performance.now();
-      lines(text, {}, 30 * EM, 'justify');
-      return performance.now() - t0;
+      let best = Infinity;
+      for (let run = 0; run < 5; run++) {
+        clearTextWidthCache();
+        const t0 = performance.now();
+        lines(text, {}, 30 * EM, 'justify');
+        best = Math.min(best, performance.now() - t0);
+      }
+      return best;
     };
     time(500);
     const small = Math.max(time(1000), 1);
