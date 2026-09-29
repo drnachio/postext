@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { measureRichBlock } from '../../measure/rich';
 import { measureBlock } from '../../measure/plain';
 import { linkSegments } from '../../measure/links';
-import { buildDocument, cachedMeasureRichBlock, createMeasurementCache } from '../../index';
+import { buildDocument, cachedMeasureRichBlock, createMeasurementCache, renderToHtml } from '../../index';
 import type { PostextConfig } from '../../types';
 import { hasCJK } from '../../measure/cjk';
 import { cjkClassOf, setCjkLineBreak, type CjkLineBreakLevel } from '../../measure/cjkClasses';
@@ -111,6 +111,39 @@ describe('links', () => {
       const doc = buildDocument({ markdown }, config);
       const segments = doc.blocks.flatMap((b) => b.lines).flatMap((l) => l.segments ?? []);
       expect(segments.filter((seg) => seg.href !== undefined).map((seg) => seg.text).join('')).toBe('这里');
+    }
+  });
+
+  it('stamp the link beside a warichu note in brackets, and beside a bracketed book title (#195)', () => {
+    // A note's brackets are added by the composer (no span holds them) and
+    // a title's 《》 are spans flagged `inserted`: neither is a character
+    // of the text the links are matched against, nor linked.
+    const pt = (value: number) => ({ value, unit: 'pt' as const });
+    const url = 'https://zh.wikisource.org/';
+    const cases: Array<[string, PostextConfig['cjk']]> = [
+      [`寶玉:warichu[甲戌側批]{open="〔" close="〕"}道，見[維基](${url})一書。`, undefined],
+      [`見[維基](${url})一書，寶玉:warichu[甲戌側批]道。`, { warichu: { open: '〔', close: '〕' } }],
+      [`見[維基](${url})一書，撰此:book[石頭記]一書也，寶玉:warichu[甲戌側批]道。`, { warichu: { open: '〔', close: '〕' }, bookTitleMark: 'brackets' }],
+    ];
+    for (const locale of ['zh-Hant', 'zh-Hans']) {
+      for (const writingMode of ['horizontal-tb', 'vertical-rl'] as const) {
+        for (const [markdown, cjk] of cases) {
+          const config: PostextConfig = {
+            locale,
+            page: { width: pt(300), height: pt(420), dpi: 72 },
+            layout: { layoutType: 'single', writingMode },
+            bodyText: { fontSize: pt(10), lineHeight: pt(16) },
+            ...(cjk ? { cjk } : {}),
+          };
+          const doc = buildDocument({ markdown }, config);
+          const segments = doc.pages.flatMap((p) => p.columns.flatMap((c) => c.blocks.flatMap((b) => b.lines.flatMap((l) => l.segments ?? []))));
+          const where = `${locale} ${writingMode} ${markdown}`;
+          expect(segments.some((s) => s.inserted && s.text === '〔'), where).toBe(true);
+          expect(segments.filter((s) => s.href !== undefined).map((s) => s.text).join(''), where).toBe('維基');
+          expect(segments.filter((s) => s.inserted).every((s) => s.href === undefined), where).toBe(true);
+          expect(renderToHtml(doc), where).toContain(`href="${url}"`);
+        }
+      }
     }
   });
 

@@ -21,7 +21,8 @@ const WHITESPACE = BREAKING_SPACE_RE;
 const INVISIBLE = new RegExp(`[${SOFT_HYPHEN}\\u200B-\\u200D\\u2060\\uFEFF]`);
 
 /** Link target of each character of the spans' joined text; null when no
- *  span carries a link. */
+ *  span carries a link. The spans hold no `inserted` one (see
+ *  {@link linkSegments}). */
 function hrefsByChar(spans: readonly InlineSpan[]): (string | undefined)[] | null {
   if (!spans.some((s) => s.links && s.links.length > 0)) return null;
   const out: (string | undefined)[] = [];
@@ -43,13 +44,18 @@ function hrefsByChar(spans: readonly InlineSpan[]): (string | undefined)[] | nul
  * and the hyphen a break adds — and a
  * segment holding any linked character takes that link's `href` (a word
  * glued to the link text, like its closing full stop, is part of the link
- * area). Returns `lines` itself when nothing is linked, or when the
- * segments cannot be matched (the block then simply has no live links).
+ * area). Characters the layout added (`inserted`: the 《》 of
+ * `cjk.bookTitleMark: 'brackets'`, which are spans, and a warichu note's
+ * brackets, which the composer adds and no span holds) are no character of
+ * the text: their spans and segments are passed over, and never linked.
+ * Returns `lines` itself when nothing is linked, or when the segments
+ * cannot be matched (the block then simply has no live links).
  */
 export function linkSegments(lines: VDTLine[], spans: readonly InlineSpan[]): VDTLine[] {
-  const hrefs = hrefsByChar(spans);
+  const written = spans.some((s) => s.inserted) ? spans.filter((s) => !s.inserted) : spans;
+  const hrefs = hrefsByChar(written);
   if (!hrefs) return lines;
-  const text = spans.map((s) => s.text).join('');
+  const text = written.map((s) => s.text).join('');
   let p = 0;
   const same = (a: string, b: string) => a === b || a.toLowerCase() === b.toLowerCase();
 
@@ -89,6 +95,10 @@ export function linkSegments(lines: VDTLine[], spans: readonly InlineSpan[]): VD
     let lineChanged = false;
     const segments: VDTLineSegment[] = [];
     for (const seg of line.segments) {
+      if (seg.inserted) {
+        segments.push(seg);
+        continue;
+      }
       if (seg.kind === 'space') {
         while (p < text.length && WHITESPACE.test(text[p]!)) p++;
         segments.push(seg);
