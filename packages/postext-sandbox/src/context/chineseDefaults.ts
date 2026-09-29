@@ -646,7 +646,14 @@ export interface ChineseDefaultsMemory {
   at: number;
   status: ChineseDefaultsStatus;
   undo: { before: PostextConfig; after: PostextConfig } | null;
+  /** Where the focus goes once the section is on screen: the message
+   *  after Apply, Review after Undo. Both may change the typefaces, and
+   *  the sandbox then puts its interface away until the fonts load: the
+   *  section that takes the focus is a new mount. */
+  focus?: ChineseDefaultsFocus;
 }
+
+export type ChineseDefaultsFocus = 'status' | 'review';
 
 /** How long a remounted section still shows the message (and Undo): the
  *  application's for a while, the undo's for a few seconds. */
@@ -671,4 +678,19 @@ export function recallChineseDefaults(book: string, now = Date.now()): ChineseDe
   const lifetime = memory.status.kind === 'applied' ? APPLIED_LIFETIME : UNDONE_LIFETIME;
   if (memory.book !== book || now - memory.at >= lifetime) memory = null;
   return memory;
+}
+
+/** The focus the memory asks for in `book`, taken once: a later mount
+ *  (the author back from another group) leaves the focus where it is. */
+export function takeChineseDefaultsFocus(book: string, now = Date.now()): ChineseDefaultsFocus | null {
+  const m = recallChineseDefaults(book, now);
+  if (!m?.focus) return null;
+  memory = { ...m, focus: undefined };
+  return m.focus;
+}
+
+/** The section goes away with the focus on `target` (the interface put
+ *  away while fonts load): the next mount takes it back. */
+export function keepChineseDefaultsFocus(target: ChineseDefaultsFocus): void {
+  if (memory) memory = { ...memory, focus: target };
 }

@@ -1,16 +1,18 @@
 'use client';
 
-import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { chineseScriptOf, resolveLayoutConfig } from 'postext';
-import type { PostextConfig } from 'postext';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector, type SandboxState } from '../../context/SandboxContext';
 import {
   chineseDefaults,
   forgetChineseDefaults,
+  keepChineseDefaultsFocus,
   recallChineseDefaults,
   rememberChineseDefaults,
+  takeChineseDefaultsFocus,
   undoChineseDefaults,
   type ChineseDefaultChange,
+  type ChineseDefaultsFocus,
   type ChineseDefaultId,
   type ChineseDefaultValue,
   type ChineseDefaultsMemory,
@@ -140,6 +142,21 @@ export function ChineseDefaultsField() {
     if (open) firstControlRef.current?.querySelector<HTMLElement>('[role="radio"][tabindex="0"]')?.focus();
   }, [open]);
 
+  // Apply sends the focus to the message and Undo to Review. When they
+  // change the typefaces, the sandbox puts its interface away until the
+  // fonts load and this section mounts anew: the request waits in the
+  // memory, and is kept again if the section goes with the focus in it.
+  useEffect(() => {
+    if (open) return;
+    const want = takeChineseDefaultsFocus(book);
+    if (want === 'status') statusRef.current?.focus();
+    else if (want === 'review') reviewRef.current?.focus();
+  }, [open, book, memory]);
+  useLayoutEffect(() => () => {
+    const target = (document.activeElement as HTMLElement | null)?.dataset?.chineseDefaultsFocus;
+    if (target === 'status' || target === 'review') keepChineseDefaultsFocus(target satisfies ChineseDefaultsFocus);
+  }, []);
+
   const start = () => {
     setScript(docScript === 'Hant' ? 'zh-Hant' : 'zh-Hans');
     setVerticalPick(null);
@@ -160,15 +177,14 @@ export function ChineseDefaultsField() {
       at: Date.now(),
       status: { kind: 'applied', count },
       undo: count > 0 ? { before: config, after: preview.config } : null,
+      focus: 'status',
     });
     setOpen(false);
-    requestAnimationFrame(() => statusRef.current?.focus());
   };
   const undo = () => {
     if (!undone) return;
     dispatch({ type: 'SET_CONFIG', payload: undone.config });
-    setMemory({ book, at: Date.now(), status: { kind: 'undone', partial: undone.kept.length > 0 }, undo: null });
-    requestAnimationFrame(() => reviewRef.current?.focus());
+    setMemory({ book, at: Date.now(), status: { kind: 'undone', partial: undone.kept.length > 0 }, undo: null, focus: 'review' });
   };
 
   const appliedCount = preview?.changes.filter((c) => c.applied).length ?? 0;
@@ -180,10 +196,10 @@ export function ChineseDefaultsField() {
     <FieldRow label={labels.chineseDefaults} tooltip={labels.chineseDefaultsTooltip} isDefault stacked>
       {!open ? (
         <div className="flex w-full min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-          <Button ref={reviewRef} variant="primary" size="sm" onClick={start} aria-expanded={false}>
+          <Button ref={reviewRef} variant="primary" size="sm" onClick={start} aria-expanded={false} data-chinese-defaults-focus="review">
             {labels.chineseDefaultsReview}
           </Button>
-          <p ref={statusRef} tabIndex={-1} role="status" className="min-w-0 flex-1 text-[0.68rem] leading-[1.35] text-(--slate) outline-none [text-wrap:pretty]">
+          <p ref={statusRef} tabIndex={-1} role="status" data-chinese-defaults-focus="status" className="min-w-0 flex-1 text-[0.68rem] leading-[1.35] text-(--slate) outline-none [text-wrap:pretty]">
             {status?.kind === 'undone' || canUndo ? statusText : ''}
           </p>
           {canUndo && status?.kind === 'applied' && (

@@ -3,7 +3,8 @@ import type { PostextConfig } from 'postext';
 import { defaultResourceTypes, resolveBodyTextConfig, resolveHeadingsConfig, resolveLayoutConfig, resolveOrderedListsConfig, resolvePageConfig } from 'postext';
 import { createDefaultConfig } from './defaultConfig';
 import {
-  chineseDefaults, chineseFontsFor, forgetChineseDefaults, recallChineseDefaults, rememberChineseDefaults, undoChineseDefaults,
+  chineseDefaults, chineseFontsFor, forgetChineseDefaults, keepChineseDefaultsFocus, recallChineseDefaults, rememberChineseDefaults,
+  takeChineseDefaultsFocus, undoChineseDefaults,
   type ChineseDefaultId,
 } from './chineseDefaults';
 
@@ -346,5 +347,29 @@ describe('Chinese defaults memory', () => {
     rememberChineseDefaults({ book: 'b', at: 0, status: { kind: 'applied', count: 3 }, undo: { before, after } });
     expect(recallChineseDefaults('b', 60_000)?.status.kind).toBe('applied');
     expect(recallChineseDefaults('b', 11 * 60_000)).toBeNull();
+  });
+
+  // Apply and Undo send the focus to the message or to Review. When they
+  // change the typefaces the sandbox puts its interface away until the
+  // fonts load, and the section mounts anew: the request must outlive it.
+  it('keeps the focus Apply asks for until the section is there to take it, across a remount', () => {
+    forgetChineseDefaults();
+    const now = Date.now();
+    rememberChineseDefaults({ book: 'b', at: now, status: { kind: 'applied', count: 9 }, undo: { before, after }, focus: 'status' });
+    expect(takeChineseDefaultsFocus('b')).toBe('status');
+    // Taken once: a later mount (the author back from another group) leaves the focus alone.
+    expect(takeChineseDefaultsFocus('b')).toBeNull();
+    // The section went away with the focus on its message: the next mount takes it back.
+    keepChineseDefaultsFocus('status');
+    expect(takeChineseDefaultsFocus('other book')).toBeNull();
+    rememberChineseDefaults({ book: 'b', at: now, status: { kind: 'undone', partial: false }, undo: null, focus: 'review' });
+    keepChineseDefaultsFocus('review');
+    expect(recallChineseDefaults('b')?.status.kind).toBe('undone');
+    expect(takeChineseDefaultsFocus('b')).toBe('review');
+    expect(recallChineseDefaults('b')?.status.kind).toBe('undone');
+    // Nothing remembered: nothing to keep.
+    forgetChineseDefaults();
+    keepChineseDefaultsFocus('review');
+    expect(takeChineseDefaultsFocus('b')).toBeNull();
   });
 });
