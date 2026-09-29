@@ -47,9 +47,15 @@ function extractBlockText(block: VDTBlock): string {
 }
 
 /** Headings of `doc`, with page indices offset by `base` (the PDF pages of
- *  the documents rendered before it). */
+ *  the documents rendered before it). A level-1 heading whose style keeps it
+ *  out of the running chapter and out of the contents (`runningChapter:
+ *  false`, `toc: false`: a plate or a map set as a heading inside a chapter)
+ *  is not bookmarked either. */
 function collectHeadings(doc: VDTDocument, base = 0): OutlineEntry[] {
   const entries: OutlineEntry[] = [];
+  const unlisted = new Set(
+    (doc.config.headingStyles ?? []).filter((s) => !s.runningChapter && !s.toc).map((s) => s.id),
+  );
   for (const page of doc.pages) {
     // Part-divider pages sit above the chapters: level 0 so `buildTree`
     // nests the following H1s (level 1) under them.
@@ -60,6 +66,7 @@ function collectHeadings(doc: VDTDocument, base = 0): OutlineEntry[] {
     for (const col of page.columns) {
       for (const block of col.blocks) {
         if (block.type !== 'heading') continue;
+        if (block.notRunningChapter && block.headingStyleId && unlisted.has(block.headingStyleId)) continue;
         const title = extractBlockText(block);
         if (!title) continue;
         entries.push({
