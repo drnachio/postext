@@ -55,10 +55,10 @@ subtitle: "程乙本前三回选读"
 
 黛玉虽不知原委，探春等却晓得是议论金陵城中居住的薛家姨母之子——表兄:index[薛蟠]{term="薛蟠"}，倚财仗势打死人命，现在应天府案下审理。如今舅舅:index[王子腾]{term="王子腾"}得了信，遣人来告诉这边，意欲唤取进京之意。
 
-# 人名索引 {style="index" kicker="按汉语拼音排列" note="本索引收录前三回选文中的人物，按姓名首字的汉语拼音排列。粗体页码为人物出场之页；别名、原名另立参见条目。"}
+# 人名索引 {style="index" kicker="按汉语拼音排列" note="本索引收录前三回选文中的人物。\n粗体页码为人物出场之页。\n别名与原名另立参见条目。"}
 
 :::index
 
 :::paragraphs{style="colophon"}
-Dream of the Red Chamber, chapters 1–3, Simplified edition: the passages where the characters first appear, from the Cheng–Gao text of 1792 (zh.wikisource, CC BY-SA 4.0; converted with OpenCC). Cuts inside a paragraph are marked ……. Set in Noto Serif SC, Noto Sans SC and LXGW WenKai TC (SIL OFL).
+Dream of the Red Chamber, chapters 1–3, Simplified edition: the passages where the characters first appear, from the Cheng–Gao text of 1792 (zh.wikisource, revision 9685985, CC BY-SA 4.0), converted to Simplified characters with OpenCC, with —— for the source’s －－. Cuts inside a paragraph are marked ……. Set in Noto Serif SC, Noto Sans SC and Ma Shan Zheng (SIL OFL).
 :::

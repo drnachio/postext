@@ -55,10 +55,10 @@ subtitle: "程乙本前三回選讀"
 
 黛玉雖不知原委，探春等卻曉得是議論金陵城中居住的薛家姨母之子——表兄:index[薛蟠]{term="薛蟠"}，倚財仗勢打死人命，現在應天府案下審理。如今舅舅:index[王子騰]{term="王子騰"}得了信，遣人來告訴這邊，意欲喚取進京之意。
 
-# 人名索引 {style="index" kicker="依筆畫排列" note="本索引收錄前三回選文中的人物，依姓名首字筆畫多少排列。粗體頁碼為人物出場之頁；別名、原名另立參見條目。"}
+# 人名索引 {style="index" kicker="依筆畫排列" note="本索引收錄前三回選文中的人物。\n粗體頁碼為人物出場之頁。\n別名與原名另立參見條目。"}
 
 :::index
 
 :::paragraphs{style="colophon"}
-Sueño en el pabellón rojo, capítulos 1 a 3, edición en caracteres tradicionales: los pasajes en que aparecen los personajes, según el texto de Cheng y Gao de 1792 (zh.wikisource, CC BY-SA 4.0). Los cortes dentro de un párrafo se marcan con ……. Compuesto en Noto Serif TC, Noto Sans TC y LXGW WenKai TC (SIL OFL).
+Sueño en el pabellón rojo, capítulos 1 a 3, edición en caracteres tradicionales: los pasajes en que aparecen los personajes, según el texto de Cheng y Gao de 1792 (zh.wikisource, revisión 9685985, CC BY-SA 4.0), con 原係 donde el original pone 原系 y —— donde pone －－. Los cortes dentro de un párrafo se marcan con ……. Compuesto en Noto Serif TC, Noto Sans TC y LXGW WenKai TC (SIL OFL).
 :::
