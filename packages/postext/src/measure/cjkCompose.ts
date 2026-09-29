@@ -33,7 +33,7 @@ import type { InlineSpan } from '../parse';
 import type { VDTLine, VDTLineSegment } from '../vdt';
 import { createBoundingBox } from '../vdt';
 import { lineMeasure, type MeasuredBlock, type MeasureBlockOptions } from './types';
-import { measureTextWidth, normalSpaceWidthFor } from './canvas';
+import { measureInkBox, measureInkExtent, measureTextWidth, normalSpaceWidthFor } from './canvas';
 import {
   atomicSpanToken,
   emergencySplit,
@@ -66,7 +66,7 @@ import { hasCJK } from './cjk';
 import { graphemeCount, graphemesOf, lastGrapheme } from './graphemes';
 import { isBreakingSpace } from './spaces';
 import { trimChipLineEdges } from './chipEdges';
-import { cellAdvance, getMeasureWritingMode, withMeasureWritingMode } from './vertical';
+import { cellAdvance, fontFamilyOf, getMeasureWritingMode, measureCentralBaseline, withMeasureWritingMode } from './vertical';
 import {
   applyLineEdges,
   boxCut,
@@ -192,6 +192,12 @@ interface Unit {
    *  graphemes' glyph starts in its one-em cell, px. Set only when a glyph
    *  is not one em wide, so its box and its advance differ. */
   place?: number[];
+  /** A 破折号 (——) set in Chinese boxes (see {@link dashRule}): the
+   *  horizontal scale each dash is painted at (`VDTLineSegment.inkScale`)
+   *  and how far its glyphs move down (negative: up), px, to sit on the
+   *  characters' centre. */
+  scale?: number;
+  shift?: number;
 }
 
 interface Fonts {
@@ -459,9 +465,10 @@ function unitScript(v: Unit): 'cjk' | 'western' | undefined {
  * block's tracking) whatever its font's advance, and its glyph sits where
  * a Chinese font puts it: an opening quote at the end of its box, a
  * closing one at its start, an interpunct, an ellipsis and a single dash
- * centred; a pair (—— ……) is set as the font sets the two together and
- * centred in its two ems, so a 破折号 reads as one line and the six dots
- * of an ellipsis keep one spacing. The composition then adjusts the box as
+ * centred; an ellipsis pair (……) is set as the font sets the two
+ * together and centred in its two ems, so its six dots keep one spacing,
+ * and a 破折号 (——) is stretched into one rule over its two ems
+ * (`dashRule`). The composition then adjusts the box as
  * it does any mark's (`cjk.punctuationWidth`). A glyph one em wide already changes
  * nothing. Next to Western text on both sides (`He said “yes”`) they keep
  * their own advance, and so do they in Japanese and Korean text (the
@@ -494,9 +501,17 @@ function routeSharedMarks(units: Unit[], letterSpacingPx: number): void {
     const em = emOfFont(u.style.font);
     const font = u.style.font;
     let place: number[];
-    if (u.graphemes === 2) {
-      // —— ……: the pair as the font sets it (a face may kern the dashes
-      // into one line), centred in its two ems.
+    const rule = u.graphemes === 2 && (u.text[0] === '\u2014' || u.text[0] === '\u2015')
+      ? dashRule(u.text[0], font, em, em + letterSpacingPx)
+      : undefined;
+    if (rule) {
+      place = rule.place;
+      if (rule.scale !== undefined) u.scale = rule.scale;
+      if (rule.shift !== undefined) u.shift = rule.shift;
+    } else if (u.graphemes === 2) {
+      // ……, or —— when the measurer gives no ink metrics: the pair as the
+      // font sets it (a face may kern the dashes into one line), centred
+      // in its two ems.
       const g = u.text[0]!;
       const adv = measureTextWidth(g, font);
       const pair = measureTextWidth(u.text, font);
@@ -513,6 +528,41 @@ function routeSharedMarks(units: Unit[], letterSpacingPx: number): void {
     u.width = u.graphemes * (em + letterSpacingPx);
     u.place = place;
   }
+}
+
+/** How far past the join each dash of a 破折号 runs, em: the two strokes
+ *  overlap, so no seam shows between them at any resolution. */
+const DASH_JOIN_EM = 0.02;
+
+/**
+ * A 破折号 (——) in Chinese text is one unbroken rule two ems long, on the
+ * characters' centre line (GB/T 15834). Faces whose em dash is a
+ * proportional Latin stroke (Noto Serif SC: 0.89 em advance, ink from 0.04
+ * to 0.85 em, at the height of a Latin dash) print the pair as a short
+ * rule with blank on both sides, and low. Each dash is stretched over its
+ * cell (`cell`, px: an em and the block's tracking): the rule starts and
+ * ends the face's own side bearing inside the pair's two cells (at most a
+ * tenth of an em) and each stroke runs `DASH_JOIN_EM` past the join. Its
+ * glyphs move to the centre of the ideographic em box
+ * (`measureCentralBaseline`). Undefined when the measurer gives no ink
+ * metrics, or when the dash already fills its em (a face whose two dashes
+ * join by themselves).
+ */
+function dashRule(g: string, font: string, em: number, cell: number): { place: number[]; scale?: number; shift?: number } | undefined {
+  const ink = measureInkExtent(g, font);
+  // No ink metrics, or a dash already drawn edge to edge across its em.
+  if (!ink || (ink.start <= 0.01 * em && ink.end >= cell - 0.01 * em)) return undefined;
+  const side = Math.min(Math.max(ink.start, 0), 0.1 * em);
+  const join = DASH_JOIN_EM * em;
+  const scale = (cell - side + join) / (ink.end - ink.start);
+  const place = [side - ink.start * scale, -join - ink.start * scale];
+  const box = measureInkBox(g, font);
+  const shift = box ? (box.ascent - box.descent) / 2 - measureCentralBaseline(fontFamilyOf(font)) * em : 0;
+  return {
+    place,
+    ...(Math.abs(scale - 1) > 1e-3 ? { scale } : {}),
+    ...(Math.abs(shift) > 0.01 * em ? { shift } : {}),
+  };
 }
 
 /** The em (px) of a font shorthand: its size. */
@@ -1278,6 +1328,8 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
       // a Chinese box, so no renderer paints its line in one run at the
       // glyphs' own advances.
       ...(ink !== undefined ? { inkOffset: ink } : {}),
+      ...(u.scale !== undefined ? { inkScale: u.scale } : {}),
+      ...(u.shift !== undefined ? { baselineShift: u.shift } : {}),
     };
   };
   for (let j = 0; j < us.length; j++) {
@@ -1416,7 +1468,10 @@ export function composeCjkParagraph(
   let lines = compose(breakUnits(units, breaks, measureOf, 0, letterSpacingPx, fit));
   // Column balancing asks for a paragraph one line longer: break each line
   // a little short of its measure, in eighths of an em, until the paragraph
-  // gains the lines without a line past the tracking cap.
+  // gains the lines without a line past the tracking cap. The first step
+  // that gains them usually carries a single character down; a setting
+  // whose last line is one character, alone or with its marks (孤字), is
+  // passed over for the next step's, which carries more.
   const looseness = options?.looseness ?? 0;
   if (looseness > 0) {
     const target = lines.length + looseness;
@@ -1425,7 +1480,7 @@ export function composeCjkParagraph(
       if (ranges.length < target) continue;
       if (ranges.length > target) break;
       const loose = compose(ranges);
-      if (!loose.some((l) => l.cjkLoose)) {
+      if (!loose.some((l) => l.cjkLoose) && !endsOnOneCharacter(loose)) {
         lines = loose;
         break;
       }
@@ -1435,6 +1490,17 @@ export function composeCjkParagraph(
     expandSmallCaps(lines, normalFont, boldFont, italicFont, boldItalicFont, letterSpacingPx);
   }
   return { lines, totalHeight: lines.length * lineHeightPx };
+}
+
+/** Whether a paragraph of two lines or more ends on a line that holds one
+ *  CJK character, alone or followed by the marks that may not open a line
+ *  (`图`, `版。`, `说。”`): the 孤字 Chinese typesetting avoids. */
+function endsOnOneCharacter(lines: readonly VDTLine[]): boolean {
+  if (lines.length < 2) return false;
+  const gs = graphemesOf(lines[lines.length - 1]!.text.trim());
+  let n = gs.length;
+  while (n > 1 && isLineStartProhibited(cjkClassOf(gs[n - 1]!), 'basic')) n--;
+  return n === 1 && isCjkGrapheme(gs[0]!) && cjkClassOf(gs[0]!) === 'ideograph';
 }
 
 /** Where a word that holds CJK characters may break, and its widths: see

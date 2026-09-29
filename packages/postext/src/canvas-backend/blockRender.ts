@@ -7,6 +7,7 @@ import { paintSwatch } from './swatch';
 import { paintChip } from './chip';
 import { lineInkExtent, lineTrailingTracking } from '../lineInk';
 import { fillFlowText } from './verticalText';
+import { fillSegmentText } from './segmentText';
 import { lineMarkCuts, type MarkCutRule } from '../measure/markCuts';
 
 function pickSegmentFont(
@@ -180,7 +181,7 @@ function renderSegments(
     }
     // A compressed CJK mark is painted before its box (`inkOffset`), along
     // the line in either writing mode.
-    fillFlowText(ctx, seg.text, x + (seg.inkOffset ?? 0), baseline + (seg.baselineShift ?? 0), 'fill', undefined, cuts);
+    fillSegmentText(ctx, seg, x, baseline, cuts);
     x += seg.width;
   }
   if (spacing !== tracking) ctx.letterSpacing = `${tracking}px`;

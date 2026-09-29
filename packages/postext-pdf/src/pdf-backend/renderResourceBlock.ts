@@ -71,6 +71,7 @@ import {
   type VectorFont,
   type VectorFontResolver,
 } from './svgVector';
+import { inkScaleOperators } from './inkScale';
 
 /** Raw bytes of a resource binary, keyed by `fileId`. */
 export type ResourceBytesProvider = (fileId: string) => Uint8Array | undefined;
@@ -638,7 +639,10 @@ function paintLineRuns(
       const markSpacing = compressedMarkSpacingPx(font, seg, size);
       if (markSpacing !== undefined) ctx.page.pushOperators(setCharacterSpacing(markSpacing * ctx.scale));
       else if (seg.tracking !== undefined) ctx.page.pushOperators(setCharacterSpacing((tracking + seg.tracking) * ctx.scale));
+      const stretch = inkScaleOperators(seg.inkScale);
+      ctx.page.pushOperators(...stretch.before);
       drawTextPx(ctx, seg.text, x + (seg.inkOffset ?? 0), line.baseline + (seg.baselineShift ?? 0), font, size, segColor);
+      ctx.page.pushOperators(...stretch.after);
       if (markSpacing !== undefined || seg.tracking !== undefined) ctx.page.pushOperators(setCharacterSpacing(tracking * ctx.scale));
       const ref = refId !== undefined ? refRun.leave(seg, segs[i + 1], refId) : undefined;
       if (ref && linkRegistry) {

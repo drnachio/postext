@@ -44,6 +44,13 @@ const CJK_TEXT_DECL = "text-spacing-trim:space-all;text-autospace:no-autospace;f
 /** The part of {@link CJK_TEXT_DECL} a `font` shorthand resets: repeated
  *  after it on an inner box in another face. */
 const CJK_FEATURES_DECL = "font-feature-settings:'chws' 0,'halt' 0,'vchw' 0;";
+/** A dash of a 破折号 stretched over its em (`VDTLineSegment.inkScale`):
+ *  scaled from its start, with the glyph the layout measured. Under
+ *  `lang="zh-Hans"` a face may swap its own Chinese form in (`locl`: Noto
+ *  Serif SC's full-width dash), which the scale was not computed for. */
+const DASH_FEATURES_DECL = "font-feature-settings:'chws' 0,'halt' 0,'vchw' 0,'locl' 0;";
+const inkScaleDecl = (scale: number): string =>
+  `transform:scaleX(${scale.toFixed(4)});transform-origin:0 0;${DASH_FEATURES_DECL}`;
 
 /** Whether a line box carries {@link CJK_TEXT_DECL}: a line of the CJK
  *  composer, which it measured character by character, or a line with no
@@ -307,9 +314,10 @@ function renderTextSegment(
   const spacingDecl = seg.tracking !== undefined ? `letter-spacing:${tracking + seg.tracking}px;` : '';
   // A compressed CJK mark is painted before its box (`inkOffset`).
   const left = seg.inkOffset !== undefined ? x + seg.inkOffset : x;
-  const pos = `position:absolute;left:${left.toFixed(3)}px;top:${top};white-space:pre;${spacingDecl}${cjk === 'own' ? CJK_TEXT_DECL : ''}`;
+  const scaleDecl = seg.inkScale !== undefined ? inkScaleDecl(seg.inkScale) : '';
+  const pos = `position:absolute;left:${left.toFixed(3)}px;top:${top};white-space:pre;${spacingDecl}${cjk === 'own' ? CJK_TEXT_DECL : ''}${scaleDecl}`;
   const text = esc(seg.text);
-  const featuresDecl = cjk && fontDecl ? CJK_FEATURES_DECL : '';
+  const featuresDecl = !fontDecl ? '' : scaleDecl ? DASH_FEATURES_DECL : cjk ? CJK_FEATURES_DECL : '';
   if (seg.refResourceId !== undefined) {
     // Anchors carry an explicit color so the UA link blue never leaks in.
     const inner = `<a href="${refAnchorHref(seg.refResourceId)}" style="text-decoration:none;${fontDecl}${featuresDecl}${fontDecl ? 'line-height:0;' : ''}color:${color};">${text}</a>`;

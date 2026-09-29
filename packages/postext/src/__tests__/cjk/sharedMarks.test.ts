@@ -31,12 +31,16 @@ const width = (s: string, em: number): number => {
   for (const [pair, k] of Object.entries(KERN)) if (s.includes(pair)) w += k * em;
   return w;
 };
+/** Whether the stub gives ink metrics (a measurer without them sets a
+ *  破折号 as the font sets the pair). */
+let INK = true;
 class StubCtx {
   font = `${EM}px Test`;
   letterSpacing = '0px';
   measureText(s: string): TextMetrics {
     const em = Number(SIZE_RE.exec(this.font)?.[1] ?? EM);
     const w = width(s, em);
+    if (!INK) return { width: w } as TextMetrics;
     return { width: w, actualBoundingBoxAscent: em * 0.8, actualBoundingBoxDescent: em * 0.04, actualBoundingBoxLeft: 0, actualBoundingBoxRight: w } as TextMetrics;
   }
 }
@@ -93,26 +97,32 @@ describe('marks shared with Latin text take a Chinese box in Chinese text', () =
     expect(ls[0]!.bbox.width).toBeCloseTo(8 * EM);
   });
 
-  it('gives …… and —— one em per character, each pair centred as the font sets it', () => {
+  it('gives …… and —— one em per character: the ellipsis centred as the font sets it, the dash stretched over its ems', () => {
     const ls = lines('忽念及当日——一一细考较去……觉其', { punctuationWidth: 'fullwidth', compressAdjacent: false });
     const dashes = segs(ls, '—');
     const dots = segs(ls, '…');
     expect(dashes).toHaveLength(2);
     expect(dots).toHaveLength(2);
     for (const s of [...dashes, ...dots]) expect(s.width).toBeCloseTo(EM);
-    // Each pair meets at its middle: 0.1 em blank on the outer sides of
-    // the dash, 0.2 em on those of the ellipsis.
-    expect(dashes[0]!.inkOffset).toBeCloseTo(0.1 * EM);
-    expect(dashes[1]!.inkOffset).toBeCloseTo(0);
+    // The ellipsis meets at its middle, 0.2 em blank on its outer sides.
     expect(dots[0]!.inkOffset).toBeCloseTo(0.2 * EM);
     expect(dots[1]!.inkOffset).toBeCloseTo(0);
+    expect(dots[0]!.inkScale).toBeUndefined();
+    // Each 0.9-em dash (ink edge to edge in the stub) stretched over its em
+    // and 0.02 em past the join: one rule from 0 to 2 em.
+    const scale = 1.02 / 0.9;
+    for (const s of dashes) expect(s.inkScale).toBeCloseTo(scale);
+    expect(dashes[0]!.inkOffset).toBeCloseTo(0);
+    expect(dashes[1]!.inkOffset).toBeCloseTo(-0.02 * EM);
+    expect(EM + dashes[1]!.inkOffset! + 0.9 * EM * scale).toBeCloseTo(2 * EM);
     expect(ls[0]!.bbox.width).toBeCloseTo(17 * EM);
   });
 
-  it('keeps the kerning a face puts between the two dashes of a pair', () => {
+  it('keeps the kerning a face puts between the two dashes of a pair when the measurer gives no ink metrics', () => {
     // Noto Serif SC: — 0.89 em, —— kerned 0.088 em tighter, so the two
     // strokes join.
     KERN['——'] = -0.088;
+    INK = false;
     clearTextWidthCache();
     try {
       const ls = lines('女子——一一细考', { punctuationWidth: 'fullwidth', compressAdjacent: false });
@@ -124,8 +134,10 @@ describe('marks shared with Latin text take a Chinese box in Chinese text', () =
       // font puts it, 0.088 em into the first one's advance.
       expect(a!.inkOffset).toBeCloseTo(EM - pair / 2);
       expect(EM + b!.inkOffset!).toBeCloseTo(a!.inkOffset! + (0.9 - 0.088) * EM);
+      expect(a!.inkScale).toBeUndefined();
     } finally {
       delete KERN['——'];
+      INK = true;
       clearTextWidthCache();
     }
   });
@@ -277,9 +289,18 @@ describe('renderers paint a shared mark in its Chinese box', () => {
     const block = doc.blocks.find((b) => b.type === 'paragraph')!;
     const texts: { text: string; x: number }[] = [];
     const target: Record<string | symbol, unknown> = { letterSpacing: '0px', font: FONT };
+    // The pen's horizontal transform: a stretched dash is painted at the
+    // origin of a translated, scaled context.
+    let tx = 0;
+    let sx = 1;
+    const saved: [number, number][] = [];
     const ctx = new Proxy(target, {
       get(t, key) {
-        if (key === 'fillText') return (text: string, x: number) => { texts.push({ text, x }); };
+        if (key === 'fillText') return (text: string, x: number) => { texts.push({ text, x: tx + sx * x }); };
+        if (key === 'save') return () => { saved.push([tx, sx]); };
+        if (key === 'restore') return () => { [tx, sx] = saved.pop() ?? [0, 1]; };
+        if (key === 'translate') return (x: number) => { tx += sx * x; };
+        if (key === 'scale') return (x: number) => { sx *= x; };
         if (key === 'measureText') return (s: string) => ({ width: width(s, EM) });
         if (key in t) return t[key];
         return () => undefined;
@@ -296,6 +317,7 @@ describe('renderers paint a shared mark in its Chinese box', () => {
           const at = x + s.inkOffset!;
           expect(texts.some((t) => t.text === s.text && Math.abs(t.x - at) < 1e-6), `${s.text} at ${at}`).toBe(true);
           expect(html).toContain(`left:${(at - line.bbox.x).toFixed(3)}px;`);
+          if (s.inkScale !== undefined) expect(html).toContain(`transform:scaleX(${s.inkScale.toFixed(4)})`);
           checked++;
         }
         x += s.width;

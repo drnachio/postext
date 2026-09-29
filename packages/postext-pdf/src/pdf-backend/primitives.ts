@@ -834,7 +834,7 @@ export function cjkLineText(segments: readonly { text: string; tracking?: number
  */
 export function compressedMarkSpacingPx(
   font: PDFFont,
-  seg: { text: string; width: number; inkOffset?: number },
+  seg: { text: string; width: number; inkOffset?: number; inkScale?: number },
   sizePx: number,
 ): number | undefined {
   if (seg.inkOffset === undefined || !(sizePx > 0)) return undefined;
@@ -848,7 +848,9 @@ export function compressedMarkSpacingPx(
   }
   // Character spacing follows every glyph: only a mark shown as one.
   if (glyphs !== 1) return undefined;
-  return seg.width - seg.inkOffset - (advance / 1000) * sizePx;
+  // A stretched glyph (`inkScale`, shown with `Tz`): the scaling applies
+  // to the character spacing as well.
+  return (seg.width - seg.inkOffset) / (seg.inkScale ?? 1) - (advance / 1000) * sizePx;
 }
 
 /** Close the span {@link beginActualTextSpan} opened, with the line's text

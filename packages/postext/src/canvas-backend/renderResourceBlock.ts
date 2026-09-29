@@ -15,6 +15,7 @@
 
 import type { VDTBlock, VDTLine, ResolvedResourceBlock, RoundedOutline } from '../vdt';
 import { fillFlowText, setVerticalPaint } from './verticalText';
+import { fillSegmentText } from './segmentText';
 import { lineMarkCuts } from '../measure/markCuts';
 import { tableCellFill, tableFrameOutline } from '../vdt';
 import { paintSwatch } from './swatch';
@@ -366,7 +367,7 @@ function paintLineRuns(
           : color;
       // A justified CJK line spreads its characters per segment.
       if (seg.tracking !== undefined) ctx.letterSpacing = `${tracking + seg.tracking}px`;
-      fillFlowText(ctx, seg.text, x + (seg.inkOffset ?? 0), line.baseline + (seg.baselineShift ?? 0), 'fill', undefined, cuts);
+      fillSegmentText(ctx, seg, x, line.baseline, cuts);
       if (seg.tracking !== undefined) ctx.letterSpacing = `${tracking}px`;
       x += seg.width;
     }

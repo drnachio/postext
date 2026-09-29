@@ -14,6 +14,7 @@ import {
 import { LinkRegistry, RefRun, UriRuns } from './links';
 import { tagArtifact, tagContent, type StructElem } from './tagging';
 import type { StructureFlow } from './structureFlow';
+import { inkScaleOperators } from './inkScale';
 
 /** Per-document context for resource rendering, threaded through `renderBlock`. */
 export interface ResourceRenderContext {
@@ -180,7 +181,11 @@ function renderSegments(
     const markSpacing = compressedMarkSpacingPx(font, seg, size);
     if (markSpacing !== undefined) ctx.page.pushOperators(setCharacterSpacing(markSpacing * ctx.scale));
     else if (seg.tracking !== undefined) ctx.page.pushOperators(setCharacterSpacing((tracking + seg.tracking) * ctx.scale));
+    // A dash of a 破折号 is stretched over its em (`inkScale`).
+    const stretch = inkScaleOperators(seg.inkScale);
+    ctx.page.pushOperators(...stretch.before);
     drawTextPx(ctx, seg.text, x + (seg.inkOffset ?? 0), baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText);
+    ctx.page.pushOperators(...stretch.after);
     if (markSpacing !== undefined || seg.tracking !== undefined) ctx.page.pushOperators(setCharacterSpacing(tracking * ctx.scale));
     if (seg.pageLink !== undefined && linkRegistry) {
       const { scale, pageHeightPt } = ctx;
