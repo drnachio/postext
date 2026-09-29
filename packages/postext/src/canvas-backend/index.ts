@@ -143,7 +143,11 @@ function paintPage(
   if (flow) {
     ctx.save();
     ctx.transform(0, 1, -1, 0, page.width, 0);
-    outerVertical = setVerticalPaint({ region: doc.config.cjk?.region ?? 'mainland', ...(flow.centralBaselines ? { axes: flow.centralBaselines } : {}) });
+    outerVertical = setVerticalPaint({
+      region: doc.config.cjk?.region ?? 'mainland',
+      uprightDigits: doc.config.cjk?.uprightDigits ?? 2,
+      ...(flow.centralBaselines ? { axes: flow.centralBaselines } : {}),
+    });
   }
 
   if (doc.config.page.baselineGrid.enabled) {

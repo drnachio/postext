@@ -1,4 +1,4 @@
-import { getMeasureWritingMode, setMeasureWritingMode, withMeasureWritingMode } from '../measure/vertical';
+import { fontFamilyOf, getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, measureCentralBaseline, setMeasureWritingMode, withMeasureWritingMode } from '../measure/vertical';
 import type { PartPageInfo } from './placeholders';
 import { applyPartPalettesToFlow, type FlowColorValues } from './partPalette';
 import { TITLE_BREAK_RE, applyTitleBreaks, parseInlineFormatting } from '../parse/inlineFormatting';
@@ -117,11 +117,13 @@ function textPrimitiveToBlock(prim: ResolvedTextPrimitive): VDTDesignTextBlock {
 
   // A centred or right-aligned line is placed by its ink: the tracking
   // after its last glyph does not count (EF-153).
+  // A vertical block's lines stay in its own turned frame: baselines from
+  // the box's right edge (see `VDTDesignTextBlock.vertical`).
   const lines = prim.lines.map((l) => ({
     text: l.text,
     xOffset: prim.contentX + (l.xOffset ?? 0)
       + textAlignOffsetX(prim.align, prim.contentWidth - (l.xOffset ?? 0), l.width - trailingTracking(l.text, prim.letterSpacingPx)),
-    baselineY: prim.y + prim.contentY + vOffset + l.baselineY,
+    baselineY: (prim.vertical ? 0 : prim.y) + prim.contentY + vOffset + l.baselineY,
     width: l.width,
     ...(l.runs ? { runs: l.runs.map((r) => ({ ...r })) } : {}),
     ...(l.wordSpacingPx !== undefined ? { wordSpacingPx: l.wordSpacingPx } : {}),
@@ -147,7 +149,22 @@ function textPrimitiveToBlock(prim: ResolvedTextPrimitive): VDTDesignTextBlock {
       ? { letterSpacingPx: prim.letterSpacingPx }
       : {}),
     ...(prim.stroke ? { stroke: { ...prim.stroke } } : {}),
+    ...(prim.vertical ? { vertical: verticalTextOf(prim) } : {}),
   };
+}
+
+/** How a vertical design text is set (`VDTDesignTextBlock.vertical`): the
+ *  document's region and upright digits, the central axis of each family
+ *  of its runs. */
+function verticalTextOf(prim: ResolvedTextPrimitive): NonNullable<VDTDesignTextBlock['vertical']> {
+  const centralBaselines: Record<string, number> = {};
+  const add = (font: string): void => {
+    const family = fontFamilyOf(font);
+    if (!(family in centralBaselines)) centralBaselines[family] = measureCentralBaseline(family);
+  };
+  add(prim.fontString);
+  for (const line of prim.lines) for (const run of line.runs ?? []) add(run.fontString);
+  return { region: getMeasureRegion(), uprightDigits: getMeasureUprightDigits(), centralBaselines };
 }
 
 function rulePrimitiveToBlock(prim: ResolvedRulePrimitive): VDTDesignRuleBlock {
@@ -1027,9 +1044,17 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
       metadataSources: doc.metadataSources, metadata: doc.metadata as Record<string, unknown>,
     };
     // Running heads and folios stay on the sheet: the physical content
-    // area and trim box.
+    // area and trim box. `anchor.to: 'outer'` is the outer margin, on the
+    // side away from the spine (it swaps with the binding and the page's
+    // parity, as mirrored margins do).
     const sheetArea = flowRectToPage(page, contentArea);
-    const sheetExtras: SlotLayoutExtras = page.flow ? { ...extras, frames: physicalFrames } : extras;
+    const trim = metrics.physical.trimBox;
+    const recto = (page.index + pageIndexOffset) % 2 === 0;
+    const outerRight = recto !== (resolved.page.binding === 'right');
+    const outer = outerRight
+      ? { x: sheetArea.x + sheetArea.width, y: sheetArea.y, width: Math.max(0, trim.x + trim.width - (sheetArea.x + sheetArea.width)), height: sheetArea.height }
+      : { x: trim.x, y: sheetArea.y, width: Math.max(0, sheetArea.x - trim.x), height: sheetArea.height };
+    const sheetExtras: SlotLayoutExtras = { ...extras, frames: { ...physicalFrames, outer } };
     const section = sectionByPage[page.index];
     const headerSlot = section?.header ?? resolved.header;
     const footerSlot = section?.footer ?? resolved.footer;

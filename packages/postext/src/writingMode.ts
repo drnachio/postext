@@ -48,8 +48,11 @@ import { cjkClassOf, isWordInnerMark } from './measure/cjkClasses';
  *    cell of its own (dashes, ellipses, the interpunct).
  *  - `alternate`: the font's vertical form (`vert`); without one, the
  *    `fallback`: `rotate` (brackets, quotes) or `corner` (a mainland
- *    pause or stop mark moved to the top-right quadrant of its cell). */
-export type VerticalOrientationKind = 'upright' | 'sideways' | 'rotate' | 'alternate';
+ *    pause or stop mark moved to the top-right quadrant of its cell).
+ *  - `tcy`: tate-chu-yoko (縱中橫): a short number (`cjk.uprightDigits`)
+ *    or a `:tcy[…]` run set side by side in one upright cell, squeezed
+ *    across when wider than the cell. */
+export type VerticalOrientationKind = 'upright' | 'sideways' | 'rotate' | 'alternate' | 'tcy';
 
 export interface VerticalGlyph {
   orient: VerticalOrientationKind;
@@ -163,6 +166,7 @@ const ALT_ROTATE: VerticalGlyph = { orient: 'alternate', fallback: 'rotate' };
 const ALT_CORNER: VerticalGlyph = { orient: 'alternate', fallback: 'corner' };
 const ALT_EXCLAIM: VerticalGlyph = { orient: 'alternate', fallback: 'corner', offset: { x: 0.5, y: -0.08 } };
 const ALT_COLON: VerticalGlyph = { orient: 'alternate', fallback: 'corner', offset: { x: 0.52, y: -0.22 } };
+const TCY: VerticalGlyph = { orient: 'tcy' };
 
 /**
  * How a grapheme is set in a vertical line of `region`'s Chinese (see the
@@ -220,15 +224,61 @@ export interface VerticalRun {
   cell?: number;
 }
 
+/** The numbers up to how many ASCII digits are set side by side in one
+ *  upright cell (tate-chu-yoko) in vertical text: `cjk.uprightDigits`, 0
+ *  (none), 2 (the default), 3 or 4. */
+export type UprightDigits = 0 | 2 | 3 | 4;
+
+const isAsciiDigit = (g: string | undefined): boolean => g !== undefined && g.length === 1 && g >= '0' && g <= '9';
+const isAsciiLetter = (g: string | undefined): boolean => g !== undefined && g.length === 1 && /[A-Za-z]/.test(g);
+const isGroupMark = (g: string | undefined): boolean => g === '.' || g === ',';
+
+/**
+ * Where the automatic tate-chu-yoko cells of `graphemes` start, with their
+ * length: every run of at most `digits` ASCII digits, whole (a longer run is
+ * set sideways, never split), that is not part of a word (no Latin letter
+ * touches it: `A4`, `mp3`, `3D` stay sideways) nor of a number with digit
+ * grouping or a decimal point (`10,000`, `3.14`: a `,` or `.` between it and
+ * another digit). Empty when `digits` is 0.
+ */
+export function uprightDigitRuns(graphemes: readonly string[], digits: number): Map<number, number> {
+  const out = new Map<number, number>();
+  if (!(digits > 0)) return out;
+  for (let i = 0; i < graphemes.length; i++) {
+    if (!isAsciiDigit(graphemes[i])) continue;
+    let j = i;
+    while (isAsciiDigit(graphemes[j + 1])) j++;
+    const before = graphemes[i - 1];
+    const after = graphemes[j + 1];
+    const grouped = (isGroupMark(before) && isAsciiDigit(graphemes[i - 2])) || (isGroupMark(after) && isAsciiDigit(graphemes[j + 2]));
+    if (j - i + 1 <= digits && !isAsciiLetter(before) && !isAsciiLetter(after) && !grouped) out.set(i, j - i + 1);
+    i = j;
+  }
+  return out;
+}
+
 /** Cut `text` into the runs a vertical line paints and measures: sideways
  *  graphemes joined into runs, every other grapheme a cell of its own. An
  *  apostrophe or interpunct between two letters of a Latin word runs
- *  sideways with it (see `isWordInnerMark`), as the composer measures it. */
-export function verticalRuns(graphemes: readonly string[], region: CjkRegion = 'mainland'): VerticalRun[] {
+ *  sideways with it (see `isWordInnerMark`), as the composer measures it.
+ *  With `uprightDigits` (`cjk.uprightDigits`), each short number
+ *  ({@link uprightDigitRuns}) is one `tcy` cell. */
+export function verticalRuns(graphemes: readonly string[], region: CjkRegion = 'mainland', uprightDigits = 0): VerticalRun[] {
   const out: VerticalRun[] = [];
+  const tcy = uprightDigitRuns(graphemes, uprightDigits);
   let side = '';
   for (let i = 0; i < graphemes.length; i++) {
     const g = graphemes[i]!;
+    const combined = tcy.get(i);
+    if (combined !== undefined) {
+      if (side) {
+        out.push({ text: side, glyph: SIDEWAYS });
+        side = '';
+      }
+      out.push({ text: graphemes.slice(i, i + combined).join(''), glyph: TCY, cell: 1 });
+      i += combined - 1;
+      continue;
+    }
     const glyph = isWordInnerMark(g, graphemes[i - 1], graphemes[i + 1]) ? SIDEWAYS : verticalOrientation(g, region);
     if (glyph.orient === 'sideways') {
       side += g;
@@ -244,9 +294,33 @@ export function verticalRuns(graphemes: readonly string[], region: CjkRegion = '
   return out;
 }
 
+/** How the author set a run of vertical text apart (`VDTLineSegment.tcy`,
+ *  `VDTLineSegment.orientation`): `'tcy'` (`:tcy[…]`), one upright cell;
+ *  `'upright'` (`:upright[…]`), every character upright in a cell of its
+ *  own; `'sideways'` (`:sideways[…]`), the whole run turned. */
+export type ForcedOrientation = 'tcy' | 'upright' | 'sideways';
+
+/** The runs of a text whose orientation the author forced (see
+ *  {@link ForcedOrientation}): one `tcy` cell, one upright cell per
+ *  grapheme, or one sideways run. */
+export function forcedVerticalRuns(graphemes: readonly string[], orient: ForcedOrientation): VerticalRun[] {
+  if (graphemes.length === 0) return [];
+  if (orient === 'tcy') return [{ text: graphemes.join(''), glyph: TCY, cell: 1 }];
+  if (orient === 'sideways') return [{ text: graphemes.join(''), glyph: SIDEWAYS }];
+  return graphemes.map((g) => ({ text: g, glyph: UPRIGHT, cell: 1 }));
+}
+
+/** The orientation a segment's author forced, if any. */
+export function segmentOrientation(seg: { tcy?: boolean; orientation?: 'upright' | 'sideways' }): ForcedOrientation | undefined {
+  return seg.tcy ? 'tcy' : seg.orientation;
+}
+
 /** Whether `text` holds a character that stands in a cell of its own in
- *  vertical text (see {@link verticalRuns}). ASCII never does. */
-export function holdsVerticalCell(text: string): boolean {
+ *  vertical text (see {@link verticalRuns}), a short number included when
+ *  `uprightDigits` sets it in a cell (the measurer passes the document's
+ *  `cjk.uprightDigits`, as the painters do). ASCII letters never do. */
+export function holdsVerticalCell(text: string, uprightDigits: number): boolean {
+  if (uprightDigits > 0 && /[0-9]/.test(text) && uprightDigitRuns([...text], uprightDigits).size > 0) return true;
   // eslint-disable-next-line no-control-regex
   if (!/[^\u0000-\u007F]/.test(text)) return false;
   for (const ch of text) {

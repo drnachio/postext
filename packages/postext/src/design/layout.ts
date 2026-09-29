@@ -1,4 +1,4 @@
-import { flowTextWidth } from '../measure/vertical';
+import { flowTextWidth, getMeasureWritingMode, withMeasureWritingMode } from '../measure/vertical';
 import type {
   AnchorEdge,
   ColorValue,
@@ -118,6 +118,12 @@ export interface ResolvedTextPrimitive extends ResolvedElementGeometry {
   contentWidth: number;
   contentHeight: number;
   box?: ResolvedElementBox;
+  /** Set vertically (`DesignTextElement.writingMode: 'vertical-rl'`): `x`,
+   *  `y`, `width`, `height` are the box as it stands, every other number
+   *  (the lines, the content box) is in the box's own frame turned a
+   *  quarter turn clockwise, where a line runs along `width` = the box's
+   *  height and its baselines are measured from the box's right edge. */
+  vertical?: true;
 }
 
 export interface ResolvedRulePrimitive extends ResolvedElementGeometry {
@@ -218,6 +224,10 @@ export interface LayoutIssue {
 export interface DesignFrames {
   page: { x: number; y: number; width: number; height: number };
   bleed: { x: number; y: number; width: number; height: number };
+  /** The page's outer margin, for `anchor.to: 'outer'` (header and footer
+   *  slots): between the type area and the trim edge away from the spine,
+   *  from the type area's head to its foot. */
+  outer?: { x: number; y: number; width: number; height: number };
   /** The frames of a vertical page's flow (`VDTPage.flow`): a picture
    *  stands upright on the sheet, so its box in the flow is sized with the
    *  picture's width and height swapped (`ResolvedImagePrimitive.upright`). */
@@ -337,7 +347,7 @@ export function applyPaletteOverrides(el: ResolvedDesignElement, overrides: Reco
 
 function anchorTargetId(placement: ElementPlacement): string | undefined {
   const to = placement.anchor.to;
-  if (to === 'container' || to === 'page' || to === 'bleed') return undefined;
+  if (to === 'container' || to === 'page' || to === 'bleed' || to === 'outer') return undefined;
   return to.slice(1);
 }
 
@@ -348,6 +358,7 @@ function frameFor(placement: ElementPlacement, frames: DesignFrames | undefined)
   const to = placement.anchor.to;
   if (to === 'page') return frames.page;
   if (to === 'bleed') return frames.bleed;
+  if (to === 'outer') return frames.outer;
   return undefined;
 }
 
@@ -914,18 +925,22 @@ export function layoutDesignSlot(
       ? resolveElementAnchor(el.placement.anchor.edge, refGeo)
       : resolveContainerAnchor(el.placement.anchor.edge, refGeo);
 
-    const offsetX = dimPx(el.placement.offset?.x, context.dpi);
-    const offsetY = dimPx(el.placement.offset?.y, context.dpi);
+    // A text element's offset may be written in ems of its own size (a
+    // running head four characters below the type area).
+    const emPx = el.kind === 'text' ? dimPx(el.fontSize, context.dpi) : undefined;
+    const offsetX = dimPx(el.placement.offset?.x, context.dpi, emPx);
+    const offsetY = dimPx(el.placement.offset?.y, context.dpi, emPx);
     const anchorX = anchor.anchorX + offsetX;
     const anchorY = anchor.anchorY + offsetY;
 
     if (el.kind === 'text') {
-      const prims = layoutTextElement(el, textContent.get(el.id) ?? '', {
-        anchorX,
-        anchorY,
-        pinX: anchor.pinX,
-        pinY: anchor.pinY,
-      }, fillRef, context.dpi, useElementEdge);
+      const pin: AnchorResult = { anchorX, anchorY, pinX: anchor.pinX, pinY: anchor.pinY };
+      // A vertical element in a frame whose text is horizontal (a running
+      // head on the sheet, a design of a horizontal page); in a vertical
+      // flow the text already runs down.
+      const prims = el.writingMode === 'vertical-rl' && getMeasureWritingMode() !== 'vertical-rl'
+        ? layoutVerticalTextElement(el, textContent.get(el.id) ?? '', pin, fillRef, context.dpi, useElementEdge)
+        : layoutTextElement(el, textContent.get(el.id) ?? '', pin, fillRef, context.dpi, useElementEdge);
       resolvedGeo.set(el.id, prims[0]!);
       primsByElement.set(el, prims);
     } else if (el.kind === 'rule') {
@@ -1090,7 +1105,8 @@ function justifyLine(
     natural = measure(text);
   }
   const pieces: DesignTextRun[] = runs ?? [{ text, fontString: font, width: natural }];
-  const splittable = (i: number): boolean => !pieces[i]!.stacked && !pieces[i - 1]?.stacked;
+  // A run the author oriented in vertical text is never cut at its spaces.
+  const splittable = (i: number): boolean => !pieces[i]!.stacked && !pieces[i - 1]?.stacked && !pieces[i]!.tcy && !pieces[i]!.orientation;
   let spaces = 0;
   pieces.forEach((r, i) => { if (splittable(i)) spaces += stretchableSpaces(r.text); });
   const room = width - natural;
@@ -1368,6 +1384,49 @@ function layoutTextElement(
     ...(stroke ? { stroke: { ...stroke, color: el.stroke?.color ? stroke.color : cap.color } } : {}),
   };
   return [main, capPrim];
+}
+
+const flipPin = (p: Pin): Pin => (p === 'start' ? 'end' : p === 'end' ? 'start' : 'middle');
+
+/**
+ * A text element set vertically (`writingMode: 'vertical-rl'`): laid out
+ * as a horizontal text in the element's own frame turned a quarter turn
+ * clockwise — its lines as long as the box is tall, stacked from the right
+ * — and measured as vertical text (characters in their cells), then
+ * turned back onto the page. A flow point `(fx, fy)` of that frame stands
+ * at `(−fy, fx)` on the page, so the anchor, the pins and the container
+ * turn with it: the top of the page is the start of a line, its right the
+ * top of the frame. A drop cap is not set.
+ */
+function layoutVerticalTextElement(
+  el: ResolvedDesignTextElement,
+  resolvedText: string,
+  pin: AnchorResult,
+  container: AnchorReference,
+  dpi: number,
+  anchoredToElement: boolean,
+): ResolvedTextPrimitive[] {
+  const flowPin: AnchorResult = { anchorX: pin.anchorY, anchorY: -pin.anchorX, pinX: pin.pinY, pinY: flipPin(pin.pinX) };
+  const flowContainer: AnchorReference = { x: container.y, y: -(container.x + container.width), width: container.height, height: container.width };
+  const size = el.placement.size;
+  const padding = el.box?.padding;
+  const turned: ResolvedDesignTextElement = {
+    ...el,
+    dropCap: undefined,
+    placement: {
+      ...el.placement,
+      size: {
+        width: size?.height,
+        height: size?.width,
+        ...(size?.maxWidth !== undefined ? { maxWidth: size.maxWidth } : {}),
+      },
+    },
+    ...(el.box
+      ? { box: { ...el.box, ...(padding ? { padding: { top: padding.right, right: padding.bottom, bottom: padding.left, left: padding.top } } : {}) } }
+      : {}),
+  };
+  const [main] = withMeasureWritingMode('vertical-rl', () => layoutTextElement(turned, resolvedText, flowPin, flowContainer, dpi, anchoredToElement));
+  return [{ ...main!, x: -(main!.y + main!.height), y: main!.x, width: main!.height, height: main!.width, vertical: true }];
 }
 
 function layoutRuleElement(

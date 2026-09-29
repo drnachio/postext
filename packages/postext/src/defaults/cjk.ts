@@ -22,6 +22,7 @@ export const DEFAULT_CJK_CONFIG: Required<CjkConfig> = {
   trimLineStart: 'auto',
   hangingPunctuation: 'none',
   latinSpacing: { value: 0.25, unit: 'em' },
+  uprightDigits: 2,
   grid: { enabled: false, show: false },
 };
 
@@ -95,6 +96,8 @@ export function resolveCjkConfig(partial: CjkConfig | undefined, locale: string 
   const latinSpacing = isLength(partial?.latinSpacing) && partial.latinSpacing.value >= 0
     ? { value: partial.latinSpacing.value, unit: partial.latinSpacing.unit }
     : { ...DEFAULT_CJK_CONFIG.latinSpacing };
+  const digits = typeof partial?.uprightDigits === 'string' ? Number(partial.uprightDigits) : partial?.uprightDigits;
+  const uprightDigits = digits === 0 || digits === 2 || digits === 3 || digits === 4 ? digits : DEFAULT_CJK_CONFIG.uprightDigits;
   return {
     region,
     lineBreak,
@@ -103,6 +106,7 @@ export function resolveCjkConfig(partial: CjkConfig | undefined, locale: string 
     trimLineStart,
     hangingPunctuation,
     latinSpacing,
+    uprightDigits,
     grid: resolveGrid(partial?.grid),
   };
 }
@@ -132,6 +136,7 @@ export function stripCjkDefaults(cjk?: CjkConfig): CjkConfig | undefined {
   if (cjk.trimLineStart !== undefined && cjk.trimLineStart !== d.trimLineStart) result.trimLineStart = cjk.trimLineStart;
   if (cjk.hangingPunctuation !== undefined && cjk.hangingPunctuation !== d.hangingPunctuation) result.hangingPunctuation = cjk.hangingPunctuation;
   if (cjk.latinSpacing !== undefined && !dimensionsEqual(cjk.latinSpacing, d.latinSpacing)) result.latinSpacing = cjk.latinSpacing;
+  if (cjk.uprightDigits !== undefined && cjk.uprightDigits !== d.uprightDigits) result.uprightDigits = cjk.uprightDigits;
   const grid = stripGridDefaults(cjk.grid);
   if (grid) result.grid = grid;
   return Object.keys(result).length > 0 ? result : undefined;

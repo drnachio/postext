@@ -1,9 +1,10 @@
-import { popGraphicsState, pushGraphicsState, setCharacterSpacing } from 'pdf-lib';
+import { popGraphicsState, pushGraphicsState } from 'pdf-lib';
+import { segmentOrientation } from 'postext';
 import type { Color, PDFFont } from 'pdf-lib';
 import type { VDTBlock, VDTLine, VDTLineSegment, MathRender } from 'postext';
 import { parseFontString } from '../fontString';
 import { FontCache } from '../fontCache';
-import { type PageCtx, alphaOf, alphaStateOp, beginActualTextSpan, cjkLineText, compressedMarkSpacingPx, drawLinePx, drawMeasuredTextPx, drawSwatchPx, drawTextPx, colorFromHex, endActualTextSpan, type LineTextState } from './primitives';
+import { type PageCtx, alphaOf, alphaStateOp, beginActualTextSpan, cjkLineText, compressedMarkSpacingPx, drawLinePx, drawMeasuredTextPx, drawSwatchPx, drawTextPx, colorFromHex, endActualTextSpan, setTrackingPx, type LineTextState } from './primitives';
 import { paintChip } from './chip';
 import { pickSegmentColor, pickSegmentFont } from './fontHelpers';
 import { renderHeaderFooterSlot } from './headerFooter';
@@ -106,7 +107,9 @@ function renderSegments(
   const repeatedAt = repeatedHyphenSegment(line, segments);
   // A composed CJK line (spread characters, Han–Latin spaces) reads as
   // written, not with the gaps between its pieces.
-  const actualLine = cjkLineText(segments);
+  // A vertical line is painted in runs and cells down the column: it reads
+  // as the line too.
+  const actualLine = ctx.vertical ? segments.map((s) => s.text).join('') : cjkLineText(segments);
   let lineState: LineTextState | undefined;
   if (actualLine !== undefined) {
     const first = segments.find((s) => s.kind === 'text' && !s.chip && s.text !== '');
@@ -177,11 +180,12 @@ function renderSegments(
     const actualText = i === repeatedAt ? seg.text.slice(1) : undefined;
     // A compressed CJK mark is painted before its box (`inkOffset`) and
     // advances to its box's end.
-    const markSpacing = compressedMarkSpacingPx(font, seg, size);
-    if (markSpacing !== undefined) ctx.page.pushOperators(setCharacterSpacing(markSpacing * ctx.scale));
-    else if (seg.tracking !== undefined) ctx.page.pushOperators(setCharacterSpacing((tracking + seg.tracking) * ctx.scale));
-    drawTextPx(ctx, seg.text, x + (seg.inkOffset ?? 0), baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText);
-    if (markSpacing !== undefined || seg.tracking !== undefined) ctx.page.pushOperators(setCharacterSpacing(tracking * ctx.scale));
+    // (Down a vertical line every cell is one em: no mark shown narrower.)
+    const markSpacing = ctx.vertical ? undefined : compressedMarkSpacingPx(font, seg, size);
+    if (markSpacing !== undefined) setTrackingPx(ctx, markSpacing);
+    else if (seg.tracking !== undefined) setTrackingPx(ctx, tracking + seg.tracking);
+    drawTextPx(ctx, seg.text, x + (seg.inkOffset ?? 0), baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText, segmentOrientation(seg));
+    if (markSpacing !== undefined || seg.tracking !== undefined) setTrackingPx(ctx, tracking);
     if (seg.pageLink !== undefined && linkRegistry) {
       const { scale, pageHeightPt } = ctx;
       linkRegistry.addPageLink(
@@ -222,9 +226,9 @@ function renderLine(
   elem: StructElem | undefined,
 ): void {
   const tracking = (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0);
-  if (tracking !== 0) ctx.page.pushOperators(setCharacterSpacing(tracking * ctx.scale));
+  if (tracking !== 0) setTrackingPx(ctx, tracking);
   renderLineText(ctx, line, block, columnWidth, columnX, fontCache, linkRegistry, elem, tracking, trailingTracking(line, tracking));
-  if (tracking !== 0) ctx.page.pushOperators(setCharacterSpacing(0));
+  if (tracking !== 0) setTrackingPx(ctx, 0);
 }
 
 /** The tracking a line's measured width carries after its last glyph:
@@ -302,7 +306,7 @@ function renderLineText(
   // blocks. Segments are needed when any of them styles differently from the
   // block (bold/italic/math/ref/own font or colour); otherwise one text
   // object paints the line.
-  if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined || s.href !== undefined || s.pageLink !== undefined || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined || s.tracking !== undefined || s.inkOffset !== undefined || s.hangs !== undefined || s.autospace !== undefined)) {
+  if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined || s.href !== undefined || s.pageLink !== undefined || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined || s.tracking !== undefined || s.inkOffset !== undefined || s.hangs !== undefined || s.autospace !== undefined || s.tcy !== undefined || s.orientation !== undefined)) {
     renderSegments(ctx, segments, line.bbox.x, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem, undefined, tracking);
     return;
   }

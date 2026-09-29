@@ -2,6 +2,7 @@ import type { InlineSpan } from './types';
 import { MATH_PLACEHOLDER } from './inlineMath';
 import { BREAK_PLACEHOLDER, CHIP_PLACEHOLDER, FOOTNOTE_PLACEHOLDER, REF_PLACEHOLDER, SMALLCAPS_OPENER, SWATCH_PLACEHOLDER } from './inlineFormatting';
 import { sliceSpan } from './links';
+import { orientationOpenerAt } from './orientationMarks';
 
 /** A `:smallcaps[` at `r` that the parser took as markup: its closing `]`
  *  comes later on the same line (an unclosed one stays literal text). */
@@ -162,6 +163,12 @@ export function computeSourceMap(
       // it whole, so its letters never match the text inside.
       if (rc === ':' && isSmallCapsOpenerAt(markdown, r, blockSrcEnd)) {
         r += SMALLCAPS_OPENER.length;
+        continue;
+      }
+      // So has the opener of `:tcy[…]`, `:upright[…]`, `:sideways[…]`.
+      const orientationOpener = rc === ':' ? orientationOpenerAt(markdown, r, blockSrcEnd) : 0;
+      if (orientationOpener > 0) {
+        r += orientationOpener;
         continue;
       }
       if (rc === ch) break;

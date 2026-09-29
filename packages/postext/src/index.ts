@@ -308,12 +308,14 @@ export type {
 } from './vdt';
 export { resourceBlockToPage, resourceBlockToLocal, resourceBlockRectToPage, tableFrameOutline, tableCellFill, tableCellFillRects } from './vdt';
 export { flowToPage, pageToFlow, flowRectToPage, pageRectToFlow, pageIsVertical, DEFAULT_CENTRAL_BASELINE } from './vdt';
-export { verticalOrientation, verticalRuns, uaxVerticalOrientation, isVerticalCell, verticalCellEms, CORNER_OFFSET_EM } from './writingMode';
-export type { VerticalGlyph, VerticalOrientationKind, VerticalRun, UaxVerticalOrientation } from './writingMode';
+export { verticalOrientation, verticalRuns, uaxVerticalOrientation, isVerticalCell, verticalCellEms, CORNER_OFFSET_EM, uprightDigitRuns, forcedVerticalRuns, segmentOrientation } from './writingMode';
+export { graphemesOf } from './measure/graphemes';
+export type { VerticalGlyph, VerticalOrientationKind, VerticalRun, UaxVerticalOrientation, UprightDigits, ForcedOrientation } from './writingMode';
 export { computeColumnEdges } from './pipeline/resourceLayout';
 export type { ContentBlock, ContentBlockType, DirectiveAttrs, DirectiveName, ContainerName, RefCase, InlineSpan, InlineLink, TextSpan, MathSpan, MathMeta, ListKind, ParseIssue, ParseIssueKind, UnclosedMathIssue, UnclosedContainerIssue, TocBlockInfo, IndexBlockInfo, IndexMark, ChipBox } from './parse';
 export { parseMarkdownWithIssues, MATH_PLACEHOLDER, SWATCH_PLACEHOLDER, CHIP_PLACEHOLDER, KNOWN_DIRECTIVES, KNOWN_CONTAINERS, spaceDirectiveLines, MAX_SPACE_LINES } from './parse';
-export { computeSourceMap, parseInlineSnippetSpans, mapInlineSnippet } from './parse';
+export { computeSourceMap, parseInlineSnippetSpans, mapInlineSnippet, orientationMarkAt } from './parse';
+export type { OrientationMark } from './parse';
 export type { InlineSnippetMapping } from './parse';
 export { buildPageLabels, collectPageLabelRuns, formatNumeral, parseNumberFormat, chineseInformalStyle, EAST_ASIAN_NUMERAL_STYLES } from './numbering';
 export type { NumeralStyle, NumberFormatStyle, EastAsianNumeralStyle, PageNumberSegment, PageLabelInfo, PageLabelRun } from './numbering';

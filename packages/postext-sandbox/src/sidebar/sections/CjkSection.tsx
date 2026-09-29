@@ -96,6 +96,7 @@ export const CjkSection = memo(function CjkSection() {
   const trimLineStart = raw?.trimLineStart ?? DEFAULT_CJK_CONFIG.trimLineStart;
   const hanging = raw?.hangingPunctuation ?? DEFAULT_CJK_CONFIG.hangingPunctuation;
   const latinSpacing = raw?.latinSpacing ?? DEFAULT_CJK_CONFIG.latinSpacing;
+  const uprightDigits = raw?.uprightDigits ?? DEFAULT_CJK_CONFIG.uprightDigits;
   const autoRegion = cjkRegionOf(locale) ?? 'mainland';
   const resolvedRegion = region === 'auto' ? autoRegion : region;
   const autoLineBreak = defaultCjkLineBreak(resolvedRegion);
@@ -246,6 +247,18 @@ export const CjkSection = memo(function CjkSection() {
         tooltip={labels.cjkLatinSpacingTooltip}
         isDefault={dimensionsEqual(latinSpacing, DEFAULT_CJK_CONFIG.latinSpacing)}
         onReset={() => resetField('latinSpacing')}
+      />
+      <SelectInput
+        label={labels.cjkUprightDigits}
+        value={String(uprightDigits)}
+        options={[
+          { value: '0', label: labels.cjkOff },
+          ...[2, 3, 4].map((n) => ({ value: String(n), label: labels.cjkUprightDigitsCount.replace('__count__', String(n)) })),
+        ]}
+        onChange={(v) => write({ ...raw, uprightDigits: Number(v) as CjkConfig['uprightDigits'] })}
+        tooltip={labels.cjkUprightDigitsTooltip}
+        isDefault={uprightDigits === DEFAULT_CJK_CONFIG.uprightDigits}
+        onReset={() => resetField('uprightDigits')}
       />
       <FieldGroup title={labels.cjkGrid} description={labels.cjkGridDescription}>
         <ToggleSwitch

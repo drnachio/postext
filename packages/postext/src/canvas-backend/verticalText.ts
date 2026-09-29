@@ -18,15 +18,19 @@
  * Punctuation takes the font's vertical form (OpenType `vert`) through a
  * twin face the host registers with {@link registerVerticalAlternates} —
  * the same font file loaded under another family name with
- * `featureSettings: '"vert" 1'`, which Chrome 140+ applies to canvas text.
- * Without a twin, the fallbacks of `verticalOrientation` apply: brackets and
- * quotes turned about the em box's centre, mainland pause and stop marks
- * moved to the upper right of the cell (each by its glyph's `offset`).
+ * `featureSettings: '"vert" 1, "fwid" 1'`, which Chrome 140+ applies to
+ * canvas text. Without a twin, the fallbacks of `verticalOrientation`
+ * apply: brackets and quotes turned about the em box's centre, mainland
+ * pause and stop marks moved to the upper right of the cell (each by its
+ * glyph's `offset`). A dash, an ellipsis or a wave dash stands in the
+ * twin's vertical form when the font has one (Noto CJK's —— needs `fwid`
+ * with `vert`: a rule down the middle of the cell), else it is turned
+ * with its ink centred on the column's axis.
  */
 
 import type { CjkRegion } from '../types';
 import { DEFAULT_CENTRAL_BASELINE } from '../vdt';
-import { verticalRuns, CORNER_OFFSET_EM, type VerticalGlyph } from '../writingMode';
+import { forcedVerticalRuns, verticalRuns, CORNER_OFFSET_EM, type ForcedOrientation, type VerticalGlyph } from '../writingMode';
 import { graphemeCount, graphemesOf } from '../measure/graphemes';
 import { markPieces, type MarkCutRule } from '../measure/markCuts';
 import { measureRunWidth } from '../measure/canvas';
@@ -36,6 +40,9 @@ export interface VerticalPaintState {
   region: CjkRegion;
   /** `VDTFlowFrame.centralBaselines` of the page. */
   axes?: Record<string, number>;
+  /** `cjk.uprightDigits`: a number of at most this many digits stands in
+   *  one upright cell (as the measurer found it, `verticalRuns`). */
+  uprightDigits?: number;
 }
 
 let paintState: VerticalPaintState | null = null;
@@ -157,7 +164,10 @@ export async function loadVerticalAlternates(family: string, faces: readonly Ver
         ...(face.weight ? { weight: face.weight } : {}),
         ...(face.style ? { style: face.style } : {}),
         ...(face.unicodeRange ? { unicodeRange: face.unicodeRange } : {}),
-        featureSettings: '"vert" 1',
+        // `fwid` with `vert`: the full-width forms of dashes, whose
+        // vertical form Noto CJK keys to both; the marks the twin paints
+        // are full-width already.
+        featureSettings: '"vert" 1, "fwid" 1',
       });
       document.fonts.add(ff);
       loaded.push(ff);
@@ -270,13 +280,16 @@ export function fillFlowText(
   mode: TextPaintMode = 'fill',
   tracking?: number,
   cuts: MarkCutRule = 'text',
+  /** The orientation the author gave the text (`VDTLineSegment.tcy` /
+   *  `orientation`); vertical text only. */
+  orient?: ForcedOrientation,
 ): void {
   const state = paintState;
   if (!state) {
     putHorizontal(ctx, text, x, baseline, mode, cuts);
     return;
   }
-  paintVertical(ctx, state, text, x, baseline, mode, tracking);
+  paintVertical(ctx, state, text, x, baseline, mode, tracking, orient);
 }
 
 function paintVertical(
@@ -287,6 +300,7 @@ function paintVertical(
   y: number,
   mode: TextPaintMode,
   trackingArg: number | undefined,
+  orient?: ForcedOrientation,
 ): void {
   const font = ctx.font;
   const { em, family, prefix } = parseFont(font);
@@ -303,17 +317,41 @@ function paintVertical(
   const twin = twins.get(family);
   const twinFont = twin ? `${prefix}${JSON.stringify(twin)}` : undefined;
   let cx = x;
-  for (const run of verticalRuns(graphemesOf(text), state.region)) {
+  const graphemes = graphemesOf(text);
+  const runs = orient ? forcedVerticalRuns(graphemes, orient) : verticalRuns(graphemes, state.region, state.uprightDigits ?? 0);
+  for (const run of runs) {
     if (run.cell === undefined) {
       // The frame turns it sideways: painted as it is, the letters tracked.
       put(ctx, run.text, cx, baseline, mode);
       cx += ctx.measureText(run.text).width;
       continue;
     }
+    if (run.glyph.orient === 'tcy') {
+      cx += paintCombined(ctx, run.text, cx, axis, em, central, mode) + tracking;
+      continue;
+    }
     cx += paintCell(ctx, run.text, run.glyph, cx, axis, em * run.cell, em, central, mode, twinFont, tracking !== 0) + tracking;
   }
   if (middle) ctx.textBaseline = 'middle';
   if (align !== 'left' && align !== 'start') ctx.textAlign = align;
+}
+
+/** Whether the twin face (`twin`, a font string) gives `char` a glyph of
+ *  its own — a vertical form — where the face (`face`) has the horizontal
+ *  one: their ink at 100 px differs. Cached per family pair. */
+const formCache = new Map<string, boolean>();
+function twinHasForm(ctx: CanvasRenderingContext2D, face: string, twin: string, char: string): boolean {
+  const at100 = (font: string) => font.replace(SIZE_RE, '100px ');
+  const key = `${at100(face)}|${at100(twin)}|${char}`;
+  const hit = formCache.get(key);
+  if (hit !== undefined) return hit;
+  const saved = ctx.font;
+  const plain = inkKey(ctx, at100(face), char);
+  const vertical = inkKey(ctx, at100(twin), char);
+  ctx.font = saved;
+  const differs = plain !== vertical;
+  formCache.set(key, differs);
+  return differs;
 }
 
 /** Paint one cell (`cell` px along the line: an em, or half of one)
@@ -339,8 +377,12 @@ function paintCell(
   let kind: 'upright' | 'rotate' | 'corner' = 'upright';
   let char = g;
   let face: string | undefined;
-  if (glyph.orient === 'rotate') kind = 'rotate';
-  else if (glyph.orient === 'alternate') {
+  if (glyph.orient === 'rotate') {
+    // A dash, an ellipsis, a wave dash: the font's vertical form when the
+    // twin has one, else turned.
+    if (twinFont && twinHasForm(ctx, ctx.font, twinFont, g)) face = twinFont;
+    else kind = 'rotate';
+  } else if (glyph.orient === 'alternate') {
     if (twinFont) face = twinFont;
     else {
       kind = glyph.fallback === 'corner' ? 'corner' : 'rotate';
@@ -353,10 +395,20 @@ function paintCell(
   ctx.save();
   ctx.translate(cx, axis);
   if (kind === 'rotate') {
-    // Turned with the frame, about the em box's centre; a dash stretched
-    // to fill its cell.
+    // Turned with the frame; a dash stretched to fill its cell. A bracket
+    // or a quote turns about the em box's centre, so it hugs the character
+    // it belongs to; a dash, an ellipsis, an interpunct is centred on the
+    // axis by its ink (Noto's — sits 0.27 em above the baseline, not at the
+    // em box's 0.38).
     if (glyph.stretch && w > 0 && w < cell) ctx.scale(cell / w, 1);
-    put(ctx, char, -w / 2, central, mode);
+    let lift = central;
+    if (glyph.orient === 'rotate') {
+      const m = ctx.measureText(char);
+      const ascent = m.actualBoundingBoxAscent;
+      const descent = m.actualBoundingBoxDescent;
+      if (Number.isFinite(ascent) && Number.isFinite(descent) && ascent + descent > 0) lift = (ascent - descent) / 2;
+    }
+    put(ctx, char, -w / 2, lift, mode);
   } else {
     // Stood upright again about the cell's centre.
     ctx.rotate(-Math.PI / 2);
@@ -369,6 +421,34 @@ function paintCell(
   if (baseFont !== undefined) ctx.font = baseFont;
   if (spacing !== undefined) ctx.letterSpacing = spacing;
   return cell;
+}
+
+/** Tate-chu-yoko: `text` side by side in one upright cell of one em
+ *  (`em` px along the line) centred on `(x + em / 2, axis)`, squeezed
+ *  across to the em when wider; no tracking inside. Returns the cell's
+ *  advance. */
+function paintCombined(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  axis: number,
+  em: number,
+  central: number,
+  mode: TextPaintMode,
+): number {
+  const spacing = ctx.letterSpacing;
+  const tracked = spacing !== '' && spacing !== '0px';
+  if (tracked) ctx.letterSpacing = '0px';
+  const w = ctx.measureText(text).width;
+  const k = w > em ? em / w : 1;
+  ctx.save();
+  ctx.translate(x + em / 2, axis);
+  ctx.rotate(-Math.PI / 2);
+  if (k !== 1) ctx.scale(k, 1);
+  put(ctx, text, -w / 2, central, mode);
+  ctx.restore();
+  if (tracked) ctx.letterSpacing = spacing;
+  return em;
 }
 
 /**

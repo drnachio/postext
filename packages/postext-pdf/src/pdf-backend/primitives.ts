@@ -35,9 +35,10 @@ import {
   setTextRenderingMode,
   TextRenderingMode,
   setGraphicsState,
+  setCharacterSpacing,
 } from 'pdf-lib';
 import { colorAlpha, hexToRgb, rgbToCmyk, rgbToGrayscale } from '../colors';
-import type { PdfColorSpace, RoundedOutline, VDTChip } from 'postext';
+import type { CjkRegion, ForcedOrientation, PdfColorSpace, RoundedOutline, VDTChip } from 'postext';
 import type { PageTagger } from './tagging';
 import { fallbackPieces, type FallbackFace, type TextPiece } from './fallbackSpaces';
 import { fileRuns, noteMissingGlyphs } from '../faceFiles';
@@ -51,15 +52,44 @@ export interface PageCtx {
    *  document is not tagged. Renderers route each drawing call to a
    *  structure element or flag it as an artifact through it. */
   tags?: PageTagger;
-  /** Set while a transform is pushed (a rotated resource block): maps a
-   *  rect `[x1, y1, x2, y2]` in points of the transformed frame — what the
-   *  `*Px` helpers compute — to page user space, for the annotation and
+  /** Set while a frame is pushed ({@link pushFrame}: a vertical page's
+   *  flow, a rotated resource block, a vertical design text): maps a rect
+   *  `[x1, y1, x2, y2]` in points of the current frame — what the `*Px`
+   *  helpers compute — to page user space, for the annotation and
    *  structure rects that live outside the content stream. */
   mapRectPt?: (rect: [number, number, number, number]) => [number, number, number, number];
+  /** The frames pushed with {@link pushFrame}, outermost first, each
+   *  composed with the ones outside it: a point of the innermost frame
+   *  lands on the page through the last one. */
+  frames?: PdfMatrix[];
   /** Told of every image the page paints as a placeholder (no bytes, or
    *  bytes that did not decode), with its resource when the painter knows
    *  it. Set when the host asked for render warnings. */
   onMissingImage?: (fileId: string, resourceId?: string) => void;
+  /** Set while a vertical page's flow (or a vertical design text) paints:
+   *  text is set down the column (see `verticalText.ts`). */
+  vertical?: VerticalPaint;
+  /** The character spacing (px) set with {@link setTrackingPx}: the
+   *  vertical painter reads it, since it sets its own spacing inside its
+   *  text objects. */
+  trackingPx?: number;
+}
+
+/** What the vertical painter needs (see `verticalText.ts`): the Chinese
+ *  region whose marks it sets, the central axis of each family (em above
+ *  the baseline, `VDTFlowFrame.centralBaselines`), and how many digits a
+ *  number set in one upright cell may have (`cjk.uprightDigits`). */
+export interface VerticalPaint {
+  region: CjkRegion;
+  axes?: Record<string, number>;
+  uprightDigits: number;
+}
+
+/** Set the character spacing (`Tc`) text is painted with, px, and record
+ *  it on the context. */
+export function setTrackingPx(ctx: PageCtx, px: number): void {
+  ctx.trackingPx = px;
+  ctx.page.pushOperators(setCharacterSpacing(px * ctx.scale));
 }
 
 /** A PDF transformation matrix `[a b c d e f]` (`x' = a·x + c·y + e`,
@@ -81,6 +111,74 @@ export function pushTransform(ctx: PageCtx, m: PdfMatrix): void {
 export function popTransform(ctx: PageCtx): void {
   ctx.tags?.close();
   ctx.page.pushOperators(popGraphicsState());
+}
+
+/** The quarter-turn matrix of a turned frame (`VDTResourceRotation`, or
+ *  a vertical page's flow, `VDTFlowFrame.rotation`) in the backend's
+ *  points, y up: a frame whose `*Px` helpers flip y against the page
+ *  height, as the page's own do. */
+export function quarterTurnMatrix(
+  rot: { direction: 'cw' | 'ccw'; originX: number; originY: number },
+  scale: number,
+  pageHeightPt: number,
+): PdfMatrix {
+  return rot.direction === 'ccw'
+    ? [0, 1, -1, 0, rot.originX * scale + pageHeightPt, pageHeightPt - rot.originY * scale]
+    : [0, -1, 1, 0, rot.originX * scale - pageHeightPt, pageHeightPt - rot.originY * scale];
+}
+
+/** `inner` then `outer`: the matrix that maps a point of `inner`'s frame
+ *  through both. */
+export function composeMatrix(inner: PdfMatrix, outer: PdfMatrix): PdfMatrix {
+  return [
+    inner[0] * outer[0] + inner[1] * outer[2],
+    inner[0] * outer[1] + inner[1] * outer[3],
+    inner[2] * outer[0] + inner[3] * outer[2],
+    inner[2] * outer[1] + inner[3] * outer[3],
+    inner[4] * outer[0] + inner[5] * outer[2] + outer[4],
+    inner[4] * outer[1] + inner[5] * outer[3] + outer[5],
+  ];
+}
+
+/** Enter a frame: `m` concatenated onto the CTM ({@link pushTransform}),
+ *  and the rects and points computed inside it mapped onto the page
+ *  through it and every frame around it (`ctx.mapRectPt`,
+ *  {@link mapPointPt}). Frames nest; {@link popFrame} leaves the last. */
+export function pushFrame(ctx: PageCtx, m: PdfMatrix): void {
+  pushTransform(ctx, m);
+  const frames = ctx.frames ?? (ctx.frames = []);
+  const outer = frames[frames.length - 1];
+  const composed = outer ? composeMatrix(m, outer) : m;
+  frames.push(composed);
+  ctx.mapRectPt = (r) => mapRectThrough(composed, r);
+}
+
+/** Leave the frame {@link pushFrame} entered last. */
+export function popFrame(ctx: PageCtx): void {
+  popTransform(ctx);
+  const frames = ctx.frames;
+  frames?.pop();
+  const outer = frames?.[frames.length - 1];
+  if (outer) ctx.mapRectPt = (r) => mapRectThrough(outer, r);
+  else {
+    delete ctx.mapRectPt;
+    delete ctx.frames;
+  }
+}
+
+/** A point `(x, y)` in points of the current frame, on the page. */
+export function mapPointPt(ctx: PageCtx, x: number, y: number): { x: number; y: number } {
+  const m = ctx.frames?.[ctx.frames.length - 1];
+  return m ? applyMatrix(m, x, y) : { x, y };
+}
+
+/** The rect map of the frame around the current one (the page's for a
+ *  block turned inside a vertical page's flow), or undefined on the
+ *  page. */
+export function outerRectMap(ctx: PageCtx): PageCtx['mapRectPt'] {
+  const frames = ctx.frames;
+  const outer = frames && frames.length > 1 ? frames[frames.length - 2] : undefined;
+  return outer ? (r) => mapRectThrough(outer, r) : undefined;
 }
 
 /** Map a rect `[x1, y1, x2, y2]` through `m`, re-normalised to min / max. */
@@ -201,7 +299,7 @@ export function alphaStateOp(ctx: PageCtx, fillAlpha: number, strokeAlpha = 1): 
 }
 
 /** `op` as a one-element list when set, for spreading into operator runs. */
-function opt(op: PDFOperator | null): PDFOperator[] {
+export function opt(op: PDFOperator | null): PDFOperator[] {
   return op ? [op] : [];
 }
 
@@ -554,6 +652,26 @@ function shownRun(font: PDFFont, text: string): ShownRun | undefined {
   return run;
 }
 
+/** How far `text` moves the pen in `font`'s face at `sizePx`, px, with
+ *  `trackingPx` after every glyph (as {@link showTextShaped} paints it,
+ *  each run in the file of the face that has it); and how many glyphs it
+ *  shows. */
+export function textAdvancePx(font: PDFFont, text: string, sizePx: number, trackingPx = 0): { advance: number; glyphs: number } {
+  let advance = 0;
+  let glyphs = 0;
+  for (const { font: file, text: part } of fileRuns(font, text)) {
+    const run = shownRun(file, part);
+    if (!run) {
+      advance += file.widthOfTextAtSize(part, sizePx);
+      glyphs += [...part].length;
+      continue;
+    }
+    advance += (run.advance / 1000) * sizePx;
+    glyphs += run.glyphs;
+  }
+  return { advance: advance + glyphs * trackingPx, glyphs };
+}
+
 /** Below this (thousandths of the font size) the pen is left where the
  *  glyphs put it and the difference is carried to the next piece: the
  *  layout and the embedded face agree on almost every word, and the
@@ -629,7 +747,7 @@ export function measuredTextShows(
 
 const fontKeysByPage = new WeakMap<PDFPage, Map<PDFFont, PDFName>>();
 
-function fontKeyOn(page: PDFPage, font: PDFFont): PDFName {
+export function fontKeyOn(page: PDFPage, font: PDFFont): PDFName {
   let keys = fontKeysByPage.get(page);
   if (!keys) {
     keys = new Map();
@@ -663,9 +781,37 @@ export function drawTextPx(
   color: Color,
   outline?: TextOutline,
   actualText?: string,
+  /** Vertical text: the orientation the author gave it
+   *  (`VDTLineSegment.tcy` / `orientation`). */
+  orient?: ForcedOrientation,
 ): void {
   if (!text) return;
+  if (ctx.vertical) {
+    verticalPainter?.(ctx, text, xPx, baselinePx, font, sizePx, color, outline, actualText, orient);
+    return;
+  }
   pushTextObject(ctx, textShows(font, text), xPx, baselinePx, font, sizePx, color, outline, actualText);
+}
+
+/** The painter of vertical text (`verticalText.ts` registers it, so this
+ *  module does not import it back). */
+type VerticalPainter = (
+  ctx: PageCtx,
+  text: string,
+  xPx: number,
+  baselinePx: number,
+  font: PDFFont,
+  sizePx: number,
+  color: Color,
+  outline?: TextOutline,
+  actualText?: string,
+  orient?: ForcedOrientation,
+) => void;
+let verticalPainter: VerticalPainter | undefined;
+
+/** Register the painter {@link drawTextPx} hands vertical text to. */
+export function registerVerticalPainter(painter: VerticalPainter): void {
+  verticalPainter = painter;
 }
 
 /**
@@ -687,6 +833,23 @@ export function drawMeasuredTextPx(
   trackingPx = 0,
   actualText?: string,
 ): boolean {
+  if (ctx.vertical) {
+    // Down the column each piece starts where the layout put it, in one
+    // span that reads as the line.
+    const span = actualText ?? pieces.map((p) => p.text).join('');
+    if (!verticalPainter) return false;
+    // The span closes the structure's open sequence: opened again inside.
+    const elem = ctx.tags?.openElem;
+    beginActualTextSpan(ctx, span, { font, text: pieces[0]?.text ?? '', sizePx, xPx, baselinePx });
+    if (elem) ctx.tags?.content(elem);
+    let x = xPx;
+    for (const piece of pieces) {
+      if (piece.text) verticalPainter(ctx, piece.text, x, baselinePx, font, sizePx, color);
+      x += piece.width;
+    }
+    endActualTextSpan(ctx, { font, text: pieces[0]?.text ?? '', sizePx, xPx, baselinePx });
+    return true;
+  }
   const shows = measuredTextShows(font, pieces, sizePx, trackingPx);
   if (!shows) return false;
   pushTextObject(ctx, shows, xPx, baselinePx, font, sizePx, color, undefined, actualText);
@@ -754,7 +917,7 @@ function pushTextObject(
 type OperatorArg = Parameters<typeof PDFOperator.of>[1] extends (infer A)[] | undefined ? A : never;
 
 /** `shows` inside a `/Span` whose `/ActualText` is `text`. */
-function withActualText(ctx: PageCtx, text: string, shows: readonly PDFOperator[]): PDFOperator[] {
+export function withActualText(ctx: PageCtx, text: string, shows: readonly PDFOperator[]): PDFOperator[] {
   // A property list (`<< /ActualText … >>`) is an inline dictionary operand
   // of `BDC`; pdf-lib types operator arguments narrowly but serialises it.
   const props = ctx.page.doc.context.obj({ ActualText: PDFHexString.fromText(text) }) as unknown as OperatorArg;

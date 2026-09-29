@@ -15,13 +15,15 @@ import {
   colorFromHex,
   fillRectPx,
   makeScale,
-  mapRectThrough,
   popClip,
-  popTransform,
+  popFrame,
   pushClipRect,
-  pushTransform,
+  pushFrame,
+  quarterTurnMatrix,
   whiteColor,
 } from './primitives';
+// Registers the painter of vertical text with the primitives.
+import './verticalText';
 import { collectFontText, type FontText } from './fontHelpers';
 import {
   computeContentArea,
@@ -368,18 +370,21 @@ function renderPage(
   // A vertical page (`VDTPage.flow`) paints its flow through the page's
   // frame, a quarter turn clockwise (the `'cw'` resource matrix with its
   // origin at the sheet's right edge), and maps the rects that live outside
-  // the content stream through it (`ctx.mapRectPt`): link annotations of
-  // the text, contents rows, `:ref`s and page links, the named
-  // destinations of resources and notes, structure bounding boxes. Running
-  // heads, folios and the marks stay on the sheet. Characters are not stood
-  // upright here yet: the flow reads turned until the PDF learns vertical
-  // glyphs (#191).
+  // the content stream through it (`pushFrame`): link annotations of the
+  // text, contents rows, `:ref`s and page links, the named destinations of
+  // resources and notes, structure bounding boxes. Its text is set down the
+  // column (`verticalText.ts`): characters upright through the fonts'
+  // vertical twins, Latin words and long numbers sideways. Running heads,
+  // folios and the marks stay on the sheet.
   let flowMatrix: PdfMatrix | undefined;
   if (vdtPage.flow) {
-    flowMatrix = [0, -1, 1, 0, vdtPage.flow.rotation.originX * scale - pageHeightPt, pageHeightPt - vdtPage.flow.rotation.originY * scale];
-    pushTransform(ctx, flowMatrix);
-    const m = flowMatrix;
-    ctx.mapRectPt = (r) => mapRectThrough(m, r);
+    flowMatrix = quarterTurnMatrix(vdtPage.flow.rotation, scale, pageHeightPt);
+    pushFrame(ctx, flowMatrix);
+    ctx.vertical = {
+      region: doc.config.cjk?.region ?? 'mainland',
+      uprightDigits: doc.config.cjk?.uprightDigits ?? 2,
+      ...(vdtPage.flow.centralBaselines ? { axes: vdtPage.flow.centralBaselines } : {}),
+    };
   }
 
   tagArtifact(ctx, { type: 'Layout' });
@@ -482,8 +487,8 @@ function renderPage(
   }
 
   if (flowMatrix) {
-    popTransform(ctx);
-    delete ctx.mapRectPt;
+    popFrame(ctx);
+    delete ctx.vertical;
   }
 
   // Running headers and footers are pagination artifacts.
@@ -588,6 +593,9 @@ export async function renderToPdf(
         lang: languageTag(first.config),
         producer: 'postext-pdf',
         creatorTool: 'postext',
+        // Vertical text: the document's layout reads top to bottom, lines
+        // right to left (`WritingMode /TbRl`, inherited by every element).
+        ...(first.config.layout.writingMode === 'vertical-rl' ? { writingMode: 'TbRl' as const } : {}),
       })
     : undefined;
 

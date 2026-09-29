@@ -27,7 +27,7 @@
  * become clickable link annotations targeting the resource embed's destination.
  */
 
-import { PDFHexString, setCharacterSpacing, type Color, type PDFImage, type PDFDocument, type PDFEmbeddedPage, type PDFFont } from 'pdf-lib';
+import { PDFHexString, type Color, type PDFImage, type PDFDocument, type PDFEmbeddedPage, type PDFFont } from 'pdf-lib';
 import type {
   VDTBlock,
   VDTLine,
@@ -46,6 +46,7 @@ import {
   cjkLineText,
   compressedMarkSpacingPx,
   drawTextPx,
+  setTrackingPx,
   endActualTextSpan,
   type LineTextState,
   drawLinePx,
@@ -53,9 +54,10 @@ import {
   fillRectPx,
   fillRectsPx,
   colorFromHex,
-  mapRectThrough,
-  pushTransform,
-  popTransform,
+  outerRectMap,
+  popFrame,
+  pushFrame,
+  quarterTurnMatrix,
   pushClipOutline,
   popClip,
   strokeOutlinePx,
@@ -558,9 +560,9 @@ function paintLine(
   elem?: StructElem,
 ): void {
   const tracking = line.letterSpacing ?? 0;
-  if (tracking !== 0) ctx.page.pushOperators(setCharacterSpacing(tracking * ctx.scale));
+  if (tracking !== 0) setTrackingPx(ctx, tracking);
   paintLineRuns(ctx, line, fonts, fontCache, color, linkColor, linkRegistry, resolveRefId, labelColor, elem, tracking);
-  if (tracking !== 0) ctx.page.pushOperators(setCharacterSpacing(0));
+  if (tracking !== 0) setTrackingPx(ctx, 0);
 }
 
 function paintLineRuns(
@@ -636,10 +638,10 @@ function paintLineRuns(
       // A justified CJK line spreads its characters per segment.
       // A compressed CJK mark advances to its box's end (see blockRender).
       const markSpacing = compressedMarkSpacingPx(font, seg, size);
-      if (markSpacing !== undefined) ctx.page.pushOperators(setCharacterSpacing(markSpacing * ctx.scale));
-      else if (seg.tracking !== undefined) ctx.page.pushOperators(setCharacterSpacing((tracking + seg.tracking) * ctx.scale));
+      if (markSpacing !== undefined) setTrackingPx(ctx, markSpacing);
+      else if (seg.tracking !== undefined) setTrackingPx(ctx, (tracking + seg.tracking));
       drawTextPx(ctx, seg.text, x + (seg.inkOffset ?? 0), line.baseline + (seg.baselineShift ?? 0), font, size, segColor);
-      if (markSpacing !== undefined || seg.tracking !== undefined) ctx.page.pushOperators(setCharacterSpacing(tracking * ctx.scale));
+      if (markSpacing !== undefined || seg.tracking !== undefined) setTrackingPx(ctx, tracking);
       const ref = refId !== undefined ? refRun.leave(seg, segs[i + 1], refId) : undefined;
       if (ref && linkRegistry) {
         const { scale, pageHeightPt } = ctx;
@@ -868,17 +870,14 @@ export function renderResourceBlock(
   // structure bounding boxes) go through the same matrix.
   const rot = rb.rotation;
   let matrix: PdfMatrix | undefined;
-  let outerMapRect: PageCtx['mapRectPt'];
+  // A turned block's text is horizontal in its own frame: an upright
+  // figure on a vertical page sets its caption and cells across.
+  const outerVertical = rot ? ctx.vertical : undefined;
   if (rot) {
-    matrix = rot.direction === 'ccw'
-      ? [0, 1, -1, 0, rot.originX * scale + pageHeightPt, pageHeightPt - rot.originY * scale]
-      : [0, -1, 1, 0, rot.originX * scale - pageHeightPt, pageHeightPt - rot.originY * scale];
-    pushTransform(ctx, matrix);
-    const m = matrix;
+    matrix = quarterTurnMatrix(rot, scale, pageHeightPt);
     // Inside a vertical page's frame the block's rects go through both.
-    const outer = ctx.mapRectPt;
-    ctx.mapRectPt = outer ? (r) => outer(mapRectThrough(m, r)) : (r) => mapRectThrough(m, r);
-    outerMapRect = outer;
+    pushFrame(ctx, matrix);
+    delete ctx.vertical;
   }
   const bx = (rot ? 0 : block.bbox.x) + rb.bodyRect.x;
   const by = (rot ? 0 : block.bbox.y) + rb.bodyRect.y;
@@ -922,7 +921,7 @@ export function renderResourceBlock(
   if (linkRegistry && rb.resource.id && !rb.slice?.continued) {
     // On the sheet: the block's box is in the page's frame, which a vertical
     // page turns (not the block's own turned frame).
-    const pageMap = rot ? outerMapRect : ctx.mapRectPt;
+    const pageMap = rot ? outerRectMap(ctx) : ctx.mapRectPt;
     const box: [number, number, number, number] = [
       block.bbox.x * scale, pageHeightPt - (block.bbox.y + block.bbox.height) * scale,
       (block.bbox.x + block.bbox.width) * scale, pageHeightPt - block.bbox.y * scale,
@@ -976,8 +975,7 @@ export function renderResourceBlock(
     }
   }
   if (matrix) {
-    popTransform(ctx);
-    if (outerMapRect) ctx.mapRectPt = outerMapRect;
-    else delete ctx.mapRectPt;
+    popFrame(ctx);
+    if (outerVertical) ctx.vertical = outerVertical;
   }
 }

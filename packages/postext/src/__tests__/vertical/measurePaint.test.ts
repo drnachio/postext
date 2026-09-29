@@ -46,12 +46,13 @@ function flowLines(doc: VDTDocument): Array<{ line: VDTLine; font: string }> {
 /** What the canvas painter advances through a segment: its runs as
  *  `verticalRuns` cuts them, sideways runs at their measured width, cells
  *  at their length; the segment's tracking after every grapheme. */
-function paintedAdvance(seg: VDTLineSegment, font: string, region: 'mainland' | 'taiwan' | 'hongkong'): number {
+function paintedAdvance(seg: VDTLineSegment, font: string, region: 'mainland' | 'taiwan' | 'hongkong', digits = 2): number {
   const f = seg.fontString ?? font;
   const em = Number(/(\d*\.?\d+)px/.exec(f)![1]);
   const t = seg.tracking ?? 0;
   let adv = 0;
-  for (const run of verticalRuns(graphemesOf(seg.text), region)) {
+  // Short numbers stand in one cell (`cjk.uprightDigits`, 2 by default).
+  for (const run of verticalRuns(graphemesOf(seg.text), region, digits)) {
     adv += run.cell === undefined ? stubWidth(run.text, em) + t * graphemesOf(run.text).length : run.cell * em + t;
   }
   return adv;
@@ -104,11 +105,16 @@ describe('vertical text: the painter advances what the measurer measured (#188 r
   }
 
   it('gives an upright sign inside a number its cell: 3×4 advances 3, one em, 4', () => {
-    const doc = buildDocument({ markdown: '價格3×4元' }, config('zh-Hant', 'left'));
+    const noCells = config('zh-Hant', 'left');
+    noCells.cjk = { ...noCells.cjk, uprightDigits: 0 };
+    const doc = buildDocument({ markdown: '價格3×4元' }, noCells);
     const segs = flowLines(doc)[0]!.line.segments!;
     const run = segs.find((s) => s.text === '3×4')!;
     // 10 px em: the digits ½ em each (the stub), × a whole cell.
     expect(run.width).toBeCloseTo(5 + 10 + 5);
+    // With the default two upright digits each digit is a cell too (#190).
+    const cells = buildDocument({ markdown: '價格3×4元' }, config('zh-Hant', 'left'));
+    expect(flowLines(cells)[0]!.line.segments!.find((s) => s.text === '3×4')!.width).toBeCloseTo(30);
   });
 
   it('measures a Latin paragraph of a vertical book with the cells its Chinese marks and upright signs are painted in', () => {
@@ -123,6 +129,49 @@ describe('vertical text: the painter advances what the measurer measured (#188 r
     const width = (locale: string) => flowLines(buildDocument({ markdown: '約翰·史密斯' }, config(locale, 'left')))[0]!.line.bbox.width;
     expect(width('zh-Hans')).toBeCloseTo(5 * 10 + 5);
     expect(width('zh-Hant')).toBeCloseTo(6 * 10);
+  });
+});
+
+describe('vertical text: an ASCII paragraph measures its numbers in the cells they are painted in (#190 review)', () => {
+  // No CJK character, no mark with a cell of its own, no styling: the
+  // paragraph once went to pretext, which measured every number at its
+  // horizontal width.
+  const expected: Record<2 | 3 | 4, string[]> = { 2: ['7'], 3: ['120', '7'], 4: ['1998', '120', '7'] };
+  for (const digits of [2, 3, 4] as const) {
+    it(`sets the numbers of "In 1998 the 120 men met on page 7." in one cell each under ${digits} digits`, () => {
+      const cfg = config('zh-Hant', 'left');
+      cfg.cjk = { ...cfg.cjk, uprightDigits: digits };
+      const doc = buildDocument({ markdown: 'In 1998 the 120 men met on page 7.' }, cfg);
+      const lines = flowLines(doc);
+      expect(lines.length).toBeGreaterThan(0);
+      const off: string[] = [];
+      const cells: string[] = [];
+      for (const { line, font } of lines) {
+        for (const seg of line.segments ?? []) {
+          if (seg.kind !== 'text') continue;
+          const painted = paintedAdvance(seg, font, 'taiwan', digits);
+          if (Math.abs(painted - seg.width) > 0.01) off.push(`${JSON.stringify(seg.text)}: measured ${seg.width.toFixed(2)}, painted ${painted.toFixed(2)}`);
+          for (const run of verticalRuns(graphemesOf(seg.text), 'taiwan', digits)) if (run.glyph.orient === 'tcy') cells.push(run.text);
+        }
+      }
+      expect(off).toEqual([]);
+      expect(cells).toEqual(expected[digits]);
+    });
+  }
+
+  it('measures an ASCII heading and list item of a vertical book the same way', () => {
+    const cfg = config('zh-Hant', 'left');
+    cfg.cjk = { ...cfg.cjk, uprightDigits: 3 };
+    const doc = buildDocument({ markdown: '# Part 120\n\n- Item 7 of 120' }, cfg);
+    const off: string[] = [];
+    for (const { line, font } of flowLines(doc)) {
+      for (const seg of line.segments ?? []) {
+        if (seg.kind !== 'text') continue;
+        const painted = paintedAdvance(seg, font, 'taiwan', 3);
+        if (Math.abs(painted - seg.width) > 0.01) off.push(`${JSON.stringify(seg.text)}: measured ${seg.width.toFixed(2)}, painted ${painted.toFixed(2)}`);
+      }
+    }
+    expect(off).toEqual([]);
   });
 });
 

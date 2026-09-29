@@ -32,7 +32,7 @@ import { collectConfigWarnings } from '../configWarnings';
 import { initHyphenator } from '../measure';
 import { getCjkLineBreak, setCjkLineBreak } from '../measure/cjkClasses';
 import { cjkCompositionOf, getCjkComposition, setCjkComposition } from '../measure/cjkPunctuation';
-import { getMeasureRegion, getMeasureWritingMode, setMeasureWritingMode } from '../measure/vertical';
+import { getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, setMeasureUprightDigits, setMeasureWritingMode } from '../measure/vertical';
 import { stampCentralBaselines } from './verticalMetrics';
 import type { MeasurementCache } from '../measure';
 import { resolveAllConfig, computeBaselineGrid, resolvedLocale } from './config';
@@ -394,12 +394,14 @@ export function buildDocumentPass(
   const composition = getCjkComposition();
   const writingMode = getMeasureWritingMode();
   const region = getMeasureRegion();
+  const uprightDigits = getMeasureUprightDigits();
   try {
     return placeDocumentPass(content, config, cache, options, hints);
   } finally {
     setCjkLineBreak(lineBreak);
     setCjkComposition(composition);
     setMeasureWritingMode(writingMode, region);
+    setMeasureUprightDigits(uprightDigits);
   }
 }
 
@@ -452,6 +454,8 @@ function placeDocumentPass(
   // Characters of a vertical flow that stand in a cell advance by it (half
   // an em for the mainland interpunct).
   setMeasureWritingMode(resolved.layout.writingMode, resolved.cjk.region);
+  // Short numbers set in one upright cell (`cjk.uprightDigits`).
+  setMeasureUprightDigits(resolved.cjk.uprightDigits);
 
   // Compute baseline grid
   const baselineGrid = computeBaselineGrid(resolved);

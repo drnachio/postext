@@ -120,11 +120,12 @@ export const CONTAINER_EDGES: AnchorEdge[] = [
   'bottom-left', 'bottom', 'bottom-right',
 ];
 
-/** Anchor targets that are frames rather than sibling elements. */
-export type FrameTarget = 'container' | 'page' | 'bleed';
+/** Anchor targets that are frames rather than sibling elements (`outer`,
+ *  the page's outer margin, in header and footer slots only). */
+export type FrameTarget = 'container' | 'page' | 'bleed' | 'outer';
 
 export function isFrameTarget(to: string): to is FrameTarget {
-  return to === 'container' || to === 'page' || to === 'bleed';
+  return to === 'container' || to === 'page' || to === 'bleed' || to === 'outer';
 }
 
 /** Anchored to a sibling element (`#id`). */
@@ -135,7 +136,7 @@ export function isElementAnchor(placement: ElementPlacement): boolean {
 /** Anchored to the page or bleed frame (edge-to-edge bands). */
 export function isPageFrameAnchor(placement: ElementPlacement): boolean {
   const to = placement.anchor.to;
-  return to === 'page' || to === 'bleed';
+  return to === 'page' || to === 'bleed' || to === 'outer';
 }
 
 /** Anchored to the slot's own container — the align / margin controls apply. */
@@ -161,7 +162,7 @@ export function applyAnchorTarget(
       offset: { x: ZERO, y: ZERO },
     };
   }
-  if (target === 'page' || target === 'bleed') {
+  if (target === 'page' || target === 'bleed' || target === 'outer') {
     // Moving between frames keeps the edge and offsets; coming from an
     // element anchor starts centred on the slot's natural edge.
     const prev = placement.anchor.edge;

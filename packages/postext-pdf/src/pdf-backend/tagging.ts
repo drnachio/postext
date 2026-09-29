@@ -146,6 +146,11 @@ export class PageTagger {
   get mcidCount(): number {
     return this.nextMcid;
   }
+
+  /** The element the content painted now is routed to, if any. */
+  get openElem(): StructElem | undefined {
+    return this.open && 'elem' in this.open ? this.open.elem : undefined;
+  }
 }
 
 /** Route the next drawing calls on `ctx` to `elem` (no-op when untagged). */
@@ -167,6 +172,11 @@ export interface StructTreeOptions {
   /** `pdf:Producer` / `xmp:CreatorTool` of the XMP packet. */
   producer: string;
   creatorTool: string;
+  /** The writing mode of the document's text, as the Layout attribute
+   *  `WritingMode` of the `Document` element (ISO 32000-1 Table 343), which
+   *  every element inherits: `'TbRl'` for vertical text. Absent: the
+   *  default, `LrTb`. */
+  writingMode?: 'TbRl';
 }
 
 function xmlEscape(s: string): string {
@@ -208,7 +218,9 @@ export class StructTree {
   private nextParentKey = 0;
 
   constructor(readonly pdfDoc: PDFDocument, readonly options: StructTreeOptions) {
-    this.root = this.elem('Document', null, {});
+    this.root = this.elem('Document', null, options.writingMode
+      ? { attributes: [{ owner: 'Layout', entries: { WritingMode: PDFName.of(options.writingMode) } }] }
+      : {});
   }
 
   /** Create an element under `parent` (`null` only for the root). */

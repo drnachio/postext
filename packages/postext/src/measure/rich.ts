@@ -18,7 +18,7 @@ import { trimChipLineEdges } from './chipEdges';
 import { cjkJoinBreaks, hasCJK } from './cjk';
 import { composeCjkParagraph, cjkWordBreaks, composesAsCjk, type CjkWordBreaks } from './cjkCompose';
 import { graphemeCount } from './graphemes';
-import { getMeasureWritingMode, measuringVertically, verticalTextWidth, withMeasureWritingMode } from './vertical';
+import { fontEm, getMeasureUprightDigits, getMeasureWritingMode, measuringVertically, verticalTextWidth, withMeasureWritingMode } from './vertical';
 import { NO_BREAK_SPACES, WORDS_AND_SPACES_RE, isBlankText, isBreakingSpace, isBreakingSpaceRun } from './spaces';
 import { breaksAfterDash, breaksAfterHardHyphen, hasCompound, isDash, raggedStretchPx } from './breakRules';
 
@@ -92,6 +92,12 @@ export interface RichToken {
   /** The chip style's gap (px), read when the word spaces around the chip
    *  are sized (see {@link applyChipGaps}). */
   chipGap?: number;
+  /** Vertical text: a `:tcy[…]` run, one upright cell of one em (see
+   *  `VDTLineSegment.tcy`). */
+  tcy?: true;
+  /** Vertical text: a `:upright[…]` or `:sideways[…]` run (see
+   *  `VDTLineSegment.orientation`). */
+  orientation?: 'upright' | 'sideways';
   /** The token ends on a dash a line may end after, and the next token
    *  touches it: a run in another style, as in `riddles—*and*` (see
    *  {@link markDashJoins}). The line may break between the two. */
@@ -253,10 +259,11 @@ export function smallCapsWidth(text: string, font: string): number {
 /** Advance of `text` in `font`, set in small capitals when `smallCaps`.
  *  In vertical text (`measuringVertically`) a character that stands in a
  *  cell of its own advances its cell (`verticalTextWidth`), as the
- *  renderers paint it; ASCII text never holds one. */
+ *  renderers paint it, and so does a short number set in one cell
+ *  (`cjk.uprightDigits`); no other ASCII text holds one. */
 export function textWidth(text: string, font: string, smallCaps: boolean | undefined): number {
   // eslint-disable-next-line no-control-regex
-  if (measuringVertically() && /[^\u0000-\u007F]/.test(text)) {
+  if (measuringVertically() && (/[^\u0000-\u007F]/.test(text) || (getMeasureUprightDigits() > 0 && /[0-9]/.test(text)))) {
     return verticalTextWidth(text, font, (run) => (smallCaps ? smallCapsWidth(run, font) : measureTextWidth(run, font)));
   }
   return smallCaps ? smallCapsWidth(text, font) : measureTextWidth(text, font);
@@ -738,6 +745,13 @@ export function spanScriptFields(
   return { script: span.script, scriptFont: m.font, baselineShift: m.baselineShift };
 }
 
+/** Whether a span sets something other than its text: a `:ref` or a
+ *  note marker (its label), a chip, a swatch or a formula. The orientation
+ *  marks of vertical text leave such a span as it is. */
+export function setsObject(span: InlineSpan): boolean {
+  return span.ref !== undefined || span.footnote !== undefined || span.chip !== undefined || span.swatch !== undefined || span.math !== undefined || span.mathRender !== undefined;
+}
+
 /**
  * The one token of a span that is set as a whole, or undefined for text:
  * - an inline `:ref` or a footnote marker: the resolved label (already in
@@ -757,6 +771,25 @@ export function atomicSpanToken(
   boldItalicFont: string,
   letterSpacingPx: number,
 ): RichToken | undefined {
+  // Vertical text: a run the author set upright or sideways is one unit a
+  // line never breaks inside (tate-chu-yoko one em, upright letters one em
+  // each, a sideways run its horizontal width). A reference, a note
+  // marker, a chip, a swatch or a formula keeps its own setting.
+  if ((span.combineUpright || span.orientation) && measuringVertically() && span.text.length > 0 && !setsObject(span)) {
+    const font = pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont);
+    const em = fontEm(font);
+    const count = span.combineUpright ? 1 : graphemeCount(span.text);
+    const track = letterSpacingPx === 0 ? 0 : letterSpacingPx * count;
+    return {
+      text: span.text,
+      bold: span.bold,
+      italic: span.italic,
+      captionLabel: span.captionLabel,
+      kind: 'text',
+      width: (span.combineUpright ? em : span.orientation === 'upright' ? em * count : measureTextWidth(span.text, font)) + track,
+      ...(span.combineUpright ? { tcy: true as const } : { orientation: span.orientation! }),
+    };
+  }
   if (span.ref || span.footnote) {
     const scriptFields = spanScriptFields(span, normalFont, boldFont, italicFont, boldItalicFont);
     const refFont = scriptFields.scriptFont ?? pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont);
@@ -819,6 +852,8 @@ export function tokenSegment(t: RichToken): PendingSegment {
     ...(t.script ? { script: t.script, fontString: t.scriptFont, baselineShift: t.baselineShift } : {}),
     ...(t.stacked === 'first' ? { stacked: true } : {}),
     ...(t.smallCaps ? { smallCaps: true } : {}),
+    ...(t.tcy ? { tcy: true } : {}),
+    ...(t.orientation ? { orientation: t.orientation } : {}),
   } as PendingSegment;
 }
 

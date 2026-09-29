@@ -30,6 +30,7 @@ import type {
   ResolvedIndexConfig,
   ResolvedFootnotesConfig,
   ResolvedCjkConfig,
+  CjkRegion,
   PageRole,
   PartState,
   PostextConfig,
@@ -255,6 +256,18 @@ export interface VDTLineSegment {
    *  word spaces leave it as it is. Its `text` is empty, or the space the
    *  author typed there (which it replaces). */
   autospace?: boolean;
+  /** Vertical text: the segment is one tate-chu-yoko cell set by
+   *  `:tcy[…]`: its characters side by side in one upright cell, `width`
+   *  one em (and the segment's `tracking`, after the cell), squeezed
+   *  across when their natural width exceeds the em. Short numbers set in
+   *  one cell by `cjk.uprightDigits` carry no flag: the renderers find
+   *  them as the measurer does (`verticalRuns`). Absent elsewhere. */
+  tcy?: true;
+  /** Vertical text: the author's orientation for the segment's text
+   *  (`:upright[…]`: every character upright in a one-em cell;
+   *  `:sideways[…]`: the whole text turned with the line, at its
+   *  horizontal width). Absent elsewhere. */
+  orientation?: 'upright' | 'sideways';
 }
 
 export interface VDTLine {
@@ -1084,6 +1097,12 @@ export interface VDTDesignTextRun {
    *  on {@link VDTLineSegment.stacked}: width 0, the next run painted at
    *  the same x. */
   stacked?: boolean;
+  /** Vertical text: set in one upright cell (`:tcy[…]`), as
+   *  {@link VDTLineSegment.tcy}. */
+  tcy?: true;
+  /** Vertical text: stood upright or turned by its author (`:upright[…]`,
+   *  `:sideways[…]`), as {@link VDTLineSegment.orientation}. */
+  orientation?: 'upright' | 'sideways';
 }
 
 /** Line of wrapped text inside a `VDTDesignTextBlock`. */
@@ -1155,6 +1174,26 @@ export interface VDTDesignTextBlock {
    *  PDF marks it an artifact and the HTML hides it from assistive
    *  technology, so the text is read once. */
   artifact?: boolean;
+  /** Set vertically on a page or a slot whose text is horizontal
+   *  (`DesignTextElement.writingMode: 'vertical-rl'`): the lines are laid
+   *  out in the block's own frame, turned a quarter turn clockwise about
+   *  its box's top right corner — a line's `xOffset` runs down from the
+   *  box's top edge, its `baselineY` leftward from the box's right edge
+   *  (0 there) — and painted through that frame with the vertical glyph
+   *  painter. `bbox` is where the box stands. Absent on every other
+   *  block. */
+  vertical?: VDTVerticalText;
+}
+
+/** How the text of a vertical design block ({@link VDTDesignTextBlock.vertical})
+ *  is set: the Chinese region whose punctuation it takes, how many digits a
+ *  number set in one cell may have (`cjk.uprightDigits`), and the central
+ *  axis of each family it is set in (em above the baseline, as
+ *  {@link VDTFlowFrame.centralBaselines}). */
+export interface VDTVerticalText {
+  region: CjkRegion;
+  uprightDigits: number;
+  centralBaselines: Record<string, number>;
 }
 
 /** Rendered rule inside a design slot. */

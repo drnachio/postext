@@ -2,6 +2,8 @@ import { padTrueTypeGlyphs } from './trueTypePadding';
 import { PDFDict, PDFName, PDFRef, PDFStream, type PDFDocument, type PDFFont } from 'pdf-lib';
 import { fontKey, parseFontString } from './fontString';
 import { missingGlyphsOf, registerFaceFiles, wantsGlyph, type FaceFiles } from './faceFiles';
+import { registerFontFamily } from './fontFamilies';
+import { verticalTwinRefOf } from './verticalFonts';
 
 /** True when `bytes` starts with the `OTTO` magic identifying a CFF-flavored
  *  OpenType font — the ones pdf-lib cannot subset reliably, so they embed
@@ -363,6 +365,7 @@ export class FontCache {
         const answer = await this.provider(spec.family, spec.weight, spec.style, { codePoints });
         const fonts = await this.embedAnswer(answer, spec);
         if (fonts.length === 0) throw new Error('the font provider returned no file');
+        for (const font of fonts) registerFontFamily(font, spec.family);
         const primary = fonts[0]!;
         const face: LoadedFace = {
           spec,
@@ -405,7 +408,10 @@ export class FontCache {
     face.growing = face.growing.then(async () => {
       try {
         const answer = await this.provider(family, weight, style, { codePoints: wanted });
-        for (const font of await this.embedAnswer(answer, face.spec)) face.files.add(font);
+        for (const font of await this.embedAnswer(answer, face.spec)) {
+          registerFontFamily(font, face.spec.family);
+          face.files.add(font);
+        }
       } catch {
         // The characters stay missing; the render goes on.
       }
@@ -540,7 +546,10 @@ export class FontCache {
     const used = fontRefsInUse(this.pdfDoc);
     for (let i = fonts.length - 1; i >= 0; i--) {
       const font = fonts[i]!;
-      if (this.embedded.has(font) && !used.has(font.ref.toString())) fonts.splice(i, 1);
+      // A font drawn only through its vertical twin is used: the twin's
+      // dictionary is written with it.
+      const twin = verticalTwinRefOf(font);
+      if (this.embedded.has(font) && !used.has(font.ref.toString()) && !(twin !== undefined && used.has(twin))) fonts.splice(i, 1);
     }
   }
 }
