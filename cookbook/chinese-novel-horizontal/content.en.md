@@ -130,13 +130,13 @@ author: "鲁迅"
 我似乎打了一个寒噤；我就知道，我们之间已经隔了一层可悲的厚障壁了。我也说不出话。
 
 :::paragraphs{style="note"}
-（本篇作于1921年1月，同年5月1日发表于《新青年》第9卷第1号，1923年收入小说集《呐喊》。这里节选前半篇，至闰土来访为止。文字据1948年版《鲁迅全集》第一卷，改排为简体横排：引号『』改作“”，“馀”“偸”改作“余”“偷”。）
+（本篇作于1921年1月，同年5月1日发表于《新青年》第9卷第1号，1923年8月收入小说集《呐喊》。这里节选前半篇，至闰土来访为止。文字据1948年版《鲁迅全集》第一卷，改排为简体横排：引号『』改作“”，“馀”“偸”改作“余”“偷”。）
 :::
 
 :::paragraphs{style="colophon"}
-本书正文用 Noto Serif SC 五号字排，每行 28 字，每面 28 行；书眉、页码和版本说明用 Noto Sans SC，卷首题句用 Ma Shan Zheng，均为 SIL OFL 字体。卷首插图由程序绘制。
+本书正文用Noto Serif SC五号字排，每行28字，每面28行；书眉、页码和版本说明用Noto Sans SC，篇首题句用Ma Shan Zheng，均为SIL OFL字体。篇首插图由程序绘制。
 :::
 
 :::paragraphs{style="colophon"}
-Lu Xun, “My Old Home” (故乡), 1921: the first half of the story · Text: public domain, from zh.wikisource · Frontispiece: drawn in code.
+Lu Xun, 故乡 (My Old Home), 1921: the first half of the story · Text: public domain, from zh.wikisource · Plate: drawn in code.
 :::

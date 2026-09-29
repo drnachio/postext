@@ -45,8 +45,8 @@ const cjk = {
   region: 'mainland',
   lineBreak: 'gb', // no 。，、”》 opens a line, no “《（ ends one, and no / at either end
   punctuationWidth: 'kaiming', // ，、：； quotes, brackets ½ em; 。？！ one em, ½ at a line end
-  compressAdjacent: true, // 。” and ”“ take 1.5 em between them, not 2
-  latinSpacing: em(0.25), // 1921 年, Noto Serif SC: a quarter em nobody has to type
+  compressAdjacent: true, // idle under Kaiming (no pair tops 1.5 em); 'fullwidth' needs it
+  latinSpacing: em(0.25), // 1921年, 用Noto Serif SC五号: a quarter em, none of it typed
 };
 const bodyText = {
   fontFamily: SONG, fontSize: pt(BODY), lineHeight: pt(LEAD), color: col('ink'),
@@ -116,11 +116,12 @@ const resources = [{
   svg: { fileId: 'moon.svg', width: TRIM.width, height: TRIM.height }, // the trim's ratio
   altText: t({
     en: 'A golden full moon in a deep blue sky over a strip of sea. On the sand below, among '
-      + 'rows of striped watermelons, a boy with a silver collar thrusts a steel fork at a small '
-      + 'animal that slips away between his feet.',
-    es: 'Una luna llena dorada en un cielo azul oscuro sobre una franja de mar. En la arena, entre '
-      + 'hileras de sandías rayadas, un muchacho con un aro de plata al cuello lanza una horquilla '
-      + 'de acero contra un animal pequeño que se le escapa entre los pies.',
+      + 'rows of striped watermelons, a boy with a silver collar stabs a steel fork at the '
+      + 'sand ahead of him, and the small animal he aimed at runs off between his legs.',
+    es: 'Una luna llena dorada en un cielo azul oscuro sobre una franja de mar. En la arena, '
+      + 'entre hileras de sandías rayadas, un muchacho con un aro de plata al cuello clava una '
+      + 'horquilla de acero en la arena, delante de él, y el animalillo al que apuntaba huye '
+      + 'entre sus piernas.',
   }),
 }];
 const quote = { fontFamily: KAI, fontSize: pt(14), lineHeight: 1.5, color: col('paper') };
@@ -146,8 +147,9 @@ const plate = {
 
 // #region styles: the editor's note in 小五 Song, the colophon in Hei
 const paragraphStyles = [
-  { id: 'note', fontSize: pt(9), lineHeight: pt(LEAD), color: col('ink'),
-    firstLineIndent: em(2), marginTop: pt(LEAD) }, // 小五, on the grid, a line below the text
+  // 小五 (9 pt) nudged to 9.1875 pt: 32 of its characters fill the 28-em measure exactly.
+  { id: 'note', fontSize: pt((CHARS * BODY) / 32), lineHeight: pt(LEAD), color: col('ink'),
+    firstLineIndent: em(2), marginTop: pt(LEAD) }, // on the grid, a line below the text
   { id: 'colophon', fontFamily: HEI, fontSize: pt(7), lineHeight: pt(11), color: col('muted'),
     textAlign: 'left', firstLineIndent: pt(0), marginTop: pt(LEAD / 2) },
 ];
@@ -242,10 +244,10 @@ function drawPlate(W, H) {
       field.push({ row, x, y: wave(x) - s * 0.5, s, depth });
     }
   }
-  // The boy with the silver collar lunges at the badger-like zha, which slips between his feet.
+  // The boy with the silver collar stabs at the badger-like zha, which slips between his legs.
   const boy = { x: 47, y: rowY(4) + 2, h: 31 }; // feet on the fifth row
   for (const m of field) {
-    if (m.row === 4 && Math.abs(m.x - boy.x) < 14) continue; // clear his patch
+    if (m.row === 4 && m.x > boy.x - 14 && m.x < boy.x + 32) continue; // his patch, the fork's
     leafAt(m.x - m.s * 0.6, m.y + m.s * 0.4, m.s * 0.9, 190 + rnd() * 40);
     leafAt(m.x + m.s * 0.5, m.y + m.s * 0.45, m.s * 0.8, -20 + rnd() * 40);
     melon(m.x, m.y, m.s);
@@ -253,31 +255,45 @@ function drawPlate(W, H) {
   const figure = mix(P.night, P.ink, 0.35);
   const u = boy.h / 30; // the figure is drawn on a 30-unit height
   const at = (x, y) => [boy.x + x * u, boy.y - y * u];
+  const xy = (x, y) => at(x, y).map(n2).join(' ');
+  const steel = mix(P.sand, '#ffffff', 0.4);
   line([at(-1, 12), at(-5.5, 0.4)], figure, 2 * u); // the back leg
   line([at(1.2, 12), at(6, 5.5), at(7.5, 0.4)], figure, 2 * u); // the front knee bent
-  out.push(`<path d="M${at(-3.2, 22.6).join(' ')}L${at(3.4, 22.6).join(' ')}`
-    + `L${at(4.2, 11).join(' ')}L${at(-3.8, 11).join(' ')}Z" fill="${figure}"/>`); // the tunic
+  out.push(`<path d="M${xy(-3.2, 22.6)}L${xy(3.4, 22.6)}L${xy(4.2, 11)}L${xy(-3.8, 11)}Z" `
+    + `fill="${figure}"/>`); // the tunic
+  // The silver collar round the neck: its back arc behind the neck, its front arc over it.
+  const collar = (sweep) => out.push(`<path d="M${xy(-1.2, 23.1)}A${n2(1.6 * u)} `
+    + `${n2(0.55 * u)} 0 0 ${sweep} ${xy(2, 23.1)}" fill="none" stroke="${steel}" `
+    + `stroke-width="${n2(0.55 * u)}"/>`);
+  collar(1);
+  line([at(0.4, 22.2), at(0.4, 24.4)], figure, 2 * u); // the neck
   circle(...at(0.4, 26.4), 2.9 * u, figure); // the head
-  line([at(2.6, 21.5), at(8.6, 14.1)], figure, 1.5 * u); // both hands on the shaft
-  line([at(-2.4, 21), at(5.2, 15.6)], figure, 1.5 * u);
-  const steel = mix(P.sand, '#ffffff', 0.4);
-  line([at(-5, 20.4), at(22, 7.4)], steel, 0.55 * u); // the steel fork, three tines
-  [[22, 7.4, 25.6, 7.4], [22, 7.4, 25.2, 5.4], [22, 7.4, 24.6, 9.2]]
-    .forEach(([x0, y0, x1, y1]) => line([at(x0, y0), at(x1, y1)], steel, 0.45 * u));
-  out.push(`<ellipse cx="${n2(at(0.4, 22.6)[0])}" cy="${n2(at(0.4, 22.6)[1])}" `
-    + `rx="${n2(1.9 * u)}" ry="${n2(0.8 * u)}" fill="none" stroke="${steel}" `
-    + `stroke-width="${n2(0.6 * u)}"/>`); // the silver collar
-  // The zha has slipped between his feet and runs off to the left, tail up.
-  const [zx, zy] = at(-10, 1.8);
+  collar(0);
+  line([at(2.6, 21.5), at(8.2, 11.8)], figure, 1.5 * u); // both hands on the shaft
+  line([at(-2.4, 21), at(4.4, 14.3)], figure, 1.5 * u);
+  // The steel fork stabs down at the sand: a shaft, a crossbar and three parallel tines.
+  const [butt, head] = [[-3, 19.4], [19, 4.4]];
+  const len = Math.hypot(head[0] - butt[0], head[1] - butt[1]);
+  const [dx, dy] = [(head[0] - butt[0]) / len, (head[1] - butt[1]) / len];
+  const across = (k) => [head[0] - k * 1.3 * dy, head[1] + k * 1.3 * dx];
+  line([at(...butt), at(...head)], steel, 0.55 * u);
+  line([at(...across(-1)), at(...across(1))], steel, 0.45 * u);
+  for (const k of [-1, 0, 1]) {
+    const [x0, y0] = across(k);
+    line([at(x0, y0), at(x0 + 3.8 * dx, y0 + 3.8 * dy)], steel, 0.45 * u);
+  }
+  // The zha he aimed at has slipped between his legs and runs off to the left, tail up.
+  const fur = mix(P.sand, P.ink, 0.62);
+  const [zx, zy] = at(0.6, 1.6);
   out.push(`<path d="M${n2(zx - 4.6 * u)} ${n2(zy - 0.2 * u)}L${n2(zx - 2.6 * u)} `
     + `${n2(zy - 1.6 * u)}C${n2(zx)} ${n2(zy - 2.4 * u)} ${n2(zx + 3 * u)} ${n2(zy - 1.8 * u)} `
     + `${n2(zx + 3.4 * u)} ${n2(zy - 0.2 * u)}C${n2(zx + 2 * u)} ${n2(zy + 1 * u)} `
     + `${n2(zx - 2 * u)} ${n2(zy + 1 * u)} ${n2(zx - 4.6 * u)} ${n2(zy - 0.2 * u)}Z" `
-    + `fill="${figure}"/>`); // a pointed snout, a round back
-  line([[zx + 3 * u, zy - 1 * u], [zx + 5.6 * u, zy - 3.2 * u]], figure, 0.7 * u); // tail
-  [[-2, 1.8], [-0.8, 2.2], [1.4, 2], [2.6, 1.6]].forEach(([dx, dy], i) => line(
-    [[zx + dx * u, zy + 0.4 * u], [zx + (dx + (i % 2 ? 1 : -1)) * u, zy + dy * u]],
-    figure, 0.45 * u)); // legs mid-stride
+    + `fill="${fur}"/>`); // a pointed snout, a round back
+  line([[zx + 3 * u, zy - 1 * u], [zx + 4.8 * u, zy - 2.8 * u]], fur, 0.7 * u); // tail
+  [[-2, 1.8], [-0.8, 2.2], [1.4, 2], [2.6, 1.6]].forEach(([ddx, ddy], i) => line(
+    [[zx + ddx * u, zy + 0.4 * u], [zx + (ddx + (i % 2 ? 1 : -1)) * u, zy + ddy * u]],
+    fur, 0.45 * u)); // legs mid-stride
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}mm" height="${H}mm" `
     + `viewBox="0 0 ${W} ${H}">${out.join('')}</svg>`;
 }
