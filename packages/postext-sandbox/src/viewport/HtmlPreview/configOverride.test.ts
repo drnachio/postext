@@ -63,6 +63,16 @@ describe('buildHtmlConfigOverride', () => {
       left: { value: 0, unit: 'px' },
       right: { value: 0, unit: 'px' },
     });
+    expect(title.kind === 'text' && title.content).toBe('{number} {titleText}');
+  });
+
+  it("joins a part's number and title with the H1's numberSeparator (#180)", () => {
+    const out = buildHtmlConfigOverride(
+      { ...base, locale: 'zh-Hant', headings: { levels: [{ level: 1, numberingTemplate: '第{1:一}回', numberSeparator: '　' }] } },
+      opts,
+    );
+    const title = out.parts!.design!.elements[0]!;
+    expect(title.kind === 'text' && title.content).toBe('{number}　{titleText}');
   });
 
   it('leads a part title on a grid-step H1 line height at 1.2, not the step', () => {

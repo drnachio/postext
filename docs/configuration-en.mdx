@@ -2091,7 +2091,7 @@ Per-level overrides support the same properties as the general defaults — `fon
       <td><code>numberSeparator</code></td>
       <td><code>string</code></td>
       <td><code>' '</code></td>
-      <td>What stands between the number and the title: in the column, in the default opener of a <code>span: 'page'</code> level, in the running heads that print the heading line and in the PDF bookmarks. Chinese chapter heads take an ideographic space or nothing (<code>'　'</code>: 第一回　甄士隱夢幻識通靈). The contents keep their own number column (<code>toc.levels[].numberGap</code>). A <a href="#heading-styles">heading style</a> may set its own. When a title is broken in two with <code>{'\\\\'}</code>, as the couplet titles of Chinese novels are, the single-line forms (the column, the contents, the running heads) join the halves with an ideographic space when both sides are Chinese or Japanese characters, and with a space otherwise.</td>
+      <td>What stands between the number and the title: in the column, in the default opener of a <code>span: 'page'</code> level, in the running heads that print the heading line and in the PDF bookmarks. The level-1 separator also joins a part's number and title in the default part page and in the default part row of the contents. Chinese chapter heads take an ideographic space or nothing (<code>'　'</code>: 第一回　甄士隱夢幻識通靈). The contents keep their own number column (<code>toc.levels[].numberGap</code>). A <a href="#heading-styles">heading style</a> may set its own. When a title is broken in two with <code>{'\\\\'}</code>, as the couplet titles of Chinese novels are, the single-line forms (the column, the contents, the running heads) join the halves with an ideographic space when both sides are Chinese or Japanese characters, and with a space otherwise.</td>
     </tr>
     <tr>
       <td><code>breakBefore</code></td>
@@ -4858,7 +4858,7 @@ const config: PostextConfig = {
       <td><code>design</code></td>
       <td><code>DesignSlot</code></td>
       <td>empty</td>
-      <td>Opener design. Its container is the page <strong>trim box</strong>, so container anchors and <code>'page'</code> anchors coincide and <code>'bleed'</code> runs to the bleed when cut lines are on. Purely decorative: it never reserves body space — raise <code>margins.top</code> to keep the body clear of it. When empty, a default <code>{'{number} {titleText}'}</code> text in the H1 typography is synthesised at the top-left of the body area.</td>
+      <td>Opener design. Its container is the page <strong>trim box</strong>, so container anchors and <code>'page'</code> anchors coincide and <code>'bleed'</code> runs to the bleed when cut lines are on. Purely decorative: it never reserves body space — raise <code>margins.top</code> to keep the body clear of it. When empty, a default <code>{'{number} {titleText}'}</code> text in the H1 typography is synthesised at the top-left of the body area, with the H1's <code>numberSeparator</code> between number and title.</td>
     </tr>
     <tr>
       <td><code>versoDesign</code></td>
@@ -5201,7 +5201,7 @@ const config: PostextConfig = {
       <td><code>parts.design</code></td>
       <td><code>DesignSlot</code></td>
       <td>empty</td>
-      <td>Row design; its container is the row (column width × <code>height</code>). Placeholders: <code>{'{number}'}</code>, <code>{'{numberDecimal}'}</code>, <code>{'{numberRoman}'}</code>…, <code>{'{titleText}'}</code> and <code>{'{pageNumber}'}</code> (the part page's label; with <code>parts.page: false</code>, which opens no part page, the label of the page the part's content starts on, where its running heads switch to it; in a book laid out chapter by chapter, a fence that closes its chapter points at the first content page of the next chapter). Palette-linked colours take the part's own <code>palette</code>, so each section's row comes in its colour. When empty, <code>{'{number} {titleText}'}</code> and the page number are set in the level-1 entry typography.</td>
+      <td>Row design; its container is the row (column width × <code>height</code>). Placeholders: <code>{'{number}'}</code>, <code>{'{numberDecimal}'}</code>, <code>{'{numberRoman}'}</code>…, <code>{'{titleText}'}</code> and <code>{'{pageNumber}'}</code> (the part page's label; with <code>parts.page: false</code>, which opens no part page, the label of the page the part's content starts on, where its running heads switch to it; in a book laid out chapter by chapter, a fence that closes its chapter points at the first content page of the next chapter). Palette-linked colours take the part's own <code>palette</code>, so each section's row comes in its colour. When empty, <code>{'{number} {titleText}'}</code> (the H1's <code>numberSeparator</code> between them) and the page number are set in the level-1 entry typography.</td>
     </tr>
     <tr>
       <td><code>parts.height</code>, <code>marginTop</code>, <code>marginBottom</code></td>

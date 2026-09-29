@@ -2140,9 +2140,10 @@ export interface HeadingLevelConfig {
   /** What stands between the number and the title (`第一回` + `'　'` +
    *  `甄士隱夢幻識通靈`): in the column, in the default opener of a
    *  `span: 'page'` level, in the running heads that print the heading
-   *  line and in the PDF bookmarks. Default `' '`; Chinese sets U+3000
-   *  (`'　'`) or nothing (`''`). The contents keep their own number column
-   *  (`toc.levels[].numberGap`). */
+   *  line and in the PDF bookmarks; level 1's also joins a part's number
+   *  and title in the default part page and contents row. Default `' '`;
+   *  Chinese sets U+3000 (`'　'`) or nothing (`''`). The contents keep
+   *  their own number column (`toc.levels[].numberGap`). */
   numberSeparator?: string;
   italic?: boolean;
   /** Tracking after every glyph of the heading (spaces and the numbering
@@ -3565,7 +3566,7 @@ export interface PartsConfig {
    *  `'bleed'` anchors and container anchors coincide. Purely decorative —
    *  it never reserves body space; raise `margins.top` to leave room for
    *  it. When empty, `{number} {titleText}` is synthesised from the H1
-   *  typography. */
+   *  typography, joined with the H1's `numberSeparator`. */
   design?: DesignSlot;
   /** Design of the blank verso that follows a part page (the back of the
    *  divider leaf). Same container and placeholders as `design`; when
@@ -3816,8 +3817,9 @@ export interface TocConfig {
     /** Row design; its container is the row (column width × `height`).
      *  Placeholders: `{number}`, `{numberRoman}`…, `{titleText}` and
      *  `{pageNumber}` (the part page's label). Palette-linked colours take
-     *  the part's own palette. When empty, `{number} {titleText}` and the
-     *  page number are set in the level-1 entry typography. */
+     *  the part's own palette. When empty, `{number} {titleText}` (joined
+     *  with the H1's `numberSeparator`) and the page number are set in the
+     *  level-1 entry typography. */
     design?: DesignSlot;
     /** Row height; `em` is the body text size. Default `2em`, twice the
      *  body size (a row one or two body lines tall, depending on the

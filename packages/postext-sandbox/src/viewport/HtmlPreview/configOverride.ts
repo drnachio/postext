@@ -323,7 +323,8 @@ function viewerPartDesign(face: ReturnType<typeof partTitleFace>, bandPx: number
           offset: { x: { value: 0, unit: 'px' }, y: { value: 0, unit: 'px' } },
           size: { width: 'fill', height: { value: bandPx, unit: 'px' } },
         },
-        content: '{number} {titleText}',
+        // Joined as the print part page joins them (the H1's separator).
+        content: `{number}${h1.numberSeparator ?? ' '}{titleText}`,
         fontFamily: h1.fontFamily,
         fontSize: h1.fontSize,
         fontWeight: h1.fontWeight,

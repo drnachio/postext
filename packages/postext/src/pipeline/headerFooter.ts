@@ -845,19 +845,32 @@ function synthesiseDefaultOpenerSlot(
   return { elements: [textEl] };
 }
 
+/** The level-1 heading settings, which the default part designs borrow. */
+function levelOne(resolved: ResolvedConfig): ResolvedHeadingLevelConfig {
+  return resolved.headings.levels.find((l) => l.level === 1) ?? resolved.headings.levels[0]!;
+}
+
+/** `{number}` and `{titleText}` joined as the book's chapter openers join
+ *  them: with the H1's `numberSeparator` (`'　'` in Chinese, one space by
+ *  default). */
+function partNumberAndTitle(resolved: ResolvedConfig): string {
+  return `{number}${levelOne(resolved).numberSeparator ?? ' '}{titleText}`;
+}
+
 /** Default opener design of a `:::part` page when `parts.design` is empty:
- *  `{number} {titleText}` (or just `{titleText}` without a number) in the
- *  H1 typography, anchored at the top-left of the part's body area — the
- *  container is the trim box, so the offset is the part margins. Purely
- *  decorative: raise `parts.margins.top` to keep the body clear of it. */
+ *  `{number} {titleText}` (the H1's `numberSeparator` between them; just
+ *  `{titleText}` without a number) in the H1 typography, anchored at the
+ *  top-left of the part's body area — the container is the trim box, so
+ *  the offset is the part margins. Purely decorative: raise
+ *  `parts.margins.top` to keep the body clear of it. */
 function synthesiseDefaultPartSlot(
   resolved: ResolvedConfig,
   page: VDTPage,
   trimBox: { x: number; y: number },
   hasNumber: boolean,
 ): ResolvedDesignSlot {
-  const level = resolved.headings.levels.find((l) => l.level === 1) ?? resolved.headings.levels[0]!;
-  const content = hasNumber ? '{number} {titleText}' : '{titleText}';
+  const level = levelOne(resolved);
+  const content = hasNumber ? partNumberAndTitle(resolved) : '{titleText}';
   const textEl: ResolvedDesignTextElement = {
     kind: 'text',
     id: 'defaultPartOpener',
@@ -887,9 +900,10 @@ function synthesiseDefaultPartSlot(
 }
 
 /** Default row design of a part in the contents when `toc.parts.design` is
- *  empty: `{number} {titleText}` at the left and `{pageNumber}` at the
- *  right, in the level-1 entry typography. */
-function synthesiseDefaultTocPartSlot(resolved: ResolvedConfig): ResolvedDesignSlot {
+ *  empty: `{number} {titleText}` (the H1's `numberSeparator` between them;
+ *  just `{titleText}` without a number) at the left and `{pageNumber}` at
+ *  the right, in the level-1 entry typography. */
+function synthesiseDefaultTocPartSlot(resolved: ResolvedConfig, hasNumber: boolean): ResolvedDesignSlot {
   const entry = resolved.toc.levels[0]!;
   const common = {
     kind: 'text' as const, parity: 'all' as const, pages: 'all' as const,
@@ -897,7 +911,7 @@ function synthesiseDefaultTocPartSlot(resolved: ResolvedConfig): ResolvedDesignS
     color: entry.color, verticalAlign: 'middle' as const, lineHeight: 1.2, hyphenate: false,
   };
   const title: ResolvedDesignTextElement = {
-    ...common, id: 'tocPartTitle', content: '{number} {titleText}', align: 'left', overflow: 'ellipsis-end',
+    ...common, id: 'tocPartTitle', content: hasNumber ? partNumberAndTitle(resolved) : '{titleText}', align: 'left', overflow: 'ellipsis-end',
     placement: { anchor: { to: 'container', edge: 'left' }, offset: {}, size: { width: 'auto', height: 'auto' } },
   };
   const page: ResolvedDesignTextElement = {
@@ -1237,7 +1251,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
           const tp = block.tocPart;
           const slot = resolved.toc.parts.design.elements.length > 0
             ? resolved.toc.parts.design
-            : synthesiseDefaultTocPartSlot(resolved);
+            : synthesiseDefaultTocPartSlot(resolved, tp.number.length > 0);
           const rowPage = { ...page, pageLabel: tp.pageLabel } as VDTPage;
           const palette = { ...(partPaletteByPageIndex[page.index] ?? {}), ...(tp.palette ?? {}) };
           const placeholders: DesignPlaceholderContext = {
