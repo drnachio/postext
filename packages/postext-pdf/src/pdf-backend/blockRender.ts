@@ -16,6 +16,7 @@ import { LinkRegistry, RefRun, UriRuns } from './links';
 import { tagArtifact, tagContent, type StructElem } from './tagging';
 import type { StructureFlow } from './structureFlow';
 import { paintLineMarks, paintRuby, paintWarichu } from './annotations';
+import { inkScaleOperators } from './inkScale';
 
 /** Per-document context for resource rendering, threaded through `renderBlock`. */
 export interface ResourceRenderContext {
@@ -193,11 +194,16 @@ function renderSegments(
     const actualText = i === repeatedAt ? seg.text.slice(1) : undefined;
     // A compressed CJK mark is painted before its box (`inkOffset`) and
     // advances to its box's end.
-    // (Down a vertical line every cell is one em: no mark shown narrower.)
+    // (Down a vertical line every cell is one em: no mark shown narrower,
+    // and a dash takes its vertical form rather than a stretch.)
     const markSpacing = ctx.vertical ? undefined : compressedMarkSpacingPx(font, seg, size);
     if (markSpacing !== undefined) setTrackingPx(ctx, markSpacing);
     else if (seg.tracking !== undefined) setTrackingPx(ctx, tracking + seg.tracking);
+    // A dash of a 破折号 is stretched over its em (`inkScale`).
+    const stretch = inkScaleOperators(ctx.vertical ? undefined : seg.inkScale);
+    ctx.page.pushOperators(...stretch.before);
     drawTextPx(ctx, seg.text, x + (seg.inkOffset ?? 0), baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText, segmentOrientation(seg));
+    ctx.page.pushOperators(...stretch.after);
     if (markSpacing !== undefined || seg.tracking !== undefined) setTrackingPx(ctx, tracking);
     if (seg.ruby) {
       if (tracking !== 0) setTrackingPx(ctx, 0);

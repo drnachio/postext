@@ -7,7 +7,7 @@ import { paintSwatch } from './swatch';
 import { paintChip } from './chip';
 import { lineInkExtent, lineTrailingTracking } from '../lineInk';
 import { fillFlowText } from './verticalText';
-import { segmentOrientation } from '../writingMode';
+import { fillSegmentText } from './segmentText';
 import { lineMarkCuts, type MarkCutRule } from '../measure/markCuts';
 import { paintLineMarks, paintRuby, paintWarichu } from './annotations';
 
@@ -188,7 +188,7 @@ function renderSegments(
     }
     // A compressed CJK mark is painted before its box (`inkOffset`), along
     // the line in either writing mode.
-    fillFlowText(ctx, seg.text, x + (seg.inkOffset ?? 0), baseline + (seg.baselineShift ?? 0), 'fill', undefined, cuts, segmentOrientation(seg));
+    fillSegmentText(ctx, seg, x, baseline, cuts);
     // A ruby base's reading (#194).
     if (seg.ruby) paintRuby(ctx, seg.ruby, x, baseline, fill);
     x += seg.width;

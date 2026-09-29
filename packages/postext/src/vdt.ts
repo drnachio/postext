@@ -245,6 +245,14 @@ export interface VDTLineSegment {
    *  positive or negative. The layout never reads it. Absent on every other
    *  segment. */
   inkOffset?: number;
+  /** Paint-only horizontal scale of the segment's glyph, from `x +
+   *  inkOffset`. Set on each dash of a 破折号 (——) in Chinese text whose
+   *  glyphs do not fill their two ems (Noto Serif SC's em dash is a
+   *  proportional 0.8 em stroke): each dash is stretched over its em, the
+   *  two overlapping at the join, so the pair prints as one unbroken
+   *  two-em rule. Renderers paint the glyph at its own advance times this
+   *  factor; its `width` is unchanged. Absent on every other segment. */
+  inkScale?: number;
   /** A pause or stop mark hung past the end of its line
    *  (`cjk.hangingPunctuation`): the line's measure and `bbox.width` leave
    *  it out, and the column clip is widened to show it. Painted after the

@@ -33,14 +33,14 @@ Postext es un **motor de maquetación de código abierto** que lleva a la web el
 Este libro es su propia demostración. La cubierta, el índice que se numera solo, las portadillas en tres colores, la banda que abre cada capítulo, las cabeceras de estas páginas y cada figura que flota hasta su sitio las ha maquetado Postext, en tu navegador, hace un momento. Nada se ha colocado a mano: el Markdown solo dice qué es cada cosa, y la configuración decide cómo se ve.
 
 :::callout{type="try"}
-Abre el panel **Markdown** y elige este capítulo en el selector de capítulos de su cabecera. Cambia una palabra de este párrafo o borra una frase: la página vuelve a componerse, las columnas se reequilibran y los folios de los capítulos siguientes se actualizan.
+Abre el panel **Texto** y elige este capítulo en el selector de capítulos de su cabecera. Cambia una palabra de este párrafo o borra una frase: la página vuelve a componerse, las columnas se reequilibran y los folios de los capítulos siguientes se actualizan.
 :::
 
 ## Cómo leer este libro
 
 El libro se organiza en tres partes. **Fundamentos**, la parte en la que estás, explica el problema que resuelve Postext y cómo está construido el motor: qué entra, qué sale y qué ocurre entre medias. **El oficio** trata de tipografía: cómo se compone una línea, cómo se enmarca una página, adónde van las figuras y las tablas y cómo un conjunto de capítulos se convierte en un libro. **La práctica** se ocupa de las herramientas: el formato del documento, el Sandbox, los tres formatos de salida y el proyecto que los rodea.
 
-Cada capítulo se abre con una breve introducción sobre su banda, y la mayoría cierran sus secciones con un recuadro titulado _Pruébalo en el Sandbox_: un pequeño experimento que puedes hacer sobre este mismo libro, ahora mismo, para ver la función en acción. Nada de lo que propone puede estropear nada —el botón de restablecer de la fila de la guía, en el panel Proyectos, la devuelve a su estado original—, así que cambia lo que quieras. Los capítulos pueden leerse en cualquier orden; cuando uno depende de otro, lo dice.
+Cada capítulo se abre con una breve introducción sobre su banda, y la mayoría cierran sus secciones con un recuadro titulado _Pruébalo en el Sandbox_: un pequeño experimento que puedes hacer sobre este mismo libro, ahora mismo, para ver la función en acción. Nada de lo que propone puede estropear nada —**Restaurar el original…**, en el menú de la fila de la guía del panel **Libros**, la devuelve a su estado original—, así que cambia lo que quieras. Los capítulos pueden leerse en cualquier orden; cuando uno depende de otro, lo dice.
 
 ## Maquetación de aplicaciones y maquetación editorial
 
@@ -241,11 +241,25 @@ La separación silábica usa los mismos **patrones de Liang** en los que TeX con
 
 La separación solo actúa en el texto justificado, donde se gana el sueldo. Hay dos oportunidades de corte siempre disponibles, sea cual sea el ajuste: un guion entre dos letras es un corte legítimo, y una palabra más ancha que toda la medida se divide por la última sílaba que cabe o, si no hay más remedio, por el último carácter.
 
-Los guiones opcionales escritos en el texto se respetan como puntos de corte, al mismo precio que los del patrón. El idioma también puede cambiar dentro de un libro: todos los capítulos comparten el idioma de la configuración, así que una edición bilingüe como esta se configura una vez por idioma, y cada versión de la guía divide las palabras según sus propias reglas.
+Los guiones opcionales escritos en el texto se respetan como puntos de corte, al mismo precio que los del patrón. El idioma también puede cambiar dentro de un libro: todos los capítulos comparten el idioma de la configuración, así que una edición en varios idiomas, como esta, se configura una vez por idioma, y cada versión de la guía divide las palabras según sus propias reglas.
 
 ## Espaciado y líneas en bandera
 
 Dos ajustes limitan cuánto puede estirarse o encogerse un espacio: \`maxWordSpacing\`, por defecto el doble del espacio natural, y \`minWordSpacing\`, 0,6 veces. Estirar más allá del máximo se paga por encima de cualquier otro defecto, así que el cortador prefiere poner un guion, mover una palabra o aceptar una línea corta antes que abrir un río. Hay líneas que no se pueden llenar —una URL larga, la cola irrompible de un elemento de lista— y, en lugar de abrirlas con huecos de tres veces el espacio natural, el motor las compone en bandera con el espaciado natural. La última línea de un párrafo va siempre en bandera, salvo cuando se desborda: entonces sus espacios se comprimen para que quepa, igual que hace TeX con las gomas.
+
+## Chino y escrituras de Asia oriental
+
+El chino se escribe sin espacios entre palabras y nunca se parte con guion: una línea puede terminar entre casi cualquier par de caracteres. Un párrafo con más caracteres chinos, japoneses o coreanos que espacios entre palabras no pasa por Knuth-Plass; lo compone, línea a línea, el **compositor CJK**. Lo que este debe respetar son las reglas de principio y fin de línea: una coma, un punto o un signo de cierre nunca abren una línea, y un signo de apertura nunca la termina. Su rigor depende de la región, que da el idioma del documento —\`zh-Hans\` sigue la norma de China continental, GB/T 15834, y \`zh-Hant\` la práctica de Taiwán y Hong Kong—, y \`cjk.lineBreak\` fija el nivel a mano. Hay tramos que nunca se parten: una raya o unos puntos suspensivos de dos cuadratines, un número con su unidad. Una palabra latina o una dirección web entre los caracteres pasa entera a la línea siguiente, salvo que sea más ancha que la línea; entonces la palabra se divide y la dirección se corta tras una barra o delante de un punto.
+
+Cada signo de puntuación chino ocupa un cuadrado propio, mitad trazo y mitad blanco, y cuánto de ese blanco conserva un libro es cuestión de estilo de la casa, como muestra :ref{id="cjk-composition"}. En Taiwán y Hong Kong cada signo ocupa un cuadratín entero. El estilo Kaiming de China continental, el predeterminado para \`zh-Hans\`, compone las comas, los paréntesis, las comillas y los signos de título en medio cuadratín y deja entero el punto salvo a final de línea; donde se juntan dos signos, desaparece también el blanco que hay entre ellos. \`cjk.punctuationWidth\` elige el estilo; \`cjk.compressAdjacent\` y \`cjk.trimLineStart\` activan los dos ajustes, y con \`cjk.hangingPunctuation\` una coma o un punto pueden colgar más allá del final de la línea.
+
+Una línea china justificada se llena en un orden fijo: primero los espacios entre palabras occidentales, después el cuarto de cuadratín que el motor pone entre el texto chino y el latino (\`cjk.latinSpacing\`; nunca se teclea) y, por último, cada hueco entre dos caracteres, nunca dentro de una palabra latina ni de un número. Cuando un carácter no puede abrir la línea siguiente, el compositor intenta primero meterlo en la línea quitando blanco a los signos que ya tiene, y solo si no lo consigue baja con él a la línea siguiente el carácter anterior. Una línea que necesitaría más de medio cuadratín entre sus caracteres se deja corta, y el panel **Revisión** la señala como línea CJK corta.
+
+El resto de un libro chino sigue los mismos ajustes. Las plantillas de capítulo, los folios, las listas y los contadores admiten los estilos de numerales chinos, entre ellos \`cjk-decimal\`, \`simp-chinese-informal\` y \`trad-chinese-informal\`, de modo que los capítulos pueden llevar sus ordinales chinos; las figuras y las tablas toman su nombre en chino y se numeran por capítulo con un guion. \`cjk.grid\` fija la caja de texto como un número de caracteres por línea y de líneas por página, la retícula sobre la que se diseñan los libros chinos. La edición china de esta guía lo usa todo: su fila en el panel **Libros** tiene un tercer botón de idioma. Entre los libros de ejemplo, _Sueño en el pabellón rojo_ es una novela entera compuesta en chino.
+
+\`layout.writingMode: 'vertical-rl'\` compone un libro en vertical. Las líneas van de arriba abajo y se suceden de derecha a izquierda, dos columnas se convierten en dos pisos apilados en la página, las figuras y las tablas se mantienen derechas, las palabras latinas y los números largos se tumban de lado, y cada signo toma el lugar o la forma que tiene en el texto vertical: los paréntesis y las comillas adoptan su forma vertical, y el punto pasa a la esquina superior derecha de su casilla en China continental y se queda centrado en Taiwán y Hong Kong. Un libro así se encuaderna por la derecha (\`page.binding\`): su primera página queda sola a la izquierda del lomo, y el Sandbox muestra sus pliegos de derecha a izquierda. El canvas, la vista HTML y el PDF componen igual las líneas verticales, y un número de hasta dos cifras se pone de pie en una sola casilla (\`cjk.uprightDigits\`; \`:tcy[…]\` hace lo mismo con cualquier tramo corto).
+
+Los libros chinos marcan además el texto de maneras que la tipografía latina no conoce. El énfasis se señala con un punto junto a cada carácter y no con cursiva, así que en un documento chino \`*…*\` pone puntos de énfasis en los caracteres chinos que abarca, como \`:dots[…]\`; \`cjk.emphasis: 'italic'\` conserva la cursiva. \`:name[…]\` traza la línea recta de los nombres propios, y \`:book[…]\` señala el título de una obra, y \`cjk.bookTitleMark\` elige cómo: con los signos angulares dobles de China continental o con la línea ondulada de Taiwán y Hong Kong. \`:ruby[…]{rt="…"}\` compone una lectura, en pinyin sobre los caracteres o en zhuyin a la derecha de cada uno, y \`:warichu[…]\` compone una nota en dos filas de medio cuerpo dentro de la línea, que sigue en la línea o la página siguiente cuando no cabe. Ninguna cambia el interlineado: el panel **Revisión** avisa cuando los puntos, las líneas o las lecturas necesitan entre líneas más hueco del que deja el párrafo. En texto vertical, los puntos pasan a la derecha de la columna, las líneas a su izquierda, y de una nota se lee primero la fila de la derecha.
 
 ## Énfasis y tramos
 
@@ -264,7 +278,7 @@ Postext pone precio a las tres. Cuando un párrafo cruza una columna, el motor c
 Las listas siguen la misma disciplina que los párrafos, con una tipografía propia. Las listas con viñetas eligen el carácter de la viñeta, su tamaño, su peso y su color, y el espacio y la sangría francesa que mantienen alineado el texto de cada elemento; las listas numeradas eligen entre números arábigos, letras minúsculas o mayúsculas y números romanos en minúscula o mayúscula, con un separador que puede tener estilo propio y números alineados a la derecha, para que los elementos 9 y 10 queden alineados. El anidamiento llega a cinco niveles, cada uno con su propia sangría y sus propias marcas, y las listas de tareas dibujan una casilla para cada elemento, marcada o no. Los elementos pueden ir juntos o espaciados, y el motor trata el final de una lista como una de sus palancas al equilibrar las columnas.
 
 :::callout{type="try"}
-En **Configuración**, busca _flojas_ y activa **Resaltar líneas flojas** de la sección de depuración. Después estrecha las columnas o sube \`maxWordSpacing\` y observa qué líneas tiene que abrir el motor y cómo las redistribuye el optimizador.
+En el panel **Diseño**, busca _flojas_ y activa **Resaltar líneas flojas**, en el grupo **Avanzado**. Después estrecha las columnas o sube \`maxWordSpacing\` y observa qué líneas tiene que abrir el motor y cómo las redistribuye el optimizador.
 :::
 
 ## Matemáticas
@@ -358,12 +372,12 @@ Una página no siempre es un único juego de columnas de arriba abajo. Una figur
 Las columnas finales de un capítulo reciben el mismo trato. En lugar de dejar la última página con una columna llena y otra casi vacía, un tope final reparte entre ellas las líneas que quedan, y las palancas de equilibrado hacen el resto. Los saltos de columna explícitos se respetan: \`:::columnbreak\` termina una columna donde quiere el autor, y el equilibrado deja en paz el pie de esa columna.
 
 :::callout{type="try"}
-En **Configuración**, abre **Títulos** y desactiva **Equilibrar columnas**. Mira el pie de las columnas de este capítulo; después vuelve a activarlo y observa qué palanca ha usado el motor en cada página.
+En el panel **Diseño**, abre **Títulos e índice** y desactiva **Equilibrar columnas**. Mira el pie de las columnas de este capítulo; después vuelve a activarlo y observa qué palanca ha usado el motor en cada página.
 :::
 
 # Figuras, tablas y flotantes {lead="Una referencia es una promesa, no una posición. Menciona una figura y Postext le busca casa: el primer hueco libre tras la mención, numerada por orden de lectura, con su pie, y nunca antes de las palabras que la llaman." summary="Dónde caen los recursos, cómo se numeran, tablas que se parten"}
 
-Todo lo que no es texto que fluye —imágenes, diagramas SVG, tablas— es un **recurso**. Los recursos se declaran fuera del texto, cada uno con su identificador, su tipo, su pie y sus preferencias de colocación, y el Markdown se limita a mencionarlos. En el Sandbox viven en el panel de Recursos.
+Todo lo que no es texto que fluye —imágenes, diagramas SVG, tablas— es un **recurso**. Los recursos se declaran fuera del texto, cada uno con su identificador, su tipo, su pie y sus preferencias de colocación, y el Markdown se limita a mencionarlos. En el Sandbox viven en el panel Figuras.
 
 ## Basta con una mención
 
@@ -397,7 +411,7 @@ Un tipo con el prefijo vacío y sin pie también es útil: convierte una imagen 
 
 Las tablas llevan su modelo consigo: filas de celdas con fusiones de columnas y filas, filas de cabecera, alineación y anchos de columna relativos. Las celdas admiten Markdown en línea, párrafos y listas sencillas, un relleno propio —los tres colores de parte de este libro son :swatch{color="#2b4acb"} azul, :swatch{color="#b7820f"} oro y :swatch{color="#c0452f"} bermellón— e incluso una imagen. El estilo de las tablas se define una vez para todo el documento: tipografía del cuerpo y de la cabecera, relleno de la cabecera y filetes en retícula, solo horizontales, solo exteriores o ninguno.
 
-Las tablas se editan en el panel Recursos, en un editor que funciona como una pequeña hoja de cálculo: añade o quita filas y columnas, fusiona y divide celdas, marca filas y columnas de cabecera, alinea celdas, fija rellenos y anchos de columna, suelta una imagen en una celda y pega un bloque de celdas copiado de una hoja de cálculo. Todo cambio se puede deshacer, y la tabla de la página sigue lo que escribes.
+Las tablas se editan en el panel Figuras, en un editor que funciona como una pequeña hoja de cálculo: añade o quita filas y columnas, fusiona y divide celdas, marca filas y columnas de cabecera, alinea celdas, fija rellenos y anchos de columna, suelta una imagen en una celda y pega un bloque de celdas copiado de una hoja de cálculo. Todo cambio se puede deshacer, y la tabla de la página sigue lo que escribes.
 
 Una tabla más alta que la página se parte entre páginas. Sus filas de cabecera se repiten en cada tramo, el pie de cada continuación gana el sufijo _(cont.)_, un aviso de _Continúa_ cierra cada tramo salvo el último, y ningún corte atraviesa una fusión de filas. Una tabla girada se parte igual, página tras página.
 
@@ -417,12 +431,12 @@ Algunos recursos son más anchos de lo que la página es alta: una cronología, 
 
 Los diagramas SVG se dibujan como vectores en todas partes. El PDF convierte el subconjunto habitual de SVG —formas, trazados, grupos, trazados de recorte, rellenos y trazos sólidos, opacidad y texto— en operaciones de dibujo nativas, y rasteriza a 600 ppp lo que queda fuera; una figura también puede traer un máster PDF propio, que se incrusta tal cual. Para imprimir a una tinta, un interruptor recolorea todos los diagramas como tintas de un solo color, según su luminancia, en los tres renderizadores.
 
-El texto de un SVG sigue siendo texto. En el PDF se compone con fuentes reales y se puede seleccionar y buscar, y en el Sandbox se puede editar en su sitio: el panel Recursos abre el código del diagrama con solo su texto editable —el dibujo en sí queda bloqueado salvo que lo desbloquees—, de modo que una etiqueta puede corregirse o traducirse sin abrir un programa de dibujo. Los diagramas de este libro se generan para cada idioma, y por eso sus etiquetas están en español en la edición española y en inglés en la inglesa.
+El texto de un SVG sigue siendo texto. En el PDF se compone con fuentes reales y se puede seleccionar y buscar, y en el Sandbox se puede editar en su sitio: el panel Figuras abre el código del diagrama con solo su texto editable —el dibujo en sí queda bloqueado salvo que lo desbloquees—, de modo que una etiqueta puede corregirse o traducirse sin abrir un programa de dibujo. Los diagramas de este libro se generan para cada idioma, y por eso sus etiquetas están en español en la edición española, en inglés en la inglesa y en chino en la china.
 
 Tres figuras compuestas aquí lo demuestran. La roseta de :ref{id="vector-rosette"} está hecha de curvas de Bézier, trazos finísimos y una línea de microtexto de dos puntos y medio de alto; el gráfico de :ref{id="vector-chart"} combina un área rellena, una línea discontinua y etiquetas de texto; y :ref{id="vector-clip"} usa un trazado de recorte, un grupo dibujado con transparencia y una misma forma reutilizada cinco veces. Abre el PDF, amplíalo varias veces su tamaño y mira los bordes: siguen tan nítidos como el texto que los rodea, porque se dibujan con los mismos operadores y no se pegan como imágenes. Prueba a seleccionar las etiquetas del gráfico, o a buscarlas: son texto.
 
 :::callout{type="try"}
-Haz clic en el pie de cualquier figura del canvas: el panel de Recursos se abre en ese recurso, con el campo del pie listo. Cambia su colocación de _auto_ a _top_ y mira cómo se mueve.
+Haz clic en el pie de cualquier figura del canvas: el panel Figuras se abre en ese recurso, con el campo del pie listo. Cambia su colocación de _auto_ a _top_ y mira cómo se mueve.
 :::
 
 # Libros, partes y cabeceras {lead="Un libro es más que sus capítulos: una cubierta, un índice que se mantiene al día, portadillas de parte, aperturas que anuncian cada capítulo y cabeceras que saben dónde está el lector. Todo ello es configuración." summary="Capítulos, estilos de título, diseños, partes, índice y folios"}
@@ -441,7 +455,7 @@ Como la continuación es todo lo que un capítulo necesita del resto del libro, 
 
 ## Estilos de título
 
-Un título puede llevar atributos, escritos entre llaves al final de su línea. El más potente es el **estilo**: \`{style="cover"}\` aplica un estilo de título con nombre, que cambia la tipografía y el diseño del título y, para la sección que abre, puede cambiar las cabeceras, los márgenes de página, la disposición de columnas, la tipografía del cuerpo y la paleta. La cubierta de este libro es un estilo de título con márgenes propios, sin cabeceras y con un diseño a página completa; el índice es otro. Un estilo también puede dejar sin numerar sus títulos, para que un prólogo no desplace la numeración de los capítulos, y dejarlos fuera del índice.
+Un título puede llevar atributos, escritos entre llaves al final de su línea. El más potente de ellos es el **estilo**: \`{style="cover"}\` aplica un estilo de título con nombre, que cambia la tipografía y el diseño del título y, para la sección que abre, puede cambiar las cabeceras, los márgenes de página, la disposición de columnas, la tipografía del cuerpo y la paleta. La cubierta de este libro es un estilo de título con márgenes propios, sin cabeceras y con un diseño a página completa; el índice es otro. Un estilo también puede dejar sin numerar sus títulos, para que un prólogo no desplace la numeración de los capítulos, y dejarlos fuera del índice.
 
 ## Un vistazo a la configuración de este libro
 
@@ -451,7 +465,7 @@ Las aperturas de capítulo son un diseño del primer nivel de título. Una caja 
 
 ## Diseños
 
-Las cabeceras, los pies de página, las aperturas de capítulo y las portadillas se dibujan con **diseños**: pequeñas composiciones libres de textos, filetes, cajas e imágenes. Cada elemento se ancla a la página, al sangrado, a la caja de texto o a otro elemento, con desplazamientos y tamaños en unidades reales, e imprime **marcadores** como \`{pageNumber}\`, \`{chapterTitle}\`, \`{partTitle}\` o cualquier atributo del título, como el \`{attr.lead}\` que pone la entradilla en la banda de este capítulo. Los elementos se pueden limitar a las páginas pares o impares y a las páginas de un papel concreto —cuerpo, apertura, parte o blanca—, y así las cabeceras de este libro desaparecen en las aperturas de capítulo mientras aparece un folio al pie. Los elementos de texto pueden ajustarse, dividir palabras, recortarse con puntos suspensivos, dibujar una caja detrás y abrir con una capitular.
+Las cabeceras, los pies de página, las aperturas de capítulo y las portadillas se dibujan con **diseños**: pequeñas composiciones libres de textos, filetes, cajas e imágenes. Cada elemento se ancla a la página, al sangrado, a la caja de texto o a otro elemento, con desplazamientos y tamaños en unidades reales, y su texto puede llevar **marcadores** como \`{pageNumber}\`, \`{chapterTitle}\`, \`{partTitle}\` o cualquier atributo del título, como el \`{attr.lead}\` que pone la entradilla en la banda de este capítulo. Los elementos se pueden limitar a las páginas pares o impares y a las páginas de un papel concreto —cuerpo, apertura, parte o blanca—, y así las cabeceras de este libro desaparecen en las aperturas de capítulo mientras aparece un folio al pie. Los elementos de texto pueden ajustarse, dividir palabras, recortarse con puntos suspensivos, dibujar una caja detrás y abrir con una capitular.
 
 Las cabeceras son un diseño corriente, con elementos filtrados por paridad y por papel. En las páginas pares de este libro, el folio en el color de parte y el título del libro van junto al borde exterior; en las impares, el título del capítulo y el folio. Solo aparecen en las páginas de cuerpo; las aperturas llevan en su lugar un folio al pie, y las portadillas de parte no llevan nada. La página negra que da frente a cada portadilla de parte también es un elemento de diseño: una caja que llena el sangrado, visible solo en las páginas pares en blanco, que, en un libro cuyos capítulos abren en página par y cuyas partes abren en página impar, son exactamente las páginas que dan frente a una parte.
 
@@ -488,13 +502,13 @@ Títulos de una a seis almohadillas, párrafos, citas en bloque, listas con viñ
 
 Conviene conocer algunos detalles. Las líneas consecutivas de un párrafo se unen, así que los saltos de línea del original nunca llegan a la página; un párrafo nuevo necesita una línea en blanco. Las listas toleran una sola línea en blanco entre elementos, pero dos líneas en blanco las terminan. Las listas ordenadas conservan el número con el que empiezan, de modo que una lista puede empezar en 0 o en 5. Y un título puede forzar un salto de línea en su texto con dos barras invertidas, lo que solo afecta a los diseños que imprimen el título en grande —aperturas y portadillas de parte—, mientras que las cabeceras, el índice y los marcadores del PDF lo mantienen en una sola línea.
 
-Parte de Markdown se deja fuera a propósito, porque un libro tiene otras formas de decirlo: las imágenes son recursos y no dibujos en línea, las tablas son recursos con un modelo y no tablas de barras, y el HTML en bruto no significa nada en una página impresa. Los enlaces conservan su texto; hacerlos pulsables y dar al código en línea un estilo propio está en la hoja de ruta.
+Parte de Markdown se deja fuera a propósito, porque un libro tiene otras formas de decirlo: las imágenes son recursos y no dibujos en línea, las tablas son recursos con un modelo y no tablas de barras, y el HTML en bruto no significa nada en una página impresa. Los enlaces funcionan en la vista HTML y en el PDF; dar al código en línea un estilo propio está en la hoja de ruta.
 
 ## Directivas y contenedores
 
 Todo lo demás se expresa con un pequeño vocabulario de directivas, recogido en :ref{id="document-format"}. Las directivas de una línea empiezan con tres dos puntos y actúan en el punto donde aparecen. Los contenedores envuelven bloques entre una línea de apertura con atributos y una línea de cierre con tres dos puntos; se pueden anidar, y uno sin cerrar se cierra al final del capítulo, con un aviso.
 
-Los valores de los atributos pueden ir entre comillas dobles o simples, o sin comillas cuando son una sola palabra, y una clave sin valor es un indicador. Una directiva que el motor no conoce no se descarta en silencio: se imprime como un párrafo, para que nada desaparezca, y el panel Avisos la señala con su capítulo y su línea. Lo mismo ocurre con un estilo de recuadro o un estilo de párrafo que la configuración no define.
+Los valores de los atributos pueden ir entre comillas dobles o simples, o sin comillas cuando son una sola palabra, y una clave sin valor es un indicador. Una directiva que el motor no conoce no se descarta en silencio: se imprime como un párrafo, para que nada desaparezca, y el panel Revisión la señala con su capítulo y su línea. Lo mismo ocurre con un estilo de recuadro o un estilo de párrafo que la configuración no define.
 
 ## Mencionar recursos
 
@@ -516,7 +530,7 @@ Cada extensión responde a una pregunta que un libro se hace y Markdown no sabe 
 
 ## Matemáticas en el original
 
-Las matemáticas se escriben en notación LaTeX. Las fórmulas en línea van entre signos de dólar sencillos, en mitad de una frase; las fórmulas destacadas van entre dobles signos de dólar, en una línea propia o como un bloque de varias líneas. Un signo de dólar que deba imprimirse como tal se escapa con una barra invertida. Una fórmula que nunca se cierra, o que MathJax no puede leer, se señala en el panel Avisos y se sustituye en la página por un marcador rojo, para que no pueda colarse sin que nadie lo note en el PDF.
+Las matemáticas se escriben en notación LaTeX. Las fórmulas en línea van entre signos de dólar sencillos, en mitad de una frase; las fórmulas destacadas van entre dobles signos de dólar, en una línea propia o como un bloque de varias líneas. Un signo de dólar que deba imprimirse como tal se escapa con una barra invertida. Una fórmula que nunca se cierra, o que MathJax no puede leer, se señala en el panel Revisión y se sustituye en la página por un marcador rojo, para que no pueda colarse sin que nadie lo note en el PDF.
 
 ## Estilos de párrafo
 
@@ -524,7 +538,7 @@ Las matemáticas se escriben en notación LaTeX. Las fórmulas en línea van ent
 
 ## Escribir bien para el motor
 
-Unas cuantas costumbres facilitan el trabajo del motor y mejoran las páginas. Introduce cada lista con una frase, para que la lista nunca sea lo primero bajo un título; el panel Avisos puede señalar las que lo son. Mantén los títulos en orden, sin saltarte niveles. Menciona cada figura y cada tabla en el texto, cerca de donde la quieres: la mención decide adónde puede ir el recurso y qué número recibe. Deja la colocación a la configuración salvo que un recurso necesite de verdad una posición propia. Y escribe un texto alternativo para cada figura, porque el PDF accesible se lo ofrece a los lectores que no pueden ver la imagen.
+Unas cuantas costumbres facilitan el trabajo del motor y mejoran las páginas. Introduce cada lista con una frase, para que la lista nunca sea lo primero bajo un título; el panel Revisión puede señalar las que lo son. Mantén los títulos en orden, sin saltarte niveles. Menciona cada figura y cada tabla en el texto, cerca de donde la quieres: la mención decide adónde puede ir el recurso y qué número recibe. Deja la colocación a la configuración salvo que un recurso necesite de verdad una posición propia. Y escribe un texto alternativo para cada figura, porque el PDF accesible se lo ofrece a los lectores que no pueden ver la imagen.
 
 ## Metadatos
 
@@ -536,19 +550,19 @@ Todo lo que cuenta este libro puede probarse ahora mismo, sin escribir código. 
 
 ## Un recorrido por la interfaz
 
-La interfaz sigue la disposición de un editor conocido, esbozada en :ref{id="sandbox-ui"}. Una **barra de actividad** a la izquierda cambia entre seis paneles —Proyectos, Markdown, Recursos, Fuentes, Configuración y Avisos, este último con el número de asuntos pendientes—. Una **barra lateral** redimensionable aloja el panel activo; al hacer clic en el icono activo se pliega. El **visor**, a la derecha, muestra la misma maquetación en tres pestañas: Canvas, HTML y PDF.
+La interfaz sigue la disposición de un editor conocido, esbozada en :ref{id="sandbox-ui"}. Una **barra de actividad** a la izquierda cambia entre siete paneles —Libros, Capítulos, Texto, Figuras, Fuentes, Diseño y Revisión, este último con el número de asuntos pendientes—. Una **barra lateral** redimensionable aloja el panel activo; al hacer clic en el icono activo se pliega. El **visor**, a la derecha, muestra la misma maquetación en tres pestañas: Canvas, HTML y PDF.
 
-La barra lateral y el visor comparten la ventana, y la frontera entre ambos se puede arrastrar. Cada panel y el visor recuerdan su estado entre visitas: la ampliación y el modo de vista del canvas, el modo de columnas de la vista HTML, las secciones abiertas en el panel Configuración. El tema y el idioma de la interfaz se cambian desde el pie de la barra de actividad, y el idioma de la interfaz es independiente del idioma del libro.
+La barra lateral y el visor comparten la ventana, y la frontera entre ambos se puede arrastrar. Cada panel y el visor recuerdan su estado entre visitas: la ampliación y el modo de vista del canvas, el modo de columnas de la vista HTML, los grupos abiertos en el panel Diseño. El tema y el idioma de la interfaz se cambian desde el pie de la barra de actividad, y el idioma de la interfaz es independiente del idioma del libro.
 
 ## Editar un libro
 
-El editor de Markdown resalta los metadatos y las matemáticas, y su barra de herramientas inserta formato, listas, saltos de página y cambios de numeración. En su cabecera, un **selector de capítulos** recorre los capítulos del libro y muestra sus páginas; cada capítulo conserva su propio historial de deshacer y su cursor. Editor y páginas se siguen en los dos sentidos: hacer clic en una palabra de la página lleva el cursor a ella en el Markdown, y seleccionar texto lo resalta en la página.
+El editor del panel **Texto** resalta los metadatos y las matemáticas, y su barra de herramientas inserta formato, listas, saltos de página y cambios de numeración. En su cabecera, un **selector de capítulos** recorre los capítulos del libro y muestra sus páginas; cada capítulo conserva su propio historial de deshacer y su cursor. Editor y páginas se siguen en los dos sentidos: hacer clic en una palabra de la página lleva el cursor a ella en el Markdown, y seleccionar texto lo resalta en la página. El panel **Capítulos** muestra el libro abierto de una vez, con sus capítulos en orden y las páginas de cada uno.
 
 El editor vigila además el libro entero. Su menú de capítulos lista cada capítulo con las páginas que ocupa en cuanto se conocen, y pasar a otro capítulo cambia las vistas previas a él. Los capítulos se pueden crear, renombrar, reordenar, dividir por sus títulos de primer nivel o fusionar con el anterior, y el capítulo entero se puede exportar como archivo Markdown o sustituir por uno.
 
 ## Configuración
 
-El panel de Configuración edita la configuración completa —más de quinientos campos— agrupada en secciones plegables. Un buscador encuentra cualquier opción por su nombre, unas fichas de categoría acotan la lista al documento, el texto, las figuras y tablas, la salida o los ajustes avanzados, y un filtro de _solo modificados_ muestra lo que difiere de los valores por defecto. Cada campo y cada sección se pueden restablecer por separado, y la configuración se puede exportar e importar como archivo.
+El panel **Diseño** edita la configuración completa —más de quinientos campos— por grupos: página y columnas, colores, tipografía, títulos e índice, listas, figuras y tablas, recuadros, cabeceras y pies, partes, exportación y ajustes avanzados. Un buscador encuentra cualquier opción por su nombre, y el filtro **Cambiados** muestra lo que difiere de los valores por defecto. Cada campo y cada sección se pueden restablecer por separado, y la configuración se puede exportar e importar como archivo.
 
 ## Las tres vistas
 
@@ -558,19 +572,19 @@ Las vistas canvas y HTML pueden maquetar el capítulo actual o el libro completo
 
 ## Recursos y fuentes
 
-El panel de Recursos lista los recursos del libro por tipo. Las imágenes y los archivos SVG se pueden arrastrar, las tablas se editan en un editor tipo hoja de cálculo con celdas fusionadas, rellenos, imágenes, anchos de columna y pegado desde una hoja de cálculo, y el texto de un diagrama SVG se puede editar en su sitio. Al hacer clic en un pie, una nota, una celda o el texto de un diagrama de la vista previa, se abre en el panel. El panel de Fuentes añade familias propias, peso a peso, en los formatos web y de escritorio habituales; una familia propia tiene prioridad sobre una fuente de Google con el mismo nombre.
+El panel **Figuras** lista los recursos del libro por tipo. Las imágenes y los archivos SVG se pueden arrastrar, las tablas se editan en un editor tipo hoja de cálculo con celdas fusionadas, rellenos, imágenes, anchos de columna y pegado desde una hoja de cálculo, y el texto de un diagrama SVG se puede editar en su sitio. Al hacer clic en un pie, una nota, una celda o el texto de un diagrama de la vista previa, se abre en el panel. El panel de Fuentes añade familias propias, peso a peso, en los formatos web y de escritorio habituales; una familia propia tiene prioridad sobre una fuente de Google con el mismo nombre.
 
 Cada recurso tiene una vista de detalle con su identificador, su tipo, su pie, su nota y su texto alternativo, su colocación —posición, ancho de columna, giro, ancho, alineación y un pie al lado— y una vista previa en vivo. Borrar un recurso avisa cuando el texto aún lo menciona. El panel Fuentes, por su parte, comprueba que cada familia que nombra la configuración tenga los pesos y estilos que necesita, y avisa de las variantes que faltan o están duplicadas.
 
 ## Avisos
 
-El panel de Avisos lista todo lo que el motor ha notado al componer el libro: fuentes que no han cargado, líneas holgadas, niveles de título que se saltan, contenedores sin cerrar y directivas desconocidas, estilos que no existen, marcadores que no imprimen nada, recursos que faltan y recuadros demasiado altos para su columna. Cada aviso indica su capítulo y su línea, y al hacer clic lleva hasta ellos.
+El panel **Revisión** lista todo lo que el motor ha notado al componer el libro: fuentes que no han cargado, líneas holgadas, niveles de título que se saltan, contenedores sin cerrar y directivas desconocidas, estilos que no existen, marcadores que no imprimen nada, recursos que faltan y recuadros demasiado altos para su columna. Cada aviso indica su capítulo y su línea, y al hacer clic lleva hasta ellos.
 
 ## Proyectos, presets y compartir
 
-Tu trabajo se guarda en el navegador mientras escribes. Los **proyectos** son libros guardados localmente, cada uno con su nombre, su descripción y su imagen de cubierta; se pueden duplicar, exportar e importar. Los **presets** son libros de solo lectura desde los que empezar: esta guía y una galería de ediciones de muestra —una revista de astronomía, un _Quijote_ ilustrado, una revista de medio ambiente, un catálogo de exposición y dos manuales universitarios—, cada una con un diseño propio. Duplica uno como proyecto para hacerlo tuyo.
+Tu trabajo se guarda en el navegador mientras escribes. Los **proyectos** son libros guardados localmente, en **Mis libros** dentro del panel **Libros**, cada uno con su nombre, su descripción y su imagen de cubierta; se pueden duplicar, exportar e importar. Los **presets** son libros de solo lectura desde los que empezar, en **Libros de ejemplo**: esta guía y una galería de ediciones de muestra —una revista de astronomía, un _Quijote_ ilustrado, una revista de medio ambiente, un catálogo de exposición, dos manuales universitarios y _Sueño en el pabellón rojo_ en chino—, cada una con un diseño propio. **Hacer una copia propia** convierte uno en un proyecto tuyo.
 
-Los presets siguen a su origen. Cuando un paquete de preset cambia en el servidor, el Sandbox lo nota en cuestión de segundos: un preset sin tocar se recarga solo, y uno que has editado muestra un aviso que ofrece recargarlo, de modo que el trabajo en curso nunca se sobrescribe. Los presets se pueden ocultar de la lista y volver a mostrar, y cada uno se puede abrir en cualquiera de sus idiomas cuando tiene dos, como esta guía.
+Los presets siguen a su origen. Cuando un paquete de preset cambia en el servidor, el Sandbox lo nota en cuestión de segundos: un preset sin tocar se recarga solo, y uno que has editado muestra un aviso que ofrece recargarlo, de modo que el trabajo en curso nunca se sobrescribe. Los presets se pueden ocultar de la lista y volver a mostrar, y cada uno se puede abrir en cualquiera de sus idiomas cuando tiene más de uno, como esta guía, que también está en chino simplificado.
 
 Un libro viaja como un único archivo **.postext**: sus capítulos, su configuración, sus recursos y sus fuentes, además de la paginación ya calculada, de modo que se abre paginado. Y la barra de direcciones contiene siempre un enlace permanente a lo que estás viendo: el libro, el idioma, el visor, el capítulo y la página.
 
@@ -655,9 +669,9 @@ Postext no aspira a ser una plataforma documental universal. Aspira a ser un mot
 
 El trabajo se organiza en cuatro fases, resumidas en :ref{id="development-phases"}. No son hitos estrictos: describen el orden en que las capacidades se vuelven lo bastante estables para producción.
 
-Las dos primeras fases están prácticamente terminadas: el modelo de datos, el analizador y la capa de medición, el formato del documento, el motor de columnas con su equilibrado, sus flotantes y sus tablas, y la maquinaria de libro de capítulos, partes, índice y cabeceras. La tercera fase ha entregado su núcleo —corte óptimo de líneas con penalizaciones editoriales, separación silábica en ocho idiomas y matemáticas— y tiene todavía una gran pieza pendiente. La cuarta, la salida, ha publicado el canvas, el HTML y un PDF etiquetado, junto con el worker, el Sandbox y sus presets.
+Las dos primeras fases están prácticamente terminadas: el modelo de datos, el analizador y la capa de medición, el formato del documento, el motor de columnas con su equilibrado, sus flotantes y sus tablas, y la maquinaria de libro de capítulos, partes, índice y cabeceras. La tercera fase ha entregado su núcleo —corte óptimo de líneas con penalizaciones editoriales, separación silábica en ocho idiomas, matemáticas, notas al pie y notas de final de capítulo, y el chino en horizontal y en vertical— y tiene pendientes las notas al margen. La cuarta, la salida, ha publicado el canvas, el HTML y un PDF etiquetado, junto con el worker, el Sandbox y sus presets.
 
-Lo que falta importa tanto como lo que ya está hecho. Las **notas al pie, las notas finales y las notas al margen** son la mayor área abierta: el modelo de datos tiene un sitio para ellas, pero todavía no se maquetan. Los **enlaces** conservan su texto pero no su destino, el código en línea no tiene estilo propio, el texto aún no rodea obstáculos y la maquetación solo ocurre en el navegador. Son los siguientes problemas que merece la pena resolver, y aquellos en los que más cuenta la ayuda.
+Lo que falta importa tanto como lo que ya está hecho. Las **notas al margen** tienen un sitio en el modelo de datos, pero todavía no se maquetan. El código en línea no tiene estilo propio, el texto aún no rodea obstáculos, el japonés y el coreano se componen con las reglas del chino y no con las suyas, y la maquetación solo ocurre en el navegador. Son los siguientes problemas que merece la pena resolver, y aquellos en los que más cuenta la ayuda.
 
 ## Cómo participar
 

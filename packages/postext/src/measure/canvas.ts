@@ -128,6 +128,24 @@ export function measureInkBox(text: string, font: string): { ascent: number; des
   return { ascent, descent };
 }
 
+/** Where the ink of `text` in `font` starts and ends along the line, px
+ *  from the pen's origin (the start is negative when the ink overhangs
+ *  it), or null when the measurer gives no ink metrics or the text has no
+ *  ink. Not cached. */
+export function measureInkExtent(text: string, font: string): { start: number; end: number } | null {
+  const ctx = getMeasureCtx();
+  if (font !== _currentFont) {
+    ctx.font = font;
+    _currentFont = font;
+  }
+  const m = ctx.measureText(text) as Partial<TextMetrics>;
+  const left = m.actualBoundingBoxLeft;
+  const right = m.actualBoundingBoxRight;
+  if (typeof left !== 'number' || typeof right !== 'number' || !Number.isFinite(left) || !Number.isFinite(right)) return null;
+  const start = -left;
+  return right > start ? { start, end: right } : null;
+}
+
 /** Measure a short glyph (e.g. a list bullet) in the given font. */
 export function measureGlyphWidth(text: string, font: string): number {
   return measureTextWidth(text, font);
