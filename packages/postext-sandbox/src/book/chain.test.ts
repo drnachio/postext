@@ -56,6 +56,21 @@ describe('layOutBookChain', () => {
     expect(calls).toHaveLength(3);
   });
 
+  it('drops the provisional page fields of a plan not yet paginated', async () => {
+    // The book's first chapter is left out: nothing numbers the next one
+    // but its plan, whose numbering the planner made up while the pages
+    // before it were unknown (a plate opening on a verso).
+    const { build, calls } = fakeBuild({ c1: 2, c2: 4 });
+    const provisional = { pageIndexOffset: 1, pageNumbering: { format: 'decimal' as const, startAt: 2 } };
+    await layOutBookChain([planOf(0), planOf(1, provisional), planOf(2)], build, false);
+    expect(calls[1]).toEqual({ pageIndexOffset: 0 });
+    // A paginated plan's numbering stands.
+    calls.length = 0;
+    const paginated = { ...planOf(1, { pageIndexOffset: 4, pageNumbering: { format: 'decimal', startAt: 5 } }), paginated: true };
+    await layOutBookChain([planOf(0), paginated, planOf(2)], build, false);
+    expect(calls[1]).toEqual({ pageIndexOffset: 0, pageNumbering: { format: 'decimal', startAt: 5 } });
+  });
+
   it('leaves out a chapter the build skips', async () => {
     const { build } = fakeBuild({ c0: 3, c2: 4 });
     const docs = await layOutBookChain([planOf(0), planOf(1), planOf(2)], build, true);

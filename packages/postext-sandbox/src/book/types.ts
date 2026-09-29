@@ -162,7 +162,9 @@ export interface ChapterPlan {
   part?: ChapterPart;
   /** What the engine inherits. `undefined` for the first chapter (a
    *  self-contained document); the counters alone while the pages of a
-   *  preceding chapter are still unknown. When the configuration prints
+   *  preceding chapter are still unknown, with one page before it and the
+   *  numbering one on when the chapter opens with a heading that breaks to
+   *  an even page (`opensOnEvenPage`). When the configuration prints
    *  `{bookTotalPages}` and every chapter is paginated, every chapter — the
    *  first one too — also gets the book's page count (`bookPageCount`),
    *  which is not part of {@link continuationKey}: it moves no page. */

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { NumeralStyle, PostextConfig, Resource, VDTDocument } from 'postext';
-import { chapterLayoutFromDoc, chapterPageLabels, createBookPlanner, sameChapterLayout, sameLayoutInputs } from './pagination';
+import { chapterLayoutFromDoc, chapterPageLabels, createBookPlanner, opensOnEvenPage, sameChapterLayout, sameLayoutInputs } from './pagination';
 import { ENGINE_KEY, configKeyOf, resourcesKeyOf } from './layoutKeys';
 import { newChapter } from './chapterOps';
 import type { Chapter, ChapterLayout, ChapterPlan } from './types';
@@ -56,6 +56,52 @@ describe('createBookPlanner', () => {
     expect(plan.byId.c!.continuation?.resourceNumbers?.f1?.number).toBe('1.1');
     expect(plan.bookPages).toEqual({});
     expect(plan.pendingChapterId).toBe('a');
+  });
+
+  it('sets a chapter opening on a verso as if one page came first while the pages before it are unknown', () => {
+    // 紅樓夢 in Traditional characters: each 回 opens with its plate alone on
+    // the verso (a heading of a style breaking to an even page) facing the
+    // opener. Set from page 1, the plate would stand on a recto.
+    const plated: PostextConfig = {
+      page: { pageNumbering: { format: 'cjk-decimal', startAt: 1 } },
+      // Parts open no page of their own: a part's fence sets nothing.
+      parts: { page: false },
+      headingStyles: [{ id: 'plate', breakBefore: { enabled: true, parity: 'even' } }],
+    };
+    const book = [
+      newChapter('a', 'A', '# 甄士隱夢幻識通靈 {style="plate"}\n\n# 甄士隱夢幻識通靈\n\n此開卷第一回也。', 1),
+      newChapter('b', 'B', ':::part{number="卷一"}\n:::\n\n# 賈夫人仙逝揚州城 {style="plate"}\n\n# 賈夫人仙逝揚州城\n\n卻說封肅聽見公差傳喚。', 1),
+      newChapter('c', 'C', '# 托內兄如海薦西賓\n\n卻說雨村忙回頭看時。', 1),
+    ];
+    const planner = createBookPlanner();
+    const p0 = planner.plan(book, plated, [], {});
+    expect(p0.byId.b!.paginated).toBe(false);
+    expect(p0.byId.b!.continuation?.pageIndexOffset).toBe(1);
+    expect(p0.byId.b!.continuation?.pageNumbering).toEqual({ format: 'cjk-decimal', startAt: 2 });
+    // A chapter opening on a recto keeps the first page it had.
+    expect(p0.byId.c!.continuation?.pageIndexOffset).toBeUndefined();
+    expect(p0.byId.c!.continuation?.pageNumbering).toBeUndefined();
+    // The book's first chapter is the book's first page.
+    expect(p0.byId.a!.continuation).toBeUndefined();
+    // Once the chapter before it is paginated, its pages are the book's.
+    const a = { ...layoutFor(p0.byId.a!, { pageCount: 13 }, book), configKey: configKeyOf(plated), resourcesKey: resourcesKeyOf([]), lastPageFormat: 'cjk-decimal' as const };
+    const p1 = planner.plan(book, plated, [], { a });
+    expect(p1.byId.b!.paginated).toBe(true);
+    expect(p1.byId.b!.continuation?.pageIndexOffset).toBe(13);
+    expect(p1.byId.b!.continuation?.pageNumbering).toEqual({ format: 'cjk-decimal', startAt: 14 });
+  });
+
+  it('reads what a chapter sets first', () => {
+    const plated: PostextConfig = { headingStyles: [{ id: 'plate', breakBefore: { enabled: true, parity: 'even' } }] };
+    expect(opensOnEvenPage(':::numbering{format="cjk-decimal" startAt=1}\n\n:::pagebreak\n\n# P {style="plate"}', plated)).toBe(true);
+    expect(opensOnEvenPage('---\ntitle: T\n---\n\n# P {style="plate"}', plated)).toBe(true);
+    // Text, the contents, a part opening its own page, a heading breaking
+    // to a recto: none opens on a verso.
+    expect(opensOnEvenPage('此開卷第一回也。\n\n# P {style="plate"}', plated)).toBe(false);
+    expect(opensOnEvenPage(':::toc\n\n# P {style="plate"}', plated)).toBe(false);
+    expect(opensOnEvenPage(':::part{number="I"}\n:::\n\n# P {style="plate"}', { ...plated, parts: { page: true } })).toBe(false);
+    expect(opensOnEvenPage('# P', plated)).toBe(false);
+    expect(opensOnEvenPage('# P', { headings: { levels: [{ level: 1, breakBefore: { enabled: true, parity: 'always-even' } }] } })).toBe(true);
   });
 
   it('chains page offsets and numbering through the recorded layouts', () => {

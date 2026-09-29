@@ -439,10 +439,13 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
           // this build over.
           if (!chapterPlan) return;
           const source = composeBookMemo(snapshotChapters, chapter.id);
-          // The first chapter inherits nothing but the book's page count.
+          // The first chapter inherits nothing but the book's page count;
+          // the page fields of a plan not yet paginated are provisional.
+          const { pageNumbering: planNumbering, ...inherited } = chapterPlan.continuation ?? {};
+          const numbering = nextNumbering ?? (chapterPlan.paginated ? planNumbering : undefined);
           const continuation: LayoutContinuation | undefined = chapterPlan.index === 0
             ? chapterPlan.continuation
-            : { ...chapterPlan.continuation, pageIndexOffset: offset, ...(nextNumbering ? { pageNumbering: nextNumbering } : {}) };
+            : { ...inherited, pageIndexOffset: offset, ...(numbering ? { pageNumbering: numbering } : {}) };
           const keyInput = { markdown: source.markdown, metadata: source.metadata, config: deferredConfig, resources: deferredResources, continuation, outlineKey: chapterPlan.outlineKey };
           // What the chapter was built from, whatever the records say: the
           // counters and pages it actually continues.
