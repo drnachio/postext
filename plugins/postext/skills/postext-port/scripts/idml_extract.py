@@ -23,7 +23,9 @@ page-number style as `main`, ranged references as range start/end, and See /
 See also cross-references gathered in the report as marks to paste above
 `:::index`. East Asian character attributes become Postext marks (postext >= 1.9):
 ruby (`RubyFlag`/`RubyString`) as `:ruby[…]{rt="…"}`, tate-chu-yoko as
-`:tcy[…]`, kenten (emphasis marks) as `:dots[…]`, warichu as `:warichu[…]`;
+`:tcy[…]`, kenten (emphasis marks) as `:dots[…]`, warichu as `:warichu[…]`,
+nested when a run carries several (a warichu note outermost, then ruby, dots
+and tate-chu-yoko) and keeping the run's bold and italic inside them;
 vertical stories (`StoryOrientation="Vertical"`) and a right-to-left page
 binding are reported, since they belong in the config.
 
@@ -115,55 +117,73 @@ def _props(el):
     return {pr.tag: (pr.text or "").strip() for pr in el.findall("Properties/*")}
 
 
+# Kenten kinds as :dots styles: (style, fill), "" for the default. Other
+# kinds (triangles, squares, bullseyes, custom marks) have no :dots style
+# and are set as plain dots, which the report lists.
 KENTEN_STYLES = {
-    "KentenSesameDot": "sesame", "KentenWhiteSesameDot": "sesame",
-    "KentenWhiteCircle": "circle", "KentenSmallWhiteCircle": "circle",
+    "KentenSesameDot": ("sesame", ""), "KentenWhiteSesameDot": ("sesame", "open"),
+    "KentenBlackCircle": ("circle", "filled"), "KentenWhiteCircle": ("circle", ""),
+    "KentenSmallBlackCircle": ("", ""), "KentenSmallWhiteCircle": ("", "open"),
 }
+# How the marks of one run nest, outermost first: a warichu note holds
+# whatever its text carries, a ruby base may carry dots or a tate-chu-yoko
+# cell.
+CJK_ORDER = ("warichu", "ruby", "dots", "tcy")
 
 
-def cjk_mark(a: dict) -> tuple | None:
-    """The East Asian markup a character range asks for, from its IDML
-    attributes: ruby, warichu, tate-chu-yoko or kenten (emphasis marks)."""
+def cjk_mark(a: dict) -> dict | None:
+    """The East Asian marks a character range carries, from its IDML
+    attributes, by kind: ruby (reading, group), warichu, tate-chu-yoko and
+    kenten (emphasis marks: style, fill, the IDML kind)."""
+    marks: dict = {}
     if a.get("RubyFlag") == "true" and a.get("RubyString"):
-        return ("ruby", a["RubyString"], a.get("RubyType", "GroupRuby") != "PerCharacterRuby")
+        marks["ruby"] = (a["RubyString"], a.get("RubyType", "GroupRuby") != "PerCharacterRuby")
     if a.get("Warichu") == "true":
-        return ("warichu",)
+        marks["warichu"] = True
     if a.get("Tatechuyoko") == "true":
-        return ("tcy",)
+        marks["tcy"] = True
     kind = a.get("KentenKind", "None")
     if kind and kind != "None":
-        return ("dots", KENTEN_STYLES.get(kind, ""))
-    return None
+        marks["dots"] = KENTEN_STYLES.get(kind, ("", "")) + (kind,)
+    return marks or None
 
 
 def _bracket_safe(text: str) -> str | None:
-    """Text for inside `:mark[…]`: balanced brackets stay as they are, a `]`
-    with no `[` before it is escaped, and None when a `[` is left open (the
-    parser would not close the mark)."""
-    out, depth = [], 0
-    for ch in text:
+    """Markup for inside `:mark[…]`: balanced brackets stay as they are, a `]`
+    with no `[` before it is escaped, an escaped character is kept as it is,
+    and None when a `[` is left open (the parser would not close the mark)."""
+    out, depth, i = [], 0, 0
+    while i < len(text):
+        ch = text[i]
+        if ch == "\\" and i + 1 < len(text):
+            out.append(text[i:i + 2])
+            i += 2
+            continue
         if ch == "[":
             depth += 1
         elif ch == "]":
             if depth == 0:
                 out.append("\\]")
+                i += 1
                 continue
             depth -= 1
         out.append(ch)
+        i += 1
     return None if depth else "".join(out)
 
 
-def cjk_markup(mark: tuple, text: str) -> str | None:
-    """Postext markup for a run of text carrying one East Asian mark, or None
-    when the text cannot go inside one (an unclosed `[`)."""
-    inner = _bracket_safe(escape(clean_text(text)))
+def cjk_markup(kind: str, key, inner: str) -> str | None:
+    """Postext markup for one East Asian mark around `inner` (markup already),
+    or None when it cannot go inside the brackets (an unclosed `[`)."""
+    inner = _bracket_safe(inner)
     if inner is None:
         return None
-    if mark[0] == "ruby":
-        return f':ruby[{inner}]{{rt="{attr_value(mark[1])}"{" group" if mark[2] else ""}}}'
-    if mark[0] == "dots":
-        return f":dots[{inner}]" + (f'{{style="{mark[1]}"}}' if mark[1] else "")
-    return f":{mark[0]}[{inner}]"
+    if kind == "ruby":
+        return f':ruby[{inner}]{{rt="{attr_value(key[0])}"{" group" if key[1] else ""}}}'
+    if kind == "dots":
+        a = " ".join(x for x in (f'style="{key[0]}"' if key[0] else "", f'fill="{key[1]}"' if key[1] else "") if x)
+        return f":dots[{inner}]" + (f"{{{a}}}" if a else "")
+    return f":{kind}[{inner}]"
 
 
 class IRun:
@@ -544,40 +564,66 @@ def cmd_markdown(args) -> None:
     callout: list | None = None
     list_run: list[str] = []
 
-    def render(p: IPara, plain: bool = False, marks: bool = True) -> str:
-        runs = []
-        prs = [r for r in p.runs if r.text not in (TABLE_MARK, OBJECT_MARK, "￲")]
+    def leaf(r: IRun, plain: bool, marks: bool) -> Run | None:
+        if r.text.startswith(INDEX_MARK):
+            if marks and not plain:
+                return Run(r.text[1:], raw=True)
+            if not marks:
+                report["index marks in table cells or captions dropped (they print as written there)"] += 1
+            return None
+        t = r.text.replace("\u2028", " ").replace("\t", " ")
+        return Run(t, r.bold, r.italic, r.position in ("Superscript", "OTSuperscript"),
+                   r.position in ("Subscript", "OTSubscript"))
+
+    def nest(prs: list[IRun], cjk: list, depth: int, plain: bool, marks: bool) -> list[Run]:
+        """Runs for `prs`, the East Asian marks from CJK_ORDER[depth] on
+        written around them, each kind nested inside the one before it."""
+        if depth == len(CJK_ORDER):
+            return [x for x in (leaf(r, plain, marks) for r in prs) if x is not None]
+        kind = CJK_ORDER[depth]
+        key = [(m or {}).get(kind) for m in cjk]
+        out: list[Run] = []
         i = 0
         while i < len(prs):
-            r = prs[i]
-            if r.text.startswith(INDEX_MARK):
-                if marks and not plain:
-                    runs.append(Run(r.text[1:], raw=True))
-                elif not marks:
-                    report["index marks in table cells or captions dropped (they print as written there)"] += 1
-                i += 1
-                continue
-            if r.cjk and not plain:
-                j = i
-                while j < len(prs) and prs[j].cjk == r.cjk and not prs[j].text.startswith(INDEX_MARK):
-                    j += 1
-                text = "".join(x.text for x in prs[i:j])
-                markup = cjk_markup(r.cjk, text)
+            j = i + 1
+            while j < len(prs) and key[j] == key[i]:
+                j += 1
+            inner = nest(prs[i:j], cjk[i:j], depth + 1, plain, marks)
+            if key[i] is None:
+                out += inner
+            else:
+                markup = cjk_markup(kind, key[i], render_runs(inner))
                 if markup is None:
-                    runs.append(Run(text))
-                    report[f"East Asian :{r.cjk[0]} marks left out: the text holds an unclosed '[' (mark by hand)"] += 1
+                    out += inner
+                    report[f"East Asian :{kind} marks left out: the text holds an unclosed '[' (mark by hand)"] += 1
                 else:
-                    runs.append(Run(markup, raw=True))
-                    report[f"East Asian marks written as :{r.cjk[0]}[…] (check them against the PDF)"] += 1
-                i = j
-                continue
-            t = r.text.replace(" ", " ").replace("\t", " ")
-            runs.append(Run(t, r.bold, r.italic, r.position in ("Superscript", "OTSuperscript"),
-                            r.position in ("Subscript", "OTSubscript")))
-            i += 1
+                    out.append(Run(markup, raw=True))
+                    report[f"East Asian marks written as :{kind}[…] (check them against the PDF)"] += 1
+                    if kind == "dots" and key[i][2] not in KENTEN_STYLES:
+                        report[f"kenten {key[i][2]} set as plain :dots (no such style in Postext)"] += 1
+            i = j
+        return out
+
+    def run_marks(prs: list[IRun]) -> list:
+        """Each run's marks; an index mark takes the marks around it when both
+        sides share them, so it does not cut a ruby or a note in two."""
+        cjk = [r.cjk for r in prs]
+        for i, r in enumerate(prs):
+            if r.text.startswith(INDEX_MARK):
+                before = next((prs[k].cjk for k in range(i - 1, -1, -1) if not prs[k].text.startswith(INDEX_MARK)), None)
+                after = next((prs[k].cjk for k in range(i + 1, len(prs)) if not prs[k].text.startswith(INDEX_MARK)), None)
+                cjk[i] = before if before == after else None
+        return cjk
+
+    def render(p: IPara, plain: bool = False, marks: bool = True) -> str:
+        prs = [r for r in p.runs if r.text not in (TABLE_MARK, OBJECT_MARK, "\ufff2")]
         if plain:
+            runs = nest(prs, [None] * len(prs), 0, plain, marks)
             return collapse_spaces("".join(x.text for x in runs))
-        return render_runs(runs)
+        return render_runs(nest(prs, run_marks(prs), 0, plain, marks))
+
+    def has_cjk_marks(p: IPara) -> bool:
+        return any(r.cjk for r in p.runs)
 
     def target() -> list:
         return callout[2] if callout else chapters[-1][1]
@@ -644,6 +690,8 @@ def cmd_markdown(args) -> None:
                     chapters[-1][0] = text_plain
                 marks = "".join(r.text[1:] for r in p.runs if r.text.startswith(INDEX_MARK))
                 chapters[-1][1].append(heading(int(role[1:]), text_plain) + marks)
+                if has_cjk_marks(p):
+                    report["East Asian marks in headings dropped (the heading keeps the text; mark it by hand)"] += 1
                 continue
             if role == "caption":
                 text = render(p, marks=False)
@@ -670,6 +718,8 @@ def cmd_markdown(args) -> None:
                 close_callout()
                 flush_list()
                 callout = [role.split(":", 1)[1], text_plain, []]
+                if has_cjk_marks(p):
+                    report["East Asian marks in callout titles dropped (titles are plain text)"] += 1
                 continue
             if role.startswith("callout:"):
                 ctype = role.split(":", 1)[1]

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { spawnSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
@@ -60,6 +60,49 @@ describe.skipIf(!python)("postext-port lint on Chinese text", () => {
     expect(out).toContain("：：： typed with an input method prints as text (fullwidthMarkup): type :::");
   });
 
+  it("counts Chinese in the family that sets it: paragraph and heading styles, not heading attributes", () => {
+    const dir = mkdtempSync(path.join(os.tmpdir(), "postext-lint-"));
+    mkdirSync(path.join(dir, "chapters"));
+    const chapter = (extra: string) => [
+      '# The Stone {zh="石頭記" subtitle="甄士隱夢幻識通靈"}',
+      "",
+      "An English paragraph.",
+      "",
+      ':::paragraphs{style="zh"}',
+      "滿紙荒唐言，一把辛酸淚。",
+      ":::",
+      "",
+      '## 回目{style="cn"}',
+      "",
+      extra,
+    ].join("\n");
+    const manifest = {
+      version: 2, configVersion: 8, id: "t", name: "T", locale: "en",
+      chapters: { en: [{ title: "One", file: "chapters/01.md" }] },
+      config: {
+        locale: "en", header: { elements: [] }, layout: { layoutType: "single" },
+        bodyText: { fontFamily: "EB Garamond" },
+        headings: { fontFamily: "EB Garamond", levels: [{ level: 1, breakBefore: { enabled: true } }] },
+        paragraphStyles: [{ id: "zh", name: "Chinese", fontFamily: "Noto Serif TC" }],
+        headingStyles: [{ id: "cn", fontFamily: "Noto Serif TC" }],
+      },
+      resources: [], fonts: [],
+    };
+    writeFileSync(path.join(dir, "preset.json"), JSON.stringify(manifest));
+
+    writeFileSync(path.join(dir, "chapters/01.md"), chapter("More English."));
+    const clean = lint(dir);
+    expect(clean.out).not.toContain("EB Garamond");
+    expect(clean.out).not.toContain("does not parse as attributes");
+    expect(clean.out).toMatch(/Noto Serif TC sets 14 CJK characters but is not bundled/);
+    expect(clean.status).toBe(0);
+
+    writeFileSync(path.join(dir, "chapters/01.md"), chapter("The title page reads 紅樓夢."));
+    const stray = lint(dir);
+    expect(stray.out).toMatch(/ERROR fonts \(en\): 3 CJK characters \(夢樓紅…\) are set in EB Garamond, which has none: set bodyText\.fontFamily/);
+    expect(stray.status).toBe(1);
+  });
+
   it.skipIf(!fontTools)("flags the characters a bundled face has no glyph for, and passes when it has them", () => {
     const config = {
       locale: "zh-Hant-TW",
@@ -72,5 +115,22 @@ describe.skipIf(!python)("postext-port lint on Chinese text", () => {
     const good = lint(project(config, CHAPTER, true));
     expect(good.out).toContain("0 error(s), 0 warning(s)");
     expect(good.status).toBe(0);
+  });
+});
+
+describe("postext-port command lines", () => {
+  it("gives every documented fonts.py subset command the --out it requires", () => {
+    const skill = path.join(REPO, "plugins/postext/skills/postext-port");
+    const files = ["SKILL.md", ...readdirSync(path.join(skill, "references")).map((f) => `references/${f}`)];
+    let seen = 0;
+    for (const file of files) {
+      // A code span may wrap onto the next line in these files.
+      const text = readFileSync(path.join(skill, file), "utf8").replace(/\n\s*/g, " ");
+      for (const m of text.matchAll(/`fonts\.py subset ([^`]+)`/g)) {
+        seen++;
+        expect(m[1], `${file}: ${m[0]}`).toMatch(/(^| )--out /);
+      }
+    }
+    expect(seen).toBeGreaterThan(1);
   });
 });

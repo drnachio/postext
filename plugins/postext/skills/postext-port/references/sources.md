@@ -219,7 +219,11 @@ about it:
   pages), then as above. Check the rare characters by hand.
 - **InDesign (IDML)**: `idml_extract.py` turns character attributes into marks: `RubyFlag`/`RubyString`
   (`RubyType` PerCharacterRuby = one reading per character) → `:ruby[…]{rt="…"}`, `Tatechuyoko` → `:tcy[…]`,
-  `KentenKind` (emphasis marks) → `:dots[…]`, `Warichu` → `:warichu[…]`. It reports stories with
+  `KentenKind` (emphasis marks) → `:dots[…]` (sesame and circles, white ones as `fill="open"`; triangles,
+  squares and custom marks come out as plain dots, listed in the report), `Warichu` → `:warichu[…]`. A run
+  that carries several nests them, the note outermost, then ruby, dots and tate-chu-yoko, and keeps its bold
+  and italic inside them; headings and callout titles keep the text only, and the report counts the marks
+  they lose. It reports stories with
   `StoryPreference@StoryOrientation="Vertical"` (→ `layout.writingMode: 'vertical-rl'`) and
   `DocumentPreference@PageBinding="RightToLeft"` (→ `page.binding: 'right'`). The frame grid
   (`CjkGridPreference`, `FrameGridOption`: characters per line, lines, size) gives `cjk.grid`; the kinsoku and

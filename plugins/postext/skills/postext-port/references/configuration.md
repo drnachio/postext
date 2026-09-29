@@ -960,9 +960,9 @@ CJK keeps Knuth–Plass. The guide is docs/chinese-layout-en.mdx (postext.dev/en
 | `region` | `'auto'` | `'mainland'` \| `'taiwan'` \| `'hongkong'` |
 | `lineBreak` | `gb` / `basic` / `basic` | `'none'` (break anywhere) \| `'basic'` (no 、，。？！ 」）》 at a line start, no 「（《 at an end) \| `'gb'` (+ solidus) \| `'strict'` (+ —— …… at a start) |
 | `punctuationWidth` | `kaiming` / `fullwidth` / `fullwidth` | `'kaiming'`: 。？！ 1 em inside the line, every other mark ½, all ½ at a line end; `'fullwidth'`; `'lineEndHalf'`; `'halfwidth'` |
-| `compressAdjacent` | on / off / on | two marks that meet (`。」` `》（`) take 1.5 em |
+| `compressAdjacent` | on / off / on | two marks that meet (`。」` `》（`) take 1.5 em; a centred TW/HK `。，` before a closing bracket keeps its em |
 | `trimLineStart` | on / off / on | opening bracket at a line start, closing at an end, lose their outer half |
-| `hangingPunctuation` | `'none'` | `'allow'` \| `'force'`: one 、，。． (mainland also ；：？！) past the line end; never in horizontal TW/HK |
+| `hangingPunctuation` | `'none'` | `'allow'` \| `'force'`: one 、，。． (mainland also ；：？！) past the line end; `'allow'` never in horizontal TW/HK, `'force'` there too |
 | `latinSpacing` | `{0.25, em}` | Han ↔ Latin letter/digit; replaces a typed space; `0` off |
 | `uprightDigits` | `2` | vertical text: numbers of ≤ N digits in one upright cell (0, 2, 3, 4); `:tcy[…]` by hand |
 | `grid` | off | `{enabled, charsPerLine, linesPerPage, show}`: rewrites margins so columns are whole ems and the type area whole lines; configured margins are minimums; warning `cjkGridClamped` |

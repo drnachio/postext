@@ -270,7 +270,7 @@ list deliberate deviations.
 ### 6. Fonts and images
 - Fonts: `scripts/fonts.py info|instance|subset|scale|split`.
 - Chinese faces: subset a TrueType build to the book's text first
-  (`fonts.py subset NotoSerifTC[wght].ttf --text-from chapters/ --ranges latin,punct,cjk-punct`),
+  (`fonts.py subset NotoSerifTC[wght].ttf --out work/ --text-from chapters/ --ranges latin,punct,cjk-punct`),
   then cut static weights (`fonts.py instance`). Layout features (`vert`)
   and vertical metrics survive (playbooks E6).
 - Images: `scripts/images.py prep|join|size`.

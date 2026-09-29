@@ -511,7 +511,7 @@ Make static instances per weight and italic at a fixed `opsz`/`wdth`
 (`fonts.py instance`). Copy the OFL licence next to them.
 
 ### E2. Licensed faces
-Subset them to the characters used (`fonts.py subset --text-from chapters/ --woff2`)
+Subset them to the characters used (`fonts.py subset FONT… --out fonts/ --text-from chapters/ --woff2`)
 and mark them `"redistributable": false`. Check the embedding permission
 (`fonts.py info`, where `restricted` means the face may not be embedded).
 

@@ -29,7 +29,6 @@ KNOWN_DIRECTIVES = {"pagebreak", "numbering", "columnbreak", "space", "toc", "in
 FENCE_RE = re.compile(r"^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$")
 ATTR_RE = re.compile(r"([A-Za-z_][A-Za-z0-9_-]*)(?:\s*=\s*(?:\"([^\"]*)\"|'([^']*)'|([^\s]+)))?")
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+)$")
-HEADING_ATTRS_RE = re.compile(r"\s+\{([^{}]*)\}\s*$")
 INDEX_MARK_RE = re.compile(r"(?<![:\\]):index(?:\[((?:\\.|[^\]\\\n])*)\])?(?:\{([^}\n]*)\})?")
 INDEX_AFTER_COLON_RE = re.compile(r"(?<=[^\s:])::index[\[{]")
 FOOTNOTE_MARK_RE = re.compile(r"\[\^([\w.:-]+)\]")
@@ -63,6 +62,61 @@ def parse_attrs(blob: str | None) -> dict[str, str]:
     for m in ATTR_RE.finditer(blob or ""):
         out[m.group(1)] = next((g for g in m.groups()[1:] if g is not None), "")
     return out
+
+
+# The engine's strict attribute grammar (parse/attrs.ts): ASCII keys, `=` or
+# the fullwidth `＝`, values in "…", '…', “…”, 「…」 or bare; a key in another
+# script is read (so the block still parses) and dropped.
+_ATTR_VALUE = "\"([^\"]*)\"|'([^']*)'|\u201c([^\u201d]*)\u201d|\u300c([^\u300d]*)\u300d|(\\S+)"
+_ATTR_TOKEN_RE = re.compile(r"([A-Za-z_][A-Za-z0-9_-]*)(?:\s*[=\uff1d]\s*(?:" + _ATTR_VALUE + "))?")
+_ATTR_FOREIGN_RE = re.compile(r"([^\W\d][\w-]*)\s*[=\uff1d]\s*(?:" + _ATTR_VALUE + ")")
+# A heading's trailing block: after a space, or glued to a Chinese or
+# Japanese character (parse/blockParser.ts HEADING_ATTRS_RE).
+_HEADING_BLOCK_RE = re.compile(
+    "(?:\\s+|(?<=[\u3000-\u303f\u3040-\u30ff\u31f0-\u31ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff00-\uffef"
+    "\U00020000-\U0003134f]))\\{([^{}]*)\\}\\s*$"
+)
+
+
+def parse_attrs_strict(blob: str) -> list[tuple[str, str, bool, bool]] | None:
+    """(key, value, flag, foreign key) for each token of a blob the grammar
+    reads whole, else None (`{x, y}`, `{紅樓|hóng lóu}`)."""
+    out: list[tuple[str, str, bool, bool]] = []
+    at = len(blob) - len(blob.lstrip())
+    while at < len(blob):
+        f = _ATTR_FOREIGN_RE.match(blob, at)
+        foreign = bool(f and re.search(r"[^\x00-\x7f]", f.group(1)))
+        m = f if foreign else _ATTR_TOKEN_RE.match(blob, at)
+        if not m:
+            return None
+        groups = m.groups()[1:]
+        which = next((i for i, g in enumerate(groups) if g is not None), -1)
+        at = m.end()
+        before = at
+        while at < len(blob) and blob[at].isspace():
+            at += 1
+        # Two tokens need a space between them unless a quote closes the first.
+        if at < len(blob) and at == before and not 0 <= which < 4:
+            return None
+        out.append((m.group(1), groups[which] if which >= 0 else "", which < 0, foreign))
+    return out
+
+
+def split_heading_attrs(title: str) -> tuple[str, dict[str, str] | None]:
+    """A heading's text without its trailing attribute block, and the block's
+    attributes (keys outside ASCII dropped); None when the braces stay in the
+    title, as the engine reads them: the grammar must read the whole block,
+    and flags alone count only after a space (`# 第一回{draft}` keeps them)."""
+    m = _HEADING_BLOCK_RE.search(title)
+    if not m:
+        return title, None
+    tokens = parse_attrs_strict(m.group(1))
+    if not tokens:
+        return title, None
+    spaced = m.group(0)[0] != "{"
+    if not spaced and all(flag for _, _, flag, _ in tokens):
+        return title, None
+    return title[:m.start()], {k: v for k, v, _, foreign in tokens if not foreign}
 
 
 def walk_values(node, path=""):
@@ -245,7 +299,7 @@ def has_han(font) -> bool:
 
 
 def check_cjk_coverage(where: str, chars: dict[str, set[str]], cfg: dict, coverage: dict | None,
-                       fonts: set[str], rep: Report) -> None:
+                       fonts: set[str], rep: Report, roles: dict[str, set[str]] | None = None) -> None:
     """Every CJK character a family sets must be in each of its bundled files:
     Postext sets one family per style and takes nothing from another family."""
     for family, used in chars.items():
@@ -253,8 +307,10 @@ def check_cjk_coverage(where: str, chars: dict[str, set[str]], cfg: dict, covera
             continue
         sample = "".join(sorted(used)[:12])
         if family in LATIN_ONLY_FAMILIES:
+            by = ", ".join(sorted((roles or {}).get(family, ()))) or "bodyText/headings fontFamily"
             rep.error(where, f"{len(used)} CJK characters ({sample}…) are set in {family}, which has none: "
-                             "set bodyText/headings fontFamily to a Chinese face (Noto Serif SC/TC, Noto Sans SC/TC)")
+                             f"set {by} to a Chinese face (Noto Serif SC/TC, Noto Sans SC/TC), or give that text a "
+                             "paragraph or heading style that has one")
             continue
         if family not in fonts:
             rep.warn(where, f"{family} sets {len(used)} CJK characters but is not bundled: its coverage cannot be checked, "
@@ -270,27 +326,97 @@ def check_cjk_coverage(where: str, chars: dict[str, set[str]], cfg: dict, covera
             if missing:
                 rep.error(where, f"{family} {label} has no glyph for {len(missing)} of the {len(used)} CJK characters it sets: "
                                  f"{''.join(missing[:20])}{'…' if len(missing) > 20 else ''} (they print as empty boxes; "
-                                 "subset from a face that has them: fonts.py subset --text-from chapters/)")
+                                 "subset from a face that has them: fonts.py subset FONT --out fonts/ --text-from chapters/)")
 
 
-def cjk_chars_by_family(texts: list[tuple[str, str]], cfg: dict) -> dict[str, set[str]]:
-    """The CJK characters each family sets: headings in the headings family
-    (a level may name its own), everything else in the body family."""
+def _styles_by_id(cfg: dict, key: str) -> dict[str, dict]:
+    v = cfg.get(key)
+    return {s.get("id"): s for s in v if isinstance(s, dict)} if isinstance(v, list) else {}
+
+
+def cjk_chars_by_family(texts: list[tuple[str, str]], cfg: dict) -> tuple[dict[str, set[str]], dict[str, set[str]]]:
+    """The CJK characters each family sets, and the settings that set them
+    there: a heading in its heading style's family, else its level's, else
+    the headings family; a `:::paragraphs{style}` run in its paragraph
+    style's family; a callout's body in its style's `body.fontFamily` and
+    its `title` in `titleStyle.fontFamily`; everything else in the body
+    family. A heading's trailing attribute block is not printed in the
+    heading (a design prints `{attr.<key>}` in its own face) and front
+    matter and display maths are not text, so none of them is counted."""
     body = (cfg.get("bodyText") or {}).get("fontFamily") or "EB Garamond"
     headings = cfg.get("headings") or {}
     head_default = headings.get("fontFamily") or "Open Sans"
     level_family = {l.get("level"): l.get("fontFamily") for l in headings.get("levels", [])
                     if isinstance(l, dict) and l.get("fontFamily")}
+    para_styles = _styles_by_id(cfg, "paragraphStyles")
+    head_styles = _styles_by_id(cfg, "headingStyles")
+    callouts = [s for s in cfg.get("calloutStyles") or [] if isinstance(s, dict)] \
+        if isinstance(cfg.get("calloutStyles"), list) else []
     out: dict[str, set[str]] = defaultdict(set)
+    roles: dict[str, set[str]] = defaultdict(set)
+
+    def add(fam: str, role: str, text: str) -> None:
+        chars = {c for c in CJK_RE.findall(text) if c != "　"}
+        if chars:
+            out[fam].update(chars)
+            roles[fam].add(role)
+
     for _, text in texts:
-        for line in text.split("\n"):
-            m = HEADING_RE.match(line.strip())
+        lines = text.split("\n")
+        start = 0
+        if lines and lines[0].strip() == "---":
+            end = next((i for i in range(1, len(lines)) if lines[i].strip() == "---"), None)
+            start = end + 1 if end is not None else 0
+        # Innermost open container: (family, role) of the text it holds.
+        stack: list[tuple[str, str]] = []
+        in_math = False
+        for line in (l.strip() for l in lines[start:]):
+            if in_math or line == "$$":
+                in_math = (line != "$$") if in_math else True
+                continue
+            here = stack[-1] if stack else (body, "bodyText.fontFamily")
+            if line.startswith(":::"):
+                if line == ":::":
+                    if stack:
+                        stack.pop()
+                    continue
+                fm = FENCE_RE.match(line)
+                if not fm or fm.group(1) not in KNOWN_CONTAINERS:
+                    continue
+                name, attrs = fm.group(1), parse_attrs(fm.group(2))
+                if name == "paragraphs":
+                    sid = attrs.get("style", "")
+                    fam = (para_styles.get(sid) or {}).get("fontFamily")
+                    stack.append((fam, f"paragraphStyles[{sid}].fontFamily") if fam else (body, "bodyText.fontFamily"))
+                elif name == "callout":
+                    t = attrs.get("type")
+                    st = next((s for s in callouts if t and s.get("id") == t), callouts[0] if callouts else {})
+                    sid = st.get("id", "note")
+                    if attrs.get("title"):
+                        tfam = (st.get("titleStyle") or {}).get("fontFamily")
+                        add(tfam or head_default,
+                            f"calloutStyles[{sid}].titleStyle.fontFamily" if tfam else "headings.fontFamily",
+                            attrs["title"])
+                    bfam = (st.get("body") or {}).get("fontFamily")
+                    stack.append((bfam, f"calloutStyles[{sid}].body.fontFamily") if bfam else (body, "bodyText.fontFamily"))
+                else:
+                    stack.append(here)
+                continue
+            m = HEADING_RE.match(line)
             if m:
-                fam = level_family.get(len(m.group(1)), head_default)
-                out[fam].update(CJK_RE.findall(m.group(2)))
-            else:
-                out[body].update(c for c in CJK_RE.findall(line) if c != "　")
-    return out
+                title, attrs = split_heading_attrs(INDEX_MARK_RE.sub("", m.group(2)))
+                level = len(m.group(1))
+                sid = (attrs or {}).get("style", "")
+                sfam = (head_styles.get(sid) or {}).get("fontFamily") if sid else None
+                if sfam:
+                    add(sfam, f"headingStyles[{sid}].fontFamily", title)
+                elif level in level_family:
+                    add(level_family[level], f"headings.levels[{level}].fontFamily", title)
+                else:
+                    add(head_default, "headings.fontFamily", title)
+                continue
+            add(here[0], here[1], line)
+    return out, roles
 
 
 def check_cjk_locale(where: str, texts: list[tuple[str, str]], cfg: dict, rep: Report) -> None:
@@ -528,17 +654,16 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
         hm = HEADING_RE.match(line)
         if hm:
             title = INDEX_MARK_RE.sub("", hm.group(2))
-            am = HEADING_ATTRS_RE.search(title)
-            if am:
-                attrs = parse_attrs(am.group(1))
-                if attrs:
-                    s = attrs.get("style")
-                    if s and s not in ids["heading"]:
-                        rep.error(where, f"heading style {s!r} is not in headingStyles {sorted(ids['heading'])}")
-                    if "numbered" in attrs:
-                        rep.warn(where, "{numbered=…} is not a heading attribute: use a headingStyles entry with numbered:false")
+            _, attrs = split_heading_attrs(title)
+            if attrs is not None:
+                s = attrs.get("style")
+                if s and s not in ids["heading"]:
+                    rep.error(where, f"heading style {s!r} is not in headingStyles {sorted(ids['heading'])}")
+                if "numbered" in attrs:
+                    rep.warn(where, "{numbered=…} is not a heading attribute: use a headingStyles entry with numbered:false")
             elif re.search(r"\{[^{}]*\}\s*$", title):
-                rep.warn(where, "trailing {…} that does not parse as attributes (a value holding } or a stray brace?)")
+                rep.warn(where, "trailing {…} that does not parse as attributes, so it prints in the title (commas, "
+                                "a value holding }, a flag glued to the title?)")
             if FOOTNOTE_MARK_RE.search(title):
                 rep.warn(where, "[^id] in a heading prints as written: cite the note from the text")
             if ":chip[" in title:
@@ -758,7 +883,8 @@ def main() -> None:
             check_cjk_locale(f"config ({lang})", texts, cfg, rep)
             if coverage is ...:
                 coverage = font_coverage(root, m.get("fonts", []))
-            check_cjk_coverage(f"fonts ({lang})", cjk_chars_by_family(texts, cfg), cfg, coverage, fonts, rep)
+            chars, roles = cjk_chars_by_family(texts, cfg)
+            check_cjk_coverage(f"fonts ({lang})", chars, cfg, coverage, fonts, rep, roles)
             if not font_files_checked:
                 vertical = any(((cf.get("layout") or {}).get("writingMode") == "vertical-rl")
                                for cf in [shared] + [(x.get("config") or {}) for x in (m.get("localized") or {}).values()])
