@@ -503,7 +503,7 @@ export const DEFAULT_LABELS: SandboxLabels = {
   bodySlackWeight: 'Column slack weight',
   bodySlackWeightTooltip: 'Cost per squared unit of unused column height. Higher values make the layout prefer filling columns; 0 disables the pressure',
   bodyAvoidRunts: 'Avoid runts',
-  bodyAvoidRuntsTooltip: 'Discourage paragraphs from ending with a very short last line (e.g. a single short word)',
+  bodyAvoidRuntsTooltip: 'Discourage paragraphs from ending with a very short last line (e.g. a single short word). In Chinese, Japanese and Korean text, a last line of one character (孤字) takes the last character of the line above',
   bodyRuntMinCharacters: 'Min characters',
   bodyRuntMinCharactersTooltip: 'Width threshold for the last line, counted in word spaces (about half a letter each): the default 20 catches last lines under roughly 8 to 12 letters. For about N letters, use 2 × N.',
   bodyRuntPenalty: 'Penalty',

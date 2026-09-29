@@ -945,7 +945,10 @@ export interface BodyTextConfig {
   /** When true, discourage paragraphs from ending with a very short last line
    *  (a "runt" — e.g. a single short word alone). Soft (Knuth-Plass penalty),
    *  so ragged text takes it only when `optimalRagged` breaks it with
-   *  Knuth–Plass. Default true. */
+   *  Knuth–Plass. A Chinese, Japanese or Korean paragraph does not end on a
+   *  line holding one character, alone or with its closing marks (孤字): the
+   *  line above gives it its last character when that line can still be
+   *  justified within the tracking cap. Default true. */
   avoidRunts?: boolean;
   /** Approximate minimum character count for the last line of a paragraph.
    *  Interpreted internally as `runtMinCharacters * normalSpaceWidth` pixels, so

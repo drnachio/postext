@@ -151,6 +151,8 @@ Chinese body text is justified, and a justified line is spread between its chara
 
 A line that would need more than half an em between its characters (or more than `bodyText.maxJustifyTracking`, when set) takes that much and ends short of the measure; the build reports it as a `cjkLooseLine` content warning, which the Sandbox calls **CJK line set short**. A long Latin word or web address that cannot come up is the usual cause. The last line of a paragraph is set solid. [Hyphenation & Justification](/en/docs/justification#chinese-japanese-and-korean) has the details, among them how a CJK line counts for the loose-line highlight and how column balancing runs a Chinese paragraph one line longer.
 
+A paragraph does not end on a line that holds one character, alone or with the marks that close it (孤字, as in `後。`). The line above gives up its last character, with any mark that must stay with it, and is spread to the measure; when that would take more than the tracking cap, the character stays alone. It follows `bodyText.avoidRunts`, on by default, in both writing modes; column balancing never creates such a line either.
+
 ### Space between Han and Latin
 
 `cjk.latinSpacing` sets a quarter em between a Han character and a Latin letter or digit next to it ([clreq §6.3.3](https://www.w3.org/TR/clreq/#x6-3-3-mixed-text-composition-in-horizontal-writing-mode)): `1999年的iPhone 15售价为¥5,999。` prints with a gap after 1999, before and after iPhone 15, and none before ¥, which is a sign. There is none at the start or end of a line, none between a Latin word and a Chinese mark (`用iPhone，`), and none inside Chinese brackets (`（iPhone）`). A space the author typed at such a boundary, as much web text has, is replaced by the Han–Latin space, so `用 iPhone 拍照` and `用iPhone拍照` set alike. On a justified line the space grows to half an em before the characters are spread, and a line taking in one more character shrinks it to an eighth. The space is not text: copying, search and the PDF's extracted text read `用iPhone拍照` as written. `0` turns it off.
@@ -397,7 +399,6 @@ In the Sandbox, **Design › Writing system** holds the document language, the w
 
 - **Japanese and Korean** are set with the mainland Chinese defaults. Their own rules ([JLREQ](https://www.w3.org/TR/jlreq/), KLREQ) are not implemented.
 - **Design text** (running heads, openers, box titles) breaks Chinese between any two characters, without the line-start and line-end rules or the punctuation widths. Fit such titles by hand.
-- **Single-character last lines** (孤字) are not avoided by the composer; column balancing never creates one.
 - **One writing mode per page.** A horizontal box inside a vertical page, native vertical tables with the header row on the right, and captions beside an upright figure are not available. Inline formulas, chips and swatches are turned sideways with a vertical line.
 - **Sizes in points.** There are no 号 or Q units.
 - **Vertical metrics.** Every upright character advances one em; proportional vertical metrics (`vpal`) and vertical kerning are not used.

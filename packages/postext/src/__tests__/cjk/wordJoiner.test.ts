@@ -25,9 +25,10 @@ const WJ = '⁠';
 
 describe('word joiner in Chinese text', () => {
   it('keeps two characters on one line', () => {
-    // Seven characters to the line: 也 ends the first, 作 opens the second.
+    // Seven characters to the line: 也 ends the first, 作 opens the second
+    // (and 歷 goes down to 過, which would end the paragraph alone: 孤字).
     expect(linesOf(buildDocument({ markdown: '此開卷第一回也作者自云因曾歷過' }, config(7))))
-      .toEqual(['此開卷第一回也', '作者自云因曾歷', '過']);
+      .toEqual(['此開卷第一回也', '作者自云因曾', '歷過']);
     const glued = linesOf(buildDocument({ markdown: `此開卷第一回也${WJ}作者自云因曾歷過` }, config(7)));
     expect(glued).toEqual(['此開卷第一回', '也作者自云因曾', '歷過']);
   });

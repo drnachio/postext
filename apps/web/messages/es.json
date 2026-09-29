@@ -1525,7 +1525,7 @@
     "bodySlackWeight": "Peso de hueco de columna",
     "bodySlackWeightTooltip": "Coste por unidad al cuadrado de altura de columna sin usar. Valores más altos hacen que el motor prefiera rellenar columnas; 0 desactiva esta presión.",
     "bodyAvoidRunts": "Evitar líneas cortas",
-    "bodyAvoidRuntsTooltip": "Desalienta que un párrafo termine con una última línea muy corta (p. ej. una sola palabra breve).",
+    "bodyAvoidRuntsTooltip": "Desalienta que un párrafo termine con una última línea muy corta (p. ej. una sola palabra breve). En chino, japonés y coreano, una última línea de un solo carácter (孤字) toma el último carácter de la línea anterior.",
     "bodyRuntMinCharacters": "Mín. caracteres",
     "bodyRuntMinCharactersTooltip": "Umbral de anchura para la última línea, contado en espacios entre palabras (cada uno, más o menos media letra): el valor por defecto, 20, alcanza a las últimas líneas de menos de unas 8 a 12 letras. Para unas N letras, usa 2 × N.",
     "bodyRuntPenalty": "Penalización",

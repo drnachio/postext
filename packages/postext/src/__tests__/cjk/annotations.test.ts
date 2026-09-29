@@ -405,9 +405,9 @@ describe('review fixes', () => {
   });
 
   it('a ruby base closing a line aligns to its end with its reading', () => {
-    // 18 characters, 莊 (a 25 px box) and 也, which goes down: 莊 ends the
+    // 18 characters, 莊 (a 25 px box) and 也夫, which go down: 莊 ends the
     // justified first line.
-    const doc = buildDocument({ markdown: '此開卷第一回也作者自云因曾歷過一番夢{莊|zhuāng}也' }, config({}, roomy, 20));
+    const doc = buildDocument({ markdown: '此開卷第一回也作者自云因曾歷過一番夢{莊|zhuāng}也夫' }, config({}, roomy, 20));
     const line = lines(doc)[0]!;
     const seg = line.segments![line.segments!.length - 1]!;
     expect(seg.ruby).toBeDefined();

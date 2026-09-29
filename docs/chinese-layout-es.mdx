@@ -151,6 +151,8 @@ El texto chino se justifica, y una línea justificada se ensancha entre sus cara
 
 Una línea que necesitaría más de medio cuadratín entre sus caracteres (o más de `bodyText.maxJustifyTracking`, si está fijado) toma ese máximo y se queda corta; la composición avisa con `cjkLooseLine`, que el Sandbox llama **Línea CJK corta**. La causa habitual es una palabra latina o una dirección web larga que no cabe. La última línea de un párrafo va sin espaciar. [Separación silábica y justificación](/es/docs/justification#chino-japonés-y-coreano) da los detalles, entre ellos cómo cuenta una línea CJK para el resaltado de líneas flojas y cómo el equilibrado de columnas alarga un párrafo chino una línea.
 
+Un párrafo no termina en una línea de un solo carácter, solo o con los signos que lo cierran (孤字, como `後。`). La línea anterior cede su último carácter, con el signo que deba ir con él, y se reparte hasta la medida; si para eso hiciera falta más que el tope de espaciado, el carácter se queda solo. Lo rige `bodyText.avoidRunts`, activo por defecto, en los dos modos de escritura; el equilibrado de columnas tampoco crea nunca una línea así.
+
 ### Espacio entre chino y latín
 
 `cjk.latinSpacing` pone un cuarto de cuadratín entre un carácter chino y la letra latina o la cifra que tiene al lado ([clreq §6.3.3](https://www.w3.org/TR/clreq/#x6-3-3-mixed-text-composition-in-horizontal-writing-mode)): `1999年的iPhone 15售价为¥5,999。` se imprime con un hueco tras 1999, delante y detrás de iPhone 15, y ninguno delante de ¥, que es un signo. No se pone al principio ni al final de una línea, ni entre una palabra latina y un signo chino (`用iPhone，`), ni dentro de paréntesis chinos (`（iPhone）`). El espacio que el autor escribió en ese punto, como lo traen muchos textos de la web, se sustituye por el espacio entre chino y latín, así que `用 iPhone 拍照` y `用iPhone拍照` se componen igual. En una línea justificada el espacio crece hasta medio cuadratín antes de que se espacien los caracteres, y en una línea que admite un carácter más se reduce hasta un octavo. El espacio no es texto: al copiar, al buscar y en el texto extraído del PDF se lee `用iPhone拍照` tal como se escribió. `0` lo desactiva.
@@ -397,7 +399,6 @@ En el Sandbox, **Diseño › Escritura** reúne el idioma del documento, el modo
 
 - **El japonés y el coreano** se componen con los valores por defecto de China continental. Sus reglas propias ([JLREQ](https://www.w3.org/TR/jlreq/), KLREQ) no están implementadas.
 - **El texto de los diseños** (cabeceras, aperturas, títulos de recuadro) corta el chino entre dos caracteres cualesquiera, sin las reglas de principio y final de línea ni el ancho de la puntuación. Esos títulos se ajustan a mano.
-- **Las últimas líneas de un solo carácter** (孤字) no las evita el compositor; el equilibrado de columnas nunca crea una.
 - **Un modo de escritura por página.** No hay recuadros horizontales dentro de una página vertical, ni tablas verticales con la fila de cabecera a la derecha, ni pies al lado de una figura derecha. Las fórmulas, las etiquetas y las muestras de color en línea se tumban con la línea vertical.
 - **Cuerpos en puntos.** No hay unidades 号 ni Q.
 - **Métricas verticales.** Cada carácter de pie avanza un cuadratín; no se usan las métricas verticales proporcionales (`vpal`) ni el interletraje vertical.

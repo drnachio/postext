@@ -1295,6 +1295,8 @@ function breakUnits(
   letterSpacingPx: number,
   fit?: LineFit,
   level: CjkLineBreakLevel = getCjkLineBreak(),
+  /** End line `line` before unit `at` (a break), whatever else fits. */
+  stop?: { line: number; at: number },
 ): LineRange[] {
   const out: LineRange[] = [];
   const n = units.length;
@@ -1334,6 +1336,10 @@ function breakUnits(
     // What the line could give up to take one more character (push-in).
     let give = 0;
     for (let k = i; k < n; k++) {
+      if (stop && stop.line === li && k >= stop.at) {
+        end = k;
+        break;
+      }
       const u = unitAt(k);
       if (k > i && breaks[k]) lastBreak = k;
       if (u.note) {
@@ -2035,7 +2041,26 @@ export function composeCjkParagraph(
   };
   const compose = (ranges: LineRange[]): VDTLine[] => ranges.map((r, li) => composeLine(units, r, li, li === ranges.length - 1, ctx));
 
-  let lines = compose(breakUnits(units, breaks, measureOf, 0, letterSpacingPx, fit, level));
+  const ranges = breakUnits(units, breaks, measureOf, 0, letterSpacingPx, fit, level);
+  let lines = compose(ranges);
+  // 孤字 (clreq §7.2), where the paragraph avoids runts (`bodyText.avoidRunts`
+  // gives it a runt penalty): a last line that holds one character, alone
+  // or with its closing marks, takes the last character the line above may
+  // give up (push-out), and that line is spread to the measure. When it
+  // would need more than the tracking cap, the runt stays.
+  if ((options?.runtPenalty ?? 0) > 0 && endsOnOneCharacter(lines)) {
+    const li = ranges.length - 2;
+    const above = ranges[li]!;
+    let at = above.end - 1;
+    while (at > above.start && !breaks[at]) at--;
+    if (!above.head && !above.hyphenated && !ranges[li + 1]!.first && at > above.start) {
+      const pushed = breakUnits(units, breaks, measureOf, 0, letterSpacingPx, fit, level, { line: li, at });
+      if (pushed.length === ranges.length) {
+        const set = compose(pushed);
+        if (!set[li]!.cjkLoose && !endsOnOneCharacter(set)) lines = set;
+      }
+    }
+  }
   // Column balancing asks for a paragraph one line longer: break each line
   // a little short of its measure, in eighths of an em, until the paragraph
   // gains the lines without a line past the tracking cap. The first step
