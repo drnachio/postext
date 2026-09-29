@@ -6,27 +6,72 @@
   "chapter": "figures",
   "order": 10,
   "level": 3,
-  "genres": ["textbook"],
-  "outputs": ["canvas"],
+  "genres": [
+    "textbook"
+  ],
+  "outputs": [
+    "canvas"
+  ],
   "features": {
-    "primary": ["citations", "float-placement", "figure-numbering"],
+    "primary": [
+      "citations",
+      "float-placement",
+      "figure-numbering"
+    ],
     "also": [
-      "inline-embeds", "float-barriers", "localised-labels", "captions", "credit-notes",
-      "resources", "resource-types", "opener-design", "opener-band", "heading-attributes",
-      "heading-numbering", "hyphenation-languages", "running-heads", "page-role-filters",
-      "color-palette", "vertical-space", "column-balancing"
+      "inline-embeds",
+      "float-barriers",
+      "localised-labels",
+      "captions",
+      "credit-notes",
+      "resources",
+      "resource-types",
+      "opener-design",
+      "opener-band",
+      "heading-attributes",
+      "heading-numbering",
+      "hyphenation-languages",
+      "running-heads",
+      "page-role-filters",
+      "color-palette",
+      "vertical-space",
+      "column-balancing"
     ]
   },
-  "answers": ["Q63", "Q64", "Q74", "Q10"],
-  "gaps": ["inline-images"],
-  "gotchas": [
-    "top-float-next-page", "float-queues-at-paragraph", "here-figure-no-space-after",
-    "unknown-ref-silent", "resource-types-locale", "resource-double-quotes",
-    "sandbox-only-warnings", "svg-no-webfonts", "svg-no-marker-filters", "hyphenation-locales",
-    "headings-drop-h1-break", "overflow-ellipsis-default", "palette-skips-designs", "fonts-first"
+  "answers": [
+    "Q63",
+    "Q64",
+    "Q74",
+    "Q10"
   ],
-  "explainsWarnings": ["unknownResourceId", "danglingTypeRef"],
-  "related": ["chapter-opener-bleed-band", "textbook-margin-column", "technical-datasheet"],
+  "gaps": [
+    "inline-images"
+  ],
+  "gotchas": [
+    "top-float-next-page",
+    "float-queues-at-paragraph",
+    "here-figure-no-space-after",
+    "unknown-ref-silent",
+    "resource-types-locale",
+    "resource-double-quotes",
+    "sandbox-only-warnings",
+    "svg-no-webfonts",
+    "svg-no-marker-filters",
+    "hyphenation-locales",
+    "headings-drop-h1-break",
+    "overflow-ellipsis-default",
+    "palette-skips-designs",
+    "fonts-first"
+  ],
+  "explainsWarnings": [
+    "unknownResourceId",
+    "danglingTypeRef"
+  ],
+  "related": [
+    "chapter-opener-bleed-band",
+    "textbook-margin-column",
+    "technical-datasheet"
+  ],
   "workarounds": [
     {
       "followup": "EF-19",
@@ -64,40 +109,134 @@
       "note": "locale is the exact bundled code ('en-us' | 'es'): a region-tagged code such as 'es-ES' silently hyphenates as American English (gotcha hyphenation-locales)"
     }
   ],
-  "engine": { "postext": "1.4.1" },
-  "kit": ["core", "fonts", "viewer", "images"],
+  "engine": {
+    "postext": "1.4.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "images"
+  ],
   "sample": {
-    "locales": ["es", "en"]
+    "locales": [
+      "es",
+      "en"
+    ]
   },
   "capture": {
-    "hero": [2, 3],
+    "hero": [
+      2,
+      3
+    ],
     "card": "crop",
-    "focus": { "page": 4, "x": 0.22, "y": 0.6088, "w": 0.54, "h": 0.324 },
+    "focus": {
+      "page": 4,
+      "x": 0.22,
+      "y": 0.6088,
+      "w": 0.54,
+      "h": 0.324
+    },
     "pages": "all",
-    "expect": { "pages": [4, 5] }
+    "expect": {
+      "pages": [
+        4,
+        5
+      ]
+    }
   },
   "credits": {
     "authors": [
-      { "name": "Ignacio Ferro", "github": "drnachio" }
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
     ],
     "text": [],
     "images": [
       {
         "what": {
-          "en": "The seven figures, drawn in code in the page's palette",
-          "es": "Las siete figuras, dibujadas en código con la paleta de la página"
+          "en": "Figure 2.1: a V-shaped river valley and a U-shaped glacial valley",
+          "es": "Figura 2.1: un valle fluvial en V y un valle glaciar en U"
         },
-        "who": "Ignacio Ferro",
-        "license": "CC-BY-4.0"
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "valleys-1536.jpg"
+      },
+      {
+        "what": {
+          "en": "Figure 2.2: long profile of a valley glacier",
+          "es": "Figura 2.2: perfil longitudinal de un glaciar de valle"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "profile-1400.jpg"
+      },
+      {
+        "what": {
+          "en": "Figure 2.3: a glacial cirque in section",
+          "es": "Figura 2.3: un circo glaciar en sección"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "cirque-1080.jpg"
+      },
+      {
+        "what": {
+          "en": "Figure 2.4: abrasion at the base of the ice",
+          "es": "Figura 2.4: abrasión en la base del hielo"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "abrasion-1080.jpg"
+      },
+      {
+        "what": {
+          "en": "Figure 2.5: plucking on a rock step",
+          "es": "Figura 2.5: arranque en un resalte rocoso"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plucking-1080.jpg"
+      },
+      {
+        "what": {
+          "en": "Figure 2.6: a roche moutonnée",
+          "es": "Figura 2.6: una roca aborregada"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "roche-1080.jpg"
+      },
+      {
+        "what": {
+          "en": "Figure 2.7: lateral, medial and terminal moraines in plan",
+          "es": "Figura 2.7: morrenas laterales, central y frontal en planta"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "moraines-1080.jpg"
       }
     ],
     "fonts": [
-      { "family": "Faustina", "license": "OFL-1.1" },
-      { "family": "Montserrat", "license": "OFL-1.1" },
-      { "family": "IBM Plex Sans Condensed", "license": "OFL-1.1" }
+      {
+        "family": "Faustina",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Montserrat",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "IBM Plex Sans Condensed",
+        "license": "OFL-1.1"
+      }
     ]
   },
-  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
   "created": "2026-09-25",
-  "updated": "2026-09-25"
+  "updated": "2026-09-28"
 }

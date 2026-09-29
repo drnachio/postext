@@ -20,6 +20,8 @@
     "sandbox": "Sandbox",
     "github": "GitHub",
     "githubAriaLabel": "Postext en GitHub (abre en nueva pestaña)",
+    "youtube": "YouTube",
+    "youtubeAriaLabel": "Postext en YouTube (abre en nueva pestaña)",
     "openMenu": "Abrir menú de navegación",
     "closeMenu": "Cerrar menú de navegación",
     "tryIt": "Abrir el Sandbox"
@@ -314,10 +316,17 @@
     "part": "Parte"
   },
   "Showreel": {
-    "kicker": "Vídeo · 2 min",
     "title": "Postext en dos minutos",
     "play": "Reproducir el vídeo a pantalla completa",
     "watch": "Ver · 2:12",
+    "subtitles": "Subtítulos",
+    "fullscreen": "Pantalla completa",
+    "exitFullscreen": "Salir de pantalla completa"
+  },
+  "Tutorial": {
+    "title": "Convierte tu publicación en Postext con un agente de IA",
+    "play": "Reproducir el vídeo a pantalla completa",
+    "watch": "Ver el tutorial · 5:06",
     "subtitles": "Subtítulos",
     "fullscreen": "Pantalla completa",
     "exitFullscreen": "Salir de pantalla completa"
@@ -480,6 +489,7 @@
     "docs": "Documentación",
     "cookbook": "Recetario",
     "sandbox": "Sandbox",
+    "skill": "Skill para agentes",
     "product": "Postext"
   },
   "Theme": {

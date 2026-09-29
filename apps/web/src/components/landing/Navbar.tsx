@@ -34,8 +34,8 @@ export async function Navbar() {
           <NavLink href="/cookbook" className={NAV_LINK}>
             {t("cookbook")}
           </NavLink>
-          {/* Below lg, GitHub lives in the footer and the mobile menu: the
-              row would overflow at 768 px with it. */}
+          {/* Below lg (xl for YouTube), these live in the footer and the
+              mobile menu: the row would overflow at 768 px with them. */}
           <a
             href="https://github.com/drnachio/postext"
             target="_blank"
@@ -44,6 +44,15 @@ export async function Navbar() {
             className={`hidden lg:inline-flex ${NAV_LINK}`}
           >
             {t("github")}
+          </a>
+          <a
+            href="https://www.youtube.com/@Postext"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={t("youtubeAriaLabel")}
+            className={`hidden xl:inline-flex ${NAV_LINK}`}
+          >
+            {t("youtube")}
           </a>
           <span aria-hidden="true" className="mx-1.5 h-5 w-px bg-rule" />
           <LanguageSwitcher />

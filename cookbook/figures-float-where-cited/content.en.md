@@ -64,5 +64,5 @@ The glaciers left in the Iberian Peninsula are small, and all of them are in the
 When the last of them melts, the Maladeta massif will look much as the Sierra de Gredos does now, more than ten thousand years after its glaciers disappeared, with tarns in its cirques and moraines across its valleys.
 
 :::paragraphs{style="colophon"}
-Set in Faustina, Montserrat and IBM Plex Sans Condensed (SIL Open Font License) · Text and figures: original, CC BY 4.0
+Set in Faustina, Montserrat and IBM Plex Sans Condensed (SIL Open Font License) · Text: CC BY 4.0 · Figures: diffusion models
 :::

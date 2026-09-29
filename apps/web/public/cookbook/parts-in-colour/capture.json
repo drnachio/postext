@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "parts-in-colour",
-  "sourceHash": "59e4007247f1449b0d22b5d94d4d44cc8808ad1ddcc60afae169832eef01d024",
+  "sourceHash": "56de9256109add39a27a245ea778ad06463e6b18fc5dbe1521f666bd5e60cad8",
   "engine": {
-    "postext": "1.7.0",
+    "postext": "1.8.3",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-28T10:21:50.372Z",
+  "capturedAt": "2026-09-28T19:59:48.733Z",
   "variants": {
     "en": {
-      "hash8": "731b1391",
-      "vdtHash": "c21b136dc76d8ceac56d1126c3c5d25fe1d7f4dd",
+      "hash8": "09352ee0",
+      "vdtHash": "0e5889b3360077090ccfa5da2047c750f0b77848",
       "timings": {
-        "importMs": 223,
-        "fontsMs": 1250,
-        "buildMs": 14,
-        "totalMs": 2119,
+        "importMs": 291,
+        "fontsMs": 114,
+        "buildMs": 21,
+        "totalMs": 1284,
         "builds": 2
       },
       "specimen": {
@@ -49,7 +49,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 41906,
+          "bytes": 166002,
           "alt": "Opening page 1: Birds of the Estuary."
         },
         {
@@ -60,7 +60,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 63460,
+          "bytes": 118876,
           "alt": "Opening page 2: Contents."
         },
         {
@@ -93,7 +93,7 @@
           "h": 1333,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 68874,
+          "bytes": 102090,
           "alt": "Page 5: 1 Eurasian Curlew. Plate 1. Adult at low water. The female’s bill is the longer."
         },
         {
@@ -104,7 +104,7 @@
           "h": 1333,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 70648,
+          "bytes": 94184,
           "alt": "Page 6: 2 Common Redshank. Plate 2. Adult by a saltmarsh creek, on the red legs that give it its name."
         },
         {
@@ -137,7 +137,7 @@
           "h": 1333,
           "file": "p09.webp",
           "strip": "p09.s.webp",
-          "bytes": 77128,
+          "bytes": 78290,
           "alt": "Page 9: 3 Bearded Reedling. Plate 3. Male on a reed stem. The female has a plain brown head."
         },
         {
@@ -148,7 +148,7 @@
           "h": 1333,
           "file": "p10.webp",
           "strip": "p10.s.webp",
-          "bytes": 69044,
+          "bytes": 79252,
           "alt": "Page 10: 4 Eurasian Reed Warbler. Plate 4. Singing from the reeds, one foot on each stem."
         }
       ],
@@ -192,7 +192,7 @@
       },
       "sandbox": {
         "file": "parts-in-colour.postext",
-        "bytes": 54931
+        "bytes": 843769
       },
       "detected": {
         "apis": [
@@ -405,8 +405,8 @@
           "\\\\"
         ],
         "resources": {
-          "svg": 6,
-          "bitmap": 0,
+          "svg": 0,
+          "bitmap": 6,
           "table": 0
         },
         "fonts": [
@@ -480,17 +480,23 @@
           "share": 0,
           "worst": 1.3800000000000001
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "cb10d9a2",
-      "vdtHash": "913df3bc05cd08ea68a184bd40c1486163a18865",
+      "hash8": "a51a2e0a",
+      "vdtHash": "31d347092a81c1b9efa5c01bdc022c9921779bf7",
       "timings": {
-        "importMs": 90,
-        "fontsMs": 36,
-        "buildMs": 15,
-        "totalMs": 842,
+        "importMs": 172,
+        "fontsMs": 51,
+        "buildMs": 18,
+        "totalMs": 909,
         "builds": 2
       },
       "specimen": {
@@ -523,7 +529,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 41222,
+          "bytes": 164784,
           "alt": "Página de apertura 1: Aves del estuario."
         },
         {
@@ -534,7 +540,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 62908,
+          "bytes": 118414,
           "alt": "Página de apertura 2: Índice."
         },
         {
@@ -567,7 +573,7 @@
           "h": 1333,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 71384,
+          "bytes": 104660,
           "alt": "Página 5: 1 Zarapito real. Lámina 1. Adulto en bajamar. La hembra tiene el pico más largo."
         },
         {
@@ -578,7 +584,7 @@
           "h": 1333,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 65022,
+          "bytes": 88140,
           "alt": "Página 6: 2 Archibebe común. Lámina 2. Adulto junto a un caño de la marisma, sobre las patas rojas que lo delatan."
         },
         {
@@ -611,7 +617,7 @@
           "h": 1333,
           "file": "p09.webp",
           "strip": "p09.s.webp",
-          "bytes": 75446,
+          "bytes": 76438,
           "alt": "Página 9: 3 Bigotudo. Lámina 3. Macho en un tallo de carrizo. La hembra tiene la cabeza parda."
         },
         {
@@ -622,7 +628,7 @@
           "h": 1333,
           "file": "p10.webp",
           "strip": "p10.s.webp",
-          "bytes": 65776,
+          "bytes": 75956,
           "alt": "Página 10: 4 Carricero común. Lámina 4. Cantando en el carrizal, con una pata en cada tallo."
         }
       ],
@@ -666,7 +672,7 @@
       },
       "sandbox": {
         "file": "parts-in-colour.postext",
-        "bytes": 54775
+        "bytes": 843698
       },
       "detected": {
         "apis": [
@@ -879,8 +885,8 @@
           "\\\\"
         ],
         "resources": {
-          "svg": 6,
-          "bitmap": 0,
+          "svg": 0,
+          "bitmap": 6,
           "table": 0
         },
         "fonts": [
@@ -954,7 +960,13 @@
           "share": 0,
           "worst": 1.54
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "figures-float-where-cited",
-  "sourceHash": "454adabccc1ebb85d1a48b43a21c1cb562b84150fd8496b8b72dc5df17e91344",
+  "sourceHash": "f2a27584eeedf9fb24bfb7ac0a91c067e005c0e591d93df00efae0032a764419",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.8.3",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:00:56.783Z",
+  "capturedAt": "2026-09-28T19:59:48.721Z",
   "variants": {
     "en": {
-      "hash8": "8543fcfd",
-      "vdtHash": "c7736c397e41fbf46401b9a9c3b28663b083c9a5",
+      "hash8": "52f0294f",
+      "vdtHash": "a60e59f1072698bac136056b366a185a5af49dfd",
       "timings": {
-        "importMs": 169,
-        "fontsMs": 59,
-        "buildMs": 243,
-        "totalMs": 1445,
+        "importMs": 809,
+        "fontsMs": 1226,
+        "buildMs": 383,
+        "totalMs": 4741,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Montserrat"
         ],
         "pages": 4,
-        "ownLines": 237
+        "ownLines": 239
       },
       "pages": [
         {
@@ -50,7 +50,7 @@
           "h": 1250,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 92506,
+          "bytes": 119018,
           "alt": "Opening page 27: How glaciers carve mountain valleys. Figure 2.1. A river cuts a V; a glacier widens the valley into a U. Dashed, the V the ice wore away."
         },
         {
@@ -61,7 +61,7 @@
           "h": 1250,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 123656,
+          "bytes": 159152,
           "alt": "Page 28: 2.2 Where glaciers are born. Figure 2.2. Profile of a valley glacier: ice fed above the equilibrium line flows down to melt below it. · Figure 2.3. A cirque in section. The ice rotates in the basin and deepens it below the rock lip."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1250,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 135564,
+          "bytes": 168760,
           "alt": "Page 29: 2.3 The tools of the ice. Figure 2.6. Roche moutonnée. The ice polished the gentle face and plucked the steep one. · Figure 2.4. Abrasion: stones held in the base of the ice scratch the bed. · Figure 2.5. Plucking: water freezes in the joints and the ice carries block…"
         },
         {
@@ -83,7 +83,7 @@
           "h": 1250,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 129722,
+          "bytes": 148954,
           "alt": "Page 30: 2.6 Reading a glacial landscape. Figure 2.7. Two glaciers join: their lateral moraines become a medial one, and the terminal moraine dams a lake."
         }
       ],
@@ -115,7 +115,7 @@
       },
       "sandbox": {
         "file": "figures-float-where-cited.postext",
-        "bytes": 328550
+        "bytes": 1458110
       },
       "detected": {
         "apis": [
@@ -315,23 +315,34 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 4,
+        "iterationCount": 5,
         "looseLines": {
           "count": 0,
           "share": 0,
           "worst": 1.95
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.headings {\"h1\":1,\"h2\":0,\"h3\":0,\"h4\":0,\"h5\":0,\"h6\":0} dropped (chapter numbers restart)"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "f50e68c0",
-      "vdtHash": "00f114c29169e30b4f63a482b587e365bcc8e652",
+      "hash8": "c28c3021",
+      "vdtHash": "f8d3efa1b0ff98ae8bdc20a85f61261d7734e080",
       "timings": {
-        "importMs": 957,
-        "fontsMs": 845,
-        "buildMs": 156,
-        "totalMs": 2836,
+        "importMs": 852,
+        "fontsMs": 4385,
+        "buildMs": 347,
+        "totalMs": 6642,
         "builds": 2
       },
       "specimen": {
@@ -354,7 +365,7 @@
           "Montserrat"
         ],
         "pages": 4,
-        "ownLines": 237
+        "ownLines": 239
       },
       "pages": [
         {
@@ -365,7 +376,7 @@
           "h": 1250,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 95770,
+          "bytes": 121074,
           "alt": "Página de apertura 27: Cómo esculpen los glaciares el paisaje. Figura 2.1. Un río abre un valle en V; un glaciar lo ensancha en U. A trazos, la V que borró el hielo."
         },
         {
@@ -376,7 +387,7 @@
           "h": 1250,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 126582,
+          "bytes": 162104,
           "alt": "Página 28: 2.2 Donde nacen los glaciares. Figura 2.2. Perfil de un glaciar: el hielo nacido sobre la línea de equilibrio baja a fundirse bajo ella. · Figura 2.3. Circo glaciar en sección. El hielo gira en la cubeta y la ahonda por debajo del umbral."
         },
         {
@@ -387,7 +398,7 @@
           "h": 1250,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 136456,
+          "bytes": 170782,
           "alt": "Página 29: 2.3 Las herramientas del hielo. Figura 2.6. Roca aborregada. El hielo pulió la cara tendida y arrancó bloques de la abrupta. · Figura 2.4. Abrasión: los cantos presos en la base del hielo rayan el lecho. · Figura 2.5. Arranque: el agua se hiela en las diaclasas y el…"
         },
         {
@@ -398,7 +409,7 @@
           "h": 1250,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 129946,
+          "bytes": 148046,
           "alt": "Página 30: 2.6 Cómo leer un paisaje glaciar. Figura 2.7. Dos glaciares se unen: sus morrenas laterales forman la central, y la frontal represa un lago."
         }
       ],
@@ -430,7 +441,7 @@
       },
       "sandbox": {
         "file": "figures-float-where-cited.postext",
-        "bytes": 328459
+        "bytes": 1459869
       },
       "detected": {
         "apis": [
@@ -634,13 +645,18 @@
         "looseLines": {
           "count": 0,
           "share": 0,
-          "worst": 1.98
+          "worst": 1.92
         },
         "findings": [
           {
             "check": "vdt",
             "severity": "info",
             "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.headings {\"h1\":1,\"h2\":0,\"h3\":0,\"h4\":0,\"h5\":0,\"h6\":0} dropped (chapter numbers restart)"
           }
         ]
       }

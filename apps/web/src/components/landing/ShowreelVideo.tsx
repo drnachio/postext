@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
-/** The narrated showreel, streamed as HLS from Cloudflare R2 through the
- *  `postext-media` Worker. Safari and iOS play HLS natively; other browsers
+/** A narrated video (the home page showreel, the skill tutorial), streamed as
+ *  HLS from Cloudflare R2 through the `postext-media` Worker. Safari and iOS play HLS natively; other browsers
  *  load hls.js on demand, once the player comes near the viewport. No
  *  autoplay (it is narrated) and `preload="none"`: nothing is fetched until
  *  the reader scrolls to it. A new cut ships under a new version path.
@@ -25,7 +25,11 @@ type IOSVideo = HTMLVideoElement & {
   webkitDisplayingFullscreen?: boolean;
 };
 
+/** The videos on the media CDN, each under `<video>/<version>/<lang>/`. */
+export type MediaVideo = "showreel" | "tutorial";
+
 export function ShowreelVideo({
+  video = "showreel",
   lang,
   title,
   playLabel,
@@ -34,6 +38,7 @@ export function ShowreelVideo({
   fullscreenLabel,
   exitFullscreenLabel,
 }: {
+  video?: MediaVideo;
   lang: "en" | "es";
   title: string;
   playLabel: string;
@@ -45,12 +50,15 @@ export function ShowreelVideo({
   const ref = useRef<HTMLVideoElement>(null);
   const frame = useRef<HTMLDivElement>(null);
   const [started, setStarted] = useState(false);
+  // Nothing comes from the media domain, poster included, until the player
+  // nears the viewport; the 16:9 frame holds its place meanwhile.
+  const [near, setNear] = useState(false);
   const [hasSubs, setHasSubs] = useState(false);
   const [subsOn, setSubsOn] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   // Element full screen (not the iPhone): our button replaces the native one
   const [frameFs, setFrameFs] = useState(false);
-  const base = `${MEDIA_BASE}/showreel/${VERSION}/${lang}`;
+  const base = `${MEDIA_BASE}/${video}/${VERSION}/${lang}`;
   const src = `${base}/master.m3u8`;
   const poster = `${base}/poster.jpg`;
 
@@ -77,6 +85,7 @@ export function ShowreelVideo({
       ([e]) => {
         if (e?.isIntersecting) {
           io.disconnect();
+          setNear(true);
           void attach();
         }
       },
@@ -174,7 +183,7 @@ export function ShowreelVideo({
         controlsList={frameFs ? "nofullscreen" : undefined}
         playsInline
         preload="none"
-        poster={poster}
+        poster={near ? poster : undefined}
         aria-label={title}
         onPlay={() => setStarted(true)}
         onEnded={ended}
@@ -187,7 +196,7 @@ export function ShowreelVideo({
           aria-label={playLabel}
           // the video shows its poster only until the first play; after the
           // end the button carries it
-          style={{ backgroundImage: `url(${poster})` }}
+          style={near ? { backgroundImage: `url(${poster})` } : undefined}
           className="group absolute inset-0 flex cursor-pointer bg-cover bg-center items-start justify-start p-2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:items-end sm:p-4 md:p-6"
         >
           {/* where the poster leaves room (its centre carries the title): bottom-left, or top-left on phones, where its foot line sits too close */}

@@ -41,6 +41,7 @@ export async function Footer() {
                 <li><Link href="/docs" className={LINK}>{t("docs")}</Link></li>
                 <li><Link href="/cookbook" className={LINK}>{t("cookbook")}</Link></li>
                 <li><Link href="/sandbox" className={LINK}>{t("sandbox")}</Link></li>
+                <li><Link href="/docs/skill" className={LINK}>{t("skill")}</Link></li>
               </ul>
             </div>
             <div>
@@ -54,6 +55,11 @@ export async function Footer() {
                 <li>
                   <a href="https://www.npmjs.com/package/postext" target="_blank" rel="noopener noreferrer" className={LINK}>
                     npm
+                  </a>
+                </li>
+                <li>
+                  <a href="https://www.youtube.com/@Postext" target="_blank" rel="noopener noreferrer" className={LINK}>
+                    YouTube
                   </a>
                 </li>
               </ul>

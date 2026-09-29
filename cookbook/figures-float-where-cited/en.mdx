@@ -4,20 +4,20 @@ summary: "A two-column chapter with seven numbered figures: six float from their
 description: "A two-column textbook chapter in Postext: seven figures numbered in order of first mention, six floated to the first slot their placement allows, one inline."
 question: "How do I number figures, cite them and decide whether they land at the top, at the foot, across or right here?"
 aliases: ["figure placement", "floats", "cross-references", "see figure", "cite a figure", "figure numbers", "captions", "inline figure", "top of the page", "both columns", "Figura", "textbook"]
-pageNotes: { "1": "The chapter opener: a blue ribbon hangs from the head with a white 2 at its foot, beside an ice-blue slab that runs off the fore-edge with the kicker Chapter 2 · Glacial geomorphology, the title How glaciers carve mountain valleys and an italic standfirst; two columns of text follow, and Figure 2.1, a V-shaped river valley beside a U-shaped glacial valley full of ice, fills the foot of the page.", "2": "Figure 2.3, a cirque in section, opens the right-hand column; Figure 2.2, the long profile of a valley glacier, spans both columns at the foot of the page.", "3": "Figures 2.4 and 2.5, abrasion and plucking, stand side by side at the heads of the two columns; Figure 2.6, a roche moutonnée, sits inside the left column exactly where the text introduces it.", "4": "The chapter's last page: a bulleted list of four marks of glaciation in the left column, the closing section and the colophon in the right, and Figure 2.7, a plan view of two glaciers that join above a lake dammed by their terminal moraine, is centred at 60% of the text width at the foot." }
+pageNotes: { "1": "The chapter opener: a blue ribbon hangs from the head with a white 2 at its foot, beside an ice-blue slab that runs off the fore-edge with the kicker Chapter 2 · Glacial geomorphology, the title How glaciers carve mountain valleys and an italic standfirst; two columns of text follow, and Figure 2.1, a V-shaped river valley beside a U-shaped glacial valley full of ice, fills the foot of the page.", "2": "Figure 2.3, a cirque in section, opens the right-hand column; Figure 2.2, the long profile of a valley glacier, spans both columns at the foot of the page.", "3": "Figures 2.4 and 2.5, abrasion and plucking, stand side by side at the heads of the two columns; Figure 2.6, a roche moutonnée, sits inside the left column exactly where the text introduces it.", "4": "The chapter's last page: a bulleted list of four marks of glaciation in the left column, the closing section and the colophon in the right, and Figure 2.7, a plan view of two glaciers that join above a lake dammed by their terminal moraine, is centred at half the text width at the foot." }
 ---
 
 ## What you'll build
 
-Chapter 2 of *Mountain Landforms*, a geomorphology textbook on a 200 × 250 mm page. A blue ribbon with the chapter number hangs from the head of the opener, beside the title's ice-blue slab; two justified columns of Faustina follow. The seven diagrams, drawn in code in the page's palette, are numbered in order of first mention. Six float to the first free slot their placement allows, counting from the paragraph that first cites them. Figure 2.1, `auto`, lands at the foot of the opener; 2.3 opens the right-hand column of page 28 and 2.2 fills the foot of that page; 2.4 and 2.5 open the two columns of page 29. Figure 2.6 is set where the text embeds it. Figure 2.7, a `top` float cited on page 30, would wait for page 31, but a float cannot leave its chapter, so it goes to the foot of page 30.
+Chapter 2 of *Mountain Landforms*, a geomorphology textbook on a 200 × 250 mm page. A blue ribbon with the chapter number hangs from the head of the opener, beside the title's ice-blue slab; two justified columns of Faustina follow. The seven figures, paintings generated with diffusion models and labelled in code, are numbered in order of first mention. Six float to the first free slot their placement allows, counting from the paragraph that first cites them. Figure 2.1, `auto`, lands at the foot of the opener; 2.3 opens the right-hand column of page 28 and 2.2 fills the foot of that page; 2.4 and 2.5 open the two columns of page 29. Figure 2.6 is set where the text embeds it. Figure 2.7, a `top` float cited on page 30, would wait for page 31, but a float cannot leave its chapter, so it goes to the foot of page 30.
 
 ## Method
 
-### 1 · One palette for the pages and the drawings
+### 1 · One palette for the pages and the figures
 
 <Excerpt region="palette" />
 
-Every colour in the configuration links to one of these entries, and the drawings mix their sky, ice and rock tints from the same ones, so a new value for `glacier` changes the ribbon on the page and the ice and water in the drawings. The accent is dark enough for small type: 5.2:1 on white for caption labels and citations, 4.5:1 on the ice slab for the kicker. The labels inside the drawings are set in IBM Plex Sans Condensed, embedded in each SVG, because an SVG loaded as an image has no access to the page's web fonts.
+Every colour in the configuration links to one of these entries, and the paintings were generated in the same slate, glacier blue and moss, so the figures sit in the page's colours. A painting keeps its own colours: a new value for `glacier` changes the ribbon, the slab and the labels, not the ice in the figures. The accent is dark enough for small type: 5.2:1 on white for caption labels and citations, 4.5:1 on the ice slab for the kicker. Each figure is an SVG that embeds its painting as a JPEG data URL and sets its labels over it as text, with a thin white halo, so they stay sharp and follow the edition's language. The labels are in IBM Plex Sans Condensed, embedded in each SVG, because an SVG loaded as an image has no access to the page's web fonts.
 
 ### 2 · Name the figures in the reader's language
 
@@ -41,7 +41,7 @@ A `:ref` to an id no resource has prints "?", and a figure nobody mentions is ne
 
 <Excerpt region="build" />
 
-This is chapter 2 of a longer book, so the continuation records one chapter before it: figures numbered `{h1}.{n}` start at 2.1, and the folios at 27. On <PageRef page={2}>page 28</PageRef> Figure 2.3 stands above Figure 2.2, which has the lower number because the text cites it first. Markdown's `![]()` is stripped, so every figure is a resource whose drawing is registered under its `svg.fileId` before the build. Each placement follows from where the figure is cited: `auto` for 2.1, because the slab fills the head of the opener; `bottom` for the profile, which can still take the foot of the page that cites it; `top` for the column figures, which open the next free column heads; and `top` for 2.7 as well, which ends up at the foot of page 30 because a float stays inside its chapter.
+This is chapter 2 of a longer book, so the continuation records one chapter before it: figures numbered `{h1}.{n}` start at 2.1, and the folios at 27. On <PageRef page={2}>page 28</PageRef> Figure 2.3 stands above Figure 2.2, which has the lower number because the text cites it first. Markdown's `![]()` is stripped, so every figure is a resource whose SVG is registered under its `svg.fileId` before the build. Each placement follows from where the figure is cited: `auto` for 2.1, because the slab fills the head of the opener; `bottom` for the profile, which can still take the foot of the page that cites it; `top` for the column figures, which open the next free column heads; and `top` for 2.7 as well, which ends up at the foot of page 30 because a float stays inside its chapter.
 
 ## Variations
 
@@ -57,7 +57,7 @@ Drop the chapter from the numbers and the figures print 1 to 7; for one count th
 
 ### Set the captions above, on a bar
 
-The caption moves over the figure onto a bar in the palette's ice blue and the credit line stays under the drawing; refit the text, since both editions then run onto a fifth page.
+The caption moves over the figure onto a bar in the palette's ice blue and the credit line stays under the figure; refit the text, since both editions then run onto a fifth page.
 
 ```diff
    captionStyle: { // the text colour follows bodyText; the note is 0.85 × the caption size

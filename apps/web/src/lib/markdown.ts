@@ -25,6 +25,7 @@ const MESSAGES: Record<string, Messages> = { en, es: es as Messages };
 
 const REPO_URL = "https://github.com/drnachio/postext";
 const NPM_URL = "https://www.npmjs.com/package/postext";
+const YOUTUBE_URL = "https://www.youtube.com/@Postext";
 
 function messagesFor(locale: string): Messages {
   return MESSAGES[locale] ?? en;
@@ -293,7 +294,7 @@ function jsxAttrs(tag: string): Record<string, string> {
 }
 
 /** Block components that stand alone on their lines (`<Excerpt … />`). */
-const BLOCK_TAGS = ["Illustration", "CodePenExample", "Excerpt", "PageShot", "Gotcha"] as const;
+const BLOCK_TAGS = ["Illustration", "CodePenExample", "TutorialVideo", "Excerpt", "PageShot", "Gotcha"] as const;
 type CookbookBlockTag = "Excerpt" | "PageShot" | "Gotcha";
 /** Inline components (`<Feature id="x">text</Feature>`, or self-closing). */
 const INLINE_TAGS = ["Feature", "RecipeLink", "PageRef"] as const;
@@ -363,6 +364,8 @@ export function mdxToMarkdown(
       const name = /^<([A-Za-z]+)/.exec(trimmed)?.[1];
       if (name === "Illustration") out.push(illustrationToMarkdown(text, labels.figure));
       else if (name === "CodePenExample") out.push(codePenToMarkdown(text, labels));
+      // the player has no Markdown form: name the video (the page links it)
+      else if (name === "TutorialVideo") out.push(`> *${messagesFor(locale).Tutorial.title}* · ${messagesFor(locale).Tutorial.watch}`);
       else if (name === "Excerpt" || name === "PageShot" || name === "Gotcha") {
         const attrs = jsxAttrs(trimmed);
         const render = renderers?.block?.[name];
@@ -630,6 +633,7 @@ export function homeMarkdown(locale: string): string {
     "",
     `- [GitHub](${REPO_URL})`,
     `- [npm](${NPM_URL})`,
+    `- [YouTube](${YOUTUBE_URL})`,
     `- [${labels.cookbook}](${markdownUrl(locale, COOKBOOK_PATH)}): ${labels.cookbookDesc}`,
     `- [${labels.sandbox}](${localizedUrl(locale, "/sandbox")}): ${labels.sandboxDesc}`,
     `- [${m.Footer.mitLicense}](${markdownUrl(locale, "/license")})`,
@@ -1149,6 +1153,7 @@ export function llmsTxt(locale: string): string {
     "",
     `- [GitHub](${REPO_URL}): source code, issues and examples`,
     `- [npm](${NPM_URL}): the \`postext\` package`,
+    `- [YouTube](${YOUTUBE_URL}): video walkthroughs`,
     `- [${labels.sandbox}](${localizedUrl(locale, "/sandbox")}): ${labels.sandboxDesc}`,
     "",
     `## ${labels.optional}`,

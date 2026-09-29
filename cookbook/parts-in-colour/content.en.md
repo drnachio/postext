@@ -15,7 +15,7 @@ subtitle: "A pocket guide to the mudflats and the reedbeds"
 The birds are grouped by habitat: the open mud of the lower estuary, and the reedbeds along its upper reaches. Each habitat has a colour, printed on its tab at the edge of the page, on the field marks in its species texts and on its row in the list above. Sizes are total length, from bill tip to tail tip.
 
 :::paragraphs{style="colophon"}
-Set in Alegreya, Zilla Slab and Barlow Condensed (SIL OFL) · Text and drawings: original, CC BY 4.0.
+Set in Alegreya, Zilla Slab and Barlow Condensed (SIL OFL) · Text: CC BY 4.0 · Plates: diffusion models.
 :::
 :::
 
