@@ -57,7 +57,7 @@
           "es": "El pinyin, las notas para las familias y las traducciones"
         },
         "who": "Postext Cookbook",
-        "license": "original"
+        "license": "CC-BY-4.0"
       }
     ],
     "images": [
@@ -67,7 +67,7 @@
           "es": "Las cuadrículas de escritura y los cuatro dibujos de las lecciones, dibujados en código con la paleta de la página"
         },
         "who": "Postext Cookbook",
-        "license": "MIT"
+        "license": "CC-BY-4.0"
       }
     ],
     "fonts": [
