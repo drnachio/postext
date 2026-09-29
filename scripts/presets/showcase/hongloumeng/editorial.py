@@ -92,19 +92,23 @@ EDITION_NOTE: dict[str, list[str]] = {
         "简体字本由繁体本经 OpenCC 转换而成，引号改用“”‘’。少数字经转换会成为类推简化字，而所用字体没有收这些字形，本书保留原字，如“圞”“爇”。",
         "本书另有英文版，采用乔利（H. Bencraft Joly）的译本。乔利译本于1892年、1893年分两册出版，只译到第五十六回，英文版也就到此为止；文字据古登堡计划（Project Gutenberg）的录入本。",
         "每回回首的插图采自光绪十年（1884）上海同文书局石印本《增评补图石头记》。原书每回有图两幅，分题回目的上下句，本书取题上句的一幅，底本为大学数字图书馆国际合作计划（CADAL）扫描、经维基共享资源发布的影印本；第四十六回、第五十二回两幅取自东京大学所藏《增评补图大观琐录》。卷首绣像二十四幅出自改琦绘《红楼梦图咏》（光绪五年，1879年刊）。图版均属公有领域，只作了裁切和灰度处理。",
-        "本书用 Postext 排版，开本140×203毫米，正文用思源宋体（Noto Serif SC），每行二十八字，每面二十八行；诗词、回目用霞鹜文楷。",
+        "本书用 Postext 排版，开本140×203毫米，正文用思源宋体（Noto Serif SC），每行二十八字，每面二十八行；诗词、回目用霞鹜文楷。同书的繁体字本竖排右翻，每行三十八字。",
     ],
+    # The vertical edition writes its numbers in Chinese numerals (a year of
+    # four Arabic digits would run sideways down the column) and marks the
+    # names of people, places and reigns with the proper-name line (專名號,
+    # `:name[…]`), left of the column.
     "zh-Hant": [
-        "《紅樓夢》一百二十回。前八十回出自曹雪芹之手，乾隆年間以《石頭記》之名在抄本中流傳；程偉元、高鶚蒐集整理後四十回，與前八十回合為全帙，於乾隆五十六年（1791）用木活字排印，世稱「程甲本」。次年（1792）二人再加修訂重印，即「程乙本」。後四十回的作者是誰，學界至今沒有定論。",
+        "《紅樓夢》一百二十回。前八十回出自:name[曹雪芹]之手，:name[乾隆]年間以《石頭記》之名在抄本中流傳；:name[程偉元]、:name[高鶚]蒐集整理後四十回，與前八十回合為全帙，於:name[乾隆]五十六年（一七九一）用木活字排印，世稱「程甲本」。次年（一七九二）二人再加修訂重印，即「程乙本」。後四十回的作者是誰，學界至今沒有定論。",
         "本書以程乙本為底本，文字據維基文庫《紅樓夢（程乙本）》錄入本。原書刊行於十八世紀，屬於公有領域；錄入本的文字與標點出自維基文庫編者，按知識共享「姓名標示—相同方式分享」4.0授權（CC BY-SA 4.0）釋出，本書正文沿用同一授權。",
         "整理時作了以下處理：錄入本中簡繁轉換留下的錯字（如「巨集」「空雲」「泥幹」）逐一改正；系與係、繫，干與乾、幹，云與雲等容易混淆的字，凡錄入本與維基文庫所收程甲本在同一處用字不同的，依程甲本改定，共二百處；段首的空格一律刪去，縮排交由版式處理。詩詞韻語依維基文庫主本的分行標記，並參照五言、七言的句式單獨排出。",
-        "本書另有英文版，採用喬利（H. Bencraft Joly）的譯本。喬利譯本於1892年、1893年分兩冊出版，只譯到第五十六回，英文版也就到此為止；文字據古騰堡計畫（Project Gutenberg）的錄入本。",
-        "每回回首的插圖採自光緒十年（1884）上海同文書局石印本《增評補圖石頭記》。原書每回有圖兩幅，分題回目的上下句，本書取題上句的一幅，底本為大學數字圖書館國際合作計劃（CADAL）掃描、經維基共享資源釋出的影印本；第四十六回、第五十二回兩幅取自東京大學所藏《增評補圖大觀瑣錄》。卷首繡像二十四幅出自改琦繪《紅樓夢圖詠》（光緒五年，1879年刊）。圖版均屬公有領域，只作了裁切和灰度處理。",
-        "本書用 Postext 排版，正文用思源宋體（Noto Serif TC），詩詞、回目用霞鶩文楷（LXGW WenKai TC）。",
+        "本書另有英文版，採用:name[喬利]（H. Bencraft Joly）的譯本。喬利譯本於一八九二年、一八九三年分兩冊出版，只譯到第五十六回，英文版也就到此為止；文字據古騰堡計畫（Project Gutenberg）的錄入本。",
+        "每回回目前一頁的插圖採自:name[光緒]十年（一八八四）:name[上海]同文書局石印本《增評補圖石頭記》。原書每回有圖兩幅，分題回目的上下句，本書取題上句的一幅，底本為大學數字圖書館國際合作計劃（CADAL）掃描、經維基共享資源釋出的影印本；第四十六回、第五十二回兩幅取自:name[東京]大學所藏《增評補圖大觀瑣錄》。卷首繡像二十四幅出自:name[改琦]繪《紅樓夢圖詠》（:name[光緒]五年，一八七九年刊）。圖版均屬公有領域，只作了裁切和灰度處理。",
+        "本書用 Postext 排版，開本一四八×二一〇毫米（二十五開），直排右翻。正文用思源宋體（Noto Serif TC），每行三十八字，每面十五行，標點依臺灣通行的體例置於字身正中；詩詞、回目用霞鶩文楷（LXGW WenKai TC）。",
     ],
     "en": [
         "*Hung Lou Meng*, the Dream of the Red Chamber, is a novel in 120 chapters. Cao Xueqin wrote the first eighty, which circulated in manuscript under the title *Shitou ji*, the Story of the Stone. Cheng Weiyuan and Gao E collected and edited the last forty and printed all 120 chapters with movable type in 1791; the next year they printed a revised text, known as the Cheng B edition (*Cheng yi ben*). Who wrote the last forty chapters is still debated.",
-        "The translation is H. Bencraft Joly’s, published in two books in 1892 and 1893 and transcribed by Project Gutenberg (eBooks #9603 and #9604). Joly translated chapters 1 to 56, and this edition ends where he did; the Chinese editions in the same book carry all 120 chapters. His romanisation is kept as he printed it, with *ü* restored where the transcription wrote *ue* for it (Pao-yü, Hsüeh); the few names it spells without the diaeresis, hyphen or apostrophe they carry everywhere else take their usual form (She Yüeh, Tai-yü, Hsüeh P’an). The transcribers’ notes and the list of errata are left out, and straight quotation marks are curled.",
+        "The translation is H. Bencraft Joly’s, published in two books in 1892 and 1893 and transcribed by Project Gutenberg (eBooks #9603 and #9604). Joly translated chapters 1 to 56, and this edition ends where he did; the Chinese editions in the same book carry all 120 chapters, the one in Traditional characters set vertically and bound on the right, as Chinese books were. His romanisation is kept as he printed it, with *ü* restored where the transcription wrote *ue* for it (Pao-yü, Hsüeh); the few names it spells without the diaeresis, hyphen or apostrophe they carry everywhere else take their usual form (She Yüeh, Tai-yü, Hsüeh P’an). The transcribers’ notes and the list of errata are left out, and straight quotation marks are curled.",
         "Each chapter opens with a plate, the Chinese couplet of the 1792 text and Joly’s two title lines. The plates come from the *Zengping butu Shitou ji*, lithographed by the Tongwen Press in Shanghai in 1884, which gives every chapter two pictures, one for each half of its couplet, with that half written on the picture. The first of each pair is reproduced here from the CADAL scans on Wikimedia Commons; the plates of chapters 46 and 52 come from the University of Tokyo copy of a related edition. The portraits at the front are twenty-four of Gai Qi’s drawings of the characters, cut in wood and published in 1879 as *Honglou meng tuyong*.",
         "The book was set with Postext: EB Garamond for the English, LXGW WenKai TC for the Chinese couplets.",
     ],
@@ -135,8 +139,8 @@ CREDITS: dict[str, list[str]] = {
     "zh-Hant": [
         "正文：維基文庫《紅樓夢（程乙本）》，zh.wikisource.org/wiki/紅樓夢（程乙本），共十二個分卷頁面；知識共享「姓名標示—相同方式分享」4.0授權。詩詞分行參照維基文庫《紅樓夢》，用字核對參照維基文庫《紅樓夢（程甲本）》。",
         "程偉元序、高鶚敘、引言：同上首頁。據程甲本錄入本改正五處錄入錯字（如「付剞」補作「付剞劂」）。",
-        "回首插圖：光緒十年（1884）上海同文書局石印本《增評補圖石頭記》，大學數字圖書館國際合作計劃（CADAL）掃描本，維基共享資源「CADAL07015047 增評補圖石頭記（上冊）」「CADAL07018893 增評補圖石頭記（下冊）」；第四十六回、第五十二回據東京大學藏《增評補圖大觀瑣錄》卷四十六、卷五十二。公有領域。",
-        "繡像：改琦繪《紅樓夢圖詠》（1879），維基共享資源分類「Portraits of the Dream of the Red Chamber by Gai Qi」。公有領域。",
+        "回圖：光緒十年（一八八四）上海同文書局石印本《增評補圖石頭記》，大學數字圖書館國際合作計劃（CADAL）掃描本，維基共享資源「CADAL07015047 增評補圖石頭記（上冊）」「CADAL07018893 增評補圖石頭記（下冊）」；第四十六回、第五十二回據東京大學藏《增評補圖大觀瑣錄》卷四十六、卷五十二。公有領域。",
+        "繡像：改琦繪《紅樓夢圖詠》（一八七九），維基共享資源分類「Portraits of the Dream of the Red Chamber by Gai Qi」。公有領域。",
         "字型：思源宋體、思源黑體（Noto Serif TC、Noto Sans TC），霞鶩文楷（LXGW WenKai TC），均按 SIL 開源字型授權 1.1 釋出；個別缺字補自 Noto Serif SC、Chiron Sung HK（SIL 開源字型授權 1.1）與字雲 Jigmo（CC0 1.0）。授權全文見本書 fonts 目錄。",
         "出版說明、繡像說明、索引、本頁等編者文字按知識共享「姓名標示—相同方式分享」4.0授權釋出。排版：Postext，postext.dev。",
     ],
@@ -162,8 +166,8 @@ COLOPHON: dict[str, list[str]] = {
     "zh-Hant": [
         "紅樓夢",
         "曹雪芹　著　　程偉元　高鶚　整理",
-        "底本：程乙本（1792），維基文庫錄入",
-        "插圖：《增評補圖石頭記》（1884）、改琦《紅樓夢圖詠》（1879）",
+        "底本：程乙本（一七九二），維基文庫錄入",
+        "插圖：《增評補圖石頭記》（一八八四）、改琦《紅樓夢圖詠》（一八七九）",
         "正文按知識共享 CC BY-SA 4.0 授權釋出",
         "Postext 排版　二〇二六年",
     ],

@@ -86,7 +86,8 @@
         "index"
       ],
       "openLocale": "zh-Hant",
-      "binding": "right"
+      "binding": "right",
+      "shelfOrder": 1
     },
     {
       "id": "openstax-fisica",

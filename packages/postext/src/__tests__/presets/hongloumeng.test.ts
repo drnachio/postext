@@ -139,15 +139,19 @@ describe('hongloumeng bundle', () => {
     expect(size(BUNDLE)).toBeLessThanOrEqual(30e6);
   });
 
-  it('names an existing plate on every chapter heading', () => {
+  it('names an existing plate in every chapter', () => {
     const ids = new Set(manifest.resources.map((r: any) => r.id));
     for (const lang of ['zh-Hant', 'zh-Hans', 'en']) {
       const plates = manifest.chapters[lang]
-        .map((c: any) => /\{plate="([^"]+)"/.exec(readFileSync(join(BUNDLE, c.file), 'utf8'))?.[1])
+        .map((c: any) => /plate="([^"]+)"/.exec(readFileSync(join(BUNDLE, c.file), 'utf8'))?.[1])
         .filter(Boolean);
       expect(plates).toHaveLength(lang === 'en' ? 56 : 120);
       for (const p of plates) expect(ids.has(p), `${lang} ${p}`).toBe(true);
     }
+    // The vertical edition sets the plate on the verso before the opener, a
+    // heading of the `plate` style named by the line the plate illustrates.
+    const hui1 = readFileSync(join(BUNDLE, 'chapters/zh-Hant/001-hui.md'), 'utf8');
+    expect(hui1).toMatch(/^# 甄士隱夢幻識通靈 \{style="plate" plate="plate-001"\}\n\n:::pagebreak\n\n:::numbering\{format="cjk-decimal" startAt=1\}\n\n# 甄士隱夢幻識通靈 \\\\ 賈雨村風塵懷閨秀\n/m);
   });
 
   it('reads each edition in its own language, wording and design', async () => {
@@ -226,23 +230,32 @@ describe('hongloumeng bundle', () => {
     for (const lang of ['zh-Hans', 'zh-Hant', 'en']) expect(index(lang)).not.toMatch(/出場|出场|first appears/);
   });
 
-  it('opens each edition with its metadata and lower-roman front matter, then Arabic folios from chapter 1', async () => {
-    for (const [lang, title, author] of [['zh-Hant', '紅樓夢', '曹雪芹'], ['zh-Hans', '红楼梦', '曹雪芹'], ['en', 'Hung Lou Meng', 'Cao Xueqin']] as const) {
+  it('opens each edition with its metadata and front-matter folios, then the chapters’ folios from chapter 1', async () => {
+    // The vertical edition numbers its pages in Chinese numerals: 一, 二 … in
+    // the front matter, 一〇三 from 第一回; the horizontal ones in roman and
+    // Arabic numerals.
+    for (const [lang, title, author, front, body] of [
+      ['zh-Hant', '紅樓夢', '曹雪芹', 'trad-chinese-informal', 'cjk-decimal'],
+      ['zh-Hans', '红楼梦', '曹雪芹', 'lower-roman', 'decimal'],
+      ['en', 'Hung Lou Meng', 'Cao Xueqin', 'lower-roman', 'decimal'],
+    ] as const) {
       const book = await open(lang);
-      // The base format is Arabic: a chapter the Sandbox lays out before
-      // the background pagination reaches it does not show roman folios.
-      expect(book.config.page.pageNumbering.format, lang).toBe('decimal');
+      // The base format is the chapters': a chapter the Sandbox lays out
+      // before the background pagination reaches it shows their folios.
+      expect(book.config.page.pageNumbering.format, lang).toBe(body);
       const first = book.chapters[0]!.markdown;
       const { metadata, content } = extractFrontmatter(first);
       expect(metadata).toMatchObject({ title, author });
-      expect(content.trimStart().startsWith(':::numbering{format="lower-roman" startAt=1}'), lang).toBe(true);
+      expect(content.trimStart().startsWith(`:::numbering{format="${front}" startAt=1}`), lang).toBe(true);
       const one = book.chapters.find((_, i) => chapterNumber(manifest.chapters[lang][i].file) === 1)!;
-      expect(one.markdown.startsWith(':::numbering{format="decimal" startAt=1}'), lang).toBe(true);
+      // The vertical edition restarts on the opener, after the plate's page.
+      if (lang === 'zh-Hant') expect(one.markdown).toContain(`:::pagebreak\n\n:::numbering{format="${body}" startAt=1}\n\n# `);
+      else expect(one.markdown.startsWith(`:::numbering{format="${body}" startAt=1}`), lang).toBe(true);
     }
   });
 
-  it('centres the opener’s elements on the container', () => {
-    for (const lang of ['zh-Hant', 'zh-Hans', 'en']) {
+  it('centres the opener’s elements on the container in the horizontal editions', () => {
+    for (const lang of ['zh-Hans', 'en']) {
       const config = configOf(lang);
       const front = config.headingStyles.find((s: any) => s.id === 'front');
       for (const design of [config.headings.levels[0].advancedDesign, front.advancedDesign]) {
@@ -269,7 +282,10 @@ describe('hongloumeng bundle', () => {
       const poem = config.headingStyles.find((s: any) => s.id === 'poem');
       expect(poem).toMatchObject({ numbered: false, toc: false });
       const [title, author] = poem.advancedDesign.slot.elements;
-      expect([title.content, title.align, author.content, author.align, author.placement.anchor.edge]).toEqual(['{attr.title}', 'left', '{attr.by}', 'right', 'top-right']);
+      expect([title.content, title.align, author.content, author.align]).toEqual(['{attr.title}', 'left', '{attr.by}', 'right']);
+      // Horizontal: the name at the right of the line; vertical: at the foot
+      // of the column, which the flow frame's `right` is.
+      expect(author.placement.anchor.edge).toBe(lang === 'zh-Hans' ? 'top-right' : 'top-left');
       expect(config.headings.keepWithNext).toBe(true);
     }
     expect(readFileSync(join(BUNDLE, 'chapters/zh-Hans/038-hui.md'), 'utf8')).toContain('## 忆菊　蘅芜君 {style="poem" title="忆菊" by="蘅芜君"}\n\n:::paragraphs{style="verse"}\n怅望西风抱闷思');
@@ -280,6 +296,45 @@ describe('hongloumeng bundle', () => {
       .filter(({ b }) => b.type === 'heading' && (b as any).headingStyleId === 'poem');
     expect(heads).toHaveLength(12);
     for (const { b, next } of heads) expect(next?.type, JSON.stringify((b as any).text)).toBe('paragraph');
+  });
+
+  it('sets the Traditional edition vertically and right-bound on the character grid, the others horizontally', () => {
+    const hant = configOf('zh-Hant');
+    expect(hant.layout.writingMode).toBe('vertical-rl');
+    // `page.binding` left at auto: right for a vertical book.
+    expect(hant.page.binding ?? 'auto').toBe('auto');
+    expect(hant.cjk.grid).toEqual({ enabled: true, charsPerLine: 38, linesPerPage: 15 });
+    expect([hant.page.width, hant.page.height]).toEqual([{ value: 148, unit: 'mm' }, { value: 210, unit: 'mm' }]);
+    for (const lang of ['zh-Hans', 'en']) {
+      const c = configOf(lang);
+      expect(c.layout.writingMode ?? 'horizontal-tb', lang).toBe('horizontal-tb');
+      // Each edition restates every key of the base config, so the grid and
+      // the writing mode stay the Traditional edition's.
+      expect(c.cjk, lang).toEqual({});
+      for (const k of Object.keys(manifest.config)) expect(c[k], `${lang} ${k}`).toBeDefined();
+    }
+  });
+
+  it('sets each plate of the vertical edition on a page of its own, out of the running heads and the contents', () => {
+    const hant = configOf('zh-Hant');
+    const plate = hant.headingStyles.find((s: any) => s.id === 'plate');
+    expect(plate).toMatchObject({ numbered: false, toc: false, runningChapter: false, span: 'page', breakBefore: { enabled: true, parity: 'even' } });
+    expect(plate.header).toEqual({ elements: [] });
+    expect(plate.footer).toEqual({ elements: [] });
+    expect(plate.advancedDesign.slot.elements[0]).toMatchObject({ kind: 'image', resourceId: '{attr.plate}' });
+    // The opener: a recto, the left page of a right-bound spread.
+    expect(hant.headings.levels[0].breakBefore).toEqual({ enabled: true, parity: 'odd' });
+    const plates = manifest.chapters['zh-Hant'].filter((c: any) => /\{style="plate" plate="plate-\d{3}"\}/.test(readFileSync(join(BUNDLE, c.file), 'utf8')));
+    expect(plates).toHaveLength(120);
+  });
+
+  it('sets the song titles of chapter 5 as headings kept with their songs', () => {
+    for (const lang of ['zh-Hant', 'zh-Hans']) {
+      const hui5 = readFileSync(join(BUNDLE, `chapters/${lang}/005-hui.md`), 'utf8');
+      expect(hui5.match(/^## 【[^】]+】 \{style="song"\}$/gm), lang).toHaveLength(14);
+      expect(hui5, lang).not.toContain(':::paragraphs{style="song"}');
+      expect(configOf(lang).headingStyles.find((s: any) => s.id === 'song'), lang).toMatchObject({ numbered: false, toc: false });
+    }
   });
 
   it('fits the widest chapter number in the contents’ number column', () => {
@@ -328,6 +383,59 @@ describe('hongloumeng pages', () => {
     for (const g of han) expect((g.width - (g.tracking ?? 0) * chars(g.text)) / em).toBeCloseTo(chars(g.text), 6);
     expect(Math.max(...page.map(chars))).toBeGreaterThanOrEqual(28);
     expect(page.filter((l) => chars(l) >= 26).length).toBeGreaterThan(20);
+  });
+
+  it('sets the Traditional edition 38 characters down each of 15 columns, right to left', async () => {
+    const book = await open('zh-Hant');
+    // After an odd number of pages the chapter's first page is a verso: the
+    // plate, then the opener on the recto, then the text.
+    const doc = buildDocument({ markdown: book.chapters[7]!.markdown, resources: book.resources, continuation: { pageIndexOffset: 1 } }, book.config);
+    expect(doc.binding).toBe('right');
+    const [plate, opener, body] = doc.pages;
+    expect(plate!.columns.flatMap((c) => c.blocks).map((b: any) => b.headingStyleId)).toEqual(['plate']);
+    expect(JSON.stringify(opener)).toContain('第一回');
+    expect(body!.flow?.writingMode).toBe('vertical-rl');
+    const blocks = body!.columns.flatMap((c) => c.blocks).filter((b) => b.type === 'paragraph');
+    const em = Number(/(\d*\.?\d+)px/.exec(blocks[0]!.fontString)![1]);
+    // A column is 38 ems long: the flow's x runs down the page.
+    for (const b of blocks) expect(b.bbox.width / em).toBeCloseTo(38, 2);
+    // Fifteen columns a page (a page may end a column early, where a
+    // paragraph's first line would stand alone at its foot).
+    const perPage = doc.pages.slice(2).map((p) => p.columns.flatMap((c) => c.blocks).filter((b) => b.type === 'paragraph').flatMap((b) => b.lines).length);
+    expect(Math.max(...perPage)).toBe(15);
+    expect(perPage.filter((n) => n === 15).length).toBeGreaterThan(perPage.length / 2);
+    const full = blocks.flatMap((b) => b.lines.slice(0, -1).map((l) => ({ l, b })));
+    expect(full.length).toBeGreaterThan(8);
+    for (const { l, b } of full) expect((l.bbox.x - b.bbox.x + l.bbox.width) / em).toBeCloseTo(38, 2);
+    // Full-width Taiwan punctuation, nothing compressed: a Han character or a
+    // mark is one em down the column, plus the justification tracking.
+    const chars = (t: string) => [...t].length;
+    const cells = full.flatMap(({ l }) => l.segments ?? []).filter((g) => g.kind === 'text' && /^[\u4e00-\u9fff，。、：；！？「」『』]+$/.test(g.text));
+    expect(cells.reduce((n, g) => n + chars(g.text), 0)).toBeGreaterThan(200);
+    for (const g of cells) expect((g.width - (g.tracking ?? 0) * chars(g.text)) / em).toBeCloseTo(chars(g.text), 6);
+    // Columns follow one another leftwards, from the right edge of the type
+    // area: their flow y grows.
+    const ys = blocks.flatMap((b) => b.lines.map((l) => l.bbox.y));
+    expect([...ys].sort((a, b) => a - b)).toEqual(ys);
+  });
+
+  it('opens a 回 on a recto facing its plate, a blank page first when the chapter before ends on a verso', async () => {
+    const book = await open('zh-Hant');
+    const five = manifest.chapters['zh-Hant'].findIndex((c: any) => c.file.endsWith('/005-hui.md'));
+    // Four pages before: the chapter's first page is the fifth, a recto.
+    const doc = buildDocument({ markdown: book.chapters[five]!.markdown, resources: book.resources, continuation: { pageIndexOffset: 4 } }, book.config);
+    expect(doc.pages[0]!.blankForParity).toBeTruthy();
+    expect(doc.pages[1]!.columns.flatMap((c) => c.blocks).map((b: any) => b.headingStyleId)).toEqual(['plate']);
+    // Page 6 (a verso, the right page) holds the plate, page 7 (a recto, the
+    // left page) the opener.
+    const opener = doc.pages[2]!.columns.flatMap((c) => c.blocks)[0] as any;
+    expect([opener.type, opener.headingLevel, opener.headingStyleId]).toEqual(['heading', 1, undefined]);
+    expect(JSON.stringify(doc.pages[2]!.openerBand)).toContain('賈寶玉神遊太虛境');
+    // Every song title stands on the page of its song's first line.
+    const heads = doc.pages.flatMap((p) => p.columns.flatMap((c) => c.blocks.map((b, i, all) => ({ b, next: all[i + 1] }))))
+      .filter(({ b }) => b.type === 'heading' && (b as any).headingStyleId === 'song');
+    expect(heads).toHaveLength(14);
+    for (const { b, next } of heads) expect(next?.type, JSON.stringify((b as any).text)).toBe('paragraph');
   });
 
   it('opens an English chapter with the couplet and both of Joly’s title lines', async () => {

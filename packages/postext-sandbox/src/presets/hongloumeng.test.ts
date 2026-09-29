@@ -16,8 +16,9 @@ const manifest = ((await import(/* @vite-ignore */ new URL('../../../../apps/web
 const configOf = (lang: string): PostextConfig => ({ ...manifest.config, ...(manifest.localized[lang]?.config ?? {}) });
 
 const CHAPTER_ONE: Record<string, string> = {
-  'zh-Hant': '# 甄士隱夢幻識通靈 \\\\ 賈雨村風塵懷閨秀 {plate="plate-001"}\n\n此開卷第一回也。\n\n## 憶菊　蘅蕪君 {style="poem" title="憶菊" by="蘅蕪君"}\n\n:::paragraphs{style="verse"}\n悵望西風抱悶思，蓼紅葦白斷腸時。\n:::\n',
-  'zh-Hans': '# 甄士隐梦幻识通灵 \\\\ 贾雨村风尘怀闺秀 {plate="plate-001"}\n\n此开卷第一回也。\n\n## 忆菊　蘅芜君 {style="poem" title="忆菊" by="蘅芜君"}\n\n:::paragraphs{style="verse"}\n怅望西风抱闷思，蓼红苇白断肠时。\n:::\n',
+  // The vertical edition: the plate on its own page before the opener.
+  'zh-Hant': '# 甄士隱夢幻識通靈 {style="plate" plate="plate-001"}\n\n:::pagebreak\n\n:::numbering{format="cjk-decimal" startAt=1}\n\n# 甄士隱夢幻識通靈 \\\\ 賈雨村風塵懷閨秀\n\n此開卷第一回也。\n\n## 【紅樓夢引子】 {style="song"}\n\n:::paragraphs{style="verse"}\n開闢鴻濛，誰為情種？\n:::\n\n## 憶菊　蘅蕪君 {style="poem" title="憶菊" by="蘅蕪君"}\n\n:::paragraphs{style="verse"}\n悵望西風抱悶思，蓼紅葦白斷腸時。\n:::\n',
+  'zh-Hans': '# 甄士隐梦幻识通灵 \\\\ 贾雨村风尘怀闺秀 {plate="plate-001"}\n\n此开卷第一回也。\n\n## 【红楼梦引子】 {style="song"}\n\n:::paragraphs{style="verse"}\n开辟鸿蒙，谁为情种？\n:::\n\n## 忆菊　蘅芜君 {style="poem" title="忆菊" by="蘅芜君"}\n\n:::paragraphs{style="verse"}\n怅望西风抱闷思，蓼红苇白断肠时。\n:::\n',
   en: '# Chen Shih-yin, in a vision \\\\ Chia Yü-ts’un {plate="plate-001" zh="甄士隱夢幻識通靈　賈雨村風塵懷閨秀"}\n\nThis is the opening section.',
 };
 
@@ -30,6 +31,17 @@ describe('hongloumeng in the Sandbox', () => {
     for (const lang of ['zh-Hant', 'zh-Hans', 'en']) {
       const warnings = computeWarnings({ markdown: CHAPTER_ONE[lang]!, config: configOf(lang), doc: null }).map((w) => JSON.stringify(w.payload));
       expect(warnings, lang).toEqual([]);
+    }
+  });
+
+  it('ships every variant the Chinese designs ask of their faces', () => {
+    // The body family is asked for no italics where `*…*` sets dots.
+    const { families } = fontsToCustomFonts('hongloumeng', manifest.fonts);
+    for (const [lang, names] of [['zh-Hant', ['Noto Serif TC', 'LXGW WenKai TC', 'Noto Sans TC']], ['zh-Hans', ['Noto Serif SC', 'LXGW WenKai', 'Noto Sans SC']]] as const) {
+      for (const name of names) {
+        const family = families.find((f) => f.name === name)!;
+        expect(missingUsedVariants(family, configOf(lang)), `${lang} ${name}`).toEqual([]);
+      }
     }
   });
 

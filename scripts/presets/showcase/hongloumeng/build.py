@@ -12,10 +12,11 @@
 
 One bundle, three editions:
 
-- `zh-Hant`, the edition the home shelf opens: 程乙本 (1792), 120 回. Its
-  design here is a HORIZONTAL PLACEHOLDER (the zh-Hans design in Traditional
-  faces, `zh_hant_placeholder_config`); the vertical right-bound design
-  (#188, #189) replaces it.
+- `zh-Hant`, the edition the home shelf opens: 程乙本 (1792), 120 回, set
+  vertically and bound on the right (`zh_hant_config`, #188 #189 #192): 25開
+  148 × 210 mm, 38 characters down each of 15 columns on the character grid
+  (#187), Taiwan punctuation, running heads down the fore-edge with a 魚尾,
+  folios in Chinese numerals; each 回 opens on a recto facing its plate.
 - `zh-Hans`: the same text in Simplified characters, horizontal and
   left-bound, 140 × 203 mm, 28 characters by 28 lines, mainland punctuation.
 - `en`: H. Bencraft Joly's translation, chapters 1–56 (all he published),
@@ -23,17 +24,20 @@ One bundle, three editions:
 
 Each edition: a cover and title page, the edition note, the prefaces (程偉元's
 序, 高鶚's 敘 and the 1792 引言 in Chinese; Joly's preface in English), a gallery
-of Gai Qi's portraits, the contents, the chapters (a plate at the head of every
-opener, the 回目 couplet on two lines, verse in Kai, the ch. 5 song titles, the
-ch. 38 poem heads and the closing formula in styles of their own), an index
+of Gai Qi's portraits, the contents, the chapters (the chapter's plate, the
+回目 couplet on two lines or columns, verse in Kai, the ch. 5 song titles and
+the ch. 38 poem heads as headings of their own, the closing formula), an index
 of the principal characters at their first mention, and the credits.
 
-The chapter plate is drawn by the opener design (`resourceId: "{attr.plate}"`):
-the couplet printed under it is the plate's own inscription, so it takes no
-caption and no number. Its wording in every edition (the couplet half, Joly's
-line) is the resource's caption in the Resources panel; its alt text names the
-chapter and the line the plate illustrates, and the opener design hands it to
-the HTML `alt` and to a tagged PDF's `Figure` (#213).
+The chapter plate is drawn by a design (`resourceId: "{attr.plate}"`): in the
+horizontal editions at the head of the opener, in the vertical one alone on
+the verso before it (a heading of the `plate` style, `runningChapter: false`,
+out of the contents and the bookmarks). The couplet the plate illustrates is
+its own inscription, so it takes no caption and no number. Its wording in
+every edition (the couplet half, Joly's line) is the resource's caption in
+the Resources panel; its alt text names the chapter and the line the plate
+illustrates, and the design hands it to the HTML `alt` and to a tagged PDF's
+`Figure` (#213).
 """
 from __future__ import annotations
 
@@ -315,6 +319,18 @@ def zh_poem_head(f: ZhFaces) -> dict:
     }
 
 
+def zh_song_head(f: ZhFaces) -> dict:
+    """A song title of chapter 5 (【紅樓夢引子】…): vermilion 黑體 one em in,
+    on a line of its own. A heading, so it keeps with its song."""
+    em_mm = pt_to_mm(ZH.body_pt)
+    lh = ZH.lead_pt / 9.5
+    return {
+        "enabled": True,
+        "minHeight": mm(pt_to_mm(ZH.lead_pt)),
+        "slot": {"elements": [text("song-title", "{titleText}", anchor=at("container", "top-left"), offset=(em_mm, 0), width=ZH.text_w - em_mm, size_pt=9.5, family=f.sans, weight=500, color="vermilion", align="left", line_height=lh, overflow="clip")]},
+    }
+
+
 def zh_heading_styles(lang: str, f: ZhFaces) -> list[dict]:
     b = ed.BOOK[lang]
     empty = {"elements": []}
@@ -355,6 +371,8 @@ def zh_heading_styles(lang: str, f: ZhFaces) -> list[dict]:
         {"id": "credits", "name": names[7], **front},
         # `## 憶菊　蘅蕪君 {style="poem" title="憶菊" by="蘅蕪君"}`
         {"id": "poem", "name": "詩題" if lang == "zh-Hant" else "诗题", "numbered": False, "toc": False, "fontFamily": f.kai, "fontSize": pt(ZH.body_pt), "lineHeight": pt(ZH.lead_pt), "marginTop": pt(ZH.lead_pt), "marginBottom": pt(0), "advancedDesign": zh_poem_head(f)},
+        # The song titles of chapter 5: `## 【紅樓夢引子】 {style="song"}`.
+        {"id": "song", "name": "曲名", "numbered": False, "toc": False, "fontFamily": f.sans, "fontSize": pt(9.5), "lineHeight": pt(ZH.lead_pt), "fontWeight": 500, "color": col("vermilion"), "marginTop": pt(ZH.lead_pt), "marginBottom": pt(0), "advancedDesign": zh_song_head(f)},
     ]
 
 
@@ -365,8 +383,6 @@ def zh_paragraph_styles(lang: str, f: ZhFaces) -> list[dict]:
         # Verse: 低二格, turnover lines two more; a poem in several stanzas is
         # one block (build.py merges consecutive verse paragraphs).
         {"id": "verse", "name": "詩詞" if hant else "诗词", "fontFamily": f.kai, "fontSize": pt(10.5), "lineHeight": lead, "textAlign": "left", "indent": {"value": 2, "unit": "em"}, "hangingIndent": {"value": 2, "unit": "em"}, "spaceBetween": pt(0)},
-        # The song titles of chapter 5: 【紅樓夢引子】…
-        {"id": "song", "name": "曲名", "fontFamily": f.sans, "fontSize": pt(9.5), "lineHeight": lead, "fontWeight": 500, "textAlign": "left", "indent": {"value": 1, "unit": "em"}, "firstLineIndent": pt(0), "marginTop": lead, "color": col("vermilion")},
         # The closing formula: 且聽下回分解.
         {"id": "closing", "name": "回末", "fontFamily": f.kai, "fontSize": pt(10.5), "lineHeight": lead, "textAlign": "left", "firstLineIndent": {"value": 2, "unit": "em"}, "marginTop": lead},
         {"id": "signature", "name": "署名", "fontFamily": f.kai, "fontSize": pt(10.5), "lineHeight": lead, "textAlign": "right", "firstLineIndent": pt(0), "indent": pt(0)},
@@ -407,6 +423,9 @@ def zh_config(lang: str) -> dict:
         "locale": lang,
         "page": g.page(),
         "layout": {"layoutType": "single"},
+        # The locale's defaults (mainland), no grid: the key restates the
+        # base's (the vertical edition's), which sets one.
+        "cjk": {},
         "bodyText": {
             "fontFamily": f.serif,
             "fontSize": pt(g.body_pt),
@@ -487,17 +506,443 @@ def zh_config(lang: str) -> dict:
         "footer": zh_folios(f),
         "captionStyle": {"fontFamily": f.kai, "fontSize": pt(9.5), "color": col("ink"), "align": "center", "labelBold": False, "labelNumberGap": "", "labelSeparator": "　"},
         "colorPalette": palette(lang),
-        "resourceTypes": zh_resource_types(lang, f),
+        "resourceTypes": zh_resource_types(lang, f) + [ORNAMENT_TYPE[lang]],
         "pdfGeneration": {"outlines": True},
     }
 
 
-def zh_hant_placeholder_config() -> dict:
-    """PLACEHOLDER for the zh-Hant edition: the horizontal zh-Hans design in
-    the Traditional faces (Noto Serif TC, LXGW WenKai TC, Noto Sans TC),
-    Taiwan conventions from the locale. The vertical, right-bound design
-    (148 × 210 mm, 38 characters per column, #188 #189 #192) replaces it."""
-    return zh_config("zh-Hant")
+# --- the vertical design (zh-Hant) ------------------------------------------------------------------
+#
+# 程乙本 set as a Taiwan vertical book (直排, right-bound): 25開 148 × 210 mm,
+# 38 characters down each column and 14 columns on a 19.5 pt pitch, on the
+# character grid (`cjk.grid`). The design slots of a vertical page are laid out
+# in the page's flow frame (#188): x runs down a column from the head of the
+# type area, y across the columns from its right edge; a `'horizontal'` rule is
+# a line down the page. Header and footer are on the sheet.
+
+
+class VGeometry:
+    """A vertical page on the character grid: `chars` characters of the body
+    size down each column, `cols` columns across on a pitch of `pitch_pt`.
+    The margins are the sheet's: `top` the head (天頭), `inner` the spine side;
+    the foot and the fore-edge take what the type area leaves."""
+
+    def __init__(self, width: float, height: float, body_pt: float, pitch_pt: float, chars: int, cols: int, top: float, inner: float):
+        self.width, self.height = width, height
+        self.body_pt, self.pitch_pt = body_pt, pitch_pt
+        self.chars, self.cols = chars, cols
+        self.col_len = pt_to_mm(chars * body_pt)
+        self.type_w = pt_to_mm(cols * pitch_pt)
+        self.pitch = pt_to_mm(pitch_pt)
+        self.em = pt_to_mm(body_pt)
+        self.top, self.inner = top, inner
+        self.bottom = height - top - self.col_len
+        self.outer = width - inner - self.type_w
+
+    def page(self) -> dict:
+        # The grid takes the margins as minimums and centres the type area in
+        # the room they leave: a hair under each keeps them as designed.
+        m = lambda v: mm(v - 0.05)  # noqa: E731
+        return {
+            "sizePreset": "custom",
+            "width": mm(self.width),
+            "height": mm(self.height),
+            "margins": {"top": m(self.top), "bottom": m(self.bottom), "left": m(self.inner), "right": m(self.outer), "mirror": True},
+            # 一〇三: the front matter switches to 一, 二, 三 in its first file.
+            "pageNumbering": {"format": "cjk-decimal", "startAt": 1},
+        }
+
+    def grid(self) -> dict:
+        return {"enabled": True, "charsPerLine": self.chars, "linesPerPage": self.cols}
+
+
+VG = VGeometry(148, 210, 10.5, 18.5, 38, 15, top=38.5, inner=19)
+V_PLATE_H = 140.0  # a chapter plate on its page, head to foot
+V_FORE_PT = 8.4  # the fore-edge heads: 80 % of the body (JLREQ §2.6)
+ORNAMENT_ID = "ornament-yuwei"
+
+
+def ftext(id_: str, content: str, *, x: float, y: float, length: float, across: float, size_pt: float, family: str, anchor: dict | None = None, **kw) -> dict:
+    """A text element in the flow frame of a vertical page: `x` lowers it
+    down the column, `y` moves it across (leftward), `length` is the room
+    down the column and `across` the room its lines share (centred in it)."""
+    kw.setdefault("overflow", "clip")
+    el = text(id_, content, anchor=anchor or at("container", "top-left"), offset=(x, y), width=length, size_pt=size_pt, family=family, **kw)
+    el["placement"]["size"]["height"] = mm(across)
+    return el
+
+
+def frule(id_: str, *, x: float, y: float, length: float, color: str = "vermilion", thickness: float = 0.3, anchor: dict | None = None, **kw) -> dict:
+    """A rule down the page (a line along the flow's x)."""
+    return rule(id_, anchor=anchor or at("container", "top-left"), offset=(x, y), width=length, color=color, thickness=thickness, **kw)
+
+
+def frame(id_: str, *, x: float, y: float, length: float, across: float, color: str = "vermilion", thickness: float = 0.6, anchor: dict | None = None, **kw) -> dict:
+    """An unfilled box (a border only)."""
+    el = {
+        "kind": "box",
+        "id": id_,
+        "placement": {"anchor": anchor or at("container", "top-left"), "offset": {"x": mm(x), "y": mm(y)}, "size": {"width": mm(length), "height": mm(across)}},
+        "style": {"borderColor": col(color), "borderWidth": pt(thickness), "borderRadius": mm(0)},
+    }
+    el.update(kw)
+    return el
+
+
+def v_fore_edge(content_odd: str, content_even: str, f: ZhFaces) -> dict:
+    """Running heads down the fore-edge (#192): the chapter on rectos (the
+    left pages of a right-bound book), the book's title on versos, set
+    vertically 4 characters below the head of the type area with a small
+    vermilion 魚尾 above them, as on the centre strip of a woodblock leaf;
+    the folio in Chinese numerals at the foot, level with the type area's
+    last character. None on openers, plates and blank pages but the folio,
+    which blank pages do not carry either (clreq §7.2)."""
+    g = VG
+    gap = 5.0  # from the type area to the axis side of the heads
+    fore = pt_to_mm(V_FORE_PT)
+    els = []
+    for parity, content in (("odd", content_odd), ("even", content_even)):
+        # The fore-edge is left of a recto, right of a verso: the heads keep
+        # `gap` from the type area.
+        edge, dx = ("top-right", -gap) if parity == "odd" else ("top-left", gap)
+        foot = "bottom-right" if parity == "odd" else "bottom-left"
+        # The 魚尾 just above the head: an image takes no em offsets.
+        orn_w = fore + 0.4
+        orn_y = 4 * fore - orn_w * 0.64 - 1.2
+        els.append({"kind": "image", "id": f"yuwei-{parity}", "resourceId": ORNAMENT_ID, "decorative": True, "parity": parity, "pages": "body", "placement": {"anchor": at("outer", edge), "offset": {"x": mm(dx + (0.2 if parity == "even" else -0.2)), "y": mm(orn_y)}, "size": {"width": mm(orn_w), "height": "auto"}}})
+        # A vertical element's `size.height` is the length of its line: the
+        # head runs to six characters above the foot, the folio (up to four
+        # characters, 一八二四) ends level with the type area's foot.
+        head = text(f"head-{parity}", content, anchor=at("outer", edge), offset=(dx, 0), width="auto", size_pt=V_FORE_PT, family=f.kai, parity=parity, pages="body", overflow="ellipsis-end", writingMode="vertical-rl", letterSpacing=pt(0.6))
+        head["placement"]["offset"]["y"] = {"value": 4, "unit": "em"}
+        head["placement"]["size"]["height"] = mm(g.col_len - 10 * fore)
+        els.append(head)
+        for pages in ("body", "opener"):
+            folio = text(f"folio-{parity}-{pages}", "{pageNumber}", anchor=at("outer", foot), offset=(dx, 0), width="auto", size_pt=V_FORE_PT, family=f.serif, align="right", parity=parity, pages=pages, overflow="clip", writingMode="vertical-rl")
+            folio["placement"]["size"]["height"] = mm(4.5 * fore)
+            els.append(folio)
+    return {"elements": els}
+
+
+def v_opener(f: ZhFaces) -> dict:
+    """第一回 and the two halves of the 回目 on three columns of their own at
+    the right of a recto, in a vermilion frame ruled between the columns
+    (四周雙邊 with 界行, as on a woodblock leaf); a blank column, then the
+    text. 第一回 is lowered two characters, the couplet four (clreq §7.1.3;
+    research-vertical §5.4)."""
+    g = VG
+    p, L, em = g.pitch, g.col_len, g.em
+    c1, c2 = 1.5 * p, 1.25 * p
+    w = c1 + 2 * c2
+    inset = 0.7
+    couplet_pt = 12.5
+    return {
+        "enabled": True,
+        "minHeight": mm(w + p),
+        "slot": {
+            "elements": [
+                frame("hui-frame", x=0, y=0, length=L, across=w, thickness=0.9),
+                frame("hui-frame-in", x=inset, y=inset, length=L - 2 * inset, across=w - 2 * inset, thickness=0.3),
+                frule("hui-rule-1", x=inset, y=c1, length=L - 2 * inset),
+                frule("hui-rule-2", x=inset, y=c1 + c2, length=L - 2 * inset),
+                ftext("hui", "{number}", x=2 * em, y=0, length=L - 2 * em, across=c1, size_pt=14, family=f.serif, weight=700, letterSpacing=pt(2)),
+                ftext("couplet", "{titleText}", x=4 * em, y=c1, length=L - 4 * em, across=2 * c2, size_pt=couplet_pt, family=f.kai, line_height=round(c2 / pt_to_mm(couplet_pt), 4), letterSpacing=pt(1)),
+            ]
+        },
+    }
+
+
+def v_plate() -> dict:
+    """The chapter's plate alone on the verso that faces the opener
+    (前圖後文): the right page of the spread, read first."""
+    return {
+        "enabled": True,
+        "minHeight": mm(VG.type_w),
+        "slot": {
+            "elements": [
+                {"kind": "image", "id": "plate", "resourceId": "{attr.plate}", "placement": {"anchor": at("page", "center"), "offset": {"x": mm(0), "y": mm(0)}, "size": {"width": mm(V_PLATE_H), "height": "auto"}}},
+            ]
+        },
+    }
+
+
+def v_front_opener(f: ZhFaces) -> dict:
+    """The title of a front- or back-matter section: one column at the right
+    of a recto, lowered three characters, a vermilion rule beside it, then
+    a blank column."""
+    g = VG
+    p, L, em = g.pitch, g.col_len, g.em
+    return {
+        "enabled": True,
+        "minHeight": mm(3 * p),
+        "slot": {
+            "elements": [
+                ftext("front-title", "{titleText}", x=3 * em, y=0, length=L - 3 * em, across=2 * p, size_pt=16, family=f.kai, letterSpacing=pt(3)),
+                frule("front-rule", x=3 * em, y=2 * p, length=L - 6 * em, thickness=0.6),
+            ]
+        },
+    }
+
+
+def v_cover(lang: str, f: ZhFaces) -> dict:
+    """The thread-bound cover of the right-bound edition: indigo cloth,
+    four-hole stitching down the spine edge (the right, the flow's top) and
+    a paper title slip at the head of the free edge with 紅樓夢 set down it
+    and 程乙本 small beside the foot."""
+    g = VG
+    # Flow frame of the sheet: x down from the head, y leftward from the spine.
+    stitch = 9.0
+    holes = [g.height * r for r in (0.1, 0.36, 0.64, 0.9)]
+    slip_w, slip_h, slip_top, slip_edge = 23.0, 92.0, 14.0, 11.0
+    slip_y = g.width - slip_edge - slip_w
+    page_tl = at("bleed", "top-left")
+    els = [
+        box("cloth", anchor=page_tl, fill="indigo"),
+        rule("stitch-line", anchor=at("page", "top-left"), offset=(holes[0], stitch), width=holes[-1] - holes[0], color="thread", thickness=1.5),
+    ]
+    for i, x in enumerate(holes):
+        els.append({"kind": "rule", "id": f"stitch-{i}", "direction": "vertical", "placement": {"anchor": at("page", "top-left"), "offset": {"x": mm(x), "y": mm(-1)}, "size": {"height": mm(stitch + 1)}}, "color": col("thread"), "thickness": pt(1.5)})
+    els += [
+        box("slip", anchor=at("page", "top-left"), offset=(slip_top, slip_y), width=slip_h, height=slip_w, fill="paper", style={"backgroundColor": col("paper"), "borderColor": col("ink"), "borderWidth": pt(0.6), "borderRadius": mm(0)}),
+        box("slip-frame", anchor=at("#slip", "top-left"), offset=(1.4, 1.4), width=slip_h - 2.8, height=slip_w - 2.8, fill="paper", style={"borderColor": col("ink"), "borderWidth": pt(0.3), "borderRadius": mm(0)}),
+        ftext("slip-title", ed.BOOK[lang]["title"], anchor=at("#slip", "top-left"), x=8, y=0, length=slip_h - 26, across=slip_w, size_pt=30, family=f.kai, letterSpacing=pt(16)),
+        ftext("slip-note", ed.BOOK[lang]["slip_note"], anchor=at("#slip", "top-left"), x=slip_h - 22, y=slip_w - 7.5, length=18, across=5, size_pt=9, family=f.kai, letterSpacing=pt(1)),
+    ]
+    return {"enabled": True, "minHeight": mm(g.type_w), "slot": {"elements": els}}
+
+
+def v_title_page(lang: str, f: ZhFaces) -> dict:
+    """The title page (扉頁), a recto: 紅樓夢 down the middle in a vermilion
+    double frame, the author on the column to its right, the editors to its
+    left, Postext at the foot of the last column. Anchored to the page (a
+    recto's type area starts `inner` from its right edge): the section's
+    margins narrow the type area to the colophon's columns on the verso."""
+    g = VG
+    b = ed.BOOK[lang]
+    L, p = g.col_len, g.pitch
+    page = at("page", "top-left")
+    x0, y0 = g.top, g.inner
+    fw = 6 * p  # the frame: six columns wide, centred on the type area
+    fy = y0 + (g.type_w - fw) / 2
+    fx, fl = x0 + 10.0, L - 20.0
+    return {
+        "enabled": True,
+        "minHeight": mm(g.type_w),
+        "slot": {
+            "elements": [
+                frame("tp-frame", anchor=page, x=fx, y=fy, length=fl, across=fw, thickness=1.1),
+                frame("tp-frame-in", anchor=page, x=fx + 1.0, y=fy + 1.0, length=fl - 2.0, across=fw - 2.0, thickness=0.35),
+                frule("tp-rule-1", anchor=page, x=fx + 1.0, y=fy + 1.5 * p, length=fl - 2.0, thickness=0.35),
+                frule("tp-rule-2", anchor=page, x=fx + 1.0, y=fy + fw - 1.5 * p, length=fl - 2.0, thickness=0.35),
+                ftext("tp-author", b["author"], anchor=page, x=fx + 8, y=fy, length=fl - 16, across=1.5 * p, size_pt=11.5, family=f.kai, letterSpacing=pt(2)),
+                ftext("tp-title", b["title"], anchor=page, x=fx, y=fy + 1.5 * p, length=fl, across=3 * p, size_pt=40, family=f.kai, align="center", letterSpacing=pt(16)),
+                ftext("tp-editors", b["editors"], anchor=page, x=fx + 8, y=fy + fw - 1.5 * p, length=fl - 16, across=1.5 * p, size_pt=11.5, family=f.kai, align="right", letterSpacing=pt(1)),
+                ftext("tp-imprint", "Postext", anchor=page, x=x0, y=y0 + g.type_w - p, length=L, across=p, size_pt=9, family=f.serif, align="center", color="muted", letterSpacing=pt(1)),
+            ]
+        },
+    }
+
+
+def v_poem_head(f: ZhFaces) -> dict:
+    """A poem's title and its author on one column (ch. 38: 憶菊 … 蘅蕪君):
+    the title lowered four characters, the name at the foot."""
+    g = VG
+    L, p, em = g.col_len, g.pitch, g.em
+    lh = g.pitch_pt / g.body_pt
+    return {
+        "enabled": True,
+        "minHeight": mm(p),
+        "slot": {
+            "elements": [
+                ftext("poem-title", "{attr.title}", x=4 * em, y=0, length=L / 2, across=p, size_pt=g.body_pt, family=f.kai, line_height=lh),
+                ftext("poem-author", "{attr.by}", x=L / 2, y=0, length=L / 2, across=p, size_pt=g.body_pt, family=f.kai, line_height=lh, align="right"),
+            ]
+        },
+    }
+
+
+def v_song_head(f: ZhFaces) -> dict:
+    g = VG
+    return {
+        "enabled": True,
+        "minHeight": mm(g.pitch),
+        "slot": {"elements": [ftext("song-title", "{titleText}", x=2 * g.em, y=0, length=g.col_len - 2 * g.em, across=g.pitch, size_pt=9.5, family=f.sans, weight=500, color="vermilion", letterSpacing=pt(0.5))]},
+    }
+
+
+def v_heading_styles(lang: str, f: ZhFaces) -> list[dict]:
+    g = VG
+    empty = {"elements": []}
+    front = {
+        "numbered": False,
+        "span": "page",
+        "breakBefore": {"enabled": True, "parity": "odd"},
+        "advancedDesign": v_front_opener(f),
+        "header": v_fore_edge("{chapterTitle}", ed.BOOK[lang]["title"], f),
+        "marginBottom": pt(0),
+    }
+    kai_body = {"fontFamily": f.kai, "fontSize": pt(g.body_pt), "lineHeight": pt(g.pitch_pt), "textAlign": "justify"}
+    # The prefaces in a larger Kai, ten columns of thirty characters, after
+    # the hand-written prefaces of the woodblock editions (寫刻).
+    preface_pt = round(g.chars * g.body_pt / 30, 3)
+    two_tiers = {"layoutType": "double", "gutterWidth": mm(2 * g.em)}
+    return [
+        {"id": "cover", "name": "封面", "numbered": False, "toc": False, "span": "page", "breakBefore": {"enabled": True, "parity": "odd"}, "advancedDesign": v_cover(lang, f), "header": empty, "footer": empty},
+        {
+            "id": "titlepage",
+            "name": "扉頁",
+            "numbered": False,
+            "toc": False,
+            "span": "page",
+            "breakBefore": {"enabled": True, "parity": "odd"},
+            "advancedDesign": v_title_page(lang, f),
+            "header": empty,
+            "footer": empty,
+            # The back of the title page: the colophon (版權頁) in the last
+            # columns, at the left of the page.
+            "margins": {"right": mm(g.width - g.inner - 6 * g.pitch)},
+            "bodyStyle": {"fontFamily": f.serif, "fontSize": pt(8.5), "lineHeight": pt(15), "textAlign": "left"},
+        },
+        {"id": "front", "name": "卷首", **front},
+        {"id": "preface", "name": "序文", **front, "bodyStyle": {**kai_body, "fontSize": pt(preface_pt), "lineHeight": pt(g.cols * g.pitch_pt / 10)}},
+        {"id": "gallery", "name": "繡像", **front, "layout": two_tiers},
+        {"id": "contents", "name": "目錄", **front, "toc": False},
+        {"id": "back", "name": "索引", **front, "layout": two_tiers},
+        {"id": "credits", "name": "卷末", **front},
+        # The chapter's plate on the verso before its opener:
+        # `# 甄士隱夢幻識通靈 {style="plate" plate="plate-001"}`.
+        {"id": "plate", "name": "回圖", "numbered": False, "toc": False, "runningChapter": False, "span": "page", "breakBefore": {"enabled": True, "parity": "even"}, "advancedDesign": v_plate(), "header": empty, "footer": empty, "marginBottom": pt(0)},
+        {"id": "poem", "name": "詩題", "numbered": False, "toc": False, "fontFamily": f.kai, "fontSize": pt(g.body_pt), "lineHeight": pt(g.pitch_pt), "marginTop": pt(g.pitch_pt), "marginBottom": pt(0), "advancedDesign": v_poem_head(f)},
+        # The song titles of chapter 5 (`## 【紅樓夢引子】 {style="song"}`):
+        # vermilion 黑體 lowered two, a blank column before; kept with the song.
+        {"id": "song", "name": "曲名", "numbered": False, "toc": False, "fontFamily": f.sans, "fontSize": pt(9.5), "lineHeight": pt(g.pitch_pt), "fontWeight": 500, "color": col("vermilion"), "marginTop": pt(g.pitch_pt), "marginBottom": pt(0), "advancedDesign": v_song_head(f)},
+    ]
+
+
+def v_paragraph_styles(f: ZhFaces) -> list[dict]:
+    g = VG
+    lead = pt(g.pitch_pt)
+    em = lambda n: {"value": n, "unit": "em"}  # noqa: E731
+    return [
+        # Verse: 低三格, turnovers two more; the stanzas of one poem are one
+        # block (build.py joins consecutive verse paragraphs).
+        {"id": "verse", "name": "詩詞", "fontFamily": f.kai, "fontSize": pt(g.body_pt), "lineHeight": lead, "textAlign": "left", "indent": em(3), "hangingIndent": em(2), "spaceBetween": pt(0)},
+        # The closing formula, 且聽下回分解: lowered four, after a blank column.
+        {"id": "closing", "name": "回末", "fontFamily": f.kai, "fontSize": pt(g.body_pt), "lineHeight": lead, "textAlign": "left", "firstLineIndent": em(4), "marginTop": lead},
+        {"id": "signature", "name": "署名", "fontFamily": f.kai, "fontSize": pt(g.body_pt), "lineHeight": lead, "textAlign": "right", "firstLineIndent": pt(0), "indent": pt(0)},
+        {"id": "note", "name": "說明", "fontFamily": f.kai, "fontSize": pt(10), "lineHeight": lead, "textAlign": "justify", "firstLineIndent": em(2), "color": col("muted"), "marginBottom": lead},
+        {"id": "colophon", "name": "版權頁", "fontFamily": f.serif, "fontSize": pt(8.5), "lineHeight": pt(15), "textAlign": "left", "firstLineIndent": pt(0), "spaceBetween": pt(0)},
+        {"id": "credits", "name": "來源", "fontFamily": f.serif, "fontSize": pt(9.5), "lineHeight": lead, "textAlign": "justify", "firstLineIndent": em(2), "spaceBetween": pt(0)},
+    ]
+
+
+def zh_hant_config() -> dict:
+    """The vertical right-bound book (#188 #189): 38 characters down each
+    column, 14 columns a page, Taiwan punctuation (centred, full width, no
+    compression) and basic line breaking from the locale; chapters open on
+    a recto (the left page) facing their plate."""
+    lang = "zh-Hant"
+    f = ZhFaces(lang)
+    g = VG
+    lead = pt(g.pitch_pt)
+    return {
+        "locale": lang,
+        "page": g.page(),
+        "layout": {"layoutType": "single", "writingMode": "vertical-rl"},
+        "cjk": {"grid": g.grid()},
+        "bodyText": {
+            "fontFamily": f.serif,
+            "fontSize": pt(g.body_pt),
+            "lineHeight": lead,
+            "textAlign": "justify",
+            "firstLineIndent": {"value": 2, "unit": "em"},
+            "indentAfterHeading": True,
+            "paragraphSpacing": False,
+            "color": col("ink"),
+            "boldColor": col("ink"),
+            "italicColor": col("ink"),
+            "avoidWidows": True,
+            "avoidOrphans": True,
+        },
+        "headings": {
+            "fontFamily": f.kai,
+            "color": col("ink"),
+            "keepWithNext": True,
+            "levels": [
+                {
+                    "level": 1,
+                    "numberingTemplate": "第{1:一}回",
+                    "numberSeparator": "　",
+                    "fontSize": pt(12.5),
+                    "lineHeight": lead,
+                    "span": "page",
+                    # A recto: the left page, facing the plate on its verso.
+                    "breakBefore": {"enabled": True, "parity": "odd"},
+                    "marginBottom": pt(0),
+                    "advancedDesign": v_opener(f),
+                }
+            ],
+        },
+        "headingStyles": v_heading_styles(lang, f),
+        "paragraphStyles": v_paragraph_styles(f),
+        "parts": {"page": False, "design": {"elements": []}},
+        "toc": {
+            "levels": [
+                {
+                    "level": 1,
+                    "fontFamily": f.serif,
+                    "fontSize": pt(10),
+                    "lineHeight": lead,
+                    "color": col("ink"),
+                    # 第一百一十一回 … 第一百一十九回 are seven characters.
+                    "numberWidth": {"value": 7, "unit": "em"},
+                    "numberGap": {"value": 1, "unit": "em"},
+                    "numberFontFamily": f.serif,
+                    "numberFontSize": pt(10),
+                    "numberFontWeight": TOC_NUMBER_WEIGHT,
+                    "numberColor": col("ink"),
+                }
+            ],
+            "unnumbered": {"fontFamily": f.kai, "color": col("ink")},
+            # 一八二四: four characters.
+            "pageNumber": {"fontFamily": f.serif, "fontSize": pt(10), "color": col("ink"), "width": {"value": 4.5, "unit": "em"}},
+            "leader": {"enabled": True, "char": "·", "gap": mm(1.5)},
+            "parts": {
+                "enabled": True,
+                "height": pt(g.pitch_pt * 2),
+                "marginTop": pt(0),
+                "design": {"elements": [ftext("toc-part", "{number}　{titleText}", x=2 * g.em, y=0, length=g.col_len - 2 * g.em, across=2 * g.pitch, size_pt=10, family=f.sans, weight=500, color="vermilion", letterSpacing=pt(1))]},
+            },
+        },
+        "index": {
+            "fontFamily": f.serif,
+            "fontSize": pt(10),
+            "lineHeight": lead,
+            "separator": "　",
+            "locatorSeparator": "，",
+            "groups": {"fontFamily": f.sans, "fontWeight": 500, "color": col("vermilion"), "marginTop": lead},
+        },
+        "header": v_fore_edge("{chapterNumber}　{chapterTitle}", ed.BOOK[lang]["title"], f),
+        "footer": {"elements": []},
+        "captionStyle": {"fontFamily": f.kai, "fontSize": pt(9.5), "color": col("ink"), "align": "center", "labelBold": False, "labelNumberGap": "", "labelSeparator": "　"},
+        "colorPalette": palette(lang),
+        "resourceTypes": zh_resource_types(lang, f) + [ORNAMENT_TYPE[lang]],
+        "pdfGeneration": {"outlines": True},
+    }
+
+
+def ornament_type(name: str) -> dict:
+    return {"id": "ornament", "name": name, "namePlural": name, "shortLabel": name, "captionPrefix": "", "numberingTemplate": "", "resetOn": "never", "counterFormat": "decimal"}
+
+
+# The 魚尾 of the fore-edge heads is a resource of every edition (resources are
+# shared), so each has the type.
+ORNAMENT_TYPE = {"zh-Hant": ornament_type("紋飾"), "zh-Hans": ornament_type("纹饰"), "en": ornament_type("Ornament")}
+ORNAMENT_CAPTION = {"zh-Hant": "魚尾", "zh-Hans": "鱼尾", "en": "Fish-tail ornament"}
+# A single 魚尾 (fish tail) as on the centre strip of a woodblock leaf: a
+# band whose lower edge is cut in a curved V.
+ORNAMENT_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 64" width="100" height="64"><path d="M0 0H100V64Q66 48 50 26Q34 48 0 64Z" fill="#b23a2e"/></svg>
+"""
 
 
 # --- the English design ------------------------------------------------------------------------
@@ -628,6 +1073,7 @@ def en_config() -> dict:
         "locale": "en",
         "page": g.page(),
         "layout": {"layoutType": "single"},
+        "cjk": {},
         "bodyText": {
             "fontFamily": SERIF_EN,
             "fontSize": pt(g.body_pt),
@@ -720,6 +1166,7 @@ def en_config() -> dict:
             {"id": "figure", "name": "Figure", "namePlural": "Figures", "shortLabel": "Fig.", "captionPrefix": "Figure", "numberingTemplate": "{n}", "resetOn": "never", "counterFormat": "decimal"},
             {"id": "portrait", "name": "Portrait", "namePlural": "Portraits", "shortLabel": "Portrait", "captionPrefix": "", "numberingTemplate": "", "resetOn": "never", "counterFormat": "decimal", "defaultPlacement": {"position": "here", "span": "column", "width": 0.84, "align": "center"}, "captionStyle": {"fontSize": pt(9), "align": "center", "gap": mm(1.2)}},
             {"id": "plate", "name": "Chapter plate", "namePlural": "Chapter plates", "shortLabel": "Plate", "captionPrefix": "", "numberingTemplate": "", "resetOn": "never", "counterFormat": "decimal", "defaultPlacement": {"position": "here", "span": "column", "width": 1, "align": "center"}},
+            ORNAMENT_TYPE["en"],
         ],
         "pdfGeneration": {"outlines": True},
     }
@@ -786,7 +1233,8 @@ def chapter_body(lang: str, c: dict, marks: dict[int, list]) -> str:
         flush()
         head = POEM_HEAD.match(p["text"]) if p["kind"] == "prose" and i not in marks else None
         if p["kind"] == "song-title":
-            out.append(block("song", [f"【{t}】"]))
+            # A heading, so it keeps with its song at a column's end.
+            out.append(f'## 【{md_escape(t)}】 {{style="song"}}\n')
         elif head:
             title, by = head.group(1), head.group(2)
             out.append(f'## {md_escape(title)}\u3000{md_escape(by)} {{style="poem" title="{attr(title)}" by="{attr(by)}"}}\n')
@@ -904,12 +1352,25 @@ def emit(out: str, lang: str, specs: list[dict], name: str, title: str, md: str)
     specs.append({"title": title, "file": rel})
 
 
+# The folios of the front matter and of the chapters: the vertical edition
+# numbers its pages in Chinese numerals (一, 二 … in the front matter, 一〇三
+# from 第一回 on), the horizontal ones in roman and Arabic numerals.
+FOLIO_FORMATS = {
+    "zh-Hant": ("trad-chinese-informal", "cjk-decimal"),
+    "zh-Hans": ("lower-roman", "decimal"),
+    "en": ("lower-roman", "decimal"),
+}
+
+
 def front_matter(lang: str) -> str:
     """The head of an edition's first file: the book's metadata, then the
-    front matter's lower-roman folios (the chapters switch to Arabic at 第一回
-    / chapter I)."""
+    front matter's folios (the chapters switch at 第一回 / chapter I)."""
     meta = "".join(f"{k}: {json.dumps(v, ensure_ascii=False)}\n" for k, v in ed.BOOK[lang]["metadata"].items())
-    return f"---\n{meta}---\n\n" + ':::numbering{format="lower-roman" startAt=1}\n\n'
+    return f"---\n{meta}---\n\n" + f':::numbering{{format="{FOLIO_FORMATS[lang][0]}" startAt=1}}\n\n'
+
+
+def body_numbering(lang: str) -> str:
+    return f':::numbering{{format="{FOLIO_FORMATS[lang][1]}" startAt=1}}\n\n'
 
 
 def para_block(style: str, paragraphs: list[str]) -> str:
@@ -935,14 +1396,27 @@ def write_zh(out: str, lang: str, data: dict, front: dict, pictures: dict, marks
     emit(out, lang, specs, "000g-contents", b["contents"], f'# {b["contents"]} {{style="contents"}}\n\n:::toc\n')
 
     plates = {p["chapter"]: p for p in pictures["plates"]}
+    vertical = lang == "zh-Hant"
     for c in chapters:
         n = c["n"]
-        head = ':::numbering{format="decimal" startAt=1}\n\n' if n == 1 else ""
+        head = ""
         if n % 10 == 1:
             number, span = b["part"]
             head += f':::part{{number="{number.format(n=cn(n // 10 + 1))}" title="{span.format(a=cn(n), b=cn(n + 9))}"}}\n:::\n\n'
         first, second = c["title_couplet"][0], c["title_couplet"][1]
-        heading = f'# {md_escape(first)} \\\\ {md_escape(second)} {{plate="{plates[n]["id"]}"}}\n'
+        plate = plates[n]
+        if vertical:
+            # The plate on the verso before the opener (前圖後文), a heading
+            # of the `plate` style named by the line it illustrates; the
+            # folios start again on the opener, the recto after it.
+            head += f'# {md_escape(plate["caption"][lang])} {{style="plate" plate="{plate["id"]}"}}\n\n'
+            if n == 1:
+                head += ":::pagebreak\n\n" + body_numbering(lang)
+            heading = f'# {md_escape(first)} \\\\ {md_escape(second)}\n'
+        else:
+            if n == 1:
+                head = body_numbering(lang) + head
+            heading = f'# {md_escape(first)} \\\\ {md_escape(second)} {{plate="{plate["id"]}"}}\n'
         body = chapter_body(lang, c, {i: m for (cn_, i), m in marks.items() if cn_ == n})
         emit(out, lang, specs, f"{n:03d}-hui", f"第{cn(n)}回　{first}　{second}", head + heading + "\n" + body)
 
@@ -976,7 +1450,7 @@ def write_en(out: str, data: dict, pictures: dict, marks: dict) -> list[dict]:
     parts = {first: (number, title) for number, title, first, _ in b["parts"]}
     for c in chapters:
         n = c["n"]
-        head = ':::numbering{format="decimal" startAt=1}\n\n' if n == 1 else ""
+        head = body_numbering(lang) if n == 1 else ""
         if n in parts:
             number, title = parts[n]
             head += f':::part{{number="{number}" title="{title}"}}\n:::\n\n'
@@ -1018,6 +1492,13 @@ def resources(out: str, pictures: dict) -> tuple[list[dict], dict[str, list[dict
                 if not cap:
                     continue  # no English after chapter 56: the Chinese wording stands
                 wording[lang].append({"id": p["id"], "caption": cap, "altText": alt(lang, cap)})
+    # The fore-edge ornament of the vertical edition (decorative: no alt text).
+    rel = f"resources/{ORNAMENT_ID}.svg"
+    with open(os.path.join(out, rel), "w", encoding="utf-8") as f:
+        f.write(ORNAMENT_SVG)
+    shared.append({"id": ORNAMENT_ID, "typeId": "ornament", "kind": "svg", "file": rel, "width": 100, "height": 64, "caption": ORNAMENT_CAPTION["zh-Hant"]})
+    for lang in LANGS:
+        wording[lang].append({"id": ORNAMENT_ID, "caption": ORNAMENT_CAPTION[lang]})
     return shared, wording
 
 
@@ -1081,7 +1562,11 @@ def build_fonts(out: str, configs: dict[str, dict]) -> list[dict]:
 
 def localized_config(base: dict, config: dict) -> dict:
     """The top-level keys an edition changes (each replaces the base key
-    wholesale when the edition is opened)."""
+    wholesale when the edition is opened). An edition must restate every
+    key of the base: one it left out would keep the base's value."""
+    missing = [k for k in base if k not in config]
+    if missing:
+        raise SystemExit(f"an edition's config leaves out {missing}: it would keep the vertical edition's")
     return {k: v for k, v in config.items() if base.get(k) != v}
 
 
@@ -1203,7 +1688,7 @@ def main() -> None:
         shutil.rmtree(os.path.join(out, sub), ignore_errors=True)
     for lang in LANGS:
         os.makedirs(os.path.join(out, "chapters", lang), exist_ok=True)
-    configs = {"zh-Hant": zh_hant_placeholder_config(), "zh-Hans": zh_config("zh-Hans"), "en": en_config()}
+    configs = {"zh-Hant": zh_hant_config(), "zh-Hans": zh_config("zh-Hans"), "en": en_config()}
     marks = first_appearances(data)
     chapters = {
         "zh-Hant": write_zh(out, "zh-Hant", data, front, pictures, marks["zh-Hant"]),
@@ -1219,7 +1704,8 @@ def main() -> None:
     if out == OUT:
         # The shelf opens the zh-Hant edition, a right-bound book: its cover
         # carries the stitching on the right, and so does the shelf's spine.
-        _common.register(PRESET_ID, {**meta, "binding": "right"})
+        # It stands last on the shelf, the eighth book (`shelfOrder`).
+        _common.register(PRESET_ID, {**meta, "binding": "right", "shelfOrder": 1})
     print(f"wrote {out} ({_common.bundle_size(out):.1f} MB)")
 
 

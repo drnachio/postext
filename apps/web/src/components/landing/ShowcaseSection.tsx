@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Kicker } from "@/components/brand/Kicker";
 import presetIndex from "../../../public/presets/index.json";
 import { GuideCover } from "./GuideCover";
+import { shelfOrder } from "@/lib/shelf";
 
 interface PresetEntry {
   id: string;
@@ -19,6 +20,10 @@ interface PresetEntry {
   /** The binding edge of the book the shelf opens: a right-bound book
    *  (Chinese or Japanese set vertically) shows its spine on the right. */
   binding?: "left" | "right";
+  /** Where the book stands on the shelf: the books without one keep the
+   *  index order (by id) and come first, the others follow by this number
+   *  (紅樓夢, the eighth book, stands last). */
+  shelfOrder?: number;
 }
 
 /** The bundle's content hash (`fingerprint.json`, rewritten by every build),
@@ -72,7 +77,7 @@ export async function ShowcaseSection() {
   const t = await getTranslations("Showcase");
   const hero = await getTranslations("Hero");
   const locale = await getLocale();
-  const presets = (presetIndex as { presets: PresetEntry[] }).presets;
+  const presets = shelfOrder((presetIndex as { presets: PresetEntry[] }).presets);
   const lang = locale.startsWith("es") ? "es" : "en";
 
   return (

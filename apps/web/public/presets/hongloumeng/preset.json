@@ -1319,39 +1319,47 @@
   "page": {
    "sizePreset": "custom",
    "width": {
-    "value": 140,
+    "value": 148,
     "unit": "mm"
    },
    "height": {
-    "value": 203,
+    "value": 210,
     "unit": "mm"
    },
    "margins": {
     "top": {
-     "value": 20,
+     "value": 38.45,
      "unit": "mm"
     },
     "bottom": {
-     "value": 24.95,
+     "value": 30.692,
      "unit": "mm"
     },
     "left": {
-     "value": 16,
+     "value": 18.95,
      "unit": "mm"
     },
     "right": {
-     "value": 20.28,
+     "value": 31.054,
      "unit": "mm"
     },
     "mirror": true
    },
    "pageNumbering": {
-    "format": "decimal",
+    "format": "cjk-decimal",
     "startAt": 1
    }
   },
   "layout": {
-   "layoutType": "single"
+   "layoutType": "single",
+   "writingMode": "vertical-rl"
+  },
+  "cjk": {
+   "grid": {
+    "enabled": true,
+    "charsPerLine": 38,
+    "linesPerPage": 15
+   }
   },
   "bodyText": {
    "fontFamily": "Noto Serif TC",
@@ -1360,7 +1368,7 @@
     "unit": "pt"
    },
    "lineHeight": {
-    "value": 16,
+    "value": 18.5,
     "unit": "pt"
    },
    "textAlign": "justify",
@@ -1406,30 +1414,33 @@
       "unit": "pt"
      },
      "lineHeight": {
-      "value": 20,
+      "value": 18.5,
       "unit": "pt"
      },
      "span": "page",
      "breakBefore": {
       "enabled": true,
-      "parity": "any"
+      "parity": "odd"
      },
      "marginBottom": {
-      "value": 8.0,
+      "value": 0,
       "unit": "pt"
      },
      "advancedDesign": {
       "enabled": true,
+      "minHeight": {
+       "value": 32.632,
+       "unit": "mm"
+      },
       "slot": {
        "elements": [
         {
-         "kind": "image",
-         "id": "plate",
-         "resourceId": "{attr.plate}",
+         "kind": "box",
+         "id": "hui-frame",
          "placement": {
           "anchor": {
            "to": "container",
-           "edge": "top"
+           "edge": "top-left"
           },
           "offset": {
            "x": {
@@ -1442,128 +1453,99 @@
            }
           },
           "size": {
-           "width": "auto",
+           "width": {
+            "value": 140.758,
+            "unit": "mm"
+           },
            "height": {
-            "value": 86.0,
+            "value": 26.106,
             "unit": "mm"
            }
+          }
+         },
+         "style": {
+          "borderColor": {
+           "hex": "#b23a2e",
+           "model": "hex",
+           "paletteId": "vermilion"
+          },
+          "borderWidth": {
+           "value": 0.9,
+           "unit": "pt"
+          },
+          "borderRadius": {
+           "value": 0,
+           "unit": "mm"
           }
          }
         },
         {
-         "kind": "text",
-         "id": "hui",
+         "kind": "box",
+         "id": "hui-frame-in",
          "placement": {
           "anchor": {
            "to": "container",
-           "edge": "top"
+           "edge": "top-left"
           },
           "offset": {
            "x": {
-            "value": 0,
+            "value": 0.7,
             "unit": "mm"
            },
            "y": {
-            "value": 92.5,
+            "value": 0.7,
             "unit": "mm"
            }
           },
           "size": {
            "width": {
-            "value": 103.72,
+            "value": 139.358,
             "unit": "mm"
            },
-           "height": "auto"
-          }
-         },
-         "content": "{number}",
-         "fontFamily": "Noto Serif TC",
-         "fontSize": {
-          "value": 14,
-          "unit": "pt"
-         },
-         "fontWeight": 700,
-         "italic": false,
-         "align": "center",
-         "verticalAlign": "middle",
-         "lineHeight": 1.2,
-         "overflow": "clip",
-         "color": {
-          "hex": "#1f1b16",
-          "model": "hex",
-          "paletteId": "ink"
-         },
-         "letterSpacing": {
-          "value": 1.5,
-          "unit": "pt"
-         }
-        },
-        {
-         "kind": "text",
-         "id": "couplet",
-         "placement": {
-          "anchor": {
-           "to": "container",
-           "edge": "top"
-          },
-          "offset": {
-           "x": {
-            "value": 0,
-            "unit": "mm"
-           },
-           "y": {
-            "value": 101.0,
+           "height": {
+            "value": 24.706,
             "unit": "mm"
            }
-          },
-          "size": {
-           "width": {
-            "value": 103.72,
-            "unit": "mm"
-           },
-           "height": "auto"
           }
          },
-         "content": "{titleText}",
-         "fontFamily": "LXGW WenKai TC",
-         "fontSize": {
-          "value": 12.5,
-          "unit": "pt"
-         },
-         "fontWeight": 400,
-         "italic": false,
-         "align": "center",
-         "verticalAlign": "middle",
-         "lineHeight": 1.6,
-         "overflow": "wrap",
-         "color": {
-          "hex": "#1f1b16",
-          "model": "hex",
-          "paletteId": "ink"
+         "style": {
+          "borderColor": {
+           "hex": "#b23a2e",
+           "model": "hex",
+           "paletteId": "vermilion"
+          },
+          "borderWidth": {
+           "value": 0.3,
+           "unit": "pt"
+          },
+          "borderRadius": {
+           "value": 0,
+           "unit": "mm"
+          }
          }
         },
         {
          "kind": "rule",
-         "id": "couplet-rule",
+         "id": "hui-rule-1",
          "direction": "horizontal",
          "placement": {
           "anchor": {
-           "to": "#couplet",
-           "edge": "below"
+           "to": "container",
+           "edge": "top-left"
           },
           "offset": {
            "x": {
-            "value": 45.86,
+            "value": 0.7,
             "unit": "mm"
            },
            "y": {
-            "value": 3.5,
+            "value": 9.79,
             "unit": "mm"
            }
           },
           "size": {
            "width": {
-            "value": 12,
+            "value": 139.358,
             "unit": "mm"
            }
           }
@@ -1574,7 +1556,145 @@
           "paletteId": "vermilion"
          },
          "thickness": {
-          "value": 0.6,
+          "value": 0.3,
+          "unit": "pt"
+         }
+        },
+        {
+         "kind": "rule",
+         "id": "hui-rule-2",
+         "direction": "horizontal",
+         "placement": {
+          "anchor": {
+           "to": "container",
+           "edge": "top-left"
+          },
+          "offset": {
+           "x": {
+            "value": 0.7,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 17.948,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 139.358,
+            "unit": "mm"
+           }
+          }
+         },
+         "color": {
+          "hex": "#b23a2e",
+          "model": "hex",
+          "paletteId": "vermilion"
+         },
+         "thickness": {
+          "value": 0.3,
+          "unit": "pt"
+         }
+        },
+        {
+         "kind": "text",
+         "id": "hui",
+         "placement": {
+          "anchor": {
+           "to": "container",
+           "edge": "top-left"
+          },
+          "offset": {
+           "x": {
+            "value": 7.408,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 0,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 133.35,
+            "unit": "mm"
+           },
+           "height": {
+            "value": 9.79,
+            "unit": "mm"
+           }
+          }
+         },
+         "content": "{number}",
+         "fontFamily": "Noto Serif TC",
+         "fontSize": {
+          "value": 14,
+          "unit": "pt"
+         },
+         "fontWeight": 700,
+         "italic": false,
+         "align": "left",
+         "verticalAlign": "middle",
+         "lineHeight": 1.2,
+         "overflow": "clip",
+         "color": {
+          "hex": "#1f1b16",
+          "model": "hex",
+          "paletteId": "ink"
+         },
+         "letterSpacing": {
+          "value": 2,
+          "unit": "pt"
+         }
+        },
+        {
+         "kind": "text",
+         "id": "couplet",
+         "placement": {
+          "anchor": {
+           "to": "container",
+           "edge": "top-left"
+          },
+          "offset": {
+           "x": {
+            "value": 14.817,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 9.79,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 125.942,
+            "unit": "mm"
+           },
+           "height": {
+            "value": 16.316,
+            "unit": "mm"
+           }
+          }
+         },
+         "content": "{titleText}",
+         "fontFamily": "LXGW WenKai TC",
+         "fontSize": {
+          "value": 12.5,
+          "unit": "pt"
+         },
+         "fontWeight": 400,
+         "italic": false,
+         "align": "left",
+         "verticalAlign": "middle",
+         "lineHeight": 1.85,
+         "overflow": "clip",
+         "color": {
+          "hex": "#1f1b16",
+          "model": "hex",
+          "paletteId": "ink"
+         },
+         "letterSpacing": {
+          "value": 1,
           "unit": "pt"
          }
         }
@@ -1598,7 +1718,7 @@
     "advancedDesign": {
      "enabled": true,
      "minHeight": {
-      "value": 203,
+      "value": 97.896,
       "unit": "mm"
      },
      "slot": {
@@ -1641,7 +1761,7 @@
        {
         "kind": "rule",
         "id": "stitch-line",
-        "direction": "vertical",
+        "direction": "horizontal",
         "placement": {
          "anchor": {
           "to": "page",
@@ -1649,17 +1769,17 @@
          },
          "offset": {
           "x": {
-           "value": 131.0,
+           "value": 21.0,
            "unit": "mm"
           },
           "y": {
-           "value": 20.3,
+           "value": 9.0,
            "unit": "mm"
           }
          },
          "size": {
-          "height": {
-           "value": 162.4,
+          "width": {
+           "value": 168.0,
            "unit": "mm"
           }
          }
@@ -1677,7 +1797,7 @@
        {
         "kind": "rule",
         "id": "stitch-0",
-        "direction": "horizontal",
+        "direction": "vertical",
         "placement": {
          "anchor": {
           "to": "page",
@@ -1685,16 +1805,16 @@
          },
          "offset": {
           "x": {
-           "value": 131.0,
+           "value": 21.0,
            "unit": "mm"
           },
           "y": {
-           "value": 20.3,
+           "value": -1,
            "unit": "mm"
           }
          },
          "size": {
-          "width": {
+          "height": {
            "value": 10.0,
            "unit": "mm"
           }
@@ -1713,7 +1833,7 @@
        {
         "kind": "rule",
         "id": "stitch-1",
-        "direction": "horizontal",
+        "direction": "vertical",
         "placement": {
          "anchor": {
           "to": "page",
@@ -1721,16 +1841,16 @@
          },
          "offset": {
           "x": {
-           "value": 131.0,
+           "value": 75.6,
            "unit": "mm"
           },
           "y": {
-           "value": 73.08,
+           "value": -1,
            "unit": "mm"
           }
          },
          "size": {
-          "width": {
+          "height": {
            "value": 10.0,
            "unit": "mm"
           }
@@ -1749,7 +1869,7 @@
        {
         "kind": "rule",
         "id": "stitch-2",
-        "direction": "horizontal",
+        "direction": "vertical",
         "placement": {
          "anchor": {
           "to": "page",
@@ -1757,16 +1877,16 @@
          },
          "offset": {
           "x": {
-           "value": 131.0,
+           "value": 134.4,
            "unit": "mm"
           },
           "y": {
-           "value": 129.92,
+           "value": -1,
            "unit": "mm"
           }
          },
          "size": {
-          "width": {
+          "height": {
            "value": 10.0,
            "unit": "mm"
           }
@@ -1785,7 +1905,7 @@
        {
         "kind": "rule",
         "id": "stitch-3",
-        "direction": "horizontal",
+        "direction": "vertical",
         "placement": {
          "anchor": {
           "to": "page",
@@ -1793,16 +1913,16 @@
          },
          "offset": {
           "x": {
-           "value": 131.0,
+           "value": 189.0,
            "unit": "mm"
           },
           "y": {
-           "value": 182.7,
+           "value": -1,
            "unit": "mm"
           }
          },
          "size": {
-          "width": {
+          "height": {
            "value": 10.0,
            "unit": "mm"
           }
@@ -1828,21 +1948,21 @@
          },
          "offset": {
           "x": {
-           "value": 11.0,
+           "value": 14.0,
            "unit": "mm"
           },
           "y": {
-           "value": 14.0,
+           "value": 114.0,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 23.0,
+           "value": 92.0,
            "unit": "mm"
           },
           "height": {
-           "value": 92.0,
+           "value": 23.0,
            "unit": "mm"
           }
          }
@@ -1888,11 +2008,11 @@
          },
          "size": {
           "width": {
-           "value": 20.2,
+           "value": 89.2,
            "unit": "mm"
           },
           "height": {
-           "value": 89.2,
+           "value": 20.2,
            "unit": "mm"
           }
          }
@@ -1923,23 +2043,26 @@
          },
          "offset": {
           "x": {
-           "value": 0,
+           "value": 8,
            "unit": "mm"
           },
           "y": {
-           "value": 9,
+           "value": 0,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 23.0,
+           "value": 66.0,
            "unit": "mm"
           },
-          "height": "auto"
+          "height": {
+           "value": 23.0,
+           "unit": "mm"
+          }
          }
         },
-        "content": "紅\n樓\n夢",
+        "content": "紅樓夢",
         "fontFamily": "LXGW WenKai TC",
         "fontSize": {
          "value": 30,
@@ -1947,14 +2070,18 @@
         },
         "fontWeight": 400,
         "italic": false,
-        "align": "center",
+        "align": "left",
         "verticalAlign": "middle",
-        "lineHeight": 1.22,
-        "overflow": "wrap",
+        "lineHeight": 1.2,
+        "overflow": "clip",
         "color": {
          "hex": "#1f1b16",
          "model": "hex",
          "paletteId": "ink"
+        },
+        "letterSpacing": {
+         "value": 16,
+         "unit": "pt"
         }
        },
        {
@@ -1967,23 +2094,26 @@
          },
          "offset": {
           "x": {
-           "value": 8.3,
+           "value": 70.0,
            "unit": "mm"
           },
           "y": {
-           "value": 62.0,
+           "value": 15.5,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 6.4,
+           "value": 18,
            "unit": "mm"
           },
-          "height": "auto"
+          "height": {
+           "value": 5,
+           "unit": "mm"
+          }
          }
         },
-        "content": "程\n乙\n本",
+        "content": "程乙本",
         "fontFamily": "LXGW WenKai TC",
         "fontSize": {
          "value": 9,
@@ -1991,14 +2121,18 @@
         },
         "fontWeight": 400,
         "italic": false,
-        "align": "center",
+        "align": "left",
         "verticalAlign": "middle",
-        "lineHeight": 1.25,
-        "overflow": "wrap",
+        "lineHeight": 1.2,
+        "overflow": "clip",
         "color": {
          "hex": "#1f1b16",
          "model": "hex",
          "paletteId": "ink"
+        },
+        "letterSpacing": {
+         "value": 1,
+         "unit": "pt"
         }
        }
       ]
@@ -2024,14 +2158,14 @@
     "advancedDesign": {
      "enabled": true,
      "minHeight": {
-      "value": 158.05,
+      "value": 97.896,
       "unit": "mm"
      },
      "slot": {
       "elements": [
        {
-        "kind": "text",
-        "id": "tp-title",
+        "kind": "box",
+        "id": "tp-frame",
         "placement": {
          "anchor": {
           "to": "page",
@@ -2039,66 +2173,108 @@
          },
          "offset": {
           "x": {
-           "value": 16,
+           "value": 48.5,
            "unit": "mm"
           },
           "y": {
-           "value": 54,
+           "value": 48.369,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 103.72,
+           "value": 120.758,
            "unit": "mm"
           },
-          "height": "auto"
+          "height": {
+           "value": 39.158,
+           "unit": "mm"
+          }
          }
         },
-        "content": "紅樓夢",
-        "fontFamily": "LXGW WenKai TC",
-        "fontSize": {
-         "value": 34,
-         "unit": "pt"
+        "style": {
+         "borderColor": {
+          "hex": "#b23a2e",
+          "model": "hex",
+          "paletteId": "vermilion"
+         },
+         "borderWidth": {
+          "value": 1.1,
+          "unit": "pt"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "box",
+        "id": "tp-frame-in",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 49.5,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 49.369,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 118.758,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 37.158,
+           "unit": "mm"
+          }
+         }
         },
-        "fontWeight": 400,
-        "italic": false,
-        "align": "center",
-        "verticalAlign": "middle",
-        "lineHeight": 1.2,
-        "overflow": "wrap",
-        "color": {
-         "hex": "#1f1b16",
-         "model": "hex",
-         "paletteId": "ink"
-        },
-        "letterSpacing": {
-         "value": 8,
-         "unit": "pt"
+        "style": {
+         "borderColor": {
+          "hex": "#b23a2e",
+          "model": "hex",
+          "paletteId": "vermilion"
+         },
+         "borderWidth": {
+          "value": 0.35,
+          "unit": "pt"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
         }
        },
        {
         "kind": "rule",
-        "id": "tp-rule",
+        "id": "tp-rule-1",
         "direction": "horizontal",
         "placement": {
          "anchor": {
-          "to": "#tp-title",
-          "edge": "below"
+          "to": "page",
+          "edge": "top-left"
          },
          "offset": {
           "x": {
-           "value": 43.86,
+           "value": 49.5,
            "unit": "mm"
           },
           "y": {
-           "value": 8,
+           "value": 58.158,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 16,
+           "value": 118.758,
            "unit": "mm"
           }
          }
@@ -2109,7 +2285,43 @@
          "paletteId": "vermilion"
         },
         "thickness": {
-         "value": 0.8,
+         "value": 0.35,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "rule",
+        "id": "tp-rule-2",
+        "direction": "horizontal",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 49.5,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 77.738,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 118.758,
+           "unit": "mm"
+          }
+         }
+        },
+        "color": {
+         "hex": "#b23a2e",
+         "model": "hex",
+         "paletteId": "vermilion"
+        },
+        "thickness": {
+         "value": 0.35,
          "unit": "pt"
         }
        },
@@ -2118,25 +2330,28 @@
         "id": "tp-author",
         "placement": {
          "anchor": {
-          "to": "#tp-rule",
-          "edge": "below"
+          "to": "page",
+          "edge": "top-left"
          },
          "offset": {
           "x": {
-           "value": -43.86,
+           "value": 56.5,
            "unit": "mm"
           },
           "y": {
-           "value": 9,
+           "value": 48.369,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 103.72,
+           "value": 104.758,
            "unit": "mm"
           },
-          "height": "auto"
+          "height": {
+           "value": 9.79,
+           "unit": "mm"
+          }
          }
         },
         "content": "曹雪芹　著",
@@ -2147,14 +2362,69 @@
         },
         "fontWeight": 400,
         "italic": false,
-        "align": "center",
+        "align": "left",
         "verticalAlign": "middle",
         "lineHeight": 1.2,
-        "overflow": "wrap",
+        "overflow": "clip",
         "color": {
          "hex": "#1f1b16",
          "model": "hex",
          "paletteId": "ink"
+        },
+        "letterSpacing": {
+         "value": 2,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "tp-title",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 48.5,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 58.158,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 120.758,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 19.579,
+           "unit": "mm"
+          }
+         }
+        },
+        "content": "紅樓夢",
+        "fontFamily": "LXGW WenKai TC",
+        "fontSize": {
+         "value": 40,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "clip",
+        "color": {
+         "hex": "#1f1b16",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "letterSpacing": {
+         "value": 16,
+         "unit": "pt"
         }
        },
        {
@@ -2162,25 +2432,28 @@
         "id": "tp-editors",
         "placement": {
          "anchor": {
-          "to": "#tp-author",
-          "edge": "below"
+          "to": "page",
+          "edge": "top-left"
          },
          "offset": {
           "x": {
-           "value": 0,
+           "value": 56.5,
            "unit": "mm"
           },
           "y": {
-           "value": 3,
+           "value": 77.738,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 103.72,
+           "value": 104.758,
            "unit": "mm"
           },
-          "height": "auto"
+          "height": {
+           "value": 9.79,
+           "unit": "mm"
+          }
          }
         },
         "content": "程偉元　高鶚　整理",
@@ -2191,14 +2464,18 @@
         },
         "fontWeight": 400,
         "italic": false,
-        "align": "center",
+        "align": "right",
         "verticalAlign": "middle",
         "lineHeight": 1.2,
-        "overflow": "wrap",
+        "overflow": "clip",
         "color": {
          "hex": "#1f1b16",
          "model": "hex",
          "paletteId": "ink"
+        },
+        "letterSpacing": {
+         "value": 1,
+         "unit": "pt"
         }
        },
        {
@@ -2211,20 +2488,23 @@
          },
          "offset": {
           "x": {
-           "value": 16,
+           "value": 38.5,
            "unit": "mm"
           },
           "y": {
-           "value": 170.05,
+           "value": 110.369,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 103.72,
+           "value": 140.758,
            "unit": "mm"
           },
-          "height": "auto"
+          "height": {
+           "value": 6.526,
+           "unit": "mm"
+          }
          }
         },
         "content": "Postext",
@@ -2238,7 +2518,7 @@
         "align": "center",
         "verticalAlign": "middle",
         "lineHeight": 1.2,
-        "overflow": "wrap",
+        "overflow": "clip",
         "color": {
          "hex": "#6b6259",
          "model": "hex",
@@ -2259,8 +2539,8 @@
      "elements": []
     },
     "margins": {
-     "top": {
-      "value": 131,
+     "right": {
+      "value": 89.842,
       "unit": "mm"
      }
     },
@@ -2271,7 +2551,7 @@
       "unit": "pt"
      },
      "lineHeight": {
-      "value": 13,
+      "value": 15,
       "unit": "pt"
      },
      "textAlign": "left"
@@ -2289,7 +2569,7 @@
     "advancedDesign": {
      "enabled": true,
      "minHeight": {
-      "value": 22.578,
+      "value": 19.579,
       "unit": "mm"
      },
      "slot": {
@@ -2300,24 +2580,27 @@
         "placement": {
          "anchor": {
           "to": "container",
-          "edge": "top"
+          "edge": "top-left"
          },
          "offset": {
           "x": {
-           "value": 0,
+           "value": 11.113,
            "unit": "mm"
           },
           "y": {
-           "value": 5.644,
+           "value": 0,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 103.72,
+           "value": 129.646,
            "unit": "mm"
           },
-          "height": "auto"
+          "height": {
+           "value": 13.053,
+           "unit": "mm"
+          }
          }
         },
         "content": "{titleText}",
@@ -2328,17 +2611,17 @@
         },
         "fontWeight": 400,
         "italic": false,
-        "align": "center",
+        "align": "left",
         "verticalAlign": "middle",
         "lineHeight": 1.2,
-        "overflow": "wrap",
+        "overflow": "clip",
         "color": {
          "hex": "#1f1b16",
          "model": "hex",
          "paletteId": "ink"
         },
         "letterSpacing": {
-         "value": 2,
+         "value": 3,
          "unit": "pt"
         }
        },
@@ -2348,22 +2631,22 @@
         "direction": "horizontal",
         "placement": {
          "anchor": {
-          "to": "#front-title",
-          "edge": "below"
+          "to": "container",
+          "edge": "top-left"
          },
          "offset": {
           "x": {
-           "value": 45.86,
+           "value": 11.113,
            "unit": "mm"
           },
           "y": {
-           "value": 4,
+           "value": 13.053,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 12,
+           "value": 118.533,
            "unit": "mm"
           }
          }
@@ -2384,124 +2667,71 @@
     "header": {
      "elements": [
       {
-       "kind": "text",
-       "id": "head-even",
+       "kind": "image",
+       "id": "yuwei-odd",
+       "resourceId": "ornament-yuwei",
+       "decorative": true,
+       "parity": "odd",
+       "pages": "body",
        "placement": {
         "anchor": {
-         "to": "page",
-         "edge": "top-left"
+         "to": "outer",
+         "edge": "top-right"
         },
         "offset": {
          "x": {
-          "value": 20.28,
+          "value": -5.2,
           "unit": "mm"
          },
          "y": {
-          "value": 9.5,
+          "value": 8.501,
           "unit": "mm"
          }
         },
         "size": {
          "width": {
-          "value": 103.72,
+          "value": 3.363,
           "unit": "mm"
          },
          "height": "auto"
         }
-       },
-       "content": "紅樓夢",
-       "fontFamily": "LXGW WenKai TC",
-       "fontSize": {
-        "value": 8.5,
-        "unit": "pt"
-       },
-       "fontWeight": 400,
-       "italic": false,
-       "align": "center",
-       "verticalAlign": "middle",
-       "lineHeight": 1.2,
-       "overflow": "ellipsis-end",
-       "color": {
-        "hex": "#1f1b16",
-        "model": "hex",
-        "paletteId": "ink"
-       },
-       "parity": "even",
-       "pages": "body"
-      },
-      {
-       "kind": "rule",
-       "id": "head-rule-even",
-       "direction": "horizontal",
-       "placement": {
-        "anchor": {
-         "to": "page",
-         "edge": "top-left"
-        },
-        "offset": {
-         "x": {
-          "value": 20.28,
-          "unit": "mm"
-         },
-         "y": {
-          "value": 15.5,
-          "unit": "mm"
-         }
-        },
-        "size": {
-         "width": {
-          "value": 103.72,
-          "unit": "mm"
-         }
-        }
-       },
-       "color": {
-        "hex": "#1f1b16",
-        "model": "hex",
-        "paletteId": "ink"
-       },
-       "thickness": {
-        "value": 0.35,
-        "unit": "pt"
-       },
-       "parity": "even",
-       "pages": "body"
+       }
       },
       {
        "kind": "text",
        "id": "head-odd",
        "placement": {
         "anchor": {
-         "to": "page",
-         "edge": "top-left"
+         "to": "outer",
+         "edge": "top-right"
         },
         "offset": {
          "x": {
-          "value": 16,
+          "value": -5.0,
           "unit": "mm"
          },
          "y": {
-          "value": 9.5,
-          "unit": "mm"
+          "value": 4,
+          "unit": "em"
          }
         },
         "size": {
-         "width": {
-          "value": 103.72,
+         "width": "auto",
+         "height": {
+          "value": 111.125,
           "unit": "mm"
-         },
-         "height": "auto"
+         }
         }
        },
        "content": "{chapterTitle}",
        "fontFamily": "LXGW WenKai TC",
        "fontSize": {
-        "value": 8.5,
+        "value": 8.4,
         "unit": "pt"
        },
        "fontWeight": 400,
        "italic": false,
-       "align": "center",
+       "align": "left",
        "verticalAlign": "middle",
        "lineHeight": 1.2,
        "overflow": "ellipsis-end",
@@ -2511,45 +2741,282 @@
         "paletteId": "ink"
        },
        "parity": "odd",
-       "pages": "body"
+       "pages": "body",
+       "writingMode": "vertical-rl",
+       "letterSpacing": {
+        "value": 0.6,
+        "unit": "pt"
+       }
       },
       {
-       "kind": "rule",
-       "id": "head-rule-odd",
-       "direction": "horizontal",
+       "kind": "text",
+       "id": "folio-odd-body",
        "placement": {
         "anchor": {
-         "to": "page",
-         "edge": "top-left"
+         "to": "outer",
+         "edge": "bottom-right"
         },
         "offset": {
          "x": {
-          "value": 16,
+          "value": -5.0,
           "unit": "mm"
          },
          "y": {
-          "value": 15.5,
+          "value": 0,
           "unit": "mm"
          }
         },
         "size": {
-         "width": {
-          "value": 103.72,
+         "width": "auto",
+         "height": {
+          "value": 13.335,
           "unit": "mm"
          }
         }
        },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
        "color": {
         "hex": "#1f1b16",
         "model": "hex",
         "paletteId": "ink"
        },
-       "thickness": {
-        "value": 0.35,
+       "parity": "odd",
+       "pages": "body",
+       "writingMode": "vertical-rl"
+      },
+      {
+       "kind": "text",
+       "id": "folio-odd-opener",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "bottom-right"
+        },
+        "offset": {
+         "x": {
+          "value": -5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 13.335,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
         "unit": "pt"
        },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
        "parity": "odd",
-       "pages": "body"
+       "pages": "opener",
+       "writingMode": "vertical-rl"
+      },
+      {
+       "kind": "image",
+       "id": "yuwei-even",
+       "resourceId": "ornament-yuwei",
+       "decorative": true,
+       "parity": "even",
+       "pages": "body",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.2,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 8.501,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 3.363,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       }
+      },
+      {
+       "kind": "text",
+       "id": "head-even",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 4,
+          "unit": "em"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 111.125,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "紅樓夢",
+       "fontFamily": "LXGW WenKai TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body",
+       "writingMode": "vertical-rl",
+       "letterSpacing": {
+        "value": 0.6,
+        "unit": "pt"
+       }
+      },
+      {
+       "kind": "text",
+       "id": "folio-even-body",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "bottom-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 13.335,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body",
+       "writingMode": "vertical-rl"
+      },
+      {
+       "kind": "text",
+       "id": "folio-even-opener",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "bottom-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 13.335,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "opener",
+       "writingMode": "vertical-rl"
       }
      ]
     },
@@ -2570,7 +3037,7 @@
     "advancedDesign": {
      "enabled": true,
      "minHeight": {
-      "value": 22.578,
+      "value": 19.579,
       "unit": "mm"
      },
      "slot": {
@@ -2581,24 +3048,27 @@
         "placement": {
          "anchor": {
           "to": "container",
-          "edge": "top"
+          "edge": "top-left"
          },
          "offset": {
           "x": {
-           "value": 0,
+           "value": 11.113,
            "unit": "mm"
           },
           "y": {
-           "value": 5.644,
+           "value": 0,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 103.72,
+           "value": 129.646,
            "unit": "mm"
           },
-          "height": "auto"
+          "height": {
+           "value": 13.053,
+           "unit": "mm"
+          }
          }
         },
         "content": "{titleText}",
@@ -2609,17 +3079,17 @@
         },
         "fontWeight": 400,
         "italic": false,
-        "align": "center",
+        "align": "left",
         "verticalAlign": "middle",
         "lineHeight": 1.2,
-        "overflow": "wrap",
+        "overflow": "clip",
         "color": {
          "hex": "#1f1b16",
          "model": "hex",
          "paletteId": "ink"
         },
         "letterSpacing": {
-         "value": 2,
+         "value": 3,
          "unit": "pt"
         }
        },
@@ -2629,22 +3099,22 @@
         "direction": "horizontal",
         "placement": {
          "anchor": {
-          "to": "#front-title",
-          "edge": "below"
+          "to": "container",
+          "edge": "top-left"
          },
          "offset": {
           "x": {
-           "value": 45.86,
+           "value": 11.113,
            "unit": "mm"
           },
           "y": {
-           "value": 4,
+           "value": 13.053,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 12,
+           "value": 118.533,
            "unit": "mm"
           }
          }
@@ -2665,124 +3135,71 @@
     "header": {
      "elements": [
       {
-       "kind": "text",
-       "id": "head-even",
+       "kind": "image",
+       "id": "yuwei-odd",
+       "resourceId": "ornament-yuwei",
+       "decorative": true,
+       "parity": "odd",
+       "pages": "body",
        "placement": {
         "anchor": {
-         "to": "page",
-         "edge": "top-left"
+         "to": "outer",
+         "edge": "top-right"
         },
         "offset": {
          "x": {
-          "value": 20.28,
+          "value": -5.2,
           "unit": "mm"
          },
          "y": {
-          "value": 9.5,
+          "value": 8.501,
           "unit": "mm"
          }
         },
         "size": {
          "width": {
-          "value": 103.72,
+          "value": 3.363,
           "unit": "mm"
          },
          "height": "auto"
         }
-       },
-       "content": "紅樓夢",
-       "fontFamily": "LXGW WenKai TC",
-       "fontSize": {
-        "value": 8.5,
-        "unit": "pt"
-       },
-       "fontWeight": 400,
-       "italic": false,
-       "align": "center",
-       "verticalAlign": "middle",
-       "lineHeight": 1.2,
-       "overflow": "ellipsis-end",
-       "color": {
-        "hex": "#1f1b16",
-        "model": "hex",
-        "paletteId": "ink"
-       },
-       "parity": "even",
-       "pages": "body"
-      },
-      {
-       "kind": "rule",
-       "id": "head-rule-even",
-       "direction": "horizontal",
-       "placement": {
-        "anchor": {
-         "to": "page",
-         "edge": "top-left"
-        },
-        "offset": {
-         "x": {
-          "value": 20.28,
-          "unit": "mm"
-         },
-         "y": {
-          "value": 15.5,
-          "unit": "mm"
-         }
-        },
-        "size": {
-         "width": {
-          "value": 103.72,
-          "unit": "mm"
-         }
-        }
-       },
-       "color": {
-        "hex": "#1f1b16",
-        "model": "hex",
-        "paletteId": "ink"
-       },
-       "thickness": {
-        "value": 0.35,
-        "unit": "pt"
-       },
-       "parity": "even",
-       "pages": "body"
+       }
       },
       {
        "kind": "text",
        "id": "head-odd",
        "placement": {
         "anchor": {
-         "to": "page",
-         "edge": "top-left"
+         "to": "outer",
+         "edge": "top-right"
         },
         "offset": {
          "x": {
-          "value": 16,
+          "value": -5.0,
           "unit": "mm"
          },
          "y": {
-          "value": 9.5,
-          "unit": "mm"
+          "value": 4,
+          "unit": "em"
          }
         },
         "size": {
-         "width": {
-          "value": 103.72,
+         "width": "auto",
+         "height": {
+          "value": 111.125,
           "unit": "mm"
-         },
-         "height": "auto"
+         }
         }
        },
        "content": "{chapterTitle}",
        "fontFamily": "LXGW WenKai TC",
        "fontSize": {
-        "value": 8.5,
+        "value": 8.4,
         "unit": "pt"
        },
        "fontWeight": 400,
        "italic": false,
-       "align": "center",
+       "align": "left",
        "verticalAlign": "middle",
        "lineHeight": 1.2,
        "overflow": "ellipsis-end",
@@ -2792,45 +3209,282 @@
         "paletteId": "ink"
        },
        "parity": "odd",
-       "pages": "body"
+       "pages": "body",
+       "writingMode": "vertical-rl",
+       "letterSpacing": {
+        "value": 0.6,
+        "unit": "pt"
+       }
       },
       {
-       "kind": "rule",
-       "id": "head-rule-odd",
-       "direction": "horizontal",
+       "kind": "text",
+       "id": "folio-odd-body",
        "placement": {
         "anchor": {
-         "to": "page",
-         "edge": "top-left"
+         "to": "outer",
+         "edge": "bottom-right"
         },
         "offset": {
          "x": {
-          "value": 16,
+          "value": -5.0,
           "unit": "mm"
          },
          "y": {
-          "value": 15.5,
+          "value": 0,
           "unit": "mm"
          }
         },
         "size": {
-         "width": {
-          "value": 103.72,
+         "width": "auto",
+         "height": {
+          "value": 13.335,
           "unit": "mm"
          }
         }
        },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
        "color": {
         "hex": "#1f1b16",
         "model": "hex",
         "paletteId": "ink"
        },
-       "thickness": {
-        "value": 0.35,
+       "parity": "odd",
+       "pages": "body",
+       "writingMode": "vertical-rl"
+      },
+      {
+       "kind": "text",
+       "id": "folio-odd-opener",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "bottom-right"
+        },
+        "offset": {
+         "x": {
+          "value": -5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 13.335,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
         "unit": "pt"
        },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
        "parity": "odd",
-       "pages": "body"
+       "pages": "opener",
+       "writingMode": "vertical-rl"
+      },
+      {
+       "kind": "image",
+       "id": "yuwei-even",
+       "resourceId": "ornament-yuwei",
+       "decorative": true,
+       "parity": "even",
+       "pages": "body",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.2,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 8.501,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 3.363,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       }
+      },
+      {
+       "kind": "text",
+       "id": "head-even",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 4,
+          "unit": "em"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 111.125,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "紅樓夢",
+       "fontFamily": "LXGW WenKai TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body",
+       "writingMode": "vertical-rl",
+       "letterSpacing": {
+        "value": 0.6,
+        "unit": "pt"
+       }
+      },
+      {
+       "kind": "text",
+       "id": "folio-even-body",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "bottom-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 13.335,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body",
+       "writingMode": "vertical-rl"
+      },
+      {
+       "kind": "text",
+       "id": "folio-even-opener",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "bottom-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 13.335,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "opener",
+       "writingMode": "vertical-rl"
       }
      ]
     },
@@ -2841,11 +3495,11 @@
     "bodyStyle": {
      "fontFamily": "LXGW WenKai TC",
      "fontSize": {
-      "value": 10.5,
+      "value": 13.3,
       "unit": "pt"
      },
      "lineHeight": {
-      "value": 16,
+      "value": 27.75,
       "unit": "pt"
      },
      "textAlign": "justify"
@@ -2863,7 +3517,7 @@
     "advancedDesign": {
      "enabled": true,
      "minHeight": {
-      "value": 22.578,
+      "value": 19.579,
       "unit": "mm"
      },
      "slot": {
@@ -2874,24 +3528,27 @@
         "placement": {
          "anchor": {
           "to": "container",
-          "edge": "top"
+          "edge": "top-left"
          },
          "offset": {
           "x": {
-           "value": 0,
+           "value": 11.113,
            "unit": "mm"
           },
           "y": {
-           "value": 5.644,
+           "value": 0,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 103.72,
+           "value": 129.646,
            "unit": "mm"
           },
-          "height": "auto"
+          "height": {
+           "value": 13.053,
+           "unit": "mm"
+          }
          }
         },
         "content": "{titleText}",
@@ -2902,17 +3559,17 @@
         },
         "fontWeight": 400,
         "italic": false,
-        "align": "center",
+        "align": "left",
         "verticalAlign": "middle",
         "lineHeight": 1.2,
-        "overflow": "wrap",
+        "overflow": "clip",
         "color": {
          "hex": "#1f1b16",
          "model": "hex",
          "paletteId": "ink"
         },
         "letterSpacing": {
-         "value": 2,
+         "value": 3,
          "unit": "pt"
         }
        },
@@ -2922,22 +3579,22 @@
         "direction": "horizontal",
         "placement": {
          "anchor": {
-          "to": "#front-title",
-          "edge": "below"
+          "to": "container",
+          "edge": "top-left"
          },
          "offset": {
           "x": {
-           "value": 45.86,
+           "value": 11.113,
            "unit": "mm"
           },
           "y": {
-           "value": 4,
+           "value": 13.053,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 12,
+           "value": 118.533,
            "unit": "mm"
           }
          }
@@ -2958,124 +3615,71 @@
     "header": {
      "elements": [
       {
-       "kind": "text",
-       "id": "head-even",
+       "kind": "image",
+       "id": "yuwei-odd",
+       "resourceId": "ornament-yuwei",
+       "decorative": true,
+       "parity": "odd",
+       "pages": "body",
        "placement": {
         "anchor": {
-         "to": "page",
-         "edge": "top-left"
+         "to": "outer",
+         "edge": "top-right"
         },
         "offset": {
          "x": {
-          "value": 20.28,
+          "value": -5.2,
           "unit": "mm"
          },
          "y": {
-          "value": 9.5,
+          "value": 8.501,
           "unit": "mm"
          }
         },
         "size": {
          "width": {
-          "value": 103.72,
+          "value": 3.363,
           "unit": "mm"
          },
          "height": "auto"
         }
-       },
-       "content": "紅樓夢",
-       "fontFamily": "LXGW WenKai TC",
-       "fontSize": {
-        "value": 8.5,
-        "unit": "pt"
-       },
-       "fontWeight": 400,
-       "italic": false,
-       "align": "center",
-       "verticalAlign": "middle",
-       "lineHeight": 1.2,
-       "overflow": "ellipsis-end",
-       "color": {
-        "hex": "#1f1b16",
-        "model": "hex",
-        "paletteId": "ink"
-       },
-       "parity": "even",
-       "pages": "body"
-      },
-      {
-       "kind": "rule",
-       "id": "head-rule-even",
-       "direction": "horizontal",
-       "placement": {
-        "anchor": {
-         "to": "page",
-         "edge": "top-left"
-        },
-        "offset": {
-         "x": {
-          "value": 20.28,
-          "unit": "mm"
-         },
-         "y": {
-          "value": 15.5,
-          "unit": "mm"
-         }
-        },
-        "size": {
-         "width": {
-          "value": 103.72,
-          "unit": "mm"
-         }
-        }
-       },
-       "color": {
-        "hex": "#1f1b16",
-        "model": "hex",
-        "paletteId": "ink"
-       },
-       "thickness": {
-        "value": 0.35,
-        "unit": "pt"
-       },
-       "parity": "even",
-       "pages": "body"
+       }
       },
       {
        "kind": "text",
        "id": "head-odd",
        "placement": {
         "anchor": {
-         "to": "page",
-         "edge": "top-left"
+         "to": "outer",
+         "edge": "top-right"
         },
         "offset": {
          "x": {
-          "value": 16,
+          "value": -5.0,
           "unit": "mm"
          },
          "y": {
-          "value": 9.5,
-          "unit": "mm"
+          "value": 4,
+          "unit": "em"
          }
         },
         "size": {
-         "width": {
-          "value": 103.72,
+         "width": "auto",
+         "height": {
+          "value": 111.125,
           "unit": "mm"
-         },
-         "height": "auto"
+         }
         }
        },
        "content": "{chapterTitle}",
        "fontFamily": "LXGW WenKai TC",
        "fontSize": {
-        "value": 8.5,
+        "value": 8.4,
         "unit": "pt"
        },
        "fontWeight": 400,
        "italic": false,
-       "align": "center",
+       "align": "left",
        "verticalAlign": "middle",
        "lineHeight": 1.2,
        "overflow": "ellipsis-end",
@@ -3085,45 +3689,282 @@
         "paletteId": "ink"
        },
        "parity": "odd",
-       "pages": "body"
+       "pages": "body",
+       "writingMode": "vertical-rl",
+       "letterSpacing": {
+        "value": 0.6,
+        "unit": "pt"
+       }
       },
       {
-       "kind": "rule",
-       "id": "head-rule-odd",
-       "direction": "horizontal",
+       "kind": "text",
+       "id": "folio-odd-body",
        "placement": {
         "anchor": {
-         "to": "page",
-         "edge": "top-left"
+         "to": "outer",
+         "edge": "bottom-right"
         },
         "offset": {
          "x": {
-          "value": 16,
+          "value": -5.0,
           "unit": "mm"
          },
          "y": {
-          "value": 15.5,
+          "value": 0,
           "unit": "mm"
          }
         },
         "size": {
-         "width": {
-          "value": 103.72,
+         "width": "auto",
+         "height": {
+          "value": 13.335,
           "unit": "mm"
          }
         }
        },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
        "color": {
         "hex": "#1f1b16",
         "model": "hex",
         "paletteId": "ink"
        },
-       "thickness": {
-        "value": 0.35,
+       "parity": "odd",
+       "pages": "body",
+       "writingMode": "vertical-rl"
+      },
+      {
+       "kind": "text",
+       "id": "folio-odd-opener",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "bottom-right"
+        },
+        "offset": {
+         "x": {
+          "value": -5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 13.335,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
         "unit": "pt"
        },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
        "parity": "odd",
-       "pages": "body"
+       "pages": "opener",
+       "writingMode": "vertical-rl"
+      },
+      {
+       "kind": "image",
+       "id": "yuwei-even",
+       "resourceId": "ornament-yuwei",
+       "decorative": true,
+       "parity": "even",
+       "pages": "body",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.2,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 8.501,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 3.363,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       }
+      },
+      {
+       "kind": "text",
+       "id": "head-even",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 4,
+          "unit": "em"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 111.125,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "紅樓夢",
+       "fontFamily": "LXGW WenKai TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body",
+       "writingMode": "vertical-rl",
+       "letterSpacing": {
+        "value": 0.6,
+        "unit": "pt"
+       }
+      },
+      {
+       "kind": "text",
+       "id": "folio-even-body",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "bottom-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 13.335,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body",
+       "writingMode": "vertical-rl"
+      },
+      {
+       "kind": "text",
+       "id": "folio-even-opener",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "bottom-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 13.335,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "opener",
+       "writingMode": "vertical-rl"
       }
      ]
     },
@@ -3134,7 +3975,7 @@
     "layout": {
      "layoutType": "double",
      "gutterWidth": {
-      "value": 6,
+      "value": 7.408,
       "unit": "mm"
      }
     }
@@ -3151,7 +3992,7 @@
     "advancedDesign": {
      "enabled": true,
      "minHeight": {
-      "value": 22.578,
+      "value": 19.579,
       "unit": "mm"
      },
      "slot": {
@@ -3162,24 +4003,27 @@
         "placement": {
          "anchor": {
           "to": "container",
-          "edge": "top"
+          "edge": "top-left"
          },
          "offset": {
           "x": {
-           "value": 0,
+           "value": 11.113,
            "unit": "mm"
           },
           "y": {
-           "value": 5.644,
+           "value": 0,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 103.72,
+           "value": 129.646,
            "unit": "mm"
           },
-          "height": "auto"
+          "height": {
+           "value": 13.053,
+           "unit": "mm"
+          }
          }
         },
         "content": "{titleText}",
@@ -3190,17 +4034,17 @@
         },
         "fontWeight": 400,
         "italic": false,
-        "align": "center",
+        "align": "left",
         "verticalAlign": "middle",
         "lineHeight": 1.2,
-        "overflow": "wrap",
+        "overflow": "clip",
         "color": {
          "hex": "#1f1b16",
          "model": "hex",
          "paletteId": "ink"
         },
         "letterSpacing": {
-         "value": 2,
+         "value": 3,
          "unit": "pt"
         }
        },
@@ -3210,22 +4054,22 @@
         "direction": "horizontal",
         "placement": {
          "anchor": {
-          "to": "#front-title",
-          "edge": "below"
+          "to": "container",
+          "edge": "top-left"
          },
          "offset": {
           "x": {
-           "value": 45.86,
+           "value": 11.113,
            "unit": "mm"
           },
           "y": {
-           "value": 4,
+           "value": 13.053,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 12,
+           "value": 118.533,
            "unit": "mm"
           }
          }
@@ -3246,124 +4090,71 @@
     "header": {
      "elements": [
       {
-       "kind": "text",
-       "id": "head-even",
+       "kind": "image",
+       "id": "yuwei-odd",
+       "resourceId": "ornament-yuwei",
+       "decorative": true,
+       "parity": "odd",
+       "pages": "body",
        "placement": {
         "anchor": {
-         "to": "page",
-         "edge": "top-left"
+         "to": "outer",
+         "edge": "top-right"
         },
         "offset": {
          "x": {
-          "value": 20.28,
+          "value": -5.2,
           "unit": "mm"
          },
          "y": {
-          "value": 9.5,
+          "value": 8.501,
           "unit": "mm"
          }
         },
         "size": {
          "width": {
-          "value": 103.72,
+          "value": 3.363,
           "unit": "mm"
          },
          "height": "auto"
         }
-       },
-       "content": "紅樓夢",
-       "fontFamily": "LXGW WenKai TC",
-       "fontSize": {
-        "value": 8.5,
-        "unit": "pt"
-       },
-       "fontWeight": 400,
-       "italic": false,
-       "align": "center",
-       "verticalAlign": "middle",
-       "lineHeight": 1.2,
-       "overflow": "ellipsis-end",
-       "color": {
-        "hex": "#1f1b16",
-        "model": "hex",
-        "paletteId": "ink"
-       },
-       "parity": "even",
-       "pages": "body"
-      },
-      {
-       "kind": "rule",
-       "id": "head-rule-even",
-       "direction": "horizontal",
-       "placement": {
-        "anchor": {
-         "to": "page",
-         "edge": "top-left"
-        },
-        "offset": {
-         "x": {
-          "value": 20.28,
-          "unit": "mm"
-         },
-         "y": {
-          "value": 15.5,
-          "unit": "mm"
-         }
-        },
-        "size": {
-         "width": {
-          "value": 103.72,
-          "unit": "mm"
-         }
-        }
-       },
-       "color": {
-        "hex": "#1f1b16",
-        "model": "hex",
-        "paletteId": "ink"
-       },
-       "thickness": {
-        "value": 0.35,
-        "unit": "pt"
-       },
-       "parity": "even",
-       "pages": "body"
+       }
       },
       {
        "kind": "text",
        "id": "head-odd",
        "placement": {
         "anchor": {
-         "to": "page",
-         "edge": "top-left"
+         "to": "outer",
+         "edge": "top-right"
         },
         "offset": {
          "x": {
-          "value": 16,
+          "value": -5.0,
           "unit": "mm"
          },
          "y": {
-          "value": 9.5,
-          "unit": "mm"
+          "value": 4,
+          "unit": "em"
          }
         },
         "size": {
-         "width": {
-          "value": 103.72,
+         "width": "auto",
+         "height": {
+          "value": 111.125,
           "unit": "mm"
-         },
-         "height": "auto"
+         }
         }
        },
        "content": "{chapterTitle}",
        "fontFamily": "LXGW WenKai TC",
        "fontSize": {
-        "value": 8.5,
+        "value": 8.4,
         "unit": "pt"
        },
        "fontWeight": 400,
        "italic": false,
-       "align": "center",
+       "align": "left",
        "verticalAlign": "middle",
        "lineHeight": 1.2,
        "overflow": "ellipsis-end",
@@ -3373,45 +4164,282 @@
         "paletteId": "ink"
        },
        "parity": "odd",
-       "pages": "body"
+       "pages": "body",
+       "writingMode": "vertical-rl",
+       "letterSpacing": {
+        "value": 0.6,
+        "unit": "pt"
+       }
       },
       {
-       "kind": "rule",
-       "id": "head-rule-odd",
-       "direction": "horizontal",
+       "kind": "text",
+       "id": "folio-odd-body",
        "placement": {
         "anchor": {
-         "to": "page",
-         "edge": "top-left"
+         "to": "outer",
+         "edge": "bottom-right"
         },
         "offset": {
          "x": {
-          "value": 16,
+          "value": -5.0,
           "unit": "mm"
          },
          "y": {
-          "value": 15.5,
+          "value": 0,
           "unit": "mm"
          }
         },
         "size": {
-         "width": {
-          "value": 103.72,
+         "width": "auto",
+         "height": {
+          "value": 13.335,
           "unit": "mm"
          }
         }
        },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
        "color": {
         "hex": "#1f1b16",
         "model": "hex",
         "paletteId": "ink"
        },
-       "thickness": {
-        "value": 0.35,
+       "parity": "odd",
+       "pages": "body",
+       "writingMode": "vertical-rl"
+      },
+      {
+       "kind": "text",
+       "id": "folio-odd-opener",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "bottom-right"
+        },
+        "offset": {
+         "x": {
+          "value": -5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 13.335,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
         "unit": "pt"
        },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
        "parity": "odd",
-       "pages": "body"
+       "pages": "opener",
+       "writingMode": "vertical-rl"
+      },
+      {
+       "kind": "image",
+       "id": "yuwei-even",
+       "resourceId": "ornament-yuwei",
+       "decorative": true,
+       "parity": "even",
+       "pages": "body",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.2,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 8.501,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 3.363,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       }
+      },
+      {
+       "kind": "text",
+       "id": "head-even",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 4,
+          "unit": "em"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 111.125,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "紅樓夢",
+       "fontFamily": "LXGW WenKai TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body",
+       "writingMode": "vertical-rl",
+       "letterSpacing": {
+        "value": 0.6,
+        "unit": "pt"
+       }
+      },
+      {
+       "kind": "text",
+       "id": "folio-even-body",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "bottom-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 13.335,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body",
+       "writingMode": "vertical-rl"
+      },
+      {
+       "kind": "text",
+       "id": "folio-even-opener",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "bottom-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 13.335,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "opener",
+       "writingMode": "vertical-rl"
       }
      ]
     },
@@ -3433,7 +4461,7 @@
     "advancedDesign": {
      "enabled": true,
      "minHeight": {
-      "value": 22.578,
+      "value": 19.579,
       "unit": "mm"
      },
      "slot": {
@@ -3444,24 +4472,27 @@
         "placement": {
          "anchor": {
           "to": "container",
-          "edge": "top"
+          "edge": "top-left"
          },
          "offset": {
           "x": {
-           "value": 0,
+           "value": 11.113,
            "unit": "mm"
           },
           "y": {
-           "value": 5.644,
+           "value": 0,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 103.72,
+           "value": 129.646,
            "unit": "mm"
           },
-          "height": "auto"
+          "height": {
+           "value": 13.053,
+           "unit": "mm"
+          }
          }
         },
         "content": "{titleText}",
@@ -3472,17 +4503,17 @@
         },
         "fontWeight": 400,
         "italic": false,
-        "align": "center",
+        "align": "left",
         "verticalAlign": "middle",
         "lineHeight": 1.2,
-        "overflow": "wrap",
+        "overflow": "clip",
         "color": {
          "hex": "#1f1b16",
          "model": "hex",
          "paletteId": "ink"
         },
         "letterSpacing": {
-         "value": 2,
+         "value": 3,
          "unit": "pt"
         }
        },
@@ -3492,22 +4523,22 @@
         "direction": "horizontal",
         "placement": {
          "anchor": {
-          "to": "#front-title",
-          "edge": "below"
+          "to": "container",
+          "edge": "top-left"
          },
          "offset": {
           "x": {
-           "value": 45.86,
+           "value": 11.113,
            "unit": "mm"
           },
           "y": {
-           "value": 4,
+           "value": 13.053,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 12,
+           "value": 118.533,
            "unit": "mm"
           }
          }
@@ -3528,124 +4559,71 @@
     "header": {
      "elements": [
       {
-       "kind": "text",
-       "id": "head-even",
+       "kind": "image",
+       "id": "yuwei-odd",
+       "resourceId": "ornament-yuwei",
+       "decorative": true,
+       "parity": "odd",
+       "pages": "body",
        "placement": {
         "anchor": {
-         "to": "page",
-         "edge": "top-left"
+         "to": "outer",
+         "edge": "top-right"
         },
         "offset": {
          "x": {
-          "value": 20.28,
+          "value": -5.2,
           "unit": "mm"
          },
          "y": {
-          "value": 9.5,
+          "value": 8.501,
           "unit": "mm"
          }
         },
         "size": {
          "width": {
-          "value": 103.72,
+          "value": 3.363,
           "unit": "mm"
          },
          "height": "auto"
         }
-       },
-       "content": "紅樓夢",
-       "fontFamily": "LXGW WenKai TC",
-       "fontSize": {
-        "value": 8.5,
-        "unit": "pt"
-       },
-       "fontWeight": 400,
-       "italic": false,
-       "align": "center",
-       "verticalAlign": "middle",
-       "lineHeight": 1.2,
-       "overflow": "ellipsis-end",
-       "color": {
-        "hex": "#1f1b16",
-        "model": "hex",
-        "paletteId": "ink"
-       },
-       "parity": "even",
-       "pages": "body"
-      },
-      {
-       "kind": "rule",
-       "id": "head-rule-even",
-       "direction": "horizontal",
-       "placement": {
-        "anchor": {
-         "to": "page",
-         "edge": "top-left"
-        },
-        "offset": {
-         "x": {
-          "value": 20.28,
-          "unit": "mm"
-         },
-         "y": {
-          "value": 15.5,
-          "unit": "mm"
-         }
-        },
-        "size": {
-         "width": {
-          "value": 103.72,
-          "unit": "mm"
-         }
-        }
-       },
-       "color": {
-        "hex": "#1f1b16",
-        "model": "hex",
-        "paletteId": "ink"
-       },
-       "thickness": {
-        "value": 0.35,
-        "unit": "pt"
-       },
-       "parity": "even",
-       "pages": "body"
+       }
       },
       {
        "kind": "text",
        "id": "head-odd",
        "placement": {
         "anchor": {
-         "to": "page",
-         "edge": "top-left"
+         "to": "outer",
+         "edge": "top-right"
         },
         "offset": {
          "x": {
-          "value": 16,
+          "value": -5.0,
           "unit": "mm"
          },
          "y": {
-          "value": 9.5,
-          "unit": "mm"
+          "value": 4,
+          "unit": "em"
          }
         },
         "size": {
-         "width": {
-          "value": 103.72,
+         "width": "auto",
+         "height": {
+          "value": 111.125,
           "unit": "mm"
-         },
-         "height": "auto"
+         }
         }
        },
        "content": "{chapterTitle}",
        "fontFamily": "LXGW WenKai TC",
        "fontSize": {
-        "value": 8.5,
+        "value": 8.4,
         "unit": "pt"
        },
        "fontWeight": 400,
        "italic": false,
-       "align": "center",
+       "align": "left",
        "verticalAlign": "middle",
        "lineHeight": 1.2,
        "overflow": "ellipsis-end",
@@ -3655,45 +4633,282 @@
         "paletteId": "ink"
        },
        "parity": "odd",
-       "pages": "body"
+       "pages": "body",
+       "writingMode": "vertical-rl",
+       "letterSpacing": {
+        "value": 0.6,
+        "unit": "pt"
+       }
       },
       {
-       "kind": "rule",
-       "id": "head-rule-odd",
-       "direction": "horizontal",
+       "kind": "text",
+       "id": "folio-odd-body",
        "placement": {
         "anchor": {
-         "to": "page",
-         "edge": "top-left"
+         "to": "outer",
+         "edge": "bottom-right"
         },
         "offset": {
          "x": {
-          "value": 16,
+          "value": -5.0,
           "unit": "mm"
          },
          "y": {
-          "value": 15.5,
+          "value": 0,
           "unit": "mm"
          }
         },
         "size": {
-         "width": {
-          "value": 103.72,
+         "width": "auto",
+         "height": {
+          "value": 13.335,
           "unit": "mm"
          }
         }
        },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
        "color": {
         "hex": "#1f1b16",
         "model": "hex",
         "paletteId": "ink"
        },
-       "thickness": {
-        "value": 0.35,
+       "parity": "odd",
+       "pages": "body",
+       "writingMode": "vertical-rl"
+      },
+      {
+       "kind": "text",
+       "id": "folio-odd-opener",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "bottom-right"
+        },
+        "offset": {
+         "x": {
+          "value": -5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 13.335,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
         "unit": "pt"
        },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
        "parity": "odd",
-       "pages": "body"
+       "pages": "opener",
+       "writingMode": "vertical-rl"
+      },
+      {
+       "kind": "image",
+       "id": "yuwei-even",
+       "resourceId": "ornament-yuwei",
+       "decorative": true,
+       "parity": "even",
+       "pages": "body",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.2,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 8.501,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 3.363,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       }
+      },
+      {
+       "kind": "text",
+       "id": "head-even",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 4,
+          "unit": "em"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 111.125,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "紅樓夢",
+       "fontFamily": "LXGW WenKai TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body",
+       "writingMode": "vertical-rl",
+       "letterSpacing": {
+        "value": 0.6,
+        "unit": "pt"
+       }
+      },
+      {
+       "kind": "text",
+       "id": "folio-even-body",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "bottom-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 13.335,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body",
+       "writingMode": "vertical-rl"
+      },
+      {
+       "kind": "text",
+       "id": "folio-even-opener",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "bottom-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 13.335,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "opener",
+       "writingMode": "vertical-rl"
       }
      ]
     },
@@ -3704,7 +4919,7 @@
     "layout": {
      "layoutType": "double",
      "gutterWidth": {
-      "value": 6,
+      "value": 7.408,
       "unit": "mm"
      }
     }
@@ -3721,7 +4936,7 @@
     "advancedDesign": {
      "enabled": true,
      "minHeight": {
-      "value": 22.578,
+      "value": 19.579,
       "unit": "mm"
      },
      "slot": {
@@ -3732,24 +4947,27 @@
         "placement": {
          "anchor": {
           "to": "container",
-          "edge": "top"
+          "edge": "top-left"
          },
          "offset": {
           "x": {
-           "value": 0,
+           "value": 11.113,
            "unit": "mm"
           },
           "y": {
-           "value": 5.644,
+           "value": 0,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 103.72,
+           "value": 129.646,
            "unit": "mm"
           },
-          "height": "auto"
+          "height": {
+           "value": 13.053,
+           "unit": "mm"
+          }
          }
         },
         "content": "{titleText}",
@@ -3760,17 +4978,17 @@
         },
         "fontWeight": 400,
         "italic": false,
-        "align": "center",
+        "align": "left",
         "verticalAlign": "middle",
         "lineHeight": 1.2,
-        "overflow": "wrap",
+        "overflow": "clip",
         "color": {
          "hex": "#1f1b16",
          "model": "hex",
          "paletteId": "ink"
         },
         "letterSpacing": {
-         "value": 2,
+         "value": 3,
          "unit": "pt"
         }
        },
@@ -3780,22 +4998,22 @@
         "direction": "horizontal",
         "placement": {
          "anchor": {
-          "to": "#front-title",
-          "edge": "below"
+          "to": "container",
+          "edge": "top-left"
          },
          "offset": {
           "x": {
-           "value": 45.86,
+           "value": 11.113,
            "unit": "mm"
           },
           "y": {
-           "value": 4,
+           "value": 13.053,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 12,
+           "value": 118.533,
            "unit": "mm"
           }
          }
@@ -3816,124 +5034,71 @@
     "header": {
      "elements": [
       {
-       "kind": "text",
-       "id": "head-even",
+       "kind": "image",
+       "id": "yuwei-odd",
+       "resourceId": "ornament-yuwei",
+       "decorative": true,
+       "parity": "odd",
+       "pages": "body",
        "placement": {
         "anchor": {
-         "to": "page",
-         "edge": "top-left"
+         "to": "outer",
+         "edge": "top-right"
         },
         "offset": {
          "x": {
-          "value": 20.28,
+          "value": -5.2,
           "unit": "mm"
          },
          "y": {
-          "value": 9.5,
+          "value": 8.501,
           "unit": "mm"
          }
         },
         "size": {
          "width": {
-          "value": 103.72,
+          "value": 3.363,
           "unit": "mm"
          },
          "height": "auto"
         }
-       },
-       "content": "紅樓夢",
-       "fontFamily": "LXGW WenKai TC",
-       "fontSize": {
-        "value": 8.5,
-        "unit": "pt"
-       },
-       "fontWeight": 400,
-       "italic": false,
-       "align": "center",
-       "verticalAlign": "middle",
-       "lineHeight": 1.2,
-       "overflow": "ellipsis-end",
-       "color": {
-        "hex": "#1f1b16",
-        "model": "hex",
-        "paletteId": "ink"
-       },
-       "parity": "even",
-       "pages": "body"
-      },
-      {
-       "kind": "rule",
-       "id": "head-rule-even",
-       "direction": "horizontal",
-       "placement": {
-        "anchor": {
-         "to": "page",
-         "edge": "top-left"
-        },
-        "offset": {
-         "x": {
-          "value": 20.28,
-          "unit": "mm"
-         },
-         "y": {
-          "value": 15.5,
-          "unit": "mm"
-         }
-        },
-        "size": {
-         "width": {
-          "value": 103.72,
-          "unit": "mm"
-         }
-        }
-       },
-       "color": {
-        "hex": "#1f1b16",
-        "model": "hex",
-        "paletteId": "ink"
-       },
-       "thickness": {
-        "value": 0.35,
-        "unit": "pt"
-       },
-       "parity": "even",
-       "pages": "body"
+       }
       },
       {
        "kind": "text",
        "id": "head-odd",
        "placement": {
         "anchor": {
-         "to": "page",
-         "edge": "top-left"
+         "to": "outer",
+         "edge": "top-right"
         },
         "offset": {
          "x": {
-          "value": 16,
+          "value": -5.0,
           "unit": "mm"
          },
          "y": {
-          "value": 9.5,
-          "unit": "mm"
+          "value": 4,
+          "unit": "em"
          }
         },
         "size": {
-         "width": {
-          "value": 103.72,
+         "width": "auto",
+         "height": {
+          "value": 111.125,
           "unit": "mm"
-         },
-         "height": "auto"
+         }
         }
        },
        "content": "{chapterTitle}",
        "fontFamily": "LXGW WenKai TC",
        "fontSize": {
-        "value": 8.5,
+        "value": 8.4,
         "unit": "pt"
        },
        "fontWeight": 400,
        "italic": false,
-       "align": "center",
+       "align": "left",
        "verticalAlign": "middle",
        "lineHeight": 1.2,
        "overflow": "ellipsis-end",
@@ -3943,47 +5108,345 @@
         "paletteId": "ink"
        },
        "parity": "odd",
-       "pages": "body"
+       "pages": "body",
+       "writingMode": "vertical-rl",
+       "letterSpacing": {
+        "value": 0.6,
+        "unit": "pt"
+       }
       },
       {
-       "kind": "rule",
-       "id": "head-rule-odd",
-       "direction": "horizontal",
+       "kind": "text",
+       "id": "folio-odd-body",
        "placement": {
         "anchor": {
-         "to": "page",
-         "edge": "top-left"
+         "to": "outer",
+         "edge": "bottom-right"
         },
         "offset": {
          "x": {
-          "value": 16,
+          "value": -5.0,
           "unit": "mm"
          },
          "y": {
-          "value": 15.5,
+          "value": 0,
           "unit": "mm"
          }
         },
         "size": {
-         "width": {
-          "value": 103.72,
+         "width": "auto",
+         "height": {
+          "value": 13.335,
           "unit": "mm"
          }
         }
        },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
        "color": {
         "hex": "#1f1b16",
         "model": "hex",
         "paletteId": "ink"
        },
-       "thickness": {
-        "value": 0.35,
+       "parity": "odd",
+       "pages": "body",
+       "writingMode": "vertical-rl"
+      },
+      {
+       "kind": "text",
+       "id": "folio-odd-opener",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "bottom-right"
+        },
+        "offset": {
+         "x": {
+          "value": -5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 13.335,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
         "unit": "pt"
        },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
        "parity": "odd",
-       "pages": "body"
+       "pages": "opener",
+       "writingMode": "vertical-rl"
+      },
+      {
+       "kind": "image",
+       "id": "yuwei-even",
+       "resourceId": "ornament-yuwei",
+       "decorative": true,
+       "parity": "even",
+       "pages": "body",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.2,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 8.501,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 3.363,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       }
+      },
+      {
+       "kind": "text",
+       "id": "head-even",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 4,
+          "unit": "em"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 111.125,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "紅樓夢",
+       "fontFamily": "LXGW WenKai TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body",
+       "writingMode": "vertical-rl",
+       "letterSpacing": {
+        "value": 0.6,
+        "unit": "pt"
+       }
+      },
+      {
+       "kind": "text",
+       "id": "folio-even-body",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "bottom-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 13.335,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body",
+       "writingMode": "vertical-rl"
+      },
+      {
+       "kind": "text",
+       "id": "folio-even-opener",
+       "placement": {
+        "anchor": {
+         "to": "outer",
+         "edge": "bottom-left"
+        },
+        "offset": {
+         "x": {
+          "value": 5.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": {
+          "value": 13.335,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Noto Serif TC",
+       "fontSize": {
+        "value": 8.4,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1b16",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "opener",
+       "writingMode": "vertical-rl"
       }
      ]
+    },
+    "marginBottom": {
+     "value": 0,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "plate",
+    "name": "回圖",
+    "numbered": false,
+    "toc": false,
+    "runningChapter": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "even"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 97.896,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "plate",
+        "resourceId": "{attr.plate}",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "center"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 140.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        }
+       }
+      ]
+     }
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
     },
     "marginBottom": {
      "value": 0,
@@ -4001,11 +5464,11 @@
      "unit": "pt"
     },
     "lineHeight": {
-     "value": 16,
+     "value": 18.5,
      "unit": "pt"
     },
     "marginTop": {
-     "value": 16,
+     "value": 18.5,
      "unit": "pt"
     },
     "marginBottom": {
@@ -4015,7 +5478,7 @@
     "advancedDesign": {
      "enabled": true,
      "minHeight": {
-      "value": 5.644,
+      "value": 6.526,
       "unit": "mm"
      },
      "slot": {
@@ -4040,10 +5503,13 @@
          },
          "size": {
           "width": {
-           "value": 51.86,
+           "value": 70.379,
            "unit": "mm"
           },
-          "height": "auto"
+          "height": {
+           "value": 6.526,
+           "unit": "mm"
+          }
          }
         },
         "content": "{attr.title}",
@@ -4056,7 +5522,7 @@
         "italic": false,
         "align": "left",
         "verticalAlign": "middle",
-        "lineHeight": 1.5238095238095237,
+        "lineHeight": 1.7619047619047619,
         "overflow": "clip",
         "color": {
          "hex": "#1f1b16",
@@ -4070,11 +5536,11 @@
         "placement": {
          "anchor": {
           "to": "container",
-          "edge": "top-right"
+          "edge": "top-left"
          },
          "offset": {
           "x": {
-           "value": 0,
+           "value": 70.379,
            "unit": "mm"
           },
           "y": {
@@ -4084,10 +5550,13 @@
          },
          "size": {
           "width": {
-           "value": 34.573,
+           "value": 70.379,
            "unit": "mm"
           },
-          "height": "auto"
+          "height": {
+           "value": 6.526,
+           "unit": "mm"
+          }
          }
         },
         "content": "{attr.by}",
@@ -4100,12 +5569,103 @@
         "italic": false,
         "align": "right",
         "verticalAlign": "middle",
-        "lineHeight": 1.5238095238095237,
+        "lineHeight": 1.7619047619047619,
         "overflow": "clip",
         "color": {
          "hex": "#1f1b16",
          "model": "hex",
          "paletteId": "ink"
+        }
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "song",
+    "name": "曲名",
+    "numbered": false,
+    "toc": false,
+    "fontFamily": "Noto Sans TC",
+    "fontSize": {
+     "value": 9.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 18.5,
+     "unit": "pt"
+    },
+    "fontWeight": 500,
+    "color": {
+     "hex": "#b23a2e",
+     "model": "hex",
+     "paletteId": "vermilion"
+    },
+    "marginTop": {
+     "value": 18.5,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 6.526,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "text",
+        "id": "song-title",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 7.408,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 133.35,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 6.526,
+           "unit": "mm"
+          }
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Noto Sans TC",
+        "fontSize": {
+         "value": 9.5,
+         "unit": "pt"
+        },
+        "fontWeight": 500,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "clip",
+        "color": {
+         "hex": "#b23a2e",
+         "model": "hex",
+         "paletteId": "vermilion"
+        },
+        "letterSpacing": {
+         "value": 0.5,
+         "unit": "pt"
         }
        }
       ]
@@ -4123,12 +5683,12 @@
      "unit": "pt"
     },
     "lineHeight": {
-     "value": 16,
+     "value": 18.5,
      "unit": "pt"
     },
     "textAlign": "left",
     "indent": {
-     "value": 2,
+     "value": 3,
      "unit": "em"
     },
     "hangingIndent": {
@@ -4141,38 +5701,6 @@
     }
    },
    {
-    "id": "song",
-    "name": "曲名",
-    "fontFamily": "Noto Sans TC",
-    "fontSize": {
-     "value": 9.5,
-     "unit": "pt"
-    },
-    "lineHeight": {
-     "value": 16,
-     "unit": "pt"
-    },
-    "fontWeight": 500,
-    "textAlign": "left",
-    "indent": {
-     "value": 1,
-     "unit": "em"
-    },
-    "firstLineIndent": {
-     "value": 0,
-     "unit": "pt"
-    },
-    "marginTop": {
-     "value": 16,
-     "unit": "pt"
-    },
-    "color": {
-     "hex": "#b23a2e",
-     "model": "hex",
-     "paletteId": "vermilion"
-    }
-   },
-   {
     "id": "closing",
     "name": "回末",
     "fontFamily": "LXGW WenKai TC",
@@ -4181,16 +5709,16 @@
      "unit": "pt"
     },
     "lineHeight": {
-     "value": 16,
+     "value": 18.5,
      "unit": "pt"
     },
     "textAlign": "left",
     "firstLineIndent": {
-     "value": 2,
+     "value": 4,
      "unit": "em"
     },
     "marginTop": {
-     "value": 16,
+     "value": 18.5,
      "unit": "pt"
     }
    },
@@ -4203,7 +5731,7 @@
      "unit": "pt"
     },
     "lineHeight": {
-     "value": 16,
+     "value": 18.5,
      "unit": "pt"
     },
     "textAlign": "right",
@@ -4225,7 +5753,7 @@
      "unit": "pt"
     },
     "lineHeight": {
-     "value": 16,
+     "value": 18.5,
      "unit": "pt"
     },
     "textAlign": "justify",
@@ -4239,7 +5767,7 @@
      "paletteId": "muted"
     },
     "marginBottom": {
-     "value": 16,
+     "value": 18.5,
      "unit": "pt"
     }
    },
@@ -4252,7 +5780,7 @@
      "unit": "pt"
     },
     "lineHeight": {
-     "value": 13,
+     "value": 15,
      "unit": "pt"
     },
     "textAlign": "left",
@@ -4261,7 +5789,7 @@
      "unit": "pt"
     },
     "spaceBetween": {
-     "value": 2,
+     "value": 0,
      "unit": "pt"
     }
    },
@@ -4270,20 +5798,20 @@
     "name": "來源",
     "fontFamily": "Noto Serif TC",
     "fontSize": {
-     "value": 9,
+     "value": 9.5,
      "unit": "pt"
     },
     "lineHeight": {
-     "value": 14,
+     "value": 18.5,
      "unit": "pt"
     },
-    "textAlign": "left",
+    "textAlign": "justify",
     "firstLineIndent": {
-     "value": 0,
-     "unit": "pt"
+     "value": 2,
+     "unit": "em"
     },
     "spaceBetween": {
-     "value": 6,
+     "value": 0,
      "unit": "pt"
     }
    }
@@ -4304,7 +5832,7 @@
       "unit": "pt"
      },
      "lineHeight": {
-      "value": 16,
+      "value": 18.5,
       "unit": "pt"
      },
      "color": {
@@ -4353,8 +5881,8 @@
      "paletteId": "ink"
     },
     "width": {
-     "value": 8,
-     "unit": "mm"
+     "value": 4.5,
+     "unit": "em"
     }
    },
    "leader": {
@@ -4368,7 +5896,7 @@
    "parts": {
     "enabled": true,
     "height": {
-     "value": 32,
+     "value": 37.0,
      "unit": "pt"
     },
     "marginTop": {
@@ -4383,11 +5911,11 @@
        "placement": {
         "anchor": {
          "to": "container",
-         "edge": "left"
+         "edge": "top-left"
         },
         "offset": {
          "x": {
-          "value": 0,
+          "value": 7.408,
           "unit": "mm"
          },
          "y": {
@@ -4397,10 +5925,13 @@
         },
         "size": {
          "width": {
-          "value": 103.72,
+          "value": 133.35,
           "unit": "mm"
          },
-         "height": "auto"
+         "height": {
+          "value": 13.053,
+          "unit": "mm"
+         }
         }
        },
        "content": "{number}　{titleText}",
@@ -4414,7 +5945,7 @@
        "align": "left",
        "verticalAlign": "middle",
        "lineHeight": 1.2,
-       "overflow": "wrap",
+       "overflow": "clip",
        "color": {
         "hex": "#b23a2e",
         "model": "hex",
@@ -4436,7 +5967,7 @@
     "unit": "pt"
    },
    "lineHeight": {
-    "value": 16,
+    "value": 18.5,
     "unit": "pt"
    },
    "separator": "　",
@@ -4450,7 +5981,7 @@
      "paletteId": "vermilion"
     },
     "marginTop": {
-     "value": 16,
+     "value": 18.5,
      "unit": "pt"
     }
    }
@@ -4458,124 +5989,71 @@
   "header": {
    "elements": [
     {
-     "kind": "text",
-     "id": "head-even",
+     "kind": "image",
+     "id": "yuwei-odd",
+     "resourceId": "ornament-yuwei",
+     "decorative": true,
+     "parity": "odd",
+     "pages": "body",
      "placement": {
       "anchor": {
-       "to": "page",
-       "edge": "top-left"
+       "to": "outer",
+       "edge": "top-right"
       },
       "offset": {
        "x": {
-        "value": 20.28,
+        "value": -5.2,
         "unit": "mm"
        },
        "y": {
-        "value": 9.5,
+        "value": 8.501,
         "unit": "mm"
        }
       },
       "size": {
        "width": {
-        "value": 103.72,
+        "value": 3.363,
         "unit": "mm"
        },
        "height": "auto"
       }
-     },
-     "content": "紅樓夢",
-     "fontFamily": "LXGW WenKai TC",
-     "fontSize": {
-      "value": 8.5,
-      "unit": "pt"
-     },
-     "fontWeight": 400,
-     "italic": false,
-     "align": "center",
-     "verticalAlign": "middle",
-     "lineHeight": 1.2,
-     "overflow": "ellipsis-end",
-     "color": {
-      "hex": "#1f1b16",
-      "model": "hex",
-      "paletteId": "ink"
-     },
-     "parity": "even",
-     "pages": "body"
-    },
-    {
-     "kind": "rule",
-     "id": "head-rule-even",
-     "direction": "horizontal",
-     "placement": {
-      "anchor": {
-       "to": "page",
-       "edge": "top-left"
-      },
-      "offset": {
-       "x": {
-        "value": 20.28,
-        "unit": "mm"
-       },
-       "y": {
-        "value": 15.5,
-        "unit": "mm"
-       }
-      },
-      "size": {
-       "width": {
-        "value": 103.72,
-        "unit": "mm"
-       }
-      }
-     },
-     "color": {
-      "hex": "#1f1b16",
-      "model": "hex",
-      "paletteId": "ink"
-     },
-     "thickness": {
-      "value": 0.35,
-      "unit": "pt"
-     },
-     "parity": "even",
-     "pages": "body"
+     }
     },
     {
      "kind": "text",
      "id": "head-odd",
      "placement": {
       "anchor": {
-       "to": "page",
-       "edge": "top-left"
+       "to": "outer",
+       "edge": "top-right"
       },
       "offset": {
        "x": {
-        "value": 16,
+        "value": -5.0,
         "unit": "mm"
        },
        "y": {
-        "value": 9.5,
-        "unit": "mm"
+        "value": 4,
+        "unit": "em"
        }
       },
       "size": {
-       "width": {
-        "value": 103.72,
+       "width": "auto",
+       "height": {
+        "value": 111.125,
         "unit": "mm"
-       },
-       "height": "auto"
+       }
       }
      },
      "content": "{chapterNumber}　{chapterTitle}",
      "fontFamily": "LXGW WenKai TC",
      "fontSize": {
-      "value": 8.5,
+      "value": 8.4,
       "unit": "pt"
      },
      "fontWeight": 400,
      "italic": false,
-     "align": "center",
+     "align": "left",
      "verticalAlign": "middle",
      "lineHeight": 1.2,
      "overflow": "ellipsis-end",
@@ -4585,126 +6063,43 @@
       "paletteId": "ink"
      },
      "parity": "odd",
-     "pages": "body"
-    },
-    {
-     "kind": "rule",
-     "id": "head-rule-odd",
-     "direction": "horizontal",
-     "placement": {
-      "anchor": {
-       "to": "page",
-       "edge": "top-left"
-      },
-      "offset": {
-       "x": {
-        "value": 16,
-        "unit": "mm"
-       },
-       "y": {
-        "value": 15.5,
-        "unit": "mm"
-       }
-      },
-      "size": {
-       "width": {
-        "value": 103.72,
-        "unit": "mm"
-       }
-      }
-     },
-     "color": {
-      "hex": "#1f1b16",
-      "model": "hex",
-      "paletteId": "ink"
-     },
-     "thickness": {
-      "value": 0.35,
+     "pages": "body",
+     "writingMode": "vertical-rl",
+     "letterSpacing": {
+      "value": 0.6,
       "unit": "pt"
-     },
-     "parity": "odd",
-     "pages": "body"
-    }
-   ]
-  },
-  "footer": {
-   "elements": [
-    {
-     "kind": "text",
-     "id": "folio-even-body",
-     "placement": {
-      "anchor": {
-       "to": "page",
-       "edge": "top-left"
-      },
-      "offset": {
-       "x": {
-        "value": 20.28,
-        "unit": "mm"
-       },
-       "y": {
-        "value": 186.05,
-        "unit": "mm"
-       }
-      },
-      "size": {
-       "width": {
-        "value": 24,
-        "unit": "mm"
-       },
-       "height": "auto"
-      }
-     },
-     "content": "{pageNumber}",
-     "fontFamily": "Noto Serif TC",
-     "fontSize": {
-      "value": 8.5,
-      "unit": "pt"
-     },
-     "fontWeight": 400,
-     "italic": false,
-     "align": "left",
-     "verticalAlign": "middle",
-     "lineHeight": 1.2,
-     "overflow": "clip",
-     "color": {
-      "hex": "#1f1b16",
-      "model": "hex",
-      "paletteId": "ink"
-     },
-     "parity": "even",
-     "pages": "body"
+     }
     },
     {
      "kind": "text",
      "id": "folio-odd-body",
      "placement": {
       "anchor": {
-       "to": "page",
-       "edge": "top-left"
+       "to": "outer",
+       "edge": "bottom-right"
       },
       "offset": {
        "x": {
-        "value": 95.72,
+        "value": -5.0,
         "unit": "mm"
        },
        "y": {
-        "value": 186.05,
+        "value": 0,
         "unit": "mm"
        }
       },
       "size": {
-       "width": {
-        "value": 24,
+       "width": "auto",
+       "height": {
+        "value": 13.335,
         "unit": "mm"
-       },
-       "height": "auto"
+       }
       }
      },
      "content": "{pageNumber}",
      "fontFamily": "Noto Serif TC",
      "fontSize": {
-      "value": 8.5,
+      "value": 8.4,
       "unit": "pt"
      },
      "fontWeight": 400,
@@ -4719,43 +6114,173 @@
       "paletteId": "ink"
      },
      "parity": "odd",
-     "pages": "body"
+     "pages": "body",
+     "writingMode": "vertical-rl"
     },
     {
      "kind": "text",
-     "id": "folio-even-opener",
+     "id": "folio-odd-opener",
      "placement": {
       "anchor": {
-       "to": "page",
-       "edge": "top-left"
+       "to": "outer",
+       "edge": "bottom-right"
       },
       "offset": {
        "x": {
-        "value": 20.28,
+        "value": -5.0,
         "unit": "mm"
        },
        "y": {
-        "value": 186.05,
+        "value": 0,
         "unit": "mm"
        }
       },
       "size": {
-       "width": {
-        "value": 24,
+       "width": "auto",
+       "height": {
+        "value": 13.335,
         "unit": "mm"
-       },
-       "height": "auto"
+       }
       }
      },
      "content": "{pageNumber}",
      "fontFamily": "Noto Serif TC",
      "fontSize": {
-      "value": 8.5,
+      "value": 8.4,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "right",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "clip",
+     "color": {
+      "hex": "#1f1b16",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "parity": "odd",
+     "pages": "opener",
+     "writingMode": "vertical-rl"
+    },
+    {
+     "kind": "image",
+     "id": "yuwei-even",
+     "resourceId": "ornament-yuwei",
+     "decorative": true,
+     "parity": "even",
+     "pages": "body",
+     "placement": {
+      "anchor": {
+       "to": "outer",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 5.2,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 8.501,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 3.363,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     }
+    },
+    {
+     "kind": "text",
+     "id": "head-even",
+     "placement": {
+      "anchor": {
+       "to": "outer",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 5.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 4,
+        "unit": "em"
+       }
+      },
+      "size": {
+       "width": "auto",
+       "height": {
+        "value": 111.125,
+        "unit": "mm"
+       }
+      }
+     },
+     "content": "紅樓夢",
+     "fontFamily": "LXGW WenKai TC",
+     "fontSize": {
+      "value": 8.4,
       "unit": "pt"
      },
      "fontWeight": 400,
      "italic": false,
      "align": "left",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#1f1b16",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "parity": "even",
+     "pages": "body",
+     "writingMode": "vertical-rl",
+     "letterSpacing": {
+      "value": 0.6,
+      "unit": "pt"
+     }
+    },
+    {
+     "kind": "text",
+     "id": "folio-even-body",
+     "placement": {
+      "anchor": {
+       "to": "outer",
+       "edge": "bottom-left"
+      },
+      "offset": {
+       "x": {
+        "value": 5.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": "auto",
+       "height": {
+        "value": 13.335,
+        "unit": "mm"
+       }
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "Noto Serif TC",
+     "fontSize": {
+      "value": 8.4,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "right",
      "verticalAlign": "middle",
      "lineHeight": 1.2,
      "overflow": "clip",
@@ -4765,38 +6290,39 @@
       "paletteId": "ink"
      },
      "parity": "even",
-     "pages": "opener"
+     "pages": "body",
+     "writingMode": "vertical-rl"
     },
     {
      "kind": "text",
-     "id": "folio-odd-opener",
+     "id": "folio-even-opener",
      "placement": {
       "anchor": {
-       "to": "page",
-       "edge": "top-left"
+       "to": "outer",
+       "edge": "bottom-left"
       },
       "offset": {
        "x": {
-        "value": 95.72,
+        "value": 5.0,
         "unit": "mm"
        },
        "y": {
-        "value": 186.05,
+        "value": 0,
         "unit": "mm"
        }
       },
       "size": {
-       "width": {
-        "value": 24,
+       "width": "auto",
+       "height": {
+        "value": 13.335,
         "unit": "mm"
-       },
-       "height": "auto"
+       }
       }
      },
      "content": "{pageNumber}",
      "fontFamily": "Noto Serif TC",
      "fontSize": {
-      "value": 8.5,
+      "value": 8.4,
       "unit": "pt"
      },
      "fontWeight": 400,
@@ -4810,10 +6336,14 @@
       "model": "hex",
       "paletteId": "ink"
      },
-     "parity": "odd",
-     "pages": "opener"
+     "parity": "even",
+     "pages": "opener",
+     "writingMode": "vertical-rl"
     }
    ]
+  },
+  "footer": {
+   "elements": []
   },
   "captionStyle": {
    "fontFamily": "LXGW WenKai TC",
@@ -4935,6 +6465,16 @@
      "width": 1,
      "align": "center"
     }
+   },
+   {
+    "id": "ornament",
+    "name": "紋飾",
+    "namePlural": "紋飾",
+    "shortLabel": "紋飾",
+    "captionPrefix": "",
+    "numberingTemplate": "",
+    "resetOn": "never",
+    "counterFormat": "decimal"
    }
   ],
   "pdfGeneration": {
@@ -5663,12 +7203,54 @@
      "id": "portrait-qin-zhong",
      "caption": "秦鍾",
      "altText": "秦鍾"
+    },
+    {
+     "id": "ornament-yuwei",
+     "caption": "魚尾"
     }
    ]
   },
   "zh-Hans": {
    "config": {
     "locale": "zh-Hans",
+    "page": {
+     "sizePreset": "custom",
+     "width": {
+      "value": 140,
+      "unit": "mm"
+     },
+     "height": {
+      "value": 203,
+      "unit": "mm"
+     },
+     "margins": {
+      "top": {
+       "value": 20,
+       "unit": "mm"
+      },
+      "bottom": {
+       "value": 24.95,
+       "unit": "mm"
+      },
+      "left": {
+       "value": 16,
+       "unit": "mm"
+      },
+      "right": {
+       "value": 20.28,
+       "unit": "mm"
+      },
+      "mirror": true
+     },
+     "pageNumbering": {
+      "format": "decimal",
+      "startAt": 1
+     }
+    },
+    "layout": {
+     "layoutType": "single"
+    },
+    "cjk": {},
     "bodyText": {
      "fontFamily": "Noto Serif SC",
      "fontSize": {
@@ -8427,6 +10009,90 @@
         ]
        }
       }
+     },
+     {
+      "id": "song",
+      "name": "曲名",
+      "numbered": false,
+      "toc": false,
+      "fontFamily": "Noto Sans SC",
+      "fontSize": {
+       "value": 9.5,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 16,
+       "unit": "pt"
+      },
+      "fontWeight": 500,
+      "color": {
+       "hex": "#b23a2e",
+       "model": "hex",
+       "paletteId": "vermilion"
+      },
+      "marginTop": {
+       "value": 16,
+       "unit": "pt"
+      },
+      "marginBottom": {
+       "value": 0,
+       "unit": "pt"
+      },
+      "advancedDesign": {
+       "enabled": true,
+       "minHeight": {
+        "value": 5.644,
+        "unit": "mm"
+       },
+       "slot": {
+        "elements": [
+         {
+          "kind": "text",
+          "id": "song-title",
+          "placement": {
+           "anchor": {
+            "to": "container",
+            "edge": "top-left"
+           },
+           "offset": {
+            "x": {
+             "value": 3.704,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 0,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 100.016,
+             "unit": "mm"
+            },
+            "height": "auto"
+           }
+          },
+          "content": "{titleText}",
+          "fontFamily": "Noto Sans SC",
+          "fontSize": {
+           "value": 9.5,
+           "unit": "pt"
+          },
+          "fontWeight": 500,
+          "italic": false,
+          "align": "left",
+          "verticalAlign": "middle",
+          "lineHeight": 1.6842105263157894,
+          "overflow": "clip",
+          "color": {
+           "hex": "#b23a2e",
+           "model": "hex",
+           "paletteId": "vermilion"
+          }
+         }
+        ]
+       }
+      }
      }
     ],
     "paragraphStyles": [
@@ -8454,38 +10120,6 @@
       "spaceBetween": {
        "value": 0,
        "unit": "pt"
-      }
-     },
-     {
-      "id": "song",
-      "name": "曲名",
-      "fontFamily": "Noto Sans SC",
-      "fontSize": {
-       "value": 9.5,
-       "unit": "pt"
-      },
-      "lineHeight": {
-       "value": 16,
-       "unit": "pt"
-      },
-      "fontWeight": 500,
-      "textAlign": "left",
-      "indent": {
-       "value": 1,
-       "unit": "em"
-      },
-      "firstLineIndent": {
-       "value": 0,
-       "unit": "pt"
-      },
-      "marginTop": {
-       "value": 16,
-       "unit": "pt"
-      },
-      "color": {
-       "hex": "#b23a2e",
-       "model": "hex",
-       "paletteId": "vermilion"
       }
      },
      {
@@ -9245,6 +10879,16 @@
        "width": 1,
        "align": "center"
       }
+     },
+     {
+      "id": "ornament",
+      "name": "纹饰",
+      "namePlural": "纹饰",
+      "shortLabel": "纹饰",
+      "captionPrefix": "",
+      "numberingTemplate": "",
+      "resetOn": "never",
+      "counterFormat": "decimal"
      }
     ]
    },
@@ -9968,6 +11612,10 @@
      "id": "portrait-qin-zhong",
      "caption": "秦钟",
      "altText": "秦钟"
+    },
+    {
+     "id": "ornament-yuwei",
+     "caption": "鱼尾"
     }
    ]
   },
@@ -10008,6 +11656,10 @@
       "startAt": 1
      }
     },
+    "layout": {
+     "layoutType": "single"
+    },
+    "cjk": {},
     "bodyText": {
      "fontFamily": "EB Garamond",
      "fontSize": {
@@ -12562,6 +14214,16 @@
        "width": 1,
        "align": "center"
       }
+     },
+     {
+      "id": "ornament",
+      "name": "Ornament",
+      "namePlural": "Ornament",
+      "shortLabel": "Ornament",
+      "captionPrefix": "",
+      "numberingTemplate": "",
+      "resetOn": "never",
+      "counterFormat": "decimal"
      }
     ]
    },
@@ -12965,6 +14627,10 @@
      "id": "portrait-qin-zhong",
      "caption": "Ch’in Chung",
      "altText": "Ch’in Chung"
+    },
+    {
+     "id": "ornament-yuwei",
+     "caption": "Fish-tail ornament"
     }
    ]
   }
@@ -14409,6 +16075,15 @@
    "height": 1000,
    "caption": "秦鍾",
    "altText": "秦鍾"
+  },
+  {
+   "id": "ornament-yuwei",
+   "typeId": "ornament",
+   "kind": "svg",
+   "file": "resources/ornament-yuwei.svg",
+   "width": 100,
+   "height": 64,
+   "caption": "魚尾"
   }
  ],
  "fonts": [
