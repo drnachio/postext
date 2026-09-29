@@ -169,7 +169,8 @@ export function drawVerticalTextPx(
       useFont(twinKeyOn(ctx.page, show.file, show.twin));
       useTc(0);
       noteMissingGlyphs(show.file, show.text);
-      const { hex } = show.twin.encode(show.text, show.vertical);
+      const cells = graphemesOf(show.text);
+      const { hex } = show.twin.encode(show.text, show.vertical, cells);
       body.push(setTextMatrix(0, 1, -1, 0, X(cellStart + penOffset), Y(axis)));
       const count = hex.length / 4;
       if (trackTj === 0 || count === 1) {
@@ -182,7 +183,7 @@ export function drawVerticalTextPx(
         }
         body.push(PDFOperator.of(PDFOperatorNames.ShowTextAdjusted, [array]));
       }
-      cellStart += graphemesOf(show.text).length * (em + tracking);
+      cellStart += cells.length * (em + tracking);
     }
     pending = [];
   };

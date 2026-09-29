@@ -60,8 +60,11 @@ export interface VerticalTwin {
    *  face): in the font's vertical forms (OpenType `vert` with `fwid`, as
    *  the canvas's twin face sets them: Noto CJK keys the vertical form of
    *  its dashes to both, and the marks are full-width already), or as it
-   *  is when `vertical` is false. */
-  encode(text: string, vertical?: boolean): { hex: string; glyphs: ShapedGlyph[] };
+   *  is when `vertical` is false. With `cells` (the graphemes of `text`,
+   *  each set in a cell of its own), one glyph per cell: the text is shaped
+   *  whole when that gives as many glyphs as cells, else cell by cell, so a
+   *  ligature (f + i in `:upright[fi]`) never takes two cells' places. */
+  encode(text: string, vertical?: boolean, cells?: readonly string[]): { hex: string; glyphs: ShapedGlyph[] };
   /** Whether the font has a vertical form for `ch`: a glyph `vert` gives
    *  on top of what `fwid` alone gives. */
   hasVerticalForm(ch: string): boolean;
@@ -127,8 +130,10 @@ export function verticalTwinOf(font: PDFFont): VerticalTwin | undefined {
   const countCache = new Map<string, number>();
   const twin: VerticalTwin = {
     ref,
-    encode(text, upright = true) {
-      const glyphs = embedder.font.layout(text, upright ? vertical : plain).glyphs;
+    encode(text, upright = true, cells) {
+      const features = upright ? vertical : plain;
+      let glyphs = embedder.font.layout(text, features).glyphs;
+      if (cells && cells.length > 1 && glyphs.length !== cells.length) glyphs = cells.flatMap((c) => embedder.font.layout(c, features).glyphs);
       let hex = '';
       for (const g of glyphs) {
         let id = g.id;

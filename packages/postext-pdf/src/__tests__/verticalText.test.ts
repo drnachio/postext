@@ -260,6 +260,23 @@ describe('vertical text in the PDF (#191)', () => {
     expect(cluster.some((x) => Math.abs(x - (line.bbox.x + 8 + central * 16)) < 0.01)).toBe(true);
   });
 
+  it('sets each letter of an :upright run in its own cell, never a ligature of two', async () => {
+    // Fraunces ligates f+f+i, f+i and f+f by default: shaped together, the
+    // six letters of "office" would be four glyphs of one em each, and the
+    // two cells after them empty.
+    const fraunces = new Uint8Array(fs.readFileSync(new URL('../../../../apps/web/public/fonts/Fraunces-Regular.ttf', import.meta.url)));
+    expect(fontkit.create(Buffer.from(fraunces)).layout('office').glyphs).toHaveLength(4);
+    const doc = buildDocument({ markdown: ':upright[office]' }, config('zh-Hant'));
+    const line = doc.pages[0]!.columns[0]!.blocks[0]!.lines[0]!;
+    expect(line.bbox.width).toBeCloseTo(6 * 16, 3);
+    const pdf = await PDFDocument.load(await renderToPdf(doc, { fontProvider: async () => fraunces, accessible: false }));
+    const cids = uprightShows(pageOps(pdf), pageFonts(pdf)).flatMap((s) => s.cids);
+    // o f f i c e: one glyph per cell, the two f's the same glyph.
+    expect(cids).toHaveLength(6);
+    expect(cids[1]).toBe(cids[2]);
+    expect(new Set(cids).size).toBe(5);
+  });
+
   it('spreads a justified vertical line with TJ numbers that move the pen down', async () => {
     const cfg = config('zh-Hant');
     cfg.bodyText = { ...cfg.bodyText, textAlign: 'justify' };
