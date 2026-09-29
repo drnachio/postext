@@ -1,0 +1,156 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 80,
+  "status": "draft",
+  "chapter": "type",
+  "order": 140,
+  "level": 3,
+  "genres": [
+    "textbook"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "ruby",
+      "vertical-writing"
+    ],
+    "also": [
+      "right-binding",
+      "cjk-fonts",
+      "cjk-punctuation",
+      "character-grid",
+      "column-and-a-half",
+      "side-column-floats",
+      "side-boxes",
+      "chinese-numerals",
+      "numbered-lists",
+      "resource-types",
+      "callout-styles",
+      "paragraph-styles",
+      "heading-styles",
+      "design-elements",
+      "running-heads",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q100",
+    "Q87",
+    "Q89"
+  ],
+  "gotchas": [
+    "ruby-not-in-designs",
+    "cjk-fonts-slices",
+    "cjk-spread-order",
+    "cjk-locale-tag"
+  ],
+  "workarounds": [
+    {
+      "package": "postext",
+      "note": "the lesson and fable numbers are typed into the headings: a numberingTemplate joins the number to the title's first span (buildBlockKind.ts, the heading case), and when that span is a ruby base the reading is centred over the number and the first character together; the `marked` test there should count ruby, warichu, emphasis marks, name and title lines, tcy and orientation runs"
+    },
+    {
+      "package": "postext",
+      "note": "each box and picture of the upper tier is fenced or cited where the channel of its page has room: a span 'side' box, or a side figure queued behind one, that finds no room before the text ends is dropped with no warning (in both writing modes; figures alone get pages of their own)"
+    }
+  ],
+  "engine": {
+    "postext": "1.9.0",
+    "postextPdf": "1.9.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images",
+    "cjk"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "loupe",
+    "focus": {
+      "page": 1,
+      "x": 0.5,
+      "y": 0.535,
+      "w": 0.43,
+      "h": 0.29
+    },
+    "expect": {
+      "pages": [
+        4,
+        4
+      ]
+    }
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "Han Feizi, chapter 49, “Wu du” (The five vermin): the man of Song who waited by the stump",
+          "es": "Han Feizi, capítulo 49, «Wu du» (Las cinco carcomas): el hombre de Song que esperaba junto al tocón"
+        },
+        "who": "Han Fei; transcription and punctuation by Wikisource editors (爲 set as 為, the Taiwan standard form)",
+        "source": "https://zh.wikisource.org/wiki/韓非子/五蠹",
+        "license": "CC-BY-SA-4.0"
+      },
+      {
+        "what": {
+          "en": "Han Feizi, chapter 32, “Wai chu shuo zuo shang”: the man of Zheng who went to buy shoes",
+          "es": "Han Feizi, capítulo 32, «Wai chu shuo zuo shang»: el hombre de Zheng que fue a comprar zapatos"
+        },
+        "who": "Han Fei; transcription and punctuation by Wikisource editors",
+        "source": "https://zh.wikisource.org/wiki/韓非子/外儲說左上",
+        "license": "CC-BY-SA-4.0"
+      },
+      {
+        "what": {
+          "en": "The zhuyin, the modern Chinese versions, the notes, the author box, the lead and the exercises, written for this recipe",
+          "es": "El zhuyin, las versiones en chino moderno, las notas, el recuadro del autor, la entradilla y los ejercicios, escritos para esta receta"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      {
+        "family": "LXGW WenKai TC",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Serif TC",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Sans TC",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-09-29",
+  "updated": "2026-09-29"
+}
