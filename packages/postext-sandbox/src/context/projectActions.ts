@@ -267,7 +267,8 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
     const fontsChange = wantsConfig || (parts === 'document' && config.customFonts !== undefined);
     // Register fonts before any state change: viewport builds run before the
     // provider's font effect and would otherwise measure with fallbacks.
-    if (fontsChange) setCustomFonts(config.customFonts);
+    // They are the record's, not an edit of the last book's.
+    if (fontsChange) setCustomFonts(config.customFonts, { newBook: true });
     dispatch({ type: 'SET_ACTIVE_PROJECT', payload: { id: record.id, sourcePresetId: record.sourcePresetId } });
     if (wantsConfig) dispatch({ type: 'SET_CONFIG', payload: config });
     else if (parts === 'document' && config.customFonts !== undefined) {

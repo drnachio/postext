@@ -7,6 +7,7 @@ import {
   setCustomFonts,
   collectFontUsage,
   hasLatinEmphasis,
+  isRemovedCustomFontFamily,
   missingUsedVariants,
 } from './fontLoader';
 
@@ -37,6 +38,33 @@ describe('customFontsSignature', () => {
     expect(customFontsSignature([])).not.toBe(customFontsSignature());
     expect(customFontsSignature([optima, family('DIN Pro', [[400, 'normal', 'f3']])])).not.toBe(customFontsSignature());
     expect(customFontsSignature([family('Optima', [[400, 'normal', 'f1-new']])])).not.toBe(customFontsSignature());
+  });
+});
+
+describe('isRemovedCustomFontFamily', () => {
+  afterEach(() => setCustomFonts(undefined, { newBook: true }));
+  const notoSC = family('Noto Serif SC', [[400, 'normal', 'f1']]);
+  const garamond = family('EB Garamond', [[400, 'normal', 'f2']]);
+
+  it('reports a family the author deleted from the book', () => {
+    setCustomFonts([notoSC, garamond]);
+    setCustomFonts([garamond]);
+    expect(isRemovedCustomFontFamily('Noto Serif SC')).toBe(true);
+    expect(isRemovedCustomFontFamily('EB Garamond')).toBe(false);
+  });
+
+  it('forgets the families another book bundled: the next book may ask Google Fonts for them', () => {
+    // 紅樓夢 bundles Noto Serif SC and EB Garamond; the guide and a blank
+    // book name the same families, served by Google Fonts.
+    setCustomFonts([notoSC, garamond], { newBook: true });
+    setCustomFonts([], { newBook: true });
+    expect(isRemovedCustomFontFamily('Noto Serif SC')).toBe(false);
+    expect(isRemovedCustomFontFamily('EB Garamond')).toBe(false);
+    // Deleting a family in the new book is reported again.
+    setCustomFonts([garamond]);
+    setCustomFonts([]);
+    expect(isRemovedCustomFontFamily('EB Garamond')).toBe(true);
+    expect(isRemovedCustomFontFamily('Noto Serif SC')).toBe(false);
   });
 });
 

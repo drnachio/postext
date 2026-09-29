@@ -83,8 +83,10 @@ export async function applyPreset(
   // Register the preset's custom families before any state change: the
   // viewports' build effects run before the provider's font effect, and a
   // build that starts with a stale registry measures with fallback glyphs.
+  // The families the last book declared and this one leaves out were not
+  // deleted by the author: they are forgotten.
   if (parts === 'all' || parts === 'config' || (parts === 'document' && loaded.config.customFonts !== undefined)) {
-    setCustomFonts(loaded.config.customFonts);
+    setCustomFonts(loaded.config.customFonts, { newBook: true });
   }
   options.before?.();
   dispatch({ type: 'SET_PRESET', payload: { id, config: loaded.config } });

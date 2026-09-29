@@ -1298,7 +1298,7 @@ export function SandboxProvider({
     presetLoadSeqRef.current++;
     const loc = stateRef.current.locale;
     const config = withDefaultResourceTypes(draft.config, loc);
-    setCustomFonts(config.customFonts);
+    setCustomFonts(config.customFonts, { newBook: true });
     const book: BookContent = {
       chapters: draft.chapters,
       activeChapterId: draft.activeChapterId,

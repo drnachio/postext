@@ -441,10 +441,13 @@ export async function collectFontPayloadsForFamilies(
 // ---------------------------------------------------------------------------
 
 const customFontRegistry = new Map<string, CustomFontFamily>();
-/** Names of families that have ever been registered as a custom font in
- *  this session. Seeded by every `setCustomFonts` call so `hasBeen…`
- *  checks can distinguish "deleted a custom I had declared" from "never
- *  seen this name". Never pruned — membership is monotonic. */
+/** Names of families registered as a custom font since the book on screen
+ *  was opened. Seeded by every `setCustomFonts` call so
+ *  `isRemovedCustomFontFamily` can tell "deleted a custom family I had
+ *  declared" from "never seen this name". Emptied when another book comes
+ *  in (`newBook`): a family the last book bundled may be a Google Font the
+ *  next one asks for by name (紅樓夢 bundles Noto Serif SC; the guide's
+ *  Chinese edition loads it from Google Fonts). */
 const everSeenCustomFamilies = new Set<string>();
 /** Listeners notified when the set of known custom families changes. The
  *  payload is the list of family names whose definition changed, was added,
@@ -465,8 +468,11 @@ function familySignature(f: CustomFontFamily): string {
 }
 
 /** Replace the sandbox's known custom fonts. Invalidates every cached
- *  loader state for families that changed, added, or were removed. */
-export function setCustomFonts(list: CustomFontFamily[] | undefined): void {
+ *  loader state for families that changed, added, or were removed.
+ *  `newBook`: the list is another book's (a preset, a project, a draft
+ *  opened), not an edit of this one's, so the families left out were not
+ *  deleted by the author. */
+export function setCustomFonts(list: CustomFontFamily[] | undefined, options: { newBook?: boolean } = {}): void {
   const next = new Map<string, CustomFontFamily>();
   for (const f of list ?? []) next.set(f.name, f);
 
@@ -480,6 +486,7 @@ export function setCustomFonts(list: CustomFontFamily[] | undefined): void {
   }
 
   customFontRegistry.clear();
+  if (options.newBook) everSeenCustomFamilies.clear();
   for (const [name, fam] of next) {
     customFontRegistry.set(name, fam);
     everSeenCustomFamilies.add(name);
@@ -535,9 +542,9 @@ export function isCustomFontFamily(name: string): boolean {
   return customFontRegistry.has(name);
 }
 
-/** True when `name` was registered as a custom family earlier in this
- *  session but is no longer present — i.e. the user has deleted it while
- *  some `fontFamily` field still references it. */
+/** True when `name` was registered as a custom family since the book on
+ *  screen was opened but is no longer present — i.e. the user has deleted
+ *  it while some `fontFamily` field still references it. */
 export function isRemovedCustomFontFamily(name: string): boolean {
   return everSeenCustomFamilies.has(name) && !customFontRegistry.has(name);
 }
