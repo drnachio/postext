@@ -85,9 +85,9 @@ import { COLUMN_VW, DEFS, FS, P, PAGE_VW, bar, edge, localizeFigureFonts, node, 
 import { balancingSvg, bookAnatomySvg, cjkCompositionSvg, columnLayoutsSvg, floatSlotsSvg, sandboxUiSvg, vectorChartSvg, vectorClipSvg, vectorRosetteSvg } from './guideFigures';
 
 const PIPELINE = byLang(
-  { parse: 'Parse', measure: 'Measure', layout: 'Layout', config: 'Configuration', loop: '≤ 5 passes', aria: 'Postext pipeline' },
-  { parse: 'Análisis', measure: 'Medición', layout: 'Maquetación', config: 'Configuración', loop: '≤ 5 pasadas', aria: 'tubería de Postext' },
-  { parse: '解析', measure: '测量', layout: '排版', config: '配置', loop: '最多5轮', aria: 'Postext的处理流水线' },
+  { parse: 'Parse', measure: 'Measure', layout: 'Layout', config: 'Configuration', loop: ['at most', '5 passes'], aria: 'Postext pipeline' },
+  { parse: 'Análisis', measure: 'Medición', layout: 'Maquetación', config: 'Configuración', loop: ['hasta', '5 pasadas'], aria: 'tubería de Postext' },
+  { parse: '解析', measure: '测量', layout: '排版', config: '配置', loop: ['最多5轮'], aria: 'Postext的处理流水线' },
 );
 
 /** The Postext pipeline: Markdown and configuration → parse → measure →
@@ -109,7 +109,7 @@ function pipelineSvg(lang: GuideLang): string {
   ${node(95, 122, 110, 32, measure, 'tint')}
   ${node(95, 174, 110, 32, layout, 'solid')}
   ${edge('M205,184 C236,184 236,200 205,200', { color: P.amber, marker: 'ahAmber' })}
-  ${text(240, 196, loop, { size: FS.small, color: P.amberDark, anchor: 'start', italic: true })}
+  ${loop.map((l, i, all) => text(240, 196 + (i - (all.length - 1) / 2) * 12, l, { size: FS.small, color: P.amberDark, anchor: 'start', italic: true })).join('\n  ')}
   ${edge('M80,46 C80,58 130,56 136,66')}
   ${edge('M220,46 C220,58 170,56 164,66')}
   ${edge('M150,102 L150,118')}
@@ -127,8 +127,8 @@ function pipelineSvg(lang: GuideLang): string {
 }
 
 const CONVERGENCE = byLang(
-  { place: 'Place', check: 'Check', adjust: 'Adjust', done: 'Converged', ok: 'satisfied', conflict: 'conflict', iters: '≤ 5 iterations', aria: 'layout convergence loop', itersWidth: 100 },
-  { place: 'Colocar', check: 'Comprobar', adjust: 'Ajustar', done: 'Convergido', ok: 'cumple', conflict: 'conflicto', iters: '≤ 5 iteraciones', aria: 'bucle de convergencia de la maquetación', itersWidth: 96 },
+  { place: 'Place', check: 'Check', adjust: 'Adjust', done: 'Converged', ok: 'satisfied', conflict: 'conflict', iters: 'at most 5 iterations', aria: 'layout convergence loop', itersWidth: 112 },
+  { place: 'Colocar', check: 'Comprobar', adjust: 'Ajustar', done: 'Convergido', ok: 'cumple', conflict: 'conflicto', iters: 'hasta 5 iteraciones', aria: 'bucle de convergencia de la maquetación', itersWidth: 110 },
   { place: '排布', check: '检查', adjust: '调整', done: '收敛', ok: '满足', conflict: '冲突', iters: '最多5轮', aria: '排版的收敛循环', itersWidth: 72 },
 );
 
@@ -730,12 +730,12 @@ const FIGURE_SPECS: FigureSpec[] = [
     placement: { position: 'auto', span: 'page' },
     caption: byLang(
       'One Chinese line three ways: every mark a full em; in the mainland Kaiming style, where brackets and the full stop at the end take half an em; and set vertically, the brackets turned and the full stop moved to the corner of its cell.',
-      'Una misma línea en chino de tres maneras: cada signo un cuadratín entero; en el estilo Kaiming de China continental, donde los corchetes y el punto final ocupan medio cuadratín; y en vertical, con los corchetes girados y el punto en la esquina de su casilla.',
+      'Una misma línea en chino de tres maneras: cada signo un cuadratín entero; en el estilo Kaiming de China continental, donde los paréntesis, los signos de título y el punto final ocupan medio cuadratín; y en vertical, con los paréntesis y los signos de título girados y el punto en la esquina de su casilla.',
       '同一行中文的三种排法：每个标点占一个全角；大陆的开明式，括号、书名号和行末句号只占半个字；竖排，括号转90度，句号移到字格的右上角。',
     ),
     altText: byLang(
       'Two rows of the same Chinese sentence on a grid of em squares, the second shorter because its brackets take half a square, and the sentence again in two vertical columns.',
-      'Dos filas de la misma frase en chino sobre una rejilla de cuadratines, la segunda más corta porque sus corchetes ocupan medio cuadratín, y la misma frase en dos columnas verticales.',
+      'Dos filas de la misma frase en chino sobre una rejilla de cuadratines, la segunda más corta porque sus paréntesis y signos de título ocupan medio cuadratín, y la misma frase en dos columnas verticales.',
       '同一句中文排在全角字格上的两行，第二行较短，因为括号和书名号只占半格；右边是同一句竖排成的两列。',
     ),
   },

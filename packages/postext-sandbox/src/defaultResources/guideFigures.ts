@@ -280,7 +280,7 @@ const CJK_COMPOSITION = byLang(
   },
   {
     aria: 'una línea en chino a ancho completo, en estilo Kaiming y en vertical',
-    full: 'Ancho completo: cada signo ocupa un cuadratín', kaiming: 'Kaiming (China continental): corchetes y punto final, medio cuadratín',
+    full: 'Ancho completo: cada signo ocupa un cuadratín', kaiming: 'Kaiming (China continental): paréntesis, signos de título y punto final, medio cuadratín',
     vertical: 'En vertical', ems: (n: number) => `${String(n).replace('.', ',')} cuadratines`,
     legend: ['la mitad en blanco de un signo de ancho completo', 'un signo compuesto en medio cuadratín'],
   },

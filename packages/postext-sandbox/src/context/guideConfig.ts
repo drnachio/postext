@@ -213,12 +213,12 @@ function image(id: string, resourceId: string, o: Common & { width: number; heig
 }
 const slot = (...elements: DesignElement[]): DesignSlot => ({ elements });
 
-/** How a small label is set: Latin labels in capitals, spaced out;
- *  Chinese ones as written, with a little space between the characters
- *  (`tracking` in points, for the Latin editions). */
+/** How a small label is set: Latin labels in capitals, spaced out
+ *  (`tracking` in points); Chinese ones as written, unspaced, since
+ *  tracking would space out the letters of a Latin word inside them too. */
 function label(lang: GuideLang, tracking: number): Pick<TextOpts, 'family' | 'upper' | 'tracking'> {
   return lang === 'zh-Hans'
-    ? { family: ZH_SANS, tracking: Math.min(tracking, 1.2) }
+    ? { family: ZH_SANS }
     : { upper: true, tracking };
 }
 
@@ -428,14 +428,14 @@ function paragraphStyles(lang: GuideLang): ParagraphStyleConfig[] {
 const CALLOUT_WORDS: Record<GuideLang, { try: [string, string]; note: [string, string]; quote: string; figures: [string, string] }> = {
   en: { try: ['Try it', 'Try it in the Sandbox'], note: ['Technical note', 'Technical note'], quote: 'Pull quote', figures: ['Key figures', 'In figures'] },
   es: { try: ['Pruébalo', 'Pruébalo en el Sandbox'], note: ['Nota técnica', 'Nota técnica'], quote: 'Cita destacada', figures: ['Cifras', 'En cifras'] },
-  'zh-Hans': { try: ['试一试', '在Sandbox中试一试'], note: ['技术说明', '技术说明'], quote: '醒目引文', figures: ['数字一览', '数字一览'] },
+  'zh-Hans': { try: ['试一试', '在 Sandbox 中试一试'], note: ['技术说明', '技术说明'], quote: '醒目引文', figures: ['数字一览', '数字一览'] },
 };
 
 function calloutStyles(lang: GuideLang): CalloutStyleConfig[] {
   const zh = lang === 'zh-Hans';
   const words = CALLOUT_WORDS[lang];
   const label = zh
-    ? { fontFamily: ZH_SANS, fontSize: pt(7.5), fontWeight: 700, letterSpacing: pt(1) }
+    ? { fontFamily: ZH_SANS, fontSize: pt(7.5), fontWeight: 700, letterSpacing: pt(0) }
     : { fontFamily: SANS, fontSize: pt(7.5), fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: pt(1.6) };
   const sansBody = zh
     ? {
