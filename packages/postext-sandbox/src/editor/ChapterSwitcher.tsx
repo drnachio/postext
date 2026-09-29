@@ -117,6 +117,12 @@ export function ChapterSwitcher() {
         className="w-full min-w-0 rounded border bg-transparent px-2 py-1 text-xs outline-none focus-visible:border-(--brand-hover)"
         style={{ borderColor: 'var(--rule)', color: 'var(--foreground)' }}
       />
+      {/* Beside the list, which is the menu and holds menu items only. */}
+      <div aria-live="polite">
+        {entries.length === 0 && open && (
+          <p className="m-0 px-1 pt-1.5 text-xs" style={{ color: 'var(--slate)' }}>{labels.chapterFilterEmpty}</p>
+        )}
+      </div>
     </div>
   ) : undefined;
 
@@ -135,6 +141,7 @@ export function ChapterSwitcher() {
         open={open}
         onOpenChange={onOpenChange}
         header={filter}
+        label={labels.chapters}
         highlightItemOnHover={filterable ? false : undefined}
         popupRef={popupRef}
         trigger={
@@ -159,9 +166,6 @@ export function ChapterSwitcher() {
           </button>
         }
       >
-        {entries.length === 0 && open && (
-          <p className="px-2 py-1.5 text-xs" style={{ color: 'var(--slate)' }}>{labels.chapterFilterEmpty}</p>
-        )}
         {entries.map((entry) => {
           if (entry.kind === 'part') {
             const label = partLabel(entry.part);

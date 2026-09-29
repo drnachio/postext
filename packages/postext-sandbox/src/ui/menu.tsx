@@ -16,26 +16,47 @@ interface MenuProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   /** Content fixed above the items (a filter field): the items scroll
-   *  under it. */
+   *  under it. The popup is then a dialog holding the header and the list,
+   *  and the list alone is the menu (a menu may own menu items only). */
   header?: ReactNode;
+  /** With a header: the name of the list of items. */
+  label?: string;
   /** Whether hovering an item highlights (and focuses) it. Off for a menu
    *  with a filter field, which keeps the focus while the pointer moves. */
   highlightItemOnHover?: boolean;
   popupRef?: Ref<HTMLDivElement>;
 }
 
+/** The popup's role: Base UI's `menu`, or a dialog when a header shares
+ *  it with the list. */
+export function menuPopupRole(header: boolean): { role?: 'dialog' } {
+  return header ? { role: 'dialog' } : {};
+}
+
+/** What the popup holds: the items, or the header and the list of items,
+ *  which is then the menu. */
+export function MenuBody({ header, label, children }: { header?: ReactNode; label?: string; children: ReactNode }) {
+  if (!header) return <>{children}</>;
+  return (
+    <>
+      <div className="shrink-0">{header}</div>
+      <div role="menu" aria-label={label} className="min-h-0 flex-1 overflow-y-auto" style={{ overscrollBehavior: 'contain' }}>{children}</div>
+    </>
+  );
+}
+
 /** Dropdown menu with keyboard navigation, portal rendering and anchor
  *  tracking. Compose `MenuItem`/`MenuSeparator` as children. The popup
  *  never runs past the viewport: a long menu (120 chapters) scrolls, and
  *  the highlighted item is scrolled into view as the keyboard moves. */
-export function Menu({ trigger, side = 'bottom', align = 'end', children, open, onOpenChange, header, highlightItemOnHover, popupRef }: MenuProps) {
+export function Menu({ trigger, side = 'bottom', align = 'end', children, open, onOpenChange, header, label, highlightItemOnHover, popupRef }: MenuProps) {
   return (
     <MenuPrimitive.Root
       {...(open !== undefined ? { open } : {})}
       {...(onOpenChange ? { onOpenChange: (next: boolean) => onOpenChange(next) } : {})}
       {...(highlightItemOnHover !== undefined ? { highlightItemOnHover } : {})}
     >
-      <MenuPrimitive.Trigger render={trigger} />
+      <MenuPrimitive.Trigger render={trigger} {...(header ? { 'aria-haspopup': 'dialog' as const } : {})} />
       <MenuPrimitive.Portal>
         <MenuPrimitive.Positioner
           side={side}
@@ -46,6 +67,7 @@ export function Menu({ trigger, side = 'bottom', align = 'end', children, open, 
         >
           <MenuPrimitive.Popup
             ref={popupRef}
+            {...menuPopupRole(!!header)}
             data-postext-popup=""
             style={{
               ...POPUP_SURFACE,
@@ -57,12 +79,7 @@ export function Menu({ trigger, side = 'bottom', align = 'end', children, open, 
                 : { overflowY: 'auto', overscrollBehavior: 'contain' }),
             }}
           >
-            {header ? (
-              <>
-                <div className="shrink-0">{header}</div>
-                <div className="min-h-0 flex-1 overflow-y-auto" style={{ overscrollBehavior: 'contain' }}>{children}</div>
-              </>
-            ) : children}
+            <MenuBody header={header} label={label}>{children}</MenuBody>
           </MenuPrimitive.Popup>
         </MenuPrimitive.Positioner>
       </MenuPrimitive.Portal>
