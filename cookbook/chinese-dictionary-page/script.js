@@ -100,7 +100,7 @@ const bodyText = { fontFamily: SONG, fontSize: pt(BODY), lineHeight: pt(LEAD), c
   boldColor: col('cinnabar'), italicColor: col('ink'), referenceColor: col('ink'),
   textAlign: 'justify', firstLineIndent: pt(0) }; // no indent: the headword opens the entry
 // #endregion
-// The colophon: a line of Chinese in the Kai, then the credits in the Song's Latin letters.
+// The colophon: a sentence of Chinese in the Kai, then the credits in the Song's Latin letters.
 const colophon = { fontSize: pt(7.5), lineHeight: pt(11), color: col('muted'),
   firstLineIndent: pt(0), textAlign: 'left' };
 const paragraphStyles = [
@@ -144,7 +144,7 @@ const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookboo
 const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
   'Noto Serif TC': ['400', '700', '900'], // SONG: the entries, readings, credits; the headwords
   'Noto Sans TC': ['700'], // HEI: guide words, folios, the tab
-  'LXGW WenKai TC': ['400'], // KAI: the colophon's line of Chinese
+  'LXGW WenKai TC': ['400'], // KAI: the colophon's sentence of Chinese
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
