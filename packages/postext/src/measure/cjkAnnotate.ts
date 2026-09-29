@@ -39,6 +39,7 @@ import { DEFAULT_CENTRAL_BASELINE } from '../vdt';
 import { measureInkBox, measureTextWidth, onTextWidthCacheClear } from './canvas';
 import { flowTextWidth, fontEm, measuringVertically } from './vertical';
 import { graphemesOf } from './graphemes';
+import { latinReadingLift } from './rubyLift';
 
 /** The central axis of a face, in em above its baseline. */
 export const CENTRAL = DEFAULT_CENTRAL_BASELINE;
@@ -221,7 +222,9 @@ export function rubyGeometry(input: RubyInput): RubyGeometry {
   // `right` outside zhuyin (pinyin asked right of horizontal text): over.
   const side = position === 'under' ? 1 : -1;
   const rtAxis = axis + side * (em / 2 + rtEm / 2);
-  return { width, inset, rtWidth, runs: [{ text: reading, dx: (width - rtWidth) / 2, dy: baselineOf(rtAxis, rtEm), fontString }], ...allow };
+  // A Latin reading over the base: its descenders clear the base (rubyLift.ts).
+  const lift = side < 0 ? latinReadingLift(reading, fontString, em) : 0;
+  return { width, inset, rtWidth, runs: [{ text: reading, dx: (width - rtWidth) / 2, dy: baselineOf(rtAxis, rtEm) - lift, fontString }], ...allow };
 }
 
 /** The advance of a reading along the line (a zhuyin reading: its

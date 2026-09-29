@@ -25,6 +25,7 @@ import { graphemesOf } from './measure/graphemes';
 import { isCjkGrapheme } from './measure/cjkClasses';
 import { CENTRAL, ZHUYIN_SIZE_RATIO, isZhuyin } from './measure/cjkAnnotate';
 import { fontEm } from './measure/vertical';
+import { latinReadingLift } from './measure/rubyLift';
 import { verticalRuns } from './writingMode';
 
 /** What a block contributes to its lines' painting. */
@@ -269,14 +270,17 @@ function marksNeed(line: VDTLine): number {
 }
 
 /** How much line gap (em of the text) a line's ruby readings over or under
- *  it need: the reading's size (a zhuyin column's, with its tone mark). */
+ *  it need: the reading's size (a zhuyin column's, with its tone mark; a
+ *  Latin reading over the base, with the lift that clears its descenders). */
 function rubyNeed(line: VDTLine, em: number): number {
   let need = 0;
   for (const seg of line.segments ?? []) {
     const r = seg.ruby;
     if (!r || r.position === 'right') continue;
     const rtEm = fontEm(r.fontString);
-    const size = isZhuyin(r.text) ? rtEm * ZHUYIN_SIZE_RATIO * (/[ˊˇˋˉ]/.test(r.text) ? 1.75 : 1) : rtEm;
+    // A Latin reading over its base stands higher by its lift (rubyLift.ts).
+    const lift = r.position === 'under' ? 0 : latinReadingLift(r.text, r.fontString, em);
+    const size = isZhuyin(r.text) ? rtEm * ZHUYIN_SIZE_RATIO * (/[ˊˇˋˉ]/.test(r.text) ? 1.75 : 1) : rtEm + lift;
     need = Math.max(need, size / em);
   }
   return need;

@@ -523,6 +523,14 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
   const units: Unit[] = [];
   const track = (n: number): number => (letterSpacingPx === 0 ? 0 : letterSpacingPx * n);
   let zwsp = false;
+  // A word joiner (U+2060) before the next unit: no break there, in one
+  // span or across two (`**①**⁠文`). It takes no room and is left out.
+  let wj = false;
+  const glue = (): { glueBefore?: true } => {
+    const g = wj;
+    wj = false;
+    return g ? { glueBefore: true } : {};
+  };
   // Which units open a span and hold all of it (the candidates for stacked
   // scripts), by index.
   const wholeSpan = new Set<number>();
@@ -532,12 +540,14 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
     // A ruby base: one unit, sized with its reading once its neighbours
     // are known (`sizeRubies`).
     if (span.ruby && span.text.length > 0) {
-      units.push({ ...rubyBaseUnit(span, fonts, letterSpacingPx, vertical), ...(zwsp ? { zwspBefore: true } : {}) });
+      units.push({ ...rubyBaseUnit(span, fonts, letterSpacingPx, vertical), ...(zwsp ? { zwspBefore: true } : {}), ...glue() });
       zwsp = false;
       continue;
     }
     if (vertical && (span.combineUpright || span.orientation) && span.text.length > 0 && !setsObject(span)) {
+      const first = units.length;
       orientedUnits(span, styleOf(span, fonts, vertical), letterSpacingPx, zwsp, units);
+      if (units.length > first) Object.assign(units[first]!, glue());
       zwsp = false;
       continue;
     }
@@ -562,6 +572,7 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
         token: atomic,
         ...(atomic.refResourceId !== undefined || atomic.footnoteId !== undefined ? { glueBefore: true } : {}),
         ...(zwsp ? { zwspBefore: true } : {}),
+        ...glue(),
       });
       zwsp = false;
       continue;
@@ -595,6 +606,7 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
         style,
         ...(zwsp ? { zwspBefore: true } : {}),
         ...(style.script && units.length === spanFirst ? { glueBefore: true } : {}),
+        ...glue(),
       });
       zwsp = false;
     };
@@ -649,6 +661,7 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
       at += g.length;
       if (isBreakingSpace(g[0])) {
         flushRun();
+        wj = false;
         if (space === '') spaceAt = gAt;
         space += g;
         continue;
@@ -657,6 +670,12 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
       if (g === '\u200B') {
         flushRun();
         zwsp = true;
+        pairOpen = -1;
+        continue;
+      }
+      if (g === '\u2060') {
+        flushRun();
+        wj = true;
         pairOpen = -1;
         continue;
       }
