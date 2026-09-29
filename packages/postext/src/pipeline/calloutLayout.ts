@@ -39,7 +39,7 @@
  * children.
  */
 
-import { flowTextWidth } from '../measure/vertical';
+import { flowTextWidth, lineBaselineOffset } from '../measure/vertical';
 import type { ContentBlock, DirectiveAttrs } from '../parse';
 import { suffixJoiner } from '../parse/inlineFormatting';
 import { spaceDirectiveLines } from '../parse/attrs';
@@ -558,7 +558,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       : measureBlock(titleText, titleFont, titleW, titleLineHeight, { textAlign: 'left' });
     const lines = measured.lines.length > 0
       ? measured.lines
-      : [{ text: titleText, bbox: createBoundingBox(0, 0, titleW, titleLineHeight), baseline: titleLineHeight * 0.8, hyphenated: false }];
+      : [{ text: titleText, bbox: createBoundingBox(0, 0, titleW, titleLineHeight), baseline: lineBaselineOffset(titleLineHeight, titleFont), hyphenated: false }];
     const titleHeight = lines.length * titleLineHeight;
     titleBlock = {
       kind: 'text',
@@ -568,7 +568,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       lines: lines.map((ln, i) => ({
         text: ln.text,
         xOffset: 0,
-        baselineY: cursorY + i * titleLineHeight + titleLineHeight * 0.8,
+        baselineY: cursorY + i * titleLineHeight + lineBaselineOffset(titleLineHeight, titleFont),
         width: ln.bbox.width,
       })),
       clip: false,
@@ -1182,7 +1182,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
           return {
             text: ln.text,
             xOffset: align === 'right' ? slack : align === 'center' ? slack / 2 : 0,
-            baselineY: top + i * lh + lh * 0.8,
+            baselineY: top + i * lh + lineBaselineOffset(lh, font),
             width: ln.bbox.width,
           };
         }),
@@ -1504,7 +1504,7 @@ function buildIconBlock(
       lines: [{
         text: spec.glyph,
         xOffset: Math.max(0, (size - glyphW) / 2),
-        baselineY: y + size * 0.8,
+        baselineY: y + lineBaselineOffset(size, font),
         width: glyphW,
       }],
       clip: false,

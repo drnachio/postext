@@ -181,3 +181,20 @@ export function measureCentralBaseline(family: string): number {
 }
 
 onTextWidthCacheClear(clearCentralBaselineCache);
+
+/**
+ * How far below the top of its line box a line of `font` has its baseline,
+ * for a line box `lineHeightPx` tall. Horizontal text: 0.8 of the line
+ * height, as it always was. Vertical text: the line box runs down the
+ * column and its height is the pitch across it, and the characters stand
+ * centred on the font's central axis ({@link measureCentralBaseline}), so
+ * the baseline goes where that axis falls in the middle of the box: a
+ * column of characters in the middle of its pitch, as CSS sets a vertical
+ * line and as a rule drawn between two columns expects. `font`'s family
+ * and size decide the axis; the renderers turn each character about the
+ * same one (`VDTFlowFrame.centralBaselines`).
+ */
+export function lineBaselineOffset(lineHeightPx: number, font: string): number {
+  if (measureWritingMode !== 'vertical-rl') return lineHeightPx * 0.8;
+  return lineHeightPx / 2 + measureCentralBaseline(fontFamilyOf(font)) * fontEm(font);
+}

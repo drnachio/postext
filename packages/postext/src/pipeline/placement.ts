@@ -15,6 +15,7 @@ import type { HeadingBreakParity } from '../types';
 import { computeColumnBboxes, hasFloatSideColumn } from './config';
 import { contentAreaForPage, mirrorFlowArea, pageMirrored, type PageMetrics } from './buildHelpers';
 import { dimensionToPx } from '../units';
+import { measuringVertically } from '../measure/vertical';
 
 export interface PlacementCursor {
   pageIndex: number;
@@ -25,10 +26,13 @@ export function resetLinePositions(
   lines: VDTLine[],
   lineHeightPx: number,
 ): VDTLine[] {
+  // A vertical line keeps the baseline it was measured with, which centres
+  // its characters in the line box (`lineBaselineOffset`).
+  const vertical = measuringVertically();
   return lines.map((line, i) => ({
     ...line,
     bbox: createBoundingBox(line.bbox.x, i * lineHeightPx, line.bbox.width, lineHeightPx),
-    baseline: i * lineHeightPx + lineHeightPx * 0.8,
+    baseline: i * lineHeightPx + (vertical ? line.baseline - line.bbox.y : lineHeightPx * 0.8),
   }));
 }
 

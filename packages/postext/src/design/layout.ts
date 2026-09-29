@@ -1,4 +1,4 @@
-import { flowTextWidth, getMeasureWritingMode, withMeasureWritingMode } from '../measure/vertical';
+import { flowTextWidth, getMeasureWritingMode, lineBaselineOffset, withMeasureWritingMode } from '../measure/vertical';
 import type {
   AnchorEdge,
   ColorValue,
@@ -1294,6 +1294,12 @@ function layoutTextElement(
     m = layoutRichText(richM, lineHeightPx, el.overflow, contentMax, el.hyphenate);
   } else {
     m = layoutText(text, measure, lineHeightPx, el.overflow, contentMax, el.hyphenate);
+  }
+  // Set vertically (in a vertical flow, or turned by `writingMode`): each
+  // line's characters stand on the middle of its line box, as a vertical
+  // line of the body does (`lineBaselineOffset`).
+  if (getMeasureWritingMode() === 'vertical-rl') {
+    for (const line of m.lines) line.baselineY = line.topY + lineBaselineOffset(line.height, fontString);
   }
   // The tracking after a line's last glyph is advance, not ink: a box that
   // shrink-wraps its text leaves it out (EF-153), as the alignment of each

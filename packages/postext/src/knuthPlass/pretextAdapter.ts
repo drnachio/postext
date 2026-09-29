@@ -198,6 +198,9 @@ export function reconstructPretextLines(
   /** `KPOptions.trackingPerChar` the breaks were found with: each line
    *  takes the tracking the breaker counted on (`VDTLine.letterSpacing`). */
   trackingPerChar = 0,
+  /** How far below its top each line has its baseline
+   *  (`lineBaselineOffset`); 0.8 of the line height by default. */
+  baselineOffsetPx = lineHeightPx * 0.8,
 ): VDTLine[] {
   const segments = prepared.segments;
   const widths = (prepared as unknown as { widths: number[] }).widths;
@@ -294,7 +297,7 @@ export function reconstructPretextLines(
     lines.push({
       text: lineText,
       bbox: createBoundingBox(lineIndent, li * lineHeightPx, contentWidth, lineHeightPx),
-      baseline: li * lineHeightPx + lineHeightPx * 0.8,
+      baseline: li * lineHeightPx + baselineOffsetPx,
       hyphenated,
       // The line ends on a hyphen the word carries (EF-140).
       ...(hyphenated && bareBreak ? { hardHyphen: true } : {}),

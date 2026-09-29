@@ -18,7 +18,7 @@ import { trimChipLineEdges } from './chipEdges';
 import { cjkJoinBreaks, hasCJK } from './cjk';
 import { composeCjkParagraph, cjkWordBreaks, composesAsCjk, spanMarks, type CjkWordBreaks } from './cjkCompose';
 import { graphemeCount } from './graphemes';
-import { fontEm, getMeasureUprightDigits, getMeasureWritingMode, measuringVertically, verticalTextWidth, withMeasureWritingMode } from './vertical';
+import { fontEm, getMeasureUprightDigits, getMeasureWritingMode, lineBaselineOffset, measuringVertically, verticalTextWidth, withMeasureWritingMode } from './vertical';
 import { NO_BREAK_SPACES, WORDS_AND_SPACES_RE, isBlankText, isBreakingSpace, isBreakingSpaceRun } from './spaces';
 import { breaksAfterDash, breaksAfterHardHyphen, hasCompound, isDash, raggedStretchPx } from './breakRules';
 
@@ -1304,7 +1304,7 @@ function measureRichText(
       const kpLines = reconstructRichLines(
         items, breaks, tokens, lineHeightPx,
         lineWidthFn, lineIndentFn, normalSpaceWidth, textAlign,
-        trackingPerChar,
+        trackingPerChar, lineBaselineOffset(lineHeightPx, normalFont),
       );
       if (!hasOverfullLine(kpLines, lineWidthFn, ragged)) {
         if (hasSmallCaps) expandSmallCaps(kpLines, normalFont, boldFont, italicFont, boldItalicFont, letterSpacingPx);
@@ -1321,6 +1321,7 @@ function measureRichText(
   }
 
   const lines: VDTLine[] = [];
+  const baselineOffset = lineBaselineOffset(lineHeightPx, normalFont);
   let y = 0;
   let tokenIdx = 0;
   let lineIndex = 0;
@@ -1555,7 +1556,7 @@ function measureRichText(
     lines.push({
       text: lineText,
       bbox: createBoundingBox(lineIndent, y, contentWidth, lineHeightPx),
-      baseline: y + lineHeightPx * 0.8,
+      baseline: y + baselineOffset,
       hyphenated: lineHyphenated,
       ...(lineHyphenated && lineHardHyphen ? { hardHyphen: true } : {}),
       ...(lineRepeated && lineText.startsWith('-') ? { repeatedHyphen: true } : {}),

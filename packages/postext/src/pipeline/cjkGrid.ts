@@ -29,8 +29,6 @@ import { resolvePageConfig } from '../defaults/page';
 import { resolveBodyTextConfig } from '../defaults/bodyText';
 import { DEFAULT_LAYOUT_CONFIG, resolveLayoutConfig } from '../defaults/layout';
 import { dimensionToPx } from '../units';
-import { DEFAULT_CENTRAL_BASELINE } from '../vdt';
-import { fontFamilyOf } from '../measure/vertical';
 
 /** The grid of a config as the pre-pass sets it (px at the page's dpi). */
 export interface CjkGridGeometry {
@@ -183,8 +181,8 @@ export const CHARACTER_GRID_COLOR = 'rgba(128, 128, 128, 0.45)';
  *  (one em of the body size) and the top of each row's cells. A row's cell
  *  is the character's em box on the line: from 0.88 em above the line's
  *  baseline (set 0.8 of the line pitch down) to 0.12 em below it; on a
- *  vertical page, half an em either side of the axis the painter centres
- *  the body's characters on (`VDTFlowFrame.centralBaselines`). Undefined
+ *  vertical page, half an em either side of the middle of the line's
+ *  pitch, where the body's characters stand (`lineBaselineOffset`). Undefined
  *  when the grid is off or hidden. The geometry is the page's content area,
  *  in the frame its blocks are laid out in (the flow frame of a vertical
  *  page, where a column is a tier and a row a line down the page). */
@@ -235,11 +233,10 @@ export function cjkGridCells(
       columnChars.push(grid.charsPerLine);
     }
   }
-  // How far the em box reaches above the baseline: 0.88 em, or on a
-  // vertical page the body family's central baseline plus half an em.
-  const central = pageFlow ? pageFlow.centralBaselines?.[fontFamilyOf(`1px ${resolved.bodyText.fontFamily ?? ''}`)] ?? DEFAULT_CENTRAL_BASELINE : undefined;
-  const above = central !== undefined ? (central + 0.5) * em : em * 0.88;
+  // Where a row's cells start in its line: the em box reaches 0.88 em
+  // above the baseline, set 0.8 of the pitch down; on a vertical page the
+  // characters stand in the middle of the pitch (`lineBaselineOffset`).
   const rows: number[] = [];
-  for (let j = 0; j < grid.linesPerPage; j++) rows.push(contentArea.y + j * pitch + pitch * 0.8 - above);
+  for (let j = 0; j < grid.linesPerPage; j++) rows.push(pageFlow ? contentArea.y + j * pitch + (pitch - em) / 2 : contentArea.y + j * pitch + pitch * 0.8 - em * 0.88);
   return { cell: em, chars: grid.charsPerLine, columns, columnChars, rows };
 }

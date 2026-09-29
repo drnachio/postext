@@ -214,6 +214,32 @@ describe('vertical text in the PDF (#191)', () => {
     expect(show.tm[4]).toBeCloseTo(line.bbox.x + 16 * (0.5 - (0.88 - central)), 3);
   });
 
+  it('stands each column in the middle of its line box, and a design title in the middle of its own line (#188)', async () => {
+    const { doc, pdf } = await render('此開卷也', config('zh-Hant'));
+    const line = doc.pages[0]!.columns[0]!.blocks[0]!.lines[0]!;
+    const show = uprightShows(pageOps(pdf), pageFonts(pdf))[0]!;
+    expect(show.tm[5]).toBeCloseTo(420 - (line.bbox.y + line.bbox.height / 2), 3);
+    // An opener title of 40 pt on a line of 40 pt: the same, in its own box.
+    const opened = await render('# 桃園結義\n\n此開卷也', config('zh-Hant', {
+      headings: { fontFamily: 'Noto Serif TC', levels: [{ level: 1, breakBefore: { enabled: false }, advancedDesign: { enabled: true, minHeight: pt(95), slot: { elements: [
+        { kind: 'text', id: 't', content: '{titleText}', fontFamily: 'Noto Serif TC', fontSize: pt(40), lineHeight: 1, overflow: 'clip', placement: { anchor: { to: 'container', edge: 'top-left' }, offset: { x: pt(20), y: pt(19) } } },
+      ] } } }] },
+    }));
+    const page = opened.doc.pages[0]!;
+    const slot = page.openerBand ?? page.columns[0]!.blocks.find((b) => b.designOverlay)!.designOverlay!;
+    const title = slot.blocks.find((b) => b.kind === 'text')!;
+    const sized: number[] = [];
+    let size = 0;
+    for (const op of pageOps(opened.pdf).split('\n')) {
+      const tf = /^\/\S+ ([\d.]+) Tf$/.exec(op);
+      if (tf) size = Number(tf[1]);
+      const tm = /^([-\d. ]+) Tm$/.exec(op);
+      if (tm && size === 40) sized.push(Number(tm[1]!.trim().split(/\s+/)[5]));
+    }
+    expect(sized.length).toBeGreaterThan(0);
+    for (const y of sized) expect(y).toBeCloseTo(420 - (title.bbox.y + title.bbox.height / 2), 3);
+  });
+
   it('sets a cluster of several glyphs in one cell, the characters after it where they were measured (#191 review)', async () => {
     // 此 with a combining acute the font does not compose: two glyphs (the
     // fixture has no acute: .notdef). In one show the second would push

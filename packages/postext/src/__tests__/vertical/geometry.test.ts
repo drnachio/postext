@@ -51,7 +51,7 @@ function flowShape(doc: VDTDocument) {
     contentArea: p.contentArea,
     columns: p.columns.map((c) => ({
       bbox: c.bbox,
-      blocks: c.blocks.map((b) => ({ type: b.type, bbox: b.bbox, lines: b.lines.map((l) => ({ text: l.text, bbox: l.bbox, baseline: l.baseline })) })),
+      blocks: c.blocks.map((b) => ({ type: b.type, bbox: b.bbox, lines: b.lines.map((l) => ({ text: l.text, bbox: l.bbox })) })),
     })),
   })));
 }
@@ -129,6 +129,12 @@ describe('vertical flow frame — page geometry', () => {
       expect(dv.pages.length).toBeGreaterThan(1);
       expect(dv.pages.length).toBe(dh.pages.length);
       expect(flowShape(dv)).toEqual(flowShape(dh));
+      // The baselines differ: a vertical line centres its characters in
+      // its line box (the stub's central baseline is 0.38 em), a horizontal
+      // one sets its baseline 0.8 of the line height down.
+      const offsets = (d: VDTDocument) => [...new Set(d.pages.flatMap((p) => p.columns.flatMap((c) => c.blocks.filter((b) => b.type === 'paragraph').flatMap((b) => b.lines.map((l) => Math.round((l.baseline - l.bbox.y) * 1e6) / 1e6)))))];
+      expect(offsets(dv)).toEqual([Math.round((px(pt(16)) / 2 + 0.38 * px(pt(10))) * 1e6) / 1e6]);
+      expect(offsets(dh)).toEqual([Math.round(px(pt(16)) * 0.8 * 1e6) / 1e6]);
     }
   });
 

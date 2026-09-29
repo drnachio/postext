@@ -67,7 +67,7 @@ import { hasCJK } from './cjk';
 import { graphemeCount, graphemesOf, lastGrapheme } from './graphemes';
 import { isBreakingSpace } from './spaces';
 import { trimChipLineEdges } from './chipEdges';
-import { cellAdvance, fontEm, fontFamilyOf, getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, measureCentralBaseline, verticalTrackCount, withMeasureWritingMode } from './vertical';
+import { cellAdvance, fontEm, fontFamilyOf, getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, lineBaselineOffset, measureCentralBaseline, verticalTrackCount, withMeasureWritingMode } from './vertical';
 import { verticalRuns } from '../writingMode';
 import { foldWidth, isZhuyin, noteRowBaselines, readingAdvance, rubyGeometry, splitNote, withFontSize, ZHUYIN_SIZE_RATIO, type RubyGeometry } from './cjkAnnotate';
 import {
@@ -1484,6 +1484,8 @@ interface ComposeContext {
   cap: number;
   normalSpace: number;
   lineHeightPx: number;
+  /** How far below its top a line has its baseline (`lineBaselineOffset`). */
+  baselineOffset: number;
   indentOf: (line: number) => number;
   measureOf: (line: number) => number;
   /** Vertical text: a Western run keeps the gap after it in its width. */
@@ -1955,7 +1957,7 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
   return {
     text,
     bbox: createBoundingBox(ctx.indentOf(li), y, width, ctx.lineHeightPx),
-    baseline: y + ctx.lineHeightPx * 0.8,
+    baseline: y + ctx.baselineOffset,
     hyphenated: range.hyphenated,
     ...(range.hyphenated && range.hardHyphen ? { hardHyphen: true } : {}),
     segments: trimmed,
@@ -2024,6 +2026,7 @@ export function composeCjkParagraph(
     cap: trackingCap,
     normalSpace: textAlign === 'justify' ? normalSpaceWidthFor(normalFont) + letterSpacingPx : 0,
     lineHeightPx,
+    baselineOffset: lineBaselineOffset(lineHeightPx, normalFont),
     indentOf,
     measureOf,
     ...(vertical ? { vertical: true } : {}),

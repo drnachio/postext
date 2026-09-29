@@ -21,7 +21,7 @@ import { measureRichBlock } from './rich';
 import { hasCJKRun } from './cjk';
 import { composesAsCjk } from './cjkCompose';
 import { markCuts } from './markCuts';
-import { getMeasureUprightDigits, getMeasureWritingMode, measuringVertically, withMeasureWritingMode } from './vertical';
+import { getMeasureUprightDigits, getMeasureWritingMode, lineBaselineOffset, measuringVertically, withMeasureWritingMode } from './vertical';
 import { holdsVerticalCell } from '../writingMode';
 import { WORDS_AND_SPACES_RE } from './spaces';
 import { breaksAfterHardHyphen, hasCompound, raggedStretchPx } from './breakRules';
@@ -312,7 +312,7 @@ export function measureBlock(
       const kpLines = reconstructPretextLines(
         items, breaks, prepared, lineHeightPx,
         lineWidthFn, lineIndentFn, normalSpaceWidth, textAlign,
-        trackingPerChar,
+        trackingPerChar, lineBaselineOffset(lineHeightPx, font),
       );
       if (!hasOverfullLine(kpLines, lineWidthFn, ragged)) {
         return {
@@ -328,6 +328,7 @@ export function measureBlock(
   }
 
   const lines: VDTLine[] = [];
+  const baselineOffset = lineBaselineOffset(lineHeightPx, font);
   let cursor: LayoutCursor = { segmentIndex: 0, graphemeIndex: 0 };
   let y = 0;
   let lineIndex = 0;
@@ -377,7 +378,7 @@ export function measureBlock(
     lines.push({
       text: hyphenated && !lineText.endsWith('-') ? lineText + '-' : lineText,
       bbox: createBoundingBox(lineIndent, y, line.width, lineHeightPx),
-      baseline: y + lineHeightPx * 0.8,
+      baseline: y + baselineOffset,
       hyphenated,
       segments,
       isLastLine: false,
