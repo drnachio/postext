@@ -66,7 +66,9 @@ const tab = (parity) => {
   const at = (x, width) => ({ anchor: { to: 'page', edge },
     offset: { x: mm(parity === 'odd' ? x : -x), y: mm(TOP + INITIALS.indexOf('T') * STEP + 0.3) },
     size: { width: mm(width), height: mm(STEP - 0.6) } });
-  return [ // 6 mm inside the trim and 3 mm past it, into the bleed; the letter on the 6 mm
+  // 6 mm inside the trim and 3 mm past it: the page cuts the tab square at the fore-edge
+  // (a print file with cutLines prints the 3 mm in its bleed); the letter on the 6 mm.
+  return [
     { kind: 'box', id: `tab-${parity}`, parity, placement: at(3, 9),
       style: { backgroundColor: col('cinnabar'), borderRadius: mm(1.2) } },
     { kind: 'text', id: `tab-letter-${parity}`, parity, content: 'T', fontFamily: HEI,
@@ -79,11 +81,9 @@ const tab = (parity) => {
 // #region headwords: 15 pt Song Black in cinnabar, the pinyin over it in the line gap
 // A heading with no design of its own keeps its reading: '## {天|tiān}' sets tiān over 天.
 // Two grid lines hold the headword and a 7.5 pt reading, so every entry stays on the grid.
+// A Latin reading stands clear of its base by its descenders: the g of tīng stays off 汀.
 const cjk = {
   grid: { enabled: true, charsPerLine: CHARS, linesPerPage: LINES },
-  // The composer counts ① ② as Latin and would put a quarter em between each number and
-  // the character after it. The entries hold no Latin words, so the space goes.
-  latinSpacing: pt(0),
   // The regular Song, not the heading's Black: a reading takes the face of its base.
   ruby: { fontFamily: SONG, fontSize: em(0.5), color: col('cinnabar') },
 };
@@ -94,14 +94,18 @@ const headword = { level: 2, fontSize: pt(15), lineHeight: pt(2 * LEAD), marginT
 // #region senses: one paragraph to an entry, the sense numbers ① ② in cinnabar
 // As the Kangxi Dictionary sets an entry: the rhyme-book readings (反切), then the senses
 // run in, each after its number. '**②**' marks a number, and the text prints its bold in
-// cinnabar: the only bold on these pages.
+// cinnabar: the only bold on these pages. A word joiner (U+2060, invisible) follows each
+// number in the Markdown: no line ends on a number, away from the sense it opens.
 const bodyText = { fontFamily: SONG, fontSize: pt(BODY), lineHeight: pt(LEAD), color: col('ink'),
   boldColor: col('cinnabar'), italicColor: col('ink'), referenceColor: col('ink'),
   textAlign: 'justify', firstLineIndent: pt(0) }; // no indent: the headword opens the entry
 // #endregion
+// The colophon: a line of Chinese in the Kai, then the credits in the Song's Latin letters.
+const colophon = { fontSize: pt(7.5), lineHeight: pt(11), color: col('muted'),
+  firstLineIndent: pt(0), textAlign: 'left' };
 const paragraphStyles = [
-  { id: 'colophon', fontFamily: KAI, fontSize: pt(7.5), lineHeight: pt(11), color: col('muted'),
-    firstLineIndent: pt(0), textAlign: 'left', marginTop: pt(LEAD) },
+  { id: 'colophon-zh', ...colophon, fontFamily: KAI, marginTop: pt(LEAD) },
+  { id: 'colophon', ...colophon, fontFamily: SONG, marginTop: pt(3) },
 ];
 
 const config = () => ({ // a factory: the engine caches resolved configs per object
@@ -118,9 +122,10 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   cjk,
   bodyText,
   headings: { fontFamily: SONG, fontWeight: 900, color: col('cinnabar'), textAlign: 'left',
-    // Columns end level: the lines a column has left over go above its headwords, one to a
-    // headword at most, so no entry stands three lines clear of the one before it.
-    balancing: { maxLinesPerHeading: 1 },
+    // Every entry follows the one before with no line between them. Column balancing would
+    // open lines above some headwords to bring a short column down to the foot; off, a column
+    // that cannot take the next headword and two lines of its text ends short instead.
+    balancing: { enabled: false },
     levels: [
       // No letter opens in these pages; restated all the same, since any headings object
       // drops the H1 break (gotcha: headings-drop-h1-break).
@@ -137,9 +142,9 @@ const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookboo
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
-  'Noto Serif TC': ['400', '700', '900'], // SONG: the entries and the readings; the headwords
+  'Noto Serif TC': ['400', '700', '900'], // SONG: the entries, readings, credits; the headwords
   'Noto Sans TC': ['700'], // HEI: guide words, folios, the tab
-  'LXGW WenKai TC': ['400'], // KAI: the colophon
+  'LXGW WenKai TC': ['400'], // KAI: the colophon's line of Chinese
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
@@ -153,7 +158,7 @@ await loadCjkFonts({ [SONG]: ['400'] }, markdown);
 await loadCjkFonts({ [SONG]: ['700'] }, all(/\*\*(.+?)\*\*/g));
 await loadCjkFonts({ [SONG]: ['900'] }, heads);
 await loadCjkFonts({ [HEI]: ['700'] }, `${heads}—0123456789T`);
-await loadCjkFonts({ [KAI]: ['400'] }, all(/style="colophon"\}\n(.+)\n/g));
+await loadCjkFonts({ [KAI]: ['400'] }, all(/style="colophon-zh"\}\n(.+)\n/g));
 // #endregion
 // Pages 634 to 637 of the dictionary: page 1 is a verso, so the four lie as two spreads.
 const continuation = { pageIndexOffset: 633, pageNumbering: { startAt: 634 } };
