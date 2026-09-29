@@ -186,6 +186,18 @@ describe('collectFontUsage / missingUsedVariants', () => {
     expect(missingUsedVariants(family('Unused', []), config)).toEqual([]);
   });
 
+  it('asks no italics of the body family where emphasis is set as dots', () => {
+    const body = (extra: object) => collectFontUsage({ bodyText: { fontFamily: 'Noto Serif TC' }, ...extra } as unknown as import('postext').PostextConfig).get('Noto Serif TC');
+    const italics = (extra: object) => body(extra)!.filter((v) => v.style === 'italic');
+    // A Chinese document: `*…*` sets dots under Chinese text. Bold is asked.
+    expect(italics({ locale: 'zh-Hant' })).toEqual([]);
+    expect(body({ locale: 'zh-Hant' })).toContainEqual({ weight: 700, style: 'normal' });
+    expect(italics({ locale: 'en', cjk: { emphasis: 'dots' } })).toEqual([]);
+    // Italic emphasis asks for both italics, as in any other document.
+    expect(italics({ locale: 'zh-Hans', cjk: { emphasis: 'italic' } })).toHaveLength(2);
+    expect(italics({ locale: 'en' })).toHaveLength(2);
+  });
+
   it('asks bold and the other slant of a design text set with inline marks', () => {
     const config = {
       header: {

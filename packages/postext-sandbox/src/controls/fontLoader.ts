@@ -2,6 +2,7 @@ import type { CustomFontFamily, CustomFontVariant, PostextConfig, VerticalAltern
 import type { FontPayload } from 'postext/worker';
 import {
   DEFAULT_TEXT_ELEMENT,
+  defaultCjkEmphasis,
   loadVerticalAlternates,
   unregisterVerticalAlternates,
   primaryFontFamily,
@@ -644,7 +645,10 @@ function missingVariants(family: CustomFontFamily, wanted: readonly FontVariantU
  * config node carrying a `fontFamily` contributes its `fontWeight` (400
  * when unset) and `fontStyle` (normal when unset). The body text family
  * also needs the four standard variants, since markdown emphasis sets bold
- * and italic runs in it; so does a design text with `inlineMarks`.
+ * and italic runs in it; so does a design text with `inlineMarks`. A
+ * document whose emphasis is set as dots (`cjk.emphasis`, by default in a
+ * Chinese document) asks the body family for bold only: `*…*` puts dots
+ * under Chinese text there, and a Chinese face has no italics to give.
  */
 export function collectFontUsage(config: PostextConfig): Map<string, FontVariantUse[]> {
   const usage = new Map<string, FontVariantUse[]>();
@@ -680,7 +684,9 @@ export function collectFontUsage(config: PostextConfig): Map<string, FontVariant
   walk(config);
   const body = config.bodyText?.fontFamily;
   if (typeof body === 'string' && body.trim()) {
-    for (const v of STANDARD_VARIANTS) add(primaryFontFamily(body), v);
+    const emphasis = config.cjk?.emphasis ?? 'auto';
+    const dots = emphasis === 'dots' || (emphasis === 'auto' && defaultCjkEmphasis(config.locale) === 'dots');
+    for (const v of STANDARD_VARIANTS) if (!(dots && v.style === 'italic')) add(primaryFontFamily(body), v);
   }
   return usage;
 }
