@@ -32,8 +32,13 @@ export type MarkCutRule = 'text' | 'words' | 'composed';
 /** The offsets (UTF-16) at which `text` is painted apart under `rule`;
  *  empty when it is painted whole. */
 export function markCuts(text: string, rule: MarkCutRule): number[] {
-  if (rule === 'text') return cjkMarkCuts(text, hasCJK(text));
   if (rule === 'composed') return composedCuts(text);
+  // Text with no CJK is never cut under the other two rules: they count
+  // the shared marks only next to CJK text, and every other mark they cut
+  // is CJK itself. Every segment of a Latin page is painted through here,
+  // so it is not scanned character by character.
+  if (!hasCJK(text)) return [];
+  if (rule === 'text') return cjkMarkCuts(text, true);
   let cuts: number[] | undefined;
   let start = 0;
   for (let i = 0; i <= text.length; i++) {
