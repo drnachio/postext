@@ -24,12 +24,6 @@
     "cjk-source-script-mix", "headings-drop-h1-break"
   ],
   "related": ["red-ink-commentary", "vertical-novel-right-bound", "baseline-grid-book-page", "certificate-single-page"],
-  "workarounds": [
-    {
-      "package": "postext",
-      "note": "renderPageToCanvas paints with the direction the canvas inherits from the page (ctx.direction 'inherit'); the cjk kit's showBook sets dir=\"rtl\" on each spread of a right-bound book, so the horizontal Latin colophon would be reordered and anchored from the right. The pen sets #pages canvas { direction: ltr }; the fix belongs in renderPageToCanvas (ctx.direction = 'ltr') or in the kit's showBook style."
-    }
-  ],
   "engine": { "postext": "1.9.0", "postextPdf": "1.9.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "images", "cjk"],
   "sample": { "locales": ["en", "es"] },
@@ -42,8 +36,8 @@
     "text": [
       {
         "what": {
-          "en": "論語集註 (Collected Commentaries on the Analects), juan 1, the book 學而 from its opening to the end of its tenth section, in the copy made for the 四庫全書 (Siku quanshu, 1773–1782); Wikisource transcription, revision 523110. 巳 is read as 已 or 己 by its sentence, and six variant forms Noto Serif TC does not draw (廹 徳 絶 逺 専 内) are set in their standard forms",
-          "es": "論語集註 (Comentarios reunidos a las Analectas), juan 1, el libro 學而 desde el comienzo hasta el final de su décima sección, en la copia hecha para el 四庫全書 (Siku quanshu, 1773–1782); transcripción de Wikisource, revisión 523110. 巳 se lee como 已 o 己 según la frase, y seis variantes que Noto Serif TC no dibuja (廹 徳 絶 逺 専 内) se componen en su forma normal"
+          "en": "論語集註 (Collected Commentaries on the Analects), juan 1, the book 學而 from its opening to the end of its tenth section, in the copy made for the 四庫全書 (Siku quanshu, 1773–1782); Wikisource transcription, revision 523110. 巳 is read as 已 or 己 by its sentence; 開 in 張敬夫's 必開其政 is corrected to 聞, as in the words of the Analects he repeats and in Wikisource's other edition (論語集注卷一, revision 2598582); the two characters the transcription gives as glyph images are set as 傳 (以忠信為傳習之本) and 邦 (夫子至於是邦也); and six variant forms Noto Serif TC does not draw (廹 徳 絶 逺 専 内) are set in their standard forms",
+          "es": "論語集註 (Comentarios reunidos a las Analectas), juan 1, el libro 學而 desde el comienzo hasta el final de su décima sección, en la copia hecha para el 四庫全書 (Siku quanshu, 1773–1782); transcripción de Wikisource, revisión 523110. 巳 se lee como 已 o 己 según la frase; el 開 de 必開其政, en la cita de 張敬夫, se cambia por 聞, como en las palabras de las Analectas que repite y en la otra edición de Wikisource (論語集注卷一, revisión 2598582); los dos caracteres que la transcripción da como imágenes se componen como 傳 (以忠信為傳習之本) y 邦 (夫子至於是邦也), y seis variantes que Noto Serif TC no dibuja (廹 徳 絶 逺 専 内) se componen en su forma normal"
         },
         "who": "Zhu Xi (1130–1200); transcription by Wikisource editors",
         "source": "https://zh.wikisource.org/w/index.php?title=%E5%9B%9B%E6%9B%B8%E7%AB%A0%E5%8F%A5%E9%9B%86%E8%A8%BB_(%E5%9B%9B%E5%BA%AB%E5%85%A8%E6%9B%B8%E6%9C%AC)/%E8%AB%96%E8%AA%9E%E5%8D%B701&oldid=523110",

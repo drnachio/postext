@@ -86,8 +86,8 @@ const frame = (id, [x0, x1], parity) => [[RULES, 1.8], [0, 0.6]].map(([out, t], 
   kind: 'box', id: `${id}-${i}`, parity, style: { borderColor: col('rule'), borderWidth: pt(t) },
   placement: { ...at(x0 - out - t / 2, Y0 - out - t / 2),
     size: { width: pt(x1 - x0 + 2 * out + t), height: pt(Y1 - Y0 + 2 * out + t) } } }));
-// The middle of the strip, where its text stands: the fold, less the same shift. Both
-// pages draw the text whole, and each shows its own half of it.
+// The middle of the strip, where its text stands: halfway between its two rules, which
+// sit the same shift off the fold. Both pages draw the text whole, and each shows its half.
 const mid = (parity) => (parity === 'even' ? 0 : W) - SHIFT;
 const strip = (id, content, parity, y) => ({ kind: 'text', id: `${id}-${parity}`, parity,
   content, writingMode: 'vertical-rl', fontFamily: SONG, fontSize: pt(11), color: col('ink'),
@@ -120,6 +120,8 @@ const furniture = (parity) => [
 // A heading style of its own: hidden and unnumbered, so the leaves still count from 一, and
 // its header replaces the leaves' furniture on its page. Its attributes hold the byline,
 // this edition's note in red and the colophon, the one line that changes with the language.
+const CELLS = [0, 2, LINES - 2, LINES]; // the byline, title and note, in pitches from the right
+const cell = (i) => [CELLS[i], CELLS[i + 1]];
 const column = (id, content, [k0, k1], style) => ({ kind: 'text', id, content,
   writingMode: 'vertical-rl', color: col('ink'), overflow: 'clip', verticalAlign: 'middle',
   placement: { ...at(line('odd', k1), TOP),
@@ -129,13 +131,13 @@ const titlePage = {
   footer: { elements: [] },
   header: { elements: [
     ...frame('title-frame', [line('odd', LINES), line('odd', 0)]),
-    rule('title-rule-1', line('odd', 2)), rule('title-rule-2', line('odd', 7)),
-    column('byline', '{attr.byline}', [0, 2], { fontFamily: SONG, fontSize: pt(14),
+    rule('title-rule-1', line('odd', CELLS[1])), rule('title-rule-2', line('odd', CELLS[2])),
+    column('byline', '{attr.byline}', cell(0), { fontFamily: SONG, fontSize: pt(14),
       align: 'left' }),
-    column('book', '{title}', [2, 7], { fontFamily: KAI, fontSize: pt(60),
+    column('book', '{title}', cell(1), { fontFamily: KAI, fontSize: pt(60),
       letterSpacing: pt(20), align: 'center' }),
-    column('note', '{attr.note}', [7, 9], { fontFamily: KAI, fontSize: pt(11),
-      lineHeight: 1.6, color: col('vermilion'), align: 'right' }),
+    column('note', '{attr.note}', cell(2), { fontFamily: KAI, fontSize: pt(11),
+      lineHeight: pt(0.6 * PITCH), color: col('vermilion'), align: 'right' }), // 3 in 2 pitches
     { kind: 'text', id: 'colophon', content: '{attr.colophon}', fontFamily: SONG,
       fontSize: pt(6.5), lineHeight: 1.4, color: col('muted'), align: 'left', overflow: 'wrap',
       placement: { ...at(line('odd', LINES) - RULES - 0.9, Y1 + RULES + 16),
@@ -156,8 +158,9 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   },
   headings: { fontFamily: SONG, fontWeight: 400, color: col('ink'), levels: [leaf] },
   headingStyles: [titlePage],
-  // The byline, ten characters down the column after the title.
-  paragraphStyles: [{ id: 'byline', indent: em(10), firstLineIndent: pt(0), textAlign: 'left' }],
+  // The byline's seven characters (宋　朱子　集註) end at the foot of the column.
+  paragraphStyles: [{ id: 'byline', indent: em(CHARS - 7), firstLineIndent: pt(0),
+    textAlign: 'left' }],
 });
 
 // ─── 2 · Content ────────────────────────────────────────────────────────────
@@ -181,9 +184,6 @@ await loadCjkFonts({ [KAI]: FONTS[KAI] }, `論語集註${note}`);
 await loadSvg('fish.svg', FISH);
 const doc = await buildWithFonts(
   () => buildDocument({ markdown, resources }, config()), markdown);
-// workaround: a canvas takes its text direction from the page, and showBook sets
-// dir="rtl" on each spread, which would reorder and shift the Latin colophon.
-document.head.insertAdjacentHTML('beforeend', '<style>#pages canvas { direction: ltr }</style>');
 showBook(doc, { title: t({ en: 'A woodblock leaf: double frame, rules and centre strip',
   es: 'Una hoja xilográfica: marco doble, filetes y franja central' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider, resourceBytes: imageBytes }),
