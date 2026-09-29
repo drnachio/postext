@@ -58,7 +58,7 @@
   "workarounds": [
     {
       "package": "postext",
-      "note": "the CJK composer sets lines first-fit and bodyText.avoidRunts acts on Latin text only, so a paragraph may end on a lone character (孤字), and a line may break a book title after its first character (《說|文》). The Kangxi excerpts are cut, clause by clause and in the source's order, so that no entry ends on a lone character, no title breaks after its first character and every column but the last ends on its last grid line (checked in the VDT, both editions); 鐵 keeps one of its ancient forms (〔古文〕銕) and 天 leaves out its direct reading (並腆平聲), which moves their first line breaks off 《說|文》"
+      "note": "the CJK composer may break a line inside a book title after its first character (《說|文》). The Kangxi excerpts are cut, clause by clause and in the source's order, so that no title breaks after its first character and every column but the last ends on its last grid line (checked in the VDT, both editions); 鐵 keeps one of its ancient forms (〔古文〕銕) and 天 leaves out its direct reading (並腆平聲), which moves their first line breaks off 《說|文》"
     },
     {
       "package": "postext",

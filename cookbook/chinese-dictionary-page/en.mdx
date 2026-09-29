@@ -69,5 +69,5 @@ A compact dictionary sets the headword in bold at the start of its paragraph. Pu
 
 ## Pitfalls
 
-- The composer does not keep a paragraph from ending on a line of one character (孤字, as 添。 alone under the rest of its entry), and it may break a book title after its first character (《說|文》). The thirty entries are cut from much longer Kangxi articles, and the cuts were chosen so that no entry ends that way and no title breaks there. A word joiner inside a title (`《說⁠文》`) keeps it whole, at the cost of a line one character shorter.
+- The composer may break a book title after its first character (《說|文》). The thirty entries are cut from much longer Kangxi articles, and the cuts were chosen so that no title breaks there. A word joiner inside a title (`《說⁠文》`) keeps it whole, at the cost of a line one character shorter.
 - With column balancing on, a column that cannot take the next headword with two lines of its text under it (`bodyText.widowMinLines`) ends early, and the lines left over go above the headwords, one line each at most: one entry stands a line clear of the one before, the next does not. Off, such a column ends short; the cuts above also fill every column but the last.
