@@ -164,21 +164,40 @@ describe('vertical text in the PDF (#191)', () => {
     }
   });
 
-  it('sets a dash in its vertical form, one per cell (vert with fwid)', async () => {
-    const { pdf } = await render('此——也', config('zh-Hant'));
-    const fonts = pageFonts(pdf);
-    const shows = uprightShows(pageOps(pdf), fonts);
-    const embedded = embeddedFace(pdf, fonts.get(shows[0]!.font)!);
-    const rule = (cid: number) => {
-      const b = embedded.getGlyph(cid).bbox;
+  it('sets a single dash in its vertical form (vert with fwid), a 破折号 as one rule turned down the column', async () => {
+    const isRule = (face: ReturnType<typeof embeddedFace>) => (cid: number) => {
+      const b = face.getGlyph(cid).bbox;
       return b.maxY - b.minY > 700 && b.maxX - b.minX < 100;
     };
-    const dashes = shows.filter((s) => s.cids.length === 1 && rule(s.cids[0]!));
-    // Two shows of one glyph each: a rule down the middle of its cell.
-    expect(dashes).toHaveLength(2);
+    // A single dash: one show of the vertical form, a rule down the middle
+    // of its cell.
+    const single = await render('此—也', config('zh-Hant'));
+    const singleFonts = pageFonts(single.pdf);
+    const singleShows = uprightShows(pageOps(single.pdf), singleFonts);
+    const embedded = embeddedFace(single.pdf, singleFonts.get(singleShows[0]!.font)!);
+    const dashes = singleShows.filter((s) => s.cids.length === 1 && isRule(embedded)(s.cids[0]!));
+    expect(dashes).toHaveLength(1);
     const bbox = embedded.getGlyph(dashes[0]!.cids[0]!).bbox;
     expect((bbox.minX + bbox.maxX) / 2).toBeCloseTo(500, -1);
-    expect(dashes[1]!.tm[4]! - dashes[0]!.tm[4]!).toBeCloseTo(16, 3);
+    // A 破折号: its vertical forms would leave blank at both ends of each
+    // cell (0.07 em), so each dash is shown turned with the frame, the
+    // horizontal glyph under an unturned text matrix, stretched down the
+    // column (Tz) into one rule.
+    const { doc, pdf } = await render('此——也', config('zh-Hant'));
+    const ops = pageOps(pdf);
+    const fonts = pageFonts(pdf);
+    const shows = uprightShows(ops, fonts);
+    expect(shows.some((s) => s.cids.some(isRule(embeddedFace(pdf, fonts.get(s.font)!))))).toBe(false);
+    const stretched = [...ops.matchAll(/([\d.]+) Tz\s+q[\s\S]*?\/(\S+) [\d.]+ Tf[\s\S]*?(-?[\d.]+) (-?[\d.]+) (-?[\d.]+) (-?[\d.]+) (-?[\d.]+) (-?[\d.]+) Tm[\s\S]*?ET\s+Q\s+100 Tz/g)];
+    expect(stretched).toHaveLength(2);
+    const segs = doc.pages[0]!.columns[0]!.blocks[0]!.lines[0]!.segments!.filter((s) => s.text === '—');
+    for (const [i, m] of stretched.entries()) {
+      expect(Number(m[1])).toBeCloseTo(segs[i]!.inkScale! * 100, 2);
+      expect(Number(m[1])).toBeGreaterThan(100);
+      expect(fonts.get(m[2]!)?.get(PDFName.of('Encoding'))).toBe(PDFName.of('Identity-H'));
+      expect([m[3], m[4], m[5], m[6]].map(Number)).toEqual([1, 0, 0, 1]);
+    }
+    expect(Number(stretched[1]![7]) - Number(stretched[0]![7])).toBeCloseTo(16 + segs[1]!.inkOffset! - segs[0]!.inkOffset!, 3);
   });
 
   it('places the pen so every em box is centred on the column axis, one em apart', async () => {

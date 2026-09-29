@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument, renderToHtml, flowRectToPage } from '../../index';
 import type { PostextConfig, Dimension } from '../../types';
 import { installSizedStub } from './stub';
+import { verticalSpans } from './verticalSpans';
 
 installSizedStub();
 
@@ -79,12 +80,27 @@ describe('vertical pages in the HTML (#191)', () => {
     expect(html).toContain('<span style="text-combine-upright:all;">12</span>');
     expect(html).toContain('<span style="text-orientation:upright;">GDP</span>');
     expect(html).toContain('<span style="text-orientation:sideways;">34</span>');
-    const tops = [...html.matchAll(/position:absolute;top:([\d.]+)px;right:0;line-height:([\d.]+)px/g)];
-    expect(tops.length).toBeGreaterThan(2);
+    const runs = verticalSpans(html);
+    expect(runs.length).toBeGreaterThan(2);
     const line = doc.pages[0]!.columns[0]!.blocks[0]!.lines[0]!;
     // line-height = 2 × the axis's distance from the flow's top edge of the
     // line box: baseline less the central axis (0.38 em).
-    expect(parseFloat(tops[0]![2]!)).toBeCloseTo(2 * (line.baseline - line.bbox.y - 0.38 * 10), 3);
+    expect(runs[0]!.lineHeight).toBeCloseTo(2 * (line.baseline - line.bbox.y - 0.38 * 10), 3);
+  });
+
+  it('centres a run in another face on the column axis, as the plain text', () => {
+    // A run in its own face writes a `font` shorthand, which resets
+    // `line-height`: the run's line height must come after it, or the
+    // browser sets the run at `normal` and off the axis.
+    const doc = buildDocument({ markdown: '此事**不可輕忽**，*千萬*記取。' }, config());
+    const line = doc.pages[0]!.columns[0]!.blocks[0]!.lines[0]!;
+    const runs = verticalSpans(renderToHtml(doc, { mode: 'single' }));
+    const bold = runs.find((r) => r.text === '不可輕忽')!;
+    const plain = runs.find((r) => r.text.startsWith('此事'))!;
+    expect(bold.size).toBeDefined();
+    expect(bold.axis).toBeCloseTo(line.baseline - line.bbox.y - 0.38 * 10, 3);
+    expect(bold.axis).toBeCloseTo(plain.axis, 3);
+    for (const r of runs) expect(Number.isFinite(r.lineHeight)).toBe(true);
   });
 
   it('wraps a short number in one cell (cjk.uprightDigits)', () => {

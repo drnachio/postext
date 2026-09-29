@@ -78,4 +78,27 @@ describe('a 破折号 in the PDF', () => {
       expect(tms.some(([tx, ty]) => Math.abs(tx! - x) < 1e-3 && Math.abs(ty! - y) < 1e-3), `dash ${i} at ${x}, ${y}`).toBe(true);
     }
   }, 60_000);
+
+  it('shows the dashes of a vertical line turned with the frame, stretched down the column (#191)', async () => {
+    const doc = buildDocument({ markdown: '女子——一一细考' }, { ...config, layout: { layoutType: 'single', writingMode: 'vertical-rl' } });
+    const line = doc.blocks.find((b) => b.type === 'paragraph')!.lines[0]!;
+    const dashes = line.segments!.filter((s) => s.text === '—');
+    expect(dashes).toHaveLength(2);
+    const scale = (16 - 0.8 + 0.32) / 11.2;
+    for (const d of dashes) expect(d.inkScale).toBeCloseTo(scale);
+    const content = await contentOf(doc);
+    // Each dash: the scaling on, its own text object with the horizontal
+    // font under an unturned text matrix (the flow's frame turns it), the
+    // scaling off.
+    const shows = [...content.matchAll(/([\d.]+) Tz\s+q[\s\S]*?BT[\s\S]*?\/(\S+) [\d.]+ Tf[\s\S]*?(-?[\d.]+) (-?[\d.]+) (-?[\d.]+) (-?[\d.]+) (-?[\d.]+) (-?[\d.]+) Tm[\s\S]*?ET\s+Q\s+100 Tz/g)];
+    expect(shows).toHaveLength(2);
+    for (const m of shows) {
+      expect(Number(m[1])).toBeCloseTo(scale * 100, 2);
+      expect(m[2]!.endsWith('V')).toBe(false);
+      expect([m[3], m[4], m[5], m[6]].map(Number)).toEqual([1, 0, 0, 1]);
+    }
+    // One em apart down the line, from where the layout put each glyph.
+    const xs = shows.map((m) => Number(m[7]));
+    expect(xs[1]! - xs[0]!).toBeCloseTo(16 + dashes[1]!.inkOffset! - dashes[0]!.inkOffset!, 3);
+  }, 60_000);
 });

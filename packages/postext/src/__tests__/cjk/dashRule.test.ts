@@ -198,11 +198,68 @@ describe('renderers paint a stretched dash', () => {
     expect(html).toContain("'locl' 0");
   });
 
-  it('stretches nothing down a vertical line, where each dash takes its vertical form (#191)', () => {
+  it('stretches the pair into one rule down a vertical line, each dash painted turned (#191)', () => {
+    // The font's vertical form of a dash leaves blank at both ends of its
+    // cell (Noto CJK's, 0.07 em): set one to a cell, the pair would print
+    // as two strokes.
     const doc = buildDocument({ markdown: '忽念及当日所有之女子——一一细考较去。' }, { ...config(), layout: { writingMode: 'vertical-rl' } });
-    const segs = doc.blocks.find((b) => b.type === 'paragraph')!.lines.flatMap((l) => l.segments ?? []);
-    expect(segs.some((s) => s.text.includes('—'))).toBe(true);
-    expect(segs.some((s) => s.inkScale !== undefined)).toBe(false);
-    expect(renderToHtml(doc)).not.toContain('transform:scaleX(');
+    const block = doc.blocks.find((b) => b.type === 'paragraph')!;
+    const line = block.lines.find((l) => l.text.includes('——'))!;
+    const [a, b] = segs([line], '—');
+    expect(a!.width).toBeCloseTo(EM);
+    expect(b!.width).toBeCloseTo(EM);
+    // The same rule as across a horizontal line, down the column: the
+    // face's side bearing inside the two cells, the strokes overlapping.
+    const [a0, a1] = inkSpan(line, a!);
+    const [b0, b1] = inkSpan(line, b!);
+    let start = 0;
+    for (const s of line.segments!) {
+      if (s === a) break;
+      start += s.width;
+    }
+    expect(a0 - start).toBeCloseTo(0.043 * EM);
+    expect(start + 2 * EM - b1).toBeCloseTo(0.043 * EM);
+    expect(a1 - b0).toBeCloseTo(0.04 * EM);
+    expect(a!.inkScale).toBeCloseTo((1 - 0.043 + 0.02) / (0.846 - 0.043));
+    // On the column's axis: raised as in horizontal text, to the centre of
+    // the characters' em box.
+    expect(a!.baselineShift).toBeCloseTo(-0.1035 * EM);
+    // A single dash keeps its vertical form.
+    const single = buildDocument({ markdown: '北京—上海' }, { ...config(), layout: { writingMode: 'vertical-rl' } });
+    expect(single.blocks.flatMap((bl) => bl.lines).flatMap((l) => l.segments ?? []).some((s) => s.inkScale !== undefined)).toBe(false);
+
+    // The canvas paints each dash as it is in the turned frame (no cell
+    // turned back upright), stretched from its ink offset.
+    const calls: string[] = [];
+    const target: Record<string | symbol, unknown> = { letterSpacing: '0px', font: FONT, textAlign: 'left', textBaseline: 'alphabetic' };
+    const ctx = new Proxy(target, {
+      get(t, key) {
+        if (key === 'fillText') return (text: string, x: number, y: number) => { calls.push(`fillText ${text} ${x} ${y}`); };
+        if (key === 'translate') return (x: number, y: number) => { calls.push(`translate ${x.toFixed(3)} ${y.toFixed(3)}`); };
+        if (key === 'scale') return (x: number, y: number) => { calls.push(`scale ${x.toFixed(4)} ${y}`); };
+        if (key === 'rotate') return (r: number) => { calls.push(`rotate ${r.toFixed(4)}`); };
+        if (key === 'measureText') return (s: string) => new StubCtx().measureText(s);
+        if (key in t) return t[key];
+        return () => undefined;
+      },
+      set(t, key, value) { t[key] = value; return true; },
+    });
+    renderPageToCanvas(doc.pages[0]!, doc, { width: 0, height: 0, getContext: () => ctx } as unknown as HTMLCanvasElement);
+    let x = line.bbox.x;
+    for (const s of line.segments ?? []) {
+      if (s.text === '—') {
+        const i = calls.indexOf(`translate ${(x + s.inkOffset!).toFixed(3)} ${(line.baseline + s.baselineShift!).toFixed(3)}`);
+        expect(i, `${x}`).toBeGreaterThanOrEqual(0);
+        expect(calls[i + 1]).toBe(`scale ${s.inkScale!.toFixed(4)} 1`);
+        expect(calls[i + 2]).toBe('fillText — 0 0');
+      }
+      x += s.width;
+    }
+    // HTML: each dash sideways in the upright box, stretched down it.
+    const html = renderToHtml(doc);
+    expect(html.match(/transform:scaleY\(/g)).toHaveLength(2);
+    expect(html.match(/<span style="text-orientation:sideways;">—<\/span>/g)).toHaveLength(2);
+    expect(html).toContain("'locl' 0");
+    expect(html).not.toContain('transform:scaleX(');
   });
 });

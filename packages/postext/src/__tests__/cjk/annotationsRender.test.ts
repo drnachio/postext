@@ -4,6 +4,7 @@ import { renderToHtml } from '../../html-backend';
 import type { PostextConfig } from '../../types';
 import type { VDTDocument, VDTLine } from '../../vdt';
 import { installSizedStub, stubCharWidth } from '../vertical/stub';
+import { verticalSpans } from '../vertical/verticalSpans';
 
 // The marks, readings and notes of #193–#195 in the canvas and HTML
 // backends: drawn where the layout put them.
@@ -140,9 +141,9 @@ describe('annotations on a vertical page in HTML (#191 with #193–#195)', () =>
     const line = firstLine(doc);
     const { upright } = lineHtml(renderToHtml(doc, { mode: 'single' }));
     // Every reading and row is a run of the upright box, at its place
-    // along the line (top) and centred across it on its axis (right).
-    const runs = [...upright.matchAll(/<span aria-hidden="true" style="position:absolute;top:([\d.]+)px;right:(-?[\d.]+)px;line-height:([\d.]+)px;[^"]*font:[^;]*?(\d+)px[^"]*">(.*?)<\/span>/g)]
-      .map((m) => ({ top: +m[1]!, axis: +m[2]! + +m[3]! / 2, size: +m[4]!, text: m[5]!.replace(/<[^>]*>/g, '') }));
+    // along the line (top) and centred across it on its axis (right), with
+    // the line height in effect after its own `font` (which resets it).
+    const runs = verticalSpans(upright).filter((r) => r.size !== undefined && r.size < 20);
     const segs = line.segments!;
     let x = 0;
     const at = new Map<string, number>();
@@ -164,8 +165,11 @@ describe('annotations on a vertical page in HTML (#191 with #193–#195)', () =>
     const rows = runs.filter((r) => r.size === 10 && /[甲戌側批此是]/.test(r.text));
     expect(rows.map((r) => r.text).join('')).toBe('甲戌側批此是');
     expect(rows[0]!.axis).toBeLessThan(rows[1]!.axis);
+    // Each row centred on its own axis, as the canvas and the PDF set it.
+    const note = segs.find((s) => s.warichu)!.warichu!;
+    note.runs.forEach((run, i) => expect(rows[i]!.axis).toBeCloseTo(axisOf(run.dy, 10), 3));
     // The base text is set once, the note never at the text size.
-    expect(upright).not.toMatch(/line-height:48\.8\d*px;white-space:pre;">[^<]*甲戌/);
+    expect(verticalSpans(upright).some((r) => r.size === undefined && r.text.includes('甲戌'))).toBe(false);
   });
 
   it('draws the marks in the line box of the turned flow, dotted text as emphasis', () => {

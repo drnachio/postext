@@ -194,15 +194,17 @@ function renderSegments(
     const actualText = i === repeatedAt ? seg.text.slice(1) : undefined;
     // A compressed CJK mark is painted before its box (`inkOffset`) and
     // advances to its box's end.
-    // (Down a vertical line every cell is one em: no mark shown narrower,
-    // and a dash takes its vertical form rather than a stretch.)
+    // (Down a vertical line every cell is one em: no mark shown narrower.)
     const markSpacing = ctx.vertical ? undefined : compressedMarkSpacingPx(font, seg, size);
     if (markSpacing !== undefined) setTrackingPx(ctx, markSpacing);
     else if (seg.tracking !== undefined) setTrackingPx(ctx, tracking + seg.tracking);
-    // A dash of a 破折号 is stretched over its em (`inkScale`).
-    const stretch = inkScaleOperators(ctx.vertical ? undefined : seg.inkScale);
+    // A dash of a 破折号 is stretched over its em (`inkScale`); down a
+    // vertical line it is shown turned with the frame (sideways), so the
+    // stretch runs down the column.
+    const stretch = inkScaleOperators(seg.inkScale);
+    const orient = ctx.vertical && seg.inkScale !== undefined ? 'sideways' : segmentOrientation(seg);
     ctx.page.pushOperators(...stretch.before);
-    drawTextPx(ctx, seg.text, x + (seg.inkOffset ?? 0), baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText, segmentOrientation(seg));
+    drawTextPx(ctx, seg.text, x + (seg.inkOffset ?? 0), baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText, orient);
     ctx.page.pushOperators(...stretch.after);
     if (markSpacing !== undefined || seg.tracking !== undefined) setTrackingPx(ctx, tracking);
     if (seg.ruby) {

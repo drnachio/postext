@@ -723,7 +723,7 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
       b.glueBefore = true;
     }
   }
-  if (route && !vertical) routeSharedMarks(units, letterSpacingPx);
+  if (route) routeSharedMarks(units, letterSpacingPx, vertical);
   return units;
 }
 
@@ -766,8 +766,16 @@ function unitScript(v: Unit): 'cjk' | 'western' | undefined {
  * nothing. Next to Western text on both sides (`He said “yes”`) they keep
  * their own advance, and so do they in Japanese and Korean text (the
  * composer calls this for Chinese text only, `routesSharedMarks`).
+ *
+ * Down a vertical line (`vertical`) every mark stands in a cell of its own
+ * already; only the 破折号 is set here: the font's vertical form of a dash
+ * leaves blank at both ends of its cell (Noto CJK's, 0.07 em), so the pair
+ * would print as two strokes. Its dashes are stretched into one rule as in
+ * horizontal text, and the renderers paint them turned with the page's
+ * frame (sideways), the stretch running down the column
+ * (`VDTLineSegment.inkScale`).
  */
-function routeSharedMarks(units: Unit[], letterSpacingPx: number): void {
+function routeSharedMarks(units: Unit[], letterSpacingPx: number, vertical = false): void {
   if (!units.some(isSharedMarkUnit)) return;
   // The script of the nearest unit on each side that is not transparent
   // (`unitScript`), past runs of shared marks and inline boxes: two
@@ -788,19 +796,29 @@ function routeSharedMarks(units: Unit[], letterSpacingPx: number): void {
   for (let k = 0; k < n; k++) {
     const u = units[k]!;
     if (!isSharedMarkUnit(u)) continue;
+    const dash = u.graphemes === 2 && (u.text[0] === '\u2014' || u.text[0] === '\u2015');
+    // Vertical text: a 破折号 only, and not one whose orientation the
+    // author set (`:upright[…]`, `:sideways[…]`).
+    if (vertical && (!dash || u.orient)) continue;
     const b = before[k];
     const a = after[k];
     if (b !== 'cjk' && a !== 'cjk' && (b !== undefined || a !== undefined)) continue;
     const em = emOfFont(u.style.font);
     const font = u.style.font;
     let place: number[];
-    const rule = u.graphemes === 2 && (u.text[0] === '\u2014' || u.text[0] === '\u2015')
-      ? dashRule(u.text[0], font, em, em + letterSpacingPx)
-      : undefined;
+    const rule = dash ? dashRule(u.text[0]!, font, em, em + letterSpacingPx, vertical) : undefined;
     if (rule) {
       place = rule.place;
       if (rule.scale !== undefined) u.scale = rule.scale;
       if (rule.shift !== undefined) u.shift = rule.shift;
+      if (vertical) {
+        // The cells keep their length down the line.
+        u.place = place;
+        continue;
+      }
+    } else if (vertical) {
+      // No ink metrics: each dash in its vertical form, as it was.
+      continue;
     } else if (u.graphemes === 2) {
       // ……, or —— when the measurer gives no ink metrics: the pair as the
       // font sets it (a face may kern the dashes into one line), centred
@@ -839,9 +857,10 @@ const DASH_JOIN_EM = 0.02;
  * glyphs move to the centre of the ideographic em box
  * (`measureCentralBaseline`). Undefined when the measurer gives no ink
  * metrics, or when the dash already fills its em (a face whose two dashes
- * join by themselves).
+ * join by themselves). Down a vertical line (`vertical`) the scale is set
+ * even when it is 1: it tells the renderers to paint the dash turned.
  */
-function dashRule(g: string, font: string, em: number, cell: number): { place: number[]; scale?: number; shift?: number } | undefined {
+function dashRule(g: string, font: string, em: number, cell: number, vertical = false): { place: number[]; scale?: number; shift?: number } | undefined {
   const ink = measureInkExtent(g, font);
   // No ink metrics, or a dash already drawn edge to edge across its em.
   if (!ink || (ink.start <= 0.01 * em && ink.end >= cell - 0.01 * em)) return undefined;
@@ -853,7 +872,7 @@ function dashRule(g: string, font: string, em: number, cell: number): { place: n
   const shift = box ? (box.ascent - box.descent) / 2 - measureCentralBaseline(fontFamilyOf(font)) * em : 0;
   return {
     place,
-    ...(Math.abs(scale - 1) > 1e-3 ? { scale } : {}),
+    ...(vertical || Math.abs(scale - 1) > 1e-3 ? { scale } : {}),
     ...(Math.abs(shift) > 0.01 * em ? { shift } : {}),
   };
 }

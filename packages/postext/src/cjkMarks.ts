@@ -101,18 +101,23 @@ const PAST_LINE = 0.16;
  *  evenly (the composer only puts characters that advance alike in one
  *  segment); anything else is measured and scaled to the segment. Down a
  *  vertical line a number set in one upright cell (`:tcy[…]`, or up to
- *  `cjk.uprightDigits` digits) is one character: it takes one dot. */
+ *  `cjk.uprightDigits` digits) is one character: it takes one dot; the
+ *  letters of an `:upright[…]` run stand one to a cell, whatever their
+ *  horizontal widths. */
 function graphemeAdvances(seg: VDTLineSegment, width: number, font: string, vertical?: VerticalMarks): { g: string; at: number; adv: number }[] {
   const graphemes = graphemesOf(seg.text);
   if (graphemes.length === 0) return [];
   const out: { g: string; at: number; adv: number }[] = [];
   if (vertical && seg.tcy) return [{ g: seg.text, at: 0, adv: width }];
+  if (vertical && seg.orientation === 'upright') {
+    const adv = width / graphemes.length;
+    graphemes.forEach((g, i) => out.push({ g, at: i * adv, adv }));
+    return out;
+  }
   if (vertical && seg.orientation !== 'sideways' && vertical.uprightDigits > 0 && /[0-9]/.test(seg.text)) {
     const em = fontEm(font);
-    const pieces = seg.orientation === 'upright'
-      ? graphemes.map((g) => ({ g, w: em }))
-      : verticalRuns(graphemes, vertical.region, vertical.uprightDigits).flatMap((run) =>
-        run.cell !== undefined ? [{ g: run.text, w: em * run.cell }] : graphemesOf(run.text).map((g) => ({ g, w: measureTextWidth(g, font) })));
+    const pieces = verticalRuns(graphemes, vertical.region, vertical.uprightDigits).flatMap((run) =>
+      run.cell !== undefined ? [{ g: run.text, w: em * run.cell }] : graphemesOf(run.text).map((g) => ({ g, w: measureTextWidth(g, font) })));
     const sum = pieces.reduce((a, p) => a + p.w, 0);
     const k = sum > 0 ? width / sum : 1;
     let at = 0;

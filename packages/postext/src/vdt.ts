@@ -251,7 +251,10 @@ export interface VDTLineSegment {
    *  proportional 0.8 em stroke): each dash is stretched over its em, the
    *  two overlapping at the join, so the pair prints as one unbroken
    *  two-em rule. Renderers paint the glyph at its own advance times this
-   *  factor; its `width` is unchanged. Absent on every other segment. */
+   *  factor; its `width` is unchanged. Down a vertical line the dash is
+   *  painted turned with the page's frame (sideways), not in its vertical
+   *  form, so the stretch runs down the column; there it is set even when
+   *  it is 1. Absent on every other segment. */
   inkScale?: number;
   /** A pause or stop mark hung past the end of its line
    *  (`cjk.hangingPunctuation`): the line's measure and `bbox.width` leave

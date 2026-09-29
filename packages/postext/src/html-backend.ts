@@ -706,10 +706,12 @@ function uprightInner(width: number, height: number, decl: string, content: stri
 }
 
 /** A run of vertical text at `at` along its box, its em boxes centred
- *  `axis` px from the box's flow top (the physical right edge). */
+ *  `axis` px from the box's flow top (the physical right edge). The
+ *  line height that centres them comes after `decl`: a `font` shorthand
+ *  in it resets `line-height` to `normal`. */
 function verticalSpan(at: number, axis: number, inner: string, decl = ''): string {
   const lh = Math.max(0, 2 * axis);
-  return `<span style="position:absolute;top:${at.toFixed(3)}px;right:0;line-height:${lh.toFixed(3)}px;white-space:pre;${decl}">${inner}</span>`;
+  return `<span style="position:absolute;top:${at.toFixed(3)}px;right:0;white-space:pre;${decl}line-height:${lh.toFixed(3)}px;">${inner}</span>`;
 }
 
 /** A run of vertical text whose em boxes are centred `axis` px from the
@@ -717,7 +719,7 @@ function verticalSpan(at: number, axis: number, inner: string, decl = ''): strin
  *  sits outside the line's own box). */
 function verticalSpanAt(at: number, axis: number, size: number, inner: string, decl = ''): string {
   const lh = Math.max(1, 2 * size);
-  return `<span aria-hidden="true" style="position:absolute;top:${at.toFixed(3)}px;right:${(axis - lh / 2).toFixed(3)}px;line-height:${lh.toFixed(3)}px;white-space:pre;${decl}">${inner}</span>`;
+  return `<span aria-hidden="true" style="position:absolute;top:${at.toFixed(3)}px;right:${(axis - lh / 2).toFixed(3)}px;white-space:pre;${decl}line-height:${lh.toFixed(3)}px;">${inner}</span>`;
 }
 
 /** Annotation runs of a vertical line (a ruby reading, a warichu note's
@@ -792,10 +794,15 @@ function renderVerticalLine(line: VDTLine, block: VDTBlock, v: VerticalHtml, tar
     const fontString = pickSegmentFont(seg, block);
     const font = quoteFontString(fontString);
     const color = pickSegmentColor(seg, block);
+    // A dash of a 破折号 (`inkScale`): turned with the flow (sideways) and
+    // stretched down the column from where the layout put its glyph, the
+    // face's own Chinese form off, as the canvas and the PDF paint it.
+    const stretched = seg.inkScale !== undefined;
     const decl = (font !== blockFont ? `font:${font};` : '')
       + (color !== block.color ? `color:${color};` : '')
-      + (seg.tracking !== undefined ? `letter-spacing:${lineTracking + seg.tracking}px;` : '');
-    let text = verticalTextHtml(seg.text, v, segmentOrientation(seg));
+      + (seg.tracking !== undefined ? `letter-spacing:${lineTracking + seg.tracking}px;` : '')
+      + (stretched ? `transform:scaleY(${seg.inkScale!.toFixed(4)});transform-origin:0 0;${DASH_FEATURES_DECL}` : '');
+    let text = verticalTextHtml(seg.text, v, stretched ? 'sideways' : segmentOrientation(seg));
     // Text set with emphasis dots is emphasis (#193); the dots are the
     // line's marks.
     if (seg.cjkMarks?.dots) text = `<em style="font-style:inherit;">${text}</em>`;
