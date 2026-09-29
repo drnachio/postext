@@ -1,0 +1,74 @@
+---
+title: "Fechas y siglas en pie en texto vertical"
+summary: "Dos proclamas de 1912 compuestas en vertical y encuadernadas por la derecha: los números de dos cifras se ponen en pie solos; :tcy y :upright marcan el resto."
+description: "Un libro de documentos chinos en Postext: texto vertical en una retícula de 44 caracteres, fechas en tate-chu-yoko, una sigla apilada y el latín girado."
+question: "¿Cómo mantengo en pie las fechas en un texto chino vertical, y qué pasa con las siglas y las palabras latinas?"
+aliases: ["tate-chu-yoko", "縱中橫", "fechas en chino vertical", "números en texto vertical", "siglas en texto vertical", "antología de documentos", "proclama", "cabeceras en el corte", "文告"]
+pageNotes: { "1": "La cubierta: un campo bermellón dentro de un filete grueso y otro fino en bermellón pálido; el título 民國元年文告二種 baja por la derecha en blanco, y los dos documentos con sus fechas ocupan dos líneas a la izquierda, con el 11 de 3月11日 en pie en una sola casilla.", "2": "La apertura de la proclama: una banda bermellón por el borde derecho lleva el título, el subtítulo en español girado y la fecha al pie; la presentación en letra Kai, dos caracteres más abajo, y después la proclama en Song.", "3": "La proclama sigue a toda la página y termina con su línea de fecha, doce caracteres más abajo, y el aviso del sello en bermellón debajo.", "4": "Las notas a la proclama en letra Kai: 10月10日 en pie, 1911 y Sun Yat-sen girados, ROC apilada letra a letra.", "5": "La apertura de la Constitución Provisional: la banda, la presentación con 3月8日 y 第35號 en pie, la orden de promulgación con su sello y su fecha, y el capítulo primero.", "6": "El capítulo segundo de la constitución: los artículos 5 a 15, con las siete libertades del artículo 6 dos caracteres más abajo.", "7": "Las notas a la constitución y el colofón, en español, girado." }
+---
+
+## Lo que vas a componer
+
+Siete páginas con dos textos fundacionales de la República de China: la proclama con la que Sun Wen asumió la presidencia provisional el 1 de enero de 1912 y los dos primeros capítulos de la Constitución Provisional del 11 de marzo. Todo va en vertical, en una página de 184 × 260 mm encuadernada por la derecha. Los documentos conservan sus numerales chinos, 民國元年三月十一日. Las presentaciones y las notas, en letra Kai, dan las fechas del calendario occidental en cifras arábigas, y esas cifras son el tema de la receta: 10月10日 pone cada número en pie en su casilla, 1912 y Sun Yat-sen van girados, 民國115年 mete tres cifras en una casilla y ROC apila sus letras. Una cubierta bermellón con doble filete, una banda bermellón en la apertura de cada documento y cabeceras en el corte, con folios en numerales chinos, enmarcan el texto.
+
+## Elaboración
+
+### 1 · Deja los números cortos a la configuración
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Con `cjk.uprightDigits: 2`, cualquier grupo de una o dos cifras de un texto vertical se pone en pie en una casilla de un cuadratín, con las dos cifras una junto a otra: 10月10日, 第35號 y 7章56條 no llevan marca alguna. Un número más largo se compone entero de lado, como una palabra latina, que es como clreq compone los números de cuatro cifras, así que 1912 y 1644 bajan por la línea girados un cuarto de vuelta. Si quieres en pie un número de tres cifras, márcalo: `民國:tcy[115]年` estrecha el 115 hasta que cabe en el cuadratín. `:upright[ROC]` pone cada letra en pie en su propia casilla, una debajo de otra, y la línea nunca se corta dentro ([números en texto vertical](/es/docs/configuration#números-en-texto-vertical)).
+
+<PageShot page={4} crop="0.43,0.145,0.45,0.74" caption="Página 4, las notas: 10月10日 y 2月12日 en pie, 1911 y Sun Yat-sen de lado, 268 y 115 estrechados con :tcy, ROC apilada con :upright." />
+
+Los números siguen una sola norma editorial: los textos de 1912 quedan como se imprimieron, y solo las notas del editor usan cifras arábigas, para las fechas del calendario occidental. La fecha lunar que las acompaña conserva sus numerales chinos, 辛亥年八月十九日, como pide GB/T 15835, la norma china sobre los números en los impresos.
+
+### 2 · Abre cada documento con una banda a la derecha
+
+<Excerpt region="opener" />
+
+En un flujo vertical, la cabeza de la página es el borde derecho del pliego, donde empieza la lectura. Un diseño de título anclado a la cabeza de la sangre es, por tanto, una banda que baja por el borde derecho, y su `size.height` es su anchura sobre el papel. Los desplazamientos giran con el flujo: `x` se mide hacia abajo y `y` hacia la izquierda. La retícula centra la mancha entre los márgenes, y `HEAD` repite esa cuenta para que el título empiece a la altura del primer carácter de cada línea. `align: 'right'` lleva la fecha al pie de su línea, donde terminan las líneas de texto, e `inlineMarks: true` le da las mismas casillas que al texto. La banda es la de <RecipeLink slug="chapter-opener-bleed-band">Apertura de capítulo sobre banda a sangre</RecipeLink>, girada un cuarto de vuelta.
+
+<PageShot page={2} crop="0.55,0.13,0.45,0.52" caption="Página 2: el título desde la cabeza de la mancha, la fecha al pie de la banda, el 10 de 晚上10時 y el 29 de 同月29日 en pie en la presentación." />
+
+### 3 · Lleva las cabeceras al corte
+
+<Excerpt region="heads" />
+
+`anchor.to: 'outer'` es el margen del lado opuesto al lomo, así que en un libro encuadernado por la derecha las cabeceras bajan por el borde izquierdo de la página impar y por el derecho de la par. El título queda cuatro caracteres por debajo de la cabeza de la mancha y el folio termina cinco por encima de su pie, ambos en vertical, al 80 % del cuerpo del texto ([elementos de texto verticales](/es/docs/configuration#elementos-de-texto-verticales)). `pageNumbering.format: 'trad-chinese-informal'` imprime los folios 三, 四, 六, y `pages: 'body'` los quita de las dos aperturas.
+
+### 4 · Lleva la cubierta a sangre con un diseño de página
+
+<Excerpt region="cover" />
+
+Un diseño de título en una columna se corta al pie de la columna, y en una página vertical ese pie es el margen izquierdo: un campo anclado a la sangre se quedaba a 21,6 mm del corte izquierdo. Con `span: 'page'` el título se compone como banda de página, que no se corta, y el campo llega a los dos bordes. Los dos marcos dibujan el filete doble, grueso y fino, de los libros impresos chinos: 1,6 pt y 0,5 pt, separados 2 mm.
+
+### 5 · Carga cada voz con el texto que compone
+
+<Excerpt region="voices" />
+
+Fontsource sirve cada peso de estas fuentes en un centenar de archivos, cada uno con un tramo de caracteres, y `loadCjkFonts` carga los archivos que toca un texto. Con solo los títulos, los avisos de sello, el colofón, las líneas de la cubierta y los folios, cada peso de Noto Sans TC carga 10 archivos; con la muestra entera cargaría 35, y son tres pesos. LXGW WenKai TC recibe las presentaciones y las notas, y carga 16. Una fuente que recibe menos texto del que compone hace fallar la captura (C12), que nombra los caracteres que tuvo que tomar de otra fuente.
+
+## Variantes
+
+### Pon en pie también los números de tres cifras
+
+Con 3, el 268 y el 115 de las notas ocupan su casilla sin marca, igual que cualquier número de artículo o de página hasta el 999; 1912 sigue de lado.
+
+```diff
+-  uprightDigits: 2,
++  uprightDigits: 3,
+```
+
+### Gira todos los números
+
+Con 0 ningún número se pone en pie por sí solo: 10月10日 se gira como 1912, y solo el 115 y ROC, que llevan marca, siguen en pie.
+
+```diff
+-  uprightDigits: 2,
++  uprightDigits: 0,
+```
+
+## Errores frecuentes
+
+- Noto Serif TC no tiene 敎 (U+654E), la variante de 教 que trae el artículo 6 en el texto de 1912. El lienzo lo dibujó con una fuente del sistema y el PDF no tenía glifo para él, cosa que la captura avisó (C25); la edición compone 教.
+- LXGW WenKai TC, tal como la sirve Fontsource, dibuja 即 y 為 con sus formas antiguas, 卽 y 爲, que desentonan junto al 即 y el 為 del texto en Song. Las notas se redactaron sin esos dos caracteres. Lee a tamaño real el texto en Kai de tus propias notas.
+- Un número compuesto de lado se separa del chino que lo rodea como una palabra latina, un cuarto de cuadratín a cada lado (`cjk.latinSpacing`), y por eso las presentaciones muestran `1912 年`; un número en una casilla no lleva espacio, como un carácter chino.

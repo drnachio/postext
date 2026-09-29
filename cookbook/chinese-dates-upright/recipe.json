@@ -1,0 +1,73 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 81,
+  "status": "draft",
+  "chapter": "page",
+  "order": 90,
+  "level": 2,
+  "genres": ["textbook", "ephemera"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["tate-chu-yoko", "vertical-writing"],
+    "also": [
+      "right-binding", "character-grid", "chinese-numerals", "cjk-fonts", "cjk-punctuation",
+      "cjk-line-breaking", "opener-design", "heading-styles", "heading-attributes",
+      "paragraph-styles", "running-heads", "design-elements", "page-background", "color-palette",
+      "pdf-export", "pdf-fonts"
+    ]
+  },
+  "answers": ["Q95", "Q87", "Q90"],
+  "gaps": [],
+  "gotchas": [
+    "cjk-fonts-slices", "cjk-locale-tag", "cjk-spread-order", "headings-drop-h1-break",
+    "config-cache-identity", "fonts-first"
+  ],
+  "explainsWarnings": [],
+  "related": ["certificate-single-page", "chapter-opener-bleed-band", "din-business-letter"],
+  "engine": { "postext": "1.9.0", "postextPdf": "1.9.0" },
+  "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": 1, "card": "page", "expect": { "pages": [7, 7] } },
+  "downloads": { "pdf": true },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "Sun Wen (Sun Yat-sen), proclamation on taking office as Provisional President, 1 January 1912 (Linshi zhengfu gongbao no. 1)",
+          "es": "Sun Wen (Sun Yat-sen), proclama al asumir la presidencia provisional, 1 de enero de 1912 (Linshi zhengfu gongbao, n.º 1)"
+        },
+        "who": "Sun Wen; transcription and punctuation by Wikisource editors",
+        "source": "https://zh.wikisource.org/wiki/中華民國大總統孫文宣言書",
+        "license": "CC-BY-SA-4.0"
+      },
+      {
+        "what": {
+          "en": "Provisional Constitution of the Republic of China, 11 March 1912, chapters 1 and 2, with its promulgation order",
+          "es": "Constitución Provisional de la República de China, 11 de marzo de 1912, capítulos 1 y 2, con su orden de promulgación"
+        },
+        "who": "Provisional Senate, Nanjing; transcription by Wikisource editors",
+        "source": "https://zh.wikisource.org/wiki/中華民國臨時約法",
+        "license": "CC-BY-SA-4.0"
+      },
+      {
+        "what": {
+          "en": "The headnotes and notes in Chinese, written for this recipe",
+          "es": "Las presentaciones y las notas en chino, escritas para esta receta"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Noto Serif TC", "license": "OFL-1.1" },
+      { "family": "Noto Sans TC", "license": "OFL-1.1" },
+      { "family": "LXGW WenKai TC", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-29",
+  "updated": "2026-09-29"
+}
