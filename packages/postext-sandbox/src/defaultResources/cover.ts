@@ -6,6 +6,8 @@
 // every backend and stays vector in the PDF. Deterministic: a seeded
 // generator draws the word widths.
 
+import { byLang, type GuideLang } from './lang';
+
 /** Canvas size in SVG units: 216 × 168 mm (the cover band, 3 mm of bleed
  *  each side) at 5 units per millimetre. */
 export const COVER_VW = 1080;
@@ -164,11 +166,15 @@ function numeralOne(x: number, y: number, h: number, fill: string): string {
   return `<path d="${d} Z" fill="${fill}"/>`;
 }
 
-export function coverArtSvg(es: boolean): string {
+const COVER_ARIA = byLang(
+  'An open spread drawn the way the engine sees it: justified lines of word boxes on a baseline grid, a chapter band, a floated figure and one line opened into boxes, glue and a penalty',
+  'Un pliego abierto dibujado como lo ve el motor: líneas justificadas de cajas de palabra sobre una rejilla de línea base, una banda de capítulo, una figura flotante y una línea abierta en cajas, gomas y una penalización',
+  '按引擎眼中的样子画出的一个跨页：基线网格上由词块组成的两端对齐的行、一条章首色带、一幅浮动图，以及拆成盒子、粘连和惩罚值的一行',
+);
+
+export function coverArtSvg(lang: GuideLang): string {
   const rand = prng(1983);
-  const ariaLabel = es
-    ? 'Un pliego abierto dibujado como lo ve el motor: líneas justificadas de cajas de palabra sobre una rejilla de línea base, una banda de capítulo, una figura flotante y una línea abierta en cajas, gomas y una penalización'
-    : 'An open spread drawn the way the engine sees it: justified lines of word boxes on a baseline grid, a chapter band, a floated figure and one line opened into boxes, glue and a penalty';
+  const ariaLabel = COVER_ARIA[lang];
 
   const pitch = 11;
   let grid = '';
@@ -246,7 +252,7 @@ export function coverArtSvg(es: boolean): string {
  *  shown as an image cannot load web fonts. */
 export function coverThumbnailSvg(): string {
   const artH = 168;
-  const art = coverArtSvg(false)
+  const art = coverArtSvg('en')
     .replace('<svg xmlns="http://www.w3.org/2000/svg"', `<svg x="-3" y="-3" width="216" height="${artH}"`)
     .replace(/ role="img" aria-label="[^"]*"/, '');
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 280">

@@ -2,7 +2,8 @@
 // lands, the balancing levers, the anatomy of a book and the Sandbox
 // interface. Same kit and unit system as the figures in `index.ts`.
 
-import { FS, P, PAGE_VW, bar, edge, text } from './svgKit';
+import { FS, P, PAGE_VW, SERIF_ZH, bar, edge, text } from './svgKit';
+import { byLang, type GuideLang } from './lang';
 
 const NIGHT = '#15171c';
 const GILT = '#d8a21a';
@@ -34,11 +35,14 @@ function disc(cx: number, cy: number, n: string, fill: string, color = '#ffffff'
 
 /** The layouts `layout.layoutType` offers: one column, two, and a column and
  *  a half whose side column carries text or only floats. */
-export function columnLayoutsSvg(es: boolean): string {
-  const ariaLabel = es ? 'estructuras de columnas disponibles' : 'available column structures';
-  const labels = es
-    ? ['Una columna', 'Dos columnas', 'Columna y media', 'Lateral de flotantes']
-    : ['Single', 'Two columns', 'One and a half', 'Float side column'];
+const COLUMN_LAYOUTS = byLang(
+  { aria: 'available column structures', labels: ['Single', 'Two columns', 'One and a half', 'Float side column'] },
+  { aria: 'estructuras de columnas disponibles', labels: ['Una columna', 'Dos columnas', 'Columna y media', 'Lateral de flotantes'] },
+  { aria: '可用的分栏结构', labels: ['单栏', '双栏', '一栏半', '浮动体边栏'] },
+);
+
+export function columnLayoutsSvg(lang: GuideLang): string {
+  const { aria: ariaLabel, labels } = COLUMN_LAYOUTS[lang];
   const W = 112;
   const H = 146;
   const y = 12;
@@ -67,14 +71,14 @@ export function columnLayoutsSvg(es: boolean): string {
 
 /** The first free slot after the reference: the slots a figure referenced
  *  at the foot of column 1 is offered, in order, and the one it takes. */
-export function floatSlotsSvg(es: boolean): string {
-  const ariaLabel = es
-    ? 'orden de los huecos que se ofrecen a un flotante tras su referencia'
-    : 'order of the slots offered to a float after its reference';
-  const ref = es ? 'referencia' : 'reference';
-  const taken = es ? 'ocupa el primer hueco libre' : 'takes the first free slot';
-  const full = es ? 'sin sitio' : 'no room';
-  const next = es ? 'página siguiente' : 'next page';
+const FLOAT_SLOTS = byLang(
+  { aria: 'order of the slots offered to a float after its reference', ref: 'reference', taken: 'takes the first free slot', full: 'no room', next: 'next page' },
+  { aria: 'orden de los huecos que se ofrecen a un flotante tras su referencia', ref: 'referencia', taken: 'ocupa el primer hueco libre', full: 'sin sitio', next: 'página siguiente' },
+  { aria: '引用之后依次提供给浮动体的空位', ref: '引用处', taken: '占用第一个空位', full: '放不下', next: '下一页' },
+);
+
+export function floatSlotsSvg(lang: GuideLang): string {
+  const { aria: ariaLabel, ref, taken, full, next } = FLOAT_SLOTS[lang];
   const W = 250;
   const H = 172;
   const y = 16;
@@ -123,13 +127,14 @@ export function floatSlotsSvg(es: boolean): string {
 /** Before and after balancing: a short second column, then the three levers
  *  that even the pair out — grid lines above a heading, a line after a list
  *  and a paragraph set one line looser. */
-export function balancingSvg(es: boolean): string {
-  const ariaLabel = es ? 'palancas del equilibrado de columnas' : 'column balancing levers';
-  const before = es ? 'Antes' : 'Before';
-  const after = es ? 'Después' : 'After';
-  const legend = es
-    ? ['Espacio sobre el título', 'Línea tras la lista', 'Párrafo más suelto']
-    : ['Space above a heading', 'A line after a list', 'A looser paragraph'];
+const BALANCING = byLang(
+  { aria: 'column balancing levers', before: 'Before', after: 'After', legend: ['Space above a heading', 'A line after a list', 'A looser paragraph'] },
+  { aria: 'palancas del equilibrado de columnas', before: 'Antes', after: 'Después', legend: ['Espacio sobre el título', 'Línea tras la lista', 'Párrafo más suelto'] },
+  { aria: '平衡分栏的调节手段', before: '平衡前', after: '平衡后', legend: ['标题上方加空', '列表后加一行', '段落排松一行'] },
+);
+
+export function balancingSvg(lang: GuideLang): string {
+  const { aria: ariaLabel, before, after, legend } = BALANCING[lang];
   const pitch = 9;
   const colW = 60;
   const top = 26;
@@ -190,11 +195,14 @@ export function balancingSvg(es: boolean): string {
 /** The pages a book is made of and the role each one plays for the running
  *  heads (`pages` filter of a design element): cover, contents, part
  *  divider, chapter opener and body pages. */
-export function bookAnatomySvg(es: boolean): string {
-  const ariaLabel = es ? 'anatomía de un libro compuesto con Postext' : 'anatomy of a book set with Postext';
-  const names = es
-    ? ['Cubierta', 'Índice', 'Parte', 'Apertura', 'Cuerpo', 'Cuerpo']
-    : ['Cover', 'Contents', 'Part', 'Opener', 'Body', 'Body'];
+const BOOK_ANATOMY = byLang(
+  { aria: 'anatomy of a book set with Postext', names: ['Cover', 'Contents', 'Part', 'Opener', 'Body', 'Body'] },
+  { aria: 'anatomía de un libro compuesto con Postext', names: ['Cubierta', 'Índice', 'Parte', 'Apertura', 'Cuerpo', 'Cuerpo'] },
+  { aria: '用Postext排出的一本书的构成', names: ['封面', '目录', '篇章页', '章首页', '正文页', '正文页'] },
+);
+
+export function bookAnatomySvg(lang: GuideLang): string {
+  const { aria: ariaLabel, names } = BOOK_ANATOMY[lang];
   const roles = ['heading style', ':::toc', ':::part', 'opener', 'body', 'body'];
   const W = 84;
   const H = 112;
@@ -249,22 +257,167 @@ export function bookAnatomySvg(es: boolean): string {
 </svg>`;
 }
 
+// ── Chinese composition ─────────────────────────────────────────────────────
+
+/** The sample line: 曹雪芹's novel and its other title, in the mainland's
+ *  punctuation. Nineteen characters, seven of them marks; 》（ and 》）。
+ *  meet. */
+const CJK_SAMPLE = '曹雪芹著《红楼梦》（又名《石头记》）。';
+/** The same line cut into two vertical lines where the rules allow (an
+ *  opening bracket never ends a line). */
+const CJK_VERTICAL = ['曹雪芹著《红楼梦》', '（又名《石头记》）。'];
+
+const OPENING = new Set(['《', '（', '“', '「']);
+const CLOSING = new Set(['》', '）', '”', '」']);
+const STOP = new Set(['。', '，', '、']);
+
+const CJK_COMPOSITION = byLang(
+  {
+    aria: 'one Chinese line at full width, in Kaiming style and set vertically',
+    full: 'Full width: every mark takes a whole em', kaiming: 'Kaiming (mainland): brackets and the final stop take half an em',
+    vertical: 'Vertical', ems: (n: number) => `${n} em`,
+    legend: ['the blank half of a full-width mark', 'a mark set half an em wide'],
+  },
+  {
+    aria: 'una línea en chino a ancho completo, en estilo Kaiming y en vertical',
+    full: 'Ancho completo: cada signo ocupa un cuadratín', kaiming: 'Kaiming (China continental): corchetes y punto final, medio cuadratín',
+    vertical: 'En vertical', ems: (n: number) => `${String(n).replace('.', ',')} cuadratines`,
+    legend: ['la mitad en blanco de un signo de ancho completo', 'un signo compuesto en medio cuadratín'],
+  },
+  {
+    aria: '同一行中文的全角式、开明式和竖排',
+    full: '全角式：每个标点占一整格', kaiming: '开明式（大陆）：括号、书名号和行末句号占半格',
+    vertical: '竖排', ems: (n: number) => `${n}格`,
+    legend: ['全角标点空着的半格', '只占半格的标点'],
+  },
+);
+
+/** One character of the sample, in the Chinese body face, its em box's
+ *  left edge at `x` and top at `top`. */
+function han(x: number, top: number, ch: string, em: number): string {
+  // The ideographic em box: the alphabetic baseline 0.88 em below its top.
+  return `<text x="${+x.toFixed(2)}" y="${+(top + em * 0.88).toFixed(2)}" font-family="${SERIF_ZH}" font-size="${em}" fill="${NIGHT}">${ch}</text>`;
+}
+
+/** The same Chinese line set three ways: on a row of full-width cells,
+ *  where each mark carries half an em of blank (tinted); in the Kaiming
+ *  style, where the brackets and the stop at the line's end give that blank
+ *  up; and down two vertical lines, the brackets turned a quarter and the
+ *  full stop moved to the top-right corner of its cell, as mainland fonts
+ *  set it. Each glyph is placed by its em box, so any Chinese face lands
+ *  where the rules put it. */
+export function cjkCompositionSvg(lang: GuideLang): string {
+  const t = CJK_COMPOSITION[lang];
+  const E = 18;
+  const x0 = 24;
+  const chars = [...CJK_SAMPLE];
+  const out: string[] = [];
+  const cell = (x: number, y: number, w: number, fill = 'none', stroke: string = P.hair): string =>
+    `<rect x="${+x.toFixed(2)}" y="${y}" width="${+w.toFixed(2)}" height="${E}" fill="${fill}" stroke="${stroke}" stroke-width="0.8" />`;
+  const isMark = (ch: string) => OPENING.has(ch) || CLOSING.has(ch) || STOP.has(ch);
+  const blank = (x: number, y: number, w: number) => `<rect x="${+x.toFixed(2)}" y="${y}" width="${w}" height="${E}" fill="${P.amberTint}" />`;
+
+  // Row 1: full width. The blank half of each mark is tinted: before the
+  // glyph of an opening bracket, after that of a closing one or a stop.
+  const top1 = 40;
+  out.push(text(x0, top1 - 10, t.full, { size: FS.small, color: P.muted, anchor: 'start' }));
+  chars.forEach((ch, i) => {
+    const x = x0 + i * E;
+    if (isMark(ch)) out.push(blank(OPENING.has(ch) ? x : x + E / 2, top1, E / 2));
+    out.push(cell(x, top1, E));
+    out.push(han(x, top1, ch, E));
+  });
+  const end1 = x0 + chars.length * E;
+  out.push(text(end1 + 8, top1 + 13, t.ems(chars.length), { size: FS.small, color: P.amberDark, weight: 600, anchor: 'start' }));
+
+  // Row 2: Kaiming. Every bracket half an em (its glyph half kept), the
+  // full stop half an em at the line's end; the characters close up.
+  const top2 = 108;
+  out.push(text(x0, top2 - 10, t.kaiming, { size: FS.small, color: P.muted, anchor: 'start' }));
+  let x = x0;
+  chars.forEach((ch) => {
+    if (isMark(ch)) {
+      out.push(cell(x, top2, E / 2, P.blueTint, P.blueMid));
+      // The glyph sits in the half of its em box the blank did not take.
+      out.push(han(OPENING.has(ch) ? x - E / 2 : x, top2, ch, E));
+      x += E / 2;
+    } else {
+      out.push(cell(x, top2, E));
+      out.push(han(x, top2, ch, E));
+      x += E;
+    }
+  });
+  out.push(text(x + 8, top2 + 13, t.ems((x - x0) / E), { size: FS.small, color: P.blueDark, weight: 600, anchor: 'start' }));
+
+  // Legend.
+  const ly = 160;
+  out.push(blank(x0 + 9, ly, 9), `<rect x="${x0}" y="${ly}" width="18" height="${E}" fill="none" stroke="${P.hair}" stroke-width="0.8" />`);
+  out.push(text(x0 + 28, ly + 12.5, t.legend[0]!, { size: FS.small, color: P.muted, anchor: 'start' }));
+  out.push(`<rect x="${x0 + 9}" y="${ly + 28}" width="9" height="${E}" fill="${P.blueTint}" stroke="${P.blueMid}" stroke-width="0.8" />`);
+  out.push(text(x0 + 28, ly + 40.5, t.legend[1]!, { size: FS.small, color: P.muted, anchor: 'start' }));
+
+  // Vertical: two lines, right to left, one em per cell.
+  const colRight = 600;
+  const colGap = 14;
+  const vTop = 40;
+  const vCentre = colRight - E - colGap / 2;
+  out.push(text(vCentre, vTop - 10, t.vertical, { size: FS.small, color: P.muted }));
+  CJK_VERTICAL.forEach((line, li) => {
+    const cx = colRight - E - li * (E + colGap);
+    [...line].forEach((ch, i) => {
+      const y = vTop + i * E;
+      out.push(cell(cx, y, E));
+      if (OPENING.has(ch) || CLOSING.has(ch)) {
+        // Turned a quarter clockwise about the cell's centre: an opening
+        // bracket's glyph moves from the right half to the lower one.
+        out.push(`<g transform="rotate(90 ${cx + E / 2} ${y + E / 2})">${han(cx, y, ch, E)}</g>`);
+      } else if (STOP.has(ch)) {
+        // Mainland faces set 。，、 in the top-right corner of the cell.
+        out.push(han(cx + E * 0.6, y - E * 0.62, ch, E));
+      } else {
+        out.push(han(cx, y, ch, E));
+      }
+    });
+  });
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PAGE_VW} 232" role="img" aria-label="${t.aria}">
+  ${out.join('\n  ')}
+</svg>`;
+}
+
 // ── The Sandbox ─────────────────────────────────────────────────────────────
 
-/** The Sandbox interface: activity bar with its six panels, the markdown
+/** The panels of the activity bar, the one whose editor is drawn open
+ *  (with its tooltip) and the chapter the switcher shows. The Sandbox's
+ *  interface is in English or Spanish, so the Chinese edition draws the
+ *  English one around a Chinese book. */
+const SANDBOX_UI = byLang(
+  {
+    aria: 'Sandbox interface layout', chapter: '3 · Setting the line', scope: 'Whole book',
+    panels: ['Books', 'Chapters', 'Text', 'Figures', 'Fonts', 'Design', 'Checks'],
+  },
+  {
+    aria: 'disposición de la interfaz del Sandbox', chapter: '3 · Componer la línea', scope: 'Libro completo',
+    panels: ['Libros', 'Capítulos', 'Texto', 'Figuras', 'Fuentes', 'Diseño', 'Revisión'],
+  },
+  {
+    aria: 'Sandbox的界面布局', chapter: '3 · 排好每一行', scope: 'Whole book',
+    panels: ['Books', 'Chapters', 'Text', 'Figures', 'Fonts', 'Design', 'Checks'],
+  },
+);
+
+/** The Sandbox interface: activity bar with its seven panels, the text
  *  editor with the chapter switcher, and the viewport with its three tabs
  *  showing a spread. */
-export function sandboxUiSvg(es: boolean): string {
-  const ariaLabel = es ? 'disposición de la interfaz del Sandbox' : 'Sandbox interface layout';
-  const chapter = es ? '3 · Componer la línea' : '3 · Setting the line';
-  const scope = es ? 'Libro completo' : 'Whole book';
-  const panels = es
-    ? ['Proyectos', 'Markdown', 'Recursos', 'Fuentes', 'Configuración', 'Avisos']
-    : ['Projects', 'Markdown', 'Resources', 'Fonts', 'Configuration', 'Warnings'];
+export function sandboxUiSvg(lang: GuideLang): string {
+  const { aria: ariaLabel, chapter, scope, panels } = SANDBOX_UI[lang];
+  const TEXT_PANEL = 2;
+  const CHECKS_PANEL = panels.length - 1;
   const iconY = (i: number) => 44 + i * 36;
-  const icons = panels.map((_, i) => `<rect x="31" y="${iconY(i)}" width="24" height="24" rx="6" fill="${i === 1 ? P.blue : '#c9d4df'}" />`).join('');
-  const badge = `<circle cx="55" cy="${iconY(5) + 2}" r="6" fill="${VERMILION}" />${text(55, iconY(5) + 5.4, '3', { size: 8.5, color: '#ffffff', weight: 700 })}`;
-  const tooltip = `<rect x="62" y="${iconY(1) + 2}" width="${es ? 64 : 64}" height="20" rx="4" fill="${NIGHT}" />${text(94, iconY(1) + 15.5, panels[1]!, { size: FS.small, color: '#ffffff' })}`;
+  const icons = panels.map((_, i) => `<rect x="31" y="${iconY(i)}" width="24" height="24" rx="6" fill="${i === TEXT_PANEL ? P.blue : '#c9d4df'}" />`).join('');
+  const badge = `<circle cx="55" cy="${iconY(CHECKS_PANEL) + 2}" r="6" fill="${VERMILION}" />${text(55, iconY(CHECKS_PANEL) + 5.4, '3', { size: 8.5, color: '#ffffff', weight: 700 })}`;
+  const tipW = 48;
+  const tooltip = `<rect x="62" y="${iconY(TEXT_PANEL) + 2}" width="${tipW}" height="20" rx="4" fill="${NIGHT}" />${text(62 + tipW / 2, iconY(TEXT_PANEL) + 15.5, panels[TEXT_PANEL]!, { size: FS.small, color: '#ffffff' })}`;
   const edX = 80;
   const edW = 190;
   const editorWidths = [70, 150, 142, 150, 120, 150, 146, 90, 150, 134, 150];
@@ -308,8 +461,14 @@ export function sandboxUiSvg(es: boolean): string {
 const WIDE = PAGE_VW;
 
 /** A rosette of Bézier petals, hairline rings and microtext. */
-export function vectorRosetteSvg(es: boolean): string {
-  const ariaLabel = es ? 'roseta vectorial de pétalos, anillos y microtexto' : 'vector rosette of petals, rings and microtext';
+const ROSETTE = byLang(
+  { aria: 'vector rosette of petals, rings and microtext', micro: 'Postext · vector · zoom · ' },
+  { aria: 'roseta vectorial de pétalos, anillos y microtexto', micro: 'Postext · vector · zoom · ' },
+  { aria: '由花瓣、圆环和微缩文字组成的矢量玫瑰花饰', micro: 'Postext · 矢量 · 缩放 · ' },
+);
+
+export function vectorRosetteSvg(lang: GuideLang): string {
+  const { aria: ariaLabel, micro } = ROSETTE[lang];
   const cx = WIDE / 2;
   const cy = 108;
   const petals: string[] = [];
@@ -322,7 +481,6 @@ export function vectorRosetteSvg(es: boolean): string {
     petals.push(`<path d="M${cx},${cy} C${p(a - w, r * 0.62)} ${p(a - w * 0.4, r)} ${p(a, r)} C${p(a + w * 0.4, r)} ${p(a + w, r * 0.62)} ${cx},${cy} Z" fill="${i % 2 ? P.blue : GILT}" opacity="${i % 2 ? 0.55 : 0.7}" stroke="${P.blueDark}" stroke-width="0.35" />`);
   }
   const rings = [22, 34, 46, 86, 90].map((r, i) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${i < 3 ? '#ffffff' : P.blueDark}" stroke-width="${i < 3 ? 0.6 : 0.3}" />`).join('');
-  const micro = es ? 'Postext · vector · zoom · ' : 'Postext · vector · zoom · ';
   const microText = Array.from({ length: 5 }, (_, i) => text(cx, 200 + i * 3.2, micro.repeat(10).trim(), { size: 2.6, color: P.muted })).join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${WIDE} 222" role="img" aria-label="${ariaLabel}">
   ${petals.join('')}${rings}
@@ -332,9 +490,14 @@ export function vectorRosetteSvg(es: boolean): string {
 }
 
 /** A small area-and-line chart with axes, grid and labels. */
-export function vectorChartSvg(es: boolean): string {
-  const ariaLabel = es ? 'gráfico vectorial de área y línea con ejes y etiquetas' : 'vector area and line chart with axes and labels';
-  const months = es ? ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago'] : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'];
+const CHART = byLang(
+  { aria: 'vector area and line chart with axes and labels', months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'], pages: 'pages per second', chapters: 'chapters' },
+  { aria: 'gráfico vectorial de área y línea con ejes y etiquetas', months: ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago'], pages: 'páginas por segundo', chapters: 'capítulos' },
+  { aria: '带坐标轴和标签的矢量面积图与折线图', months: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月'], pages: '每秒页数', chapters: '章数' },
+);
+
+export function vectorChartSvg(lang: GuideLang): string {
+  const { aria: ariaLabel, months, pages, chapters } = CHART[lang];
   const a = [12, 18, 15, 27, 31, 29, 42, 48];
   const b = [8, 10, 14, 13, 19, 24, 22, 30];
   const x0 = 34;
@@ -356,14 +519,20 @@ export function vectorChartSvg(es: boolean): string {
   ${dots}
   <line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y0}" stroke="${P.line}" stroke-width="1" />
   ${labels}
-  <rect x="${x0 + 4}" y="176" width="12" height="3" fill="${P.blue}" />${text(x0 + 20, 180, es ? 'páginas por segundo' : 'pages per second', { size: 8.5, anchor: 'start' })}
-  <rect x="${x0 + 128}" y="176" width="12" height="3" fill="${GILT}" />${text(x0 + 144, 180, es ? 'capítulos' : 'chapters', { size: 8.5, anchor: 'start' })}
+  <rect x="${x0 + 4}" y="176" width="12" height="3" fill="${P.blue}" />${text(x0 + 20, 180, pages, { size: 8.5, anchor: 'start' })}
+  <rect x="${x0 + 128}" y="176" width="12" height="3" fill="${GILT}" />${text(x0 + 144, 180, chapters, { size: 8.5, anchor: 'start' })}
 </svg>`;
 }
 
 /** Clip paths, reused elements and overlapping translucent shapes. */
-export function vectorClipSvg(es: boolean): string {
-  const ariaLabel = es ? 'composición vectorial con recortes, elementos reutilizados y transparencias' : 'vector composition with clip paths, reused elements and transparency';
+const CLIP = byLang(
+  { aria: 'vector composition with clip paths, reused elements and transparency', clip: 'clip path', opacity: 'opacity' },
+  { aria: 'composición vectorial con recortes, elementos reutilizados y transparencias', clip: 'recorte', opacity: 'opacidad' },
+  { aria: '带剪切路径、重复使用的元素和透明度的矢量构图', clip: '剪切路径', opacity: '不透明度' },
+);
+
+export function vectorClipSvg(lang: GuideLang): string {
+  const { aria: ariaLabel, clip, opacity } = CLIP[lang];
   const D = 90; // disc offset
   const O = 160; // translucent circles offset
   const S = 250; // stars offset
@@ -383,8 +552,8 @@ export function vectorClipSvg(es: boolean): string {
     <circle cx="${146 + O}" cy="104" r="30" fill="${GILT}" />
   </g>
   ${stars}
-  ${text(72 + D, 158, es ? 'recorte' : 'clip path', { size: 9, color: P.muted })}
-  ${text(163 + O, 158, es ? 'opacidad' : 'opacity', { size: 9, color: P.muted })}
+  ${text(72 + D, 158, clip, { size: 9, color: P.muted })}
+  ${text(163 + O, 158, opacity, { size: 9, color: P.muted })}
   ${text(231 + S, 158, 'use', { size: 9, color: P.muted })}
 </svg>`;
 }

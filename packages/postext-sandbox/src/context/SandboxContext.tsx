@@ -75,7 +75,7 @@ import type { Warning } from '../warnings/types';
 import { hasIndexedDB } from '../storage/blobStore';
 import { onUnavailableResourceImagesChange, unavailableResourceImages } from '../controls/resourceImages';
 import { onPdfFontChecksChange, pdfFontChecks, pdfFontChecksFor } from '../controls/pdfFontWarnings';
-import { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES } from '../defaultMarkdown';
+import { DEFAULT_MARKDOWN_EN } from '../defaultMarkdown';
 import { withDefaultResourceTypes } from './defaultConfig';
 import { createPostextGuideConfig } from './guideConfig';
 import { createProjectActions } from './projectActions';
@@ -84,11 +84,13 @@ import { presetCoverKey, type CoverTarget } from '../covers/autoCover';
 import { bytesToDataUrl, listPresetCovers, putPresetCoverIfMissing } from '../storage/presetCovers';
 import {
   BUILTIN_PRESET_ID,
+  GUIDE_SAMPLE_DOCUMENTS,
   applyPreset,
   createPostextGuidePreset,
   decidePresetUpdate,
   findDefaultPrivatePreset,
   isDocumentUntouched,
+  isPristineChineseGuide,
   listPresets,
   rekeyMigratedConfig,
 } from '../presets';
@@ -987,7 +989,8 @@ export function useSandboxWarnings(): Warning[] {
   return useSyncExternalStore(store.subscribe, read, read);
 }
 
-const SAMPLE_DOCUMENTS = [DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES];
+/** The guide in every edition (English, Spanish, Simplified Chinese). */
+const SAMPLE_DOCUMENTS = GUIDE_SAMPLE_DOCUMENTS;
 
 /** The book slice (chapters, active chapter). */
 export function useBookContent(): BookContent {
@@ -1515,8 +1518,11 @@ export function SandboxProvider({
         // persisted in *another* language gets swapped to this locale's
         // default and its examples reseeded, so entering the Spanish sandbox
         // shows Spanish resources instead of whichever language seeded first.
+        // The Chinese guide is no interface's default: it was opened on
+        // purpose, and an untouched copy stays Chinese.
         const pristineOtherLocale =
-          isPristineBook(currentBook, SAMPLE_DOCUMENTS) && currentBook.chapters[0]!.markdown !== defaultMd;
+          isPristineBook(currentBook, SAMPLE_DOCUMENTS) && !isPristineChineseGuide(currentBook)
+          && currentBook.chapters[0]!.markdown !== defaultMd;
         const onBuiltin = savedId === null || savedId === BUILTIN_PRESET_ID;
 
         // Summaries: every provider, plus a placeholder for a previously
