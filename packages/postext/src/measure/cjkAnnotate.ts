@@ -15,7 +15,8 @@
  *   box (the base is centred in it) less what it may pass the base by: a
  *   quarter of the ruby em onto a neighbour without ruby, none past a line
  *   edge (the composer shifts it back), and it keeps a quarter of the ruby
- *   em from a neighbour's reading.
+ *   em from a neighbour's reading (two zhuyin readings: a quarter of the
+ *   symbols' em).
  * - Zhuyin right of the base (horizontal text) stacks its symbols in a
  *   column beside each character, at 60 % of the ruby size (0.3 em by
  *   default, clreq §5.5.3.2), the tone mark right of the column with half

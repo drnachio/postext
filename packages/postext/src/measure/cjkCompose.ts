@@ -69,7 +69,7 @@ import { isBreakingSpace } from './spaces';
 import { trimChipLineEdges } from './chipEdges';
 import { cellAdvance, fontEm, fontFamilyOf, getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, measureCentralBaseline, verticalTrackCount, withMeasureWritingMode } from './vertical';
 import { verticalRuns } from '../writingMode';
-import { foldWidth, isZhuyin, noteRowBaselines, readingAdvance, rubyGeometry, splitNote, withFontSize, type RubyGeometry } from './cjkAnnotate';
+import { foldWidth, isZhuyin, noteRowBaselines, readingAdvance, rubyGeometry, splitNote, withFontSize, ZHUYIN_SIZE_RATIO, type RubyGeometry } from './cjkAnnotate';
 import {
   applyLineEdges,
   boxCut,
@@ -407,7 +407,8 @@ function rubyBaseUnit(span: InlineSpan, fonts: Fonts, letterSpacingPx: number, v
  * Lay out each ruby base's reading (see `cjkAnnotate.ts`): its box grows
  * to the reading less what the reading may pass it by — a quarter of the
  * ruby em onto a neighbour without ruby, and it keeps as much from a
- * neighbour's reading on the same side. Run once the units are final.
+ * neighbour's reading on the same side (two zhuyin readings: a quarter of
+ * the symbols' em). Run once the units are final.
  */
 function sizeRubies(units: Unit[]): void {
   for (let k = 0; k < units.length; k++) {
@@ -416,16 +417,21 @@ function sizeRubies(units: Unit[]): void {
     const fontOf = (v: Unit): string => v.ruby!.span.fontString ?? withFontSize(v.style.font, emOfFont(v.style.font) / 2);
     const font = fontOf(u);
     const q = fontEm(font) / 4;
+    const zhuyin = isZhuyin(u.ruby.span.text);
     // How far the reading may pass its box towards a neighbour: a quarter
     // of the ruby em onto one without a reading; next to a reading on the
     // same side, what keeps the two a quarter em apart (the neighbour's
-    // box is at least its base).
+    // box is at least its base). Zhuyin is set at 60 % of the ruby size,
+    // so two zhuyin readings keep a quarter of that em apart: three
+    // symbols beside each of two characters stay in their cells (clreq
+    // §5.5.3 centres each column on its own character).
     const allow = (v: Unit | undefined): number => {
       if (!v || v.kind !== 'text' || v.note) return 0;
       if (!v.ruby) return q;
       if (v.ruby.position !== u.ruby!.position || v.ruby.position === 'right') return q;
       const theirs = v.ruby.geometry?.rtWidth ?? readingAdvance(v.ruby.span.text, fontOf(v), v.ruby.position);
-      return Math.min(q, (v.width - theirs) / 2 - q);
+      const gap = zhuyin && isZhuyin(v.ruby.span.text) ? (fontEm(font) * ZHUYIN_SIZE_RATIO) / 4 : q;
+      return Math.min(q, (v.width - theirs) / 2 - gap);
     };
     const geometry = rubyGeometry({
       reading: u.ruby.span.text,

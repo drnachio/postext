@@ -433,6 +433,32 @@ describe('review fixes', () => {
     expect(tone!.dy).toBeLessThan(symbols!.dy);
   });
 
+  it('two zhuyin readings side by side keep a quarter of the symbols’ em apart, not of the ruby em (Nº 080)', () => {
+    // ㄐㄧㄡ and ㄒㄧㄤ: three 6 px symbols beside 20 px characters, 1 px
+    // to spare at each end. A quarter of the 10 px ruby em apart (2.5 px)
+    // made 就 21 px; a quarter of the symbols' 6 px em (1.5 px) keeps both
+    // characters one em.
+    const vertical = { ...roomy, locale: 'zh-Hant-TW', layout: { layoutType: 'single' as const, writingMode: 'vertical-rl' as const } };
+    const doc = buildDocument({ markdown: '一{就|ㄐㄧㄡˋ}{像|ㄒㄧㄤˋ}二' }, config({}, vertical));
+    const line = lines(doc)[0]!;
+    const [jiu, xiang] = line.segments!.filter((s) => s.ruby);
+    expect([jiu!.width, xiang!.width]).toEqual([20, 20]);
+    // The readings stay apart: 就's ends 1 px before its cell ends, 像's
+    // starts 1 px into its own.
+    const end = segmentX(line, jiu!) + jiu!.ruby!.runs[0]!.dx + 18;
+    const start = segmentX(line, xiang!) + xiang!.ruby!.runs[0]!.dx;
+    expect(start - end).toBeCloseTo(2, 9);
+    // So 21 characters and 就像 fill a measure of 23 with or without readings.
+    const run = '此開卷第一回也作者自云因曾歷過一番夢幻之後';
+    for (const md of [`${run}就像`, `${run}{就|ㄐㄧㄡˋ}{像|ㄒㄧㄤˋ}`]) {
+      expect(lines(buildDocument({ markdown: md }, config({}, vertical, 23))).map((l) => l.text)).toEqual([`${run}就像`]);
+    }
+    // Two pinyin readings still keep a quarter of the ruby em apart: shuō
+    // and míng fill their 20 px bases, so 說 grows by 2 × 2.5 px.
+    const pinyin = segments(buildDocument({ markdown: '一{說|shuō}{明|míng}二' }, config({}, roomy))).filter((s) => s.ruby);
+    expect(pinyin[0]!.width).toBeCloseTo(25, 9);
+  });
+
   it('marks under one line and readings over the next share the line gap', () => {
     // 20 px text on 32 px lines: a gap of 0.6 em, enough for each alone.
     const tight = { bodyText: { fontSize: pt(20), lineHeight: pt(32), textAlign: 'justify' as const, firstLineIndent: pt(0), hyphenation: { enabled: false } } };
