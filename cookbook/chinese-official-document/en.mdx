@@ -17,7 +17,7 @@ A notice from an invented publishers’ association in an invented city, 示例�
 
 The code is [the short answer](#the-short-answer) above. GB/T 9704 fixes the head margin at 37 mm and the binding margin at 28 mm, and fills a 156 × 225 mm type area with 22 lines of 28 characters in 三号. `cjk.grid` takes the numbers as they are: 28 ems of 15.75 pt make 155.6 mm, and 22 lines of 29 pt make 225.1 mm ([Character grid](/en/docs/configuration#character-grid)). Word’s 三号 is 16 pt, which would make the line 158 mm, wider than the standard’s type area; 15.75 pt is the value in typesetters’ tables. With the grid on, the margins are minimums. These leave 0.02 mm to share, so the type area stays where the standard puts it. The standard names 仿宋 for the text; Fontsource has no Fangsong face, so the text is set in the Song of Noto Serif SC (see Pitfalls).
 
-Every mark takes a whole cell and gives none of it up, so the characters stand in columns down the page, as on the grid the standard draws. When a comma falls on the 29th cell, `hangingPunctuation: 'allow'` hangs it in the margin instead of pushing a character onto the next line and spreading the rest ([Hanging punctuation](/en/docs/configuration#hanging-punctuation)).
+Every mark takes a whole cell and gives none of it up, so in a line of Chinese the characters stand in the columns of the grid the standard draws. Arabic numerals are narrower than a cell, so in a line such as 版心156毫米×225毫米 the characters after the digits fall between the columns. When a comma falls on the 29th cell, `hangingPunctuation: 'allow'` hangs it in the margin instead of pushing a character onto the next line and spreading the rest ([Hanging punctuation](/en/docs/configuration#hanging-punctuation)).
 
 <PageShot page={2} crop="0.08,0.683,0.9,0.2" caption="Page 2: the comma after 各一份 fills the 28th cell; the one after 可自愿报名 hangs in a 29th, past the edge of the type area, and the next line starts at the margin." />
 
@@ -31,7 +31,7 @@ The standard sets 一、 in 黑体, （一） in 楷体, and 1. and （1） in t
 
 <Excerpt region="letterhead" />
 
-The letterhead is the design of the H1, whose attributes carry the copy number, the issuer and the document number: the config holds the stationery, the Markdown the document. `lineTop(n)` gives the top of grid line *n*, so each element stands where the standard counts it: the number two blank lines under the issuer’s name, the title two blank lines under the red rule. The `\\` in the heading breaks the title after 关于举办, which gives the trapezoid the standard asks for, a short line over a long one. `minHeight` reserves 14 lines and `marginBottom` one more, so the addressee starts on line 16 ([Span and advanced design](/en/docs/configuration#span-and-advanced-design)).
+The letterhead is the design of the H1, whose attributes carry the copy number, the issuer and the document number: the config holds the stationery, the Markdown the document. `lineTop(n)` gives the top of grid line *n*, so each element stands where the standard counts it: the number two blank lines under the issuer’s name, the title two blank lines under the red rule. At 46 pt the name’s ink runs from 35 mm under the top of the type area to the foot of line 5, which leaves lines 6 and 7 blank and puts the number on line 8; at 48 pt it would reach into line 6 and push the rest of the page a line down. The `\\` in the heading breaks the title after 关于举办, a short line over a long one: a trapezoid, one of the two shapes the standard allows (the other is a diamond). `minHeight` reserves 13 lines and `marginBottom` one more, so the addressee starts on line 15 ([Span and advanced design](/en/docs/configuration#span-and-advanced-design)).
 
 ### 4 · Folios under the type area
 
@@ -43,13 +43,13 @@ In the footer, the container’s top edge is the foot of the type area, so `offs
 
 <Excerpt region="annex" />
 
-The annex heading takes a style of its own: a new page, 附件 on line 1, the title on line 3, the table from line 5. The 版记 is part of the same design, drawn on the two grid lines that end on the type area’s foot. Its elements have `reserve: false`, so they add nothing to the room the heading takes and the table starts under the title. The standard puts the 版记 on the last page, after the annexes; with a one-page annex that is the annex’s page. A longer annex would need the 版记 drawn by a heading on its last page.
+The annex heading takes a style of its own: a new page, 附件 on line 1, the title on line 3, and no margin under the three lines it reserves. The blank line 4 is the float gap every inline resource keeps above it (`inlineResourceGap`, under [Layout](/en/docs/configuration#layout)), so the table’s top rule sits on line 5. The 版记 is part of the same design, drawn on the two grid lines that end on the type area’s foot. Its elements have `reserve: false`, so they add nothing to the room the heading takes and the table is not pushed down past them. The standard puts the 版记 on the last page, after the annexes; with a one-page annex that is the annex’s page. A longer annex would need the 版记 drawn by a heading on its last page.
 
 ### 6 · The signature block
 
 <Excerpt region="styles" />
 
-A notice without a seal sets the issuer’s name two cells in from the right and the date under it, starting two cells further right. Started there, the date, 6.9 ems long, would end less than two cells from the margin, so the standard lets it set the right edge instead: it ends two cells short, and the name moves left to keep the two-cell step. `indent` places both lines on whole cells, 17 and 19 ems from the margin ([Paragraph styles](/en/docs/configuration#paragraph-styles)).
+A notice without a seal sets the issuer’s name two cells in from the right and the date under it, starting two cells further right. A date longer than the name ends two cells short of the right edge instead, and the name moves left to keep the two-cell step. Ours is 6.9 ems, a shade shorter than the name’s 7, so by the letter it would start two cells right of the name and end 0.14 em from the margin. We read the rule by what it is for, a date that never runs to the edge, and take the second case: the date ends just over two cells short. `indent` places both lines on whole cells, 17 and 19 ems from the margin ([Paragraph styles](/en/docs/configuration#paragraph-styles)).
 
 ## Variations
 
@@ -74,3 +74,4 @@ The canvas draws a grey square for every cell of the 28 × 22 grid, and the PDF 
 ## Pitfalls
 
 - At 150 dpi a 29 pt line is 60.41666… px. When a head and a two-line paragraph fell on the last three lines of a page, the check that keeps a head with its text summed the grid lines 10⁻¹³ px short and sent the head to the next page, which left three blank lines. At 144 dpi a point is two pixels and the sums are exact, so the page keeps its 22 lines.
+- A justified line shares its slack between the Chinese characters and any space it holds, and the space takes more than its share: on page 2 the one in GB/T 15834 opened to nearly twice the width of the one in GB/T 9704 above it. The content writes both numbers with a no-break space (U+00A0), which keeps each number in one piece, so the slack goes between the characters.

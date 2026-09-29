@@ -76,16 +76,16 @@ const rule = (id, y, thickness, colour = 'ink', reserve = false) => ({ kind: 'ru
   direction: 'horizontal', thickness, color: col(colour), placement: { anchor: { to: 'container',
     edge: 'top-left' }, offset: { y: mm(y) }, size: { width: mm(AREA.w) } } });
 const PAD = { left: pt(5), right: pt(5) }; // the specimen stamp's: not a GB/T 9704 element
-const letterhead = { enabled: true, minHeight: pt(14 * LEAD), slot: { elements: [
+const letterhead = { enabled: true, minHeight: pt(13 * LEAD), slot: { elements: [
   text('copy', '{attr.copy}', face(SONG, BODY, 400, 'ink'), lineTop(1), { align: 'left' }),
   text('stamp', '样　张', face(HEI, BODY, 500, 'red', 1.3), lineTop(1) + 1.5, { edge: 'top-right',
     width: 'auto', box: { borderColor: col('red'), borderWidth: pt(1), padding: PAD } }),
-  // The name's top 35 mm under the type area: at lineHeight 1 its ink rises 1.2 mm above the box.
-  text('issuer', '{attr.issuer}文件', face(SONG, 48, 900, 'red', 1), 35 + 1.2),
+  // The name's ink starts 35 mm down, 0.07 em over its box; at 46 pt it ends in line 5.
+  text('issuer', '{attr.issuer}文件', face(SONG, 46, 900, 'red', 1), 35 + 0.07 * 46 * MM),
   // The number two blank lines under the name; the red rule 4 mm under its characters.
-  text('number', '{attr.number}', face(SONG, BODY, 400, 'ink'), lineTop(9)),
-  rule('red-rule', lineTop(9) + ((LEAD + BODY) / 2) * MM + 4, mm(0.5), 'red', true),
-  text('title', '{titleText}', face(SONG, 22, 900, 'ink'), lineTop(13)), // 二号, 2 lines under
+  text('number', '{attr.number}', face(SONG, BODY, 400, 'ink'), lineTop(8)),
+  rule('red-rule', lineTop(8) + ((LEAD + BODY) / 2) * MM + 4, mm(0.5), 'red', true),
+  text('title', '{titleText}', face(SONG, 22, 900, 'ink'), lineTop(12)), // 二号, 2 lines under
 ] } };
 const notice = { level: 1, span: 'page', advancedDesign: letterhead,
   marginTop: pt(0), marginBottom: pt(LEAD), // 空一行: a blank line, then the addressee
@@ -111,7 +111,7 @@ const small = face(SONG, FOLIO, 400, 'ink', LEAD / FOLIO); // 四号
 const inset = { x: FOLIO * MM, width: AREA.w - 2 * FOLIO * MM, reserve: false }; // 左右各空一字
 const annex = {
   id: 'annex', numbered: false, toc: false, breakBefore: { enabled: true, parity: 'any' },
-  span: 'page', marginTop: pt(0), marginBottom: pt(LEAD), // the table starts on line 5
+  span: 'page', marginTop: pt(0), marginBottom: pt(0), // line 4 is the table's float gap
   advancedDesign: { enabled: true, minHeight: pt(3 * LEAD), slot: { elements: [
     text('label', '{attr.label}', face(HEI, BODY, 500, 'ink'), lineTop(1), { align: 'left' }),
     text('title', '{titleText}', face(SONG, 22, 900, 'ink'), lineTop(3)),

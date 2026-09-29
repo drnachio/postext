@@ -30,7 +30,7 @@
       "pdf-export"
     ]
   },
-  "answers": ["Q105", "Q90", "Q92", "Q30"],
+  "answers": ["Q105", "Q90", "Q92"],
   "gaps": ["chinese-point-sizes"],
   "gotchas": [
     "cjk-no-fangsong",
