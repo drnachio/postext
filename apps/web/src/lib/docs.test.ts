@@ -43,6 +43,26 @@ describe("docs table of contents", () => {
     expect(es).toContain("3 idiomas-y-escrituras");
   });
 
+  it("gives every heading of the Chinese layout page its own title", () => {
+    for (const locale of ["en", "es"] as const) {
+      const texts = extractToc(getDocSource("chinese-layout", locale)!.source).map((t) => t.text);
+      expect(texts.filter((t, i) => texts.indexOf(t) !== i), locale).toEqual([]);
+    }
+  });
+
+  it("keeps Markdown markers literal in the Chinese layout page's code spans", () => {
+    // MDX reads Markdown inside JSX, so <code>*…*</code> prints an italic
+    // "…", and the docs pipeline drops JavaScript expressions (blockJS), so
+    // <code>{'*…*'}</code> prints nothing. A character reference stays
+    // literal in both the page and its Markdown rendition: <code>&#42;…&#42;</code>.
+    for (const locale of ["en", "es"] as const) {
+      const { source } = getDocSource("chinese-layout", locale)!;
+      for (const m of source.matchAll(/<code>([^<]*)<\/code>/g)) {
+        expect(m[1], m[0]).not.toMatch(/[*~^{]|(?<![\w])_|_(?![\w])/);
+      }
+    }
+  });
+
   it("links from the Chinese layout page only to headings that exist", () => {
     for (const locale of ["en", "es"] as const) {
       const { source } = getDocSource("chinese-layout", locale)!;

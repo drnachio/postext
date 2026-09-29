@@ -183,6 +183,7 @@ describe("page renditions", () => {
       expect(md).toMatch(/^\| .*`kaiming`/m);
       expect(md).not.toMatch(/<\/?(table|thead|tbody|tr|td|th|code|ruby|rt)\b|style=\{\{|\{\/\*/);
       expect(md).toContain("第{1:一}回");
+      expect(md).toMatch(/^\| `\*…\*` (on Chinese characters|sobre caracteres chinos)/m);
       expect(llmsTxt(locale)).toContain(`https://postext.dev/${locale}/docs/chinese-layout.md`);
     }
   });

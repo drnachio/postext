@@ -52,13 +52,15 @@ Write the whole tag: `zh-Hans` or `zh-Hant`, and the region when you know it (`z
     <tr><td>、，。 across the page</td><td>lower left of the cell</td><td>centred</td><td>centred</td></tr>
     <tr><td>、，。 down the page</td><td>upper right of the cell</td><td>centred</td><td>centred</td></tr>
     <tr><td>Interpunct ·</td><td>half an em</td><td>one em</td><td>one em</td></tr>
-    <tr><td>Marks that may hang, with <code>hangingPunctuation</code> on</td><td>、，。．；：？！</td><td>、，。． in vertical text only</td><td>、，。． in vertical text only</td></tr>
+    <tr><td>Marks that may hang, with <code>hangingPunctuation</code> on</td><td>、，。．；：？！</td><td>、，。．, across the page only under <code>'force'</code></td><td>、，。．, across the page only under <code>'force'</code></td></tr>
     <tr><td><code>:book[…]</code> (<code>bookTitleMark</code>)</td><td>《》 around the title</td><td>wavy line</td><td>wavy line</td></tr>
-    <tr><td><code>*…*</code> on Chinese characters (<code>emphasis</code>)</td><td>emphasis dots</td><td>emphasis dots</td><td>emphasis dots</td></tr>
+    <tr><td><code>&#42;…&#42;</code> on Chinese characters (<code>emphasis</code>)</td><td>emphasis dots</td><td>emphasis dots</td><td>emphasis dots</td></tr>
     <tr><td>Figure, continued table, see</td><td>图, （续）, 见</td><td>圖, （續）, 見</td><td>圖, （續）, 見</td></tr>
     <tr><td>Index groups (<code>index.groupBy</code>)</td><td>pinyin initials</td><td>stroke counts</td><td>stroke counts</td></tr>
   </tbody>
 </table>
+
+The last two rows follow the script, not the region. A classic in Traditional characters printed in Beijing (`zh-Hant-CN`) takes the mainland's line breaking and punctuation, and 圖, （續）, 見 and stroke-count groups; a Simplified book tagged for Hong Kong (`zh-Hans-HK`) takes 图 and pinyin groups.
 
 Japanese and Korean documents get the no-hyphenation rule and the CJK composer, but no rules of their own yet: they are set with the mainland Chinese defaults, and a paragraph in kana or hangul keeps the font's own quotes and dashes.
 
@@ -127,7 +129,7 @@ A full-width mark is half an em of glyph and half an em of blank, and what the s
   </tbody>
 </table>
 
-Two further settings act on marks in any style. With `compressAdjacent`, two marks that meet give up the blank between them, so `。」`, `》（` or `，「` take one and a half ems instead of two. With `trimLineStart`, an opening bracket that starts a line gives up its leading half, so its ink lines up with the text edge, and a closing bracket that ends a line its trailing half. Both are on for the mainland and Hong Kong and off for Taiwan, whose books keep every mark in its cell.
+Two further settings act on marks in any style. With `compressAdjacent`, two marks that meet give up the blank between them, so `。」`, `》（` or `，「` take one and a half ems instead of two. A centred `。` or `，`, as Taiwan and Hong Kong set them, keeps its whole em before a closing bracket, so `。」` stays two ems wide there; `》（`, `」，` and `，「` still close up. With `trimLineStart`, an opening bracket that starts a line gives up its leading half, so its ink lines up with the text edge, and a closing bracket that ends a line its trailing half. Both are on for the mainland and Hong Kong and off for Taiwan, whose books keep every mark in its cell.
 
 <Illustration name="PunctuationWidths" data='{"title": "Full width and Kaiming punctuation", "desc": "The line 曹雪芹著《红楼梦》（又名《石头记》）。 set twice. At full width every mark takes one em and the line is 19 em long; the blank half of each mark is tinted. In the Kaiming style the brackets take half an em each and the full stop at the end of the line half an em, and the same line is 15.5 em long.", "caption": "The same line at full width (19 em) and in the Kaiming style (15.5 em).", "fullwidth": "Full width (全角式)", "kaiming": "Kaiming (开明式)", "blank": "blank given up", "sample": "曹雪芹著《红楼梦》（又名《石头记》）。", "ems": "em"}' />
 
@@ -137,7 +139,7 @@ Set a book in a face of its region: Noto Serif SC or Source Han Serif SC for the
 
 ### Hanging punctuation
 
-With `hangingPunctuation: 'allow'`, a comma or full stop that would otherwise open the next line, and that push-in cannot take in, may hang past the end of the line ([clreq §6.1.3](https://www.w3.org/TR/clreq/#x6-1-3-hanging-punctuation-at-line-end)). `'force'` hangs such a mark whenever it ends a line. One mark at most hangs, never one touching another mark (`。」`), and never in horizontal Taiwan or Hong Kong text, whose centred marks would look cut off. Most Chinese books do not hang punctuation; clreq recommends it with a character grid. The default is `'none'`.
+With `hangingPunctuation: 'allow'`, a comma or full stop that would otherwise open the next line, and that push-in cannot take in, may hang past the end of the line ([clreq §6.1.3](https://www.w3.org/TR/clreq/#x6-1-3-hanging-punctuation-at-line-end)). `'force'` hangs such a mark whenever it ends a line. One mark at most hangs, never one touching another mark (`。」`). Under `'allow'` none hangs in horizontal Taiwan or Hong Kong text, whose centred marks would look cut off; `'force'` hangs them there too. Most Chinese books do not hang punctuation; clreq recommends it with a character grid. The default is `'none'`.
 
 ### Justification between characters
 
@@ -180,7 +182,7 @@ headings: {
 },
 ```
 
-That gives 第一回 to 第一百二十回, followed by an ideographic space before the title. A 回目 couplet is written with a line break in the heading, `# 甄士隱夢幻識通靈 \\ 賈雨村風塵懷閨秀`: the opener prints two lines, and the contents, running heads and PDF bookmarks join the halves with an ideographic space. `{1:words}` writes the number in Chinese words in a Chinese document (十二) and `{1:ordinal}` with 第 (第十二). A part numbered `:::part{number="卷三"}` reads as 3 for the placeholders that need a number.
+That gives 第一回 to 第一百二十回, followed by an ideographic space before the title. A 回目 couplet is written with a line break in the heading, `# 甄士隱夢幻識通靈 \\ 賈雨村風塵懷閨秀`. A heading design prints `{titleText}` on two lines, one half each: an opener band, or an in-column `advancedDesign` on the level or on a heading style (see [Span and advanced design](/en/docs/configuration#span-and-advanced-design)). Everywhere else the halves are joined with an ideographic space: in the contents, the running heads and the PDF bookmarks, and in a heading set in the column without a design, where the joined title then wraps wherever the measure ends, often inside the second half. Neither example below has a design, so give the heading one when the couplet should stand on two lines. `{1:words}` writes the number in Chinese words in a Chinese document (十二) and `{1:ordinal}` with 第 (第十二). A part numbered `:::part{number="卷三"}` reads as 3 for the placeholders that need a number.
 
 Ordered lists follow the hierarchy of GB/T 15834—2011 (一、 （一） 1. （1） ①) with a `prefix` before the number:
 
