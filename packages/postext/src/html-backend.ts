@@ -1290,7 +1290,9 @@ function renderDesignTextBlock(block: VDTDesignTextBlock, options?: HtmlPaint): 
 }
 
 /** A design text of a vertical page's flow: its lines set down the
- *  column, clipped, tracked and outlined as a horizontal one. */
+ *  column, clipped, tracked and outlined as a horizontal one. A line's
+ *  `xOffset` is from the block's own edge (as in `renderDesignTextBlock`),
+ *  its `baselineY` in the flow: only the latter is taken back to the box. */
 function renderVerticalDesignText(block: VDTDesignTextBlock, v: VerticalHtml): string {
   const clipDecl = block.clip ? 'overflow:hidden;' : '';
   const trackingDecl = block.letterSpacingPx ? `letter-spacing:${block.letterSpacingPx}px;` : '';
@@ -1300,7 +1302,7 @@ function renderVerticalDesignText(block: VDTDesignTextBlock, v: VerticalHtml): s
   const hidden = block.artifact ? ' aria-hidden="true"' : '';
   return (
     `<div${hidden} style="position:absolute;left:${block.bbox.x}px;top:${block.bbox.y}px;width:${block.bbox.width}px;height:${block.bbox.height}px;${clipDecl}${trackingDecl}${strokeDecl}">` +
-    verticalDesignLines(block, v, -block.bbox.x, -block.bbox.y) +
+    verticalDesignLines(block, v, 0, -block.bbox.y) +
     `</div>`
   );
 }
