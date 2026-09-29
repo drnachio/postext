@@ -688,22 +688,24 @@ def v_cover(lang: str, f: ZhFaces) -> dict:
     """The thread-bound cover of the right-bound edition: indigo cloth,
     four-hole stitching down the spine edge (the right, the flow's top) and
     a paper title slip at the head of the free edge with 紅樓夢 set down it
-    and 程乙本 small beside the foot."""
+    and 程乙本 small near its foot. Everything is placed from the bleed box
+    the cloth fills, so the cover holds together on a page of another size
+    (the HTML view)."""
     g = VG
-    # Flow frame of the sheet: x down from the head, y leftward from the spine.
+    # Flow frame: x down from the head, y leftward from the spine.
     stitch = 9.0
     holes = [g.height * r for r in (0.1, 0.36, 0.64, 0.9)]
     slip_w, slip_h, slip_top, slip_edge = 23.0, 92.0, 14.0, 11.0
-    slip_y = g.width - slip_edge - slip_w
-    page_tl = at("bleed", "top-left")
+    cloth = at("bleed", "top-left")
     els = [
-        box("cloth", anchor=page_tl, fill="indigo"),
-        rule("stitch-line", anchor=at("page", "top-left"), offset=(holes[0], stitch), width=holes[-1] - holes[0], color="thread", thickness=1.5),
+        box("cloth", anchor=at("bleed", "top-left"), fill="indigo"),
+        rule("stitch-line", anchor=cloth, offset=(holes[0], stitch), width=holes[-1] - holes[0], color="thread", thickness=1.5),
     ]
     for i, x in enumerate(holes):
-        els.append({"kind": "rule", "id": f"stitch-{i}", "direction": "vertical", "placement": {"anchor": at("page", "top-left"), "offset": {"x": mm(x), "y": mm(-1)}, "size": {"height": mm(stitch + 1)}}, "color": col("thread"), "thickness": pt(1.5)})
+        els.append({"kind": "rule", "id": f"stitch-{i}", "direction": "vertical", "placement": {"anchor": cloth, "offset": {"x": mm(x), "y": mm(-1)}, "size": {"height": mm(stitch + 1)}}, "color": col("thread"), "thickness": pt(1.5)})
     els += [
-        box("slip", anchor=at("page", "top-left"), offset=(slip_top, slip_y), width=slip_h, height=slip_w, fill="paper", style={"backgroundColor": col("paper"), "borderColor": col("ink"), "borderWidth": pt(0.6), "borderRadius": mm(0)}),
+        # The slip 11 mm from the free edge (the flow's foot).
+        box("slip", anchor=at("bleed", "bottom-left"), offset=(slip_top, -slip_edge), width=slip_h, height=slip_w, fill="paper", style={"backgroundColor": col("paper"), "borderColor": col("ink"), "borderWidth": pt(0.6), "borderRadius": mm(0)}),
         box("slip-frame", anchor=at("#slip", "top-left"), offset=(1.4, 1.4), width=slip_h - 2.8, height=slip_w - 2.8, fill="paper", style={"borderColor": col("ink"), "borderWidth": pt(0.3), "borderRadius": mm(0)}),
         ftext("slip-title", ed.BOOK[lang]["title"], anchor=at("#slip", "top-left"), x=8, y=0, length=slip_h - 26, across=slip_w, size_pt=30, family=f.kai, letterSpacing=pt(16)),
         ftext("slip-note", ed.BOOK[lang]["slip_note"], anchor=at("#slip", "top-left"), x=slip_h - 22, y=slip_w - 7.5, length=18, across=5, size_pt=9, family=f.kai, letterSpacing=pt(1)),
@@ -714,14 +716,17 @@ def v_cover(lang: str, f: ZhFaces) -> dict:
 def v_title_page(lang: str, f: ZhFaces) -> dict:
     """The title page (扉頁), a recto: 紅樓夢 down the middle in a vermilion
     double frame, the author on the column to its right, the editors to its
-    left, Postext at the foot of the last column. Anchored to the page (a
-    recto's type area starts `inner` from its right edge): the section's
-    margins narrow the type area to the colophon's columns on the verso."""
+    left, Postext at the foot of the last column. The section's margins
+    narrow the type area to the colophon's columns on the verso; on the
+    recto they widen its outer margin, on the left, so the title page is
+    placed from the type area's head and right edge all the same."""
     g = VG
     b = ed.BOOK[lang]
     L, p = g.col_len, g.pitch
-    page = at("page", "top-left")
-    x0, y0 = g.top, g.inner
+    # The type area's head and right edge: the container's on a recto, whose
+    # outer margin (widened for the colophon) is on its left.
+    page = at("container", "top-left")
+    x0, y0 = 0.0, 0.0
     fw = 6 * p  # the frame: six columns wide, centred on the type area
     fy = y0 + (g.type_w - fw) / 2
     fx, fl = x0 + 10.0, L - 20.0
@@ -1383,7 +1388,9 @@ def write_zh(out: str, lang: str, data: dict, front: dict, pictures: dict, marks
     chapters = data["editions"][lang]["chapters"]
     count = cn(len(ed.CHARACTERS))
 
-    emit(out, lang, specs, "000a-cover", b["cover"], front_matter(lang) + f'# {b["title"]} {{style="cover"}}\n\n# {b["title"]} {{style="titlepage"}}\n\n:::pagebreak\n\n' + para_block("colophon", ed.COLOPHON[lang]))
+    # The cover and the title page print the book's title from their designs;
+    # their headings name the pages in the PDF bookmarks (封面, 扉頁).
+    emit(out, lang, specs, "000a-cover", b["cover"], front_matter(lang) + f'# {b["cover"]} {{style="cover"}}\n\n# {b["title_page"]} {{style="titlepage"}}\n\n:::pagebreak\n\n' + para_block("colophon", ed.COLOPHON[lang]))
     emit(out, lang, specs, "000b-edition", b["edition_title"], f'# {b["edition_title"]} {{style="front"}}\n\n' + "\n\n".join(ed.EDITION_NOTE[lang]) + "\n")
     for k, key in enumerate(("cheng", "gao", "yinyan")):
         e = next(x for x in front[lang] if x["key"] == key)

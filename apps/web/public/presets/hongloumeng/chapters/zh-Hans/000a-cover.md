@@ -5,9 +5,9 @@ author: "曹雪芹"
 
 :::numbering{format="lower-roman" startAt=1}
 
-# 红楼梦 {style="cover"}
+# 封面 {style="cover"}
 
-# 红楼梦 {style="titlepage"}
+# 扉页 {style="titlepage"}
 
 :::pagebreak
 

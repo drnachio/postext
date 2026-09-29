@@ -5,9 +5,9 @@ author: "曹雪芹"
 
 :::numbering{format="trad-chinese-informal" startAt=1}
 
-# 紅樓夢 {style="cover"}
+# 封面 {style="cover"}
 
-# 紅樓夢 {style="titlepage"}
+# 扉頁 {style="titlepage"}
 
 :::pagebreak
 
