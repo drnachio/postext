@@ -1,15 +1,15 @@
 ---
 title: "Dates and acronyms upright in vertical text"
-summary: "Two proclamations of 1912 set vertically, bound on the right: two-digit numbers stand upright in one cell unaided, and :tcy and :upright mark the rest."
+summary: "Two founding documents of 1912 set vertically, bound on the right: two-digit numbers stand upright in one cell unaided, and :tcy and :upright mark the rest."
 description: "A Chinese documents reader in Postext: vertical text on a 44-character grid, dates set tate-chu-yoko, an acronym stacked, Latin turned, fore-edge heads."
 question: "How do I keep dates upright in vertical Chinese text, and what happens to acronyms and Latin words?"
 aliases: ["tate-chu-yoko", "縱中橫", "dates in vertical Chinese", "numbers in vertical text", "acronyms in vertical text", "documents reader", "proclamation", "fore-edge running heads", "文告"]
-pageNotes: { "1": "The cover: a vermilion field inside a thick and a thin rule in pale vermilion; the title 民國元年文告二種 runs down the right in white, the two documents and their dates in two lines on the left, 11 of 3月11日 upright in one cell.", "2": "The opener of the proclamation: a vermilion band down the right edge holds the title, the English subtitle turned on its side and the date at the foot; the headnote in a Kai face, set two characters lower, then the proclamation in Song.", "3": "The proclamation continues across the page and ends with its date line, set twelve characters low, and the seal notice in vermilion below it.", "4": "The notes to the proclamation in the Kai face: 10月10日 upright, 1911 and Sun Yat-sen turned on their side, ROC stacked letter by letter.", "5": "The opener of the Provisional Constitution: the band, the headnote with 3月8日 and 第35號 upright, the promulgation order with its seal notice and date, then chapter one.", "6": "Chapter two of the constitution: articles 5 to 15, the seven freedoms of article 6 set two characters lower.", "7": "The notes to the constitution and the colophon, in English, turned on its side." }
+pageNotes: { "1": "The cover: a vermilion field inside a thick and a thin rule in pale vermilion; the title 民國元年文告二種 runs down the right in white, the two documents and their dates in two lines on the left, 11 of 3月11日 upright in one cell.", "2": "The opener of the proclamation: a vermilion band down the right edge holds the title, the English subtitle turned on its side and the date at the foot; the headnote in a Kai face, set two characters lower, then the proclamation in Song.", "3": "The proclamation continues across the page and ends with its date line, set twelve characters low, and, on the next line, the seal notice in vermilion, starting one character below where the date ends.", "4": "The notes to the proclamation in the Kai face: 10月10日 upright, 1911 and Sun Yat-sen turned on their side, ROC stacked letter by letter.", "5": "The opener of the Provisional Constitution: the band, the headnote with 3月8日 and 第35號 upright, the promulgation order with its seal notice and date, then chapter one.", "6": "Chapter two of the constitution: articles 5 to 15, the seven freedoms of article 6 set two characters lower.", "7": "The notes to the constitution and the colophon, in English, turned on its side." }
 ---
 
 ## What you'll build
 
-A seven-page reader of two founding texts of the Republic of China: Sun Wen's proclamation on taking office on 1 January 1912, and the first two chapters of the Provisional Constitution of 11 March. The pages are set vertically on a 184 × 260 mm page bound on the right. The documents keep their own Chinese numerals, 民國元年三月十一日. The headnotes and notes, in a Kai face, give the Western dates in Arabic figures, and those figures are what the recipe sets: 10月10日 stands upright one number to a cell, 1912 and Sun Yat-sen are turned on their side, 民國115年 fits three digits into one cell and ROC stacks its letters. A vermilion cover inside a double rule, a vermilion band where each document opens and fore-edge heads with folios in Chinese numerals frame the text.
+A seven-page reader of two founding texts of the Republic of China: Sun Wen's proclamation on taking office on 1 January 1912, and the first two chapters of the Provisional Constitution of 11 March. The pages are set vertically on a 184 × 260 mm page bound on the right. The documents keep their own Chinese numerals, 民國元年三月十一日. The headnotes and notes, in a Kai face, give dates of the Western calendar, counts and issue numbers in Arabic figures, and those figures are what the recipe sets: 10月10日 stands upright one number to a cell, 1912 and Sun Yat-sen are turned on their side, 民國115年 fits three digits into one cell and ROC stacks its letters. A vermilion cover inside a double rule, a vermilion band where each document opens and fore-edge heads with folios in Chinese numerals frame the text.
 
 ## Method
 
@@ -19,13 +19,15 @@ The code is [the short answer](#the-short-answer) above. With `cjk.uprightDigits
 
 <PageShot page={4} crop="0.43,0.145,0.45,0.74" caption="Page 4, the notes: 10月10日 and 2月12日 upright, 1911 and Sun Yat-sen on their side, 268 and 115 squeezed by :tcy, ROC stacked by :upright." />
 
-The numbers follow one editorial rule: the texts of 1912 stay as printed, and only the editor's notes use Arabic figures, for dates of the Western calendar. The lunar date beside them keeps its Chinese numerals, 辛亥年八月十九日, as GB/T 15835, the Chinese standard for numbers in print, asks.
+The texts of 1912 stay as printed. The editor's notes follow Taiwan's rules for numbers, the Executive Yuan's 公文書橫式書寫數字使用原則 of 2004: dates, serial numbers and counts take Arabic figures (1912年3月8日, 第35號, 7章56條), while proper names, set phrases and round figures keep Chinese numerals (東三省, 四萬萬, 四億), and so does the lunar date, 辛亥年八月十九日. Where a note quotes a heading or a term of the documents it keeps their form, 第一章 and 二十二行省. Those rules were written for horizontal documents; set vertically, their figures are the ones the recipe has to stand upright.
 
 ### 2 · Open each document with a band on the right
 
 <Excerpt region="opener" />
 
-In a vertical flow the top of the page is the sheet's right edge, where reading starts. A heading design anchored to the top of the bleed is therefore a band down the right edge, and its `size.height` is its width on the sheet. Offsets turn with the flow: `x` measures down the sheet, `y` leftward. The grid centres the type area between the margins, and `HEAD` repeats that sum, so the title starts level with the first character of every line. `align: 'right'` puts the date at the foot of its line, where the lines of text end, and `inlineMarks: true` gives the date the same cells as the body. The band is the one of <RecipeLink slug="chapter-opener-bleed-band">Chapter opener on a full-bleed band</RecipeLink>, turned a quarter.
+In a vertical flow the top of the page is the sheet's right edge, where reading starts. A heading design anchored to the top of the bleed is therefore a band down the right edge, and its `size.height` is its width on the sheet. Offsets turn with the flow: `x` measures down the sheet, `y` leftward. The grid centres the type area between the margins, and `HEAD` repeats that sum, so the title starts level with the first character of every line. `align: 'right'` puts the date at the foot of its line, where the lines of text end, and `cjk.uprightDigits` reaches the design's text too: the 11 of 3月11日 stands in one cell, as in the body. The band is the one of <RecipeLink slug="chapter-opener-bleed-band">Chapter opener on a full-bleed band</RecipeLink>, turned a quarter.
+
+A heading design has no parity, so the band always runs down the sheet's right edge. On page 2, a right-hand page, that edge is the fore-edge; on page 5, a left-hand page of a book bound on the right, it is the spine, and the title starts 8 mm from the fold, inside the 21.6 mm inner margin. A stapled reader opens flat enough for that. For a sewn or glued book, open each document on a right-hand page with `breakBefore.parity: 'even'`, which leaves page 5 blank.
 
 <PageShot page={2} crop="0.55,0.13,0.45,0.52" caption="Page 2: the title from the head of the type area, the date at the foot of the band, 10 of 晚上10時 and 29 of 同月29日 upright in the headnote." />
 
@@ -33,7 +35,7 @@ In a vertical flow the top of the page is the sheet's right edge, where reading 
 
 <Excerpt region="heads" />
 
-`anchor.to: 'outer'` is the margin away from the spine, so in a book bound on the right the heads run down the left edge of a recto and the right edge of a verso. The title stands four characters below the head of the type area and the folio ends five above its foot, both set vertically at 80 % of the body size ([vertical text elements](/en/docs/configuration#vertical-text-elements)). `pageNumbering.format: 'trad-chinese-informal'` prints the folios 三, 四, 六, and `pages: 'body'` keeps them off the two openers.
+`anchor.to: 'outer'` is the margin away from the spine, so in a book bound on the right the heads run down the left edge of a recto and the right edge of a verso. The title stands four characters below the head of the type area and the folio ends five above its foot, both set vertically at 80 % of the body size ([vertical text elements](/en/docs/configuration#vertical-text-elements)). `pageNumbering.format: 'trad-chinese-informal'` prints the folios 三, 四, 六 and 七, and `pages: 'body'` keeps them off the two openers.
 
 ### 4 · Bleed the cover from a page-wide design
 
@@ -60,7 +62,7 @@ With 3, the 268 and 115 of the notes take their cell without markup, and so woul
 
 ### Turn every number on its side
 
-With 0 no number stands upright by itself: 10月10日 turns like 1912, and only the marked 115 and ROC still stand.
+With 0 no number stands upright by itself: 10月10日 turns like 1912, and only the marked 268, 115 and ROC still stand.
 
 ```diff
 -  uprightDigits: 2,
@@ -69,6 +71,6 @@ With 0 no number stands upright by itself: 10月10日 turns like 1912, and only 
 
 ## Pitfalls
 
-- Noto Serif TC has no 敎 (U+654E), the variant of 教 in article 6 of the 1912 text. The canvas drew it in a system face and the PDF had no glyph for it, which the capture reported (C25); the reader sets 教.
-- LXGW WenKai TC, as Fontsource serves it, draws 即 and 為 in the older forms 卽 and 爲, which sit oddly beside the 即 and 為 of the Song text. The notes are worded without those two characters. Read the Kai text of your own notes at full size.
+- Noto Serif TC, as Fontsource serves it, has no 爲 or 敎: its stylesheet lists both, but no file holds a glyph for them. The 1912 printing of the constitution writes 為 and 教 in those forms. The canvas drew 敎 in a system face and the PDF had no glyph for it, which the capture reported (C25). The reader sets 為 and 教, brings 靑 and 决 to 青 and 決 with them, and its headnote says so.
+- LXGW WenKai TC, as Fontsource serves it, draws 即, 為, 青 and 教 in the older forms 卽, 爲, 靑 and 敎, which sit oddly beside the same characters in the Song text. The notes are worded without those four; only the headnote that lists the constitution's old forms wants them. Read the Kai text of your own notes at full size.
 - A number set sideways is spaced from the Chinese beside it like a Latin word, a quarter em on each side (`cjk.latinSpacing`), so the headnotes read `1912 年`; a number in one cell takes no space, like a Chinese character.

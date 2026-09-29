@@ -1,8 +1,8 @@
 // ═══ Postext Cookbook · Nº 081 · Dates and acronyms upright in vertical text ═══════
 // https://postext.dev/en/cookbook/chinese-dates-upright
-// Code: MIT · Text: 1912 proclamations, zh.wikisource (CC BY-SA 4.0); notes (CC BY 4.0)
+// Code: MIT · Text: 1912 documents, zh.wikisource (CC BY-SA 4.0); notes (CC BY 4.0)
 // Fonts: Noto Serif TC, Noto Sans TC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.9.0
-// Two founding texts of the Republic of China, 1912, set vertically as a documents reader.
+// Two founding documents of the Republic of China, 1912, set vertically as a reader.
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
@@ -55,7 +55,7 @@ const cjk = {
 // so the type area starts HEAD mm down the sheet. The band's title starts there too.
 const HEAD = MARGIN.top + (TRIM.h - MARGIN.top - MARGIN.bottom - LINE) / 2;
 const BAND = 42; // mm from the right trim edge: where a reader of vertical text starts
-const onBand = { color: col('paper'), overflow: 'wrap', inlineMarks: true };
+const onBand = { color: col('paper'), overflow: 'wrap' };
 // In the flow of a vertical page x runs down the sheet and y leftward from its right edge.
 const at = (x, y, extra = {}) => ({ anchor: { to: 'page', edge: 'top-left' },
   offset: { x: mm(x), y: mm(y) }, ...extra });
@@ -147,15 +147,16 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   },
   headingStyles: [cover],
   paragraphStyles: [
-    // 低二格: the editor's voice in Kai, two characters lower than the text.
-    { id: 'headnote', fontFamily: KAI, fontSize: pt(10.5), lineHeight: pt(LEAD),
-      color: col('ink'), indent: em(2), firstLineIndent: em(2), marginBottom: pt(LEAD) },
+    // 低二格: the editor's Kai, two body cells lower (pt: the Kai's own em is off the grid).
+    { id: 'headnote', fontFamily: KAI, fontSize: pt(10.5), lineHeight: pt(LEAD), color: col('ink'),
+      indent: pt(2 * BODY), firstLineIndent: pt(2 * BODY), marginBottom: pt(LEAD) },
     { id: 'note', fontFamily: KAI, fontSize: pt(10.5), lineHeight: pt(LEAD),
       color: col('ink'), firstLineIndent: pt(0), hangingIndent: em(1) },
     { id: 'order', firstLineIndent: em(2), marginTop: pt(0) },
     { id: 'dateline', textAlign: 'left', indent: em(12), firstLineIndent: pt(0) },
+    // The seal notice starts 22 cells down, a cell past the end of 大中華民國元年元旦.
     { id: 'seal', fontFamily: HEI, fontSize: pt(10.5), color: col('seal'), textAlign: 'left',
-      indent: em(22), firstLineIndent: pt(0) },
+      indent: pt(22 * BODY), firstLineIndent: pt(0) },
     { id: 'article', firstLineIndent: pt(0), hangingIndent: em(2) },
     { id: 'item', indent: em(2), firstLineIndent: pt(0), hangingIndent: em(2) },
     { id: 'colophon', fontFamily: HEI, fontSize: pt(7.5), lineHeight: pt(LEAD),
@@ -187,7 +188,7 @@ await loadCjkFonts({ [SONG]: FONTS[SONG] }, markdown, { vertical: true });
 await loadCjkFonts({ [HEI]: FONTS[HEI] }, heiText, { vertical: true });
 await loadCjkFonts({ [KAI]: FONTS[KAI] }, kaiText, { vertical: true });
 const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
-showBook(doc, { title: t({ en: 'Two proclamations of 1912', es: 'Dos proclamas de 1912' }) });
+showBook(doc, { title: t({ en: 'Two documents of 1912', es: 'Dos documentos de 1912' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);
 
 // @kit core fonts viewer pdf cjk
