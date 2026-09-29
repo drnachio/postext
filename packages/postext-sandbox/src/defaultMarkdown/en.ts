@@ -33,14 +33,14 @@ Postext is an **open-source layout engine** that brings the craft of professiona
 This book is its own demonstration. Its cover, the contents page that numbers itself, the part dividers in three colours, the band that opens each chapter, the running heads at the top of these pages and every figure that floats into place were all laid out by Postext, in your browser, a moment ago. Nothing here was placed by hand: the Markdown only says what things are, and the configuration decides how they look.
 
 :::callout{type="try"}
-Open the **Markdown** panel and pick this chapter in the chapter switcher at its head. Change a word in this paragraph, or delete a sentence: the page sets itself again, the columns rebalance and the page numbers of the following chapters follow.
+Open the **Text** panel and pick this chapter in the chapter switcher at its head. Change a word in this paragraph, or delete a sentence: the page sets itself again, the columns rebalance and the page numbers of the following chapters follow.
 :::
 
 ## How to read this book
 
 The book is organised in three parts. **Foundations**, the part you are in, explains the problem Postext solves and how the engine is built: what goes in, what comes out and what happens in between. **The craft** is about typography: how a line is set, how a page is framed, where figures and tables go and how a set of chapters becomes a book. **In practice** turns to the tools: the document format, the Sandbox, the three output formats and the project around them.
 
-Each chapter opens with a short introduction on its band, and most of them close their sections with a box headed _Try it in the Sandbox_: a small experiment you can run on this very book, right now, to see the feature at work. Nothing in them can break anything — the reset button on the guide's row in the Projects panel restores it as it shipped — so change freely. The chapters can be read in any order; when one depends on another, it says so.
+Each chapter opens with a short introduction on its band, and most of them close their sections with a box headed _Try it in the Sandbox_: a small experiment you can run on this very book, right now, to see the feature at work. Nothing in them can break anything — **Restore the original…**, in the menu of the guide's row in the **Books** panel, brings it back as it shipped — so change freely. The chapters can be read in any order; when one depends on another, it says so.
 
 ## Application layout and editorial layout
 
@@ -241,11 +241,23 @@ Hyphenation uses the same **Liang patterns** TeX has relied on since 1983, serve
 
 Hyphenation only runs on justified text, where it earns its keep. Two break opportunities are always available, whatever the setting: a hard hyphen between two letters is a legitimate break, and a word wider than the whole measure is divided at the last syllable that fits, or at the last character if it has to be.
 
-Soft hyphens typed in the text are honoured as break points, and at the same price as the pattern's own. The language can also change within a book: every chapter shares the configuration's language, so a bilingual edition like this one is configured once per language, and each version of the guide hyphenates by its own rules.
+Soft hyphens typed in the text are honoured as break points, and at the same price as the pattern's own. The language can also change within a book: every chapter shares the configuration's language, so an edition in several languages, like this one, is configured once per language, and each version of the guide hyphenates by its own rules.
 
 ## Word spacing and ragged lines
 
 Two settings bound how far a space may stretch or shrink: \`maxWordSpacing\`, by default twice the natural space, and \`minWordSpacing\`, 0.6 of it. Stretching past the maximum is priced above any other defect, so the breaker will hyphenate, move a word or accept a runt before it opens a river. Some lines cannot be filled at all — a long URL, the unbreakable tail of a list item — and rather than opening them into gaps three times the natural space, the engine sets them ragged at natural spacing. The last line of a paragraph is always ragged, except when it is overfull: then its spaces compress to fit, exactly as TeX sets glue.
+
+## Chinese and East Asian text
+
+Chinese is written without spaces between words and is never hyphenated: a line may end between almost any two characters. A paragraph that holds more Chinese, Japanese or Korean characters than word spaces does not go through Knuth-Plass; the **CJK composer** sets it one line after another. What it has to respect are the rules for the ends of lines: a comma, a full stop or a closing bracket never opens a line, and an opening bracket never ends one. How strict they are depends on the region, which the document language gives — \`zh-Hans\` follows the mainland standard, GB/T 15834, and \`zh-Hant\` the practice of Taiwan and Hong Kong — and \`cjk.lineBreak\` sets the level by hand. Some runs are never split: a two-em dash or ellipsis, a number with its unit, a Latin word or a web address set among the characters.
+
+Each Chinese punctuation mark sits in a square of its own, half of it ink and half blank, and how much of the blank a book keeps is a matter of house style, shown in :ref{id="cjk-composition"}. Taiwan and Hong Kong keep every mark a full square. The mainland's Kaiming style, the default for \`zh-Hans\`, sets commas, brackets and quotation marks in half a square and keeps the full stop whole except at the end of a line; where two marks meet, the blank between them goes as well. \`cjk.punctuationWidth\` chooses the style, \`cjk.compressAdjacent\` and \`cjk.trimLineStart\` switch the two adjustments, and \`cjk.hangingPunctuation\` lets a comma or a full stop hang past the end of the line.
+
+A justified Chinese line is filled in a fixed order: first the spaces between Western words, then the quarter of an em the engine sets between Chinese and Latin text (\`cjk.latinSpacing\`; it is never typed), and last every gap between two characters, never inside a Latin word or a number. When a character may not open the next line, the composer first tries to take it into the line by giving up blank from the marks already on it, and only when that fails carries the character before it down to the next line. A line that would need more than half an em between its characters is left short, and the **Checks** panel reports it as a CJK line set short.
+
+The rest of a Chinese book follows the same settings. Numbering accepts the Chinese numeral styles — \`simp-chinese-informal\`, \`trad-chinese-informal\`, \`cjk-decimal\` and others — in chapter templates, page numbers, lists and counters, so chapters can be named by their Chinese ordinals; figures and tables take their Chinese names and are numbered by chapter with a hyphen. \`cjk.grid\` sets the type area as a number of characters per line and lines per page, the grid Chinese books are designed on. The Chinese edition of this guide uses all of it: its row in the **Books** panel has a third language button. Among the sample books, _Dream of the Red Chamber_ is a whole novel set in Chinese.
+
+\`layout.writingMode: 'vertical-rl'\` sets a book vertically. Lines run from top to bottom and follow each other from right to left, two columns become two tiers stacked on the page, figures and tables stay upright, Latin words and long numbers turn on their side, and each mark takes the place or the form it has in vertical text. Such a book is bound on the right (\`page.binding\`): its first page stands alone to the left of the spine, and the Sandbox shows its spreads from right to left.
 
 ## Emphasis and runs
 
@@ -264,7 +276,7 @@ Postext prices all three. When a paragraph crosses a column, the engine compares
 Lists follow the same discipline as paragraphs, with a typography of their own. Bulleted lists choose their bullet character, its size, weight and colour, and the gap and hanging indentation that keep the text of every item aligned; numbered lists choose between arabic numbers, lower or upper letters and lower or upper roman numerals, with a separator that can be styled on its own and numbers aligned to the right, so items 9 and 10 line up. Nesting goes five levels deep, each level with its own indentation and markers, and task lists draw a checkbox for every item, checked or not. Items can be kept tight or spaced, and the engine treats the end of a list as one of its levers when it balances columns.
 
 :::callout{type="try"}
-In **Configuration**, search for _loose_ and turn on the loose-line highlight of the debug section. Then narrow the columns or raise \`maxWordSpacing\` and watch which lines the engine has to open, and how the optimiser redistributes them.
+In the **Design** panel, search for _loose_ and turn on **Highlight loose lines**, in the **Advanced** group. Then narrow the columns or raise \`maxWordSpacing\` and watch which lines the engine has to open, and how the optimiser redistributes them.
 :::
 
 ## Mathematics
@@ -358,12 +370,12 @@ A page is not always one set of columns from top to bottom. A page-wide figure, 
 The closing columns of a chapter get the same treatment. Rather than leaving the last page with one full column and one nearly empty, a trailing cap shares the remaining lines between them, and the balancing levers do the rest. Explicit column breaks are respected: \`:::columnbreak\` ends a column where the author wants it, and the balancer leaves that column's foot alone.
 
 :::callout{type="try"}
-In **Configuration**, open **Headings** and switch **Balance Columns** off. Look at the foot of the columns of this chapter, then switch it back on and see which lever the engine used on each page.
+In the **Design** panel, open **Headings & contents** and switch **Balance columns** off. Look at the foot of the columns of this chapter, then switch it back on and see which lever the engine used on each page.
 :::
 
 # Figures, tables and floats {lead="A reference is a promise, not a position. Mention a figure and Postext finds it a home: the first free slot after the mention, numbered in reading order, captioned, never before the words that call for it." summary="Where resources land, how they are numbered, tables that split"}
 
-Everything that is not flowing text — images, SVG diagrams, tables — is a **resource**. Resources are declared outside the text, each with an id, a type, a caption and its placement preferences, and the Markdown simply mentions them. In the Sandbox they live in the Resources panel.
+Everything that is not flowing text — images, SVG diagrams, tables — is a **resource**. Resources are declared outside the text, each with an id, a type, a caption and its placement preferences, and the Markdown simply mentions them. In the Sandbox they live in the Figures panel.
 
 ## One mention is enough
 
@@ -397,7 +409,7 @@ A type with an empty prefix and no caption is useful too: it turns an image into
 
 Tables carry their model inline: rows of cells with column and row spans, header rows, alignment and relative column widths. Cells accept inline Markdown, paragraphs and simple lists, a fill of their own — this book's three part colours are :swatch{color="#2b4acb"} blue, :swatch{color="#b7820f"} gilt and :swatch{color="#c0452f"} vermilion — and even an image. Tables are styled once, for the whole document: body and header typography, header fill, rules in a grid, horizontal only, outer only or none.
 
-Tables are edited in the Resources panel, in an editor that works like a small spreadsheet: add or remove rows and columns, merge and split cells, mark header rows and columns, align cells, set fills and column widths, drop an image into a cell, and paste a block of cells copied from a spreadsheet. Every change is undoable, and the table on the page follows as you type.
+Tables are edited in the Figures panel, in an editor that works like a small spreadsheet: add or remove rows and columns, merge and split cells, mark header rows and columns, align cells, set fills and column widths, drop an image into a cell, and paste a block of cells copied from a spreadsheet. Every change is undoable, and the table on the page follows as you type.
 
 A table taller than the page splits across pages. Its header rows repeat on every part, the caption of each continuation gains a _(cont.)_ suffix, a _Continued_ marker closes every part but the last, and no split ever cuts through a row span. A rotated table splits the same way, page after page.
 
@@ -417,12 +429,12 @@ Some resources are wider than the page is tall: a timeline, a wide table of resu
 
 SVG diagrams are drawn as vectors everywhere. The PDF converts the common subset of SVG — shapes, paths, groups, clip paths, solid fills and strokes, opacity and text — into native drawing operations, and rasterises anything beyond it at 600 dpi; a figure can also bring a PDF master of its own, embedded as it is. For single-colour printing, a switch recolours every diagram as tints of one ink, by luminance, in all three renderers.
 
-Text inside an SVG stays text. In the PDF it is set in real fonts and can be selected and searched, and in the Sandbox it can be edited in place: the Resources panel opens the diagram's source with only its text editable — the drawing itself stays locked unless you unlock it — so a label can be corrected or translated without opening a drawing program. The diagrams in this book are generated for each language, which is why their labels are Spanish in the Spanish edition and English in this one.
+Text inside an SVG stays text. In the PDF it is set in real fonts and can be selected and searched, and in the Sandbox it can be edited in place: the Figures panel opens the diagram's source with only its text editable — the drawing itself stays locked unless you unlock it — so a label can be corrected or translated without opening a drawing program. The diagrams in this book are generated for each language, which is why their labels are Spanish in the Spanish edition, Chinese in the Chinese one and English in this one.
 
 Three figures set here to prove the point. The rosette of :ref{id="vector-rosette"} is made of Bézier curves, hairline strokes and a line of microtext two and a half points tall; the chart of :ref{id="vector-chart"} combines a filled area, a dashed line and text labels; and :ref{id="vector-clip"} uses a clipping path, a group drawn with transparency and one shape reused five times. Open the PDF, zoom in to several times their size and look at the edges: they stay as sharp as the text around them, because they are drawn with the same operators, not pasted in as pictures. Try selecting the chart's labels, or searching for them: they are text.
 
 :::callout{type="try"}
-Click the caption of any figure in the canvas: the Resources panel opens on that resource, with its caption field ready. Change its placement from _auto_ to _top_ and watch it move.
+Click the caption of any figure in the canvas: the Figures panel opens on that resource, with its caption field ready. Change its placement from _auto_ to _top_ and watch it move.
 :::
 
 # Books, parts and running heads {lead="A book is more than its chapters: a cover, a contents page that keeps itself up to date, part dividers, openers that announce each chapter and running heads that know where the reader is. All of it is configuration." summary="Chapters, heading styles, design slots, parts, contents and page numbers"}
@@ -488,13 +500,13 @@ Headings from one to six hashes, paragraphs, block quotes, bulleted, numbered an
 
 A few details are worth knowing. Consecutive lines of a paragraph are joined, so line breaks in the source never reach the page; a new paragraph needs a blank line. Lists tolerate a single blank line between items, but two blank lines end them. Ordered lists keep the number they start with, so a list can begin at 0 or 5. And a heading can force a line break in its title with two backslashes, which only affects the designs that print the title large — openers and part pages — while the running heads, the contents and the PDF bookmarks keep it on one line.
 
-Some Markdown is deliberately left out, because a book has other ways to say it: images are resources rather than inline pictures, tables are resources with a model rather than pipe tables, and raw HTML has no meaning on a printed page. Links keep their text; making them clickable and giving inline code a style of its own are on the roadmap.
+Some Markdown is deliberately left out, because a book has other ways to say it: images are resources rather than inline pictures, tables are resources with a model rather than pipe tables, and raw HTML has no meaning on a printed page. Links are live in the HTML view and in the PDF; giving inline code a style of its own is on the roadmap.
 
 ## Directives and containers
 
 Everything else is expressed with a small vocabulary of directives, listed in :ref{id="document-format"}. Single-line directives start with three colons and act at the point where they appear. Containers wrap blocks between an opening line with attributes and a closing line of three colons; they nest, and an unclosed one is closed at the end of the chapter, with a warning.
 
-Attribute values can be quoted with double or single quotes, or left bare when they are a single word, and a bare key is a flag. A directive the engine does not know is not dropped silently: it is printed as a paragraph, so nothing disappears, and the Warnings panel reports it with its chapter and line. The same happens with a callout style or a paragraph style that the configuration does not define.
+Attribute values can be quoted with double or single quotes, or left bare when they are a single word, and a bare key is a flag. A directive the engine does not know is not dropped silently: it is printed as a paragraph, so nothing disappears, and the Checks panel reports it with its chapter and line. The same happens with a callout style or a paragraph style that the configuration does not define.
 
 ## Mentioning resources
 
@@ -516,7 +528,7 @@ Each extension answers one question a book asks and Markdown cannot: where a pag
 
 ## Mathematics in the source
 
-Mathematics is written in LaTeX notation. Inline formulas go between single dollar signs, in the middle of a sentence; display formulas go between double dollar signs, on a line of their own or as a block of several lines. A dollar sign that should print as a dollar is escaped with a backslash. A formula that is never closed, or that MathJax cannot read, is reported in the Warnings panel and replaced on the page by a red placeholder, so it cannot go unnoticed into the PDF.
+Mathematics is written in LaTeX notation. Inline formulas go between single dollar signs, in the middle of a sentence; display formulas go between double dollar signs, on a line of their own or as a block of several lines. A dollar sign that should print as a dollar is escaped with a backslash. A formula that is never closed, or that MathJax cannot read, is reported in the Checks panel and replaced on the page by a red placeholder, so it cannot go unnoticed into the PDF.
 
 ## Paragraph styles
 
@@ -536,19 +548,19 @@ Everything described in this book can be tried right now, without writing code. 
 
 ## A tour of the interface
 
-The interface follows a familiar editor layout, sketched in :ref{id="sandbox-ui"}. An **activity bar** on the left switches between six panels — Projects, Markdown, Resources, Fonts, Configuration and Warnings, the last with a count of open issues. A resizable **sidebar** holds the active panel; clicking the active icon collapses it. The **viewport** on the right shows the same layout in three tabs: Canvas, HTML and PDF.
+The interface follows a familiar editor layout, sketched in :ref{id="sandbox-ui"}. An **activity bar** on the left switches between seven panels — Books, Chapters, Text, Figures, Fonts, Design and Checks, the last with a count of open issues. A resizable **sidebar** holds the active panel; clicking the active icon collapses it. The **viewport** on the right shows the same layout in three tabs: Canvas, HTML and PDF.
 
-The sidebar and the viewport share the window, and the boundary between them can be dragged. Every panel and the viewport remember their state between visits: the zoom and view mode of the canvas, the column mode of the HTML view, the sections open in the Configuration panel. The theme and the interface language are switched from the foot of the activity bar, and the language of the interface is independent of the language of the book.
+The sidebar and the viewport share the window, and the boundary between them can be dragged. Every panel and the viewport remember their state between visits: the zoom and view mode of the canvas, the column mode of the HTML view, the groups open in the Design panel. The theme and the interface language are switched from the foot of the activity bar, and the language of the interface is independent of the language of the book.
 
 ## Editing a book
 
-The Markdown editor highlights front matter and mathematics, and its toolbar inserts formatting, lists, page breaks and numbering changes. At its head, a **chapter switcher** moves between the chapters of the book, showing their page ranges; each chapter keeps its own undo history and cursor. Editor and pages stay in step both ways: clicking a word on the page puts the cursor on it in the Markdown, and selecting text highlights it on the page.
+The editor of the **Text** panel highlights front matter and mathematics, and its toolbar inserts formatting, lists, page breaks and numbering changes. At its head, a **chapter switcher** moves between the chapters of the book, showing their page ranges; each chapter keeps its own undo history and cursor. Editor and pages stay in step both ways: clicking a word on the page puts the cursor on it in the Markdown, and selecting text highlights it on the page. The **Chapters** panel shows the open book as a whole, its chapters in order with their page ranges.
 
 The editor also keeps an eye on the book. Its chapter menu lists every chapter with the pages it occupies once they are known, and moving to another chapter switches the previews to it. Chapters can be created, renamed, reordered, split at their first-level headings or merged into the previous one, and the whole chapter can be exported as a Markdown file or replaced by one.
 
 ## Configuration
 
-The Configuration panel edits the whole configuration — more than five hundred fields — grouped in collapsible sections. A search box finds any option by name, category chips narrow the list to the document, the text, figures and tables, the output or advanced settings, and a _modified only_ filter shows what differs from the defaults. Every field and every section can be reset on its own, and the configuration can be exported and imported as a file.
+The **Design** panel edits the whole configuration — more than five hundred fields — in groups: page and columns, colours, typography, headings and contents, lists, figures and tables, boxes, headers and footers, parts, export and advanced settings. A search box finds any option by name, and the **Changed** filter shows what differs from the defaults. Every field and every section can be reset on its own, and the configuration can be exported and imported as a file.
 
 ## The three views
 
@@ -558,19 +570,19 @@ The canvas and the HTML views can lay out the current chapter or the whole book;
 
 ## Resources and fonts
 
-The Resources panel lists the book's resources by type. Images and SVG files can be dragged in, tables are edited in a spreadsheet-like editor with merged cells, fills, images, column widths and pasting from a spreadsheet, and the text of an SVG diagram can be edited in place. Clicking a caption, a note, a cell or the text of a diagram in the preview opens it in the panel. The Fonts panel adds families of your own, weight by weight, in the usual web and desktop formats; a custom family takes precedence over a Google Font of the same name.
+The **Figures** panel lists the book's resources by type. Images and SVG files can be dragged in, tables are edited in a spreadsheet-like editor with merged cells, fills, images, column widths and pasting from a spreadsheet, and the text of an SVG diagram can be edited in place. Clicking a caption, a note, a cell or the text of a diagram in the preview opens it in the panel. The Fonts panel adds families of your own, weight by weight, in the usual web and desktop formats; a custom family takes precedence over a Google Font of the same name.
 
 Each resource has a detail view with its id, its type, its caption, its note and its alternative text, its placement — position, span, rotation, width, alignment and a caption beside it — and a live preview. Deleting a resource warns when the text still mentions it. The Fonts panel, for its part, checks that every family the configuration names has the weights and styles it needs, and warns about missing or duplicate variants.
 
 ## Warnings
 
-The Warnings panel lists everything the engine noticed while setting the book: fonts that failed to load, loose lines, skipped heading levels, unclosed containers and unknown directives, unknown styles, placeholders that print nothing, missing resources and callouts too tall for their column. Every warning names its chapter and line, and clicking it jumps there.
+The **Checks** panel lists everything the engine noticed while setting the book: fonts that failed to load, loose lines, skipped heading levels, unclosed containers and unknown directives, unknown styles, placeholders that print nothing, missing resources and callouts too tall for their column. Every warning names its chapter and line, and clicking it jumps there.
 
 ## Projects, presets and sharing
 
-Your work is saved in the browser as you type. **Projects** are books stored locally, each with its name, description and cover image; they can be duplicated, exported and imported. **Presets** are read-only books to start from: this guide and a gallery of showcase editions — an astronomy magazine, an illustrated _Don Quixote_, an environmental magazine, an exhibition catalogue and two university textbooks — each set with a design of its own. Duplicate one as a project to make it yours.
+Your work is saved in the browser as you type. **Projects** are books stored locally, listed under **My books** in the **Books** panel, each with its name, description and cover image; they can be duplicated, exported and imported. **Presets** are read-only books to start from, listed under **Sample books**: this guide and a gallery of showcase editions — an astronomy magazine, an illustrated _Don Quixote_, an environmental magazine, an exhibition catalogue, two university textbooks and _Dream of the Red Chamber_ in Chinese — each set with a design of its own. **Make my own copy** turns one into a project of yours.
 
-Presets follow their source. When a preset bundle changes on the server, the Sandbox notices within seconds: an untouched preset is reloaded on its own, and one you have edited shows a banner offering to reload it, so work in progress is never overwritten. Presets can be hidden from the list and shown again, and each one can be opened in either of its languages when it has two, like this guide.
+Presets follow their source. When a preset bundle changes on the server, the Sandbox notices within seconds: an untouched preset is reloaded on its own, and one you have edited shows a banner offering to reload it, so work in progress is never overwritten. Presets can be hidden from the list and shown again, and each one can be opened in any of its languages when it has more than one, like this guide, which also comes in Simplified Chinese.
 
 A book travels as a single **.postext** file: its chapters, configuration, resources and fonts, plus the pagination already computed, so it opens paginated. And the address bar always holds a permalink to what you are looking at — the book, the language, the viewer, the chapter and the page.
 
@@ -655,9 +667,9 @@ Postext is not trying to be a universal document platform. It aims to be a very 
 
 The work is organised in four phases, summarised in :ref{id="development-phases"}. They are not strict milestones; they describe the order in which capabilities become stable enough for production.
 
-The first two phases are essentially complete: the data model, the parser and the measurement layer, the document format, the column engine with its balancing, floats and tables, and the book machinery of chapters, parts, contents and running heads. The third phase has delivered its core — optimal line breaking with editorial penalties, hyphenation in eight languages and mathematics — and has one large piece still open. The fourth, output, has shipped canvas, HTML and a tagged PDF, together with the worker, the Sandbox and its presets.
+The first two phases are essentially complete: the data model, the parser and the measurement layer, the document format, the column engine with its balancing, floats and tables, and the book machinery of chapters, parts, contents and running heads. The third phase has delivered its core — optimal line breaking with editorial penalties, hyphenation in eight languages, mathematics, footnotes and chapter-end notes, and Chinese set horizontally and vertically — and has margin notes still open. The fourth, output, has shipped canvas, HTML and a tagged PDF, together with the worker, the Sandbox and its presets.
 
-What is still missing is as important as what has shipped. **Footnotes, endnotes and margin notes** are the largest open area: the data model has a place for them, but they are not laid out yet. **Links** keep their text but not their destination, inline code has no style of its own, text does not yet flow around obstacles, and layout happens in the browser only. These are the next problems worth solving, and the ones where help counts most.
+What is still missing is as important as what has shipped. **Margin notes** have a place in the data model but are not laid out yet. Inline code has no style of its own, text does not yet flow around obstacles, Japanese and Korean are set with the Chinese rules rather than their own, and layout happens in the browser only. These are the next problems worth solving, and the ones where help counts most.
 
 ## Getting involved
 

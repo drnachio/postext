@@ -33,7 +33,7 @@ const load = (path) => import(new URL(path, sandbox).href);
 const { createPostextGuideConfig } = await load('context/guideConfig.ts');
 const { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES } = await load('defaultMarkdown/index.ts');
 const { sampleBook } = await load('book/chapterOps.ts');
-const { buildDefaultResources, SVG_FIGURES } = await load('defaultResources/index.ts');
+const { buildDefaultResources, SVG_FIGURES, figureBlobId } = await load('defaultResources/index.ts');
 const { coverThumbnailSvg } = await load('defaultResources/cover.ts');
 const { createBundle, zipBundle } = await import(new URL('../../../packages/postext/dist/bundle/index.js', import.meta.url).href);
 
@@ -108,7 +108,9 @@ for (const locale of LOCALES) {
   fonts ??= await fontFiles(config);
   const resources = await buildDefaultResources(locale);
   const files = { ...fonts.files };
-  for (const [fileId, fig] of Object.entries(SVG_FIGURES)) files[fileId] = fig.generate(locale === 'es');
+  // Each language's figures live under blob ids of their own (`-en`, `-es`),
+  // the ids its resources point at.
+  for (const [fileId, fig] of Object.entries(SVG_FIGURES)) files[figureBlobId(fileId, locale)] = fig.generate(locale);
   const { chapters } = sampleBook(MARKDOWN[locale], () => 'chapter', NAME[locale]);
   const bundle = await createBundle({
     id: 'postext-guide',
