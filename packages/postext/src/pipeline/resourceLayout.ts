@@ -1359,26 +1359,63 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
 }
 
 
+/** The share of its first width an upright picture keeps when its frame
+ *  narrows (see `layoutUprightResourceBlock`): it may give up a quarter,
+ *  about two caption lines in a full tier. */
+const UPRIGHT_MIN_PICTURE_SHARE = 0.75;
+
 /**
  * A resource set upright on a vertical page (see `ResourceLayoutInput.
  * upright`): a counter-clockwise rotated block whose upright frame is as
- * wide as its picture. The frame is first tried `maxLength` wide; a
+ * wide as its picture. The frame is first tried `maxLength` wide, which
+ * gives the picture its largest size (the caption on the fewest lines). A
  * picture the tier's height shrinks (or a bitmap narrower than that) gives
  * its width back, and the block is laid out again at the picture's width
- * so the caption wraps under the picture, a few rounds until the width
- * holds. The origin is block-relative (`originX` 0, `originY` the block's
- * height in the flow), as `offsetResourceBlockToAbsolute` expects.
+ * so the caption wraps under it, a few rounds until the width holds. A
+ * narrower frame is taken only while it fits the tier and the picture
+ * keeps `UPRIGHT_MIN_PICTURE_SHARE` of its first width: a caption that
+ * wraps onto more lines at each narrowing would otherwise squeeze the
+ * picture to nothing and run the frame past the tier. When the rounds stop
+ * short of a frame as wide as the picture, the frame narrows by bisection
+ * to the least width at which the picture still keeps that share, and the
+ * caption runs wider than the picture. The origin is block-relative
+ * (`originX` 0, `originY` the block's height in the flow), as
+ * `offsetResourceBlockToAbsolute` expects.
  */
 function layoutUprightResourceBlock(input: ResourceLayoutInput, maxLength: number): ReturnType<typeof layoutResourceBlock> {
   const base: ResourceLayoutInput = { ...input, upright: undefined, rotate: 'ccw' };
+  const at = (length: number) => layoutResourceBlock({ ...base, rotatedLength: length });
   let length = Math.max(1, maxLength);
-  let out = layoutResourceBlock({ ...base, rotatedLength: length });
+  let out = at(length);
   if (input.resource.kind === 'bitmap' || input.resource.kind === 'svg') {
+    const floor = out.block.bodyRect.width * UPRIGHT_MIN_PICTURE_SHARE;
+    const holds = (o: ReturnType<typeof layoutResourceBlock>) =>
+      o.block.rotation!.height <= input.columnWidth + 0.5 && o.block.bodyRect.width >= floor;
+    let settled = false;
     for (let round = 0; round < 4; round++) {
       const used = out.block.bodyRect.width;
-      if (!(used > 0) || used >= length - 0.5) break;
+      if (!(used > 0) || used >= length - 0.5) {
+        settled = true;
+        break;
+      }
+      const next = at(Math.max(1, used));
+      if (!holds(next)) break;
       length = Math.max(1, used);
-      out = layoutResourceBlock({ ...base, rotatedLength: length });
+      out = next;
+    }
+    if (!settled) {
+      let lo = Math.max(1, floor);
+      let hi = length;
+      for (let step = 0; step < 12 && hi - lo > 0.5; step++) {
+        const mid = (lo + hi) / 2;
+        const o = at(mid);
+        if (holds(o)) {
+          hi = mid;
+          out = o;
+        } else {
+          lo = mid;
+        }
+      }
     }
   }
   const rotation = out.block.rotation!;

@@ -104,6 +104,54 @@ describe('upright resources in a vertical flow', () => {
     expect(rb.rotation!.width).toBeCloseTo(rb.bodyRect.width, 0);
   });
 
+  describe('a caption that wraps as the frame narrows (#188)', () => {
+    const LONG = '寶玉與黛玉初見，一段頗長的圖說文字，看看它如何換行。';
+    const build = (w: number, h: number, caption: string, placement: Resource['placement']) => {
+      const doc = buildDocument(
+        { markdown: `${text(2)}見圖:ref{id="f1"}。\n\n${text(8)}`, resources: [{ ...figure('f1', w, h, placement), caption }] },
+        { ...config({ layoutType: 'double', gutterWidth: pt(20) }), page: { width: pt(300), height: pt(420), dpi: 72, margins: { top: pt(40), right: pt(30), bottom: pt(40), left: pt(30) } } },
+      );
+      const { page, blk } = resourceBlocks(doc)[0]!;
+      const tiers = page.columns.map((c) => flowRectToPage(page, c.bbox));
+      const f = sheetFrame(page, blk);
+      const tier = tiers.find((t) => f.origin.y >= t.y - 0.5 && f.origin.y <= t.y + t.height + 0.5)!;
+      return { page, rb: blk.resourceBlock!, f, tier, tierLength: page.columns[0]!.bbox.width };
+    };
+
+    it('keeps the picture when half a tier leaves room for one caption line', () => {
+      // At the frame's widest the caption takes one line and the picture
+      // 37.67 px; set at the picture's width the caption wraps to three
+      // lines, and the picture would shrink round after round to nothing.
+      const { rb, f, tier } = build(600, 900, '寶玉黛玉初見', { position: 'top', width: 0.5 });
+      expect(rb.rotation!.height).toBeLessThanOrEqual(80 + 0.5);
+      expect(rb.bodyRect.width).toBeGreaterThan(37);
+      expect(rb.captionLines).toHaveLength(1);
+      // The frame narrows to the caption's line, not the whole flow.
+      const capRight = Math.max(...rb.captionLines.map((l) => l.bbox.x + l.bbox.width));
+      expect(rb.rotation!.width).toBeLessThanOrEqual(capRight + 12);
+      expect(rb.rotation!.width).toBeGreaterThanOrEqual(capRight - 0.5);
+      expect(f.far.y).toBeLessThanOrEqual(tier.y + tier.height + 0.5);
+    });
+
+    it('never runs a tall picture with a long caption past its tier', () => {
+      // The widest frame gives the picture 22.59 px beside a two-line
+      // caption; at that width the caption would take fifteen lines.
+      const { rb, f, tier, tierLength } = build(300, 1600, LONG, { position: 'top' });
+      expect(rb.rotation!.height).toBeLessThanOrEqual(tierLength + 0.5);
+      // Three quarters of the picture at least, in a frame well short of
+      // the flow's 224 px.
+      expect(rb.bodyRect.width).toBeGreaterThanOrEqual(0.75 * 22.59 - 0.01);
+      expect(rb.rotation!.width).toBeLessThan(120);
+      expect(rb.captionLines.length).toBeLessThanOrEqual(3);
+      // Inside its own tier on the sheet: it neither crosses the gutter nor
+      // leaves the page.
+      expect(f.origin.y).toBeGreaterThanOrEqual(tier.y - 0.5);
+      expect(f.far.y).toBeLessThanOrEqual(tier.y + tier.height + 0.5);
+      // Every caption line within the frame.
+      for (const l of rb.captionLines) expect(l.bbox.x + l.bbox.width).toBeLessThanOrEqual(rb.rotation!.width + 0.5);
+    });
+  });
+
   it('an inline figure (`::resource`) stands upright in its column', () => {
     const doc = buildDocument(
       { markdown: `${text(1)}\n\n::resource{id="f2"}\n\n${text(3)}`, resources: [figure('f2', 400, 300, { position: 'here' })] },
