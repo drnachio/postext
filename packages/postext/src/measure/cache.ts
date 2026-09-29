@@ -55,6 +55,21 @@ function mathCacheKey(span: InlineSpan): string {
   return `|m:${span.math!.tex}${render ? `|${render.widthPx}x${render.heightPx}` : ''}`;
 }
 
+/** The Chinese annotations of a span (#193–#195): marks set on the same
+ *  text change its segments, a reading or a note its measure. Empty for a
+ *  span without any, so its key is unchanged. */
+function annotationCacheKey(s: InlineSpan): string {
+  if (!s.emphasisMark && s.properName === undefined && !s.bookTitle && !s.ruby && !s.warichu && !s.inserted) return '';
+  let key = '';
+  if (s.emphasisMark) key += `|em:${s.emphasisMark.style ?? ''}:${s.emphasisMark.fill ?? ''}:${s.emphasisMark.position ?? ''}`;
+  if (s.properName !== undefined) key += `|pn:${s.properName}`;
+  if (s.bookTitle) key += `|bt:${s.bookTitle.id}.${s.bookTitle.depth}`;
+  if (s.ruby) key += `|rb:${s.ruby.text}|${s.ruby.group ? 'g' : 'm'}|${s.ruby.position ?? ''}|${s.ruby.fontString ?? ''}|${s.ruby.color ?? ''}|${s.ruby.id}`;
+  if (s.warichu) key += `|wc:${s.warichu.id}|${s.warichu.fontString ?? ''}|${s.warichu.open ?? ''}|${s.warichu.close ?? ''}|${s.warichu.color ?? ''}`;
+  if (s.inserted) key += '|ins';
+  return key;
+}
+
 function buildRichCacheKey(
   spans: InlineSpan[],
   fonts: [string, string, string, string],
@@ -65,7 +80,7 @@ function buildRichCacheKey(
   // Script and small-caps marks change the measure of the same text, and a
   // formula or a swatch colour what a placeholder paints: they join the key
   // only when set, so the common keys are unchanged.
-  const spanKey = spans.map((s) => `${s.text}|${s.bold}|${s.italic}|${s.ref?.resourceId ?? ''}${s.footnote ? `|fn:${s.footnote.id}` : ''}${s.chip ? chipCacheKey(s.chip) : ''}${s.math ? mathCacheKey(s) : ''}${s.swatch ? `|sw:${s.swatch.color}` : ''}${s.script ? `|${s.script}` : ''}${s.smallCaps ? '|sc' : ''}${s.combineUpright ? '|tcy' : ''}${s.orientation === 'upright' ? '|up' : s.orientation === 'sideways' ? '|side' : ''}`).join('\x01');
+  const spanKey = spans.map((s) => `${s.text}|${s.bold}|${s.italic}|${s.ref?.resourceId ?? ''}${s.footnote ? `|fn:${s.footnote.id}` : ''}${s.chip ? chipCacheKey(s.chip) : ''}${s.math ? mathCacheKey(s) : ''}${s.swatch ? `|sw:${s.swatch.color}` : ''}${s.script ? `|${s.script}` : ''}${s.smallCaps ? '|sc' : ''}${s.combineUpright ? '|tcy' : ''}${s.orientation === 'upright' ? '|up' : s.orientation === 'sideways' ? '|side' : ''}${annotationCacheKey(s)}`).join('\x01');
   return `R\x00${spanKey}\x00${fonts[0]}\x00${fonts[1]}\x00${fonts[2]}\x00${fonts[3]}\x00${maxWidthPx}\x00${lineHeightPx}\x00${optionsKey(options)}${cjkKey(spanKey, options)}${cjkLinkKey(spans, spanKey)}`;
 }
 

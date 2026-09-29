@@ -516,6 +516,21 @@ El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezado
       <td>En texto vertical: una casilla de pie (tate-chu-yoko), cada carácter de pie en su propia casilla, o el tramo entero tumbado. No cambian nada en texto horizontal; ver <a href="#orientación-en-texto-vertical">Orientación en texto vertical</a>.</td>
     </tr>
     <tr>
+      <td>Marcas chinas</td>
+      <td><code>:dots[不可]</code>, <code>:name[賈寶玉]</code>, <code>:book[石頭記]</code></td>
+      <td>Puntos de énfasis (着重号), la línea de nombre propio (专名号) y la marca de título (书名号: 《》 o una línea ondulada, según <code>cjk.bookTitleMark</code>). El texto queda tal como se escribe; ver <a href="#marcas-chinas-ruby-y-warichu">Marcas chinas, ruby y warichu</a>.</td>
+    </tr>
+    <tr>
+      <td>Ruby</td>
+      <td><code>:ruby[紅樓]&#123;rt="hóng lóu"&#125;</code> o <code>&#123;紅樓|hóng|lóu&#125;</code></td>
+      <td>Lecturas en pinyin o zhuyin encima (o al lado) de los caracteres base. La forma compacta necesita una base con un carácter han, kana o bopomofo, así que <code>&#123;x|x&gt;0&#125;</code> sigue siendo texto.</td>
+    </tr>
+    <tr>
+      <td>Warichu</td>
+      <td><code>:warichu[nota]&#123;open="〔" close="〕"&#125;</code></td>
+      <td>Una nota compuesta en dos filas de medio cuerpo dentro de la línea (双行夹注), que se corta entre líneas y páginas.</td>
+    </tr>
+    <tr>
       <td>Código en línea</td>
       <td><code>`código`</code></td>
       <td>Las comillas invertidas se eliminan; el tramo se renderiza como texto plano, tal cual se escribió: un <code>{':ref{…}'}</code>, un chip, una fórmula, un enlace o un signo de marca dentro de él se imprimen literalmente, que es como un texto muestra la sintaxis. El estilo diferenciado para código está en el roadmap.</td>
@@ -626,6 +641,26 @@ En texto vertical (`layout.writingMode: 'vertical-rl'`) los caracteres chinos qu
 - Una referencia, una llamada de nota, una fórmula, un chip o una muestra de color dentro de una marca conserva su propia composición: `:sideways[iPhone[^1]]` tumba iPhone y deja la llamada como se componen todas; el número de una referencia queda en una casilla por `cjk.uprightDigits` como cualquier número corto.
 - Un elemento de texto de diseño con `inlineMarks: true` también las admite cuando se compone en vertical (ver [Configuración › Elementos de texto verticales](/es/docs/configuration#elementos-de-texto-verticales)).
 - Para cortar y justificar, una casilla `:tcy` y cada carácter de `:upright` cuentan como caracteres chinos, y no llevan espacio entre chino y latín al lado.
+
+
+### Marcas chinas, ruby y warichu
+
+Las ediciones chinas marcan el texto entre líneas en vez de con cursiva o subrayado, glosan los caracteres con su lectura y componen el comentario dentro de la línea. Cinco directivas lo hacen. Conservan su texto: los caracteres entre corchetes siguen en el párrafo (la búsqueda, el índice general, las anclas del índice analítico y el texto copiado los leen tal como se escribieron), y admiten las demás marcas en línea dentro y alrededor, anidadas incluidas. Escribe `\]` para un corchete literal.
+
+```markdown
+此事:dots[不可]輕忽。:name[賈寶玉]與:name[林黛玉]讀:book[西廂記]。
+
+{滿紙|mǎn|zhǐ}荒唐言，:ruby[一把]{rt="yì bǎ"}辛酸淚！:ruby[都]{rt="ㄉㄡ"}云作者痴。
+
+寶玉:warichu[甲戌側批：此是第一首標題詩。]{open="〔" close="〕"}道：……
+```
+
+- **`:dots[texto]`** pone un punto de énfasis (着重号) bajo cada carácter en texto horizontal, a su derecha en vertical, y ninguno en la puntuación ni en los espacios. `style="dot|circle|sesame"` (por defecto `dot`), `fill="open"` para el contorno, `pos="over|under"` para el otro lado. El énfasis de Markdown `*…*` sobre caracteres chinos hace lo mismo con `cjk.emphasis: 'dots'`, el valor por defecto en un documento en chino; las letras latinas del mismo énfasis siguen en cursiva.
+- **`:name[texto]`** traza la línea de nombre propio (专名号) bajo el texto (a su izquierda en vertical), y **`:book[texto]`** la marca de título (书名号): 《》 alrededor del título (〈〉 para un título dentro de otro), la línea ondulada de las ediciones clásicas y de Taiwán, o nada, según `cjk.bookTitleMark` (por defecto, signos en la China continental y línea ondulada en Taiwán y Hong Kong). Una misma fuente sirve para una edición continental moderna y para una clásica. Dos nombres o títulos seguidos mantienen sus líneas separadas.
+- **`:ruby[base]{rt="…"}`** pone lecturas encima de la base (pinyin) o a la derecha de cada carácter (zhuyin, lo que se hace por defecto con lecturas en bopomofo). Con tantas lecturas como caracteres, separadas por espacios o `|`, cada carácter recibe la suya y la línea puede cortarse entre ellos (ruby mono); `group`, o un número que no coincide, pone una lectura centrada sobre toda la base, que nunca se corta. `pos="over|under|right"` elige el lado. La forma compacta `{紅樓|hóng|lóu}` (una lectura por `|`) o `{紅樓|hónglóu}` (una lectura para toda la base) se lee igual, solo cuando la base tiene un carácter han, kana o bopomofo y fuera de las fórmulas, el código y los atributos, de modo que `{x|x>0}` en prosa latina sigue siendo texto. Una barra invertida delante de la llave o de la barra vertical deja una en chino como texto: `\{紅|hóng}` y `{紅\|hóng}` imprimen `{紅|hóng}`. Una base que abre o cierra una línea se alinea con ese borde junto con su lectura.
+- **`:warichu[nota]`** compone una nota (双行夹注) en dos filas a medio cuerpo dentro de la línea; la de arriba se lee primero (la de la derecha en texto vertical). Una nota larga llena lo que queda de línea y sigue en la línea, la columna o la página siguientes. `open` y `close` la rodean de signos al tamaño del texto; `cjk.warichu` fija el tamaño, el color y los signos por defecto. Una nota en escritura latina se corta entre sus palabras.
+
+El paso de línea no cambia nunca: marcas y lecturas viven en el interlineado, y la composición avisa cuando el hueco entre las líneas de un párrafo es demasiado estrecho para ellas (`cjkMarksExceedLeading`, `rubyExceedsLeading`), y cuando las marcas bajo una línea y las lecturas sobre la siguiente no caben juntas en el hueco que comparten, en un mismo párrafo o entre dos. Dales a los párrafos anotados un estilo de párrafo con más interlineado. Las marcas, lecturas y notas se dibujan en párrafos, títulos, elementos de lista, citas y recuadros; en los pies de figura, las celdas y las notas de tabla, y en los encabezados y diseños, el texto se imprime sin ellas. Con `cjk.bookTitleMark: 'brackets'` los 《》 de un título son puntuación del texto: los pies, las celdas, las notas, las filas del índice general, los marcadores del PDF y las entradas del índice alfabético los conservan. Ver [Configuración › Marcas, ruby y warichu](/es/docs/configuration#marcas-ruby-y-warichu).
 
 
 ## Notas al pie

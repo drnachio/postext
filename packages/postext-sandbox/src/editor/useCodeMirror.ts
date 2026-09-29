@@ -12,6 +12,7 @@ import { mathHighlight, mathTheme } from './mathHighlight';
 import { chipHighlight, chipTheme } from './chipSyntax';
 import { smallCapsHighlight, smallCapsTheme } from './smallCapsSyntax';
 import { orientationHighlight, orientationTheme } from './orientationSyntax';
+import { annotationHighlight, annotationTheme } from './annotationSyntax';
 import { indexHighlight, indexTheme } from './indexSyntax';
 import { refCompletion, type RefCompletionContext } from './refCompletion';
 
@@ -77,6 +78,8 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
       smallCapsHighlight,
       orientationTheme,
       orientationHighlight,
+      annotationTheme,
+      annotationHighlight,
       indexTheme,
       indexHighlight,
       refCompletion(() => getRefContextRef.current?.() ?? { resources: [], types: [] }),

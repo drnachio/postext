@@ -1581,7 +1581,7 @@ const config: PostextConfig = {
 Postext sets alphabetic scripts written left to right. Two families of writing systems are not fully supported yet:
 
 - **Right-to-left scripts** (Arabic, Hebrew, Persian, Urdu…). There is no bidirectional algorithm: lines are broken and aligned as if the text ran left to right, against the left margin, and what each line shows depends on how it is painted. In the canvas and PDF output a left-aligned line without inline formatting is drawn as one run of text, which the browser or the PDF's font engine turns right to left by itself, so there a line all in one right-to-left script can read correctly, but one that mixes directions, numbers or punctuation does not. The HTML output, justified, centred and right-aligned lines, and lines with inline formatting are drawn word by word from left to right: each word reads correctly, but the words come out in reverse reading order.
-- **Chinese, Japanese and Korean** are set horizontally, or down the page with `layout.writingMode: 'vertical-rl'` (see [Vertical writing](#vertical-writing)). A paragraph that holds more CJK characters than word spaces is broken between characters under the clreq line-start and line-end rules of `cjk.lineBreak` (no line starts with 。、」 or ー, none ends with 「 or （), keeps —— and …… whole, a number with its signs and a Latin word whole, and a justified line is spread between its characters to the measure: see [East Asian typography](#east-asian-typography). A Latin paragraph that quotes a few CJK words keeps optimal line breaking and may break next to them; a CJK bracket, the middle dot or a fullwidth sign quoted in Latin text (〈h〉, ％) changes nothing. Punctuation widths, hanging punctuation, the space between Han and Latin and the character grid are set as in [East Asian typography](#east-asian-typography), along the line in either writing mode; there is no ruby yet. Korean text breaks between syllables as well as at its spaces.
+- **Chinese, Japanese and Korean** are set horizontally, or down the page with `layout.writingMode: 'vertical-rl'` (see [Vertical writing](#vertical-writing)). A paragraph that holds more CJK characters than word spaces is broken between characters under the clreq line-start and line-end rules of `cjk.lineBreak` (no line starts with 。、」 or ー, none ends with 「 or （), keeps —— and …… whole, a number with its signs and a Latin word whole, and a justified line is spread between its characters to the measure: see [East Asian typography](#east-asian-typography). A Latin paragraph that quotes a few CJK words keeps optimal line breaking and may break next to them; a CJK bracket, the middle dot or a fullwidth sign quoted in Latin text (〈h〉, ％) changes nothing. Punctuation widths, hanging punctuation, the space between Han and Latin and the character grid are set as in [East Asian typography](#east-asian-typography), along the line in either writing mode, and so are emphasis dots, the proper-name and book-title marks, ruby and warichu notes (see [Marks, ruby and warichu](#marks-ruby-and-warichu)). Korean text breaks between syllables as well as at its spaces.
 
 Hyphenation patterns ship for eight languages (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`); the built-in resource types and continuation strings exist in those eight and in Chinese. Chinese, Japanese and Korean are set without hyphenation. Any other language is hyphenated with the US English patterns, with a console warning, and gets the English strings. For such a document, set `hyphenation.enabled: false` and pass `resourceTypes` and the `tableStyle` continuation strings in its language.
 
@@ -3069,7 +3069,7 @@ import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefault
 
 ## East Asian typography
 
-The `cjk` property sets how Chinese, Japanese and Korean text is composed: which regional conventions it follows, where its lines may break, how wide its punctuation is set and whether it hangs, the space between Han and Latin, and the character grid of the type area. Every field is optional, and `'auto'` follows the region of the document language (`locale`), so a book with `locale: 'zh-Hant'` breaks its lines and sets its punctuation the Taiwan way without setting anything else.
+The `cjk` property sets how Chinese, Japanese and Korean text is composed: which regional conventions it follows, where its lines may break, how wide its punctuation is set and whether it hangs, the space between Han and Latin, the character grid of the type area, and how the Chinese marks, ruby readings and warichu notes of the text print. Every field is optional, and `'auto'` follows the region of the document language (`locale`), so a book with `locale: 'zh-Hant'` breaks its lines and sets its punctuation the Taiwan way without setting anything else.
 
 ```ts
 interface CjkConfig {
@@ -3082,6 +3082,11 @@ interface CjkConfig {
   latinSpacing?: Dimension;                 // Between Han and Latin; default 0.25 em.
   uprightDigits?: 0 | 2 | 3 | 4;            // Vertical text: numbers in one upright cell; default 2.
   grid?: { enabled?: boolean; charsPerLine?: number; linesPerPage?: number; show?: boolean };
+  emphasis?: 'auto' | 'italic' | 'dots';    // What *…* does to Chinese characters.
+  bookTitleMark?: 'auto' | 'brackets' | 'wavy' | 'none'; // What :book[…] prints.
+  annotationColor?: ColorValue;             // Dots and name/title lines; default the text colour.
+  ruby?: { fontFamily?: string; fontSize?: Dimension; color?: ColorValue; position?: 'auto' | 'over' | 'under' | 'right' };
+  warichu?: { fontSize?: Dimension; color?: ColorValue; open?: string; close?: string };
 }
 ```
 
@@ -3148,6 +3153,36 @@ interface CjkConfig {
       <td><code>&#123; enabled?, charsPerLine?, linesPerPage?, show? &#125;</code></td>
       <td>off</td>
       <td>The type area in characters per line and lines per page (see <a href="#character-grid">Character grid</a>).</td>
+    </tr>
+    <tr>
+      <td><code>emphasis</code></td>
+      <td><code>'auto' | 'italic' | 'dots'</code></td>
+      <td><code>'auto'</code></td>
+      <td>What Markdown emphasis (<code>*…*</code>) does to Chinese characters: <code>'dots'</code> sets an emphasis dot under each (right of it in vertical text), as <code>:dots[…]</code> does, and Latin letters in the same emphasis keep their italics; <code>'italic'</code> slants them, which a Chinese face can only fake. <code>'auto'</code>: <code>'dots'</code> when the document language is Chinese, <code>'italic'</code> otherwise (see <a href="#marks-ruby-and-warichu">Marks, ruby and warichu</a>).</td>
+    </tr>
+    <tr>
+      <td><code>bookTitleMark</code></td>
+      <td><code>'auto' | 'brackets' | 'wavy' | 'none'</code></td>
+      <td><code>'auto'</code></td>
+      <td>What <code>:book[…]</code> prints: 《》 around the title (〈〉 inside another title), the wavy book-title line under it, or the bare title. <code>'auto'</code>: brackets for the mainland, the wavy line for Taiwan and Hong Kong.</td>
+    </tr>
+    <tr>
+      <td><code>annotationColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>the text colour</td>
+      <td>Colour of the emphasis dots and the proper-name and book-title lines; the default of the ruby and warichu colours.</td>
+    </tr>
+    <tr>
+      <td><code>ruby</code></td>
+      <td><code>&#123; fontFamily?, fontSize?, color?, position? &#125;</code></td>
+      <td>half-size, <code>'auto'</code></td>
+      <td>The readings of <code>:ruby[…]</code> and <code>&#123;紅樓|hóng|lóu&#125;</code>: face (default the text's), size (default <code>&#123; value: 0.5, unit: 'em' &#125;</code> of the text; zhuyin at 60 % of it), colour, and where they go when a ruby does not say (<code>'auto'</code>: zhuyin right of each character, pinyin over the text in horizontal text and right of it in vertical text).</td>
+    </tr>
+    <tr>
+      <td><code>warichu</code></td>
+      <td><code>&#123; fontSize?, color?, open?, close? &#125;</code></td>
+      <td>half-size, no brackets</td>
+      <td>The two-row notes of <code>:warichu[…]</code>: the note's size (default half an em, so the two rows fill the line's em), its colour, and the brackets set at the text size before its first row and after its last (a note's own <code>open</code> / <code>close</code> win).</td>
     </tr>
   </tbody>
 </table>
@@ -3259,6 +3294,19 @@ Two layouts from Chinese practice, at 五号 (10.5 pt) with a 6 pt line gap (`li
 
 `show` draws the grid (稿纸) over the type area, one light grey square per character position on each line (the character's em box around its baseline), on each column of the page (a `oneAndHalf` side column on the side the page's parity puts it), on the canvas and in the HTML. The PDF draws it only when `renderToPdf` is given `characterGrid: true`: it is a screen aid. `cjkGridGeometry(config)` returns the grid a config sets (numbers in use, margins, type area) and `applyCjkGrid(config)` the rewritten config.
 
+### Marks, ruby and warichu
+
+The markup of [Chinese marks, ruby and warichu](/en/docs/document-format#chinese-marks-ruby-and-warichu) keeps its text in the paragraph: search, the contents, index anchors and copied text read the characters as written, and only what is drawn around them depends on these settings.
+
+- **Emphasis dots** (着重号, `:dots[…]`, and `*…*` on Chinese characters under `emphasis: 'dots'`) take one dot per character, centred on it (the spacing of a justified line left out), never on punctuation or spaces: under the character in horizontal text, right of it in vertical text (clreq §5.3.1). `style` picks a filled dot, an open circle or a sesame dot, `fill="open"` draws the outline, `pos="over|under"` the side.
+- **Proper-name and book-title lines** (专名号 `:name[…]`, 书名号 `:book[…]` under `bookTitleMark: 'wavy'`) run under the characters' em box (left of it in vertical text), across the spaces inside the run. Where two runs meet, each end gives up an eighth of an em, so `:name[賈寶玉]:name[林黛玉]` reads as two names. When dots and a line mark the same text on one side, the line is nearer the text. Under `'brackets'` the 《》 are text the lines are broken with, painted and copied like any other character; they take no character of the plain text or the source map (the segments are flagged `inserted`).
+- **Ruby** readings sit in the line gap against the base's em box, centred on it; a reading wider than its base widens the base's box less a quarter of the ruby em it may pass onto a neighbour without a reading, and two readings keep a quarter of the ruby em apart. A mono ruby (one reading per character) may break between its characters; a group ruby never breaks. At a line start or end, base and reading align to the edge (clreq §5.5.4). Zhuyin in horizontal text stands in a column right of each character, and the character's box grows by the column; in vertical text the same column runs down the right of the characters. The tone mark goes right of the column with half of its ink above the top of the last symbol (clreq §5.5.3.3), placed by its ink because fonts set these marks high in their em box, and in vertical text it stands upright, like the neutral-tone dot above the first symbol.
+- **Warichu** notes (双行夹注) fold into two rows at the note size, centred on the line with no gap between them. The upper row takes characters until it holds at least half of the part, so the second row is never the longer, and one more while the lower row would open with a mark that may not start a line. A note longer than the room left on a line fills it and goes on with the next line, column or page; its brackets go only before its first row and after its last. In vertical text the upper row is the right one, read first.
+
+The line pitch never changes: marks and readings live in the leading. A paragraph whose line gap (line height less the text size) is under half an em with marks on one side, or five eighths with marks on both sides (clreq §5.6.1), is reported as a `cjkMarksExceedLeading` content warning; one whose readings are taller than its gap, as `rubyExceedsLeading`. Give such paragraphs a paragraph style with more leading.
+
+In the VDT a marked segment carries `cjkMarks`, and the layout places the dots and lines on its lines as `VDTLine.marks` (dots, circles, sesames, straight and wavy lines, in the line's flow frame), which the canvas, HTML and PDF draw as they are (PDF: `Artifact /Layout`; HTML: `aria-hidden` boxes, dotted text in `<em>`). A ruby base's segment carries `ruby` (the reading and its runs) and paints its base at `inkOffset` when the reading spread it; a warichu note's part on a line is one segment whose `text` is its upper row then its lower one and whose `warichu` holds the rows the renderers paint instead. Tagged PDF puts a reading in the `RT` of its base's `Ruby` and a note in a `Warichu`, and the line's `/ActualText` reads the base text and the note once. Marks, readings and notes are drawn in body text, headings, lists and boxes; captions, table cells and design text keep the text without them.
+
 Resolver and stripper match the other sections; `setCjkLineBreak` and `setCjkComposition` set the level and the composition (punctuation widths, hanging, the Han–Latin space; `cjkCompositionOf(resolved.cjk, dpi)`) for measurements made outside `buildDocument`, which sets them from the config. Outside a build, marks keep their full advance and no Han–Latin space is set:
 
 ```ts
@@ -3267,7 +3315,10 @@ import { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOf, se
 resolveCjkConfig(undefined, 'zh-HK');
 // { region: 'hongkong', lineBreak: 'basic', punctuationWidth: 'fullwidth', compressAdjacent: true,
 //   trimLineStart: true, hangingPunctuation: 'none', latinSpacing: { value: 0.25, unit: 'em' }, uprightDigits: 2,
-//   grid: { enabled: false, charsPerLine: 0, linesPerPage: 0, show: false } }
+//   grid: { enabled: false, charsPerLine: 0, linesPerPage: 0, show: false },
+//   emphasis: 'dots', bookTitleMark: 'wavy',
+//   ruby: { fontSize: { value: 0.5, unit: 'em' }, position: 'auto' },
+//   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '', close: '' } }
 ```
 
 In the Sandbox these settings are in **Design › Typography › East Asian typography**.

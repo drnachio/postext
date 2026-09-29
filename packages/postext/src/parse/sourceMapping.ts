@@ -3,6 +3,7 @@ import { MATH_PLACEHOLDER } from './inlineMath';
 import { BREAK_PLACEHOLDER, CHIP_PLACEHOLDER, FOOTNOTE_PLACEHOLDER, REF_PLACEHOLDER, SMALLCAPS_OPENER, SWATCH_PLACEHOLDER } from './inlineFormatting';
 import { sliceSpan } from './links';
 import { orientationOpenerAt } from './orientationMarks';
+import { annotationSourceSkips } from './annotations';
 
 /** A `:smallcaps[` at `r` that the parser took as markup: its closing `]`
  *  comes later on the same line (an unclosed one stays literal text). */
@@ -32,6 +33,11 @@ export function computeSourceMap(
 ): number[] {
   const map = new Array<number>(plainText.length);
   let r = blockSrcStart;
+  // The markup of Chinese annotations (`:ruby[`, `]{rt="…"}`, a compact
+  // ruby's `|hóng|lóu}`) prints nothing: plain characters never match
+  // inside it (#193–#195).
+  const skips = annotationSourceSkips(markdown, blockSrcStart, blockSrcEnd);
+  let si = 0;
   for (let p = 0; p < plainText.length; p++) {
     const ch = plainText[p]!;
     // Math placeholder: the plain char represents `$...$` in the markdown.
@@ -158,6 +164,11 @@ export function computeSourceMap(
     }
     const isSpace = ch === ' ';
     while (r < blockSrcEnd) {
+      while (si < skips.length && skips[si]![1] <= r) si++;
+      if (si < skips.length && r >= skips[si]![0]) {
+        r = skips[si]![1];
+        continue;
+      }
       const rc = markdown[r]!;
       // The opener of a `:smallcaps[…]` run has no plain character: skip
       // it whole, so its letters never match the text inside.

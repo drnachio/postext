@@ -10,6 +10,7 @@
 
 import type { ContentBlock } from '../parse';
 import { plainSpans } from '../parse/inlineFormatting';
+import { withBookBrackets } from '../parse/annotations';
 import type { ResolvedHeadingLevelConfig, ResolvedHeadingStyleConfig, WritingMode } from '../types';
 import type { ResolvedConfig, VDTBlock } from '../vdt';
 import { buildHeadingLevelMap } from './config';
@@ -30,26 +31,34 @@ export function headingStyleOf(
   return resolved.headingStyles.find((s) => s.id === id);
 }
 
-const plainHeadingsMemo = new WeakMap<readonly ContentBlock[], ContentBlock[]>();
+/** Memo of {@link headingMarksFor}: per parsed array, the plain headings
+ *  without and with book-title brackets. */
+const plainHeadingsMemo = new WeakMap<readonly ContentBlock[], { plain?: ContentBlock[]; brackets?: ContentBlock[] }>();
 
 /** The parsed blocks as a configuration with `headings.inlineMarks: false`
  *  lays them out: every heading's spans set plain (see `plainSpans`), the
- *  text unchanged. `blocks` itself when marks are on or no heading carries
- *  one. Memoised on the (memoised) parsed array. */
+ *  text unchanged. A book title's 《》 stay when they are the document's
+ *  book-title mark (`cjk.bookTitleMark: 'brackets'`): they are its
+ *  punctuation, not a mark. `blocks` itself when marks are on or no
+ *  heading carries one. Memoised on the (memoised) parsed array. */
 export function headingMarksFor(blocks: ContentBlock[], resolved: ResolvedConfig): ContentBlock[] {
   if (resolved.headings.inlineMarks) return blocks;
-  let out = plainHeadingsMemo.get(blocks);
+  const brackets = resolved.cjk.bookTitleMark === 'brackets';
+  let memo = plainHeadingsMemo.get(blocks);
+  if (!memo) plainHeadingsMemo.set(blocks, (memo = {}));
+  let out = brackets ? memo.brackets : memo.plain;
   if (!out) {
     let changed = false;
     const next = blocks.map((b) => {
       if (b.type !== 'heading') return b;
-      const spans = plainSpans(b.spans);
+      const spans = plainSpans(brackets && b.spans.some((s) => s.bookTitle) ? withBookBrackets(b.spans) : b.spans);
       if (spans.length === b.spans.length && spans.every((s, i) => s === b.spans[i])) return b;
       changed = true;
       return { ...b, spans };
     });
     out = changed ? next : blocks;
-    plainHeadingsMemo.set(blocks, out);
+    if (brackets) memo.brackets = out;
+    else memo.plain = out;
   }
   return out;
 }

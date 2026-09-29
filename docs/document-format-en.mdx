@@ -516,6 +516,21 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
       <td>In vertical text: one upright cell (tate-chu-yoko), each character upright in a cell of its own, or the whole run turned. No effect in horizontal text; see <a href="#orientation-in-vertical-text">Orientation in vertical text</a>.</td>
     </tr>
     <tr>
+      <td>Chinese marks</td>
+      <td><code>:dots[不可]</code>, <code>:name[賈寶玉]</code>, <code>:book[石頭記]</code></td>
+      <td>Emphasis dots (着重号), the proper-name line (专名号) and the book-title mark (书名号: 《》 or a wavy line, per <code>cjk.bookTitleMark</code>). The text stays as written; see <a href="#chinese-marks-ruby-and-warichu">Chinese marks, ruby and warichu</a>.</td>
+    </tr>
+    <tr>
+      <td>Ruby</td>
+      <td><code>:ruby[紅樓]&#123;rt="hóng lóu"&#125;</code> or <code>&#123;紅樓|hóng|lóu&#125;</code></td>
+      <td>Pinyin or zhuyin readings over (or beside) the base characters. The compact form needs a Han, kana or bopomofo base, so <code>&#123;x|x&gt;0&#125;</code> stays text.</td>
+    </tr>
+    <tr>
+      <td>Warichu</td>
+      <td><code>:warichu[note]&#123;open="〔" close="〕"&#125;</code></td>
+      <td>A note set in two half-size rows inside the line (双行夹注), broken across lines and pages.</td>
+    </tr>
+    <tr>
       <td>Inline code</td>
       <td><code>`code`</code></td>
       <td>Backticks are stripped; the span is rendered as plain text, exactly as written: a <code>{':ref{…}'}</code>, a chip, maths, a link or an emphasis marker inside it prints literally, which is how a text shows the syntax. Distinct code styling is on the roadmap.</td>
@@ -626,6 +641,26 @@ In vertical text (`layout.writingMode: 'vertical-rl'`) Chinese characters stand 
 - A reference, a note marker, a formula, a chip or a swatch inside a mark keeps its own setting: `:sideways[iPhone[^1]]` turns iPhone and leaves the note number as every note number is set; a reference's number stands in one cell by `cjk.uprightDigits` like any short number.
 - A design text element with `inlineMarks: true` takes them too when it is set vertically (see [Configuration › Vertical text elements](/en/docs/configuration#vertical-text-elements)).
 - For breaking and justifying, a `:tcy` cell and each `:upright` character count as Chinese characters, and no Han–Latin space is set next to them.
+
+
+### Chinese marks, ruby and warichu
+
+Chinese editions mark text between the lines rather than with italics or underlining, gloss characters with their readings, and set commentary inside the line. Five directives do it. They keep their text: the characters between the brackets stay in the paragraph (search, the contents, index anchors and copied text read them as written), and the directives take the other inline marks inside and around them, nested ones included. Write `\]` for a literal bracket.
+
+```markdown
+此事:dots[不可]輕忽。:name[賈寶玉]與:name[林黛玉]讀:book[西廂記]。
+
+{滿紙|mǎn|zhǐ}荒唐言，:ruby[一把]{rt="yì bǎ"}辛酸淚！:ruby[都]{rt="ㄉㄡ"}云作者痴。
+
+寶玉:warichu[甲戌側批：此是第一首標題詩。]{open="〔" close="〕"}道：……
+```
+
+- **`:dots[text]`** sets an emphasis dot (着重号) under each character in horizontal text, right of it in vertical text, and none on punctuation or spaces. `style="dot|circle|sesame"` (default `dot`), `fill="open"` for an outline, `pos="over|under"` for the other side. Markdown emphasis `*…*` on Chinese characters does the same under `cjk.emphasis: 'dots'`, the default in a Chinese document; Latin letters in the same emphasis stay italic.
+- **`:name[text]`** draws the proper-name line (专名号) under the text (left of it in vertical text), and **`:book[text]`** the book-title mark (书名号): 《》 around the title (〈〉 for a title inside another), the wavy line of classical and Taiwan editions, or nothing, as `cjk.bookTitleMark` says (by default brackets on the mainland, the wavy line in Taiwan and Hong Kong). One source serves a modern mainland edition and a classical one. Two names or titles side by side keep their lines apart.
+- **`:ruby[base]{rt="…"}`** sets readings over the base (pinyin), or right of each character (zhuyin, the default for bopomofo readings). With as many readings as characters, split on spaces or `|`, each character gets its own and a line may break between them (mono ruby); `group`, or a count that does not match, sets one reading centred over the whole base, which never breaks. `pos="over|under|right"` picks the side. The compact form `{紅樓|hóng|lóu}` (one reading per `|`) or `{紅樓|hónglóu}` (one reading for the whole base) reads the same, only when the base holds a Han, kana or bopomofo character, outside maths, code and attributes, so `{x|x>0}` in Latin prose stays text. A backslash before the brace or the bar keeps a Chinese one as text: `\{紅|hóng}` and `{紅\|hóng}` print `{紅|hóng}`. A base that opens or closes a line aligns to that edge together with its reading.
+- **`:warichu[note]`** sets a note (双行夹注) in two rows at half the text size inside the line, the upper row read first (the right one in vertical text). A long note fills what is left of the line and goes on with the next line, column or page. `open` and `close` wrap it in brackets at the text size; `cjk.warichu` sets the size, colour and default brackets. A note in Latin script breaks between its words.
+
+The line pitch never changes: marks and readings live in the leading, and the build warns when a paragraph's line gap is too narrow for them (`cjkMarksExceedLeading`, `rubyExceedsLeading`), and when the marks under one line and the readings over the next do not fit in the gap they share, in one paragraph or across two. Give annotated paragraphs a paragraph style with more leading. Marks, readings and notes are drawn in paragraphs, headings, list items, blockquotes and boxes; in captions, table cells and notes, and in running heads and designs, the text prints without them. Under `cjk.bookTitleMark: 'brackets'` the 《》 of a title are punctuation of the text: captions, cells, notes, contents rows, bookmarks and index entries keep them. See [Configuration › Marks, ruby and warichu](/en/docs/configuration#marks-ruby-and-warichu).
 
 
 ## Footnotes

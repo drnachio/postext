@@ -108,8 +108,11 @@ function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warning[] {
   // What `:::index` raised: cross-references and ranges are only known
   // once the whole book's marks reach the index chapter.
   (doc.contentWarnings ?? []).forEach((w, i) => {
-    // …and the justified CJK lines set short at their tracking cap.
-    if (w.kind !== 'indexSeeUnknown' && w.kind !== 'indexRangeUnclosed' && w.kind !== 'cjkLooseLine') return;
+    // …the justified CJK lines set short at their tracking cap, and the
+    // paragraphs whose leading is too tight for their Chinese marks or
+    // ruby readings.
+    if (w.kind !== 'indexSeeUnknown' && w.kind !== 'indexRangeUnclosed' && w.kind !== 'cjkLooseLine'
+      && w.kind !== 'cjkMarksExceedLeading' && w.kind !== 'rubyExceedsLeading') return;
     const payload: Record<string, unknown> = { ...w };
     delete payload.sourceStart;
     delete payload.sourceEnd;

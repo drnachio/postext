@@ -1,20 +1,30 @@
 import type {
+  CjkBookTitleMark,
   CjkConfig,
+  CjkEmphasis,
   CjkGridConfig,
   CjkHangingPunctuation,
   CjkLineBreak,
   CjkPunctuationWidth,
   CjkRegion,
+  CjkRubyConfig,
+  CjkRubyPosition,
+  CjkWarichuConfig,
+  ColorValue,
   Dimension,
   ResolvedCjkConfig,
   ResolvedCjkGridConfig,
+  ResolvedCjkRubyConfig,
+  ResolvedCjkWarichuConfig,
 } from '../types';
-import { cjkRegionOf } from '../locale';
-import { dimensionsEqual } from './shared';
+import { cjkRegionOf, languageOf } from '../locale';
+import { colorsEqual, dimensionsEqual } from './shared';
 
 /** `cjk` as written when nothing is set: everything follows the locale,
- *  nothing hangs, a quarter em between Han and Latin, no grid. */
-export const DEFAULT_CJK_CONFIG: Required<CjkConfig> = {
+ *  nothing hangs, a quarter em between Han and Latin, no grid; readings
+ *  and warichu notes at half the text size, no warichu brackets, marks in
+ *  the text colour (`annotationColor` unset). */
+export const DEFAULT_CJK_CONFIG: Required<Omit<CjkConfig, 'annotationColor'>> & Pick<CjkConfig, 'annotationColor'> = {
   region: 'auto',
   lineBreak: 'auto',
   punctuationWidth: 'auto',
@@ -24,7 +34,52 @@ export const DEFAULT_CJK_CONFIG: Required<CjkConfig> = {
   latinSpacing: { value: 0.25, unit: 'em' },
   uprightDigits: 2,
   grid: { enabled: false, show: false },
+  emphasis: 'auto',
+  bookTitleMark: 'auto',
+  ruby: { fontSize: { value: 0.5, unit: 'em' }, position: 'auto' },
+  warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '', close: '' },
 };
+
+const EMPHASES: readonly CjkEmphasis[] = ['italic', 'dots'];
+const BOOK_TITLE_MARKS: readonly CjkBookTitleMark[] = ['brackets', 'wavy', 'none'];
+const RUBY_POSITIONS: readonly CjkRubyPosition[] = ['over', 'under', 'right'];
+
+/** What `*…*` does to Chinese characters by default: emphasis dots when the
+ *  document language is Chinese, italics otherwise. */
+export function defaultCjkEmphasis(locale: string | undefined): CjkEmphasis {
+  return languageOf(locale) === 'zh' ? 'dots' : 'italic';
+}
+
+/** What `:book[…]` prints by default: 《》 on the mainland, the wavy line
+ *  in Taiwan and Hong Kong. */
+export function defaultCjkBookTitleMark(region: CjkRegion): CjkBookTitleMark {
+  return region === 'mainland' ? 'brackets' : 'wavy';
+}
+
+function isColor(c: unknown): c is ColorValue {
+  return !!c && typeof c === 'object' && typeof (c as ColorValue).hex === 'string';
+}
+
+function resolveRuby(ruby: CjkRubyConfig | undefined): ResolvedCjkRubyConfig {
+  const d = DEFAULT_CJK_CONFIG.ruby;
+  const family = typeof ruby?.fontFamily === 'string' && ruby.fontFamily.trim() !== '' ? ruby.fontFamily.trim() : undefined;
+  return {
+    ...(family ? { fontFamily: family } : {}),
+    fontSize: isLength(ruby?.fontSize) && ruby.fontSize.value > 0 ? { value: ruby.fontSize.value, unit: ruby.fontSize.unit } : { ...d.fontSize! },
+    ...(isColor(ruby?.color) ? { color: ruby.color } : {}),
+    position: ruby?.position && RUBY_POSITIONS.includes(ruby.position as CjkRubyPosition) ? ruby.position : 'auto',
+  };
+}
+
+function resolveWarichu(warichu: CjkWarichuConfig | undefined): ResolvedCjkWarichuConfig {
+  const d = DEFAULT_CJK_CONFIG.warichu;
+  return {
+    fontSize: isLength(warichu?.fontSize) && warichu.fontSize.value > 0 ? { value: warichu.fontSize.value, unit: warichu.fontSize.unit } : { ...d.fontSize! },
+    ...(isColor(warichu?.color) ? { color: warichu.color } : {}),
+    open: typeof warichu?.open === 'string' ? warichu.open : '',
+    close: typeof warichu?.close === 'string' ? warichu.close : '',
+  };
+}
 
 const REGIONS: readonly CjkRegion[] = ['mainland', 'taiwan', 'hongkong'];
 const LINE_BREAKS: readonly CjkLineBreak[] = ['none', 'basic', 'gb', 'strict'];
@@ -108,7 +163,42 @@ export function resolveCjkConfig(partial: CjkConfig | undefined, locale: string 
     latinSpacing,
     uprightDigits,
     grid: resolveGrid(partial?.grid),
+    emphasis: partial?.emphasis && EMPHASES.includes(partial.emphasis as CjkEmphasis)
+      ? (partial.emphasis as CjkEmphasis)
+      : defaultCjkEmphasis(locale),
+    bookTitleMark: partial?.bookTitleMark && BOOK_TITLE_MARKS.includes(partial.bookTitleMark as CjkBookTitleMark)
+      ? (partial.bookTitleMark as CjkBookTitleMark)
+      : defaultCjkBookTitleMark(region),
+    ...(isColor(partial?.annotationColor) ? { annotationColor: partial.annotationColor } : {}),
+    ruby: resolveRuby(partial?.ruby),
+    warichu: resolveWarichu(partial?.warichu),
   };
+}
+
+/** `cjk.ruby` without the fields at their default; undefined when nothing
+ *  is left. */
+function stripRubyDefaults(ruby: CjkRubyConfig | undefined): CjkRubyConfig | undefined {
+  if (!ruby) return undefined;
+  const d = DEFAULT_CJK_CONFIG.ruby;
+  const result: CjkRubyConfig = {};
+  if (ruby.fontFamily !== undefined && ruby.fontFamily.trim() !== '') result.fontFamily = ruby.fontFamily;
+  if (ruby.fontSize !== undefined && !dimensionsEqual(ruby.fontSize, d.fontSize!)) result.fontSize = ruby.fontSize;
+  if (ruby.color !== undefined) result.color = ruby.color;
+  if (ruby.position !== undefined && ruby.position !== d.position) result.position = ruby.position;
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
+/** `cjk.warichu` without the fields at their default; undefined when
+ *  nothing is left. */
+function stripWarichuDefaults(warichu: CjkWarichuConfig | undefined): CjkWarichuConfig | undefined {
+  if (!warichu) return undefined;
+  const d = DEFAULT_CJK_CONFIG.warichu;
+  const result: CjkWarichuConfig = {};
+  if (warichu.fontSize !== undefined && !dimensionsEqual(warichu.fontSize, d.fontSize!)) result.fontSize = warichu.fontSize;
+  if (warichu.color !== undefined) result.color = warichu.color;
+  if (warichu.open !== undefined && warichu.open !== '') result.open = warichu.open;
+  if (warichu.close !== undefined && warichu.close !== '') result.close = warichu.close;
+  return Object.keys(result).length > 0 ? result : undefined;
 }
 
 /** `cjk.grid` without the fields at their default; undefined when nothing
@@ -124,7 +214,8 @@ function stripGridDefaults(grid: CjkGridConfig | undefined): CjkGridConfig | und
 }
 
 /** `cjk` without the fields at their default (`'auto'`, `'none'`, a
- *  quarter em); undefined when nothing is left. */
+ *  quarter em, half-size readings and notes); undefined when nothing is
+ *  left. */
 export function stripCjkDefaults(cjk?: CjkConfig): CjkConfig | undefined {
   if (!cjk) return undefined;
   const d = DEFAULT_CJK_CONFIG;
@@ -139,5 +230,12 @@ export function stripCjkDefaults(cjk?: CjkConfig): CjkConfig | undefined {
   if (cjk.uprightDigits !== undefined && cjk.uprightDigits !== d.uprightDigits) result.uprightDigits = cjk.uprightDigits;
   const grid = stripGridDefaults(cjk.grid);
   if (grid) result.grid = grid;
+  if (cjk.emphasis !== undefined && cjk.emphasis !== d.emphasis) result.emphasis = cjk.emphasis;
+  if (cjk.bookTitleMark !== undefined && cjk.bookTitleMark !== d.bookTitleMark) result.bookTitleMark = cjk.bookTitleMark;
+  if (cjk.annotationColor !== undefined) result.annotationColor = cjk.annotationColor;
+  const ruby = stripRubyDefaults(cjk.ruby);
+  if (ruby) result.ruby = ruby;
+  const warichu = stripWarichuDefaults(cjk.warichu);
+  if (warichu) result.warichu = warichu;
   return Object.keys(result).length > 0 ? result : undefined;
 }

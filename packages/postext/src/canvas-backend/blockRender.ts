@@ -9,6 +9,7 @@ import { lineInkExtent, lineTrailingTracking } from '../lineInk';
 import { fillFlowText } from './verticalText';
 import { segmentOrientation } from '../writingMode';
 import { lineMarkCuts, type MarkCutRule } from '../measure/markCuts';
+import { paintLineMarks, paintRuby, paintWarichu } from './annotations';
 
 function pickSegmentFont(
   bold: boolean,
@@ -160,6 +161,12 @@ function renderSegments(
       currentFill = '';
       continue;
     }
+    if (seg.warichu) {
+      // A warichu note's part: its two rows, not its text (#195).
+      paintWarichu(ctx, seg.warichu, x, baseline, style.color);
+      x += seg.width;
+      continue;
+    }
     const font = seg.fontString
       ?? pickSegmentFont(!!seg.bold, !!seg.italic, style.font, style.boldFont, style.italicFont, style.boldItalicFont);
     if (font !== currentFont) {
@@ -182,6 +189,8 @@ function renderSegments(
     // A compressed CJK mark is painted before its box (`inkOffset`), along
     // the line in either writing mode.
     fillFlowText(ctx, seg.text, x + (seg.inkOffset ?? 0), baseline + (seg.baselineShift ?? 0), 'fill', undefined, cuts, segmentOrientation(seg));
+    // A ruby base's reading (#194).
+    if (seg.ruby) paintRuby(ctx, seg.ruby, x, baseline, fill);
     x += seg.width;
   }
   if (spacing !== tracking) ctx.letterSpacing = `${tracking}px`;
@@ -191,7 +200,8 @@ function renderSegments(
 function segmentIsStyled(s: VDTLineSegment): boolean {
   return !!s.bold || !!s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined
     || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined || s.tracking !== undefined
-    || s.inkOffset !== undefined || s.hangs !== undefined || s.autospace !== undefined || s.tcy !== undefined || s.orientation !== undefined;
+    || s.inkOffset !== undefined || s.hangs !== undefined || s.autospace !== undefined || s.tcy !== undefined || s.orientation !== undefined
+    || s.ruby !== undefined || s.warichu !== undefined;
 }
 
 function renderLine(
@@ -351,6 +361,8 @@ export function renderBlock(
     if (tracking !== 0) ctx.letterSpacing = `${tracking}px`;
     renderLine(ctx, line, style, block.textAlign, block.bbox.width, block.bbox.x, lineTrailingTracking(line, tracking), tracking);
     if (tracking !== 0) ctx.letterSpacing = '0px';
+    // Emphasis dots, proper-name and book-title lines (#193).
+    if (line.marks) paintLineMarks(ctx, line, block.color);
   }
   if (block.strikethroughText) {
     renderStrikethrough(ctx, block);

@@ -27,6 +27,7 @@ import { composesAsCjk } from '../measure/cjkCompose';
 import { measuringVertically } from '../measure/vertical';
 import { resolveRefSpans, resolveSwatchSpans, shiftResourceBlockX } from './resourceLayout';
 import { chipContextOf, resolveChipSpans } from './chips';
+import { hasAnnotations, resolveAnnotationSpans } from './annotations';
 import type { ResourceNumberingMap } from './resourceNumbering';
 import { measureTocBlock } from './toc';
 import { measureIndexBlock } from './indexDirective';
@@ -235,10 +236,21 @@ export function measureContentBlock(
     contentBlock = { ...contentBlock, spans: contentBlock.spans.map((s) => (s.smallCaps ? s : { ...s, smallCaps: true })) };
   }
 
+  // Chinese annotations (#193–#195): emphasis dots for `*…*`, book-title
+  // brackets, the fonts of readings and notes.
+  if (hasAnnotations(contentBlock.spans, resolved.cjk)) {
+    contentBlock = {
+      ...contentBlock,
+      spans: resolveAnnotationSpans(contentBlock.spans, { cjk: resolved.cjk, dpi: resolved.page.dpi, fontString: style.fontString, fontSizePx: style.fontSizePx }),
+    };
+  }
+
   // The orientation marks of vertical text change nothing in horizontal
   // text, which is measured as before them.
   const vertical = measuringVertically();
-  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.swatch || s.chip || s.script || s.smallCaps || (vertical && (s.combineUpright || s.orientation)));
+  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.swatch || s.chip || s.script || s.smallCaps
+    || s.emphasisMark || s.properName !== undefined || s.bookTitle || s.ruby || s.warichu || s.inserted
+    || (vertical && (s.combineUpright || s.orientation)));
 
   // List items reserve horizontal space for indent + bullet + gap.
   const {

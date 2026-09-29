@@ -15,6 +15,7 @@ import {
 import { LinkRegistry, RefRun, UriRuns } from './links';
 import { tagArtifact, tagContent, type StructElem } from './tagging';
 import type { StructureFlow } from './structureFlow';
+import { paintLineMarks, paintRuby, paintWarichu } from './annotations';
 
 /** Per-document context for resource rendering, threaded through `renderBlock`. */
 export interface ResourceRenderContext {
@@ -159,6 +160,15 @@ function renderSegments(
       x += seg.width;
       continue;
     }
+    if (seg.warichu) {
+      // A warichu note's part: its two rows, not its text (#195), with no
+      // character spacing.
+      if (tracking !== 0) setTrackingPx(ctx, 0);
+      paintWarichu(ctx, seg.warichu, x, baseline, pickSegmentColor(!!seg.bold, !!seg.italic, block), fontCache, blockFont, elem);
+      if (tracking !== 0) setTrackingPx(ctx, tracking);
+      x += seg.width;
+      continue;
+    }
     const fontStr = seg.fontString ?? pickSegmentFont(!!seg.bold, !!seg.italic, block);
     const font = fontCache.get(fontStr) ?? blockFont;
     const size = parseFontString(fontStr)?.sizePx ?? blockSize;
@@ -175,7 +185,10 @@ function renderSegments(
     const link = refRun.enter(seg, x, elem, target);
     // A page number of the index links to its page.
     const pageElem = seg.pageLink !== undefined && elem && !link ? elem.child('Link') : undefined;
-    tagContent(ctx, link ?? pageElem ?? uriElem ?? elem);
+    // A ruby base is the `RB` of a `Ruby` whose `RT` holds its reading (#194).
+    const holder = link ?? pageElem ?? uriElem ?? elem;
+    const rubyElem = seg.ruby && holder ? holder.child('Ruby') : undefined;
+    tagContent(ctx, rubyElem ? rubyElem.child('RB') : holder);
     // The hyphen repeated from the line before is painted but not read.
     const actualText = i === repeatedAt ? seg.text.slice(1) : undefined;
     // A compressed CJK mark is painted before its box (`inkOffset`) and
@@ -186,6 +199,11 @@ function renderSegments(
     else if (seg.tracking !== undefined) setTrackingPx(ctx, tracking + seg.tracking);
     drawTextPx(ctx, seg.text, x + (seg.inkOffset ?? 0), baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText, segmentOrientation(seg));
     if (markSpacing !== undefined || seg.tracking !== undefined) setTrackingPx(ctx, tracking);
+    if (seg.ruby) {
+      if (tracking !== 0) setTrackingPx(ctx, 0);
+      paintRuby(ctx, seg.ruby, x, baseline, colorHex, fontCache, blockFont, rubyElem);
+      if (tracking !== 0) setTrackingPx(ctx, tracking);
+    }
     if (seg.pageLink !== undefined && linkRegistry) {
       const { scale, pageHeightPt } = ctx;
       linkRegistry.addPageLink(
@@ -306,7 +324,7 @@ function renderLineText(
   // blocks. Segments are needed when any of them styles differently from the
   // block (bold/italic/math/ref/own font or colour); otherwise one text
   // object paints the line.
-  if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined || s.href !== undefined || s.pageLink !== undefined || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined || s.tracking !== undefined || s.inkOffset !== undefined || s.hangs !== undefined || s.autospace !== undefined || s.tcy !== undefined || s.orientation !== undefined)) {
+  if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined || s.href !== undefined || s.pageLink !== undefined || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined || s.tracking !== undefined || s.inkOffset !== undefined || s.hangs !== undefined || s.autospace !== undefined || s.tcy !== undefined || s.orientation !== undefined || s.ruby !== undefined || s.warichu !== undefined)) {
     renderSegments(ctx, segments, line.bbox.x, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem, undefined, tracking);
     return;
   }
@@ -506,6 +524,8 @@ export function renderBlock(
   void columnX;
   for (const line of block.lines) {
     renderLine(ctx, line, block, block.bbox.width, block.bbox.x, fontCache, linkRegistry, elem);
+    // Emphasis dots, proper-name and book-title lines (#193).
+    if (line.marks) paintLineMarks(ctx, line, colorFromHex(block.color, ctx.colorSpace));
   }
   if (targetPage !== undefined && linkRegistry) {
     const contents = block.lines.map((l) => l.text).join(' ');

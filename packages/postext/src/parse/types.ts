@@ -131,6 +131,80 @@ export interface InlineSpan {
      *  `Figure`) of the computed label. Ignored when `text` is set. */
     case?: RefCase;
   };
+  /** Emphasis dots (着重号, `:dots[text]{style fill pos}`, #193): one mark
+   *  under each character in horizontal text, to its right in vertical
+   *  text, never on punctuation or spaces. Each field left unset takes its
+   *  default (a filled dot, on the side the writing mode gives). Also set
+   *  on the Chinese characters of `*…*` under `cjk.emphasis: 'dots'`. */
+  emphasisMark?: EmphasisMark;
+  /** Proper-name mark (专名号, `:name[text]`, #193): a straight line under
+   *  the text (left of it in vertical text). The number tells the runs
+   *  apart, so two names set side by side keep two lines. */
+  properName?: number;
+  /** Book-title mark (书名号, `:book[text]`, #193): the title's run and
+   *  how deep it is nested in other titles (1 for the outermost). What it
+   *  prints follows `cjk.bookTitleMark`: 《》 (〈〉 nested) around the
+   *  title, a wavy line under it, or nothing. */
+  bookTitle?: { id: number; depth: number };
+  /** Ruby (`:ruby[base]{rt="…"}` or `{base|reading}`, #194): the reading
+   *  set over the base text (beside it for zhuyin). A mono ruby is one
+   *  span per base character, each with its own reading; a group ruby one
+   *  span for the whole base. */
+  ruby?: InlineRuby;
+  /** Warichu (双行夹注, `:warichu[note]{open close}`, #195): the span is part
+   *  of a two-row note set inside the line at a smaller size. Every span of
+   *  one note shares the object. */
+  warichu?: InlineWarichu;
+  /** Characters the layout added that the source does not hold: the
+   *  brackets `cjk.bookTitleMark: 'brackets'` sets around a title and the
+   *  brackets of a warichu note. They are measured and painted, and never
+   *  take a character of the plain text or the source map. */
+  inserted?: boolean;
+}
+
+/** An emphasis-dot mark: its shape, whether it is filled, and its side. */
+export interface EmphasisMark {
+  /** `dot` (default) ●, `circle` ○ (open), `sesame` ﹅. */
+  style?: 'dot' | 'circle' | 'sesame';
+  /** `filled` (default for `dot` and `sesame`) or `open` (default for
+   *  `circle`). */
+  fill?: 'filled' | 'open';
+  /** `under` or `over` the text in its flow (in vertical text over is the
+   *  right side, under the left). Unset: under in horizontal text, over
+   *  (right) in vertical text. */
+  position?: 'over' | 'under';
+}
+
+/** The ruby of one span (see {@link InlineSpan.ruby}). */
+export interface InlineRuby {
+  /** The reading as written (a group ruby) or this character's reading (a
+   *  mono ruby). */
+  text: string;
+  /** One reading centred over the whole base, which never breaks. */
+  group?: boolean;
+  /** Where the reading goes, as written (`pos`); unset follows
+   *  `cjk.ruby.position`. `right` sets zhuyin beside each character. */
+  position?: 'over' | 'under' | 'right';
+  /** The ruby this span belongs to (the characters of a mono ruby share
+   *  it). */
+  id: number;
+  /** Resolved by the layout before measuring: the reading's font (CSS
+   *  shorthand at the ruby size) and colour (hex; unset: the text's). */
+  fontString?: string;
+  color?: string;
+}
+
+/** The warichu note a span is part of (see {@link InlineSpan.warichu}). */
+export interface InlineWarichu {
+  id: number;
+  /** Brackets for this note as written (`open` / `close`); unset follow
+   *  `cjk.warichu`. */
+  open?: string;
+  close?: string;
+  /** Resolved by the layout before measuring: the note's font at the note
+   *  size (CSS shorthand) and colour (hex; unset: the text's). */
+  fontString?: string;
+  color?: string;
 }
 
 /** A chip style resolved for one chip in its context: lengths in px (em

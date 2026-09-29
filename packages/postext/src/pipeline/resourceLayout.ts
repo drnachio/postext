@@ -67,7 +67,8 @@ import { dimensionToPx } from '../units';
 // Caption / table-cell / note content is parsed with the shared snippet
 // parser so measurement and the sandbox's glyph→snippet mapping agree on
 // one span list (`:ref{…}` becomes a one-char placeholder span).
-import { parseInlineSnippetSpans as parseRefAwareSpans } from '../parse/inlineSnippet';
+import { parseInlineSnippetSpans } from '../parse/inlineSnippet';
+import { dropAnnotations } from '../parse/annotations';
 import { sliceSpan } from '../parse/links';
 import { chipContextOf, fontSizePxOf, resolveChipSpans, type ChipContext } from './chips';
 import { mergeCaptionStyle } from '../defaults/captionStyle';
@@ -77,6 +78,12 @@ import { resolveBodyStyle } from './styles';
 import { uppercasePreservingLength } from './buildBlockKind';
 import { lineTrailingTracking } from '../lineInk';
 import type { ResourceNumberingMap } from './resourceNumbering';
+
+/** A caption's, a note's or a cell's spans. The Chinese annotations
+ *  (#193–#195) are set as plain text there: resource lines draw no marks,
+ *  readings or warichu rows; a book title keeps its 《》 when they are the
+ *  document's book-title mark (`bookBrackets`). */
+const parseRefAwareSpans = (text: string, bookBrackets: boolean) => dropAnnotations(parseInlineSnippetSpans(text), bookBrackets);
 
 /** Non-breaking space used to glue a resolved `:ref` label into a single
  *  atomic text token, so a post-measurement pass can tag it reliably. */
@@ -336,6 +343,9 @@ interface TableLayoutStyle {
   palette?: ColorPaletteEntry[];
   /** Chip styles, for inline `:chip[…]` in cells. */
   chips?: ChipContext;
+  /** Book titles in cells print their 《》 (`cjk.bookTitleMark:
+   *  'brackets'`). */
+  bookBrackets?: boolean;
 }
 
 /** A list-item marker at the head of a cell paragraph: the glyph as
@@ -779,7 +789,7 @@ function layoutTable(
       const isHeader = cellIsHeader(cell, r, model);
       const set = isHeader ? header : body;
       const cellWidth = spanWidth(c, colSpan) - cellPaddingPx * 2;
-      const parsed = parseRefAwareSpans(cell.content);
+      const parsed = parseRefAwareSpans(cell.content, style.bookBrackets === true);
       const spans = resolveCellChips(resolveSwatchSpans(resolveRefSpans(
         set.uppercase ? parsed.map((s) => (s.ref || s.math ? s : { ...s, text: uppercasePreservingLength(s.text) })) : parsed,
         resourceNumbering,
@@ -1067,6 +1077,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       listGapPx: dimensionToPx(resolved.unorderedLists.gap, dpi, bodyFontPx),
       palette,
       chips: chipContextOf(resolved),
+      ...(resolved.cjk.bookTitleMark === 'brackets' ? { bookBrackets: true } : {}),
     };
     const { layout, height, metrics } = layoutTable(
       resource.table.model,
@@ -1121,7 +1132,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     // Prefix span: "<captionPrefix> <number>. " (non-breaking inside the label).
     const prefixText = captionLabelText(captionPrefix, number, cs);
     const resolvedSpans = resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
-      parseRefAwareSpans(captionText),
+      parseRefAwareSpans(captionText, resolved.cjk.bookTitleMark === 'brackets'),
       resourceNumbering,
       resourceTypes,
       resources,
@@ -1170,7 +1181,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   // the last slice.
   if (noteText.trim().length > 0 && !slice?.continues) {
     const noteSpans = resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
-      parseRefAwareSpans(noteText),
+      parseRefAwareSpans(noteText, resolved.cjk.bookTitleMark === 'brackets'),
       resourceNumbering,
       resourceTypes,
       resources,

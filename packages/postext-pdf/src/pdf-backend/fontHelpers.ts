@@ -126,6 +126,12 @@ function addLinesFonts(lines: readonly VDTLine[] | undefined, faces: FaceSet, ou
         for (const run of seg.chip.runs) if (run.text) add(out, run.fontString, run.text);
         continue;
       }
+      // A warichu note paints its rows; a ruby base its reading too.
+      if (seg.warichu) {
+        for (const run of seg.warichu.runs) if (run.text) add(out, run.fontString, run.text);
+        continue;
+      }
+      if (seg.ruby) for (const run of seg.ruby.runs) if (run.text) add(out, run.fontString, run.text);
       if (!seg.text) continue;
       add(out, seg.fontString ?? pickFace(!!seg.bold, !!seg.italic, faces), seg.text);
     }

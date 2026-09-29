@@ -3,6 +3,7 @@ import type { InlineLink, InlineSpan, RefCase } from './types';
 import { injectPlaceholderSpans } from './injectSpans';
 import { sliceSpan } from './links';
 import { parseDirectiveAttrs } from './attrs';
+import { applyAnnotationMarks, markAnnotations, stripAnnotations, type QueuedAnnotation } from './annotations';
 
 /** Atomic plain-text placeholder for an inline reference span. One code unit
  *  per `:ref{…}` so `sourceMap` stays 1-to-1 (mirroring the inline-math
@@ -544,22 +545,24 @@ export function trimSpans(spans: InlineSpan[]): InlineSpan[] {
   return out;
 }
 
-/** `spans` set plain: bold, italic, scripts, small capitals and links
- *  dropped, adjacent text spans merged — a heading's spans as they were
- *  built before headings read inline marks (`headings.inlineMarks:
- *  false`). Formulas, references and swatches keep their own spans. */
+/** `spans` set plain: bold, italic, scripts, small capitals, links and the
+ *  Chinese marks (emphasis dots, proper-name and book-title marks) dropped,
+ *  adjacent text spans merged — a heading's spans as they were built before
+ *  headings read inline marks (`headings.inlineMarks: false`). Formulas,
+ *  references, swatches, ruby and warichu notes keep their own spans, and
+ *  so do characters the layout added (a book title's 《》). */
 export function plainSpans(spans: readonly InlineSpan[]): InlineSpan[] {
   const out: InlineSpan[] = [];
   let changed = false;
   for (const span of spans) {
-    const { script, smallCaps, links, bold, italic, ...rest } = span;
-    if (script || smallCaps || links || bold || italic) changed = true;
+    const { script, smallCaps, links, bold, italic, emphasisMark, properName, bookTitle, ...rest } = span;
+    if (script || smallCaps || links || bold || italic || emphasisMark || properName !== undefined || bookTitle) changed = true;
     const plain: InlineSpan = { ...rest, bold: false, italic: false };
     // A run set upright or sideways in vertical text keeps its span: the
     // mark is about how it stands, not a style.
-    const special = plain.math || plain.mathRender || plain.swatch || plain.ref || plain.chip || plain.captionLabel || plain.footnote || plain.combineUpright || plain.orientation;
+    const special = plain.math || plain.mathRender || plain.swatch || plain.ref || plain.chip || plain.captionLabel || plain.footnote || plain.combineUpright || plain.orientation || plain.ruby || plain.warichu || plain.inserted;
     const last = out[out.length - 1];
-    const lastSpecial = last && (last.math || last.mathRender || last.swatch || last.ref || last.chip || last.captionLabel || last.footnote || last.combineUpright || last.orientation);
+    const lastSpecial = last && (last.math || last.mathRender || last.swatch || last.ref || last.chip || last.captionLabel || last.footnote || last.combineUpright || last.orientation || last.ruby || last.warichu || last.inserted);
     if (!special && last && !lastSpecial) {
       out[out.length - 1] = { ...last, text: last.text + plain.text };
       changed = true;
@@ -577,7 +580,7 @@ export function plainSpans(spans: readonly InlineSpan[]): InlineSpan[] {
 export function stripInlineFormatting(text: string): string {
   const b = MARKUP_BOUNDARY;
   const wrap = (_: string, inner: string): string => b + inner + b;
-  return restoreEscapes(stripOrientationMarks(replaceLinkSyntax(replaceLinkSyntax(protectEscapes(text), true, () => b), false, (label) => b + label + b), b)
+  return restoreEscapes(stripOrientationMarks(replaceLinkSyntax(replaceLinkSyntax(stripAnnotations(protectEscapes(text), b), true, () => b), false, (label) => b + label + b), b)
     .replace(INLINE_SMALLCAPS_RE, (_, inner: string) => b + unescapeBrackets(inner) + b) // small caps
     .replace(/`(.+?)`/g, wrap)               // inline code
     .replace(/\*\*(.+?)\*\*/g, wrap)          // bold
@@ -790,8 +793,9 @@ function linkDestinationRanges(text: string): Array<readonly [number, number]> {
 }
 
 /** The `{…}` attributes of an inline directive — `:ref{…}`, `:swatch{…}`,
- *  a chip's `:chip[…]{…}` — in group 1: data, never text to break. */
-const DIRECTIVE_ATTRS_RE = /(?::ref|:swatch|:chip\[(?:\\.|[^\]\\\n])+\])(\{[^}\n]*\})/g;
+ *  a chip's `:chip[…]{…}`, an annotation's `:ruby[…]{…}` — in group 1:
+ *  data, never text to break. */
+const DIRECTIVE_ATTRS_RE = /(?::ref|:swatch|:(?:chip|dots|name|book|ruby|warichu)\[(?:\\.|[^\]\\\n])+\])(\{[^}\n]*\})/g;
 
 /**
  * Turn the forced line breaks of a resource snippet ({@link SNIPPET_BREAK_RE})
@@ -913,7 +917,13 @@ export function parseInlineFormatting(text: string): InlineSpan[] {
   // run — so a link inside, across or around emphasis never changes how
   // the text splits into spans — and become ranges once the spans exist.
   const hrefs: string[] = [];
-  const cleaned = stripNonEmphasisFormatting(markOrientation(markSmallCaps(protectEscapes(text))), hrefs);
+  // Chinese annotations (`:dots[…]`, `:ruby[…]{rt="…"}`, `{紅樓|hóng|lóu}`…)
+  // become marks around their text, their attributes queued, before the
+  // emphasis scanners run (#193, #194, #195); so do the orientation marks
+  // of vertical text (`:tcy[…]`, `:upright[…]`, `:sideways[…]`, #190),
+  // which may sit inside an annotation.
+  const annotations: QueuedAnnotation[] = [];
+  const cleaned = stripNonEmphasisFormatting(markAnnotations(markOrientation(markSmallCaps(protectEscapes(text))), annotations, restoreEscapes), hrefs);
   const spans: InlineSpan[] = [];
 
   // Triple markers (bold+italic) first, then double (bold) — longest first.
@@ -952,6 +962,6 @@ export function parseInlineFormatting(text: string): InlineSpan[] {
   for (const s of spans) if (ESCAPED_RE.test(s.text)) s.text = restoreEscapes(s.text);
   // Small caps first: its marks split spans without moving link ranges,
   // which are taken from the finished spans.
-  const marked = applyOrientationMarks(applySmallCapsMarks(dropMarkupBoundaries(spans)));
+  const marked = applyAnnotationMarks(applyOrientationMarks(applySmallCapsMarks(dropMarkupBoundaries(spans))), annotations);
   return hrefs.length > 0 ? takeLinkMarks(marked, hrefs) : marked;
 }

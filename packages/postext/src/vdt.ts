@@ -268,6 +268,126 @@ export interface VDTLineSegment {
    *  `:sideways[…]`: the whole text turned with the line, at its
    *  horizontal width). Absent elsewhere. */
   orientation?: 'upright' | 'sideways';
+  /** The Chinese marks on this segment's text (`:dots`, `:name`, `:book`,
+   *  #193): the layout draws them as `VDTLine.marks`; renderers only read
+   *  this to give the text its meaning (HTML wraps dotted text in `<em>`).
+   *  Absent on unmarked text. */
+  cjkMarks?: VDTSegmentMarks;
+  /** The segment is a ruby base (#194): its `text` is the base, painted at
+   *  `x + inkOffset` when the reading is wider than it, and the reading's
+   *  runs follow. Absent otherwise. */
+  ruby?: VDTRuby;
+  /** The segment is the part of a warichu note (双行夹注, #195) set on this
+   *  line: its `text` is the upper row then the lower one (so the plain
+   *  text, search and the source map read the note once, in order), and
+   *  renderers paint the two rows (`runs`) instead of `text`. Its `width`
+   *  is the wider row's advance. Absent otherwise. */
+  warichu?: VDTWarichu;
+  /** Characters the layout added (the 《》 of `cjk.bookTitleMark:
+   *  'brackets'`, the brackets of a warichu note): painted, and read in
+   *  copied text, but no character of the plain text or the source. */
+  inserted?: boolean;
+}
+
+/** The marks of a segment (see {@link VDTLineSegment.cjkMarks}). */
+export interface VDTSegmentMarks {
+  /** Emphasis dots on each character but punctuation and spaces, on the
+   *  side given (in the flow frame: `under` is the left of vertical text,
+   *  `over` its right). */
+  dots?: { style: 'dot' | 'circle' | 'sesame'; fill: 'filled' | 'open'; position: 'over' | 'under' };
+  /** The proper-name run the text belongs to (a straight line under it). */
+  properName?: number;
+  /** The book-title run the text belongs to (a wavy line under it, when
+   *  `cjk.bookTitleMark` is `'wavy'`). */
+  bookTitle?: number;
+}
+
+/** Text an annotation paints (a ruby reading, a zhuyin symbol, a row of a
+ *  warichu note), placed from its segment: `dx` px along the line from
+ *  where the segment starts, `dy` px from the line's baseline to the run's
+ *  baseline, across the line (positive: towards the line's foot — down in
+ *  horizontal text, left in vertical text; both in the flow frame). A run
+ *  of a vertical line is painted as vertical text (cells upright, Latin
+ *  sideways). */
+export interface VDTAnnotationRun {
+  text: string;
+  dx: number;
+  dy: number;
+  fontString: string;
+  /** Colour (hex); unset: the annotation's. */
+  color?: string;
+  /** On a vertical line, every character of the run stands upright in a
+   *  cell one em of its font long, from `dx`, centred across the line on
+   *  `dy` less the font's central axis — the zhuyin tone marks and the
+   *  neutral-tone dot, which Unicode would turn sideways (UAX #50 `R`).
+   *  Ignored on a horizontal line. */
+  upright?: true;
+}
+
+/** A ruby base's reading (see {@link VDTLineSegment.ruby}). */
+export interface VDTRuby {
+  /** The reading. */
+  text: string;
+  /** Its font (CSS shorthand at the ruby size). */
+  fontString: string;
+  /** Advance of the base text and of the reading, px. */
+  baseWidth: number;
+  rtWidth: number;
+  /** `over` / `under` the base in the flow frame (over is the right side
+   *  of vertical text), or `right`: beside each character inside the line
+   *  (zhuyin in horizontal text). */
+  position: 'over' | 'under' | 'right';
+  /** Group ruby: one reading over the whole base. */
+  group?: boolean;
+  /** Colour of the reading (hex); unset: the text colour. */
+  color?: string;
+  /** What is painted: the reading, or its zhuyin symbols one by one. */
+  runs: VDTAnnotationRun[];
+}
+
+/** One line's part of a warichu note (see {@link VDTLineSegment.warichu}). */
+export interface VDTWarichu {
+  /** The rows' text: `upper` is read first (in vertical text, the right
+   *  one). */
+  upper: string;
+  lower: string;
+  /** The note's font (CSS shorthand at the note size). */
+  fontString: string;
+  /** Baselines of the rows, px from the line's baseline (flow frame). */
+  upperDy: number;
+  lowerDy: number;
+  /** Colour of the note (hex); unset: the text colour. */
+  color?: string;
+  /** What is painted: each row in runs of one style. */
+  runs: VDTAnnotationRun[];
+}
+
+/**
+ * A mark the layout set on a line (#193): an emphasis dot, circle or sesame
+ * on one character, or the proper-name or wavy book-title line under a run.
+ * Geometry is in the flow frame, relative to the line: `x` px along the
+ * line from `VDTLine.bbox.x` (where the painted text starts: alignment and
+ * justified word spaces included), `y` px from the line's baseline across
+ * it (positive: towards the line's foot, the left of vertical text).
+ */
+export interface VDTLineMark {
+  kind: 'dot' | 'circle' | 'sesame' | 'line' | 'wavy';
+  /** A dot's centre; a line's start. */
+  x: number;
+  y: number;
+  /** A dot's diameter (a sesame's length). */
+  size?: number;
+  /** A line's length along the line. */
+  length?: number;
+  /** Stroke width: a line, a wave, an open dot's outline. */
+  thickness: number;
+  /** A dot drawn as an outline (`circle`, or `fill="open"`). */
+  open?: boolean;
+  /** A wave's height, crest to trough, and its period. */
+  amplitude?: number;
+  wavelength?: number;
+  /** Colour (hex); unset: the colour of the block's text. */
+  color?: string;
 }
 
 export interface VDTLine {
@@ -352,6 +472,10 @@ export interface VDTLine {
    *  grows by the slack shared among them, and the line ends on the right
    *  edge of the measure. */
   justifiedSpaceRatio?: number;
+  /** The Chinese marks set on this line (emphasis dots, proper-name and
+   *  book-title lines, #193), for renderers to draw as they are; absent on
+   *  a line with none. */
+  marks?: VDTLineMark[];
   /** Tracking this line takes on top of its block's (`VDTBlock.letterSpacing`),
    *  px after every glyph — negative tightens: a justified line its word
    *  spaces alone would set past `bodyText.maxWordSpacing` or
@@ -1488,6 +1612,18 @@ export type ContentWarning = ContentWarningBase & (
    *  address that cannot break. `text` is the line's text. Found by the
    *  layout, so `collectContentWarnings` never returns it. */
   | { kind: 'cjkLooseLine'; text: string }
+  /** A paragraph with Chinese marks (emphasis dots, proper-name or
+   *  book-title lines, #193) whose line gap is narrower than the marks
+   *  need: half an em for marks on one side of the text, five eighths for
+   *  marks on both sides (clreq §5.6.1). The line pitch never changes for
+   *  them, so they crowd the next line: give the paragraph more leading.
+   *  `gapEm` is the gap (line height less the text size) and `neededEm`
+   *  what the marks need, in em of the text. */
+  | { kind: 'cjkMarksExceedLeading'; text: string; gapEm: number; neededEm: number }
+  /** A paragraph with ruby readings over or under its text (#194) whose
+   *  line gap is narrower than the readings: they overlap the next line.
+   *  `gapEm` and `neededEm` in em of the text. */
+  | { kind: 'rubyExceedsLeading'; text: string; gapEm: number; neededEm: number }
   /** Markup typed with fullwidth characters, as a Chinese or Japanese
    *  input method types it: a `：：：` fence, a `＃` heading, a `［＾…］`
    *  footnote marker, `｛…｝` attributes after a fence or heading, or

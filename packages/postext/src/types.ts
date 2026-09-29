@@ -2902,6 +2902,93 @@ export interface CjkConfig {
   /** The character grid (字格): a type area authored in characters per line
    *  and lines per page (see {@link CjkGridConfig}). Off by default. */
   grid?: CjkGridConfig;
+  /** What Markdown emphasis (`*…*`) does to Chinese characters: `'dots'`
+   *  sets emphasis dots (着重号) under them, as `:dots[…]` does, and Latin
+   *  letters inside the same emphasis keep their italics; `'italic'` slants
+   *  them as any text (a CJK face has no italic, so the slant is
+   *  synthesised). `'auto'` (the default): `'dots'` when the document
+   *  language (`locale`) is Chinese, `'italic'` otherwise (#193). */
+  emphasis?: 'auto' | CjkEmphasis;
+  /** What a book title marked `:book[…]` prints (#193): `'brackets'` sets
+   *  《》 around it (〈〉 for a title inside another), as text the lines
+   *  are broken with; `'wavy'` draws the wavy book-title line (书名号甲式)
+   *  under it (left of it in vertical text); `'none'` prints the bare
+   *  title. `'auto'` (the default): brackets for the mainland, the wavy
+   *  line for Taiwan and Hong Kong (`region`). */
+  bookTitleMark?: 'auto' | CjkBookTitleMark;
+  /** Colour of the emphasis dots and of the proper-name and book-title
+   *  lines. Unset: the colour of the text they mark (#193). The default of
+   *  the ruby and warichu colours too. */
+  annotationColor?: ColorValue;
+  /** Ruby: how readings (pinyin, zhuyin) set with `:ruby[…]{rt="…"}` or
+   *  `{紅樓|hóng|lóu}` look (see {@link CjkRubyConfig}, #194). */
+  ruby?: CjkRubyConfig;
+  /** Warichu (双行夹注): how the two-row notes of `:warichu[…]` look (see
+   *  {@link CjkWarichuConfig}, #195). */
+  warichu?: CjkWarichuConfig;
+}
+
+/** See {@link CjkConfig.emphasis}. */
+export type CjkEmphasis = 'italic' | 'dots';
+
+/** See {@link CjkConfig.bookTitleMark}. */
+export type CjkBookTitleMark = 'brackets' | 'wavy' | 'none';
+
+/** Where a ruby reading goes: over the base (in vertical text: to its
+ *  right), under it (to its left), or right of each character inside the
+ *  line (zhuyin in horizontal text; the same as `over` in vertical text). */
+export type CjkRubyPosition = 'over' | 'under' | 'right';
+
+/** `cjk.ruby`: the look of ruby readings. Readings live in the line gap,
+ *  whose height never changes: a paragraph with readings over or under it
+ *  needs a line height of at least its size plus the reading's
+ *  (`rubyExceedsLeading` reports one that is tighter). */
+export interface CjkRubyConfig {
+  /** Face of the readings. Unset: the text's own face. Pinyin often reads
+   *  better in a sans face with a single-storey a and g. */
+  fontFamily?: string;
+  /** Size of the readings, in em of the text they annotate (or any
+   *  length). Default `{ value: 0.5, unit: 'em' }`. Zhuyin is set at 60 %
+   *  of it (0.3 em by default), as clreq asks. */
+  fontSize?: Dimension;
+  /** Colour of the readings. Unset: `cjk.annotationColor`, else the text
+   *  colour. */
+  color?: ColorValue;
+  /** Where readings go when `pos` does not say (see
+   *  {@link CjkRubyPosition}). `'auto'` (the default): zhuyin (bopomofo)
+   *  right of each character, anything else (pinyin) over the base in
+   *  horizontal text and right of it in vertical text. */
+  position?: 'auto' | CjkRubyPosition;
+}
+
+/** `cjk.warichu`: the look of warichu notes (双行夹注). */
+export interface CjkWarichuConfig {
+  /** Size of the note's characters, in em of the text (or any length);
+   *  the two rows together take the line's em. Default
+   *  `{ value: 0.5, unit: 'em' }`. */
+  fontSize?: Dimension;
+  /** Colour of the notes and their brackets (a commentary set in
+   *  vermilion). Unset: `cjk.annotationColor`, else the text colour. */
+  color?: ColorValue;
+  /** Brackets set at the text size before the first row and after the
+   *  last one (`〔` `〕`, `（` `）`). Default: none. A note's own
+   *  `open` / `close` attributes win. */
+  open?: string;
+  close?: string;
+}
+
+export interface ResolvedCjkRubyConfig {
+  fontFamily?: string;
+  fontSize: Dimension;
+  color?: ColorValue;
+  position: 'auto' | CjkRubyPosition;
+}
+
+export interface ResolvedCjkWarichuConfig {
+  fontSize: Dimension;
+  color?: ColorValue;
+  open: string;
+  close: string;
 }
 
 /** Punctuation width styles (clreq §6.3.2.1): each full-width mark is
@@ -2962,6 +3049,11 @@ export interface ResolvedCjkConfig {
   latinSpacing: Dimension;
   uprightDigits: 0 | 2 | 3 | 4;
   grid: ResolvedCjkGridConfig;
+  emphasis: CjkEmphasis;
+  bookTitleMark: CjkBookTitleMark;
+  annotationColor?: ColorValue;
+  ruby: ResolvedCjkRubyConfig;
+  warichu: ResolvedCjkWarichuConfig;
 }
 
 export type PdfColorSpace = 'rgb' | 'cmyk' | 'grayscale';

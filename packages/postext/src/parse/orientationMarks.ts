@@ -76,13 +76,13 @@ function replaceOrientationMarks(text: string, wrap: (kind: Mark, inner: string)
 
 /** Private-use marks bracketing each kind while the emphasis regexes run
  *  (outside the escape range and the other marks of `inlineFormatting.ts`). */
-const OPEN: Record<Mark, string> = { tcy: '\uE1B0', upright: '\uE1B2', sideways: '\uE1B4' };
-const CLOSE: Record<Mark, string> = { tcy: '\uE1B1', upright: '\uE1B3', sideways: '\uE1B5' };
+const OPEN: Record<Mark, string> = { tcy: '\uE1C0', upright: '\uE1C2', sideways: '\uE1C4' };
+const CLOSE: Record<Mark, string> = { tcy: '\uE1C1', upright: '\uE1C3', sideways: '\uE1C5' };
 const MARK_OF = new Map<string, { mark: Mark; open: boolean }>([
   ...(Object.keys(OPEN) as Mark[]).map((m): [string, { mark: Mark; open: boolean }] => [OPEN[m], { mark: m, open: true }]),
   ...(Object.keys(CLOSE) as Mark[]).map((m): [string, { mark: Mark; open: boolean }] => [CLOSE[m], { mark: m, open: false }]),
 ]);
-const ANY_MARK_RE = /[\uE1B0-\uE1B5]/;
+const ANY_MARK_RE = /[\uE1C0-\uE1C5]/;
 
 const unescapeBrackets = (inner: string): string => inner.replace(/\\([[\]])/g, '$1');
 

@@ -132,6 +132,50 @@
       }
     }
   },
+  "cjkMarksExceedLeading": {
+    "source": "engine",
+    "label": {
+      "en": "Marks crowd the next line",
+      "es": "Marcas pegadas a la línea vecina"
+    },
+    "cause": {
+      "en": "A paragraph with emphasis dots or proper-name and book-title lines has a line gap under half an em (five eighths with marks on both sides): the marks live in the leading, whose height never changes for them, so they touch the next line.",
+      "es": "Un párrafo con puntos de énfasis o líneas de nombre propio y de título tiene un hueco entre líneas de menos de medio em (cinco octavos con marcas por los dos lados): las marcas viven en el interlineado, que no crece por ellas, así que tocan la línea vecina."
+    },
+    "fix": {
+      "en": "Give the paragraph a paragraph style with more leading, or raise `bodyText.lineHeight`.",
+      "es": "Dale al párrafo un estilo de párrafo con más interlineado, o sube `bodyText.lineHeight`."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Marks, ruby and warichu",
+        "es": "Marcas, ruby y warichu"
+      }
+    }
+  },
+  "rubyExceedsLeading": {
+    "source": "engine",
+    "label": {
+      "en": "Readings crowd the next line",
+      "es": "Lecturas pegadas a la línea vecina"
+    },
+    "cause": {
+      "en": "A paragraph with ruby readings over or under its text has a line gap narrower than the readings: they sit in the leading and touch the line next to them.",
+      "es": "Un párrafo con lecturas ruby encima o debajo del texto tiene un hueco entre líneas más estrecho que las lecturas: ocupan el interlineado y tocan la línea vecina."
+    },
+    "fix": {
+      "en": "Set the paragraph with more leading (at least the text size plus `cjk.ruby.fontSize`), or make the readings smaller.",
+      "es": "Compón el párrafo con más interlineado (al menos el cuerpo más `cjk.ruby.fontSize`), o reduce las lecturas."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Marks, ruby and warichu",
+        "es": "Marcas, ruby y warichu"
+      }
+    }
+  },
   "headingHierarchy": {
     "source": "sandbox",
     "label": {

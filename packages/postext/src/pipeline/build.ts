@@ -166,6 +166,8 @@ import {
 } from './bandCaps';
 import { raggedLooseLines } from './raggedLines';
 import { cjkLooseLineWarnings, collectContentWarnings, locateContentWarnings } from './contentWarnings';
+import { annotateDocument } from '../cjkMarks';
+import { withBookTitleBrackets } from './annotations';
 
 /** Tolerance for "does this block fit" checks against a column's free
  *  height, absorbing floating-point drift between grid multiples. */
@@ -2163,7 +2165,7 @@ function placeDocumentPass(
       // a resource keeps the printed text, whose `:ref` label the source
       // does not hold.
       if (headingLevels.forBlock(raw)?.textTransform === 'uppercase' && !raw.spans.some((s) => s.ref)) {
-        blk.sourceTitle = flattenTitleBreaks(raw.text);
+        blk.sourceTitle = flattenTitleBreaks(withBookTitleBrackets(raw.text, raw.spans, resolved.cjk).text);
       }
     }
     if (raw.footnoteNote !== undefined) blk.footnoteNote = raw.footnoteNote;
@@ -5613,7 +5615,10 @@ export function* buildDocumentGen(
   const located = found.length > 0 ? locateContentWarnings(doc, found) : [];
   // Justified CJK lines the composer could not fill within its tracking cap.
   const loose = cjkLooseLineWarnings(doc);
-  if (located.length > 0 || loose.length > 0) doc.contentWarnings = [...located, ...loose];
+  // Chinese marks placed where the lines are painted (#193), and the
+  // paragraphs whose leading is too tight for their marks or readings.
+  const annotations = annotateDocument(doc, doc.config?.cjk);
+  if (located.length > 0 || loose.length > 0 || annotations.length > 0) doc.contentWarnings = [...located, ...loose, ...annotations];
   // Config values the build replaced (an unknown number format, a font
   // stack, a side column no column width can take): walked once per build,
   // not per pass — they belong to no page.

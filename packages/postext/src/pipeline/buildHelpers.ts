@@ -337,7 +337,9 @@ export function stampSourceRanges(
     const units: (string | null)[] = [];
     if (line.segments && line.segments.length > 0) {
       for (const seg of line.segments) {
-        if (seg.refContinues) continue;
+        // Brackets the layout added (a book title's 《》, a warichu note's)
+        // are no plain text.
+        if (seg.refContinues || seg.inserted) continue;
         if (seg.refResourceId !== undefined) units.push(null);
         else for (let k = 0; k < seg.text.length; k++) units.push(seg.text[k]!);
       }
