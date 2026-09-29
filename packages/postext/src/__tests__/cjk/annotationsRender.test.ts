@@ -10,7 +10,7 @@ import { verticalSpans } from '../vertical/verticalSpans';
 // backends: drawn where the layout put them.
 installSizedStub();
 
-interface Call { op: string; args: unknown[]; font?: string; fill?: string }
+interface Call { op: string; args: unknown[]; font?: string; fill?: string; spacing?: string }
 
 function recordingCanvas(): { canvas: HTMLCanvasElement; calls: Call[] } {
   const calls: Call[] = [];
@@ -29,7 +29,7 @@ function recordingCanvas(): { canvas: HTMLCanvasElement; calls: Call[] } {
         };
       }
       if (key in t) return t[key];
-      return (...args: unknown[]) => { calls.push({ op: String(key), args, font: String(t.font), fill: String(t.fillStyle) }); };
+      return (...args: unknown[]) => { calls.push({ op: String(key), args, font: String(t.font), fill: String(t.fillStyle), spacing: String(t.letterSpacing) }); };
     },
     set(t, key, value) { t[key] = value; return true; },
   });
@@ -187,5 +187,87 @@ describe('annotations on a vertical page in HTML (#191 with #193–#195)', () =>
     // Right of the column (over, in the flow): above the baseline.
     for (const d of dots) expect(+d[2]!).toBeLessThan(0);
     expect(marks).toMatch(/<svg aria-hidden="true"[^>]*><path d="M/);
+  });
+});
+
+describe('a ruby base of several characters on a justified line (#194)', () => {
+  // A measure of 216 px (10.8 characters): 此開卷紅樓夢第一回 is spread by
+  // 6 px between each two of its 9 characters. Full-width marks, no Han–Latin
+  // space, so every gap is the same.
+  const spread = (extra: Partial<PostextConfig> = {}): PostextConfig => config({
+    locale: 'zh-Hans',
+    page: { width: pt(256), height: pt(600), dpi: 72, margins: { top: pt(20), bottom: pt(20), left: pt(20), right: pt(20) } },
+    cjk: { punctuationWidth: 'fullwidth', compressAdjacent: false, trimLineStart: false, latinSpacing: { value: 0, unit: 'em' } },
+    ...extra,
+  });
+  const MD_GROUP = '此開卷:ruby[紅樓夢]{rt="hóng lóu mèng" group}第一回作，者自云因曾歷過一番夢幻之後';
+
+  it('keeps the base at its natural spacing: the gap follows the box once, as a space of its own', () => {
+    const line = firstLine(buildDocument({ markdown: MD_GROUP }, spread()));
+    expect(line.text).toBe('此開卷紅樓夢第一回');
+    const segs = line.segments!;
+    const at = segs.findIndex((s) => s.ruby);
+    const base = segs[at]!;
+    expect(base.text).toBe('紅樓夢');
+    // The box is the three characters (the reading, 13 letters of 5 px at
+    // 10 px less its spaces, is no wider); no tracking after each of them.
+    expect(base.width).toBe(60);
+    expect(base.tracking).toBeUndefined();
+    expect(segs[at + 1]).toEqual({ kind: 'space', text: '', width: 6, autospace: true });
+    // The neighbours keep theirs.
+    expect(segs[at - 1]!.tracking).toBe(6);
+    expect(line.bbox.width).toBeCloseTo(216, 9);
+  });
+
+  it('on the canvas the base ends before the next character and stays centred under its reading', () => {
+    const doc = buildDocument({ markdown: MD_GROUP }, spread());
+    const { canvas, calls } = recordingCanvas();
+    renderPageToCanvas(doc.pages[0]!, doc, canvas);
+    const texts = calls.filter((c) => c.op === 'fillText');
+    const base = texts.find((c) => c.args[0] === '紅樓夢')!;
+    const next = texts.find((c) => c.args[0] === '第一')!;
+    const reading = texts.find((c) => c.args[0] === 'hóng lóu mèng')!;
+    expect(base.spacing).toBe('0px');
+    const x = Number(base.args[1]);
+    // 20 px margin + 此開卷 (3 × 26 px) = 98; the base inks 60 px, then the gap.
+    expect(x).toBe(98);
+    expect(Number(next.args[1])).toBe(x + 60 + 6);
+    let rt = 0;
+    for (const ch of 'hóng lóu mèng') rt += stubCharWidth(ch, 10);
+    expect(Number(reading.args[1]) + rt / 2).toBeCloseTo(x + 30, 9);
+  });
+
+  it('in HTML the base span has no letter spacing and the next span starts past the gap', () => {
+    const html = renderToHtml(buildDocument({ markdown: MD_GROUP }, spread()));
+    const span = /<span style="position:absolute;left:([\d.]+)px;top:0;white-space:pre;([^"]*)">紅樓夢<\/span>/.exec(html)!;
+    expect(span).not.toBeNull();
+    expect(span[2]).not.toContain('letter-spacing');
+    const next = /<span style="position:absolute;left:([\d.]+)px;top:0;white-space:pre;[^"]*">第一<\/span>/.exec(html)!;
+    expect(+next[1]! - +span[1]!).toBeCloseTo(66, 3);
+  });
+
+  it('down a vertical line, and in a reader with word-level pinyin, no base of several characters takes tracking', () => {
+    const reader = '{小朋友|xiǎopéngyǒu}们{今天|jīntiān}去{动物园|dòngwùyuán}看{大熊猫|dàxióngmāo}，{大熊猫|dàxióngmāo}在{吃竹子|chīzhúzi}。{老师|lǎoshī}说：“{熊猫|xióngmāo}很{可爱|kě\'ài}。”';
+    const square = { page: { width: pt(340), height: pt(340), dpi: 72, margins: { top: pt(20), bottom: pt(20), left: pt(20), right: pt(20) } } };
+    for (const layout of [{ layoutType: 'single' as const }, { layoutType: 'single' as const, writingMode: 'vertical-rl' as const }]) {
+      const doc = buildDocument({ markdown: reader }, config({ locale: 'zh-Hans', ...square, layout }));
+      const lines = doc.blocks.find((b) => b.type === 'paragraph')!.lines;
+      let gaps = 0;
+      for (const l of lines) {
+        const segs = l.segments!;
+        segs.forEach((s, i) => {
+          if (!s.ruby) return;
+          if ([...s.text].length > 1) expect(s.tracking).toBeUndefined();
+          const after = segs[i + 1];
+          if (after?.kind === 'space' && after.autospace && after.text === '') {
+            gaps++;
+            // The gap is the line's: what the characters around it take.
+            const plain = segs.find((t) => t.kind === 'text' && !t.ruby && t.tracking !== undefined);
+            if (plain) expect(after.width).toBeCloseTo(plain.tracking!, 9);
+          }
+        });
+      }
+      expect(gaps).toBeGreaterThan(0);
+    }
   });
 });

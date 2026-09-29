@@ -1899,10 +1899,15 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
     }
     if (u.ruby?.geometry) {
       // A ruby base: centred in its box, its reading placed from the box's
-      // start (#194).
+      // start (#194). One character takes the gap after it as tracking; a
+      // base of several keeps its natural spacing, centred under its
+      // reading, and the gap follows the box as a space of its own (its
+      // width final, as a Han–Latin space's is): tracking would be added
+      // after each of its characters.
       const g = u.ruby.geometry;
+      const gapAfter = gap > 0 && u.graphemes > 1;
       const seg: PendingSegment = {
-        ...segmentOf(u, u.width + gap, gap > 0 ? gap : undefined),
+        ...segmentOf(u, gapAfter ? u.width : u.width + gap, gap > 0 && !gapAfter ? gap : undefined),
         text: u.text,
         ...(g.inset > 1e-9 ? { inkOffset: g.inset } : {}),
         ruby: {
@@ -1917,6 +1922,7 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
         },
       };
       pieces.push({ seg, parts: [u.text], key: undefined });
+      if (gapAfter) pieces.push({ seg: { kind: 'space', text: '', width: gap, autospace: true }, parts: [''], key: undefined });
       continue;
     }
     if (u.place && u.graphemes === 2) {

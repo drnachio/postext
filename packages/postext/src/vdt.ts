@@ -265,7 +265,10 @@ export interface VDTLineSegment {
    *  (`cjk.latinSpacing`), `kind: 'space'`: its `width` is final (the
    *  composer spread or compressed it), and renderers justifying the line's
    *  word spaces leave it as it is. Its `text` is empty, or the space the
-   *  author typed there (which it replaces). */
+   *  author typed there (which it replaces). Also set, with empty `text`,
+   *  on the gap a justified CJK line leaves after a ruby base of several
+   *  characters (#194): the base is painted at its natural spacing, so the
+   *  gap cannot be its `tracking`. */
   autospace?: boolean;
   /** Vertical text: the segment is one tate-chu-yoko cell set by
    *  `:tcy[…]`: its characters side by side in one upright cell, `width`
