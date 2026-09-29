@@ -29,7 +29,7 @@ import { renderLangOf } from './locale';
 import { hasCJK } from './measure/cjk';
 import { DEFAULT_CENTRAL_BASELINE } from './vdt';
 import type { CjkRegion } from './types';
-import { segmentOrientation, verticalRuns, type ForcedOrientation } from './writingMode';
+import { holdsTurnedMark, segmentOrientation, verticalRuns, type ForcedOrientation, type VerticalRun } from './writingMode';
 import { graphemesOf } from './measure/graphemes';
 import { fontFamilyOf } from './measure/vertical';
 import { lineMarksHtml, rubyHtml, verticalLineMarksHtml, warichuHtml } from './htmlAnnotations';
@@ -152,11 +152,13 @@ interface HtmlPaint extends RenderHtmlOptions {
 }
 
 /** What vertical lines need: the Chinese region, the central axis of each
- *  family (`VDTFlowFrame.centralBaselines`), and `cjk.uprightDigits`. */
+ *  family (`VDTFlowFrame.centralBaselines`), `cjk.uprightDigits`, and the
+ *  advance of each dash stretched to its cell (`VDTFlowFrame.dashAdvances`). */
 interface VerticalHtml {
   region: CjkRegion;
   axes?: Record<string, number>;
   uprightDigits: number;
+  dashes?: Record<string, Record<string, number>>;
 }
 
 /**
@@ -659,27 +661,48 @@ function centralOf(v: VerticalHtml, fontString: string): number {
   return v.axes?.[fontFamilyOf(fontString)] ?? DEFAULT_CENTRAL_BASELINE;
 }
 
-/** Escaped text of a vertical run, with its tate-chu-yoko cells and the
- *  orientation its author forced. */
-function verticalTextHtml(text: string, v: VerticalHtml, orient?: ForcedOrientation): string {
+/** Escaped text of a vertical run, with its tate-chu-yoko cells, the
+ *  orientation its author forced, and each turned mark in a box of its
+ *  cell ({@link turnedCellHtml}). `font` is the run's font string (whose
+ *  family's `dashes` stretch a dash) and `tracking` the letter spacing it
+ *  is set with, px, which follows each cell. */
+function verticalTextHtml(text: string, v: VerticalHtml, orient?: ForcedOrientation, font?: string, tracking = 0): string {
   if (orient === 'tcy') return `<span style="text-combine-upright:all;">${esc(text)}</span>`;
   if (orient === 'upright') return `<span style="text-orientation:upright;">${esc(text)}</span>`;
   if (orient === 'sideways') return `<span style="text-orientation:sideways;">${esc(text)}</span>`;
   const digits = v.uprightDigits > 0 && /[0-9]/.test(text);
-  const dashes = DASH_RE.test(text);
-  if (!digits && !dashes) return esc(text);
+  if (!digits && !holdsTurnedMark(text)) return esc(text);
   const runs = verticalRuns(graphemesOf(text), v.region, v.uprightDigits);
-  if (!runs.some((r) => r.glyph.orient === 'tcy' || r.glyph.stretch)) return esc(text);
-  // A number in one cell combined upright; a dash turned at the full width
-  // of its cell (the font's full-width form, as the canvas stretches it:
-  // Noto's — is 0.89 em).
+  if (!runs.some((r) => r.glyph.orient === 'tcy' || r.glyph.orient === 'rotate')) return esc(text);
+  const advances = font !== undefined ? v.dashes?.[fontFamilyOf(font)] : undefined;
+  // A number in one cell combined upright; a turned mark in its cell.
   return runs.map((r) => (r.glyph.orient === 'tcy'
     ? `<span style="text-combine-upright:all;">${esc(r.text)}</span>`
-    : r.glyph.stretch ? `<span style="font-variant-east-asian:full-width;">${esc(r.text)}</span>` : esc(r.text))).join('');
+    : r.glyph.orient === 'rotate' ? turnedCellHtml(r, advances?.[r.text], tracking) : esc(r.text))).join('');
 }
 
-/** Dashes a vertical line sets turned at the full width of their cell. */
-const DASH_RE = /[\u2013\u2014\u2015\u2E3A\u2E3B]/;
+/**
+ * A mark a vertical line turns in a cell of its own (`rotate`: a dash, an
+ * ellipsis, an interpunct, a wave dash). The browser sets it sideways at
+ * its horizontal advance (Noto's · is a third of an em), where the layout
+ * gave it its cell (one em; half an em for the mainland interpunct), as
+ * the canvas and the PDF paint it: so it stands in a box the cell's
+ * length, centred in it, with the line's tracking after the box as after
+ * any cell. A dash is stretched to fill its cell, as they stretch it: by
+ * its advance the layout measured (`advance`, ems), with the glyph it
+ * measured (the face's Chinese form off, see {@link DASH_FEATURES_DECL});
+ * with no measured advance, in the font's full-width form (Noto's —).
+ */
+function turnedCellHtml(run: VerticalRun, advance: number | undefined, tracking: number): string {
+  const cell = run.cell ?? 1;
+  let inner = esc(run.text);
+  if (run.glyph.stretch) {
+    inner = advance !== undefined && advance > 0
+      ? `<span style="${advance < cell ? `transform:scaleY(${(cell / advance).toFixed(4)});` : ''}${DASH_FEATURES_DECL}">${inner}</span>`
+      : `<span style="font-variant-east-asian:full-width;">${inner}</span>`;
+  }
+  return `<span style="display:inline-flex;justify-content:center;inline-size:${cell}em;letter-spacing:0;${tracking !== 0 ? `margin-inline-end:${tracking}px;` : ''}">${inner}</span>`;
+}
 
 /**
  * A box of the turned flow (`left`, `top`, `width` along the line,
@@ -729,7 +752,7 @@ function verticalSpanAt(at: number, axis: number, size: number, inner: string, d
 function verticalAnnotationRuns(runs: readonly VDTAnnotationRun[], x: number, color: string, v: VerticalHtml, axisOf: (fontString: string, shift?: number) => number): string {
   return runs.map((run) => {
     const decl = `font:${quoteFontString(run.fontString)};color:${run.color ?? color};letter-spacing:0;`;
-    return verticalSpanAt(x + run.dx, axisOf(run.fontString, run.dy), extractFontSizePx(run.fontString), verticalTextHtml(run.text, v, run.upright ? 'upright' : undefined), decl);
+    return verticalSpanAt(x + run.dx, axisOf(run.fontString, run.dy), extractFontSizePx(run.fontString), verticalTextHtml(run.text, v, run.upright ? 'upright' : undefined, run.fontString), decl);
   }).join('');
 }
 
@@ -802,7 +825,8 @@ function renderVerticalLine(line: VDTLine, block: VDTBlock, v: VerticalHtml, tar
       + (color !== block.color ? `color:${color};` : '')
       + (seg.tracking !== undefined ? `letter-spacing:${lineTracking + seg.tracking}px;` : '')
       + (stretched ? `transform:scaleY(${seg.inkScale!.toFixed(4)});transform-origin:0 0;${DASH_FEATURES_DECL}` : '');
-    let text = verticalTextHtml(seg.text, v, stretched ? 'sideways' : segmentOrientation(seg));
+    const segTracking = seg.tracking !== undefined ? lineTracking + seg.tracking : lineTracking;
+    let text = verticalTextHtml(seg.text, v, stretched ? 'sideways' : segmentOrientation(seg), fontString, segTracking);
     // Text set with emphasis dots is emphasis (#193); the dots are the
     // line's marks.
     if (seg.cjkMarks?.dots) text = `<em style="font-style:inherit;">${text}</em>`;
@@ -845,7 +869,7 @@ function renderVerticalMarker(cls: string, x: number, block: VDTBlock, v: Vertic
     : (block.bulletY ?? line.baseline) - lineTop;
   const width = size * graphemesOf(text).length;
   const decl = `font:${quoteFontString(fontString)};color:${color};${hasCJK(text) ? CJK_TEXT_DECL : ''}`;
-  return uprightBox(x, lineTop, width, h, decl, verticalSpan(0, axis, verticalTextHtml(text, v)), `class="${cls}" aria-hidden="true"`);
+  return uprightBox(x, lineTop, width, h, decl, verticalSpan(0, axis, verticalTextHtml(text, v, undefined, fontString)), `class="${cls}" aria-hidden="true"`);
 }
 
 function renderVerticalBullet(block: VDTBlock, v: VerticalHtml): string {
@@ -880,7 +904,7 @@ function verticalDesignLines(block: VDTDesignTextBlock, v: VerticalHtml, originX
     for (const run of runs) {
       const runFont = quoteFontString(run.fontString);
       const decl = runFont !== font ? `font:${runFont};` : '';
-      inner.push(verticalSpan(x, axisOf(run.fontString, run.baselineShift ?? 0), verticalTextHtml(run.text, v, segmentOrientation(run)), decl));
+      inner.push(verticalSpan(x, axisOf(run.fontString, run.baselineShift ?? 0), verticalTextHtml(run.text, v, segmentOrientation(run), run.fontString, block.letterSpacingPx ?? 0), decl));
       x += run.width;
     }
     const width = Math.max(line.width, x);
@@ -1472,7 +1496,7 @@ function renderPageDetailed(
     : pageOptions;
   // A vertical page's flow sets its text down the column.
   const options: HtmlPaint = page.flow
-    ? { ...inked, vertical: { region: verticalRegion ?? 'mainland', uprightDigits: verticalDigits ?? 2, ...(page.flow.centralBaselines ? { axes: page.flow.centralBaselines } : {}) } }
+    ? { ...inked, vertical: { region: verticalRegion ?? 'mainland', uprightDigits: verticalDigits ?? 2, ...(page.flow.centralBaselines ? { axes: page.flow.centralBaselines } : {}), ...(page.flow.dashAdvances ? { dashes: page.flow.dashAdvances } : {}) } }
     : inked;
   const blocks: Array<{ id: string; html: string }> = [];
   for (const col of page.columns) {

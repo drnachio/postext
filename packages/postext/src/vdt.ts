@@ -827,6 +827,13 @@ export interface VDTFlowFrame {
    *  turns a character about the same point. A family missing here takes
    *  {@link DEFAULT_CENTRAL_BASELINE}. */
   centralBaselines?: Record<string, number>;
+  /** The horizontal advance, in ems, of each dash the flow stretches to
+   *  fill its cell (— – ― ⸺ ⸻ －, `VerticalGlyph.stretch`), per font family
+   *  (keyed as {@link centralBaselines}) and dash: what a renderer with no
+   *  font metrics of its own (the HTML output) stretches the glyph by, as
+   *  the canvas and the PDF do from theirs. Only the dashes the page's flow
+   *  sets; absent when it sets none. */
+  dashAdvances?: Record<string, Record<string, number>>;
 }
 
 /** Where the ideographic em box's centre sits above the alphabetic

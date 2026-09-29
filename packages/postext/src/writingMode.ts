@@ -150,6 +150,23 @@ const TURNED = new Set([
  *  are Unicode's `R`: sideways with the word they join.) */
 const STRETCHED = new Set(['—', '―', '⸺', '⸻', '–', '－']);
 
+const TURNED_RE = new RegExp(`[${[...TURNED].join('')}]`);
+const STRETCHED_RE = new RegExp(`[${[...STRETCHED].join('')}]`, 'g');
+
+/** Whether `text` holds a mark a vertical line turns in a cell of its own
+ *  (`rotate`: a dash, an ellipsis, an interpunct, a wave dash), which a
+ *  browser setting the text vertically advances by its horizontal width. */
+export function holdsTurnedMark(text: string): boolean {
+  return TURNED_RE.test(text);
+}
+
+/** The dashes of `text` a vertical line stretches to fill their cell
+ *  (`VerticalGlyph.stretch`), each once. */
+export function stretchedDashesOf(text: string): string[] {
+  const found = text.match(STRETCHED_RE);
+  return found ? [...new Set(found)] : [];
+}
+
 /** Mainland vertical quotes: the corner brackets (UAX #50 §3.2.4). */
 const HANS_QUOTES: Record<string, string> = {
   '“': '『', // “ → 『
