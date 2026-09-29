@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Formato del documento',
   description: 'El subconjunto de markdown que parsea Postext y las normas para escribir los documentos fuente',
   lang: 'es',
-  lastUpdated: '2026-09-24',
+  lastUpdated: '2026-09-29',
   readingTime: '10 min',
   order: 5,
 };
@@ -645,7 +645,7 @@ En texto vertical (`layout.writingMode: 'vertical-rl'`) los caracteres chinos qu
 
 ### Marcas chinas, ruby y warichu
 
-Las ediciones chinas marcan el texto entre líneas en vez de con cursiva o subrayado, glosan los caracteres con su lectura y componen el comentario dentro de la línea. Cinco directivas lo hacen. Conservan su texto: los caracteres entre corchetes siguen en el párrafo (la búsqueda, el índice general, las anclas del índice analítico y el texto copiado los leen tal como se escribieron), y admiten las demás marcas en línea dentro y alrededor, anidadas incluidas. Escribe `\]` para un corchete literal.
+Las ediciones chinas marcan el texto entre líneas en vez de con cursiva o subrayado, glosan los caracteres con su lectura y componen el comentario dentro de la línea. Cinco directivas lo hacen. [Composición china](/es/docs/chinese-layout) explica las convenciones que hay detrás. Conservan su texto: los caracteres entre corchetes siguen en el párrafo (la búsqueda, el índice general, las anclas del índice analítico y el texto copiado los leen tal como se escribieron), y admiten las demás marcas en línea dentro y alrededor, anidadas incluidas. Escribe `\]` para un corchete literal.
 
 ```markdown
 此事:dots[不可]輕忽。:name[賈寶玉]與:name[林黛玉]讀:book[西廂記]。
@@ -1014,7 +1014,7 @@ Postext no reconoce las siguientes características de CommonMark. O se tratan c
 
 Esta lista se irá reduciendo con el tiempo. Mientras tanto, cualquier cosa que no aparezca explícitamente arriba debe considerarse texto literal.
 
-Más allá de la sintaxis, dos familias de sistemas de escritura todavía no se componen bien: las escrituras de derecha a izquierda (árabe, hebreo…), que no tienen composición bidireccional, y el chino, el japonés y el coreano, que se cortan entre caracteres solo con reglas básicas de inicio y fin de línea y nunca se justifican entre caracteres. Los patrones de separación silábica y las etiquetas integradas existen para ocho idiomas. Ver [Idiomas y escrituras](/es/docs/configuration#idiomas-y-escrituras).
+Más allá de la sintaxis, las escrituras de derecha a izquierda (árabe, hebreo…) todavía no se componen bien: no hay composición bidireccional. El chino se compone a lo ancho de la página y a lo alto, con el corte de líneas, el ancho de la puntuación, la justificación entre caracteres, las marcas, el ruby y el warichu que espera su región (ver [Composición china](/es/docs/chinese-layout)); el japonés y el coreano pasan por el mismo compositor con las reglas de China continental. Los patrones de separación silábica existen para ocho idiomas, y las etiquetas integradas para esos ocho y el chino. Ver [Idiomas y escrituras](/es/docs/configuration#idiomas-y-escrituras).
 
 
 ## Normas de redacción
@@ -1029,6 +1029,7 @@ Unas pocas normas marcan la diferencia entre un documento que se parsea limpiame
 - **No se admiten citas dentro de listas.** Empieza la cita en la columna 0, fuera de la lista.
 - **Las imágenes y tablas viven en `resources`.** El `![alt](src)` en línea se elimina precisamente porque rompe la colocación consciente de columnas. Declara cada imagen como recurso y refiérela por id — el motor decide si flota, rompe la columna o se desplaza al inicio de la página siguiente.
 - **Escapa los signos de dólar con `\$` cuando no sean matemáticas.** Postext interpreta `$…$` como LaTeX en línea, así que un `$` suelto en prosa iniciaría una fórmula. Precios, prompts de shell y cualquier otro dólar literal deben escribirse como `\$`.
+- **Escribe el marcado en ASCII, también en texto chino.** Un método de entrada chino o japonés da formas de ancho completo: `：：：` para una valla, `＃` para un título, `［＾1］` para una llamada de nota, `｛…｝` para los atributos, `＊＊` para la negrita. Se imprimen como texto, y la composición avisa de la línea con `fullwidthMarkup`, indicando la forma ASCII que hay que escribir. Los valores de los atributos pueden ir en cualquier escritura y entre `“…”` o `「…」`; las claves siguen en ASCII.
 
 
 ## Ejemplo completo

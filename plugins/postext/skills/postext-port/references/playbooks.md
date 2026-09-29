@@ -10,7 +10,10 @@ Every case below came up while porting real publications to Postext:
 - a whole two-column medical textbook: 56 chapters in four colour-coded
   sections, with front matter and a dynamic table of contents;
 - a column-and-a-half biochemistry textbook ported from InDesign, with
-  live-text translated figures.
+  live-text translated figures;
+- a 120-chapter Chinese classic in three editions: Traditional set
+  vertically and bound on the right, Simplified set horizontally, and an
+  English translation.
 
 Each entry: **case → technique**, with the Markdown/config to write. Syntax
 details are in document-format.md and configuration.md.
@@ -508,7 +511,7 @@ Make static instances per weight and italic at a fixed `opsz`/`wdth`
 (`fonts.py instance`). Copy the OFL licence next to them.
 
 ### E2. Licensed faces
-Subset them to the characters used (`fonts.py subset --text-from chapters/ --woff2`)
+Subset them to the characters used (`fonts.py subset FONT… --out fonts/ --text-from chapters/ --woff2`)
 and mark them `"redistributable": false`. Check the embedding permission
 (`fonts.py info`, where `restricted` means the face may not be embedded).
 
@@ -523,6 +526,26 @@ Use `fonts.py scale --factor 1.10 --family "Garamond 110"`.
 
 ### E5. Collections
 Use `fonts.py split file.ttc`.
+
+### E6. CJK faces
+A Chinese family is tens of MB and thousands of glyphs; ship it cut to the book.
+- Start from a **TrueType** build (Google Fonts `NotoSerifTC[wght].ttf`, Fontsource files), not the CFF
+  `.otf` of Source Han / Noto CJK: postext-pdf embeds CFF whole (`cffEmbeddedWhole`).
+- **Subset first, then instance**: `fonts.py subset NotoSerifTC[wght].ttf --out work/ --text-from chapters/
+  --ranges latin,punct,cjk-punct` (add `bopomofo` for zhuyin), then `fonts.py instance work/NotoSerifTC[wght].ttf
+  --out fonts/ --stem NotoSerifTC --weights 400,700`. Instancing a few thousand glyphs takes seconds; a variable
+  font left as is prints every weight at its default (`variableFontDefaultInstance`). Rebuild the subset
+  whenever the text changes (config strings, captions and running heads count: `--text-from` the whole
+  project folder).
+- `fonts.py subset` keeps every layout feature (`vert`, `vrt2`, `locl`, `fwid`) and the vertical metrics
+  (`vhea`, `vmtx`): vertical punctuation comes from them.
+- **Coverage**: Postext sets a style in one family and never falls back to another. A character missing from
+  the face (a rare Han, a variant form) prints as an empty box. `lint_project.py` lists them per face; copy the
+  glyphs in from a donor face of the same em (the TC face from the SC one, then a CC0 face such as Jigmo),
+  or change the character if the edition allows it.
+- **Voices**: Song/Ming for the text (Noto Serif SC/TC/HK), Hei for headings and labels (Noto Sans), Kai for
+  quotations, verse and prefaces (LXGW WenKai / WenKai TC), Fangsong for official documents. No italics: a
+  Chinese face has none. Use the face of the book's region (SC mainland, TC Taiwan, HK Hong Kong).
 
 ---
 
@@ -547,6 +570,50 @@ text.
 
 ### F4. Number formats
 Decimal comma vs point in data and captions; `{,}` in LaTeX.
+
+### F5. Chinese, horizontal (mainland novel, textbook, report)
+- `locale: 'zh-Hans'` (`zh-Hans-CN`); body in Noto Serif SC, headings Noto Sans SC; `firstLineIndent: 2em`,
+  justified, no paragraph spacing, `indentAfterHeading: true` (Chinese books indent every paragraph).
+- Measure the grid in characters (design-analysis §2a) and set `cjk.grid` (`charsPerLine`, `linesPerPage`):
+  the columns come out in whole ems and every justified line ends in the same cell.
+- Leave `cjk` to the region unless the source differs: GB line breaking, Kaiming punctuation (。？！ one em in
+  the line, other marks half, every mark half at a line end), adjacent marks compressed, brackets trimmed at
+  line edges, a quarter em between Han and Latin. A source set with every mark full width:
+  `punctuationWidth: 'fullwidth'`.
+- Numbering: `numberingTemplate: '第{1:一}章'` with `numberSeparator: '　'`; resource types 图/表 numbered
+  `{h1}-{n}` come with the locale; `captionStyle: {labelNumberGap: '', labelSeparator: '　'}` gives 图1-1　标题;
+  lists 一、（一）1.（1）① (configuration.md §10).
+- Markup: keep the source's full-width punctuation, quotes and typed 《》; emphasis as `*…*` (dots) or
+  `:dots[…]`; readings as `{字|zì}`.
+- Index: `:index[…]` marks work as in any book; `groupBy` auto gives pinyin initials; a polyphonic
+  character takes a Han `sort` key with the wanted reading (`sort="崇阳"` for 重阳).
+- Check `cjkLooseLine` in the render (a line that could not be spread, usually a long Latin word or URL) and
+  single-character last lines (孤字), which the composer does not avoid: reword or accept.
+
+### F6. Chinese, vertical and bound on the right (Taiwan novel, classic, poetry)
+- `locale: 'zh-Hant-TW'` (or `zh-Hant-HK`, or `zh-Hans` for a mainland classic set vertically: the region,
+  not the script, decides where the punctuation sits); `layout.writingMode: 'vertical-rl'`; `page.binding`
+  stays `'auto'` (right). Body in Noto Serif TC.
+- The grid: `cjk.grid.charsPerLine` is the column length down the page; leave `linesPerPage` unset to take the
+  columns that fit, or set it from the source. Two tiers = `layoutType: 'double'` (not balanced at a
+  chapter end).
+- Taiwan defaults: basic line breaking, every mark full width and centred, no compression, wavy `:book[…]`.
+  Short numbers stand upright (`cjk.uprightDigits` 2; `:tcy[…]` for three or four characters); Latin words
+  lie sideways. Literary sources usually write numbers in Chinese numerals: keep them.
+- Openers: `numberingTemplate: '第{1:一}回'` and `breakBefore.parity: 'odd'` (the recto is the LEFT page);
+  the 回目 couplet as `# 上聯 \\ 下聯`. A design opener lays out in the turned frame: "top" is the page's
+  right edge.
+- Running heads: horizontal ones need no change; fore-edge heads are two vertical text elements anchored
+  to `'outer'` (configuration.md §19c); folios in Chinese numerals with
+  `page.pageNumbering.format: 'trad-chinese-informal'`.
+- Figures and tables stand upright with horizontal captions; `placement.rotate` is ignored. A horizontal
+  appendix or index: a heading style whose `layout` sets `writingMode: 'horizontal-tb'`.
+- Commentary editions: `:warichu[…]` for two-line inline notes (双行夹注), `:name[…]` / `:book[…]` for the
+  proper-name and wavy title lines of classical editions, ruby as `{字|zhuyin}` (zhuyin stands right of the
+  character). Give such text enough leading (half an em of line gap with marks on one side, ⅝ with both):
+  `cjkMarksExceedLeading` / `rubyExceedsLeading` say when it is short.
+- Fonts need `vert` (E6); the canvas loads a `vert` twin itself in the Sandbox, and the PDF shapes with it.
+- Compare pages right to left: the source's page 1 is the left page of the first spread.
 
 ---
 
@@ -579,7 +646,8 @@ scripts are in the Postext repository under `scripts/presets/showcase/<id>/`):
 | `senales` (report) | the publisher's PDFs (EN/ES) | PDF type roles, reading order, reference calls, D13 infographics transcribed as panels, D14 replaced photos, B4 interview questions/signatures, C4 splitting grey boxes, per-article heading styles (A6) |
 | `openstax-fisica` (textbook) | CNXML/MathML | XML two-pass conversion, B5 MathML → LaTeX, C1 worked examples/objectives/checks with `splitMinLines`, D3 placement by aspect, F2 different books per locale |
 | `bioquimica-feduchi` (column-and-a-half textbook, one chapter) | InDesign IDML + print PDF | IDML roles and positions from the PDF, `oneAndHalf` with side figures and `captionSide`, C2 corner icons and numbered tabs, C3 floated boxes, `:::columns` in boxes, B5 equations as paragraphs, D6 live-text translated figures, E2 subset licensed fonts, E4 scaled faces, G screen openers |
-| built-in guide (two-column manual) | written for Postext | A3 with part rows, A4 coloured blank versos, A5 opener with kicker/lead, C2 quote glyph icon, dark 3-column panels |
+| built-in guide (two-column manual) | written for Postext | A3 with part rows, A4 coloured blank versos, A5 opener with kicker/lead, C2 quote glyph icon, dark 3-column panels; a Simplified Chinese edition (F5) |
+| `hongloumeng` (紅樓夢, 120 chapters, three editions) | zh.wikisource 程乙本 (1792) text, 1884 plates from Commons, Joly's English (Gutenberg) | F6 Traditional vertical right-bound edition, F5 Simplified horizontal edition, F1 English edition (chapters 1–56), E6 subset TC/SC faces with donor glyphs, A2, A3 contents grouped by 卷 (`parts.page: false`), A5 opener with the chapter plate (`{attr.plate}`) and the couplet, A10 index of characters by strokes / pinyin / letters, B1 verse and song titles, `openLocale: 'zh-Hant'` |
 
 A complete 56-chapter two-column textbook was also ported from its print PDF
 alone, with the same toolkit:

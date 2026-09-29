@@ -1,6 +1,6 @@
 ---
 name: postext-port
-description: Port an existing publication into a Postext project (config manifest + enriched Markdown chapters + resources + fonts) that reproduces the original's layout rules; typically a publisher or author migrating their own titles. Use when the user wants to convert, adapt, migrate, re-typeset or rebuild a book, textbook, magazine, catalogue, report, manual, course or deck in Postext from a PDF, Word (.docx), PowerPoint (.pptx), EPUB, HTML, InDesign (IDML), LaTeX, Markdown, XML or scanned pages; when writing or fixing Postext preset.json/config/chapters; or when asked how to express a source layout (columns, openers, parts, boxes, floats, tables, running heads) in Postext.
+description: Port an existing publication into a Postext project (config manifest + enriched Markdown chapters + resources + fonts) that reproduces the original's layout rules; typically a publisher or author migrating their own titles. Use when the user wants to convert, adapt, migrate, re-typeset or rebuild a book, textbook, magazine, catalogue, report, manual, course or deck in Postext from a PDF, Word (.docx), PowerPoint (.pptx), EPUB, HTML, InDesign (IDML), LaTeX, Markdown, XML or scanned pages, Chinese books set horizontally or vertically included; when writing or fixing Postext preset.json/config/chapters; or when asked how to express a source layout (columns, openers, parts, boxes, floats, tables, running heads) in Postext.
 license: MIT
 metadata:
   homepage: https://postext.dev/en/docs/skill
@@ -89,8 +89,37 @@ Config traps:
   italic text (`bodyText.boldColor`).
 - Without a `header`, the built-in blue Open Sans running head is used.
 - Built-in `figure`/`table` types are English.
-- Geometry, font sizes and design offsets in `em` throw: use mm and pt.
+- Geometry, font sizes and the offsets of rule, box and image elements in
+  `em` throw: use mm and pt (a text element's offset may be in `em` of its
+  own size, postext ≥ 1.9).
 - Never write `config.customFonts`; fonts come from the manifest's `fonts`.
+
+Chinese, Japanese and Korean traps (postext ≥ 1.9; playbooks F5–F6):
+
+- **`config.locale` in full**: `zh-Hans` or `zh-Hant`, with the region when
+  known (`zh-Hans-CN`, `zh-Hant-TW`, `zh-Hant-HK`). A bare `zh` reads as
+  Simplified mainland. The **region** picks line breaking, punctuation widths
+  and the book-title mark; the **script** picks 图/圖, （续）/（續） and the
+  numerals of `第{1:一}回`.
+- **No hyphenation, no italics.** Hyphenation is off in a Chinese document;
+  `*…*` on Chinese characters prints emphasis dots (`cjk.emphasis`). Never
+  fake italics; keep the source's emphasis as `*…*` or `:dots[…]`.
+- **Punctuation as typed**: keep full-width ，。「」（）《》 and the source's
+  quotes; do not add spaces around Latin words (the engine sets the Han–Latin
+  quarter em and replaces typed spaces).
+- **Indents from the config**: `bodyText.firstLineIndent: {value: 2, unit: 'em'}`;
+  delete the U+3000 the source typed at paragraph starts (the parser drops
+  them anyway).
+- **Markup in ASCII**: `:::`, `#`, `[^1]`, `{…}`, `**`. Text cleaned with a
+  Chinese input method may carry `：：：`, `＃`, `［＾1］`, which print as text.
+- **Sizes in pt**: 五号 = 10.5 pt, 小五 = 9 pt, 小四 = 12 pt, 四号 = 14 pt,
+  三号 = 16 pt; there is no 号 unit.
+- **One family per style, no fallback**: the bundled Chinese face must hold
+  every character the book prints (`lint_project.py` checks it with fontTools).
+  Headings default to Open Sans and the body to EB Garamond, which have no Han.
+- **Vertical books** (`layout.writingMode: 'vertical-rl'`) are bound on the
+  right by default (`page.binding: 'auto'`); page 1 is the recto and sits on
+  the left of its spread. `page.margins` keep their names on the sheet.
 
 Full references (load the one you need):
 
@@ -109,8 +138,9 @@ Full references (load the one you need):
   already solved (parts with palettes, openers, verse, glosses, footnotes,
   back-of-book indexes,
   floated/split/nested boxes, print masters, live-text figures, cell
-  pictures, rotated tables, translated editions…) and which public preset
-  shows each.
+  pictures, rotated tables, translated editions, Chinese books set
+  horizontally and vertically, CJK fonts…) and which public preset shows
+  each.
 - [references/verification.md](references/verification.md): lint, headless
   render, page-by-page comparison, and a symptom → lever table.
 
@@ -138,6 +168,11 @@ Ask only what you cannot infer:
 - Which part: the whole book, or a sample chapter first (recommended)?
 - Languages.
 - Print (PDF) and/or screen.
+- For Chinese (or Japanese, Korean) sources: the script and region (简体
+  mainland; 繁體 Taiwan or Hong Kong), the writing direction (horizontal or
+  vertical) and the binding edge (a vertical book is bound on the right).
+  Keep the source's; a redesign may change the direction, never the script
+  without being asked.
 - Rights, asked once: "Is this your own title (publisher, author or
   licensee)?" Yes → port everything as is. Then only ask about third-party
   pieces they do not control: licensed fonts get `redistributable: false`
@@ -165,6 +200,12 @@ Follow [design-analysis.md](references/design-analysis.md).
 
 Write each number with where you measured it.
 
+Chinese books: measure the grid in characters, as their designers specify
+it: characters per line × lines per page (字数 × 行数, the 版心), the body size
+as its 号 in pt, the line gap as a fraction of the size, the tiers of a
+vertical page, and where the punctuation sits (in the corner or centred,
+full width or Kaiming). Then set `cjk.grid` (design-analysis.md §2a).
+
 ### 3. Scaffold the project
 ```bash
 python3 scripts/preset_kit.py init my-book --id my-book --name "My Book" --lang es [--lang en]
@@ -191,6 +232,10 @@ Pick the path per [sources.md](references/sources.md):
   `scripts/idml_extract.py roles book.idml > map.json` and
   `scripts/idml_extract.py markdown book.idml --map map.json --out draft`.
 - **Scans**: `ocrmypdf` first, then the PDF path.
+- **Chinese sources**, vertical ones included: see sources.md, "Chinese,
+  Japanese and Korean sources". `idml_extract.py` turns InDesign ruby,
+  tate-chu-yoko, kenten and warichu into `:ruby`, `:tcy`, `:dots` and
+  `:warichu`, and reports vertical stories and a right-to-left binding.
 - **Other XML or plain text**: a small script of your own, following
   sources.md; reuse `scripts/postext_md.py` to write safe Markdown
   (`render_runs`, `escape`, `heading`, `fence`, `attr_value`,
@@ -224,6 +269,10 @@ list deliberate deviations.
 
 ### 6. Fonts and images
 - Fonts: `scripts/fonts.py info|instance|subset|scale|split`.
+- Chinese faces: subset a TrueType build to the book's text first
+  (`fonts.py subset NotoSerifTC[wght].ttf --out work/ --text-from chapters/ --ranges latin,punct,cjk-punct`),
+  then cut static weights (`fonts.py instance`). Layout features (`vert`)
+  and vertical metrics survive (playbooks E6).
 - Images: `scripts/images.py prep|join|size`.
 - Vector artwork: `scripts/convert_assets.py` (`.ai`/`.pdf` → SVG) and
   `scripts/pdf_figures.py crop … .pdf` (print masters).
@@ -245,6 +294,9 @@ Look at the comparison images and fix the config or the Markdown. Aim for:
 - `converged=true`;
 - no warnings;
 - the same page breaks on most pages, within ±1 page per chapter.
+
+A right-bound book reads its spreads right to left: compare page by page,
+and when you look at spreads, the source's odd page is the left one.
 
 ### 8. Deliver
 ```bash

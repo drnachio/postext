@@ -195,6 +195,14 @@ def _merge(runs: list[Run]) -> list[Run]:
     return out
 
 
+# Letters of a word for the rule below. Chinese and Japanese are written
+# without spaces, so a style boundary between two Han or kana characters is
+# no slip inside a word: they are left out.
+_WORD = "(?:(?![\u3040-\u30ff\u3100-\u312f\u31a0-\u31ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\U00020000-\U0003134f])\\w)+"
+_WORD_TAIL_RE = re.compile(f"({_WORD})$")
+_WORD_HEAD_RE = re.compile(f"^({_WORD})")
+
+
 def normalise_runs(runs: list[Run]) -> list[Run]:
     """Make style boundaries fall on word boundaries.
 
@@ -228,8 +236,8 @@ def normalise_runs(runs: list[Run]) -> list[Run]:
                 continue
             if a.style() == b.style():
                 continue
-            ma = re.search(r"(\w+)$", a.text)
-            mb = re.match(r"^(\w+)", b.text)
+            ma = _WORD_TAIL_RE.search(a.text)
+            mb = _WORD_HEAD_RE.match(b.text)
             if not ma or not mb:
                 continue
             left, right = ma.group(1), mb.group(1)

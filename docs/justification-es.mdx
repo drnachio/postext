@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Separación silábica y justificación',
   description: 'Cómo Postext corta líneas, justifica texto y controla el espaciado entre palabras usando el algoritmo Knuth-Plass',
   lang: 'es',
-  lastUpdated: '2026-09-24',
+  lastUpdated: '2026-09-29',
   readingTime: '14 min',
   order: 4,
 };
@@ -173,7 +173,7 @@ Los patrones codifican un conjunto de reglas numeradas que, al superponerse sobr
   </tbody>
 </table>
 
-Cada idioma carga su propio conjunto de patrones. Las instancias de Hypher se crean de forma perezosa y se cachean — la primera llamada para un idioma paga el coste de inicialización; las llamadas siguientes son instantáneas. Un idioma con etiqueta de región usa los patrones de su lengua (`'es-ES'` se divide con `'es'`, `'en-GB'` con `'en-us'`). Un idioma sin patrones incluidos recurre a `en-us`, y el motor lo avisa una vez en la consola (ver [Separación silábica](/es/docs/configuration#separación-silábica) en la referencia de configuración).
+Cada idioma carga su propio conjunto de patrones. Las instancias de Hypher se crean de forma perezosa y se cachean — la primera llamada para un idioma paga el coste de inicialización; las llamadas siguientes son instantáneas. Un idioma con etiqueta de región usa los patrones de su lengua (`'es-ES'` se divide con `'es'`, `'en-GB'` con `'en-us'`). Un idioma sin patrones incluidos recurre a `en-us`, y el motor lo avisa una vez en la consola (ver [Separación silábica](/es/docs/configuration#separación-silábica) en la referencia de configuración). El chino, el japonés y el coreano son la excepción: se componen sin separación silábica y sin el aviso, y sus líneas se cortan entre caracteres (ver [Chino, japonés y coreano](#chino-japonés-y-coreano) más abajo).
 
 ### Por qué Hypher (y no un algoritmo propio)
 
@@ -333,7 +333,7 @@ Cuando Knuth-Plass está activo y no produce cortes válidos (algo que puede ocu
 
 ### Chino, japonés y coreano
 
-Un párrafo con más caracteres CJK que espacios entre palabras lo compone el compositor CJK, no Knuth-Plass. Cada hueco entre dos caracteres es un sitio donde la línea puede cortarse (salvo donde lo impiden las reglas de `cjk.lineBreak`), así que una búsqueda óptima no tiene nada que sopesar; las líneas se llenan una tras otra. Cuando un carácter no cabe, la línea intenta primero admitirlo cediendo blanco de la puntuación y de los espacios (*push-in*: los espacios entre palabras hasta un cuarto de cuadratín, después los puntos medios, los paréntesis, los signos de pausa, los espacios entre chino y latín hasta un octavo de cuadratín y los signos de cierre de oración, según lo permita `cjk.punctuationWidth`); solo si no basta, un carácter que no puede abrir línea se lleva consigo el anterior. Las reglas están en [Tipografía de Asia oriental](/es/docs/configuration#tipografía-de-asia-oriental).
+Un párrafo con más caracteres CJK que espacios entre palabras lo compone el compositor CJK, no Knuth-Plass. Cada hueco entre dos caracteres es un sitio donde la línea puede cortarse (salvo donde lo impiden las reglas de `cjk.lineBreak`), así que una búsqueda óptima no tiene nada que sopesar; las líneas se llenan una tras otra. Cuando un carácter no cabe, la línea intenta primero admitirlo cediendo blanco de la puntuación y de los espacios (*push-in*: los espacios entre palabras hasta un cuarto de cuadratín, después los puntos medios, los paréntesis, los signos de pausa, los espacios entre chino y latín hasta un octavo de cuadratín y los signos de cierre de oración, según lo permita `cjk.punctuationWidth`); solo si no basta, un carácter que no puede abrir línea se lleva consigo el anterior. Las reglas están en [Tipografía de Asia oriental](/es/docs/configuration#tipografía-de-asia-oriental). [Composición china](/es/docs/chinese-layout) trata el resto de la composición china: el ancho de la puntuación según la región, la retícula de caracteres y el texto vertical.
 
 Una línea justificada de un párrafo así, salvo la última, se ensancha hasta la medida en el orden que fija clreq (§6.2.2.4):
 

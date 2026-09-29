@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Document Format',
   description: 'The markdown subset Postext parses, and the rules for authoring source documents',
   lang: 'en',
-  lastUpdated: '2026-09-24',
+  lastUpdated: '2026-09-29',
   readingTime: '10 min',
   order: 5,
 };
@@ -645,7 +645,7 @@ In vertical text (`layout.writingMode: 'vertical-rl'`) Chinese characters stand 
 
 ### Chinese marks, ruby and warichu
 
-Chinese editions mark text between the lines rather than with italics or underlining, gloss characters with their readings, and set commentary inside the line. Five directives do it. They keep their text: the characters between the brackets stay in the paragraph (search, the contents, index anchors and copied text read them as written), and the directives take the other inline marks inside and around them, nested ones included. Write `\]` for a literal bracket.
+Chinese editions mark text between the lines rather than with italics or underlining, gloss characters with their readings, and set commentary inside the line. Five directives do it. [Chinese layout](/en/docs/chinese-layout) explains the conventions behind them. They keep their text: the characters between the brackets stay in the paragraph (search, the contents, index anchors and copied text read them as written), and the directives take the other inline marks inside and around them, nested ones included. Write `\]` for a literal bracket.
 
 ```markdown
 此事:dots[不可]輕忽。:name[賈寶玉]與:name[林黛玉]讀:book[西廂記]。
@@ -1014,7 +1014,7 @@ Postext does not recognise the following CommonMark features. They are either tr
 
 This list will shrink over time. Until then, anything not explicitly listed in the supported section above should be assumed to be literal text.
 
-Beyond the syntax, two families of writing systems are not set correctly yet: right-to-left scripts (Arabic, Hebrew…), which have no bidirectional layout, and Chinese, Japanese and Korean, which break between characters with basic line-start and line-end rules only, and are never justified between characters. Hyphenation patterns and built-in labels ship for eight languages. See [Languages and scripts](/en/docs/configuration#languages-and-scripts).
+Beyond the syntax, right-to-left scripts (Arabic, Hebrew…) are not set correctly yet: there is no bidirectional layout. Chinese is set across the page and down it, with the line breaking, punctuation widths, justification between characters, marks, ruby and warichu its region expects (see [Chinese layout](/en/docs/chinese-layout)); Japanese and Korean go through the same composer with the mainland Chinese rules. Hyphenation patterns ship for eight languages, and built-in labels for those eight and Chinese. See [Languages and scripts](/en/docs/configuration#languages-and-scripts).
 
 
 ## Authoring conventions
@@ -1029,6 +1029,7 @@ A few conventions make the difference between a document that parses cleanly and
 - **Blockquotes inside lists are not supported.** Start the blockquote at column 0, outside the list.
 - **Images and tables live in `resources`.** Inline `![alt](src)` is stripped precisely because inline images break column-aware placement. Declare each image as a resource and reference it by id — the engine then decides whether it floats, breaks the column, or moves to the top of the next page.
 - **Escape dollar signs with `\$` when you do not mean math.** Postext interprets `$…$` as inline LaTeX, so a raw `$` in prose will start a formula. Prices, shell prompts, and anything else with a bare dollar sign should be written as `\$`.
+- **Type the markup in ASCII, also in Chinese text.** A Chinese or Japanese input method gives full-width forms: `：：：` for a fence, `＃` for a heading, `［＾1］` for a footnote marker, `｛…｝` for attributes, `＊＊` for bold. They print as text, and the build reports the line as a `fullwidthMarkup` warning that names the ASCII form to type. Attribute values may be in any script and quoted with `“…”` or `「…」`; keys stay ASCII.
 
 
 ## Worked example

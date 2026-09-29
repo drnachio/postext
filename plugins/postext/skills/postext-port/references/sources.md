@@ -201,6 +201,50 @@ Gotchas:
   Emit `:::paragraphs{style="verse"}` with **one paragraph per line**, blank
   lines between. Postext has no hard line break.
 
+## Chinese, Japanese and Korean sources
+
+Postext sets Chinese horizontally and vertically (postext ≥ 1.9; playbooks F5–F6). What each source says
+about it:
+
+- **PDF, horizontal**: the PDF path works; PyMuPDF gives the characters in reading order. Chinese has no
+  end-of-line hyphens to join, but lines that end mid-sentence must be joined with no space: Postext drops a
+  line end between two Chinese characters by itself, so writing one source line per printed line is harmless.
+- **PDF, vertical** (直排): `pdf_extract.py` assumes horizontal lines. Read the text with PyMuPDF
+  `page.get_text("dict")`: each line has `dir` = (0, 1) (characters running down; sideways Latin runs have
+  (1, 0) inside a vertical column), and its `bbox`. Sort the columns by `x` **descending** (right to left),
+  the characters of a column by `y`, tiers by `y` before `x`; a new paragraph starts where a column opens two
+  characters lower (the indent). Numbers set in one cell come out as a separate horizontal span: rejoin them.
+  Running heads in the fore-edge are vertical too: drop them by position.
+- **Scans**: `ocrmypdf --language chi_tra` (or `chi_sim`; `chi_tra_vert` / `chi_sim_vert` for vertical
+  pages), then as above. Check the rare characters by hand.
+- **InDesign (IDML)**: `idml_extract.py` turns character attributes into marks: `RubyFlag`/`RubyString`
+  (`RubyType` PerCharacterRuby = one reading per character) → `:ruby[…]{rt="…"}`, `Tatechuyoko` → `:tcy[…]`,
+  `KentenKind` (emphasis marks) → `:dots[…]` (sesame and circles, white ones as `fill="open"`; triangles,
+  squares and custom marks come out as plain dots, listed in the report), `Warichu` → `:warichu[…]`. A run
+  that carries several nests them, the note outermost, then ruby, dots and tate-chu-yoko, and keeps its bold
+  and italic inside them; headings and callout titles keep the text only, and the report counts the marks
+  they lose. It reports stories with
+  `StoryPreference@StoryOrientation="Vertical"` (→ `layout.writingMode: 'vertical-rl'`) and
+  `DocumentPreference@PageBinding="RightToLeft"` (→ `page.binding: 'right'`). The frame grid
+  (`CjkGridPreference`, `FrameGridOption`: characters per line, lines, size) gives `cjk.grid`; the kinsoku and
+  mojikumi sets (`KinsokuSet`, `Mojikumi`) say which `cjk.lineBreak` and `punctuationWidth` the book used.
+- **Word (.docx)**: vertical sections carry `w:textDirection w:val="tbRl"` in `w:sectPr` (→ vertical);
+  `w:eastAsianLayout` on a run: `w:vert="1"` is horizontal-in-vertical (→ `:tcy[…]`), `w:combine="1"` two lines
+  in one (双行合一, → `:warichu[…]`); `w:em` is an emphasis mark (→ `:dots[…]`); `w:ruby` holds `w:rubyBase` and
+  `w:rt` (→ `:ruby[…]`). pandoc drops most of these: check the draft against the document, or read
+  `word/document.xml` for the runs that carry them. Chinese paragraph styles often indent with two U+3000:
+  delete them (the config indents).
+- **EPUB**: the OPF spine's `page-progression-direction="rtl"` and CSS `writing-mode: vertical-rl`
+  (`-epub-writing-mode`) mean a vertical right-bound book. `<ruby>紅<rt>hóng</rt></ruby>` → `{紅|hóng}`;
+  `text-emphasis` → `:dots[…]`; `text-combine-upright` → `:tcy[…]`; a wavy `text-decoration` under titles →
+  `:book[…]`, a straight one under names → `:name[…]`.
+- **HTML / Wikisource**: the same `<ruby>` and CSS mapping. zh.wikisource classics carry notes in `<small>` or
+  brackets (candidates for `:warichu`) and variant characters in templates: resolve them to text.
+- **Plain text** (Gutenberg, ctext): paragraphs are usually indented with U+3000 (delete) and chapters titled
+  `第X回　上聯　下聯` (split into the heading and its couplet, `\\` between the halves).
+- **Script**: never convert Simplified ↔ Traditional unless asked; when asked, use OpenCC (`t2s`, `s2t`,
+  `s2twp` for Taiwan phrasing) and switch the quotes (「」 ↔ “”) with the region.
+
 ## Content you must not copy blindly
 
 - **Rights**: when the user owns the title (publisher, author, licensee;
@@ -210,5 +254,7 @@ Gotchas:
   the licence of each file before downloading, and record credits (a credits
   chapter plus `note` credit lines). Licensed fonts: `redistributable: false`.
 - **Characters the fonts cannot set** (Greek, IPA, emoji, CJK): check font
-  coverage (`fonts.py info`), then choose between a fallback family for those
-  runs, a paragraph style, or removal.
+  coverage (`fonts.py info`; `lint_project.py` lists the CJK characters a
+  bundled face lacks), then choose between a face that has them (for
+  Chinese, donor glyphs copied into the subset, playbooks E6), a paragraph
+  style in another family, or removal.

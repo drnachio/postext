@@ -5,9 +5,9 @@ export const metadata = {
   sidebarTitle: 'Skill',
   description: 'Instala la skill postext-port en Claude Code, Codex o cualquier agente y deja que convierta un PDF, Word, PowerPoint, EPUB, InDesign o HTML en un proyecto de Postext que sigue la maquetación original',
   lang: 'es',
-  lastUpdated: '2026-09-24',
+  lastUpdated: '2026-09-29',
   readingTime: '8 min',
-  order: 8,
+  order: 9,
 };
 
 # Skill para agentes
@@ -58,7 +58,13 @@ y [muchos otros agentes](https://skills.sh).
     índices analíticos,
     recuadros flotantes, partidos y anidados, originales vectoriales para
     imprenta, figuras con texto vivo, imágenes en celdas, tablas apaisadas,
-    ediciones bilingües y más.
+    ediciones bilingües y más;
+  - libros chinos, en horizontal o en vertical y encuadernados por la
+    derecha: qué preguntar en el encargo (escritura, región, dirección,
+    encuadernación), cómo medir una retícula de caracteres, cómo leer PDF
+    verticales, el ruby y el warichu de InDesign, la maquetación de Asia
+    oriental de Word y los EPUB de derecha a izquierda, y cómo recortar las
+    fuentes CJK al libro (ver [Composición china](/es/docs/chinese-layout)).
 - **Scripts** (Python y Node), descritos en la sección siguiente.
 
 ## Scripts
@@ -77,11 +83,11 @@ y [muchos otros agentes](https://skills.sh).
     <tr><td><code>pdf_figures.py</code></td><td>Recorta figuras de un PDF: fotos a resolución nativa, previsualizaciones SVG, originales vectoriales en PDF para imprenta</td></tr>
     <tr><td><code>extract_tables.py</code></td><td>Tablas de PDF → <code>TableModel</code> de Postext</td></tr>
     <tr><td><code>pandoc_to_postext.py</code></td><td>DOCX, PPTX, ODT, EPUB, HTML, LaTeX, Markdown, JATS, DocBook → capítulos en borrador, con los estilos de Word asignados a recuadros y estilos de párrafo</td></tr>
-    <tr><td><code>idml_extract.py</code></td><td>IDML de InDesign → capítulos en borrador por estilo de párrafo, tablas e imágenes ancladas</td></tr>
+    <tr><td><code>idml_extract.py</code></td><td>IDML de InDesign → capítulos en borrador por estilo de párrafo, tablas e imágenes ancladas; el ruby, el tate-chu-yoko, los puntos de énfasis y el warichu pasan a <code>:ruby</code>, <code>:tcy</code>, <code>:dots</code> y <code>:warichu</code>, y avisa de las historias verticales y de la encuadernación de derecha a izquierda</td></tr>
     <tr><td><code>index_marks.py</code></td><td>Reconstruye un índice analítico impreso como marcas <code>:index</code>: lee las páginas del índice en el PDF, busca cada término en su página y marca las mismas palabras en los capítulos</td></tr>
-    <tr><td><code>fonts.py</code>, <code>images.py</code>, <code>convert_assets.py</code></td><td>Instanciar, subconjuntar, escalar y separar fuentes; pasar imágenes a sRGB, recortarlas y unirlas; convertir ilustraciones <code>.ai</code>/<code>.pdf</code> en SVG</td></tr>
+    <tr><td><code>fonts.py</code>, <code>images.py</code>, <code>convert_assets.py</code></td><td>Instanciar, subconjuntar, escalar y separar fuentes (una fuente china recortada a los caracteres del libro conserva sus formas y métricas verticales); pasar imágenes a sRGB, recortarlas y unirlas; convertir ilustraciones <code>.ai</code>/<code>.pdf</code> en SVG</td></tr>
     <tr><td><code>preset_kit.py</code></td><td>Crea el proyecto y su script generador, construye <code>preset.json</code> y empaqueta el <code>.postext</code></td></tr>
-    <tr><td><code>lint_project.py</code></td><td>Detecta todo lo que el parser y el cargador hacen mal en silencio</td></tr>
+    <tr><td><code>lint_project.py</code></td><td>Detecta todo lo que el parser y el cargador hacen mal en silencio y, en texto chino, japonés o coreano, los caracteres que las fuentes del proyecto no pueden componer</td></tr>
     <tr><td><code>render.mjs</code></td><td>Compone el proyecto (una carpeta o un archivo <code>.postext</code>) sin navegador con el motor real, leyendo su configuración igual que el Sandbox, muestra los avisos y escribe el PDF</td></tr>
     <tr><td><code>compare_pages.py</code></td><td>Pone las páginas de la fuente y de Postext lado a lado</td></tr>
   </tbody>

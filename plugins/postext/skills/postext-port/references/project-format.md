@@ -36,6 +36,10 @@ my-book/
   "id": "my-book",                     // [a-z0-9-], stable
   "name": "My Book",
   "description": "…", "locale": "es", "locales": ["es", "en"],
+  "openLocale": "es",                  // optional: the edition opened when no language is asked for (a zh-Hant
+                                       // original on a Spanish or English site); must be one of `locales`
+  "binding": "right",                  // optional: the edge a shelf draws the spine on (index.json;
+                                       // `preset_kit.py index` copies it there). The layout's binding is page.binding
   "thumbnail": "thumbnail.jpg", "license": "CC BY 4.0", "credits": "…", "tags": ["book"],
   "view": { "canvasScope": "book" },   // "book": the canvas lays out the whole book; default "chapter"
 
@@ -84,7 +88,10 @@ only drops the print master). It does **not** check `kind`, `typeId` against
 
 - `chapters` may map each locale to its own chapter list. The sandbox picks the
   exact tag, then the base language (`es` for `es-ES`), then `locale`, then the
-  first key.
+  first key. Chinese keys name the script: `zh-Hans` and `zh-Hant` are two
+  editions, never the same one; a reader asking for `zh-TW` or `zh-HK` gets
+  `zh-Hant`, one asking for `zh` or `zh-CN` gets `zh-Hans` (postext ≥ 1.9).
+  Permalinks take the same tags (`#preset=my-book&lang=zh-Hant`).
 - `localized.<lang>.config` is **shallow**: each top-level key it names
   replaces the shared one wholesale (merge order: built-in defaults ← `config`
   ← `localized.<lang>.config`). A localized `headings` must carry the whole
@@ -99,8 +106,12 @@ only drops the print master). It does **not** check `kind`, `typeId` against
 - Two *different* books per language (not a translation): give resources
   language-prefixed ids, keep them all in the shared list, and leave
   `localized.resources` empty.
-- Always put `config.locale` (`es`, `en-us`, `fr`, `de`, `it`, `pt`, `ca`, `nl`):
+- Always put `config.locale` (`es`, `en-us`, `fr`, `de`, `it`, `pt`, `ca`, `nl`, `zh-Hans`, `zh-Hant`…):
   hyphenation, built-in resource types, table continuation strings ("(cont.)") and the PDF `/Lang`.
+  A Chinese edition next to a Latin one restates in its `localized.<lang>.config` at least `locale`,
+  `bodyText` (a Chinese face, 2 em indent), `headings` (Chinese face, `第{1:一}章`), `captionStyle`,
+  `orderedLists` and, when it is set vertically, `layout` (`writingMode`) and `page`
+  (the Chinese folios); `cjk` only where it differs from the region's defaults.
 
 ## 3. Resources
 
