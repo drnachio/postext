@@ -20,7 +20,7 @@
   "answers": ["Q104", "Q90", "Q87"],
   "gaps": ["leaf-folios", "line-rules"],
   "gotchas": [
-    "vertical-line-axis", "cjk-locale-tag", "cjk-fonts-slices", "cjk-spread-order",
+    "cjk-locale-tag", "cjk-fonts-slices", "cjk-spread-order",
     "cjk-source-script-mix", "headings-drop-h1-break"
   ],
   "related": ["red-ink-commentary", "vertical-novel-right-bound", "baseline-grid-book-page", "certificate-single-page"],

@@ -49,8 +49,6 @@
     "cjk-fonts-slices",
     "cjk-spread-order",
     "cjk-source-script-mix",
-    "vertical-design-image-pdf",
-    "vertical-line-axis",
     "quote-frontmatter"
   ],
   "related": [
@@ -58,16 +56,6 @@
     "chinese-novel-horizontal",
     "running-heads-by-parity",
     "five-chapter-openers"
-  ],
-  "workarounds": [
-    {
-      "package": "postext-pdf",
-      "note": "the plate's woodcut is drawn by the plate style's header, on the sheet: postext-pdf draws a design image of a vertical page's flow turned a quarter turn and stretched to its box (VDTDesignImageBlock.upright is not read by headerFooter.ts renderImageBlock), while the canvas and the HTML stand it upright; as a header picture it is a pagination artifact in the tagged PDF, without its alt text"
-    },
-    {
-      "package": "postext",
-      "note": "a design text in a vertical flow is centred off the middle of its column: design/layout.ts puts a line's baseline at 0.8 of the line height and the vertical painter (canvas-backend/verticalText.ts, and postext-pdf the same) centres each character 0.38 em above the baseline, so the characters land at 0.8 × line − 0.38 em instead of line / 2, 3.4 pt too far left for the 13.5/28.5 pt couplet and 3.2 pt too far right for the 40/40 pt title. The pen moves both back with offAxis(size, line) = 0.3 × line − 0.38 × size; the fix is to centre the axis at the line's top + line height / 2 in vertical flows, in the canvas and in postext-pdf, after which offAxis goes."
-    }
   ],
   "engine": {
     "postext": "1.9.0",

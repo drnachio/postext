@@ -1200,28 +1200,6 @@
     },
     "feature": "cjk-fonts"
   },
-  "vertical-design-image-pdf": {
-    "title": {
-      "en": "A picture in a vertical page's design prints turned in the PDF",
-      "es": "La imagen del diseño de una página vertical sale girada en el PDF"
-    },
-    "body": {
-      "en": "On a vertical page a heading design is laid out in the flow frame, and an image element in it stands upright on the canvas and in the HTML. postext-pdf draws it turned a quarter turn and stretched to its box. Until that is fixed, draw such a picture from the header or footer of the heading's style, which is laid out on the sheet: anchored to 'outer', 'top-left' it hangs from the top right corner of the type area on a right-hand page of a right-bound book. A header picture is a pagination artifact in a tagged PDF, so it loses its alternative text there.",
-      "es": "En una página vertical, el diseño de un título se compone en el marco del flujo, y un elemento de imagen suyo sale en pie en el lienzo y en el HTML. postext-pdf lo dibuja girado un cuarto de vuelta y estirado hasta su caja. Hasta que se corrija, dibuja esa imagen desde la cabecera o el pie de página del estilo del título, que se componen sobre el papel: anclada a 'outer', 'top-left', cuelga de la esquina superior derecha de la mancha en una página de la derecha de un libro encuadernado por la derecha. Una imagen de cabecera es un artefacto de paginación en un PDF etiquetado, así que ahí pierde su texto alternativo."
-    },
-    "feature": "vertical-writing"
-  },
-  "vertical-line-axis": {
-    "title": {
-      "en": "Vertical characters sit off the middle of their line",
-      "es": "Los caracteres verticales no quedan en el centro de su línea"
-    },
-    "body": {
-      "en": "A vertical line hangs its characters on the face's central axis, 0.38 em from the baseline in Noto Serif TC (VDTPage.flow.centralBaselines has each family's), and the baseline sits 0.8 of the line pitch into the line. The characters therefore stand 0.3 × the pitch − 0.38 × the size from the middle of their line, to the left when that is positive: a 20 pt body on a 29 pt pitch sits 1.1 pt left of it. The text does not show it, but rules, boxes or cells drawn between the columns at whole pitches look off-centre: move them by that amount. A text element of a heading design set down a vertical page is placed the same way in its own line: a 13.5 pt couplet on a 28.5 pt line lands 3.4 pt left of the middle and a 40 pt title with a line height of 1 lands 3.2 pt right, in the canvas and the PDF alike. Move it back in its across offset (placement.offset.y).",
-      "es": "Una línea vertical cuelga sus caracteres del eje central de la fuente, a 0,38 em de la línea base en Noto Serif TC (VDTPage.flow.centralBaselines da el de cada familia), y la línea base queda a 0,8 del paso de línea. Por eso los caracteres quedan a 0,3 × el paso − 0,38 × el cuerpo del centro de su línea, hacia la izquierda si el valor es positivo: un cuerpo de 20 pt sobre un paso de 29 pt queda 1,1 pt a la izquierda. En el texto no se nota, pero los filetes, cajas o casillas dibujados entre columnas a pasos enteros se ven descentrados: desplázalos esa cantidad. Un elemento de texto del diseño de un título compuesto en vertical se coloca igual en su propia línea: un pareado de 13,5 pt en una línea de 28,5 pt cae 3,4 pt a la izquierda del centro, y un título de 40 pt con interlineado 1, 3,2 pt a la derecha, igual en el lienzo que en el PDF. Devuélvelo a su sitio con su desplazamiento transversal (placement.offset.y)."
-    },
-    "feature": "vertical-writing"
-  },
   "ruby-not-in-designs": {
     "title": {
       "en": "Readings print in the text, not in designs, captions or cells",

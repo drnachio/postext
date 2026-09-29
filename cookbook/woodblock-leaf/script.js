@@ -69,13 +69,10 @@ const leaf = {
 // read right to left: a right-hand page (even) from the outer frame to the fold, a
 // left-hand page (odd) from the fold to the outer frame.
 const at = (x, y) => ({ anchor: { to: 'page', edge: 'top-left' }, offset: { x: pt(x), y: pt(y) } });
-// gotcha: vertical-line-axis. A vertical line hangs its characters on the face's central
-// axis, 0.38 em from a baseline 0.8 of the pitch into the line, so the middles of the
-// columns sit 0.3 pitch − 0.38 em left of the pitch's: the rules move with them.
-const SHIFT = 0.3 * PITCH - 0.38 * BODY;
-// The k-th line between columns, counted from the right edge of the type area.
+// A column of characters stands in the middle of its pitch, so the rules between columns
+// fall on whole pitches. The k-th, counted from the right edge of the type area:
 const line = (parity, k) =>
-  (parity === 'even' ? HALF + LINES * PITCH : W - HALF) - k * PITCH - SHIFT;
+  (parity === 'even' ? HALF + LINES * PITCH : W - HALF) - k * PITCH;
 const [Y0, Y1] = [TOP - GAP, TOP + CHARS * BODY + GAP]; // the inner frame's top and foot
 // A rule is drawn from its x, a box's border inside the box: each is set so that the line
 // is centred where it belongs.
@@ -86,9 +83,9 @@ const frame = (id, [x0, x1], parity) => [[RULES, 1.8], [0, 0.6]].map(([out, t], 
   kind: 'box', id: `${id}-${i}`, parity, style: { borderColor: col('rule'), borderWidth: pt(t) },
   placement: { ...at(x0 - out - t / 2, Y0 - out - t / 2),
     size: { width: pt(x1 - x0 + 2 * out + t), height: pt(Y1 - Y0 + 2 * out + t) } } }));
-// The middle of the strip, where its text stands: halfway between its two rules, which
-// sit the same shift off the fold. Both pages draw the text whole, and each shows its half.
-const mid = (parity) => (parity === 'even' ? 0 : W) - SHIFT;
+// The middle of the strip, where its text stands: the fold, halfway between its two rules.
+// Both pages draw the text whole, and each shows its half.
+const mid = (parity) => (parity === 'even' ? 0 : W);
 const strip = (id, content, parity, y) => ({ kind: 'text', id: `${id}-${parity}`, parity,
   content, writingMode: 'vertical-rl', fontFamily: SONG, fontSize: pt(11), color: col('ink'),
   align: 'left', overflow: 'clip',

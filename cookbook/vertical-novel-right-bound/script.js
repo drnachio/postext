@@ -30,10 +30,6 @@ const ROMAN = 'Source Serif 4'; // the imprint: Noto Serif TC has no italic
 const [BODY, LEAD] = [10.5, 19]; // pt: 五號 text on a column pitch of 1.8 em
 const cols = (n) => pt(n * LEAD); // n columns across the page
 const PT = 25.4 / 72; // mm in a point
-// workaround: a design text set down a vertical page lands off the middle of its column,
-// by 0.3 × its line − 0.38 × its size (leftward when positive): the baseline sits at 0.8 of
-// the line and each character is centred 0.38 em above it. The pen moves it back.
-const offAxis = (size, line) => 0.3 * line - 0.38 * size; // pt
 
 // #region answer: vertical text on a 25開 page, bound on the right, 40 characters × 16 columns
 // 'vertical-rl' turns the flow a quarter turn: lines run down, columns from right to left,
@@ -68,7 +64,7 @@ const title = (id, content, x, family, weight) => ({ kind: 'text', id, content,
   fontFamily: family, fontWeight: weight, fontSize: pt(TITLE), lineHeight: PITCH / TITLE,
   color: col('ink'), align: 'left', // the head of the column
   placement: { anchor: { to: 'container', edge: 'top-left' },
-    offset: { x: pt(x), y: pt(LEAD - offAxis(TITLE, PITCH)) } } }); // centred between rules
+    offset: { x: pt(x), y: pt(LEAD) } } }); // a line of PITCH, centred between two rules
 const opener = {
   enabled: true,
   minHeight: cols(5), // a blank column, the two title columns, a blank one: 5 × 19 pt
@@ -124,7 +120,7 @@ const titlePage = {
     slip('slip', 0, 1.4), slip('slip-in', 1.2, 0.4), // a heavy and a light vermilion rule
     { kind: 'text', id: 'book', content: '{titleText}', fontFamily: SONG, fontWeight: 700,
       fontSize: pt(40), lineHeight: 1, letterSpacing: pt(10), color: col('ink'),
-      placement: at(SLIP.down + (SLIP.long - RUN) / 2, AXIS - (20 + offAxis(40, 40)) * PT) },
+      placement: at(SLIP.down + (SLIP.long - RUN) / 2, AXIS - 20 * PT) }, // its 40 pt line on the axis
     { kind: 'text', id: 'author', content: '{author}　著', fontFamily: KAI, fontSize: pt(12),
       color: col('ink'), placement: at(52, 72) },
     { kind: 'text', id: 'editor', content: '{attr.editor}', fontFamily: KAI, fontSize: pt(12),
@@ -132,25 +128,21 @@ const titlePage = {
   ] } },
 };
 // The woodcut, 138 mm tall in a double frame (四周雙邊), hangs from the top right corner of
-// the type area: on this right-hand page that is where the outer margin starts. The page's
-// header draws it on the sheet (workaround: postext-pdf turns a picture drawn in the flow);
-// the heading's design sets the caption down the column on its left.
+// the type area, and its caption runs down the column on its left. In the flow frame a
+// box's width runs down the page: the picture's width is its height on the sheet, and it
+// stands upright in the canvas, the HTML and the PDF.
 const PLATE = { right: 8.3, top: 5.1, h: 138, w: (138 * 806) / 1427 }; // mm
-const fromCorner = (inset) => ({ anchor: { to: 'outer', edge: 'top-left' },
-  offset: { x: mm(-(PLATE.right + PLATE.w + inset)), y: mm(PLATE.top - inset) } });
 const frame = (id, inset, thickness) => ({ kind: 'box', id,
-  placement: { ...fromCorner(inset),
-    size: { width: mm(PLATE.w + 2 * inset), height: mm(PLATE.h + 2 * inset) } },
+  placement: { ...at(PLATE.top - inset, PLATE.right - inset),
+    size: { width: mm(PLATE.h + 2 * inset), height: mm(PLATE.w + 2 * inset) } },
   style: { borderColor: col('ink'), borderWidth: pt(thickness) } });
 const plate = {
-  id: 'plate', numbered: false, toc: false, span: 'page', footer: none,
+  id: 'plate', numbered: false, toc: false, span: 'page', header: none, footer: none,
   breakBefore: { enabled: true, parity: 'any' },
-  header: { elements: [
-    { kind: 'image', id: 'woodcut', resourceId: 'peach-garden',
-      placement: { ...fromCorner(0), size: { width: mm(PLATE.w), height: 'auto' } } },
-    frame('inner', 1.6, 0.4), frame('outer', 2.8, 1.4),
-  ] },
   advancedDesign: { enabled: true, minHeight: cols(16), slot: { elements: [
+    { kind: 'image', id: 'woodcut', resourceId: 'peach-garden',
+      placement: { ...at(PLATE.top, PLATE.right), size: { width: mm(PLATE.h), height: 'auto' } } },
+    frame('inner', 1.6, 0.4), frame('outer', 2.8, 1.4),
     { kind: 'text', id: 'caption', content: '{titleText}', fontFamily: HEI, fontSize: pt(9),
       color: col('ink'), placement: at(PLATE.top - 2.8, PLATE.right + PLATE.w + 7) },
     { kind: 'text', id: 'note', content: '{attr.note}', fontFamily: KAI, fontSize: pt(8),
