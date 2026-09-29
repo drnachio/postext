@@ -2,7 +2,7 @@
 title: "蒙學誦讀"
 ---
 
-# 第一課 {picture="sprout"}
+# 第一課 {left="sprout"}
 
 ## {人之初|rén zhī chū}
 
@@ -19,10 +19,10 @@ title: "蒙學誦讀"
 :::callout{type="family" title="For families"}
 People are good when they are born. Their natures are much the same; their habits carry them apart. Left untaught, a nature drifts, and teaching works when it keeps at one thing.
 
-Read each line aloud together, one syllable to each character, pointing to the character as you say it. The marks over the vowels are the four tones: ā level, á rising, ǎ dipping, à falling.
+Read each line aloud together, one syllable to each character, pointing to the character as you say it. The marks over the vowels are the four tones: ā level, á rising, ǎ dipping, à falling.
 :::
 
-# 第二課 {picture="shuttle"}
+# 第二課 {right="shuttle"}
 
 ## {昔孟母|xī mèng mǔ}
 
@@ -39,10 +39,10 @@ Read each line aloud together, one syllable to each character, pointing to the c
 :::callout{type="family" title="For families"}
 Long ago, Mencius’s mother moved house to find good neighbours, and when her son skipped his lessons she cut the cloth on her loom. Dou Yanshan had the right method: he taught his five sons, and all five made their names.
 
-Mencius (Mèngzǐ, about 372–289 BC) is honoured as the Second Sage, after Confucius. Dou Yanshan, a tenth-century official, saw his five sons pass the imperial examinations.
+Mencius (Mèngzǐ, about 372–289 BC) is honoured as the Second Sage, after Confucius. Dou Yanshan, a tenth-century official, saw his five sons pass the imperial examinations.
 :::
 
-# 第三課 {picture="brush"}
+# 第三課 {left="brush"}
 
 ## {養不教|yǎng bú jiào}
 
@@ -54,7 +54,7 @@ Mencius (Mèngzǐ, about 372–289 BC) is honoured as the Second Sage, after Con
 
 {幼不學|yòu bù xué}，{老何為|lǎo hé wéi}？
 
-### 我會寫 {write="父師學老何為"}
+### 我會寫 {write="父師學幼老何"}
 
 :::callout{type="family" title="For families"}
 To raise a child without teaching is the father’s fault; to teach without strictness is the teacher’s neglect. A child who does not study is not doing right: who does not learn when young, what will he do when old?
@@ -62,7 +62,7 @@ To raise a child without teaching is the father’s fault; to teach without stri
 The word bù, “not”, is said bú before a fourth tone, so the first line reads yǎng bú jiào. The book prints the tone you say.
 :::
 
-# 第四課 {picture="jade"}
+# 第四課 {right="jade"}
 
 ## {玉不琢|yù bù zhuó}
 

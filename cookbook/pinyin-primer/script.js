@@ -35,14 +35,16 @@ const MEASURE = CHARS * TEXT * 25.4 / 72; // mm
 // #region answer: one reading per character, in Andika, in a line gap wide enough to hold it
 // {人之初|rén zhī chū} gives each character its own syllable (mono ruby): three readings for
 // three characters, split on the spaces. The reading sits in the line gap, centred on its
-// character; a syllable wider than the character (zhuān over 專) widens that character's box
-// by what the reading needs, less the quarter of the reading's size it may lend a neighbour.
+// character; a syllable wider than the character widens that character's box by what the
+// reading needs, less the quarter of the reading's size it may lend a neighbour.
 const cjk = {
   // The type area in characters: 12 per line, 11 lines of 54 pt. The margins grow to centre it.
   grid: { enabled: true, charsPerLine: CHARS, linesPerPage: 11 },
   ruby: {
     fontFamily: PINYIN, // one-storey a and g, as a Chinese primer prints them
-    fontSize: em(0.45), // of each base: 11.7 pt over the text, 18.9 pt over the 42 pt title
+    // 9.9 pt over the text, 16 pt over the title: the widest syllables (xiāng, zhuān) still fit
+    // over one character, so every couplet is 8 em long and keeps to the grid.
+    fontSize: em(0.38),
     color: col('pinyin'),
   },
 };
@@ -55,14 +57,18 @@ const text = {
 // #endregion
 
 // #region opener: a tinted band with the lesson's badge and its drawing
-const BAND = 64; // mm from the top edge
+const BAND = 68; // mm from the top edge
+// Heading designs ignore parity: a place for the drawing on each side, 14 mm from the outer
+// edge, named {left="…"} on a verso and {right="…"} on a recto. A missing attribute draws nothing.
+const picture = (side, x) => ({ kind: 'image', id: `picture-${side}`,
+  resourceId: `{attr.${side}}`, decorative: true, reserve: false,
+  placement: { anchor: { to: 'page', edge: `top-${side}` }, offset: { x: mm(x), y: mm(14) },
+    size: { width: mm(42), height: mm(42) } } });
 const opener = { enabled: true, slot: { elements: [
   { kind: 'box', id: 'band', reserve: false, style: { backgroundColor: col('tint') },
     placement: { anchor: { to: 'page', edge: 'top-left' },
       size: { width: mm(184), height: mm(BAND) } } },
-  { kind: 'image', id: 'picture', resourceId: '{attr.picture}', decorative: true, reserve: false,
-    placement: { anchor: { to: 'page', edge: 'top-right' }, offset: { x: mm(-14), y: mm(12) },
-      size: { width: mm(42), height: mm(42) } } },
+  picture('left', 14), picture('right', -14),
   { kind: 'text', id: 'lesson', content: '{titleText}', fontFamily: HEI, fontSize: pt(11),
     fontWeight: 700, letterSpacing: pt(2), color: col('paper'), align: 'center', overflow: 'wrap',
     placement: { anchor: { to: 'container', edge: 'top' } },
@@ -97,7 +103,7 @@ const squares = { enabled: true, slot: { elements: [
 
 // The page number in a jade disc at the outer foot, the series beside it.
 const DISC = 8; // mm
-const at = (edge, x) => ({ anchor: { to: 'page', edge }, offset: { x: mm(x), y: mm(-12) } });
+const at = (edge, x) => ({ anchor: { to: 'page', edge }, offset: { x: mm(x), y: mm(-10) } });
 const folio = (parity, edge, x, sign) => [
   { kind: 'text', id: `n-${parity}`, parity, content: '{pageNumber}', fontFamily: PINYIN,
     fontSize: pt(10), fontWeight: 700, color: col('paper'), align: 'center',
@@ -118,8 +124,9 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   // #endregion
   colorPalette,
   page: { sizePreset: 'custom', width: mm(184), height: mm(260), dpi: 150, // 16开
-    // Minimums: cjk.grid grows them to centre the 12 × 11 type area (110 × 210 mm).
-    margins: { top: mm(20), bottom: mm(24), left: mm(18), right: mm(18), mirror: true } },
+    // Minimums, the head deeper than the foot (天头 over 地脚): cjk.grid adds what the
+    // 12 × 11 type area (110 × 210 mm) leaves, 3.2 mm to each, so 27.2 over 23.2 mm.
+    margins: { top: mm(24), bottom: mm(20), left: mm(18), right: mm(18), mirror: true } },
   layout: { layoutType: 'single' },
   cjk,
   bodyText: { ...text, color: col('ink'), boldColor: col('ink'), italicColor: col('ink'),
@@ -229,7 +236,7 @@ const artwork = Object.entries(drawings).map(([id, draw]) => {
 const FONTS = {
   'LXGW WenKai TC': ['400'], // 楷: the text and the titles
   'Noto Sans TC': ['700'], // 黑: badges, labels, the series line
-  Andika: ['400', '400i', '700'], // the pinyin, the notes, the folios
+  Andika: ['400', '700'], // the pinyin, the notes, the folios
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────

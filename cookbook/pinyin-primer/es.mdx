@@ -4,24 +4,28 @@ summary: "Ruby carácter a carácter en una cartilla de Hong Kong: {人之初|r�
 description: "Una cartilla china compuesta con Postext: una sílaba de pinyin sobre cada carácter de una kai de 26 pt, títulos con lectura y cuadrículas, con todo el código."
 question: "¿Cómo pongo pinyin sobre cada carácter de un texto chino, como en una cartilla?"
 aliases: ["pinyin", "注音版", "cartilla", "libro de lectura", "ruby", "三字經", "Clásico de los tres caracteres", "田字格", "cuadrícula de escritura"]
-pageNotes: { "1": "Lección primera, 人之初: una banda verde pálido con la etiqueta roja 第一課, un brote y el título con su pinyin rén zhī chū; cuatro pareados del Clásico de los tres caracteres con una sílaba de pinyin sobre cada carácter; seis cuadrículas de escritura con 人之本不相以 y una nota para las familias.", "2": "Lección segunda, 昔孟母, sobre la madre de Mencio: la misma página con una lanzadera que cruza la urdimbre, las cuadrículas con 子母山五方名 y una nota sobre Mencio y Dou Yanshan.", "3": "Lección tercera, 養不教: un pincel que traza una pincelada en una cuadrícula, cuatro pareados, las cuadrículas con 父師學老何為 y una nota sobre el tono de bù.", "4": "Lección cuarta, 玉不琢: un disco de jade tallado en un cordón rojo, cuatro pareados, las cuadrículas con 玉成知方友禮, una nota para las familias y el colofón." }
+pageNotes: { "1": "Lección primera, 人之初: una banda verde pálido con la etiqueta roja 第一課, un brote y el título con su pinyin rén zhī chū; cuatro pareados del Clásico de los tres caracteres con una sílaba de pinyin sobre cada carácter; seis cuadrículas de escritura con 人之本不相以 y una nota para las familias.", "2": "Lección segunda, 昔孟母, sobre la madre de Mencio: la misma página con una lanzadera que cruza la urdimbre, las cuadrículas con 子母山五方名 y una nota sobre Mencio y Dou Yanshan.", "3": "Lección tercera, 養不教: un pincel que traza una pincelada en una cuadrícula, cuatro pareados, las cuadrículas con 父師學幼老何 y una nota sobre el tono de bù.", "4": "Lección cuarta, 玉不琢: un disco de jade tallado en un cordón rojo, cuatro pareados, las cuadrículas con 玉成知方友禮, una nota para las familias y el colofón." }
 ---
 
 ## Lo que vas a componer
 
 Dos pliegos de 《蒙學誦讀》, una cartilla inventada de Hong Kong, donde los niños leen en voz alta el *Clásico de los tres caracteres* en mandarín (putonghua). Cada página es una lección de cuatro pareados en kai de 一号 (26 pt), y cada carácter va bajo su sílaba de pinyin. Las sílabas van en Andika porque dibuja la a y la g de un solo piso que imprimen los libros escolares chinos. Una banda verde pálido lleva la etiqueta roja de la lección, un dibujo y el título en 初号 (42 pt) con su propia lectura. Debajo del texto, seis cuadrículas de escritura (田字格) guardan los caracteres para copiar, y una nota cuenta a la familia qué dicen los versos. Su pareja en español es <RecipeLink slug="reading-primer-syllables">la cartilla de sílabas en chips</RecipeLink>, donde cada sílaba es un chip de color en lugar de una lectura sobre un carácter.
 
+Una cartilla se aparta a propósito de las normas del libro chino. Un niño lee pocos caracteres y grandes, así que la línea lleva doce de 26 pt donde un libro pone entre 25 y 40 de 10,5 pt, y la interlínea pasa un poco del doble del cuerpo para que quepan las lecturas. Cada pareado va centrado en su propia línea, sin justificar ni sangrar. El texto va en kai, la letra que sigue al pincel, porque enseña los trazos que el niño aprende a escribir; un libro lo compondría en song.
+
 ## Elaboración
 
 ### 1 · Una sílaba sobre cada carácter
 
-El código es [la respuesta corta](#la-respuesta-corta) de arriba. `{人之初|rén zhī chū}` da tres lecturas a tres caracteres, separadas por los espacios: cada sílaba se centra sobre su carácter, y la línea puede cortarse entre ellos. La lectura no ocupa sitio propio. Va en el hueco entre líneas, aquí 54 − 26 = 28 pt, y un hueco más estrecho que la lectura se avisa como `rubyExceedsLeading`. Una sílaba más ancha que su carácter ensancha la caja de ese carácter, así que 性相近, bajo xìng xiāng jìn, queda más suelto que 人之初; una cartilla compuesta a mano suele abrir toda la línea por igual.
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `{人之初|rén zhī chū}` da tres lecturas a tres caracteres, separadas por los espacios: cada sílaba se centra sobre su carácter, y la línea puede cortarse entre ellos. La lectura no ocupa sitio propio. Va en el hueco entre líneas, aquí 54 − 26 = 28 pt, y un hueco más estrecho que la lectura se avisa como `rubyExceedsLeading`. Una sílaba más ancha que su carácter sí ocupa sitio: ensancha la caja de ese carácter, y en una línea centrada los caracteres que la siguen se salen de la retícula. Las lecturas llevan el cuerpo con el que las sílabas más anchas de la muestra, xiāng y zhuān, aún caben sobre un carácter, 0,38 em (9,9 pt): cada pareado mide ocho caracteres y cada carácter conserva su casilla. Con 0,45 em, 性相近，習相遠 se estiraría hasta ocho caracteres y medio y abriría huecos alrededor de 相.
 
 ### 2 · El título conserva su lectura
 
 <Excerpt region="opener" />
 
 El texto de un diseño no imprime lecturas, así que el título no puede salir del diseño de la apertura. El título de primer nivel, 第一課, dibuja la banda, el dibujo y la etiqueta roja; el de la lección es el título de segundo nivel que va debajo, sin diseño propio, en 初号, y el compositor de texto lo compone con su pinyin. `reserve: false` deja la banda y el dibujo fuera de la altura del título, y `span: 'page'` los pinta debajo del texto.
+
+Un diseño de título no atiende a `parity`, así que el dibujo tiene un elemento a cada lado de la página: `{attr.left}` a 14 mm del borde izquierdo y `{attr.right}` a 14 mm del derecho. Las lecciones de página par escriben `# 第一課 {left="sprout"}`, y las de impar, `{right="shuttle"}`, de modo que cada dibujo queda en el lado exterior del pliego; el elemento cuyo atributo falta no dibuja nada.
 
 ### 3 · Seis cuadrículas con un solo atributo
 
@@ -35,11 +39,11 @@ El texto de un diseño no imprime lecturas, así que el título no puede salir d
 
 Fontsource corta cada fuente china en un centenar de archivos por intervalos de caracteres. La kai compone toda la muestra y carga los archivos que contienen sus caracteres. La hei solo compone las etiquetas, los rótulos y el pie, así que recibe ese texto y descarga unos pocos archivos. Andika llega con `loadFonts`, que añade el archivo latin-ext cuando el texto tiene letras más allá de Latin-1, como ǎ y ǐ.
 
-### 5 · La puntuación de Hong Kong sale del locale
+### 5 · La etiqueta de idioma trae la puntuación de Hong Kong
 
 <Excerpt region="locale" />
 
-`zh-HK` fija las reglas de Hong Kong: puntuación de ancho completo y el juego básico de reglas de corte. LXGW WenKai TC dibuja la coma y el punto en el centro de la casilla, como los imprimen Hong Kong y Taiwán, y por eso esta cartilla es de Hong Kong. Una edición continental en caracteres simplificados pone la coma y el punto abajo a la izquierda de la casilla y usa una song, como hace <RecipeLink slug="chinese-novel-horizontal">la página de novela continental</RecipeLink>.
+`zh-HK` fija las reglas de Hong Kong: puntuación de ancho completo y el juego básico de reglas de corte, que aquí ningún pareado necesita. LXGW WenKai TC dibuja la coma y el punto en el centro de la casilla, como los imprimen Hong Kong y Taiwán, y por eso esta cartilla es de Hong Kong. Una cartilla continental también va en kai, en caracteres simplificados y con la coma y el punto abajo a la izquierda de la casilla. Pero Fontsource no tiene una kai de texto para el chino simplificado, y la tradicional pegaría esos signos al carácter siguiente, así que en este Recetario una página continental toma Noto Serif SC, la song de <RecipeLink slug="chinese-novel-horizontal">la página de novela continental</RecipeLink>.
 
 ## Variantes
 
@@ -59,3 +63,5 @@ Las lecturas en bopomofo se colocan en una columna a la derecha de cada carácte
 ## Errores frecuentes
 
 Esta receta no ofrece PDF. El `fontsourceProvider` del kit incrusta solo el archivo latin de una fuente, y las letras con tono ā ǎ ǐ ǒ ǔ están en latin-ext, así que el PDF las perdería y postext-pdf avisaría de cada una con `missingGlyph`. Si lo necesitas, compón las lecturas con una fuente china, cuyos archivos elige `cjkPdfProvider` carácter a carácter.
+
+Comprueba cada carácter de las cuadrículas con las formas normalizadas de la región. LXGW WenKai TC dibuja 為 con la parte de arriba de 爲 (爫), una forma antigua que pasa en el texto corrido, como en 老何為 y 為人子, pero no en una cuadrícula que copia un niño de Hong Kong. Por eso la lección tercera practica 幼.

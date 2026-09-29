@@ -2,7 +2,7 @@
 title: "蒙學誦讀"
 ---
 
-# 第一課 {picture="sprout"}
+# 第一課 {left="sprout"}
 
 ## {人之初|rén zhī chū}
 
@@ -19,10 +19,10 @@ title: "蒙學誦讀"
 :::callout{type="family" title="Para las familias"}
 Al nacer, las personas son buenas. Por naturaleza se parecen; las costumbres las van separando. Sin enseñanza, la naturaleza se tuerce, y enseñar da fruto cuando se hace con constancia.
 
-Leed juntos cada verso en voz alta, una sílaba por carácter, y señalad el carácter mientras lo decís. Las marcas sobre las vocales son los cuatro tonos: ā llano, á ascendente, ǎ descendente y ascendente, à descendente.
+Leed juntos cada verso en voz alta, una sílaba por carácter, y señalad el carácter mientras lo decís. Las marcas sobre las vocales son los cuatro tonos: ā llano, á ascendente, ǎ descendente y ascendente, à descendente.
 :::
 
-# 第二課 {picture="shuttle"}
+# 第二課 {right="shuttle"}
 
 ## {昔孟母|xī mèng mǔ}
 
@@ -37,12 +37,12 @@ Leed juntos cada verso en voz alta, una sílaba por carácter, y señalad el car
 ### 我會寫 {write="子母山五方名"}
 
 :::callout{type="family" title="Para las familias"}
-Antiguamente, la madre de Mencio cambió de casa para buscar buenos vecinos, y cuando su hijo faltó a las lecciones cortó la tela de su telar. Dou Yanshan tuvo buen método: educó a sus cinco hijos y los cinco se hicieron un nombre.
+Antiguamente, la madre de Mencio cambió de casa para buscar buenos vecinos, y cuando su hijo faltó a las lecciones cortó la tela de su telar. Dou Yanshan tenía un buen método: educó a sus cinco hijos y los cinco se hicieron un nombre.
 
-A Mencio (Mèngzǐ, hacia 372-289 a. C.) se le llama el Segundo Sabio, después de Confucio. Dou Yanshan, funcionario del siglo X, vio a sus cinco hijos aprobar los exámenes imperiales.
+A Mencio (Mèngzǐ, hacia 372-289 a. C.) se le llama el Segundo Sabio, después de Confucio. Dou Yanshan, funcionario del siglo X, vio a sus cinco hijos aprobar los exámenes imperiales.
 :::
 
-# 第三課 {picture="brush"}
+# 第三課 {left="brush"}
 
 ## {養不教|yǎng bú jiào}
 
@@ -54,7 +54,7 @@ A Mencio (Mèngzǐ, hacia 372-289 a. C.) se le llama el Segundo Sabio, después 
 
 {幼不學|yòu bù xué}，{老何為|lǎo hé wéi}？
 
-### 我會寫 {write="父師學老何為"}
+### 我會寫 {write="父師學幼老何"}
 
 :::callout{type="family" title="Para las familias"}
 Criar sin educar es culpa del padre; enseñar sin exigencia, dejadez del maestro. No está bien que un niño no estudie: quien no aprende de pequeño, ¿qué hará de mayor?
@@ -62,7 +62,7 @@ Criar sin educar es culpa del padre; enseñar sin exigencia, dejadez del maestro
 La palabra bù, «no», se dice bú delante de un cuarto tono, así que el primer verso se lee yǎng bú jiào. El libro imprime el tono que se pronuncia.
 :::
 
-# 第四課 {picture="jade"}
+# 第四課 {right="jade"}
 
 ## {玉不琢|yù bù zhuó}
 

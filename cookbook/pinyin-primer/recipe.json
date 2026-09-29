@@ -12,7 +12,6 @@
     "primary": ["ruby", "cjk-fonts"],
     "also": [
       "character-grid",
-      "cjk-line-breaking",
       "cjk-punctuation",
       "body-typography",
       "opener-design",
@@ -27,6 +26,7 @@
   "answers": ["Q89"],
   "gotchas": [
     "ruby-not-in-designs",
+    "cjk-face-region",
     "cjk-fonts-slices",
     "cjk-locale-tag",
     "headings-drop-h1-break",
@@ -44,11 +44,11 @@
     "text": [
       {
         "what": {
-          "en": "The Three Character Classic (三字經, 13th century), lines 1–32, from the Harvard-Yenching copy of the Xinkan Sanzijing, with today’s punctuation and 隣 written 鄰",
-          "es": "El Clásico de los tres caracteres (三字經, siglo XIII), versos 1-32, de la copia del Xinkan Sanzijing de Harvard-Yenching, con puntuación actual y 隣 escrito 鄰"
+          "en": "The Three Character Classic (三字經), lines 1–32: the text of the Harvard-Yenching Library’s 新刊三字經 as transcribed on zh.wikisource (revision 10344699), with today’s punctuation and 隣 written 鄰",
+          "es": "El Clásico de los tres caracteres (三字經), versos 1-32: el texto del 新刊三字經 de la Biblioteca Harvard-Yenching transcrito en zh.wikisource (revisión 10344699), con puntuación actual y 隣 escrito 鄰"
         },
-        "who": "Attributed to Wang Yinglin; transcription by Wikisource editors",
-        "source": "https://zh.wikisource.org/wiki/新刊三字經",
+        "who": "Traditionally attributed to Wang Yinglin (13th century); transcription by Wikisource editors",
+        "source": "https://zh.wikisource.org/w/index.php?title=%E6%96%B0%E5%88%8A%E4%B8%89%E5%AD%97%E7%B6%93&oldid=10344699",
         "license": "PD"
       },
       {
