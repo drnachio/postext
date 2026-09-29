@@ -38,6 +38,10 @@ export function computeSourceMap(
   // inside it (#193–#195).
   const skips = annotationSourceSkips(markdown, blockSrcStart, blockSrcEnd);
   let si = 0;
+  // Inline code spans, which the parser protects: an orientation mark
+  // written inside one (`` `:tcy[…]` ``) is text, its opener printed.
+  const code = orientationCodeSpans(markdown, blockSrcStart, blockSrcEnd);
+  let ci = 0;
   for (let p = 0; p < plainText.length; p++) {
     const ch = plainText[p]!;
     // Math placeholder: the plain char represents `$...$` in the markdown.
@@ -176,8 +180,11 @@ export function computeSourceMap(
         r += SMALLCAPS_OPENER.length;
         continue;
       }
-      // So has the opener of `:tcy[…]`, `:upright[…]`, `:sideways[…]`.
-      const orientationOpener = rc === ':' ? orientationOpenerAt(markdown, r, blockSrcEnd) : 0;
+      // So has the opener of `:tcy[…]`, `:upright[…]`, `:sideways[…]`,
+      // outside inline code.
+      while (ci < code.length && code[ci]![1] <= r) ci++;
+      const inCode = ci < code.length && r >= code[ci]![0];
+      const orientationOpener = rc === ':' && !inCode ? orientationOpenerAt(markdown, r, blockSrcEnd) : 0;
       if (orientationOpener > 0) {
         r += orientationOpener;
         continue;
@@ -194,6 +201,19 @@ export function computeSourceMap(
     }
   }
   return map;
+}
+
+/** The inline code spans (`` `…` ``) of `[from, end)` that may hold an
+ *  orientation mark, as `[start, end)` source offsets in order; none when
+ *  the block has no such mark. */
+function orientationCodeSpans(markdown: string, from: number, end: number): Array<[number, number]> {
+  const slice = markdown.slice(from, end);
+  if (!slice.includes('`') || !/:(?:tcy|upright|sideways)\[/.test(slice)) return [];
+  const out: Array<[number, number]> = [];
+  const re = /(?<!\\)`[^`\n]+?`/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(slice)) !== null) out.push([from + m.index, from + m.index + m[0].length]);
+  return out;
 }
 
 /** Whitespace collapsed by pretext's `normalizeWhitespaceNormal`. A Set

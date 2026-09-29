@@ -171,6 +171,18 @@ describe('tate-chu-yoko in vertical lines (#190)', () => {
     expect(block.sourceMap?.[2]).toBe(md.indexOf('12') + 1);
     expect(block.sourceMap?.[3]).toBe(md.indexOf('回'));
   });
+
+  it('maps a mark written in inline code as the text it prints', () => {
+    const md = 'Write `:tcy[12]` for one cell.';
+    const doc = buildDocument({ markdown: md }, config('zh-Hant'));
+    const block = doc.pages[0]!.columns[0]!.blocks[0]!;
+    const plain = block.lines.map((l) => l.text).join(' ');
+    expect(plain).toContain(':tcy[12]');
+    // Every character of the code maps to itself in the source.
+    const at = plain.indexOf(':tcy[12]');
+    for (let i = 0; i < ':tcy[12]'.length; i++) expect(block.sourceMap?.[at + i]).toBe(md.indexOf(':tcy[12]') + i);
+    expect(block.sourceMap?.[plain.indexOf('for')]).toBe(md.indexOf('for'));
+  });
 });
 
 describe('orientation marks leave references, notes and objects as they are (#190 review)', () => {
