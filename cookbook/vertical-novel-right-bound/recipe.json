@@ -63,10 +63,6 @@
     },
     {
       "package": "postext",
-      "note": "renderPageToCanvas paints with the direction the canvas inherits from the page (ctx.direction 'inherit'); the cjk kit's showBook sets dir=\"rtl\" on each spread of a right-bound book, so horizontal Latin text (the title page's imprint) is reordered by the bidi algorithm and anchored from the right, and letter-spaced text (the title) shifts. The pen sets #pages canvas { direction: ltr }; the fix belongs in renderPageToCanvas (set ctx.direction = 'ltr') or in the kit's showBook style."
-    },
-    {
-      "package": "postext",
       "note": "a design text in a vertical flow is centred off the middle of its column: design/layout.ts puts a line's baseline at 0.8 of the line height and the vertical painter (canvas-backend/verticalText.ts, and postext-pdf the same) centres each character 0.38 em above the baseline, so the characters land at 0.8 × line − 0.38 em instead of line / 2, 3.4 pt too far left for the 13.5/28.5 pt couplet and 3.2 pt too far right for the 40/40 pt title. The pen moves both back with offAxis(size, line) = 0.3 × line − 0.38 × size; the fix is to centre the axis at the line's top + line height / 2 in vertical flows, in the canvas and in postext-pdf, after which offAxis goes."
     }
   ],

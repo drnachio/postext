@@ -217,9 +217,6 @@ await loadCjkFonts({ [HEI]: ['400'] }, `${heads}第回一二三四五六七八�
 await loadImage('peach-garden.jpg', asset('peach-garden-oath-1592-v2.jpg'));
 const doc = await buildWithFonts(
   () => buildDocument({ markdown, resources }, config()), markdown);
-// workaround: a canvas takes its text direction from the page, and showBook sets
-// dir="rtl" on each spread, which would reorder and shift the Latin imprint.
-document.head.insertAdjacentHTML('beforeend', '<style>#pages canvas { direction: ltr }</style>');
 showBook(doc, { title: t({ en: 'A vertical Chinese novel, bound on the right',
   es: 'Una novela china vertical, encuadernada por la derecha' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider, resourceBytes: imageBytes }),
