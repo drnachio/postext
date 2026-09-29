@@ -35,7 +35,7 @@ import {
 } from './pageDecorations';
 import { renderBlock, type ResourceRenderContext } from './blockRender';
 import { renderHeaderFooterSlot } from './headerFooter';
-import { addOutlines, headingLinesText } from './outlines';
+import { addOutlines, numberedHeadingText } from './outlines';
 import { addPageLabels } from './pageLabels';
 import {
   preloadResourceImages,
@@ -286,9 +286,7 @@ function documentTitle(docs: readonly VDTDocument[]): string {
     }
     if (best && (best.headingLevel ?? 1) === 1) break;
   }
-  const text = best ? headingLinesText(best) : '';
-  if (text) return best?.numberPrefix && !text.startsWith(best.numberPrefix) ? `${best.numberPrefix}${best.numberSeparator ?? ' '}${text}` : text;
-  return 'Document';
+  return (best && numberedHeadingText(best)) || 'Document';
 }
 
 /** The heading element an opener band's text belongs to: the part title on

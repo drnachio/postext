@@ -28,22 +28,36 @@ export function headingLinesText(block: VDTBlock): string {
   return blockLinesText(block).replace(SPACES, ' ').trim();
 }
 
+/** A heading's number as its lines read it back: white space collapsed
+ *  and trimmed at the ends. A template that opens with ideographic spaces
+ *  (`'　　{2:一}、'`, the two-cell indent of a GB/T 9704 head) prints them,
+ *  but the lines lose them to the trim, and a bookmark does not start with
+ *  an indent. */
+function headingNumberText(block: VDTBlock): string {
+  return block.numberPrefix?.replace(SPACES, ' ').trim() ?? '';
+}
+
+/** A heading's number and title as one line, from its printed lines: the
+ *  number goes in front when the lines do not already start with it (an
+ *  opener prints it apart), joined as the heading joins them (`'　'` or
+ *  nothing in a Chinese heading). The bookmarks and the document title read
+ *  a heading this way. */
+export function numberedHeadingText(block: VDTBlock): string {
+  const raw = headingLinesText(block);
+  if (!raw) return '';
+  const number = headingNumberText(block);
+  return number && !raw.startsWith(number) ? `${number}${block.numberSeparator ?? ' '}${raw}` : raw;
+}
+
 /** A heading's bookmark title: its number and its title as written. A
  *  letter-case transform (`textTransform: 'uppercase'`) is how the page
  *  prints the heading, not its name — as with CSS `text-transform`, the
  *  bookmark keeps the source's case (EF-81). */
 function extractBlockText(block: VDTBlock): string {
-  // The number and the title joined as the heading joins them (`'　'` or
-  // nothing in a Chinese heading).
-  const sep = block.numberSeparator ?? ' ';
   const written = block.sourceTitle?.replace(SPACES, ' ').trim();
-  if (written) return block.numberPrefix ? `${block.numberPrefix}${sep}${written}` : written;
-  const raw = headingLinesText(block);
-  if (!raw) return '';
-  if (block.numberPrefix && !raw.startsWith(block.numberPrefix)) {
-    return `${block.numberPrefix}${sep}${raw}`;
-  }
-  return raw;
+  if (!written) return numberedHeadingText(block);
+  const number = headingNumberText(block);
+  return number ? `${number}${block.numberSeparator ?? ' '}${written}` : written;
 }
 
 /** Headings of `doc`, with page indices offset by `base` (the PDF pages of

@@ -575,10 +575,12 @@ function plainTextOfBlock(block: VDTBlock): string {
   // No-break spaces stay, so the running head never breaks at one, and so
   // does the ideographic space of a Chinese title.
   const text = collapseTitleSpaces(blockLinesText(block)).trim();
-  // Strip any numbering prefix that was prepended during build.
-  if (block.numberPrefix && text.startsWith(block.numberPrefix)) {
-    return text.slice(block.numberPrefix.length).trimStart();
-  }
+  // Strip any numbering prefix that was prepended during build, as the
+  // trimmed lines read it: a template that opens with ideographic spaces
+  // (`'　　{2:一}、'`, a GB/T 9704 head's two-cell indent) lost them to the
+  // trim.
+  const prefix = block.numberPrefix?.trim();
+  if (prefix && text.startsWith(prefix)) return text.slice(prefix.length).trimStart();
   return text;
 }
 

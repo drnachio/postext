@@ -103,6 +103,35 @@ describe('bookmarks of Chinese chapter heads', () => {
   }, 60_000);
 });
 
+// GB/T 9704 indents every head two cells, and a heading level has no
+// indent of its own: the template opens with two ideographic spaces
+// (`'　　{2:一}、'`). The lines read back trimmed, so the number is found in
+// them without its indent, and the bookmark neither repeats it nor starts
+// with the indent.
+describe('bookmarks of heads whose number opens with ideographic spaces', () => {
+  const cfg: PostextConfig = {
+    ...config,
+    locale: 'zh-Hans',
+    headings: { levels: [
+      { level: 1, breakBefore: { enabled: false }, numberingTemplate: '\u3000\u3000{1:一}、', numberSeparator: '' },
+      { level: 2, numberingTemplate: '\u3000\u3000（{2:一}）', numberSeparator: '' },
+      { level: 3, numberingTemplate: '\u3000\u3000{3}.', numberSeparator: '' },
+    ] },
+  };
+  const markdown = '# 培训时间\n\n正文。\n\n## 排版规范\n\n正文。\n\n### 公文格式\n\n正文。';
+
+  it('print the number once, without the indent', async () => {
+    const doc = buildDocument({ markdown }, cfg);
+    expect(doc.blocks.find((b) => b.type === 'heading')!.numberPrefix).toBe('\u3000\u3000一、');
+    expect(await outlineTitles(markdown, cfg)).toEqual(['一、培训时间', '（一）排版规范', '1.公文格式']);
+  }, 60_000);
+
+  it('name the document after the first head the same way', async () => {
+    const pdf = await PDFDocument.load(await renderToPdf(buildDocument({ markdown }, cfg), { fontProvider, accessible: true }));
+    expect(pdf.getTitle()).toBe('一、培训时间');
+  }, 60_000);
+});
+
 describe('bookmarks of wrapped headings', () => {
   it('rejoin a word the line cut, and keep a hard hyphen', async () => {
     const cfg: PostextConfig = { ...config, page: { ...config.page, width: pt(150) } };
