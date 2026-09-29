@@ -21,7 +21,11 @@ chapter endnotes; index page references (Window > Type & Tables > Index) become
 `:index{term="…"}` marks (postext >= 1.7): topic levels, sort order, a bold
 page-number style as `main`, ranged references as range start/end, and See /
 See also cross-references gathered in the report as marks to paste above
-`:::index`.
+`:::index`. East Asian character attributes become Postext marks (postext >= 1.9):
+ruby (`RubyFlag`/`RubyString`) as `:ruby[…]{rt="…"}`, tate-chu-yoko as
+`:tcy[…]`, kenten (emphasis marks) as `:dots[…]`, warichu as `:warichu[…]`;
+vertical stories (`StoryOrientation="Vertical"`) and a right-to-left page
+binding are reported, since they belong in the config.
 
 Export IDML from InDesign with File > Export > InDesign Markup (IDML).
 Standard library only.
@@ -44,7 +48,9 @@ from postext_md import (  # noqa: E402
     Slugger,
     attr_value,
     caption_kind,
+    clean_text,
     collapse_spaces,
+    escape,
     fence,
     guard_line_start,
     fix_index_marks,
@@ -109,12 +115,64 @@ def _props(el):
     return {pr.tag: (pr.text or "").strip() for pr in el.findall("Properties/*")}
 
 
-class IRun:
-    __slots__ = ("text", "font", "fstyle", "size", "position", "color", "cstyle")
+KENTEN_STYLES = {
+    "KentenSesameDot": "sesame", "KentenWhiteSesameDot": "sesame",
+    "KentenWhiteCircle": "circle", "KentenSmallWhiteCircle": "circle",
+}
 
-    def __init__(self, text, font, fstyle, size, position, color, cstyle):
+
+def cjk_mark(a: dict) -> tuple | None:
+    """The East Asian markup a character range asks for, from its IDML
+    attributes: ruby, warichu, tate-chu-yoko or kenten (emphasis marks)."""
+    if a.get("RubyFlag") == "true" and a.get("RubyString"):
+        return ("ruby", a["RubyString"], a.get("RubyType", "GroupRuby") != "PerCharacterRuby")
+    if a.get("Warichu") == "true":
+        return ("warichu",)
+    if a.get("Tatechuyoko") == "true":
+        return ("tcy",)
+    kind = a.get("KentenKind", "None")
+    if kind and kind != "None":
+        return ("dots", KENTEN_STYLES.get(kind, ""))
+    return None
+
+
+def _bracket_safe(text: str) -> str | None:
+    """Text for inside `:mark[…]`: balanced brackets stay as they are, a `]`
+    with no `[` before it is escaped, and None when a `[` is left open (the
+    parser would not close the mark)."""
+    out, depth = [], 0
+    for ch in text:
+        if ch == "[":
+            depth += 1
+        elif ch == "]":
+            if depth == 0:
+                out.append("\\]")
+                continue
+            depth -= 1
+        out.append(ch)
+    return None if depth else "".join(out)
+
+
+def cjk_markup(mark: tuple, text: str) -> str | None:
+    """Postext markup for a run of text carrying one East Asian mark, or None
+    when the text cannot go inside one (an unclosed `[`)."""
+    inner = _bracket_safe(escape(clean_text(text)))
+    if inner is None:
+        return None
+    if mark[0] == "ruby":
+        return f':ruby[{inner}]{{rt="{attr_value(mark[1])}"{" group" if mark[2] else ""}}}'
+    if mark[0] == "dots":
+        return f":dots[{inner}]" + (f'{{style="{mark[1]}"}}' if mark[1] else "")
+    return f":{mark[0]}[{inner}]"
+
+
+class IRun:
+    __slots__ = ("text", "font", "fstyle", "size", "position", "color", "cstyle", "cjk")
+
+    def __init__(self, text, font, fstyle, size, position, color, cstyle, cjk=None):
         self.text, self.font, self.fstyle, self.size = text, font, fstyle, size
         self.position, self.color, self.cstyle = position, color, cstyle
+        self.cjk = cjk
 
     @property
     def bold(self):
@@ -307,7 +365,8 @@ class Idml:
             def mk(a, text):
                 return IRun(text, a.get("AppliedFont", ""), a.get("FontStyle", "Regular"),
                             float(a["PointSize"]) if a.get("PointSize") else None,
-                            a.get("Position", "Normal"), short(a.get("FillColor", "")), a.get("_cstyle", ""))
+                            a.get("Position", "Normal"), short(a.get("FillColor", "")), a.get("_cstyle", ""),
+                            cjk_mark(a))
 
             for cel in pr:
                 if cel.tag != "CharacterStyleRange":
@@ -346,10 +405,31 @@ class Idml:
 
     def _stories(self) -> None:
         self.stories: dict[str, list[IPara]] = {}
+        self.vertical: set[str] = set()
         for name in sorted(n for n in self.z.namelist() if n.startswith("Stories/") and n.endswith(".xml")):
             st = self.xml(name).find("Story")
             if st is not None:
                 self.stories[st.get("Self")] = self.paras(st)
+                pref = st.find("StoryPreference")
+                if pref is not None and pref.get("StoryOrientation") == "Vertical":
+                    self.vertical.add(st.get("Self"))
+        self.binding = ""
+        if "Resources/Preferences.xml" in self.z.namelist():
+            pref = self.xml("Resources/Preferences.xml").find(".//DocumentPreference")
+            if pref is not None:
+                self.binding = pref.get("PageBinding", "")
+
+    def layout_notes(self, stories: list[str]) -> list[str]:
+        """Config facts the stories imply: vertical text and a right-bound book."""
+        notes = []
+        vertical = [s for s in stories if s in self.vertical]
+        if vertical:
+            notes.append(f"{len(vertical)} of {len(stories)} stories are set vertically (StoryOrientation=Vertical): "
+                         "layout.writingMode: 'vertical-rl'")
+        if self.binding == "RightToLeft":
+            notes.append("the document is bound on the right (PageBinding=RightToLeft): page.binding: 'right' "
+                         "(the default for a vertical book)")
+        return notes
 
     def ordered_stories(self) -> list[str]:
         """Stories placed on document pages, in page order of their first frame."""
@@ -375,6 +455,8 @@ def cmd_roles(args) -> None:
                 samples[p.style] = t[:70]
     print(f"# {Path(args.idml).name}: {len(doc.pages)} pages, {len(doc.stories)} stories "
           f"({len(doc.ordered_stories())} placed)", file=sys.stderr)
+    for note in doc.layout_notes(doc.ordered_stories()):
+        print(f"# {note}", file=sys.stderr)
     styles = {}
     for st, n in counts.most_common():
         low = st.lower()
@@ -464,18 +546,35 @@ def cmd_markdown(args) -> None:
 
     def render(p: IPara, plain: bool = False, marks: bool = True) -> str:
         runs = []
-        for r in p.runs:
-            if r.text in (TABLE_MARK, OBJECT_MARK, "￲"):
-                continue
+        prs = [r for r in p.runs if r.text not in (TABLE_MARK, OBJECT_MARK, "￲")]
+        i = 0
+        while i < len(prs):
+            r = prs[i]
             if r.text.startswith(INDEX_MARK):
                 if marks and not plain:
                     runs.append(Run(r.text[1:], raw=True))
                 elif not marks:
                     report["index marks in table cells or captions dropped (they print as written there)"] += 1
+                i += 1
+                continue
+            if r.cjk and not plain:
+                j = i
+                while j < len(prs) and prs[j].cjk == r.cjk and not prs[j].text.startswith(INDEX_MARK):
+                    j += 1
+                text = "".join(x.text for x in prs[i:j])
+                markup = cjk_markup(r.cjk, text)
+                if markup is None:
+                    runs.append(Run(text))
+                    report[f"East Asian :{r.cjk[0]} marks left out: the text holds an unclosed '[' (mark by hand)"] += 1
+                else:
+                    runs.append(Run(markup, raw=True))
+                    report[f"East Asian marks written as :{r.cjk[0]}[…] (check them against the PDF)"] += 1
+                i = j
                 continue
             t = r.text.replace(" ", " ").replace("\t", " ")
             runs.append(Run(t, r.bold, r.italic, r.position in ("Superscript", "OTSuperscript"),
                             r.position in ("Subscript", "OTSubscript")))
+            i += 1
         if plain:
             return collapse_spaces("".join(x.text for x in runs))
         return render_runs(runs)
@@ -612,6 +711,9 @@ def cmd_markdown(args) -> None:
     (out / "chapters.json").write_text(json.dumps({args.lang: manifest}, ensure_ascii=False, indent=2), encoding="utf-8")
     rep = [f"# IDML extraction report: {Path(args.idml).name}", "",
            f"- stories used: {len(order)}; chapters: {len(manifest)}; resources: {len(resources)}", ""]
+    notes = doc.layout_notes(order)
+    if notes:
+        rep += ["## Layout the stories imply", ""] + [f"- {n}" for n in notes] + [""]
     if unmapped:
         rep += ["## Styles missing from the map (set as body)", ""] + [f"- `{k}`: {v}" for k, v in unmapped.most_common()] + [""]
     report.update(doc.index_report)

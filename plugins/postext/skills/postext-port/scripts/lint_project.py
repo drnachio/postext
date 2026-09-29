@@ -8,7 +8,10 @@ habits that print literally (pipe tables, code fences, HTML,
 `---` rules), blocks swallowed into the previous paragraph, line-start traps,
 unknown style/resource ids, malformed `::resource`, unbalanced fences, config
 keys that crash or silently reset (em units, H1 page breaks, `main-color`),
-missing files and bitmap sizes. Pure Python, no dependencies.
+missing files and bitmap sizes; for Chinese, Japanese and Korean text, the
+document language, markup typed with an input method, and whether the bundled
+fonts have a glyph for every character the chapters set (with fontTools
+installed; without it that check is skipped). Pure Python otherwise.
 
 Exit code 1 when there are errors (or warnings with --strict).
 """
@@ -97,9 +100,14 @@ def check_config(cfg: dict, where: str, fonts: set[str], rep: Report, partial: b
         if (1 not in levels or "breakBefore" not in levels.get(1, {})) and not (partial and 1 not in levels):
             rep.warn(where, "headings is set but level 1 has no breakBefore: chapters will NOT start on a new page "
                             "(the default recto break only applies when `headings` is absent)")
+    for path, el in design_elements(cfg):
+        if el.get("kind") == "text":
+            continue  # a text element's offset may be in em of its own size (postext >= 1.9)
+        for axis in ("x", "y"):
+            unit = (((el.get("placement") or {}).get("offset") or {}).get(axis) or {}).get("unit")
+            if unit in ("em", "rem"):
+                rep.error(where, f"{path}.placement.offset.{axis}: a {el.get('kind')} element's offset in em throws, use mm/pt")
     for path, val in walk_values(cfg):
-        if path.endswith(("offset.x.unit", "offset.y.unit")) and val in ("em", "rem"):
-            rep.error(where, f"{path}: design offsets in em throw, use mm/pt")
         if re.search(r"elements\[\d+\]\.fontSize\.unit$", path) and val in ("em", "rem"):
             rep.error(where, f"{path}: design text sizes in em throw, use pt")
     pal = cfg.get("colorPalette")
@@ -124,6 +132,186 @@ def check_config(cfg: dict, where: str, fonts: set[str], rep: Report, partial: b
         if path.endswith("fontFamily") and isinstance(val, str) and fonts and val not in fonts:
             rep.warn(where, f"{path} = {val!r} is not a bundled family (only the browser can fetch Google Fonts; "
                             "the PDF and headless renders need the files)")
+
+
+def design_elements(node, path=""):
+    """Every design element (a dict with a `kind`) inside an `elements` list."""
+    if isinstance(node, dict):
+        for k, v in node.items():
+            sub = f"{path}.{k}" if path else k
+            if k == "elements" and isinstance(v, list):
+                for i, el in enumerate(v):
+                    if isinstance(el, dict) and "kind" in el:
+                        yield f"{sub}[{i}]", el
+            yield from design_elements(v, sub)
+    elif isinstance(node, list):
+        for i, v in enumerate(node):
+            yield from design_elements(v, f"{path}[{i}]")
+
+
+# Characters the CJK checks look at: Han (with extensions and compatibility
+# ideographs), kana, bopomofo, hangul, CJK punctuation, fullwidth forms and
+# the vertical and small presentation forms.
+CJK_RE = re.compile(
+    "[\u2e80-\u2fdf\u3000-\u303f\u3040-\u30ff\u3100-\u312f\u3190-\u31ef\u3400-\u4dbf"
+    "\u4e00-\u9fff\uac00-\ud7af\uf900-\ufaff\ufe10-\ufe1f\ufe30-\ufe4f\uff00-\uffef"
+    "\U00020000-\U0003134f]"
+)
+HAN_RE = re.compile("[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\U00020000-\U0003134f]")
+FULLWIDTH_MARKUP = [
+    (re.compile(r"^\s*：：："), "：：：", ":::"),
+    (re.compile(r"^\s*＃{1,6}[ 　]"), "＃", "#"),
+    (re.compile(r"［＾[^］]*］"), "［＾…］", "[^…]"),
+    (re.compile(r"＊＊[^＊]+＊＊"), "＊＊…＊＊", "**…**"),
+]
+LATIN_ONLY_FAMILIES = {"EB Garamond", "Open Sans", "Lora", "Geist", "Fraunces", "Newsreader", "Source Serif 4",
+                       "Alegreya", "Playfair Display", "Merriweather", "Inter", "Roboto"}
+
+
+def check_cjk_lines(name: str, text: str, rep: Report) -> None:
+    """Markup typed with a Chinese or Japanese input method, and ideographic
+    spaces typed as a paragraph indent."""
+    prev_blank = True
+    for i, raw in enumerate(text.split("\n")):
+        where = f"{name}:{i + 1}"
+        for rx, typed, ascii_ in FULLWIDTH_MARKUP:
+            if rx.search(raw):
+                rep.warn(where, f"{typed} typed with an input method prints as text (fullwidthMarkup): type {ascii_}")
+        if prev_blank and raw.startswith("　"):
+            rep.info(where, "paragraph starts with ideographic spaces (U+3000), which the parser drops: "
+                            "indent with bodyText.firstLineIndent {value: 2, unit: 'em'}")
+        prev_blank = not raw.strip()
+
+
+def font_coverage(root: Path, fonts: list[dict]) -> dict[str, list[tuple[str, set[int]]]] | None:
+    """family -> [(variant label, code points the file maps)], or None when
+    fontTools cannot be imported (the coverage check is then skipped)."""
+    try:
+        from fontTools.ttLib import TTFont
+    except ImportError:
+        return None
+    out: dict[str, list[tuple[str, set[int]]]] = {}
+    for f in fonts:
+        for v in f.get("variants", []):
+            path = root / v.get("file", "")
+            if not path.exists():
+                continue
+            try:
+                font = TTFont(str(path), lazy=True, fontNumber=0)
+                cmap = set((font.getBestCmap() or {}).keys())
+            except Exception:  # noqa: BLE001 (a broken file is reported elsewhere)
+                continue
+            label = f"{v.get('weight', 400)}{' italic' if v.get('style') == 'italic' else ''} ({v.get('file')})"
+            out.setdefault(f.get("name", ""), []).append((label, cmap))
+    return out
+
+
+def check_font_files(root: Path, fonts: list[dict], vertical: bool, rep: Report) -> None:
+    """CFF files that postext-pdf embeds whole, variable fonts that print
+    their default instance, and vertical forms for a vertical book."""
+    try:
+        from fontTools.ttLib import TTFont
+    except ImportError:
+        return
+    for f in fonts:
+        for v in f.get("variants", []):
+            path = root / v.get("file", "")
+            if not path.exists():
+                continue
+            try:
+                font = TTFont(str(path), lazy=True, fontNumber=0)
+            except Exception:  # noqa: BLE001
+                continue
+            where = f"font {v.get('file')}"
+            if "CFF " in font and path.stat().st_size > 2 * 1024 * 1024:
+                rep.warn(where, f"CFF outlines, {path.stat().st_size // (1024 * 1024)} MB: postext-pdf embeds CFF fonts whole "
+                                "(cffEmbeddedWhole); subset it or use a TrueType build")
+            if "fvar" in font:
+                rep.warn(where, "a variable font: pdf-lib embeds its default instance, so other weights print at it "
+                                "(variableFontDefaultInstance); cut a static instance per weight (fonts.py instance)")
+            if vertical and has_han(font):
+                feats = set()
+                if "GSUB" in font and font["GSUB"].table.FeatureList:
+                    feats = {r.FeatureTag for r in font["GSUB"].table.FeatureList.FeatureRecord}
+                if not feats & {"vert", "vrt2"}:
+                    rep.warn(where, "the book is vertical but this Chinese face has no `vert` feature: brackets and "
+                                    "punctuation are turned instead of taking their vertical forms (keep layout "
+                                    "features when subsetting: fonts.py subset keeps them)")
+
+
+def has_han(font) -> bool:
+    cmap = font.getBestCmap() or {}
+    return any(0x4E00 <= cp <= 0x9FFF for cp in cmap)
+
+
+def check_cjk_coverage(where: str, chars: dict[str, set[str]], cfg: dict, coverage: dict | None,
+                       fonts: set[str], rep: Report) -> None:
+    """Every CJK character a family sets must be in each of its bundled files:
+    Postext sets one family per style and takes nothing from another family."""
+    for family, used in chars.items():
+        if not used:
+            continue
+        sample = "".join(sorted(used)[:12])
+        if family in LATIN_ONLY_FAMILIES:
+            rep.error(where, f"{len(used)} CJK characters ({sample}…) are set in {family}, which has none: "
+                             "set bodyText/headings fontFamily to a Chinese face (Noto Serif SC/TC, Noto Sans SC/TC)")
+            continue
+        if family not in fonts:
+            rep.warn(where, f"{family} sets {len(used)} CJK characters but is not bundled: its coverage cannot be checked, "
+                            "and the PDF and headless renders need the files")
+            continue
+        if coverage is None:
+            rep.info(where, "install fontTools to check that the bundled fonts cover the CJK text")
+            return
+        for label, cmap in coverage.get(family, []):
+            if "italic" in label:
+                continue
+            missing = sorted(c for c in used if ord(c) not in cmap)
+            if missing:
+                rep.error(where, f"{family} {label} has no glyph for {len(missing)} of the {len(used)} CJK characters it sets: "
+                                 f"{''.join(missing[:20])}{'…' if len(missing) > 20 else ''} (they print as empty boxes; "
+                                 "subset from a face that has them: fonts.py subset --text-from chapters/)")
+
+
+def cjk_chars_by_family(texts: list[tuple[str, str]], cfg: dict) -> dict[str, set[str]]:
+    """The CJK characters each family sets: headings in the headings family
+    (a level may name its own), everything else in the body family."""
+    body = (cfg.get("bodyText") or {}).get("fontFamily") or "EB Garamond"
+    headings = cfg.get("headings") or {}
+    head_default = headings.get("fontFamily") or "Open Sans"
+    level_family = {l.get("level"): l.get("fontFamily") for l in headings.get("levels", [])
+                    if isinstance(l, dict) and l.get("fontFamily")}
+    out: dict[str, set[str]] = defaultdict(set)
+    for _, text in texts:
+        for line in text.split("\n"):
+            m = HEADING_RE.match(line.strip())
+            if m:
+                fam = level_family.get(len(m.group(1)), head_default)
+                out[fam].update(CJK_RE.findall(m.group(2)))
+            else:
+                out[body].update(c for c in CJK_RE.findall(line) if c != "　")
+    return out
+
+
+def check_cjk_locale(where: str, texts: list[tuple[str, str]], cfg: dict, rep: Report) -> None:
+    han = sum(len(HAN_RE.findall(t)) for _, t in texts)
+    if not han:
+        return
+    loc = cfg.get("locale") or ((cfg.get("bodyText") or {}).get("hyphenation") or {}).get("locale")
+    if not loc:
+        rep.warn(where, f"the chapters hold {han} Chinese characters but config.locale is not set: set 'zh-Hans' or "
+                        "'zh-Hant' with the region ('zh-Hans-CN', 'zh-Hant-TW', 'zh-Hant-HK'); the region picks line "
+                        "breaking and punctuation widths, the script the built-in 图/圖 strings")
+        return
+    lang = re.split(r"[-_]", loc)[0].lower()
+    if lang == "zh" and not re.search(r"(?i)[-_](hans|hant|cn|sg|my|tw|hk|mo)\b", loc):
+        rep.warn(where, f"config.locale {loc!r} names no script: it reads as Simplified, mainland; write 'zh-Hans' or "
+                        "'zh-Hant' (with the region)")
+    elif lang not in ("zh", "ja", "ko"):
+        latin = sum(len(re.findall(r"[A-Za-z]+", t)) for _, t in texts)
+        if han > 4 * latin:
+            rep.warn(where, f"the chapters are mostly Chinese ({han} characters) but config.locale is {loc!r}: the "
+                            "Chinese defaults (region, emphasis dots, strings, index groups) follow a zh locale")
 
 
 def style_ids(cfg: dict) -> dict[str, set[str]]:
@@ -534,6 +722,8 @@ def main() -> None:
         if "source" in r:
             rep.info(where, "`source` is extraction metadata: drop it from the final manifest")
 
+    coverage = ...  # loaded on the first locale with CJK text
+    font_files_checked = False
     for lang in langs:
         specs = chapters.get(lang) or []
         loc = (m.get("localized") or {}).get(lang, {})
@@ -552,13 +742,28 @@ def main() -> None:
         index: dict = {"marks": [], "printed": set()}
         if not specs:
             rep.error("preset.json", f"no chapters for {lang}")
+        texts: list[tuple[str, str]] = []
         for i, c in enumerate(specs):
             p = root / c.get("file", "")
             if not p.exists():
                 rep.error("preset.json", f"missing chapter file {c.get('file')}")
                 continue
-            check_markdown(c["file"], p.read_text(encoding="utf-8"), i, ids, res_ids, rep, embedded, referenced, index)
+            chapter = p.read_text(encoding="utf-8")
+            texts.append((c["file"], chapter))
+            check_markdown(c["file"], chapter, i, ids, res_ids, rep, embedded, referenced, index)
+            if CJK_RE.search(chapter):
+                check_cjk_lines(c["file"], chapter, rep)
         check_index(index, rep, lang)
+        if any(CJK_RE.search(t) for _, t in texts):
+            check_cjk_locale(f"config ({lang})", texts, cfg, rep)
+            if coverage is ...:
+                coverage = font_coverage(root, m.get("fonts", []))
+            check_cjk_coverage(f"fonts ({lang})", cjk_chars_by_family(texts, cfg), cfg, coverage, fonts, rep)
+            if not font_files_checked:
+                vertical = any(((cf.get("layout") or {}).get("writingMode") == "vertical-rl")
+                               for cf in [shared] + [(x.get("config") or {}) for x in (m.get("localized") or {}).values()])
+                check_font_files(root, m.get("fonts", []), vertical, rep)
+                font_files_checked = True
         # placement sanity
         types = {t.get("id"): t for t in cfg.get("resourceTypes", []) if isinstance(t, dict)} if isinstance(cfg.get("resourceTypes"), list) else {}
         design_refs = set(re.findall(r'"resourceId":\s*"([^"]+)"', json.dumps(cfg)))

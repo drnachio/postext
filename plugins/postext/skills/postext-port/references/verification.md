@@ -17,7 +17,9 @@ Fix every ERROR. Common ones:
 - unknown callout types, paragraph styles, heading styles or resource ids;
 - a bitmap without `width`/`height`;
 - `em` in page, gutter, body size or heading sizes (the layout throws);
-- `config.customFonts` written by hand.
+- `config.customFonts` written by hand;
+- Chinese, Japanese or Korean characters a bundled face has no glyph for, or set in a Latin face such as the
+  default EB Garamond or Open Sans (checked with fontTools; they would print as empty boxes).
 
 Read every WARN:
 
@@ -25,7 +27,10 @@ Read every WARN:
 - a missing header design (the default one is blue Open Sans);
 - font families that are not bundled;
 - odd `$`;
-- a `here` resource that is never embedded.
+- a `here` resource that is never embedded;
+- Chinese text with no `config.locale`, or `locale: 'zh'` with no script;
+- markup typed with an input method (`：：：`, `＃`, `［＾…］`, `＊＊`);
+- a CFF font over 2 MB, a variable font, a vertical book whose Chinese face lacks `vert`.
 
 ## 2. Headless layout
 
@@ -49,6 +54,16 @@ node scripts/render.mjs my-book --lang es --out /tmp/my-book.pdf --png /tmp/page
   `＊＊…＊＊`) is set as text, and an attribute key outside ASCII (`作者=曹雪芹`) is
   dropped. Retype the ASCII form the warning names; keys are ASCII, values any script.
 - `PROBLEM font families used but not bundled`: add the files to `fonts[]`.
+- `WARN cjkLooseLine` (Chinese): a justified line could not be spread to the measure without more than half
+  an em between its characters and was set short. Usually a long Latin word or URL: reword, or let it be.
+- `WARN cjkMarksExceedLeading|rubyExceedsLeading`: emphasis dots, name lines or ruby readings do not fit in
+  the line gap. Give the paragraph (or the book) more leading.
+- `WARN rotateIgnoredVertical`: a figure with `placement.rotate` is cited in vertical text, where figures
+  already stand upright. Remove the rotation.
+- `CONFIG cjkGridClamped`: `cjk.grid` asked for more characters or lines than the margins leave room for.
+- `PDF-WARN missingGlyph` (with `--out`): characters no file of a face has a glyph for; they print as
+  empty boxes. `variableFontDefaultInstance`: a variable font printed at its default weight.
+  `cffEmbeddedWhole`: a CFF font over 2 MB embedded whole. Fix the font files (playbooks E6).
 - `NOTE preset.json has no "configVersion"` (or an older one): the config is
   laid out, as in the Sandbox, with the postext 1.4 rules the line names
   (heading breaks, formula size, space around inline resources, plain
@@ -76,6 +91,16 @@ Look at the sheet, then at single pairs:
   numbering;
 - page breaks: aim for the same pages as the source on most pages, and
   within ±1 page per chapter.
+
+Chinese books, page by page:
+- lines never start with 、，。）」》 or end with 「（《 (the region's `lineBreak`), and a justified line ends in
+  the same cell as the others;
+- punctuation sits where the source puts it (corner or centred) and takes the source's widths
+  (full width or Kaiming): compare a line with several marks;
+- no paragraph ends on a single character (孤字) where the source avoided one;
+- a right-bound book: page 1 on the left of its spread; compare spreads right to left;
+- vertical text: brackets and quotes in their vertical forms, short numbers upright, Latin sideways, the
+  running heads where the source has them (horizontal, fore-edge, outer foot).
 
 ## 4. The real viewer
 
@@ -118,6 +143,12 @@ the page images instead of claiming the port is visually verified.
 | Text in a figure in the wrong font | outline the text, or embed `@font-face` subsets in the SVG |
 | Blank figure in the browser | too many nested SVG filters: flatten |
 | Page count differs by one per chapter | a copy-fitted source (`compact` style), or accept it and note it |
+| Chinese lines a character longer or shorter than the source's | `cjk.grid` `charsPerLine`; the region's `punctuationWidth` (Kaiming vs full width) and `compressAdjacent` |
+| Chinese punctuation in the wrong corner | the region (`locale` / `cjk.region`) and a face of that region (SC/TC/HK) must agree |
+| Empty boxes in the PDF | `missingGlyph`: the face lacks the character; rebuild the subset from the final text (playbooks E6) |
+| Bold Chinese headings print regular | a variable font: cut a static 700 instance (`variableFontDefaultInstance`) |
+| Vertical brackets turned instead of vertical forms | the face lost `vert` in subsetting: use `fonts.py subset`, which keeps it |
+| A vertical book's spreads read left to right in the PDF viewer | Chrome's viewer ignores `/Direction /R2L`; Acrobat and Foxit follow it |
 
 Accept remaining deviations explicitly and list them as known gaps, for
 example a paragraph the source wraps around a box, or a caption set 1–5 %
