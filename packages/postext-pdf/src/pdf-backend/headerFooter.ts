@@ -236,9 +236,20 @@ function renderBoxBlock(ctx: PageCtx, block: VDTDesignBoxBlock): void {
 }
 
 /** Image block (e.g. a callout icon): drawn from the preloaded resource
- *  image map, with a neutral placeholder when the image is absent. */
-function renderImageBlock(ctx: PageCtx, block: VDTDesignImageBlock, images: ResourceImageMap | undefined): void {
+ *  image map, with a neutral placeholder when the image is absent. `tag`
+ *  routes the picture in an accessible render (a `Figure`, an artifact):
+ *  it runs where the picture is painted, inside the turned frame of a
+ *  vertical page, since entering a frame ends the open marked-content
+ *  sequence. */
+function renderImageBlock(
+  ctx: PageCtx,
+  block: VDTDesignImageBlock,
+  images: ResourceImageMap | undefined,
+  tag?: () => void,
+): void {
   const { x, y, width, height } = block.bbox;
+  const turned = !!ctx.vertical && width > 0 && height > 0;
+  if (!turned) tag?.();
   if (width <= 0 || height <= 0) return;
   const embedded = images?.get(block.fileId);
   const draw = (bx: number, by: number, bw: number, bh: number): void => {
@@ -259,6 +270,7 @@ function renderImageBlock(ctx: PageCtx, block: VDTDesignImageBlock, images: Reso
   // sized for that (`upright`) is filled; any other picture (a callout
   // icon) is fitted inside it, keeping its proportions.
   pushFrame(ctx, quarterTurnMatrix({ direction: 'ccw', originX: x, originY: y + height }, ctx.scale, ctx.pageHeightPt));
+  tag?.();
   if (block.upright) draw(0, 0, height, width);
   else {
     const k = Math.min(height / width, width / height);
@@ -285,8 +297,8 @@ export function renderHeaderFooterSlot(
       // heading).
       const hasText = !!mark.text && slot.blocks.some((b) => b.kind === 'text' && !b.artifact);
       const { x, y, width, height } = block.bbox;
-      tagContent(ctx, mark.figure(block.altText, figureLayout(ctx, x, y, width, height), hasText ? mark.text!() : undefined));
-      renderImageBlock(ctx, block, images);
+      const figure = mark.figure(block.altText, figureLayout(ctx, x, y, width, height), hasText ? mark.text!() : undefined);
+      renderImageBlock(ctx, block, images, () => tagContent(ctx, figure));
       continue;
     }
     if (block.kind === 'box' && block.clip) {
@@ -299,9 +311,12 @@ export function renderHeaderFooterSlot(
       popClip(ctx);
       continue;
     }
+    if (block.kind === 'image') {
+      renderImageBlock(ctx, block, images, mark ? () => tagArtifact(ctx, mark.artifact) : undefined);
+      continue;
+    }
     if (mark) tagArtifact(ctx, mark.artifact);
     if (block.kind === 'rule') renderRuleBlock(ctx, block);
-    else if (block.kind === 'image') renderImageBlock(ctx, block, images);
     else renderBoxBlock(ctx, block);
   }
 }

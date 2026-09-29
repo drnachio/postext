@@ -32,6 +32,7 @@ const PNG = Uint8Array.from(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAIAAAB
 const resources: Resource[] = [
   { id: 'plate', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0, bitmap: { fileId: 'plate.png', format: 'png', width: 200, height: 100 } },
 ];
+const described: Resource[] = [{ ...resources[0]!, altText: '石頭與美玉' }];
 
 const config = (writingMode: 'vertical-rl' | 'horizontal-tb'): PostextConfig => ({
   page: { dpi: 72, width: pt(300), height: pt(420), margins: { top: pt(30), bottom: pt(30), left: pt(30), right: pt(30) } },
@@ -117,5 +118,41 @@ describe('a design picture in the flow of a vertical page (#200)', () => {
     expect([Math.abs(b), Math.abs(c)]).toEqual([0, 0]);
     expect(a).toBeCloseTo(60, 3);
     expect(d).toBeCloseTo(30, 3);
+  });
+});
+
+/** The marked-content sequence open at each image `Do` of a content
+ *  stream (its tag, `/Figure` or `/Artifact`), or `null` outside any. */
+function imageTags(content: string): (string | null)[] {
+  const out: (string | null)[] = [];
+  const open: string[] = [];
+  const tokens = content.replace(/\((?:\\.|[^\\)])*\)|<[0-9A-Fa-f\s]*>/g, ' ').replace(/<<[^>]*>>/g, ' ').split(/\s+/).filter(Boolean);
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i]!;
+    if (t === 'BDC' || t === 'BMC') {
+      // The tag is the last name before the operator (and its properties).
+      const name = tokens.slice(0, i).reverse().find((x) => x.startsWith('/'));
+      open.push(name ?? '?');
+    } else if (t === 'EMC') open.pop();
+    else if (t === 'Do' && /^\/Image/.test(tokens[i - 1] ?? '')) out.push(open[open.length - 1] ?? null);
+  }
+  return out;
+}
+
+describe('a design picture on a vertical page in a tagged PDF (#200, #213)', () => {
+  const render = async (writingMode: 'vertical-rl' | 'horizontal-tb', res: Resource[]) => {
+    const doc = buildDocument({ markdown: '# 甄士隱\n\n此開卷第一回也。', resources: res }, config(writingMode));
+    const pdf = await PDFDocument.load(await renderToPdf(doc, { fontProvider, resourceBytes: (id) => (id === 'plate.png' ? PNG : undefined) }));
+    return imageTags(pageContent(pdf, 0));
+  };
+
+  it('paints a picture with alternative text inside its Figure', async () => {
+    expect(await render('vertical-rl', described)).toEqual(['/Figure']);
+    expect(await render('horizontal-tb', described)).toEqual(['/Figure']);
+  });
+
+  it('paints a picture without alternative text inside an artifact', async () => {
+    expect(await render('vertical-rl', resources)).toEqual(['/Artifact']);
+    expect(await render('horizontal-tb', resources)).toEqual(['/Artifact']);
   });
 });
