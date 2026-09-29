@@ -3,9 +3,11 @@ title: "三國演義"
 author: "羅貫中"
 ---
 
-# 三國演義 {style="title" editor="毛宗崗　評" colophon="Luo Guanzhong, Romance de los Tres Reinos, capítulo 1, en la versión de Mao Zonggang (hacia 1679). Texto: Wikisource en chino, revisión 2583915, CC BY-SA 4.0. Lámina: xilografía de la edición de Yu Xiangdou, 1592. Compuesto en Noto Serif TC, LXGW WenKai TC y Noto Sans TC (SIL OFL)."}
+# 三國演義 {style="title" editor="毛宗崗　評" colophon="Luo Guanzhong, *Romance de los Tres Reinos*, capítulo 1,\nen la versión de Mao Zonggang (hacia 1679).\nTexto: Wikisource en chino, revisión 2583915, CC BY-SA 4.0; un carácter corregido.\nLámina: xilografía de la edición de Yu Xiangdou, 1592.\nCompuesto en Noto Serif TC, LXGW WenKai TC, Noto Sans TC y Source Serif 4 (SIL OFL)."}
 
 # 桃園結義 {style="plate" note="明萬曆二十年余象斗刊《三國志傳評林》插圖"}
+
+:::numbering{startAt=1}
 
 # 宴桃園豪傑三結義 \\ 斬黃巾英雄首立功
 

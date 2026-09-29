@@ -3,9 +3,11 @@ title: "三國演義"
 author: "羅貫中"
 ---
 
-# 三國演義 {style="title" editor="毛宗崗　評" colophon="Luo Guanzhong, Romance of the Three Kingdoms, chapter 1, in the recension of Mao Zonggang (about 1679). Text: Chinese Wikisource, revision 2583915, CC BY-SA 4.0. Plate: woodcut from the edition of Yu Xiangdou, 1592. Set in Noto Serif TC, LXGW WenKai TC and Noto Sans TC (SIL OFL)."}
+# 三國演義 {style="title" editor="毛宗崗　評" colophon="Luo Guanzhong, *Romance of the Three Kingdoms*, chapter 1,\nin the recension of Mao Zonggang (about 1679).\nText: Chinese Wikisource, revision 2583915, CC BY-SA 4.0; one character corrected.\nPlate: woodcut from the edition of Yu Xiangdou, 1592.\nSet in Noto Serif TC, LXGW WenKai TC, Noto Sans TC and Source Serif 4 (SIL OFL)."}
 
 # 桃園結義 {style="plate" note="明萬曆二十年余象斗刊《三國志傳評林》插圖"}
+
+:::numbering{startAt=1}
 
 # 宴桃園豪傑三結義 \\ 斬黃巾英雄首立功
 

@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 075 · A vertical Chinese novel, bound on the right ════════
 // https://postext.dev/en/cookbook/vertical-novel-right-bound
 // Code: MIT · Text: 三國演義 ch. 1, zh.wikisource (CC BY-SA 4.0) · Plate: woodcut, 1592 (PD)
-// Fonts: Noto Serif TC, LXGW WenKai TC, Noto Sans TC (SIL OFL 1.1) · Needs postext ≥ 1.9.0
+// Fonts: Noto Serif TC, LXGW WenKai TC, Noto Sans TC, Source Serif 4 (OFL) · Needs postext ≥ 1.9.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
   loadVerticalAlternates,
@@ -26,8 +26,14 @@ const colorPalette = [
 ];
 // #endregion
 const [SONG, KAI, HEI] = ['Noto Serif TC', 'LXGW WenKai TC', 'Noto Sans TC']; // 宋, 楷, 黑
+const ROMAN = 'Source Serif 4'; // the imprint: Noto Serif TC has no italic
 const [BODY, LEAD] = [10.5, 19]; // pt: 五號 text on a column pitch of 1.8 em
 const cols = (n) => pt(n * LEAD); // n columns across the page
+const PT = 25.4 / 72; // mm in a point
+// workaround: a design text set down a vertical page lands off the middle of its column,
+// by 0.3 × its line − 0.38 × its size (leftward when positive): the baseline sits at 0.8 of
+// the line and each character is centred 0.38 em above it. The pen moves it back.
+const offAxis = (size, line) => 0.3 * line - 0.38 * size; // pt
 
 // #region answer: vertical text on a 25開 page, bound on the right, 40 characters × 16 columns
 // 'vertical-rl' turns the flow a quarter turn: lines run down, columns from right to left,
@@ -39,7 +45,7 @@ const page = {
   backgroundColor: col('paper'),
   // 天頭 above 地腳; left is the spine side (the right edge of a left-hand page).
   margins: { top: mm(32), bottom: mm(26), left: mm(16), right: mm(22), mirror: true },
-  pageNumbering: { format: 'trad-chinese-informal' }, // folios 一, 二 … 十一
+  pageNumbering: { format: 'trad-chinese-informal' }, // folios 一, 二 … 九, from the chapter
 };
 const layout = { layoutType: 'single', writingMode: 'vertical-rl' };
 const cjk = { grid: { enabled: true, charsPerLine: 40, linesPerPage: 16 } };
@@ -62,7 +68,7 @@ const title = (id, content, x, family, weight) => ({ kind: 'text', id, content,
   fontFamily: family, fontWeight: weight, fontSize: pt(TITLE), lineHeight: PITCH / TITLE,
   color: col('ink'), align: 'left', // the head of the column
   placement: { anchor: { to: 'container', edge: 'top-left' },
-    offset: { x: pt(x), y: pt(LEAD) } } });
+    offset: { x: pt(x), y: pt(LEAD - offAxis(TITLE, PITCH)) } } }); // centred between rules
 const opener = {
   enabled: true,
   minHeight: cols(5), // a blank column, the two title columns, a blank one: 5 × 19 pt
@@ -94,23 +100,31 @@ const none = { elements: [] };
 // page from the right edge of the type area.
 const at = (down, across) => ({ anchor: { to: 'container', edge: 'top-left' },
   offset: { x: mm(down), y: mm(across) } });
+// The title slip (題簽), 96 × 22 mm: its axis, 55 mm in from the right of the type area, is
+// the axis of the page, and of the imprint under it.
+const SLIP = { down: 10, across: 44, long: 96, wide: 22 };
+const AXIS = SLIP.across + SLIP.wide / 2;
+const slip = (id, inset, thickness) => ({ kind: 'box', id,
+  placement: { ...at(SLIP.down + inset, SLIP.across + inset),
+    size: { width: mm(SLIP.long - 2 * inset), height: mm(SLIP.wide - 2 * inset) } },
+  style: { borderColor: col('vermilion'), borderWidth: pt(thickness) } });
+const RUN = (4 * 40 + 3 * 10) * PT; // 三國演義 down the slip: four 40 pt characters, 3 gaps
 const titlePage = {
   id: 'title', numbered: false, toc: false, span: 'page', header: none,
   breakBefore: { enabled: true, parity: 'any' },
   footer: { elements: [{ kind: 'text', id: 'imprint', content: '{attr.colophon}',
-    fontFamily: SONG, fontSize: pt(6.5), lineHeight: 1.4, color: col('muted'),
-    overflow: 'wrap', align: 'left', // an imprint in the edition's language, set across
-    placement: { anchor: { to: 'container', edge: 'top-left' }, offset: { y: mm(5) },
-      size: { width: 'fill' } } }] },
+    fontFamily: ROMAN, fontSize: pt(6.5), lineHeight: 1.4, color: col('muted'),
+    // In the edition's language, set across and centred on the axis: the box runs from the
+    // left of the type area (16 columns) as far past the axis. Each \n in the attribute
+    // starts a line, and *…* sets the book's title in italic.
+    inlineMarks: true, overflow: 'wrap', align: 'center',
+    placement: { anchor: { to: 'container', edge: 'top-left' }, offset: { y: mm(4) },
+      size: { width: mm(2 * (16 * LEAD * PT - AXIS)) } } }] },
   advancedDesign: { enabled: true, minHeight: cols(16), slot: { elements: [
-    // The title slip (題簽): a heavy and a light vermilion rule.
-    { kind: 'box', id: 'slip', placement: { ...at(10, 44), size: { width: mm(96),
-      height: mm(22) } }, style: { borderColor: col('vermilion'), borderWidth: pt(1.4) } },
-    { kind: 'box', id: 'slip-in', placement: { ...at(11.2, 45.2), size: { width: mm(93.6),
-      height: mm(19.6) } }, style: { borderColor: col('vermilion'), borderWidth: pt(0.4) } },
+    slip('slip', 0, 1.4), slip('slip-in', 1.2, 0.4), // a heavy and a light vermilion rule
     { kind: 'text', id: 'book', content: '{titleText}', fontFamily: SONG, fontWeight: 700,
       fontSize: pt(40), lineHeight: 1, letterSpacing: pt(10), color: col('ink'),
-      placement: at(20, 48) },
+      placement: at(SLIP.down + (SLIP.long - RUN) / 2, AXIS - (20 + offAxis(40, 40)) * PT) },
     { kind: 'text', id: 'author', content: '{author}　著', fontFamily: KAI, fontSize: pt(12),
       color: col('ink'), placement: at(52, 72) },
     { kind: 'text', id: 'editor', content: '{attr.editor}', fontFamily: KAI, fontSize: pt(12),
@@ -121,7 +135,7 @@ const titlePage = {
 // the type area: on this right-hand page that is where the outer margin starts. The page's
 // header draws it on the sheet (workaround: postext-pdf turns a picture drawn in the flow);
 // the heading's design sets the caption down the column on its left.
-const PLATE = { right: 8.3, top: 5.1, h: 138, w: (138 * 815) / 1433 }; // mm
+const PLATE = { right: 8.3, top: 5.1, h: 138, w: (138 * 806) / 1427 }; // mm
 const fromCorner = (inset) => ({ anchor: { to: 'outer', edge: 'top-left' },
   offset: { x: mm(-(PLATE.right + PLATE.w + inset)), y: mm(PLATE.top - inset) } });
 const frame = (id, inset, thickness) => ({ kind: 'box', id,
@@ -145,7 +159,7 @@ const plate = {
 };
 const resources = [{
   id: 'peach-garden', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0,
-  bitmap: { fileId: 'peach-garden.jpg', format: 'jpeg', width: 815, height: 1433 },
+  bitmap: { fileId: 'peach-garden.jpg', format: 'jpeg', width: 806, height: 1427 },
   caption: '桃園結義',
   altText: '桃園結義圖：劉備、關羽、張飛立於祭桌前，桌上香爐燭臺與三杯酒，旁有烏牛白馬。',
 }];
@@ -182,6 +196,7 @@ const FONTS = {
   'Noto Serif TC': ['400', '700'], // 宋: the text; 700 for 第一回 and the title
   'LXGW WenKai TC': ['400'], // 楷: the couplet, the 詞 and the poems, the plate's note
   'Noto Sans TC': ['400'], // 黑: the fore-edge heads and folios, the plate's title
+  'Source Serif 4': ['400', '400i'], // the imprint, with the book's title in italic
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
@@ -192,14 +207,14 @@ const FONTS = {
 const heads = markdown.match(/^# .*$/gm).join('').replace(/\{[^}]*\}/g, ''); // no attributes
 const attr = (key) => markdown.match(new RegExp(`${key}="([^"]*)"`))?.[1] ?? '';
 const verse = markdown.match(/:::paragraphs\{style="verse"\}[\s\S]*?\n:::/g).join('');
-await loadFonts(FONTS, markdown); // their Latin files: the imprint
+await loadFonts(FONTS, markdown); // the Latin files: the imprint
 await loadCjkFonts({ [SONG]: ['400'] }, markdown, { vertical: true });
 await loadCjkFonts({ [SONG]: ['700'] }, '三國演義第一回'); // no punctuation: no vertical twin
 await loadCjkFonts({ [KAI]: ['400'] }, `${heads}${verse}${attr('editor')}${attr('note')}羅貫中著`,
   { vertical: true });
 await loadCjkFonts({ [HEI]: ['400'] }, `${heads}第回一二三四五六七八九十`, { vertical: true });
 // #endregion
-await loadImage('peach-garden.jpg', asset('peach-garden-oath-1592.jpg'));
+await loadImage('peach-garden.jpg', asset('peach-garden-oath-1592-v2.jpg'));
 const doc = await buildWithFonts(
   () => buildDocument({ markdown, resources }, config()), markdown);
 // workaround: a canvas takes its text direction from the page, and showBook sets

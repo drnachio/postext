@@ -64,6 +64,10 @@
     {
       "package": "postext",
       "note": "renderPageToCanvas paints with the direction the canvas inherits from the page (ctx.direction 'inherit'); the cjk kit's showBook sets dir=\"rtl\" on each spread of a right-bound book, so horizontal Latin text (the title page's imprint) is reordered by the bidi algorithm and anchored from the right, and letter-spaced text (the title) shifts. The pen sets #pages canvas { direction: ltr }; the fix belongs in renderPageToCanvas (set ctx.direction = 'ltr') or in the kit's showBook style."
+    },
+    {
+      "package": "postext",
+      "note": "a design text in a vertical flow is centred off the middle of its column: design/layout.ts puts a line's baseline at 0.8 of the line height and the vertical painter (canvas-backend/verticalText.ts, and postext-pdf the same) centres each character 0.38 em above the baseline, so the characters land at 0.8 × line − 0.38 em instead of line / 2, 3.4 pt too far left for the 13.5/28.5 pt couplet and 3.2 pt too far right for the 40/40 pt title. The pen moves both back with offAxis(size, line) = 0.3 × line − 0.38 × size; the fix is to centre the axis at the line's top + line height / 2 in vertical flows, in the canvas and in postext-pdf, after which offAxis goes."
     }
   ],
   "engine": {
@@ -119,8 +123,8 @@
     "text": [
       {
         "what": {
-          "en": "三國演義 (Romance of the Three Kingdoms), chapter 1, Mao Zonggang recension (about 1679); Wikisource transcription, revision 2583915",
-          "es": "三國演義 (Romance de los Tres Reinos), capítulo 1, versión de Mao Zonggang (hacia 1679); transcripción de Wikisource, revisión 2583915"
+          "en": "三國演義 (Romance of the Three Kingdoms), chapter 1, Mao Zonggang recension (about 1679); Wikisource transcription, revision 2583915, with one character corrected (颙 → 顒)",
+          "es": "三國演義 (Romance de los Tres Reinos), capítulo 1, versión de Mao Zonggang (hacia 1679); transcripción de Wikisource, revisión 2583915, con un carácter corregido (颙 → 顒)"
         },
         "who": "Luo Guanzhong; transcription by Wikisource editors",
         "source": "https://zh.wikisource.org/w/index.php?title=%E4%B8%89%E5%9C%8B%E6%BC%94%E7%BE%A9/%E7%AC%AC001%E5%9B%9E&oldid=2583915",
@@ -130,13 +134,13 @@
     "images": [
       {
         "what": {
-          "en": "桃園結義 (The Oath in the Peach Garden), woodcut from Yu Xiangdou’s 新刊京本校正演義全像三國志傳評林, Jianyang, 1592 (Waseda University Library); scan from Wikimedia Commons, cropped inside its frame, cleaned and toned to the page’s ink and paper",
-          "es": "桃園結義 (El juramento del jardín de los melocotoneros), xilografía de la edición de Yu Xiangdou, 新刊京本校正演義全像三國志傳評林, Jianyang, 1592 (Biblioteca de la Universidad de Waseda); escaneado de Wikimedia Commons, recortado dentro del marco, limpiado y entonado con la tinta y el papel de la página"
+          "en": "桃園結義 (The Oath in the Peach Garden), woodcut from Yu Xiangdou’s 新刊京本校正演義全像三國志傳評林, Jianyang, 1592 (Waseda University Library); scan from Wikimedia Commons, cropped inside its frame and clear of what was left of it, cleaned and toned to the page’s ink and paper",
+          "es": "桃園結義 (El juramento del jardín de los melocotoneros), xilografía de la edición de Yu Xiangdou, 新刊京本校正演義全像三國志傳評林, Jianyang, 1592 (Biblioteca de la Universidad de Waseda); escaneado de Wikimedia Commons, recortado dentro del marco y sin los restos de este, limpiado y entonado con la tinta y el papel de la página"
         },
         "who": "Yu Xiangdou (publisher), anonymous block cutter",
         "source": "https://commons.wikimedia.org/wiki/File:%E6%A1%83%E5%9B%AD%E4%B8%89%E7%BB%93%E4%B9%89%EF%BC%88%E4%BD%99%E8%B1%A1%E6%96%97%E8%AF%84%E6%9C%AC%EF%BC%89.png",
         "license": "PD",
-        "file": "peach-garden-oath-1592.jpg"
+        "file": "peach-garden-oath-1592-v2.jpg"
       }
     ],
     "fonts": [
@@ -150,6 +154,10 @@
       },
       {
         "family": "Noto Sans TC",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Source Serif 4",
         "license": "OFL-1.1"
       }
     ]

@@ -212,6 +212,10 @@ export interface PunctuationBox {
    *  between the two ({@link applyLineEdges}). */
   pairStart?: number;
   pairEnd?: number;
+  /** The blank of a Kaiming stop before it that a closing mark holds after
+   *  its glyph, px ({@link carryStopBlank}): it goes when the mark opens a
+   *  line ({@link applyLineEdges}). */
+  carry?: number;
 }
 
 /** A mark's advance now: its full advance less the blank it gave up. */
@@ -336,6 +340,31 @@ export function compressPair(a: PunctuationBox, b: PunctuationBox): void {
   }
 }
 
+/**
+ * Under Kaiming a stop mark keeps its blank inside the line and a closing
+ * mark gives its own up, so where the two meet (。” ？” 。）) the stop's half
+ * em would stand between them and the quote would read as the next
+ * character's. The blank goes after the closing mark instead: 。”␣, the
+ * glyphs together, as full width with `compressAdjacent` sets them; the
+ * pair keeps its width. A closing mark after that one takes the blank on
+ * (。”）␣). The blank is still the stop's: it goes at a line end
+ * ({@link lineEndTrim}), gives way with the stop marks' to take in a
+ * character ({@link punctuationShrink}), and returns to the stop when the
+ * line breaks between the two. Mainland marks only (in the corner of their
+ * box): a centred mark keeps its blank on both sides.
+ */
+export function carryStopBlank(a: PunctuationBox, b: PunctuationBox): void {
+  if (b.cls !== 'closing' || b.side !== 'end' || a.side !== 'end') return;
+  if (!isStop(a) && !a.carry) return;
+  const moved = Math.min(Math.max(0, blankEnd(a)), b.cutEnd);
+  if (moved <= 1e-9) return;
+  a.cutEnd += moved;
+  a.pairEnd = (a.pairEnd ?? 0) + moved;
+  if (a.carry) a.carry = Math.max(0, a.carry - moved);
+  b.cutEnd -= moved;
+  b.carry = (b.carry ?? 0) + moved;
+}
+
 /** The blank a mark gives up when it opens a line: an opening bracket or
  *  quote its start half, with `trimLineStart` (clreq §6.3.2.3). */
 export function lineStartTrim(box: PunctuationBox | undefined, c: CjkComposition): number {
@@ -345,14 +374,15 @@ export function lineStartTrim(box: PunctuationBox | undefined, c: CjkComposition
 
 /** The blank a mark gives up when it ends a line: every mark under
  *  `lineEndHalf` (GB/T 15834—2011 §5.1.10), the stop marks under
- *  `kaiming` (the rest are half already), a closing bracket or quote with
+ *  `kaiming` (the rest are half already, but for a closing mark holding a
+ *  stop's blank, {@link carryStopBlank}), a closing bracket or quote with
  *  `trimLineStart` (clreq §6.3.2.3). A centred mark gives up a quarter em
  *  each side. */
 export function lineEndTrim(box: PunctuationBox | undefined, c: CjkComposition): number {
   if (!box || box.side === 'start') return 0;
   const rest = box.side === 'both' ? Math.max(0, blankStart(box)) + Math.max(0, blankEnd(box)) : Math.max(0, blankEnd(box));
   if (c.punctuationWidth === 'lineEndHalf') return rest;
-  if (c.punctuationWidth === 'kaiming' && isStop(box)) return rest;
+  if (c.punctuationWidth === 'kaiming' && (isStop(box) || box.cls === 'closing')) return rest;
   if (c.trimLineStart && box.cls === 'closing') return rest;
   return 0;
 }
@@ -386,6 +416,11 @@ export function applyLineEdges(box: PunctuationBox, c: CjkComposition, start: bo
       box.cutStart -= box.pairStart;
       box.pairStart = 0;
     }
+    if (box.carry) {
+      // The stop whose blank it held ends the line before.
+      box.cutEnd += box.carry;
+      box.carry = 0;
+    }
     applyLineTrim(box, lineStartTrim(box, c), 0);
   }
   if (end) {
@@ -401,7 +436,7 @@ export function applyLineEdges(box: PunctuationBox, c: CjkComposition, start: bo
 /** What {@link applyLineEdges} would give up at the edges, leaving `box`
  *  as it is. */
 export function lineEdgeCut(box: PunctuationBox, c: CjkComposition, start: boolean, end: boolean): number {
-  if (!(start && box.pairStart) && !(end && box.pairEnd)) {
+  if (!(start && (box.pairStart || box.carry)) && !(end && box.pairEnd)) {
     // Nothing comes back: the trims alone (an opening mark's start trim and
     // an end trim never touch the same blank).
     return (start ? lineStartTrim(box, c) : 0) + (end ? lineEndTrim(box, c) : 0);
@@ -417,14 +452,16 @@ export function lineEdgeCut(box: PunctuationBox, c: CjkComposition, start: boole
  * grid); `halfwidth` marks have nothing left; `kaiming` lets its stop marks
  * go down to half an em, last (only to resolve a prohibition: a line that
  * merely falls short is spread, so Kaiming keeps 。？！ one em inside the
- * line); `lineEndHalf` lets every mark go down to half an em.
+ * line), and with them the stop's blank a closing mark holds
+ * ({@link carryStopBlank}); `lineEndHalf` lets every mark go down to half an
+ * em.
  */
 export function punctuationShrink(box: PunctuationBox | undefined, c: CjkComposition): number {
   if (!box) return 0;
   const rest = Math.max(0, box.blank - boxCut(box));
   switch (c.punctuationWidth) {
     case 'kaiming':
-      return isStop(box) ? rest : 0;
+      return isStop(box) || box.carry ? rest : 0;
     case 'lineEndHalf':
       return rest;
     default:
@@ -440,8 +477,9 @@ export function shrinkPunctuation(box: PunctuationBox, amount: number): number {
 
 /** The step of clreq §6.2.2.3's reduction order a mark belongs to:
  *  interpuncts, then brackets, then pause marks, then (after the Han–Latin
- *  spaces) stop marks. */
+ *  spaces) stop marks, and a closing mark holding a stop's blank. */
 export function shrinkStep(box: PunctuationBox): number {
+  if (box.carry) return 6;
   switch (box.cls) {
     case 'interpunct': return 2;
     case 'opening': case 'closing': return 3;

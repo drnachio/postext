@@ -94,6 +94,57 @@ describe('punctuation widths (clreq §6.3.2)', () => {
     expect(pairWidth(untouched, '。”')).toBe(32);
   });
 
+  it('sets a Kaiming stop close to the closing mark after it, the blank after the pair (。”␣, not 。␣”)', () => {
+    // Each mark's advance and where its glyph is painted from its box.
+    const marks = (line: VDTLine, pair: string): [number, number][] => {
+      const a = advances(line);
+      const chars = [...pair];
+      const i = a.findIndex((_, k) => chars.every((c, j) => a[k + j]?.ch === c));
+      expect(i).toBeGreaterThanOrEqual(0);
+      return chars.map((_, j) => [a[i + j]!.w, a[i + j]!.seg.inkOffset ?? 0]);
+    };
+    for (const compressAdjacent of [true, false]) {
+      const kaiming = lines(DIALOGUE, 2000, comp({ compressAdjacent }))[0]!;
+      // The stop is its glyph alone; the quote takes the stop's half em after its own glyph.
+      expect(marks(kaiming, '？”')).toEqual([[8, 0], [16, 0]]);
+      expect(marks(kaiming, '。”')).toEqual([[8, 0], [16, 0]]);
+      // As full width with compressAdjacent sets them.
+      const full = lines(DIALOGUE, 2000, comp({ punctuationWidth: 'fullwidth', compressAdjacent: true }))[0]!;
+      expect(marks(full, '。”')).toEqual(marks(kaiming, '。”'));
+    }
+    // A closing bracket after the quote takes the blank on: 。”）␣.
+    const chain = lines('宝玉道：“来了。”）黛玉笑了', 2000, comp())[0]!;
+    expect(marks(chain, '。”）')).toEqual([[8, 0], [8, 0], [16, 0]]);
+    expect(marks(lines('（改作“偷”。）黛玉', 2000, comp())[0]!, '。）')).toEqual([[8, 0], [16, 0]]);
+    // At the end of a line the stop's blank goes, as with a stop alone: 。” take one em.
+    for (const trimLineStart of [true, false]) {
+      const last = lines(`${HAN.slice(0, 5)}。”`, 2000, comp({ trimLineStart }))[0]!;
+      expect(marks(last, '。”')).toEqual([[8, 0], [8, 0]]);
+    }
+    // A break between the two (lineBreak 'none') gives the stop its blank back: it ends
+    // its line half an em, and the quote opens the next one half an em.
+    const split = lines(`${HAN.slice(0, 5)}。”${HAN.slice(5, 10)}`, 88, comp(), { cjkLineBreak: 'none' });
+    expect(split[0]!.text).toBe(`${HAN.slice(0, 5)}。`);
+    expect(pairWidth(split[0]!, '。')).toBe(8);
+    expect(split[1]!.text.startsWith('”')).toBe(true);
+    expect(pairWidth(split[1]!, '”')).toBe(8);
+    // Centred marks (a Taiwan stop under Kaiming) keep their blank where it was.
+    const tw = lines('他說：「來了。」寶玉', 2000, comp({ punctuationWidth: 'kaiming' }, 'zh-TW'))[0]!;
+    expect(marks(tw, '。」')).toEqual([[16, 0], [8, 0]]);
+  });
+
+  it('lets the blank a closing mark took from a Kaiming stop give way last, to take in a comma', () => {
+    // As 'pushes a comma in' below, with 。” for 。: 36 characters and the pair (1.5 em)
+    // fill a 600 px measure.
+    const head = `${HAN.slice(0, 7)}。”${HAN.slice(7, 36)}`;
+    expect([...head].length).toBe(38);
+    const text = `${head}，${HAN.slice(36, 44)}`;
+    const ls = lines(text, 600, comp(), { textAlign: 'justify' });
+    expect(ls[0]!.text).toBe(`${head}，`);
+    expect(lineWidth(ls[0]!)).toBeCloseTo(600, 6);
+    expect(pairWidth(ls[0]!, '。”')).toBe(16);
+  });
+
   it('reduces 》（ to 1.5 em when full width, and to one em under Kaiming', () => {
     const full = lines(TITLE, 2000, comp({ punctuationWidth: 'fullwidth', compressAdjacent: true }))[0]!;
     expect(pairWidth(full, '》（')).toBe(24);
@@ -254,10 +305,11 @@ describe('punctuation widths (clreq §6.3.2)', () => {
   });
 
   it('gives each compressed mark a segment of its own', () => {
-    const line = lines(DIALOGUE, 2000, comp())[0]!;
-    for (const seg of line.segments!) {
-      if ([...seg.text].some((c) => '：“”'.includes(c))) expect([...seg.text].length).toBe(1);
-    }
+    const line = lines(`${DIALOGUE}“通灵”之说`, 2000, comp())[0]!;
+    // The quotes after 。 and ？ keep their em (the stop's blank after their glyph).
+    const cut = advances(line).filter((a) => '：“”'.includes(a.ch) && a.w < 16);
+    expect(cut.map((a) => a.ch).join('')).toBe('：“：““”');
+    for (const a of cut) expect([...a.seg.text].length).toBe(1);
   });
 });
 

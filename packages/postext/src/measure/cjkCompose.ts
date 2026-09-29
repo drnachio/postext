@@ -73,6 +73,7 @@ import { foldWidth, isZhuyin, noteRowBaselines, readingAdvance, rubyGeometry, sp
 import {
   applyLineEdges,
   boxCut,
+  carryStopBlank,
   compositionFor,
   compressPair,
   getCjkComposition,
@@ -923,12 +924,15 @@ function prepareUnits(units: Unit[], c: CjkComposition, letterSpacingPx: number)
     u.width -= boxCut(box);
   }
   if (plain) return units;
-  if (c.compressAdjacent && full.size > 1) {
+  // Kaiming sets a stop's blank after the closing mark that follows it (。”␣).
+  const carry = c.punctuationWidth === 'kaiming';
+  if ((c.compressAdjacent || carry) && full.size > 1) {
     for (let k = 1; k < units.length; k++) {
       const a = units[k - 1]!;
       const b = units[k]!;
       if (!a.punct || !b.punct || b.zwspBefore) continue;
-      compressPair(a.punct, b.punct);
+      if (c.compressAdjacent) compressPair(a.punct, b.punct);
+      if (carry) carryStopBlank(a.punct, b.punct);
       a.width = full.get(a)! - boxCut(a.punct);
       b.width = full.get(b)! - boxCut(b.punct);
     }
