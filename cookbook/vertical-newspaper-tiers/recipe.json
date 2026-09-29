@@ -25,12 +25,6 @@
   ],
   "explainsWarnings": [],
   "related": ["newspaper-front-page", "chinese-dates-upright", "vertical-novel-right-bound", "red-ink-commentary"],
-  "workarounds": [
-    {
-      "package": "postext",
-      "note": "renderPageToCanvas paints with the direction the canvas inherits (ctx.direction 'inherit'), and the cjk kit's showBook sets dir=\"rtl\" on each spread of a right-bound book, so every upright character of a vertical line is anchored from its right and the lines overlap in the live viewer (the capture paints outside the spread and is not affected). The pen sets #pages canvas { direction: ltr }, as Nº 075 does; the fix belongs in renderPageToCanvas (ctx.direction = 'ltr') or in showBook's style."
-    }
-  ],
   "engine": { "postext": "1.9.0", "postextPdf": "1.9.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
   "sample": { "locales": ["en", "es"] },
@@ -45,7 +39,7 @@
           "es": "Shenbao (Shanghái), 11 de diciembre de 1912: el banquete a Sun Yat-sen en el Lago del Oeste, Hangzhou"
         },
         "who": "Shenbao; transcription by Wikisource editors",
-        "source": "https://zh.wikisource.org/wiki/西湖公宴孫中山紀事",
+        "source": "https://zh.wikisource.org/w/index.php?title=%E8%A5%BF%E6%B9%96%E5%85%AC%E5%AE%B4%E5%AD%AB%E4%B8%AD%E5%B1%B1%E7%B4%80%E4%BA%8B&oldid=9458634",
         "license": "PD"
       },
       {
@@ -54,7 +48,7 @@
           "es": "Shenbao (Shanghái), 4 de diciembre de 1912: las honras a los soldados de Zhejiang caídos en Nankín"
         },
         "who": "Shenbao; transcription by Wikisource editors",
-        "source": "https://zh.wikisource.org/wiki/浙都督追祭攻寧陣亡將士",
+        "source": "https://zh.wikisource.org/w/index.php?title=%E6%B5%99%E9%83%BD%E7%9D%A3%E8%BF%BD%E7%A5%AD%E6%94%BB%E5%AF%A7%E9%99%A3%E4%BA%A1%E5%B0%87%E5%A3%AB&oldid=9458637",
         "license": "PD"
       },
       {
@@ -63,7 +57,7 @@
           "es": "Shenbao (Shanghái), 17 de julio de 1912: el monumento a la victoria del Lago del Oeste, con la inscripción de Tang Shouqian"
         },
         "who": "Shenbao, Tang Shouqian; transcription and punctuation by Wikisource editors, revised for this recipe",
-        "source": "https://zh.wikisource.org/wiki/湯蟄仙之紀功碑",
+        "source": "https://zh.wikisource.org/w/index.php?title=%E6%B9%AF%E8%9F%84%E4%BB%99%E4%B9%8B%E7%B4%80%E5%8A%9F%E7%A2%91&oldid=9458640",
         "license": "CC-BY-SA-4.0"
       },
       {
@@ -72,7 +66,7 @@
           "es": "Cuatro telegramas del Linshi zhengfu gongbao (Boletín del Gobierno Provisional), n.º 1, 29 de enero de 1912"
         },
         "who": "Provisional Government, Nanjing; transcription and punctuation by Wikisource editors",
-        "source": "https://zh.wikisource.org/wiki/臨時政府公報_(民國元年1月29日)",
+        "source": "https://zh.wikisource.org/w/index.php?title=%E8%87%A8%E6%99%82%E6%94%BF%E5%BA%9C%E5%85%AC%E5%A0%B1_%28%E6%B0%91%E5%9C%8B%E5%85%83%E5%B9%B41%E6%9C%8829%E6%97%A5%29&oldid=2490036",
         "license": "CC-BY-SA-4.0"
       },
       {

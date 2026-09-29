@@ -1,6 +1,6 @@
 // ═══ Postext Cookbook · Nº 084 · A vertical newspaper page in tiers ═══════════════
 // https://postext.dev/en/cookbook/vertical-newspaper-tiers
-// Code: MIT · Text: Shenbao 1912 (PD), Linshi zhengfu gongbao no. 1, zh.wikisource (CC BY-SA 4.0)
+// Code: MIT · Text: Shenbao, 1912 (PD); gazette, stele report: zh.wikisource (CC BY-SA 4.0)
 // Fonts: Noto Serif TC, Noto Sans TC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.9.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, loadVerticalAlternates,
@@ -29,10 +29,10 @@ const colorPalette = [
 const [SONG, HEI, KAI] = ['Noto Serif TC', 'Noto Sans TC', 'LXGW WenKai TC']; // 宋, 黑, 楷
 const BODY = 10.5; // pt: 五號, the body size of the papers of 1912
 const LEAD = 15.75; // pt: the line pitch across the page, 1.5 em
-const CHARS = 26; // characters down a tier
+const CHARS = 25; // characters down a tier: a newspaper column, 17 to 25
 const HEIGHT = 2 * CHARS * BODY + 2 * BODY; // pt: two tiers and a gutter of two ems
 const TRIM = { w: 184, h: 260 }; // mm, 16開
-const MARGIN = { top: 30, bottom: 22, side: 14 }; // mm, minimums: the grid centres the tiers
+const MARGIN = { top: 30, bottom: 22, side: 11 }; // mm, minimums: the grid centres the tiers
 // The grid grows the margins evenly, so the tiers start HEAD mm below the top edge.
 const HEAD = MARGIN.top + (TRIM.h - MARGIN.top - MARGIN.bottom - (HEIGHT * 25.4) / 72) / 2;
 
@@ -44,15 +44,15 @@ const layout = {
   gutterWidth: pt(2 * BODY),
   columnRule: { enabled: true, color: col('ink'), lineWidth: pt(0.75) },
 };
-// The grid counts characters down a tier and lines across the page: 26 × 28.
-const cjk = { grid: { enabled: true, charsPerLine: CHARS, linesPerPage: 28 } };
+// The grid counts characters down a tier and lines across the page: 25 × 29.
+const cjk = { grid: { enabled: true, charsPerLine: CHARS, linesPerPage: 29 } };
 // The body has two tiers at most. The telegrams take three inside a page-span box floated to
 // the foot of the flow, the left of the sheet (gotcha: callout-columns), with the fences
 //   :::callout{type="wires" span="page" placement="bottom" title="電報"} and :::columns{count=3}
 const wires = { id: 'wires', backgroundEnabled: false,
   stripe: { enabled: true, side: 'top', width: pt(1.5), color: col('ink') }, // on its right
   padding: { top: pt(6), right: pt(0), bottom: pt(0), left: pt(0) },
-  columnGap: pt((HEIGHT - 3 * 20 * 9) / 2), // three tiers of 20 characters of 9 pt
+  columnGap: pt((HEIGHT - 3 * 18 * 9) / 2), // three tiers of 18 characters of 9 pt
   titleStyle: { fontFamily: HEI, fontSize: pt(12), fontWeight: 700, color: col('accent') },
   body: { fontFamily: SONG, fontSize: pt(9), lineHeight: pt(13.5), textAlign: 'justify',
     firstLineIndent: pt(0), boldFontWeight: 700 } };
@@ -83,6 +83,8 @@ const front = { enabled: true, minHeight: pt(BAND), slot: { elements: [
       placement: at(22, 13) }),
     text('kicker', '{subtitle}', HEI, 700, 12, 'paper', { placement: at(24, 82) }),
     text('sources', '錄{author}', HEI, 400, 8.5, 'paper', { placement: at(150, 84) }),
+    text('issue', '{attr.issue}', HEI, 700, 12, 'paper', { placement: at(330, 33) }), // the year
+    text('edition', '{attr.edition}', HEI, 400, 8.5, 'paper', { placement: at(330, 84) }),
     text('sheet', '第{pageNumber}張', HEI, 700, 10, 'accent', { placement: at(HEIGHT - 58, 80),
       box: { backgroundColor: col('paper'), padding: { top: pt(3), right: pt(3),
         bottom: pt(3), left: pt(3) } } }),
@@ -173,7 +175,7 @@ const voices = [ // family, weights, the text it sets, and whether it runs down 
   [SONG, ['400'], markdown, true], // the text
   [SONG, ['700', '900'], pick(/^#+ [^{\n]*|\*\*[^*]+\*\*/gm), false], // heads, labels
   [HEI, ['400', '700'], pick(/^(?:subtitle|author): .*$|style="source"\}[^:]*/gm) // masthead,
-    + attrs('dateline', 'title', 'colophon') + '錄第一二張', true], // datelines, colophon
+    + attrs('dateline', 'issue', 'edition', 'title', 'colophon') + '錄第一二張', true], // datelines
   [KAI, ['400'], attrs('deck') + pick(/style="inscription"\}[^:]*/g), true], // decks, the stele
   [KAI, ['700'], pick(/^title: .*$/m), false], // the paper's name
 ];
@@ -185,9 +187,6 @@ for (const [family, weights, text, vertical] of voices) {
   await loadCjkFonts({ [family]: weights }, text, { vertical });
 }
 const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
-// workaround: showBook sets dir="rtl" on each spread and a canvas paints with the direction
-// it inherits, which would anchor every character from its right and shift it.
-document.head.insertAdjacentHTML('beforeend', '<style>#pages canvas { direction: ltr }</style>');
 showBook(doc, { title: t({ en: 'A vertical newspaper page in tiers',
   es: 'Una página de periódico vertical, en pisos' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);
