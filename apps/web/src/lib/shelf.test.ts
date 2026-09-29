@@ -1,6 +1,13 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import presetIndex from "../../public/presets/index.json";
 import { shelfOrder } from "./shelf";
+
+/** The widest licence tag that fits a row of the Sandbox's Books panel at
+ *  its default width (360 px): the tag is set in 9 px capitals and neither
+ *  wraps nor truncates. The EEA line is the longest that fits. */
+const LICENCE_TAG_MAX = "© EEA 2020, reproduction authorised · CC0 photos".length;
 
 describe("the showcase shelf", () => {
   it("keeps the index order for books without a shelfOrder and puts the others after them", () => {
@@ -25,5 +32,14 @@ describe("the showcase shelf", () => {
     const [es, en] = entry.description.split(" · ");
     expect(es).toContain("compuesto en vertical y con el lomo a la derecha");
     expect(en).toContain("set vertically and bound on the right");
+  });
+
+  it("keeps every licence tag short enough for a Books panel row, as the preset itself states it", () => {
+    for (const entry of (presetIndex as { presets: { id: string; dir: string; license?: string }[] }).presets) {
+      if (!entry.license) continue;
+      expect(entry.license.length, entry.id).toBeLessThanOrEqual(LICENCE_TAG_MAX);
+      const manifest = JSON.parse(readFileSync(path.join(__dirname, "../../public/presets", entry.dir, "preset.json"), "utf8")) as { license?: string };
+      expect(manifest.license, entry.id).toBe(entry.license);
+    }
   });
 });
