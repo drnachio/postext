@@ -21,6 +21,7 @@ export {
   missingStandardVariants,
   missingUsedVariants,
   collectFontUsage,
+  hasLatinEmphasis,
 } from './fontLoader';
 export { NumberControl } from './NumberControl';
 export { DimensionControl } from './DimensionInput';

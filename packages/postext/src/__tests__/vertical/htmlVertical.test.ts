@@ -111,6 +111,34 @@ describe('vertical pages in the HTML (#191)', () => {
     expect(html).not.toContain('<span style="text-combine-upright:all;">2026</span>');
   });
 
+  it('sets a design text of the flow where its block is, as the canvas does (#200)', () => {
+    // An opener lowered 20 pt down the column: its line box starts at the
+    // block's own top edge in the flow, not at the flow's origin.
+    const cfg = config({
+      headings: {
+        levels: [{
+          level: 1,
+          span: 'page',
+          breakBefore: { enabled: true, parity: 'any' },
+          advancedDesign: {
+            enabled: true,
+            slot: { elements: [{ kind: 'text', id: 'hui', content: '第一回', fontFamily: 'Test Serif', fontSize: pt(12), overflow: 'clip', placement: { anchor: { to: 'container', edge: 'top-left' }, offset: { x: pt(20), y: pt(0) }, size: { width: pt(200), height: pt(24) } } }] },
+          },
+        }],
+      },
+    });
+    const doc = buildDocument({ markdown: '# 甄士隱\n\n此開卷第一回也。' }, cfg);
+    const block = doc.pages[0]!.openerBand!.blocks.find((b) => b.kind === 'text')! as import('../../vdt').VDTDesignTextBlock;
+    expect(block.bbox.x).toBeGreaterThan(20);
+    const html = renderToHtml(doc, { mode: 'single' });
+    const m = new RegExp(`left:${block.bbox.x}px;top:${block.bbox.y}px;[^"]*"><div style="position:absolute;left:(-?[\\d.]+)px;top:(-?[\\d.]+)px;`).exec(html)!;
+    expect(m).not.toBeNull();
+    const line = block.lines[0]!;
+    const size = 12;
+    expect(parseFloat(m[1]!)).toBeCloseTo(line.xOffset, 3);
+    expect(parseFloat(m[2]!)).toBeCloseTo(line.baselineY - block.bbox.y - size * 1.5, 3);
+  });
+
   it('keeps running heads on the sheet and horizontal pages as they were', () => {
     const doc = buildDocument({ markdown: '此開卷第一回也。' }, config({
       header: { elements: [{ kind: 'text', id: 'rh', content: '紅樓夢', fontSize: pt(8), overflow: 'clip', placement: { anchor: { to: 'container', edge: 'bottom-left' } } }] },

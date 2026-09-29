@@ -5,7 +5,7 @@
 // preceding chapter, recorded as a `ChapterLayout`). Page numbers thus run
 // on across chapters without ever laying out the whole book in a preview.
 
-import { configUsesPlaceholder, contentOutline, continuationAfter, formatNumeral, indexOutline, outlineFromDoc, outlineKey, resolvePageConfig, tocOutline } from 'postext';
+import { configUsesPlaceholder, contentOutline, continuationAfter, extractFrontmatter, formatNumeral, indexOutline, outlineFromDoc, outlineKey, parseMarkdown, resolveHeadingsConfig, resolvePageConfig, DEFAULT_PARTS_CONFIG, tocOutline } from 'postext';
 import type { LayoutContinuation, NumeralStyle, OutlineEntry, PostextConfig, Resource, VDTDocument } from 'postext';
 import type { BookPages, BookPlan, Chapter, ChapterLayout, ChapterPageNumber, ChapterPages, ChapterPart, ChapterPlan, OutlinePage } from './types';
 import { ENGINE_KEY, configKeyOf, resourcesKeyOf } from './layoutKeys';
@@ -85,6 +85,8 @@ interface CountersEntry {
   hasToc: boolean;
   /** Whether the chapter prints the index (`:::index`). */
   hasIndex: boolean;
+  /** {@link opensOnEvenPage}, worked out the first time a plan asks. */
+  opensEven?: boolean;
 }
 
 export interface BookPlanner {
@@ -203,6 +205,37 @@ function chapterPart(outline: readonly OutlineEntry[], before: LayoutContinuatio
 }
 
 const continuationFingerprint = (c: LayoutContinuation | undefined): string => JSON.stringify(c ?? null);
+
+/** Directives that set nothing of their own at the head of a document. */
+const QUIET_DIRECTIVES = new Set(['pagebreak', 'numbering', 'columnbreak', 'space']);
+
+/** Whether the first thing `markdown` sets is a heading that breaks to an
+ *  even page, as a plate set alone on the verso before its chapter's
+ *  opener does. The engine lets the first page of a document stand
+ *  whatever its heading asks, so such a chapter laid out on its own opens
+ *  on a recto; {@link BookPlanner.plan} sets it as if one page came first
+ *  while the pages before it are unknown. */
+export function opensOnEvenPage(markdown: string, config: PostextConfig): boolean {
+  for (const block of parseMarkdown(extractFrontmatter(markdown).content)) {
+    if (block.type === 'directive') {
+      if (block.directiveName && QUIET_DIRECTIVES.has(block.directiveName)) continue;
+      return false;
+    }
+    if (block.type === 'containerStart' || block.type === 'containerEnd') {
+      // A part opening a divider page sets that page first.
+      if (block.type === 'containerStart' && block.containerName === 'part' && (config.parts?.page ?? DEFAULT_PARTS_CONFIG.page)) return false;
+      continue;
+    }
+    if (block.type !== 'heading') return false;
+    const level = resolveHeadingsConfig(config.headings).levels.find((l) => l.level === (block.level ?? 1));
+    const styleId = block.attrs?.style;
+    const style = styleId ? config.headingStyles?.find((st) => st.id === styleId)?.breakBefore : undefined;
+    const enabled = style?.enabled ?? level?.breakBefore.enabled ?? false;
+    const parity = style?.parity ?? level?.breakBefore.parity ?? 'any';
+    return enabled && (parity === 'even' || parity === 'always-even');
+  }
+  return false;
+}
 
 const bookTotalUse = new WeakMap<PostextConfig, boolean>();
 
@@ -384,11 +417,20 @@ export function createBookPlanner(): BookPlanner {
         const first = index === 0;
         const pages = starts[index]!;
         const total = bookPageCount !== undefined ? { bookPageCount } : undefined;
+        // While the pages before it are unknown, a chapter opening on a
+        // verso (a plate facing the opener) is set as if one page came
+        // first, so the preview does not open it on a recto; the chain of
+        // the whole book gives it its real pages.
+        const entry = entries[index]!;
+        if (!pages && entry.opensEven === undefined) entry.opensEven = opensOnEvenPage(chapter.markdown, config);
+        const provisional = !pages && entry.opensEven
+          ? { pageIndexOffset: 1, pageNumbering: { format: numbering.format, startAt: numbering.startAt + 1 } }
+          : {};
         const continuation: LayoutContinuation | undefined = first
           ? total
           : {
             ...counters,
-            ...(pages ? { pageIndexOffset: pages.physical, pageNumbering: { format: pages.format, startAt: pages.number } } : {}),
+            ...(pages ? { pageIndexOffset: pages.physical, pageNumbering: { format: pages.format, startAt: pages.number } } : provisional),
             ...total,
           };
         const { outline: printedOutline, key: chapterOutlineKey } = chapterOutline(entries[index]!);

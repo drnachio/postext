@@ -36,6 +36,7 @@ import {
   getConfigFontFamilies,
   getCustomFontFamily,
   missingUsedVariants,
+  hasLatinEmphasis,
   isKnownUnavailableGoogleFont,
   isRemovedCustomFontFamily,
 } from '../controls/fontLoader';
@@ -1015,6 +1016,9 @@ function computeDocumentWarnings(params: {
   const debug = resolveDebugConfig(config.debug);
   const toggles = debug.warnings;
   const warnings: Warning[] = [];
+  // Always parse so we can surface math issues (unclosed delimiters) even
+  // when other toggles are off.
+  const { blocks, issues } = parseMarkdownWithIssues(markdown);
 
   if (toggles.missingFont) {
     // Duplicate (weight, style) slots apply to every declared custom
@@ -1039,12 +1043,15 @@ function computeDocumentWarnings(params: {
 
     const families = getConfigFontFamilies(config);
     const specMissing = new Set(detectMissingFonts(config));
+    // Where emphasis is set as dots, only the Latin letters and digits of
+    // `*…*` ask the body family for its italics.
+    const text = { latinEmphasis: hasLatinEmphasis(blocks) };
     for (const family of families) {
       const custom = getCustomFontFamily(family);
       if (custom) {
         // Custom family still declared: report the variants the
         // configuration asks of it (weight × style) that have no file.
-        const missingVariants = missingUsedVariants(custom, config);
+        const missingVariants = missingUsedVariants(custom, config, text);
         if (missingVariants.length > 0) {
           warnings.push({
             id: `missing-font-variant-${family}`,
@@ -1074,9 +1081,6 @@ function computeDocumentWarnings(params: {
     }
   }
 
-  // Always parse so we can surface math issues (unclosed delimiters) even
-  // when other toggles are off.
-  const { blocks, issues } = parseMarkdownWithIssues(markdown);
   if (toggles.headingHierarchy) {
     warnings.push(...collectHeadingHierarchyWarnings(blocks, markdown));
   }

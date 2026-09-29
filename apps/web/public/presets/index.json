@@ -67,7 +67,7 @@
       "id": "hongloumeng",
       "dir": "hongloumeng",
       "name": "紅樓夢 · Dream of the Red Chamber",
-      "description": "Novela clásica china en 120 capítulos: el texto de 1792 en chino tradicional y simplificado, con las láminas de 1884, y la traducción inglesa de Joly de los 56 primeros capítulos · A classic Chinese novel in 120 chapters: the 1792 text in Traditional and Simplified Chinese with the 1884 plates, and Joly’s English translation of the first 56 chapters",
+      "description": "Novela clásica china en 120 capítulos, con las láminas de 1884: el texto de 1792 en chino tradicional, compuesto en vertical y con el lomo a la derecha, el mismo texto en chino simplificado y la traducción inglesa de Joly de los 56 primeros capítulos · A classic Chinese novel in 120 chapters, with the 1884 plates: the 1792 text in Traditional Chinese, set vertically and bound on the right, the same text in Simplified Chinese, and Joly’s English translation of the first 56 chapters",
       "locale": "zh-Hant",
       "locales": [
         "zh-Hant",
@@ -80,13 +80,15 @@
       "tags": [
         "book",
         "chinese",
-        "single-column",
+        "vertical",
+        "right-bound",
         "plates",
         "front-matter",
         "index"
       ],
       "openLocale": "zh-Hant",
-      "binding": "right"
+      "binding": "right",
+      "shelfOrder": 1
     },
     {
       "id": "openstax-fisica",

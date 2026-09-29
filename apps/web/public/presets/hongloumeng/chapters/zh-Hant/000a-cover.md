@@ -3,11 +3,11 @@ title: "紅樓夢"
 author: "曹雪芹"
 ---
 
-:::numbering{format="lower-roman" startAt=1}
+:::numbering{format="trad-chinese-informal" startAt=1}
 
-# 紅樓夢 {style="cover"}
+# 封面 {style="cover"}
 
-# 紅樓夢 {style="titlepage"}
+# 扉頁 {style="titlepage"}
 
 :::pagebreak
 
@@ -16,9 +16,9 @@ author: "曹雪芹"
 
 曹雪芹　著　　程偉元　高鶚　整理
 
-底本：程乙本（1792），維基文庫錄入
+底本：程乙本（一七九二），維基文庫錄入
 
-插圖：《增評補圖石頭記》（1884）、改琦《紅樓夢圖詠》（1879）
+插圖：《增評補圖石頭記》（一八八四）、改琦《紅樓夢圖詠》（一八七九）
 
 正文按知識共享 CC BY-SA 4.0 授權釋出
 

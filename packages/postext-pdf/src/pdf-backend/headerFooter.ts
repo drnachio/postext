@@ -241,12 +241,30 @@ function renderImageBlock(ctx: PageCtx, block: VDTDesignImageBlock, images: Reso
   const { x, y, width, height } = block.bbox;
   if (width <= 0 || height <= 0) return;
   const embedded = images?.get(block.fileId);
-  if (embedded) {
-    drawEmbeddedResource(ctx, embedded, x, y, width, height);
-  } else {
-    ctx.onMissingImage?.(block.fileId);
-    fillRectPx(ctx, x, y, width, height, colorFromHex('#e8e8e8', ctx.colorSpace));
+  const draw = (bx: number, by: number, bw: number, bh: number): void => {
+    if (embedded) {
+      drawEmbeddedResource(ctx, embedded, bx, by, bw, bh);
+    } else {
+      ctx.onMissingImage?.(block.fileId);
+      fillRectPx(ctx, bx, by, bw, bh, colorFromHex('#e8e8e8', ctx.colorSpace));
+    }
+  };
+  if (!ctx.vertical) {
+    draw(x, y, width, height);
+    return;
   }
+  // In a vertical page's flow the picture stands upright on the sheet, as
+  // the canvas and the HTML draw it: turned back inside its box, whose
+  // `width` runs down the sheet and whose `height` runs across it. A box
+  // sized for that (`upright`) is filled; any other picture (a callout
+  // icon) is fitted inside it, keeping its proportions.
+  pushFrame(ctx, quarterTurnMatrix({ direction: 'ccw', originX: x, originY: y + height }, ctx.scale, ctx.pageHeightPt));
+  if (block.upright) draw(0, 0, height, width);
+  else {
+    const k = Math.min(height / width, width / height);
+    draw((height - width * k) / 2, (width - height * k) / 2, width * k, height * k);
+  }
+  popFrame(ctx);
 }
 
 export function renderHeaderFooterSlot(

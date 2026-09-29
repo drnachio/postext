@@ -32,6 +32,19 @@ interface LooseElement {
   [key: string]: unknown;
 }
 
+/** A leaf as the flow of a vertical page sees it: x runs down the page,
+ *  so the leaf's height is the frame's width and its width the frame's
+ *  height, and y runs leftward from the right edge, so the right margin is
+ *  the frame's top, the foot its right and the left margin its bottom. */
+function turnedLeaf(leaf: LeafGeometry): LeafGeometry {
+  const m = leaf.margins;
+  return {
+    width: leaf.height,
+    height: leaf.width,
+    margins: { top: m.right, right: m.bottom, bottom: m.left, left: m.top },
+  };
+}
+
 /** Whether any element of `value` anchors to the leaf itself. Such a slot
  *  is laid out against the page or bleed box on paper — a cover panel
  *  filling the trim, a band bleeding off the edge — so the viewer gives it
@@ -424,22 +437,36 @@ export function buildHtmlConfigOverride(
       margins: { top: at(m.top), right: at(m.right), bottom: at(m.bottom), left: at(m.left) },
     };
   };
+  const layoutResolved = resolveLayoutConfig(base.layout);
+  // A vertical page's heading designs are laid out in the flow's frame: x
+  // down the page, y leftward from its right edge. The leaf and the
+  // viewer's page are handed to them turned the same way, so a cover keeps
+  // the leaf's shape, the leaf's height running down the screen, and an
+  // element placed down the leaf is not cut at the leaf's width.
+  const vertical = layoutResolved.writingMode === 'vertical-rl';
+  const flowLeafOf = (margins: PageMargins | undefined): LeafGeometry =>
+    vertical ? turnedLeaf(leafOf(margins)) : leafOf(margins);
+  // The length of the viewer page's lines: its width, or its height when
+  // the lines run down it.
+  const lineLengthPx = vertical ? pageHeightPx : pageWidthPx;
   // The main text column of a viewer page, as the engine will cut it
   // (`computeColumnBboxes` on a page with no margins): the page itself,
   // half of it less the gutter, or what the side column leaves.
-  const layoutResolved = resolveLayoutConfig(base.layout);
   const gutterPx = dimensionToPx(layoutResolved.gutterWidth, dpi);
   const columnWidthPx = layoutType === 'double'
-    ? (pageWidthPx - gutterPx) / 2
+    ? (lineLengthPx - gutterPx) / 2
     : layoutType === 'oneAndHalf'
-      ? pageWidthPx * (1 - layoutResolved.sideColumnPercent / 100) - gutterPx
-      : pageWidthPx;
+      ? lineLengthPx * (1 - layoutResolved.sideColumnPercent / 100) - gutterPx
+      : lineLengthPx;
   const designOpts = {
-    maxBandPx: columnMode === 'single' ? null : pageHeightPx,
-    pageWidthPx,
-    columnWidthPx: Math.max(Math.min(columnWidthPx, pageWidthPx), 1),
+    // A band runs across the lines: down a horizontal page, which the
+    // vertical scroll leaves unbounded, and across a vertical one, whose
+    // width is always the page's.
+    maxBandPx: vertical ? pageWidthPx : columnMode === 'single' ? null : pageHeightPx,
+    pageWidthPx: lineLengthPx,
+    columnWidthPx: Math.max(Math.min(columnWidthPx, lineLengthPx), 1),
     dpi,
-    leaf: leafOf(undefined),
+    leaf: flowLeafOf(undefined),
   };
   const headingLevels = resolvedHeadings.levels.map((lvl) => ({
     ...lvl,
@@ -562,7 +589,7 @@ export function buildHtmlConfigOverride(
             // for — a cover's text box in the lower corner of a 225 mm page
             // leaves no content area at all on a viewer page.
             margins: undefined,
-            ...viewerHeadingDesign(style.advancedDesign, { ...designOpts, leaf: leafOf(style.margins) }),
+            ...viewerHeadingDesign(style.advancedDesign, { ...designOpts, leaf: flowLeafOf(style.margins) }),
           })),
         }
       : {}),

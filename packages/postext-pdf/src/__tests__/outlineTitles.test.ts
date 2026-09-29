@@ -110,3 +110,24 @@ describe('bookmarks of wrapped headings', () => {
     expect(await outlineTitles('# A well-known and oft-quoted opening line\n\nText.', cfg)).toEqual(['A well-known and oft-quoted opening line']);
   }, 60_000);
 });
+
+describe('bookmarks of a plate set as a heading', () => {
+  // The vertical 紅樓夢 puts each chapter's plate on the verso before its
+  // opener with a level-1 heading of a `plate` style (#200): it interrupts no
+  // chapter and is listed nowhere, so it gets no bookmark either.
+  const cfg = (plate: { runningChapter?: boolean; toc?: boolean }): PostextConfig => ({
+    ...config,
+    headings: { levels: [{ level: 1, breakBefore: { enabled: true, parity: 'any' } }] },
+    headingStyles: [{ id: 'plate', numbered: false, ...plate }],
+  });
+  const markdown = '# The gate {style="plate"}\n\n# Chapter one\n\nText.\n\n# The garden {style="plate"}\n\n# Chapter two\n\nText.';
+
+  it('leave out a heading kept out of the running chapter and the contents', async () => {
+    expect(await outlineTitles(markdown, cfg({ runningChapter: false, toc: false }))).toEqual(['Chapter one', 'Chapter two']);
+  }, 60_000);
+
+  it('keep one the contents list or the running heads name', async () => {
+    expect(await outlineTitles(markdown, cfg({ runningChapter: false, toc: true }))).toEqual(['The gate', 'Chapter one', 'The garden', 'Chapter two']);
+    expect(await outlineTitles(markdown, cfg({ toc: false }))).toEqual(['The gate', 'Chapter one', 'The garden', 'Chapter two']);
+  }, 60_000);
+});

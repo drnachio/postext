@@ -1,7 +1,8 @@
-import type { CustomFontFamily, CustomFontVariant, PostextConfig, VerticalAlternatesFace } from 'postext';
+import type { ContentBlock, CustomFontFamily, CustomFontVariant, PostextConfig, VerticalAlternatesFace } from 'postext';
 import type { FontPayload } from 'postext/worker';
 import {
   DEFAULT_TEXT_ELEMENT,
+  defaultCjkEmphasis,
   loadVerticalAlternates,
   unregisterVerticalAlternates,
   primaryFontFamily,
@@ -639,14 +640,38 @@ function missingVariants(family: CustomFontFamily, wanted: readonly FontVariantU
   return out;
 }
 
+/** What a document's text asks of its faces beyond its configuration. */
+export interface FontUsageDocument {
+  /** Whether the text sets a letter or digit that is not Chinese in
+   *  emphasis (`*…*`): the characters that keep their italics where
+   *  emphasis is set as dots ({@link hasLatinEmphasis}). Unset when the
+   *  text is not known. */
+  latinEmphasis?: boolean;
+}
+
+/** Letters and digits outside Chinese and Japanese script. */
+const NON_CJK_LETTER_RE = /(?![\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}\p{sc=Bopomofo}])[\p{L}\p{N}]/u;
+
+/** Whether the text of `blocks` (headings aside, which are set in their
+ *  own face) puts a letter or digit that is not Chinese in emphasis: a
+ *  Latin word in `*…*` keeps its italics where the Chinese characters
+ *  beside it take dots (`cjk.emphasis: 'dots'`). */
+export function hasLatinEmphasis(blocks: readonly ContentBlock[]): boolean {
+  return blocks.some((b) => b.type !== 'heading' && b.spans.some((s) => s.italic && !s.math && NON_CJK_LETTER_RE.test(s.text)));
+}
+
 /**
  * The (weight, style) pairs the configuration asks of each family: every
  * config node carrying a `fontFamily` contributes its `fontWeight` (400
  * when unset) and `fontStyle` (normal when unset). The body text family
  * also needs the four standard variants, since markdown emphasis sets bold
- * and italic runs in it; so does a design text with `inlineMarks`.
+ * and italic runs in it; so does a design text with `inlineMarks`. Where
+ * emphasis is set as dots (`cjk.emphasis`, by default in a Chinese
+ * document), `*…*` puts dots under Chinese characters and keeps the
+ * italics of the rest: the body family is asked for its italics only when
+ * `doc` does not say the text holds no Latin letter or digit in emphasis.
  */
-export function collectFontUsage(config: PostextConfig): Map<string, FontVariantUse[]> {
+export function collectFontUsage(config: PostextConfig, doc?: FontUsageDocument): Map<string, FontVariantUse[]> {
   const usage = new Map<string, FontVariantUse[]>();
   const add = (family: string, use: FontVariantUse) => {
     const list = usage.get(family) ?? [];
@@ -680,16 +705,19 @@ export function collectFontUsage(config: PostextConfig): Map<string, FontVariant
   walk(config);
   const body = config.bodyText?.fontFamily;
   if (typeof body === 'string' && body.trim()) {
-    for (const v of STANDARD_VARIANTS) add(primaryFontFamily(body), v);
+    const emphasis = config.cjk?.emphasis ?? 'auto';
+    const dots = emphasis === 'dots' || (emphasis === 'auto' && defaultCjkEmphasis(config.locale) === 'dots');
+    const italics = !dots || doc?.latinEmphasis !== false;
+    for (const v of STANDARD_VARIANTS) if (italics || v.style !== 'italic') add(primaryFontFamily(body), v);
   }
   return usage;
 }
 
-/** The variants `config` asks of a declared custom family that it has no
- *  file for — bold or italic set in a family that only carries a regular
- *  face, a weight no face covers. */
-export function missingUsedVariants(family: CustomFontFamily, config: PostextConfig): FontVariantUse[] {
-  const wanted = collectFontUsage(config).get(family.name) ?? [];
+/** The variants `config` (and the text `doc` describes) asks of a
+ *  declared custom family that it has no file for — bold or italic set in
+ *  a family that only carries a regular face, a weight no face covers. */
+export function missingUsedVariants(family: CustomFontFamily, config: PostextConfig, doc?: FontUsageDocument): FontVariantUse[] {
+  const wanted = collectFontUsage(config, doc).get(family.name) ?? [];
   return missingVariants(family, wanted);
 }
 
