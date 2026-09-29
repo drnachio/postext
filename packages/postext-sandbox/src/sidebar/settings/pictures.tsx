@@ -43,3 +43,27 @@ export function AlignPicture({ align }: { align: 'left' | 'justify' | 'center' |
     </svg>
   );
 }
+
+/** A page of horizontal lines, or of vertical lines filled from the right
+ *  (the first one full, the last one short, as a paragraph ends). */
+export function WritingModePicture({ mode }: { mode: 'horizontal-tb' | 'vertical-rl' }) {
+  if (mode === 'horizontal-tb') {
+    return (
+      <svg width={38} height={28} viewBox="0 0 38 28" fill="none">
+        <rect x={PAGE.x} y={PAGE.y} width={PAGE.w} height={PAGE.h} rx={1.5} stroke="currentColor" strokeWidth={1} />
+        <Lines x={PAGE.x + 3} w={PAGE.w - 6} y1={20} />
+        <rect x={PAGE.x + 3} y={23} width={9} height={1.2} rx={0.6} fill="currentColor" opacity={0.75} />
+      </svg>
+    );
+  }
+  const xs: number[] = [];
+  for (let x = PAGE.x + PAGE.w - 4.2; x >= PAGE.x + 3; x -= 3) xs.push(x);
+  return (
+    <svg width={38} height={28} viewBox="0 0 38 28" fill="none">
+      <rect x={PAGE.x} y={PAGE.y} width={PAGE.w} height={PAGE.h} rx={1.5} stroke="currentColor" strokeWidth={1} />
+      {xs.map((x, i) => (
+        <rect key={x} x={x} y={5} width={1.2} height={i === xs.length - 1 ? 8 : 18} rx={0.6} fill="currentColor" opacity={0.75} />
+      ))}
+    </svg>
+  );
+}

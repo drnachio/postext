@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowDown, ArrowUp, GripVertical, MoreHorizontal, Pencil, Plus, Scissors, Trash2, Merge } from 'lucide-react';
-import { useBookContent, useBookPlan, useSandboxDispatch, useSandboxLabels } from '../../context/SandboxContext';
+import { isCjkLanguage } from 'postext';
+import { useBookContent, useBookPlan, useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { h1Count, newChapter, wordCount } from '../../book/chapterOps';
 import { chapterPageLabels } from '../../book/pagination';
 import { chapterMenuEntries, partLabel } from '../../book/chapterMenu';
@@ -140,14 +141,17 @@ function ChapterRow({ chapter, index, total, isActive, number, pages, part, drag
     if (next && next !== chapter.title) dispatch({ type: 'RENAME_CHAPTER', payload: { id: chapter.id, title: next } });
   };
 
-  const headings = h1Count(chapter.markdown);
-  const words = wordCount(chapter.markdown);
+  // The list re-renders while pages are counted: count once per text.
+  const headings = useMemo(() => h1Count(chapter.markdown), [chapter.markdown]);
+  const words = useMemo(() => wordCount(chapter.markdown), [chapter.markdown]);
+  // A Chinese, Japanese or Korean book counts characters (字数).
+  const cjk = useSandboxSelector((s) => isCjkLanguage(s.config.locale));
   const range = pages ? chapterPageLabels(pages) : null;
   const pagesText = range
     ? labels.chapterPages.replace('__from__', range.from).replace('__to__', range.to)
     : labels.chapterPagesUnknown;
   const numberText = number === null ? '–' : number === undefined ? '' : String(number);
-  const subtitle = `${pagesText} · ${labels.chapterWords.replace('__n__', words.toLocaleString())}`;
+  const subtitle = `${pagesText} · ${(cjk ? labels.chapterCharacters : labels.chapterWords).replace('__n__', words.toLocaleString())}`;
 
   const ask = (message: string, action: () => void) => {
     setConfirm({ message, action });

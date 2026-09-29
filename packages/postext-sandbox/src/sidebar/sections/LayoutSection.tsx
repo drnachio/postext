@@ -32,10 +32,12 @@ export const LayoutSection = memo(function LayoutSection() {
     });
   };
 
+  // The writing mode lives in `layout` but is edited under Writing system:
+  // resetting the columns leaves it alone.
   const resetLayout = () => {
     dispatch({
       type: 'UPDATE_CONFIG',
-      payload: { layout: undefined },
+      payload: { layout: raw?.writingMode !== undefined ? { writingMode: raw.writingMode } : undefined },
     });
   };
 
@@ -87,7 +89,7 @@ export const LayoutSection = memo(function LayoutSection() {
     { value: 'oneAndHalf', label: labels.layoutOneAndHalf, description: labels.layoutOneAndHalfDescription, picture: <ColumnsPicture kind="oneAndHalf" /> },
   ];
 
-  const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
+  const hasOverrides = raw !== undefined && Object.keys(raw).some((k) => k !== 'writingMode');
   const isTypeDefault = layout.layoutType === D.layoutType;
   const isGutterDefault = dimensionsEqual(layout.gutterWidth, D.gutterWidth);
   const isSideColDefault = layout.sideColumnPercent === D.sideColumnPercent;

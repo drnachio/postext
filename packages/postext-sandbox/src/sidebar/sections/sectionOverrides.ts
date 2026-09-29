@@ -23,7 +23,9 @@ export function sectionHasOverrides(config: PostextConfig, section: SettingsSect
     case 'tableStyles':
       return (config.tableStyles ?? []).length > 0;
     case 'bodyText':
-      return hasKeys(config.bodyText) || config.locale !== undefined;
+      return hasKeys(config.bodyText);
+    case 'writing':
+      return config.locale !== undefined || config.layout?.writingMode !== undefined || config.page?.binding !== undefined;
     case 'calloutStyles':
       return config.calloutStyles !== undefined;
     case 'chipStyles':
@@ -41,9 +43,12 @@ export function sectionHasOverrides(config: PostextConfig, section: SettingsSect
     case 'warnings':
       return hasKeys(config.debug?.warnings);
     case 'page':
-      // The baseline grid is stored under `page` but belongs to Debug.
-      return Object.keys(config.page ?? {}).some((k) => k !== 'baselineGrid');
+      // The baseline grid is stored under `page` but belongs to Debug, the
+      // binding to Writing system.
+      return Object.keys(config.page ?? {}).some((k) => k !== 'baselineGrid' && k !== 'binding');
     case 'layout':
+      // The writing mode belongs to Writing system.
+      return Object.keys(config.layout ?? {}).some((k) => k !== 'writingMode');
     case 'parts':
     case 'headings':
     case 'toc':

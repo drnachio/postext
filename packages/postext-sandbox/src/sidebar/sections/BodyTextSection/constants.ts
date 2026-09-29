@@ -67,3 +67,17 @@ export function documentLocaleOptionsFor(value: string | undefined): { value: st
     : DOCUMENT_LANGUAGES.find((l) => l.tag === matchHyphenationLocale(value));
   return [...DOCUMENT_LOCALE_OPTIONS, { value, label: same ? `${same.name} (${value})` : value }];
 }
+
+/** The name of a document language, in its own language, as the Document
+ *  language select shows it: `中文（繁體）` for `zh-Hant` and `zh-TW`,
+ *  `English` for `en` and `en-us`, the tag itself when nothing matches. */
+export function documentLocaleLabel(tag: string): string {
+  const exact = DOCUMENT_LOCALE_OPTIONS.find((o) => o.value === tag);
+  if (exact) return exact.label;
+  const region = cjkRegionOf(tag);
+  const same = region !== undefined
+    ? DOCUMENT_LANGUAGES.find((l) => sameContentLocale(l.tag, tag) && cjkRegionOf(l.tag) === region)
+      ?? DOCUMENT_LANGUAGES.find((l) => sameContentLocale(l.tag, tag))
+    : DOCUMENT_LANGUAGES.find((l) => l.tag === matchHyphenationLocale(tag));
+  return same?.name ?? tag;
+}

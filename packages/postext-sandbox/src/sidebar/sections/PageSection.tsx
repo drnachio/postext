@@ -45,12 +45,15 @@ export const PageSection = memo(function PageSection() {
     });
   };
 
-  // The baseline grid lives in `page` but is edited under Advanced → Debug:
-  // resetting the page leaves it alone.
+  // The baseline grid lives in `page` but is edited under Advanced → Debug,
+  // the binding under Writing system: resetting the page leaves them alone.
   const resetPage = () => {
+    const kept: PageConfig = {};
+    if (raw?.baselineGrid) kept.baselineGrid = raw.baselineGrid;
+    if (raw?.binding !== undefined) kept.binding = raw.binding;
     dispatch({
       type: 'UPDATE_CONFIG',
-      payload: { page: raw?.baselineGrid ? { baselineGrid: raw.baselineGrid } : undefined },
+      payload: { page: Object.keys(kept).length > 0 ? kept : undefined },
     });
   };
 
@@ -132,7 +135,7 @@ export const PageSection = memo(function PageSection() {
   };
 
   // Check which fields differ from defaults
-  const hasOverrides = raw !== undefined && Object.keys(raw).some((k) => k !== 'baselineGrid');
+  const hasOverrides = raw !== undefined && Object.keys(raw).some((k) => k !== 'baselineGrid' && k !== 'binding');
   const isBgDefault = colorsEqual(page.backgroundColor, D.backgroundColor);
   const isPresetDefault = page.sizePreset === D.sizePreset;
   const isWidthDefault = dimensionsEqual(page.width, D.width);

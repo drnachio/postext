@@ -24,8 +24,19 @@ describe('sectionHasOverrides', () => {
     expect(sectionHasOverrides({ ...base, headingStyles: [{ id: 'preface' }] }, 'headingStyles')).toBe(true);
     expect(sectionHasOverrides({ ...base, toc: { leader: { enabled: false } } }, 'toc')).toBe(true);
   });
-  it('counts the document locale as a body text override', () => {
-    expect(sectionHasOverrides({ ...base, locale: 'es' }, 'bodyText')).toBe(true);
+  it('counts the language, the writing mode and the binding under Writing system', () => {
+    expect(sectionHasOverrides(base, 'writing')).toBe(false);
+    expect(sectionHasOverrides({ ...base, locale: 'es' }, 'writing')).toBe(true);
+    expect(sectionHasOverrides({ ...base, locale: 'es' }, 'bodyText')).toBe(false);
+    const vertical: PostextConfig = { ...base, layout: { writingMode: 'vertical-rl' } };
+    expect(sectionHasOverrides(vertical, 'writing')).toBe(true);
+    expect(sectionHasOverrides(vertical, 'layout')).toBe(false);
+    expect(sectionHasOverrides({ ...vertical, layout: { writingMode: 'vertical-rl', layoutType: 'double' } }, 'layout')).toBe(true);
+    const right: PostextConfig = { ...base, page: { binding: 'right' } };
+    expect(sectionHasOverrides(right, 'writing')).toBe(true);
+    expect(sectionHasOverrides(right, 'page')).toBe(false);
+    expect(sectionHasOverrides({ ...base, cjk: { lineBreak: 'strict' } }, 'cjk')).toBe(true);
+    expect(groupOverrideCounts({ ...right, locale: 'zh-Hant', cjk: { lineBreak: 'strict' } })).toMatchObject({ writing: 2, page: 0, text: 0 });
   });
   it('separates debug from warnings inside config.debug', () => {
     const warningsOnly: PostextConfig = { ...base, debug: { warnings: { looseLines: false } } };
