@@ -62,6 +62,11 @@ export async function Footer() {
                     YouTube
                   </a>
                 </li>
+                <li>
+                  <a href="https://discord.gg/CSzm6hr8YD" target="_blank" rel="noopener noreferrer" className={LINK}>
+                    Discord
+                  </a>
+                </li>
               </ul>
             </div>
             <div>
