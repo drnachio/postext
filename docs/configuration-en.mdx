@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Configuration',
   description: 'Complete reference for all Postext layout configuration options',
   lang: 'en',
-  lastUpdated: '2026-09-24',
+  lastUpdated: '2026-09-29',
   readingTime: '30 min',
   order: 3,
 };
@@ -39,7 +39,7 @@ This reference is long. These are the main blocks:
 - [Headers & footers](#headers--footers) — per-page text and rule elements with placeholders, parity, and alignment.
 - [Body text](#body-text) — typography, hyphenation, orphans and widows.
 - [Document language](#document-language) — the top-level `locale`: hyphenation fallback, built-in resource types and the continuation strings of tables and split callouts, the language tagged into an accessible PDF; and the [languages and scripts](#languages-and-scripts) Postext sets.
-- [East Asian typography](#east-asian-typography) — `cjk`: the regional conventions and line breaking of Chinese, Japanese and Korean text, how their justified lines are spread, punctuation widths and hanging, the space between Han and Latin, and the character grid.
+- [East Asian typography](#east-asian-typography) — `cjk`: the regional conventions and line breaking of Chinese, Japanese and Korean text, how their justified lines are spread, punctuation widths and hanging, the space between Han and Latin, the character grid, upright numbers in vertical text, and the marks, ruby and warichu notes. The guide to all of it is [Chinese layout](/en/docs/chinese-layout).
 - [Headings](#headings) — shared defaults and H1–H6 overrides.
 - [Unordered lists](#unordered-lists) and [Ordered lists](#ordered-lists) — bullets, numbering, nesting.
 - [Math](#math) — LaTeX rendering, scale, colour, margins.
@@ -1532,9 +1532,9 @@ Ragged hyphenation lays paragraphs out with the line breaker that paragraphs wit
 
 In the Sandbox the switch is **Hyphenate ragged text**, under the paragraph alignment of the Body text section, with the zone below it. Under a justified body the same switch sits with the justification settings, for the ragged paragraph styles and boxes.
 
-#### Document language
+### Document language
 
-The top-level `locale` is the language of the document as a whole. It takes the same values as `hyphenation.locale` and is the fallback when that field is unset, so a Spanish book only needs `locale: 'es'` to hyphenate in Spanish. It also picks the language of the built-in continuation strings of tables and split callouts (`(cont.)` / *Continued* versus *Continúa*, see [Tables taller than the page](#tables-taller-than-the-page) and [Marks on a split box](#marks-on-a-split-box)) and of spelled-out heading numbers (*Chapter One* versus *Capítulo uno*, see [Spelled-out numbers](#spelled-out-numbers)), and is the language tagged into an accessible PDF. Unset, the engine assumes `'en-us'`; the sandbox falls back to the interface language and exposes the field at the top of the Body text section.
+The top-level `locale` is the language of the document as a whole. It takes the same values as `hyphenation.locale` and is the fallback when that field is unset, so a Spanish book only needs `locale: 'es'` to hyphenate in Spanish. It also picks the language of the built-in continuation strings of tables and split callouts (`(cont.)` / *Continued* versus *Continúa*, see [Tables taller than the page](#tables-taller-than-the-page) and [Marks on a split box](#marks-on-a-split-box)) and of spelled-out heading numbers (*Chapter One* versus *Capítulo uno*, see [Spelled-out numbers](#spelled-out-numbers)), and is the language tagged into an accessible PDF. Unset, the engine assumes `'en-us'`; the Sandbox falls back to the interface language and sets the field under **Design › Writing system**.
 
 It picks the built-in resource types too. When `resourceTypes` is not set, `buildDocument` numbers and captions with `defaultResourceTypes(locale)`, so `locale: 'de'` alone gives *Abbildung 1.1* and *Tabelle 1.1*. When `locale` is unset, the hyphenation locale stands in for it, for the resource types and the table strings alike. An explicit `resourceTypes` list always wins. Earlier versions used the English types whatever the `locale` unless you passed `defaultResourceTypes(locale)` yourself; a document that sets `locale` and wants to keep the English labels passes `resourceTypes: defaultResourceTypes('en')`. Sandbox books and bundles carry their own list, so they are not affected.
 
@@ -1576,12 +1576,13 @@ const config: PostextConfig = {
 };
 ```
 
-#### Languages and scripts
+### Languages and scripts
 
-Postext sets alphabetic scripts written left to right. Two families of writing systems are not fully supported yet:
+Postext sets alphabetic scripts written left to right, and Chinese across the page and down it. [Chinese layout](/en/docs/chinese-layout) explains how Chinese is set and which settings control it; the keys are under [East Asian typography](#east-asian-typography), [Vertical writing](#vertical-writing) and [Binding](#binding). What each script gets:
 
-- **Right-to-left scripts** (Arabic, Hebrew, Persian, Urdu…). There is no bidirectional algorithm: lines are broken and aligned as if the text ran left to right, against the left margin, and what each line shows depends on how it is painted. In the canvas and PDF output a left-aligned line without inline formatting is drawn as one run of text, which the browser or the PDF's font engine turns right to left by itself, so there a line all in one right-to-left script can read correctly, but one that mixes directions, numbers or punctuation does not. The HTML output, justified, centred and right-aligned lines, and lines with inline formatting are drawn word by word from left to right: each word reads correctly, but the words come out in reverse reading order.
-- **Chinese, Japanese and Korean** are set horizontally, or down the page with `layout.writingMode: 'vertical-rl'` (see [Vertical writing](#vertical-writing)). A paragraph that holds more CJK characters than word spaces is broken between characters under the clreq line-start and line-end rules of `cjk.lineBreak` (no line starts with 。、」 or ー, none ends with 「 or （), keeps —— and …… whole, a number with its signs and a Latin word whole, and a justified line is spread between its characters to the measure: see [East Asian typography](#east-asian-typography). A Latin paragraph that quotes a few CJK words keeps optimal line breaking and may break next to them; a CJK bracket, the middle dot or a fullwidth sign quoted in Latin text (〈h〉, ％) changes nothing. Punctuation widths, hanging punctuation, the space between Han and Latin and the character grid are set as in [East Asian typography](#east-asian-typography), along the line in either writing mode, and so are emphasis dots, the proper-name and book-title marks, ruby and warichu notes (see [Marks, ruby and warichu](#marks-ruby-and-warichu)). Korean text breaks between syllables as well as at its spaces.
+- **Chinese** is set by the CJK composer when a paragraph holds more CJK characters than word spaces: its lines break between characters under the line-start and line-end rules of `cjk.lineBreak` (no line starts with 。、」 or ー, none ends with 「 or （), keep —— and ……, a number with its signs and a Latin word whole, and a justified line is spread between its characters to the measure. Punctuation widths, hanging punctuation, the space between Han and Latin, the character grid, emphasis dots, the proper-name and book-title marks, ruby and warichu notes follow the region of `locale`, across the line or down it (`layout.writingMode: 'vertical-rl'`). A Latin paragraph that quotes a few CJK words keeps optimal line breaking and may break next to them; a CJK bracket, the middle dot or a fullwidth sign quoted in Latin text (〈h〉, ％) changes nothing.
+- **Japanese and Korean** go through the same composer and are set without hyphenation, but with the mainland Chinese defaults: their own rules (JLREQ, KLREQ) are not implemented. Korean text breaks between syllables as well as at its spaces.
+- **Right-to-left scripts** (Arabic, Hebrew, Persian, Urdu…) are not supported yet. There is no bidirectional algorithm: lines are broken and aligned as if the text ran left to right, against the left margin, and what each line shows depends on how it is painted. In the canvas and PDF output a left-aligned line without inline formatting is drawn as one run of text, which the browser or the PDF's font engine turns right to left by itself, so there a line all in one right-to-left script can read correctly, but one that mixes directions, numbers or punctuation does not. The HTML output, justified, centred and right-aligned lines, and lines with inline formatting are drawn word by word from left to right: each word reads correctly, but the words come out in reverse reading order. `page.binding: 'right'` lays out right-bound spreads for such a book, but not its lines.
 
 Hyphenation patterns ship for eight languages (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`); the built-in resource types and continuation strings exist in those eight and in Chinese. Chinese, Japanese and Korean are set without hyphenation. Any other language is hyphenated with the US English patterns, with a console warning, and gets the English strings. For such a document, set `hyphenation.enabled: false` and pass `resourceTypes` and the `tableStyle` continuation strings in its language.
 
@@ -3069,7 +3070,7 @@ import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefault
 
 ## East Asian typography
 
-The `cjk` property sets how Chinese, Japanese and Korean text is composed: which regional conventions it follows, where its lines may break, how wide its punctuation is set and whether it hangs, the space between Han and Latin, the character grid of the type area, and how the Chinese marks, ruby readings and warichu notes of the text print. Every field is optional, and `'auto'` follows the region of the document language (`locale`), so a book with `locale: 'zh-Hant'` breaks its lines and sets its punctuation the Taiwan way without setting anything else.
+The `cjk` property sets how Chinese, Japanese and Korean text is composed: which regional conventions it follows, where its lines may break, how wide its punctuation is set and whether it hangs, the space between Han and Latin, the character grid of the type area, and how the Chinese marks, ruby readings and warichu notes of the text print. Every field is optional, and `'auto'` follows the region of the document language (`locale`), so a book with `locale: 'zh-Hant'` breaks its lines and sets its punctuation the Taiwan way without setting anything else. [Chinese layout](/en/docs/chinese-layout) explains the rules behind these settings, region by region, with two complete configurations.
 
 ```ts
 interface CjkConfig {

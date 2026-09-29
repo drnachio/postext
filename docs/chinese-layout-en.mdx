@@ -1,0 +1,416 @@
+{/* docs/chinese-layout-en.mdx */}
+
+export const metadata = {
+  title: 'Chinese layout',
+  sidebarTitle: 'Chinese layout',
+  description: 'How Postext sets Chinese, horizontally and vertically: regions, line breaking, punctuation widths, justification between characters, the character grid, right-bound books, upright numbers, marks, ruby, warichu, Chinese numerals and fonts',
+  lang: 'en',
+  lastUpdated: '2026-09-29',
+  readingTime: '26 min',
+  order: 6,
+};
+
+# Chinese layout
+
+**A Chinese page is a grid of square cells, and the rules that fill it depend on where the book is printed.**
+
+Postext sets Chinese across the page and down it, from one Markdown source and one configuration. The same engine places the punctuation of a mainland novel where GB/T 15834 puts it and that of a Taiwan edition where the Ministry of Education's handbook does, breaks their lines under each region's rules, adjusts the blank inside each mark, spreads a justified line between its characters, stands short numbers upright in a vertical column, and turns a book's spreads so that it opens from the right. This page explains what the engine does and which settings control it. The [configuration reference](/en/docs/configuration#east-asian-typography) lists every key with its default, and the [document format](/en/docs/document-format#chinese-marks-ruby-and-warichu) describes the markup.
+
+The rules follow the W3C *Requirements for Chinese Text Layout* ([clreq](https://www.w3.org/TR/clreq/)), cited below by section, and the national standards it draws on. The sources are listed at the end.
+
+## Cells, grids and regions
+
+A Han character fills a square one em wide and one em high, and so does every full-width punctuation mark: half an em of glyph and half an em of blank. Set solid, the characters line up down the page as well as along the line. That is why a Chinese type area is specified in characters and lines rather than millimetres: body size, characters per line, lines per page, the line gap and, with two columns, the gutter (clreq §7.1.1). A 28-character line at 10.5 pt is 294 pt wide, and every justified line of the book ends in the same cell.
+
+A horizontal page runs its lines left to right, top to bottom, and is bound on the left like a Western book. A vertical page runs its characters top to bottom and its lines from the right edge to the left; the book is bound on the right, so its first page is a left-hand page and its spreads read from right to left (clreq §7.1.1.1).
+
+<Illustration name="ChinesePageModels" data='{"title": "Horizontal and vertical Chinese pages", "desc": "Two spreads. The horizontal book is bound on the left: page 2 on the left, page 3 on the right, lines running left to right and stacked from the top. The vertical book is bound on the right: page 2 on the right, page 3 on the left, characters running top to bottom in columns that advance from the right edge to the left.", "caption": "The same text, set horizontally and bound on the left, or vertically and bound on the right.", "horizontalTitle": "Horizontal, bound on the left", "verticalTitle": "Vertical, bound on the right", "spine": "spine", "lineDirection": "lines run left to right", "columnDirection": "columns run from the right", "pageOrder": "next page", "sample": "此開卷第一回也作者自云因曾歷過一番夢幻之後故將真事隱去"}' />
+
+### Region before script
+
+Simplified and Traditional characters are a matter of spelling. The typographic rules follow the place of printing: a classic in Traditional characters printed in Beijing follows the mainland standard, and a Taiwan novel follows Taiwan's. clreq recommends that software "distinguish typographical rules by 'region' rather than 'Traditional or Simplified'" ([§1.2](https://www.w3.org/TR/clreq/#x1-2-basic-features-of-chinese-script)), and Postext reads both from the document language, `config.locale`:
+
+- The **script** picks the built-in words: 图 or 圖 for figures, （续） or （續） after a continued table caption, 见 or 見 in the index, and the numerals a heading template writes. `zh`, `zh-Hans`, `zh-CN` and `zh-SG` are Simplified; `zh-Hant`, `zh-TW`, `zh-HK` and `zh-MO` are Traditional.
+- The **region** picks the typographic defaults of the `cjk` key. CN, SG and MY are the mainland, TW is Taiwan, HK and MO are Hong Kong, and a tag without a region follows its script: `zh-Hant` reads as Taiwan, `zh` and `zh-Hans` as the mainland. `cjk.region` overrides it.
+
+Write the whole tag: `zh-Hans` or `zh-Hant`, and the region when you know it (`zh-Hans-CN`, `zh-Hant-TW`, `zh-Hant-HK`). The same tag is declared in the HTML (`lang` on the document) and in the PDF (`/Lang`), and the browser and the PDF reader use it to choose the region's glyph shapes: Unicode gives 骨 one code point, and a mainland and a Taiwan font draw it differently. In a Chinese document hyphenation is off unless you turn it on for the Latin words.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Default</th>
+      <th>Mainland (<code>zh-Hans</code>, <code>zh-CN</code>)</th>
+      <th>Taiwan (<code>zh-Hant</code>, <code>zh-TW</code>)</th>
+      <th>Hong Kong (<code>zh-HK</code>, <code>zh-MO</code>)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Line breaking (<code>lineBreak</code>)</td><td><code>gb</code></td><td><code>basic</code></td><td><code>basic</code></td></tr>
+    <tr><td>Punctuation width (<code>punctuationWidth</code>)</td><td><code>kaiming</code></td><td><code>fullwidth</code></td><td><code>fullwidth</code></td></tr>
+    <tr><td>Two marks that meet take 1.5 em (<code>compressAdjacent</code>)</td><td>yes</td><td>no</td><td>yes</td></tr>
+    <tr><td>Brackets trimmed at line edges (<code>trimLineStart</code>)</td><td>yes</td><td>no</td><td>yes</td></tr>
+    <tr><td>、，。 across the page</td><td>lower left of the cell</td><td>centred</td><td>centred</td></tr>
+    <tr><td>、，。 down the page</td><td>upper right of the cell</td><td>centred</td><td>centred</td></tr>
+    <tr><td>Interpunct ·</td><td>half an em</td><td>one em</td><td>one em</td></tr>
+    <tr><td>Marks that may hang, with <code>hangingPunctuation</code> on</td><td>、，。．；：？！</td><td>、，。． in vertical text only</td><td>、，。． in vertical text only</td></tr>
+    <tr><td><code>:book[…]</code> (<code>bookTitleMark</code>)</td><td>《》 around the title</td><td>wavy line</td><td>wavy line</td></tr>
+    <tr><td><code>*…*</code> on Chinese characters (<code>emphasis</code>)</td><td>emphasis dots</td><td>emphasis dots</td><td>emphasis dots</td></tr>
+    <tr><td>Figure, continued table, see</td><td>图, （续）, 见</td><td>圖, （續）, 見</td><td>圖, （續）, 見</td></tr>
+    <tr><td>Index groups (<code>index.groupBy</code>)</td><td>pinyin initials</td><td>stroke counts</td><td>stroke counts</td></tr>
+  </tbody>
+</table>
+
+Japanese and Korean documents get the no-hyphenation rule and the CJK composer, but no rules of their own yet: they are set with the mainland Chinese defaults, and a paragraph in kana or hangul keeps the font's own quotes and dashes.
+
+### The Markdown of a Chinese chapter
+
+Chinese text is written in the same Markdown as any other. A few rules make it comfortable:
+
+- **Wrap lines anywhere.** A line end between two Chinese characters is dropped, as CSS drops it, so an editor that wraps at 80 columns adds no spaces to the text. Between two marks (`”⏎“`) the characters beyond them decide. A space typed inside a line stays.
+- **Indent with the configuration.** The two-character first-line indent is `bodyText.firstLineIndent: { value: 2, unit: 'em' }`; the parser drops the ideographic spaces (U+3000) a paragraph starts with.
+- **Type the markup in ASCII.** A Chinese input method gives `：：：`, `＃`, `［＾1］`, `｛…｝` and `＊＊`; they print as text, and the build reports each line as `fullwidthMarkup`, with the ASCII form to type. Attribute values may be quoted with “…” or 「…」 and may use `＝`, and heading attributes may follow the title with no space: `# 第一回{style="hui"}`. Keys stay ASCII; a key in Chinese (`作者=曹雪芹`) is dropped with an `attributeKeyInvalid` warning.
+- **Emphasis and ranges.** `_` and `__` work between Chinese characters (`中文_斜体_中文`). A `~` between two digits or two Chinese words is a range and stays as typed (`3~5天`, `周一~周五`).
+- **Ids and file names** keep Chinese letters: a chapter titled 第一回 is stored as `chapters/001-第一回.md`.
+
+The directives for Chinese marks, ruby, warichu and orientation are described [below](#marks-and-annotations) and in the [document format](/en/docs/document-format#chinese-marks-ruby-and-warichu).
+
+## Horizontal composition
+
+A paragraph that holds more Chinese, Japanese or Korean characters than word spaces is set by the CJK composer. It cuts the text into units (one per character, one per Latin word or number, one per two-em dash or ellipsis), measures each once, and fills the lines one after the other. There is nothing for an optimal search like Knuth–Plass to weigh: almost every gap between two characters is a place to break, and the rules below remove the few that are not. A Latin paragraph that quotes a Chinese title keeps Knuth–Plass and may break next to its Chinese characters under the same rules. Captions, table cells, footnotes and boxes break at the document's level too.
+
+### Line breaking
+
+The line-start and line-end rules (避头尾) say which marks may not open a line and which may not close one. `cjk.lineBreak` picks one of the four levels of [clreq §6.1.1](https://www.w3.org/TR/clreq/#x6-1-1-prohibition-rules-for-line-start-and-line-end):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '90px' }}>Level</th>
+      <th>Never at the start of a line</th>
+      <th>Never at the end of a line</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>none</code></td><td>Nothing: newspapers in Taiwan and Hong Kong break anywhere.</td><td>Nothing.</td></tr>
+    <tr><td><code>basic</code></td><td>Pause and stop marks 、，；：。！？, closing quotes and brackets ”’」』）〕］》〉, connectors ～ and a single —, interpuncts ·‧・, iteration marks 々, units % ‰ ° ℃.</td><td>Opening quotes and brackets “‘「『（〔［《〈, currency signs ¥ $ €.</td></tr>
+    <tr><td><code>gb</code></td><td><code>basic</code> and the solidus ／ (GB/T 15834—2011 §5.1.9).</td><td><code>basic</code> and the solidus.</td></tr>
+    <tr><td><code>strict</code></td><td><code>gb</code> and the two-em marks —— ⸺ …… ⋯⋯.</td><td><code>gb</code>.</td></tr>
+  </tbody>
+</table>
+
+At every level a line never splits the two-em dash —— or the ellipsis ……, a number and its sign or unit (¥5,999, 50%, 120㎡, −3 ℃), a Latin word, or a number written in full-width digits (１２：３０); a footnote marker, a `:ref` and a superscript stay with the character before them; and a line never breaks before an ideographic space. A Latin word or a web address wider than the whole line is the one exception: the word is divided at a syllable, the address at one of its joints.
+
+When the next character does not fit, the composer looks at it. If it may open a line, it goes down and a justified line is spread. If it may not (a comma, a closing bracket, the character after an opening one), the line first tries to take it in by giving up punctuation blank, the push-in of [clreq §6.2.2.3](https://www.w3.org/TR/clreq/#x6-2-2-3-procedures-for-inter-character-spacing-reduction); only when that blank does not cover the overflow does the line end earlier and carry the character before it down with the mark. Push-in comes first because it keeps the line's characters together; push-out is the fallback.
+
+### Punctuation widths
+
+A full-width mark is half an em of glyph and half an em of blank, and what the settings adjust is the blank, never the glyph ([clreq §6.3.2](https://www.w3.org/TR/clreq/#x6-3-2-punctuation-width-adjustment)). Where that blank sits depends on the region. The mainland sets its pause and stop marks in a corner of the cell, so the blank follows the glyph; Taiwan and Hong Kong centre them, with a quarter em on each side. Opening brackets and quotes carry their blank before the glyph, closing ones after it, in every region.
+
+<Illustration name="PunctuationPositions" data='{"title": "Where the pause and stop marks sit in their cell", "desc": "Four strips of cells with the characters 甲 乙 丙 丁 followed by a full stop, a comma, a pause mark and a colon. Mainland text across the page puts the marks in the lower left of the cell; mainland text down the page puts them in the upper right. Taiwan and Hong Kong text centres them in both directions.", "caption": "The glyph takes half the cell; the region decides which half.", "mainland": "Mainland", "taiwan": "Taiwan and Hong Kong", "horizontal": "across the page", "vertical": "down the page", "sample": "甲乙丙丁"}' />
+
+`cjk.punctuationWidth` chooses how much blank a mark keeps:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '150px' }}>Style</th>
+      <th>Inside the line</th>
+      <th>At the end of the line</th>
+      <th style={{ width: '180px' }}>Where it is used</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fullwidth</code> 全角式</td><td>Every mark one em.</td><td>One em.</td><td>Taiwan and Hong Kong books; most web text.</td></tr>
+    <tr><td><code>kaiming</code> 开明式</td><td>。．？！ one em; ，、；：, brackets, quotes and interpuncts half an em.</td><td>Every mark half an em.</td><td>Most mainland books; the default of 方正书版.</td></tr>
+    <tr><td><code>lineEndHalf</code> 行末半角</td><td>Every mark one em.</td><td>Every mark half an em.</td><td>GB/T 15834—2011 §5.1.10 read literally.</td></tr>
+    <tr><td><code>halfwidth</code> 半角式</td><td>Every mark half an em.</td><td>Half an em.</td><td>Dictionaries.</td></tr>
+  </tbody>
+</table>
+
+Two further settings act on marks in any style. With `compressAdjacent`, two marks that meet give up the blank between them, so `。」`, `》（` or `，「` take one and a half ems instead of two. With `trimLineStart`, an opening bracket that starts a line gives up its leading half, so its ink lines up with the text edge, and a closing bracket that ends a line its trailing half. Both are on for the mainland and Hong Kong and off for Taiwan, whose books keep every mark in its cell.
+
+<Illustration name="PunctuationWidths" data='{"title": "Full width and Kaiming punctuation", "desc": "The line 曹雪芹著《红楼梦》（又名《石头记》）。 set twice. At full width every mark takes one em and the line is 19 em long; the blank half of each mark is tinted. In the Kaiming style the brackets take half an em each and the full stop at the end of the line half an em, and the same line is 15.5 em long.", "caption": "The same line at full width (19 em) and in the Kaiming style (15.5 em).", "fullwidth": "Full width (全角式)", "kaiming": "Kaiming (开明式)", "blank": "blank given up", "sample": "曹雪芹著《红楼梦》（又名《石头记》）。", "ems": "em"}' />
+
+The quotation marks, the ellipsis, the dash and the interpunct are shared with Latin text, and a Latin font draws them narrow. In Chinese text (the nearest character on either side is Chinese) they take a Chinese mark's box whatever the font's advance: “ and ” one em each (half under Kaiming), …… two ems centred, · half an em on the mainland and one em elsewhere. A 破折号 (——) prints as one unbroken rule across its two ems, raised to the middle of the characters. Next to Latin words the same marks keep the font's widths, so `他说：He said “yes” and left.` sets its English quotes as English.
+
+Set a book in a face of its region: Noto Serif SC or Source Han Serif SC for the mainland, TC for Taiwan, HK for Hong Kong. The layout decides which side of a mark holds the blank from the region, not from the font, and a Traditional face under a mainland tag compresses the wrong side of its centred marks.
+
+### Hanging punctuation
+
+With `hangingPunctuation: 'allow'`, a comma or full stop that would otherwise open the next line, and that push-in cannot take in, may hang past the end of the line ([clreq §6.1.3](https://www.w3.org/TR/clreq/#x6-1-3-hanging-punctuation-at-line-end)). `'force'` hangs such a mark whenever it ends a line. One mark at most hangs, never one touching another mark (`。」`), and never in horizontal Taiwan or Hong Kong text, whose centred marks would look cut off. Most Chinese books do not hang punctuation; clreq recommends it with a character grid. The default is `'none'`.
+
+### Justification between characters
+
+Chinese body text is justified, and a justified line is spread between its characters. A line that is not its paragraph's last is filled in the order of [clreq §6.2.2.4](https://www.w3.org/TR/clreq/#x6-2-2-4-procedures-for-inter-character-space-expansion):
+
+1. The spaces between Latin words, up to half an em each.
+2. The spaces between Han and Latin (next section), up to half an em each.
+3. Every gap between characters, equally: between two Han characters, between a character and a mark, between Han and a Latin word. Never inside a Latin word, a number or a two-em mark, and never next to a connector (～, a single —) or a solidus.
+
+A line that would need more than half an em between its characters (or more than `bodyText.maxJustifyTracking`, when set) takes that much and ends short of the measure; the build reports it as a `cjkLooseLine` content warning, which the Sandbox calls **CJK line set short**. A long Latin word or web address that cannot come up is the usual cause. The last line of a paragraph is set solid. [Hyphenation & Justification](/en/docs/justification#chinese-japanese-and-korean) has the details, among them how a CJK line counts for the loose-line highlight and how column balancing runs a Chinese paragraph one line longer.
+
+### Space between Han and Latin
+
+`cjk.latinSpacing` sets a quarter em between a Han character and a Latin letter or digit next to it ([clreq §6.3.3](https://www.w3.org/TR/clreq/#x6-3-3-mixed-text-composition-in-horizontal-writing-mode)): `1999年的iPhone 15售价为¥5,999。` prints with a gap after 1999, before and after iPhone 15, and none before ¥, which is a sign. There is none at the start or end of a line, none between a Latin word and a Chinese mark (`用iPhone，`), and none inside Chinese brackets (`（iPhone）`). A space the author typed at such a boundary, as much web text has, is replaced by the Han–Latin space, so `用 iPhone 拍照` and `用iPhone拍照` set alike. On a justified line the space grows to half an em before the characters are spread, and a line taking in one more character shrinks it to an eighth. The space is not text: copying, search and the PDF's extracted text read `用iPhone拍照` as written. `0` turns it off.
+
+### The character grid
+
+`cjk.grid` specifies the type area the Chinese way, in characters per line and lines per page:
+
+```ts
+cjk: { grid: { enabled: true, charsPerLine: 28, linesPerPage: 28, show: true } }
+```
+
+Each column becomes `charsPerLine` ems of the body size and the type area `linesPerPage` lines of the body line height. The configured `page.margins` act as minimums: the type area is centred in the room they leave, each margin growing by half the difference. With two columns the gutter is rounded to a whole number of ems. A number larger than fits is reduced and reported (`cjkGridClamped`); an unset one takes as many as fit. `show` draws the grid (稿纸) on screen, one square per character position; the PDF leaves it out unless `renderToPdf` is given `characterGrid: true`.
+
+The usual books, at 五号 (10.5 pt) with a 6 pt line gap, a 16.5 pt line height:
+
+- 大32开, 140 × 203 mm, 28 × 28 characters: a 103.7 mm measure and a 163 mm type area.
+- 16开, 184 × 260 mm, two columns of 23 characters at 小五 (9 pt, 13.5 pt lines) with a two-character gutter.
+
+clreq recommends lines of 17 to 40 characters, at most 48 across the page and 55 down it, and a line gap of half to one character ([clreq §7.1.1.5](https://www.w3.org/TR/clreq/#x7-1-1-5-considerations-when-designing-the-type-area)). Chinese point sizes have names: 五号 10.5 pt is book text, 小五 9 pt newspapers and notes, 小四 12 pt, 四号 14 pt, 三号 16 pt, 二号 22 pt. Postext takes sizes in points; write the 号 size as its point value.
+
+## Numbering
+
+Every numbering setting takes the Chinese numeral styles of CSS Counter Styles: page numbers, ordered lists, figure counters, heading templates, parts and PDF page labels. `simp-chinese-informal` writes 一, 十二, 一百零一; `trad-chinese-informal` the same with 萬 and 億; `cjk-decimal` 二〇二六; `simp-chinese-formal` and `trad-chinese-formal` the financial numerals 壹贰叁; `circled-decimal` ①; and there are the heavenly stems 甲乙丙 and the earthly branches 子丑寅. In a template, `一` names the informal numerals of the document's script, so one template serves both editions:
+
+```ts
+headings: {
+  levels: [{ level: 1, numberingTemplate: '第{1:一}回', numberSeparator: '　' }],
+},
+```
+
+That gives 第一回 to 第一百二十回, followed by an ideographic space before the title. A 回目 couplet is written with a line break in the heading, `# 甄士隱夢幻識通靈 \\ 賈雨村風塵懷閨秀`: the opener prints two lines, and the contents, running heads and PDF bookmarks join the halves with an ideographic space. `{1:words}` writes the number in Chinese words in a Chinese document (十二) and `{1:ordinal}` with 第 (第十二). A part numbered `:::part{number="卷三"}` reads as 3 for the placeholders that need a number.
+
+Ordered lists follow the hierarchy of GB/T 15834—2011 (一、 （一） 1. （1） ①) with a `prefix` before the number:
+
+```ts
+orderedLists: {
+  levels: [
+    { level: 1, numberFormat: 'simp-chinese-informal', separator: '、' },
+    { level: 2, numberFormat: 'simp-chinese-informal', prefix: '（', separator: '）' },
+    { level: 3, numberFormat: 'arabic', separator: '.' },
+    { level: 4, numberFormat: 'arabic', prefix: '（', separator: '）' },
+    { level: 5, numberFormat: 'circled-decimal', separator: '' },
+  ],
+},
+```
+
+The built-in Chinese figure and table types number by chapter with a hyphen (图1-1, 表3-2). Chinese captions put no space between the label and the number and an ideographic space before the text: `captionStyle: { labelNumberGap: '', labelSeparator: '　' }` gives 图1-1　大观园图, and a `:ref` reads 图1-1. The PDF writes Chinese page labels, so the reader's page box shows 一, 二, 三 where the page prints them.
+
+A back-of-book index of a Chinese book groups its entries by pinyin initial (Simplified) or by stroke count (Traditional), from the collator's own data (`index.groupBy`, `'auto'` by default). A character with several readings files under the collator's usual one; give such an entry a `sort` key in characters that read as intended: `:index[重阳]{sort="崇阳"}`. See [Back-of-book index](/en/docs/configuration#back-of-book-index).
+
+## Vertical writing
+
+`layout.writingMode: 'vertical-rl'` sets the book down the page. The whole composition above applies unchanged, down the line instead of across it; what changes is the page around it and the way each character stands.
+
+### The page turned a quarter turn
+
+A vertical page is laid out as a horizontal page turned a quarter turn clockwise. Its lines are the columns of vertical text, read from the right, and everything the engine does with lines (breaking, justification, floats, footnotes, keep-together rules, balancing) works in that turned frame. On the sheet:
+
+- A column of the layout is a **tier** (栏). `layoutType: 'double'` gives two tiers stacked top to bottom, filled from the upper right, with the column rule a horizontal rule between them. Tiers are not balanced at the end of a chapter ([clreq §7.1.3.4](https://www.w3.org/TR/clreq/#x7-1-3-4-handling-of-spaces-just-before-the-new-recto-page-breaks-and-new-edges)).
+- The top of the flow is the sheet's **right** edge: a chapter opener is a band down the right of the page, a top float stands at the right, a bottom float at the left, footnotes land at the left end of each tier.
+- `page.margins` keep their names on the sheet. Running heads, folios, crop marks and the background stay on the sheet too.
+- A heading style may set its own writing mode, so a horizontal appendix or index can follow a vertical book.
+
+A host reading the layout finds `VDTPage.flow` on a vertical page, and helpers (`flowToPage`, `pageToFlow`, `flowRectToPage`) to map between the flow and the sheet. See [Vertical writing](/en/docs/configuration#vertical-writing) in the configuration reference.
+
+### Right binding
+
+`page.binding` is `'auto'` by default, and auto is the right edge for a vertical book. Page 1 is still odd and still the recto, so parity settings, `:::pagebreak{parity="odd"}` and page counts keep their meaning; what changes is the side the recto sits on, the left page of the spread (clreq §7.1.3.3). With mirrored margins the odd pages carry their inner margin on the right. The Sandbox shows the spreads as 3 | 2, page 1 alone on the left of the spine, and its HTML viewer runs the pages right to left. The PDF asks viewers for the same (`/Direction /R2L` and `/PageLayout /TwoPageRight`); Acrobat and Foxit follow it, Chrome's built-in viewer does not. A horizontal book can be bound on the right too. See [Binding](/en/docs/configuration#binding).
+
+### How each character stands
+
+Which characters stand upright and which are turned follows Unicode's vertical orientation property ([UAX #50](https://www.unicode.org/reports/tr50/)), with the Chinese conventions of clreq Appendix A on top:
+
+- Han characters, kana, bopomofo and full-width letters stand upright, one em each.
+- Latin words and numbers longer than the upright limit (next section) are turned a quarter turn clockwise and keep their horizontal widths.
+- Brackets and quotes take their vertical forms (﹁﹂﹃﹄︵︶). In mainland text “ ” ‘ ’ read as 『』「」, as GB/T 15834—2011 §5.2.3 prescribes.
+- Pause and stop marks are never turned, although UAX #50 turns ：； for Japanese. A mainland font puts 、，。． in the upper right of the cell and ！？：； in its right half (GB/T 15834—2011 §5.2.1); Taiwan and Hong Kong fonts centre them.
+- Dashes, ellipses and the wave dash run down the column; a 破折号 is one rule down the axis of the characters.
+- The signs Unicode sets upright (× © ± § ℃ ①) stand in a cell of their own, inside a number too: `30×40` is 30, × and 40, all upright.
+
+The widths of punctuation, compression, hanging and the Han–Latin space work down the line as they work across it: a Kaiming 、 takes half a cell, `」「` take one and a half, and `：；？！` keep a whole cell in every region.
+
+### Numbers set upright
+
+A short number reads better standing in one cell than lying on its side: tate-chu-yoko (縱中橫, [clreq §2.1.3](https://www.w3.org/TR/clreq/#x2-1-3-mixed-text-composition-in-vertical-writing-mode)). `cjk.uprightDigits` sets how many digits such a number may have: `2` by default, `3` or `4`, or `0` for none. The whole number stands in the cell or none of it, so under the default `2026年9月28日` sets 2026 sideways, 9 upright and 28 side by side in one cell; `A4`, `3.14` and `10,000` stay sideways with their letters and separators. Three marks override the setting by hand:
+
+```markdown
+第:tcy[120]回，:upright[GDP]增長:sideways[12]倍。
+```
+
+`:tcy[…]` sets its text in one upright cell, squeezed to the em when wider; `:upright[…]` stands each character in a cell of its own, for an acronym read letter by letter; `:sideways[…]` turns the run. In horizontal text they change nothing. Literary texts usually write numbers in Chinese numerals, which need none of this.
+
+### Figures, tables and captions
+
+Figures and tables stand upright in a vertical book. A figure fills the height of its tier as far as its caption allows, and the width it takes on the sheet is the room it uses in the flow; its caption is set horizontally under it, and so are the cells of a table (clreq notes that captions, tables and page numbers usually keep horizontal writing, §2.1.1). A table taller than its tier has its rows cut across the tiers. A `placement.rotate` is ignored where a figure is first cited in vertical text, with a `rotateIgnoredVertical` warning.
+
+### Running heads and folios
+
+Running heads and folios stay on the sheet and are set horizontally, as in most vertical books (clreq §7.2). Two other conventions are common, and a text element can be set vertically (`writingMode: 'vertical-rl'`) and anchored to the page's outer margin (`anchor.to: 'outer'`) for them:
+
+- **Fore-edge heads**: the chapter title down the outer margin, starting about four characters below the head of the type area, and the folio ending about five characters above its foot, in Chinese numerals, at about 80 % of the body size. The Sandbox adds them in one step (**Header › Fore-edge heads (vertical)**).
+- **Folio at the outer foot corner**, as Taiwan's rules for vertical books ask: a horizontal element in the footer at the bottom left of odd pages and the bottom right of even pages of a right-bound book.
+
+The template is in the configuration reference, under [Vertical text elements](/en/docs/configuration#vertical-text-elements).
+
+### Vertical text in each output
+
+The canvas paints a vertical page itself, each upright character turned back about the centre of its cell. To use the font's own vertical forms of the punctuation, a browser host loads a twin of each family with the OpenType `vert` feature on (`loadVerticalAlternates`); the Sandbox does it for every family of a vertical book, and without the twin the engine turns or moves the marks itself. The PDF shows upright characters through a second, vertical-mode (`Identity-V`) font dictionary over the same embedded file, shaped with `vert`, so readers select and copy a column as one line and nothing is embedded twice; a tagged PDF declares `WritingMode /TbRl`. The HTML sets each line as a box with `writing-mode: vertical-rl` and `text-combine-upright` for numbers in one cell. The three outputs place every character within a few hundredths of an em of HarfBuzz's vertical layout.
+
+## Marks and annotations
+
+Chinese editions mark text between the lines rather than with italics or underlining, gloss characters with their readings, and set commentary inside the line. Five directives cover these. Each keeps its text in the paragraph, so search, the contents, index anchors and copied text read the characters as written, and only what is drawn around them depends on the configuration.
+
+```markdown
+此事:dots[不可]輕忽。:name[賈寶玉]與:name[林黛玉]讀:book[西廂記]。
+
+{滿紙|mǎn|zhǐ}荒唐言，:ruby[一把]{rt="yì bǎ"}辛酸淚！
+
+寶玉:warichu[甲戌側批：此是第一首標題詩。]{open="〔" close="〕"}道：
+```
+
+### Emphasis dots
+
+`:dots[…]` sets one emphasis dot (着重号) under each character across the page and right of it down the page, none on punctuation (clreq §5.3.1; GB/T 15834—2011 §4.12, and §5.2.5 for vertical text). `style` picks a dot, an open circle or a sesame dot. Markdown emphasis does the same in a Chinese document: `cjk.emphasis` is `'dots'` by default there, so `*不可*` prints dots, since a Chinese face has no italics to fall back on. Latin letters inside the same emphasis keep their italics.
+
+### Proper-name and book-title marks
+
+`:name[…]` draws the proper-name line (专名号) under the text, left of it in vertical text. `:book[…]` prints the book-title mark (书名号) as `cjk.bookTitleMark` says: 《》 around the title, as modern mainland books write it (〈〉 for a title inside another), the wavy line under it of classical and Taiwan editions, or nothing. One source therefore serves a modern mainland edition and a classical one. Where two names or two titles meet, each line gives up an eighth of an em at the join, so `:name[賈寶玉]:name[林黛玉]` reads as two names.
+
+### Ruby: pinyin and zhuyin
+
+`:ruby[紅樓]{rt="hóng lóu"}` sets a reading over each character; with as many readings as characters a line may break between them, and `group` sets one reading over the whole word. The compact form `{紅樓|hóng|lóu}` reads the same when the base holds Chinese characters, so `{x|x>0}` in Latin prose stays text. Readings in bopomofo (zhuyin) stand in a column right of each character, with the tone mark beside the column and half of its ink above the last symbol (clreq §5.5.3.3); pinyin goes over the text across the page and right of it down the page. A reading wider than its base widens the base's box, less a quarter of the ruby size it may pass onto a neighbour without a reading. `cjk.ruby` sets the face, size (half the text by default), colour and default side.
+
+### Warichu
+
+`:warichu[…]` sets a note in two half-size rows inside the line (双行夹注), the form of the commentary in classical editions. The upper row takes at least half of each part, so the lower row is never the longer, and a mark that may not open a line never opens the lower row. A long note fills what is left of the line and goes on in the next line, column or page, and its brackets go only before the first row and after the last. In vertical text the right sub-column is read first. `cjk.warichu` sets the size, colour and default brackets.
+
+### Room in the leading
+
+The line pitch never changes: dots, lines and readings live in the gap between lines. The build warns when a paragraph's gap is too narrow for what it carries: under half an em with marks on one side, five eighths with marks on both (clreq §5.6.1), reported as `cjkMarksExceedLeading`, and `rubyExceedsLeading` for readings taller than the gap. Give annotated paragraphs a paragraph style with more leading. Marks and readings are drawn in paragraphs, headings, list items, quotes and boxes; captions, table cells, notes and running heads print the text without them.
+
+## Fonts
+
+Postext sets each style in one family and does not fall back to another family for a missing character: Noto Serif TC does not borrow from Noto Serif SC. The face must cover every character the book prints, punctuation included.
+
+- **In the browser and the Sandbox**, a Chinese family comes from Fontsource as about a hundred files per weight, each holding part of the characters and declared with its `unicode-range`; the browser loads the files the text touches. The Sandbox's PDF tab does the same: its font provider reads the family's stylesheet and hands `renderToPdf` the slices the pages use, each embedded as a subset. Fontsource's named subsets are incomplete (Noto Serif TC's `chinese-traditional` has no full-width ，！？), so use the numbered slices.
+- **In a bundle**, ship the faces subset to the book's own characters, punctuation and vertical forms included. Cut a static file per weight from a variable font: pdf-lib embeds a variable font's default instance, so a bold heading would print at the default weight (`variableFontDefaultInstance`). Prefer TrueType builds (Google Fonts, Fontsource) to the CFF `.otf` files, which postext-pdf embeds whole, up to 25 MB a weight (`cffEmbeddedWhole`). Keep the layout features (`vert`, `vrt2`) and the vertical metrics (`vhea`, `vmtx`) when subsetting: vertical punctuation comes from them.
+- **Missing glyphs** print as the font's empty box. `renderToPdf` reports them per face (`missingGlyph`), and the Sandbox lists them in the Checks panel after each PDF.
+- **The region's face.** Noto Serif SC, TC and HK draw the same code points in their region's shapes, and put the pause and stop marks where their region puts them. A book's face and its locale should agree.
+- **No italics.** Chinese faces have none; the browser and the PDF would slant the glyphs. Set emphasis with dots, a Kai face (楷体, such as LXGW WenKai) or bold.
+
+The traditional voices of a Chinese book map onto families: Song (宋体, Noto Serif) for the text, Hei (黑体, Noto Sans) for headings and labels, Kai (楷体) for quotations, verse and prefaces, Fangsong (仿宋) for official documents. [Chinese, Japanese and Korean fonts](/en/docs/configuration#chinese-japanese-and-korean-fonts) in the configuration reference has the font provider code.
+
+## Two complete configurations
+
+### A mainland novel, set horizontally
+
+A 大32开 book, 28 × 28 characters of Noto Serif SC at 10.5 pt, chapters numbered 第一章, Kaiming punctuation and GB line breaking from the locale:
+
+```ts
+import type { PostextConfig } from 'postext';
+
+const pt = (value: number) => ({ value, unit: 'pt' as const });
+const mm = (value: number) => ({ value, unit: 'mm' as const });
+const ink = { hex: '#1a1a1a', model: 'hex' as const };
+
+const config: PostextConfig = {
+  locale: 'zh-Hans-CN',
+  page: {
+    sizePreset: 'custom', width: mm(140), height: mm(203),
+    margins: { top: mm(18), bottom: mm(20), left: mm(16), right: mm(20), mirror: true },
+  },
+  layout: { layoutType: 'single' },
+  bodyText: {
+    fontFamily: 'Noto Serif SC', fontSize: pt(10.5), lineHeight: pt(16.5),
+    textAlign: 'justify', firstLineIndent: { value: 2, unit: 'em' },
+    color: ink, boldColor: ink, italicColor: ink,
+  },
+  headings: {
+    fontFamily: 'Noto Sans SC', color: ink,
+    levels: [
+      { level: 1, fontSize: pt(16), numberingTemplate: '第{1:一}章', numberSeparator: '　',
+        breakBefore: { enabled: true, parity: 'any' } },
+    ],
+  },
+  captionStyle: { labelNumberGap: '', labelSeparator: '　' },
+  cjk: { grid: { enabled: true, charsPerLine: 28, linesPerPage: 28 } },
+  header: { elements: [] },
+  footer: { elements: [
+    { kind: 'text', id: 'folio', content: '{pageNumber}', fontFamily: 'Noto Serif SC', fontSize: pt(9),
+      overflow: 'clip', color: ink, placement: { anchor: { to: 'container', edge: 'center' } } },
+  ] },
+};
+```
+
+The `cjk` key sets only the grid: the region, line breaking, punctuation widths, compression and the Han–Latin space follow `zh-Hans-CN`. Chapters open on either page, as most mainland novels do (另页起).
+
+### A Taiwan novel, set vertically and bound on the right
+
+A 25開 book (148 × 210 mm) in Noto Serif TC, 38 characters to a column, chapters numbered 第一回, fore-edge heads and Chinese folios; Taiwan's centred, full-width punctuation and basic line breaking come from `zh-Hant-TW`, and the right binding from the writing mode:
+
+```ts
+const config: PostextConfig = {
+  locale: 'zh-Hant-TW',
+  page: {
+    sizePreset: 'custom', width: mm(148), height: mm(210),
+    margins: { top: mm(24), bottom: mm(18), left: mm(16), right: mm(22), mirror: true },
+    pageNumbering: { format: 'trad-chinese-informal' },
+  },
+  layout: { layoutType: 'single', writingMode: 'vertical-rl' },
+  bodyText: {
+    fontFamily: 'Noto Serif TC', fontSize: pt(10.5), lineHeight: pt(18),
+    textAlign: 'justify', firstLineIndent: { value: 2, unit: 'em' },
+    color: ink, boldColor: ink, italicColor: ink,
+  },
+  headings: {
+    fontFamily: 'Noto Serif TC', color: ink,
+    levels: [
+      { level: 1, fontSize: pt(14), numberingTemplate: '第{1:一}回', numberSeparator: '　',
+        breakBefore: { enabled: true, parity: 'odd' } },
+    ],
+  },
+  cjk: { grid: { enabled: true, charsPerLine: 38 } },
+  header: { elements: [
+    { kind: 'text', id: 'head', content: '{chapterTitle}', writingMode: 'vertical-rl', pages: 'body',
+      fontFamily: 'Noto Serif TC', fontSize: pt(8.4), overflow: 'clip', align: 'left', color: ink,
+      placement: { anchor: { to: 'outer', edge: 'top' }, offset: { y: { value: 4, unit: 'em' } } } },
+    { kind: 'text', id: 'folio', content: '{pageNumber}', writingMode: 'vertical-rl',
+      fontFamily: 'Noto Serif TC', fontSize: pt(8.4), overflow: 'clip', align: 'left', color: ink,
+      placement: { anchor: { to: 'outer', edge: 'bottom' }, offset: { y: { value: -5, unit: 'em' } } } },
+  ] },
+  footer: { elements: [] },
+};
+```
+
+`parity: 'odd'` opens each chapter on a recto, which in this book is a left-hand page. `linesPerPage` is left out, so the page takes as many columns as its width holds. The fore-edge heads run down the left margin of odd pages and the right margin of even ones, and `{pageNumber}` prints 一百零三 on page 103.
+
+## In the Sandbox and the Cookbook
+
+In the Sandbox, **Design › Writing system** holds the document language, the writing mode, the binding and every `cjk` setting, and **Chinese defaults › Review…** sets a book up for Chinese in one step, listing each change first (see [Sandbox](/en/docs/sandbox#design-panel)). The showcase shelf has *Dream of the Red Chamber* (紅樓夢, 程乙本 of 1792) in three editions: [Traditional, vertical and bound on the right](/en/sandbox#preset=hongloumeng&lang=zh-Hant), [Simplified and horizontal](/en/sandbox#preset=hongloumeng&lang=zh-Hans), and the first 56 chapters in H. Bencraft Joly's English translation. The [Cookbook](/en/cookbook?col=chinese-layout) gathers the Chinese recipes in its *Chinese layout* collection, each a page or spread with the script that sets it.
+
+## Known limits
+
+- **Japanese and Korean** are set with the mainland Chinese defaults. Their own rules ([JLREQ](https://www.w3.org/TR/jlreq/), KLREQ) are not implemented.
+- **Design text** (running heads, openers, box titles) breaks Chinese between any two characters, without the line-start and line-end rules or the punctuation widths. Fit such titles by hand.
+- **Single-character last lines** (孤字) are not avoided by the composer; column balancing never creates one.
+- **One writing mode per page.** A horizontal box inside a vertical page, native vertical tables with the header row on the right, and captions beside an upright figure are not available. Inline formulas, chips and swatches are turned sideways with a vertical line.
+- **Sizes in points.** There are no 号 or Q units.
+- **Vertical metrics.** Every upright character advances one em; proportional vertical metrics (`vpal`) and vertical kerning are not used.
+- **Ruby and warichu**: no double-sided ruby, no automatic readings, no single-row notes; notes and readings in captions, cells and design text print as plain text.
+- **Fonts**: no fallback from one family to another, no italics in Chinese faces, CFF fonts embedded whole.
+- **Index**: a character with several readings takes the collator's usual one unless its entry has a `sort` key; radical order is not available.
+- **Right-to-left scripts** (Arabic, Hebrew) have no bidirectional layout; see [Languages and scripts](/en/docs/configuration#languages-and-scripts).
+
+## Sources
+
+- W3C, [Requirements for Chinese Text Layout (clreq)](https://www.w3.org/TR/clreq/), Group Note Draft, 2026.
+- W3C, [Requirements for Japanese Text Layout (JLREQ)](https://www.w3.org/TR/jlreq/), for the running heads of vertical books.
+- Unicode Standard Annex #50, [Unicode Vertical Text Layout](https://www.unicode.org/reports/tr50/).
+- W3C, [CSS Writing Modes Level 4](https://www.w3.org/TR/css-writing-modes-4/) and [CSS Text Level 4](https://www.w3.org/TR/css-text-4/).
+- W3C, [CSS Counter Styles Level 3](https://www.w3.org/TR/css-counter-styles-3/#limited-chinese), for the Chinese numeral styles.
+- GB/T 15834—2011 《标点符号用法》 ([text](https://people.ubuntu.com/~happyaron/l10n/GB%28T%2915834-2011.html)).
+- GB/T 15835—2011 《出版物上数字用法》.
+- Taiwan Ministry of Education, 《重訂標點符號手冊》, revised edition, 2008.

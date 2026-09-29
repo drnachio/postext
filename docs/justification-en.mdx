@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Hyphenation & Justification',
   description: 'How Postext breaks lines, justifies text, and controls word spacing using the Knuth-Plass algorithm',
   lang: 'en',
-  lastUpdated: '2026-09-24',
+  lastUpdated: '2026-09-29',
   readingTime: '14 min',
   order: 4,
 };
@@ -173,7 +173,7 @@ The patterns encode a set of numbered rules that, when overlaid on a word, indic
   </tbody>
 </table>
 
-Each locale loads its own pattern set. Hypher instances are lazily created and cached — the first call for a given locale pays the initialization cost; subsequent calls are instant. A region-tagged locale uses its language's patterns (`'es-ES'` hyphenates with `'es'`, `'en-GB'` with `'en-us'`). A language with no patterns here falls back to `en-us`, and the engine warns once on the console (see [Hyphenation](/en/docs/configuration#hyphenation) in the configuration reference).
+Each locale loads its own pattern set. Hypher instances are lazily created and cached — the first call for a given locale pays the initialization cost; subsequent calls are instant. A region-tagged locale uses its language's patterns (`'es-ES'` hyphenates with `'es'`, `'en-GB'` with `'en-us'`). A language with no patterns here falls back to `en-us`, and the engine warns once on the console (see [Hyphenation](/en/docs/configuration#hyphenation) in the configuration reference). Chinese, Japanese and Korean are the exception: they are set without hyphenation and without the warning, and their lines break between characters (see [Chinese, Japanese and Korean](#chinese-japanese-and-korean) below).
 
 ### Why Hypher (and Not a Custom Algorithm)
 
@@ -333,7 +333,7 @@ When Knuth-Plass is active and produces no valid breaks (which can happen with e
 
 ### Chinese, Japanese and Korean
 
-A paragraph that holds more CJK characters than word spaces is set by the CJK composer, not by Knuth-Plass. Every gap between two characters is a place a line may break (except where the line-break rules of `cjk.lineBreak` forbid it), so there is nothing for an optimal search to weigh; the lines are filled one after the other. When a character does not fit, the line first tries to take it in by giving up punctuation blank and space (push-in: word spaces down to a quarter em, then interpuncts, brackets, pause marks, Han–Latin spaces down to an eighth of an em, and stop marks, as `cjk.punctuationWidth` allows); only when that is not enough does a character that may not open a line take the one before it down with it. See [East Asian typography](/en/docs/configuration#east-asian-typography) for the rules.
+A paragraph that holds more CJK characters than word spaces is set by the CJK composer, not by Knuth-Plass. Every gap between two characters is a place a line may break (except where the line-break rules of `cjk.lineBreak` forbid it), so there is nothing for an optimal search to weigh; the lines are filled one after the other. When a character does not fit, the line first tries to take it in by giving up punctuation blank and space (push-in: word spaces down to a quarter em, then interpuncts, brackets, pause marks, Han–Latin spaces down to an eighth of an em, and stop marks, as `cjk.punctuationWidth` allows); only when that is not enough does a character that may not open a line take the one before it down with it. See [East Asian typography](/en/docs/configuration#east-asian-typography) for the rules. [Chinese layout](/en/docs/chinese-layout) covers the rest of Chinese composition: punctuation widths by region, the character grid and vertical text.
 
 A justified line of such a paragraph, except its last, is spread to the measure in the order clreq sets (§6.2.2.4):
 

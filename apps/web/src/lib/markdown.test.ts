@@ -174,6 +174,19 @@ describe("page renditions", () => {
     }
   }, RENDITIONS_TIMEOUT_MS);
 
+  it("renders the Chinese layout guide as plain Markdown", () => {
+    for (const locale of ["en", "es"]) {
+      const md = pageMarkdown(locale, "/docs/chinese-layout")!;
+      expect(md).toMatch(/^# (Chinese layout|Composición china)/);
+      // Figures described in words, HTML tables as GFM, no JSX left over.
+      expect(md).toMatch(/^> \*\*(Figure|Figura): /m);
+      expect(md).toMatch(/^\| .*`kaiming`/m);
+      expect(md).not.toMatch(/<\/?(table|thead|tbody|tr|td|th|code|ruby|rt)\b|style=\{\{|\{\/\*/);
+      expect(md).toContain("第{1:一}回");
+      expect(llmsTxt(locale)).toContain(`https://postext.dev/${locale}/docs/chinese-layout.md`);
+    }
+  });
+
   it("llms.txt follows the llmstxt.org shape", () => {
     const txt = llmsTxt("en");
     expect(txt).toMatch(/^# Postext\n\n> /);
