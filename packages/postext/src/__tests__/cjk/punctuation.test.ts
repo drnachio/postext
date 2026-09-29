@@ -356,6 +356,31 @@ describe('Han–Latin spacing (clreq §6.3.3)', () => {
     expect(b.text).toBe('用 iPhone 拍照');
   });
 
+  it('sets a sentence with more typed spaces than characters alike with and without them', () => {
+    // Web text types a space at each Han–Latin boundary. Those spaces become
+    // Han–Latin spaces, so they do not count as word spaces against the
+    // characters: each spaced sentence is composed like its solid spelling
+    // (6 characters and 6 typed spaces, 5 and 6, 4 and 5, 2 and 2).
+    const shape = (l: VDTLine) => l.segments!.map((s) => [s.kind, s.text.trim(), s.width, s.autospace ?? false]);
+    for (const [spaced, solid] of [
+      ['安装 Node.js、npm 和 Git 后运行 npm install。', '安装Node.js、npm和Git后运行npm install。'],
+      ['使用 npm install 安装 React 和 ReactDOM。', '使用npm install安装React和ReactDOM。'],
+      ['2026 年 9 月 28 日，晴。', '2026年9月28日，晴。'],
+      ['第 3 章', '第3章'],
+    ]) {
+      const a = lines(solid!, 2000, c)[0]!;
+      const b = lines(spaced!, 2000, c)[0]!;
+      expect(a.cjkComposed).toBe(true);
+      expect(b.cjkComposed).toBe(true);
+      expect(shape(b)).toEqual(shape(a));
+      // The stop and the comma take their Kaiming half em.
+      for (const s of b.segments!.filter((seg) => seg.text === '。' || seg.text === '，')) expect(s.width).toBe(8);
+    }
+    // A Latin sentence that quotes a title keeps its word spaces (five
+    // between Latin words against three characters) and Knuth–Plass.
+    expect(lines('the novel 紅樓夢 was written by Cao Xueqin', 2000, c)[0]!.cjkComposed).toBeUndefined();
+  });
+
   it('spaces digits and letters from Han, not signs, marks or a Western space', () => {
     const line = lines('1999年的iPhone 15售价为¥5,999。', 2000, c)[0]!;
     const segs = line.segments!;

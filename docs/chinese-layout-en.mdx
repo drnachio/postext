@@ -78,7 +78,7 @@ The directives for Chinese marks, ruby, warichu and orientation are described [b
 
 ## Horizontal composition
 
-A paragraph that holds more Chinese, Japanese or Korean characters than word spaces is set by the CJK composer. It cuts the text into units (one per character, one per Latin word or number, one per two-em dash or ellipsis), measures each once, and fills the lines one after the other. There is nothing for an optimal search like Knuth–Plass to weigh: almost every gap between two characters is a place to break, and the rules below remove the few that are not. A Latin paragraph that quotes a Chinese title keeps Knuth–Plass and may break next to its Chinese characters under the same rules. Captions, table cells, footnotes and boxes break at the document's level too.
+A paragraph that holds more Chinese, Japanese or Korean characters than word spaces is set by the CJK composer. Only a space between two Latin words, numbers or signs counts as a word space: the spaces web text types around Latin words and numbers (`2026 年 9 月 28 日`, `安装 Node.js 和 Git`) do not, so such a sentence is composed like its spelling without them. It cuts the text into units (one per character, one per Latin word or number, one per two-em dash or ellipsis), measures each once, and fills the lines one after the other. There is nothing for an optimal search like Knuth–Plass to weigh: almost every gap between two characters is a place to break, and the rules below remove the few that are not. A Latin paragraph that quotes a Chinese title keeps Knuth–Plass and may break next to its Chinese characters under the same rules. Captions, table cells, footnotes and boxes break at the document's level too.
 
 ### Line breaking
 

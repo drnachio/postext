@@ -102,26 +102,42 @@ const FONT_SIZE_RE = /(\d*\.?\d+)px/;
  *  as {@link isCjkParagraph} counts them. */
 const CJK_LETTER_RE = /[\u3005-\u3007\u3040-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3100-\u312F\u31A0-\u31BF\u3400-\u4DBF\u4E00-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF\uFF66-\uFF9F\u{20000}-\u{3FFFF}]/u;
 
+/** Combining marks and variation selectors: they belong to the character
+ *  before them. */
+const MARK_RE = /\p{M}/u;
+
 /**
  * Whether a paragraph is set by the CJK composer: it holds more CJK letters
- * than word spaces. A Latin paragraph that quotes a Chinese title or name
- * ("the novel 紅樓夢 was …") has more spaces, stays with Knuth–Plass and
- * breaks next to the characters it quotes; a Chinese paragraph with Latin
- * words in it ("用 iPhone 拍照") is composed.
+ * than word spaces. A word space is a run of spaces between two characters
+ * that are not CJK. A space that touches a CJK character or mark is the
+ * one web text types at each boundary (`2026 年 9 月 28 日`, `安装 Node.js
+ * 和 Git`), which the composer replaces with the Han–Latin space.
+ * A Latin paragraph that quotes a Chinese title or name ("the novel 紅樓夢
+ * was …") has more word spaces, stays with Knuth–Plass and breaks next to
+ * the characters it quotes; a Chinese paragraph with Latin words in it
+ * ("用 iPhone 拍照") is composed, with its typed spaces or without them.
  */
 export function isCjkParagraph(text: string): boolean {
   let letters = 0;
   let spaces = 0;
   let inSpace = false;
+  // Whether the character before the run of spaces is CJK.
+  let spaceAfterCjk = false;
+  let lastCjk = false;
   for (const ch of text) {
     if (isBreakingSpace(ch)) {
-      if (!inSpace) spaces++;
+      if (!inSpace) spaceAfterCjk = lastCjk;
       inSpace = true;
       continue;
     }
+    if (MARK_RE.test(ch)) continue;
+    const cjk = hasCJK(ch);
+    if (inSpace && !spaceAfterCjk && !cjk) spaces++;
     inSpace = false;
+    lastCjk = cjk;
     if (CJK_LETTER_RE.test(ch)) letters++;
   }
+  if (inSpace && !spaceAfterCjk) spaces++;
   return letters > spaces;
 }
 
