@@ -1,0 +1,88 @@
+---
+title: "Una hoja xilográfica: marco doble, filetes y franja central"
+summary: "El comentario de Zhu Xi a las Analectas como lo imprimía un bloque de madera: una hoja por doble página, marco doble, filetes y la franja central en el pliegue."
+description: "Tres hojas del comentario de Zhu Xi a las Analectas compuestas en Postext como un libro xilográfico: texto vertical, notas a dos filas y franja central."
+question: "¿Cómo compongo una hoja xilográfica con marco doble, filetes entre columnas y la franja central en el pliegue?"
+aliases: ["xilografía", "libro xilográfico", "impresión con bloques de madera", "libro cosido a la china", "portada", "clásico chino", "Analectas", "Zhu Xi", "cola de pez", "filetes de columna", "marco doble", "media hoja", "número de hoja", "線裝書", "刻本", "內封", "版心", "魚尾", "界行", "四周雙邊", "半葉", "論語集註"]
+pageNotes: { "1": "Página 1, la portada, sola a la izquierda del lomo: un marco doble dividido en tres columnas por dos filetes finos. La autoría 宋 朱子 集註 arriba en la columna derecha, el título 論語集註 en caracteres Kai grandes por el centro y, al pie de la columna izquierda, tres columnas cortas en rojo: la nota de esta edición. Debajo del marco, un colofón de dos líneas en letra pequeña gris.", "2": "Página 2, la mitad derecha de la primera hoja: nueve columnas dentro de una línea gruesa exterior y otra fina interior, con un filete fino entre cada dos columnas. Desde la derecha: 論語卷一, la autoría 宋 朱子 集註 abajo en la segunda columna, 學而第一 con su nota en dos filas pequeñas y luego 子曰學而時習之不亦說乎 con las notas de Zhu Xi plegadas dentro de las columnas. En el borde izquierdo, sobre el pliegue, media franja central: 論語集註, una cola de pez negra, 卷一 y el número de hoja 一.", "3": "Página 3, la mitad izquierda de la misma hoja, con la otra media franja central en su borde derecho: las páginas 2 y 3 juntas muestran la hoja entera con la franja en el centro.", "6": "Página 6, la mitad derecha de la tercera hoja. Su primera columna sigue con una nota en dos filas pequeñas, cortada donde terminó la segunda hoja; el número de hoja del pliegue es 三.", "7": "Página 7, la mitad izquierda de la tercera hoja. El texto termina una columna antes del marco." }
+---
+
+## Lo que vas a componer
+
+Tres hojas del comentario de Zhu Xi a las *Analectas* (論語集註), el comienzo del libro 學而, compuestas como las imprimía un bloque de madera, tras una portada. Cada página es media hoja de 121 × 213 mm y cada doble página es una hoja entera, que se lee desde la derecha: en cada mitad, nueve columnas de 17 caracteres en Noto Serif TC de 20 pt, un marco doble, un filete fino entre cada dos columnas y, en el pliegue, la franja central (版心) con el título, una cola de pez negra, el *juan* y el número de la hoja. Las notas de Zhu Xi se pliegan en dos filas de caracteres de 10 pt dentro de la columna, a continuación de las palabras que explican. El margen superior dobla al inferior.
+
+## Elaboración
+
+### 1 · Cada página, media hoja; cada doble página, una hoja
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Un bloque imprimía la hoja (葉) entera de una vez, con sus dos mitades a los lados de la franja central; el impresor doblaba el papel por la franja, con la cara impresa hacia fuera, y cosía los bordes abiertos, así que la franja acababa en el corte delantero del libro. Estas páginas quedan como la hoja salía del bloque. Cada página es media hoja. En un [libro encuadernado por la derecha](/es/docs/configuration#encuadernación) la página 1 va sola a la izquierda del lomo y cada doble página siguiente junta una página par a la derecha con la impar que la sigue, así que, con la portada en la página 1, cada doble página es una hoja. La [retícula de caracteres](/es/docs/configuration#retícula-de-caracteres) fija el 行款 del bloque, nueve columnas de 17 caracteres, y los márgenes que deja son exactos: el interior mide media franja.
+
+Postext numera páginas, no hojas. Cada hoja empieza con un título de nivel 1 [oculto](/es/docs/configuration#configuración-por-nivel): no imprime nada ni ocupa sitio, pero su `breakBefore` con `parity: 'even'` abre una página de la derecha, y su número, 一, 二, 三 con `numberingTemplate: '{1:一}'`, es el `{chapterNumber}` de la franja.
+
+### 2 · Corta el texto donde acaba cada hoja
+
+El copista que pasaba a limpio un texto para el grabador lo ajustaba al bloque hoja a hoja. El Markdown hace lo mismo: el título de una hoja va donde termina la novena columna de la mitad izquierda de la anterior, aunque caiga dentro de una frase o de una nota. Una nota cortada ahí se cierra y se vuelve a abrir, y como cada columna pliega en dos filas su propio trozo de nota, las filas salen igual que antes:
+
+```markdown
+子曰巧言令色鮮矣仁:warichu[巧好令善也好其言善其色致飾於]
+
+# 學而
+
+:warichu[外務以悦人則人欲肆而本心之德亡矣…]
+```
+
+El bloque no lleva puntuación, así que ninguna regla de corte de línea mueve un carácter y cada columna termina en el decimoséptimo: los cortes de hoja se cuentan una vez y no se mueven. Las notas de Zhu Xi son [`:warichu[…]`](/es/docs/document-format#marcas-chinas-ruby-y-warichu) a la mitad de cuerpo, que es el valor por defecto, 34 caracteres pequeños por fila, con un ○ entre la lectura y la glosa como en el bloque.
+
+### 3 · Dibuja el bloque con los números de la retícula
+
+<Excerpt region="frame" />
+
+La cabecera se compone sobre el papel, así que el marco, los filetes y la franja se colocan en puntos desde la esquina de la página con los mismos números que fijan la retícula: un [elemento de línea](/es/docs/configuration#elementos-de-línea) cada 29 pt a lo ancho de la mancha, una [caja](/es/docs/configuration#elementos-de-caja) a 4,5 pt del texto para la línea fina y otra 4,5 pt más afuera para la gruesa. Una línea vertical cuelga sus caracteres del eje central de la fuente, que queda 1,1 pt a la izquierda del centro del paso, así que cada filete se corre 1,1 pt a la izquierda con ellos (`SHIFT`). El texto de la franja va de arriba abajo en [elementos de texto verticales](/es/docs/configuration#elementos-de-texto-verticales) y la cola de pez es un SVG en un [elemento de imagen](/es/docs/configuration#elementos-de-imagen), los dos centrados entre los dos filetes de la franja. Esos filetes se corren con los demás, así que el centro de la franja queda 1,1 pt a la izquierda del pliegue: la página de la derecha enseña 15,9 pt de franja y la de la izquierda 18,1 pt. Cada página dibuja enteros el texto de la franja y la cola de pez y enseña la parte de su lado, y al juntarlas las partes casan. Los marcos pasan del pliegue por lo mismo.
+
+### 4 · Dale a la portada un estilo propio
+
+<Excerpt region="title" />
+
+La portada (內封) es un título de nivel 1 con un [estilo de título](/es/docs/configuration#estilos-de-encabezado) oculto y sin número, así que las hojas siguen contando desde 一. Un estilo gobierna las páginas de su sección, y su `header` sustituye allí al del documento: la portada lleva un marco cerrado y dividido en tres columnas en lugar de los elementos de la media hoja. La autoría, la nota de esta edición en Kai rojo y el colofón salen de los [atributos](/es/docs/document-format#atributos-de-encabezado) del título; el colofón es la única línea que cambia con el idioma de la edición. `\n` dentro de un atributo empieza otra columna.
+
+### 5 · Carga cada fuente con los caracteres que compone
+
+<Excerpt region="voices" />
+
+Fontsource sirve cada fuente china en un centenar de archivos por peso. Song compone las hojas, la franja y los números de hoja, así que su llamada recibe la muestra y esos caracteres; Kai compone solo el título y la nota. El bloque no lleva puntuación, así que ninguna de las dos necesita las formas verticales de `loadCjkFonts(…, { vertical: true })`.
+
+### 6 · Una tinta sobre un papel cálido
+
+<Excerpt region="palette" />
+
+El texto y las líneas del bloque se imprimen en el mismo negro cálido, a 14 : 1 sobre el papel. Aun así son dos entradas de la paleta, `ink` y `rule`, para que los filetes cambien de color sin tocar el texto. El rojo queda para lo que añade esta edición.
+
+## Variantes
+
+### Pauta las columnas en rojo
+
+Las copias del 四庫全書 se escribieron sobre papel pautado en rojo (朱絲欄). Cambia el color de los filetes; la cola de pez lo sigue.
+
+```diff
+-  rule: '#1f1b17', // the frame, the column rules and the fish tail: the same block, same ink
++  rule: '#b3412e', // 朱絲欄: red rules under black text
+```
+
+### Talla otro bloque
+
+Hubo muchos 行款 distintos, y 半葉十行，行二十字 es de los más corrientes. Los marcos, la franja, las tres casillas de la portada y la sangría de la autoría salen de estos números, así que se ajustan solos; los cortes de hoja del Markdown hay que contarlos otra vez.
+
+```diff
+-const [BODY, PITCH, CHARS, LINES] = [20, 29, 17, 9];
++const [BODY, PITCH, CHARS, LINES] = [17, 24.5, 20, 10];
+```
+
+### Compárala con una página europea sobre retícula
+
+<RecipeLink slug="baseline-grid-book-page">Una página de libro sobre una rejilla base</RecipeLink> construye su mancha contando líneas, como esta hoja construye la suya con columnas y caracteres; <RecipeLink slug="certificate-single-page">el diploma</RecipeLink> dibuja su orla en la cabecera de un estilo de título, como aquí la portada.
+
+## Errores frecuentes
+
+- Los cortes de hoja viven en el Markdown. Si cambias el texto, el cuerpo o el 行款, una hoja que se pasa empuja el título siguiente una página más allá y las dobles páginas dejan de coincidir con las hojas; una que se queda corta deja columnas en blanco antes del pliegue. Revisa la última columna de cada página de la izquierda.
+- La transcripción del 四庫全書 escribe 巳 tanto por 已 como por 己; esta muestra decide cada caso por la frase. La página aún pide que alguien la coteje con los facsímiles, y se nota: el comentario de 張敬夫 dice 必開其政 donde las *Analectas*, que él repite, dicen 必聞其政, y dos caracteres vienen como imágenes del glifo. La muestra pone 聞, 傳 y 邦. Coteja el pasaje con una segunda edición antes de componerlo.
+- La misma transcripción trae formas que Noto Serif TC no tiene (廹 徳 絶 逺 専 内). Cinco caen dentro del rango de un archivo de Fontsource, así que `loadCjkFonts` las deja pasar, y luego el lienzo las toma de una fuente del sistema y postext-pdf imprime una caja vacía y avisa. 廹 no cae en el rango de ningún archivo, y `loadCjkFonts` se detiene con un error. La muestra usa 迫 德 絕 遠 專 內.

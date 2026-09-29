@@ -1,0 +1,101 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 82,
+  "status": "draft",
+  "chapter": "page",
+  "order": 100,
+  "level": 2,
+  "genres": ["report"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["character-grid", "chinese-numerals", "heading-numbering"],
+    "also": [
+      "cjk-punctuation",
+      "cjk-line-breaking",
+      "cjk-justification",
+      "han-latin-spacing",
+      "cjk-fonts",
+      "page-size",
+      "mirrored-margins",
+      "opener-design",
+      "design-elements",
+      "design-anchoring",
+      "running-heads",
+      "heading-styles",
+      "heading-attributes",
+      "title-line-breaks",
+      "paragraph-styles",
+      "table-style",
+      "pdf-export"
+    ]
+  },
+  "answers": ["Q105", "Q90", "Q92"],
+  "gaps": ["chinese-point-sizes"],
+  "gotchas": [
+    "cjk-no-fangsong",
+    "cjk-grid-balancing",
+    "cjk-fonts-slices",
+    "cjk-locale-tag",
+    "headings-drop-h1-break",
+    "merged-cells-hiddenby",
+    "overflow-ellipsis-default",
+    "fonts-first"
+  ],
+  "workarounds": [
+    {
+      "package": "postext",
+      "note": "page.dpi 144, not 150: at 150 dpi a 29 pt grid line is 60.41666… px, and the heading keep-with-next check in pipeline/build.ts (remainAfterHeading < minSpaceAfter, compared without FIT_EPS) found a head with a two-line paragraph on the last three lines of the page 1e-13 px short and pushed it to the next page, leaving three blank lines; at 2 px to the point the sums are exact"
+    },
+    {
+      "package": "postext",
+      "note": "headings.balancing.enabled: false: on a character grid the loose-paragraph lever re-broke a Chinese paragraph a line longer by spreading its characters 0.13 em (balancing.maxTracking allows 0.01 em), and the heading lever adds grid lines above heads; both move text off the grid"
+    },
+    {
+      "package": "postext",
+      "note": "each heading template opens with two U+3000: heading levels have no indent setting, and GB/T 9704 indents every head two cells (a head that wraps returns to the margin, as the standard wants)"
+    }
+  ],
+  "explainsWarnings": ["cjkGridClamped"],
+  "related": [
+    "din-business-letter",
+    "chinese-novel-horizontal",
+    "running-heads-by-parity",
+    "certificate-single-page"
+  ],
+  "engine": { "postext": "1.9.0", "postextPdf": "1.9.0" },
+  "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": {
+    "hero": 1,
+    "card": "loupe",
+    "focus": { "page": 1, "x": 0.08, "y": 0.1, "w": 0.84, "h": 0.55 },
+    "pages": "all",
+    "expect": { "pages": [4, 4] }
+  },
+  "downloads": { "pdf": true },
+  "credits": {
+    "authors": [
+      { "name": "Ignacio Ferro", "github": "drnachio" }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "A notice from a fictitious publishers’ association, written for the recipe in the form GB/T 9704—2012 sets out",
+          "es": "Un aviso de una asociación de editores ficticia, escrito para la receta con la forma que fija la GB/T 9704—2012"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Noto Serif SC", "license": "OFL-1.1" },
+      { "family": "Noto Sans SC", "license": "OFL-1.1" },
+      { "family": "LXGW WenKai TC", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-29",
+  "updated": "2026-09-29"
+}

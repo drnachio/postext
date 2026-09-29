@@ -1,5 +1,5 @@
 {
-  "$comment": "The questions users ask (research: understand/user-doubts.md §4), Q01–Q97, permanent ids. recipe.json answers lists them, answers[0] being the question the recipe's band shows. kind: 'how' or 'why'; text: the question as a reader asks it; index: its back-of-book form (\"Footnotes, workarounds for\"); theme: the chapter id it belongs to; gap: set when the honest answer is a workaround for an unsupported feature.",
+  "$comment": "The questions users ask (research: understand/user-doubts.md §4), Q01–Q105, permanent ids. recipe.json answers lists them, answers[0] being the question the recipe's band shows. kind: 'how' or 'why'; text: the question as a reader asks it; index: its back-of-book form (\"Footnotes, workarounds for\"); theme: the chapter id it belongs to; gap: set when the honest answer is a workaround for an unsupported feature.",
   "Q01": {
     "kind": "how",
     "text": {
@@ -1168,5 +1168,101 @@
       "es": "Índice chino agrupado por pinyin o por trazos"
     },
     "theme": "structure"
+  },
+  "Q98": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set a commentary edition: small two-line notes inside the line and comments in the head margin?",
+      "es": "¿Cómo compongo una edición comentada, con notas pequeñas a dos líneas dentro de la línea y comentarios en el margen superior?"
+    },
+    "index": {
+      "en": "Commentary editions, notes in the line and in the head margin",
+      "es": "Ediciones comentadas, notas en la línea y en el margen superior"
+    },
+    "theme": "boxes"
+  },
+  "Q99": {
+    "kind": "how",
+    "text": {
+      "en": "How do I mark proper names and book titles in Chinese text with a straight and a wavy line?",
+      "es": "¿Cómo marco los nombres propios y los títulos de un texto chino con una línea recta y una ondulada?"
+    },
+    "index": {
+      "en": "Chinese name and title lines",
+      "es": "Líneas de nombre y de título en chino"
+    },
+    "theme": "type"
+  },
+  "Q100": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set zhuyin beside every character of a vertical Chinese text?",
+      "es": "¿Cómo pongo el zhuyin junto a cada carácter de un texto chino vertical?"
+    },
+    "index": {
+      "en": "Zhuyin beside the characters, in vertical text",
+      "es": "Zhuyin junto a los caracteres, en texto vertical"
+    },
+    "theme": "type"
+  },
+  "Q101": {
+    "kind": "how",
+    "text": {
+      "en": "How do I print the first and last headword of each page in a dictionary's running head?",
+      "es": "¿Cómo imprimo en la cabecera de un diccionario el primer y el último lema de cada página?"
+    },
+    "index": {
+      "en": "Guide words, first and last headword",
+      "es": "Palabras guía: primer y último lema"
+    },
+    "theme": "running-heads"
+  },
+  "Q102": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set a Chinese newspaper page vertically, in tiers with rules between them?",
+      "es": "¿Cómo compongo una página de periódico chino en vertical, en pisos separados por filetes?"
+    },
+    "index": {
+      "en": "Newspapers, vertical, in tiers (欄)",
+      "es": "Periódicos verticales, en pisos (欄)"
+    },
+    "theme": "page"
+  },
+  "Q103": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set a poem and its translation on facing pages, with the original always on the recto?",
+      "es": "¿Cómo compongo un poema y su traducción en páginas enfrentadas, con el original siempre en la impar?"
+    },
+    "index": {
+      "en": "Facing translations, the original on the recto",
+      "es": "Traducciones enfrentadas, el original en la página impar"
+    },
+    "theme": "page"
+  },
+  "Q104": {
+    "kind": "how",
+    "text": {
+      "en": "How do I lay out a woodblock leaf, with a double frame, a rule between the columns and the centre strip?",
+      "es": "¿Cómo compongo una hoja xilográfica, con marco doble, un filete entre columnas y la franja central?"
+    },
+    "index": {
+      "en": "Woodblock leaves: frame, column rules, centre strip (版心)",
+      "es": "Hojas xilográficas: marco, filetes, franja central (版心)"
+    },
+    "theme": "page"
+  },
+  "Q105": {
+    "kind": "how",
+    "text": {
+      "en": "How do I lay out a Chinese official document to GB/T 9704, with its red letterhead, grid and folios?",
+      "es": "¿Cómo compongo un documento oficial chino según la GB/T 9704, con su membrete rojo, su retícula y sus folios?"
+    },
+    "index": {
+      "en": "Official documents, Chinese (GB/T 9704)",
+      "es": "Documentos oficiales chinos (GB/T 9704)"
+    },
+    "theme": "page"
   }
 }

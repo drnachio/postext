@@ -69,10 +69,11 @@ import { isBreakingSpace } from './spaces';
 import { trimChipLineEdges } from './chipEdges';
 import { cellAdvance, fontEm, fontFamilyOf, getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, measureCentralBaseline, verticalTrackCount, withMeasureWritingMode } from './vertical';
 import { verticalRuns } from '../writingMode';
-import { foldWidth, isZhuyin, noteRowBaselines, readingAdvance, rubyGeometry, splitNote, withFontSize, type RubyGeometry } from './cjkAnnotate';
+import { foldWidth, isZhuyin, noteRowBaselines, readingAdvance, rubyGeometry, splitNote, withFontSize, ZHUYIN_SIZE_RATIO, type RubyGeometry } from './cjkAnnotate';
 import {
   applyLineEdges,
   boxCut,
+  carryStopBlank,
   compositionFor,
   compressPair,
   getCjkComposition,
@@ -406,7 +407,8 @@ function rubyBaseUnit(span: InlineSpan, fonts: Fonts, letterSpacingPx: number, v
  * Lay out each ruby base's reading (see `cjkAnnotate.ts`): its box grows
  * to the reading less what the reading may pass it by — a quarter of the
  * ruby em onto a neighbour without ruby, and it keeps as much from a
- * neighbour's reading on the same side. Run once the units are final.
+ * neighbour's reading on the same side (two zhuyin readings: a quarter of
+ * the symbols' em). Run once the units are final.
  */
 function sizeRubies(units: Unit[]): void {
   for (let k = 0; k < units.length; k++) {
@@ -415,16 +417,21 @@ function sizeRubies(units: Unit[]): void {
     const fontOf = (v: Unit): string => v.ruby!.span.fontString ?? withFontSize(v.style.font, emOfFont(v.style.font) / 2);
     const font = fontOf(u);
     const q = fontEm(font) / 4;
+    const zhuyin = isZhuyin(u.ruby.span.text);
     // How far the reading may pass its box towards a neighbour: a quarter
     // of the ruby em onto one without a reading; next to a reading on the
     // same side, what keeps the two a quarter em apart (the neighbour's
-    // box is at least its base).
+    // box is at least its base). Zhuyin is set at 60 % of the ruby size,
+    // so two zhuyin readings keep a quarter of that em apart: three
+    // symbols beside each of two characters stay in their cells (clreq
+    // §5.5.3 centres each column on its own character).
     const allow = (v: Unit | undefined): number => {
       if (!v || v.kind !== 'text' || v.note) return 0;
       if (!v.ruby) return q;
       if (v.ruby.position !== u.ruby!.position || v.ruby.position === 'right') return q;
       const theirs = v.ruby.geometry?.rtWidth ?? readingAdvance(v.ruby.span.text, fontOf(v), v.ruby.position);
-      return Math.min(q, (v.width - theirs) / 2 - q);
+      const gap = zhuyin && isZhuyin(v.ruby.span.text) ? (fontEm(font) * ZHUYIN_SIZE_RATIO) / 4 : q;
+      return Math.min(q, (v.width - theirs) / 2 - gap);
     };
     const geometry = rubyGeometry({
       reading: u.ruby.span.text,
@@ -516,6 +523,14 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
   const units: Unit[] = [];
   const track = (n: number): number => (letterSpacingPx === 0 ? 0 : letterSpacingPx * n);
   let zwsp = false;
+  // A word joiner (U+2060) before the next unit: no break there, in one
+  // span or across two (`**①**⁠文`). It takes no room and is left out.
+  let wj = false;
+  const glue = (): { glueBefore?: true } => {
+    const g = wj;
+    wj = false;
+    return g ? { glueBefore: true } : {};
+  };
   // Which units open a span and hold all of it (the candidates for stacked
   // scripts), by index.
   const wholeSpan = new Set<number>();
@@ -525,12 +540,14 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
     // A ruby base: one unit, sized with its reading once its neighbours
     // are known (`sizeRubies`).
     if (span.ruby && span.text.length > 0) {
-      units.push({ ...rubyBaseUnit(span, fonts, letterSpacingPx, vertical), ...(zwsp ? { zwspBefore: true } : {}) });
+      units.push({ ...rubyBaseUnit(span, fonts, letterSpacingPx, vertical), ...(zwsp ? { zwspBefore: true } : {}), ...glue() });
       zwsp = false;
       continue;
     }
     if (vertical && (span.combineUpright || span.orientation) && span.text.length > 0 && !setsObject(span)) {
+      const first = units.length;
       orientedUnits(span, styleOf(span, fonts, vertical), letterSpacingPx, zwsp, units);
+      if (units.length > first) Object.assign(units[first]!, glue());
       zwsp = false;
       continue;
     }
@@ -555,6 +572,7 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
         token: atomic,
         ...(atomic.refResourceId !== undefined || atomic.footnoteId !== undefined ? { glueBefore: true } : {}),
         ...(zwsp ? { zwspBefore: true } : {}),
+        ...glue(),
       });
       zwsp = false;
       continue;
@@ -588,6 +606,7 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
         style,
         ...(zwsp ? { zwspBefore: true } : {}),
         ...(style.script && units.length === spanFirst ? { glueBefore: true } : {}),
+        ...glue(),
       });
       zwsp = false;
     };
@@ -642,6 +661,7 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
       at += g.length;
       if (isBreakingSpace(g[0])) {
         flushRun();
+        wj = false;
         if (space === '') spaceAt = gAt;
         space += g;
         continue;
@@ -650,6 +670,12 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
       if (g === '\u200B') {
         flushRun();
         zwsp = true;
+        pairOpen = -1;
+        continue;
+      }
+      if (g === '\u2060') {
+        flushRun();
+        wj = true;
         pairOpen = -1;
         continue;
       }
@@ -923,12 +949,15 @@ function prepareUnits(units: Unit[], c: CjkComposition, letterSpacingPx: number)
     u.width -= boxCut(box);
   }
   if (plain) return units;
-  if (c.compressAdjacent && full.size > 1) {
+  // Kaiming sets a stop's blank after the closing mark that follows it (。”␣).
+  const carry = c.punctuationWidth === 'kaiming';
+  if ((c.compressAdjacent || carry) && full.size > 1) {
     for (let k = 1; k < units.length; k++) {
       const a = units[k - 1]!;
       const b = units[k]!;
       if (!a.punct || !b.punct || b.zwspBefore) continue;
-      compressPair(a.punct, b.punct);
+      if (c.compressAdjacent) compressPair(a.punct, b.punct);
+      if (carry) carryStopBlank(a.punct, b.punct);
       a.width = full.get(a)! - boxCut(a.punct);
       b.width = full.get(b)! - boxCut(b.punct);
     }

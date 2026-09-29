@@ -67,7 +67,7 @@ const segs = (ls: VDTLine[], text: string): VDTLineSegment[] => ls.flatMap((l) =
 
 describe('marks shared with Latin text take a Chinese box in Chinese text', () => {
   it('sets proportional quotes in half-em Kaiming boxes, the opening glyph at the end of its box', () => {
-    const ls = lines('他说：“你来了。”她答：“好。”');
+    const ls = lines('他说：“你来了。”她答：“好”。');
     const open = segs(ls, '“');
     const close = segs(ls, '”');
     expect(open).toHaveLength(2);
@@ -79,10 +79,11 @@ describe('marks shared with Latin text take a Chinese box in Chinese text', () =
       expect(s.inkOffset).toBeCloseTo(EM / 2 - 0.35 * EM);
       expect(s.inkOffset! + 0.35 * EM).toBeCloseTo(s.width);
     }
-    for (const s of close) {
-      expect(s.width).toBeCloseTo(EM / 2);
-      expect(s.inkOffset).toBe(0);
-    }
+    // After 好 the closing quote is half an em; after 。 it holds the stop's
+    // half em after its glyph (。”␣), the glyph still at the start of its box.
+    expect(close.map((s) => s.width)).toEqual([EM, EM / 2]);
+    for (const s of close) expect(s.inkOffset).toBe(0);
+    expect(segs(ls, '。')[0]!.width).toBeCloseTo(EM / 2);
   });
 
   it('sets them one em under full width, an opening quote against the text it opens', () => {

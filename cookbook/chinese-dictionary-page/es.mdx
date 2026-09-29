@@ -1,0 +1,73 @@
+---
+title: "Una página de diccionario chino con palabras guía"
+summary: "Cuatro páginas de una selección del Diccionario de Kangxi en orden de pinyin: {firstMark.h2} y {lastMark.h2} imprimen en la cabecera el primer y el último lema."
+description: "Un diccionario chino a dos columnas en Postext: lemas con su pinyin encima, acepciones numeradas ① ② y palabras guía en la cabecera, con todo el código."
+question: "¿Cómo imprimo en la cabecera de un diccionario chino el primer y el último lema de cada página?"
+aliases: ["diccionario", "diccionario chino", "字典", "康熙字典", "Diccionario de Kangxi", "palabras guía", "reclamos", "书眉", "書眉", "lemas", "orden de pinyin", "pinyin sobre los lemas", "反切", "fanqie", "números en círculo", "números de acepción", "unidor de palabras", "pestaña"]
+pageNotes: { "1": "Página 634, par. La cabecera dice 634 y 天—殄 sobre un filete fino. Dos columnas de entradas de 天 tiān a 殄 tiǎn: cada lema en rojo, en la song supernegra, con su pinyin encima, y después las lecturas de los diccionarios de rimas y las acepciones seguidas, numeradas ① ② en rojo. Las entradas se suceden sin espacio entre ellas y las dos columnas acaban en la última línea de la retícula. En el borde izquierdo, una pestaña roja con una T.", "2": "Página 635, impar: 腆—髫 y el folio arriba a la derecha. La primera columna empieza con el final de la entrada 殄 y sigue con las entradas de 腆 tiǎn a 髫 tiáo; la pestaña T, en el borde derecho.", "3": "Página 636: empieza con el final de la entrada 髫, y la cabecera dice 挑—鐵, el primer y el último lema que empiezan en ella; 挑 aparece otra vez con su lectura tiǎo.", "4": "Página 637: 餮—庭, el final de 鐵, las entradas de 餮 tiè a 庭 tíng y, debajo, un colofón: una frase en chino en kai, en dos líneas, y seis líneas de créditos en español." }
+---
+
+## Lo que vas a componer
+
+Cuatro páginas del centro de una edición de lectura del Diccionario de Kangxi (康熙字典, 1716), reordenado por pinyin, de 天 tiān a 庭 tíng. Cada lema va en rojo, en la song supernegra, con su pinyin encima; las lecturas de los diccionarios de rimas (反切) y las acepciones lo siguen en un solo párrafo, con las acepciones numeradas ① ② en el mismo rojo. La página es un 大32开 de 140 × 203 mm, a dos columnas de 17 caracteres de 小五 (9 pt), sobre una retícula de 31 líneas, y cada columna llega a su última línea. En la esquina exterior de cada página, la cabecera nombra el primer y el último lema que hay en ella, así que quien busca 蜩 va a la página que lleva 腆—髫. Para compararlo con un diccionario en alfabeto latino, mira <RecipeLink slug="dictionary-thumb-index">el vocabulario marinero de Smyth</RecipeLink>.
+
+## Elaboración
+
+### 1 · Las palabras guía salen de los lemas
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Cada lema es un título de segundo nivel, y `{firstMark.h2}` y `{lastMark.h2}` imprimen el texto del primer y del último título de ese nivel que empiezan en la página ([elementos de texto](/es/docs/configuration#elementos-de-texto)). La marca son los caracteres del título: `## {天|tiān}` marca 天, y la lectura se queda sobre el lema. Una entrada que pasa de una página a la siguiente solo cuenta donde está su lema: la <PageRef page={2}>página 635</PageRef> empieza con el final de 殄 y lleva 腆—髫. El primer nivel queda para las letras; en estas cuatro páginas no empieza ninguna, pero la cabecera de una letra no contaría como palabra guía.
+
+### 2 · El pinyin sobre el lema
+
+<Excerpt region="headwords" />
+
+`{天|tiān}` es la forma corta de `:ruby[天]{rt="tiān"}`, una lectura sobre un carácter ([marcas chinas, ruby y warichu](/es/docs/document-format#marcas-chinas-ruby-y-warichu)). Un título sin diseño propio compone su lectura; con un diseño, el título imprimiría 天 solo. La lectura toma la fuente del título, la supernegra, salvo que `cjk.ruby.fontFamily` nombre otra, y por eso se nombra la song regular. La mitad de 15 pt son 7,5 pt, y la línea de 30 pt del título deja sitio para la lectura sobre el lema: el título ocupa dos líneas de la retícula y el texto que va debajo sigue en las líneas de 15 pt de las dos columnas. El pinyin sube lo que bajan los rasgos descendentes de su fuente y 0,04 em más, así que la g de tīng acaba 0,6 pt por encima de la caja de 汀.
+
+### 3 · Un párrafo para cada entrada
+
+<Excerpt region="senses" />
+
+El Diccionario de Kangxi compone cada entrada seguida: primero las lecturas de los diccionarios de rimas y después cada acepción, introducida por 又. Aquí el 又 se ha cambiado por números en círculo, escritos como `**②**`, y `boldColor` los imprime en el rojo de los lemas; no hay otra negrita en el texto. Una acepción que el Kangxi lee de otro modo conserva su lectura, como 跳 ② con 徒刀切. El compositor trata ① a ⑳ como letras latinas, así que una línea podría acabar en un número cuya acepción empieza en la línea siguiente: el unidor de palabras (U+2060) escrita después de cada número lo impide, y de paso quita el espacio entre chino y latín. El equilibrado de columnas está desactivado (`headings.balancing.enabled: false`): ninguna columna abre espacio sobre sus lemas y cada entrada sigue a la anterior a la misma distancia.
+
+### 4 · La pestaña de la T
+
+<Excerpt region="tab" />
+
+Las sílabas del pinyin empiezan por 23 de las 26 letras (ninguna por I, U o V), así que la altura de la caja se divide en 23 pasos de 7,13 mm, y a la T le toca el decimonoveno. La pestaña mide 9 mm y empieza 3 mm fuera del corte, de modo que la página la corta en recto por el borde exterior y solo se ven redondeadas sus esquinas interiores; un archivo para imprenta con `page.cutLines` llevaría esos 3 mm a la sangre. La letra se centra en los 6 mm que quedan dentro. Las cuatro páginas son de la T, de modo que la pestaña no cambia de altura; en <RecipeLink slug="dictionary-thumb-index">el vocabulario de Smyth</RecipeLink> baja por el corte de una letra a la siguiente.
+
+### 5 · Cada fuente carga sus propios caracteres
+
+<Excerpt region="voices" />
+
+Fontsource corta cada fuente china en un centenar de archivos por intervalos de caracteres, y `loadCjkFonts` carga los que contienen el texto que recibe. La song regular recibe toda la muestra, también el texto en español del colofón. La supernegra, los treinta lemas; la negrita, los números de acepción; la hei, los lemas y las cifras de las cabeceras, y la kai, la frase en chino del colofón. `cjkPdfProvider` incrusta esos mismos archivos en el PDF, cada uno reducido a los caracteres que usan sus páginas.
+
+## Variantes
+
+### El primer lema en la par y el último en la impar
+
+Hay diccionarios que imprimen una sola palabra guía por página: la primera arriba en la par y la última arriba en la impar, de modo que el pliego dice 天 … 髫.
+
+```diff
+-  head('verso-guide', '{firstMark.h2}—{lastMark.h2}', 'even', SIDE + 8, GUIDE),
+-  head('recto-guide', '{firstMark.h2}—{lastMark.h2}', 'odd', SIDE + 8, GUIDE),
++  head('verso-guide', '{firstMark.h2}', 'even', SIDE + 8, GUIDE),
++  head('recto-guide', '{lastMark.h2}', 'odd', SIDE + 8, GUIDE),
+```
+
+### Pinyin con ɑ y ɡ de un solo ojo
+
+Los diccionarios chinos componen el pinyin en una fuente con la a y la g de un solo ojo. Nombra Andika para las lecturas y añádela a `FONTS` (`'Andika': ['400']`, con su crédito OFL).
+
+```diff
+-  ruby: { fontFamily: SONG, fontSize: em(0.5), color: col('cinnabar') },
++  ruby: { fontFamily: 'Andika', fontSize: em(0.5), color: col('cinnabar') },
+```
+
+### Lemas del tamaño del texto
+
+Un diccionario compacto pone el lema en negrita al principio de su párrafo. Mete las entradas en `:::paragraphs{style="entry"}`, empieza cada una con `**{天|tiān}**` e imprime `{firstMark.entry}`: un párrafo que empieza con un tramo en negrita marca la página con él.
+
+## Errores frecuentes
+
+- El compositor no evita que un párrafo termine en una línea de un solo carácter (孤字, como un 添。 suelto bajo el resto de su entrada), y puede cortar el título de una obra después de su primer carácter (《說|文》). Las treinta entradas son recortes de artículos del Kangxi mucho más largos, y los recortes se eligieron para que ninguna termine así y ningún título se corte por ahí. Un unidor de palabras dentro del título (`《說⁠文》`) lo mantiene entero, a cambio de una línea con un carácter menos.
+- Con el equilibrado de columnas activado, una columna en la que ya no cabe el siguiente lema con dos líneas de su texto debajo (`bodyText.widowMinLines`) termina antes, y las líneas que sobran van encima de los lemas, una como mucho para cada uno: una entrada queda a una línea de la anterior y la siguiente no. Desactivado, esa columna se queda corta; los recortes de arriba llenan además todas las columnas menos la última.

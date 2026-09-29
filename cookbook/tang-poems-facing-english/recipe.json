@@ -1,0 +1,101 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 83,
+  "status": "draft",
+  "chapter": "page",
+  "order": 110,
+  "level": 2,
+  "genres": ["poetry"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["chapter-breaks", "heading-styles", "footnotes"],
+    "also": [
+      "paragraph-styles",
+      "character-grid",
+      "cjk-fonts",
+      "cjk-line-breaking",
+      "opener-design",
+      "heading-attributes",
+      "design-elements",
+      "covers",
+      "running-heads",
+      "section-running-heads",
+      "page-role-filters",
+      "mirrored-margins",
+      "page-background",
+      "color-palette",
+      "vertical-space",
+      "pdf-export",
+      "pdf-fonts"
+    ]
+  },
+  "answers": ["Q103", "Q43", "Q45", "Q24"],
+  "gaps": ["hard-line-breaks"],
+  "gotchas": [
+    "style-inherits-break",
+    "parity-page1-recto",
+    "cjk-fonts-slices",
+    "cjk-locale-tag",
+    "cjk-face-latin-quotes",
+    "headings-drop-h1-break",
+    "fonts-first"
+  ],
+  "related": ["bilingual-facing-verse", "catalogue-facing-plates", "poetry-collection", "chinese-novel-horizontal"],
+  "engine": { "postext": "1.9.0", "postextPdf": "1.9.0" },
+  "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": [2, 3], "card": "spread", "pages": "all" },
+  "downloads": { "pdf": true },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "Three Tang poems in traditional characters, Li Bai’s 靜夜思 and 月下獨酌 and Wang Wei’s 竹里館, as Three Hundred Tang Poems (1763) gives them",
+          "es": "Tres poemas Tang en caracteres tradicionales, 靜夜思 y 月下獨酌 de Li Bai y 竹里館 de Wang Wei, como los dan los Trescientos poemas Tang (1763)"
+        },
+        "who": "Li Bai, Wang Wei",
+        "source": "https://zh.wikisource.org/wiki/唐詩三百首",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "Du Fu’s 絕句, the second of his 絕句二首, as the Complete Tang Poems (1705, juan 228) prints it",
+          "es": "El 絕句 de Du Fu, el segundo de sus 絕句二首, como lo imprime el Quan Tang shi, la poesía completa de los Tang (1705, juan 228)"
+        },
+        "who": "Du Fu",
+        "source": "https://zh.wikisource.org/wiki/全唐詩/卷228",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The English verse translations, from A History of Chinese Literature (1901), Project Gutenberg eBook 43711",
+          "es": "Las traducciones inglesas en verso, de A History of Chinese Literature (1901), libro electrónico 43711 del Proyecto Gutenberg"
+        },
+        "who": "Herbert A. Giles",
+        "source": "https://www.gutenberg.org/ebooks/43711",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The notes, the English titles, the note on the text and the colophon",
+          "es": "Las notas, los títulos ingleses, la nota sobre el texto y el colofón"
+        },
+        "who": "Postext Cookbook",
+        "license": "original"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Noto Serif TC", "license": "OFL-1.1" },
+      { "family": "LXGW WenKai TC", "license": "OFL-1.1" },
+      { "family": "Noto Sans TC", "license": "OFL-1.1" },
+      { "family": "Source Serif 4", "license": "OFL-1.1" },
+      { "family": "Source Sans 3", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "MIT" },
+  "created": "2026-09-29",
+  "updated": "2026-09-29"
+}

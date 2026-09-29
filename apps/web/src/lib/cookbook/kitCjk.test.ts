@@ -72,3 +72,33 @@ describe("kit block cjk: loadCjkFonts", () => {
     );
   });
 });
+
+describe("kit block cjk: showBook", () => {
+  /** showBook over a stubbed viewer: two spreads, the styles it injects. */
+  function showBookWith(binding: "left" | "right") {
+    const spreads = [{ dir: "" }, { dir: "" }];
+    const styles: string[] = [];
+    const pages = { dataset: {} as Record<string, string> };
+    const document = {
+      getElementById: (id: string) => (id === "pages" ? pages : null),
+      head: { insertAdjacentHTML: (_where: string, html: string) => styles.push(html) },
+      querySelectorAll: () => spreads,
+    };
+    const run = new Function("document", "showPages", `${readKit().cjk}\nreturn showBook;`) as (
+      ...args: unknown[]
+    ) => (docs: unknown) => number;
+    run(document, () => 7)({ binding });
+    return { dirs: spreads.map((s) => s.dir), css: styles.join("\n"), binding: pages.dataset.binding };
+  }
+
+  it("lays a right-bound book's spreads right to left", () => {
+    expect(showBookWith("right")).toMatchObject({ dirs: ["rtl", "rtl"], binding: "right" });
+    expect(showBookWith("left")).toMatchObject({ dirs: ["ltr", "ltr"], binding: "left" });
+  });
+
+  it("keeps the canvases of a mirrored spread ltr", () => {
+    // A canvas draws text in the direction its element inherits: under the
+    // spread's rtl every sideways run and every bracket pair moved (Nº 081).
+    expect(showBookWith("right").css).toMatch(/\.pt-spread\[dir="rtl"\] canvas\s*\{\s*direction:\s*ltr;?\s*\}/);
+  });
+});

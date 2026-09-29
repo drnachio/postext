@@ -1,0 +1,79 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 77,
+  "status": "draft",
+  "chapter": "type",
+  "order": 130,
+  "level": 2,
+  "genres": ["textbook"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["emphasis-marks", "vertical-writing"],
+    "also": [
+      "right-binding",
+      "cjk-punctuation",
+      "cjk-line-breaking",
+      "character-grid",
+      "cjk-fonts",
+      "pdf-fonts",
+      "pdf-export",
+      "chinese-numerals",
+      "heading-styles",
+      "section-geometry",
+      "opener-design",
+      "opener-band",
+      "heading-attributes",
+      "numbered-lists",
+      "paragraph-indents",
+      "paragraph-styles",
+      "color-palette"
+    ]
+  },
+  "answers": ["Q99", "Q96", "Q87"],
+  "gotchas": [
+    "cjk-locale-tag",
+    "cjk-fonts-slices",
+    "cjk-spread-order",
+    "cjk-no-italic",
+    "headings-drop-h1-break"
+  ],
+  "explainsWarnings": ["cjkMarksExceedLeading"],
+  "related": ["critical-edition-line-numbers"],
+  "engine": { "postext": "1.9.0", "postextPdf": "1.9.0" },
+  "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": [2, 3], "card": "spread", "expect": { "pages": [3, 3] } },
+  "downloads": { "pdf": true },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "The opening of the Basic Annals of Xiang Yu (項羽本紀), Records of the Grand Historian (史記), chapter 7; characters from the zh.wikisource transcription",
+          "es": "El comienzo de los Anales básicos de Xiang Yu (項羽本紀), Memorias históricas (史記), capítulo 7; los caracteres, según la transcripción de zh.wikisource"
+        },
+        "who": "Sima Qian (司馬遷)",
+        "source": "https://zh.wikisource.org/wiki/史記/卷007",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The punctuation, the paragraphs and the marks of the passage, the headnote (題解), the conventions (凡例), the slug lines and the colophon",
+          "es": "La puntuación, los párrafos y las marcas del pasaje, la presentación (題解), las normas de la edición (凡例), los rótulos al pie y el colofón"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Noto Serif TC", "license": "OFL-1.1" },
+      { "family": "Noto Sans TC", "license": "OFL-1.1" },
+      { "family": "LXGW WenKai TC", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-29",
+  "updated": "2026-09-29"
+}

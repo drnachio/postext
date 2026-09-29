@@ -1,0 +1,170 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 75,
+  "status": "draft",
+  "chapter": "page",
+  "order": 80,
+  "level": 3,
+  "genres": [
+    "novel"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "vertical-writing",
+      "right-binding",
+      "chinese-numerals"
+    ],
+    "also": [
+      "cjk-line-breaking",
+      "cjk-punctuation",
+      "character-grid",
+      "cjk-fonts",
+      "opener-design",
+      "heading-styles",
+      "heading-attributes",
+      "heading-numbering",
+      "title-line-breaks",
+      "running-heads",
+      "section-running-heads",
+      "page-role-filters",
+      "mirrored-margins",
+      "paragraph-styles",
+      "design-images",
+      "pdf-export",
+      "page-background"
+    ]
+  },
+  "answers": [
+    "Q87",
+    "Q92"
+  ],
+  "gotchas": [
+    "headings-drop-h1-break",
+    "cjk-locale-tag",
+    "cjk-fonts-slices",
+    "cjk-spread-order",
+    "cjk-source-script-mix",
+    "vertical-design-image-pdf",
+    "vertical-line-axis",
+    "quote-frontmatter"
+  ],
+  "related": [
+    "trade-paperback-novel",
+    "chinese-novel-horizontal",
+    "running-heads-by-parity",
+    "five-chapter-openers"
+  ],
+  "workarounds": [
+    {
+      "package": "postext-pdf",
+      "note": "the plate's woodcut is drawn by the plate style's header, on the sheet: postext-pdf draws a design image of a vertical page's flow turned a quarter turn and stretched to its box (VDTDesignImageBlock.upright is not read by headerFooter.ts renderImageBlock), while the canvas and the HTML stand it upright; as a header picture it is a pagination artifact in the tagged PDF, without its alt text"
+    },
+    {
+      "package": "postext",
+      "note": "a design text in a vertical flow is centred off the middle of its column: design/layout.ts puts a line's baseline at 0.8 of the line height and the vertical painter (canvas-backend/verticalText.ts, and postext-pdf the same) centres each character 0.38 em above the baseline, so the characters land at 0.8 × line − 0.38 em instead of line / 2, 3.4 pt too far left for the 13.5/28.5 pt couplet and 3.2 pt too far right for the 40/40 pt title. The pen moves both back with offAxis(size, line) = 0.3 × line − 0.38 × size; the fix is to centre the axis at the line's top + line height / 2 in vertical flows, in the canvas and in postext-pdf, after which offAxis goes."
+    }
+  ],
+  "engine": {
+    "postext": "1.9.0",
+    "postextPdf": "1.9.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images",
+    "cjk"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": [
+      2,
+      3
+    ],
+    "card": "spread",
+    "pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      10,
+      11
+    ],
+    "expect": {
+      "pages": [
+        11,
+        11
+      ]
+    }
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "三國演義 (Romance of the Three Kingdoms), chapter 1, Mao Zonggang recension (about 1679); Wikisource transcription, revision 2583915, with one character corrected (颙 → 顒)",
+          "es": "三國演義 (Romance de los Tres Reinos), capítulo 1, versión de Mao Zonggang (hacia 1679); transcripción de Wikisource, revisión 2583915, con un carácter corregido (颙 → 顒)"
+        },
+        "who": "Luo Guanzhong; transcription by Wikisource editors",
+        "source": "https://zh.wikisource.org/w/index.php?title=%E4%B8%89%E5%9C%8B%E6%BC%94%E7%BE%A9/%E7%AC%AC001%E5%9B%9E&oldid=2583915",
+        "license": "CC-BY-SA-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "桃園結義 (The Oath in the Peach Garden), woodcut from Yu Xiangdou’s 新刊京本校正演義全像三國志傳評林, Jianyang, 1592 (Waseda University Library); scan from Wikimedia Commons, cropped inside its frame and clear of what was left of it, cleaned and toned to the page’s ink and paper",
+          "es": "桃園結義 (El juramento del jardín de los melocotoneros), xilografía de la edición de Yu Xiangdou, 新刊京本校正演義全像三國志傳評林, Jianyang, 1592 (Biblioteca de la Universidad de Waseda); escaneado de Wikimedia Commons, recortado dentro del marco y sin los restos de este, limpiado y entonado con la tinta y el papel de la página"
+        },
+        "who": "Yu Xiangdou (publisher), anonymous block cutter",
+        "source": "https://commons.wikimedia.org/wiki/File:%E6%A1%83%E5%9B%AD%E4%B8%89%E7%BB%93%E4%B9%89%EF%BC%88%E4%BD%99%E8%B1%A1%E6%96%97%E8%AF%84%E6%9C%AC%EF%BC%89.png",
+        "license": "PD",
+        "file": "peach-garden-oath-1592-v2.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Noto Serif TC",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "LXGW WenKai TC",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Sans TC",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Source Serif 4",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-09-29",
+  "updated": "2026-09-29"
+}

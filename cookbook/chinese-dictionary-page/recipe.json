@@ -1,0 +1,154 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 86,
+  "status": "draft",
+  "chapter": "running-heads",
+  "order": 25,
+  "level": 2,
+  "genres": [
+    "manual"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "guide-words",
+      "ruby"
+    ],
+    "also": [
+      "character-grid",
+      "column-layouts",
+      "column-rule",
+      "column-balancing",
+      "cjk-fonts",
+      "cjk-line-breaking",
+      "cjk-punctuation",
+      "cjk-justification",
+      "running-heads",
+      "bleed-bands",
+      "design-anchoring",
+      "emphasis-colours",
+      "paragraph-styles",
+      "mirrored-margins",
+      "color-palette",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q101",
+    "Q89",
+    "Q94"
+  ],
+  "gotchas": [
+    "circled-numbers-western",
+    "ruby-not-in-designs",
+    "cjk-fonts-slices",
+    "cjk-locale-tag",
+    "headings-drop-h1-break",
+    "fonts-first"
+  ],
+  "related": [
+    "dictionary-thumb-index",
+    "pinyin-primer",
+    "chinese-novel-horizontal"
+  ],
+  "workarounds": [
+    {
+      "package": "postext",
+      "note": "the CJK composer sets lines first-fit and bodyText.avoidRunts acts on Latin text only, so a paragraph may end on a lone character (孤字), and a line may break a book title after its first character (《說|文》). The Kangxi excerpts are cut, clause by clause and in the source's order, so that no entry ends on a lone character, no title breaks after its first character and every column but the last ends on its last grid line (checked in the VDT, both editions); 鐵 keeps one of its ancient forms (〔古文〕銕) and 天 leaves out its direct reading (並腆平聲), which moves their first line breaks off 《說|文》"
+    },
+    {
+      "package": "postext",
+      "note": "the CJK composer classes the circled numbers ① to ⑳ as Latin letters: a line may end on a sense number whose sense opens the next line, and cjk.latinSpacing puts its quarter em after the number. Each number is followed by a word joiner (U+2060) in the Markdown, which the CJK composer honours since the #201 review fixes (it broke on both sides of one before); without it the sense numbers would have to be kept off the line ends by hand"
+    }
+  ],
+  "engine": {
+    "postext": "1.9.0",
+    "postextPdf": "1.9.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "cjk"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 2,
+    "card": "loupe",
+    "focus": {
+      "page": 2,
+      "x": 0.505,
+      "y": 0.02,
+      "w": 0.47,
+      "h": 0.245
+    },
+    "pages": "all",
+    "expect": {
+      "pages": [
+        4,
+        4
+      ]
+    }
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "Thirty entries of the Kangxi Dictionary (康熙字典, 1716), 天 to 庭, each cut to a few senses: what is kept stands in the source’s order and under its attribution, a sense with a reading of its own keeps it, and of the ancient forms (古文) only 銕 is set, the others being outside the fonts. Variant forms are written in today’s standard Traditional characters and the punctuation is revised in places. From the zh.wikisource transcription, which gives the Siku Quanshu Huiyao copy (四庫全書薈要本) as its source and notes some of Wang Yinzhi’s corrections of 1831 (字典考證); 29 pages by radical and stroke count, revisions read on 29 September 2026: 大部 2535754, 水部/八畫 2542298, 田部 2543683, 心部/六畫 2537571, 土部/十畫 2535684, 門部/十畫 2553837, 心部/四畫 2537569, 歹部/五畫 2541608, 肉部/八畫 2549900, 人部/六畫 416510, 手部/六畫 2538445, 辵部/五畫 2553283, 木部/七畫 2540094, 虫部/八畫 2551174, 言部/八畫 2551690, 髟部/五畫 2556393, 穴部/六畫 2546633, 目部/六畫 2544863, 足部/六畫 2552906, 米部/十九畫 2548884, 巾部/五畫 2536199, 貝部/五畫 2552278, 金部/十三畫 2553630, 食部/九畫 2556072, 水部/二畫 2541898, 耳部/十六畫 2549782, 广部/二十二畫 2536291, 亠部/七畫 409671, 广部/七畫 2536277",
+          "es": "Treinta entradas del Diccionario de Kangxi (康熙字典, 1716), de 天 a 庭, reducidas a unas pocas acepciones: lo que se conserva sigue el orden y las atribuciones del original, una acepción con lectura propia la mantiene y, de las formas antiguas (古文), solo se compone 銕, porque las demás no están en las fuentes. Las variantes van en los caracteres tradicionales normalizados de hoy y la puntuación se ha revisado en algunos puntos. Según la transcripción de zh.wikisource, que da como fuente la copia del Siku Quanshu Huiyao (四庫全書薈要本) y anota algunas correcciones de Wang Yinzhi de 1831 (字典考證); 29 páginas por radical y número de trazos, revisiones consultadas el 29 de septiembre de 2026: 大部 2535754, 水部/八畫 2542298, 田部 2543683, 心部/六畫 2537571, 土部/十畫 2535684, 門部/十畫 2553837, 心部/四畫 2537569, 歹部/五畫 2541608, 肉部/八畫 2549900, 人部/六畫 416510, 手部/六畫 2538445, 辵部/五畫 2553283, 木部/七畫 2540094, 虫部/八畫 2551174, 言部/八畫 2551690, 髟部/五畫 2556393, 穴部/六畫 2546633, 目部/六畫 2544863, 足部/六畫 2552906, 米部/十九畫 2548884, 巾部/五畫 2536199, 貝部/五畫 2552278, 金部/十三畫 2553630, 食部/九畫 2556072, 水部/二畫 2541898, 耳部/十六畫 2549782, 广部/二十二畫 2536291, 亠部/七畫 409671, 广部/七畫 2536277"
+        },
+        "who": "Zhang Yushu, Chen Tingjing and others (1716); transcription by Wikisource editors",
+        "source": "https://zh.wikisource.org/w/index.php?title=%E5%BA%B7%E7%86%99%E5%AD%97%E5%85%B8&oldid=2554464",
+        "license": "CC-BY-SA-4.0"
+      },
+      {
+        "what": {
+          "en": "The pinyin readings, the sense numbers, the order of the entries and the colophon",
+          "es": "Las lecturas en pinyin, los números de acepción, el orden de las entradas y el colofón"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Noto Serif TC",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Sans TC",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "LXGW WenKai TC",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-09-29",
+  "updated": "2026-09-29"
+}

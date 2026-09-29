@@ -1123,7 +1123,7 @@
     ],
     "detect": {
       "markdown": [
-        "\\^[^\\s^][^^\\n]*\\^",
+        "(?<!\\[)\\^[^\\s^][^^\\n]*(?<!\\[)\\^",
         "~[^\\s~][^~\\n]*~"
       ]
     }
@@ -2245,6 +2245,51 @@
         "headingStyles[].footer"
       ]
     }
+  },
+  "guide-words": {
+    "label": {
+      "en": "Guide words in running heads",
+      "es": "Palabras guía en la cabecera"
+    },
+    "definition": {
+      "en": "{firstMark.<key>} and {lastMark.<key>} print the first and the last headword that start on a page, as dictionaries and reference books do: the key is a heading level (h2) or a paragraph style whose paragraphs open with a bold headword. A page on which none starts repeats the one in force.",
+      "es": "{firstMark.<clave>} y {lastMark.<clave>} imprimen el primer y el último lema que empiezan en una página, como hacen los diccionarios y las obras de consulta: la clave es un nivel de título (h2) o un estilo de párrafo cuyos párrafos empiezan con un lema en negrita. Una página en la que no empieza ninguno repite el vigente."
+    },
+    "aliases": {
+      "en": [
+        "guide words",
+        "catchwords",
+        "dictionary running heads",
+        "first and last entry",
+        "headwords in the running head",
+        "running marks",
+        "firstMark",
+        "lastMark",
+        "书眉",
+        "書眉"
+      ],
+      "es": [
+        "palabras guía",
+        "reclamos",
+        "cabeceras de diccionario",
+        "primera y última entrada",
+        "lemas en la cabecera",
+        "marcas de página",
+        "firstMark",
+        "lastMark",
+        "书眉",
+        "書眉"
+      ]
+    },
+    "group": "furniture",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Text elements",
+        "es": "Elementos de texto"
+      }
+    },
+    "since": "1.5.0"
   },
   "callout-styles": {
     "label": {
@@ -4721,6 +4766,231 @@
       }
     },
     "since": "1.9.0"
+  },
+  "tate-chu-yoko": {
+    "label": {
+      "en": "Numbers upright in vertical text",
+      "es": "Números en pie en texto vertical"
+    },
+    "definition": {
+      "en": "In vertical text a number of up to cjk.uprightDigits digits (two by default) stands upright in one cell, tate-chu-yoko; :tcy[…] puts any short run in one cell, :upright[…] stands each letter of an acronym upright, and :sideways[…] turns a run with the line.",
+      "es": "En texto vertical, un número de hasta cjk.uprightDigits cifras (dos por defecto) se pone en pie en una sola casilla, el tate-chu-yoko; :tcy[…] mete cualquier grupo corto en una casilla, :upright[…] pone en pie cada letra de una sigla y :sideways[…] gira un grupo con la línea."
+    },
+    "aliases": {
+      "en": [
+        "tate-chu-yoko",
+        "縱中橫",
+        "纵中横",
+        "text-combine-upright",
+        "horizontal in vertical",
+        "upright digits",
+        "dates in vertical text",
+        "acronyms in vertical text",
+        ":tcy",
+        ":upright",
+        ":sideways"
+      ],
+      "es": [
+        "tate-chu-yoko",
+        "縱中橫",
+        "纵中横",
+        "text-combine-upright",
+        "horizontal dentro de vertical",
+        "cifras en pie",
+        "fechas en texto vertical",
+        "siglas en texto vertical",
+        ":tcy",
+        ":upright",
+        ":sideways"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Numbers in vertical text",
+        "es": "Números en texto vertical"
+      }
+    },
+    "since": "1.9.0",
+    "detect": {
+      "config": [
+        "cjk.uprightDigits"
+      ],
+      "markdown": [
+        ":tcy\\[",
+        ":upright\\[",
+        ":sideways\\["
+      ]
+    }
+  },
+  "emphasis-marks": {
+    "label": {
+      "en": "Emphasis dots, name and title lines",
+      "es": "Puntos de énfasis y líneas de nombre y de título"
+    },
+    "definition": {
+      "en": "The marks Chinese sets beside the characters instead of italics: emphasis dots (着重号, :dots[…]), the straight proper-name line (专名号, :name[…]) and the wavy book-title line (书名号, :book[…]), under the text across the page and beside it down the page; cjk.bookTitleMark prints titles with 《》, a wavy line or nothing, and cjk.annotationColor inks the marks.",
+      "es": "Las marcas que el chino pone junto a los caracteres en lugar de la cursiva: puntos de énfasis (着重号, :dots[…]), la línea recta de nombre propio (专名号, :name[…]) y la línea ondulada de título (书名号, :book[…]), bajo el texto en horizontal y a su lado en vertical; cjk.bookTitleMark imprime los títulos con 《》, con línea ondulada o sin nada, y cjk.annotationColor da color a las marcas."
+    },
+    "aliases": {
+      "en": [
+        "emphasis dots",
+        "proper-name mark",
+        "proper noun line",
+        "book-title mark",
+        "wavy underline",
+        "着重号",
+        "专名号",
+        "專名號",
+        "私名號",
+        "书名号",
+        "書名號",
+        "全式标点",
+        ":dots",
+        ":name",
+        ":book"
+      ],
+      "es": [
+        "puntos de énfasis",
+        "marca de nombre propio",
+        "línea de nombre propio",
+        "marca de título",
+        "subrayado ondulado",
+        "着重号",
+        "专名号",
+        "專名號",
+        "私名號",
+        "书名号",
+        "書名號",
+        "全式标点",
+        ":dots",
+        ":name",
+        ":book"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Chinese marks, ruby and warichu",
+        "es": "Marcas chinas, ruby y warichu"
+      }
+    },
+    "since": "1.9.0",
+    "detect": {
+      "config": [
+        "cjk.bookTitleMark",
+        "cjk.emphasis",
+        "cjk.annotationColor"
+      ],
+      "markdown": [
+        ":dots\\[",
+        ":name\\[",
+        ":book\\["
+      ]
+    }
+  },
+  "ruby": {
+    "label": {
+      "en": "Ruby: pinyin and zhuyin readings",
+      "es": "Ruby: lecturas en pinyin y zhuyin"
+    },
+    "definition": {
+      "en": "Readings set over or beside the characters they gloss, with :ruby[…]{rt=\"…\"} or the compact {人之初|rén zhī chū}: one reading per character, so a line may break between them, or one for a whole word. Pinyin goes over horizontal text and zhuyin right of each character; cjk.ruby sets their face, size, colour and side, and the readings sit in the line gap, which must be wide enough to hold them.",
+      "es": "Lecturas compuestas encima o al lado de los caracteres que glosan, con :ruby[…]{rt=\"…\"} o la forma compacta {人之初|rén zhī chū}: una lectura por carácter, así que la línea puede cortarse entre ellas, o una para toda la palabra. El pinyin va encima del texto horizontal y el zhuyin a la derecha de cada carácter; cjk.ruby fija su fuente, su cuerpo, su color y su lado, y las lecturas ocupan el hueco entre líneas, que tiene que ser lo bastante ancho para contenerlas."
+    },
+    "aliases": {
+      "en": [
+        "ruby",
+        "pinyin",
+        "zhuyin",
+        "bopomofo",
+        "furigana",
+        "readings over characters",
+        "interlinear readings",
+        "注音",
+        "拼音",
+        "注音版"
+      ],
+      "es": [
+        "ruby",
+        "pinyin",
+        "zhuyin",
+        "bopomofo",
+        "furigana",
+        "lecturas sobre los caracteres",
+        "lecturas interlineales",
+        "注音",
+        "拼音",
+        "注音版"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Chinese marks, ruby and warichu",
+        "es": "Marcas chinas, ruby y warichu"
+      }
+    },
+    "since": "1.9.0",
+    "detect": {
+      "config": [
+        "cjk.ruby"
+      ],
+      "markdown": [
+        ":ruby\\[",
+        "\\{[\\u3100-\\u312f\\u3400-\\u4dbf\\u4e00-\\u9fff][^{}|\\n]*\\|[^{}\\n]+\\}"
+      ]
+    }
+  },
+  "warichu": {
+    "label": {
+      "en": "Warichu: two-line notes in the line",
+      "es": "Warichu: notas a dos líneas dentro de la línea"
+    },
+    "definition": {
+      "en": "A note set inside the line in two rows at half the text size (双行夹注, :warichu[…]), the upper row read first; a long note fills the rest of the line and goes on with the next line, column or page. cjk.warichu sets its size, colour and brackets.",
+      "es": "Una nota compuesta dentro de la línea en dos filas a la mitad del cuerpo del texto (双行夹注, :warichu[…]), que se lee primero la fila de arriba; una nota larga llena lo que queda de línea y sigue en la línea, la columna o la página siguientes. cjk.warichu fija su cuerpo, su color y sus corchetes."
+    },
+    "aliases": {
+      "en": [
+        "warichu",
+        "two-line notes",
+        "inline notes",
+        "双行夹注",
+        "雙行夾批",
+        "夹注",
+        "割注"
+      ],
+      "es": [
+        "warichu",
+        "notas a dos líneas",
+        "notas en línea",
+        "双行夹注",
+        "雙行夾批",
+        "夹注",
+        "割注"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Chinese marks, ruby and warichu",
+        "es": "Marcas chinas, ruby y warichu"
+      }
+    },
+    "since": "1.9.0",
+    "detect": {
+      "config": [
+        "cjk.warichu"
+      ],
+      "markdown": [
+        ":warichu\\["
+      ]
+    }
   },
   "cjk-fonts": {
     "label": {

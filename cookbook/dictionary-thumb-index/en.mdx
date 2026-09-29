@@ -21,7 +21,7 @@ The code is [the short answer](#the-short-answer) above. `TABS` lists 22 tabs, w
 
 <Excerpt region="running-heads" />
 
-The heads are text elements anchored to the page and filtered by `parity` and `pages: 'body'` ([text elements](/en/docs/configuration#text-elements)). The title on page 1 spans both columns, which makes page 1 an opener. The heads skip it, and its folio comes from the footer, an element set to `pages: 'opener'` that prints 6 mm below the text block. On a recto `{chapterTitle}` prints the letter of the last level-1 heading on or before the page. Postext has no placeholder for a page’s first or last headword, so the recto head prints *Letter C* where a dictionary would print guide words.
+The heads are text elements anchored to the page and filtered by `parity` and `pages: 'body'` ([text elements](/en/docs/configuration#text-elements)). The title on page 1 spans both columns, which makes page 1 an opener. The heads skip it, and its folio comes from the footer, an element set to `pages: 'opener'` that prints 6 mm below the text block. On a recto `{chapterTitle}` prints the letter of the last level-1 heading on or before the page, *Letter C*. Since postext 1.5.0 `{firstMark.<key>}` and `{lastMark.<key>}` print a page’s first and last headword instead, the guide words most dictionaries carry; this recipe was set with 1.4.1 and keeps the letter.
 
 ### 3 · Colour the headwords and nothing else
 

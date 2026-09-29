@@ -327,6 +327,18 @@ describe('headings: number separator and couplet titles', () => {
     }
   });
 
+  it('the running head drops a number whose template opens with ideographic spaces', () => {
+    // GB/T 9704 heads: '　　{1:一}、' indents the head two cells. The lines
+    // read back trimmed, so the number is found without its indent.
+    const cfg: PostextConfig = { ...config(''), locale: 'zh-Hans',
+      headings: { levels: [{ level: 1, numberingTemplate: '\u3000\u3000{1:一}、', numberSeparator: '' }] } };
+    const doc = buildDocument({ markdown: '# 培训时间\n\n正文。' }, cfg);
+    expect(doc.blocks.find((b) => b.type === 'heading')!.numberPrefix).toBe('\u3000\u3000一、');
+    expect(computeChapterTitles(doc.blocks, doc.pages.length)[0]).toBe('培训时间');
+    const header = (doc.pages[0]!.header?.blocks ?? []).filter((b): b is VDTDesignTextBlock => b.kind === 'text');
+    expect(header.flatMap((b) => b.lines.map((l) => l.text)).join('')).toBe('一、|培训时间');
+  });
+
   it('the default opener of a page-span level uses it too', () => {
     const doc = buildDocument({ markdown: md }, config('　', 'page'));
     expect(bandText(doc).startsWith('第一回\u3000甄士隱')).toBe(true);
