@@ -2,6 +2,7 @@ import Link from "next/link";
 import { compileDocsMdx } from "@/lib/mdx";
 import * as illustrations from "./illustrations";
 import { CodePenExample } from "./CodePenExample";
+import { TutorialVideo } from "./TutorialVideo";
 
 function createHeading(level: 1 | 2 | 3) {
   const Tag = `h${level}` as const;
@@ -42,6 +43,7 @@ const components = {
   a: MdxLink,
   ...illustrations,
   CodePenExample,
+  TutorialVideo,
 };
 
 function wrapScrollableElements(source: string): string {

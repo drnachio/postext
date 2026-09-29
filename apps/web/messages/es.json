@@ -322,6 +322,14 @@
     "fullscreen": "Pantalla completa",
     "exitFullscreen": "Salir de pantalla completa"
   },
+  "Tutorial": {
+    "title": "Convierte tu publicación en Postext con un agente de IA",
+    "play": "Reproducir el vídeo a pantalla completa",
+    "watch": "Ver el tutorial · 5:06",
+    "subtitles": "Subtítulos",
+    "fullscreen": "Pantalla completa",
+    "exitFullscreen": "Salir de pantalla completa"
+  },
   "About": {
     "eyebrow": "Por qué Postext",
     "titleLine1": "Maquetación editorial,",

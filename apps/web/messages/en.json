@@ -322,6 +322,14 @@
     "fullscreen": "Full screen",
     "exitFullscreen": "Exit full screen"
   },
+  "Tutorial": {
+    "title": "Convert your publication to Postext with an AI agent",
+    "play": "Play the video full screen",
+    "watch": "Watch the tutorial · 5:10",
+    "subtitles": "Subtitles",
+    "fullscreen": "Full screen",
+    "exitFullscreen": "Exit full screen"
+  },
   "About": {
     "eyebrow": "Why Postext",
     "titleLine1": "Editorial layout,",
