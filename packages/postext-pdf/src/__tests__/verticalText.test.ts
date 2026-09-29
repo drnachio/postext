@@ -293,6 +293,36 @@ describe('vertical text in the PDF (#191)', () => {
     expect(uprightShows(after, pageFonts(pdf)).flatMap((sh) => sh.cids)).toHaveLength(5);
   });
 
+  it('sets readings, note rows and marks down the column (#193–#195)', async () => {
+    const cfg = config('zh-Hant', { bodyText: { fontFamily: 'Noto Serif TC', fontSize: pt(16), lineHeight: pt(32), firstLineIndent: pt(0), textAlign: 'left', hyphenation: { enabled: false } } });
+    const { doc, pdf } = await render('此:dots[真事]隱:ruby[開卷]{rt="GD PA"}:ruby[回]{rt="ㄏㄨㄟˊ"}:warichu[甲乙丙丁]也', cfg);
+    const line = doc.pages[0]!.columns[0]!.blocks[0]!.lines[0]!;
+    const ops = pageOps(pdf);
+    const fonts = pageFonts(pdf);
+    // Everything after the flow's frame is entered.
+    const flow = ops.slice(ops.indexOf(' cm', ops.indexOf('0 -1 1 0 ')));
+    const shows = uprightShows(flow, fonts);
+    const sizeOf = (font: string) => Number(new RegExp(`/${font} ([\\d.]+) Tf`).exec(flow)![1]);
+    // The note: two rows through the twin at half the size, the upper one
+    // (read first) nearer the flow's top, the right of the column.
+    const rows = shows.filter((sh) => /V-/.test(sh.font) && sh.cids.length === 2 && flow.includes(`/${sh.font} 8 Tf`)).filter((sh) => sh.tm[4]! > line.bbox.x + 16 * 6);
+    expect(rows).toHaveLength(2);
+    expect(rows[0]!.tm[5]!).toBeGreaterThan(rows[1]!.tm[5]!);
+    // Pinyin runs sideways with the horizontal font at the ruby size.
+    expect(flow).toMatch(/Tf\n[^\n]*\n?1 0 0 1 [\d.]+ [\d.]+ Tm\n\[? ?<[0-9A-F]{4}>/);
+    expect(sizeOf(shows[0]!.font)).toBe(16);
+    // Zhuyin at 0.3 em through the twin: the symbols' column, then the
+    // tone mark standing upright in a show of its own (UAX #50 would turn
+    // it sideways).
+    const zhuyin = [...flow.matchAll(/V-\d+ 4\.8 Tf\n[^\n]*\n?0 1 -1 0 [\d.]+ [\d.]+ Tm\n<([0-9a-fA-F]+)> Tj/g)].map((m) => m[1]!.length / 4);
+    expect(zhuyin).toEqual([3, 1]);
+    // The dots: two filled circles drawn in the flow's frame after the
+    // line's text.
+    const after = flow.slice(flow.lastIndexOf(' Tj'));
+    expect(after.match(/ c\n/g)!.length).toBe(8);
+    expect(after.match(/\nf\n/g)!.length).toBe(2);
+  });
+
   it('leaves horizontal Chinese text without a twin', async () => {
     const { pdf } = await render('此開卷第一回也。', config('zh-Hant', { layout: { writingMode: 'horizontal-tb', layoutType: 'single' } }));
     const fonts = pageFonts(pdf);

@@ -18,13 +18,14 @@
  */
 
 import type { ContentWarning, VDTBlock, VDTDocument, VDTLine, VDTLineMark, VDTLineSegment } from './vdt';
-import type { ResolvedCjkConfig } from './types';
+import type { CjkRegion, ResolvedCjkConfig } from './types';
 import { lineInkExtent, lineTrailingTracking } from './lineInk';
 import { measureTextWidth } from './measure/canvas';
 import { graphemesOf } from './measure/graphemes';
 import { isCjkGrapheme } from './measure/cjkClasses';
 import { CENTRAL, ZHUYIN_SIZE_RATIO, isZhuyin } from './measure/cjkAnnotate';
 import { fontEm } from './measure/vertical';
+import { verticalRuns } from './writingMode';
 
 /** What a block contributes to its lines' painting. */
 type BlockLike = Pick<VDTBlock, 'bbox' | 'textAlign' | 'letterSpacing' | 'fontString' | 'boldFontString' | 'italicFontString' | 'boldItalicFontString'>;
@@ -98,11 +99,29 @@ const PAST_LINE = 0.16;
 /** Where each grapheme of a segment starts and how far it advances, px
  *  from the segment's start: CJK characters share the segment's width
  *  evenly (the composer only puts characters that advance alike in one
- *  segment); anything else is measured and scaled to the segment. */
-function graphemeAdvances(seg: VDTLineSegment, width: number, font: string): { g: string; at: number; adv: number }[] {
+ *  segment); anything else is measured and scaled to the segment. Down a
+ *  vertical line a number set in one upright cell (`:tcy[…]`, or up to
+ *  `cjk.uprightDigits` digits) is one character: it takes one dot. */
+function graphemeAdvances(seg: VDTLineSegment, width: number, font: string, vertical?: VerticalMarks): { g: string; at: number; adv: number }[] {
   const graphemes = graphemesOf(seg.text);
   if (graphemes.length === 0) return [];
   const out: { g: string; at: number; adv: number }[] = [];
+  if (vertical && seg.tcy) return [{ g: seg.text, at: 0, adv: width }];
+  if (vertical && seg.orientation !== 'sideways' && vertical.uprightDigits > 0 && /[0-9]/.test(seg.text)) {
+    const em = fontEm(font);
+    const pieces = seg.orientation === 'upright'
+      ? graphemes.map((g) => ({ g, w: em }))
+      : verticalRuns(graphemes, vertical.region, vertical.uprightDigits).flatMap((run) =>
+        run.cell !== undefined ? [{ g: run.text, w: em * run.cell }] : graphemesOf(run.text).map((g) => ({ g, w: measureTextWidth(g, font) })));
+    const sum = pieces.reduce((a, p) => a + p.w, 0);
+    const k = sum > 0 ? width / sum : 1;
+    let at = 0;
+    for (const p of pieces) {
+      out.push({ g: p.g, at, adv: p.w * k });
+      at += p.w * k;
+    }
+    return out;
+  }
   if (graphemes.every(isCjkGrapheme)) {
     const adv = width / graphemes.length;
     graphemes.forEach((g, i) => out.push({ g, at: i * adv, adv }));
@@ -120,9 +139,16 @@ function graphemeAdvances(seg: VDTLineSegment, width: number, font: string): { g
   return out;
 }
 
+/** What a vertical line's dots need to find its upright cells. */
+interface VerticalMarks {
+  region: CjkRegion;
+  uprightDigits: number;
+}
+
 /** The marks of one line (see the module comment), relative to it; empty
- *  when it has none. `color` is `cjk.annotationColor` (hex), if set. */
-export function lineMarks(line: VDTLine, block: BlockLike, color?: string): VDTLineMark[] {
+ *  when it has none. `color` is `cjk.annotationColor` (hex), if set;
+ *  `vertical` is set on a vertical page. */
+export function lineMarks(line: VDTLine, block: BlockLike, color?: string, vertical?: VerticalMarks): VDTLineMark[] {
   const segments = line.segments;
   if (!segments || !segments.some((s) => s.cjkMarks)) return [];
   const { xs, widths } = segmentPositions(line, block);
@@ -208,7 +234,7 @@ export function lineMarks(line: VDTLine, block: BlockLike, color?: string): VDTL
     const t = tracking + (seg.tracking ?? 0);
     const inset = seg.ruby ? seg.inkOffset ?? 0 : 0;
     const box = seg.ruby ? Math.max(0, widths[i]! - 2 * inset) : widths[i]!;
-    for (const { g, at, adv } of graphemeAdvances(seg, box, font)) {
+    for (const { g, at, adv } of graphemeAdvances(seg, box, font, vertical)) {
       if (NO_DOT_RE.test(g)) continue;
       out.push({
         kind: dots.style === 'dot' ? 'dot' : dots.style,
@@ -336,7 +362,9 @@ export function annotateDocument(doc: VDTDocument, cjk: ResolvedCjkConfig | unde
       if (!segs) continue;
       if (segs.some((s) => s.cjkMarks)) {
         marked = true;
-        const marks = lineMarks(line, block, color);
+        const flow = block.pageIndex >= 0 ? doc.pages[block.pageIndex]?.flow : undefined;
+        const vertical = flow?.writingMode === 'vertical-rl' ? { region: cjk?.region ?? 'mainland', uprightDigits: cjk?.uprightDigits ?? 2 } : undefined;
+        const marks = lineMarks(line, block, color, vertical);
         if (marks.length > 0) line.marks = marks;
       }
       if (segs.some((s) => s.ruby && s.ruby.position !== 'right')) ruby = true;

@@ -61,6 +61,20 @@ describe('emphasis dots (:dots)', () => {
     for (const d of dots) expect(d.y).toBeLessThan(-0.88 * 20);
   });
 
+  it('give a number set in one upright cell one dot in vertical text (#190 with #193)', () => {
+    const vertical = config({}, { layout: { layoutType: 'single', writingMode: 'vertical-rl' } });
+    // 28 stands in one cell (cjk.uprightDigits 2), 12 by :tcy: a dot each,
+    // centred on the cell.
+    for (const md of [':dots[第28回]', ':dots[第:tcy[12]回]']) {
+      const line = lines(buildDocument({ markdown: md }, vertical))[0]!;
+      const dots = line.marks!.filter((m) => m.kind === 'dot');
+      expect(dots.map((d) => d.x)).toEqual([10, 30, 50]);
+    }
+    // Sideways (three digits under 2) and in horizontal text: a dot a digit.
+    expect(lines(buildDocument({ markdown: ':dots[第120回]' }, vertical))[0]!.marks!).toHaveLength(5);
+    expect(lines(buildDocument({ markdown: ':dots[第28回]' }, config()))[0]!.marks!).toHaveLength(4);
+  });
+
   it('style, fill and side follow the attributes', () => {
     const doc = buildDocument({ markdown: ':dots[不可]{style="circle"}:dots[忘]{style="sesame" pos="over"}' }, config());
     const marks = lines(doc)[0]!.marks!;

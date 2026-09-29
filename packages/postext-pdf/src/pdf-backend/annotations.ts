@@ -128,7 +128,9 @@ export function paintLineMarks(ctx: PageCtx, line: VDTLine, ink: Color): void {
 }
 
 /** Paint text runs from `x` on `baseline` (px) in `colorHex`, each in its
- *  run's face (the block's when the cache has none). */
+ *  run's face (the block's when the cache has none). On a vertical page
+ *  they go down the column through the vertical painter, a zhuyin tone
+ *  mark standing upright in its cell (`VDTAnnotationRun.upright`). */
 function paintRuns(
   ctx: PageCtx,
   runs: readonly VDTAnnotationRun[],
@@ -142,7 +144,7 @@ function paintRuns(
     const font = fontCache.get(run.fontString) ?? fallback;
     const size = parseFontString(run.fontString)?.sizePx ?? 0;
     if (!(size > 0)) continue;
-    drawTextPx(ctx, run.text, x + run.dx, baseline + run.dy, font, size, colorFromHex(run.color ?? colorHex, ctx.colorSpace));
+    drawTextPx(ctx, run.text, x + run.dx, baseline + run.dy, font, size, colorFromHex(run.color ?? colorHex, ctx.colorSpace), undefined, undefined, run.upright && ctx.vertical ? 'upright' : undefined);
   }
 }
 

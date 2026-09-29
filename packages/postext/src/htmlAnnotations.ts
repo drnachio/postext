@@ -58,6 +58,18 @@ export function lineMarksHtml(line: VDTLine, color: string): string {
     + `<span style="display:inline-block;position:relative;width:0;height:0;vertical-align:baseline;">${marks}</span></span>`;
 }
 
+/** The marks of a vertical line (`VDTLine.marks`) inside its box of the
+ *  turned flow (see `renderVerticalLine` in the HTML backend): placed from
+ *  the line's baseline in the flow frame, as the canvas draws them, so they
+ *  turn onto the sheet with the flow (dots right of the column, lines left
+ *  of it). '' when it has none. */
+export function verticalLineMarksHtml(line: VDTLine, color: string): string {
+  if (!line.marks || line.marks.length === 0) return '';
+  const baseline = line.baseline - line.bbox.y;
+  return `<span aria-hidden="true" style="position:absolute;left:0;top:${n(baseline)}px;width:0;height:0;">`
+    + line.marks.map((m) => markHtml(m, 0, color)).join('') + '</span>';
+}
+
 /** Quotes the family of a CSS font shorthand for a `style` attribute (the
  *  backend's own `quoteFontString`). */
 export type FontQuoter = (font: string) => string;

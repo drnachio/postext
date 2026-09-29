@@ -5,6 +5,7 @@ import type {
   VDTBlock,
   VDTLine,
   VDTLineSegment,
+  VDTAnnotationRun,
   VDTChip,
   VDTChipRun,
   VDTDesignSlot,
@@ -31,7 +32,7 @@ import type { CjkRegion } from './types';
 import { segmentOrientation, verticalRuns, type ForcedOrientation } from './writingMode';
 import { graphemesOf } from './measure/graphemes';
 import { fontFamilyOf } from './measure/vertical';
-import { lineMarksHtml, rubyHtml, warichuHtml } from './htmlAnnotations';
+import { lineMarksHtml, rubyHtml, verticalLineMarksHtml, warichuHtml } from './htmlAnnotations';
 
 /**
  * Declarations of every box of CJK text measured with no punctuation
@@ -703,6 +704,25 @@ function verticalSpan(at: number, axis: number, inner: string, decl = ''): strin
   return `<span style="position:absolute;top:${at.toFixed(3)}px;right:0;line-height:${lh.toFixed(3)}px;white-space:pre;${decl}">${inner}</span>`;
 }
 
+/** A run of vertical text whose em boxes are centred `axis` px from the
+ *  box's flow top, on either side of it (a ruby reading or a warichu row
+ *  sits outside the line's own box). */
+function verticalSpanAt(at: number, axis: number, size: number, inner: string, decl = ''): string {
+  const lh = Math.max(1, 2 * size);
+  return `<span aria-hidden="true" style="position:absolute;top:${at.toFixed(3)}px;right:${(axis - lh / 2).toFixed(3)}px;line-height:${lh.toFixed(3)}px;white-space:pre;${decl}">${inner}</span>`;
+}
+
+/** Annotation runs of a vertical line (a ruby reading, a warichu note's
+ *  rows, #194, #195) from `x` along it: set down the column in their own
+ *  face, centred across it on their baseline (`dy`) less their face's
+ *  axis, a zhuyin tone mark standing upright (`VDTAnnotationRun.upright`). */
+function verticalAnnotationRuns(runs: readonly VDTAnnotationRun[], x: number, color: string, v: VerticalHtml, axisOf: (fontString: string, shift?: number) => number): string {
+  return runs.map((run) => {
+    const decl = `font:${quoteFontString(run.fontString)};color:${run.color ?? color};letter-spacing:0;`;
+    return verticalSpanAt(x + run.dx, axisOf(run.fontString, run.dy), extractFontSizePx(run.fontString), verticalTextHtml(run.text, v, run.upright ? 'upright' : undefined), decl);
+  }).join('');
+}
+
 /** A body line of a vertical page: its text segments down an upright box,
  *  its formulas, swatches and chips sideways where the canvas paints them
  *  (see the section comment). */
@@ -753,6 +773,14 @@ function renderVerticalLine(line: VDTLine, block: VDTBlock, v: VerticalHtml, tar
       x += seg.width;
       continue;
     }
+    if (seg.warichu) {
+      // A warichu note's part: its two rows down the column, the upper
+      // row the right one, read once (#195).
+      const w = seg.warichu;
+      inner.push(`<span role="note" aria-label="${esc(w.upper + w.lower)}">${verticalAnnotationRuns(w.runs, x, w.color ?? pickSegmentColor(seg, block), v, axisOf)}</span>`);
+      x += seg.width;
+      continue;
+    }
     const fontString = pickSegmentFont(seg, block);
     const font = quoteFontString(fontString);
     const color = pickSegmentColor(seg, block);
@@ -760,13 +788,21 @@ function renderVerticalLine(line: VDTLine, block: VDTBlock, v: VerticalHtml, tar
       + (color !== block.color ? `color:${color};` : '')
       + (seg.tracking !== undefined ? `letter-spacing:${lineTracking + seg.tracking}px;` : '');
     let text = verticalTextHtml(seg.text, v, segmentOrientation(seg));
+    // Text set with emphasis dots is emphasis (#193); the dots are the
+    // line's marks.
+    if (seg.cjkMarks?.dots) text = `<em style="font-style:inherit;">${text}</em>`;
     const href = seg.refResourceId !== undefined
       ? (refLinks(seg.refResourceId, targets) ? refAnchorHref(seg.refResourceId) : undefined)
       : seg.href;
     if (href !== undefined) text = `<a href="${esc(href)}" style="color:inherit;text-decoration:none;"${seg.href !== undefined && seg.refResourceId === undefined ? ' rel="noopener noreferrer"' : ''}>${text}</a>`;
     inner.push(verticalSpan(x + (seg.inkOffset ?? 0), axisOf(fontString, seg.baselineShift ?? 0), text, decl));
+    // A ruby base's reading, beside the base (#194).
+    if (seg.ruby) inner.push(verticalAnnotationRuns(seg.ruby.runs, x, seg.ruby.color ?? color, v, axisOf));
     x += seg.width;
   }
+  // Emphasis dots, proper-name and book-title lines (#193), in the turned
+  // flow with the line's box.
+  if (line.marks) sideways.push(verticalLineMarksHtml(line, block.color));
   const width = Math.max(line.bbox.width, effectiveWidth);
   const decl = `font:${blockFont};color:${block.color};`
     + (block.strikethroughText ? 'text-decoration:line-through;' : '')

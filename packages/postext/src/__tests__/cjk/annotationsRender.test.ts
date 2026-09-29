@@ -124,3 +124,64 @@ describe('annotations in HTML', () => {
     expect(firstLine(doc).text).not.toContain('hóng');
   });
 });
+
+describe('annotations on a vertical page in HTML (#191 with #193–#195)', () => {
+  const vertical = () => config({ layout: { layoutType: 'single', writingMode: 'vertical-rl' } });
+  /** The upright box of the first line and the line's own box. */
+  const lineHtml = (html: string): { box: string; upright: string } => {
+    const start = html.indexOf('class="pt-line"');
+    const box = html.slice(start, html.indexOf('class="pt-line"', start + 1) >>> 0 || undefined);
+    const upright = box.slice(box.indexOf('writing-mode:vertical-rl'), box.indexOf('</div>'));
+    return { box, upright };
+  };
+
+  it('sets readings and note rows down the column beside the text, the tone mark upright', () => {
+    const doc = buildDocument({ markdown: '輕忽{紅樓|hóng|lóu}:ruby[滿]{rt="ㄇㄢˇ"}寶玉:warichu[甲戌側批此是]道' }, vertical());
+    const line = firstLine(doc);
+    const { upright } = lineHtml(renderToHtml(doc, { mode: 'single' }));
+    // Every reading and row is a run of the upright box, at its place
+    // along the line (top) and centred across it on its axis (right).
+    const runs = [...upright.matchAll(/<span aria-hidden="true" style="position:absolute;top:([\d.]+)px;right:(-?[\d.]+)px;line-height:([\d.]+)px;[^"]*font:[^;]*?(\d+)px[^"]*">(.*?)<\/span>/g)]
+      .map((m) => ({ top: +m[1]!, axis: +m[2]! + +m[3]! / 2, size: +m[4]!, text: m[5]!.replace(/<[^>]*>/g, '') }));
+    const segs = line.segments!;
+    let x = 0;
+    const at = new Map<string, number>();
+    for (const s of segs) {
+      at.set(s.text, x);
+      x += s.width;
+    }
+    const axisOf = (dy: number, size: number) => line.baseline - line.bbox.y + dy - 0.38 * size;
+    const hong = segs.find((s) => s.ruby?.text === 'hóng')!;
+    const hongRun = runs.find((r) => r.text === 'hóng')!;
+    expect(hongRun.top).toBeCloseTo(at.get(hong.text)! + hong.ruby!.runs[0]!.dx, 3);
+    expect(hongRun.axis).toBeCloseTo(axisOf(hong.ruby!.runs[0]!.dy, 10), 3);
+    // Over the text in the flow: right of the column on the sheet.
+    expect(hongRun.axis).toBeLessThan(axisOf(0, 20));
+    // Zhuyin: the tone mark stands upright.
+    expect(upright).toContain('<span style="text-orientation:upright;">ˇ</span>');
+    // The note: two rows, the upper one right of the lower one, read once.
+    expect(upright).toContain('role="note" aria-label="甲戌側批此是"');
+    const rows = runs.filter((r) => r.size === 10 && /[甲戌側批此是]/.test(r.text));
+    expect(rows.map((r) => r.text).join('')).toBe('甲戌側批此是');
+    expect(rows[0]!.axis).toBeLessThan(rows[1]!.axis);
+    // The base text is set once, the note never at the text size.
+    expect(upright).not.toMatch(/line-height:48\.8\d*px;white-space:pre;">[^<]*甲戌/);
+  });
+
+  it('draws the marks in the line box of the turned flow, dotted text as emphasis', () => {
+    const doc = buildDocument({ markdown: '此:dots[不可]輕忽:name[甄士隱]撰:book[石頭記]' }, config({ layout: { layoutType: 'single', writingMode: 'vertical-rl' }, cjk: { bookTitleMark: 'wavy' } }));
+    const line = firstLine(doc);
+    const { box, upright } = lineHtml(renderToHtml(doc, { mode: 'single' }));
+    expect(upright).toContain('<em style="font-style:inherit;">不可</em>');
+    // The marks sit outside the upright box, in the line's own (turned)
+    // box, from its baseline: as the canvas draws them.
+    const marks = box.slice(box.indexOf('</div>'));
+    expect(marks).toContain(`top:${(line.baseline - line.bbox.y).toFixed(3)}px;width:0;height:0;`);
+    const dots = [...marks.matchAll(/left:([\d.]+)px;top:(-?[\d.]+)px;width:([\d.]+)px;height:[\d.]+px;box-sizing:border-box;border-radius:50%/g)];
+    const want = line.marks!.filter((m) => m.kind === 'dot');
+    expect(dots.map((d) => +d[1]! + +d[3]! / 2)).toEqual(want.map((m) => +m.x.toFixed(3)));
+    // Right of the column (over, in the flow): above the baseline.
+    for (const d of dots) expect(+d[2]!).toBeLessThan(0);
+    expect(marks).toMatch(/<svg aria-hidden="true"[^>]*><path d="M/);
+  });
+});
