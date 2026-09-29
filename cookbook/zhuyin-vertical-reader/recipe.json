@@ -39,8 +39,7 @@
   },
   "answers": [
     "Q100",
-    "Q87",
-    "Q89"
+    "Q87"
   ],
   "gotchas": [
     "ruby-not-in-designs",
@@ -55,7 +54,7 @@
     },
     {
       "package": "postext",
-      "note": "each box and picture of the upper tier is fenced or cited where the channel of its page has room: a span 'side' box, or a side figure queued behind one, that finds no room before the text ends is dropped with no warning (in both writing modes; figures alone get pages of their own)"
+      "note": "each box and picture of the upper tier is fenced or cited where the channel of its page has room: a span 'side' box, or a side figure queued behind one, that finds no room before the text ends gets a page of its own with nothing under it, and the ones after it are dropped with no warning (in both writing modes; figures alone get pages of their own)"
     }
   ],
   "engine": {
@@ -81,10 +80,10 @@
     "card": "loupe",
     "focus": {
       "page": 1,
-      "x": 0.5,
-      "y": 0.535,
-      "w": 0.43,
-      "h": 0.29
+      "x": 0.415,
+      "y": 0.405,
+      "w": 0.515,
+      "h": 0.403
     },
     "expect": {
       "pages": [
@@ -110,7 +109,7 @@
           "es": "Han Feizi, capítulo 49, «Wu du» (Las cinco carcomas): el hombre de Song que esperaba junto al tocón"
         },
         "who": "Han Fei; transcription and punctuation by Wikisource editors (爲 set as 為, the Taiwan standard form)",
-        "source": "https://zh.wikisource.org/wiki/韓非子/五蠹",
+        "source": "https://zh.wikisource.org/w/index.php?title=%E9%9F%93%E9%9D%9E%E5%AD%90/%E4%BA%94%E8%A0%B9&oldid=2642850",
         "license": "CC-BY-SA-4.0"
       },
       {
@@ -119,13 +118,13 @@
           "es": "Han Feizi, capítulo 32, «Wai chu shuo zuo shang»: el hombre de Zheng que fue a comprar zapatos"
         },
         "who": "Han Fei; transcription and punctuation by Wikisource editors",
-        "source": "https://zh.wikisource.org/wiki/韓非子/外儲說左上",
+        "source": "https://zh.wikisource.org/w/index.php?title=%E9%9F%93%E9%9D%9E%E5%AD%90/%E5%A4%96%E5%84%B2%E8%AA%AA%E5%B7%A6%E4%B8%8A&oldid=2327662",
         "license": "CC-BY-SA-4.0"
       },
       {
         "what": {
-          "en": "The zhuyin, the modern Chinese versions, the notes, the author box, the lead and the exercises, written for this recipe",
-          "es": "El zhuyin, las versiones en chino moderno, las notas, el recuadro del autor, la entradilla y los ejercicios, escritos para esta receta"
+          "en": "The zhuyin (checked against the Ministry of Education's Revised Mandarin Chinese Dictionary), the modern Chinese versions, the notes, the author box, the lead and the exercises, written for this recipe",
+          "es": "El zhuyin (cotejado con el Diccionario Revisado de Chino Mandarín del Ministerio de Educación de Taiwán), las versiones en chino moderno, las notas, el recuadro del autor, la entradilla y los ejercicios, escritos para esta receta"
         },
         "who": "Postext Cookbook",
         "license": "CC-BY-4.0"
@@ -133,6 +132,10 @@
     ],
     "images": [],
     "fonts": [
+      {
+        "family": "Iansui",
+        "license": "OFL-1.1"
+      },
       {
         "family": "LXGW WenKai TC",
         "license": "OFL-1.1"

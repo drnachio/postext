@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 080 · A vertical reader with zhuyin to the right ═════════
 // https://postext.dev/en/cookbook/zhuyin-vertical-reader
-// Code: MIT · Text: Han Feizi, zh.wikisource (public domain) · Pictures: drawn in code
-// Fonts: LXGW WenKai TC, Noto Serif TC, Noto Sans TC (SIL OFL 1.1) · Needs postext ≥ 1.9.0
+// Code: MIT · Text: Han Feizi, zh.wikisource (CC BY-SA 4.0) · Pictures: drawn in code
+// Fonts: Iansui, LXGW WenKai TC, Noto Serif TC, Noto Sans TC (SIL OFL 1.1) · Needs postext ≥ 1.9.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
   loadVerticalAlternates,
@@ -15,7 +15,7 @@ const RECIPE = 'zhuyin-vertical-reader';
 // #region palette: semantic colours, every one linked by id
 const palette = {
   ink: '#2b2520', // text and zhuyin
-  accent: '#c2452d', // lesson title, labels, the unit's tab
+  accent: '#b83f28', // lesson title, labels, the unit's tab (4.9:1 on the tint)
   tint: '#f7efdf', // the boxes of the upper tier
   muted: '#72675b', // lead, folios, colophon
   paper: '#ffffff', // the lettering on the tab
@@ -26,7 +26,8 @@ const colorPalette = [
   { id: 'main-color', name: 'accent (defaults)', value: { hex: palette.accent, model: 'hex' } },
 ];
 // #endregion
-const KAI = 'LXGW WenKai TC'; // 楷: the lesson, as Taiwan's readers set it
+const KAI = 'Iansui'; // 楷: the lesson, drawn to Taiwan's standard forms (為, not 爲)
+const ZHUYIN = 'LXGW WenKai TC'; // the readings: a round dot for the neutral tone
 const MING = 'Noto Serif TC'; // 明: notes and the author box
 const HEI = 'Noto Sans TC'; // 黑: labels, folios, the tab
 const SIZE = 16; // the text size (三號)
@@ -43,10 +44,11 @@ const cjk = {
   // The lower tier: 23 characters down, 13 lines across the page.
   grid: { enabled: true, charsPerLine: 23, linesPerPage: 13 },
   // Readings at half the text size; zhuyin sets its symbols at 60 % of that, 0.3 em,
-  // so a three-symbol syllable fits beside one character without spacing the line.
-  ruby: { fontFamily: KAI, fontSize: em(0.5) },
+  // so three symbols fit beside one character, and beside each of two in a row.
+  ruby: { fontFamily: ZHUYIN, fontSize: em(0.5) },
 };
-// The line pitch is twice the size: the character, its zhuyin and tone mark, then a gap.
+// The line pitch is twice the size: a gap of one em, which the zhuyin and its tone
+// marks half fill. clreq asks for 1.5 em; one em keeps 13 lines of 23 on the page.
 const LINE = 2 * SIZE;
 const bodyText = {
   fontFamily: KAI, fontSize: pt(SIZE), lineHeight: pt(LINE), color: col('ink'),
@@ -60,12 +62,14 @@ const resourceTypes = [{ id: 'plate', name: '插圖', shortLabel: '圖', numberi
   resetOn: 'never', counterFormat: 'decimal', captionPrefix: '' }]; // no prefix, no caption
 const box = (id, title, body) => ({ id, title, background: col('tint'),
   padding: { top: mm(3), right: mm(3), bottom: mm(3), left: mm(3) },
-  titleStyle: { fontFamily: HEI, fontSize: pt(10), fontWeight: 700, color: col('accent') },
+  titleStyle: { fontFamily: HEI, fontSize: pt(11), fontWeight: 700, color: col('accent') },
   body: { color: col('ink'), firstLineIndent: pt(0), textAlign: 'left', boldColor: col('ink'),
     italicColor: col('ink'), ...body } });
+// Zhuyin is 0.3 em of the text it reads: at 13 pt the notes' readings are 3.9 pt.
 const calloutStyles = [ // fenced :::callout{type="notes" span="side"} in the text
-  box('notes', '注釋', { fontFamily: MING, fontSize: pt(11), lineHeight: pt(22) }),
-  box('author', '作者', { fontFamily: MING, fontSize: pt(11), lineHeight: pt(22) }),
+  box('notes', '注釋', { fontFamily: MING, fontSize: pt(13), lineHeight: pt(24) }),
+  box('author', '作者', { fontFamily: MING, fontSize: pt(13), lineHeight: pt(24),
+    textAlign: 'justify', firstLineIndent: em(2) }),
   box('chars', '生字', { fontFamily: KAI, fontSize: pt(22), lineHeight: pt(40),
     textAlign: 'center' }),
 ];
@@ -112,7 +116,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   cjk,
   bodyText,
   headings: {
-    fontFamily: KAI, color: col('ink'), fontWeight: 700,
+    fontFamily: KAI, color: col('ink'), fontWeight: 400, // Iansui has one weight
     levels: [
       // The lesson and fable numbers are typed in the headings: a numberingTemplate would
       // join the number to the title's first reading (see the recipe's workarounds).
@@ -120,22 +124,23 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
         breakBefore: { enabled: true, parity: 'any' }, marginBottom: pt(0) },
       { level: 2, fontSize: pt(20), lineHeight: pt(2 * LINE), marginTop: pt(LINE),
         marginBottom: pt(0) },
-      { level: 3, fontFamily: HEI, fontSize: pt(11), lineHeight: pt(LINE), color: col('accent'),
-        marginTop: pt(LINE / 2), marginBottom: pt(0) },
+      { level: 3, fontFamily: HEI, fontWeight: 700, fontSize: pt(13), lineHeight: pt(LINE),
+        color: col('accent'), marginTop: pt(LINE / 2), marginBottom: pt(0) },
     ],
   },
   // 想一想 and 語文天地: exercise heads in the label face, one line tall.
-  headingStyles: [{ id: 'drill', fontFamily: HEI, fontSize: pt(13), lineHeight: pt(LINE),
-    color: col('accent'), marginTop: pt(LINE / 2), marginBottom: pt(0) }],
+  headingStyles: [{ id: 'drill', fontFamily: HEI, fontWeight: 700, fontSize: pt(13),
+    lineHeight: pt(LINE), color: col('accent'), marginTop: pt(LINE / 2), marginBottom: pt(0) }],
   orderedLists: { numberFormat: 'trad-chinese-informal', separator: '、', color: col('accent'),
     fontFamily: HEI, fontWeight: 700, marginTop: pt(0), marginBottom: pt(0) },
   paragraphStyles: [
-    { id: 'lead', fontFamily: KAI, fontSize: pt(13), lineHeight: pt(LINE), color: col('muted'),
+    { id: 'lead', fontFamily: KAI, fontSize: pt(14), lineHeight: pt(LINE), color: col('muted'),
       textAlign: 'justify', firstLineIndent: em(0) },
     { id: 'plain', fontFamily: KAI, fontSize: pt(14), lineHeight: pt(LINE), color: col('ink'),
       textAlign: 'justify', firstLineIndent: em(2) },
     { id: 'idiom', fontFamily: KAI, fontSize: pt(SIZE), lineHeight: pt(LINE), color: col('ink'),
-      boldColor: col('accent'), textAlign: 'justify', firstLineIndent: em(0) }, // Kai bold is faint
+      boldColor: col('accent'), boldFontWeight: 400, textAlign: 'justify', // bold in colour only
+      firstLineIndent: em(0) },
     { id: 'colophon', fontFamily: HEI, fontSize: pt(7), lineHeight: pt(11), color: col('muted'),
       textAlign: 'left', firstLineIndent: pt(0), marginTop: pt(LINE) },
   ],
@@ -149,7 +154,8 @@ const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookboo
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 const FONTS = {
-  'LXGW WenKai TC': ['400', '700'],
+  Iansui: ['400'],
+  'LXGW WenKai TC': ['400'],
   'Noto Serif TC': ['400'],
   'Noto Sans TC': ['400', '700'],
 };
@@ -262,9 +268,15 @@ const resources = Object.keys(plates).map((id) => ({ id, typeId: 'plate', kind: 
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 // #region build: each voice loads with the text it sets; vertical forms for the canvas
+// {株|ㄓㄨ}: the characters are the text, the readings go to the zhuyin face.
+const BOXES = /^:::callout\{type="(?:notes|author)"[^}]*\}\n([\s\S]*?)^:::$/gm;
+const bases = (md) => md.replace(/\{([^|{}]+)((?:\|[^|{}]+)+)\}/g, '$1');
+const readings = [...markdown.matchAll(/\{[^|{}]+((?:\|[^|{}]+)+)\}/g)].map((m) => m[1]).join('');
 await loadFonts(FONTS, markdown);
-await loadCjkFonts({ [KAI]: ['400', '700'] }, markdown, { vertical: true });
-await loadCjkFonts({ [MING]: ['400'] }, markdown, { vertical: true });
+await loadCjkFonts({ [KAI]: ['400'] }, bases(markdown.replace(BOXES, '')), { vertical: true });
+const notesText = [...markdown.matchAll(BOXES)].map((m) => m[1]).join('\n');
+await loadCjkFonts({ [MING]: ['400'] }, bases(notesText), { vertical: true });
+await loadCjkFonts({ [ZHUYIN]: ['400'] }, readings.replaceAll('|', ''), { vertical: true });
 await loadCjkFonts({ [HEI]: ['400', '700'] }, LABELS, { vertical: true });
 await Promise.all(Object.entries(plates).map(([id, markup]) => loadSvg(`${id}.svg`, markup)));
 // Lesson 12 of a reader: page 86 is a verso, so the lesson opens on a spread.

@@ -1,33 +1,33 @@
 ---
 title: "A vertical reader with zhuyin to the right"
-summary: "A Taiwan school reader set down the page: {守株|ㄕㄡˇ|ㄓㄨ} stands a zhuyin column right of each character, with pictures and notes in an upper tier."
+summary: "A Taiwan school reader set down the page: {守株|ㄕㄡˇ|ㄓㄨ} sets a zhuyin column right of each character, with pictures and notes in an upper tier."
 description: "A lesson of a Taiwan school reader set with Postext: vertical Kai text with zhuyin beside every character, pictures and notes above, bound on the right."
 question: "How do I set zhuyin beside every character of a vertical Chinese text?"
 aliases: ["zhuyin", "bopomofo", "注音", "注音符號", "國語課本", "Taiwan textbook", "school reader", "vertical reader", "直排", "寓言"]
-pageNotes: { "1": "Page 86, a verso on the right of the spread: a picture of a farmer sitting by a tree stump with a hare running off; under it the title 第十二課　寓言兩則 in red, a lead, the heading 一　守株待兔 and the original text, every character with its zhuyin; a red tab on the right edge reads 第三單元　寓言故事.", "2": "Page 87: in the upper tier a box of seven notes and a box on Han Fei; below, the modern version of the first fable and the original of the second, 二　鄭人買履.", "3": "Page 88: a picture of the man walking home from a shoe stall to the stool where he left his measure; below, the modern version of the second fable and three questions under 想一想.", "4": "Page 89: the notes of the second fable and a box of six new characters with their zhuyin; below, 語文天地 on the two fables as idioms, the headwords in red, and the colophon." }
+pageNotes: { "1": "Page 86, a verso on the right of the spread: a picture of a farmer sitting by a tree stump with a hare running off; under it the title 第十二課　寓言兩則 in red, a lead, the heading 一　守株待兔 and the original text, every character with its zhuyin; a red tab on the right edge reads 第三單元　寓言故事.", "2": "Page 87: in the upper tier one box of fifteen notes on both fables, numbered through the lesson; below, the modern version of the first fable and the original of the second, 二　鄭人買履.", "3": "Page 88: a picture of the man walking home from a shoe stall to the stool where he left his measure; below, the modern version of the second fable and three questions under 想一想.", "4": "Page 89: in the upper tier a box on Han Fei and a box of six new characters with their zhuyin; below, 語文天地 on the two fables as idioms, the headwords in red, and the colophon." }
 ---
 
 ## What you'll build
 
-Lesson 12 of *國語* book 9, an invented fifth-grade reader from Taiwan: two fables from the *Han Feizi*, the farmer of Song who waits by a stump for another hare and the man of Zheng who trusts his measure more than his feet. Taiwan's readers are set vertically, in Kai, with the zhuyin of every character in a column to its right, so a child can read a character before learning it. The lesson opens on a spread bound on the right. Above, a tier holds the pictures, the notes, the author and the new characters; below, the lesson runs in 16 pt Kai, 23 characters to the line. The Latin-script counterpart is <RecipeLink slug="textbook-margin-column">the textbook with a margin column</RecipeLink>, whose float-only side column is the upper tier here, turned a quarter.
+Lesson 12 of *國語* book 9, an invented fifth-grade reader from Taiwan: two fables from the *Han Feizi*, the farmer of Song who waits by a stump for another hare and the man of Zheng who trusts his measure more than his feet. Taiwan's readers are set vertically, in a Kai hand, with the zhuyin of every character in a column to its right, so a child can read a character before learning it. The lesson opens on a spread bound on the right. Above, a tier holds the pictures, the notes, the author and the new characters; below, the lesson runs in 16 pt Iansui, 23 characters to the line. The Latin-script counterpart is <RecipeLink slug="textbook-margin-column">the textbook with a margin column</RecipeLink>, whose float-only side column is the upper tier here, turned a quarter.
 
 ## Method
 
 ### 1 · A zhuyin column beside each character
 
-The code is [the short answer](#the-short-answer) above. `{宋人|ㄙㄨㄥˋ|ㄖㄣˊ}` gives each character its own reading, one per `|`; punctuation stays outside the braces, so 。and ， get none. In vertical text a reading in bopomofo goes right of the column, its symbols stacked, the tone mark right of the last one and the dot of the neutral tone above the first. At half the text size, `cjk.ruby.fontSize` sets the symbols at 0.3 em, and a syllable of three symbols fits beside its character; at 0.6 em ㄇㄧㄥˊ is taller than 明 and spaced 明明 apart. The 32 pt line pitch leaves 16 pt between columns for the zhuyin and its tone marks. The readings are written by hand, as a Taiwan reader prints them: 一 and 不 keep their own tone, and 度 reads ㄉㄨㄛˊ in 自度其足 (to measure) and ㄉㄨˋ in 吾忘持度 (the measure).
+The code is [the short answer](#the-short-answer) above. `{宋人|ㄙㄨㄥˋ|ㄖㄣˊ}` gives each character its own reading, one per `|`; punctuation stays outside the braces, so 。and ， get none. In vertical text a reading in bopomofo goes right of the column, its symbols stacked, the tone mark right of the last one and the dot of the neutral tone above the first. At half the text size, `cjk.ruby.fontSize` sets the symbols at 0.3 em, so three symbols fit beside a character, and two such readings in a row, as in 就像, keep at least a quarter of a symbol apart without widening either character; at 0.6 em ㄇㄧㄥˊ is taller than 明 and spaced 明明 apart. The 32 pt line pitch leaves a gap of one em, which the zhuyin and its tone marks half fill. clreq asks for 1.5 em when zhuyin stands between vertical lines; that is a 40 pt pitch and ten lines to the page, so this page keeps one em for 13 lines of 23, and each reading stays about 8 pt clear of the line beside it.
 
 ### 2 · Pictures and notes in the upper tier
 
 <Excerpt region="upper-tier" />
 
-In vertical text the columns of a `oneAndHalf` layout are tiers, and `sideColumnSide: 'left'` puts the float-only one on top. `::resource{id="plate-1"}` in the text sends the first picture there; the `plate` type has no caption prefix and the pictures no caption, so nothing prints under them. A box fenced with `span="side"` lands in the tier beside the line where it is fenced, and its text runs down the tier. The notes of the first fable are fenced after the original, which ends on page 86, so they open the tier of page 87; the author box follows them after the modern version.
+In vertical text the columns of a `oneAndHalf` layout are tiers, and `sideColumnSide: 'left'` puts the float-only one on top. `::resource{id="plate-1"}` in the text sends the first picture there; the `plate` type has no caption prefix and the pictures no caption, so nothing prints under them. A box fenced with `span="side"` lands in the tier from the line where it is fenced, and its text runs down the tier. The notes of both fables are one box, numbered through the lesson and fenced after the first original, which ends on page 86: they fill the tier of page 87, so both fables' notes lie on the spread that holds their originals. Zhuyin is 0.3 em of the text it reads, and `cjk.ruby` is one setting for the book, so the notes and the author box are set at 13 pt to keep their readings at 3.9 pt.
 
-### 3 · Three voices, each loaded with its own text
+### 3 · Four faces, each loaded with its own text
 
 <Excerpt region="build" />
 
-The lesson is in LXGW WenKai TC because Taiwan's readers print the Kai forms the children learn to write; the notes are in Noto Serif TC and the labels in Noto Sans TC. Each face loads the files that hold the characters it sets, and `vertical: true` adds their vertical forms, so 「」 and 、 stand as they should down the column. `pageIndexOffset: 1` makes page 86 a verso, so the lesson opens on a spread.
+The lesson is in Iansui, a Kai hand drawn from Klee One to Taiwan's standard character forms, the ones the children learn to write. The readings are in LXGW WenKai TC, whose neutral-tone dot stays round at 4.8 pt, the notes in Noto Serif TC and the labels in Noto Sans TC. Each face loads the files that hold the characters it sets: the readings are split from their characters, and the boxes of notes go to the Ming face alone. `vertical: true` adds the vertical forms, so 「」 and 、 stand as they should down the column. `pageIndexOffset: 1` makes page 86 a verso, so the lesson opens on a spread.
 
 ### 4 · The tab and the folios on the outer edge
 
@@ -42,8 +42,8 @@ In a book bound on the right the verso lies on the right of the spread, so even 
 Some readers print the readings lighter than the text, so the characters come forward.
 
 ```diff
--  ruby: { fontFamily: KAI, fontSize: em(0.5) },
-+  ruby: { fontFamily: KAI, fontSize: em(0.5), color: col('muted') },
+-  ruby: { fontFamily: ZHUYIN, fontSize: em(0.5) },
++  ruby: { fontFamily: ZHUYIN, fontSize: em(0.5), color: col('muted') },
 ```
 
 ### Set the readings over horizontal text
@@ -52,8 +52,12 @@ Some readers print the readings lighter than the text, so the characters come fo
 
 ## Pitfalls
 
+Take the readings from Taiwan's dictionary. Tools built on mainland dictionaries, pypinyin among them, give 度 duó, 寧 nìng, 時候 shíhou and 市場 shìchǎng; the Ministry of Education's *Revised Mandarin Chinese Dictionary*, which Taiwan's readers follow, reads ㄉㄨㄛˋ, ㄋㄧㄥˊ, ㄕˊ ㄏㄡˋ and ㄕˋ ㄔㄤˊ, and sets 故事, 家裡 and 過來 with a neutral second syllable. moedict.tw serves it word by word. It keeps 一 and 不 in their own tone, and so does this lesson.
+
+Draw a few characters in each face before you mix them. LXGW WenKai TC follows the inherited forms and draws 為 (U+70BA) as 爲, so a lesson in it printed 爲宋國笑 in the text and 為宋國笑 in the Ming note on the same spread. Iansui draws the standard 為.
+
 The lesson and fable numbers are typed into the headings (`# 第十二課　{寓言兩則|…}`). A `numberingTemplate` joins the number to the first character of the title, and when that character has a reading, the reading is centred over the number and the character together.
 
-Count what the upper tier of each page has to hold. A box or picture that finds no room in the tier before the text ends is left out with no warning, so check that every one of them is on the pages.
+Count what the upper tier of each page has to hold, and fence each box where its page has room. The author box is fenced before 語文天地 so that it opens the tier of page 89, and the new characters, fenced after the idioms, follow it. A box or picture that finds no room before the text ends is set on a page with nothing under it, and the next one is left out with no warning, so check that every one of them is on the pages.
 
-LXGW WenKai TC's bold has about a sixth more ink than its regular, too little to tell apart at 16 pt. The idioms in 語文天地 are bold in a paragraph style whose `boldColor` is the accent.
+Iansui has one weight. The headings stand out by size and the idiom headwords by colour: the `idiom` style sets `boldFontWeight: 400` with the accent as `boldColor`, so `**…**` changes the colour and not the face.

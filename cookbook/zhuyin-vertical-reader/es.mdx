@@ -4,30 +4,30 @@ summary: "Una lección de un libro escolar de Taiwán en vertical: {守株|ㄕ�
 description: "Un libro de lectura de Taiwán compuesto con Postext: texto vertical en Kai con zhuyin junto a cada carácter, dibujos y notas arriba y lomo a la derecha."
 question: "¿Cómo pongo el zhuyin junto a cada carácter de un texto chino vertical?"
 aliases: ["zhuyin", "bopomofo", "注音", "注音符號", "國語課本", "libro de texto de Taiwán", "libro de lectura", "texto vertical", "直排", "fábulas"]
-pageNotes: { "1": "Página 86, par, a la derecha del pliego: un dibujo de un campesino sentado junto a un tocón mientras una liebre se aleja; debajo, el título 第十二課　寓言兩則 en rojo, una entradilla, el título 一　守株待兔 y el texto original, cada carácter con su zhuyin; en el borde derecho, una pestaña roja con 第三單元　寓言故事.", "2": "Página 87: en el piso de arriba, un recuadro con siete notas y otro sobre Han Fei; abajo, la versión moderna de la primera fábula y el original de la segunda, 二　鄭人買履.", "3": "Página 88: un dibujo del hombre que vuelve a casa desde un puesto de zapatos hacia el taburete donde dejó la medida; abajo, la versión moderna de la segunda fábula y tres preguntas bajo 想一想.", "4": "Página 89: las notas de la segunda fábula y un recuadro con seis caracteres nuevos y su zhuyin; abajo, 語文天地 sobre las dos fábulas como frases hechas, con los lemas en rojo, y el colofón." }
+pageNotes: { "1": "Página 86, par, a la derecha del pliego: un dibujo de un campesino sentado junto a un tocón mientras una liebre se aleja; debajo, el título 第十二課　寓言兩則 en rojo, una entradilla, el título 一　守株待兔 y el texto original, cada carácter con su zhuyin; en el borde derecho, una pestaña roja con 第三單元　寓言故事.", "2": "Página 87: en el piso de arriba, un recuadro con las quince notas de las dos fábulas, numeradas de corrido en toda la lección; abajo, la versión moderna de la primera fábula y el original de la segunda, 二　鄭人買履.", "3": "Página 88: un dibujo del hombre que vuelve a casa desde un puesto de zapatos hacia el taburete donde dejó la medida; abajo, la versión moderna de la segunda fábula y tres preguntas bajo 想一想.", "4": "Página 89: en el piso de arriba, un recuadro sobre Han Fei y otro con seis caracteres nuevos y su zhuyin; abajo, 語文天地 sobre las dos fábulas como frases hechas, con los lemas en rojo, y el colofón." }
 ---
 
 ## Lo que vas a componer
 
-La lección 12 del libro noveno de *國語*, un libro taiwanés de lectura de quinto de primaria, inventado: dos fábulas del *Han Feizi*, la del campesino de Song que espera otra liebre junto a un tocón y la del hombre de Zheng que se fía más de su medida que de sus pies. En Taiwán se componen en vertical, en letra Kai, con el zhuyin de cada carácter en una columna a su derecha, para que el niño lea un carácter antes de aprenderlo. La lección se abre en un pliego con el lomo a la derecha. Arriba, un piso guarda los dibujos, las notas, el autor y los caracteres nuevos; abajo va la lección en Kai de 16 pt, 23 caracteres por línea. Su pareja en escritura latina es <RecipeLink slug="textbook-margin-column">el libro de texto con columna al margen</RecipeLink>, cuya columna lateral de flotantes es aquí el piso de arriba, girado un cuarto de vuelta.
+La lección 12 del libro noveno de *國語*, un libro taiwanés de lectura de quinto de primaria, inventado: dos fábulas del *Han Feizi*, la del campesino de Song que espera otra liebre junto a un tocón y la del hombre de Zheng que se fía más de su medida que de sus pies. En Taiwán estos libros se componen en vertical, en letra Kai, con el zhuyin de cada carácter en una columna a su derecha, para que el niño lea un carácter antes de aprenderlo. La lección se abre en un pliego con el lomo a la derecha. Arriba, un piso guarda los dibujos, las notas, el autor y los caracteres nuevos; abajo va la lección en Iansui de 16 pt, 23 caracteres por línea. Su pareja en escritura latina es <RecipeLink slug="textbook-margin-column">el libro de texto con columna al margen</RecipeLink>, cuya columna lateral de flotantes es aquí el piso de arriba, girado un cuarto de vuelta.
 
 ## Elaboración
 
 ### 1 · Una columna de zhuyin junto a cada carácter
 
-El código es [la respuesta corta](#la-respuesta-corta) de arriba. `{宋人|ㄙㄨㄥˋ|ㄖㄣˊ}` da a cada carácter su lectura, una por cada `|`; la puntuación queda fuera de las llaves, así que 。 y ， no llevan ninguna. En texto vertical, una lectura en bopomofo va a la derecha de la columna, con los signos uno debajo de otro, la marca de tono a la derecha del último y el punto del tono neutro encima del primero. A la mitad del cuerpo del texto, `cjk.ruby.fontSize` deja los signos en 0,3 em, y una sílaba de tres signos cabe junto a su carácter; con 0,6 em, ㄇㄧㄥˊ es más alta que 明 y separa los dos 明 de 明明. El paso de línea de 32 pt deja 16 pt entre columnas para el zhuyin y sus tonos. Las lecturas se escriben a mano, como las imprime un libro de Taiwán: 一 y 不 conservan su tono propio, y 度 se lee ㄉㄨㄛˊ en 自度其足 (medir) y ㄉㄨˋ en 吾忘持度 (la medida).
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `{宋人|ㄙㄨㄥˋ|ㄖㄣˊ}` da a cada carácter su lectura, una por cada `|`; la puntuación queda fuera de las llaves, así que 。 y ， no llevan ninguna. En texto vertical, una lectura en bopomofo va a la derecha de la columna, con los signos uno debajo de otro, la marca de tono a la derecha del último y el punto del tono neutro encima del primero. A la mitad del cuerpo del texto, `cjk.ruby.fontSize` deja los signos en 0,3 em, así que tres signos caben junto a un carácter, y dos lecturas así seguidas, como en 就像, guardan entre sí al menos un cuarto de signo sin ensanchar ninguno de los dos caracteres; con 0,6 em, ㄇㄧㄥˊ es más alta que 明 y separa los dos 明 de 明明. El interlineado de 32 pt deja un hueco de un em entre líneas, que el zhuyin y sus tonos llenan a medias. clreq pide 1,5 em cuando el zhuyin va entre líneas verticales; eso son 40 pt de interlineado y diez líneas por página, así que esta página se queda en un em para meter 13 líneas de 23, y cada lectura queda a unos 8 pt de la línea vecina.
 
 ### 2 · Dibujos y notas en el piso de arriba
 
 <Excerpt region="upper-tier" />
 
-En texto vertical, las columnas de una maquetación `oneAndHalf` son pisos, y `sideColumnSide: 'left'` pone arriba el que solo admite flotantes. `::resource{id="plate-1"}` en el texto manda allí el primer dibujo; el tipo `plate` no tiene prefijo de pie y los dibujos no llevan pie, así que debajo no se imprime nada. Un recuadro abierto con `span="side"` cae en el piso a la altura de la línea donde se abre, y su texto corre hacia abajo dentro del piso. Las notas de la primera fábula se abren tras el original, que termina en la página 86, así que empiezan el piso de la página 87; el recuadro del autor va detrás, tras la versión moderna.
+En texto vertical, las columnas de una maquetación `oneAndHalf` son pisos, y `sideColumnSide: 'left'` pone arriba el que solo admite flotantes. `::resource{id="plate-1"}` en el texto manda allí el primer dibujo; el tipo `plate` no tiene prefijo de pie y los dibujos no llevan pie, así que debajo no se imprime nada. Un recuadro abierto con `span="side"` cae en el piso a partir de la línea donde se abre, y su texto corre hacia abajo dentro del piso. Las notas de las dos fábulas van en un solo recuadro, numeradas de corrido; se abre tras el primer original, que termina en la página 86, y llena el piso de la página 87, así que las notas de cada fábula quedan en el pliego de su original. El zhuyin mide 0,3 em del texto que lee y `cjk.ruby` es un ajuste para todo el libro, así que las notas y el recuadro del autor van en 13 pt para que sus lecturas no bajen de 3,9 pt.
 
-### 3 · Tres voces, cada una cargada con su texto
+### 3 · Cuatro fuentes, cada una cargada con su texto
 
 <Excerpt region="build" />
 
-La lección va en LXGW WenKai TC porque los libros de lectura de Taiwán imprimen las formas Kai que los niños aprenden a escribir; las notas van en Noto Serif TC y las etiquetas en Noto Sans TC. Cada fuente carga los archivos que tienen los caracteres que compone, y `vertical: true` añade sus formas verticales, para que 「」 y 、 queden bien en la columna. `pageIndexOffset: 1` hace de la página 86 una página par, así que la lección se abre en un pliego.
+La lección va en Iansui, una letra Kai dibujada a partir de Klee One con las formas estándar de Taiwán, las que los niños aprenden a escribir. Las lecturas van en LXGW WenKai TC, cuyo punto de tono neutro sigue redondo a 4,8 pt; las notas, en Noto Serif TC, y las etiquetas, en Noto Sans TC. Cada fuente carga los archivos que tienen los caracteres que compone: las lecturas se separan de sus caracteres y los recuadros de notas van solo a la fuente Ming. `vertical: true` añade las formas verticales, para que 「」 y 、 queden bien en la columna. `pageIndexOffset: 1` hace de la página 86 una página par, así que la lección se abre en un pliego.
 
 ### 4 · La pestaña y los folios en el borde exterior
 
@@ -42,8 +42,8 @@ En un libro con el lomo a la derecha, la página par queda a la derecha del plie
 Algunos libros imprimen las lecturas más claras que el texto, para que los caracteres destaquen.
 
 ```diff
--  ruby: { fontFamily: KAI, fontSize: em(0.5) },
-+  ruby: { fontFamily: KAI, fontSize: em(0.5), color: col('muted') },
+-  ruby: { fontFamily: ZHUYIN, fontSize: em(0.5) },
++  ruby: { fontFamily: ZHUYIN, fontSize: em(0.5), color: col('muted') },
 ```
 
 ### Pon las lecturas sobre texto horizontal
@@ -52,8 +52,12 @@ Algunos libros imprimen las lecturas más claras que el texto, para que los cara
 
 ## Errores frecuentes
 
+Toma las lecturas del diccionario de Taiwán. Las herramientas hechas sobre diccionarios del continente, pypinyin entre ellas, dan 度 duó, 寧 nìng, 時候 shíhou y 市場 shìchǎng; el *Diccionario Revisado de Chino Mandarín* del Ministerio de Educación, que siguen los libros de Taiwán, lee ㄉㄨㄛˋ, ㄋㄧㄥˊ, ㄕˊ ㄏㄡˋ y ㄕˋ ㄔㄤˊ, y pone en tono neutro la segunda sílaba de 故事, 家裡 y 過來. moedict.tw lo sirve palabra por palabra. Mantiene 一 y 不 en su tono propio, y esta lección también.
+
+Dibuja unos cuantos caracteres en cada fuente antes de mezclarlas. LXGW WenKai TC sigue las formas heredadas y dibuja 為 (U+70BA) como 爲, así que una lección compuesta con ella imprimía 爲宋國笑 en el texto y 為宋國笑 en la nota en Ming del mismo pliego. Iansui dibuja el 為 estándar.
+
 Los números de la lección y de las fábulas se escriben en los títulos (`# 第十二課　{寓言兩則|…}`). Un `numberingTemplate` une el número al primer carácter del título, y cuando ese carácter lleva lectura, la lectura se centra sobre el número y el carácter juntos.
 
-Calcula lo que tiene que caber en el piso de arriba de cada página. Un recuadro o un dibujo que no encuentra sitio en el piso antes de que acabe el texto se queda fuera sin aviso, así que comprueba que todos aparecen en las páginas.
+Calcula lo que tiene que caber en el piso de arriba de cada página y abre cada recuadro donde su página tenga sitio. El recuadro del autor se abre antes de 語文天地 para que empiece el piso de la página 89, y el de los caracteres nuevos, abierto tras las frases hechas, va detrás. Un recuadro o un dibujo que no encuentra sitio antes de que acabe el texto sale en una página sin nada debajo, y el siguiente se queda fuera sin aviso, así que comprueba que todos aparecen en las páginas.
 
-La negrita de LXGW WenKai TC tiene una sexta parte más de tinta que la redonda, demasiado poco para distinguirla a 16 pt. Las frases hechas de 語文天地 van en negrita en un estilo de párrafo cuyo `boldColor` es el color de acento.
+Iansui tiene un solo grosor. Los títulos destacan por el tamaño y los lemas de las frases hechas por el color: el estilo `idiom` fija `boldFontWeight: 400` con el acento como `boldColor`, así que `**…**` cambia el color y no la letra.
