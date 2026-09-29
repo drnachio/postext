@@ -98,6 +98,18 @@ export function MobileMenu() {
                   {t("github")}
                 </a>
               </li>
+              <li>
+                <a
+                  href="https://www.youtube.com/@Postext"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={t("youtubeAriaLabel")}
+                  onClick={() => setOpen(false)}
+                  className="block font-sans text-lg font-medium text-foreground transition-colors hover:text-brand"
+                >
+                  {t("youtube")}
+                </a>
+              </li>
             </ul>
             <div className="mt-4 flex items-center justify-evenly border-t border-rule pt-4">
               <ThemeToggle />

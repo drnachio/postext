@@ -144,7 +144,7 @@ export default async function LocaleLayout({
       "@type": "Organization",
       name: SITE_NAME,
       url: SITE_URL,
-      sameAs: ["https://github.com/drnachio/postext"],
+      sameAs: ["https://github.com/drnachio/postext", "https://www.youtube.com/@Postext"],
     },
   ];
 

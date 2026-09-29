@@ -20,6 +20,8 @@
     "sandbox": "Sandbox",
     "github": "GitHub",
     "githubAriaLabel": "Postext on GitHub (opens in new tab)",
+    "youtube": "YouTube",
+    "youtubeAriaLabel": "Postext on YouTube (opens in new tab)",
     "openMenu": "Open navigation menu",
     "closeMenu": "Close navigation menu",
     "tryIt": "Open the Sandbox"
@@ -314,7 +316,6 @@
     "part": "Part"
   },
   "Showreel": {
-    "kicker": "Showreel · 2 min",
     "title": "Postext in two minutes",
     "play": "Play the video full screen",
     "watch": "Watch · 2:04",
@@ -488,6 +489,7 @@
     "docs": "Documentation",
     "cookbook": "Cookbook",
     "sandbox": "Sandbox",
+    "skill": "Agent skill",
     "product": "Postext"
   },
   "Theme": {

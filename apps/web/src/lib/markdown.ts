@@ -25,6 +25,7 @@ const MESSAGES: Record<string, Messages> = { en, es: es as Messages };
 
 const REPO_URL = "https://github.com/drnachio/postext";
 const NPM_URL = "https://www.npmjs.com/package/postext";
+const YOUTUBE_URL = "https://www.youtube.com/@Postext";
 
 function messagesFor(locale: string): Messages {
   return MESSAGES[locale] ?? en;
@@ -632,6 +633,7 @@ export function homeMarkdown(locale: string): string {
     "",
     `- [GitHub](${REPO_URL})`,
     `- [npm](${NPM_URL})`,
+    `- [YouTube](${YOUTUBE_URL})`,
     `- [${labels.cookbook}](${markdownUrl(locale, COOKBOOK_PATH)}): ${labels.cookbookDesc}`,
     `- [${labels.sandbox}](${localizedUrl(locale, "/sandbox")}): ${labels.sandboxDesc}`,
     `- [${m.Footer.mitLicense}](${markdownUrl(locale, "/license")})`,
@@ -1151,6 +1153,7 @@ export function llmsTxt(locale: string): string {
     "",
     `- [GitHub](${REPO_URL}): source code, issues and examples`,
     `- [npm](${NPM_URL}): the \`postext\` package`,
+    `- [YouTube](${YOUTUBE_URL}): video walkthroughs`,
     `- [${labels.sandbox}](${localizedUrl(locale, "/sandbox")}): ${labels.sandboxDesc}`,
     "",
     `## ${labels.optional}`,
