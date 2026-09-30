@@ -365,6 +365,21 @@ describe('tate-chu-yoko: a number in a Latin sentence runs sideways (#222)', () 
     expect(link.href).toBe('https://example.com');
   });
 
+  // Nº 080's colophon turned its chapter numbers by hand; the rule now
+  // gives the same page without the marks, however the lines break.
+  it('sets a colophon without :sideways as the marks set it', () => {
+    const marked = 'Set in Iansui, LXGW WenKai TC, Noto Serif TC and Noto Sans TC (SIL OFL). Text: Han Feizi, chapters :sideways[49] and :sideways[32], Chinese Wikisource, revisions 2642850 and 2327662 (CC BY-SA 4.0).';
+    const plain = marked.replace(/:sideways\[(\d+)\]/g, '$1');
+    const strip = (d: VDTDocument) => lines(d).map((l) => ({ text: l.text, width: l.bbox.width, segs: l.segments?.map((s) => [s.text, s.width, s.orientation]) }));
+    for (const height of [80, 120, 200, 400]) {
+      const column = config('zh-Hant', { bodyText: { fontFamily: 'Test Serif', fontSize: pt(EM), lineHeight: pt(16), textAlign: 'justify', firstLineIndent: pt(0) }, page: { width: pt(300), height: pt(height + 60), dpi: 72, margins: { top: pt(30), right: pt(30), bottom: pt(30), left: pt(30) } } });
+      const a = buildDocument({ markdown: marked }, column);
+      const b = buildDocument({ markdown: plain }, column);
+      expect(strip(b), String(height)).toEqual(strip(a));
+      expect(renderToHtml(b), String(height)).toBe(renderToHtml(a));
+    }
+  });
+
   it('turns the number with the sentence on the canvas and in the HTML', () => {
     const doc = buildDocument({ markdown: '書中寫道 printed in 49 copies 等語，第28回。' }, cfg(2));
     const { canvas, calls } = record();
