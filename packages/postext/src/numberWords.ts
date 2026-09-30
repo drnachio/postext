@@ -1,11 +1,15 @@
 /**
  * Numbers spelled out in words — "twenty-one", "twenty-first", "veintiuno",
- * "vigesimoprimero" — for heading numbering templates (`{1:words}`,
- * `{1:ordinal}`) and the `{numberWords}` / `{numberOrdinalWords}` design
- * placeholders. English and Spanish; any other language takes the English
- * words, like the other localised strings (table continuation labels).
- * Masculine forms, as a chapter or a part is numbered ("capítulo primero").
+ * "vigesimoprimero", 二十一, 第二十一 — for heading numbering templates
+ * (`{1:words}`, `{1:ordinal}`) and the `{numberWords}` /
+ * `{numberOrdinalWords}` design placeholders. English, Spanish and Chinese
+ * (in the document's script: 一万 / 一萬); any other language takes the
+ * English words, like the other localised strings (table continuation
+ * labels). Masculine forms, as a chapter or a part is numbered ("capítulo
+ * primero").
  */
+import { stringsKeyOf } from './locale';
+import { chineseNumeral } from './chineseNumerals';
 
 /** Cardinal ("twenty-one") or ordinal ("twenty-first"). */
 export type NumberWordsKind = 'cardinal' | 'ordinal';
@@ -14,8 +18,9 @@ export type NumberWordsKind = 'cardinal' | 'ordinal';
 const MAX_CARDINAL = 999_999;
 const MAX_ORDINAL_ES = 999;
 
-function language(locale: string | undefined): 'en' | 'es' {
-  return (locale ?? 'en').toLowerCase().split(/[-_]/)[0] === 'es' ? 'es' : 'en';
+function language(locale: string | undefined): 'en' | 'es' | 'zh-hans' | 'zh-hant' {
+  const key = stringsKeyOf(locale ?? 'en');
+  return key === 'es' || key === 'zh-hans' || key === 'zh-hant' ? key : 'en';
 }
 
 // --- English ---------------------------------------------------------------
@@ -135,13 +140,19 @@ function esOrdinal(n: number): string {
 
 /**
  * `n` spelled out in lower case, in the document language (`locale`:
- * `'es'` or a Spanish tag gives Spanish, anything else English). Numbers
- * past 999 999 (Spanish ordinals: past 999) print in digits; zero and
+ * `'es'` or a Spanish tag gives Spanish, a Chinese tag Chinese numerals in
+ * its script, anything else English). Numbers past 999 999 (Spanish
+ * ordinals: past 999; Chinese: past 10¹⁶ − 1) print in digits; zero and
  * below print nothing, like the other numeral formats.
  */
 export function numberToWords(n: number, kind: NumberWordsKind = 'cardinal', locale?: string): string {
   if (!Number.isInteger(n) || n < 1) return n > 0 ? String(n) : '';
   const lang = language(locale);
+  if (lang === 'zh-hans' || lang === 'zh-hant') {
+    // Informal numerals; the ordinal is 第 before them (第十二).
+    const numeral = chineseNumeral(n, 'informal', lang === 'zh-hant');
+    return kind === 'ordinal' ? `第${numeral}` : numeral;
+  }
   if (kind === 'ordinal') {
     if (lang === 'es') return n <= MAX_ORDINAL_ES ? esOrdinal(n) : String(n);
     return n <= MAX_CARDINAL ? enOrdinal(n) : String(n);
@@ -155,7 +166,8 @@ export function numberToWords(n: number, kind: NumberWordsKind = 'cardinal', loc
 export type WordsCase = 'lower' | 'capital' | 'upper';
 
 export function caseWords(words: string, wordsCase: WordsCase, locale?: string): string {
-  const tag = language(locale);
+  // Han characters have no case: the variants print alike.
+  const tag = language(locale) === 'es' ? 'es' : 'en';
   if (wordsCase === 'upper') return words.toLocaleUpperCase(tag);
   if (wordsCase === 'capital') return words.charAt(0).toLocaleUpperCase(tag) + words.slice(1);
   return words;

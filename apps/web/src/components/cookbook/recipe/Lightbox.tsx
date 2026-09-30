@@ -38,10 +38,11 @@ export function rangeLabel(
 /** The light table's enlarged view: a native modal `<dialog>` showing a
  *  spread or a single page as large as the screen allows. ←/→ turn,
  *  Home/End jump, Esc closes (natively) and focus goes back to the control
- *  that opened it. */
+ *  that opened it. A right-bound book lies mirrored and turns leftward. */
 export function Lightbox({
   pages,
   spreads,
+  binding = "left",
   total,
   title,
   start,
@@ -50,6 +51,8 @@ export function Lightbox({
 }: {
   pages: PageImage[];
   spreads: Spread[];
+  /** The edge the book is bound on. */
+  binding?: "left" | "right";
   total: number;
   title: string;
   /** Index into `pages` to open at. The lightbox is mounted to open it. */
@@ -69,6 +72,7 @@ export function Lightbox({
     !single && window.matchMedia("(min-width: 900px)").matches ? "spread" : "single",
   );
   const indexRef = useRef(index);
+  const rtl = binding === "right";
 
   useEffect(() => {
     indexRef.current = index;
@@ -132,8 +136,8 @@ export function Lightbox({
         if (event.target === event.currentTarget) close();
       }}
       onKeyDown={(event) => {
-        if (event.key === "ArrowLeft") step(-1);
-        else if (event.key === "ArrowRight") step(1);
+        if (event.key === (rtl ? "ArrowRight" : "ArrowLeft")) step(-1);
+        else if (event.key === (rtl ? "ArrowLeft" : "ArrowRight")) step(1);
         else if (event.key === "Home") setIndex(0);
         else if (event.key === "End") setIndex(mode === "single" ? pages.length - 1 : spreadPages(spreads[spreads.length - 1])[0] ?? 0);
         else return;
@@ -176,11 +180,12 @@ export function Lightbox({
           swipe.current = null;
           if (!from) return;
           const dx = event.clientX - from.x;
-          if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(event.clientY - from.y)) step(dx < 0 ? 1 : -1);
+          if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(event.clientY - from.y)) step((dx < 0) !== rtl ? 1 : -1);
         }}
+        dir={rtl ? "rtl" : undefined}
       >
         <button type="button" className="cb-lt-nav" onClick={() => step(-1)} disabled={atStart} aria-label={t("prevSpread")}>
-          <ChevronLeft aria-hidden="true" className="size-5" />
+          {rtl ? <ChevronRight aria-hidden="true" className="size-5" /> : <ChevronLeft aria-hidden="true" className="size-5" />}
         </button>
         <div className={cn("cb-lb-pages", mode === "single" && "is-single")} style={{ "--ar": ar } as React.CSSProperties}>
           {slots.map((i, slot) => {
@@ -197,7 +202,7 @@ export function Lightbox({
           })}
         </div>
         <button type="button" className="cb-lt-nav" onClick={() => step(1)} disabled={atEnd} aria-label={t("nextSpread")}>
-          <ChevronRight aria-hidden="true" className="size-5" />
+          {rtl ? <ChevronLeft aria-hidden="true" className="size-5" /> : <ChevronRight aria-hidden="true" className="size-5" />}
         </button>
       </div>
       <p className="cb-lb-hint" aria-hidden="true">

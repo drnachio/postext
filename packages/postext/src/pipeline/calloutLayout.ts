@@ -39,7 +39,9 @@
  * children.
  */
 
+import { flowTextWidth, lineBaselineOffset } from '../measure/vertical';
 import type { ContentBlock, DirectiveAttrs } from '../parse';
+import { suffixJoiner } from '../parse/inlineFormatting';
 import { spaceDirectiveLines } from '../parse/attrs';
 import type {
   CalloutPlacement,
@@ -60,7 +62,8 @@ import {
   type VDTDesignSlot,
   type VDTDesignTextBlock,
 } from '../vdt';
-import { buildFontString, measureBlock, measureRichBlock, measureTextWidth } from '../measure';
+import { buildFontString, measureBlock, measureRichBlock } from '../measure';
+import { graphemeCount } from '../measure/graphemes';
 import { applyStyleAttrs, isMarkerBlock } from './buildHelpers';
 import { resetLinePositions } from './placement';
 import { raggedLooseLines } from './raggedLines';
@@ -392,6 +395,7 @@ function offsetBlock(blk: VDTBlock, ox: number, oy: number): void {
   }
   if (blk.bulletOffsetX !== undefined) blk.bulletOffsetX += ox;
   if (blk.separatorX !== undefined) blk.separatorX += ox;
+  if (blk.prefixX !== undefined) blk.prefixX += ox;
   if (blk.bulletY !== undefined) blk.bulletY += oy;
   if (blk.bulletBaselineY !== undefined) blk.bulletBaselineY += oy;
   if (blk.resourceBlock) offsetResourceBlock(blk.resourceBlock, ox, oy);
@@ -500,7 +504,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   // asks for it (`repeatTitle`); the repeat is pagination furniture.
   const repeatedTitle = !!input.continuation && style.repeatTitle && rawTitle.trim().length > 0;
   const suffix = repeatedTitle ? style.continuedSuffix.trim() : '';
-  const shownTitle = suffix.length > 0 ? `${rawTitle} ${suffix}` : rawTitle;
+  const shownTitle = suffix.length > 0 ? `${rawTitle}${suffixJoiner(suffix)}${suffix}` : rawTitle;
   const titleText = style.titleStyle.textTransform === 'uppercase'
     ? uppercasePreservingLength(shownTitle)
     : shownTitle;
@@ -524,7 +528,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   const cornerLeftRoom = hasIcon && cornerIcon && !cornerRight ? Math.max(0, cornerIconW / 2 + gapPx - padL) : 0;
   const titleIndentPx = Math.max(cornerLeftRoom, dimensionToPx(style.titleStyle.indent, dpi, titleFontPx));
   const hasTitle = (!input.continuation || repeatedTitle) && titleText.trim().length > 0;
-  const titleWidthOf = (t: string): number => measureTextWidth(t, titleFont) + titleTrackingPx * t.length;
+  const titleWidthOf = (t: string): number => flowTextWidth(t, titleFont) + titleTrackingPx * graphemeCount(t);
 
   // Box width: `fill` uses the given width less the marker column; `auto`
   // shrink-wraps the title.
@@ -554,7 +558,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       : measureBlock(titleText, titleFont, titleW, titleLineHeight, { textAlign: 'left' });
     const lines = measured.lines.length > 0
       ? measured.lines
-      : [{ text: titleText, bbox: createBoundingBox(0, 0, titleW, titleLineHeight), baseline: titleLineHeight * 0.8, hyphenated: false }];
+      : [{ text: titleText, bbox: createBoundingBox(0, 0, titleW, titleLineHeight), baseline: lineBaselineOffset(titleLineHeight, titleFont), hyphenated: false }];
     const titleHeight = lines.length * titleLineHeight;
     titleBlock = {
       kind: 'text',
@@ -564,7 +568,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       lines: lines.map((ln, i) => ({
         text: ln.text,
         xOffset: 0,
-        baselineY: cursorY + i * titleLineHeight + titleLineHeight * 0.8,
+        baselineY: cursorY + i * titleLineHeight + lineBaselineOffset(titleLineHeight, titleFont),
         width: ln.bbox.width,
       })),
       clip: false,
@@ -706,7 +710,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       ?? measureContentBlock(raw, blockIdx, width, derivedCtx, { styleOverride });
     if (!measuredBlock) return undefined;
     const { kind, measured, prefixLen, absoluteSourceMap, mathDisplayRender, resourceBlock, letterSpacingPx } = measuredBlock;
-    const { vdtType, headingLevel, numberPrefix, headingNumber, listBullet, listDepth, listKind, bulletXOffsetInColumn, strikethroughText } = kind;
+    const { vdtType, headingLevel, numberPrefix, numberSeparator, headingNumber, listBullet, listDepth, listKind, bulletXOffsetInColumn, strikethroughText } = kind;
     // A structural heading (`hidden`) keeps its lines' text but prints
     // nothing and takes no room: no line height, no margins, and the
     // spacing around it collapses as if it were not there.
@@ -752,7 +756,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     blk.snappedToGrid = false;
     blk.headingLevel = headingLevel;
     if (nestPath) blk.calloutPath = [...nestPath];
-    if (numberPrefix) blk.numberPrefix = numberPrefix;
+    if (numberPrefix) { blk.numberPrefix = numberPrefix; if (numberSeparator !== undefined) blk.numberSeparator = numberSeparator; }
     if (headingNumber !== undefined) blk.headingNumber = headingNumber;
     if (hiddenHeading) blk.hidden = true;
     blk.sourceMap = absoluteSourceMap;
@@ -824,6 +828,10 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
         blk.separatorFontString = listBullet.separatorFontString;
         blk.separatorColor = listBullet.separatorColor;
         blk.separatorX = blk.bulletOffsetX + (listBullet.separatorOffsetPx ?? 0);
+        if (listBullet.prefixText !== undefined) {
+          blk.prefixText = listBullet.prefixText;
+          blk.prefixX = blk.bulletOffsetX + (listBullet.prefixOffsetPx ?? 0);
+        }
       }
       if (strikethroughText) blk.strikethroughText = true;
       const firstLine = blk.lines[0];
@@ -973,6 +981,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     delete tail.bulletText; delete tail.bulletFontString; delete tail.bulletColor;
     delete tail.bulletOffsetX; delete tail.bulletY; delete tail.bulletBaselineY;
     delete tail.separatorText; delete tail.separatorFontString; delete tail.separatorColor; delete tail.separatorX;
+    delete tail.prefixText; delete tail.prefixX;
     tail.bbox = createBoundingBox(blk.bbox.x, 0, blk.bbox.width, tail.lines.length * lh);
     tail.sourceStart = tail.lines[0]?.sourceStart ?? blk.sourceStart;
     return tail;
@@ -1173,7 +1182,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
           return {
             text: ln.text,
             xOffset: align === 'right' ? slack : align === 'center' ? slack / 2 : 0,
-            baselineY: top + i * lh + lh * 0.8,
+            baselineY: top + i * lh + lineBaselineOffset(lh, font),
             width: ln.bbox.width,
           };
         }),
@@ -1273,7 +1282,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     const tabH = dimensionToPx(lb.height, dpi, lbFontPx);
     const rise = px(lb.offset);
     const inset = px(lb.inset);
-    const textW = measureTextWidth(labelText, lbFont);
+    const textW = flowTextWidth(labelText, lbFont);
     const tabW = textW + 2 * padX;
     const onRight = lb.position === 'top-right';
     const tabX = onRight ? boxWidth - inset - tabW : inset;
@@ -1485,7 +1494,7 @@ function buildIconBlock(
     };
   }
   const font = buildFontString(spec.fontFamily, size, spec.fontWeight.toString());
-  const glyphW = measureTextWidth(spec.glyph, font);
+  const glyphW = flowTextWidth(spec.glyph, font);
   return {
     block: {
       kind: 'text',
@@ -1495,7 +1504,7 @@ function buildIconBlock(
       lines: [{
         text: spec.glyph,
         xOffset: Math.max(0, (size - glyphW) / 2),
-        baselineY: y + size * 0.8,
+        baselineY: y + lineBaselineOffset(size, font),
         width: glyphW,
       }],
       clip: false,

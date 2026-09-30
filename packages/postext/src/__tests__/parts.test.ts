@@ -224,6 +224,32 @@ describe(':::part furniture and design', () => {
     expect(part.columns[0]!.bbox.y).toBeCloseTo(px(60), 3);
   });
 
+  it("joins the number and title of the default part designs with the H1's numberSeparator (#180)", () => {
+    // 紅樓夢 in Chinese defaults: the chapter openers read 第一回　…, and so
+    // do the part page and the part's row in the contents.
+    const cfg: PostextConfig = {
+      page: { width: pt(300), height: pt(420), dpi: 72 },
+      locale: 'zh-Hans',
+      headings: { levels: [{ level: 1, numberingTemplate: '第{1:一}回', numberSeparator: '　' }] },
+      toc: { parts: { enabled: true } },
+    };
+    const md = `:::toc\n\n:::part{number="卷二" title="第十一回至第二十回"}\n:::\n\n# 第十一回\n\n此開卷第一回也。作者自云：因曾歷過一番夢幻之後，故將真事隱去。`;
+    const doc = buildDocument({ markdown: md }, cfg);
+    const part = doc.pages.find((p) => p.role === 'part')!;
+    const opener = part.openerBand!.blocks.find((b): b is VDTDesignTextBlock => b.kind === 'text')!;
+    expect(opener.lines.map((l) => l.text).join('')).toBe('卷二　第十一回至第二十回');
+    const row = doc.blocks.find((b) => b.tocPart)!;
+    const rowTitle = row.designOverlay!.blocks.find((b): b is VDTDesignTextBlock => b.kind === 'text' && b.lines[0]!.text.startsWith('卷二'))!;
+    expect(rowTitle.lines[0]!.text.startsWith('卷二　第')).toBe(true);
+    // A part without a number opens its row on the title, not on the separator.
+    const bare = buildDocument({ markdown: md.replace('number="卷二" ', '') }, cfg);
+    const bareRow = bare.blocks.find((b) => b.tocPart)!;
+    expect((bareRow.designOverlay!.blocks[0] as VDTDesignTextBlock).lines[0]!.text.startsWith('第十一回')).toBe(true);
+    // Without a separator of its own the level joins with one space.
+    const plain = buildDocument({ markdown: partDoc }, base);
+    expect(plain.pages.find((p) => p.partInfo)!.openerBand!.blocks[0]).toMatchObject({ lines: [{ text: 'I Foundations' }] });
+  });
+
   it('lays out parts.design against the page with the heading placeholder set (roman → {numberDecimal})', () => {
     const cfg: PostextConfig = {
       ...base,

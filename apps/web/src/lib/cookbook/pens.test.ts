@@ -15,7 +15,7 @@ import {
   staticLevel,
   usedApis,
 } from "./detect.ts";
-import { KIT_IMPORTS, imageSize, isAllowedUrl, lintPen, lintRecipe } from "./lint.ts";
+import { KIT_IMPORTS, imageSize, isAllowedUrl, lintPen, lintRecipe, previewDraftsAllowed } from "./lint.ts";
 import { REPO_DIR } from "./paths.ts";
 import { listRecipeSlugs, readKit } from "./sources.ts";
 import type { KitBlock, Locale, RecipeMeta, RecipeSources } from "./types.ts";
@@ -258,6 +258,116 @@ describe("lintPen (fixture)", () => {
   });
 });
 
+// ─── Chinese, Japanese and Korean recipes (the cjk kit block) ───────────────
+
+const OPENING = "此開卷第一回也。作者自云：因曾歷過一番夢幻之後，故將真事隱去，而借「通靈」之說，撰此《石頭記》一書也。";
+
+/** The fixture turned into a Chinese recipe: its faces loaded by slices,
+ *  its PDF from cjkPdfProvider, its locale set to the text's. */
+function cjkScript(s: string): string {
+  return s
+    .replace("const FONTS = { Newsreader: ['400', '400i', '700'], Archivo: ['700'] };",
+      "const FONTS = { Newsreader: ['400', '400i', '700'], Archivo: ['700'], 'Noto Serif TC': ['400'] };")
+    .replace("await loadFonts(FONTS, markdown);", "await loadFonts(FONTS, markdown);\nawait loadCjkFonts(FONTS, markdown);")
+    .replace("fontProvider: fontsourceProvider", "fontProvider: cjkPdfProvider")
+    .replace("  locale: LANG,", "  locale: 'zh-Hant',")
+    .replace("showPages(doc,", "showBook(doc,");
+}
+
+function cjkMeta(): RecipeMeta {
+  const meta = fixtureMeta();
+  return {
+    ...meta,
+    kit: [...meta.kit, "cjk"],
+    credits: { ...meta.credits, fonts: [...meta.credits.fonts, { family: "Noto Serif TC", license: "OFL-1.1" }] },
+  };
+}
+
+describe("lintPen (a Chinese recipe)", () => {
+  const cjkContent = { en: `# 第一回\n\n${OPENING}\n`, es: `# 第一回\n\n${OPENING}\n` };
+  const lintCjk = (edit: (s: string) => string = (s) => s, content: Record<string, string> = cjkContent) =>
+    lint((s) => edit(cjkScript(s)), { meta: cjkMeta(), sources: { content } });
+
+  it("passes a pen that loads its faces through the cjk block", () => {
+    const { fails, warns } = lintCjk();
+    expect(fails).toEqual([]);
+    expect(warns.filter((w) => /cjk|CJK|Chinese|latin/.test(w))).toEqual([]);
+  });
+
+  it("counts Chinese characters, 1.7 to the word", () => {
+    const long = { en: `# 一\n\n${"天".repeat(4300)}\n`, es: "# 一\n" };
+    expect(lintCjk(undefined, long).fails).toContain(
+      "content.en.md: 4,301 Chinese or Japanese characters, about 2,530 words (at most 2,500; 1.7 characters count as a word)",
+    );
+    const fits = { en: `# 一\n\n${"天".repeat(4000)}\n`, es: "# 一\n" };
+    expect(lintCjk(undefined, fits).fails.filter((f) => f.includes("words"))).toEqual([]);
+  });
+
+  it("leaves Han to the CJK faces in the PDF, but not the Latin letters beyond latin", () => {
+    const pinyin = { en: `# 一\n\n${OPENING} Zhì yǎn zhāi.\n`, es: "# 一\n" };
+    const warns = lintCjk(undefined, pinyin).warns.filter((w) => w.includes("latin"));
+    expect(warns).toHaveLength(1);
+    expect(warns[0]).toMatch(/^content\.en\.md: characters outside Fontsource latin and the CJK blocks \(ǎ ā\)/);
+    // Without the block, the Chinese is reported with the kit block to use.
+    const plain = lint((s) => s, { sources: { content: cjkContent } }).warns;
+    expect(plain.filter((w) => w.includes("outside Fontsource latin"))).toEqual([]);
+    expect(plain).toContain(
+      "content.en.md: Chinese, Japanese or Korean text needs the cjk kit block: load its faces with loadCjkFonts(FONTS, markdown) (gotcha cjk-fonts-slices)",
+    );
+  });
+
+  it("asks for cjkPdfProvider, the locale, showBook for right-bound books and the vertical twin's import", () => {
+    const latinPdf = lintCjk((s) => s.replace("fontProvider: cjkPdfProvider", "fontProvider: fontsourceProvider")).fails;
+    expect(latinPdf).toContain(
+      "script.js: renderToPdf takes fontProvider: cjkPdfProvider (fontsourceProvider embeds only the latin file of a CJK face; gotcha cjk-fonts-slices)",
+    );
+    const lang = lintCjk((s) => s.replace("  locale: 'zh-Hant',", "  locale: LANG,")).warns;
+    expect(lang).toContain(
+      "script.js: set config.locale to the text's language ('zh-Hans', 'zh-Hant'…), not LANG: the tag picks the regional conventions and turns hyphenation off (gotcha cjk-locale-tag)",
+    );
+    const vertical = (s: string) => s.replace("  locale: 'zh-Hant',", "  locale: 'zh-Hant',\n  layout: { writingMode: 'vertical-rl' },");
+    const shown = lintCjk((s) => vertical(s).replace("showBook(doc,", "showPages(doc,")).warns;
+    expect(shown).toContain("script.js: a right-bound book shows its spreads mirrored with showBook(…) from the cjk block (gotcha cjk-spread-order)");
+    expect(lintCjk(vertical).warns.filter((w) => w.includes("showBook"))).toEqual([]);
+    const twin = lintCjk((s) => s.replace("await loadCjkFonts(FONTS, markdown);", "await loadCjkFonts(FONTS, markdown, { vertical: true });")).fails;
+    expect(twin).toContain("script.js: loadCjkFonts(…, { vertical: true }) needs `loadVerticalAlternates` imported from postext");
+    const imported = lintCjk((s) =>
+      s.replace("await loadCjkFonts(FONTS, markdown);", "await loadCjkFonts(FONTS, markdown, { vertical: true });")
+        .replace("defaultResourceTypes,\n}", "defaultResourceTypes, loadVerticalAlternates,\n}"),
+    ).fails;
+    expect(imported).toEqual([]);
+  });
+
+  it("asks for the CJK faces and locale only when the text is Chinese, and reads the binding off the config", () => {
+    // A Latin book bound on the right lists the block for showBook alone.
+    const latin = { en: "# One\n\nA page of Latin text.\n", es: "# Uno\n\nUna página de texto latino.\n" };
+    const rightBound = (s: string) =>
+      s.replace("  page: {\n", "  page: {\n    binding: 'right',\n")
+        .replace("fontProvider: cjkPdfProvider", "fontProvider: fontsourceProvider")
+        .replace("  locale: 'zh-Hant',", "  locale: LANG,");
+    const latinBook = lintCjk(rightBound, latin);
+    expect(latinBook.fails).toEqual([]);
+    expect(latinBook.warns.filter((w) => /cjk|CJK|showBook/.test(w))).toEqual([]);
+    // Without the block, showPages still gets the advice.
+    const noBlock = lint((s) => s.replace("  page: {\n", "  page: {\n    binding: 'right',\n"), { sources: { content: latin } }).warns;
+    expect(noBlock).toContain("script.js: a right-bound book shows its spreads mirrored with showBook(…) from the cjk block (gotcha cjk-spread-order)");
+    // A vertical heading style does not bind a horizontal book on the right.
+    const verticalHead = (s: string) =>
+      s.replace("  locale: 'zh-Hant',", "  locale: 'zh-Hant',\n  headingStyles: [{ id: 'side', layout: { writingMode: 'vertical-rl' } }],")
+        .replace("showBook(doc,", "showPages(doc,");
+    expect(lintCjk(verticalHead).warns.filter((w) => w.includes("showBook"))).toEqual([]);
+    // page.binding 'left' keeps a vertical book left-bound.
+    const leftVertical = (s: string) =>
+      s.replace("  locale: 'zh-Hant',", "  locale: 'zh-Hant',\n  layout: { columns: { count: 1 }, writingMode: 'vertical-rl' },")
+        .replace("  page: {\n", "  page: {\n    binding: 'left',\n")
+        .replace("showBook(doc,", "showPages(doc,");
+    expect(lintCjk(leftVertical).warns.filter((w) => w.includes("showBook"))).toEqual([]);
+    expect(lintCjk((s) => leftVertical(s).replace("binding: 'left'", "binding: 'right'")).warns).toContain(
+      "script.js: a right-bound book shows its spreads mirrored with showBook(…) from the cjk block (gotcha cjk-spread-order)",
+    );
+  });
+});
+
 // ─── detect.ts ──────────────────────────────────────────────────────────────
 
 describe("detect", () => {
@@ -364,7 +474,10 @@ describe("engine vocabularies", () => {
 
 describe("recipe pens", () => {
   it("pass the lint in every edition", () => {
-    const failures = listRecipeSlugs().flatMap((slug) => lintRecipe(slug).fails.map((f) => `${slug}: ${f}`));
+    // As `pnpm cookbook lint`; with COOKBOOK_PREVIEW=1, as `--engine local`
+    // (a draft may preview the next release).
+    const preview = previewDraftsAllowed();
+    const failures = listRecipeSlugs().flatMap((slug) => lintRecipe(slug, { preview }).fails.map((f) => `${slug}: ${f}`));
     expect(failures).toEqual([]);
   });
 });

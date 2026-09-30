@@ -24,6 +24,7 @@ import { dimensionToPx } from './units';
 import { resolveAllConfig, sideColumnPercentUsed } from './pipeline/config';
 import { computePageMetrics } from './pipeline/buildHelpers';
 import { deriveSectionGeometryConfig } from './pipeline/headingStyles';
+import { cjkGridGeometry } from './pipeline/cjkGrid';
 
 /** The format fields and the decimal spelling each falls back to. A
  *  `format` is a format field only under `pageNumbering`. */
@@ -58,7 +59,7 @@ function percentText(n: number): string {
  */
 export function collectConfigWarnings(config: PostextConfig | undefined): ConfigWarning[] {
   if (!config) return [];
-  return [...collectValueWarnings(config), ...collectSideColumnWarnings(config), ...collectUnknownKeyWarnings(config)];
+  return [...collectValueWarnings(config), ...collectSideColumnWarnings(config), ...collectUnknownKeyWarnings(config), ...collectCjkGridWarnings(config)];
 }
 
 // The keys of the heading settings, checked against their types: a key
@@ -75,14 +76,14 @@ const BALANCING_KEYS = {
 } satisfies Record<keyof ColumnBalancingConfig, true>;
 const HEADING_LEVEL_KEYS = {
   level: true, fontSize: true, lineHeight: true, fontFamily: true, color: true, fontWeight: true,
-  marginTop: true, marginBottom: true, numberingTemplate: true, italic: true, letterSpacing: true,
+  marginTop: true, marginBottom: true, numberingTemplate: true, numberSeparator: true, italic: true, letterSpacing: true,
   breakBefore: true, span: true, advancedDesign: true, textTransform: true, hidden: true, snapToGrid: true,
 } satisfies Record<keyof HeadingLevelConfig, true>;
 const HEADING_STYLE_KEYS = {
   id: true, name: true, numberingTemplate: true, numbered: true, toc: true, runningChapter: true, header: true, footer: true,
   margins: true, layout: true, bodyStyle: true, palette: true,
   fontSize: true, lineHeight: true, fontFamily: true, color: true, fontWeight: true, marginTop: true,
-  marginBottom: true, italic: true, letterSpacing: true, breakBefore: true, span: true,
+  marginBottom: true, numberSeparator: true, italic: true, letterSpacing: true, breakBefore: true, span: true,
   advancedDesign: true, textTransform: true, hidden: true, snapToGrid: true,
 } satisfies Record<keyof HeadingStyleConfig, true>;
 const PARAGRAPH_STYLE_KEYS = {
@@ -216,5 +217,17 @@ function collectSideColumnWarnings(config: PostextConfig): ConfigWarning[] {
   resolved.headingStyles.forEach((style, i) => {
     if (style.layout) check(deriveSectionGeometryConfig(resolved, style), style.layout, `headingStyles[${i}].layout.sideColumnPercent`);
   });
+  return out;
+}
+
+/** A character grid (`cjk.grid`) with more characters per line or lines
+ *  per page than the page's margins leave room for: the grid is reduced to
+ *  what fits (`cjkGridClamped`, `used` the number set). */
+function collectCjkGridWarnings(config: PostextConfig): ConfigWarning[] {
+  const g = cjkGridGeometry(config);
+  if (!g) return [];
+  const out: ConfigWarning[] = [];
+  if (g.clamped.charsPerLine !== undefined) out.push({ kind: 'cjkGridClamped', path: 'cjk.grid.charsPerLine', value: String(g.clamped.charsPerLine), used: String(g.charsPerLine) });
+  if (g.clamped.linesPerPage !== undefined) out.push({ kind: 'cjkGridClamped', path: 'cjk.grid.linesPerPage', value: String(g.clamped.linesPerPage), used: String(g.linesPerPage) });
   return out;
 }

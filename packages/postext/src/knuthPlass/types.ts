@@ -151,4 +151,7 @@ export interface RichTokenMeta {
   bare?: boolean;
   /** On a penalty: a break between ideographs — no hyphen, no penalty. */
   free?: boolean;
+  /** On a free penalty: the break is next to a CJK character, so the line
+   *  it ends is not `hyphenated`. */
+  cjk?: boolean;
 }

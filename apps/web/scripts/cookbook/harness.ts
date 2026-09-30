@@ -18,7 +18,7 @@ import os from "node:os";
 import path from "node:path";
 import puppeteer from "puppeteer-core";
 import type { Browser, Page } from "puppeteer-core";
-import type { Locale, RecipeMeta } from "../../src/lib/cookbook/types.ts";
+import type { CaptureBuild, Locale, RecipeMeta } from "../../src/lib/cookbook/types.ts";
 import { cardProblems, heroPages, publishedPages } from "./cards.ts";
 import type { ProbeFacts } from "./checks.ts";
 import type { NetIssue } from "./net.ts";
@@ -388,7 +388,7 @@ export async function runVariant(opts: RunOptions): Promise<VariantRun> {
  *  pen's engine (lib/probe.js `sandboxBundle`). */
 async function sandboxBundle(
   page: Page,
-  select: string | number,
+  select: CaptureBuild | CaptureBuild[],
   locale: Locale,
   meta: SandboxMeta,
   thumbnail: Buffer | null,

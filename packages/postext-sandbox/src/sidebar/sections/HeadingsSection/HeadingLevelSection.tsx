@@ -5,6 +5,7 @@ import { DEFAULT_HEADINGS_CONFIG, dimensionsEqual, colorsEqual, resolveDesignSlo
 import type { HeadingLevelConfig, HeadingBreakBeforeConfig, HeadingBreakParity, HeadingSpan, HeadingTextTransform, HeadingAdvancedDesignConfig, ResolvedHeadingLevelConfig, ColorValue, Dimension, DimensionUnit, DesignSlot, ResolvedDesignSlot } from 'postext';
 import { SlotEditor } from '../HeaderFooterSection/SlotEditor';
 import { breakParityOptions } from './breakParityOptions';
+import { separatorFromOption, separatorOption, separatorOptions, type SeparatorChoice } from '../../settings/eastAsianOptions';
 import {
   CollapsibleSection,
   ColorPicker,
@@ -25,6 +26,9 @@ const ZERO_PT: Dimension = { value: 0, unit: 'pt' };
 const TRACKING_UNITS: DimensionUnit[] = ['pt', 'em', 'px'];
 
 const D = DEFAULT_HEADINGS_CONFIG;
+/** Between a heading's number and its title: a space, the ideographic
+ *  space of Chinese chapter heads, or nothing. */
+const NUMBER_SEPARATOR_CHOICES: readonly SeparatorChoice[] = ['space', 'ideographic', 'none'];
 
 export function HeadingLevelSection({
   level,
@@ -216,6 +220,20 @@ export function HeadingLevelSection({
         isDefault={isNumberingDefault}
         onReset={() => onReset(level, 'numberingTemplate')}
       />
+      {!isNumberingDefault && (
+        <SelectInput
+          label={labels.headingNumberSeparator}
+          value={separatorOption(resolved.numberSeparator, NUMBER_SEPARATOR_CHOICES)}
+          options={separatorOptions(labels, NUMBER_SEPARATOR_CHOICES, resolved.numberSeparator)}
+          onChange={(v) => {
+            const sep = separatorFromOption(v);
+            if (sep !== undefined) onUpdate(level, { numberSeparator: sep });
+          }}
+          tooltip={labels.headingNumberSeparatorTooltip}
+          isDefault={raw?.numberSeparator === undefined}
+          onReset={() => onReset(level, 'numberSeparator')}
+        />
+      )}
       <ToggleSwitch
         label={labels.headingBreakBefore}
         checked={resolved.breakBefore.enabled}

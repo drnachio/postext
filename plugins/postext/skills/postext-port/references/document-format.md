@@ -74,12 +74,14 @@ A heading's inline content is read like a paragraph's while `headings.inlineMark
 
 ### 2.2 Heading attributes: trailing `{…}`
 
-**Regex:** `\s+\{([^{}]*)\}\s*$`. The block must be the **last thing on the line** and preceded by whitespace. It contains no nested braces, so a value cannot contain `{` or `}`.
+**Regex:** `\s+\{([^{}]*)\}\s*$`. The block must be the **last thing on the line** and preceded by whitespace, or (postext ≥ 1.9) glued to a Chinese or Japanese character: `# 回目{style="x"}`. It contains no nested braces, so a value cannot contain `{` or `}`.
 
-The blob is parsed with the shared attribute grammar (§8). If it yields **at least one key**, the whole `{…}` is removed from the title and stored in `block.attrs`. Otherwise it stays in the text.
+The blob is parsed with the shared attribute grammar (§8). Since 1.9 it is taken only when the grammar reads **all** of it (tokens separated by spaces); otherwise it stays in the text.
 - `# Title {}` keeps `{}` in the title.
 - `# Chapter {1}` keeps `{1}`, because a key must start with a letter or `_`.
-- **Gotcha:** `# The set {a, b}` becomes the title `The set` with attrs `{a:"", b:""}`. The braces are eaten. To keep literal trailing braces in a title, end the line with something after them, or put the braces inside `$…$` math.
+- `# The set {a, b}`, Pandoc's `{#id}` / `{.class}` and `{a="1", b="2"}` stay in the title (1.8 and earlier ate them). Flags alone are read after a space (`# Title {draft}`) but not glued to a title (`# 第一回{draft}` stays text).
+- A key in another script (`作者=曹雪芹`) is dropped with an `attributeKeyInvalid` warning; the block's other keys apply.
+- A title ending in a compact ruby (`# 紅樓夢 {紅樓|hóng|lóu}`) keeps it as a ruby.
 - **Gotcha:** `# Title {note="a}b"}` does not parse (a `}` inside the value). The whole blob stays in the text.
 
 **Attributes with engine meaning:**
@@ -137,6 +139,8 @@ The first line is always taken. Subsequent lines are appended (trimmed, joined w
 - any `:::…` fence line: known or unknown directive/container, or a bare `:::`;
 - a whole display formula (postext ≥ 1.5): a `$$…$$` line, or a `$$` fence closed before the next blank line. The text right under the closing `$$` continues the paragraph, flush (§11). Up to 1.4 these lines were swallowed as text.
 
+**Chinese and Japanese line ends** (postext ≥ 1.9): between two East Asian wide characters (Han, kana, full-width punctuation, and curly quotes, dashes or an ellipsis beside them) the joining space is dropped, as CSS does, so a Chinese source may be wrapped anywhere. Korean keeps its space. A space typed inside a line stays.
+
 **The paragraph does NOT stop at the following. They are swallowed into the paragraph as literal text:**
 - ordered list lines. `Intro\n1. first\n2. second` gives one paragraph `Intro 1. first 2. second`. **Always put a blank line before an ordered list.**
 - `::resource{id="…"}`. **Always put blank lines around `::resource`.**
@@ -165,6 +169,8 @@ The same triggers also end a running paragraph mid-way (§3.1): a continuation l
 - URL-like tokens (`http(s)://`, `ftp://`, `www.`, DOIs `10.xxxx/`) get URL break points and no hyphen.
 - **HTML is not interpreted.** `<b>x</b>` and `&amp;` / `&nbsp;` appear literally. Write the Unicode characters themselves (`&`, U+00A0, `…`).
 - Tabs count as one character of indentation (so they don't nest lists).
+- **Ideographic spaces (U+3000) that open a paragraph are dropped.** Chinese paragraph indents come from `bodyText.firstLineIndent: {value: 2, unit: 'em'}`. Inside a line U+3000 is a character one em wide (a line may break after it, never before).
+- **Full-width markup is text**: `：：：`, `＃ `, `［＾1］`, `｛…｝` after a fence or heading, `＊＊…＊＊` typed with an input method print literally and raise `fullwidthMarkup`. Write the ASCII forms.
 
 ---
 
@@ -193,9 +199,17 @@ Earlier passes shield their content from later ones. Math is extracted before em
 | Link | `[text](url)` | text kept and set exactly as without the link. The URL becomes a live link in HTML (`<a>`) and PDF (a URI annotation), not on canvas. Only `http`, `https`, `mailto`, `tel`, `ftp` and relative URLs are linked; any other scheme keeps the text only. The destination takes **balanced parentheses** as in CommonMark (`[Wiki](…/A_(b))` links the whole URL); an unbalanced one ends at the first `)` and the text is set with no link. A `"title"` is ignored; `<…>` may hold spaces. Works in paragraphs, lists, quotes, callouts, captions, notes and cells, not in headings or chips | `replaceLinkSyntax`, `linkHref` |
 | Image | `![alt](src)` | **removed** from the text | `:315` |
 | Escapes | `\*` `\_` `\^` `\~` `` \` `` | the literal character (body, captions, cells, notes) | `:261-273` |
+| Emphasis dots (≥ 1.9) | `:dots[不可]`, `{style="dot\|circle\|sesame" fill="open" pos="over\|under"}` | 着重号: under each character (right in vertical text), none on punctuation. `*…*` on Chinese characters does the same under `cjk.emphasis: 'dots'` (default in a Chinese document) | |
+| Proper-name line (≥ 1.9) | `:name[賈寶玉]` | 专名号: straight line under (left in vertical); adjacent names keep a gap | |
+| Book title (≥ 1.9) | `:book[石頭記]` | 书名号 per `cjk.bookTitleMark`: 《》 inserted (mainland default), wavy line (Taiwan/HK), or bare. If the source already TYPES 《》, keep them as text instead | |
+| Ruby (≥ 1.9) | `:ruby[紅樓]{rt="hóng lóu"}`, `{rt="hónglóu" group}`, `pos="over\|under\|right"`; compact `{紅樓\|hóng\|lóu}` | one reading per character when the counts match (line may break between), else one group reading. Zhuyin (bopomofo) goes right of each character. Compact form only when the base holds Han/kana/bopomofo; `\{紅\|hóng}` is text | |
+| Warichu (≥ 1.9) | `:warichu[note]{open="〔" close="〕"}` | 双行夹注: two half-size rows inside the line, breaking across lines and pages | |
+| Tate-chu-yoko (≥ 1.9) | `:tcy[12]` | vertical text: one upright cell. Numbers of ≤ `cjk.uprightDigits` (2) digits get it automatically. No effect horizontally | |
+| Upright / sideways (≥ 1.9) | `:upright[GDP]`, `:sideways[12]` | vertical text: each character upright in its own cell / the run turned | |
 | Dollar | `\$` | literal `$`; otherwise `$` opens inline math. Captions, cells, notes and chip texts have no maths: `$` is literal there, and `\$` gives `$` too (postext ≥ 1.5; 1.4 printed `\$` there). In an attribute value (`:ref{text="…"}`) a backslash is ordinary: `\$` stays `\$` |  |
 
 **Emphasis gotchas:**
+- (≥ 1.9) Han, kana and hangul do not block `_` flanking: `中文_斜体_中文` is italic. A `~` with a digit on both sides (`3~5天`) or between two Chinese words (`周一~周五`) is literal; `^_^` is always text.
 - **Intraword underscores are text** (since the engine follows CommonMark here): `snake_case_name` and `http://a.com/x_y_z` keep their underscores; only `_emphasis_` at word boundaries italicises. For emphasis inside a word, use `*`. (Older engines italicised between two intraword underscores: write `\_` there if a document must also lay out on them.)
 - Lone asterisks pair up across a paragraph: `x * y * z` gives an italic ` y `. Write `\*` or use `×` / `·`.
 - `~` pairs: `~~strike~~` has **no strikethrough**. It gives a subscript `~strike` plus literal tildes. A span is `~X~` / `^X^` where X starts and ends with a non-space and has no inner marker or newline. `from ~5 to ~10` stays literal only because the text before the second `~` ends in a space. `about ~5km~ish` would subscript. When in doubt, write `\~` (or `\^`).
@@ -370,6 +384,7 @@ Source: ; .
 - **No escapes.** A value cannot contain its own quote. Use the other quote style: `title='He said "hi"'` works.
 - For fences, directives and `:ref`/`:swatch`, the blob ends at the first `}`, so **values can never contain `}`**. `:ref{id="a" text="x}y"}` breaks.
 - Unknown keys are kept but ignored.
+- (≥ 1.9) A value may be quoted with the curly `“…”` or corner `「…」` an input method types (spaces included), and `＝` works as `=`. Keys stay ASCII: a key in another script is dropped with `attributeKeyInvalid`.
 
 ---
 
@@ -610,6 +625,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 - `unknownResourceId` (embed or ref), `duplicateResourceId`, `danglingTypeRef`
 - `headingHierarchy`, `consecutiveHeadings`, `listAfterHeading`
 - `chapterFrontmatterIgnored`, `calloutOverflow`
+- `fullwidthMarkup` (`：：：`, `＃`, `［＾…］`, `｛…｝`, `＊＊` typed with a Chinese input method: set as text), `attributeKeyInvalid` (a key outside ASCII, `作者=曹雪芹`: dropped, the block's other keys still apply)
 
 ---
 
@@ -671,6 +687,14 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 | Small caps | `:smallcaps[…]` inline; `smallCaps: true` on a paragraph style or a callout body for whole paragraphs. |
 | Underline, strikethrough, colour spans, language spans | **Unsupported inline.** Use a chip style or a paragraph style, or accept plain text. |
 | HTML entities | Use the literal Unicode characters. |
+| Chinese emphasis dots (着重号) | `:dots[…]`, or `*…*` in a Chinese document (dots by default). |
+| Proper-name line (专名号) | `:name[…]`. |
+| Book-title mark (书名号) | Keep typed 《》 as text. A classical/Taiwan edition with wavy lines: `:book[…]` (prints what `cjk.bookTitleMark` says). |
+| Ruby: pinyin or zhuyin over/beside characters | `{字|zì}` / `:ruby[漢字]{rt="hàn zì"}`; HTML `<ruby>紅<rt>hóng</rt></ruby>` → `{紅|hóng}`. |
+| Inline two-line commentary (双行夹注, 割注) | `:warichu[…]`; a one-line note in brackets stays as text in （）. |
+| Numbers upright in vertical text (纵中横) | Nothing for ≤ 2 digits (automatic, `cjk.uprightDigits`); `:tcy[…]` for 3–4 characters or `A+`; `:upright[…]` for an acronym read letter by letter. |
+| 回目 couplet / two-line chapter title | `# 甄士隱夢幻識通靈 \\ 賈雨村風塵懷閨秀`; the number from `numberingTemplate: '第{1:一}回'`, never typed. |
+| Paragraph indent of two ideographic spaces | Delete them; `bodyText.firstLineIndent: 2em`. |
 
 ---
 
@@ -687,3 +711,4 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 9. Frontmatter appears only in the book's first chapter.
 10. No GFM tables, code fences, HTML, or `---` rules remain. Every `[^id]` marker has one `[^id]:` definition in its chapter, and none sits in a heading, caption or cell.
 11. Index marks sit in running text (not captions or cells), never right after a colon; ranges are paired; every `see`/`seealso` target is an entry; each index that has marks has its `:::index`.
+12. Chinese text: no U+3000 opening a paragraph, no full-width markup (`：：：`, `＃`), 《》 kept as typed, readings as `:ruby`/`{字|zì}`, and `config.locale` names the script (`zh-Hans`/`zh-Hant`).

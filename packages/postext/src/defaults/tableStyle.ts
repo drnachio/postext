@@ -7,7 +7,7 @@ import type {
   ColorValue,
 } from '../types';
 import { dimensionsEqual, colorsEqual } from './shared';
-import { languageOf, presentTag } from '../locale';
+import { presentTag, stringsFor } from '../locale';
 
 /** Default header fill — a neutral light grey. */
 const DEFAULT_HEADER_BACKGROUND: ColorValue = { hex: '#f0f0f0', model: 'hex' };
@@ -44,8 +44,9 @@ const STATIC_DEFAULTS = {
 
 /** Localised continuation strings: the caption suffix of a continued slice
  *  and the marker under a slice that continues, one per bundled hyphenation
- *  language. English is the fallback for any locale not listed here. Add a
- *  language by adding a key. */
+ *  language plus Chinese in each script (keyed by `stringsKeyOf`). English
+ *  is the fallback for any locale not listed here. Add a language by adding
+ *  a key. */
 const CONTINUATION_STRINGS: Record<string, { continuedSuffix: string; continuesMarker: string }> = {
   en: { continuedSuffix: '(cont.)', continuesMarker: 'Continued' },
   es: { continuedSuffix: '(cont.)', continuesMarker: 'Continúa' },
@@ -55,12 +56,14 @@ const CONTINUATION_STRINGS: Record<string, { continuedSuffix: string; continuesM
   pt: { continuedSuffix: '(cont.)', continuesMarker: 'Continua' },
   ca: { continuedSuffix: '(cont.)', continuesMarker: 'Continua' },
   nl: { continuedSuffix: '(vervolg)', continuesMarker: 'Wordt vervolgd' },
+  'zh-hans': { continuedSuffix: '（续）', continuesMarker: '接下页' },
+  'zh-hant': { continuedSuffix: '（續）', continuesMarker: '接下頁' },
 };
 
 /** Default continuation strings for a (possibly regional) locale tag such
  *  as `es-ES` or `pt_BR`, falling back to English. */
 export function defaultTableContinuationStrings(locale = 'en'): { continuedSuffix: string; continuesMarker: string } {
-  return { ...(CONTINUATION_STRINGS[languageOf(locale)] ?? CONTINUATION_STRINGS.en!) };
+  return { ...stringsFor(CONTINUATION_STRINGS, locale) };
 }
 
 /** Resolve a partial table-style config into a fully-specified one. Font
@@ -75,7 +78,7 @@ export function resolveTableStyleConfig(
   // Continuation strings follow the document language: the explicit
   // `locale`, else the hyphenation locale (which the sandbox derives from
   // the app language when unset).
-  const strings = defaultTableContinuationStrings(presentTag(locale) ?? bodyText.hyphenation.locale);
+  const strings = defaultTableContinuationStrings(presentTag(locale) ?? bodyText.hyphenation.tag ?? bodyText.hyphenation.locale);
   return {
     bodyFontFamily: p.bodyFontFamily ?? bodyText.fontFamily,
     bodyFontSize: p.bodyFontSize ?? bodyText.fontSize,

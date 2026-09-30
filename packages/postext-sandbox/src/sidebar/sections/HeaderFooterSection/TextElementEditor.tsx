@@ -406,6 +406,27 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
         }}
       />
       <SelectInput
+        label={labels.headerFooterElementWritingMode}
+        value={raw.writingMode ?? 'horizontal-tb'}
+        options={[
+          { value: 'horizontal-tb', label: labels.writingModeHorizontal },
+          { value: 'vertical-rl', label: labels.writingModeVertical },
+        ]}
+        onChange={(v) => {
+          const next: DesignTextElement = { ...raw };
+          if (v === 'vertical-rl') next.writingMode = 'vertical-rl';
+          else delete next.writingMode;
+          onChange(next);
+        }}
+        tooltip={labels.headerFooterElementWritingModeTooltip}
+        isDefault={raw.writingMode !== 'vertical-rl'}
+        onReset={() => {
+          const next: DesignTextElement = { ...raw };
+          delete next.writingMode;
+          onChange(next);
+        }}
+      />
+      <SelectInput
         label={labels.headerFooterElementOverflow}
         value={resolved.overflow}
         options={[

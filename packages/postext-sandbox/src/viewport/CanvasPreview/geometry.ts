@@ -1,5 +1,5 @@
 import type { VDTDocument } from 'postext';
-import { resourceBlockToLocal } from 'postext';
+import { pageToFlow, resourceBlockToLocal } from 'postext';
 import { bandCharAtX, bandLineBoxes, bandPlainToSource, bandTitleBlocks, isHiddenUnderBand } from './bandTitle';
 
 type VDTBlock = VDTDocument['blocks'][number];
@@ -18,7 +18,9 @@ type VDTSegment = NonNullable<VDTLine['segments']>[number];
  * see {@link opensWithRepeatedHyphen}).
  */
 export function segmentPlainLength(seg: VDTSegment, dropTrailingHyphen: boolean, dropLeadingHyphen = false): number {
-  if (seg.refContinues) return 0;
+  // Brackets the layout added (a book title's 《》, a warichu note's) are
+  // no plain text (#193, #195).
+  if (seg.refContinues || seg.inserted) return 0;
   if (seg.refResourceId !== undefined) return 1;
   if (seg.kind === 'swatch') return 1;
   let len = seg.text.length;
@@ -60,6 +62,86 @@ export function foldRefRuns(segs: readonly VDTSegment[]): VDTSegment[] {
     }
   }
   return out;
+}
+
+const graphemeSegmenter = typeof Intl !== 'undefined' && 'Segmenter' in Intl
+  ? new Intl.Segmenter(undefined, { granularity: 'grapheme' })
+  : undefined;
+
+/**
+ * Where the graphemes of a segment start, as offsets into its text, with
+ * the text's length last — or null when every UTF-16 unit is a grapheme and
+ * the segment is not tracked, so the linear mapping over units is exact.
+ * A tracked segment (a justified CJK line) spreads its characters evenly,
+ * one share of its width per grapheme; a supplementary-plane ideograph (𠺕)
+ * is one grapheme of two units, which the caret never lands inside.
+ */
+export function segmentGraphemeStarts(seg: Pick<VDTSegment, 'text' | 'tracking'>): number[] | null {
+  const text = seg.text;
+  const complex = /[\uD800-\uDFFF\u0300-\u036F\u200D\uFE00-\uFE0F]/.test(text);
+  if (!complex && seg.tracking === undefined) return null;
+  const starts: number[] = [];
+  if (graphemeSegmenter && complex) {
+    for (const g of graphemeSegmenter.segment(text)) starts.push(g.index);
+  } else {
+    for (let i = 0; i < text.length; i++) starts.push(i);
+  }
+  starts.push(text.length);
+  return starts;
+}
+
+/** The x of plain offset `within` (UTF-16 units into the segment, up to
+ *  `plainLen`) over a segment `rendered` px wide: grapheme by grapheme when
+ *  {@link segmentGraphemeStarts} gives its boundaries, else linearly. */
+function xWithinSegment(seg: VDTSegment, within: number, plainLen: number, rendered: number): number {
+  // A warichu note's part: the offset falls in its upper row, or past it in
+  // the lower one (#195); both rows advance by the same cell.
+  if (seg.warichu) {
+    const w = seg.warichu;
+    const cell = warichuCell(seg);
+    return within <= w.upper.length ? within * cell : (within - w.upper.length) * cell;
+  }
+  const starts = seg.kind === 'text' ? segmentGraphemeStarts(seg) : null;
+  if (!starts || starts.length < 2) return plainLen > 0 ? (within / plainLen) * rendered : 0;
+  const n = starts.length - 1;
+  let k = 0;
+  while (k < n && starts[k + 1]! <= within) k++;
+  return (k / n) * rendered;
+}
+
+/** The advance of one character of a warichu part's rows: the part's
+ *  width (its tracking left out) over the longer row. */
+function warichuCell(seg: VDTSegment): number {
+  const w = seg.warichu!;
+  const n = Math.max(1, w.upper.length, w.lower.length);
+  return (seg.width - (seg.tracking ?? 0)) / n;
+}
+
+/**
+ * The plain offset (UTF-16 units into the segment) of a click `dx` px along
+ * a warichu note's part and `dy` px from the line's baseline (flow frame):
+ * above the line's axis the upper row, below it the lower one, whose
+ * characters follow the upper row's in the plain text (#195).
+ */
+export function warichuOffset(seg: VDTSegment, dx: number, dy: number): number {
+  const w = seg.warichu!;
+  const noteEm = w.lowerDy - w.upperDy;
+  const axis = (w.upperDy + w.lowerDy) / 2 - 0.38 * noteEm;
+  const cell = warichuCell(seg);
+  const k = (n: number) => Math.max(0, Math.min(n, Math.round(dx / (cell || 1))));
+  return dy < axis ? k(w.upper.length) : w.upper.length + k(w.lower.length);
+}
+
+/** The plain offset (UTF-16 units into the segment, at most `plainLen`) of
+ *  the grapheme boundary nearest to `dx` px into a segment `rendered` px
+ *  wide (see {@link xWithinSegment}). */
+function offsetWithinSegment(seg: VDTSegment, dx: number, plainLen: number, rendered: number): number {
+  const ratio = rendered > 0 ? dx / rendered : 0;
+  const starts = seg.kind === 'text' ? segmentGraphemeStarts(seg) : null;
+  if (!starts || starts.length < 2) return Math.round(ratio * plainLen);
+  const n = starts.length - 1;
+  const k = Math.max(0, Math.min(n, Math.round(ratio * n)));
+  return Math.min(plainLen, starts[k]!);
 }
 
 /** Page-space position of a resource embed (inline block or float band). */
@@ -122,7 +204,7 @@ function refInBlockLine(
   const segs = line.segments;
   if (!segs || segs.length === 0) return null;
   const blockRight = block.bbox.x + block.bbox.width;
-  const justifyFill = block.textAlign === 'justify' && line.isLastLine === false;
+  const justifyFill = block.textAlign === 'justify' && line.isLastLine === false && !line.ragged;
   let naturalWidth = 0;
   let spaceCount = 0;
   for (const seg of segs) {
@@ -175,7 +257,9 @@ type DesignSlotOf = NonNullable<VDTPageOf['openerBand']>;
  * picture, a header logo, an advanced heading design's plate — as the blob
  * id the block was resolved to, or null when none is there. Slots paint in
  * order (in-column overlays, then the opener band, header and footer) and
- * later blocks over earlier ones, so the last hit wins.
+ * later blocks over earlier ones, so the last hit wins. The point is on the
+ * sheet: on a vertical page it is turned into the flow frame for every slot
+ * but the header and the footer.
  */
 export function designImageFileIdAtPixel(
   doc: VDTDocument,
@@ -190,14 +274,17 @@ export function designImageFileIdAtPixel(
     if (b.pageIndex === pageIndex && b.designOverlay) slots.push(b.designOverlay);
   }
   if (page.openerBand) slots.push(page.openerBand);
-  if (page.header) slots.push(page.header);
-  if (page.footer) slots.push(page.footer);
+  const flow = pageToFlow(page, xPage, yPage);
+  const sheetSlots = new Set<DesignSlotOf>();
+  if (page.header) { slots.push(page.header); sheetSlots.add(page.header); }
+  if (page.footer) { slots.push(page.footer); sheetSlots.add(page.footer); }
   let hit: string | null = null;
   for (const slot of slots) {
+    const { x, y } = sheetSlots.has(slot) ? { x: xPage, y: yPage } : flow;
     for (const block of slot.blocks) {
       if (block.kind !== 'image') continue;
       const r = block.bbox;
-      if (xPage >= r.x && xPage <= r.x + r.width && yPage >= r.y && yPage <= r.y + r.height) hit = block.fileId;
+      if (x >= r.x && x <= r.x + r.width && y >= r.y && y <= r.y + r.height) hit = block.fileId;
     }
   }
   return hit;
@@ -298,7 +385,9 @@ export function xForPlainInLine(
 ): number {
   const blockRight = block.bbox.x + block.bbox.width;
   const lineLen = Math.max(0, (line.plainEnd ?? 0) - (line.plainStart ?? 0));
-  const justifyFill = block.textAlign === 'justify' && line.isLastLine === false;
+  // A line set ragged inside a justified paragraph (a loose CJK line, a
+  // line a URL left unfillable) is painted at its natural width.
+  const justifyFill = block.textAlign === 'justify' && line.isLastLine === false && !line.ragged;
   const segs = line.segments && foldRefRuns(line.segments);
 
   if (!segs || segs.length === 0) {
@@ -331,9 +420,7 @@ export function xForPlainInLine(
     const segPlainLen = segmentPlainLength(seg, isLastSeg && addsHyphen(line), opensWithRepeatedHyphen(line, i));
     const segRendered = seg.width + (seg.kind === 'space' ? extraPerSpace : 0);
     if (inLineOffset <= cum + segPlainLen) {
-      const within = inLineOffset - cum;
-      const ratio = segPlainLen > 0 ? within / segPlainLen : 0;
-      return x + ratio * segRendered;
+      return x + xWithinSegment(seg, inLineOffset - cum, segPlainLen, segRendered);
     }
     x += segRendered;
     cum += segPlainLen;
@@ -418,7 +505,7 @@ export function pixelToSourceOffset(
   // 3. Walk segments to find the plain-char offset within the line. Mirror the
   //    justify-fill math from xForPlainInLine.
   const blockRight = hitBlock.bbox.x + hitBlock.bbox.width;
-  const justifyFill = hitBlock.textAlign === 'justify' && hitLine.isLastLine === false;
+  const justifyFill = hitBlock.textAlign === 'justify' && hitLine.isLastLine === false && !hitLine.ragged;
   const segs = hitLine.segments && foldRefRuns(hitLine.segments);
   const lineLen = Math.max(0, hitLine.plainEnd - hitLine.plainStart);
   let inLineOffset: number;
@@ -457,9 +544,9 @@ export function pixelToSourceOffset(
       const segPlainLen = segmentPlainLength(seg, isLastSeg && addsHyphen(hitLine), opensWithRepeatedHyphen(hitLine, i));
       const segRendered = seg.width + (seg.kind === 'space' ? extraPerSpace : 0);
       if (clampedX <= x + segRendered) {
-        const within = clampedX - x;
-        const ratio = segRendered > 0 ? within / segRendered : 0;
-        result = cum + Math.round(ratio * segPlainLen);
+        result = cum + (seg.warichu
+          ? Math.min(segPlainLen, warichuOffset(seg, clampedX - x, yPage - hitLine.baseline))
+          : offsetWithinSegment(seg, clampedX - x, segPlainLen, segRendered));
         resolved = true;
         break;
       }

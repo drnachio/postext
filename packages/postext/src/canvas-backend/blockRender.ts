@@ -5,7 +5,12 @@ import { renderHeaderFooterSlot } from './headerFooter';
 import { renderResourceBlock } from './renderResourceBlock';
 import { paintSwatch } from './swatch';
 import { paintChip } from './chip';
-import { lineTrailingTracking } from '../lineInk';
+import { lineInkExtent, lineTrailingTracking } from '../lineInk';
+import { fillFlowText, verticalPaintActive } from './verticalText';
+import { fillSegmentText, fillWordsText } from './segmentText';
+import { lineMarkCuts, type MarkCutRule } from '../measure/markCuts';
+import { hasCJK } from '../measure/cjk';
+import { paintLineMarks, paintRuby, paintWarichu } from './annotations';
 
 function pickSegmentFont(
   bold: boolean,
@@ -105,10 +110,13 @@ interface BlockTextStyle {
 }
 
 /**
- * Paint a line's segments left to right starting at `startX`. When
+ * Paint the segments of a line set word by word on a horizontal page (see
+ * {@link renderLine}) left to right starting at `startX`. When
  * `justifiedSpaceWidth` is set, spaces advance by it instead of their
  * measured width. Tracks the current canvas font/fillStyle to skip
- * redundant state changes (segments overwhelmingly share styling).
+ * redundant state changes (segments overwhelmingly share styling). `cjk`:
+ * the line may hold CJK text, whose marks that meet are painted apart
+ * (`fillWordsText`); without it, each segment is one `fillText`.
  */
 function renderSegments(
   ctx: CanvasRenderingContext2D,
@@ -116,7 +124,8 @@ function renderSegments(
   startX: number,
   baseline: number,
   style: BlockTextStyle,
-  justifiedSpaceWidth?: number,
+  justifiedSpaceWidth: number | undefined,
+  cjk: boolean,
 ): void {
   let x = startX;
   let currentFont = '';
@@ -162,17 +171,130 @@ function renderSegments(
       ctx.fillStyle = fill;
       currentFill = fill;
     }
-    ctx.fillText(seg.text, x, baseline + (seg.baselineShift ?? 0));
+    if (cjk) fillWordsText(ctx, seg.text, x, baseline + (seg.baselineShift ?? 0));
+    else ctx.fillText(seg.text, x, baseline + (seg.baselineShift ?? 0));
     x += seg.width;
   }
 }
 
-/** Whether a segment paints differently from the block's plain text. */
+/** Whether a segment of a line set word by word paints differently from
+ *  the block's plain text. An orientation mark (`:tcy`, `:upright`,
+ *  `:sideways`) keeps its segment apart. */
 function segmentIsStyled(s: VDTLineSegment): boolean {
   return !!s.bold || !!s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined
-    || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined;
+    || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined
+    || s.tcy !== undefined || s.orientation !== undefined;
 }
 
+/**
+ * {@link renderSegments} for a line of the CJK composer or any line down a
+ * vertical page: each text segment through `fillSegmentText` (its
+ * `inkOffset`, `inkScale` and orientation, its marks cut by `cuts`), a
+ * Han–Latin space at its own width, a warichu note's rows and a ruby
+ * reading. `tracking` is the block's and the line's (the context's
+ * `letterSpacing` on entry); a segment's own tracking (a justified CJK
+ * line) is painted on top of it and the context is left as it was found.
+ */
+function renderComposedSegments(
+  ctx: CanvasRenderingContext2D,
+  segments: VDTLineSegment[],
+  startX: number,
+  baseline: number,
+  style: BlockTextStyle,
+  justifiedSpaceWidth?: number,
+  tracking = 0,
+  /** How the line was measured: two marks that meet are painted apart
+   *  where the measurer set them apart (see `fillFlowText`). */
+  cuts: MarkCutRule = 'words',
+): void {
+  let x = startX;
+  let currentFont = '';
+  let currentFill = '';
+  let spacing = tracking;
+  for (const seg of segments) {
+    if (seg.kind === 'space') {
+      // A Han–Latin space keeps the width the composer set.
+      x += seg.autospace ? seg.width : justifiedSpaceWidth ?? seg.width;
+      continue;
+    }
+    if (seg.kind === 'math') {
+      renderMathSegment(ctx, seg, x, baseline, style.color);
+      x += seg.width;
+      // Math painting touches canvas state; force re-set on the next text segment.
+      currentFont = '';
+      currentFill = '';
+      continue;
+    }
+    if (seg.kind === 'swatch') {
+      paintSwatch(ctx, x, baseline, seg.width, seg.swatch?.color, style.color);
+      x += seg.width;
+      continue;
+    }
+    if (seg.chip) {
+      paintChip(ctx, seg.chip, x, baseline, (run) =>
+        pickSegmentColor(!!run.bold, !!run.italic, style.color, style.boldColor, style.italicColor));
+      x += seg.width;
+      // The chip set its own font and fill; force a re-set on the next text.
+      currentFont = '';
+      currentFill = '';
+      continue;
+    }
+    if (seg.warichu) {
+      // A warichu note's part: its two rows, not its text (#195).
+      paintWarichu(ctx, seg.warichu, x, baseline, style.color);
+      x += seg.width;
+      continue;
+    }
+    const font = seg.fontString
+      ?? pickSegmentFont(!!seg.bold, !!seg.italic, style.font, style.boldFont, style.italicFont, style.boldItalicFont);
+    if (font !== currentFont) {
+      ctx.font = font;
+      currentFont = font;
+    }
+    const fill = seg.color
+      ?? (seg.refResourceId !== undefined && style.refColor
+        ? style.refColor
+        : pickSegmentColor(!!seg.bold, !!seg.italic, style.color, style.boldColor, style.italicColor));
+    if (fill !== currentFill) {
+      ctx.fillStyle = fill;
+      currentFill = fill;
+    }
+    const segSpacing = tracking + (seg.tracking ?? 0);
+    if (segSpacing !== spacing) {
+      ctx.letterSpacing = `${segSpacing}px`;
+      spacing = segSpacing;
+    }
+    // A compressed CJK mark is painted before its box (`inkOffset`), along
+    // the line in either writing mode.
+    fillSegmentText(ctx, seg, x, baseline, cuts);
+    // A ruby base's reading (#194).
+    if (seg.ruby) paintRuby(ctx, seg.ruby, x, baseline, fill);
+    x += seg.width;
+  }
+  if (spacing !== tracking) ctx.letterSpacing = `${tracking}px`;
+}
+
+/** Whether a segment of a line of the CJK composer, or of a line down a
+ *  vertical page, paints differently from the block's plain text. */
+function composedSegmentIsStyled(s: VDTLineSegment): boolean {
+  return !!s.bold || !!s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined
+    || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined || s.tracking !== undefined
+    || s.inkOffset !== undefined || s.hangs !== undefined || s.autospace !== undefined || s.tcy !== undefined || s.orientation !== undefined
+    || s.ruby !== undefined || s.warichu !== undefined;
+}
+
+/**
+ * Paint one line. A line of the CJK composer (`cjkComposed`) and every line
+ * down a vertical page go to {@link renderComposedLine}. Any other line was
+ * set word by word, and the fields only the composer sets (a segment's
+ * `tracking`, `inkOffset`, `inkScale`, `hangs`, `autospace`, `ruby`,
+ * `warichu`) are absent from it: it is painted as the canvas painted every
+ * line before the CJK features, one `fillText` per segment or per line.
+ * Only a line whose text holds CJK characters has its text cut at the
+ * marks that meet (`fillWordsText`): the line's `text` holds the text of
+ * every segment, except the leader of a contents entry (`tocEntry`, the
+ * dots `measureTocBlock` adds), whose segments are each looked at.
+ */
 function renderLine(
   ctx: CanvasRenderingContext2D,
   line: VDTLine,
@@ -180,8 +302,15 @@ function renderLine(
   textAlign: TextAlign,
   columnWidth: number,
   columnX: number,
-  trailing = 0,
+  trailing: number,
+  tracking: number,
+  tocEntry: boolean,
 ): void {
+  if (line.cjkComposed || verticalPaintActive()) {
+    renderComposedLine(ctx, line, style, textAlign, columnWidth, columnX, trailing, tracking);
+    return;
+  }
+  const cjk = tocEntry || hasCJK(line.text);
   ctx.textBaseline = 'alphabetic';
 
   // Effective width accounts for line-level indent (e.g. first-line or hanging indent)
@@ -205,7 +334,7 @@ function renderLine(
     }
     if (spaceCount > 0 && ((!line.isLastLine && !line.ragged) || naturalWidth > effectiveWidth)) {
       const justifiedSpaceWidth = (effectiveWidth - wordWidth) / spaceCount;
-      renderSegments(ctx, segments, line.bbox.x, line.baseline, style, justifiedSpaceWidth);
+      renderSegments(ctx, segments, line.bbox.x, line.baseline, style, justifiedSpaceWidth, cjk);
       return;
     }
   }
@@ -219,7 +348,7 @@ function renderLine(
     for (const seg of segments) contentWidth += seg.width;
     const slack = Math.max(0, effectiveWidth - (contentWidth - trailing));
     const startX = line.bbox.x + (textAlign === 'center' ? slack / 2 : slack);
-    renderSegments(ctx, segments, startX, line.baseline, style);
+    renderSegments(ctx, segments, startX, line.baseline, style, undefined, cjk);
     return;
   }
 
@@ -228,7 +357,7 @@ function renderLine(
   // block (bold/italic/math/ref/own font or colour); otherwise one fillText
   // paints the line.
   if (segments && segments.some(segmentIsStyled)) {
-    renderSegments(ctx, segments, line.bbox.x, line.baseline, style);
+    renderSegments(ctx, segments, line.bbox.x, line.baseline, style, undefined, cjk);
     return;
   }
 
@@ -236,7 +365,71 @@ function renderLine(
   ctx.fillStyle = style.color;
   const plainSlack = Math.max(0, effectiveWidth - (line.bbox.width - trailing));
   const plainX = line.bbox.x + (textAlign === 'right' ? plainSlack : textAlign === 'center' ? plainSlack / 2 : 0);
-  ctx.fillText(line.text, plainX, line.baseline);
+  if (cjk) fillWordsText(ctx, line.text, plainX, line.baseline);
+  else ctx.fillText(line.text, plainX, line.baseline);
+}
+
+/** {@link renderLine} for a line of the CJK composer or any line down a
+ *  vertical page: hung marks and Han–Latin spaces kept out of the
+ *  justification, each segment through {@link renderComposedSegments}. */
+function renderComposedLine(
+  ctx: CanvasRenderingContext2D,
+  line: VDTLine,
+  style: BlockTextStyle,
+  textAlign: TextAlign,
+  columnWidth: number,
+  columnX: number,
+  trailing: number,
+  tracking: number,
+): void {
+  ctx.textBaseline = 'alphabetic';
+
+  const lineIndent = line.bbox.x - columnX;
+  const effectiveWidth = columnWidth - lineIndent;
+  const segments = line.segments;
+  // A line of the CJK composer was measured character by character, any
+  // other word by word: two marks that meet are painted apart where they
+  // were measured apart.
+  const cuts = lineMarkCuts(line);
+
+  if (textAlign === 'justify' && segments && segments.length > 0) {
+    let wordWidth = 0;
+    let naturalWidth = 0;
+    let spaceCount = 0;
+    for (const seg of segments) {
+      // A hung mark is outside the measure; a Han–Latin space keeps its
+      // width.
+      if (seg.hangs) continue;
+      if (seg.kind === 'space' && !seg.autospace) spaceCount++;
+      else wordWidth += seg.width;
+      naturalWidth += seg.width;
+    }
+    if (spaceCount > 0 && ((!line.isLastLine && !line.ragged) || naturalWidth > effectiveWidth)) {
+      const justifiedSpaceWidth = (effectiveWidth - wordWidth) / spaceCount;
+      renderComposedSegments(ctx, segments, line.bbox.x, line.baseline, style, justifiedSpaceWidth, tracking, cuts);
+      return;
+    }
+  }
+
+  // Hung marks stay out of the alignment, as the trailing tracking does.
+  if ((textAlign === 'center' || textAlign === 'right') && segments) {
+    const contentWidth = lineInkExtent(line, 0).width;
+    const slack = Math.max(0, effectiveWidth - (contentWidth - trailing));
+    const startX = line.bbox.x + (textAlign === 'center' ? slack / 2 : slack);
+    renderComposedSegments(ctx, segments, startX, line.baseline, style, undefined, tracking, cuts);
+    return;
+  }
+
+  if (segments && segments.some(composedSegmentIsStyled)) {
+    renderComposedSegments(ctx, segments, line.bbox.x, line.baseline, style, undefined, tracking, cuts);
+    return;
+  }
+
+  ctx.font = style.font;
+  ctx.fillStyle = style.color;
+  const plainSlack = Math.max(0, effectiveWidth - (line.bbox.width - trailing));
+  const plainX = line.bbox.x + (textAlign === 'right' ? plainSlack : textAlign === 'center' ? plainSlack / 2 : 0);
+  fillFlowText(ctx, line.text, plainX, line.baseline, 'fill', undefined, cuts);
 }
 
 function renderBullet(ctx: CanvasRenderingContext2D, block: VDTBlock): void {
@@ -251,12 +444,14 @@ function renderBullet(ctx: CanvasRenderingContext2D, block: VDTBlock): void {
   ctx.textBaseline = onBaseline ? 'alphabetic' : 'middle';
   ctx.font = block.bulletFontString;
   const y = block.bulletBaselineY ?? block.bulletY ?? firstLine.baseline;
-  ctx.fillText(block.bulletText, block.bulletOffsetX, y);
+  fillFlowText(ctx, block.bulletText, block.bulletOffsetX, y);
   // Ordered-list separator styled apart from the number (own font/colour).
   if (block.separatorText && block.separatorX !== undefined) {
     ctx.fillStyle = block.separatorColor ?? block.bulletColor ?? block.color;
     ctx.font = block.separatorFontString ?? block.bulletFontString;
-    ctx.fillText(block.separatorText, block.separatorX, y);
+    fillFlowText(ctx, block.separatorText, block.separatorX, y);
+    // The prefix run before the number, in the separator's style.
+    if (block.prefixText && block.prefixX !== undefined) fillFlowText(ctx, block.prefixText, block.prefixX, y);
   }
   ctx.restore();
 }
@@ -316,11 +511,14 @@ export function renderBlock(
   // Tracking: the block (column balancing, a runt set short — negative)
   // and each line (justification tracking) were measured with this much
   // extra advance after every glyph, so paint them the same way.
+  const tocEntry = block.tocEntry !== undefined;
   for (const line of block.lines) {
     const tracking = (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0);
     if (tracking !== 0) ctx.letterSpacing = `${tracking}px`;
-    renderLine(ctx, line, style, block.textAlign, block.bbox.width, block.bbox.x, lineTrailingTracking(line, tracking));
+    renderLine(ctx, line, style, block.textAlign, block.bbox.width, block.bbox.x, lineTrailingTracking(line, tracking), tracking, tocEntry);
     if (tracking !== 0) ctx.letterSpacing = '0px';
+    // Emphasis dots, proper-name and book-title lines (#193).
+    if (line.marks) paintLineMarks(ctx, line, block.color);
   }
   if (block.strikethroughText) {
     renderStrikethrough(ctx, block);

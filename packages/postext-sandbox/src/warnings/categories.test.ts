@@ -18,6 +18,11 @@ describe('warningCategory', () => {
     expect(warningCategory('sideColumnPercentClamped')).toBe('design');
     expect(warningCategory('unknownNumberFormat')).toBe('design');
   });
+  it('files the PDF font warnings with the fonts', () => {
+    expect(warningCategory('missingGlyph')).toBe('fonts');
+    expect(warningCategory('variableFontDefaultInstance')).toBe('fonts');
+    expect(warningCategory('cffEmbeddedWhole')).toBe('fonts');
+  });
   it('lists every category once', () => {
     expect(new Set(WARNING_CATEGORY_ORDER).size).toBe(WARNING_CATEGORY_ORDER.length);
   });

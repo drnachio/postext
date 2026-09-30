@@ -8,6 +8,7 @@ import type { SandboxLabels } from '../../types/labels';
 
 export type SettingsGroupId =
   | 'page'
+  | 'writing'
   | 'colors'
   | 'text'
   | 'headings'
@@ -22,6 +23,7 @@ export type SettingsGroupId =
 export type SettingsSectionId =
   | 'page'
   | 'layout'
+  | 'writing'
   | 'color-palette'
   | 'headerFooter'
   | 'parts'
@@ -36,6 +38,7 @@ export type SettingsSectionId =
   | 'ordered-lists'
   | 'math'
   | 'footnotes'
+  | 'cjk'
   | 'resource-types'
   | 'captionStyle'
   | 'tableStyle'
@@ -62,10 +65,13 @@ export interface SettingsSectionEntry {
   configKeys: (keyof PostextConfig)[];
 }
 
-/** Browsing order: the page first, then the text on it from the body out,
- *  then what repeats on every page, then output. */
+/** Browsing order: the page first, then the writing system (the direction
+ *  of the lines decides page progression, margins and column order), then
+ *  the text on the page from the body out, then what repeats on every page,
+ *  then output. */
 export const SETTINGS_GROUPS: readonly SettingsGroup[] = [
   { id: 'page', labelKey: 'settingsGroupPage', descriptionKey: 'settingsGroupPageDescription' },
+  { id: 'writing', labelKey: 'settingsGroupWriting', descriptionKey: 'settingsGroupWritingDescription' },
   { id: 'colors', labelKey: 'settingsGroupColors', descriptionKey: 'settingsGroupColorsDescription' },
   { id: 'text', labelKey: 'settingsGroupText', descriptionKey: 'settingsGroupTextDescription' },
   { id: 'headings', labelKey: 'settingsGroupHeadings', descriptionKey: 'settingsGroupHeadingsDescription' },
@@ -81,8 +87,12 @@ export const SETTINGS_GROUPS: readonly SettingsGroup[] = [
 export const SETTINGS_SECTIONS: readonly SettingsSectionEntry[] = [
   { id: 'page', group: 'page', labelKey: 'page', configKeys: ['page'] },
   { id: 'layout', group: 'page', labelKey: 'layout', configKeys: ['layout'] },
+  // Language and direction: `locale`, `layout.writingMode`, `page.binding`
+  // (see `sectionHasOverrides` for the two nested keys).
+  { id: 'writing', group: 'writing', labelKey: 'writingSection', configKeys: ['locale', 'layout', 'page'] },
+  { id: 'cjk', group: 'writing', labelKey: 'cjkSection', configKeys: ['cjk'] },
   { id: 'color-palette', group: 'colors', labelKey: 'colorPalette', configKeys: ['colorPalette'] },
-  { id: 'bodyText', group: 'text', labelKey: 'bodyText', configKeys: ['bodyText', 'locale'] },
+  { id: 'bodyText', group: 'text', labelKey: 'bodyText', configKeys: ['bodyText'] },
   { id: 'paragraphStyles', group: 'text', labelKey: 'paragraphStylesSection', configKeys: ['paragraphStyles'] },
   { id: 'chipStyles', group: 'text', labelKey: 'chipStylesSection', configKeys: ['chipStyles'] },
   { id: 'math', group: 'text', labelKey: 'mathSection', configKeys: ['math'] },

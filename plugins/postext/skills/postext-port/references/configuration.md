@@ -35,7 +35,8 @@ Conversion at `page.dpi` (default 300):
 - **Hard rule: fields with no font context THROW on em/rem** (`dimensionToPx` requires a base).
   Always use absolute units (mm/pt/cm) for: `page.width/height/margins`, `cutLines.*`,
   `baselineGrid.lineWidth`, `layout.gutterWidth`, `columnRule.lineWidth`, `bodyText.fontSize`,
-  every `headings.levels[].fontSize`, design-element `fontSize`, design `placement.offset.x/y`,
+  every `headings.levels[].fontSize`, design-element `fontSize`, design `placement.offset.x/y`
+  (rule, box and image elements; a text element's offset takes em of its own size since 1.9),
   `advancedDesign.minHeight`, rule `thickness`. Safe rule for an agent: **use mm for geometry,
   pt for type sizes and hairlines**, em only where listed below as "em = X".
   (Verified: em in `bodyText.fontSize`, `layout.gutterWidth` or a design `offset.y` makes
@@ -100,8 +101,9 @@ Conversion at `page.dpi` (default 300):
 | `math` | MathConfig | §19 | |
 | `footnotes` | FootnotesConfig | §19a | `[^id]` notes: placement, numbering, type, rule |
 | `index` | IndexConfig | §19b | what `:::index` prints: type, indents, separators, ranges, letter heads |
+| `cjk` | CjkConfig | §19c | Chinese, Japanese and Korean composition: region, line breaking, punctuation widths, Han–Latin space, character grid, upright digits, marks, ruby, warichu (postext ≥ 1.9) |
 | `colorPalette` | ColorPaletteEntry[] | `[main-color #295AA3]` | §0 |
-| `locale` | LocaleTag (any BCP 47 tag: `'es'`, `'es-ES'`, `'pt-BR'`) | `'en-us'` | document language: hyphenation fallback, built-in resource types and table continuation strings, PDF `/Lang` |
+| `locale` | LocaleTag (any BCP 47 tag: `'es'`, `'es-ES'`, `'pt-BR'`, `'zh-Hant-TW'`) | `'en-us'` | document language: hyphenation fallback, built-in resource types and table continuation strings, PDF `/Lang`, HTML `lang`. Chinese: the script picks the strings (图/圖), the region the `cjk` defaults (§19c); hyphenation is off |
 | `customFonts` | CustomFontFamily[] | — | §20 **do not write in preset.json config** |
 | `htmlViewer` | HtmlViewerConfig | §21 | screen-only; `overrides` = partial config merged for HTML |
 | `pdfGeneration` | PdfGenerationConfig | §21 | outlines, tagging, colour space |
@@ -135,10 +137,15 @@ page
 ├─ dpi          number, default 300 (raster resolution + px unit)
 ├─ cutLines     { enabled=false, bleed=3mm, markLength=5mm, markOffset=3mm, markWidth=0.25pt, color=#000 }
 ├─ baselineGrid { enabled=false, color=#cccccc, lineWidth=0.5pt }   VISUAL OVERLAY ONLY
-└─ pageNumbering { format='decimal'|'lower-roman'|'upper-roman'|'lower-alpha'|'upper-alpha', startAt=1 }
+├─ pageNumbering { format='decimal'|'lower-roman'|'upper-roman'|'lower-alpha'|'upper-alpha'|<East Asian style, §10>, startAt=1 }
+└─ binding      'auto'|'left'|'right', default 'auto' (= 'right' when layout.writingMode is 'vertical-rl')   postext ≥ 1.9
 ```
 Gotchas
 - Page 1 is odd (recto). With `mirror: true`, `left` is the spine margin on every page.
+- `binding: 'right'` (vertical Chinese books, by default): page 1 is still the recto but sits on the
+  LEFT of its spread; with `mirror: true` the odd pages carry the inner (`left`) margin on their right.
+  The Sandbox shows spreads `[3 | 2]`, the PDF asks viewers for `/Direction /R2L`. Folio templates do not
+  swap sides by themselves: set odd/even elements for the right edge.
 - For a custom trim size set `sizePreset: 'custom'` + width/height (width/height alone also win).
 - The **baseline grid itself is always on**: pitch = `bodyText.fontSize × bodyText.lineHeight`
   (em) or the absolute `lineHeight`. `page.baselineGrid` only draws it.
@@ -168,7 +175,8 @@ layout
 ├─ hugClosingFloats   boolean                                default true   closing page: page-wide floats below the last text move up under it
 ├─ inlineResourceGap  'around' | 'above'                     default 'around'  (a preset without configVersion ≥ 5 reads 'above')
 ├─ inlineResourceGapInBoxes boolean                          default true  (a preset below configVersion 6 reads false)
-└─ boxChildSplitMinLines number                              default 2  lines of a paragraph/item a box cut leaves per side (a preset below configVersion 6 with a :::callout reads 1)
+├─ boxChildSplitMinLines number                              default 2  lines of a paragraph/item a box cut leaves per side (a preset below configVersion 6 with a :::callout reads 1)
+└─ writingMode        'horizontal-tb' | 'vertical-rl'         default 'horizontal-tb'   postext ≥ 1.9; a heading style's layout may set its own
 ```
 Geometry:
 - `double`: two equal columns, `colW = (contentW − gutter)/2`.
@@ -201,6 +209,13 @@ Geometry:
   below `"configVersion": 6` gets `1` when a chapter opens a `:::callout`.
 - `columnRule` stops under a page-span heading's band (it starts where the text starts). A heading
   style's `layout.columnRule` is drawn on its section's pages; its unset fields take the document's.
+- `writingMode: 'vertical-rl'`: the page is laid out as a horizontal page turned a quarter turn clockwise.
+  Lines are columns read from the right; a layout column is a **tier** stacked top to bottom (`double` = two
+  tiers, the column rule horizontal between them, not balanced at a chapter end unless
+  `headings.balancing.enabled`); the flow's "top" is the sheet's right edge (openers, top floats), footnotes at
+  the left end of each tier; figures and tables stand upright with horizontal captions and cells
+  (`placement.rotate` is ignored there, warning `rotateIgnoredVertical`); running heads and folios stay
+  horizontal on the sheet. `page.margins` keep their sheet names.
 - `hugClosingFloats: false` leaves a `position: 'bottom'` float at the foot of a chapter's closing
   page, as on every other page (default: it moves up to sit one float gap under the last text).
 
@@ -309,6 +324,7 @@ headings
                                        when advancedDesign renders the level: design text has its own)
   textTransform: 'none'|'uppercase'    'none' (length-preserving; number prefix kept as written)
   numberingTemplate: string            ''  → no automatic number
+  numberSeparator: string              ' ' between the number and the title ('　' U+3000 or '' in Chinese: 第一回　回目)
   breakBefore: { enabled: boolean, parity: 'any'|'odd'|'even'|'always-odd'|'always-even' }
   span: 'column'|'page'                'column'
   advancedDesign: { enabled: boolean, slot: DesignSlot, minHeight?: Dimension(abs) }
@@ -326,8 +342,11 @@ headings
 - `numberingTemplate` tokens: `{1}`…`{6}` = counter of that level, optional style suffix
   `{1:I}` upper roman, `{1:i}` lower roman, `{1:A}`/`{1:a}` alpha, `{1:01}` zero-padded,
   `{1:words}`/`{1:Words}`/`{1:WORDS}` spelled out, `{1:ordinal}`/`{1:Ordinal}`/`{1:ORDINAL}`
-  ordinal words (English or Spanish by `locale`, else the hyphenation locale; other languages
-  take English); other text literal; `\{` escapes. Empty counters collapse with their separator.
+  ordinal words (English or Spanish by `locale`, else the hyphenation locale; Chinese documents: 十二 and
+  第十二; other languages take English); other text literal; `\{` escapes. Chinese numerals (≥ 1.9):
+  `{1:一}` informal in the document's script (`第{1:一}回` → 第一回 … 第一百二十回), `{1:〇}` cjk-decimal
+  (一二〇), `{1:壹}` financial, `{1:①}` circled, `{1:甲}` stems, `{1:子}` branches, `{1:１}` fullwidth, or a
+  CSS name (`{1:trad-chinese-informal}`). Design placeholder `{numberHan}`: the counter in informal numerals. Empty counters collapse with their separator.
   A heading line's `{startAt=N}` sets its level counter to N instead of advancing it.
   The number is prepended to the title **followed by one space**,
   e.g. `'{1}.{2}'` → "2.3 Title"; `'Chapter {1}.'` → "Chapter 2. Title". It also feeds `{number}`
@@ -453,7 +472,8 @@ placement: {
   anchor: { to: 'container'|'page'|'bleed'|'#elementId',
             edge: container edges 'top-left'|'top'|'top-right'|'left'|'center'|'right'|'bottom-left'|'bottom'|'bottom-right'
                   element edges  'right-of'|'left-of'|'below'|'above'|'align-top'|'align-bottom'|'align-left'|'align-right' },
-  offset?: { x?: Dimension(abs), y?: Dimension(abs) },   // screen direction: +x right, +y DOWN (not "inward")
+  offset?: { x?: Dimension(abs), y?: Dimension(abs) },   // screen direction: +x right, +y DOWN (not "inward");
+                                                         // a TEXT element's offset may be in em of its own size (≥ 1.9)
   size?: { width?: 'auto'|'fill'|Dimension, height?: 'auto'|'fill'|Dimension, maxWidth?: 'auto'|'fill'|Dimension }
 }
 ```
@@ -466,7 +486,11 @@ placement: {
   edges level; `align-top` and `align-left` are the SAME placement (top-left corners together);
   `align-bottom` = bottom-left corners; `align-right` = top-right corners. No edge puts the
   bottom-right corners together: use `align-bottom` plus an x offset, or anchor the other way.
-- Offsets in em throw — use mm/pt.
+- Offsets in em throw on rule, box and image elements — use mm/pt. A text element takes em of its own
+  `fontSize` (≥ 1.9): the fore-edge head sits `{y: {value: 4, unit: 'em'}}` below the type area.
+- `anchor.to: 'outer'` (header/footer slots, ≥ 1.9): the page's outer margin, from the type area's edge to
+  the trim edge on the side away from the spine, head to foot of the type area; follows parity and
+  `page.binding`.
 
 ### 7.3 Element kinds
 Common: `id` (string, unique in slot; referenced as `'#id'`), `parity: 'all'|'odd'|'even'`
@@ -495,7 +519,9 @@ bottom folio only there). Parity/pages are ignored inside heading slots.
   inlineMarks?: boolean   (read **b** *i* ^sup^ ~sub~ in the resolved text, values included)
   stroke?: { width: Dimension, color?: ColorValue (= text colour), hollow?: boolean }
   reserve?: boolean       (heading slots: false = don't count toward the reserved height)
-  parity?, pages? }
+  parity?, pages?,
+  writingMode?: 'horizontal-tb' | 'vertical-rl'   (≥ 1.9: set top to bottom, lines right to left, in a
+    horizontal slot such as a fore-edge running head; size.height = line length; ignored in a vertical flow) }
 ```
 A newline or the two characters `\n` (in the template or an `{attr.*}` value; not in titles
 or front-matter values, which print as written) always starts a new line, in every `overflow`
@@ -521,7 +547,9 @@ of the page: differs where a chapter starts below other text, for run-on chapter
 (stroke painted inside: its outer edge on the box edge, in canvas, HTML and PDF; radius clamped).
 Use for colour bands, thumb tabs, backdrops.
 
-**image**: `{ kind:'image', id, placement, resourceId, reserve? }` — bitmap/SVG resource
+**image**: `{ kind:'image', id, placement, resourceId, reserve?, decorative? }` — bitmap/SVG resource
+(`decorative: true` keeps an ornament out of the accessible text; otherwise the resource's `altText`, else its
+caption, is the picture's alternative text in HTML and tagged PDF; running-head pictures are always furniture)
 (e.g. logo, cover photo). One of width/height `'auto'` keeps aspect; both set = fit & centre.
 
 ### 7.4 Header/footer defaults
@@ -614,17 +642,25 @@ orderedLists
 ```
 fontFamily = body, color = main-color, fontWeight = 700, italic = false  (number marker)
 numberFormat = 'arabic'|'lower-alpha'|'upper-alpha'|'lower-roman'|'upper-roman'  ('arabic')
+               | East Asian (≥ 1.9): 'simp-chinese-informal' 一 | 'trad-chinese-informal' | 'simp-chinese-formal' 壹
+               | 'trad-chinese-formal' | 'cjk-decimal' 〇 | 'cjk-heavenly-stem' 甲 | 'cjk-earthly-branch' 子
+               | 'circled-decimal' ① | 'fullwidth-decimal' １   (every numbering setting takes them: page labels,
+               resource counterFormat, heading templates, :::numbering)
+prefix = ''   (≥ 1.9) text before the number, in the separator's style: prefix '（' + separator '）' → （一）
 separator = '.', numberFontSize = 1em, gap = 0.5em, indent = 0em, numberVerticalOffset = 0em
 marginTop/Bottom = 1.5em, itemSpacing = 0em, hangingIndent = true, snapTopToGrid = false
 numberWidth = 'run'  ('run' = text after the widest number of the item's own run, so a list broken by a figure or
                       a paragraph can shift its text; 'level' = widest number at that depth in the chapter)
 separatorFontFamily / separatorFontWeight / separatorItalic / separatorColor  → inherit number style
 separatorGap = 0em  (a differing separator style draws the separator as its own run)
-levels[]: { level 1–5, numberFormat, separator, fontFamily, fontSize, color, fontWeight, italic,
+levels[]: { level 1–5, numberFormat, prefix, separator, fontFamily, fontSize, color, fontWeight, italic,
             indent, verticalOffset, separatorFontFamily, separatorFontWeight, separatorItalic,
             separatorColor, separatorGap }
 ```
-Numbers are right-aligned within a run (within the depth with `numberWidth: 'level'`). Around a list nested
+GB/T 15834 list hierarchy for Chinese: levels 一、 / （一） / 1. / （1） / ①:
+`[{level:1,numberFormat:'simp-chinese-informal',separator:'、'}, {level:2,numberFormat:'simp-chinese-informal',prefix:'（',separator:'）'},
+{level:3,numberFormat:'arabic',separator:'.'}, {level:4,numberFormat:'arabic',prefix:'（',separator:'）'}, {level:5,numberFormat:'circled-decimal',separator:''}]`
+(`trad-chinese-informal` in Traditional). Numbers are right-aligned within a run (within the depth with `numberWidth: 'level'`). Around a list nested
 in another the outer list's `itemSpacing` applies on both sides. List margins of 1.5em are large — books usually want
 `{0.5,'em'}` or a pt value. Nested list depth in markdown = 2 spaces per level (max 5).
 
@@ -768,7 +804,8 @@ captionSide?: boolean    caption in the float-only side column, level with the f
 Gotchas
 - **Engine default types follow the document language**: with `resourceTypes` unset, the
   engine uses `defaultResourceTypes(locale)` (else the hyphenation locale; strings exist for
-  en, es, fr, de, it, pt, ca, nl, English otherwise). Older engines used English. Still declare
+  en, es, fr, de, it, pt, ca, nl and Chinese, English otherwise). Chinese: 图/圖 and 表, numbered
+  `{h1}-{n}` (图1-1), continued tables （续）/（續）. Older engines used English. Still declare
   `resourceTypes` explicitly in a preset (and translate per locale via
   `localized.<lang>.config.resourceTypes` in preset.json).
 - Numbering follows first `:ref` in reading order; `{h1}` is the chapter number (continues across chapters in book mode).
@@ -810,6 +847,8 @@ header rows; a cell's own `background` wins; a split table keeps each row's stri
 fontFamily, fontSize, color  → body text (label and description share family+size: engine limit)
 align = 'left' (TextAlign), gap = 0.75em (em = caption size; body↔caption)
 labelBold = true, labelItalic = false, labelColor = color
+labelNumberGap = ' ' (no-break space) between label and number; labelSeparator = '. ' after the number (≥ 1.9)
+   Chinese captions: labelNumberGap '' and labelSeparator '　' (U+3000) → 图1-1　标题
 descriptionItalic = false
 position = 'below' | 'above'
 backgroundEnabled = false, background = main, padding = 0.35em   (bar behind caption)
@@ -890,10 +929,11 @@ What `:::index` prints from the `:index` marks (document-format.md §10.5). An e
 | `main` | `{bold:true}` | `{bold?, italic?}` for `main` pages |
 | `see` | by language, italic | `{label?, alsoLabel?, italic?}`: "See"/"See also", "Véase"/"Véase también"… |
 | `locale` | the document's | collation (Intl.Collator) |
-| `groups.enabled` | `true` | letter heads (A, B…, `0–9`, Symbols) |
+| `groupBy` | `'auto'` | `'letter'` \| `'pinyin'` (Han under the pinyin initial, 贾宝玉 → J) \| `'stroke'` (一畫, 二畫…; 一画… in zh-Hans) \| `'none'` (no heads); `auto` = pinyin for zh / zh-Hans / zh-CN, stroke for zh-Hant / zh-TW / zh-HK, letter otherwise (since 1.9). A polyphonic character read wrongly takes a Han `sort` key with the wanted reading (`sort="崇阳"` for 重阳); a pinyin key sorts after its letter's Han entries |
+| `groups.enabled` | `true` | letter heads (A, B…, `0–9`, Symbols; 数字 / 數字 and 符号 / 符號 in Chinese) |
 | `groups.fontFamily/fontSize/fontWeight/italic/color` | entries', 700 | set on the entries' pitch |
 | `groups.marginTop` | one index line | above each group; none above the first or at a column top |
-| `groups.symbolsLabel` / `numbersLabel` | by language / `'0–9'` | |
+| `groups.symbolsLabel` / `numbersLabel` | by language / `'0–9'` (数字 / 數字 in Chinese) | |
 
 Two columns come from the **heading style** of the index chapter, not from `index`:
 
@@ -908,6 +948,50 @@ Measure the source index like body text: size, leading, indent per level, hangin
 
 ---------------------------------------------------------------------------------
 
+## 19c. `cjk` — East Asian typography (postext ≥ 1.9)
+
+Every field optional; `'auto'` follows the **region** of `locale` (CN/SG/MY mainland, TW Taiwan, HK/MO Hong Kong;
+`zh`, `zh-Hans` → mainland, `zh-Hant` → Taiwan). A paragraph with more CJK characters than word spaces is set
+by the CJK composer (first fit, push-in before push-out, spread between characters); a Latin paragraph quoting
+CJK keeps Knuth–Plass. The guide is docs/chinese-layout-en.mdx (postext.dev/en/docs/chinese-layout).
+
+| key | default (mainland / Taiwan / Hong Kong) | notes |
+|---|---|---|
+| `region` | `'auto'` | `'mainland'` \| `'taiwan'` \| `'hongkong'` |
+| `lineBreak` | `gb` / `basic` / `basic` | `'none'` (break anywhere) \| `'basic'` (no 、，。？！ 」）》 at a line start, no 「（《 at an end) \| `'gb'` (+ solidus) \| `'strict'` (+ —— …… at a start) |
+| `punctuationWidth` | `kaiming` / `fullwidth` / `fullwidth` | `'kaiming'`: 。？！ 1 em inside the line, every other mark ½, all ½ at a line end; `'fullwidth'`; `'lineEndHalf'`; `'halfwidth'` |
+| `compressAdjacent` | on / off / on | two marks that meet (`。」` `》（`) take 1.5 em; a centred TW/HK `。，` before a closing bracket keeps its em |
+| `trimLineStart` | on / off / on | opening bracket at a line start, closing at an end, lose their outer half |
+| `hangingPunctuation` | `'none'` | `'allow'` \| `'force'`: one 、，。． (mainland also ；：？！) past the line end; `'allow'` never in horizontal TW/HK, `'force'` there too |
+| `latinSpacing` | `{0.25, em}` | Han ↔ Latin letter/digit; replaces a typed space; `0` off |
+| `uprightDigits` | `2` | vertical text: numbers of ≤ N digits in one upright cell (0, 2, 3, 4); `:tcy[…]` by hand |
+| `grid` | off | `{enabled, charsPerLine, linesPerPage, show}`: rewrites margins so columns are whole ems and the type area whole lines; configured margins are minimums; warning `cjkGridClamped` |
+| `emphasis` | `'dots'` in a Chinese document | what `*…*` does to Chinese characters (`'italic'` fakes a slant) |
+| `bookTitleMark` | brackets / wavy / wavy | `:book[…]` prints 《》, a wavy line under it, or `'none'` |
+| `annotationColor` | text colour | dots and name/title lines |
+| `ruby` | `{fontSize: 0.5em, position: 'auto'}` | `fontFamily`, `fontSize`, `color`, `position`: zhuyin right of each character, pinyin over (right in vertical) |
+| `warichu` | `{fontSize: 0.5em}` | `fontSize`, `color`, `open`, `close` (brackets around each note) |
+
+Content warnings to expect: `cjkLooseLine` (a justified line needing more than ½ em between characters, set
+short), `cjkMarksExceedLeading` / `rubyExceedsLeading` (line gap under ½ em with marks on one side, ⅝ with both;
+give annotated text more leading), `fullwidthMarkup`, `attributeKeyInvalid`, `rotateIgnoredVertical`; config
+warning `cjkGridClamped`; PDF warnings `missingGlyph`, `variableFontDefaultInstance`, `cffEmbeddedWhole`.
+
+```json
+"locale": "zh-Hant-TW",
+"layout": { "layoutType": "single", "writingMode": "vertical-rl" },
+"page": { "pageNumbering": { "format": "trad-chinese-informal" } },
+"bodyText": { "fontFamily": "Noto Serif TC", "fontSize": {"value": 10.5, "unit": "pt"}, "lineHeight": {"value": 18, "unit": "pt"},
+  "textAlign": "justify", "firstLineIndent": {"value": 2, "unit": "em"} },
+"headings": { "fontFamily": "Noto Serif TC", "levels": [ { "level": 1, "numberingTemplate": "第{1:一}回", "numberSeparator": "　",
+  "breakBefore": {"enabled": true, "parity": "odd"} } ] },
+"cjk": { "grid": { "enabled": true, "charsPerLine": 38 } }
+```
+
+Fore-edge running heads for a vertical book (the Sandbox's **Header › Fore-edge heads (vertical)**): two text
+elements with `writingMode: 'vertical-rl'`, anchored `{to: 'outer', edge: 'top'}` (offset y 4 em, `{chapterTitle}`)
+and `{to: 'outer', edge: 'bottom'}` (offset y −5 em, `{pageNumber}`), at 80 % of the body size.
+
 ## 20. Fonts — `customFonts` and what goes in preset.json
 
 `CustomFontFamily = { name, variants: [{ weight 100–900, style 'normal'|'italic', fileId, format 'woff2'|'woff'|'ttf'|'otf', fileName? }], redistributable?: boolean (default true) }`.
@@ -915,6 +999,10 @@ Measure the source index like body text: size, leading, indent per level, hangin
 - Needed variants: at least 400/700 normal+italic (else "missing variant" warning); if the book
   uses semibold for bold, provide 600 and set `bodyText.boldFontWeight: 600`.
 - `.woff` is rejected by the PDF backend and skipped by the preset loader — use woff2/ttf/otf.
+- Chinese faces: one static file per weight (a variable font embeds its default instance), TrueType
+  outlines (CFF files are embedded whole), subset to the book's characters with layout features and
+  vertical metrics kept (playbooks E6). No italic variants: a Chinese face has none; the missing-variant
+  note for them is harmless. A face must cover every character: there is no fallback to another family.
 
 **preset.json** — `version: 2` manifest (full reference: project-format.md):
 ```

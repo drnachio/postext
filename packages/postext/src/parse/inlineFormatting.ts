@@ -1,7 +1,9 @@
+import { applyOrientationMarks, markOrientation, stripOrientationMarks } from './orientationMarks';
 import type { InlineLink, InlineSpan, RefCase } from './types';
 import { injectPlaceholderSpans } from './injectSpans';
 import { sliceSpan } from './links';
 import { parseDirectiveAttrs } from './attrs';
+import { applyAnnotationMarks, markAnnotations, stripAnnotations, type QueuedAnnotation } from './annotations';
 
 /** Atomic plain-text placeholder for an inline reference span. One code unit
  *  per `:ref{…}` so `sourceMap` stays 1-to-1 (mirroring the inline-math
@@ -99,9 +101,81 @@ export function titleBreakIndices(text: string): number[] {
   return out;
 }
 
-/** Replace the break placeholder with a space (single-line contexts). */
+/** Han (every plane: `𠀀` is one character in two UTF-16 units), kana, CJK
+ *  punctuation and fullwidth forms: text set without spaces between words
+ *  (Hangul excluded, Korean spaces its words). */
+const CJK_WIDE_RE = /^[\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}\u3000-\u303f\uff00-\uffef]$/u;
+
+/** The dashes and the ellipsis Chinese writes doubled (——, ……): wide next to
+ *  a Chinese character, and nothing of the kind next to Latin text. */
+const CJK_DASH_RE = /^[\u2014\u2015\u2026]$/;
+
+/** Whether `ch` (one character, a surrogate pair included) is Han, kana,
+ *  CJK punctuation or a fullwidth form. */
+export function isCjkWideChar(ch: string | undefined): boolean {
+  return ch !== undefined && CJK_WIDE_RE.test(ch);
+}
+
+/** The character that ends at `at` (exclusive), a surrogate pair whole. */
+export function charBefore(text: string, at: number): string | undefined {
+  if (at <= 0) return undefined;
+  const low = text.charCodeAt(at - 1);
+  if (low >= 0xdc00 && low <= 0xdfff && at >= 2) {
+    const high = text.charCodeAt(at - 2);
+    if (high >= 0xd800 && high <= 0xdbff) return text.slice(at - 2, at);
+  }
+  return text[at - 1];
+}
+
+/** The character that starts at `at`, a surrogate pair whole. */
+export function charFrom(text: string, at: number): string | undefined {
+  const cp = text.codePointAt(at);
+  return cp === undefined ? undefined : String.fromCodePoint(cp);
+}
+
+/** What goes between a text and a suffix set after it (a continued
+ *  caption's or box title's `continuedSuffix`): nothing when the suffix
+ *  opens with a wide character, since Chinese sets `（续）` solid against the
+ *  text and the fullwidth bracket carries its own space; one space
+ *  otherwise (`(cont.)`, after Chinese text too, which keeps a gap before
+ *  Latin). */
+export function suffixJoiner(suffix: string): '' | ' ' {
+  return isCjkWideChar(charFrom(suffix, 0)) ? '' : ' ';
+}
+
+/** Whether two characters meet as Chinese or Japanese text does: both wide,
+ *  or a Chinese dash or ellipsis beside a wide one. */
+export function joinsWide(before: string | undefined, after: string | undefined): boolean {
+  if (before === undefined || after === undefined) return false;
+  const a = isCjkWideChar(before);
+  const b = isCjkWideChar(after);
+  return (a && b) || (a && CJK_DASH_RE.test(after)) || (b && CJK_DASH_RE.test(before));
+}
+
+/** Replace the break placeholder with a space (single-line contexts): an
+ *  ideographic space (U+3000) between two Chinese or Japanese characters,
+ *  so a couplet title `甄士隱夢幻識通靈 \\ 賈雨村風塵懷閨秀` reads
+ *  `甄士隱夢幻識通靈　賈雨村風塵懷閨秀` in the column, the contents and the
+ *  running heads (and `「紅樓夢」 \\ ——序` reads `「紅樓夢」　——序`); one
+ *  space anywhere else. One character for one, so the source map holds. */
 export function flattenTitleBreaks(text: string): string {
-  return text.replace(/\u2028/g, ' ');
+  if (!text.includes('\u2028')) return text;
+  return text.replace(/\u2028/g, (_m, at: number) => (joinsWide(charBefore(text, at), charFrom(text, at + 1)) ? '\u3000' : ' '));
+}
+
+/** {@link flattenTitleBreaks} over a block's spans, read against the whole
+ *  `text` (the spans' texts joined): a break at a span's edge sees both of
+ *  its neighbours. Maths spans are kept as they are. */
+export function flattenTitleBreakSpans<T extends { text: string; math?: unknown }>(text: string, spans: readonly T[]): T[] {
+  const flat = flattenTitleBreaks(text);
+  const aligned = spans.map((s) => s.text).join('') === text;
+  let at = 0;
+  return spans.map((s) => {
+    const from = at;
+    at += s.text.length;
+    if (s.math) return s;
+    return { ...s, text: aligned ? flat.slice(from, at) : flattenTitleBreaks(s.text) };
+  });
 }
 
 /** Insert `\n` at the recorded break indices when the (possibly uppercased
@@ -335,8 +409,15 @@ export function injectRefSpans(spans: InlineSpan[], refs: RefMeta[]): InlineSpan
 const ESCAPE_RE = /\\([*_^~`])/g;
 const ESCAPE_BASE = 0xe100;
 const ESCAPED_RE = /[\ue100-\ue17f]/g;
+/** The faces `^_^` and `^o^` (#181) stay text, protected like escapes so
+ *  that no marker scanner reads their carets or underscore: two `^_^` on a
+ *  line must not pair their underscores into italics. `^o^` after a letter,
+ *  a digit or a full stop is a superscript (`n.^o^`, `1^o^`). */
+const CARET_FACE_RE = /\^_\^|(?<![A-Za-z0-9.])\^[oO]\^/g;
+const protectChar = (c: string): string => String.fromCharCode(ESCAPE_BASE + c.charCodeAt(0));
 export function protectEscapes(text: string): string {
-  return text.replace(ESCAPE_RE, (_, c: string) => String.fromCharCode(ESCAPE_BASE + c.charCodeAt(0)));
+  const escaped = text.replace(ESCAPE_RE, (_, c: string) => protectChar(c));
+  return escaped.includes('^') ? escaped.replace(CARET_FACE_RE, (face) => face.replace(/./g, protectChar)) : escaped;
 }
 export function restoreEscapes(text: string): string {
   return text.replace(ESCAPED_RE, (m) => String.fromCharCode(m.charCodeAt(0) - ESCAPE_BASE));
@@ -397,13 +478,23 @@ function applySmallCapsMarks(spans: InlineSpan[]): InlineSpan[] {
   return out;
 }
 
+/** A letter or digit that keeps an `_` beside it from opening or closing
+ *  emphasis. Chinese, Japanese and Korean letters do not: they are written
+ *  without spaces, so `中文__粗体__中文` is bold (the CJK-friendly emphasis
+ *  rule, #181). A `_` does too, so a `__` that is not bold never turns into
+ *  a single-underscore italic (`foo__bar__baz` stays text). */
+const UNDERSCORE_BLOCKER = '(?:_|(?![\\p{sc=Han}\\p{sc=Hira}\\p{sc=Kana}\\p{sc=Hang}])[\\p{L}\\p{N}])';
 /** `_` opens or closes emphasis only at a word boundary (CommonMark): an
  *  underscore between two letters or digits — a URL's `SR_AIR_EN.pdf`, a
  *  `snake_case` name — is text. `*` still works inside a word. */
-const UNDERSCORE_OPEN = '(?<![\\p{L}\\p{N}])';
-const UNDERSCORE_CLOSE = '(?![\\p{L}\\p{N}])';
-const UNDERSCORE_BOLD_RE = new RegExp(`${UNDERSCORE_OPEN}__(.+?)__${UNDERSCORE_CLOSE}`, 'gu');
-const UNDERSCORE_ITALIC_RE = new RegExp(`${UNDERSCORE_OPEN}_(.+?)_${UNDERSCORE_CLOSE}`, 'gu');
+const UNDERSCORE_OPEN = `(?<!${UNDERSCORE_BLOCKER})`;
+const UNDERSCORE_CLOSE = `(?!${UNDERSCORE_BLOCKER})`;
+/** `n` underscores opening a run: not one of a longer row. */
+const underscores = (n: number): string => `${UNDERSCORE_OPEN}${'_'.repeat(n)}(?!_)`;
+/** `n` underscores closing a run. */
+const underscoresClose = (n: number): string => `(?<!_)${'_'.repeat(n)}${UNDERSCORE_CLOSE}`;
+const UNDERSCORE_BOLD_RE = new RegExp(`${underscores(2)}(.+?)${underscoresClose(2)}`, 'gu');
+const UNDERSCORE_ITALIC_RE = new RegExp(`${underscores(1)}(.+?)${underscoresClose(1)}`, 'gu');
 
 /** Left where markup was taken out — an image, the backticks of inline
  *  code, and here also a link, small caps or an emphasis marker — so that
@@ -454,20 +545,24 @@ export function trimSpans(spans: InlineSpan[]): InlineSpan[] {
   return out;
 }
 
-/** `spans` set plain: bold, italic, scripts, small capitals and links
- *  dropped, adjacent text spans merged — a heading's spans as they were
- *  built before headings read inline marks (`headings.inlineMarks:
- *  false`). Formulas, references and swatches keep their own spans. */
+/** `spans` set plain: bold, italic, scripts, small capitals, links and the
+ *  Chinese marks (emphasis dots, proper-name and book-title marks) dropped,
+ *  adjacent text spans merged — a heading's spans as they were built before
+ *  headings read inline marks (`headings.inlineMarks: false`). Formulas,
+ *  references, swatches, ruby and warichu notes keep their own spans, and
+ *  so do characters the layout added (a book title's 《》). */
 export function plainSpans(spans: readonly InlineSpan[]): InlineSpan[] {
   const out: InlineSpan[] = [];
   let changed = false;
   for (const span of spans) {
-    const { script, smallCaps, links, bold, italic, ...rest } = span;
-    if (script || smallCaps || links || bold || italic) changed = true;
+    const { script, smallCaps, links, bold, italic, emphasisMark, properName, bookTitle, ...rest } = span;
+    if (script || smallCaps || links || bold || italic || emphasisMark || properName !== undefined || bookTitle) changed = true;
     const plain: InlineSpan = { ...rest, bold: false, italic: false };
-    const special = plain.math || plain.mathRender || plain.swatch || plain.ref || plain.chip || plain.captionLabel || plain.footnote;
+    // A run set upright or sideways in vertical text keeps its span: the
+    // mark is about how it stands, not a style.
+    const special = plain.math || plain.mathRender || plain.swatch || plain.ref || plain.chip || plain.captionLabel || plain.footnote || plain.combineUpright || plain.orientation || plain.ruby || plain.warichu || plain.inserted;
     const last = out[out.length - 1];
-    const lastSpecial = last && (last.math || last.mathRender || last.swatch || last.ref || last.chip || last.captionLabel || last.footnote);
+    const lastSpecial = last && (last.math || last.mathRender || last.swatch || last.ref || last.chip || last.captionLabel || last.footnote || last.combineUpright || last.orientation || last.ruby || last.warichu || last.inserted);
     if (!special && last && !lastSpecial) {
       out[out.length - 1] = { ...last, text: last.text + plain.text };
       changed = true;
@@ -485,7 +580,7 @@ export function plainSpans(spans: readonly InlineSpan[]): InlineSpan[] {
 export function stripInlineFormatting(text: string): string {
   const b = MARKUP_BOUNDARY;
   const wrap = (_: string, inner: string): string => b + inner + b;
-  return restoreEscapes(replaceLinkSyntax(replaceLinkSyntax(protectEscapes(text), true, () => b), false, (label) => b + label + b)
+  return restoreEscapes(stripOrientationMarks(replaceLinkSyntax(replaceLinkSyntax(stripAnnotations(protectEscapes(text), b), true, () => b), false, (label) => b + label + b), b)
     .replace(INLINE_SMALLCAPS_RE, (_, inner: string) => b + unescapeBrackets(inner) + b) // small caps
     .replace(/`(.+?)`/g, wrap)               // inline code
     .replace(/\*\*(.+?)\*\*/g, wrap)          // bold
@@ -498,16 +593,31 @@ export function stripInlineFormatting(text: string): string {
     .trim());
 }
 
+const SUPERSCRIPT = '\\^(\\S(?:[^^\\n]*?\\S)?)\\^';
+/** Chinese and Japanese characters (Han, kana, CJK punctuation, fullwidth
+ *  forms), in a class that needs no `u` flag. */
+const EAST_ASIAN_CHAR = '(?:[\\u3000-\\u30ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uf900-\\ufaff\\uff01-\\uff60]|[\\ud840-\\ud8bf][\\udc00-\\udfff])';
+/** A `~` with an ASCII digit on both sides is a range (`3~5天`, `10~20`):
+ *  it neither opens nor closes a subscript (#181). */
+const TILDE = '(?!(?<=[0-9])~[0-9])~';
+/** A `~` between two Chinese words is a range too (`周一~周五`, `北京~上海`):
+ *  it does not open a subscript. It may close one, so a Han subscript
+ *  still ends before a Han character (`F~合~等于`). */
+const TILDE_OPEN = `(?!(?<=${EAST_ASIAN_CHAR})~${EAST_ASIAN_CHAR})${TILDE}`;
+const SUBSCRIPT = `${TILDE_OPEN}(\\S(?:[^~\\n]*?\\S)?)${TILDE}`;
+
 /** `^text^` (superscript) and `~text~` (subscript): the marked text starts
  *  and ends with a non-space character and carries no other marker of the
- *  same kind, so a stray caret or tilde in prose stays literal. */
-export const SUPERSCRIPT_RE = /\^(\S(?:[^^\n]*?\S)?)\^/g;
-export const SUBSCRIPT_RE = /~(\S(?:[^~\n]*?\S)?)~/g;
+ *  same kind, so a stray caret or tilde in prose stays literal. The faces
+ *  `^_^` and `^o^` never reach them (see `protectEscapes`). */
+export const SUPERSCRIPT_RE = new RegExp(SUPERSCRIPT, 'g');
+export const SUBSCRIPT_RE = new RegExp(SUBSCRIPT, 'g');
+const SCRIPT_RE = new RegExp(`${SUPERSCRIPT}|${SUBSCRIPT}`, 'g');
 
 /** Split a bold / italic run into plain and script spans: `^…^` becomes a
  *  superscript span, `~…~` a subscript one (the markers are dropped). */
 function splitScriptSpans(text: string, bold: boolean, italic: boolean, out: InlineSpan[]): void {
-  const re = /\^(\S(?:[^^\n]*?\S)?)\^|~(\S(?:[^~\n]*?\S)?)~/g;
+  const re = new RegExp(SCRIPT_RE.source, 'g');
   let last = 0;
   let m: RegExpExecArray | null;
   while ((m = re.exec(text)) !== null) {
@@ -683,8 +793,9 @@ function linkDestinationRanges(text: string): Array<readonly [number, number]> {
 }
 
 /** The `{…}` attributes of an inline directive — `:ref{…}`, `:swatch{…}`,
- *  a chip's `:chip[…]{…}` — in group 1: data, never text to break. */
-const DIRECTIVE_ATTRS_RE = /(?::ref|:swatch|:chip\[(?:\\.|[^\]\\\n])+\])(\{[^}\n]*\})/g;
+ *  a chip's `:chip[…]{…}`, an annotation's `:ruby[…]{…}` — in group 1:
+ *  data, never text to break. */
+const DIRECTIVE_ATTRS_RE = /(?::ref|:swatch|:(?:chip|dots|name|book|ruby|warichu)\[(?:\\.|[^\]\\\n])+\])(\{[^}\n]*\})/g;
 
 /**
  * Turn the forced line breaks of a resource snippet ({@link SNIPPET_BREAK_RE})
@@ -778,7 +889,7 @@ function splitItalicSpans(text: string, bold: boolean, forcedItalic: boolean, ou
     if (text.length > 0) splitScriptSpans(text, bold, true, out);
     return;
   }
-  const italicRe = new RegExp(`\\*(.+?)\\*|${UNDERSCORE_OPEN}_(.+?)_${UNDERSCORE_CLOSE}`, 'gu');
+  const italicRe = new RegExp(`\\*(.+?)\\*|${underscores(1)}(.+?)${underscoresClose(1)}`, 'gu');
   let last = 0;
   let m: RegExpExecArray | null;
   while ((m = italicRe.exec(text)) !== null) {
@@ -806,12 +917,18 @@ export function parseInlineFormatting(text: string): InlineSpan[] {
   // run — so a link inside, across or around emphasis never changes how
   // the text splits into spans — and become ranges once the spans exist.
   const hrefs: string[] = [];
-  const cleaned = stripNonEmphasisFormatting(markSmallCaps(protectEscapes(text)), hrefs);
+  // Chinese annotations (`:dots[…]`, `:ruby[…]{rt="…"}`, `{紅樓|hóng|lóu}`…)
+  // become marks around their text, their attributes queued, before the
+  // emphasis scanners run (#193, #194, #195); so do the orientation marks
+  // of vertical text (`:tcy[…]`, `:upright[…]`, `:sideways[…]`, #190),
+  // which may sit inside an annotation.
+  const annotations: QueuedAnnotation[] = [];
+  const cleaned = stripNonEmphasisFormatting(markAnnotations(markOrientation(markSmallCaps(protectEscapes(text))), annotations, restoreEscapes), hrefs);
   const spans: InlineSpan[] = [];
 
   // Triple markers (bold+italic) first, then double (bold) — longest first.
   const boldRe = new RegExp(
-    `\\*\\*\\*(.+?)\\*\\*\\*|${UNDERSCORE_OPEN}___(.+?)___${UNDERSCORE_CLOSE}|\\*\\*(.+?)\\*\\*|${UNDERSCORE_OPEN}__(.+?)__${UNDERSCORE_CLOSE}`,
+    `\\*\\*\\*(.+?)\\*\\*\\*|${underscores(3)}(.+?)${underscoresClose(3)}|\\*\\*(.+?)\\*\\*|${underscores(2)}(.+?)${underscoresClose(2)}`,
     'gu',
   );
   let lastIndex = 0;
@@ -845,6 +962,6 @@ export function parseInlineFormatting(text: string): InlineSpan[] {
   for (const s of spans) if (ESCAPED_RE.test(s.text)) s.text = restoreEscapes(s.text);
   // Small caps first: its marks split spans without moving link ranges,
   // which are taken from the finished spans.
-  const marked = applySmallCapsMarks(dropMarkupBoundaries(spans));
+  const marked = applyAnnotationMarks(applyOrientationMarks(applySmallCapsMarks(dropMarkupBoundaries(spans))), annotations);
   return hrefs.length > 0 ? takeLinkMarks(marked, hrefs) : marked;
 }

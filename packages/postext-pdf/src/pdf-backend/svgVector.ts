@@ -74,7 +74,7 @@ import {
   setTextMatrix,
   stroke,
 } from 'pdf-lib';
-import { type PageCtx, colorFromHex, showTextShaped } from './primitives';
+import { type PageCtx, colorFromHex, textShows } from './primitives';
 
 // ---------------------------------------------------------------- IR types
 
@@ -1516,12 +1516,23 @@ function drawingOps(drawing: VectorDrawing, res: FormResources, colorSpace: Page
         // Text matrix: local → root, then undo the root y-flip so glyphs
         // stand upright, with the pen at the run's baseline start.
         const [a, b, c, d, e, f] = mul(run.matrix, [1, 0, 0, -1, run.x, run.y]);
+        // A face of several files switches font per stretch of characters.
+        const shows = textShows(font, run.text);
+        const body: PDFOperator[] = [];
+        let current = shows[0]!.font;
+        for (const show of shows) {
+          if (show.font !== current) {
+            body.push(setFontAndSize(res.font(show.font), round(run.size)));
+            current = show.font;
+          }
+          body.push(show.op);
+        }
         ops.push(
           setFillingColor(colorFromHex(run.fill.hex, colorSpace)),
           beginText(),
-          setFontAndSize(res.font(font), round(run.size)),
+          setFontAndSize(res.font(shows[0]!.font), round(run.size)),
           setTextMatrix(round(a), round(b), round(c), round(d), round(e), round(f)),
-          showTextShaped(font, run.text),
+          ...body,
           endText(),
           popGraphicsState(),
         );

@@ -74,7 +74,9 @@ export function collectHeadingDesignCuts(doc: VDTDocument): HeadingDesignCut[] {
     // An opener hides the heading block whose design it paints.
     const opener = page.openerBand && !page.partInfo ? headings.find((h) => h.hidden) : undefined;
     if (opener) {
-      const over = textPast(page.openerBand!, page.height - trimOffset);
+      // The flow's foot: a vertical page's flow is as tall as the sheet is
+      // wide (its foot is the sheet's left edge).
+      const over = textPast(page.openerBand!, (page.flow ? page.width : page.height) - trimOffset);
       if (over > 0.5) out.push(cutOf(opener, page.index, 'page', over));
     }
     for (const h of headings) {

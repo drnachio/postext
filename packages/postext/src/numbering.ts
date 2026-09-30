@@ -1,6 +1,37 @@
 import type { ContentBlock } from './parse';
 import { caseWords, numberToWords, type WordsCase } from './numberWords';
 import type { OrderedListNumberFormat } from './types';
+import { localeScript } from './locale';
+import { chineseNumeral, cjkDecimal, circledDecimal, fullwidthDecimal, fixedSymbol, CJK_HEAVENLY_STEMS, CJK_EARTHLY_BRANCHES } from './chineseNumerals';
+
+/** The East Asian numeral styles, named as in CSS Counter Styles 3: Chinese
+ *  numerals in the informal (一百二十) and formal (壹佰贰拾) longhand of
+ *  either script, digit by digit (`cjk-decimal`, 二〇二六), the heavenly
+ *  stems (甲乙丙) and earthly branches (子丑寅), circled (①) and fullwidth
+ *  (１２３) digits. Every numbering setting takes them. */
+export type EastAsianNumeralStyle =
+  | 'simp-chinese-informal'
+  | 'trad-chinese-informal'
+  | 'simp-chinese-formal'
+  | 'trad-chinese-formal'
+  | 'cjk-decimal'
+  | 'cjk-heavenly-stem'
+  | 'cjk-earthly-branch'
+  | 'circled-decimal'
+  | 'fullwidth-decimal';
+
+/** Every {@link EastAsianNumeralStyle}, in the order a picker lists them. */
+export const EAST_ASIAN_NUMERAL_STYLES: readonly EastAsianNumeralStyle[] = Object.freeze([
+  'simp-chinese-informal',
+  'trad-chinese-informal',
+  'simp-chinese-formal',
+  'trad-chinese-formal',
+  'cjk-decimal',
+  'cjk-heavenly-stem',
+  'cjk-earthly-branch',
+  'circled-decimal',
+  'fullwidth-decimal',
+] as const);
 
 export type NumeralStyle =
   | 'decimal'
@@ -8,7 +39,8 @@ export type NumeralStyle =
   | 'upper-alpha'
   | 'lower-alpha'
   | 'upper-roman'
-  | 'lower-roman';
+  | 'lower-roman'
+  | EastAsianNumeralStyle;
 
 /** A counter spelled out in words (heading templates only): cardinal
  *  (`words`) or ordinal (`ordinal`), the case of the suffix picking the
@@ -60,28 +92,57 @@ const NUMBER_FORMAT_NAMES: ReadonlyMap<string, NumberFormatStyle> = new Map<stri
   ['upper-alpha', 'upper-alpha'],
   ['alpha-upper', 'upper-alpha'],
   ['upper-latin', 'upper-alpha'],
+  ...EAST_ASIAN_NUMERAL_STYLES.map((name): [string, NumberFormatStyle] => [name, name]),
+  // CSS keeps `cjk-ideographic` as another name of the traditional informal.
+  ['cjk-ideographic', 'trad-chinese-informal'],
 ]);
 
 /** The one-character tokens of the heading templates (`{1:i}`), which the
- *  format fields accept as well. Case-sensitive: `i` and `I` differ. */
+ *  format fields accept as well. Case-sensitive: `i` and `I` differ. The
+ *  Chinese tokens `一` and `壹` are read apart: they follow the document's
+ *  script (see {@link parseNumberFormat}). */
 const NUMBER_FORMAT_TOKENS: ReadonlyMap<string, NumberFormatStyle> = new Map<string, NumberFormatStyle>([
   ['1', 'decimal'],
   ['i', 'lower-roman'],
   ['I', 'upper-roman'],
   ['a', 'lower-alpha'],
   ['A', 'upper-alpha'],
+  ['〇', 'cjk-decimal'],
+  ['①', 'circled-decimal'],
+  ['甲', 'cjk-heavenly-stem'],
+  ['子', 'cjk-earthly-branch'],
+  ['１', 'fullwidth-decimal'],
 ]);
+
+/** Whether `locale` is written in Traditional characters (`zh-Hant`,
+ *  `zh-TW`, `zh-HK`…). */
+function traditional(locale: string | undefined): boolean {
+  return localeScript(locale) === 'Hant';
+}
+
+/** The informal Chinese style of a document's script: `trad-chinese-informal`
+ *  for a Traditional tag, else `simp-chinese-informal`. What `{1:一}`, the
+ *  `{numberHan}` placeholder and spelled-out Chinese numbers use. */
+export function chineseInformalStyle(locale?: string): 'simp-chinese-informal' | 'trad-chinese-informal' {
+  return traditional(locale) ? 'trad-chinese-informal' : 'simp-chinese-informal';
+}
 
 /**
  * The numeral style a numbering-format value names, in any of the
  * spellings the engine accepts (see `NUMBER_FORMAT_NAMES`: `decimal` /
  * `arabic`, `lower-roman` / `roman-lower` / `i`, `upper-alpha` /
- * `alpha-upper` / `upper-latin` / `A`…; names are case-insensitive).
- * `undefined` for anything else — the caller numbers in decimal.
+ * `alpha-upper` / `upper-latin` / `A`, the CSS names of the East Asian
+ * styles and their one-character tokens `〇`, `①`, `甲`, `子`, `１`…; names
+ * are case-insensitive). `一` and `壹` name the informal and formal Chinese
+ * numerals of the document's script: Traditional when `locale` is
+ * (`zh-Hant`, `zh-TW`…), else Simplified. `undefined` for anything else —
+ * the caller numbers in decimal.
  */
-export function parseNumberFormat(value: unknown): NumberFormatStyle | undefined {
+export function parseNumberFormat(value: unknown, locale?: string): NumberFormatStyle | undefined {
   if (typeof value !== 'string') return undefined;
   const v = value.trim();
+  if (v === '一') return chineseInformalStyle(locale);
+  if (v === '壹') return traditional(locale) ? 'trad-chinese-formal' : 'simp-chinese-formal';
   return NUMBER_FORMAT_TOKENS.get(v) ?? NUMBER_FORMAT_NAMES.get(v.toLowerCase());
 }
 
@@ -91,19 +152,20 @@ export function toOrderedListNumberFormat(style: NumberFormatStyle): OrderedList
 }
 
 /** A template token's style: its own alias, else any format-field
- *  spelling (`{1:roman-lower}`), else decimal. */
-function templateStyle(raw: string): NumeralStyle {
+ *  spelling (`{1:roman-lower}`, `{1:一}` in the script of `locale`), else
+ *  decimal. */
+function templateStyle(raw: string, locale?: string): NumeralStyle {
   const s = raw.trim();
-  return Object.prototype.hasOwnProperty.call(STYLE_ALIASES, s) ? STYLE_ALIASES[s]! : parseNumberFormat(s) ?? 'decimal';
+  return Object.prototype.hasOwnProperty.call(STYLE_ALIASES, s) ? STYLE_ALIASES[s]! : parseNumberFormat(s, locale) ?? 'decimal';
 }
 
 const SPELLED_STYLES = new Set<string>(['words', 'Words', 'WORDS', 'ordinal', 'Ordinal', 'ORDINAL']);
 
-function counterStyleOf(raw: string | undefined): CounterStyle {
+function counterStyleOf(raw: string | undefined, locale?: string): CounterStyle {
   if (!raw) return 'decimal';
   const key = raw.trim();
   if (SPELLED_STYLES.has(key)) return key as SpelledNumeralStyle;
-  return templateStyle(key);
+  return templateStyle(key, locale);
 }
 
 /** A counter value in a template style; spelled-out styles use the
@@ -116,7 +178,9 @@ export function formatCounter(n: number, style: CounterStyle, locale?: string): 
   return caseWords(numberToWords(n, kind, locale), wordsCase, locale);
 }
 
-export function parseTemplate(tpl: string): Token[] {
+/** The tokens of a numbering template. `locale` (the document language)
+ *  decides the script of the `{1:一}` and `{1:壹}` tokens. */
+export function parseTemplate(tpl: string, locale?: string): Token[] {
   const tokens: Token[] = [];
   let buf = '';
   let i = 0;
@@ -147,7 +211,7 @@ export function parseTemplate(tpl: string): Token[] {
       const [rawLevel, rawStyle] = body.split(':');
       const level = Number(rawLevel);
       if (Number.isInteger(level) && level >= 1 && level <= 6) {
-        const style = counterStyleOf(rawStyle);
+        const style = counterStyleOf(rawStyle, locale);
         flush();
         tokens.push({ kind: 'counter', level, style });
         i = end + 1;
@@ -195,7 +259,26 @@ function toRoman(n: number): string {
 }
 
 export function formatNumeral(n: number, style: NumeralStyle): string {
-  if (n <= 0) return '';
+  if (n === 0) {
+    // The positional East Asian styles have a zero; the others print
+    // nothing for it, as before.
+    switch (style) {
+      case 'simp-chinese-informal':
+      case 'trad-chinese-informal':
+      case 'simp-chinese-formal':
+      case 'trad-chinese-formal':
+        return '零';
+      case 'cjk-decimal':
+        return '〇';
+      case 'circled-decimal':
+        return '⓪';
+      case 'fullwidth-decimal':
+        return '０';
+      default:
+        return '';
+    }
+  }
+  if (n < 0) return '';
   switch (style) {
     case 'decimal':
       return String(n);
@@ -209,6 +292,24 @@ export function formatNumeral(n: number, style: NumeralStyle): string {
       return toRoman(n);
     case 'lower-roman':
       return toRoman(n).toLowerCase();
+    case 'simp-chinese-informal':
+      return chineseNumeral(n, 'informal', false);
+    case 'trad-chinese-informal':
+      return chineseNumeral(n, 'informal', true);
+    case 'simp-chinese-formal':
+      return chineseNumeral(n, 'formal', false);
+    case 'trad-chinese-formal':
+      return chineseNumeral(n, 'formal', true);
+    case 'cjk-decimal':
+      return cjkDecimal(n);
+    case 'cjk-heavenly-stem':
+      return fixedSymbol(n, CJK_HEAVENLY_STEMS);
+    case 'cjk-earthly-branch':
+      return fixedSymbol(n, CJK_EARTHLY_BRANCHES);
+    case 'circled-decimal':
+      return circledDecimal(n);
+    case 'fullwidth-decimal':
+      return fullwidthDecimal(n);
     default:
       // A style from outside the type (a hand-written config, a stale
       // continuation) numbers in decimal rather than printing "undefined".
@@ -243,7 +344,9 @@ export function renderCounterTemplate(pieces: RenderPiece[]): string {
         continue;
       }
       if (prev.length > 0 && work[i - 1]?.kind === 'literal') {
-        out = out.replace(/[^A-Za-z0-9]+$/, '');
+        // Punctuation and spaces go; letters and numerals of any script
+        // stay (第 before a missing counter is text, not a separator).
+        out = out.replace(/[^\p{L}\p{N}]+$/u, '');
       }
       continue;
     }
@@ -433,7 +536,7 @@ export function computeHeadingNumbering(
   const tokensOf = (tpl: string): Token[] | null => {
     let tokens = parsed.get(tpl);
     if (tokens === undefined) {
-      tokens = tpl.length > 0 ? parseTemplate(tpl) : null;
+      tokens = tpl.length > 0 ? parseTemplate(tpl, options.locale) : null;
       parsed.set(tpl, tokens);
     }
     return tokens;

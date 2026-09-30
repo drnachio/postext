@@ -1,13 +1,33 @@
 import type { VDTBlock, VDTDocument, VDTLine, VDTPage } from './vdt';
 import { DEFAULT_DEBUG_CONFIG } from './defaults/debug';
 
+const FONT_SIZE_RE = /(\d*\.?\d+)px/;
+
+/**
+ * How loosely a line is set, as a word-space ratio: its
+ * `justifiedSpaceRatio`, or, for a CJK line spread between its characters
+ * (segment `tracking`), `1 + tracking / (⅛ em)` — at the default threshold
+ * of 3, a line whose characters are spread by more than ¼ em is loose. The
+ * larger of the two when a line has both; undefined when it has neither.
+ * `fontSizePx` is the block's text size.
+ */
+export function lineLooseness(line: VDTLine, fontSizePx: number): number | undefined {
+  let tracking = 0;
+  for (const seg of line.segments ?? []) if (seg.tracking !== undefined && seg.tracking > tracking) tracking = seg.tracking;
+  const cjk = tracking > 0 && fontSizePx > 0 ? 1 + tracking / (fontSizePx / 8) : undefined;
+  const spaces = line.justifiedSpaceRatio;
+  if (cjk === undefined) return spaces;
+  return spaces === undefined ? cjk : Math.max(spaces, cjk);
+}
+
 /** A justified line whose word spaces stretch past the loose-line threshold,
  *  with the band the highlight covers. */
 export interface LooseLine {
   block: VDTBlock;
   line: VDTLine;
   /** Applied word-space width over the font's normal space
-   *  (`line.justifiedSpaceRatio`). */
+   *  (`line.justifiedSpaceRatio`); for a CJK line spread between its
+   *  characters, the ratio {@link lineLooseness} gives. */
   ratio: number;
   /** The highlight band, in page pixels: the block's full width across the
    *  line's box. */
@@ -43,8 +63,13 @@ export function findLooseLines(doc: VDTDocument, options: FindLooseLinesOptions 
   const out: LooseLine[] = [];
   for (const block of doc.blocks) {
     if (options.pageIndex !== undefined && block.pageIndex !== options.pageIndex) continue;
+    let fontSizePx: number | undefined;
     for (const line of block.lines) {
-      const ratio = line.justifiedSpaceRatio;
+      let ratio = line.justifiedSpaceRatio;
+      if (line.segments?.some((s) => s.tracking !== undefined)) {
+        fontSizePx ??= Number(FONT_SIZE_RE.exec(block.fontString ?? '')?.[1] ?? 16);
+        ratio = lineLooseness(line, fontSizePx);
+      }
       if (ratio === undefined || ratio <= threshold) continue;
       out.push({
         block,

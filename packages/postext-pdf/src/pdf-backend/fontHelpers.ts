@@ -8,6 +8,20 @@ interface FaceSet {
   boldItalic: string;
 }
 
+/** Font strings and the characters set in each (see {@link collectFontText}). */
+export type FontText = Map<string, Set<number>>;
+
+/** Record that `text` is set in `fontString`; an empty text still records
+ *  the face. */
+function add(out: FontText, fontString: string, text = ''): void {
+  let cps = out.get(fontString);
+  if (!cps) {
+    cps = new Set();
+    out.set(fontString, cps);
+  }
+  for (const ch of text) cps.add(ch.codePointAt(0)!);
+}
+
 /**
  * Collect the fontString of every face the pages paint, walking them the
  * way the renderer does: a block's base face when it sets any line, the
@@ -19,7 +33,20 @@ interface FaceSet {
  * lines of a block drawn through its design overlay, paint nothing.
  */
 export function collectFontStrings(doc: VDTDocument): string[] {
-  const out = new Set<string>();
+  return [...collectFontText(doc).keys()];
+}
+
+/**
+ * {@link collectFontStrings} with the characters set in each face, for a
+ * font provider that serves a family as several files (issue #196). A
+ * block's base face is credited with the whole text of its lines (it paints
+ * the spaces and every plain line), so it may list characters a styled run
+ * sets in another face: the provider may hand over a file that is never
+ * drawn from, which is left out of the PDF. `into` gathers several
+ * documents (the chapters of a book).
+ */
+export function collectFontText(doc: VDTDocument, into: FontText = new Map()): FontText {
+  const out = into;
   for (const page of doc.pages) {
     for (const col of page.columns) {
       for (const block of col.blocks) addBlockFonts(block, out);
@@ -28,10 +55,10 @@ export function collectFontStrings(doc: VDTDocument): string[] {
     for (const block of page.floats ?? []) addBlockFonts(block, out);
     for (const slot of [page.header, page.footer, page.openerBand]) addSlotFonts(slot, out);
   }
-  return [...out];
+  return out;
 }
 
-function addBlockFonts(block: VDTBlock, out: Set<string>): void {
+function addBlockFonts(block: VDTBlock, out: FontText): void {
   if (block.hidden) return;
   // Design overlays (advanced heading designs, callout frames) replace the
   // block's own lines.
@@ -71,8 +98,8 @@ function addBlockFonts(block: VDTBlock, out: Set<string>): void {
     return;
   }
   if (block.type === 'listItem' && block.bulletText && block.bulletFontString && block.bulletOffsetX !== undefined && block.lines[0]) {
-    out.add(block.bulletFontString);
-    if (block.separatorText && block.separatorX !== undefined) out.add(block.separatorFontString ?? block.bulletFontString);
+    add(out, block.bulletFontString, block.bulletText);
+    if (block.separatorText && block.separatorX !== undefined) add(out, block.separatorFontString ?? block.bulletFontString, block.separatorText);
   }
   addLinesFonts(block.lines, {
     normal: block.fontString,
@@ -84,31 +111,41 @@ function addBlockFonts(block: VDTBlock, out: Set<string>): void {
 
 /** The faces a run of lines paints: the base face (spaces, plain lines)
  *  once any line sets something, then each text segment's pick. */
-function addLinesFonts(lines: readonly VDTLine[] | undefined, faces: FaceSet, out: Set<string>): void {
+function addLinesFonts(lines: readonly VDTLine[] | undefined, faces: FaceSet, out: FontText): void {
   for (const line of lines ?? []) {
     const segments = line.segments ?? [];
     if (line.text.length === 0 && segments.length === 0) continue;
-    out.add(faces.normal);
+    add(out, faces.normal, line.text);
     for (const seg of segments) {
-      if (seg.kind === 'space' || seg.kind === 'math' || seg.kind === 'swatch') continue;
-      // A chip may set its own family; its runs carry their faces.
-      if (seg.chip) {
-        for (const run of seg.chip.runs) if (run.text) out.add(run.fontString);
+      if (seg.kind === 'space' || seg.kind === 'math' || seg.kind === 'swatch') {
+        if (seg.kind === 'space') add(out, faces.normal, seg.text);
         continue;
       }
+      // A chip may set its own family; its runs carry their faces.
+      if (seg.chip) {
+        for (const run of seg.chip.runs) if (run.text) add(out, run.fontString, run.text);
+        continue;
+      }
+      // A warichu note paints its rows; a ruby base its reading too.
+      if (seg.warichu) {
+        for (const run of seg.warichu.runs) if (run.text) add(out, run.fontString, run.text);
+        continue;
+      }
+      if (seg.ruby) for (const run of seg.ruby.runs) if (run.text) add(out, run.fontString, run.text);
       if (!seg.text) continue;
-      out.add(seg.fontString ?? pickFace(!!seg.bold, !!seg.italic, faces));
+      add(out, seg.fontString ?? pickFace(!!seg.bold, !!seg.italic, faces), seg.text);
     }
   }
 }
 
-function addSlotFonts(slot: VDTDesignSlot | undefined, out: Set<string>): void {
+function addSlotFonts(slot: VDTDesignSlot | undefined, out: FontText): void {
   for (const b of slot?.blocks ?? []) {
     if (b.kind !== 'text' || !b.lines.some((l) => l.text.length > 0)) continue;
-    out.add(b.fontString);
-    // Inline-mark runs: bold, italic, a script at the reduced size.
+    add(out, b.fontString);
     for (const line of b.lines) {
-      for (const run of line.runs ?? []) if (run.text) out.add(run.fontString);
+      add(out, b.fontString, line.text);
+      // Inline-mark runs: bold, italic, a script at the reduced size.
+      for (const run of line.runs ?? []) if (run.text) add(out, run.fontString, run.text);
     }
   }
 }

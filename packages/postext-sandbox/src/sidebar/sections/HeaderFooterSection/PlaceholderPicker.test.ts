@@ -47,5 +47,6 @@ describe('PlaceholderPicker', () => {
     const shown = buttonLabels('heading', DEFAULT_LABELS);
     expect(shown.get('numberWords')).toBe(DEFAULT_LABELS.headerFooterPlaceholderNumberWords);
     expect(shown.get('numberOrdinalWordsLower')).toBe(DEFAULT_LABELS.headerFooterPlaceholderNumberOrdinalWordsLower);
+    expect(shown.get('numberHan')).toBe(DEFAULT_LABELS.headerFooterPlaceholderNumberHan);
   });
 });

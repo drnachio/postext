@@ -104,7 +104,14 @@ export function pageImages(recipe: RecipeMedia, locale: Locale): PageImage[] {
   });
 }
 
-/** The published pages as spreads ([verso, recto]; page 1 alone on the right). */
+/** The edge the edition's book is bound on: `"right"` when its capture
+ *  says so (the light table then lays the spreads out mirrored). */
+export function spreadBinding(recipe: RecipeMedia, locale: Locale): "left" | "right" {
+  return captureVariantFor(recipe, locale)?.data.binding === "right" ? "right" : "left";
+}
+
+/** The published pages as spreads ([verso, recto]; page 1 alone), in
+ *  reading order: a right-bound book shows each pair mirrored. */
 export function spreadImages(recipe: RecipeMedia, locale: Locale): [PageImage | null, PageImage | null][] {
   const hit = captureVariantFor(recipe, locale);
   if (!hit) return [];

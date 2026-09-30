@@ -87,9 +87,13 @@ export function buildPagesDom(
     rowDiv.style.boxSizing = 'border-box';
     rowDiv.style.minHeight = `${displayHeight + paddingTop + paddingBottom}px`;
     rowDiv.dataset.pageRow = '1';
+    // A right-bound book reads its spreads right to left: [3 | 2], the
+    // first page alone on the left of the spine.
+    if (isSpread && doc.binding === 'right') rowDiv.style.flexDirection = 'row-reverse';
 
     if (isSpread && row.length === 1) {
-      // A lone page keeps its side of the spread: a recto on the right.
+      // A lone page keeps its side of the spread: a recto on the right (on
+      // the left in a right-bound book, the row being reversed).
       const pageIndex = row[0]!;
       const recto = isRecto(pageIndex);
       if (recto) rowDiv.appendChild(buildSpacer());

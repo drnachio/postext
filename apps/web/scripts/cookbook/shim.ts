@@ -136,8 +136,21 @@ if (typeof window.FontFace === 'function' && !window.FontFace.__cb) {
   window.FontFace = Recorded;
 }
 
+/** The faces loaded when a layout starts ([family, weight, style,
+ *  unicodeRange]): the probe tells a CJK file that loaded after the layout
+ *  (measured in a fallback face) from one the layout used. */
+function loadedFaces() {
+  const out = [];
+  if (typeof document === 'undefined') return null;
+  for (const face of document.fonts) {
+    if (face.status === 'loaded') out.push([face.family.replace(/^['"]|['"]$/g, ''), face.weight, face.style, face.unicodeRange]);
+  }
+  return out;
+}
+
 /** A finished build: { kind, shim, content, config, docs, ms, at }. */
 export function record(entry) {
+  if (!('fonts' in entry)) entry.fonts = cb.fontsAtBegin ?? null;
   entry.index = cb.builds.length;
   for (const doc of entry.docs) if (doc && typeof doc === 'object') known.add(doc);
   cb.builds.push(entry);
@@ -145,13 +158,13 @@ export function record(entry) {
   return entry;
 }
 
-export function begin() { cb.pending++; return performance.now(); }
+export function begin() { cb.pending++; cb.fontsAtBegin = loadedFaces(); return performance.now(); }
 export function end() { cb.pending = Math.max(0, cb.pending - 1); cb.lastBuildAt = performance.now(); }
 
 /** A document painted without a recorded build (a worker's, H6). */
 export function seen(doc, shim) {
   if (!doc || typeof doc !== 'object' || !Array.isArray(doc.pages) || known.has(doc)) return;
-  record({ kind: 'rendered', shim, content: null, config: null, docs: [doc], ms: 0, at: performance.now() });
+  record({ kind: 'rendered', shim, content: null, config: null, docs: [doc], ms: 0, at: performance.now(), fonts: null });
 }
 `;
 
@@ -221,7 +234,7 @@ export function createLayoutWorker(...args) {
     const t0 = begin();
     return build.call(this, content, config, options).then((doc) => {
       end();
-      if (doc) record({ kind: 'worker', shim: 'postext', content, config, docs: [doc], ms: performance.now() - t0, at: t0 });
+      if (doc) record({ kind: 'worker', shim: 'postext', content, config, docs: [doc], ms: performance.now() - t0, at: t0, fonts: null });
       return doc;
     }, (error) => { end(); throw error; });
   };

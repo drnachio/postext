@@ -1,5 +1,5 @@
 import type { PostextConfig, ResourceType } from '../types';
-import { languageOf, presentTag } from '../locale';
+import { presentTag, stringsFor } from '../locale';
 
 /** Localised display strings for a built-in resource type. The numbering
  *  behaviour (template, reset, counter format) is language-independent and
@@ -12,9 +12,11 @@ interface ResourceTypeStrings {
 }
 
 /** Per-language strings for the two built-in types, one per bundled
- *  hyphenation language. English is the fallback for any locale not listed
- *  here. Add a language by adding a key. */
-const BUILTIN_TYPE_STRINGS: Record<string, { figure: ResourceTypeStrings; table: ResourceTypeStrings }> = {
+ *  hyphenation language plus Chinese in each script (keyed by
+ *  `stringsKeyOf`). English is the fallback for any locale not listed here.
+ *  Add a language by adding a key. A language may also number its figures
+ *  its own way (`numberingTemplate`, the house style being `{h1}.{n}`). */
+const BUILTIN_TYPE_STRINGS: Record<string, { figure: ResourceTypeStrings; table: ResourceTypeStrings; numberingTemplate?: string }> = {
   en: {
     figure: { name: 'Figure', namePlural: 'Figures', shortLabel: 'Fig.', captionPrefix: 'Figure' },
     table: { name: 'Table', namePlural: 'Tables', shortLabel: 'Tab.', captionPrefix: 'Table' },
@@ -47,12 +49,23 @@ const BUILTIN_TYPE_STRINGS: Record<string, { figure: ResourceTypeStrings; table:
     figure: { name: 'Figuur', namePlural: 'Figuren', shortLabel: 'Fig.', captionPrefix: 'Figuur' },
     table: { name: 'Tabel', namePlural: 'Tabellen', shortLabel: 'Tab.', captionPrefix: 'Tabel' },
   },
+  // Chinese numbers figures by chapter with a hyphen: 图1-1, 表2-3.
+  'zh-hans': {
+    figure: { name: '图', namePlural: '图', shortLabel: '图', captionPrefix: '图' },
+    table: { name: '表', namePlural: '表', shortLabel: '表', captionPrefix: '表' },
+    numberingTemplate: '{h1}-{n}',
+  },
+  'zh-hant': {
+    figure: { name: '圖', namePlural: '圖', shortLabel: '圖', captionPrefix: '圖' },
+    table: { name: '表', namePlural: '表', shortLabel: '表', captionPrefix: '表' },
+    numberingTemplate: '{h1}-{n}',
+  },
 };
 
 /** Resolve a (possibly regional) locale tag like `es-ES` or `pt_BR` to a
  *  strings entry, falling back to English. */
-function stringsForLocale(locale: string): { figure: ResourceTypeStrings; table: ResourceTypeStrings } {
-  return BUILTIN_TYPE_STRINGS[languageOf(locale)] ?? BUILTIN_TYPE_STRINGS.en!;
+function stringsForLocale(locale: string): { figure: ResourceTypeStrings; table: ResourceTypeStrings; numberingTemplate?: string } {
+  return stringsFor(BUILTIN_TYPE_STRINGS, locale);
 }
 
 /** The document language the built-in strings follow: `config.locale`, else
@@ -64,23 +77,24 @@ export function documentLocale(config: PostextConfig | undefined): string {
 
 /** Built-in resource types provided when a config does not define its own,
  *  localised to `locale` (defaults to English). Both reset their counter on
- *  every `h1` and number as `{h1}.{n}` (e.g. "Figure 2.3"), using decimal
- *  counters. New objects are returned on every call so callers may freely
- *  mutate the result. */
+ *  every `h1` and number as `{h1}.{n}` (e.g. "Figure 2.3"), or `{h1}-{n}` in
+ *  Chinese ("图 2-3"), using decimal counters. New objects are returned on
+ *  every call so callers may freely mutate the result. */
 export function defaultResourceTypes(locale = 'en'): ResourceType[] {
   const s = stringsForLocale(locale);
+  const numberingTemplate = s.numberingTemplate ?? '{h1}.{n}';
   return [
     {
       id: 'figure',
       ...s.figure,
-      numberingTemplate: '{h1}.{n}',
+      numberingTemplate,
       resetOn: 'h1',
       counterFormat: 'decimal',
     },
     {
       id: 'table',
       ...s.table,
-      numberingTemplate: '{h1}.{n}',
+      numberingTemplate,
       resetOn: 'h1',
       counterFormat: 'decimal',
     },

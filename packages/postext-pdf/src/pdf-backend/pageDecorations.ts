@@ -9,12 +9,13 @@ import {
   popGraphicsState,
   pushGraphicsState,
   setLineWidth,
+  setStrokingColor,
   stroke,
   type PDFDocument,
   type PDFPage,
   type PDFRef,
 } from 'pdf-lib';
-import type { VDTDocument, VDTPage, VDTColumn, BoundingBox } from 'postext';
+import type { VDTDocument, VDTPage, VDTColumn, BoundingBox, CjkGridCells } from 'postext';
 import { dimensionToPx, columnRuleSegments, cropMarkSegments, footnoteRuleSegments } from 'postext';
 import { type PageCtx, drawLinePx, colorFromHex } from './primitives';
 
@@ -41,6 +42,34 @@ export function renderBaselineGrid(
     drawLinePx(ctx, contentArea.x, y, right, y, color, lineWidthPx);
     y += baselineIncrement;
   }
+}
+
+/** The character grid (稿纸) over the type area, when a render asks for it
+ *  (`RenderToPdfOptions.characterGrid`): one light grey square per
+ *  character position, in one path. */
+export function renderCharacterGrid(ctx: PageCtx, cells: CjkGridCells): void {
+  const { scale, pageHeightPt } = ctx;
+  const ops: PDFOperator[] = [];
+  const line = (x1: number, y1: number, x2: number, y2: number): void => {
+    ops.push(moveTo(x1 * scale, pageHeightPt - y1 * scale), lineTo(x2 * scale, pageHeightPt - y2 * scale));
+  };
+  const { cell } = cells;
+  cells.columns.forEach((x0, c) => {
+    const chars = cells.columnChars[c] ?? cells.chars;
+    for (const y of cells.rows) {
+      line(x0, y, x0 + chars * cell, y);
+      line(x0, y + cell, x0 + chars * cell, y + cell);
+      for (let i = 0; i <= chars; i++) line(x0 + i * cell, y, x0 + i * cell, y + cell);
+    }
+  });
+  ctx.page.pushOperators(
+    pushGraphicsState(),
+    setStrokingColor(colorFromHex('#bfbfbf', ctx.colorSpace)),
+    setLineWidth(0.5 * scale),
+    ...ops,
+    stroke(),
+    popGraphicsState(),
+  );
 }
 
 export function renderColumnRule(

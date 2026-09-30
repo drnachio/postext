@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Configuration',
   description: 'Complete reference for all Postext layout configuration options',
   lang: 'en',
-  lastUpdated: '2026-09-24',
+  lastUpdated: '2026-09-29',
   readingTime: '30 min',
   order: 3,
 };
@@ -34,11 +34,12 @@ For an overview of how the engine processes this configuration, see the [Archite
 
 This reference is long. These are the main blocks:
 
-- [Page](#page) — size, margins, baseline grid, cut lines.
-- [Layout](#layout) — column count, gutters, rules.
+- [Page](#page) — size, margins, baseline grid, cut lines, [binding](#binding).
+- [Layout](#layout) — column count, gutters, rules, [vertical writing](#vertical-writing).
 - [Headers & footers](#headers--footers) — per-page text and rule elements with placeholders, parity, and alignment.
 - [Body text](#body-text) — typography, hyphenation, orphans and widows.
 - [Document language](#document-language) — the top-level `locale`: hyphenation fallback, built-in resource types and the continuation strings of tables and split callouts, the language tagged into an accessible PDF; and the [languages and scripts](#languages-and-scripts) Postext sets.
+- [East Asian typography](#east-asian-typography) — `cjk`: the regional conventions and line breaking of Chinese, Japanese and Korean text, how their justified lines are spread, punctuation widths and hanging, the space between Han and Latin, the character grid, upright numbers in vertical text, and the marks, ruby and warichu notes. The guide to all of it is [Chinese layout](/en/docs/chinese-layout).
 - [Headings](#headings) — shared defaults and H1–H6 overrides.
 - [Unordered lists](#unordered-lists) and [Ordered lists](#ordered-lists) — bullets, numbering, nesting.
 - [Math](#math) — LaTeX rendering, scale, colour, margins.
@@ -123,6 +124,12 @@ The `page` property controls the physical dimensions and appearance of the page.
       <td>disabled</td>
       <td>Draw the baseline grid over the pages, to check the vertical rhythm. The layout snaps to the grid whether or not it is drawn. See below.</td>
     </tr>
+    <tr>
+      <td><code>binding</code></td>
+      <td><code>'auto' | 'left' | 'right'</code></td>
+      <td><code>'auto'</code></td>
+      <td>The edge the book is bound on. <code>'auto'</code> is <code>'right'</code> when <code>layout.writingMode</code> is <code>'vertical-rl'</code>, else <code>'left'</code>. A right-bound book opens on a left page and mirrors its margins the other way round. Book-level: a heading style's own <code>layout</code> never changes it. See <a href="#binding">Binding</a>.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -145,6 +152,17 @@ Books are read as spreads, and the inner margin usually differs from the outer o
 ```
 
 With this configuration every odd page has a 2.2 cm margin on the left (the spine) and 1.4 cm on the right (the fore-edge); every even page has 1.4 cm on the left (the fore-edge) and 2.2 cm on the right (the spine). Each laid-out page carries its own `contentArea` on the `VDTPage`, so everything derived from it — columns, full-width float bands, header and footer containers, and `span: 'page'` opener bands — follows the mirrored geometry automatically. Page and bleed frames used by design elements anchored to `'page'` / `'bleed'` are not affected: they describe the physical sheet, not the margins.
+
+### Binding
+
+"Vertically set Chinese documents are bound on the right-hand side, and horizontally set documents are bound on the left-hand side" ([clreq §7.1.1.1](https://www.w3.org/TR/clreq/#x7-1-1-1-basic-elements-of-page-formatting)). `page.binding: 'right'` lays a book out for the right edge:
+
+- Page 1 is still odd and still the recto, so `breakBefore.parity`, `:::pagebreak{parity}`, design elements with a `parity` and every page count keep their meaning. What changes is the side the recto sits on: the left page of the spread. A chapter that opens on a new recto opens on a left page ([clreq §7.1.3.3](https://www.w3.org/TR/clreq/#x7-1-3-3-how-to-handle-headings-with-new-recto-and-page-break)).
+- With `margins.mirror`, `left` is still the inner margin, but it is the odd pages that swap: page 1 has its inner margin on its right, page 2 on its left. A `oneAndHalf` side column at `'outer'` / `'inner'`, a rotated float that sits against the spine, part-page margins and box corner icons at `'outer'` / `'inner'` follow the same rule.
+- The document says so (`VDTDocument.binding: 'right'`), so a host never has to read the config: the Sandbox shows its spreads as `[3 | 2]` with page 1 alone on the left of the spine, and its HTML viewer runs the pages right to left, opening at the right end, the left arrow going to the next page. `renderToHtml` in multi mode lays the row out right to left.
+- The PDF carries `/ViewerPreferences << /Direction /R2L >>` and `/PageLayout /TwoPageRight` (page 1 alone, then pairs), tagged or not. Acrobat and Foxit follow them; Chrome's built-in viewer ignores both.
+
+Folios and running heads do not move by themselves: a template that prints the page number at the outer corner needs its odd and even elements set for the right edge (elements take a `parity`).
 
 ### Page size presets
 
@@ -283,9 +301,9 @@ The `page.pageNumbering` block controls how page labels are formatted and where 
   <tbody>
     <tr>
       <td><code>format</code></td>
-      <td><code>'decimal' | 'lower-roman' | 'upper-roman' | 'lower-alpha' | 'upper-alpha'</code></td>
+      <td><code>'decimal' | 'lower-roman' | 'upper-roman' | 'lower-alpha' | 'upper-alpha'</code>, or an East Asian style</td>
       <td><code>'decimal'</code></td>
-      <td>Numeric style used to render page labels.</td>
+      <td>Numeric style used to render page labels. The East Asian styles (<code>'trad-chinese-informal'</code> numbers the pages 一, 二, 三) are listed under <a href="#numbering-format-spellings">Numbering format spellings</a>.</td>
     </tr>
     <tr>
       <td><code>startAt</code></td>
@@ -296,7 +314,7 @@ The `page.pageNumbering` block controls how page labels are formatted and where 
   </tbody>
 </table>
 
-The computed label is stored on every `VDTPage` as `pageLabel` and is what the <code>\{pageNumber\}</code> header/footer placeholder resolves to. PDFs emit a <code>/PageLabels</code> number tree so Preview / Acrobat's page indicator and "Go to page" navigation match the printed labels exactly.
+The computed label is stored on every `VDTPage` as `pageLabel` and is what the <code>\{pageNumber\}</code> header/footer placeholder resolves to. PDFs emit a <code>/PageLabels</code> number tree so Preview / Acrobat's page indicator and "Go to page" navigation match the printed labels exactly. A style PDF has no code for (Chinese numerals, circled and fullwidth digits) is written out page by page, so the reader shows 一, 二, 三 too.
 
 #### Numbering format spellings
 
@@ -316,10 +334,21 @@ Three settings choose a numbering format, and each grew its own spelling: page l
     <tr><td>Upper roman</td><td><code>I, II, III</code></td><td><code>upper-roman</code>, <code>roman-upper</code>, <code>I</code></td></tr>
     <tr><td>Lower alpha</td><td><code>a, b, c</code></td><td><code>lower-alpha</code>, <code>alpha-lower</code>, <code>lower-latin</code>, <code>a</code></td></tr>
     <tr><td>Upper alpha</td><td><code>A, B, C</code></td><td><code>upper-alpha</code>, <code>alpha-upper</code>, <code>upper-latin</code>, <code>A</code></td></tr>
+    <tr><td>Chinese numerals, Simplified</td><td>一, 十二, 一百零一</td><td><code>simp-chinese-informal</code>, <code>一</code> in a Simplified document</td></tr>
+    <tr><td>Chinese numerals, Traditional</td><td>一, 十二, 一萬</td><td><code>trad-chinese-informal</code>, <code>cjk-ideographic</code>, <code>一</code> in a Traditional document</td></tr>
+    <tr><td>Chinese financial numerals, Simplified</td><td>壹, 壹拾贰, 壹佰贰拾</td><td><code>simp-chinese-formal</code>, <code>壹</code> in a Simplified document</td></tr>
+    <tr><td>Chinese financial numerals, Traditional</td><td>壹, 壹拾貳, 壹佰貳拾</td><td><code>trad-chinese-formal</code>, <code>壹</code> in a Traditional document</td></tr>
+    <tr><td>Chinese digits</td><td>一二〇, 二〇二六</td><td><code>cjk-decimal</code>, <code>〇</code></td></tr>
+    <tr><td>Heavenly stems</td><td>甲, 乙, 丙 … 癸</td><td><code>cjk-heavenly-stem</code>, <code>甲</code></td></tr>
+    <tr><td>Earthly branches</td><td>子, 丑, 寅 … 亥</td><td><code>cjk-earthly-branch</code>, <code>子</code></td></tr>
+    <tr><td>Circled</td><td>①, ②, ③ … ㊿</td><td><code>circled-decimal</code>, <code>①</code></td></tr>
+    <tr><td>Fullwidth digits</td><td>１, ２, ３</td><td><code>fullwidth-decimal</code>, <code>１</code></td></tr>
   </tbody>
 </table>
 
-The other spellings are for configurations that nothing type-checks: JSON presets and plain JavaScript. The TypeScript types still name only each setting's own spelling — the one the Sandbox writes and `resolveAllConfig` returns — so a typed `PostextConfig` keeps to it, and another spelling needs a cast.
+The East Asian styles keep their [CSS Counter Styles](https://www.w3.org/TR/css-counter-styles-3/#limited-chinese) names in all three settings. The informal Chinese numerals write 十 for 10 to 19 without a leading 一 (十二, but 一百一十), one 零 for a run of zeros inside the number (一百零一, 一千零五十), and 万 or 萬 for ten thousand, 亿 or 億 for a hundred million (一万零一十). Only `cjk-decimal` uses 〇, digit by digit, the way years are written (二〇二六, GB/T 15835—2011). The stems stop at 10, the branches at 12 and the circled digits at 50; past them the number prints in digits. `一` and `壹` follow the script of the document's `locale`: Traditional for `zh-Hant`, `zh-TW` or `zh-HK`, Simplified otherwise. Some older editions write 101 as 一百一 with no 零; Postext does not print that form.
+
+The other spellings are for configurations that nothing type-checks: JSON presets and plain JavaScript. The TypeScript types still name only each setting's own spelling — the one the Sandbox writes and `resolveAllConfig` returns, the East Asian names included — so a typed `PostextConfig` keeps to it, and another spelling needs a cast.
 
 ```js
 // JavaScript or a JSON preset (in TypeScript, each setting's own spelling)
@@ -415,8 +444,31 @@ The `layout` property controls how columns are arranged within the content area.
       <td><code>2</code></td>
       <td>Fewest lines of a paragraph or list item that a cut inside it leaves on each side when a box splits (<code>splitMinLines</code>, under <a href="#callout-styles">Callout styles</a>, still counts every line of the box on each side of the cut). A whole number, at least 1. With the default a cut never leaves a lone line of a paragraph or item at the foot of a column or at the head of the next; a box style whose <code>splitMinLines</code> is lower sets the limit instead. <code>1</code> lets a cut leave one line of the paragraph or item on a side, as up to postext 1.4. Configurations stored by earlier versions whose chapters hold a <code>:::callout</code> are read with <code>1</code> (see <a href="#bundles-written-by-postext-14-or-earlier">Bundles written by postext 1.4 or earlier</a>); in code, <code>pinLegacyBoxChildCut</code> from <code>postext/bundle</code> does the same.</td>
     </tr>
+    <tr>
+      <td><code>writingMode</code></td>
+      <td><code>'horizontal-tb' | 'vertical-rl'</code></td>
+      <td><code>'horizontal-tb'</code></td>
+      <td>How lines run. <code>'vertical-rl'</code> sets Chinese and Japanese text vertically: characters top to bottom, each line to the left of the one before. A heading style's <code>layout</code> inherits it unless it sets its own, so a horizontal appendix can follow a vertical book. See <a href="#vertical-writing">Vertical writing</a>.</td>
+    </tr>
   </tbody>
 </table>
+
+### Vertical writing
+
+With `writingMode: 'vertical-rl'` a page is laid out as a horizontal page turned a quarter turn clockwise. The flow is set in a frame as wide as the sheet is tall; its lines are the columns of vertical text, read from the right, and everything the engine does with lines (breaking, justification, floats, footnotes, keep-together rules) works in that frame. So, on the sheet:
+
+- A column of the layout is a **tier** (栏): `layoutType: 'double'` gives two tiers stacked top to bottom, filled from the upper right; `gutterWidth` is the gap between them and the column rule a horizontal rule between them. Tiers are not balanced at the end of a chapter ([clreq §7.1.3.4](https://www.w3.org/TR/clreq/#x7-1-3-4-handling-of-spaces-just-before-the-new-recto-page-breaks-and-new-edges)): column balancing is off in a vertical document unless `headings.balancing.enabled` is set.
+- What the flow calls "top" is the sheet's **right** edge, where reading starts: a top float sits at the right of the page, a bottom float at the left, a page-span opener is a band down the right edge, footnotes land at the left end of each tier. A design element anchored to the top of the page (a heading design, a fixed box) is anchored to the right edge. `sideColumnSide` `'left'` is the top tier, `'right'` the bottom one; `'outer'` and `'inner'` read as `'right'` and `'left'`.
+- The flow's margins are the sheet's margins turned: the right margin is the top of the flow, the top margin its left. `page.margins` keep their names on the sheet.
+- Running heads, folios, crop marks and the page background stay on the sheet, set horizontally, as clreq describes for vertical books.
+- **Figures and tables stand upright.** A figure fills the height of its tier as far as its caption allows, at most as wide as the page; the width it takes is the room it uses in the flow. Its caption is set horizontally under it, and so are the cells of a table: both are measured as horizontal text. A table is set upright across the page, its rows cut to the tier when it is taller. `placement.align` sets a figure at the top (`'left'`), middle or foot of its tier. A `placement.rotate` is not applied where the figure is first referred to in vertical text: the build reports a `rotateIgnoredVertical` content warning. A horizontal section of the book (a heading style whose `layout` sets `'horizontal-tb'`) turns its figures as asked.
+- A picture of a design (an opener's illustration, a part page's) stands upright too. Its box in the flow is sized with the picture's width and height swapped, so `size.width` is how far the picture runs down the column and its width on the sheet follows from its proportions.
+- Characters: Han, kana and fullwidth forms stand upright, one em each; Latin words and numbers are turned sideways with their horizontal widths; punctuation takes the font's vertical form. Pause and stop marks are never turned: a mainland font sets 、。，． in the top-right corner of the cell and ！？：； in its right half, a Taiwan or Hong Kong font centres them (`cjk.region`). Brackets take their vertical forms, and “ ” ‘ ’ in mainland text read as 『』「」. Dashes, ellipses and the wave dash take the font's vertical form where it has one (Noto CJK keys that of — to `vert` together with `fwid`: a rule down the middle of the cell), else they are turned with their ink centred on the column's axis. A 破折号 (——) in Chinese text is one rule down the column: its vertical forms would leave blank at both ends of each cell, so each dash is turned with the line and stretched as in horizontal text (see [Punctuation widths](#punctuation-widths)). A number of at most two digits stands in one upright cell (see [Numbers in vertical text](#numbers-in-vertical-text)). The interpunct (·) takes half a cell in mainland text and a whole cell in Taiwan and Hong Kong text. The signs Unicode sets upright (× © ± § ℃ ① and the like) stand in a cell of their own, inside a number too: `3×4` is 3 and 4 sideways with × upright between them. An apostrophe or an interpunct between two letters of a Latin word (`don’t`, `l·l`) stays in the word, sideways. A Latin paragraph in a vertical flow follows the same rules. Inline formulas, chips and swatches are turned sideways with the line.
+- Every character is measured as it is painted: a cell advances its cell down the line, a sideways run its horizontal width. Text that stays horizontal on the sheet (running heads, folios, captions, table cells) is measured horizontally.
+- The [punctuation widths](#punctuation-widths), [hanging punctuation](#hanging-punctuation) and the [space between Han and Latin](#space-between-han-and-latin) apply down the line as they apply across it. The blank before a glyph is above it and the blank after it below: a Kaiming 、 takes half a cell, `」「` compress to a cell and a half, an opening bracket trimmed at the head of a line starts half a cell higher, a hung 。 sits under the foot of its line, and the Han–Latin space is a quarter em of the column above and below a sideways word. `：；？！` keep a whole cell in vertical text in every region.
+- The [character grid](#character-grid) counts characters down the line and lines across the page: `charsPerLine` sets how long a tier is, `linesPerPage` how many lines a page holds, and `layoutType: 'double'` gives two tiers of whole characters with a gutter of whole ems between them.
+
+For hosts reading the layout: a vertical page carries `VDTPage.flow`. Its `contentArea`, columns, blocks, lines, floats, footnote areas, opener band and block design overlays are in flow coordinates; `width`, `height`, `header` and `footer` are on the sheet. `flowToPage`, `pageToFlow`, `flowRectToPage` and `pageRectToFlow` map between the two, and `verticalOrientation(char, region)` says how a character stands. `flow.centralBaselines` gives, per font family, the axis the layout centred upright characters on: the centre of the ink of 中, whose long stroke runs the height of the em box (0.38 em above the baseline in Noto Serif and Noto Sans, SC and TC alike), and which every Chinese, Japanese and Korean face has. Each line is centred on that axis: a vertical line's baseline sits half its line height plus the family's central baseline below the top of its line box (a horizontal line's sits 0.8 of its line height down), so a column of characters stands in the middle of its pitch and a rule drawn between two columns at a whole pitch falls halfway between them. A vertical design text is set the same way in its own lines. The canvas paints a vertical page itself; to paint punctuation with the font's own vertical forms a browser host loads, once per family, a twin face with them switched on: `loadVerticalAlternates(family, faces)`, where `faces` are the family's sources (URLs or bytes) and descriptors. The Sandbox does this for every family of a vertical document. Without a twin, brackets are turned about their em box and mainland pause and stop marks moved within their cell where the font's vertical forms put them: 、。，． to the top-right corner (within 0.07 em of Noto Serif SC's vertical forms), ！？：； half an em to the right and a little up (within 0.02 em). The PDF and the HTML set the same page: see [Vertical text in the PDF](#vertical-text-in-the-pdf) and the table under [How the HTML output differs from canvas and PDF](#how-the-html-output-differs-from-canvas-and-pdf). Checked cell by cell against HarfBuzz (vertical layout with `vert`) in Noto Serif TC and SC, every character of 「賈雨村」云云，宜乎？故曰！；：、。“引”‘單’…… stands within 0.02 em of it on the canvas and in the PDF, and within 0.05 em in the HTML (Chrome centres a turned glyph on the middle of the font's ascent and descent, which in Noto is 0.05 em above its em box's centre). `flow.dashAdvances` gives, per family, the horizontal advance in ems of each dash the page stretches to fill its cell (— – ― ⸺ ⸻ －), for a renderer with no font metrics of its own: the HTML stretches the dash by it, as the canvas and the PDF do from theirs. Running heads and folios can be set vertically too: see [Vertical text elements](#vertical-text-elements).
 
 ### Column rule
 
@@ -651,6 +703,12 @@ The defaults in the table below are those of a text element you add yourself. Th
       <td>Outline drawn around the letters: <code>width</code> (a <code>Dimension</code>, centred on the glyph edges), <code>color</code> (default: the text colour; a drop cap takes its own colour) and <code>hollow</code> (<code>true</code> paints the outline only). See <a href="#inline-marks-and-outlines">Inline marks and outlines</a>.</td>
     </tr>
     <tr>
+      <td><code>writingMode</code></td>
+      <td><code>'horizontal-tb' | 'vertical-rl'</code></td>
+      <td><code>'horizontal-tb'</code></td>
+      <td><code>'vertical-rl'</code> sets the text top to bottom, lines right to left, the characters upright: a running head down the fore-edge, a vertical title beside a horizontal chapter. See <a href="#vertical-text-elements">Vertical text elements</a>.</td>
+    </tr>
+    <tr>
       <td><code>reserve</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
@@ -814,6 +872,50 @@ An element with no `placement.size.width` (or `'auto'`) sizes itself to its text
 - anchor it to the opposite edge of the container.
 
 The container of a header runs from the trim top down to the body, and that of a footer from the body down to the trim bottom: in a header, `top-*` anchors measure from the trim edge and `bottom-*` anchors from the body, and the other way round in a footer (see **Container frame** above). A header or footer never moves the body text, and it paints on top of it, so an element pushed into the body area covers the text. An opener band, by contrast, paints under the body text; how much room it takes in the flow is described under [Reserved height](#reserved-height).
+
+### Vertical text elements
+
+A text element with `writingMode: 'vertical-rl'` is set vertically in a slot whose text is horizontal: the running heads and folios of any book, which stay on the sheet, and every design of a horizontal page. It is laid out as a horizontal text in its own frame turned a quarter turn clockwise, and turned back onto the page:
+
+- Its box stays where the placement puts it. Its height is the length of a line: `size.height` sets it (or `'auto'`, the text's length; `'fill'`, down to the container's edge), `size.width` sets how many lines fit across, and `size.maxWidth` caps a line's length.
+- `align` places the lines along the box (`'left'` at the top), `verticalAlign` across it (`'top'` at the right, where the first line stands), and a box's padding stays on the side it is written for.
+- The characters are measured and painted as in a vertical page: Han upright one em each, punctuation in its vertical form, Latin words sideways, short numbers in one cell (`cjk.uprightDigits`). The canvas, the PDF and the HTML place it at the same rectangle.
+- With `inlineMarks: true` the orientation marks set a run apart as in the body: `第:tcy[3.0]回` sets 3.0 in one cell, `:upright[GDP]` stands the letters upright one under the other, `:sideways[…]` turns a run; a line never breaks inside one. A horizontal element ignores them.
+- A drop cap is not set on a vertical element.
+- In the flow of a vertical page (an opener, a part page, a box title) text already runs down, and `writingMode` changes nothing there.
+
+Vertical Chinese books put their running heads and folios in one of three places ([clreq §7.2](https://www.w3.org/TR/clreq/#x7-2-page-headers-footers-etc); [JLREQ §2.6](https://www.w3.org/TR/jlreq/#running_heads_and_page_numbers) for Japanese):
+
+<table>
+  <thead>
+    <tr><th style={{ width: '170px' }}>Convention</th><th>Where</th><th>How to set it</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Horizontal head and foot</td><td>Above and under the type area, as in horizontal books; the most common.</td><td>The header and footer as they are.</td></tr>
+    <tr><td>Fore-edge (中缝 style, Taiwan 邊峰)</td><td>Down the outer margin: the chapter or book title from about four characters below the head of the type area, the folio ending about five above its foot, in Chinese numerals, at about 80 % of the body size.</td><td>Two vertical elements anchored to <code>'outer'</code>, below.</td></tr>
+    <tr><td>Outer foot corner</td><td>The folio at the foot of the page, in the outer corner (Taiwan's rules for 中式 books).</td><td>A horizontal element in the footer at <code>'bottom-left'</code> with <code>parity: 'odd'</code> and one at <code>'bottom-right'</code> with <code>parity: 'even'</code> in a right-bound book (the other way round in a left-bound one).</td></tr>
+  </tbody>
+</table>
+
+The fore-edge heads, as the Sandbox adds them (**Header › Fore-edge heads (vertical)**), here for a 10 pt body (the Sandbox sets them at 80 % of the body size):
+
+```json
+{
+  "page": { "pageNumbering": { "format": "trad-chinese-informal" } },
+  "header": { "elements": [
+    { "kind": "text", "id": "head", "content": "{chapterTitle}", "writingMode": "vertical-rl",
+      "fontSize": { "value": 8, "unit": "pt" }, "overflow": "clip", "align": "left",
+      "placement": { "anchor": { "to": "outer", "edge": "top" }, "offset": { "y": { "value": 4, "unit": "em" } } } },
+    { "kind": "text", "id": "folio", "content": "{pageNumber}", "writingMode": "vertical-rl",
+      "fontSize": { "value": 8, "unit": "pt" }, "overflow": "clip", "align": "left",
+      "placement": { "anchor": { "to": "outer", "edge": "bottom" }, "offset": { "y": { "value": -5, "unit": "em" } } } }
+  ] }
+}
+```
+
+`anchor.to: 'outer'` (see [Element placement](#element-placement)) is the outer margin of each page, so the two elements run down the left edge of a recto and the right edge of a verso in a right-bound book (`page.binding`). `{pageNumber}` prints in the page numbering format: `trad-chinese-informal` gives 一百零三 on page 103, `cjk-decimal` 一〇三. The per-slot rules still apply: `pages: 'body'` keeps a head off the chapter openers. A short ornament between head and folio (a fish-tail ︻, a rule) is an ordinary element anchored to the same frame.
+
+In the VDT a vertical block carries `vertical` (`VDTDesignTextBlock.vertical`: the region, the upright digits and the central axis of each family); its lines are in the block's own turned frame, `xOffset` down from the box's top, `baselineY` leftward from its right edge. A run of a marked line carries `tcy` or `orientation`, as a segment of the body does.
 
 ### Rule elements
 
@@ -1023,6 +1125,12 @@ An `image` element draws a bitmap or SVG resource of the document — a publishe
       <td>Id of a bitmap or SVG <code>Resource</code> of the document. It may hold placeholders, <code>&#123;attr.&lt;key&gt;&#125;</code> among them, filled in per heading, part or page.</td>
     </tr>
     <tr>
+      <td><code>decorative</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>The picture is decoration only (an ornament, a band): it gives no alternative text to the output even when its resource has one (see below).</td>
+    </tr>
+    <tr>
       <td><code>placement</code></td>
       <td><code>ElementPlacement</code></td>
       <td>—</td>
@@ -1045,6 +1153,8 @@ An `image` element draws a bitmap or SVG resource of the document — a publishe
 
 The PDF backend embeds the resource like a figure (an SVG with a print master uses it); the HTML viewer resolves it through <code>resourceImageUrl</code>.
 
+A picture a design draws is content when its resource describes it: the resource's `altText`, else its caption as plain text (a chip read by its label, a `:ref` by its `text` when it has one), goes into the VDT (`VDTDesignImageBlock.altText`), becomes the `alt` of its `<img>` in HTML and a `Figure` with `/Alt` in a tagged PDF, read right after the text of its design (a chapter's plate after the chapter's heading). A picture whose resource has neither, and one marked `decorative`, is decoration: `alt=""` with `role="presentation"`, and an artifact in the PDF. A running head's or footer's picture repeats on every page, so it is furniture whatever its resource says: no `altText` in the VDT, `alt=""` with `role="presentation"` in HTML, an artifact of the page in the PDF.
+
 ### Element placement
 
 `ElementPlacement` is the unified positioning model used by every element type (text, rule, box) inside any design slot — page header, page footer, or heading-level advanced design slot. Three pieces of state describe a placement:
@@ -1053,7 +1163,7 @@ The PDF backend embeds the resource like a figure (an SVG with a print master us
 interface ElementPlacement {
   /** What this element anchors to and which edge of that target. */
   anchor: {
-    to: 'container' | 'page' | 'bleed' | `#${string}`; // container = the slot; page = trim box; bleed = trim box + bleed; #id = another element
+    to: 'container' | 'page' | 'bleed' | 'outer' | `#${string}`; // container = the slot; page = trim box; bleed = trim box + bleed; outer = the outer margin (header, footer); #id = another element
     edge: AnchorEdge;
   };
   /** Distance from the anchor point. */
@@ -1089,6 +1199,8 @@ An element-relative edge used with `'container'`, `'page'` or `'bleed'`, and a c
 ```
 
 With cut lines on, whatever an element paints past the bleed box is clipped (see [Cut lines](#cut-lines)).
+
+`anchor.to: 'outer'` (header and footer slots) anchors the element to the page's **outer margin**: from the edge of the type area to the trim edge on the side away from the spine, and from the head of the type area to its foot. It is on the right of a recto and the left of a verso in a left-bound book and the other way round in a right-bound one (`page.binding`), so one element serves both pages of a spread: a running head down the fore-edge (see [Vertical text elements](#vertical-text-elements)). In any other slot it reads as `'container'`. A text element's `offset` may be written in `em`, ems of its own `fontSize`: four characters below the head of the type area is `{ "y": { "value": 4, "unit": "em" } }`.
 
 Inside a heading's advanced-design slot, page- and bleed-anchored elements do not grow the height reserved for the heading unless they extend below the heading's top edge (a band across the top of the page sits behind the opener; a band reaching below the heading pushes the body text down). Use `advancedDesign.minHeight` to reserve a fixed opener height regardless, and `reserve: false` on an element that should not push the text at all. The full rules are under [Reserved height](#reserved-height).
 
@@ -1238,7 +1350,7 @@ The `bodyText` property controls the typography of all paragraph text.
       <td><code>optimalLineBreaking</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Use Knuth-Plass optimal line breaking instead of greedy first-fit. Produces more even word spacing across the paragraph. A paragraph with words in Chinese, Japanese or Korean (see <a href="#languages-and-scripts">Languages and scripts</a>), or with a word wider than the column, is still set first-fit. Ragged text takes it too with <code>optimalRagged</code>. See <a href="/en/docs/justification">Hyphenation &amp; Justification</a>.</td>
+      <td>Use Knuth-Plass optimal line breaking instead of greedy first-fit. Produces more even word spacing across the paragraph. A Chinese, Japanese or Korean paragraph (see <a href="#east-asian-typography">East Asian typography</a>), or one with a word wider than the column, is still set line by line; a Latin paragraph that quotes a few CJK words keeps it. Ragged text takes it too with <code>optimalRagged</code>. See <a href="/en/docs/justification">Hyphenation &amp; Justification</a>.</td>
     </tr>
     <tr>
       <td><code>optimalRagged</code></td>
@@ -1383,7 +1495,7 @@ When text alignment is set to `'justify'`, hyphenation prevents excessive word s
 
 **Supported locales:** `'en-us'` (English), `'es'` (Spanish), `'fr'` (French), `'de'` (German), `'it'` (Italian), `'pt'` (Portuguese), `'ca'` (Catalan), `'nl'` (Dutch).
 
-Region, script and variant subtags are ignored when the patterns are picked, and so are letter case and `_` separators: `'es-ES'`, `'es-MX'` and `'es_419'` hyphenate with `'es'`, `'pt-BR'` with `'pt'`, and every English tag (`'en'`, `'en-GB'`) with `'en-us'` — the only English patterns bundled, so British text gets American breaks. A language with no bundled patterns (`'sv'`, `'pl'`, `'ja'`…) is hyphenated with the `'en-us'` patterns, which gives wrong breaks rather than none; the engine reports it once per tag with a `console.warn`, and the Sandbox lists it in its Checks panel. Set `enabled: false` for such a document; that silences the warning too. `matchHyphenationLocale(tag)` returns the bundled locale a tag maps to (`undefined` when there is none), and `HYPHENATION_LOCALES` lists the bundled ones. The resolved configuration (`doc.config.bodyText.hyphenation`) names the patterns actually used in `locale`, and keeps the tag you gave in `tag` when it differs; the PDF backend declares that tag as the document language.
+Region, script and variant subtags are ignored when the patterns are picked, and so are letter case and `_` separators: `'es-ES'`, `'es-MX'` and `'es_419'` hyphenate with `'es'`, `'pt-BR'` with `'pt'`, and every English tag (`'en'`, `'en-GB'`) with `'en-us'` — the only English patterns bundled, so British text gets American breaks. A language with no bundled patterns (`'sv'`, `'pl'`, `'fi'`…) is hyphenated with the `'en-us'` patterns, which gives wrong breaks rather than none; the engine reports it once per tag with a `console.warn`, and the Sandbox lists it in its Checks panel. Set `enabled: false` for such a document; that silences the warning too. Chinese, Japanese and Korean (`zh`, `ja`, `ko`, whatever the region or script) need no patterns and print no warning: a document in one of them is set without hyphenation. To divide the Latin words quoted in it, set `enabled: true` and name their language in `locale` (`'en-us'` for English). `enabled: true` with no `locale`, or with a Chinese, Japanese or Korean one, leaves hyphenation off and says so once on the console. `matchHyphenationLocale(tag)` returns the bundled locale a tag maps to (`undefined` when there is none), and `HYPHENATION_LOCALES` lists the bundled ones. The resolved configuration (`doc.config.bodyText.hyphenation`) names the patterns actually used in `locale`, and keeps the tag you gave in `tag` when it differs. The PDF backend declares the document language from the top-level `locale`, and from this tag only when `locale` is unset (see [Document language](#document-language)).
 
 ```ts
 import { matchHyphenationLocale } from 'postext';
@@ -1420,13 +1532,15 @@ Ragged hyphenation lays paragraphs out with the line breaker that paragraphs wit
 
 In the Sandbox the switch is **Hyphenate ragged text**, under the paragraph alignment of the Body text section, with the zone below it. Under a justified body the same switch sits with the justification settings, for the ragged paragraph styles and boxes.
 
-#### Document language
+### Document language
 
-The top-level `locale` is the language of the document as a whole. It takes the same values as `hyphenation.locale` and is the fallback when that field is unset, so a Spanish book only needs `locale: 'es'` to hyphenate in Spanish. It also picks the language of the built-in continuation strings of tables and split callouts (`(cont.)` / *Continued* versus *Continúa*, see [Tables taller than the page](#tables-taller-than-the-page) and [Marks on a split box](#marks-on-a-split-box)) and of spelled-out heading numbers (*Chapter One* versus *Capítulo uno*, see [Spelled-out numbers](#spelled-out-numbers)), and is the language tagged into an accessible PDF. Unset, the engine assumes `'en-us'`; the sandbox falls back to the interface language and exposes the field at the top of the Body text section.
+The top-level `locale` is the language of the document as a whole. It takes the same values as `hyphenation.locale` and is the fallback when that field is unset, so a Spanish book only needs `locale: 'es'` to hyphenate in Spanish. It also picks the language of the built-in continuation strings of tables and split callouts (`(cont.)` / *Continued* versus *Continúa*, see [Tables taller than the page](#tables-taller-than-the-page) and [Marks on a split box](#marks-on-a-split-box)) and of spelled-out heading numbers (*Chapter One* versus *Capítulo uno*, see [Spelled-out numbers](#spelled-out-numbers)), and is the language tagged into an accessible PDF. Unset, the engine assumes `'en-us'`; the Sandbox falls back to the interface language and sets the field under **Design › Writing system**.
 
 It picks the built-in resource types too. When `resourceTypes` is not set, `buildDocument` numbers and captions with `defaultResourceTypes(locale)`, so `locale: 'de'` alone gives *Abbildung 1.1* and *Tabelle 1.1*. When `locale` is unset, the hyphenation locale stands in for it, for the resource types and the table strings alike. An explicit `resourceTypes` list always wins. Earlier versions used the English types whatever the `locale` unless you passed `defaultResourceTypes(locale)` yourself; a document that sets `locale` and wants to keep the English labels passes `resourceTypes: defaultResourceTypes('en')`. Sandbox books and bundles carry their own list, so they are not affected.
 
-Any BCP 47 tag works here as in `hyphenation.locale`: `'de-AT'` gets the German strings. The built-in strings exist in the eight languages hyphenation supports; any other language gets the English ones.
+Any BCP 47 tag works here as in `hyphenation.locale`: `'de-AT'` gets the German strings. The built-in strings exist in the eight languages hyphenation supports and in Chinese, in Simplified and in Traditional characters; any other language gets the English ones.
+
+Chinese takes `zh`, `zh-Hans`, `zh-Hant`, `zh-CN`, `zh-SG`, `zh-TW`, `zh-HK`, `zh-MO` and the long forms (`zh-Hant-TW`), in any case and with `-` or `_`. The strings follow the script, read with `Intl.Locale(tag).maximize()`: `zh`, `zh-CN` and `zh-SG` are Simplified, `zh-TW`, `zh-HK` and `zh-MO` Traditional. The typographic defaults that depend on the language follow the region instead, as [clreq §1.2](https://www.w3.org/TR/clreq/#x1-2-basic-features-of-chinese-script) recommends: CN, SG and MY count as the mainland, TW as Taiwan, HK and MO as Hong Kong, and a tag without a region goes by its script (`zh-Hant` is Taiwan, `zh` and `zh-Hans` the mainland). `localeScript(tag)`, `cjkRegionOf(tag)`, `stringsKeyOf(tag)` and `sameContentLocale(a, b)` give these readings, and `DOCUMENT_LANGUAGES` lists the languages with built-in strings, each named in its own language, as the Sandbox's Document language select shows them.
 
 <table>
   <thead>
@@ -1446,10 +1560,14 @@ Any BCP 47 tag works here as in `hyphenation.locale`: `'de-AT'` gets the German 
     <tr><td>Portuguese (<code>pt</code>)</td><td>Figura, Figuras, Fig.</td><td>Tabela, Tabelas, Tab.</td><td>(cont.), Continua</td></tr>
     <tr><td>Catalan (<code>ca</code>)</td><td>Figura, Figures, Fig.</td><td>Taula, Taules, Taula</td><td>(cont.), Continua</td></tr>
     <tr><td>Dutch (<code>nl</code>)</td><td>Figuur, Figuren, Fig.</td><td>Tabel, Tabellen, Tab.</td><td>(vervolg), Wordt vervolgd</td></tr>
+    <tr><td>Chinese, Simplified (<code>zh-Hans</code>, <code>zh</code>, <code>zh-CN</code>)</td><td>图, 图, 图</td><td>表, 表, 表</td><td>（续）, 接下页</td></tr>
+    <tr><td>Chinese, Traditional (<code>zh-Hant</code>, <code>zh-TW</code>, <code>zh-HK</code>)</td><td>圖, 圖, 圖</td><td>表, 表, 表</td><td>（續）, 接下頁</td></tr>
   </tbody>
 </table>
 
-The caption prefix is the type's name (*Figure 1.1.*).
+The caption prefix is the type's name (*Figure 1.1.*). The Chinese types number within the chapter with a hyphen, `{h1}-{n}` (图 1-1); with the caption settings `labelNumberGap: ''` and `labelSeparator: '　'` the caption reads 图1-1　标题 (see [Caption style](#caption-style)). The back-of-book index follows the language too: 见 and 另见 before a cross-reference, 符号 and 数字 over the symbols and the numbers in Simplified; 見, 另見, 符號 and 數字 in Traditional.
+
+A Chinese, Japanese or Korean document declares its language in the HTML output (`lang` on the `.pt-doc` root, `zh-Hant-TW` kept whole) and on the canvas it paints (`ctx.lang`, in Chrome 136 and later), so the browser draws the region's glyph forms: Unicode unifies the Han characters, and one code point looks different in a Taiwanese and in a Japanese font. Other documents carry no `lang`, as before. The PDF declares `/Lang` from `locale` for every document, tagged or not, with its script and region.
 
 ```ts
 const config: PostextConfig = {
@@ -1458,14 +1576,15 @@ const config: PostextConfig = {
 };
 ```
 
-#### Languages and scripts
+### Languages and scripts
 
-Postext sets alphabetic scripts written left to right. Two families of writing systems are not fully supported yet:
+Postext sets alphabetic scripts written left to right, and Chinese across the page and down it. [Chinese layout](/en/docs/chinese-layout) explains how Chinese is set and which settings control it; the keys are under [East Asian typography](#east-asian-typography), [Vertical writing](#vertical-writing) and [Binding](#binding). What each script gets:
 
-- **Right-to-left scripts** (Arabic, Hebrew, Persian, Urdu…). There is no bidirectional algorithm: lines are broken and aligned as if the text ran left to right, against the left margin, and what each line shows depends on how it is painted. In the canvas and PDF output a left-aligned line without inline formatting is drawn as one run of text, which the browser or the PDF's font engine turns right to left by itself, so there a line all in one right-to-left script can read correctly, but one that mixes directions, numbers or punctuation does not. The HTML output, justified, centred and right-aligned lines, and lines with inline formatting are drawn word by word from left to right: each word reads correctly, but the words come out in reverse reading order.
-- **Chinese, Japanese and Korean** are set only in part. Text with ideographs breaks between characters, with no hyphen, under pretext's basic *kinsoku* rules: no line starts with closing punctuation such as 。、」 or the prolonged sound mark ー, and none ends with an opening bracket such as 「 or （. Both line breakers follow the same rules, and two runs of ideographs set side by side (`**日本**語`) may break where they meet. A paragraph with words set this way — two ideographs, kana or hangul syllables in a row — is not set with optimal line breaking: it is broken line by line, even when justified. A CJK bracket, the middle dot or a fullwidth sign quoted in Latin text (〈h〉, ％) leaves the paragraph to optimal line breaking. Only spaces are stretched to justify a line, so a line of ideographs keeps its natural width, a little short of the column; there is no inter-character justification, no punctuation compression, no vertical writing and no ruby. Korean text breaks between syllables as well as at its spaces.
+- **Chinese** is set by the CJK composer when a paragraph holds more CJK characters than word spaces: its lines break between characters under the line-start and line-end rules of `cjk.lineBreak` (no line starts with 。、」 or ー, none ends with 「 or （), keep —— and ……, a number with its signs and a Latin word whole, and a justified line is spread between its characters to the measure. Punctuation widths, hanging punctuation, the space between Han and Latin, the character grid, emphasis dots, the proper-name and book-title marks, ruby and warichu notes follow the region of `locale`, across the line or down it (`layout.writingMode: 'vertical-rl'`). A Latin paragraph that quotes a few CJK words keeps optimal line breaking and may break next to them; a CJK bracket, the middle dot or a fullwidth sign quoted in Latin text (〈h〉, ％) changes nothing.
+- **Japanese and Korean** go through the same composer and are set without hyphenation, but with the mainland Chinese defaults: their own rules (JLREQ, KLREQ) are not implemented. Korean text breaks between syllables as well as at its spaces.
+- **Right-to-left scripts** (Arabic, Hebrew, Persian, Urdu…) are not supported yet. There is no bidirectional algorithm: lines are broken and aligned as if the text ran left to right, against the left margin, and what each line shows depends on how it is painted. In the canvas and PDF output a left-aligned line without inline formatting is drawn as one run of text, which the browser or the PDF's font engine turns right to left by itself, so there a line all in one right-to-left script can read correctly, but one that mixes directions, numbers or punctuation does not. The HTML output, justified, centred and right-aligned lines, and lines with inline formatting are drawn word by word from left to right: each word reads correctly, but the words come out in reverse reading order. `page.binding: 'right'` lays out right-bound spreads for such a book, but not its lines.
 
-Hyphenation patterns ship for eight languages (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`), and so do the built-in resource types and table continuation strings. Any other language is hyphenated with the US English patterns, with a console warning, and gets the English strings. For such a document, set `hyphenation.enabled: false` and pass `resourceTypes` and the `tableStyle` continuation strings in its language.
+Hyphenation patterns ship for eight languages (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`); the built-in resource types and continuation strings exist in those eight and in Chinese. Chinese, Japanese and Korean are set without hyphenation. Any other language is hyphenated with the US English patterns, with a console warning, and gets the English strings. For such a document, set `hyphenation.enabled: false` and pass `resourceTypes` and the `tableStyle` continuation strings in its language.
 
 ### Orphans, widows, runts, and keep-together rules
 
@@ -1535,7 +1654,7 @@ Beyond hyphenation and spacing bounds, the body-text configuration exposes the s
       <td><code>avoidRunts</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Discourage paragraphs from ending with a very short last line — a <em>runt</em>, e.g. a single short word alone. Ragged text too, with <code>optimalRagged</code>.</td>
+      <td>Discourage paragraphs from ending with a very short last line — a <em>runt</em>, e.g. a single short word alone. Ragged text too, with <code>optimalRagged</code>. A Chinese, Japanese or Korean paragraph does not end on a line holding one character, alone or with its closing marks (孤字): the line above gives it its last character when that line can still be justified within the tracking cap.</td>
     </tr>
     <tr>
       <td><code>runtMinCharacters</code></td>
@@ -1966,7 +2085,13 @@ Per-level overrides support the same properties as the general defaults — `fon
       <td><code>numberingTemplate</code></td>
       <td><code>string</code></td>
       <td><code>''</code></td>
-      <td>Template of the level's automatic number. A token <code>{'{1}'}</code> … <code>{'{6}'}</code> prints the running counter of that heading level, optionally formatted by a suffix — <code>{'{1:I}'}</code> upper roman, <code>{'{1:i}'}</code> lower roman, <code>{'{1:A}'}</code> / <code>{'{1:a}'}</code> alphabetic, <code>{'{1:01}'}</code> zero-padded, <code>{'{1:words}'}</code> spelled out (<em>twenty-one</em>) and <code>{'{1:ordinal}'}</code> as an ordinal (<em>twenty-first</em>) — and any other text is literal (<code>'Chapter {'{1}'}. '</code>, <code>'{'{1}'}.{'{2}'}'</code>; a backslash escapes a literal brace). A token whose counter is still empty collapses together with its adjacent separator. Empty (the default) means no automatic number. The rendered number is prepended to the title in the flow, feeds the <code>{'{number}'}</code> placeholder of an advanced design slot (where the prefix itself is not prepended) and is printed in the table of contents. See <a href="#spelled-out-numbers">Spelled-out numbers</a> for the words, and <a href="#heading-styles">Heading styles</a> for a template of its own on some headings of a level.</td>
+      <td>Template of the level's automatic number. A token <code>{'{1}'}</code> … <code>{'{6}'}</code> prints the running counter of that heading level, optionally formatted by a suffix — <code>{'{1:I}'}</code> upper roman, <code>{'{1:i}'}</code> lower roman, <code>{'{1:A}'}</code> / <code>{'{1:a}'}</code> alphabetic, <code>{'{1:01}'}</code> zero-padded, <code>{'{1:words}'}</code> spelled out (<em>twenty-one</em>), <code>{'{1:ordinal}'}</code> as an ordinal (<em>twenty-first</em>), <code>{'{1:一}'}</code> in Chinese numerals, <code>{'{1:〇}'}</code> digit by digit, <code>{'{1:壹}'}</code> in financial numerals and <code>{'{1:①}'}</code> circled, or any name of <a href="#numbering-format-spellings">Numbering format spellings</a> — and any other text is literal (<code>'Chapter {'{1}'}. '</code>, <code>'{'{1}'}.{'{2}'}'</code>, <code>'第{'{1:一}'}回'</code> for 第一百二十回; a backslash escapes a literal brace). A token whose counter is still empty collapses together with its adjacent separator. Empty (the default) means no automatic number. The rendered number is prepended to the title in the flow, feeds the <code>{'{number}'}</code> placeholder of an advanced design slot (where the prefix itself is not prepended) and is printed in the table of contents. See <a href="#spelled-out-numbers">Spelled-out numbers</a> for the words, and <a href="#heading-styles">Heading styles</a> for a template of its own on some headings of a level.</td>
+    </tr>
+    <tr>
+      <td><code>numberSeparator</code></td>
+      <td><code>string</code></td>
+      <td><code>' '</code></td>
+      <td>What stands between the number and the title: in the column, in the default opener of a <code>span: 'page'</code> level, in the running heads that print the heading line and in the PDF bookmarks. The level-1 separator also joins a part's number and title in the default part page and in the default part row of the contents. Chinese chapter heads take an ideographic space or nothing (<code>'　'</code>: 第一回　甄士隱夢幻識通靈). The contents keep their own number column (<code>toc.levels[].numberGap</code>). A <a href="#heading-styles">heading style</a> may set its own. When a title is broken in two with <code>{'\\\\'}</code>, as the couplet titles of Chinese novels are, the single-line forms (the column, the contents, the running heads) join the halves with an ideographic space when both sides are Chinese or Japanese characters, and with a space otherwise.</td>
     </tr>
     <tr>
       <td><code>breakBefore</code></td>
@@ -2152,6 +2277,7 @@ Heading placeholders available inside a level's design slot:
 - `{number}` — the formatted number per the level's `numberingTemplate`.
 - `{numberDecimal}`, `{numberRoman}`, `{numberRomanLower}`, `{numberAlpha}`, `{numberAlphaLower}` — the heading's counter (its level's running count, whatever the template prints) in other numeral formats: the third chapter gives `3`, `III`, `iii`, `C`, `c`, with or without a `numberingTemplate`. An unnumbered heading (a style with `numbered: false`) leaves them empty.
 - `{numberWords}`, `{numberWordsLower}`, `{numberOrdinalWords}`, `{numberOrdinalWordsLower}` — the same counter spelled out, with a capital or in lower case: *Three* / *three*, *Third* / *third* (see [Spelled-out numbers](#spelled-out-numbers)).
+- `{numberHan}` — the same counter in Chinese numerals, in the script of the document's `locale`: an opener set with `第{numberHan}回` prints 第十二回 for the twelfth chapter while the contents list `12`.
 - `{chapterNumber}`, `{chapterTitle}`, `{pageNumber}`, `{totalPages}`, `{bookTotalPages}`, `{title}`, `{subtitle}`, `{author}`, `{publishDate}` — shared metadata placeholders.
 - `{attr.<key>}` — an attribute written on the heading line itself (`# Title {author="I. Zango Martín"}`), falling back to the current chapter's H1 attribute. Missing attributes resolve to an empty string with no warning.
 
@@ -2232,19 +2358,20 @@ Two numbering-template suffixes write a counter in words, in the document langua
       <th style={{ width: '160px' }}>Token</th>
       <th>English (21)</th>
       <th>Spanish (21)</th>
+      <th>Chinese (21)</th>
     </tr>
   </thead>
   <tbody>
-    <tr><td><code>{'{1:words}'}</code></td><td>twenty-one</td><td>veintiuno</td></tr>
-    <tr><td><code>{'{1:Words}'}</code></td><td>Twenty-one</td><td>Veintiuno</td></tr>
-    <tr><td><code>{'{1:WORDS}'}</code></td><td>TWENTY-ONE</td><td>VEINTIUNO</td></tr>
-    <tr><td><code>{'{1:ordinal}'}</code></td><td>twenty-first</td><td>vigesimoprimero</td></tr>
-    <tr><td><code>{'{1:Ordinal}'}</code></td><td>Twenty-first</td><td>Vigesimoprimero</td></tr>
-    <tr><td><code>{'{1:ORDINAL}'}</code></td><td>TWENTY-FIRST</td><td>VIGESIMOPRIMERO</td></tr>
+    <tr><td><code>{'{1:words}'}</code></td><td>twenty-one</td><td>veintiuno</td><td>二十一</td></tr>
+    <tr><td><code>{'{1:Words}'}</code></td><td>Twenty-one</td><td>Veintiuno</td><td>二十一</td></tr>
+    <tr><td><code>{'{1:WORDS}'}</code></td><td>TWENTY-ONE</td><td>VEINTIUNO</td><td>二十一</td></tr>
+    <tr><td><code>{'{1:ordinal}'}</code></td><td>twenty-first</td><td>vigesimoprimero</td><td>第二十一</td></tr>
+    <tr><td><code>{'{1:Ordinal}'}</code></td><td>Twenty-first</td><td>Vigesimoprimero</td><td>第二十一</td></tr>
+    <tr><td><code>{'{1:ORDINAL}'}</code></td><td>TWENTY-FIRST</td><td>VIGESIMOPRIMERO</td><td>第二十一</td></tr>
   </tbody>
 </table>
 
-English and Spanish are spelled out; any other language takes the English words, as the built-in table continuation strings do. English follows American usage (*one hundred five*, no *and*). Spanish uses masculine forms, as a *capítulo* or a *libro* is numbered (*capítulo primero*, *tercero*, *veintiuno*), and writes the ordinals from 13 to 29 as one word, as the RAE prefers (*decimotercero*, *vigesimoprimero*). Cardinals are spelled up to 999 999 and Spanish ordinals up to 999; larger numbers print in digits.
+English, Spanish and Chinese are spelled out; any other language takes the English words, as the built-in table continuation strings do. Chinese writes the informal numerals of `simp-chinese-informal` or `trad-chinese-informal`, after the script of `locale` (一万 / 一萬), with 第 before an ordinal; Han characters have no case, so the three spellings of a suffix print alike. English follows American usage (*one hundred five*, no *and*). Spanish uses masculine forms, as a *capítulo* or a *libro* is numbered (*capítulo primero*, *tercero*, *veintiuno*), and writes the ordinals from 13 to 29 as one word, as the RAE prefers (*decimotercero*, *vigesimoprimero*). Cardinals are spelled up to 999 999 and Spanish ordinals up to 999; larger numbers print in digits.
 
 In a heading design, `{numberWords}` / `{numberWordsLower}` and `{numberOrdinalWords}` / `{numberOrdinalWordsLower}` spell the heading's counter the same way, so the opener can say *Chapter One* while the contents list `1`. A text element's `textTransform: 'uppercase'` gives the capitals:
 
@@ -2488,6 +2615,12 @@ The `orderedLists` property controls numbered lists (`1.`, `2)`, etc.). Up to fi
       <td>Number style: <code>'arabic'</code>, <code>'lower-alpha'</code>, <code>'upper-alpha'</code>, <code>'lower-roman'</code>, <code>'upper-roman'</code>. The other settings' spellings work too (<code>'decimal'</code>, <code>'roman-lower'</code>, <code>'i'</code>…; see <a href="#numbering-format-spellings">Numbering format spellings</a>); an unknown value numbers in arabic and is reported.</td>
     </tr>
     <tr>
+      <td><code>prefix</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>Text set before the number, in the separator's style: with <code>'（'</code> here and <code>'）'</code> as the separator a Chinese list reads （一）, （二）. When the separator is drawn as its own run, the prefix is one too, just before the number.</td>
+    </tr>
+    <tr>
       <td><code>separator</code></td>
       <td><code>string</code></td>
       <td><code>'.'</code></td>
@@ -2588,7 +2721,7 @@ The `orderedLists` property controls numbered lists (`1.`, `2)`, etc.). Up to fi
 
 ### Ordered per-level overrides
 
-Each entry in `levels` can override `numberFormat`, `separator`, `fontFamily`, `fontSize`, `color`, `fontWeight`, `italic`, `indent`, `verticalOffset` and the separator style (`separatorFontFamily`, `separatorFontWeight`, `separatorItalic`, `separatorColor`, `separatorGap`) — the same indent cascade as unordered lists applies. A level's separator style inherits its own number style unless the list-wide separator setting is given.
+Each entry in `levels` can override `numberFormat`, `prefix`, `separator`, `fontFamily`, `fontSize`, `color`, `fontWeight`, `italic`, `indent`, `verticalOffset` and the separator style (`separatorFontFamily`, `separatorFontWeight`, `separatorItalic`, `separatorColor`, `separatorGap`) — the same indent cascade as unordered lists applies. A level's separator style inherits its own number style unless the list-wide separator setting is given.
 
 **Right alignment.** The pipeline measures the widest formatted number within a run and indents all items in that run so the number markers line up on their right edge. A list of ten items rendered as `1.` – `10.` has the single-digit numbers right-padded so the separator stays in the same column.
 
@@ -2611,6 +2744,20 @@ This yields the classic nested mix:
       i) Deep note
    b. Sub-item
 2. Second item
+```
+
+The hierarchy of Chinese documents (GB/T 15834—2011, Annex B.3) takes five levels, 一、 then （一） then 1. then （1） then ①:
+
+```ts
+orderedLists: {
+  levels: [
+    { level: 1, numberFormat: 'simp-chinese-informal', separator: '、' },
+    { level: 2, numberFormat: 'simp-chinese-informal', prefix: '（', separator: '）' },
+    { level: 3, numberFormat: 'arabic', separator: '.' },
+    { level: 4, numberFormat: 'arabic', prefix: '（', separator: '）' },
+    { level: 5, numberFormat: 'circled-decimal', separator: '' },
+  ],
+}
 ```
 
 
@@ -2919,6 +3066,263 @@ Resolver and stripper match the other sections:
 ```ts
 import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults } from 'postext';
 ```
+
+
+## East Asian typography
+
+The `cjk` property sets how Chinese, Japanese and Korean text is composed: which regional conventions it follows, where its lines may break, how wide its punctuation is set and whether it hangs, the space between Han and Latin, the character grid of the type area, and how the Chinese marks, ruby readings and warichu notes of the text print. Every field is optional, and `'auto'` follows the region of the document language (`locale`), so a book with `locale: 'zh-Hant'` breaks its lines and sets its punctuation the Taiwan way without setting anything else. [Chinese layout](/en/docs/chinese-layout) explains the rules behind these settings, region by region, with two complete configurations.
+
+```ts
+interface CjkConfig {
+  region?: 'auto' | 'mainland' | 'taiwan' | 'hongkong';   // Regional conventions.
+  lineBreak?: 'auto' | 'none' | 'basic' | 'gb' | 'strict'; // Which marks may not open or close a line.
+  punctuationWidth?: 'auto' | 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'halfwidth';
+  compressAdjacent?: 'auto' | boolean;      // Two marks that meet take 1.5 em.
+  trimLineStart?: 'auto' | boolean;         // Brackets at a line edge lose their outer half.
+  hangingPunctuation?: 'none' | 'allow' | 'force';
+  latinSpacing?: Dimension;                 // Between Han and Latin; default 0.25 em.
+  uprightDigits?: 0 | 2 | 3 | 4;            // Vertical text: numbers in one upright cell; default 2.
+  grid?: { enabled?: boolean; charsPerLine?: number; linesPerPage?: number; show?: boolean };
+  emphasis?: 'auto' | 'italic' | 'dots';    // What *…* does to Chinese characters.
+  bookTitleMark?: 'auto' | 'brackets' | 'wavy' | 'none'; // What :book[…] prints.
+  annotationColor?: ColorValue;             // Dots and name/title lines; default the text colour.
+  ruby?: { fontFamily?: string; fontSize?: Dimension; color?: ColorValue; position?: 'auto' | 'over' | 'under' | 'right' };
+  warichu?: { fontSize?: Dimension; color?: ColorValue; open?: string; close?: string };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '120px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>region</code></td>
+      <td><code>'auto' | 'mainland' | 'taiwan' | 'hongkong'</code></td>
+      <td><code>'auto'</code></td>
+      <td>The conventions the text follows, after the regions the W3C <a href="https://www.w3.org/TR/clreq/">Requirements for Chinese Text Layout</a> (clreq) describes. <code>'auto'</code> reads the region from <code>locale</code>, or from <code>bodyText.hyphenation.locale</code> when <code>locale</code> is unset: <code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code> and <code>zh-SG</code> give <code>'mainland'</code>; <code>zh-Hant</code> and <code>zh-TW</code> give <code>'taiwan'</code>; <code>zh-HK</code> and <code>zh-MO</code> give <code>'hongkong'</code>; any other language gives <code>'mainland'</code>. The region picks the defaults of <code>lineBreak</code>, <code>punctuationWidth</code>, <code>compressAdjacent</code> and <code>trimLineStart</code>.</td>
+    </tr>
+    <tr>
+      <td><code>lineBreak</code></td>
+      <td><code>'auto' | 'none' | 'basic' | 'gb' | 'strict'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Which marks may not open or close a line (clreq §6.1.1; see the table below). <code>'auto'</code>: <code>'gb'</code> for the mainland, <code>'basic'</code> for Taiwan and Hong Kong.</td>
+    </tr>
+    <tr>
+      <td><code>punctuationWidth</code></td>
+      <td><code>'auto' | 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'halfwidth'</code></td>
+      <td><code>'auto'</code></td>
+      <td>How wide the full-width marks are set (see <a href="#punctuation-widths">Punctuation widths</a>). <code>'auto'</code>: <code>'kaiming'</code> for the mainland, <code>'fullwidth'</code> for Taiwan and Hong Kong.</td>
+    </tr>
+    <tr>
+      <td><code>compressAdjacent</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>Two marks that meet (<code>。」</code>, <code>》（</code>, <code>：“</code>) give up the half em of blank between them, so the pair takes 1.5 em instead of 2. <code>'auto'</code>: on for the mainland and Hong Kong, off for Taiwan.</td>
+    </tr>
+    <tr>
+      <td><code>trimLineStart</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>An opening bracket or quote that starts a line gives up its leading half em, and a closing one that ends a line its trailing half. <code>'auto'</code>: on for the mainland and Hong Kong, off for Taiwan.</td>
+    </tr>
+    <tr>
+      <td><code>hangingPunctuation</code></td>
+      <td><code>'none' | 'allow' | 'force'</code></td>
+      <td><code>'none'</code></td>
+      <td>Whether a pause or stop mark may hang past the end of the line (see <a href="#hanging-punctuation">Hanging punctuation</a>).</td>
+    </tr>
+    <tr>
+      <td><code>latinSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>&#123; value: 0.25, unit: 'em' &#125;</code></td>
+      <td>The space between a Han character and a Latin letter or digit next to it, in em of the CJK text's size or any length; <code>0</code> turns it off (see <a href="#space-between-han-and-latin">Space between Han and Latin</a>).</td>
+    </tr>
+    <tr>
+      <td><code>uprightDigits</code></td>
+      <td><code>0 | 2 | 3 | 4</code></td>
+      <td><code>2</code></td>
+      <td>Vertical text: a number of at most this many digits stands in one upright cell (tate-chu-yoko); <code>0</code> turns it off (see <a href="#numbers-in-vertical-text">Numbers in vertical text</a>).</td>
+    </tr>
+    <tr>
+      <td><code>grid</code></td>
+      <td><code>&#123; enabled?, charsPerLine?, linesPerPage?, show? &#125;</code></td>
+      <td>off</td>
+      <td>The type area in characters per line and lines per page (see <a href="#character-grid">Character grid</a>).</td>
+    </tr>
+    <tr>
+      <td><code>emphasis</code></td>
+      <td><code>'auto' | 'italic' | 'dots'</code></td>
+      <td><code>'auto'</code></td>
+      <td>What Markdown emphasis (<code>*…*</code>) does to Chinese characters: <code>'dots'</code> sets an emphasis dot under each (right of it in vertical text), as <code>:dots[…]</code> does, and Latin letters in the same emphasis keep their italics; <code>'italic'</code> slants them, which a Chinese face can only fake. <code>'auto'</code>: <code>'dots'</code> when the document language is Chinese, <code>'italic'</code> otherwise (see <a href="#marks-ruby-and-warichu">Marks, ruby and warichu</a>).</td>
+    </tr>
+    <tr>
+      <td><code>bookTitleMark</code></td>
+      <td><code>'auto' | 'brackets' | 'wavy' | 'none'</code></td>
+      <td><code>'auto'</code></td>
+      <td>What <code>:book[…]</code> prints: 《》 around the title (〈〉 inside another title), the wavy book-title line under it, or the bare title. <code>'auto'</code>: brackets for the mainland, the wavy line for Taiwan and Hong Kong.</td>
+    </tr>
+    <tr>
+      <td><code>annotationColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>the text colour</td>
+      <td>Colour of the emphasis dots and the proper-name and book-title lines; the default of the ruby and warichu colours.</td>
+    </tr>
+    <tr>
+      <td><code>ruby</code></td>
+      <td><code>&#123; fontFamily?, fontSize?, color?, position? &#125;</code></td>
+      <td>half-size, <code>'auto'</code></td>
+      <td>The readings of <code>:ruby[…]</code> and <code>&#123;紅樓|hóng|lóu&#125;</code>: face (default the text's), size (default <code>&#123; value: 0.5, unit: 'em' &#125;</code> of the text; zhuyin at 60 % of it), colour, and where they go when a ruby does not say (<code>'auto'</code>: zhuyin right of each character, pinyin over the text in horizontal text and right of it in vertical text).</td>
+    </tr>
+    <tr>
+      <td><code>warichu</code></td>
+      <td><code>&#123; fontSize?, color?, open?, close? &#125;</code></td>
+      <td>half-size, no brackets</td>
+      <td>The two-row notes of <code>:warichu[…]</code>: the note's size (default half an em, so the two rows fill the line's em), its colour, and the brackets set at the text size before its first row and after its last (a note's own <code>open</code> / <code>close</code> win).</td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '90px' }}>Level</th>
+      <th>Never at the start of a line</th>
+      <th>Never at the end of a line</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>none</code></td><td>Nothing: a line may break between any two characters, as newspapers in Taiwan and Hong Kong do.</td><td>Nothing.</td></tr>
+    <tr><td><code>basic</code></td><td>Pause and stop marks 、，；：。！？．‼⁇⁈⁉; closing quotes ” ’ 」 』 and brackets ）〕］｝】〗》〉; connectors – ～ ~ and a single — between two words; interpuncts · ‧ ・; iteration marks 々〻ゝゞヽヾ and ー; number units % ‰ ° ℃ ％ and the unit squares ㎡ ㎏ ㏄.</td><td>Opening quotes “ ‘ 「 『 and brackets （〔［｛【〖《〈; currency signs ¥ $ € £.</td></tr>
+    <tr><td><code>gb</code></td><td><code>basic</code>, and the solidus / ／ (GB/T 15834—2011 §5.1.9).</td><td><code>basic</code>, and the solidus.</td></tr>
+    <tr><td><code>strict</code></td><td><code>gb</code>, and the two-em dash —— ⸺ and the ellipsis …… ⋯⋯.</td><td><code>gb</code>.</td></tr>
+  </tbody>
+</table>
+
+At every level:
+
+- —— and …… are one unit two ems wide and never split; two such units in a row may part between them.
+- A number keeps its signs and its unit (¥5,999, 50%, 50％, 120㎡), also across a space (−3 ℃, 50 %), and a Latin word stays whole: Western text between CJK characters is set as a run a line never breaks inside, unless the run alone is wider than the line (it is then divided at a syllable with a hyphen, or at the last character that fits; a web address at its joints). The unit squares ㎡ ㎏ ㎞ ㏄ (U+3371–337A, U+3380–33DF, U+33FF) belong to the run of their number and do not make a Latin paragraph CJK.
+- A number or a word in fullwidth digits and letters (１２３４５６, ５０％, ￥５９９, ３．１４, １２：３０, ＡＢＣ) never splits either; a justified line still spreads its characters as it spreads Han.
+- A word space is a break only where the rules allow one: the line does not break there when the next character may not open a line (`参见图表 （ 第三章 ）` never opens a line with ）) or the last one before it may not close one.
+- A footnote marker, a `:ref` and a superscript or subscript stay with the character before them.
+- The ideographic space U+3000 is a character one em wide: a line may break after it, never before; it is never stretched and never dropped at the start of a line. For the two-character indent of Chinese paragraphs set `bodyText.firstLineIndent: { value: 2, unit: 'em' }` rather than typing two U+3000 (the parser drops the ones a paragraph opens with).
+
+When a character does not fit the line and may open the next one, it goes down and a justified line spreads what is left. When it may not open the next line (a comma, a closing bracket, the character after an opening one), the line first tries to take it by compressing (push-in, clreq §6.2.2.3): if the blank it may give up — see [Punctuation widths](#punctuation-widths) — covers the overflow, the character (with the marks that must stay with it, a closing quote after a full stop) goes on the line and the line is set to the measure. Otherwise the line gives up characters to it (push-out): the break moves back to the last place the rules allow, and a justified line spreads what is left. In a line narrower than a number with its full stop, nothing may end the line, and it breaks before the full stop after all.
+
+Which paragraphs this applies to: those that hold more CJK characters (Han, kana, bopomofo, hangul) than word spaces, even with no two of them in a row (`第1条、第2条`, `价¥5,999。好`). A space next to a CJK character or mark is not a word space: `2026 年 9 月 28 日` is composed as `2026年9月28日` is. They are set line by line, on the plain and the formatted path alike, so a paragraph with a bold word breaks exactly as the same text without it. A Latin paragraph that quotes a Chinese title or name has more spaces than characters: it keeps optimal line breaking, and a line may break next to its CJK characters under the same rules. Captions, table cells, notes and boxes break at the document's level too. Dictionary hyphenation does not reach the Latin words of a CJK paragraph.
+
+A justified CJK line that is not the last of its paragraph is spread to the measure, in this order (clreq §6.2.2.4): the spaces between Western words, up to half an em each; the spaces between Han and Latin, up to half an em each; then every gap between characters, and those spaces, equally. No space goes inside a Latin word, a number or a two-em mark, nor next to a connector or a solidus. The spacing is set per segment of the line (`VDTLineSegment.tracking`, px after each character, part of the segment's `width`), which the canvas, HTML and PDF output paint as letter spacing; a Latin word followed by a gap gives its last letter a segment of its own. A segment holds one Western run, or characters of one style, link and spacing that advance alike, so the Sandbox spreads its width evenly over them when it places the cursor, and a link covers only its own characters. When a line would need more than half an em between its characters (or more than `bodyText.maxJustifyTracking`, when that is set), it is set with that much and ends short of the measure: the line is flagged `cjkLoose` and `ragged`, and the build reports a `cjkLooseLine` content warning with the line's text. A long Latin word or web address that cannot come up is the usual cause. A line with no CJK character on it (the head of a long web address) is set ragged without the warning, as a Latin line of one word is. See [Hyphenation &amp; Justification](/en/docs/justification#chinese-japanese-and-korean).
+
+### Punctuation widths
+
+A full-width Chinese mark is half an em of glyph and half an em of blank, and what the settings adjust is the blank, never the glyph (clreq §6.3.2). The blank sits before the glyph of an opening bracket or quote, after the glyph of a closing one, and after the glyph of the mainland's pause and stop marks 、，。．；：？！, which sit in the corner of their box; the marks Taiwan and Hong Kong centre (、，。．；：) and interpuncts keep a quarter em on each side. `？！` stay one em in horizontal Taiwan and Hong Kong text, and `：；？！` in vertical text everywhere. The mainland interpunct is half an em under every style, centred, in both writing modes (GB/T 15834, clreq §5.1): a full-width glyph gives up its blank on both sides, and in vertical text its cell is half an em to begin with.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '130px' }}>Style</th>
+      <th>Inside the line</th>
+      <th>At the end of the line</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fullwidth</code> (全角式)</td><td>Every mark one em.</td><td>One em; a closing bracket half, with <code>trimLineStart</code>.</td></tr>
+    <tr><td><code>kaiming</code> (开明式)</td><td>。．？！ one em; ，、；：, brackets, quotes and interpuncts half an em. Most mainland books.</td><td>Every mark half an em.</td></tr>
+    <tr><td><code>lineEndHalf</code> (行末半角)</td><td>Every mark one em.</td><td>Every mark half an em (GB/T 15834—2011 §5.1.10 read literally).</td></tr>
+    <tr><td><code>halfwidth</code> (半角式)</td><td>Every mark half an em, as in dictionaries.</td><td>Half an em.</td></tr>
+  </tbody>
+</table>
+
+With `compressAdjacent`, two marks that meet give up the blank between them (the eight rules of the earlier clreq drafts): a closing bracket after another closing one or after a mainland pause or stop mark (`。」`, not after the centred marks of Taiwan and Hong Kong), a pause or stop mark after a closing bracket (`」，`), an opening bracket after any of them or after another opening one (`，「`, `》（`, `「『`), and a quarter em between an interpunct and a closing bracket before it or an opening one after it. Never more than takes the pair to 1.5 em: under Kaiming `。”` already takes 1.5 em and keeps it, `》（` takes one em. Kaiming sets a stop's blank after a closing mark that follows it, with `compressAdjacent` or without: the two glyphs sit together and the half em comes after the quote (`。”␣母`, not `。␣”母`), and it goes at the end of a line as a stop's does. With `trimLineStart`, an opening bracket that starts a line gives up its leading blank, so its ink lines up with the text edge (on the first line of a paragraph it sits half an em into the indent), and a closing one that ends a line its trailing blank. A centred mark gives up a quarter em on each side, never half on one. When a line breaks between two marks, neither keeps the compression: each is set as a mark at a line edge (a full-width `，` whose `「` opens the next line ends its own line a full em).
+
+A line takes in a character that may not open the next line (push-in) when the blank it may still give up covers the overflow, in clreq's order: word spaces down to a quarter em, then interpuncts, brackets, pause marks, the spaces between Han and Latin down to an eighth of an em, and stop marks last, each step shared equally. `kaiming` lets only its stop marks go down to half an em, and only in this case: a line that is merely short of one more character is spread, so 。？！ keep their em inside the line. `lineEndHalf` lets every mark go down to half an em; `fullwidth` marks give up nothing (a full-width book keeps its grid), and `halfwidth` marks have nothing left.
+
+The marks Latin text shares with Chinese (“ ” ‘ ’ … — ·) take the box of a Chinese mark in Chinese text, whatever the font's own advance: LXGW WenKai draws “ ” 0.35 em wide, Noto Serif SC the em dash at 0.89 em and · at a third of an em. They count as Chinese when the nearest character on either side (past other such marks) is Chinese, or when nothing next to them is Western. An opening quote's glyph sits at the end of its one-em box, a closing one's at its start; an interpunct, an ellipsis and a single dash sit in the middle; an ellipsis pair (……) is set as the font sets the two together and centred in its two ems. A 破折号 (——) is one unbroken rule: each dash is stretched over its em from the face's own side bearing, the two strokes overlapping at the join, and raised to the centre of the characters (`VDTLineSegment.inkScale`, a paint-only scale). The style then adjusts the box like any other mark's. With Western text on both sides (`他说：He said “yes” and left.`) they keep the font's advance, and a glyph that is already one em wide changes nothing.
+
+The renderers keep the browser's own punctuation spacing out of the text. Chrome sets the first of two marks that meet half width when it measures or paints them in one run (`本）》录` in Noto Serif SC is 3.5 em that way), so two marks that meet are measured and painted apart, and HTML lines of CJK text carry `text-spacing-trim: space-all` and `text-autospace: no-autospace` with the `chws`, `halt` and `vchw` features off.
+
+In the VDT a mark that gave up blank is a segment of its own, its `width` the advance it keeps, with `inkOffset` (px) set: the renderers paint its glyph at `x + inkOffset`, so a mark that gave up the blank before its glyph (an opening bracket at a line start) is drawn that far before its box (a negative offset). A shared mark set in a Chinese box carries the place of its glyph in the box, less any blank given up before it, which may be positive. The PDF shows such a glyph with a character spacing that ends its advance where its box ends, so a reader never sees it run over the next character, and puts its line in an `/ActualText` span (see [Space between Han and Latin](#space-between-han-and-latin)). The region decides which side a mark's blank is on, not the font: set a book in a face of its region (Noto Serif SC for the mainland, TC for Taiwan, HK for Hong Kong); a Traditional font under a mainland tag compresses the wrong side of its centred marks.
+
+### Hanging punctuation
+
+`hangingPunctuation: 'allow'` lets one of 、，。． (on the mainland, whose marks sit at the start of their box, also ；：？！) hang past the end of the line when it would otherwise open the next one and compressing the line cannot take it in; never in horizontal Taiwan and Hong Kong text, whose centred marks would look cut off (in vertical text they may). In vertical text the hung mark sits under the foot of the line. `'force'` hangs such a mark whenever it ends a line (but the last line of a paragraph), and at once when it does not fit. A mark never hangs when another mark touches it (`。」`, `，「`). The hung segment is flagged `hangs`; the line's `bbox.width`, its justification and its alignment leave it out, and the canvas and PDF widen the column clip by the widest hung mark (`hangingPunctuationOverhang`), so it is never cut. Most Chinese books do not hang punctuation; clreq recommends it only with a character grid.
+
+### Space between Han and Latin
+
+`latinSpacing` (default a quarter em) sets a space between a Han character (or kana) and a Latin letter or European digit next to it: `用iPhone拍照` and `1999年` are set `用 iPhone 拍照` and `1999 年`. There is none at the start or end of a line, none between a Latin character and a Chinese mark (`用iPhone，` sets nothing before the comma), none inside Chinese brackets (`（iPhone）`), and none next to a sign that is no letter or digit (`为¥5,999`). A space the author typed at such a boundary (`用 iPhone 拍照`, as many web texts carry it) is replaced by the Han–Latin space, not added to, so the two spellings set alike; a no-break space or an ideographic space is left as it is. On a justified line it grows up to half an em before the characters are spread; on a line taking in a character that may not open the next line it shrinks down to an eighth of an em. A length in any unit other than em is converted at the page's dpi. `0` turns it off, and a space typed there stays a word space.
+
+The space is a segment of `kind: 'space'` flagged `autospace`, with empty `text` (or the space the author typed); its `width` is final, and the renderers' own space justification leaves it as it is. It is never in the plain text, so search, copy and paste and source ranges read the text as written. The PDF puts every line set in pieces (spread characters, Han–Latin spaces, marks that gave up blank or hang) in a `/Span` whose `/ActualText` is the line's text, so text extraction reads `用iPhone拍照`, not `用 iPhone 拍 照`, and reads a line with half-width marks as one line.
+
+### Numbers in vertical text
+
+In vertical text a Latin word or a long number is turned sideways, and a short number stands upright, its digits side by side in one cell of one em: tate-chu-yoko (縱中橫, [clreq §2.1.3](https://www.w3.org/TR/clreq/#x2-1-3-mixed-text-composition-in-vertical-writing-mode), [CSS `text-combine-upright`](https://www.w3.org/TR/css-writing-modes-4/#text-combine-upright)). `uprightDigits` sets how many digits such a number may have: `2` (the default), `3`, `4`, or `0` for none. `2026年9月28日` under `2` is 2026 sideways, 9 upright, and 28 upright in one cell.
+
+- The whole number or none of it: under `2` a three-digit number stays sideways, never split.
+- A number that touches a Latin letter (`A4`, `mp3`, `3D`) stays in its word, sideways; so does a number written with a decimal point or digit grouping (`3.14`, `10,000`).
+- Next to a sign Unicode sets upright each number takes its own cell: `30×40` is 30, ×, 40, all upright.
+- A cell of more characters than fit an em is squeezed across to the em; tracking and justification never go inside it, only after it.
+- For breaking and justifying, the cell counts as one Chinese character, and no Han–Latin space is set around it.
+- The measurer and every renderer find the same cells: the canvas paints the digits turned back upright and squeezed, the PDF likewise with the horizontal font, and the HTML wraps them in `text-combine-upright: all`.
+
+By hand, three inline marks override the setting in vertical text and change nothing in horizontal text (see [Document format › Orientation in vertical text](/en/docs/document-format#orientation-in-vertical-text)):
+
+```markdown
+第:tcy[120]回、:upright[GDP]與:sideways[12]
+```
+
+`:tcy[…]` sets its text in one upright cell, `:upright[…]` stands each character upright in a cell of its own (Latin letters centred in it), `:sideways[…]` turns the whole run, Chinese characters too. In the VDT a `:tcy` run is a segment with `tcy: true`, one em wide; an `:upright` or `:sideways` run carries `orientation`. The numbers set in one cell by `uprightDigits` carry no flag: `verticalRuns(graphemes, region, uprightDigits)` finds them.
+
+### Character grid
+
+A Chinese type area is specified in characters (clreq §7.1.1): the body size × characters per line × lines per page, plus the line gap and, with two columns, the gutter. `grid` sets it that way:
+
+```ts
+cjk: { grid: { enabled: true, charsPerLine: 28, linesPerPage: 28, show: true } }
+```
+
+When `enabled`, the configuration is rewritten before anything reads it: each column is `charsPerLine` ems of `bodyText.fontSize` wide, and the type area `linesPerPage` lines of `bodyText.lineHeight` tall; with `layoutType: 'double'` the gutter is `layout.gutterWidth` rounded to a whole number of ems, at least one. The margins in `page.margins` act as minimums: the type area is placed in the middle of the area they leave, each margin grown by half the room left over along its axis (a mirrored book keeps its inner and outer margins apart, both grown by the same amount). Left unset, `charsPerLine` and `linesPerPage` take as many as fit. A number larger than fits is reduced to what fits and reported as a `cjkGridClamped` config warning. The font size and line height stay as written. In a `oneAndHalf` layout `charsPerLine` is the main column's; the side column takes the whole number of ems nearest the width `sideColumnPercent` gives it inside the configured margins (at least one), the gutter is rounded like a two-column one, and `sideColumnPercent` is rewritten so both columns are cut in whole ems. In vertical text (`layout.writingMode: 'vertical-rl'`) the characters of a line run down the page and the lines across it, so `charsPerLine` measures the page's height, a `double` layout gives two tiers stacked top to bottom, and the overlay's cells stand on the axis the characters are centred on.
+
+Two layouts from Chinese practice, at 五号 (10.5 pt) with a 6 pt line gap (`lineHeight: 16.5pt`):
+
+- 大32开, 140 × 203 mm, 28 × 28: a 294 pt measure (103.7 mm) and a 462 pt type area (163 mm); `page.margins` of 16/20 mm inside and outside and 18/20 mm top and bottom leave room for it.
+- 16开, 184 × 260 mm, two columns of 23 characters at 小五 (9 pt, 13.5 pt lines) with a two-character gutter: 2 × 207 pt + 18 pt.
+
+`show` draws the grid (稿纸) over the type area, one light grey square per character position on each line (the character's em box around its baseline), on each column of the page (a `oneAndHalf` side column on the side the page's parity puts it), on the canvas and in the HTML. The PDF draws it only when `renderToPdf` is given `characterGrid: true`: it is a screen aid. `cjkGridGeometry(config)` returns the grid a config sets (numbers in use, margins, type area) and `applyCjkGrid(config)` the rewritten config.
+
+### Marks, ruby and warichu
+
+The markup of [Chinese marks, ruby and warichu](/en/docs/document-format#chinese-marks-ruby-and-warichu) keeps its text in the paragraph: search, the contents, index anchors and copied text read the characters as written, and only what is drawn around them depends on these settings.
+
+- **Emphasis dots** (着重号, `:dots[…]`, and `*…*` on Chinese characters under `emphasis: 'dots'`) take one dot per character, centred on it (the spacing of a justified line left out), never on punctuation or spaces: under the character in horizontal text, right of it in vertical text (clreq §5.3.1). `style` picks a filled dot, an open circle or a sesame dot, `fill="open"` draws the outline, `pos="over|under"` the side.
+- **Proper-name and book-title lines** (专名号 `:name[…]`, 书名号 `:book[…]` under `bookTitleMark: 'wavy'`) run under the characters' em box (left of it in vertical text), across the spaces inside the run. Where two runs meet, each end gives up an eighth of an em, so `:name[賈寶玉]:name[林黛玉]` reads as two names. When dots and a line mark the same text on one side, the line is nearer the text. Under `'brackets'` the 《》 are text the lines are broken with, painted and copied like any other character; they take no character of the plain text or the source map (the segments are flagged `inserted`).
+- **Ruby** readings sit in the line gap against the base's em box, centred on it; a reading that holds a Latin letter (pinyin) and stands over its base is raised by the depth of its face's descenders (g, j, p, q, y) and 0.04 em of the text more, so that they clear the base, and every reading of the line keeps one baseline; a reading wider than its base widens the base's box less a quarter of the ruby em it may pass onto a neighbour without a reading, and two readings keep a quarter of the ruby em apart (two zhuyin readings a quarter of the symbols' em, so three symbols beside each of two characters stay in their cells). A mono ruby (one reading per character) may break between its characters; a group ruby never breaks. At a line start or end, base and reading align to the edge (clreq §5.5.4). Zhuyin in horizontal text stands in a column right of each character, and the character's box grows by the column; in vertical text the same column runs down the right of the characters. The tone mark goes right of the column with half of its ink above the top of the last symbol (clreq §5.5.3.3), placed by its ink because fonts set these marks high in their em box, and in vertical text it stands upright, like the neutral-tone dot above the first symbol.
+- **Warichu** notes (双行夹注) fold into two rows at the note size, centred on the line with no gap between them. The upper row takes characters until it holds at least half of the part, so the second row is never the longer, and one more while the lower row would open with a mark that may not start a line. A note longer than the room left on a line fills it and goes on with the next line, column or page; its brackets go only before its first row and after its last. In vertical text the upper row is the right one, read first.
+
+The line pitch never changes: marks and readings live in the leading. A paragraph whose line gap (line height less the text size) is under half an em with marks on one side, or five eighths with marks on both sides (clreq §5.6.1), is reported as a `cjkMarksExceedLeading` content warning; one whose readings are taller than its gap (a pinyin reading counted with its lift), as `rubyExceedsLeading`. Give such paragraphs a paragraph style with more leading.
+
+In the VDT a marked segment carries `cjkMarks`, and the layout places the dots and lines on its lines as `VDTLine.marks` (dots, circles, sesames, straight and wavy lines, in the line's flow frame), which the canvas, HTML and PDF draw as they are (PDF: `Artifact /Layout`; HTML: `aria-hidden` boxes, dotted text in `<em>`). A ruby base's segment carries `ruby` (the reading and its runs) and paints its base at `inkOffset` when the reading spread it; a warichu note's part on a line is one segment whose `text` is its upper row then its lower one and whose `warichu` holds the rows the renderers paint instead. Tagged PDF puts a reading in the `RT` of its base's `Ruby` and a note in a `Warichu`, and the line's `/ActualText` reads the base text and the note once. Marks, readings and notes are drawn in body text, headings, lists and boxes; captions, table cells and design text keep the text without them.
+
+Resolver and stripper match the other sections; `setCjkLineBreak` and `setCjkComposition` set the level and the composition (punctuation widths, hanging, the Han–Latin space; `cjkCompositionOf(resolved.cjk, dpi)`) for measurements made outside `buildDocument`, which sets them from the config. Outside a build, marks keep their full advance and no Han–Latin space is set:
+
+```ts
+import { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOf, setCjkLineBreak, setCjkComposition, cjkCompositionOf } from 'postext';
+
+resolveCjkConfig(undefined, 'zh-HK');
+// { region: 'hongkong', lineBreak: 'basic', punctuationWidth: 'fullwidth', compressAdjacent: true,
+//   trimLineStart: true, hangingPunctuation: 'none', latinSpacing: { value: 0.25, unit: 'em' }, uprightDigits: 2,
+//   grid: { enabled: false, charsPerLine: 0, linesPerPage: 0, show: false },
+//   emphasis: 'dots', bookTitleMark: 'wavy',
+//   ruby: { fontSize: { value: 0.5, unit: 'em' }, position: 'auto' },
+//   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '', close: '' } }
+```
+
+In the Sandbox these settings are in **Design › Writing system › East Asian typography**.
 
 
 ## Resource types
@@ -3272,7 +3676,7 @@ const config: PostextConfig = {
       <td><code>continuedSuffix</code></td>
       <td><code>string</code></td>
       <td><code>'(cont.)'</code></td>
-      <td>Appended, in italics, to the caption of every continued part of a split table.</td>
+      <td>Appended, in italics, to the caption of every continued part of a split table, after a space; a suffix that opens with a Chinese or fullwidth character (<code>'（续）'</code>) is set solid against the caption.</td>
     </tr>
     <tr>
       <td><code>continuesMarkerEnabled</code></td>
@@ -3502,6 +3906,18 @@ const config: PostextConfig = {
       <td><code>object</code></td>
       <td>—</td>
       <td>Styling of the resource note — see the sub-table below.</td>
+    </tr>
+    <tr>
+      <td><code>labelNumberGap</code></td>
+      <td><code>string</code></td>
+      <td>no-break space</td>
+      <td>What stands between the label and the number, in the caption and in an inline <code>:ref</code>: <em>Figure 1.7</em>, <em>Fig. 1.7</em>. Chinese sets them solid: <code>''</code> gives 图1-1.</td>
+    </tr>
+    <tr>
+      <td><code>labelSeparator</code></td>
+      <td><code>string</code></td>
+      <td><code>'. '</code></td>
+      <td>What follows the number, before the description: <em>Figure 1.7. A caption</em>. Chinese captions take an ideographic space, <code>'　'</code> (图1-1　标题). A label without a number keeps its own rule: a full stop, unless the prefix ends in one.</td>
     </tr>
   </tbody>
 </table>
@@ -4258,7 +4674,7 @@ The glass stays hot for an hour after the flame is out.
       <td><code>continuedSuffix</code></td>
       <td><code>string</code></td>
       <td><code>'(cont.)'</code></td>
-      <td>Text after the repeated title, in the document language (<code>locale</code>, else the hyphenation locale), like a split table's.</td>
+      <td>Text after the repeated title, in the document language (<code>locale</code>, else the hyphenation locale), like a split table's, and joined to the title as a table's is.</td>
     </tr>
     <tr>
       <td><code>continuesMarkerEnabled</code></td>
@@ -4442,7 +4858,7 @@ const config: PostextConfig = {
       <td><code>design</code></td>
       <td><code>DesignSlot</code></td>
       <td>empty</td>
-      <td>Opener design. Its container is the page <strong>trim box</strong>, so container anchors and <code>'page'</code> anchors coincide and <code>'bleed'</code> runs to the bleed when cut lines are on. Purely decorative: it never reserves body space — raise <code>margins.top</code> to keep the body clear of it. When empty, a default <code>{'{number} {titleText}'}</code> text in the H1 typography is synthesised at the top-left of the body area.</td>
+      <td>Opener design. Its container is the page <strong>trim box</strong>, so container anchors and <code>'page'</code> anchors coincide and <code>'bleed'</code> runs to the bleed when cut lines are on. Purely decorative: it never reserves body space — raise <code>margins.top</code> to keep the body clear of it. When empty, a default <code>{'{number} {titleText}'}</code> text in the H1 typography is synthesised at the top-left of the body area, with the H1's <code>numberSeparator</code> between number and title.</td>
     </tr>
     <tr>
       <td><code>versoDesign</code></td>
@@ -4485,7 +4901,7 @@ const config: PostextConfig = {
 
 ### Part design placeholders
 
-The design slot resolves the heading placeholder set with the part's own values: `{titleText}` is the fence's `title`; `{number}` the `number` exactly as written; `{numberDecimal}`, `{numberRoman}`, `{numberRomanLower}`, `{numberAlpha}`, `{numberAlphaLower}` re-format it — the number is parsed as a decimal or a roman numeral (`"IV"`, `"iv"` and `"4"` all give `{numberDecimal}` = `4`), and resolve to `''` for anything else. `{partTitle}` / `{partNumber}`, `{chapterTitle}` / `{chapterNumber}` (the chapter before the part), `{pageNumber}`, `{totalPages}`, `{bookTotalPages}` and the metadata placeholders are available too. `{attr.<key>}` reads the current chapter's H1 attributes.
+The design slot resolves the heading placeholder set with the part's own values: `{titleText}` is the fence's `title`; `{number}` the `number` exactly as written; `{numberDecimal}`, `{numberRoman}`, `{numberRomanLower}`, `{numberAlpha}`, `{numberAlphaLower}` re-format it — the number is parsed as a decimal, a roman numeral or Chinese numerals, with or without the words that frame them (`"IV"`, `"iv"`, `"4"`, `"４"`, `"四"`, `"卷四"` and `"第四卷"` all give `{numberDecimal}` = `4`), and resolve to `''` for anything else. `{partTitle}` / `{partNumber}`, `{chapterTitle}` / `{chapterNumber}` (the chapter before the part), `{pageNumber}`, `{totalPages}`, `{bookTotalPages}` and the metadata placeholders are available too. `{attr.<key>}` reads the current chapter's H1 attributes.
 
 ### The verso design
 
@@ -4602,7 +5018,7 @@ const config: PostextConfig = {
       <td><code>runningChapter</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Whether a level-1 heading of this style becomes the running chapter: the chapter that <code>{'{chapterTitle}'}</code>, <code>{'{chapterNumber}'}</code>, <code>{'{attr.<key>}'}</code> and their <code>…AtTop</code> forms name on its page and the pages after it. <code>false</code> for a plate, a map or a cover set as an H1 inside a chapter: the running heads pass over it, on its own page too, and keep naming the chapter it interrupts; it sets no <code>h1</code> guide word either. The heading still counts when <code>numbered</code> (its own design reads its own <code>{'{chapterNumber}'}</code>) and is still listed by <code>:::toc</code> when <code>toc</code>. Headings of other levels ignore it. With the default, the pages after a plate print the plate's title. A preface or a prologue with <code>numbered: false</code> is still a chapter of its own and keeps the default. The option changes only which chapter the placeholders name: the style still opens a section of its own, as every heading style does, so up to the next level-1 heading the pages take the plate style's running-head slots, margins, columns, body style and palette (the document's where the style sets none), not those of a styled section the interrupted chapter opened. In a book laid out chapter by chapter, the running heads do not carry over from one chapter file to the next, so a plate that opens a file shows empty chapter placeholders until the file's first chapter heading.</td>
+      <td>Whether a level-1 heading of this style becomes the running chapter: the chapter that <code>{'{chapterTitle}'}</code>, <code>{'{chapterNumber}'}</code>, <code>{'{attr.<key>}'}</code> and their <code>…AtTop</code> forms name on its page and the pages after it. <code>false</code> for a plate, a map or a cover set as an H1 inside a chapter: the running heads pass over it, on its own page too, and keep naming the chapter it interrupts; it sets no <code>h1</code> guide word either. The heading still counts when <code>numbered</code> (its own design reads its own <code>{'{chapterNumber}'}</code>) and is still listed by <code>:::toc</code> when <code>toc</code>. With <code>toc: false</code> as well it gets no PDF bookmark: a chapter's plate on the page before its opener leaves the bookmarks to the chapters. Headings of other levels ignore it. With the default, the pages after a plate print the plate's title. A preface or a prologue with <code>numbered: false</code> is still a chapter of its own and keeps the default. The option changes only which chapter the placeholders name: the style still opens a section of its own, as every heading style does, so up to the next level-1 heading the pages take the plate style's running-head slots, margins, columns, body style and palette (the document's where the style sets none), not those of a styled section the interrupted chapter opened. In a book laid out chapter by chapter, the running heads do not carry over from one chapter file to the next, so a plate that opens a file shows empty chapter placeholders until the file's first chapter heading.</td>
     </tr>
     <tr>
       <td>level fields</td>
@@ -4785,7 +5201,7 @@ const config: PostextConfig = {
       <td><code>parts.design</code></td>
       <td><code>DesignSlot</code></td>
       <td>empty</td>
-      <td>Row design; its container is the row (column width × <code>height</code>). Placeholders: <code>{'{number}'}</code>, <code>{'{numberDecimal}'}</code>, <code>{'{numberRoman}'}</code>…, <code>{'{titleText}'}</code> and <code>{'{pageNumber}'}</code> (the part page's label; with <code>parts.page: false</code>, which opens no part page, the label of the page the part's content starts on, where its running heads switch to it; in a book laid out chapter by chapter, a fence that closes its chapter points at the first content page of the next chapter). Palette-linked colours take the part's own <code>palette</code>, so each section's row comes in its colour. When empty, <code>{'{number} {titleText}'}</code> and the page number are set in the level-1 entry typography.</td>
+      <td>Row design; its container is the row (column width × <code>height</code>). Placeholders: <code>{'{number}'}</code>, <code>{'{numberDecimal}'}</code>, <code>{'{numberRoman}'}</code>…, <code>{'{titleText}'}</code> and <code>{'{pageNumber}'}</code> (the part page's label; with <code>parts.page: false</code>, which opens no part page, the label of the page the part's content starts on, where its running heads switch to it; in a book laid out chapter by chapter, a fence that closes its chapter points at the first content page of the next chapter). Palette-linked colours take the part's own <code>palette</code>, so each section's row comes in its colour. When empty, <code>{'{number} {titleText}'}</code> (the H1's <code>numberSeparator</code> between them) and the page number are set in the level-1 entry typography.</td>
     </tr>
     <tr>
       <td><code>parts.height</code>, <code>marginTop</code>, <code>marginBottom</code></td>
@@ -4800,7 +5216,7 @@ The page labels are the ones the document prints. `buildDocument()` lays a docum
 
 ## Back-of-book index
 
-The `index` property configures what a `:::index` directive prints (see [Document format](/en/docs/document-format#back-of-book-index)): the terms marked with `:index[…]` and `:index{term="…"}` in the text, sorted, grouped by first letter, each with the pages it falls on. An entry is its term, a separator and its page numbers; its sub-entries follow, one indent step per level, and wrapped lines hang by `turnoverIndent` so they never line up with a sub-entry.
+The `index` property configures what a `:::index` directive prints (see [Document format](/en/docs/document-format#back-of-book-index)): the terms marked with `:index[…]` and `:index{term="…"}` in the text, sorted, grouped by first letter (by pinyin initial or stroke count in Chinese, see `groupBy`), each with the pages it falls on. An entry is its term, a separator and its page numbers; its sub-entries follow, one indent step per level, and wrapped lines hang by `turnoverIndent` so they never line up with a sub-entry.
 
 ```ts
 const config: PostextConfig = {
@@ -4879,7 +5295,7 @@ const config: PostextConfig = {
       <td><code>see</code></td>
       <td><code>{'{ label?, alsoLabel?, italic? }'}</code></td>
       <td>by language, italic</td>
-      <td>The words before a cross-reference. Unset, they follow the document language: <em>See</em> / <em>See also</em>, <em>Véase</em> / <em>Véase también</em>, <em>Voir</em> / <em>Voir aussi</em>…</td>
+      <td>The words before a cross-reference. Unset, they follow the document language: <em>See</em> / <em>See also</em>, <em>Véase</em> / <em>Véase también</em>, <em>Voir</em> / <em>Voir aussi</em>, 见 / 另见 (見 / 另見 in Traditional Chinese)… A Chinese index sets the reference after a full stop, with no space: <code>贾琏 12。见贾政</code>.</td>
     </tr>
     <tr>
       <td><code>locale</code></td>
@@ -4888,10 +5304,16 @@ const config: PostextConfig = {
       <td>The language whose alphabetical order sorts the entries (a BCP 47 tag, read by <code>Intl.Collator</code>). In Spanish <em>ñ</em> sorts after <em>n</em> and heads a group of its own; accents never change the order.</td>
     </tr>
     <tr>
+      <td><code>groupBy</code></td>
+      <td><code>'auto' | 'letter' | 'pinyin' | 'stroke' | 'none'</code></td>
+      <td><code>'auto'</code></td>
+      <td>What the group heads are. <code>'letter'</code>: the first letter of the sort key. <code>'pinyin'</code>: an entry that starts with a Han character files under the Latin initial of its pinyin reading (贾宝玉 under <code>J</code>), and a Latin sort key under its letter, after that letter's Chinese entries (the collator sets Latin letters after Chinese characters): <code>sort="jia mu"</code> ends the <code>J</code>. <code>'stroke'</code>: under the stroke count of the first character, <code>一畫</code>, <code>二畫</code>… (<code>一画</code>… in Simplified Chinese). <code>'none'</code>: no heads; symbols, numbers and words are set apart by <code>groups.marginTop</code> only. <code>'auto'</code> groups a Simplified Chinese index (<code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code>) by pinyin, a Traditional one (<code>zh-Hant</code>, <code>zh-TW</code>, <code>zh-HK</code>) by strokes, and every other language by letter. The entries sort in the collation the heads come from: a <code>zh-Hant</code> index grouped by pinyin sorts by pinyin. The readings and stroke counts are the collator's (CLDR); where it reads a character wrongly (重 as <em>zhòng</em> in 重阳, 行 as <em>xíng</em> in 行业), give the mark a <code>sort</code> key in characters that have only the reading you want, which sorts in place: <code>sort="崇阳"</code> for 重阳, <code>sort="航业"</code> for 行业. A browser without Chinese collation data prints a pinyin or stroke index with no heads.</td>
+    </tr>
+    <tr>
       <td><code>groups.enabled</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Print a letter head above each group of entries (<code>A</code>, <code>B</code>…, <code>0–9</code> for numbers, <code>Symbols</code> for the rest).</td>
+      <td>Print a head above each group of entries (<code>A</code>, <code>B</code>…, or the stroke count, <code>0–9</code> for numbers, <code>Symbols</code> for the rest; <code>数字</code> / <code>數字</code> and <code>符号</code> / <code>符號</code> in Chinese).</td>
     </tr>
     <tr>
       <td><code>groups.fontFamily</code>, <code>fontSize</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code></td>
@@ -4908,7 +5330,7 @@ const config: PostextConfig = {
     <tr>
       <td><code>groups.symbolsLabel</code>, <code>numbersLabel</code></td>
       <td><code>string</code></td>
-      <td>by language, <code>'0–9'</code></td>
+      <td>by language; <code>'0–9'</code>, <code>'数字'</code> / <code>'數字'</code> in Chinese</td>
       <td>The heads of the entries that start with a symbol and with a digit.</td>
     </tr>
   </tbody>
@@ -5523,6 +5945,7 @@ Four mistakes in the configuration itself are never silent, and no toggle hides 
 - **Unknown number format** — an ordered-list `numberFormat`, a `page.pageNumbering.format` or a resource type's `counterFormat` that is none of the [numbering format spellings](#numbering-format-spellings). It numbers in decimal.
 - **Font stack in a font family** — a `fontFamily` (or any `…FontFamily`) that holds a CSS font stack. The text is set in the stack's first family (see [One family per `fontFamily`](#one-family-per-fontfamily)).
 - **Side column with no room** — a `'oneAndHalf'` layout's `sideColumnPercent` (the document's, or a heading style's own `layout`) that would leave one of the columns under 1% of the content width, or that is not a number. The columns are cut at the nearest value both can take, and `used` names it (`sideColumnPercentClamped`; see the [`'oneAndHalf'` layout](#layout-types)).
+- **Character grid too large** — a `cjk.grid` with more characters per line or lines per page than the margins leave room for. The grid is set with the most that fit, and `used` names the number (`cjkGridClamped`; see [Character grid](#character-grid)).
 - **Unknown heading setting** — a key that `headings`, `headings.balancing`, a heading level, a heading style or a paragraph style does not have: a misspelt `letterSpacng`, a `tracking` borrowed from another tool, a `level` on a heading style, a `fontStyle: 'italic'` on a paragraph style (which takes `italic: true`). The engine ignores it (up to postext 1.4 it did so without a word). `value` is the key, `used` is empty, and `suggestion` names the setting it is closest to, when one is a letter or two away or differs only in case (`unknownConfigKey`).
 
 The Sandbox lists them in the **Checks** panel with the path of the setting. In code, `buildDocument` puts them on the document as `configWarnings` (absent when the configuration is clean), and `collectConfigWarnings(config)` returns them without laying anything out:
@@ -5602,6 +6025,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>malformedEmbed</code></td>
       <td>A <code>::name</code> line that is not a well-formed embed standing alone: <code>::resource</code> with an unquoted or single-quoted id or another attribute, or a line glued under a paragraph without a blank line.</td>
       <td>The line is set as text.</td>
+    </tr>
+    <tr>
+      <td><code>fullwidthMarkup</code></td>
+      <td>A line holds markup typed with a Chinese or Japanese input method: a <code>：：：</code> fence, a <code>＃</code> heading, a <code>［＾…］</code> footnote marker, <code>｛…｝</code> attributes after a fence or heading, or <code>＊＊…＊＊</code> bold. <code>typed</code> is the markup as written, <code>ascii</code> the form to type. One per line.</td>
+      <td>The line is set as text; nothing is converted.</td>
+    </tr>
+    <tr>
+      <td><code>attributeKeyInvalid</code></td>
+      <td>An attribute key holds letters outside ASCII (<code>作者=曹雪芹</code>); points at the key.</td>
+      <td>The attribute is ignored.</td>
     </tr>
     <tr>
       <td><code>unknownParagraphStyle</code></td>
@@ -6330,6 +6763,12 @@ The sandbox's `HtmlPreview` component (`packages/postext-sandbox/src/viewport/Ht
       <td>Embedded fonts from your <code>fontProvider</code>; selectable, searchable and tagged.</td>
     </tr>
     <tr>
+      <td>Vertical text (<code>layout.writingMode: 'vertical-rl'</code>)</td>
+      <td>Characters painted one cell at a time, turned back upright; vertical forms through a twin face (<code>loadVerticalAlternates</code>).</td>
+      <td>The flow in one box turned a quarter turn; each line turned back upright and set with <code>writing-mode: vertical-rl</code>, so the browser takes the vertical forms and stands the characters; short numbers in <code>text-combine-upright: all</code>; a dash, an ellipsis, an interpunct or a wave dash in a box of its cell (the browser would advance it by its horizontal width), a dash stretched to fill it by <code>flow.dashAdvances</code>.</td>
+      <td>Upright characters through an <code>Identity-V</code> twin of each font; see <a href="#vertical-text-in-the-pdf">Vertical text in the PDF</a>.</td>
+    </tr>
+    <tr>
       <td>Images</td>
       <td><code>registerResourceImage</code></td>
       <td>The <code>resourceImageUrl(fileId)</code> option; a grey placeholder box without it.</td>
@@ -6374,9 +6813,9 @@ npm install postext postext-pdf
 The package exposes a single entry point and a handful of types:
 
 - **`renderToPdf(doc, options): Promise<Uint8Array>`** — takes a `VDTDocument` (or a book's chapters as an array of them) and returns the raw PDF bytes.
-- **`PdfFontProvider`** — the callback signature `(family, weight, style) => Promise<Uint8Array>` that `renderToPdf` uses to request font bytes when it needs to embed a new family/weight/style combination.
-- **`RenderToPdfOptions`** — `{ fontProvider, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, onProgress?, onWarning?, rasterizeSvg? }`. `outlines`, `accessible` and `colorSpace` fall back to the document's `pdfGeneration` when left out (see [PDF generation (config)](#pdf-generation-config)). `resourceBytes` is described in [Resource bytes and print masters](#resource-bytes-and-print-masters); `onWarning` in [Which faces the provider is asked for](#which-faces-the-provider-is-asked-for) and [Warnings in the document](#warnings-in-the-document).
-- **`PdfWarning`** — a non-fatal problem reported through `onWarning`; narrow on `kind`: `'fontFallback'` (`PdfFontFallbackWarning`), a face set in another cut of its family, or `'missingImage'`, an image with no bytes drawn as a placeholder (reported only to an `onWarning` you pass; a font fallback without one goes to `console.warn`).
+- **`PdfFontProvider`** — the callback signature `(family, weight, style, request?) => Promise<Uint8Array | Uint8Array[]>` that `renderToPdf` uses to request font bytes when it needs to embed a new family/weight/style combination. `request.codePoints` holds the characters the pages set in that face; the answer is one file, or several that make the face together (see [Chinese, Japanese and Korean fonts](#chinese-japanese-and-korean-fonts)).
+- **`RenderToPdfOptions`** — `{ fontProvider, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, onProgress?, onWarning?, rasterizeSvg? }`. `outlines`, `accessible` and `colorSpace` fall back to the document's `pdfGeneration` when left out (see [PDF generation (config)](#pdf-generation-config)). `resourceBytes` is described in [Resource bytes and print masters](#resource-bytes-and-print-masters); `onWarning` in [Which faces the provider is asked for](#which-faces-the-provider-is-asked-for) and [Warnings in the document](#warnings-in-the-document). `characterGrid: true` prints the grid `cjk.grid.show` draws on screen, which the PDF otherwise leaves out (see [Character grid](#character-grid)).
+- **`PdfWarning`** — a non-fatal problem reported through `onWarning`; narrow on `kind`: `'fontFallback'` (`PdfFontFallbackWarning`), a face set in another cut of its family; `'missingGlyph'` (`PdfMissingGlyphWarning`), characters no file of a face has a glyph for; `'variableFontDefaultInstance'` (`PdfVariableFontWarning`), a variable font asked for at a weight other than its default instance; `'cffEmbeddedWhole'` (`PdfCffEmbeddedWholeWarning`), a CFF face over 2 MB embedded whole; or `'missingImage'`, an image with no bytes drawn as a placeholder (reported only to an `onWarning` you pass; the font warnings without one go to `console.warn`).
 - **`decompressWoff2(bytes): Uint8Array`** — helper that turns a WOFF2 file into TTF bytes, which is the format `pdf-lib` can embed directly.
 - **`createPdfWorker(options?)`**, from `postext-pdf/worker` — the same render on a Web Worker; see [Rendering the PDF on a worker](#rendering-the-pdf-on-a-worker).
 
@@ -6412,11 +6851,11 @@ window.open(url);
 
 ### Why a font provider?
 
-`pdf-lib` embeds real font files into the PDF — the browser's installed fonts are not available at render time, and a font you only loaded for on-screen measurement is not, on its own, enough to produce a self-contained PDF. `renderToPdf` scans the pages for every face they paint (one per `family|weight|style` combination — see [Which faces the provider is asked for](#which-faces-the-provider-is-asked-for)) and calls your provider once per unique combination. The provider returns a `Uint8Array` of **TTF or OTF** bytes; `pdf-lib` subsets and embeds them. Faces the provider answers with the same file, such as a regular cut standing in for the bold a family lacks, share one embedded font. A face no page ends up drawing with, such as the face of an SVG figure's text when the figure is drawn as a picture, is left out of the file.
+`pdf-lib` embeds real font files into the PDF — the browser's installed fonts are not available at render time, and a font you only loaded for on-screen measurement is not, on its own, enough to produce a self-contained PDF. `renderToPdf` scans the pages for every face they paint (one per `family|weight|style` combination — see [Which faces the provider is asked for](#which-faces-the-provider-is-asked-for)) and calls your provider once per unique combination. The provider returns a `Uint8Array` of **TTF or OTF** bytes, or a list of them for a face served as several files (see [Chinese, Japanese and Korean fonts](#chinese-japanese-and-korean-fonts)); `pdf-lib` subsets TrueType outlines and embeds CFF (`.otf`) files whole. Faces the provider answers with the same file, such as a regular cut standing in for the bold a family lacks, share one embedded font. A face no page ends up drawing with, such as the face of an SVG figure's text when the figure is drawn as a picture, is left out of the file.
 
-**Use per-weight static fonts, not a single variable font.** Google Fonts often serves one variable WOFF2 per family covering the whole weight axis. `pdf-lib` can only embed the default instance from a variable file, so a bold paragraph would render at regular weight. Fontsource publishes per-weight static WOFF2 files that solve this cleanly — this is the pattern the sandbox uses.
+**Use per-weight static fonts, not a single variable font.** Google Fonts often serves one variable WOFF2 per family covering the whole weight axis. `pdf-lib` can only embed the default instance from a variable file, so a bold paragraph would render at regular weight. Fontsource publishes per-weight static WOFF2 files that solve this cleanly — this is the pattern the sandbox uses. A variable file asked for at a weight other than its default instance is reported as a `variableFontDefaultInstance` warning.
 
-**Every word of the text lands where the layout put it.** In paragraphs, list items, quotes, boxes and other flowing text, each word starts at the position the VDT measured, so a difference between the browser's widths and the embedded face's never builds up along a line. A line with no inline formatting is painted as one text object that moves the pen between words; justified lines, centred ones and lines with formatting are painted word by word. A character the face has no glyph for, which the browser measured in another font and the PDF paints as the face's missing-glyph box, moves none of the words after it. A space the face lacks, such as a narrow no-break space or a figure space, takes the width the browser gave it, and invisible characters such as the word joiner and the zero-width space are not drawn. There are two exceptions. A line with right-to-left letters is still painted as one run (see [Languages and scripts](#languages-and-scripts)). Text placed by a design (running heads and footers, openers, box titles and other design elements) is set with the embedded face's own widths, so a glyph the face lacks there still moves the rest of its line.
+**Every word of the text lands where the layout put it.** In paragraphs, list items, quotes, boxes and other flowing text, each word starts at the position the VDT measured, so a difference between the browser's widths and the embedded face's never builds up along a line. A line with no inline formatting is painted as one text object that moves the pen between words; justified lines, centred ones and lines with formatting are painted word by word. A character the face has no glyph for, which the browser measured in another font and the PDF paints as the face's missing-glyph box, moves none of the words after it, and is reported once per face as a `missingGlyph` warning. A space the face lacks, such as a narrow no-break space or a figure space, takes the width the browser gave it, and invisible characters such as the word joiner and the zero-width space are not drawn. A non-breaking hyphen (U+2011) the face lacks is drawn with the face's hyphen (U+2010), or its hyphen-minus when it has no hyphen either, as the browser shows it; Open Sans and Outfit, among others, lack both. Neither case counts as a missing glyph. There are two exceptions. A line with right-to-left letters is still painted as one run (see [Languages and scripts](#languages-and-scripts)). Text placed by a design (running heads and footers, openers, box titles and other design elements) is set with the embedded face's own widths, so a glyph the face lacks there still moves the rest of its line.
 
 ### Which faces the provider is asked for
 
@@ -6498,6 +6937,61 @@ A production version should also:
 - **Fall back from italic to normal** when a family has no italic cut for the requested weight, rather than failing the whole render.
 - **Reuse the cache across renders** (keep the `bytesCache` module-scoped, not per-call) so regenerating the PDF after a config change is effectively free.
 
+### Chinese, Japanese and Korean fonts
+
+A CJK face does not come as one small file. Fontsource ships Noto Serif SC as about a hundred files per weight, each holding part of the characters and declared in the family's stylesheet with its `unicode-range` (`@fontsource/noto-serif-sc/400.css`); the browser downloads the files a page's text touches. The `latin` file that the provider above fetches holds no Han at all, and the named subsets are incomplete: `chinese-simplified` of Noto Serif SC lacks 釵, and `chinese-traditional` of Noto Serif TC has none of the full-width marks （），！？：；.
+
+So a provider may answer a face with several files. `renderToPdf` passes it the characters the pages set in that face (`request.codePoints`), collected from every chapter before anything is drawn, and the provider returns the files that hold them, in the order the browser looks them up. Each file is embedded as a subset of its own and each character is drawn from the first file that has a glyph for it: a chapter that touches 60 slices embeds 60 small subsets. A face asked for again, for the text of an SVG figure say, is asked only for the characters its files lack. A provider that returns one `Uint8Array` works as before. The sandbox provider reads the Fontsource stylesheet of the weight and style and fetches the files whose ranges hold the text; the core of it:
+
+```ts
+import type { PdfFontProvider } from 'postext-pdf';
+import { decompressWoff2 } from 'postext-pdf';
+
+type Slice = { url: string; ranges: Array<[number, number]> };
+
+async function fontsourceSlices(family: string, weight: number, style: 'normal' | 'italic'): Promise<Slice[]> {
+  const id = family.toLowerCase().replace(/\s+/g, '-');
+  const cssUrl = `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/${weight}${style === 'italic' ? '-italic' : ''}.css`;
+  const css = await (await fetch(cssUrl)).text();
+  return [...css.matchAll(/@font-face\s*{([^}]*)}/g)].map(([, rule]) => ({
+    url: new URL(/url\(\.?\/?([^)]+\.woff2)\)/.exec(rule)![1], cssUrl).href,
+    ranges: /unicode-range:\s*([^;]+);/.exec(rule)![1].split(',').map((part) => {
+      const [lo, hi = lo] = part.trim().slice(2).split('-');
+      return [parseInt(lo, 16), parseInt(hi, 16)] as [number, number];
+    }),
+  }));
+}
+
+export const sliceFontProvider: PdfFontProvider = async (family, weight, style, request) => {
+  // Where ranges overlap, the browser tries the last rule first.
+  const slices = (await fontsourceSlices(family, weight, style)).reverse();
+  const picked = new Set<Slice>();
+  for (const cp of request?.codePoints ?? []) {
+    const slice = slices.find((s) => s.ranges.some(([lo, hi]) => cp >= lo && cp <= hi));
+    if (slice) picked.add(slice);
+  }
+  if (picked.size === 0) picked.add(slices[0]!);
+  return Promise.all(slices.filter((s) => picked.has(s)).map(async (s) =>
+    decompressWoff2(new Uint8Array(await (await fetch(s.url)).arrayBuffer()))));
+};
+```
+
+A Latin family goes through the same code: English text gets its `latin` file alone, Czech gets `latin` and `latin-ext`.
+
+Characters that no file of the face has a glyph for are drawn as the font's `.notdef` glyph (an empty box in most fonts), and `renderToPdf` reports them once per face after the pages are drawn:
+
+```ts
+// { kind: 'missingGlyph', family: 'Noto Serif TC', weight: 400, style: 'normal',
+//   characters: ['，', '！', '？'], message: '…' }
+```
+
+The Sandbox lists these, and the two warnings below, in its Checks panel after each PDF it generates. When the book, its settings or its resources change, they are marked as coming from an earlier PDF until the next one replaces them; opening another book clears them.
+
+- **Bold needs a static file per weight.** Fontsource serves each weight of Noto Serif SC and TC as separate static files, so bold works in the Sandbox. The Google Fonts files (`NotoSerifSC[wght].ttf`, 25 MB) are variable fonts: pdf-lib embeds their default instance, so a 700 face prints at 400, and `renderToPdf` reports it as `variableFontDefaultInstance`. For a bundle, cut one static instance per weight with fontTools (`fonttools varLib.instancer NotoSerifSC[wght].ttf wght=700`) and subset it to the book's characters with `pyftsubset`.
+- **Use TrueType builds.** Source Han Serif and the Noto Serif CJK `.otf` files have CFF outlines, which postext-pdf embeds whole, 8 to 25 MB per weight; a CFF face over 2 MB is reported as `cffEmbeddedWhole`. The TrueType builds (Google Fonts, Fontsource) are subset to the glyphs used.
+
+A character missing from one family is not taken from another: Noto Serif TC does not borrow from Noto Serif SC. Settle coverage when you build the font files; the 红楼梦 showcase copies the glyphs its TC subsets lack from the SC face.
+
 ### Server-side font provider (Node, local files)
 
 In Node you can skip the WOFF2 step entirely and read TTF/OTF files from disk:
@@ -6552,6 +7046,20 @@ const pdf = await renderToPdf(buildDocument({ markdown, resources }, config), {
 ```
 
 A host may also return the master's bytes for the SVG's own id, as `bundleResourceBytes` does; both ways work.
+
+### Vertical text in the PDF
+
+A vertical page (`layout.writingMode: 'vertical-rl'`) is drawn through a quarter-turn frame, as the canvas paints it, and its text is set down the column:
+
+- **Upright characters** are shown through a second Type0 font of the same embedded file: the same CIDFont, widths and ToUnicode map, with `Encoding /Identity-V` (vertical mode). One run of characters is one text object whose glyphs advance one em down the column by themselves (`DW2 [880 −1000]`), so readers select and extract a column as one line. The glyphs are shaped with OpenType `vert` and `fwid`, which gives brackets, quotes, mainland pause marks, ellipses and dashes their vertical forms; a character that stands upright as it is keeps its horizontal glyph. Nothing of the font is embedded twice.
+- **Latin words and long numbers** run sideways with the horizontal font; **a number in one cell** stands upright, squeezed across to the em when wider; a mark the font has no vertical form for is turned or moved, as on the canvas.
+- **Tracking** between characters is written as `TJ` numbers, which in vertical mode move the pen down the column.
+- **Every vertical line** is marked with an `/ActualText` of its text, so copying and text extraction read it as written. `pdftotext` and pdf.js read the columns top to bottom, right to left; pdf.js starts a new line at a number set in one cell.
+- **Links, bookmarks and destinations** are mapped onto the sheet: a link over a vertical line is a tall, thin rectangle, and a bookmark opens the page at the top of its heading's column.
+- **A tagged PDF** declares the writing mode on its `Document` element (the Layout attribute `WritingMode /TbRl`, which every element inherits); PDF/UA-1 validation (veraPDF) passes on a vertical chapter.
+- **Viewers:** Acrobat, Preview, Chrome (PDFium), pdf.js and Poppler render the vertical fonts. A right-bound book (`page.binding`) also asks viewers to lay its spreads out right to left (`/Direction /R2L`, `/PageLayout /TwoPageRight`); Acrobat and Foxit follow it, Chrome does not.
+
+A 43-page chapter set in Noto Serif TC (the book's characters, TrueType) is about 820 KB, of which the two font subsets are most.
 
 ### Links in the PDF
 
@@ -6746,7 +7254,7 @@ Four helpers connect an opened bundle to the engine and the backends:
 - **`loadBundleFonts(bundle)`** registers the bundle's faces with `document.fonts`. Await it before laying out, because layout measures text with the fonts the browser has. Families the bundle names but does not carry (Google Fonts) still have to be loaded by you, as in any other document.
 - **`registerBundleImages(bundle)`** decodes the pictures for the canvas backend (`renderPage`, `renderToCanvas`). **`bundleImageUrl(bundle)`** is the `resourceImageUrl` resolver for `renderToHtml`. Both recolour SVG figures when `diagramStyle.singleInk` is on, once: they recolour the markup and flag the pictures so that no backend tints them again (see [Single ink on canvas and in HTML](#single-ink-on-canvas-and-in-html)).
 - **`buildBundle(bundle)`** lays the chapters out in order and returns one `VDTDocument` per chapter. Each chapter continues the one before it: heading and resource counters, the open part, page parity and page numbering. A chapter that prints the contents (`:::toc`) or the index (`:::index`) receives the whole book's outline. It takes the same options as `buildDocument`, plus `config` to override the bundle's configuration, `cache` to share a measurement cache and `metadata` (see below).
-- **`bundleResourceBytes(bundle)`** and **`bundleFontProvider(bundle, { decodeWoff2, fallback })`** are the `resourceBytes` and `fontProvider` options of `postext-pdf`'s `renderToPdf`. The font provider picks the nearest weight of the requested style from the bundle. For a `.woff2` face it needs `decompressWoff2`, and for a family the bundle does not carry it calls `fallback`.
+- **`bundleResourceBytes(bundle)`** and **`bundleFontProvider(bundle, { decodeWoff2, fallback })`** are the `resourceBytes` and `fontProvider` options of `postext-pdf`'s `renderToPdf`. The font provider picks the nearest weight of the requested style from the bundle. For a `.woff2` face it needs `decompressWoff2`, and for a family the bundle does not carry it calls `fallback` with the renderer's arguments, `request` included, and passes on whatever it returns. A fallback that fetches only a family's `latin` file prints a Chinese family the bundle does not embed as empty boxes; one that answers with slices, such as `sliceFontProvider` in [Chinese, Japanese and Korean fonts](#chinese-japanese-and-korean-fonts), prints it whole.
 
 ```ts
 import { openBundle, loadBundleFonts, registerBundleImages, buildBundle, renderPage,

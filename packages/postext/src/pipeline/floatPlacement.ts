@@ -80,14 +80,16 @@ export interface PlannedFloat {
 /** Resolve a resource's placement: own `placement` → its type's
  *  `defaultPlacement` → the built-in default (`auto` / `column`). A rotated
  *  resource is always a page-span float; an inline (`here`) embed is never
- *  rotated. */
+ *  rotated, and neither is any resource of a vertical flow (`noRotation`:
+ *  every resource there stands upright, in its own span). */
 export function resolveResourcePlacement(
   resource: Resource,
   type: ResourceType | undefined,
+  noRotation = false,
 ): ResolvedPlacement {
   const position =
     resource.placement?.position ?? type?.defaultPlacement?.position ?? 'auto';
-  const rotate = position === 'here'
+  const rotate = position === 'here' || noRotation
     ? undefined
     : (resource.placement?.rotate ?? type?.defaultPlacement?.rotate);
   const span = rotate ? 'page' : (resource.placement?.span ?? type?.defaultPlacement?.span ?? 'column');
@@ -115,7 +117,13 @@ export function computeFloatPlan(
   resources: Resource[],
   resourceTypes: ResourceType[],
   incorporated?: ReadonlySet<string>,
+  /** A vertical flow: no resource is turned (see `resolveResourcePlacement`).
+   *  Either for the whole document or per content block (the block a
+   *  resource is first referred to in: a styled section may set its own
+   *  writing mode). */
+  noRotation: boolean | ((blockIdx: number) => boolean) = false,
 ): PlannedFloat[] {
+  const noRotationAt = typeof noRotation === 'function' ? noRotation : () => noRotation;
   const resourceById = new Map<string, Resource>();
   for (const r of resources) resourceById.set(r.id, r);
   const typeById = new Map<string, ResourceType>();
@@ -130,12 +138,16 @@ export function computeFloatPlan(
     const resource = resourceById.get(resourceId);
     if (!resource) return;
     const type = typeById.get(resource.typeId);
-    const { position, span, rotate, widthFraction, align, captionSide } = resolveResourcePlacement(resource, type);
+    const upright = noRotationAt(blockIdx);
+    const { position, span, rotate, widthFraction, align, captionSide } = resolveResourcePlacement(resource, type, upright);
     if (position === 'here') return;
     plan.push({
       resourceId, firstBlockIdx: blockIdx, position, span,
       ...(rotate ? { rotate } : {}),
-      ...(widthFraction < 1 && !rotate ? { widthFraction, align } : {}),
+      ...(widthFraction < 1 && !rotate
+        ? { widthFraction, align }
+        // A vertical flow's upright figure keeps its alignment along the tier.
+        : upright && align !== 'left' ? { align } : {}),
       ...(captionSide && span === 'column' ? { captionSide } : {}),
     });
   };

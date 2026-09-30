@@ -27,6 +27,7 @@ import {
   collectConfigWarnings,
   collectHeadingDesignCuts,
   parseNumberFormat,
+  isCjkLanguage,
   matchHyphenationLocale,
   findLooseLines,
 } from 'postext';
@@ -35,10 +36,12 @@ import {
   getConfigFontFamilies,
   getCustomFontFamily,
   missingUsedVariants,
+  hasLatinEmphasis,
   isKnownUnavailableGoogleFont,
   isRemovedCustomFontFamily,
 } from '../controls/fontLoader';
 import type { Warning, WarningPayload } from './types';
+import type { PdfFontCheck } from '../controls/pdfFontWarnings';
 import type { ComposedBook } from '../book/types';
 import { fromBookLine, fromBookOffset } from '../book/compose';
 import { frontmatterRange } from '../book/frontmatter';
@@ -80,6 +83,9 @@ function collectLooseLineWarnings(
   const out: Warning[] = [];
   let idx = 0;
   for (const { block, line, ratio } of findLooseLines(doc, { threshold })) {
+    // A CJK line set short at its tracking cap has a warning of its own
+    // (`cjkLooseLine`, from the layout).
+    if (line.cjkLoose) continue;
     const sourceStart = line.sourceStart ?? block.sourceStart;
     const sourceEnd = line.sourceEnd ?? block.sourceEnd;
     out.push({
@@ -103,7 +109,11 @@ function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warning[] {
   // What `:::index` raised: cross-references and ranges are only known
   // once the whole book's marks reach the index chapter.
   (doc.contentWarnings ?? []).forEach((w, i) => {
-    if (w.kind !== 'indexSeeUnknown' && w.kind !== 'indexRangeUnclosed') return;
+    // …the justified CJK lines set short at their tracking cap, and the
+    // paragraphs whose leading is too tight for their Chinese marks or
+    // ruby readings.
+    if (w.kind !== 'indexSeeUnknown' && w.kind !== 'indexRangeUnclosed' && w.kind !== 'cjkLooseLine'
+      && w.kind !== 'cjkMarksExceedLeading' && w.kind !== 'rubyExceedsLeading') return;
     const payload: Record<string, unknown> = { ...w };
     delete payload.sourceStart;
     delete payload.sourceEnd;
@@ -873,11 +883,38 @@ export function computeWarnings(params: {
   book?: ComposedBook;
   /** Chapter titles by id (for `chapterFrontmatterIgnored`). */
   chapterTitles?: ReadonlyMap<string, string>;
+  /** The font warnings of the last PDF generated (see `pdfFontChecksFor`):
+   *  `missingGlyph`, `variableFontDefaultInstance`, `cffEmbeddedWhole`. */
+  pdfFontChecks?: readonly PdfFontCheck[];
+  /** The book has changed since that PDF: its warnings are marked so. */
+  pdfFontChecksStale?: boolean;
 }): Warning[] {
-  const { markdown, config, doc, resources = [], storageUnavailable = false, unavailableImages, book, chapterTitles } = params;
+  const { markdown, config, doc, resources = [], storageUnavailable = false, unavailableImages, book, chapterTitles, pdfFontChecks = [], pdfFontChecksStale = false } = params;
   const warnings = computeDocumentWarnings({ markdown, config, doc, resources, storageUnavailable, unavailableImages, bookMetadata: book?.metadata });
+  warnings.push(...pdfFontWarnings(pdfFontChecks, pdfFontChecksStale));
   if (!book) return warnings;
   return attributeToChapters(warnings, book, chapterTitles);
+}
+
+/** The Checks-panel entries of the last PDF's font warnings, one per face
+ *  and kind. They point at no place in the text. `stale`: the book has
+ *  changed since that PDF, and each entry says so. */
+export function pdfFontWarnings(checks: readonly PdfFontCheck[], stale = false): Warning[] {
+  const out: Warning[] = [];
+  const seen = new Set<string>();
+  for (const check of checks) {
+    const id = `pdf-${check.kind}-${check.family}-${check.weight}-${check.style}`;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    const face = { family: check.family, weight: check.weight, style: check.style, ...(stale ? { stale: true as const } : {}) };
+    const payload: WarningPayload = check.kind === 'missingGlyph'
+      ? { kind: 'missingGlyph', ...face, characters: [...check.characters] }
+      : check.kind === 'variableFontDefaultInstance'
+        ? { kind: 'variableFontDefaultInstance', ...face, defaultWeight: check.defaultWeight }
+        : { kind: 'cffEmbeddedWhole', ...face, bytes: check.bytes };
+    out.push({ id, payload });
+  }
+  return out;
 }
 
 /** Add chapter attribution to every located warning and flag later chapters
@@ -979,6 +1016,9 @@ function computeDocumentWarnings(params: {
   const debug = resolveDebugConfig(config.debug);
   const toggles = debug.warnings;
   const warnings: Warning[] = [];
+  // Always parse so we can surface math issues (unclosed delimiters) even
+  // when other toggles are off.
+  const { blocks, issues } = parseMarkdownWithIssues(markdown);
 
   if (toggles.missingFont) {
     // Duplicate (weight, style) slots apply to every declared custom
@@ -1003,12 +1043,15 @@ function computeDocumentWarnings(params: {
 
     const families = getConfigFontFamilies(config);
     const specMissing = new Set(detectMissingFonts(config));
+    // Where emphasis is set as dots, only the Latin letters and digits of
+    // `*…*` ask the body family for its italics.
+    const text = { latinEmphasis: hasLatinEmphasis(blocks) };
     for (const family of families) {
       const custom = getCustomFontFamily(family);
       if (custom) {
         // Custom family still declared: report the variants the
         // configuration asks of it (weight × style) that have no file.
-        const missingVariants = missingUsedVariants(custom, config);
+        const missingVariants = missingUsedVariants(custom, config, text);
         if (missingVariants.length > 0) {
           warnings.push({
             id: `missing-font-variant-${family}`,
@@ -1038,9 +1081,6 @@ function computeDocumentWarnings(params: {
     }
   }
 
-  // Always parse so we can surface math issues (unclosed delimiters) even
-  // when other toggles are off.
-  const { blocks, issues } = parseMarkdownWithIssues(markdown);
   if (toggles.headingHierarchy) {
     warnings.push(...collectHeadingHierarchyWarnings(blocks, markdown));
   }
@@ -1112,11 +1152,12 @@ function computeDocumentWarnings(params: {
 /** The document's hyphenation language — its hyphenation locale, else its
  *  `locale` — when no patterns ship for it: the engine falls back to en-us
  *  (and says so only on the console). Not while hyphenation is switched
- *  off, which is the remedy. */
+ *  off, which is the remedy, nor for Chinese, Japanese or Korean, which are
+ *  set without hyphenation (the engine switches it off for them). */
 export function collectHyphenationLocaleWarnings(config: PostextConfig): Warning[] {
   if (config.bodyText?.hyphenation?.enabled === false) return [];
   const tag = config.bodyText?.hyphenation?.locale?.trim() || config.locale?.trim();
-  if (!tag || matchHyphenationLocale(tag)) return [];
+  if (!tag || matchHyphenationLocale(tag) || isCjkLanguage(tag)) return [];
   return [{ id: `unsupported-hyphenation-locale-${tag}`, payload: { kind: 'unsupportedHyphenationLocale', locale: tag } }];
 }
 

@@ -1,8 +1,8 @@
 'use client';
 
 import { Plus, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
-import { useSandboxLabels } from '../../../context/SandboxContext';
-import { DEFAULT_TEXT_ELEMENT, DEFAULT_RULE_ELEMENT, DEFAULT_BOX_ELEMENT } from 'postext';
+import { useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext';
+import { DEFAULT_TEXT_ELEMENT, DEFAULT_RULE_ELEMENT, DEFAULT_BOX_ELEMENT, resolveBodyTextConfig } from 'postext';
 import type {
   DesignSlot,
   DesignElement,
@@ -22,6 +22,7 @@ import { RuleElementEditor } from './RuleElementEditor';
 import { BoxElementEditor } from './BoxElementEditor';
 import { ImageElementEditor } from './ImageElementEditor';
 import { applyAlign, type SlotKind } from './placementAdapter';
+import { foreEdgeElements } from './foreEdge';
 
 interface SlotEditorProps {
   slotKey: SlotKind;
@@ -38,6 +39,7 @@ function generateId(kind: 'text' | 'rule' | 'box' | 'image', used: Set<string>):
 
 export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps) {
   const labels = useSandboxLabels();
+  const bodyTextRaw = useSandboxSelector((s) => s.config.bodyText);
 
   // When there's no override, show the resolved (library-default) elements
   // so the list is never mysteriously empty. Any edit then materialises the
@@ -92,6 +94,12 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
       placement: { anchor: { to: 'container', edge: 'top-left' }, size: { width: { value: 20, unit: 'mm' }, height: 'auto' } },
     };
     commit([...currentRaw, template]);
+  };
+
+  /** The fore-edge heads of a vertical book, at 80 % of the body size
+   *  (see `foreEdgeElements`). */
+  const addForeEdge = () => {
+    commit([...currentRaw, ...foreEdgeElements(existingIds, resolveBodyTextConfig(bodyTextRaw).fontSize)]);
   };
 
   const updateAt = (index: number, next: DesignElement) => {
@@ -233,6 +241,13 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
         <AddButton label={labels.headerFooterAddBox} onClick={addBox} />
         <AddButton label={labels.headerFooterAddImage} onClick={addImage} />
       </div>
+      {slotKey === 'header' && (
+        <div className="mt-2 flex gap-2">
+          <Button variant="outline" size="xs" icon={<Plus size={12} />} onClick={addForeEdge} title={labels.headerFooterAddForeEdgeTooltip}>
+            {labels.headerFooterAddForeEdge}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

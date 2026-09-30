@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowDown, ArrowUp, GripVertical, MoreHorizontal, Pencil, Plus, Scissors, Trash2, Merge } from 'lucide-react';
-import { useBookContent, useBookPlan, useSandboxDispatch, useSandboxLabels } from '../../context/SandboxContext';
+import { isCjkLanguage } from 'postext';
+import { useBookContent, useBookPlan, useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { h1Count, newChapter, wordCount } from '../../book/chapterOps';
 import { chapterPageLabels } from '../../book/pagination';
+import { chapterMenuEntries, partLabel } from '../../book/chapterMenu';
 import type { Chapter, ChapterPages } from '../../book/types';
 import { generateChapterId } from '../../storage/projects';
 import { ConfirmPopover, IconButton, ListRow, Menu, MenuItem, MenuSeparator, cn } from '../../ui';
@@ -55,6 +57,15 @@ export function ChapterList() {
   // A book that numbers nothing (a magazine's front matter plus sections
   // carried by parts) would show a column of dashes: drop it.
   const anyNumbered = chapters.some((c) => plan.byId[c.id]?.number != null);
+  // A book in parts: the first chapter of each part carries its header
+  // (inside the row's own item, so dragging still counts rows).
+  const partStarts = useMemo(() => {
+    const starts = new Map<number, string>();
+    for (const entry of chapterMenuEntries(chapters.map((c) => ({ id: c.id, title: c.title, number: null, ...(plan.byId[c.id]?.part ? { part: plan.byId[c.id]!.part } : {}) })))) {
+      if (entry.kind === 'part') starts.set(entry.firstIndex, partLabel(entry.part));
+    }
+    return starts;
+  }, [chapters, plan]);
 
   return (
     <section
@@ -74,6 +85,7 @@ export function ChapterList() {
               isActive={c.id === activeChapterId}
               number={anyNumbered ? plan.byId[c.id]?.number ?? null : undefined}
               pages={plan.bookPages[c.id] ?? null}
+              part={partStarts.get(i)}
               dragging={drag?.id === c.id}
               handleProps={handleProps(c.id, i)}
             />
@@ -103,12 +115,14 @@ interface ChapterRowProps {
    *  numbers no chapter at all: the number column goes away. */
   number: number | null | undefined;
   pages: ChapterPages | null;
+  /** The part this chapter opens in the list (its header text), if any. */
+  part?: string;
   /** Whether this row is the one being dragged (drawn faded). */
   dragging: boolean;
   handleProps: RowDragHandleProps;
 }
 
-function ChapterRow({ chapter, index, total, isActive, number, pages, dragging, handleProps }: ChapterRowProps) {
+function ChapterRow({ chapter, index, total, isActive, number, pages, part, dragging, handleProps }: ChapterRowProps) {
   const labels = useSandboxLabels();
   const dispatch = useSandboxDispatch();
   const [editing, setEditing] = useState(false);
@@ -127,14 +141,17 @@ function ChapterRow({ chapter, index, total, isActive, number, pages, dragging, 
     if (next && next !== chapter.title) dispatch({ type: 'RENAME_CHAPTER', payload: { id: chapter.id, title: next } });
   };
 
-  const headings = h1Count(chapter.markdown);
-  const words = wordCount(chapter.markdown);
+  // The list re-renders while pages are counted: count once per text.
+  const headings = useMemo(() => h1Count(chapter.markdown), [chapter.markdown]);
+  const words = useMemo(() => wordCount(chapter.markdown), [chapter.markdown]);
+  // A Chinese, Japanese or Korean book counts characters (字数).
+  const cjk = useSandboxSelector((s) => isCjkLanguage(s.config.locale));
   const range = pages ? chapterPageLabels(pages) : null;
   const pagesText = range
     ? labels.chapterPages.replace('__from__', range.from).replace('__to__', range.to)
     : labels.chapterPagesUnknown;
   const numberText = number === null ? '–' : number === undefined ? '' : String(number);
-  const subtitle = `${pagesText} · ${labels.chapterWords.replace('__n__', words.toLocaleString())}`;
+  const subtitle = `${pagesText} · ${(cjk ? labels.chapterCharacters : labels.chapterWords).replace('__n__', words.toLocaleString())}`;
 
   const ask = (message: string, action: () => void) => {
     setConfirm({ message, action });
@@ -163,6 +180,15 @@ function ChapterRow({ chapter, index, total, isActive, number, pages, dragging, 
 
   return (
     <li className="mb-0.5">
+      {part && (
+        <div
+          className={cn('truncate px-1 pb-1 text-[10px] font-semibold uppercase tracking-wide', index === 0 ? 'pt-0.5' : 'pt-2')}
+          style={{ color: 'var(--slate)' }}
+          title={part}
+        >
+          {part}
+        </div>
+      )}
       <ListRow
         selected={isActive}
         className={cn(dragging && 'opacity-40')}

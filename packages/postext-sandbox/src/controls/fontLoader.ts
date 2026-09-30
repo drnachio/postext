@@ -1,7 +1,10 @@
-import type { CustomFontFamily, CustomFontVariant, PostextConfig } from 'postext';
+import type { ContentBlock, CustomFontFamily, CustomFontVariant, PostextConfig, VerticalAlternatesFace } from 'postext';
 import type { FontPayload } from 'postext/worker';
 import {
   DEFAULT_TEXT_ELEMENT,
+  defaultCjkEmphasis,
+  loadVerticalAlternates,
+  unregisterVerticalAlternates,
   primaryFontFamily,
   resolveBodyTextConfig,
   resolveHeaderFooterConfig,
@@ -438,10 +441,13 @@ export async function collectFontPayloadsForFamilies(
 // ---------------------------------------------------------------------------
 
 const customFontRegistry = new Map<string, CustomFontFamily>();
-/** Names of families that have ever been registered as a custom font in
- *  this session. Seeded by every `setCustomFonts` call so `hasBeen…`
- *  checks can distinguish "deleted a custom I had declared" from "never
- *  seen this name". Never pruned — membership is monotonic. */
+/** Names of families registered as a custom font since the book on screen
+ *  was opened. Seeded by every `setCustomFonts` call so
+ *  `isRemovedCustomFontFamily` can tell "deleted a custom family I had
+ *  declared" from "never seen this name". Emptied when another book comes
+ *  in (`newBook`): a family the last book bundled may be a Google Font the
+ *  next one asks for by name (紅樓夢 bundles Noto Serif SC; the guide's
+ *  Chinese edition loads it from Google Fonts). */
 const everSeenCustomFamilies = new Set<string>();
 /** Listeners notified when the set of known custom families changes. The
  *  payload is the list of family names whose definition changed, was added,
@@ -462,8 +468,11 @@ function familySignature(f: CustomFontFamily): string {
 }
 
 /** Replace the sandbox's known custom fonts. Invalidates every cached
- *  loader state for families that changed, added, or were removed. */
-export function setCustomFonts(list: CustomFontFamily[] | undefined): void {
+ *  loader state for families that changed, added, or were removed.
+ *  `newBook`: the list is another book's (a preset, a project, a draft
+ *  opened), not an edit of this one's, so the families left out were not
+ *  deleted by the author. */
+export function setCustomFonts(list: CustomFontFamily[] | undefined, options: { newBook?: boolean } = {}): void {
   const next = new Map<string, CustomFontFamily>();
   for (const f of list ?? []) next.set(f.name, f);
 
@@ -477,6 +486,7 @@ export function setCustomFonts(list: CustomFontFamily[] | undefined): void {
   }
 
   customFontRegistry.clear();
+  if (options.newBook) everSeenCustomFamilies.clear();
   for (const [name, fam] of next) {
     customFontRegistry.set(name, fam);
     everSeenCustomFamilies.add(name);
@@ -532,9 +542,9 @@ export function isCustomFontFamily(name: string): boolean {
   return customFontRegistry.has(name);
 }
 
-/** True when `name` was registered as a custom family earlier in this
- *  session but is no longer present — i.e. the user has deleted it while
- *  some `fontFamily` field still references it. */
+/** True when `name` was registered as a custom family since the book on
+ *  screen was opened but is no longer present — i.e. the user has deleted
+ *  it while some `fontFamily` field still references it. */
 export function isRemovedCustomFontFamily(name: string): boolean {
   return everSeenCustomFamilies.has(name) && !customFontRegistry.has(name);
 }
@@ -637,14 +647,38 @@ function missingVariants(family: CustomFontFamily, wanted: readonly FontVariantU
   return out;
 }
 
+/** What a document's text asks of its faces beyond its configuration. */
+export interface FontUsageDocument {
+  /** Whether the text sets a letter or digit that is not Chinese in
+   *  emphasis (`*…*`): the characters that keep their italics where
+   *  emphasis is set as dots ({@link hasLatinEmphasis}). Unset when the
+   *  text is not known. */
+  latinEmphasis?: boolean;
+}
+
+/** Letters and digits outside Chinese and Japanese script. */
+const NON_CJK_LETTER_RE = /(?![\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}\p{sc=Bopomofo}])[\p{L}\p{N}]/u;
+
+/** Whether the text of `blocks` (headings aside, which are set in their
+ *  own face) puts a letter or digit that is not Chinese in emphasis: a
+ *  Latin word in `*…*` keeps its italics where the Chinese characters
+ *  beside it take dots (`cjk.emphasis: 'dots'`). */
+export function hasLatinEmphasis(blocks: readonly ContentBlock[]): boolean {
+  return blocks.some((b) => b.type !== 'heading' && b.spans.some((s) => s.italic && !s.math && NON_CJK_LETTER_RE.test(s.text)));
+}
+
 /**
  * The (weight, style) pairs the configuration asks of each family: every
  * config node carrying a `fontFamily` contributes its `fontWeight` (400
  * when unset) and `fontStyle` (normal when unset). The body text family
  * also needs the four standard variants, since markdown emphasis sets bold
- * and italic runs in it; so does a design text with `inlineMarks`.
+ * and italic runs in it; so does a design text with `inlineMarks`. Where
+ * emphasis is set as dots (`cjk.emphasis`, by default in a Chinese
+ * document), `*…*` puts dots under Chinese characters and keeps the
+ * italics of the rest: the body family is asked for its italics only when
+ * `doc` does not say the text holds no Latin letter or digit in emphasis.
  */
-export function collectFontUsage(config: PostextConfig): Map<string, FontVariantUse[]> {
+export function collectFontUsage(config: PostextConfig, doc?: FontUsageDocument): Map<string, FontVariantUse[]> {
   const usage = new Map<string, FontVariantUse[]>();
   const add = (family: string, use: FontVariantUse) => {
     const list = usage.get(family) ?? [];
@@ -678,15 +712,103 @@ export function collectFontUsage(config: PostextConfig): Map<string, FontVariant
   walk(config);
   const body = config.bodyText?.fontFamily;
   if (typeof body === 'string' && body.trim()) {
-    for (const v of STANDARD_VARIANTS) add(primaryFontFamily(body), v);
+    const emphasis = config.cjk?.emphasis ?? 'auto';
+    const dots = emphasis === 'dots' || (emphasis === 'auto' && defaultCjkEmphasis(config.locale) === 'dots');
+    const italics = !dots || doc?.latinEmphasis !== false;
+    for (const v of STANDARD_VARIANTS) if (italics || v.style !== 'italic') add(primaryFontFamily(body), v);
   }
   return usage;
 }
 
-/** The variants `config` asks of a declared custom family that it has no
- *  file for — bold or italic set in a family that only carries a regular
- *  face, a weight no face covers. */
-export function missingUsedVariants(family: CustomFontFamily, config: PostextConfig): FontVariantUse[] {
-  const wanted = collectFontUsage(config).get(family.name) ?? [];
+/** The variants `config` (and the text `doc` describes) asks of a
+ *  declared custom family that it has no file for — bold or italic set in
+ *  a family that only carries a regular face, a weight no face covers. */
+export function missingUsedVariants(family: CustomFontFamily, config: PostextConfig, doc?: FontUsageDocument): FontVariantUse[] {
+  const wanted = collectFontUsage(config, doc).get(family.name) ?? [];
   return missingVariants(family, wanted);
+}
+
+// ---------------------------------------------------------------------------
+// Vertical forms for vertical text (canvas)
+// ---------------------------------------------------------------------------
+
+/** Whether a config sets any text vertically (`layout.writingMode`, or a
+ *  heading style's own layout). */
+export function configIsVertical(config: PostextConfig): boolean {
+  if (config.layout?.writingMode === 'vertical-rl') return true;
+  return (config.headingStyles ?? []).some((s) => s.layout?.writingMode === 'vertical-rl');
+}
+
+/** The twin load of each family, keyed by where its faces come from
+ *  ({@link twinSourceKey}): a family whose sources change is loaded again. */
+const verticalTwins = new Map<string, { key: string; promise: Promise<boolean> }>();
+/** Per family, the source key whose twin load has settled. */
+const verticalTwinsDone = new Map<string, string>();
+
+/** Where a family's faces come from: the files of a custom family (a file
+ *  uploaded again under the same name is another source), else Google. */
+function twinSourceKey(family: string): string {
+  const custom = getCustomFontFamily(family);
+  return custom ? `custom:${familySignature(custom)}` : 'google';
+}
+
+async function verticalFacesOf(family: string): Promise<VerticalAlternatesFace[]> {
+  const custom = getCustomFontFamily(family);
+  if (custom) {
+    const faces: VerticalAlternatesFace[] = [];
+    await Promise.all(custom.variants.map(async (variant) => {
+      const buffer = await loadVariantBuffer(variant);
+      if (buffer) faces.push({ source: buffer, weight: String(variant.weight), style: variant.style });
+    }));
+    return faces;
+  }
+  const meta = await fetchFontMetadata(family);
+  const res = await fetch(buildFontUrl(family, meta), { credentials: 'omit' });
+  if (!res.ok) return [];
+  return parseFontFaceCss(await res.text()).map((face) => ({
+    source: face.url,
+    weight: face.weight,
+    style: face.style,
+    ...(face.unicodeRange ? { unicodeRange: face.unicodeRange } : {}),
+  }));
+}
+
+/**
+ * For a config that sets text vertically: load, for every family it uses, a
+ * twin with the font's vertical forms (OpenType `vert`) that the canvas
+ * paints brackets and punctuation with (see `loadVerticalAlternates` in
+ * postext). Once per family; resolves when every family is settled, to
+ * whether any family has its twin (the preview repaints then).
+ */
+export async function loadVerticalTwins(config: PostextConfig): Promise<boolean> {
+  if (typeof document === 'undefined' || !configIsVertical(config)) return false;
+  const results = await Promise.all(getConfigFontFamilies(config).map((family) => {
+    const key = twinSourceKey(family);
+    const entry = verticalTwins.get(family);
+    if (entry && entry.key === key) return entry.promise;
+    // New sources for a family (a custom font uploaded again, or a book
+    // whose font of that name is another file): the old twin's faces go,
+    // and the twin is loaded from the new ones.
+    if (entry) {
+      unregisterVerticalAlternates(family);
+      verticalTwinsDone.delete(family);
+    }
+    const promise = verticalFacesOf(family)
+      .then((faces) => loadVerticalAlternates(family, faces))
+      .catch(() => false)
+      .then((ok) => {
+        if (verticalTwins.get(family)?.key === key) verticalTwinsDone.set(family, key);
+        return ok;
+      });
+    verticalTwins.set(family, { key, promise });
+    return promise;
+  }));
+  return results.some(Boolean);
+}
+
+/** Whether every family of a vertical config has had its twin tried, from
+ *  the family's current sources. */
+export function verticalTwinsSettled(config: PostextConfig): boolean {
+  if (!configIsVertical(config)) return true;
+  return getConfigFontFamilies(config).every((f) => verticalTwinsDone.get(f) === twinSourceKey(f));
 }

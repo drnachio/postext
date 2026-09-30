@@ -125,6 +125,7 @@ export async function parseBundle(
       // of a bilingual bundle is an English project.
       locale: read.locale,
       ...(bundle.locales ? { locales: bundle.locales } : {}),
+      ...(bundle.openLocale ? { openLocale: bundle.openLocale } : {}),
       ...(bundle.license ? { license: bundle.license } : {}),
       ...(bundle.credits ? { credits: bundle.credits } : {}),
       ...(bundle.tags ? { tags: bundle.tags } : {}),

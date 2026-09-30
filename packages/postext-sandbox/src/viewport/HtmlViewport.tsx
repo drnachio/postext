@@ -25,7 +25,7 @@ export function HtmlViewport() {
   const [fontScale, setFontScale] = useState(1);
   const [columnMode, setColumnMode] = useState<ColumnMode>('multi');
   const [generating, setGenerating] = useState(false);
-  const [scrollBounds, setScrollBounds] = useState<{ canPrev: boolean; canNext: boolean }>({ canPrev: false, canNext: false });
+  const [scrollBounds, setScrollBounds] = useState<{ canPrev: boolean; canNext: boolean; rtl?: boolean }>({ canPrev: false, canNext: false });
   const [layout, setLayout] = useState<ViewerLayout>(EMPTY_VIEWER_LAYOUT);
   const previewRef = useRef<HtmlPreviewHandle | null>(null);
   const hydratedRef = useRef(false);
@@ -108,6 +108,7 @@ export function HtmlViewport() {
         hidden={shell.hidden}
         canScrollPrev={scrollBounds.canPrev}
         canScrollNext={scrollBounds.canNext}
+        rightToLeft={scrollBounds.rtl === true}
         onRegenerate={handleRegenerate}
         onTogglePin={shell.togglePin}
         onFontScaleUp={handleFontScaleUp}

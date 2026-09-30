@@ -19,6 +19,9 @@ export type {
   IndexBlockInfo,
   IndexMark,
   ChipBox,
+  EmphasisMark,
+  InlineRuby,
+  InlineWarichu,
 } from './types';
 export { MATH_PLACEHOLDER } from './inlineMath';
 export { REF_PLACEHOLDER, SWATCH_PLACEHOLDER, CHIP_PLACEHOLDER, extractInlineSwatches, injectSwatchSpans, extractInlineChips, injectChipSpans } from './inlineFormatting';
@@ -34,6 +37,8 @@ export {
   MAX_SPACE_LINES,
 } from './blockParser';
 export { computeSourceMap } from './sourceMapping';
+export { orientationMarkAt } from './orientationMarks';
+export type { OrientationMark } from './orientationMarks';
 export { parseInlineSnippetSpans, mapInlineSnippet } from './inlineSnippet';
 export type { InlineSnippetMapping } from './inlineSnippet';
 export { extractIndexMarks } from './indexMarks';

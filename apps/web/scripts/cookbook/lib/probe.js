@@ -31,12 +31,29 @@ function record() {
   return window.__cb ?? { builds: [], images: [], engines: {}, pending: 0, lastBuildAt: 0, importedAt: 0 };
 }
 
-/** The build that is "the result": capture.doc = 'last' | 'first' | index. */
+/** One recorded build: 'last' | 'first' | index. */
+function pickOne(builds, select) {
+  const i = select === 'first' ? 0 : typeof select === 'number' ? select : builds.length - 1;
+  return builds[Math.max(0, Math.min(builds.length - 1, i))];
+}
+
+/** The build that is "the result": capture.doc = 'last' | 'first' | index,
+ *  or a list of them (two editions). Several builds make one: the first's
+ *  source, config and engine, every build's documents, and `segments`, the
+ *  documents of each build, whose pages {@link pagesOf} numbers on from
+ *  one build to the next. */
 function pick(select = 'last') {
   const { builds } = record();
   if (!builds.length) return null;
-  const i = select === 'first' ? 0 : typeof select === 'number' ? select : builds.length - 1;
-  return builds[Math.max(0, Math.min(builds.length - 1, i))];
+  if (!Array.isArray(select)) return pickOne(builds, select);
+  const picked = [...new Set(select.map((s) => pickOne(builds, s)))];
+  if (picked.length === 1) return picked[0];
+  return { ...picked[0], docs: picked.flatMap((b) => b.docs ?? []), segments: picked.map((b) => b.docs ?? []), picked };
+}
+
+/** A build's index in the record (the first one, for several). */
+function indexOfBuild(build) {
+  return record().builds.indexOf(build?.picked?.[0] ?? build);
 }
 
 /** The engine module instance that built (or painted) a build. */
@@ -51,11 +68,26 @@ function engineOf(build) {
  *  1–4); `book` is the physical page number in the whole book, whose parity
  *  decides versos and rectos. */
 function pagesOf(build) {
-  const base = build.docs[0]?.pageIndexOffset ?? 0;
-  return build.docs.flatMap((doc, docIndex) => doc.pages.map((page) => {
-    const book = (doc.pageIndexOffset ?? 0) + page.index + 1;
-    return { doc, docIndex, page, n: book - base, book };
-  }));
+  const out = [];
+  let before = 0;
+  let docIndex = 0;
+  // Several builds (`capture.doc` as a list): each keeps its book page
+  // numbers, and `n` goes on from the pages of the builds before it.
+  for (const docs of build.segments ?? [build.docs]) {
+    const base = docs[0]?.pageIndexOffset ?? 0;
+    let last = before;
+    for (const doc of docs) {
+      for (const page of doc.pages) {
+        const book = (doc.pageIndexOffset ?? 0) + page.index + 1;
+        const n = before + book - base;
+        out.push({ doc, docIndex, page, n, book });
+        last = Math.max(last, n);
+      }
+      docIndex++;
+    }
+    before = last;
+  }
+  return out;
 }
 
 const round = (value, step = 1) => Math.round(value / step) * step;
@@ -142,6 +174,36 @@ function loadedFaces() {
   return [...document.fonts].filter((face) => face.status === 'loaded').map((face) => ({
     family: face.family.replace(/^["']|["']$/g, ''), weight: face.weight, style: face.style,
   }));
+}
+
+/** The code-point ranges of a FontFace's `unicodeRange` ("U+4E00-4FFF, U+3001"). */
+function rangesOf(unicodeRange) {
+  return String(unicodeRange ?? 'U+0-10FFFF').split(',').map((part) => {
+    const [lo, hi = lo] = part.trim().replace(/^U\+/i, '').split('-');
+    if (lo.includes('?')) return [parseInt(lo.replace(/\?/g, '0'), 16), parseInt(lo.replace(/\?/g, 'F'), 16)];
+    return [parseInt(lo, 16), parseInt(hi, 16)];
+  });
+}
+
+/** Families served by unicode-range slices that reach the Han ideographs
+ *  (the cjk kit block adds every file of such a face, loaded or not), with
+ *  the code points their files cover: the PDF's cjkPdfProvider hands over
+ *  whichever of those files the pages need. */
+function slicedFamilies() {
+  const out = new Map();
+  for (const face of document.fonts) {
+    const family = face.family.replace(/^["']|["']$/g, '');
+    const ranges = rangesOf(face.unicodeRange);
+    const list = out.get(family) ?? [];
+    list.push(...ranges);
+    out.set(family, list);
+  }
+  for (const [family, ranges] of out) {
+    if (!ranges.some(([lo, hi]) => lo <= 0x4e00 && hi >= 0x4e00) || ranges.some(([lo, hi]) => lo === 0 && hi >= 0x10ffff)) {
+      out.delete(family);
+    }
+  }
+  return out;
 }
 
 /** A loaded FontFace covers exactly this family, weight and style. */
@@ -315,7 +377,8 @@ export function facts({ select = 'last', hero = [] } = {}) {
   };
   const build = pick(select);
   if (!build || !build.docs?.length) return out;
-  out.selected = cb.builds.indexOf(build);
+  out.selected = indexOfBuild(build);
+  if (build.picked) out.selectedBuilds = build.picked.map((b) => cb.builds.indexOf(b));
   const engine = engineOf(build);
   const docs = build.docs;
   const resolved = docs[0].config;
@@ -479,9 +542,22 @@ export function facts({ select = 'last', hero = [] } = {}) {
 
   // C12, C16, C25: the faces and text the renderer paints.
   const loaded = loadedFaces();
+  const sliced = slicedFamilies();
   const used = new Map();
   const garbage = [];
   const outside = new Map();
+  // C12: a character set in a CJK face from a file that was not loaded when
+  // the layout ran was measured in a fallback face (loadCjkFonts was not
+  // given it). The shim notes the faces loaded as each build starts.
+  const atLayout = new Map();
+  for (const [family, weight, style, range] of build.fonts ?? []) {
+    if (!sliced.has(family)) continue;
+    const list = atLayout.get(family) ?? [];
+    list.push({ weight, style, ranges: rangesOf(range) });
+    atLayout.set(family, list);
+  }
+  const late = new Map();
+  const judged = new Set();
   const placeholders = new Set([engine.MATH_PLACEHOLDER, engine.SWATCH_PLACEHOLDER, engine.CHIP_PLACEHOLDER, '￼'].filter(Boolean));
   walkPainted(pages, (font, text, where) => {
     const face = font ? parseFont(font) : null;
@@ -490,10 +566,32 @@ export function facts({ select = 'last', hero = [] } = {}) {
       if (!used.has(key)) used.set(key, { family: face.family, weight: face.weight, style: face.style, where });
     }
     if (/\bundefined\b|\bNaN\b/.test(text) && garbage.length < 10) garbage.push({ text: text.slice(0, 80), where });
+    const covered = face ? sliced.get(face.family) : null;
     for (const ch of text) {
       if (placeholders.has(ch)) continue;
       const cp = ch.codePointAt(0);
-      if (!LATIN.some(([a, b]) => cp >= a && cp <= b) && !outside.has(ch)) outside.set(ch, where);
+      if (LATIN.some(([a, b]) => cp >= a && cp <= b) || outside.has(ch)) continue;
+      // A CJK face loaded by slices takes the character from its own files.
+      if (covered?.some(([a, b]) => cp >= a && cp <= b)) continue;
+      outside.set(ch, where);
+    }
+    if (!face || !build.fonts || !atLayout.has(face.family)) return;
+    const key = `${face.family}|${face.weight}|${face.style}`;
+    for (const ch of new Set(text)) {
+      if (!/\S/.test(ch) || placeholders.has(ch) || judged.has(`${key}|${ch}`)) continue;
+      judged.add(`${key}|${ch}`);
+      const cp = ch.codePointAt(0);
+      // A character no file of the family has is C25's (nonLatin).
+      if (!covered?.some(([a, b]) => cp >= a && cp <= b)) continue;
+      const ready = atLayout.get(face.family).some((f) => {
+        if (f.style !== face.style) return false;
+        const [low, high = low] = String(f.weight).split(' ').map(Number);
+        return face.weight >= low && face.weight <= high && f.ranges.some(([a, b]) => cp >= a && cp <= b);
+      });
+      if (ready) continue;
+      const entry = late.get(key) ?? { family: face.family, weight: face.weight, style: face.style, chars: '', where };
+      if ([...entry.chars].length < 12) entry.chars += ch;
+      late.set(key, entry);
     }
   });
   out.faces = {
@@ -501,6 +599,7 @@ export function facts({ select = 'last', hero = [] } = {}) {
     loaded,
   };
   out.faces.missing = out.faces.used.filter((f) => !hasFace(loaded, f.family, f.weight, f.style));
+  if (late.size) out.faces.late = [...late.values()];
   out.garbage = garbage;
   out.nonLatin = [...outside].slice(0, 40).map(([ch, where]) => ({
     ch, code: `U+${ch.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`, where,
@@ -535,9 +634,12 @@ export function facts({ select = 'last', hero = [] } = {}) {
   };
 
   // C5, C6, C24: the engine's own diagnostics.
-  const base = docs[0].pageIndexOffset ?? 0;
+  // A document's page `pageIndex` is page `nOf(doc) + pageIndex`.
+  const firstN = new Map();
+  for (const p of pages) if (!firstN.has(p.doc)) firstN.set(p.doc, p.n - p.page.index);
+  const nOf = (doc, pageIndex) => (firstN.get(doc) ?? 1) + pageIndex;
   out.warnings = docs.flatMap((doc) => (doc.warnings ?? []).map((w) => ({
-    kind: w.kind, page: (doc.pageIndexOffset ?? 0) - base + w.pageIndex + 1, overflowPx: round(w.overflowPx ?? 0, 0.1),
+    kind: w.kind, page: nOf(doc, w.pageIndex), overflowPx: round(w.overflowPx ?? 0, 0.1),
   })));
   // The index's own warnings are content warnings the source checks (C7–C10)
   // cannot see: the expansion raises them with the whole book's marks (#172).
@@ -545,7 +647,7 @@ export function facts({ select = 'last', hero = [] } = {}) {
     .filter((w) => /^index[A-Z]/.test(w.kind))
     .map((w) => ({
       kind: w.kind,
-      page: w.pageIndex === undefined ? null : (doc.pageIndexOffset ?? 0) - base + w.pageIndex + 1,
+      page: w.pageIndex === undefined ? null : nOf(doc, w.pageIndex),
       detail: w.target ?? w.term ?? '',
     })));
   out.converged = docs.every((doc) => doc.converged !== false);
@@ -553,9 +655,28 @@ export function facts({ select = 'last', hero = [] } = {}) {
   let justified = 0;
   let worst = 0;
   const looseLines = [];
+  // Lines of the CJK composer are justified between their characters (the
+  // segments' tracking, capped at half an em or bodyText.maxJustifyTracking);
+  // one past the cap is set short and flagged cjkLoose.
+  let cjkJustified = 0;
+  let cjkWorst = 0;
+  const cjkShort = [];
+  const trackingCap = (doc) => {
+    const max = Number(doc.config.bodyText.maxJustifyTracking) || 0;
+    return max > 0 ? Math.min(0.5, max / 1000) : 0.5;
+  };
   for (const { block, doc, n } of all) {
     const max = doc.config.bodyText.maxWordSpacing ?? 2;
+    const emPx = parseFont(block.fontString ?? '')?.px ?? 0;
     for (const line of block.lines ?? []) {
+      if (line.cjkComposed || line.cjkLoose) {
+        if (line.isLastLine || block.textAlign !== 'justify' || (line.ragged && !line.cjkLoose)) continue;
+        cjkJustified++;
+        const tracking = Math.max(0, ...(line.segments ?? []).map((seg) => seg.tracking ?? 0));
+        if (emPx > 0) cjkWorst = Math.max(cjkWorst, tracking / emPx);
+        if (line.cjkLoose) cjkShort.push({ page: n, tracking: emPx > 0 ? round(tracking / emPx, 0.01) : 0, text: (line.text ?? '').trim() });
+        continue;
+      }
       const ratio = line.justifiedSpaceRatio;
       if (ratio === undefined || line.isLastLine || line.ragged) continue;
       justified++;
@@ -567,6 +688,11 @@ export function facts({ select = 'last', hero = [] } = {}) {
   const loosest = [...looseLines].sort((a, b) => b.ratio - a.ratio).slice(0, 5);
   out.loose = { count: looseLines.length, total: justified, share: justified ? looseLines.length / justified : 0,
     worst: round(worst, 0.01), threshold: bt.maxWordSpacing ?? 2, lines: loosest };
+  if (cjkJustified) {
+    out.cjkLoose = { count: cjkShort.length, total: cjkJustified, share: cjkShort.length / cjkJustified,
+      worst: round(cjkWorst, 0.01), threshold: trackingCap(docs[0]), lines: cjkShort.slice(0, 5) };
+  }
+  if (docs[0].binding === 'right') out.binding = 'right';
 
   // Pages: roles, emptiness, coverage, hero legibility, alt-text material.
   const heroSet = new Set(hero);
@@ -857,7 +983,10 @@ function heroPair(hero, byN) {
   return [p, byN.get(n + 1) ?? null];                        // a verso
 }
 
-function drawSpread(ctx, engine, pair) {
+/** The hero pair on the stage, [verso, recto] laid out as the book opens:
+ *  a right-bound book (doc.binding) has its recto on the left. */
+function drawSpread(ctx, engine, [verso, recto], right = false) {
+  const pair = right ? [recto, verso] : [verso, recto];
   const present = pair.filter(Boolean);
   let h = 0.8 * H;
   let widths = present.map((p) => (p.page.width * h) / p.page.height);
@@ -977,7 +1106,7 @@ export async function composeCard({ select = 'last', mode = 'spread', hero = [1]
   let magnification = null;
   try {
     if (mode === 'screenshot') await drawScreenshot(ctx, screenshot);
-    else if (mode === 'spread') drawSpread(ctx, engine, heroPair(hero, byN));
+    else if (mode === 'spread') drawSpread(ctx, engine, heroPair(hero, byN), build.docs[0]?.binding === 'right');
     else if (mode === 'page') drawPage(ctx, engine, byN.get(hero[0]), { x: 0.05 * W, w: 0.9 * W, h: 0.86 * H, cy: 0.46 * H });
     else if (mode === 'loupe') magnification = drawLoupe(ctx, engine, byN.get(focus.page) ?? byN.get(hero[0]), focus);
     else if (mode === 'crop') drawCrop(ctx, engine, byN.get(focus.page) ?? byN.get(hero[0]), focus);

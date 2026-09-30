@@ -146,7 +146,7 @@ export default async function RecipePage({ params }: { params: Params }) {
   const view = await recipeView(recipe, locale);
   if (!view) notFound();
   const t = await getTranslations("CookbookRecipe");
-  const { pen, pages, spreads, heroSpread } = view;
+  const { pen, pages, spreads, heroSpread, binding } = view;
 
   // The first spread is the page's largest paint.
   for (const i of spreads[heroSpread] ?? []) {
@@ -192,6 +192,7 @@ export default async function RecipePage({ params }: { params: Params }) {
         <LightTable
           pages={pages}
           spreads={spreads}
+          binding={binding}
           initial={heroSpread}
           total={view.capture?.specimen.pages ?? pages.length}
           title={view.title}

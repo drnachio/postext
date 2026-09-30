@@ -4,7 +4,15 @@ import type { RenderToPdfOptions } from '../pdf-backend';
 import { rasterizeSvgWithDom, type SvgRasterizer } from '../pdf-backend/renderResourceBlock';
 import type { PdfRequestMessage, PdfResponseMessage } from './protocol';
 
-export type { PdfWarning, PdfFontFallbackWarning, RenderProgress } from '../pdf-backend';
+export type {
+  PdfWarning,
+  PdfFontWarning,
+  PdfFontFallbackWarning,
+  PdfMissingGlyphWarning,
+  PdfVariableFontWarning,
+  PdfCffEmbeddedWholeWarning,
+  RenderProgress,
+} from '../pdf-backend';
 
 export interface PdfWorkerRenderOptions extends Omit<RenderToPdfOptions, 'resourceBytes' | 'rasterizeSvg'> {
   /** Resource bytes by file id. Their buffers are transferred: pass copies
@@ -53,12 +61,13 @@ export function createPdfWorker(options?: CreatePdfWorkerOptions): PdfWorkerHand
     else worker.postMessage(msg);
   };
 
-  const answer = async (askId: number, job: () => Promise<Uint8Array | null>): Promise<void> => {
+  const answer = async (askId: number, job: () => Promise<Uint8Array | Uint8Array[] | null>): Promise<void> => {
     try {
       const bytes = await job();
-      // A copy: the provider may keep the original in a cache.
-      const copy = bytes ? bytes.slice() : null;
-      send({ kind: 'answer', askId, bytes: copy }, copy ? [copy.buffer] : undefined);
+      // Copies: the provider may keep the originals in a cache.
+      const copy = Array.isArray(bytes) ? bytes.map((b) => b.slice()) : bytes ? bytes.slice() : null;
+      const buffers = Array.isArray(copy) ? copy.map((b) => b.buffer) : copy ? [copy.buffer] : undefined;
+      send({ kind: 'answer', askId, bytes: copy }, buffers);
     } catch (err) {
       send({ kind: 'answer', askId, bytes: null, error: err instanceof Error ? err.message : String(err) });
     }
@@ -69,7 +78,8 @@ export function createPdfWorker(options?: CreatePdfWorkerOptions): PdfWorkerHand
     switch (msg.kind) {
       case 'font': {
         const job = current;
-        void answer(msg.askId, () => (job ? job.options.fontProvider(msg.family, msg.weight, msg.style) : Promise.resolve(null)));
+        const request = msg.codePoints ? { codePoints: new Set(msg.codePoints) } : undefined;
+        void answer(msg.askId, () => (job ? job.options.fontProvider(msg.family, msg.weight, msg.style, request) : Promise.resolve(null)));
         return;
       }
       case 'rasterize': {
@@ -85,7 +95,7 @@ export function createPdfWorker(options?: CreatePdfWorkerOptions): PdfWorkerHand
       case 'warning': {
         const onWarning = pending.get(msg.id)?.options.onWarning;
         if (onWarning) onWarning(msg.warning);
-        else if (msg.warning.kind === 'fontFallback') console.warn(msg.warning.message);
+        else if ('message' in msg.warning) console.warn(msg.warning.message);
         return;
       }
       case 'rendered': {

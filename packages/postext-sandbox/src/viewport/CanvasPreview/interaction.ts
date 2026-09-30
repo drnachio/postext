@@ -1,5 +1,6 @@
 import type { Dispatch, MutableRefObject } from 'react';
 import type { Resource, VDTDocument } from 'postext';
+import { pageToFlow } from 'postext';
 import type { PendingEditorFocus, ResourceFocusTarget, SandboxAction } from '../../context/SandboxContext';
 import type { ComposedBook } from '../../book/types';
 import { fromBookOffset, segmentForChapter } from '../../book/compose';
@@ -133,13 +134,21 @@ export function attachSlotClickHandler(
   // Read the current slot size instead of the creation-time displayWidth/Height:
   // applyDisplaySize mutates the canvas/overlay CSS dims on resize, so a cached
   // scale factor goes stale and clicks land on the wrong offset.
-  const resolvePagePoint = (ev: MouseEvent): { x: number; y: number } | null => {
+  const resolveSheetPoint = (ev: MouseEvent): { x: number; y: number } | null => {
     const rect = slot.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) return null;
     return {
       x: (ev.clientX - rect.left) * (pageWidthPx / rect.width),
       y: (ev.clientY - rect.top) * (pageHeightPx / rect.height),
     };
+  };
+  // The point in the page's flow frame, where the text, the floats and
+  // the opener live: a vertical page's flow is the sheet turned a quarter
+  // turn (`VDTPage.flow`), the identity elsewhere.
+  const resolvePagePoint = (ev: MouseEvent): { x: number; y: number } | null => {
+    const pt = resolveSheetPoint(ev);
+    const page = docRef.current?.pages[pageIndex];
+    return pt && page ? pageToFlow(page, pt.x, pt.y) : pt;
   };
 
   const resolveOffset = (ev: MouseEvent): number | null => {
@@ -171,7 +180,7 @@ export function attachSlotClickHandler(
     const doc = docRef.current;
     const resources = resourcesRef?.current;
     if (!doc || !resources) return null;
-    const pt = resolvePagePoint(ev);
+    const pt = resolveSheetPoint(ev);
     if (!pt) return null;
     const fileId = designImageFileIdAtPixel(doc, pageIndex, pt.x, pt.y);
     if (fileId === null) return null;

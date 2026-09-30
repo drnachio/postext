@@ -423,6 +423,19 @@ describe('engine content warnings', () => {
     expect(found.map((w) => [w.payload.name, w.line])).toEqual([['resource', 3]]);
   });
 
+  it('flags markup typed with a Chinese input method, with the ASCII form (#181)', () => {
+    const md = '：：：callout{type="note"}\n甄士隐梦幻识通灵。\n：：：\n\n＃ 第一回';
+    const found = find(md, 'fullwidthMarkup');
+    expect(found.map((w) => [w.payload.typed, w.payload.ascii, w.line])).toEqual([
+      ['：：：', ':::', 1], ['：：：', ':::', 3], ['＃', '#', 5],
+    ]);
+  });
+
+  it('flags an attribute key written in Chinese (#181)', () => {
+    const found = find(':::callout{type="note" 作者=曹雪芹}\n正文\n:::', 'attributeKeyInvalid');
+    expect(found.map((w) => [w.payload.key, w.line])).toEqual([['作者', 1]]);
+  });
+
   it('flags an image the previews cannot read, unless storage itself is out', () => {
     const md = 'Look :ref{id="photo"}.';
     const found = computeWarnings({ markdown: md, config: {}, doc: null, resources: [photo], unavailableImages: new Set(['file-photo']) })
@@ -553,6 +566,13 @@ describe('hyphenation locale warnings', () => {
     expect(find('Hej.', 'unsupportedHyphenationLocale', { bodyText: { hyphenation: { enabled: false, locale: 'fi' } } })).toHaveLength(0);
   });
 
+  it('says nothing for Chinese, Japanese or Korean, set without hyphenation', () => {
+    for (const locale of ['zh-Hans', 'zh-Hant-TW', 'ja', 'ko']) {
+      expect(kinds('此開卷第一回也。', { locale }), locale).not.toContain('unsupportedHyphenationLocale');
+    }
+    expect(kinds('Text.', { locale: 'es', bodyText: { hyphenation: { locale: 'zh' } } })).not.toContain('unsupportedHyphenationLocale');
+  });
+
   it('accepts bundled languages with any region subtag', () => {
     for (const locale of ['es', 'es-ES', 'pt-BR', 'en-GB', 'ca-ES-valencia', 'nl']) {
       expect(kinds('Text.', { locale }), locale).not.toContain('unsupportedHyphenationLocale');
@@ -613,5 +633,28 @@ describe('heading designs cut off (EF-91)', () => {
     expect(cut(docWith({ columns: [column([heading({ designOverlay: band([60, 370]) })])] }))).toHaveLength(0);
     // A part page's design belongs to no heading.
     expect(cut(docWith({ partInfo: { number: 'I', title: 'Part' }, openerBand: band([900]) }))).toHaveLength(0);
+  });
+});
+
+describe('PDF font warnings (#196)', () => {
+  it('lists the last PDF\'s font warnings once per face and kind, in the fonts group', () => {
+    const warnings = computeWarnings({
+      markdown: '此開卷第一回也。',
+      config: {},
+      doc: null,
+      pdfFontChecks: [
+        { kind: 'missingGlyph', family: 'Noto Serif TC', weight: 400, style: 'normal', characters: ['，', '！'], message: '' },
+        { kind: 'missingGlyph', family: 'Noto Serif TC', weight: 400, style: 'normal', characters: ['，'], message: '' },
+        { kind: 'variableFontDefaultInstance', family: 'Noto Serif SC', weight: 700, style: 'normal', defaultWeight: 400, message: '' },
+        { kind: 'cffEmbeddedWhole', family: 'Source Han Serif TW', weight: 400, style: 'normal', bytes: 7_936_412, message: '' },
+      ],
+    });
+    const pdf = warnings.filter((w) => w.id.startsWith('pdf-'));
+    expect(pdf.map((w) => w.payload)).toEqual([
+      { kind: 'missingGlyph', family: 'Noto Serif TC', weight: 400, style: 'normal', characters: ['，', '！'] },
+      { kind: 'variableFontDefaultInstance', family: 'Noto Serif SC', weight: 700, style: 'normal', defaultWeight: 400 },
+      { kind: 'cffEmbeddedWhole', family: 'Source Han Serif TW', weight: 400, style: 'normal', bytes: 7_936_412 },
+    ]);
+    expect(pdf.every((w) => w.sourceStart === undefined)).toBe(true);
   });
 });

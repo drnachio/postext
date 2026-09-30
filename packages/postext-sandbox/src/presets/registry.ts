@@ -1,3 +1,4 @@
+import { matchContentLocale } from 'postext';
 import { createRemotePreset, fetchPresetIndexEntries } from './remote';
 import type { PresetProvider, PresetSourceSpec } from './types';
 
@@ -29,18 +30,15 @@ export async function listPresets({ sources, builtin }: ListPresetsOptions): Pro
 }
 
 /** Among private presets flagged `default`, pick the one matching `locale`
- *  (exact tag, then base language); otherwise the first default. */
+ *  (exact tag, then the same language — and script, for Chinese); otherwise
+ *  the first default. */
 export function findDefaultPrivatePreset(
   providers: PresetProvider[],
   locale: string,
 ): PresetProvider | null {
   const candidates = providers.filter((p) => p.summary.source === 'private' && p.summary.default);
   if (candidates.length === 0) return null;
-  const wanted = locale.toLowerCase();
-  const base = wanted.split(/[-_]/)[0];
-  const exact = candidates.find((p) => p.summary.locale?.toLowerCase() === wanted);
-  if (exact) return exact;
-  const byBase = candidates.find((p) => p.summary.locale?.toLowerCase().split(/[-_]/)[0] === base);
-  if (byBase) return byBase;
-  return candidates[0];
+  const tags = candidates.map((p) => p.summary.locale ?? '');
+  const match = matchContentLocale(tags, locale);
+  return (match !== undefined ? candidates[tags.indexOf(match)] : undefined) ?? candidates[0] ?? null;
 }

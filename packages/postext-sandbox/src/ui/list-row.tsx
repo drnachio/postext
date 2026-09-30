@@ -97,7 +97,9 @@ const ROW_TAG_CLASS = 'shrink-0 rounded border px-1 text-[9px] font-semibold upp
 
 /** Tiny uppercase tag used inside rows (locale, Active, Default…). With
  *  `onClick` it is a small toggle button (a bilingual preset's locales);
- *  `label` names it for assistive tech and the tooltip. */
+ *  `label` names it for assistive tech and the tooltip. A static tag is a
+ *  plain span, which aria-label may not name: its label is hidden text,
+ *  read in place of the short one (简 alone is a bare syllable). */
 export function RowTag({
   children,
   accent,
@@ -117,8 +119,13 @@ export function RowTag({
   };
   if (!onClick) {
     return (
-      <span className={ROW_TAG_CLASS} style={style} title={label} aria-label={label}>
-        {children}
+      <span className={ROW_TAG_CLASS} style={style} title={label}>
+        {label ? (
+          <>
+            <span aria-hidden="true">{children}</span>
+            <span className="sr-only normal-case">{label}</span>
+          </>
+        ) : children}
       </span>
     );
   }

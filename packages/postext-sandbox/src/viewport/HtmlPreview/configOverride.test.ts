@@ -63,6 +63,16 @@ describe('buildHtmlConfigOverride', () => {
       left: { value: 0, unit: 'px' },
       right: { value: 0, unit: 'px' },
     });
+    expect(title.kind === 'text' && title.content).toBe('{number} {titleText}');
+  });
+
+  it("joins a part's number and title with the H1's numberSeparator (#180)", () => {
+    const out = buildHtmlConfigOverride(
+      { ...base, locale: 'zh-Hant', headings: { levels: [{ level: 1, numberingTemplate: '第{1:一}回', numberSeparator: '　' }] } },
+      opts,
+    );
+    const title = out.parts!.design!.elements[0]!;
+    expect(title.kind === 'text' && title.content).toBe('{number}　{titleText}');
   });
 
   it('leads a part title on a grid-step H1 line height at 1.2, not the step', () => {
@@ -157,6 +167,53 @@ describe('buildHtmlConfigOverride', () => {
     const k = (852 * 0.95) / px144(225);
     expect(design.minHeight!.value).toBeCloseTo(852 * 0.95, 5);
     expect((design.slot.elements[1]!.placement.size!.width as { value: number }).value).toBeCloseTo(122 * k, 5);
+  });
+
+  it('keeps the shape of a vertical cover, the leaf’s height running down the page', () => {
+    // A 148 × 210 mm leaf set vertically (紅樓夢): its designs are laid out
+    // in the flow's frame, x down the page, y leftward from its right edge.
+    // The cloth fills the bleed; the thread runs down it from 21 mm to 189 mm.
+    const thread = { value: 1.5, unit: 'pt' as const };
+    const cover: NonNullable<PostextConfig['headingStyles']>[number] = {
+      id: 'cover',
+      span: 'page' as const,
+      advancedDesign: {
+        enabled: true,
+        minHeight: mm(148),
+        slot: {
+          elements: [
+            { kind: 'box' as const, id: 'cloth', style: { backgroundColor: { hex: '#34405a', model: 'hex' as const } }, placement: { anchor: { to: 'bleed' as const, edge: 'top-left' as const }, offset: { x: mm(0), y: mm(0) }, size: { width: 'fill' as const, height: 'fill' as const } } },
+            { kind: 'rule' as const, id: 'thread', direction: 'horizontal' as const, color: { hex: '#e9e1cf', model: 'hex' as const }, thickness: thread, placement: { anchor: { to: 'bleed' as const, edge: 'top-left' as const }, offset: { x: mm(21), y: mm(9) }, size: { width: mm(168) } } },
+          ],
+        },
+      },
+    };
+    const vertical: PostextConfig = {
+      ...base,
+      page: { sizePreset: 'custom' as const, width: mm(148), height: mm(210), margins: { top: mm(38.5), bottom: mm(30.7), left: mm(19), right: mm(31.1) } },
+      layout: { layoutType: 'single', writingMode: 'vertical-rl' },
+      headingStyles: [cover],
+    };
+    // A page of the paged view 800 px wide and 852 px tall: the leaf's
+    // 210 mm run down its height, its 148 mm across its width.
+    const out = buildHtmlConfigOverride(vertical, { ...opts, layoutType: 'single', pageWidthPx: 800 });
+    const design = out.headingStyles![0]!.advancedDesign!;
+    const k = Math.min(852 / px144(210), (800 * 0.95) / px144(148));
+    const [cloth, rule] = design.slot.elements;
+    const size = cloth!.placement.size as { width: { value: number }; height: { value: number } };
+    expect(size.width.value).toBeCloseTo(px144(210) * k, 5);
+    expect(size.height.value).toBeCloseTo(px144(148) * k, 5);
+    expect(design.minHeight!.value).toBeCloseTo(px144(148) * k, 5);
+    // The thread keeps its length: the leaf is 210 mm long down the flow,
+    // not the 148 mm of its width.
+    expect((rule!.placement.size!.width as { value: number }).value).toBeCloseTo(168 * k, 5);
+    expect((rule!.placement.offset!.x as { value: number }).value).toBeCloseTo(px144(21) * k, 5);
+    // Set horizontally, the same rule stops at the leaf's 148 mm edge.
+    const flat = buildHtmlConfigOverride({ ...vertical, layout: { layoutType: 'single' } }, { ...opts, layoutType: 'single', pageWidthPx: 800 });
+    const kFlat = Math.min(800 / px144(148), (852 * 0.95) / px144(210));
+    const flatWidth = flat.headingStyles![0]!.advancedDesign!.slot.elements[1]!.placement.size!.width as { value: number; unit: string };
+    expect(flatWidth.unit).toBe('px');
+    expect(flatWidth.value).toBeCloseTo(px144(148 - 21) * kFlat, 5);
   });
 
   it('scales type once: lengths relative to the type size keep their value', () => {

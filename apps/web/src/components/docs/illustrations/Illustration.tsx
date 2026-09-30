@@ -25,6 +25,9 @@ import { SandboxLayout } from "./sandbox/SandboxLayout";
 import { SandboxSyncFlow } from "./sandbox/SandboxSyncFlow";
 import { ContributionAreas } from "./contributing/ContributionAreas";
 import { ContributionWorkflow } from "./contributing/ContributionWorkflow";
+import { ChinesePageModels } from "./chinese-layout/ChinesePageModels";
+import { PunctuationPositions } from "./chinese-layout/PunctuationPositions";
+import { PunctuationWidths } from "./chinese-layout/PunctuationWidths";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const registry: Record<string, React.ComponentType<{ labels: any }>> = {
@@ -55,6 +58,9 @@ const registry: Record<string, React.ComponentType<{ labels: any }>> = {
   SandboxSyncFlow,
   ContributionAreas,
   ContributionWorkflow,
+  ChinesePageModels,
+  PunctuationPositions,
+  PunctuationWidths,
 };
 
 interface IllustrationProps {

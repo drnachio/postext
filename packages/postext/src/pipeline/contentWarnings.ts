@@ -11,6 +11,7 @@
 
 import type { ContentBlock } from '../parse';
 import { KNOWN_CONTAINERS, KNOWN_DIRECTIVES, parseInlineSnippetSpans, parseMarkdownMemo } from '../parse';
+import { invalidAttributeKeys } from '../parse/attrs';
 import { extractFrontmatter } from '../frontmatter';
 import { tableGridIssues } from '../table/model';
 import type { PostextConfig, Resource } from '../types';
@@ -19,6 +20,8 @@ import type { HeadingDesignCut } from './headingDesignCuts';
 import { DEFAULT_CHIP_STYLES } from '../defaults/chipStyles';
 import { DEFAULT_PARAGRAPH_STYLES } from '../defaults/paragraphStyles';
 import { DEFAULT_HEADING_STYLES } from '../defaults/headingStyles';
+import { resolveAllConfig } from './config';
+import { planHeadingSections, sectionWritingMode } from './headingStyles';
 
 /** A `:::name` line: the name starts it, whatever follows (a line the parser
  *  does not take as a fence — an unknown name, or text after the name — is
@@ -36,6 +39,65 @@ function embedLineName(line: string): string | undefined {
   const m = EMBED_LINE_RE.exec(line);
   if (!m) return undefined;
   return m[1] === 'resource' || m[2] !== undefined ? m[1] : undefined;
+}
+
+/** Markup typed with fullwidth characters (a Chinese or Japanese input
+ *  method), each with the ASCII form the parser reads (#181). A match
+ *  holding no fullwidth character is ordinary markup and is skipped. */
+const FULLWIDTH_MARKUP: readonly { re: RegExp; ascii: (typed: string) => string }[] = [
+  // A fence: `：：：callout{…}`, a closing `：：：`.
+  { re: /^[:：]{3,}(?=[a-z]|\s*$|\s*[{｛])/u, ascii: () => ':::' },
+  // A heading: `＃ 第一回`, `＃＃　回目`.
+  { re: /^[#＃]{1,6}(?=[ \t\u3000])/u, ascii: (t) => '#'.repeat(t.length) },
+  // A footnote marker: `［＾1］`.
+  { re: /[［[][＾^][^［[\]］\s]+[］\]]/u, ascii: () => '[^…]' },
+  // Bold: `＊＊强调＊＊`.
+  { re: /＊＊[^＊\n]+＊＊/u, ascii: () => '**…**' },
+];
+/** Fullwidth braces at the end of a heading line or after a fence's name. */
+const FULLWIDTH_ATTRS_RE = /｛[^｛｝\n]*｝\s*$|(?<=^[:：]{3}\s*[a-z][a-z0-9-]*\s*)｛[^｛｝\n]*｝/u;
+const HAS_FULLWIDTH_RE = /[\uFF00-\uFFEF]/u;
+
+/** The fullwidth markup of one source line — the first on the line — or
+ *  undefined. `at` is its offset in the line. */
+export function fullwidthMarkupIn(line: string): { typed: string; ascii: string; at: number } | undefined {
+  if (!/[：＃［＾］＊｛]/u.test(line)) return undefined;
+  const lead = line.length - line.trimStart().length;
+  const text = line.slice(lead);
+  let found: { typed: string; ascii: string; at: number } | undefined;
+  for (const { re, ascii } of FULLWIDTH_MARKUP) {
+    // The first match that holds a fullwidth character (`[^1]` before a
+    // `［＾2］` is ordinary markup).
+    const all = new RegExp(re.source, 'gu');
+    let m: RegExpExecArray | null;
+    while ((m = all.exec(text)) !== null && !HAS_FULLWIDTH_RE.test(m[0])) {
+      if (m[0].length === 0) all.lastIndex++;
+    }
+    if (m && (!found || m.index < found.at)) found = { typed: m[0], ascii: ascii(m[0]), at: m.index };
+  }
+  if (!found && /^(?:[#＃]{1,6}[ \t\u3000]|[:：]{3})/u.test(text)) {
+    const m = FULLWIDTH_ATTRS_RE.exec(text);
+    if (m) found = { typed: m[0].trimEnd(), ascii: '{…}', at: m.index };
+  }
+  return found ? { ...found, at: found.at + lead } : undefined;
+}
+
+/** The `{…}` attribute blobs of a source line — a fence's, a heading's
+ *  trailing block and those of the inline directives — with their offsets
+ *  in the line. */
+function attributeBlobs(line: string): { blob: string; at: number }[] {
+  const out: { blob: string; at: number }[] = [];
+  const fence = /^\s*:::\s*[a-z][a-z0-9-]*\s*\{([^}]*)\}/.exec(line);
+  if (fence) out.push({ blob: fence[1]!, at: fence[0].length - 1 - fence[1]!.length });
+  const heading = /^\s*#{1,6}\s.*?\{([^{}]*)\}\s*$/.exec(line);
+  if (heading) out.push({ blob: heading[1]!, at: line.lastIndexOf('{') + 1 });
+  const inline = /:(?:ref|swatch|index)\{([^}\n]*)\}|:(?:chip|index)\[(?:\\.|[^\]\\\n])*\]\{([^}\n]*)\}/g;
+  let m: RegExpExecArray | null;
+  while ((m = inline.exec(line)) !== null) {
+    const blob = m[1] ?? m[2]!;
+    out.push({ blob, at: m.index + m[0].length - 1 - blob.length });
+  }
+  return out;
 }
 
 /** Every `:::name` the parser understands: leaf directives plus containers. */
@@ -90,11 +152,28 @@ export function collectContentWarnings(
   const chipStyles = new Set((config?.chipStyles ?? DEFAULT_CHIP_STYLES).map((s) => s.id));
   const headingStyles = new Set((config?.headingStyles ?? DEFAULT_HEADING_STYLES).map((s) => s.id));
   const tableStyles = new Set((config?.tableStyles ?? []).map((s) => s.id));
+  // Whether a content block is laid out in a vertical flow: the document's
+  // writing mode, or its styled section's (a horizontal appendix of a
+  // vertical book, a vertical chapter of a horizontal one).
+  const anyVertical = config?.layout?.writingMode === 'vertical-rl'
+    || (config?.headingStyles ?? []).some((s) => s.layout?.writingMode === 'vertical-rl');
+  let verticalAt: (blockIdx: number) => boolean = () => false;
+  if (anyVertical) {
+    const resolved = resolveAllConfig(config);
+    const sections = planHeadingSections(blocks, resolved);
+    verticalAt = (blockIdx) => sectionWritingMode(sections, resolved, blockIdx) === 'vertical-rl';
+  }
 
-  /** First embed or reference of every known resource, in reading order. */
+  /** First embed or reference of every known resource, in reading order,
+   *  and the content block it sits in. */
   const firstUse = new Map<string, SourceRange>();
+  const firstUseBlock = new Map<string, number>();
+  let blockIdx = -1;
   const use = (id: string, range: SourceRange): void => {
-    if (byId.has(id) && !firstUse.has(id)) firstUse.set(id, range);
+    if (byId.has(id) && !firstUse.has(id)) {
+      firstUse.set(id, range);
+      firstUseBlock.set(id, blockIdx);
+    }
   };
 
   /** Footnote markers (first one of each id) and definitions. */
@@ -129,6 +208,7 @@ export function collectContentWarnings(
   };
 
   for (const b of blocks) {
+    blockIdx++;
     const range = { start: b.sourceStart, end: b.sourceEnd };
     switch (b.type) {
       case 'resourceBlock': {
@@ -185,6 +265,49 @@ export function collectContentWarnings(
     scanSpans(b);
   }
 
+  // Markup typed with fullwidth characters, and attribute keys outside
+  // ASCII (#181): read line by line from the source, outside display
+  // maths.
+  {
+    const lines = body.split('\n');
+    const starts: number[] = [];
+    let acc = 0;
+    for (const line of lines) {
+      starts.push(acc);
+      acc += line.length + 1;
+    }
+    const lineOf = (offset: number): number => {
+      let lo = 0;
+      let hi = starts.length - 1;
+      while (lo < hi) {
+        const mid = (lo + hi + 1) >> 1;
+        if (starts[mid]! <= offset) lo = mid;
+        else hi = mid - 1;
+      }
+      return lo;
+    };
+    const mathLines = new Set<number>();
+    for (const b of blocks) {
+      if (b.type !== 'mathDisplay') continue;
+      for (let k = lineOf(b.sourceStart); k <= lineOf(b.sourceEnd); k++) mathLines.add(k);
+    }
+    lines.forEach((line, k) => {
+      if (mathLines.has(k)) return;
+      const lineStart = starts[k]!;
+      const fw = fullwidthMarkupIn(line);
+      if (fw) {
+        out.push({ kind: 'fullwidthMarkup', typed: fw.typed, ascii: fw.ascii, ...abs({ start: lineStart + fw.at, end: lineStart + fw.at + fw.typed.length }) });
+      }
+      if (!line.includes('{')) return;
+      for (const { blob, at } of attributeBlobs(line)) {
+        for (const key of invalidAttributeKeys(blob)) {
+          const start = lineStart + at + key.start;
+          out.push({ kind: 'attributeKeyInvalid', key: key.key, ...abs({ start, end: start + key.key.length }) });
+        }
+      }
+    });
+  }
+
   // Footnotes cited with no definition, and definitions never cited.
   for (const [id, at] of footnoteCites) {
     if (!footnoteDefs.has(id)) out.push({ kind: 'undefinedFootnote', id, ...abs(at) });
@@ -219,6 +342,11 @@ export function collectContentWarnings(
     };
     scanSnippet(r.caption);
     scanSnippet(r.note);
+    // A vertical flow sets every resource upright: a turn asked for it is
+    // not applied where the resource is first used in one (#188).
+    if (r.placement?.rotate && r.placement.position !== 'here' && verticalAt(firstUseBlock.get(id) ?? -1)) {
+      out.push({ kind: 'rotateIgnoredVertical', resourceId: id, ...where });
+    }
     if (r.kind !== 'table' || !r.table) continue;
     const styleId = r.table.styleId;
     // JSON documents may carry `styleId: null` for "no named style".
@@ -291,6 +419,25 @@ export function locateContentWarnings(doc: VDTDocument, warnings: readonly Conte
       ?? (w.kind === 'unknownResourceId' && w.usage === 'embed' ? undefined : w.sourceStart !== undefined ? pageAt(w.sourceStart) : undefined);
     return page !== undefined ? { ...w, pageIndex: page } : w;
   });
+}
+
+/** A `cjkLooseLine` warning for each justified CJK line set short with the
+ *  capped tracking (`VDTLine.cjkLoose`), on the page it was placed on. */
+export function cjkLooseLineWarnings(doc: VDTDocument): ContentWarning[] {
+  const out: ContentWarning[] = [];
+  for (const block of doc.blocks) {
+    for (const line of block.lines) {
+      if (!line.cjkLoose) continue;
+      out.push({
+        kind: 'cjkLooseLine',
+        text: line.text,
+        ...(line.sourceStart !== undefined ? { sourceStart: line.sourceStart } : {}),
+        ...(line.sourceEnd !== undefined ? { sourceEnd: line.sourceEnd } : {}),
+        ...(block.pageIndex >= 0 ? { pageIndex: block.pageIndex } : {}),
+      });
+    }
+  }
+  return out;
 }
 
 /** Where a warning sits, for a message: `page 3` / `offset 120`. A
@@ -367,6 +514,12 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'unknownTableStyle':
       text = `Unknown table style "${w.styleId}" on table "${w.resourceId}" — the document's table style applies`;
       break;
+    case 'fullwidthMarkup':
+      text = `Markup typed in fullwidth characters "${w.typed}" is set as text — type ${w.ascii} instead`;
+      break;
+    case 'attributeKeyInvalid':
+      text = `The attribute key "${w.key}" is not read — keys are written in ASCII letters, digits, _ and -`;
+      break;
     case 'raggedTableGrid':
       text = w.reason === 'spanOverlap'
         ? `Table "${w.resourceId}": the cell at row ${w.row + 1}, column ${w.col + 1} sits under a merged cell — keep covered cells with hiddenBy (mergeCells) or the cells shift`
@@ -375,6 +528,15 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
       break;
     case 'missingImage':
       text = `No image for file "${w.fileId}"${w.resourceId !== undefined ? ` (resource "${w.resourceId}")` : ''} — painted as a placeholder`;
+      break;
+    case 'cjkLooseLine':
+      text = `The justified line "${w.text}" needs more space between its characters than the cap allows — it is set short of the measure`;
+      break;
+    case 'cjkMarksExceedLeading':
+      text = `The paragraph "${w.text}" has emphasis dots or name and title lines in a line gap of ${w.gapEm} em — they need ${w.neededEm} em; set it with more leading`;
+      break;
+    case 'rubyExceedsLeading':
+      text = `The paragraph "${w.text}" has ruby readings ${w.neededEm} em high in a line gap of ${w.gapEm} em — they touch the next line; set it with more leading`;
       break;
     case 'unknownNumberFormat':
       text = `${w.path}: unknown number format "${w.value}" — numbered as ${w.used}`;
@@ -392,6 +554,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
       text = w.value.trim() !== '' && Number.isFinite(Number(w.value))
         ? `${w.path}: a side column of ${w.value}% leaves a column with no width — cut at ${w.used}%`
         : `${w.path}: "${w.value}" is not a percentage — the side column is cut at ${w.used}%`;
+      break;
+    case 'cjkGridClamped':
+      text = `${w.path}: ${w.value} ${w.path.endsWith('charsPerLine') ? 'characters per line' : 'lines'} do not fit inside the margins — the grid is set with ${w.used}`;
       break;
     default:
       // A kind this build does not know (a VDT from a newer engine).

@@ -8,6 +8,9 @@ export type WarningKind =
   | 'missingFontVariant'
   | 'duplicateFontVariant'
   | 'looseLine'
+  | 'cjkLooseLine'
+  | 'cjkMarksExceedLeading'
+  | 'rubyExceedsLeading'
   | 'headingHierarchy'
   | 'consecutiveHeadings'
   | 'listAfterHeading'
@@ -17,6 +20,8 @@ export type WarningKind =
   | 'headerFooterMetadataMissing'
   | 'unknownDirective'
   | 'malformedEmbed'
+  | 'fullwidthMarkup'
+  | 'attributeKeyInvalid'
   | 'unclosedContainer'
   | 'unknownParagraphStyle'
   | 'unknownCalloutType'
@@ -38,6 +43,7 @@ export type WarningKind =
   | 'calloutOverflow'
   | 'headingDesignCut'
   | 'sideColumnPercentClamped'
+  | 'cjkGridClamped'
   | 'designCyclicAnchor'
   | 'designDanglingAnchor'
   | 'designTextClipAlwaysTruncates'
@@ -55,7 +61,10 @@ export type WarningKind =
   | 'fontFamilyStack'
   | 'unknownNumberFormat'
   | 'unknownConfigKey'
-  | 'unsupportedHyphenationLocale';
+  | 'unsupportedHyphenationLocale'
+  | 'missingGlyph'
+  | 'variableFontDefaultInstance'
+  | 'cffEmbeddedWhole';
 
 export type WarningPayload =
   | { kind: 'missingFont'; family: string }
@@ -79,6 +88,9 @@ export type WarningPayload =
       variants: Array<{ weight: number; style: 'normal' | 'italic'; count: number }>;
     }
   | { kind: 'looseLine'; ratio: number; threshold: number }
+  | { kind: 'cjkLooseLine'; text: string }
+  | { kind: 'cjkMarksExceedLeading'; text: string; gapEm: number; neededEm: number }
+  | { kind: 'rubyExceedsLeading'; text: string; gapEm: number; neededEm: number }
   | { kind: 'headingHierarchy'; from: number; to: number }
   | { kind: 'consecutiveHeadings' }
   | { kind: 'listAfterHeading' }
@@ -110,6 +122,14 @@ export type WarningPayload =
   /** A `::name` line that is not a well-formed embed on its own (after a
    *  blank line, `::resource{id="…"}`): it prints as text. */
   | { kind: 'malformedEmbed'; name: string }
+  /** Markup typed with fullwidth characters (`：：：`, `＃`, `［＾…］`,
+   *  `｛…｝`, `＊＊…＊＊`): the parser reads only the ASCII forms, so the
+   *  line prints as text. `typed` is what was written, `ascii` the form to
+   *  type. */
+  | { kind: 'fullwidthMarkup'; typed: string; ascii: string }
+  /** An attribute key with letters outside ASCII (`作者=曹雪芹`): the
+   *  attribute is ignored. */
+  | { kind: 'attributeKeyInvalid'; key: string }
   /** A `:::name` container fence was still open at the end of the document;
    *  the parser auto-closed it. Points at the opening fence. */
   | { kind: 'unclosedContainer'; name: string }
@@ -158,6 +178,10 @@ export type WarningPayload =
    *  width (`collectConfigWarnings`): `path` names the setting, `used`
    *  the percentage the engine cuts the columns at instead. */
   | { kind: 'sideColumnPercentClamped'; path: string; value: string; used: string }
+  /** A character grid (`cjk.grid`) with more characters per line or lines
+   *  per page than the margins leave room for (`collectConfigWarnings`):
+   *  the grid is set with `used`. */
+  | { kind: 'cjkGridClamped'; path: string; value: string; used: string }
   | {
       kind: 'designCyclicAnchor';
       slot: WarningSlotKind;
@@ -235,7 +259,17 @@ export type WarningPayload =
   | { kind: 'unknownConfigKey'; path: string; value: string; used: string; suggestion?: string }
   /** The document's language (its hyphenation locale, else `locale`) has
    *  no bundled hyphenation patterns: the engine hyphenates it with en-us. */
-  | { kind: 'unsupportedHyphenationLocale'; locale: string };
+  | { kind: 'unsupportedHyphenationLocale'; locale: string }
+  /** The last PDF generated set characters no file of a face has a glyph
+   *  for (postext-pdf's `missingGlyph`): they print as the font's empty
+   *  box. `characters` in the order the pages first set them. `stale` (on
+   *  the three PDF font kinds): the book has changed since that PDF. */
+  | { kind: 'missingGlyph'; family: string; weight: number; style: 'normal' | 'italic'; characters: string[]; stale?: true }
+  /** The last PDF generated set a face from a variable font at a weight
+   *  other than its default instance, which is the one embedded. */
+  | { kind: 'variableFontDefaultInstance'; family: string; weight: number; style: 'normal' | 'italic'; defaultWeight: number; stale?: true }
+  /** The last PDF generated embedded a CFF (.otf) face over 2 MB whole. */
+  | { kind: 'cffEmbeddedWhole'; family: string; weight: number; style: 'normal' | 'italic'; bytes: number; stale?: true };
 
 export interface Warning {
   id: string;

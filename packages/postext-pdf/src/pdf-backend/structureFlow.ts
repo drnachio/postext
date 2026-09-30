@@ -246,6 +246,15 @@ export class StructureFlow {
     return elem;
   }
 
+  /** The `Figure` of a picture a design draws with alternative text
+   *  (#213): beside `after` (the slot's text element: a chapter's heading
+   *  for the plate its opener draws), so it is read right after it; at the
+   *  document's end of the flow when the slot has no text. */
+  designFigure(alt: string, attributes: StructAttrs['attributes'], after?: StructElem): StructElem {
+    const parent = after?.parent ?? this.tree.root;
+    return parent.child('Figure', { alt, ...(attributes ? { attributes } : {}) });
+  }
+
   /** The `Caption` child of a figure / table (created once). */
   captionElem(owner: StructElem): StructElem {
     let cap = this.captions.get(owner);

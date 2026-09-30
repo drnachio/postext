@@ -10,11 +10,12 @@
  * design `buildHeadersAndFooters` lays out from `toc.parts.design`.
  */
 
+import { flowTextWidth } from '../measure/vertical';
 import type { ContentBlock, InlineSpan, TocBlockInfo } from '../parse';
 import type { OutlineEntry, ResolvedTocEntryStyleConfig } from '../types';
 import type { VDTLine, VDTLineSegment } from '../vdt';
 import { dimensionToPx } from '../units';
-import { buildFontString, measureRichBlock, measureTextWidth } from '../measure';
+import { buildFontString, measureRichBlock } from '../measure';
 import type { ResolvedConfig } from '../vdt';
 import type { BlockStyle } from './styles';
 import type { BlockMeasureContext, MeasuredContentBlock } from './measureContentBlock';
@@ -104,12 +105,12 @@ function segmentsOf(line: VDTLine): VDTLineSegment[] {
  * over the gap into the page number (EF-148). Null when not one fits.
  */
 function fitLeader(char: string, font: string, room: number): { text: string; width: number } | null {
-  const unit = measureTextWidth(char, font);
+  const unit = flowTextWidth(char, font);
   const most = unit > 0 ? Math.floor(room / unit) : 0;
   if (most <= 0) return null;
   // Rounding in the width sums is not an overrun.
   const fits = (width: number) => width <= room + 0.01;
-  const widthOf = (n: number) => measureTextWidth(char.repeat(n), font);
+  const widthOf = (n: number) => flowTextWidth(char.repeat(n), font);
   let width = widthOf(most);
   if (fits(width)) return { text: char.repeat(most), width };
   // The longest shorter run that fits (a run widens with every character).
@@ -206,7 +207,7 @@ export function measureTocBlock(
   if (hasNumber) {
     const numberFontSizePx = dimensionToPx(entry.numberFontSize, dpi);
     const numberFont = buildFontString(entry.numberFontFamily, numberFontSizePx, entry.numberFontWeight.toString());
-    const numberW = measureTextWidth(info.number, numberFont);
+    const numberW = flowTextWidth(info.number, numberFont);
     listBullet = {
       indentPx, bulletText: info.number, bulletFontString: numberFont, bulletColor: entry.numberColor.hex,
       bulletWidthPx: numberWidthPx, gapPx: numberGapPx, hangingIndent: true, itemSpacingPx: 0,
@@ -225,7 +226,7 @@ export function measureTocBlock(
   const labelColor = pn.color.hex;
   const reservePx = label.length > 0 ? dimensionToPx(pn.width, dpi, fontSizePx) : 0;
   const gapPx = label.length > 0 ? dimensionToPx(toc.leader.gap, dpi, fontSizePx) : 0;
-  const labelW = label.length > 0 ? measureTextWidth(label, labelFont) : 0;
+  const labelW = label.length > 0 ? flowTextWidth(label, labelFont) : 0;
 
   const measureTitle = (maxW: number) => measureRichBlock(
     rawBlock.spans, fontString, boldFontString, italicFontString, boldItalicFontString,

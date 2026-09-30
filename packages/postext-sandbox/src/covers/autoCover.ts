@@ -10,7 +10,7 @@
 // This module holds the decisions (pure, tested); the capture itself is
 // covers/useAutoCover.ts, the storage the two stores above.
 
-import { sameLanguage } from '../presets/locale';
+import { sameContentLocale } from '../presets/locale';
 
 /** The book a cover is for. */
 export type CoverTarget =
@@ -97,7 +97,7 @@ export function presetCoverFor(covers: Readonly<Record<string, string>>, presetI
   for (const [key, url] of Object.entries(covers)) {
     if (!key.startsWith(prefix)) continue;
     const l = key.slice(prefix.length);
-    if (locale && l && sameLanguage(l, locale)) return url;
+    if (locale && l && sameContentLocale(l, locale)) return url;
     fallback ??= url;
   }
   return fallback;

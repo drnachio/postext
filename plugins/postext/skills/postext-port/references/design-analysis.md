@@ -48,6 +48,49 @@ Front-matter pages often have their own margins, single column and roman
 folios. Use heading styles with their own `margins`/`layout`/`header`/`footer`
 (configuration.md §6).
 
+## 2a. Chinese books: the grid in characters
+
+Chinese designers specify a type area in characters (clreq §7.1.1): body size × characters per line ×
+lines per page, plus the line gap and, with two columns, the gutter in characters. Measure it that way.
+
+- **Characters per line**: count the characters of a full line (a justified line that is not a
+  paragraph's last), marks included. In a vertical book, count down a column. clreq's range is 17–40,
+  at most 48 across the page and 55 down it.
+- **Lines per page**: count the lines of a full page (the columns of a vertical page, right to left).
+- **Body size**: line length ÷ characters. Round to a named size: 五号 10.5 pt (book text), 小五 9 pt
+  (magazines, notes), 小四 12 pt, 四号 14 pt, 三号 16 pt, 小二 18 pt, 二号 22 pt, 一号 27.5–28 pt; 六号 7.5–8 pt
+  is the smallest for text. Taiwan also uses Q units (0.25 mm): 13 Q ≈ 9.2 pt.
+- **Line gap**: pitch − size, usually ½ to 1 em (对开 = ½ of the size); the pitch is `bodyText.lineHeight`
+  in pt. Marks and readings between lines need at least ½ em of gap (⅝ with both sides).
+- **Punctuation**: where 。，、 sit (lower left of the cell = mainland; centred = Taiwan/Hong Kong), and
+  their widths: a comma followed by a character with no gap = Kaiming or half width; the line-end marks at
+  half width with a straight right edge = Kaiming or `lineEndHalf`; two marks side by side taking two full
+  cells = no compression. These set `cjk.region` / `punctuationWidth` / `compressAdjacent`.
+- **Space between Han and Latin**: a visible gap around Latin words and digits = `latinSpacing` (¼ em by
+  default); none = `0`.
+- Then set `cjk.grid: {enabled: true, charsPerLine, linesPerPage}` and give `page.margins` as minimums: the
+  engine centres the type area in the room they leave.
+
+Common trims and grids (五号, 6 pt gap unless noted): 大32开 140 × 203 mm, 28 × 28; 32开 130 × 184 mm,
+26–27 × 26–27; 16开 184 × 260 mm, 39 × 37, or two columns of 23 at 小五 with a two-character gutter;
+Taiwan 25開 (A5) 148 × 210 mm; 18開 170 × 230 mm.
+
+A vertical page (直排):
+- characters run down, columns from the right edge; the book is bound on the right and page 1 is the
+  left page of its spread;
+- tiers (栏) instead of columns, stacked top to bottom and not balanced;
+- the head margin (天头) is usually larger than the foot (地脚); the type area is often placed by its foot;
+- running heads: horizontal above the type area, or vertical in the fore-edge (书口/邊峰: chapter title about
+  four characters below the head of the type area, folio about five above its foot, at ~80 % of the body,
+  in Chinese numerals), or the folio alone in the outer foot corner;
+- figures upright, captions horizontal;
+- chapter openers (回目) on a new page, often a recto (left page): 第×回 on its own column, the couplet on two
+  columns, lowered a few characters.
+
+A thread-bound woodblock edition (线装) has its furniture in the centre strip of the folded leaf (版心:
+title, fish-tail 鱼尾, chapter, leaf number). Postext sets one page per page, so reset such a book with
+fore-edge heads rather than a centre strip.
+
 ## 3. Type
 
 `pdf_extract.py roles` / `inventory.py` list every (font, size, colour) with
@@ -74,6 +117,10 @@ alignment, indent, space before and after (in grid lines), and hyphenation.
 - **Horizontal scaling** in the source (body at 105–110 %): build a scaled
   face (`fonts.py scale`). Postext has no horizontal-scale setting.
 - Semibold used as bold: add a 600 face and set `bodyText.boldFontWeight: 600`.
+- Chinese type roles by face rather than weight: Song/Ming (宋体/明體) body, Hei (黑体) headings and labels,
+  Kai (楷体) quotations, verse, prefaces, signatures, Fangsong (仿宋) official text. Headings are usually
+  10–20 % larger than the body, set in Hei or bold Song, centred or indented two characters. Emphasis is
+  dots, never italics.
 
 ## 4. Colour
 

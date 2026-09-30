@@ -1,14 +1,16 @@
 // Slug helpers for auto-suggesting resource ids from a filename or caption.
 
 /** Convert arbitrary text to a lowercase, hyphen-separated slug.
- *  Strips diacritics, collapses non-alphanumerics to single hyphens, and
- *  trims leading/trailing hyphens. Returns '' for empty/symbol-only input. */
+ *  Strips diacritics, keeps the letters and digits of every script (a
+ *  Chinese caption gives a Chinese id, #181), collapses anything else to
+ *  single hyphens, and trims leading/trailing hyphens. Returns '' for
+ *  empty/symbol-only input. */
 export function slugify(input: string): string {
   return input
     .normalize('NFKD')
-    .replace(/[̀-ͯ]/g, '') // strip combining diacritics
+    .replace(/\p{M}/gu, '') // strip combining marks
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/[^\p{L}\p{N}]+/gu, '-')
     .replace(/^-+|-+$/g, '');
 }
 

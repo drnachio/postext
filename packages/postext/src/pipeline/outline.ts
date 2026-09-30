@@ -7,14 +7,15 @@
  */
 
 import type { ContentBlock, InlineSpan } from '../parse';
-import { flattenTitleBreaks, TITLE_BREAK_RE } from '../parse/inlineFormatting';
-import { collapseBreakingSpaces } from '../measure/spaces';
+import { flattenTitleBreaks, flattenTitleBreakSpans, TITLE_BREAK_RE } from '../parse/inlineFormatting';
+import { collapseTitleSpaces } from '../measure/spaces';
 import { computeHeadingNumbering, type HeadingNumberingOptions, type HeadingTemplates } from '../numbering';
 import type { HeadingCounters, OutlineEntry, PostextConfig } from '../types';
 import type { ResolvedConfig, VDTDocument } from '../vdt';
 import { resolvedLocale, resolveAllConfig } from './config';
 import { headingIsListed, headingIsNumbered, headingMarksFor, headingStyleOf } from './headingStyles';
 import { partMarkPages, planParts } from './parts';
+import { withBookTitleBrackets } from './annotations';
 
 /** Whether the parsed content holds a `:::toc` directive. */
 export function hasTocDirective(blocks: readonly ContentBlock[]): boolean {
@@ -59,11 +60,11 @@ export function indexOutline(entries: readonly OutlineEntry[]): OutlineEntry[] {
   return entries.filter((e) => e.kind === 'indexMark');
 }
 
-function titleSpans(spans: readonly InlineSpan[]): OutlineEntry['spans'] {
+function titleSpans(blockText: string, spans: readonly InlineSpan[]): OutlineEntry['spans'] {
   const out: NonNullable<OutlineEntry['spans']> = [];
-  for (const s of spans) {
+  for (const s of flattenTitleBreakSpans(blockText, spans)) {
     if (s.math || s.ref) continue; // formulas and references do not carry into the contents
-    const text = flattenTitleBreaks(s.text);
+    const text = s.text;
     if (text.length === 0) continue;
     const last = out[out.length - 1];
     if (last && last.bold === s.bold && last.italic === s.italic) last.text += text;
@@ -142,12 +143,16 @@ export function computeOutline(
     // A style whose own template is empty prints no number at all.
     const ordinal = b.level === 1 && style?.numberingTemplate !== '';
     const number = numbered ? (prefix.length > 0 ? prefix : ordinal ? String(values[i] ?? '') : '') : '';
+    // A book title's 《》 are text of the title where they are its mark.
+    const titled = withBookTitleBrackets(b.text, b.spans, resolved.cjk);
     out.push({
       kind: 'heading',
       level: b.level,
-      // No-break spaces stay: a running head or contents entry keeps them.
-      title: collapseBreakingSpaces(flattenTitleBreaks(b.text)).trim(),
-      spans: titleSpans(b.spans),
+      // No-break spaces stay: a running head or contents entry keeps them,
+      // and so does the ideographic space between the halves of a Chinese
+      // couplet title.
+      title: collapseTitleSpaces(flattenTitleBreaks(titled.text)).trim(),
+      spans: titleSpans(titled.text, titled.spans),
       number,
       ...(numbered && values[i] !== undefined ? { counter: values[i] } : {}),
       numbered,

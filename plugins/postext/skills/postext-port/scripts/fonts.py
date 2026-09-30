@@ -15,6 +15,11 @@
       Subset licensed faces to what the book needs (and mark them
       `redistributable: false` in the manifest so a .postext export leaves
       them out). --text-from adds every character used in the chapters.
+      Every OpenType layout feature is kept (`vert`, `vrt2`, `locl`…), and so
+      are the vertical metrics (`vhea`, `vmtx`). A Chinese face: pass
+      `--ranges latin,punct,cjk-punct` (full-width and vertical punctuation
+      the text may not hold yet; add `bopomofo` for zhuyin readings) and
+      subset a variable font before `instance`, which is then quick.
 
   fonts.py scale FONT --factor 1.10 --family "Garamond 110" --out fonts/
       A horizontally scaled copy (layout apps set body text at 105-110 %
@@ -55,6 +60,11 @@ RANGES = {
     "math": [(0x2200, 0x22FF), (0x00B1, 0x00B1), (0x00D7, 0x00D7), (0x00F7, 0x00F7)],
     "shapes": [(0x25A0, 0x25FF), (0x2600, 0x26FF), (0x2700, 0x27BF)],
     "ligatures": [(0xFB00, 0xFB06)],
+    # CJK punctuation, full-width forms, vertical and compatibility forms, the
+    # quotes, dashes, ellipsis and interpunct Chinese text shares with Latin.
+    "cjk-punct": [(0x3000, 0x303F), (0xFF00, 0xFFEF), (0xFE10, 0xFE1F), (0xFE30, 0xFE4F),
+                  (0x2010, 0x2027), (0x00B7, 0x00B7), (0x2E3A, 0x2E3B)],
+    "bopomofo": [(0x3100, 0x312F), (0x31A0, 0x31BF), (0x02C7, 0x02C7), (0x02CA, 0x02CB), (0x02D9, 0x02D9)],
 }
 
 

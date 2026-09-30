@@ -28,6 +28,7 @@ export function OrderedListLevelSection({
   raw,
   generalNumberFormat,
   generalSeparator,
+  generalPrefix,
   generalFont,
   generalFontSize,
   generalColor,
@@ -44,6 +45,7 @@ export function OrderedListLevelSection({
   raw: OrderedListLevelConfig | undefined;
   generalNumberFormat: OrderedListNumberFormat;
   generalSeparator: string;
+  generalPrefix: string;
   generalFont: string;
   generalFontSize: Dimension;
   generalColor: ColorValue;
@@ -57,6 +59,7 @@ export function OrderedListLevelSection({
 }) {
   const isNumberFormatDefault = resolved.numberFormat === generalNumberFormat;
   const isSeparatorDefault = resolved.separator === generalSeparator;
+  const isPrefixDefault = resolved.prefix === generalPrefix;
   const isFontDefault = resolved.fontFamily === generalFont;
   const isFontSizeDefault = dimensionsEqual(resolved.fontSize, generalFontSize);
   const isColorDefault = colorsEqual(resolved.color, generalColor);
@@ -84,6 +87,16 @@ export function OrderedListLevelSection({
         tooltip={labels.orderedListLevelNumberFormatTooltip}
         isDefault={isNumberFormatDefault}
         onReset={() => onReset(level, 'numberFormat')}
+      />
+      <TextInput
+        label={labels.orderedListsPrefix}
+        value={resolved.prefix}
+        onChange={(v) => onUpdate(level, { prefix: v })}
+        placeholder={labels.orderedListsPrefixPlaceholder}
+        tooltip={labels.orderedListsPrefixTooltip}
+        isDefault={isPrefixDefault}
+        onReset={() => onReset(level, 'prefix')}
+        widthCh={6}
       />
       <TextInput
         label={labels.orderedListLevelSeparator}

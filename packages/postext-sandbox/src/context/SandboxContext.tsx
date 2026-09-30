@@ -23,7 +23,6 @@ import {
   hashNamesOtherBook,
   parseHashBundle,
   readViewHash,
-  sameBook,
   writeViewHash,
   type HashBundleRef,
   type ViewHash,
@@ -49,7 +48,8 @@ import {
 } from '../storage/presetDrafts';
 import { createSaveScheduler, type SaveScheduler } from '../storage/saveScheduler';
 import { getBlob, putBlobAt } from '../storage/blobStore';
-import { choosePresetOpen, sameLanguage } from '../presets/locale';
+import { effectiveCanvasScope, wholeBookAllowed } from '../book/scope';
+import { choosePresetOpen, isEditionOnScreen, linkNamesBookOnScreen } from '../presets/locale';
 import { fetchBundleBytes, openHashBundle } from './hashBundle';
 import { getChapterLayouts, pruneChapterLayoutStore, putChapterLayouts } from '../storage/layouts';
 import type { ProjectSummary } from '../storage/projects';
@@ -74,7 +74,8 @@ import { computeWarnings } from '../warnings/compute';
 import type { Warning } from '../warnings/types';
 import { hasIndexedDB } from '../storage/blobStore';
 import { onUnavailableResourceImagesChange, unavailableResourceImages } from '../controls/resourceImages';
-import { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES } from '../defaultMarkdown';
+import { onPdfFontChecksChange, pdfFontChecks, pdfFontChecksFor } from '../controls/pdfFontWarnings';
+import { DEFAULT_MARKDOWN_EN } from '../defaultMarkdown';
 import { withDefaultResourceTypes } from './defaultConfig';
 import { createPostextGuideConfig } from './guideConfig';
 import { createProjectActions } from './projectActions';
@@ -83,11 +84,13 @@ import { presetCoverKey, type CoverTarget } from '../covers/autoCover';
 import { bytesToDataUrl, listPresetCovers, putPresetCoverIfMissing } from '../storage/presetCovers';
 import {
   BUILTIN_PRESET_ID,
+  GUIDE_SAMPLE_DOCUMENTS,
   applyPreset,
   createPostextGuidePreset,
   decidePresetUpdate,
   findDefaultPrivatePreset,
   isDocumentUntouched,
+  isPristineChineseGuide,
   listPresets,
   rekeyMigratedConfig,
 } from '../presets';
@@ -332,7 +335,9 @@ const EMPTY_SELECTION: EditorSelection = { from: 0, to: 0, head: 0 };
 /** Adopt a book slice and re-derive the active-chapter mirror. Returns
  *  `state` itself when nothing changed. */
 function withBook(state: SandboxState, book: BookContent, resetSelection = false): SandboxState {
-  const canvasScope = book.canvasScope ?? 'chapter';
+  // A book too long to be shown whole (see `book/scope.ts`) is shown a
+  // chapter at a time, whatever it asks for.
+  const canvasScope = effectiveCanvasScope(book.canvasScope, book.chapters.length);
   if (
     book.chapters === state.chapters &&
     book.activeChapterId === state.activeChapterId &&
@@ -405,6 +410,7 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
       return { ...state, pdfScope: action.payload };
     case 'SET_CANVAS_SCOPE':
       if (action.payload === state.canvasScope) return state;
+      if (action.payload === 'book' && !wholeBookAllowed(state.chapters.length)) return state;
       // The PDF follows the canvas by default — a book laid out whole on
       // the canvas is exported whole — until the PDF scope is picked by
       // hand, which holds until the canvas scope moves again.
@@ -983,7 +989,8 @@ export function useSandboxWarnings(): Warning[] {
   return useSyncExternalStore(store.subscribe, read, read);
 }
 
-const SAMPLE_DOCUMENTS = [DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES];
+/** The guide in every edition (English, Spanish, Simplified Chinese). */
+const SAMPLE_DOCUMENTS = GUIDE_SAMPLE_DOCUMENTS;
 
 /** The book slice (chapters, active chapter). */
 export function useBookContent(): BookContent {
@@ -1180,8 +1187,8 @@ export function SandboxProvider({
       markdown: activeChapter(book).markdown,
       chapters: book.chapters,
       activeChapterId: book.activeChapterId,
-      pdfScope: book.canvasScope ?? 'chapter',
-      canvasScope: book.canvasScope ?? 'chapter',
+      pdfScope: effectiveCanvasScope(book.canvasScope, book.chapters.length),
+      canvasScope: effectiveCanvasScope(book.canvasScope, book.chapters.length),
       chapterLayouts: {},
       hiddenPresetIds: loadHiddenPresetIds(),
       config,
@@ -1291,7 +1298,7 @@ export function SandboxProvider({
     presetLoadSeqRef.current++;
     const loc = stateRef.current.locale;
     const config = withDefaultResourceTypes(draft.config, loc);
-    setCustomFonts(config.customFonts);
+    setCustomFonts(config.customFonts, { newBook: true });
     const book: BookContent = {
       chapters: draft.chapters,
       activeChapterId: draft.activeChapterId,
@@ -1381,8 +1388,11 @@ export function SandboxProvider({
     const s = stateRef.current;
     const onScreen = s.activeProjectId === null && s.activePresetId === id;
     const current = onScreen && s.presetApplied?.presetId === id ? s.presetApplied.locale ?? null : null;
+    // Already open in that edition (Simplified ↔ Traditional Chinese, one
+    // language in two editions, switch; `zh-TW` asks for the `zh-Hant` on
+    // screen). The hash sync asks the same question before it calls here.
+    if (isEditionOnScreen(provider.summary, locale, current) && s.presetStatus !== 'loading') return true;
     const choice = choosePresetOpen({ summary: provider.summary, requested: locale, current, viewer: s.locale, drafts: draftsRef.current });
-    if (current !== null && sameLanguage(choice.locale, current) && s.presetStatus !== 'loading') return true;
     return switchBookRef.current(async () => {
       if (choice.draft) {
         const draft = await getPresetDraft(choice.draft.key);
@@ -1508,8 +1518,11 @@ export function SandboxProvider({
         // persisted in *another* language gets swapped to this locale's
         // default and its examples reseeded, so entering the Spanish sandbox
         // shows Spanish resources instead of whichever language seeded first.
+        // The Chinese guide is no interface's default: it was opened on
+        // purpose, and an untouched copy stays Chinese.
         const pristineOtherLocale =
-          isPristineBook(currentBook, SAMPLE_DOCUMENTS) && currentBook.chapters[0]!.markdown !== defaultMd;
+          isPristineBook(currentBook, SAMPLE_DOCUMENTS) && !isPristineChineseGuide(currentBook)
+          && currentBook.chapters[0]!.markdown !== defaultMd;
         const onBuiltin = savedId === null || savedId === BUILTIN_PRESET_ID;
 
         // Summaries: every provider, plus a placeholder for a previously
@@ -1567,7 +1580,9 @@ export function SandboxProvider({
             ? before.presetApplied.locale ?? null
             : null,
         };
-        if (!bundleRef && !sameBook(wanted, onScreen)) {
+        // `lang=zh-TW` names the `zh-Hant` edition on screen: it stays, and
+        // is seeded below as any visit's book.
+        if (!bundleRef && !linkNamesBookOnScreen(wanted, onScreen, summaries)) {
           if (wanted.project !== null && projects.some((p) => p.id === wanted.project)) {
             await saveOutgoing();
             await projectActions.activate(wanted.project).catch(() => undefined);
@@ -1612,11 +1627,13 @@ export function SandboxProvider({
           await openPresetRef.current(BUILTIN_PRESET_ID, loc);
           return;
         }
-        if (loaded.length === 0) {
+        if (loaded.length === 0 && onBuiltin) {
           // First entry (empty store): seed the built-in preset. A pristine
           // document takes the sample markdown too (and a fresh config only
           // when none was ever saved); an edited document with an emptied
-          // store just gets its example resources back.
+          // store just gets its example resources back. Another preset on
+          // screen may simply have no resources (a novel without figures):
+          // it stays what it is, not the guide's resources under its text.
           const parts: PresetApplyParts = !pristine
             ? 'resources'
             : loadConfig() === null ? 'all' : 'document';
@@ -1984,10 +2001,11 @@ export function SandboxProvider({
   const chapterDocsRef = useRef<Map<string, ChapterDocument>>(new Map());
   const warningsCacheRef = useRef<{ key: unknown[]; value: Warning[] } | null>(null);
   /** Bumped whenever the set of unreadable image payloads changes (the
-   *  previews decode them after the layout): part of the warnings key. */
+   *  previews decode them after the layout), or a PDF generation brings
+   *  its font warnings: part of the warnings key. */
   const imageStatusRef = useRef(0);
   const getWarnings = (s: SandboxState): Warning[] => {
-    const key = [s.chapters, s.activeChapterId, s.config, s.resources, s.docVersion, s.canvasScope, s.activeViewport, imageStatusRef.current];
+    const key = [s.chapters, s.activeChapterId, s.config, s.resources, s.docVersion, s.canvasScope, s.activeViewport, imageStatusRef.current, pdfFontChecks(), s.bookVersion, s.pdfScope];
     const cached = warningsCacheRef.current;
     if (cached && cached.key.every((k, i) => k === key[i])) return cached.value;
     const chapterBook = composeBookMemo(s.chapters, s.activeChapterId);
@@ -2002,6 +2020,7 @@ export function SandboxProvider({
     const whole = wholeSource !== null && wholeSource.scope === 'book' ? wholeSource : null;
     const book = whole ?? chapterBook;
     const doc = stitched ? chapterDocsRef.current.get(s.activeChapterId)?.doc ?? null : docRef.current;
+    const fontChecks = pdfFontChecksFor(s);
     const all = computeWarnings({
       markdown: book.markdown,
       config: s.config,
@@ -2011,6 +2030,9 @@ export function SandboxProvider({
       unavailableImages: unavailableResourceImages(),
       book,
       chapterTitles: new Map(s.chapters.map((c) => [c.id, c.title])),
+      // Another book's are dropped; after an edit they are marked stale.
+      pdfFontChecks: fontChecks.checks,
+      pdfFontChecksStale: fontChecks.stale,
     });
     const value = whole ? all.filter((w) => w.chapterId === undefined || w.chapterId === s.activeChapterId) : all;
     warningsCacheRef.current = { key, value };
@@ -2047,29 +2069,34 @@ export function SandboxProvider({
   // Warnings parse the active chapter and walk the built document: not
   // on every keystroke, but once the inputs have settled.
   const warningsRef = useRef<Warning[]>([]);
-  const { chapters: warnChapters, activeChapterId: warnChapterId, config: warnConfig, resources: warnResources, docVersion: warnDocVersion } = state;
+  const { chapters: warnChapters, activeChapterId: warnChapterId, config: warnConfig, resources: warnResources, docVersion: warnDocVersion, bookVersion: warnBookVersion, pdfScope: warnPdfScope } = state;
   useEffect(() => {
     const timer = setTimeout(() => {
       warningsRef.current = getWarningsRef.current(stateRef.current);
       for (const cb of listenersRef.current) cb();
     }, WARNINGS_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [warnChapters, warnChapterId, warnConfig, warnResources, warnDocVersion]);
+  }, [warnChapters, warnChapterId, warnConfig, warnResources, warnDocVersion, warnBookVersion, warnPdfScope]);
 
   // An image payload found missing or undecodable (or readable again) after
   // the previews decoded it: list the change without waiting for an edit.
+  // A PDF generated with characters its fonts lack (and the like) lists
+  // them the same way.
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const off = onUnavailableResourceImagesChange(() => {
+    const refresh = () => {
       imageStatusRef.current++;
       clearTimeout(timer);
       timer = setTimeout(() => {
         warningsRef.current = getWarningsRef.current(stateRef.current);
         for (const cb of listenersRef.current) cb();
       }, WARNINGS_DEBOUNCE_MS);
-    });
+    };
+    const offImages = onUnavailableResourceImagesChange(refresh);
+    const offPdf = onPdfFontChecksChange(refresh);
     return () => {
-      off();
+      offImages();
+      offPdf();
       clearTimeout(timer);
     };
   }, []);
