@@ -340,7 +340,9 @@ describe('headings: number separator and couplet titles', () => {
       ['关于:book[红楼梦]举办 \\\\ 2026年培训班', '1 关于《红楼梦》举办2026年培训班'],
       ['Intro \\\\ 中 x:book[书]', '1 Intro中 x《书》'],
     ];
-    for (const width of [400, 150]) {
+    // 400 pt: one line; 100 and 90 pt wrap at the break, at the author's
+    // space or inside the brackets.
+    for (const width of [400, 100, 90]) {
       for (const [title, bookmark] of cases) {
         const doc = buildDocument({ markdown: `# ${title}\n\n正文。` }, zhs(width));
         const heading = doc.blocks.find((b) => b.type === 'heading')!;

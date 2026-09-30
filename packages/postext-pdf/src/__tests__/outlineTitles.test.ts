@@ -189,7 +189,9 @@ describe('bookmarks of headings with a forced break', () => {
   // in the title stays (#221 review).
   it('find the break past the brackets of a book title', async () => {
     const markdown = '# 第一章 \\\\ 中 API:book[手册]\n\n正文。\n\n# 关于举办 \\\\ 2026年:book[红楼梦]研讨\n\n正文。';
-    for (const width of [300, 150]) {
+    // One line, and wrapped at the break, at the author's space or inside
+    // the brackets.
+    for (const width of [300, 100, 90]) {
       expect(await outlineTitles(markdown, zh(width)), String(width)).toEqual(['第一章\u3000中 API《手册》', '关于举办2026年《红楼梦》研讨']);
     }
   }, 60_000);
