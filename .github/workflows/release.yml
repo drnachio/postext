@@ -17,8 +17,8 @@ name: Release
 on:
   push:
     branches: [main]
-    # A merge that only touches the workflows is not a release
-    paths-ignore: ['.github/**']
+    # A merge that only touches the workflows or the README is not a release
+    paths-ignore: ['.github/**', 'README.md']
   # Manual recovery: re-run a release without a new merge (e.g. after fixing NPM_TOKEN)
   workflow_dispatch:
 
