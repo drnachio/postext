@@ -1,0 +1,611 @@
+{
+  "schemaVersion": 1,
+  "slug": "pinyin-primer",
+  "sourceHash": "e0abaa54970a8577b4f3bfc9a6241e4fda4cf9bcf4fa0ce17063143475da9afd",
+  "engine": {
+    "postext": "1.9.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-30T04:14:21.929Z",
+  "variants": {
+    "en": {
+      "hash8": "3e72e404",
+      "vdtHash": "316c6d868a9fcd8c5f2d580936b4bed6271e334b",
+      "timings": {
+        "importMs": 360,
+        "fontsMs": 9639,
+        "buildMs": 79,
+        "totalMs": 35074,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          184,
+          260
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "LXGW WenKai TC",
+          "sizePt": 26,
+          "leadingPt": 54
+        },
+        "families": [
+          "Andika",
+          "LXGW WenKai TC",
+          "Noto Sans TC"
+        ],
+        "pages": 4,
+        "ownLines": 180
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "36",
+          "role": "opener",
+          "w": 1000,
+          "h": 1413,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 56850,
+          "alt": "Opening page 36: 第一課."
+        },
+        {
+          "n": 2,
+          "label": "37",
+          "role": "opener",
+          "w": 1000,
+          "h": 1413,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 60418,
+          "alt": "Opening page 37: 第二課."
+        },
+        {
+          "n": 3,
+          "label": "38",
+          "role": "opener",
+          "w": 1000,
+          "h": 1413,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 56754,
+          "alt": "Opening page 38: 第三課."
+        },
+        {
+          "n": 4,
+          "label": "39",
+          "role": "opener",
+          "w": 1000,
+          "h": 1413,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 60718,
+          "alt": "Opening page 39: 第四課."
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "pinyin-primer.postext",
+        "bytes": 22079
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].body",
+          "calloutStyles[].body.boldColor",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.italicColor",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.paragraphSpacing",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].borderRadius",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].snapToGrid",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "cjk.ruby",
+          "cjk.ruby.color",
+          "cjk.ruby.fontFamily",
+          "cjk.ruby.fontSize",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].box",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].verticalAlign",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "headings.snapToGrid",
+          "headings.textAlign",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 318,
+        "designElements": 16,
+        "directives": [
+          ":::callout",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 5,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Andika",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Andika",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "LXGW WenKai TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans TC",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "character-grid",
+          "cjk-line-breaking",
+          "heading-attributes",
+          "off-grid-spacing",
+          "opener-band",
+          "opener-design",
+          "paragraph-styles",
+          "resources",
+          "ruby"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 35: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "f5da6053",
+      "vdtHash": "d2293135b1ca77f32a280f93739ce35e0e369ecd",
+      "timings": {
+        "importMs": 136,
+        "fontsMs": 6921,
+        "buildMs": 16,
+        "totalMs": 9638,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          184,
+          260
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "LXGW WenKai TC",
+          "sizePt": 26,
+          "leadingPt": 54
+        },
+        "families": [
+          "Andika",
+          "LXGW WenKai TC",
+          "Noto Sans TC"
+        ],
+        "pages": 4,
+        "ownLines": 180
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "36",
+          "role": "opener",
+          "w": 1000,
+          "h": 1413,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 59246,
+          "alt": "Página de apertura 36: 第一課."
+        },
+        {
+          "n": 2,
+          "label": "37",
+          "role": "opener",
+          "w": 1000,
+          "h": 1413,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 61696,
+          "alt": "Página de apertura 37: 第二課."
+        },
+        {
+          "n": 3,
+          "label": "38",
+          "role": "opener",
+          "w": 1000,
+          "h": 1413,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 56290,
+          "alt": "Página de apertura 38: 第三課."
+        },
+        {
+          "n": 4,
+          "label": "39",
+          "role": "opener",
+          "w": 1000,
+          "h": 1413,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 59452,
+          "alt": "Página de apertura 39: 第四課."
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "pinyin-primer.postext",
+        "bytes": 22595
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].body",
+          "calloutStyles[].body.boldColor",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.italicColor",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.paragraphSpacing",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].borderRadius",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].snapToGrid",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "cjk.ruby",
+          "cjk.ruby.color",
+          "cjk.ruby.fontFamily",
+          "cjk.ruby.fontSize",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].box",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].verticalAlign",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "headings.snapToGrid",
+          "headings.textAlign",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 318,
+        "designElements": 16,
+        "directives": [
+          ":::callout",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 5,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Andika",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Andika",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "LXGW WenKai TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans TC",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "character-grid",
+          "cjk-line-breaking",
+          "heading-attributes",
+          "off-grid-spacing",
+          "opener-band",
+          "opener-design",
+          "paragraph-styles",
+          "resources",
+          "ruby"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 35: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -128,7 +128,7 @@ const quote = { fontFamily: KAI, fontSize: pt(14), lineHeight: 1.5, color: col('
 // # 月下的瓜地 {style="plate" line1="…" line2="…" line3="…"}: a page with no head or folio.
 // 'page' spans the design over the sheet: a heading's design in the column is cut at its foot.
 const plate = {
-  id: 'plate', span: 'page',
+  id: 'plate', span: 'page', runningChapter: false, toc: false, // out of the PDF outline
   breakBefore: { enabled: true, parity: 'any' }, // (gotcha: style-inherits-break)
   header: { elements: [] }, footer: { elements: [] },
   advancedDesign: { enabled: true, slot: { elements: [

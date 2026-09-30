@@ -120,7 +120,7 @@ const titlePage = {
     slip('slip', 0, 1.4), slip('slip-in', 1.2, 0.4), // a heavy and a light vermilion rule
     { kind: 'text', id: 'book', content: '{titleText}', fontFamily: SONG, fontWeight: 700,
       fontSize: pt(40), lineHeight: 1, letterSpacing: pt(10), color: col('ink'),
-      placement: at(SLIP.down + (SLIP.long - RUN) / 2, AXIS - 20 * PT) }, // its 40 pt line on the axis
+      placement: at(SLIP.down + (SLIP.long - RUN) / 2, AXIS - 20 * PT) }, // 40 pt line on the axis
     { kind: 'text', id: 'author', content: '{author}　著', fontFamily: KAI, fontSize: pt(12),
       color: col('ink'), placement: at(52, 72) },
     { kind: 'text', id: 'editor', content: '{attr.editor}', fontFamily: KAI, fontSize: pt(12),

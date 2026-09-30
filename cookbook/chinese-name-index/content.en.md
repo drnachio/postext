@@ -60,5 +60,5 @@ subtitle: "程乙本前三回选读"
 :::index
 
 :::paragraphs{style="colophon"}
-Dream of the Red Chamber, chapters 1–3, Simplified edition: the passages where the characters first appear, from the Cheng–Gao text of 1792 (zh.wikisource, revision 9685985, CC BY-SA 4.0), converted to Simplified characters with OpenCC, with —— for the source’s －－. Cuts inside a paragraph are marked ……. Set in Noto Serif SC, Noto Sans SC and Ma Shan Zheng (SIL OFL).
+Dream of the Red Chamber, chapters 1–3, Simplified edition: the passages where the characters first appear, from the Cheng–Gao text of 1792 (zh.wikisource, revision 9685985, CC BY-SA 4.0), converted to Simplified characters with OpenCC, with —— where the source has －－. Cuts inside a paragraph are marked ……. Set in Noto Serif SC, Noto Sans SC and Ma Shan Zheng (SIL OFL).
 :::

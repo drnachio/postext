@@ -1,0 +1,834 @@
+{
+  "schemaVersion": 1,
+  "slug": "tang-poems-facing-english",
+  "sourceHash": "11719192ccd435eb050c63c4185802ec935938e4daac69f2b974cadfe98fa1e5",
+  "engine": {
+    "postext": "1.9.0",
+    "postextPdf": "1.9.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-30T04:14:22.010Z",
+  "variants": {
+    "en": {
+      "hash8": "c06be875",
+      "vdtHash": "b1896ec0ff3f9212321383186ad84577043c48c2",
+      "timings": {
+        "importMs": 121,
+        "fontsMs": 35737,
+        "buildMs": 18,
+        "totalMs": 36576,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          148,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Noto Serif TC",
+          "sizePt": 10.5,
+          "leadingPt": 16
+        },
+        "families": [
+          "LXGW WenKai TC",
+          "Noto Sans TC",
+          "Noto Serif TC",
+          "Source Sans 3",
+          "Source Serif 4"
+        ],
+        "pages": 10,
+        "ownLines": 180
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 17590,
+          "alt": "Opening page 1: 唐詩."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 23848,
+          "alt": "Opening page 2: Night Thoughts."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 50250,
+          "alt": "Opening page 3: 靜夜思."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 66216,
+          "alt": "Opening page 4: Drinking Alone under the Moon."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 65020,
+          "alt": "Opening page 5: 月下獨酌."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 21134,
+          "alt": "Opening page 6: Stop-short."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 34676,
+          "alt": "Opening page 7: 絕句."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 19928,
+          "alt": "Opening page 8: The Bamboo Lodge."
+        },
+        {
+          "n": 9,
+          "label": "9",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 36558,
+          "alt": "Opening page 9: 竹里館."
+        },
+        {
+          "n": 10,
+          "label": "10",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p10.webp",
+          "strip": "p10.s.webp",
+          "bytes": 96254,
+          "alt": "Opening page 10: A note on the text."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          9,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "tang-poems-facing-english.pdf",
+        "bytes": 152869,
+        "pages": 10
+      },
+      "sandbox": {
+        "file": "tang-poems-facing-english.postext",
+        "bytes": 14729
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.hyphenation.locale",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footnotes",
+          "footnotes.color",
+          "footnotes.fontSize",
+          "footnotes.lineHeight",
+          "footnotes.placement",
+          "footnotes.separator",
+          "footnotes.separator.color",
+          "footnotes.separator.lineWidth",
+          "footnotes.separator.width",
+          "footnotes.spaceAbove",
+          "footnotes.spaceBelowRule",
+          "footnotes.spaceBetween",
+          "footnotes.textAlign",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].runningChapter",
+          "headingStyles[].span",
+          "headings",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].indent",
+          "paragraphStyles[].italicColor",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "footnotes",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 326,
+        "designElements": 16,
+        "directives": [
+          ":::paragraphs",
+          ":::space"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "LXGW WenKai TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 900,
+            "style": "normal"
+          },
+          {
+            "family": "Source Sans 3",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Source Sans 3",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Source Sans 3",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "character-grid",
+          "cjk-line-breaking",
+          "footnotes",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "section-running-heads",
+          "vertical-space"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.81
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "b6395c45",
+      "vdtHash": "87f9ddefa2d8a72b7537f4624fce89143df90ecc",
+      "timings": {
+        "importMs": 127,
+        "fontsMs": 2494,
+        "buildMs": 29,
+        "totalMs": 5624,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          148,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Noto Serif TC",
+          "sizePt": 10.5,
+          "leadingPt": 16
+        },
+        "families": [
+          "LXGW WenKai TC",
+          "Noto Sans TC",
+          "Noto Serif TC",
+          "Source Sans 3",
+          "Source Serif 4"
+        ],
+        "pages": 10,
+        "ownLines": 180
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 18326,
+          "alt": "Página de apertura 1: 唐詩."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 23902,
+          "alt": "Página de apertura 2: Night Thoughts."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 51082,
+          "alt": "Página de apertura 3: 靜夜思."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 66284,
+          "alt": "Página de apertura 4: Drinking Alone under the Moon."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 65578,
+          "alt": "Página de apertura 5: 月下獨酌."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 21192,
+          "alt": "Página de apertura 6: Stop-short."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 35078,
+          "alt": "Página de apertura 7: 絕句."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 20014,
+          "alt": "Página de apertura 8: The Bamboo Lodge."
+        },
+        {
+          "n": 9,
+          "label": "9",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 38568,
+          "alt": "Página de apertura 9: 竹里館."
+        },
+        {
+          "n": 10,
+          "label": "10",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p10.webp",
+          "strip": "p10.s.webp",
+          "bytes": 101062,
+          "alt": "Página de apertura 10: Nota sobre el texto."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          9,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "tang-poems-facing-english.pdf",
+        "bytes": 155236,
+        "pages": 10
+      },
+      "sandbox": {
+        "file": "tang-poems-facing-english.postext",
+        "bytes": 15003
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.hyphenation.locale",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footnotes",
+          "footnotes.color",
+          "footnotes.fontSize",
+          "footnotes.lineHeight",
+          "footnotes.placement",
+          "footnotes.separator",
+          "footnotes.separator.color",
+          "footnotes.separator.lineWidth",
+          "footnotes.separator.width",
+          "footnotes.spaceAbove",
+          "footnotes.spaceBelowRule",
+          "footnotes.spaceBetween",
+          "footnotes.textAlign",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].runningChapter",
+          "headingStyles[].span",
+          "headings",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].indent",
+          "paragraphStyles[].italicColor",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "footnotes",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 326,
+        "designElements": 16,
+        "directives": [
+          ":::paragraphs",
+          ":::space"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "LXGW WenKai TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 900,
+            "style": "normal"
+          },
+          {
+            "family": "Source Sans 3",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Source Sans 3",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Source Sans 3",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "character-grid",
+          "cjk-line-breaking",
+          "footnotes",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "section-running-heads",
+          "vertical-space"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.79
+        },
+        "findings": []
+      }
+    }
+  }
+}

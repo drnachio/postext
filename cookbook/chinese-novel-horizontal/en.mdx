@@ -41,7 +41,7 @@ Mainland novels carry the book’s title over versos and the story’s over rect
 
 <Excerpt region="plate" />
 
-The picture belongs to a heading of its own, `# 月下的瓜地 {style="plate" …}`, whose style draws the page and clears its head and folio. The plate needs `span: 'page'`, because a heading’s design that stays in the column is cut at the column’s foot, 18 mm short of the trim. The three lines of the quotation are three attributes and three text elements, because design text has a line breaker of its own, which sets no Chinese punctuation widths; broken by hand, the lines also drop their commas, as display lines in Chinese usually do.
+The picture belongs to a heading of its own, `# 月下的瓜地 {style="plate" …}`, whose style draws the page and clears its head and folio. The plate needs `span: 'page'`, because a heading’s design that stays in the column is cut at the column’s foot, 18 mm short of the trim. `runningChapter: false` with `toc: false` leaves it out of the PDF outline, which opens on 故乡. The three lines of the quotation are three attributes and three text elements, because design text has a line breaker of its own, which sets no Chinese punctuation widths; broken by hand, the lines also drop their commas, as display lines in Chinese usually do.
 
 ### 6 · Latin letters and digits in the Chinese text
 
@@ -73,5 +73,5 @@ The canvas draws a light grey square for every character position of every line 
 
 ## Pitfalls
 
-- The plate is a heading, so the PDF outline lists 月下的瓜地 as a first-level bookmark before 故乡, and the tagged PDF keeps it as an H1. No heading setting leaves a heading out of the outline yet.
+- The plate is a heading, and a heading gets a PDF bookmark: without `runningChapter: false` and `toc: false` in the plate’s style, the outline would open on 月下的瓜地, a first-level bookmark before 故乡. Either setting alone keeps it. The tagged PDF still keeps the plate’s title as an H1.
 - The headings’ own face must be one that `FONTS` loads, even when a design paints every title: with the default weight 700 the kit found Noto Serif SC 700 in the layout and loaded its Latin file with a warning. `headings.fontWeight: 400` keeps the heading blocks in the text face.

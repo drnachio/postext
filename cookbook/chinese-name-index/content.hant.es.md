@@ -60,5 +60,5 @@ subtitle: "程乙本前三回選讀"
 :::index
 
 :::paragraphs{style="colophon"}
-Sueño en el pabellón rojo, capítulos 1 a 3, edición en caracteres tradicionales: los pasajes en que aparecen los personajes, según el texto de Cheng y Gao de 1792 (zh.wikisource, revisión 9685985, CC BY-SA 4.0), con 原係 donde el original pone 原系 y —— donde pone －－. Los cortes dentro de un párrafo se marcan con ……. Compuesto en Noto Serif TC, Noto Sans TC y LXGW WenKai TC (SIL OFL).
+Sueño en el pabellón rojo, capítulos 1 a 3, edición en caracteres tradicionales: los pasajes en que aparecen los personajes, según el texto de Cheng y Gao de 1792 (zh.wikisource, revisión 9685985, CC BY-SA 4.0), con 原⁠係 donde el original pone 原⁠系 y —— donde pone －－. Los cortes dentro de un párrafo se marcan con ……. Compuesto en Noto Serif TC, Noto Sans TC y LXGW WenKai TC (SIL OFL).
 :::

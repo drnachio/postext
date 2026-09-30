@@ -2,7 +2,7 @@
   "$schema": "../recipe.schema.json",
   "schemaVersion": 1,
   "number": 79,
-  "status": "draft",
+  "status": "published",
   "chapter": "structure",
   "order": 80,
   "level": 2,
@@ -69,5 +69,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-29",
-  "updated": "2026-09-29"
+  "updated": "2026-09-30"
 }

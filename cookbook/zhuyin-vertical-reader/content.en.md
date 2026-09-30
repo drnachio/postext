@@ -88,5 +88,5 @@
 :::
 
 :::paragraphs{style="colophon"}
-Set in Iansui, LXGW WenKai TC, Noto Serif TC and Noto Sans TC (SIL OFL). Text: Han Feizi, chapters 49 and 32, Chinese Wikisource, revisions 2642850 and 2327662 (CC BY-SA 4.0). Zhuyin checked against the Revised Mandarin Chinese Dictionary (Ministry of Education, Taiwan); modern versions, notes and exercises written for this recipe (CC BY 4.0).
+Set in Iansui, LXGW WenKai TC, Noto Serif TC and Noto Sans TC (SIL OFL). Text: Han Feizi, chapters :sideways[49] and :sideways[32], Chinese Wikisource, revisions 2642850 and 2327662 (CC BY-SA 4.0). Zhuyin checked against the Revised Mandarin Chinese Dictionary (Ministry of Education, Taiwan); modern versions, notes and exercises written for this recipe (CC BY 4.0).
 :::

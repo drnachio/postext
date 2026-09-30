@@ -41,7 +41,7 @@ Las novelas continentales llevan el título del libro sobre las páginas pares y
 
 <Excerpt region="plate" />
 
-La ilustración pertenece a un título propio, `# 月下的瓜地 {style="plate" …}`, cuyo estilo dibuja la página y le quita la cabecera y el folio. La lámina necesita `span: 'page'`, porque el diseño de un título que se queda en la columna se corta al pie de la columna, 18 mm antes del borde. Las tres líneas de la cita son tres atributos y tres elementos de texto, porque el texto de diseño tiene su propio corte de líneas y no aplica los anchos de la puntuación china; al partirlas a mano, las líneas pierden además sus comas, como suele hacerse con las líneas de exhibición en chino.
+La ilustración pertenece a un título propio, `# 月下的瓜地 {style="plate" …}`, cuyo estilo dibuja la página y le quita la cabecera y el folio. La lámina necesita `span: 'page'`, porque el diseño de un título que se queda en la columna se corta al pie de la columna, 18 mm antes del borde. `runningChapter: false` con `toc: false` la deja fuera de los marcadores del PDF, que empiezan por 故乡. Las tres líneas de la cita son tres atributos y tres elementos de texto, porque el texto de diseño tiene su propio corte de líneas y no aplica los anchos de la puntuación china; al partirlas a mano, las líneas pierden además sus comas, como suele hacerse con las líneas de exhibición en chino.
 
 ### 6 · Letras latinas y cifras en el texto chino
 
@@ -73,5 +73,5 @@ El lienzo dibuja un cuadrado gris claro por cada posición de carácter de cada 
 
 ## Errores frecuentes
 
-- La lámina es un título, así que los marcadores del PDF muestran 月下的瓜地 en el primer nivel, antes de 故乡, y el PDF etiquetado lo conserva como H1. Todavía no hay ningún ajuste de título que lo deje fuera de los marcadores.
+- La lámina es un título, y un título tiene marcador en el PDF: sin `runningChapter: false` y `toc: false` en el estilo de la lámina, los marcadores empezarían por 月下的瓜地, en el primer nivel, antes de 故乡. Con uno solo de los dos ajustes, el marcador sigue ahí. El PDF etiquetado conserva el título de la lámina como H1.
 - La fuente de los títulos tiene que ser una de las que carga `FONTS`, aunque un diseño pinte todos los títulos: con el peso 700 por defecto, el kit encontró Noto Serif SC 700 en la maqueta y cargó su archivo latino con un aviso. `headings.fontWeight: 400` deja los bloques de título en la fuente del texto.

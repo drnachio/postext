@@ -1,0 +1,672 @@
+{
+  "schemaVersion": 1,
+  "slug": "vertical-newspaper-tiers",
+  "sourceHash": "b165fc90c70e0c7f72f7ebe270efdd535a7b1b9d1cb7791b1c644dc93277040f",
+  "engine": {
+    "postext": "1.9.0",
+    "postextPdf": "1.9.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-30T04:14:22.023Z",
+  "variants": {
+    "en": {
+      "hash8": "7e5ea71b",
+      "vdtHash": "4314e230195b458784bb410c7c41cdfa6b4d9cf0",
+      "timings": {
+        "importMs": 117,
+        "fontsMs": 24223,
+        "buildMs": 63,
+        "totalMs": 24958,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          184,
+          260
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 7.4,
+        "mirror": true,
+        "body": {
+          "family": "Noto Serif TC",
+          "sizePt": 10.5,
+          "leadingPt": 15.8
+        },
+        "families": [
+          "LXGW WenKai TC",
+          "Noto Sans TC",
+          "Noto Serif TC"
+        ],
+        "pages": 2,
+        "ownLines": 179
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "一",
+          "role": "opener",
+          "w": 1000,
+          "h": 1413,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 141196,
+          "alt": "Opening page 一: 西湖公宴孫中山紀事."
+        },
+        {
+          "n": 2,
+          "label": "二",
+          "role": "body",
+          "w": 1000,
+          "h": 1413,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 171282,
+          "alt": "Page 二: 湯蟄仙之紀功碑."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "vertical-newspaper-tiers.pdf",
+        "bytes": 379502,
+        "pages": 2
+      },
+      "sandbox": {
+        "file": "vertical-newspaper-tiers.postext",
+        "bytes": 22298
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.boldFontWeight",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].columnGap",
+          "calloutStyles[].id",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].lineHeight",
+          "footer.elements[].overflow",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].lineHeight",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].placement",
+          "header.elements[].thickness",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].id",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "layout",
+          "layout.columnRule",
+          "layout.columnRule.color",
+          "layout.columnRule.enabled",
+          "layout.columnRule.lineWidth",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "layout.writingMode",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.format",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].indent",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 367,
+        "designElements": 20,
+        "directives": [
+          ":::callout",
+          ":::columns",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "LXGW WenKai TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "LXGW WenKai TC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans TC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 900,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-columns",
+          "callout-styles",
+          "character-grid",
+          "cjk-line-breaking",
+          "column-rule",
+          "floated-callouts",
+          "heading-attributes",
+          "heading-styles",
+          "opener-band",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "right-binding",
+          "roman-front-matter",
+          "span-boxes",
+          "vertical-writing"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.06
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "0f45160f",
+      "vdtHash": "b3f782d917419cebafda94a9a128694b3d931d07",
+      "timings": {
+        "importMs": 144,
+        "fontsMs": 2105,
+        "buildMs": 51,
+        "totalMs": 2849,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          184,
+          260
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 7.4,
+        "mirror": true,
+        "body": {
+          "family": "Noto Serif TC",
+          "sizePt": 10.5,
+          "leadingPt": 15.8
+        },
+        "families": [
+          "LXGW WenKai TC",
+          "Noto Sans TC",
+          "Noto Serif TC"
+        ],
+        "pages": 2,
+        "ownLines": 179
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "一",
+          "role": "opener",
+          "w": 1000,
+          "h": 1413,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 141196,
+          "alt": "Página de apertura 一: 西湖公宴孫中山紀事."
+        },
+        {
+          "n": 2,
+          "label": "二",
+          "role": "body",
+          "w": 1000,
+          "h": 1413,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 171474,
+          "alt": "Página 二: 湯蟄仙之紀功碑."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "vertical-newspaper-tiers.pdf",
+        "bytes": 379642,
+        "pages": 2
+      },
+      "sandbox": {
+        "file": "vertical-newspaper-tiers.postext",
+        "bytes": 22325
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.boldFontWeight",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].columnGap",
+          "calloutStyles[].id",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].lineHeight",
+          "footer.elements[].overflow",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].lineHeight",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].placement",
+          "header.elements[].thickness",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].id",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "layout",
+          "layout.columnRule",
+          "layout.columnRule.color",
+          "layout.columnRule.enabled",
+          "layout.columnRule.lineWidth",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "layout.writingMode",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.format",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].indent",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 367,
+        "designElements": 20,
+        "directives": [
+          ":::callout",
+          ":::columns",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "LXGW WenKai TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "LXGW WenKai TC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans TC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 900,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-columns",
+          "callout-styles",
+          "character-grid",
+          "cjk-line-breaking",
+          "column-rule",
+          "floated-callouts",
+          "heading-attributes",
+          "heading-styles",
+          "opener-band",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "right-binding",
+          "roman-front-matter",
+          "span-boxes",
+          "vertical-writing"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.06
+        },
+        "findings": []
+      }
+    }
+  }
+}

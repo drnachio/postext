@@ -88,5 +88,5 @@
 :::
 
 :::paragraphs{style="colophon"}
-Compuesto en Iansui, LXGW WenKai TC, Noto Serif TC y Noto Sans TC (SIL OFL). Texto: Han Feizi, capítulos 49 y 32, Wikisource en chino, revisiones 2642850 y 2327662 (CC BY-SA 4.0). Zhuyin cotejado con el Diccionario Revisado de Chino Mandarín (Ministerio de Educación, Taiwán); versiones modernas, notas y ejercicios escritos para esta receta (CC BY 4.0).
+Compuesto en Iansui, LXGW WenKai TC, Noto Serif TC y Noto Sans TC (SIL OFL). Texto: Han Feizi, capítulos :sideways[49] y :sideways[32], Wikisource en chino, revisiones 2642850 y 2327662 (CC BY-SA 4.0). Zhuyin cotejado con el Diccionario Revisado de Chino Mandarín (Ministerio de Educación, Taiwán); versiones modernas, notas y ejercicios escritos para esta receta (CC BY 4.0).
 :::

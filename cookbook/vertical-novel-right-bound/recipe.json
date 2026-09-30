@@ -2,7 +2,7 @@
   "$schema": "../recipe.schema.json",
   "schemaVersion": 1,
   "number": 75,
-  "status": "draft",
+  "status": "published",
   "chapter": "page",
   "order": 80,
   "level": 3,
@@ -154,5 +154,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-29",
-  "updated": "2026-09-29"
+  "updated": "2026-09-30"
 }

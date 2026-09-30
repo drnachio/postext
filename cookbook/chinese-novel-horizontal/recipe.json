@@ -2,7 +2,7 @@
   "$schema": "../recipe.schema.json",
   "schemaVersion": 1,
   "number": 74,
-  "status": "draft",
+  "status": "published",
   "chapter": "type",
   "order": 110,
   "level": 2,
@@ -23,7 +23,8 @@
       "design-elements",
       "page-role-filters",
       "mirrored-margins",
-      "paragraph-styles"
+      "paragraph-styles",
+      "pdf-outlines"
     ]
   },
   "answers": ["Q90", "Q88", "Q91", "Q93"],
@@ -82,5 +83,5 @@
   },
   "license": { "code": "MIT", "content": "MIT" },
   "created": "2026-09-29",
-  "updated": "2026-09-29"
+  "updated": "2026-09-30"
 }

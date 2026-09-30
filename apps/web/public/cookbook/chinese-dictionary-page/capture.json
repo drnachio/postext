@@ -1,0 +1,590 @@
+{
+  "schemaVersion": 1,
+  "slug": "chinese-dictionary-page",
+  "sourceHash": "1ec87570de18f8f452ca0811e0a5212a0489057f41599711336b9548b02af451",
+  "engine": {
+    "postext": "1.9.0",
+    "postextPdf": "1.9.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-30T04:14:22.053Z",
+  "variants": {
+    "en": {
+      "hash8": "e25de80a",
+      "vdtHash": "83c4dea9b86c080bc171ade893e793a82f7ea796",
+      "timings": {
+        "importMs": 118,
+        "fontsMs": 4337,
+        "buildMs": 13,
+        "totalMs": 5108,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          140,
+          203
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 6.300000000000001,
+        "mirror": true,
+        "body": {
+          "family": "Noto Serif TC",
+          "sizePt": 9,
+          "leadingPt": 15
+        },
+        "families": [
+          "LXGW WenKai TC",
+          "Noto Sans TC",
+          "Noto Serif TC"
+        ],
+        "pages": 4,
+        "ownLines": 158
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "634",
+          "role": "body",
+          "w": 1000,
+          "h": 1450,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 136164,
+          "alt": "Page 634: 天."
+        },
+        {
+          "n": 2,
+          "label": "635",
+          "role": "body",
+          "w": 1000,
+          "h": 1450,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 140350,
+          "alt": "Page 635: 腆."
+        },
+        {
+          "n": 3,
+          "label": "636",
+          "role": "body",
+          "w": 1000,
+          "h": 1450,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 134058,
+          "alt": "Page 636: 挑."
+        },
+        {
+          "n": 4,
+          "label": "637",
+          "role": "body",
+          "w": 1000,
+          "h": 1450,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 127436,
+          "alt": "Page 637: 餮."
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "loupe"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "chinese-dictionary-page.pdf",
+        "bytes": 312792,
+        "pages": 4
+      },
+      "sandbox": {
+        "file": "chinese-dictionary-page.postext",
+        "bytes": 25943
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "cjk.ruby",
+          "cjk.ruby.color",
+          "cjk.ruby.fontFamily",
+          "cjk.ruby.fontSize",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].direction",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].lineHeight",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].style",
+          "header.elements[].thickness",
+          "header.elements[].verticalAlign",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.enabled",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.textAlign",
+          "layout",
+          "layout.columnRule",
+          "layout.columnRule.color",
+          "layout.columnRule.enabled",
+          "layout.columnRule.lineWidth",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 196,
+        "designElements": 9,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "LXGW WenKai TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans TC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 900,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "character-grid",
+          "cjk-line-breaking",
+          "column-balancing",
+          "column-rule",
+          "page-background",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "ruby"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.15
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 633: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "846fa7e0",
+      "vdtHash": "97d639df1a3ade0191fd3263536c04070e71b84a",
+      "timings": {
+        "importMs": 119,
+        "fontsMs": 271,
+        "buildMs": 11,
+        "totalMs": 1011,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          140,
+          203
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 6.300000000000001,
+        "mirror": true,
+        "body": {
+          "family": "Noto Serif TC",
+          "sizePt": 9,
+          "leadingPt": 15
+        },
+        "families": [
+          "LXGW WenKai TC",
+          "Noto Sans TC",
+          "Noto Serif TC"
+        ],
+        "pages": 4,
+        "ownLines": 158
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "634",
+          "role": "body",
+          "w": 1000,
+          "h": 1450,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 136164,
+          "alt": "Página 634: 天."
+        },
+        {
+          "n": 2,
+          "label": "635",
+          "role": "body",
+          "w": 1000,
+          "h": 1450,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 140350,
+          "alt": "Página 635: 腆."
+        },
+        {
+          "n": 3,
+          "label": "636",
+          "role": "body",
+          "w": 1000,
+          "h": 1450,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 134058,
+          "alt": "Página 636: 挑."
+        },
+        {
+          "n": 4,
+          "label": "637",
+          "role": "body",
+          "w": 1000,
+          "h": 1450,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 127804,
+          "alt": "Página 637: 餮."
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "loupe"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "chinese-dictionary-page.pdf",
+        "bytes": 312765,
+        "pages": 4
+      },
+      "sandbox": {
+        "file": "chinese-dictionary-page.postext",
+        "bytes": 26011
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "cjk.ruby",
+          "cjk.ruby.color",
+          "cjk.ruby.fontFamily",
+          "cjk.ruby.fontSize",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].direction",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].lineHeight",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].style",
+          "header.elements[].thickness",
+          "header.elements[].verticalAlign",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.enabled",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.textAlign",
+          "layout",
+          "layout.columnRule",
+          "layout.columnRule.color",
+          "layout.columnRule.enabled",
+          "layout.columnRule.lineWidth",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 196,
+        "designElements": 9,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "LXGW WenKai TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans TC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 900,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "character-grid",
+          "cjk-line-breaking",
+          "column-balancing",
+          "column-rule",
+          "page-background",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "ruby"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.15
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 633: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
+      }
+    }
+  }
+}

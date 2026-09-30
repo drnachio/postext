@@ -60,5 +60,5 @@ subtitle: "程乙本前三回選讀"
 :::index
 
 :::paragraphs{style="colophon"}
-Dream of the Red Chamber, chapters 1–3, Traditional edition: the passages where the characters first appear, from the Cheng–Gao text of 1792 (zh.wikisource, revision 9685985, CC BY-SA 4.0), with 原係 for the source’s 原系 and —— for its －－. Cuts inside a paragraph are marked ……. Set in Noto Serif TC, Noto Sans TC and LXGW WenKai TC (SIL OFL).
+Dream of the Red Chamber, chapters 1–3, Traditional edition: the passages where the characters first appear, from the Cheng–Gao text of 1792 (zh.wikisource, revision 9685985, CC BY-SA 4.0), with 原⁠係 where the source has 原⁠系 and —— where it has －－. Cuts inside a paragraph are marked ……. Set in Noto Serif TC, Noto Sans TC and LXGW WenKai TC (SIL OFL).
 :::
