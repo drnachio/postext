@@ -251,14 +251,16 @@ const isAsciiLetter = (g: string | undefined): boolean => g !== undefined && g.l
 const isGroupMark = (g: string | undefined): boolean => g === '.' || g === ',';
 
 /**
- * Where the automatic tate-chu-yoko cells of `graphemes` start, with their
- * length: every run of at most `digits` ASCII digits, whole (a longer run is
- * set sideways, never split), that is not part of a word (no Latin letter
- * touches it: `A4`, `mp3`, `3D` stay sideways) nor of a number with digit
- * grouping or a decimal point (`10,000`, `3.14`: a `,` or `.` between it and
- * another digit). Empty when `digits` is 0.
+ * The short numbers of `graphemes` a vertical line may stand in one cell,
+ * where they start, with their length: every run of at most `digits` ASCII
+ * digits, whole (a longer run is set sideways, never split), that is not
+ * part of a word (no Latin letter touches it: `A4`, `mp3`, `3D` stay
+ * sideways) nor of a number with digit grouping or a decimal point
+ * (`10,000`, `3.14`: a `,` or `.` between it and another digit). Empty
+ * when `digits` is 0. {@link uprightDigitRuns} then leaves out those that
+ * run with Latin text.
  */
-export function uprightDigitRuns(graphemes: readonly string[], digits: number): Map<number, number> {
+export function uprightDigitCandidates(graphemes: readonly string[], digits: number): Map<number, number> {
   const out = new Map<number, number>();
   if (!(digits > 0)) return out;
   for (let i = 0; i < graphemes.length; i++) {
@@ -274,6 +276,54 @@ export function uprightDigitRuns(graphemes: readonly string[], digits: number): 
   return out;
 }
 
+/** Spaces and the zero-width characters a number's neighbours are looked
+ *  for past. */
+const SKIPPED_RE = /^[\s\u00AD\u200B-\u200D\u2060\uFEFF]+$/;
+
+/** Whether a number's neighbour is looked past (a space, a zero-width
+ *  character). */
+export function isSkippedNeighbour(g: string): boolean {
+  return SKIPPED_RE.test(g);
+}
+
+/** Whether `g` is Latin text to a number beside it: a letter, or a
+ *  punctuation mark of a run set sideways (`verticalOrientation`: UAX #50
+ *  `R`), not a digit. A Chinese character or mark, and a sign that stands
+ *  upright (× © ℃), are not. */
+function isLatinNeighbour(g: string | undefined, region: CjkRegion): boolean {
+  return g !== undefined && !isAsciiDigit(g) && verticalOrientation(g, region).orient === 'sideways';
+}
+
+/**
+ * Whether the digits `graphemes[from, to)` run with Latin text: the nearest
+ * grapheme past any spaces on each side is Latin ({@link isLatinNeighbour}).
+ * A side with no grapheme (the start or the end of the text) is not Latin,
+ * so a text cut out of a longer one never reads a number as Latin that the
+ * whole text would stand upright.
+ */
+export function runsWithLatin(graphemes: readonly string[], from: number, to: number, region: CjkRegion = 'mainland'): boolean {
+  let b = from - 1;
+  while (b >= 0 && isSkippedNeighbour(graphemes[b]!)) b--;
+  if (b < 0 || !isLatinNeighbour(graphemes[b], region)) return false;
+  let a = to;
+  while (a < graphemes.length && isSkippedNeighbour(graphemes[a]!)) a++;
+  return a < graphemes.length && isLatinNeighbour(graphemes[a], region);
+}
+
+/**
+ * Where the automatic tate-chu-yoko cells of `graphemes` start, with their
+ * length: the short numbers of {@link uprightDigitCandidates} but those
+ * that run with Latin text ({@link runsWithLatin}): a number between two
+ * Latin words (`printed in 49 and 32 copies`) follows the sentence it is
+ * part of, which is set sideways (#222). A number next to a Chinese
+ * character, or alone between Chinese text, stands upright.
+ */
+export function uprightDigitRuns(graphemes: readonly string[], digits: number, region: CjkRegion = 'mainland'): Map<number, number> {
+  const out = uprightDigitCandidates(graphemes, digits);
+  for (const [i, n] of out) if (runsWithLatin(graphemes, i, i + n, region)) out.delete(i);
+  return out;
+}
+
 /** Cut `text` into the runs a vertical line paints and measures: sideways
  *  graphemes joined into runs, every other grapheme a cell of its own. An
  *  apostrophe or interpunct between two letters of a Latin word runs
@@ -282,7 +332,7 @@ export function uprightDigitRuns(graphemes: readonly string[], digits: number): 
  *  ({@link uprightDigitRuns}) is one `tcy` cell. */
 export function verticalRuns(graphemes: readonly string[], region: CjkRegion = 'mainland', uprightDigits = 0): VerticalRun[] {
   const out: VerticalRun[] = [];
-  const tcy = uprightDigitRuns(graphemes, uprightDigits);
+  const tcy = uprightDigitRuns(graphemes, uprightDigits, region);
   let side = '';
   for (let i = 0; i < graphemes.length; i++) {
     const g = graphemes[i]!;
@@ -334,10 +384,14 @@ export function segmentOrientation(seg: { tcy?: boolean; orientation?: 'upright'
 
 /** Whether `text` holds a character that stands in a cell of its own in
  *  vertical text (see {@link verticalRuns}), a short number included when
- *  `uprightDigits` sets it in a cell (the measurer passes the document's
- *  `cjk.uprightDigits`, as the painters do). ASCII letters never do. */
+ *  `uprightDigits` may set it in a cell (the measurer passes the document's
+ *  `cjk.uprightDigits`, as the painters do): any candidate of
+ *  {@link uprightDigitCandidates}, also one that runs with Latin text, so a
+ *  paragraph holding one is measured by the formatted path, which reads
+ *  each number with its paragraph (`sidewaysNumberSpans`). ASCII letters
+ *  never do. */
 export function holdsVerticalCell(text: string, uprightDigits: number): boolean {
-  if (uprightDigits > 0 && /[0-9]/.test(text) && uprightDigitRuns([...text], uprightDigits).size > 0) return true;
+  if (uprightDigits > 0 && /[0-9]/.test(text) && uprightDigitCandidates([...text], uprightDigits).size > 0) return true;
   if (!/[^\u0000-\u007F]/.test(text)) return false;
   for (const ch of text) {
     if (ch.charCodeAt(0) < 0x80) continue;

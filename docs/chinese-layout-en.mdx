@@ -238,7 +238,7 @@ The widths of punctuation, compression, hanging and the Han–Latin space work d
 
 ### Numbers set upright
 
-A short number reads better standing in one cell than lying on its side: tate-chu-yoko (縱中橫, [clreq §2.1.3](https://www.w3.org/TR/clreq/#x2-1-3-mixed-text-composition-in-vertical-writing-mode)). `cjk.uprightDigits` sets how many digits such a number may have: `2` by default, `3` or `4`, or `0` for none. The whole number stands in the cell or none of it, so under the default `2026年9月28日` sets 2026 sideways, 9 upright and 28 side by side in one cell; `A4`, `3.14` and `10,000` stay sideways with their letters and separators. Three marks override the setting by hand:
+A short number reads better standing in one cell than lying on its side: tate-chu-yoko (縱中橫, [clreq §2.1.3](https://www.w3.org/TR/clreq/#x2-1-3-mixed-text-composition-in-vertical-writing-mode)). `cjk.uprightDigits` sets how many digits such a number may have: `2` by default, `3` or `4`, or `0` for none. The whole number stands in the cell or none of it, so under the default `2026年9月28日` sets 2026 sideways, 9 upright and 28 side by side in one cell; `A4`, `3.14` and `10,000` stay sideways with their letters and separators. A number inside an English sentence follows it on its side: in `chapters 49 and 32` both numbers run with the words around them, while one next to a Chinese character stands (`第 3 回`, `用iPhone 15拍攝`). Three marks override the setting by hand:
 
 ```markdown
 第:tcy[120]回，:upright[GDP]增長:sideways[12]倍。

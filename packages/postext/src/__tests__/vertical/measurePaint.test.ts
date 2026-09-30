@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument, measureBlock, getCjkLineBreak, setCjkLineBreak } from '../../index';
-import { verticalRuns } from '../../writingMode';
+import { forcedVerticalRuns, segmentOrientation, verticalRuns } from '../../writingMode';
 import { graphemesOf } from '../../measure/graphemes';
 import { getMeasureWritingMode } from '../../measure/vertical';
 import type { PostextConfig, Dimension, Resource } from '../../types';
@@ -43,16 +43,24 @@ function flowLines(doc: VDTDocument): Array<{ line: VDTLine; font: string }> {
   return out;
 }
 
-/** What the canvas painter advances through a segment: its runs as
- *  `verticalRuns` cuts them, sideways runs at their measured width, cells
- *  at their length; the segment's tracking after every grapheme. */
+/** The runs the canvas painter cuts a segment into: those its author (or
+ *  the paragraph, for a number inside a Latin sentence) forced, else
+ *  `verticalRuns`. */
+function paintedRuns(seg: VDTLineSegment, region: 'mainland' | 'taiwan' | 'hongkong', digits: number) {
+  const orient = segmentOrientation(seg);
+  return orient ? forcedVerticalRuns(graphemesOf(seg.text), orient) : verticalRuns(graphemesOf(seg.text), region, digits);
+}
+
+/** What the canvas painter advances through a segment: its runs
+ *  ({@link paintedRuns}), sideways runs at their measured width, cells at
+ *  their length; the segment's tracking after every grapheme. */
 function paintedAdvance(seg: VDTLineSegment, font: string, region: 'mainland' | 'taiwan' | 'hongkong', digits = 2): number {
   const f = seg.fontString ?? font;
   const em = Number(/(\d*\.?\d+)px/.exec(f)![1]);
   const t = seg.tracking ?? 0;
   let adv = 0;
   // Short numbers stand in one cell (`cjk.uprightDigits`, 2 by default).
-  for (const run of verticalRuns(graphemesOf(seg.text), region, digits)) {
+  for (const run of paintedRuns(seg, region, digits)) {
     adv += run.cell === undefined ? stubWidth(run.text, em) + t * graphemesOf(run.text).length : run.cell * em + t;
   }
   return adv;
@@ -136,28 +144,41 @@ describe('vertical text: an ASCII paragraph measures its numbers in the cells th
   // No CJK character, no mark with a cell of its own, no styling: the
   // paragraph once went to pretext, which measured every number at its
   // horizontal width.
-  const expected: Record<2 | 3 | 4, string[]> = { 2: ['7'], 3: ['120', '7'], 4: ['1998', '120', '7'] };
+  // A number inside the sentence runs sideways with it (#222); 7 ends the
+  // paragraph, has no Latin text after it and stands in a cell.
+  const sideways: Record<2 | 3 | 4, string[]> = { 2: [], 3: ['120'], 4: ['1998', '120'] };
   for (const digits of [2, 3, 4] as const) {
-    it(`sets the numbers of "In 1998 the 120 men met on page 7." in one cell each under ${digits} digits`, () => {
+    it(`sets 7 of "In 1998 the 120 men met on page 7" in one cell, the numbers in the sentence sideways, under ${digits} digits`, () => {
       const cfg = config('zh-Hant', 'left');
       cfg.cjk = { ...cfg.cjk, uprightDigits: digits };
-      const doc = buildDocument({ markdown: 'In 1998 the 120 men met on page 7.' }, cfg);
+      const doc = buildDocument({ markdown: 'In 1998 the 120 men met on page 7' }, cfg);
       const lines = flowLines(doc);
       expect(lines.length).toBeGreaterThan(0);
       const off: string[] = [];
       const cells: string[] = [];
+      const turned: string[] = [];
       for (const { line, font } of lines) {
         for (const seg of line.segments ?? []) {
           if (seg.kind !== 'text') continue;
           const painted = paintedAdvance(seg, font, 'taiwan', digits);
           if (Math.abs(painted - seg.width) > 0.01) off.push(`${JSON.stringify(seg.text)}: measured ${seg.width.toFixed(2)}, painted ${painted.toFixed(2)}`);
-          for (const run of verticalRuns(graphemesOf(seg.text), 'taiwan', digits)) if (run.glyph.orient === 'tcy') cells.push(run.text);
+          for (const run of paintedRuns(seg, 'taiwan', digits)) if (run.glyph.orient === 'tcy') cells.push(run.text);
+          if (seg.orientation === 'sideways') turned.push(seg.text);
         }
       }
       expect(off).toEqual([]);
-      expect(cells).toEqual(expected[digits]);
+      expect(cells).toEqual(['7']);
+      expect(turned).toEqual(sideways[digits]);
     });
   }
+
+  it('sets the numbers of "In 1998 the 120 men met on page 7." sideways, the full stop being Latin', () => {
+    const cfg = config('zh-Hant', 'left');
+    cfg.cjk = { ...cfg.cjk, uprightDigits: 4 };
+    const doc = buildDocument({ markdown: 'In 1998 the 120 men met on page 7.' }, cfg);
+    const segs = flowLines(doc).flatMap(({ line }) => line.segments ?? []);
+    expect(segs.filter((s) => /[0-9]/.test(s.text)).map((s) => [s.text, s.orientation])).toEqual([['1998', 'sideways'], ['120', 'sideways'], ['7', 'sideways']]);
+  });
 
   it('measures an ASCII heading and list item of a vertical book the same way', () => {
     const cfg = config('zh-Hant', 'left');

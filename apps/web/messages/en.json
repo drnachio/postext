@@ -891,7 +891,7 @@
     "cjkLatinSpacing": "Space between Han and Latin",
     "cjkLatinSpacingTooltip": "The space set between a Chinese character and a Latin letter or digit next to it (用 iPhone 拍照), in ems of the text size or any length; 0 turns it off. None at the start or end of a line, next to a Chinese mark or inside Chinese brackets. A space typed there is replaced, not added to. On a justified line it grows up to half an em before the characters are spread, and shrinks to an eighth of an em when the line takes one more character. Default 0.25 em.",
     "cjkUprightDigits": "Numbers in one upright cell",
-    "cjkUprightDigitsTooltip": "Vertical text: a number of at most this many digits is set side by side in one upright cell (tate-chu-yoko): in 2026年9月28日, 9 and 28 stand upright and 2026 runs sideways. The whole number or none of it; a number touching a Latin letter (A4) or with a decimal point or digit grouping (3.14, 10,000) runs sideways. Mark a run by hand with :tcy[…], :upright[…] or :sideways[…]. No effect in horizontal text. Default 2.",
+    "cjkUprightDigitsTooltip": "Vertical text: a number of at most this many digits is set side by side in one upright cell (tate-chu-yoko): in 2026年9月28日, 9 and 28 stand upright and 2026 runs sideways. The whole number or none of it; a number touching a Latin letter (A4) or with a decimal point or digit grouping (3.14, 10,000) runs sideways, and so does one inside a Latin sentence, between two Latin words (chapters 49 and 32). Mark a run by hand with :tcy[…], :upright[…] or :sideways[…]. No effect in horizontal text. Default 2.",
     "cjkUprightDigitsCount": "Up to __count__ digits",
     "cjkGrid": "Character grid",
     "cjkGridDescription": "The type area in characters per line and lines per page (字格, 版心).",
