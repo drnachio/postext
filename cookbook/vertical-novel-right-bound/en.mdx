@@ -1,0 +1,75 @@
+---
+title: "A vertical Chinese novel, bound on the right"
+summary: "Chapter 1 of 三國演義 on a Taiwan 25開 page: 40 characters down 16 columns, a ruled 回目 opener, fore-edge heads, Chinese folios and spreads read right to left."
+description: "Romance of the Three Kingdoms, chapter 1, set vertically with Postext: a character grid, a ruled 第一回 opener, fore-edge heads, Chinese folios, right binding."
+question: "How do I set a Chinese novel vertically, bound on the right, with 第一回 and the folios in Chinese numerals?"
+aliases: ["vertical Chinese", "vertical novel", "直排", "豎排", "直書", "right-to-left book", "R2L spreads", "Taiwan edition", "章回小說", "回目", "chapter couplet", "fore-edge running head", "邊峰", "Chinese folios", "Chinese numerals", "25開", "繡像", "Romance of the Three Kingdoms", "三國演義", "tategaki"]
+pageNotes: { "1": "The title page, alone on the left of the spine: 三國演義 in large bold characters down a double vermilion frame, 羅貫中　著 and 毛宗崗　評 in two columns to its left, and at the foot a five-line imprint in English, centred on the slip's axis, with the book's title in italic.", "2": "The plate: a woodcut of the oath in the peach garden, 1592, with the three sworn brothers before an altar with three cups, the black ox and the white horse behind them, in a double black frame; its title 桃園結義 and a note on the edition run down two columns on its left.", "3": "The chapter opens on a left-hand page: from the right, a blank column, then 第一回 and the couplet 宴桃園豪傑三結義 / 斬黃巾英雄首立功 in two columns between three thin vermilion rules, then 詞曰： and the four lines of the ci indented four characters, then the text. The folio 一 stands low in the left margin.", "4": "A right-hand page of text, 16 columns of 40 characters, with 三國演義 running down the right margin and the folio 二 low in the same margin.", "5": "A left-hand page: the fore-edge head 第一回　宴桃園豪傑三結義　斬黃巾英雄首立功 runs down the left margin, with the folio 三 below it.", "11": "The last page: Zhang Fei's anger at Dong Zhuo, the closing quatrain indented four characters, and 畢竟董卓性命如何，且聽下文分解。 The rest of the page is left blank." }
+---
+
+## What you'll build
+
+Eleven pages of a Taiwan paperback of *Romance of the Three Kingdoms*: the whole of chapter 1, in Mao Zonggang's recension, set top to bottom in columns read from the right on a 148 × 210 mm page (25開) bound on the right. The title page lies alone on the left of the spine. On the next spread a woodcut of the oath in the peach garden, cut in 1592, faces the opening of the chapter, where 第一回 and its couplet stand between vermilion rules. Every page of text holds 16 columns of 40 characters, each mark centred in its cell. The book's title runs down the outer margin of the right-hand pages and the chapter's down the left-hand ones, over folios in Chinese numerals. The same book structure in a European paperback is <RecipeLink slug="trade-paperback-novel">Nº 038</RecipeLink>.
+
+## Method
+
+### 1 · Turn the page a quarter turn and bind it on the right
+
+The code is [the short answer](#the-short-answer) above. `layout.writingMode: 'vertical-rl'` lays each page out as a horizontal page turned a quarter turn clockwise: a line of the flow is a column of characters, read from the right, and line breaking, justification and the two-character indent work down the column ([Vertical writing](/en/docs/configuration#vertical-writing)). `page.binding` stays at `'auto'`, which binds a vertical book on the right: page 1 is still the recto, but it is a left-hand page, and `mirror: true` puts its inner margin, `left`, on its right ([Binding](/en/docs/configuration#binding)). The kit's `showBook` lays the spreads out as the book opens, page 1 alone and then `[3 | 2]`; the PDF asks viewers for the same order with `/Direction /R2L`, which Acrobat follows and Chrome's viewer ignores.
+
+The [character grid](/en/docs/configuration#character-grid) sets the type area as 40 characters of 10.5 pt down and 16 columns of 19 pt across, 148.2 × 107.2 mm. The margins in `page` are minimums: the grid grows each pair alike, to 33.9 mm at the head and 27.9 at the foot, 17.4 at the spine and 23.4 at the fore-edge. `locale: 'zh-Hant'` gives the East Asian settings Taiwan's values, every mark a full em and centred in its cell, with no compression between marks. `trad-chinese-informal` prints the folios 一 to 九, and `第{1:一}回` numbers the chapter ([Numbering](/en/docs/configuration#numbering)).
+
+### 2 · Rule the 回目 in two columns
+
+<Excerpt region="opener" />
+
+A heading design on a vertical page is laid out in the flow frame: `x` runs down the column from the head of the type area and `y` across the page from its right edge. A `'horizontal'` rule is therefore a vertical line on the sheet, as long as the column. Three rules of 0.5 pt frame two title columns 28.5 pt apart, 1.5 times the column pitch of the text. Each column is a line 28.5 pt tall whose characters stand in its middle, halfway between two rules. `{number}` prints 第一回 in Noto Serif TC Bold two characters down; `{titleText}` prints the couplet in LXGW WenKai TC, one character after it. The heading is written `# 宴桃園豪傑三結義 \\ 斬黃巾英雄首立功`, and the forced break starts the second half in the next column, level with the first. `minHeight` reserves five columns of 19 pt, so the text starts on its grid ([Span and advanced design](/en/docs/configuration#span-and-advanced-design)). Where the title is read on one line, in the running heads and the PDF bookmarks, the break becomes an ideographic space.
+
+### 3 · Set the heads and folios down the fore-edge
+
+<Excerpt region="fore-edge" />
+
+Vertical books in Taiwan often put the running head and the folio down the outer margin. `writingMode: 'vertical-rl'` sets a header element top to bottom on the sheet, and `anchor.to: 'outer'` places it in the outer margin, the left one of an odd page and the right one of an even page when the book is bound on the right ([Vertical text elements](/en/docs/configuration#vertical-text-elements)). The offsets are in ems of the element's own 8.5 pt, about 80 % of the text size: the head starts four characters below the head of the type area and the folio ends five characters above its foot. `parity` puts 三國演義 on the right-hand pages and the chapter on the left-hand ones. `pages: 'body'` keeps both heads off the opening page, which keeps its folio.
+
+### 4 · Put the plate before the chapter
+
+<Excerpt region="front" />
+
+The title page and the plate are level-1 headings with styles of their own, `# 三國演義 {style="title" …}` and `# 桃園結義 {style="plate" …}`. `numbered: false` leaves them out of the count, so the chapter is still 第一回, and their own `header`, empty, replaces the fore-edge heads. The chapter's `breakBefore` asks for an odd page, page 3, whose spread has the plate on its right: the reader sees the picture before the text, as in the illustrated (繡像) editions ([Heading styles](/en/docs/configuration#heading-styles)). The folios leave the two pages out as well. A Chinese editor numbers the text (正文) from its first page, so a `:::numbering{startAt=1}` line just before the chapter's heading starts the count again at 一 on page 3 ([`:::numbering`](/en/docs/document-format#numbering)); the title page and the plate still count as sheets for the parity, and the viewer and the PDF label them 一 and 二 all the same (a variation below labels them apart).
+
+三國演義 is centred down its slip: `RUN` is the length of four characters of 40 pt and the three 10 pt gaps between them, without the tracking after the last one. The title page's footer sets the imprint across the foot, in the edition's language, from the heading's `colophon` attribute. Noto Serif TC has no italic, so the imprint is set in Source Serif 4: `inlineMarks: true` reads the asterisks round the book's title, and each `\n` in the attribute starts a line, so the lines break where the sense does ([Text elements](/en/docs/configuration#text-elements)). The box is twice as wide as the distance from the left of the type area to the slip's axis, which puts the centre of every line under 三國演義. The plate's design hangs the woodcut and its double frame from the top right corner of the type area and sets the caption down two columns on its left. In the flow frame a box's width runs down the page, so the picture's `width` is its height on the sheet; it stands upright in the canvas, the HTML and the PDF, and the tagged PDF reads it as a figure with its alternative text.
+
+### 5 · Load each voice with the characters it sets
+
+<Excerpt region="voices" />
+
+The book has three voices: Noto Serif TC (宋) for the text, LXGW WenKai TC (楷) for the couplet and the verse, Noto Sans TC (黑) for the fore-edge. Fontsource serves each weight of a Chinese face as about a hundred files, each covering a range of characters, and `loadCjkFonts` fetches the files that hold the text it is given ([Chinese, Japanese and Korean fonts](/en/docs/configuration#chinese-japanese-and-korean-fonts)). The text face gets the whole chapter and fetches 67 files; the Kai face gets the headings and the verse and fetches 25, the Hei face 15 and the bold 4. The bold sets seven characters and no punctuation, so it loads no vertical forms. The imprint's Source Serif 4 comes in through `loadFonts` like any Latin face, roman and italic. `renderToPdf` takes `cjkPdfProvider`, which embeds the same files as subsets, and `imageBytes` for the woodcut.
+
+## Variations
+
+### Write the folios digit by digit
+
+`cjk-decimal` writes one numeral per digit. This chapter ends on folio 九, where the two formats agree; from the tenth page of text on, 十 and 十一 would read 一〇 and 一一.
+
+```diff
+-  pageNumbering: { format: 'trad-chinese-informal' }, // folios 一, 二 … 九, from the chapter
++  pageNumbering: { format: 'cjk-decimal' }, // folios 一, 二 … 九, 一〇, 一一
+```
+
+### Label the front pages apart
+
+The title page and the plate print no folio, yet the viewer and the PDF label them 一 and 二, like the first two pages of the text; with Roman labels for the front and the Chinese numerals moved to the `:::numbering` line, the PDF counts i, ii, 一, 二 …
+
+```diff
+-  pageNumbering: { format: 'trad-chinese-informal' }, // folios 一, 二 … 九, from the chapter
++  pageNumbering: { format: 'lower-roman' }, // i, ii: the title page and the plate
+```
+
+```diff
+-:::numbering{startAt=1}
++:::numbering{format="trad-chinese-informal" startAt=1}
+```
+
+### Set the chapter across the page
+
+The mainland convention sets the same kind of chapter horizontally, bound on the left, in Simplified characters with Kaiming punctuation: <RecipeLink slug="chinese-novel-horizontal">A Chinese novel page on a 28 × 28 grid</RecipeLink>.

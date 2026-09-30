@@ -1,0 +1,590 @@
+{
+  "schemaVersion": 1,
+  "slug": "woodblock-leaf",
+  "sourceHash": "d6e8a444e2226f16baaa323dc4f0cc4d57cbab9c53afca890e72b2f9015decab",
+  "engine": {
+    "postext": "1.9.0",
+    "postextPdf": "1.9.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-30T04:14:22.039Z",
+  "variants": {
+    "en": {
+      "hash8": "9f006e61",
+      "vdtHash": "91ea12b4e4b739496a275ae667b92b4fef3b7255",
+      "timings": {
+        "importMs": 118,
+        "fontsMs": 175,
+        "buildMs": 9,
+        "totalMs": 908,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          120.80000000000001,
+          213.10000000000002
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Noto Serif TC",
+          "sizePt": 20,
+          "leadingPt": 29
+        },
+        "families": [
+          "LXGW WenKai TC",
+          "Noto Serif TC"
+        ],
+        "pages": 7,
+        "ownLines": 177
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1764,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 32978,
+          "alt": "Opening page 1: 論語集註."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1764,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 115940,
+          "alt": "Opening page 2: 一 學而."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1764,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 139686,
+          "alt": "Page 3."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "opener",
+          "w": 1000,
+          "h": 1764,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 155624,
+          "alt": "Opening page 6: 三 學而."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "body",
+          "w": 1000,
+          "h": 1764,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 126930,
+          "alt": "Page 7."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "woodblock-leaf.pdf",
+        "bytes": 209489,
+        "pages": 7
+      },
+      "sandbox": {
+        "file": "woodblock-leaf.postext",
+        "bytes": 25600
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].decorative",
+          "header.elements[].direction",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].overflow",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].resourceId",
+          "header.elements[].style",
+          "header.elements[].thickness",
+          "header.elements[].writingMode",
+          "headingStyles",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].hidden",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].hidden",
+          "headings.levels[].level",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.layoutType",
+          "layout.writingMode",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].id",
+          "paragraphStyles[].indent",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 527,
+        "designElements": 38,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 1,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "LXGW WenKai TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "character-grid",
+          "cjk-line-breaking",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "page-background",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "right-binding",
+          "section-running-heads",
+          "unnumbered-headings",
+          "vertical-writing",
+          "warichu"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.17
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "712715b8",
+      "vdtHash": "644b1ce8232fdd9b1350f719fe85772a763d0d2d",
+      "timings": {
+        "importMs": 117,
+        "fontsMs": 165,
+        "buildMs": 9,
+        "totalMs": 912,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          120.80000000000001,
+          213.10000000000002
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Noto Serif TC",
+          "sizePt": 20,
+          "leadingPt": 29
+        },
+        "families": [
+          "LXGW WenKai TC",
+          "Noto Serif TC"
+        ],
+        "pages": 7,
+        "ownLines": 177
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1764,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 33752,
+          "alt": "Página de apertura 1: 論語集註."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1764,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 115940,
+          "alt": "Página de apertura 2: 一 學而."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1764,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 139686,
+          "alt": "Página 3."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "opener",
+          "w": 1000,
+          "h": 1764,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 155624,
+          "alt": "Página de apertura 6: 三 學而."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "body",
+          "w": 1000,
+          "h": 1764,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 126930,
+          "alt": "Página 7."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "woodblock-leaf.pdf",
+        "bytes": 209736,
+        "pages": 7
+      },
+      "sandbox": {
+        "file": "woodblock-leaf.postext",
+        "bytes": 25638
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].decorative",
+          "header.elements[].direction",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].overflow",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].resourceId",
+          "header.elements[].style",
+          "header.elements[].thickness",
+          "header.elements[].writingMode",
+          "headingStyles",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].hidden",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].hidden",
+          "headings.levels[].level",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.layoutType",
+          "layout.writingMode",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].id",
+          "paragraphStyles[].indent",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 527,
+        "designElements": 38,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 1,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "LXGW WenKai TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "character-grid",
+          "cjk-line-breaking",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "page-background",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "right-binding",
+          "section-running-heads",
+          "unnumbered-headings",
+          "vertical-writing",
+          "warichu"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.17
+        },
+        "findings": []
+      }
+    }
+  }
+}

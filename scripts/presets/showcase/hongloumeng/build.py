@@ -1598,6 +1598,8 @@ def write_manifest(out: str, chapters: dict, shared: list[dict], wording: dict, 
         # read as a postext 1.4 configuration (`migrateConfig`).
         "configVersion": CONFIG_VERSION,
         **meta,
+        # 120 chapters read as one novel: the canvas opens on the whole book.
+        "view": {"canvasScope": "book"},
         "chapters": chapters,
         "config": base,
         "localized": {lang: ({"config": localized_config(base, configs[lang])} if lang != "zh-Hant" else {}) | {"resources": wording[lang]} for lang in LANGS},

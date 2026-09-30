@@ -5,13 +5,15 @@ import { dimensionToPx, parseMarkdown, type Dimension, type PostextConfig } from
 import { computeWarnings } from '../warnings/compute';
 import { buildHtmlConfigOverride } from '../viewport/HtmlPreview/configOverride';
 import { hasLatinEmphasis, missingUsedVariants } from '../controls/fontLoader';
+import { effectiveCanvasScope } from '../book/scope';
 import { fontsToCustomFonts } from './manifest';
+import { localeLayoutsFile, type BundleLayoutsFile } from './bundle';
 import type { PresetFontFamilySpec } from './types';
 
 // Loaded through a dynamic import (the package has no Node typings).
 const BUNDLE = '../../../../apps/web/public/presets/hongloumeng/';
 const manifest = ((await import(/* @vite-ignore */ new URL(`${BUNDLE}preset.json`, import.meta.url).href)) as {
-  default: { config: PostextConfig; localized: Record<string, { config?: PostextConfig }>; fonts: PresetFontFamilySpec[]; chapters: Record<string, { file: string }[]> };
+  default: { view?: { canvasScope?: 'book' | 'chapter' }; config: PostextConfig; localized: Record<string, { config?: PostextConfig }>; fonts: PresetFontFamilySpec[]; chapters: Record<string, { file: string }[]> };
 }).default;
 
 /** The text of every chapter file of an edition. */
@@ -81,5 +83,16 @@ describe('hongloumeng in the Sandbox', () => {
     const { families } = fontsToCustomFonts('hongloumeng', manifest.fonts);
     const garamond = families.find((f) => f.name === 'EB Garamond')!;
     expect(missingUsedVariants(garamond, configOf('en'))).toEqual([]);
+  });
+
+  it('opens on the whole book, already paginated in every edition', async () => {
+    for (const lang of ['zh-Hant', 'zh-Hans', 'en']) {
+      const files = manifest.chapters[lang]!.map(({ file }) => file);
+      expect(effectiveCanvasScope(manifest.view?.canvasScope, files.length), lang).toBe('book');
+      // `layouts.<lang>.json`, saved from the Sandbox: rebuilt with the
+      // bundle, it goes stale (and is laid out afresh) until saved again.
+      const layouts = ((await import(/* @vite-ignore */ new URL(`${BUNDLE}${localeLayoutsFile(lang)}`, import.meta.url).href)) as { default: BundleLayoutsFile }).default;
+      expect(Object.keys(layouts.chapters), lang).toEqual(files);
+    }
   });
 });

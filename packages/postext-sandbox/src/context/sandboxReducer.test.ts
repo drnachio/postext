@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { sandboxReducer, type SandboxState } from './SandboxContext';
 import { DEFAULT_LABELS } from '../types';
 import { BUILTIN_PRESET_ID } from '../presets';
+import { WHOLE_BOOK_MAX_CHAPTERS } from '../book/scope';
 
 function ch(id: string, markdown = ''): SandboxState['chapters'][number] {
   return { id, title: id.toUpperCase(), markdown, createdAt: 1, updatedAt: 1 };
@@ -213,10 +214,10 @@ describe('book actions', () => {
     expect(sandboxReducer(s, { type: 'SET_BOOK', payload: { chapters: s.chapters, activeChapterId: 'a' } }).canvasScope).toBe('chapter');
     expect(sandboxReducer(baseState(), { type: 'SET_BOOK', payload: { chapters: s.chapters, activeChapterId: 'a', canvasScope: 'book' } }).canvasScope).toBe('book');
   });
-  // #199: a 120-chapter book (some 1,800 pages) is never laid out whole on
-  // the canvas or in HTML; the PDF may still take it whole.
+  // #199: a book past the whole-book limit is never laid out whole on the
+  // canvas or in HTML; the PDF may still take it whole.
   it('keeps a book over the whole-book limit in chapter scope', () => {
-    const long = Array.from({ length: 120 }, (_, i) => ch(`c${i}`, `# ${i}`));
+    const long = Array.from({ length: WHOLE_BOOK_MAX_CHAPTERS + 1 }, (_, i) => ch(`c${i}`, `# ${i}`));
     const opened = sandboxReducer(baseState(), { type: 'SET_BOOK', payload: { chapters: long, activeChapterId: 'c0', canvasScope: 'book' } });
     expect(opened.canvasScope).toBe('chapter');
     expect(opened.pdfScope).toBe('chapter');
@@ -226,9 +227,10 @@ describe('book actions', () => {
     const whole = sandboxReducer(baseState(), { type: 'SET_CANVAS_SCOPE', payload: 'book' });
     const grown = sandboxReducer(whole, { type: 'SET_BOOK', payload: { chapters: long, activeChapterId: 'c0', canvasScope: 'book' } });
     expect(grown.canvasScope).toBe('chapter');
-    // Eighty chapters are still shown whole.
-    const eighty = long.slice(0, 80);
-    expect(sandboxReducer(baseState(), { type: 'SET_BOOK', payload: { chapters: eighty, activeChapterId: 'c0', canvasScope: 'book' } }).canvasScope).toBe('book');
+    // A book at the limit is still shown whole: 紅樓夢's 129 chapters are.
+    const atLimit = long.slice(0, WHOLE_BOOK_MAX_CHAPTERS);
+    expect(sandboxReducer(baseState(), { type: 'SET_BOOK', payload: { chapters: atLimit, activeChapterId: 'c0', canvasScope: 'book' } }).canvasScope).toBe('book');
+    expect(WHOLE_BOOK_MAX_CHAPTERS).toBeGreaterThanOrEqual(129);
   });
   it('SET_PDF_SCOPE switches what the PDF tab renders', () => {
     const s = sandboxReducer(baseState(), { type: 'SET_PDF_SCOPE', payload: 'book' });
