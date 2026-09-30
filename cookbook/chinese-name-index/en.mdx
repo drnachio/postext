@@ -1,0 +1,67 @@
+---
+title: "An index of Chinese names, by pinyin and by strokes"
+summary: "One set of :index marks in two editions of a 紅樓夢 reader: index.groupBy files the names under pinyin initials in zh-Hans and under stroke counts in zh-Hant."
+description: "A Chinese name index in Postext: the same :index marks give A–Z pinyin heads in the Simplified edition and 三畫, 四畫 stroke heads in the Traditional one."
+question: "How do I group an index of Chinese names by pinyin, or by stroke count as Taiwan books do?"
+aliases: ["Chinese index", "name index", "人名索引", "pinyin index", "拼音索引", "stroke-count index", "笔画索引", "筆畫索引", "index.groupBy", "Chinese collation", "Dream of the Red Chamber", "紅樓夢", "Simplified and Traditional editions"]
+pageNotes: { "7": "The index opener of the Simplified edition: the kicker 按汉语拼音排列 in red, the title 人名索引 in a brush Kai, a note of three short sentences, one to a line, then two columns under the pinyin heads F, H, J, K, L and M; the J group lists sixteen members of the Jia family and Jia Yucun, who only shares their name.", "8": "The rest of the index, from the last M name to Z, and the English colophon, with the source's revision and the two changes made to its text, at the foot of the second column.", "15": "The index opener of the Traditional edition: the kicker 依筆畫排列 in red, 人名索引, the same note in Traditional characters, then two columns under stroke-count heads from 三畫 to 十三畫, where the Jia names begin, since 賈 has thirteen strokes.", "16": "The rest of the stroke index, from the Jia names to 二十八畫 (鸚哥), and the English colophon of the Traditional edition at the foot of the second column." }
+---
+
+## What you'll build
+
+A slim reader of 紅樓夢 (*Dream of the Red Chamber*) that reprints, from chapters 1 to 3, the passages where the cast first appears, and ends with an index of its 47 names, plus four cross-references from other names. It comes in two editions from the same marks. The mainland one, in Simplified characters, files the names under their pinyin initial, F, H, J…; the Taiwan one, in Traditional characters, under the stroke count of the first character, 三畫, 四畫… Both are 大32开 paperbacks, 140 × 203 mm, 26 characters to the line in Noto Serif, with the chapter titles in a Kai face and the kickers, folios and index heads in Noto Sans. The card lays the two index pages side by side. <RecipeLink slug="names-and-subjects-indexes">An index of names and an index of subjects</RecipeLink> builds the same kind of index for an English monograph.
+
+## Method
+
+### 1 · Mark each name where the reader meets it
+
+The code is [the short answer](#the-short-answer) above; the rest is in the Markdown. A mark files the full name whatever the text prints: `字:index[士隐]{term="甄士隐" main}` prints 士隐 and files a page under 甄士隐. `main` makes the page bold, and the note under the index title says what bold means here: the page where the character enters in person. Jia Baoyu is born in chapter 2 without being named (又生了一位公子), so the mark goes in with nothing to print, `:index{term="贾宝玉"}`, and his entry reads 4, **6**. Other names and nicknames get a cross-reference of their own, `:index[凤辣子]{term="凤辣子" see="王熙凤"}`, which Postext prints the Chinese way, after a full stop and with no space: 凤辣子。见王熙凤 ([Index marks](/en/docs/document-format#index-marks)).
+
+### 2 · Let the locale choose the order
+
+<Excerpt region="editions" />
+
+The two editions share the configuration, and `locale` is the only switch the index needs: `groupBy: 'auto'` groups a `zh-Hans` index by pinyin and a `zh-Hant` one by strokes, and the short answer writes the two values out so you can see them. The entries sort in the order the heads come from, so the same names change places: 甄费 comes before 甄士隐 under Z (fèi before shì), and after it under 十四畫 (士 has three strokes, 費 twelve); 宁国公 and 荣国公 part for N and R, while 寧國公 and 榮國公 stay together among the fourteen-stroke names ([Back-of-book index](/en/docs/configuration#back-of-book-index)). The readings and stroke counts are the browser's Chinese collation; a surname it reads wrong (曾, 单, 解) takes a `sort` key in characters with the right reading.
+
+### 3 · Load each face with the characters it sets
+
+<Excerpt region="voices" />
+
+Fontsource cuts each Chinese weight into about a hundred files, and `loadCjkFonts` fetches the ones its text touches. The Song face gets the whole book, so the running heads cost it nothing; its bold, the digits of the principal pages; the Hei face, the text of the `kicker` attributes, the index heads and the digits of the folios; the Kai face, the three couplets and 人名索引. The PDF takes the same route: `cjkPdfProvider` embeds those files, each cut down to the characters its pages use, and no character comes out as an empty box. The Kai face changes with the edition. LXGW WenKai TC, the only Kai text face on Fontsource, draws inherited forms, 冷 with the old 卩 foot of 令, and centres its commas and full stops, so the Simplified titles are set in Ma Shan Zheng, a brush Kai with the mainland forms ([Chinese, Japanese and Korean fonts](/en/docs/configuration#chinese-japanese-and-korean-fonts)).
+
+### 4 · Put the note in the index opener
+
+<Excerpt region="opener" />
+
+The note is an attribute of the heading, `# 人名索引 {style="index" kicker="按汉语拼音排列" note="…"}`, set across the whole measure above the two columns. As a paragraph inside the columns it was a lever for column balancing: to even out the Traditional edition's last page, the layout loosened it to twelve characters a line in a column of fourteen. Design text has no Chinese line-breaking rules and sets every mark full width, where the Simplified text sets ，、； half width, so the note is three short sentences, one to a line (`\n` in the attribute), each with a full stop as its only mark. The chapter openers use the same design, with `第{numberHan}回` as the kicker, which prints 第一回 in the script of the document.
+
+### 5 · Show both index pages side by side
+
+<Excerpt region="side-by-side" />
+
+The pen builds both editions and shows the Simplified one on the desk. The 简体版 and 繁體版 buttons switch the desk, and each switch offers the PDF of the edition on it, `chinese-name-index-hans.pdf` or `chinese-name-index-hant.pdf`. The capture records both builds (`capture.doc: ['first', 'last']`): the first eight pages above are the Simplified edition, and the four after them come from the Traditional one, its first page and its stroke index. The card is this strip, with the first index page of each, and the PDF offered with the recipe is the Simplified edition's.
+
+## Variations
+
+### Group a Traditional index by pinyin
+
+A Traditional edition for readers who look names up by their reading can file them by pinyin. Set `groupBy: 'pinyin'` in both editions: the heads are A–Z and the entries keep their Traditional forms. The kicker says how the index is ordered, so change it in the Traditional Markdown too, to `kicker="依漢語拼音排列"`.
+
+```diff
+-  groupBy: e.locale === 'zh-Hans' ? 'pinyin' : 'stroke', // A B C… or 三畫 四畫…
++  groupBy: 'pinyin', // A B C… in both scripts
+```
+
+### Print the names without heads
+
+A short list of names reads well with a blank line between groups and no head over them. Keep the grouping and turn the heads off. `groupBy: 'none'` would not do it: it sets apart only symbols, numbers and words, and every name here starts with a Han character, so the 47 would run as one block.
+
+```diff
+-  groups: { fontFamily: e.sans, fontSize: pt(9.5), fontWeight: 700, color: col('cinnabar'),
+-    marginTop: pt(7) },
++  groups: { enabled: false, marginTop: pt(14) }, // no heads; a blank line between groups
+```
+
+## Pitfalls
+
+- The `index` configuration belongs to the document, so one document prints one order. A book that wants both a pinyin index and a stroke finding list builds twice, as this pen does.

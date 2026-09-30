@@ -1,0 +1,86 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 74,
+  "status": "draft",
+  "chapter": "type",
+  "order": 110,
+  "level": 2,
+  "genres": ["novel"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["character-grid", "cjk-line-breaking", "cjk-punctuation"],
+    "also": [
+      "cjk-justification",
+      "han-latin-spacing",
+      "cjk-fonts",
+      "paragraph-indents",
+      "body-typography",
+      "running-heads",
+      "opener-design",
+      "heading-styles",
+      "heading-attributes",
+      "design-elements",
+      "page-role-filters",
+      "mirrored-margins",
+      "paragraph-styles"
+    ]
+  },
+  "answers": ["Q90", "Q88", "Q91", "Q93"],
+  "gotchas": [
+    "cjk-fonts-slices",
+    "cjk-locale-tag",
+    "cjk-face-region",
+    "cjk-no-italic",
+    "headings-drop-h1-break",
+    "style-inherits-break",
+    "fonts-first"
+  ],
+  "explainsWarnings": ["cjkGridClamped"],
+  "related": ["spanish-pocket-novel", "justification-lab", "trade-paperback-novel", "baseline-grid-book-page"],
+  "engine": { "postext": "1.9.0", "postextPdf": "1.9.0" },
+  "kit": ["core", "fonts", "viewer", "pdf", "images", "cjk"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": [1, 2], "card": "spread", "pages": "all" },
+  "downloads": { "pdf": true },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "“My Old Home” (故乡, 1921), the first half, from the 1948 Complete Works, in simplified characters",
+          "es": "«El pueblo natal» (故乡, 1921), primera mitad, de las Obras completas de 1948, en caracteres simplificados"
+        },
+        "who": "Lu Xun (鲁迅)",
+        "source": "https://zh.wikisource.org/wiki/故鄉",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The editor’s note and the colophon",
+          "es": "La nota del editor y el colofón"
+        },
+        "who": "Postext Cookbook",
+        "license": "original"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "The moonlit melon field of the story, drawn in code in the page’s palette",
+          "es": "El campo de sandías bajo la luna del relato, dibujado en código con la paleta de la página"
+        },
+        "who": "Ignacio Ferro",
+        "license": "MIT"
+      }
+    ],
+    "fonts": [
+      { "family": "Noto Serif SC", "license": "OFL-1.1" },
+      { "family": "Noto Sans SC", "license": "OFL-1.1" },
+      { "family": "Ma Shan Zheng", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "MIT" },
+  "created": "2026-09-29",
+  "updated": "2026-09-29"
+}

@@ -1,0 +1,77 @@
+---
+title: "A Chinese novel page on a 28 × 28 grid"
+summary: "Lu Xun’s “My Old Home” on a 大32开 page: 28 characters to the line, 28 lines to the page, GB line breaks, Kaiming punctuation and Han–Latin spacing."
+description: "A mainland Chinese novel page in Postext: cjk.grid sets 28 × 28 characters of 五号 on 大32开, with GB line breaking, Kaiming punctuation and 2-em indents."
+question: "How do I set a Chinese page in characters, 28 to the line and 28 lines to the page?"
+aliases: ["Chinese novel", "Simplified Chinese", "horizontal Chinese", "character grid", "版心", "type area in characters", "Kaiming punctuation", "开明式", "GB line breaking", "避头尾", "line-start rules", "push-in", "Han–Latin spacing", "two-character indent", "大32开", "Lu Xun"]
+pageNotes: { "1": "The plate: a golden moon in a deep blue sky over a strip of sea, and on the sand below, among rows of striped watermelons, a boy with a silver collar stabbing a steel fork at the sand ahead of him while the animal he aimed at runs off between his legs. Three lines from the story in white brush script at the top.", "2": "The opener: the title 故乡 in black Song characters, half a character apart, a short blue rule and the author’s name 鲁迅; below, twenty lines of justified text, each paragraph indented two characters, and the folio 71 at the foot." }
+---
+
+## What you'll build
+
+The opening of Lu Xun’s “My Old Home” (故乡, 1921) as a mainland paperback of his first collection would set it: a 大32开 page, 140 × 203 mm, whose type area is counted in characters, 28 to the line and 28 lines to the page, in Noto Serif SC at 五号 (10.5 pt). Every paragraph opens two characters in; commas and quotation marks take half a character, as in most mainland books; no line starts with 。 or ， and none ends with “. The story opens on a recto under its title in the Song face’s black weight. Facing it, a plate drawn in code shows the moonlit melon field the narrator remembers, with the words that describe it in Ma Shan Zheng’s brush script. <RecipeLink slug="spanish-pocket-novel">Justified Spanish in a pocket novel</RecipeLink> does the same job for a Latin script.
+
+## Method
+
+### 1 · A page counted in characters
+
+The code is [the short answer](#the-short-answer) above. `cjk.grid` makes the measure 28 ems of `bodyText.fontSize` (294 pt, 103.7 mm) and the type area 28 lines of `lineHeight` (462 pt, 163 mm), then moves the margins to fit them, so a full line of Han holds exactly 28 characters and every full page ends on the same line ([Character grid](/en/docs/configuration#character-grid)). The five settings under the grid are what `locale: 'zh-Hans'` gives by itself; they are written out so you can change one at a time, though `compressAdjacent` changes nothing until `punctuationWidth` is `'fullwidth'`: under Kaiming no two marks that meet take more than 1.5 em. On <PageRef page={2}>page 71</PageRef> the closing 。 of a paragraph does not fit, and the line-start rules (every `lineBreak` level but `'none'`; `'gb'` adds the solidus) forbid it to open a line. The line takes it in by setting the 。 after 事 half a character wide (push-in), so 事。宏 closes up and the paragraph does not run to another line ([Punctuation widths](/en/docs/configuration#punctuation-widths)). Lines that fall short are spread between their characters, never between words, and on these pages by no more than 0.05 em ([Chinese, Japanese and Korean](/en/docs/justification#chinese-japanese-and-korean)).
+
+<PageShot page={2} crop="0.1,0.82,0.8,0.11" caption="Page 71: the last lines of a paragraph. 事。宏 is set close so that 看。 can stay on the line instead of opening one." />
+
+### 2 · A 大32开 page with a deeper head
+
+<Excerpt region="page" />
+
+With the grid on, the margins are minimums: the grid places the type area in the room they leave and shares out what is over. 22 and 18 mm leave exactly 163 mm, so the head margin stays 4 mm deeper than the foot, as Chinese books keep it; the 18 mm at each side leave 0.3 mm to share. Ask for more characters or lines than fit and the grid is cut down to what fits, with a `cjkGridClamped` warning; the size and leading stay as written.
+
+### 3 · A title sunk a whole number of lines
+
+<Excerpt region="opener" />
+
+`minHeight` is eight lines of 16.5 pt, so the text under the title starts on the ninth line of the grid, the same baselines as on every other page. The 23 pt of letter spacing puts half a character between 故 and 乡, the usual spacing for a two-character title; Postext leaves the spacing after the last character out when it centres the line, so the title stays on the page’s axis ([Heading styles](/en/docs/configuration#heading-styles)).
+
+### 4 · The book on the verso, the story on the recto
+
+<Excerpt region="heads" />
+
+Mainland novels carry the book’s title over versos and the story’s over rectos, centred, with the folio at the outer edge and a hairline under both. `pages: 'body'` keeps them off the opener and the plate, and the opener gets its folio at the foot instead. The heads are set in Noto Sans SC, the Hei face, at 8 pt: small, but a different voice from the Song of the text.
+
+### 5 · A plate over the whole sheet
+
+<Excerpt region="plate" />
+
+The picture belongs to a heading of its own, `# 月下的瓜地 {style="plate" …}`, whose style draws the page and clears its head and folio. The plate needs `span: 'page'`, because a heading’s design that stays in the column is cut at the column’s foot, 18 mm short of the trim. The three lines of the quotation are three attributes and three text elements, because design text has a line breaker of its own, which sets no Chinese punctuation widths; broken by hand, the lines also drop their commas, as display lines in Chinese usually do.
+
+### 6 · Latin letters and digits in the Chinese text
+
+<Excerpt region="styles" />
+
+The note and the colophon on <PageRef page={7}>page 76</PageRef> are where digits and Latin names meet Han. `latinSpacing` puts a quarter em wherever they touch, as in the note’s 1921年 and the colophon’s 用Noto Serif SC五号, typed with no space at all ([Space between Han and Latin](/en/docs/configuration#space-between-han-and-latin)); on a justified line that space grows first, up to half an em. The note is set at 9.1875 pt, not the 9 pt of 小五, so that 32 of its characters fill the measure: at 9 pt each line had two thirds of an em left over, and the Han–Latin spaces took it. In the Markdown the font names are joined with no-break spaces (U+00A0), which the Han–Latin space leaves alone: with ordinary spaces the colophon’s ragged lines broke Noto Sans / SC.
+
+## Variations
+
+### Set every mark full width (全角式)
+
+Commas, pause marks and quotation marks take a whole character, 。” takes two, and each line holds fewer characters of text.
+
+```diff
+-  punctuationWidth: 'kaiming', // ，、：； quotes, brackets ½ em; 。？！ one em, ½ at a line end
+-  compressAdjacent: true, // idle under Kaiming (no pair tops 1.5 em); 'fullwidth' needs it
++  punctuationWidth: 'fullwidth',
++  compressAdjacent: false,
+```
+
+### Show the grid while you set the page
+
+The canvas draws a light grey square for every character position of every line (稿纸); the PDF leaves it out unless `renderToPdf` gets `characterGrid: true`.
+
+```diff
+-  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: LINES },
++  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: LINES, show: true },
+```
+
+## Pitfalls
+
+- The plate is a heading, so the PDF outline lists 月下的瓜地 as a first-level bookmark before 故乡, and the tagged PDF keeps it as an H1. No heading setting leaves a heading out of the outline yet.
+- The headings’ own face must be one that `FONTS` loads, even when a design paints every title: with the default weight 700 the kit found Noto Serif SC 700 in the layout and loaded its Latin file with a warning. `headings.fontWeight: 400` keeps the heading blocks in the text face.
