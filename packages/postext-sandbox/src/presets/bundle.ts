@@ -96,9 +96,12 @@ export async function parseBundle(
   const { config, resources } = read;
 
   // The bundle's pagination, taken as is when it was built by this engine
-  // from this configuration and these resources — else laid out afresh.
+  // from this configuration and these resources — else laid out afresh. A
+  // multilingual bundle sets each language with its own configuration, so
+  // it may carry one per language (`layouts.<locale>.json`).
   let layouts: Record<string, ChapterLayout> | undefined;
-  const layoutsBytes = await readFile(LAYOUTS_FILE).catch(() => null);
+  const layoutsBytes = await readFile(localeLayoutsFile(read.locale)).catch(() => null)
+    ?? await readFile(LAYOUTS_FILE).catch(() => null);
   if (layoutsBytes) {
     try {
       const parsed = JSON.parse(new TextDecoder().decode(layoutsBytes)) as BundleLayoutsFile;
@@ -170,6 +173,11 @@ export interface BundleContent {
  *  chapter file, valid for the engine, configuration and resources named
  *  by their fingerprints (`layoutKeys.ts`). */
 export const LAYOUTS_FILE = 'layouts.json';
+/** The pagination of one language of a multilingual bundle, read before
+ *  `layouts.json`. */
+export function localeLayoutsFile(locale: string): string {
+  return `layouts.${locale}.json`;
+}
 export interface BundleLayoutsFile {
   version: 1;
   engine: string;
