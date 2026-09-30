@@ -12,7 +12,7 @@
  *
  * Pure and isomorphic: no I/O (sources.ts reads the files).
  */
-import type { ComposedPen, KitBlock, Locale, PenJson, RecipeMeta, RecipeSources } from "./types.ts";
+import type { ComposedPen, KitBlock, Locale, PenJson, RecipeMeta, RecipeSources, SampleLocale } from "./types.ts";
 import { KIT_ORDER } from "./types.ts";
 
 /** Bump when composition output changes: it invalidates every capture. */
@@ -37,9 +37,11 @@ export class ComposeError extends Error {
 }
 
 /** The sample edition a site locale shows: its own when the recipe has one,
- *  otherwise the first sample language. */
-export function variantFor(meta: Pick<RecipeMeta, "sample">, locale: Locale): Locale {
-  return meta.sample.locales.includes(locale) ? locale : meta.sample.locales[0];
+ *  otherwise the first sample language (always so for a locale no sample
+ *  can be written in, such as zh). */
+export function variantFor(meta: Pick<RecipeMeta, "sample">, locale: Locale): SampleLocale {
+  const own = meta.sample.locales.find((l) => l === locale);
+  return own ?? meta.sample.locales[0];
 }
 
 /** A JavaScript literal holding `text` exactly. `String.raw` keeps the
@@ -68,8 +70,8 @@ function countLines(text: string): number {
 function contentFor(
   sources: RecipeSources,
   key: string | undefined,
-  variant: Locale,
-  fallback: Locale,
+  variant: SampleLocale,
+  fallback: SampleLocale,
 ): string {
   const prefix = key ? `${key}.` : "";
   const text = sources.content[`${prefix}${variant}`] ?? sources.content[`${prefix}${fallback}`];
@@ -89,7 +91,7 @@ export interface ComposeOptions {
 export function composePen(
   sources: RecipeSources,
   meta: Pick<RecipeMeta, "sample" | "kit">,
-  variant: Locale,
+  variant: SampleLocale,
   { kit }: ComposeOptions,
 ): ComposedPen {
   const { slug } = sources;

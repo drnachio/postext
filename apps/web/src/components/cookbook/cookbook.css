@@ -369,3 +369,14 @@ html:has(.cb-bar) {
     scroll-padding-top: calc(var(--cb-nav-h, 3.35rem) + 7rem);
   }
 }
+
+/* Han has no italic (a slanted Chinese face is a synthetic oblique): on a
+   Chinese page the italic leads, notes and captions stand upright, as
+   globals.css sets `em`. An English fallback write-up (lang="en") keeps
+   its italics. */
+.italic:lang(zh),
+.cb-lt-empty:lang(zh),
+.docs-content .cb-answers ul:lang(zh),
+.docs-content .cb-excerpt-caption:lang(zh) {
+  font-style: normal;
+}

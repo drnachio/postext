@@ -14,6 +14,8 @@ interface PresetEntry {
   description: string;
   thumbnail?: string;
   tags?: string[];
+  /** The content locales the bundle ships editions in. */
+  locales?: string[];
   /** The content locale the book opens in from the shelf (a Chinese
    *  original rather than the translation in the site's language). */
   openLocale?: string;
@@ -47,12 +49,21 @@ function localizedThumbnail(dir: string, thumbnail: string, lang: string): strin
   return fs.existsSync(path.join(process.cwd(), "public/presets", dir, localized)) ? localized : thumbnail;
 }
 
-/** Bundle descriptions are written "Spanish · English". Book titles are
- *  in the `Showcase.books` messages, keyed by preset id (the index `name`
- *  mixes both languages); a preset without one shows its index name. */
-function localizedDescription(description: string, locale: string): string {
+/** Book titles and descriptions are in the `Showcase.books` and
+ *  `Showcase.descriptions` messages, keyed by preset id (the index `name`
+ *  mixes languages); a preset without them shows its index name and the
+ *  index description, written "Spanish · English". */
+function indexDescription(description: string, locale: string): string {
   const [es, ...en] = description.split(" · ");
   return locale.startsWith("es") ? es! : en.join(" · ") || es!;
+}
+
+/** The edition a book opens in: Spanish on Spanish pages, Simplified
+ *  Chinese on Chinese pages when the bundle has it, else English. */
+function openLocale(locale: string, locales: readonly string[] | undefined): string {
+  if (locale.startsWith("es")) return "es";
+  if (locale.startsWith("zh") && locales?.includes("zh-Hans")) return "zh-Hans";
+  return "en";
 }
 
 function Book({ href, name, description, binding = "left", children }: { href: string; name: string; description: string; binding?: "left" | "right"; children: React.ReactNode }) {
@@ -88,7 +99,7 @@ export async function ShowcaseSection() {
   const hero = await getTranslations("Hero");
   const locale = await getLocale();
   const presets = shelfOrder((presetIndex as { presets: PresetEntry[] }).presets);
-  const lang = locale.startsWith("es") ? "es" : "en";
+  const guideLang = locale.startsWith("zh") ? "zh-Hans" : locale.startsWith("es") ? "es" : "en";
 
   return (
     <section aria-labelledby="showcase-heading" className="relative isolate overflow-hidden bg-surface py-16 text-foreground md:py-20 dark:bg-night">
@@ -107,15 +118,17 @@ export async function ShowcaseSection() {
       </div>
 
       <ul className="mx-auto mt-12 flex max-w-[100vw] snap-x snap-mandatory gap-8 overflow-x-auto px-6 pb-6 [scrollbar-width:thin] md:gap-10 lg:justify-center lg:overflow-visible lg:flex-wrap 2xl:px-8">
-        <Book href={`/${locale}/sandbox#preset=postext-guide&lang=${lang}&view=canvas`} name={t("guideName")} description={t("guideDescription")}>
+        <Book href={`/${locale}/sandbox#preset=postext-guide&lang=${guideLang}&view=canvas`} name={t("guideName")} description={t("guideDescription")}>
           <GuideCover kicker={hero("kicker")} title="Postext" subtitle={hero("colophon")} label={hero("artAlt")} />
         </Book>
-        {presets.map((p) => (
+        {presets.map((p) => {
+          const lang = openLocale(locale, p.locales);
+          return (
           <Book
             key={p.id}
             href={`/${locale}/sandbox#preset=${p.id}&lang=${p.openLocale ?? lang}&view=canvas`}
             name={t.has(`books.${p.id}`) ? t(`books.${p.id}`) : p.name}
-            description={localizedDescription(p.description, locale)}
+            description={t.has(`descriptions.${p.id}`) ? t(`descriptions.${p.id}`) : indexDescription(p.description, locale)}
             binding={p.binding}
           >
             <Image
@@ -127,7 +140,8 @@ export async function ShowcaseSection() {
               className="block aspect-[210/280] h-auto w-full object-cover"
             />
           </Book>
-        ))}
+          );
+        })}
       </ul>
     </section>
   );

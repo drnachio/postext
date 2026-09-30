@@ -110,20 +110,32 @@ export function sidesOf<T>(pair: readonly [T, T], binding: "left" | "right" | un
   return binding === "right" ? [pair[1], pair[0]] : [pair[0], pair[1]];
 }
 
+/** `{n}` is the folio. */
 const ROLE_WORDS: Record<Locale, Record<ProbePage["role"], string>> = {
-  en: { body: "Page", opener: "Opening page", part: "Part title page", blank: "Blank page" },
-  es: { body: "Página", opener: "Página de apertura", part: "Portadilla de parte", blank: "Página en blanco" },
+  en: { body: "Page {n}", opener: "Opening page {n}", part: "Part title page {n}", blank: "Blank page {n}" },
+  es: { body: "Página {n}", opener: "Página de apertura {n}", part: "Portadilla de parte {n}", blank: "Página en blanco {n}" },
+  zh: { body: "第 {n} 页", opener: "章首页，第 {n} 页", part: "篇章扉页，第 {n} 页", blank: "空白页，第 {n} 页" },
+};
+
+/** Chinese takes full-width punctuation with no space after it. */
+const PUNCT: Record<Locale, { colon: string; stop: string }> = {
+  en: { colon: ": ", stop: ". " },
+  es: { colon: ": ", stop: ". " },
+  zh: { colon: "：", stop: "。" },
 };
 
 /** Role and folio, the page's first heading, then its figure captions, in
  *  the sample's language. */
 export function altText(page: ProbePage, lang: Locale): string {
   const clean = (s: string) => s.replace(/\s+/g, " ").trim();
-  let text = `${ROLE_WORDS[lang][page.role] ?? ROLE_WORDS[lang].body} ${page.label || page.n}`;
+  const words = ROLE_WORDS[lang][page.role] ?? ROLE_WORDS[lang].body;
+  const { colon, stop } = PUNCT[lang];
+  let text = words.replace("{n}", String(page.label || page.n));
   const heading = clean(page.heading ?? "");
-  if (heading) text += `: ${heading}`;
+  if (heading) text += `${colon}${heading}`;
   const captions = (page.captions ?? []).map(clean).filter(Boolean);
-  if (captions.length) text += `. ${captions.join(" · ")}`;
-  text = text.replace(/[.:]$/, "");
-  return text.length > 280 ? `${text.slice(0, 277).trimEnd()}…` : `${text}.`;
+  if (captions.length) text += `${stop}${captions.join(" · ")}`;
+  text = text.replace(/[.:。：]$/, "");
+  const end = stop.trimEnd();
+  return text.length > 280 ? `${text.slice(0, 277).trimEnd()}…` : `${text}${end}`;
 }

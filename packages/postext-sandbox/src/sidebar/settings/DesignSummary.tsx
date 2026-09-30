@@ -9,7 +9,8 @@ import { formatNumber, toPt } from '../../controls/units';
 import { cn } from '../../ui';
 import type { SettingsGroupId } from '../sections/registry';
 import { pageDrawingConfig } from '../sections/cjkGridReadout';
-import { LOCALE_TO_HYPHENATION, documentLocaleLabel } from '../sections/BodyTextSection/constants';
+import { documentLocaleLabel } from '../sections/BodyTextSection/constants';
+import { defaultDocumentLocale } from '../../controls/hyphenation';
 import { PagePreview } from './PagePreview';
 
 interface DesignSummaryProps {
@@ -43,7 +44,7 @@ export function DesignSummary({ onOpenGroup }: DesignSummaryProps) {
   const type = `${body.fontFamily} · ${n(toPt(body.fontSize))}/${n(toPt(body.lineHeight))} pt`;
   // Writing system: the language, with the direction and the binding when
   // they are a choice (Chinese text, vertical lines, a right binding).
-  const language = config.locale ?? LOCALE_TO_HYPHENATION[uiLocale] ?? 'en-us';
+  const language = config.locale ?? defaultDocumentLocale(uiLocale);
   const vertical = layout.writingMode === 'vertical-rl';
   const writing = [
     vertical || isCjkLanguage(language) ? (vertical ? labels.writingModeVerticalShort : labels.writingModeHorizontal) : '',

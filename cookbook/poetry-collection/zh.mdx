@@ -1,0 +1,97 @@
+---
+title: "逐行排诗"
+summary: "每一行诗是一个段落，转行悬挂缩进4 em。全身空格保留1918年版的缩进，:::space在诗节之间留出一行。"
+description: "用Postext排霍普金斯的四首诗：一行一段，沿用1918年版的缩进，转行悬挂，诗节之间用:::space，目录页带点状前导符。"
+question: "怎样逐行排诗，保留缩进、诗节间隔和悬挂的转行，并且不断词？"
+aliases: ["诗歌", "诗", "诗集", "韵文", "诗节", "诗节间隔", "诗行", "缩进诗行", "缩进", "全身空格", "转行", "长诗行", "悬挂缩进", "换行", "小诗集", "点状前导符", "献词", "日期行", "装饰图案", "花饰", "尾花", "卷首插图", "简扉页", "霍普金斯", "poetry", "poem", "verse", "stanza", "em space", "word joiner", "turnover", "hanging indent", "chapbook", "dot leaders", "fleuron", "tailpiece", "frontispiece", "half-title", "Gerard Manley Hopkins"]
+pageNotes: { "2": "卷首插图：一张蕨叶和一枝结果花楸的物影照片，在刷过的灰绿底色上留白，下方是斜体题注。", "4": "目录：四个斜体诗题排在各自的罗马数字之后，疏排的点状前导符通向页码，其后是一段关于文本的短注和版权页说明。", "6": "The Windhover：献词位于第一行之上，押-iding和-illion韵的诗行缩进2 em，四个长行转行，悬挂缩进4 em。", "7": "Pied Beauty：诗行按韵脚缩进1 em或2 em，结尾的半行Praise him.缩进8 em。" }
+---
+
+## 成品一览
+
+一本收录杰拉德·曼利·霍普金斯四首自然诗的小诗集，140 × 216 mm，文本采用1918年初版。简扉页之后，一张蕨草和花楸的物影照片作为卷首插图，与用Italiana排的书名页相对。目录按罗马数字和斜体诗题列出每首诗，用疏排的点通向页码。每首诗另起一页，上方是灰绿色的罗马数字和斜体诗题。每一行诗是一个段落，缩进与1918年版相同：*Pied Beauty*的诗行按韵脚缩进，*The Windhover*的长行转行后悬挂缩进4 em，是其缩进深度的两倍。诗节之间空一行，除了霍普金斯自己断开的地方，没有任何词被断开。日期排在每首诗之下，右对齐，最后一首之后是一枝花楸。诗页在页脚居中印页码。
+
+## 做法
+
+### 1 · 一行诗就是一个段落
+
+代码见上文的[简短回答](#简短回答)。Postext会把一个Markdown段落里的各行合成一行，所以一首诗需要一行一个段落。诗行样式让这些段落齐左，因为两端对齐会把转行的前半截拉满整个行长。它把一行其余的部分悬挂缩进4 em，超过押韵诗行1 em和2 em的缩进，这样转出的部分不会被读成单独一行（[段落样式](/zh/docs/configuration#段落样式)）。段落会丢掉行首的空格，全身空格也不例外，而带悬挂缩进的样式会忽略首行缩进。因此`indentVerse`把行首的每两个空格写成一个跟在连接符（word joiner）后面的全身空格；连接符是零宽字符，去除行首空白时到它就停下。互相押韵的诗行保持相同的缩进，和1918年版一样。空行不增加间距。每个诗节间隔是容器内的一行`:::space`，它留出一行网格，出现在页首时会被丢弃（[`:::space`](/zh/docs/document-format#space)）。
+
+<PageShot page={6} crop="0.08,0.22,0.86,0.48" caption="The Windhover, page 6: the lines that rhyme in -iding start 2 em in, and the four lines too long for the page turn over and hang 4 em in." />
+
+### 2 · 诗周围的文字也有样式
+
+<Excerpt region="lines" />
+
+*The Windhover*上方的献词和每首诗下方的地点与日期都不是诗行，所以各自是只含一个段落的`:::paragraphs`容器，使用自己的样式。这两个样式都不设行距，外边距都是一行（15 pt），所以诗行仍落在正文的网格上。日期排在诗下一行处，右对齐，用8 pt的Marcellus SC，也就是页码的字体。
+
+### 3 · 每首诗在自己的编号下另起一页
+
+<Excerpt region="poem-head" />
+
+这个标题不印它的文字，而是在栏里印一个版面设计。在这个设计里，`{number}`是按`numberingTemplate: '{1:I}'`格式化的计数，从I到IV，`{titleText}`是诗题（[通栏与高级版面设计](/zh/docs/configuration#通栏与高级设计)）。这一级标题没有下外边距，`minHeight`让每个标题都占六行网格（31.75 mm）。罗马数字和一行诗题占其中四行，诗题折行时占五行，所以每首诗都从页面上的同一行开始。在<PageRef page={6}>第6页</PageRef>上，这一行放的是献词。奇偶设为`'any'`时分页到下一页，不论左右页，所以诗与诗之间没有空白页。
+
+### 4 · 前置部分由标题组成
+
+<Excerpt region="front" />
+
+标题样式可以分页到新的一页并在那里画出版面设计，所以简扉页、卷首插图和书名页各是一个标题，各有自己的样式。`numbered: false`让它们不参与计数，第一首诗仍是I。`toc: false`让它们不进目录，空的页脚让它们的页面不带页码（[标题样式](/zh/docs/configuration#标题样式)）。这些样式设为通栏，因为栏内的版面设计会被裁到版心之内，那样会把满版出血的插图裁到页边距，还会切掉题注。题注来自标题的`caption`属性；书名页上的作者、书名和副书名来自frontmatter。
+
+### 5 · 目录自动填写
+
+<Excerpt region="contents" />
+
+`:::toc`列出样式允许进入目录的每个标题，罗马数字出自同一个模板，页码取标题所在页的页码标签。构建会反复排版，直到这些页码标签不再变化（[目录](/zh/docs/configuration#目录)）。目录页本身的标题Contents使用带`numbered: false`的样式；没有它，Contents就会成为第I首诗。前导符`'. '`在每个点后加一个空格。点是右对齐的，所以各条目之间的点上下对齐；它们用页码的字体和颜色印出，因为`toc.leader`没有颜色设置。
+
+### 6 · 装饰图案是一种不带标签的资源类型
+
+<Excerpt region="ornament" />
+
+正文中的图片是资源，每个资源都有一个类型。装饰图案类型的题注前缀为空，花楸枝也没有题注，所以下面不会印出“Figure 1”之类的标签（[资源类型](/zh/docs/configuration#资源类型)）。这个类型的`defaultPlacement`把花楸枝放在`::resource{id="sprig"}`所在的位置，居中，宽度为行长的五分之一，所以*Inversnaid*下面的尾花只占一行Markdown。`resourceTypes`会替换默认列表，所以这本书没有Figure或Table类型。要保留它们，就把`defaultResourceTypes()`展开放在装饰图案之前。
+
+## 变化
+
+### 转行悬挂得更深
+
+悬挂缩进越深，转行的部分离页边距越远，适合经常转行的诗。
+
+```diff
+-  hangingIndent: em(4), // 转行悬挂在1 em和2 em缩进之外
++  hangingIndent: em(6), // 转行悬挂在1 em和2 em缩进之外
+```
+
+### 每行都从页边距开始
+
+不用`indentVerse`时，Postext会去掉行首空格，每一行诗都齐左起排；只有转行部分仍然悬挂。
+
+```diff
+-const verses = indentVerse(markdown); // 诗行的行首空格，改写为全身空格
++const verses = markdown; // 行首空格交给裁剪处理
+```
+
+### 每首诗都从右页开始
+
+奇偶设为`'odd'`时，每首诗都从下一个右页开始。全书从八页增加到十一页，三个空白的左页不印页码，因为页码按页面角色筛选。
+
+```diff
+ const poems = { level: 1, numberingTemplate: '{1:I}', advancedDesign: poemHead,
+-  marginBottom: pt(0), breakBefore: { enabled: true, parity: 'any' } };
++  marginBottom: pt(0), breakBefore: { enabled: true, parity: 'odd' } };
+```
+
+### 用阿拉伯数字给诗编号
+
+模板的计数样式会同时改变诗页上和目录里的编号。
+
+```diff
+-const poems = { level: 1, numberingTemplate: '{1:I}', advancedDesign: poemHead,
++const poems = { level: 1, numberingTemplate: '{1}', advancedDesign: poemHead,
+```
+
+## 常见问题
+
+- 每行诗后面都要留一个空行。两行之间没有空行就是同一个段落，诗会像散文一样重排。
+- 给诗行样式单独设置`textAlign`。段落样式继承正文的对齐方式，两端对齐的诗行会把每个转行的前半截拉满整个行长。
+- 以年份加句点（如“1877. ”）或以连字符加空格开头的诗行会变成列表项，因为每一行都是一个段落。在它前面加一个连接符（U+2060），就像`indentVerse`在缩进前所做的那样。
+- 要让两个词一起转行，用不换行空格（U+00A0）把它们连起来，如第5页的*the soil*和*bright wings.*。这在纯文本行里有效；如果行里有斜体或粗体，引擎仍会在那里断开。
+- `pages`保留为`'all'`的页脚元素在空白页上也会印出。这里的页码是两个元素，一个用于章首页，一个用于正文页，所以空白的左页保持空白。

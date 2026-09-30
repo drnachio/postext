@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { AppWindow, ArrowUpRight, Copy, Download, FileDown, Play } from "lucide-react";
 import { defineData, pageHtml } from "@/lib/cookbook/compose";
-import type { ComposedPen, Locale, PenJson } from "@/lib/cookbook/types";
+import type { ComposedPen, SampleLocale, PenJson } from "@/lib/cookbook/types";
 import { openInCodePen } from "@/lib/codepenClient";
 import { cn } from "@/lib/utils";
 import { SOURCE_ATTR, SOURCE_EOL_ATTR, SOURCES_ID, type RecipeSourcesPayload } from "./sources";
@@ -21,7 +21,7 @@ function sourceText(id: "js" | "html" | "css"): string {
 export interface RecipeActionsData {
   slug: string;
   /** The sample edition the page shows. */
-  variant: Locale;
+  variant: SampleLocale;
   /** "<title> · Postext Cookbook": the pen's and the download's title. */
   penTitle: string;
   /** The summary plus the canonical URL. */
@@ -49,7 +49,7 @@ function SandboxAction({ sandbox, short }: { sandbox: NonNullable<RecipeActionsD
 
 /** The composed files of an edition, read at click time from the page:
  *  pen.json from the embedded JSON, the files from the whole-recipe view. */
-export function readSources(variant: Locale): { js: string; html: string; css: string; pen: PenJson } | null {
+export function readSources(variant: SampleLocale): { js: string; html: string; css: string; pen: PenJson } | null {
   const el = document.getElementById(SOURCES_ID);
   if (!el?.textContent) return null;
   const payload = (JSON.parse(el.textContent) as RecipeSourcesPayload)[variant];
@@ -59,7 +59,7 @@ export function readSources(variant: Locale): { js: string; html: string; css: s
 }
 
 /** The composed pen, read from the page's embedded JSON at click time. */
-function readPen(slug: string, variant: Locale): ComposedPen | null {
+function readPen(slug: string, variant: SampleLocale): ComposedPen | null {
   const files = readSources(variant);
   if (!files) return null;
   return { slug, variant, ...files, ranges: { content: [], kit: null, regions: {} }, ownLines: 0 };

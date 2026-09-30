@@ -1,0 +1,67 @@
+---
+title: "一份把每处错误都标成红色的长条校样"
+summary: "一篇报纸稿件校对两遍，引擎报告的错误和示例自己查出的错误都在页面上用红色标出，并链接到对应的Markdown。"
+description: "用Postext搭一个新闻稿校对台：未闭合的围栏、calloutOverflow、未知id和松行都在页面上标出，点击即可选中对应的Markdown。"
+question: "怎样找出文档哪里有问题，并把页面上的每处错误追溯到它的Markdown？"
+aliases: ["长条校样", "校样", "校对", "文档调试", "排查文档错误", "解析问题", "未知引用", "未知指令", "松行", "源码映射", "点击定位源码", "单词连接符", "转义美元符号", "galley proof", "proofreading", "parse issues", "doc.warnings", "calloutOverflow", "unknown reference", "loose lines", "source mapping", "sourceStart", "word joiner"]
+pageNotes: { "1": "《The Tideline》第41期第1页：右上角是一个红色描边的PROOF · 2ND PASS印章；一幅夜景画中，渡轮Marram在满月下驶过幽暗的河口；眉题Estuary · Transport，粗黑无衬线的大标题The Night Ferry Returns，斜体导语和等宽字体的署名。接着是两段两端对齐的正文，第一段引用了地图1，这是一张排在外侧栏里的航线图。页面底部，资料框The crossing in figures在一条红线下开始。", "2": "第2页：资料框在红线下接续，没有标题，排着两栏的时刻表，然后正文以两端对齐的衬线体继续。外侧栏里有Dana Whitcomb的一段引文框、两条船的大事年表（1971、2015、2026），栏底是版权说明。" }
+---
+
+## 成品一览
+
+县里的周报《The Tideline》第41期，头条是夜班渡轮恢复横渡Sawyer河，示例把这篇稿子校对两遍。第一遍是原始来稿：以改好的稿件为底，放回六处笔误，其中包括一个被写成不存在的指令的印章，以及一个始终没有闭合的资料框。这六处笔误留下十个标记。和卡片上一样，每处错误都在它所在的行下画红线（松行改为整行铺底色），页边的编号对应页面旁列表中的条目。点击某一行或某个条目，就会选中它的Markdown。下面的页面是第二遍。检查什么也没发现，右上角钉着一个PROOF · 2ND PASS印章。
+
+## 做法
+
+### 1 · 先读引擎的报告，再检查其余部分
+
+代码见上文的[简短回答](#简短回答)。`parseMarkdownWithIssues()`会为每个未闭合的`$`、`$$`或`:::`返回一条问题，`doc.warnings`为每个无法拆分的框记录一条`calloutOverflow`；在1.4.1中，引擎只报告这些。`doc.converged`和`doc.iterationCount`说明版面是否已稳定，这篇稿子无论有没有错误，都在一次迭代后稳定。沙盒的检查面板（见[侧边栏面板](/zh/docs/sandbox#侧栏面板)）还会列出未知id、未知指令和松行，但这些是沙盒自己算出来的，所以`proof()`要重做一遍。它把`:ref`和`::resource`的id与这次构建的`resources`比对，把围栏名称与`KNOWN_CONTAINERS`和`KNOWN_DIRECTIVES`比对。针对这篇稿子，它还会标出`startNumber`是年份的列表块，以及任何公式，因为这篇稿子本来没有公式；它还会检查排好的行，找出空格被拉宽到超过`maxWordSpacing`的行、排成齐左的行，以及网址中被加了连字符的地方。
+
+### 2 · 把错误放回改好的稿件
+
+<Excerpt region="first-pass" />
+
+示例只保留一个Markdown文件，即改好的稿件，第一遍由它撤销六处修改得到，所以两个版本不会彼此脱节，每个标记都有已知的原因。改好的稿件最后构建，下面的页面就是这次构建的结果。`\$`对价格中的美元符号进行[转义](/zh/docs/document-format#书写约定)，这样就不会开启公式。第2页年表中每个年份前的单词连接符（U+2060）防止*1971. The Tern…*这样的条目开启一个从该年份起编号的列表；第一遍只删掉了1971前的那一个。带上`https://`协议头时，1.4.1把网址当作网址来排，从不断词，只在其连接处断开，比如第1页上*.example*前的断点。没有协议头，网址就是一个普通单词，第一遍把它断成了*night-ferry*。
+
+### 3 · 在错误所在处做标记
+
+<Excerpt region="marks" />
+
+VDT中的每一行都带有`sourceStart`和`sourceEnd`，所以错误的源码范围能找到印出它的那一行。容器围栏本身不印出任何行，它的标记放在其后`REACH`（80）个字符以内开始的第一行上。`calloutOverflow`在它指明的那一栏底部画一条横杠。一处笔误可能留下好几个标记。未转义的美元符号把`$2.50 on foot, $`变成一个公式，因为这个示例从不加载数学引擎，公式什么也不印；第三个美元符号又开启了一个永不闭合的公式。这段文字被吞掉后，票价段落中有一行的空格变成正常宽度的1.9倍。缺失的两个围栏让资料框和它的`:::columns`组一直开到稿件末尾，而分栏组从不拆分，所以资料框超出所在栏256 mm。`proof()`把`justifiedSpaceRatio`超过`maxWordSpacing`（这里是1.6）的行判为松行。空格会超过3倍的行没有比值可比，因为1.4.1改为把它[排成齐左](/zh/docs/justification#断行算法填不满的行)，所以`proof()`还要检查`ragged`。
+
+### 4 · 选中一行背后的Markdown
+
+<Excerpt region="source" />
+
+点击坐标以CSS像素给出。`onPageClick()`把它换算成页面像素，找到`bbox`包含该点的那一行，并在textarea中选中那一行的源码范围；列表中的条目也以同样方式选中其错误的范围。`selectSource()`让textarea获得焦点而不滚动页面，并根据选区之前文本的高度设置它的`scrollTop`。在1.4.1中，两端对齐行的`bbox`保留该行的自然宽度，而不是绘制时的宽度，所以`linesOf()`把它延伸到所在块的右边缘。否则底色会在页边距之前就停下，在右边缘附近点击也选不中任何东西。
+
+### 5 · 让资料框拆分，把印章钉住
+
+<Excerpt region="boxes" />
+
+`keepTogether: false`让资料框从第1页底部开始，在下一页的红线下接续，不带标题。这个框没有背景，底部也没有线，所以在第2页上只有空白把时刻表和正文隔开；`marginBottom`是整整一行行距，即14 pt；如果用4 pt，时刻表会在下一段上方1.5 mm处结束。印章设为`placement: 'fixed'`，脱离文本流，钉在距上边缘8 mm处；`width: 'auto'`让它收缩到标题的宽度，42 mm，而不是主栏的110 mm。
+
+## 变化
+
+### 让资料框保持完整
+
+使用默认的`keepTogether`，资料框会整体移到第2页；第1页在离底部33 mm处结束，稿件排到第三页。
+
+```diff
+-  { id: 'facts', keepTogether: false, backgroundEnabled: false, marginBottom: pt(LEAD),
++  { id: 'facts', backgroundEnabled: false, marginBottom: pt(LEAD),
+```
+
+### 仍有错误时中止构建
+
+在构建脚本或测试中，对最终稿件运行`proof()`，只要发现问题就抛出异常。
+
+```diff
+ const doc = await build(markdown); // 最后构建：改好的长条校样，即下面的页面
++if (proof(markdown, doc).length) throw new Error('The second pass still has faults.');
+```
+
+## 常见问题
+
+- 调整稿件，让资料框把第1页填到最后一行。在1.4.1中，收尾一栏的框会在各栏齐底时下移：删掉第一段的最后一句，框的线就会落在票价段落下方6.4 mm处，而不是2.4 mm。
+- 在网址和转义字符附近，源码偏移会滞后。在1.4.1中，断词会在网址的斜杠后插入零宽空格（U+200B），而`line.text`保留了它们，所以含有这种空格的行每有一个就晚一个字符结束，下一行也晚同样多开始：第1页以*https://aldercounty*结尾的那一行还会选中*.example*的点号。以转义字符开头的行，其范围从反斜杠之后开始，比如第1页以`$40`开头的那一行。

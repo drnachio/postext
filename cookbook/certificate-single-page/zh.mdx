@@ -1,0 +1,81 @@
+---
+title: "带扭索纹边框的证书"
+summary: "结业证书由一个标题样式画出：页眉里是扭索纹边框，页脚里是印章和签名线，章首区是姓名。"
+description: "用Postext排结业证书：扭索纹边框和印章用代码绘制，姓名取自每个标题并用手写体排出，全班证书放在一个PDF里。"
+question: "怎样在证书的每一页都加上扭索纹边框、印章和签名线？"
+aliases: ["毕业证书", "证书", "奖状", "结业证书", "扭索纹", "guilloche", "花边边框", "装饰边框", "印章", "签名线", "邮件合并", "批量生成", "班级名单", "批量PDF", "每条记录一页", "mail merge", "certificate"]
+pageNotes: { "1": "一张米色纸上的US Letter证书，四周是一条青绿色边框，里面填满米色扭索纹透镜图案，四角各有一个米色花饰。框内依次是加大字距的大写行The Quoin Room · Letterpress workshop、青绿色大号大写字母CERTIFICATE和OF COMPLETION，然后是斜体的This certifies that，以及金色横线上方用黑色手写体排的姓名Imogen Achterberg。接着是四行居中的嘉许语和一行斜体日期。靠近页脚处，一枚带两条飘带的红色印章位于两条签名线之间，签名线下分别是Harriet Colfax, master printer和Samuel Okoro, course tutor，下方有一行印刷说明；右上角用红色印着编号No. 26-031。", "2": "同样的证书，颁给Tomás Okafor，编号26-032。", "3": "同样的证书，颁给Ruth Adair，编号26-033。" }
+---
+
+## 成品一览
+
+Quoin Room的结业证书。这是普罗维登斯一家虚构的凸版印刷工坊，每位学员一页US Letter。西班牙文版则是萨拉戈萨一家工坊La Cuña的A4证书。一条填满米色扭索纹透镜图案的青绿色边框围住整张纸，四角各有一个米色花饰；两者都用正弦曲线和内摆线在代码里画出。在加大字距的大写标题下方，学员姓名用48 pt的Pinyon Script排在一条金色横线上，嘉许语用Rosarivo居中排。一枚带两条飘带的红色印章位于两条签名线之间，下方有一行印刷说明。整页都由一个标题样式画出，所以每位学员就是一个Markdown标题，PDF里是全班的证书，每个姓名一个书签。
+
+## 做法
+
+### 1 · 让一个标题样式画出整页
+
+样式本身就是上面的[简短回答](#简短回答)。标题样式管辖它所在章节的页面（[标题样式](/zh/docs/configuration#标题样式)）：它的`header`和`footer`取代文档的页眉页脚（这里文档的是空的），`margins`设定正文区域，`advancedDesign`画出章首区。章首区的高度会向上取整为17 pt正文网格的整行数。106 mm的`minHeight`变成18行，所以嘉许语从距上边缘140 mm处开始；在A4上，`y()`把它变成112.7 mm，即19行，嘉许语从146 mm处开始。如果只有标题块，嘉许语会从128 mm处开始（A4上是134 mm）。没有`marginBottom: 0`的话，标题下默认的0.5 em会把同样的106 mm推到19行。
+
+### 2 · 在页眉里把边框挂到页面上
+
+<Excerpt region="frame" />
+
+图片元素按它的放置尺寸绘制资源（[图片元素](/zh/docs/configuration#图像元素)）：锚定在页面左上角、两边都设为`'fill'`时，扭索纹覆盖整个成品尺寸框；SVG按页面比例声明，所以填满时不会变形。页眉把它画在`page.backgroundColor`之上，而且不占空间，只靠页边距让正文离裁切边至少32 mm，落在26 mm处的内框线之内。放在页眉里的水印会印在文字上面，因为页眉是在正文之后绘制的。在页眉中，`{attr.serial}`读取本页所属章节的标题属性，所以每张证书印出自己的编号。
+
+### 3 · 章首区只放标题块
+
+<Excerpt region="title" />
+
+每一行都锚定在页面的`'top'`边上，也就是水平居中，`y`从裁切边量起，所以无论页边距怎么设，标题块都待在原位；`y()`把这些位置从Letter拉伸到A4。姓名就是标题自己的文字，通过`{titleText}`读取，所以PDF的书签和标签里都有它。设了`overflow: 'wrap'`后，长姓名会折到第二行；默认设置则会用省略号截断。`centred()`把每一行加了字距的文字右移其字距的一半。没有它，每一行都会偏到页面中线左侧这么多：眉题0.4 mm，*Certificate* 0.5 mm，*of completion* 0.7 mm。
+
+### 4 · 印章和签名都从同一条边量起
+
+<Excerpt region="signatures" />
+
+页脚里的一切都从`SIGN`量起，也就是印章的上边缘；样式的下边距也让正文区域止于同一条边，所以嘉许语太长时会转到下一页，而不会压到印章下面。如果把签名线和姓名移进章首区，它们会计入章首区的高度（[通栏与高级设计](/zh/docs/configuration#通栏与高级设计)）；由于它们伸到正文区域之下，1.4.1会放弃整个预留，让嘉许语从上页边距下方7.6 mm处开始，压在标题上。`LINE`取两侧页边距之间的宽度，减去印章34 mm的圆盘，剩下的对半分，再减去3 mm，所以在两种纸张尺寸上，每条签名线都在离印章3 mm处停止（Letter上长56 mm，A4上长53 mm）。每个姓名和职务都是一个与签名线等宽的文本元素，因此在线下居中。
+
+### 5 · 把班级名单合并成标题
+
+<Excerpt region="merge" />
+
+每一行名单变成一个`#`标题，指定样式，并把编号作为属性带着（[标题属性](/zh/docs/document-format#标题属性)），后面接`content.en.md`里的文字，所以三行名单就是三页。第1级的`breakBefore`设为奇偶性`'any'`，让每个标题从新的一页开始，证书之间不插空白页；样式继承这一设置。
+
+### 6 · 为全班生成一个PDF
+
+<Excerpt region="pdf" />
+
+全班是一个文档，所以`renderToPdf`写出一个三页的文件，每个标题一个书签，以学员姓名命名。`renderToPdf`也接受文档数组，比如一本书的各章；但每位学员一个文档，就意味着每人调用一次`buildDocument`。写成标题后，全班在一次构建中完成排版，查看器显示的三张证书都来自这次构建。除了页面上用到的四种字体，PDF还会请求Rosarivo的粗体和粗斜体，而Fontsource没有提供：套件的字体提供器把每个请求对应到这个字族现有的最接近的字体（[为什么需要字体提供器？](/zh/docs/configuration#为什么需要字体提供函数)）。
+
+## 变化
+
+### 每位学员一个PDF
+
+每位学员一个按钮，用一个新的`config()`把那张证书作为独立文档生成，并以编号命名文件；每个文件约245 KB。
+
+```diff
+-offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
+-  `${RECIPE}.pdf`); // 书签：每个标题一个，也就是每位学员一个
+-document.querySelector('[data-postext-pdf]').textContent = t({ en: 'Class list → one PDF',
+-  es: 'Toda la clase en un PDF' });
++for (const [name, serial] of CLASS) {
++  offerPdf(() => renderToPdf(buildDocument({ markdown:
++    `# ${name} {style="certificate" serial="${serial}"}\n\n${markdown}`, metadata, resources },
++    config()), { fontProvider: fontsourceProvider, resourceBytes: imageBytes }), `${serial}.pdf`);
++  document.querySelector(`[data-postext-pdf="${serial}.pdf"]`).textContent = name;
++}
+```
+
+### 边框和标题改用藏青色
+
+SVG图稿和配置读取同一个`palette`对象，所以改一个条目，就能给边框、花饰图案和标题行换色。
+
+```diff
+-  teal: '#1f5f5b', // 边框、标题行
++  teal: '#2b3a67', // 边框、标题行
+```
+
+## 常见问题
+
+- 在1.4.1里，居中且带`letterSpacing`的设计文本会偏到锚点左侧半个字距，右对齐的则少排一整个字距，因为它的宽度包含了最后一个字母后面的字距。`space()`把加了字距的行移回原位。
+- postext-pdf 1.4.1把SVG写进每个绘制它的页面的内容流，没有共享副本：边框让每页增加约210 KB，所以三页的PDF有694 KB（去掉边框是58 KB），一个三十人的班级约6.6 MB。

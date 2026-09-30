@@ -3,7 +3,8 @@
   "code-blocks": {
     "label": {
       "en": "Fenced code blocks",
-      "es": "Bloques de código"
+      "es": "Bloques de código",
+      "zh": "围栏代码块"
     },
     "aliases": {
       "en": [
@@ -19,24 +20,36 @@
         "listado de código",
         "texto preformateado",
         "bloque monoespaciado"
+      ],
+      "zh": [
+        "代码块",
+        "代码清单",
+        "预格式化文本",
+        "等宽字体",
+        "程序代码",
+        "```",
+        "code block"
       ]
     },
     "explanation": {
       "en": "Triple-backtick fences and indented code are set line by line as ordinary paragraphs. Set listings with a monospace paragraph style, hyphenation off and left aligned, inside :::paragraphs or a callout; inline code works.",
-      "es": "Las vallas de tres acentos graves y el código sangrado se componen línea a línea como párrafos normales. Compón los listados con un estilo de párrafo monoespaciado, sin separación silábica y alineado a la izquierda, dentro de :::paragraphs o de un recuadro; el código en línea sí funciona."
+      "es": "Las vallas de tres acentos graves y el código sangrado se componen línea a línea como párrafos normales. Compón los listados con un estilo de párrafo monoespaciado, sin separación silábica y alineado a la izquierda, dentro de :::paragraphs o de un recuadro; el código en línea sí funciona.",
+      "zh": "三个反引号的围栏和缩进代码都按普通段落逐行排版。排代码清单时，在:::paragraphs或标注框中使用等宽字体的段落样式，关闭断词并左对齐；行内代码可以正常使用。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "What is NOT supported",
-        "es": "Qué NO se soporta"
+        "es": "Qué NO se soporta",
+        "zh": "不支持的内容"
       }
     }
   },
   "syntax-highlighting": {
     "label": {
       "en": "Syntax highlighting",
-      "es": "Resaltado de sintaxis"
+      "es": "Resaltado de sintaxis",
+      "zh": "语法高亮"
     },
     "aliases": {
       "en": [
@@ -48,24 +61,34 @@
         "colores de código",
         "código resaltado",
         "código en color"
+      ],
+      "zh": [
+        "语法高亮",
+        "代码着色",
+        "代码高亮",
+        "彩色代码",
+        "syntax highlighting"
       ]
     },
     "explanation": {
       "en": "There is no code colouring. A listing can use bold and italic runs whose colours the style sets, but keywords and strings are not detected.",
-      "es": "No hay coloreado de código. Un listado puede usar fragmentos en negrita y cursiva cuyos colores fija el estilo, pero las palabras clave y las cadenas no se detectan."
+      "es": "No hay coloreado de código. Un listado puede usar fragmentos en negrita y cursiva cuyos colores fija el estilo, pero las palabras clave y las cadenas no se detectan.",
+      "zh": "不支持代码着色。代码清单可以使用粗体和斜体片段，颜色由样式设定，但不会识别关键字和字符串。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "What is NOT supported",
-        "es": "Qué NO se soporta"
+        "es": "Qué NO se soporta",
+        "zh": "不支持的内容"
       }
     }
   },
   "pipe-tables": {
     "label": {
       "en": "Pipe tables",
-      "es": "Tablas con barras"
+      "es": "Tablas con barras",
+      "zh": "竖线表格"
     },
     "aliases": {
       "en": [
@@ -77,24 +100,35 @@
         "tabla de markdown",
         "| a | b |",
         "tabla GFM"
+      ],
+      "zh": [
+        "Markdown表格",
+        "竖线表格",
+        "管道表格",
+        "表格语法",
+        "| a | b |",
+        "GFM table"
       ]
     },
     "explanation": {
       "en": "| a | b | prints literally. Tables are resources with a structured model; parseTSV turns pasted spreadsheet data into one and mergeCells joins cells.",
-      "es": "| a | b | se imprime tal cual. Las tablas son recursos con un modelo estructurado; parseTSV convierte en uno los datos pegados de una hoja de cálculo y mergeCells combina celdas."
+      "es": "| a | b | se imprime tal cual. Las tablas son recursos con un modelo estructurado; parseTSV convierte en uno los datos pegados de una hoja de cálculo y mergeCells combina celdas.",
+      "zh": "| a | b |会按原样打印出来。表是采用结构化模型的资源；parseTSV把粘贴来的电子表格数据转成表，mergeCells用来合并单元格。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "What is NOT supported",
-        "es": "Qué NO se soporta"
+        "es": "Qué NO se soporta",
+        "zh": "不支持的内容"
       }
     }
   },
   "inline-images": {
     "label": {
       "en": "Markdown images ![]()",
-      "es": "Imágenes de Markdown ![]()"
+      "es": "Imágenes de Markdown ![]()",
+      "zh": "Markdown图片![]()"
     },
     "aliases": {
       "en": [
@@ -108,24 +142,35 @@
         "imagen en línea",
         "imagen en markdown",
         "etiqueta img"
+      ],
+      "zh": [
+        "插入图片",
+        "行内图片",
+        "Markdown图片",
+        "图片语法",
+        "![alt](src)",
+        "img tag"
       ]
     },
     "explanation": {
       "en": "![alt](src) is stripped on purpose, because pictures are placed by the float engine, which works with the columns. Declare the picture as a resource and cite it with :ref or embed it with ::resource.",
-      "es": "![alt](src) se elimina a propósito, porque las imágenes las coloca el motor de flotantes, que trabaja por columnas. Declara la imagen como recurso y cítala con :ref o insértala con ::resource."
+      "es": "![alt](src) se elimina a propósito, porque las imágenes las coloca el motor de flotantes, que trabaja por columnas. Declara la imagen como recurso y cítala con :ref o insértala con ::resource.",
+      "zh": "![alt](src)是有意去掉的，因为图片由浮动体引擎放置，它要配合分栏工作。把图片声明为资源，用:ref引用，或用::resource嵌入。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "What is NOT supported",
-        "es": "Qué NO se soporta"
+        "es": "Qué NO se soporta",
+        "zh": "不支持的内容"
       }
     }
   },
   "three-columns": {
     "label": {
       "en": "Three or more body columns",
-      "es": "Tres o más columnas de texto"
+      "es": "Tres o más columnas de texto",
+      "zh": "三栏及以上的正文"
     },
     "aliases": {
       "en": [
@@ -139,24 +184,35 @@
         "3 columnas",
         "periódico a varias columnas",
         "cuatro columnas"
+      ],
+      "zh": [
+        "三栏",
+        "3栏",
+        "四栏",
+        "多栏",
+        "报纸分栏",
+        "three columns"
       ]
     },
     "explanation": {
       "en": "Body text runs in one column, two, or a column and a half. Three or more columns exist only inside a box: a :::columns group in a page-span callout.",
-      "es": "El texto va a una columna, a dos o en columna y media. Tres o más columnas solo existen dentro de un recuadro: un grupo :::columns en un recuadro a todo el ancho."
+      "es": "El texto va a una columna, a dos o en columna y media. Tres o más columnas solo existen dentro de un recuadro: un grupo :::columns en un recuadro a todo el ancho.",
+      "zh": "正文可以排成一栏、两栏或一栏半。三栏及以上只能出现在框内：放在通栏标注框中的:::columns组。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Layout types",
-        "es": "Tipos de disposición"
+        "es": "Tipos de disposición",
+        "zh": "版式类型"
       }
     }
   },
   "text-wrap": {
     "label": {
       "en": "Text wrapping around pictures",
-      "es": "Texto alrededor de imágenes"
+      "es": "Texto alrededor de imágenes",
+      "zh": "文字绕图"
     },
     "aliases": {
       "en": [
@@ -170,24 +226,35 @@
         "texto alrededor de la imagen",
         "ajuste de texto",
         "imagen flotante con texto al lado"
+      ],
+      "zh": [
+        "文字绕排",
+        "图文绕排",
+        "绕图",
+        "环绕图片",
+        "text wrap",
+        "runaround"
       ]
     },
     "explanation": {
       "en": "Floats take whole bands of a column or the page; text never flows beside a picture inside one column. Use a side column, a narrow float in a two-column page, or a page-span band.",
-      "es": "Los flotantes ocupan bandas enteras de una columna o de la página; el texto nunca rodea una imagen dentro de una misma columna. Usa una columna lateral, un flotante estrecho en una página a dos columnas o una banda a todo el ancho."
+      "es": "Los flotantes ocupan bandas enteras de una columna o de la página; el texto nunca rodea una imagen dentro de una misma columna. Usa una columna lateral, un flotante estrecho en una página a dos columnas o una banda a todo el ancho.",
+      "zh": "浮动体占据一栏或整页的完整横条；在同一栏内，文字不会从图片旁边流过。可以改用边栏、两栏页面中的窄浮动体，或通栏横条。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "What is NOT supported",
-        "es": "Qué NO se soporta"
+        "es": "Qué NO se soporta",
+        "zh": "不支持的内容"
       }
     }
   },
   "body-drop-cap": {
     "label": {
       "en": "Drop caps in body paragraphs",
-      "es": "Capitulares en párrafos de texto"
+      "es": "Capitulares en párrafos de texto",
+      "zh": "正文段落的首字下沉"
     },
     "aliases": {
       "en": [
@@ -199,24 +266,34 @@
         "capitular",
         "letra capital",
         "inicial"
+      ],
+      "zh": [
+        "首字下沉",
+        "首字放大",
+        "段首大字",
+        "drop cap",
+        "initial letter"
       ]
     },
     "explanation": {
       "en": "Drop caps exist only in design text elements. Put the lead paragraph in a heading attribute and draw it with a dropCap in the opener design.",
-      "es": "Las capitulares solo existen en los elementos de texto de diseño. Pon la entradilla en un atributo del título y dibújala con dropCap en el diseño de la apertura."
+      "es": "Las capitulares solo existen en los elementos de texto de diseño. Pon la entradilla en un atributo del título y dibújala con dropCap en el diseño de la apertura.",
+      "zh": "首字下沉只存在于版面设计的文本元素中。把开头一段放进标题属性，在章首页设计中用dropCap画出来。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Text elements",
-        "es": "Elementos de texto"
+        "es": "Elementos de texto",
+        "zh": "文本元素"
       }
     }
   },
   "tab-stops": {
     "label": {
       "en": "Tab stops",
-      "es": "Tabuladores"
+      "es": "Tabuladores",
+      "zh": "制表位"
     },
     "aliases": {
       "en": [
@@ -228,24 +305,35 @@
         "tabulaciones",
         "tabulador con puntos",
         "columnas de texto alineadas"
+      ],
+      "zh": [
+        "制表位",
+        "制表符",
+        "Tab对齐",
+        "前导符",
+        "文字对齐成列",
+        "tabs"
       ]
     },
     "explanation": {
       "en": "Tab characters are not typeset. Align values with a table resource; dot leaders exist only in the table of contents.",
-      "es": "Los caracteres de tabulación no se componen. Alinea los valores con una tabla como recurso; las líneas de puntos solo existen en el índice de contenidos."
+      "es": "Los caracteres de tabulación no se componen. Alinea los valores con una tabla como recurso; las líneas de puntos solo existen en el índice de contenidos.",
+      "zh": "制表符不参与排版。用表资源来对齐数值；点状前导符只在目录中提供。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "What is NOT supported",
-        "es": "Qué NO se soporta"
+        "es": "Qué NO se soporta",
+        "zh": "不支持的内容"
       }
     }
   },
   "heading-level-7": {
     "label": {
       "en": "More than six heading levels",
-      "es": "Más de seis niveles de título"
+      "es": "Más de seis niveles de título",
+      "zh": "六级以上的标题"
     },
     "aliases": {
       "en": [
@@ -257,24 +345,34 @@
         "H7",
         "séptimo nivel de título",
         "esquema profundo"
+      ],
+      "zh": [
+        "七级标题",
+        "多级标题",
+        "标题层级",
+        "深层大纲",
+        "H7"
       ]
     },
     "explanation": {
       "en": "Headings stop at H6. A seventh level can be an H6 whose text is wrapped in bold or italic, styled apart through the level-6 typography.",
-      "es": "Los títulos llegan hasta H6. Un séptimo nivel puede ser un H6 con el texto en negrita o cursiva, diferenciado con la tipografía del nivel 6."
+      "es": "Los títulos llegan hasta H6. Un séptimo nivel puede ser un H6 con el texto en negrita o cursiva, diferenciado con la tipografía del nivel 6.",
+      "zh": "标题到H6为止。第七级可以用H6来做，把文字包在粗体或斜体里，再通过六级标题的字体设置单独设定样式。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "What is NOT supported",
-        "es": "Qué NO se soporta"
+        "es": "Qué NO se soporta",
+        "zh": "不支持的内容"
       }
     }
   },
   "server-side": {
     "label": {
       "en": "Server-side or Node layout",
-      "es": "Composición en servidor o Node"
+      "es": "Composición en servidor o Node",
+      "zh": "服务器端或Node排版"
     },
     "aliases": {
       "en": [
@@ -290,24 +388,38 @@
         "línea de comandos",
         "sin interfaz",
         "SSR"
+      ],
+      "zh": [
+        "服务器端渲染",
+        "服务端排版",
+        "命令行",
+        "无头浏览器",
+        "批量排版",
+        "Node",
+        "CLI",
+        "headless",
+        "SSR"
       ]
     },
     "explanation": {
       "en": "Layout measures text with the browser's canvas, so it runs in a browser or a Web Worker. For batch jobs, drive a headless browser; postext-pdf can read fonts from disk once the layout exists.",
-      "es": "La composición mide el texto con el canvas del navegador, así que se ejecuta en un navegador o en un Web Worker. Para trabajos por lotes, usa un navegador sin interfaz; postext-pdf puede leer las fuentes del disco una vez hecha la composición."
+      "es": "La composición mide el texto con el canvas del navegador, así que se ejecuta en un navegador o en un Web Worker. Para trabajos por lotes, usa un navegador sin interfaz; postext-pdf puede leer las fuentes del disco una vez hecha la composición.",
+      "zh": "排版借助浏览器的canvas测量文字，因此只能在浏览器或Web Worker中运行。批量任务可以驱动无头浏览器；版面生成之后，postext-pdf可以从磁盘读取字体。"
     },
     "docs": {
       "slug": "architecture",
       "heading": {
         "en": "Non-Goals",
-        "es": "Fuera de alcance"
+        "es": "Fuera de alcance",
+        "zh": "不做的事"
       }
     }
   },
   "float-shrink": {
     "label": {
       "en": "Shrinking over-tall floats",
-      "es": "Reducir flotantes demasiado altos"
+      "es": "Reducir flotantes demasiado altos",
+      "zh": "缩小过高的浮动体"
     },
     "aliases": {
       "en": [
@@ -319,24 +431,34 @@
         "figura demasiado alta",
         "escalar figura para que quepa",
         "reducir lámina"
+      ],
+      "zh": [
+        "图太高",
+        "图片缩放",
+        "缩放适应页面",
+        "缩小插图",
+        "fitFiguresToPage"
       ]
     },
     "explanation": {
       "en": "A float taller than its band is not shrunk (fitFiguresToPage acts only on figures taller than the page). Compute the width from the aspect ratio so the plate fits the page height.",
-      "es": "Un flotante más alto que su banda no se reduce (fitFiguresToPage solo actúa sobre figuras más altas que la página). Calcula el ancho a partir de la proporción para que la lámina quepa en el alto de la página."
+      "es": "Un flotante más alto que su banda no se reduce (fitFiguresToPage solo actúa sobre figuras más altas que la página). Calcula el ancho a partir de la proporción para que la lámina quepa en el alto de la página.",
+      "zh": "比所在横条更高的浮动体不会被缩小（fitFiguresToPage只处理比页面还高的图）。按宽高比算出宽度，让插图适合页面高度。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "Placement",
-        "es": "Colocación"
+        "es": "Colocación",
+        "zh": "位置"
       }
     }
   },
   "math-in-captions": {
     "label": {
       "en": "Maths in captions, cells or attributes",
-      "es": "Matemáticas en pies, celdas o atributos"
+      "es": "Matemáticas en pies, celdas o atributos",
+      "zh": "题注、单元格或属性中的数学公式"
     },
     "aliases": {
       "en": [
@@ -348,24 +470,34 @@
         "fórmula en el pie",
         "LaTeX en una tabla",
         "matemáticas en un atributo"
+      ],
+      "zh": [
+        "题注中的公式",
+        "表格中的公式",
+        "标题属性中的公式",
+        "数学公式",
+        "LaTeX"
       ]
     },
     "explanation": {
       "en": "Formulas are set only in body text. In captions, table cells and heading attributes use ^superscripts^, ~subscripts~ and Unicode symbols.",
-      "es": "Las fórmulas solo se componen en el texto. En los pies, las celdas y los atributos de título usa ^superíndices^, ~subíndices~ y símbolos Unicode."
+      "es": "Las fórmulas solo se componen en el texto. En los pies, las celdas y los atributos de título usa ^superíndices^, ~subíndices~ y símbolos Unicode.",
+      "zh": "公式只能排在正文中。在题注、表格单元格和标题属性中，使用^上标^、~下标~和Unicode符号。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "Mathematical formulas",
-        "es": "Fórmulas matemáticas"
+        "es": "Fórmulas matemáticas",
+        "zh": "数学公式"
       }
     }
   },
   "rotated-text": {
     "label": {
       "en": "Rotated text on a horizontal page",
-      "es": "Texto girado en una página horizontal"
+      "es": "Texto girado en una página horizontal",
+      "zh": "横排页面上的旋转文字"
     },
     "aliases": {
       "en": [
@@ -381,24 +513,35 @@
         "título de lado",
         "pie girado",
         "texto a 90 grados"
+      ],
+      "zh": [
+        "旋转文字",
+        "文字旋转90度",
+        "书脊文字",
+        "侧排标题",
+        "旋转题注",
+        "rotated text"
       ]
     },
     "explanation": {
       "en": "On a horizontal page, text elements and paragraphs stay horizontal; only whole floats rotate. A whole book or a section can be set vertically (layout.writingMode 'vertical-rl'), but that is Chinese or Japanese vertical writing, not a turned line. Draw a turned label inside an SVG resource, or rotate the whole table or figure onto its own page.",
-      "es": "En una página horizontal, los elementos de texto y los párrafos son siempre horizontales; solo giran los flotantes enteros. Un libro entero o una sección pueden componerse en vertical (layout.writingMode 'vertical-rl'), pero eso es la escritura vertical del chino o del japonés, no una línea girada. Dibuja la etiqueta girada dentro de un recurso SVG, o gira la tabla o la figura entera en una página propia."
+      "es": "En una página horizontal, los elementos de texto y los párrafos son siempre horizontales; solo giran los flotantes enteros. Un libro entero o una sección pueden componerse en vertical (layout.writingMode 'vertical-rl'), pero eso es la escritura vertical del chino o del japonés, no una línea girada. Dibuja la etiqueta girada dentro de un recurso SVG, o gira la tabla o la figura entera en una página propia.",
+      "zh": "在横排页面上，文本元素和段落保持水平，只有整个浮动体可以旋转。整本书或某一节可以竖排（layout.writingMode 'vertical-rl'），但那是中文或日文的竖排，不是把一行文字转过去。把转向的标签画在SVG资源里，或者把整个表或图旋转后放到单独的一页。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "What is NOT supported",
-        "es": "Qué NO se soporta"
+        "es": "Qué NO se soporta",
+        "zh": "不支持的内容"
       }
     }
   },
   "markdown-links": {
     "label": {
       "en": "Clickable Markdown links",
-      "es": "Enlaces de Markdown activos"
+      "es": "Enlaces de Markdown activos",
+      "zh": "可点击的Markdown链接"
     },
     "aliases": {
       "en": [
@@ -412,24 +555,35 @@
         "enlaces pulsables",
         "enlaces a URL",
         "[texto](url)"
+      ],
+      "zh": [
+        "超链接",
+        "可点击链接",
+        "网址链接",
+        "链接",
+        "[text](url)",
+        "hyperlinks"
       ]
     },
     "explanation": {
       "en": "[text](url) prints its text and drops the URL in every output. Only :ref citations and contents rows are links; print the URL itself when the reader needs it.",
-      "es": "[texto](url) imprime el texto y descarta la URL en todas las salidas. Solo son enlaces las citas :ref y las filas del índice; imprime la propia URL cuando el lector la necesite."
+      "es": "[texto](url) imprime el texto y descarta la URL en todas las salidas. Solo son enlaces las citas :ref y las filas del índice; imprime la propia URL cuando el lector la necesite.",
+      "zh": "[text](url)在所有输出中都只打印文字，丢掉URL。只有:ref引用和目录条目是链接；读者需要网址时，直接把URL印出来。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "What is NOT supported",
-        "es": "Qué NO se soporta"
+        "es": "Qué NO se soporta",
+        "zh": "不支持的内容"
       }
     }
   },
   "rtl-cjk": {
     "label": {
       "en": "Right-to-left scripts",
-      "es": "Escrituras de derecha a izquierda"
+      "es": "Escrituras de derecha a izquierda",
+      "zh": "从右向左书写的文字"
     },
     "aliases": {
       "en": [
@@ -449,24 +603,37 @@
         "RTL",
         "bidireccional",
         "de derecha a izquierda"
+      ],
+      "zh": [
+        "阿拉伯文",
+        "希伯来文",
+        "波斯文",
+        "乌尔都文",
+        "从右向左",
+        "双向文字",
+        "RTL",
+        "bidi"
       ]
     },
     "explanation": {
       "en": "There is no bidirectional layout: Arabic, Hebrew and the other right-to-left scripts are neither shaped nor ordered from the right. A book can be bound on the right (page.binding), which orders its pages, not its lines.",
-      "es": "No hay composición bidireccional: el árabe, el hebreo y las demás escrituras de derecha a izquierda ni se modelan ni se ordenan desde la derecha. Un libro puede encuadernarse por la derecha (page.binding), lo que ordena sus páginas, no sus líneas."
+      "es": "No hay composición bidireccional: el árabe, el hebreo y las demás escrituras de derecha a izquierda ni se modelan ni se ordenan desde la derecha. Un libro puede encuadernarse por la derecha (page.binding), lo que ordena sus páginas, no sus líneas.",
+      "zh": "不支持双向排版：阿拉伯文、希伯来文和其他从右向左书写的文字既不做字形变化，也不从右往左排序。书可以右翻（page.binding），但这改变的是页的顺序，而不是行内文字的顺序。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "What is NOT supported",
-        "es": "Qué NO se soporta"
+        "es": "Qué NO se soporta",
+        "zh": "不支持的内容"
       }
     }
   },
   "font-scaling": {
     "label": {
       "en": "Horizontal font scaling",
-      "es": "Escalado horizontal de fuentes"
+      "es": "Escalado horizontal de fuentes",
+      "zh": "字体水平缩放"
     },
     "aliases": {
       "en": [
@@ -478,24 +645,35 @@
         "letra condensada",
         "escala horizontal",
         "estrechar el texto"
+      ],
+      "zh": [
+        "长体",
+        "扁体",
+        "字体压缩",
+        "水平缩放",
+        "窄体字",
+        "condensed"
       ]
     },
     "explanation": {
       "en": "Glyphs cannot be stretched or squeezed. Choose a condensed family, or build a scaled copy of the font.",
-      "es": "Los glifos no se pueden estirar ni estrechar. Elige una familia condensada o crea una copia escalada de la fuente."
+      "es": "Los glifos no se pueden estirar ni estrechar. Elige una familia condensada o crea una copia escalada de la fuente.",
+      "zh": "字形不能拉宽或压窄。选用窄体字族，或者自己制作一份缩放过的字体。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "What is NOT supported",
-        "es": "Qué NO se soporta"
+        "es": "Qué NO se soporta",
+        "zh": "不支持的内容"
       }
     }
   },
   "markdown-extras": {
     "label": {
       "en": "Setext headings, rules, strikethrough, autolinks",
-      "es": "Títulos setext, filetes, tachado, autoenlaces"
+      "es": "Títulos setext, filetes, tachado, autoenlaces",
+      "zh": "Setext标题、分隔线、删除线、自动链接"
     },
     "aliases": {
       "en": [
@@ -515,24 +693,38 @@
         "setext",
         "autoenlace",
         "enlaces por referencia"
+      ],
+      "zh": [
+        "分隔线",
+        "水平线",
+        "删除线",
+        "自动链接",
+        "引用式链接",
+        "Setext标题",
+        "---",
+        "~~text~~",
+        "strikethrough"
       ]
     },
     "explanation": {
       "en": "These Markdown forms print as text. Write ATX headings (#), mark a section break with :::space or a design rule, and write URLs as plain text.",
-      "es": "Estas formas de Markdown se imprimen como texto. Escribe títulos ATX (#), marca la separación entre secciones con :::space o con un filete de diseño, y escribe las URL como texto normal."
+      "es": "Estas formas de Markdown se imprimen como texto. Escribe títulos ATX (#), marca la separación entre secciones con :::space o con un filete de diseño, y escribe las URL como texto normal.",
+      "zh": "这些Markdown写法会按文字原样打印。标题用ATX写法（#），节与节之间的分隔用:::space或设计中的线条，URL写成纯文本。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "What is NOT supported",
-        "es": "Qué NO se soporta"
+        "es": "Qué NO se soporta",
+        "zh": "不支持的内容"
       }
     }
   },
   "raw-html": {
     "label": {
       "en": "Raw HTML and MDX",
-      "es": "HTML y MDX en bruto"
+      "es": "HTML y MDX en bruto",
+      "zh": "原始HTML与MDX"
     },
     "aliases": {
       "en": [
@@ -546,24 +738,35 @@
         "<br>",
         "<span>",
         "componentes MDX"
+      ],
+      "zh": [
+        "HTML标签",
+        "内嵌HTML",
+        "MDX组件",
+        "<br>",
+        "<span>",
+        "raw HTML"
       ]
     },
     "explanation": {
       "en": "Tags are not interpreted, since Postext reads only Markdown and its own directives. Use heading attributes, chips, paragraph styles and callouts for what HTML would do.",
-      "es": "Las etiquetas no se interpretan, porque Postext solo lee Markdown y sus propias directivas. Usa atributos de título, chips, estilos de párrafo y recuadros para lo que harías con HTML."
+      "es": "Las etiquetas no se interpretan, porque Postext solo lee Markdown y sus propias directivas. Usa atributos de título, chips, estilos de párrafo y recuadros para lo que harías con HTML.",
+      "zh": "标签不会被解析，因为Postext只读取Markdown和它自己的指令。HTML能做的事，用标题属性、行内标签、段落样式和标注框来实现。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "What is NOT supported",
-        "es": "Qué NO se soporta"
+        "es": "Qué NO se soporta",
+        "zh": "不支持的内容"
       }
     }
   },
   "ragged-hyphenation": {
     "label": {
       "en": "Hyphenation in ragged text",
-      "es": "Separación silábica en texto en bandera"
+      "es": "Separación silábica en texto en bandera",
+      "zh": "齐左文字的断词"
     },
     "aliases": {
       "en": [
@@ -575,24 +778,34 @@
         "partir palabras en bandera",
         "zona de separación",
         "separación en texto alineado a la izquierda"
+      ],
+      "zh": [
+        "齐左断词",
+        "左对齐断词",
+        "不齐行断词",
+        "断词区",
+        "hyphenation zone"
       ]
     },
     "explanation": {
       "en": "Only justified text is hyphenated; ragged-right text breaks between words. Justify the passage, or reword by hand the lines that end far short; the narrower the measure, the deeper the rag.",
-      "es": "Solo se separa por sílabas el texto justificado; el texto en bandera corta entre palabras. Justifica el pasaje o retoca a mano las líneas que quedan demasiado cortas; cuanto más estrecha es la medida, más profunda es la bandera."
+      "es": "Solo se separa por sílabas el texto justificado; el texto en bandera corta entre palabras. Justifica el pasaje o retoca a mano las líneas que quedan demasiado cortas; cuanto más estrecha es la medida, más profunda es la bandera.",
+      "zh": "只有两端对齐的文字会断词；左对齐不齐行的文字在词间断行。把这段改为两端对齐，或者手动改写那些行尾空得很多的行；行长越窄，行尾越参差。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Hyphenation",
-        "es": "Separación silábica"
+        "es": "Separación silábica",
+        "zh": "断词"
       }
     }
   },
   "booktabs-rules": {
     "label": {
       "en": "Booktabs rules",
-      "es": "Filetes al estilo booktabs"
+      "es": "Filetes al estilo booktabs",
+      "zh": "三线表"
     },
     "aliases": {
       "en": [
@@ -606,24 +819,35 @@
         "filete solo bajo la cabecera",
         "tabla de tres filetes",
         "filetes superior, intermedio e inferior"
+      ],
+      "zh": [
+        "三线表",
+        "表格横线",
+        "表头下的线",
+        "顶线 中线 底线",
+        "booktabs",
+        "toprule midrule bottomrule"
       ]
     },
     "explanation": {
       "en": "Table rules come in four patterns: grid, horizontal (a rule between every pair of rows), outer and none. None of them draws only a top rule, a rule under the header and a bottom rule. Use 'horizontal' with hairlines in a light rule colour, and set the header apart by its face, weight and colour.",
-      "es": "Los filetes de tabla siguen cuatro patrones: rejilla, horizontal (un filete entre cada par de filas), exterior y ninguno. Ninguno dibuja solo un filete arriba, otro bajo la cabecera y otro al pie. Usa 'horizontal' con filetes finos en un color claro y distingue la cabecera por la fuente, el peso y el color."
+      "es": "Los filetes de tabla siguen cuatro patrones: rejilla, horizontal (un filete entre cada par de filas), exterior y ninguno. Ninguno dibuja solo un filete arriba, otro bajo la cabecera y otro al pie. Usa 'horizontal' con filetes finos en un color claro y distingue la cabecera por la fuente, el peso y el color.",
+      "zh": "表格线有四种样式：grid（网格）、horizontal（每两行之间一条线）、outer（外框）和none（无）。没有一种只画顶线、表头下的线和底线。用'horizontal'配上浅色的细线，再用字体、字重和颜色把表头区分出来。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Table style",
-        "es": "Estilo de tablas"
+        "es": "Estilo de tablas",
+        "zh": "表格样式"
       }
     }
   },
   "pdf-x": {
     "label": {
       "en": "PDF/X, trim boxes and ICC profiles",
-      "es": "PDF/X, cajas de corte y perfiles ICC"
+      "es": "PDF/X, cajas de corte y perfiles ICC",
+      "zh": "PDF/X、裁切框与ICC配置文件"
     },
     "aliases": {
       "en": [
@@ -642,24 +866,38 @@
         "perfil ICC",
         "gestión del color",
         "color de registro"
+      ],
+      "zh": [
+        "PDF/X",
+        "印前",
+        "裁切框",
+        "出血框",
+        "色彩管理",
+        "ICC配置文件",
+        "TrimBox",
+        "BleedBox",
+        "output intent"
       ]
     },
     "explanation": {
       "en": "postext-pdf writes each page as a single MediaBox, the sheet with its bleed and crop marks, with no TrimBox, BleedBox or output intent, and turns colours into CMYK with a plain formula, without an ICC profile. The crop marks show where to cut; a print master carries exact inks for a figure; a prepress tool adds the boxes and the profile when a printer asks for PDF/X.",
-      "es": "postext-pdf escribe cada página como una sola MediaBox, el pliego con su sangrado y sus marcas de corte, sin TrimBox, BleedBox ni perfil de salida, y pasa los colores a CMYK con una fórmula simple, sin perfil ICC. Las marcas de corte indican dónde cortar; un máster de impresión lleva las tintas exactas de una figura; una herramienta de preimpresión añade las cajas y el perfil cuando la imprenta pide PDF/X."
+      "es": "postext-pdf escribe cada página como una sola MediaBox, el pliego con su sangrado y sus marcas de corte, sin TrimBox, BleedBox ni perfil de salida, y pasa los colores a CMYK con una fórmula simple, sin perfil ICC. Las marcas de corte indican dónde cortar; un máster de impresión lleva las tintas exactas de una figura; una herramienta de preimpresión añade las cajas y el perfil cuando la imprenta pide PDF/X.",
+      "zh": "postext-pdf把每一页写成一个MediaBox，即带出血和裁切标记的整张纸，不写TrimBox、BleedBox或输出意图；颜色用一个简单公式转成CMYK，不使用ICC配置文件。裁切标记指明裁切位置；印刷母版为图提供准确的油墨；印刷厂要求PDF/X时，由印前工具加上这些框和配置文件。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Print-ready PDFs",
-        "es": "PDFs listos para imprenta"
+        "es": "PDFs listos para imprenta",
+        "zh": "可付印的PDF"
       }
     }
   },
   "hard-line-breaks": {
     "label": {
       "en": "Line breaks and leading spaces in a paragraph",
-      "es": "Saltos de línea y espacios iniciales en un párrafo"
+      "es": "Saltos de línea y espacios iniciales en un párrafo",
+      "zh": "段落内的换行与行首空格"
     },
     "aliases": {
       "en": [
@@ -679,24 +917,36 @@
         "espacios iniciales",
         "verso sangrado",
         "sangría de un poema"
+      ],
+      "zh": [
+        "强制换行",
+        "手动换行",
+        "软回车",
+        "诗歌换行",
+        "行首空格",
+        "诗行缩进",
+        "hard line break"
       ]
     },
     "explanation": {
       "en": "The lines of a Markdown paragraph are joined with a space and its leading spaces are trimmed, so a paragraph keeps neither a poem's line breaks nor its indents, and a paragraph style cannot pair a first-line indent with a hanging indent. Give every line a paragraph of its own in a :::paragraphs container, and write an indent as em spaces (U+2003) behind a word joiner (U+2060), which nothing trims.",
-      "es": "Las líneas de un párrafo de Markdown se unen con un espacio y sus espacios iniciales se recortan, así que un párrafo no conserva ni los saltos de línea de un poema ni sus sangrías, y un estilo de párrafo no admite a la vez sangría de primera línea y sangría francesa. Da a cada verso un párrafo propio en un contenedor :::paragraphs, y escribe una sangría como espacios eme (U+2003) tras un unidor de palabras (U+2060), que nada recorta."
+      "es": "Las líneas de un párrafo de Markdown se unen con un espacio y sus espacios iniciales se recortan, así que un párrafo no conserva ni los saltos de línea de un poema ni sus sangrías, y un estilo de párrafo no admite a la vez sangría de primera línea y sangría francesa. Da a cada verso un párrafo propio en un contenedor :::paragraphs, y escribe una sangría como espacios eme (U+2003) tras un unidor de palabras (U+2060), que nada recorta.",
+      "zh": "Markdown段落中的各行以空格连接，行首空格被去掉，所以段落既保留不了诗的分行，也保留不了缩进；段落样式也无法把首行缩进和悬挂缩进搭配使用。在:::paragraphs容器中让每一行自成一段，缩进写成放在连接符（U+2060）后面的em空格（U+2003），这样就不会被去掉。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "Block constructs",
-        "es": "Construcciones de bloque"
+        "es": "Construcciones de bloque",
+        "zh": "块结构"
       }
     }
   },
   "line-numbers": {
     "label": {
       "en": "Line numbers",
-      "es": "Numeración de líneas"
+      "es": "Numeración de líneas",
+      "zh": "行号"
     },
     "aliases": {
       "en": [
@@ -714,24 +964,36 @@
         "numeración al margen",
         "cada cinco versos",
         "edición crítica"
+      ],
+      "zh": [
+        "行号",
+        "给行编号",
+        "诗行编号",
+        "页边行号",
+        "每五行一个行号",
+        "校勘本",
+        "line numbers"
       ]
     },
     "explanation": {
       "en": "Postext does not count or number lines. For verse, give each line a paragraph of its own and count them with a short preprocessor that adds, after every fifth line, a side box holding the number, set in a side column reserved for floats.",
-      "es": "Postext no cuenta ni numera líneas. En verso, da a cada línea un párrafo propio y cuéntalas con un preprocesador breve que, tras cada quinto verso, añade un recuadro lateral con el número, compuesto en una columna lateral reservada a los flotantes."
+      "es": "Postext no cuenta ni numera líneas. En verso, da a cada línea un párrafo propio y cuéntalas con un preprocesador breve que, tras cada quinto verso, añade un recuadro lateral con el número, compuesto en una columna lateral reservada a los flotantes.",
+      "zh": "Postext不统计也不编排行号。排诗时，让每一行自成一段，用一个简短的预处理脚本来数行，每隔五行加一个装有行号的侧框，排在为浮动体预留的边栏中。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "What is NOT supported",
-        "es": "Qué NO se soporta"
+        "es": "Qué NO se soporta",
+        "zh": "不支持的内容"
       }
     }
   },
   "japanese-korean-rules": {
     "label": {
       "en": "Japanese and Korean composition rules",
-      "es": "Reglas de composición del japonés y el coreano"
+      "es": "Reglas de composición del japonés y el coreano",
+      "zh": "日文与韩文排版规则"
     },
     "aliases": {
       "en": [
@@ -753,24 +1015,39 @@
         "hangul",
         "日本語",
         "한국어"
+      ],
+      "zh": [
+        "日文排版",
+        "韩文排版",
+        "日语",
+        "韩语",
+        "假名",
+        "谚文",
+        "日本語",
+        "한국어",
+        "JLREQ",
+        "KLREQ"
       ]
     },
     "explanation": {
       "en": "Japanese and Korean text breaks between characters and justifies like Chinese, with the mainland Chinese defaults: there are no Japanese (JLREQ) or Korean (KLREQ) rules, labels or regional punctuation yet. Set cjk.lineBreak, punctuationWidth and latinSpacing by hand to come close.",
-      "es": "El texto japonés y el coreano se cortan entre caracteres y se justifican como el chino, con los valores de la China continental: aún no hay reglas japonesas (JLREQ) ni coreanas (KLREQ), ni etiquetas ni puntuación regional. Ajusta a mano cjk.lineBreak, punctuationWidth y latinSpacing para acercarte."
+      "es": "El texto japonés y el coreano se cortan entre caracteres y se justifican como el chino, con los valores de la China continental: aún no hay reglas japonesas (JLREQ) ni coreanas (KLREQ), ni etiquetas ni puntuación regional. Ajusta a mano cjk.lineBreak, punctuationWidth y latinSpacing para acercarte.",
+      "zh": "日文和韩文像中文一样按字断行、两端对齐，采用中国大陆的默认规则：目前还没有日文（JLREQ）或韩文（KLREQ）规则、标签和各地标点。可以手动设定cjk.lineBreak、punctuationWidth和latinSpacing来接近。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "East Asian typography",
-        "es": "Tipografía de Asia oriental"
+        "es": "Tipografía de Asia oriental",
+        "zh": "东亚排版"
       }
     }
   },
   "mixed-writing-modes": {
     "label": {
       "en": "Vertical and horizontal text on one page",
-      "es": "Texto vertical y horizontal en la misma página"
+      "es": "Texto vertical y horizontal en la misma página",
+      "zh": "同一页上的竖排与横排"
     },
     "aliases": {
       "en": [
@@ -786,24 +1063,35 @@
         "recuadro vertical",
         "横排插图说明",
         "writing-mode en un recuadro"
+      ],
+      "zh": [
+        "横竖混排",
+        "竖排中的横排框",
+        "竖排框",
+        "横排插图说明",
+        "混合排版方向",
+        "writing-mode"
       ]
     },
     "explanation": {
       "en": "The writing mode belongs to the document or to a section (a heading style's layout): a single box, sidebar or table cell cannot run vertically on a horizontal page, or horizontally in vertical text. Running heads, folios and captions stay horizontal on a vertical page. Give the passage a section of its own, or draw it as an SVG resource.",
-      "es": "La dirección de escritura es del documento o de una sección (el layout de un estilo de título): un recuadro, un destacado o una celda no pueden ir en vertical en una página horizontal, ni en horizontal dentro de un texto vertical. Las cabeceras, los folios y los pies se quedan horizontales en una página vertical. Da al pasaje una sección propia o dibújalo como recurso SVG."
+      "es": "La dirección de escritura es del documento o de una sección (el layout de un estilo de título): un recuadro, un destacado o una celda no pueden ir en vertical en una página horizontal, ni en horizontal dentro de un texto vertical. Las cabeceras, los folios y los pies se quedan horizontales en una página vertical. Da al pasaje una sección propia o dibújalo como recurso SVG.",
+      "zh": "书写方向属于整个文档或某一节（标题样式的版式设置）：单个框、边栏或表格单元格不能在横排页面上竖排，也不能在竖排文字中横排。竖排页面上的书眉、页码和题注保持横排。让这段文字单独成为一节，或者画成SVG资源。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Vertical writing",
-        "es": "Escritura vertical"
+        "es": "Escritura vertical",
+        "zh": "竖排"
       }
     }
   },
   "vertical-tables": {
     "label": {
       "en": "Tables set in vertical text",
-      "es": "Tablas compuestas en texto vertical"
+      "es": "Tablas compuestas en texto vertical",
+      "zh": "竖排的表"
     },
     "aliases": {
       "en": [
@@ -817,24 +1105,34 @@
         "tabla que se lee desde la derecha",
         "竖排表格",
         "pies junto a las figuras"
+      ],
+      "zh": [
+        "竖排表格",
+        "从右往左读的表",
+        "竖排题注",
+        "图旁题注",
+        "vertical table"
       ]
     },
     "explanation": {
       "en": "In a vertical book, figures and tables stand upright and their captions and cells are set horizontally, as most modern vertical books print them. A table whose cells run top to bottom with its header on the right, or a caption set vertically beside its figure, is not available: draw such a table as an SVG resource.",
-      "es": "En un libro vertical, las figuras y las tablas están en pie y sus pies y celdas se componen en horizontal, como las imprimen casi todos los libros verticales de hoy. No hay tablas cuyas celdas corran de arriba abajo con la cabecera a la derecha, ni pies compuestos en vertical junto a su figura: dibuja una tabla así como recurso SVG."
+      "es": "En un libro vertical, las figuras y las tablas están en pie y sus pies y celdas se componen en horizontal, como las imprimen casi todos los libros verticales de hoy. No hay tablas cuyas celdas corran de arriba abajo con la cabecera a la derecha, ni pies compuestos en vertical junto a su figura: dibuja una tabla así como recurso SVG.",
+      "zh": "竖排书中，图和表保持直立，题注和单元格横排，大多数现代竖排书都是这样印的。单元格从上往下排、表头在右侧的表，或者竖排在图旁的题注，都不支持：这样的表可以画成SVG资源。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Vertical writing",
-        "es": "Escritura vertical"
+        "es": "Escritura vertical",
+        "zh": "竖排"
       }
     }
   },
   "chinese-point-sizes": {
     "label": {
       "en": "Chinese type sizes (号) and Q units",
-      "es": "Cuerpos chinos (号) y unidades Q"
+      "es": "Cuerpos chinos (号) y unidades Q",
+      "zh": "中文字号（号）与Q数"
     },
     "aliases": {
       "en": [
@@ -852,24 +1150,37 @@
         "unidades Q",
         "级数",
         "cuerpos chinos"
+      ],
+      "zh": [
+        "字号",
+        "五号",
+        "小四",
+        "号数",
+        "级数",
+        "Q数",
+        "hao sizes",
+        "Q units"
       ]
     },
     "explanation": {
       "en": "Sizes are given in pt, mm, px or em: there is no 五号 or 小四 and no Japanese Q. Convert them as Chinese word processors do: 初号 42 pt, 二号 22 pt, 三号 16 pt, 四号 14 pt, 小四 12 pt, 五号 10.5 pt, 小五 9 pt; 1 Q is 0.25 mm.",
-      "es": "Los cuerpos se dan en pt, mm, px o em: no hay 五号 ni 小四, ni la Q japonesa. Conviértelos como lo hacen los procesadores de texto chinos: 初号 42 pt, 二号 22 pt, 三号 16 pt, 四号 14 pt, 小四 12 pt, 五号 10,5 pt, 小五 9 pt; 1 Q son 0,25 mm."
+      "es": "Los cuerpos se dan en pt, mm, px o em: no hay 五号 ni 小四, ni la Q japonesa. Conviértelos como lo hacen los procesadores de texto chinos: 初号 42 pt, 二号 22 pt, 三号 16 pt, 四号 14 pt, 小四 12 pt, 五号 10,5 pt, 小五 9 pt; 1 Q son 0,25 mm.",
+      "zh": "字号用pt、mm、px或em指定：没有五号、小四，也没有日本的Q。按中文文字处理软件的做法换算：初号42 pt，二号22 pt，三号16 pt，四号14 pt，小四12 pt，五号10.5 pt，小五9 pt；1 Q为0.25 mm。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Character grid",
-        "es": "Retícula de caracteres"
+        "es": "Retícula de caracteres",
+        "zh": "字格"
       }
     }
   },
   "interlinear-notes": {
     "label": {
       "en": "Notes between the lines",
-      "es": "Notas entre las líneas"
+      "es": "Notas entre las líneas",
+      "zh": "行间注"
     },
     "aliases": {
       "en": [
@@ -889,24 +1200,36 @@
         "comentarios laterales",
         "側批",
         "旁批"
+      ],
+      "zh": [
+        "行间注",
+        "旁批",
+        "側批",
+        "批注",
+        "眉批",
+        "栏旁注释",
+        "interlinear gloss"
       ]
     },
     "explanation": {
       "en": "Nothing is set between two lines or two columns of text: the gloss written over a word of a medieval manuscript, or the red comment (側批) a Chinese manuscript writes beside a column, has no place of its own. Ruby carries a reading of a few characters beside its base. A longer note goes into the line as warichu (:warichu[…], two rows at half the size), or into a side column as a box fenced with span=\"side\".",
-      "es": "No se compone nada entre dos líneas o dos columnas de texto: la glosa escrita sobre una palabra en un manuscrito medieval, o el comentario rojo (側批) que un manuscrito chino escribe junto a una columna, no tienen un sitio propio. El ruby lleva una lectura de pocos caracteres junto a su base. Una nota más larga entra en la línea como warichu (:warichu[…], dos filas a la mitad del cuerpo) o va a una columna lateral como recuadro con span=\"side\"."
+      "es": "No se compone nada entre dos líneas o dos columnas de texto: la glosa escrita sobre una palabra en un manuscrito medieval, o el comentario rojo (側批) que un manuscrito chino escribe junto a una columna, no tienen un sitio propio. El ruby lleva una lectura de pocos caracteres junto a su base. Una nota más larga entra en la línea como warichu (:warichu[…], dos filas a la mitad del cuerpo) o va a una columna lateral como recuadro con span=\"side\".",
+      "zh": "两行或两栏文字之间不排任何内容：中世纪手抄本写在词上方的注解，或中文抄本写在一行旁边的朱批（側批），都没有专属的位置。注音可以在底字旁边放几个字的读音。较长的注，可以作为双行夹注排进行内（:warichu[…]，以一半字号分两行），或者作为用span=\"side\"标记的框放进边栏。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "Chinese marks, ruby and warichu",
-        "es": "Marcas chinas, ruby y warichu"
+        "es": "Marcas chinas, ruby y warichu",
+        "zh": "中文标记、注音和双行夹注"
       }
     }
   },
   "leaf-folios": {
     "label": {
       "en": "One folio for a two-page leaf",
-      "es": "Un número por hoja de dos páginas"
+      "es": "Un número por hoja de dos páginas",
+      "zh": "一叶两页共用一个页码"
     },
     "aliases": {
       "en": [
@@ -925,24 +1248,36 @@
         "numerar cada dos páginas",
         "葉碼",
         "頁碼"
+      ],
+      "zh": [
+        "叶码",
+        "葉碼",
+        "頁碼",
+        "按叶编号",
+        "隔页编号",
+        "线装书页码",
+        "leaf numbers"
       ]
     },
     "explanation": {
       "en": "Page numbers count pages: no counter advances once per spread or per leaf, as the leaf numbers (葉碼) of a woodblock book do. Open each leaf with a hidden level-1 heading that breaks to the page the leaf starts on (parity 'even' in a book bound on the right) and print {chapterNumber} in the design; the text then has to be broken in the Markdown where each leaf ends.",
-      "es": "Los números de página cuentan páginas: ningún contador avanza una vez por pliego o por hoja, como el número de hoja (葉碼) de un libro xilográfico. Abre cada hoja con un título de nivel 1 oculto que salte a la página donde empieza la hoja (paridad 'even' en un libro encuadernado por la derecha) e imprime {chapterNumber} en el diseño; el texto hay que cortarlo en el Markdown donde acaba cada hoja."
+      "es": "Los números de página cuentan páginas: ningún contador avanza una vez por pliego o por hoja, como el número de hoja (葉碼) de un libro xilográfico. Abre cada hoja con un título de nivel 1 oculto que salte a la página donde empieza la hoja (paridad 'even' en un libro encuadernado por la derecha) e imprime {chapterNumber} en el diseño; el texto hay que cortarlo en el Markdown donde acaba cada hoja.",
+      "zh": "页码按页计数：没有哪个计数器像雕版书的叶码（葉碼）那样每个跨页或每一叶才加一。可以在每一叶开头放一个隐藏的一级标题，让它换页到该叶起始的那一页（右翻书中parity设为'even'），再在设计中打印{chapterNumber}；这样一来，正文必须在Markdown中每叶结束的地方断开。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Numbering",
-        "es": "Numeración"
+        "es": "Numeración",
+        "zh": "页码编号"
       }
     }
   },
   "line-rules": {
     "label": {
       "en": "A rule between every two lines of text",
-      "es": "Un filete entre cada dos líneas de texto"
+      "es": "Un filete entre cada dos líneas de texto",
+      "zh": "每两行文字之间一条线"
     },
     "aliases": {
       "en": [
@@ -962,17 +1297,28 @@
         "界行",
         "朱絲欄",
         "烏絲欄"
+      ],
+      "zh": [
+        "界行",
+        "朱絲欄",
+        "烏絲欄",
+        "行间线",
+        "稿纸格线",
+        "竖栏格线",
+        "ruled paper"
       ]
     },
     "explanation": {
       "en": "The column rule runs between columns, and the character grid's overlay (cjk.grid.show) is a light grey square for every character, a screen aid the PDF leaves out unless renderToPdf gets characterGrid: true. The rules of a woodblock page or of ruled manuscript paper, one between every two lines, are drawn as vertical rule elements in the header, placed from the grid's pitch.",
-      "es": "El filete de columna va entre columnas, y la cuadrícula de la retícula de caracteres (cjk.grid.show) es un cuadrado gris claro por carácter, una ayuda de pantalla que el PDF no imprime salvo que renderToPdf reciba characterGrid: true. Los filetes de una página xilográfica o del papel pautado de un manuscrito, uno entre cada dos líneas, se dibujan como elementos de línea verticales en la cabecera, colocados con el paso de la retícula."
+      "es": "El filete de columna va entre columnas, y la cuadrícula de la retícula de caracteres (cjk.grid.show) es un cuadrado gris claro por carácter, una ayuda de pantalla que el PDF no imprime salvo que renderToPdf reciba characterGrid: true. Los filetes de una página xilográfica o del papel pautado de un manuscrito, uno entre cada dos líneas, se dibujan como elementos de línea verticales en la cabecera, colocados con el paso de la retícula.",
+      "zh": "栏间线画在栏与栏之间；字符网格的叠加层（cjk.grid.show）是每个字一个浅灰方格，只是屏幕上的辅助，PDF中不画，除非renderToPdf收到characterGrid: true。雕版页面或格纸上那种每两行之间一条的界行，要在页眉中用竖线元素画出来，按网格的间距定位。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Column rule",
-        "es": "Filete de columna"
+        "es": "Filete de columna",
+        "zh": "栏线"
       }
     }
   }

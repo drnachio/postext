@@ -8,11 +8,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { Browser } from "puppeteer-core";
-import type { Locale } from "../../src/lib/cookbook/types.ts";
+import type { SampleLocale } from "../../src/lib/cookbook/types.ts";
 
 export interface SheetEntry {
   slug: string;
-  variant: Locale;
+  variant: SampleLocale;
   ok: boolean;
   /** card.480.webp */
   card: Buffer | null;

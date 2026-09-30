@@ -1,11 +1,11 @@
-import type { Credit } from "@/lib/cookbook/types";
+import { localizedText, type Credit } from "@/lib/cookbook/types";
 import { LICENSES, licenceName, type RecipeT, type RecipeView } from "./model";
 
 function CreditLine({ credit, view, t }: { credit: Credit; view: RecipeView; t: RecipeT }) {
   const licence = LICENSES[credit.license];
   return (
     <li>
-      {credit.what[view.locale]} · {credit.source ? <a href={credit.source}>{credit.who}</a> : credit.who} ·{" "}
+      {localizedText(credit.what, view.locale)} · {credit.source ? <a href={credit.source}>{credit.who}</a> : credit.who} ·{" "}
       {licence ? <a href={licence.url}>{licenceName(credit.license, t)}</a> : licenceName(credit.license, t)}
     </li>
   );

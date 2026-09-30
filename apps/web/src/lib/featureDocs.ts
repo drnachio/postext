@@ -1,5 +1,6 @@
 import { docAnchorPath } from "@/lib/cookbook/docLinks";
 import type { DocAnchor, Locale } from "@/lib/cookbook/types";
+import { siteLocale } from "@/i18n/locales";
 
 /** The six capability cards of the home page's chapter 2, in display order.
  *  Each entry expects a `<key>Title` and `<key>Description` pair in the
@@ -16,27 +17,27 @@ export type FeatureKey = (typeof FEATURE_KEYS)[number];
 const FEATURE_DOCS: Record<FeatureKey, DocAnchor> = {
   justification: {
     slug: "justification",
-    heading: { en: "Knuth-Plass: Seeing the Whole Paragraph", es: "Knuth-Plass: ver el párrafo completo" },
+    heading: { en: "Knuth-Plass: Seeing the Whole Paragraph", es: "Knuth-Plass: ver el párrafo completo", zh: "Knuth-Plass：通观整个段落" },
   },
   resources: {
     slug: "document-format",
-    heading: { en: "Resources", es: "Recursos" },
+    heading: { en: "Resources", es: "Recursos", zh: "资源" },
   },
   tables: {
     slug: "configuration",
-    heading: { en: "Table style", es: "Estilo de tablas" },
+    heading: { en: "Table style", es: "Estilo de tablas", zh: "表格样式" },
   },
   singleInk: {
     slug: "configuration",
-    heading: { en: "Diagram style", es: "Estilo de diagramas" },
+    heading: { en: "Diagram style", es: "Estilo de diagramas", zh: "图示样式" },
   },
   math: {
     slug: "document-format",
-    heading: { en: "Mathematical formulas", es: "Fórmulas matemáticas" },
+    heading: { en: "Mathematical formulas", es: "Fórmulas matemáticas", zh: "数学公式" },
   },
   output: {
     slug: "architecture",
-    heading: { en: "Backend Interface", es: "Interfaz del backend" },
+    heading: { en: "Backend Interface", es: "Interfaz del backend", zh: "后端接口" },
   },
 };
 
@@ -45,7 +46,7 @@ const FEATURE_DOCS: Record<FeatureKey, DocAnchor> = {
 export function featureDocPath(key: FeatureKey, locale: string): string {
   const anchor = FEATURE_DOCS[key];
   // Unknown locales fall back to the English doc.
-  const lang: Locale = locale === "es" ? "es" : "en";
+  const lang: Locale = siteLocale(locale);
   const path = docAnchorPath(anchor, lang);
   if (!path) {
     const text = anchor.heading[lang];

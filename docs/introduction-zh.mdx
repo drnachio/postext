@@ -1,0 +1,126 @@
+{/* docs/introduction-zh.mdx */}
+
+export const metadata = {
+  title: 'Postext简介',
+  sidebarTitle: '简介',
+  description: 'Postext是什么，为什么要做它，它解决什么问题',
+  lang: 'zh',
+  lastUpdated: '2026-09-24',
+  readingTime: '7分钟',
+  order: 1,
+};
+
+# Postext简介
+
+**一个面向Web的可编程排版系统。**
+
+翻开任何一本排印精良的书，看看文字在页面上的样子：各栏齐底，图片嵌在文字流中，没有突兀的空白，也没有哪一行孤零零地落在栏首。几百年的手艺积累，才让这一切看起来毫不费力。
+
+再打开一个网页。即使是做得最好的网页，感觉也不一样。文字直接撞上图片；栏要么溢出，要么空着半截；脚注被推到页面最底部，而不是留在引用它的文字附近。Web给了我们响应式布局，却从没给过我们*编辑级*的版面。
+
+Postext要补上的就是这个缺口。它是一个排版引擎：输入你的内容，即Markdown正文加上按引用编入的已声明资源（位图、SVG图示和表格），然后套用专业排版师会用的那些规则：避免段首孤行和段末孤行、各栏齐底、文字绕排障碍物、有意识地控制间距。输出的是可用于出版的版面几何数据，HTML和PDF都适用。
+
+Postext构建在[`@chenglou/pretext`](https://github.com/chenglou/pretext)之上，靠它在不依赖DOM的情况下测量文字，而且速度快到足以支撑上述一切。
+
+
+## 印刷与Web之间的缺口
+
+几百年来，排版师一直遵循一套让文字读起来舒服的规则。这些规则不是审美偏好，而是在一代代书籍、报纸和杂志的印制中反复打磨出来的原则：
+
+- 没有段末孤行（段落的单独一行被甩到栏首）。
+- 没有段首孤行（段落的单独一行被留在栏底）。
+- 各栏齐底（跨页上各栏高度大致相等）。
+- 文字绕排图、引文框和嵌入的图片。
+- 脚注放在引用它的那一栏的底部。
+- 边注与引用它的段落对齐。
+- 标题、块引用和图周围的间距一致且经过推敲。
+- 断词要避免出现“河流”和过度参差的行尾。
+
+除了这些规则，还有两个具体、可量化的维度，能看出Web离印刷有多远：
+
+- **行长。** Bringhurst认为单栏排版时每行**45–75个字符**比较舒适（多栏时为**40–50**）；无障碍指南[WCAG 1.4.8](https://www.w3.org/WAI/WCAG21/Understanding/visual-presentation.html)把上限定为80。大多数网站让行长延伸到100、120甚至更多，远远超过眼睛能顺畅跟读一行而不串行的长度。
+- **行距。** 传统上建议取**字号的1.3–1.5倍**，[WCAG 1.4.12](https://www.w3.org/WAI/WCAG21/Understanding/text-spacing.html)要求内容在1.5倍或更大行距下仍能正常使用。但合适的数值取决于行长：在50个字符的行长下读着舒服的行距，到了90个字符就显得局促。排版师会让两者互相配合着调整；CSS没有提供自动完成这件事的办法。
+
+CSS到这里就无能为力了：你有`column-count`，别的几乎没有。无法控制资源的位置，无法感知溢出，无法跨栏防止段首孤行和段末孤行，也没有原生办法让文字绕排任意形状的障碍物。Web上的多栏编辑版面至今仍靠手工打造，是静态的设计，屏幕尺寸一变就会走样。
+
+Web拥有响应式布局已经超过十年：flexbox、grid、能适应任何屏幕的容器。它始终没有的是响应式的*编辑*版面：内容能在各栏之间、图片周围、脚注之间合理地重新排布，并遵守那些让文字*读起来舒服*的规则。
+
+<Illustration name="CssGapVsEditorial" data='{"title": "CSS多栏与编辑版面之间的缺口", "desc": "CSS提供column-count，别的几乎没有；编辑版面需要控制段首孤行和段末孤行、绕排障碍物、各栏齐底、放置脚注，以及基于收敛的逐步优化。", "caption": "CSS能给你的，与编辑版面真正需要的。", "cssTitle": "CSS能给你的", "cssLead": "column-count", "cssMore": "……仅此而已。", "cssCons": ["不能控制段首/段末孤行", "不能绕排障碍物", "不能各栏齐底", "不能放置脚注", "没有收敛/逐步优化"], "gap": "缺口", "editorialTitle": "编辑版面需要的", "editorialPros": ["防止段首孤行和段末孤行", "文字绕排资源", "各栏齐底", "放置脚注", "控制断词", "基于收敛的逐步优化"], "equals": "= Postext"}' />
+
+
+## 寻找缺失一环的十年
+
+[Content First](https://medium.com/binpar/el-arte-de-maquetar-para-ser-le%C3%ADdo-933be57cb293)项目始于2014年，是把编辑级版面质量带到Web上的一次早期尝试。基于栏的版面、文字流实验、一个接一个的原型，最后总是撞上同一堵墙：**不确切知道文字要占多少空间，就做不出好的排版决策。**
+
+这听起来很简单，但问题的全部就在这里。每次你问浏览器“这个段落在这个宽度下有多高？”，都会触发一次完整的布局重排（reflow）。对于一篇复杂的多栏文档，这样问上几百次，页面就会卡死。浏览器从来就不是为这种试探性测量设计的：试十种不同的栏宽找出最好的一种，测试段落该在哪里断开，检查一张图片能否放在这里、还是得挪到下一栏。
+
+缺的是一种测量文字的方法，要快到可以放手去试，又不会卡住主线程。整整十年，这样的工具都不存在。
+
+
+## 缺失的一环
+
+2025年，Cheng Lou发布了[`Pretext`](https://github.com/chenglou/pretext)：一个不依赖DOM的文字测量库，比浏览器重排快300到600倍，在Chrome、Safari和Firefox上都能做到像素级精确。它借助Canvas字体度量和纯算术运算来计算文字高度和断行，完全不碰DOM。
+
+有了Pretext，卡住这项工作十年的瓶颈就消失了。几毫秒内测量上千个文字块，试十种不同的分栏配置并保留最好的一种，每次调整窗口大小都重跑整个排版算法，而不阻塞主线程。
+
+Postext就是接下来的事。
+
+
+## Pretext + Postext
+
+这个命名是有意为之：同一件事的前后两半。把两者分开很重要，因为它们各司其职，一个负责测量，一个负责决策；把测量独立出来，任何后端都能使用它，而不必和编辑规则绑在一起。
+
+**Pretext**处理文字放置*之前*的事：测量它需要多少空间。不依赖DOM，基于Canvas，只处理纯数字。
+
+**Postext**处理测量*之后*的事：编辑决策。拿到每个文字块在任意宽度下的确切尺寸后，引擎决定每个元素放在哪里：哪一栏、什么位置、绕排哪些资源、遵守哪些排版规则。
+
+```ts
+import { prepare, layout } from '@chenglou/pretext';
+import { buildDocument, renderToCanvas, renderToHtml } from 'postext';
+import { renderToPdf } from 'postext-pdf';
+
+// pretext：测量（“pre”，之前的工作）
+const prepared = prepare(paragraphText, '16px/1.5 Inter');
+const { height } = layout(prepared, columnWidth, 24);
+// => “在这个栏宽下，这个段落高144px。”
+
+// postext：决策（“post”，之后的工作）
+const vdt = buildDocument(content, config);
+// => 一棵完整的虚拟文档树，其中每个段落、
+//     标题和资源都已放在确切的坐标上。
+
+// 一个VDT，三种输出方式：
+const canvases = renderToCanvas(vdt);                       // 每页一张像素级精确的位图
+const html = renderToHtml(vdt);                             // 面向Web的可选中DOM
+const pdfBytes = await renderToPdf(vdt, { fontProvider });  // 可直接印刷的PDF
+```
+
+Pretext给你测量结果，Postext给你版面。
+
+<Illustration name="PretextPostextPipeline" data='{"title": "Pretext负责测量，Postext负责决策", "desc": "Pretext提供不依赖DOM、基于Canvas的文字测量。Postext拿这些确切尺寸来决定栏、位置、绕排资源的方式，以及段首孤行、段末孤行和各栏齐底的规则。", "caption": "同一件事的前后两半：Pretext在前，Postext在后。", "pretextTitle": "Pretext", "pretextSubtitle": "测量", "pretextBullets": ["不依赖DOM，基于Canvas", "比重排快300-600倍", "像素级精确的断行"], "bridge": ["确切", "尺寸"], "postextTitle": "Postext", "postextSubtitle": "决策", "postextBullets": ["哪一栏，什么位置", "绕排资源", "孤行控制、各栏齐底"]}' />
+
+*Pretext由[Cheng Lou](https://github.com/chenglou)创建。Postext构建在它之上。*
+
+
+## 工作原理
+
+整个过程分三个阶段：
+
+1. **你提供内容。** Markdown正文加上已声明的资源：位图、SVG图示和表格。行内的`:ref{id="..."}`既为资源编号，又把它浮动到首次引用处附近的顶部或底部区域，就像印刷排版师安排插图那样。内容保持纯语义：它描述要呈现*什么*，而不是*怎样*呈现；排版决策从不硬编码在源文件里。完整语法见[文档格式](/zh/docs/document-format)一文的“资源”一节。
+
+2. **引擎做出决策。** Postext解析内容，调用Pretext在不接触DOM的情况下做像素级精确的文字测量，然后运行多轮排版流水线：各栏齐底、为资源编号并浮动、防止段末孤行和段首孤行、对齐基线、细调间距。每项决策都由配置驱动：页面和版面几何、正文和标题，还有控制表格单元格文字的`tableStyle`、控制图题注的`captionStyle`，以及带`singleInk`选项的`diagramStyle`，后者按亮度把SVG图示重新着色为同一种油墨的不同深浅，用于单专色印刷。规则由你掌控，引擎负责执行。
+
+3. **你得到完整的版面。** 每一页上每个元素的精确坐标和尺寸。渲染器把这些几何数据转换成目标格式：**Canvas**用于像素级精确的位图预览（`renderToCanvas`、`renderPage`），**HTML**用于Web上可选中、能随尺寸变化的文字（`renderToHtml`、`renderToHtmlIndexed`），**PDF**用于内嵌字体、可直接印刷的输出（`renderToPdf`，来自`postext-pdf`包）。同样的内容、同样的规则，三种可以互换的输出。
+
+<Illustration name="LayoutProcess" data='{"title": "三阶段排版流程", "desc": "增强的Markdown加上配置进入引擎，引擎在内部借助Pretext测量，运行多轮排版流水线，输出渲染好的HTML或PDF。", "caption": "输入内容，输出几何数据，再渲染成目标格式。", "inputTitle": "增强的Markdown", "inputSubtitle": "+ 配置", "parse": "解析", "engineTitle": "Postext引擎", "engineSub1": "内部借助Pretext测量", "engineSub2": "多轮排版", "render": "渲染", "outputTitle": "HTML / PDF", "outputSubtitle": "渲染输出"}' />
+
+想详细了解引擎内部，包括虚拟文档树、多轮流水线和收敛循环，请看[架构](/zh/docs/architecture)文档。所有配置选项的完整参考，从页面几何到表格、题注和图示样式，见[配置](/zh/docs/configuration)页面。想亲手试一试，就打开[沙盒](/zh/docs/sandbox)：那里有章节文本编辑器，带表格编辑器和图片/SVG上传功能的图面板，用编辑术语浏览全部设置的“设计”面板，以及实时的Canvas、HTML和PDF预览。
+
+
+## 致谢
+
+**[Pretext](https://github.com/chenglou/pretext)**，作者Cheng Lou。这是让Postext成为可能的基础文字测量库。没有不依赖DOM、亚毫秒级、像素级精确的测量，这一切都无法实用。
+
+**Content First**（约2014年）：在Web上实现高质量编辑版面的最初探索。十年间不断碰壁，弄清了哪些做法行不通，也越来越确信这个问题值得一个真正的解决方案。
+
+Postext建立在几百年的排印传统之上。它实现的规则不是发明出来的，而是继承自排版师、字体排印师和设计师的工作，他们早在屏幕出现之前就已把让文字易读的技艺磨炼成熟。从谷登堡的活字印刷，到Tschichold的非对称版式，再到Bringhurst的*Elements of Typographic Style*，在页面上编排文字的技艺已经演进了五百多年。Postext把这些积累下来的经验带到Web上，而Web恰恰一直明显缺少它们。

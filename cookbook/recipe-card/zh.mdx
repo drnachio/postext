@@ -1,0 +1,87 @@
+---
+title: "菜谱卡片：用料与做法并排"
+summary: "菜谱书的两页，白色菜谱卡片上方有一个SERVES 4页签：左边是用料、标签和清单，右边是配26 pt红色序号的步骤。"
+description: "用Postext排菜谱书的两页：带份量页签的菜谱卡片，用料与做法分两栏并排，大号步骤序号、做成行内标签的标签和清单。"
+question: "怎样把用料和做法并排成两栏，放进一个带份量页签的框里？"
+aliases: ["菜谱卡片", "菜谱", "食谱书", "烹饪书", "用料", "做法", "框内分两栏", "份量页签", "几人份", "步骤序号", "编号步骤", "标签", "引言", "清单", "备料", "图标", "recipe card", "cookbook", "serves 4", "mise en place", "checklist"]
+pageNotes: { "1": "Tortilla de patatas：顶部是一幅插图，金黄的土豆饼切出一块，放在蓝边白点的白盘里，旁边是红格餐巾、藏红花色桌面和一枝橄榄；一句手写批注“onion, always!”指向土豆饼。眉题、两行标题和三个白色胶囊标签排在藏红花色底上。斜体引言下方是一张白色卡片，右上角有红色的SERVES 4页签；左边是五种用料，前面是橄榄绿短横，然后是三个标签和一份清单，清单上方是碗、锅和盘子的线描；右边是五个步骤，配大号红色数字。卡片下方一行提示：Keep the oil.", "2": "对页的Gazpacho andaluz：一碗橙红色冷汤，里面有蔬菜丁、几滴油和一把汤匙，放在蓝格餐巾和鼠尾草绿桌面上，碗脚有两个番茄，批注写着“serve it ice cold!”。同样的卡片标着SERVES 6，列出八种用料和五个步骤；一段关于提前做好的提示和版权页结束本页，页脚在页码旁写出菜名。" }
+---
+
+## 成品一览
+
+*Salt & Olive Oil*是一本虚构的西班牙家常菜谱，这里是其中相对的两页，成品尺寸190 × 250 mm，一页一道菜。一幅用代码画的插图出血铺满顶部104 mm：藏红花色桌面上切出一块的土豆饼，鼠尾草绿桌面上的一碗西班牙冷汤。插图上叠着眉题、42 pt Young Serif标题、表示用时、难度和季节的胶囊标签，还有一句Caveat手写体批注指向菜品。斜体引言下方是一张白色卡片，右上角有番茄红的份量页签。用料沿左栏排下，前面是橄榄绿短横，后面是标签；土豆饼的用料下方，碗、锅和盘子的线描领起一份清单。做法占满右栏，每一步以26 pt的旧式数字开头。
+
+## 做法
+
+### 1 · 每栏一个自己的框
+
+用松散列表时，[框内的分栏组](/zh/docs/document-format#columns)会在各栏最齐的地方切开，可能在块之间，也可能在一个块的行之间，于是冷汤的第一步被栏间距劈成两半：第一行排在用料栏末尾，其余部分排在做法栏开头。像上面[简短回答](#简短回答)那样嵌套一个框，它就成为一个整块，分栏组永远不会从中切开。放在其中的图片需要一个placement为`'here'`的`::resource`，因为任何其他placement都会让它成为浮动体，离开框，像任何被引用的图一样另行放置。卡片样式的`label`把围栏上的`label="SERVES 4"`变成页签：`offset`等于它的`height`，就让它立在卡片上边缘，`rule`从远端的角一直画到刀叉图标（[标注框样式](/zh/docs/configuration#标注框样式)）。
+
+### 2 · 让步骤序号在两行之间居中
+
+<Excerpt region="steps" />
+
+列表序号画在条目第一条基线稍上方并居中，所以只设`numberFontSize`会让26 pt的数字与第一行齐平；`numberVerticalOffset`把它们下移2.5 mm，移到从第一行大写字母顶部到第二行基线这一区间的中部。Young Serif用的是旧式数字：3、4、5会伸到1和2所在的基线以下。设了`separatorColor`后，分隔符作为单独的一段文字绘制，默认的句点就以橄榄绿印在红色数字旁（[有序列表](/zh/docs/configuration#有序列表)）。
+
+### 3 · 用一排线描领起清单
+
+<Excerpt region="prep" />
+
+`prep`框里只有标题和图标，所以它起标题栏的作用：图标`width`是`size`的3.75倍，把图标的正方形拉成18.75 × 5 mm的长条，三幅线描排满标题左侧（[标注框样式](/zh/docs/configuration#标注框样式)）。图标在框内独占一栏，与框内其他内容并排，所以任务项放在框之后，这样它们与用料的短横对齐，而不是从21 mm处开始。`- [ ]`条目印出默认的任务框，`unorderedLists.marginTop: 0`让它们以标题栏的`marginBottom`紧随其后，即各栏标题保留的2.4 mm间距（[无序列表](/zh/docs/configuration#无序列表)）。
+
+### 4 · 把标签做成行内标签
+
+<Excerpt region="chips" />
+
+`:chip[Vegetarian]{style="tag"}`把一个词放进一个永不跨行断开的框。大于框高一半的`borderRadius`会被限制为一半，两端就成了半圆；`borderWidth: 0`时，胶囊只用底色绘制。框高11.4 pt，小于卡片12.8 pt的行距，所以第二行标签不会碰到第一行（[行内标签样式](/zh/docs/configuration#行内标签样式)）。
+
+### 5 · 一套版面设计，每道菜一幅图
+
+<Excerpt region="opener" />
+
+`# Tortilla \\ de patatas {style="receta" art="tortilla" kicker="…" lead="…"}`选定标题样式，并用属性填入各个位置，斜体引言也在其中（[标题属性](/zh/docs/document-format#标题属性)）。图片元素的`resourceId`是`'{attr.art}'`，和文字里的占位符一样，所以两道菜共用一个样式，由各自的标题指明插图（[图片元素](/zh/docs/configuration#图像元素)）。每个胶囊标签锚定在前一个的`right-of`，标题锚定在第一个胶囊的`above`，眉题在标题上方，所以标题变长时眉题上移，胶囊标签留在原来那一行。在1.4.1中插图不预留高度，但它下面的引言会预留，所以不设`minHeight`卡片也从引言下方开始。批注和插图一样锚定在页面上，两页上都在画出的箭头前2 mm处结束，尽管对称的页边距让右页的版心向右移了2 mm。
+
+### 6 · 把插图注册为资源
+
+<Excerpt region="pictures" />
+
+开篇的图片元素、页签的图标和清单标题栏的图标各自指明一个资源，Canvas绘制`loadSvg`为它注册的文件。没有`:ref`引用这些资源，所以它们都不会成为编号的图。作为图片绘制的SVG用不了页面的网页字体，所以插图里没有文字：手写批注是叠在上面的设计文字。
+
+## 变化
+
+### 不给各栏装框，改为按块计数
+
+去掉各栏的框后，`breaks`指定开启右栏的那个子块，每个列表条目、标签那一行和清单的标题栏各算一个：冷汤需要`breaks="10"`（前面是八种用料和标签），土豆饼是`breaks="11"`。各栏标题和栏样式在步骤之间留的间距也随之消失。
+
+```diff
+ :::callout{type="card" label="SERVES 6"}
+-:::columns{count=2}
+-:::callout{type="column" title="Ingredients"}
++:::columns{count=2 breaks="10"}
+ - **1.5 kg** ripe plum tomatoes
+@@ seven more ingredients and a blank line @@
+ :chip[Vegan]{style="tag"} :chip[No-cook]{style="tag"} :chip[Make ahead]{style="tag"}
+-:::
+-:::callout{type="column" title="Method"}
++
+ 1. Chop the tomatoes, seeded pepper, peeled cucumber and garlic.
+@@ steps 2 to 5 @@
+ :::
+-:::
+ :::
+```
+
+### 把页签立在左上角
+
+`'top-left'`让页签左右翻转：页签移到左上角，刀叉在它右边，线从右边画过来。
+
+```diff
+     background: col('tomato'), height: mm(TAB), offset: mm(TAB), paddingX: mm(2.6),
++    position: 'top-left', // 默认为'top-right'
+```
+
+## 常见问题
+
+- 1.4.1中页签的label没有`textTransform`和`letterSpacing`，所以SERVES 4和PARA 4在围栏里直接用大写输入。
+- 任务框☐不在三种字体中的任何一种里，浏览器用系统字体绘制它，形状随系统而变。
+- 宽图标要留在框自己的栏里：`position: 'corner'`时，1.4.1按图标高度的一半而不是宽度的一半偏移，18.75 mm的长条会超出框的右边缘16 mm。

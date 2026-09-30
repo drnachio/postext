@@ -1,0 +1,71 @@
+---
+title: "嵌入同一套字体的真正PDF"
+summary: "把一份独奏会节目单导出为PDF。每款字体只下载一次，同时供FontFace和PDF使用，每个标题都成为一个书签。"
+description: "用Postext在浏览器里导出PDF：把排版时用的WOFF2文件转成TrueType嵌入其中，并为每个标题生成书签。"
+question: "怎样在浏览器里导出真正的PDF，带书签，并且嵌入的正是页面排版时用的字体？"
+aliases: ["PDF嵌入字体", "嵌入字体", "下载PDF", "PDF书签", "PDF大纲", "字体提供器", "用字节创建FontFace", "WOFF2转TTF", "PDF字体不一致", "音乐会节目单", "独奏会节目单", "embed fonts in a PDF", "PDF bookmarks", "PDF outline", "font provider", "FontFace from bytes", "decompressWoff2", "WOFF2 to TTF"]
+pageNotes: { "1": "封面：夜色蓝绿铺满到成品边缘，金色小号大写字母的The Harbour Consort，标题Home from Sea以大号金色斜体分两行排出，其下是浅色斜体副标题，日期和场地为疏排的大写字母，一排排金色波纹鳞片从页脚升起，向标题方向渐隐。", "2": "第2页：深金色大写字母的眉题Twilight recital，一条金色短线上方是标题Programme；演出曲目排成表格，表头为蓝绿底白色大写字母，时长右对齐，合计行为浅色底；下面是两端对齐的乐曲解说。", "3": "第3页：标题The texts，下面两首诗在斜体诗题之下逐行排出，保留印刷版本的缩进：朗费罗的The Tide Rises, the Tide Falls，叠句缩进；史蒂文森的Requiem，最后三行为斜体。", "4": "第4页：丁尼生的Crossing the Bar共四节，短行缩进；一段演出者介绍，以及用灰色小号Tenor Sans排的版权页说明。" }
+---
+
+## 成品一览
+
+一场黄昏独奏会的节目单，题为*Home from Sea*：四页A5，演出者是由女高音、大提琴和竖琴组成的小乐团。封面为夜色蓝绿，标题用金色Fraunces斜体，一排排金色波纹鳞片从页脚升起。内页的演出曲目是一个表格，表头用Tenor Sans大写字母、蓝绿底色，合计行着浅色。乐曲解说用两端对齐的Crimson Text。三首歌的歌词分别是朗费罗、史蒂文森和丁尼生的诗，按印刷版本的缩进排出。点*Build the PDF*按钮，得到的就是你要发给听众或放在场馆网站上的文件。它的四页与屏幕上逐行一致，只嵌入浏览器已加载的七个字体文件，每个标题都是一个书签。如果要交付商业印刷，参见<RecipeLink slug="print-ready-pdf">可直接付印的PDF</RecipeLink>。
+
+## 做法
+
+### 1 · 每款字体只下载一次，页面和PDF共用
+
+代码见上文的[简短回答](#简短回答)。Postext用构建时浏览器已加载的字体测量每个词，PDF则把每一行画在版面给它的位置上。如果PDF嵌入的是另一个文件，比如可变字体的默认实例或系统后备字体，每个词仍从测量出的位置开始，但字母宽度不同，于是词与词重叠或留出空隙。所以本食谱每款字体只下载一次：它的字节在第一次构建之前变成一个`FontFace`，字体提供器再把同样的字节交给`decompressWoff2`供PDF使用，导出时不会另行下载任何字体。
+
+### 2 · 先字体，后版面
+
+<Excerpt region="build" />
+
+`registerFaces()`要等`FONTS`中的每款字体都加载完才会完成，所以第一次构建所用的字体就是PDF将要嵌入的字体。这也是唯一一次构建：`FONTS`列出了Crimson Text或Fraunces文本块可能用到的每种粗体和斜体，工具包的`buildWithFonts`找不到需要补充的字体（[测量缓存](/zh/docs/configuration#测量缓存)）。这项检查只对屏幕有用。如果`FONTS`漏了某款字体，`buildWithFonts`会加载它并重新排版；若有文本块整体用这款字体排，控制台会给出警告，若只是粗体或斜体则不会。但PDF拿到的仍是提供器手里最接近的那款字体。
+
+### 3 · 导出，并列出嵌入了什么
+
+<Excerpt region="pdf" />
+
+`renderToPdf`分三个阶段调用`onProgress`：字体和封面嵌入后为`prepare`，每排完一页为`pages`，写文件之前为`save`。这里它向提供器要了十款字体。状态行列出提供器给出的七个文件，正好是`FONTS`里的那些，另有三个替代，全是Tenor Sans的：这款字体只有常规400一种，这里也从不用粗体或斜体。除此之外的替代，都说明`FONTS`里缺了某款字体。如果删掉Crimson Text 600，状态行会报告`Crimson Text 600 → 400`，第4页粗体的*The Harbour Consort*会以常规字重印出。CodePen的预览无法显示PDF，所以工具包的`offerPdf`把按钮换成两个链接，一个在新标签页打开PDF，一个下载它（[生成PDF](/zh/docs/configuration#生成pdf)）。
+
+### 4 · 标题树就是书签树
+
+<Excerpt region="headings" />
+
+在PDF里，书签面板显示封面标题、*Programme*及其下的*About the music*、*The texts*及其三首歌，以及*The performers*。大纲沿用标题层级，所以选层级时要考虑书签：这里每个部分用一个H1，每首歌用一个H2。*The performers*有自己的标题样式，是一个不分页、不做章首页的H1，因此它与丁尼生的诗同在第4页，仍然得到一个顶层书签。把封面标题断成两行的`\\`在书签里变成一个空格。
+
+### 5 · 标题和作者取自frontmatter
+
+<Excerpt region="cover" />
+
+frontmatter的每个值都加了引号。封面通过`{author}`和`{subtitle}`印出其中两个，PDF的文档属性也从同一块里取标题*Home from Sea*和作者*The Harbour Consort*。日期和场地是封面标题的属性。它们背后的图案是一张与页面等宽的SVG，PDF将其保留为矢量路径。
+
+## 变化
+
+### 不要书签
+
+单页传单或海报没有什么可做书签的。设`outlines: false`后，PDF不带大纲，打开时侧栏是关闭的。
+
+```diff
+-    outlines: true, // 默认值，这里明确写出：每个标题都成为一个书签
++    outlines: false,
+```
+
+### 自己托管字体
+
+让fetch指向你自己保存的同一套静态WOFF2文件，每个字重和样式一个文件，沿用Fontsource的文件名。页面和PDF仍共用每一次下载。
+
+```diff
+-    files.set(file, fetch(`https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${file}.woff2`)
++    files.set(file, fetch(`/fonts/${file}.woff2`)
+       .then((res) => {
+-        if (!res.ok) throw new Error(`Fontsource has no ${family} ${weight} ${style}`);
++        if (!res.ok) throw new Error(`No font file ${file}.woff2`);
+```
+
+## 常见问题
+
+在`FONTS`中列出正文可能用到的每种粗体和斜体。漏了一种时，屏幕看上去仍然正确，因为工具包会不加警告地加载这款字体；但PDF印出的是提供器最接近的字体，只有状态行上的替代项会暴露这次调换。
+
+使用静态文件，每个字重和样式一个。对于可变WOFF2，PDF只嵌入它的默认实例，一段粗体会以常规字重印出（[为什么需要字体提供器？](/zh/docs/configuration#为什么需要字体提供函数)）。

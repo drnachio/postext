@@ -4,11 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
+import { LOCALE_INFO, isSiteLocale } from "@/i18n/locales";
 
-const LOCALE_CODES: Record<string, string> = {
-  en: "EN",
-  es: "ES",
-};
 
 export function CompactLanguageSwitcher() {
   const locale = useLocale();
@@ -60,7 +57,7 @@ export function CompactLanguageSwitcher() {
         onMouseEnter={(e) => (e.currentTarget.style.color = "var(--foreground)")}
         onMouseLeave={(e) => (e.currentTarget.style.color = "var(--slate)")}
       >
-        {LOCALE_CODES[locale] ?? locale.toUpperCase()}
+        {isSiteLocale(locale) ? LOCALE_INFO[locale].code : locale.toUpperCase()}
       </button>
 
       {open && (
@@ -95,7 +92,7 @@ export function CompactLanguageSwitcher() {
                   if (l !== locale) e.currentTarget.style.color = "var(--slate)";
                 }}
               >
-                {LOCALE_CODES[l] ?? l.toUpperCase()}
+                {LOCALE_INFO[l].code}
               </button>
             </li>
           ))}

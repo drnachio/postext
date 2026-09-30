@@ -1,0 +1,78 @@
+---
+title: "浮动到引用处的图"
+summary: "一个双栏章节，含七幅编号的图：六幅从首次:ref处浮动到其位置设置允许的第一个空位，一幅放在::resource指定的地方。"
+description: "用Postext排一个双栏教科书章节：七幅图按首次提及的顺序编号，六幅浮动到位置设置允许的第一个空位，一幅随文排。"
+question: "怎样给图编号、引用它们，并决定它们放在页顶、页底、通栏还是就地？"
+aliases: ["图的位置", "figure placement", "浮动体", "floats", "交叉引用", "cross-references", "见图", "引用图", "图号", "figure numbers", "题注", "captions", "随文图", "inline figure", "页顶", "通栏", "Figura", "教科书", "textbook"]
+pageNotes: { "1": "章首页：一条蓝色飘带从页顶垂下，底端有一个白色的2；旁边是一块冰蓝色色块，一直伸出书口，里面有眉题Chapter 2 · Glacial geomorphology、标题How glaciers carve mountain valleys和一段斜体导语；下面是两栏正文，Figure 2.1填满页面底部，画的是V形河谷和一个充满冰的U形冰川谷。", "2": "Figure 2.3是冰斗的剖面，排在右栏顶部；Figure 2.2是山谷冰川的纵剖面，在页面底部横跨两栏。", "3": "Figures 2.4和2.5（磨蚀和拔蚀）并排位于两栏顶部；Figure 2.6是一块羊背石，恰好排在左栏中正文引出它的地方。", "4": "本章最后一页：左栏是一个列出冰川作用四种痕迹的项目符号列表，右栏是最后一节和版权信息；Figure 2.7居中排在页面底部，宽度为版心的一半，画的是两条冰川的平面图，它们在一个由终碛堵成的湖泊上方汇合。" }
+---
+
+## 成品一览
+
+这是地貌学教科书《*Mountain Landforms*》的第2章，页面尺寸为200 × 250 mm。章首页上，一条带章号的蓝色飘带从页顶垂下，旁边是标题所在的冰蓝色色块；后面是两栏两端对齐的Faustina。七幅图是用扩散模型生成、再用代码加上标注的画，按首次提及的顺序编号。其中六幅从首次引用它的段落算起，浮动到其位置设置允许的第一个空位。Figure 2.1设为`auto`，落在章首页底部；2.3排在第28页右栏顶部，2.2填满同一页的底部；2.4和2.5分别排在第29页两栏的顶部。Figure 2.6放在正文嵌入它的地方。Figure 2.7是一个`top`浮动体，在第30页被引用，本应等到第31页，但浮动体不能离开所在的章，所以它排到了第30页底部。
+
+## 做法
+
+### 1 · 页面和图共用一套调色板
+
+<Excerpt region="palette" />
+
+配置中的每种颜色都链接到这里的某一项，而画作也是用同样的石板灰、冰川蓝和苔绿生成的，所以图与页面的颜色一致。画作保留自己的颜色：给`glacier`换一个值，会改变飘带、色块和标注，但不会改变图中冰的颜色。强调色足够深，可以用于小字：在白底上对比度为5.2:1，用于题注标签和引用；在冰蓝色块上为4.5:1，用于眉题。每幅图都是一个SVG，把画作以JPEG data URL嵌入，并在上面用文字排出标注，带一圈细细的白色描边，所以标注保持清晰，并随版本的语言变化。标注用IBM Plex Sans Condensed，嵌入在每个SVG里，因为作为图像加载的SVG无法使用页面的网络字体。
+
+### 2 · 用读者的语言给图命名
+
+<Excerpt region="captions" />
+
+`defaultResourceTypes(LANG)`用样例的语言给类型命名：这里的题注是*Figure 2.3*，西班牙文版是*Figura 2.3*；如果只设`locale: 'es'`，正文会按西班牙语断词，但所有题注仍是英文。每处引用再采用所在句子需要的形式：`case="lower"`得到*(fig. 2.1)*，再加上`style="full"`得到*(figure 2.2)*；复数之后用`style="number"`（*figures 2.4 and 2.5*）；`text="…"`用于*the chapter’s first figure*这样的短语，不印编号。这个短语指回一幅已经放好的图；如果作为首次提及，它仍然会给图编号并确定其位置。
+
+### 3 · 章首页的飘带和冰色块
+
+<Excerpt region="furniture" />
+
+章首页由两个框和四段文字组成：一条从页顶垂下、底端带章号的飘带，一块伸出书口的冰色块，取自标题`topic`属性的眉题，以及依次挂在它下方的标题和导语。`minHeight`预留出色块及其下方至少5 mm的空间，向上取整到整数个网格行（这里约7 mm），所以Figure 2.1仍能放进同一页的底部区域。书眉位于外侧角上，下面是一条`rule`颜色的细线，`pages: 'body'`让章首页不印书眉，章首页改用排在页脚的页码。
+
+### 4 · 排版前拒绝未知的id
+
+<Excerpt region="check" />
+
+指向不存在的资源id的`:ref`会印出“?”，没人提及的图永远不会被放置；沙盒会对前一种情况发出警告，但postext 1.4.1对这两种情况都不会给pen任何警告。检查用引擎自己的解析器`parseMarkdown`读取Markdown，所以能找到编号和定位时会读取的每个`:ref`和`::resource`。未知或重复的id、未被引用的图、没有`::resource`行的`here`图，以及缺失的类型，都会在排第一页之前变成一个错误。
+
+### 5 · 从全书的当前位置开始计数
+
+<Excerpt region="build" />
+
+这是一本较长的书的第2章，所以接续信息记录了它之前的一章：按`{h1}.{n}`编号的图从2.1开始，页码从27开始。在<PageRef page={2}>第28页</PageRef>上，Figure 2.3排在Figure 2.2上方，后者编号较小，因为正文先引用它。Markdown的`![]()`会被去掉，所以每幅图都是一个资源，其SVG在排版前以`svg.fileId`注册。每幅图的位置都取决于它在哪里被引用：2.1用`auto`，因为色块占满了章首页的顶部；纵剖面用`bottom`，它还能占用引用它那一页的底部；各栏中的图用`top`，排在接下来空出的栏顶；2.7也用`top`，它最终排在第30页底部，因为浮动体不会离开所在的章。
+
+## 变化
+
+### 图号不带章号
+
+从编号中去掉章号，图就印成1到7；如果要全书统一计数，用`buildBundle`排各章，或者把前一章的`continuationAfter()`传给后一章。
+
+```diff
+-  resourceTypes: defaultResourceTypes(LANG),
++  resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type,
++    numberingTemplate: '{n}', resetOn: 'never' })),
+```
+
+### 把题注放在上方的色条上
+
+题注移到图的上方，放在调色板冰蓝色的色条上，出处行仍留在图下方；需要重新调整正文，因为这样两个版本都会排到第五页。
+
+```diff
+   captionStyle: { // 文字颜色跟随bodyText；注释为题注字号的0.85倍
++    position: 'above', backgroundEnabled: true, background: col('ice'),
+     fontFamily: LABEL, fontSize: pt(8.3), gap: mm(2.2),
+```
+
+### 把图放在边栏里
+
+一栏半的页面给图和题注留出一条正文从不进入的外侧通道：参见<RecipeLink slug="textbook-margin-column">带边注栏的教科书</RecipeLink>。
+
+### 用同样的方式浮动表格
+
+表格也是资源，按同样的规则引用和定位，长表还会跨页拆分：参见<RecipeLink slug="technical-datasheet">技术数据表</RecipeLink>。
+
+## 常见问题
+
+- 在<PageRef page={4}>第30页</PageRef>上，关于湖泊的段落在第一句就引用了Figure 2.7，因为图会在引用它的段落开始处排队。如果那句话是上一段的末句，而上一段从第29页开始，这幅图就会排在第30页顶部，位于引用它的那一行之上。

@@ -1,0 +1,76 @@
+---
+title: "唐诗与英译对页排"
+summary: "每首唐诗占一个浅色底纹的右页，Giles的英译占对面的左页：一种标题样式分页到偶数页，另一种分页到奇数页。"
+description: "用Postext排一本唐诗双语书：标题样式分别分页到左页和右页，中文在字格网格中居中，注释排为脚注。"
+question: "怎样把诗和译文排在对页上，并让原文总在右页？"
+aliases: ["对页翻译", "对照本", "双语对照", "双语诗集", "原文在右页", "唐诗", "唐詩", "汉诗英译", "李白", "杜甫", "王维", "翟理斯", "注释", "注釋", "左页右页", "facing translation", "parallel text", "en face", "bilingual poetry", "Herbert Giles", "verso and recto"]
+pageNotes: { "1": "扉页：淡金色月亮上是黑色的“唐詩”二字，下面是红色大写的TANG POEMS、三位诗人的名字、一行注明Giles英译的文字，近页脚处有一方红色小印，印文为“明月”。", "3": "与Night Thoughts相对的右页，淡金色底：粗体标题“靜夜思”，下面是红色的“〔唐〕李白”，诗分两行，用毛笔风格的字体排，每行末尾有一个小注码；页脚一条红色短线下有两条注释。" }
+---
+
+## 成品一览
+
+一本小型的唐诗双语书，按对照本排经典的方式来排：中文在右页，页面带有旧纸般的底纹；Herbert A. Giles于1901年所作的押韵英译在对面的左页。李白、杜甫、王维的四首诗各占一个跨页，每首用两种语言分别加标题，并署上诗人名字。中文用LXGW WenKai排，这是一款仿毛笔书写的楷体。两句诗排成一行，所以每一行都与翻译它的两行英文平齐。用读者语言写的注释放在中文页的页脚。<RecipeLink slug="bilingual-facing-verse">逐节对照的译诗</RecipeLink>把一首西班牙语诗和它的英译排在同一页上；这里每种语言各占一页。
+
+## 做法
+
+### 1 · 跨页两侧各用一种标题样式
+
+代码见上文的[简短回答](#简短回答)。每首诗由两个一级标题组成：先是`# Night Thoughts {style="en" …}`及Giles的译诗，再是`# 靜夜思 {style="zh" …}`及原诗。`en`样式分页到下一个偶数页，即左页；`zh`样式分页到下一个奇数页，即与之相对的右页。只要每首诗都排得进一页，就不会插入空白页；如果某首英译超出一页，它的原文会被推到再下一个右页，前面隔一个空白左页（[前置分页](/zh/docs/configuration#前置分页)）。两种版面设计都预留了网格的六行，所以英文和中文从同一行开始。中文样式设了`span: 'page'`，因为它的第一个元素是一个与页面等大的框，也就是带底纹的页面；而留在栏内的版面设计到栏底就截止了（[通栏与高级版面设计](/zh/docs/configuration#通栏与高级设计)）。
+
+<PageShot page={2} crop="0,0.05,1,0.28" caption="第2页：英文在左页往下六行处开始，与第3页中文开始的网格线相同。" />
+
+### 2 · 一行中文对两行英文
+
+<Excerpt region="verse" />
+
+中文行的行距是英文行的两倍，32 pt对16 pt，所以一行两句五言正对Giles译成的一联。在<PageRef page={4}>第4、5页</PageRef>那首写月光的诗里，两种文本中放入同样的`:::space{lines=1}`，三节诗在跨页两边保持平齐。中文行从51 pt处开始，这样它的12 em在网格的28 em中居中。每个注码放在本行的“。”之后，在这12 em之外：如果放在行内，它会把后面的每个字向右推三分之一em，与下一行错开。英文的缩进由测量每首诗的最长一行得出。Giles隔行缩进；Markdown保留了他的两个空格，`indentVerse`把它们换成跟在连接符（word joiner）后的全角空格，因为段落会丢掉开头的空格。
+
+### 3 · 注释放在中文页的页脚
+
+<Excerpt region="notes" />
+
+注释是脚注，每行一条：`疑是地上霜。[^bed]`结束诗的第一行，`[^bed]: …`紧随其后。由于注码不再紧挨被注的词，每条注释都用粗体写出所注的词。每个开启新页的标题处编号都重新开始，所以每首诗的注释都从1数起（[脚注](/zh/docs/document-format#脚注)）。注释用正文字体排，而本书的正文字体是Noto Serif TC，因为注释里汉字和拼音混排；Noto Serif TC的拉丁字母取自Source Serif，所以英文页用Source Serif 4排。注释用本版本的语言书写：它与左页的书眉、关于文本的说明一起，是西班牙语版本要改的部分。
+
+### 4 · 每页的书眉用该页的语言
+
+<Excerpt region="heads" />
+
+本书每一页都以标题开头，所以每页都是章首页，书眉因此用`pages: 'opener'`。分页插入的空白页不带书眉，扉页则用自己的空页眉清掉书眉。左页取frontmatter中的`subtitle`作书名，每个版本用自己的语言写它；右页取中文标题的`name`属性作诗人名（[页眉与页脚](/zh/docs/configuration#页眉与页脚)）。
+
+### 5 · 月亮上的扉页
+
+<Excerpt region="title" />
+
+扉页也是一种标题样式，设了`runningChapter: false`，不作为任何章的名字。月亮是一个版面设计框，圆角半径为边长的一半；“唐詩”靠计算居中在月亮上：月亮的中线减去标题高度的一半。印章用`writingMode: 'vertical-rl'`排“明月”，一字在上一字在下，与刻印的方式相同。
+
+### 6 · 每款中文字体只加载它要排的字
+
+<Excerpt region="voices" />
+
+Fontsource把每款中文字体按字符范围切成大约一百个文件，`loadCjkFonts`只获取文本用得到的文件（[中文、日文和韩文字体](/zh/docs/configuration#中文日文和韩文字体)）。楷体排诗和印章，黑体排诗人行和名字，粗宋体排四个诗题和注释的词头，它的特粗字重排扉页上的两个字。
+
+## 变化
+
+### 把原文放在左页
+
+洛布古典丛书和许多汉英读本把原文放在左边：交换两种标题样式的奇偶，以及写书名和诗人名的两个书眉的奇偶，并在Markdown中把每首诗的中文标题和原诗写在英文之前。
+
+```diff
+-const english = { id: 'en', breakBefore: { enabled: true, parity: 'even' }, // 左页
++const english = { id: 'en', breakBefore: { enabled: true, parity: 'odd' }, // 右页
+-const chinese = { id: 'zh', span: 'page', breakBefore: { enabled: true, parity: 'odd' },
++const chinese = { id: 'zh', span: 'page', breakBefore: { enabled: true, parity: 'even' },
+-  head('verso-book', '{subtitle}', 'even', 'top-left', EDGE + 8,
++  head('verso-book', '{subtitle}', 'odd', 'top-right', -(EDGE + 8),
+-  head('recto-poet', '{attr.name}', 'odd', 'top-right', -(EDGE + 8),
++  head('recto-poet', '{attr.name}', 'even', 'top-left', EDGE + 8,
+```
+
+### 把注释紧接在诗后
+
+中文注释本把注释印在每首诗之后。这里用章末注实现，因为每首诗本身就是一章。
+
+```diff
+-const footnotes = { placement: 'column', // 栏底，这里就是页底
++const footnotes = { placement: 'chapterEnd', chapterEndAlign: 'text',
+```

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { docAnchor } from "@/lib/cookbook/docLinks";
 import { readRecipeSources } from "@/lib/cookbook/sources";
+import { localizedText } from "@/lib/cookbook/types";
 import { licenceName, type RecipeT, type RecipeView } from "./model";
 
 /** "This recipe answers": the questions in `answers`, at the end of What
@@ -105,7 +106,7 @@ export function Ingredients({ view, t }: { view: RecipeView; t: RecipeT }) {
                 .filter((c) => !c.file || !assets.includes(c.file))
                 .map((c) => (
                   <li key={c.what.en}>
-                    {c.what[locale]} ({c.who}, {licenceName(c.license, t)})
+                    {localizedText(c.what, locale)} ({c.who}, {licenceName(c.license, t)})
                   </li>
                 ))}
             </ul>

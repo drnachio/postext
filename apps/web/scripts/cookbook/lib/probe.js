@@ -389,7 +389,7 @@ export function facts({ select = 'last', hero = [] } = {}) {
   // `resourceTypes: defaultResourceTypes(LANG)` is one setting, not dozens of leaves.
   if (Array.isArray(user?.resourceTypes) && typeof engine.defaultResourceTypes === 'function') {
     const given = JSON.stringify(user.resourceTypes);
-    const lang = [...new Set([user.locale, 'en', 'es'].filter((l) => typeof l === 'string'))]
+    const lang = [...new Set([user.locale, 'en', 'es', 'zh'].filter((l) => typeof l === 'string'))]
       .find((l) => JSON.stringify(plain(engine.defaultResourceTypes(l))) === given);
     if (lang) user.resourceTypes = `defaultResourceTypes('${lang}')`;
   }

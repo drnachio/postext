@@ -13,6 +13,7 @@ import { plateLabels } from "@/components/cookbook/gallery/labels";
 import { askRecipeUrl } from "@/components/cookbook/gallery/links";
 import type { Locale } from "@/lib/cookbook/types";
 import { buildMetadata, localizedUrl, SITE_NAME, SITE_URL } from "@/lib/seo";
+import { htmlLang } from "@/i18n/locales";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -48,7 +49,7 @@ export default async function CookbookPage({ params }: { params: Promise<{ local
       name: t("metaTitle"),
       description: t("metaDescription"),
       url,
-      inLanguage: locale,
+      inLanguage: htmlLang(locale),
       isPartOf: { "@type": "WebSite", name: SITE_NAME, url: SITE_URL },
       mainEntity: {
         "@type": "ItemList",

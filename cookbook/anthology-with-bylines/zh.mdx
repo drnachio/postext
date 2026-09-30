@@ -1,0 +1,82 @@
+---
+title: "带作者署名的文集"
+summary: "三篇关于散步的随笔，标题带有作者、年份和刊物：章首页三项都印，左页书眉和目录印作者。"
+description: "用Postext排一本收录Hazlitt、Thoreau和Stevenson的袖珍文集：标题属性填出署名行、左页书眉和目录页。"
+question: "怎样做一个自动填充的目录页，带前导符、页码和每篇文章的作者？"
+aliases: ["文集", "选集", "anthology", "合集", "随笔集", "essay collection", "撰稿人", "作者署名", "byline", "目录中标题下的作者", "书眉中的作者", "带作者的目录", "章节作者", "目录副标题", "toc subtitle"]
+pageNotes: { "2": "目录：铁锈色罗马数字，用Gloock排的随笔标题，疏排的点状前导符引到第3、5、8页，每位作者的名字用石楠色斜体排在标题下方，关于文本的说明固定在页面底部。", "3": "随笔I在其编号和标题下开始，署名行WILLIAM HAZLITT和出处行The New Monthly Magazine, 1822位于一条细线之上。", "6": "一个左页：书眉中是页码和HENRY DAVID THOREAU。", "7": "一个右页：页码旁是书眉WALKING；这篇随笔在距页底四行处结束。" }
+---
+
+## 成品一览
+
+*Afoot*的九页。这是一本袖珍文集，收录三篇关于散步的随笔，作者分别是Hazlitt（1822）、Thoreau（1862）和Stevenson（1876）。封面是一幅用代码画出的黄昏风景。目录给每篇随笔一个铁锈色编号、一个用Gloock排的标题、引到页码的疏排前导符，下面用石楠色斜体印作者名。每篇随笔以编号和标题开篇，接着是疏排大写字母的署名行，以及注明首次刊载的刊物和年份的出处行。左页印作者名，右页印随笔标题。每篇随笔的标题都以属性形式带着作者、年份和出处，章首页、书眉和目录都从这里取值，所以加第四篇随笔时不用改配置。
+
+## 做法
+
+### 1 · 给随笔编号，并让正文下沉
+
+<Excerpt region="opener" />
+
+该层级的`numberingTemplate: '{1:I}'`把随笔编为I、II、III，`{number}`把编号印在标题上方（[通栏与高级设计](/zh/docs/configuration#通栏与高级设计)）。`minHeight`预留12行14 pt，细线止于其上7 mm处，所以标题只有一行时，每个章首页的正文都从距上边缘79 mm处开始。26 pt的标题多一行会增加9.9 mm，把正文推下一条网格线；设`SINK = 14`后，一行和两行标题的正文从同一行开始。`marginBottom: pt(0)`防止标题默认的外边距叠加到预留高度上。
+
+### 2 · 让目录自己填好
+
+<Excerpt region="contents" />
+
+Markdown中的`:::toc`为每个列入的标题印一条目录项：编号、标题、前导符、页码标签，以及通过`subtitle`印出的作者。`buildDocument`反复排版整本书，直到页码标签不再变化，所以随笔改了名或变长，目录都会更新（[目录](/zh/docs/configuration#目录)）。Postext 1.4.1把目录项编号的中线放在基线之上0.3 × 目录项字号处，而Chrome把Gloock的中线放在其基线之上0.3125 em处，所以0.3 × 15 ÷ 0.3125 = 14.4 pt的编号正好立在15 pt标题的基线上；12 pt的编号会高出0.3 mm。带篇的书还会为每个`:::part`加一行，由`toc.parts.design`绘制，见<RecipeLink slug="parts-in-colour">用一个属性给各篇配色</RecipeLink>。
+
+### 3 · 左页印作者，右页印随笔标题
+
+<Excerpt region="running-heads" />
+
+每个书眉都锚定在页面上，距上边缘11 mm，由`parity`决定左右：页码与正文外侧边缘对齐，作者名或标题再往里7 mm。`head()`中的`pages: 'body'`让书眉不出现在章首页，因为那里的署名行已经写明作者；页脚的`pages: 'opener'`则在章首页改印页脚页码（[文本元素](/zh/docs/configuration#文本元素)）。`{chapterTitle}`印出不带编号的随笔标题。
+
+### 4 · 封面和目录不计入编号
+
+<Excerpt region="front" />
+
+设了`numbered: false`，封面和目录不会推进计数器，所以Hazlitt是I；`toc: false`让它们不进入目录（[标题样式](/zh/docs/configuration#标题样式)）。两种样式都继承该层级的`breakBefore`，奇偶性为`'any'`，所以目录不用`:::pagebreak`就紧接封面排在第2页。在单栏书中，封面样式跨越整页，因为留在栏内的设计会在栏的上下边缘被裁掉，风景上方会空出20 mm白纸。
+
+### 5 · 每个颜色都连同调色板关联一起写出
+
+<Excerpt region="palette" />
+
+在1.4.1中，`colorPalette`作用于文本样式，但作用不到设计元素，所以`col()`在每个颜色的`paletteId`旁写出它的hex值：署名行、书眉和封面都用这个hex绘制。把`main-color`指向墨色，可以覆盖配置中没有重新指定的所有默认值，否则它们会印成引擎的蓝色`#295AA3`。
+
+## 变化
+
+### 列出每篇随笔最初发表的刊物
+
+`toc.subtitle`可以印出标题的任何属性，所以同一份Markdown也能在每篇标题下列出其最初发表的刊物。
+
+```diff
+-const authorLine = { enabled: true, attr: 'author', fontFamily: 'Spectral', fontSize: pt(10),
++const authorLine = { enabled: true, attr: 'source', fontFamily: 'Spectral', fontSize: pt(10),
+```
+
+### 左页印书名
+
+很多书在左页印书名，右页印章名；`{title}`从Markdown的前置元数据中读取书名，印出AFOOT。
+
+```diff
+-const versoAuthor = head('verso-author', '{attr.author}', 'even',
++const versoAuthor = head('verso-author', '{title}', 'even',
+```
+
+### 每篇随笔都从右页开始
+
+奇偶性设为`'odd'`时，Stevenson移到第9页，前面是空白的第8页。这时两种前置部分样式需要各自设`'any'`，否则目录会继承`'odd'`，排到第3页，前面空出一个左页。
+
+```diff
+-  breakBefore: { enabled: true, parity: 'any' } }; // 'any'：每篇都从下一页开始
++  breakBefore: { enabled: true, parity: 'odd' } };
+-const bare = { numbered: false, toc: false, header: { elements: [] }, footer: { elements: [] } };
++const bare = { numbered: false, toc: false, breakBefore: { enabled: true, parity: 'any' },
++  header: { elements: [] }, footer: { elements: [] } };
+```
+
+## 常见问题
+
+- Hazlitt在句子中间引用诗句。段落不保留换行，所以每行诗都单独成段，放在`:::paragraphs{style="verse"}`容器里，诗后接续的句子用不缩进的`runon`样式。如果用Markdown引用块，它会印成固定的`#666666`灰色斜体，带正文的首行缩进而没有左右缩进，1.4.1里也没有设置可以改变这一点。
+- 标题缺少的属性什么也不印，也不报警告。缺了`author="…"`，这篇随笔的署名行和左页书眉都是空的，目录中标题下的那一行也会消失。
+- 第2步的14.4 pt只适用于Gloock。换其他字体时，要先查出Chrome把它的中线放在基线之上多远：设`textBaseline = 'middle'`，`measureText('I').alphabeticBaseline`返回这个距离的相反数，单位是像素。然后把`numberFontSize`设为0.3 × 目录项字号除以这个以em计的距离（Hanken Grotesk是0.2675 em）。

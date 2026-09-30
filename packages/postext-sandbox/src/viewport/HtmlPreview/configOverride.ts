@@ -8,7 +8,8 @@ import {
   resolvePageConfig,
 } from 'postext';
 import type { Dimension, DesignSlot, LayoutType, PageMargins, PostextConfig, ResolvedHeadingsConfig } from 'postext';
-import { htmlViewerDpi, LOCALE_TO_HYPHENATION, PADDING_PX, type ColumnMode } from './constants';
+import { htmlViewerDpi, PADDING_PX, type ColumnMode } from './constants';
+import { defaultDocumentLocale } from '../../controls/hyphenation';
 
 /** The leaf a heading design was drawn on: its size and the margins that
  *  place the design's container (the band under the text block's top-left
@@ -405,7 +406,7 @@ export function buildHtmlConfigOverride(
   // The document's own language first (its hyphenation locale, else its
   // `locale`); the app language only stands in when it names neither.
   const hypLocale =
-    base.bodyText?.hyphenation?.locale ?? base.locale ?? LOCALE_TO_HYPHENATION[locale] ?? 'en-us';
+    base.bodyText?.hyphenation?.locale ?? base.locale ?? defaultDocumentLocale(locale);
 
   // Single-column mode: disable widow/orphan/runt avoidance (no column breaks
   // to protect — the whole document lives on one tall, scrollable page).

@@ -1,0 +1,87 @@
+---
+title: "从一段Markdown字符串到一页设计好的版面"
+summary: "一段带frontmatter的Markdown字符串排成双栏杂志页，在Canvas上绘制，用六种命名颜色取代默认的蓝色。"
+description: "这支pen在第一次构建前加载字体，每次构建都新建配置，用frontmatter排章首页，再把各页画到Canvas上。"
+question: "怎样把一段Markdown字符串排成设计好的页面，让标题、粗体字和项目符号不再是默认的蓝色？"
+aliases: ["第一个文档", "入门", "快速上手", "Markdown转Canvas", "默认样式", "旅行专题", "杂志排版", "first document", "getting started", "hello world", "quick start", "markdown to canvas", "default skin"]
+pageNotes: { "1": "页面上部是一条靛蓝色色带：白色盐田组成的格子上，一条虚线小路爬上沙丘，通向丘顶的石堆；下方是标题The Salt Road、导语和署名。", "2": "随后的左页：页码和作为书眉的文章标题，两栏两端对齐的正文带靛蓝色小标题，一个以粗体起首词开头的破折号列表，文末符号，以及细线下的版权信息。" }
+---
+
+## 成品一览
+
+小杂志*Field Notes*里一篇旅行专题的开头几页。第1页是右页章首页：靛蓝色色带占满页面上方58%，里面画着盐田和沙丘，标题用54 pt的Young Serif，下面两栏两端对齐的正文以粗体起首词开篇。翻过来的第2页在加宽字距的大写书眉下接排，结尾是文末符号和版权信息。整个设计由一个配置工厂函数和六种颜色的调色板决定。标题取自一级标题，导语、作者和日期取自Markdown字符串的frontmatter，所以只要标题能排进两行，同一支pen能排任何文章；只有那幅画专属这一篇。
+
+## 做法
+
+### 1 · 第一次构建之前，加载每一款字体
+
+<Excerpt region="fonts" />
+
+Postext用浏览器已经加载的字体测量文字，并缓存宽度，所以字体到达之前运行的构建会一直保留错误的断行。这套工具从Fontsource加载这些文件，也就是PDF会嵌入的同一批文件。`buildWithFonts`随后检查页面用到的所有字体。如果某个块或设计元素用了未加载的字体，它会在控制台打印警告，加载该字体后重新构建；如果Fontsource没有这款字体，pen会报错停止（见“常见问题”）。正文字体的粗体和斜体变体加载时不打印警告，而且只在字族确实有这些变体时才加载。
+
+### 2 · 先给颜色命名，再引用名字
+
+<Excerpt region="palette" />
+
+配置里的每种颜色都写成`col('id')`，即调色板id加上旁边的十六进制值。`bodyText.boldColor`、`italicColor`、`referenceColor`和`unorderedLists.color`引用`ink`，`headings.color`引用强调色。引擎对标题、粗体、斜体和项目符号的默认颜色都链接到`main-color`，而这个调色板把该项指向强调色，所以你没写的那些会变成靛蓝而不是蓝色。Postext 1.4.1绘制页眉、页脚和章首页元素以及`referenceColor`时用的是十六进制值，忽略id，所以设计对象写成工厂函数：`config()`在每次构建时调用它们，`col()`每次都从`palette`里复制当前的十六进制值。文末符号是一个引用`band`的行内色块，所以换色也会影响它。默认书眉不读调色板，替换它之前一直是蓝色（第5步）。
+
+### 3 · 用代码画的插图
+
+<Excerpt region="art" />
+
+盐田、沙丘和石堆是一段SVG字符串，由同一个调色板和一个带种子的随机数生成器画出，所以每次运行画出的风景都一样，只有代码变了截图才会变。它按`PAGE.width` × `BAND`毫米的画框绘制，资源也按每毫米10 px声明同样的画框，所以图正好填满色带，色带加高时画出的图也更高。章首页通过一个按id引用该资源的图像元素显示它。
+
+### 4 · frontmatter写出章首页
+
+<Excerpt region="opener" />
+
+一级标题横跨两栏，它的章首页是一个元素槽：一个延伸到出血的靛蓝色方框、那幅画，以及上下串联的四段文字。标题变长时会把导语和署名往下推，不会与它们重叠；但超过两行，署名就会落到浅色的盐田上。`{titleText}`是标题文字；`{subtitle}`、`{author}`和`{publishDate}`是frontmatter字段。标题里的`\\`在你指定的位置给标题换行（[标题中的换行](/zh/docs/document-format#标题中的换行)）。`minHeight`从上页边距起算，所以预留的高度止于色带下方5 mm。
+
+### 5 · 用自己的书眉替换默认的蓝色书眉
+
+<Excerpt region="running-heads" />
+
+不写`header`，引擎的默认设置就会回来：每页都是Open Sans，下面一条通宽的线。这里每个页码都锚定在物理页面上并按奇偶筛选，所以总在外侧边缘。它的标签锚定在页码上，用`right-of`或`left-of`相隔`GAP`毫米；三四位数的页码会把标签往外推，而不会撞上它。`pages: 'body'`让这四个元素不出现在章首页。页脚只放章首页用的一个底部页码；既然设了`footer`，正文页也就没有了默认的居中页码。
+
+### 6 · 用新的配置构建，然后绘制
+
+<Excerpt region="build" />
+
+`config()`是一个函数，因为引擎按对象标识缓存每份解析后的配置，只有每次构建都拿到一个新对象，修改的设置才会生效。`showPages`按装订成书的样子摆放页面，第1页单独在右侧，并用`renderPageToCanvas`绘制每一页。
+
+## 变化
+
+### 看看配置替换了什么
+
+用空配置构建，同一段Markdown会排在17 × 24 cm的页面上，正文是8 pt的EB Garamond，标题是蓝色Open Sans，线上方是蓝色书眉；这套工具会替你加载这些字体，并打印控制台警告。
+
+```diff
+-  () => buildDocument({ markdown, resources }, config()), markdown);
++  () => buildDocument({ markdown, resources }, {}), markdown);
+```
+
+### 给整页换色
+
+换掉强调色，下一次运行就会用新颜色画色带、页码、小标题和文末符号，因为`config()`每次运行时`col()`都会复制id旁的新十六进制值，风景函数每次绘制时也会读取`palette`。
+
+```diff
+-  band: '#2b3a67', // the one accent (an indigo): the band, the folios, the subheads
++  band: '#3f5b3a', // the one accent (a pine green): the band, the folios, the subheads
+```
+
+### 把一页画到你自己的Canvas上
+
+`renderPageToCanvas`按文档的dpi（默认300）乘以`scale`把Canvas设成页面的像素尺寸，所以`scale: 0.5`大约是150 dpi，屏幕上显示多大由CSS决定。
+
+```diff
+-showPages(doc, {
+-  title: t({ en: 'From a Markdown string to a designed page',
+-    es: 'De una cadena Markdown a una página diseñada' }),
+-});
++const canvas = document.body.appendChild(document.createElement('canvas'));
++renderPageToCanvas(doc.pages[0], doc, canvas, { scale: 0.5 });
+```
+
+## 常见问题
+
+- Young Serif只有一个字重。标题默认是粗体，所以这里必须写`headings.fontWeight: 400`：不写的话，工具会去找Fontsource没有的粗体Young Serif，pen会报错停止。
