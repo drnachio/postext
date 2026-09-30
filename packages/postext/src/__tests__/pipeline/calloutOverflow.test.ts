@@ -249,3 +249,31 @@ describe('splitMinLines guards text, not pictures', () => {
     expect(frames(lax).map((f) => kidsOf(lax, f))).toEqual([['resource'], ['paragraph']]);
   }, 30000);
 });
+
+describe('page-span box after figures flushed onto its fresh page', () => {
+  // The box does not fit under the text of page 1 and moves to page 2, where
+  // the page-span figure cited before it is set first and leaves too little
+  // room: the box goes on to page 3 instead of running off page 2 (the case
+  // of a wide figure standing upright across a vertical page).
+  const md = (lines: number) =>
+    `${filler(lines)} :ref{id="wide"}\n\n:::callout{type="panel"}\n${filler(5)}\n:::\n\n${filler(4)}`;
+  const config = (): PostextConfig => ({
+    ...TWO_COL(),
+    calloutStyles: [{ id: 'panel', title: '', span: 'page' as const, placement: 'here' as const, keepTogether: true }],
+  });
+  // 140 × 88 mm at the page's width: the figure nearly fills a page.
+  const wide = figure('wide', 1400, 880, 'page');
+
+  it('moves the box to the next page instead of overflowing the figure page', () => {
+    for (const lines of [34, 40, 46]) {
+      const doc = build(md(lines), config(), [wide]);
+      const [box] = frames(doc);
+      expect(box, `${lines}`).toBeDefined();
+      expect(floatsOf(doc).find((f) => f.id === 'wide')?.page, `${lines}`).toBe(1);
+      expect(box!.pageIndex, `${lines}`).toBe(2);
+      const area = doc.pages[2]!.contentArea;
+      expect(box!.bbox.y + box!.bbox.height, `${lines}`).toBeLessThanOrEqual(area.y + area.height + 0.5);
+      expect((doc.warnings ?? []).filter((w) => w.kind === 'calloutOverflow'), `${lines}`).toEqual([]);
+    }
+  });
+});

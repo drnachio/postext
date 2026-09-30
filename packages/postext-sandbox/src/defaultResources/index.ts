@@ -19,7 +19,7 @@
 import type { Resource, ResourcePlacement, TableCell, TableModel } from 'postext';
 import { invalidateResourceImage } from '../controls/resourceImages';
 import { putBlobAt } from '../storage/blobStore';
-import { COVER_VH, COVER_VW, coverArtSvg } from './cover';
+import { COVER_VH, COVER_VW, COVER_ZH_VH, COVER_ZH_VW, coverArtSvg, coverArtVerticalSvg } from './cover';
 import { GUIDE_LANGS, byLang, guideLang, type ByLang, type GuideLang } from './lang';
 
 export { GUIDE_LANGS, guideLang, type GuideLang } from './lang';
@@ -319,6 +319,13 @@ export interface GuideFigure {
   generate: (lang: GuideLang) => string;
   width: number;
   height: number;
+  /** A size of its own in an edition drawn to other proportions. */
+  sizeIn?: Partial<Record<GuideLang, { width: number; height: number }>>;
+}
+
+/** A figure's canvas size in an edition. */
+export function figureSize(fig: GuideFigure, lang: GuideLang): { width: number; height: number } {
+  return fig.sizeIn?.[lang] ?? { width: fig.width, height: fig.height };
 }
 
 /** A figure drawn with the kit: the Chinese edition's labels are set in the
@@ -330,7 +337,13 @@ const drawn = (draw: (lang: GuideLang) => string) => (lang: GuideLang): string =
  *  Widths follow the shared unit system: COLUMN_VW for column-span figures,
  *  PAGE_VW for page-span ones (see FIGURE_SPECS placements). */
 export const SVG_FIGURES: Record<string, GuideFigure> = {
-  'default-guide-cover': { generate: coverArtSvg, width: COVER_VW, height: COVER_VH },
+  // The Chinese edition, a vertical book, has a portrait cover: one of its
+  // own pages beside the title strip.
+  'default-guide-cover': {
+    generate: (lang) => (lang === 'zh-Hans' ? coverArtVerticalSvg() : coverArtSvg(lang)),
+    width: COVER_VW, height: COVER_VH,
+    sizeIn: { 'zh-Hans': { width: COVER_ZH_VW, height: COVER_ZH_VH } },
+  },
   'default-layout-pipeline': { generate: drawn(pipelineSvg), width: COLUMN_VW, height: 300 },
   'default-convergence-loop': { generate: drawn(convergenceLoopSvg), width: PAGE_VW, height: 170 },
   'default-measurement-speed': { generate: drawn(measurementSpeedSvg), width: COLUMN_VW, height: 190 },
@@ -933,6 +946,15 @@ const TABLE_SPECS: TableSpec[] = [
   },
 ];
 
+/** A figure's placement in an edition. The Chinese edition is vertical: a
+ *  figure stands upright in its tier and the breadth it takes on the sheet
+ *  is the room it uses in the flow, so a wide figure set across both tiers
+ *  would hold a whole page for the strip it fills. There every figure takes
+ *  one tier, the other going on with the text. */
+function figurePlacement(placement: ResourcePlacement, lang: GuideLang): ResourcePlacement {
+  return lang === 'zh-Hans' && placement.span === 'page' ? { ...placement, span: 'column' } : placement;
+}
+
 /** The blob id a figure's SVG is stored under in one language. Each
  *  language keeps its own copy: the Spanish and the English guide can be
  *  open (and edited, as drafts) side by side without one's figures
@@ -950,7 +972,7 @@ export function defaultResourcesSignature(): string {
   const parts: unknown[] = ['blob-ids-by-locale'];
   for (const lang of GUIDE_LANGS) {
     for (const [fileId, fig] of Object.entries(SVG_FIGURES)) parts.push(fileId, fig.generate(lang));
-    for (const f of FIGURE_SPECS) parts.push(f.id, f.fileId, f.placement, f.caption[lang], f.altText[lang]);
+    for (const f of FIGURE_SPECS) parts.push(f.id, f.fileId, figurePlacement(f.placement, lang), f.caption[lang], f.altText[lang]);
     for (const t of TABLE_SPECS) parts.push(t.id, t.placement, t.caption[lang], t.model(lang));
   }
   return JSON.stringify(parts);
@@ -991,8 +1013,8 @@ export async function buildDefaultResources(locale = 'en'): Promise<Resource[]> 
       id: spec.id,
       typeId: 'figure',
       kind: 'svg',
-      svg: { fileId: figureBlobId(spec.fileId, lang), width: fig.width, height: fig.height },
-      placement: spec.placement,
+      svg: { fileId: figureBlobId(spec.fileId, lang), ...figureSize(fig, lang) },
+      placement: figurePlacement(spec.placement, lang),
       caption: spec.caption[lang],
       altText: spec.altText[lang],
       createdAt: now,
