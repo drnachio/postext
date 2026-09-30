@@ -282,45 +282,63 @@ const SKIPPED_RE = /^[\s\u00AD\u200B-\u200D\u2060\uFEFF]+$/;
 
 /** Whether a number's neighbour is looked past (a space, a zero-width
  *  character). */
-export function isSkippedNeighbour(g: string): boolean {
+function isSkippedNeighbour(g: string): boolean {
   return SKIPPED_RE.test(g);
 }
 
-/** Whether `g` is Latin text to a number beside it: a letter, or a
- *  punctuation mark of a run set sideways (`verticalOrientation`: UAX #50
- *  `R`), not a digit. A Chinese character or mark, and a sign that stands
- *  upright (× © ℃), are not. */
-function isLatinNeighbour(g: string | undefined, region: CjkRegion): boolean {
-  return g !== undefined && !isAsciiDigit(g) && verticalOrientation(g, region).orient === 'sideways';
-}
+/** Marks a number's Latin neighbour is looked for past although a vertical
+ *  line does not set them sideways: the en and em dashes, turned in a cell
+ *  of their own (`pages 3–5 of`), and the curly quotes (`the “49” copies`).
+ *  Chinese text uses them too; there the look reaches a Chinese character. */
+const LOOKED_PAST = new Set(['–', '—', '‘', '’', '“', '”']);
+
+const LETTER_RE = /^\p{L}/u;
 
 /**
- * Whether the digits `graphemes[from, to)` run with Latin text: the nearest
- * grapheme past any spaces on each side is Latin ({@link isLatinNeighbour}).
- * A side with no grapheme (the start or the end of the text) is not Latin,
- * so a text cut out of a longer one never reads a number as Latin that the
- * whole text would stand upright.
+ * Whether the numbers of `graphemes` run with Latin text: `(from, to)`
+ * tells it for the digits `graphemes[from, to)`, Latin text on both sides.
+ * On each side the look goes past any spaces, digits (another number),
+ * punctuation marks of a sideways run (UAX #50 `R`: `, . : ; ( ) ' " - /`
+ * and the like) and the marks of {@link LOOKED_PAST}; the side is Latin
+ * when the first other grapheme is a letter set sideways (Latin, Greek,
+ * Cyrillic), and not when a Chinese character or mark, a sign that stands
+ * upright (× © ℃) or the start or end of the text comes first: the colons
+ * of `上午12:30:45开会` and the brackets of `见图(3)` lead to Chinese text,
+ * those of `at 12:30 pm` and `said (7) of` to words. A text cut out of a
+ * longer one so never reads a number as Latin that the whole text would
+ * stand upright: its look stops sooner, on the same graphemes. Each side
+ * is read once for the whole text (one pass each way).
  */
-export function runsWithLatin(graphemes: readonly string[], from: number, to: number, region: CjkRegion = 'mainland'): boolean {
-  let b = from - 1;
-  while (b >= 0 && isSkippedNeighbour(graphemes[b]!)) b--;
-  if (b < 0 || !isLatinNeighbour(graphemes[b], region)) return false;
-  let a = to;
-  while (a < graphemes.length && isSkippedNeighbour(graphemes[a]!)) a++;
-  return a < graphemes.length && isLatinNeighbour(graphemes[a], region);
+export function latinReader(graphemes: readonly string[], region: CjkRegion = 'mainland'): (from: number, to: number) => boolean {
+  const n = graphemes.length;
+  // What a grapheme says about the side it lies on: 1 Latin, 0 not, -1
+  // looked past.
+  const says = graphemes.map((g): -1 | 0 | 1 => {
+    if (isSkippedNeighbour(g) || isAsciiDigit(g) || LOOKED_PAST.has(g)) return -1;
+    if (verticalOrientation(g, region).orient !== 'sideways') return 0;
+    return LETTER_RE.test(g) ? 1 : -1;
+  });
+  // left[i]: the look from `i` towards the start; right[i]: towards the end.
+  const left = new Array<boolean>(n);
+  const right = new Array<boolean>(n);
+  for (let i = 0, reach = false; i < n; i++) left[i] = reach = says[i] === -1 ? reach : says[i] === 1;
+  for (let i = n - 1, reach = false; i >= 0; i--) right[i] = reach = says[i] === -1 ? reach : says[i] === 1;
+  return (from, to) => from > 0 && to < n && left[from - 1]! && right[to]!;
 }
 
 /**
  * Where the automatic tate-chu-yoko cells of `graphemes` start, with their
  * length: the short numbers of {@link uprightDigitCandidates} but those
- * that run with Latin text ({@link runsWithLatin}): a number between two
+ * that run with Latin text ({@link latinReader}): a number between two
  * Latin words (`printed in 49 and 32 copies`) follows the sentence it is
  * part of, which is set sideways (#222). A number next to a Chinese
  * character, or alone between Chinese text, stands upright.
  */
 export function uprightDigitRuns(graphemes: readonly string[], digits: number, region: CjkRegion = 'mainland'): Map<number, number> {
   const out = uprightDigitCandidates(graphemes, digits);
-  for (const [i, n] of out) if (runsWithLatin(graphemes, i, i + n, region)) out.delete(i);
+  if (out.size === 0) return out;
+  const latin = latinReader(graphemes, region);
+  for (const [i, n] of out) if (latin(i, i + n)) out.delete(i);
   return out;
 }
 

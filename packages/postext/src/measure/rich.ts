@@ -19,7 +19,7 @@ import { cjkJoinBreaks, hasCJK } from './cjk';
 import { composeCjkParagraph, cjkWordBreaks, composesAsCjk, spanMarks, type CjkWordBreaks } from './cjkCompose';
 import { graphemeCount, graphemesOf } from './graphemes';
 import { fontEm, getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, lineBaselineOffset, measuringVertically, verticalTextWidth, withMeasureWritingMode } from './vertical';
-import { isSkippedNeighbour, runsWithLatin, uprightDigitCandidates } from '../writingMode';
+import { latinReader, uprightDigitCandidates } from '../writingMode';
 import { sliceSpan } from '../parse/links';
 import type { CjkRegion } from '../types';
 import { NO_BREAK_SPACES, WORDS_AND_SPACES_RE, isBlankText, isBreakingSpace, isBreakingSpaceRun } from './spaces';
@@ -760,36 +760,45 @@ export function setsObject(span: InlineSpan): boolean {
   return span.ref !== undefined || span.footnote !== undefined || span.chip !== undefined || span.swatch !== undefined || span.math !== undefined || span.mathRender !== undefined;
 }
 
-/** A stand-in for what a span sets other than its text, or sets upright:
- *  no Latin text to a number beside it. */
+/** A stand-in for what a span sets other than its text (a chip, a
+ *  formula, a swatch, a reading, a warichu note), or sets upright: no
+ *  Latin text to a number beside it. */
 const NOT_LATIN = '\uFFFC';
+/** A stand-in for a note marker or a reference: looked past, as a space
+ *  is (`printed in 49[^1] copies`). */
+const LOOKED_PAST = '\u200B';
 
 /**
  * Vertical text: `spans` with each short number that runs with Latin text
- * (`runsWithLatin`: `printed in 49 and 32 copies`) set sideways, as
+ * (`latinReader`: `printed in 49 and 32 copies`) set sideways, as
  * `:sideways[…]` sets it, where the words it runs with lie past a space or
  * in another span (#222). A line keeps each word of a vertical paragraph in
  * a segment of its own, and a segment alone would read such a number
  * without its neighbours and stand it upright (`uprightDigitRuns`): the
- * number is measured and painted sideways as the paragraph reads it. A
- * number whose Latin neighbours touch it inside its span (`(49)`) is left
- * as it is: its own text reads it so. Nothing changes when `digits` is 0
- * or no span holds a digit.
+ * number is measured and painted sideways as the paragraph reads it,
+ * also one whose marks touch it (`(49)`, `49,`): the words those lead to
+ * may lie in another segment. A piece of the paragraph never reads a
+ * number as Latin that the paragraph stands upright (`latinReader`), so
+ * the numbers left alone read alike in every segment. Nothing changes
+ * when `digits` is 0 or no span holds a digit.
  */
 export function sidewaysNumberSpans(spans: InlineSpan[], digits: number, region: CjkRegion): InlineSpan[] {
   if (!(digits > 0)) return spans;
   const numbered = (s: InlineSpan): boolean => /[0-9]/.test(s.text) && !setsObject(s) && !s.ruby && !s.warichu && !s.combineUpright && !s.orientation && !s.script;
   if (!spans.some(numbered)) return spans;
-  // The paragraph as graphemes; a span that sets something other than its
-  // text (a reference, a formula, a reading, a note) or that the author set
-  // upright is one character that is not Latin.
+  // The paragraph as graphemes; a note marker or a reference is looked
+  // past, and a span that sets something else than its text (a formula, a
+  // chip, a reading, a warichu note) or that the author set upright is one
+  // character that is not Latin.
   const all: string[] = [];
   const firsts: number[] = [];
   for (const s of spans) {
     firsts.push(all.length);
-    if (setsObject(s) || s.ruby || s.warichu || s.combineUpright || s.orientation === 'upright') all.push(NOT_LATIN);
+    if (s.footnote !== undefined || s.ref !== undefined) all.push(LOOKED_PAST);
+    else if (setsObject(s) || s.ruby || s.warichu || s.combineUpright || s.orientation === 'upright') all.push(NOT_LATIN);
     else for (const g of graphemesOf(s.text)) all.push(g);
   }
+  const latin = latinReader(all, region);
   let out: InlineSpan[] | undefined;
   spans.forEach((s, k) => {
     const own = numbered(s) ? graphemesOf(s.text) : undefined;
@@ -797,9 +806,7 @@ export function sidewaysNumberSpans(spans: InlineSpan[], digits: number, region:
     if (own) {
       for (const [i, n] of uprightDigitCandidates(own, digits)) {
         const from = firsts[k]! + i;
-        if (!runsWithLatin(all, from, from + n, region)) continue;
-        const touched = i > 0 && i + n < own.length && !isSkippedNeighbour(own[i - 1]!) && !isSkippedNeighbour(own[i + n]!);
-        if (!touched) cuts.push([i, i + n]);
+        if (latin(from, from + n)) cuts.push([i, i + n]);
       }
     }
     if (!own || cuts.length === 0) {

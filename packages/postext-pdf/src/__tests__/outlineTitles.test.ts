@@ -177,6 +177,24 @@ describe('bookmarks of headings with a forced break', () => {
     const markdown = '# 年会 \\\\ Annual meeting {style="back"}\n\n正文。\n\n# Author \\\\ contributions {style="back"}\n\n正文。';
     expect(await outlineTitles(markdown, cfg)).toEqual(['年会Annual meeting', 'Author contributions']);
   }, 60_000);
+
+  // A part's title reads its break as a heading's does (#221 review).
+  it('join the halves of a part title the same way', async () => {
+    const markdown = ':::part{number="第一部" title="风月宝鉴 \\\\ 2026年版"}\n:::\n\n# 甲\n\n正文。\n\n:::part{number="第二部" title="金陵 \\\\ 十二钗"}\n:::\n\n# 乙\n\n正文。\n\n:::part{number="Part III" title="Stone \\\\ and dream"}\n:::\n\n# 丙\n\n正文。';
+    expect(await outlineTitles(markdown, zh(300))).toEqual(['第一部 风月宝鉴2026年版', '甲', '第二部 金陵\u3000十二钗', '乙', 'Part III Stone and dream', '丙']);
+  }, 60_000);
+
+  // The 《》 of a book title are set by the layout, no characters of the
+  // title: the break is found past them, and the author's space elsewhere
+  // in the title stays (#221 review).
+  it('find the break past the brackets of a book title', async () => {
+    const markdown = '# 第一章 \\\\ 中 API:book[手册]\n\n正文。\n\n# 关于举办 \\\\ 2026年:book[红楼梦]研讨\n\n正文。';
+    // One line, and wrapped at the break, at the author's space or inside
+    // the brackets.
+    for (const width of [300, 100, 90]) {
+      expect(await outlineTitles(markdown, zh(width)), String(width)).toEqual(['第一章\u3000中 API《手册》', '关于举办2026年《红楼梦》研讨']);
+    }
+  }, 60_000);
 });
 
 describe('bookmarks of wrapped headings', () => {

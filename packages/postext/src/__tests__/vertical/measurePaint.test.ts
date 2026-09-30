@@ -172,12 +172,17 @@ describe('vertical text: an ASCII paragraph measures its numbers in the cells th
     });
   }
 
-  it('sets the numbers of "In 1998 the 120 men met on page 7." sideways, the full stop being Latin', () => {
+  // A full stop is Latin only when a word follows it (#222 review): the one
+  // that ends the paragraph leads to nothing, and 7 stands as without it.
+  it('sets 7 of "…on page 7." in one cell, and sideways when another sentence follows', () => {
     const cfg = config('zh-Hant', 'left');
     cfg.cjk = { ...cfg.cjk, uprightDigits: 4 };
-    const doc = buildDocument({ markdown: 'In 1998 the 120 men met on page 7.' }, cfg);
-    const segs = flowLines(doc).flatMap(({ line }) => line.segments ?? []);
-    expect(segs.filter((s) => /[0-9]/.test(s.text)).map((s) => [s.text, s.orientation])).toEqual([['1998', 'sideways'], ['120', 'sideways'], ['7', 'sideways']]);
+    const numbers = (markdown: string) => flowLines(buildDocument({ markdown }, cfg))
+      .flatMap(({ line }) => line.segments ?? [])
+      .filter((s) => /[0-9]/.test(s.text))
+      .map((s) => [s.text, s.orientation]);
+    expect(numbers('In 1998 the 120 men met on page 7.')).toEqual([['1998', 'sideways'], ['120', 'sideways'], ['7.', undefined]]);
+    expect(numbers('In 1998 the 120 men met on page 7. They left.')).toEqual([['1998', 'sideways'], ['120', 'sideways'], ['7', 'sideways']]);
   });
 
   it('measures an ASCII heading and list item of a vertical book the same way', () => {

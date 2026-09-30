@@ -1,9 +1,9 @@
-import { charBefore, charFrom, flattenTitleBreaks, joinsWide, plainTitleBreak, TITLE_BREAK_RE } from '../parse/inlineFormatting';
+import { BREAK_PLACEHOLDER, charBefore, charFrom, flattenTitleBreaks, joinsWide, plainTitleBreak, plainTitleBreaks, TITLE_BREAK_RE } from '../parse/inlineFormatting';
 import { collapseBreakingSpaces, collapseTitleSpaces } from '../measure/spaces';
 import type { InlineSpan } from '../parse';
 import type { DocumentMetadata } from '../types';
 import { metadataText } from '../frontmatter';
-import type { VDTBlock, VDTPage } from '../vdt';
+import type { VDTBlock, VDTLine, VDTPage } from '../vdt';
 
 /** A minimal view of a page used by `computeChapterTitles` to detect
  *  blank parity-padding pages. We accept just the flags rather than the
@@ -551,15 +551,23 @@ export interface BlockLinesTextOptions {
  *  running heads read a heading this way, and so do the PDF bookmarks and
  *  document title (with `options.plainTitleBreaks`). */
 export function blockLinesText(block: VDTBlock, options?: BlockLinesTextOptions): string {
+  const plain = options?.plainTitleBreaks === true && (block.titleBreaks?.length ?? 0) > 0;
   const lines = block.lines.map((line) => {
     // The hyphen repeated from the line before (`repeatHyphen`) is not text.
-    const own = line.repeatedHyphen && line.text.startsWith('-') ? line.text.slice(1) : line.text;
+    const cut = line.repeatedHyphen && line.text.startsWith('-') ? 1 : 0;
+    const own = line.text.slice(cut);
     const raw = flattenTitleBreaks(own);
-    return { raw, t: raw.replace(BREAKING_EDGES_RE, '') };
+    const t = raw.replace(BREAKING_EDGES_RE, '');
+    // Which characters of `t` the layout inserted (`VDTLineSegment.inserted`:
+    // the 《》 of a book title), for `plainBreaksOf`.
+    const lead = plain ? BREAKING_HEAD_RE.exec(raw)![0].length : 0;
+    const ins = plain ? insertedMask(line, cut)?.slice(lead, lead + t.length) : undefined;
+    return { raw, t, ins };
   });
   let text = '';
+  const inserted: boolean[] = [];
   block.lines.forEach((line, i) => {
-    const { raw, t } = lines[i]!;
+    const { raw, t, ins } = lines[i]!;
     if (t.length === 0) return;
     const next = block.lines[i + 1];
     const { drop, separator } = lineJoin(t, line, next, /[ \t]$/.test(raw));
@@ -572,29 +580,62 @@ export function blockLinesText(block: VDTBlock, options?: BlockLinesTextOptions)
       // were never apart, whatever the offsets say.
       else if (broken.length === 0 && joinsWide(charBefore(t, t.length), charFrom(after.t, 0))) sep = '';
     }
-    text += t.slice(0, t.length - drop) + (next === undefined ? '' : sep);
+    const piece = t.slice(0, t.length - drop) + (next === undefined ? '' : sep);
+    text += piece;
+    if (plain) for (let k = 0; k < piece.length; k++) inserted.push(ins?.[k] === true);
   });
-  return (options?.plainTitleBreaks ? plainBreaksOf(text, block) : text).trim();
+  return (plain ? plainBreaksOf(text, block, inserted) : text).trim();
+}
+
+/** For each UTF-16 unit of `line.text` from `from` on, whether the layout
+ *  inserted it (a segment with `inserted`); undefined when the segments do
+ *  not spell the line's text. */
+function insertedMask(line: VDTLine, from: number): boolean[] | undefined {
+  const segs = line.segments;
+  if (!segs || !segs.some((s) => s.inserted)) return undefined;
+  const mask: boolean[] = [];
+  let spelled = '';
+  for (const s of segs) {
+    spelled += s.text;
+    for (let k = 0; k < s.text.length; k++) mask.push(s.inserted === true);
+  }
+  return spelled === line.text ? mask.slice(from) : undefined;
 }
 
 /** `text`, a heading's lines read back, with each forced break the lines
  *  set as a space read as plain text (see `plainTitleBreak`). The title
  *  ends the text, so a break's index in the title (`titleBreaks`, the
- *  number prefix excluded) counts back from the end of `text`; a break
- *  whose place does not hold a space is left alone. */
-function plainBreaksOf(text: string, block: VDTBlock): string {
+ *  number prefix excluded) counts back from the end of `text`, past the
+ *  characters the layout inserted (`inserted`, one flag per unit of
+ *  `text`: the 《》 of a book title are no characters of the title); a
+ *  break whose place does not hold a space is left alone. */
+function plainBreaksOf(text: string, block: VDTBlock, inserted: readonly boolean[]): string {
   const breaks = block.titleBreaks;
   const length = block.titleLength;
-  if (!breaks || breaks.length === 0 || length === undefined || text.length < length) return text;
-  const start = text.length - length;
+  if (!breaks || breaks.length === 0 || length === undefined) return text;
+  // Where each character of the title's own text sits in `text`.
+  const own: number[] = [];
+  for (let k = 0; k < text.length; k++) if (!inserted[k]) own.push(k);
+  if (own.length < length) return text;
+  const start = own.length - length;
   let out = text;
   // The last break first, so the places of the others hold.
   for (const i of [...breaks].sort((a, b) => b - a)) {
-    const at = start + i;
+    const at = own[start + i]!;
     if (out[at] !== ' ') continue;
     if (plainTitleBreak(charBefore(out, at), charFrom(out, at + 1)) === '') out = out.slice(0, at) + out.slice(at + 1);
   }
   return out;
+}
+
+/** A title written with forced breaks (`\\`, as in a part's `title`
+ *  attribute) as plain text reads it: each break as `plainTitleBreak` reads
+ *  it, nothing where a Chinese character meets a digit or Latin text, the
+ *  ideographic space between two Chinese characters, a space between Latin
+ *  words. The PDF bookmarks of the parts read their titles this way, as
+ *  those of the headings read theirs (#221). */
+export function plainTitleText(title: string): string {
+  return plainTitleBreaks(title.replace(TITLE_BREAK_RE, BREAK_PLACEHOLDER));
 }
 
 /** The breaking whitespace a line ends / starts with. */

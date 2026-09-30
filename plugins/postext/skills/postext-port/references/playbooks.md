@@ -600,7 +600,7 @@ Decimal comma vs point in data and captions; `{,}` in LaTeX.
   chapter end).
 - Taiwan defaults: basic line breaking, every mark full width and centred, no compression, wavy `:book[…]`.
   Short numbers stand upright (`cjk.uprightDigits` 2; `:tcy[…]` for three or four characters); Latin words
-  lie sideways. Literary sources usually write numbers in Chinese numerals: keep them.
+  lie sideways, and so do the short numbers inside a Latin sentence (a colophon's `chapters 49 and 32`). Literary sources usually write numbers in Chinese numerals: keep them.
 - Openers: `numberingTemplate: '第{1:一}回'` and `breakBefore.parity: 'odd'` (the recto is the LEFT page);
   the 回目 couplet as `# 上聯 \\ 下聯`. A design opener lays out in the turned frame: "top" is the page's
   right edge.

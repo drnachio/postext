@@ -5,7 +5,7 @@ import { verticalRuns, uprightDigitRuns, forcedVerticalRuns, segmentOrientation 
 import { graphemesOf } from '../../measure/graphemes';
 import { atomicSpanToken } from '../../measure/rich';
 import { withMeasureWritingMode } from '../../measure/vertical';
-import type { PostextConfig, Dimension, Resource } from '../../types';
+import type { CjkRegion, PostextConfig, Dimension, Resource } from '../../types';
 import type { VDTDocument, VDTLine, VDTLineSegment } from '../../vdt';
 import { installSizedStub, stubCharWidth } from './stub';
 
@@ -307,7 +307,7 @@ describe('the canvas paints what was measured (#190)', () => {
 // runs sideways; a Chinese character, an upright sign or the end of the
 // text on either side and it stands.
 describe('tate-chu-yoko: a number in a Latin sentence runs sideways (#222)', () => {
-  const cells = (s: string, digits = 2) => verticalRuns(graphemesOf(s), 'taiwan', digits).filter((r) => r.glyph.orient === 'tcy').map((r) => r.text);
+  const cells = (s: string, digits = 2, region: CjkRegion = 'taiwan') => verticalRuns(graphemesOf(s), region, digits).filter((r) => r.glyph.orient === 'tcy').map((r) => r.text);
 
   it('reads the nearest neighbours past the spaces', () => {
     expect(cells('printed in 49 and 32 copies')).toEqual([]);
@@ -324,6 +324,37 @@ describe('tate-chu-yoko: a number in a Latin sentence runs sideways (#222)', () 
     expect(cells('a 30×40 print')).toEqual(['30', '40']);
     expect(cells('49 copies')).toEqual(['49']);
     expect(cells('Part 12')).toEqual(['12']);
+  });
+
+  // An ASCII mark is Latin to a number only when a word lies past it: in
+  // Chinese text the colons of a time, the hyphens of a range or a date and
+  // the brackets or quotes around a number lead to a Chinese character or
+  // to the end of the text, and every number stands (#222 review).
+  it('stands a number whose marks lead to Chinese text, not to a word', () => {
+    for (const region of ['mainland', 'taiwan'] as const) {
+      const at = (s: string, digits = 2) => cells(s, digits, region);
+      expect(at('上午12:30:45开会'), region).toEqual(['12', '30', '45']);
+      expect(at('比分为3:2:1'), region).toEqual(['3', '2', '1']);
+      expect(at('第3-5-7章'), region).toEqual(['3', '5', '7']);
+      expect(at('于2026-09-30发布', 4), region).toEqual(['2026', '09', '30']);
+      expect(at('于2026/9/28发布', 4), region).toEqual(['2026', '9', '28']);
+      expect(at('见图(3)所示'), region).toEqual(['3']);
+      expect(at('他住在"12"号楼'), region).toEqual(['12']);
+      expect(at("第'3'条"), region).toEqual(['3']);
+      expect(at('他说“12”次'), region).toEqual(['12']);
+    }
+    // The same marks between the words of a Latin sentence.
+    expect(cells('met at 12:30 pm, chapters (7) and "12" of it')).toEqual([]);
+  });
+
+  it('reads a range, curly quotes and a run of numbers inside a Latin sentence', () => {
+    // The en and em dashes are turned in cells of their own, and the curly
+    // quotes too, but a word lies past them.
+    expect(cells('The years 1998–2001 and pages 3–5 of vol. 2', 4)).toEqual(['2']);
+    expect(cells('chapter 3—the last—and the “49” copies')).toEqual([]);
+    expect(cells('pages 3 4 5 of it')).toEqual([]);
+    // In Chinese text they lead to Chinese characters.
+    expect(cells('第3–5章，1998—2001年', 4)).toEqual(['3', '5', '1998', '2001']);
   });
 
   const cfg = (digits: 2 | 3 = 3, locale = 'zh-Hant') => config(locale, { cjk: { uprightDigits: digits, latinSpacing: { value: 0, unit: 'em' } } });
@@ -352,6 +383,43 @@ describe('tate-chu-yoko: a number in a Latin sentence runs sideways (#222)', () 
       ['120', '', 10], ['2026', '', 20], ['9', '', 10], ['28', '', 10], ['15', '', 10],
     ]);
     for (const seg of segments(doc)) if (seg.kind === 'text') expect(painted(seg, 3), seg.text).toBeCloseTo(seg.width, 6);
+  });
+
+  it('reads the words past a note marker', () => {
+    const doc = buildDocument({ markdown: 'This book was printed in 49[^1] copies and 32 more.\n\n[^1]: Of which 12 are lost.' }, cfg(2));
+    const body = segments(doc).filter((s) => /[0-9]/.test(s.text) && s.footnoteId === undefined);
+    expect(body.map((s) => [s.text, s.orientation])).toEqual([['49', 'sideways'], ['32', 'sideways']]);
+    for (const seg of segments(doc)) if (seg.kind === 'text' && seg.footnoteId === undefined) expect(painted(seg, 2), seg.text).toBeCloseTo(seg.width, 6);
+  });
+
+  it('turns a number in brackets or quotes with its sentence, and keeps it whole in any column', () => {
+    const text = 'He said (49) and "12", then 7; ok.';
+    for (const height of [25, 30, 40, 60, 80, 200]) {
+      const column = config('zh-Hant', { cjk: { uprightDigits: 2, latinSpacing: { value: 0, unit: 'em' } }, page: { width: pt(600), height: pt(height + 60), dpi: 72, margins: { top: pt(30), right: pt(30), bottom: pt(30), left: pt(30) } } });
+      const doc = buildDocument({ markdown: text }, column);
+      expect(numbers(doc).map(([t, o]) => [t, o]), String(height)).toEqual([['49', 'sideways'], ['12', 'sideways'], ['7', 'sideways']]);
+      for (const seg of segments(doc)) if (seg.kind === 'text') expect(painted(seg, 2), `${height}: ${seg.text}`).toBeCloseTo(seg.width, 6);
+      // No line opens on a closing bracket or a comma, or ends on an
+      // opening bracket.
+      for (const line of lines(doc)) {
+        expect(line.text.trimStart(), String(height)).not.toMatch(/^[),;]/);
+        expect(line.text.trimEnd(), String(height)).not.toMatch(/\($/);
+      }
+    }
+  });
+
+  // A piece of a line cut out of such a text once read the marks as Latin
+  // and was painted wider than measured (`2:1` of `3:2:1`).
+  it('measures and paints a score, a time and a date in Chinese text alike in any column', () => {
+    const text = '比分为3:2:1，上午12:30:45开会，见图(3)，于2026/9/28发布。';
+    for (const height of [25, 30, 35, 40, 60, 100]) {
+      const column = config('zh-Hant', { cjk: { uprightDigits: 2, latinSpacing: { value: 0, unit: 'em' } }, page: { width: pt(600), height: pt(height + 60), dpi: 72, margins: { top: pt(30), right: pt(30), bottom: pt(30), left: pt(30) } } });
+      const doc = buildDocument({ markdown: text }, column);
+      expect(segments(doc).filter((s) => s.orientation === 'sideways'), String(height)).toEqual([]);
+      for (const seg of segments(doc)) if (seg.kind === 'text') expect(painted(seg, 2), `${height}: ${seg.text}`).toBeCloseTo(seg.width, 6);
+      const tcy = segments(doc).flatMap((s) => verticalRuns(graphemesOf(s.text), 'taiwan', 2)).filter((r) => r.glyph.orient === 'tcy').map((r) => r.text);
+      expect(tcy, String(height)).toEqual(['3', '2', '1', '12', '30', '45', '3', '9', '28']);
+    }
   });
 
   it('reads the words past a line break, a style change and a link', () => {
