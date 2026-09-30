@@ -22,10 +22,11 @@ const SPACES = /[^\S\u3000]+/g;
 
 /** A heading's printed lines as one line of text: joined back as they were
  *  broken (`blockLinesText`: nothing between two Chinese characters, the
- *  word a hyphen divided whole again), white space collapsed but for the
- *  ideographic space. */
+ *  word a hyphen divided whole again), a forced break (`\\`) as plain text
+ *  reads it (nothing where a Chinese character meets a digit or Latin
+ *  text, #221), white space collapsed but for the ideographic space. */
 export function headingLinesText(block: VDTBlock): string {
-  return blockLinesText(block).replace(SPACES, ' ').trim();
+  return blockLinesText(block, { plainTitleBreaks: true }).replace(SPACES, ' ').trim();
 }
 
 /** A heading's number as its lines read it back: white space collapsed

@@ -459,7 +459,7 @@ Los números de página son los que el documento imprime realmente. Un documento
 
 ### Saltos de línea en los títulos
 
-Escribe `\\` dentro de un encabezado (o dentro del atributo `title` de una parte) para forzar un salto de línea allí donde el título se muestra como tal: el encabezado en columna sigue fluyendo y muestra un espacio, mientras que el `{titleText}` de un diseño de apertura salta de línea en ese punto (en cualquier modo de `overflow` del elemento de texto). Las cabeceras de página, `{chapterTitle}`, `{partTitle}` y el índice del PDF siempre componen el título en una sola línea.
+Escribe `\\` dentro de un encabezado (o dentro del atributo `title` de una parte) para forzar un salto de línea allí donde el título se muestra como tal: el encabezado en columna sigue fluyendo y muestra un espacio, mientras que el `{titleText}` de un diseño de apertura salta de línea en ese punto (en cualquier modo de `overflow` del elemento de texto). Las cabeceras de página, `{chapterTitle}`, `{partTitle}` y el índice del PDF siempre componen el título en una sola línea. En chino o en japonés el salto se lee como un espacio ideográfico entre dos caracteres de esa escritura (un título en pareado); donde uno de ellos se junta con una cifra o con texto latino (`关于举办 \\ 2026年…`), la página pone el espacio entre chino y latín, y los marcadores y el título del PDF unen las dos mitades sin nada, como se escribe el chino en texto plano.
 
 ```md
 # Concepto de salud y enfermedad. \\ Salud comunitaria {author="I. Zango Martín"}

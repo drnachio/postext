@@ -459,7 +459,7 @@ The page numbers are the ones the document actually prints. A document laid out 
 
 ### Line breaks in titles
 
-Write `\\` inside a heading (or inside a part's `title` attribute) to force a line break where the title is displayed as a title: the in-column heading keeps flowing and shows a space there, while an opener design's `{titleText}` breaks the line at that point (in every `overflow` mode of the text element). Running heads, `{chapterTitle}`, `{partTitle}` and the PDF outline always render the title on one line.
+Write `\\` inside a heading (or inside a part's `title` attribute) to force a line break where the title is displayed as a title: the in-column heading keeps flowing and shows a space there, while an opener design's `{titleText}` breaks the line at that point (in every `overflow` mode of the text element). Running heads, `{chapterTitle}`, `{partTitle}` and the PDF outline always render the title on one line. In Chinese or Japanese the break reads as an ideographic space between two characters of the script (a couplet title); where one of them meets a digit or Latin text (`关于举办 \\ 2026年…`) the page sets the Han–Latin space, and the PDF bookmarks and document title join the two halves with nothing, as plain Chinese text is written.
 
 ```md
 # Concepts of health and illness. \\ Community health {author="I. Zango Martín"}
