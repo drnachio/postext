@@ -3132,6 +3132,9 @@ function placeDocumentPass(
     /** The box already moved to a fresh page (or sits on an empty one):
      *  whatever does not fit there is force-placed and overflows. */
     let forceHere = false;
+    /** Times the box left a fresh page whose room the floats flushed onto
+     *  it had taken — bounded. */
+    let floatPageMoves = 0;
 
     for (;;) {
       let page = doc.pages[cursor.pageIndex]!;
@@ -3274,6 +3277,24 @@ function placeDocumentPass(
             action = { kind: 'split', fit: band, need: needFor(band.spacing, fragment.result.totalHeight, 0), fragment };
           }
         }
+      }
+      // A fresh page whose room went to the floats flushed onto it (a
+      // figure page, a page-span figure standing upright across a vertical
+      // page) holds no text to cut: a box a page would hold moves on to the
+      // next page rather than overflow this one.
+      if (
+        !action && forceHere && fit && floatPageMoves < 2
+        && fit.spacing + result.totalHeight > fit.roomPx + 0.5
+        && result.totalHeight <= contentArea.height + 0.01
+        && !pageHasContent(page) && (page.floats?.length ?? 0) > 0
+      ) {
+        floatPageMoves++;
+        pendingSpacing = 0;
+        const startPageIndex = cursor.pageIndex;
+        do {
+          advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+        } while (cursor.pageIndex === startPageIndex);
+        continue;
       }
       if (!action && forceHere && fit) {
         action = { kind: 'whole', fit, need: fit.need, result };
