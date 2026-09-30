@@ -1,0 +1,64 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 85,
+  "status": "published",
+  "chapter": "page",
+  "order": 120,
+  "level": 2,
+  "genres": ["textbook"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["design-elements", "character-grid", "vertical-writing"],
+    "also": [
+      "warichu", "right-binding", "heading-styles", "section-running-heads",
+      "unnumbered-headings", "design-anchoring", "design-images", "heading-numbering",
+      "heading-attributes", "chinese-numerals", "cjk-fonts", "paragraph-styles",
+      "mirrored-margins", "page-size", "page-background", "color-palette", "pdf-export"
+    ]
+  },
+  "answers": ["Q104", "Q90", "Q87"],
+  "gaps": ["leaf-folios", "line-rules"],
+  "gotchas": [
+    "cjk-locale-tag", "cjk-fonts-slices", "cjk-spread-order",
+    "cjk-source-script-mix", "headings-drop-h1-break"
+  ],
+  "related": ["red-ink-commentary", "vertical-novel-right-bound", "baseline-grid-book-page", "certificate-single-page"],
+  "engine": { "postext": "1.9.0", "postextPdf": "1.9.0" },
+  "kit": ["core", "fonts", "viewer", "pdf", "images", "cjk"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": {
+    "hero": [2, 3], "card": "spread", "pages": [1, 2, 3, 6, 7], "expect": { "pages": [7, 7] }
+  },
+  "downloads": { "pdf": true },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "論語集註 (Collected Commentaries on the Analects), juan 1, the book 學而 from its opening to the end of its tenth section, in the copy made for the 四庫全書 (Siku quanshu, 1773–1782); Wikisource transcription, revision 523110. 巳 is read as 已 or 己 by its sentence; 開 in 張敬夫's 必開其政 is corrected to 聞, as in the words of the Analects he repeats and in Wikisource's other edition (論語集注卷一, revision 2598582); the two characters the transcription gives as glyph images are set as 傳 (以忠信為傳習之本) and 邦 (夫子至於是邦也); and six variant forms Noto Serif TC does not draw (廹 徳 絶 逺 専 内) are set in their standard forms",
+          "es": "論語集註 (Comentarios reunidos a las Analectas), juan 1, el libro 學而 desde el comienzo hasta el final de su décima sección, en la copia hecha para el 四庫全書 (Siku quanshu, 1773–1782); transcripción de Wikisource, revisión 523110. 巳 se lee como 已 o 己 según la frase; el 開 de 必開其政, en la cita de 張敬夫, se cambia por 聞, como en las palabras de las Analectas que repite y en la otra edición de Wikisource (論語集注卷一, revisión 2598582); los dos caracteres que la transcripción da como imágenes se componen como 傳 (以忠信為傳習之本) y 邦 (夫子至於是邦也), y seis variantes que Noto Serif TC no dibuja (廹 徳 絶 逺 専 内) se componen en su forma normal"
+        },
+        "who": "Zhu Xi (1130–1200); transcription by Wikisource editors",
+        "source": "https://zh.wikisource.org/w/index.php?title=%E5%9B%9B%E6%9B%B8%E7%AB%A0%E5%8F%A5%E9%9B%86%E8%A8%BB_(%E5%9B%9B%E5%BA%AB%E5%85%A8%E6%9B%B8%E6%9C%AC)/%E8%AB%96%E8%AA%9E%E5%8D%B701&oldid=523110",
+        "license": "CC-BY-SA-4.0"
+      },
+      {
+        "what": {
+          "en": "The title page, the division into leaves and the note on this edition (據四庫全書本錄文…)",
+          "es": "La portada, la división en hojas y la nota sobre esta edición (據四庫全書本錄文…)"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Noto Serif TC", "license": "OFL-1.1" },
+      { "family": "LXGW WenKai TC", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-29",
+  "updated": "2026-09-29"
+}

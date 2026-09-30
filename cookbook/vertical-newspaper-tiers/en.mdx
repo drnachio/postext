@@ -1,0 +1,79 @@
+---
+title: "A vertical newspaper page in tiers"
+summary: "Two sheets of a 1912 Chinese paper set vertically: the body in two tiers with a rule between them, the telegrams in three, the lead headline down both."
+description: "A vertical Chinese newspaper in Postext: two tiers (欄) of 25 characters with a rule between, masthead and lead headline in one design, telegrams in three tiers."
+question: "How do I set a Chinese newspaper page vertically, in tiers with rules between them?"
+aliases: ["欄", "栏", "tiers", "vertical newspaper", "Chinese newspaper", "Shenbao", "申報", "masthead", "banner headline", "dateline", "telegrams", "1912"]
+pageNotes: { "1": "The front sheet: a vermilion masthead block down the right edge with 民元舊聞 reversed out in a Kai face and the issue line, 中華民國元年　歲次壬子 and 今日出紙兩張, below it; beside it the lead headline 西湖公宴孫中山紀事 in heavy Song, centred down the whole height, and its deck; then the report in two tiers with a black rule between them, and the next story, 浙都督追祭攻寧陣亡將士, opening in the lower tier under a hairline, with its deck and dateline.", "2": "The second sheet: a head across the top with the paper's name and 第二張; the memorial report ends in the upper tier, the victory-monument story fills the rest, its inscription in Kai two characters lower; at the left, the telegrams in a box of three tiers under a vermilion 電報; the colophon across the foot." }
+---
+
+## What you'll build
+
+Two sheets of a Chinese newspaper as it looked in 1912, the first year of the Republic, when the papers were still set down the page. The text comes from the Shanghai *Shenbao*: Sun Yat-sen at a banquet on West Lake, where Chen Qimei stood up to object to a speech and stood up again to apologise; the memorial for the Zhejiang soldiers killed taking Nanjing; the victory monument Hangzhou raised for the returning army. Four telegrams from the first issue of the Provisional Government's gazette fill a box. The body runs in two tiers (欄) of 25 characters with a rule between them, the telegrams in three. A vermilion masthead and the lead headline, set down the full height of the page, open the front sheet. <RecipeLink slug="newspaper-front-page">Newspaper front page</RecipeLink> builds the same page across.
+
+## Method
+
+### 1 · Turn two columns into two tiers
+
+The code is [the short answer](#the-short-answer) above. With `writingMode: 'vertical-rl'` the page is a horizontal page turned a quarter turn, so `layoutType: 'double'` stacks two tiers, the upper one read first, and the column rule becomes a rule across the page between them ([vertical writing](/en/docs/configuration#vertical-writing)). The character grid sets each tier to 25 characters of 五號 (10.5 pt), the long end of a newspaper column, and the page to 29 lines; it rounds the gutter to two ems and grows the margins so the tiers sit in the middle of them ([character grid](/en/docs/configuration#character-grid)).
+
+Body text has two tiers at most. The telegrams get three inside a box: `span="page"` makes it as tall as the type area, `placement="bottom"` floats it to the foot of the flow, which on a vertical page is the left edge, and `:::columns{count=3}` cuts it into tiers. `columnGap` is what three tiers of 18 characters of 9 pt leave of the type area's 546 pt, so each tier holds whole characters.
+
+<PageShot page={2} crop="0.04,0.12,0.36,0.78" caption="Page 2: the telegrams in three tiers, the stripe on the box's top edge drawn as a rule down its right side." />
+
+### 2 · Put the masthead and the lead headline in one design
+
+<Excerpt region="front" />
+
+The lead story's headline had to cross both tiers under the masthead. A heading with `span: 'page'` is laid out as an opener at the head of a page, so a second one after the masthead would have started a page of its own. The H1 of the page is therefore the lead story, and its heading style draws the masthead above the headline: a vermilion block 6.5 lines deep with the paper's name reversed out and, under it, the issue line: the year of the Republic and of the cycle, and 今日出紙兩張, "two sheets today"; then the headline in Noto Serif TC 900 at 44 pt. In the flow the design's width is the height of the type area on the sheet, so `size: { width: 'fill' }` with `align: 'center'` centres the headline across both tiers. The design is 13 lines deep, a whole number of grid lines, so the text after it starts on a line of the grid.
+
+<PageShot page={1} crop="0.54,0.1,0.44,0.82" caption="Page 1: the masthead block, the headline centred down both tiers, the deck beside it and the dateline at the head of its line." />
+
+### 3 · Open each story with a heading design
+
+<Excerpt region="heads" />
+
+An in-column heading design lives inside its tier. Its rule is `direction: 'horizontal'` in the flow, so it runs down the tier on the sheet, a hairline between two stories. The headline starts at the head of the tier, the deck two characters lower, and the dateline gives the place, the paper and the day the report appeared. `minHeight` keeps each head four lines deep, so the text under every head starts on the grid.
+
+### 4 · Head the second sheet and sign it at the foot
+
+<Excerpt region="pagehead" />
+
+Running heads stay horizontal on a vertical page, as clreq describes. The header's frame is the margin above the tiers; the grid grows that margin, and `HEAD` repeats the grid's sum so the rule sits 6 mm above the first character. `pages: 'body'` leaves page 1 to the masthead. The colophon is an attribute of the H1, so the English and Spanish editions each print their own line under the same Chinese pages.
+
+### 5 · Load each voice with the text it sets
+
+<Excerpt region="voices" />
+
+Fontsource serves each weight of these faces as about a hundred files, and `loadCjkFonts` fetches the ones a text touches. Noto Serif TC 400 gets the whole sample; its 700 and 900 get only the headlines and the telegrams' labels, Noto Sans TC the masthead lines, datelines and colophon, and LXGW WenKai TC the decks, the inscription and the paper's name. A face given too little text fails the capture (C12) and names the characters it borrowed from another face.
+
+## Variations
+
+### Give the telegrams four tiers
+
+Four tiers of 14 characters fit the same height, and the box narrows to the lines they need.
+
+```diff
+-  columnGap: pt((HEIGHT - 3 * 18 * 9) / 2), // three tiers of 18 characters of 9 pt
++  columnGap: pt((HEIGHT - 4 * 14 * 9) / 3), // four tiers of 14 characters of 9 pt
+```
+
+In the Markdown, `:::columns{count=4}`.
+
+### Set the stories in a single tier
+
+One tier of 52 characters runs the height of the type area, 193 mm down the sheet for every line. Each story head now takes four lines of the whole page, and the two sheets become three.
+
+```diff
+-  layoutType: 'double', writingMode: 'vertical-rl', // binding 'auto' becomes 'right'
++  layoutType: 'single', writingMode: 'vertical-rl', // binding 'auto' becomes 'right'
+```
+
+With `charsPerLine: 2 * CHARS + 2` in the grid.
+
+## Pitfalls
+
+- Fontsource's Noto Serif TC declares 爲, the form the *Shenbao* printed, in the range of one of its files, but that file has no glyph for it: the canvas drew it in a system face and the PDF had none (C25). The reports set 為.
+- The Wikisource transcriptions have slips the page corrects: 己紀 for 已紀 and, twice, 倍侍 for 陪侍 in the banquet report; in the memorial report 勸勵一番現在將土, with 土 for 士 and the object after 一番, set here as 勸勵現在將士一番, "encouraged the officers and men present". The page also sets the standard form of four variants: 寧 for 寗, 總 for 縂 (three times) and 決 for 决 (twice) in the telegrams, 刊 for 刋 in the inscription.
+- LXGW WenKai TC, as Fontsource serves it, draws 為 as 爲, so the inscription, in Kai, shows the older form the Song text lacks.
+- The three tiers of the box are thirds of the type area and do not line up with the two tiers of the body. A newspaper sets such a section to its own grid; the rule on the box's right edge keeps the two grids apart.

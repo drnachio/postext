@@ -1,0 +1,67 @@
+---
+title: "A pinyin primer: readings over every character"
+summary: "Mono ruby in a Hong Kong first reader: {人之初|rén zhī chū} centres one pinyin syllable over each character, in Andika, inside a 28 pt line gap."
+description: "A Chinese first reader set with Postext: a pinyin syllable over every character of 26 pt Kai, titles with their readings, writing squares, and the full code."
+question: "How do I print pinyin over every character of a Chinese text, as a first reader does?"
+aliases: ["pinyin", "注音版", "first reader", "Chinese primer", "ruby", "三字經", "Three Character Classic", "田字格", "writing squares"]
+pageNotes: { "1": "Lesson one, 人之初: a pale green band with a red badge 第一課, a seedling and the title with its pinyin rén zhī chū; four couplets of the Three Character Classic with a pinyin syllable over every character; six writing squares holding 人之本不相以; a note for families.", "2": "Lesson two, 昔孟母, on the story of Mencius’s mother: the same page with a loom shuttle crossing the warp, the squares holding 子母山五方名 and a note on Mencius and Dou Yanshan.", "3": "Lesson three, 養不教: a brush setting a stroke in a writing square, four couplets, the squares holding 父師學幼老何 and a note on the tone of bù.", "4": "Lesson four, 玉不琢: a carved jade disc on a red cord, four couplets, the squares holding 玉成知方友禮, a note for families and the colophon." }
+---
+
+## What you'll build
+
+Two spreads of 《蒙學誦讀》, an invented first reader from Hong Kong, where children read the *Three Character Classic* aloud in Putonghua. Each page is a lesson of four couplets in 一号 Kai (26 pt), every character under its pinyin syllable. The syllables are set in Andika because it draws the one-storey a and g that Chinese schoolbooks print. A pale band carries a red lesson badge, a drawing, and the title at 初号 (42 pt) with its own readings. Under the text, six writing squares (田字格) hold the characters to copy, and a note tells the family what the lines mean. The Spanish counterpart is <RecipeLink slug="reading-primer-syllables">the primer with syllable chips</RecipeLink>, where each syllable is a coloured chip instead of a reading over a character.
+
+A primer leaves the rules of a Chinese book on purpose. A child reads a few large characters at a time, so a line holds twelve at 26 pt, where a book sets 25 to 40 at 10.5 pt, and the leading is a little over twice the size to hold the readings. Each couplet stands centred on a line of its own, neither justified nor indented. The text is in Kai, the face that follows the brush, because it shows the strokes a child learns to write; a book would set it in Song.
+
+## Method
+
+### 1 · A syllable over each character
+
+The code is [the short answer](#the-short-answer) above. `{人之初|rén zhī chū}` gives three characters three readings, split on the spaces: each syllable is centred over its own character, and a line may break between them. A reading takes no room of its own. It sits in the line gap, 54 − 26 = 28 pt here, and a gap narrower than the reading is reported as `rubyExceedsLeading`. A syllable wider than its character does take room: it widens that character's box, and in a centred line the characters that follow move off the grid. The readings are set at the size where the widest syllables here, xiāng and zhuān, still fit over one character, 0.38 em (9.9 pt): every couplet is eight characters long and each character keeps its square. At 0.45 em, 性相近，習相遠 would stretch to eight and a half characters and open gaps around 相.
+
+### 2 · The title keeps its readings
+
+<Excerpt region="opener" />
+
+Design text prints no readings, so the title cannot come from the opener's design. The level-1 heading, 第一課, draws the band, the drawing and the red badge; the title is the level-2 heading under it, a plain heading at 初号 that the text composer sets with its pinyin. `reserve: false` leaves the band and the drawing out of the heading's height, and `span: 'page'` paints them under the text.
+
+A heading design ignores `parity`, so the drawing has an element on each side of the page: `{attr.left}` 14 mm from the left edge and `{attr.right}` 14 mm from the right. The lessons on versos write `# 第一課 {left="sprout"}` and the ones on rectos `{right="shuttle"}`, so every drawing sits on the outer side of the spread; the element whose attribute is missing draws nothing.
+
+### 3 · Six squares from one attribute
+
+<Excerpt region="squares" />
+
+`### 我會寫 {write="人之本不相以"}` gives the design the six characters in one attribute. Every Han character of LXGW WenKai TC is one em wide, so a tracking of the squares' pitch less one em (18.4 − 10.6 mm) steps the characters from square to square, and one text element fills the row. The square is an SVG drawn in code: a red frame and a dashed cross.
+
+### 4 · Each face loads its own characters
+
+<Excerpt region="voices" />
+
+Fontsource cuts each Chinese face into about a hundred files by character range. The Kai face sets the whole sample and loads the files that hold its characters. The Hei face sets only the badges, the labels and the footer, so it gets that text and fetches a few files. Andika comes from `loadFonts`, which adds the latin-ext file when the text has letters past Latin-1, as ǎ and ǐ are.
+
+### 5 · Hong Kong punctuation from the locale
+
+<Excerpt region="locale" />
+
+`zh-HK` sets Hong Kong's rules: punctuation at full width and the basic line-breaking rules, which no couplet here needs. LXGW WenKai TC draws its commas and full stops in the middle of the square, as Hong Kong and Taiwan print them, and that is why this primer comes from Hong Kong. A mainland first reader is set in Kai as well, in simplified characters with the comma and the full stop in the lower left of the square. Fontsource has no Kai text face for simplified Chinese, though, and the Traditional one would crowd those marks against the next character, so a mainland page in this Cookbook takes Noto Serif SC, the Song face of <RecipeLink slug="chinese-novel-horizontal">the mainland novel page</RecipeLink>.
+
+## Variations
+
+### Show the grid while you set the page
+
+`show: true` draws the twelve squares of every line on the canvas; the PDF leaves them out unless `renderToPdf` is given `characterGrid: true`.
+
+```diff
+-  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: 11 },
++  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: 11, show: true },
+```
+
+### Put zhuyin beside the characters
+
+Bopomofo readings stand in a column right of each character; <RecipeLink slug="zhuyin-vertical-reader">the zhuyin reader</RecipeLink> sets them down a vertical page.
+
+## Pitfalls
+
+- This recipe offers no PDF. The kit's `fontsourceProvider` embeds a face's latin file only, and the tone letters ā ǎ ǐ ǒ ǔ are in latin-ext, so a PDF would lose them and postext-pdf would report each as `missingGlyph`. If you need one, set the readings in a Chinese face, whose files `cjkPdfProvider` picks character by character.
+
+- Check each character of the squares against the region's standard forms. LXGW WenKai TC draws 為 with the 爫 top of 爲, an older form that passes in running text, as in 老何為 and 為人子 here, but not in a square a Hong Kong child copies. Lesson three practises 幼 instead.
