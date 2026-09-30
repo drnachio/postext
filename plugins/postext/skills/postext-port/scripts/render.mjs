@@ -301,6 +301,11 @@ for (const w of engineWarnings) {
     console.log(`WARN ${w.kind} at ${where(w.sourceStart)}: ${text}${snippet ? ` ${snippet}` : ''}`);
   }
 }
+// doc.configWarnings: settings the engine could not honour as written (an
+// unknown numbering format, a character grid larger than the page).
+for (const w of doc.configWarnings ?? []) {
+  console.log(`CONFIG ${w.kind}: ${postext.formatWarning ? postext.formatWarning(w) : JSON.stringify(w)}`);
+}
 if (computeWarnings) {
   const IGNORE = new Set(['missingFont', 'missingFontFamily', 'storageUnavailable', opt('show-loose') ? '' : 'looseLine']);
   // The kinds the engine reported above are listed once.
@@ -324,6 +329,8 @@ if (OUT || PNG) {
       return (await loadFace(v.file)).bytes;
     },
     resourceBytes: (fileId) => blobs.get(fileId),
+    // missingGlyph (characters no file of a face has), variableFontDefaultInstance, cffEmbeddedWhole.
+    onWarning: (w) => console.log(`PDF-WARN ${w.kind}: ${w.message ?? JSON.stringify(w)}`),
     // SVGs outside the PDF vector subset: rasterise with ImageMagick when present.
     rasterizeSvg: async (svgText, w, h) => {
       try {

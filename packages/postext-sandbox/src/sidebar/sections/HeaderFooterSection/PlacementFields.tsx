@@ -57,6 +57,8 @@ export function PlacementFields({ placement, slotKind, siblings = [], onChange }
     { value: 'container', label: labels.headerFooterElementAnchorContainer },
     { value: 'page', label: labels.headerFooterAnchorToPage },
     { value: 'bleed', label: labels.headerFooterAnchorToBleed },
+    // The fore-edge: running heads and folios only.
+    ...(slotKind === 'header' || slotKind === 'footer' ? [{ value: 'outer', label: labels.headerFooterAnchorToOuter }] : []),
     ...siblings.map((s) => ({ value: s.id, label: `${kindLabel(s.kind)} #${s.index + 1}` })),
   ];
 

@@ -31,7 +31,9 @@
  * row metrics the full-table layout reports.
  */
 
+import { measuringVertically, withMeasureWritingMode } from '../measure/vertical';
 import type { InlineSpan, RefCase } from '../parse';
+import { suffixJoiner } from '../parse/inlineFormatting';
 import type {
   ColorPaletteEntry,
   ResolvedCaptionStyleConfig,
@@ -60,11 +62,13 @@ import type { MeasureBlockOptions } from '../measure';
 import { isSwatchFill, measureRichSnippet } from '../measure/rich';
 import { isBlankText } from '../measure/spaces';
 import { linkSegments } from '../measure/links';
+import { graphemeCount } from '../measure/graphemes';
 import { dimensionToPx } from '../units';
 // Caption / table-cell / note content is parsed with the shared snippet
 // parser so measurement and the sandbox's glyph→snippet mapping agree on
 // one span list (`:ref{…}` becomes a one-char placeholder span).
-import { parseInlineSnippetSpans as parseRefAwareSpans } from '../parse/inlineSnippet';
+import { parseInlineSnippetSpans } from '../parse/inlineSnippet';
+import { dropAnnotations } from '../parse/annotations';
 import { sliceSpan } from '../parse/links';
 import { chipContextOf, fontSizePxOf, resolveChipSpans, type ChipContext } from './chips';
 import { mergeCaptionStyle } from '../defaults/captionStyle';
@@ -74,6 +78,12 @@ import { resolveBodyStyle } from './styles';
 import { uppercasePreservingLength } from './buildBlockKind';
 import { lineTrailingTracking } from '../lineInk';
 import type { ResourceNumberingMap } from './resourceNumbering';
+
+/** A caption's, a note's or a cell's spans. The Chinese annotations
+ *  (#193–#195) are set as plain text there: resource lines draw no marks,
+ *  readings or warichu rows; a book title keeps its 《》 when they are the
+ *  document's book-title mark (`bookBrackets`). */
+const parseRefAwareSpans = (text: string, bookBrackets: boolean) => dropAnnotations(parseInlineSnippetSpans(text), bookBrackets);
 
 /** Non-breaking space used to glue a resolved `:ref` label into a single
  *  atomic text token, so a post-measurement pass can tag it reliably. */
@@ -111,6 +121,17 @@ export interface ResourceLayoutInput {
   /** Widest a figure's image (bitmap or SVG) may be set; the caption and
    *  note keep `columnWidth`. Defaults to `columnWidth`. */
   maxBodyWidth?: number;
+  /** Set the block upright on a vertical page (`VDTPage.flow`): laid out
+   *  in an upright frame counter-rotated in the flow (`rotation.direction:
+   *  'ccw'`, which the page's clockwise frame turns back), so the picture
+   *  and its caption read as on a horizontal page. `columnWidth` (the
+   *  column's width in the flow: the tier's height on the sheet) bounds
+   *  the frame's height; its width is the picture's (a bitmap at its size,
+   *  an SVG as tall as the tier leaves room for with its caption), at most
+   *  `maxLength` px, and the block reports that width as its height in the
+   *  flow. A table is laid out `maxLength` wide, its rows cut to the tier
+   *  by the placer. `rotate` and `rotatedLength` are ignored. */
+  upright?: { maxLength: number };
 }
 
 /** The rows a table slice carries. `startRow > 0` makes it a continuation:
@@ -172,6 +193,9 @@ export function resolveRefLabel(
   resourceNumbering: ResourceNumberingMap,
   resourceTypes: ResourceType[],
   resources: Resource[],
+  /** Between the label and the number (`captionStyle.labelNumberGap`); a
+   *  type's own caption style may set another. */
+  labelNumberGap: string = NBSP,
 ): string {
   if (ref.text !== undefined && ref.text.length > 0) return ref.text;
   const entry = resourceNumbering[ref.resourceId];
@@ -179,30 +203,33 @@ export function resolveRefLabel(
   if (ref.style === 'number') return number;
   const resource = resources.find((r) => r.id === ref.resourceId);
   const type = resource ? resourceTypes.find((t) => t.id === resource.typeId) : undefined;
+  const gap = typeof type?.captionStyle?.labelNumberGap === 'string' ? type.captionStyle.labelNumberGap : labelNumberGap;
   if (ref.style === 'full') {
-    return labelWithNumber(applyRefCase(type?.name ?? type?.shortLabel ?? '', ref.case), number);
+    return labelWithNumber(applyRefCase(type?.name ?? type?.shortLabel ?? '', ref.case), number, gap);
   }
   // default: short label + number (e.g. "Fig. 1.7")
-  return labelWithNumber(applyRefCase(type?.shortLabel ?? type?.name ?? '', ref.case), number);
+  return labelWithNumber(applyRefCase(type?.shortLabel ?? type?.name ?? '', ref.case), number, gap);
 }
 
-/** "Fig. 1.7": a type's label and a number, glued by a no-break space. A
- *  type whose `numberingTemplate` is empty has no number, and its label
- *  stands alone (EF-149). */
-function labelWithNumber(label: string, number: string): string {
+/** "Fig. 1.7": a type's label and a number, glued by a no-break space (or
+ *  the caption style's `labelNumberGap`: 图1-1). A type whose
+ *  `numberingTemplate` is empty has no number, and its label stands alone
+ *  (EF-149). */
+function labelWithNumber(label: string, number: string, gap: string = NBSP): string {
   if (!label) return number;
-  return number ? `${label}${NBSP}${number}` : label;
+  return number ? `${label}${gap}${number}` : label;
 }
 
 /** The label that opens a caption: "Figure 1.7. " — or, for a type
  *  numbered with an empty template, "Figure. ". Without a number, spaces at
  *  the prefix's end are dropped, and a prefix that already ends in a stop
  *  (`.`, `:`, `!`, `?`, `…` or a full-width form, as in "Pl.") takes no
- *  second one. Empty without a prefix. */
+ *  second one. Empty without a prefix. With a number, the caption style's
+ *  `labelNumberGap` and `labelSeparator` stand around it ("图1-1　"). */
 const CAPTION_STOP_RE = /[.:!?…。．：！？]$/;
-function captionLabelText(captionPrefix: string, number: string): string {
+function captionLabelText(captionPrefix: string, number: string, cs?: Pick<ResolvedCaptionStyleConfig, 'labelNumberGap' | 'labelSeparator'>): string {
   if (captionPrefix.length === 0) return '';
-  if (number) return `${captionPrefix}${NBSP}${number}. `;
+  if (number) return `${captionPrefix}${cs?.labelNumberGap ?? NBSP}${number}${cs?.labelSeparator ?? '. '}`;
   const label = captionPrefix.trimEnd();
   if (label.length === 0) return '';
   return CAPTION_STOP_RE.test(label) ? `${label} ` : `${label}. `;
@@ -233,14 +260,14 @@ export function resolveRefSpans(
   resourceNumbering: ResourceNumberingMap,
   resourceTypes: ResourceType[],
   resources: Resource[],
-  refStyle?: { bold: boolean; italic: boolean },
+  refStyle?: { bold: boolean; italic: boolean; labelNumberGap?: string },
 ): InlineSpan[] {
   if (!spans.some((s) => s.ref)) return spans;
   return spans.map((span) => {
     if (!span.ref) return span;
     return {
       ...span,
-      text: resolveRefLabel(span.ref, resourceNumbering, resourceTypes, resources),
+      text: resolveRefLabel(span.ref, resourceNumbering, resourceTypes, resources, refStyle?.labelNumberGap),
       // Reference labels carry their own emphasis (bold/italic) so the measurer
       // selects the matching font; colour is applied by renderers via
       // `refResourceId`.
@@ -316,6 +343,9 @@ interface TableLayoutStyle {
   palette?: ColorPaletteEntry[];
   /** Chip styles, for inline `:chip[…]` in cells. */
   chips?: ChipContext;
+  /** Book titles in cells print their 《》 (`cjk.bookTitleMark:
+   *  'brackets'`). */
+  bookBrackets?: boolean;
 }
 
 /** A list-item marker at the head of a cell paragraph: the glyph as
@@ -466,7 +496,7 @@ function measureCellContent(
       y += m.lines.length * set.lineHeightPx;
       continue;
     }
-    const markerWidth = measureTextWidth(item.marker.text, set.fontString) + tracking * item.marker.text.length;
+    const markerWidth = measureTextWidth(item.marker.text, set.fontString) + tracking * graphemeCount(item.marker.text);
     const indentPx = markerWidth + listGapPx;
     const levelOffset = (item.marker.level - 1) * indentPx;
     const textX = levelOffset + indentPx;
@@ -689,7 +719,7 @@ function layoutTable(
   resourceNumbering: ResourceNumberingMap,
   resourceTypes: ResourceType[],
   resources: Resource[],
-  refStyle: { bold: boolean; italic: boolean },
+  refStyle: { bold: boolean; italic: boolean; labelNumberGap?: string },
   selection?: readonly number[],
 ): { layout: VDTResourceTableLayout; height: number; metrics?: TableRowMetrics } {
   const { body, header, borderColor, borderWidthPx, cellPaddingPx } = style;
@@ -759,7 +789,7 @@ function layoutTable(
       const isHeader = cellIsHeader(cell, r, model);
       const set = isHeader ? header : body;
       const cellWidth = spanWidth(c, colSpan) - cellPaddingPx * 2;
-      const parsed = parseRefAwareSpans(cell.content);
+      const parsed = parseRefAwareSpans(cell.content, style.bookBrackets === true);
       const spans = resolveCellChips(resolveSwatchSpans(resolveRefSpans(
         set.uppercase ? parsed.map((s) => (s.ref || s.math ? s : { ...s, text: uppercasePreservingLength(s.text) })) : parsed,
         resourceNumbering,
@@ -935,6 +965,11 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
    *  {@link planTableSlice}. */
   tableRows?: TableRowMetrics;
 } {
+  // Captions, notes and table cells are set horizontally on every page: a
+  // resource of a vertical flow stands upright, its text read as on a
+  // horizontal page.
+  if (measuringVertically()) return withMeasureWritingMode('horizontal-tb', () => layoutResourceBlock(input));
+  if (input.upright) return layoutUprightResourceBlock(input, input.upright.maxLength);
   const {
     resource,
     resourceType,
@@ -975,7 +1010,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   // previous heights exactly when the size is left at the body default).
   const lineHeightRatio = bodyStyle.lineHeightPx / bodyStyle.fontSizePx;
   // Inline `:ref` emphasis (bold/italic), applied to refs in captions + cells.
-  const refStyle = { bold: resolved.bodyText.referenceBold, italic: resolved.bodyText.referenceItalic };
+  const refStyle = { bold: resolved.bodyText.referenceBold, italic: resolved.bodyText.referenceItalic, labelNumberGap: resolved.captionStyle.labelNumberGap };
 
   // --- Figure body -------------------------------------------------------
   let bodyWidth = columnWidth;
@@ -1042,6 +1077,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       listGapPx: dimensionToPx(resolved.unorderedLists.gap, dpi, bodyFontPx),
       palette,
       chips: chipContextOf(resolved),
+      ...(resolved.cjk.bookTitleMark === 'brackets' ? { bookBrackets: true } : {}),
     };
     const { layout, height, metrics } = layoutTable(
       resource.table.model,
@@ -1094,9 +1130,9 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   const hasCaption = captionText.trim().length > 0 || captionPrefix.length > 0;
   if (hasCaption) {
     // Prefix span: "<captionPrefix> <number>. " (non-breaking inside the label).
-    const prefixText = captionLabelText(captionPrefix, number);
+    const prefixText = captionLabelText(captionPrefix, number, cs);
     const resolvedSpans = resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
-      parseRefAwareSpans(captionText),
+      parseRefAwareSpans(captionText, resolved.cjk.bookTitleMark === 'brackets'),
       resourceNumbering,
       resourceTypes,
       resources,
@@ -1107,10 +1143,11 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       ? resolvedSpans.map((s) => ({ ...s, italic: s.italic || true }))
       : resolvedSpans;
     // A continued table slice: "Table 6-4. Title (cont.)" — the suffix is
-    // set in italics after the description, glued to it by a plain space.
+    // set in italics after the description, glued to it by a plain space,
+    // or solid when it opens with a wide character (表1-1　标题（续）).
     const suffix = slice?.continued ? tableStyle.continuedSuffix.trim() : '';
     const suffixSpans: InlineSpan[] = suffix.length > 0
-      ? [{ text: `${descSpans.length > 0 ? ' ' : ''}${suffix}`, bold: false, italic: true }]
+      ? [{ text: `${descSpans.length > 0 ? suffixJoiner(suffix) : ''}${suffix}`, bold: false, italic: true }]
       : [];
     const allSpans: InlineSpan[] = prefixText.length > 0
       ? [{ text: prefixText, bold: cs.labelBold, italic: cs.labelItalic, captionLabel: true }, ...descSpans, ...suffixSpans]
@@ -1144,7 +1181,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   // the last slice.
   if (noteText.trim().length > 0 && !slice?.continues) {
     const noteSpans = resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
-      parseRefAwareSpans(noteText),
+      parseRefAwareSpans(noteText, resolved.cjk.bookTitleMark === 'brackets'),
       resourceNumbering,
       resourceTypes,
       resources,
@@ -1321,6 +1358,71 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   };
 }
 
+
+/** The share of its first width an upright picture keeps when its frame
+ *  narrows (see `layoutUprightResourceBlock`): it may give up a quarter,
+ *  about two caption lines in a full tier. */
+const UPRIGHT_MIN_PICTURE_SHARE = 0.75;
+
+/**
+ * A resource set upright on a vertical page (see `ResourceLayoutInput.
+ * upright`): a counter-clockwise rotated block whose upright frame is as
+ * wide as its picture. The frame is first tried `maxLength` wide, which
+ * gives the picture its largest size (the caption on the fewest lines). A
+ * picture the tier's height shrinks (or a bitmap narrower than that) gives
+ * its width back, and the block is laid out again at the picture's width
+ * so the caption wraps under it, a few rounds until the width holds. A
+ * narrower frame is taken only while it fits the tier and the picture
+ * keeps `UPRIGHT_MIN_PICTURE_SHARE` of its first width: a caption that
+ * wraps onto more lines at each narrowing would otherwise squeeze the
+ * picture to nothing and run the frame past the tier. When the rounds stop
+ * short of a frame as wide as the picture, the frame narrows by bisection
+ * to the least width at which the picture still keeps that share, and the
+ * caption runs wider than the picture. The origin is block-relative
+ * (`originX` 0, `originY` the block's height in the flow), as
+ * `offsetResourceBlockToAbsolute` expects.
+ */
+function layoutUprightResourceBlock(input: ResourceLayoutInput, maxLength: number): ReturnType<typeof layoutResourceBlock> {
+  const base: ResourceLayoutInput = { ...input, upright: undefined, rotate: 'ccw' };
+  const at = (length: number) => layoutResourceBlock({ ...base, rotatedLength: length });
+  let length = Math.max(1, maxLength);
+  let out = at(length);
+  if (input.resource.kind === 'bitmap' || input.resource.kind === 'svg') {
+    const floor = out.block.bodyRect.width * UPRIGHT_MIN_PICTURE_SHARE;
+    const holds = (o: ReturnType<typeof layoutResourceBlock>) =>
+      o.block.rotation!.height <= input.columnWidth + 0.5 && o.block.bodyRect.width >= floor;
+    let settled = false;
+    for (let round = 0; round < 4; round++) {
+      const used = out.block.bodyRect.width;
+      if (!(used > 0) || used >= length - 0.5) {
+        settled = true;
+        break;
+      }
+      const next = at(Math.max(1, used));
+      if (!holds(next)) break;
+      length = Math.max(1, used);
+      out = next;
+    }
+    if (!settled) {
+      let lo = Math.max(1, floor);
+      let hi = length;
+      for (let step = 0; step < 12 && hi - lo > 0.5; step++) {
+        const mid = (lo + hi) / 2;
+        const o = at(mid);
+        if (holds(o)) {
+          hi = mid;
+          out = o;
+        } else {
+          lo = mid;
+        }
+      }
+    }
+  }
+  const rotation = out.block.rotation!;
+  rotation.originX = 0;
+  rotation.originY = out.totalHeight;
+  return out;
+}
 
 /** Shift a resolved resource block's geometry right by `dx` (an inline
  *  resource narrower than its column, set per `placement.align`). */

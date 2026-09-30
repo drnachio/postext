@@ -26,10 +26,14 @@ export async function layOutBookChain(
     let nextNumbering: { format: NumeralStyle; startAt: number } | null = null;
     const total = bookPageCount !== undefined ? { bookPageCount } : {};
     for (const plan of plans) {
-      // The first chapter inherits nothing but the book's page count.
+      // The first chapter inherits nothing but the book's page count. The
+      // page fields of a plan not yet paginated are provisional: the chain
+      // has the real ones.
+      const { pageNumbering: planNumbering, ...inherited } = plan.continuation ?? {};
+      const numbering = nextNumbering ?? (plan.paginated ? planNumbering : undefined);
       const continuation: LayoutContinuation | undefined = plan.index === 0
         ? (bookPageCount !== undefined ? { ...plan.continuation, ...total } : plan.continuation)
-        : { ...plan.continuation, pageIndexOffset: offset, ...(nextNumbering ? { pageNumbering: nextNumbering } : {}), ...total };
+        : { ...inherited, pageIndexOffset: offset, ...(numbering ? { pageNumbering: numbering } : {}), ...total };
       const doc = await build(plan, continuation, offset);
       if (!doc) continue;
       docs.push(doc);

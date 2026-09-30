@@ -21,7 +21,7 @@ El código está en [la respuesta corta](#la-respuesta-corta), más arriba. `TAB
 
 <Excerpt region="running-heads" />
 
-Las cabeceras son elementos de texto anclados a la página y filtrados por `parity` y por `pages: 'body'` ([elementos de texto](/es/docs/configuration#elementos-de-texto)). El título de la página 1 abarca las dos columnas, y eso la convierte en página de apertura. Las cabeceras no salen en ella, y su folio lo pone el pie, un elemento con `pages: 'opener'` que se imprime 6 mm por debajo de la caja. En las impares, `{chapterTitle}` imprime la letra del último título de nivel 1 que hay en la página o antes de ella. Postext no tiene marcador para el primer lema de una página ni para el último, así que la cabecera impar dice *Letra C* donde un diccionario pondría las palabras guía.
+Las cabeceras son elementos de texto anclados a la página y filtrados por `parity` y por `pages: 'body'` ([elementos de texto](/es/docs/configuration#elementos-de-texto)). El título de la página 1 abarca las dos columnas, y eso la convierte en página de apertura. Las cabeceras no salen en ella, y su folio lo pone el pie, un elemento con `pages: 'opener'` que se imprime 6 mm por debajo de la caja. En las impares, `{chapterTitle}` imprime la letra del último título de nivel 1 que hay en la página o antes de ella, *Letra C*. Desde postext 1.5.0, `{firstMark.<clave>}` y `{lastMark.<clave>}` imprimen en su lugar el primer y el último lema de la página, las palabras guía que llevan casi todos los diccionarios; esta receta se compuso con la 1.4.1 y conserva la letra.
 
 ### 3 · Color para los lemas y nada más
 

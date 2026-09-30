@@ -1,4 +1,4 @@
-import type { Dimension, IndexConfig, ResolvedBodyTextConfig, ResolvedIndexConfig } from '../types';
+import type { Dimension, IndexConfig, IndexGroupBy, ResolvedBodyTextConfig, ResolvedIndexConfig } from '../types';
 
 const ONE_EM: Dimension = { value: 1, unit: 'em' };
 const TWO_EM: Dimension = { value: 2, unit: 'em' };
@@ -17,8 +17,11 @@ export const DEFAULT_INDEX_CONFIG = {
   rangeFormat: 'full' as const,
   main: { bold: true, italic: false },
   see: { italic: true },
+  groupBy: 'auto' as IndexGroupBy,
   groups: { enabled: true, fontWeight: 700 },
 };
+
+const GROUP_BY: readonly IndexGroupBy[] = ['auto', 'letter', 'pinyin', 'stroke', 'none'];
 
 export function resolveIndexConfig(
   partial: IndexConfig | undefined,
@@ -51,6 +54,7 @@ export function resolveIndexConfig(
       italic: partial?.see?.italic ?? d.see.italic,
     },
     ...(partial?.locale ? { locale: partial.locale } : {}),
+    groupBy: partial?.groupBy !== undefined && GROUP_BY.includes(partial.groupBy) ? partial.groupBy : d.groupBy,
     groups: {
       enabled: g?.enabled ?? d.groups.enabled,
       fontFamily: g?.fontFamily ?? fontFamily,
@@ -84,6 +88,7 @@ export function stripIndexDefaults(index: IndexConfig | undefined): IndexConfig 
   if (r.rangeSeparator === d.rangeSeparator) delete r.rangeSeparator;
   if (r.mergeRanges === d.mergeRanges) delete r.mergeRanges;
   if (r.rangeFormat === d.rangeFormat) delete r.rangeFormat;
+  if (r.groupBy === d.groupBy) delete r.groupBy;
   if (r.main) {
     const m = definedFields(r.main);
     if (m?.bold === d.main.bold) delete m.bold;

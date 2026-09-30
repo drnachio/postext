@@ -5,6 +5,7 @@ import type {
   VDTBlock,
   VDTLine,
   VDTLineSegment,
+  VDTAnnotationRun,
   VDTChip,
   VDTChipRun,
   VDTDesignSlot,
@@ -22,7 +23,57 @@ import type {
 import { tableCellFillRects, tableFrameOutline } from './vdt';
 import { dimensionToPx } from './units';
 import { documentInkHex, isSingleInkSvgUrl, singleInkColorMatrix } from './svg/singleInk';
-import { lineTrailingTracking } from './lineInk';
+import { lineInkExtent, lineTrailingTracking } from './lineInk';
+import { CHARACTER_GRID_COLOR, cjkGridCells, type CjkGridCells } from './pipeline/cjkGrid';
+import { renderLangOf } from './locale';
+import { hasCJK } from './measure/cjk';
+import { DEFAULT_CENTRAL_BASELINE } from './vdt';
+import type { CjkRegion } from './types';
+import { holdsTurnedMark, segmentOrientation, verticalRuns, type ForcedOrientation, type VerticalRun } from './writingMode';
+import { graphemesOf } from './measure/graphemes';
+import { fontFamilyOf } from './measure/vertical';
+import { lineMarksHtml, rubyHtml, verticalLineMarksHtml, warichuHtml } from './htmlAnnotations';
+
+/**
+ * Declarations of every box of CJK text measured with no punctuation
+ * trimming: the browser adds and removes nothing. Chrome's
+ * `text-spacing-trim: normal` (and fonts' `chws`) would set the first of
+ * two marks that meet half width (`）》`, `”“`), and `text-autospace` would
+ * add space between Han and Latin, where the layout measured them apart
+ * (`measureTextWidth`, `markCuts`) and the CJK composer adjusted the marks
+ * itself; the renderers position what it set. Set on a line of the CJK
+ * composer (`VDTLine.cjkComposed`), on each word of another line that holds
+ * CJK text (each was measured alone), on a design text line or run and a
+ * list marker that holds CJK text. Absent from any other box, so the
+ * output of other documents is unchanged.
+ */
+const CJK_TEXT_DECL = "text-spacing-trim:space-all;text-autospace:no-autospace;font-feature-settings:'chws' 0,'halt' 0,'vchw' 0;";
+/** The part of {@link CJK_TEXT_DECL} a `font` shorthand resets: repeated
+ *  after it on an inner box in another face. */
+const CJK_FEATURES_DECL = "font-feature-settings:'chws' 0,'halt' 0,'vchw' 0;";
+/** A dash of a 破折号 stretched over its em (`VDTLineSegment.inkScale`):
+ *  scaled from its start, with the glyph the layout measured. Under
+ *  `lang="zh-Hans"` a face may swap its own Chinese form in (`locl`: Noto
+ *  Serif SC's full-width dash), which the scale was not computed for. */
+const DASH_FEATURES_DECL = "font-feature-settings:'chws' 0,'halt' 0,'vchw' 0,'locl' 0;";
+const inkScaleDecl = (scale: number): string =>
+  `transform:scaleX(${scale.toFixed(4)});transform-origin:0 0;${DASH_FEATURES_DECL}`;
+
+/** Whether a line box carries {@link CJK_TEXT_DECL}: a line of the CJK
+ *  composer, which it measured character by character, or a line with no
+ *  segments (one span) holding CJK text. A word-by-word line holding CJK
+ *  text sets it on the words that hold some (`segmentCjk`). */
+function lineCjkDecl(line: VDTLine): boolean {
+  return line.cjkComposed === true || ((!line.segments || line.segments.length === 0) && hasCJK(line.text));
+}
+
+/** How a text segment's box takes {@link CJK_TEXT_DECL}: from its line
+ *  (`'line'`), on its own box (`'own'`), or not at all. */
+type SegmentCjk = 'line' | 'own' | false;
+
+function segmentCjk(seg: VDTLineSegment, lineDecl: boolean): SegmentCjk {
+  return lineDecl ? 'line' : hasCJK(seg.text) ? 'own' : false;
+}
 
 export interface RenderHtmlOptions {
   /** Layout mode: single vertical column or many columns laid out horizontally. */
@@ -95,6 +146,19 @@ interface HtmlPaint extends RenderHtmlOptions {
    *  rendered on its own — is set as plain text in its link colour, not as
    *  a link to nowhere (the PDF backend drops such a link the same way). */
   linkTargets?: ReadonlySet<string>;
+  /** Set while a vertical page's flow is rendered: its text lines are
+   *  set down the column (see {@link renderVerticalLine}). */
+  vertical?: VerticalHtml;
+}
+
+/** What vertical lines need: the Chinese region, the central axis of each
+ *  family (`VDTFlowFrame.centralBaselines`), `cjk.uprightDigits`, and the
+ *  advance of each dash stretched to its cell (`VDTFlowFrame.dashAdvances`). */
+interface VerticalHtml {
+  region: CjkRegion;
+  axes?: Record<string, number>;
+  uprightDigits: number;
+  dashes?: Record<string, Record<string, number>>;
 }
 
 /**
@@ -259,7 +323,53 @@ function renderTextSegment(
   fontDecl: string,
   colorDecl: string,
   color: string,
+  /** The tracking the line box already carries (block + line); a segment's
+   *  own (a justified CJK line) is added to it. */
+  tracking = 0,
+  /** Whether the browser's punctuation spacing is off for the segment
+   *  (see {@link CJK_TEXT_DECL}): set by its line (`'line'`) or on its own
+   *  box (`'own'`); a box in another face repeats the features either way. */
+  cjk: SegmentCjk = false,
 ): string {
+  const spacingDecl = seg.tracking !== undefined ? `letter-spacing:${tracking + seg.tracking}px;` : '';
+  // A compressed CJK mark is painted before its box (`inkOffset`).
+  const left = seg.inkOffset !== undefined ? x + seg.inkOffset : x;
+  const scaleDecl = seg.inkScale !== undefined ? inkScaleDecl(seg.inkScale) : '';
+  const pos = `position:absolute;left:${left.toFixed(3)}px;top:${top};white-space:pre;${spacingDecl}${cjk === 'own' ? CJK_TEXT_DECL : ''}${scaleDecl}`;
+  // Text set with emphasis dots is emphasis (#193); the dots are the
+  // line's marks.
+  const text = seg.cjkMarks?.dots ? `<em style="font-style:inherit;">${esc(seg.text)}</em>` : esc(seg.text);
+  const featuresDecl = !fontDecl ? '' : scaleDecl ? DASH_FEATURES_DECL : cjk ? CJK_FEATURES_DECL : '';
+  if (seg.refResourceId !== undefined) {
+    // Anchors carry an explicit color so the UA link blue never leaks in.
+    const inner = `<a href="${refAnchorHref(seg.refResourceId)}" style="text-decoration:none;${fontDecl}${featuresDecl}${fontDecl ? 'line-height:0;' : ''}color:${color};">${text}</a>`;
+    return `<span style="${pos}">${inner}</span>`;
+  }
+  if (fontDecl) {
+    return `<span style="${pos}"><span style="${fontDecl}${featuresDecl}line-height:0;${colorDecl}">${text}</span></span>`;
+  }
+  return `<span style="${pos}${colorDecl}">${text}</span>`;
+}
+
+/**
+ * {@link renderTextSegment} for a segment of a line set word by word (not
+ * `VDTLine.cjkComposed`), which carries none of the composer's fields
+ * (`tracking`, `inkOffset`, `inkScale`): the markup every such segment had
+ * before the CJK features. One that holds CJK text (`cjk`) or carries
+ * Chinese marks goes to {@link renderMarkedWordSegment}: the browser's
+ * punctuation spacing off on its own box (see {@link CJK_TEXT_DECL}), its
+ * text in `<em>` when it is set with emphasis dots.
+ */
+function renderWordTextSegment(
+  seg: VDTLineSegment,
+  x: number,
+  top: string,
+  fontDecl: string,
+  colorDecl: string,
+  color: string,
+  cjk: boolean,
+): string {
+  if (cjk || seg.cjkMarks) return renderMarkedWordSegment(seg, x, top, fontDecl, colorDecl, color, cjk);
   const pos = `position:absolute;left:${x.toFixed(3)}px;top:${top};white-space:pre;`;
   const text = esc(seg.text);
   if (seg.refResourceId !== undefined) {
@@ -269,6 +379,33 @@ function renderTextSegment(
   }
   if (fontDecl) {
     return `<span style="${pos}"><span style="${fontDecl}line-height:0;${colorDecl}">${text}</span></span>`;
+  }
+  return `<span style="${pos}${colorDecl}">${text}</span>`;
+}
+
+/** {@link renderWordTextSegment} for a segment that holds CJK text (`cjk`)
+ *  or carries Chinese marks. */
+function renderMarkedWordSegment(
+  seg: VDTLineSegment,
+  x: number,
+  top: string,
+  fontDecl: string,
+  colorDecl: string,
+  color: string,
+  cjk: boolean,
+): string {
+  const pos = `position:absolute;left:${x.toFixed(3)}px;top:${top};white-space:pre;${cjk ? CJK_TEXT_DECL : ''}`;
+  // Text set with emphasis dots is emphasis (#193); the dots are the
+  // line's marks.
+  const text = seg.cjkMarks?.dots ? `<em style="font-style:inherit;">${esc(seg.text)}</em>` : esc(seg.text);
+  const featuresDecl = fontDecl && cjk ? CJK_FEATURES_DECL : '';
+  if (seg.refResourceId !== undefined) {
+    // Anchors carry an explicit color so the UA link blue never leaks in.
+    const inner = `<a href="${refAnchorHref(seg.refResourceId)}" style="text-decoration:none;${fontDecl}${featuresDecl}${fontDecl ? 'line-height:0;' : ''}color:${color};">${text}</a>`;
+    return `<span style="${pos}">${inner}</span>`;
+  }
+  if (fontDecl) {
+    return `<span style="${pos}"><span style="${fontDecl}${featuresDecl}line-height:0;${colorDecl}">${text}</span></span>`;
   }
   return `<span style="${pos}${colorDecl}">${text}</span>`;
 }
@@ -328,7 +465,19 @@ function segmentHref(seg: VDTLineSegment): string | undefined {
   return seg.refResourceId === undefined ? seg.href : undefined;
 }
 
+/**
+ * The segments of a horizontal line. A line of the CJK composer goes to
+ * {@link renderComposedSegments}. Any other line was set word by word and
+ * carries none of the composer's fields (a segment's `tracking`,
+ * `inkOffset`, `inkScale`, `hangs`, `autospace`, `ruby`, `warichu`): its
+ * markup is the one every line had before the CJK features, the browser's
+ * punctuation spacing turned off on each segment that holds CJK text. Only
+ * a line whose text holds CJK characters has its segments looked into: the
+ * line's `text` holds the text of every segment, except the leader of a
+ * contents entry (`tocEntry`).
+ */
 function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<string>): string {
+  if (line.cjkComposed) return renderComposedSegments(line, block, targets);
   // The tracking after the last glyph is advance, not ink: centring and
   // right alignment leave it out (EF-153), as the canvas does.
   const trailing = lineTrailingTracking(line, (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0));
@@ -375,13 +524,14 @@ function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<st
   const links = linkRuns();
   let x = leadingGap;
   const segs = line.segments;
+  const cjk = block.tocEntry !== undefined || hasCJK(line.text);
   const paintText = (seg: VDTLineSegment, at: number, inLink = false): string => {
     const font = quoteFontString(pickSegmentFont(seg, block));
     const color = pickSegmentColor(seg, block);
     const fontDecl = font !== quoteFontString(block.fontString) ? `font:${font};` : '';
     const colorDecl = color !== block.color ? `color:${color};` : '';
     const top = seg.baselineShift ? `${seg.baselineShift.toFixed(3)}px` : '0';
-    return renderTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, color);
+    return renderWordTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, color, cjk && hasCJK(seg.text));
   };
   for (let i = 0; i < segs.length; i++) {
     const seg = segs[i]!;
@@ -417,6 +567,118 @@ function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<st
     x += seg.width;
   }
   parts.push(links.end());
+  // Emphasis dots, proper-name and book-title lines (#193).
+  if (line.marks) parts.push(lineMarksHtml(line, block.color));
+  return parts.join('');
+}
+
+/** {@link renderSegments} for a line of the CJK composer: hung marks and
+ *  Han–Latin spaces kept out of the justification, each segment with its
+ *  own tracking, ink offset and scale, warichu notes and ruby readings. */
+function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<string>): string {
+  // The tracking after the last glyph is advance, not ink: centring and
+  // right alignment leave it out (EF-153), as the canvas does.
+  const lineTracking = (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0);
+  const trailing = lineTrailingTracking(line, lineTracking);
+  if (!line.segments || line.segments.length === 0) {
+    const plainIndent = line.bbox.x - block.bbox.x;
+    const plainWidth = line.bbox.width - trailing;
+    const plainLeft = block.textAlign === 'right'
+      ? Math.max(0, block.bbox.width - plainIndent - plainWidth)
+      : block.textAlign === 'center'
+        ? Math.max(0, (block.bbox.width - plainIndent - plainWidth) / 2)
+        : 0;
+    return `<span style="position:absolute;left:${plainLeft.toFixed(3)}px;top:0;white-space:pre;">${esc(line.text)}</span>`;
+  }
+
+  // Match canvas justification: stretch inter-word spaces to fill effective width.
+  const lineIndent = line.bbox.x - block.bbox.x;
+  const effectiveWidth = block.bbox.width - lineIndent;
+
+  let wordWidth = 0;
+  let spaceCount = 0;
+  for (const seg of line.segments) {
+    // A hung mark is outside the measure; a Han–Latin space keeps its
+    // width.
+    if (seg.hangs) continue;
+    if (seg.kind === 'space' && !seg.autospace) spaceCount++;
+    else wordWidth += seg.width;
+  }
+  const contentWidth = lineInkExtent(line, 0).width;
+
+  // Last lines render ragged at natural width — except when overfull:
+  // Knuth-Plass may accept a final line wider than the measure on the
+  // assumption that its inter-word glue shrinks (TeX glue-setting semantics),
+  // so honor that by compressing the spaces to fit the measure exactly.
+  const useJustify =
+    block.textAlign === 'justify' && spaceCount > 0 &&
+    ((!line.isLastLine && !line.ragged) || contentWidth > effectiveWidth);
+  const justifiedSpaceWidth = useJustify
+    ? (effectiveWidth - wordWidth) / spaceCount
+    : 0;
+
+  // Centred / right alignment — math display blocks, ragged-left paragraph
+  // styles. Distribute the leading gap.
+  const slack = Math.max(0, effectiveWidth - (contentWidth - trailing));
+  const leadingGap = block.textAlign === 'center' ? slack / 2 : block.textAlign === 'right' ? slack : 0;
+
+  const parts: string[] = [];
+  const links = linkRuns();
+  let x = leadingGap;
+  const segs = line.segments;
+  const lineDecl = lineCjkDecl(line);
+  const paintText = (seg: VDTLineSegment, at: number, inLink = false): string => {
+    const font = quoteFontString(pickSegmentFont(seg, block));
+    const color = pickSegmentColor(seg, block);
+    const fontDecl = font !== quoteFontString(block.fontString) ? `font:${font};` : '';
+    const colorDecl = color !== block.color ? `color:${color};` : '';
+    const top = seg.baselineShift ? `${seg.baselineShift.toFixed(3)}px` : '0';
+    return renderTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, color, lineTracking, segmentCjk(seg, lineDecl));
+  };
+  for (let i = 0; i < segs.length; i++) {
+    const seg = segs[i]!;
+    if (seg.kind === 'space') {
+      x += useJustify && !seg.autospace ? justifiedSpaceWidth : seg.width;
+      continue;
+    }
+    parts.push(links.at(segmentHref(seg)));
+    if (seg.kind === 'math') {
+      parts.push(renderMathSegmentSvg(seg, x, line, block));
+      x += seg.width;
+      continue;
+    }
+    if (seg.kind === 'swatch') {
+      parts.push(renderSwatch(x, line.baseline - line.bbox.y, seg.width, seg.swatch?.color, block.color));
+      x += seg.width;
+      continue;
+    }
+    if (seg.chip) {
+      parts.push(renderChip(seg.chip, x, line.baseline - line.bbox.y, quoteFontString(block.fontString), block.color, (run) =>
+        pickSegmentColor({ kind: 'text', text: run.text, width: run.width, bold: run.bold, italic: run.italic }, block)));
+      x += seg.width;
+      continue;
+    }
+    if (seg.warichu) {
+      // A warichu note's part: its two rows (#195).
+      parts.push(warichuHtml(seg.warichu, x, pickSegmentColor(seg, block), quoteFontString));
+      x += seg.width;
+      continue;
+    }
+    if (seg.refResourceId !== undefined && segs[i + 1]?.refContinues) {
+      const group = renderRefRuns(segs, i, x, pickSegmentColor(seg, block), (run, at) => paintText(run, at, true), refLinks(seg.refResourceId, targets));
+      parts.push(group.html);
+      x = group.x;
+      i = group.end - 1;
+      continue;
+    }
+    parts.push(paintText(seg, x, seg.refResourceId !== undefined && !refLinks(seg.refResourceId, targets)));
+    // A ruby base's reading (#194).
+    if (seg.ruby) parts.push(rubyHtml(seg.ruby, x, pickSegmentColor(seg, block), quoteFontString));
+    x += seg.width;
+  }
+  parts.push(links.end());
+  // Emphasis dots, proper-name and book-title lines (#193).
+  if (line.marks) parts.push(lineMarksHtml(line, block.color));
   return parts.join('');
 }
 
@@ -464,7 +726,8 @@ function renderChip(
     const fontDecl = font !== lineFont ? `font:${font};` : '';
     const colorDecl = color !== lineColor ? `color:${color};` : '';
     const top = run.baselineShift ? `${run.baselineShift.toFixed(3)}px` : '0';
-    parts.push(renderTextSegment({ kind: 'text', text: run.text, width: run.width }, tx, top, fontDecl, colorDecl, color));
+    // A chip's runs were measured one by one, as a whole each.
+    parts.push(renderTextSegment({ kind: 'text', text: run.text, width: run.width }, tx, top, fontDecl, colorDecl, color, 0, hasCJK(run.text) ? 'own' : false));
     tx += run.width;
   }
   return parts.join('');
@@ -504,14 +767,20 @@ function renderBullet(block: VDTBlock): string {
     `font:${onBaseline ? lineFont : font};` +
     `color:${color};` +
     `white-space:pre;` +
+    (hasCJK(text) ? CJK_TEXT_DECL : '') +
     (onBaseline
-      ? `"><span style="font:${font};line-height:0;">${esc(text)}</span></div>`
+      ? `"><span style="font:${font};${hasCJK(text) ? CJK_FEATURES_DECL : ''}line-height:0;">${esc(text)}</span></div>`
       : `">${esc(text)}</div>`);
   let html = markerDiv('pt-bullet', block.bulletOffsetX, bulletFont, bulletColor, block.bulletText);
   // Ordered-list separator styled apart from the number (own font/colour).
   if (block.separatorText && block.separatorX !== undefined) {
     const separatorFont = quoteFontString(block.separatorFontString ?? block.bulletFontString ?? block.fontString);
     const separatorColor = block.separatorColor ?? bulletColor;
+    // The prefix run before the number, in the separator's style, first in
+    // the markup so a copy reads （一）.
+    if (block.prefixText && block.prefixX !== undefined) {
+      html = markerDiv('pt-separator', block.prefixX, separatorFont, separatorColor, block.prefixText) + html;
+    }
     html += markerDiv('pt-separator', block.separatorX, separatorFont, separatorColor, block.separatorText);
   }
   return html;
@@ -535,8 +804,284 @@ function renderLine(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<string
     `color:${block.color};` +
     strikethroughDecl +
     trackingDecl +
+    (lineCjkDecl(line) ? CJK_TEXT_DECL : '') +
     `">${renderSegments(line, block, targets)}</div>`
   );
+}
+
+// ---------------------------------------------------------------------------
+// Vertical text (`VDTPage.flow`)
+//
+// A vertical page's flow is rendered in a box turned a quarter turn
+// clockwise (`pt-flow`, see `renderPageDetailed`), so boxes, rules,
+// pictures, turned resource blocks and everything else of the flow land on
+// the sheet as the canvas paints them. Each text line is turned back
+// upright inside it — one box per line, the line's physical rectangle — and
+// set with `writing-mode: vertical-rl`: the browser stands Chinese
+// characters upright, takes the fonts' vertical forms and sets Latin words
+// sideways. Every segment is placed where the layout put it along the line
+// (`top`), its em boxes centred on the column's central axis; tate-chu-yoko
+// cells are `text-combine-upright: all`, `:upright` and `:sideways` runs
+// `text-orientation`.
+// ---------------------------------------------------------------------------
+
+/** The central axis of a font (em above the baseline). */
+function centralOf(v: VerticalHtml, fontString: string): number {
+  return v.axes?.[fontFamilyOf(fontString)] ?? DEFAULT_CENTRAL_BASELINE;
+}
+
+/** Escaped text of a vertical run, with its tate-chu-yoko cells, the
+ *  orientation its author forced, and each turned mark in a box of its
+ *  cell ({@link turnedCellHtml}). `font` is the run's font string (whose
+ *  family's `dashes` stretch a dash) and `tracking` the letter spacing it
+ *  is set with, px, which follows each cell. */
+function verticalTextHtml(text: string, v: VerticalHtml, orient?: ForcedOrientation, font?: string, tracking = 0): string {
+  if (orient === 'tcy') return `<span style="text-combine-upright:all;">${esc(text)}</span>`;
+  if (orient === 'upright') return `<span style="text-orientation:upright;">${esc(text)}</span>`;
+  if (orient === 'sideways') return `<span style="text-orientation:sideways;">${esc(text)}</span>`;
+  const digits = v.uprightDigits > 0 && /[0-9]/.test(text);
+  if (!digits && !holdsTurnedMark(text)) return esc(text);
+  const runs = verticalRuns(graphemesOf(text), v.region, v.uprightDigits);
+  if (!runs.some((r) => r.glyph.orient === 'tcy' || r.glyph.orient === 'rotate')) return esc(text);
+  const advances = font !== undefined ? v.dashes?.[fontFamilyOf(font)] : undefined;
+  // A number in one cell combined upright; a turned mark in its cell.
+  return runs.map((r) => (r.glyph.orient === 'tcy'
+    ? `<span style="text-combine-upright:all;">${esc(r.text)}</span>`
+    : r.glyph.orient === 'rotate' ? turnedCellHtml(r, advances?.[r.text], tracking) : esc(r.text))).join('');
+}
+
+/**
+ * A mark a vertical line turns in a cell of its own (`rotate`: a dash, an
+ * ellipsis, an interpunct, a wave dash). The browser sets it sideways at
+ * its horizontal advance (Noto's · is a third of an em), where the layout
+ * gave it its cell (one em; half an em for the mainland interpunct), as
+ * the canvas and the PDF paint it: so it stands in a box the cell's
+ * length, centred in it, with the line's tracking after the box as after
+ * any cell. A dash is stretched to fill its cell, as they stretch it: by
+ * its advance the layout measured (`advance`, ems), with the glyph it
+ * measured (the face's Chinese form off, see {@link DASH_FEATURES_DECL});
+ * with no measured advance, in the font's full-width form (Noto's —).
+ */
+function turnedCellHtml(run: VerticalRun, advance: number | undefined, tracking: number): string {
+  const cell = run.cell ?? 1;
+  let inner = esc(run.text);
+  if (run.glyph.stretch) {
+    inner = advance !== undefined && advance > 0
+      ? `<span style="${advance < cell ? `transform:scaleY(${(cell / advance).toFixed(4)});` : ''}${DASH_FEATURES_DECL}">${inner}</span>`
+      : `<span style="font-variant-east-asian:full-width;">${inner}</span>`;
+  }
+  return `<span style="display:inline-flex;justify-content:center;inline-size:${cell}em;letter-spacing:0;${tracking !== 0 ? `margin-inline-end:${tracking}px;` : ''}">${inner}</span>`;
+}
+
+/**
+ * A box of the turned flow (`left`, `top`, `width` along the line,
+ * `height` across it) holding a box turned back upright, set vertically:
+ * `content` is placed inside that one with physical `top` (along the line)
+ * and `right` (from the box's physical right edge, the flow's top).
+ */
+function uprightBox(left: number, top: number, width: number, height: number, decl: string, content: string, attrs = ''): string {
+  return (
+    `<div${attrs ? ` ${attrs}` : ''} style="position:absolute;left:${left.toFixed(3)}px;top:${top.toFixed(3)}px;width:${Math.max(0, width).toFixed(3)}px;height:${height.toFixed(3)}px;">` +
+    uprightInner(width, height, decl, content) +
+    `</div>`
+  );
+}
+
+/** The box of {@link uprightBox} turned back upright: `height` wide on the
+ *  sheet, `width` tall, set vertically. */
+function uprightInner(width: number, height: number, decl: string, content: string): string {
+  return (
+    `<div style="position:absolute;left:0;top:0;width:${height.toFixed(3)}px;height:${Math.max(0, width).toFixed(3)}px;` +
+    `transform:translate(0,${height.toFixed(3)}px) rotate(-90deg);transform-origin:0 0;` +
+    `writing-mode:vertical-rl;text-orientation:mixed;${decl}">${content}</div>`
+  );
+}
+
+/** A run of vertical text at `at` along its box, its em boxes centred
+ *  `axis` px from the box's flow top (the physical right edge). The
+ *  line height that centres them comes after `decl`: a `font` shorthand
+ *  in it resets `line-height` to `normal`. */
+function verticalSpan(at: number, axis: number, inner: string, decl = ''): string {
+  const lh = Math.max(0, 2 * axis);
+  return `<span style="position:absolute;top:${at.toFixed(3)}px;right:0;white-space:pre;${decl}line-height:${lh.toFixed(3)}px;">${inner}</span>`;
+}
+
+/** A run of vertical text whose em boxes are centred `axis` px from the
+ *  box's flow top, on either side of it (a ruby reading or a warichu row
+ *  sits outside the line's own box). */
+function verticalSpanAt(at: number, axis: number, size: number, inner: string, decl = ''): string {
+  const lh = Math.max(1, 2 * size);
+  return `<span aria-hidden="true" style="position:absolute;top:${at.toFixed(3)}px;right:${(axis - lh / 2).toFixed(3)}px;white-space:pre;${decl}line-height:${lh.toFixed(3)}px;">${inner}</span>`;
+}
+
+/** Annotation runs of a vertical line (a ruby reading, a warichu note's
+ *  rows, #194, #195) from `x` along it: set down the column in their own
+ *  face, centred across it on their baseline (`dy`) less their face's
+ *  axis, a zhuyin tone mark standing upright (`VDTAnnotationRun.upright`). */
+function verticalAnnotationRuns(runs: readonly VDTAnnotationRun[], x: number, color: string, v: VerticalHtml, axisOf: (fontString: string, shift?: number) => number): string {
+  return runs.map((run) => {
+    const decl = `font:${quoteFontString(run.fontString)};color:${run.color ?? color};letter-spacing:0;`;
+    return verticalSpanAt(x + run.dx, axisOf(run.fontString, run.dy), extractFontSizePx(run.fontString), verticalTextHtml(run.text, v, run.upright ? 'upright' : undefined, run.fontString), decl);
+  }).join('');
+}
+
+/** A body line of a vertical page: its text segments down an upright box,
+ *  its formulas, swatches and chips sideways where the canvas paints them
+ *  (see the section comment). */
+function renderVerticalLine(line: VDTLine, block: VDTBlock, v: VerticalHtml, targets?: ReadonlySet<string>): string {
+  const lineTracking = (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0);
+  const trailing = lineTrailingTracking(line, lineTracking);
+  const lineIndent = line.bbox.x - block.bbox.x;
+  const effectiveWidth = block.bbox.width - lineIndent;
+  const baseline = line.baseline - line.bbox.y;
+  const blockFont = quoteFontString(block.fontString);
+  const axisOf = (fontString: string, shift = 0): number => baseline + shift - centralOf(v, fontString) * extractFontSizePx(fontString);
+  const inner: string[] = [];
+  const sideways: string[] = [];
+  const segs = line.segments && line.segments.length > 0
+    ? line.segments
+    : [{ kind: 'text', text: line.text, width: line.bbox.width } as VDTLineSegment];
+  let wordWidth = 0;
+  let spaceCount = 0;
+  for (const seg of segs) {
+    if (seg.hangs) continue;
+    if (seg.kind === 'space' && !seg.autospace) spaceCount++;
+    else wordWidth += seg.width;
+  }
+  const contentWidth = line.segments && line.segments.length > 0 ? lineInkExtent(line, 0).width : line.bbox.width;
+  const useJustify = block.textAlign === 'justify' && spaceCount > 0
+    && ((!line.isLastLine && !line.ragged) || contentWidth > effectiveWidth);
+  const justifiedSpaceWidth = useJustify ? (effectiveWidth - wordWidth) / spaceCount : 0;
+  const slack = Math.max(0, effectiveWidth - (contentWidth - trailing));
+  let x = block.textAlign === 'center' ? slack / 2 : block.textAlign === 'right' ? slack : 0;
+  for (const seg of segs) {
+    if (seg.kind === 'space') {
+      x += useJustify && !seg.autospace ? justifiedSpaceWidth : seg.width;
+      continue;
+    }
+    if (seg.kind === 'math') {
+      sideways.push(renderMathSegmentSvg(seg, x, line, block));
+      x += seg.width;
+      continue;
+    }
+    if (seg.kind === 'swatch') {
+      sideways.push(renderSwatch(x, line.baseline - line.bbox.y, seg.width, seg.swatch?.color, block.color));
+      x += seg.width;
+      continue;
+    }
+    if (seg.chip) {
+      sideways.push(renderChip(seg.chip, x, line.baseline - line.bbox.y, blockFont, block.color, (run) =>
+        pickSegmentColor({ kind: 'text', text: run.text, width: run.width, bold: run.bold, italic: run.italic }, block)));
+      x += seg.width;
+      continue;
+    }
+    if (seg.warichu) {
+      // A warichu note's part: its two rows down the column, the upper
+      // row the right one, read once (#195).
+      const w = seg.warichu;
+      inner.push(`<span role="note" aria-label="${esc(w.upper + w.lower)}">${verticalAnnotationRuns(w.runs, x, w.color ?? pickSegmentColor(seg, block), v, axisOf)}</span>`);
+      x += seg.width;
+      continue;
+    }
+    const fontString = pickSegmentFont(seg, block);
+    const font = quoteFontString(fontString);
+    const color = pickSegmentColor(seg, block);
+    // A dash of a 破折号 (`inkScale`): turned with the flow (sideways) and
+    // stretched down the column from where the layout put its glyph, the
+    // face's own Chinese form off, as the canvas and the PDF paint it.
+    const stretched = seg.inkScale !== undefined;
+    const decl = (font !== blockFont ? `font:${font};` : '')
+      + (color !== block.color ? `color:${color};` : '')
+      + (seg.tracking !== undefined ? `letter-spacing:${lineTracking + seg.tracking}px;` : '')
+      + (stretched ? `transform:scaleY(${seg.inkScale!.toFixed(4)});transform-origin:0 0;${DASH_FEATURES_DECL}` : '');
+    const segTracking = seg.tracking !== undefined ? lineTracking + seg.tracking : lineTracking;
+    let text = verticalTextHtml(seg.text, v, stretched ? 'sideways' : segmentOrientation(seg), fontString, segTracking);
+    // Text set with emphasis dots is emphasis (#193); the dots are the
+    // line's marks.
+    if (seg.cjkMarks?.dots) text = `<em style="font-style:inherit;">${text}</em>`;
+    const href = seg.refResourceId !== undefined
+      ? (refLinks(seg.refResourceId, targets) ? refAnchorHref(seg.refResourceId) : undefined)
+      : seg.href;
+    if (href !== undefined) text = `<a href="${esc(href)}" style="color:inherit;text-decoration:none;"${seg.href !== undefined && seg.refResourceId === undefined ? ' rel="noopener noreferrer"' : ''}>${text}</a>`;
+    inner.push(verticalSpan(x + (seg.inkOffset ?? 0), axisOf(fontString, seg.baselineShift ?? 0), text, decl));
+    // A ruby base's reading, beside the base (#194).
+    if (seg.ruby) inner.push(verticalAnnotationRuns(seg.ruby.runs, x, seg.ruby.color ?? color, v, axisOf));
+    x += seg.width;
+  }
+  // Emphasis dots, proper-name and book-title lines (#193), in the turned
+  // flow with the line's box.
+  if (line.marks) sideways.push(verticalLineMarksHtml(line, block.color));
+  const width = Math.max(line.bbox.width, effectiveWidth);
+  const decl = `font:${blockFont};color:${block.color};`
+    + (block.strikethroughText ? 'text-decoration:line-through;' : '')
+    + (lineTracking !== 0 ? `letter-spacing:${lineTracking}px;` : '')
+    + (lineCjkDecl(line) || hasCJK(line.text) ? CJK_TEXT_DECL : '');
+  return (
+    `<div class="pt-line" data-block="${esc(block.id)}" style="position:absolute;left:${line.bbox.x}px;top:${line.bbox.y}px;width:${width}px;height:${line.bbox.height}px;">` +
+    uprightInner(width, line.bbox.height, decl, inner.join('')) +
+    sideways.join('') +
+    `</div>`
+  );
+}
+
+/** A list marker of a vertical line (the bullet, the number, its prefix
+ *  and separator), set down the column from `x`. */
+function renderVerticalMarker(cls: string, x: number, block: VDTBlock, v: VerticalHtml, fontString: string, color: string, text: string): string {
+  const line = block.lines[0]!;
+  const size = extractFontSizePx(fontString);
+  const lineTop = line.bbox.y;
+  const h = line.bbox.height;
+  // A marker set as text sits on its baseline; a bullet is centred on
+  // `bulletY` (its axis).
+  const axis = block.bulletBaselineY !== undefined
+    ? block.bulletBaselineY - lineTop - centralOf(v, fontString) * size
+    : (block.bulletY ?? line.baseline) - lineTop;
+  const width = size * graphemesOf(text).length;
+  const decl = `font:${quoteFontString(fontString)};color:${color};${hasCJK(text) ? CJK_TEXT_DECL : ''}`;
+  return uprightBox(x, lineTop, width, h, decl, verticalSpan(0, axis, verticalTextHtml(text, v, undefined, fontString)), `class="${cls}" aria-hidden="true"`);
+}
+
+function renderVerticalBullet(block: VDTBlock, v: VerticalHtml): string {
+  if (block.type !== 'listItem' || !block.bulletText || block.bulletOffsetX === undefined || !block.lines[0]) return '';
+  const bulletFont = block.bulletFontString ?? block.fontString;
+  const bulletColor = block.bulletColor ?? block.color;
+  let html = renderVerticalMarker('pt-bullet', block.bulletOffsetX, block, v, bulletFont, bulletColor, block.bulletText);
+  if (block.separatorText && block.separatorX !== undefined) {
+    const sepFont = block.separatorFontString ?? bulletFont;
+    const sepColor = block.separatorColor ?? bulletColor;
+    if (block.prefixText && block.prefixX !== undefined) html = renderVerticalMarker('pt-separator', block.prefixX, block, v, sepFont, sepColor, block.prefixText) + html;
+    html += renderVerticalMarker('pt-separator', block.separatorX, block, v, sepFont, sepColor, block.separatorText);
+  }
+  return html;
+}
+
+/** The lines of a design text set vertically: in the flow of a vertical
+ *  page (an opener, a box title), or on its own (a running head set down
+ *  the fore-edge, `VDTDesignTextBlock.writingMode`) inside the block's own
+ *  turned frame. Each line's box runs from its baseline's line top. */
+function verticalDesignLines(block: VDTDesignTextBlock, v: VerticalHtml, originX: number, originY: number): string {
+  const size = extractFontSizePx(block.fontString);
+  const font = quoteFontString(block.fontString);
+  const parts: string[] = [];
+  const h = size * 2;
+  for (const line of block.lines) {
+    const top = line.baselineY - size * 1.5;
+    const axisOf = (fontString: string, shift = 0): number => size * 1.5 + shift - centralOf(v, fontString) * extractFontSizePx(fontString);
+    const runs = line.runs ?? [{ text: line.text, fontString: block.fontString, width: line.width }];
+    let x = 0;
+    const inner: string[] = [];
+    for (const run of runs) {
+      const runFont = quoteFontString(run.fontString);
+      const decl = runFont !== font ? `font:${runFont};` : '';
+      inner.push(verticalSpan(x, axisOf(run.fontString, run.baselineShift ?? 0), verticalTextHtml(run.text, v, segmentOrientation(run), run.fontString, block.letterSpacingPx ?? 0), decl));
+      x += run.width;
+    }
+    const width = Math.max(line.width, x);
+    const decl = `font:${font};color:${block.color};${hasCJK(line.text) ? CJK_TEXT_DECL : ''}`
+      + (line.wordSpacingPx ? `word-spacing:${line.wordSpacingPx.toFixed(3)}px;` : '');
+    parts.push(uprightBox(originX + line.xOffset, originY + top, width, h, decl, inner.join('')));
+  }
+  return parts.join('');
 }
 
 // ---------------------------------------------------------------------------
@@ -574,8 +1119,11 @@ function renderResourceLine(
 ): string {
   const baseFont = quoteFontString(fonts.normal);
   const parts: string[] = [];
+  const lineDecl = lineCjkDecl(line);
   if (line.segments && line.segments.length > 0) {
     const segs = line.segments;
+    const composed = line.cjkComposed === true;
+    const cjk = !composed && hasCJK(line.text);
     const segColorOf = (seg: VDTLineSegment): string => (seg.refResourceId !== undefined
       ? linkColor
       : seg.captionLabel
@@ -587,7 +1135,11 @@ function renderResourceLine(
       const fontDecl = font !== baseFont ? `font:${font};` : '';
       const colorDecl = segColor !== color ? `color:${segColor};` : '';
       const top = seg.baselineShift ? `${seg.baselineShift.toFixed(3)}px` : '0';
-      return renderTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, segColor);
+      // A line set word by word as every line was before the CJK
+      // features (see `renderSegments`).
+      return composed
+        ? renderTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, segColor, line.letterSpacing ?? 0, segmentCjk(seg, lineDecl))
+        : renderWordTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, segColor, cjk && hasCJK(seg.text));
     };
     const links = linkRuns();
     let x = 0;
@@ -633,6 +1185,7 @@ function renderResourceLine(
     // A tracked line (a table header set with `headerLetterSpacing`) was
     // measured with the tracking in its widths.
     (line.letterSpacing ? `letter-spacing:${line.letterSpacing}px;` : '') +
+    (lineDecl ? CJK_TEXT_DECL : '') +
     `">${parts.join('')}</div>`
   );
 }
@@ -774,9 +1327,12 @@ function renderResourceTable(rb: ResolvedResourceBlock, bx: number, by: number, 
   return parts.join('');
 }
 
-function renderResourceBlockHtml(block: VDTBlock, options: HtmlPaint): string {
+function renderResourceBlockHtml(block: VDTBlock, paint: HtmlPaint): string {
   const rb = block.resourceBlock;
   if (!rb) return '';
+  // Its caption, notes and cells are horizontal text, in its own frame
+  // (upright on a vertical page).
+  const options: HtmlPaint = paint.vertical ? { ...paint, vertical: undefined } : paint;
   const parts: string[] = [];
   // A rotated block: its geometry is in the upright frame, emitted inside a
   // wrapper turned a quarter turn about the frame's origin on the page.
@@ -866,9 +1422,11 @@ function renderBoxAt(bbox: BoundingBox, style: VDTDesignBoxStyle): string {
   );
 }
 
-function renderDesignTextBlock(block: VDTDesignTextBlock): string {
+function renderDesignTextBlock(block: VDTDesignTextBlock, options?: HtmlPaint): string {
   const parts: string[] = [];
   if (block.box) parts.push(renderBoxAt(block.bbox, block.box));
+  if (options?.vertical) return parts.join('') + renderVerticalDesignText(block, options.vertical);
+  if (block.vertical) return parts.join('') + renderTurnedDesignText(block);
   const font = quoteFontString(block.fontString);
   const fontSize = extractFontSizePx(block.fontString);
   const lineParts: string[] = [];
@@ -878,17 +1436,21 @@ function renderDesignTextBlock(block: VDTDesignTextBlock): string {
     // in its own font; a script is shifted off the baseline. Of a subscript
     // and a superscript set over each other, the first sits in a box that
     // takes no room and the second in one as wide as the pair (EF-80).
+    // Each run was measured whole, and so was a line without runs: the
+    // browser's punctuation trimming is off on those that hold CJK text.
     const inner = line.runs
       ? line.runs.map((run, i) => {
           const runFont = quoteFontString(run.fontString);
+          const cjkDecl = hasCJK(run.text) ? CJK_TEXT_DECL : '';
           const fontDecl = runFont !== font ? `font:${runFont};` : '';
           const stackDecl = run.stacked
             ? 'display:inline-block;width:0;'
             : line.runs![i - 1]?.stacked ? `display:inline-block;min-width:${run.width.toFixed(3)}px;` : '';
           const shiftDecl = run.baselineShift ? `position:relative;top:${run.baselineShift.toFixed(3)}px;` : '';
-          return fontDecl || stackDecl || shiftDecl ? `<span style="${fontDecl}${stackDecl}${shiftDecl}">${esc(run.text)}</span>` : esc(run.text);
+          return fontDecl || cjkDecl || stackDecl || shiftDecl ? `<span style="${fontDecl}${cjkDecl}${stackDecl}${shiftDecl}">${esc(run.text)}</span>` : esc(run.text);
         }).join('')
       : esc(line.text);
+    const lineDecl = !line.runs && hasCJK(line.text) ? CJK_TEXT_DECL : '';
     // A justified line: its word spaces widened as the canvas and the PDF
     // advance its runs (EF-109).
     const wordSpacingDecl = line.wordSpacingPx ? `word-spacing:${line.wordSpacingPx.toFixed(3)}px;` : '';
@@ -899,6 +1461,7 @@ function renderDesignTextBlock(block: VDTDesignTextBlock): string {
       `top:${top.toFixed(3)}px;` +
       `line-height:1;white-space:pre;` +
       wordSpacingDecl +
+      lineDecl +
       `">${inner}</span>`,
     );
   }
@@ -925,6 +1488,46 @@ function renderDesignTextBlock(block: VDTDesignTextBlock): string {
   return parts.join('');
 }
 
+/** A design text of a vertical page's flow: its lines set down the
+ *  column, clipped, tracked and outlined as a horizontal one. A line's
+ *  `xOffset` is from the block's own edge (as in `renderDesignTextBlock`),
+ *  its `baselineY` in the flow: only the latter is taken back to the box. */
+function renderVerticalDesignText(block: VDTDesignTextBlock, v: VerticalHtml): string {
+  const clipDecl = block.clip ? 'overflow:hidden;' : '';
+  const trackingDecl = block.letterSpacingPx ? `letter-spacing:${block.letterSpacingPx}px;` : '';
+  const strokeDecl = block.stroke && block.stroke.widthPx > 0
+    ? `-webkit-text-stroke:${block.stroke.widthPx}px ${block.stroke.color};` + (block.stroke.hollow ? '-webkit-text-fill-color:transparent;' : '')
+    : '';
+  const hidden = block.artifact ? ' aria-hidden="true"' : '';
+  return (
+    `<div${hidden} style="position:absolute;left:${block.bbox.x}px;top:${block.bbox.y}px;width:${block.bbox.width}px;height:${block.bbox.height}px;${clipDecl}${trackingDecl}${strokeDecl}">` +
+    verticalDesignLines(block, v, 0, -block.bbox.y) +
+    `</div>`
+  );
+}
+
+/** A design text set vertically on a page or slot whose text is
+ *  horizontal (`VDTDesignTextBlock.vertical`): its lines in the block's own
+ *  frame, turned a quarter turn clockwise about the box's top right corner,
+ *  each line turned back upright and set vertically. */
+function renderTurnedDesignText(block: VDTDesignTextBlock): string {
+  const vt = block.vertical!;
+  const v: VerticalHtml = { region: vt.region, uprightDigits: vt.uprightDigits, axes: vt.centralBaselines };
+  const clipDecl = block.clip ? 'overflow:hidden;' : '';
+  const trackingDecl = block.letterSpacingPx ? `letter-spacing:${block.letterSpacingPx}px;` : '';
+  const strokeDecl = block.stroke && block.stroke.widthPx > 0
+    ? `-webkit-text-stroke:${block.stroke.widthPx}px ${block.stroke.color};` + (block.stroke.hollow ? '-webkit-text-fill-color:transparent;' : '')
+    : '';
+  const hidden = block.artifact ? ' aria-hidden="true"' : '';
+  const { x, y, width, height } = block.bbox;
+  return (
+    `<div${hidden} style="position:absolute;left:${x}px;top:${y}px;width:${width}px;height:${height}px;${clipDecl}${trackingDecl}${strokeDecl}">` +
+    `<div style="position:absolute;left:${width}px;top:0;width:${height}px;height:${width}px;transform:rotate(90deg);transform-origin:0 0;">` +
+    verticalDesignLines(block, v, 0, 0) +
+    `</div></div>`
+  );
+}
+
 function renderDesignRuleBlock(block: VDTDesignRuleBlock): string {
   const w = block.direction === 'vertical' ? block.thicknessPx : block.bbox.width;
   const h = block.direction === 'vertical' ? block.bbox.height : block.thicknessPx;
@@ -944,8 +1547,11 @@ function renderDesignBoxBlock(block: VDTDesignBoxBlock): string {
   return block.clip ? clipToOutline(html, block.clip) : html;
 }
 
-/** Image block (e.g. a callout icon): `<img>` from `resourceImageUrl`, or a
- *  neutral placeholder box when the host cannot supply the image. */
+/** Image block (a callout icon, a picture a design draws): `<img>` from
+ *  `resourceImageUrl` — with its alternative text when it is content
+ *  (`VDTDesignImageBlock.altText`), else `alt=""` and
+ *  `role="presentation"` — or a neutral placeholder box when the host
+ *  cannot supply the image. */
 function renderDesignImageBlock(block: VDTDesignImageBlock, options?: HtmlPaint): string {
   const { x, y, width, height } = block.bbox;
   if (width <= 0 || height <= 0) return '';
@@ -953,8 +1559,25 @@ function renderDesignImageBlock(block: VDTDesignImageBlock, options?: HtmlPaint)
   if (url) {
     const svg = block.imageKind === undefined ? undefined : block.imageKind === 'svg';
     const filter = options ? inkFilterDecl(options, svg, url) : '';
+    const alt = block.altText ? `alt="${esc(block.altText)}"` : 'alt="" role="presentation"';
+    if (options?.vertical) {
+      // A picture of a vertical page's flow stands upright on the sheet:
+      // turned back inside its box, which runs `width` down the sheet and
+      // `height` across it (sized for that when `upright`, else fitted
+      // keeping its proportions, as the canvas draws it).
+      const k = block.upright ? 1 : Math.min(height / width, width / height);
+      const dw = block.upright ? height : width * k;
+      const dh = block.upright ? width : height * k;
+      const ox = block.upright ? 0 : (height - dw) / 2;
+      const oy = block.upright ? 0 : (width - dh) / 2;
+      return (
+        `<div style="position:absolute;left:${x}px;top:${y}px;width:${width}px;height:${height}px;">` +
+        `<img src="${esc(url)}" ${alt} style="position:absolute;left:0;top:0;width:${dw}px;height:${dh}px;` +
+        `transform:translate(0,${height}px) rotate(-90deg) translate(${ox}px,${oy}px);transform-origin:0 0;${filter}" /></div>`
+      );
+    }
     return (
-      `<img src="${esc(url)}" alt="" style="position:absolute;` +
+      `<img src="${esc(url)}" ${alt} style="position:absolute;` +
       `left:${x}px;top:${y}px;width:${width}px;height:${height}px;${filter}" />`
     );
   }
@@ -967,7 +1590,7 @@ function renderDesignImageBlock(block: VDTDesignImageBlock, options?: HtmlPaint)
 }
 
 function renderDesignBlock(block: VDTDesignBlock, options?: HtmlPaint): string {
-  if (block.kind === 'text') return renderDesignTextBlock(block);
+  if (block.kind === 'text') return renderDesignTextBlock(block, options);
   if (block.kind === 'rule') return renderDesignRuleBlock(block);
   if (block.kind === 'image') return renderDesignImageBlock(block, options);
   return renderDesignBoxBlock(block);
@@ -986,9 +1609,10 @@ function renderBlockInner(block: VDTBlock, options: HtmlPaint): string {
   // the block's single placeholder line renders nothing useful.
   if (block.resourceBlock) return renderResourceBlockHtml(block, options);
   const parts: string[] = [];
-  parts.push(renderBullet(block));
+  const v = options.vertical;
+  parts.push(v ? renderVerticalBullet(block, v) : renderBullet(block));
   for (const line of block.lines) {
-    parts.push(renderLine(line, block, options.linkTargets));
+    parts.push(v ? renderVerticalLine(line, block, v, options.linkTargets) : renderLine(line, block, options.linkTargets));
   }
   return parts.join('');
 }
@@ -1029,6 +1653,11 @@ function renderPageDetailed(
   /** With cut lines, how far the bleed box lies inside the sheet (px); 0
    *  without them. */
   bleedInset = 0,
+  /** The character grid drawn over the type area (`cjk.grid.show`). */
+  gridCells?: CjkGridCells,
+  /** `cjk.region` and `cjk.uprightDigits`, for a vertical page. */
+  verticalRegion?: CjkRegion,
+  verticalDigits?: number,
 ): PageRenderResult {
   const bgDecl = background && background !== 'transparent' ? `background:${background};` : '';
   // With cut lines nothing the page paints shows past the bleed box, as on
@@ -1037,9 +1666,13 @@ function renderPageDetailed(
   // A filter id local to the page and its ink, so every page is
   // self-contained (a patcher may replace pages one by one) and two
   // documents on one page never share a filter.
-  const options: HtmlPaint = ink
+  const inked: HtmlPaint = ink
     ? { ...pageOptions, ink: { id: `pt-ink-${ink.hex.replace(/[^0-9a-z]/gi, '')}-${page.index}`, matrix: ink.matrix } }
     : pageOptions;
+  // A vertical page's flow sets its text down the column.
+  const options: HtmlPaint = page.flow
+    ? { ...inked, vertical: { region: verticalRegion ?? 'mainland', uprightDigits: verticalDigits ?? 2, ...(page.flow.centralBaselines ? { axes: page.flow.centralBaselines } : {}), ...(page.flow.dashAdvances ? { dashes: page.flow.dashAdvances } : {}) } }
+    : inked;
   const blocks: Array<{ id: string; html: string }> = [];
   for (const col of page.columns) {
     for (const block of col.blocks) {
@@ -1056,9 +1689,11 @@ function renderPageDetailed(
   // under the body (a part page's full-bleed background must not cover its
   // chapter list); header and footer paint on top.
   const openerHtml = page.openerBand ? renderDesignSlot(page.openerBand, options) : '';
+  // Running heads and folios stay on the sheet, horizontal.
+  const sheetOptions: HtmlPaint = options.vertical ? { ...options, vertical: undefined } : options;
   const slotParts: string[] = [];
-  if (page.header) slotParts.push(renderDesignSlot(page.header, options));
-  if (page.footer) slotParts.push(renderDesignSlot(page.footer, options));
+  if (page.header) slotParts.push(renderDesignSlot(page.header, sheetOptions));
+  if (page.footer) slotParts.push(renderDesignSlot(page.footer, sheetOptions));
   // Whether or not a picture on the page uses it: a host patching blocks
   // one by one may bring in an SVG image the first render did not have.
   const defsHtml = options.ink ? inkFilterDefs(options.ink) : '';
@@ -1066,8 +1701,14 @@ function renderPageDetailed(
   const footnoteRulesHtml = footnoteRuleSegments(page).map((r) =>
     `<div class="pt-footnote-rule" style="position:absolute;left:${r.x}px;top:${r.y - r.lineWidthPx / 2}px;width:${r.width}px;height:${r.lineWidthPx}px;background:${r.color};"></div>`,
   ).join('');
-  const decorationHtml = defsHtml + openerHtml + footnoteRulesHtml + slotParts.join('');
-  const innerHtml = defsHtml + openerHtml + blocksHtml + footnoteRulesHtml + slotParts.join('');
+  const gridHtml = gridCells ? renderCharacterGridSvg(gridCells, page.flow ? page.height : page.width, page.flow ? page.width : page.height) : '';
+  const decorationHtml = defsHtml + gridHtml + openerHtml + footnoteRulesHtml + slotParts.join('');
+  // A vertical page's flow: one box turned a quarter turn clockwise, its
+  // text lines turned back and set vertically (see `renderVerticalLine`).
+  const flowHtml = gridHtml + openerHtml + blocksHtml + footnoteRulesHtml;
+  const innerHtml = defsHtml + (page.flow
+    ? `<div class="pt-flow" style="position:absolute;left:0;top:0;width:${page.height}px;height:${page.width}px;transform:translate(${page.width}px,0) rotate(90deg);transform-origin:0 0;">${flowHtml}</div>`
+    : flowHtml) + slotParts.join('');
   const outerHtml =
     `<div class="pt-page" data-page="${page.index}" style="` +
     `position:relative;` +
@@ -1078,6 +1719,24 @@ function renderPageDetailed(
     clipDecl +
     `">${innerHtml}</div>`;
   return { outerHtml, innerHtml, blocks, decorationHtml };
+}
+
+/** The character grid (稿纸) as one SVG path over the page, under the
+ *  text (see `cjkGridCells`). */
+function renderCharacterGridSvg(cells: CjkGridCells, width: number, height: number): string {
+  const { cell } = cells;
+  const d: string[] = [];
+  const n = (v: number): string => String(Math.round(v * 1000) / 1000);
+  cells.columns.forEach((x0, c) => {
+    const chars = cells.columnChars[c] ?? cells.chars;
+    const w = chars * cell;
+    for (const y of cells.rows) {
+      d.push(`M${n(x0)} ${n(y)}h${n(w)}M${n(x0)} ${n(y + cell)}h${n(w)}`);
+      for (let i = 0; i <= chars; i++) d.push(`M${n(x0 + i * cell)} ${n(y)}v${n(cell)}`);
+    }
+  });
+  return `<svg class="pt-char-grid" aria-hidden="true" width="${width}" height="${height}" style="position:absolute;left:0;top:0;pointer-events:none;">` +
+    `<path d="${d.join('')}" fill="none" stroke="${CHARACTER_GRID_COLOR}" stroke-width="0.5"/></svg>`;
 }
 
 export interface HtmlRenderIndexPage {
@@ -1132,9 +1791,10 @@ export function renderToHtmlIndexed(
   const background =
     options.background ?? doc.config.page.backgroundColor.hex ?? 'transparent';
 
+  // A right-bound book lays its pages out right to left in a row.
   const docStyle =
     mode === 'multi'
-      ? `display:flex;flex-direction:row;gap:${gap}px;align-items:flex-start;padding:${padding}px;box-sizing:border-box;width:max-content;`
+      ? `display:flex;flex-direction:${doc.binding === 'right' ? 'row-reverse' : 'row'};gap:${gap}px;align-items:flex-start;padding:${padding}px;box-sizing:border-box;width:max-content;`
       : `display:flex;flex-direction:column;align-items:center;padding:${padding}px 0;box-sizing:border-box;`;
 
   // Single-ink diagrams: SVG pictures are filtered to the ink when the host
@@ -1165,7 +1825,8 @@ export function renderToHtmlIndexed(
           },
         }
       : { ...options, linkTargets };
-    const detail = renderPageDetailed(p, background, pageOptions, ink, bleedInset);
+    const gridCells = doc.config.cjk?.grid?.show ? cjkGridCells(doc.config, p.contentArea, doc.baselineGrid, p.columns, p.flow) : undefined;
+    const detail = renderPageDetailed(p, background, pageOptions, ink, bleedInset, gridCells, doc.config.cjk?.region, doc.config.cjk?.uprightDigits);
     pageHtmlParts.push(detail.outerHtml);
     indexedPages.push({
       index: p.index,
@@ -1177,9 +1838,12 @@ export function renderToHtmlIndexed(
     });
   }
 
-  // The host's inherited text properties are reset first (EF-96).
+  // The host's inherited text properties are reset first (EF-96). A
+  // Chinese, Japanese or Korean document declares its language, so the
+  // browser picks the region's glyph forms (see `renderLangOf`).
+  const docLang = renderLangOf(doc.config);
   const html =
-    `<div class="pt-doc" data-mode="${mode}" style="${HTML_TEXT_RESET}${docStyle}">` +
+    `<div class="pt-doc"${docLang ? ` lang="${docLang}"` : ''} data-mode="${mode}" style="${HTML_TEXT_RESET}${docStyle}">` +
     pageHtmlParts.join('') +
     `</div>`;
 

@@ -443,6 +443,50 @@ describe('accessible (tagged) PDF output', () => {
     for (let i = 0; i < out.getPageCount(); i++) expect(unmarkedPainting(pageContent(out, i))).toEqual([]);
   });
 
+  it('tags a picture a design draws as a Figure with its alt text, read after its heading (#213)', async () => {
+    const plate = (decorative: boolean) => ({
+      kind: 'image' as const, id: 'plate', resourceId: '{attr.art}', ...(decorative ? { decorative: true } : {}),
+      placement: { anchor: { to: 'container' as const, edge: 'top-left' as const }, size: { width: pt(60) } },
+    });
+    const title = {
+      kind: 'text' as const, id: 'title', content: '{titleText}', fontSize: pt(20), overflow: 'wrap' as const,
+      placement: { anchor: { to: 'container' as const, edge: 'bottom-left' as const }, size: { width: 'fill' as const } },
+    };
+    const cfg = (decorative: boolean): PostextConfig => ({
+      ...config,
+      // A running head drawing the same picture: pagination, never read.
+      header: { elements: [{ ...plate(false), id: 'logo', placement: { anchor: { to: 'container', edge: 'top-right' }, size: { width: pt(12) } } }] },
+      headings: { balancing: { enabled: false }, levels: [{ level: 1, breakBefore: { enabled: true, parity: 'any' } }] },
+      headingStyles: [{ id: 'opener', advancedDesign: { enabled: true, slot: { elements: [plate(decorative), title] } } }],
+    });
+    const res: Resource[] = [
+      { id: 'p1', typeId: 'figure', kind: 'bitmap', altText: 'Stone and jade by a river', createdAt: 0, updatedAt: 0, bitmap: { fileId: 'p1.png', format: 'png', width: 400, height: 300 } },
+      { id: 'p2', typeId: 'figure', kind: 'bitmap', caption: 'A *dream* of the land of illusion', createdAt: 0, updatedAt: 0, bitmap: { fileId: 'p2.png', format: 'png', width: 400, height: 300 } },
+      { id: 'p3', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0, bitmap: { fileId: 'p3.png', format: 'png', width: 400, height: 300 } },
+    ];
+    const md = '# First {style="opener" art="p1"}\n\nOne.\n\n# Second {style="opener" art="p2"}\n\nTwo.\n\n# Third {style="opener" art="p3"}\n\nThree.';
+    const render = async (decorative: boolean) => PDFDocument.load(await renderToPdf(buildDocument({ markdown: md, resources: res }, cfg(decorative)), {
+      fontProvider,
+      resourceBytes: (fileId) => (fileId.endsWith('.png') ? PNG : undefined),
+    }));
+    const out = await render(false);
+    const root = structRoot(out);
+    // Each heading, then the plate it draws when that has a text; the
+    // third plate and every running head's picture are artifacts.
+    expect(root.kids.map((k) => k.type)).toEqual(['H1', 'Figure', 'P', 'H1', 'Figure', 'P', 'H1', 'P']);
+    const figures = root.kids.filter((k) => k.type === 'Figure');
+    expect(figures.map((f) => f.alt)).toEqual(['Stone and jade by a river', 'A dream of the land of illusion']);
+    for (const f of figures) {
+      expect(f.mcids).toBe(1);
+      expect(f.attrs[0]?.O).toBe('Layout');
+      expect(f.attrs[0]?.BBox).toBeDefined();
+    }
+    for (let i = 0; i < out.getPageCount(); i++) expect(unmarkedPainting(pageContent(out, i))).toEqual([]);
+    // Decorative: no figure at all.
+    const plain = structRoot(await render(true));
+    expect(plain.kids.map((k) => k.type)).toEqual(['H1', 'P', 'H1', 'P', 'H1', 'P']);
+  }, 60_000);
+
   it('keeps a reference set in small capitals one link', async () => {
     // `:smallcaps[…]` paints the label as several case runs ("F" + "IG. 1.1"),
     // in the body and in a caption: still one Link, one annotation each.

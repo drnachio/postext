@@ -364,61 +364,34 @@
   },
   "rotated-text": {
     "label": {
-      "en": "Rotated or vertical text",
-      "es": "Texto girado o vertical"
+      "en": "Rotated text on a horizontal page",
+      "es": "Texto girado en una página horizontal"
     },
     "aliases": {
       "en": [
-        "vertical text",
         "rotated label",
         "spine text",
-        "sideways heading"
+        "sideways heading",
+        "turned caption",
+        "text at 90 degrees"
       ],
       "es": [
-        "texto vertical",
         "etiqueta girada",
         "texto del lomo",
-        "título de lado"
+        "título de lado",
+        "pie girado",
+        "texto a 90 grados"
       ]
     },
     "explanation": {
-      "en": "Text elements are always horizontal; only whole floats rotate. Draw rotated labels inside an SVG resource, or rotate the whole table or figure onto its own page.",
-      "es": "Los elementos de texto son siempre horizontales; solo giran los flotantes enteros. Dibuja las etiquetas giradas dentro de un recurso SVG, o gira la tabla o la figura entera en una página propia."
+      "en": "On a horizontal page, text elements and paragraphs stay horizontal; only whole floats rotate. A whole book or a section can be set vertically (layout.writingMode 'vertical-rl'), but that is Chinese or Japanese vertical writing, not a turned line. Draw a turned label inside an SVG resource, or rotate the whole table or figure onto its own page.",
+      "es": "En una página horizontal, los elementos de texto y los párrafos son siempre horizontales; solo giran los flotantes enteros. Un libro entero o una sección pueden componerse en vertical (layout.writingMode 'vertical-rl'), pero eso es la escritura vertical del chino o del japonés, no una línea girada. Dibuja la etiqueta girada dentro de un recurso SVG, o gira la tabla o la figura entera en una página propia."
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "What is NOT supported",
         "es": "Qué NO se soporta"
-      }
-    }
-  },
-  "running-head-marks": {
-    "label": {
-      "en": "First and last entry in running heads",
-      "es": "Primera y última entrada en la cabecera"
-    },
-    "aliases": {
-      "en": [
-        "dictionary running heads",
-        "guide words",
-        "marks"
-      ],
-      "es": [
-        "cabeceras de diccionario",
-        "palabras guía",
-        "reclamos"
-      ]
-    },
-    "explanation": {
-      "en": "There is no placeholder for the first or last entry on a page. A dictionary can show the current letter through a heading style's own running head.",
-      "es": "No hay marcador para la primera o la última entrada de una página. Un diccionario puede mostrar la letra en curso con la cabecera propia de un estilo de título."
-    },
-    "docs": {
-      "slug": "configuration",
-      "heading": {
-        "en": "Text elements",
-        "es": "Elementos de texto"
       }
     }
   },
@@ -455,30 +428,32 @@
   },
   "rtl-cjk": {
     "label": {
-      "en": "Right-to-left scripts and CJK line breaking",
-      "es": "Escrituras de derecha a izquierda y corte CJK"
+      "en": "Right-to-left scripts",
+      "es": "Escrituras de derecha a izquierda"
     },
     "aliases": {
       "en": [
         "Arabic",
         "Hebrew",
-        "Chinese",
-        "Japanese",
+        "Persian",
+        "Urdu",
         "RTL",
-        "bidi"
+        "bidi",
+        "right-to-left"
       ],
       "es": [
         "árabe",
         "hebreo",
-        "chino",
-        "japonés",
+        "persa",
+        "urdu",
         "RTL",
-        "bidireccional"
+        "bidireccional",
+        "de derecha a izquierda"
       ]
     },
     "explanation": {
-      "en": "There is no bidirectional layout and no CJK line breaking; Postext sets left-to-right alphabetic scripts, with hyphenation in eight languages.",
-      "es": "No hay composición bidireccional ni corte de líneas CJK; Postext compone escrituras alfabéticas de izquierda a derecha, con separación silábica en ocho idiomas."
+      "en": "There is no bidirectional layout: Arabic, Hebrew and the other right-to-left scripts are neither shaped nor ordered from the right. A book can be bound on the right (page.binding), which orders its pages, not its lines.",
+      "es": "No hay composición bidireccional: el árabe, el hebreo y las demás escrituras de derecha a izquierda ni se modelan ni se ordenan desde la derecha. Un libro puede encuadernarse por la derecha (page.binding), lo que ordena sus páginas, no sus líneas."
     },
     "docs": {
       "slug": "document-format",
@@ -750,6 +725,254 @@
       "heading": {
         "en": "What is NOT supported",
         "es": "Qué NO se soporta"
+      }
+    }
+  },
+  "japanese-korean-rules": {
+    "label": {
+      "en": "Japanese and Korean composition rules",
+      "es": "Reglas de composición del japonés y el coreano"
+    },
+    "aliases": {
+      "en": [
+        "Japanese",
+        "Korean",
+        "JLREQ",
+        "KLREQ",
+        "kana",
+        "hangul",
+        "日本語",
+        "한국어"
+      ],
+      "es": [
+        "japonés",
+        "coreano",
+        "JLREQ",
+        "KLREQ",
+        "kana",
+        "hangul",
+        "日本語",
+        "한국어"
+      ]
+    },
+    "explanation": {
+      "en": "Japanese and Korean text breaks between characters and justifies like Chinese, with the mainland Chinese defaults: there are no Japanese (JLREQ) or Korean (KLREQ) rules, labels or regional punctuation yet. Set cjk.lineBreak, punctuationWidth and latinSpacing by hand to come close.",
+      "es": "El texto japonés y el coreano se cortan entre caracteres y se justifican como el chino, con los valores de la China continental: aún no hay reglas japonesas (JLREQ) ni coreanas (KLREQ), ni etiquetas ni puntuación regional. Ajusta a mano cjk.lineBreak, punctuationWidth y latinSpacing para acercarte."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "East Asian typography",
+        "es": "Tipografía de Asia oriental"
+      }
+    }
+  },
+  "mixed-writing-modes": {
+    "label": {
+      "en": "Vertical and horizontal text on one page",
+      "es": "Texto vertical y horizontal en la misma página"
+    },
+    "aliases": {
+      "en": [
+        "mixed orientation",
+        "horizontal box in vertical text",
+        "vertical box",
+        "横排插图说明",
+        "writing-mode in a box"
+      ],
+      "es": [
+        "orientación mixta",
+        "recuadro horizontal en texto vertical",
+        "recuadro vertical",
+        "横排插图说明",
+        "writing-mode en un recuadro"
+      ]
+    },
+    "explanation": {
+      "en": "The writing mode belongs to the document or to a section (a heading style's layout): a single box, sidebar or table cell cannot run vertically on a horizontal page, or horizontally in vertical text. Running heads, folios and captions stay horizontal on a vertical page. Give the passage a section of its own, or draw it as an SVG resource.",
+      "es": "La dirección de escritura es del documento o de una sección (el layout de un estilo de título): un recuadro, un destacado o una celda no pueden ir en vertical en una página horizontal, ni en horizontal dentro de un texto vertical. Las cabeceras, los folios y los pies se quedan horizontales en una página vertical. Da al pasaje una sección propia o dibújalo como recurso SVG."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Vertical writing",
+        "es": "Escritura vertical"
+      }
+    }
+  },
+  "vertical-tables": {
+    "label": {
+      "en": "Tables set in vertical text",
+      "es": "Tablas compuestas en texto vertical"
+    },
+    "aliases": {
+      "en": [
+        "vertical table",
+        "table read from the right",
+        "竖排表格",
+        "captions beside figures"
+      ],
+      "es": [
+        "tabla vertical",
+        "tabla que se lee desde la derecha",
+        "竖排表格",
+        "pies junto a las figuras"
+      ]
+    },
+    "explanation": {
+      "en": "In a vertical book, figures and tables stand upright and their captions and cells are set horizontally, as most modern vertical books print them. A table whose cells run top to bottom with its header on the right, or a caption set vertically beside its figure, is not available: draw such a table as an SVG resource.",
+      "es": "En un libro vertical, las figuras y las tablas están en pie y sus pies y celdas se componen en horizontal, como las imprimen casi todos los libros verticales de hoy. No hay tablas cuyas celdas corran de arriba abajo con la cabecera a la derecha, ni pies compuestos en vertical junto a su figura: dibuja una tabla así como recurso SVG."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Vertical writing",
+        "es": "Escritura vertical"
+      }
+    }
+  },
+  "chinese-point-sizes": {
+    "label": {
+      "en": "Chinese type sizes (号) and Q units",
+      "es": "Cuerpos chinos (号) y unidades Q"
+    },
+    "aliases": {
+      "en": [
+        "五号",
+        "小四",
+        "hao sizes",
+        "Q units",
+        "级数",
+        "Chinese point sizes"
+      ],
+      "es": [
+        "五号",
+        "小四",
+        "cuerpos hao",
+        "unidades Q",
+        "级数",
+        "cuerpos chinos"
+      ]
+    },
+    "explanation": {
+      "en": "Sizes are given in pt, mm, px or em: there is no 五号 or 小四 and no Japanese Q. Convert them as Chinese word processors do: 初号 42 pt, 二号 22 pt, 三号 16 pt, 四号 14 pt, 小四 12 pt, 五号 10.5 pt, 小五 9 pt; 1 Q is 0.25 mm.",
+      "es": "Los cuerpos se dan en pt, mm, px o em: no hay 五号 ni 小四, ni la Q japonesa. Conviértelos como lo hacen los procesadores de texto chinos: 初号 42 pt, 二号 22 pt, 三号 16 pt, 四号 14 pt, 小四 12 pt, 五号 10,5 pt, 小五 9 pt; 1 Q son 0,25 mm."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Character grid",
+        "es": "Retícula de caracteres"
+      }
+    }
+  },
+  "interlinear-notes": {
+    "label": {
+      "en": "Notes between the lines",
+      "es": "Notas entre las líneas"
+    },
+    "aliases": {
+      "en": [
+        "interlinear notes",
+        "interlinear gloss",
+        "notes between the lines",
+        "notes beside the column",
+        "side comments",
+        "側批",
+        "旁批"
+      ],
+      "es": [
+        "notas interlineales",
+        "glosa interlineal",
+        "notas entre líneas",
+        "notas junto a la columna",
+        "comentarios laterales",
+        "側批",
+        "旁批"
+      ]
+    },
+    "explanation": {
+      "en": "Nothing is set between two lines or two columns of text: the gloss written over a word of a medieval manuscript, or the red comment (側批) a Chinese manuscript writes beside a column, has no place of its own. Ruby carries a reading of a few characters beside its base. A longer note goes into the line as warichu (:warichu[…], two rows at half the size), or into a side column as a box fenced with span=\"side\".",
+      "es": "No se compone nada entre dos líneas o dos columnas de texto: la glosa escrita sobre una palabra en un manuscrito medieval, o el comentario rojo (側批) que un manuscrito chino escribe junto a una columna, no tienen un sitio propio. El ruby lleva una lectura de pocos caracteres junto a su base. Una nota más larga entra en la línea como warichu (:warichu[…], dos filas a la mitad del cuerpo) o va a una columna lateral como recuadro con span=\"side\"."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Chinese marks, ruby and warichu",
+        "es": "Marcas chinas, ruby y warichu"
+      }
+    }
+  },
+  "leaf-folios": {
+    "label": {
+      "en": "One folio for a two-page leaf",
+      "es": "Un número por hoja de dos páginas"
+    },
+    "aliases": {
+      "en": [
+        "leaf numbers",
+        "folio per leaf",
+        "folio per spread",
+        "sheet numbers",
+        "number every other page",
+        "葉碼",
+        "頁碼"
+      ],
+      "es": [
+        "número de hoja",
+        "folio por hoja",
+        "folio por pliego",
+        "numerar cada dos páginas",
+        "葉碼",
+        "頁碼"
+      ]
+    },
+    "explanation": {
+      "en": "Page numbers count pages: no counter advances once per spread or per leaf, as the leaf numbers (葉碼) of a woodblock book do. Open each leaf with a hidden level-1 heading that breaks to the page the leaf starts on (parity 'even' in a book bound on the right) and print {chapterNumber} in the design; the text then has to be broken in the Markdown where each leaf ends.",
+      "es": "Los números de página cuentan páginas: ningún contador avanza una vez por pliego o por hoja, como el número de hoja (葉碼) de un libro xilográfico. Abre cada hoja con un título de nivel 1 oculto que salte a la página donde empieza la hoja (paridad 'even' en un libro encuadernado por la derecha) e imprime {chapterNumber} en el diseño; el texto hay que cortarlo en el Markdown donde acaba cada hoja."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Numbering",
+        "es": "Numeración"
+      }
+    }
+  },
+  "line-rules": {
+    "label": {
+      "en": "A rule between every two lines of text",
+      "es": "Un filete entre cada dos líneas de texto"
+    },
+    "aliases": {
+      "en": [
+        "rules between lines",
+        "ruled columns",
+        "ruled paper",
+        "lines between vertical columns",
+        "界行",
+        "朱絲欄",
+        "烏絲欄"
+      ],
+      "es": [
+        "filetes entre líneas",
+        "columnas pautadas",
+        "papel pautado",
+        "líneas entre columnas verticales",
+        "界行",
+        "朱絲欄",
+        "烏絲欄"
+      ]
+    },
+    "explanation": {
+      "en": "The column rule runs between columns, and the character grid's overlay (cjk.grid.show) is a light grey square for every character, a screen aid the PDF leaves out unless renderToPdf gets characterGrid: true. The rules of a woodblock page or of ruled manuscript paper, one between every two lines, are drawn as vertical rule elements in the header, placed from the grid's pitch.",
+      "es": "El filete de columna va entre columnas, y la cuadrícula de la retícula de caracteres (cjk.grid.show) es un cuadrado gris claro por carácter, una ayuda de pantalla que el PDF no imprime salvo que renderToPdf reciba characterGrid: true. Los filetes de una página xilográfica o del papel pautado de un manuscrito, uno entre cada dos líneas, se dibujan como elementos de línea verticales en la cabecera, colocados con el paso de la retícula."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Column rule",
+        "es": "Filete de columna"
       }
     }
   }

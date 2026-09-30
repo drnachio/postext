@@ -113,4 +113,35 @@ describe('design text in HTML (EF-25)', () => {
     expect(html).toMatch(/>Ana<span style="font:[^"]*5\.8\d*px[^"]*;position:relative;top:-3\.33\dpx;">1<\/span> <span style="font:700 10px[^"]*;">bold<\/span>/);
     expect(html).toContain('-webkit-text-stroke:1px #aa0000;-webkit-text-fill-color:transparent;');
   });
+
+  it('turns the browser’s punctuation trimming off on the lines and runs holding CJK text only', () => {
+    // Each line (or run) was measured whole: 紅樓夢 without trimming, a
+    // Latin line or run with it.
+    const cjkConfig: PostextConfig = {
+      ...config,
+      header: {
+        elements: [
+          {
+            kind: 'text', id: 'lines', content: '《紅樓夢》\n“end.”“Yes”', fontSize: pt(10), overflow: 'wrap',
+            placement: { anchor: { to: 'container', edge: 'top-left' } },
+          },
+          {
+            kind: 'text', id: 'runs', content: '**《紅樓夢》** “end.”“Yes”', fontSize: pt(10), inlineMarks: true, overflow: 'ellipsis-end',
+            placement: { anchor: { to: 'container', edge: 'top-right' } },
+          },
+        ],
+      },
+    };
+    const doc = buildDocument({ markdown: 'Body text.' }, cjkConfig);
+    const html = renderToHtmlIndexed(doc).pages[0]!.decorationHtml;
+    const decl = 'text-spacing-trim:space-all';
+    // Lines: the one holding CJK text turns it off, the Latin one not.
+    expect(html).toMatch(/white-space:pre;text-spacing-trim:space-all;[^"]*">《紅樓夢》<\/span>/);
+    expect(html).toContain('white-space:pre;">“end.”“Yes”</span>');
+    // Runs: the bold 《紅樓夢》 turns it off; the line box, and so the run
+    // after it, keep the browser's trimming.
+    expect(html).toMatch(/white-space:pre;"><span style="font:700 [^"]*;text-spacing-trim:space-all;[^"]*">《紅樓夢》<\/span> “end.”“Yes”<\/span>/);
+    // No block holds the declaration for all its lines.
+    for (const div of html.split('<div').slice(1)) expect(div.slice(0, div.indexOf('>'))).not.toContain(decl);
+  });
 });

@@ -1,4 +1,4 @@
-import type { PageConfig, ResolvedPageConfig, ResolvedPageNumberingConfig, PageMargins, PageNumberingConfig, PageSizePreset, Dimension, CutLinesConfig } from '../types';
+import type { PageConfig, ResolvedPageConfig, ResolvedPageNumberingConfig, PageMargins, PageNumberingConfig, PageSizePreset, Dimension, CutLinesConfig, WritingMode } from '../types';
 import { dimensionsEqual, colorsEqual } from './shared';
 import { parseNumberFormat } from '../numbering';
 
@@ -44,14 +44,23 @@ export const DEFAULT_PAGE_CONFIG: ResolvedPageConfig = {
   cutLines: { ...DEFAULT_CUT_LINES },
   baselineGrid: { enabled: false, color: { hex: '#cccccc', model: 'hex' }, lineWidth: { value: 0.5, unit: 'pt' } },
   pageNumbering: { ...DEFAULT_PAGE_NUMBERING },
+  binding: 'left',
 };
 
-function resolvePageNumbering(raw?: PageNumberingConfig): ResolvedPageNumberingConfig {
+/** The edge a book is bound on: `'auto'` (or anything unknown) is the
+ *  right edge in a vertical document (clreq §7.1.1.1), else the left. */
+export function resolvePageBinding(binding: PageConfig['binding'], writingMode?: WritingMode): 'left' | 'right' {
+  if (binding === 'left' || binding === 'right') return binding;
+  return writingMode === 'vertical-rl' ? 'right' : 'left';
+}
+
+function resolvePageNumbering(raw?: PageNumberingConfig, locale?: string): ResolvedPageNumberingConfig {
   if (!raw) return { ...DEFAULT_PAGE_NUMBERING };
   return {
-    // Any spelling of a format is read (`roman-lower`, `arabic`, `i`…); an
-    // unknown one numbers in decimal (`collectConfigWarnings` reports it).
-    format: parseNumberFormat(raw.format) ?? DEFAULT_PAGE_NUMBERING.format,
+    // Any spelling of a format is read (`roman-lower`, `arabic`, `i`…, `一`
+    // in the document's script); an unknown one numbers in decimal
+    // (`collectConfigWarnings` reports it).
+    format: parseNumberFormat(raw.format, locale) ?? DEFAULT_PAGE_NUMBERING.format,
     startAt: raw.startAt ?? DEFAULT_PAGE_NUMBERING.startAt,
   };
 }
@@ -70,8 +79,11 @@ function resolveCutLines(raw?: CutLinesConfig | boolean): ResolvedPageConfig['cu
   };
 }
 
-export function resolvePageConfig(partial?: PageConfig): ResolvedPageConfig {
-  if (!partial) return { ...DEFAULT_PAGE_CONFIG };
+/** A page config in full. `locale` (the document language) decides the
+ *  script of a page-number format written `一` or `壹`, and `writingMode`
+ *  (the document's `layout.writingMode`) what `binding: 'auto'` is. */
+export function resolvePageConfig(partial?: PageConfig, locale?: string, writingMode?: WritingMode): ResolvedPageConfig {
+  if (!partial) return { ...DEFAULT_PAGE_CONFIG, binding: resolvePageBinding(undefined, writingMode) };
   const sizePreset = partial.sizePreset ?? DEFAULT_PAGE_CONFIG.sizePreset;
   const presetSize = sizePreset === 'custom' ? undefined : PAGE_SIZE_PRESETS[sizePreset];
 
@@ -101,7 +113,8 @@ export function resolvePageConfig(partial?: PageConfig): ResolvedPageConfig {
           lineWidth: partial.baselineGrid.lineWidth ?? DEFAULT_PAGE_CONFIG.baselineGrid.lineWidth,
         }
       : { ...DEFAULT_PAGE_CONFIG.baselineGrid },
-    pageNumbering: resolvePageNumbering(partial.pageNumbering),
+    pageNumbering: resolvePageNumbering(partial.pageNumbering, locale),
+    binding: resolvePageBinding(partial.binding, writingMode),
   };
 }
 
@@ -180,6 +193,10 @@ export function stripPageDefaults(page?: PageConfig): PageConfig | undefined {
       };
       hasOverride = true;
     }
+  }
+  if (page.binding !== undefined && page.binding !== 'auto') {
+    result.binding = page.binding;
+    hasOverride = true;
   }
   if (page.baselineGrid) {
     const enabledOverride = page.baselineGrid.enabled !== undefined && page.baselineGrid.enabled !== DEFAULT_PAGE_CONFIG.baselineGrid.enabled;

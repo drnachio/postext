@@ -19,6 +19,7 @@ export const DEFAULT_LAYOUT_CONFIG: ResolvedLayoutConfig = {
   inlineResourceGap: 'around',
   inlineResourceGapInBoxes: true,
   boxChildSplitMinLines: 2,
+  writingMode: 'horizontal-tb',
 };
 
 export function resolveLayoutConfig(partial?: LayoutConfig): ResolvedLayoutConfig {
@@ -45,6 +46,8 @@ export function resolveLayoutConfig(partial?: LayoutConfig): ResolvedLayoutConfi
     boxChildSplitMinLines: Number.isInteger(partial.boxChildSplitMinLines) && partial.boxChildSplitMinLines! >= 1
       ? partial.boxChildSplitMinLines!
       : DEFAULT_LAYOUT_CONFIG.boxChildSplitMinLines,
+    // Anything but the one vertical mode is the default.
+    writingMode: partial.writingMode === 'vertical-rl' ? 'vertical-rl' : DEFAULT_LAYOUT_CONFIG.writingMode,
   };
 }
 
@@ -92,6 +95,10 @@ export function stripLayoutDefaults(layout?: LayoutConfig): LayoutConfig | undef
   }
   if (layout.boxChildSplitMinLines !== undefined && layout.boxChildSplitMinLines !== DEFAULT_LAYOUT_CONFIG.boxChildSplitMinLines) {
     result.boxChildSplitMinLines = layout.boxChildSplitMinLines;
+    hasOverride = true;
+  }
+  if (layout.writingMode !== undefined && layout.writingMode !== DEFAULT_LAYOUT_CONFIG.writingMode) {
+    result.writingMode = layout.writingMode;
     hasOverride = true;
   }
   if (layout.columnRule) {

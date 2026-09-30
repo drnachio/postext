@@ -9,7 +9,7 @@ import GithubSlugger from "github-slugger";
 import type { getTranslations } from "next-intl/server";
 import { detectPen } from "@/lib/cookbook/detect";
 import { highlightLines, type HighlightedLine } from "@/lib/cookbook/highlight";
-import { captureVariantFor, pageImages, pdfDownload, type PageImage } from "@/lib/cookbook/images";
+import { captureVariantFor, pageImages, pdfDownload, spreadBinding, type PageImage } from "@/lib/cookbook/images";
 import { getComposed, writeupFor } from "@/lib/cookbook/recipes";
 import { loadRegistry } from "@/lib/cookbook/registry";
 import type {
@@ -60,8 +60,11 @@ export interface RecipeView {
   capture: CaptureVariant | null;
   engine: CaptureManifest["engine"] | null;
   pages: PageImage[];
-  /** Indexes into `pages`: [verso, recto]. */
+  /** Indexes into `pages`: [verso, recto], in reading order. */
   spreads: [number | null, number | null][];
+  /** The edge the book is bound on: a right-bound book (vertical Chinese)
+   *  lies open mirrored, its recto on the left, and turns leftward. */
+  binding: "left" | "right";
   /** The spread the light table opens on (the hero's). */
   heroSpread: number;
   pdf: { href: string; bytes: number; pages: number } | null;
@@ -150,6 +153,7 @@ export async function recipeView(recipe: Recipe, locale: Locale): Promise<Recipe
     engine: recipe.capture?.engine ?? null,
     pages,
     spreads,
+    binding: spreadBinding(recipe, locale),
     heroSpread,
     pdf: pdfDownload(recipe, locale),
     detected: detectedFor(pen, hit?.data ?? null),

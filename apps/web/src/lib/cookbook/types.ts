@@ -60,9 +60,11 @@ export const REQUIRED_AUTHORED_SECTIONS: readonly SectionId[] = ["build", "metho
 
 // ─── Pens ───────────────────────────────────────────────────────────────────
 
-/** Kit blocks, inlined by composition in this order. */
-export type KitBlock = "core" | "fonts" | "viewer" | "pdf" | "images";
-export const KIT_ORDER: readonly KitBlock[] = ["core", "fonts", "viewer", "pdf", "images"];
+/** Kit blocks, inlined by composition in this order. `cjk` (Chinese,
+ *  Japanese and Korean faces by unicode-range slices) is optional and
+ *  listed only by the recipes that set such text. */
+export type KitBlock = "core" | "fonts" | "viewer" | "pdf" | "images" | "cjk";
+export const KIT_ORDER: readonly KitBlock[] = ["core", "fonts", "viewer", "pdf", "images", "cjk"];
 export const REQUIRED_KIT: readonly KitBlock[] = ["core", "fonts", "viewer"];
 
 export type CardMode = "spread" | "page" | "loupe" | "crop" | "screenshot";
@@ -177,8 +179,14 @@ export interface RecipeMeta {
     focus?: FocusRect;
     /** Published pages (1-based); default: all when ≤ 8, else hero + first 6; cap 12. */
     pages?: number[] | "all";
-    /** Which recorded build is the result (default "last"). */
-    doc?: "last" | "first" | number;
+    /** Which recorded build is the result (default "last"), or several, in
+     *  the order the light table shows them: a pen that builds two editions
+     *  publishes the pages of both. Their pages are numbered on from one
+     *  build to the next (`hero`, `pages`, `focus` and `expect.pages` count
+     *  them so), each build's first page opens a spread of its own, and the
+     *  checks, the detected features and the Sandbox bundle read the first
+     *  build's source. */
+    doc?: CaptureBuild | CaptureBuild[];
     /** "screenshot" mode: element to clip (default "#pages"). */
     selector?: string;
     /** "screenshot" mode viewport (default 1280×900 at DPR 2). */
@@ -417,8 +425,14 @@ export interface CaptureVariant {
     ownLines: number;
   };
   pages: CapturePage[];
-  /** Indexes into `pages`: [verso, recto], page 1 alone on the right. */
+  /** Indexes into `pages`: [verso, recto] (page 1 alone), in reading order
+   *  whichever edge the book is bound on. */
   spreads: [number | null, number | null][];
+  /** `"right"` for a book bound on its right edge (the document's
+   *  `binding`: `page.binding` or vertical text): the light table, the
+   *  card and the contact sheet lay each pair out mirrored, the recto on
+   *  the left, and turn pages leftward. Absent for a left-bound book. */
+  binding?: "right";
   card: { file: string; file480: string; w: number; h: number; mode: CardMode };
   og: { file: string; w: number; h: number };
   pdf?: { file: string; bytes: number; pages: number };
@@ -442,9 +456,17 @@ export interface CaptureVariant {
     converged: boolean;
     iterationCount: number;
     looseLines: { count: number; share: number; worst: number };
+    /** Justified Chinese, Japanese or Korean lines: `count` set short past
+     *  the tracking cap (`cjkLoose`), `worst` the widest space between
+     *  characters, in em. Absent when the pages have no such line. */
+    cjkLooseLines?: { count: number; share: number; worst: number };
     findings: CaptureFinding[];
   };
 }
+
+/** A recorded build of the pen (`capture.doc`): the first, the last, or
+ *  its index in build order from 0. */
+export type CaptureBuild = "last" | "first" | number;
 
 export interface CaptureManifest {
   schemaVersion: 1;

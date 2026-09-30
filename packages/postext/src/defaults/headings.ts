@@ -60,12 +60,12 @@ const DEFAULT_HEADING_MARGIN_BOTTOM: Dimension = { value: 0.5, unit: 'em' };
 const DEFAULT_HEADING_LETTER_SPACING: Dimension = { value: 0, unit: 'pt' };
 
 const DEFAULT_HEADING_LEVELS: ResolvedHeadingLevelConfig[] = [
-  { level: 1, fontSize: { value: 18, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false, letterSpacing: DEFAULT_HEADING_LETTER_SPACING, breakBefore: { enabled: true, parity: 'always-odd' }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none', hidden: false, snapToGrid: true },
-  { level: 2, fontSize: { value: 15, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false, letterSpacing: DEFAULT_HEADING_LETTER_SPACING, breakBefore: { ...DEFAULT_BREAK_BEFORE }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none', hidden: false, snapToGrid: true },
-  { level: 3, fontSize: { value: 12, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false, letterSpacing: DEFAULT_HEADING_LETTER_SPACING, breakBefore: { ...DEFAULT_BREAK_BEFORE }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none', hidden: false, snapToGrid: true },
-  { level: 4, fontSize: { value: 10, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false, letterSpacing: DEFAULT_HEADING_LETTER_SPACING, breakBefore: { ...DEFAULT_BREAK_BEFORE }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none', hidden: false, snapToGrid: true },
-  { level: 5, fontSize: { value: 9, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false, letterSpacing: DEFAULT_HEADING_LETTER_SPACING, breakBefore: { ...DEFAULT_BREAK_BEFORE }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none', hidden: false, snapToGrid: true },
-  { level: 6, fontSize: { value: 8, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false, letterSpacing: DEFAULT_HEADING_LETTER_SPACING, breakBefore: { ...DEFAULT_BREAK_BEFORE }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none', hidden: false, snapToGrid: true },
+  { level: 1, fontSize: { value: 18, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', numberSeparator: ' ', italic: false, letterSpacing: DEFAULT_HEADING_LETTER_SPACING, breakBefore: { enabled: true, parity: 'always-odd' }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none', hidden: false, snapToGrid: true },
+  { level: 2, fontSize: { value: 15, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', numberSeparator: ' ', italic: false, letterSpacing: DEFAULT_HEADING_LETTER_SPACING, breakBefore: { ...DEFAULT_BREAK_BEFORE }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none', hidden: false, snapToGrid: true },
+  { level: 3, fontSize: { value: 12, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', numberSeparator: ' ', italic: false, letterSpacing: DEFAULT_HEADING_LETTER_SPACING, breakBefore: { ...DEFAULT_BREAK_BEFORE }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none', hidden: false, snapToGrid: true },
+  { level: 4, fontSize: { value: 10, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', numberSeparator: ' ', italic: false, letterSpacing: DEFAULT_HEADING_LETTER_SPACING, breakBefore: { ...DEFAULT_BREAK_BEFORE }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none', hidden: false, snapToGrid: true },
+  { level: 5, fontSize: { value: 9, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', numberSeparator: ' ', italic: false, letterSpacing: DEFAULT_HEADING_LETTER_SPACING, breakBefore: { ...DEFAULT_BREAK_BEFORE }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none', hidden: false, snapToGrid: true },
+  { level: 6, fontSize: { value: 8, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', numberSeparator: ' ', italic: false, letterSpacing: DEFAULT_HEADING_LETTER_SPACING, breakBefore: { ...DEFAULT_BREAK_BEFORE }, span: 'column', advancedDesign: { ...DEFAULT_ADVANCED_DESIGN, slot: { elements: [] } }, textTransform: 'none', hidden: false, snapToGrid: true },
 ];
 
 export const DEFAULT_HEADINGS_CONFIG: ResolvedHeadingsConfig = {
@@ -151,6 +151,7 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
       marginTop: override?.marginTop ?? generalMarginTop,
       marginBottom: override?.marginBottom ?? generalMarginBottom,
       numberingTemplate: override?.numberingTemplate ?? def.numberingTemplate,
+      numberSeparator: override?.numberSeparator ?? def.numberSeparator,
       italic: override?.italic ?? def.italic,
       letterSpacing: override?.letterSpacing ?? def.letterSpacing,
       breakBefore: resolveBreakBefore(override?.breakBefore, def.breakBefore),
@@ -183,6 +184,7 @@ export function resolveHeadingLevelOverrides(
   if (partial.fontWeight !== undefined) out.fontWeight = partial.fontWeight;
   if (partial.marginTop !== undefined) out.marginTop = partial.marginTop;
   if (partial.marginBottom !== undefined) out.marginBottom = partial.marginBottom;
+  if (partial.numberSeparator !== undefined) out.numberSeparator = partial.numberSeparator;
   if (partial.italic !== undefined) out.italic = partial.italic;
   if (partial.letterSpacing !== undefined) out.letterSpacing = partial.letterSpacing;
   if (partial.breakBefore !== undefined) out.breakBefore = resolveBreakBefore(partial.breakBefore);
@@ -380,6 +382,10 @@ export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig
       }
       if (level.numberingTemplate !== undefined && level.numberingTemplate !== def.numberingTemplate) {
         entry.numberingTemplate = level.numberingTemplate;
+        levelHasOverride = true;
+      }
+      if (level.numberSeparator !== undefined && level.numberSeparator !== def.numberSeparator) {
+        entry.numberSeparator = level.numberSeparator;
         levelHasOverride = true;
       }
       if (level.italic !== undefined && level.italic !== def.italic) {

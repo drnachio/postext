@@ -6,6 +6,7 @@ import {
   PDFRef,
   type PDFContext,
 } from 'pdf-lib';
+import { blockLinesText } from 'postext';
 import type { VDTBlock, VDTDocument } from 'postext';
 
 interface OutlineEntry {
@@ -15,29 +16,60 @@ interface OutlineEntry {
   y: number;
 }
 
+/** Runs of white space as one space; the ideographic space (U+3000) of a
+ *  Chinese title stays. */
+const SPACES = /[^\S\u3000]+/g;
+
+/** A heading's printed lines as one line of text: joined back as they were
+ *  broken (`blockLinesText`: nothing between two Chinese characters, the
+ *  word a hyphen divided whole again), white space collapsed but for the
+ *  ideographic space. */
+export function headingLinesText(block: VDTBlock): string {
+  return blockLinesText(block).replace(SPACES, ' ').trim();
+}
+
+/** A heading's number as its lines read it back: white space collapsed
+ *  and trimmed at the ends. A template that opens with ideographic spaces
+ *  (`'　　{2:一}、'`, the two-cell indent of a GB/T 9704 head) prints them,
+ *  but the lines lose them to the trim, and a bookmark does not start with
+ *  an indent. */
+function headingNumberText(block: VDTBlock): string {
+  return block.numberPrefix?.replace(SPACES, ' ').trim() ?? '';
+}
+
+/** A heading's number and title as one line, from its printed lines: the
+ *  number goes in front when the lines do not already start with it (an
+ *  opener prints it apart), joined as the heading joins them (`'　'` or
+ *  nothing in a Chinese heading). The bookmarks and the document title read
+ *  a heading this way. */
+export function numberedHeadingText(block: VDTBlock): string {
+  const raw = headingLinesText(block);
+  if (!raw) return '';
+  const number = headingNumberText(block);
+  return number && !raw.startsWith(number) ? `${number}${block.numberSeparator ?? ' '}${raw}` : raw;
+}
+
 /** A heading's bookmark title: its number and its title as written. A
  *  letter-case transform (`textTransform: 'uppercase'`) is how the page
  *  prints the heading, not its name — as with CSS `text-transform`, the
  *  bookmark keeps the source's case (EF-81). */
 function extractBlockText(block: VDTBlock): string {
-  const written = block.sourceTitle?.replace(/\s+/g, ' ').trim();
-  if (written) return block.numberPrefix ? `${block.numberPrefix} ${written}` : written;
-  const raw = block.lines
-    .map((line) => line.text)
-    .join(' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  if (!raw) return '';
-  if (block.numberPrefix && !raw.startsWith(block.numberPrefix)) {
-    return `${block.numberPrefix} ${raw}`;
-  }
-  return raw;
+  const written = block.sourceTitle?.replace(SPACES, ' ').trim();
+  if (!written) return numberedHeadingText(block);
+  const number = headingNumberText(block);
+  return number ? `${number}${block.numberSeparator ?? ' '}${written}` : written;
 }
 
 /** Headings of `doc`, with page indices offset by `base` (the PDF pages of
- *  the documents rendered before it). */
+ *  the documents rendered before it). A level-1 heading whose style keeps it
+ *  out of the running chapter and out of the contents (`runningChapter:
+ *  false`, `toc: false`: a plate or a map set as a heading inside a chapter)
+ *  is not bookmarked either. */
 function collectHeadings(doc: VDTDocument, base = 0): OutlineEntry[] {
   const entries: OutlineEntry[] = [];
+  const unlisted = new Set(
+    (doc.config.headingStyles ?? []).filter((s) => !s.runningChapter && !s.toc).map((s) => s.id),
+  );
   for (const page of doc.pages) {
     // Part-divider pages sit above the chapters: level 0 so `buildTree`
     // nests the following H1s (level 1) under them.
@@ -48,13 +80,16 @@ function collectHeadings(doc: VDTDocument, base = 0): OutlineEntry[] {
     for (const col of page.columns) {
       for (const block of col.blocks) {
         if (block.type !== 'heading') continue;
+        if (block.notRunningChapter && block.headingStyleId && unlisted.has(block.headingStyleId)) continue;
         const title = extractBlockText(block);
         if (!title) continue;
         entries.push({
           title,
           level: block.headingLevel ?? 1,
           pageIndex: base + page.index,
-          y: block.bbox.y,
+          // A vertical page's heading runs down its column from the flow's
+          // x: the top of the column on the sheet, where reading starts.
+          y: page.flow ? block.bbox.x : block.bbox.y,
         });
       }
     }

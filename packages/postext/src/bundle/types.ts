@@ -11,6 +11,11 @@ export interface BundleShowcaseMeta {
   /** Every locale the bundle carries chapters for (a bilingual bundle lists
    *  both); `locale` stays the primary one. */
   locales?: string[];
+  /** The locale a viewer opens the bundle in when the reader asks for none
+   *  (a picker, a link without a language): the original of a book whose
+   *  translations would otherwise open for readers of their language. One
+   *  of `locales`; absent, the viewer's own language picks. */
+  openLocale?: string;
   /** Preview image (`thumbnail.jpg`), relative to the bundle root. */
   thumbnail?: string;
   /** Licence of the bundled content, as a short label (`CC BY 4.0`). */
@@ -111,8 +116,8 @@ interface BundleManifestBase extends BundleShowcaseMeta {
   resources?: BundleResourceSpec[];
   fonts?: BundleFontFamilySpec[];
   /** Locale → overrides, resolved with the same rules as a locale →
-   *  chapters map (exact tag, base language, the manifest's locale, first
-   *  entry). */
+   *  chapters map (exact tag, then the same language and script — `zh-TW`
+   *  reads `zh-Hant` — then the manifest's locale, then the first entry). */
   localized?: Record<string, BundleLocaleOverrides>;
 }
 

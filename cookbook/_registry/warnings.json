@@ -110,6 +110,72 @@
       }
     }
   },
+  "cjkLooseLine": {
+    "source": "engine",
+    "label": {
+      "en": "CJK line set short",
+      "es": "Línea CJK corta"
+    },
+    "cause": {
+      "en": "A justified line of Chinese, Japanese or Korean text would need more space between its characters than half an em (or `bodyText.maxJustifyTracking`) to reach the measure, usually because a long Latin word or web address on the next line cannot break.",
+      "es": "Una línea justificada de texto chino, japonés o coreano necesitaría más de medio cuadratín entre sus caracteres (o más que `bodyText.maxJustifyTracking`) para llegar a la medida, casi siempre porque una palabra latina larga o una dirección web de la línea siguiente no se puede cortar."
+    },
+    "fix": {
+      "en": "Break the long word or address yourself (a zero-width space, U+200B, where a line may end), move it, or widen the measure.",
+      "es": "Corta tú la palabra o la dirección larga (un espacio de anchura cero, U+200B, donde puede acabar la línea), muévela o ensancha la medida."
+    },
+    "docs": {
+      "slug": "justification",
+      "heading": {
+        "en": "Chinese, Japanese and Korean",
+        "es": "Chino, japonés y coreano"
+      }
+    }
+  },
+  "cjkMarksExceedLeading": {
+    "source": "engine",
+    "label": {
+      "en": "Marks crowd the next line",
+      "es": "Marcas pegadas a la línea vecina"
+    },
+    "cause": {
+      "en": "A paragraph with emphasis dots or proper-name and book-title lines has a line gap under half an em (five eighths with marks on both sides): the marks live in the leading, whose height never changes for them, so they touch the next line.",
+      "es": "Un párrafo con puntos de énfasis o líneas de nombre propio y de título tiene un hueco entre líneas de menos de medio em (cinco octavos con marcas por los dos lados): las marcas viven en el interlineado, que no crece por ellas, así que tocan la línea vecina."
+    },
+    "fix": {
+      "en": "Give the paragraph a paragraph style with more leading, or raise `bodyText.lineHeight`.",
+      "es": "Dale al párrafo un estilo de párrafo con más interlineado, o sube `bodyText.lineHeight`."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Marks, ruby and warichu",
+        "es": "Marcas, ruby y warichu"
+      }
+    }
+  },
+  "rubyExceedsLeading": {
+    "source": "engine",
+    "label": {
+      "en": "Readings crowd the next line",
+      "es": "Lecturas pegadas a la línea vecina"
+    },
+    "cause": {
+      "en": "A paragraph with ruby readings over or under its text has a line gap narrower than the readings: they sit in the leading and touch the line next to them.",
+      "es": "Un párrafo con lecturas ruby encima o debajo del texto tiene un hueco entre líneas más estrecho que las lecturas: ocupan el interlineado y tocan la línea vecina."
+    },
+    "fix": {
+      "en": "Set the paragraph with more leading (at least the text size plus `cjk.ruby.fontSize`), or make the readings smaller.",
+      "es": "Compón el párrafo con más interlineado (al menos el cuerpo más `cjk.ruby.fontSize`), o reduce las lecturas."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Marks, ruby and warichu",
+        "es": "Marcas, ruby y warichu"
+      }
+    }
+  },
   "headingHierarchy": {
     "source": "sandbox",
     "label": {
@@ -924,6 +990,50 @@
       }
     }
   },
+  "fullwidthMarkup": {
+    "source": "engine",
+    "label": {
+      "en": "Fullwidth markup",
+      "es": "Marcas en ancho completo"
+    },
+    "cause": {
+      "en": "A line holds markup typed with a Chinese or Japanese input method: a `：：：` fence, a `＃` heading, a `［＾…］` footnote marker, `｛…｝` attributes or `＊＊…＊＊` bold. The parser reads only the ASCII forms, so the line prints as text.",
+      "es": "Una línea lleva marcas escritas con un método de entrada chino o japonés: una valla `：：：`, un encabezado `＃`, una llamada de nota `［＾…］`, atributos `｛…｝` o negrita `＊＊…＊＊`. El analizador solo lee las formas ASCII, así que la línea se imprime como texto."
+    },
+    "fix": {
+      "en": "Switch the input method to half-width (or English) for the markup and type `:::`, `#`, `[^…]`, `{…}` or `**…**`; the text between them stays Chinese.",
+      "es": "Pasa el método de entrada a ancho medio (o al inglés) para las marcas y escribe `:::`, `#`, `[^…]`, `{…}` o `**…**`; el texto entre ellas sigue en chino."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Warnings in the document",
+        "es": "Avisos del documento"
+      }
+    }
+  },
+  "attributeKeyInvalid": {
+    "source": "engine",
+    "label": {
+      "en": "Attribute key not read",
+      "es": "Clave de atributo no leída"
+    },
+    "cause": {
+      "en": "An attribute key holds letters outside ASCII (`作者=曹雪芹`). Keys are ASCII, so the attribute is ignored.",
+      "es": "Una clave de atributo lleva letras fuera del ASCII (`作者=曹雪芹`). Las claves son ASCII, así que el atributo se ignora."
+    },
+    "fix": {
+      "en": "Write the key in ASCII letters, digits, `_` and `-` (`author=曹雪芹`); the value may stay in any script.",
+      "es": "Escribe la clave con letras ASCII, cifras, `_` y `-` (`author=曹雪芹`); el valor puede seguir en cualquier escritura."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Attribute values",
+        "es": "Valores de los atributos"
+      }
+    }
+  },
   "unknownHeadingStyle": {
     "source": "engine",
     "label": {
@@ -965,6 +1075,28 @@
       "heading": {
         "en": "Configuration warnings",
         "es": "Avisos de configuración"
+      }
+    }
+  },
+  "cjkGridClamped": {
+    "source": "engine",
+    "label": {
+      "en": "Character grid too large",
+      "es": "Retícula de caracteres demasiado grande"
+    },
+    "cause": {
+      "en": "`cjk.grid` asks for more characters per line or lines per page than the page margins leave room for at the body size and line height, so the grid is set with the most that fit.",
+      "es": "`cjk.grid` pide más caracteres por línea o más líneas por página de los que caben entre los márgenes con ese cuerpo e interlineado, así que la retícula se compone con los que caben."
+    },
+    "fix": {
+      "en": "Lower `charsPerLine` or `linesPerPage`, narrow the margins (they are minimums), or set a smaller `bodyText.fontSize` or `lineHeight`.",
+      "es": "Baja `charsPerLine` o `linesPerPage`, estrecha los márgenes (son mínimos) o reduce `bodyText.fontSize` o `lineHeight`."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Character grid",
+        "es": "Retícula de caracteres"
       }
     }
   },
@@ -1185,6 +1317,94 @@
       "heading": {
         "en": "Back-of-book index",
         "es": "Índice analítico"
+      }
+    }
+  },
+  "missingGlyph": {
+    "source": "sandbox",
+    "label": {
+      "en": "Characters missing from a PDF font",
+      "es": "Caracteres sin glifo en una fuente del PDF"
+    },
+    "cause": {
+      "en": "The last PDF set characters that no file of a face has a glyph for, such as a Chinese family served only as its Latin file, or Fontsource's chinese-traditional subset of Noto Serif TC, which has no full-width ，！？（）. They print as the font's empty box. postext-pdf reports it through onWarning as a missingGlyph warning.",
+      "es": "El último PDF compuso caracteres para los que ningún archivo de una variante tiene glifo, como una familia china servida solo con su archivo latino, o el subconjunto chinese-traditional de Noto Serif TC en Fontsource, que no tiene ，！？（） de ancho completo. Se imprimen como la caja vacía de la fuente. postext-pdf lo notifica por onWarning como aviso missingGlyph."
+    },
+    "fix": {
+      "en": "Give the PDF the files that hold those characters (the numbered unicode-range slices of a Fontsource CJK family), or choose a family that covers them.",
+      "es": "Da al PDF los archivos que contienen esos caracteres (los fragmentos numerados por unicode-range de una familia CJK de Fontsource) o elige una familia que los incluya."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Chinese, Japanese and Korean fonts",
+        "es": "Fuentes chinas, japonesas y coreanas"
+      }
+    }
+  },
+  "variableFontDefaultInstance": {
+    "source": "sandbox",
+    "label": {
+      "en": "Variable font in the PDF",
+      "es": "Fuente variable en el PDF"
+    },
+    "cause": {
+      "en": "A face of the last PDF came from a variable font asked for at a weight other than its default instance. pdf-lib embeds the default instance only, so that text prints at the default weight (a bold set from NotoSerifSC[wght].ttf prints regular).",
+      "es": "Una variante del último PDF salió de una fuente variable pedida con un peso distinto del de su instancia por defecto. pdf-lib solo incrusta la instancia por defecto, así que ese texto se imprime con el peso por defecto (una negrita compuesta con NotoSerifSC[wght].ttf sale redonda)."
+    },
+    "fix": {
+      "en": "Provide one static file per weight (fontTools varLib.instancer cuts them), or use Fontsource, which serves static weights.",
+      "es": "Da un archivo estático por peso (fontTools varLib.instancer los saca) o usa Fontsource, que sirve pesos estáticos."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Chinese, Japanese and Korean fonts",
+        "es": "Fuentes chinas, japonesas y coreanas"
+      }
+    }
+  },
+  "cffEmbeddedWhole": {
+    "source": "sandbox",
+    "label": {
+      "en": "Large CFF font embedded whole",
+      "es": "Fuente CFF grande incrustada entera"
+    },
+    "cause": {
+      "en": "The last PDF embedded a CFF-flavoured OpenType file (.otf) over 2 MB whole, since postext-pdf does not subset CFF outlines. Source Han Serif adds 8 to 25 MB per weight.",
+      "es": "El último PDF incrustó entero un archivo OpenType con contornos CFF (.otf) de más de 2 MB, porque postext-pdf no reduce los contornos CFF. Source Han Serif añade de 8 a 25 MB por peso."
+    },
+    "fix": {
+      "en": "Use the TrueType build of the face (Noto Serif CJK from Google Fonts or Fontsource), which is subset to the glyphs used.",
+      "es": "Usa la versión TrueType de la fuente (Noto Serif CJK de Google Fonts o Fontsource), que se reduce a los glifos usados."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Chinese, Japanese and Korean fonts",
+        "es": "Fuentes chinas, japonesas y coreanas"
+      }
+    }
+  },
+  "rotateIgnoredVertical": {
+    "source": "engine",
+    "label": {
+      "en": "Rotation ignored in vertical text",
+      "es": "Giro ignorado en texto vertical"
+    },
+    "cause": {
+      "en": "A figure or table asks for a quarter turn (placement.rotate) in a document set vertically. Every figure and table of a vertical flow already stands upright, so the turn is not applied and the resource floats in its own span.",
+      "es": "Una figura o una tabla pide un cuarto de vuelta (placement.rotate) en un documento compuesto en vertical. Todas las figuras y tablas de un flujo vertical ya están en pie, así que el giro no se aplica y el recurso flota en su propio espacio."
+    },
+    "fix": {
+      "en": "Drop placement.rotate, or set the passage in a horizontal section (a heading style whose layout sets writingMode 'horizontal-tb'), where the figure turns as asked.",
+      "es": "Quita placement.rotate o compón ese pasaje en una sección horizontal (un estilo de título cuyo layout fije writingMode 'horizontal-tb'), donde la figura gira como se pide."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Vertical writing",
+        "es": "Escritura vertical"
       }
     }
   }

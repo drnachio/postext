@@ -6,7 +6,7 @@ export type { PostextBundle, OpenBundleOptions, CreateBundleInput, CreateBundleL
 export { buildBundle } from './book';
 export type { BuildBundleOptions } from './book';
 export { loadBundleFonts, registerBundleImages, bundleImageUrl, bundleResourceBytes, bundleFontProvider, diagramInkHex } from './adapters';
-export type { BundleSource, BundleFontProviderOptions } from './adapters';
+export type { BundleSource, BundleFontProviderOptions, BundleFontRequest } from './adapters';
 
 // Low-level codec, for hosts that store or serve bundles their own way.
 export { readBundle, planBundle, resolveBundleFiles, bundleBaseConfig, EXPORTABLE_FONT_FORMATS } from './codec';

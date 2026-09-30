@@ -28,6 +28,9 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'duplicateFontVariant':
       return Type;
     case 'looseLine':
+    case 'cjkLooseLine':
+    case 'cjkMarksExceedLeading':
+    case 'rubyExceedsLeading':
       return FileWarning;
     case 'headingHierarchy':
       return Heading;
@@ -43,6 +46,8 @@ function iconFor(kind: WarningPayload['kind']) {
       return FileText;
     case 'unknownDirective':
     case 'malformedEmbed':
+    case 'fullwidthMarkup':
+    case 'attributeKeyInvalid':
     case 'unclosedContainer':
     case 'unknownParagraphStyle':
     case 'unknownCalloutType':
@@ -62,6 +67,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'alphaPdfOverflow':
     case 'calloutOverflow':
     case 'sideColumnPercentClamped':
+    case 'cjkGridClamped':
       return FileWarning;
     case 'designCyclicAnchor':
     case 'designDanglingAnchor':
@@ -91,6 +97,9 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'unknownConfigKey':
       return FileWarning;
     case 'unsupportedHyphenationLocale':
+    case 'missingGlyph':
+    case 'variableFontDefaultInstance':
+    case 'cffEmbeddedWhole':
       return Type;
     default:
       return AlertTriangle;
@@ -109,6 +118,12 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsDuplicateFontVariantTitle;
     case 'looseLine':
       return labels.warningsLooseLineTitle;
+    case 'cjkLooseLine':
+      return labels.warningsCjkLooseLineTitle;
+    case 'cjkMarksExceedLeading':
+      return labels.warningsCjkMarksLeadingTitle;
+    case 'rubyExceedsLeading':
+      return labels.warningsRubyLeadingTitle;
     case 'headingHierarchy':
       return labels.warningsHeadingHierarchyTitle;
     case 'consecutiveHeadings':
@@ -127,6 +142,10 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsUnknownDirectiveTitle;
     case 'malformedEmbed':
       return labels.warningsMalformedEmbedTitle;
+    case 'fullwidthMarkup':
+      return labels.warningsFullwidthMarkupTitle;
+    case 'attributeKeyInvalid':
+      return labels.warningsAttributeKeyInvalidTitle;
     case 'unclosedContainer':
       return labels.warningsUnclosedContainerTitle;
     case 'unknownParagraphStyle':
@@ -168,6 +187,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsHeadingDesignCutTitle;
     case 'sideColumnPercentClamped':
       return labels.warningsSideColumnPercentClampedTitle;
+    case 'cjkGridClamped':
+      return labels.warningsCjkGridClampedTitle;
     case 'designCyclicAnchor':
       return labels.warningsDesignCyclicAnchorTitle;
     case 'designDanglingAnchor':
@@ -204,7 +225,28 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsUnknownConfigKeyTitle;
     case 'unsupportedHyphenationLocale':
       return labels.warningsUnsupportedHyphenationLocaleTitle;
+    case 'missingGlyph':
+      return labels.warningsMissingGlyphTitle;
+    case 'variableFontDefaultInstance':
+      return labels.warningsVariableFontTitle;
+    case 'cffEmbeddedWhole':
+      return labels.warningsCffEmbeddedWholeTitle;
   }
+}
+
+/** How many missing characters a warning lists before "…". */
+const LISTED_GLYPHS = 12;
+
+/** `"Noto Serif TC" 700 italic`: the face a PDF font warning is about. */
+function faceLabel(payload: { family: string; weight: number; style: 'normal' | 'italic' }): string {
+  return `"${payload.family}" ${payload.weight}${payload.style === 'italic' ? ' italic' : ''}`;
+}
+
+/** A PDF font warning's detail: the face, what happened, and a note when
+ *  the book has changed since that PDF. */
+function pdfFontDetail(payload: { family: string; weight: number; style: 'normal' | 'italic'; stale?: true }, labels: SandboxLabels, detail: string): string {
+  const text = `${faceLabel(payload)} — ${detail}`;
+  return payload.stale ? `${text} ${labels.warningsPdfFontStale}` : text;
 }
 
 /** `pagebreak`, `numbering`, `callout`, … — every fence name the parser
@@ -241,6 +283,18 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
     }
     case 'looseLine':
       return `${payload.ratio.toFixed(2)}× · ${labels.warningsThresholdLabel} ${payload.threshold.toFixed(2)}×`;
+    case 'cjkLooseLine':
+      return labels.warningsCjkLooseLineDetail.replace('__text__', payload.text);
+    case 'cjkMarksExceedLeading':
+      return labels.warningsCjkMarksLeadingDetail
+        .replace('__text__', payload.text)
+        .replace('__need__', String(payload.neededEm))
+        .replace('__gap__', String(payload.gapEm));
+    case 'rubyExceedsLeading':
+      return labels.warningsRubyLeadingDetail
+        .replace('__text__', payload.text)
+        .replace('__need__', String(payload.neededEm))
+        .replace('__gap__', String(payload.gapEm));
     case 'headingHierarchy':
       return `H${payload.from} → H${payload.to} · ${labels.warningsHeadingHierarchyDetail}`;
     case 'consecutiveHeadings':
@@ -261,6 +315,10 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `:::${payload.name} — ${labels.warningsUnclosedContainerDetail}`;
     case 'malformedEmbed':
       return `::${payload.name} — ${labels.warningsMalformedEmbedDetail}`;
+    case 'fullwidthMarkup':
+      return `${payload.typed} → ${payload.ascii} — ${labels.warningsFullwidthMarkupDetail}`;
+    case 'attributeKeyInvalid':
+      return `${payload.key}= — ${labels.warningsAttributeKeyInvalidDetail}`;
     case 'unknownParagraphStyle':
       return `:::paragraphs{style="${payload.style}"} — ${labels.warningsUnknownParagraphStyleDetail}`;
     case 'unknownCalloutType':
@@ -307,6 +365,8 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
         .replace('__mm__', payload.overflowMm.toFixed(1))}`;
     case 'sideColumnPercentClamped':
       return `${payload.path}: ${payload.value} — ${labels.warningsSideColumnPercentClampedDetail.replace('__used__', payload.used)}`;
+    case 'cjkGridClamped':
+      return `${payload.path}: ${payload.value} — ${labels.warningsCjkGridClampedDetail.replace('__used__', payload.used)}`;
     case 'designCyclicAnchor': {
       const where = slotWhere(payload);
       return `${where} · #${payload.elementId} — ${labels.warningsDesignCyclicAnchorDetail}`;
@@ -360,6 +420,17 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsUnsupportedHyphenationLocaleDetail
         .replace('__locale__', payload.locale)
         .replace('__locales__', HYPHENATION_LOCALES.join(', '));
+    case 'missingGlyph': {
+      // The first few, then how many more: `a b c … +38`.
+      const shown = payload.characters.slice(0, LISTED_GLYPHS).join(' ');
+      const rest = payload.characters.length - LISTED_GLYPHS;
+      const chars = rest > 0 ? `${shown} … +${rest}` : shown;
+      return pdfFontDetail(payload, labels, labels.warningsMissingGlyphDetail.replace('__chars__', chars));
+    }
+    case 'variableFontDefaultInstance':
+      return pdfFontDetail(payload, labels, labels.warningsVariableFontDetail.replace('__default__', String(payload.defaultWeight)).replace('__weight__', String(payload.weight)));
+    case 'cffEmbeddedWhole':
+      return pdfFontDetail(payload, labels, labels.warningsCffEmbeddedWholeDetail.replace('__size__', (payload.bytes / (1024 * 1024)).toFixed(1)));
   }
 }
 
@@ -368,7 +439,10 @@ function isFontWarning(kind: WarningPayload['kind']): boolean {
     kind === 'missingFont' ||
     kind === 'missingFontFamily' ||
     kind === 'missingFontVariant' ||
-    kind === 'duplicateFontVariant'
+    kind === 'duplicateFontVariant' ||
+    kind === 'missingGlyph' ||
+    kind === 'variableFontDefaultInstance' ||
+    kind === 'cffEmbeddedWhole'
   );
 }
 

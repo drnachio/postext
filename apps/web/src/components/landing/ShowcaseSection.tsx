@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Kicker } from "@/components/brand/Kicker";
 import presetIndex from "../../../public/presets/index.json";
 import { GuideCover } from "./GuideCover";
+import { shelfOrder } from "@/lib/shelf";
 
 interface PresetEntry {
   id: string;
@@ -13,6 +14,16 @@ interface PresetEntry {
   description: string;
   thumbnail?: string;
   tags?: string[];
+  /** The content locale the book opens in from the shelf (a Chinese
+   *  original rather than the translation in the site's language). */
+  openLocale?: string;
+  /** The binding edge of the book the shelf opens: a right-bound book
+   *  (Chinese or Japanese set vertically) shows its spine on the right. */
+  binding?: "left" | "right";
+  /** Where the book stands on the shelf: the books without one keep the
+   *  index order (by id) and come first, the others follow by this number
+   *  (紅樓夢, the eighth book, stands last). */
+  shelfOrder?: number;
 }
 
 /** The bundle's content hash (`fingerprint.json`, rewritten by every build),
@@ -44,16 +55,24 @@ function localizedDescription(description: string, locale: string): string {
   return locale.startsWith("es") ? es! : en.join(" · ") || es!;
 }
 
-function Book({ href, name, description, children }: { href: string; name: string; description: string; children: React.ReactNode }) {
+function Book({ href, name, description, binding = "left", children }: { href: string; name: string; description: string; binding?: "left" | "right"; children: React.ReactNode }) {
+  const right = binding === "right";
   return (
     <li className="reveal w-[13rem] shrink-0 snap-start md:w-[14rem] 2xl:w-[15rem]">
       {/* A full page load: the Sandbox reads its permalink hash when it mounts,
           before a client-side navigation has put the new URL in place. */}
       <a href={href} className="group block rounded-sm focus-visible:outline-offset-4">
         <div className="relative [perspective:1200px]">
-          <div className="relative overflow-hidden rounded-[2px] shadow-[0_2px_3px_rgba(14,16,20,0.25),0_24px_40px_-18px_rgba(14,16,20,0.55)] dark:shadow-[0_2px_3px_rgba(0,0,0,0.4),0_28px_50px_-18px_rgba(0,0,0,0.8)] transition-transform duration-500 ease-out [transform-origin:left_center] group-hover:[transform:rotateY(-14deg)_translateX(4px)]">
+          <div
+            className={`relative overflow-hidden rounded-[2px] shadow-[0_2px_3px_rgba(14,16,20,0.25),0_24px_40px_-18px_rgba(14,16,20,0.55)] dark:shadow-[0_2px_3px_rgba(0,0,0,0.4),0_28px_50px_-18px_rgba(0,0,0,0.8)] transition-transform duration-500 ease-out ${
+              right ? "[transform-origin:right_center] group-hover:[transform:rotateY(14deg)_translateX(-4px)]" : "[transform-origin:left_center] group-hover:[transform:rotateY(-14deg)_translateX(4px)]"
+            }`}
+          >
             {children}
-            <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/35 to-transparent" />
+            <span
+              aria-hidden="true"
+              className={`pointer-events-none absolute inset-y-0 w-3 from-black/35 to-transparent ${right ? "right-0 bg-gradient-to-l" : "left-0 bg-gradient-to-r"}`}
+            />
             <span aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-white/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
           </div>
         </div>
@@ -68,7 +87,7 @@ export async function ShowcaseSection() {
   const t = await getTranslations("Showcase");
   const hero = await getTranslations("Hero");
   const locale = await getLocale();
-  const presets = (presetIndex as { presets: PresetEntry[] }).presets;
+  const presets = shelfOrder((presetIndex as { presets: PresetEntry[] }).presets);
   const lang = locale.startsWith("es") ? "es" : "en";
 
   return (
@@ -94,9 +113,10 @@ export async function ShowcaseSection() {
         {presets.map((p) => (
           <Book
             key={p.id}
-            href={`/${locale}/sandbox#preset=${p.id}&lang=${lang}&view=canvas`}
+            href={`/${locale}/sandbox#preset=${p.id}&lang=${p.openLocale ?? lang}&view=canvas`}
             name={t.has(`books.${p.id}`) ? t(`books.${p.id}`) : p.name}
             description={localizedDescription(p.description, locale)}
+            binding={p.binding}
           >
             <Image
               src={`/presets/${p.dir}/${localizedThumbnail(p.dir, p.thumbnail ?? "thumbnail.jpg", lang)}?v=${bundleVersion(p.dir)}`}

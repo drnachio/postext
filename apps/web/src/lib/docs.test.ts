@@ -1,0 +1,91 @@
+import { describe, expect, it } from "vitest";
+import { extractToc, getAllDocs, getDocSource } from "./docs";
+import { docPart } from "./docParts";
+
+describe("docs table of contents", () => {
+  const docs = getAllDocs();
+  const order = (slug: string, locale = "en") => docs.find((d) => d.slug === slug)?.locales[locale]?.order;
+
+  it("lists the docs in order, both languages alike", () => {
+    expect(docs.map((d) => d.slug)).toEqual([
+      "introduction",
+      "architecture",
+      "configuration",
+      "justification",
+      "document-format",
+      "chinese-layout",
+      "contributing",
+      "sandbox",
+      "skill",
+    ]);
+    for (const doc of docs) {
+      expect(Object.keys(doc.locales).sort(), doc.slug).toEqual(["en", "es"]);
+      expect(doc.locales.en!.order, doc.slug).toBe(doc.locales.es!.order);
+    }
+  });
+
+  it("puts Chinese layout in Part II at order 6 and the practice pages after it", () => {
+    expect(order("chinese-layout")).toBe(6);
+    expect(docPart(6).key).toBe("craft");
+    expect(docPart(order("document-format")!).key).toBe("craft");
+    for (const slug of ["contributing", "sandbox", "skill"]) {
+      expect(docPart(order(slug)!).key, slug).toBe("practice");
+    }
+    expect([order("contributing"), order("sandbox"), order("skill")]).toEqual([7, 8, 9]);
+  });
+
+  it("gives the language sections h3 headings that anchors can target", () => {
+    const en = extractToc(getDocSource("configuration", "en")!.source).map((t) => `${t.level} ${t.id}`);
+    expect(en).toContain("3 document-language");
+    expect(en).toContain("3 languages-and-scripts");
+    const es = extractToc(getDocSource("configuration", "es")!.source).map((t) => `${t.level} ${t.id}`);
+    expect(es).toContain("3 idioma-del-documento");
+    expect(es).toContain("3 idiomas-y-escrituras");
+  });
+
+  it("gives every heading of the Chinese layout page its own title", () => {
+    for (const locale of ["en", "es"] as const) {
+      const texts = extractToc(getDocSource("chinese-layout", locale)!.source).map((t) => t.text);
+      expect(texts.filter((t, i) => texts.indexOf(t) !== i), locale).toEqual([]);
+    }
+  });
+
+  it("keeps Markdown markers literal in the Chinese layout page's code spans", () => {
+    // MDX reads Markdown inside JSX, so <code>*…*</code> prints an italic
+    // "…", and the docs pipeline drops JavaScript expressions (blockJS), so
+    // <code>{'*…*'}</code> prints nothing. A character reference stays
+    // literal in both the page and its Markdown rendition: <code>&#42;…&#42;</code>.
+    for (const locale of ["en", "es"] as const) {
+      const { source } = getDocSource("chinese-layout", locale)!;
+      for (const m of source.matchAll(/<code>([^<]*)<\/code>/g)) {
+        expect(m[1], m[0]).not.toMatch(/[*~^{]|(?<![\w])_|_(?![\w])/);
+      }
+    }
+  });
+
+  it("links from the Chinese layout page only to headings that exist", () => {
+    for (const locale of ["en", "es"] as const) {
+      const { source } = getDocSource("chinese-layout", locale)!;
+      const own = new Set(extractToc(source).map((t) => t.id));
+      for (const m of source.matchAll(/\]\(\/(en|es)\/docs\/([a-z-]+)(?:#([^)]+))?\)/g)) {
+        const [, lang, slug, anchor] = m;
+        expect(lang, m[0]).toBe(locale);
+        const doc = getDocSource(slug!, locale);
+        expect(doc, m[0]).not.toBeNull();
+        if (!anchor) continue;
+        // Any heading level: the page links to h4 sections of the Sandbox guide too.
+        const ids = extractTocAllLevels(doc!.source);
+        expect(ids.has(decodeURIComponent(anchor)), m[0]).toBe(true);
+      }
+      for (const m of source.matchAll(/\]\(#([^)]+)\)/g)) {
+        expect(own.has(decodeURIComponent(m[1]!)), m[0]).toBe(true);
+      }
+    }
+  });
+});
+
+/** Heading ids at every level, as rehype-slug gives them on the page. */
+function extractTocAllLevels(source: string): Set<string> {
+  const deep = source.replace(/^#{4,6}(\s)/gm, "###$1");
+  return new Set(extractToc(deep).map((t) => t.id));
+}

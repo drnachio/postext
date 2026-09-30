@@ -238,6 +238,16 @@ export function drawOverlay(
   if (!selectionGroup || !cursorGroup || !cursorRect) return null;
 
   clearOverlay(svg);
+  // A vertical page's marks are drawn in its flow frame, turned onto the
+  // sheet the way the canvas paints the flow (`VDTPage.flow`): the caret
+  // becomes a bar across the column, between two characters.
+  const flow = doc.pages[pageIndex]?.flow;
+  const frame = flow ? `matrix(0 1 -1 0 ${flow.rotation.originX} ${flow.rotation.originY})` : null;
+  for (const g of [selectionGroup, cursorGroup, looseLineGroup]) {
+    if (!g) continue;
+    if (frame) g.setAttribute('transform', frame);
+    else g.removeAttribute('transform');
+  }
 
   // A resource editor's selection paints regardless of Markdown editor focus.
   if (resourceSelection) drawResourceSelection(selectionGroup, doc, pageIndex, resourceSelection, debug);

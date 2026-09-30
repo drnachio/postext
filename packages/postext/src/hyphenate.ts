@@ -156,7 +156,8 @@ function isSpace(code: number): boolean {
   // The whitespace `\s` matches. A no-break space is one too: it is no
   // break opportunity (the breakers keep it inside the word it glues), but
   // the dictionary hyphenates the words on either side of it on their own.
+  // The ideographic space U+3000 is a character of CJK text, not a space.
   return code === 0x20 || (code >= 0x09 && code <= 0x0d) || code === 0xa0 || code === 0x1680
     || (code >= 0x2000 && code <= 0x200a) || code === 0x2028 || code === 0x2029 || code === 0x202f
-    || code === 0x205f || code === 0x3000 || code === 0xfeff;
+    || code === 0x205f || code === 0xfeff;
 }

@@ -1,32 +1,41 @@
 import {
   PDFDocument,
+  PDFName,
   BlendMode,
+  ReadingDirection,
 } from 'pdf-lib';
 import type { ResourceImageMap, SvgRasterizer } from './renderResourceBlock';
 import fontkit from '@pdf-lib/fontkit';
 import type { HyphenationLocale, PdfColorSpace, RenderWarning, VDTBlock, VDTDocument, VDTPage } from 'postext';
-import { columnClipRect, computePageTextExtent, dimensionToPx, pageColumnRule } from 'postext';
-import { FontCache, type FontFallback, type PdfFontProvider } from '../fontCache';
+import { canonicalLocaleTag, cjkGridCells, columnClipRect, computePageTextExtent, dimensionToPx, pageColumnRule } from 'postext';
+import { FontCache, type FontFallback, type FontFileIssue, type FontMissingGlyphs, type PdfFontProvider, type PdfFontRequest } from '../fontCache';
 import {
   type PageCtx,
+  type PdfMatrix,
   colorFromHex,
   fillRectPx,
   makeScale,
   popClip,
+  popFrame,
   pushClipRect,
+  pushFrame,
+  quarterTurnMatrix,
   whiteColor,
 } from './primitives';
-import { collectFontStrings } from './fontHelpers';
+// Registers the painter of vertical text with the primitives.
+import './verticalText';
+import { collectFontText, type FontText } from './fontHelpers';
 import {
   computeContentArea,
   renderBaselineGrid,
+  renderCharacterGrid,
   renderColumnRule,
   renderFootnoteRules,
   renderCutLines,
 } from './pageDecorations';
 import { renderBlock, type ResourceRenderContext } from './blockRender';
 import { renderHeaderFooterSlot } from './headerFooter';
-import { addOutlines } from './outlines';
+import { addOutlines, numberedHeadingText } from './outlines';
 import { addPageLabels } from './pageLabels';
 import {
   preloadResourceImages,
@@ -66,6 +75,10 @@ export interface RenderToPdfOptions {
    *  flagged as artifacts. When omitted, the first document's
    *  `config.pdfGeneration.accessible`, else true. */
   accessible?: boolean;
+  /** Draw the character grid (`cjk.grid.show`) over the type area, as
+   *  the canvas and HTML do on screen. Default false: the grid is a
+   *  screen aid and stays out of a file meant for print. */
+  characterGrid?: boolean;
   /** Called as the render advances: after the fonts and resources are
    *  embedded, after every page, and before the file is written. */
   onProgress?: (progress: RenderProgress) => void;
@@ -74,12 +87,16 @@ export interface RenderToPdfOptions {
   rasterizeSvg?: SvgRasterizer;
   /** Called for each non-fatal problem met while rendering (see
    *  {@link PdfWarning}): a face the font provider rejected and another cut
-   *  of its family embedded instead (`fontFallback`), and an image with no
-   *  bytes from `resourceBytes` (or bytes that did not decode), drawn as a
+   *  of its family embedded instead (`fontFallback`); characters no file of
+   *  a face has a glyph for (`missingGlyph`, once per face, after the pages
+   *  are drawn); a variable font asked for at a weight other than its
+   *  default instance (`variableFontDefaultInstance`); a CFF face over
+   *  2 MB embedded whole (`cffEmbeddedWhole`); and an image with no bytes
+   *  from `resourceBytes` (or bytes that did not decode), drawn as a
    *  placeholder and reported once per `fileId` as a `missingImage` warning
    *  carrying the page and the index of its document in `input`. Without
-   *  it, a `fontFallback` goes to `console.warn` with its `message`, and a
-   *  `missingImage` is not reported. */
+   *  it, the font warnings go to `console.warn` with their `message`, and
+   *  a `missingImage` is not reported. */
   onWarning?: (warning: PdfWarning) => void;
 }
 
@@ -104,20 +121,111 @@ export interface PdfFontFallbackWarning {
   message: string;
 }
 
+/** Characters a face has no glyph for in any of its files. */
+export interface PdfMissingGlyphWarning {
+  /** `missingGlyph`: the pages set characters that no file the font
+   *  provider gave for this face has a glyph for. The PDF still builds;
+   *  each of them is drawn as the font's `.notdef` glyph (an empty box, or
+   *  nothing, depending on the font) at the width the layout measured.
+   *  Reported once per face, after the pages are drawn. Typical causes: a
+   *  provider that returns only a Latin file for a Chinese family, or a
+   *  font's named subset that leaves marks out (Fontsource's
+   *  `chinese-traditional` file has no full-width ，！？（）). */
+  kind: 'missingGlyph';
+  family: string;
+  weight: number;
+  style: 'normal' | 'italic';
+  /** The characters, in the order the pages first set them. */
+  characters: string[];
+  message: string;
+}
+
+/** A variable font embedded at its default instance. */
+export interface PdfVariableFontWarning {
+  /** `variableFontDefaultInstance`: the provider answered a face with a
+   *  variable font (it has an `fvar` table) whose default instance is
+   *  another weight. pdf-lib embeds the default instance only, so text in
+   *  this face prints at `defaultWeight`. Give the provider a static file
+   *  per weight (fontTools `instancer` makes one). */
+  kind: 'variableFontDefaultInstance';
+  family: string;
+  weight: number;
+  style: 'normal' | 'italic';
+  defaultWeight: number;
+  message: string;
+}
+
+/** A large CFF face embedded whole. */
+export interface PdfCffEmbeddedWholeWarning {
+  /** `cffEmbeddedWhole`: a CFF-flavoured OpenType file (`.otf`) over 2 MB
+   *  went into the PDF whole, since postext-pdf does not subset CFF
+   *  outlines. A CJK face such as Source Han Serif adds 8 to 25 MB per
+   *  weight; its TrueType build (Noto Serif CJK from Google Fonts or
+   *  Fontsource) is subset to the glyphs used. */
+  kind: 'cffEmbeddedWhole';
+  family: string;
+  weight: number;
+  style: 'normal' | 'italic';
+  /** Size of the file, in bytes. */
+  bytes: number;
+  message: string;
+}
+
 /** A non-fatal problem met while rendering a PDF. The render goes on; the
  *  output differs from what the document asked for in the way described:
- *  a font fallback ({@link PdfFontFallbackWarning}), or one of the engine's
+ *  a font fallback ({@link PdfFontFallbackWarning}), characters a face
+ *  lacks ({@link PdfMissingGlyphWarning}), a variable font set at its
+ *  default weight ({@link PdfVariableFontWarning}), a CFF face embedded
+ *  whole ({@link PdfCffEmbeddedWholeWarning}), or one of the engine's
  *  render warnings (`RenderWarning`: an image painted as a placeholder,
  *  `formatWarning` describes it). Narrow on `kind`. */
-export type PdfWarning = PdfFontFallbackWarning | RenderWarning;
+export type PdfWarning =
+  | PdfFontFallbackWarning
+  | PdfMissingGlyphWarning
+  | PdfVariableFontWarning
+  | PdfCffEmbeddedWholeWarning
+  | RenderWarning;
+
+/** The font warnings: the kinds that carry a `message`, logged when the
+ *  caller passes no `onWarning`. */
+export type PdfFontWarning = Exclude<PdfWarning, RenderWarning>;
+
+const faceName = (weight: number, style: string) => `${weight}${style === 'italic' ? ' italic' : ''}`;
 
 /** The warning of a face set in another cut of its family. */
 function fontFallbackWarning(f: FontFallback): PdfFontFallbackWarning {
-  const face = (weight: number, style: string) => `${weight}${style === 'italic' ? ' italic' : ''}`;
   return {
     kind: 'fontFallback',
     ...f,
-    message: `postext-pdf: "${f.family}" ${face(f.weight, f.style)} is not available from the font provider (${f.reason}); using ${face(f.fallback.weight, f.fallback.style)} instead`,
+    message: `postext-pdf: "${f.family}" ${faceName(f.weight, f.style)} is not available from the font provider (${f.reason}); using ${faceName(f.fallback.weight, f.fallback.style)} instead`,
+  };
+}
+
+/** How many characters a missing-glyph message lists. */
+const LISTED_CHARACTERS = 12;
+
+function missingGlyphWarning(m: FontMissingGlyphs): PdfMissingGlyphWarning {
+  const shown = m.characters.slice(0, LISTED_CHARACTERS).join(' ');
+  const more = m.characters.length > LISTED_CHARACTERS ? ` and ${m.characters.length - LISTED_CHARACTERS} more` : '';
+  const count = m.characters.length === 1 ? '1 character' : `${m.characters.length} characters`;
+  return {
+    kind: 'missingGlyph',
+    ...m,
+    message: `postext-pdf: "${m.family}" ${faceName(m.weight, m.style)} has no glyph for ${count} (${shown}${more}); the PDF draws them as the font's .notdef glyph`,
+  };
+}
+
+function fileIssueWarning(issue: FontFileIssue): PdfVariableFontWarning | PdfCffEmbeddedWholeWarning {
+  const face = `"${issue.family}" ${faceName(issue.weight, issue.style)}`;
+  if (issue.kind === 'variableFontDefaultInstance') {
+    return {
+      ...issue,
+      message: `postext-pdf: ${face} is a variable font; the PDF embeds its default instance, so this text prints at weight ${issue.defaultWeight}. Provide a static ${issue.weight} file.`,
+    };
+  }
+  return {
+    ...issue,
+    message: `postext-pdf: ${face} is a CFF (.otf) font of ${(issue.bytes / (1024 * 1024)).toFixed(1)} MB, embedded whole; a TrueType build of the face would be subset to the glyphs used.`,
   };
 }
 
@@ -128,13 +236,17 @@ export interface RenderProgress {
   totalPages: number;
 }
 
-export type { PdfFontProvider };
+export type { PdfFontProvider, PdfFontRequest };
 export type { ResourceBytesProvider } from './renderResourceBlock';
 
-/** BCP 47 tag of a postext locale (`/Lang`): the tag the document named
- *  (`'es-ES'`, `'sv'`) when its hyphenation patterns are another locale's,
- *  else the patterns' own (`'en-us'` → `'en-US'`). */
-function languageTag(hyphenation: { locale?: HyphenationLocale; tag?: string } | undefined): string | undefined {
+/** BCP 47 tag of a document (`/Lang`): its `locale` (`'zh-Hant-TW'`,
+ *  script and region kept), else the tag its hyphenation was asked for
+ *  (`'es-ES'`, `'sv'`) when the patterns are another locale's, else the
+ *  patterns' own (`'en-us'` → `'en-US'`). */
+function languageTag(config: { locale?: string; bodyText?: { hyphenation?: { locale?: HyphenationLocale; tag?: string } } } | undefined): string | undefined {
+  const declared = canonicalLocaleTag(config?.locale);
+  if (declared) return declared;
+  const hyphenation = config?.bodyText?.hyphenation;
   const locale = hyphenation?.tag?.trim() || hyphenation?.locale;
   if (!locale) return undefined;
   // Canonical case: language lower, a two-letter region upper, the script
@@ -174,9 +286,7 @@ function documentTitle(docs: readonly VDTDocument[]): string {
     }
     if (best && (best.headingLevel ?? 1) === 1) break;
   }
-  const text = best?.lines.map((l) => l.text).join(' ').replace(/\s+/g, ' ').trim();
-  if (text) return best?.numberPrefix && !text.startsWith(best.numberPrefix) ? `${best.numberPrefix} ${text}` : text;
-  return 'Document';
+  return (best && numberedHeadingText(best)) || 'Document';
 }
 
 /** The heading element an opener band's text belongs to: the part title on
@@ -208,6 +318,7 @@ function renderPage(
   resourceCtx: ResourceRenderContext,
   tree: StructTree | undefined,
   onMissingImage?: PageCtx['onMissingImage'],
+  characterGrid = false,
 ): void {
   const scale = makeScale(doc.config.page.dpi);
   const pageWidthPt = vdtPage.width * scale;
@@ -254,6 +365,26 @@ function renderPage(
     pushClipRect(ctx, inset, inset, vdtPage.width - inset * 2, vdtPage.height - inset * 2);
   }
 
+  // A vertical page (`VDTPage.flow`) paints its flow through the page's
+  // frame, a quarter turn clockwise (the `'cw'` resource matrix with its
+  // origin at the sheet's right edge), and maps the rects that live outside
+  // the content stream through it (`pushFrame`): link annotations of the
+  // text, contents rows, `:ref`s and page links, the named destinations of
+  // resources and notes, structure bounding boxes. Its text is set down the
+  // column (`verticalText.ts`): characters upright through the fonts'
+  // vertical twins, Latin words and long numbers sideways. Running heads,
+  // folios and the marks stay on the sheet.
+  let flowMatrix: PdfMatrix | undefined;
+  if (vdtPage.flow) {
+    flowMatrix = quarterTurnMatrix(vdtPage.flow.rotation, scale, pageHeightPt);
+    pushFrame(ctx, flowMatrix);
+    ctx.vertical = {
+      region: doc.config.cjk?.region ?? 'mainland',
+      uprightDigits: doc.config.cjk?.uprightDigits ?? 2,
+      ...(vdtPage.flow.centralBaselines ? { axes: vdtPage.flow.centralBaselines } : {}),
+    };
+  }
+
   tagArtifact(ctx, { type: 'Layout' });
   if (doc.config.page.baselineGrid.enabled) {
     // Bound the grid to the page's actual text: from the first text line to
@@ -276,6 +407,12 @@ function renderPage(
     }
   }
 
+  // The character grid, only when the render asks for it.
+  if (characterGrid && doc.config.cjk?.grid?.show) {
+    const cells = cjkGridCells(doc.config, vdtPage.contentArea ?? computeContentArea(vdtPage, doc), doc.baselineGrid, vdtPage.columns, vdtPage.flow);
+    if (cells) renderCharacterGrid(ctx, cells);
+  }
+
   // The page's own rule on a styled section's pages, else the document's
   // (mirrors the canvas backend via `pageColumnRule`).
   const columnRule = pageColumnRule(vdtPage, doc);
@@ -292,15 +429,23 @@ function renderPage(
       vdtPage.openerBand,
       fontCache,
       resourceCtx.images,
-      structure ? { text: openerTextElem(vdtPage, structure), artifact: { type: 'Layout' } } : undefined,
+      structure
+        ? {
+            text: openerTextElem(vdtPage, structure),
+            artifact: { type: 'Layout' },
+            figure: (alt, attributes, after) => structure.designFigure(alt, attributes, after),
+          }
+        : undefined,
     );
   }
 
   // Clip to column bounds, widened for glyph ink and for design overlays
   // that hang past the column on purpose — the same rectangle the canvas
-  // backend clips to (see `columnClipRect`).
+  // backend clips to (see `columnClipRect`). Only a document that hangs
+  // marks (`cjk.hangingPunctuation`) has lines whose marks reach past it.
+  const hanging = doc.config.cjk?.hangingPunctuation !== 'none';
   for (const col of vdtPage.columns) {
-    const clip = columnClipRect(col, doc.config.page.dpi);
+    const clip = columnClipRect(col, doc.config.page.dpi, hanging);
     pushClipRect(ctx, clip.x, clip.y, clip.width, clip.height);
     for (const block of col.blocks) {
       if (block.tocPart && block.designOverlay) {
@@ -339,6 +484,11 @@ function renderPage(
   if (vdtPage.footnoteAreas?.some((a) => a.rule)) {
     tagArtifact(ctx, { type: 'Layout' });
     renderFootnoteRules(ctx, vdtPage);
+  }
+
+  if (flowMatrix) {
+    popFrame(ctx);
+    delete ctx.vertical;
   }
 
   // Running headers and footers are pagination artifacts.
@@ -387,6 +537,13 @@ function pdfSettings(
  * tree; page indices in contents links are book-absolute already, so they
  * resolve across chapters.
  */
+/** `/ViewerPreferences << /Direction /R2L >>` and `/PageLayout
+ *  /TwoPageRight` (page 1 alone, then pairs), for a right-bound book. */
+export function setRightToLeft(pdfDoc: PDFDocument): void {
+  pdfDoc.catalog.getOrCreateViewerPreferences().setReadingDirection(ReadingDirection.R2L);
+  pdfDoc.catalog.set(PDFName.of('PageLayout'), PDFName.of('TwoPageRight'));
+}
+
 export async function renderToPdf(
   input: VDTDocument | VDTDocument[],
   options: RenderToPdfOptions,
@@ -405,9 +562,16 @@ export async function renderToPdf(
   pdfDoc.setCreator('postext');
   pdfDoc.setProducer('postext-pdf');
 
-  const warn = options.onWarning ?? ((w: PdfWarning) => { if (w.kind === 'fontFallback') console.warn(w.message); });
-  const fontCache = new FontCache(pdfDoc, options.fontProvider, (f) => warn(fontFallbackWarning(f)));
-  for (const doc of docs) await fontCache.preloadFontStrings(collectFontStrings(doc));
+  const warn = options.onWarning ?? ((w: PdfWarning) => { if ('message' in w) console.warn(w.message); });
+  const fontCache = new FontCache(pdfDoc, options.fontProvider, {
+    onFallback: (f) => warn(fontFallbackWarning(f)),
+    onFileIssue: (issue) => warn(fileIssueWarning(issue)),
+  });
+  // The faces of every chapter at once, each with the characters set in
+  // it: a provider serving a family as slices is asked once per face.
+  const fontText: FontText = new Map();
+  for (const doc of docs) collectFontText(doc, fontText);
+  await fontCache.preloadFontStrings(fontText);
 
   const missing = fontCache.missing();
   if (missing.length > 0) {
@@ -426,9 +590,12 @@ export async function renderToPdf(
     ? new StructTree(pdfDoc, {
         title: documentTitle(docs),
         author: metaAuthor,
-        lang: languageTag(first.config.bodyText.hyphenation),
+        lang: languageTag(first.config),
         producer: 'postext-pdf',
         creatorTool: 'postext',
+        // Vertical text: the document's layout reads top to bottom, lines
+        // right to left (`WritingMode /TbRl`, inherited by every element).
+        ...(first.config.layout.writingMode === 'vertical-rl' ? { writingMode: 'TbRl' as const } : {}),
       })
     : undefined;
 
@@ -465,7 +632,7 @@ export async function renderToPdf(
             onWarning({ kind: 'missingImage', fileId, ...(resourceId !== undefined ? { resourceId } : {}), pageIndex: page.index, documentIndex });
           }
         : undefined;
-      renderPage(pdfDoc, page, doc, fontCache, options.pageNegative ?? false, colorSpace, resourceCtx, tree, onMissingImage);
+      renderPage(pdfDoc, page, doc, fontCache, options.pageNegative ?? false, colorSpace, resourceCtx, tree, onMissingImage, options.characterGrid ?? false);
       rendered++;
       options.onProgress?.({ phase: 'pages', pages: rendered, totalPages });
     }
@@ -481,6 +648,18 @@ export async function renderToPdf(
   addPageLabels(pdfDoc, docs);
 
   tree?.finalize();
+  // A right-bound book (`VDTDocument.binding`) tells viewers to lay its
+  // spreads out right to left, page 1 alone (Acrobat and Foxit follow it;
+  // Chrome's viewer does not).
+  if (first.binding === 'right') setRightToLeft(pdfDoc);
+  // Untagged output declares its language too (the tagged one did above).
+  if (!tree) {
+    const lang = languageTag(first.config);
+    if (lang) pdfDoc.setLanguage(lang);
+  }
+
+  // Characters drawn with no glyph, once per face.
+  for (const m of fontCache.missingGlyphs()) warn(missingGlyphWarning(m));
 
   // A face asked for but never drawn with is not written.
   fontCache.dropUnusedFonts();

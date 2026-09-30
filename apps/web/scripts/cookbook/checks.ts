@@ -52,6 +52,9 @@ export interface ProbeFacts {
   builds: { kind: "document" | "bundle" | "worker" | "rendered"; shim: string; ms: number; at: number; pages: number }[];
   /** Index of the build that is the result, or -1 when nothing was built. */
   selected: number;
+  /** Every build that is the result, when `capture.doc` names several: their
+   *  pages are published one build after the other. */
+  selectedBuilds?: number[];
   importedAt: number;
   registered: string[];
   state: string | null;
@@ -70,7 +73,13 @@ export interface ProbeFacts {
   directives?: string[];
   inline?: string[];
   unregistered?: { fileId: string; page: number }[];
-  faces?: { used: ProbeFace[]; loaded: { family: string; weight: string; style: string }[]; missing: ProbeFace[] };
+  faces?: {
+    used: ProbeFace[];
+    loaded: { family: string; weight: string; style: string }[];
+    missing: ProbeFace[];
+    /** Characters a CJK face set from files not loaded when the layout ran. */
+    late?: (ProbeFace & { chars: string })[];
+  };
   garbage?: { text: string; where: string }[];
   nonLatin?: { ch: string; code: string; where: string }[];
   defaultSkin?: {
@@ -98,6 +107,21 @@ export interface ProbeFacts {
     /** The loosest lines past the threshold, loosest first (at most 5). */
     lines?: { page: number; ratio: number; text: string }[];
   };
+  /** Justified lines of the CJK composer (`VDTLine.cjkComposed`), judged by
+   *  the space between their characters (`VDTLineSegment.tracking`, in em)
+   *  instead of their word spaces: `count` lines past the cap, set short
+   *  (`cjkLoose`), `worst` the widest spacing, `threshold` the cap. */
+  cjkLoose?: {
+    count: number;
+    total: number;
+    share: number;
+    worst: number;
+    threshold: number;
+    /** The lines set short, in page order (at most 5). */
+    lines?: { page: number; tracking: number; text: string }[];
+  };
+  /** `"right"` when the document is bound on its right edge (`doc.binding`). */
+  binding?: "right";
   pages?: ProbePage[];
   specimen?: {
     trimMm: [number, number];
@@ -235,7 +259,10 @@ export function detect(meta: RecipeMeta, facts: ProbeFacts, pen: ComposedPen, re
   const resources = { svg: 0, bitmap: 0, table: 0 };
   for (const r of facts.resources ?? []) if (r.kind in resources) resources[r.kind as keyof typeof resources]++;
   const fonts = (facts.faces?.used ?? []).map(({ family, weight, style }) => ({ family, weight, style }));
-  const { detected } = detectFeatures(registry, { paths: stats.paths, markdown: (facts.markdowns ?? []).join("\n"), apis });
+  // Vertical text binds a book on the right without saying page.binding:
+  // the document's binding counts as the key.
+  const paths = facts.binding === "right" && !stats.paths.includes("page.binding") ? [...stats.paths, "page.binding"] : stats.paths;
+  const { detected } = detectFeatures(registry, { paths, markdown: (facts.markdowns ?? []).join("\n"), apis });
   const directives = new Set<string>();
   const inline = new Set<string>();
   for (const markdown of facts.markdowns ?? []) {
@@ -431,9 +458,15 @@ function collect(input: CheckInput): Finding[] {
     add("C11", "fail", `image "${u.fileId}" (page ${u.page}) is placed but never registered: a grey placeholder`);
   }
 
-  // C12: faces the pages use that no FontFace covers.
+  // C12: faces the pages use that no FontFace covers, and characters a CJK
+  // face set from files that loaded after the layout (measured in another face).
+  const faceName = (face: ProbeFace) => `${face.family} ${face.weight}${face.style === "italic" ? " italic" : ""}`;
   for (const face of facts.faces?.missing ?? []) {
-    add("C12", "fail", `${face.family} ${face.weight}${face.style === "italic" ? " italic" : ""} is used (${face.where}) but not loaded`);
+    add("C12", "fail", `${faceName(face)} is used (${face.where}) but not loaded`);
+  }
+  for (const face of facts.faces?.late ?? []) {
+    add("C12", "fail", `${faceName(face)} sets ${[...face.chars].join(" ")} (${face.where}) from files not loaded when the layout ran: ` +
+      `give loadCjkFonts the text this face sets, and list the weight in FONTS`);
   }
 
   // C14: the PDF.
@@ -447,7 +480,13 @@ function collect(input: CheckInput): Finding[] {
       if (!pdf.error && !pdf.timedOut && !pdf.bytes) add("C14", "fail", "no PDF bytes were produced");
       if (pdf.bytes && pdf.pages !== null) {
         if (pdf.pages === 0) add("C14", "warn", "could not count the PDF's pages");
-        else if (pdf.pages !== pages.length) add("C14", "fail", `the PDF has ${pdf.pages} pages, the document ${pages.length}`);
+        else {
+          // Of a capture of several builds, the PDF is one of them.
+          const counts = (facts.selectedBuilds ?? []).map((i) => facts.builds[i]?.pages ?? 0);
+          if (counts.length > 1) {
+            if (!counts.includes(pdf.pages)) add("C14", "fail", `the PDF has ${pdf.pages} pages, the documents ${counts.join(" and ")}`);
+          } else if (pdf.pages !== pages.length) add("C14", "fail", `the PDF has ${pdf.pages} pages, the document ${pages.length}`);
+        }
       }
       if (pdf.bytes > 2 * MB) add("C20", "fail", `the PDF weighs ${(pdf.bytes / MB).toFixed(2)} MB (limit 2 MB)`);
     }
@@ -521,9 +560,10 @@ function collect(input: CheckInput): Finding[] {
     if (size > cardLimits[key] * 1024) add("C20", "warn", `${cardNames[key]} weighs ${Math.round(size / 1024)} KB (aim for ≤ ${cardLimits[key]} KB)`);
   }
 
-  // C21: performance.
-  const build = facts.builds[facts.selected];
-  if (build) {
+  // C21: performance, of each build that is the result.
+  for (const i of facts.selectedBuilds ?? [facts.selected]) {
+    const build = facts.builds[i];
+    if (!build) continue;
     if (build.ms > 4000) add("C21", "fail", `the build took ${Math.round(build.ms)} ms (limit 4 s)`);
     else if (build.ms > 1500) add("C21", "warn", `the build took ${Math.round(build.ms)} ms (warning at 1.5 s)`);
   }
@@ -550,17 +590,35 @@ function collect(input: CheckInput): Finding[] {
     if (p.coverage < 0.25) add("C23", "warn", `page ${p.n} is only ${pct(p.coverage)} filled (not a chapter's last page)`);
   });
 
-  // C24: loose lines.
+  // C24: loose lines. Latin lines by their word spaces; Chinese, Japanese
+  // and Korean lines by the space between their characters, which is how
+  // they are justified: only a line past the cap, set short, is loose.
+  const clipText = (text: string) => (text.length > 48 ? `${text.slice(0, 47).trimEnd()}…` : text);
   const loose = facts.loose;
   if (loose && loose.total && loose.share > 0.02) {
-    const clipText = (text: string) => (text.length > 48 ? `${text.slice(0, 47).trimEnd()}…` : text);
     const where = (loose.lines ?? []).slice(0, 3).map((l) => `p. ${l.page} ${l.ratio}× “${clipText(l.text)}”`);
     add("C24", "warn", `${loose.count} of ${loose.total} justified lines (${pct(loose.share)}) stretch past ${loose.threshold}× (worst ${loose.worst}×)${where.length ? `; loosest: ${where.join(", ")}` : ""}`);
   }
+  const cjkLoose = facts.cjkLoose;
+  if (cjkLoose && cjkLoose.count > 0) {
+    const where = (cjkLoose.lines ?? []).slice(0, 3).map((l) => `p. ${l.page} “${clipText(l.text)}”`);
+    add("C24", "warn", `${cjkLoose.count} of ${cjkLoose.total} justified Chinese, Japanese or Korean lines needed more than ${cjkLoose.threshold} em between characters and end short (cjkLooseLine)${where.length ? `; ${where.join(", ")}` : ""}`);
+  }
 
-  // C25: characters outside Fontsource's latin subset in a PDF recipe.
-  if ((meta.outputs.includes("pdf") || meta.downloads?.pdf) && facts.nonLatin?.length) {
+  // C25: characters a PDF recipe's fonts cannot set: those outside
+  // Fontsource's latin subset that no loaded face covers (a CJK face the
+  // cjk block loads by slices covers its own), and what postext-pdf drew
+  // with no glyph (its missingGlyph warning, printed to the console).
+  const pdfRecipe = meta.outputs.includes("pdf") || !!meta.downloads?.pdf;
+  if (pdfRecipe && facts.nonLatin?.length) {
     add("C25", "warn", `outside the latin subset: ${facts.nonLatin.map((c) => `${c.ch} ${c.code}`).join(", ")}`);
+  }
+  if (pdfRecipe) {
+    const MISSING = /^postext-pdf: "(.+?)" (\d+(?: italic)?) has no glyph for [^(]*\((.+?)\); the PDF draws them/;
+    for (const m of input.console) {
+      const hit = MISSING.exec(m.text);
+      if (hit) add("C25", "warn", `the PDF has no glyph for "${hit[1]}" ${hit[2]}: ${hit[3]}`);
+    }
   }
 
   // C26: hero legibility.

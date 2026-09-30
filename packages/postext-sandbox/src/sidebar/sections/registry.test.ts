@@ -6,7 +6,15 @@ describe('settings registry', () => {
   it('lists every section exactly once', () => {
     const ids = SETTINGS_SECTIONS.map((s) => s.id);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(ids).toHaveLength(26);
+    expect(ids).toHaveLength(28);
+    expect(SETTINGS_GROUPS).toHaveLength(12);
+  });
+  it('puts the writing system right after the page, with its two sections', () => {
+    expect(SETTINGS_GROUPS.map((g) => g.id).slice(0, 3)).toEqual(['page', 'writing', 'colors']);
+    expect(sectionsInGroup('writing').map((s) => s.id)).toEqual(['writing', 'cjk']);
+    expect(groupOfSection('cjk')).toBe('writing');
+    // The document language left Body text.
+    expect(SETTINGS_SECTIONS.find((s) => s.id === 'bodyText')?.configKeys).toEqual(['bodyText']);
   });
   it('points every section and group at an existing label', () => {
     for (const s of SETTINGS_SECTIONS) expect(typeof DEFAULT_LABELS[s.labelKey]).toBe('string');

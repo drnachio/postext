@@ -14,6 +14,9 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'missingFontVariant':
     case 'duplicateFontVariant':
     case 'fontFamilyStack':
+    case 'missingGlyph':
+    case 'variableFontDefaultInstance':
+    case 'cffEmbeddedWhole':
       return 'fonts';
     case 'unknownResourceId':
     case 'duplicateResourceId':
@@ -31,11 +34,15 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'headingSpanWithoutBreak':
     case 'headingAdvancedWithoutTitleText':
     case 'sideColumnPercentClamped':
+    case 'cjkGridClamped':
     case 'unknownNumberFormat':
     case 'unknownConfigKey':
     case 'headingDesignCut':
       return 'design';
     case 'looseLine':
+    case 'cjkLooseLine':
+    case 'cjkMarksExceedLeading':
+    case 'rubyExceedsLeading':
     case 'calloutOverflow':
     case 'alphaPdfOverflow':
     case 'chipOverlap':

@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'en',
   lastUpdated: '2026-09-29',
   readingTime: '8 min',
-  order: 8,
+  order: 9,
 };
 
 # Agent skill
@@ -65,7 +65,12 @@ Also on YouTube: [watch it there](https://youtu.be/iiqeWdm9sQE) or in the
   - a catalogue of solved layout cases: parts with their own colours,
     chapter openers, verse, margin glosses, footnotes, back-of-book indexes, floated/split/nested
     boxes, vector print masters, live-text figures, pictures in table
-    cells, landscape tables, bilingual editions, and more.
+    cells, landscape tables, bilingual editions, and more;
+  - Chinese books, set horizontally or vertically and bound on the right:
+    what to ask in the brief (script, region, direction, binding), how to
+    measure a grid of characters, how to read vertical PDFs, InDesign ruby
+    and warichu, Word's East Asian layout and right-to-left EPUBs, and how to
+    cut CJK fonts to the book (see [Chinese layout](/en/docs/chinese-layout)).
 - **Scripts** (Python and Node), described in the next section.
 
 ## Scripts
@@ -84,11 +89,11 @@ Also on YouTube: [watch it there](https://youtu.be/iiqeWdm9sQE) or in the
     <tr><td><code>pdf_figures.py</code></td><td>Cuts figures out of a PDF: photos at native resolution, SVG previews, vector PDF print masters</td></tr>
     <tr><td><code>extract_tables.py</code></td><td>PDF tables → Postext <code>TableModel</code></td></tr>
     <tr><td><code>pandoc_to_postext.py</code></td><td>DOCX, PPTX, ODT, EPUB, HTML, LaTeX, Markdown, JATS, DocBook → draft chapters, with Word styles mapped to callouts and paragraph styles</td></tr>
-    <tr><td><code>idml_extract.py</code></td><td>InDesign IDML → draft chapters by paragraph style, tables and anchored images</td></tr>
+    <tr><td><code>idml_extract.py</code></td><td>InDesign IDML → draft chapters by paragraph style, tables and anchored images; ruby, tate-chu-yoko, emphasis marks and warichu become <code>:ruby</code>, <code>:tcy</code>, <code>:dots</code> and <code>:warichu</code>, and vertical stories and a right-to-left binding are reported</td></tr>
     <tr><td><code>index_marks.py</code></td><td>Rebuilds a printed back-of-book index as <code>:index</code> marks: reads the index pages of the PDF, finds each term on its page and marks the same words in the chapters</td></tr>
-    <tr><td><code>fonts.py</code>, <code>images.py</code>, <code>convert_assets.py</code></td><td>Instance, subset, scale and split fonts; convert images to sRGB, trim and join them; turn <code>.ai</code>/<code>.pdf</code> artwork into SVG</td></tr>
+    <tr><td><code>fonts.py</code>, <code>images.py</code>, <code>convert_assets.py</code></td><td>Instance, subset, scale and split fonts (a Chinese face cut to the book's characters keeps its vertical forms and metrics); convert images to sRGB, trim and join them; turn <code>.ai</code>/<code>.pdf</code> artwork into SVG</td></tr>
     <tr><td><code>preset_kit.py</code></td><td>Scaffolds the project and its generator script, builds <code>preset.json</code>, packs the <code>.postext</code> file</td></tr>
-    <tr><td><code>lint_project.py</code></td><td>Catches everything the parser and loader silently get wrong</td></tr>
+    <tr><td><code>lint_project.py</code></td><td>Catches everything the parser and loader silently get wrong, and, for Chinese, Japanese and Korean text, the characters the bundled fonts cannot set</td></tr>
     <tr><td><code>render.mjs</code></td><td>Lays the project (a folder or a <code>.postext</code> file) out headlessly with the real engine, reading its configuration as the Sandbox does, prints warnings and writes the PDF</td></tr>
     <tr><td><code>compare_pages.py</code></td><td>Places source and Postext pages side by side</td></tr>
   </tbody>

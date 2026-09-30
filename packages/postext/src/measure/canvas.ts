@@ -1,3 +1,6 @@
+import { cjkMarkPieces } from './cjkClasses';
+import { hasCJK } from './cjk';
+
 let _measureCtx: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D | null = null;
 /** Font string currently set on the measure context, to skip redundant
  *  `ctx.font` assignments (each assignment re-parses the shorthand). */
@@ -38,7 +41,13 @@ export function measureTextWidth(text: string, font: string): number {
     ctx.font = font;
     _currentFont = font;
   }
-  const width = ctx.measureText(text).width;
+  // Two CJK marks side by side (`）》`, `”“`) are measured apart: the
+  // browser would set the first half width in one run (see
+  // `cjkMarkCuts`), and the renderers paint them apart. Text with no CJK
+  // is never cut (`markCuts`): one measure, with no cut to look for.
+  let width = 0;
+  if (!hasCJK(text)) width += ctx.measureText(text).width;
+  else for (const piece of cjkMarkPieces(text, true)) width += ctx.measureText(piece).width;
 
   if (_widthCacheEntries >= MAX_WIDTH_CACHE_ENTRIES) {
     _widthCaches = new Map();
@@ -51,11 +60,91 @@ export function measureTextWidth(text: string, font: string): number {
   return width;
 }
 
+// Widths of runs as the browser sets them (see `measureRunWidth`).
+let _runCaches = new Map<string, Map<string, number>>();
+let _runCacheEntries = 0;
+
+/**
+ * The width of `text` set in one run, as the browser paints it: two CJK
+ * marks that meet are not measured apart (see {@link measureTextWidth}).
+ * For the pieces a renderer paints apart (`markPieces`), each of which
+ * holds only pairs the layout measured whole.
+ */
+export function measureRunWidth(text: string, font: string): number {
+  let byText = _runCaches.get(font);
+  if (byText === undefined) {
+    byText = new Map();
+    _runCaches.set(font, byText);
+  }
+  const cached = byText.get(text);
+  if (cached !== undefined) return cached;
+  const ctx = getMeasureCtx();
+  if (font !== _currentFont) {
+    ctx.font = font;
+    _currentFont = font;
+  }
+  const width = ctx.measureText(text).width;
+  if (_runCacheEntries >= MAX_WIDTH_CACHE_ENTRIES) {
+    _runCaches = new Map();
+    _runCacheEntries = 0;
+    byText = new Map();
+    _runCaches.set(font, byText);
+  }
+  byText.set(text, width);
+  _runCacheEntries++;
+  return width;
+}
+
 /** Drop all cached text widths. Must be called whenever font faces are
  *  (un)registered: widths measured against fallback glyphs are stale. */
 export function clearTextWidthCache(): void {
   _widthCaches = new Map();
   _widthCacheEntries = 0;
+  _runCaches = new Map();
+  _runCacheEntries = 0;
+  for (const listener of _fontChangeListeners) listener();
+}
+
+const _fontChangeListeners = new Set<() => void>();
+
+/** Called whenever {@link clearTextWidthCache} drops the widths (fonts
+ *  changed): other font-dependent caches clear with it. */
+export function onTextWidthCacheClear(listener: () => void): void {
+  _fontChangeListeners.add(listener);
+}
+
+/** The ink box of `text` in `font` above and below the alphabetic
+ *  baseline (px), or null when the measurer gives no ink metrics. Not
+ *  cached. */
+export function measureInkBox(text: string, font: string): { ascent: number; descent: number } | null {
+  const ctx = getMeasureCtx();
+  if (font !== _currentFont) {
+    ctx.font = font;
+    _currentFont = font;
+  }
+  const m = ctx.measureText(text) as Partial<TextMetrics>;
+  const ascent = m.actualBoundingBoxAscent;
+  const descent = m.actualBoundingBoxDescent;
+  if (typeof ascent !== 'number' || typeof descent !== 'number' || !Number.isFinite(ascent) || !Number.isFinite(descent)) return null;
+  return { ascent, descent };
+}
+
+/** Where the ink of `text` in `font` starts and ends along the line, px
+ *  from the pen's origin (the start is negative when the ink overhangs
+ *  it), or null when the measurer gives no ink metrics or the text has no
+ *  ink. Not cached. */
+export function measureInkExtent(text: string, font: string): { start: number; end: number } | null {
+  const ctx = getMeasureCtx();
+  if (font !== _currentFont) {
+    ctx.font = font;
+    _currentFont = font;
+  }
+  const m = ctx.measureText(text) as Partial<TextMetrics>;
+  const left = m.actualBoundingBoxLeft;
+  const right = m.actualBoundingBoxRight;
+  if (typeof left !== 'number' || typeof right !== 'number' || !Number.isFinite(left) || !Number.isFinite(right)) return null;
+  const start = -left;
+  return right > start ? { start, end: right } : null;
 }
 
 /** Measure a short glyph (e.g. a list bullet) in the given font. */

@@ -1,9 +1,10 @@
-import { popGraphicsState, pushGraphicsState, setCharacterSpacing } from 'pdf-lib';
+import { popGraphicsState, pushGraphicsState } from 'pdf-lib';
+import { segmentOrientation } from 'postext';
 import type { Color, PDFFont } from 'pdf-lib';
 import type { VDTBlock, VDTLine, VDTLineSegment, MathRender } from 'postext';
 import { parseFontString } from '../fontString';
 import { FontCache } from '../fontCache';
-import { type PageCtx, alphaOf, alphaStateOp, drawLinePx, drawMeasuredTextPx, drawSwatchPx, drawTextPx, colorFromHex } from './primitives';
+import { type PageCtx, alphaOf, alphaStateOp, beginActualTextSpan, cjkLineText, compressedMarkSpacingPx, drawLinePx, drawMeasuredTextPx, drawSwatchPx, drawTextPx, colorFromHex, endActualTextSpan, setTrackingPx, type LineTextState } from './primitives';
 import { paintChip } from './chip';
 import { pickSegmentColor, pickSegmentFont } from './fontHelpers';
 import { renderHeaderFooterSlot } from './headerFooter';
@@ -14,6 +15,8 @@ import {
 import { LinkRegistry, RefRun, UriRuns } from './links';
 import { tagArtifact, tagContent, type StructElem } from './tagging';
 import type { StructureFlow } from './structureFlow';
+import { paintLineMarks, paintRuby, paintWarichu } from './annotations';
+import { inkScaleOperators } from './inkScale';
 
 /** Per-document context for resource rendering, threaded through `renderBlock`. */
 export interface ResourceRenderContext {
@@ -70,6 +73,50 @@ function renderMathSegment(
 }
 
 /**
+ * The text of a segment of a composed line (see {@link renderSegments}):
+ * a compressed CJK mark painted before its box (`inkOffset`) with the
+ * character spacing that advances it to its box's end, a segment's own
+ * tracking, a dash of a 破折号 stretched over its em (`inkScale`), the
+ * orientation forced down a vertical line, and a ruby base's reading.
+ */
+function paintComposedText(
+  ctx: PageCtx,
+  seg: VDTLineSegment,
+  x: number,
+  baseline: number,
+  font: PDFFont,
+  size: number,
+  color: Color,
+  colorHex: string,
+  actualText: string | undefined,
+  tracking: number,
+  fontCache: FontCache,
+  blockFont: PDFFont,
+  rubyElem: StructElem | undefined,
+): void {
+  // A compressed CJK mark is painted before its box (`inkOffset`) and
+  // advances to its box's end.
+  // (Down a vertical line every cell is one em: no mark shown narrower.)
+  const markSpacing = ctx.vertical ? undefined : compressedMarkSpacingPx(font, seg, size);
+  if (markSpacing !== undefined) setTrackingPx(ctx, markSpacing);
+  else if (seg.tracking !== undefined) setTrackingPx(ctx, tracking + seg.tracking);
+  // A dash of a 破折号 is stretched over its em (`inkScale`); down a
+  // vertical line it is shown turned with the frame (sideways), so the
+  // stretch runs down the column.
+  const stretch = inkScaleOperators(seg.inkScale);
+  const orient = ctx.vertical && seg.inkScale !== undefined ? 'sideways' : segmentOrientation(seg);
+  ctx.page.pushOperators(...stretch.before);
+  drawTextPx(ctx, seg.text, x + (seg.inkOffset ?? 0), baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText, orient);
+  ctx.page.pushOperators(...stretch.after);
+  if (markSpacing !== undefined || seg.tracking !== undefined) setTrackingPx(ctx, tracking);
+  if (seg.ruby) {
+    if (tracking !== 0) setTrackingPx(ctx, 0);
+    paintRuby(ctx, seg.ruby, x, baseline, colorHex, fontCache, blockFont, rubyElem);
+    if (tracking !== 0) setTrackingPx(ctx, tracking);
+  }
+}
+
+/**
  * Paint a line's segments left to right starting at `startX`. When
  * `justifiedSpaceWidth` is set, spaces advance by it instead of their
  * measured width. `:ref` segments record a link annotation rectangle so the
@@ -81,6 +128,13 @@ function renderMathSegment(
  * never has to infer them from the gaps of a justified line. A ref painted
  * as several runs (small capitals; the later runs flagged `refContinues`)
  * is still one `Link` element with one annotation over all its runs.
+ *
+ * A line of the CJK composer and any line down a vertical page (`composed`)
+ * read the composer's fields — a segment's `tracking`, `inkOffset`,
+ * `inkScale`, `autospace`, `ruby` and `warichu` — and are read as one
+ * `/ActualText`. Any other line was set word by word and carries none of
+ * them: its segments are painted as every line was before the CJK
+ * features, with no further look at each one.
  */
 function renderSegments(
   ctx: PageCtx,
@@ -96,11 +150,33 @@ function renderSegments(
   linkRegistry: LinkRegistry | undefined,
   elem: StructElem | undefined,
   justifiedSpaceWidth?: number,
+  /** The character spacing the line is painted with (block + line, px);
+   *  a segment's own tracking (a justified CJK line) goes on top of it. */
+  tracking = 0,
 ): void {
   let x = startX;
   const refRun = new RefRun();
   const uris = new UriRuns(ctx, line, linkRegistry, elem);
   const repeatedAt = repeatedHyphenSegment(line, segments);
+  const composed = line.cjkComposed === true || ctx.vertical !== undefined;
+  // A composed CJK line (spread characters, Han–Latin spaces) reads as
+  // written, not with the gaps between its pieces.
+  // A vertical line is painted in runs and cells down the column: it reads
+  // as the line too.
+  const actualLine = !composed ? undefined : ctx.vertical ? segments.map((s) => s.text).join('') : cjkLineText(segments);
+  let lineState: LineTextState | undefined;
+  if (actualLine !== undefined) {
+    const first = segments.find((s) => s.kind === 'text' && !s.chip && s.text !== '');
+    const fontStr = first ? first.fontString ?? pickSegmentFont(!!first.bold, !!first.italic, block) : block.fontString;
+    lineState = {
+      font: fontCache.get(fontStr) ?? blockFont,
+      text: first?.text ?? '',
+      sizePx: parseFontString(fontStr)?.sizePx ?? blockSize,
+      xPx: startX,
+      baselinePx: baseline,
+    };
+    beginActualTextSpan(ctx, actualLine, lineState);
+  }
   for (let i = 0; i < segments.length; i++) {
     const seg = segments[i]!;
     if (seg.kind === 'space') {
@@ -109,7 +185,8 @@ function renderSegments(
         tagContent(ctx, inLink ?? elem);
         drawTextPx(ctx, seg.text, x, baseline, blockFont, blockSize, blockColor);
       }
-      x += justifiedSpaceWidth ?? seg.width;
+      // A Han–Latin space keeps the width the composer set.
+      x += composed && seg.autospace ? seg.width : justifiedSpaceWidth ?? seg.width;
       continue;
     }
     if (seg.kind !== 'text' || seg.chip) uris.other();
@@ -136,6 +213,15 @@ function renderSegments(
       x += seg.width;
       continue;
     }
+    if (composed && seg.warichu) {
+      // A warichu note's part: its two rows, not its text (#195), with no
+      // character spacing.
+      if (tracking !== 0) setTrackingPx(ctx, 0);
+      paintWarichu(ctx, seg.warichu, x, baseline, pickSegmentColor(!!seg.bold, !!seg.italic, block), fontCache, blockFont, elem);
+      if (tracking !== 0) setTrackingPx(ctx, tracking);
+      x += seg.width;
+      continue;
+    }
     const fontStr = seg.fontString ?? pickSegmentFont(!!seg.bold, !!seg.italic, block);
     const font = fontCache.get(fontStr) ?? blockFont;
     const size = parseFontString(fontStr)?.sizePx ?? blockSize;
@@ -152,15 +238,19 @@ function renderSegments(
     const link = refRun.enter(seg, x, elem, target);
     // A page number of the index links to its page.
     const pageElem = seg.pageLink !== undefined && elem && !link ? elem.child('Link') : undefined;
-    tagContent(ctx, link ?? pageElem ?? uriElem ?? elem);
+    // A ruby base is the `RB` of a `Ruby` whose `RT` holds its reading (#194).
+    const holder = link ?? pageElem ?? uriElem ?? elem;
+    const rubyElem = composed && seg.ruby && holder ? holder.child('Ruby') : undefined;
+    tagContent(ctx, rubyElem ? rubyElem.child('RB') : holder);
     // The hyphen repeated from the line before is painted but not read.
     const actualText = i === repeatedAt ? seg.text.slice(1) : undefined;
-    drawTextPx(ctx, seg.text, x, baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText);
+    if (!composed) drawTextPx(ctx, seg.text, x, baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText);
+    else paintComposedText(ctx, seg, x, baseline, font, size, color, colorHex, actualText, tracking, fontCache, blockFont, rubyElem);
     if (seg.pageLink !== undefined && linkRegistry) {
       const { scale, pageHeightPt } = ctx;
       linkRegistry.addPageLink(
         ctx.page,
-        [x * scale, pageHeightPt - (line.bbox.y + line.bbox.height) * scale, (x + seg.width) * scale, pageHeightPt - line.bbox.y * scale],
+        sheetRect(ctx, [x * scale, pageHeightPt - (line.bbox.y + line.bbox.height) * scale, (x + seg.width) * scale, pageHeightPt - line.bbox.y * scale]),
         seg.pageLink,
         pageElem ? { elem: pageElem, contents: seg.text } : undefined,
       );
@@ -172,12 +262,14 @@ function renderSegments(
       const x2 = (x + seg.width) * scale;
       const y2 = pageHeightPt - line.bbox.y * scale;
       const y1 = pageHeightPt - (line.bbox.y + line.bbox.height) * scale;
-      linkRegistry.addLink(ctx.page, [x1, y1, x2, y2], ref.resourceId, link ? { elem: link, contents: ref.text } : undefined);
+      linkRegistry.addLink(ctx.page, sheetRect(ctx, [x1, y1, x2, y2]), ref.resourceId, link ? { elem: link, contents: ref.text } : undefined);
     }
     x += seg.width;
   }
   uris.end();
+  if (lineState) endActualTextSpan(ctx, lineState);
 }
+
 
 /** Tracking: the block (column balancing; negative for a runt set short)
  *  and the line (justification tracking) were measured with extra advance
@@ -194,9 +286,9 @@ function renderLine(
   elem: StructElem | undefined,
 ): void {
   const tracking = (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0);
-  if (tracking !== 0) ctx.page.pushOperators(setCharacterSpacing(tracking * ctx.scale));
+  if (tracking !== 0) setTrackingPx(ctx, tracking);
   renderLineText(ctx, line, block, columnWidth, columnX, fontCache, linkRegistry, elem, tracking, trailingTracking(line, tracking));
-  if (tracking !== 0) ctx.page.pushOperators(setCharacterSpacing(0));
+  if (tracking !== 0) setTrackingPx(ctx, 0);
 }
 
 /** The tracking a line's measured width carries after its last glyph:
@@ -207,7 +299,10 @@ function trailingTracking(line: VDTLine, tracking: number): number {
   if (tracking === 0) return 0;
   const segments = line.segments;
   if (segments && segments.length > 0) {
-    const last = segments[segments.length - 1]!;
+    let i = segments.length - 1;
+    // A mark hung past the line's end is outside it (CJK only).
+    while (i > 0 && segments[i]!.hangs) i--;
+    const last = segments[i]!;
     return last.kind === 'text' && last.text.length > 0 ? tracking : 0;
   }
   return /\S$/.test(line.text) ? tracking : 0;
@@ -233,6 +328,9 @@ function renderLineText(
   const lineIndent = line.bbox.x - columnX;
   const effectiveWidth = columnWidth - lineIndent;
   const segments = line.segments;
+  // Only a line of the CJK composer (or down a vertical page) has hung
+  // marks and Han–Latin spaces (see `renderSegments`).
+  const composed = line.cjkComposed === true || ctx.vertical !== undefined;
 
   // Last lines render ragged at natural width — except when overfull:
   // Knuth-Plass may accept a final line wider than the measure on the
@@ -243,23 +341,27 @@ function renderLineText(
     let naturalWidth = 0;
     let spaceCount = 0;
     for (const seg of segments) {
-      if (seg.kind === 'space') spaceCount++;
+      // A hung mark is outside the measure; a Han–Latin space keeps its
+      // width.
+      if (composed && seg.hangs) continue;
+      if (seg.kind === 'space' && !(composed && seg.autospace)) spaceCount++;
       else wordWidth += seg.width;
       naturalWidth += seg.width;
     }
     if (spaceCount > 0 && ((!line.isLastLine && !line.ragged) || naturalWidth > effectiveWidth)) {
       const justifiedSpaceWidth = (effectiveWidth - wordWidth) / spaceCount;
-      renderSegments(ctx, segments, line.bbox.x, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem, justifiedSpaceWidth);
+      renderSegments(ctx, segments, line.bbox.x, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem, justifiedSpaceWidth, tracking);
       return;
     }
   }
 
   if ((block.textAlign === 'center' || block.textAlign === 'right') && segments) {
+    // Hung marks stay out of the alignment, as trailing tracking does.
     let contentWidth = 0;
-    for (const seg of segments) contentWidth += seg.width;
+    for (const seg of segments) if (!(composed && seg.hangs)) contentWidth += seg.width;
     const slack = Math.max(0, effectiveWidth - (contentWidth - trailing));
     const startX = line.bbox.x + (block.textAlign === 'center' ? slack / 2 : slack);
-    renderSegments(ctx, segments, startX, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem);
+    renderSegments(ctx, segments, startX, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem, undefined, tracking);
     return;
   }
 
@@ -267,8 +369,8 @@ function renderLineText(
   // blocks. Segments are needed when any of them styles differently from the
   // block (bold/italic/math/ref/own font or colour); otherwise one text
   // object paints the line.
-  if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined || s.href !== undefined || s.pageLink !== undefined || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined)) {
-    renderSegments(ctx, segments, line.bbox.x, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem);
+  if (segments && segments.some(composed ? composedSegmentIsStyled : segmentIsStyled)) {
+    renderSegments(ctx, segments, line.bbox.x, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem, undefined, tracking);
     return;
   }
 
@@ -284,6 +386,20 @@ function renderLineText(
   if (segments && segments.length > 0 && !hasRightToLeft(line.text)
     && drawMeasuredTextPx(ctx, withLineEndSpace(segments, line.text), plainX, line.baseline, blockFont, blockSize, blockColor, tracking, actualText)) return;
   drawTextPx(ctx, line.text, plainX, line.baseline, blockFont, blockSize, blockColor, undefined, actualText);
+}
+
+/** Whether a segment of a line set word by word paints differently from
+ *  the block's plain text, or is linked; an orientation mark (`:tcy`,
+ *  `:upright`, `:sideways`) keeps its segment apart. */
+function segmentIsStyled(s: VDTLineSegment): boolean {
+  return s.bold || s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined || s.href !== undefined || s.pageLink !== undefined || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined
+    || s.tcy !== undefined || s.orientation !== undefined;
+}
+
+/** {@link segmentIsStyled} for a line of the CJK composer or one down a
+ *  vertical page, whose segments may carry the composer's fields. */
+function composedSegmentIsStyled(s: VDTLineSegment): boolean {
+  return segmentIsStyled(s) || s.tracking !== undefined || s.inkOffset !== undefined || s.hangs !== undefined || s.autospace !== undefined || s.ruby !== undefined || s.warichu !== undefined;
 }
 
 /**
@@ -355,16 +471,21 @@ function renderBullet(ctx: PageCtx, block: VDTBlock, fontCache: FontCache, elem:
   const midY = block.bulletY ?? firstLine.baseline;
   const baselinePx = onBaseline ? baselineY : midY + size * 0.3;
   tagContent(ctx, elem);
+  // Ordered-list separator styled apart from the number (own font/colour),
+  // with the prefix run before the number in the same style: drawn in
+  // reading order, prefix, number, separator, so text extraction reads
+  // （一） and not 一）（.
+  const sepFontString = block.separatorText && block.separatorX !== undefined ? block.separatorFontString ?? block.bulletFontString : undefined;
+  const sepFont = sepFontString !== undefined ? fontCache.get(sepFontString) : undefined;
+  const sepSize = sepFontString !== undefined ? parseFontString(sepFontString)?.sizePx ?? size : size;
+  const sepColor = colorFromHex(block.separatorColor ?? colorHex, ctx.colorSpace);
+  const sepY = onBaseline ? baselineY : midY + sepSize * 0.3;
+  if (sepFont && block.prefixText && block.prefixX !== undefined) {
+    drawTextPx(ctx, block.prefixText, block.prefixX, sepY, sepFont, sepSize, sepColor);
+  }
   drawTextPx(ctx, block.bulletText, block.bulletOffsetX, baselinePx, font, size, color);
-
-  // Ordered-list separator styled apart from the number (own font/colour).
-  if (block.separatorText && block.separatorX !== undefined) {
-    const sepFontString = block.separatorFontString ?? block.bulletFontString;
-    const sepFont = fontCache.get(sepFontString);
-    if (!sepFont) return;
-    const sepSize = parseFontString(sepFontString)?.sizePx ?? size;
-    const sepColor = colorFromHex(block.separatorColor ?? colorHex, ctx.colorSpace);
-    drawTextPx(ctx, block.separatorText, block.separatorX, onBaseline ? baselineY : midY + sepSize * 0.3, sepFont, sepSize, sepColor);
+  if (sepFont && block.separatorText && block.separatorX !== undefined) {
+    drawTextPx(ctx, block.separatorText, block.separatorX, sepY, sepFont, sepSize, sepColor);
   }
 }
 
@@ -382,11 +503,19 @@ function renderStrikethrough(ctx: PageCtx, block: VDTBlock): void {
   }
 }
 
-/** Annotation rectangle of a block's box, in PDF points. */
+/** A rect of the page's frame in PDF points, on the sheet: through the
+ *  flow frame of a vertical page (`PageCtx.mapRectPt`), as it is on any
+ *  other. Annotation rects and destinations live outside the content
+ *  stream, so the frame's `cm` does not reach them. */
+function sheetRect(ctx: PageCtx, rect: [number, number, number, number]): [number, number, number, number] {
+  return ctx.mapRectPt ? ctx.mapRectPt(rect) : rect;
+}
+
+/** Annotation rectangle of a block's box, in PDF points, on the sheet. */
 function rectOfBlock(ctx: PageCtx, block: VDTBlock): [number, number, number, number] {
   const { scale, pageHeightPt } = ctx;
   const { x, y, width, height } = block.bbox;
-  return [x * scale, pageHeightPt - (y + height) * scale, (x + width) * scale, pageHeightPt - y * scale];
+  return sheetRect(ctx, [x * scale, pageHeightPt - (y + height) * scale, (x + width) * scale, pageHeightPt - y * scale]);
 }
 
 export function renderBlock(
@@ -415,7 +544,9 @@ export function renderBlock(
       block.designOverlay,
       fontCache,
       resourceCtx?.images,
-      textElem ? { text: textElem, artifact: { type: 'Layout' } } : undefined,
+      textElem && structure
+        ? { text: textElem, artifact: { type: 'Layout' }, figure: (alt, attributes, after) => structure.designFigure(alt, attributes, after) }
+        : undefined,
     );
     if (targetPage !== undefined && linkRegistry) {
       const contents = block.tocPart ? `${block.tocPart.number} ${block.tocPart.title}`.trim() : block.lines.map((l) => l.text).join(' ');
@@ -442,12 +573,9 @@ export function renderBlock(
   }
   // A note is where its markers link to.
   if (block.footnoteNote !== undefined && linkRegistry) {
-    linkRegistry.addDestination(
-      footnoteDestination(linkRegistry, block.footnoteNote),
-      ctx.page,
-      block.bbox.x * ctx.scale,
-      ctx.pageHeightPt - block.bbox.y * ctx.scale,
-    );
+    // The top left of the note's box on the sheet.
+    const [left, , , top] = rectOfBlock(ctx, block);
+    linkRegistry.addDestination(footnoteDestination(linkRegistry, block.footnoteNote), ctx.page, left, top);
   }
   // Justify against the block's own measure (see the canvas backend): blocks
   // inside callouts are narrower than their column.
@@ -455,6 +583,8 @@ export function renderBlock(
   void columnX;
   for (const line of block.lines) {
     renderLine(ctx, line, block, block.bbox.width, block.bbox.x, fontCache, linkRegistry, elem);
+    // Emphasis dots, proper-name and book-title lines (#193).
+    if (line.marks) paintLineMarks(ctx, line, colorFromHex(block.color, ctx.colorSpace));
   }
   if (targetPage !== undefined && linkRegistry) {
     const contents = block.lines.map((l) => l.text).join(' ');

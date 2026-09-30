@@ -254,6 +254,14 @@
 .cb-lt-page.is-recto::after {
   background: linear-gradient(to right, rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.05) 3%, transparent 9%);
 }
+/* A right-bound book lies mirrored: the verso on the right, the recto on
+   the left, each shaded towards the fold. */
+[dir="rtl"] .cb-lt-page.is-verso::after {
+  background: linear-gradient(to right, rgb(0 0 0 / 0.16), rgb(0 0 0 / 0.04) 3%, transparent 9%);
+}
+[dir="rtl"] .cb-lt-page.is-recto::after {
+  background: linear-gradient(to left, rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.05) 3%, transparent 9%);
+}
 .cb-lt-open {
   display: block;
   width: 100%;
@@ -379,8 +387,9 @@
   background: #fff;
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.5);
 }
-/* The missing half of a spread (page 1 alone on the right): a faint sheet,
-   so the thumbnail still reads as verso and recto. */
+/* The missing half of a spread (page 1 alone, on the right of a left-bound
+   book, on the left of a right-bound one): a faint sheet, so the thumbnail
+   still reads as verso and recto. */
 .cb-lt-film-blank {
   display: block;
   flex-shrink: 0;

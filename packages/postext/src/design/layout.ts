@@ -1,3 +1,4 @@
+import { flowTextWidth, getMeasureWritingMode, lineBaselineOffset, withMeasureWritingMode } from '../measure/vertical';
 import type {
   AnchorEdge,
   ColorValue,
@@ -22,7 +23,10 @@ import type {
 import { dimensionToPx } from '../units';
 import { resolveDesignLineHeight } from '../defaults/headerFooter';
 import { createBoundingBox, pictureTraits, type BoundingBox } from '../vdt';
-import { buildFontString, measureTextWidth } from '../measure';
+import { buildFontString } from '../measure';
+import { graphemeCount } from '../measure/graphemes';
+import { parseInlineSnippetSpans } from '../parse/inlineSnippet';
+import type { InlineSpan } from '../parse/types';
 import { hyphenateText, withoutSlashJoints } from '../hyphenate';
 import { BREAKING_SPACE_RUNS_SPLIT_RE, NO_BREAK_SPACES, isBreakingSpaceRun } from '../measure/spaces';
 import {
@@ -114,6 +118,12 @@ export interface ResolvedTextPrimitive extends ResolvedElementGeometry {
   contentWidth: number;
   contentHeight: number;
   box?: ResolvedElementBox;
+  /** Set vertically (`DesignTextElement.writingMode: 'vertical-rl'`): `x`,
+   *  `y`, `width`, `height` are the box as it stands, every other number
+   *  (the lines, the content box) is in the box's own frame turned a
+   *  quarter turn clockwise, where a line runs along `width` = the box's
+   *  height and its baselines are measured from the box's right edge. */
+  vertical?: true;
 }
 
 export interface ResolvedRulePrimitive extends ResolvedElementGeometry {
@@ -139,6 +149,50 @@ export interface ResolvedImagePrimitive extends ResolvedElementGeometry {
   /** Bitmap or SVG, and an SVG's print master (see `pictureTraits`). */
   imageKind?: 'bitmap' | 'svg';
   pdfFileId?: string;
+  /** Laid out in a vertical flow: the box's width runs down the sheet, and
+   *  it was sized for the picture turned back upright (see
+   *  `DesignFrames.upright`). */
+  upright?: true;
+  /** The picture's alternative text: its resource's `altText`, else its
+   *  caption as plain text; absent for a `decorative` element or a
+   *  resource with neither. */
+  altText?: string;
+}
+
+/** Placeholder characters the snippet parser leaves in span text (private
+ *  use, the object replacement character, the invisible separator and
+ *  plus of references and swatches): nothing a reader can read. */
+const PLACEHOLDER_RE = /[\uE000-\uF8FF\uFFFC\u2063\u2064]/g;
+
+/** The words of caption spans as a reader reads them: a chip's label, a
+ *  reference's own text (`:ref{… text="…"}`; its number is not known
+ *  here), nothing for a swatch or a note marker. */
+function spansReadText(spans: readonly InlineSpan[]): string {
+  let out = '';
+  for (const s of spans) {
+    if (s.chip) out += spansReadText(s.chip.spans);
+    else if (s.ref) out += s.ref.text ?? '';
+    else if (s.swatch || s.footnote) continue;
+    else out += s.text;
+  }
+  return out.replace(PLACEHOLDER_RE, '');
+}
+
+/** The alternative text of a resource drawn by a design (#213): its
+ *  `altText`, else its caption as plain text (inline formatting read,
+ *  a chip by its label, forced line breaks as spaces, placeholders left
+ *  out). Captions are not parsed for maths, so a `$` in one is read as
+ *  it is printed. Undefined when it has neither. */
+export function designImageAltText(resource: Resource | undefined): string | undefined {
+  const alt = resource?.altText?.trim();
+  if (alt) return alt;
+  const caption = resource?.caption?.trim();
+  if (!caption) return undefined;
+  // Runs of breaking whitespace become one space; an ideographic space
+  // stays.
+  const text = spansReadText(parseInlineSnippetSpans(caption))
+    .replace(/\u2028/g, ' ').replace(/[^\S\u3000]+/g, ' ').trim();
+  return text || undefined;
 }
 
 export type ResolvedPrimitive =
@@ -170,6 +224,14 @@ export interface LayoutIssue {
 export interface DesignFrames {
   page: { x: number; y: number; width: number; height: number };
   bleed: { x: number; y: number; width: number; height: number };
+  /** The page's outer margin, for `anchor.to: 'outer'` (header and footer
+   *  slots): between the type area and the trim edge away from the spine,
+   *  from the type area's head to its foot. */
+  outer?: { x: number; y: number; width: number; height: number };
+  /** The frames of a vertical page's flow (`VDTPage.flow`): a picture
+   *  stands upright on the sheet, so its box in the flow is sized with the
+   *  picture's width and height swapped (`ResolvedImagePrimitive.upright`). */
+  upright?: boolean;
 }
 
 export interface LayoutContext {
@@ -285,7 +347,7 @@ export function applyPaletteOverrides(el: ResolvedDesignElement, overrides: Reco
 
 function anchorTargetId(placement: ElementPlacement): string | undefined {
   const to = placement.anchor.to;
-  if (to === 'container' || to === 'page' || to === 'bleed') return undefined;
+  if (to === 'container' || to === 'page' || to === 'bleed' || to === 'outer') return undefined;
   return to.slice(1);
 }
 
@@ -296,6 +358,7 @@ function frameFor(placement: ElementPlacement, frames: DesignFrames | undefined)
   const to = placement.anchor.to;
   if (to === 'page') return frames.page;
   if (to === 'bleed') return frames.bleed;
+  if (to === 'outer') return frames.outer;
   return undefined;
 }
 
@@ -862,18 +925,22 @@ export function layoutDesignSlot(
       ? resolveElementAnchor(el.placement.anchor.edge, refGeo)
       : resolveContainerAnchor(el.placement.anchor.edge, refGeo);
 
-    const offsetX = dimPx(el.placement.offset?.x, context.dpi);
-    const offsetY = dimPx(el.placement.offset?.y, context.dpi);
+    // A text element's offset may be written in ems of its own size (a
+    // running head four characters below the type area).
+    const emPx = el.kind === 'text' ? dimPx(el.fontSize, context.dpi) : undefined;
+    const offsetX = dimPx(el.placement.offset?.x, context.dpi, emPx);
+    const offsetY = dimPx(el.placement.offset?.y, context.dpi, emPx);
     const anchorX = anchor.anchorX + offsetX;
     const anchorY = anchor.anchorY + offsetY;
 
     if (el.kind === 'text') {
-      const prims = layoutTextElement(el, textContent.get(el.id) ?? '', {
-        anchorX,
-        anchorY,
-        pinX: anchor.pinX,
-        pinY: anchor.pinY,
-      }, fillRef, context.dpi, useElementEdge);
+      const pin: AnchorResult = { anchorX, anchorY, pinX: anchor.pinX, pinY: anchor.pinY };
+      // A vertical element in a frame whose text is horizontal (a running
+      // head on the sheet, a design of a horizontal page); in a vertical
+      // flow the text already runs down.
+      const prims = el.writingMode === 'vertical-rl' && getMeasureWritingMode() !== 'vertical-rl'
+        ? layoutVerticalTextElement(el, textContent.get(el.id) ?? '', pin, fillRef, context.dpi, useElementEdge)
+        : layoutTextElement(el, textContent.get(el.id) ?? '', pin, fillRef, context.dpi, useElementEdge);
       resolvedGeo.set(el.id, prims[0]!);
       primsByElement.set(el, prims);
     } else if (el.kind === 'rule') {
@@ -891,7 +958,7 @@ export function layoutDesignSlot(
         anchorY,
         pinX: anchor.pinX,
         pinY: anchor.pinY,
-      }, fillRef, context.dpi, context.resourceById, resolveDesignResourceId(el.resourceId, context.placeholders));
+      }, fillRef, context.dpi, context.resourceById, resolveDesignResourceId(el.resourceId, context.placeholders), context.frames?.upright === true);
       if (prim) {
         resolvedGeo.set(el.id, prim);
         primsByElement.set(el, [prim]);
@@ -1038,7 +1105,8 @@ function justifyLine(
     natural = measure(text);
   }
   const pieces: DesignTextRun[] = runs ?? [{ text, fontString: font, width: natural }];
-  const splittable = (i: number): boolean => !pieces[i]!.stacked && !pieces[i - 1]?.stacked;
+  // A run the author oriented in vertical text is never cut at its spaces.
+  const splittable = (i: number): boolean => !pieces[i]!.stacked && !pieces[i - 1]?.stacked && !pieces[i]!.tcy && !pieces[i]!.orientation;
   let spaces = 0;
   pieces.forEach((r, i) => { if (splittable(i)) spaces += stretchableSpaces(r.text); });
   const room = width - natural;
@@ -1091,7 +1159,7 @@ function layoutTextElement(
   // below zero, however tight.
   const trackingPx = dimPx(el.letterSpacing, dpi, fontSizePx);
   const letterSpacingPx = Number.isFinite(trackingPx) ? trackingPx : 0;
-  const measure: TextMeasure = (t) => Math.max(0, measureTextWidth(t, fontString) + letterSpacingPx * t.length);
+  const measure: TextMeasure = (t) => Math.max(0, flowTextWidth(t, fontString) + letterSpacingPx * graphemeCount(t));
   const box = resolveBox(el.box, dpi, fontSizePx);
   const padding: ResolvedPadding = box?.padding ?? { top: 0, right: 0, bottom: 0, left: 0 };
   // Inline marks: a text that carries any is laid out in runs; one that
@@ -1182,14 +1250,14 @@ function layoutTextElement(
       const letter = paragraphs[0]!.slice(0, 1);
       paragraphs[0] = paragraphs[0]!.slice(1).trimStart();
       paraRanges[0]![0] = paraRanges[0]![1] - paragraphs[0].length;
-      const capW = measureTextWidth(letter, capFont);
+      const capW = flowTextWidth(letter, capFont);
       capRoom = capW + Math.max(0, dimPx(dropCap.gap, dpi, fontSizePx));
       cap = { text: letter, font: capFont, fontPx: capFontPx, width: capW, lines: capLines, color: colorHex(dropCap.color ?? el.color) };
     }
     // Justified lines fill their room by stretching their word spaces, and
     // a word that does not fit may be cut at a syllable to fill (EF-109).
     const fill = justify && (el.hyphenate ?? false);
-    const measureIn = (t: string, font: string): number => Math.max(0, measureTextWidth(t, font) + letterSpacingPx * t.length);
+    const measureIn = (t: string, font: string): number => Math.max(0, flowTextWidth(t, font) + letterSpacingPx * graphemeCount(t));
     let lineNo = 0;
     paragraphs.forEach((para, p) => {
       const offsetOf = (i: number): number => {
@@ -1226,6 +1294,12 @@ function layoutTextElement(
     m = layoutRichText(richM, lineHeightPx, el.overflow, contentMax, el.hyphenate);
   } else {
     m = layoutText(text, measure, lineHeightPx, el.overflow, contentMax, el.hyphenate);
+  }
+  // Set vertically (in a vertical flow, or turned by `writingMode`): each
+  // line's characters stand on the middle of its line box, as a vertical
+  // line of the body does (`lineBaselineOffset`).
+  if (getMeasureWritingMode() === 'vertical-rl') {
+    for (const line of m.lines) line.baselineY = line.topY + lineBaselineOffset(line.height, fontString);
   }
   // The tracking after a line's last glyph is advance, not ink: a box that
   // shrink-wraps its text leaves it out (EF-153), as the alignment of each
@@ -1318,6 +1392,49 @@ function layoutTextElement(
   return [main, capPrim];
 }
 
+const flipPin = (p: Pin): Pin => (p === 'start' ? 'end' : p === 'end' ? 'start' : 'middle');
+
+/**
+ * A text element set vertically (`writingMode: 'vertical-rl'`): laid out
+ * as a horizontal text in the element's own frame turned a quarter turn
+ * clockwise — its lines as long as the box is tall, stacked from the right
+ * — and measured as vertical text (characters in their cells), then
+ * turned back onto the page. A flow point `(fx, fy)` of that frame stands
+ * at `(−fy, fx)` on the page, so the anchor, the pins and the container
+ * turn with it: the top of the page is the start of a line, its right the
+ * top of the frame. A drop cap is not set.
+ */
+function layoutVerticalTextElement(
+  el: ResolvedDesignTextElement,
+  resolvedText: string,
+  pin: AnchorResult,
+  container: AnchorReference,
+  dpi: number,
+  anchoredToElement: boolean,
+): ResolvedTextPrimitive[] {
+  const flowPin: AnchorResult = { anchorX: pin.anchorY, anchorY: -pin.anchorX, pinX: pin.pinY, pinY: flipPin(pin.pinX) };
+  const flowContainer: AnchorReference = { x: container.y, y: -(container.x + container.width), width: container.height, height: container.width };
+  const size = el.placement.size;
+  const padding = el.box?.padding;
+  const turned: ResolvedDesignTextElement = {
+    ...el,
+    dropCap: undefined,
+    placement: {
+      ...el.placement,
+      size: {
+        width: size?.height,
+        height: size?.width,
+        ...(size?.maxWidth !== undefined ? { maxWidth: size.maxWidth } : {}),
+      },
+    },
+    ...(el.box
+      ? { box: { ...el.box, ...(padding ? { padding: { top: padding.right, right: padding.bottom, bottom: padding.left, left: padding.top } } : {}) } }
+      : {}),
+  };
+  const [main] = withMeasureWritingMode('vertical-rl', () => layoutTextElement(turned, resolvedText, flowPin, flowContainer, dpi, anchoredToElement));
+  return [{ ...main!, x: -(main!.y + main!.height), y: main!.x, width: main!.height, height: main!.width, vertical: true }];
+}
+
 function layoutRuleElement(
   el: ResolvedDesignRuleElement,
   pin: AnchorResult,
@@ -1375,13 +1492,19 @@ function layoutImageElement(
   resourceById: ReadonlyMap<string, Resource> | undefined,
   /** `el.resourceId` with its placeholders filled in. */
   resourceId: string,
+  /** In a vertical flow: the picture stands upright on the sheet, where the
+   *  box's width runs down the page, so the box takes the picture's height
+   *  as its width and its width as its height. */
+  upright = false,
 ): ResolvedImagePrimitive | undefined {
   const resource = resourceId ? resourceById?.get(resourceId) : undefined;
   const payload = resource?.bitmap ?? resource?.svg;
   const fileId = payload?.fileId;
   if (!fileId) return undefined;
-  const natW = payload?.width && payload.width > 0 ? payload.width : 1;
-  const natH = payload?.height && payload.height > 0 ? payload.height : 1;
+  const picW = payload?.width && payload.width > 0 ? payload.width : 1;
+  const picH = payload?.height && payload.height > 0 ? payload.height : 1;
+  const natW = upright ? picH : picW;
+  const natH = upright ? picW : picH;
   const widthSize = resolveFixedSize(el.placement.size?.width, dpi);
   const heightSize = resolveFixedSize(el.placement.size?.height, dpi);
   const fixedW = typeof widthSize === 'number' ? widthSize
@@ -1410,7 +1533,17 @@ function layoutImageElement(
     fileId,
     ...(resource?.bitmap?.format ? { format: resource.bitmap.format } : {}),
     ...pictureTraits(resource, fileId),
+    ...(upright ? { upright: true as const } : {}),
+    ...altTextOf(el, resource),
   };
+}
+
+/** The `altText` field of an image primitive: none for a decorative
+ *  element (see `DesignImageElement.decorative`). */
+function altTextOf(el: ResolvedDesignImageElement, resource: Resource | undefined): { altText?: string } {
+  if (el.decorative) return {};
+  const altText = designImageAltText(resource);
+  return altText ? { altText } : {};
 }
 
 function layoutBoxElement(

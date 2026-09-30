@@ -4,6 +4,7 @@
  * optimal breakpoint sequence.
  */
 
+import { graphemeCount } from '../measure/graphemes';
 import type { PreparedTextWithSegments } from '@chenglou/pretext';
 import type { VDTLine, VDTLineSegment } from '../vdt';
 import { createBoundingBox } from '../vdt';
@@ -94,7 +95,7 @@ export function pretextSegmentsToItems(
 
     switch (kind) {
       case 'text': {
-        items.push({ type: 'box', width: w, sourceIndex: i, chars: segments[i]!.length });
+        items.push({ type: 'box', width: w, sourceIndex: i, chars: graphemeCount(segments[i]!) });
         const seg = segments[i]!;
         const last = seg[seg.length - 1];
         if (kinds[i + 1] !== 'text') break;
@@ -158,10 +159,10 @@ export function pretextSegmentsToItems(
         break;
       case 'preserved-space':
       case 'tab':
-        items.push({ type: 'box', width: w, sourceIndex: i, chars: segments[i]!.length });
+        items.push({ type: 'box', width: w, sourceIndex: i, chars: graphemeCount(segments[i]!) });
         break;
       default:
-        items.push({ type: 'box', width: w, sourceIndex: i, chars: segments[i]!.length });
+        items.push({ type: 'box', width: w, sourceIndex: i, chars: graphemeCount(segments[i]!) });
         break;
     }
   }
@@ -197,6 +198,9 @@ export function reconstructPretextLines(
   /** `KPOptions.trackingPerChar` the breaks were found with: each line
    *  takes the tracking the breaker counted on (`VDTLine.letterSpacing`). */
   trackingPerChar = 0,
+  /** How far below its top each line has its baseline
+   *  (`lineBaselineOffset`); 0.8 of the line height by default. */
+  baselineOffsetPx = lineHeightPx * 0.8,
 ): VDTLine[] {
   const segments = prepared.segments;
   const widths = (prepared as unknown as { widths: number[] }).widths;
@@ -293,7 +297,7 @@ export function reconstructPretextLines(
     lines.push({
       text: lineText,
       bbox: createBoundingBox(lineIndent, li * lineHeightPx, contentWidth, lineHeightPx),
-      baseline: li * lineHeightPx + lineHeightPx * 0.8,
+      baseline: li * lineHeightPx + baselineOffsetPx,
       hyphenated,
       // The line ends on a hyphen the word carries (EF-140).
       ...(hyphenated && bareBreak ? { hardHyphen: true } : {}),

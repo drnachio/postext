@@ -14,6 +14,10 @@
  */
 
 import type { VDTBlock, VDTLine, ResolvedResourceBlock, RoundedOutline } from '../vdt';
+import { fillFlowText, setVerticalPaint, verticalPaintActive } from './verticalText';
+import { fillSegmentText, fillWordsText } from './segmentText';
+import { lineMarkCuts } from '../measure/markCuts';
+import { hasCJK } from '../measure/cjk';
 import { tableCellFill, tableFrameOutline } from '../vdt';
 import { paintSwatch } from './swatch';
 import { paintChip } from './chip';
@@ -319,7 +323,7 @@ function paintLine(
 ): void {
   const tracking = line.letterSpacing ?? 0;
   if (tracking !== 0) ctx.letterSpacing = `${tracking}px`;
-  paintLineRuns(ctx, line, font, boldFont, italicFont, boldItalicFont, color, linkColor, labelColor);
+  paintLineRuns(ctx, line, font, boldFont, italicFont, boldItalicFont, color, linkColor, labelColor, tracking);
   if (tracking !== 0) ctx.letterSpacing = '0px';
 }
 
@@ -333,10 +337,21 @@ function paintLineRuns(
   color: string,
   linkColor: string,
   labelColor: string,
+  tracking = 0,
 ): void {
   ctx.textBaseline = 'alphabetic';
   if (line.segments && line.segments.length > 0) {
     let x = line.bbox.x;
+    // A line of the CJK composer, or any line down a vertical page, paints
+    // each segment through `fillSegmentText`; a line set word by word as
+    // the canvas always painted it, its text cut at the marks that meet
+    // only when it holds CJK characters (see `renderLine` in
+    // blockRender.ts).
+    const composed = line.cjkComposed === true || verticalPaintActive();
+    const cjk = !composed && hasCJK(line.text);
+    // Two marks that meet are painted apart where the line's measurer set
+    // them apart (see `fillFlowText`).
+    const cuts = lineMarkCuts(line);
     for (const seg of line.segments) {
       if (seg.kind === 'space') {
         x += seg.width;
@@ -358,14 +373,25 @@ function paintLineRuns(
         : seg.captionLabel
           ? labelColor
           : color;
-      ctx.fillText(seg.text, x, line.baseline + (seg.baselineShift ?? 0));
+      if (!composed) {
+        if (cjk) fillWordsText(ctx, seg.text, x, line.baseline + (seg.baselineShift ?? 0));
+        else ctx.fillText(seg.text, x, line.baseline + (seg.baselineShift ?? 0));
+        x += seg.width;
+        continue;
+      }
+      // A justified CJK line spreads its characters per segment.
+      if (seg.tracking !== undefined) ctx.letterSpacing = `${tracking + seg.tracking}px`;
+      fillSegmentText(ctx, seg, x, line.baseline, cuts);
+      if (seg.tracking !== undefined) ctx.letterSpacing = `${tracking}px`;
       x += seg.width;
     }
     return;
   }
   ctx.font = font;
   ctx.fillStyle = color;
-  ctx.fillText(line.text, line.bbox.x, line.baseline);
+  if (line.cjkComposed || verticalPaintActive()) fillFlowText(ctx, line.text, line.bbox.x, line.baseline, 'fill', undefined, lineMarkCuts(line));
+  else if (hasCJK(line.text)) fillWordsText(ctx, line.text, line.bbox.x, line.baseline);
+  else ctx.fillText(line.text, line.bbox.x, line.baseline);
 }
 
 function drawPlaceholder(
@@ -537,6 +563,9 @@ export function renderResourceBlock(
   // A rotated block: its geometry is in the upright frame, painted through
   // the quarter-turn transform that lands the frame on the page.
   const rot = rb.rotation;
+  // Inside a turned block the text reads along the block's own frame: on
+  // a vertical page that is the upright figure, set horizontally.
+  const outerVertical = rot ? setVerticalPaint(null) : null;
   if (rot) {
     ctx.save();
     ctx.translate(rot.originX, rot.originY);
@@ -582,5 +611,8 @@ export function renderResourceBlock(
     );
   }
   ctx.restore();
-  if (rot) ctx.restore();
+  if (rot) {
+    ctx.restore();
+    setVerticalPaint(outerVertical);
+  }
 }

@@ -127,6 +127,31 @@ export interface ReadBundleResult {
 
 const identityIds: BundleIdScheme = { blob: (f) => f, font: (f) => f };
 
+/** Chapter files a bundle reads at once. */
+const CHAPTER_READ_CONCURRENCY = 8;
+
+/** `items` mapped by `fn`, at most `limit` calls in flight, results in the
+ *  order of `items`. The first rejection rejects the whole (calls already
+ *  started run to their end; no new one starts). */
+async function mapConcurrent<T, R>(items: readonly T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let next = 0;
+  let failed = false;
+  const worker = async (): Promise<void> => {
+    while (!failed && next < items.length) {
+      const i = next++;
+      try {
+        results[i] = await fn(items[i]!);
+      } catch (err) {
+        failed = true;
+        throw err;
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(Math.max(1, limit), items.length) }, worker));
+  return results;
+}
+
 /** Read a manifest plus its files. Throws on an invalid manifest or a
  *  missing chapter, picture or font file. The configuration of a manifest
  *  written by postext 1.4 or earlier (no `configVersion`) keeps the heading
@@ -159,10 +184,13 @@ export async function readBundle(
   const measureBitmap = options.measureBitmap ?? ((bytes: ArrayBuffer) => bitmapSize(bytes));
 
   const decoder = new TextDecoder();
-  const chapters: BundleChapter[] = [];
-  for (const spec of pickChapterSpecs(manifest, locale)) {
-    chapters.push({ title: spec.title, file: spec.file, markdown: decoder.decode(await readFile(spec.file)) });
-  }
+  // Only the chosen locale's chapters, several at a time (a 120-chapter
+  // book is 120 round trips over HTTP), in manifest order.
+  const chapters: BundleChapter[] = await mapConcurrent(
+    pickChapterSpecs(manifest, locale),
+    CHAPTER_READ_CONCURRENCY,
+    async (spec) => ({ title: spec.title, file: spec.file, markdown: decoder.decode(await readFile(spec.file)) }),
+  );
 
   // A bilingual bundle's per-locale wording: resource captions, notes and
   // alt texts merged by id, config keys replaced wholesale.

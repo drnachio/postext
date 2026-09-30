@@ -23,8 +23,11 @@ import {
 import { resolveBlockKind, uppercasePreservingLength, type BlockKind, type BlockKindContext } from './buildBlockKind';
 import { runMeasurement } from './buildMeasurement';
 import { linkSegments } from '../measure/links';
+import { composesAsCjk } from '../measure/cjkCompose';
+import { measuringVertically } from '../measure/vertical';
 import { resolveRefSpans, resolveSwatchSpans, shiftResourceBlockX } from './resourceLayout';
 import { chipContextOf, resolveChipSpans } from './chips';
+import { hasAnnotations, resolveAnnotationSpans } from './annotations';
 import type { ResourceNumberingMap } from './resourceNumbering';
 import { measureTocBlock } from './toc';
 import { measureIndexBlock } from './indexDirective';
@@ -99,6 +102,9 @@ export interface MeasureContentBlockOptions {
   /** Resource blocks: the widest a figure's image may be set, its caption
    *  keeping the column's width (`layout.fitFiguresToPage`). */
   figureMaxBodyWidth?: number;
+  /** Resource blocks on a vertical page: set upright, the frame at most
+   *  this wide (see `ResourceLayoutInput.upright`). */
+  uprightMaxLength?: number;
   /** Lines (1-based) a column or a page ends on, which should not end on
    *  a hyphen (`bodyText.hyphenateAcrossColumns: false`). */
   avoidHyphenAtLines?: readonly number[];
@@ -170,11 +176,14 @@ export function measureContentBlock(
       resourceType: kind.resourceType,
       resourceNumber: kind.resourceNumber,
       ...(opts?.figureMaxBodyWidth !== undefined ? { maxBodyWidth: opts.figureMaxBodyWidth } : {}),
+      ...(opts?.uprightMaxLength !== undefined ? { upright: { maxLength: opts.uprightMaxLength } } : {}),
     });
     if (!resourceBlock) return null;
     if (frac < 1) {
       const dx = (columnWidth - embedWidth) * (align === 'center' ? 0.5 : align === 'right' ? 1 : 0);
-      shiftResourceBlockX(resourceBlock, dx);
+      // An upright block (a vertical page) moves its frame along the flow.
+      if (resourceBlock.rotation) resourceBlock.rotation.originX += dx;
+      else shiftResourceBlockX(resourceBlock, dx);
     }
     return { kind, contentBlock, measured, prefixLen: 0, absoluteSourceMap: [], resourceBlock };
   }
@@ -190,6 +199,7 @@ export function measureContentBlock(
     const spans = resolveRefSpans(contentBlock.spans, ctx.resourceNumbering, ctx.resourceTypes, ctx.resources, {
       bold: bodyStyle.referenceBold ?? true,
       italic: bodyStyle.referenceItalic ?? false,
+      labelNumberGap: resolved.captionStyle.labelNumberGap,
     });
     contentBlock = {
       ...contentBlock,
@@ -226,7 +236,21 @@ export function measureContentBlock(
     contentBlock = { ...contentBlock, spans: contentBlock.spans.map((s) => (s.smallCaps ? s : { ...s, smallCaps: true })) };
   }
 
-  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.swatch || s.chip || s.script || s.smallCaps);
+  // Chinese annotations (#193–#195): emphasis dots for `*…*`, book-title
+  // brackets, the fonts of readings and notes.
+  if (hasAnnotations(contentBlock.spans, resolved.cjk)) {
+    contentBlock = {
+      ...contentBlock,
+      spans: resolveAnnotationSpans(contentBlock.spans, { cjk: resolved.cjk, dpi: resolved.page.dpi, fontString: style.fontString, fontSizePx: style.fontSizePx }),
+    };
+  }
+
+  // The orientation marks of vertical text change nothing in horizontal
+  // text, which is measured as before them.
+  const vertical = measuringVertically();
+  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.swatch || s.chip || s.script || s.smallCaps
+    || s.emphasisMark || s.properName !== undefined || s.bookTitle || s.ruby || s.warichu || s.inserted
+    || (vertical && (s.combineUpright || s.orientation)));
 
   // List items reserve horizontal space for indent + bullet + gap.
   const {
@@ -347,7 +371,12 @@ export function measureContentBlock(
   // and so does a hyphenation zone (the rich greedy breaker weighs it).
   const hasUrl = /(?:^|\s)(?:(?:https?|ftp):\/\/|www\.|10\.\d{4,}\/)\S/i.test(contentBlock.text);
   const zoned = style.hyphenationZonePx !== undefined;
-  const useRich = hasRichFonts && (hasRichSpans || letterSpacingPx !== 0 || hasUrl || zoned);
+  // A Markdown link in a paragraph the CJK composer sets: on the formatted
+  // path the composer sees the link's range and gives its characters
+  // segments of their own, so the link covers them and nothing else (the
+  // lines are the same on both paths).
+  const cjkLinks = contentBlock.spans.some((s) => s.links !== undefined && s.links.length > 0) && composesAsCjk(contentBlock.text);
+  const useRich = hasRichFonts && (hasRichSpans || letterSpacingPx !== 0 || hasUrl || zoned || cjkLinks);
 
   const first = runMeasurement({
     vdtType, rawBlock, contentBlock, style, measureMaxWidth, measureOptions, mathEnabled, useRich, cache,
@@ -380,7 +409,7 @@ export function measureContentBlock(
           looseness: -1,
           letterSpacingPx: spacing !== 0 ? spacing : undefined,
         },
-        useRich: hasRichFonts && (hasRichSpans || spacing !== 0 || hasUrl || zoned),
+        useRich: hasRichFonts && (hasRichSpans || spacing !== 0 || hasUrl || zoned || cjkLinks),
       });
       if (attempt.measured.lines.length !== target || attempt.measured.lastLineRunt) continue;
       const profile = wordSpacingProfile(attempt.measured.lines);

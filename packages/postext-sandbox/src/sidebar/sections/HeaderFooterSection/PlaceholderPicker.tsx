@@ -41,6 +41,7 @@ export function PlaceholderPicker({ onInsert, slotKind = 'header' }: Props) {
     numberWordsLower: labels.headerFooterPlaceholderNumberWordsLower,
     numberOrdinalWords: labels.headerFooterPlaceholderNumberOrdinalWords,
     numberOrdinalWordsLower: labels.headerFooterPlaceholderNumberOrdinalWordsLower,
+    numberHan: labels.headerFooterPlaceholderNumberHan,
   };
 
   const kind: DesignContextKind = slotKind;

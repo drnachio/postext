@@ -6,9 +6,12 @@
  */
 
 import type { ContentBlock } from '../parse';
-import type { ColorValue, Dimension } from '../types';
+import type { ColorValue, Dimension, OrderedListsConfig } from '../types';
+import { listNumberFormat } from '../defaults/orderedLists';
+import { resolvedLocale } from './config';
 import type { ResolvedConfig, VDTDocument } from '../vdt';
 import { dimensionsEqual } from '../defaults/shared';
+import { parseChineseNumeral } from '../chineseNumerals';
 import { resolveBodyStyle, resolveBlockquoteStyle } from './styles';
 import {
   computeLevelIndentsPx,
@@ -95,12 +98,20 @@ const ROMAN_VALUES: Record<string, number> = {
   M: 1000, D: 500, C: 100, L: 50, X: 10, V: 5, I: 1,
 };
 
-/** Numeric value of a part number written as a decimal (`'3'`) or a roman
- *  numeral (`'III'`, `'iv'`), so `{numberDecimal}` / `{numberRoman}` work
- *  whichever way the author wrote it. `undefined` for anything else. */
+/** Numeric value of a part number written as a decimal (`'3'`, fullwidth
+ *  `'３'`), a roman numeral (`'III'`, `'iv'`) or Chinese numerals (`'三'`,
+ *  `'十二'`, `'一二〇'`), the latter also with the words that frame them
+ *  (`'卷三'`, `'第一卷'`, `'第十二部'`), so `{numberDecimal}` /
+ *  `{numberRoman}` work whichever way the author wrote it. `undefined` for
+ *  anything else. */
 export function parsePartNumber(raw: string): number | undefined {
-  const s = raw.trim();
+  let s = raw.trim().replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xfee0));
   if (s.length === 0) return undefined;
+  if (/[^\x00-\x7f]/.test(s)) {
+    s = s.replace(/^(?:第|卷)\s*/, '').replace(/\s*(?:卷|部|篇|编|編|册|冊|章|回|节|節|集)$/, '');
+    if (/^\d+$/.test(s)) return Number(s);
+    return parseChineseNumeral(s);
+  }
   if (/^\d+$/.test(s)) {
     const n = Number(s);
     return Number.isSafeInteger(n) ? n : undefined;
@@ -192,6 +203,7 @@ const ORDERED_FIELDS: ListFieldSpec[] = [
     dependents: [{ key: 'separatorItalic', levelKey: 'separatorItalic' }],
   },
   { key: 'numberFormat', levelKey: 'numberFormat', eq: eqStrict },
+  { key: 'prefix', levelKey: 'prefix', eq: eqStrict },
   { key: 'separator', levelKey: 'separator', eq: eqStrict },
   { key: 'numberFontSize', levelKey: 'fontSize', eq: eqDim },
   { key: 'gap', eq: eqDim },
@@ -262,6 +274,17 @@ function applyListOverrides<B extends { levels: L[] }, L extends { level: number
   return out as unknown as B;
 }
 
+/** A part's ordered-list override with its number formats read in the
+ *  document language, as the document's own lists are: `壹` in a
+ *  Traditional Chinese document is `trad-chinese-formal`. A spelling the
+ *  list vocabulary does not know is left for the list to fall back on. */
+function withListNumberFormats(lists: OrderedListsConfig | undefined, locale: string): OrderedListsConfig | undefined {
+  if (!lists) return lists;
+  const read = <T extends { numberFormat?: OrderedListsConfig['numberFormat'] }>(o: T): T =>
+    o.numberFormat === undefined ? o : { ...o, numberFormat: listNumberFormat(o.numberFormat, locale) ?? o.numberFormat };
+  return { ...read(lists), ...(lists.levels ? { levels: lists.levels.map(read) } : {}) };
+}
+
 /** Shallow copy of `resolved` whose `bodyText` and list configs carry the
  *  `parts.bodyStyle` overrides, so the body/list resolvers yield the part
  *  typography without any part-specific branches (the callout approach).
@@ -279,7 +302,7 @@ export function derivePartResolvedConfig(resolved: ResolvedConfig): ResolvedConf
   );
   const orderedLists = applyListOverrides(
     applyListOverrides(resolved.orderedLists, { color: bodyStyle.numberColor, fontWeight: bold }, ORDERED_FIELDS),
-    bodyStyle.orderedLists,
+    withListNumberFormats(bodyStyle.orderedLists, resolvedLocale(resolved)),
     ORDERED_FIELDS,
   );
   return {

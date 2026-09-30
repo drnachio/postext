@@ -59,6 +59,10 @@ function resolveHeadingStyleConfig(
     out.layout = docLayout
       ? {
           ...layout,
+          // The document's writing mode, unless the section sets its own.
+          writingMode: partial.layout.writingMode === 'vertical-rl' || partial.layout.writingMode === 'horizontal-tb'
+            ? partial.layout.writingMode
+            : docLayout.writingMode,
           columnRule: {
             enabled: own?.enabled ?? docLayout.columnRule.enabled,
             color: own?.color ?? docLayout.columnRule.color,

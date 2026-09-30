@@ -1,13 +1,15 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { ChevronRight } from 'lucide-react';
-import { resolveBodyTextConfig, resolveColorValue, resolveLayoutConfig, resolvePageConfig } from 'postext';
+import { isCjkLanguage, resolveBodyTextConfig, resolveColorValue, resolveLayoutConfig, resolvePageConfig } from 'postext';
 import type { Dimension } from 'postext';
 import { useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { formatNumber, toPt } from '../../controls/units';
 import { cn } from '../../ui';
 import type { SettingsGroupId } from '../sections/registry';
+import { pageDrawingConfig } from '../sections/cjkGridReadout';
+import { LOCALE_TO_HYPHENATION, documentLocaleLabel } from '../sections/BodyTextSection/constants';
 import { PagePreview } from './PagePreview';
 
 interface DesignSummaryProps {
@@ -16,13 +18,16 @@ interface DesignSummaryProps {
 
 /** "This book" card at the top of the Design panel: a drawing of the page
  *  and the handful of decisions that define the book (trim size, columns,
- *  body type, palette). Each line opens the group that changes it. */
+ *  writing system, body type, palette). Each line opens the group that
+ *  changes it. */
 export function DesignSummary({ onOpenGroup }: DesignSummaryProps) {
   const labels = useSandboxLabels();
   const config = useSandboxSelector((s) => s.config);
   const uiLocale = useSandboxSelector((s) => s.locale);
-  const page = resolvePageConfig(config.page);
-  const layout = resolveLayoutConfig(config.layout);
+  // The page as it is set: the character grid's margins when it is on.
+  const drawn = useMemo(() => pageDrawingConfig(config), [config]);
+  const layout = resolveLayoutConfig(drawn.layout);
+  const page = resolvePageConfig(drawn.page, config.locale, layout.writingMode);
   const body = resolveBodyTextConfig(config.bodyText, config.locale);
   const ink = resolveColorValue(body.color, config.colorPalette, { hex: '#000000', model: 'hex' }).hex;
   const palette = config.colorPalette ?? [];
@@ -36,6 +41,15 @@ export function DesignSummary({ onOpenGroup }: DesignSummaryProps) {
       : layout.layoutType === 'oneAndHalf' ? labels.settingsSummaryOneAndHalf
         : labels.settingsSummaryOneColumn;
   const type = `${body.fontFamily} · ${n(toPt(body.fontSize))}/${n(toPt(body.lineHeight))} pt`;
+  // Writing system: the language, with the direction and the binding when
+  // they are a choice (Chinese text, vertical lines, a right binding).
+  const language = config.locale ?? LOCALE_TO_HYPHENATION[uiLocale] ?? 'en-us';
+  const vertical = layout.writingMode === 'vertical-rl';
+  const writing = [
+    vertical || isCjkLanguage(language) ? (vertical ? labels.writingModeVerticalShort : labels.writingModeHorizontal) : '',
+    vertical || page.binding === 'right' ? (page.binding === 'right' ? labels.settingsSummaryBoundRight : labels.settingsSummaryBoundLeft) : '',
+  ].filter(Boolean);
+  if (writing[0]) writing[0] = writing[0].charAt(0).toLocaleUpperCase(uiLocale) + writing[0].slice(1);
 
   return (
     <section
@@ -60,6 +74,10 @@ export function DesignSummary({ onOpenGroup }: DesignSummaryProps) {
         <SummaryLine onClick={() => onOpenGroup('page')} group={labels.settingsGroupPage}>
           {columns}
         </SummaryLine>
+        <SummaryLine onClick={() => onOpenGroup('writing')} group={labels.settingsGroupWriting} wrap>
+          {writing.map((w) => `${w} · `).join('')}
+          <span lang={language} className="whitespace-nowrap">{documentLocaleLabel(language)}</span>
+        </SummaryLine>
         <SummaryLine onClick={() => onOpenGroup('text')} group={labels.settingsGroupText}>
           <span style={{ fontFamily: `"${body.fontFamily}", serif` }}>{type}</span>
         </SummaryLine>
@@ -83,7 +101,10 @@ export function DesignSummary({ onOpenGroup }: DesignSummaryProps) {
   );
 }
 
-function SummaryLine({ onClick, group, children }: { onClick: () => void; group: string; children: ReactNode }) {
+/** One line of the card; `wrap` lets a line whose end matters (the
+ *  language after the direction and the binding) run on to a second one
+ *  instead of being cut. */
+function SummaryLine({ onClick, group, wrap, children }: { onClick: () => void; group: string; wrap?: boolean; children: ReactNode }) {
   return (
     <button
       type="button"
@@ -93,7 +114,7 @@ function SummaryLine({ onClick, group, children }: { onClick: () => void; group:
         'hover:bg-(--surface-2,var(--background)) focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)',
       )}
     >
-      <span className="min-w-0 truncate">{children}</span>
+      <span className={cn('min-w-0', wrap ? '[text-wrap:pretty]' : 'truncate')}>{children}</span>
       <span className="sr-only">— {group}</span>
       <ChevronRight size={12} aria-hidden="true" className="shrink-0 text-(--slate) opacity-0 transition-opacity group-hover/line:opacity-100 group-focus-visible/line:opacity-100" />
     </button>

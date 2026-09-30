@@ -1,4 +1,4 @@
-import type { NumeralStyle } from './numbering';
+import type { EastAsianNumeralStyle, NumeralStyle } from './numbering';
 
 /** @deprecated Legacy content-model resource used by the VDT renderer
  *  (`VDTBlock.resource`). The Resources-panel feature uses the newer
@@ -20,13 +20,15 @@ export interface PostextResource {
 // (images, SVGs, HTML tables) that can be referenced inline.
 // ---------------------------------------------------------------------------
 
-/** How a counter renders for a given resource type. */
+/** How a counter renders for a given resource type. The East Asian styles
+ *  keep their CSS names (`simp-chinese-informal`, `circled-decimal`…). */
 export type ResourceCounterFormat =
   | 'decimal'
   | 'roman-lower'
   | 'roman-upper'
   | 'alpha-lower'
-  | 'alpha-upper';
+  | 'alpha-upper'
+  | EastAsianNumeralStyle;
 
 /** When the per-type counter resets back to its starting value. `'never'`
  *  yields a single document-wide running count; `'h1'..'h6'` resets the
@@ -495,8 +497,11 @@ export interface PageMargins {
   right?: Dimension;
   /** Mirrored (facing-page) margins: `left` is the inner margin and `right`
    *  the outer one. Odd pages (page 1 = odd) keep them as written; even
-   *  pages swap them so the inner margin always faces the spine. Default
-   *  `false`. */
+   *  pages swap them so the inner margin always faces the spine. In a
+   *  right-bound book (`page.binding`) it is the other way round: the
+   *  recto (odd) is the left page of the spread, its spine on its right,
+   *  so odd pages swap and even pages keep the margins as written — `left`
+   *  is still the inner margin. Default `false`. */
   mirror?: boolean;
 }
 
@@ -539,7 +544,8 @@ export type PageNumberFormat =
   | 'lower-roman'
   | 'upper-roman'
   | 'lower-alpha'
-  | 'upper-alpha';
+  | 'upper-alpha'
+  | EastAsianNumeralStyle;
 
 export interface PageNumberingConfig {
   /** Format for page labels. Default: `'decimal'`. The list and resource
@@ -558,6 +564,9 @@ export interface ResolvedPageNumberingConfig {
   startAt: number;
 }
 
+/** The edge a book is bound on (see `PageConfig.binding`). */
+export type PageBinding = 'auto' | 'left' | 'right';
+
 export interface PageConfig {
   backgroundColor?: ColorValue;
   sizePreset?: PageSizePreset;
@@ -568,6 +577,16 @@ export interface PageConfig {
   cutLines?: CutLinesConfig;
   baselineGrid?: BaselineGridConfig;
   pageNumbering?: PageNumberingConfig;
+  /** The edge the book is bound on. `'left'`: pages turn right to left, as
+   *  in any Western book. `'right'`: the book is bound on its right edge,
+   *  as vertical Chinese and Japanese books are (clreq §7.1.1.1): page 1 is
+   *  still the recto (odd), but it is the LEFT page of a spread, its inner
+   *  margin is on its right, and viewers show the pairs `[3 | 2]`. With
+   *  mirrored margins the recto therefore swaps `left` and `right`: `left`
+   *  stays the inner margin. `'auto'` (the default) is `'right'` when
+   *  `layout.writingMode` is `'vertical-rl'`, else `'left'`. Book-level:
+   *  a heading style's own `layout` never changes it. */
+  binding?: PageBinding;
 }
 
 export interface ResolvedPageConfig {
@@ -580,9 +599,14 @@ export interface ResolvedPageConfig {
   cutLines: { enabled: boolean; bleed: Dimension; markLength: Dimension; markOffset: Dimension; markWidth: Dimension; color: ColorValue };
   baselineGrid: { enabled: boolean; color: ColorValue; lineWidth: Dimension };
   pageNumbering: ResolvedPageNumberingConfig;
+  /** `binding` resolved: `'auto'` is `'right'` in a vertical document. */
+  binding: 'left' | 'right';
 }
 
 export type LayoutType = 'single' | 'double' | 'oneAndHalf';
+
+/** The direction lines run in (see `LayoutConfig.writingMode`). */
+export type WritingMode = 'horizontal-tb' | 'vertical-rl';
 
 /** What the narrow column of a `oneAndHalf` layout carries. `'text'` (the
  *  default): body text flows into it after the main column, as into any
@@ -668,6 +692,17 @@ export interface LayoutConfig {
    *  by an earlier version is read with 1 when its chapters hold a box (see
    *  `migrateConfig` in `postext/bundle`). */
   boxChildSplitMinLines?: number;
+  /** How lines run. `'horizontal-tb'` (the default): left to right, lines
+   *  stacked top to bottom. `'vertical-rl'`: Chinese and Japanese vertical
+   *  setting — characters top to bottom, lines advancing right to left
+   *  (clreq §2.1.2). The flow is laid out as a horizontal page turned a
+   *  quarter turn clockwise: columns become tiers (栏) stacked top to
+   *  bottom, a top float sits at the right edge where reading starts,
+   *  footnotes at the left end of each tier. Figures, tables and images stay
+   *  upright; running heads, folios, crop marks and the page background stay
+   *  physical. See `VDTPage.flow`. A heading style's `layout` inherits the
+   *  document's writing mode unless it sets its own. */
+  writingMode?: WritingMode;
 }
 
 /** Where an inline resource keeps the float gap (see
@@ -686,6 +721,7 @@ export interface ResolvedLayoutConfig {
   inlineResourceGap: InlineResourceGap;
   inlineResourceGapInBoxes: boolean;
   boxChildSplitMinLines: number;
+  writingMode: WritingMode;
 }
 
 export type TextAlign = 'left' | 'justify' | 'center' | 'right';
@@ -909,7 +945,10 @@ export interface BodyTextConfig {
   /** When true, discourage paragraphs from ending with a very short last line
    *  (a "runt" — e.g. a single short word alone). Soft (Knuth-Plass penalty),
    *  so ragged text takes it only when `optimalRagged` breaks it with
-   *  Knuth–Plass. Default true. */
+   *  Knuth–Plass. A Chinese, Japanese or Korean paragraph does not end on a
+   *  line holding one character, alone or with its closing marks (孤字): the
+   *  line above gives it its last character when that line can still be
+   *  justified within the tracking cap. Default true. */
   avoidRunts?: boolean;
   /** Approximate minimum character count for the last line of a paragraph.
    *  Interpreted internally as `runtMinCharacters * normalSpaceWidth` pixels, so
@@ -1299,6 +1338,15 @@ export interface CaptionStyleConfig {
   padding?: Dimension;
   /** Styling of the optional resource note (`Resource.note`). */
   note?: CaptionNoteStyleConfig;
+  /** What stands between the label and the number: in the caption
+   *  ("Figure 1.7") and in an inline `:ref` ("Fig. 1.7"). Default a no-break
+   *  space (U+00A0); `''` sets them solid, as Chinese does (图1-1). */
+  labelNumberGap?: string;
+  /** What follows the number in the caption, before the description.
+   *  Default `'. '` ("Figure 1.7. A caption"); Chinese sets an ideographic
+   *  space (`'　'`: 图1-1　标题). A label without a number keeps its own rule
+   *  (a stop unless the prefix ends in one). */
+  labelSeparator?: string;
 }
 
 export interface ResolvedCaptionStyleConfig {
@@ -1316,6 +1364,8 @@ export interface ResolvedCaptionStyleConfig {
   background: ColorValue;
   padding: Dimension;
   note: ResolvedCaptionNoteStyleConfig;
+  labelNumberGap: string;
+  labelSeparator: string;
 }
 
 /** Styling for embedded SVG diagrams (`kind: 'svg'` resources). When
@@ -2087,6 +2137,14 @@ export interface HeadingLevelConfig {
    *  with `{1:words}` / `{1:ordinal}` — see `numberingTemplate` in the
    *  configuration docs). Default `''`: no number. */
   numberingTemplate?: string;
+  /** What stands between the number and the title (`第一回` + `'　'` +
+   *  `甄士隱夢幻識通靈`): in the column, in the default opener of a
+   *  `span: 'page'` level, in the running heads that print the heading
+   *  line and in the PDF bookmarks; level 1's also joins a part's number
+   *  and title in the default part page and contents row. Default `' '`;
+   *  Chinese sets U+3000 (`'　'`) or nothing (`''`). The contents keep
+   *  their own number column (`toc.levels[].numberGap`). */
+  numberSeparator?: string;
   italic?: boolean;
   /** Tracking after every glyph of the heading (spaces and the numbering
    *  prefix included), as CSS `letter-spacing`: positive spreads the
@@ -2145,6 +2203,8 @@ export interface ResolvedHeadingLevelConfig {
   marginTop: Dimension;
   marginBottom: Dimension;
   numberingTemplate: string;
+  /** The level's own separator, else `' '`. */
+  numberSeparator: string;
   italic: boolean;
   /** The level's own tracking, else `0`. */
   letterSpacing: Dimension;
@@ -2421,12 +2481,15 @@ export type OrderedListNumberFormat =
   | 'lower-alpha'
   | 'upper-alpha'
   | 'lower-roman'
-  | 'upper-roman';
+  | 'upper-roman'
+  | EastAsianNumeralStyle;
 
 export interface OrderedListLevelConfig {
   level: number;
   /** Number style of this level (see `OrderedListsConfig.numberFormat`). */
   numberFormat?: OrderedListNumberFormat;
+  /** Text before this level's number (see `OrderedListsConfig.prefix`). */
+  prefix?: string;
   separator?: string;
   fontFamily?: string;
   fontSize?: Dimension;
@@ -2447,6 +2510,7 @@ export interface OrderedListLevelConfig {
 export interface ResolvedOrderedListLevelConfig {
   level: number;
   numberFormat: OrderedListNumberFormat;
+  prefix: string;
   separator: string;
   fontFamily: string;
   fontSize: Dimension;
@@ -2473,6 +2537,10 @@ export interface OrderedListsConfig {
    *  `parseNumberFormat`) and resolve to the list spelling; an unknown
    *  value numbers in arabic and is reported by `collectConfigWarnings`. */
   numberFormat?: OrderedListNumberFormat;
+  /** Text set before the number, styled like the separator: with
+   *  `prefix: '（'` and `separator: '）'` a Chinese list reads （一）（二）.
+   *  Default `''`. A level may set its own. */
+  prefix?: string;
   separator?: string;
   numberFontSize?: Dimension;
   gap?: Dimension;
@@ -2521,6 +2589,7 @@ export interface ResolvedOrderedListsConfig {
   fontWeight: number;
   italic: boolean;
   numberFormat: OrderedListNumberFormat;
+  prefix: string;
   separator: string;
   numberFontSize: Dimension;
   gap: Dimension;
@@ -2758,6 +2827,239 @@ export interface ResolvedFootnotesConfig {
   separator: ResolvedFootnoteSeparatorConfig;
 }
 
+/** The conventions Chinese text follows, after the regions clreq
+ *  describes: `mainland` (China and Singapore: simplified characters,
+ *  GB/T 15834—2011), `taiwan` and `hongkong` (traditional characters). */
+export type CjkRegion = 'mainland' | 'taiwan' | 'hongkong';
+
+/** How strictly lines of CJK text avoid starting or ending with a mark
+ *  (clreq §6.1.1):
+ *  - `none`: a line may break between any two characters (Taiwan and Hong
+ *    Kong newspapers);
+ *  - `basic`: no line starts with a pause or stop mark (、，；：。！？), a
+ *    closing bracket or quote, a connector (– ～, a single —), an
+ *    interpunct (·) or an iteration mark (々), and none ends with an
+ *    opening bracket or quote;
+ *  - `gb`: `basic`, and the solidus (/ ／) at neither end (GB/T
+ *    15834—2011 §5.1.9);
+ *  - `strict`: `gb`, and no line starts with a two-em dash (——) or an
+ *    ellipsis (……).
+ *  At every level —— and …… never split, a number keeps its signs and its
+ *  unit (¥5,999, 50%), a Latin word stays whole unless it is wider than the
+ *  line, and a footnote marker stays with the character it follows. */
+export type CjkLineBreak = 'none' | 'basic' | 'gb' | 'strict';
+
+/** East Asian typography: how Chinese, Japanese and Korean text is
+ *  composed. Every field is optional; `'auto'` follows the region of the
+ *  document language (`locale`). A paragraph is composed this way when it
+ *  holds more CJK characters than word spaces; a Latin paragraph quoting a
+ *  few characters keeps Knuth–Plass, with a break allowed next to them. */
+export interface CjkConfig {
+  /** The regional conventions to follow. `'auto'` (the default) reads them
+   *  from `locale`: `zh`, `zh-Hans`, `zh-CN` and `zh-SG` → `mainland`;
+   *  `zh-Hant` and `zh-TW` → `taiwan`; `zh-HK` and `zh-MO` → `hongkong`;
+   *  any other language → `mainland`. */
+  region?: 'auto' | CjkRegion;
+  /** Where lines may break (see {@link CjkLineBreak}). `'auto'` (the
+   *  default): `gb` for the mainland, `basic` for Taiwan and Hong Kong. */
+  lineBreak?: 'auto' | CjkLineBreak;
+  /** How wide the full-width marks are set (see
+   *  {@link CjkPunctuationWidth}). `'auto'` (the default): `kaiming` for
+   *  the mainland, `fullwidth` for Taiwan and Hong Kong. */
+  punctuationWidth?: 'auto' | CjkPunctuationWidth;
+  /** Two marks that meet (`。」`, `》（`, `：“`) give up the half em of
+   *  blank between them, so the pair takes 1.5 em instead of 2 (clreq
+   *  §6.3.2.2). `'auto'` (the default): on for the mainland and Hong
+   *  Kong, off for Taiwan. */
+  compressAdjacent?: 'auto' | boolean;
+  /** An opening bracket or quote that starts a line gives up its leading
+   *  half em, so its ink lines up with the text edge, and a closing one
+   *  that ends a line its trailing half (clreq §6.3.2.3). `'auto'` (the
+   *  default): on for the mainland and Hong Kong, off for Taiwan. */
+  trimLineStart?: 'auto' | boolean;
+  /** Whether a pause or stop mark may hang past the end of the line
+   *  (clreq §6.1.3). `'none'` (the default): never. `'allow'`: one of
+   *  、，。． (on the mainland also ；：？！) hangs when it would otherwise
+   *  open the next line and compressing the line cannot take it in; never
+   *  in horizontal Taiwan and Hong Kong text. `'force'`: such a mark hangs
+   *  whenever it ends a line (but the paragraph's last). Never after or
+   *  before another mark. */
+  hangingPunctuation?: CjkHangingPunctuation;
+  /** The space set between a Han character (or kana) and a Latin letter or
+   *  a European digit next to it (`用 iPhone 拍照`), in em of the CJK
+   *  text's size or any length. Default `{ value: 0.25, unit: 'em' }`; `0`
+   *  turns it off. None at a line start or end, none next to a Chinese
+   *  mark or inside Chinese brackets; a space the author typed there is
+   *  replaced, not added to. On a justified line it grows up to ½ em
+   *  before characters are spread, and shrinks down to ⅛ em when the line
+   *  takes one more character. */
+  latinSpacing?: Dimension;
+  /** Tate-chu-yoko (縱中橫) in vertical text: a number of at most this many
+   *  ASCII digits is set side by side in one upright cell (`2026年9月28日`:
+   *  `9` and `28` upright, `2026` sideways). `0` turns it off; default
+   *  `2`. The whole number or none of it: under `2` a three-digit number
+   *  stays sideways. A number touching a Latin letter (`A4`, `mp3`) or
+   *  written with a decimal point or digit grouping (`3.14`, `10,000`)
+   *  stays sideways. `:tcy[…]`, `:upright[…]` and `:sideways[…]` set a
+   *  run apart by hand. No effect in horizontal text. */
+  uprightDigits?: 0 | 2 | 3 | 4;
+  /** The character grid (字格): a type area authored in characters per line
+   *  and lines per page (see {@link CjkGridConfig}). Off by default. */
+  grid?: CjkGridConfig;
+  /** What Markdown emphasis (`*…*`) does to Chinese characters: `'dots'`
+   *  sets emphasis dots (着重号) under them, as `:dots[…]` does, and Latin
+   *  letters inside the same emphasis keep their italics; `'italic'` slants
+   *  them as any text (a CJK face has no italic, so the slant is
+   *  synthesised). `'auto'` (the default): `'dots'` when the document
+   *  language (`locale`) is Chinese, `'italic'` otherwise (#193). */
+  emphasis?: 'auto' | CjkEmphasis;
+  /** What a book title marked `:book[…]` prints (#193): `'brackets'` sets
+   *  《》 around it (〈〉 for a title inside another), as text the lines
+   *  are broken with; `'wavy'` draws the wavy book-title line (书名号甲式)
+   *  under it (left of it in vertical text); `'none'` prints the bare
+   *  title. `'auto'` (the default): brackets for the mainland, the wavy
+   *  line for Taiwan and Hong Kong (`region`). */
+  bookTitleMark?: 'auto' | CjkBookTitleMark;
+  /** Colour of the emphasis dots and of the proper-name and book-title
+   *  lines. Unset: the colour of the text they mark (#193). The default of
+   *  the ruby and warichu colours too. */
+  annotationColor?: ColorValue;
+  /** Ruby: how readings (pinyin, zhuyin) set with `:ruby[…]{rt="…"}` or
+   *  `{紅樓|hóng|lóu}` look (see {@link CjkRubyConfig}, #194). */
+  ruby?: CjkRubyConfig;
+  /** Warichu (双行夹注): how the two-row notes of `:warichu[…]` look (see
+   *  {@link CjkWarichuConfig}, #195). */
+  warichu?: CjkWarichuConfig;
+}
+
+/** See {@link CjkConfig.emphasis}. */
+export type CjkEmphasis = 'italic' | 'dots';
+
+/** See {@link CjkConfig.bookTitleMark}. */
+export type CjkBookTitleMark = 'brackets' | 'wavy' | 'none';
+
+/** Where a ruby reading goes: over the base (in vertical text: to its
+ *  right), under it (to its left), or right of each character inside the
+ *  line (zhuyin in horizontal text; the same as `over` in vertical text). */
+export type CjkRubyPosition = 'over' | 'under' | 'right';
+
+/** `cjk.ruby`: the look of ruby readings. Readings live in the line gap,
+ *  whose height never changes: a paragraph with readings over or under it
+ *  needs a line height of at least its size plus the reading's
+ *  (`rubyExceedsLeading` reports one that is tighter). */
+export interface CjkRubyConfig {
+  /** Face of the readings. Unset: the text's own face. Pinyin often reads
+   *  better in a sans face with a single-storey a and g. */
+  fontFamily?: string;
+  /** Size of the readings, in em of the text they annotate (or any
+   *  length). Default `{ value: 0.5, unit: 'em' }`. Zhuyin is set at 60 %
+   *  of it (0.3 em by default), as clreq asks. */
+  fontSize?: Dimension;
+  /** Colour of the readings. Unset: `cjk.annotationColor`, else the text
+   *  colour. */
+  color?: ColorValue;
+  /** Where readings go when `pos` does not say (see
+   *  {@link CjkRubyPosition}). `'auto'` (the default): zhuyin (bopomofo)
+   *  right of each character, anything else (pinyin) over the base in
+   *  horizontal text and right of it in vertical text. */
+  position?: 'auto' | CjkRubyPosition;
+}
+
+/** `cjk.warichu`: the look of warichu notes (双行夹注). */
+export interface CjkWarichuConfig {
+  /** Size of the note's characters, in em of the text (or any length);
+   *  the two rows together take the line's em. Default
+   *  `{ value: 0.5, unit: 'em' }`. */
+  fontSize?: Dimension;
+  /** Colour of the notes and their brackets (a commentary set in
+   *  vermilion). Unset: `cjk.annotationColor`, else the text colour. */
+  color?: ColorValue;
+  /** Brackets set at the text size before the first row and after the
+   *  last one (`〔` `〕`, `（` `）`). Default: none. A note's own
+   *  `open` / `close` attributes win. */
+  open?: string;
+  close?: string;
+}
+
+export interface ResolvedCjkRubyConfig {
+  fontFamily?: string;
+  fontSize: Dimension;
+  color?: ColorValue;
+  position: 'auto' | CjkRubyPosition;
+}
+
+export interface ResolvedCjkWarichuConfig {
+  fontSize: Dimension;
+  color?: ColorValue;
+  open: string;
+  close: string;
+}
+
+/** Punctuation width styles (clreq §6.3.2.1): each full-width mark is
+ *  half a glyph and half an em of blank that may be set or removed.
+ *  - `fullwidth` (全角式): every mark one em; only a pair of adjacent marks
+ *    (`compressAdjacent`) and a bracket at a line edge (`trimLineStart`)
+ *    lose blank;
+ *  - `kaiming` (开明式): 。？！ one em (half at a line end), ，、；：,
+ *    brackets and quotes half an em;
+ *  - `lineEndHalf` (行末半角): one em inside the line, half at its end
+ *    (GB/T 15834—2011 §5.1.10 read literally);
+ *  - `halfwidth` (半角式): every mark half an em (dictionaries).
+ *  Marks set in the middle of their box (Taiwan, Hong Kong: 。，、；：) lose
+ *  a quarter em on each side; ？！ stay one em in horizontal Taiwan and
+ *  Hong Kong text. */
+export type CjkPunctuationWidth = 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'halfwidth';
+
+/** See {@link CjkConfig.hangingPunctuation}. */
+export type CjkHangingPunctuation = 'none' | 'allow' | 'force';
+
+/** The character grid of `cjk.grid`: the type area is derived from the
+ *  body size, not authored as margins. Each column is `charsPerLine` ems
+ *  wide and holds `linesPerPage` lines of the body's line height; with two
+ *  columns the gutter is rounded to a whole number of ems (at least one).
+ *  The grid is centred inside the configured margins, which act as
+ *  minimums; a grid that does not fit is reduced to what fits and reported
+ *  (`cjkGridClamped`). In vertical text (`layout.writingMode:
+ *  'vertical-rl'`) characters run down the page and lines across it. */
+export interface CjkGridConfig {
+  /** Default `false`. */
+  enabled?: boolean;
+  /** Characters per line of one column. Unset: as many as the margins
+   *  leave room for. */
+  charsPerLine?: number;
+  /** Lines per column. Unset: as many as the margins leave room for. */
+  linesPerPage?: number;
+  /** Draw the grid (稿纸) over the type area on screen. Default `false`. */
+  show?: boolean;
+}
+
+export interface ResolvedCjkGridConfig {
+  enabled: boolean;
+  /** The characters per line in use (after the pre-pass: what the
+   *  margins leave room for when unset or too many); 0 when off. */
+  charsPerLine: number;
+  /** The lines per column in use; 0 when off. */
+  linesPerPage: number;
+  show: boolean;
+}
+
+export interface ResolvedCjkConfig {
+  region: CjkRegion;
+  lineBreak: CjkLineBreak;
+  punctuationWidth: CjkPunctuationWidth;
+  compressAdjacent: boolean;
+  trimLineStart: boolean;
+  hangingPunctuation: CjkHangingPunctuation;
+  latinSpacing: Dimension;
+  uprightDigits: 0 | 2 | 3 | 4;
+  grid: ResolvedCjkGridConfig;
+  emphasis: CjkEmphasis;
+  bookTitleMark: CjkBookTitleMark;
+  annotationColor?: ColorValue;
+  ruby: ResolvedCjkRubyConfig;
+  warichu: ResolvedCjkWarichuConfig;
+}
+
 export type PdfColorSpace = 'rgb' | 'cmyk' | 'grayscale';
 
 /** How postext-pdf writes the file. Layout ignores it; the VDT carries it
@@ -2861,8 +3163,14 @@ export interface ElementAnchor {
    *  enabled, otherwise the trim box) or `'#elementId'` — a reference to
    *  another element in the slot. Page/bleed anchoring also makes that frame
    *  the reference for `size: 'fill'` and auto-width clamping, so a band can
-   *  run edge to edge regardless of the page margins. */
-  to: 'container' | 'page' | 'bleed' | `#${string}`;
+   *  run edge to edge regardless of the page margins. `'outer'` (header
+   *  and footer only) is the outer margin of the page — between the type
+   *  area and the trim edge on the side away from the spine, from the type
+   *  area's head to its foot — on the right of a recto and the left of a
+   *  verso in a left-bound book, the other way round in a right-bound one
+   *  (`page.binding`), so one element serves both pages of a spread: a
+   *  running head down the fore-edge. Elsewhere it reads as `'container'`. */
+  to: 'container' | 'page' | 'bleed' | 'outer' | `#${string}`;
   edge: AnchorEdge;
 }
 
@@ -3005,6 +3313,16 @@ export interface DesignTextElement {
   inlineMarks?: boolean;
   /** Outline drawn around the glyphs (see `DesignTextStroke`). */
   stroke?: DesignTextStroke;
+  /** `'vertical-rl'`: the text is set vertically, top to bottom, lines
+   *  right to left, with the characters upright (a running head down the
+   *  fore-edge of a vertical book, a vertical title beside a horizontal
+   *  chapter). The element's box stays as placed on the page: its height
+   *  is the length of a line, its width the lines side by side; `align`
+   *  places the lines along it (`'left'` at the top), `verticalAlign` in
+   *  the box across (`'top'` at the right), and `size.maxWidth` caps a
+   *  line's length. In the flow of a vertical page text already runs so,
+   *  and the setting changes nothing there. Default `'horizontal-tb'`. */
+  writingMode?: 'horizontal-tb' | 'vertical-rl';
 }
 
 export interface DesignRuleElement {
@@ -3066,6 +3384,12 @@ export interface DesignImageElement {
    *  `# Chapter I {style="opener" vignette="log"}`. An id that resolves
    *  empty or to no resource draws nothing. */
   resourceId: string;
+  /** A picture that is decoration only (an ornament, a band): it carries
+   *  no alternative text into the output even when its resource has one.
+   *  Otherwise the resource's `altText`, else its caption, becomes the
+   *  picture's `alt` in HTML and a `Figure` with `/Alt` in a tagged PDF.
+   *  Default `false`. */
+  decorative?: boolean;
 }
 
 export type DesignElement = DesignTextElement | DesignRuleElement | DesignBoxElement | DesignImageElement;
@@ -3242,7 +3566,7 @@ export interface PartsConfig {
    *  `'bleed'` anchors and container anchors coincide. Purely decorative —
    *  it never reserves body space; raise `margins.top` to leave room for
    *  it. When empty, `{number} {titleText}` is synthesised from the H1
-   *  typography. */
+   *  typography, joined with the H1's `numberSeparator`. */
   design?: DesignSlot;
   /** Design of the blank verso that follows a part page (the back of the
    *  divider leaf). Same container and placeholders as `design`; when
@@ -3493,8 +3817,9 @@ export interface TocConfig {
     /** Row design; its container is the row (column width × `height`).
      *  Placeholders: `{number}`, `{numberRoman}`…, `{titleText}` and
      *  `{pageNumber}` (the part page's label). Palette-linked colours take
-     *  the part's own palette. When empty, `{number} {titleText}` and the
-     *  page number are set in the level-1 entry typography. */
+     *  the part's own palette. When empty, `{number} {titleText}` (joined
+     *  with the H1's `numberSeparator`) and the page number are set in the
+     *  level-1 entry typography. */
     design?: DesignSlot;
     /** Row height; `em` is the body text size. Default `2em`, twice the
      *  body size (a row one or two body lines tall, depending on the
@@ -3621,8 +3946,31 @@ export interface IndexConfig {
   /** Language whose alphabetical order sorts the entries (a BCP 47 tag).
    *  Default: the document language. */
   locale?: string;
+  /** What the group heads are (#182):
+   *  - `'letter'`: the first letter of the sort key (up to postext 1.8 the
+   *    only grouping);
+   *  - `'pinyin'`: an entry starting with a Han character files under the
+   *    Latin initial of its pinyin reading (A–Z; 贾宝玉 under J), a Latin
+   *    sort key under its letter, after the Han entries (`sort="jia mu"`
+   *    ends J); a Han key read as wanted sorts in place (`sort="崇阳"`
+   *    for 重阳);
+   *  - `'stroke'`: under the stroke count of its first character (一畫,
+   *    二畫 …; 一画 … in Simplified Chinese);
+   *  - `'none'`: no heads; symbols, numbers and words are set apart by the
+   *    groups' `marginTop` only;
+   *  - `'auto'` (default): `'pinyin'` in Simplified Chinese (`zh`,
+   *    `zh-Hans`, `zh-CN`), `'stroke'` in Traditional Chinese (`zh-Hant`,
+   *    `zh-TW`, `zh-HK`), `'letter'` in any other language.
+   *
+   *  The entries sort in the collation the heads come from (a
+   *  `zh-Hant` index grouped by pinyin sorts by pinyin). A browser without
+   *  Chinese collation data sets a pinyin or stroke index with no heads. */
+  groupBy?: IndexGroupBy;
   groups?: IndexGroupsConfig;
 }
+
+/** See {@link IndexConfig.groupBy}. */
+export type IndexGroupBy = 'auto' | 'letter' | 'pinyin' | 'stroke' | 'none';
 
 export interface ResolvedIndexConfig {
   fontFamily: string;
@@ -3642,6 +3990,7 @@ export interface ResolvedIndexConfig {
   /** Unset labels follow the document language. */
   see: { label?: string; alsoLabel?: string; italic: boolean };
   locale?: string;
+  groupBy: IndexGroupBy;
   groups: {
     enabled: boolean;
     fontFamily: string;
@@ -3695,6 +4044,9 @@ export interface PostextConfig {
   math?: MathConfig;
   /** Footnotes (`[^id]` markers and `[^id]: …` definitions). */
   footnotes?: FootnotesConfig;
+  /** East Asian typography: line breaking and justification of Chinese,
+   *  Japanese and Korean text (see {@link CjkConfig}). */
+  cjk?: CjkConfig;
   header?: HeaderFooterSlot;
   footer?: HeaderFooterSlot;
 

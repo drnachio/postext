@@ -441,6 +441,23 @@ describe('adapters', () => {
     await expect(bundleFontProvider(bundle)('Open Sans', 400, 'normal')).rejects.toThrow(/not in the bundle/);
   });
 
+  it('hands the fallback the characters of the face and passes several files through', async () => {
+    const bundle = await openBundle((await sample()).bytes);
+    const heard: Array<ReadonlySet<number> | undefined> = [];
+    const slices = [new Uint8Array([1]), new Uint8Array([2])];
+    const provider = bundleFontProvider(bundle, {
+      fallback: async (_family, _weight, _style, request) => {
+        heard.push(request?.codePoints);
+        return slices;
+      },
+    });
+    const codePoints = new Set([...'紅樓夢'].map((ch) => ch.codePointAt(0)!));
+    expect(await provider('Noto Serif TC', 400, 'normal', { codePoints })).toEqual(slices);
+    expect(heard).toEqual([codePoints]);
+    // The bundle's own faces ignore the request.
+    expect(await provider('House Serif', 700, 'italic', { codePoints })).toEqual(FONT);
+  });
+
   it('asks for a WOFF2 decoder when a face is WOFF2', async () => {
     const provider = bundleFontProvider({ fonts: [{ fileId: 'f.woff2', file: 'f.woff2', fileName: 'f.woff2', family: 'F', weight: 400, style: 'normal', format: 'woff2', bytes: new ArrayBuffer(4) }] });
     await expect(provider('F', 400, 'normal')).rejects.toThrow(/decodeWoff2/);

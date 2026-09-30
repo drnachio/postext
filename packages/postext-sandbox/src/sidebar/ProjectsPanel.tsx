@@ -12,12 +12,15 @@ import {
 } from '../context/SandboxContext';
 import { Button, Collapsible, ConfirmPopover, EmptyState, IconButton, ListRow, Menu, MenuItem, MenuSeparator, PanelBody, PanelHeader, RowTag } from '../ui';
 import { isPresetHideable, partitionPresets } from '../presets/hidden';
-import { choosePresetOpen, presetLocales, sameLanguage } from '../presets/locale';
+import { activeLocaleTag, bundleContentLocales, choosePresetOpen, presetLocales } from '../presets/locale';
+import { readBundleZipManifest } from '../presets/zip';
+import { localeDisplayName, localeShortTag } from '../presets/localeNames';
 import { useBlobObjectUrl } from '../panels/resources/ResourcePreview';
 import type { PresetSummary } from '../presets';
 import { presetCoverFor } from '../covers/autoCover';
 import { openBookThenShowChapters } from './openBook';
 import { RowActionsMenu } from './RowActionsMenu';
+import { LocaleTag } from './LocaleTag';
 
 function GroupTitle({ children, actions }: { children: ReactNode; actions?: ReactNode }) {
   return (
@@ -50,7 +53,7 @@ export function ProjectsPanel() {
     duplicate,
     rename,
     remove,
-    importBundle,
+    importBundleBytes,
     exportProject,
     setThumbnail,
   } = projectsValue;
@@ -67,6 +70,7 @@ export function ProjectsPanel() {
   const importRef = useRef<HTMLInputElement>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [hiddenOpen, setHiddenOpen] = useState(false);
+  const [pendingImport, setPendingImport] = useState<{ bytes: Uint8Array; fileName: string; locales: string[]; own: string } | null>(null);
 
   const presetLoading = status === 'loading';
   const busy = presetLoading || projectStatus === 'busy';
@@ -75,17 +79,35 @@ export function ProjectsPanel() {
   const canReload = !busy && (active?.available ?? false);
   const { visible: visiblePresets, hidden: hiddenPresets } = partitionPresets(presets, hiddenIds);
 
+  const importBytes = async (bytes: Uint8Array, fileName: string, locale?: string) => {
+    try {
+      await importBundleBytes(bytes, fileName, locale ? { locale } : {});
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setImportError(/preset\.json|zip/i.test(message) ? labels.projectImportInvalid : `${labels.projectImportError} (${message})`);
+    }
+  };
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
     setImportError(null);
+    setPendingImport(null);
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    // A bundle in several languages asks which one to open, starting from
+    // the one it is written in; any other opens as it is. Only its
+    // manifest is inflated here: the import opens the archive once.
+    let choice: ReturnType<typeof bundleContentLocales> = { locales: [], own: null };
     try {
-      await importBundle(file);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      setImportError(/preset\.json|zip/i.test(message) ? labels.projectImportInvalid : `${labels.projectImportError} (${message})`);
+      choice = bundleContentLocales(readBundleZipManifest(bytes));
+    } catch {
+      // Not a zip: the import reports it.
     }
+    if (choice.locales.length > 1) {
+      setPendingImport({ bytes, fileName: file.name, locales: choice.locales, own: choice.own ?? choice.locales[0]! });
+      return;
+    }
+    await importBytes(bytes, file.name, choice.own ?? undefined);
   };
 
   const presetRow = (preset: PresetSummary, hidden: boolean) => {
@@ -102,6 +124,7 @@ export function ProjectsPanel() {
         preset={preset}
         isActive={isActive}
         activeLocale={isActive ? activeLocale : null}
+        uiLocale={viewerLocale}
         editedLocales={presetDrafts.map((d) => d.locale)}
         disabled={busy || !preset.available}
         coverUrl={preset.thumbnailUrl ?? presetCoverFor(covers, preset.id, isActive && activeLocale ? activeLocale : choice.locale)}
@@ -192,6 +215,39 @@ export function ProjectsPanel() {
           <p className="mb-2 text-xs" style={{ color: 'var(--destructive)' }} role="alert">
             {importError}
           </p>
+        )}
+        {pendingImport && (
+          <div
+            role="group"
+            aria-labelledby="postext-import-locale"
+            className="mb-2 rounded border px-2 py-1.5 text-xs"
+            style={{ borderColor: 'var(--rule)', color: 'var(--foreground)' }}
+          >
+            <p id="postext-import-locale" className="mb-1.5 break-words">
+              {labels.projectImportLocale.replace('__name__', pendingImport.fileName)}
+            </p>
+            <div className="flex flex-wrap gap-1">
+              {[pendingImport.own, ...pendingImport.locales.filter((l) => l !== pendingImport.own)].map((l) => (
+                <Button
+                  key={l}
+                  variant={l === pendingImport.own ? 'primary' : 'outline'}
+                  size="xs"
+                  autoFocus={l === pendingImport.own}
+                  disabled={busy}
+                  onClick={() => {
+                    const { bytes, fileName } = pendingImport;
+                    setPendingImport(null);
+                    void importBytes(bytes, fileName, l);
+                  }}
+                >
+                  {localeDisplayName(l, viewerLocale)}
+                </Button>
+              ))}
+              <Button variant="ghost" size="xs" onClick={() => setPendingImport(null)}>
+                {labels.cancel}
+              </Button>
+            </div>
+          </div>
         )}
         {notice && (
           <div
@@ -362,7 +418,7 @@ function ProjectRow({
 
   const tags = (
     <>
-      {project.locale && <RowTag>{project.locale}</RowTag>}
+      {project.locale && <LocaleTag locale={project.locale} />}
       {project.chapterCount > 1 && <RowTag>{labels.chapterCountTag.replace('__n__', String(project.chapterCount))}</RowTag>}
       {isActive && <RowTag accent>{labels.presetActive}</RowTag>}
     </>
@@ -480,6 +536,8 @@ interface PresetRowProps {
   isActive: boolean;
   /** The content locale the active preset is loaded in; null otherwise. */
   activeLocale: string | null;
+  /** The interface language, which names the locales in the tooltips. */
+  uiLocale: string;
   /** Locales of this preset with a saved draft (the reader's edits). */
   editedLocales: string[];
   /** The cover: the one the preset ships, else the one taken from its
@@ -503,6 +561,7 @@ function PresetRow({
   preset,
   isActive,
   activeLocale,
+  uiLocale,
   editedLocales,
   coverUrl,
   disabled,
@@ -521,27 +580,32 @@ function PresetRow({
   // A bilingual bundle lists every locale it carries; the primary one
   // otherwise. With more than one, each tag opens the preset in that
   // language (the reader's edits there, if any); the active one is marked.
+  // The tags are short (繁 / 简 for the two Chinese editions, EN, ES) and
+  // named in full in the interface language by their tooltips.
   const locales = presetLocales(preset);
+  const activeTag = isActive ? activeLocaleTag(locales, activeLocale) : null;
   const localeTag = (l: string) => {
-    if (locales.length < 2) return <RowTag key={l}>{l}</RowTag>;
-    const code = l.toUpperCase();
-    const current = isActive && activeLocale !== null && sameLanguage(activeLocale, l);
-    const label = (current ? labels.presetLocaleActive : labels.presetLocaleLoad).replace('__locale__', code);
+    const short = localeShortTag(l, locales);
+    const text = short.lang ? <span lang={short.lang}>{short.text}</span> : short.text;
+    const name = localeDisplayName(l, uiLocale);
+    if (locales.length < 2) return <RowTag key={l} label={name}>{text}</RowTag>;
+    const current = activeTag === l;
+    const label = (current ? labels.presetLocaleActive : labels.presetLocaleLoad).replace('__locale__', name);
     if (current || disabled) {
       return (
         <RowTag key={l} accent={current} label={label}>
-          {l}
+          {text}
         </RowTag>
       );
     }
     return (
       <RowTag key={l} onClick={() => onLoadLocale(l)} pressed={false} label={label}>
-        {l}
+        {text}
       </RowTag>
     );
   };
   const editedHint = locales.length > 1 && edited
-    ? `${labels.presetEditedHint} (${editedLocales.map((l) => (l || '?').toUpperCase()).join(', ')})`
+    ? `${labels.presetEditedHint} (${editedLocales.map((l) => (l ? localeDisplayName(l, uiLocale) : '?')).join(', ')})`
     : labels.presetEditedHint;
   const tags = (
     <>

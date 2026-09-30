@@ -15,6 +15,7 @@ import {
 
 const DEFAULT_ORDERED_NUMBER_FORMAT: OrderedListNumberFormat = 'arabic';
 const DEFAULT_ORDERED_SEPARATOR = '.';
+const DEFAULT_ORDERED_PREFIX = '';
 const DEFAULT_ORDERED_LIST_FONT_WEIGHT = 700;
 const DEFAULT_ORDERED_LIST_COLOR: ColorValue = { ...DEFAULT_MAIN_COLOR };
 const DEFAULT_ORDERED_SEPARATOR_GAP: Dimension = { value: 0, unit: 'em' };
@@ -23,14 +24,17 @@ const DEFAULT_ORDERED_NUMBER_WIDTH: OrderedListNumberWidth = 'run';
 /** A list `numberFormat` in the list vocabulary, whatever vocabulary it was
  *  written in (`decimal`, `roman-lower`, `i`… — see `parseNumberFormat`);
  *  `undefined` when unset or unknown. */
-export function listNumberFormat(value: unknown): OrderedListNumberFormat | undefined {
-  const style = parseNumberFormat(value);
+export function listNumberFormat(value: unknown, locale?: string): OrderedListNumberFormat | undefined {
+  const style = parseNumberFormat(value, locale);
   return style ? toOrderedListNumberFormat(style) : undefined;
 }
 
+/** The ordered lists in full. `locale` (the document language) decides the
+ *  script of a format written `一` or `壹`. */
 export function resolveOrderedListsConfig(
   partial: OrderedListsConfig | undefined,
   bodyText: ResolvedBodyTextConfig,
+  locale?: string,
 ): ResolvedOrderedListsConfig {
   const generalFont = partial?.fontFamily ?? bodyText.fontFamily;
   const generalColor = partial?.color ?? DEFAULT_ORDERED_LIST_COLOR;
@@ -38,8 +42,9 @@ export function resolveOrderedListsConfig(
   const generalItalic = partial?.italic ?? false;
   // Any spelling of a format is read; an unknown one numbers in arabic
   // (`collectConfigWarnings` reports it).
-  const generalNumberFormat = listNumberFormat(partial?.numberFormat) ?? DEFAULT_ORDERED_NUMBER_FORMAT;
+  const generalNumberFormat = listNumberFormat(partial?.numberFormat, locale) ?? DEFAULT_ORDERED_NUMBER_FORMAT;
   const generalSeparator = partial?.separator ?? DEFAULT_ORDERED_SEPARATOR;
+  const generalPrefix = partial?.prefix ?? DEFAULT_ORDERED_PREFIX;
   const generalFontSize = partial?.numberFontSize ?? DEFAULT_LIST_BULLET_FONT_SIZE;
   const generalIndent = partial?.indent ?? DEFAULT_LIST_INDENT;
   const generalVerticalOffset = partial?.numberVerticalOffset ?? DEFAULT_LIST_VERTICAL_OFFSET;
@@ -56,7 +61,8 @@ export function resolveOrderedListsConfig(
       level,
       numberFormat: override?.numberFormat === undefined
         ? generalNumberFormat
-        : listNumberFormat(override.numberFormat) ?? DEFAULT_ORDERED_NUMBER_FORMAT,
+        : listNumberFormat(override.numberFormat, locale) ?? DEFAULT_ORDERED_NUMBER_FORMAT,
+      prefix: override?.prefix ?? generalPrefix,
       separator: override?.separator ?? generalSeparator,
       fontFamily,
       fontSize: override?.fontSize ?? generalFontSize,
@@ -81,6 +87,7 @@ export function resolveOrderedListsConfig(
     fontWeight: generalFontWeight,
     italic: generalItalic,
     numberFormat: generalNumberFormat,
+    prefix: generalPrefix,
     separator: generalSeparator,
     numberFontSize: generalFontSize,
     gap: partial?.gap ?? DEFAULT_LIST_GAP,
@@ -105,6 +112,7 @@ export const DEFAULT_ORDERED_LISTS_STATIC = {
   fontWeight: DEFAULT_ORDERED_LIST_FONT_WEIGHT,
   italic: false,
   numberFormat: DEFAULT_ORDERED_NUMBER_FORMAT,
+  prefix: DEFAULT_ORDERED_PREFIX,
   separator: DEFAULT_ORDERED_SEPARATOR,
   numberFontSize: DEFAULT_LIST_BULLET_FONT_SIZE,
   gap: DEFAULT_LIST_GAP,
@@ -146,6 +154,10 @@ export function stripOrderedListsDefaults(
   // Another spelling of the default (`decimal`) is the default.
   if (lists.numberFormat !== undefined && listNumberFormat(lists.numberFormat) !== DEFAULT_ORDERED_NUMBER_FORMAT) {
     result.numberFormat = lists.numberFormat;
+    hasOverride = true;
+  }
+  if (lists.prefix !== undefined && lists.prefix !== DEFAULT_ORDERED_PREFIX) {
+    result.prefix = lists.prefix;
     hasOverride = true;
   }
   if (lists.separator !== undefined && lists.separator !== DEFAULT_ORDERED_SEPARATOR) {
@@ -221,6 +233,10 @@ export function stripOrderedListsDefaults(
       let levelHasOverride = false;
       if (lvl.numberFormat !== undefined) {
         entry.numberFormat = lvl.numberFormat;
+        levelHasOverride = true;
+      }
+      if (lvl.prefix !== undefined) {
+        entry.prefix = lvl.prefix;
         levelHasOverride = true;
       }
       if (lvl.separator !== undefined) {

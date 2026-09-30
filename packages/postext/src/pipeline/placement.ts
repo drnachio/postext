@@ -9,11 +9,13 @@ import {
   type VDTLine,
   type VDTPage,
   type VDTColumn,
+  verticalFlowFrame,
 } from '../vdt';
 import type { HeadingBreakParity } from '../types';
 import { computeColumnBboxes, hasFloatSideColumn } from './config';
-import { contentAreaForPage, mirrorContentArea, type PageMetrics } from './buildHelpers';
+import { contentAreaForPage, mirrorContentArea, pageMirrored, sheetRectToFlow, type PageMetrics } from './buildHelpers';
 import { dimensionToPx } from '../units';
+import { measuringVertically } from '../measure/vertical';
 
 export interface PlacementCursor {
   pageIndex: number;
@@ -24,10 +26,13 @@ export function resetLinePositions(
   lines: VDTLine[],
   lineHeightPx: number,
 ): VDTLine[] {
+  // A vertical line keeps the baseline it was measured with, which centres
+  // its characters in the line box (`lineBaselineOffset`).
+  const vertical = measuringVertically();
   return lines.map((line, i) => ({
     ...line,
     bbox: createBoundingBox(line.bbox.x, i * lineHeightPx, line.bbox.width, lineHeightPx),
-    baseline: i * lineHeightPx + lineHeightPx * 0.8,
+    baseline: i * lineHeightPx + (vertical ? line.baseline - line.bbox.y : lineHeightPx * 0.8),
   }));
 }
 
@@ -49,13 +54,15 @@ export function createPageWithColumns(
   pageIndexOffset = 0,
 ): VDTPage {
   // `contentArea` is the recto (odd-page) area; mirrored margins swap the
-  // inner/outer margins on even pages. `pageIndex` is the page's position in
-  // `doc.pages`, so page number = index + 1 (+ the pages before a continued
-  // document).
+  // inner/outer margins on the pages facing the other way (`pageMirrored`).
+  // `pageIndex` is the page's position in `doc.pages`, so page number =
+  // index + 1 (+ the pages before a continued document). `pageWidthPx` /
+  // `pageHeightPx` are the sheet's; a vertical layout's `contentArea` is in
+  // the flow frame, and the page carries that frame (`page.flow`).
   const pageArea = contentAreaForPage({ contentArea, pageWidthPx }, resolved, pageIndex, pageIndexOffset);
   const page = createVDTPage(pageIndex, pageWidthPx, pageHeightPx, pageArea);
-  const isEvenPage = (pageIndex + pageIndexOffset + 1) % 2 === 0;
-  const colBboxes = computeColumnBboxes(pageArea, resolved, isEvenPage);
+  if (resolved.layout.writingMode === 'vertical-rl') page.flow = verticalFlowFrame(pageWidthPx, pageHeightPx);
+  const colBboxes = computeColumnBboxes(pageArea, resolved, pageMirrored(resolved, pageIndex, pageIndexOffset));
   const sideIndex = hasFloatSideColumn(resolved) ? colBboxes.length - 1 : -1;
   for (let i = 0; i < colBboxes.length; i++) {
     const col = createVDTColumn(i, colBboxes[i]!);
@@ -67,21 +74,26 @@ export function createPageWithColumns(
 }
 
 /** Turn a freshly opened (empty) page into a part-divider page: a single
- *  body column inset from the trim box by `parts.margins` (mirrored on even
- *  pages when `parts.margins.mirror` is on), `page.contentArea` set to that
- *  area, `partInfo` stamped and the role fixed to `'part'`. The opener
- *  design is laid out later by `buildHeadersAndFooters` against the full
- *  trim box and never reserves body space. */
+ *  body column inset from the trim box by `parts.margins` (mirrored on the
+ *  pages `pageMirrored` names when `parts.margins.mirror` is on),
+ *  `page.contentArea` set to that area, `partInfo` stamped and the role
+ *  fixed to `'part'`. The opener design is laid out later by
+ *  `buildHeadersAndFooters` against the full trim box and never reserves
+ *  body space. The margins keep their names on the sheet, as the page
+ *  margins do: the area is cut from the physical trim box, mirrored there
+ *  and, on a vertical page, turned into the flow frame (a vertical
+ *  document's part page is vertical too). */
 export function createPartPage(
   page: VDTPage,
-  metrics: Pick<PageMetrics, 'trimBox' | 'pageWidthPx'>,
+  metrics: Pick<PageMetrics, 'physical' | 'pageWidthPx'> & Partial<Pick<PageMetrics, 'vertical' | 'pageHeightPx'>>,
   resolved: ResolvedConfig,
   info: { number: string; title: string; palette?: Record<string, string>; titleSourceStart?: number; titleSourceEnd?: number },
   pageIndexOffset = 0,
 ): VDTPage {
   const dpi = resolved.page.dpi;
   const m = resolved.parts.margins;
-  const trim = metrics.trimBox;
+  const vertical = metrics.vertical === true;
+  const trim = metrics.physical.trimBox;
   const top = dimensionToPx(m.top, dpi);
   const bottom = dimensionToPx(m.bottom, dpi);
   const left = dimensionToPx(m.left, dpi);
@@ -92,9 +104,11 @@ export function createPartPage(
     Math.max(0, trim.width - left - right),
     Math.max(0, trim.height - top - bottom),
   );
-  const isEvenPage = (page.index + pageIndexOffset + 1) % 2 === 0;
-  if (m.mirror && isEvenPage) area = mirrorContentArea(area, metrics.pageWidthPx);
+  if (pageMirrored(resolved, page.index, pageIndexOffset, m.mirror)) area = mirrorContentArea(area, metrics.pageWidthPx);
+  if (vertical) area = sheetRectToFlow(area, metrics.pageWidthPx);
   page.contentArea = area;
+  if (vertical) page.flow = verticalFlowFrame(page.width, page.height);
+  else delete page.flow;
   page.columns = [createVDTColumn(0, area)];
   page.partInfo = {
     number: info.number,

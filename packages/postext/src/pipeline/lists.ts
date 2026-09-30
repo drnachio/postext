@@ -1,9 +1,10 @@
+import { flowTextWidth } from '../measure/vertical';
 import type { ResolvedUnorderedListLevelConfig, ResolvedOrderedListLevelConfig, OrderedListNumberFormat, Dimension } from '../types';
 import type { ContentBlock, ListKind } from '../parse';
 import { dimensionToPx } from '../units';
 import type { ResolvedConfig } from '../vdt';
-import { buildFontString, measureGlyphWidth } from '../measure';
-import { listNumberFormat } from '../defaults/orderedLists';
+import { buildFontString } from '../measure';
+import { formatNumeral, parseNumberFormat } from '../numbering';
 import type { BlockStyle } from './styles';
 import { resolveBodyStyle } from './styles';
 
@@ -28,6 +29,12 @@ export interface ListBulletStyle {
   separatorFontString?: string;
   separatorColor?: string;
   separatorOffsetPx?: number;
+  /** Ordered-list prefix (`（` of （一）) drawn as its own run before the
+   *  number, in the separator's style, when the separator is one; else
+   *  `bulletText` carries it. `prefixOffsetPx` is measured from the
+   *  bullet's left edge (negative: the prefix sits before the number). */
+  prefixText?: string;
+  prefixOffsetPx?: number;
 }
 
 /**
@@ -88,6 +95,9 @@ export interface OrderedRunMetric {
   separatorColor?: string;
   separatorGapPx?: number;
   separatorWidthPx?: number;
+  /** Prefix drawn as a run of its own (with the separator run). */
+  prefixText?: string;
+  prefixWidthPx?: number;
 }
 
 /** Style of the separator run when it must be drawn apart from the number. */
@@ -202,7 +212,7 @@ export function computeLevelIndentsPx(resolved: ResolvedConfig, bodyFontSizePx: 
     dimensionToPx(lists.gap, dpi, bodyFontSizePx),
     dpi,
     bodyFontSizePx,
-    (prev, prevFontString) => measureGlyphWidth(prev.bulletChar, prevFontString),
+    (prev, prevFontString) => flowTextWidth(prev.bulletChar, prevFontString),
   );
 }
 
@@ -229,52 +239,29 @@ export function computeOrderedLevelIndentsPx(
       const measured = maxNumberWidthByDepth.get(prevIndex + 1);
       if (measured !== undefined) return measured;
       const sep = resolveSeparatorRun(prev, prevFontString, dpi, bodyFontSizePx);
-      if (!sep) return measureGlyphWidth('99' + prev.separator, prevFontString);
-      return measureGlyphWidth('99', prevFontString) + sep.gapPx + measureGlyphWidth(prev.separator, sep.fontString);
+      if (!sep) return flowTextWidth(prev.prefix + '99' + prev.separator, prevFontString);
+      return (prev.prefix ? flowTextWidth(prev.prefix, sep.fontString) : 0)
+        + flowTextWidth('99', prevFontString) + sep.gapPx + flowTextWidth(prev.separator, sep.fontString);
     },
   );
 }
 
-function toRoman(n: number): string {
-  if (n <= 0 || n >= 4000) return n.toString();
-  const pairs: Array<[number, string]> = [
-    [1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'],
-    [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'],
-    [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I'],
-  ];
-  let out = '';
-  for (const [v, s] of pairs) {
-    while (n >= v) {
-      out += s;
-      n -= v;
-    }
-  }
-  return out;
+/** An ordered-list item's number in its level's format, by the shared
+ *  numeral formatter. Lists keep two edges of their own: a number below 1
+ *  (a Markdown list may start at `0.`) prints in digits, and so does a roman
+ *  numeral from 4000 up. The resolver hands over the list spelling; a part's
+ *  partial override is applied after it, so any spelling is read here too
+ *  (unknown → arabic). */
+export function formatListNumber(n: number, format: OrderedListNumberFormat): string {
+  const style = parseNumberFormat(format) ?? 'decimal';
+  if (n < 0 || (n === 0 && !EAST_ASIAN_ZERO.has(style))) return n.toString();
+  if ((style === 'lower-roman' || style === 'upper-roman') && n >= 4000) return n.toString();
+  return formatNumeral(n, style);
 }
 
-function toAlpha(n: number, upper: boolean): string {
-  if (n <= 0) return n.toString();
-  const base = upper ? 65 : 97;
-  let s = '';
-  while (n > 0) {
-    n -= 1;
-    s = String.fromCharCode(base + (n % 26)) + s;
-    n = Math.floor(n / 26);
-  }
-  return s;
-}
-
-function formatListNumber(n: number, format: OrderedListNumberFormat): string {
-  // The resolver hands over the list spelling; a part's partial override is
-  // applied after it, so read any spelling here too (unknown → arabic).
-  switch (listNumberFormat(format) ?? 'arabic') {
-    case 'arabic': return n.toString();
-    case 'lower-alpha': return toAlpha(n, false);
-    case 'upper-alpha': return toAlpha(n, true);
-    case 'lower-roman': return toRoman(n).toLowerCase();
-    case 'upper-roman': return toRoman(n);
-  }
-}
+/** The styles with a zero of their own (零, 〇, ⓪, ０); an item numbered 0
+ *  in them prints it. */
+const EAST_ASIAN_ZERO = new Set<string>(['simp-chinese-informal', 'trad-chinese-informal', 'simp-chinese-formal', 'trad-chinese-formal', 'cjk-decimal', 'circled-decimal', 'fullwidth-decimal']);
 
 /**
  * Walks content blocks identifying contiguous ordered-list runs per depth,
@@ -315,14 +302,17 @@ export function computeOrderedListRunMetrics(
     const fontString = levelFontStrings[levelIdx]!;
     const sepRun = levelSeparatorRuns[levelIdx];
     const separator = lists.levels[levelIdx]!.separator;
-    // The separator is the same string in the same font for the whole run.
-    const separatorWidthPx = sepRun ? measureGlyphWidth(separator, sepRun.fontString) : 0;
+    const prefix = lists.levels[levelIdx]!.prefix;
+    // The separator (and prefix) is the same string in the same font for
+    // the whole run.
+    const separatorWidthPx = sepRun ? flowTextWidth(separator, sepRun.fontString) : 0;
+    const prefixWidthPx = sepRun && prefix ? flowTextWidth(prefix, sepRun.fontString) : 0;
     let maxWidth = 0;
     const widths = new Map<number, number>();
     for (const idx of run.itemIdxs) {
       const entry = perBlock.get(idx);
       if (!entry) continue;
-      const w = measureGlyphWidth(entry.numberText, fontString);
+      const w = flowTextWidth(entry.numberText, fontString);
       widths.set(idx, w);
       if (w > maxWidth) maxWidth = w;
     }
@@ -332,9 +322,11 @@ export function computeOrderedListRunMetrics(
       entry.numberWidthPx = widths.get(idx) ?? 0;
       entry.maxNumberWidthPx = maxWidth;
       if (sepRun) entry.separatorWidthPx = separatorWidthPx;
+      if (entry.prefixText !== undefined) entry.prefixWidthPx = prefixWidthPx;
     }
-    // Marker column = right-aligned numbers (+ gap + separator when split).
-    const markerWidth = sepRun ? maxWidth + sepRun.gapPx + separatorWidthPx : maxWidth;
+    // Marker column = right-aligned numbers (+ gap + separator when split,
+    // and the prefix before them).
+    const markerWidth = sepRun ? prefixWidthPx + maxWidth + sepRun.gapPx + separatorWidthPx : maxWidth;
     const prevDepthMax = maxWidthByDepth.get(depth) ?? 0;
     if (markerWidth > prevDepthMax) maxWidthByDepth.set(depth, markerWidth);
     if (maxWidth > (maxNumberByDepth.get(depth) ?? 0)) maxNumberByDepth.set(depth, maxWidth);
@@ -390,8 +382,9 @@ export function computeOrderedListRunMetrics(
             separatorColor: sepRun.color,
             separatorGapPx: sepRun.gapPx,
             separatorWidthPx: 0,
+            ...(levelCfg.prefix ? { prefixText: levelCfg.prefix, prefixWidthPx: 0 } : {}),
           }
-        : { numberText: number + levelCfg.separator, numberWidthPx: 0, maxNumberWidthPx: 0 });
+        : { numberText: levelCfg.prefix + number + levelCfg.separator, numberWidthPx: 0, maxNumberWidthPx: 0 });
     }
   }
   closeAllRuns();
@@ -432,7 +425,7 @@ export function resolveUnorderedListItemStyle(
 
   const indentPx = levelIndentsPx[levelIdx] ?? 0;
   const gapPx = dimensionToPx(lists.gap, dpi, bodyStyle.fontSizePx);
-  const bulletWidthPx = measureGlyphWidth(bulletChar, bulletFontString);
+  const bulletWidthPx = flowTextWidth(bulletChar, bulletFontString);
   const itemSpacingPx = dimensionToPx(lists.itemSpacing, dpi, bodyStyle.fontSizePx);
   const verticalOffsetPx = dimensionToPx(levelConfig.verticalOffset, dpi, bodyStyle.fontSizePx);
   const marginTopPx = dimensionToPx(lists.marginTop, dpi, bodyStyle.fontSizePx);
@@ -503,8 +496,10 @@ export function resolveOrderedListItemStyle(
   const separatorGapPx = metric.separatorGapPx ?? 0;
   const separatorWidthPx = metric.separatorWidthPx ?? 0;
   const hasSeparatorRun = metric.separatorText !== undefined;
+  // A prefix run sits before the (right-aligned) number, hugging it.
+  const prefixWidthPx = metric.prefixText !== undefined ? metric.prefixWidthPx ?? 0 : 0;
   const markerWidthPx = hasSeparatorRun
-    ? metric.maxNumberWidthPx + separatorGapPx + separatorWidthPx
+    ? prefixWidthPx + metric.maxNumberWidthPx + separatorGapPx + separatorWidthPx
     : metric.maxNumberWidthPx;
 
   const text: BlockStyle = {
@@ -534,12 +529,16 @@ export function resolveOrderedListItemStyle(
     bullet.separatorFontString = metric.separatorFontString;
     bullet.separatorColor = metric.separatorColor;
     bullet.separatorOffsetPx = metric.numberWidthPx + separatorGapPx;
+    if (metric.prefixText !== undefined) {
+      bullet.prefixText = metric.prefixText;
+      bullet.prefixOffsetPx = -prefixWidthPx;
+    }
   }
 
   return {
     text,
     bullet,
-    bulletXOffsetInColumn: indentPx + rightAlignOffsetPx,
+    bulletXOffsetInColumn: indentPx + prefixWidthPx + rightAlignOffsetPx,
     strikethroughText: false,
   };
 }

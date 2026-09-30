@@ -27,7 +27,7 @@
  * become clickable link annotations targeting the resource embed's destination.
  */
 
-import { PDFHexString, setCharacterSpacing, type Color, type PDFImage, type PDFDocument, type PDFEmbeddedPage, type PDFFont } from 'pdf-lib';
+import { PDFHexString, type Color, type PDFImage, type PDFDocument, type PDFEmbeddedPage, type PDFFont } from 'pdf-lib';
 import type {
   VDTBlock,
   VDTLine,
@@ -38,18 +38,26 @@ import type {
 import { applySingleInkToSvg, resolveColorValue, tableCellFillRects, tableFrameOutline } from 'postext';
 import { parseFontString } from '../fontString';
 import { FontCache, type PdfFontProvider } from '../fontCache';
+import { widthOfTextAtSize } from '../faceFiles';
 import {
   type PageCtx,
   type PdfMatrix,
+  beginActualTextSpan,
+  cjkLineText,
+  compressedMarkSpacingPx,
   drawTextPx,
+  setTrackingPx,
+  endActualTextSpan,
+  type LineTextState,
   drawLinePx,
   drawSwatchPx,
   fillRectPx,
   fillRectsPx,
   colorFromHex,
-  mapRectThrough,
-  pushTransform,
-  popTransform,
+  outerRectMap,
+  popFrame,
+  pushFrame,
+  quarterTurnMatrix,
   pushClipOutline,
   popClip,
   strokeOutlinePx,
@@ -65,6 +73,7 @@ import {
   type VectorFont,
   type VectorFontResolver,
 } from './svgVector';
+import { inkScaleOperators } from './inkScale';
 
 /** Raw bytes of a resource binary, keyed by `fileId`. */
 export type ResourceBytesProvider = (fileId: string) => Uint8Array | undefined;
@@ -186,6 +195,30 @@ function svgFontString(family: string, weight: number, italic: boolean): string 
   return `${italic ? 'italic ' : ''}${weight} 16px ${family}`;
 }
 
+/** The character of a numeric reference; nothing for one out of range. */
+function charOf(cp: number): string {
+  return Number.isInteger(cp) && cp >= 0 && cp <= 0x10ffff ? String.fromCodePoint(cp) : '';
+}
+
+/** The characters an SVG's text may set: those of its markup outside tags,
+ *  entities decoded — more than its text nodes (a `<style>` sheet counts
+ *  too), which only asks a sliced face for a file more. */
+function svgCodePoints(svgText: string): Set<number> {
+  const text = svgText
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => charOf(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, dec: string) => charOf(parseInt(dec, 10)))
+    .replace(/&(lt|gt|amp|quot|apos);/g, (_, name: string) => ({ lt: '<', gt: '>', amp: '&', quot: '"', apos: "'" })[name] ?? '');
+  const out = new Set<number>();
+  for (const ch of text) {
+    const cp = ch.codePointAt(0)!;
+    if (cp > 0x20) out.add(cp);
+  }
+  out.add(0x20);
+  return out;
+}
+
 /** Fonts an SVG's text would need, as font strings the {@link FontCache}
  *  can preload: every named (non-generic) family of each run, so the
  *  resolver can fall through the `font-family` list in order. */
@@ -210,7 +243,7 @@ function fontResolverFor(fontCache: FontCache): VectorFontResolver {
       if (!pdfFont) continue;
       let vf = fonts.get(pdfFont);
       if (!vf) {
-        vf = { pdfFont, widthOf: (text, size) => pdfFont.widthOfTextAtSize(text, size) };
+        vf = { pdfFont, widthOf: (text, size) => widthOfTextAtSize(pdfFont, text, size) };
         fonts.set(pdfFont, vf);
       }
       return vf;
@@ -249,13 +282,18 @@ export async function inlineSvgFontsForRaster(
   provider: PdfFontProvider,
 ): Promise<string> {
   let css = '';
+  const codePoints = svgCodePoints(svgText);
   for (const fs of fontStrings) {
     const parsed = parseFontString(fs);
     if (!parsed) continue;
-    const bytes = await provider(parsed.family, parsed.weight, parsed.style).catch(() => null);
-    if (!bytes || bytes.length === 0) continue;
-    const format = sniffFontFormat(bytes);
-    css += `@font-face{font-family:"${parsed.family.replace(/["\\]/g, '')}";font-weight:${parsed.weight};font-style:${parsed.style};src:url(data:${FONT_MIME[format]};base64,${toBase64(bytes)})}`;
+    const answer = await provider(parsed.family, parsed.weight, parsed.style, { codePoints }).catch(() => null);
+    // A face of several files is one @font-face per file: the browser
+    // looks each character up in them in turn.
+    for (const bytes of Array.isArray(answer) ? answer : answer ? [answer] : []) {
+      if (bytes.length === 0) continue;
+      const format = sniffFontFormat(bytes);
+      css += `@font-face{font-family:"${parsed.family.replace(/["\\]/g, '')}";font-weight:${parsed.weight};font-style:${parsed.style};src:url(data:${FONT_MIME[format]};base64,${toBase64(bytes)})}`;
+    }
   }
   if (!css) return svgText;
   const m = /<svg\b[^>]*?>/i.exec(svgText);
@@ -389,7 +427,10 @@ export async function preloadResourceImages(
         if (fontCache) {
           // Text runs need their fonts embedded before the sync conversion.
           wanted = collectSvgFontStrings(svgText);
-          if (wanted.length > 0) await fontCache.preloadFontStrings(wanted);
+          if (wanted.length > 0) {
+            const codePoints = svgCodePoints(svgText);
+            await fontCache.preloadFontStrings(new Map(wanted.map((fs) => [fs, codePoints])));
+          }
           fonts = fontResolverFor(fontCache);
         }
         const drawing = svgToVectorDrawing(svgText, { fonts });
@@ -520,9 +561,9 @@ function paintLine(
   elem?: StructElem,
 ): void {
   const tracking = line.letterSpacing ?? 0;
-  if (tracking !== 0) ctx.page.pushOperators(setCharacterSpacing(tracking * ctx.scale));
-  paintLineRuns(ctx, line, fonts, fontCache, color, linkColor, linkRegistry, resolveRefId, labelColor, elem);
-  if (tracking !== 0) ctx.page.pushOperators(setCharacterSpacing(0));
+  if (tracking !== 0) setTrackingPx(ctx, tracking);
+  paintLineRuns(ctx, line, fonts, fontCache, color, linkColor, linkRegistry, resolveRefId, labelColor, elem, tracking);
+  if (tracking !== 0) setTrackingPx(ctx, 0);
 }
 
 function paintLineRuns(
@@ -536,6 +577,7 @@ function paintLineRuns(
   resolveRefId: ((seg: { refResourceId?: string }) => string | undefined),
   labelColor: Color,
   elem: StructElem | undefined,
+  tracking = 0,
 ): void {
   const baseFont = fontCache.get(fonts.normal);
   if (!baseFont) return;
@@ -545,6 +587,25 @@ function paintLineRuns(
     const refRun = new RefRun();
     let x = line.bbox.x;
     const uris = new UriRuns(ctx, line, linkRegistry, elem);
+    // Only a line of the CJK composer carries its fields (a segment's
+    // tracking, ink offset and scale); any other is painted as every line
+    // was before them (see `renderSegments` in blockRender.ts).
+    const composed = line.cjkComposed === true || ctx.vertical !== undefined;
+    // A composed CJK line reads as written, not with its gaps.
+    const actualLine = composed ? cjkLineText(segs) : undefined;
+    let lineState: LineTextState | undefined;
+    if (actualLine !== undefined) {
+      const first = segs.find((s) => s.kind === 'text' && !s.chip && s.text !== '');
+      const fontStr = first ? first.fontString ?? pickFont(!!first.bold, !!first.italic, fonts) : fonts.normal;
+      lineState = {
+        font: fontCache.get(fontStr) ?? baseFont,
+        text: first?.text ?? '',
+        sizePx: parseFontString(fontStr)?.sizePx ?? baseSize,
+        xPx: line.bbox.x,
+        baselinePx: line.baseline,
+      };
+      beginActualTextSpan(ctx, actualLine, lineState);
+    }
     for (let i = 0; i < segs.length; i++) {
       const seg = segs[i]!;
       if (seg.kind === 'space') {
@@ -579,7 +640,20 @@ function paintLineRuns(
       const uriElem = uris.word(refId === undefined ? seg.href : undefined, x, seg.width, seg.text);
       const link = refId !== undefined ? refRun.enter(seg, x, elem, refId) : undefined;
       tagContent(ctx, link ?? uriElem ?? elem);
-      drawTextPx(ctx, seg.text, x, line.baseline + (seg.baselineShift ?? 0), font, size, segColor);
+      if (!composed) {
+        drawTextPx(ctx, seg.text, x, line.baseline + (seg.baselineShift ?? 0), font, size, segColor);
+      } else {
+        // A justified CJK line spreads its characters per segment.
+        // A compressed CJK mark advances to its box's end (see blockRender).
+        const markSpacing = compressedMarkSpacingPx(font, seg, size);
+        if (markSpacing !== undefined) setTrackingPx(ctx, markSpacing);
+        else if (seg.tracking !== undefined) setTrackingPx(ctx, (tracking + seg.tracking));
+        const stretch = inkScaleOperators(seg.inkScale);
+        ctx.page.pushOperators(...stretch.before);
+        drawTextPx(ctx, seg.text, x + (seg.inkOffset ?? 0), line.baseline + (seg.baselineShift ?? 0), font, size, segColor);
+        ctx.page.pushOperators(...stretch.after);
+        if (markSpacing !== undefined || seg.tracking !== undefined) setTrackingPx(ctx, tracking);
+      }
       const ref = refId !== undefined ? refRun.leave(seg, segs[i + 1], refId) : undefined;
       if (ref && linkRegistry) {
         const { scale, pageHeightPt } = ctx;
@@ -593,6 +667,7 @@ function paintLineRuns(
       x += seg.width;
     }
     uris.end();
+    if (lineState) endActualTextSpan(ctx, lineState);
     return;
   }
   tagContent(ctx, elem);
@@ -601,7 +676,7 @@ function paintLineRuns(
 
 /** Layout attributes of a figure: its bounding box on the page (PDF user
  *  space, bottom-up) and block placement. */
-function figureLayout(ctx: PageCtx, xPx: number, yPx: number, wPx: number, hPx: number): StructAttrs['attributes'] {
+export function figureLayout(ctx: PageCtx, xPx: number, yPx: number, wPx: number, hPx: number): StructAttrs['attributes'] {
   const { scale, pageHeightPt } = ctx;
   const rect: [number, number, number, number] = [
     xPx * scale,
@@ -807,13 +882,14 @@ export function renderResourceBlock(
   // structure bounding boxes) go through the same matrix.
   const rot = rb.rotation;
   let matrix: PdfMatrix | undefined;
+  // A turned block's text is horizontal in its own frame: an upright
+  // figure on a vertical page sets its caption and cells across.
+  const outerVertical = rot ? ctx.vertical : undefined;
   if (rot) {
-    matrix = rot.direction === 'ccw'
-      ? [0, 1, -1, 0, rot.originX * scale + pageHeightPt, pageHeightPt - rot.originY * scale]
-      : [0, -1, 1, 0, rot.originX * scale - pageHeightPt, pageHeightPt - rot.originY * scale];
-    pushTransform(ctx, matrix);
-    const m = matrix;
-    ctx.mapRectPt = (r) => mapRectThrough(m, r);
+    matrix = quarterTurnMatrix(rot, scale, pageHeightPt);
+    // Inside a vertical page's frame the block's rects go through both.
+    pushFrame(ctx, matrix);
+    delete ctx.vertical;
   }
   const bx = (rot ? 0 : block.bbox.x) + rb.bodyRect.x;
   const by = (rot ? 0 : block.bbox.y) + rb.bodyRect.y;
@@ -855,8 +931,15 @@ export function renderResourceBlock(
   // Named destination for inline refs: top-left of the placed block (the
   // first slice of a split table; continuations are not targets).
   if (linkRegistry && rb.resource.id && !rb.slice?.continued) {
-    const destTop = pageHeightPt - block.bbox.y * scale;
-    linkRegistry.addDestination(rb.resource.id, ctx.page, block.bbox.x * scale, destTop);
+    // On the sheet: the block's box is in the page's frame, which a vertical
+    // page turns (not the block's own turned frame).
+    const pageMap = rot ? outerRectMap(ctx) : ctx.mapRectPt;
+    const box: [number, number, number, number] = [
+      block.bbox.x * scale, pageHeightPt - (block.bbox.y + block.bbox.height) * scale,
+      (block.bbox.x + block.bbox.width) * scale, pageHeightPt - block.bbox.y * scale,
+    ];
+    const [left, , , top] = pageMap ? pageMap(box) : box;
+    linkRegistry.addDestination(rb.resource.id, ctx.page, left, top);
   }
 
   // Caption bar (behind the caption lines).
@@ -904,7 +987,7 @@ export function renderResourceBlock(
     }
   }
   if (matrix) {
-    popTransform(ctx);
-    delete ctx.mapRectPt;
+    popFrame(ctx);
+    if (outerVertical) ctx.vertical = outerVertical;
   }
 }

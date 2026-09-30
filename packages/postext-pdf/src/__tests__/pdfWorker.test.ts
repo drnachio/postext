@@ -123,6 +123,24 @@ describe('createPdfWorker (EF-52)', () => {
     }
   });
 
+  it('sends each face the characters it sets, and takes a face back as several files (#196)', async () => {
+    const slices = ['noto-serif-tc-122.ttf', 'noto-serif-tc-123.ttf', 'noto-serif-tc-121.ttf']
+      .map((name) => new Uint8Array(fs.readFileSync(new URL(`./fixtures/cjk/${name}`, import.meta.url))));
+    const doc = buildDocument({ markdown: '之也。《》' }, { ...config, bodyText: { fontFamily: 'Noto Serif TC' }, footer: { elements: [] } });
+    const heard: string[] = [];
+    const warnings: PdfWarning[] = [];
+    const bytes = await pdf.render(doc, {
+      fontProvider: async (family, _weight, _style, request) => {
+        heard.push(`${family}: ${[...(request?.codePoints ?? [])].map((cp) => String.fromCodePoint(cp)).sort().join('')}`);
+        return slices;
+      },
+      onWarning: (w) => warnings.push(w),
+    });
+    expect(new TextDecoder().decode(bytes.slice(0, 5))).toBe('%PDF-');
+    expect(heard).toEqual(['Noto Serif TC: 。《》之也']);
+    expect(warnings).toEqual([]);
+  });
+
   it('rejects when a family cannot be had at all', async () => {
     const doc = buildDocument({ markdown: 'Body.' }, config);
     await expect(pdf.render(doc, {

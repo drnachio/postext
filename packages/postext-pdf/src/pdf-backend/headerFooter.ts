@@ -6,19 +6,24 @@ import type {
   VDTDesignImageBlock,
   VDTDesignBoxStyle,
 } from 'postext';
-import { setCharacterSpacing } from 'pdf-lib';
-import { drawEmbeddedResource, type ResourceImageMap } from './renderResourceBlock';
-import { tagArtifact, tagContent, type ArtifactSpec, type StructElem } from './tagging';
+import { segmentOrientation } from 'postext';
+import { drawEmbeddedResource, figureLayout, type ResourceImageMap } from './renderResourceBlock';
+import { tagArtifact, tagContent, type ArtifactSpec, type StructAttrs, type StructElem } from './tagging';
 
 /** How an accessible render tags a design slot: its text goes to the
  *  element `text()` returns (created on first use), or counts as an
  *  artifact when `text` is absent (running headers / footers) or the text
  *  block is pagination furniture (`artifact`: a split callout's repeated
- *  title and continuation marker); rules, boxes and images are always
- *  artifacts of class `artifact`. */
+ *  title and continuation marker). A picture with alternative text
+ *  (`VDTDesignImageBlock.altText`, #213) is a `Figure` that `figure`
+ *  creates — read after the slot's text element, `after`, when the slot
+ *  has text; without `figure` (running heads) it stays an artifact. Rules,
+ *  boxes and pictures without alternative text are artifacts of class
+ *  `artifact`. */
 export interface SlotMark {
   text?: () => StructElem;
   artifact: ArtifactSpec;
+  figure?: (alt: string, attributes: StructAttrs['attributes'], after: StructElem | undefined) => StructElem;
 }
 
 function tagSlotText(ctx: PageCtx, mark: SlotMark | undefined, block: VDTDesignTextBlock): void {
@@ -33,6 +38,10 @@ import {
   alphaOf,
   colorFromHex,
   drawTextPx,
+  setTrackingPx,
+  pushFrame,
+  popFrame,
+  quarterTurnMatrix,
   fillRectPx,
   pushClipOutline,
   pushClipRect,
@@ -173,26 +182,43 @@ function renderTextBlock(
   }
   // Negative tracking tightens the letters (EF-82).
   const tracked = block.letterSpacingPx !== undefined && block.letterSpacingPx !== 0;
-  if (tracked) ctx.page.pushOperators(setCharacterSpacing(block.letterSpacingPx! * ctx.scale));
+  if (tracked) setTrackingPx(ctx, block.letterSpacingPx!);
   const outline: TextOutline | undefined = block.stroke && block.stroke.widthPx > 0
     ? { color: colorFromHex(block.stroke.color, ctx.colorSpace), widthPx: block.stroke.widthPx, hollow: block.stroke.hollow }
     : undefined;
   tagSlotText(ctx, mark, block);
+  // A vertical block (`VDTDesignTextBlock.vertical`) paints its lines in
+  // its own frame, turned a quarter turn clockwise about the box's top
+  // right corner, set down the column.
+  const vertical = block.vertical;
+  const outerVertical = ctx.vertical;
+  if (vertical) {
+    pushFrame(ctx, quarterTurnMatrix({ direction: 'cw', originX: block.bbox.x + block.bbox.width, originY: block.bbox.y }, ctx.scale, ctx.pageHeightPt));
+    ctx.vertical = { region: vertical.region, uprightDigits: vertical.uprightDigits, axes: vertical.centralBaselines };
+    tagSlotText(ctx, mark, block);
+  }
+  const originX = vertical ? 0 : block.bbox.x;
   for (const line of block.lines) {
     if (!line.runs) {
-      drawTextPx(ctx, line.text, block.bbox.x + line.xOffset, line.baselineY, font, size, color, outline);
+      drawTextPx(ctx, line.text, originX + line.xOffset, line.baselineY, font, size, color, outline);
       continue;
     }
     // Inline marks: each run in its own font, one after another.
-    let x = block.bbox.x + line.xOffset;
+    let x = originX + line.xOffset;
     for (const run of line.runs) {
       const runFont = fontCache.get(run.fontString) ?? font;
       const runSize = parseFontString(run.fontString)?.sizePx ?? size;
-      drawTextPx(ctx, run.text, x, line.baselineY + (run.baselineShift ?? 0), runFont, runSize, color, outline);
+      // A vertical line: the orientation its author gave the run.
+      drawTextPx(ctx, run.text, x, line.baselineY + (run.baselineShift ?? 0), runFont, runSize, color, outline, undefined, segmentOrientation(run));
       x += run.width;
     }
   }
-  if (tracked) ctx.page.pushOperators(setCharacterSpacing(0));
+  if (vertical) {
+    popFrame(ctx);
+    if (outerVertical) ctx.vertical = outerVertical;
+    else delete ctx.vertical;
+  }
+  if (tracked) setTrackingPx(ctx, 0);
   if (clip) popClip(ctx);
 }
 
@@ -210,17 +236,47 @@ function renderBoxBlock(ctx: PageCtx, block: VDTDesignBoxBlock): void {
 }
 
 /** Image block (e.g. a callout icon): drawn from the preloaded resource
- *  image map, with a neutral placeholder when the image is absent. */
-function renderImageBlock(ctx: PageCtx, block: VDTDesignImageBlock, images: ResourceImageMap | undefined): void {
+ *  image map, with a neutral placeholder when the image is absent. `tag`
+ *  routes the picture in an accessible render (a `Figure`, an artifact):
+ *  it runs where the picture is painted, inside the turned frame of a
+ *  vertical page, since entering a frame ends the open marked-content
+ *  sequence. */
+function renderImageBlock(
+  ctx: PageCtx,
+  block: VDTDesignImageBlock,
+  images: ResourceImageMap | undefined,
+  tag?: () => void,
+): void {
   const { x, y, width, height } = block.bbox;
+  const turned = !!ctx.vertical && width > 0 && height > 0;
+  if (!turned) tag?.();
   if (width <= 0 || height <= 0) return;
   const embedded = images?.get(block.fileId);
-  if (embedded) {
-    drawEmbeddedResource(ctx, embedded, x, y, width, height);
-  } else {
-    ctx.onMissingImage?.(block.fileId);
-    fillRectPx(ctx, x, y, width, height, colorFromHex('#e8e8e8', ctx.colorSpace));
+  const draw = (bx: number, by: number, bw: number, bh: number): void => {
+    if (embedded) {
+      drawEmbeddedResource(ctx, embedded, bx, by, bw, bh);
+    } else {
+      ctx.onMissingImage?.(block.fileId);
+      fillRectPx(ctx, bx, by, bw, bh, colorFromHex('#e8e8e8', ctx.colorSpace));
+    }
+  };
+  if (!ctx.vertical) {
+    draw(x, y, width, height);
+    return;
   }
+  // In a vertical page's flow the picture stands upright on the sheet, as
+  // the canvas and the HTML draw it: turned back inside its box, whose
+  // `width` runs down the sheet and whose `height` runs across it. A box
+  // sized for that (`upright`) is filled; any other picture (a callout
+  // icon) is fitted inside it, keeping its proportions.
+  pushFrame(ctx, quarterTurnMatrix({ direction: 'ccw', originX: x, originY: y + height }, ctx.scale, ctx.pageHeightPt));
+  tag?.();
+  if (block.upright) draw(0, 0, height, width);
+  else {
+    const k = Math.min(height / width, width / height);
+    draw((height - width * k) / 2, (width - height * k) / 2, width * k, height * k);
+  }
+  popFrame(ctx);
 }
 
 export function renderHeaderFooterSlot(
@@ -235,6 +291,16 @@ export function renderHeaderFooterSlot(
       renderTextBlock(ctx, block, fontCache, mark);
       continue;
     }
+    if (block.kind === 'image' && block.altText && mark?.figure) {
+      // A picture that is content: a `Figure` with its alternative text,
+      // read after the slot's own text (a chapter's plate after its
+      // heading).
+      const hasText = !!mark.text && slot.blocks.some((b) => b.kind === 'text' && !b.artifact);
+      const { x, y, width, height } = block.bbox;
+      const figure = mark.figure(block.altText, figureLayout(ctx, x, y, width, height), hasText ? mark.text!() : undefined);
+      renderImageBlock(ctx, block, images, () => tagContent(ctx, figure));
+      continue;
+    }
     if (block.kind === 'box' && block.clip) {
       // A callout stripe on a rounded frame, clipped to the frame's
       // outline. The clip's graphics state opens first: a marked-content
@@ -245,9 +311,12 @@ export function renderHeaderFooterSlot(
       popClip(ctx);
       continue;
     }
+    if (block.kind === 'image') {
+      renderImageBlock(ctx, block, images, mark ? () => tagArtifact(ctx, mark.artifact) : undefined);
+      continue;
+    }
     if (mark) tagArtifact(ctx, mark.artifact);
     if (block.kind === 'rule') renderRuleBlock(ctx, block);
-    else if (block.kind === 'image') renderImageBlock(ctx, block, images);
     else renderBoxBlock(ctx, block);
   }
 }

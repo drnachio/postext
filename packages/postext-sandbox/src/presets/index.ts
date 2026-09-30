@@ -31,7 +31,7 @@ export {
   presetFontFileId,
   resourceFromSpec,
 } from './manifest';
-export { BUILTIN_PRESET_ID, createPostextGuidePreset } from './builtin';
+export { BUILTIN_PRESET_ID, BUILTIN_PRESET_LOCALES, GUIDE_SAMPLE_DOCUMENTS, createPostextGuidePreset, isPristineChineseGuide } from './builtin';
 export { buildBundleFiles, parseBundle, planBundle, presetIdScheme, MARKDOWN_FILE } from './bundle';
 export type { BundleContent, BundleFileReader, BundleIdScheme, BundleMeta, BundlePlan, BuiltBundle } from './bundle';
 export { openBundleZip, zipBundle, POSTEXT_EXTENSION, POSTEXT_MIME } from './zip';

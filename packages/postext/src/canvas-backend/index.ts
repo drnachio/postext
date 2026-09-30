@@ -3,11 +3,14 @@ import { computePageTextExtent } from '../vdt';
 import { dimensionToPx } from '../units';
 import { columnClipRect } from '../columnClip';
 import { pageColumnRule } from '../columnRule';
-import { renderBaselineGrid, renderColumnRule, renderCutLines, renderFootnoteRules, computeContentArea } from './decorations';
+import { renderBaselineGrid, renderCharacterGrid, renderColumnRule, renderCutLines, renderFootnoteRules, computeContentArea } from './decorations';
+import { cjkGridCells } from '../pipeline/cjkGrid';
 import { renderBlock } from './blockRender';
 import { renderHeaderFooterSlot } from './headerFooter';
 import { documentInkHex } from '../svg/singleInk';
+import { renderLangOf } from '../locale';
 import { setMissingImageSink, setTintUnflagged } from './renderResourceBlock';
+import { setVerticalPaint } from './verticalText';
 export {
   registerResourceImage,
   unregisterResourceImage,
@@ -15,6 +18,8 @@ export {
   getResourceImage,
 } from './renderResourceBlock';
 export type { ResourceImageSource, RegisterResourceImageOptions } from './renderResourceBlock';
+export { registerVerticalAlternates, unregisterVerticalAlternates, loadVerticalAlternates, verticalTwinName, VERTICAL_ALTERNATE_SAMPLE } from './verticalText';
+export type { VerticalAlternatesFace } from './verticalText';
 
 export interface RenderPageOptions {
   pageNegative?: boolean;
@@ -80,6 +85,40 @@ function paintPage(
 
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
+  // Text is painted from where the layout measured it, left to right. A
+  // canvas inside a right-to-left container inherits `rtl`, which would
+  // set a line's 'start' at its right end and reorder mixed runs: the page
+  // paints with `ltr`, and the context gets its own direction back.
+  const direction = 'direction' in ctx ? ctx.direction : undefined;
+  if (direction !== undefined) ctx.direction = 'ltr';
+  try {
+    paintContext(ctx, canvas, page, doc, options);
+  } finally {
+    if (direction !== undefined) ctx.direction = direction;
+  }
+}
+
+/** {@link renderLangOf} of each resolved config: every page of a document
+ *  asks for it. */
+const langByConfig = new WeakMap<object, string | undefined>();
+function langOf(config: VDTDocument['config']): string | undefined {
+  if (langByConfig.has(config)) return langByConfig.get(config);
+  const lang = renderLangOf(config);
+  langByConfig.set(config, lang);
+  return lang;
+}
+
+function paintContext(
+  ctx: CanvasRenderingContext2D,
+  canvas: HTMLCanvasElement,
+  page: VDTPage,
+  doc: VDTDocument,
+  options?: RenderPageOptions,
+): void {
+  // A Chinese, Japanese or Korean document paints in its language, so the
+  // browser picks the region's glyph forms (`ctx.lang`, Chrome 136+).
+  const lang = langOf(doc.config);
+  if (lang && 'lang' in ctx) (ctx as CanvasRenderingContext2D & { lang: string }).lang = lang;
   // The bitmap is a whole number of pixels; the page rarely is. Drawing at
   // `scale` would leave the last column (and row) of pixels only partly
   // covered — a light hairline at the edge of a dark or coloured page — so
@@ -126,6 +165,21 @@ function paintPage(
     ctx.clip();
   }
 
+  // A vertical page paints its flow through the page's frame — a quarter
+  // turn clockwise — with the vertical text painter on; the running heads,
+  // folios, background and crop marks stay on the sheet.
+  const flow = page.flow;
+  let outerVertical: ReturnType<typeof setVerticalPaint> = null;
+  if (flow) {
+    ctx.save();
+    ctx.transform(0, 1, -1, 0, page.width, 0);
+    outerVertical = setVerticalPaint({
+      region: doc.config.cjk?.region ?? 'mainland',
+      uprightDigits: doc.config.cjk?.uprightDigits ?? 2,
+      ...(flow.centralBaselines ? { axes: flow.centralBaselines } : {}),
+    });
+  }
+
   if (doc.config.page.baselineGrid.enabled) {
     // Bound the grid to the page's actual text: from the first text line to
     // the last. Pages with no text (blank parity pages) draw no grid, and
@@ -145,6 +199,10 @@ function paintPage(
     }
   }
 
+  // The character grid (稿纸), a screen aid (`cjk.grid.show`).
+  const gridCells = doc.config.cjk?.grid?.show ? cjkGridCells(doc.config, page.contentArea ?? computeContentArea(page, doc), doc.baselineGrid, page.columns, page.flow) : undefined;
+  if (gridCells) renderCharacterGrid(ctx, gridCells);
+
   // The page's own rule on a styled section's pages, else the document's.
   const columnRule = pageColumnRule(page, doc);
   if (columnRule.enabled && page.columns.length > 1) {
@@ -157,8 +215,11 @@ function paintPage(
 
   // Clip to column bounds, widened for glyph ink and for design overlays
   // that hang past the column on purpose (see `columnClipRect`).
+  // Only a document that hangs marks (`cjk.hangingPunctuation`) has lines
+  // whose marks reach past the column.
+  const hanging = doc.config.cjk?.hangingPunctuation !== 'none';
   for (const col of page.columns) {
-    const clip = columnClipRect(col, doc.config.page.dpi);
+    const clip = columnClipRect(col, doc.config.page.dpi, hanging);
     ctx.save();
     ctx.beginPath();
     ctx.rect(clip.x, clip.y, clip.width, clip.height);
@@ -184,6 +245,11 @@ function paintPage(
     for (const fb of page.floats) renderBlock(ctx, fb, fb.bbox.width, fb.bbox.x, inkHex);
   }
   renderFootnoteRules(ctx, page);
+
+  if (flow) {
+    setVerticalPaint(outerVertical);
+    ctx.restore();
+  }
 
   if (page.header) renderHeaderFooterSlot(ctx, page.header, inkHex);
   if (page.footer) renderHeaderFooterSlot(ctx, page.footer, inkHex);

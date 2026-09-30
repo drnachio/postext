@@ -9,6 +9,7 @@ import path from "node:path";
 import { variantFor } from "../../src/lib/cookbook/compose.ts";
 import { KIT_DIR, REPO_DIR, recipeDir } from "../../src/lib/cookbook/paths.ts";
 import { resetKitCache } from "../../src/lib/cookbook/sources.ts";
+import { compareSemVer } from "../../src/lib/cookbook/validate.ts";
 import type { Locale } from "../../src/lib/cookbook/types.ts";
 import { LOCALES } from "../../src/lib/cookbook/types.ts";
 import { UsageError, c, int, loadRecipes, mark, parseArgs, shown, str } from "./args.ts";
@@ -59,6 +60,14 @@ export async function runDev(argv: readonly string[]): Promise<number> {
   if (!meta) {
     console.error(`${mark.fail()} ${slug}: ${entry.error}`);
     return 1;
+  }
+
+  if (engine !== "local") {
+    const { resolveEngine } = await import("./shim.ts");
+    const pinned = resolveEngine(engine ?? "npm").postext;
+    if (typeof meta.engine?.postext === "string" && compareSemVer(meta.engine.postext, pinned) > 0) {
+      console.log(`${mark.warn()} ${slug} needs postext ${meta.engine.postext}; this page runs ${pinned}: pass --engine local to preview it on the workspace engine`);
+    }
   }
 
   const lang = (str(args, "lang") as Locale | undefined) ?? meta.sample?.locales?.[0] ?? "en";

@@ -15,6 +15,8 @@ import {
   NestedGroup,
 } from '../../controls';
 import { HighlightZone } from '../settings/previewHighlight';
+import { eastAsianNumberFormatOptions } from '../settings/eastAsianOptions';
+import { gridMarginsText, useCjkGrid } from './cjkGridReadout';
 
 const PAGE_SIZE_OPTIONS = [
   { value: '11x17', label: '11 \u00d7 17 cm' },
@@ -31,6 +33,10 @@ export const PageSection = memo(function PageSection() {
   const labels = useSandboxLabels();
   const raw = useSandboxSelector((s) => s.config.page);
   const page = resolvePageConfig(raw);
+  // The character grid sets the margins the pages use; the ones here are
+  // its minimums.
+  const grid = useCjkGrid();
+  const uiLocale = useSandboxSelector((s) => s.locale);
 
   const updatePage = (partial: Partial<PageConfig>) => {
     dispatch({
@@ -39,12 +45,15 @@ export const PageSection = memo(function PageSection() {
     });
   };
 
-  // The baseline grid lives in `page` but is edited under Advanced → Debug:
-  // resetting the page leaves it alone.
+  // The baseline grid lives in `page` but is edited under Advanced → Debug,
+  // the binding under Writing system: resetting the page leaves them alone.
   const resetPage = () => {
+    const kept: PageConfig = {};
+    if (raw?.baselineGrid) kept.baselineGrid = raw.baselineGrid;
+    if (raw?.binding !== undefined) kept.binding = raw.binding;
     dispatch({
       type: 'UPDATE_CONFIG',
-      payload: { page: raw?.baselineGrid ? { baselineGrid: raw.baselineGrid } : undefined },
+      payload: { page: Object.keys(kept).length > 0 ? kept : undefined },
     });
   };
 
@@ -126,7 +135,7 @@ export const PageSection = memo(function PageSection() {
   };
 
   // Check which fields differ from defaults
-  const hasOverrides = raw !== undefined && Object.keys(raw).some((k) => k !== 'baselineGrid');
+  const hasOverrides = raw !== undefined && Object.keys(raw).some((k) => k !== 'baselineGrid' && k !== 'binding');
   const isBgDefault = colorsEqual(page.backgroundColor, D.backgroundColor);
   const isPresetDefault = page.sizePreset === D.sizePreset;
   const isWidthDefault = dimensionsEqual(page.width, D.width);
@@ -153,6 +162,7 @@ export const PageSection = memo(function PageSection() {
     { value: 'upper-roman', label: labels.pageNumberingFormatUpperRoman },
     { value: 'lower-alpha', label: labels.pageNumberingFormatLowerAlpha },
     { value: 'upper-alpha', label: labels.pageNumberingFormatUpperAlpha },
+    ...eastAsianNumberFormatOptions(labels),
   ];
 
   const sizeReset = () => {
@@ -273,6 +283,11 @@ export const PageSection = memo(function PageSection() {
             onReset={() => resetMargin('right')}
           />
         </HighlightZone>
+        {grid && (
+          <p className="mt-1 text-[0.66rem] leading-[1.35] text-(--slate) [text-wrap:pretty]">
+            {gridMarginsText(labels.pageMarginsFromGrid, grid, uiLocale)}
+          </p>
+        )}
       </FieldGroup>
 
       <FieldGroup title={labels.pageGroupPaper}>

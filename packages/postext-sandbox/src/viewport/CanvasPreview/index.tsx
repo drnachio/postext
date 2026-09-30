@@ -11,7 +11,7 @@ import type { LayoutContinuation, NumeralStyle, VDTDocument, PostextConfig, Rend
 import { clearOverlay, drawOverlay } from './overlay';
 import { findResourceLocation } from './geometry';
 import type { BookPageMap } from '../usePageHashSync';
-import { ensureConfigFontsLoaded, getConfigFontSpecs } from '../../controls/fontLoader';
+import { ensureConfigFontsLoaded, getConfigFontSpecs, loadVerticalTwins, verticalTwinsSettled } from '../../controls/fontLoader';
 import { ensureResourceImages } from '../../controls/resourceImages';
 import { useLayoutWorker } from '../../worker/useLayoutWorker';
 import { layoutCacheKey, stableStringify } from '../../book/layoutKeys';
@@ -401,6 +401,15 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
       }
     }
 
+    // Vertical text: the canvas paints brackets and punctuation with the
+    // fonts' vertical forms, through twin faces loaded once per family; the
+    // pages are painted again when they land (with the fallbacks meanwhile).
+    if (!verticalTwinsSettled(deferredConfig)) {
+      loadVerticalTwins(deferredConfig).then((added) => {
+        if (added && !cancelled) setRebuildKey((k) => k + 1);
+      });
+    }
+
     // Track rebuildKey so worker fonts are re-registered when main-thread
     // fonts land after the first build. The worker's own cache is keyed on
     // measurement-relevant config bits, so unchanged builds stay cheap.
@@ -430,10 +439,13 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
           // this build over.
           if (!chapterPlan) return;
           const source = composeBookMemo(snapshotChapters, chapter.id);
-          // The first chapter inherits nothing but the book's page count.
+          // The first chapter inherits nothing but the book's page count;
+          // the page fields of a plan not yet paginated are provisional.
+          const { pageNumbering: planNumbering, ...inherited } = chapterPlan.continuation ?? {};
+          const numbering = nextNumbering ?? (chapterPlan.paginated ? planNumbering : undefined);
           const continuation: LayoutContinuation | undefined = chapterPlan.index === 0
             ? chapterPlan.continuation
-            : { ...chapterPlan.continuation, pageIndexOffset: offset, ...(nextNumbering ? { pageNumbering: nextNumbering } : {}) };
+            : { ...inherited, pageIndexOffset: offset, ...(numbering ? { pageNumbering: numbering } : {}) };
           const keyInput = { markdown: source.markdown, metadata: source.metadata, config: deferredConfig, resources: deferredResources, continuation, outlineKey: chapterPlan.outlineKey };
           // What the chapter was built from, whatever the records say: the
           // counters and pages it actually continues.

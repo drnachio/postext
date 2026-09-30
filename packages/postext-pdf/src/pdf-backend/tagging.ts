@@ -43,7 +43,8 @@ export type StructType =
   | 'Document' | 'Div' | 'P' | 'H1' | 'H2' | 'H3' | 'H4' | 'H5' | 'H6'
   | 'L' | 'LI' | 'Lbl' | 'LBody' | 'BlockQuote' | 'Figure' | 'Formula'
   | 'Caption' | 'Table' | 'TR' | 'TH' | 'TD' | 'Link' | 'Note' | 'Span'
-  | 'TOC' | 'TOCI' | 'Reference';
+  | 'TOC' | 'TOCI' | 'Reference'
+  | 'Ruby' | 'RB' | 'RT' | 'Warichu' | 'WT';
 
 /** Artifact classes (PDF 1.7 §14.8.2.2). */
 export interface ArtifactSpec {
@@ -146,6 +147,11 @@ export class PageTagger {
   get mcidCount(): number {
     return this.nextMcid;
   }
+
+  /** The element the content painted now is routed to, if any. */
+  get openElem(): StructElem | undefined {
+    return this.open && 'elem' in this.open ? this.open.elem : undefined;
+  }
 }
 
 /** Route the next drawing calls on `ctx` to `elem` (no-op when untagged). */
@@ -167,6 +173,11 @@ export interface StructTreeOptions {
   /** `pdf:Producer` / `xmp:CreatorTool` of the XMP packet. */
   producer: string;
   creatorTool: string;
+  /** The writing mode of the document's text, as the Layout attribute
+   *  `WritingMode` of the `Document` element (ISO 32000-1 Table 343), which
+   *  every element inherits: `'TbRl'` for vertical text. Absent: the
+   *  default, `LrTb`. */
+  writingMode?: 'TbRl';
 }
 
 function xmlEscape(s: string): string {
@@ -208,7 +219,9 @@ export class StructTree {
   private nextParentKey = 0;
 
   constructor(readonly pdfDoc: PDFDocument, readonly options: StructTreeOptions) {
-    this.root = this.elem('Document', null, {});
+    this.root = this.elem('Document', null, options.writingMode
+      ? { attributes: [{ owner: 'Layout', entries: { WritingMode: PDFName.of(options.writingMode) } }] }
+      : {});
   }
 
   /** Create an element under `parent` (`null` only for the root). */

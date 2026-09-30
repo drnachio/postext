@@ -249,7 +249,8 @@
           "fonts",
           "viewer",
           "pdf",
-          "images"
+          "images",
+          "cjk"
         ]
       },
       "minItems": 3,
@@ -368,6 +369,26 @@
             {
               "type": "integer",
               "minimum": 0
+            },
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "last",
+                      "first"
+                    ]
+                  },
+                  {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 4,
+              "uniqueItems": true
             }
           ]
         },

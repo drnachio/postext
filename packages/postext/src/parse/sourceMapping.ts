@@ -2,6 +2,8 @@ import type { InlineSpan } from './types';
 import { MATH_PLACEHOLDER } from './inlineMath';
 import { BREAK_PLACEHOLDER, CHIP_PLACEHOLDER, FOOTNOTE_PLACEHOLDER, REF_PLACEHOLDER, SMALLCAPS_OPENER, SWATCH_PLACEHOLDER } from './inlineFormatting';
 import { sliceSpan } from './links';
+import { orientationOpenerAt } from './orientationMarks';
+import { annotationSourceSkips } from './annotations';
 
 /** A `:smallcaps[` at `r` that the parser took as markup: its closing `]`
  *  comes later on the same line (an unclosed one stays literal text). */
@@ -31,6 +33,15 @@ export function computeSourceMap(
 ): number[] {
   const map = new Array<number>(plainText.length);
   let r = blockSrcStart;
+  // The markup of Chinese annotations (`:ruby[`, `]{rt="…"}`, a compact
+  // ruby's `|hóng|lóu}`) prints nothing: plain characters never match
+  // inside it (#193–#195).
+  const skips = annotationSourceSkips(markdown, blockSrcStart, blockSrcEnd);
+  let si = 0;
+  // Inline code spans, which the parser protects: an orientation mark
+  // written inside one (`` `:tcy[…]` ``) is text, its opener printed.
+  const code = orientationCodeSpans(markdown, blockSrcStart, blockSrcEnd);
+  let ci = 0;
   for (let p = 0; p < plainText.length; p++) {
     const ch = plainText[p]!;
     // Math placeholder: the plain char represents `$...$` in the markdown.
@@ -157,11 +168,25 @@ export function computeSourceMap(
     }
     const isSpace = ch === ' ';
     while (r < blockSrcEnd) {
+      while (si < skips.length && skips[si]![1] <= r) si++;
+      if (si < skips.length && r >= skips[si]![0]) {
+        r = skips[si]![1];
+        continue;
+      }
       const rc = markdown[r]!;
       // The opener of a `:smallcaps[…]` run has no plain character: skip
       // it whole, so its letters never match the text inside.
       if (rc === ':' && isSmallCapsOpenerAt(markdown, r, blockSrcEnd)) {
         r += SMALLCAPS_OPENER.length;
+        continue;
+      }
+      // So has the opener of `:tcy[…]`, `:upright[…]`, `:sideways[…]`,
+      // outside inline code.
+      while (ci < code.length && code[ci]![1] <= r) ci++;
+      const inCode = ci < code.length && r >= code[ci]![0];
+      const orientationOpener = rc === ':' && !inCode ? orientationOpenerAt(markdown, r, blockSrcEnd) : 0;
+      if (orientationOpener > 0) {
+        r += orientationOpener;
         continue;
       }
       if (rc === ch) break;
@@ -176,6 +201,19 @@ export function computeSourceMap(
     }
   }
   return map;
+}
+
+/** The inline code spans (`` `…` ``) of `[from, end)` that may hold an
+ *  orientation mark, as `[start, end)` source offsets in order; none when
+ *  the block has no such mark. */
+function orientationCodeSpans(markdown: string, from: number, end: number): Array<[number, number]> {
+  const slice = markdown.slice(from, end);
+  if (!slice.includes('`') || !/:(?:tcy|upright|sideways)\[/.test(slice)) return [];
+  const out: Array<[number, number]> = [];
+  const re = /(?<!\\)`[^`\n]+?`/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(slice)) !== null) out.push([from + m.index, from + m.index + m[0].length]);
+  return out;
 }
 
 /** Whitespace collapsed by pretext's `normalizeWhitespaceNormal`. A Set

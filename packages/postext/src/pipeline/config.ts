@@ -20,12 +20,14 @@ import {
   resolveTocConfig,
   resolveIndexConfig,
   resolveFootnotesConfig,
+  resolveCjkConfig,
   resolvePdfGenerationConfig,
   applyPaletteToConfig,
   applyPaletteToResolvedConfig,
   DEFAULT_LAYOUT_CONFIG,
 } from '../defaults';
 import { dimensionToPx } from '../units';
+import { applyCjkGrid } from './cjkGrid';
 import { presentTag } from '../locale';
 import { createBoundingBox, type BoundingBox, type ResolvedConfig } from '../vdt';
 
@@ -48,13 +50,19 @@ export function resolveAllConfig(rawConfig?: PostextConfig): ResolvedConfig {
 }
 
 function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
-  const config = applyPaletteToConfig(rawConfig);
+  // The character grid (`cjk.grid`) sets the margins and the gutter before
+  // anything reads them (see `cjkGrid.ts`).
+  const config = applyCjkGrid(applyPaletteToConfig(rawConfig));
   const bodyText = resolveBodyTextConfig(config?.bodyText, config?.locale);
-  const headings = resolveHeadingsConfig(config?.headings);
-  const unorderedLists = resolveUnorderedListsConfig(config?.unorderedLists, bodyText);
-  const orderedLists = resolveOrderedListsConfig(config?.orderedLists, bodyText);
-  const page = resolvePageConfig(config?.page);
+  // The document language as `resolvedLocale` reads it: the script of the
+  // numeral tokens 一 and 壹 in list and page formats follows it, as it does
+  // in heading templates and `:::numbering`, and so does the `cjk` region.
+  const documentLocale = documentLocaleOf(config?.locale, bodyText.hyphenation);
   const layout = resolveLayoutConfig(config?.layout);
+  const headings = verticalBalancing(resolveHeadingsConfig(config?.headings), layout, config?.headings?.balancing?.enabled);
+  const unorderedLists = resolveUnorderedListsConfig(config?.unorderedLists, bodyText);
+  const orderedLists = resolveOrderedListsConfig(config?.orderedLists, bodyText, documentLocale);
+  const page = resolvePageConfig(config?.page, documentLocale, layout.writingMode);
   const resolved: ResolvedConfig = {
     page,
     layout,
@@ -77,6 +85,7 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
     toc: resolveTocConfig(config?.toc, bodyText),
     index: resolveIndexConfig(config?.index, bodyText),
     footnotes: resolveFootnotesConfig(config?.footnotes),
+    cjk: resolveCjkConfig(config?.cjk, documentLocale),
     ...(config?.locale ? { locale: config.locale } : {}),
     // Kept for per-resource-type caption overrides, which resolve their
     // palette colours at layout time (see `mergeCaptionStyle`). A copy: the
@@ -93,12 +102,29 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
   return applyPaletteToResolvedConfig(resolved, rawConfig?.colorPalette);
 }
 
-/** The document language: `locale`, else the hyphenation locale (which the
- *  Sandbox fills from the app language) — the same rule the table
+/** Tiers of vertical text are not balanced: the flow fills the upper tier,
+ *  then the next, and a chapter's last tiers end where their text ends
+ *  (clreq §7.1.3.4). Column balancing is therefore off in a vertical
+ *  document unless the config turns it on itself. */
+function verticalBalancing(
+  headings: ResolvedConfig['headings'],
+  layout: ResolvedConfig['layout'],
+  asked: boolean | undefined,
+): ResolvedConfig['headings'] {
+  if (layout.writingMode !== 'vertical-rl' || asked !== undefined || !headings.balancing.enabled) return headings;
+  return { ...headings, balancing: { ...headings.balancing, enabled: false } };
+}
+
+/** The document language: `locale`, else the hyphenation locale as written
+ *  (which the Sandbox fills from the app language) — the same rule the table
  *  continuation strings and `documentLocale` follow; a blank tag counts as
  *  unset. */
 export function resolvedLocale(resolved: ResolvedConfig): string {
-  return presentTag(resolved.locale) ?? presentTag(resolved.bodyText.hyphenation.locale) ?? 'en-us';
+  return documentLocaleOf(resolved.locale, resolved.bodyText.hyphenation);
+}
+
+function documentLocaleOf(locale: string | undefined, h: ResolvedConfig['bodyText']['hyphenation']): string {
+  return presentTag(locale) ?? presentTag(h.tag) ?? presentTag(h.locale) ?? 'en-us';
 }
 
 /** Index heading-level configs by level so per-block lookups in the
@@ -125,12 +151,15 @@ export function computeBaselineGrid(resolved: ResolvedConfig): number {
 
 /** Whether the side column of a `oneAndHalf` layout sits at the left edge
  *  of the content area on this page. `'outer'` / `'inner'` follow the page
- *  parity only when the margins are mirrored (a recto's outer edge is its
- *  right edge, a verso's its left); otherwise they are `'right'` /
- *  `'left'`. */
-export function sideColumnOnLeft(resolved: ResolvedConfig, isEvenPage: boolean): boolean {
+ *  only when the margins are mirrored: `mirrored` is whether this page
+ *  swaps them (`pageMirrored`: a verso of a left-bound book, a recto of a
+ *  right-bound one), whose outer edge is its left; otherwise they are
+ *  `'right'` / `'left'`. In a vertical flow the side column is a tier: the
+ *  flow's left is the sheet's top, and `'outer'` / `'inner'` are
+ *  `'right'` / `'left'` there (a tier has no outer edge). */
+export function sideColumnOnLeft(resolved: ResolvedConfig, mirrored: boolean): boolean {
   const side = resolved.layout.sideColumnSide;
-  const mirrored = resolved.page.margins.mirror === true && isEvenPage;
+  if (resolved.layout.writingMode === 'vertical-rl') mirrored = false;
   if (side === 'left') return true;
   if (side === 'right') return false;
   if (side === 'outer') return mirrored;
@@ -162,12 +191,13 @@ export function sideColumnPercentUsed(value: number, contentWidthPx: number, gut
  *  main column comes first and the side column second whatever their
  *  geometric order: a float-only side column (`sideColumnRole: 'floats'`)
  *  is not part of the flow, and a text side column at the left still reads
- *  after the main column (a marginal column). `isEvenPage` decides the side
- *  of an `'outer'` / `'inner'` side column. */
+ *  after the main column (a marginal column). `mirrored` (the page swaps
+ *  its mirrored margins, see `pageMirrored`) decides the side of an
+ *  `'outer'` / `'inner'` side column. */
 export function computeColumnBboxes(
   contentArea: BoundingBox,
   resolved: ResolvedConfig,
-  isEvenPage = false,
+  mirrored = false,
 ): BoundingBox[] {
   const { layoutType, gutterWidth, sideColumnPercent } = resolved.layout;
   const dpi = resolved.page.dpi;
@@ -190,7 +220,7 @@ export function computeColumnBboxes(
   const sidePercent = sideColumnPercentUsed(sideColumnPercent, contentArea.width, gutterPx);
   const sideWidth = contentArea.width * (sidePercent / 100);
   const mainWidth = contentArea.width - sideWidth - gutterPx;
-  if (sideColumnOnLeft(resolved, isEvenPage)) {
+  if (sideColumnOnLeft(resolved, mirrored)) {
     return [
       createBoundingBox(contentArea.x + sideWidth + gutterPx, contentArea.y, mainWidth, contentArea.height),
       createBoundingBox(contentArea.x, contentArea.y, sideWidth, contentArea.height),

@@ -1,9 +1,11 @@
+import { fontFamilyOf, getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, measureCentralBaseline, setMeasureWritingMode, withMeasureWritingMode } from '../measure/vertical';
 import type { PartPageInfo } from './placeholders';
 import { applyPartPalettesToFlow, type FlowColorValues } from './partPalette';
 import { TITLE_BREAK_RE, applyTitleBreaks, parseInlineFormatting } from '../parse/inlineFormatting';
 import type { DesignTextAlign, DocumentMetadata, Resource, ResolvedDesignSlot, ResolvedDesignTextElement, ResolvedHeadingLevelConfig, TextAlign } from '../types';
 import {
   createBoundingBox,
+  flowRectToPage,
   type VDTBlock,
   type VDTDocument,
   type VDTDesignSlot,
@@ -16,7 +18,7 @@ import {
 } from '../vdt';
 import { computeChapterTitles, computeChapterTitlesAtTop, computeChapterNumbers, computeChapterNumbersAtTop, computeChapterNumbersByBlock, computeChapterAttrs, computePageMarks, computePartValues, lineJoin, markSourceOf, type JoinedLine, type PageMarks } from './placeholders';
 import { parsePartNumber, partMarkPages } from './parts';
-import { computePageMetrics } from './buildHelpers';
+import { computePageMetrics, sheetRectToFlow } from './buildHelpers';
 import { resolvedLocale } from './config';
 import { classifyPages } from './pageRoles';
 import { computeSectionStyles, createHeadingLevelResolver, headingIsHidden, type HeadingLevelResolver } from './headingStyles';
@@ -102,6 +104,8 @@ function imagePrimitiveToBlock(prim: ResolvedImagePrimitive): VDTDesignImageBloc
     fileId: prim.fileId,
     ...(prim.imageKind ? { imageKind: prim.imageKind } : {}),
     ...(prim.pdfFileId ? { pdfFileId: prim.pdfFileId } : {}),
+    ...(prim.upright ? { upright: true } : {}),
+    ...(prim.altText ? { altText: prim.altText } : {}),
   };
 }
 
@@ -113,11 +117,13 @@ function textPrimitiveToBlock(prim: ResolvedTextPrimitive): VDTDesignTextBlock {
 
   // A centred or right-aligned line is placed by its ink: the tracking
   // after its last glyph does not count (EF-153).
+  // A vertical block's lines stay in its own turned frame: baselines from
+  // the box's right edge (see `VDTDesignTextBlock.vertical`).
   const lines = prim.lines.map((l) => ({
     text: l.text,
     xOffset: prim.contentX + (l.xOffset ?? 0)
       + textAlignOffsetX(prim.align, prim.contentWidth - (l.xOffset ?? 0), l.width - trailingTracking(l.text, prim.letterSpacingPx)),
-    baselineY: prim.y + prim.contentY + vOffset + l.baselineY,
+    baselineY: (prim.vertical ? 0 : prim.y) + prim.contentY + vOffset + l.baselineY,
     width: l.width,
     ...(l.runs ? { runs: l.runs.map((r) => ({ ...r })) } : {}),
     ...(l.wordSpacingPx !== undefined ? { wordSpacingPx: l.wordSpacingPx } : {}),
@@ -143,7 +149,22 @@ function textPrimitiveToBlock(prim: ResolvedTextPrimitive): VDTDesignTextBlock {
       ? { letterSpacingPx: prim.letterSpacingPx }
       : {}),
     ...(prim.stroke ? { stroke: { ...prim.stroke } } : {}),
+    ...(prim.vertical ? { vertical: verticalTextOf(prim) } : {}),
   };
+}
+
+/** How a vertical design text is set (`VDTDesignTextBlock.vertical`): the
+ *  document's region and upright digits, the central axis of each family
+ *  of its runs. */
+function verticalTextOf(prim: ResolvedTextPrimitive): NonNullable<VDTDesignTextBlock['vertical']> {
+  const centralBaselines: Record<string, number> = {};
+  const add = (font: string): void => {
+    const family = fontFamilyOf(font);
+    if (!(family in centralBaselines)) centralBaselines[family] = measureCentralBaseline(family);
+  };
+  add(prim.fontString);
+  for (const line of prim.lines) for (const run of line.runs ?? []) add(run.fontString);
+  return { region: getMeasureRegion(), uprightDigits: getMeasureUprightDigits(), centralBaselines };
 }
 
 function rulePrimitiveToBlock(prim: ResolvedRulePrimitive): VDTDesignRuleBlock {
@@ -323,7 +344,7 @@ export function measureHeadingDesign(
     const ox = origin?.x ?? frames.page.x;
     const oy = origin?.y ?? frames.page.y;
     const shift = (f: DesignFrames['page']) => ({ x: f.x - ox, y: f.y - oy, width: f.width, height: f.height });
-    stubFrames = { page: shift(frames.page), bleed: shift(frames.bleed) };
+    stubFrames = { page: shift(frames.page), bleed: shift(frames.bleed), ...(frames.upright ? { upright: true } : {}) };
   }
   const layoutAt = (height: number) => layoutDesignSlot(
     level.advancedDesign.slot,
@@ -386,7 +407,7 @@ export interface SlotLayoutExtras {
   metadata?: Record<string, unknown>;
 }
 
-const HEADING_LINE_PLACEHOLDER = /\{(number|numberDecimal|numberRoman|numberRomanLower|numberAlpha|numberAlphaLower|numberWords|numberWordsLower|numberOrdinalWords|numberOrdinalWordsLower|chapterNumber|chapterTitle)\}/;
+const HEADING_LINE_PLACEHOLDER = /\{(number|numberDecimal|numberRoman|numberRomanLower|numberAlpha|numberAlphaLower|numberWords|numberWordsLower|numberOrdinalWords|numberOrdinalWordsLower|numberHan|chapterNumber|chapterTitle)\}/;
 const METADATA_ELEMENT = /^\s*\{(title|subtitle|author|publishDate)\}\s*$/;
 
 /** The source a text element maps back to, from what its content renders:
@@ -471,6 +492,26 @@ export function layoutSlotToVdt(
   };
 }
 
+/**
+ * A running head or footer as page furniture: the pictures it repeats on
+ * every page keep no alternative text, so HTML gives them `alt=""` and
+ * `role="presentation"` and a screen reader skips them, as the tagged PDF
+ * does (a pagination artifact). The pictures of an opener, a part page or a
+ * heading design keep theirs.
+ */
+function asFurniture(slot: VDTDesignSlot | undefined): VDTDesignSlot | undefined {
+  if (!slot || !slot.blocks.some((b) => b.kind === 'image' && b.altText !== undefined)) return slot;
+  return {
+    ...slot,
+    blocks: slot.blocks.map((b) => {
+      if (b.kind !== 'image' || b.altText === undefined) return b;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { altText: _alt, ...rest } = b;
+      return rest;
+    }),
+  };
+}
+
 /** The source of a heading block's title text: its per-character map when
  *  the block has one, else its whole range. */
 function headingTitleSource(block: VDTBlock, titleText: string): SlotLayoutExtras['titleSource'] {
@@ -531,7 +572,7 @@ function findOpenerHeading(
       // A structural heading prints nothing, not even an opener.
       if (headingIsHidden(block, lvl)) continue;
       const pref = block.numberPrefix ?? '';
-      const title = defaultOpenerTitle(block.lines, pref, block.titleBreaks, block.titleLength ?? -1);
+      const title = defaultOpenerTitle(block.lines, pref, block.titleBreaks, block.titleLength ?? -1, block.numberSeparator);
       return { block, level: block.headingLevel, title, numberPrefix: pref };
     }
   }
@@ -570,8 +611,9 @@ export function headingTitleText(
   numberPrefix: string,
   titleBreaks: readonly number[] | undefined,
   titleLength: number,
+  numberSeparator = ' ',
 ): string {
-  return defaultOpenerTitle(lines, numberPrefix, titleBreaks, titleLength).titleText;
+  return defaultOpenerTitle(lines, numberPrefix, titleBreaks, titleLength, numberSeparator).titleText;
 }
 
 type TitleRunFlags = { bold: boolean; italic: boolean; script?: 'sup' | 'sub' };
@@ -590,6 +632,9 @@ export function defaultOpenerTitle(
   numberPrefix: string,
   titleBreaks: readonly number[] | undefined,
   titleLength: number,
+  /** What joins the number to the title in the lines
+   *  (`HeadingLevelConfig.numberSeparator`). */
+  numberSeparator = ' ',
 ): DefaultOpenerTitle {
   const chars: string[] = [];
   const flags: TitleRunFlags[] = [];
@@ -643,7 +688,7 @@ export function defaultOpenerTitle(
     }
   }
   const full = chars.join('');
-  const drop = numberPrefix && full.startsWith(`${numberPrefix} `) ? numberPrefix.length + 1 : 0;
+  const drop = numberPrefix && full.startsWith(`${numberPrefix}${numberSeparator}`) ? numberPrefix.length + numberSeparator.length : 0;
   const title = full.slice(drop);
   const titleText = applyTitleBreaks(title, titleBreaks, titleLength);
   if (!hasMarks) return { titleText };
@@ -757,8 +802,8 @@ export function measureDefaultOpenerHeight(
  *  text element, anchored to fill the full-page-width container, using the
  *  heading level's resolved typography and `headings.textAlign` (justified
  *  sets flush left, like the last line of a justified heading). Emits
- *  `{number} {titleText}` when the heading carries a numberPrefix, otherwise
- *  `{titleText}`. With `marked`, `{titleText}` holds the title as inline
+ *  `{number} {titleText}` (the level's `numberSeparator` between them) when
+ *  the heading carries a numberPrefix, otherwise `{titleText}`. With `marked`, `{titleText}` holds the title as inline
  *  Markdown (see {@link DefaultOpenerTitle}) and the element reads it so. */
 function synthesiseDefaultOpenerSlot(
   level: ResolvedHeadingLevelConfig,
@@ -768,7 +813,8 @@ function synthesiseDefaultOpenerSlot(
 ): ResolvedDesignSlot {
   // `{number}` is the heading placeholder for the formatted number;
   // `{formattedNumber}` is not one, and left the title with a leading space.
-  const content = hasNumberPrefix ? '{number} {titleText}' : '{titleText}';
+  // The level's separator joins them, as in the column (`'　'` in Chinese).
+  const content = hasNumberPrefix ? `{number}${level.numberSeparator ?? ' '}{titleText}` : '{titleText}';
   const textEl: ResolvedDesignTextElement = {
     kind: 'text',
     id: 'defaultHeadingOpener',
@@ -800,19 +846,32 @@ function synthesiseDefaultOpenerSlot(
   return { elements: [textEl] };
 }
 
+/** The level-1 heading settings, which the default part designs borrow. */
+function levelOne(resolved: ResolvedConfig): ResolvedHeadingLevelConfig {
+  return resolved.headings.levels.find((l) => l.level === 1) ?? resolved.headings.levels[0]!;
+}
+
+/** `{number}` and `{titleText}` joined as the book's chapter openers join
+ *  them: with the H1's `numberSeparator` (`'　'` in Chinese, one space by
+ *  default). */
+function partNumberAndTitle(resolved: ResolvedConfig): string {
+  return `{number}${levelOne(resolved).numberSeparator ?? ' '}{titleText}`;
+}
+
 /** Default opener design of a `:::part` page when `parts.design` is empty:
- *  `{number} {titleText}` (or just `{titleText}` without a number) in the
- *  H1 typography, anchored at the top-left of the part's body area — the
- *  container is the trim box, so the offset is the part margins. Purely
- *  decorative: raise `parts.margins.top` to keep the body clear of it. */
+ *  `{number} {titleText}` (the H1's `numberSeparator` between them; just
+ *  `{titleText}` without a number) in the H1 typography, anchored at the
+ *  top-left of the part's body area — the container is the trim box, so
+ *  the offset is the part margins. Purely decorative: raise
+ *  `parts.margins.top` to keep the body clear of it. */
 function synthesiseDefaultPartSlot(
   resolved: ResolvedConfig,
   page: VDTPage,
   trimBox: { x: number; y: number },
   hasNumber: boolean,
 ): ResolvedDesignSlot {
-  const level = resolved.headings.levels.find((l) => l.level === 1) ?? resolved.headings.levels[0]!;
-  const content = hasNumber ? '{number} {titleText}' : '{titleText}';
+  const level = levelOne(resolved);
+  const content = hasNumber ? partNumberAndTitle(resolved) : '{titleText}';
   const textEl: ResolvedDesignTextElement = {
     kind: 'text',
     id: 'defaultPartOpener',
@@ -842,9 +901,10 @@ function synthesiseDefaultPartSlot(
 }
 
 /** Default row design of a part in the contents when `toc.parts.design` is
- *  empty: `{number} {titleText}` at the left and `{pageNumber}` at the
- *  right, in the level-1 entry typography. */
-function synthesiseDefaultTocPartSlot(resolved: ResolvedConfig): ResolvedDesignSlot {
+ *  empty: `{number} {titleText}` (the H1's `numberSeparator` between them;
+ *  just `{titleText}` without a number) at the left and `{pageNumber}` at
+ *  the right, in the level-1 entry typography. */
+function synthesiseDefaultTocPartSlot(resolved: ResolvedConfig, hasNumber: boolean): ResolvedDesignSlot {
   const entry = resolved.toc.levels[0]!;
   const common = {
     kind: 'text' as const, parity: 'all' as const, pages: 'all' as const,
@@ -852,7 +912,7 @@ function synthesiseDefaultTocPartSlot(resolved: ResolvedConfig): ResolvedDesignS
     color: entry.color, verticalAlign: 'middle' as const, lineHeight: 1.2, hyphenate: false,
   };
   const title: ResolvedDesignTextElement = {
-    ...common, id: 'tocPartTitle', content: '{number} {titleText}', align: 'left', overflow: 'ellipsis-end',
+    ...common, id: 'tocPartTitle', content: hasNumber ? partNumberAndTitle(resolved) : '{titleText}', align: 'left', overflow: 'ellipsis-end',
     placement: { anchor: { to: 'container', edge: 'left' }, offset: {}, size: { width: 'auto', height: 'auto' } },
   };
   const page: ResolvedDesignTextElement = {
@@ -896,10 +956,29 @@ export interface HeaderFooterInputs {
 }
 
 export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: ReadonlyMap<string, Resource>, inputs: HeaderFooterInputs = {}): void {
+  // Each page's slots measure their text in the writing mode they are set
+  // in (see the loop); the mode in force before is put back.
+  const measureMode = getMeasureWritingMode();
+  try {
+    layoutHeadersAndFooters(doc, resourceById, inputs);
+  } finally {
+    setMeasureWritingMode(measureMode);
+  }
+}
+
+function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<string, Resource> | undefined, inputs: HeaderFooterInputs): void {
   const resolved = doc.config;
   const dpi = resolved.page.dpi;
   const metrics = computePageMetrics(resolved);
-  const frames: DesignFrames = { page: metrics.trimBox, bleed: metrics.bleedBox };
+  // Header and footer are laid out on the sheet on every page; every other
+  // slot (openers, part pages, overlays) in the page's flow frame, so on a
+  // vertical page their text reads vertically.
+  const physicalFrames: DesignFrames = { page: metrics.physical.trimBox, bleed: metrics.physical.bleedBox };
+  const verticalFrames: DesignFrames = {
+    page: sheetRectToFlow(metrics.physical.trimBox, metrics.pageWidthPx),
+    bleed: sheetRectToFlow(metrics.physical.bleedBox, metrics.pageWidthPx),
+    upright: true,
+  };
 
   // Page roles drive the per-element `pages` filter of every slot below.
   classifyPages(doc, resolved);
@@ -968,12 +1047,29 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
   applyPartPalettesToFlow(doc, partPaletteByPageIndex, resolved.colorPalette, inputs.flowColorValues);
 
   for (const page of doc.pages) {
+    // Text in the flow (openers, part pages, in-column designs) reads as the
+    // page's flow does; running heads and folios are horizontal on the
+    // sheet, whatever the flow (see below).
+    setMeasureWritingMode(page.flow ? 'vertical-rl' : 'horizontal-tb');
     // Per-page content area: mirrored margins swap inner/outer on even pages.
     const contentArea = page.contentArea;
+    const frames = page.flow ? verticalFrames : physicalFrames;
     const extras: SlotLayoutExtras = {
       frames, pageRole: page.role, resourceById,
       metadataSources: doc.metadataSources, metadata: doc.metadata as Record<string, unknown>,
     };
+    // Running heads and folios stay on the sheet: the physical content
+    // area and trim box. `anchor.to: 'outer'` is the outer margin, on the
+    // side away from the spine (it swaps with the binding and the page's
+    // parity, as mirrored margins do).
+    const sheetArea = flowRectToPage(page, contentArea);
+    const trim = metrics.physical.trimBox;
+    const recto = (page.index + pageIndexOffset) % 2 === 0;
+    const outerRight = recto !== (resolved.page.binding === 'right');
+    const outer = outerRight
+      ? { x: sheetArea.x + sheetArea.width, y: sheetArea.y, width: Math.max(0, trim.x + trim.width - (sheetArea.x + sheetArea.width)), height: sheetArea.height }
+      : { x: trim.x, y: sheetArea.y, width: Math.max(0, sheetArea.x - trim.x), height: sheetArea.height };
+    const sheetExtras: SlotLayoutExtras = { ...extras, frames: { ...physicalFrames, outer } };
     const section = sectionByPage[page.index];
     const headerSlot = section?.header ?? resolved.header;
     const footerSlot = section?.footer ?? resolved.footer;
@@ -994,14 +1090,14 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
         partNumberByPageIndex,
         partPaletteByPageIndex,
       };
-      page.header = layoutSlotToVdt(
+      page.header = asFurniture(withMeasureWritingMode('horizontal-tb', () => layoutSlotToVdt(
         headerSlot,
-        headerContainerBbox(contentArea, metrics.trimBox),
+        headerContainerBbox(sheetArea, metrics.physical.trimBox),
         page.index + pageIndexOffset,
         placeholders,
         dpi,
-        extras,
-      );
+        sheetExtras,
+      )));
     }
     // Back of a part divider: a blank page right after a part page takes the
     // part's verso design (the model book tints the whole leaf). The part
@@ -1156,7 +1252,7 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
           const tp = block.tocPart;
           const slot = resolved.toc.parts.design.elements.length > 0
             ? resolved.toc.parts.design
-            : synthesiseDefaultTocPartSlot(resolved);
+            : synthesiseDefaultTocPartSlot(resolved, tp.number.length > 0);
           const rowPage = { ...page, pageLabel: tp.pageLabel } as VDTPage;
           const palette = { ...(partPaletteByPageIndex[page.index] ?? {}), ...(tp.palette ?? {}) };
           const placeholders: DesignPlaceholderContext = {
@@ -1201,7 +1297,7 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
         // The lines joined back into the title (EF-162), with a forced break
         // (`\\`) as a newline, as the block's height was measured
         // (`build.ts`) and as an opener prints it (EF-152).
-        const title = headingTitleText(block.lines, pref, block.titleBreaks, block.titleLength ?? -1);
+        const title = headingTitleText(block.lines, pref, block.titleBreaks, block.titleLength ?? -1, block.numberSeparator);
         const placeholders: DesignPlaceholderContext = {
           kind: 'heading',
           page,
@@ -1258,14 +1354,14 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
         partNumberByPageIndex,
         partPaletteByPageIndex,
       };
-      page.footer = layoutSlotToVdt(
+      page.footer = asFurniture(withMeasureWritingMode('horizontal-tb', () => layoutSlotToVdt(
         footerSlot,
-        footerContainerBbox(contentArea, metrics.trimBox),
+        footerContainerBbox(sheetArea, metrics.physical.trimBox),
         page.index + pageIndexOffset,
         placeholders,
         dpi,
-        extras,
-      );
+        sheetExtras,
+      )));
     }
   }
 }

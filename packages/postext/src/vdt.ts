@@ -29,6 +29,8 @@ import type {
   ResolvedTocConfig,
   ResolvedIndexConfig,
   ResolvedFootnotesConfig,
+  ResolvedCjkConfig,
+  CjkRegion,
   PageRole,
   PartState,
   PostextConfig,
@@ -81,6 +83,9 @@ export interface ResolvedConfig {
   index: ResolvedIndexConfig;
   /** Footnotes (`[^id]`): placement, numbering, style. */
   footnotes: ResolvedFootnotesConfig;
+  /** East Asian typography (`cjk`), with `'auto'` resolved from the
+   *  document language. */
+  cjk: ResolvedCjkConfig;
   /** The document language (`PostextConfig.locale`) when the config sets
    *  one; `resolvedLocale()` falls back to the hyphenation locale. Spelled-
    *  out heading numbers follow it. */
@@ -219,6 +224,184 @@ export interface VDTLineSegment {
    *  stacked as it is; one that flows text (HTML inline runs) gives this
    *  segment a box that takes no room. */
   stacked?: boolean;
+  /** Tracking of this segment alone, px added after every grapheme of its
+   *  text and already counted in `width`: the inter-character spacing of a
+   *  justified CJK line (see `measure/cjkCompose.ts`). Renderers paint the
+   *  segment with it on top of the block's and the line's tracking; a
+   *  segment carrying it is never painted with the rest of its line in one
+   *  run. Absent on lines that are not CJK. */
+  tracking?: number;
+  /** Paint-only shift of the segment's glyphs, px. Set on a full-width CJK
+   *  mark that gave up blank (see `cjk.punctuationWidth`): its `width` is
+   *  narrower than its glyph's advance, so it is always painted on its own,
+   *  at `x + inkOffset`. A mark that gave up the blank before its glyph (an
+   *  opening bracket at a line start, one compressed after another mark)
+   *  is painted that far before its box (negative), so its ink stays inside
+   *  `width`; one that gave up only the blank after its glyph has 0. Also
+   *  set on a mark Latin text shares with Chinese (“ ” ‘ ’ … — ·) whose
+   *  glyph is narrower or wider than the Chinese box it takes in Chinese
+   *  text: where its glyph starts in the box (an opening quote at the
+   *  box's end, an ellipsis centred), less any blank given up before it —
+   *  positive or negative. The layout never reads it. Absent on every other
+   *  segment. */
+  inkOffset?: number;
+  /** Paint-only horizontal scale of the segment's glyph, from `x +
+   *  inkOffset`. Set on each dash of a 破折号 (——) in Chinese text whose
+   *  glyphs do not fill their two ems (Noto Serif SC's em dash is a
+   *  proportional 0.8 em stroke): each dash is stretched over its em, the
+   *  two overlapping at the join, so the pair prints as one unbroken
+   *  two-em rule. Renderers paint the glyph at its own advance times this
+   *  factor; its `width` is unchanged. Down a vertical line the dash is
+   *  painted turned with the page's frame (sideways), not in its vertical
+   *  form, so the stretch runs down the column; there it is set even when
+   *  it is 1. Absent on every other segment. */
+  inkScale?: number;
+  /** A pause or stop mark hung past the end of its line
+   *  (`cjk.hangingPunctuation`): the line's measure and `bbox.width` leave
+   *  it out, and the column clip is widened to show it. Painted after the
+   *  segment before it like any other. */
+  hangs?: boolean;
+  /** A space between a Han character and a Latin letter or digit
+   *  (`cjk.latinSpacing`), `kind: 'space'`: its `width` is final (the
+   *  composer spread or compressed it), and renderers justifying the line's
+   *  word spaces leave it as it is. Its `text` is empty, or the space the
+   *  author typed there (which it replaces). Also set, with empty `text`,
+   *  on the gap a justified CJK line leaves after a ruby base of several
+   *  characters (#194): the base is painted at its natural spacing, so the
+   *  gap cannot be its `tracking`. */
+  autospace?: boolean;
+  /** Vertical text: the segment is one tate-chu-yoko cell set by
+   *  `:tcy[…]`: its characters side by side in one upright cell, `width`
+   *  one em (and the segment's `tracking`, after the cell), squeezed
+   *  across when their natural width exceeds the em. Short numbers set in
+   *  one cell by `cjk.uprightDigits` carry no flag: the renderers find
+   *  them as the measurer does (`verticalRuns`). Absent elsewhere. */
+  tcy?: true;
+  /** Vertical text: the author's orientation for the segment's text
+   *  (`:upright[…]`: every character upright in a one-em cell;
+   *  `:sideways[…]`: the whole text turned with the line, at its
+   *  horizontal width). Absent elsewhere. */
+  orientation?: 'upright' | 'sideways';
+  /** The Chinese marks on this segment's text (`:dots`, `:name`, `:book`,
+   *  #193): the layout draws them as `VDTLine.marks`; renderers only read
+   *  this to give the text its meaning (HTML wraps dotted text in `<em>`).
+   *  Absent on unmarked text. */
+  cjkMarks?: VDTSegmentMarks;
+  /** The segment is a ruby base (#194): its `text` is the base, painted at
+   *  `x + inkOffset` when the reading is wider than it, and the reading's
+   *  runs follow. Absent otherwise. */
+  ruby?: VDTRuby;
+  /** The segment is the part of a warichu note (双行夹注, #195) set on this
+   *  line: its `text` is the upper row then the lower one (so the plain
+   *  text, search and the source map read the note once, in order), and
+   *  renderers paint the two rows (`runs`) instead of `text`. Its `width`
+   *  is the wider row's advance. Absent otherwise. */
+  warichu?: VDTWarichu;
+  /** Characters the layout added (the 《》 of `cjk.bookTitleMark:
+   *  'brackets'`, the brackets of a warichu note): painted, and read in
+   *  copied text, but no character of the plain text or the source. */
+  inserted?: boolean;
+}
+
+/** The marks of a segment (see {@link VDTLineSegment.cjkMarks}). */
+export interface VDTSegmentMarks {
+  /** Emphasis dots on each character but punctuation and spaces, on the
+   *  side given (in the flow frame: `under` is the left of vertical text,
+   *  `over` its right). */
+  dots?: { style: 'dot' | 'circle' | 'sesame'; fill: 'filled' | 'open'; position: 'over' | 'under' };
+  /** The proper-name run the text belongs to (a straight line under it). */
+  properName?: number;
+  /** The book-title run the text belongs to (a wavy line under it, when
+   *  `cjk.bookTitleMark` is `'wavy'`). */
+  bookTitle?: number;
+}
+
+/** Text an annotation paints (a ruby reading, a zhuyin symbol, a row of a
+ *  warichu note), placed from its segment: `dx` px along the line from
+ *  where the segment starts, `dy` px from the line's baseline to the run's
+ *  baseline, across the line (positive: towards the line's foot — down in
+ *  horizontal text, left in vertical text; both in the flow frame). A run
+ *  of a vertical line is painted as vertical text (cells upright, Latin
+ *  sideways). */
+export interface VDTAnnotationRun {
+  text: string;
+  dx: number;
+  dy: number;
+  fontString: string;
+  /** Colour (hex); unset: the annotation's. */
+  color?: string;
+  /** On a vertical line, every character of the run stands upright in a
+   *  cell one em of its font long, from `dx`, centred across the line on
+   *  `dy` less the font's central axis — the zhuyin tone marks and the
+   *  neutral-tone dot, which Unicode would turn sideways (UAX #50 `R`).
+   *  Ignored on a horizontal line. */
+  upright?: true;
+}
+
+/** A ruby base's reading (see {@link VDTLineSegment.ruby}). */
+export interface VDTRuby {
+  /** The reading. */
+  text: string;
+  /** Its font (CSS shorthand at the ruby size). */
+  fontString: string;
+  /** Advance of the base text and of the reading, px. */
+  baseWidth: number;
+  rtWidth: number;
+  /** `over` / `under` the base in the flow frame (over is the right side
+   *  of vertical text), or `right`: beside each character inside the line
+   *  (zhuyin in horizontal text). */
+  position: 'over' | 'under' | 'right';
+  /** Group ruby: one reading over the whole base. */
+  group?: boolean;
+  /** Colour of the reading (hex); unset: the text colour. */
+  color?: string;
+  /** What is painted: the reading, or its zhuyin symbols one by one. */
+  runs: VDTAnnotationRun[];
+}
+
+/** One line's part of a warichu note (see {@link VDTLineSegment.warichu}). */
+export interface VDTWarichu {
+  /** The rows' text: `upper` is read first (in vertical text, the right
+   *  one). */
+  upper: string;
+  lower: string;
+  /** The note's font (CSS shorthand at the note size). */
+  fontString: string;
+  /** Baselines of the rows, px from the line's baseline (flow frame). */
+  upperDy: number;
+  lowerDy: number;
+  /** Colour of the note (hex); unset: the text colour. */
+  color?: string;
+  /** What is painted: each row in runs of one style. */
+  runs: VDTAnnotationRun[];
+}
+
+/**
+ * A mark the layout set on a line (#193): an emphasis dot, circle or sesame
+ * on one character, or the proper-name or wavy book-title line under a run.
+ * Geometry is in the flow frame, relative to the line: `x` px along the
+ * line from `VDTLine.bbox.x` (where the painted text starts: alignment and
+ * justified word spaces included), `y` px from the line's baseline across
+ * it (positive: towards the line's foot, the left of vertical text).
+ */
+export interface VDTLineMark {
+  kind: 'dot' | 'circle' | 'sesame' | 'line' | 'wavy';
+  /** A dot's centre; a line's start. */
+  x: number;
+  y: number;
+  /** A dot's diameter (a sesame's length). */
+  size?: number;
+  /** A line's length along the line. */
+  length?: number;
+  /** Stroke width: a line, a wave, an open dot's outline. */
+  thickness: number;
+  /** A dot drawn as an outline (`circle`, or `fill="open"`). */
+  open?: boolean;
+  /** A wave's height, crest to trough, and its period. */
+  amplitude?: number;
+  wavelength?: number;
+  /** Colour (hex); unset: the colour of the block's text. */
+  color?: string;
 }
 
 export interface VDTLine {
@@ -230,7 +413,11 @@ export interface VDTLine {
    *  its text runs from `bbox.x` to the right edge of its block,
    *  `block.bbox.x + block.bbox.width`. So does a last line wider than that
    *  edge, whose spaces are narrowed to fit. An overlay or a hit test on the
-   *  painted text widens or narrows such a line to that edge. */
+   *  painted text widens or narrows such a line to that edge. A justified
+   *  CJK line is set to the measure in its segments (their `tracking`, its
+   *  word spaces at their final width), so its `width` is the measure. A
+   *  mark hung past the line's end (a segment flagged `hangs`) is left out
+   *  of `width`. */
   bbox: BoundingBox;
   baseline: number;
   /** The line ends inside a word, or at least not at a space. Mostly the
@@ -241,7 +428,9 @@ export interface VDTLine {
    *  run, and on Knuth–Plass for ragged text), after an em or en dash set
    *  closed between words (`bodyText.breakAfterDashes`, on every breaker but
    *  pretext's first-fit one; no `hardHyphen`, the line ends on the dash),
-   *  at a URL joint, between ideographs. Pretext's first-fit breaker (a
+   *  at a URL joint. A break next to a CJK character (between ideographs,
+   *  before a Latin word in Chinese text) adds nothing and leaves it false,
+   *  so the column-end hyphen rules never retry it. Pretext's first-fit breaker (a
    *  heading, a paragraph set line by line without formatting) leaves it
    *  false after a hyphen or a dash of the text. Whether a final `-` is the
    *  text's own is read from `hardHyphen`. */
@@ -264,8 +453,24 @@ export interface VDTLine {
   /** Whether this is the last line of the paragraph (ragged even when justified) */
   isLastLine?: boolean;
   /** Set ragged inside a justified paragraph: a line a URL made unfillable
-   *  (its few word spaces would stretch past the loose-line threshold). */
+   *  (its few word spaces would stretch past the loose-line threshold), or
+   *  a CJK line flagged {@link cjkLoose}. */
   ragged?: boolean;
+  /** A justified CJK line that needed more inter-character spacing than the
+   *  cap (½ em, or `bodyText.maxJustifyTracking` when it is set): it is set
+   *  with the cap, short of the measure and {@link ragged}, and reported as
+   *  a `cjkLooseLine` content warning. Typically the line before a long
+   *  Latin word or web address that cannot break. Absent otherwise. */
+  cjkLoose?: boolean;
+  /** Set by the CJK composer (a paragraph set as Chinese, Japanese or
+   *  Korean text, `composesAsCjk`): its characters were measured one by
+   *  one, so a renderer paints two CJK marks that meet apart — the marks
+   *  Latin text shares with Chinese (“ ” ‘ ’ ·) too — whether or not the
+   *  line holds a Han character, and HTML turns the browser's punctuation
+   *  trimming off on the whole line. Lines of the word-by-word breakers
+   *  were measured word by word and are cut word by word (`MarkCutRule`).
+   *  Absent otherwise. */
+  cjkComposed?: boolean;
   /** Approximate character offset in the original markdown source where this line begins.
    *  A line that opens with a backslash escape (`\$40`) begins at its backslash. */
   sourceStart?: number;
@@ -281,6 +486,10 @@ export interface VDTLine {
    *  grows by the slack shared among them, and the line ends on the right
    *  edge of the measure. */
   justifiedSpaceRatio?: number;
+  /** The Chinese marks set on this line (emphasis dots, proper-name and
+   *  book-title lines, #193), for renderers to draw as they are; absent on
+   *  a line with none. */
+  marks?: VDTLineMark[];
   /** Tracking this line takes on top of its block's (`VDTBlock.letterSpacing`),
    *  px after every glyph — negative tightens: a justified line its word
    *  spaces alone would set past `bodyText.maxWordSpacing` or
@@ -597,6 +806,88 @@ export function resourceBlockRectToPage(
   return createBoundingBox(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.abs(b.x - a.x), Math.abs(b.y - a.y));
 }
 
+/**
+ * The frame a vertical page's flow is laid out in (`VDTPage.flow`). The
+ * engine sets a `'vertical-rl'` page as a horizontal page turned a quarter
+ * turn clockwise: the flow is laid out in a frame `page.height` wide and
+ * `page.width` tall, whose x axis runs down the sheet (the direction of a
+ * vertical line) and whose y axis runs leftward (the direction lines
+ * advance). `rotation` maps that frame onto the page exactly as a `'cw'`
+ * resource rotation does: `{ direction: 'cw', originX: page.width,
+ * originY: 0, width: page.height, height: page.width }`, so a flow point
+ * `(x, y)` lands at page `(page.width − y, x)` (see {@link flowToPage}).
+ */
+export interface VDTFlowFrame {
+  writingMode: 'vertical-rl';
+  rotation: VDTResourceRotation;
+  /** Where the ideographic em box's centre sits above the alphabetic
+   *  baseline, in ems, per font family (the first family of a font string,
+   *  unquoted): the axis upright characters are centred on and turned
+   *  about. Measured once per family by the layout, so every renderer
+   *  turns a character about the same point. A family missing here takes
+   *  {@link DEFAULT_CENTRAL_BASELINE}. */
+  centralBaselines?: Record<string, number>;
+  /** The horizontal advance, in ems, of each dash the flow stretches to
+   *  fill its cell (— – ― ⸺ ⸻ －, `VerticalGlyph.stretch`), per font family
+   *  (keyed as {@link centralBaselines}) and dash: what a renderer with no
+   *  font metrics of its own (the HTML output) stretches the glyph by, as
+   *  the canvas and the PDF do from theirs. Only the dashes the page's flow
+   *  sets; absent when it sets none. */
+  dashAdvances?: Record<string, Record<string, number>>;
+}
+
+/** Where the ideographic em box's centre sits above the alphabetic
+ *  baseline, in ems, when the font was not measured: the value of every
+ *  Source Han / Noto CJK face (em box from −0.12 to 0.88 em). */
+export const DEFAULT_CENTRAL_BASELINE = 0.38;
+
+/** Whether a page's flow is set vertically (`page.flow`). */
+export function pageIsVertical(page: Pick<VDTPage, 'flow'>): boolean {
+  return page.flow !== undefined;
+}
+
+/** Map a point of a page's flow frame to page coordinates: the identity on
+ *  a horizontal page, `(page.width − y, x)` on a vertical one. */
+export function flowToPage(page: Pick<VDTPage, 'flow'>, x: number, y: number): { x: number; y: number } {
+  const r = page.flow?.rotation;
+  if (!r) return { x, y };
+  return { x: r.originX - y, y: r.originY + x };
+}
+
+/** Map a page point into the page's flow frame (the inverse of
+ *  {@link flowToPage}). */
+export function pageToFlow(page: Pick<VDTPage, 'flow'>, x: number, y: number): { x: number; y: number } {
+  const r = page.flow?.rotation;
+  if (!r) return { x, y };
+  return { x: y - r.originY, y: r.originX - x };
+}
+
+/** Map an axis-aligned rect of a page's flow frame to the page: width and
+ *  height swap on a vertical page. */
+export function flowRectToPage(page: Pick<VDTPage, 'flow'>, rect: BoundingBox): BoundingBox {
+  if (!page.flow) return rect;
+  const a = flowToPage(page, rect.x, rect.y);
+  const b = flowToPage(page, rect.x + rect.width, rect.y + rect.height);
+  return createBoundingBox(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.abs(b.x - a.x), Math.abs(b.y - a.y));
+}
+
+/** Map an axis-aligned page rect into the page's flow frame (the inverse
+ *  of {@link flowRectToPage}). */
+export function pageRectToFlow(page: Pick<VDTPage, 'flow'>, rect: BoundingBox): BoundingBox {
+  if (!page.flow) return rect;
+  const a = pageToFlow(page, rect.x, rect.y);
+  const b = pageToFlow(page, rect.x + rect.width, rect.y + rect.height);
+  return createBoundingBox(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.abs(b.x - a.x), Math.abs(b.y - a.y));
+}
+
+/** The flow frame of a vertical page `width` × `height` px (physical). */
+export function verticalFlowFrame(width: number, height: number): VDTFlowFrame {
+  return {
+    writingMode: 'vertical-rl',
+    rotation: { direction: 'cw', originX: width, originY: 0, width: height, height: width },
+  };
+}
+
 export interface ResolvedResourceBlock {
   /** The source resource. */
   resource: Resource;
@@ -717,6 +1008,10 @@ export interface VDTBlock {
    *  column-balancing stretch points. */
   tocEntry?: { pageIndex?: number };
   numberPrefix?: string;
+  /** What joins {@link numberPrefix} to the title
+   *  (`HeadingLevelConfig.numberSeparator`), when it is not one space:
+   *  `'　'` or `''` in a Chinese heading. Absent means `' '`. */
+  numberSeparator?: string;
   /** A numbered heading's counter: its level's running count (the `3` of
    *  a third chapter, whatever its template prints). Backs `{numberDecimal}`,
    *  `{numberRoman}`, `{numberWords}`… in heading designs. Absent on
@@ -783,6 +1078,13 @@ export interface VDTBlock {
   /** Absolute page X coordinate where the separator run starts (shares the
    *  bullet's `bulletY`, or its `bulletBaselineY` when set) */
   separatorX?: number;
+  /** Ordered-list prefix drawn as its own run before the number (`（` of
+   *  （一）), in the separator run's font and colour; set only with a
+   *  separator run (otherwise `bulletText` carries it). */
+  prefixText?: string;
+  /** Absolute page X coordinate where the prefix run starts (on the
+   *  bullet's `bulletY` / `bulletBaselineY`, as the separator). */
+  prefixX?: number;
   /** List kind for `listItem` blocks — drives bullet shape and text decoration. */
   listKind?: 'unordered' | 'ordered' | 'task';
   /** When true, the canvas backend draws a strikethrough through the block's lines (completed tasks). */
@@ -940,6 +1242,12 @@ export interface VDTDesignTextRun {
    *  on {@link VDTLineSegment.stacked}: width 0, the next run painted at
    *  the same x. */
   stacked?: boolean;
+  /** Vertical text: set in one upright cell (`:tcy[…]`), as
+   *  {@link VDTLineSegment.tcy}. */
+  tcy?: true;
+  /** Vertical text: stood upright or turned by its author (`:upright[…]`,
+   *  `:sideways[…]`), as {@link VDTLineSegment.orientation}. */
+  orientation?: 'upright' | 'sideways';
 }
 
 /** Line of wrapped text inside a `VDTDesignTextBlock`. */
@@ -1011,6 +1319,26 @@ export interface VDTDesignTextBlock {
    *  PDF marks it an artifact and the HTML hides it from assistive
    *  technology, so the text is read once. */
   artifact?: boolean;
+  /** Set vertically on a page or a slot whose text is horizontal
+   *  (`DesignTextElement.writingMode: 'vertical-rl'`): the lines are laid
+   *  out in the block's own frame, turned a quarter turn clockwise about
+   *  its box's top right corner — a line's `xOffset` runs down from the
+   *  box's top edge, its `baselineY` leftward from the box's right edge
+   *  (0 there) — and painted through that frame with the vertical glyph
+   *  painter. `bbox` is where the box stands. Absent on every other
+   *  block. */
+  vertical?: VDTVerticalText;
+}
+
+/** How the text of a vertical design block ({@link VDTDesignTextBlock.vertical})
+ *  is set: the Chinese region whose punctuation it takes, how many digits a
+ *  number set in one cell may have (`cjk.uprightDigits`), and the central
+ *  axis of each family it is set in (em above the baseline, as
+ *  {@link VDTFlowFrame.centralBaselines}). */
+export interface VDTVerticalText {
+  region: CjkRegion;
+  uprightDigits: number;
+  centralBaselines: Record<string, number>;
 }
 
 /** Rendered rule inside a design slot. */
@@ -1049,6 +1377,18 @@ export interface VDTDesignImageBlock {
   /** For an SVG with a print master (`Resource.svg.pdfFileId`): the
    *  master's id, which the PDF backend embeds in place of the SVG. */
   pdfFileId?: string;
+  /** A picture of a vertical page's flow, sized to stand upright on the
+   *  sheet: the box's `width` runs down the sheet and is the picture's
+   *  height there, its `height` the picture's width. Renderers draw the
+   *  picture turned back upright, filling the box. */
+  upright?: true;
+  /** The picture's alternative text, for a picture that is content (#213):
+   *  its resource's `altText`, else its caption as plain text. HTML gives
+   *  it as the `<img>`'s `alt`, a tagged PDF as the `/Alt` of a `Figure`.
+   *  Absent for a `decorative` design element, for a resource with neither
+   *  text, and for callout icons: such a picture is decoration (`alt=""`,
+   *  an artifact). */
+  altText?: string;
 }
 
 export type VDTDesignBlock =
@@ -1080,14 +1420,29 @@ export interface VDTColumnRule {
 
 export interface VDTPage {
   index: number;
+  /** The sheet's width and height (px), physical on every page. */
   width: number;
   height: number;
   /** The page's own content area (px, page coordinates): the trim box inset
    *  by the margins, mirrored on even pages when `margins.mirror` is on.
    *  Columns, float bands, header/footer containers and opener bands all
    *  derive from it — renderers read it instead of inferring the area from
-   *  the column bboxes. */
+   *  the column bboxes. On a vertical page it is in flow coordinates (see
+   *  {@link flow}); `flowRectToPage(page, page.contentArea)` is the
+   *  physical area. */
   contentArea: BoundingBox;
+  /** Present on a page whose flow is set vertically (`layout.writingMode:
+   *  'vertical-rl'`): the frame the flow was laid out in. On such a page
+   *  `contentArea`, the columns, blocks, lines, floats, margin notes,
+   *  footnote areas, the opener band and the design overlays of blocks are
+   *  in FLOW coordinates, mapped onto the sheet by `flow.rotation` (see
+   *  {@link flowToPage}, {@link flowRectToPage}); `width`, `height`, the
+   *  header and the footer are physical, as are crop marks and the page
+   *  background. Text painted in the flow is set vertically: upright CJK
+   *  characters, Latin turned sideways; resource blocks carry a `'ccw'`
+   *  rotation that composes with the frame to stand upright. Absent on
+   *  horizontal pages. */
+  flow?: VDTFlowFrame;
   /** Page classification (see `PageRole`), stamped after placement by
    *  `classifyPages`. Drives the per-element `pages` filter of design
    *  slots. Absent until headers/footers are built. */
@@ -1175,13 +1530,16 @@ export interface ConfigWarning {
    *  `sideColumnPercentClamped`: a `oneAndHalf` layout's
    *  `sideColumnPercent` that would leave one of its columns with no width
    *  (or is not a number); the columns are cut at `used` percent instead.
+   *  `cjkGridClamped`: a character grid (`cjk.grid`) with more characters
+   *  per line or lines per page than the margins leave room for; the grid
+   *  is reduced to `used`.
    *  `unknownConfigKey`: a key the heading settings or a paragraph style do
    *  not have (`headings`, `headings.balancing`, a heading level, a heading
    *  style, a paragraph style — and the same under
    *  `htmlViewer.overrides`), such as a misspelt `letterSpacng`; the
    *  engine ignores it. `value` is the key, `used` is empty, and
    *  `suggestion` names the key it is closest to, when one is close. */
-  kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'unknownConfigKey';
+  kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'unknownConfigKey' | 'cjkGridClamped';
   /** Where the value sits in the config, e.g.
    *  `orderedLists.levels[1].numberFormat`, `header.elements[0].fontFamily`,
    *  `headingStyles[2].layout.sideColumnPercent`. */
@@ -1268,6 +1626,41 @@ export type ContentWarning = ContentWarningBase & (
    *  (`missingCells`). `row` / `col` locate the first issue; `count` is
    *  how many the table has. */
   | { kind: 'raggedTableGrid'; resourceId: string; reason: 'spanOverlap' | 'missingCells'; row: number; col: number; count: number }
+  /** A justified line of CJK text that would need more space between its
+   *  characters than the cap (½ em, or `bodyText.maxJustifyTracking` when
+   *  set) to reach the measure: it is set with the cap and ends short
+   *  (`VDTLine.cjkLoose`). Usually the line before a long Latin word or web
+   *  address that cannot break. `text` is the line's text. Found by the
+   *  layout, so `collectContentWarnings` never returns it. */
+  | { kind: 'cjkLooseLine'; text: string }
+  /** A paragraph with Chinese marks (emphasis dots, proper-name or
+   *  book-title lines, #193) whose line gap is narrower than the marks
+   *  need: half an em for marks on one side of the text, five eighths for
+   *  marks on both sides (clreq §5.6.1). The line pitch never changes for
+   *  them, so they crowd the next line: give the paragraph more leading.
+   *  `gapEm` is the gap (line height less the text size) and `neededEm`
+   *  what the marks need, in em of the text. */
+  | { kind: 'cjkMarksExceedLeading'; text: string; gapEm: number; neededEm: number }
+  /** A paragraph with ruby readings over or under its text (#194) whose
+   *  line gap is narrower than the readings: they overlap the next line.
+   *  `gapEm` and `neededEm` in em of the text. */
+  | { kind: 'rubyExceedsLeading'; text: string; gapEm: number; neededEm: number }
+  /** Markup typed with fullwidth characters, as a Chinese or Japanese
+   *  input method types it: a `：：：` fence, a `＃` heading, a `［＾…］`
+   *  footnote marker, `｛…｝` attributes after a fence or heading, or
+   *  `＊＊…＊＊` bold. The parser reads only the ASCII forms, so the line
+   *  is set as text. `typed` is the markup as written, `ascii` the form
+   *  to type (#181). One per line. */
+  | { kind: 'fullwidthMarkup'; typed: string; ascii: string }
+  /** An attribute key with letters outside ASCII (`作者=曹雪芹`): keys are
+   *  ASCII, so the attribute is not read. Points at the key (#181). */
+  | { kind: 'attributeKeyInvalid'; key: string }
+  /** A resource whose `placement.rotate` asks for a quarter turn, in a
+   *  document set vertically (`layout.writingMode: 'vertical-rl'`): every
+   *  figure and table of a vertical flow stands upright, so the turn is
+   *  not applied, and the resource floats in its own `span` (#188). Points
+   *  at its first use. */
+  | { kind: 'rotateIgnoredVertical'; resourceId: string }
 );
 
 /** What a build reports in `VDTDocument.warnings`: a construct the layout
@@ -1304,6 +1697,11 @@ export type RenderWarning = MissingImageWarning;
 export interface VDTDocument {
   pages: VDTPage[];
   blocks: VDTBlock[];
+  /** `'right'` when the book is bound on its right edge (`page.binding`):
+   *  page 1 is still the recto, but the left page of a spread; viewers show
+   *  the pairs `[3 | 2]` and turn pages leftward. Absent for a left-bound
+   *  book. */
+  binding?: 'right';
   /** Layout warnings raised while placing the content: boxes the layout
    *  had to force (see {@link LayoutWarning}). Absent or empty when
    *  everything fit. */

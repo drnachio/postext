@@ -4,12 +4,16 @@ import { Copy, Download, Pencil, RotateCcw } from 'lucide-react';
 import { useRef, useState } from 'react';
 import {
   useBookContent,
+  useBookPlan,
   useSandboxLabels,
   useSandboxPresets,
   useSandboxProjects,
+  useSandboxSelector,
 } from '../context/SandboxContext';
 import { MenuItem, MenuSeparator, PanelHeader, RowTag } from '../ui';
 import { AddChapterButton, ChapterList } from './chapters/ChapterList';
+import { presetLocales } from '../presets/locale';
+import { LocaleTag } from './LocaleTag';
 import { RowActionsMenu } from './RowActionsMenu';
 
 /** The Chapters panel: the book on screen — its name and kind (your book,
@@ -26,6 +30,11 @@ export function ChaptersPanel() {
   const locale = project ? project.locale : activeLocale;
   const busy = status === 'busy';
   const chapterCount = useBookContent().chapters.length;
+  // The background pagination of a long book, while it runs.
+  const storeReady = useSandboxSelector((s) => s.storeReady);
+  const plan = useBookPlan();
+  const paginatedCount = Object.keys(plan.bookPages).length;
+  const paginating = storeReady && chapterCount > 1 && paginatedCount < chapterCount;
 
   const [renaming, setRenaming] = useState(false);
   const [draft, setDraft] = useState(name);
@@ -91,8 +100,13 @@ export function ChaptersPanel() {
           )}
           <div className="mt-1 flex flex-wrap items-center gap-1">
             <RowTag>{project ? labels.bookKindProject : labels.bookKindPreset}</RowTag>
-            {locale && <RowTag>{locale}</RowTag>}
+            {locale && <LocaleTag locale={locale} all={preset ? presetLocales(preset) : [locale]} />}
             {!project && edited && <RowTag accent label={labels.presetEditedHint}>{labels.presetEdited}</RowTag>}
+            {paginating && (
+              <span className="text-[10px]" style={{ color: 'var(--slate)', fontVariantNumeric: 'tabular-nums' }}>
+                {labels.chapterPaginating.replace('__done__', String(paginatedCount)).replace('__total__', String(chapterCount))}
+              </span>
+            )}
           </div>
         </div>
         <RowActionsMenu

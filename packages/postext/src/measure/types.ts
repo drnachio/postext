@@ -1,5 +1,7 @@
 import type { VDTLine } from '../vdt';
-import type { TextAlign } from '../types';
+import type { TextAlign, WritingMode } from '../types';
+import type { CjkLineBreakLevel } from './cjkClasses';
+import type { CjkComposition } from './cjkPunctuation';
 
 /** Where the Knuth–Plass breaker broke a paragraph: the path it ran on
  *  (the plain and the rich path number their items differently) and the
@@ -152,6 +154,23 @@ export interface MeasureBlockOptions {
    *  flagged `repeatedHyphen`. Plain text holding a compound is then
    *  measured by the formatted-text breaker. Unset: off. */
   repeatHyphen?: boolean;
+  /** Where lines of CJK text may break (`cjk.lineBreak`, resolved): see
+   *  `CjkLineBreakLevel`. Unset: the document's level, which the build sets
+   *  (`setCjkLineBreak`); `gb` outside a build. Only CJK text reads it. */
+  cjkLineBreak?: CjkLineBreakLevel;
+  /** The writing mode the text is measured in: `'vertical-rl'` gives every
+   *  character that stands in a cell of its own in vertical text its cell
+   *  (CJK characters, Chinese marks, the signs Unicode sets upright: see
+   *  `verticalRuns`), and runs the rest sideways at its horizontal width.
+   *  Unset: the build's (`setMeasureWritingMode`), horizontal outside a
+   *  build. ASCII text measures the same either way. */
+  writingMode?: WritingMode;
+  /** How CJK text is composed: punctuation widths, adjacent marks, line
+   *  edges, hanging, the Han–Latin space (`cjk`, resolved; see
+   *  `cjkPunctuation.ts`). Unset: the document's, which the build sets
+   *  (`setCjkComposition`); outside a build, none (every mark at its full
+   *  advance). Only CJK text reads it. */
+  cjkComposition?: CjkComposition;
 }
 
 export const SOFT_HYPHEN = '\u00AD';

@@ -2,12 +2,38 @@ import type { PostextConfig } from 'postext';
 import { createPostextGuideConfig } from '../context/guideConfig';
 import { buildDefaultResources, defaultResourcesSignature } from '../defaultResources';
 import { coverThumbnailSvg } from '../defaultResources/cover';
-import { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES } from '../defaultMarkdown';
+import { guideLang, type GuideLang } from '../defaultResources/lang';
+import { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS } from '../defaultMarkdown';
 import type { PresetProvider } from './types';
-import { sampleBook } from '../book/chapterOps';
+import { isPristineBook, sampleBook } from '../book/chapterOps';
+import type { BookContent } from '../book/types';
 import { generateId } from '../storage/ids';
 
 export const BUILTIN_PRESET_ID = 'postext-guide';
+
+/** The editions of the guide, as the tags its summary lists: the library
+ *  row offers ES, EN and 简 (see `localeShortTag`), and a permalink names
+ *  one with `lang=`. */
+export const BUILTIN_PRESET_LOCALES = ['es', 'en', 'zh-Hans'] as const;
+
+/** The guide's text in each edition. */
+export const GUIDE_MARKDOWN: Record<GuideLang, string> = {
+  en: DEFAULT_MARKDOWN_EN,
+  es: DEFAULT_MARKDOWN_ES,
+  'zh-Hans': DEFAULT_MARKDOWN_ZH_HANS,
+};
+
+/** Every edition of the guide's text, for the pristine-book checks. */
+export const GUIDE_SAMPLE_DOCUMENTS: readonly string[] = [DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS];
+
+/** Whether `book` is the untouched Chinese guide. The Chinese edition is
+ *  no interface's default: it is opened on purpose (the 简 button, a
+ *  `lang=zh-Hans` link), so an untouched copy stays Chinese when the
+ *  Sandbox is opened in English or Spanish, where an untouched English or
+ *  Spanish guide follows the interface. */
+export function isPristineChineseGuide(book: BookContent): boolean {
+  return isPristineBook(book, [DEFAULT_MARKDOWN_ZH_HANS]);
+}
 
 export interface BuiltinPresetOptions {
   /** Markdown to use instead of the locale's default sample (the host app
@@ -30,21 +56,22 @@ export function createPostextGuidePreset(opts: BuiltinPresetOptions): PresetProv
     description: opts.description,
     source: 'builtin' as const,
     available: true,
-    // Bilingual, like the showcase presets: the row offers both versions.
-    locales: ['es', 'en'],
+    // Like the showcase presets, the row offers every edition: Spanish,
+    // English and Simplified Chinese (the interface stays in the first two).
+    locales: [...BUILTIN_PRESET_LOCALES],
     license: 'MIT',
     thumbnailUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(coverThumbnailSvg())}`,
   };
   // The guide ships with the code: its fingerprint is a hash of everything
-  // it loads (both languages), so the live-preset watcher reloads an
+  // it loads (every language), so the live-preset watcher reloads an
   // untouched copy — or offers a reload over an edited one — whenever a new
   // version of the guide is deployed.
   let fingerprintValue: string | null = null;
   const fingerprint = async (): Promise<string | null> => {
     if (fingerprintValue === null) {
       const source = JSON.stringify([
-        opts.markdownOverride ?? null, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES,
-        opts.configOverride ?? null, createPostextGuideConfig('en'), createPostextGuideConfig('es'),
+        opts.markdownOverride ?? null, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS,
+        opts.configOverride ?? null, createPostextGuideConfig('en'), createPostextGuideConfig('es'), createPostextGuideConfig('zh-Hans'),
         defaultResourcesSignature(),
       ]);
       fingerprintValue = `builtin-${hashString(source)}`;
@@ -55,17 +82,18 @@ export function createPostextGuidePreset(opts: BuiltinPresetOptions): PresetProv
     summary,
     fingerprint,
     async load(locale: string) {
-      const isSpanish = locale.toLowerCase().startsWith('es');
+      const lang = guideLang(locale);
       // A host override that is just one of the built-in samples (the web app
       // passes its locale's copy) still follows the locale asked for, so the
-      // ES / EN buttons switch the language; any other text is used as is.
-      const custom = opts.markdownOverride !== undefined
-        && opts.markdownOverride !== DEFAULT_MARKDOWN_EN && opts.markdownOverride !== DEFAULT_MARKDOWN_ES;
-      const markdown = custom ? opts.markdownOverride! : isSpanish ? DEFAULT_MARKDOWN_ES : DEFAULT_MARKDOWN_EN;
-      const config = opts.configOverride ?? createPostextGuideConfig(locale);
-      const resources = await buildDefaultResources(locale);
+      // ES / EN / 简 buttons switch the language; any other text is used as is.
+      const custom = opts.markdownOverride !== undefined && !GUIDE_SAMPLE_DOCUMENTS.includes(opts.markdownOverride);
+      const markdown = custom ? opts.markdownOverride! : GUIDE_MARKDOWN[lang];
+      // A host config is the design of the host's own language: the Chinese
+      // edition keeps its own, set for Chinese text.
+      const config = opts.configOverride && lang !== 'zh-Hans' ? opts.configOverride : createPostextGuideConfig(lang);
+      const resources = await buildDefaultResources(lang);
       const { chapters } = sampleBook(markdown, () => generateId('chapter'), opts.name);
-      return { summary, locale: isSpanish ? 'es' : 'en', chapters, config, resources, blobs: [], fonts: [], canvasScope: 'book' };
+      return { summary, locale: lang, chapters, config, resources, blobs: [], fonts: [], canvasScope: 'book' };
     },
   };
 }

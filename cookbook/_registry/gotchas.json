@@ -1133,5 +1133,148 @@
     },
     "feature": "table-style",
     "followup": "EF-64"
+  },
+  "cjk-fonts-slices": {
+    "title": {
+      "en": "Chinese faces load by slices, through the cjk block",
+      "es": "Las fuentes chinas se cargan por fragmentos, con el bloque cjk"
+    },
+    "body": {
+      "en": "Fontsource serves a Chinese, Japanese or Korean family as about a hundred files per weight, each covering a range of characters. loadFonts fetches only the latin file, so on screen the Han characters come from a system face and measure wrong, and fontsourceProvider hands the PDF that latin file, which prints them as empty boxes. List the cjk kit block, call loadCjkFonts(FONTS, markdown) after loadFonts (once per voice, with the text it sets, when the book uses several CJK faces) and give renderToPdf fontProvider: cjkPdfProvider: both take the files that hold the text's characters.",
+      "es": "Fontsource sirve una familia china, japonesa o coreana en un centenar de archivos por peso, cada uno con un intervalo de caracteres. loadFonts solo descarga el archivo latin, así que en pantalla los caracteres chinos salen de una fuente del sistema y se miden mal, y fontsourceProvider entrega al PDF ese archivo latin, que los imprime como cajas vacías. Añade el bloque cjk del kit, llama a loadCjkFonts(FONTS, markdown) después de loadFonts (una vez por voz, con el texto que compone, si el libro usa varias fuentes chinas) y pasa a renderToPdf fontProvider: cjkPdfProvider: ambos toman los archivos que contienen los caracteres del texto."
+    },
+    "feature": "cjk-fonts"
+  },
+  "cjk-no-italic": {
+    "title": {
+      "en": "Chinese has no italic",
+      "es": "El chino no tiene cursiva"
+    },
+    "body": {
+      "en": "The CJK families ship no italic, and Chinese typography marks emphasis with dots beside the characters, not with a slant. In a document tagged Chinese, *…* sets emphasis dots on the Chinese characters it holds and keeps italics for the Latin words (cjk.emphasis: 'dots', the default for Chinese); :dots[…] sets them anywhere. With cjk.emphasis: 'italic', or in a document tagged en or es, *…* makes the canvas slant the upright glyphs, a synthetic oblique that Chinese typography never uses (the PDF falls back to the upright face): keep the Chinese tag, or set emphasis in bold or in a Kai face (LXGW WenKai) through a paragraph or chip style.",
+      "es": "Las familias CJK no traen cursiva, y la tipografía china marca el énfasis con puntos junto a los caracteres, no inclinándolos. En un documento etiquetado como chino, *…* pone puntos de énfasis en los caracteres chinos que abarca y deja la cursiva para las palabras latinas (cjk.emphasis: 'dots', lo predeterminado en chino); :dots[…] los pone en cualquier sitio. Con cjk.emphasis: 'italic', o en un documento etiquetado en o es, *…* hace que el canvas incline los glifos redondos, una oblicua sintética que la tipografía china nunca usa (el PDF recurre a la redonda): conserva la etiqueta china, o marca el énfasis en negrita o en una fuente Kai (LXGW WenKai) con un estilo de párrafo o de chip."
+    },
+    "feature": "cjk-fonts"
+  },
+  "cjk-locale-tag": {
+    "title": {
+      "en": "Tag the document zh-Hans or zh-Hant, not with LANG",
+      "es": "Etiqueta el documento zh-Hans o zh-Hant, no con LANG"
+    },
+    "body": {
+      "en": "A recipe's editions are en and es, but a Chinese sample is Chinese in both: `locale: LANG` would tag it English or Spanish, hyphenate its Latin words, label its figures Figure or Figura and give the PDF the wrong language. Write the tag yourself: 'zh-Hans' (mainland conventions: GB line breaking, Kaiming punctuation) or 'zh-Hant' (Taiwan: full-width centred punctuation); 'zh-HK' for Hong Kong. A bare 'zh' reads as Simplified, mainland.",
+      "es": "Las ediciones de una receta son en y es, pero una muestra china es china en las dos: `locale: LANG` la etiquetaría como inglés o español, separaría sus palabras latinas, llamaría Figure o Figura a sus figuras y daría al PDF un idioma equivocado. Escribe tú la etiqueta: 'zh-Hans' (convenciones de la China continental: corte GB, puntuación Kaiming) o 'zh-Hant' (Taiwán: puntuación de ancho completo centrada); 'zh-HK' para Hong Kong. Un 'zh' a secas se lee como chino simplificado continental."
+    },
+    "feature": "cjk-line-breaking"
+  },
+  "cjk-spread-order": {
+    "title": {
+      "en": "A right-bound book shows its spreads with showBook",
+      "es": "Un libro encuadernado por la derecha muestra sus pliegos con showBook"
+    },
+    "body": {
+      "en": "In a book bound on the right (vertical Chinese, or page.binding 'right') page 1 is still the recto, but it lies on the left of the spine, and the pairs read [3 | 2]. showPages lays every book out left-bound; showBook from the cjk block reads doc.binding and mirrors the pairs. capture.hero still names a spread in reading order, [verso, recto]: [2, 3].",
+      "es": "En un libro encuadernado por la derecha (chino vertical, o page.binding 'right') la página 1 sigue siendo impar, pero queda a la izquierda del lomo, y los pliegos se leen [3 | 2]. showPages compone todos los libros como si se encuadernaran por la izquierda; showBook, del bloque cjk, lee doc.binding y refleja los pliegos. capture.hero sigue nombrando un pliego en orden de lectura, [par, impar]: [2, 3]."
+    },
+    "feature": "right-binding"
+  },
+  "cjk-face-region": {
+    "title": {
+      "en": "Set each region's punctuation in a face of that region",
+      "es": "Compón la puntuación de cada región con una fuente de esa región"
+    },
+    "body": {
+      "en": "The punctuation widths move the blank beside each mark to the side the document's region puts it, not the side the font draws it: under zh-Hans a Kaiming comma keeps the left half of its box, where a Simplified face draws the glyph, and gives up the right half. A Traditional face centres ，。 in the box, so the half that goes holds part of the glyph and the comma crowds the next character. LXGW WenKai TC, the only Kai text face on Fontsource, does this in Simplified text. Set mainland text, notes and quotations in Noto Serif SC or Noto Sans SC, keep the TC faces for zh-Hant, and use a Simplified brush face (Ma Shan Zheng) only for display lines, where design text applies no punctuation widths. It also draws inherited forms that neither the mainland nor the Taiwan standard prints, 為 with the 爫 top of 爲 and 令 (in 冷, 領) with a 卩 foot: check the characters a page sets in it.",
+      "es": "Los anchos de la puntuación mueven el blanco de cada signo al lado donde lo pone la región del documento, no al lado donde lo dibuja la fuente: con zh-Hans, una coma Kaiming conserva la mitad izquierda de su caja, donde una fuente simplificada dibuja el signo, y cede la derecha. Una fuente tradicional centra ，。 en la caja, así que la mitad que se va se lleva parte del signo y la coma se pega al carácter siguiente. LXGW WenKai TC, la única Kai de texto de Fontsource, lo hace en texto simplificado. Compón el texto, las notas y las citas continentales en Noto Serif SC o Noto Sans SC, deja las fuentes TC para zh-Hant y usa una letra de pincel simplificada (Ma Shan Zheng) solo en líneas de exhibición, donde el texto de diseño no aplica anchos de puntuación. Además dibuja formas heredadas que no imprime ni el estándar continental ni el de Taiwán, 為 con el 爫 de 爲 y 令 (en 冷, 領) con el pie de 卩: revisa los caracteres que compone en cada página."
+    },
+    "feature": "cjk-punctuation"
+  },
+  "cjk-source-script-mix": {
+    "title": {
+      "en": "Traditional transcriptions carry stray Simplified characters",
+      "es": "Las transcripciones en chino tradicional traen caracteres simplificados sueltos"
+    },
+    "body": {
+      "en": "Texts copied from Wikisource or another web edition of a Traditional book sometimes carry a Simplified form (颙 for 顒 in 三國演義, chapter 1), and a TC face such as Noto Serif TC may not have it. loadCjkFonts stops the pen with the character in its message; on a page it would print in a fallback face. Restore the Traditional form in the sample and say so in the credits.",
+      "es": "Los textos copiados de Wikisource o de otra edición en la web de un libro en chino tradicional traen a veces una forma simplificada (颙 por 顒 en el capítulo 1 de 三國演義), y una fuente TC como Noto Serif TC puede no tenerla. loadCjkFonts detiene la receta y nombra el carácter; en la página saldría con una fuente de sustitución. Recupera la forma tradicional en la muestra y dilo en los créditos."
+    },
+    "feature": "cjk-fonts"
+  },
+  "ruby-not-in-designs": {
+    "title": {
+      "en": "Readings print in the text, not in designs, captions or cells",
+      "es": "Las lecturas se imprimen en el texto, no en diseños, pies ni celdas"
+    },
+    "body": {
+      "en": "Ruby readings are drawn in paragraphs, headings, list items, quotations and boxes. A design text element (an opener, a running head, a badge), a caption, a footnote and a table cell print the base characters without their readings. A title that needs its pinyin is a heading without a design of its own: draw what surrounds it (a band, a lesson number) with the design of the heading before it, whose elements with reserve: false paint under the text of a span: 'page' opener.",
+      "es": "Las lecturas ruby se dibujan en párrafos, títulos, elementos de lista, citas y recuadros. Un elemento de texto de un diseño (una apertura, una cabecera, una etiqueta), un pie, una nota al pie y una celda de tabla imprimen los caracteres base sin sus lecturas. Un título que necesita su pinyin es un título sin diseño propio: dibuja lo que lo rodea (una banda, el número de la lección) con el diseño del título anterior, cuyos elementos con reserve: false se pintan bajo el texto de una apertura span: 'page'."
+    },
+    "feature": "ruby"
+  },
+  "vertical-side-column-top": {
+    "title": {
+      "en": "In vertical text the side column is a tier, and 'left' is the top one",
+      "es": "En texto vertical la columna lateral es un piso, y 'left' es el de arriba"
+    },
+    "body": {
+      "en": "With layout.writingMode 'vertical-rl' the page is a horizontal page turned a quarter turn, so the side column of a oneAndHalf layout becomes a tier across the page: sideColumnSide 'left' puts it at the head, the place of head-margin comments (眉批), and 'right' at the foot. 'outer' and 'inner' read as 'right' and 'left' (a tier has no outer edge), so the 'outer' of a textbook's margin column sends the notes to the foot. sideColumnPercent is a share of the page's height.",
+      "es": "Con layout.writingMode 'vertical-rl' la página es una página horizontal girada un cuarto de vuelta, así que la columna lateral de una disposición oneAndHalf pasa a ser un piso que cruza la página: sideColumnSide 'left' la pone arriba, donde van los comentarios del margen superior (眉批), y 'right' al pie. 'outer' e 'inner' se leen como 'right' y 'left' (un piso no tiene borde exterior), así que el 'outer' de la columna de notas de un libro de texto manda las notas al pie. sideColumnPercent es una fracción de la altura de la página."
+    },
+    "feature": "side-column-floats"
+  },
+  "cjk-no-fangsong": {
+    "title": {
+      "en": "Fontsource has no Fangsong (仿宋) face",
+      "es": "Fontsource no tiene ninguna fuente Fangsong (仿宋)"
+    },
+    "body": {
+      "en": "GB/T 9704 and most mainland forms set their text in 仿宋, a Song face drawn with the thin, slightly rising strokes of the brush. None of the Chinese families on Fontsource is a Fangsong, so a recipe sets the text in the Song face it has, Noto Serif SC, and says so. A Fangsong you hold a licence for goes in as your own font: register its file with FontFace, name the family in bodyText.fontFamily and give renderToPdf a fontProvider that returns its bytes.",
+      "es": "La GB/T 9704 y casi todos los impresos de la China continental componen el texto en 仿宋, una letra Song dibujada con los trazos finos y algo ascendentes del pincel. Ninguna de las familias chinas de Fontsource es una Fangsong, así que una receta compone el texto con la Song que hay, Noto Serif SC, y lo dice. Una Fangsong con licencia entra como fuente propia: registra su archivo con FontFace, nombra la familia en bodyText.fontFamily y pasa a renderToPdf un fontProvider que devuelva sus bytes."
+    },
+    "feature": "cjk-fonts"
+  },
+  "cjk-grid-balancing": {
+    "title": {
+      "en": "On a character grid, turn column balancing off",
+      "es": "En una retícula de caracteres, desactiva el equilibrado de columnas"
+    },
+    "body": {
+      "en": "Column balancing fills a page that ends short, as a head kept with its text leaves blank lines at the foot, by adding grid lines above heads and by setting a paragraph one line looser. A looser Chinese line spreads its characters (0.13 em on a GB/T 9704 page, far past balancing.maxTracking), so the characters leave the columns of the grid and the heads leave their lines. A page counted in cells ends short instead: set headings.balancing: { enabled: false }.",
+      "es": "El equilibrado de columnas llena una página que acaba corta (un título que se queda con su texto deja líneas en blanco al pie) añadiendo líneas de la retícula encima de los títulos y componiendo un párrafo una línea más holgado. Una línea china más holgada separa sus caracteres (0,13 em en una página GB/T 9704, muy por encima de balancing.maxTracking), así que los caracteres se salen de las columnas de la retícula y los títulos de sus líneas. Una página contada en casillas acaba corta: pon headings.balancing: { enabled: false }."
+    },
+    "feature": "character-grid"
+  },
+  "cjk-face-latin-quotes": {
+    "title": {
+      "en": "A Chinese face sets quotation marks and apostrophes full width, in Latin text too",
+      "es": "Una fuente china compone comillas y apóstrofos a ancho completo, también en texto latino"
+    },
+    "body": {
+      "en": "Noto Serif TC and the other Traditional Chinese faces draw ‘ ’ “ ” one em wide, the way Chinese text uses them, and that glyph is what a Latin word set in the face gets: Li Bai’s prints with a wide gap after the apostrophe, and an English quotation opens and closes on a full em of blank. A CJK face has no italic either, and the slant faked on screen prints upright in the PDF. Text that mixes Chinese with a Latin language in one face (footnotes, which take the body face, or glosses with pinyin) reads best without apostrophes, curly quotes and italics; « » and the Latin-1 marks keep their width. Where the Latin text runs on its own, give it a Latin face through a paragraph style.",
+      "es": "Noto Serif TC y las demás fuentes de chino tradicional dibujan ‘ ’ “ ” con un cuadratín de ancho, como las usa el texto chino, y ese es el signo que recibe una palabra latina compuesta con la fuente: Li Bai’s sale con un hueco ancho tras el apóstrofo y una cita inglesa abre y cierra con un cuadratín en blanco. Una fuente china tampoco tiene cursiva, y la inclinación simulada en pantalla sale recta en el PDF. El texto que mezcla chino y una lengua latina en una sola fuente (las notas al pie, que usan la fuente del cuerpo, o las glosas con pinyin) se lee mejor sin apóstrofos, comillas inglesas ni cursivas; « » y los signos de Latin-1 conservan su ancho. Cuando el texto latino va aparte, dale una fuente latina con un estilo de párrafo."
+    },
+    "feature": "cjk-fonts"
+  },
+  "page-span-heading-new-page": {
+    "title": {
+      "en": "A page-span heading always opens a new page",
+      "es": "Un título a todo el ancho siempre abre una página nueva"
+    },
+    "body": {
+      "en": "A heading whose level or style sets span: 'page' is laid out as an opener at the head of a page, whether or not it has a breakBefore. Placed after other text, or after another opener on the same page, it moves to the next page and leaves the rest of the current one empty. A banner headline across both columns (or both tiers of a vertical page) under a masthead goes into the opener's own design, next to the masthead, or into a :::callout{span=\"page\"} box as a heading without span, as newspaper-front-page sets its banners.",
+      "es": "Un título cuyo nivel o estilo fija span: 'page' se compone como apertura en la cabeza de una página, tenga o no breakBefore. Colocado después de otro texto, o de otra apertura en la misma página, pasa a la página siguiente y deja vacío el resto de la actual. Un titular que cruza las dos columnas (o los dos pisos de una página vertical) bajo la cabecera del periódico va en el diseño de la propia apertura, junto a la cabecera, o dentro de un recuadro :::callout{span=\"page\"} como título sin span, que es como newspaper-front-page compone sus titulares."
+    },
+    "feature": "opener-design"
+  },
+  "circled-numbers-western": {
+    "title": {
+      "en": "Circled numbers ① ② are set as Latin text",
+      "es": "Los números en círculo ① ② se componen como texto latino"
+    },
+    "body": {
+      "en": "In a Chinese paragraph the composer sets ① to ⑳ as Latin letters: a line may end on a number whose sense opens the next line, and cjk.latinSpacing puts its quarter em between the number and the character after it. Type a word joiner (U+2060) after each number: the number stays on the line of its sense and the space goes.",
+      "es": "En un párrafo chino, el compositor trata ① a ⑳ como letras latinas: una línea puede acabar en un número cuya acepción empieza en la línea siguiente, y cjk.latinSpacing pone su cuarto de cuadratín entre el número y el carácter siguiente. Escribe una unión de palabras (U+2060) después de cada número: el número se queda en la línea de su acepción y el espacio desaparece."
+    },
+    "feature": "han-latin-spacing"
   }
 }

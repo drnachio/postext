@@ -4,6 +4,7 @@ import { useRef, useState, useEffect, useCallback, type ReactNode } from 'react'
 import { BookOpen, FileText } from 'lucide-react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../context/SandboxContext';
 import type { LayoutScope } from '../book/types';
+import { WHOLE_BOOK_MAX_CHAPTERS, wholeBookAllowed } from '../book/scope';
 import type { ViewportTab } from '../types';
 import { SegmentedControl, cn } from '../ui';
 
@@ -23,7 +24,14 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
   const activeViewport = useSandboxSelector((s) => s.activeViewport);
   const pdfScope = useSandboxSelector((s) => s.pdfScope);
   const canvasScope = useSandboxSelector((s) => s.canvasScope);
-  const multiChapter = useSandboxSelector((s) => s.chapters.length > 1);
+  const chapterCount = useSandboxSelector((s) => s.chapters.length);
+  const multiChapter = chapterCount > 1;
+  // A long book is shown a chapter at a time on the canvas and in HTML
+  // (the PDF can still take it whole): the whole-book choice says why.
+  const bookScopeBlocked = activeViewport !== 'pdf' && !wholeBookAllowed(chapterCount);
+  const bookScopeTitle = bookScopeBlocked
+    ? labels.canvasScopeBookTooLong.replace('__n__', String(WHOLE_BOOK_MAX_CHAPTERS))
+    : undefined;
   const containerRef = useRef<HTMLDivElement>(null);
   const [indicator, setIndicator] = useState({ left: 0, width: 0 });
 
@@ -69,11 +77,11 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
             options={compact
               ? [
                   { value: 'chapter', label: <FileText size={13} aria-hidden="true" />, title: labels.pdfScopeChapter },
-                  { value: 'book', label: <BookOpen size={13} aria-hidden="true" />, title: labels.pdfScopeBook },
+                  { value: 'book', label: <BookOpen size={13} aria-hidden="true" />, title: bookScopeTitle ?? labels.pdfScopeBook, disabled: bookScopeBlocked },
                 ]
               : [
                   { value: 'chapter', label: labels.pdfScopeChapter },
-                  { value: 'book', label: labels.pdfScopeBook },
+                  { value: 'book', label: labels.pdfScopeBook, ...(bookScopeTitle ? { title: bookScopeTitle } : {}), disabled: bookScopeBlocked },
                 ]}
           />
         )}

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Document Format',
   description: 'The markdown subset Postext parses, and the rules for authoring source documents',
   lang: 'en',
-  lastUpdated: '2026-09-24',
+  lastUpdated: '2026-09-29',
   readingTime: '10 min',
   order: 5,
 };
@@ -71,12 +71,12 @@ Postext recognises seven prose block types, plus the directives and resource emb
     <tr>
       <td>Paragraph</td>
       <td>Plain text over one or more lines</td>
-      <td>Consecutive non-blank, non-special lines are joined with a single space and emitted as one paragraph. Manual line breaks inside a paragraph are not preserved — use a blank line to start a new paragraph.</td>
+      <td>Consecutive non-blank, non-special lines are joined with a single space and emitted as one paragraph. Between two Chinese or Japanese characters (ideographs, kana, fullwidth punctuation, and curly quotes, dashes or an ellipsis beside them) the line end is dropped instead, as CSS does, so a Chinese paragraph may be wrapped anywhere in the source. Between two such marks (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>) the characters past them decide: the line end goes when one of them is Chinese or Japanese, and <code>“hello”⏎“bye”</code> keeps its space. Korean keeps its space. Manual line breaks inside a paragraph are not preserved — use a blank line to start a new paragraph.</td>
     </tr>
     <tr>
       <td>Blockquote</td>
       <td><code>&gt; quoted text</code></td>
-      <td>Every line of the quote must start with <code>&gt;</code> (one optional space after). Consecutive quote lines merge into a single blockquote block. It is set as <code>bodyText.blockquote</code> says: grey italics with the body's first-line indent unless you change them (see <a href="/en/docs/configuration#blockquotes">Configuration › Blockquotes</a>).</td>
+      <td>Every line of the quote must start with <code>&gt;</code> (one optional space after). Consecutive quote lines merge into a single blockquote block, joined like paragraph lines. It is set as <code>bodyText.blockquote</code> says: grey italics with the body's first-line indent unless you change them (see <a href="/en/docs/configuration#blockquotes">Configuration › Blockquotes</a>).</td>
     </tr>
     <tr>
       <td>Unordered list</td>
@@ -115,7 +115,7 @@ A heading line may end with an attribute block in braces — the same `key="valu
 # The Long Road {author="I. Zango Martín" year=1998}
 ```
 
-The braces and their content are removed from the heading text (the title above renders as *The Long Road*) and stored on the heading as `attrs`. They are exposed to design slots as `{attr.<key>}` placeholders: in the heading's own advanced-design slot, and in page headers and footers, where they resolve from the current chapter's H1. Only a balanced, brace-free block at the very end of the line is recognised; a lone `{}` or an unbalanced brace stays in the text. See **Configuration → Headers & footers**.
+The braces and their content are removed from the heading text (the title above renders as *The Long Road*) and stored on the heading as `attrs`. They are exposed to design slots as `{attr.<key>}` placeholders: in the heading's own advanced-design slot, and in page headers and footers, where they resolve from the current chapter's H1. Only a balanced, brace-free block at the very end of the line is recognised, after a space or, since Chinese titles are written without one, right after a Chinese or Japanese character (`# 回目{style="x"}`). The block is taken only when the attribute syntax below reads all of it: `{x, y}`, `{紅樓|hóng lóu}` and a lone `{}` stay in the title, and so do flags alone glued to the title (`# 第一回{draft}`). Attributes are separated by spaces, so a block with commas (`{a="1", b="2"}`) and Pandoc's `{#id}` and `{.class}` stay in the title as well; up to postext 1.8 they were read and removed from it. A key written in another script is read and dropped with a warning (see below), so `# 回目{style="x" 作者=曹雪芹}` still takes `style`. See **Configuration → Headers & footers**.
 
 A value printed by a design text may span several lines: the two characters `\n` start a new line there, whatever the element's `overflow` (`to="Firma X\nStrasse 1\n10115 Berlin"` prints a three-line address). With `inlineMarks` on the element, inline marks in the value apply too: `authors="Ana Ruiz^1^, Luis Gil^2^"` sets the affiliation numbers as superscripts. The escape belongs to attribute values (and to the design's own templates): the characters `\n` in a heading's text, say in a code span, print as written.
 
@@ -200,10 +200,10 @@ Only `pagebreak`, `numbering`, `columnbreak`, `space`, `toc` and `index` are rec
 
 The same `key="value"` syntax is read by heading attributes, directive and container fences (`:::name{…}`), inline references (`:ref{…}`), chips (`:chip[…]{…}`), swatches (`:swatch{…}`) and index marks (`:index[…]{…}`). Its rules:
 
-- **Keys** start with a letter or `_` and go on with letters, digits, `_` or `-`. Spaces around `=` are fine, a repeated key keeps its last value, and a key without `=` is a flag with an empty value.
-- **Quoted values.** A double-quoted value may hold anything but `"`, single quotes included; a single-quoted one anything but `'`. So a value with double quotes goes in single quotes: `lead='He said "hi"'`. There are no escapes — a backslash is an ordinary character — so a value that needs both ASCII quotes takes typographic ones (`“…”`, `’`).
+- **Keys** start with an ASCII letter or `_` and go on with ASCII letters, digits, `_` or `-`. Spaces around `=` are fine, the fullwidth `＝` a Chinese input method types works as `=`, a repeated key keeps its last value, and a key without `=` is a flag with an empty value. A key in another script (`作者=曹雪芹`) is not read and raises an `attributeKeyInvalid` warning; the other keys of the block still apply. Values may be in any script.
+- **Quoted values.** A double-quoted value may hold anything but `"`, single quotes included; a single-quoted one anything but `'`. So a value with double quotes goes in single quotes: `lead='He said "hi"'`. There are no escapes — a backslash is an ordinary character — so a value that needs both ASCII quotes takes typographic ones (`“…”`, `’`). A value may also open with the curly `“` or the corner bracket `「` a Chinese input method types, and then runs to the matching `”` or `」`, spaces included: `title=“甲戌本 眉批”`, `title=「脂批」`.
 - **Bare values** (`startAt=17`, `year=1998`) run to the next space: `title=Hello world` is `title="Hello"` plus a flag `world`.
-- **No braces.** `{` and `}` never go in a value. The first `}` ends the block: a fence whose value holds one is no longer a directive but a paragraph, and inline the rest of the value spills into the text. In a heading, a `}` in a value leaves the whole block in the title, and a `{` after a space starts the block over: `# Title {note="a {b"}` keeps `Title {note="a` as its title and reads only a flag `b`.
+- **No braces.** `{` and `}` never go in a value. The first `}` ends the block: a fence whose value holds one is no longer a directive but a paragraph, and inline the rest of the value spills into the text. In a heading, a brace in a value leaves the whole block in the title: `# Title {note="a {b"}` is set as written. (Up to postext 1.8 a `{` after a space started the block over and `b` was read as a flag.)
 - **Dollar signs are plain text.** Attributes are read before inline maths, so `lead="from $5 to $6"` is just text.
 - **One line.** An attribute block never spans lines.
 
@@ -488,7 +488,7 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
     <tr>
       <td>Italic</td>
       <td><code>*italic*</code> or <code>_italic_</code></td>
-      <td>Rendered with the italic variant of the current font family. An optional <code>bodyText.italicColor</code> overrides the default body color for italic spans. An underscore marks emphasis only at a word boundary, as in CommonMark: one between two letters or digits — <code>snake_case_name</code>, a URL's <code>SR_AIR_EN.pdf</code> — is text (also for <code>__bold__</code>); inside a word, use asterisks (<code>un*believ*able</code>).</td>
+      <td>Rendered with the italic variant of the current font family. An optional <code>bodyText.italicColor</code> overrides the default body color for italic spans. An underscore marks emphasis only at a word boundary, as in CommonMark: one between two letters or digits — <code>snake_case_name</code>, a URL's <code>SR_AIR_EN.pdf</code> — is text (also for <code>__bold__</code>); inside a word, use asterisks (<code>un*believ*able</code>). Chinese, Japanese and Korean letters do not count here, since those scripts have no spaces: <code>中文_斜体_中文</code> and <code>中文__粗体__中文</code> are italic and bold. A <code>__</code> that does not make bold never turns into italics: <code>foo__bar__baz</code> stays text.</td>
     </tr>
     <tr>
       <td>Bold italic</td>
@@ -498,17 +498,37 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
     <tr>
       <td>Superscript</td>
       <td><code>^text^</code></td>
-      <td>Set at 58% of the text size and raised a third of it — an exponent (<code>10^-8^</code>), an ion charge (<code>Na^+^</code>). The marked text starts and ends with a non-space character; a lone caret in prose stays literal.</td>
+      <td>Set at 58% of the text size and raised a third of it — an exponent (<code>10^-8^</code>), an ion charge (<code>Na^+^</code>). The marked text starts and ends with a non-space character; a lone caret in prose stays literal, and so do the faces <code>^_^</code> and <code>^o^</code> (<code>n.^o^</code> and <code>1^o^</code> are still superscripts).</td>
     </tr>
     <tr>
       <td>Subscript</td>
       <td><code>~text~</code></td>
-      <td>Same size, lowered 0.15 of the text size, so it stays within the descenders — a chemical index (<code>H~2~O</code>, <code>p<em>K</em>~a~</code>). Combines with bold and italic (<code>**H~2~O**</code>). A subscript and a superscript written together, with nothing between them, are stacked as in a formula: <code>*T*~0~^2^</code> sets the 2 over the 0, whichever comes first, the subscript lowered 0.25 of the text size to clear the superscript, and the pair takes the width of the wider one. A space or a letter between them sets them one after the other; a word joiner (U+2060) does too, with nothing visible between them. A stacked pair never parts at a line break: a word too wide for the line breaks before the pair.</td>
+      <td>Same size, lowered 0.15 of the text size, so it stays within the descenders — a chemical index (<code>H~2~O</code>, <code>p<em>K</em>~a~</code>). A tilde with a digit on each side is a range and stays literal: <code>3~5 days</code>, <code>需要3~5天</code>. So is one between two Chinese words, which opens no subscript: <code>周一~周五</code>, <code>北京~上海</code>; a subscript still closes before a Chinese character (<code>F~合~等于</code>). Combines with bold and italic (<code>**H~2~O**</code>). A subscript and a superscript written together, with nothing between them, are stacked as in a formula: <code>*T*~0~^2^</code> sets the 2 over the 0, whichever comes first, the subscript lowered 0.25 of the text size to clear the superscript, and the pair takes the width of the wider one. A space or a letter between them sets them one after the other; a word joiner (U+2060) does too, with nothing visible between them. A stacked pair never parts at a line break: a word too wide for the line breaks before the pair.</td>
     </tr>
     <tr>
       <td>Small caps</td>
       <td><code>:smallcaps[text]</code></td>
       <td>Lowercase letters set as capitals at 70% of the text size — a character's name in a play, an acronym in running text. Takes other marks inside and around it; see <a href="#small-capitals">Small capitals</a>.</td>
+    </tr>
+    <tr>
+      <td>Orientation in vertical text</td>
+      <td><code>:tcy[12]</code>, <code>:upright[GDP]</code>, <code>:sideways[12]</code></td>
+      <td>In vertical text: one upright cell (tate-chu-yoko), each character upright in a cell of its own, or the whole run turned. No effect in horizontal text; see <a href="#orientation-in-vertical-text">Orientation in vertical text</a>.</td>
+    </tr>
+    <tr>
+      <td>Chinese marks</td>
+      <td><code>:dots[不可]</code>, <code>:name[賈寶玉]</code>, <code>:book[石頭記]</code></td>
+      <td>Emphasis dots (着重号), the proper-name line (专名号) and the book-title mark (书名号: 《》 or a wavy line, per <code>cjk.bookTitleMark</code>). The text stays as written; see <a href="#chinese-marks-ruby-and-warichu">Chinese marks, ruby and warichu</a>.</td>
+    </tr>
+    <tr>
+      <td>Ruby</td>
+      <td><code>:ruby[紅樓]&#123;rt="hóng lóu"&#125;</code> or <code>&#123;紅樓|hóng|lóu&#125;</code></td>
+      <td>Pinyin or zhuyin readings over (or beside) the base characters. The compact form needs a Han, kana or bopomofo base, so <code>&#123;x|x&gt;0&#125;</code> stays text.</td>
+    </tr>
+    <tr>
+      <td>Warichu</td>
+      <td><code>:warichu[note]&#123;open="〔" close="〕"&#125;</code></td>
+      <td>A note set in two half-size rows inside the line (双行夹注), broken across lines and pages.</td>
     </tr>
     <tr>
       <td>Inline code</td>
@@ -606,6 +626,42 @@ The :smallcaps[unesco] report and the :smallcaps[who] guidelines.
 - **Whole paragraphs.** A paragraph style or a callout body with `smallCaps: true` sets all its text this way (see [Paragraph styles](/en/docs/configuration#paragraph-styles)).
 - **Text.** The canvas, the HTML and the PDF carry the letters as painted: copying `:smallcaps[Hamlet]` gives "HAMLET".
 
+### Orientation in vertical text
+
+In vertical text (`layout.writingMode: 'vertical-rl'`) Chinese characters stand upright, Latin words and long numbers are turned sideways, and a number of at most two digits stands upright in one cell (see [Configuration › Numbers in vertical text](/en/docs/configuration#numbers-in-vertical-text)). Three marks set a run apart by hand:
+
+```markdown
+第:tcy[120]回，:upright[GDP]增長:sideways[12]倍。
+```
+
+- `:tcy[…]` (tate-chu-yoko, 縱中橫) sets its text side by side in one upright cell of one em, squeezed across when it is wider: `:tcy[120]`, `:tcy[3.0]`, `:tcy[A+]`. Up to about four characters read well.
+- `:upright[…]` stands each character upright in a cell of its own, Latin letters centred in it: an acronym read letter by letter down the column. A line never breaks inside it.
+- `:sideways[…]` turns the whole run with the line, Chinese characters too: a two-digit number the author wants on its side.
+- The text stays in the plain text; the marks take other inline marks inside (`:tcy[**12**]`), a link (`:sideways[[iPhone](https://…)]`) and each other, the innermost winning (`:tcy[:upright[AB]]` stands A and B upright), and write `\]` for a literal bracket. In horizontal text they change nothing.
+- A reference, a note marker, a formula, a chip or a swatch inside a mark keeps its own setting: `:sideways[iPhone[^1]]` turns iPhone and leaves the note number as every note number is set; a reference's number stands in one cell by `cjk.uprightDigits` like any short number.
+- A design text element with `inlineMarks: true` takes them too when it is set vertically (see [Configuration › Vertical text elements](/en/docs/configuration#vertical-text-elements)).
+- For breaking and justifying, a `:tcy` cell and each `:upright` character count as Chinese characters, and no Han–Latin space is set next to them.
+
+
+### Chinese marks, ruby and warichu
+
+Chinese editions mark text between the lines rather than with italics or underlining, gloss characters with their readings, and set commentary inside the line. Five directives do it. [Chinese layout](/en/docs/chinese-layout) explains the conventions behind them. They keep their text: the characters between the brackets stay in the paragraph (search, the contents, index anchors and copied text read them as written), and the directives take the other inline marks inside and around them, nested ones included. Write `\]` for a literal bracket.
+
+```markdown
+此事:dots[不可]輕忽。:name[賈寶玉]與:name[林黛玉]讀:book[西廂記]。
+
+{滿紙|mǎn|zhǐ}荒唐言，:ruby[一把]{rt="yì bǎ"}辛酸淚！:ruby[都]{rt="ㄉㄡ"}云作者痴。
+
+寶玉:warichu[甲戌側批：此是第一首標題詩。]{open="〔" close="〕"}道：……
+```
+
+- **`:dots[text]`** sets an emphasis dot (着重号) under each character in horizontal text, right of it in vertical text, and none on punctuation or spaces. `style="dot|circle|sesame"` (default `dot`), `fill="open"` for an outline, `pos="over|under"` for the other side. Markdown emphasis `*…*` on Chinese characters does the same under `cjk.emphasis: 'dots'`, the default in a Chinese document; Latin letters in the same emphasis stay italic.
+- **`:name[text]`** draws the proper-name line (专名号) under the text (left of it in vertical text), and **`:book[text]`** the book-title mark (书名号): 《》 around the title (〈〉 for a title inside another), the wavy line of classical and Taiwan editions, or nothing, as `cjk.bookTitleMark` says (by default brackets on the mainland, the wavy line in Taiwan and Hong Kong). One source serves a modern mainland edition and a classical one. Two names or titles side by side keep their lines apart.
+- **`:ruby[base]{rt="…"}`** sets readings over the base (pinyin), or right of each character (zhuyin, the default for bopomofo readings). With as many readings as characters, split on spaces or `|`, each character gets its own and a line may break between them (mono ruby); `group`, or a count that does not match, sets one reading centred over the whole base, which never breaks. `pos="over|under|right"` picks the side. The compact form `{紅樓|hóng|lóu}` (one reading per `|`) or `{紅樓|hónglóu}` (one reading for the whole base) reads the same, only when the base holds a Han, kana or bopomofo character, outside maths, code and attributes, so `{x|x>0}` in Latin prose stays text. A backslash before the brace or the bar keeps a Chinese one as text: `\{紅|hóng}` and `{紅\|hóng}` print `{紅|hóng}`. A base that opens or closes a line aligns to that edge together with its reading.
+- **`:warichu[note]`** sets a note (双行夹注) in two rows at half the text size inside the line, the upper row read first (the right one in vertical text). A long note fills what is left of the line and goes on with the next line, column or page. `open` and `close` wrap it in brackets at the text size; `cjk.warichu` sets the size, colour and default brackets. A note in Latin script breaks between its words.
+
+The line pitch never changes: marks and readings live in the leading, and the build warns when a paragraph's line gap is too narrow for them (`cjkMarksExceedLeading`, `rubyExceedsLeading`), and when the marks under one line and the readings over the next do not fit in the gap they share, in one paragraph or across two. Give annotated paragraphs a paragraph style with more leading. Marks, readings and notes are drawn in paragraphs, headings, list items, blockquotes and boxes; in captions, table cells and notes, and in running heads and designs, the text prints without them. Under `cjk.bookTitleMark: 'brackets'` the 《》 of a title are punctuation of the text: captions, cells, notes, contents rows, bookmarks and index entries keep them. See [Configuration › Marks, ruby and warichu](/en/docs/configuration#marks-ruby-and-warichu).
+
 
 ## Footnotes
 
@@ -662,7 +718,7 @@ The pulse is taken at the wrist.:index{term="Pulse!radial" main}
     </tr>
     <tr>
       <td><code>sort</code></td>
-      <td>The sort key of the last level when it should sort by other letters: <code>:index[St Kilda]&#123;sort="Saint Kilda"&#125;</code>, <code>term="20th century" sort="twentieth century"</code>.</td>
+      <td>The sort key of the last level when it should sort by other letters: <code>:index[St Kilda]&#123;sort="Saint Kilda"&#125;</code>, <code>term="20th century" sort="twentieth century"</code>. A Chinese index sorts and groups by the reading the collator gives a character. For a polyphonic one read the other way, write the key in characters that have only the reading you want: <code>:index[重阳]&#123;sort="崇阳"&#125;</code> files 重阳 under C, between 程 and 崔, not under Z. A pinyin key (<code>sort="chong yang"</code>) reaches C too, but sorts after all of its Chinese entries, because the collator sets Latin letters after Chinese characters (see <a href="/en/docs/configuration#back-of-book-index">Configuration › Back-of-book index</a>, <code>groupBy</code>).</td>
     </tr>
     <tr>
       <td><code>main</code></td>
@@ -958,7 +1014,7 @@ Postext does not recognise the following CommonMark features. They are either tr
 
 This list will shrink over time. Until then, anything not explicitly listed in the supported section above should be assumed to be literal text.
 
-Beyond the syntax, two families of writing systems are not set correctly yet: right-to-left scripts (Arabic, Hebrew…), which have no bidirectional layout, and Chinese, Japanese and Korean, which break between characters with basic line-start and line-end rules only, and are never justified between characters. Hyphenation patterns and built-in labels ship for eight languages. See [Languages and scripts](/en/docs/configuration#languages-and-scripts).
+Beyond the syntax, right-to-left scripts (Arabic, Hebrew…) are not set correctly yet: there is no bidirectional layout. Chinese is set across the page and down it, with the line breaking, punctuation widths, justification between characters, marks, ruby and warichu its region expects (see [Chinese layout](/en/docs/chinese-layout)); Japanese and Korean go through the same composer with the mainland Chinese rules. Hyphenation patterns ship for eight languages, and built-in labels for those eight and Chinese. See [Languages and scripts](/en/docs/configuration#languages-and-scripts).
 
 
 ## Authoring conventions
@@ -973,6 +1029,7 @@ A few conventions make the difference between a document that parses cleanly and
 - **Blockquotes inside lists are not supported.** Start the blockquote at column 0, outside the list.
 - **Images and tables live in `resources`.** Inline `![alt](src)` is stripped precisely because inline images break column-aware placement. Declare each image as a resource and reference it by id — the engine then decides whether it floats, breaks the column, or moves to the top of the next page.
 - **Escape dollar signs with `\$` when you do not mean math.** Postext interprets `$…$` as inline LaTeX, so a raw `$` in prose will start a formula. Prices, shell prompts, and anything else with a bare dollar sign should be written as `\$`.
+- **Type the markup in ASCII, also in Chinese text.** A Chinese or Japanese input method gives full-width forms: `：：：` for a fence, `＃` for a heading, `［＾1］` for a footnote marker, `｛…｝` for attributes, `＊＊` for bold. They print as text, and the build reports the line as a `fullwidthMarkup` warning that names the ASCII form to type. Attribute values may be in any script and quoted with `“…”` or `「…」`; keys stay ASCII.
 
 
 ## Worked example

@@ -13,6 +13,7 @@ import { Prec, StateEffect, StateField, type EditorState, type Extension } from 
 import type { Resource, ResourceKind, ResourceType } from 'postext';
 import { chipCompletionSource, type ChipStyleOption } from './chipSyntax';
 import { smallCapsCompletionSource } from './smallCapsSyntax';
+import { annotationCompletionSource } from './annotationSyntax';
 import { indexCompletionSource } from './indexSyntax';
 
 /** What the `@` picker needs from the sandbox: the current resources and the
@@ -274,6 +275,7 @@ export function refCompletion(getContext: () => RefCompletionContext): Extension
         refSource(getContext),
         chipCompletionSource(() => getContext().chipStyles ?? []),
         smallCapsCompletionSource,
+        annotationCompletionSource,
         indexCompletionSource(() => getContext().indexTerms?.() ?? []),
       ],
       activateOnTyping: true,

@@ -24,19 +24,36 @@ import { renderMath, isMathReady, noteMathWithoutEngine } from '../math';
 export interface PageMetrics {
   trimWidthPx: number;
   trimHeightPx: number;
+  /** The sheet (trim plus the cut-lines band on every side), physical. */
   pageWidthPx: number;
   pageHeightPx: number;
   trimOffset: number;
   /** Content area of an odd (recto) page — the trim box inset by the
-   *  margins as written. Use `contentAreaForPage` for a specific page so
-   *  mirrored margins swap on even pages. */
+   *  margins as written, in the flow frame (see `vertical`). Use
+   *  `contentAreaForPage` for a specific page so mirrored margins swap on
+   *  the pages that face the other way. */
   contentArea: BoundingBox;
-  /** The trim box (the final page after cutting) in page px. */
+  /** The trim box (the final page after cutting) in flow px. */
   trimBox: BoundingBox;
   /** The trim box expanded by `cutLines.bleed` on every side when cut lines
    *  are enabled; equals `trimBox` otherwise. Design elements anchored to
-   *  `'bleed'` run to this frame. */
+   *  `'bleed'` run to this frame. In flow px. */
   bleedBox: BoundingBox;
+  /** Whether the flow is set vertically (`layout.writingMode:
+   *  'vertical-rl'`): `contentArea`, `trimBox` and `bleedBox` are then in
+   *  the flow frame (`flowWidthPx` = the sheet's height, `flowHeightPx` =
+   *  its width; see `VDTPage.flow`), and `physical` holds them on the
+   *  sheet. On a horizontal page the two frames are one. */
+  vertical: boolean;
+  flowWidthPx: number;
+  flowHeightPx: number;
+  physical: { contentArea: BoundingBox; trimBox: BoundingBox; bleedBox: BoundingBox };
+}
+
+/** A sheet rect in the flow frame of a vertical page `sheetWidthPx` wide
+ *  (see `pageRectToFlow`): `(x, y, w, h)` → `(y, W − x − w, h, w)`. */
+export function sheetRectToFlow(rect: BoundingBox, sheetWidthPx: number): BoundingBox {
+  return createBoundingBox(rect.y, sheetWidthPx - (rect.x + rect.width), rect.height, rect.width);
 }
 
 export function computePageMetrics(resolved: ResolvedConfig): PageMetrics {
@@ -77,7 +94,25 @@ export function computePageMetrics(resolved: ResolvedConfig): PageMetrics {
     trimHeightPx + bleedPx * 2,
   );
 
-  return { trimWidthPx, trimHeightPx, pageWidthPx, pageHeightPx, trimOffset, contentArea, trimBox, bleedBox };
+  const physical = { contentArea, trimBox, bleedBox };
+  if (resolved.layout.writingMode === 'vertical-rl') {
+    // The flow is a horizontal page turned a quarter turn clockwise: its
+    // width is the sheet's height, its top the sheet's right edge.
+    return {
+      trimWidthPx, trimHeightPx, pageWidthPx, pageHeightPx, trimOffset,
+      contentArea: sheetRectToFlow(contentArea, pageWidthPx),
+      trimBox: sheetRectToFlow(trimBox, pageWidthPx),
+      bleedBox: sheetRectToFlow(bleedBox, pageWidthPx),
+      vertical: true,
+      flowWidthPx: pageHeightPx,
+      flowHeightPx: pageWidthPx,
+      physical,
+    };
+  }
+  return {
+    trimWidthPx, trimHeightPx, pageWidthPx, pageHeightPx, trimOffset, contentArea, trimBox, bleedBox,
+    vertical: false, flowWidthPx: pageWidthPx, flowHeightPx: pageHeightPx, physical,
+  };
 }
 
 /** Mirror a content area horizontally about the page's vertical centre line:
@@ -92,18 +127,43 @@ export function mirrorContentArea(area: BoundingBox, pageWidthPx: number): Bound
   );
 }
 
+/** Mirror an area of a page's flow frame about the sheet's vertical centre
+ *  line (`pageWidthPx` = the physical sheet width): a horizontal flip on a
+ *  horizontal page, a flip of the flow's y axis on a vertical one (the
+ *  flow's y runs across the sheet). */
+export function mirrorFlowArea(area: BoundingBox, pageWidthPx: number, vertical: boolean): BoundingBox {
+  if (!vertical) return mirrorContentArea(area, pageWidthPx);
+  return createBoundingBox(area.x, pageWidthPx - (area.y + area.height), area.width, area.height);
+}
+
+/** Whether the page at `pageIndex` (position in `doc.pages`; its number is
+ *  `pageIndex + pageIndexOffset + 1`) sets its mirrored margins swapped:
+ *  with `margins.mirror`, the pages whose spine is on their left in the
+ *  book's binding — the even pages of a left-bound book, the odd ones
+ *  (rectos, the left pages of a spread) of a right-bound one. */
+export function pageMirrored(
+  resolved: Pick<ResolvedConfig, 'page'>,
+  pageIndex: number,
+  pageIndexOffset = 0,
+  mirror = resolved.page.margins.mirror,
+): boolean {
+  if (!mirror) return false;
+  const isEvenPage = (pageIndex + pageIndexOffset + 1) % 2 === 0;
+  return isEvenPage !== (resolved.page.binding === 'right');
+}
+
 /** Content area for the page at `pageIndex` (position in `doc.pages`). With
- *  `margins.mirror`, even pages (page number = index + 1) swap the inner and
- *  outer margins so the inner margin always faces the spine. */
+ *  `margins.mirror`, the pages {@link pageMirrored} names swap the inner and
+ *  outer margins so the inner margin always faces the spine. The area is in
+ *  the page's flow frame (vertical when `resolved.layout.writingMode` is). */
 export function contentAreaForPage(
   metrics: Pick<PageMetrics, 'contentArea' | 'pageWidthPx'>,
   resolved: ResolvedConfig,
   pageIndex: number,
   pageIndexOffset = 0,
 ): BoundingBox {
-  const isEvenPage = (pageIndex + pageIndexOffset + 1) % 2 === 0;
-  if (resolved.page.margins.mirror && isEvenPage) {
-    return mirrorContentArea(metrics.contentArea, metrics.pageWidthPx);
+  if (pageMirrored(resolved, pageIndex, pageIndexOffset)) {
+    return mirrorFlowArea(metrics.contentArea, metrics.pageWidthPx, resolved.layout.writingMode === 'vertical-rl');
   }
   return createBoundingBox(
     metrics.contentArea.x,
@@ -277,7 +337,9 @@ export function stampSourceRanges(
     const units: (string | null)[] = [];
     if (line.segments && line.segments.length > 0) {
       for (const seg of line.segments) {
-        if (seg.refContinues) continue;
+        // Brackets the layout added (a book title's 《》, a warichu note's)
+        // are no plain text.
+        if (seg.refContinues || seg.inserted) continue;
         if (seg.refResourceId !== undefined) units.push(null);
         else for (let k = 0; k < seg.text.length; k++) units.push(seg.text[k]!);
       }
@@ -321,7 +383,9 @@ export function stampSourceRanges(
     // group is wider than the line, and the second line keeps the space.
     const after = plain[line.plainEnd];
     const opensNext = after !== undefined && NO_BREAK_SPACES.includes(after) && nextUnits[0] === after;
-    const skipSeparator = li !== lastLineIdx && after !== undefined && (/\s/.test(after) || isUnprinted(after)) && !opensNext ? 1 : 0;
+    // The ideographic space (U+3000) is a character of CJK text: a line
+    // that ends before one leaves it to the next.
+    const skipSeparator = li !== lastLineIdx && after !== undefined && ((/\s/.test(after) && after !== '\u3000') || isUnprinted(after)) && !opensNext ? 1 : 0;
     cumPlain = line.plainEnd + skipSeparator;
     line.sourceStart = plainToSrcStart(line.plainStart);
     line.sourceEnd = plainToSrcStart(line.plainEnd);

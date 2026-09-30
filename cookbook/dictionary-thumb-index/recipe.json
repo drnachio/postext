@@ -18,7 +18,6 @@
     ]
   },
   "answers": ["Q83", "Q40", "Q50", "Q30", "Q31"],
-  "gaps": ["running-head-marks"],
   "gotchas": [
     "section-last-wins", "style-inherits-break", "headings-drop-h1-break", "header-paints-over-text",
     "negative-offsets", "palette-skips-designs", "nbsp-breaks", "runt-tracking-unpainted",
@@ -71,5 +70,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-26",
-  "updated": "2026-09-26"
+  "updated": "2026-09-29"
 }

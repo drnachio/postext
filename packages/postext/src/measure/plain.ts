@@ -18,7 +18,11 @@ import { lineMeasure, uniformMeasureFrom, type MeasuredBlock, type MeasureBlockO
 import { cleanSoftHyphens, measureTextWidth, normalSpaceWidthFor } from './canvas';
 import { isRuntLastLine } from './runts';
 import { measureRichBlock } from './rich';
-import { hasCJKRun } from './cjk';
+import { hasCJK, hasCJKRun } from './cjk';
+import { composesAsCjk } from './cjkCompose';
+import { markCuts } from './markCuts';
+import { getMeasureUprightDigits, getMeasureWritingMode, lineBaselineOffset, measuringVertically, withMeasureWritingMode } from './vertical';
+import { holdsVerticalCell } from '../writingMode';
 import { WORDS_AND_SPACES_RE } from './spaces';
 import { breaksAfterHardHyphen, hasCompound, raggedStretchPx } from './breakRules';
 
@@ -195,7 +199,26 @@ export function measureBlock(
   if (text.trim() === '') {
     return { lines: [], totalHeight: 0 };
   }
+  // A writing mode asked for this text alone (`options.writingMode`).
+  if (options?.writingMode !== undefined && options.writingMode !== getMeasureWritingMode()) {
+    const opts = options;
+    return withMeasureWritingMode(opts.writingMode!, () => measureBlock(text, font, maxWidthPx, lineHeightPx, opts));
+  }
 
+  // Words set without spaces (Chinese, Japanese, Korean): the formatted
+  // path's breaker, which composes a CJK paragraph (clreq line breaking,
+  // inter-character justification) and breaks a Latin one that quotes CJK
+  // words next to their characters. The same text gives the same lines on
+  // both paths. In vertical text so does any text with a character that
+  // stands in a cell of its own (— … © ×) or a short number set in one
+  // (`cjk.uprightDigits`): pretext would measure it at its horizontal
+  // width. And so does a word holding CJK text and two marks
+  // that meet (`本）》录`): pretext would measure it with the browser's
+  // trimming, where the renderers paint such marks apart (`markCuts`).
+  // Each of the three CJK tests needs CJK text (`hasCJK`), looked for once.
+  if ((hasCJK(text) && (hasCJKRun(text) || composesAsCjk(text) || markCuts(text, 'words').length > 0)) || (measuringVertically() && holdsVerticalCell(text, getMeasureUprightDigits()))) {
+    return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
+  }
   const shouldHyphenate = options?.hyphenate ?? false;
   const indentPx = options?.firstLineIndentPx ?? 0;
   const hanging = options?.hangingIndent ?? false;
@@ -235,15 +258,13 @@ export function measureBlock(
   const prepared = prepareWithSegments(processedText, font);
   const normalSpaceWidth = textAlign === 'justify' ? normalSpaceWidthFor(font) : 0;
 
-  // Knuth-Plass optimal line breaking path. Not for words set without
-  // spaces (a run of ideographs or kana): its item stream breaks only at
-  // spaces and hyphenation points, so such a run would run past the column.
-  // Pretext's own breaker below breaks between them, with its kinsoku
-  // rules. A lone CJK bracket or fullwidth sign in Latin text is no reason.
-  // Ragged text takes it too with `optimalRagged`: its word spaces keep
-  // their width and each line gets the ragged stretch instead.
+  // Knuth-Plass optimal line breaking path (text with words set without
+  // spaces went to the formatted path above; a lone CJK bracket or
+  // fullwidth sign in Latin text is no reason). Ragged text takes it too
+  // with `optimalRagged`: its word spaces keep their width and each line
+  // gets the ragged stretch instead.
   const ragged = textAlign !== 'justify';
-  if (options?.optimal && (!ragged || options.optimalRagged) && !hasCJKRun(text)) {
+  if (options?.optimal && (!ragged || options.optimalRagged)) {
     const maxStretchRatio = ragged ? 1 : options.maxStretchRatio ?? 1.5;
     const minShrinkRatio = ragged ? 1 : options.minShrinkRatio ?? 0.8;
     // The runt threshold counts word spaces on ragged text too.
@@ -292,7 +313,7 @@ export function measureBlock(
       const kpLines = reconstructPretextLines(
         items, breaks, prepared, lineHeightPx,
         lineWidthFn, lineIndentFn, normalSpaceWidth, textAlign,
-        trackingPerChar,
+        trackingPerChar, lineBaselineOffset(lineHeightPx, font),
       );
       if (!hasOverfullLine(kpLines, lineWidthFn, ragged)) {
         return {
@@ -308,6 +329,7 @@ export function measureBlock(
   }
 
   const lines: VDTLine[] = [];
+  const baselineOffset = lineBaselineOffset(lineHeightPx, font);
   let cursor: LayoutCursor = { segmentIndex: 0, graphemeIndex: 0 };
   let y = 0;
   let lineIndex = 0;
@@ -357,7 +379,7 @@ export function measureBlock(
     lines.push({
       text: hyphenated && !lineText.endsWith('-') ? lineText + '-' : lineText,
       bbox: createBoundingBox(lineIndent, y, line.width, lineHeightPx),
-      baseline: y + lineHeightPx * 0.8,
+      baseline: y + baselineOffset,
       hyphenated,
       segments,
       isLastLine: false,

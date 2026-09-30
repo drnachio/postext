@@ -9,17 +9,24 @@
  */
 export const NO_BREAK_SPACES = '\u00A0\u2007\u202F\uFEFF';
 
+/** The ideographic space U+3000 is no word space either: in Chinese and
+ *  Japanese text it is a character one em wide (an indent typed as two of
+ *  them, a gap in a title), which a line may break after but which never
+ *  stretches on a justified line nor vanishes at a line start. */
+export const IDEOGRAPHIC_SPACE = '\u3000';
+
 /** One whitespace character a line may break at: `\s` without the
- *  no-break spaces. */
-export const BREAKING_SPACE_RE = /[^\S\u00A0\u2007\u202F\uFEFF]/;
+ *  no-break spaces and the ideographic space. */
+export const BREAKING_SPACE_RE = /[^\S\u00A0\u2007\u202F\uFEFF\u3000]/;
 
 /** Words and the runs of breaking whitespace between them, in order: a
- *  word may hold no-break spaces ("37 °C", "225 000"). */
-export const WORDS_AND_SPACES_RE = /(?:[^\s]|[\u00A0\u2007\u202F\uFEFF])+|[^\S\u00A0\u2007\u202F\uFEFF]+/g;
+ *  word may hold no-break spaces ("37 °C", "225 000") and ideographic
+ *  spaces. */
+export const WORDS_AND_SPACES_RE = /(?:[^\s]|[\u00A0\u2007\u202F\uFEFF\u3000])+|[^\S\u00A0\u2007\u202F\uFEFF\u3000]+/g;
 
 /** Runs of breaking whitespace, captured, for `split` (design text keeps
  *  the separators). */
-export const BREAKING_SPACE_RUNS_SPLIT_RE = /([^\S\u00A0\u2007\u202F\uFEFF]+)/;
+export const BREAKING_SPACE_RUNS_SPLIT_RE = /([^\S\u00A0\u2007\u202F\uFEFF\u3000]+)/;
 
 /** Whether `ch` (one character) is whitespace a line may break at. */
 export function isBreakingSpace(ch: string | undefined): boolean {
@@ -28,7 +35,7 @@ export function isBreakingSpace(ch: string | undefined): boolean {
 
 /** Whether `text` is nothing but breaking whitespace (and not empty). */
 export function isBreakingSpaceRun(text: string): boolean {
-  return /^[^\S\u00A0\u2007\u202F\uFEFF]+$/.test(text);
+  return /^[^\S\u00A0\u2007\u202F\uFEFF\u3000]+$/.test(text);
 }
 
 /** Whether `text` sets nothing: empty, or breaking whitespace only. A
@@ -44,5 +51,14 @@ export function isBlankText(text: string): boolean {
 /** `text` with every run of breaking whitespace set as one space and the
  *  ends trimmed of it; no-break spaces stay as they are. */
 export function collapseBreakingSpaces(text: string): string {
-  return text.replace(/[^\S\u00A0\u2007\u202F\uFEFF]+/g, ' ').replace(/^ | $/g, '');
+  return text.replace(/[^\S\u00A0\u2007\u202F\uFEFF\u3000]+/g, ' ').replace(/^ | $/g, '');
+}
+
+/** {@link collapseBreakingSpaces}, keeping the ideographic space (U+3000):
+ *  in a Chinese title (`甄士隱夢幻識通靈　賈雨村風塵懷閨秀`, `第一回　…`) it is
+ *  a character of the title, not a gap between words. */
+export function collapseTitleSpaces(text: string): string {
+  return text.includes('\u3000')
+    ? text.split('\u3000').map(collapseBreakingSpaces).join('\u3000')
+    : collapseBreakingSpaces(text);
 }

@@ -2,7 +2,7 @@
 // naming, and conversion of manifest entries into engine resources and
 // custom fonts. No DOM or storage access.
 
-import { presentTag } from '../locale';
+import { canonicalLocaleTag, matchContentLocale, presentTag, sameContentLocale } from '../locale';
 import type { CustomFontFamily, CustomFontFormat, Resource } from '../types';
 import type {
   BundleChapterSpec,
@@ -39,6 +39,7 @@ function isOptionalStringList(v: unknown): boolean {
 export function hasValidShowcaseMeta(v: Record<string, unknown>): boolean {
   return isOptionalStringList(v.locales)
     && isOptionalString(v.thumbnail)
+    && isOptionalString(v.openLocale)
     && isOptionalString(v.license)
     && isOptionalString(v.credits)
     && isOptionalStringList(v.tags);
@@ -115,22 +116,23 @@ export function isBundleManifest(data: unknown): data is BundleManifest {
 // ---------------------------------------------------------------------------
 // Locale resolution
 
-/** The key of a locale → value map that serves `locale`: exact tag, base
- *  language, the manifest's own locale, then the first key. */
+/** The key of a locale → value map that serves `locale`: the one
+ *  `matchContentLocale` picks (exact tag, then the same language and
+ *  script, so `zh-TW` finds `zh-Hant` before `zh-Hans`, then the language
+ *  in another script: `zh-TW` reads a bare `zh` rather than the manifest's
+ *  English), else the one serving the manifest's own locale, then the
+ *  first key. */
 function pickLocaleKey(keys: string[], locale: string, manifestLocale?: string): string {
-  const wanted = locale.toLowerCase();
-  const byLower = new Map(keys.map((k) => [k.toLowerCase(), k]));
-  const exact = byLower.get(wanted);
-  if (exact) return exact;
-  const base = wanted.split(/[-_]/)[0]!;
-  const baseKey = byLower.get(base);
-  if (baseKey) return baseKey;
-  if (manifestLocale) {
-    const own = byLower.get(manifestLocale.toLowerCase())
-      ?? byLower.get(manifestLocale.toLowerCase().split(/[-_]/)[0]!);
-    if (own) return own;
-  }
-  return keys[0]!;
+  return matchContentLocale(keys, locale)
+    ?? (manifestLocale ? matchContentLocale(keys, manifestLocale) : undefined)
+    ?? keys[0]!;
+}
+
+/** Whether two tags are the same tag, case and `_` separators aside. */
+function sameTag(a: string, b: string): boolean {
+  const ca = canonicalLocaleTag(a) ?? a;
+  const cb = canonicalLocaleTag(b) ?? b;
+  return ca.toLowerCase() === cb.toLowerCase();
 }
 
 function pickByLocale<T>(map: Record<string, T>, locale: string, manifestLocale?: string): T {
@@ -165,8 +167,9 @@ function contentLocaleKey(manifest: BundleManifest, locale: string): string | nu
  *  manifest has none: those of the locale the content is served under (see
  *  {@link resolveBundleLocale}), so text and wording never disagree. That
  *  is the entry of the exact tag; for any locale but the manifest's own,
- *  else the entry of its bare base language (`pt` for `pt-BR`), else of a
- *  regional variant of the same language. The manifest's own locale is
+ *  else the entry `matchContentLocale` picks: its bare base language (`pt`
+ *  for `pt-BR`), else a regional variant of the same language, and for
+ *  Chinese only an entry in the same script. The manifest's own locale is
  *  what the shared wording is written in: only an entry naming it exactly
  *  rewords it, never a sibling variant (`pt-BR` when the bundle is
  *  `pt-PT`). */
@@ -175,15 +178,14 @@ export function pickLocaleOverrides(manifest: BundleManifest, locale: string): B
   if (!localized || Object.keys(localized).length === 0) return null;
   const key = contentLocaleKey(manifest, locale);
   if (key === null) return null;
-  const wanted = key.toLowerCase();
   const keys = Object.keys(localized);
-  const exact = keys.find((k) => k.toLowerCase() === wanted);
+  const exact = keys.find((k) => sameTag(k, key));
   if (exact) return localized[exact]!;
-  if (manifest.locale?.toLowerCase() === wanted) return null;
-  const base = wanted.split(/[-_]/)[0]!;
-  const found = keys.find((k) => k.toLowerCase() === base)
-    ?? keys.find((k) => k.toLowerCase().split(/[-_]/)[0] === base);
-  return found ? localized[found]! : null;
+  if (manifest.locale && sameTag(manifest.locale, key)) return null;
+  // Wording in the script of the text served: Simplified labels never
+  // reword a Traditional edition.
+  const found = matchContentLocale(keys, key);
+  return found && sameContentLocale(found, key) ? localized[found]! : null;
 }
 
 /** The locale a bundle actually serves for `locale`: the key of its
@@ -217,14 +219,15 @@ export function pickChapterSpecs(manifest: BundleManifest, locale: string): Bund
 // ---------------------------------------------------------------------------
 // File names
 
-/** Lowercase, hyphen-separated slug: diacritics stripped, runs of anything
- *  else collapsed to one hyphen. '' for symbol-only input. */
+/** Lowercase, hyphen-separated slug: diacritics stripped, letters and
+ *  digits of every script kept (`第一回-甄士隐梦幻识通灵`, #181), runs of
+ *  anything else collapsed to one hyphen. '' for symbol-only input. */
 export function slugify(input: string): string {
   return input
     .normalize('NFKD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/\p{M}/gu, '')
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/[^\p{L}\p{N}]+/gu, '-')
     .replace(/^-+|-+$/g, '');
 }
 

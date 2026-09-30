@@ -1,6 +1,9 @@
 import { padTrueTypeGlyphs } from './trueTypePadding';
 import { PDFDict, PDFName, PDFRef, PDFStream, type PDFDocument, type PDFFont } from 'pdf-lib';
 import { fontKey, parseFontString } from './fontString';
+import { missingGlyphsOf, registerFaceFiles, wantsGlyph, type FaceFiles } from './faceFiles';
+import { registerFontFamily } from './fontFamilies';
+import { verticalTwinRefOf } from './verticalFonts';
 
 /** True when `bytes` starts with the `OTTO` magic identifying a CFF-flavored
  *  OpenType font — the ones pdf-lib cannot subset reliably, so they embed
@@ -115,11 +118,58 @@ export function coverAllGlyphUnicode(font: PDFFont): void {
   };
 }
 
+/** What the pages set in a face, handed to the {@link PdfFontProvider}. */
+export interface PdfFontRequest {
+  /** The characters (Unicode code points) the document sets in the face,
+   *  collected from its pages before any is drawn. A provider serving a
+   *  family as several files (Fontsource's unicode-range slices) returns
+   *  the files that hold them; one serving a single file may ignore it.
+   *  May be empty when the render cannot tell (a face asked for with no
+   *  text yet). When the same face is asked for again, it lists only the
+   *  characters the files already given lack. */
+  codePoints: ReadonlySet<number>;
+}
+
+/**
+ * The bytes of a face (TrueType, or CFF-flavoured OpenType): one file, or
+ * several that together make the face — each holding part of its
+ * characters, like the numbered unicode-range slices Fontsource ships for
+ * Chinese, Japanese and Korean families. Each file is embedded as its own
+ * subset font and a character is drawn from the first file, in the order
+ * given, that has a glyph for it. Reject (throw) for a face the provider
+ * cannot supply: another cut of the family is set in its place
+ * (`fontFallback`).
+ */
 export type PdfFontProvider = (
   family: string,
   weight: number,
   style: 'normal' | 'italic',
-) => Promise<Uint8Array>;
+  request?: PdfFontRequest,
+) => Promise<Uint8Array | Uint8Array[]>;
+
+/** A face some characters of which no file of it has a glyph for; the PDF
+ *  draws them as the font's `.notdef` glyph. */
+export interface FontMissingGlyphs {
+  family: string;
+  weight: number;
+  style: 'normal' | 'italic';
+  /** The characters, in the order the pages first set them. */
+  characters: string[];
+}
+
+/** A problem with a face's file the render works around: a variable font
+ *  asked for at a weight other than its default instance (pdf-lib embeds
+ *  that instance, so the text prints at the default weight), or a CFF
+ *  face larger than the limit embedded whole (pdf-lib cannot subset CFF
+ *  outlines reliably). */
+export type FontFileIssue =
+  | { kind: 'variableFontDefaultInstance'; family: string; weight: number; style: 'normal' | 'italic'; defaultWeight: number }
+  | { kind: 'cffEmbeddedWhole'; family: string; weight: number; style: 'normal' | 'italic'; bytes: number };
+
+/** Size from which a CFF face embedded whole is reported: 2 MB, about ten
+ *  times a Latin text face, and a fraction of a CJK one (Source Han Serif
+ *  is 8 to 25 MB a weight). */
+export const CFF_WHOLE_WARN_BYTES = 2 * 1024 * 1024;
 
 /** A face the document asked for, and the face of the same family set in
  *  its place because the provider rejected it (see
@@ -181,6 +231,32 @@ export function fallbackFaces(spec: FaceSpec): FaceSpec[] {
   return out;
 }
 
+/** A face as loaded: its files (the first one is the font the renderers
+ *  are handed) and the characters it was asked for. */
+interface LoadedFace {
+  spec: FaceSpec;
+  primary: PDFFont;
+  files: FaceFiles;
+  /** The provider answered with a list: a face that grows when later text
+   *  needs characters its files lack. A single file is the whole face. */
+  sliced: boolean;
+  /** Every character the face was asked for so far. */
+  asked: Set<number>;
+  /** The growth in progress, one at a time. */
+  growing: Promise<void>;
+}
+
+export interface FontCacheOptions {
+  /** A face the provider rejected and the face set in its place. */
+  onFallback?: (fallback: FontFallback) => void;
+  /** A variable font asked for at another weight, or a large CFF face
+   *  embedded whole (see {@link FontFileIssue}). */
+  onFileIssue?: (issue: FontFileIssue) => void;
+  /** Size from which a CFF face embedded whole is reported
+   *  ({@link CFF_WHOLE_WARN_BYTES} by default). */
+  cffWarnBytes?: number;
+}
+
 /**
  * Per-document mapping from `family|weight|style` to an embedded pdf-lib
  * font. Entries are populated up-front by `preload()` so that block-level
@@ -191,12 +267,20 @@ export function fallbackFaces(spec: FaceSpec): FaceSpec[] {
  * is mapped to `null` and reported back via `missing()`. Faces the
  * provider answers with the same file share one embedded font, and
  * `dropUnusedFonts()` keeps the fonts no page draws with out of the file.
+ *
+ * A face the provider answers with several files (see
+ * {@link PdfFontProvider}) embeds each file as a subset of its own; `get()`
+ * hands out the first, and the text primitives draw each character from
+ * the file that has it (`faceFiles.ts`). Asked again for characters its
+ * files lack, such a face asks the provider for those only.
  */
 export class FontCache {
   private map = new Map<string, PDFFont | null>();
   private failed = new Set<string>();
   /** One load per actual face, shared by every key that falls back to it. */
-  private loads = new Map<string, Promise<PDFFont | null>>();
+  private loads = new Map<string, Promise<LoadedFace | null>>();
+  /** The faces loaded, in the order they loaded. */
+  private faces: LoadedFace[] = [];
   private errors = new Map<string, string>();
   /** Loaded faces by lower-cased family, for lookups nothing preloaded. */
   private byFamily = new Map<string, Array<FaceSpec & { font: PDFFont }>>();
@@ -206,15 +290,24 @@ export class FontCache {
   private byLength = new Map<number, Array<{ bytes: Uint8Array; font: Promise<PDFFont> }>>();
   /** Every font this cache embedded. */
   private embedded = new Set<PDFFont>();
+  private onFallback?: (fallback: FontFallback) => void;
+  private onFileIssue?: (issue: FontFileIssue) => void;
+  private cffWarnBytes: number;
 
   constructor(
     private pdfDoc: PDFDocument,
     private provider: PdfFontProvider,
-    private onFallback?: (fallback: FontFallback) => void,
-  ) {}
+    options?: FontCacheOptions | ((fallback: FontFallback) => void),
+  ) {
+    const opts = typeof options === 'function' ? { onFallback: options } : options ?? {};
+    this.onFallback = opts.onFallback;
+    this.onFileIssue = opts.onFileIssue;
+    this.cffWarnBytes = opts.cffWarnBytes ?? CFF_WHOLE_WARN_BYTES;
+  }
 
-  /** Embed a font file, once per distinct content. */
-  private embedBytes(bytes: Uint8Array): Promise<PDFFont> {
+  /** Embed a font file, once per distinct content. `spec` is the face it
+   *  was first given for (named in a CFF size report). */
+  private embedBytes(bytes: Uint8Array, spec?: FaceSpec): Promise<PDFFont> {
     const same = this.byLength.get(bytes.length) ?? [];
     const known = same.find((entry) => sameBytes(entry.bytes, bytes));
     if (known) return known.font;
@@ -232,6 +325,9 @@ export class FontCache {
       if (!subset) {
         coverAllGlyphWidths(embedded);
         coverAllGlyphUnicode(embedded);
+        if (spec && bytes.length > this.cffWarnBytes) {
+          this.onFileIssue?.({ kind: 'cffEmbeddedWhole', ...spec, bytes: bytes.length });
+        }
       }
       this.embedded.add(embedded);
       return embedded;
@@ -241,21 +337,51 @@ export class FontCache {
     return font;
   }
 
-  /** Fetch and embed one face, once. Null when the provider rejects it or
-   *  its bytes do not embed. */
-  private loadFace(spec: FaceSpec): Promise<PDFFont | null> {
+  /** Embed every file of a provider answer, in order, dropping repeats. */
+  private async embedAnswer(answer: Uint8Array | Uint8Array[], spec: FaceSpec): Promise<PDFFont[]> {
+    const files = Array.isArray(answer) ? answer : [answer];
+    const fonts: PDFFont[] = [];
+    for (const bytes of files) {
+      const font = await this.embedBytes(bytes, spec);
+      if (!fonts.includes(font)) fonts.push(font);
+    }
+    return fonts;
+  }
+
+  /** Fetch and embed one face, once; later calls with characters it was
+   *  not asked for grow a sliced face (see {@link growFace}). Null when
+   *  the provider rejects it or its bytes do not embed. */
+  private loadFace(spec: FaceSpec, codePoints: ReadonlySet<number>): Promise<LoadedFace | null> {
     const key = fontKey(spec.family, spec.weight, spec.style);
     const pending = this.loads.get(key);
-    if (pending) return pending;
-    const load = (async (): Promise<PDFFont | null> => {
+    if (pending) {
+      return pending.then(async (face) => {
+        if (face) await this.growFace(face, codePoints);
+        return face;
+      });
+    }
+    const load = (async (): Promise<LoadedFace | null> => {
       try {
-        const bytes = await this.provider(spec.family, spec.weight, spec.style);
-        const font = await this.embedBytes(bytes);
+        const answer = await this.provider(spec.family, spec.weight, spec.style, { codePoints });
+        const fonts = await this.embedAnswer(answer, spec);
+        if (fonts.length === 0) throw new Error('the font provider returned no file');
+        for (const font of fonts) registerFontFamily(font, spec.family);
+        const primary = fonts[0]!;
+        const face: LoadedFace = {
+          spec,
+          primary,
+          files: registerFaceFiles(primary, fonts.slice(1)),
+          sliced: Array.isArray(answer),
+          asked: new Set(codePoints),
+          growing: Promise.resolve(),
+        };
+        this.faces.push(face);
+        this.checkVariableWeight(face);
         const family = spec.family.toLowerCase();
         const faces = this.byFamily.get(family) ?? [];
-        faces.push({ ...spec, font });
+        faces.push({ ...spec, font: primary });
         this.byFamily.set(family, faces);
-        return font;
+        return face;
       } catch (err) {
         this.errors.set(key, err instanceof Error ? err.message : String(err));
         return null;
@@ -265,30 +391,89 @@ export class FontCache {
     return load;
   }
 
-  async preloadFontStrings(fontStrings: Iterable<string | undefined>): Promise<void> {
-    const jobs = new Map<string, FaceSpec>();
-    for (const fs of fontStrings) {
+  /** Ask a sliced face's provider for the characters none of its files
+   *  has that it was not asked for yet, and add the files it answers. A
+   *  rejection leaves the face as it is (the characters are reported as
+   *  missing when drawn). */
+  private growFace(face: LoadedFace, codePoints: ReadonlySet<number>): Promise<void> {
+    if (!face.sliced) return Promise.resolve();
+    const wanted = new Set<number>();
+    for (const cp of codePoints) {
+      if (face.asked.has(cp)) continue;
+      face.asked.add(cp);
+      if (wantsGlyph(cp) && !face.files.fileFor(cp)) wanted.add(cp);
+    }
+    if (wanted.size === 0) return face.growing;
+    const { family, weight, style } = face.spec;
+    face.growing = face.growing.then(async () => {
+      try {
+        const answer = await this.provider(family, weight, style, { codePoints: wanted });
+        for (const font of await this.embedAnswer(answer, face.spec)) {
+          registerFontFamily(font, face.spec.family);
+          face.files.add(font);
+        }
+      } catch {
+        // The characters stay missing; the render goes on.
+      }
+    });
+    return face.growing;
+  }
+
+  /** Report a variable font asked for at a weight other than its default
+   *  instance, the one pdf-lib embeds. */
+  private checkVariableWeight(face: LoadedFace): void {
+    const axes = (face.primary as unknown as { embedder?: { font?: { variationAxes?: Record<string, { default: number }> } } })
+      .embedder?.font?.variationAxes;
+    const wght = axes?.wght;
+    if (!wght || wght.default === face.spec.weight) return;
+    this.onFileIssue?.({ kind: 'variableFontDefaultInstance', ...face.spec, defaultWeight: wght.default });
+  }
+
+  /**
+   * Load the faces of the given font strings: a list, or a map from each
+   * font string to the characters the pages set in it (handed to the
+   * provider, see {@link PdfFontRequest}). A face already loaded is not
+   * asked again, except a sliced one for characters its files lack.
+   */
+  async preloadFontStrings(fontStrings: Iterable<string | undefined> | ReadonlyMap<string, ReadonlySet<number>>): Promise<void> {
+    const jobs = new Map<string, { spec: FaceSpec; codePoints: Set<number> }>();
+    const entries: Iterable<[string | undefined, ReadonlySet<number> | undefined]> = fontStrings instanceof Map
+      ? (fontStrings as ReadonlyMap<string, ReadonlySet<number>>).entries()
+      : Array.from(fontStrings as Iterable<string | undefined>, (fs): [string | undefined, undefined] => [fs, undefined]);
+    for (const [fs, codePoints] of entries) {
       if (!fs) continue;
       const parsed = parseFontString(fs);
       if (!parsed) continue;
       const key = fontKey(parsed.family, parsed.weight, parsed.style);
-      if (this.map.has(key) || jobs.has(key)) continue;
-      jobs.set(key, { family: parsed.family, weight: parsed.weight, style: parsed.style });
+      let job = jobs.get(key);
+      if (!job) {
+        job = { spec: { family: parsed.family, weight: parsed.weight, style: parsed.style }, codePoints: new Set() };
+        jobs.set(key, job);
+      }
+      for (const cp of codePoints ?? []) job.codePoints.add(cp);
     }
 
     await Promise.all(
-      Array.from(jobs.entries()).map(async ([key, spec]) => {
-        const font = await this.loadFace(spec);
-        if (font) {
-          this.map.set(key, font);
+      Array.from(jobs.entries()).map(async ([key, { spec, codePoints }]) => {
+        if (this.map.has(key)) {
+          // Loaded before (another chapter, a picture's text): a sliced
+          // face fetches the files for the characters it lacks.
+          const font = this.map.get(key);
+          const face = font ? this.faces.find((f) => f.primary === font) : undefined;
+          if (face) await this.growFace(face, codePoints);
+          return;
+        }
+        const face = await this.loadFace(spec, codePoints);
+        if (face) {
+          this.map.set(key, face.primary);
           return;
         }
         // One candidate at a time, so no face is fetched (and embedded)
         // that nothing is set in; a face asked once is never asked again.
         for (const alt of fallbackFaces(spec)) {
-          const altFont = await this.loadFace(alt);
-          if (!altFont) continue;
-          this.map.set(key, altFont);
+          const altFace = await this.loadFace(alt, codePoints);
+          if (!altFace) continue;
+          this.map.set(key, altFace.primary);
           this.onFallback?.({
             ...spec,
             fallback: { weight: alt.weight, style: alt.style },
@@ -300,6 +485,32 @@ export class FontCache {
         this.map.set(key, null);
       }),
     );
+  }
+
+  /** Every face some characters drawn in which none of its files has a
+   *  glyph for, with those characters — call it once the pages are drawn.
+   *  A file shared by several faces is reported with the first. */
+  missingGlyphs(): FontMissingGlyphs[] {
+    const out: FontMissingGlyphs[] = [];
+    const seen = new Set<PDFFont>();
+    for (const face of this.faces) {
+      // Code point → when it was first met, over every file of the face.
+      const firstMet = new Map<number, number>();
+      for (const file of face.files.files) {
+        if (seen.has(file)) continue;
+        seen.add(file);
+        for (const [cp, order] of missingGlyphsOf(file) ?? []) {
+          // A character another file of the face has was drawn from it.
+          if (face.files.fileFor(cp)) continue;
+          const known = firstMet.get(cp);
+          if (known === undefined || order < known) firstMet.set(cp, order);
+        }
+      }
+      if (firstMet.size === 0) continue;
+      const characters = [...firstMet].sort((a, b) => a[1] - b[1]).map(([cp]) => String.fromCodePoint(cp));
+      out.push({ ...face.spec, characters });
+    }
+    return out;
   }
 
   get(fontString: string): PDFFont | null {
@@ -335,7 +546,10 @@ export class FontCache {
     const used = fontRefsInUse(this.pdfDoc);
     for (let i = fonts.length - 1; i >= 0; i--) {
       const font = fonts[i]!;
-      if (this.embedded.has(font) && !used.has(font.ref.toString())) fonts.splice(i, 1);
+      // A font drawn only through its vertical twin is used: the twin's
+      // dictionary is written with it.
+      const twin = verticalTwinRefOf(font);
+      if (this.embedded.has(font) && !used.has(font.ref.toString()) && !(twin !== undefined && used.has(twin))) fonts.splice(i, 1);
     }
   }
 }

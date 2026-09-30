@@ -1,6 +1,6 @@
 'use client';
 
-import { startTransition, useDeferredValue, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { startTransition, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ArrowLeft, ArrowRight, ChevronRight, CircleHelp, Download, RotateCcw, Search, SlidersHorizontal, Upload, X } from 'lucide-react';
 import { isDefaultColorPalette, stripConfigDefaults } from 'postext';
 import {
@@ -37,6 +37,7 @@ import { GROUP_ICONS } from './settings/groupIcons';
 import { DesignSummary } from './settings/DesignSummary';
 import { PageGroupPreview } from './settings/PageGroupPreview';
 import { PreviewHighlightProvider } from './settings/previewHighlight';
+import { OpenSettingsGroupContext } from '../context/settingsNavigation';
 import { SECTION_COMPONENTS } from './sections/components';
 
 /** The Design panel. Three views share one header and search box:
@@ -83,6 +84,17 @@ export function ConfigPanel() {
     saveSettingsGroup(id);
     bodyRef.current?.scrollTo({ top: 0 });
   };
+
+  // A section pointing at a setting kept elsewhere (Body text → Writing
+  // system) opens that group, leaving any search.
+  const openGroupFromSection = useCallback((id: SettingsGroupId) => {
+    setQuery('');
+    setOverriddenOnly(false);
+    pendingFocus.current = 'heading';
+    setGroup(id);
+    saveSettingsGroup(id);
+    bodyRef.current?.scrollTo({ top: 0 });
+  }, []);
 
   useEffect(() => {
     const target = pendingFocus.current;
@@ -214,6 +226,7 @@ export function ConfigPanel() {
       )}
 
       <HelpModeContext value={helpMode}>
+        <OpenSettingsGroupContext value={openGroupFromSection}>
         <SettingsSearchContext value={search}>
           <MatchScopeProvider id="root">
             <PanelBody ref={bodyRef}>
@@ -227,6 +240,7 @@ export function ConfigPanel() {
             </PanelBody>
           </MatchScopeProvider>
         </SettingsSearchContext>
+        </OpenSettingsGroupContext>
       </HelpModeContext>
     </div>
   );
@@ -341,7 +355,7 @@ function GroupPage({ id, headingRef, onOpen }: {
           </nav>
         )}
       </header>
-      {id === 'page' && <PageGroupPreview />}
+      {(id === 'page' || id === 'writing') && <PageGroupPreview />}
       {sections.map((s) => {
         const Section = SECTION_COMPONENTS[s.id];
         return <Section key={s.id} />;

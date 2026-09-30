@@ -16,6 +16,25 @@ export const FS = { label: 11.5, small: 10, strong: 13 };
  *  land inside double-quoted SVG attributes. */
 export const FONT = "Geist, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
 
+/** The labels' typeface in the Chinese edition: the guide's heading face,
+ *  Noto Sans SC, which sets the Latin words of a label too (the PDF sets a
+ *  whole run in the first family of the list it can provide). The system
+ *  faces after it are what the previews fall back on, since a picture drawn
+ *  through `<img>` cannot load web fonts. */
+export const FONT_ZH = "'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Source Han Sans SC', sans-serif";
+
+/** Chinese sample text inside a figure: the guide's Chinese body face. */
+export const SERIF_ZH = "'Noto Serif SC', 'Songti SC', 'STSong', 'SimSun', 'Source Han Serif SC', serif";
+
+/** A figure drawn with the kit, relabelled for the Chinese edition: its
+ *  labels set in {@link FONT_ZH} and upright (Chinese has no italic; a
+ *  slanted Han character is a browser's fake). Latin editions are returned
+ *  as drawn. */
+export function localizeFigureFonts(svg: string, zh: boolean): string {
+  if (!zh) return svg;
+  return svg.split(`font-family="${FONT}"`).join(`font-family="${FONT_ZH}"`).split(' font-style="italic"').join('');
+}
+
 /** Shared diagram palette. */
 export const P = {
   text: '#44586d',     // primary labels
