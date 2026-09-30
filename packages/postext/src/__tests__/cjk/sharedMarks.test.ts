@@ -258,16 +258,24 @@ describe('marks shared with Latin text take a Chinese box in Chinese text', () =
   it('routes a long run of shared marks in linear time', () => {
     // Each mark looks past its neighbours for the nearest text: a run of
     // n marks used to cost n² steps (16,000 quotes took three seconds).
-    // The fastest of five runs: a busy machine slows single runs by several
-    // times, which a ratio of two single timings cannot tell from n².
+    // The fastest of five runs, timed by the thread's CPU clock: when the
+    // other packages' tests share the machine (turbo runs them together),
+    // the wall clock stretched the 15 ms run several times and left the
+    // 2 ms one alone, and read ~40× where the CPU clock reads ~10×.
+    type Usage = { user: number; system: number };
+    const clock = (globalThis as unknown as { process: { threadCpuUsage?: () => Usage; cpuUsage: () => Usage } }).process;
+    const cpuMs = (): number => {
+      const usage = clock.threadCpuUsage?.() ?? clock.cpuUsage();
+      return (usage.user + usage.system) / 1000;
+    };
     const time = (n: number): number => {
       const text = `他说${'“”'.repeat(n)}。`;
       let best = Infinity;
       for (let run = 0; run < 5; run++) {
         clearTextWidthCache();
-        const t0 = performance.now();
+        const t0 = cpuMs();
         lines(text, {}, 30 * EM, 'justify');
-        best = Math.min(best, performance.now() - t0);
+        best = Math.min(best, cpuMs() - t0);
       }
       return best;
     };
