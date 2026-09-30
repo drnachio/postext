@@ -323,6 +323,33 @@ describe('headings: number separator and couplet titles', () => {
     expect(blockLinesText(heading, { plainTitleBreaks: true })).toBe('第一章 第一部分2026年概况');
   });
 
+  // The 《》 a book title gets in a mainland heading are set by the layout
+  // and are no characters of the title: a break counted back from the end
+  // of the lines is found past them, so the author's space elsewhere stays
+  // and the break itself is read as plain text (#221 review).
+  it('finds a forced break past the brackets of a book title', () => {
+    const zhs = (width: number): PostextConfig => ({
+      ...config(undefined),
+      locale: 'zh-Hans',
+      page: { width: pt(width), height: pt(400), margins: { top: pt(20), bottom: pt(20), left: pt(20), right: pt(20) } },
+      headings: { levels: [{ level: 1, numberingTemplate: '{1}' }] },
+    });
+    const cases: Array<[string, string]> = [
+      ['第一章 \\\\ 中 API:book[手册]', '1 第一章　中 API《手册》'],
+      ['关于举办 \\\\ 2026年:book[红楼梦]研讨', '1 关于举办2026年《红楼梦》研讨'],
+      ['关于:book[红楼梦]举办 \\\\ 2026年培训班', '1 关于《红楼梦》举办2026年培训班'],
+      ['Intro \\\\ 中 x:book[书]', '1 Intro中 x《书》'],
+    ];
+    for (const width of [400, 150]) {
+      for (const [title, bookmark] of cases) {
+        const doc = buildDocument({ markdown: `# ${title}\n\n正文。` }, zhs(width));
+        const heading = doc.blocks.find((b) => b.type === 'heading')!;
+        expect(heading.lines.some((l) => l.segments?.some((sg) => sg.inserted)), title).toBe(true);
+        expect(blockLinesText(heading, { plainTitleBreaks: true }), `${width}: ${title}`).toBe(bookmark);
+      }
+    }
+  });
+
   it('sets the separator between number and title in the column', () => {
     for (const [sep, expected] of [[undefined, '第一回 甄士隱夢幻識通靈　賈雨村風塵懷閨秀'], ['　', '第一回　甄士隱夢幻識通靈　賈雨村風塵懷閨秀'], ['', '第一回甄士隱夢幻識通靈　賈雨村風塵懷閨秀']] as const) {
       const doc = buildDocument({ markdown: md }, config(sep));
