@@ -11,6 +11,7 @@ import {
   migrateConfig,
   openBundle,
   openBundleZip,
+  pickBundleView,
   pickLocaleOverrides,
   resolveBundleLocale,
   svgSize,
@@ -342,6 +343,19 @@ describe('locale resolution', () => {
     expect(resolveBundleLocale(m, 'de')).toBe('en');
     // A single-language bundle keeps its own locale.
     expect(resolveBundleLocale({ ...m, localized: undefined }, 'es')).toBe('en');
+  });
+
+  it('opens each edition with its own view over the bundle\'s', () => {
+    const m: BundleManifestV2 = {
+      ...manifestOf('zh-Hant', { 'zh-Hans': {}, en: { view: { canvasScope: 'chapter' } } }, true),
+      view: { canvasScope: 'book' },
+    };
+    expect(isBundleManifest(m)).toBe(true);
+    expect(pickBundleView(m, 'zh-Hant')).toEqual({ canvasScope: 'book' });
+    expect(pickBundleView(m, 'zh-Hans')).toEqual({ canvasScope: 'book' });
+    expect(pickBundleView(m, 'en-GB')).toEqual({ canvasScope: 'chapter' });
+    expect(pickBundleView({ ...m, view: undefined }, 'zh-Hant')).toBeUndefined();
+    expect(isBundleManifest({ ...m, localized: { en: { view: { canvasScope: 'pages' } } } })).toBe(false);
   });
 });
 

@@ -14636,7 +14636,10 @@
      "id": "ornament-yuwei",
      "caption": "Fish-tail ornament"
     }
-   ]
+   ],
+   "view": {
+    "canvasScope": "chapter"
+   }
   }
  },
  "resources": [

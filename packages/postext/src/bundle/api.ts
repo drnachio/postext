@@ -4,7 +4,7 @@
 import type { PostextConfig, Resource } from '../types';
 import { readBundle, planBundle, resolveBundleFiles } from './codec';
 import type { BundleCanvasScope, BundleChapter, BundleFontFile, BundleManifest, BundleManifestV2 } from './types';
-import { mimeForFile, slugify } from './manifest';
+import { mimeForFile, pickBundleView, slugify } from './manifest';
 import { openBundleZip, zipBundle } from './zip';
 
 /** A `.postext` file, opened. Every `fileId` it hands out (in `resources`
@@ -66,6 +66,7 @@ export async function openBundle(
     onWarning: (w) => warnings.push(w),
   });
   const { manifest } = read;
+  const view = pickBundleView(manifest, read.locale);
   return {
     manifest,
     id: manifest.id,
@@ -79,7 +80,7 @@ export async function openBundle(
     fonts: read.fonts,
     files: zip.files,
     ...(manifest.thumbnail && zip.files.has(manifest.thumbnail) ? { thumbnail: manifest.thumbnail } : {}),
-    ...(manifest.view?.canvasScope ? { canvasScope: manifest.view.canvasScope } : {}),
+    ...(view?.canvasScope ? { canvasScope: view.canvasScope } : {}),
     warnings,
   };
 }
