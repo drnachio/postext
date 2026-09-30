@@ -23,6 +23,9 @@
   "index"
  ],
  "openLocale": "zh-Hant",
+ "view": {
+  "canvasScope": "book"
+ },
  "chapters": {
   "zh-Hant": [
    {

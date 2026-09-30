@@ -123,7 +123,8 @@ describe('hongloumeng bundle', () => {
     expect(manifest.chapters['zh-Hant']).toHaveLength(7 + 120 + 2);
     expect(manifest.chapters['zh-Hans']).toHaveLength(7 + 120 + 2);
     expect(manifest.chapters.en).toHaveLength(5 + 56 + 2);
-    expect(manifest.view?.canvasScope).toBeUndefined();
+    // 120 chapters read as one novel: the Sandbox opens the whole book.
+    expect(manifest.view?.canvasScope).toBe('book');
   });
 
   it('ships every file it names, within 30 MB', () => {
