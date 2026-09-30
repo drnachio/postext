@@ -1,10 +1,4 @@
-import type { HyphenationLocale } from 'postext';
-
 export type ColumnMode = 'single' | 'multi';
-
-export const LOCALE_TO_HYPHENATION: Record<string, HyphenationLocale> = {
-  en: 'en-us', es: 'es', fr: 'fr', de: 'de', it: 'it', pt: 'pt', ca: 'ca', nl: 'nl',
-};
 
 // Prose sample used to measure the target column width for a given body font.
 // Proportional fonts make "N × average glyph width" unreliable, so we measure

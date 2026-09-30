@@ -1,0 +1,79 @@
+---
+title: "剧本：角色表、说话人与舞台提示"
+summary: "把王尔德剧作的开头排成演出本。人名用梅紫色粗体，舞台提示用灰色斜体；角色表从制表符分隔的行中读取。"
+description: "用Postext排出《The Importance of Being Earnest》的演出本：书名页是一张梅紫色的戏单，1895年的首演角色表与第一幕相对。"
+question: "怎样排剧本：说话人姓名、舞台提示、幕与场的标题，以及角色表？"
+aliases: ["剧本", "戏剧", "play", "drama", "演出本", "acting edition", "play script", "舞台剧", "stage play", "舞台提示", "stage directions", "说话人姓名", "speaker names", "角色名", "character names", "角色表", "演员表", "cast list", "dramatis personae", "悬挂缩进", "hanging indent", "戏单", "playbill", "书名页", "title page", "花饰", "fleuron", "康乃馨", "carnation", "王尔德", "Oscar Wilde", "The Importance of Being Earnest", "不可儿戏"]
+pageNotes: { "1": "书名页：一张梅紫色的底页，外有双重金色边框，框线在四角交叉。副标题用加大字距的金色大写字母排在标题上方；标题占四行，“Importance”和“Earnest”用粗肥体（fat face）大写字母，“The”和“of Being”用斜体。下面是两道卷饰之间的一朵金色康乃馨、加大字距大写的作者名，页脚处是剧院名和首演日期。", "2": "剧中人物排成一张表，上方的梅紫色色带写明首演阵容、剧院和日期，每个角色右侧是首演该角色的演员。下面是全剧的三个场景和版权页信息。", "3": "第一幕以梅紫色大写的标题和一朵梅紫色康乃馨开始。场景说明用居中的灰色斜体排在一个小型大写字母标签下；然后台词开始，每段都以梅紫色粗体的说话人姓名开头，转行悬挂缩进。", "4": "转行悬挂的台词，其间居中排着三条舞台提示：Lane的上场和下场，以及Jack的上场。", "5": "本页结束于Algernon关于离婚的那段台词，中间被一条灰色斜体的舞台提示隔成两半。" }
+---
+
+## 成品一览
+
+把王尔德《The Importance of Being Earnest》的开头排成一本五页的演出本，页面为140 × 216 mm。书名页是一张梅紫色戏单，外有双重金色边框，*Importance*和*Earnest*用粗肥体（fat face）大写字母，标题下有一朵金色康乃馨。与第一幕相对的角色表列出1895年在St James’s Theatre首演各角色的演员。每段台词以梅紫色粗体的说话人姓名开头，转行悬挂缩进5 mm，演员一眼就能找到下一句提示。舞台提示无论在台词中间还是两段台词之间，都用灰色斜体，对词时眼睛可以跳过它们。西班牙语版本是一个新译本，遵循西班牙语舞台惯例：每个人名后加破折号，舞台提示放在括号中。
+
+## 做法
+
+### 1 · 一幕就是一个普通标题
+
+<Excerpt region="acts" />
+
+幕标题是一个一级标题，用24 pt的Abril Fatface，没有版面设计槽位。`textTransform`把它排成大写，13.6 pt的三条网格线让大写字母位于版心顶部以下5.5 mm处（[标题](/zh/docs/configuration#标题)）。`textAlign: 'center'`不能按级别设置，所以角色表的标题和*Scene*标签也会居中。parity为`'odd'`的`breakBefore`让这一幕从右页开始，与角色表相对。配置中必须重新写明这一项，因为只要有`headings`对象，一级标题的分页就会被关闭（[分页前置](/zh/docs/configuration#前置分页)）。
+
+### 2 · 角色表是从制表符分隔的行中读取的表
+
+<Excerpt region="cast" />
+
+Postext没有管道表格，所以每张表都是一个资源。各行写在`content.cast.en.md`中，一行对应表的一行，单元格之间用制表符分隔，`parseTSV`把它们转成模型（[构建表格模型](/zh/docs/configuration#构建表格模型)）。唯一没有制表符的那一行，即带剧院和日期的首演阵容，成为一个合并行：`mergeCells`给它的第一个单元格设`colSpan: 2`，第二个单元格保留在网格中，标记为`hiddenBy`。`headerRowCount: 1`让这一行排在梅紫色色带中。其他行都不填色，因为两个填色单元格并排时，Canvas会在它们之间显出一道浅色接缝。演员一栏占宽度的三分之一，其中每个单元格都右对齐。场景表用同一个函数生成，套用一个没有线的具名样式（[具名表格样式](/zh/docs/configuration#命名表格样式)）。表格中所有单元格的文字都用同一种颜色，即正文墨色，除非`bodyColor`指定别的颜色，所以剧中人物的粗体姓名在这里印成墨色，在对白中则是梅紫色。
+
+### 3 · 不带编号和题注的装饰图
+
+<Excerpt region="ornament" />
+
+`captionPrefix`和`shortLabel`为空的资源类型只印图片本身（[资源类型](/zh/docs/configuration#资源类型)）。它的`defaultPlacement`把康乃馨放在`::resource{id="fleuron"}`所在的位置，居中，宽为107 mm行长的0.24，约26 mm。两张表用第二个不编号的类型，所以都不会标成*Table 1*。
+
+### 4 · 书名页是一个标题样式
+
+<Excerpt region="playbill" />
+
+`# The Importance of Being Earnest {style="playbill" …}`把标题分放在四个属性中，版面设计用两种字体排出：名词用40 pt和60 pt的Abril Fatface，*The*和*of Being*用17 pt的Libre Baskerville斜体（[标题属性](/zh/docs/document-format#标题属性)）。梅紫色底、边框和康乃馨是一张用代码画出的SVG，锚定在出血边上（[图片元素](/zh/docs/configuration#图像元素)）。这本书只有一栏，但样式仍设了`span: 'page'`。如果留在栏内，版面设计会在版心的顶部和底部被裁掉，即纸张顶部以下20 mm和底部以上23.3 mm处。样式中空的`header`让书眉不出现在属于同一节的角色表上，空的`footer`让页脚页码不出现在书名页上，否则它会以梅紫色印在梅紫色底上（[标题样式](/zh/docs/configuration#标题样式)）。
+
+首页标题中的图片不预留高度，所以标题只把页面占到它最低的一行文字，即176 mm处的首演信息。下面剩下的空间放不下下一个标题，截图中的页面即使去掉标题后的`:::pagebreak`也一样。这个分页是为以后的修改准备的：没有它，把剧院和首演信息上移到150 mm和156 mm时，*The Persons of the Play*会从梅紫色底页上开始。在1.4.1中，设了`letterSpacing`的居中行会向左偏离中线半个字距，所以`line()`把每个加大字距的行向右移动同样的距离。*OSCAR WILDE*因此只偏离中线0.07 mm，而不是0.56 mm。
+
+### 5 · 跳过每幕首页的书眉
+
+<Excerpt region="heads" />
+
+左页书眉印frontmatter中的剧名，右页印来自`{chapterTitle}`的幕名，都用Playfair Display SC大写，页码用梅紫色排在外侧（[文字元素](/zh/docs/configuration#文本元素)）。每幕的第一页算作首页，因为它的第一个块是一个分页的标题，所以`pages: 'body'`让书眉不出现在这一页，页脚则为它印一个页脚页码。
+
+<Note>
+电影剧本不是悬挂缩进台词，而是从两侧缩进：<RecipeLink slug="screenplay-format">电影剧本格式</RecipeLink>把每段台词排成一个无边框的框，用内边距把它收窄到对白区的宽度。
+</Note>
+
+## 变化
+
+### 让舞台提示与转行对齐
+
+改为齐左并设5 mm首行缩进后，单行的舞台提示从台词转行开始的位置排起，场景说明则变成居中标签下两个缩进的段落。
+
+```diff
+ const direction = { id: 'direction', fontSize: pt(8.6),
+-  textAlign: 'center', firstLineIndent: pt(0) };
++  textAlign: 'left', firstLineIndent: mm(5) };
+```
+
+### 台词之间空一行
+
+`paragraphSpacing: true`在每段台词后加一条空白网格线。这样英文的这一幕会排成五页而不是三页，西班牙语的排成四页。
+
+```diff
+   maxRuntTracking: 0, // gotcha: runt-tracking-unpainted
++  paragraphSpacing: true,
+ };
+```
+
+## 常见问题
+
+- 对白中的每一段斜体都使用`italicColor`，包括强调，所以Lane那个强调的*is*会印成舞台提示的灰色。灰色只能设在`bodyText`上，因为在1.4.1中段落样式不能给自己的斜体单独设颜色；只有用正体，*is*才能保持墨色。
+- 王尔德有三段台词以单独一个词结尾：*information.*、*that?*和*you.*。脚本设了`bodyText.maxRuntTracking: 0`，原因见易错点*A runt fix can tighten tracking that is never painted*。用默认值时，1.4.1会用2.0 mm的负字距把*that?*拉上去，而Canvas不绘制这个字距，这一行印出来词间距只有正常的一半。只靠词间距的话，要么把`minWordSpacing`设为0.5，*that?*才会上移，但这一行同样被挤压；要么把行长加宽1.5 mm，但这样会有十行的词间距超过正常的1.5倍，而不是两行。英文页面宁可保留这三个孤字，也不改王尔德的原文。西班牙语译文则在凡是一行以单字母词结尾或一个音节单独成行的地方都改了措辞。
+- 人名和其他词一样会断词：第5页上*Au-gusta*和*Gwen-dolen*跨行断开。在*Augusta*中间加一个词连接符（U+2060）能让它保持完整，但会把上一行的词间距拉到正常的1.71倍，所以英文文本保留了连字符。
+- Playfair Display SC在Canvas上把*fi*画成小写连字，所以*first*会在小型大写字母中间印出一个小写的*fi*。这就是角色表色带上写*The original cast*的原因。

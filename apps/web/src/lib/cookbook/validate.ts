@@ -18,6 +18,7 @@ import {
   OUTPUT_IDS,
   REQUIRED_KIT,
   RESERVED_SLUGS,
+  SAMPLE_LOCALES,
   SECTION_ORDER,
   SLUG_PATTERN,
 } from "./types.ts";
@@ -258,7 +259,7 @@ export const RECIPE_SCHEMA: JsonSchema = {
       additionalProperties: false,
       required: ["locales"],
       properties: {
-        locales: { type: "array", items: { enum: [...LOCALES] }, minItems: 1, maxItems: LOCALES.length, uniqueItems: true },
+        locales: { type: "array", items: { enum: [...SAMPLE_LOCALES] }, minItems: 1, maxItems: SAMPLE_LOCALES.length, uniqueItems: true },
       },
     },
     capture: {
@@ -389,10 +390,12 @@ export const RECIPE_SCHEMA: JsonSchema = {
     url: { type: "string", pattern: "^https?://" },
     page: { type: "integer", minimum: 1 },
     fraction: { type: "number", minimum: 0, maximum: 1 },
+    // recipe.json text (credits): the sample languages are required, other
+    // site locales optional (a page falls back to English; `localizedText`).
     localized: {
       type: "object",
       additionalProperties: false,
-      required: [...LOCALES],
+      required: [...SAMPLE_LOCALES],
       properties: Object.fromEntries(LOCALES.map((locale) => [locale, { type: "string", minLength: 1 } as JsonSchema])),
     },
     credit: {
@@ -691,6 +694,14 @@ export function validateRecipeSet(recipes: readonly { slug: string; meta: Recipe
 
 const FRONTMATTER_KEYS = ["title", "summary", "description", "question", "aliases", "pageNotes"];
 
+/** [min, max] characters of each frontmatter text. A Chinese character
+ *  carries about what two to three Latin letters do, and search snippets
+ *  cut Chinese at about half the Latin length, so zh gets its own bounds. */
+const FRONTMATTER_LENGTHS: Record<"latin" | "zh", Record<"title" | "summary" | "description" | "question", [number, number]>> = {
+  latin: { title: [1, 60], summary: [60, 160], description: [120, 160], question: [1, 110] },
+  zh: { title: [1, 30], summary: [20, 90], description: [40, 90], question: [1, 55] },
+};
+
 /** Problems with a write-up's parsed frontmatter (types.ts `RecipeFrontmatter`). */
 export function validateFrontmatter(fm: unknown, locale: Locale): string[] {
   const file = `${locale}.mdx`;
@@ -711,10 +722,11 @@ export function validateFrontmatter(fm: unknown, locale: Locale): string[] {
       errors.push(`${file}: frontmatter "${key}" must have ${min > 1 ? `${min}–` : "at most "}${max} characters (has ${length})`);
     }
   };
-  text("title", 1, 60, true);
-  text("summary", 60, 160, true);
-  text("description", 120, 160, false);
-  text("question", 1, 110, false);
+  const lengths = FRONTMATTER_LENGTHS[locale === "zh" ? "zh" : "latin"];
+  text("title", ...lengths.title, true);
+  text("summary", ...lengths.summary, true);
+  text("description", ...lengths.description, false);
+  text("question", ...lengths.question, false);
   if (fm.aliases !== undefined) {
     if (!Array.isArray(fm.aliases) || fm.aliases.some((a) => typeof a !== "string" || !a.trim())) {
       errors.push(`${file}: frontmatter "aliases" must be a list of non-empty strings`);
@@ -792,8 +804,8 @@ const FEATURE_GROUPS = [
 ];
 const SEMVER = /^\d+\.\d+\.\d+$/;
 
-/** Every object with an `en` or `es` key must carry non-empty text (or a
- *  list of non-empty strings) in both. */
+/** Every object with a locale key (`en`, `es`, `zh`) must carry non-empty
+ *  text (or a list of non-empty strings) in each. */
 function localizedErrors(value: unknown, path: string, errors: string[]): void {
   if (Array.isArray(value)) {
     value.forEach((item, i) => localizedErrors(item, `${path}[${i}]`, errors));
@@ -815,7 +827,7 @@ function localizedErrors(value: unknown, path: string, errors: string[]): void {
 
 function anchorErrors(anchor: unknown, path: string, errors: string[]): void {
   if (!isObject(anchor) || typeof anchor.slug !== "string" || !anchor.slug || !isObject(anchor.heading)) {
-    errors.push(`${path}: must be { slug, heading: { en, es } }`);
+    errors.push(`${path}: must be { slug, heading: { en, es, zh } }`);
   }
 }
 
@@ -879,7 +891,7 @@ export function validateRegistry(registry: Registry, { knownSlugs, requireFeatur
     if (!FEATURE_GROUPS.includes(feature.group)) errors.push(`${at}.group: unknown group "${feature.group}"`);
     anchorErrors(feature.docs, `${at}.docs`, errors);
     if (feature.since !== undefined && !SEMVER.test(feature.since)) errors.push(`${at}.since: must be a version`);
-    if (feature.aliases !== undefined && !isObject(feature.aliases)) errors.push(`${at}.aliases: must be { en: [], es: [] }`);
+    if (feature.aliases !== undefined && !isObject(feature.aliases)) errors.push(`${at}.aliases: must be { en: [], es: [], zh: [] }`);
     if (feature.detect !== undefined) {
       for (const [key, list] of Object.entries(feature.detect)) {
         if (!["config", "markdown", "api"].includes(key) || !Array.isArray(list)) errors.push(`${at}.detect.${key}: unknown rule`);
@@ -897,7 +909,7 @@ export function validateRegistry(registry: Registry, { knownSlugs, requireFeatur
     if (question.gap !== undefined && !registry.gaps?.[question.gap]) errors.push(`${at}.gap: unknown gap "${question.gap}"`);
   }
   for (const [id, gap] of Object.entries(registry.gaps ?? {})) {
-    if (!isObject(gap.aliases)) errors.push(`gaps.${id}.aliases: must be { en: [], es: [] }`);
+    if (!isObject(gap.aliases)) errors.push(`gaps.${id}.aliases: must be { en: [], es: [], zh: [] }`);
     if (gap.docs !== undefined) anchorErrors(gap.docs, `gaps.${id}.docs`, errors);
   }
   for (const [kind, warning] of Object.entries(registry.warnings ?? {})) {

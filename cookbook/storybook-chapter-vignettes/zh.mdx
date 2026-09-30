@@ -1,0 +1,61 @@
+---
+title: "带题头画和提要的童书章节"
+summary: "一个标题样式开启每一章；每个标题在属性中指定自己的题头画和斜体提要，由首页设计绘出。"
+description: "用Postext排意大利语的科洛迪《Pinocchio》：每章在不同的题头画下开始，下面是章序行和斜体提要。"
+question: "怎样给童书的每一章配上各自的题头画和一段斜体提要？"
+aliases: ["童书", "儿童读物", "children's book", "章节书", "chapter book", "题头画", "小插图", "vignette", "章首饰图", "headpiece", "章尾饰图", "tailpiece", "章节提要", "chapter summary", "卷首插图", "frontispiece", "木偶奇遇记", "Pinocchio"]
+pageNotes: { "1": "书名页，位于左页：一幅水彩画，淡蓝天空下是托斯卡纳的丘陵、柏树和山村，一位戴草帽的老人牵着驮柴的驴车走向一间敞开的木匠作坊；下面是LE AVVENTURE DI、大号棕色展示字体的Pinocchio、斜体的Storia di un burattino和CARLO COLLODI。", "2": "第一章在一幅渐隐入纸色的水彩题头画下开始：秃顶的Maestro Ciliegia鼻子红得像樱桃，在刨子、锯子和刨花之间举着斧头，僵在工作台上的木头上方。下面是CAPITOLO I、居中斜体的两行科洛迪提要、开头几段正文，页脚正中是一个木色的页码圆片。", "3": "第一章的整页正文，书眉为LE AVVENTURE DI PINOCCHIO，页码圆片在页脚外侧。", "4": "第一章结尾，书眉为CAPITOLO I，以居中的两颗连枝红樱桃收束，不带题注。", "5": "第二章在一幅水彩题头画下开始：戴着黄色卷发假发的Geppetto从Maestro Ciliegia手中接过木头，旁边是一口红锅，里面的玉米糊（polenta）冒着热气；下面是CAPITOLO II、三行提要、开头几段正文和版权页信息。" }
+---
+
+## 成品一览
+
+把科洛迪《Le avventure di Pinocchio》一个意大利语童书版本的开头几页，用Averia Serif Libre以13/19 pt排在190 × 240 mm的页面上。左页的书名页与第一章相对：一幅托斯卡纳丘陵的水彩画，一辆驴车把柴火运往木匠作坊，下方是Fredericka the Great字体的书名。每章都在一幅渐隐入纸色的水彩题头画下开始（第一章是举斧对着会说话的木头的Maestro Ciliegia，第二章是戴黄色假发接过木头的Geppetto），接着是章序行和居中斜体的科洛迪提要。四幅图都是用扩散模型根据同一个风格提示词和页面调色板生成的。书眉只印在第8页和第9页，即没有章首页的两页。页码放在木色圆片中，两颗樱桃为第一章收尾，不带题注和编号。
+
+## 做法
+
+### 1 · 一个标题样式，每个标题指定一幅题头画
+
+这一步的代码见[简短回答](#简短回答)。图片元素的`resourceId`接受与设计文字相同的占位符，所以`'{attr.vignetta}'`绘制标题指定的资源，就像`{attr.summary}`印出它的提要一样。两章共用`capitolo`样式，并在标题行中指定各自的图：`# Capitolo II {style="capitolo" vignetta="polenta" summary="…"}`。再加一章只需多一个资源和一个标题，不用再建样式（[图片元素](/zh/docs/configuration#图像元素)）。章序行从容器顶部定位，位于题头画框下方6 mm处，而不是锚定在`#vignette`上。图片不预留高度，所以锚定在它下方的文字会按图片不存在来计算位置；这样一来，如果没有`minHeight`，第一章的正文会从页面顶部往下62 mm处开始，落进图画里。用`minHeight`设一个14行的下限后，第一章正文与第二章正文从同一行开始，尽管第二章的提要多一行；没有它时，第一章正文会高出6.7 mm（[span与高级版面设计](/zh/docs/configuration#通栏与高级设计)）。
+
+### 2 · 把画作作为位图资源载入
+
+<Excerpt region="pictures" />
+
+每幅图都是食谱`assets/`文件夹中的一个JPEG，按像素尺寸声明：版面只读取这些尺寸，Canvas绘制页面时，画出`loadImage()`在各个文件id下登记的图像。题头画和樱桃都在白底上生成，再与纸色`#fffaf0`正片叠底，所以它们的留白印出来就是页面本身，图片没有可见的边缘。卷首插图裁成190:150，即其区域的比例，因此适配后的图像能填满区域，不留纸色条带。风景画和题头画由版面设计中的图片元素绘制，樱桃则由Markdown中的`::resource{id="ciliegie"}`绘制。
+
+### 3 · 把书名页做成一个标题样式
+
+<Excerpt region="frontispiece" />
+
+书名页是Markdown的第一个标题`# Pinocchio {style="frontespizio" kicker="Le avventure di"}`，它的样式绘出页面上的一切：从上边缘起150 mm高的风景画，然后是属性中的眉题、书名，以及frontmatter中的副标题和作者。这本书只有一栏，样式仍设了`span: 'page'`，因为留在栏内的版面设计会在版心顶部被裁掉，画作上方22 mm会印成白纸。空的`footer`去掉了章首页印的页码圆片，而`pages: 'body'`已经让书眉不出现在这一页（[标题样式](/zh/docs/configuration#标题样式)）。
+
+### 4 · 正文页上的书眉，圆片中的页码
+
+<Excerpt region="folios" />
+
+`continuation`从书中第6页（一个左页）开始给节选编页码，所以书名页与第一章相对，印出的第一个页码是7。`pages: 'body'`让书眉不出现在书名页和两个章首页上，所以书眉只印在第8页和第9页，左页印书名，右页印章名（[文字元素](/zh/docs/configuration#文本元素)）。页码是一个放在7.4 mm固定方框里的设计文字，圆角半径为边长的一半，于是成了一个圆；`verticalAlign: 'middle'`加上注释中算出的行距，让数字在圆中居中。纸色数字与木色的对比度为4.98:1。`trail()`把每个加大字距的标签向右移动半个字距，因为1.4.1在居中加大字距的行时，把最后一个字母后的那份字距也算了进去。
+
+### 5 · 用不编号的章尾饰图收束一章
+
+<Excerpt region="tailpiece" />
+
+资源类型会在题注前印出它的`captionPrefix`和编号。前缀为空、又没有题注时，樱桃下面什么也不印；设`captionPrefix: 'Fregio'`时，同一个资源会在图下印出*Fregio 1.*，高度增加10 mm（[资源类型](/zh/docs/configuration#资源类型)）。该类型的`defaultPlacement`把每个资源放在其`::resource`行所在的位置，宽为行长的六分之一并居中，所以Markdown只需在章的最后一段后写`::resource{id="ciliegie"}`。其他图片也属于这个类型，但没有任何`:ref`或`::resource`指向它们，所以它们既不会被放置，也不会被计数。
+
+## 变化
+
+### 每章从右页开始
+
+设为`'odd'`时，第二章移到第11页，第10页留空；书名页要关闭自己的分页，因为它继承了这一级的设置，否则会在空白的第6页之后移到第7页。
+
+```diff
+@@ the frontispiece style @@
+   id: 'frontespizio',
++  breakBefore: { enabled: false },
+@@ headings, in config() @@
+-    levels: [{ level: 1, breakBefore: { enabled: true, parity: 'any' } }],
++    levels: [{ level: 1, breakBefore: { enabled: true, parity: 'odd' } }],
+```
+
+## 常见问题
+
+- 在Markdown中，每个科洛迪对白破折号都用一个不换行空格（U+00A0）与其后的词连在一起，所以收尾的破折号不会出现在行首；另外两个不换行空格让*di legno*和*in piedi*在各自段落末尾保持在一起。在1.4.1中，段落含粗体或斜体时，行仍可能在不换行空格处断开。唯一一个含斜体词又用了不换行空格的段落，即第9页含*ohi*的那段，有四处连接，在截图中每处都落在行中或段末。

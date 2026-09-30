@@ -1,0 +1,67 @@
+---
+title: "论文后置部分：附录、术语表和索引"
+summary: "一篇黑白论文的最后几页：用字母编号的附录、两栏术语表、APA参考文献，以及由正文中的标记生成的索引。"
+description: "在Postext中用标题样式排论文的结尾：附录A、两栏术语表、带悬挂缩进的参考文献，以及由:index标记生成的索引。"
+question: "怎样排论文的术语表、参考文献和索引，并使用悬挂缩进和较小的字号？"
+aliases: ["论文", "学位论文", "博士论文", "后置部分", "书末部分", "附录", "字母编号附录", "术语表", "词汇表", "参考文献", "书目", "APA格式", "索引", "书后索引", "悬挂缩进", "黑白", "thesis", "dissertation", "back matter", "appendix", "glossary", "bibliography", "references", "APA style", "index", "hanging indent"]
+pageNotes: { "1": "第171页是第6章Conclusion的开篇，位于一条62 mm高的黑色色带之下：标题和118 pt的数字为白色，其上是眉题CHAPTER。表6.1排在页底，上下各有一条横线。", "3": "第173页，Appendix A, Interview guide：色带上在本章放数字的位置印着字母A。其下是七个编号问题，各带两条追问提示，然后是表A.1。", "4": "第174页，术语表：色带中是眉题BACK MATTER和一条斜体说明，下面是两栏齐左的粗体术语，释义悬挂缩进1 em。", "5": "第175页，参考文献：单栏，十七条9.3 pt的APA条目，每条悬挂缩进1.5 em。", "6": "第176页，索引：展示字体的字母位于两栏条目和缩进的子条目之上。粗体页码指向术语表中的释义。", "7": "第177页：索引在书眉INDEX下以两栏结束，两栏长度几乎相等，其后是一段版本说明。" }
+---
+
+## 成品一览
+
+一篇关于屏幕阅读与纸面阅读的博士论文的最后七页，用B5页面黑白排版。第6章、附录A、术语表、参考文献和索引都在同样一条62 mm高的黑色色带下开始，标题在色带上反白。章在色带中显示数字，附录显示字母；后置部分的各节带眉题BACK MATTER和一条简短的斜体说明。本章排为两端对齐的单栏。术语表和索引改为两栏齐左，参考文献回到单栏，每个条目的转行都缩进。索引由正文中的标记生成：引擎把术语按首字母归类排序，找到每个标记所在的页，并把连续的页合并成171–73这样的页码范围。粗体页码指向术语表中的释义。
+
+## 做法
+
+### 1 · 给后置部分的每一部分一种标题样式
+
+代码见上文的[简短回答](#简短回答)。`# Glossary {style="glossary" note="…"}`开启一节，一直延续到下一个一级标题；这一节的页面使用该样式的版式、书眉和章首设计（[标题样式](/zh/docs/configuration#标题样式)）。所以术语表和索引改为两栏，而参考文献的样式没有设置版式，就退回到文档的单栏。`numbered: false`让这些标题不计入章数（删掉它，术语表的色带会印出8）。每种样式都指定了自己的分页方式，因为没有指定的样式会继承章的`'odd'`，留下空白左页。术语表和参考文献的条目是`:::paragraphs{style="…"}`块中的段落，字号9.3 pt、行距12.4 pt，正文则是11 pt、行距14.6 pt；转行在术语表中悬挂1 em，在参考文献中悬挂1.5 em（[段落样式](/zh/docs/configuration#段落样式)）。
+
+### 2 · 所有章首页共用一条色带
+
+<Excerpt region="opener" />
+
+标记是`{number}`，在不编号的标题上为空，所以一套设计同时服务于章、附录和后置部分：附录把`{attr.letter}`作为标记传入，后置部分的各节在本该放数字的位置印出`{attr.note}`。`minHeight`预留八行14.6 pt，即从版心顶端起41.2 mm，比色带多出3.2 mm，并让正文保持在网格上。设计文本把基线放在行高的0.8处，所以底边位于某条基线`below()`的底对齐框，其最后一行就落在那条基线上。标题、118 pt的数字和说明的最后一行都立在标题的基线上，距裁切线52.5 mm。数字的行高取字号的0.72，因为在1.4.1中，高于所在框的行会忽略`verticalAlign: 'bottom'`。
+
+### 3 · 手动给附录编字母
+
+<Excerpt region="appendix" />
+
+在postext 1.4.1中，标题样式不能改变所在级别的编号，所以附录不编号，由`# Interview guide {style="appendix" letter="A"}`带上字母。这个属性供给色带和附录的书眉，附录自己的资源类型把其中的表编为A.1、A.2，依此类推；如果用默认类型，这张表会成为表6.2，因为不编号的标题让章计数器停在6。本章自己的标题按各级模板计数：`'{1}.{2}'`印出6.1，`continuation.headings.h1: 5`让这一章成为第六章。
+
+### 4 · 把书眉放在外侧
+
+<Excerpt region="running-heads" />
+
+四个文本元素锚定在页面上，并用`parity`筛选，让页码在两页上都位于外侧；每个元素按顶边定位，放在距裁切线17.5 mm的基线的`above()`处，所以9.5 pt的页码和7.5 pt的大写字母立在同一行上。左页印论文标题（`{title}`，来自frontmatter），右页印该节标题（`{chapterTitle}`），例如<PageRef page={7}>第177页</PageRef>上的INDEX。`pages: 'body'`让它们不出现在章首页上；章首页只有页脚的页码，在版心下居中。本章的右页会印*Chapter 6. Conclusion*，附录的右页会印*Appendix A. Interview guide*，不过在这个示例中只有索引延续到了右页。
+
+### 5 · 在正文讨论术语的地方做标记
+
+<Excerpt region="index" />
+
+`:index[tablet]`印出这个词，并以同一个词归入索引；`Rayner:index{term="Rayner, Keith"}`什么也不印，把*Rayner*所在的页归入全名之下；`term="interviews!timing of"`生成一个子条目。术语表中的术语带`main`，所以它们的页码排为粗体，正如索引色带中的说明所写。`# Index {style="index"}`下的`:::index`把条目排在该样式的两栏中，`buildDocument`会反复重新排版文档，直到页码不再变化。条目字号9 pt、行距11.6 pt，转行悬挂2 em，子条目缩进1 em；字母用展示字体排，字号13 pt。标记在表格单元格中不起作用，所以表6.1的各行不会增加页码：*look-backs*列出的是报告它们的那一段，而不是那张表。
+
+### 6 · 所有默认颜色都用墨色
+
+<Excerpt region="palette" />
+
+引擎对粗体、斜体和列表标记的默认颜色取自调色板条目`main-color`，所以把它指向墨色，这些就会印成黑色而不是蓝色（[调色板](/zh/docs/configuration#调色板)）。在1.4.1中，调色板管不到`bodyText.referenceColor`，所以配置里要再写一遍：没有这一行，正文中的*Table 6.1*会印成#295AA3蓝色。`referenceBold: false`把引用排为正体，与周围的作者–年份引文一致。
+
+<Note>有三件事仍需手动完成：表格目录、指向正文某一页的交叉引用（*see p. 172*），以及在1.4.1中附录的字母计数器。如果整篇论文用`buildBundle`逐章排版，包含`:::index`的那一章会收到所有章的标记。</Note>
+
+## 变化
+
+### 让每一节都从右页开始
+
+送交图书馆装订的论文常让每一节从右页开始。这样术语表、参考文献和索引会移到第175、177和179页，每一节前面都有一个空白左页，索引中的粗体页码指向第175页。
+
+```diff
+-const backMatter = (id, extra) => ({ id, numbered: false, breakBefore: { enabled: true,
+-  parity: 'any' }, advancedDesign: opener('Back matter'), header: sectionHeads, ...extra });
++const backMatter = (id, extra) => ({ id, numbered: false, breakBefore: { enabled: true,
++  parity: 'odd' }, advancedDesign: opener('Back matter'), header: sectionHeads, ...extra });
+```
+
+### 把论文的前面部分也排出来
+
+在第1页之前、用罗马数字计页的前置部分，见<RecipeLink slug="front-matter-roman-to-arabic">前置部分用罗马数字页码，然后从第1页开始</RecipeLink>。

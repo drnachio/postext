@@ -6,7 +6,8 @@ import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../
 import { relocalizedResourceTypes } from '../../context/defaultConfig';
 import { ChoiceInput, CollapsibleSection, SelectInput } from '../../controls';
 import { WritingModePicture } from '../settings/pictures';
-import { LOCALE_TO_HYPHENATION, documentLocaleOptionsFor } from './BodyTextSection/constants';
+import { documentLocaleOptionsFor } from './BodyTextSection/constants';
+import { defaultDocumentLocale } from '../../controls/hyphenation';
 import { ChineseDefaultsField } from './ChineseDefaultsField';
 
 /**
@@ -26,7 +27,7 @@ export const WritingSection = memo(function WritingSection() {
   const rawLayout = useSandboxSelector((s) => s.config.layout);
   const rawPage = useSandboxSelector((s) => s.config.page);
 
-  const defaultLocale = LOCALE_TO_HYPHENATION[uiLocale] ?? 'en-us';
+  const defaultLocale = defaultDocumentLocale(uiLocale);
   const effectiveDocumentLocale = documentLocale ?? defaultLocale;
   const writingMode = rawLayout?.writingMode ?? 'horizontal-tb';
   const binding = rawPage?.binding ?? 'auto';

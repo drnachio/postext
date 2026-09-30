@@ -5,10 +5,12 @@ import {
   MINISEARCH_OPTIONS,
   SEARCH_BOOSTS,
   exactIdentifierBonus,
+  hanWords,
   matchReason,
   processTerm,
   recipeIdentifiers,
   searchDocument,
+  searchLocale,
   tokenize,
   type SearchDocument,
 } from "./search.ts";
@@ -33,11 +35,43 @@ describe("tokenize", () => {
   it("keeps accented letters inside words", () => {
     expect(tokenize("Títulos y aperturas: ñandú")).toEqual(["Títulos", "y", "aperturas", "ñandú"]);
   });
+
+  it("cuts Chinese into characters and overlapping pairs", () => {
+    expect(tokenize("页眉设置")).toEqual(["页", "页眉", "眉", "眉设", "设", "设置", "置"]);
+    expect(tokenize("脚")).toEqual(["脚"]);
+  });
+
+  it("breaks Chinese runs at function words, so no pair straddles them", () => {
+    expect(tokenize("页眉的高度")).toEqual(["页", "页眉", "眉", "高", "高度", "度"]);
+    expect(tokenize("如何添加脚注？")).toEqual(["添", "添加", "加", "加脚", "脚", "脚注", "注"]);
+  });
+
+  it("keeps Latin words and identifiers inside Chinese text", () => {
+    expect(tokenize("用renderToPdf导出PDF书签")).toEqual([
+      "用", "renderToPdf", "render", "To", "Pdf", "导", "导出", "出", "PDF", "书", "书签", "签",
+    ]);
+    expect(hanWords("怎么给 PDF 加书签和目录")).toEqual(["给", "加书签", "目录"]);
+  });
 });
 
 describe("processTerm", () => {
   const en = (term: string) => processTerm(term, "en");
   const es = (term: string) => processTerm(term, "es");
+  const zh = (term: string) => processTerm(term, "zh");
+
+  it("keeps single Chinese characters and drops Chinese stop words", () => {
+    expect(zh("注")).toBe("注");
+    expect(zh("脚注")).toBe("脚注");
+    expect(zh("是")).toBeNull();
+    expect(zh("这个")).toBeNull();
+    expect(zh("the")).toBeNull();
+    expect(zh("Tables")).toBe("table");
+    expect(en("注")).toBe("注");
+  });
+
+  it("maps site locales to search locales", () => {
+    expect(["en", "es", "zh", "fr"].map(searchLocale)).toEqual(["en", "es", "zh", "en"]);
+  });
 
   it("lowercases and strips diacritics", () => {
     expect(es("Título")).toBe("titulo");
@@ -167,6 +201,26 @@ describe("MiniSearch options", () => {
 
   it("match Spanish queries with accents and plurals", () => {
     expect(index("es").search("nota al pié").map((r) => r.id)).toEqual(["footnotes-honestly"]);
+  });
+
+  it("match Chinese queries, which have no spaces, word by word", () => {
+    const mini = new MiniSearch<SearchDocument>(MINISEARCH_OPTIONS.zh);
+    mini.addAll(
+      [
+        recipe("footnotes-honestly", { title: "如实处理脚注", summary: "三种注释的变通办法。", search: { aliases: ["脚注", "尾注"] } }),
+        recipe("running-heads", { title: "带书眉的图书页面", summary: "书眉按奇偶页放置，页码落到页脚。" }),
+        recipe("pdf-with-fonts", { title: "嵌入字体的 PDF", summary: "用 renderToPdf 导出。", search: { apis: ["renderToPdf"] } }),
+      ].map((r) => searchDocument(r, FACETS)),
+    );
+    const ids = (query: string, options?: Parameters<typeof mini.search>[1]) => mini.search(query, options).map((r) => r.id);
+    expect(ids("脚注")).toEqual(["footnotes-honestly"]);
+    expect(ids("如何添加脚注？")).toEqual([]);
+    expect(ids("如何添加脚注？", { combineWith: "OR" })[0]).toBe("footnotes-honestly");
+    expect(ids("书眉")).toEqual(["running-heads"]);
+    expect(ids("书眉的页码")).toEqual(["running-heads"]);
+    expect(ids("页")).toEqual(["running-heads"]);
+    expect(ids("renderToPdf 导出")).toEqual(["pdf-with-fonts"]);
+    expect(ids("页脚书眉")).toEqual([]);
   });
 });
 

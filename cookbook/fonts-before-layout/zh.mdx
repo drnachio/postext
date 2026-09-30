@@ -1,0 +1,79 @@
+---
+title: "排版前加载好所有字体的字体样张"
+summary: "一份四页的字体样张：第一次构建列出页面用到的每一款字体，pen加载它们、清空宽度缓存，再重新构建。"
+description: "每个字体文件声明一个FontFace，读出Postext第一次构建所要的字体，加载它们并清空测量缓存，然后再构建。"
+question: "为什么我的断行会变，PDF里的词会叠在一起？怎样在排版前加载我自己的字体文件？"
+aliases: ["网页字体", "自托管字体", "字体加载", "后备字体", "字体样张", "字体检查", "断行变化", "web fonts", "self-hosted fonts", "FontFace", "document.fonts", "fallback font", "unicode-range", "latin-ext", "clearMeasurementCache", "type specimen"]
+pageNotes: { "1": "House Specimen Nº 3的封面：页面上半部是群青色底，里面是240 pt的白色Noto Serif Display斜体Ag，以及两行等宽字，写着它和正文字体、标签字体的名字；下方是标题Three faces, proofed、一段斜体导语和开篇段落。", "2": "Ysabeau Office从7 pt到14 pt的字号阶梯，每个字号一行，旁边用群青色等宽字标注，然后是13 pt的西班牙语、波兰语和捷克语全字母句。", "3": "检查表：一张IBM Plex Mono排的表格，表头为群青色，列出版面所要的十款字体，每个字族只写一次，附上各自的字号，以及一行读自第二次构建的状态说明，前后是解释它的段落。", "4": "第1页的第一段排了两次。上面标着first，是第一次构建排出的样子：断行位置不同，有几行越过行长边缘的细线，伸进浅群青色的底色里。下面标着last，是最后一次构建排出的样子，每行都没有碰到那条线。一条题注统计第一次构建断在别处的行数；后面是结尾段落和版权信息。" }
+---
+
+## 成品一览
+
+*House Specimen Nº 3*出自虚构的Pellow Lane Press，是一份展示三款字体的四页样张。封面上，群青色底里是240 pt的白色Noto Serif Display斜体*Ag*，以及两行写着三款字体名字的等宽字；标题在色底下方。第2页把Ysabeau Office从7 pt到14 pt排成字号阶梯，然后排西班牙语、波兰语和捷克语的全字母句，其中的ż、ř和ů需要第二个字体文件。第3页是检查表：一张由pen填写的IBM Plex Mono表格，列出版面所要的十款字体及其字号。第4页把第1页的第一段排两次，分别来自第一次和最后一次构建。第一次构建在字体到达之前运行，所以行尾落在别处，有几行越过了行长。
+
+## 做法
+
+### 1 · 声明每个文件，但不下载
+
+<Excerpt region="declare" />
+
+一个`FontFace`对应一个文件，和一条`@font-face`规则一样，所以一款有latin和latin-ext两个文件的字体要用两个`FontFace`对象声明，它们的字族、字重和样式相同，只有`unicodeRange`不同，照抄字族CSS里的值即可。把它们加进`document.fonts`不会下载任何东西：浏览器只在`load()`调用或某行文字需要其中的字符时才获取文件。`buildDocument`不加载字体（只有`loadBundleFonts`会加载，针对`.postext`文件包里的文件），配置里的`customFonts`也只是描述这些文件，所以用Markdown构建的页面必须自己声明字体。
+
+### 2 · 构建、加载、清空、再构建
+
+<Excerpt region="build" />
+
+第一次构建用浏览器手头有的字体测量，也就是后备字体，但它的页面已经写明了需要的每一款字体。`buildWithLoadedFonts`（上面的简短回答）从每次构建里收集这些名字，以小册子的文字为样本加载还缺的字体，然后再构建，直到某次构建发现没有字体要加载为止。这个样本也会下载展示字体和等宽字体的latin-ext文件，尽管它们一个这类字母都不排；如果在意下载量，就用各字体自己的文字分别加载。`clearMeasurementCache()`不带参数，清空第一次构建缓存的宽度；不清空的话，第二次构建会沿用第一次的全部断行（见“变化”）。
+
+### 3 · 从版面生成检查表
+
+<Excerpt region="audit" />
+
+这张表就是同样的遍历，按字体分组，每个字号从版面的像素换算回点。它的注释还读取所描述那次构建的另外两个字段：`converged`在版面的各轮计算稳定下来时为true；`warnings`在1.4.1中列出每个放不进任何一栏的块。显示或导出页面之前，两者都要检查。表里的字体比页面上看到的多，因为每个文字块、表格和题注除了自己的字体，还指定了粗体、斜体和粗斜体，而`renderToPdf`会要求全部这些字体。简短回答要求用来排文字的每一款字体都有自己的`FontFace`，因为对未声明的字族和浏览器可以伪造的粗体，`document.fonts.check()`都返回true。只被指定的字体在声明后才会加载：没有斜体文件的字族能通过检查，表里会把它的斜体标为`no file`。
+
+### 4 · 把第一次构建留作证据
+
+<Excerpt region="art-proof" />
+
+`buildWithLoadedFonts`返回每一次构建，所以真正的字体到位后，pen可以再把第一次构建画一遍，逐行与最后一次比较；题注里的数字就来自这次比较。一行用较窄的后备字体测量的普通文字会越过行长，直到栏的裁剪边界（边缘外2 pt）截掉最后几个字母，所以pen用加宽的栏绘制第1页，显示完整的越界部分。Canvas和`postext-pdf`把两端对齐或混合样式的行中每一段文字画在版面测量它的位置，所以比后备字体宽的真实字体会压到下一个词上，字体到达之前构建的PDF里，词会叠在一起。
+
+### 5 · 按正文节奏排的字号阶梯
+
+<Excerpt region="type" />
+
+Ysabeau Office以11/15.5 pt排正文，段落之间空一行而不缩进。正文齐左，所以每个词间距都保持自然宽度。粗体、斜体和引用都用墨色；不设的话，它们会用主色。字号阶梯的每个字号和每句全字母句都是一个两倍行距（31 pt）高的段落样式，所以页面保持正文15.5 pt的节奏。字号标签是等宽字体的行内标签，一位数的字号左右各加半个字母宽的内边距，让每个样本都从同一条边开始。
+
+### 6 · 一张封面上的三款字体
+
+<Excerpt region="opener" />
+
+封面是一级标题的设计：标题`glyphs`属性里的字母用240 pt的展示字体排出，下面两行等宽字写着这款字体以及正文和标签字体的名字，就像铸字厂的样张那样。`span: 'page'`让锚定在出血上的色底延伸出上边缘；留在栏内的话，设计会在上页边距处被裁掉，色底的顶部和眉题都会被切去。`minHeight`从上页边距起算，一直预留到`Y.end`，即色底下方42 mm；不设的话，正文会高一行开始，紧贴在导语下面。
+
+## 变化
+
+### 不清空缓存
+
+pen仍然加载每一款字体，但第二次构建沿用第一次的全部断行：第4页的两段都越过了那条线，题注统计断在别处的行数为0，等宽题注里的词叠在一起，每段文字都画在后备字体测量的位置上。
+
+```diff
+-    clearMeasurementCache(); // the widths measured with a fallback stay cached until cleared
++    // clearMeasurementCache();
+```
+
+### 漏掉一款字体
+
+去掉IBM Plex Mono的粗体（眉题和表头用它排），pen在显示任何页面之前就会抛出`No FontFace for IBM Plex Mono 700 normal`；如果只用`document.fonts.check()`，浏览器会把常规体加粗了事。
+
+```diff
+-  'IBM Plex Mono': ['400', '400i', '700', '700i'], // labels, chips, the table, captions
++  'IBM Plex Mono': ['400', '400i', '700i'], // labels, chips, the table, captions
+```
+
+### 把同样的字体嵌进PDF
+
+`renderToPdf`为每款字体嵌入其`fontProvider`返回的字节，而<RecipeLink slug="pdf-with-embedded-fonts">嵌入同样字体的真正PDF</RecipeLink>里的提供者用的是Fontsource的latin文件，只覆盖到Latin-1：为了这本小册子里的ż、ł、ř和ů，要让它从你自己的文件夹返回每款字体的完整字体文件。
+
+## 常见问题
+
+- 不带样本文字的`document.fonts.load(font)`只加载覆盖空格的那个文件，即latin文件；要传入文字，否则ż和ř会回退到系统字体，而且没有任何警告。
+- `renderPageToCanvas`和`postext-pdf`在每栏边缘外2 pt处裁剪，所以用较窄的后备字体测量的行会丢掉最后几个字母，也不会产生警告。

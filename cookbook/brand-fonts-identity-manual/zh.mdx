@@ -1,0 +1,69 @@
+---
+title: "品牌字体用于版面、PDF和文件包"
+summary: "一本虚构地铁的视觉识别手册，用品牌自己的字体文件排版；文件只下载一次，版面、PDF的字体提供器和.postext文件包都复用它。"
+description: "在排版之前注册你自己的字体文件，通过字体提供器把同样的字节交给PDF，再把允许分发的字体打包进.postext文件包。"
+question: "怎样用我自己的字体文件排版，并把同样的文件嵌入PDF？"
+aliases: ["品牌字体", "授权字体", "企业字体", "自托管字体", "用字节创建FontFace", "customFonts", "可再分发", "字体提供器", "品牌规范", "视觉识别手册", "VI手册", "色板", "brand fonts", "FontFace", "font provider", "fuentes corporativas"]
+pageNotes: { "1": "封面：Metro de Alba用黑色窄体大小写排在一行，下面是Identity manual和版次；页面下半部分有红、青绿、黄、紫、绿五条粗线，从左下角共用一条轨道出发，穿过一条灰色河流后向右散开，沿线是黑圈白心的车站。", "2": "第2页：页首横贯一条墨色色带，带一个红色方块和手册标题；一个巨大的红色01排在标题Colour及其导语旁边；两栏文字讲线路颜色，正文中嵌着小色块；页脚通栏一张表，第一列是九个色块，后面是名称以及用等宽字体排的HEX、RGB、CMYK数值。", "3": "第3页：色带上是紫色方块，一个巨大的紫色02排在标题Type旁边；小标题Big Shoulders Display、Public Sans、Weights和Spline Sans Mono下分别介绍三种字体，附Public Sans和Spline Sans Mono的样字行；页脚通栏一块黑色站台指示牌，白字写着Puerta del Mercado，Lines 2、3、5前面分别是青绿、黄、绿色方块。", "4": "第4页：色带上是绿色方块，一个巨大的绿色03排在标题Usage旁边；两栏线路图规则（绘制、站名、地理、线宽、给供应商的文件），以版权页结束；页脚通栏并排两幅带框的图：Do是三条线以45度一起转弯，车站为白色；Don't是同样的线以任意角度转弯，车站为彩色圆点。" }
+---
+
+## 成品一览
+
+Metro de Alba视觉识别手册的四页。这是一个虚构的地铁系统，共有五条线路。封面上，五条线从左下角共用一条轨道出发，穿过一条灰色河流后向右分岔，上方是用Big Shoulders Display排的名称。每一节都在一条墨色色带下开始，配一个两位数的大号编号，颜色取其中一条线路的颜色。*01 Colour*里，表格第一列就是颜色本身；*02 Type*有样字行和一块站台指示牌；*03 Usage*最后是两幅带框的线路图，一幅按规则绘制（Do），一幅违反规则（Don't）。所有文字都用六个字体文件排版，脚本在第一次排版之前下载它们。PDF用同样的六个文件绘制，`.postext`文件包里带五个，因为标题字体被标为不可再分发。
+
+## 做法
+
+### 1 · 注册品牌字体、构建文档，再把同样的字节交给PDF
+
+<Excerpt region="build" />
+
+排版时用`document.fonts`里的字体测量每个词，所以[简短回答](#简短回答)里的`loadBrandFonts()`把每个文件下载一次，保留它的字节，并在`buildDocument`运行之前注册一个用这些字节创建的`FontFace`。套件里的`loadFonts`只从Fontsource下载，而品牌的字体文件放在自己的服务器上。在postext-pdf 1.4.1里，`renderToPdf`会请求十种字体，其中四种没有文字用到（标题字体的斜体，以及等宽字体的斜体、SemiBold和SemiBold斜体），`brandFontProvider`对每个请求都返回同一字族里最接近的文件（[为什么需要字体提供器？](/zh/docs/configuration#为什么需要字体提供函数)）。页面只用到Canvas测量过的六个文件，但1.4.1还会为这四个请求各写入一份未使用的替身文件副本。
+
+### 2 · 颜色系统就是一个列表
+
+<Excerpt region="colours" />
+
+调色板和表1.1由同样的九行数据生成，所以表里不可能出现页面没用的值。`setCellBackground`把每行空着的第一格填上该行的颜色，并与调色板关联。正文里的`:swatch{color="line-2"}`接收一个调色板id，画一个用正文颜色描边的方块。`main-color`是Ink的十六进制值，所以默认关联它的标题、粗体和斜体都印成Ink，而不是引擎的蓝色。在1.4.1里，不管`main-color`设成什么，交叉引用都保持那种蓝色；`bodyText.referenceColor: col('ink')`把它们也设成Ink（[调色板](/zh/docs/configuration#调色板)）。
+
+### 3 · 一个章首页设计，三种线路颜色
+
+<Excerpt region="sections" />
+
+`numberingTemplate: '{1:01}'`把计数器写成两位数，`{number}`在章首页印出01、02和03；封面标题设为`numbered: false`，不带编号。三个章节样式只有调色板条目`section`不同，各自设成本线路的颜色。色带里的编号和方块都关联到`section`，所以一个章首页设计就能用于三节。`minHeight`为章首页预留14 pt网格的十行，每一节的正文都从本页同一条网格线开始。
+
+### 4 · Do和Don't是两种图类型
+
+<Excerpt region="do-dont" />
+
+资源类型可以带一个局部的`captionStyle`，这两种只设置标签颜色：Do用Signal green，Don't用Signal red（[资源类型](/zh/docs/configuration#资源类型)）。两种信号色在白底上的对比度是5.1:1和5.5:1，而1、2、3、5号线的颜色都低于小字所需的4.5:1。两幅图都用`position: 'bottom'`浮动，并在同一段里引用，也就是Drawing the map下的第一段，所以它们共享第4页的页脚：Do在左栏，Don't在右栏。
+
+### 5 · 文件包只装可以分发的字体
+
+<Excerpt region="bundle" />
+
+`createBundle`读取`config.customFonts`，按每个变体的`fileId`在`files`里找到对应字节，写到`fonts/`下，并在清单里加一个`fonts`条目。标题字族带有`redistributable: false`，用来模拟禁止转交文件的授权许可（Big Shoulders Display本身采用OFL）。它的文件不会打包进去，`warnings`会列出这个字族。81 KB的文件里有章节、配置、三幅图和五个字体文件。排版从不读取`customFonts`，没有它，页面也完全一样（[创建文件包](/zh/docs/configuration#创建文件包)）。
+
+## 变化
+
+### 把标题字体也打包
+
+如果授权允许转交文件，去掉这个标志，文件包就会带上全部三个字族，大小为96 KB。
+
+```diff
+-  name, redistributable: name !== DISPLAY, // 标题字体通过别的途径交给供应商
++  name,
+```
+
+### 用真正的Bold
+
+因为品牌没有Bold，`boldFontWeight: 600`让粗体、表头和题注标签都用SemiBold排。如果你的字族有Bold，把它的文件加进`FONTS`，删掉这项设置，再改写示例里的样字行和其中那句“There is no Bold”，因为它已不再成立。
+
+```diff
+-    boldFontWeight: 600, // 品牌没有Bold：**强调**用它的SemiBold排
+-  'Public Sans': ['400', '400i', '600', '600i'],
++  'Public Sans': ['400', '400i', '600', '600i', '700', '700i'],
+```
+
+## 常见问题
+
+交给`createBundle`的每个字体的字节，都要放在`customFonts`为它指定的`fileId`下。没有字节的变体会被省略，并给出“missing file, skipped”警告；一个字族的变体全部缺失时，它会从清单里消失。

@@ -1,0 +1,73 @@
+---
+title: "同一源文件，印刷版与屏幕版"
+summary: "两个版本出自同一份配置：htmlViewer.overrides存放深色的屏幕版面设计，applyHtmlViewerOverrides在每次构建HTML之前把它合并进来。"
+description: "用Postext把一个杂志栏目从同一份Markdown源文件和同一份配置排成两版：双栏的印刷刊和可调整尺寸的深色HTML阅读视图。"
+question: "怎样把同一份文档显示为响应式的HTML阅读视图，并使用更简洁的屏幕版面设计？"
+aliases: ["屏幕版", "阅读视图", "网页版", "深色模式", "夜间主题", "响应式HTML", "调整尺寸", "印刷版与屏幕版", "screen edition", "reading view", "web edition", "dark mode", "responsive HTML", "resize", "ResizeObserver", "Shadow DOM", "htmlViewer overrides"]
+pageNotes: { "1": "Notes on Weather的篇页：雨蓝色底上是白色斜向雨丝，雨丝避开文字；一个高大的罗马数字I，篇名Autumn，页脚列出三篇随笔。", "2": "Rain一篇：浅雾色色带上有眉题Autumn · Note 1、Gloock字体的标题和斜体导语，两栏两端对齐的正文，第二栏顶部是一幅雨量计剖面图。", "3": "Fog一篇：两栏齐底，下方是一幅横贯页脚的全景图：苍白的太阳下，山谷里雾气层叠，一座教堂尖塔和几棵树从雾中升起，前景是一道围着栅栏的土堤。", "4": "Wind一篇：第二栏顶部是一幅风玫瑰图，最长的蓝色花瓣指向西方和西南方，这篇随笔以本期的版权页说明结尾。" }
+---
+
+## 成品一览
+
+*Notes on Weather*，一本小杂志的秋季栏目，用同一份Markdown排两次。纸上是一期225 × 297 mm的刊物：一个雨蓝色的篇页，三篇随笔，每篇在浅雾色色带下开篇，正文两栏两端对齐，配有雨量计、雾中山谷和风玫瑰的插图。屏幕上则是单栏齐左的Newsreader，近黑底上的浅灰字，用读者可以选择和复制的HTML文本排出，没有篇页、雾色色带和页码。窗格打开时显示雨量计，它缩小到窗格高度，用夜间配色绘制，旁边是它所在的印刷页。向上滚动可以看到Rain一篇的开篇；拖动窗格的角，文字会按新尺寸重新排版。屏幕版面设计是印刷配置中`htmlViewer.overrides`下的九个键。
+
+## 做法
+
+### 1 · 一套颜色名称，两套取值
+
+<Excerpt region="palette" />
+
+配置中的每种颜色都指向一个调色板id，旁边写的十六进制值只是日间的后备值。所以屏幕版只需替换一个数组，就能换成夜间配色。[简短回答](#简短回答)中的[覆盖项](/zh/docs/configuration#html查看器)按键合并对象，按`level`合并标题层级，其他数组则整体替换，`colorPalette`也在其中。`main-color`属于调色板，所以使用它的引擎默认值也随之改变。在postext 1.4.1中，新的调色板不会传到设计元素和参照颜色，所以`relink()`根据合并后配置的调色板重写每一个关联颜色。
+
+### 2 · 开篇：纸上是色带，屏幕上只有文字
+
+<Excerpt region="opener" />
+
+眉题、标题和导语元素只定义一次，再展开到两套版面设计中，所以两个版本显示同样的标题属性：`{attr.kicker}`、`{attr.lead}`和篇的`{partTitle}`。在纸上，一级标题分页到新的一页，横跨两栏，它的版面设计从出血处挂下一条雾色色带。`minHeight`预留的深度是色带在上页边距以下的部分加上`AIR`，即色带与第一行之间的9 mm。印刷版标题用54 pt，因为每个标题都只是一个短词，也是该页唯一的大字。在屏幕上，同一级标题排成栏内标题，没有色带，也没有空白。覆盖项按`level`合并，所以它没有重新声明的标题设置都保持印刷版的样子。
+
+### 3 · 只在纸上存在的篇页
+
+<Excerpt region="part" />
+
+在印刷版中，`:::part`打开<PageRef page={1}>雨蓝色的篇页</PageRef>：一个四边出血的框，一个避开文字的雨丝图像元素，取自围栏的罗马数字和篇名，以及白色的随笔列表。屏幕覆盖项设`parts.page: false`，于是不开新页，也不排列表。[篇](/zh/docs/configuration#篇)仍然把它的编号和标题用到其后的随笔上，屏幕版的眉题和印刷版一样读作“Autumn · Note 1”。
+
+### 4 · 每幅图画两次
+
+<Excerpt region="figures" />
+
+换调色板不会给SVG重新着色，所以每幅图按每套调色板各画一次。`figures(edition)`为两个版本生成相同的资源，各自指向该版本的文件：印刷版是`gauge-day.svg`，屏幕版是`gauge-night.svg`。id、题注、替代文本和位置都不变，所以Markdown中的每个`:ref`在两个版本里都解析为同一幅图、同一个编号。在屏幕版中，替代文本写入每个`<img alt>`，屏幕阅读器可以读到它。
+
+### 5 · 承载屏幕版
+
+<Excerpt region="screen" />
+
+每个屏幕页都与窗格一样高，所以`fitFiguresToPage`把雨量计缩小到连同题注能放进一页为止（[版面](/zh/docs/configuration#版式)）。在CSS假定的96 dpi下，从印刷版继承来的毫米和点按标称尺寸渲染（[集成HTML查看器](/zh/docs/configuration#集成html查看器)）。示例把`renderToHtml`输出的绝对定位行写进一个Shadow DOM，页面的选择器够不到它们。外层容器的`all: initial`还挡住了`letter-spacing`之类的继承属性：引擎测量这些行时没有考虑它们，继承来的值会让文字互相叠印。HTML页面除非上色，否则是透明的，所以`page.backgroundColor`从调色板取夜间的纸色。ResizeObserver等待150 ms，只在窗格的宽度或高度变化时才用新的`config()`重新构建；重建之后，窗格滚回到原来高度比例的位置。
+
+## 变化
+
+### 日间阅读
+
+去掉夜间调色板，窗格和插图改用日间的取值；屏幕版就会显示白色页面、深色文字和日间插图。
+
+```diff
+-  colorPalette: paletteOf(night), // 数组整体替换：用夜间取值
+   parts: { page: false }, // 不开篇页；篇仍为其后的随笔命名
+@@
+-pane.style.background = night.paper; // 窗格自身的底色，位于页面和滚动条旁
++pane.style.background = day.paper; // 窗格自身的底色，位于页面和滚动条旁
+@@
+-  const screenDoc = buildDocument({ markdown, resources: figures('night') },
++  const screenDoc = buildDocument({ markdown, resources: figures('day') },
+```
+
+### 给印刷版开篇加上色带上的章号
+
+如果印刷版要更醒目的开篇，用饱和色带和大号章号，参见<RecipeLink slug="chapter-opener-bleed-band">满版出血色带上的章首页</RecipeLink>；屏幕覆盖项保持不变。
+
+## 常见问题
+
+- 每次修改后都检查每篇随笔的结尾。如果某篇的最后一段把两行的尾巴推到新的一页（段末孤行控制让这两行待在一起），postext 1.4.1会把该页的栏高设为一行，画布会把第二行裁掉。两个示例都做过字数调整，没有哪篇以这种方式结束。
+- 在齐左文本中，1.4.1可能把一行断在引用前的“(”上；在读者可以调整尺寸的窗格里，总有某个宽度会出现这种断行。所以这些随笔写“as Fig. 2 shows”，而从不写“(Fig. 2)”。
+- 允许屏幕版的段落从页面最后一行开始（`avoidWidows: false`）。打开这条规则时，1.4.1可能把一个比页面还高的段落整个塞进图下方的空隙，让它超出页脚；240 × 460或260 × 500 px的窗格就会出现这种情况。
+- 窗格至少保持400 px高（示例中的`min-height`）。在高度不到约350 px的窄窗格里，屏幕版开篇比页面的内容区还高；postext 1.4.1于是放弃全部预留，把第一段排在标题上面。
+- 排版之前先给窗格定好尺寸。没有宽度的窗格，无论是被隐藏还是在flex行里被挤掉，都会得到零宽的页面，所以`showScreen()`会跳过比`FOLDED`（200 px）更窄或更矮的窗格。

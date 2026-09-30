@@ -6,7 +6,7 @@ import { Dialog } from "@base-ui/react/dialog";
 import MiniSearch from "minisearch";
 import type { SearchSection } from "@/lib/docs";
 import { usePathname } from "@/i18n/navigation";
-import { cookbookPaletteEntries, makeProcessTerm, tokenize } from "@/lib/cookbook/search";
+import { cookbookPaletteEntries, makeProcessTerm, searchLocale, tokenize } from "@/lib/cookbook/search";
 import type { Catalog, PartColor } from "@/lib/cookbook/types";
 import { unpackCatalog, type PackedCatalog } from "@/lib/cookbook/wire";
 import { findPhrase, foldQuery, phraseTier, rankByPhrase } from "@/lib/searchPhrase";
@@ -108,8 +108,13 @@ async function fetchJson<T>(url: string): Promise<T | null> {
   return res.ok ? ((await res.json()) as T) : null;
 }
 
-function docsIndex(sections: SearchSection[]): MiniSearch<SearchSection> {
+/** The docs' sections. Chinese has no spaces between words, so a zh index
+ *  splits its text with the Cookbook's tokenizer (characters and character
+ *  pairs); the other languages keep MiniSearch's word splitting. */
+function docsIndex(sections: SearchSection[], locale: string): MiniSearch<SearchSection> {
+  const chinese = searchLocale(locale) === "zh";
   const ms = new MiniSearch<SearchSection>({
+    ...(chinese ? { tokenize, processTerm: makeProcessTerm("zh") } : {}),
     fields: ["sectionTitle", "docTitle", "breadcrumb", "body"],
     storeFields: ["id"],
     idField: "id",
@@ -131,7 +136,7 @@ function cookbookIndex(entries: SearchSection[], locale: string): MiniSearch<Sea
     storeFields: ["id"],
     idField: "id",
     tokenize,
-    processTerm: makeProcessTerm(locale === "es" ? "es" : "en"),
+    processTerm: makeProcessTerm(searchLocale(locale)),
     searchOptions: {
       boost: { sectionTitle: 3, breadcrumb: 1.5 },
       prefix: true,
@@ -177,7 +182,7 @@ export function DocsSearchPalette() {
       if (docs) {
         const docSections = docs.sections ?? [];
         for (const s of docSections) next.byId.set(s.id, s);
-        next.docs = docSections.length ? docsIndex(docSections) : null;
+        next.docs = docSections.length ? docsIndex(docSections, locale) : null;
         next.docsFailed = false;
       }
       if (catalog) {

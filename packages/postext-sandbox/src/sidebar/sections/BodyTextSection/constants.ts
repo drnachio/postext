@@ -1,16 +1,5 @@
 import { cjkRegionOf, DOCUMENT_LANGUAGES, matchHyphenationLocale, sameContentLocale } from 'postext';
-import type { HyphenationLocale, DimensionUnit } from 'postext';
-
-export const LOCALE_TO_HYPHENATION: Record<string, HyphenationLocale> = {
-  en: 'en-us',
-  es: 'es',
-  fr: 'fr',
-  de: 'de',
-  it: 'it',
-  pt: 'pt',
-  ca: 'ca',
-  nl: 'nl',
-};
+import type { DimensionUnit } from 'postext';
 
 export const TEXT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 export const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];

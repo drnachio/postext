@@ -47,7 +47,7 @@ import {
   type ProjectRecord,
   type ProjectThumbnail,
 } from '../storage/projects';
-import { createDefaultConfig, withDefaultResourceTypes } from './defaultConfig';
+import { createBlankBookConfig, withDefaultResourceTypes } from './defaultConfig';
 import type { SandboxAction, SandboxState } from './SandboxContext';
 import type { ChapterLayout } from '../book/types';
 import { deleteChapterLayouts, getChapterLayouts } from '../storage/layouts';
@@ -330,7 +330,7 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       if (from === 'blank') {
         const content: ProjectContent = {
           ...singleChapterBook('', generateChapterId(), deps.labels().chapterUntitled.replace('__n__', '1')),
-          config: withDefaultResourceTypes(createDefaultConfig(s.locale), s.locale),
+          config: withDefaultResourceTypes(createBlankBookConfig(s.locale), s.locale),
           resources: [],
         };
         return persistNew(newRecord(content, { name: name ?? deps.labels().projectUntitled, locale: s.locale }, id));

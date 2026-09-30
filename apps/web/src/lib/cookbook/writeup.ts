@@ -1,8 +1,8 @@
 /**
- * Recipe write-ups (`cookbook/<slug>/en.mdx`, `es.mdx`): YAML frontmatter
- * read with gray-matter, the body split into template sections, and the
- * references the body makes (excerpt regions, gotchas, features, recipes,
- * docs links) for the tests and the lint.
+ * Recipe write-ups (`cookbook/<slug>/en.mdx`, `es.mdx`, `zh.mdx`): YAML
+ * frontmatter read with gray-matter, the body split into template sections,
+ * and the references the body makes (excerpt regions, gotchas, features,
+ * recipes, docs links) for the tests and the lint.
  *
  * Isomorphic Node (site server, tests, CLI): relative `.ts` imports only.
  */
@@ -110,6 +110,6 @@ export function writeupRefs(body: string): WriteupRefs {
     features: attrValues(text, "Feature", "id"),
     recipes: attrValues(text, "RecipeLink", "slug"),
     pages: [...attrValues(text, "PageRef", "page"), ...attrValues(text, "PageShot", "page")].map(Number),
-    links: [...text.matchAll(/\]\((\/(?:en|es)\/[^)\s]*)\)/g)].map((m) => m[1]),
+    links: [...text.matchAll(/\]\((\/(?:en|es|zh)\/[^)\s]*)\)/g)].map((m) => m[1]),
   };
 }

@@ -28,7 +28,7 @@ import { fileURLToPath } from "node:url";
 import { composePen, pageHtml } from "../../src/lib/cookbook/compose.ts";
 import { REPO_DIR, WEB_DIR } from "../../src/lib/cookbook/paths.ts";
 import { readKit, readRecipeMeta, readRecipeSources, resetKitCache } from "../../src/lib/cookbook/sources.ts";
-import type { ComposedPen, Locale, RecipeMeta } from "../../src/lib/cookbook/types.ts";
+import type { ComposedPen, SampleLocale, RecipeMeta } from "../../src/lib/cookbook/types.ts";
 import { contentType, safeFile } from "./net.ts";
 import type { EngineSpec } from "./shim.ts";
 import { importMapTag, LOCAL_PREFIX, resolveEngine, shimModules } from "./shim.ts";
@@ -37,7 +37,7 @@ const PROBE_FILE = path.join(path.dirname(fileURLToPath(import.meta.url)), "lib"
 
 export interface PenServerOptions {
   slug: string;
-  variant: Locale;
+  variant: SampleLocale;
   /** "npm" (default: the released versions) or "npm@x.y.z". */
   engine?: string;
   /** Re-compose on every request and serve an SSE reload script. */
@@ -62,7 +62,7 @@ export interface PenServer {
 }
 
 /** Composes one edition from the files on disk. */
-export function composeVariant(slug: string, variant: Locale): { pen: ComposedPen; meta: RecipeMeta } {
+export function composeVariant(slug: string, variant: SampleLocale): { pen: ComposedPen; meta: RecipeMeta } {
   const meta = readRecipeMeta(slug);
   const pen = composePen(readRecipeSources(slug), meta, variant, { kit: readKit() });
   return { pen, meta };

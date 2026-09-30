@@ -56,6 +56,8 @@ function detected(recipe: Recipe, locale: Locale): Pick<CatalogRecipe["search"],
 /** The catalogue entry of one recipe. */
 export function catalogRecipe(recipe: Recipe, locale: Locale, registry: Registry, collections: string[]): CatalogRecipe {
   const { meta } = recipe;
+  // The title in another language, so an English query finds a Spanish or
+  // Chinese page's recipe (and a Spanish one an English page's).
   const other: Locale = locale === "en" ? "es" : "en";
   const writeup = writeupFor(recipe, locale);
   const fm = writeup?.frontmatter;

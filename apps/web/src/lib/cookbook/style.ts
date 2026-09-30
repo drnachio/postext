@@ -74,6 +74,8 @@ const HARD: Record<Locale, Rule[]> = {
     rule("\\bun sinfín de\\b", "un sinfín de"),
     rule("\\baprovecha(r)? al máximo\\b", "aprovechar al máximo"),
   ],
+  // HARD_ZH, below, checks Chinese prose in every locale.
+  zh: [],
 };
 
 const SOFT: Record<Locale, Rule[]> = {
@@ -103,20 +105,30 @@ const SOFT: Record<Locale, Rule[]> = {
     rule("\\bno es (solo|sólo|simplemente) un\\b", "no es solo un"),
     rule("\\bpotencia(r)? (tu|su|sus|tus)\\b", "potenciar"),
   ],
+  // SOFT_ZH, below, checks Chinese prose in every locale.
+  zh: [],
 };
 
 /** Stock phrases of Chinese prose written by machine, in Simplified and
  *  Traditional characters. Chinese has no word boundaries, so the rules
- *  match characters, not words. */
+ *  match characters, not words (no `\b`, which never fires between two
+ *  Han characters). */
 const HARD_ZH: Rule[] = [
   rule("值得一提的是", "值得一提的是"),
+  rule("值得注意的是|值得[关關]注的是", "值得注意的是"),
   rule("[众眾]所周知", "众所周知"),
   rule("不言而喻", "不言而喻"),
   rule("[总總]而言之|[总總]的[来來][说說]", "总而言之"),
   rule("[综綜]上所述", "综上所述"),
   rule("在[当當]今[^，。！？、\\s]{0,12}?(?:[时時]代|世界|社[会會])", "在当今…时代"),
   rule("[让讓]我[们們]一起(?:来[看探]|[来來]?探索|走[进進]|深入)", "让我们一起"),
+  rule("[让讓]我[们們](?:[来來])?(?:看看|探索|探[讨討]|深入|走[进進]|揭[开開])", "让我们…"),
   rule("深入探[讨討]", "深入探讨"),
+  rule("一站式", "一站式"),
+  rule("完美(?:地|的)?(?:[实實]现|解[决決]|呈[现現]|融合|契合|平衡)", "完美地"),
+  rule("(?:开启|開啟)[^，。！？]{0,10}?(?:之旅|的旅程|新篇章)", "开启…之旅"),
+  rule("(?:释放|釋放)[^，。！？]{0,8}?(?:潜力|潛力|力量)", "释放…的潜力"),
+  rule("改[变變]游[戏戲][规規][则則]|[颠顛][覆]性", "改变游戏规则"),
   rule("扮演[着著][^，。！？]{0,8}?(?:重要|[关關][键鍵]|至[关關]重要)的?角色", "扮演着重要的角色"),
   // 无缝 only with the verb it props up: 天衣无缝 is an idiom and 毫无缝隙
   // reads 毫无 + 缝隙. 赋能 is not 天赋 + 能力 or 禀赋 + 能力.
@@ -131,6 +143,11 @@ const SOFT_ZH: Rule[] = [
   rule("精心打造|打造|(?<![借辅輔])助力(?!量)", "打造/助力"),
   rule("独特的魅力|獨特的魅力|璀璨|[画畫]卷", "独特的魅力/画卷"),
   rule("(?:^|[。！？]\\s*)此外，", "此外，"),
+  rule("不[仅僅]仅?[^。！？]{1,40}?(?:更|而且|[还還])", "不仅……更"),
+  rule("需要注意的是", "需要注意的是"),
+  rule("(?:锦上添花|錦上添花|画龙点睛|畫龍點睛|事半功倍|游刃有余|遊刃有餘)", "锦上添花/画龙点睛"),
+  rule("全方位|极致|極致|轻松(?:实现|搞定|打造)|輕鬆(?:實現|搞定|打造)", "全方位/极致/轻松实现"),
+  rule("(?:^|[。！？]\\s*)(?:首先|其次|最后|最後)，[^。！？]*[。！？]\\s*(?:其次|最后|最後)，", "首先……其次……最后"),
 ];
 
 /** Letters of Chinese and Japanese writing (Han, kana with the long-vowel

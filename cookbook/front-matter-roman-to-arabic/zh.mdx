@@ -1,0 +1,91 @@
+---
+title: "前置部分用罗马数字页码，然后从第1页开始"
+summary: "封面和前置各页是不编号的标题，用小写罗马数字计页；:::numbering在小说开始的右页把计数重置为1。"
+description: "《Frankenstein》的封面和前置各页计为i到x，排在右页的Letter I是第1页。目录和PDF的页面标签给出同样的页码。"
+question: "怎样把前置部分编为i、ii、iii，并在小说开始的右页重新从1编起？"
+aliases: ["罗马数字页码", "罗马数字", "前置部分", "封面", "半书名页", "书名页", "版权页", "献词", "题词", "卷首插图", "空白左页", "署名", "重置页码", "PDF页面标签", "roman page numbers", "front matter", "prelims", "half title", "title page", "PDF page labels"]
+pageNotes: { "3": "半书名页，第iii页。它的样式换到右页，所以封面背面第ii页是空白，不印页码。", "4": "卷首插图第iv页与书名页第v页相对；两页都不印页码。", "10": "Preface的最后一页：页码x用小型大写字母排在页脚居中。", "11": "Letter I在右页开始，上方是St Petersburgh上空的北极光；页码1与对页的x位置相同。", "13": "第3页：在右页上，书眉把这封信的标题排在页码旁边，两者都靠外侧页边距。", "14": "第4页，Letter I的结尾：书眉把书名排在页码旁边，Walton的署名齐右。" }
+---
+
+## 成品一览
+
+《Frankenstein》开头几页，排成129 × 198 mm的袖珍经典本：封面是Mont Blanc上的闪电，背面留空；半书名页；Walton的船困在冰中的卷首插图，与书名页相对；版权信息排在书名页背面的低处；献给Godwin的献词在Milton的题词上方；一页目录；以及1818年的Preface。这十页编为i到x，但只有目录和Preface印出页码。Letter I在右页开始小说，上方是北极光，页码1与对页x的位置相同。这封信一直排到Walton的署名。目录里Preface旁的ix和信旁的1都取自排好的页面，PDF阅读器也按同样方式标注页面。封面、卷首插图和北极光是用扩散模型生成的画，以JPEG位图加载；出版社标志和冰晶用代码绘制。
+
+## 做法
+
+### 1 · 每一页都是一个带设计的标题
+
+<Excerpt region="leaves" />
+
+标题会另起一页，并成为PDF书签；它的样式中的设计负责放置这一页的文字和图片。用`numbered: false`和`toc: false`，这些页不计入章数，也不进目录。空的页眉和页脚给了它们印刷行所说的暗页码：书名页不印页码，但仍然是第v页，所以Preface能是第ix页。只有半书名页保留了奇数页换页，这让封面背面留空。版权信息、献词、题词和Walton的结尾是`:::paragraphs`块，用摘录末尾的样式排。
+
+### 2 · 目录的页码取自版面
+
+<Excerpt region="contents" />
+
+`:::toc`列出其样式允许的每个标题，并附上标题所在页的标签（[目录](/zh/docs/configuration#目录)）。Contents和Preface共用`front`样式，它设了`toc: false`，Preface用`{toc="true"}`覆盖它。Preface和Letter I都不编号，所以它们的条目不印章号。信的条目第二行是它的`to="…"`属性。页码用页码字体排。条目与Preface第一行从同一条基线开始，所以两个对页对齐。
+
+### 3 · 小说在右页开始，上方是北极光
+
+<Excerpt region="letter" />
+
+这幅画从页面顶端出血，底部渐隐到纸色里，信就从那里开始。在Postext 1.4.1中，图像从不计入章首页预留的空间（它的文字、线条和方框会计入，即使锚定在页面上），所以只靠`minHeight`就把第一行放到画的下方（[通栏与高级设计](/zh/docs/configuration#通栏与高级设计)）。眉题和日期行来自标题的`to`和`dateline`属性。Letter I还带着`{style="letter"}`，这个样式唯一的设置是`numbered: false`，因为Walton的信排在Chapter I之前，没有章号。
+
+### 4 · 书眉随小说回来
+
+<Excerpt region="heads" />
+
+除非样式替换，每一节都沿用文档的页眉和页脚。前置部分把两者都替换了，letter样式没有，所以从第1页起，小说在正文页上印出这些书眉，在章首页上印出简短回答里定义的底部页码。`{pageNumber}`印出所在页的标签，所以`folio()`辅助函数用同一个设计在书脊一侧排x、另一侧排1。
+
+### 5 · PDF带着同样的页码
+
+<Excerpt region="build" />
+
+`buildDocument`会重复排版，直到目录里的页面标签不再变化，所以调用一次就够了。`renderToPdf`把这些标签写进PDF：在能读取页面标签的阅读器里，页码栏从i走到x，然后从1开始，“转到第1页”会打开Letter I。每个标题都成为以其文字命名的书签，所以这些页用的是朴素的标题：Cover、Half title、Frontispiece、Title page、Imprint、Dedication。
+
+## 变化
+
+### 前置各页用大写罗马数字
+
+大写数字在页码字体里印成完整的大写字母，比小写数字得到的小型大写字母高。
+
+```diff
+-const pageNumbering = { format: 'lower-roman', startAt: 1 }; // startAt spelled out: cover = i
++const pageNumbering = { format: 'upper-roman', startAt: 1 }; // startAt spelled out: cover = I
+```
+
+### 全书连续编号
+
+去掉`startAt`，计数就以阿拉伯数字接着往下编，于是Letter I成为第11页，和那些把前置部分与正文一起计页的书一样。
+
+```diff
+-:::numbering{format="decimal" startAt=1}
++:::numbering{format="decimal"}
+```
+
+### 去掉卷首插图
+
+删除`# Frontispiece`标题，把书名页送到右页：第iv页保持空白，Preface仍是第ix页，Letter I仍是第1页。
+
+```diff
+-  { id: 'title', ...blind, advancedDesign: design([ // v: four frontmatter fields, one attribute
++  { id: 'title', ...blind, breakBefore: { enabled: true, parity: 'odd' },
++    advancedDesign: design([ // v: four frontmatter fields, one attribute
+```
+
+### 为印刷加上出血和裁切线
+
+用`cutLines`后，封面和章首页（两者都锚定在出血上）会延伸到成品线外3 mm；页码和页数不变（[裁切线](/zh/docs/configuration#裁切线)）。
+
+```diff
+     backgroundColor: col('paper'), pageNumbering,
++    cutLines: { enabled: true }, // a 3 mm bleed and crop marks
+```
+
+## 常见问题
+
+- 这些页继承了一级标题的`'odd'`换页。不处理的话，每一页都会等到右页才开始。前置部分就会从十页变成十四页，多出四个空白左页，卷首插图对着的也是空白页而不是书名页。像本食谱这样用`parity: 'any'`重新声明换页，或者用`breakBefore: { enabled: false }`关掉它；无论哪种，通栏标题都会另起一页。
+- 当一级标题以引擎自己的H1默认值`'always-odd'`换页时，去掉`:::numbering`前面的`:::pagebreak`。如果它之前的文字结束在右页，pagebreak会补到下一个右页，然后标题再加上它的分隔页并再补一次，结果是连续三个空白页而不是一个。像这里在`'odd'`换页之后，pagebreak不起作用；在`'any'`之后，正是它把第1页放到右页。
+- Preface多出一页，会把Letter I往后推两页，因为奇数页换页会在它前面加一个空白左页。每次编辑前置部分后，都要检查页数。
+- 章首页的文字要留在文字块底边以上。在Postext 1.4.1中，伸出文字块底边的标题设计会失去全部预留高度，包括`minHeight`。封面上看不出变化，因为后面没有正文；在章首页上，正文会紧接着标题开始。
+- 目录的前导点用页码的字体和颜色排，`toc.leader`没有单独的颜色设置，所以这里印成钢蓝色。

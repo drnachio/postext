@@ -4,196 +4,224 @@
     "slug": "configuration",
     "heading": {
       "en": "Page",
-      "es": "Página"
+      "es": "Página",
+      "zh": "页面"
     }
   },
   "layout": {
     "slug": "configuration",
     "heading": {
       "en": "Layout",
-      "es": "Disposición"
+      "es": "Disposición",
+      "zh": "版式"
     }
   },
   "bodyText": {
     "slug": "configuration",
     "heading": {
       "en": "Body text",
-      "es": "Texto de cuerpo"
+      "es": "Texto de cuerpo",
+      "zh": "正文"
     }
   },
   "headings": {
     "slug": "configuration",
     "heading": {
       "en": "Headings",
-      "es": "Encabezados"
+      "es": "Encabezados",
+      "zh": "标题"
     }
   },
   "tableStyle": {
     "slug": "configuration",
     "heading": {
       "en": "Table style",
-      "es": "Estilo de tablas"
+      "es": "Estilo de tablas",
+      "zh": "表格样式"
     }
   },
   "tableStyles": {
     "slug": "configuration",
     "heading": {
       "en": "Named table styles",
-      "es": "Estilos de tabla con nombre"
+      "es": "Estilos de tabla con nombre",
+      "zh": "命名表格样式"
     }
   },
   "captionStyle": {
     "slug": "configuration",
     "heading": {
       "en": "Caption style",
-      "es": "Estilo de pies de recurso"
+      "es": "Estilo de pies de recurso",
+      "zh": "题注样式"
     }
   },
   "diagramStyle": {
     "slug": "configuration",
     "heading": {
       "en": "Diagram style",
-      "es": "Estilo de diagramas"
+      "es": "Estilo de diagramas",
+      "zh": "图示样式"
     }
   },
   "paragraphStyles": {
     "slug": "configuration",
     "heading": {
       "en": "Paragraph styles",
-      "es": "Estilos de párrafo"
+      "es": "Estilos de párrafo",
+      "zh": "段落样式"
     }
   },
   "calloutStyles": {
     "slug": "configuration",
     "heading": {
       "en": "Callout styles",
-      "es": "Estilos de aviso"
+      "es": "Estilos de aviso",
+      "zh": "标注框样式"
     }
   },
   "chipStyles": {
     "slug": "configuration",
     "heading": {
       "en": "Chip styles",
-      "es": "Estilos de chip"
+      "es": "Estilos de chip",
+      "zh": "行内标签样式"
     }
   },
   "parts": {
     "slug": "configuration",
     "heading": {
       "en": "Parts",
-      "es": "Partes"
+      "es": "Partes",
+      "zh": "篇"
     }
   },
   "headingStyles": {
     "slug": "configuration",
     "heading": {
       "en": "Heading styles",
-      "es": "Estilos de encabezado"
+      "es": "Estilos de encabezado",
+      "zh": "标题样式"
     }
   },
   "toc": {
     "slug": "configuration",
     "heading": {
       "en": "Table of contents",
-      "es": "Índice de contenidos"
+      "es": "Índice de contenidos",
+      "zh": "目录"
     }
   },
   "unorderedLists": {
     "slug": "configuration",
     "heading": {
       "en": "Unordered Lists",
-      "es": "Listas no ordenadas"
+      "es": "Listas no ordenadas",
+      "zh": "无序列表"
     }
   },
   "orderedLists": {
     "slug": "configuration",
     "heading": {
       "en": "Ordered Lists",
-      "es": "Listas ordenadas"
+      "es": "Listas ordenadas",
+      "zh": "有序列表"
     }
   },
   "math": {
     "slug": "configuration",
     "heading": {
       "en": "Math",
-      "es": "Matemáticas"
+      "es": "Matemáticas",
+      "zh": "数学公式"
     }
   },
   "cjk": {
     "slug": "configuration",
     "heading": {
       "en": "East Asian typography",
-      "es": "Tipografía de Asia oriental"
+      "es": "Tipografía de Asia oriental",
+      "zh": "东亚排版"
     }
   },
   "header": {
     "slug": "configuration",
     "heading": {
       "en": "Headers & footers",
-      "es": "Encabezados y pies"
+      "es": "Encabezados y pies",
+      "zh": "页眉与页脚"
     }
   },
   "footer": {
     "slug": "configuration",
     "heading": {
       "en": "Headers & footers",
-      "es": "Encabezados y pies"
+      "es": "Encabezados y pies",
+      "zh": "页眉与页脚"
     }
   },
   "locale": {
     "slug": "configuration",
     "heading": {
       "en": "Hyphenation",
-      "es": "Separación silábica"
+      "es": "Separación silábica",
+      "zh": "断词"
     }
   },
   "debug": {
     "slug": "configuration",
     "heading": {
       "en": "Debug",
-      "es": "Depuración"
+      "es": "Depuración",
+      "zh": "调试"
     }
   },
   "htmlViewer": {
     "slug": "configuration",
     "heading": {
       "en": "HTML Viewer",
-      "es": "Visor HTML"
+      "es": "Visor HTML",
+      "zh": "HTML查看器"
     }
   },
   "pdfGeneration": {
     "slug": "configuration",
     "heading": {
       "en": "PDF generation (config)",
-      "es": "Generación de PDF (configuración)"
+      "es": "Generación de PDF (configuración)",
+      "zh": "PDF生成（配置）"
     }
   },
   "colorPalette": {
     "slug": "configuration",
     "heading": {
       "en": "Color Palette",
-      "es": "Paleta de colores"
+      "es": "Paleta de colores",
+      "zh": "调色板"
     }
   },
   "customFonts": {
     "slug": "configuration",
     "heading": {
       "en": "Custom fonts",
-      "es": "Fuentes personalizadas"
+      "es": "Fuentes personalizadas",
+      "zh": "自定义字体"
     }
   },
   "resourceTypes": {
     "slug": "configuration",
     "heading": {
       "en": "Resource types",
-      "es": "Tipos de recurso"
+      "es": "Tipos de recurso",
+      "zh": "资源类型"
     }
   },
   "index": {
     "slug": "configuration",
     "heading": {
       "en": "Back-of-book index",
-      "es": "Índice analítico"
+      "es": "Índice analítico",
+      "zh": "索引"
     }
   }
 }

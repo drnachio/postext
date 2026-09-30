@@ -9,12 +9,12 @@
 import path from "node:path";
 import { variantFor } from "./compose.ts";
 import { captureDir, PUBLIC_COOKBOOK_URL } from "./paths.ts";
-import type { CaptureManifest, CaptureVariant, CardMode, Locale, Recipe } from "./types.ts";
+import type { CaptureManifest, CaptureVariant, CardMode, Locale, Recipe, SampleLocale } from "./types.ts";
 
 type RecipeMedia = Pick<Recipe, "slug" | "meta" | "capture"> & { writeups?: Recipe["writeups"] };
 
 /** "/cookbook/<slug>/<variant>/<file>?v=<hash8>" */
-export function mediaUrl(slug: string, variant: Locale, file: string, hash8?: string): string {
+export function mediaUrl(slug: string, variant: SampleLocale, file: string, hash8?: string): string {
   return `${PUBLIC_COOKBOOK_URL}/${slug}/${variant}/${file}${hash8 ? `?v=${hash8}` : ""}`;
 }
 
@@ -22,7 +22,7 @@ export function mediaUrl(slug: string, variant: Locale, file: string, hash8?: st
 export function captureVariantFor(
   recipe: Pick<Recipe, "meta" | "capture">,
   locale: Locale,
-): { variant: Locale; data: CaptureVariant } | null {
+): { variant: SampleLocale; data: CaptureVariant } | null {
   const capture: CaptureManifest | null = recipe.capture;
   if (!capture) return null;
   const variant = variantFor(recipe.meta, locale);
@@ -72,7 +72,7 @@ export interface PageImage {
   alt: string;
   /** The alt text's language, when the page shows another language's
    *  edition (an English-only sample on a Spanish page). */
-  lang?: Locale;
+  lang?: SampleLocale;
   /** The write-up's note on the page, when it is in another language than
    *  `alt`: the light table offers it as the image's description. */
   note?: string;
@@ -83,14 +83,20 @@ export function pageImages(recipe: RecipeMedia, locale: Locale): PageImage[] {
   const hit = captureVariantFor(recipe, locale);
   if (!hit) return [];
   const { variant, data } = hit;
-  const notes = recipe.writeups?.[locale]?.frontmatter.pageNotes ?? {};
+  // The notes of the write-up the page shows: its own, or the English one
+  // it falls back to while a translation is missing (Chinese).
+  const own = recipe.writeups?.[locale];
+  const notes = (own ?? recipe.writeups?.en)?.frontmatter.pageNotes ?? {};
+  const notesLang = own ? locale : "en";
   // Another language's edition: its alt text keeps that language (marked),
-  // and the page-language note stays apart rather than mixing into it.
+  // and a note in another language stays apart rather than mixing into it.
   const foreign = variant !== locale;
+  const apart = notesLang !== variant;
   return data.pages.map((page) => {
     const note = notes[String(page.n)];
     return {
-      ...(foreign ? { lang: variant, ...(note ? { note } : {}) } : {}),
+      ...(foreign ? { lang: variant } : {}),
+      ...(note && apart ? { note } : {}),
       n: page.n,
       label: page.label,
       role: page.role,
@@ -99,7 +105,7 @@ export function pageImages(recipe: RecipeMedia, locale: Locale): PageImage[] {
       w: page.w,
       h: page.h,
       bytes: page.bytes,
-      alt: note && !foreign ? `${page.alt.replace(/[.\s]*$/, "")}. ${note}` : page.alt,
+      alt: note && !apart ? `${page.alt.replace(/[.\s]*$/, "")}. ${note}` : page.alt,
     };
   });
 }
@@ -157,7 +163,7 @@ export function pdfDownload(recipe: RecipeMedia, locale: Locale): { href: string
 export function sandboxLink(
   recipe: RecipeMedia,
   locale: Locale,
-): { href: string; variant: Locale; bundle: string } | null {
+): { href: string; variant: SampleLocale; bundle: string } | null {
   const capture = recipe.capture;
   if (!capture) return null;
   const first = variantFor(recipe.meta, locale);

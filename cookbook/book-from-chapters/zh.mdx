@@ -1,0 +1,74 @@
+---
+title: "由分开的各章合成一本书"
+summary: "buildBundle把五个Markdown文件排成一本书：每章从右页开始，页码、章号和图号在文件之间接续。"
+description: "一本按四季分章的养蜂手册，每章一个Markdown文件，用buildBundle排成；目录页给出每章开篇的页码。"
+question: "怎样一章一章地排一本书，让页码、章号和图号跨章接续？"
+aliases: ["多章图书", "分文件的章节", "连续页码", "全书连续编号", "章从右页开始", "图书目录页", "整书PDF", "multi-chapter book", "continuous page numbers", "buildBundle"]
+pageNotes: { "6": "第6页留空：Winter只占一页，所以Spring从下一个右页即第7页开始，中间的左页没有书眉和页码。", "11": "第11页是全书唯一一个正文右页：书眉在页码旁印出章标题SUMMER。" }
+---
+
+## 成品一览
+
+*A Beekeeper’s Year*是一本分四章的小手册，每章一个季节。它从Autumn开始，因为养蜂人的一年始于最后一批蜂蜜取下之时。每章是一个单独的Markdown文件，里面不含页码、章号或图号。`buildBundle`把这些计数从一个文件带到下一个文件，把各章连同放封面和目录的第五个文件排成一本十一页的书。每章都从右页开始，页角有一块蜂巢，里面印着章号。目录页位于与Autumn相对的左页，与章首页左右对称，标题紧贴书脊一侧，并列出每章的页码。一幅用代码画出的育虫巢框在每章出现一次，即图1.1到图4.1。第6页留空，因为Winter只占一页，而Spring必须从右页开始。
+
+## 做法
+
+### 1 · 每章一个文件
+
+<Excerpt region="chapters" />
+
+每个季节都是独立的文档，所以你可以改写一章而不必打开其他章。第一个文档包含frontmatter、封面和目录。在Postext 1.4.1中，后面的文档不会继承它的任何元数据，PDF只从第一个文档读取书名和作者。
+
+### 2 · 跨文档接续的规则
+
+这一步的代码见上文的[简短回答](#简短回答)。[`buildBundle`](/zh/docs/configuration#排版和渲染文件包)用同一份共享配置依次排各个文档，并把前面文档的结果作为`continuation`传给每一个文档：已经排出的物理页数，使奇偶、对称页边距和奇偶页书眉得以接续；下一个页码；以及章和图的计数器。设了`parity: 'odd'`后，如果前一章结束在右页，下一章会以一个空白左页开始，这个空白页属于下一章自己的文档（[前置分页](/zh/docs/configuration#前置分页)）。封面和目录是设了`numbered: false`的[标题样式](/zh/docs/configuration#标题样式)，所以Autumn仍是第1章。两者都从章一级继承了`span: 'page'`，不需要`:::pagebreak`就各占一页。目录样式关闭了继承来的奇偶设置，否则第2页会留空。
+
+### 3 · 全书目录
+
+<Excerpt region="contents" />
+
+`:::toc`放在第一个文档里，但列出的是全书的章和节。`buildBundle`先排一遍全书，收集每个标题及其得到的页码标签，再用这份大纲重新排版，直到标签不再变动，最多三遍（[目录](/zh/docs/configuration#目录)）。每个标题下的月份来自标题属性`{months="…"}`，章首页也会印出它。
+
+### 4 · 一种章首页，目录页取其镜像
+
+<Excerpt region="opener" />
+
+`{chapterNumber}`接着前面已排文档的计数往下数，所以尽管Spring的文件里没有编号，它的章首页仍印出3。编号的框根据所在蜂巢格的中心计算，编号和蜂巢都挂在出血区域的右上角，所以改变成品尺寸或为印刷加出血时，两者会一起移动。在目录页上，从`{subtitle}`读取的眉题和标题右对齐、紧贴书脊，蜂巢移到左页的外角。这样目录标题与对页Autumn的标题高度相同。
+
+### 5 · 每个文档都有书眉
+
+<Excerpt region="running-heads" />
+
+只有第一个文档有frontmatter，所以在Postext 1.4.1中，`{title}`在后面每个文档里都印不出内容，Autumn也一样。因此左页书眉里的书名是作为普通文本直接写上的。`{chapterTitle}`和`{pageNumber}`逐页解析，在每个文档里都能印出；第11页是唯一的正文右页，在页码旁印着SUMMER。`pages: 'body'`让章首页和空白页都不印书眉。
+
+### 6 · 屏幕上看跨页，整本书输出一个PDF
+
+<Excerpt region="build" />
+
+`buildBundle`返回一个文档数组，每个Markdown文件对应一个。`showPages`按`pageIndexOffset + page.index`给页面配对，所以第1页作为右页单独出现，第2和第3页、第4和第5页依次左右相对。`renderToPdf`接受同一个数组，写出一个文件，带有全书的页码标签，每个章节都有书签。
+
+## 变化
+
+### 单独打印一章，保留全书页码
+
+只把一个文档传给`renderToPdf`，就能单独校对Spring，页码仍和书中一样是6到8。空白的第6页也一起输出，因为章首页前的空白左页属于其后开始的那一章。
+
+```diff
+-offerPdf(() => renderToPdf(docs, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
++offerPdf(() => renderToPdf(docs[3], { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
+```
+
+### 图号全书连续编排
+
+一个从不重置的图计数器会把四幅巢框跨文档编为1到4，而不是1.1到4.1。
+
+```diff
+-  resourceTypes: defaultResourceTypes(LANG),
++  resourceTypes: defaultResourceTypes(LANG)
++    .map((type) => ({ ...type, numberingTemplate: '{n}', resetOn: 'never' })),
+```
+
+## 常见问题
+
+- 在页首，以及在位于页首的图下方，小标题会失去`marginTop`。靠外边距取得上方空间的小标题，在这两种位置离正文一行，在其他地方离正文一行半。这里的空间放在小标题自己的行里：`lineHeight`是一行半，外边距是一行，所以书中每个小标题与正文的距离都相同。
+- 默认情况下，两端对齐的行可以把词间距拉伸到正常宽度的两倍，断行器宁可这样也不断词。在这个默认值下，英文版一个断词都没有，词间距接近两倍的行和压缩到0.7的行挨在一起。`maxWordSpacing: 1.7`让断行器改为断词。改动之后要检查每段的最后一行：更紧的限度可能让那里只剩一个词，改写该段的几个词就能解决。

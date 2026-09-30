@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PostextConfig } from 'postext';
-import { BUILTIN_PRESET_LOCALES, GUIDE_SAMPLE_DOCUMENTS, createPostextGuidePreset, isPristineChineseGuide } from './builtin';
+import { BUILTIN_PRESET_LOCALES, GUIDE_SAMPLE_DOCUMENTS, createPostextGuidePreset, isPristineChineseGuide, pristineGuideFollowsViewer } from './builtin';
 import { localeShortTag } from './localeNames';
 import { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS } from '../defaultMarkdown';
 import { isPristineBook, sampleBook } from '../book/chapterOps';
@@ -88,6 +88,27 @@ describe('pristine guide detection with three languages', () => {
     expect(isPristineChineseGuide(sampleBook(DEFAULT_MARKDOWN_ZH_HANS, ids, 'Guide'))).toBe(true);
     expect(isPristineChineseGuide(sampleBook(DEFAULT_MARKDOWN_EN, ids, 'Guide'))).toBe(false);
     expect(isPristineChineseGuide(sampleBook(DEFAULT_MARKDOWN_ES, ids, 'Guide'))).toBe(false);
+  });
+
+  it('lets an untouched guide in another language follow the interface', () => {
+    const en = sampleBook(DEFAULT_MARKDOWN_EN, ids, 'Guide');
+    const es = sampleBook(DEFAULT_MARKDOWN_ES, ids, 'Guide');
+    const zh = sampleBook(DEFAULT_MARKDOWN_ZH_HANS, ids, 'Guide');
+    // The Chinese interface swaps an English or Spanish guide for its own.
+    expect(pristineGuideFollowsViewer(en, DEFAULT_MARKDOWN_ZH_HANS, 'en')).toBe(true);
+    expect(pristineGuideFollowsViewer(es, DEFAULT_MARKDOWN_ZH_HANS, null)).toBe(true);
+    // A Chinese guide opened on purpose from English or Spanish stays…
+    expect(pristineGuideFollowsViewer(zh, DEFAULT_MARKDOWN_EN, 'en')).toBe(false);
+    expect(pristineGuideFollowsViewer(zh, DEFAULT_MARKDOWN_ES, 'es')).toBe(false);
+    expect(pristineGuideFollowsViewer(zh, DEFAULT_MARKDOWN_EN, null)).toBe(false);
+    // …while the Chinese interface's own follows the next interface.
+    expect(pristineGuideFollowsViewer(zh, DEFAULT_MARKDOWN_EN, 'zh-Hans')).toBe(true);
+    expect(pristineGuideFollowsViewer(zh, DEFAULT_MARKDOWN_ES, 'zh')).toBe(true);
+    // The interface's own edition, or an edited book, stays.
+    expect(pristineGuideFollowsViewer(zh, DEFAULT_MARKDOWN_ZH_HANS, 'en')).toBe(false);
+    expect(pristineGuideFollowsViewer(en, DEFAULT_MARKDOWN_ES, 'en')).toBe(true);
+    const edited = { ...en, chapters: en.chapters.map((c, i) => (i === 3 ? { ...c, markdown: `${c.markdown}\n\nEdited.` } : c)) };
+    expect(pristineGuideFollowsViewer(edited, DEFAULT_MARKDOWN_ZH_HANS, 'en')).toBe(false);
   });
 
   it('drops an edited Chinese guide', () => {

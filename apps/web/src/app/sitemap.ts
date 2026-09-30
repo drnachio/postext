@@ -3,6 +3,7 @@ import { routing } from "@/i18n/routing";
 import { getAllDocs } from "@/lib/docs";
 import { getAllRecipes, recipeHref } from "@/lib/cookbook/recipes";
 import { SITE_URL, localizedUrl } from "@/lib/seo";
+import { htmlLang } from "@/i18n/locales";
 
 interface PageDef {
   path: string;
@@ -18,7 +19,7 @@ function buildEntry(
 ): MetadataRoute.Sitemap[number] {
   const locales = page.locales ?? routing.locales;
   const languages: Record<string, string> = {};
-  for (const l of locales) languages[l] = localizedUrl(l, page.path);
+  for (const l of locales) languages[htmlLang(l)] = localizedUrl(l, page.path);
   if (locales.includes(routing.defaultLocale)) {
     languages["x-default"] = localizedUrl(routing.defaultLocale, page.path);
   }

@@ -5,6 +5,7 @@ import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
+import { htmlLang } from "@/i18n/locales";
 
 export async function generateMetadata({
   params,
@@ -44,7 +45,7 @@ export default async function CookiePolicyPage({
             {t("lastUpdated")}
           </p>
 
-          <div lang={locale} className="mt-10 space-y-8 font-body text-[0.95rem] leading-[1.75] text-foreground/80 lg:columns-2 lg:gap-12 2xl:gap-16 text-justify [hyphens:auto]">
+          <div lang={htmlLang(locale)} className="mt-10 space-y-8 font-body text-[0.95rem] leading-[1.75] text-foreground/80 lg:columns-2 lg:gap-12 2xl:gap-16 text-justify [hyphens:auto]">
             <section className="break-inside-avoid">
               <h2 className="font-head text-lg font-bold text-brand 2xl:text-xl">
                 {t("whatAreCookiesTitle")}

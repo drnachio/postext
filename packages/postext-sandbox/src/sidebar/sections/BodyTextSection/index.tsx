@@ -17,7 +17,8 @@ import {
   FieldRow,
   useFieldIds,
 } from '../../../controls';
-import { LOCALE_TO_HYPHENATION, documentLocaleLabel, TEXT_SIZE_UNITS, LINE_HEIGHT_UNITS, INDENT_UNITS } from './constants';
+import { documentLocaleLabel, TEXT_SIZE_UNITS, LINE_HEIGHT_UNITS, INDENT_UNITS } from './constants';
+import { defaultDocumentLocale } from '../../../controls/hyphenation';
 import { useOpenSettingsGroup } from '../../../context/settingsNavigation';
 import { JustificationSubsection, RaggedBreakingSubsection } from './JustificationSubsection';
 import { BlockquoteSubsection } from './BlockquoteSubsection';
@@ -34,13 +35,16 @@ export const BodyTextSection = memo(function BodyTextSection() {
   const raw = useSandboxSelector((s) => s.config.bodyText);
   const locale = useSandboxSelector((s) => s.locale);
   const documentLocale = useSandboxSelector((s) => s.config.locale);
-  const bodyText = resolveBodyTextConfig(raw, documentLocale);
-  const defaultLocale = LOCALE_TO_HYPHENATION[locale] ?? 'en-us';
+  const defaultLocale = defaultDocumentLocale(locale);
 
   // The document language is the hyphenation fallback; the app locale
   // stands in for it while neither is explicitly set.
   const effectiveHyphenationLocale = raw?.hyphenation?.locale ?? documentLocale ?? defaultLocale;
   const effectiveDocumentLocale = documentLocale ?? defaultLocale;
+  // A Chinese interface reads an unnamed document as Chinese, which sets
+  // it without hyphenation: the switch shows what the previews do.
+  const resolvingLocale = documentLocale ?? (isCjkLanguage(defaultLocale) ? defaultLocale : undefined);
+  const bodyText = resolveBodyTextConfig(raw, resolvingLocale);
 
   const updateBodyText = (partial: Partial<BodyTextConfig>) => {
     dispatch({
@@ -112,7 +116,7 @@ export const BodyTextSection = memo(function BodyTextSection() {
   const isFontWeightDefault = bodyText.fontWeight === D.fontWeight;
   const isBoldFontWeightDefault = bodyText.boldFontWeight === D.boldFontWeight;
   // Off by default in a Chinese, Japanese or Korean document.
-  const isHyphenationEnabledDefault = bodyText.hyphenation.enabled === resolveBodyTextConfig(undefined, documentLocale).hyphenation.enabled;
+  const isHyphenationEnabledDefault = bodyText.hyphenation.enabled === resolveBodyTextConfig(undefined, resolvingLocale).hyphenation.enabled;
   const isHyphenationLocaleDefault = effectiveHyphenationLocale === defaultLocale;
   const isFirstLineIndentDefault = dimensionsEqual(bodyText.firstLineIndent, D.firstLineIndent);
   const isHangingIndentDefault = bodyText.hangingIndent === D.hangingIndent;

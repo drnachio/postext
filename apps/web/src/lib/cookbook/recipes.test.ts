@@ -6,7 +6,7 @@ import { docLinkExists } from "./docLinks.ts";
 import { fontFamilies, penFonts } from "./detect.ts";
 import { previewDraftsAllowed, readReleasedEngine } from "./lint.ts";
 import { COOKBOOK_DIR } from "./paths.ts";
-import { getAllRecipes, getRecipe, getVisibleRecipes, neighbours, neighboursIn, recipeHref, showDrafts, sortContents } from "./recipes.ts";
+import { getAllRecipes, getRecipe, getVisibleRecipes, neighbours, neighboursIn, recipeHref, showDrafts, sortContents, writeupFor } from "./recipes.ts";
 import { loadRegistry } from "./registry.ts";
 import { sectionFor, splitSections, stepTitles } from "./sections.ts";
 import { listRecipeSlugs, readKit, readRecipeMeta, readRecipeSources } from "./sources.ts";
@@ -28,17 +28,17 @@ import { parseWriteup, readWriteup, writeupRefs } from "./writeup.ts";
 
 // ─── Fixtures ───────────────────────────────────────────────────────────────
 
-const L = (en: string, es = `${en} (es)`) => ({ en, es });
+const L = (en: string, es = `${en} (es)`, zh = `${en} (zh)`) => ({ en, es, zh });
 const HEADINGS = {
-  build: L("What you'll build", "Lo que vas a componer"),
-  short: L("The short answer", "La respuesta corta"),
-  ingredients: L("Ingredients", "Ingredientes"),
-  method: L("Method", "Elaboración"),
-  whole: L("The whole recipe", "La receta completa"),
-  variations: L("Variations", "Variantes"),
-  pitfalls: L("Pitfalls", "Errores frecuentes"),
-  credits: L("Credits", "Créditos"),
-} satisfies Record<SectionId, { en: string; es: string }>;
+  build: L("What you'll build", "Lo que vas a componer", "成品一览"),
+  short: L("The short answer", "La respuesta corta", "简短回答"),
+  ingredients: L("Ingredients", "Ingredientes", "用料"),
+  method: L("Method", "Elaboración", "做法"),
+  whole: L("The whole recipe", "La receta completa", "完整食谱"),
+  variations: L("Variations", "Variantes", "变化"),
+  pitfalls: L("Pitfalls", "Errores frecuentes", "常见问题"),
+  credits: L("Credits", "Créditos", "致谢"),
+} satisfies Record<SectionId, Record<Locale, string>>;
 
 /** Just the registry tables validateRecipeMeta reads. */
 const REGISTRY = {
@@ -342,6 +342,53 @@ describe("write-ups", () => {
       'en.mdx: frontmatter line 5: quote the value ("…")',
     ]);
   });
+
+  it("reads a Chinese write-up against the Chinese headings and bounds", () => {
+    const source = [
+      "---",
+      'title: "整页出血照片上的杂志开篇"',
+      'summary: "一种标题样式：开篇是一张出血照片，眉题、主标题和导语都取自属性。"',
+      "---",
+      "",
+      "## 成品一览",
+      "",
+      "一个杂志开篇，见[标题样式](/zh/docs/configuration#table-style)。",
+      "",
+      "## 做法",
+      "",
+      "### 1、照片是页面元素",
+      '<Excerpt region="photo" />',
+      "",
+      "## 常见问题",
+      "",
+    ].join("\n");
+    const writeup = parseWriteup(source, "zh", HEADINGS);
+    expect(writeup.issues).toEqual([]);
+    expect(Object.keys(writeup.sections)).toEqual(["build", "method", "pitfalls"]);
+    expect(stepTitles(writeup.body)).toEqual(["照片是页面元素"]);
+    expect(writeupRefs(writeup.body).links).toEqual(["/zh/docs/configuration#table-style"]);
+    expect(sectionFor("做法", HEADINGS, "zh")).toBe("method");
+    expect(splitSections("## Method\nx", HEADINGS, "zh").issues[0]).toBe(
+      'line 1: "## Method" is not a section of the template ("成品一览", "做法", "变化", "常见问题")',
+    );
+    // A Chinese character carries two or three Latin letters' worth: half the bounds.
+    expect(validateFrontmatter({ title: "字".repeat(31), summary: "字".repeat(19) }, "zh")).toEqual([
+      'zh.mdx: frontmatter "title" must have at most 30 characters (has 31)',
+      'zh.mdx: frontmatter "summary" must have 20–90 characters (has 19)',
+    ]);
+    expect(validateFrontmatter({ title: "标题", summary: "字".repeat(40), description: "字".repeat(60) }, "zh")).toEqual([]);
+  });
+});
+
+describe("writeupFor", () => {
+  const writeup = (locale: Locale) => ({ locale, frontmatter: { title: locale, summary: "" }, body: "", sections: {} });
+
+  it("falls back to English while a translation is missing", () => {
+    expect(writeupFor({ writeups: { en: writeup("en"), es: writeup("es") } }, "zh")?.locale).toBe("en");
+    expect(writeupFor({ writeups: { en: writeup("en"), es: writeup("es"), zh: writeup("zh") } }, "zh")?.locale).toBe("zh");
+    expect(writeupFor({ writeups: { es: writeup("es") } }, "zh")?.locale).toBe("es");
+    expect(writeupFor({ writeups: {} }, "zh")).toBeNull();
+  });
 });
 
 // ─── The loader ─────────────────────────────────────────────────────────────
@@ -410,7 +457,7 @@ describe("recipe folders", () => {
     expect(fs.existsSync(file) ? fs.readFileSync(file, "utf-8") : "missing: run `pnpm cookbook schema`").toBe(recipeSchemaJson());
   });
 
-  it("have both write-ups, following the template", () => {
+  it("have every write-up, following the template", () => {
     const problems: string[] = [];
     for (const { slug, meta } of metas) {
       const excerpts: Partial<Record<Locale, string>> = {};
@@ -433,8 +480,10 @@ describe("recipe folders", () => {
           else if (link.includes("/docs/") && !docLinkExists(link)) problems.push(`${slug}: ${locale}.mdx: ${link} does not resolve`);
         }
       }
-      if (excerpts.en !== undefined && excerpts.en !== excerpts.es) {
-        problems.push(`${slug}: <Excerpt> regions differ (en: ${excerpts.en} · es: ${excerpts.es})`);
+      for (const locale of LOCALES) {
+        if (excerpts.en !== undefined && excerpts[locale] !== undefined && excerpts[locale] !== excerpts.en) {
+          problems.push(`${slug}: <Excerpt> regions differ (en: ${excerpts.en} · ${locale}: ${excerpts[locale]})`);
+        }
       }
     }
     expect(problems).toEqual([]);

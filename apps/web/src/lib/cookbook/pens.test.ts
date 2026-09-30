@@ -18,7 +18,7 @@ import {
 import { KIT_IMPORTS, imageSize, isAllowedUrl, lintPen, lintRecipe, previewDraftsAllowed } from "./lint.ts";
 import { REPO_DIR } from "./paths.ts";
 import { listRecipeSlugs, readKit } from "./sources.ts";
-import type { KitBlock, Locale, RecipeMeta, RecipeSources } from "./types.ts";
+import type { KitBlock, RecipeMeta, RecipeSources, SampleLocale } from "./types.ts";
 
 // ─── A pen that follows every convention ────────────────────────────────────
 
@@ -144,7 +144,7 @@ const kit = readKit();
 
 function lint(
   edit: (script: string) => string = (s) => s,
-  { meta = fixtureMeta(), sources = {}, variant = "en" }: { meta?: RecipeMeta; sources?: Partial<RecipeSources>; variant?: Locale } = {},
+  { meta = fixtureMeta(), sources = {}, variant = "en" }: { meta?: RecipeMeta; sources?: Partial<RecipeSources>; variant?: SampleLocale } = {},
 ) {
   const src = fixtureSources({ script: edit(SCRIPT), ...sources });
   const pen = composePen(src, meta, variant, { kit });

@@ -1,0 +1,175 @@
+{/* docs/skill-zh.mdx */}
+
+export const metadata = {
+  title: '智能体技能：把出版物移植到Postext',
+  sidebarTitle: '技能',
+  description: '在Claude Code、Codex或任意智能体中安装postext-port技能，让它把PDF、Word、PowerPoint、EPUB、InDesign或HTML源文件转换成沿用原版面的Postext项目',
+  lang: 'zh',
+  lastUpdated: '2026-09-29',
+  readingTime: '8分钟',
+  order: 9,
+};
+
+# 智能体技能
+
+**借助编程智能体，把现有出版物转换成Postext项目。**
+
+很多人来到Postext时手里已经有一本书：一本印刷用PDF的教材、一份Word报告、一套PowerPoint课程、一本InDesign排的产品目录，或者一本EPUB。移植它要做两件事：
+
+- **内容**：每一章的增强Markdown，连同其中的指令和微格式。
+- **版面设计**：一份配置清单，重现原书的版面规则（页面几何、基线网格、字体、章首页、书眉、标注框、浮动体、表、篇）。
+
+大语言模型可以完成其中的大部分工作，但前提是它了解Postext的工作方式。Postext的Markdown不是CommonMark，配置里也有一些陷阱，只有页面排错时才会暴露出来。**`postext-port`**技能把这些知识，连同我们构建沙盒里每个预设时用过的工具打包在一起，让你的智能体把移植做好。
+
+它遵循开放的[Agent Skills](https://agentskills.io)格式，因此可用于Claude Code、Codex、Cursor、Gemini CLI、GitHub Copilot、OpenCode以及[许多其他智能体](https://skills.sh)。
+
+## 观看教程
+
+五分钟，不用写代码：准备文件夹，带上矢量原稿，加入一份参考PDF，向智能体提出要求，然后在沙盒里检查结果。
+
+<TutorialVideo />
+
+YouTube上也有：[在那里观看](https://youtu.be/iiqeWdm9sQE)，或者看[Postext播放列表](https://www.youtube.com/playlist?list=PLXV_YSL9ROv0)。
+
+## 技能包含什么
+
+- **一套工作流程**：
+  1. 商定需求；
+  2. 清点源文件；
+  3. 测量版面设计，写成规格表；
+  4. 搭建项目框架；
+  5. 提取内容；
+  6. 整理成Postext Markdown；
+  7. 准备字体和图片；
+  8. 逐页核对；
+  9. 打包。
+- **参考资料**：
+  - 文档格式和配置清单，两者都对照引擎核实过；
+  - 项目（文件包）格式；
+  - 每种源格式各一份操作手册；
+  - 一套版面设计分析方法；
+  - 一份已解决的版面案例目录：各有配色的篇、章首页、诗歌、边注、脚注、索引、浮动/拆分/嵌套的标注框、矢量印刷原稿、保留真实文字的图、表格单元格中的图片、横排表、双语版本等；
+  - 中文书籍，横排或竖排、右侧装订：在需求中要问什么（文字、地区、方向、装订），如何测量字符网格，如何读取竖排PDF，InDesign的注音和割注，Word的东亚版式和从右到左的EPUB，以及如何按书中用字裁剪CJK字体（见[中文排版](/zh/docs/chinese-layout)）。
+- **脚本**（Python和Node），在下一节介绍。
+
+## 脚本
+
+<table>
+  <thead>
+    <tr>
+      <th>脚本</th>
+      <th>作用</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>inventory.py</code></td><td>初步查看任意源文件：几何尺寸、字体、使用中的样式、媒体、需要OCR的页面</td></tr>
+    <tr><td><code>measure_layout.py</code></td><td>PDF的页边距、栏、栏间距和行距（即基线网格）</td></tr>
+    <tr><td><code>pdf_extract.py</code></td><td>PDF → 按<em>字体角色</em>（字体/字号/颜色）生成的章节草稿：阅读顺序、段落、去除断词连字符、粗体/斜体、上标/下标、列表、题注</td></tr>
+    <tr><td><code>pdf_figures.py</code></td><td>从PDF中裁出图：原始分辨率的照片、SVG预览图、矢量PDF印刷原稿</td></tr>
+    <tr><td><code>extract_tables.py</code></td><td>PDF表格 → Postext的<code>TableModel</code></td></tr>
+    <tr><td><code>pandoc_to_postext.py</code></td><td>DOCX、PPTX、ODT、EPUB、HTML、LaTeX、Markdown、JATS、DocBook → 章节草稿，Word样式映射为标注框和段落样式</td></tr>
+    <tr><td><code>idml_extract.py</code></td><td>InDesign IDML → 按段落样式生成的章节草稿、表和锚定图片；注音、纵中横、着重号和割注转换为<code>:ruby</code>、<code>:tcy</code>、<code>:dots</code>和<code>:warichu</code>，并报告竖排文章和从右到左的装订</td></tr>
+    <tr><td><code>index_marks.py</code></td><td>把印刷版的索引重建为<code>:index</code>标记：读取PDF中的索引页，在对应页面上找到每个词条，并在各章中标记相同的词语</td></tr>
+    <tr><td><code>fonts.py</code>、<code>images.py</code>、<code>convert_assets.py</code></td><td>对字体做实例化、子集化、缩放和拆分（按书中用字裁剪的中文字体保留其竖排字形和度量）；把图片转换为sRGB、裁边和拼接；把<code>.ai</code>/<code>.pdf</code>插图转换成SVG</td></tr>
+    <tr><td><code>preset_kit.py</code></td><td>搭建项目及其生成脚本，构建<code>preset.json</code>，打包<code>.postext</code>文件</td></tr>
+    <tr><td><code>lint_project.py</code></td><td>找出解析器和加载器会悄悄弄错的所有问题；对中文、日文和韩文文本，还会找出项目自带字体排不出的字符</td></tr>
+    <tr><td><code>render.mjs</code></td><td>用真实引擎在无浏览器环境中排版项目（一个文件夹或一个<code>.postext</code>文件），像沙盒一样读取其配置，输出警告并写出PDF</td></tr>
+    <tr><td><code>compare_pages.py</code></td><td>把源文件页面和Postext页面并排放置</td></tr>
+  </tbody>
+</table>
+
+## 安装
+
+### 任意智能体（skills.sh）
+
+[`skills`](https://skills.sh)命令行工具会检测你的智能体，并为它们安装该技能：
+
+```bash
+npx skills add drnachio/postext --skill postext-port
+```
+
+用`-a`明确指定智能体，用`-g`全局安装（所有项目可用）：
+
+```bash
+npx skills add drnachio/postext --skill postext-port -a codex -a claude-code -g
+```
+
+网站也发布了同一个技能，所以这样也行：
+
+```bash
+npx skills add https://postext.dev
+```
+
+### Claude Code插件
+
+Postext仓库同时也是一个Claude Code插件市场。在Claude Code中执行：
+
+```text
+/plugin marketplace add drnachio/postext
+/plugin install postext@postext
+```
+
+或者在终端中执行：
+
+```bash
+claude plugin marketplace add drnachio/postext
+```
+
+```bash
+claude plugin install postext@postext
+```
+
+### 让智能体来安装
+
+你可以让智能体代劳，例如：*“安装Postext移植技能（`npx skills add drnachio/postext --skill postext-port`），然后用它移植这份PDF。”*读取`https://postext.dev/llms.txt`的智能体会在那里找到本页和安装命令。
+
+### 脚本用到的工具
+
+```bash
+python3 -m pip install pymupdf pillow fonttools brotli
+```
+
+```bash
+brew install pandoc poppler
+```
+
+```bash
+mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y && npm i postext postext-pdf react @pdf-lib/fontkit
+```
+
+Word、PowerPoint、EPUB和HTML源文件需要Pandoc，生成页面图像需要poppler。Node包驱动无浏览器渲染器（需要Node 22.15或更高版本）。可选工具：用于扫描件的`ocrmypdf`、ImageMagick，以及用于PDF/UA检查的veraPDF。
+
+## 使用
+
+把源文件放进工作文件夹，然后提出移植要求。例如：
+
+- *“把`manual.pdf`的第1–3章移植到Postext，重现它的双栏版面、章首页和标注框。”*
+- *“把`course.docx`转换成一本Postext图书。样式‘Nota’和‘Actividad’是标注框。”*
+- *“把`deck.pptx`做成一份Postext讲义：幻灯片变成小节，演讲者备注变成正文。”*
+- *“我们有这本教材的InDesign文件包（IDML + 印刷PDF）。为第1章构建西班牙语和英语的Postext预设。”*
+
+智能体按工作流程进行：
+
+1. **需求。**它询问无法推断的事项：忠实重现还是重新设计，样章还是全书，语言，印刷还是屏幕阅读，以及文字、图片和字体的版权。
+2. **清点与测量。**它读取源文件，写出一份实测数据的规格表：成品尺寸、页边距、栏、行距、字体角色、调色板、章首页、书眉、标注框类别和排放习惯。
+3. **项目。**它搭建`my-book/`，其中有一个`build_preset.py`生成器，把规格作为常量保存，并生成`preset.json`。
+4. **内容。**它用合适的提取器提取章节草稿，再整理成Postext Markdown：标注框、段落样式、篇、用于章首页的标题属性、`:ref`引用、表和图资源。
+5. **核对。**它对项目做lint检查，在无浏览器环境中排版，并与源文件逐页比较，直到分页、图和标注框都对上。
+6. **交付。**它打包出`my-book.postext`。
+
+在[沙盒](/zh/sandbox)中打开结果：**书 → 新建 → 打开.postext文件…**。导入时采用沙盒当前语言的章节和文字。要在Postext的本地副本中处理存放多个项目的文件夹，请设置`POSTEXT_PRIVATE_PRESETS_DIR`（见[沙盒](/zh/docs/sandbox)）。
+
+### 从代码加载结果
+
+交付的文件并不依赖沙盒。`postext`包用`openBundle`打开它，用`buildBundle`排版整本书，并渲染到Canvas、HTML或PDF（见[文件包](/zh/docs/configuration#文件包postext文件)）。因此，移植结果可以直接供程序使用。程序的输出需要调整时，用`createBundle`把它导出回`.postext`文件，在沙盒中微调，再加载修正后的文件。技能自带的无浏览器`render.mjs`既接受打包好的`.postext`文件，也接受项目文件夹。
+
+## 预期效果
+
+- **提取器产出草稿，由智能体整理。**每一章都要对照原书页面审阅一遍。质量来自这一步审阅。
+- **只改配置和Markdown。**这个技能从不为了适应某一本书而修改引擎。Postext无法表达某些内容时，智能体会选择最接近的表达方式，并把它列为已知的功能缺口。
+- **版权由你决定。**对授权不明确的图片或字体，智能体会先询问再复制。有授权限制的字体标记为`redistributable: false`，导出的项目不会包含它们。
+- **在要紧处保持一致。**目标是大多数页面的网格、字体、章首页、标注框、图的位置和分页都相同（每章误差不超过一页），而不是断行完全一致。
+
+## 所在位置
+
+这个技能位于仓库中的[`plugins/postext/skills/postext-port`](https://github.com/drnachio/postext/tree/main/plugins/postext/skills/postext-port)。它涵盖了构建沙盒中所有预设（公开的和私有的）时遇到的每一种情况。如果移植时碰到它尚未涵盖的情况，请提交一个issue或pull request来改进这个技能，下一次移植就能直接受益。

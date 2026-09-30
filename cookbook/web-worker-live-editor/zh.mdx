@@ -1,0 +1,57 @@
+---
+title: "在Web Worker里排版的实时编辑器"
+summary: "Markdown旁边是一张口袋书页面：一个从blob启动的工作线程用自己的字体排本章，每次按键都会取消正在进行的构建。"
+description: "在从同源blob启动的Web Worker里排Postext页面：把字体文件发给它，每次按键取消构建，在主线程上绘制。"
+question: "长文本排版时，怎样借助Web Worker处理字体和取消构建，让编辑器保持流畅？"
+aliases: ["Web Worker", "工作线程", "后台线程", "createLayoutWorker", "registerFonts", "AbortController", "取消构建", "实时预览", "主线程之外", "Markdown编辑器", "无头", "headless", "Node", "live preview", "off the main thread", "cancel a build", "blob URL"]
+pageNotes: { "1": "书名页：上部84 mm是一块牛血红色块，外围一道金色双线框，里面是一个黄铜表盘，盘面上有四个小表盘；下方米色纸面上是分两行的Cinzel书名The Time Machine、牛血红斜体的An Invention、一条黄铜短线，以及小型大写字母的H. G. Wells。", "2": "第I章正文从第九行开始，上方是牛血红的罗马数字、一条黄铜短线和加宽字距的大写INTRODUCTION；头两段占满这一页的其余部分，页码位于页面底部。", "3": "一页满是简短对白的右页，正文上方是牛血红小型大写字母的Introduction，页码在外侧边缘。", "4": "一页书眉为The Time Machine的左页，页码在外侧边缘；时间旅行者的一句话用斜体排。", "5": "一页讲四维几何的右页，书眉为Introduction。" }
+---
+
+## 成品一览
+
+你把H. G. Wells的*The Time Machine*第I章排成110 × 147 mm的口袋版，Markdown就在旁边。书名页上，牛血红色块里有一个带四个小表盘的黄铜表盘，下方是Cinzel书名。本章正文从第九行开始，上方是罗马数字和一条黄铜线，用9.5/13 pt的Baskervville排，书眉用小型大写字母。每次按键，整章都在一个Web Worker里重新排一遍，右边的Canvas翻到光标所在的那一页。编辑器下方有一根指针，主线程每一帧都转动它，主线程忙时它就停下；状态行给出构建耗时、最长的一帧，以及有多少次构建被更新的按键取消。右上角的菜单可以把构建移到主线程上，以便比较。
+
+## 做法
+
+### 1 · 从blob启动工作线程
+
+这一步的代码见上文的[简短回答](#简短回答)。在1.4.1里，不带选项调用`createLayoutWorker()`，会启动模块旁边的那个worker文件。模块来自esm.sh时，这个文件位于esm.sh的源上，`Worker`构造函数会抛出SecurityError。页面生成的blob URL与页面同源，所以简短回答用一行blob启动一个模块工作线程，它从esm.sh导入`postext/worker/entry`，再把这个工作线程传给`createLayoutWorker({ worker })`。句柄的`build()`接收与`buildDocument()`相同的内容和配置，返回的也是同一种文档（[在Web Worker中运行排版](/zh/docs/configuration#在web-worker中运行排版)）。
+
+<Note>Postext没有服务器端模式：它用Canvas测量文字，所以只能在浏览器或工作线程里排版。做批处理时，用Puppeteer在无头Chrome里打开页面，从那里取页面或PDF。对于磁盘上的`.postext`项目，postext-port技能的`render.mjs`在Node里运行引擎，用fontkit和项目自带的字体代替Canvas做测量（[脚本](/zh/docs/skill#脚本)）。</Note>
+
+### 2 · 每种字体加载两次
+
+<Excerpt region="fonts" />
+
+工作线程有自己的`FontFaceSet`，看不到页面已经加载的字体，所以简短回答去取同样的Fontsource文件，把它们的字节传给`registerFonts()`，每个字重写成字符串（`'400'`）。省掉这一步，1.4.1的工作线程会用后备字体测量，而且不给出警告：本章会排成175行而不是190行，第一行结束在“him)”而不是“of”。字体文件下载失败同样不会被发现。如果工作线程拿到的是一个404页面而不是Baskervville正体，`registerFonts()`照样完成，本章排成186行，警告只出现在工作线程的控制台里。所以简短回答在发送任何字节之前先检查每个响应的状态，并抛出带字体名和HTTP状态的错误。页面也用`loadFonts()`加载同样的字体，因为Canvas用页面的字体绘制。
+
+### 3 · 每次按键都构建，在主线程上绘制
+
+<Excerpt region="editor" />
+
+`typeset()`在请求下一次构建之前，先中止正在进行的构建。被中止构建的promise会立即以`AbortError`拒绝，`typeset()`把它转成`null`。在工作线程里，仍在队列中等待的构建会被立即丢弃，正在运行的构建则在当前这一轮放置结束时停止，因为构建只在两轮之间检查是否取消。`refresh()`给各次构建编号，只绘制最新的一次，所以迟到的工作线程构建不会覆盖主线程构建的结果。文档回到主线程，由`renderPageToCanvas()`用在主线程注册的图片绘制。工作线程只需要每张图片的尺寸，由资源条目提供（1100 × 840）。每个块都保留自己在Markdown中的偏移量（`sourceStart`），`follow()`显示最后一个起始位置不晚于光标的块所在的页面。
+
+<Note>计时在制作截图的机器上进行，除卡片上那一次外，又把页面加载了十二次。状态行对每次构建的计时，从发出请求开始，到页面返回后的第一帧为止。工作线程的第一次构建耗时66到141 ms，之后的构建10到36 ms，因为工作线程在整个生命周期里保留一个测量缓存；在此期间最长的一帧保持在8到18 ms。在主线程上，第一次构建会让表盘停住54到74 ms。之后的构建有自己的缓存，耗时5到17 ms，最长的一帧最多拉长到25 ms，约为60 Hz下的一帧半。构建时间超过一帧（60 Hz下为16.7 ms）时，比如本章的第一次构建，或者构建一本有很多章的书，编辑器在主线程上会卡住，在工作线程里则不会。</Note>
+
+### 4 · 用标题样式做书名页
+
+<Excerpt region="title" />
+
+`# The Time Machine {style="title"}`这一行用`title`标题样式排第1页，这个样式的`header`和`footer`都为空，所以这一页没有书眉和页码。`numbered: false`把书名排除在章节计数之外，所以Introduction仍是第I章。插图锚定在出血的左上角，作者名排在栏底下方；`span: 'page'`让设计能在这两处绘制。不设它，1.4.1会把设计裁到栏内，插图顶部会少15 mm，作者名也不会绘制出来。
+
+### 5 · 按页面角色放书眉
+
+<Excerpt region="heads" />
+
+`pages: 'body'`让书眉不出现在书名页和章首页上，`parity`在左页排书名、在右页排章名，页码位于外侧边缘。章首页改用页脚页码，来自一个设了`pages: 'opener'`的页脚元素。页码和书眉都是8 pt，悬挂在距上边缘8.2 mm处，所以页码数字与书眉位于同一条基线上。
+
+### 6 · 章首页
+
+<Excerpt region="opener" />
+
+设计中的`{number}`按`numberingTemplate: '{1:I}'`给出的形式印出章序号，即罗马数字I。`minHeight`至少预留八行，所以标题占一两行时，正文从第九行开始；标题较长、需要更多空间时，正文再往下移。`breakBefore`需要重新写一遍，因为`headings`对象会丢掉H1默认的分页；`parity: 'any'`让本章从第2页开始，与它的第二页相对。
+
+## 常见问题
+
+- 在postext 1.4.1里，带测量缓存的构建与不带缓存的构建断行可能不同，而工作线程总是保留一个缓存。在本食谱90 mm的行长下，两种情况都排成190行；但页边距改为13 mm和10 mm（行长87 mm）、使用默认词间距时，不带缓存排成196行，带缓存排成199行。示例给主线程也配了自己的缓存（`createMeasurementCache()`），这样改动行长时，两个线程排出的页面仍然相同。
+- 页面上的import map作用不到工作线程。如果你为页面固定了`https://esm.sh/postext@1.4.1`，也要把blob里的`import`固定到同一版本，否则两个线程可能运行不同的版本。

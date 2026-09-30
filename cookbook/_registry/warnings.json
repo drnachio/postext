@@ -4,21 +4,25 @@
     "source": "sandbox",
     "label": {
       "en": "Missing font",
-      "es": "Fuente no cargada"
+      "es": "Fuente no cargada",
+      "zh": "缺少字体"
     },
     "cause": {
       "en": "A family named in the config never loaded in the browser, so text was measured and drawn with a system fallback.",
-      "es": "Una familia que nombra la configuración no llegó a cargarse en el navegador, así que el texto se midió y se dibujó con una fuente de reserva del sistema."
+      "es": "Una familia que nombra la configuración no llegó a cargarse en el navegador, así que el texto se midió y se dibujó con una fuente de reserva del sistema.",
+      "zh": "配置中指定的某个字体族没有在浏览器中加载，因此文字是用系统后备字体测量和绘制的。"
     },
     "fix": {
       "en": "Fix the family name (one family, no CSS stack) and load every face before the first build; in a pen, list it in FONTS.",
-      "es": "Corrige el nombre de la familia (una sola familia, sin pila CSS) y carga todas las fuentes antes de la primera composición; en un pen, añádela a FONTS."
+      "es": "Corrige el nombre de la familia (una sola familia, sin pila CSS) y carga todas las fuentes antes de la primera composición; en un pen, añádela a FONTS.",
+      "zh": "改正字体族名称（只写一个字体族，不要写CSS字体栈），并在第一次构建前加载所有字面；在pen中，把它列入FONTS。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Missing-font warnings",
-        "es": "Avisos de fuentes faltantes"
+        "es": "Avisos de fuentes faltantes",
+        "zh": "缺失字体警告"
       }
     }
   },
@@ -26,21 +30,25 @@
     "source": "sandbox",
     "label": {
       "en": "Unknown font family",
-      "es": "Familia de fuentes desconocida"
+      "es": "Familia de fuentes desconocida",
+      "zh": "未知字体族"
     },
     "cause": {
       "en": "A fontFamily names something that is neither a Google Font nor a family declared in customFonts.",
-      "es": "Un fontFamily nombra algo que no es una fuente de Google ni una familia declarada en customFonts."
+      "es": "Un fontFamily nombra algo que no es una fuente de Google ni una familia declarada en customFonts.",
+      "zh": "fontFamily指定的名称既不是Google字体，也不是在customFonts中声明的字体族。"
     },
     "fix": {
       "en": "Correct the spelling, or declare the family in customFonts with its files.",
-      "es": "Corrige el nombre o declara la familia en customFonts con sus archivos."
+      "es": "Corrige el nombre o declara la familia en customFonts con sus archivos.",
+      "zh": "改正拼写，或在customFonts中声明该字体族及其文件。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Missing-font warnings",
-        "es": "Avisos de fuentes faltantes"
+        "es": "Avisos de fuentes faltantes",
+        "zh": "缺失字体警告"
       }
     }
   },
@@ -48,21 +56,25 @@
     "source": "sandbox",
     "label": {
       "en": "Missing font variant",
-      "es": "Variante de fuente ausente"
+      "es": "Variante de fuente ausente",
+      "zh": "缺少字体变体"
     },
     "cause": {
       "en": "A custom family has no file for a weight and style the document uses, such as its italic or bold.",
-      "es": "A una familia propia le falta el archivo de un peso y estilo que usa el documento, como su cursiva o su negrita."
+      "es": "A una familia propia le falta el archivo de un peso y estilo que usa el documento, como su cursiva o su negrita.",
+      "zh": "某个自定义字体族缺少文档用到的字重和样式对应的文件，比如斜体或粗体。"
     },
     "fix": {
       "en": "Upload or declare the missing variant, or stop using that weight or style.",
-      "es": "Sube o declara la variante que falta, o deja de usar ese peso o estilo."
+      "es": "Sube o declara la variante que falta, o deja de usar ese peso o estilo.",
+      "zh": "上传或声明缺少的变体，或者不再使用那个字重或样式。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Missing-font warnings",
-        "es": "Avisos de fuentes faltantes"
+        "es": "Avisos de fuentes faltantes",
+        "zh": "缺失字体警告"
       }
     }
   },
@@ -70,21 +82,25 @@
     "source": "sandbox",
     "label": {
       "en": "Duplicate font variant",
-      "es": "Variante de fuente duplicada"
+      "es": "Variante de fuente duplicada",
+      "zh": "字体变体重复"
     },
     "cause": {
       "en": "Two files of a custom family claim the same weight and style; only one of them is used.",
-      "es": "Dos archivos de una familia propia ocupan el mismo peso y estilo; solo se usa uno."
+      "es": "Dos archivos de una familia propia ocupan el mismo peso y estilo; solo se usa uno.",
+      "zh": "自定义字体族中有两个文件声明了相同的字重和样式，只有其中一个会被使用。"
     },
     "fix": {
       "en": "Give each file its real weight and style, or remove the extra one.",
-      "es": "Asigna a cada archivo su peso y estilo reales, o elimina el sobrante."
+      "es": "Asigna a cada archivo su peso y estilo reales, o elimina el sobrante.",
+      "zh": "给每个文件标上它真实的字重和样式，或删除多余的那个。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Missing-font warnings",
-        "es": "Avisos de fuentes faltantes"
+        "es": "Avisos de fuentes faltantes",
+        "zh": "缺失字体警告"
       }
     }
   },
@@ -92,21 +108,25 @@
     "source": "sandbox",
     "label": {
       "en": "Loose line",
-      "es": "Línea floja"
+      "es": "Línea floja",
+      "zh": "松散行"
     },
     "cause": {
       "en": "A justified line stretches its spaces beyond the threshold, usually because of a long word, a URL or a narrow measure.",
-      "es": "Una línea justificada estira sus espacios por encima del umbral, casi siempre por una palabra larga, una URL o una medida estrecha."
+      "es": "Una línea justificada estira sus espacios por encima del umbral, casi siempre por una palabra larga, una URL o una medida estrecha.",
+      "zh": "某个两端对齐的行把空格拉得超过了阈值，通常是长单词、URL或行长太窄造成的。"
     },
     "fix": {
       "en": "Turn on hyphenation in the right language, widen the measure, rephrase, or set the passage ragged.",
-      "es": "Activa la separación silábica en el idioma correcto, ensancha la medida, reformula o compón ese pasaje en bandera."
+      "es": "Activa la separación silábica en el idioma correcto, ensancha la medida, reformula o compón ese pasaje en bandera.",
+      "zh": "按正确的语言开启断词、加大行长、改写句子，或把这段排成齐左。"
     },
     "docs": {
       "slug": "justification",
       "heading": {
         "en": "Loose-Line Debugging",
-        "es": "Depuración de líneas flojas"
+        "es": "Depuración de líneas flojas",
+        "zh": "松散行调试"
       }
     }
   },
@@ -114,21 +134,25 @@
     "source": "engine",
     "label": {
       "en": "CJK line set short",
-      "es": "Línea CJK corta"
+      "es": "Línea CJK corta",
+      "zh": "中日韩行排不满"
     },
     "cause": {
       "en": "A justified line of Chinese, Japanese or Korean text would need more space between its characters than half an em (or `bodyText.maxJustifyTracking`) to reach the measure, usually because a long Latin word or web address on the next line cannot break.",
-      "es": "Una línea justificada de texto chino, japonés o coreano necesitaría más de medio cuadratín entre sus caracteres (o más que `bodyText.maxJustifyTracking`) para llegar a la medida, casi siempre porque una palabra latina larga o una dirección web de la línea siguiente no se puede cortar."
+      "es": "Una línea justificada de texto chino, japonés o coreano necesitaría más de medio cuadratín entre sus caracteres (o más que `bodyText.maxJustifyTracking`) para llegar a la medida, casi siempre porque una palabra latina larga o una dirección web de la línea siguiente no se puede cortar.",
+      "zh": "一行两端对齐的中文、日文或韩文文字要排满行长，字间需要的空隙超过半个em（或`bodyText.maxJustifyTracking`），通常是因为下一行的长西文单词或网址无法断开。"
     },
     "fix": {
       "en": "Break the long word or address yourself (a zero-width space, U+200B, where a line may end), move it, or widen the measure.",
-      "es": "Corta tú la palabra o la dirección larga (un espacio de anchura cero, U+200B, donde puede acabar la línea), muévela o ensancha la medida."
+      "es": "Corta tú la palabra o la dirección larga (un espacio de anchura cero, U+200B, donde puede acabar la línea), muévela o ensancha la medida.",
+      "zh": "自己断开那个长单词或网址（在可以换行的地方插入零宽空格U+200B），把它挪走，或加大行长。"
     },
     "docs": {
       "slug": "justification",
       "heading": {
         "en": "Chinese, Japanese and Korean",
-        "es": "Chino, japonés y coreano"
+        "es": "Chino, japonés y coreano",
+        "zh": "中文、日文和韩文"
       }
     }
   },
@@ -136,21 +160,25 @@
     "source": "engine",
     "label": {
       "en": "Marks crowd the next line",
-      "es": "Marcas pegadas a la línea vecina"
+      "es": "Marcas pegadas a la línea vecina",
+      "zh": "标记挤到下一行"
     },
     "cause": {
       "en": "A paragraph with emphasis dots or proper-name and book-title lines has a line gap under half an em (five eighths with marks on both sides): the marks live in the leading, whose height never changes for them, so they touch the next line.",
-      "es": "Un párrafo con puntos de énfasis o líneas de nombre propio y de título tiene un hueco entre líneas de menos de medio em (cinco octavos con marcas por los dos lados): las marcas viven en el interlineado, que no crece por ellas, así que tocan la línea vecina."
+      "es": "Un párrafo con puntos de énfasis o líneas de nombre propio y de título tiene un hueco entre líneas de menos de medio em (cinco octavos con marcas por los dos lados): las marcas viven en el interlineado, que no crece por ellas, así que tocan la línea vecina.",
+      "zh": "带着重号或专名号、书名号的段落，行间空隙不到半个em（两侧都有标记时不到八分之五em）：这些标记位于行距之中，而行距不会为它们增高，于是碰到下一行。"
     },
     "fix": {
       "en": "Give the paragraph a paragraph style with more leading, or raise `bodyText.lineHeight`.",
-      "es": "Dale al párrafo un estilo de párrafo con más interlineado, o sube `bodyText.lineHeight`."
+      "es": "Dale al párrafo un estilo de párrafo con más interlineado, o sube `bodyText.lineHeight`.",
+      "zh": "给该段落设一个行距更大的段落样式，或调大`bodyText.lineHeight`。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Marks, ruby and warichu",
-        "es": "Marcas, ruby y warichu"
+        "es": "Marcas, ruby y warichu",
+        "zh": "着重号、注音与夹注"
       }
     }
   },
@@ -158,21 +186,25 @@
     "source": "engine",
     "label": {
       "en": "Readings crowd the next line",
-      "es": "Lecturas pegadas a la línea vecina"
+      "es": "Lecturas pegadas a la línea vecina",
+      "zh": "注音挤到相邻行"
     },
     "cause": {
       "en": "A paragraph with ruby readings over or under its text has a line gap narrower than the readings: they sit in the leading and touch the line next to them.",
-      "es": "Un párrafo con lecturas ruby encima o debajo del texto tiene un hueco entre líneas más estrecho que las lecturas: ocupan el interlineado y tocan la línea vecina."
+      "es": "Un párrafo con lecturas ruby encima o debajo del texto tiene un hueco entre líneas más estrecho que las lecturas: ocupan el interlineado y tocan la línea vecina.",
+      "zh": "在文字上方或下方带注音的段落，行间空隙比注音还窄：注音位于行距之中，碰到相邻的行。"
     },
     "fix": {
       "en": "Set the paragraph with more leading (at least the text size plus `cjk.ruby.fontSize`), or make the readings smaller.",
-      "es": "Compón el párrafo con más interlineado (al menos el cuerpo más `cjk.ruby.fontSize`), o reduce las lecturas."
+      "es": "Compón el párrafo con más interlineado (al menos el cuerpo más `cjk.ruby.fontSize`), o reduce las lecturas.",
+      "zh": "给该段落设更大的行距（至少为正文字号加上`cjk.ruby.fontSize`），或把注音缩小。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Marks, ruby and warichu",
-        "es": "Marcas, ruby y warichu"
+        "es": "Marcas, ruby y warichu",
+        "zh": "着重号、注音与夹注"
       }
     }
   },
@@ -180,21 +212,25 @@
     "source": "sandbox",
     "label": {
       "en": "Heading hierarchy jump",
-      "es": "Salto en la jerarquía de títulos"
+      "es": "Salto en la jerarquía de títulos",
+      "zh": "标题层级跳跃"
     },
     "cause": {
       "en": "A heading skips a level, such as an H1 followed directly by an H3.",
-      "es": "Un título se salta un nivel, por ejemplo un H1 seguido directamente de un H3."
+      "es": "Un título se salta un nivel, por ejemplo un H1 seguido directamente de un H3.",
+      "zh": "某个标题跳过了一级，比如H1后面直接跟着H3。"
     },
     "fix": {
       "en": "Use the next level down, or restyle the level you meant instead of skipping one.",
-      "es": "Usa el nivel inmediatamente inferior, o cambia el estilo del nivel que querías en lugar de saltártelo."
+      "es": "Usa el nivel inmediatamente inferior, o cambia el estilo del nivel que querías en lugar de saltártelo.",
+      "zh": "改用下一级标题，或者重新设定你想用的那一级的样式，而不是跳过一级。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Warnings",
-        "es": "Avisos"
+        "es": "Avisos",
+        "zh": "警告"
       }
     }
   },
@@ -202,21 +238,25 @@
     "source": "sandbox",
     "label": {
       "en": "Consecutive headings",
-      "es": "Títulos consecutivos"
+      "es": "Títulos consecutivos",
+      "zh": "连续标题"
     },
     "cause": {
       "en": "A heading follows another with no text between them (off by default).",
-      "es": "Un título sigue a otro sin texto entre ambos (desactivado por defecto)."
+      "es": "Un título sigue a otro sin texto entre ambos (desactivado por defecto).",
+      "zh": "一个标题紧跟在另一个标题后面，中间没有正文（默认关闭）。"
     },
     "fix": {
       "en": "Add an introductory paragraph, or turn the check off where stacked headings are intended.",
-      "es": "Añade un párrafo introductorio, o desactiva la comprobación donde quieras dos títulos seguidos."
+      "es": "Añade un párrafo introductorio, o desactiva la comprobación donde quieras dos títulos seguidos.",
+      "zh": "加一段引言，或在有意叠放标题的地方关闭这项检查。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Warnings",
-        "es": "Avisos"
+        "es": "Avisos",
+        "zh": "警告"
       }
     }
   },
@@ -224,21 +264,25 @@
     "source": "sandbox",
     "label": {
       "en": "List after heading",
-      "es": "Lista tras título"
+      "es": "Lista tras título",
+      "zh": "标题后直接跟列表"
     },
     "cause": {
       "en": "A list starts right after a heading, with no sentence to introduce it (off by default).",
-      "es": "Una lista empieza justo después de un título, sin una frase que la introduzca (desactivado por defecto)."
+      "es": "Una lista empieza justo después de un título, sin una frase que la introduzca (desactivado por defecto).",
+      "zh": "列表紧接在标题之后开始，没有一句话引出它（默认关闭）。"
     },
     "fix": {
       "en": "Introduce the list with a sentence ending in a colon, which also keeps it with the list.",
-      "es": "Introduce la lista con una frase que acabe en dos puntos, que además queda unida a la lista."
+      "es": "Introduce la lista con una frase que acabe en dos puntos, que además queda unida a la lista.",
+      "zh": "用一个以冒号结尾的句子引出列表，这样它也会和列表排在一起。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Warnings",
-        "es": "Avisos"
+        "es": "Avisos",
+        "zh": "警告"
       }
     }
   },
@@ -246,21 +290,25 @@
     "source": "sandbox",
     "label": {
       "en": "Invalid LaTeX",
-      "es": "LaTeX no válido"
+      "es": "LaTeX no válido",
+      "zh": "LaTeX无效"
     },
     "cause": {
       "en": "MathJax could not parse a formula, so a red placeholder is printed instead.",
-      "es": "MathJax no pudo interpretar una fórmula, así que en su lugar se imprime un marcador rojo."
+      "es": "MathJax no pudo interpretar una fórmula, así que en su lugar se imprime un marcador rojo.",
+      "zh": "MathJax无法解析某个公式，因此印出了一个红色占位符。"
     },
     "fix": {
       "en": "Fix the TeX, or escape a dollar sign that was not meant as maths with \\$.",
-      "es": "Corrige el TeX, o escribe \\$ donde el signo de dólar no abre una fórmula."
+      "es": "Corrige el TeX, o escribe \\$ donde el signo de dólar no abre una fórmula.",
+      "zh": "改正TeX，或把不是用作数学公式的美元符号转义为\\$。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "Mathematical formulas",
-        "es": "Fórmulas matemáticas"
+        "es": "Fórmulas matemáticas",
+        "zh": "数学公式"
       }
     }
   },
@@ -268,21 +316,25 @@
     "source": "parse",
     "label": {
       "en": "Unclosed math delimiter",
-      "es": "Delimitador matemático sin cerrar"
+      "es": "Delimitador matemático sin cerrar",
+      "zh": "数学分隔符未闭合"
     },
     "cause": {
       "en": "A $ opens inline maths that is never closed, usually because it belongs to a price.",
-      "es": "Un $ abre una fórmula en línea que nunca se cierra; suele ser el de un precio."
+      "es": "Un $ abre una fórmula en línea que nunca se cierra; suele ser el de un precio.",
+      "zh": "某个$开启了行内公式却没有闭合，通常是因为它属于一个价格。"
     },
     "fix": {
       "en": "Write \\$ for a literal dollar, or close the formula on the same line.",
-      "es": "Escribe \\$ para un dólar literal, o cierra la fórmula en la misma línea."
+      "es": "Escribe \\$ para un dólar literal, o cierra la fórmula en la misma línea.",
+      "zh": "字面的美元符号写成\\$，或在同一行内闭合公式。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "Mathematical formulas",
-        "es": "Fórmulas matemáticas"
+        "es": "Fórmulas matemáticas",
+        "zh": "数学公式"
       }
     }
   },
@@ -290,21 +342,25 @@
     "source": "parse",
     "label": {
       "en": "Unclosed display formula",
-      "es": "Fórmula destacada sin cerrar"
+      "es": "Fórmula destacada sin cerrar",
+      "zh": "行间公式未闭合"
     },
     "cause": {
       "en": "A $$ display formula has no closing $$, so the rest of the block is read as maths.",
-      "es": "Una fórmula destacada abierta con $$ no tiene su $$ de cierre, así que el resto del bloque se lee como matemáticas."
+      "es": "Una fórmula destacada abierta con $$ no tiene su $$ de cierre, así que el resto del bloque se lee como matemáticas.",
+      "zh": "某个$$行间公式没有闭合的$$，因此该块其余部分都被当作数学公式读取。"
     },
     "fix": {
       "en": "Close the formula with $$, on the same line or on a line of its own.",
-      "es": "Cierra la fórmula con $$, en la misma línea o en una línea aparte."
+      "es": "Cierra la fórmula con $$, en la misma línea o en una línea aparte.",
+      "zh": "用$$闭合公式，可以写在同一行，也可以单独占一行。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "Mathematical formulas",
-        "es": "Fórmulas matemáticas"
+        "es": "Fórmulas matemáticas",
+        "zh": "数学公式"
       }
     }
   },
@@ -312,21 +368,25 @@
     "source": "sandbox",
     "label": {
       "en": "Unknown placeholder",
-      "es": "Marcador desconocido"
+      "es": "Marcador desconocido",
+      "zh": "未知占位符"
     },
     "cause": {
       "en": "A design text uses a {name} placeholder that does not exist, so it prints literally.",
-      "es": "Un texto de diseño usa un marcador {nombre} que no existe, así que se imprime tal cual."
+      "es": "Un texto de diseño usa un marcador {nombre} que no existe, así que se imprime tal cual.",
+      "zh": "某段设计文字用了不存在的{name}占位符，因此它按原样印出。"
     },
     "fix": {
       "en": "Use a supported placeholder ({pageNumber}, {chapterTitle}, {title}, {attr.x}…), or write {{ and }} for literal braces.",
-      "es": "Usa un marcador admitido ({pageNumber}, {chapterTitle}, {title}, {attr.x}…), o escribe {{ y }} para llaves literales."
+      "es": "Usa un marcador admitido ({pageNumber}, {chapterTitle}, {title}, {attr.x}…), o escribe {{ y }} para llaves literales.",
+      "zh": "使用支持的占位符（{pageNumber}、{chapterTitle}、{title}、{attr.x}……），字面花括号写成{{ and }}。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Text elements",
-        "es": "Elementos de texto"
+        "es": "Elementos de texto",
+        "zh": "文本元素"
       }
     }
   },
@@ -334,21 +394,25 @@
     "source": "sandbox",
     "label": {
       "en": "Placeholder metadata missing",
-      "es": "Falta el metadato del marcador"
+      "es": "Falta el metadato del marcador",
+      "zh": "占位符缺少元数据"
     },
     "cause": {
       "en": "A placeholder such as {author} or {title} has no value in the document's metadata, so it prints empty.",
-      "es": "Un marcador como {author} o {title} no tiene valor en los metadatos del documento, así que se imprime vacío."
+      "es": "Un marcador como {author} o {title} no tiene valor en los metadatos del documento, así que se imprime vacío.",
+      "zh": "{author}或{title}之类的占位符在文档元数据中没有值，因此印出来是空的。"
     },
     "fix": {
       "en": "Add the value to the frontmatter, quoted, or remove the placeholder.",
-      "es": "Añade el valor al frontmatter, entre comillas, o quita el marcador."
+      "es": "Añade el valor al frontmatter, entre comillas, o quita el marcador.",
+      "zh": "把这个值加到frontmatter里并加上引号，或删掉该占位符。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Text elements",
-        "es": "Elementos de texto"
+        "es": "Elementos de texto",
+        "zh": "文本元素"
       }
     }
   },
@@ -356,21 +420,25 @@
     "source": "engine",
     "label": {
       "en": "Unknown directive",
-      "es": "Directiva desconocida"
+      "es": "Directiva desconocida",
+      "zh": "未知指令"
     },
     "cause": {
       "en": "A :::name line is not one of Postext's directives or containers, so it prints as text.",
-      "es": "Una línea :::nombre no es ninguna de las directivas ni de los contenedores de Postext, así que se imprime como texto."
+      "es": "Una línea :::nombre no es ninguna de las directivas ni de los contenedores de Postext, así que se imprime como texto.",
+      "zh": "某个:::name行不是Postext的指令或容器，因此被当作文字印出。"
     },
     "fix": {
       "en": "Check the spelling against the supported names (pagebreak, columnbreak, numbering, space, toc, callout, paragraphs, part, columns).",
-      "es": "Compara el nombre con los admitidos (pagebreak, columnbreak, numbering, space, toc, callout, paragraphs, part, columns)."
+      "es": "Compara el nombre con los admitidos (pagebreak, columnbreak, numbering, space, toc, callout, paragraphs, part, columns).",
+      "zh": "对照支持的名称检查拼写（pagebreak、columnbreak、numbering、space、toc、callout、paragraphs、part、columns）。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "Directives",
-        "es": "Directivas"
+        "es": "Directivas",
+        "zh": "指令"
       }
     }
   },
@@ -378,21 +446,25 @@
     "source": "parse",
     "label": {
       "en": "Unclosed container",
-      "es": "Contenedor sin cerrar"
+      "es": "Contenedor sin cerrar",
+      "zh": "容器未闭合"
     },
     "cause": {
       "en": "A ::: fence is never closed, so the container runs to the end of the document.",
-      "es": "Una valla ::: nunca se cierra, así que el contenedor llega hasta el final del documento."
+      "es": "Una valla ::: nunca se cierra, así que el contenedor llega hasta el final del documento.",
+      "zh": "某个:::围栏从未闭合，因此容器一直延续到文档末尾。"
     },
     "fix": {
       "en": "Add a line holding a bare ::: where the container ends.",
-      "es": "Añade una línea con solo ::: donde termina el contenedor."
+      "es": "Añade una línea con solo ::: donde termina el contenedor.",
+      "zh": "在容器结束的地方加一行，只写一个:::。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "Containers",
-        "es": "Contenedores"
+        "es": "Contenedores",
+        "zh": "容器"
       }
     }
   },
@@ -400,21 +472,25 @@
     "source": "engine",
     "label": {
       "en": "Unknown paragraph style",
-      "es": "Estilo de párrafo desconocido"
+      "es": "Estilo de párrafo desconocido",
+      "zh": "未知段落样式"
     },
     "cause": {
       "en": "A :::paragraphs container names a style id that paragraphStyles does not define, so its paragraphs are set as body text.",
-      "es": "Un contenedor :::paragraphs nombra un id de estilo que paragraphStyles no define, así que sus párrafos se componen como texto de cuerpo."
+      "es": "Un contenedor :::paragraphs nombra un id de estilo que paragraphStyles no define, así que sus párrafos se componen como texto de cuerpo.",
+      "zh": "某个:::paragraphs容器指定的样式id没有在paragraphStyles中定义，因此其中的段落按正文排。"
     },
     "fix": {
       "en": "Define the style in paragraphStyles or correct the id in the fence.",
-      "es": "Define el estilo en paragraphStyles o corrige el id en la valla."
+      "es": "Define el estilo en paragraphStyles o corrige el id en la valla.",
+      "zh": "在paragraphStyles中定义该样式，或改正围栏中的id。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "The `:::paragraphs` container",
-        "es": "El contenedor `:::paragraphs`"
+        "es": "El contenedor `:::paragraphs`",
+        "zh": "`:::paragraphs`容器"
       }
     }
   },
@@ -422,21 +498,25 @@
     "source": "engine",
     "label": {
       "en": "Unknown callout type",
-      "es": "Tipo de recuadro desconocido"
+      "es": "Tipo de recuadro desconocido",
+      "zh": "未知标注框类型"
     },
     "cause": {
       "en": "A :::callout names a type that calloutStyles does not define, so it silently takes the first style.",
-      "es": "Un :::callout nombra un tipo que calloutStyles no define, así que toma sin avisar el primer estilo."
+      "es": "Un :::callout nombra un tipo que calloutStyles no define, así que toma sin avisar el primer estilo.",
+      "zh": "某个:::callout指定的类型没有在calloutStyles中定义，因此它不加提示地套用第一个样式。"
     },
     "fix": {
       "en": "Define the style or correct the type attribute.",
-      "es": "Define el estilo o corrige el atributo type."
+      "es": "Define el estilo o corrige el atributo type.",
+      "zh": "定义该样式，或改正type属性。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "The `:::callout` container",
-        "es": "El contenedor `:::callout`"
+        "es": "El contenedor `:::callout`",
+        "zh": "`:::callout`容器"
       }
     }
   },
@@ -444,21 +524,25 @@
     "source": "engine",
     "label": {
       "en": "Unknown chip style",
-      "es": "Estilo de chip desconocido"
+      "es": "Estilo de chip desconocido",
+      "zh": "未知行内标签样式"
     },
     "cause": {
       "en": "A chip names a style that chipStyles does not define, so it takes the first style.",
-      "es": "Un chip nombra un estilo que chipStyles no define, así que toma el primer estilo."
+      "es": "Un chip nombra un estilo que chipStyles no define, así que toma el primer estilo.",
+      "zh": "某个行内标签指定的样式没有在chipStyles中定义，因此它套用第一个样式。"
     },
     "fix": {
       "en": "Define the style in chipStyles or correct the style attribute.",
-      "es": "Define el estilo en chipStyles o corrige el atributo style."
+      "es": "Define el estilo en chipStyles o corrige el atributo style.",
+      "zh": "在chipStyles中定义该样式，或改正style属性。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Chip styles",
-        "es": "Estilos de chip"
+        "es": "Estilos de chip",
+        "zh": "行内标签样式"
       }
     }
   },
@@ -466,21 +550,25 @@
     "source": "engine",
     "label": {
       "en": "Footnote without a definition",
-      "es": "Nota sin definición"
+      "es": "Nota sin definición",
+      "zh": "脚注缺少定义"
     },
     "cause": {
       "en": "A [^id] marker cites a note that no [^id]: paragraph defines, so the number prints over an empty note.",
-      "es": "Una marca [^id] cita una nota que ningún párrafo [^id]: define, así que el número se imprime sobre una nota vacía."
+      "es": "Una marca [^id] cita una nota que ningún párrafo [^id]: define, así que el número se imprime sobre una nota vacía.",
+      "zh": "某个[^id]标记引用的注释没有对应的[^id]:段落来定义，因此编号印在一条空注释上。"
     },
     "fix": {
       "en": "Add a [^id]: paragraph with the note, or correct the id of the marker.",
-      "es": "Añade un párrafo [^id]: con la nota o corrige el id de la marca."
+      "es": "Añade un párrafo [^id]: con la nota o corrige el id de la marca.",
+      "zh": "加一个写有注释内容的[^id]:段落，或改正标记的id。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Footnotes",
-        "es": "Notas al pie"
+        "es": "Notas al pie",
+        "zh": "脚注"
       }
     }
   },
@@ -488,21 +576,25 @@
     "source": "engine",
     "label": {
       "en": "Footnote never cited",
-      "es": "Nota sin citar"
+      "es": "Nota sin citar",
+      "zh": "脚注从未被引用"
     },
     "cause": {
       "en": "A [^id]: definition has no marker in the text, so the note is not set.",
-      "es": "Una definición [^id]: no tiene marca en el texto, así que la nota no se compone."
+      "es": "Una definición [^id]: no tiene marca en el texto, así que la nota no se compone.",
+      "zh": "某个[^id]:定义在正文中没有标记，因此这条注释不会排出。"
     },
     "fix": {
       "en": "Cite it with [^id] where it belongs, or delete the definition.",
-      "es": "Cítala con [^id] donde corresponda o borra la definición."
+      "es": "Cítala con [^id] donde corresponda o borra la definición.",
+      "zh": "在合适的位置用[^id]引用它，或删除这条定义。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Footnotes",
-        "es": "Notas al pie"
+        "es": "Notas al pie",
+        "zh": "脚注"
       }
     }
   },
@@ -510,21 +602,25 @@
     "source": "sandbox",
     "label": {
       "en": "Chips touch the next line",
-      "es": "Los chips tocan la línea siguiente"
+      "es": "Los chips tocan la línea siguiente",
+      "zh": "行内标签碰到下一行"
     },
     "cause": {
       "en": "A chip style's box is taller than the line pitch, so chips on consecutive lines touch.",
-      "es": "La caja de un estilo de chip es más alta que el interlineado, así que los chips de líneas seguidas se tocan."
+      "es": "La caja de un estilo de chip es más alta que el interlineado, así que los chips de líneas seguidas se tocan.",
+      "zh": "某个行内标签样式的框比行距还高，因此相邻两行的标签会相碰。"
     },
     "fix": {
       "en": "Reduce the chip's vertical padding, outline or size, or increase the leading.",
-      "es": "Reduce el relleno vertical, el contorno o el cuerpo del chip, o aumenta el interlineado."
+      "es": "Reduce el relleno vertical, el contorno o el cuerpo del chip, o aumenta el interlineado.",
+      "zh": "减小标签的竖向内边距、轮廓或尺寸，或加大行距。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Chip styles",
-        "es": "Estilos de chip"
+        "es": "Estilos de chip",
+        "zh": "行内标签样式"
       }
     }
   },
@@ -532,21 +628,25 @@
     "source": "sandbox",
     "label": {
       "en": "Invalid numbering format",
-      "es": "Formato de numeración no válido"
+      "es": "Formato de numeración no válido",
+      "zh": "编号格式无效"
     },
     "cause": {
       "en": "A :::numbering format is not one of decimal, lower-roman, upper-roman, lower-alpha or upper-alpha.",
-      "es": "El formato de un :::numbering no es ninguno de decimal, lower-roman, upper-roman, lower-alpha o upper-alpha."
+      "es": "El formato de un :::numbering no es ninguno de decimal, lower-roman, upper-roman, lower-alpha o upper-alpha.",
+      "zh": "某个:::numbering的format不是decimal、lower-roman、upper-roman、lower-alpha或upper-alpha之一。"
     },
     "fix": {
       "en": "Use one of the five page-number formats; lists and resources spell theirs differently.",
-      "es": "Usa uno de los cinco formatos de número de página; las listas y los recursos los escriben de otro modo."
+      "es": "Usa uno de los cinco formatos de número de página; las listas y los recursos los escriben de otro modo.",
+      "zh": "使用这五种页码格式之一；列表和资源的格式写法不同。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "`:::numbering`",
-        "es": "`:::numbering`"
+        "es": "`:::numbering`",
+        "zh": "`:::numbering`"
       }
     }
   },
@@ -554,21 +654,25 @@
     "source": "sandbox",
     "label": {
       "en": "Invalid numbering start",
-      "es": "Inicio de numeración no válido"
+      "es": "Inicio de numeración no válido",
+      "zh": "编号起始值无效"
     },
     "cause": {
       "en": "A :::numbering startAt is not a whole number of 1 or more.",
-      "es": "El startAt de un :::numbering no es un número entero igual o mayor que 1."
+      "es": "El startAt de un :::numbering no es un número entero igual o mayor que 1.",
+      "zh": "某个:::numbering的startAt不是大于等于1的整数。"
     },
     "fix": {
       "en": "Give startAt a whole number, such as startAt=1.",
-      "es": "Da a startAt un número entero, por ejemplo startAt=1."
+      "es": "Da a startAt un número entero, por ejemplo startAt=1.",
+      "zh": "给startAt一个整数，比如startAt=1。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "`:::numbering`",
-        "es": "`:::numbering`"
+        "es": "`:::numbering`",
+        "zh": "`:::numbering`"
       }
     }
   },
@@ -576,21 +680,25 @@
     "source": "sandbox",
     "label": {
       "en": "Invalid page-break parity",
-      "es": "Paridad de salto de página no válida"
+      "es": "Paridad de salto de página no válida",
+      "zh": "换页奇偶设置无效"
     },
     "cause": {
       "en": "A :::pagebreak parity is not odd, even, always-odd or always-even.",
-      "es": "La paridad de un :::pagebreak no es odd, even, always-odd ni always-even."
+      "es": "La paridad de un :::pagebreak no es odd, even, always-odd ni always-even.",
+      "zh": "某个:::pagebreak的parity不是odd、even、always-odd或always-even。"
     },
     "fix": {
       "en": "Use odd or even to pad only when needed, always-odd or always-even to force a separator blank.",
-      "es": "Usa odd o even para rellenar solo cuando haga falta, y always-odd o always-even para forzar una página en blanco de separación."
+      "es": "Usa odd o even para rellenar solo cuando haga falta, y always-odd o always-even para forzar una página en blanco de separación.",
+      "zh": "用odd或even只在需要时补空白页，用always-odd或always-even强制插入一张隔页空白页。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "`:::pagebreak`",
-        "es": "`:::pagebreak`"
+        "es": "`:::pagebreak`",
+        "zh": "`:::pagebreak`"
       }
     }
   },
@@ -598,21 +706,25 @@
     "source": "sandbox",
     "label": {
       "en": "Invalid space size",
-      "es": "Tamaño de espacio no válido"
+      "es": "Tamaño de espacio no válido",
+      "zh": "间距大小无效"
     },
     "cause": {
       "en": "A :::space lines value is not a number above 0 and at most 20, so one line is used instead.",
-      "es": "El valor lines de un :::space no es un número mayor que 0 y no mayor que 20, así que se usa una línea."
+      "es": "El valor lines de un :::space no es un número mayor que 0 y no mayor que 20, así que se usa una línea.",
+      "zh": "某个:::space的lines值不是大于0且不超过20的数，因此改用一行。"
     },
     "fix": {
       "en": "Give lines a number between 0 and 20; fractions such as lines=0.5 are allowed.",
-      "es": "Da a lines un número entre 0 y 20; se admiten fracciones como lines=0.5."
+      "es": "Da a lines un número entre 0 y 20; se admiten fracciones como lines=0.5.",
+      "zh": "给lines一个0到20之间的数；允许用lines=0.5这样的小数。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "`:::space`",
-        "es": "`:::space`"
+        "es": "`:::space`",
+        "zh": "`:::space`"
       }
     }
   },
@@ -620,21 +732,25 @@
     "source": "sandbox",
     "label": {
       "en": "Invalid heading break parity",
-      "es": "Paridad de salto de título no válida"
+      "es": "Paridad de salto de título no válida",
+      "zh": "标题换页奇偶设置无效"
     },
     "cause": {
       "en": "A heading level's breakBefore.parity is not a supported value.",
-      "es": "El breakBefore.parity de un nivel de título no es un valor admitido."
+      "es": "El breakBefore.parity de un nivel de título no es un valor admitido.",
+      "zh": "某级标题的breakBefore.parity不是支持的值。"
     },
     "fix": {
       "en": "Use any, odd, even, always-odd or always-even.",
-      "es": "Usa any, odd, even, always-odd o always-even."
+      "es": "Usa any, odd, even, always-odd o always-even.",
+      "zh": "使用any、odd、even、always-odd或always-even。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Break before",
-        "es": "Saltar antes"
+        "es": "Saltar antes",
+        "zh": "前置分页"
       }
     }
   },
@@ -642,21 +758,25 @@
     "source": "sandbox",
     "label": {
       "en": "Parity cascade",
-      "es": "Cascada de paridad"
+      "es": "Cascada de paridad",
+      "zh": "奇偶连锁空白页"
     },
     "cause": {
       "en": "Parity breaks stack up and produce more than two blank pages in a row.",
-      "es": "Los saltos con paridad se acumulan y producen más de dos páginas en blanco seguidas."
+      "es": "Los saltos con paridad se acumulan y producen más de dos páginas en blanco seguidas.",
+      "zh": "奇偶换页层层叠加，连续产生了两页以上的空白页。"
     },
     "fix": {
       "en": "Review always-odd breaks and breakBefore parities; for short chapters, parity any usually avoids the blanks.",
-      "es": "Revisa los saltos always-odd y las paridades de breakBefore; en capítulos cortos, la paridad any suele evitar esas páginas en blanco."
+      "es": "Revisa los saltos always-odd y las paridades de breakBefore; en capítulos cortos, la paridad any suele evitar esas páginas en blanco.",
+      "zh": "检查always-odd换页和breakBefore的奇偶设置；章较短时，parity设为any通常可以避免这些空白页。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Break before",
-        "es": "Saltar antes"
+        "es": "Saltar antes",
+        "zh": "前置分页"
       }
     }
   },
@@ -664,21 +784,25 @@
     "source": "sandbox",
     "label": {
       "en": "Alphabetic page labels past Z",
-      "es": "Etiquetas alfabéticas más allá de la Z"
+      "es": "Etiquetas alfabéticas más allá de la Z",
+      "zh": "字母页码超过Z"
     },
     "cause": {
       "en": "Alphabetic page numbering runs past 26 pages, so the PDF has to spell labels such as AA page by page.",
-      "es": "La numeración alfabética de páginas pasa de 26, así que el PDF debe escribir etiquetas como AA página a página."
+      "es": "La numeración alfabética de páginas pasa de 26, así que el PDF debe escribir etiquetas como AA página a página.",
+      "zh": "字母页码超过了26页，因此PDF只能逐页写出AA这样的标签。"
     },
     "fix": {
       "en": "Switch to roman or decimal numbering for long runs.",
-      "es": "Pasa a numeración romana o decimal en los tramos largos."
+      "es": "Pasa a numeración romana o decimal en los tramos largos.",
+      "zh": "长篇幅改用罗马数字或阿拉伯数字页码。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Numbering",
-        "es": "Numeración"
+        "es": "Numeración",
+        "zh": "页码编号"
       }
     }
   },
@@ -686,21 +810,25 @@
     "source": "engine",
     "label": {
       "en": "Callout overflows its column",
-      "es": "El recuadro desborda su columna"
+      "es": "El recuadro desborda su columna",
+      "zh": "标注框溢出所在栏"
     },
     "cause": {
       "en": "A box that no cut can split (a figure, table or :::columns group taller than the column, or too high splitMinLines) was placed overflowing; the engine records it in doc.warnings and the Sandbox lists it.",
-      "es": "Una caja que ningún corte puede partir (una figura, una tabla o un grupo :::columns más alto que la columna, o un splitMinLines demasiado alto) se colocó desbordada; el motor lo anota en doc.warnings y el Sandbox lo muestra."
+      "es": "Una caja que ningún corte puede partir (una figura, una tabla o un grupo :::columns más alto que la columna, o un splitMinLines demasiado alto) se colocó desbordada; el motor lo anota en doc.warnings y el Sandbox lo muestra.",
+      "zh": "某个无法在任何位置切开的框（比栏还高的图、表或:::columns组，或splitMinLines设得太高）被放置后溢出；引擎把它记在doc.warnings中，沙盒会列出它。"
     },
     "fix": {
       "en": "Shorten the box, let it split with keepTogether: false, lower splitMinLines, or give it another span.",
-      "es": "Acorta la caja, deja que se parta con keepTogether: false, baja splitMinLines o dale otro span."
+      "es": "Acorta la caja, deja que se parta con keepTogether: false, baja splitMinLines o dale otro span.",
+      "zh": "缩短这个框、用keepTogether: false让它可以拆分、调低splitMinLines，或换一种通栏设置。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "The `:::callout` container",
-        "es": "El contenedor `:::callout`"
+        "es": "El contenedor `:::callout`",
+        "zh": "`:::callout`容器"
       }
     }
   },
@@ -708,21 +836,25 @@
     "source": "sandbox",
     "label": {
       "en": "Heading design cut off",
-      "es": "Diseño de título cortado"
+      "es": "Diseño de título cortado",
+      "zh": "标题设计被截断"
     },
     "cause": {
       "en": "A heading's design is taller than the page (or, for an in-column design, than its column), so the text of the design that lies past the foot is cut off.",
-      "es": "El diseño de un título es más alto que la página (o, si es un diseño de columna, que su columna), así que el texto del diseño que queda por debajo del pie se corta."
+      "es": "El diseño de un título es más alto que la página (o, si es un diseño de columna, que su columna), así que el texto del diseño que queda por debajo del pie se corta.",
+      "zh": "某个标题的设计比页面高（对于栏内设计，是比所在栏高），因此设计中超出页脚的文字被截掉。"
     },
     "fix": {
       "en": "Shorten the design (smaller `minHeight`, a shorter lead or a smaller picture), or give the page more room with a larger trim or smaller margins.",
-      "es": "Acorta el diseño (un `minHeight` menor, una entradilla más corta o una imagen más pequeña), o da más espacio a la página con un formato mayor o márgenes más estrechos."
+      "es": "Acorta el diseño (un `minHeight` menor, una entradilla más corta o una imagen más pequeña), o da más espacio a la página con un formato mayor o márgenes más estrechos.",
+      "zh": "缩短设计（调小`minHeight`、缩短导语或换小一些的图片），或者用更大的成品尺寸或更窄的页边距给页面留出更多空间。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Span and advanced design",
-        "es": "Span y diseño avanzado"
+        "es": "Span y diseño avanzado",
+        "zh": "通栏与高级设计"
       }
     }
   },
@@ -730,21 +862,25 @@
     "source": "sandbox",
     "label": {
       "en": "Cyclic anchor reference",
-      "es": "Referencia de anclaje cíclica"
+      "es": "Referencia de anclaje cíclica",
+      "zh": "循环锚定引用"
     },
     "cause": {
       "en": "Design elements anchor to each other in a loop, so none of them can be placed.",
-      "es": "Los elementos de diseño se anclan unos a otros en bucle, así que ninguno puede colocarse."
+      "es": "Los elementos de diseño se anclan unos a otros en bucle, así que ninguno puede colocarse.",
+      "zh": "几个设计元素相互锚定形成循环，因此一个都无法放置。"
     },
     "fix": {
       "en": "Anchor one element of the chain to the container, the page or the bleed.",
-      "es": "Ancla un elemento de la cadena al contenedor, a la página o a la sangre."
+      "es": "Ancla un elemento de la cadena al contenedor, a la página o a la sangre.",
+      "zh": "把链条中的一个元素锚定到容器、页面或出血边。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Element placement",
-        "es": "Posicionamiento de elementos"
+        "es": "Posicionamiento de elementos",
+        "zh": "元素定位"
       }
     }
   },
@@ -752,21 +888,25 @@
     "source": "sandbox",
     "label": {
       "en": "Dangling anchor reference",
-      "es": "Referencia de anclaje rota"
+      "es": "Referencia de anclaje rota",
+      "zh": "悬空锚定引用"
     },
     "cause": {
       "en": "A design element anchors to an #id that no element in the slot has.",
-      "es": "Un elemento de diseño se ancla a un #id que no tiene ningún elemento de la ranura."
+      "es": "Un elemento de diseño se ancla a un #id que no tiene ningún elemento de la ranura.",
+      "zh": "某个设计元素锚定到的#id在该版面设计中没有任何元素使用。"
     },
     "fix": {
       "en": "Correct the id, or add the element it refers to.",
-      "es": "Corrige el id o añade el elemento al que se refiere."
+      "es": "Corrige el id o añade el elemento al que se refiere.",
+      "zh": "改正id，或添加它所指向的元素。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Element placement",
-        "es": "Posicionamiento de elementos"
+        "es": "Posicionamiento de elementos",
+        "zh": "元素定位"
       }
     }
   },
@@ -774,21 +914,25 @@
     "source": "sandbox",
     "label": {
       "en": "Text always truncated",
-      "es": "Texto siempre recortado"
+      "es": "Texto siempre recortado",
+      "zh": "文字总被截断"
     },
     "cause": {
       "en": "A design text with overflow clip sits in a box too small for even one line, so it never shows whole.",
-      "es": "Un texto de diseño con overflow clip está en una caja demasiado pequeña incluso para una línea, así que nunca se ve entero."
+      "es": "Un texto de diseño con overflow clip está en una caja demasiado pequeña incluso para una línea, así que nunca se ve entero.",
+      "zh": "某段设置了overflow clip的设计文字所在的框连一行都放不下，因此永远无法完整显示。"
     },
     "fix": {
       "en": "Enlarge the box, or use overflow wrap or an ellipsis.",
-      "es": "Agranda la caja, o usa overflow wrap o puntos suspensivos."
+      "es": "Agranda la caja, o usa overflow wrap o puntos suspensivos.",
+      "zh": "放大这个框，或改用overflow wrap或省略号。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Text elements",
-        "es": "Elementos de texto"
+        "es": "Elementos de texto",
+        "zh": "文本元素"
       }
     }
   },
@@ -796,21 +940,25 @@
     "source": "sandbox",
     "label": {
       "en": "Page-span heading without a break",
-      "es": "Título a todo el ancho sin salto"
+      "es": "Título a todo el ancho sin salto",
+      "zh": "通栏标题未设换页"
     },
     "cause": {
       "en": "A heading level has span page but no breakBefore, so the band is ignored; any headings object also drops the H1 default break.",
-      "es": "Un nivel de título tiene span page pero no breakBefore, así que la banda se ignora; además, cualquier objeto headings quita el salto por defecto del H1."
+      "es": "Un nivel de título tiene span page pero no breakBefore, así que la banda se ignora; además, cualquier objeto headings quita el salto por defecto del H1.",
+      "zh": "某级标题设了span page却没有breakBefore，因此色带被忽略；而且只要提供headings对象，H1默认的换页也会失效。"
     },
     "fix": {
       "en": "Restate breakBefore: { enabled: true, parity } on that level.",
-      "es": "Vuelve a declarar breakBefore: { enabled: true, parity } en ese nivel."
+      "es": "Vuelve a declarar breakBefore: { enabled: true, parity } en ese nivel.",
+      "zh": "在该级上重新写明breakBefore: { enabled: true, parity }。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Span and advanced design",
-        "es": "Span y diseño avanzado"
+        "es": "Span y diseño avanzado",
+        "zh": "通栏与高级设计"
       }
     }
   },
@@ -818,21 +966,25 @@
     "source": "sandbox",
     "label": {
       "en": "Heading title not printed",
-      "es": "El texto del título no se imprime"
+      "es": "El texto del título no se imprime",
+      "zh": "标题文字未印出"
     },
     "cause": {
       "en": "An advanced design has no element that prints {titleText}, so the heading's own words never appear.",
-      "es": "Un diseño avanzado no tiene ningún elemento que imprima {titleText}, así que el texto del propio título no aparece."
+      "es": "Un diseño avanzado no tiene ningún elemento que imprima {titleText}, así que el texto del propio título no aparece.",
+      "zh": "某个高级设计中没有任何元素印出{titleText}，因此标题本身的文字永远不会出现。"
     },
     "fix": {
       "en": "Add a text element with {titleText}, unless the heading is meant to be invisible.",
-      "es": "Añade un elemento de texto con {titleText}, salvo que el título deba ser invisible."
+      "es": "Añade un elemento de texto con {titleText}, salvo que el título deba ser invisible.",
+      "zh": "加一个带{titleText}的文字元素，除非这个标题本来就应该不可见。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Span and advanced design",
-        "es": "Span y diseño avanzado"
+        "es": "Span y diseño avanzado",
+        "zh": "通栏与高级设计"
       }
     }
   },
@@ -840,21 +992,25 @@
     "source": "sandbox",
     "label": {
       "en": "Unknown resource",
-      "es": "Recurso desconocido"
+      "es": "Recurso desconocido",
+      "zh": "未知资源"
     },
     "cause": {
       "en": "A :ref or ::resource names an id no resource has; the reference prints \"?\" and nothing is placed.",
-      "es": "Un :ref o un ::resource nombra un id que no tiene ningún recurso; la referencia imprime «?» y no se coloca nada."
+      "es": "Un :ref o un ::resource nombra un id que no tiene ningún recurso; la referencia imprime «?» y no se coloca nada.",
+      "zh": "某个:ref或::resource指定的id没有对应的资源；引用处印出“?”，也不会放置任何内容。"
     },
     "fix": {
       "en": "Correct the id (double quotes only) or add the resource.",
-      "es": "Corrige el id (solo con comillas dobles) o añade el recurso."
+      "es": "Corrige el id (solo con comillas dobles) o añade el recurso.",
+      "zh": "改正id（只能用双引号），或添加该资源。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "Inline reference (the primary form)",
-        "es": "Referencia en línea (la forma principal)"
+        "es": "Referencia en línea (la forma principal)",
+        "zh": "行内引用（主要写法）"
       }
     }
   },
@@ -862,21 +1018,25 @@
     "source": "sandbox",
     "label": {
       "en": "Duplicate resource id",
-      "es": "Id de recurso duplicado"
+      "es": "Id de recurso duplicado",
+      "zh": "资源id重复"
     },
     "cause": {
       "en": "Several resources share one id, and only one of them resolves.",
-      "es": "Varios recursos comparten un mismo id y solo uno de ellos se resuelve."
+      "es": "Varios recursos comparten un mismo id y solo uno de ellos se resuelve.",
+      "zh": "几个资源共用一个id，只有其中一个能被解析。"
     },
     "fix": {
       "en": "Give every resource a unique id.",
-      "es": "Da a cada recurso un id único."
+      "es": "Da a cada recurso un id único.",
+      "zh": "给每个资源一个唯一的id。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "Inline reference (the primary form)",
-        "es": "Referencia en línea (la forma principal)"
+        "es": "Referencia en línea (la forma principal)",
+        "zh": "行内引用（主要写法）"
       }
     }
   },
@@ -884,21 +1044,25 @@
     "source": "sandbox",
     "label": {
       "en": "Unknown resource type",
-      "es": "Tipo de recurso desconocido"
+      "es": "Tipo de recurso desconocido",
+      "zh": "未知资源类型"
     },
     "cause": {
       "en": "A resource's typeId names a type that resourceTypes no longer defines, so a default type is used.",
-      "es": "El typeId de un recurso nombra un tipo que resourceTypes ya no define, así que se usa un tipo por defecto."
+      "es": "El typeId de un recurso nombra un tipo que resourceTypes ya no define, así que se usa un tipo por defecto.",
+      "zh": "某个资源的typeId指向的类型已不在resourceTypes中定义，因此改用默认类型。"
     },
     "fix": {
       "en": "Define the type, or point the resource at an existing one.",
-      "es": "Define el tipo o haz que el recurso apunte a uno existente."
+      "es": "Define el tipo o haz que el recurso apunte a uno existente.",
+      "zh": "定义该类型，或让资源指向一个现有类型。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Resource types",
-        "es": "Tipos de recurso"
+        "es": "Tipos de recurso",
+        "zh": "资源类型"
       }
     }
   },
@@ -906,21 +1070,25 @@
     "source": "sandbox",
     "label": {
       "en": "Low-resolution image",
-      "es": "Imagen de baja resolución"
+      "es": "Imagen de baja resolución",
+      "zh": "图片分辨率过低"
     },
     "cause": {
       "en": "A bitmap is drawn more than 1.5 times wider than its pixels, so it will look blurry in print.",
-      "es": "Un mapa de bits se dibuja más de 1,5 veces más ancho que sus píxeles, así que se verá borroso al imprimir."
+      "es": "Un mapa de bits se dibuja más de 1,5 veces más ancho que sus píxeles, así que se verá borroso al imprimir.",
+      "zh": "某张位图绘制的宽度超过其像素宽度的1.5倍，印刷出来会发虚。"
     },
     "fix": {
       "en": "Supply about 300 dpi at the printed size, and declare the bitmap's real width and height.",
-      "es": "Proporciona unos 300 ppp al tamaño de impresión y declara el ancho y el alto reales del mapa de bits."
+      "es": "Proporciona unos 300 ppp al tamaño de impresión y declara el ancho y el alto reales del mapa de bits.",
+      "zh": "提供按印刷尺寸约300 dpi的图片，并声明位图的真实宽度和高度。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "Resources",
-        "es": "Recursos"
+        "es": "Recursos",
+        "zh": "资源"
       }
     }
   },
@@ -928,21 +1096,25 @@
     "source": "sandbox",
     "label": {
       "en": "Storage unavailable",
-      "es": "Almacenamiento no disponible"
+      "es": "Almacenamiento no disponible",
+      "zh": "存储不可用"
     },
     "cause": {
       "en": "The browser blocks IndexedDB (private browsing, disabled storage), so uploaded pictures and fonts cannot be kept.",
-      "es": "El navegador bloquea IndexedDB (navegación privada, almacenamiento desactivado), así que las imágenes y fuentes subidas no se pueden guardar."
+      "es": "El navegador bloquea IndexedDB (navegación privada, almacenamiento desactivado), así que las imágenes y fuentes subidas no se pueden guardar.",
+      "zh": "浏览器屏蔽了IndexedDB（隐私浏览、存储被禁用），因此上传的图片和字体无法保存。"
     },
     "fix": {
       "en": "Open the Sandbox in a normal window, or export a .postext bundle before closing it.",
-      "es": "Abre el Sandbox en una ventana normal, o exporta un paquete .postext antes de cerrarlo."
+      "es": "Abre el Sandbox en una ventana normal, o exporta un paquete .postext antes de cerrarlo.",
+      "zh": "在普通窗口中打开沙盒，或在关闭前导出一个.postext文件包。"
     },
     "docs": {
       "slug": "sandbox",
       "heading": {
         "en": "Persistence",
-        "es": "Persistencia"
+        "es": "Persistencia",
+        "zh": "持久化"
       }
     }
   },
@@ -950,21 +1122,25 @@
     "source": "sandbox",
     "label": {
       "en": "Chapter frontmatter ignored",
-      "es": "Frontmatter del capítulo ignorado"
+      "es": "Frontmatter del capítulo ignorado",
+      "zh": "章的frontmatter被忽略"
     },
     "cause": {
       "en": "Only the first chapter's frontmatter counts; a later chapter starts with a frontmatter block that is dropped.",
-      "es": "Solo cuenta el frontmatter del primer capítulo; un capítulo posterior empieza con un bloque de frontmatter que se descarta."
+      "es": "Solo cuenta el frontmatter del primer capítulo; un capítulo posterior empieza con un bloque de frontmatter que se descarta.",
+      "zh": "只有第一章的frontmatter有效；后面某一章以frontmatter块开头，这个块被丢弃。"
     },
     "fix": {
       "en": "Keep the book's metadata in chapter one, and use heading attributes for per-chapter values.",
-      "es": "Deja los metadatos del libro en el primer capítulo y usa atributos de título para los valores de cada capítulo."
+      "es": "Deja los metadatos del libro en el primer capítulo y usa atributos de título para los valores de cada capítulo.",
+      "zh": "把书的元数据放在第一章，每章各自的值用标题属性来设。"
     },
     "docs": {
       "slug": "sandbox",
       "heading": {
         "en": "Books and chapters",
-        "es": "Libros y capítulos"
+        "es": "Libros y capítulos",
+        "zh": "书与章"
       }
     }
   },
@@ -972,21 +1148,25 @@
     "source": "engine",
     "label": {
       "en": "Malformed resource embed",
-      "es": "Inserción de recurso mal formada"
+      "es": "Inserción de recurso mal formada",
+      "zh": "资源嵌入格式错误"
     },
     "cause": {
       "en": "A `::name` line is not a well-formed embed on its own line (after a blank line, `::resource{id=\"…\"}` with the id as its only attribute), so it prints as text.",
-      "es": "Una línea `::nombre` no es una inserción bien formada en su propia línea (tras una línea en blanco, `::resource{id=\"…\"}` con el id como único atributo), así que se imprime como texto."
+      "es": "Una línea `::nombre` no es una inserción bien formada en su propia línea (tras una línea en blanco, `::resource{id=\"…\"}` con el id como único atributo), así que se imprime como texto.",
+      "zh": "某个`::name`行不是单独成行、格式正确的嵌入（前面空一行，写成`::resource{id=\"…\"}`，id是唯一的属性），因此被当作文字印出。"
     },
     "fix": {
       "en": "Put the embed alone on its line, after a blank line, with double quotes and no other attributes.",
-      "es": "Deja la inserción sola en su línea, tras una línea en blanco, con comillas dobles y sin más atributos."
+      "es": "Deja la inserción sola en su línea, tras una línea en blanco, con comillas dobles y sin más atributos.",
+      "zh": "让嵌入单独占一行，前面空一行，使用双引号，不带其他属性。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Warnings in the document",
-        "es": "Avisos del documento"
+        "es": "Avisos del documento",
+        "zh": "文档中的警告"
       }
     }
   },
@@ -994,21 +1174,25 @@
     "source": "engine",
     "label": {
       "en": "Fullwidth markup",
-      "es": "Marcas en ancho completo"
+      "es": "Marcas en ancho completo",
+      "zh": "全角标记符号"
     },
     "cause": {
       "en": "A line holds markup typed with a Chinese or Japanese input method: a `：：：` fence, a `＃` heading, a `［＾…］` footnote marker, `｛…｝` attributes or `＊＊…＊＊` bold. The parser reads only the ASCII forms, so the line prints as text.",
-      "es": "Una línea lleva marcas escritas con un método de entrada chino o japonés: una valla `：：：`, un encabezado `＃`, una llamada de nota `［＾…］`, atributos `｛…｝` o negrita `＊＊…＊＊`. El analizador solo lee las formas ASCII, así que la línea se imprime como texto."
+      "es": "Una línea lleva marcas escritas con un método de entrada chino o japonés: una valla `：：：`, un encabezado `＃`, una llamada de nota `［＾…］`, atributos `｛…｝` o negrita `＊＊…＊＊`. El analizador solo lee las formas ASCII, así que la línea se imprime como texto.",
+      "zh": "某行里有用中文或日文输入法打出的标记：`：：：`围栏、`＃`标题、`［＾…］`脚注标记、`｛…｝`属性或`＊＊…＊＊`粗体。解析器只识别ASCII形式，因此这一行被当作文字印出。"
     },
     "fix": {
       "en": "Switch the input method to half-width (or English) for the markup and type `:::`, `#`, `[^…]`, `{…}` or `**…**`; the text between them stays Chinese.",
-      "es": "Pasa el método de entrada a ancho medio (o al inglés) para las marcas y escribe `:::`, `#`, `[^…]`, `{…}` o `**…**`; el texto entre ellas sigue en chino."
+      "es": "Pasa el método de entrada a ancho medio (o al inglés) para las marcas y escribe `:::`, `#`, `[^…]`, `{…}` o `**…**`; el texto entre ellas sigue en chino.",
+      "zh": "输入标记时把输入法切换到半角（或英文），打出`:::`、`#`、`[^…]`、`{…}`或`**…**`；标记之间的文字仍然可以是中文。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Warnings in the document",
-        "es": "Avisos del documento"
+        "es": "Avisos del documento",
+        "zh": "文档中的警告"
       }
     }
   },
@@ -1016,21 +1200,25 @@
     "source": "engine",
     "label": {
       "en": "Attribute key not read",
-      "es": "Clave de atributo no leída"
+      "es": "Clave de atributo no leída",
+      "zh": "属性键未被读取"
     },
     "cause": {
       "en": "An attribute key holds letters outside ASCII (`作者=曹雪芹`). Keys are ASCII, so the attribute is ignored.",
-      "es": "Una clave de atributo lleva letras fuera del ASCII (`作者=曹雪芹`). Las claves son ASCII, así que el atributo se ignora."
+      "es": "Una clave de atributo lleva letras fuera del ASCII (`作者=曹雪芹`). Las claves son ASCII, así que el atributo se ignora.",
+      "zh": "某个属性键含有ASCII以外的字符（`作者=曹雪芹`）。键只能是ASCII，因此该属性被忽略。"
     },
     "fix": {
       "en": "Write the key in ASCII letters, digits, `_` and `-` (`author=曹雪芹`); the value may stay in any script.",
-      "es": "Escribe la clave con letras ASCII, cifras, `_` y `-` (`author=曹雪芹`); el valor puede seguir en cualquier escritura."
+      "es": "Escribe la clave con letras ASCII, cifras, `_` y `-` (`author=曹雪芹`); el valor puede seguir en cualquier escritura.",
+      "zh": "键只用ASCII字母、数字、`_`和`-`来写（`author=曹雪芹`）；值可以用任何文字。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "Attribute values",
-        "es": "Valores de los atributos"
+        "es": "Valores de los atributos",
+        "zh": "属性值"
       }
     }
   },
@@ -1038,21 +1226,25 @@
     "source": "engine",
     "label": {
       "en": "Unknown heading style",
-      "es": "Estilo de título desconocido"
+      "es": "Estilo de título desconocido",
+      "zh": "未知标题样式"
     },
     "cause": {
       "en": "A heading's `{style=\"…\"}` names no entry of `headingStyles`, so the heading keeps its level's settings.",
-      "es": "El `{style=\"…\"}` de un título no nombra ninguna entrada de `headingStyles`, así que el título conserva los ajustes de su nivel."
+      "es": "El `{style=\"…\"}` de un título no nombra ninguna entrada de `headingStyles`, así que el título conserva los ajustes de su nivel.",
+      "zh": "某个标题的`{style=\"…\"}`在`headingStyles`中找不到对应条目，因此标题沿用所在级别的设置。"
     },
     "fix": {
       "en": "Fix the id or add the style to `headingStyles`.",
-      "es": "Corrige el id o añade el estilo a `headingStyles`."
+      "es": "Corrige el id o añade el estilo a `headingStyles`.",
+      "zh": "改正id，或把该样式加到`headingStyles`中。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Warnings in the document",
-        "es": "Avisos del documento"
+        "es": "Avisos del documento",
+        "zh": "文档中的警告"
       }
     }
   },
@@ -1060,21 +1252,25 @@
     "source": "engine",
     "label": {
       "en": "Side column width clamped",
-      "es": "Ancho de la columna lateral ajustado"
+      "es": "Ancho de la columna lateral ajustado",
+      "zh": "边栏宽度被限定"
     },
     "cause": {
       "en": "A one-and-a-half layout's side column percentage would leave a column with no usable width, so the engine splits the width at another percentage.",
-      "es": "El porcentaje de la columna lateral de una maqueta de columna y media dejaría una columna sin ancho útil, así que el motor reparte el ancho con otro porcentaje."
+      "es": "El porcentaje de la columna lateral de una maqueta de columna y media dejaría una columna sin ancho útil, así que el motor reparte el ancho con otro porcentaje.",
+      "zh": "一栏半版式的边栏百分比会让某一栏没有可用宽度，因此引擎按另一个百分比分配宽度。"
     },
     "fix": {
       "en": "Choose a `sideColumnPercent` inside the documented bounds, or widen the page or the gutter.",
-      "es": "Elige un `sideColumnPercent` dentro de los límites documentados, o amplía la página o el medianil."
+      "es": "Elige un `sideColumnPercent` dentro de los límites documentados, o amplía la página o el medianil.",
+      "zh": "在文档给出的范围内选择`sideColumnPercent`，或加宽页面或栏间距。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Configuration warnings",
-        "es": "Avisos de configuración"
+        "es": "Avisos de configuración",
+        "zh": "配置警告"
       }
     }
   },
@@ -1082,21 +1278,25 @@
     "source": "engine",
     "label": {
       "en": "Character grid too large",
-      "es": "Retícula de caracteres demasiado grande"
+      "es": "Retícula de caracteres demasiado grande",
+      "zh": "字符网格过大"
     },
     "cause": {
       "en": "`cjk.grid` asks for more characters per line or lines per page than the page margins leave room for at the body size and line height, so the grid is set with the most that fit.",
-      "es": "`cjk.grid` pide más caracteres por línea o más líneas por página de los que caben entre los márgenes con ese cuerpo e interlineado, así que la retícula se compone con los que caben."
+      "es": "`cjk.grid` pide más caracteres por línea o más líneas por página de los que caben entre los márgenes con ese cuerpo e interlineado, así que la retícula se compone con los que caben.",
+      "zh": "`cjk.grid`要求的每行字数或每页行数，按正文字号和行距，超出了页边距留出的空间，因此网格按能容纳的最大值排出。"
     },
     "fix": {
       "en": "Lower `charsPerLine` or `linesPerPage`, narrow the margins (they are minimums), or set a smaller `bodyText.fontSize` or `lineHeight`.",
-      "es": "Baja `charsPerLine` o `linesPerPage`, estrecha los márgenes (son mínimos) o reduce `bodyText.fontSize` o `lineHeight`."
+      "es": "Baja `charsPerLine` o `linesPerPage`, estrecha los márgenes (son mínimos) o reduce `bodyText.fontSize` o `lineHeight`.",
+      "zh": "调低`charsPerLine`或`linesPerPage`，缩小页边距（它们是最小值），或调小`bodyText.fontSize`或`lineHeight`。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Character grid",
-        "es": "Retícula de caracteres"
+        "es": "Retícula de caracteres",
+        "zh": "字格"
       }
     }
   },
@@ -1104,21 +1304,25 @@
     "source": "engine",
     "label": {
       "en": "Unknown table style",
-      "es": "Estilo de tabla desconocido"
+      "es": "Estilo de tabla desconocido",
+      "zh": "未知表格样式"
     },
     "cause": {
       "en": "A table resource's `styleId` names no entry of `tableStyles`, so the table uses the global `tableStyle`.",
-      "es": "El `styleId` de una tabla no nombra ninguna entrada de `tableStyles`, así que la tabla usa el `tableStyle` global."
+      "es": "El `styleId` de una tabla no nombra ninguna entrada de `tableStyles`, así que la tabla usa el `tableStyle` global.",
+      "zh": "某个表格资源的`styleId`在`tableStyles`中找不到对应条目，因此该表使用全局的`tableStyle`。"
     },
     "fix": {
       "en": "Fix the id or add the named style to `tableStyles`.",
-      "es": "Corrige el id o añade el estilo con nombre a `tableStyles`."
+      "es": "Corrige el id o añade el estilo con nombre a `tableStyles`.",
+      "zh": "改正id，或把命名样式加到`tableStyles`中。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Warnings in the document",
-        "es": "Avisos del documento"
+        "es": "Avisos del documento",
+        "zh": "文档中的警告"
       }
     }
   },
@@ -1126,21 +1330,25 @@
     "source": "engine",
     "label": {
       "en": "Irregular table grid",
-      "es": "Cuadrícula de tabla irregular"
+      "es": "Cuadrícula de tabla irregular",
+      "zh": "表格网格不规整"
     },
     "cause": {
       "en": "A table's rows do not form a regular grid: merged cells overlap, or cells covered by a colSpan/rowSpan are missing instead of marked with `hiddenBy`, so later cells shift columns.",
-      "es": "Las filas de una tabla no forman una cuadrícula regular: hay celdas combinadas que se solapan, o faltan las celdas que cubre un colSpan/rowSpan en lugar de marcarse con `hiddenBy`, así que las celdas siguientes se desplazan de columna."
+      "es": "Las filas de una tabla no forman una cuadrícula regular: hay celdas combinadas que se solapan, o faltan las celdas que cubre un colSpan/rowSpan en lugar de marcarse con `hiddenBy`, así que las celdas siguientes se desplazan de columna.",
+      "zh": "某张表的各行没有构成规整的网格：合并单元格相互重叠，或者被colSpan/rowSpan覆盖的单元格缺失而没有用`hiddenBy`标记，于是后面的单元格错了栏。"
     },
     "fix": {
       "en": "Keep every row the same length and mark covered cells with `hiddenBy` (or build merges with `mergeCells`).",
-      "es": "Mantén todas las filas con la misma longitud y marca las celdas cubiertas con `hiddenBy` (o crea las combinaciones con `mergeCells`)."
+      "es": "Mantén todas las filas con la misma longitud y marca las celdas cubiertas con `hiddenBy` (o crea las combinaciones con `mergeCells`).",
+      "zh": "让每一行长度相同，并用`hiddenBy`标记被覆盖的单元格（或者用`mergeCells`来合并）。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Warnings in the document",
-        "es": "Avisos del documento"
+        "es": "Avisos del documento",
+        "zh": "文档中的警告"
       }
     }
   },
@@ -1148,21 +1356,25 @@
     "source": "engine",
     "label": {
       "en": "Image not registered",
-      "es": "Imagen sin registrar"
+      "es": "Imagen sin registrar",
+      "zh": "图片未注册"
     },
     "cause": {
       "en": "A placed image (figure, cell picture, callout icon or design image) had no registered bitmap when the page was painted, so a grey placeholder was drawn.",
-      "es": "Una imagen colocada (figura, imagen de celda, icono de recuadro o imagen de diseño) no tenía un mapa de bits registrado al pintar la página, así que se dibujó un marcador gris."
+      "es": "Una imagen colocada (figura, imagen de celda, icono de recuadro o imagen de diseño) no tenía un mapa de bits registrado al pintar la página, así que se dibujó un marcador gris.",
+      "zh": "某个放置的图片（图、单元格图片、标注框图标或设计图片）在绘制页面时还没有注册位图，因此画了一个灰色占位框。"
     },
     "fix": {
       "en": "Register every `fileId` before rendering (`registerResourceImage`, or `imageUrl`/`resourceBytes` for HTML and PDF).",
-      "es": "Registra cada `fileId` antes de renderizar (`registerResourceImage`, o `imageUrl`/`resourceBytes` para HTML y PDF)."
+      "es": "Registra cada `fileId` antes de renderizar (`registerResourceImage`, o `imageUrl`/`resourceBytes` para HTML y PDF).",
+      "zh": "渲染前注册每一个`fileId`（用`registerResourceImage`，HTML和PDF则用`imageUrl`/`resourceBytes`）。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Warnings in the document",
-        "es": "Avisos del documento"
+        "es": "Avisos del documento",
+        "zh": "文档中的警告"
       }
     }
   },
@@ -1170,21 +1382,25 @@
     "source": "engine",
     "label": {
       "en": "Font stack in fontFamily",
-      "es": "Pila de fuentes en fontFamily"
+      "es": "Pila de fuentes en fontFamily",
+      "zh": "fontFamily中写了字体栈"
     },
     "cause": {
       "en": "A `fontFamily` holds a CSS stack (`'Lora, serif'`); the engine measures and draws with the first family only.",
-      "es": "Un `fontFamily` contiene una pila CSS (`'Lora, serif'`); el motor mide y dibuja solo con la primera familia."
+      "es": "Un `fontFamily` contiene una pila CSS (`'Lora, serif'`); el motor mide y dibuja solo con la primera familia.",
+      "zh": "某个`fontFamily`写的是CSS字体栈（`'Lora, serif'`）；引擎只用第一个字体族来测量和绘制。"
     },
     "fix": {
       "en": "Give a single family name and load its faces before the first build.",
-      "es": "Indica una sola familia y carga sus fuentes antes de la primera composición."
+      "es": "Indica una sola familia y carga sus fuentes antes de la primera composición.",
+      "zh": "只写一个字体族名称，并在第一次构建前加载它的各个字面。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Configuration warnings",
-        "es": "Avisos de configuración"
+        "es": "Avisos de configuración",
+        "zh": "配置警告"
       }
     }
   },
@@ -1192,21 +1408,25 @@
     "source": "engine",
     "label": {
       "en": "Unknown number format",
-      "es": "Formato de numeración desconocido"
+      "es": "Formato de numeración desconocido",
+      "zh": "未知编号格式"
     },
     "cause": {
       "en": "A list `numberFormat`, a page numbering `format` or a resource type's counter format is none of the accepted spellings, so it numbers in decimal.",
-      "es": "Un `numberFormat` de lista, un `format` de numeración de páginas o el formato de contador de un tipo de recurso no es ninguna de las grafías aceptadas, así que numera en decimal."
+      "es": "Un `numberFormat` de lista, un `format` de numeración de páginas o el formato de contador de un tipo de recurso no es ninguna de las grafías aceptadas, así que numera en decimal.",
+      "zh": "列表的`numberFormat`、页码的`format`或某个资源类型的计数器格式不属于任何可接受的写法，因此按十进制编号。"
     },
     "fix": {
       "en": "Use one of the documented format spellings (for example `decimal`/`arabic`, `lower-roman`, `upper-alpha`).",
-      "es": "Usa una de las grafías de formato documentadas (por ejemplo `decimal`/`arabic`, `lower-roman`, `upper-alpha`)."
+      "es": "Usa una de las grafías de formato documentadas (por ejemplo `decimal`/`arabic`, `lower-roman`, `upper-alpha`).",
+      "zh": "使用文档中列出的某种格式写法（例如`decimal`/`arabic`、`lower-roman`、`upper-alpha`）。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Configuration warnings",
-        "es": "Avisos de configuración"
+        "es": "Avisos de configuración",
+        "zh": "配置警告"
       }
     }
   },
@@ -1214,21 +1434,25 @@
     "source": "engine",
     "label": {
       "en": "Unknown setting",
-      "es": "Ajuste desconocido"
+      "es": "Ajuste desconocido",
+      "zh": "未知设置项"
     },
     "cause": {
       "en": "The heading settings, a heading style or a paragraph style carry a key the engine does not have, often a typo or a name borrowed from another tool, and the engine ignores it.",
-      "es": "Los ajustes de títulos, un estilo de título o un estilo de párrafo llevan una clave que el motor no tiene, muchas veces una errata o un nombre sacado de otra herramienta, y el motor la ignora."
+      "es": "Los ajustes de títulos, un estilo de título o un estilo de párrafo llevan una clave que el motor no tiene, muchas veces una errata o un nombre sacado de otra herramienta, y el motor la ignora.",
+      "zh": "标题设置、某个标题样式或段落样式中带有引擎没有的键，通常是笔误或从别的工具借来的名称，引擎会忽略它。"
     },
     "fix": {
       "en": "Rename the key to the setting the warning suggests, or remove it.",
-      "es": "Cambia la clave por el ajuste que propone el aviso, o quítala."
+      "es": "Cambia la clave por el ajuste que propone el aviso, o quítala.",
+      "zh": "把这个键改成警告建议的设置名，或删掉它。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Configuration warnings",
-        "es": "Avisos de configuración"
+        "es": "Avisos de configuración",
+        "zh": "配置警告"
       }
     }
   },
@@ -1236,21 +1460,25 @@
     "source": "engine",
     "label": {
       "en": "Hyphenation locale not bundled",
-      "es": "Idioma de separación silábica no incluido"
+      "es": "Idioma de separación silábica no incluido",
+      "zh": "断词语言未内置"
     },
     "cause": {
       "en": "The hyphenation locale is not one of the bundled pattern sets (en-us, es, fr, de, it, pt, ca, nl) after normalising region tags, so English patterns were used.",
-      "es": "El idioma de separación silábica no es ninguno de los juegos de patrones incluidos (en-us, es, fr, de, it, pt, ca, nl) tras normalizar la región, así que se usaron los patrones del inglés."
+      "es": "El idioma de separación silábica no es ninguno de los juegos de patrones incluidos (en-us, es, fr, de, it, pt, ca, nl) tras normalizar la región, así que se usaron los patrones del inglés.",
+      "zh": "断词语言在规范化地区标签后，不属于内置的任何一套断词模式（en-us、es、fr、de、it、pt、ca、nl），因此使用了英语模式。"
     },
     "fix": {
       "en": "Use a bundled locale, or turn hyphenation off for that text.",
-      "es": "Usa un idioma incluido o desactiva la separación silábica para ese texto."
+      "es": "Usa un idioma incluido o desactiva la separación silábica para ese texto.",
+      "zh": "使用内置的语言，或对这段文字关闭断词。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Configuration warnings",
-        "es": "Avisos de configuración"
+        "es": "Avisos de configuración",
+        "zh": "配置警告"
       }
     }
   },
@@ -1258,21 +1486,25 @@
     "source": "engine",
     "label": {
       "en": "Index mark without a term",
-      "es": "Marca de índice sin término"
+      "es": "Marca de índice sin término",
+      "zh": "索引标记缺少词条"
     },
     "cause": {
       "en": "An :index{…} mark has no term attribute and no bracketed text, so it files nothing.",
-      "es": "Una marca :index{…} no tiene atributo term ni texto entre corchetes, así que no registra nada."
+      "es": "Una marca :index{…} no tiene atributo term ni texto entre corchetes, así que no registra nada.",
+      "zh": "某个:index{…}标记既没有term属性，也没有方括号中的文字，因此不会收录任何内容。"
     },
     "fix": {
       "en": "Write :index[word] to index a word of the text, or :index{term=\"…\"} to name the entry.",
-      "es": "Escribe :index[palabra] para indexar una palabra del texto, o :index{term=\"…\"} para nombrar la entrada."
+      "es": "Escribe :index[palabra] para indexar una palabra del texto, o :index{term=\"…\"} para nombrar la entrada.",
+      "zh": "写:index[word]把正文中的某个词编入索引，或写:index{term=\"…\"}来指定词条。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "Back-of-book index",
-        "es": "Índice analítico"
+        "es": "Índice analítico",
+        "zh": "索引"
       }
     }
   },
@@ -1280,21 +1512,25 @@
     "source": "engine",
     "label": {
       "en": "Index cross-reference to a missing entry",
-      "es": "Remisión del índice a una entrada que no existe"
+      "es": "Remisión del índice a una entrada que no existe",
+      "zh": "索引互见指向不存在的词条"
     },
     "cause": {
       "en": "A see or seealso mark points at a term no mark of that index files, so the reader is sent to an entry that is not there.",
-      "es": "Una marca see o seealso remite a un término que ninguna marca de ese índice registra, así que el lector va a una entrada que no está."
+      "es": "Una marca see o seealso remite a un término que ninguna marca de ese índice registra, así que el lector va a una entrada que no está.",
+      "zh": "某个see或seealso标记指向的词条，在该索引中没有任何标记收录，于是读者被引向一个不存在的词条。"
     },
     "fix": {
       "en": "Write the target exactly as its entry's term (levels joined with !), or mark the target term somewhere in the text.",
-      "es": "Escribe el destino igual que el término de su entrada (con los niveles unidos por !), o marca ese término en algún lugar del texto."
+      "es": "Escribe el destino igual que el término de su entrada (con los niveles unidos por !), o marca ese término en algún lugar del texto.",
+      "zh": "按目标词条的term原样写出目标（各级之间用!连接），或在正文某处标记目标词条。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "Back-of-book index",
-        "es": "Índice analítico"
+        "es": "Índice analítico",
+        "zh": "索引"
       }
     }
   },
@@ -1302,21 +1538,25 @@
     "source": "engine",
     "label": {
       "en": "Index range not closed",
-      "es": "Intervalo del índice sin cerrar"
+      "es": "Intervalo del índice sin cerrar",
+      "zh": "索引范围未闭合"
     },
     "cause": {
       "en": "A range=\"start\" mark has no range=\"end\" mark with the same term (or the reverse), so the entry prints one page instead of the range.",
-      "es": "Una marca range=\"start\" no tiene su range=\"end\" con el mismo término (o al revés), así que la entrada imprime una página en lugar del intervalo."
+      "es": "Una marca range=\"start\" no tiene su range=\"end\" con el mismo término (o al revés), así que la entrada imprime una página en lugar del intervalo.",
+      "zh": "某个range=\"start\"标记没有同一词条的range=\"end\"标记与之对应（或者反过来），因此该词条只印出一个页码，而不是页码范围。"
     },
     "fix": {
       "en": "Close the range with :index{term=\"…\" range=\"end\"} where the discussion ends, spelling the term the same way.",
-      "es": "Cierra el intervalo con :index{term=\"…\" range=\"end\"} donde termina la explicación, escribiendo el término igual."
+      "es": "Cierra el intervalo con :index{term=\"…\" range=\"end\"} donde termina la explicación, escribiendo el término igual.",
+      "zh": "在论述结束的地方用:index{term=\"…\" range=\"end\"}闭合范围，词条的写法要保持一致。"
     },
     "docs": {
       "slug": "document-format",
       "heading": {
         "en": "Back-of-book index",
-        "es": "Índice analítico"
+        "es": "Índice analítico",
+        "zh": "索引"
       }
     }
   },
@@ -1324,21 +1564,25 @@
     "source": "sandbox",
     "label": {
       "en": "Characters missing from a PDF font",
-      "es": "Caracteres sin glifo en una fuente del PDF"
+      "es": "Caracteres sin glifo en una fuente del PDF",
+      "zh": "PDF字体中缺少字符"
     },
     "cause": {
       "en": "The last PDF set characters that no file of a face has a glyph for, such as a Chinese family served only as its Latin file, or Fontsource's chinese-traditional subset of Noto Serif TC, which has no full-width ，！？（）. They print as the font's empty box. postext-pdf reports it through onWarning as a missingGlyph warning.",
-      "es": "El último PDF compuso caracteres para los que ningún archivo de una variante tiene glifo, como una familia china servida solo con su archivo latino, o el subconjunto chinese-traditional de Noto Serif TC en Fontsource, que no tiene ，！？（） de ancho completo. Se imprimen como la caja vacía de la fuente. postext-pdf lo notifica por onWarning como aviso missingGlyph."
+      "es": "El último PDF compuso caracteres para los que ningún archivo de una variante tiene glifo, como una familia china servida solo con su archivo latino, o el subconjunto chinese-traditional de Noto Serif TC en Fontsource, que no tiene ，！？（） de ancho completo. Se imprimen como la caja vacía de la fuente. postext-pdf lo notifica por onWarning como aviso missingGlyph.",
+      "zh": "上一次生成的PDF排了一些字符，而某个字面的所有文件中都没有这些字符的字形，比如一个只提供了拉丁文件的中文字体族，又比如Fontsource提供的Noto Serif TC的chinese-traditional子集，其中没有全角的“，！？（）”。这些字符会印成字体的空框。postext-pdf通过onWarning以missingGlyph警告报告这一问题。"
     },
     "fix": {
       "en": "Give the PDF the files that hold those characters (the numbered unicode-range slices of a Fontsource CJK family), or choose a family that covers them.",
-      "es": "Da al PDF los archivos que contienen esos caracteres (los fragmentos numerados por unicode-range de una familia CJK de Fontsource) o elige una familia que los incluya."
+      "es": "Da al PDF los archivos que contienen esos caracteres (los fragmentos numerados por unicode-range de una familia CJK de Fontsource) o elige una familia que los incluya.",
+      "zh": "给PDF提供包含这些字符的文件（Fontsource中日韩字体族按unicode-range编号的各个分片），或者换一个覆盖这些字符的字体族。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Chinese, Japanese and Korean fonts",
-        "es": "Fuentes chinas, japonesas y coreanas"
+        "es": "Fuentes chinas, japonesas y coreanas",
+        "zh": "中文、日文和韩文字体"
       }
     }
   },
@@ -1346,21 +1590,25 @@
     "source": "sandbox",
     "label": {
       "en": "Variable font in the PDF",
-      "es": "Fuente variable en el PDF"
+      "es": "Fuente variable en el PDF",
+      "zh": "PDF中的可变字体"
     },
     "cause": {
       "en": "A face of the last PDF came from a variable font asked for at a weight other than its default instance. pdf-lib embeds the default instance only, so that text prints at the default weight (a bold set from NotoSerifSC[wght].ttf prints regular).",
-      "es": "Una variante del último PDF salió de una fuente variable pedida con un peso distinto del de su instancia por defecto. pdf-lib solo incrusta la instancia por defecto, así que ese texto se imprime con el peso por defecto (una negrita compuesta con NotoSerifSC[wght].ttf sale redonda)."
+      "es": "Una variante del último PDF salió de una fuente variable pedida con un peso distinto del de su instancia por defecto. pdf-lib solo incrusta la instancia por defecto, así que ese texto se imprime con el peso por defecto (una negrita compuesta con NotoSerifSC[wght].ttf sale redonda).",
+      "zh": "上一次生成的PDF中，有一个字面来自可变字体，而请求的字重不是它的默认实例。pdf-lib只嵌入默认实例，因此这段文字按默认字重印出（用NotoSerifSC[wght].ttf设的粗体会印成常规体）。"
     },
     "fix": {
       "en": "Provide one static file per weight (fontTools varLib.instancer cuts them), or use Fontsource, which serves static weights.",
-      "es": "Da un archivo estático por peso (fontTools varLib.instancer los saca) o usa Fontsource, que sirve pesos estáticos."
+      "es": "Da un archivo estático por peso (fontTools varLib.instancer los saca) o usa Fontsource, que sirve pesos estáticos.",
+      "zh": "每个字重提供一个静态文件（可以用fontTools的varLib.instancer切出来），或者使用提供静态字重的Fontsource。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Chinese, Japanese and Korean fonts",
-        "es": "Fuentes chinas, japonesas y coreanas"
+        "es": "Fuentes chinas, japonesas y coreanas",
+        "zh": "中文、日文和韩文字体"
       }
     }
   },
@@ -1368,21 +1616,25 @@
     "source": "sandbox",
     "label": {
       "en": "Large CFF font embedded whole",
-      "es": "Fuente CFF grande incrustada entera"
+      "es": "Fuente CFF grande incrustada entera",
+      "zh": "大型CFF字体被整体嵌入"
     },
     "cause": {
       "en": "The last PDF embedded a CFF-flavoured OpenType file (.otf) over 2 MB whole, since postext-pdf does not subset CFF outlines. Source Han Serif adds 8 to 25 MB per weight.",
-      "es": "El último PDF incrustó entero un archivo OpenType con contornos CFF (.otf) de más de 2 MB, porque postext-pdf no reduce los contornos CFF. Source Han Serif añade de 8 a 25 MB por peso."
+      "es": "El último PDF incrustó entero un archivo OpenType con contornos CFF (.otf) de más de 2 MB, porque postext-pdf no reduce los contornos CFF. Source Han Serif añade de 8 a 25 MB por peso.",
+      "zh": "上一次生成的PDF整体嵌入了一个超过2 MB的CFF轮廓的OpenType文件（.otf），因为postext-pdf不对CFF轮廓做子集化。思源宋体（Source Han Serif）每个字重会增加8到25 MB。"
     },
     "fix": {
       "en": "Use the TrueType build of the face (Noto Serif CJK from Google Fonts or Fontsource), which is subset to the glyphs used.",
-      "es": "Usa la versión TrueType de la fuente (Noto Serif CJK de Google Fonts o Fontsource), que se reduce a los glifos usados."
+      "es": "Usa la versión TrueType de la fuente (Noto Serif CJK de Google Fonts o Fontsource), que se reduce a los glifos usados.",
+      "zh": "改用该字体的TrueType版本（来自Google Fonts或Fontsource的Noto Serif CJK），它会只保留用到的字形。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Chinese, Japanese and Korean fonts",
-        "es": "Fuentes chinas, japonesas y coreanas"
+        "es": "Fuentes chinas, japonesas y coreanas",
+        "zh": "中文、日文和韩文字体"
       }
     }
   },
@@ -1390,21 +1642,25 @@
     "source": "engine",
     "label": {
       "en": "Rotation ignored in vertical text",
-      "es": "Giro ignorado en texto vertical"
+      "es": "Giro ignorado en texto vertical",
+      "zh": "竖排文字中忽略旋转"
     },
     "cause": {
       "en": "A figure or table asks for a quarter turn (placement.rotate) in a document set vertically. Every figure and table of a vertical flow already stands upright, so the turn is not applied and the resource floats in its own span.",
-      "es": "Una figura o una tabla pide un cuarto de vuelta (placement.rotate) en un documento compuesto en vertical. Todas las figuras y tablas de un flujo vertical ya están en pie, así que el giro no se aplica y el recurso flota en su propio espacio."
+      "es": "Una figura o una tabla pide un cuarto de vuelta (placement.rotate) en un documento compuesto en vertical. Todas las figuras y tablas de un flujo vertical ya están en pie, así que el giro no se aplica y el recurso flota en su propio espacio.",
+      "zh": "在竖排的文档中，某个图或表要求旋转90度（placement.rotate）。竖排版面中的每个图和表本来就是直立的，因此不会旋转，该资源按自身的span设置浮动。"
     },
     "fix": {
       "en": "Drop placement.rotate, or set the passage in a horizontal section (a heading style whose layout sets writingMode 'horizontal-tb'), where the figure turns as asked.",
-      "es": "Quita placement.rotate o compón ese pasaje en una sección horizontal (un estilo de título cuyo layout fije writingMode 'horizontal-tb'), donde la figura gira como se pide."
+      "es": "Quita placement.rotate o compón ese pasaje en una sección horizontal (un estilo de título cuyo layout fije writingMode 'horizontal-tb'), donde la figura gira como se pide.",
+      "zh": "去掉placement.rotate，或者把这段内容放在横排的分节中（用一个layout把writingMode设为'horizontal-tb'的标题样式），图就会按要求旋转。"
     },
     "docs": {
       "slug": "configuration",
       "heading": {
         "en": "Vertical writing",
-        "es": "Escritura vertical"
+        "es": "Escritura vertical",
+        "zh": "竖排"
       }
     }
   }
