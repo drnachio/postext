@@ -312,6 +312,9 @@ describe('headings: number separator and couplet titles', () => {
     expect(plainTitleBreaks('Postext\u2028使用手册')).toBe('Postext使用手册');
     expect(plainTitleBreaks('甄士隱夢幻識通靈\u2028賈雨村風塵懷閨秀')).toBe('甄士隱夢幻識通靈\u3000賈雨村風塵懷閨秀');
     expect(plainTitleBreaks('Part one\u2028the storm')).toBe('Part one the storm');
+    // A fullwidth bracket is Chinese; Korean spaces its words.
+    expect(plainTitleBreaks('Postext\u2028\uff08\u6d4b\u8bd5\u7248\uff09')).toBe('Postext\uff08\u6d4b\u8bd5\u7248\uff09');
+    expect(plainTitleBreaks('\ud3ec\uc2a4\ud14d\uc2a4\ud2b8\u20282026')).toBe('\ud3ec\uc2a4\ud14d\uc2a4\ud2b8 2026');
     expect(plainTitleBreaks('「红楼梦」\u2028——序')).toBe('「红楼梦」\u3000——序');
     expect(plainTitleBreaks('Wait…\u2028…what')).toBe('Wait… …what');
     const doc = buildDocument({ markdown: '# 第一部分 \\\\ 2026年概况\n\n正文。' }, { ...config(undefined), headings: { levels: [{ level: 1, numberingTemplate: '第{1:一}章' }] } });
