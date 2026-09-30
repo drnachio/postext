@@ -573,6 +573,22 @@ describe('layouts.json round trip', () => {
     const loaded = await parseBundle(opened.manifest, opened.readFile, { locale: 'en', summary });
     expect(loaded.layouts).toBeUndefined();
   });
+
+  it('prefers the pagination of the language it opens', async () => {
+    const layouts = { c1: layoutOf(chapters[0]!, config, resources), c2: layoutOf(chapters[1]!, config, resources) };
+    const built = await buildBundleFiles(meta, { chapters, config, resources, layouts }, sources);
+    const stale = enc.encode(dec.decode(built.files['layouts.json']!).replace(ENGINE_KEY, '0.0.0'));
+    const open = async (files: Record<string, Uint8Array>) => {
+      const opened = openBundleZip(zipBundle(files));
+      return parseBundle(opened.manifest, opened.readFile, { locale: 'en', summary });
+    };
+    // Its own file wins over a shared one that no longer fits…
+    const perLocale = await open({ ...built.files, 'layouts.json': stale, 'layouts.en.json': built.files['layouts.json']! });
+    expect(Object.keys(perLocale.layouts!)).toHaveLength(2);
+    // …and another language's is never read.
+    const other = await open({ ...built.files, 'layouts.json': stale, 'layouts.es.json': built.files['layouts.json']! });
+    expect(other.layouts).toBeUndefined();
+  });
 });
 
 describe('parseBundle locale', () => {

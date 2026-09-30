@@ -92,6 +92,11 @@
       "en": "Chinese set as Chinese books set it: line breaking and punctuation, the character grid, vertical text bound on the right, readings and marks beside the characters, and fonts, from a novel page to an official document, a newspaper, a dictionary and a woodblock leaf.",
       "es": "El chino compuesto como lo componen los libros chinos: corte de líneas y puntuación, la retícula de caracteres, el texto vertical encuadernado por la derecha, las lecturas y marcas junto a los caracteres y las fuentes, de una página de novela a un documento oficial, un periódico, un diccionario y una hoja xilográfica."
     },
-    "recipes": []
+    "recipes": [
+      "chinese-novel-horizontal", "vertical-novel-right-bound", "pinyin-primer", "proper-name-marks",
+      "red-ink-commentary", "chinese-name-index", "zhuyin-vertical-reader", "chinese-dates-upright",
+      "chinese-official-document", "tang-poems-facing-english", "vertical-newspaper-tiers", "woodblock-leaf",
+      "chinese-dictionary-page"
+    ]
   }
 }

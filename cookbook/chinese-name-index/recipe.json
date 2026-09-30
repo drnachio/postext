@@ -1,0 +1,73 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 79,
+  "status": "published",
+  "chapter": "structure",
+  "order": 80,
+  "level": 2,
+  "genres": ["novel"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["back-of-book-index", "cjk-fonts"],
+    "also": [
+      "heading-styles",
+      "unnumbered-headings",
+      "opener-design",
+      "heading-attributes",
+      "chinese-numerals",
+      "character-grid",
+      "cjk-line-breaking",
+      "running-heads",
+      "mirrored-margins",
+      "paragraph-styles",
+      "color-palette",
+      "pdf-export"
+    ]
+  },
+  "answers": ["Q97", "Q94"],
+  "gotchas": ["cjk-fonts-slices", "cjk-no-italic", "cjk-locale-tag", "cjk-face-region", "headings-drop-h1-break", "palette-skips-designs", "config-cache-identity"],
+  "related": ["names-and-subjects-indexes", "back-of-book-index", "chinese-novel-horizontal"],
+  "workarounds": [
+    { "package": "postext", "note": "the index note is a heading attribute (note=\"…\") that the opener design prints above the two columns, not a paragraph: as the first paragraph under the index heading, column balancing's loose-paragraph lever spread it to twelve characters a line in a column of fourteen to even out the Traditional edition's last page" },
+    { "package": "postext", "note": "design text sets every Chinese mark full width and has no line-start or line-end rules (禁则): with ，；、 inside its lines the note set them a full em beside the Kaiming half-width marks of the Simplified text around it, and the Traditional note broke inside 頁碼. It is written as three sentences, one to a line with the \\n escape, each ending in 。, its only mark" }
+  ],
+  "engine": { "postext": "1.9.0", "postextPdf": "1.9.0" },
+  "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": {
+    "hero": [6, 7],
+    "card": "loupe",
+    "focus": { "page": 7, "x": 0.12, "y": 0.372, "w": 0.56, "h": 0.355 },
+    "doc": ["first", "last"],
+    "pages": [1, 2, 3, 4, 5, 6, 7, 8, 9, 14, 15, 16],
+    "expect": { "pages": [16, 16] }
+  },
+  "downloads": { "pdf": true },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "Dream of the Red Chamber (紅樓夢), chapters 1–3, passages where the characters first appear, in the Cheng–Gao edition of 1792 (程乙本); Wikisource transcription, revision 9685985. The Traditional edition reads the source's 原系 as 原係; both set its －－ as ——; the Simplified edition converted with OpenCC",
+          "es": "Sueño en el pabellón rojo (紅樓夢), capítulos 1 a 3, pasajes en que aparecen los personajes, en la edición de Cheng y Gao de 1792 (程乙本); transcripción de Wikisource, revisión 9685985. La edición tradicional lee 原係 donde el original dice 原系; las dos componen su －－ como ——; la edición simplificada, convertida con OpenCC"
+        },
+        "who": "Cao Xueqin, Cheng Weiyuan and Gao E; transcription by Wikisource editors",
+        "source": "https://zh.wikisource.org/w/index.php?title=%E7%B4%85%E6%A8%93%E5%A4%A2%EF%BC%88%E7%A8%8B%E4%B9%99%E6%9C%AC%EF%BC%89/%E7%AC%AC%E4%B8%80%E5%9B%9E_%E8%87%B3%E7%AC%AC%E5%8D%81%E5%9B%9E&oldid=9685985",
+        "license": "CC-BY-SA-4.0"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Noto Serif SC", "license": "OFL-1.1" },
+      { "family": "Noto Sans SC", "license": "OFL-1.1" },
+      { "family": "Ma Shan Zheng", "license": "OFL-1.1" },
+      { "family": "Noto Serif TC", "license": "OFL-1.1" },
+      { "family": "Noto Sans TC", "license": "OFL-1.1" },
+      { "family": "LXGW WenKai TC", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-09-29",
+  "updated": "2026-09-30"
+}

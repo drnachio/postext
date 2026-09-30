@@ -1,0 +1,606 @@
+{
+  "schemaVersion": 1,
+  "slug": "proper-name-marks",
+  "sourceHash": "f5273e727769f25ecfeab413893407e967cf7dbb8f2047311c06eb5f80a63d26",
+  "engine": {
+    "postext": "1.9.0",
+    "postextPdf": "1.9.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-30T05:29:06.813Z",
+  "variants": {
+    "en": {
+      "hash8": "7e6ae7b9",
+      "vdtHash": "666b14ae1706626f3a5dda2a0371d7dcbd4dd76e",
+      "timings": {
+        "importMs": 626,
+        "fontsMs": 7664,
+        "buildMs": 6,
+        "totalMs": 8959,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          140,
+          203
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Noto Serif TC",
+          "sizePt": 10.5,
+          "leadingPt": 18
+        },
+        "families": [
+          "LXGW WenKai TC",
+          "Noto Sans TC",
+          "Noto Serif TC"
+        ],
+        "pages": 3,
+        "ownLines": 167
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "一",
+          "role": "opener",
+          "w": 1000,
+          "h": 1450,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 82220,
+          "alt": "Opening page 一: 史記選讀."
+        },
+        {
+          "n": 2,
+          "label": "二",
+          "role": "opener",
+          "w": 1000,
+          "h": 1450,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 85526,
+          "alt": "Opening page 二: 項羽本紀."
+        },
+        {
+          "n": 3,
+          "label": "三",
+          "role": "opener",
+          "w": 1000,
+          "h": 1450,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 97168,
+          "alt": "Opening page 三: 項羽本紀."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "proper-name-marks.pdf",
+        "bytes": 169634,
+        "pages": 3
+      },
+      "sandbox": {
+        "file": "proper-name-marks.postext",
+        "bytes": 22565
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.annotationColor",
+          "cjk.bookTitleMark",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].bodyStyle",
+          "headingStyles[].bodyStyle.fontFamily",
+          "headingStyles[].bodyStyle.orderedLists",
+          "headingStyles[].id",
+          "headingStyles[].layout",
+          "headingStyles[].layout.layoutType",
+          "headingStyles[].layout.writingMode",
+          "headingStyles[].margins",
+          "headingStyles[].margins.bottom",
+          "headingStyles[].margins.left",
+          "headingStyles[].margins.right",
+          "headingStyles[].margins.top",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].letterSpacing",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "layout",
+          "layout.layoutType",
+          "layout.writingMode",
+          "locale",
+          "orderedLists",
+          "orderedLists.color",
+          "orderedLists.fontFamily",
+          "orderedLists.fontWeight",
+          "orderedLists.gap",
+          "orderedLists.marginBottom",
+          "orderedLists.marginTop",
+          "orderedLists.numberFormat",
+          "orderedLists.separator",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.format",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "orderedLists",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 171,
+        "designElements": 7,
+        "directives": [
+          ":::space",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "LXGW WenKai TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans TC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "character-grid",
+          "cjk-line-breaking",
+          "emphasis-marks",
+          "heading-attributes",
+          "heading-styles",
+          "opener-band",
+          "opener-design",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "right-binding",
+          "roman-front-matter",
+          "section-geometry",
+          "vertical-space",
+          "vertical-writing"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.04
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "0206b86b",
+      "vdtHash": "4ef88f23fb888f40f39312aab00daabe9b7c9bf4",
+      "timings": {
+        "importMs": 617,
+        "fontsMs": 2870,
+        "buildMs": 11,
+        "totalMs": 7326,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          140,
+          203
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Noto Serif TC",
+          "sizePt": 10.5,
+          "leadingPt": 18
+        },
+        "families": [
+          "LXGW WenKai TC",
+          "Noto Sans TC",
+          "Noto Serif TC"
+        ],
+        "pages": 3,
+        "ownLines": 167
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "一",
+          "role": "opener",
+          "w": 1000,
+          "h": 1450,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 82492,
+          "alt": "Página de apertura 一: 史記選讀."
+        },
+        {
+          "n": 2,
+          "label": "二",
+          "role": "opener",
+          "w": 1000,
+          "h": 1450,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 85474,
+          "alt": "Página de apertura 二: 項羽本紀."
+        },
+        {
+          "n": 3,
+          "label": "三",
+          "role": "opener",
+          "w": 1000,
+          "h": 1450,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 97964,
+          "alt": "Página de apertura 三: 項羽本紀."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "proper-name-marks.pdf",
+        "bytes": 170121,
+        "pages": 3
+      },
+      "sandbox": {
+        "file": "proper-name-marks.postext",
+        "bytes": 22667
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.annotationColor",
+          "cjk.bookTitleMark",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].bodyStyle",
+          "headingStyles[].bodyStyle.fontFamily",
+          "headingStyles[].bodyStyle.orderedLists",
+          "headingStyles[].id",
+          "headingStyles[].layout",
+          "headingStyles[].layout.layoutType",
+          "headingStyles[].layout.writingMode",
+          "headingStyles[].margins",
+          "headingStyles[].margins.bottom",
+          "headingStyles[].margins.left",
+          "headingStyles[].margins.right",
+          "headingStyles[].margins.top",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].letterSpacing",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "layout",
+          "layout.layoutType",
+          "layout.writingMode",
+          "locale",
+          "orderedLists",
+          "orderedLists.color",
+          "orderedLists.fontFamily",
+          "orderedLists.fontWeight",
+          "orderedLists.gap",
+          "orderedLists.marginBottom",
+          "orderedLists.marginTop",
+          "orderedLists.numberFormat",
+          "orderedLists.separator",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.format",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "orderedLists",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 171,
+        "designElements": 7,
+        "directives": [
+          ":::space",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "LXGW WenKai TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans TC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "character-grid",
+          "cjk-line-breaking",
+          "emphasis-marks",
+          "heading-attributes",
+          "heading-styles",
+          "opener-band",
+          "opener-design",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "right-binding",
+          "roman-front-matter",
+          "section-geometry",
+          "vertical-space",
+          "vertical-writing"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.04
+        },
+        "findings": []
+      }
+    }
+  }
+}

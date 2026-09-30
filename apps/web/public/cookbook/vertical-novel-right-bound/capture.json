@@ -1,0 +1,702 @@
+{
+  "schemaVersion": 1,
+  "slug": "vertical-novel-right-bound",
+  "sourceHash": "a0a27f146d4842ccfca1124ded02d35d88b4752da0728532b3e1fad8ebfab1d2",
+  "engine": {
+    "postext": "1.9.0",
+    "postextPdf": "1.9.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-30T04:37:54.381Z",
+  "variants": {
+    "en": {
+      "hash8": "7dd713cf",
+      "vdtHash": "58000b5255810f22acfb16d4f41cad6543f075f1",
+      "timings": {
+        "importMs": 139,
+        "fontsMs": 363,
+        "buildMs": 9,
+        "totalMs": 1171,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          148,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Noto Serif TC",
+          "sizePt": 10.5,
+          "leadingPt": 19
+        },
+        "families": [
+          "LXGW WenKai TC",
+          "Noto Sans TC",
+          "Noto Serif TC",
+          "Source Serif 4"
+        ],
+        "pages": 11,
+        "ownLines": 204
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "一",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 23666,
+          "alt": "Opening page 一: 三國演義."
+        },
+        {
+          "n": 2,
+          "label": "二",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 105196,
+          "alt": "Opening page 二: 桃園結義."
+        },
+        {
+          "n": 3,
+          "label": "一",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 58962,
+          "alt": "Opening page 一: 第一回 宴桃園豪傑三結義 斬黃巾英雄首立功."
+        },
+        {
+          "n": 4,
+          "label": "二",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 123910,
+          "alt": "Page 二."
+        },
+        {
+          "n": 5,
+          "label": "三",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 128130,
+          "alt": "Page 三."
+        },
+        {
+          "n": 10,
+          "label": "八",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p10.webp",
+          "strip": "p10.s.webp",
+          "bytes": 128326,
+          "alt": "Page 八."
+        },
+        {
+          "n": 11,
+          "label": "九",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p11.webp",
+          "strip": "p11.s.webp",
+          "bytes": 63470,
+          "alt": "Page 九."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "vertical-novel-right-bound.pdf",
+        "bytes": 755316,
+        "pages": 11
+      },
+      "sandbox": {
+        "file": "vertical-novel-right-bound.postext",
+        "bytes": 279142
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].writingMode",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "headings.levels[].numberSeparator",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.layoutType",
+          "layout.writingMode",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.format",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].id",
+          "paragraphStyles[].indent",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 288,
+        "designElements": 19,
+        "directives": [
+          ":::numbering",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          "\\\\"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 1,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "LXGW WenKai TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "character-grid",
+          "cjk-line-breaking",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "right-binding",
+          "roman-front-matter",
+          "section-running-heads",
+          "title-line-breaks",
+          "unnumbered-headings",
+          "vertical-writing"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.05
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "8f734401",
+      "vdtHash": "bcdcb37b970cfa95fdc05fce7542f1935663495b",
+      "timings": {
+        "importMs": 137,
+        "fontsMs": 333,
+        "buildMs": 9,
+        "totalMs": 1097,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          148,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Noto Serif TC",
+          "sizePt": 10.5,
+          "leadingPt": 19
+        },
+        "families": [
+          "LXGW WenKai TC",
+          "Noto Sans TC",
+          "Noto Serif TC",
+          "Source Serif 4"
+        ],
+        "pages": 11,
+        "ownLines": 204
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "一",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 23562,
+          "alt": "Página de apertura 一: 三國演義."
+        },
+        {
+          "n": 2,
+          "label": "二",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 105196,
+          "alt": "Página de apertura 二: 桃園結義."
+        },
+        {
+          "n": 3,
+          "label": "一",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 58962,
+          "alt": "Página de apertura 一: 第一回 宴桃園豪傑三結義 斬黃巾英雄首立功."
+        },
+        {
+          "n": 4,
+          "label": "二",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 123910,
+          "alt": "Página 二."
+        },
+        {
+          "n": 5,
+          "label": "三",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 128130,
+          "alt": "Página 三."
+        },
+        {
+          "n": 10,
+          "label": "八",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p10.webp",
+          "strip": "p10.s.webp",
+          "bytes": 128326,
+          "alt": "Página 八."
+        },
+        {
+          "n": 11,
+          "label": "九",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p11.webp",
+          "strip": "p11.s.webp",
+          "bytes": 63470,
+          "alt": "Página 九."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "vertical-novel-right-bound.pdf",
+        "bytes": 754708,
+        "pages": 11
+      },
+      "sandbox": {
+        "file": "vertical-novel-right-bound.postext",
+        "bytes": 279164
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].writingMode",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "headings.levels[].numberSeparator",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.layoutType",
+          "layout.writingMode",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.format",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].id",
+          "paragraphStyles[].indent",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 288,
+        "designElements": 19,
+        "directives": [
+          ":::numbering",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          "\\\\"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 1,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "LXGW WenKai TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "character-grid",
+          "cjk-line-breaking",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "right-binding",
+          "roman-front-matter",
+          "section-running-heads",
+          "title-line-breaks",
+          "unnumbered-headings",
+          "vertical-writing"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.05
+        },
+        "findings": []
+      }
+    }
+  }
+}

@@ -1,0 +1,916 @@
+{
+  "schemaVersion": 1,
+  "slug": "chinese-name-index",
+  "sourceHash": "406de4d474a2a8521b9646f366b81640156f9524bae6c8c69ad56e3a79fb7336",
+  "engine": {
+    "postext": "1.9.0",
+    "postextPdf": "1.9.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-30T05:31:41.586Z",
+  "variants": {
+    "en": {
+      "hash8": "2e6e4b3a",
+      "vdtHash": "3d6700b81d644051f452c8a8a34fae97a9444c3a",
+      "timings": {
+        "importMs": 369,
+        "fontsMs": 2947,
+        "buildMs": 92,
+        "totalMs": 4035,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          140,
+          203
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Noto Serif SC",
+          "sizePt": 10.5,
+          "leadingPt": 18
+        },
+        "families": [
+          "LXGW WenKai TC",
+          "Ma Shan Zheng",
+          "Noto Sans SC",
+          "Noto Sans TC",
+          "Noto Serif SC",
+          "Noto Serif TC"
+        ],
+        "pages": 16,
+        "ownLines": 180
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1450,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 101954,
+          "alt": "Opening page 1: 甄士隐梦幻识通灵 贾雨村风尘怀闺秀."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1450,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 98374,
+          "alt": "Page 2."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1450,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 96934,
+          "alt": "Opening page 3: 贾夫人仙逝扬州城 冷子兴演说荣国府."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1450,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 103544,
+          "alt": "Page 4."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1450,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 100656,
+          "alt": "Opening page 5: 托内兄如海荐西宾 接外孙贾母惜孤女."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "body",
+          "w": 1000,
+          "h": 1450,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 111096,
+          "alt": "Page 6."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1450,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 37840,
+          "alt": "Opening page 7: 人名索引."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "body",
+          "w": 1000,
+          "h": 1450,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 38100,
+          "alt": "Page 8."
+        },
+        {
+          "n": 9,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1450,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 103484,
+          "alt": "Opening page 1: 甄士隱夢幻識通靈 賈雨村風塵懷閨秀."
+        },
+        {
+          "n": 14,
+          "label": "6",
+          "role": "body",
+          "w": 1000,
+          "h": 1450,
+          "file": "p14.webp",
+          "strip": "p14.s.webp",
+          "bytes": 122238,
+          "alt": "Page 6."
+        },
+        {
+          "n": 15,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1450,
+          "file": "p15.webp",
+          "strip": "p15.s.webp",
+          "bytes": 38212,
+          "alt": "Opening page 7: 人名索引."
+        },
+        {
+          "n": 16,
+          "label": "8",
+          "role": "body",
+          "w": 1000,
+          "h": 1450,
+          "file": "p16.webp",
+          "strip": "p16.s.webp",
+          "bytes": 44364,
+          "alt": "Page 8."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          null
+        ],
+        [
+          null,
+          8
+        ],
+        [
+          9,
+          10
+        ],
+        [
+          11,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "loupe"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "chinese-name-index.pdf",
+        "bytes": 306876,
+        "pages": 8
+      },
+      "sandbox": {
+        "file": "chinese-name-index.postext",
+        "bytes": 20775
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].id",
+          "headingStyles[].layout",
+          "headingStyles[].layout.gutterWidth",
+          "headingStyles[].layout.layoutType",
+          "headingStyles[].marginBottom",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "index",
+          "index.fontFamily",
+          "index.fontSize",
+          "index.groupBy",
+          "index.groups",
+          "index.groups.color",
+          "index.groups.fontFamily",
+          "index.groups.fontSize",
+          "index.groups.fontWeight",
+          "index.groups.marginTop",
+          "index.lineHeight",
+          "index.locatorSeparator",
+          "index.see",
+          "index.see.italic",
+          "index.separator",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "index",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 238,
+        "designElements": 11,
+        "directives": [
+          ":::index",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "\\\\",
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "LXGW WenKai TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Ma Shan Zheng",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans SC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans TC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif SC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif SC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "back-of-book-index",
+          "character-grid",
+          "cjk-line-breaking",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "section-geometry",
+          "title-line-breaks",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 3,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.09
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "0463260a",
+      "vdtHash": "3e1da01925ffe042b2ce2f1485d41af6294281c0",
+      "timings": {
+        "importMs": 134,
+        "fontsMs": 485,
+        "buildMs": 78,
+        "totalMs": 1361,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          140,
+          203
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Noto Serif SC",
+          "sizePt": 10.5,
+          "leadingPt": 18
+        },
+        "families": [
+          "LXGW WenKai TC",
+          "Ma Shan Zheng",
+          "Noto Sans SC",
+          "Noto Sans TC",
+          "Noto Serif SC",
+          "Noto Serif TC"
+        ],
+        "pages": 16,
+        "ownLines": 180
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1450,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 101954,
+          "alt": "Página de apertura 1: 甄士隐梦幻识通灵 贾雨村风尘怀闺秀."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1450,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 98374,
+          "alt": "Página 2."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1450,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 96934,
+          "alt": "Página de apertura 3: 贾夫人仙逝扬州城 冷子兴演说荣国府."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1450,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 103544,
+          "alt": "Página 4."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1450,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 100656,
+          "alt": "Página de apertura 5: 托内兄如海荐西宾 接外孙贾母惜孤女."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "body",
+          "w": 1000,
+          "h": 1450,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 111096,
+          "alt": "Página 6."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1450,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 37840,
+          "alt": "Página de apertura 7: 人名索引."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "body",
+          "w": 1000,
+          "h": 1450,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 39902,
+          "alt": "Página 8."
+        },
+        {
+          "n": 9,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1450,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 103484,
+          "alt": "Página de apertura 1: 甄士隱夢幻識通靈 賈雨村風塵懷閨秀."
+        },
+        {
+          "n": 14,
+          "label": "6",
+          "role": "body",
+          "w": 1000,
+          "h": 1450,
+          "file": "p14.webp",
+          "strip": "p14.s.webp",
+          "bytes": 122238,
+          "alt": "Página 6."
+        },
+        {
+          "n": 15,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1450,
+          "file": "p15.webp",
+          "strip": "p15.s.webp",
+          "bytes": 38212,
+          "alt": "Página de apertura 7: 人名索引."
+        },
+        {
+          "n": 16,
+          "label": "8",
+          "role": "body",
+          "w": 1000,
+          "h": 1450,
+          "file": "p16.webp",
+          "strip": "p16.s.webp",
+          "bytes": 45702,
+          "alt": "Página 8."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          null
+        ],
+        [
+          null,
+          8
+        ],
+        [
+          9,
+          10
+        ],
+        [
+          11,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "loupe"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "chinese-name-index.pdf",
+        "bytes": 307323,
+        "pages": 8
+      },
+      "sandbox": {
+        "file": "chinese-name-index.postext",
+        "bytes": 20824
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].id",
+          "headingStyles[].layout",
+          "headingStyles[].layout.gutterWidth",
+          "headingStyles[].layout.layoutType",
+          "headingStyles[].marginBottom",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "index",
+          "index.fontFamily",
+          "index.fontSize",
+          "index.groupBy",
+          "index.groups",
+          "index.groups.color",
+          "index.groups.fontFamily",
+          "index.groups.fontSize",
+          "index.groups.fontWeight",
+          "index.groups.marginTop",
+          "index.lineHeight",
+          "index.locatorSeparator",
+          "index.see",
+          "index.see.italic",
+          "index.separator",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "index",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 238,
+        "designElements": 11,
+        "directives": [
+          ":::index",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "\\\\",
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "LXGW WenKai TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Ma Shan Zheng",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans SC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans TC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif SC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif SC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "back-of-book-index",
+          "character-grid",
+          "cjk-line-breaking",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "section-geometry",
+          "title-line-breaks",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 3,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.09
+        },
+        "findings": []
+      }
+    }
+  }
+}

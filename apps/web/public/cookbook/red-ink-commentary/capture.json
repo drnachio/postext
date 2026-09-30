@@ -1,0 +1,706 @@
+{
+  "schemaVersion": 1,
+  "slug": "red-ink-commentary",
+  "sourceHash": "672202ebf71aedbefc72b85e5ba167c6e91337fa9dcf9677ee4d73e2d8706f0c",
+  "engine": {
+    "postext": "1.9.0",
+    "postextPdf": "1.9.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-09-30T04:23:14.597Z",
+  "variants": {
+    "en": {
+      "hash8": "b87864bf",
+      "vdtHash": "cb5419a1491f7c61c6e139e4041ee857e8876006",
+      "timings": {
+        "importMs": 133,
+        "fontsMs": 364,
+        "buildMs": 10,
+        "totalMs": 1137,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          184,
+          260
+        ],
+        "dpi": 150,
+        "layoutType": "oneAndHalf",
+        "gutterMm": 8.5,
+        "mirror": true,
+        "body": {
+          "family": "Noto Serif TC",
+          "sizePt": 12,
+          "leadingPt": 21
+        },
+        "families": [
+          "LXGW WenKai TC",
+          "Noto Sans TC",
+          "Noto Serif TC"
+        ],
+        "pages": 6,
+        "ownLines": 159
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "一",
+          "role": "opener",
+          "w": 1000,
+          "h": 1413,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 77932,
+          "alt": "Opening page 一: 第一回."
+        },
+        {
+          "n": 2,
+          "label": "二",
+          "role": "body",
+          "w": 1000,
+          "h": 1413,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 124706,
+          "alt": "Page 二."
+        },
+        {
+          "n": 3,
+          "label": "三",
+          "role": "body",
+          "w": 1000,
+          "h": 1413,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 89562,
+          "alt": "Page 三."
+        },
+        {
+          "n": 4,
+          "label": "四",
+          "role": "body",
+          "w": 1000,
+          "h": 1413,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 137888,
+          "alt": "Page 四."
+        },
+        {
+          "n": 5,
+          "label": "五",
+          "role": "body",
+          "w": 1000,
+          "h": 1413,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 128380,
+          "alt": "Page 五."
+        },
+        {
+          "n": 6,
+          "label": "六",
+          "role": "body",
+          "w": 1000,
+          "h": 1413,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 45608,
+          "alt": "Page 六."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          null
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "loupe"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "red-ink-commentary.pdf",
+        "bytes": 513284,
+        "pages": 6
+      },
+      "sandbox": {
+        "file": "red-ink-commentary.postext",
+        "bytes": 38034
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].border",
+          "calloutStyles[].border.enabled",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].snapToGrid",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.enabled",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "cjk.warichu",
+          "cjk.warichu.color",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].writingMode",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "layout",
+          "layout.columnRule",
+          "layout.columnRule.color",
+          "layout.columnRule.enabled",
+          "layout.columnRule.lineWidth",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "layout.sideColumnPercent",
+          "layout.sideColumnRole",
+          "layout.sideColumnSide",
+          "layout.writingMode",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.format",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].id",
+          "paragraphStyles[].indent",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 190,
+        "designElements": 7,
+        "directives": [
+          ":::callout",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "LXGW WenKai TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans TC",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "character-grid",
+          "cjk-line-breaking",
+          "column-and-a-half",
+          "column-rule",
+          "heading-attributes",
+          "off-grid-spacing",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "right-binding",
+          "roman-front-matter",
+          "side-boxes",
+          "side-column-floats",
+          "vertical-writing",
+          "warichu"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.06
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "44b8032f",
+      "vdtHash": "edaa0e1f2d45fb28b7512b355be1a6fc17ad8df5",
+      "timings": {
+        "importMs": 139,
+        "fontsMs": 341,
+        "buildMs": 9,
+        "totalMs": 1072,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          184,
+          260
+        ],
+        "dpi": 150,
+        "layoutType": "oneAndHalf",
+        "gutterMm": 8.5,
+        "mirror": true,
+        "body": {
+          "family": "Noto Serif TC",
+          "sizePt": 12,
+          "leadingPt": 21
+        },
+        "families": [
+          "LXGW WenKai TC",
+          "Noto Sans TC",
+          "Noto Serif TC"
+        ],
+        "pages": 6,
+        "ownLines": 159
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "一",
+          "role": "opener",
+          "w": 1000,
+          "h": 1413,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 77932,
+          "alt": "Página de apertura 一: 第一回."
+        },
+        {
+          "n": 2,
+          "label": "二",
+          "role": "body",
+          "w": 1000,
+          "h": 1413,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 124706,
+          "alt": "Página 二."
+        },
+        {
+          "n": 3,
+          "label": "三",
+          "role": "body",
+          "w": 1000,
+          "h": 1413,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 89562,
+          "alt": "Página 三."
+        },
+        {
+          "n": 4,
+          "label": "四",
+          "role": "body",
+          "w": 1000,
+          "h": 1413,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 137888,
+          "alt": "Página 四."
+        },
+        {
+          "n": 5,
+          "label": "五",
+          "role": "body",
+          "w": 1000,
+          "h": 1413,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 128380,
+          "alt": "Página 五."
+        },
+        {
+          "n": 6,
+          "label": "六",
+          "role": "body",
+          "w": 1000,
+          "h": 1413,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 45882,
+          "alt": "Página 六."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          null
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "loupe"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "red-ink-commentary.pdf",
+        "bytes": 513367,
+        "pages": 6
+      },
+      "sandbox": {
+        "file": "red-ink-commentary.postext",
+        "bytes": 38063
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].border",
+          "calloutStyles[].border.enabled",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].snapToGrid",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.enabled",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "cjk.warichu",
+          "cjk.warichu.color",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].writingMode",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "layout",
+          "layout.columnRule",
+          "layout.columnRule.color",
+          "layout.columnRule.enabled",
+          "layout.columnRule.lineWidth",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "layout.sideColumnPercent",
+          "layout.sideColumnRole",
+          "layout.sideColumnSide",
+          "layout.writingMode",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.format",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].id",
+          "paragraphStyles[].indent",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 190,
+        "designElements": 7,
+        "directives": [
+          ":::callout",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "LXGW WenKai TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans TC",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif TC",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "character-grid",
+          "cjk-line-breaking",
+          "column-and-a-half",
+          "column-rule",
+          "heading-attributes",
+          "off-grid-spacing",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "right-binding",
+          "roman-front-matter",
+          "side-boxes",
+          "side-column-floats",
+          "vertical-writing",
+          "warichu"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.06
+        },
+        "findings": []
+      }
+    }
+  }
+}
