@@ -6,7 +6,7 @@ import {
   PDFRef,
   type PDFContext,
 } from 'pdf-lib';
-import { blockLinesText } from 'postext';
+import { blockLinesText, plainTitleText } from 'postext';
 import type { VDTBlock, VDTDocument } from 'postext';
 
 interface OutlineEntry {
@@ -22,10 +22,11 @@ const SPACES = /[^\S\u3000]+/g;
 
 /** A heading's printed lines as one line of text: joined back as they were
  *  broken (`blockLinesText`: nothing between two Chinese characters, the
- *  word a hyphen divided whole again), white space collapsed but for the
- *  ideographic space. */
+ *  word a hyphen divided whole again), a forced break (`\\`) as plain text
+ *  reads it (nothing where a Chinese character meets a digit or Latin
+ *  text, #221), white space collapsed but for the ideographic space. */
 export function headingLinesText(block: VDTBlock): string {
-  return blockLinesText(block).replace(SPACES, ' ').trim();
+  return blockLinesText(block, { plainTitleBreaks: true }).replace(SPACES, ' ').trim();
 }
 
 /** A heading's number as its lines read it back: white space collapsed
@@ -72,9 +73,10 @@ function collectHeadings(doc: VDTDocument, base = 0): OutlineEntry[] {
   );
   for (const page of doc.pages) {
     // Part-divider pages sit above the chapters: level 0 so `buildTree`
-    // nests the following H1s (level 1) under them.
+    // nests the following H1s (level 1) under them. A forced break in the
+    // title reads as it does in a heading's bookmark (#221).
     if (page.partInfo) {
-      const title = `${page.partInfo.number} ${page.partInfo.title.replace(/[ \t]*\\\\[ \t]*/g, ' ')}`.trim();
+      const title = `${page.partInfo.number} ${plainTitleText(page.partInfo.title)}`.trim();
       if (title) entries.push({ title, level: 0, pageIndex: base + page.index, y: 0 });
     }
     for (const col of page.columns) {

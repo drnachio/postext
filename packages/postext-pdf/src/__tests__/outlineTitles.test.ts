@@ -132,6 +132,71 @@ describe('bookmarks of heads whose number opens with ideographic spaces', () => 
   }, 60_000);
 });
 
+// A forced break (`\\`) reads in the column as a space, which the page
+// sets as the Han–Latin space where a Chinese character meets a digit or a
+// Latin letter. Plain text has no such space: the bookmark and the document
+// title join the two halves with nothing there, with the ideographic space
+// between two Chinese characters (a couplet title) and with a space
+// between Latin words (#221).
+describe('bookmarks of headings with a forced break', () => {
+  const zh = (width: number, extra: Partial<PostextConfig> = {}): PostextConfig => ({
+    ...config,
+    locale: 'zh-Hans',
+    page: { ...config.page, width: pt(width) },
+    headings: { levels: [{ level: 1, breakBefore: { enabled: false }, numberingTemplate: '' }] },
+    ...extra,
+  });
+  const official = '# 示例市出版协会关于举办 \\\\ 2026年中文排版实务培训班的通知\n\n为提高会员单位排版人员的业务水平，协会定于2026年10月举办中文排版实务培训班。';
+  const joined = '示例市出版协会关于举办2026年中文排版实务培训班的通知';
+
+  it('join a Chinese character and a number with nothing, in the bookmark and the document title', async () => {
+    // 300 pt sets the title on one line, the break as a space (the
+    // Han–Latin space); 180 pt wraps it after the break, 120 pt at it.
+    const printed: Record<number, string[]> = {
+      300: ['示例市出版协会关于举办 2026年中文排版实务培训班的通知'],
+      180: ['示例市出版协会关于举办 2026年中文', '排版实务培训班的通知'],
+      120: ['示例市出版协会关于举办', '2026年中文排版实', '务培训班的通知'],
+    };
+    for (const width of [300, 180, 120]) {
+      const cfg = zh(width);
+      const doc = buildDocument({ markdown: official }, cfg);
+      expect(doc.blocks.find((b) => b.type === 'heading')!.lines.map((l) => l.text), String(width)).toEqual(printed[width]);
+      expect(await outlineTitles(official, cfg), String(width)).toEqual([joined]);
+      const pdf = await PDFDocument.load(await renderToPdf(doc, { fontProvider, accessible: true }));
+      expect(pdf.getTitle(), String(width)).toBe(joined);
+    }
+  }, 60_000);
+
+  it('join Chinese and Latin text with nothing, and keep the space between Latin words', async () => {
+    const markdown = '# Postext \\\\ 使用手册\n\n正文。\n\n# 第二部分 \\\\ Appendix\n\n正文。\n\n# Latin title \\\\ second half\n\n正文。\n\n# 甄士隱夢幻識通靈 \\\\ 賈雨村風塵懷閨秀\n\n正文。';
+    expect(await outlineTitles(markdown, zh(300))).toEqual(['Postext使用手册', '第二部分Appendix', 'Latin title second half', '甄士隱夢幻識通靈\u3000賈雨村風塵懷閨秀']);
+  }, 60_000);
+
+  it('join them the same way in a heading set in capitals, named as written', async () => {
+    const cfg = zh(300, { headingStyles: [{ id: 'back', textTransform: 'uppercase', numberingTemplate: '' }] });
+    const markdown = '# 年会 \\\\ Annual meeting {style="back"}\n\n正文。\n\n# Author \\\\ contributions {style="back"}\n\n正文。';
+    expect(await outlineTitles(markdown, cfg)).toEqual(['年会Annual meeting', 'Author contributions']);
+  }, 60_000);
+
+  // A part's title reads its break as a heading's does (#221 review).
+  it('join the halves of a part title the same way', async () => {
+    const markdown = ':::part{number="第一部" title="风月宝鉴 \\\\ 2026年版"}\n:::\n\n# 甲\n\n正文。\n\n:::part{number="第二部" title="金陵 \\\\ 十二钗"}\n:::\n\n# 乙\n\n正文。\n\n:::part{number="Part III" title="Stone \\\\ and dream"}\n:::\n\n# 丙\n\n正文。';
+    expect(await outlineTitles(markdown, zh(300))).toEqual(['第一部 风月宝鉴2026年版', '甲', '第二部 金陵\u3000十二钗', '乙', 'Part III Stone and dream', '丙']);
+  }, 60_000);
+
+  // The 《》 of a book title are set by the layout, no characters of the
+  // title: the break is found past them, and the author's space elsewhere
+  // in the title stays (#221 review).
+  it('find the break past the brackets of a book title', async () => {
+    const markdown = '# 第一章 \\\\ 中 API:book[手册]\n\n正文。\n\n# 关于举办 \\\\ 2026年:book[红楼梦]研讨\n\n正文。';
+    // One line, and wrapped at the break, at the author's space or inside
+    // the brackets.
+    for (const width of [300, 100, 90]) {
+      expect(await outlineTitles(markdown, zh(width)), String(width)).toEqual(['第一章\u3000中 API《手册》', '关于举办2026年《红楼梦》研讨']);
+    }
+  }, 60_000);
+});
+
 describe('bookmarks of wrapped headings', () => {
   it('rejoin a word the line cut, and keep a hard hyphen', async () => {
     const cfg: PostextConfig = { ...config, page: { ...config.page, width: pt(150) } };

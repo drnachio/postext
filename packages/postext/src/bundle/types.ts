@@ -71,6 +71,9 @@ export interface BundleChapterSpec {
  *  also name its own `file` for the locale. */
 export interface BundleLocaleOverrides {
   config?: Partial<PostextConfig>;
+  /** How this language's edition opens, over the manifest's `view` (a
+   *  vertical edition read whole, its translation a chapter at a time). */
+  view?: BundleViewSpec;
   resources?: (Pick<BundleResourceSpec, 'id'> & Partial<Pick<BundleResourceSpec, 'caption' | 'note' | 'altText' | 'table' | 'file' | 'pdfFile' | 'width' | 'height'>>)[];
 }
 

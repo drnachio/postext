@@ -1,4 +1,4 @@
-import { flattenTitleBreaks } from '../parse/inlineFormatting';
+import { plainTitleBreaks } from '../parse/inlineFormatting';
 import type { PostextContent, PostextConfig, Resource, ResourceType, ResourceRotation, HeadingBreakParity, ResolvedCalloutStyleConfig, ResolvedHeadingLevelConfig, CalloutSpan } from '../types';
 import type { HeadingPlaceholderInfo } from '../design/placeholders';
 import type { ContentBlock, ListKind } from '../parse';
@@ -2165,7 +2165,7 @@ function placeDocumentPass(
       // a resource keeps the printed text, whose `:ref` label the source
       // does not hold.
       if (headingLevels.forBlock(raw)?.textTransform === 'uppercase' && !raw.spans.some((s) => s.ref)) {
-        blk.sourceTitle = flattenTitleBreaks(withBookTitleBrackets(raw.text, raw.spans, resolved.cjk).text);
+        blk.sourceTitle = plainTitleBreaks(withBookTitleBrackets(raw.text, raw.spans, resolved.cjk).text);
       }
     }
     if (raw.footnoteNote !== undefined) blk.footnoteNote = raw.footnoteNote;

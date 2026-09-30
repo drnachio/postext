@@ -300,6 +300,32 @@ describe('vertical text in the PDF (#191)', () => {
     expect(cells.some((k) => k < 1)).toBe(true);
   });
 
+  // #222: a number between two Latin words runs sideways with them; one
+  // next to a Chinese character stands in its cell.
+  it('sets a short number inside a Latin sentence sideways with it', async () => {
+    /** The numbers set in one upright cell: shows of a horizontal font
+     *  under a turned text matrix. */
+    const cellsOf = (pdf: PDFDocument) => {
+      const fonts = pageFonts(pdf);
+      let font = '';
+      let turned = false;
+      let n = 0;
+      for (const line of pageOps(pdf).split('\n')) {
+        const tf = /^\/(\S+) [\d.]+ Tf$/.exec(line);
+        if (tf) font = tf[1]!;
+        const tm = /^([-\d. ]+) Tm$/.exec(line);
+        if (tm) turned = /^0 [\d.]+ -1 0 /.test(tm[1]!.trim());
+        if (/ (Tj|TJ)$/.test(line) && turned && fonts.get(font)?.get(PDFName.of('Encoding')) !== PDFName.of('Identity-V')) n++;
+      }
+      return n;
+    };
+    const { pdf } = await render('書中寫道 printed in 49 and 32 copies 等語，第28回。', config('zh-Hant'));
+    // One upright cell: 28. 49 and 32 are shown sideways with the words.
+    expect(cellsOf(pdf)).toBe(1);
+    const chinese = await render('書中寫道第49回與第32回等語，第28回。', config('zh-Hant'));
+    expect(cellsOf(chinese.pdf)).toBe(3);
+  });
+
   it('reads every vertical line as written (/ActualText)', async () => {
     const { pdf } = await render('今天是2026年9月28日，用iPhone拍照。', config('zh-Hant'));
     const ops = pageOps(pdf);

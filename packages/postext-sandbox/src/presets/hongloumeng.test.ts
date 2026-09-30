@@ -5,6 +5,7 @@ import { dimensionToPx, parseMarkdown, type Dimension, type PostextConfig } from
 import { computeWarnings } from '../warnings/compute';
 import { buildHtmlConfigOverride } from '../viewport/HtmlPreview/configOverride';
 import { hasLatinEmphasis, missingUsedVariants } from '../controls/fontLoader';
+import { pickBundleView, type BundleManifest } from 'postext/bundle';
 import { effectiveCanvasScope } from '../book/scope';
 import { fontsToCustomFonts } from './manifest';
 import { localeLayoutsFile, type BundleLayoutsFile } from './bundle';
@@ -85,10 +86,13 @@ describe('hongloumeng in the Sandbox', () => {
     expect(missingUsedVariants(garamond, configOf('en'))).toEqual([]);
   });
 
-  it('opens on the whole book, already paginated in every edition', async () => {
+  it('opens the Chinese editions whole and the English a chapter at a time, already paginated', async () => {
+    const opens: Record<string, 'book' | 'chapter'> = { 'zh-Hant': 'book', 'zh-Hans': 'book', en: 'chapter' };
     for (const lang of ['zh-Hant', 'zh-Hans', 'en']) {
       const files = manifest.chapters[lang]!.map(({ file }) => file);
-      expect(effectiveCanvasScope(manifest.view?.canvasScope, files.length), lang).toBe('book');
+      // Joly's English paints whole several times slower: `localized.en.view`.
+      const view = pickBundleView(manifest as unknown as BundleManifest, lang);
+      expect(effectiveCanvasScope(view?.canvasScope, files.length), lang).toBe(opens[lang]);
       // `layouts.<lang>.json`, saved from the Sandbox: rebuilt with the
       // bundle, it goes stale (and is laid out afresh) until saved again.
       const layouts = ((await import(/* @vite-ignore */ new URL(`${BUNDLE}${localeLayoutsFile(lang)}`, import.meta.url).href)) as { default: BundleLayoutsFile }).default;

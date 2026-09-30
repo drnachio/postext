@@ -12,14 +12,14 @@ import { parseChineseNumeral } from '../chineseNumerals';
 import { numberToWords } from '../numberWords';
 import { parsePartNumber } from '../pipeline/parts';
 import { formatListNumber } from '../pipeline/lists';
-import { flattenTitleBreaks } from '../parse/inlineFormatting';
+import { flattenTitleBreaks, plainTitleBreaks } from '../parse/inlineFormatting';
 import { parseMarkdown } from '../parse';
 import { buildDocument } from '../pipeline';
 import { computeOutlineFor } from '../pipeline/outline';
 import { collectConfigWarnings } from '../configWarnings';
 import { stripConfigDefaults } from '../defaults';
 import { renderToHtml } from '../html-backend';
-import { computeChapterTitles } from '../pipeline/placeholders';
+import { blockLinesText, computeChapterTitles } from '../pipeline/placeholders';
 import type { OrderedListNumberFormat, PageNumberFormat, PostextConfig, Resource } from '../types';
 import type { VDTDesignTextBlock, VDTDocument } from '../vdt';
 
@@ -301,6 +301,55 @@ describe('headings: number separator and couplet titles', () => {
     expect(flattenTitleBreaks('卷一……\u2028甄士隱')).toBe('卷一……\u3000甄士隱');
     expect(flattenTitleBreaks('Wait…\u2028…what')).toBe('Wait… …what');
     expect(flattenTitleBreaks('One—\u2028two')).toBe('One— two');
+  });
+
+  // Plain text (the PDF bookmarks, the document title) has no space where
+  // a Chinese character meets a digit or Latin text: the page sets the
+  // Han–Latin space there (#221). The running heads and the contents keep
+  // the column's reading, one character for the break.
+  it('reads a forced break as plain text for the bookmarks', () => {
+    expect(plainTitleBreaks('示例市出版协会关于举办\u20282026年中文排版实务培训班的通知')).toBe('示例市出版协会关于举办2026年中文排版实务培训班的通知');
+    expect(plainTitleBreaks('Postext\u2028使用手册')).toBe('Postext使用手册');
+    expect(plainTitleBreaks('甄士隱夢幻識通靈\u2028賈雨村風塵懷閨秀')).toBe('甄士隱夢幻識通靈\u3000賈雨村風塵懷閨秀');
+    expect(plainTitleBreaks('Part one\u2028the storm')).toBe('Part one the storm');
+    // A fullwidth bracket is Chinese; Korean spaces its words.
+    expect(plainTitleBreaks('Postext\u2028\uff08\u6d4b\u8bd5\u7248\uff09')).toBe('Postext\uff08\u6d4b\u8bd5\u7248\uff09');
+    expect(plainTitleBreaks('\ud3ec\uc2a4\ud14d\uc2a4\ud2b8\u20282026')).toBe('\ud3ec\uc2a4\ud14d\uc2a4\ud2b8 2026');
+    expect(plainTitleBreaks('「红楼梦」\u2028——序')).toBe('「红楼梦」\u3000——序');
+    expect(plainTitleBreaks('Wait…\u2028…what')).toBe('Wait… …what');
+    const doc = buildDocument({ markdown: '# 第一部分 \\\\ 2026年概况\n\n正文。' }, { ...config(undefined), headings: { levels: [{ level: 1, numberingTemplate: '第{1:一}章' }] } });
+    const heading = doc.blocks.find((b) => b.type === 'heading')!;
+    expect(blockLinesText(heading)).toBe('第一章 第一部分 2026年概况');
+    expect(blockLinesText(heading, { plainTitleBreaks: true })).toBe('第一章 第一部分2026年概况');
+  });
+
+  // The 《》 a book title gets in a mainland heading are set by the layout
+  // and are no characters of the title: a break counted back from the end
+  // of the lines is found past them, so the author's space elsewhere stays
+  // and the break itself is read as plain text (#221 review).
+  it('finds a forced break past the brackets of a book title', () => {
+    const zhs = (width: number): PostextConfig => ({
+      ...config(undefined),
+      locale: 'zh-Hans',
+      page: { width: pt(width), height: pt(400), margins: { top: pt(20), bottom: pt(20), left: pt(20), right: pt(20) } },
+      headings: { levels: [{ level: 1, numberingTemplate: '{1}' }] },
+    });
+    const cases: Array<[string, string]> = [
+      ['第一章 \\\\ 中 API:book[手册]', '1 第一章　中 API《手册》'],
+      ['关于举办 \\\\ 2026年:book[红楼梦]研讨', '1 关于举办2026年《红楼梦》研讨'],
+      ['关于:book[红楼梦]举办 \\\\ 2026年培训班', '1 关于《红楼梦》举办2026年培训班'],
+      ['Intro \\\\ 中 x:book[书]', '1 Intro中 x《书》'],
+    ];
+    // 400 pt: one line; 100 and 90 pt wrap at the break, at the author's
+    // space or inside the brackets.
+    for (const width of [400, 100, 90]) {
+      for (const [title, bookmark] of cases) {
+        const doc = buildDocument({ markdown: `# ${title}\n\n正文。` }, zhs(width));
+        const heading = doc.blocks.find((b) => b.type === 'heading')!;
+        expect(heading.lines.some((l) => l.segments?.some((sg) => sg.inserted)), title).toBe(true);
+        expect(blockLinesText(heading, { plainTitleBreaks: true }), `${width}: ${title}`).toBe(bookmark);
+      }
+    }
   });
 
   it('sets the separator between number and title in the column', () => {

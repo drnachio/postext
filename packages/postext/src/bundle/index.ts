@@ -20,6 +20,7 @@ export {
   hasValidShowcaseMeta,
   pickMarkdownFile,
   pickLocaleOverrides,
+  pickBundleView,
   resolveBundleLocale,
   resolveBundleConfigLocale,
   pickChapterSpecs,

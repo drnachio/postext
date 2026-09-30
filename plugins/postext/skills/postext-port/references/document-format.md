@@ -204,7 +204,7 @@ Earlier passes shield their content from later ones. Math is extracted before em
 | Book title (≥ 1.9) | `:book[石頭記]` | 书名号 per `cjk.bookTitleMark`: 《》 inserted (mainland default), wavy line (Taiwan/HK), or bare. If the source already TYPES 《》, keep them as text instead | |
 | Ruby (≥ 1.9) | `:ruby[紅樓]{rt="hóng lóu"}`, `{rt="hónglóu" group}`, `pos="over\|under\|right"`; compact `{紅樓\|hóng\|lóu}` | one reading per character when the counts match (line may break between), else one group reading. Zhuyin (bopomofo) goes right of each character. Compact form only when the base holds Han/kana/bopomofo; `\{紅\|hóng}` is text | |
 | Warichu (≥ 1.9) | `:warichu[note]{open="〔" close="〕"}` | 双行夹注: two half-size rows inside the line, breaking across lines and pages | |
-| Tate-chu-yoko (≥ 1.9) | `:tcy[12]` | vertical text: one upright cell. Numbers of ≤ `cjk.uprightDigits` (2) digits get it automatically. No effect horizontally | |
+| Tate-chu-yoko (≥ 1.9) | `:tcy[12]` | vertical text: one upright cell. Numbers of ≤ `cjk.uprightDigits` (2) digits get it automatically, except inside a Latin sentence (a Latin word on both sides: `chapters 49 and 32`, `(7) of`, `pages 3–5 of`), where they run sideways with the words; postext 1.9.0 and 1.9.1 stand those upright too (`:sideways[49]` there). No effect horizontally | |
 | Upright / sideways (≥ 1.9) | `:upright[GDP]`, `:sideways[12]` | vertical text: each character upright in its own cell / the run turned | |
 | Dollar | `\$` | literal `$`; otherwise `$` opens inline math. Captions, cells, notes and chip texts have no maths: `$` is literal there, and `\$` gives `$` too (postext ≥ 1.5; 1.4 printed `\$` there). In an attribute value (`:ref{text="…"}`) a backslash is ordinary: `\$` stays `\$` |  |
 
@@ -692,7 +692,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 | Book-title mark (书名号) | Keep typed 《》 as text. A classical/Taiwan edition with wavy lines: `:book[…]` (prints what `cjk.bookTitleMark` says). |
 | Ruby: pinyin or zhuyin over/beside characters | `{字|zì}` / `:ruby[漢字]{rt="hàn zì"}`; HTML `<ruby>紅<rt>hóng</rt></ruby>` → `{紅|hóng}`. |
 | Inline two-line commentary (双行夹注, 割注) | `:warichu[…]`; a one-line note in brackets stays as text in （）. |
-| Numbers upright in vertical text (纵中横) | Nothing for ≤ 2 digits (automatic, `cjk.uprightDigits`); `:tcy[…]` for 3–4 characters or `A+`; `:upright[…]` for an acronym read letter by letter. |
+| Numbers upright in vertical text (纵中横) | Nothing for ≤ 2 digits (automatic, `cjk.uprightDigits`); `:tcy[…]` for 3–4 characters or `A+`; `:upright[…]` for an acronym read letter by letter. A short number inside a Latin sentence runs sideways with it by itself; one that opens or ends a Latin paragraph (`49 copies…`, `…page 7.`) stands: `:sideways[…]` turns it. |
 | 回目 couplet / two-line chapter title | `# 甄士隱夢幻識通靈 \\ 賈雨村風塵懷閨秀`; the number from `numberingTemplate: '第{1:一}回'`, never typed. |
 | Paragraph indent of two ideographic spaces | Delete them; `bodyText.firstLineIndent: 2em`. |
 

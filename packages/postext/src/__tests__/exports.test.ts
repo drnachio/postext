@@ -264,6 +264,7 @@ describe("package exports", () => {
       "computeChapterAttrs",
       "computePartValues",
       "blockLinesText",
+      "plainTitleText",
       "resolveDesignPlaceholders",
       "allowedPlaceholdersFor",
       "isAllowedPlaceholder",

@@ -163,6 +163,25 @@ export function flattenTitleBreaks(text: string): string {
   return text.replace(/\u2028/g, (_m, at: number) => (joinsWide(charBefore(text, at), charFrom(text, at + 1)) ? '\u3000' : ' '));
 }
 
+/** What a forced title break reads as in plain text (PDF bookmarks, the
+ *  document title): the ideographic space between two Chinese or Japanese
+ *  characters, as {@link flattenTitleBreaks} sets it; nothing where such a
+ *  character meets a digit or Latin text, since plain Chinese text puts no
+ *  space there (the page sets the Han–Latin space, `cjk.latinSpacing`);
+ *  one space between Latin words. */
+export function plainTitleBreak(before: string | undefined, after: string | undefined): '' | ' ' | '\u3000' {
+  if (joinsWide(before, after)) return '\u3000';
+  return isCjkWideChar(before) || isCjkWideChar(after) ? '' : ' ';
+}
+
+/** Replace the break placeholder as plain text reads it (see
+ *  {@link plainTitleBreak}). Unlike {@link flattenTitleBreaks} the text may
+ *  get shorter: it maps to no source. */
+export function plainTitleBreaks(text: string): string {
+  if (!text.includes('\u2028')) return text;
+  return text.replace(/\u2028/g, (_m, at: number) => plainTitleBreak(charBefore(text, at), charFrom(text, at + 1)));
+}
+
 /** {@link flattenTitleBreaks} over a block's spans, read against the whole
  *  `text` (the spans' texts joined): a break at a span's edge sees both of
  *  its neighbours. Maths spans are kept as they are. */

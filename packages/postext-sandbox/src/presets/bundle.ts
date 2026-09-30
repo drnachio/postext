@@ -6,7 +6,7 @@
 // here touches storage or the DOM.
 
 import type { PostextConfig, Resource } from 'postext';
-import { isBundleManifest, planBundle as planCoreBundle, readBundle, resolveBundleConfigLocale, resolveBundleFiles } from 'postext/bundle';
+import { isBundleManifest, pickBundleView, planBundle as planCoreBundle, readBundle, resolveBundleConfigLocale, resolveBundleFiles } from 'postext/bundle';
 import type { BundleByteSources as CoreByteSources, BundleFileReader, BundleIdScheme, PlannedFile } from 'postext/bundle';
 import { ENGINE_KEY, configKeyOf, resourcesKeyOf } from '../book/layoutKeys';
 import { createDefaultConfig } from '../context/defaultConfig';
@@ -89,6 +89,7 @@ export async function parseBundle(
     throw err;
   }
   const bundle = read.manifest;
+  const view = pickBundleView(bundle, read.locale);
   const idOf = (file: string): string => (chapterIds ? chapterIds() : presetChapterId(presetId, file));
   const untitled = untitledChapter ?? ((n: number) => `Chapter ${n}`);
   const chapters: Chapter[] = read.chapters.map((c, i) =>
@@ -140,7 +141,8 @@ export async function parseBundle(
     blobs: read.blobs.map(({ fileId, bytes, mime }) => ({ fileId, bytes, mime })),
     fonts: read.fonts.map(({ fileId, fileName, format, bytes }) => ({ fileId, fileName, format, buffer: bytes })),
     ...(layouts ? { layouts } : {}),
-    ...(bundle.view?.canvasScope ? { canvasScope: bundle.view.canvasScope } : {}),
+    // The edition's own view over the bundle's (`localized[…].view`).
+    ...(view?.canvasScope ? { canvasScope: view.canvasScope } : {}),
   };
 }
 

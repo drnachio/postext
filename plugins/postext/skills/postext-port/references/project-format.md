@@ -13,6 +13,8 @@ my-book/
   thumbnail.jpg               optional cover for the project picker
   fingerprint.json            optional {"fingerprint": "<sha1>"}: lets the sandbox notice edits
   layouts.json                engine-written pagination cache — never write it by hand
+  layouts.<lang>.json         the same, one per edition of a multilingual book (read before layouts.json;
+                              postext ≥ 1.9.1): saved from the sandbox, valid for one engine version
   build_preset.py, source/, resources.json, CREDITS.md …   yours; ignored by the loader
 ```
 
@@ -41,7 +43,8 @@ my-book/
   "binding": "right",                  // optional: the edge a shelf draws the spine on (index.json;
                                        // `preset_kit.py index` copies it there). The layout's binding is page.binding
   "thumbnail": "thumbnail.jpg", "license": "CC BY 4.0", "credits": "…", "tags": ["book"],
-  "view": { "canvasScope": "book" },   // "book": the canvas lays out the whole book; default "chapter"
+  "view": { "canvasScope": "book" },   // "book": the canvas lays out the whole book; default "chapter".
+                                       // Books over 200 chapters open a chapter at a time whatever they ask
 
   "chapters": {                        // or a plain array when there is one language
     "es": [ { "title": "Luz", "file": "chapters/es/01-luz.md" }, { "title": "Color", "file": "chapters/es/02-color.md" } ],
@@ -56,7 +59,8 @@ my-book/
   "localized": {                       // per-language overrides (§2)
     "en": {
       "config": { "locale": "en-us", "resourceTypes": [ … ], "headings": { …whole object… } },
-      "resources": [ { "id": "sky", "caption": "A clear evening sky.", "altText": "…" } ]
+      "resources": [ { "id": "sky", "caption": "A clear evening sky.", "altText": "…" } ],
+      "view": { "canvasScope": "chapter" }   // optional: how this edition opens, over the shared `view`
     }
   }
 }
@@ -103,6 +107,11 @@ only drops the print master). It does **not** check `kind`, `typeId` against
   merged into the resource with the same id. `table` replaces the whole table
   (model and styleId). `file` swaps the artwork (a diagram with translated
   labels in `resources/en/…`).
+- `localized.<lang>.view` (postext ≥ 1.9.2): how that edition opens, over the
+  manifest's `view` (`{ "canvasScope": "chapter" }` for a translation that
+  paints whole too slowly while the original opens on the whole book).
+  `pickBundleView(manifest, locale)` resolves it; `openBundle` returns it as
+  `canvasScope`.
 - Two *different* books per language (not a translation): give resources
   language-prefixed ids, keep them all in the shared list, and leave
   `localized.resources` empty.

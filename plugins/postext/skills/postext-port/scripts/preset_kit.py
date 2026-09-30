@@ -555,7 +555,8 @@ def cmd_pack(args) -> None:
             rel = p.relative_to(project).as_posix()
             if not p.is_file() or any(part.startswith(".") for part in rel.split("/")):
                 continue
-            if rel.startswith(("source/", "__pycache__/")) or rel in skip_fonts or rel in ("layouts.json",):
+            # Pagination caches go stale with the engine: the sandbox lays out afresh.
+            if rel.startswith(("source/", "__pycache__/")) or rel in skip_fonts or (rel.startswith("layouts") and rel.endswith(".json")):
                 continue
             if p.suffix in (".py",) or rel in ("resources.json", "chapters.json", "report.md", "roles.json"):
                 continue

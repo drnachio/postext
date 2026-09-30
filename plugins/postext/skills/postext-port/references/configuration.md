@@ -964,7 +964,7 @@ CJK keeps Knuth–Plass. The guide is docs/chinese-layout-en.mdx (postext.dev/en
 | `trimLineStart` | on / off / on | opening bracket at a line start, closing at an end, lose their outer half |
 | `hangingPunctuation` | `'none'` | `'allow'` \| `'force'`: one 、，。． (mainland also ；：？！) past the line end; `'allow'` never in horizontal TW/HK, `'force'` there too |
 | `latinSpacing` | `{0.25, em}` | Han ↔ Latin letter/digit; replaces a typed space; `0` off |
-| `uprightDigits` | `2` | vertical text: numbers of ≤ N digits in one upright cell (0, 2, 3, 4); `:tcy[…]` by hand |
+| `uprightDigits` | `2` | vertical text: numbers of ≤ N digits in one upright cell (0, 2, 3, 4), but not inside a Latin sentence (a Latin word on both sides, past spaces, numbers and marks), where they run sideways with it; `:tcy[…]` / `:sideways[…]` by hand |
 | `grid` | off | `{enabled, charsPerLine, linesPerPage, show}`: rewrites margins so columns are whole ems and the type area whole lines; configured margins are minimums; warning `cjkGridClamped` |
 | `emphasis` | `'dots'` in a Chinese document | what `*…*` does to Chinese characters (`'italic'` fakes a slant) |
 | `bookTitleMark` | brackets / wavy / wavy | `:book[…]` prints 《》, a wavy line under it, or `'none'` |
@@ -1013,7 +1013,8 @@ and `{to: 'outer', edge: 'bottom'}` (offset y −5 em, `{pageNumber}`), at 80 % 
   resources: [ Resource minus createdAt/updatedAt/bitmap/svg, plus file?, pdfFile?, width?, height?, note? ],
   fonts: [ { name, variants: [{ weight, style, file: "fonts/X.woff2" }], redistributable? } ],
   localized?: { "<locale>": { config?: Partial<PostextConfig> (top-level keys REPLACED wholesale),
-                              resources?: [{ id, caption?, note?, altText?, table?, file?, pdfFile?, width?, height? }] } } }
+                              resources?: [{ id, caption?, note?, altText?, table?, file?, pdfFile?, width?, height? }],
+                              view?: { canvasScope?: 'book'|'chapter' } } } }   // the edition's view over `view` (≥ 1.9.2)
 ```
 `configVersion: 8` says `config` is written for today's rules (`preset_kit.write_manifest` sets it). Without it
 the bundle reads as postext 1.4 wrote it: H1 breaks pinned, maths × 1.1312 when a chapter has `$`,

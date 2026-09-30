@@ -145,7 +145,11 @@ Use H1 with `span: "page"`, `breakBefore` (parity from the book) and an
 - `minHeight` = the distance from the top margin to where the body starts.
 
 - `\\` in the heading forces a break in the designed title only. The TOC,
-  running heads and bookmarks show one line.
+  running heads and bookmarks show one line. In Chinese the bookmarks and the
+  PDF title join the break with nothing where a Chinese character meets a
+  digit or Latin text (`关于举办 \\ 2026年` → `关于举办2026年`), with an
+  ideographic space between two Chinese characters (a 回目 couplet), and with
+  a space between Latin words (postext ≥ 1.9.2).
 - A different picture or colour per chapter needs one heading style per
   chapter (`# Title {style="cap-7"}`), each embedding its own image and
   literal colour.
@@ -600,10 +604,15 @@ Decimal comma vs point in data and captions; `{,}` in LaTeX.
   chapter end).
 - Taiwan defaults: basic line breaking, every mark full width and centred, no compression, wavy `:book[…]`.
   Short numbers stand upright (`cjk.uprightDigits` 2; `:tcy[…]` for three or four characters); Latin words
-  lie sideways. Literary sources usually write numbers in Chinese numerals: keep them.
+  lie sideways, and so do the short numbers inside a Latin sentence (a colophon's `chapters 49 and 32`). Literary sources usually write numbers in Chinese numerals: keep them.
 - Openers: `numberingTemplate: '第{1:一}回'` and `breakBefore.parity: 'odd'` (the recto is the LEFT page);
   the 回目 couplet as `# 上聯 \\ 下聯`. A design opener lays out in the turned frame: "top" is the page's
   right edge.
+- A long novel (120 回): `view.canvasScope: 'book'` opens it whole (up to 200 chapters: 129 chapters,
+  ~2,000 pages take ~25 s and ~100 MB on the canvas); a translation that paints whole much more slowly
+  opens a chapter at a time with `localized.<lang>.view`. Save each edition's pagination from the
+  sandbox as `layouts.<lang>.json` so it opens paginated (project-format.md), again after every engine
+  release.
 - Running heads: horizontal ones need no change; fore-edge heads are two vertical text elements anchored
   to `'outer'` (configuration.md §19c); folios in Chinese numerals with
   `page.pageNumbering.format: 'trad-chinese-informal'`.
