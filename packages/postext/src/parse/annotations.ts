@@ -542,6 +542,7 @@ export function withBookBrackets(spans: readonly InlineSpan[]): InlineSpan[] {
         open.push(open.length === book.depth - 1 ? book.id : -1);
       }
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { bookTitle: _b, ...rest } = span;
     out.push(rest);
   }
@@ -559,6 +560,7 @@ export function dropAnnotations(spans: InlineSpan[], bookBrackets = false): Inli
   if (!spans.some((s) => s.emphasisMark || s.properName !== undefined || s.bookTitle || s.ruby || s.warichu)) return spans;
   return spans.map((s) => {
     if (!s.emphasisMark && s.properName === undefined && !s.bookTitle && !s.ruby && !s.warichu) return s;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { emphasisMark: _e, properName: _p, bookTitle: _b, ruby: _r, warichu: _w, ...rest } = s;
     return rest;
   });

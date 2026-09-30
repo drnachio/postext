@@ -18,7 +18,7 @@ import type {
   ResolvedCjkWarichuConfig,
 } from '../types';
 import { cjkRegionOf, languageOf } from '../locale';
-import { colorsEqual, dimensionsEqual } from './shared';
+import { dimensionsEqual } from './shared';
 
 /** `cjk` as written when nothing is set: everything follows the locale,
  *  nothing hangs, a quarter em between Han and Latin, no grid; readings

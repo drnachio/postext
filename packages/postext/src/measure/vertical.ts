@@ -134,7 +134,6 @@ export function verticalTrackCount(text: string): number {
  * the same either way.
  */
 export function flowTextWidth(text: string, font: string): number {
-  // eslint-disable-next-line no-control-regex
   if (measureWritingMode === 'vertical-rl' && (/[^\u0000-\u007F]/.test(text) || (measureUprightDigits > 0 && /[0-9]/.test(text)))) return verticalTextWidth(text, font);
   return measureTextWidth(text, font);
 }

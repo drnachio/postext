@@ -338,7 +338,6 @@ export function segmentOrientation(seg: { tcy?: boolean; orientation?: 'upright'
  *  `cjk.uprightDigits`, as the painters do). ASCII letters never do. */
 export function holdsVerticalCell(text: string, uprightDigits: number): boolean {
   if (uprightDigits > 0 && /[0-9]/.test(text) && uprightDigitRuns([...text], uprightDigits).size > 0) return true;
-  // eslint-disable-next-line no-control-regex
   if (!/[^\u0000-\u007F]/.test(text)) return false;
   for (const ch of text) {
     if (ch.charCodeAt(0) < 0x80) continue;

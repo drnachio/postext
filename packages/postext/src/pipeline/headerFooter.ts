@@ -505,6 +505,7 @@ function asFurniture(slot: VDTDesignSlot | undefined): VDTDesignSlot | undefined
     ...slot,
     blocks: slot.blocks.map((b) => {
       if (b.kind !== 'image' || b.altText === undefined) return b;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { altText: _alt, ...rest } = b;
       return rest;
     }),

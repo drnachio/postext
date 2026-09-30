@@ -117,6 +117,7 @@ export function bookTitlesAsConfigured(spans: InlineSpan[], cjk: Pick<ResolvedCj
   if (cjk.bookTitleMark !== 'none') return spans;
   return spans.map((s) => {
     if (!s.bookTitle) return s;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { bookTitle: _b, ...rest } = s;
     return rest;
   });

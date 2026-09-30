@@ -268,7 +268,6 @@ export function smallCapsWidth(text: string, font: string): number {
  *  renderers paint it, and so does a short number set in one cell
  *  (`cjk.uprightDigits`); no other ASCII text holds one. */
 export function textWidth(text: string, font: string, smallCaps: boolean | undefined): number {
-  // eslint-disable-next-line no-control-regex
   if (measuringVertically() && (/[^\u0000-\u007F]/.test(text) || (getMeasureUprightDigits() > 0 && /[0-9]/.test(text)))) {
     return verticalTextWidth(text, font, (run) => (smallCaps ? smallCapsWidth(run, font) : measureTextWidth(run, font)));
   }
