@@ -70,6 +70,7 @@ function isChaptersField(v: unknown): v is BundleChapterSpec[] | Record<string, 
 function isLocaleOverrides(v: unknown): v is BundleLocaleOverrides {
   if (!isRecord(v)) return false;
   if (v.config !== undefined && !isRecord(v.config)) return false;
+  if (v.view !== undefined && !isViewField(v.view)) return false;
   if (v.resources !== undefined) {
     if (!Array.isArray(v.resources)) return false;
     if (!v.resources.every((r) => isRecord(r) && isNonEmptyString(r.id))) return false;
@@ -186,6 +187,14 @@ export function pickLocaleOverrides(manifest: BundleManifest, locale: string): B
   // reword a Traditional edition.
   const found = matchContentLocale(keys, key);
   return found && sameContentLocale(found, key) ? localized[found]! : null;
+}
+
+/** How the edition served for `locale` opens: the manifest's `view` with
+ *  that language's `localized[…].view` over it. */
+export function pickBundleView(manifest: BundleManifest, locale: string): BundleViewSpec | undefined {
+  const own = pickLocaleOverrides(manifest, locale)?.view;
+  if (!own) return manifest.view;
+  return { ...manifest.view, ...own };
 }
 
 /** The locale a bundle actually serves for `locale`: the key of its

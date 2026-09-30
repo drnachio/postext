@@ -1578,6 +1578,11 @@ def localized_config(base: dict, config: dict) -> dict:
     return {k: v for k, v in config.items() if base.get(k) != v}
 
 
+# Joly's English takes several times longer to paint whole than the
+# Chinese editions: it opens a chapter at a time.
+LOCALE_VIEW = {"en": {"view": {"canvasScope": "chapter"}}}
+
+
 def write_manifest(out: str, chapters: dict, shared: list[dict], wording: dict, fonts: list[dict], configs: dict[str, dict]) -> dict:
     meta = {
         "id": PRESET_ID,
@@ -1602,7 +1607,7 @@ def write_manifest(out: str, chapters: dict, shared: list[dict], wording: dict, 
         "view": {"canvasScope": "book"},
         "chapters": chapters,
         "config": base,
-        "localized": {lang: ({"config": localized_config(base, configs[lang])} if lang != "zh-Hant" else {}) | {"resources": wording[lang]} for lang in LANGS},
+        "localized": {lang: ({"config": localized_config(base, configs[lang])} if lang != "zh-Hant" else {}) | {"resources": wording[lang]} | LOCALE_VIEW.get(lang, {}) for lang in LANGS},
         "resources": shared,
         "fonts": fonts,
     }
