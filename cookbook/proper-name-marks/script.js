@@ -166,8 +166,11 @@ const NUMERALS = '一二三四五六七八九十、'; // folios and list numbers
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 await loadFonts(FONTS, markdown);
 await loadCjkFonts({ [SONG]: ['400'] }, markdown + NUMERALS, { vertical: true });
-await loadCjkFonts({ [SONG]: ['700'], [HEI]: ['400', '700'] }, heads + colophon,
-  { vertical: true });
+// The bold sets the two titles, which have no punctuation, so it loads no vertical forms.
+// A browser that ignores the forms' feature settings would otherwise take a twin of the
+// bold files for vertical forms and set the text's brackets upright in the regular.
+await loadCjkFonts({ [SONG]: ['700'] }, heads);
+await loadCjkFonts({ [HEI]: ['400', '700'] }, heads + colophon, { vertical: true });
 await loadCjkFonts({ [KAI]: ['400'] }, preface + heads + NUMERALS, { vertical: true });
 const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
 showBook(doc, { title: t({ en: 'Name and title marks, down and across',

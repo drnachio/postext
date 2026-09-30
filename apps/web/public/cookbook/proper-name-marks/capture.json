@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "proper-name-marks",
-  "sourceHash": "e481d241abb237756f5513a94135480ee53e9e694083fde9c375a7524454f229",
+  "sourceHash": "f5273e727769f25ecfeab413893407e967cf7dbb8f2047311c06eb5f80a63d26",
   "engine": {
     "postext": "1.9.0",
     "postextPdf": "1.9.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-30T04:14:21.937Z",
+  "capturedAt": "2026-09-30T05:29:06.813Z",
   "variants": {
     "en": {
-      "hash8": "b7b6b6c0",
+      "hash8": "7e6ae7b9",
       "vdtHash": "666b14ae1706626f3a5dda2a0371d7dcbd4dd76e",
       "timings": {
-        "importMs": 137,
-        "fontsMs": 20746,
-        "buildMs": 8,
-        "totalMs": 21498,
+        "importMs": 626,
+        "fontsMs": 7664,
+        "buildMs": 6,
+        "totalMs": 8959,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Noto Serif TC"
         ],
         "pages": 3,
-        "ownLines": 164
+        "ownLines": 167
       },
       "pages": [
         {
@@ -61,7 +61,7 @@
           "h": 1450,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 85520,
+          "bytes": 85526,
           "alt": "Opening page 二: 項羽本紀."
         },
         {
@@ -106,7 +106,7 @@
       },
       "sandbox": {
         "file": "proper-name-marks.postext",
-        "bytes": 22571
+        "bytes": 22565
       },
       "detected": {
         "apis": [
@@ -307,13 +307,13 @@
       }
     },
     "es": {
-      "hash8": "cc686ca7",
+      "hash8": "0206b86b",
       "vdtHash": "4ef88f23fb888f40f39312aab00daabe9b7c9bf4",
       "timings": {
-        "importMs": 143,
-        "fontsMs": 324,
-        "buildMs": 7,
-        "totalMs": 1082,
+        "importMs": 617,
+        "fontsMs": 2870,
+        "buildMs": 11,
+        "totalMs": 7326,
         "builds": 2
       },
       "specimen": {
@@ -335,7 +335,7 @@
           "Noto Serif TC"
         ],
         "pages": 3,
-        "ownLines": 164
+        "ownLines": 167
       },
       "pages": [
         {
@@ -357,7 +357,7 @@
           "h": 1450,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 85470,
+          "bytes": 85474,
           "alt": "Página de apertura 二: 項羽本紀."
         },
         {
@@ -402,7 +402,7 @@
       },
       "sandbox": {
         "file": "proper-name-marks.postext",
-        "bytes": 22665
+        "bytes": 22667
       },
       "detected": {
         "apis": [

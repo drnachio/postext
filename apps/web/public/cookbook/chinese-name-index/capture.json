@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "chinese-name-index",
-  "sourceHash": "3c8b34d7bedfadf7b100656d786a1d346724a9113a1ae008630523fd2a26e54b",
+  "sourceHash": "406de4d474a2a8521b9646f366b81640156f9524bae6c8c69ad56e3a79fb7336",
   "engine": {
     "postext": "1.9.0",
     "postextPdf": "1.9.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-30T04:35:08.490Z",
+  "capturedAt": "2026-09-30T05:31:41.586Z",
   "variants": {
     "en": {
-      "hash8": "c2bcf73e",
+      "hash8": "2e6e4b3a",
       "vdtHash": "3d6700b81d644051f452c8a8a34fae97a9444c3a",
       "timings": {
-        "importMs": 360,
-        "fontsMs": 3007,
-        "buildMs": 96,
-        "totalMs": 4098,
+        "importMs": 369,
+        "fontsMs": 2947,
+        "buildMs": 92,
+        "totalMs": 4035,
         "builds": 2
       },
       "specimen": {
@@ -217,7 +217,7 @@
         "file480": "card.480.webp",
         "w": 960,
         "h": 720,
-        "mode": "screenshot"
+        "mode": "loupe"
       },
       "og": {
         "file": "og.jpg",
@@ -226,12 +226,12 @@
       },
       "pdf": {
         "file": "chinese-name-index.pdf",
-        "bytes": 306875,
+        "bytes": 306876,
         "pages": 8
       },
       "sandbox": {
         "file": "chinese-name-index.postext",
-        "bytes": 17965
+        "bytes": 20775
       },
       "detected": {
         "apis": [
@@ -462,13 +462,13 @@
       }
     },
     "es": {
-      "hash8": "2b716328",
+      "hash8": "0463260a",
       "vdtHash": "3e1da01925ffe042b2ce2f1485d41af6294281c0",
       "timings": {
-        "importMs": 131,
-        "fontsMs": 443,
-        "buildMs": 80,
-        "totalMs": 1330,
+        "importMs": 134,
+        "fontsMs": 485,
+        "buildMs": 78,
+        "totalMs": 1361,
         "builds": 2
       },
       "specimen": {
@@ -668,7 +668,7 @@
         "file480": "card.480.webp",
         "w": 960,
         "h": 720,
-        "mode": "screenshot"
+        "mode": "loupe"
       },
       "og": {
         "file": "og.jpg",
@@ -677,12 +677,12 @@
       },
       "pdf": {
         "file": "chinese-name-index.pdf",
-        "bytes": 307322,
+        "bytes": 307323,
         "pages": 8
       },
       "sandbox": {
         "file": "chinese-name-index.postext",
-        "bytes": 18124
+        "bytes": 20824
       },
       "detected": {
         "apis": [
