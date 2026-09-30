@@ -1,4 +1,4 @@
-import { charBefore, charFrom, flattenTitleBreaks, joinsWide, TITLE_BREAK_RE } from '../parse/inlineFormatting';
+import { charBefore, charFrom, flattenTitleBreaks, joinsWide, plainTitleBreak, TITLE_BREAK_RE } from '../parse/inlineFormatting';
 import { collapseBreakingSpaces, collapseTitleSpaces } from '../measure/spaces';
 import type { InlineSpan } from '../parse';
 import type { DocumentMetadata } from '../types';
@@ -530,6 +530,16 @@ export function lineJoin(
  *  parted), so it stays. */
 const BREAKING_EDGES_RE = /^[^\S\u00A0\u2007\u202F\uFEFF]+|[^\S\u00A0\u2007\u202F\uFEFF]+$/g;
 
+/** How {@link blockLinesText} reads a block. */
+export interface BlockLinesTextOptions {
+  /** A heading's forced breaks (`\\`, `VDTBlock.titleBreaks`) as plain
+   *  text reads them (`plainTitleBreak`): nothing where a Chinese
+   *  character meets a digit or Latin text, where the lines hold the space
+   *  the page sets as the Han–Latin space. The PDF bookmarks and document
+   *  title read a heading this way (#221). */
+  plainTitleBreaks?: boolean;
+}
+
 /** A block's lines read back as the text they were broken from, the way
  *  the paragraph read before wrapping (see {@link lineJoin}): wrapped lines
  *  keep their trailing space token and hyphenated lines end with the break
@@ -539,8 +549,8 @@ const BREAKING_EDGES_RE = /^[^\S\u00A0\u2007\u202F\uFEFF]+|[^\S\u00A0\u2007\u202
  *  of the two lines holds it. Whitespace inside the lines is kept as it is;
  *  the ends are trimmed. `\u2028` is the title-break placeholder. The
  *  running heads read a heading this way, and so do the PDF bookmarks and
- *  document title. */
-export function blockLinesText(block: VDTBlock): string {
+ *  document title (with `options.plainTitleBreaks`). */
+export function blockLinesText(block: VDTBlock, options?: BlockLinesTextOptions): string {
   const lines = block.lines.map((line) => {
     // The hyphen repeated from the line before (`repeatHyphen`) is not text.
     const own = line.repeatedHyphen && line.text.startsWith('-') ? line.text.slice(1) : line.text;
@@ -564,7 +574,27 @@ export function blockLinesText(block: VDTBlock): string {
     }
     text += t.slice(0, t.length - drop) + (next === undefined ? '' : sep);
   });
-  return text.trim();
+  return (options?.plainTitleBreaks ? plainBreaksOf(text, block) : text).trim();
+}
+
+/** `text`, a heading's lines read back, with each forced break the lines
+ *  set as a space read as plain text (see `plainTitleBreak`). The title
+ *  ends the text, so a break's index in the title (`titleBreaks`, the
+ *  number prefix excluded) counts back from the end of `text`; a break
+ *  whose place does not hold a space is left alone. */
+function plainBreaksOf(text: string, block: VDTBlock): string {
+  const breaks = block.titleBreaks;
+  const length = block.titleLength;
+  if (!breaks || breaks.length === 0 || length === undefined || text.length < length) return text;
+  const start = text.length - length;
+  let out = text;
+  // The last break first, so the places of the others hold.
+  for (const i of [...breaks].sort((a, b) => b - a)) {
+    const at = start + i;
+    if (out[at] !== ' ') continue;
+    if (plainTitleBreak(charBefore(out, at), charFrom(out, at + 1)) === '') out = out.slice(0, at) + out.slice(at + 1);
+  }
+  return out;
 }
 
 /** The breaking whitespace a line ends / starts with. */

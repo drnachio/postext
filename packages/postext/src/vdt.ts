@@ -971,7 +971,10 @@ export interface VDTBlock {
   titleLength?: number;
   /** The heading's title as written in the source — before its level's
    *  (or style's) `textTransform`, numbering prefix excluded, forced title
-   *  breaks as spaces. Present only when the lines print it otherwise (an
+   *  breaks as plain text reads them (a space between Latin words, the
+   *  ideographic space between two Chinese characters, nothing where a
+   *  Chinese character meets Latin text or a digit; `plainTitleBreak`).
+   *  Present only when the lines print it otherwise (an
    *  `uppercase` heading) and the title cites no resource (a `:ref` label
    *  is resolved in the lines only), so PDF bookmarks can name the heading
    *  as it was written (EF-81). The `{titleText}` design placeholder is

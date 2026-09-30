@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { buildDocument, renderPageToCanvas } from '../../index';
+import { buildDocument, renderPageToCanvas, renderToHtml } from '../../index';
 import { parseInlineFormatting, stripInlineFormatting } from '../../parse/inlineFormatting';
-import { verticalRuns, uprightDigitRuns } from '../../writingMode';
+import { verticalRuns, uprightDigitRuns, forcedVerticalRuns, segmentOrientation } from '../../writingMode';
 import { graphemesOf } from '../../measure/graphemes';
 import { atomicSpanToken } from '../../measure/rich';
 import { withMeasureWritingMode } from '../../measure/vertical';
@@ -253,37 +253,38 @@ describe('orientation marks leave references, notes and objects as they are (#19
   });
 });
 
-describe('the canvas paints what was measured (#190)', () => {
-  interface Call { op: string; text?: string; m: number[] }
-  function record(): { canvas: HTMLCanvasElement; calls: Call[] } {
-    const calls: Call[] = [];
-    type M = [number, number, number, number, number, number];
-    let m: M = [1, 0, 0, 1, 0, 0];
-    const stack: M[] = [];
-    const mul = (a: M, b: M): M => [a[0] * b[0] + a[2] * b[1], a[1] * b[0] + a[3] * b[1], a[0] * b[2] + a[2] * b[3], a[1] * b[2] + a[3] * b[3], a[0] * b[4] + a[2] * b[5] + a[4], a[1] * b[4] + a[3] * b[5] + a[5]];
-    const state: Record<string, unknown> = { font: '10px Test', letterSpacing: '0px', textBaseline: 'alphabetic', textAlign: 'start' };
-    const size = () => Number(/(\d*\.?\d+)px/.exec(String(state.font))?.[1] ?? 10);
-    const api: Record<string, unknown> = {
-      save: () => stack.push(m),
-      restore: () => { m = stack.pop() ?? m; },
-      transform: (a: number, b: number, c: number, d: number, e: number, f: number) => { m = mul(m, [a, b, c, d, e, f]); },
-      translate: (x: number, y: number) => { m = mul(m, [1, 0, 0, 1, x, y]); },
-      scale: (x: number, y: number) => { m = mul(m, [x, 0, 0, y, 0, 0]); },
-      rotate: (t: number) => { m = mul(m, [Math.cos(t), Math.sin(t), -Math.sin(t), Math.cos(t), 0, 0]); },
-      fillText: (text: string, x: number, y: number) => calls.push({ op: 'fillText', text, m: [...mul(m, [1, 0, 0, 1, x, y])].map((v) => Math.round(v * 1000) / 1000) }),
-      measureText: (s: string) => {
-        let w = 0;
-        for (const ch of s) w += stubCharWidth(ch, size());
-        return { width: w };
-      },
-    };
-    const ctx = new Proxy(state, {
-      get: (t, k) => (typeof k === 'string' && k in api ? api[k] : k in t ? t[k as string] : () => undefined),
-      set: (t, k, v) => { t[k as string] = v; return true; },
-    });
-    return { canvas: { width: 0, height: 0, getContext: () => ctx } as unknown as HTMLCanvasElement, calls };
-  }
+/** A canvas that records each `fillText` with the matrix it lands under. */
+interface Call { op: string; text?: string; m: number[] }
+function record(): { canvas: HTMLCanvasElement; calls: Call[] } {
+  const calls: Call[] = [];
+  type M = [number, number, number, number, number, number];
+  let m: M = [1, 0, 0, 1, 0, 0];
+  const stack: M[] = [];
+  const mul = (a: M, b: M): M => [a[0] * b[0] + a[2] * b[1], a[1] * b[0] + a[3] * b[1], a[0] * b[2] + a[2] * b[3], a[1] * b[2] + a[3] * b[3], a[0] * b[4] + a[2] * b[5] + a[4], a[1] * b[4] + a[3] * b[5] + a[5]];
+  const state: Record<string, unknown> = { font: '10px Test', letterSpacing: '0px', textBaseline: 'alphabetic', textAlign: 'start' };
+  const size = () => Number(/(\d*\.?\d+)px/.exec(String(state.font))?.[1] ?? 10);
+  const api: Record<string, unknown> = {
+    save: () => stack.push(m),
+    restore: () => { m = stack.pop() ?? m; },
+    transform: (a: number, b: number, c: number, d: number, e: number, f: number) => { m = mul(m, [a, b, c, d, e, f]); },
+    translate: (x: number, y: number) => { m = mul(m, [1, 0, 0, 1, x, y]); },
+    scale: (x: number, y: number) => { m = mul(m, [x, 0, 0, y, 0, 0]); },
+    rotate: (t: number) => { m = mul(m, [Math.cos(t), Math.sin(t), -Math.sin(t), Math.cos(t), 0, 0]); },
+    fillText: (text: string, x: number, y: number) => calls.push({ op: 'fillText', text, m: [...mul(m, [1, 0, 0, 1, x, y])].map((v) => Math.round(v * 1000) / 1000) }),
+    measureText: (s: string) => {
+      let w = 0;
+      for (const ch of s) w += stubCharWidth(ch, size());
+      return { width: w };
+    },
+  };
+  const ctx = new Proxy(state, {
+    get: (t, k) => (typeof k === 'string' && k in api ? api[k] : k in t ? t[k as string] : () => undefined),
+    set: (t, k, v) => { t[k as string] = v; return true; },
+  });
+  return { canvas: { width: 0, height: 0, getContext: () => ctx } as unknown as HTMLCanvasElement, calls };
+}
 
+describe('the canvas paints what was measured (#190)', () => {
   it('paints 28 upright in one cell and a wide :tcy squeezed to the em', () => {
     const doc = buildDocument({ markdown: '第28回:tcy[12345]' }, config('zh-Hant'));
     const { canvas, calls } = record();
@@ -296,5 +297,101 @@ describe('the canvas paints what was measured (#190)', () => {
     // Squeezed: five half ems into one em.
     expect(wide.m[0]).toBeCloseTo(EM / (5 * EM / 2), 6);
     expect(wide.m[1]).toBeCloseTo(0, 6);
+  });
+});
+
+// A number inside a Latin sentence set sideways follows the sentence: the
+// sentence turns, and a number standing upright in it reads wrong (#222).
+// The rule reads a number's nearest neighbours past any spaces: Latin on
+// both sides (a letter, or a punctuation mark of a sideways run) and it
+// runs sideways; a Chinese character, an upright sign or the end of the
+// text on either side and it stands.
+describe('tate-chu-yoko: a number in a Latin sentence runs sideways (#222)', () => {
+  const cells = (s: string, digits = 2) => verticalRuns(graphemesOf(s), 'taiwan', digits).filter((r) => r.glyph.orient === 'tcy').map((r) => r.text);
+
+  it('reads the nearest neighbours past the spaces', () => {
+    expect(cells('printed in 49 and 32 copies')).toEqual([]);
+    expect(cells('chapters 49, 32 and (7) of the 12th')).toEqual([]);
+    expect(cells('Han Feizi, chapters 49 and 32, Chinese Wikisource')).toEqual([]);
+    // Chinese text with a date, spaced or not.
+    expect(cells('今天是2026年9月28日。')).toEqual(['9', '28']);
+    expect(cells('第 3 回　第 12 回')).toEqual(['3', '12']);
+    // Between a Chinese character and a Latin word the number stands.
+    expect(cells('第3 copies')).toEqual(['3']);
+    expect(cells('用iPhone 15拍攝')).toEqual(['15']);
+    expect(cells('printed in 12。')).toEqual(['12']);
+    // An upright sign is no Latin neighbour; nor is the end of the text.
+    expect(cells('a 30×40 print')).toEqual(['30', '40']);
+    expect(cells('49 copies')).toEqual(['49']);
+    expect(cells('Part 12')).toEqual(['12']);
+  });
+
+  const cfg = (digits: 2 | 3 = 3, locale = 'zh-Hant') => config(locale, { cjk: { uprightDigits: digits, latinSpacing: { value: 0, unit: 'em' } } });
+  /** Each number of the text lines: its text, forced orientation, width. */
+  const numbers = (doc: VDTDocument) => segments(doc).filter((s) => /[0-9]/.test(s.text)).map((s) => [s.text, s.tcy ? 'tcy' : s.orientation ?? '', Math.round(s.width * 100) / 100]);
+  /** What the painters advance through a segment: the runs they cut it into
+   *  (the forced orientation first), as the canvas paints them. */
+  const painted = (seg: VDTLineSegment, digits: number): number => {
+    const orient = segmentOrientation(seg);
+    const runs = orient ? forcedVerticalRuns(graphemesOf(seg.text), orient) : verticalRuns(graphemesOf(seg.text), 'taiwan', digits);
+    return runs.reduce((w, r) => w + (r.cell === undefined ? [...r.text].reduce((a, ch) => a + stubCharWidth(ch, EM), 0) : r.cell * EM), 0);
+  };
+
+  it('measures and paints the numbers of a Latin paragraph of a vertical book sideways', () => {
+    const doc = buildDocument({ markdown: 'This book was printed in 490 and 320 copies, of which 12 are bound in silk.' }, cfg());
+    // Three digits at half an em each (the stub): sideways, a half em more
+    // than a cell.
+    expect(numbers(doc)).toEqual([['490', 'sideways', 15], ['320', 'sideways', 15], ['12', 'sideways', 10]]);
+    for (const seg of segments(doc)) if (seg.kind === 'text') expect(painted(seg, 3), seg.text).toBeCloseTo(seg.width, 6);
+  });
+
+  it('keeps a number that meets a Chinese character upright, beside a quoted English sentence', () => {
+    const doc = buildDocument({ markdown: '書中寫道 printed in 490 and 320 copies 等語，第120回於2026年9月28日，用iPhone 15拍攝。' }, cfg());
+    expect(numbers(doc)).toEqual([
+      ['490', 'sideways', 15], ['320', 'sideways', 15],
+      ['120', '', 10], ['2026', '', 20], ['9', '', 10], ['28', '', 10], ['15', '', 10],
+    ]);
+    for (const seg of segments(doc)) if (seg.kind === 'text') expect(painted(seg, 3), seg.text).toBeCloseTo(seg.width, 6);
+  });
+
+  it('reads the words past a line break, a style change and a link', () => {
+    // A column of eight ems: the lines break around the numbers.
+    const narrow = config('zh-Hant', { cjk: { uprightDigits: 2, latinSpacing: { value: 0, unit: 'em' } }, page: { width: pt(300), height: pt(8 * EM + 60), dpi: 72, margins: { top: pt(30), right: pt(30), bottom: pt(30), left: pt(30) } } });
+    const doc = buildDocument({ markdown: 'printed in **49** and [32](https://example.com) copies, of which 12 are bound.' }, narrow);
+    expect(lines(doc).length).toBeGreaterThan(3);
+    expect(numbers(doc).map(([t, o]) => [t, o])).toEqual([['49', 'sideways'], ['32', 'sideways'], ['12', 'sideways']]);
+    for (const seg of segments(doc)) if (seg.kind === 'text') expect(painted(seg, 2), seg.text).toBeCloseTo(seg.width, 6);
+    const link = segments(doc).find((s) => s.text === '32')!;
+    expect(link.href).toBe('https://example.com');
+  });
+
+  // Nº 080's colophon turned its chapter numbers by hand; the rule now
+  // gives the same page without the marks, however the lines break.
+  it('sets a colophon without :sideways as the marks set it', () => {
+    const marked = 'Set in Iansui, LXGW WenKai TC, Noto Serif TC and Noto Sans TC (SIL OFL). Text: Han Feizi, chapters :sideways[49] and :sideways[32], Chinese Wikisource, revisions 2642850 and 2327662 (CC BY-SA 4.0).';
+    const plain = marked.replace(/:sideways\[(\d+)\]/g, '$1');
+    const strip = (d: VDTDocument) => lines(d).map((l) => ({ text: l.text, width: l.bbox.width, segs: l.segments?.map((s) => [s.text, s.width, s.orientation]) }));
+    for (const height of [80, 120, 200, 400]) {
+      const column = config('zh-Hant', { bodyText: { fontFamily: 'Test Serif', fontSize: pt(EM), lineHeight: pt(16), textAlign: 'justify', firstLineIndent: pt(0) }, page: { width: pt(300), height: pt(height + 60), dpi: 72, margins: { top: pt(30), right: pt(30), bottom: pt(30), left: pt(30) } } });
+      const a = buildDocument({ markdown: marked }, column);
+      const b = buildDocument({ markdown: plain }, column);
+      expect(strip(b), String(height)).toEqual(strip(a));
+      expect(renderToHtml(b), String(height)).toBe(renderToHtml(a));
+    }
+  });
+
+  it('turns the number with the sentence on the canvas and in the HTML', () => {
+    const doc = buildDocument({ markdown: '書中寫道 printed in 49 copies 等語，第28回。' }, cfg(2));
+    const { canvas, calls } = record();
+    renderPageToCanvas(doc.pages[0]!, doc, canvas);
+    const sideways = calls.find((c) => c.text === '49')!;
+    // Sideways: the text's x axis runs down the sheet (the flow's frame).
+    expect(sideways.m[0]).toBeCloseTo(0, 6);
+    expect(sideways.m[1]).toBeCloseTo(1, 6);
+    const upright = calls.find((c) => c.text === '28')!;
+    expect(upright.m[0]).toBeCloseTo(1, 6);
+    const html = renderToHtml(doc);
+    expect(html).toContain('text-orientation:sideways;">49<');
+    expect(html).toContain('text-combine-upright:all;">28<');
   });
 });
