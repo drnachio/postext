@@ -7165,7 +7165,7 @@ my-book.postext
 └── fonts/ebgaramond-400-normal.woff2
 ```
 
-The manifest is described field by field in the Sandbox's [Preset bundle format](/en/docs/sandbox#preset-bundle-format) appendix. A file may also carry `layouts.json`, the Sandbox's page counts, so the book opens already paginated there. `openBundle` ignores it.
+The manifest is described field by field in the Sandbox's [Preset bundle format](/en/docs/sandbox#preset-bundle-format) appendix. A file may also carry `layouts.json`, the Sandbox's page counts, so the book opens already paginated there, or one per edition of a multilingual book (`layouts.zh-Hant.json`, read first). `openBundle` ignores them.
 
 The API is exported from `postext` itself and from the `postext/bundle` subpath, which adds the low-level helpers. Import from `postext` when you also render. That way the bundle adapters and the renderers share one module instance, which matters on a CDN such as esm.sh, where every entry point is a separate build.
 
@@ -7197,7 +7197,7 @@ bundle.files;      // Map<path, Uint8Array>: every file of the bundle
     <tr><td><code>resources</code></td><td>The resources, with the captions of the chosen locale. A size missing from the manifest is read from the file.</td></tr>
     <tr><td><code>fonts</code></td><td>One entry per face: <code>&#123; family, weight, style, format, file, bytes &#125;</code>.</td></tr>
     <tr><td><code>files</code></td><td>Every file in the archive, keyed by its path.</td></tr>
-    <tr><td><code>thumbnail</code>, <code>canvasScope</code></td><td>The cover picture's path, and how the bundle asks to be viewed.</td></tr>
+    <tr><td><code>thumbnail</code>, <code>canvasScope</code></td><td>The cover picture's path, and how the bundle asks to be viewed: the manifest's <code>view</code>, with the served language's <code>localized[…].view</code> over it.</td></tr>
     <tr><td><code>warnings</code></td><td>Non-fatal problems: an unsupported font file, a missing print master.</td></tr>
   </tbody>
 </table>
@@ -7393,7 +7393,7 @@ Because the Sandbox, the agent skill and the `postext` package all read and writ
 - **`openBundleZip(bytes)` / `zipBundle(files, { mtime })`**: the archive layer. Opening tolerates a top-level folder and ignores `__MACOSX` entries and dotfiles. Paths that escape the bundle are refused. `mtime` dates the files as `createBundle`'s input does.
 - **`readBundle(manifest, readFile, options)`** reads a manifest plus a `readFile(path)` callback into chapters, config, resources, pictures and fonts. `options` sets the locale, how file ids are named (`ids`), the base configuration (`baseConfig`, under the manifest's; by default the palette and the resource types of `bundleBaseConfig` in the bundle's language, which `resolveBundleConfigLocale(manifest, locale)` returns, and a host that passes its own `baseConfig` should localise it to that language; under a manifest older than `configVersion: 4` its `math` is pinned with the bundle's, under one older than 5 its `layout`'s inline gap, under one older than 6 its `layout`'s gap in boxes, its `bodyText`'s colon-line room, its `headings`' inline marks and its drop-cap sizes, under one older than 7 its `bodyText`'s dash breaks and ragged breaking, and under one older than 8 its `headings`' split under a heading and its `bodyText`'s compound breaks and space under `:::paragraphs` containers, see [Bundles written by postext 1.4 or earlier](#bundles-written-by-postext-14-or-earlier)) and how intrinsic sizes are measured.
 - **`planBundle(meta, content)` / `resolveBundleFiles(plan, sources)`**: the writing side, split into a pure plan (file names and manifest) and resolving the bytes through `readBlob` / `readFont` callbacks.
-- **`isBundleManifest(value)`**, the locale pickers (`pickChapterSpecs`, `pickLocaleOverrides`, `resolveBundleLocale`, `resolveBundleConfigLocale`), `svgSize` / `bitmapSize`, and the format types (`BundleManifest`, `BundleResourceSpec`, `BundleFontFamilySpec`, …).
+- **`isBundleManifest(value)`**, the locale pickers (`pickChapterSpecs`, `pickLocaleOverrides`, `pickBundleView`, `resolveBundleLocale`, `resolveBundleConfigLocale`), `svgSize` / `bitmapSize`, and the format types (`BundleManifest`, `BundleResourceSpec`, `BundleFontFamilySpec`, …).
 - **`CONFIG_VERSION`, `migrateConfig(config, configVersion, { content })`, `pinLegacyHeadingBreaks(config)`, `pinLegacyMathSize(config)`, `pinLegacyInlineGap(config)`, `pinLegacyBoxResourceGap(config)`, `pinLegacyHeadingMarks(config)`, `pinLegacyDropCapSize(config)`, `pinLegacyColonListRoom(config)`, `pinLegacyBoxChildCut(config)`, `pinLegacyDashBreaks(config)`, `pinLegacyRaggedBreaking(config)`, `pinLegacyHeadingSplit(config)`, `pinLegacyParagraphContainerSpacing(config)`, `pinLegacyHyphenBreaks(config)` and `LEGACY_MATH_SIZE`** (0.5 ÷ 0.442): a stored configuration in today's terms (see [Bundles written by postext 1.4 or earlier](#bundles-written-by-postext-14-or-earlier)). `readBundle` applies it; a host that stores configurations its own way can too, once per stored copy.
 
 The Sandbox is built on these. It adds its own storage ids and the `layouts.json` page records.
