@@ -587,8 +587,9 @@ Decimal comma vs point in data and captions; `{,}` in LaTeX.
   `:dots[…]`; readings as `{字|zì}`.
 - Index: `:index[…]` marks work as in any book; `groupBy` auto gives pinyin initials; a polyphonic
   character takes a Han `sort` key with the wanted reading (`sort="崇阳"` for 重阳).
-- Check `cjkLooseLine` in the render (a line that could not be spread, usually a long Latin word or URL) and
-  single-character last lines (孤字), which the composer does not avoid: reword or accept.
+- Check `cjkLooseLine` in the render (a line that could not be spread, usually a long Latin word or URL). A
+  single-character last line (孤字) is avoided by the composer under `bodyText.avoidRunts` (default on): the line
+  above gives up its last character; one left over means that line could not be spread: reword or accept.
 
 ### F6. Chinese, vertical and bound on the right (Taiwan novel, classic, poetry)
 - `locale: 'zh-Hant-TW'` (or `zh-Hant-HK`, or `zh-Hans` for a mainland classic set vertically: the region,
