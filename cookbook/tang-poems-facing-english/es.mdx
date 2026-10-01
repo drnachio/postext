@@ -29,7 +29,7 @@ Los renglones chinos tienen el doble de interlineado que los versos ingleses, 32
 
 <Excerpt region="notes" />
 
-Las notas son notas al pie, una por renglón: `疑是地上霜。[^bed]` cierra el primer renglón del poema y `[^bed]: …` va tras él, con las palabras que glosa en negrita, porque la llamada ya no está a su lado. Se numeran como numera sus notas un libro chino (页下注): números en círculo sobre la línea de base, contados de nuevo desde ① en cada página (`numberFormat: 'circled-decimal'`, `numbering: 'page'`). En el verso la llamada se compone a seis décimas del tamaño del poema, `markerSize: { value: 0.6, unit: 'em' }`, cerca del tamaño de las notas; al pie de la página cada nota empieza con su ① al tamaño del texto de la nota ([Notas al pie](/es/docs/configuration#notas-al-pie)). Las notas se componen con la fuente del cuerpo, y la de este libro es Noto Serif TC porque una nota mezcla caracteres y pinyin; las letras latinas de Noto Serif TC son las de Source Serif, y por eso las páginas inglesas van en Source Serif 4. Las notas se escriben en la lengua de la edición: con la cabecera de la página par y la nota sobre el texto, son lo que cambia en la edición española.
+Las notas son notas al pie, una por renglón: `疑是地上霜。[^bed]` cierra el primer renglón del poema y `[^bed]: …` va tras él, con las palabras que glosa en negrita, porque la llamada ya no está a su lado. Se numeran como numera sus notas un libro chino (页下注): números en círculo sobre la línea de base, contados de nuevo desde ① en cada página (`numberFormat: 'circled-decimal'`, `numbering: 'page'`). En el verso la llamada se compone a seis décimas del tamaño del poema, `markerSize: em(0.6)`, cerca del tamaño de las notas; al pie de la página cada nota empieza con su ① al tamaño del texto de la nota ([Notas al pie](/es/docs/configuration#notas-al-pie)). Las notas se componen con la fuente del cuerpo, y la de este libro es Noto Serif TC porque una nota mezcla caracteres y pinyin; las letras latinas de Noto Serif TC son las de Source Serif, y por eso las páginas inglesas van en Source Serif 4. Las notas se escriben en la lengua de la edición: con la cabecera de la página par y la nota sobre el texto, son lo que cambia en la edición española.
 
 ### 4 · Cabeceras en la lengua de cada página
 
@@ -71,6 +71,6 @@ Las ediciones Loeb y muchos libros bilingües de chino e inglés ponen el origin
 Las antologías chinas anotadas (注釋本) imprimen las notas tras cada poema. Las notas de fin de capítulo lo hacen aquí, porque cada poema es un capítulo.
 
 ```diff
--const footnotes = { placement: 'column', // the foot of the column, here the foot of the page
+-const footnotes = { placement: 'column', numbering: 'page', // the page foot; ① again on each page
 +const footnotes = { placement: 'chapterEnd', chapterEndAlign: 'text',
 ```

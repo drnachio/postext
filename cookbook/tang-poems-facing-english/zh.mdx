@@ -29,7 +29,7 @@ pageNotes: { "1": "扉页：淡金色月亮上是黑色的“唐詩”二字，�
 
 <Excerpt region="notes" />
 
-注释是脚注，每行一条：`疑是地上霜。[^bed]`结束诗的第一行，`[^bed]: …`紧随其后。由于注码不再紧挨被注的词，每条注释都用粗体写出所注的词。编号按中文书页下注的方式：带圈数字排在基线上，每页从①重新起算（`numberFormat: 'circled-decimal'`、`numbering: 'page'`）。诗行中的注码按诗句字号的十分之六排，即`markerSize: { value: 0.6, unit: 'em' }`，与注文字号相近；页脚每条注文以与注文同大的①开头（[脚注](/zh/docs/configuration#脚注)）。注释用正文字体排，而本书的正文字体是Noto Serif TC，因为注释里汉字和拼音混排；Noto Serif TC的拉丁字母取自Source Serif，所以英文页用Source Serif 4排。注释用本版本的语言书写：它与左页的书眉、关于文本的说明一起，是西班牙语版本要改的部分。
+注释是脚注，每行一条：`疑是地上霜。[^bed]`结束诗的第一行，`[^bed]: …`紧随其后。由于注码不再紧挨被注的词，每条注释都用粗体写出所注的词。编号按中文书页下注的方式：带圈数字排在基线上，每页从①重新起算（`numberFormat: 'circled-decimal'`、`numbering: 'page'`）。诗行中的注码按诗句字号的十分之六排，即`markerSize: em(0.6)`，与注文字号相近；页脚每条注文以与注文同大的①开头（[脚注](/zh/docs/configuration#脚注)）。注释用正文字体排，而本书的正文字体是Noto Serif TC，因为注释里汉字和拼音混排；Noto Serif TC的拉丁字母取自Source Serif，所以英文页用Source Serif 4排。注释用本版本的语言书写：它与左页的书眉、关于文本的说明一起，是西班牙语版本要改的部分。
 
 ### 4 · 每页的书眉用该页的语言
 
@@ -71,6 +71,6 @@ Fontsource把每款中文字体按字符范围切成大约一百个文件，`loa
 中文注释本把注释印在每首诗之后。这里用章末注实现，因为每首诗本身就是一章。
 
 ```diff
--const footnotes = { placement: 'column', // 栏底，这里就是页底
+-const footnotes = { placement: 'column', numbering: 'page', // 页底；每页从①重新编号
 +const footnotes = { placement: 'chapterEnd', chapterEndAlign: 'text',
 ```
