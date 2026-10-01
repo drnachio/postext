@@ -1,0 +1,121 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 96,
+  "status": "published",
+  "chapter": "structure",
+  "order": 180,
+  "level": 2,
+  "genres": [
+    "paper"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "citation-styles",
+      "generated-bibliography"
+    ],
+    "also": [
+      "opener-design",
+      "heading-attributes",
+      "heading-styles",
+      "running-heads",
+      "mirrored-margins",
+      "paragraph-styles",
+      "color-palette",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q106"
+  ],
+  "gotchas": [
+    "headings-drop-h1-break",
+    "fonts-first",
+    "palette-skips-designs",
+    "hyphenation-locales",
+    "config-cache-identity"
+  ],
+  "workarounds": [
+    {
+      "package": "postext",
+      "note": "the references are CSL-YAML, not BibTeX: parseBibtex (packages/postext/src/citations/bibtex.ts) does not map shorttitle to title-short, so MLA would print the full title of each Keats work in every citation"
+    },
+    {
+      "package": "postext",
+      "note": "no narrative citation without a locator (@stillinger1974 records…): in an author-page style, postext-citeproc's composite citation leaves a trailing space, so the name is followed by two spaces"
+    }
+  ],
+  "engine": {
+    "postext": "1.12.1",
+    "postextPdf": "1.12.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "page",
+    "pages": "all"
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "Quotations from “Ode on a Grecian Urn” (1820)",
+          "es": "Citas de «Ode on a Grecian Urn» (1820)"
+        },
+        "who": "John Keats",
+        "source": "https://rpo.library.utoronto.ca/content/ode-grecian-urn",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "Quotations from two letters of 1817, in Letters of John Keats to His Family and Friends, ed. Sidney Colvin (1925)",
+          "es": "Citas de dos cartas de 1817, en Letters of John Keats to His Family and Friends, ed. de Sidney Colvin (1925)"
+        },
+        "who": "John Keats",
+        "source": "https://www.gutenberg.org/ebooks/35698",
+        "license": "PD"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Spectral",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Spectral SC",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-01",
+  "updated": "2026-10-01",
+  "downloads": {
+    "pdf": true
+  }
+}

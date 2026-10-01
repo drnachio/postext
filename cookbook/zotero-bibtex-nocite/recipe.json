@@ -1,0 +1,90 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 97,
+  "status": "published",
+  "chapter": "structure",
+  "order": 190,
+  "level": 2,
+  "genres": [
+    "textbook",
+    "report"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "generated-bibliography",
+      "citation-styles"
+    ],
+    "also": [
+      "opener-design",
+      "heading-attributes",
+      "column-layouts",
+      "running-heads",
+      "paragraph-styles",
+      "color-palette"
+    ]
+  },
+  "answers": [
+    "Q113",
+    "Q106"
+  ],
+  "gotchas": [
+    "nocite-unknown-silent",
+    "headings-drop-h1-break",
+    "fonts-first",
+    "quote-frontmatter",
+    "config-cache-identity"
+  ],
+  "related": [
+    "apa-thesis-with-bibtex",
+    "one-text-four-citation-styles"
+  ],
+  "engine": {
+    "postext": "1.12.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "page",
+    "pages": "all"
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Spectral",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "IBM Plex Sans Condensed",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-01",
+  "updated": "2026-10-01"
+}

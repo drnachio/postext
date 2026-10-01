@@ -1,0 +1,63 @@
+---
+title: "用OSCOLA格式引注的法律评论"
+summary: "一篇四页的判例评论：正文写[@robinson2018, para 21]，引文按OSCOLA排成脚注，判例名用斜体，带中立引注、ibid和(n 1)回指。"
+plain: "一篇评论英国警察案件判决的短文。文中依据的每个判例、法规和文章都在页脚的编号注释中注明，用的是英国法学院通行的格式。"
+description: "用Postext排判例评论：判例、法规和论文按OSCOLA排成脚注，带精确定位、ibid、(n 1)回指，以及一份修补过的CSL样式。"
+question: "怎样按OSCOLA样式在脚注中引用判例和法规？"
+aliases: ["OSCOLA", "法律引注", "法学期刊", "判例评论", "判例表", "中立引注", "判例汇编", "ibid", "英国法", "普通法"]
+pageNotes: { "1": "第1页：上半页一条酒红色色带，有丛书名、大号斜体的案名Robinson、v Chief Constable of West Yorkshire Police和引注[2018] UKSC 4, [2018] AC 736，以及标题Acts, Omissions and the Police；下方是案情和注1、注2，注2为ibid [21]。", "2": "第2页：There is no Caparo test一节和Acts and omissions的开头，注3至注10：Donoghue v Stevenson、Anns、Murphy和Caparo的完整引注，一份用圆括号的澳大利亚判例汇编，以及Robinson (n 1) [26–27]。", "3": "第3页：Acts and omissions一节，注释引用Stovin v Wise、Hill、Michael和两篇期刊论文，并开始The statutory route一节。", "4": "第4页：按条引用的Human Rights Act 1998和ibid s 7、Compensation Act 2006、结尾的Comment、一行小字版权说明和注18至注23。" }
+---
+
+## 成品一览
+
+一份法学期刊判例评论栏目的抽印本：四页，评论英国最高法院2018年的*Robinson v Chief Constable of West Yorkshire Police*案，讨论警察何时负有注意义务。页面162 × 240 mm，左右镜像，正文Libre Baskerville 9.4/13.6 pt，首页是一条酒红色色带，案名用60 pt斜体。作者把每个出处写成带定位的代号`[@caparo1990, 617–18]`，Postext按英国法学院通行的OSCOLA格式排出23条脚注：判例名斜体，法规正体，AC、HL、edn等缩写后不加句点，紧接上一条注的同一出处写*ibid*，隔开之后写*Robinson (n 1) [55]*。所引判例和法规都是真实的，作者和期刊是虚构的。
+
+## 做法
+
+### 1 · 每个出处一条OSCOLA注
+
+代码就是上面的[简短回答](#简短回答)。OSCOLA是注释体样式：`[@robinson2018, para 21]`在句号后留下一个上标数字，内容进入页脚。注1给出完整引注*Robinson v Chief Constable of West Yorkshire Police [2018] UKSC 4, [2018] AC 736*；紧接着再次引用的注2是*ibid [21]*；中间隔了其他判例的注8是*Robinson (n 1) [26–27]*。法学期刊文章只在注释中引用，所以`bibliography.auto: false`不在末页排参考文献表。
+
+### 2 · 判例是数据，照判例汇编的写法录入
+
+判例是`type: legal_case`的CSL条目：案名放`title`，法院放`authority`，汇编名放`container-title`，起始页放`page`。当年份用来确定卷册时（如Appeal Cases），OSCOLA把汇编年份放在方括号里，所以本例把这个年份连同卷号写进`volume`：`volume: "[1990] 2"`得到*[1990] 2 AC 605 (HL)*。2001年以后的判决还有中立引注：`authority: UKSC`、`number: "4"`和`issued: 2018`得到*[2018] UKSC 4*，后面再接汇编引注。法规是`type: legislation`，年份写在标题里、不设`issued`，免得年份印两次；`[@hra1998, § 6]`引作*s 6*。
+
+### 3 · 给内置样式打两个补丁
+
+<Excerpt region="oscola" />
+
+内置的`oscola.csl`只在判例的第一条注里给段落定位加方括号，之后的注印成*para 55*和*ibid 27*，再次引用同一法规时也丢了*s*。补丁在排版前替换样式XML中的一个宏和一行，再作为自定义样式传入，正文和文献数据都不用改。
+
+### 4 · 色带上的案名
+
+<Excerpt region="opener" />
+
+色带从裁切边向下124 mm。案名、当事人和引注都是标题属性，同一栏目的另一篇评论只需改Markdown。*Robinson*用60 pt的Libre Baskerville斜体，因为OSCOLA要求案名斜体；下面的引注保持正体，与注释中一致。
+
+<Excerpt region="palette" />
+
+## 变化
+
+### 使用未修改的样式
+
+要与未打补丁的结果对比，改用内置样式名。之后各注中的段落定位会印成*para 55*。
+
+```diff
+-  style: 'custom', customStyle: OSCOLA, // the bundled 'oscola', patched above
++  style: 'oscola',
+```
+
+### 把注释放到文末
+
+有些期刊把注释集中在正文之后。引文保留完整和简略两种形式以及编号。
+
+```diff
+-  placement: 'column', numbering: 'chapter',
++  placement: 'chapterEnd', numbering: 'chapter',
+```
+
+## 常见问题
+
+- 卷号只写数字（`volume: "2"`）时，年份印在圆括号里，成为*(1990) 2 AC*；OSCOLA只对跨年连续编卷的汇编这样写，如注7中的Commonwealth Law Reports。Appeal Cases和Weekly Law Reports要把方括号年份写进`volume`。
+- 定位前的`s`表示页（德语*Seite*），不表示条：请写`§ 6`。`6(1)`这样的款项不会被识别为定位，请在句中写明，引注只引到条。
+- OSCOLA的期刊文章不附参考文献表，样式也不区分判例表和法规表。需要这些表的论文用`:::bibliography`只能得到一份排序列表：先列学术文献，判例和法规混排在后。

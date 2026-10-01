@@ -1,0 +1,648 @@
+{
+  "schemaVersion": 1,
+  "slug": "legal-opinion-oscola",
+  "sourceHash": "5a6be45026efdbb42a521dabce907441613ac043d055a262972e15b7d02bcbc8",
+  "engine": {
+    "postext": "1.12.1",
+    "postextPdf": "1.12.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-01T21:30:17.348Z",
+  "variants": {
+    "en": {
+      "hash8": "04eafcbc",
+      "vdtHash": "befe6b0e5fca16cba211cfd372710d730d74c63a",
+      "timings": {
+        "importMs": 416,
+        "fontsMs": 1922,
+        "buildMs": 47,
+        "totalMs": 3128,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          162,
+          240
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Libre Baskerville",
+          "sizePt": 9.4,
+          "leadingPt": 13.600000000000001
+        },
+        "families": [
+          "Libre Baskerville",
+          "Libre Caslon Display",
+          "Libre Franklin"
+        ],
+        "pages": 4,
+        "ownLines": 158
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1481,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 96606,
+          "alt": "Opening page 1: Acts, Omissions and the Police."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1481,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 161786,
+          "alt": "Page 2: There is no “Caparo test”."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1481,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 173066,
+          "alt": "Page 3: The statutory route."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1481,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 166886,
+          "alt": "Page 4: Comment."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "legal-opinion-oscola.pdf",
+        "bytes": 89501,
+        "pages": 4
+      },
+      "sandbox": {
+        "file": "legal-opinion-oscola.postext",
+        "bytes": 22869
+      },
+      "detected": {
+        "apis": [
+          "LOCALES",
+          "STYLES",
+          "buildDocument",
+          "clearMeasurementCache",
+          "createCiteprocEngine",
+          "decompressWoff2",
+          "registerCitationEngine",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "citations",
+          "citations.bibliography",
+          "citations.bibliography.auto",
+          "citations.customStyle",
+          "citations.link",
+          "citations.locale",
+          "citations.notes",
+          "citations.style",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "footnotes",
+          "footnotes.fontSize",
+          "footnotes.lineHeight",
+          "footnotes.numbering",
+          "footnotes.placement",
+          "footnotes.separator",
+          "footnotes.separator.color",
+          "footnotes.separator.lineWidth",
+          "footnotes.separator.width",
+          "footnotes.spaceBetween",
+          "footnotes.textAlign",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].italic",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "citations",
+          "colorPalette",
+          "footer",
+          "footnotes",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 279,
+        "designElements": 13,
+        "directives": [
+          ":::paragraphs",
+          ":::references"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Libre Baskerville",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Libre Baskerville",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Caslon Display",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 600,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "citation-styles",
+          "cross-references",
+          "footnotes",
+          "generated-bibliography",
+          "heading-attributes",
+          "note-citations",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.6400000000000001
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "a69d9ce1",
+      "vdtHash": "a98f2a9e46d9aa968d59092714341f6cb8924bbc",
+      "timings": {
+        "importMs": 167,
+        "fontsMs": 65,
+        "buildMs": 353,
+        "totalMs": 1694,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          162,
+          240
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Libre Baskerville",
+          "sizePt": 9.4,
+          "leadingPt": 13.600000000000001
+        },
+        "families": [
+          "Libre Baskerville",
+          "Libre Caslon Display",
+          "Libre Franklin"
+        ],
+        "pages": 4,
+        "ownLines": 158
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1481,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 99398,
+          "alt": "Página de apertura 1: Acción, omisión y policía."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1481,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 154594,
+          "alt": "Página 2: No existe un «test de Caparo»."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1481,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 176302,
+          "alt": "Página 3: Actos y omisiones."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1481,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 152776,
+          "alt": "Página 4: La vía legal."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "legal-opinion-oscola.pdf",
+        "bytes": 93455,
+        "pages": 4
+      },
+      "sandbox": {
+        "file": "legal-opinion-oscola.postext",
+        "bytes": 22874
+      },
+      "detected": {
+        "apis": [
+          "LOCALES",
+          "STYLES",
+          "buildDocument",
+          "clearMeasurementCache",
+          "createCiteprocEngine",
+          "decompressWoff2",
+          "registerCitationEngine",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "citations",
+          "citations.bibliography",
+          "citations.bibliography.auto",
+          "citations.customStyle",
+          "citations.link",
+          "citations.locale",
+          "citations.notes",
+          "citations.style",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "footnotes",
+          "footnotes.fontSize",
+          "footnotes.lineHeight",
+          "footnotes.numbering",
+          "footnotes.placement",
+          "footnotes.separator",
+          "footnotes.separator.color",
+          "footnotes.separator.lineWidth",
+          "footnotes.separator.width",
+          "footnotes.spaceBetween",
+          "footnotes.textAlign",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].italic",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "citations",
+          "colorPalette",
+          "footer",
+          "footnotes",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 279,
+        "designElements": 13,
+        "directives": [
+          ":::paragraphs",
+          ":::references"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Libre Baskerville",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Libre Baskerville",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Caslon Display",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 600,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "citation-styles",
+          "cross-references",
+          "footnotes",
+          "generated-bibliography",
+          "heading-attributes",
+          "note-citations",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.76
+        },
+        "findings": []
+      }
+    }
+  }
+}

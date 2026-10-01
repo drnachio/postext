@@ -1,0 +1,68 @@
+---
+title: "按MLA格式引用的人文学科论文"
+summary: "一篇文学论文：正文写[@key, 48]，按MLA 9排成著者-页码引文，有一段独立引文，引用文献表取自CSL-YAML数据。"
+plain: "一篇谈济慈诗作的论文，按文学期刊的样子排印。作者给每条文献起一个短代号写进正文，Postext按MLA格式在括号里印出作者和页码，并在文末列出引用文献。"
+description: "用Postext排文学论文：citeproc-js生成MLA 9著者-页码引文，济慈的两部作品加简短标题，独立引文和Works Cited文献表。"
+question: "文学论文怎样按MLA格式引用，并生成Works Cited文献表？"
+aliases: ["MLA", "MLA 9", "Works Cited", "引用文献", "著者-页码制", "文学论文", "人文学科", "独立引文", "citeproc"]
+pageNotes: { "1": "第1页：上半页是一条黑色色带，上有ESSAYS · ROMANTIC POETRY字样、细斜体大字标题Cold Pastoral、关于济慈《希腊古瓮颂》的副标题和署名Helena Ward，色带下方是一道陶土红色细条；下面是开头几段，带有(Jack)、(McDermott)这样的引文。", "2": "第2页：红色小型大写字母的节标题；引用颂诗的诗句，MLA引文写作(Keats, “Ode” 1–3)，此后只写行号，如(8–9)；艾略特的话后面跟着(230)。", "3": "第3页：关于书信的一节，有(Keats, Letters 41)，以及一段缩进2 em的独立引文，引文出处(Keats, Letters 48)放在末尾句号之后。", "4": "第4页：Works Cited，按字母排序，悬挂缩进；济慈的第二部作品以三连划线代替姓名；下方是一行小字版权说明。" }
+---
+
+## 成品一览
+
+一份文学季刊里的论文：四页，讨论济慈《希腊古瓮颂》（"Ode on a Grecian Urn"）最后两行诗由谁说出。版面是150 × 230 mm的期刊页，正文用Spectral，节标题和书眉用Spectral SC；篇首放在一条黑釉色的色带里，下面压一道陶土红，取自阿提卡陶瓶的两种颜色。引文遵循MLA第9版，这是大多数文学和艺术史院系使用的格式：括号里写作者和页码；句中已提到作者时只写页码；同一作者有两部作品时加简短标题；引用文献表单独起页。正文里每条引文只是一个代号，样式只是一项设置。
+
+## 做法
+
+### 1 · 样式用MLA，数据用CSL
+
+代码就是上面的[简短回答](#简短回答)。引用引擎注册一次，`citations.style`指定内置的MLA样式，citeproc-js据此写出每条引文和文献表。文献数据放在论文末尾的`:::references{format=csl-yaml}`块里。这里用CSL-YAML而不用BibTeX，是因为MLA要给济慈的两部作品加简短标题，而postext 1.12.1的BibTeX读取器会丢掉`shorttitle`字段；CSL里对应的字段是`title-short`。
+
+### 2 · 三种引用方式
+
+正文用`[@jack1967]`引用整部著作，印出"(Jack)"。带页码的`[@keats-letters, 41]`印出"(Keats, *Letters* 41)"：文中引用了济慈的两部作品，citeproc加上简短标题加以区分。句中已经点出评论者姓名时，`[-@eliot1932, 230]`省去姓名，只印"(230)"。颂诗第一次连同行号引用之后，后面的引文只写行号，用普通括号直接打出，这是MLA允许的。
+
+### 3 · 独立引文，出处放在句号之后
+
+<Excerpt region="quotation" />
+
+关于"消极能力"（Negative Capability）的那封信超过四行散文，所以用Markdown的引文块单独成段：正体，正文颜色，左缩进2 em，首行不缩进。MLA规定独立引文的出处放在末尾句号之后，原稿也这样写：`…fact and reason. [@keats-letters, 48]`。引文上下各加一个`:::space{lines=0.5}`，与前后段落隔开。
+
+### 4 · 引用文献表单独起页
+
+<Excerpt region="works-cited" />
+
+这个标题使用一个另起新页的样式，`:::bibliography{title=""}`把文献表放在它下面，不再重复标题。文献表按字母排序，悬挂缩进；济慈的第二部作品以三连划线代替姓名，这是MLA对同一作者重复出现的要求。这一页和篇首页没有书眉，页码改印在页脚。
+
+### 5 · 用陶瓶的两种颜色排篇首
+
+<Excerpt region="opener" />
+
+<Excerpt region="palette" />
+
+色带高116 mm，里面是栏目名、56 pt的Spectral Light斜体标题、副标题和署名，内容都取自标题属性。陶土红细条是第二个方框，锚定在色带底边以上3 mm处。
+
+## 变化
+
+### 文献表紧接正文排
+
+有的期刊把引用文献接在最后一段之后，不另起页，只要去掉标题样式里的分页。
+
+```diff
+-  headingStyles: [{ id: 'works-cited', breakBefore: { enabled: true, parity: 'any' } }],
++  headingStyles: [{ id: 'works-cited', breakBefore: { enabled: false } }],
+```
+
+### 改用Chicago著者-出版年制
+
+同一篇论文改用Chicago时，作者后面跟年份，写作"(Brooks 1947, 165)"，文献表也随之改变。
+
+```diff
+-  style: 'modern-language-association', // MLA 9th edition, author-page
++  style: 'chicago-author-date',
+```
+
+## 常见问题
+
+- 不带页码的叙述式引文，如`@stillinger1974 records`，在postext 1.12.1里会在姓名后多出一个空格。可以像本文那样，把这类引文放在分句末尾的方括号里，或者给出页码。
+- citeproc-js按数据原样印出标题。MLA要求英文标题实词首字母大写，所以在文献数据里就要这样写。

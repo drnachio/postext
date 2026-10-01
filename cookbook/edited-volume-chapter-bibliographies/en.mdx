@@ -1,0 +1,73 @@
+---
+title: "An edited volume with a bibliography per chapter"
+summary: "Three essays by three contributors, each a document of its own in buildBundle, each closing on a Chicago author-date list of only the works it cites."
+plain: "A book of essays by different authors. Each essay shows its author under the title and ends with its own list of references, as collected volumes do."
+description: "An edited volume in Postext: buildBundle chapters with bylines from heading attributes and a per-chapter bibliography in Chicago author-date style."
+question: "How do I give each chapter of an edited volume its own byline and its own reference list?"
+aliases: ["edited volume", "collected essays", "proceedings", "contributed chapters", "per-chapter references", "chapter bibliography", "Chicago author-date", "byline"]
+pageNotes: { "1": "Page 1: the title page, a printer's red field over the top two thirds with The Working Page in large white Caslon and the subtitle in italics; below it the editors in red capitals and the three contributors in italics.", "2": "Page 2: the contents, three numbered essays with leaders and page numbers, each with its contributor's name in grey italics under the title.", "5": "Page 5: the end of chapter 1 and its References list of four works, among them Eisenstein 1979 and Gaskell 1972.", "8": "Page 8: the end of chapter 2 and its own References list, which repeats Eisenstein 1979 because this chapter cites it too." }
+---
+
+## What you'll build
+
+*The Working Page*, a small collection of essays on the history of printing, edited by two scholars and written by three. Each essay arrives from its contributor as a Markdown file with a BibTeX block of its own, and that is how the book keeps it: a 155 × 235 mm volume in Libre Caslon, a red title page, and chapters that open with a number, a title and the contributor's name. Each chapter closes on its own References list in Chicago author-date, holding only the works that essay cites. Eisenstein's *Printing Press as an Agent of Change* is cited by two contributors and so appears in both of their lists; Gaskell's *New Introduction to Bibliography* does the same in chapters 1 and 3.
+
+## Method
+
+### 1 · One document per contributor
+
+<Excerpt region="chapters" />
+
+The scope in [the short answer](#the-short-answer) is the scope of a document. `buildBundle` lays the four documents out as one book, so page numbers, chapter numbers and the contents run straight through, while each `:::bibliography` collects the citations of its own file. The references stay where the contributor wrote them: a key defined in any chapter counts for the whole book, so one shared entry would have been enough, but self-contained chapters can be swapped or reordered without breaking another essay's list.
+
+### 2 · The byline is a heading attribute
+
+<Excerpt region="byline" />
+
+Each essay's title carries `author="…"` and a `short="…"` title for the running head. The opener prints the author under the title, the verso running head names the author of the essay the page belongs to, and the contents print the name as a line under each entry. Nothing in the book's front matter lists the contributors twice.
+
+### 3 · The opener
+
+<Excerpt region="opener" />
+
+Kicker, title and byline stack from the top of the text area, each anchored below the one before, so a two-line title such as chapter 3's pushes the byline and the rule down with it. The 48 mm reserve holds a two-line title; the text then starts on the same grid line in every chapter.
+
+### 4 · Running heads for a book with many authors
+
+<Excerpt region="running-heads" />
+
+An edited volume names the contributor on the verso and the chapter on the recto, where a monograph would print the book's title and the chapter. The heads are filtered to `pages: 'body'`, so the openers carry only a drop folio.
+
+### 5 · The front matter
+
+<Excerpt region="front" />
+
+The title page and the contents are two unnumbered headings in the first document, with no running heads and no entry in the contents. Their designs read `{title}` and `{subtitle}` from the front matter and the editors and contributors from the heading's own attributes.
+
+## Variations
+
+### One list for the whole volume
+
+Some publishers gather every work into a single bibliography at the back. Change the scope and drop the three `## References` headings; the list then follows the last chapter.
+
+```diff
+-    scope: 'chapter',
+-    title: '', // no bold title paragraph: each chapter has its own ## References heading
++    scope: 'book',
++    title: 'Bibliography',
+```
+
+### Cite in APA instead
+
+A volume in the social sciences changes the style and nothing else.
+
+```diff
+-  style: 'chicago-author-date', // the humanities' author-date: (Eisenstein 1979)
++  style: 'apa',
+```
+
+## Pitfalls
+
+- `scope: 'chapter'` lists what the document cites before the `:::bibliography`, not what its H1 section cites. With every essay in one Markdown file, the second list repeats the works of the first essay and the third repeats both.
+- The first definition of a key wins across the book. If two contributors both use `smith2001` for different works, the later essay silently cites the earlier contributor's book: give each contributor's keys a prefix, or check the lists against the manuscripts.
+- Disambiguation is worked out for the whole book. Two different works by Smith from 2001 in different chapters can print as 2001a and 2001b, even when a chapter's own list holds only one of them.

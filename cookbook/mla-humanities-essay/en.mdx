@@ -1,0 +1,68 @@
+---
+title: "A humanities essay with MLA works cited"
+summary: "A literary essay whose [@key, 48] citations become MLA 9 author-page references, with a block quotation and a Works Cited list built from CSL-YAML data."
+plain: "An essay on a poem by Keats, as a literary journal prints it. The author writes a short code for each source; Postext prints the author and page in brackets and the list of works cited at the end, in MLA style."
+description: "A literary essay in Postext: MLA 9 author-page citations by citeproc-js, a short title for two works by Keats, a block quotation and a Works Cited list."
+question: "How do I cite in MLA and build the Works Cited list for a literature essay?"
+aliases: ["MLA", "MLA 9", "Works Cited", "author-page", "literature essay", "humanities", "block quotation", "three hyphens", "citeproc"]
+pageNotes: { "1": "Page 1: a black band over the top half with the kicker ESSAYS · ROMANTIC POETRY, the title Cold Pastoral in large light italics, a subtitle about Keats's Ode on a Grecian Urn and the byline Helena Ward, over a red clay strip; below, the opening paragraphs with citations such as (Jack) and (McDermott).", "2": "Page 2: sections in red small capitals; quotations from the ode with MLA citations (Keats, “Ode” 1–3), then line numbers alone such as (8–9), and Eliot's phrase followed by (230).", "3": "Page 3: the section on the letters, with (Keats, Letters 41) and a block quotation set in 2 em whose citation (Keats, Letters 48) follows its final full stop.", "4": "Page 4: Works Cited, alphabetical with hanging indents; the second work by Keats opens with a three-em dash; a small colophon below." }
+---
+
+## What you'll build
+
+An essay from a literary quarterly: four pages on who speaks the last two lines of Keats's "Ode on a Grecian Urn". The page is a 150 × 230 mm journal page set in Spectral, with section heads and running heads in Spectral SC, and the opener sits in a band the colour of black glaze over a strip of red clay, the two colours of an Attic vase. The citations follow MLA 9, the style of most literature and art history departments: the author and the page in brackets, the page alone when the sentence names the author, a short title when two works share an author, and a Works Cited list on its own page. Every citation is a key in the text and the style is one setting.
+
+## Method
+
+### 1 · The style is MLA, the data are CSL
+
+The code is [the short answer](#the-short-answer) above. The citation engine is registered once and `citations.style` names the bundled MLA style; citeproc-js writes each citation and the list from it. The references sit in a `:::references{format=csl-yaml}` block at the end of the essay. CSL-YAML is used here instead of BibTeX because MLA needs a short title for Keats's two works, and the BibTeX reader in postext 1.12.1 drops the `shorttitle` field; in CSL the field is `title-short`.
+
+### 2 · Three kinds of citation
+
+The text cites a work with `[@jack1967]`, which prints "(Jack)" because the essay refers to the book as a whole. With a page, `[@keats-letters, 41]` prints "(Keats, *Letters* 41)": two works by Keats are cited, so citeproc adds the short title to tell them apart. When the sentence already names the critic, `[-@eliot1932, 230]` leaves the name out and prints "(230)". Once the ode has been cited with its line numbers, later quotations from it carry the numbers alone, typed in plain parentheses, as MLA allows.
+
+### 3 · A block quotation with its citation after the full stop
+
+<Excerpt region="quotation" />
+
+The letter on Negative Capability runs to more than four lines of prose, so it is set off as a Markdown blockquote: upright, in ink, indented 2 em with no first-line indent. MLA puts the citation of a block quotation after its final full stop, and the source does the same: `…fact and reason. [@keats-letters, 48]`. A `:::space{lines=0.5}` above and below separates the quotation from the paragraphs around it.
+
+### 4 · Works Cited on a page of its own
+
+<Excerpt region="works-cited" />
+
+The heading takes a style that breaks to a new page, and `:::bibliography{title=""}` places the list under it without a second title. The list is alphabetical with a hanging indent, and the second work by Keats opens with a three-em dash in place of his name, as MLA asks for repeated authors. A drop folio prints at the foot of this page and of the opener, where the running heads stand down.
+
+### 5 · The opener in two colours of a vase
+
+<Excerpt region="opener" />
+
+<Excerpt region="palette" />
+
+The band is 116 mm deep and holds the kicker, the title at 56 pt in Spectral Light italic, the subtitle and the byline, all fed from attributes of the heading. The clay strip is a second box anchored 3 mm above the foot of the band.
+
+## Variations
+
+### Run the list on after the essay
+
+A journal that sets Works Cited after the last paragraph, without a new page, drops the break from the heading style.
+
+```diff
+-  headingStyles: [{ id: 'works-cited', breakBefore: { enabled: true, parity: 'any' } }],
++  headingStyles: [{ id: 'works-cited', breakBefore: { enabled: false } }],
+```
+
+### Cite in Chicago author-date
+
+The same essay in Chicago puts the year after the author, "(Brooks 1947, 165)", and the list follows suit.
+
+```diff
+-  style: 'modern-language-association', // MLA 9th edition, author-page
++  style: 'chicago-author-date',
+```
+
+## Pitfalls
+
+- A narrative citation without a page, `@stillinger1974 records`, prints the name with a second space after it in postext 1.12.1. Cite such a work in brackets at the end of the clause, as this essay does, or give a page.
+- citeproc-js prints titles as the data give them. MLA uses title case for English titles, so write them that way in the references.

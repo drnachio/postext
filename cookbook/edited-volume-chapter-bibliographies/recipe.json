@@ -1,0 +1,112 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 98,
+  "status": "published",
+  "chapter": "structure",
+  "order": 200,
+  "level": 3,
+  "genres": [
+    "paper",
+    "textbook"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "generated-bibliography",
+      "citation-styles"
+    ],
+    "also": [
+      "multi-chapter-books",
+      "heading-attributes",
+      "opener-design",
+      "toc",
+      "running-heads",
+      "page-role-filters",
+      "heading-styles",
+      "unnumbered-headings",
+      "covers",
+      "design-anchoring",
+      "floated-callouts",
+      "mirrored-margins",
+      "color-palette",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q114",
+    "Q106"
+  ],
+  "gotchas": [
+    "citation-key-first-wins",
+    "headings-drop-h1-break",
+    "bundle-metadata",
+    "attr-values",
+    "style-inherits-break",
+    "fonts-first",
+    "quote-frontmatter",
+    "config-cache-identity"
+  ],
+  "related": [
+    "apa-thesis-with-bibtex",
+    "anthology-with-bylines",
+    "book-from-chapters"
+  ],
+  "engine": {
+    "postext": "1.12.1",
+    "postextPdf": "1.12.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "page",
+    "pages": "all"
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Libre Caslon Text",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Libre Caslon Display",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "IBM Plex Sans Condensed",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-01",
+  "updated": "2026-10-01",
+  "downloads": {
+    "pdf": true
+  }
+}

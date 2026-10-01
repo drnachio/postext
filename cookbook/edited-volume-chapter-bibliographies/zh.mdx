@@ -1,0 +1,73 @@
+---
+title: "每章自带参考文献表的论文集"
+summary: "三位作者的三篇论文，各是buildBundle里的一个独立文档，每章末尾有一份Chicago著者-出版年制的文献表，只列本章引用的文献。"
+plain: "一本由不同作者撰写的论文集。每篇论文的标题下署着作者的名字，结尾附上自己的参考文献表，和常见的论文集一样。"
+description: "用Postext排论文集：buildBundle的各章从标题属性取作者署名，每章按Chicago著者-出版年制生成自己的参考文献表。"
+question: "怎样让论文集的每一章有自己的作者署名和自己的参考文献表？"
+aliases: ["论文集", "文集", "会议论文集", "合著章节", "每章参考文献", "章末文献表", "Chicago著者-出版年制", "署名"]
+pageNotes: { "1": "第1页：书名页，上方三分之二是印刷红色的色块，色块里是白色大号Caslon字体的书名The Working Page和斜体副题；下方是红色大写的编者名和斜体的三位作者名。", "2": "第2页：目录，三篇编号论文，带前导点和页码，每个标题下是作者名，灰色斜体。", "5": "第5页：第1章的结尾和它的References，共四条，其中有Eisenstein 1979和Gaskell 1972。", "8": "第8页：第2章的结尾和它自己的References，因为本章也引用了Eisenstein 1979，所以这一条再次出现。" }
+---
+
+## 成品一览
+
+《The Working Page》是一本关于印刷史的小论文集，两位编者，三位作者。每位作者交来的稿子是一个Markdown文件，附着自己的BibTeX块，书里也按这个样子保存：155 × 235 mm的开本，正文用Libre Caslon，书名页是一块红色，各章开头是章号、标题和作者名。每章末尾是自己的References，按Chicago著者-出版年制排，只列这篇论文引用过的文献。Eisenstein的*The Printing Press as an Agent of Change*被两位作者引用，因此出现在两份表里；Gaskell的*A New Introduction to Bibliography*在第1章和第3章的表里也各有一条。
+
+## 做法
+
+### 1 · 每位作者一个文档
+
+<Excerpt region="chapters" />
+
+[简短回答](#简短回答)里的范围指的是一个文档。`buildBundle`把四个文档排成一本书，页码、章号和目录连续下去，而每个`:::bibliography`只收集自己文件里的引文。参考文献留在作者写下它的地方。任何一章定义的代号在全书都有效，所以共用的文献其实只需写一次；但各章自成一体，调换顺序或替换一篇论文时就不会弄坏别的章的文献表。
+
+### 2 · 署名是标题属性
+
+<Excerpt region="byline" />
+
+每篇论文的标题带有`author="…"`，还有一个供页眉用的短标题`short="…"`。章首把作者印在标题下面，左页页眉写出该页所属论文的作者，目录在每个条目下面加一行作者名。前置部分不必再列一遍作者。
+
+### 3 · 章首
+
+<Excerpt region="opener" />
+
+眉题、标题和署名从版心顶端往下排，每个元素锚定在前一个的下方，所以像第3章那样的两行标题会把署名和短线一起推下去。48 mm的预留高度能放下两行标题，各章正文都从基线网格的同一行开始。
+
+### 4 · 多作者书的页眉
+
+<Excerpt region="running-heads" />
+
+论文集在左页写作者、右页写章名；专著在这两个位置写的是书名和章名。页眉限定为`pages: 'body'`，所以章首页只在页脚印一个页码。
+
+### 5 · 前置部分
+
+<Excerpt region="front" />
+
+书名页和目录是第一个文档里两个不编号的标题，没有页眉，也不进目录。它们的设计从frontmatter读取`{title}`和`{subtitle}`，编者和作者则取自标题自身的属性。
+
+## 变化
+
+### 全书一份文献表
+
+有些出版社把所有文献集中成书末的一份总表。改一下范围，删掉三个`## References`标题，文献表就排在最后一章之后。
+
+```diff
+-    scope: 'chapter',
+-    title: '', // no bold title paragraph: each chapter has its own ## References heading
++    scope: 'book',
++    title: 'Bibliography',
+```
+
+### 改用APA
+
+社会科学的论文集只改样式，别的不动。
+
+```diff
+-  style: 'chicago-author-date', // the humanities' author-date: (Eisenstein 1979)
++  style: 'apa',
+```
+
+## 常见问题
+
+- `scope: 'chapter'`列出的是文档在`:::bibliography`之前引用的文献，不是某个H1小节引用的文献。如果所有论文都写在同一个Markdown文件里，第二份表会重复第一篇的文献，第三份表会重复前两篇的。
+- 全书以每个代号的第一次定义为准。两位作者若都用`smith2001`指不同的书，后一篇会悄悄引用前一位作者的那本：给每位作者的代号加前缀，或者拿文献表和原稿核对。
+- 消歧在全书范围内进行。不同章里两部不同的Smith 2001年著作可能印成2001a和2001b，即使某一章的表里只有其中一部。

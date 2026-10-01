@@ -1,0 +1,68 @@
+---
+title: "Un ensayo de humanidades con obras citadas en MLA"
+summary: "Un ensayo literario cuyas citas [@clave, 48] salen en MLA 9, autor y página, con una cita en bloque y la lista de obras citadas tomada de datos CSL-YAML."
+plain: "Un ensayo sobre un poema de Keats, tal como lo imprime una revista literaria. La autora escribe una clave corta para cada fuente; Postext imprime el autor y la página entre paréntesis y la lista de obras citadas al final, en estilo MLA."
+description: "Un ensayo literario con Postext: citas MLA 9 de autor y página con citeproc-js, título abreviado para dos obras de Keats, cita en bloque y obras citadas."
+question: "¿Cómo cito en MLA y monto la lista de obras citadas de un ensayo de literatura?"
+aliases: ["MLA", "MLA 9", "obras citadas", "Works Cited", "autor-página", "ensayo literario", "humanidades", "cita en bloque", "cita larga", "citeproc"]
+pageNotes: { "1": "Página 1: una banda negra sobre la mitad superior con el antetítulo ENSAYOS · POESÍA ROMÁNTICA, el título Fría pastoral en cursiva fina de gran tamaño, un subtítulo sobre la «Ode on a Grecian Urn» de Keats y la firma Helena Ward, sobre una franja rojo arcilla; debajo, los primeros párrafos con citas como (Jack) y (McDermott).", "2": "Página 2: títulos de sección en versalitas rojas; citas de la oda con referencias MLA (Keats, «Ode» 1–3), después solo los números de verso, como (8–9), y la frase de Eliot seguida de (230).", "3": "Página 3: la sección de las cartas, con (Keats, Letters 41) y una cita en bloque sangrada 2 em cuya referencia (Keats, Letters 48) va tras el punto final.", "4": "Página 4: Obras citadas, en orden alfabético con sangría francesa; la segunda obra de Keats empieza con una raya triple; un pequeño colofón debajo." }
+---
+
+## Lo que vas a componer
+
+Un ensayo de una revista literaria trimestral: cuatro páginas sobre quién dice los dos últimos versos de la «Ode on a Grecian Urn» de Keats. La página mide 150 × 230 mm y va en Spectral, con los títulos de sección y las cabeceras en Spectral SC; la apertura ocupa una banda del negro del barniz sobre una franja de arcilla roja, los dos colores de un vaso ático. Las citas siguen MLA 9, el estilo de casi todos los departamentos de literatura e historia del arte: autor y página entre paréntesis, solo la página cuando la frase ya nombra al autor, un título abreviado cuando dos obras son del mismo autor y la lista de obras citadas en página aparte. Cada cita es una clave en el texto y el estilo es un solo ajuste.
+
+## Elaboración
+
+### 1 · El estilo es MLA; los datos, CSL
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. El motor de citas se registra una vez y `citations.style` nombra el estilo MLA incluido; citeproc-js redacta con él cada cita y la lista. Las referencias van en un bloque `:::references{format=csl-yaml}` al final del ensayo. Aquí se usa CSL-YAML y no BibTeX porque MLA necesita un título abreviado para las dos obras de Keats, y el lector de BibTeX de postext 1.12.1 descarta el campo `shorttitle`; en CSL el campo se llama `title-short`.
+
+### 2 · Tres maneras de citar
+
+El texto cita una obra con `[@jack1967]`, que imprime «(Jack)» porque el ensayo se refiere al libro entero. Con página, `[@keats-letters, 41]` imprime «(Keats, *Letters* 41)»: se citan dos obras de Keats, así que citeproc añade el título abreviado para distinguirlas. Cuando la frase ya nombra al crítico, `[-@eliot1932, 230]` omite el nombre e imprime «(230)». Una vez citada la oda con sus números de verso, las citas siguientes llevan solo los números, escritos entre paréntesis normales, como permite MLA.
+
+### 3 · Una cita en bloque con la referencia tras el punto
+
+<Excerpt region="quotation" />
+
+La carta sobre la Negative Capability pasa de cuatro líneas de prosa, así que va aparte como cita en bloque de Markdown: en redonda, en el color del texto, sangrada 2 em y sin sangría de primera línea. MLA pone la referencia de una cita en bloque detrás del punto final, y el original hace lo mismo: `…fact and reason. [@keats-letters, 48]`. Un `:::space{lines=0.5}` encima y otro debajo la separan de los párrafos que la rodean.
+
+### 4 · Las obras citadas, en página aparte
+
+<Excerpt region="works-cited" />
+
+El título lleva un estilo que salta a página nueva, y `:::bibliography{title=""}` coloca la lista debajo sin un segundo título. La lista va en orden alfabético con sangría francesa, y la segunda obra de Keats empieza con una raya triple en lugar del nombre, como pide MLA para los autores repetidos. Un folio al pie aparece en esta página y en la apertura, donde no hay cabeceras.
+
+### 5 · La apertura en los dos colores de un vaso
+
+<Excerpt region="opener" />
+
+<Excerpt region="palette" />
+
+La banda mide 116 mm y lleva el antetítulo, el título de 56 pt en Spectral Light cursiva, el subtítulo y la firma, todos tomados de atributos del título. La franja de arcilla es una segunda caja anclada 3 mm por encima del pie de la banda.
+
+## Variantes
+
+### Pon la lista a continuación del ensayo
+
+Una revista que compone las obras citadas tras el último párrafo, sin página nueva, quita el salto del estilo del título.
+
+```diff
+-  headingStyles: [{ id: 'works-cited', breakBefore: { enabled: true, parity: 'any' } }],
++  headingStyles: [{ id: 'works-cited', breakBefore: { enabled: false } }],
+```
+
+### Cita en Chicago autor-año
+
+El mismo ensayo en Chicago pone el año tras el autor, «(Brooks 1947, 165)», y la lista se adapta.
+
+```diff
+-  style: 'modern-language-association', // MLA 9th edition, author-page
++  style: 'chicago-author-date',
+```
+
+## Errores frecuentes
+
+- Una cita narrativa sin página, `@stillinger1974 registra`, imprime el nombre con un segundo espacio detrás en postext 1.12.1. Cita esa obra entre corchetes al final de la frase, como hace este ensayo, o da una página.
+- citeproc-js imprime los títulos tal como vienen en los datos. MLA escribe los títulos ingleses con mayúscula en cada palabra principal, así que escríbelos así en las referencias.

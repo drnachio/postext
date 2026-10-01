@@ -1,0 +1,942 @@
+{
+  "schemaVersion": 1,
+  "slug": "technical-book-crossref-chapters",
+  "sourceHash": "aac602101c1cf937abed1bfaa30377abd969507eedf5aa394a8484d8e38da2a6",
+  "engine": {
+    "postext": "1.12.1",
+    "postextPdf": "1.12.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-01T21:33:42.395Z",
+  "variants": {
+    "en": {
+      "hash8": "7dc87f5c",
+      "vdtHash": "e1f58045d77de2db248f5072a9578a5e8b54f424",
+      "timings": {
+        "importMs": 329,
+        "fontsMs": 2115,
+        "buildMs": 37,
+        "totalMs": 3136,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          178,
+          233
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "IBM Plex Serif",
+          "sizePt": 9.600000000000001,
+          "leadingPt": 13.8
+        },
+        "families": [
+          "IBM Plex Mono",
+          "IBM Plex Sans Condensed",
+          "IBM Plex Serif"
+        ],
+        "pages": 9,
+        "ownLines": 244
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1309,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 27788,
+          "alt": "Opening page 1: Power for a Cabin."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1309,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 43798,
+          "alt": "Opening page 2: Contents."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1309,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 117824,
+          "alt": "Opening page 3: 1 The daily load."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1309,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 93412,
+          "alt": "Page 4: 1.2 When the energy is used. Table 1.1. Daily loads of the example cabin on a winter day."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "body",
+          "w": 1000,
+          "h": 1309,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 31194,
+          "alt": "Page 5. Figure 1.1. Average draw, hour by hour, on a winter day. Grey: the constant floor of fridge, router and inverter; orange: everything else; pale band: daylight."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "opener",
+          "w": 1000,
+          "h": 1309,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 83808,
+          "alt": "Opening page 6: 2 The array. Figure 2.1. Peak sun hours a day by month at 42° N, panels tilted at 60°. December is the design month."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "body",
+          "w": 1000,
+          "h": 1309,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 87136,
+          "alt": "Page 7: 2.2 Losses between panel and socket. Table 2.1. Losses between the panels and the sockets, multiplied."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "opener",
+          "w": 1000,
+          "h": 1309,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 111444,
+          "alt": "Opening page 8: 3 The battery bank."
+        },
+        {
+          "n": 9,
+          "label": "9",
+          "role": "body",
+          "w": 1000,
+          "h": 1309,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 80486,
+          "alt": "Page 9: 3.3 A week of cloud. Table 3.1. Three battery chemistries for 3,480 Wh of usable energy · Figure 3.1. State of charge of the 5.1 kWh bank over five December days: clear, three overcast, clear. Shaded: night. Dashed: the 20% floor."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          8
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "technical-book-crossref-chapters.pdf",
+        "bytes": 445297,
+        "pages": 9
+      },
+      "sandbox": {
+        "file": "technical-book-crossref-chapters.postext",
+        "bytes": 66606
+      },
+      "detected": {
+        "apis": [
+          "buildBundle",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "defaultResourceTypes",
+          "parseTSV",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf",
+          "setAlignment"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "captionStyle",
+          "captionStyle.color",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelBold",
+          "captionStyle.labelColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "crossRefs",
+          "crossRefs.chapter",
+          "crossRefs.page",
+          "crossRefs.section",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberSeparator",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].spaceBetween",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].captionStyle",
+          "resourceTypes[].captionStyle.position",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].namePlural",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyle",
+          "tableStyle.bodyColor",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules",
+          "toc",
+          "toc.leader",
+          "toc.leader.char",
+          "toc.leader.gap",
+          "toc.levels",
+          "toc.levels[].fontFamily",
+          "toc.levels[].fontSize",
+          "toc.levels[].fontWeight",
+          "toc.levels[].indent",
+          "toc.levels[].level",
+          "toc.levels[].lineHeight",
+          "toc.levels[].marginTop",
+          "toc.levels[].numberColor",
+          "toc.levels[].numberFontFamily",
+          "toc.levels[].numberFontSize",
+          "toc.levels[].numberFontWeight",
+          "toc.levels[].numberGap",
+          "toc.levels[].numberWidth",
+          "toc.pageNumber",
+          "toc.pageNumber.fontFamily",
+          "toc.pageNumber.fontSize",
+          "toc.pageNumber.fontWeight",
+          "toc.pageNumber.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "captionStyle",
+          "colorPalette",
+          "crossRefs",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle",
+          "toc"
+        ],
+        "configLeaves": 434,
+        "designElements": 20,
+        "directives": [
+          ":::toc",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 4,
+          "bitmap": 0,
+          "table": 3
+        },
+        "fonts": [
+          {
+            "family": "IBM Plex Mono",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Mono",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Mono",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Serif",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "IBM Plex Serif",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Serif",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "citation-styles",
+          "cross-references",
+          "figure-citations",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "localised-labels",
+          "multi-chapter-books",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "resources",
+          "section-running-heads",
+          "table-model",
+          "toc",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 1,
+          "share": 0.0128,
+          "worst": 2.4
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "a76c93d0",
+      "vdtHash": "b4b0b8a6a796295037cf26db3e4cb19c2f61731b",
+      "timings": {
+        "importMs": 134,
+        "fontsMs": 66,
+        "buildMs": 35,
+        "totalMs": 943,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          178,
+          233
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "IBM Plex Serif",
+          "sizePt": 9.600000000000001,
+          "leadingPt": 13.8
+        },
+        "families": [
+          "IBM Plex Mono",
+          "IBM Plex Sans Condensed",
+          "IBM Plex Serif"
+        ],
+        "pages": 9,
+        "ownLines": 244
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1309,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 34374,
+          "alt": "Página de apertura 1: Energía para una cabaña."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1309,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 47400,
+          "alt": "Página de apertura 2: Índice."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1309,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 127200,
+          "alt": "Página de apertura 3: 1 El consumo diario."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1309,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 86890,
+          "alt": "Página 4: 1.2 Cuándo se gasta la energía. Tabla 1.1. Consumos diarios de la cabaña de ejemplo en un día de invierno."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "body",
+          "w": 1000,
+          "h": 1309,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 50798,
+          "alt": "Página 5. Figura 1.1. Consumo medio, hora a hora, en un día de invierno. Gris: el suelo constante de frigorífico, rúter e inversor; naranja: todo lo demás; banda clara: horas de luz."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "opener",
+          "w": 1000,
+          "h": 1309,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 84736,
+          "alt": "Página de apertura 6: 2 El campo solar. Figura 2.1. Horas de sol pico al día por mes a 42° N, con los paneles inclinados 60°. Diciembre es el mes de diseño."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "body",
+          "w": 1000,
+          "h": 1309,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 86170,
+          "alt": "Página 7: 2.2 Pérdidas entre el panel y el enchufe. Tabla 2.1. Pérdidas entre los paneles y los enchufes, multiplicadas."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "opener",
+          "w": 1000,
+          "h": 1309,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 111414,
+          "alt": "Página de apertura 8: 3 El banco de baterías."
+        },
+        {
+          "n": 9,
+          "label": "9",
+          "role": "body",
+          "w": 1000,
+          "h": 1309,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 85652,
+          "alt": "Página 9: 3.3 Una semana de nubes. Tabla 3.1. Tres químicas de batería para 3480 Wh de energía útil · Figura 3.1. Estado de carga del banco de 5,1 kWh durante cinco días de diciembre: despejado, tres nublados, despejado. Sombreado: noche. Discontinua: el suelo del 20 %."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          8
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "technical-book-crossref-chapters.pdf",
+        "bytes": 453627,
+        "pages": 9
+      },
+      "sandbox": {
+        "file": "technical-book-crossref-chapters.postext",
+        "bytes": 67923
+      },
+      "detected": {
+        "apis": [
+          "buildBundle",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "defaultResourceTypes",
+          "parseTSV",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf",
+          "setAlignment"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "captionStyle",
+          "captionStyle.color",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelBold",
+          "captionStyle.labelColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "crossRefs",
+          "crossRefs.chapter",
+          "crossRefs.page",
+          "crossRefs.section",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberSeparator",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].spaceBetween",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].captionStyle",
+          "resourceTypes[].captionStyle.position",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].namePlural",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyle",
+          "tableStyle.bodyColor",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules",
+          "toc",
+          "toc.leader",
+          "toc.leader.char",
+          "toc.leader.gap",
+          "toc.levels",
+          "toc.levels[].fontFamily",
+          "toc.levels[].fontSize",
+          "toc.levels[].fontWeight",
+          "toc.levels[].indent",
+          "toc.levels[].level",
+          "toc.levels[].lineHeight",
+          "toc.levels[].marginTop",
+          "toc.levels[].numberColor",
+          "toc.levels[].numberFontFamily",
+          "toc.levels[].numberFontSize",
+          "toc.levels[].numberFontWeight",
+          "toc.levels[].numberGap",
+          "toc.levels[].numberWidth",
+          "toc.pageNumber",
+          "toc.pageNumber.fontFamily",
+          "toc.pageNumber.fontSize",
+          "toc.pageNumber.fontWeight",
+          "toc.pageNumber.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "captionStyle",
+          "colorPalette",
+          "crossRefs",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle",
+          "toc"
+        ],
+        "configLeaves": 434,
+        "designElements": 20,
+        "directives": [
+          ":::toc",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 4,
+          "bitmap": 0,
+          "table": 3
+        },
+        "fonts": [
+          {
+            "family": "IBM Plex Mono",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Mono",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Mono",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Serif",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "IBM Plex Serif",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Serif",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "citation-styles",
+          "cross-references",
+          "figure-citations",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "localised-labels",
+          "multi-chapter-books",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "resources",
+          "section-running-heads",
+          "table-model",
+          "toc",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.73
+        },
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
+      }
+    }
+  }
+}

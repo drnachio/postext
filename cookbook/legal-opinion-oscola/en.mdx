@@ -1,0 +1,63 @@
+---
+title: "A legal opinion cited in OSCOLA"
+summary: "A four-page case comment whose [@robinson2018, para 21] citations become OSCOLA footnotes: cases in italics, neutral citations, ibid and (n 1) cross-references."
+plain: "A short commentary on an English court decision about the police. Every case, statute and article it relies on is cited in a numbered note at the foot of the page, in the style British law schools use."
+description: "A case comment set with Postext: cases, statutes and articles cited as OSCOLA footnotes, with pinpoints, ibid, (n 1) cross-references and a patched CSL style."
+question: "How do I cite cases and legislation in footnotes, OSCOLA style?"
+aliases: ["OSCOLA", "legal citation", "law review", "case note", "case comment", "table of cases", "neutral citation", "law reports", "ibid", "Bluebook", "UK law", "pinpoint"]
+pageNotes: { "1": "Page 1: a claret band over the top half with the series line, the case name Robinson in large italics, v Chief Constable of West Yorkshire Police and the citation [2018] UKSC 4, [2018] AC 736, then the title Acts, Omissions and the Police; below it the facts of the case and notes 1 and 2, the second reading ibid [21].", "2": "Page 2: the section There is no Caparo test and the start of Acts and omissions, with notes 3 to 10: Donoghue v Stevenson, Anns, Murphy and Caparo in full, an Australian report in round brackets, and Robinson (n 1) [26–27].", "3": "Page 3: Acts and omissions, with notes on Stovin v Wise, Hill, Michael, two articles in the Cambridge Law Journal and the Law Quarterly Review, and the start of The statutory route.", "4": "Page 4: the Human Rights Act 1998 cited by section, ibid s 7, the Compensation Act 2006, the closing Comment, a small colophon and notes 18 to 23." }
+---
+
+## What you'll build
+
+An offprint from a law journal's case-comment series: four pages on *Robinson v Chief Constable of West Yorkshire Police*, the 2018 Supreme Court decision on when the police owe a duty of care. The page is 162 × 240 mm, mirrored, in Libre Baskerville at 9.4/13.6 pt, and the first page opens on a claret band with the case name set in 60 pt italics. The author writes each authority as a key with its pinpoint, `[@caparo1990, 617–18]`, and Postext sets 23 footnotes in OSCOLA, the citation standard of British law schools: case names in italics, statutes in roman, no full stops after AC, HL or edn, *ibid* for the authority of the note before and *Robinson (n 1) [55]* after that. The authorities are real; the author and the journal are not.
+
+## Method
+
+### 1 · An OSCOLA note for every authority
+
+The code is [the short answer](#the-short-answer) above. OSCOLA is a note style, so `[@robinson2018, para 21]` leaves a superscript number after the full stop and its words go to the foot of the page. Note 1 gives the case in full, *Robinson v Chief Constable of West Yorkshire Police [2018] UKSC 4, [2018] AC 736*; note 2, which cites it again at once, reads *ibid [21]*; note 8, after other cases have come between, reads *Robinson (n 1) [26–27]*. A law-review article cites only in its notes, so `bibliography.auto: false` keeps the list of works off the last page.
+
+### 2 · A case is data, written as the reports print it
+
+A case is a CSL item of `type: legal_case`: its name in `title`, the court in `authority`, the report series in `container-title` and the first page in `page`. OSCOLA puts the year of a report in square brackets when the year identifies the volume, as with the Appeal Cases, so the recipe writes that year in `volume`, with the volume number after it: `volume: "[1990] 2"` gives *[1990] 2 AC 605 (HL)*. A case decided after 2001 also has a neutral citation: `authority: UKSC`, `number: "4"` and `issued: 2018` give *[2018] UKSC 4*, followed by the report. A statute is `type: legislation` with the year in its title and no `issued`, so the year is not printed twice, and `[@hra1998, § 6]` cites a section as *s 6*.
+
+### 3 · Two patches to the bundled style
+
+<Excerpt region="oscola" />
+
+The bundled `oscola.csl` brackets a paragraph pinpoint only in a case's first note. Later notes printed *para 55* and *ibid 27*, and a second note to the same Act lost its *s*. The patch replaces one macro and one line of the style's XML before the build and passes the result as a custom style, so the text and the references do not change.
+
+### 4 · The case name on the band
+
+<Excerpt region="opener" />
+
+The band runs 124 mm down from the trim. The case name, the parties and the citation are heading attributes, so another comment in the series changes only its Markdown. *Robinson* is set in Libre Baskerville Italic at 60 pt because OSCOLA italicises case names, and the citation under it stays roman, as it does in the notes.
+
+<Excerpt region="palette" />
+
+## Variations
+
+### Print the style as it ships
+
+To compare with the unpatched output, use the bundled id. Paragraph pinpoints in later notes then read *para 55*.
+
+```diff
+-  style: 'custom', customStyle: OSCOLA, // the bundled 'oscola', patched above
++  style: 'oscola',
+```
+
+### Collect the notes at the end
+
+Some journals print their notes after the text. The citations keep their full and short forms and their numbers.
+
+```diff
+-  placement: 'column', numbering: 'chapter',
++  placement: 'chapterEnd', numbering: 'chapter',
+```
+
+## Pitfalls
+
+- A report whose volume is a plain number, `volume: "2"`, prints the year in round brackets, *(1990) 2 AC*, which OSCOLA keeps for series numbered across years such as the Commonwealth Law Reports (note 7). Write the bracketed year into `volume` for the Appeal Cases and the Weekly Law Reports.
+- `s` before a locator means a page (German *Seite*), not a section: write `§ 6`. A subsection such as `6(1)` is not read as a locator; name it in the sentence and cite the section.
+- OSCOLA has no bibliography in an article, and the style has no separate tables of cases and legislation. A thesis that needs those tables gets one sorted list from `:::bibliography`, with secondary sources first and then cases and statutes mixed.

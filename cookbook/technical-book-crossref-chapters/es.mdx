@@ -1,0 +1,67 @@
+---
+title: "Un libro técnico con remisiones entre capítulos"
+summary: "Un manual solar de tres capítulos cuyo texto escribe @fig:sun, @tbl:loads y @sec:array-size, y buildBundle imprime cada número y página de un capítulo a otro."
+plain: "Un manual breve para calcular los paneles y las baterías de una cabaña. Cuando el capítulo 3 remite a una tabla del capítulo 1, o el capítulo 1 a un apartado del 2, se imprimen el número y la página correctos, y son enlaces."
+description: "Un libro técnico con Postext: remisiones al modo de pandoc-crossref a figuras, tablas y apartados de otros capítulos, resueltas por buildBundle."
+question: "¿Cómo remito a una figura, una tabla o un apartado de otro capítulo con los números siempre correctos?"
+aliases: ["pandoc-crossref", "referencia cruzada", "remisión", "@fig", "@tbl", "@sec", "véase capítulo", "remisiones entre capítulos", "libro técnico", "manual", "numeración de figuras", "numeración de tablas", "referencia a página"]
+pageNotes: { "1": "Página 1, la cubierta: una banda azul noche sobre dos tercios de la página con las trayectorias del sol en junio y en diciembre dibujadas como arcos ámbar sobre un panel solar inclinado, la colección CUADERNOS TÉCNICOS LARCH HILL · N.º 4, el título Energía para una cabaña en letra estrecha blanca y grande y un subtítulo en cursiva; la autora y la edición bajo la banda.", "2": "Página 2: el índice bajo la misma banda, tres capítulos numerados con sus apartados y páginas, y un colofón.", "3": "Página 3: el capítulo 1 se abre bajo la banda con un 1 grande en ámbar; el texto remite al capítulo 2, al capítulo 3 y al apartado 1.3, con las remisiones en naranja y negrita.", "4": "Página 4: la tabla 1.1 de consumos con la cabecera azul noche, y los apartados 1.2 y 1.3 con remisiones al apartado 2.1 en la pág. 6, a la figura 1.1 y al apartado 3.1.", "5": "Página 5: la figura 1.1, un gráfico de barras del consumo hora a hora con las horas de luz sombreadas, y el final del capítulo 1.", "6": "Página 6: empieza el capítulo 2; su primera línea remite al capítulo 1 y a la tabla 1.1; la figura 2.1, horas de sol pico por mes con diciembre en naranja.", "7": "Página 7: los apartados 2.2 y 2.3, una remisión al apartado 3.2 en la pág. 8, una fórmula centrada y la tabla 2.1 de pérdidas.", "8": "Página 8: se abre el capítulo 3; su texto cita el apartado 2.3, la figura 2.1, la tabla 1.1, el apartado 1.3 con su página, la tabla 2.1 y las tablas 2.1 y 3.1 por su número solo.", "9": "Página 9: la tabla 3.1 que compara químicas de batería, el apartado 3.3 y la figura 3.1, una curva del estado de carga durante cinco días de diciembre." }
+---
+
+## Lo que vas a componer
+
+Un manual técnico breve, *Energía para una cabaña*, compuesto en IBM Plex sobre una página de 178 × 233 mm: una cubierta con las trayectorias del sol dibujadas en código, un índice y tres capítulos bajo una banda azul noche. El libro dimensiona una instalación solar pequeña, así que cada capítulo se apoya en los demás. El capítulo 3 cita la tabla de consumos del 1 y el gráfico de horas de sol del 2; el capítulo 1 manda al lector al apartado 2.3 y le da la página. Quien escribe pone `@tbl:loads` y `@sec:array-size`, como los lee pandoc-crossref, en cuatro archivos Markdown separados. `buildBundle` los compone como un solo libro, así que cada remisión imprime el número que recibió su destino en su propio capítulo, la página en que cayó y un enlace.
+
+## Elaboración
+
+### 1 · Nombra cada destino una vez, para todo el libro
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Los títulos llevan un identificador de Pandoc con su prefijo, `## El tamaño del campo {#sec:array-size}`. Las figuras y las tablas son recursos declarados en el script, y sus identificadores se escriben igual, `fig:sun` y `tbl:loads`, de modo que el texto dice `@fig:sun` tanto si la figura está dos párrafos atrás como dos capítulos atrás. Cada identificador debe ser único en todo el libro, no solo en su capítulo.
+
+### 2 · Compón los capítulos como un solo libro
+
+<Excerpt region="answer" highlight="6" />
+
+`buildBundle` arrastra los contadores de figuras y tablas de un capítulo al siguiente, así que la primera tabla del capítulo 3 es la 3.1 y `@tbl:loads` en el capítulo 3 sigue imprimiendo *tabla 1.1*. Un capítulo cuyo texto nombra un título que no contiene se compone con el esquema del libro entero, y se vuelve a componer (tres pasadas como mucho) hasta que las páginas de ese esquema dejan de moverse. Por eso el capítulo 1 puede imprimir *apartado 2.1 … pág. 6* antes de que el capítulo 2 exista en papel.
+
+### 3 · Elige las palabras de cada remisión
+
+`crossRefs` fija *capítulo*, *apartado* y *pág.* (en inglés, *chapter*, *section* y *p.*). Una remisión a una figura o una tabla imprime el `shortLabel` de su tipo, aquí en minúscula, *figura 2.1* y *tabla 1.1*, como se escriben en medio de una frase. Una mayúscula en el prefijo, `@Tbl:loads` o `@Sec:array`, pone en mayúscula la etiqueta a principio de frase, y `[-@tbl:losses]` imprime el número solo para *las tablas 2.1 y 3.1*.
+
+### 4 · Remite hacia delante a apartados y hacia atrás a figuras
+
+Una figura o una tabla se numera, y se coloca, donde se cita por primera vez. `@fig:soc` en el capítulo 1 la convertiría en la figura 1.2 y la pondría en el capítulo 1. Por eso el capítulo 1 remite hacia delante a `@sec:autonomy`, y cada figura y cada tabla se citan primero en su propio capítulo; los capítulos siguientes remiten a ellas sin problema. La página va con el apartado, `:ref{id="sec:sun-hours" style=page}`: una remisión a un recurso imprime su etiqueta y su número, nunca su página.
+
+### 5 · Las aperturas y la cubierta salen de la misma banda
+
+<Excerpt region="opener" />
+
+La banda baja 55 mm desde el borde superior en cada capítulo y en el índice, que reutiliza los mismos elementos; el número es `{chapterNumber}` y la entradilla, un atributo del título.
+
+<Excerpt region="cover" />
+
+## Variantes
+
+### Escribe «Figura 2.1» en el texto
+
+Un libro que escribe completas sus remisiones usa el nombre del tipo en lugar de la etiqueta corta.
+
+```diff
+-  shortLabel: type.id === 'table' ? t({ en: 'table', es: 'tabla' })
+-    : t({ en: 'fig.', es: 'figura' }),
++  shortLabel: type.id === 'table' ? t({ en: 'Table', es: 'Tabla' })
++    : t({ en: 'Figure', es: 'Figura' }),
+```
+
+### Numera los apartados con el signo de párrafo
+
+```diff
+-  section: t({ en: 'section {n}', es: 'apartado {n}' }), // @sec:losses → "section 2.2"
++  section: '§ {n}',
+```
+
+## Errores frecuentes
+
+- Una remisión a un identificador que ningún capítulo define imprime *?*. Revisa los identificadores después de renombrar un título en un capítulo: las remisiones a él están en los otros.
+- Componer los capítulos uno a uno con `buildDocument` pierde los contadores y el esquema del libro: cada capítulo numera sus figuras desde 1 y una remisión a otro capítulo imprime *?*. Usa `buildBundle`, o encadena `continuation` y pasa tú el `outline`.
+- Las ecuaciones no tienen numeración propia en Postext, así que `@eq:` solo encuentra un ancla que hayas puesto e imprime su texto; este libro escribe sus dos fórmulas sin número.

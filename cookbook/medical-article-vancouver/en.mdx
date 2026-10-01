@@ -1,0 +1,75 @@
+---
+title: "A medical article in Vancouver style"
+summary: "A clinical trial report on A4 in two columns: raised citation numbers, a numbered Vancouver reference list and DOIs that open as links in the PDF."
+plain: "A short medical research article, laid out like a journal page. The authors cite with codes; Postext prints small raised numbers in the text and builds the numbered list of references at the end, with each DOI as a link."
+description: "A medical journal article in Postext: Vancouver (NLM) references by citeproc-js, superscript citation numbers, DOI links in the PDF, a structured abstract."
+question: "How do I set superscript citation numbers and live DOI links, as medical journals do?"
+aliases: ["Vancouver", "NLM", "ICMJE", "Citing Medicine", "medical journal", "clinical trial", "superscript citations", "DOI", "structured abstract", "key points", "BibTeX", "citeproc"]
+pageNotes: { "1": "Page 181: a teal masthead band with the journal name and the issue line in white capitals, then ORIGINAL ARTICLE in teal, a three-line title on a pilot trial of pharmacist-led blood pressure telemonitoring, four authors with raised affiliation numbers, the affiliations and a note that the article is illustrative. The first column holds the structured abstract on a pale teal tint and the start of the Introduction, with raised citation numbers 1 to 5 after the full stops; the second column holds a Key points box under a thick teal rule and the start of Methods.", "2": "Page 182: the end of Methods, Results and Discussion in the left column; Table 1, baseline characteristics with a teal header row, and Figure 1, a line chart of weekly home systolic pressure falling from 158 to 135 mm Hg, at the head of the right column.", "3": "Page 183: the article information and eleven numbered references in two columns, each with its DOI written out as https://doi.org/…" }
+---
+
+## What you'll build
+
+Three pages of a clinical journal: an original article reporting a pilot trial, set on A4 in two columns the way the ICMJE journals print them. A teal masthead runs across the top of the first page, over the article type, a three-line title, the authors with raised affiliation numbers and a structured abstract on a pale tint. The authors cite with BibTeX keys, and the pages show what a medical editor expects: small raised numbers after the full stop, consecutive works joined as 6–8, and a numbered reference list in the NLM form, *Lancet 2016;387(10022):957–67*, closing with each work's DOI. In the PDF every number jumps to its reference and every DOI opens the article. The trial is invented; the eleven works it cites are real.
+
+## Method
+
+### 1 · Vancouver, raised and linked
+
+The code is [the short answer](#the-short-answer) above. Of the bundled styles, `elsevier-vancouver` is the one that follows the NLM's *Citing Medicine* (citation order, authors as *Ettehad D, Emdin CA*, six names then *et al.*, abbreviated journal titles), so it is the file to start from. Two string replacements bring its list to the NLM sample references: the number reads *1.* instead of *[1]*, and the issue follows the volume. `marker: 'superscript'` sets the citations as raised numbers whatever the style writes, and `doi: 'link'` keeps each `https://doi.org/` address as a link. The AMA style is also bundled and raises its numbers by itself, but its list differs from Vancouver in punctuation and page ranges.
+
+### 2 · A title block across both columns
+
+<Excerpt region="title" />
+
+The article title is the only level-1 heading, with the style `article`, which spans the page and draws it from its design. The article type, the authors, the affiliations and the note come from heading attributes. `inlineMarks` turns `^1^` in the attribute into a raised affiliation number, and the `\n` in the affiliations starts a line for each institution. The band is anchored to the trim, so it reaches the top edge of the paper.
+
+### 3 · A structured abstract and a key points box
+
+<Excerpt region="abstract" />
+
+Both boxes share one text style: Fira Sans at 8.3 pt with bold run-in labels, the voice a reader expects for summary matter. The abstract carries a tint and its labels in teal; the key points sit under a 2.5 pt stripe with the labels in ink. `snapToGrid: false` keeps the padding exact, so the abstract box hugs its text.
+
+### 4 · Table 1 and Figure 1 at the head of a column
+
+<Excerpt region="resources" />
+
+The table is read from tab-separated text, as a spreadsheet exports it, and its header row is filled in teal with white bold labels. Both resources float to the head of a column after the paragraph that cites them. With `shortLabel` set to the type's full name, `:ref` prints *(Table 1)* as journals write it, and the `numbered: false` on the title keeps the count at 1 rather than 1.1.
+
+<Excerpt region="palette" />
+
+## Variations
+
+### Use the AMA style
+
+The AMA style raises its numbers itself and lists works with *doi:10.1056/…*; drop the edits and the marker.
+
+```diff
+-  style: 'custom', customStyle: vancouver,
+-  marker: 'superscript', collapseRanges: true, // raised 1 and 6–8, not [1] and [6–8]
++  style: 'american-medical-association',
+```
+
+### Print the DOIs without links
+
+For a print-only PDF, keep the addresses as plain black text.
+
+```diff
+-    doi: 'link' }, // https://doi.org/… printed whole and clickable
++    doi: 'text' },
+```
+
+### Numbers in brackets
+
+Some Vancouver journals write the numbers on the line, in square brackets.
+
+```diff
+-  marker: 'superscript', collapseRanges: true, // raised 1 and 6–8, not [1] and [6–8]
++  marker: 'brackets', collapseRanges: true,
+```
+
+## Pitfalls
+
+- Where the text cites two works whose numbers are not consecutive, such as 4 and 6, postext 1.12.1 writes the raised numbers as *4, 6*, and the space after the comma stretches with the justified line. This article cites such works in separate places.
+- `labelWidth` sets the indent of the turnover lines, not a column for the numbers: the first line starts after the number and a space. At 2.85 mm the text of entries 1 to 9 lines up; entries 10 and 11 start slightly further right.
+- A heading style's `header` holds for the whole section that heading opens, so `header: { elements: [] }` on the title would remove the running heads from every page up to the next styled heading. `pages: 'body'` on the running heads is enough to keep them off the first page.
