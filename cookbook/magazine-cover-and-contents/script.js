@@ -1,6 +1,6 @@
 // ═══ Postext Cookbook · Nº 023 · Magazine cover and sectioned contents ═══════════════
 // https://postext.dev/en/cookbook/magazine-cover-and-contents
-// Code: MIT · Text: original (CC BY 4.0) · Photos: R. Heuvel, chuttersnap, m. tuna (CC0)
+// Code: MIT · Text: original (CC BY 4.0) · Photos: R. Heuvel, chuttersnap, m. tuna (CC0), diffusion
 // Fonts: Spectral, Bodoni Moda, Jost (SIL OFL 1.1) · Needs postext ≥ 1.4.1
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
@@ -230,8 +230,8 @@ const resources = [ // alt texts and captions in both languages; t() picks the e
     note: t({ en: 'Photograph: Rowan Heuvel, CC0', es: 'Fotografía: Rowan Heuvel, CC0' }) }),
   picture('flasks', 'flasks-1920.jpg', [1920, 1252], { en: 'Glass flasks holding green shoots '
     + 'on a shelf.', es: 'Matraces de vidrio con brotes verdes en una balda.' }),
-  picture('fields', 'fields.svg', [TRIM.width * 10, PHOTO * 10], { en: 'Fields from above, one '
-    + 'unsown and in flower.', es: 'Campos vistos desde arriba; uno, sin sembrar y en flor.' }),
+  picture('fields', 'fields-1610.jpg', [1610, 1050], { en: 'Fields from above, one '
+    + 'unsown, and a farmhouse.', es: 'Campos desde arriba, uno sin sembrar, y una casa.' }),
   picture('harvest', 'harvest-1840.jpg', [1840, 1200], { en: 'Ripe wheat, a combine harvester '
     + 'blurred behind it.', es: 'Trigo maduro y, desenfocada detrás, una cosechadora.' }),
   picture('barcode', 'barcode.svg', [320, 140], { en: 'A barcode.', es: 'Un código de barras.' }),
@@ -248,7 +248,7 @@ const resources = [ // alt texts and captions in both languages; t() picks the e
 
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
-// #region art: the fields from above and a made-up barcode, drawn in code with a seeded PRNG
+// #region art: a made-up barcode, drawn in code with a seeded PRNG
 function mulberry32(seed) {
   return () => {
     seed = (seed + 0x6d2b79f5) | 0;
@@ -258,117 +258,6 @@ function mulberry32(seed) {
   };
 }
 const n1 = (v) => v.toFixed(2);
-const channel = (hex, i) => parseInt(hex.slice(i, i + 2), 16);
-const mix = (a, b, k) => `#${[1, 3, 5].map((i) => Math.round(channel(a, i) * (1 - k)
-  + channel(b, i) * k).toString(16).padStart(2, '0')).join('')}`; // a towards b by k
-// The part of the line p + t·d inside a convex polygon (Cyrus–Beck), or null.
-function clipLine(poly, p, d) {
-  let lo = -1e9;
-  let hi = 1e9;
-  for (let i = 0; i < poly.length; i++) {
-    const [a, b] = [poly[i], poly[(i + 1) % poly.length]];
-    const nx = a[1] - b[1];
-    const ny = b[0] - a[0]; // the inward normal of a clockwise polygon (y points down)
-    const den = nx * d[0] + ny * d[1];
-    const num = nx * (p[0] - a[0]) + ny * (p[1] - a[1]);
-    if (Math.abs(den) < 1e-9) { if (num < 0) return null; continue; }
-    const tt = -num / den;
-    if (den > 0) lo = Math.max(lo, tt); else hi = Math.min(hi, tt);
-  }
-  if (lo >= hi) return null;
-  return [[p[0] + lo * d[0], p[1] + lo * d[1]], [p[0] + hi * d[0], p[1] + hi * d[1]]];
-}
-function fieldsArt() { // TRIM.width × PHOTO mm: the valley from above, one field resting
-  const rand = mulberry32(1998);
-  const [W, H] = [TRIM.width, PHOTO];
-  const hedge = mix(palette.olive, palette.ink, 0.5);
-  const crops = { // [fill, furrow] per crop, all mixed from the page's palette
-    wheat: [mix(palette.band, '#f0c95a', 0.6), mix(palette.band, '#f0c95a', 0.25)],
-    barley: [mix(palette.band, palette.paper, 0.55), mix(palette.band, palette.paper, 0.3)],
-    beans: [mix(palette.olive, palette.paper, 0.2), mix(palette.olive, palette.ink, 0.25)],
-    sulla: [mix(palette.wine, palette.paper, 0.5), mix(palette.wine, palette.paper, 0.25)],
-    earth: [mix(palette.band, palette.paper, 0.1), mix(palette.band, palette.ink, 0.3)],
-  };
-  const kinds = Object.keys(crops);
-  const [cols, rows, REST] = [7, 5, [4, 1]]; // REST: the column and row of the resting field
-  const [cx, cy, ang] = [W / 2, H / 2, (-14 * Math.PI) / 180];
-  const grid = []; // a jittered lattice over a larger area, turned 14°
-  for (let j = 0; j <= rows; j++) {
-    grid.push([]);
-    for (let i = 0; i <= cols; i++) {
-      const edge = i === 0 || j === 0 || i === cols || j === rows;
-      const x = -30 + (i * (W + 60)) / cols + (edge ? 0 : (rand() - 0.5) * 14);
-      const y = -40 + (j * (H + 80)) / rows + (edge ? 0 : (rand() - 0.5) * 12);
-      const [dx, dy] = [x - cx, y - cy];
-      grid[j].push([cx + dx * Math.cos(ang) - dy * Math.sin(ang),
-        cy + dx * Math.sin(ang) + dy * Math.cos(ang)]);
-    }
-  }
-  let fields = '';
-  for (let j = 0; j < rows; j++) {
-    for (let i = 0; i < cols; i++) {
-      const poly = [grid[j][i], grid[j][i + 1], grid[j + 1][i + 1], grid[j + 1][i]]; // clockwise
-      const pts = poly.map(([x, y]) => `${n1(x)},${n1(y)}`).join(' ');
-      const [mx, my] = poly.reduce(([sx, sy], [x, y]) => [sx + x / 4, sy + y / 4], [0, 0]);
-      if (i === REST[0] && j === REST[1]) { // fallow: grass, and poppies gone to seed
-        fields += `<polygon points="${pts}" fill="${mix(palette.olive, palette.paper, 0.62)}"/>`;
-        for (let f = 0; f < 420; f++) {
-          const p = [mx + (rand() - 0.5) * 60, my + (rand() - 0.5) * 60];
-          const row = clipLine(poly, p, [1, 0]); // the field's width at this height
-          if (!row || p[0] < row[0][0] || p[0] > row[1][0]) continue;
-          const poppy = rand() < 0.22;
-          fields += `<circle cx="${n1(p[0])}" cy="${n1(p[1])}" r="${poppy ? 0.5 : 0.32}" `
-            + `fill="${poppy ? palette.terracotta : mix(palette.olive, palette.paper, 0.25)}"/>`;
-        }
-        continue;
-      }
-      const [fill, furrow] = crops[kinds[Math.floor(rand() * kinds.length)]];
-      fields += `<polygon points="${pts}" fill="${fill}"/>`;
-      const a = ang + (rand() < 0.5 ? 0 : Math.PI / 2) + (rand() - 0.5) * 0.25;
-      const [d, nrm] = [[Math.cos(a), Math.sin(a)], [-Math.sin(a), Math.cos(a)]];
-      for (let s = -40; s <= 40; s += 2.4) { // furrows, 2.4 mm apart
-        const seg = clipLine(poly, [mx + nrm[0] * s, my + nrm[1] * s], d);
-        if (seg) {
-          fields += `<path d="M${n1(seg[0][0])} ${n1(seg[0][1])}L${n1(seg[1][0])} `
-            + `${n1(seg[1][1])}" stroke="${furrow}" stroke-width="0.3"/>`;
-        }
-      }
-    }
-  }
-  let hedges = ''; // the field edges, and trees along them with their shadows
-  let trees = '';
-  for (let j = 0; j <= rows; j++) {
-    for (let i = 0; i <= cols; i++) {
-      for (const [ni, nj] of [[i + 1, j], [i, j + 1]]) {
-        if (ni > cols || nj > rows) continue;
-        const [a, b] = [grid[j][i], grid[nj][ni]];
-        hedges += `<path d="M${n1(a[0])} ${n1(a[1])}L${n1(b[0])} ${n1(b[1])}" stroke="${hedge}" `
-          + 'stroke-width="0.7" stroke-linecap="round"/>';
-        for (let tr = rand() < 0.45 ? 2 + Math.floor(rand() * 6) : 0; tr > 0; tr--) {
-          const u = rand();
-          const [x, y] = [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u];
-          const r = 0.9 + rand() * 1.3;
-          trees += `<circle cx="${n1(x + r * 0.55)}" cy="${n1(y + r * 0.45)}" r="${n1(r)}" `
-            + `fill="${palette.ink}" fill-opacity="0.22"/><circle cx="${n1(x)}" cy="${n1(y)}" `
-            + `r="${n1(r)}" fill="${hedge}"/>`;
-        }
-      }
-    }
-  }
-  const road = `<path d="M-5 ${H * 0.86} C ${W * 0.3} ${H * 0.66}, ${W * 0.46} ${H * 0.82}, `
-    + `${W * 0.6} ${H * 0.5} S ${W * 0.86} ${H * 0.14}, ${W + 5} ${H * 0.18}" fill="none" `
-    + `stroke="${palette.paper}" stroke-width="1.6"/>`;
-  const farm = [[0, 0, 8, 5], [8.4, 1.2, 4.2, 6.5], [1.5, 5.6, 5.5, 3.6]].map(([x, y, w, h]) => {
-    const [fx, fy] = [W * 0.61 + x, H * 0.4 + y];
-    return `<rect x="${n1(fx + 0.7)}" y="${n1(fy + 0.7)}" width="${w}" height="${h}" `
-      + `fill="${palette.ink}" fill-opacity="0.28"/><rect x="${n1(fx)}" y="${n1(fy)}" `
-      + `width="${w}" height="${h}" fill="${palette.terracotta}"/><path d="M${n1(fx)} `
-      + `${n1(fy + h / 2)}h${w}" stroke="${mix(palette.terracotta, palette.ink, 0.35)}" `
-      + 'stroke-width="0.35"/>';
-  }).join('');
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W * 10}" height="${H * 10}" `
-    + `viewBox="0 0 ${W} ${H}">${fields}${hedges}${road}${farm}${trees}</svg>`;
-}
 function barcodeArt() { // 32 × 14 mm on paper: bars and no digits, so it reads as decoration
   const rand = mulberry32(14);
   let [x, bars] = [2, ''];
@@ -393,7 +282,7 @@ const FONTS = { // text, display and label faces, loaded before the build (gotch
 await loadFonts(FONTS, markdown);
 const photos = [...new Set(resources.flatMap((r) => r.bitmap?.fileId ?? []))]; // each JPEG once
 await Promise.all([...photos.map((file) => loadImage(file, asset(file))),
-  loadSvg('fields.svg', fieldsArt()), loadSvg('barcode.svg', barcodeArt())]);
+  loadSvg('barcode.svg', barcodeArt())]);
 const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
 showPages(doc, { title: t({ en: 'Magazine cover and sectioned contents',
   es: 'Portada de revista e índice por secciones' }) });

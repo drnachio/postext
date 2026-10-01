@@ -182,8 +182,17 @@
     "images": [
       {
         "what": {
-          "en": "The cover’s view of the gulf and the camomile tailpiece, drawn in code in the page’s palette",
-          "es": "La vista del golfo de la cubierta y el florón de manzanilla, dibujados en código con la paleta de la página"
+          "en": "The cover’s view of the gulf, a painting",
+          "es": "La vista del golfo de la cubierta, una pintura"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "cover-1190.jpg"
+      },
+      {
+        "what": {
+          "en": "The camomile tailpiece, drawn in code in the page’s palette",
+          "es": "El florón de manzanilla, dibujado en código con la paleta de la página"
         },
         "who": "Ignacio Ferro",
         "license": "MIT"

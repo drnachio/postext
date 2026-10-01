@@ -346,5 +346,5 @@ Poems and note written for the Postext Cookbook (CC BY 4.0); the poet is fiction
 
 Set in Castoro, Castoro Titling and Tenor Sans (SIL OFL).
 
-Drawings made in code.
+Watercolours made with diffusion models.
 :::

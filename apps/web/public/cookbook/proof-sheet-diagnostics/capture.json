@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "proof-sheet-diagnostics",
-  "sourceHash": "9fda8cd868548774544e6197e66e1bdaa811426e12bc474472cd71e588a533b7",
+  "sourceHash": "8f37b5b6ce9b6fb53ee23ca99e5a0bd7f58783341577d0c55302dcb719499efd",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.9.2",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T22:07:41.686Z",
+  "capturedAt": "2026-10-01T06:51:26.570Z",
   "variants": {
     "en": {
-      "hash8": "4d7f6952",
-      "vdtHash": "6460d6768ef521b3ffcc6bfd567ce238dc292b73",
+      "hash8": "a178eccc",
+      "vdtHash": "bbf2e803033cdc865c0c79a1eb80c5e70690e8c0",
       "timings": {
-        "importMs": 201,
-        "fontsMs": 1044,
-        "buildMs": 9,
-        "totalMs": 1914,
+        "importMs": 1408,
+        "fontsMs": 414,
+        "buildMs": 14,
+        "totalMs": 2633,
         "builds": 3
       },
       "specimen": {
@@ -50,7 +50,7 @@
           "h": 1332,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 86754,
+          "bytes": 100710,
           "alt": "Opening page 1: The Night Ferry Returns. Map 1. Night route, north up. Solid: straight across on the flood, 12 minutes. Dashed red: on the ebb, when the current runs out to sea (arrow), bowed upstream of the Coffin Rock shoal (dotted), 15 minutes."
         },
         {
@@ -61,7 +61,7 @@
           "h": 1332,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 150780,
+          "bytes": 151320,
           "alt": "Page 2."
         }
       ],
@@ -89,7 +89,7 @@
       },
       "sandbox": {
         "file": "proof-sheet-diagnostics.postext",
-        "bytes": 32397
+        "bytes": 105908
       },
       "detected": {
         "apis": [
@@ -264,8 +264,8 @@
           ":ref"
         ],
         "resources": {
-          "svg": 2,
-          "bitmap": 0,
+          "svg": 1,
+          "bitmap": 1,
           "table": 0
         },
         "fonts": [
@@ -341,13 +341,13 @@
       }
     },
     "es": {
-      "hash8": "61301935",
-      "vdtHash": "e8b868264909ccb87913c1c13d663da39aed646a",
+      "hash8": "6cd785db",
+      "vdtHash": "7865a446137e4ba693e2346a1c2dd66092f97a16",
       "timings": {
-        "importMs": 81,
-        "fontsMs": 20,
-        "buildMs": 8,
-        "totalMs": 798,
+        "importMs": 348,
+        "fontsMs": 109,
+        "buildMs": 15,
+        "totalMs": 1376,
         "builds": 3
       },
       "specimen": {
@@ -381,7 +381,7 @@
           "h": 1332,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 91272,
+          "bytes": 105444,
           "alt": "Página de apertura 1: Vuelve la barcaza nocturna. Mapa 1. Ruta nocturna, norte arriba. Continua: en línea recta con la llenante, 12 minutos. Roja discontinua: con la vaciante (flecha), aguas arriba del bajo Piedra Negra (punteado), 15 minutos."
         },
         {
@@ -392,7 +392,7 @@
           "h": 1332,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 149204,
+          "bytes": 149858,
           "alt": "Página 2."
         }
       ],
@@ -420,7 +420,7 @@
       },
       "sandbox": {
         "file": "proof-sheet-diagnostics.postext",
-        "bytes": 34685
+        "bytes": 108217
       },
       "detected": {
         "apis": [
@@ -595,8 +595,8 @@
           ":ref"
         ],
         "resources": {
-          "svg": 2,
-          "bitmap": 0,
+          "svg": 1,
+          "bitmap": 1,
           "table": 0
         },
         "fonts": [
@@ -668,13 +668,7 @@
           "share": 0,
           "worst": 1.45
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

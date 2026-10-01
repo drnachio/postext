@@ -58,12 +58,12 @@
     {
       "followup": "EF-90",
       "package": "postext",
-      "note": "the drawing over the poems reserves no height, so the poems opener sets minHeight to 11 grid lines, which with the level's one-line bottom margin ends the heading at the drawing's foot"
+      "note": "the picture over the poems reserves no height, so the poems opener sets minHeight to 11 grid lines, which with the level's one-line bottom margin ends the heading at the picture's foot"
     },
     {
       "followup": "EF-113",
       "package": "postext",
-      "note": "the poems opener has span: 'page' in a single-column layout, because its drawing starts at the top edge of the page, above the column that would clip it"
+      "note": "the poems opener has span: 'page' in a single-column layout, because its picture starts at the top edge of the page, above the column that would clip it"
     },
     {
       "followup": "EF-05",
@@ -121,11 +121,21 @@
     "images": [
       {
         "what": {
-          "en": "The salt pans at sunrise and the flamingo on the title page, drawn in code in the page’s palette",
-          "es": "Las salinas al amanecer y el flamenco de la portada, dibujados en código con la paleta de la página"
+          "en": "The salt pans at sunrise over the poems, a watercolour",
+          "es": "Las salinas al amanecer sobre los poemas, una acuarela"
         },
-        "who": "Postext Cookbook",
-        "license": "CC-BY-4.0"
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "salina-1560.jpg"
+      },
+      {
+        "what": {
+          "en": "The flamingo on the title page, a watercolour",
+          "es": "El flamenco de la portada, una acuarela"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "flamingo-680.jpg"
       }
     ],
     "fonts": [

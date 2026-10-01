@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "magazine-cover-and-contents",
-  "sourceHash": "c402f2d2e977e6b28aef46901d9fa8958e19ff764ccad7848024b1b1e42308d9",
+  "sourceHash": "4ea44f648b9dafadf9fa3fcab97f7783b3e6d3615abb3ba5e4be150503a3ac32",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.9.2",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:26:34.704Z",
+  "capturedAt": "2026-10-01T06:45:53.073Z",
   "variants": {
     "en": {
-      "hash8": "cb8d65a8",
-      "vdtHash": "72d6e08946cbaad118ea5311dcaa531bf76f44af",
+      "hash8": "bcc05980",
+      "vdtHash": "df0858ff3432514c448b2daceae76992cfffce7a",
       "timings": {
-        "importMs": 316,
-        "fontsMs": 1745,
-        "buildMs": 268,
-        "totalMs": 3357,
+        "importMs": 663,
+        "fontsMs": 1789,
+        "buildMs": 403,
+        "totalMs": 4091,
         "builds": 2
       },
       "specimen": {
@@ -50,7 +50,7 @@
           "h": 1304,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 242722,
+          "bytes": 242870,
           "alt": "Opening page 1: Fallow."
         },
         {
@@ -61,7 +61,7 @@
           "h": 1304,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 109086,
+          "bytes": 109506,
           "alt": "Opening page 2: Contents. On the cover: the hills below Castellina in Chianti, where our feature is set."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1304,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 164472,
+          "bytes": 164482,
           "alt": "Opening page 3: The Grain Archive."
         },
         {
@@ -83,7 +83,7 @@
           "h": 1304,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 189984,
+          "bytes": 279010,
           "alt": "Opening page 4: The Year of Rest."
         },
         {
@@ -94,7 +94,7 @@
           "h": 1304,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 192748,
+          "bytes": 192712,
           "alt": "Page 5. Vines and cypresses by a farmhouse near Castellina in Chianti, in summer."
         },
         {
@@ -105,7 +105,7 @@
           "h": 1304,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 140562,
+          "bytes": 140544,
           "alt": "Opening page 6: Threshing-Day Bread."
         }
       ],
@@ -141,7 +141,7 @@
       },
       "sandbox": {
         "file": "magazine-cover-and-contents.postext",
-        "bytes": 1736598
+        "bytes": 2084569
       },
       "detected": {
         "apis": [
@@ -350,8 +350,8 @@
           "{attrs}"
         ],
         "resources": {
-          "svg": 2,
-          "bitmap": 5,
+          "svg": 1,
+          "bitmap": 6,
           "table": 0
         },
         "fonts": [
@@ -439,19 +439,19 @@
           {
             "check": "C20",
             "severity": "warn",
-            "detail": "the edition's images weigh 1.23 MB (warning at 0.9 MB for 6 pages)"
+            "detail": "the edition's images weigh 1.32 MB (warning at 0.9 MB for 6 pages)"
           }
         ]
       }
     },
     "es": {
-      "hash8": "48ff4f2e",
-      "vdtHash": "9d5f1fd7bd2fcb7bf9d383f763d37be0cb095967",
+      "hash8": "084be3d4",
+      "vdtHash": "878cf6b8e25dea2d54d06d1ce1ef7d332d455493",
       "timings": {
-        "importMs": 104,
-        "fontsMs": 97,
-        "buildMs": 75,
-        "totalMs": 1156,
+        "importMs": 204,
+        "fontsMs": 75,
+        "buildMs": 63,
+        "totalMs": 1200,
         "builds": 2
       },
       "specimen": {
@@ -485,7 +485,7 @@
           "h": 1304,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 244660,
+          "bytes": 244572,
           "alt": "Página de apertura 1: Fallow."
         },
         {
@@ -496,7 +496,7 @@
           "h": 1304,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 115682,
+          "bytes": 115996,
           "alt": "Página de apertura 2: Sumario. En la portada: las colinas de Castellina in Chianti, escenario del reportaje."
         },
         {
@@ -507,7 +507,7 @@
           "h": 1304,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 171300,
+          "bytes": 171288,
           "alt": "Página de apertura 3: El archivo del grano."
         },
         {
@@ -518,7 +518,7 @@
           "h": 1304,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 196038,
+          "bytes": 284726,
           "alt": "Página de apertura 4: El año del descanso."
         },
         {
@@ -529,7 +529,7 @@
           "h": 1304,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 201978,
+          "bytes": 201980,
           "alt": "Página 5. Viñas y cipreses junto a una casa de campo de Castellina in Chianti, en verano."
         },
         {
@@ -540,7 +540,7 @@
           "h": 1304,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 148400,
+          "bytes": 148434,
           "alt": "Página de apertura 6: El pan de la trilla."
         }
       ],
@@ -576,7 +576,7 @@
       },
       "sandbox": {
         "file": "magazine-cover-and-contents.postext",
-        "bytes": 1737305
+        "bytes": 2085284
       },
       "detected": {
         "apis": [
@@ -785,8 +785,8 @@
           "{attrs}"
         ],
         "resources": {
-          "svg": 2,
-          "bitmap": 5,
+          "svg": 1,
+          "bitmap": 6,
           "table": 0
         },
         "fonts": [
@@ -864,7 +864,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 3,
+        "iterationCount": 2,
         "looseLines": {
           "count": 1,
           "share": 0.0081,
@@ -874,7 +874,7 @@
           {
             "check": "C20",
             "severity": "warn",
-            "detail": "the edition's images weigh 1.27 MB (warning at 0.9 MB for 6 pages)"
+            "detail": "the edition's images weigh 1.35 MB (warning at 0.9 MB for 6 pages)"
           },
           {
             "check": "vdt",

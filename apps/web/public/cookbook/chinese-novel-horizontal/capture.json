@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "chinese-novel-horizontal",
-  "sourceHash": "21c85db5fc11f4608ec4376f167ee4cf816286c7d105170d27706bc5eb5ad4da",
+  "sourceHash": "c6e33d0d620c496fddfcbf24e47254a369ba501ca4893d45b4c390d00f6444a3",
   "engine": {
-    "postext": "1.9.0",
-    "postextPdf": "1.9.0",
+    "postext": "1.9.2",
+    "postextPdf": "1.9.2",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-30T04:37:54.365Z",
+  "capturedAt": "2026-10-01T06:44:03.630Z",
   "variants": {
     "en": {
-      "hash8": "331802d9",
-      "vdtHash": "fc951a6ccbc36ad61153dc071a66bc691ad03a3b",
+      "hash8": "e473eba1",
+      "vdtHash": "608e031e1bb1719ed4463a33ca71342e90ecc42e",
       "timings": {
-        "importMs": 476,
-        "fontsMs": 7679,
-        "buildMs": 14,
-        "totalMs": 8805,
+        "importMs": 5036,
+        "fontsMs": 4453,
+        "buildMs": 19,
+        "totalMs": 10577,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Noto Serif SC"
         ],
         "pages": 7,
-        "ownLines": 180
+        "ownLines": 178
       },
       "pages": [
         {
@@ -50,7 +50,7 @@
           "h": 1450,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 53148,
+          "bytes": 223988,
           "alt": "Opening page 70: 月下的瓜地."
         },
         {
@@ -116,7 +116,7 @@
           "h": 1450,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 84748,
+          "bytes": 84608,
           "alt": "Page 76."
         }
       ],
@@ -152,12 +152,12 @@
       },
       "pdf": {
         "file": "chinese-novel-horizontal.pdf",
-        "bytes": 328417,
+        "bytes": 650943,
         "pages": 7
       },
       "sandbox": {
         "file": "chinese-novel-horizontal.postext",
-        "bytes": 40911
+        "bytes": 391238
       },
       "detected": {
         "apis": [
@@ -280,7 +280,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 232,
+        "configLeaves": 223,
         "designElements": 13,
         "directives": [
           ":::paragraphs"
@@ -289,8 +289,8 @@
           "{attrs}"
         ],
         "resources": {
-          "svg": 1,
-          "bitmap": 0,
+          "svg": 0,
+          "bitmap": 1,
           "table": 0
         },
         "fonts": [
@@ -350,7 +350,12 @@
           {
             "check": "C20",
             "severity": "warn",
-            "detail": "the edition's images weigh 0.95 MB (warning at 0.9 MB for 7 pages)"
+            "detail": "the edition's images weigh 1.16 MB (warning at 0.9 MB for 7 pages)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           },
           {
             "check": "sandbox",
@@ -361,13 +366,13 @@
       }
     },
     "es": {
-      "hash8": "727b23c2",
-      "vdtHash": "76dbe9ab3df0ada28dd41386fd3f7be03b7924fe",
+      "hash8": "9a3f759d",
+      "vdtHash": "27f3916327caf4aff3f8eb8cd7ea1329b7162b13",
       "timings": {
-        "importMs": 448,
-        "fontsMs": 2552,
-        "buildMs": 20,
-        "totalMs": 6646,
+        "importMs": 5068,
+        "fontsMs": 1804,
+        "buildMs": 14,
+        "totalMs": 7676,
         "builds": 2
       },
       "specimen": {
@@ -389,7 +394,7 @@
           "Noto Serif SC"
         ],
         "pages": 7,
-        "ownLines": 180
+        "ownLines": 178
       },
       "pages": [
         {
@@ -400,7 +405,7 @@
           "h": 1450,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 53148,
+          "bytes": 223988,
           "alt": "Página de apertura 70: 月下的瓜地."
         },
         {
@@ -466,7 +471,7 @@
           "h": 1450,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 85196,
+          "bytes": 84784,
           "alt": "Página 76."
         }
       ],
@@ -502,12 +507,12 @@
       },
       "pdf": {
         "file": "chinese-novel-horizontal.pdf",
-        "bytes": 328523,
+        "bytes": 650940,
         "pages": 7
       },
       "sandbox": {
         "file": "chinese-novel-horizontal.postext",
-        "bytes": 40981
+        "bytes": 391304
       },
       "detected": {
         "apis": [
@@ -630,7 +635,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 232,
+        "configLeaves": 223,
         "designElements": 13,
         "directives": [
           ":::paragraphs"
@@ -639,8 +644,8 @@
           "{attrs}"
         ],
         "resources": {
-          "svg": 1,
-          "bitmap": 0,
+          "svg": 0,
+          "bitmap": 1,
           "table": 0
         },
         "fonts": [
@@ -700,7 +705,12 @@
           {
             "check": "C20",
             "severity": "warn",
-            "detail": "the edition's images weigh 0.95 MB (warning at 0.9 MB for 7 pages)"
+            "detail": "the edition's images weigh 1.16 MB (warning at 0.9 MB for 7 pages)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           },
           {
             "check": "sandbox",

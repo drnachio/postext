@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "anthology-with-bylines",
-  "sourceHash": "4ae287e1b2c7cf2659981b0f00f83c99c9b07fac23e111bd1ef3b2ba41dd2c20",
+  "sourceHash": "196e2ae6cd37cecbb9f6a1bfd081946fd8381abaaa03b42587d5038e3cf423b5",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.9.2",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:30:22.444Z",
+  "capturedAt": "2026-10-01T06:44:10.079Z",
   "variants": {
     "en": {
-      "hash8": "de61dbd9",
-      "vdtHash": "b3cb637497e0e9e1e7274f8408d9b55136ec2540",
+      "hash8": "46703375",
+      "vdtHash": "324ae92df9cd4b804d32a39018f9e201cd575b78",
       "timings": {
-        "importMs": 308,
-        "fontsMs": 48,
-        "buildMs": 31,
-        "totalMs": 1107,
+        "importMs": 443,
+        "fontsMs": 63,
+        "buildMs": 33,
+        "totalMs": 1296,
         "builds": 2
       },
       "specimen": {
@@ -49,7 +49,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 25968,
+          "bytes": 114162,
           "alt": "Opening page 1: Afoot."
         },
         {
@@ -60,7 +60,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 69700,
+          "bytes": 70494,
           "alt": "Opening page 2: Contents."
         },
         {
@@ -71,7 +71,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 70964,
+          "bytes": 70968,
           "alt": "Opening page 3: I On Going a Journey."
         },
         {
@@ -93,7 +93,7 @@
           "h": 1333,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 79904,
+          "bytes": 80842,
           "alt": "Opening page 5: II Walking."
         },
         {
@@ -115,7 +115,7 @@
           "h": 1333,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 110824,
+          "bytes": 110842,
           "alt": "Page 7."
         },
         {
@@ -126,7 +126,7 @@
           "h": 1333,
           "file": "p08.webp",
           "strip": "p08.s.webp",
-          "bytes": 84012,
+          "bytes": 84000,
           "alt": "Opening page 8: III Walking Tours."
         },
         {
@@ -137,7 +137,7 @@
           "h": 1333,
           "file": "p09.webp",
           "strip": "p09.s.webp",
-          "bytes": 70204,
+          "bytes": 70232,
           "alt": "Page 9."
         }
       ],
@@ -177,7 +177,7 @@
       },
       "sandbox": {
         "file": "anthology-with-bylines.postext",
-        "bytes": 22930
+        "bytes": 243338
       },
       "detected": {
         "apis": [
@@ -355,8 +355,8 @@
           "{attrs}"
         ],
         "resources": {
-          "svg": 1,
-          "bitmap": 0,
+          "svg": 0,
+          "bitmap": 1,
           "table": 0
         },
         "fonts": [
@@ -407,6 +407,11 @@
           "worst": 1.6400000000000001
         },
         "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "the edition's images weigh 0.93 MB (warning at 0.9 MB for 9 pages)"
+          },
           {
             "check": "vdt",
             "severity": "info",

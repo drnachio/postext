@@ -1,6 +1,6 @@
 // ═══ Postext Cookbook · Nº 044 · Critical edition: line numbers and line-keyed notes ═══
 // https://postext.dev/en/cookbook/critical-edition-line-numbers
-// Code: MIT · Text: Milton, Poems (1645) (PD) · Notes and laurel: CC BY 4.0
+// Code: MIT · Text: Milton, Poems (1645) (PD) · Notes: CC BY 4.0 · Laurel: diffusion models
 // Fonts: Linden Hill, Imbue, Libre Franklin (SIL OFL 1.1) · Needs postext ≥ 1.4.1
 // Lycidas in the spelling of 1645, with a number beside every fifth line and two pages of
 // notes keyed to those numbers, so the verse carries no note markers.
@@ -15,9 +15,7 @@ const RECIPE = 'critical-edition-line-numbers';
 // Black text on white, and one laurel green for the apparatus.
 const palette = {
   ink: '#1b1b1b', // the text
-  laurel: '#3c5a3e', // line numbers, note numbers, the kicker; the laurel's leaves
-  leaf: '#6d8a5f', // the leaves behind, in the drawing
-  berry: '#a4a653', // unripe berries: 'harsh and crude' (line 3)
+  laurel: '#3c5a3e', // line numbers, note numbers, the kicker
   muted: '#6a706a', // running heads, the colophon
   paper: '#ffffff',
 };
@@ -193,121 +191,13 @@ const config = () => ({ // a factory: configs are cached by identity (gotcha: co
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook: the poem
 const notes = /* @content:notes */ ''; // content.notes.<lang>.md: the notes
 
-// #region art: a sprig of bay laurel with its unripe berries, in the page's greens
-let seed = 1645; // Mulberry32: a seeded generator, never Math.random() in a recipe
-const rand = () => {
-  let r = Math.imul((seed = (seed + 0x6d2b79f5) | 0) ^ (seed >>> 15), 1 | seed);
-  r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
-  return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
-};
-const f1 = (v) => v.toFixed(1);
-const ring = (pts) => `M${pts.map(([x, y]) => `${f1(x)} ${f1(y)}`).join('L')}Z`;
-const line = (pts) => `M${pts.map(([x, y]) => `${f1(x)} ${f1(y)}`).join('L')}`;
-const fill = (d, hex) => `<path d="${d}" fill="${hex}"/>`;
-const stroke = (d, hex, w) => `<path d="${d}" fill="none" stroke="${hex}" stroke-width="${w}" `
-  + 'stroke-linecap="round"/>';
-const mix = (a, b, k) => `#${[1, 3, 5].map((i) => Math.round(parseInt(palette[a].slice(i, i + 2),
-  16) * (1 - k) + parseInt(palette[b].slice(i, i + 2), 16) * k).toString(16).padStart(2, '0'))
-  .join('')}`;
-// A point on a cubic Bézier, with its direction.
-const bez = ([p0, p1, p2, p3], t) => {
-  const u = 1 - t;
-  const pos = (i) => u * u * u * p0[i] + 3 * u * u * t * p1[i] + 3 * u * t * t * p2[i]
-    + t * t * t * p3[i];
-  const d = (i) => 3 * u * u * (p1[i] - p0[i]) + 6 * u * t * (p2[i] - p1[i])
-    + 3 * t * t * (p3[i] - p2[i]);
-  return { x: pos(0), y: pos(1), a: Math.atan2(d(1), d(0)) };
-};
-// The stem: the curve as a band tapering from w0 to w1.
-const band = (curve, w0, w1) => {
-  const [left, right] = [[], []];
-  for (let i = 0; i <= 48; i++) {
-    const p = bez(curve, i / 48);
-    const w = (w0 + (w1 - w0) * (i / 48)) / 2;
-    left.push([p.x - Math.sin(p.a) * w, p.y + Math.cos(p.a) * w]);
-    right.unshift([p.x + Math.sin(p.a) * w, p.y - Math.cos(p.a) * w]);
-  }
-  return ring([...left, ...right]);
-};
-// A bay leaf from its base (x, y) along angle a: narrow at the stalk, widest a third of the
-// way up, drawn out to a point, with its midrib bowed by `bend`. Returns the blade, the midrib
-// and four pairs of side veins.
-function bayLeaf(x, y, a, len, wide, bend) {
-  const [c, s] = [Math.cos(a), Math.sin(a)];
-  const to = (u, v) => [x + u * c - v * s, y + u * s + v * c];
-  const mid = (t) => bend * len * Math.sin(Math.PI * t);
-  const half = (t) => wide * Math.sin(Math.PI * t ** 0.72) ** 1.1;
-  const edge = (sign) => Array.from({ length: 33 }, (_, i) => {
-    const t = i / 32;
-    return to(len * t, mid(t) + sign * half(t) * (1 + 0.035 * Math.sin(t * 23 + sign)));
-  });
-  const veins = [];
-  for (const t of [0.24, 0.4, 0.56, 0.7]) {
-    for (const sign of [1, -1]) {
-      veins.push(line([to(len * t, mid(t)),
-        to(len * (t + 0.13), mid(t + 0.13) + sign * half(t + 0.13) * 0.72)]));
-    }
-  }
-  return { blade: ring([...edge(1), ...edge(-1).reverse()]),
-    rib: line(Array.from({ length: 17 }, (_, i) => to(len * i / 18, mid(i / 18)))),
-    veins: veins.join('') };
-}
-function laurel(w, h) {
-  const stem = [[w + 40, -60], [w * 0.8, h * 0.12], [w * 0.62, h * 0.62], [w * 0.14, h * 0.7]];
-  const back = [];
-  const front = [];
-  const berries = [];
-  const N = 15;
-  for (let i = 0; i < N; i++) {
-    const t = 0.03 + (i / (N - 1)) * 0.9;
-    const p = bez(stem, t);
-    const side = i % 2 ? 1 : -1;
-    const len = (300 - 150 * t) * (0.88 + rand() * 0.24);
-    const turned = i % 4 === 2; // seen edge-on, its paler underside up
-    const a = p.a + side * (0.42 + rand() * 0.5);
-    const stalk = [p.x + Math.cos(a) * 14, p.y + Math.sin(a) * 14];
-    const blade = bayLeaf(stalk[0], stalk[1], a, len, len * (turned ? 0.12 : 0.2),
-      side * (0.04 + rand() * 0.05));
-    (turned ? back : front).push({ ...blade, stalk: line([[p.x, p.y], stalk]) });
-    if (i % 4 === 1 && t < 0.8) { // a small umbel of berries in the leaf's axil
-      const b = p.a - side * 0.9;
-      const hub = [p.x + Math.cos(b) * 26, p.y + Math.sin(b) * 26];
-      for (let k = 0; k < 4; k++) {
-        const ba = b + (k - 1.5) * 0.42;
-        const r = 40 + rand() * 12;
-        berries.push({ stalk: line([[p.x, p.y], hub, [hub[0] + Math.cos(ba) * r * 0.6,
-          hub[1] + Math.sin(ba) * r * 0.6]]), x: hub[0] + Math.cos(ba) * r,
-        y: hub[1] + Math.sin(ba) * r, a: ba });
-      }
-    }
-  }
-  const [end, bud] = [bez(stem, 1), bez(stem, 0.97)]; // the shoot ends in two young leaves
-  front.push({ ...bayLeaf(end.x, end.y, end.a - 0.08, 120, 21, 0.05), stalk: '' },
-    { ...bayLeaf(bud.x, bud.y, bud.a + 0.55, 72, 13, -0.06), stalk: '' });
-  const [wood, pale, vein] = [mix('laurel', 'ink', 0.35), mix('leaf', 'paper', 0.25),
-    mix('laurel', 'paper', 0.28)];
-  const out = [];
-  for (const b of back) {
-    out.push(stroke(b.stalk, wood, 5), fill(b.blade, palette.leaf), stroke(b.rib, pale, 3));
-  }
-  out.push(fill(band(stem, 17, 6), wood));
-  for (const b of berries) {
-    out.push(stroke(b.stalk, wood, 3.5), `<ellipse cx="${f1(b.x)}" cy="${f1(b.y)}" rx="21" `
-      + `ry="16.5" transform="rotate(${f1(b.a * 180 / Math.PI)} ${f1(b.x)} ${f1(b.y)})" `
-      + `fill="${palette.berry}"/>`);
-  }
-  for (const b of front) {
-    out.push(stroke(b.stalk, wood, 5), fill(b.blade, palette.laurel), stroke(b.rib, vein, 3.2),
-      stroke(b.veins, vein, 1.6));
-  }
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" `
-    + `viewBox="0 0 ${w} ${h}">${out.join('')}</svg>`;
-}
-await loadSvg('laurel.svg', laurel(1040, 740)); // tenths of a millimetre: 104 × 74 mm
-// #endregion
-const resources = [{ id: 'laurel', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0,
-  svg: { fileId: 'laurel.svg', width: 1040, height: 740 },
+// #region art: a sprig of bay laurel with its unripe berries, a watercolour in assets/
+// The JPEG is cut to the sprig's 104 × 74 mm frame on white paper and declared at its pixels.
+const resources = [{ id: 'laurel', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: 'laurel-1040.jpg', format: 'jpeg', width: 1040, height: 740 },
   altText: 'A sprig of bay laurel with a cluster of unripe berries, entering from the corner.' }];
+await loadImage(resources[0].bitmap.fileId, asset(resources[0].bitmap.fileId));
+// #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 // Loaded before the first build (gotcha: fonts-first). Linden Hill has no bold, Imbue no italic.

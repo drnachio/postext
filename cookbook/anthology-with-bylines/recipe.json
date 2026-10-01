@@ -94,11 +94,12 @@
     "images": [
       {
         "what": {
-          "en": "The cover: hills at dusk, drawn in code",
-          "es": "La cubierta: colinas al atardecer, dibujadas con código"
+          "en": "The cover: a heath and hills at dusk, a painting",
+          "es": "La cubierta: un brezal y colinas al atardecer, una pintura"
         },
-        "who": "Ignacio Ferro",
-        "license": "CC-BY-4.0"
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "cover-1200.jpg"
       }
     ],
     "fonts": [

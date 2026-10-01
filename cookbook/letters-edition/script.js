@@ -1,6 +1,6 @@
 // ═══ Postext Cookbook · Nº 064 · Letters edition: datelines and signatures ════════════
 // https://postext.dev/en/cookbook/letters-edition
-// Code: MIT · Text: Frederick II and Voltaire, letters of 1740 and 1778 (PD) · Cover: drawn in code
+// Code: MIT · Text: Frederick II and Voltaire, 1740 and 1778 (PD) · Cover photo: diffusion models
 // Fonts: Crimson Pro, IM Fell French Canon, IM Fell DW Pica SC (SIL OFL) · Needs postext ≥ 1.4.1
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
   from 'https://esm.sh/postext';
@@ -13,10 +13,9 @@ const RECIPE = 'letters-edition';
 const palette = {
   ink: '#2a2320', // the text: a warm near-black
   paper: '#f6efe2', // the page, and the lettering on the cover
-  seal: '#9c2b24', // the letter numbers, and the wax on the cover
+  seal: '#9c2b24', // the letter numbers
   leather: '#2a4536', // the cover: a green morocco binding
   gilt: '#d0b67c', // its tooled border and the names on it
-  rule: '#c8b99f', // the folds drawn on the cover
   muted: '#75695d', // the running heads
 };
 // A design element paints the hex written beside its paletteId (gotcha: palette-skips-designs).
@@ -95,18 +94,21 @@ const header = { elements: [
 ] };
 // #endregion
 
-// #region cover: page 1 is a heading style with the drawing and the title; :::pagebreak ends it
+// #region cover: page 1 is a heading style with the art and the title; :::pagebreak ends it
 // The Markdown: # Mon sort \\ est changé {style="cover"}, then :::pagebreak, or the headnote
 // and the first letter start on the cover (gotcha: cover-pagebreak).
 const onCover = (y) => at('page', 'top', 0, y); // centred, y mm below the top edge
+const LETTERS = { x: 12, y: 72, w: 116, h: 120 }; // mm: the photograph, inside the fillet
 // numbered: false keeps the cover out of the count, so the first letter is I.
 const cover = { id: 'cover', numbered: false,
   // span: 'page' although the book has one column. Kept in the column, the design is clipped
   // to the column's top and bottom (paper above and below the leather, no names) and its title
   // loses the \\ break; page 1 would also count as a 'body' page and print the running heads.
   span: 'page', advancedDesign: { enabled: true, slot: { elements: [
-    { kind: 'image', id: 'art', resourceId: 'cover',
+    { kind: 'image', id: 'binding', resourceId: 'binding',
       placement: { ...at('bleed', 'top-left'), size: { width: 'fill', height: 'fill' } } },
+    { kind: 'image', id: 'letters', resourceId: 'letters', placement: { ...at('page', 'top-left',
+      LETTERS.x, LETTERS.y), size: { width: mm(LETTERS.w), height: mm(LETTERS.h) } } },
     { kind: 'text', id: 'names', content: '{author}', ...sc, fontSize: pt(9.5),
       letterSpacing: pt(2), color: col('gilt'), placement: onCover(18) },
     // \\ in the heading breaks the title here; lineHeight is a multiple (gotcha:
@@ -162,110 +164,30 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   footer: { elements: [] }, // the folios ride in the header
 });
 
-// #region art: the cover, drawn in code and seeded: two folded letters on green morocco
-let seed = 1740; // Mulberry32, a tiny seeded PRNG: never Math.random() in a recipe
-const rand = () => {
-  let r = Math.imul((seed = (seed + 0x6d2b79f5) | 0) ^ (seed >>> 15), 1 | seed);
-  r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
-  return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
-};
-const n = (v) => v.toFixed(2);
-const channel = (hex, i) => parseInt(hex.slice(i, i + 2), 16);
-const mix = (a, b, k) => `#${[1, 3, 5].map((i) => Math.round(channel(a, i) * (1 - k)
-  + channel(b, i) * k).toString(16).padStart(2, '0')).join('')}`; // a towards b by k
+// #region art: the binding drawn in code, and the photograph of the letters laid on it
 const W = TRIM.width;
 const H = TRIM.height;
-const SHEET = mix(palette.paper, '#ffffff', 0.35);
-const SHADE = mix(palette.paper, palette.rule, 0.55);
-
-// A line of handwriting in the ink of the text: each word a looped trochoid, one loop per
-// letter, about one loop in five twice as tall, slanted forward.
-function scrawl(x0, y0, length, size) {
-  let d = '';
-  let x = x0;
-  while (x < x0 + length - size) {
-    const loops = 3 + Math.floor(rand() * 5);
-    const heights = Array.from({ length: loops }, () => (rand() < 0.22 ? 1.8 : 0.9));
-    const pts = [];
-    for (let t = 0; t <= loops * Math.PI * 2; t += 0.3) {
-      const h = heights[Math.min(loops - 1, Math.floor(t / (Math.PI * 2)))] * size * 0.5;
-      const y = -h * (1 - Math.cos(t)); // up and back to the baseline once a letter
-      pts.push(`${n(x + t * size * 0.07 - Math.sin(t) * size * 0.18 - y * 0.3)} ${n(y0 + y)}`);
-    }
-    d += `M${pts.join(' L')}`;
-    x += loops * Math.PI * 2 * size * 0.07 + size * (0.8 + rand() * 0.5);
-  }
-  return `<path d="${d}" fill="none" stroke="${palette.ink}" stroke-width="${n(size * 0.08)}" `
-    + 'stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>';
-}
-
-// A sheet folded into a packet, turned by `angle` about its centre, shadow first.
-function sheet(cx, cy, w, h, angle, inner) {
-  const turn = `translate(${cx} ${cy}) rotate(${angle})`;
-  return `<g transform="${turn}"><rect x="${n(-w / 2 + 0.8)}" y="${n(-h / 2 + 1.3)}" width="${w}" `
-    + `height="${h}" fill="${mix(palette.leather, '#000000', 0.5)}" opacity="0.5"/>`
-    + `<rect x="${n(-w / 2)}" y="${n(-h / 2)}" width="${w}" height="${h}" fill="${SHEET}"/>`
-    + `${inner(w, h)}</g>`;
-}
-
-// The front of the first packet: the address in three lines and a flourish.
-const address = (w, h) => scrawl(-w * 0.2, -h * 0.14, w * 0.4, 3)
-  + scrawl(-w * 0.34, h * 0.06, w * 0.68, 3) + scrawl(-w * 0.06, h * 0.26, w * 0.42, 3)
-  + `<path d="M${n(-w * 0.1)} ${n(h * 0.34)} C${n(w * 0.05)} ${n(h * 0.4)} ${n(w * 0.2)} `
-  + `${n(h * 0.28)} ${n(w * 0.33)} ${n(h * 0.33)}" fill="none" stroke="${palette.ink}" `
-  + 'stroke-width="0.3" stroke-linecap="round" opacity="0.8"/>';
-
-// The back of the second: two side folds, the top flap down to its tip, and the seal on it.
-function sealed(w, h) {
-  const tip = [0, h * 0.1];
-  const folds = [[-w / 2, h / 2], [w / 2, h / 2]].map(([x, y]) =>
-    `<path d="M${n(x)} ${n(y)} L${n(tip[0])} ${n(tip[1])}" stroke="${SHADE}" stroke-width="0.4"/>`);
-  const flap = `<path d="M${n(-w / 2)} ${n(-h / 2)} L${n(w / 2)} ${n(-h / 2)} L${n(tip[0])} `
-    + `${n(tip[1])} Z" fill="${mix(SHEET, palette.rule, 0.18)}" stroke="${SHADE}" `
-    + 'stroke-width="0.35"/>';
-  return folds.join('') + flap + seal(tip[0], tip[1] - 1, 8.5);
-}
-
-// Sealing wax: an uneven disc, a pressed ring, a six-petal stamp and a light edge.
-function seal(cx, cy, r) {
-  const pts = [];
-  for (let i = 0; i < 36; i++) {
-    const a = (i / 36) * Math.PI * 2;
-    const rr = r * (0.9 + rand() * 0.16 + (i % 9 === 4 ? 0.14 : 0));
-    pts.push(`${n(cx + Math.cos(a) * rr)} ${n(cy + Math.sin(a) * rr)}`);
-  }
-  const dark = mix(palette.seal, palette.ink, 0.35);
-  const petals = [0, 60, 120, 180, 240, 300].map((deg) => `<ellipse cx="${n(cx)}" `
-    + `cy="${n(cy - r * 0.28)}" rx="${n(r * 0.12)}" ry="${n(r * 0.26)}" fill="${dark}" `
-    + `transform="rotate(${deg} ${n(cx)} ${n(cy)})"/>`).join('');
-  return `<path d="M${pts.join(' L')} Z" fill="${palette.seal}"/>`
-    + `<circle cx="${n(cx)}" cy="${n(cy)}" r="${n(r * 0.66)}" fill="none" stroke="${dark}" `
-    + `stroke-width="${n(r * 0.07)}"/>${petals}<circle cx="${n(cx)}" cy="${n(cy)}" `
-    + `r="${n(r * 0.1)}" fill="${dark}"/><path d="M${n(cx - r * 0.72)} ${n(cy - r * 0.3)} `
-    + `A${n(r * 0.8)} ${n(r * 0.8)} 0 0 1 ${n(cx - r * 0.2)} ${n(cy - r * 0.78)}" fill="none" `
-    + `stroke="${mix(palette.seal, '#ffffff', 0.35)}" stroke-width="${n(r * 0.07)}" `
-    + 'stroke-linecap="round"/>';
-}
-
-function coverSvg() {
-  // The binding: green leather to the edges, a gilt double fillet and a lozenge at each corner.
+// The binding: green leather to the edges, a gilt double fillet and a lozenge at each corner.
+function bindingSvg() {
   const tooling = [6, 7.6].map((inset, i) => `<rect x="${inset}" y="${inset}" `
     + `width="${W - 2 * inset}" height="${H - 2 * inset}" fill="none" stroke="${palette.gilt}" `
     + `stroke-width="${i ? 0.25 : 0.7}"/>`).join('') + [[6, 6], [W - 6, 6], [6, H - 6],
     [W - 6, H - 6]].map(([x, y]) => `<path d="M${x} ${y - 2.4} L${x + 2.4} ${y} L${x} ${y + 2.4} `
     + `L${x - 2.4} ${y} Z" fill="${palette.gilt}"/>`).join('');
-  const body = `<rect width="${W}" height="${H}" fill="${palette.leather}"/>${tooling}`
-    + sheet(W / 2 + 9, 152, 90, 58, 7, address) + sheet(W / 2 - 3, 102, 88, 55, -4, sealed);
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W * 10}" height="${H * 10}" `
-    + `viewBox="0 0 ${W} ${H}">${body}</svg>`;
+    + `viewBox="0 0 ${W} ${H}"><rect width="${W}" height="${H}" fill="${palette.leather}"/>`
+    + `${tooling}</svg>`;
 }
-// The cover's resource: the design's image element names it by id, and loadSvg() below
-// registers the drawing under its fileId.
-const resources = [{ id: 'cover', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0,
-  svg: { fileId: 'cover.svg', width: W * 10, height: H * 10 },
-  altText: 'A green leather cover with a gilt double fillet. Two folded letters lie on it: '
-    + 'the lower one shows an address in brown-black handwriting, the upper one lies face down, '
-    + 'its top flap closed by a red wax seal.' }];
+// The design's image elements name these by id; loadSvg() and loadImage() below register the
+// files. The photograph is a JPEG in assets/ cut to LETTERS' 116 × 120 mm, declared at its
+// pixels; its edges fade into the leather's green, so it sits on the drawn binding unseen.
+const resources = [{ id: 'binding', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0,
+  svg: { fileId: 'binding.svg', width: W * 10, height: H * 10 },
+  altText: 'A green leather cover with a gilt double fillet and a lozenge at each corner.' },
+{ id: 'letters', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: 'letters-1160.jpg', format: 'jpeg', width: 1160, height: 1200 },
+  altText: 'Two folded letters on the green leather: the upper one lies face down, its flap '
+    + 'closed by a red wax seal; the lower one shows an address in brown ink.' }];
 // #endregion
 
 // ─── 2 · Content ────────────────────────────────────────────────────────────
@@ -276,7 +198,8 @@ const FONTS = { // text, display and label faces (gotcha: fonts-first)
   'Crimson Pro': ['400', '400i'], 'IM Fell French Canon': ['400i'], 'IM Fell DW Pica SC': ['400'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadSvg('cover.svg', coverSvg());
+await loadSvg('binding.svg', bindingSvg());
+await loadImage('letters-1160.jpg', asset('letters-1160.jpg'));
 await loadFonts(FONTS, markdown);
 const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
 showPages(doc, { title: t({ en: 'Letters edition', es: 'Edición de cartas' }) });

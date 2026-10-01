@@ -49,5 +49,5 @@ El concejo aprobó el servicio nocturno por tres años en su sesión de septiemb
 El *Gaviotín*, en el varadero municipal desde agosto, está a la venta. Hay dos ofertas, ambas de mitilicultores de la costa norte que lo quieren como barco de trabajo; la oficina decidirá en noviembre.
 
 :::callout{type="colophon"}
-La Marea, número 41, compuesto en Charis SIL, Chivo y Fragment Mono (SIL OFL). Texto y dibujos CC BY 4.0. Lugares y personas de ficción.
+La Marea, número 41, compuesto en Charis SIL, Chivo y Fragment Mono (SIL OFL). Texto y mapa CC BY 4.0; fotografía generada. Lugares y personas de ficción.
 :::

@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "worksheet-answer-boxes",
-  "sourceHash": "e736371a06570a7b9faa2dfcff0bd76a0f6148d47c80afb9d00eb494a55dff09",
+  "sourceHash": "e3b8301cdb9cbe76e6e8cd039580c08e4e9f58fc870da74d271fabec90f76fe0",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.9.2",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-25T19:04:18.032Z",
+  "capturedAt": "2026-10-01T06:51:41.703Z",
   "variants": {
     "en": {
-      "hash8": "da4c2cb9",
-      "vdtHash": "53eb7a4ede2cb678bb722efe06b05a78cfe1b16d",
+      "hash8": "2633c157",
+      "vdtHash": "c01fadc567a217a890736c2dfaaca6719f8f7ace",
       "timings": {
-        "importMs": 1644,
-        "fontsMs": 37,
-        "buildMs": 12,
-        "totalMs": 2467,
+        "importMs": 525,
+        "fontsMs": 803,
+        "buildMs": 9,
+        "totalMs": 1942,
         "builds": 2
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Fredoka"
         ],
         "pages": 4,
-        "ownLines": 180
+        "ownLines": 183
       },
       "pages": [
         {
@@ -49,7 +49,7 @@
           "h": 1300,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 55030,
+          "bytes": 61180,
           "alt": "Opening page 1: Plants and their parts."
         },
         {
@@ -71,7 +71,7 @@
           "h": 1300,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 33994,
+          "bytes": 33208,
           "alt": "Page 3: 4 Parts we eat."
         },
         {
@@ -82,7 +82,7 @@
           "h": 1300,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 39344,
+          "bytes": 39404,
           "alt": "Page 4: 6 Try it at home."
         }
       ],
@@ -114,7 +114,7 @@
       },
       "sandbox": {
         "file": "worksheet-answer-boxes.postext",
-        "bytes": 29132
+        "bytes": 211310
       },
       "detected": {
         "apis": [
@@ -283,8 +283,8 @@
           "resourceTypes",
           "tableStyles"
         ],
-        "configLeaves": 470,
-        "designElements": 20,
+        "configLeaves": 488,
+        "designElements": 22,
         "directives": [
           ":::paragraphs",
           ":::callout",
@@ -299,7 +299,7 @@
         ],
         "resources": {
           "svg": 8,
-          "bitmap": 0,
+          "bitmap": 2,
           "table": 1
         },
         "fonts": [
@@ -375,17 +375,23 @@
           "share": 0,
           "worst": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "5b099dbf",
-      "vdtHash": "f562ce5b971655dc140a5deac9498a9a1827da00",
+      "hash8": "7d56d1b4",
+      "vdtHash": "4b8612c7c131d61b9f8017be83b730561359e8e9",
       "timings": {
-        "importMs": 217,
-        "fontsMs": 54,
-        "buildMs": 8,
-        "totalMs": 1102,
+        "importMs": 208,
+        "fontsMs": 44,
+        "buildMs": 10,
+        "totalMs": 951,
         "builds": 2
       },
       "specimen": {
@@ -407,7 +413,7 @@
           "Fredoka"
         ],
         "pages": 4,
-        "ownLines": 180
+        "ownLines": 183
       },
       "pages": [
         {
@@ -418,7 +424,7 @@
           "h": 1300,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 57392,
+          "bytes": 63328,
           "alt": "Página de apertura 1: Las plantas y sus partes."
         },
         {
@@ -440,7 +446,7 @@
           "h": 1300,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 36328,
+          "bytes": 35524,
           "alt": "Página 3: 4 Partes que comemos."
         },
         {
@@ -451,7 +457,7 @@
           "h": 1300,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 45236,
+          "bytes": 45564,
           "alt": "Página 4: 6 Pruébalo en casa."
         }
       ],
@@ -483,7 +489,7 @@
       },
       "sandbox": {
         "file": "worksheet-answer-boxes.postext",
-        "bytes": 30006
+        "bytes": 212202
       },
       "detected": {
         "apis": [
@@ -652,8 +658,8 @@
           "resourceTypes",
           "tableStyles"
         ],
-        "configLeaves": 470,
-        "designElements": 20,
+        "configLeaves": 488,
+        "designElements": 22,
         "directives": [
           ":::paragraphs",
           ":::callout",
@@ -668,7 +674,7 @@
         ],
         "resources": {
           "svg": 8,
-          "bitmap": 0,
+          "bitmap": 2,
           "table": 1
         },
         "fonts": [

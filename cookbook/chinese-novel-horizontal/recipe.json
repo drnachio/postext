@@ -68,11 +68,12 @@
     "images": [
       {
         "what": {
-          "en": "The moonlit melon field of the story, drawn in code in the page’s palette",
-          "es": "El campo de sandías bajo la luna del relato, dibujado en código con la paleta de la página"
+          "en": "The plate: the moonlit melon field of the story, a painting",
+          "es": "La lámina: el campo de sandías bajo la luna del relato, una pintura"
         },
-        "who": "Ignacio Ferro",
-        "license": "MIT"
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plate-1120.jpg"
       }
     ],
     "fonts": [

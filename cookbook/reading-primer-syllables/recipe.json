@@ -94,7 +94,88 @@
       }
     ],
     "text": [],
-    "images": [],
+    "images": [
+      {
+        "what": {
+          "en": "A watercolour of the butterfly on the opener",
+          "es": "Una acuarela de la mariposa de la apertura"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "mariposa-660.jpg"
+      },
+      {
+        "what": {
+          "en": "A watercolour of the apple on the opener",
+          "es": "Una acuarela de la manzana de la apertura"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "manzana-480.jpg"
+      },
+      {
+        "what": {
+          "en": "A watercolour of the hand in the picture grid",
+          "es": "Una acuarela de la mano de la tabla de dibujos"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "mano-640.jpg"
+      },
+      {
+        "what": {
+          "en": "A watercolour of the map in the picture grid",
+          "es": "Una acuarela de el mapa de la tabla de dibujos"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "mapa-640.jpg"
+      },
+      {
+        "what": {
+          "en": "A watercolour of the table in the picture grid",
+          "es": "Una acuarela de la mesa de la tabla de dibujos"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "mesa-640.jpg"
+      },
+      {
+        "what": {
+          "en": "A watercolour of the mimosa sprig in the picture grid",
+          "es": "Una acuarela de la rama de mimosa de la tabla de dibujos"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "mimosa-640.jpg"
+      },
+      {
+        "what": {
+          "en": "A watercolour of the monkey in the picture grid",
+          "es": "Una acuarela de el mono de la tabla de dibujos"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "mono-640.jpg"
+      },
+      {
+        "what": {
+          "en": "A watercolour of the doll in the picture grid",
+          "es": "Una acuarela de la muñeca de la tabla de dibujos"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "muneca-640.jpg"
+      },
+      {
+        "what": {
+          "en": "The cream band, the activity icons and the tracing rows, drawn in code in the page’s palette",
+          "es": "La franja crema, los iconos de las actividades y las pautas de caligrafía, dibujados en código con la paleta de la página"
+        },
+        "who": "Ignacio Ferro",
+        "license": "MIT"
+      }
+    ],
     "fonts": [
       {
         "family": "Andika",

@@ -158,8 +158,17 @@
     "images": [
       {
         "what": {
-          "en": "The title page’s brass dial on oxblood cloth, drawn in code in the page’s palette",
-          "es": "El cuadrante de latón sobre tela burdeos de la portada, dibujado en código con la paleta de la página"
+          "en": "The title page’s brass dial, a photograph",
+          "es": "El cuadrante de latón de la portada, una fotografía"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "dial-1120.jpg"
+      },
+      {
+        "what": {
+          "en": "The title page’s oxblood cloth and gilt frame, drawn in code in the page’s palette",
+          "es": "La tela burdeos y el marco dorado de la portada, dibujados en código con la paleta de la página"
         },
         "who": "Ignacio Ferro",
         "license": "MIT"

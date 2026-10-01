@@ -63,11 +63,47 @@
     "images": [
       {
         "what": {
-          "en": "The writing squares and the four lesson drawings, drawn in code in the page’s palette",
-          "es": "Las cuadrículas de escritura y los cuatro dibujos de las lecciones, dibujados en código con la paleta de la página"
+          "en": "The writing squares, drawn in code in the page’s palette",
+          "es": "Las cuadrículas de escritura, dibujadas en código con la paleta de la página"
         },
         "who": "Postext Cookbook",
         "license": "CC-BY-4.0"
+      },
+      {
+        "what": {
+          "en": "Lesson 1’s vignette: a seedling, a watercolour",
+          "es": "La viñeta de la lección 1: un brote, una acuarela"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "sprout-800.jpg"
+      },
+      {
+        "what": {
+          "en": "Lesson 2’s vignette: the shuttle of a loom, a watercolour",
+          "es": "La viñeta de la lección 2: la lanzadera de un telar, una acuarela"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "shuttle-800.jpg"
+      },
+      {
+        "what": {
+          "en": "Lesson 3’s vignette: a brush and its first stroke, a watercolour",
+          "es": "La viñeta de la lección 3: un pincel y su primer trazo, una acuarela"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "brush-800.jpg"
+      },
+      {
+        "what": {
+          "en": "Lesson 4’s vignette: a jade disc on a red cord, a watercolour",
+          "es": "La viñeta de la lección 4: un disco de jade con un cordón rojo, una acuarela"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "jade-800.jpg"
       }
     ],
     "fonts": [

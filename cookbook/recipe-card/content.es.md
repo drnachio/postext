@@ -63,5 +63,5 @@ title: "Sal y aceite"
 **Hazlo de víspera.** Aguanta dos días en la nevera, en una jarra tapada; remuévelo antes de servirlo.
 
 :::paragraphs{style="colophon"}
-*Sal y aceite* · Compuesto en Young Serif, Figtree y Caveat (SIL OFL) · Recetas y dibujos originales, CC BY 4.0
+*Sal y aceite* · Compuesto en Young Serif, Figtree y Caveat (SIL OFL) · Recetas originales, CC BY 4.0 · Fotos generadas
 :::

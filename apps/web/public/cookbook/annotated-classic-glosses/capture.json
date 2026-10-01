@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "annotated-classic-glosses",
-  "sourceHash": "28574bc8aeb39a35a36793cb563045e1c9f8e7be5713b4c422056c5f10a008c3",
+  "sourceHash": "5905be732a52a0bb598359780f397c4edfb3abdcc1512d33ad44df86e9ed0ca8",
   "engine": {
-    "postext": "1.6.0",
+    "postext": "1.9.2",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-28T07:57:56.103Z",
+  "capturedAt": "2026-10-01T06:44:11.782Z",
   "variants": {
     "en": {
-      "hash8": "2468fb05",
+      "hash8": "0e29f810",
       "vdtHash": "049a0a0d8b1d507eb126c2b88daebb95f4deb600",
       "timings": {
-        "importMs": 771,
-        "fontsMs": 4017,
-        "buildMs": 44,
-        "totalMs": 6224,
+        "importMs": 195,
+        "fontsMs": 46,
+        "buildMs": 38,
+        "totalMs": 976,
         "builds": 2
       },
       "specimen": {
@@ -50,7 +50,7 @@
           "h": 1500,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 117914,
+          "bytes": 204192,
           "alt": "Opening page 81: A Mad Tea-Party."
         },
         {
@@ -100,7 +100,7 @@
       },
       "sandbox": {
         "file": "annotated-classic-glosses.postext",
-        "bytes": 29617
+        "bytes": 318952
       },
       "detected": {
         "apis": [
@@ -226,7 +226,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 259,
+        "configLeaves": 256,
         "designElements": 11,
         "directives": [
           ":::callout",
@@ -238,8 +238,8 @@
           "^…^"
         ],
         "resources": {
-          "svg": 1,
-          "bitmap": 0,
+          "svg": 0,
+          "bitmap": 1,
           "table": 0
         },
         "fonts": [
@@ -283,8 +283,7 @@
           "paragraph-styles",
           "resources",
           "side-boxes",
-          "side-column-floats",
-          "super-subscripts"
+          "side-column-floats"
         ],
         "suggestedLevel": 3
       },
@@ -296,7 +295,18 @@
           "share": 0,
           "worst": 1.82
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "card.webp weighs 93 KB (aim for ≤ 90 KB)"
+          },
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "card.480.webp weighs 36 KB (aim for ≤ 35 KB)"
+          }
+        ]
       }
     }
   }

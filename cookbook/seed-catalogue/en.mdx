@@ -1,21 +1,21 @@
 ---
 title: "Mail-order catalogue with pictures in cells"
-summary: "A seed catalogue whose price list is a table read from TSV, with a seed packet drawn in each variety's cell and the list split across a spread."
-description: "A four-page seed catalogue set with Postext. Its price list, read from TSV, has a seed packet drawn in each row and splits across pages 2 and 3."
-question: "How do I set a drawing in each row of a product table, with the name under it?"
+summary: "A seed catalogue whose price list is a table read from TSV, with a painted seed packet in each variety's cell and the list split across a spread."
+description: "A four-page seed catalogue set with Postext. Its price list, read from TSV, has a painted seed packet in each row and splits across pages 2 and 3."
+question: "How do I set a picture in each row of a product table, with the name under it?"
 aliases: ["seed catalogue", "product catalogue", "price list", "mail order", "product table", "table with images", "images in a table", "thumbnails in a table", "order form", "rowspan"]
-pageNotes: { "1": "The cover on buff paper inside a green frame: Brindlewood Seed Co. in spaced green capitals, Spring Seeds in a red slab serif, a yellow banner reading Catalog No. 12 · Spring 2027, and a drawing of a sunflower and a truss of tomatoes growing from a ploughed field. Under it, the letter To Our Growers in two columns, with a red NEW chip and a green ORGANIC chip in the text, signed by Ada Brindle and Tom Okafor.", "2": "The price list opens under a tomato-red band reading Vegetable Seeds and a dark head row. Five varieties, each with a drawn seed packet above its name; Heirloom tomatoes fills a cream cell merged down four rows, the descriptions carry NEW and ORGANIC chips, and the packet and ounce prices sit flush right. Continued on the facing page closes the page.", "3": "The band returns as Vegetable Seeds (continued) over the repeated head row: two beans and two squash, each kind in a merged cell down its rows, and a note on how many seeds a packet holds. Below, From Our Trial Garden in two level columns.", "4": "The order sheet: the mailing address in green capitals, Order Sheet in the red slab serif over a double rule, an italic instruction, a rounded Ship to grid and a rounded order grid with eleven empty lines and merged total rows, the guarantee in small print and the colophon." }
+pageNotes: { "1": "The cover on buff paper inside a green frame: Brindlewood Seed Co. in spaced green capitals, Spring Seeds in a red slab serif, a yellow banner reading Catalog No. 12 · Spring 2027, and a painting of a sunflower and a staked tomato plant growing from ploughed earth. Under it, the letter To Our Growers in two columns, with a red NEW chip and a green ORGANIC chip in the text, signed by Ada Brindle and Tom Okafor.", "2": "The price list opens under a tomato-red band reading Vegetable Seeds and a dark head row. Five varieties, each with a painted seed packet above its name; Heirloom tomatoes fills a cream cell merged down four rows, the descriptions carry NEW and ORGANIC chips, and the packet and ounce prices sit flush right. Continued on the facing page closes the page.", "3": "The band returns as Vegetable Seeds (continued) over the repeated head row: two beans and two squash, each kind in a merged cell down its rows, and a note on how many seeds a packet holds. Below, From Our Trial Garden in two level columns.", "4": "The order sheet: the mailing address in green capitals, Order Sheet in the red slab serif over a double rule, an italic instruction, a rounded Ship to grid and a rounded order grid with eleven empty lines and merged total rows, the guarantee in small print and the colophon." }
 ---
 
 ## What you'll build
 
-The spring price list of Brindlewood Seed Co., an invented seed farm, as a four-page booklet on buff paper. The cover sets Spring Seeds in Alfa Slab One over a sunflower and a truss of tomatoes, with the letter to growers in two columns below. Pages 2 and 3 carry the list. Each variety has its seed packet drawn at the top of its cell and its name under it, and the kinds of vegetable run down a merged first column. Prices sit flush right in a condensed label face, and red and green chips mark new and organic seed. The list breaks after the frying pepper and picks up on the facing page under the same red band, marked (continued). The back page is the order sheet, two rounded grids with empty lines to write on.
+The spring price list of Brindlewood Seed Co., an invented seed farm, as a four-page booklet on buff paper. The cover sets Spring Seeds in Alfa Slab One over a painting of a sunflower and a tomato plant, with the letter to growers in two columns below. Pages 2 and 3 carry the list. Each variety has a painting of its seed packet at the top of its cell and its name under it, and the kinds of vegetable run down a merged first column. Prices sit flush right in a condensed label face, and red and green chips mark new and organic seed. The list breaks after the frying pepper and picks up on the facing page under the same red band, marked (continued). The back page is the order sheet, two rounded grids with empty lines to write on.
 
 ## Method
 
 ### 1 · Add what the TSV leaves out
 
-The code is [the short answer](#the-short-answer) above. The TSV holds only words and prices. `setCellImage` puts each variety's packet, a resource named after the variety, at the top of its cell at 55% of the inner width, so the name sits under a 20.3 × 27.1 mm drawing and every row grows to 36 mm. `mergeCells` runs each kind down the first column and marks the cells it covers `hiddenBy`. A table's body cells share one face, Gelasio here, so each price is a chip with no fill, border or side padding, set in bold Cabin Condensed at 1.12 em for its lining figures.
+The code is [the short answer](#the-short-answer) above. The TSV holds only words and prices. `setCellImage` puts each variety's packet, a resource named after the variety, at the top of its cell at 55% of the inner width, so the name sits under a 20.3 × 27.1 mm picture and every row grows to 36 mm. `mergeCells` runs each kind down the first column and marks the cells it covers `hiddenBy`. A table's body cells share one face, Gelasio here, so each price is a chip with no fill, border or side padding, set in bold Cabin Condensed at 1.12 em for its lining figures.
 
 ### 2 · Cite the list and split it across the spread
 
@@ -27,7 +27,7 @@ The letter on page 1 cites the list with `:ref{id="vegetables" text="the price l
 
 <Excerpt region="pictures" />
 
-A cell image names a resource by id, so each packet is an SVG resource of its own, and the kit's `loadSvg` registers its drawing under the `fileId` with `registerResourceImage`. Nothing cites the packets, so none is numbered or placed outside its cell. An SVG drawn as an image cannot use the page's web fonts, so the packets carry no lettering and the name is set as cell text.
+A cell image names a resource by id, so each packet is a bitmap resource of its own, a 360 × 480 px JPEG cut to the packet's 3 : 4, and the kit's `loadImage` registers it under the `fileId` with `registerResourceImage`. Nothing cites the packets, so none is numbered or placed outside its cell. The paintings carry no lettering: the name is set as cell text, in the page's fonts.
 
 ### 4 · A second table style for the order sheet
 
@@ -35,11 +35,11 @@ A cell image names a resource by id, so each packet is an SVG resource of its ow
 
 The two grids use the named style `form`, with grid rules, a 2.5 mm radius on the outer frame and a cream fill to write on. The price list keeps the document's `tableStyle` ([Named table styles](/en/docs/configuration#named-table-styles)). An empty cell needs no placeholder, because its row still takes a line, 7.3 mm here. Each total merges four columns into one label set flush right. The order sheet's heading style switches page 4 to a single column, so both grids run the full 157 mm measure.
 
-### 5 · Keep the letter under the drawing
+### 5 · Keep the letter under the painting
 
 <Excerpt region="cover" />
 
-The cover drawing is an image element, and an image adds nothing to the height an opener reserves. Without `minHeight` the letter would start 55 mm from the top of the page, over the sunflower. `SINK` adds 10 mm of air under the drawing and rounds the depth below the top margin up to whole 13 pt lines, 34 of them, so both columns of the letter start on the grid, 177.9 mm down the page.
+The cover painting is an image element, and an image adds nothing to the height an opener reserves. Without `minHeight` the letter would start 55 mm from the top of the page, over the sunflower. `SINK` adds 10 mm of air under the painting and rounds the depth below the top margin up to whole 13 pt lines, 34 of them, so both columns of the letter start on the grid, 177.9 mm down the page.
 
 ## Variations
 
@@ -57,8 +57,8 @@ With `overflow: 'clip'` the list stops after the five varieties that fit on page
 At 40% the rows drop to 29 mm, but the two beans share a merged cell and need 57 mm together, more than the 44 mm left on page 2. The trial notes move up into that space, and page 3 holds only the rest of the list, with the page blank below 157 mm.
 
 ```diff
--const PACKET = 0.55; // the packet drawing's share of its cell's inner width
-+const PACKET = 0.4; // the packet drawing's share of its cell's inner width
+-const PACKET = 0.55; // the packet picture's share of its cell's inner width
++const PACKET = 0.4; // the packet picture's share of its cell's inner width
 ```
 
 ## Pitfalls

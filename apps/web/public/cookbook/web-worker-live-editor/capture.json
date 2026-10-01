@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "web-worker-live-editor",
-  "sourceHash": "964425eab36fec3e55640e9b54397fa94d7f71119f6b7b8128d712e548c96248",
+  "sourceHash": "add0356aae9b050ca7f3ae952f5f1892e841cf34c1f4c3d734225f6480a0952f",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.9.2",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T13:10:56.788Z",
+  "capturedAt": "2026-10-01T06:54:46.740Z",
   "variants": {
     "en": {
-      "hash8": "332a4158",
-      "vdtHash": "ff93f8eae4aafeafc11ef1f27bf1c7f5e98a76fe",
+      "hash8": "be69bc7a",
+      "vdtHash": "718485d3ed3a2ab318607b517bc6378593a62ca7",
       "timings": {
-        "importMs": 895,
-        "fontsMs": 565,
-        "buildMs": 101,
-        "totalMs": 2157,
+        "importMs": 765,
+        "fontsMs": 675,
+        "buildMs": 110,
+        "totalMs": 2120,
         "builds": 1
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Cinzel"
         ],
         "pages": 9,
-        "ownLines": 238
+        "ownLines": 248
       },
       "pages": [
         {
@@ -49,7 +49,7 @@
           "h": 1336,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 36164,
+          "bytes": 69344,
           "alt": "Opening page 1: The Time Machine."
         },
         {
@@ -60,7 +60,7 @@
           "h": 1336,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 93012,
+          "bytes": 93122,
           "alt": "Opening page 2: I Introduction."
         },
         {
@@ -71,7 +71,7 @@
           "h": 1336,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 118818,
+          "bytes": 118778,
           "alt": "Page 3."
         },
         {
@@ -82,7 +82,7 @@
           "h": 1336,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 142644,
+          "bytes": 142584,
           "alt": "Page 4."
         },
         {
@@ -93,7 +93,7 @@
           "h": 1336,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 141568,
+          "bytes": 141530,
           "alt": "Page 5."
         }
       ],
@@ -125,7 +125,7 @@
       },
       "sandbox": {
         "file": "web-worker-live-editor.postext",
-        "bytes": 37298
+        "bytes": 218617
       },
       "detected": {
         "apis": [
@@ -232,8 +232,8 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 223,
-        "designElements": 13,
+        "configLeaves": 229,
+        "designElements": 14,
         "directives": [
           ":::space",
           ":::paragraphs"
@@ -243,7 +243,7 @@
         ],
         "resources": {
           "svg": 1,
-          "bitmap": 0,
+          "bitmap": 1,
           "table": 0
         },
         "fonts": [
@@ -288,8 +288,8 @@
         "converged": true,
         "iterationCount": 2,
         "looseLines": {
-          "count": 1,
-          "share": 0.0076,
+          "count": 2,
+          "share": 0.015,
           "worst": 2.09
         },
         "findings": [
@@ -301,7 +301,7 @@
           {
             "check": "H6",
             "severity": "info",
-            "detail": "the layout worker ran postext 1.4.2 (workers ignore the import map; pages painted with 1.4.1)"
+            "detail": "the layout worker ran postext 1.10.0 (workers ignore the import map; pages painted with 1.9.2)"
           }
         ]
       }

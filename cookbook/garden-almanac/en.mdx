@@ -9,7 +9,7 @@ pageNotes: { "1": "The March opener: seedlings in dark soil under a pale sky, �
 
 ## What you'll build
 
-The March pages of a gardener's almanac written in Italian. Page 27 opens on a drawing of seedlings in dark soil under a pale sky, with the month's name at 84 pt and a country proverb. Under two columns of text comes the month's calendar, which the pen computes from dates: Sundays in red on a cream column, Easter Sunday and Monday on pink, and the moon's four quarters drawn beside their days. Page 28 lists the month's work in a two-column box and colours a ten-by-ten companion-planting matrix green, pink or cream, with a drawing of each crop on the diagonal. The year's sowing dates, 38 crops by fortnight, are wider than the page, so the chart turns a quarter onto pages 29 and 30 and repeats its head on the second.
+The March pages of a gardener's almanac written in Italian. Page 27 opens on a watercolour of seedlings in dark soil under a pale sky, with the month's name at 84 pt and a country proverb. Under two columns of text comes the month's calendar, which the pen computes from dates: Sundays in red on a cream column, Easter Sunday and Monday on pink, and the moon's four quarters drawn beside their days. Page 28 lists the month's work in a two-column box and colours a ten-by-ten companion-planting matrix green, pink or cream, with a drawing of each crop on the diagonal. The year's sowing dates, 38 crops by fortnight, are wider than the page, so the chart turns a quarter onto pages 29 and 30 and repeats its head on the second.
 
 ## Method
 
@@ -41,11 +41,11 @@ The pairs are typed as TSV, one symbol per cell. In postext 1.4.1 `parseTSV` mak
 
 `tableStyle` sets the house style: an ink head with paper-coloured labels in Commissioner, hairlines between the rows, and the Italian continuation strings, which 1.4.1 ships in English and Spanish only. Each named style states only what its table changes. The calendar sets its days in Gilda Display at 15 pt; the matrix drops the head's fill; the matrix and the chart draw grid rules in the paper's colour, 2 pt and 1 pt wide, which cut their fills into tiles.
 
-### 6 · The month opens on a drawing
+### 6 · The month opens on a painting
 
 <Excerpt region="opener" />
 
-The first-level heading is drawn from a slot of elements. The drawing is an image element at the head of the page, and the kicker, the proverb and its source come from the heading's attributes. An image element reserves no height in 1.4.1, and `minHeight` makes up for it: 92 mm of drawing plus 5 mm of air, less the 22 mm top margin, is 75 mm, which rounds up to 16 lines of 14 pt (79 mm). The first line of text sits 101 mm from the top of the page, 9 mm under the soil. The title moves 1.5 mm left, the side bearing of Gilda Display's M at 84 pt, and the M's serif lines up with the kicker; the proverb moves back by the same amount.
+The first-level heading is drawn from a slot of elements. The watercolour is an image element at the head of the page, and the kicker, the proverb and its source come from the heading's attributes. An image element reserves no height in 1.4.1, and `minHeight` makes up for it: 92 mm of painting plus 5 mm of air, less the 22 mm top margin, is 75 mm, which rounds up to 16 lines of 14 pt (79 mm). The first line of text sits 101 mm from the top of the page, 9 mm under the soil. The title moves 1.5 mm left, the side bearing of Gilda Display's M at 84 pt, and the M's serif lines up with the kicker; the proverb moves back by the same amount.
 
 ## Variations
 

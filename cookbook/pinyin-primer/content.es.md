@@ -83,5 +83,5 @@ Practicad los seis caracteres en las cuadrículas: primero en el aire con el ded
 :::
 
 :::paragraphs{style="colophon"}
-Compuesto en LXGW WenKai TC, Noto Sans TC y Andika (SIL OFL) · Texto: el Clásico de los tres caracteres (siglo XIII), zh.wikisource · Pinyin, notas y dibujos: Recetario de Postext, CC BY 4.0
+Compuesto en LXGW WenKai TC, Noto Sans TC y Andika (SIL OFL) · Texto: el Clásico de los tres caracteres (siglo XIII), zh.wikisource · Pinyin y notas: Recetario de Postext, CC BY 4.0
 :::

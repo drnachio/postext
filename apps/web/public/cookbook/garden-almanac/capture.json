@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "garden-almanac",
-  "sourceHash": "4991495bc47bac8a3d37213afde889fc6be3bb4305076bf15909b0b3ef779344",
+  "sourceHash": "64b9b923f8d3f5478092ed59d011d87bd33fa52162822543f7a4920a37af57b6",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.9.2",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T08:15:19.709Z",
+  "capturedAt": "2026-10-01T06:52:18.359Z",
   "variants": {
     "en": {
-      "hash8": "91c9926f",
-      "vdtHash": "cc587927ff05daece7c19db54f3f6745a83801f9",
+      "hash8": "14bc4f3d",
+      "vdtHash": "a20d77284011ed50dcea8a967e12f1dd70557b55",
       "timings": {
-        "importMs": 285,
-        "fontsMs": 928,
-        "buildMs": 18,
-        "totalMs": 1902,
+        "importMs": 706,
+        "fontsMs": 922,
+        "buildMs": 36,
+        "totalMs": 2435,
         "builds": 2
       },
       "specimen": {
@@ -50,7 +50,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 79636,
+          "bytes": 116660,
           "alt": "Opening page 27: Marzo. ⁤ domeniche · ⁤ Pasqua e Pasquetta · luna nuova l’8, primo quarto il 15, luna piena il 22, ultimo quarto il 30, sul mese sinodico medio: un giorno prima o dopo è possibile. Per tradizione in crescente si semina ciò che fruttifica sopra terra, in calante…"
         },
         {
@@ -61,7 +61,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 80426,
+          "bytes": 80804,
           "alt": "Page 28: Consociazioni. Tabella 1. Consociazioni tra dieci ortaggi."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 34700,
+          "bytes": 34714,
           "alt": "Page 29. Tabella 2. Semine al Nord e al Centro, in pianura e collina: ⁤ in semenzaio protetto · ⁤ in piena terra · ⁤ trapianto o messa a dimora."
         },
         {
@@ -83,7 +83,7 @@
           "h": 1333,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 36984,
+          "bytes": 36948,
           "alt": "Page 30. Tabella 2. Semine al Nord e al Centro, in pianura e collina: ⁤ in semenzaio protetto · ⁤ in piena terra · ⁤ trapianto o messa a dimora (segue)."
         }
       ],
@@ -115,7 +115,7 @@
       },
       "sandbox": {
         "file": "garden-almanac.postext",
-        "bytes": 39854
+        "bytes": 190109
       },
       "detected": {
         "apis": [
@@ -327,8 +327,8 @@
           ":swatch"
         ],
         "resources": {
-          "svg": 15,
-          "bitmap": 0,
+          "svg": 14,
+          "bitmap": 1,
           "table": 3
         },
         "fonts": [
@@ -388,17 +388,23 @@
           "share": 0,
           "worst": 1.56
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "91c9926f",
-      "vdtHash": "cc587927ff05daece7c19db54f3f6745a83801f9",
+      "hash8": "ec892e1e",
+      "vdtHash": "a20d77284011ed50dcea8a967e12f1dd70557b55",
       "timings": {
-        "importMs": 82,
-        "fontsMs": 50,
-        "buildMs": 17,
-        "totalMs": 852,
+        "importMs": 288,
+        "fontsMs": 81,
+        "buildMs": 31,
+        "totalMs": 1176,
         "builds": 2
       },
       "specimen": {
@@ -432,7 +438,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 79636,
+          "bytes": 116660,
           "alt": "Página de apertura 27: Marzo. ⁤ domeniche · ⁤ Pasqua e Pasquetta · luna nuova l’8, primo quarto il 15, luna piena il 22, ultimo quarto il 30, sul mese sinodico medio: un giorno prima o dopo è possibile. Per tradizione in crescente si semina ciò che fruttifica sopra terra, in c…"
         },
         {
@@ -443,7 +449,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 80426,
+          "bytes": 80804,
           "alt": "Página 28: Consociazioni. Tabella 1. Consociazioni tra dieci ortaggi."
         },
         {
@@ -454,7 +460,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 34700,
+          "bytes": 34714,
           "alt": "Página 29. Tabella 2. Semine al Nord e al Centro, in pianura e collina: ⁤ in semenzaio protetto · ⁤ in piena terra · ⁤ trapianto o messa a dimora."
         },
         {
@@ -465,7 +471,7 @@
           "h": 1333,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 36984,
+          "bytes": 36948,
           "alt": "Página 30. Tabella 2. Semine al Nord e al Centro, in pianura e collina: ⁤ in semenzaio protetto · ⁤ in piena terra · ⁤ trapianto o messa a dimora (segue)."
         }
       ],
@@ -497,7 +503,7 @@
       },
       "sandbox": {
         "file": "garden-almanac.postext",
-        "bytes": 39854
+        "bytes": 190110
       },
       "detected": {
         "apis": [
@@ -709,8 +715,8 @@
           ":swatch"
         ],
         "resources": {
-          "svg": 15,
-          "bitmap": 0,
+          "svg": 14,
+          "bitmap": 1,
           "table": 3
         },
         "fonts": [
@@ -770,7 +776,13 @@
           "share": 0,
           "worst": 1.56
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

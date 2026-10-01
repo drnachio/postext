@@ -145,6 +145,23 @@
         "source": "https://commons.wikimedia.org/wiki/File:Harvesting_the_Wheat_Crop_(Unsplash).jpg",
         "license": "CC0-1.0",
         "file": "harvest-1840.jpg"
+      },
+      {
+        "what": {
+          "en": "Fields from above near Castellina in Chianti (the feature's opener)",
+          "es": "Campos vistos desde arriba cerca de Castellina in Chianti (la apertura del reportaje)"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "fields-1610.jpg"
+      },
+      {
+        "what": {
+          "en": "The cover's barcode, drawn in code",
+          "es": "El código de barras de la portada, dibujado con código"
+        },
+        "who": "Ignacio Ferro",
+        "license": "MIT"
       }
     ],
     "fonts": [

@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "letters-edition",
-  "sourceHash": "34e1e83968901b8eebe5048ef3521d855812267831df093febe47f07350d0f25",
+  "sourceHash": "7e2e3c4399f239a4cf72f1fc91b05a29e2a9efa694fc2b47a32374b0146232cb",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.9.2",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T22:14:47.901Z",
+  "capturedAt": "2026-10-01T06:48:29.367Z",
   "variants": {
     "en": {
-      "hash8": "ad49ac94",
-      "vdtHash": "b58879932991d4e5910267c4a6dd0482ad2694cd",
+      "hash8": "c0103497",
+      "vdtHash": "b52b77b62812f0fd80502a361efa4ad6be58dec8",
       "timings": {
-        "importMs": 364,
-        "fontsMs": 1014,
-        "buildMs": 9,
-        "totalMs": 2051,
+        "importMs": 1665,
+        "fontsMs": 61,
+        "buildMs": 20,
+        "totalMs": 2458,
         "builds": 2
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "IM Fell French Canon"
         ],
         "pages": 5,
-        "ownLines": 164
+        "ownLines": 167
       },
       "pages": [
         {
@@ -49,7 +49,7 @@
           "h": 1500,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 39122,
+          "bytes": 91064,
           "alt": "Opening page 1: Mon sort est changé."
         },
         {
@@ -125,7 +125,7 @@
       },
       "sandbox": {
         "file": "letters-edition.postext",
-        "bytes": 25937
+        "bytes": 211999
       },
       "detected": {
         "apis": [
@@ -217,8 +217,8 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 217,
-        "designElements": 11,
+        "configLeaves": 223,
+        "designElements": 12,
         "directives": [
           ":::pagebreak",
           ":::paragraphs"
@@ -230,7 +230,7 @@
         ],
         "resources": {
           "svg": 1,
-          "bitmap": 0,
+          "bitmap": 1,
           "table": 0
         },
         "fonts": [
@@ -279,17 +279,23 @@
           "share": 0,
           "worst": 1.97
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "ad49ac94",
-      "vdtHash": "b58879932991d4e5910267c4a6dd0482ad2694cd",
+      "hash8": "8c7cce0b",
+      "vdtHash": "b52b77b62812f0fd80502a361efa4ad6be58dec8",
       "timings": {
-        "importMs": 131,
-        "fontsMs": 31,
-        "buildMs": 12,
-        "totalMs": 893,
+        "importMs": 191,
+        "fontsMs": 39,
+        "buildMs": 14,
+        "totalMs": 1016,
         "builds": 2
       },
       "specimen": {
@@ -311,7 +317,7 @@
           "IM Fell French Canon"
         ],
         "pages": 5,
-        "ownLines": 164
+        "ownLines": 167
       },
       "pages": [
         {
@@ -322,7 +328,7 @@
           "h": 1500,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 39122,
+          "bytes": 91064,
           "alt": "Página de apertura 1: Mon sort est changé."
         },
         {
@@ -398,7 +404,7 @@
       },
       "sandbox": {
         "file": "letters-edition.postext",
-        "bytes": 25965
+        "bytes": 212036
       },
       "detected": {
         "apis": [
@@ -490,8 +496,8 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 217,
-        "designElements": 11,
+        "configLeaves": 223,
+        "designElements": 12,
         "directives": [
           ":::pagebreak",
           ":::paragraphs"
@@ -503,7 +509,7 @@
         ],
         "resources": {
           "svg": 1,
-          "bitmap": 0,
+          "bitmap": 1,
           "table": 0
         },
         "fonts": [
@@ -552,7 +558,13 @@
           "share": 0,
           "worst": 1.97
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

@@ -346,5 +346,5 @@ Poemas y nota escritos para el Recetario de Postext (CC BY 4.0); la autora es fi
 
 Compuesto en Castoro, Castoro Titling y Tenor Sans (SIL OFL).
 
-Dibujos hechos en código.
+Acuarelas hechas con modelos de difusión.
 :::

@@ -15,7 +15,7 @@ Each of these essays was first printed in a magazine, two in London and the thir
 :::space{lines=1}
 
 :::paragraphs{style="colophon"}
-Set in Spectral, Gloock and Hanken Grotesk (SIL Open Font License). The essays are in the public domain, from Project Gutenberg eBooks #3020, #1022 and #386; this note and the cover are CC BY 4.0.
+Set in Spectral, Gloock and Hanken Grotesk (SIL Open Font License). The essays are in the public domain, from Project Gutenberg eBooks #3020, #1022 and #386; this note is CC BY 4.0; the cover is a painting.
 :::
 :::
 

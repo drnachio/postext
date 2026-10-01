@@ -138,5 +138,5 @@ author: "鲁迅"
 :::
 
 :::paragraphs{style="colophon"}
-Lu Xun, «El pueblo natal» (故乡), 1921: la primera mitad del relato · Texto: dominio público, de zh.wikisource · Lámina: dibujada en código.
+Lu Xun, «El pueblo natal» (故乡), 1921: la primera mitad del relato · Texto: dominio público, de zh.wikisource · Lámina: una pintura.
 :::
