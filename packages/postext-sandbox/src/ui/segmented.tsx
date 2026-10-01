@@ -55,10 +55,10 @@ export function SegmentedControl<T extends string>({ value, onValueChange, optio
       className={cn(
         'inline-flex items-stretch overflow-hidden rounded-full border',
         fill ? 'flex w-full' : 'shrink-0',
-        size === 'sm' ? 'h-[1.3rem]' : 'h-7',
+        'h-11',
         className,
       )}
-      style={{ borderColor: 'var(--rule)' }}
+      style={{ borderColor: 'var(--pt-control-border)' }}
     >
       {options.map((o, i) => {
         const selected = o.value === value;
@@ -74,9 +74,9 @@ export function SegmentedControl<T extends string>({ value, onValueChange, optio
             aria-disabled={o.disabled || undefined}
             onClick={() => { if (!selected && !o.disabled) onValueChange(o.value); }}
             className={cn(
-              'inline-flex cursor-pointer items-center justify-center gap-1 whitespace-nowrap transition-colors',
+              'inline-flex min-w-11 cursor-pointer items-center justify-center gap-1 whitespace-nowrap transition-colors',
               fill && 'min-w-0 flex-1',
-              size === 'sm' ? 'px-2 text-[0.62rem]' : 'px-3 text-xs',
+              size === 'sm' ? 'px-2.5 text-[0.66rem]' : 'px-3 text-xs',
               'focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
               selected
                 ? 'bg-(--brand-soft,var(--surface)) font-medium text-(--foreground)'
@@ -84,7 +84,7 @@ export function SegmentedControl<T extends string>({ value, onValueChange, optio
                   ? 'cursor-default bg-transparent text-(--slate) opacity-50'
                   : 'bg-transparent text-(--slate) hover:bg-(--surface) hover:text-(--foreground)',
             )}
-            style={i > 0 ? { borderLeft: '1px solid var(--rule)' } : undefined}
+            style={i > 0 ? { borderLeft: '1px solid var(--pt-control-border)' } : undefined}
           >
             {o.label}
           </button>

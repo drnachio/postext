@@ -63,7 +63,7 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(function ListRow
       ref={ref}
       data-selected={selected || undefined}
       className={cn(
-        'group relative flex items-center gap-1 rounded border px-2 py-1.5 transition-colors',
+        'group relative flex min-h-11 items-center gap-1 rounded border py-0.5 pr-0.5 pl-2 transition-colors',
         selected ? 'border-(--brand) bg-(--surface)' : 'border-transparent',
         interactive && !disabled && !selected && 'hover:bg-(--surface)',
         disabled && 'opacity-50',
@@ -81,7 +81,7 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(function ListRow
           aria-current={selected || undefined}
           className={cn(
             'absolute inset-0 z-0 cursor-pointer rounded border-0 bg-transparent p-0',
-            'focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--brand-hover)',
+            'focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
             'disabled:cursor-default',
           )}
         />
@@ -93,7 +93,7 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(function ListRow
   );
 });
 
-const ROW_TAG_CLASS = 'shrink-0 rounded border px-1 text-[9px] font-semibold uppercase leading-[14px] tracking-wide';
+const ROW_TAG_CLASS = 'shrink-0 rounded border px-1 text-[11px] font-semibold pt-caps leading-[14px] tracking-wide';
 
 /** Tiny uppercase tag used inside rows (locale, Active, Default…). With
  *  `onClick` it is a small toggle button (a bilingual preset's locales);
@@ -122,7 +122,9 @@ export function RowTag({
       <span className={ROW_TAG_CLASS} style={style} title={label}>
         {label ? (
           <>
-            <span aria-hidden="true">{children}</span>
+            {/* The short form is an abbreviation expanded by its title
+                (WCAG 3.1.4); assistive tech reads the label instead. */}
+            <span aria-hidden="true"><abbr title={label} className="no-underline">{children}</abbr></span>
             <span className="sr-only normal-case">{label}</span>
           </>
         ) : children}
@@ -130,21 +132,27 @@ export function RowTag({
     );
   }
   return (
+    // A 44×44 target (WCAG 2.5.5) around the small tag; the negative
+    // margin keeps the row from growing by the whole target.
+    // Named by its visible text and then the label (WCAG 2.5.3: the name
+    // holds what is seen), not by aria-label alone.
     <button
       type="button"
       onClick={onClick}
-      aria-label={label}
       aria-pressed={pressed}
       title={label}
       className={cn(
-        ROW_TAG_CLASS,
-        'pointer-events-auto m-0 cursor-pointer bg-transparent font-[inherit]',
-        'hover:border-(--brand-hover) hover:text-(--foreground)',
-        'focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--brand-hover)',
+        'group/tag pointer-events-auto -my-2.5 inline-flex h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center rounded border-0 bg-transparent p-0 font-[inherit]',
+        'focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
       )}
-      style={style}
     >
-      {children}
+      <span
+        className={cn(ROW_TAG_CLASS, 'group-hover/tag:border-(--brand-hover) group-hover/tag:text-(--foreground)')}
+        style={style}
+      >
+        {label ? <abbr title={label} className="no-underline">{children}</abbr> : children}
+      </span>
+      {label && <span className="sr-only">{`: ${label}`}</span>}
     </button>
   );
 }

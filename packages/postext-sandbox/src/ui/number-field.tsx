@@ -29,10 +29,11 @@ export interface NumberFieldProps {
 }
 
 const STEPPER =
-  'inline-flex h-full w-5 shrink-0 cursor-pointer items-center justify-center text-(--slate) transition-colors hover:text-(--foreground) hover:bg-(--surface-2,var(--background)) data-disabled:cursor-default data-disabled:opacity-40';
+  'inline-flex h-full w-11 shrink-0 cursor-pointer items-center justify-center text-(--slate) transition-colors hover:text-(--foreground) hover:bg-(--surface-2,var(--background)) data-disabled:cursor-default data-disabled:opacity-50';
 
-/** Numeric input on Base UI's NumberField: − / + buttons (pointer only —
- *  keyboard users step with the arrow keys: Shift ×10, Alt ×0.1),
+/** Numeric input on Base UI's NumberField: − / + buttons, 44px wide
+ *  (pointer only — keyboard users step with the arrow keys: Shift ×10,
+ *  Alt ×0.1),
  *  locale-aware parsing and clamping to min/max. */
 export function NumberField({
   value,
@@ -72,8 +73,8 @@ export function NumberField({
     >
       <NumberFieldPrimitive.Group
         className={cn(
-          'inline-flex h-7 items-stretch overflow-hidden rounded-md border border-(--rule) bg-(--surface) transition-colors',
-          'hover:border-(--rule-strong,var(--slate)) focus-within:border-(--brand)',
+          'inline-flex h-11 items-stretch overflow-hidden rounded-md border border-(--pt-control-border) bg-(--surface) transition-colors',
+          'hover:border-(--slate) focus-within:border-(--brand) focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-(--brand)',
         )}
       >
         {steppers && (

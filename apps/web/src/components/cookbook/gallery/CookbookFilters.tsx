@@ -116,7 +116,7 @@ function FilterBar({ locale, chapters, gallery, live }: FiltersProps & { gallery
   // The bar sticks under the navbar, whatever its height.
   useEffect(() => {
     if (!live) return;
-    const nav = document.querySelector("nav[aria-label='Main navigation']");
+    const nav = document.querySelector("nav[data-site-nav]");
     if (!nav) return;
     const root = document.documentElement;
     const update = () => root.style.setProperty("--cb-nav-h", `${nav.getBoundingClientRect().height}px`);
@@ -219,8 +219,9 @@ function FilterBar({ locale, chapters, gallery, live }: FiltersProps & { gallery
       <div ref={anchorRef} aria-hidden="true" />
       <div className="cb-bar cb-bar-shadow sticky z-40 bg-background/96 backdrop-blur-md backdrop-saturate-150">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 2xl:max-w-7xl 2xl:px-8">
-          <div className="flex h-16 items-center gap-2 sm:h-14 lg:gap-3">
-            <div role="search" className="relative min-w-0 flex-1">
+          {/* Wraps instead of overflowing when text is enlarged (WCAG 1.4.4). */}
+          <div className="flex min-h-16 flex-wrap items-center gap-2 sm:min-h-14 lg:gap-3">
+            <div role="search" aria-label={t("searchBarRegion")} className="relative min-w-40 flex-1">
               <label htmlFor="cb-search" className="sr-only">
                 {t("searchLabel")}
               </label>
@@ -252,7 +253,7 @@ function FilterBar({ locale, chapters, gallery, live }: FiltersProps & { gallery
                     writeQuery("");
                     inputRef.current?.focus();
                   }}
-                  className="absolute top-1/2 right-0 grid size-11 -translate-y-1/2 place-items-center rounded-md text-slate hover:bg-surface-2 hover:text-foreground sm:right-1 sm:size-8"
+                  className="absolute top-1/2 right-0 grid size-11 -translate-y-1/2 place-items-center rounded-md text-slate hover:bg-surface-2 hover:text-foreground sm:right-0 sm:size-10"
                 >
                   <XIcon aria-hidden="true" className="size-4" />
                 </button>
@@ -359,7 +360,7 @@ function FilterBar({ locale, chapters, gallery, live }: FiltersProps & { gallery
                     loadCatalog(locale);
                     updateGallery(locale, { view });
                   }}
-                  className="grid size-9 place-items-center rounded-[5px] text-slate transition-colors hover:text-foreground aria-pressed:bg-background aria-pressed:text-foreground aria-pressed:shadow-sm"
+                  className="grid size-10 place-items-center rounded-[5px] text-slate transition-colors hover:text-foreground aria-pressed:bg-background aria-pressed:text-foreground aria-pressed:shadow-sm"
                 >
                   <Icon aria-hidden="true" className="size-4" />
                 </button>
@@ -374,7 +375,7 @@ function FilterBar({ locale, chapters, gallery, live }: FiltersProps & { gallery
               >
                 <SelectTrigger
                   aria-label={t("sort")}
-                  className="h-9 gap-1 border-0 bg-surface font-sans text-[0.8rem] dark:bg-surface dark:hover:bg-surface-2"
+                  className="h-10 min-h-10 gap-1 border-0 bg-surface font-sans text-[0.8rem] dark:bg-surface dark:hover:bg-surface-2"
                 >
                   <span className="text-slate">{t("sort")}:</span>
                   <SelectValue />

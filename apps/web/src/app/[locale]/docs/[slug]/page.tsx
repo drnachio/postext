@@ -16,6 +16,7 @@ import { SITE_NAME, SITE_URL, buildMetadata, localizedUrl } from "@/lib/seo";
 import { docPart, partClass } from "@/lib/docParts";
 import { DocOpener } from "@/components/docs/DocOpener";
 import { htmlLang } from "@/i18n/locales";
+import { PlainSummary } from "@/components/brand/PlainSummary";
 
 const PART_LABEL_KEY = {
   foundations: "partFoundations",
@@ -79,6 +80,7 @@ export default async function DocPage({
 
   const t = await getTranslations("Docs");
   const tIndex = await getTranslations("DocsIndex");
+  const tPlain = await getTranslations("PlainLanguage");
   const part = docPart(doc.meta.order);
   const chapter = docs.filter((d) => d.locales[locale]).findIndex((d) => d.slug === slug) + 1;
 
@@ -129,6 +131,7 @@ export default async function DocPage({
       />
       <main
         id="main-content"
+        tabIndex={-1}
         className={`min-w-0 flex-1 px-4 py-6 lg:px-8 2xl:px-12 ${partClass(part.color)}`}
       >
         <div className="relative mb-6 lg:hidden">
@@ -163,7 +166,7 @@ export default async function DocPage({
                   key={l}
                   href={`/${l}/docs/${slug}`}
                   aria-current={l === locale ? "true" : undefined}
-                  className={`rounded px-2 py-1.5 font-sans text-[0.68rem] lg:px-1.5 lg:py-0.5 font-semibold tracking-[0.12em] uppercase transition-colors ${
+                  className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded px-2 font-sans text-[0.68rem] font-semibold tracking-[0.12em] uppercase transition-colors ${
                     l === locale
                       ? "bg-(--part) text-(--part-on)"
                       : "text-slate hover:text-foreground"
@@ -175,6 +178,18 @@ export default async function DocPage({
             </span>
           )}
         </div>
+
+        {doc.meta.plainSummary && (
+          <PlainSummary
+            id="in-short"
+            heading={tPlain("heading")}
+            ink="text-(--part-ink)"
+            rule="border-l-(--part)"
+            className="mb-8"
+          >
+            {doc.meta.plainSummary}
+          </PlainSummary>
+        )}
 
         <MdxContent source={doc.source} skipTitle />
       </main>

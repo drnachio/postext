@@ -99,7 +99,7 @@ export function BoxElementEditor({ raw, resolved, slotKind, siblings = [], onCha
   return (
     <>
       <DimensionInput
-        label={labels.headerFooterElementWidth}
+        label={labels.headerFooterElementWidth} tooltip={labels.headerFooterElementWidthTooltip}
         value={width}
         onChange={(dim: Dimension) => updateSize({ width: dim })}
         min={0}

@@ -1,6 +1,7 @@
 ---
 title: "Live editor with layout in a Web Worker"
 summary: "Markdown beside a pocket page: a worker started from a blob sets the chapter with its own fonts, and each keystroke cancels the build in flight."
+plain: "A live editor for a small pocket edition of The Time Machine. Each time you type, the page is laid out again in the background, so the screen keeps responding."
 description: "Lay out Postext pages in a Web Worker started from a same-origin blob, send it the font files, cancel the build on each keystroke and paint on the main thread."
 question: "How do I keep an editor responsive while a long text lays out, with fonts and cancellation in a Web Worker?"
 aliases: ["Web Worker", "createLayoutWorker", "registerFonts", "AbortController", "cancel a build", "live preview", "off the main thread", "Markdown editor", "headless", "Node"]

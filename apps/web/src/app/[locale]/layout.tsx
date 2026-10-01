@@ -17,10 +17,12 @@ import { routing } from "@/i18n/routing";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { CookieConsentProvider } from "@/components/gdpr/CookieConsentProvider";
 import { CookieBanner } from "@/components/gdpr/CookieBanner";
+import { ScrollRegions } from "@/components/ui/ScrollRegions";
 import { Analytics } from "@vercel/analytics/next";
 import { cn } from "@/lib/utils";
 import { SITE_NAME, SITE_URL, buildMetadata, localizedUrl } from "@/lib/seo";
 import { PREPAINT_SCRIPT } from "@/components/cookbook/gallery/prepaint";
+import { READING_PREPAINT_SCRIPT } from "@/components/reading/readingPrefs";
 import "../globals.css";
 import { htmlLang } from "@/i18n/locales";
 
@@ -183,6 +185,8 @@ export default async function LocaleLayout({
         {/* The Cookbook gallery's filtered flag, before any of its book view
             paints. Here because the root layout never renders on the client. */}
         <script dangerouslySetInnerHTML={{ __html: PREPAINT_SCRIPT }} />
+        {/* Reading preferences and theme (WCAG 1.4.8), before the first paint. */}
+        <script dangerouslySetInnerHTML={{ __html: READING_PREPAINT_SCRIPT }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -199,6 +203,7 @@ export default async function LocaleLayout({
                   : "Skip to main content"}
               </a>
               {children}
+              <ScrollRegions />
               <CookieBanner />
             </CookieConsentProvider>
           </ThemeProvider>

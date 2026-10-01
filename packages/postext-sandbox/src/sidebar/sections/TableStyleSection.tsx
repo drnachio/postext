@@ -88,7 +88,7 @@ export function TableStyleFields({
           fieldId={`${fieldIdPrefix}-bodyColor`}
         />
         <ToggleSwitch
-          label={labels.tableBodyFill}
+          label={labels.tableBodyFill} tooltip={labels.tableBodyFillTooltip}
           checked={ts.bodyBackgroundEnabled}
           onChange={(v) => update({ bodyBackgroundEnabled: v })}
           isDefault={unset('bodyBackgroundEnabled')}
@@ -150,14 +150,14 @@ export function TableStyleFields({
           fieldId={`${fieldIdPrefix}-headerColor`}
         />
         <ToggleSwitch
-          label={labels.bold}
+          label={labels.bold} tooltip={labels.boldHelp}
           checked={ts.headerBold}
           onChange={(v) => update({ headerBold: v })}
           isDefault={unset('headerBold')}
           onReset={() => resetField('headerBold')}
         />
         <ToggleSwitch
-          label={labels.italic}
+          label={labels.italic} tooltip={labels.italicHelp}
           checked={ts.headerItalic}
           onChange={(v) => update({ headerItalic: v })}
           isDefault={unset('headerItalic')}
@@ -187,7 +187,7 @@ export function TableStyleFields({
           onReset={() => resetField('headerLetterSpacing')}
         />
         <ToggleSwitch
-          label={labels.tableHeaderFill}
+          label={labels.tableHeaderFill} tooltip={labels.tableHeaderFillTooltip}
           checked={ts.headerBackgroundEnabled}
           onChange={(v) => update({ headerBackgroundEnabled: v })}
           isDefault={unset('headerBackgroundEnabled')}
@@ -207,7 +207,7 @@ export function TableStyleFields({
 
       <CollapsibleSection title={labels.tableBordersGroup} sectionId={`${sectionIdPrefix}.borders`} variant="subsection">
         <ToggleSwitch
-          label={labels.tableBorders}
+          label={labels.tableBorders} tooltip={labels.tableBordersTooltip}
           checked={ts.borders}
           onChange={(v) => update({ borders: v })}
           isDefault={unset('borders')}
@@ -288,7 +288,7 @@ export function TableStyleFields({
               onReset={() => resetField('continuedSuffix')}
             />
             <ToggleSwitch
-              label={labels.tableContinuesMarkerEnabled}
+              label={labels.tableContinuesMarkerEnabled} tooltip={labels.tableContinuesMarkerEnabledTooltip}
               checked={ts.continuesMarkerEnabled}
               onChange={(v) => update({ continuesMarkerEnabled: v })}
               isDefault={unset('continuesMarkerEnabled')}
@@ -296,7 +296,7 @@ export function TableStyleFields({
             />
             {ts.continuesMarkerEnabled && (
               <TextInput
-                label={labels.tableContinuesMarker}
+                label={labels.tableContinuesMarker} tooltip={labels.tableContinuesMarkerTooltip}
                 value={ts.continuesMarker}
                 onChange={(v) => update({ continuesMarker: v })}
                 isDefault={unset('continuesMarker')}

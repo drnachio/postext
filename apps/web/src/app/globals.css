@@ -28,6 +28,10 @@
   --brand-gilt-deep: #b7820f;
   --brand-vermilion: #c0452f;
   --brand-vermilion-deep: #9f3522;
+  /* Vermilion deep enough for white text on it at 7:1 (bands, badges). */
+  --brand-vermilion-band: #a52d18;
+  /* Gilt for display type on paper: 4.5:1 for large text (1.4.6). */
+  --brand-gilt-display: #8a6310;
   --brand-tint: #f7f1e3;
   --brand-panel: #f1f3f8;
   --tri-stripe: linear-gradient(90deg, var(--brand-blue) 0 33.34%, var(--brand-gilt) 33.34% 66.67%, var(--brand-vermilion) 66.67% 100%);
@@ -70,15 +74,15 @@
   --surface: #1c1f26;
   --surface-2: #242832;
   --elevated: #20232b;
-  --brand: #d8a21a;
-  --brand-hover: #e8b73a;
+  --brand: #e1ab2c;
+  --brand-hover: #edbf4a;
   --brand-contrast: #0e1014;
   --brand-soft: rgba(216, 162, 26, 0.14);
-  --gilt: #d8a21a;
-  --gilt-hover: #e8b73a;
-  --accent-blue: #8ea2ff;
-  --vermilion: #ef7a62;
-  --slate: #a3a8b3;
+  --gilt: #e1ab2c;
+  --gilt-hover: #edbf4a;
+  --accent-blue: #9bb0ff;
+  --vermilion: #ff977e;
+  --slate: #aeb3be;
   --rule: #2c313c;
   --rule-strong: #3b424f;
   --paper: #1c1f26;
@@ -87,18 +91,18 @@
   --card-foreground: #f4f1ea;
   --popover: #20232b;
   --popover-foreground: #f4f1ea;
-  --primary: #d8a21a;
+  --primary: #e1ab2c;
   --primary-foreground: #0e1014;
   --secondary: #242832;
   --secondary-foreground: #f4f1ea;
   --muted: #242832;
-  --muted-foreground: #a3a8b3;
+  --muted-foreground: #aeb3be;
   --accent: #242832;
   --accent-foreground: #f4f1ea;
-  --destructive: #ef7a62;
+  --destructive: #ff977e;
   --border: #2c313c;
   --input: #3b424f;
-  --ring: #d8a21a;
+  --ring: #e1ab2c;
   --chart-1: #2b4acb;
   --chart-2: #d8a21a;
   --chart-3: #c0452f;
@@ -107,12 +111,12 @@
   --radius: 0.5rem;
   --sidebar: #111318;
   --sidebar-foreground: #f4f1ea;
-  --sidebar-primary: #d8a21a;
+  --sidebar-primary: #e1ab2c;
   --sidebar-primary-foreground: #0e1014;
   --sidebar-accent: #242832;
   --sidebar-accent-foreground: #f4f1ea;
   --sidebar-border: #2c313c;
-  --sidebar-ring: #d8a21a;
+  --sidebar-ring: #e1ab2c;
 }
 
 @theme inline {
@@ -147,6 +151,8 @@
   --color-gold-deep: var(--brand-gilt-deep);
   --color-red: var(--brand-vermilion);
   --color-red-deep: var(--brand-vermilion-deep);
+  --color-red-band: var(--brand-vermilion-band);
+  --color-gold-display: var(--brand-gilt-display);
   --color-tint: var(--brand-tint);
   --font-display: var(--font-fraunces), var(--cjk-serif);
   --font-head: var(--font-bricolage), var(--cjk-sans);
@@ -197,15 +203,15 @@
   --surface: #f4f2ec;
   --surface-2: #ebe8df;
   --elevated: #ffffff;
-  --brand: #2b4acb;
-  --brand-hover: #1f38a8;
+  --brand: #223cbc;
+  --brand-hover: #1a2f9a;
   --brand-contrast: #ffffff;
   --brand-soft: rgba(43, 74, 203, 0.09);
-  --gilt: #8a6310;
-  --gilt-hover: #6f4f0a;
-  --accent-blue: #2b4acb;
-  --vermilion: #b13e29;
-  --slate: #5d616b;
+  --gilt: #694400;
+  --gilt-hover: #553700;
+  --accent-blue: #223cbc;
+  --vermilion: #92210c;
+  --slate: #484c55;
   --rule: #e2ded4;
   --rule-strong: #cfcabd;
   --paper: #ffffff;
@@ -214,18 +220,18 @@
   --card-foreground: #15171c;
   --popover: #ffffff;
   --popover-foreground: #15171c;
-  --primary: #2b4acb;
+  --primary: #223cbc;
   --primary-foreground: #ffffff;
   --secondary: #ebe8df;
   --secondary-foreground: #15171c;
   --muted: #ebe8df;
-  --muted-foreground: #5d616b;
+  --muted-foreground: #484c55;
   --accent: #ebe8df;
   --accent-foreground: #15171c;
-  --destructive: #b13e29;
+  --destructive: #92210c;
   --border: #e2ded4;
   --input: #cfcabd;
-  --ring: #2b4acb;
+  --ring: #223cbc;
   --chart-1: #2b4acb;
   --chart-2: #b7820f;
   --chart-3: #c0452f;
@@ -233,12 +239,12 @@
   --chart-5: #5d616b;
   --sidebar: #f7f5ef;
   --sidebar-foreground: #15171c;
-  --sidebar-primary: #2b4acb;
+  --sidebar-primary: #223cbc;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #ebe8df;
   --sidebar-accent-foreground: #15171c;
   --sidebar-border: #e2ded4;
-  --sidebar-ring: #2b4acb;
+  --sidebar-ring: #223cbc;
 }
 
 /* ── SVG diagram tokens (dark mode = default) ──
@@ -256,18 +262,18 @@
   --svg-pink-fill: rgba(192, 69, 47, 0.18);
   --svg-teal-fill: rgba(31, 157, 146, 0.15);
   --svg-legend-fill: rgba(244, 241, 234, 0.04);
-  --svg-blue-text: #8ea2ff;
+  --svg-blue-text: #9bb0ff;
   --svg-orange-text: #e3b23c;
   --svg-green-text: #7fc8a0;
-  --svg-purple-text: #c5a3f0;
+  --svg-purple-text: #c6a4f1;
   --svg-yellow-text: #f0cf6a;
-  --svg-pink-text: #f08a74;
+  --svg-pink-text: #fe9881;
   --svg-teal-text: #6fd0c6;
   --svg-brown-text: #c9b49a;
   --svg-dark-text: #f4f1ea;
   --svg-mid-text: #b9bcc4;
-  --svg-light-text: #a3a8b3;
-  --svg-faint-text: #858b97;
+  --svg-light-text: #aeb3be;
+  --svg-faint-text: #adb3bf;
   --svg-stroke: #7d8391;
   --svg-grid: rgba(244, 241, 234, 0.07);
   --svg-legend-stroke: #363d4a;
@@ -291,18 +297,18 @@
   --svg-pink-fill: #fbe6e1;
   --svg-teal-fill: #e0f3f1;
   --svg-legend-fill: #f4f2ec;
-  --svg-blue-text: #2b4acb;
-  --svg-orange-text: #8a6310;
-  --svg-green-text: #22704a;
-  --svg-purple-text: #5b3aa8;
-  --svg-yellow-text: #7a5c00;
-  --svg-pink-text: #9f3522;
-  --svg-teal-text: #0f6b63;
-  --svg-brown-text: #6b4f33;
+  --svg-blue-text: #223cbc;
+  --svg-orange-text: #694400;
+  --svg-green-text: #005834;
+  --svg-purple-text: #5735a3;
+  --svg-yellow-text: #644700;
+  --svg-pink-text: #8e2513;
+  --svg-teal-text: #00564f;
+  --svg-brown-text: #61462b;
   --svg-dark-text: #15171c;
   --svg-mid-text: #3f434c;
-  --svg-light-text: #5d616b;
-  --svg-faint-text: #6c7079;
+  --svg-light-text: #484c55;
+  --svg-faint-text: #494c54;
   --svg-stroke: #6c7079;
   --svg-grid: rgba(21, 23, 28, 0.07);
   --svg-legend-stroke: #cfcabd;
@@ -368,11 +374,11 @@
   /* italic correction before the upright word that follows */
   padding-right: 0.06em;
 }
-/* On paper the bright gilt is too light for text; the guide's deep gilt
-   keeps 3:1 at display sizes. */
+/* On paper the bright gilt is too light for text; the display gilt keeps
+   4.5:1 at display sizes. */
 :root.light .hero-title em,
 :root.light .hero-em {
-  color: var(--brand-gilt-deep);
+  color: var(--brand-gilt-display);
 }
 
 /* The hero's model line re-justifies by animating this per-gap shift
@@ -430,28 +436,28 @@
 }
 
 /* Syntax highlighting — dark: gilt keywords, vermilion strings, blue values
-   (AA ≥ 4.5:1 on the code surface); light: blue keywords, vermilion
+   (AAA ≥ 7:1 on every code surface); light: blue keywords, vermilion
    strings, gilt values. Tokens, so a night section inside the light theme
    (`.on-night`) keeps the dark set. */
 :root,
 :root.dark,
 .on-night {
   --syn-keyword: #e3b23c;
-  --syn-string: #f08a74;
-  --syn-comment: #858b97;
+  --syn-string: #fe9881;
+  --syn-comment: #adb3bf;
   --syn-type: #b9bcc4;
-  --syn-punctuation: #9097a3;
+  --syn-punctuation: #adb4c0;
   --syn-property: #f4f1ea;
-  --syn-value: #8ea2ff;
+  --syn-value: #9bb0ff;
 }
 :root.light {
-  --syn-keyword: #2b4acb;
-  --syn-string: #9f3522;
-  --syn-comment: #5d616b;
+  --syn-keyword: #223cbc;
+  --syn-string: #8e2513;
+  --syn-comment: #484c55;
   --syn-type: #3f434c;
-  --syn-punctuation: #5d616b;
+  --syn-punctuation: #484c55;
   --syn-property: #15171c;
-  --syn-value: #8a6310;
+  --syn-value: #694400;
 }
 .syntax-keyword { color: var(--syn-keyword); }
 .syntax-string { color: var(--syn-string); }
@@ -472,6 +478,11 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  /* The rule above also makes every property transition (the initial
+     transition-property is "all"): keep the focus ring from easing in. */
+  :focus-visible {
+    transition-property: none !important;
   }
 }
 
@@ -528,6 +539,16 @@ html { font-size: 18px; }
 .skip-to-content:focus {
   left: 1rem;
 }
+/* The skip link's target takes focus without a ring: it is not a control. */
+main[tabindex="-1"]:focus {
+  outline: none;
+}
+/* Keyboard focus and in-page jumps stop below the sticky navbar, so a
+   focused control is never under it (WCAG 2.4.11/2.4.12); the Cookbook
+   adds its filter bar in cookbook.css. */
+html {
+  scroll-padding-top: 5.5rem;
+}
 
 /* ── Part colours ──
    `--part` fills bands and stripes, `--part-ink` sets text on the page
@@ -543,7 +564,7 @@ html { font-size: 18px; }
   --part-on: var(--brand-night);
 }
 .part-vermilion {
-  --part: var(--brand-vermilion);
+  --part: var(--brand-vermilion-band);
   --part-ink: var(--vermilion);
   --part-on: #ffffff;
 }
@@ -630,6 +651,12 @@ html { font-size: 18px; }
   display: none;
   position: absolute;
   right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
   padding-right: 0.5rem;
   font-family: var(--font-mono);
   font-style: normal;
@@ -642,8 +669,12 @@ html { font-size: 18px; }
 }
 @media (min-width: 1024px) {
   .docs-heading-anchor {
-    display: inline;
+    display: inline-flex;
   }
+}
+/* h2 carries its rule in a 1rem top padding: centre on the text. */
+.docs-content h2 > .docs-heading-anchor {
+  top: calc(50% + 0.5rem);
 }
 .docs-heading:hover .docs-heading-anchor,
 .docs-heading-anchor:focus {
@@ -908,6 +939,7 @@ html { font-size: 18px; }
 }
 .docs-content .docs-codepen-run {
   flex-shrink: 0;
+  min-height: 2.5rem;
   border: 1px solid var(--part, var(--brand));
   border-radius: 4px;
   padding: 0.3rem 0.75rem;
@@ -942,7 +974,8 @@ html { font-size: 18px; }
   border-top: 1px solid var(--rule);
 }
 .docs-content .docs-codepen-code summary {
-  padding: 0.4rem 0.75rem;
+  min-height: 2.5rem;
+  padding: 0.65rem 0.75rem;
   font-family: var(--font-mono);
   font-size: 0.75rem;
   color: var(--slate);
@@ -965,4 +998,208 @@ html { font-size: 18px; }
 }
 .docs-content .docs-codepen-error {
   color: var(--foreground);
+}
+
+/* ══ Reading preferences (WCAG 1.4.8 Visual Presentation) ══════════════
+   The site is set justified and book-like by default. The reader's choices
+   (components/reading) land as `data-rp-*` attributes on <html>, written
+   before the first paint, and apply to every prose surface: docs, the
+   home page's book prose, legal pages, Cookbook write-ups and the plain
+   paragraphs of each page's main content. The Sandbox has no <main> and
+   keeps its own presentation. */
+
+/* Alignment: ragged right, no automatic hyphenation. */
+html[data-rp-align="left"] :is(.docs-content, .book-prose, .text-justify, .rp-prose),
+html[data-rp-align="left"] :is(.docs-content, .book-prose, .text-justify, .rp-prose) :is(p, li, dd, blockquote),
+html[data-rp-align="left"] #main-content :is(p, li, dd, blockquote) {
+  text-align: start;
+  hyphens: manual;
+  -webkit-hyphens: manual;
+}
+
+/* Line spacing: 1.8 lines, and paragraphs 1.5 times that apart. */
+html[data-rp-spacing="wide"] :is(.docs-content, .book-prose, .text-justify, .rp-prose),
+html[data-rp-spacing="wide"] #main-content :is(p, li, dd, blockquote, figcaption, td, th) {
+  line-height: 1.8;
+}
+html[data-rp-spacing="wide"] :is(.docs-content, .book-prose, .text-justify, .rp-prose) :is(p, ul, ol, dl, blockquote) + :is(p, ul, ol, dl, blockquote),
+html[data-rp-spacing="wide"] #main-content p + p {
+  margin-block-start: 2.7em;
+}
+html[data-rp-spacing="wide"] .book-prose p + p {
+  text-indent: 0;
+}
+
+/* Line length: 80 characters at most (about 36em of Lora or Geist), 40
+   glyphs in Chinese; two-column prose becomes one column. */
+html[data-rp-width="narrow"] #main-content :is(p, li, dd, blockquote),
+html[data-rp-width="narrow"] :is(.docs-content, .book-prose, .text-justify, .rp-prose) :is(p, li, dd, blockquote) {
+  max-inline-size: 36em;
+}
+html[data-rp-width="narrow"]:lang(zh) #main-content :is(p, li, dd, blockquote),
+html[data-rp-width="narrow"]:lang(zh) :is(.docs-content, .book-prose, .text-justify, .rp-prose) :is(p, li, dd, blockquote) {
+  max-inline-size: 40em;
+}
+html[data-rp-width="narrow"] :is(.book-prose, .text-justify, .rp-prose) {
+  columns: auto;
+  column-count: 1;
+  max-inline-size: 36em;
+}
+html[data-rp-width="narrow"]:lang(zh) :is(.book-prose, .text-justify, .rp-prose) {
+  max-inline-size: 40em;
+}
+
+/* Colours: high contrast (pure black on white, white on black in the dark
+   theme) and warm paper (sepia), each through the theme tokens. The night
+   bands (.on-night) keep their own. */
+html.light[data-rp-colors="contrast"] {
+  --brand-gilt-display: #553700;
+  --brand-gilt-deep: #553700;
+  --background: #ffffff;
+  --foreground: #000000;
+  --surface: #ffffff;
+  --surface-2: #f0f0f0;
+  --elevated: #ffffff;
+  --paper: #ffffff;
+  --card: #ffffff;
+  --card-foreground: #000000;
+  --popover: #ffffff;
+  --popover-foreground: #000000;
+  --secondary: #f0f0f0;
+  --secondary-foreground: #000000;
+  --muted: #f0f0f0;
+  --muted-foreground: #1a1a1a;
+  --accent: #f0f0f0;
+  --accent-foreground: #000000;
+  --brand: #1a2f9a;
+  --brand-hover: #000000;
+  --accent-blue: #1a2f9a;
+  --gilt: #553700;
+  --vermilion: #7a1a08;
+  --slate: #1a1a1a;
+  --rule: #767676;
+  --rule-strong: #000000;
+  --border: #767676;
+  --input: #000000;
+  --grid-line: transparent;
+  --callout-bg: #ffffff;
+  --table-head-bg: #000000;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #000000;
+  --sidebar-border: #767676;
+}
+html:not(.light)[data-rp-colors="contrast"] {
+  --brand-gilt: #f2c14e;
+  --background: #000000;
+  --foreground: #ffffff;
+  --surface: #000000;
+  --surface-2: #141414;
+  --elevated: #000000;
+  --paper: #000000;
+  --card: #000000;
+  --card-foreground: #ffffff;
+  --popover: #000000;
+  --popover-foreground: #ffffff;
+  --secondary: #141414;
+  --secondary-foreground: #ffffff;
+  --muted: #141414;
+  --muted-foreground: #e6e6e6;
+  --accent: #141414;
+  --accent-foreground: #ffffff;
+  --brand: #f2c14e;
+  --brand-hover: #ffffff;
+  --accent-blue: #b8c6ff;
+  --gilt: #f2c14e;
+  --vermilion: #ffb09c;
+  --slate: #e6e6e6;
+  --rule: #8c8c8c;
+  --rule-strong: #ffffff;
+  --border: #8c8c8c;
+  --input: #ffffff;
+  --grid-line: transparent;
+  --callout-bg: #000000;
+  --table-head-bg: #141414;
+  --sidebar: #000000;
+  --sidebar-foreground: #ffffff;
+  --sidebar-border: #8c8c8c;
+}
+html.light[data-rp-colors="sepia"] {
+  --brand-gilt-display: #603c00;
+  --brand-gilt-deep: #603c00;
+  --background: #f5ecd7;
+  --foreground: #18120a;
+  --surface: #f2e8d0;
+  --surface-2: #e6d9bb;
+  --elevated: #faf4e6;
+  --paper: #faf4e6;
+  --card: #faf4e6;
+  --card-foreground: #18120a;
+  --popover: #faf4e6;
+  --popover-foreground: #18120a;
+  --secondary: #e6d9bb;
+  --secondary-foreground: #2a2015;
+  --muted: #e6d9bb;
+  --muted-foreground: #4d4030;
+  --accent: #e6d9bb;
+  --accent-foreground: #2a2015;
+  --brand: #1c32b1;
+  --brand-hover: #15268a;
+  --accent-blue: #1c32b1;
+  --gilt: #603c00;
+  --vermilion: #871500;
+  --slate: #4d4030;
+  --rule: #d6c49e;
+  --rule-strong: #b9a275;
+  --border: #d6c49e;
+  --input: #b9a275;
+  --grid-line: rgba(42, 32, 21, 0.05);
+  --callout-bg: #f2e8d0;
+  --sidebar: #f0e5cc;
+  --sidebar-foreground: #2a2015;
+  --sidebar-border: #d6c49e;
+}
+html:not(.light)[data-rp-colors="sepia"] {
+  --brand-gilt: #e1ab2c;
+  --background: #1e1912;
+  --foreground: #f0e5cc;
+  --surface: #28211a;
+  --surface-2: #2e271e;
+  --elevated: #2a231b;
+  --paper: #28211a;
+  --card: #28211a;
+  --card-foreground: #f0e5cc;
+  --popover: #2a231b;
+  --popover-foreground: #f0e5cc;
+  --secondary: #2e271e;
+  --secondary-foreground: #f0e5cc;
+  --muted: #2e271e;
+  --muted-foreground: #cbbd9f;
+  --accent: #2e271e;
+  --accent-foreground: #f0e5cc;
+  --slate: #cbbd9f;
+  --rule: #42382a;
+  --rule-strong: #57493a;
+  --border: #42382a;
+  --input: #57493a;
+  --grid-line: rgba(240, 229, 204, 0.05);
+  --callout-bg: #28211a;
+  --table-head-bg: #42382a;
+  --sidebar: #19150f;
+  --sidebar-foreground: #f0e5cc;
+  --sidebar-border: #42382a;
+}
+/* Code keeps the paler paper so its syntax colours stay at 7:1. */
+html.light[data-rp-colors="sepia"] :is(.docs-content pre, .cb-excerpt) {
+  background: var(--elevated);
+}
+/* ══ End of reading preferences ═══════════════════════════════════════ */
+
+/* Links in docs table cells are not inside running text, so they get the
+   AAA 44px target (2.5.5) without changing the row's look. */
+.docs-content :is(td, th) a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  min-width: 2.75rem;
 }

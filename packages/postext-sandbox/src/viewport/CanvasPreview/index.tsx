@@ -84,6 +84,10 @@ interface HeldChapterDoc {
 export const CanvasPreview = forwardRef<CanvasPreviewHandle, CanvasPreviewProps>(
 function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCountChange, onCurrentPageChange }, ref) {
   const dispatch = useSandboxDispatch();
+  const pageLabelTemplate = useSandboxSelector((s) => s.labels.canvasPageLabel);
+  const regionLabel = useSandboxSelector((s) => s.labels.canvasPreviewRegion);
+  const pageLabelRef = useRef(pageLabelTemplate);
+  pageLabelRef.current = pageLabelTemplate;
   const sharedDocRef = useSandboxDocRef();
   const layoutSource = useLayoutSource();
   const { chapterId: activeChapterId } = layoutSource;
@@ -758,6 +762,9 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
       navigateRef,
       resourcesRef,
       pageSourceRef,
+      (pageIndex, count) => pageLabelRef.current
+        .replace('__n__', String(pageIndex + 1))
+        .replace('__total__', String(count)),
     );
     drawnOverlaysRef.current = new Set();
 
@@ -979,10 +986,16 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     };
   }, [docVersion, viewMode]);
 
+  // The scroller is a named region that takes the keyboard (arrow keys,
+  // Page Up/Down, Home/End scroll it): the pages are bitmaps, so nothing
+  // inside it can take focus (WCAG 2.1.1).
   return (
     <div
       ref={containerRef}
-      className="h-full w-full"
+      role="region"
+      aria-label={regionLabel}
+      tabIndex={0}
+      className="h-full w-full focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--brand)"
       style={{ backgroundColor: 'var(--surface)', overflow: 'auto', scrollbarGutter: 'stable' }}
     />
   );

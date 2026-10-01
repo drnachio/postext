@@ -39,7 +39,7 @@ export function DocsPartsNav({ docs, onNavigate }: { docs: DocEntry[]; onNavigat
             <span aria-hidden="true" className="size-2.5 shrink-0 bg-(--part)" />
             {t("part")} {part.number} · {t(PART_LABEL_KEY[part.key])}
           </p>
-          <ul className="mt-2 space-y-0.5">
+          <ul className="mt-2">
             {partDocs.map((doc) => {
               n += 1;
               const meta = doc.locales[locale]!;
@@ -52,7 +52,7 @@ export function DocsPartsNav({ docs, onNavigate }: { docs: DocEntry[]; onNavigat
                     onClick={onNavigate}
                     aria-current={isActive ? "page" : undefined}
                     className={cn(
-                      "group flex items-baseline gap-2.5 rounded-r-md border-l-[3px] py-1.5 pr-2 pl-3 font-sans text-[0.8rem] transition-colors 2xl:text-sm",
+                      "group flex min-h-10 items-center gap-2.5 rounded-r-md border-l-[3px] py-1 pr-2 pl-3 font-sans text-[0.8rem] transition-colors 2xl:text-sm",
                       isActive
                         ? "border-(--part) bg-surface font-semibold text-foreground"
                         : "border-transparent text-slate hover:border-rule-strong hover:text-foreground",

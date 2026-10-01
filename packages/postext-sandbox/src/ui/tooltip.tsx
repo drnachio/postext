@@ -2,6 +2,7 @@
 
 import type { ReactElement, ReactNode } from 'react';
 import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip';
+import { usePortalContainer } from './portal';
 import { POPUP_SURFACE, TOOLTIP_Z_INDEX } from './surface';
 
 export type TooltipSide = 'top' | 'right' | 'bottom' | 'left';
@@ -27,10 +28,11 @@ interface TooltipProps {
 /** Positioned by Base UI (floating-ui): follows the trigger through scroll
  *  and resize, flips when it would leave the viewport. */
 export function Tooltip({ content, side = 'top', children }: TooltipProps) {
+  const portalContainer = usePortalContainer();
   return (
     <TooltipPrimitive.Root>
       <TooltipPrimitive.Trigger render={children} />
-      <TooltipPrimitive.Portal>
+      <TooltipPrimitive.Portal container={portalContainer}>
         <TooltipPrimitive.Positioner
           side={side}
           sideOffset={6}
@@ -46,7 +48,8 @@ export function Tooltip({ content, side = 'top', children }: TooltipProps) {
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
               padding: '4px 8px',
               maxWidth: 208,
-              pointerEvents: 'none',
+              // Hoverable (WCAG 1.4.13): the pointer can move onto the
+              // tooltip without it closing; Escape dismisses it.
             }}
           >
             {content}

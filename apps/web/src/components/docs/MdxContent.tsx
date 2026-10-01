@@ -1,20 +1,35 @@
 import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { getLocale } from "next-intl/server";
 import { compileDocsMdx } from "@/lib/mdx";
 import * as illustrations from "./illustrations";
 import { CodePenExample } from "./CodePenExample";
 import { TutorialVideo } from "./TutorialVideo";
+import { NewTabNote } from "@/components/ui/NewTabNote";
+
+/** The plain text of rendered children (inline code, emphasis and all). */
+function plainText(node: React.ReactNode): string {
+  if (node == null || typeof node === "boolean") return "";
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(plainText).join("");
+  if (typeof node === "object" && "props" in node) {
+    return plainText((node.props as { children?: React.ReactNode }).children);
+  }
+  return "";
+}
 
 function createHeading(level: 1 | 2 | 3) {
   const Tag = `h${level}` as const;
   return function Heading({ id, children }: { id?: string; children: React.ReactNode }) {
-    const text = typeof children === "string" ? children : String(children);
+    const t = useTranslations("Docs");
+    const text = plainText(children);
     return (
       <Tag id={id} className="docs-heading group" style={{ scrollMarginTop: "var(--docs-nav-h, 5rem)" }}>
         {id && (
           <a
             href={`#${id}`}
             className="docs-heading-anchor"
-            aria-label={`Link to ${text}`}
+            aria-label={t("headingLink", { heading: text })}
           >
             #
           </a>
@@ -33,7 +48,12 @@ function MdxLink({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAn
       </Link>
     );
   }
-  return <a href={href} {...props}>{children}</a>;
+  return (
+    <a href={href} {...props}>
+      {children}
+      {props.target === "_blank" && <NewTabNote />}
+    </a>
+  );
 }
 
 const components = {
@@ -75,9 +95,14 @@ interface MdxContentProps {
   skipTitle?: boolean;
   /** Extra MDX components, merged over the docs map (the Cookbook's). */
   components?: Parameters<typeof compileDocsMdx>[1];
+  /** The text's language, for the abbreviations' expansions (the request's
+   *  locale when omitted). */
+  locale?: string;
+  /** Abbreviations already expanded earlier on the page; see compileDocsMdx. */
+  abbrSeen?: Set<string>;
 }
 
-export async function MdxContent({ source, skipTitle, components: extra }: MdxContentProps) {
+export async function MdxContent({ source, skipTitle, components: extra, locale, abbrSeen }: MdxContentProps) {
   let cleaned = source.replace(
     /export\s+const\s+metadata\s*=\s*\{[\s\S]+?\};\s*/,
     ""
@@ -89,7 +114,10 @@ export async function MdxContent({ source, skipTitle, components: extra }: MdxCo
 
   cleaned = wrapScrollableElements(cleaned);
 
-  const { content } = await compileDocsMdx(cleaned, extra ? { ...components, ...extra } : components);
+  const { content } = await compileDocsMdx(cleaned, extra ? { ...components, ...extra } : components, {
+    locale: locale ?? (await getLocale()),
+    abbrSeen,
+  });
 
   return (
     <div className="docs-content prose prose-invert max-w-none">

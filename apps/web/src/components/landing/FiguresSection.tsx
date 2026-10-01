@@ -1,4 +1,5 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { abbreviate } from "@/components/brand/abbreviate";
 import { Kicker } from "@/components/brand/Kicker";
 
 const KEYS = ["measure", "renderers", "pdf", "server"] as const;
@@ -7,6 +8,9 @@ const KEYS = ["measure", "renderers", "pdf", "server"] as const;
  *  figures in balanced columns. */
 export async function FiguresSection() {
   const t = await getTranslations("Figures");
+  const locale = await getLocale();
+  const seen = new Set<string>();
+  const ids = ["pdf-ua", "cmyk", "mit"];
   return (
     <section aria-labelledby="figures-heading" className="mx-auto max-w-6xl px-6 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
       <div className="reveal relative overflow-hidden rounded-sm bg-ink px-6 py-8 text-mist shadow-[0_30px_60px_-30px_rgba(14,16,20,0.6)] md:px-10 md:py-10 dark:ring-1 dark:ring-white/5">
@@ -22,9 +26,9 @@ export async function FiguresSection() {
                 <span
                   className={`display block text-4xl md:text-5xl ${i === 0 ? "text-gold" : "text-white"}`}
                 >
-                  {t(`${k}Value`)}
+                  {abbreviate(t(`${k}Value`), locale, ids, seen)}
                 </span>
-                <span className="mt-3 block font-sans text-sm leading-relaxed text-mist/90">{t(`${k}Label`)}</span>
+                <span className="mt-3 block font-sans text-sm leading-relaxed text-mist">{abbreviate(t(`${k}Label`), locale, ids, seen)}</span>
               </dd>
             </div>
           ))}

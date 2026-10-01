@@ -1,6 +1,7 @@
 ---
 title: "在Web Worker里排版的实时编辑器"
 summary: "Markdown旁边是一张口袋书页面：一个从blob启动的工作线程用自己的字体排本章，每次按键都会取消正在进行的构建。"
+plain: "《时间机器》袖珍本的实时编辑器。每打一个字，页面都在后台重新排版，屏幕不会因此卡住。"
 description: "在从同源blob启动的Web Worker里排Postext页面：把字体文件发给它，每次按键取消构建，在主线程上绘制。"
 question: "长文本排版时，怎样借助Web Worker处理字体和取消构建，让编辑器保持流畅？"
 aliases: ["Web Worker", "工作线程", "后台线程", "createLayoutWorker", "registerFonts", "AbortController", "取消构建", "实时预览", "主线程之外", "Markdown编辑器", "无头", "headless", "Node", "live preview", "off the main thread", "cancel a build", "blob URL"]

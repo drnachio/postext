@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useId, useMemo, useRef } from 'react';
 import { DEFAULT_CHIP_STYLES, defaultResourceTypes } from 'postext';
 import { useCodeMirror } from './useCodeMirror';
 import { EditorToolbar } from './EditorToolbar';
@@ -40,6 +40,7 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
     },
   };
 
+  const hintId = useId();
   const { containerRef, viewRef } = useCodeMirror({
     initialValue: state.markdown,
     externalValue: state.markdown,
@@ -50,6 +51,7 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
     persistedStateRef: editorStateRef,
     getRefContext: () => refContextRef.current,
     ariaLabel: state.labels.markdownEditor,
+    ariaDescribedBy: hintId,
   });
 
   // If this editor unmounts (e.g. user switches to another viewport tab),
@@ -93,6 +95,7 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column' as const, flex: '1 1 0%', minHeight: 0 }}>
       <EditorToolbar viewRef={viewRef} />
+      <p id={hintId} className="sr-only">{state.labels.editorKeyboardHint}</p>
       <div style={{ flex: '1 1 0%', minHeight: 0, position: 'relative' }}>
         <div ref={containerRef} style={{ position: 'absolute', inset: 0, overflow: 'hidden' }} />
       </div>

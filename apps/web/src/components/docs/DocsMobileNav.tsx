@@ -43,13 +43,13 @@ export function DocsMobileNav({ docs, toc }: DocsMobileNavProps) {
               <h3 className="kicker mb-2 text-slate">
                 {t("onThisPage")}
               </h3>
-              <ul className="space-y-1">
+              <ul>
                 {toc.map((item) => (
                   <li key={item.id}>
                     <a
                       href={`#${item.id}`}
                       onClick={() => setOpen(false)}
-                      className={`block rounded-md py-2 font-sans text-sm text-slate hover:text-foreground ${
+                      className={`flex min-h-10 items-center rounded-md py-1 font-sans text-sm text-slate hover:text-foreground ${
                         item.level === 3 ? "pl-6" : "pl-3"
                       }`}
                     >

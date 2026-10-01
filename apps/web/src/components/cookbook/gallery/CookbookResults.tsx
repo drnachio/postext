@@ -23,6 +23,7 @@ import {
 } from "./model";
 import { FILTERED_ATTR } from "./prepaint";
 import { clearFilters, removeSelection, resetGallery, useGallery } from "./useGallery";
+import { NewTabNote } from "@/components/ui/NewTabNote";
 
 /** Plates per page of results ("Show more" adds as many again). */
 const PAGE = 48;
@@ -118,7 +119,7 @@ export function CookbookResults({ locale, parts }: { locale: Locale; parts: Resu
               type="button"
               onClick={() => thenFocus({ chip: i }, () => removeSelection(locale, chip.key, chip.id))}
               aria-label={t("removeFilter", { label: chip.text })}
-              className="inline-flex h-11 items-center gap-1.5 rounded-full bg-surface pr-2.5 pl-3 font-sans text-[0.78rem] font-medium transition-colors hover:bg-surface-2 sm:h-8 sm:pr-2"
+              className="inline-flex h-11 items-center gap-1.5 rounded-full bg-surface pr-2.5 pl-3 font-sans text-[0.78rem] font-medium transition-colors hover:bg-surface-2 sm:h-10 sm:pr-2"
             >
               {chip.text}
               <XIcon aria-hidden="true" className="size-3.5 text-slate" />
@@ -127,7 +128,7 @@ export function CookbookResults({ locale, parts }: { locale: Locale; parts: Resu
           <button
             type="button"
             onClick={() => thenFocus("search", () => clearFilters(locale))}
-            className="ml-1 min-h-11 rounded-md px-2 font-sans text-[0.78rem] font-semibold text-(--brand) hover:underline sm:min-h-8"
+            className="ml-1 min-h-11 rounded-md px-2 font-sans text-[0.78rem] font-semibold text-(--brand) hover:underline sm:min-h-10"
           >
             {t("clearAll")}
           </button>
@@ -297,6 +298,7 @@ function GapCallout({ gap, t, bySlug }: { gap: GapEntry; t: Translate; bySlug: M
               className="font-semibold text-(--part-ink) underline underline-offset-4"
             >
               {t("askRecipe")} ↗
+              <NewTabNote />
             </a>
           </>
         )}
@@ -372,6 +374,7 @@ function EmptyState({
               className={`${BUTTON} bg-surface hover:bg-surface-2`}
             >
               {t("askRecipe")} <span aria-hidden="true">↗</span>
+              <NewTabNote />
             </a>
             <button
               type="button"
@@ -412,7 +415,7 @@ export function ResultsSkeleton({ view = "plates", chips = 0 }: { view?: ViewId;
       {chips > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {Array.from({ length: chips }, (_, i) => (
-            <span key={i} className="h-9 w-36 rounded-full bg-surface sm:h-8" />
+            <span key={i} className="h-9 w-36 rounded-full bg-surface sm:h-10" />
           ))}
         </div>
       )}

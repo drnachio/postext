@@ -205,7 +205,7 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
       />
       {widthMode === 'custom' && (
         <DimensionInput
-          label={labels.headerFooterElementWidth}
+          label={labels.headerFooterElementWidth} tooltip={labels.headerFooterElementWidthTooltip}
           value={sizeDim(raw.placement.size?.width, DEFAULT_CUSTOM_WIDTH)}
           onChange={(dim: Dimension) => updateSize({ width: dim })}
           min={0}

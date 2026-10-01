@@ -34,7 +34,7 @@ export function FrontispieceSearch({
 }) {
   const failed = useCatalog(locale).status === "error";
   return (
-    <form role="search" action={`/${locale}/cookbook`} method="get" onSubmit={(e) => e.preventDefault()}>
+    <form role="search" aria-label={label} action={`/${locale}/cookbook`} method="get" onSubmit={(e) => e.preventDefault()}>
       <label htmlFor="cb-hero-search" className="sr-only">
         {label}
       </label>
@@ -55,7 +55,7 @@ export function FrontispieceSearch({
             handOff(e.currentTarget);
           }}
           onCompositionEnd={(e) => handOff(e.currentTarget)}
-          className="cb-search-input h-12 w-full rounded-md bg-white/[0.07] pr-12 pl-10 font-sans text-[0.9rem] text-cream shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)] outline-none placeholder:text-mist/70 focus-visible:shadow-[inset_0_0_0_2px_var(--brand-gilt)] disabled:opacity-70"
+          className="cb-search-input h-12 w-full rounded-md bg-white/[0.07] pr-12 pl-10 font-sans text-[0.9rem] text-cream shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)] outline-none placeholder:text-mist focus-visible:shadow-[inset_0_0_0_2px_var(--brand-gilt)] disabled:opacity-70"
         />
         <kbd aria-hidden="true" className="cb-kbd pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 sm:block">
           /

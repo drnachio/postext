@@ -19,7 +19,7 @@ interface CodeBlockProps {
 }
 
 const buttonClass =
-  "flex items-center gap-1.5 rounded-md border border-rule bg-background/80 px-2.5 py-1 font-sans text-xs font-medium text-slate backdrop-blur hover:text-foreground max-sm:size-8 max-sm:justify-center max-sm:p-0";
+  "flex min-h-10 min-w-10 items-center justify-center gap-1.5 rounded-md border border-rule bg-background/80 px-2.5 py-1 font-sans text-xs font-medium text-slate backdrop-blur hover:text-foreground max-sm:p-0";
 
 export function CodeBlock({ code, copyable = true, title, className, codepen, children }: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
@@ -35,7 +35,7 @@ export function CodeBlock({ code, copyable = true, title, className, codepen, ch
   return (
     <div className={cn("group relative overflow-hidden rounded-lg border border-rule bg-surface", className)}>
       {title && (
-        <div className="flex items-center gap-2 border-b border-rule px-4 py-2.5">
+        <div className="flex min-h-[3.25rem] items-center gap-2 border-b border-rule px-4 py-2.5">
           <span aria-hidden="true" className="flex gap-1.5">
             <span className="size-2.5 rounded-full bg-blue" />
             <span className="size-2.5 rounded-full bg-gold" />
@@ -46,8 +46,8 @@ export function CodeBlock({ code, copyable = true, title, className, codepen, ch
       )}
       <pre
         className="overflow-x-auto p-5 font-mono text-[0.8rem] leading-7 md:p-6 2xl:p-8 2xl:text-base 2xl:leading-8"
-        tabIndex={0}
-        aria-label={t("codeAriaLabel")}
+        data-scroll-region=""
+        data-scroll-label={title}
       >
         <code>{children}</code>
       </pre>

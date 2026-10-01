@@ -194,7 +194,7 @@ export function FontsPanel() {
       />
       <PanelBody padded>
         <BookFonts />
-        <h3 className="mb-1 text-[0.6rem] font-semibold tracking-[0.12em] text-(--slate) uppercase">
+        <h3 className="mb-1 text-[0.72rem] font-semibold tracking-[0.12em] text-(--slate) pt-caps">
           {labels.customFonts}
         </h3>
         <p className="mb-3 text-[0.68rem] leading-[1.4] text-(--slate)">

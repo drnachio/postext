@@ -34,7 +34,7 @@ function PanelNav() {
   const labels = useSandboxLabels();
   const activePanel = useSandboxSelector((s) => s.activePanel);
   const presetStale = useSandboxPresetStale();
-  const navRef = useRef<HTMLElement>(null);
+  const navRef = useRef<HTMLDivElement>(null);
   const buttonRefs = useRef<Map<PanelId, HTMLButtonElement>>(new Map());
   const [indicator, setIndicator] = useState<{ top: number; height: number } | null>(null);
   const hasAnimated = useRef(false);
@@ -83,7 +83,7 @@ function PanelNav() {
   };
 
   return (
-    <nav ref={navRef} className="relative flex w-full flex-col items-stretch gap-0.5" aria-label={labels.panelsNav} onKeyDown={onKeyDown}>
+    <div ref={navRef} role="group" className="relative flex w-full flex-col items-stretch gap-0.5" aria-label={labels.panelsNav} onKeyDown={onKeyDown}>
       {indicator && (
         <div
           aria-hidden="true"
@@ -125,7 +125,7 @@ function PanelNav() {
               aria-pressed={isActive}
               tabIndex={id === focusable ? 0 : -1}
               className={cn(
-                'relative flex w-full cursor-pointer flex-col items-center justify-center gap-0.5 rounded-md py-1.5 transition-colors',
+                'relative flex min-h-11 w-full cursor-pointer flex-col items-center justify-center gap-0.5 rounded-md py-1.5 transition-colors',
                 'focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
                 isActive ? 'bg-(--surface) text-(--brand)' : 'text-(--slate) hover:bg-(--surface) hover:text-(--foreground)',
               )}
@@ -153,31 +153,29 @@ function PanelNav() {
           </Tooltip>
         );
       })}
-    </nav>
+    </div>
   );
 }
 
 export function ActivityBar({ themeToggle, languageSwitcher, homeUrl, homeLink }: ActivityBarProps) {
   const labels = useSandboxLabels();
   return (
-    <div
-      className="flex h-full w-[3.7rem] flex-col items-center border-r px-1 pb-2"
-      style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--background)' }}
-      role="toolbar"
+    <nav
+      className="flex h-full w-[3.7rem] shrink-0 flex-col items-center overflow-y-auto border-r px-1 pb-2"
+      style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--background)', scrollbarWidth: 'none' }}
       aria-label={labels.activityBar}
-      aria-orientation="vertical"
     >
       {/* Home logo */}
       {homeLink ? (
         // The logo sits in the top band, level with the panel's title.
-        <div className="-mx-1 mb-2 flex h-9 w-[calc(100%+0.5rem)] shrink-0 items-center justify-center border-b" style={{ borderColor: 'var(--rule)' }}>
+        <div className="-mx-1 mb-2 flex min-h-12 w-[calc(100%+0.5rem)] shrink-0 items-center justify-center border-b" style={{ borderColor: 'var(--rule)' }}>
           {homeLink}
         </div>
       ) : homeUrl ? (
         <Tooltip content="Postext" side="right">
           <a
             href={homeUrl}
-            className="-mx-1 mb-2 flex h-9 w-[calc(100%+0.5rem)] shrink-0 items-center justify-center border-b transition-colors focus-visible:outline-1 focus-visible:-outline-offset-1"
+            className="-mx-1 mb-2 flex min-h-12 w-[calc(100%+0.5rem)] shrink-0 items-center justify-center border-b transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2"
             style={{ outlineColor: 'var(--brand)', borderColor: 'var(--rule)' }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = 'var(--surface)';
@@ -204,22 +202,22 @@ export function ActivityBar({ themeToggle, languageSwitcher, homeUrl, homeLink }
       <div className="flex-1" />
 
       {/* Bottom controls */}
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-col items-center gap-1 pt-2">
         {/* Theme toggle slot */}
         {themeToggle && (
-          <div className="flex h-8 w-8 items-center justify-center">
+          <div className="flex h-11 w-11 items-center justify-center">
             {themeToggle}
           </div>
         )}
 
         {/* Language switcher slot */}
         {languageSwitcher && (
-          <div className="flex h-8 w-8 items-center justify-center">
+          <div className="flex h-11 w-11 items-center justify-center">
             {languageSwitcher}
           </div>
         )}
       </div>
-    </div>
+    </nav>
   );
 }
 
@@ -239,13 +237,14 @@ export function MobileNavBar() {
   ];
 
   return (
+    // Eight 44px targets do not fit a 320px screen in one row: below 352px
+    // the bar is two rows of four (WCAG 1.4.10, 2.5.5).
     <nav
-      className="flex shrink-0 items-stretch overflow-x-auto border-t"
+      className="grid shrink-0 grid-cols-8 items-stretch border-t max-[351px]:grid-cols-4"
       style={{
         borderColor: 'var(--rule)',
         backgroundColor: 'var(--background)',
         paddingBottom: 'env(safe-area-inset-bottom)',
-        scrollbarWidth: 'none',
       }}
       aria-label={labels.panelsNav}
     >
@@ -267,7 +266,7 @@ export function MobileNavBar() {
             aria-description={hint}
             aria-pressed={isActive}
             className={cn(
-              'relative flex min-w-[40px] flex-1 basis-0 cursor-pointer flex-col items-center justify-center gap-0.5 pt-1.5 pb-1 transition-colors',
+              'relative flex min-h-11 min-w-11 cursor-pointer flex-col items-center justify-center gap-0.5 pt-1.5 pb-1 transition-colors',
               'focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
               isActive ? 'text-(--brand)' : 'text-(--slate)',
             )}

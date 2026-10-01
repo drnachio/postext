@@ -2,8 +2,9 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/brand/Logo";
 import { Kicker } from "@/components/brand/Kicker";
+import { NewTabNote } from "@/components/ui/NewTabNote";
 
-const LINK = "max-md:inline-block max-md:py-1 font-sans text-sm text-mist/80 transition-colors hover:text-gold 2xl:text-base";
+const LINK = "inline-flex min-h-10 min-w-10 items-center font-sans text-sm text-mist transition-colors hover:text-gold 2xl:text-base";
 
 /** The colophon: night, the three part colours along the head, the mark
  *  and the typefaces the site is set in. */
@@ -20,8 +21,8 @@ export async function Footer() {
             <Link href="/" aria-label={nav("home")} className="inline-block rounded-md text-white">
               <Logo className="text-3xl" />
             </Link>
-            <p className="mt-5 max-w-sm font-body text-base leading-relaxed text-cream/80 italic">{t("tagline")}</p>
-            <p className="mt-4 font-sans text-sm text-mist/70">
+            <p className="mt-5 max-w-sm font-body text-base leading-relaxed text-cream italic">{t("tagline")}</p>
+            <p className="mt-4 font-sans text-sm text-mist">
               {t("builtWith")}{" "}
               <a
                 href="https://github.com/chenglou/pretext"
@@ -30,57 +31,64 @@ export async function Footer() {
                 className="text-cream underline decoration-gold/40 underline-offset-4 hover:decoration-gold"
               >
                 @chenglou/pretext
+                <NewTabNote />
               </a>
             </p>
           </div>
 
-          <nav aria-label="Footer navigation" className="grid grid-cols-2 gap-8 sm:grid-cols-3 md:col-span-7">
+          <nav aria-label={t("footerNav")} className="grid grid-cols-2 gap-8 sm:grid-cols-3 md:col-span-7">
             <div>
               <Kicker className="text-gold">{t("product")}</Kicker>
-              <ul className="mt-5 space-y-3">
+              <ul className="mt-3">
                 <li><Link href="/docs" className={LINK}>{t("docs")}</Link></li>
                 <li><Link href="/cookbook" className={LINK}>{t("cookbook")}</Link></li>
                 <li><Link href="/sandbox" className={LINK}>{t("sandbox")}</Link></li>
                 <li><Link href="/docs/skill" className={LINK}>{t("skill")}</Link></li>
+                <li><Link href="/glossary" className={LINK}>{t("glossary")}</Link></li>
               </ul>
             </div>
             <div>
               <Kicker className="text-gold">{t("resources")}</Kicker>
-              <ul className="mt-5 space-y-3">
+              <ul className="mt-3">
                 <li>
                   <a href="https://github.com/drnachio/postext" target="_blank" rel="noopener noreferrer" className={LINK}>
                     GitHub
+                    <NewTabNote />
                   </a>
                 </li>
                 <li>
                   <a href="https://www.npmjs.com/package/postext" target="_blank" rel="noopener noreferrer" className={LINK}>
                     npm
+                    <NewTabNote />
                   </a>
                 </li>
                 <li>
                   <a href="https://www.youtube.com/@Postext" target="_blank" rel="noopener noreferrer" className={LINK}>
                     YouTube
+                    <NewTabNote />
                   </a>
                 </li>
                 <li>
                   <a href="https://discord.gg/CSzm6hr8YD" target="_blank" rel="noopener noreferrer" className={LINK}>
                     Discord
+                    <NewTabNote />
                   </a>
                 </li>
               </ul>
             </div>
             <div>
               <Kicker className="text-gold">{t("legal")}</Kicker>
-              <ul className="mt-5 space-y-3">
+              <ul className="mt-3">
                 <li><Link href="/license" className={LINK}>{t("mitLicense")}</Link></li>
                 <li><Link href="/privacy-policy" className={LINK}>{t("privacyPolicy")}</Link></li>
                 <li><Link href="/cookie-policy" className={LINK}>{t("cookiePolicy")}</Link></li>
+                <li><Link href="/accessibility" className={LINK}>{t("accessibility")}</Link></li>
               </ul>
             </div>
           </nav>
         </div>
 
-        <div className="mt-12 flex flex-col gap-3 border-t border-white/10 pt-6 font-sans text-xs text-mist/60 md:flex-row md:items-center md:justify-between 2xl:text-sm">
+        <div className="mt-12 flex flex-col gap-3 border-t border-white/10 pt-6 font-sans text-xs text-mist md:flex-row md:items-center md:justify-between 2xl:text-sm">
           <p>{t("copyright")}</p>
           <p className="font-body italic">{t("colophon")}</p>
         </div>

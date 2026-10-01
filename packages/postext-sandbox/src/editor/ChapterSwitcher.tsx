@@ -114,8 +114,8 @@ export function ChapterSwitcher() {
         }}
         placeholder={labels.chapterFilter}
         aria-label={labels.chapterFilter}
-        className="w-full min-w-0 rounded border bg-transparent px-2 py-1 text-xs outline-none focus-visible:border-(--brand-hover)"
-        style={{ borderColor: 'var(--rule)', color: 'var(--foreground)' }}
+        className="min-h-11 w-full min-w-0 rounded border bg-transparent px-2 py-1 text-xs focus-visible:border-(--brand) focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-(--brand)"
+        style={{ borderColor: 'var(--pt-control-border)', color: 'var(--foreground)' }}
       />
       {/* Beside the list, which is the menu and holds menu items only. */}
       <div aria-live="polite">
@@ -147,13 +147,15 @@ export function ChapterSwitcher() {
         trigger={
           <button
             type="button"
-            aria-label={labels.chapterPicker}
             title={active?.title}
             className={cn(
-              'flex h-7 min-w-0 cursor-pointer items-center gap-1 rounded border-0 bg-transparent px-1.5 text-left',
-              'hover:bg-(--surface) focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--brand-hover)',
+              'flex min-h-11 min-w-0 cursor-pointer items-center gap-1 rounded border-0 bg-transparent px-1.5 text-left',
+              'hover:bg-(--surface) focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
             )}
           >
+            {/* The name starts with what the button does and goes on with
+                the visible text (WCAG 2.5.3). */}
+            <span className="sr-only">{labels.chapterPicker}: </span>
             {!single && (
               <span className="shrink-0 text-[10px] font-medium" style={{ color: 'var(--slate)', fontVariantNumeric: 'tabular-nums' }}>
                 {index + 1}/{total}

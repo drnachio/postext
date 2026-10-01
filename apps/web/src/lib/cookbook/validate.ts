@@ -692,14 +692,14 @@ export function validateRecipeSet(recipes: readonly { slug: string; meta: Recipe
 
 // ─── Write-up frontmatter ───────────────────────────────────────────────────
 
-const FRONTMATTER_KEYS = ["title", "summary", "description", "question", "aliases", "pageNotes"];
+const FRONTMATTER_KEYS = ["title", "summary", "plain", "description", "question", "aliases", "pageNotes"];
 
 /** [min, max] characters of each frontmatter text. A Chinese character
  *  carries about what two to three Latin letters do, and search snippets
  *  cut Chinese at about half the Latin length, so zh gets its own bounds. */
-const FRONTMATTER_LENGTHS: Record<"latin" | "zh", Record<"title" | "summary" | "description" | "question", [number, number]>> = {
-  latin: { title: [1, 60], summary: [60, 160], description: [120, 160], question: [1, 110] },
-  zh: { title: [1, 30], summary: [20, 90], description: [40, 90], question: [1, 55] },
+const FRONTMATTER_LENGTHS: Record<"latin" | "zh", Record<"title" | "summary" | "plain" | "description" | "question", [number, number]>> = {
+  latin: { title: [1, 60], summary: [60, 160], plain: [40, 240], description: [120, 160], question: [1, 110] },
+  zh: { title: [1, 30], summary: [20, 90], plain: [15, 120], description: [40, 90], question: [1, 55] },
 };
 
 /** Problems with a write-up's parsed frontmatter (types.ts `RecipeFrontmatter`). */
@@ -725,6 +725,7 @@ export function validateFrontmatter(fm: unknown, locale: Locale): string[] {
   const lengths = FRONTMATTER_LENGTHS[locale === "zh" ? "zh" : "latin"];
   text("title", ...lengths.title, true);
   text("summary", ...lengths.summary, true);
+  text("plain", ...lengths.plain, false);
   text("description", ...lengths.description, false);
   text("question", ...lengths.question, false);
   if (fm.aliases !== undefined) {

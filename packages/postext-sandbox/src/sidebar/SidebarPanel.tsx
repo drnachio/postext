@@ -4,10 +4,14 @@ import type { ReactNode } from 'react';
 import { useSandboxSelector } from '../context/SandboxContext';
 
 interface SidebarPanelProps {
+  /** Name of the open panel: the region is a landmark only while open. */
+  label?: string;
+  /** The splitter, drawn over the panel's right edge. */
+  handle?: ReactNode;
   children: ReactNode;
 }
 
-export function SidebarPanel({ children }: SidebarPanelProps) {
+export function SidebarPanel({ label, handle, children }: SidebarPanelProps) {
   const activePanel = useSandboxSelector((s) => s.activePanel);
   const sidebarPercent = useSandboxSelector((s) => s.sidebarPercent);
   const sidebarDragging = useSandboxSelector((s) => s.sidebarDragging);
@@ -15,8 +19,10 @@ export function SidebarPanel({ children }: SidebarPanelProps) {
   const widthValue = isOpen ? `${sidebarPercent}%` : '0%';
 
   return (
-    <div
-      className="h-full shrink-0 overflow-hidden"
+    <section
+      data-postext-sidebar=""
+      aria-label={isOpen ? label : undefined}
+      className="relative z-10 h-full shrink-0"
       style={{
         width: widthValue,
         // Settings rows need room for a label beside its control.
@@ -30,6 +36,7 @@ export function SidebarPanel({ children }: SidebarPanelProps) {
           {children}
         </div>
       </div>
-    </div>
+      {handle}
+    </section>
   );
 }

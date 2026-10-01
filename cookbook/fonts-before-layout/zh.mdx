@@ -1,6 +1,7 @@
 ---
 title: "排版前加载好所有字体的字体样张"
 summary: "一份四页的字体样张：第一次构建列出页面用到的每一款字体，pen加载它们、清空宽度缓存，再重新构建。"
+plain: "一本展示三款字体的四页样本册。示例说明为什么要等所有字体加载完再排版，否则行会在错误的位置断开。"
 description: "每个字体文件声明一个FontFace，读出Postext第一次构建所要的字体，加载它们并清空测量缓存，然后再构建。"
 question: "为什么我的断行会变，PDF里的词会叠在一起？怎样在排版前加载我自己的字体文件？"
 aliases: ["网页字体", "自托管字体", "字体加载", "后备字体", "字体样张", "字体检查", "断行变化", "web fonts", "self-hosted fonts", "FontFace", "document.fonts", "fallback font", "unicode-range", "latin-ext", "clearMeasurementCache", "type specimen"]

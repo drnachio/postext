@@ -64,7 +64,7 @@ const MIN_HEIGHT_UNITS: DimensionUnit[] = ['pt', 'mm', 'cm', 'in', 'em', 'px'];
 const ZERO_PT: Dimension = { value: 0, unit: 'pt' };
 
 const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-1.5 py-1 text-xs';
-const inputStyle = { borderColor: 'var(--rule)', color: 'var(--foreground)' } as const;
+const inputStyle = { borderColor: 'var(--pt-control-border)', color: 'var(--foreground)' } as const;
 const infoStyle = { color: 'var(--slate)' } as const;
 
 type MarginSide = 'top' | 'bottom' | 'left' | 'right';
@@ -97,9 +97,9 @@ function hasKeys(obj: object | undefined): boolean {
   return obj !== undefined && Object.keys(obj).length > 0;
 }
 
-function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+function Field({ label, tooltip, hint, children }: { label: string; tooltip?: string; hint?: string; children: React.ReactNode }) {
   return (
-    <FieldRow stacked label={label} hint={hint} className="mb-0">
+    <FieldRow stacked label={label} tooltip={tooltip} hint={hint} className="mb-0">
       {children}
     </FieldRow>
   );
@@ -322,7 +322,7 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
 
       <div className="mb-2 flex flex-col gap-2">
         <Field
-          label={labels.idLabel}
+          label={labels.idLabel} tooltip={labels.styleIdHelp}
           hint={idTaken ? labels.paragraphStyleIdHintDuplicate : labels.headingStyleUsageHint.replace('__id__', style.id)}
         >
           <input
@@ -341,7 +341,7 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
             style={{ ...inputStyle, borderColor: idEmpty || idTaken ? 'var(--destructive)' : 'var(--rule)' }}
           />
         </Field>
-        <Field label={labels.paragraphStyleNameLabel}>
+        <Field label={labels.paragraphStyleNameLabel} tooltip={labels.styleNameHelp}>
           <input
             type="text"
             value={style.name ?? ''}
@@ -788,7 +788,7 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
           fieldId={`${prefix}-body-color`}
         />
         <SelectInput
-          label={labels.partsBodyTextAlign}
+          label={labels.partsBodyTextAlign} tooltip={labels.partsBodyTextAlignTooltip}
           value={body?.textAlign ?? base.bodyText.textAlign}
           options={ALIGN_OPTIONS}
           onChange={(v) => updateBodyStyle({ textAlign: v as TextAlign })}

@@ -3,6 +3,7 @@
 import type { ReactElement, ReactNode, Ref } from 'react';
 import { Menu as MenuPrimitive } from '@base-ui/react/menu';
 import { cn } from './cn';
+import { usePortalContainer } from './portal';
 import { POPUP_SURFACE, POPUP_Z_INDEX } from './surface';
 
 interface MenuProps {
@@ -50,6 +51,7 @@ export function MenuBody({ header, label, children }: { header?: ReactNode; labe
  *  never runs past the viewport: a long menu (120 chapters) scrolls, and
  *  the highlighted item is scrolled into view as the keyboard moves. */
 export function Menu({ trigger, side = 'bottom', align = 'end', children, open, onOpenChange, header, label, highlightItemOnHover, popupRef }: MenuProps) {
+  const portalContainer = usePortalContainer();
   return (
     <MenuPrimitive.Root
       {...(open !== undefined ? { open } : {})}
@@ -57,7 +59,7 @@ export function Menu({ trigger, side = 'bottom', align = 'end', children, open, 
       {...(highlightItemOnHover !== undefined ? { highlightItemOnHover } : {})}
     >
       <MenuPrimitive.Trigger render={trigger} {...(header ? { 'aria-haspopup': 'dialog' as const } : {})} />
-      <MenuPrimitive.Portal>
+      <MenuPrimitive.Portal container={portalContainer}>
         <MenuPrimitive.Positioner
           side={side}
           align={align}
@@ -111,11 +113,12 @@ export function MenuItem({ icon, onClick, disabled, destructive, selected, headi
       title={title}
       className={(state) =>
         cn(
-          'flex cursor-pointer items-center gap-2 rounded px-2 text-xs outline-none select-none',
-          heading ? 'pt-2 pb-1 text-[10px] tracking-wide uppercase' : 'py-1.5',
+          'flex min-h-11 cursor-pointer items-center gap-2 rounded px-2 text-xs outline-none select-none',
+          heading ? 'pt-2 pb-1 text-[11px] tracking-wide' : 'py-1.5',
+          'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--brand)',
           state.highlighted && 'bg-(--background)',
           !state.disabled && 'hover:bg-(--background)',
-          state.disabled && 'cursor-default opacity-40',
+          state.disabled && 'cursor-default opacity-50',
         )
       }
       style={{

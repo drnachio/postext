@@ -1,8 +1,10 @@
 import { getLocale, getTranslations } from "next-intl/server";
+import { abbreviate } from "@/components/brand/abbreviate";
 import { ChapterOpener } from "@/components/brand/ChapterOpener";
 import { Kicker } from "@/components/brand/Kicker";
 import { PageMock } from "./PageMock";
 import { siteLocale, type SiteLocale } from "@/i18n/locales";
+import { NewTabNote } from "@/components/ui/NewTabNote";
 
 /** The markdown the miniature page is set from, per language. */
 const SOURCE: Record<SiteLocale, string> = {
@@ -59,7 +61,8 @@ export async function AboutSection() {
   const tl = await getTranslations("Landing");
   const pm = await getTranslations("PageMock");
   const body = [1, 2, 3, 4, 5, 6].map((i) => pm(`body${i}`));
-  const source = SOURCE[siteLocale(await getLocale())];
+  const locale = await getLocale();
+  const source = SOURCE[siteLocale(locale)];
 
   return (
     <section aria-labelledby="about-heading" className="relative">
@@ -78,9 +81,9 @@ export async function AboutSection() {
 
       <div className="mx-auto max-w-6xl px-6 py-14 md:py-20 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
         <div className="book-prose two-col reveal text-base leading-[1.75] text-foreground/90">
-          <p>{t("paragraph1")}</p>
+          <p>{abbreviate(t("paragraph1"), locale, ["css"])}</p>
           <p>
-            {t("paragraph2prefix")}
+            {abbreviate(t("paragraph2prefix"), locale, ["dom"])}
             <a
               href="https://github.com/chenglou/pretext"
               target="_blank"
@@ -88,6 +91,7 @@ export async function AboutSection() {
               className="font-semibold text-brand underline decoration-brand/30 underline-offset-4 hover:decoration-brand"
             >
               {t("pretextLink")}
+              <NewTabNote />
             </a>
             {t("paragraph2suffix")}
           </p>

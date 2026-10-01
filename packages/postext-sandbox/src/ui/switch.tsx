@@ -18,7 +18,7 @@ export interface SwitchProps {
 
 /** On/off switch on Base UI's Switch: `role="switch"`, Space/Enter, and a
  *  hidden checkbox input a native label can point at. */
-export function Switch({ checked, onCheckedChange, id, ariaLabelledBy, ariaDescribedBy, ariaLabel, muted, disabled, className }: SwitchProps) {
+export function Switch({ checked, onCheckedChange, id, ariaLabelledBy, ariaDescribedBy, ariaLabel, muted: _muted, disabled, className }: SwitchProps) {
   return (
     <SwitchPrimitive.Root
       id={id}
@@ -29,20 +29,27 @@ export function Switch({ checked, onCheckedChange, id, ariaLabelledBy, ariaDescr
       aria-describedby={ariaDescribedBy}
       aria-label={ariaLabelledBy ? undefined : ariaLabel}
       className={cn(
-        'relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border p-[2px] transition-colors',
-        'border-(--rule) bg-(--surface) data-checked:border-(--brand) data-checked:bg-(--brand)',
-        'focus-visible:outline-2 focus-visible:outline-offset-2 outline-(--brand)',
+        // A 44×44 target (WCAG 2.5.5) around the 36×20 track.
+        'group relative inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-md',
+        'focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
         'data-disabled:cursor-default data-disabled:opacity-50',
-        muted && 'opacity-80',
         className,
       )}
     >
-      <SwitchPrimitive.Thumb
+      <span
+        aria-hidden="true"
         className={cn(
-          'block h-3.5 w-3.5 rounded-full transition-transform duration-150',
-          'bg-(--slate) data-checked:translate-x-4 data-checked:bg-(--brand-contrast,var(--background))',
+          'inline-flex h-5 w-9 items-center rounded-full border p-[2px] transition-colors',
+          'border-(--pt-control-border) bg-(--surface) group-data-checked:border-(--brand) group-data-checked:bg-(--brand)',
         )}
-      />
+      >
+        <SwitchPrimitive.Thumb
+          className={cn(
+            'block h-3.5 w-3.5 rounded-full transition-transform duration-150',
+            'bg-(--slate) data-checked:translate-x-4 data-checked:bg-(--brand-contrast,var(--background))',
+          )}
+        />
+      </span>
     </SwitchPrimitive.Root>
   );
 }

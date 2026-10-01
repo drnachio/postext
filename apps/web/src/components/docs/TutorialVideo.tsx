@@ -1,5 +1,6 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { MEDIA_BASE, ShowreelVideo } from "@/components/landing/ShowreelVideo";
+import { VideoTranscript } from "@/components/landing/VideoTranscript";
 
 /** `<TutorialVideo />` in the docs: the narrated postext-port tutorial, one
  *  cut per language, on the same player as the home page showreel. Nothing
@@ -7,7 +8,8 @@ import { MEDIA_BASE, ShowreelVideo } from "@/components/landing/ShowreelVideo";
 export async function TutorialVideo() {
   if (!MEDIA_BASE) return null;
   const t = await getTranslations("Tutorial");
-  const lang = (await getLocale()).startsWith("es") ? "es" : "en";
+  const locale = await getLocale();
+  const lang = locale.startsWith("es") ? "es" : "en";
 
   return (
     <div className="my-6">
@@ -21,6 +23,7 @@ export async function TutorialVideo() {
         fullscreenLabel={t("fullscreen")}
         exitFullscreenLabel={t("exitFullscreen")}
       />
+      <VideoTranscript video="tutorial" locale={locale} />
     </div>
   );
 }

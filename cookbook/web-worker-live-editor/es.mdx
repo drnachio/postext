@@ -1,6 +1,7 @@
 ---
 title: "Editor en vivo con la composición en un Web Worker"
 summary: "Markdown junto a una página de bolsillo: un worker creado desde un blob compone con fuentes propias y cada pulsación cancela la composición en curso."
+plain: "Un editor en directo para una edición de bolsillo de La máquina del tiempo. Cada vez que escribes, la página se compone de nuevo en segundo plano, y la pantalla sigue respondiendo."
 description: "Compón en un Web Worker arrancado desde un blob del mismo origen, pásale las fuentes, cancela la composición en cada pulsación y pinta en el hilo principal."
 question: "¿Cómo mantengo fluido un editor al componer un texto largo, con fuentes y cancelación en un Web Worker?"
 aliases: ["Web Worker", "createLayoutWorker", "registerFonts", "AbortController", "cancelar una composición", "vista previa en vivo", "fuera del hilo principal", "editor de Markdown", "sin interfaz", "Node"]

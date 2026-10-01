@@ -8,6 +8,7 @@ export const metadata = {
   lastUpdated: '2026-09-29',
   readingTime: '30分钟',
   order: 3,
+  plainSummary: "本页列出控制页面外观的所有设置。所有选择都放在一组设置里：页面大小、栏数、字体、字号、标题、框、颜色等等。每项设置都有合理的默认值，你只需写出想改的那几项。本页是参考资料，可以直接跳到需要的部分。最后几节告诉程序员怎样用代码生成网页和PDF文件。",
 };
 
 # 配置
@@ -1382,7 +1383,7 @@ interface ElementPlacement {
   </tbody>
 </table>
 
-#### 引用块
+### 引用块
 
 引用块（以`>`开头的行）沿用正文的字体族、字号、行距、字重、对齐方式和断词设置。其余由`bodyText.blockquote`设置；不设置时，引用块的样子与postext 1.4及更早版本相同：灰色、斜体，使用正文的首行缩进，没有侧缩进。
 
@@ -1433,7 +1434,7 @@ bodyText: {
 
 在沙盒中，这些设置位于“正文”部分的**引用块**分组。
 
-#### 每个`fontFamily`只写一个字体族
+### 每个`fontFamily`只写一个字体族
 
 `fontFamily`，无论是这里还是其他任何字体族字段（`headings.fontFamily`、`tableStyle.bodyFontFamily`、`separatorFontFamily`、行内标签样式或设计元素的`fontFamily`……），都只指定**一个**字体族。Canvas、HTML输出和PDF必须使用同一款字体，而PDF对每个字体族只嵌入一款字体，没有回退链，所以CSS字体栈没有可以回退的对象。写成字体栈时，按其中第一个字体族排版，并报告一条[配置警告](#配置警告)：
 

@@ -95,7 +95,8 @@ export function CodePenEmbed({ embedHtml, title, height, children }: CodePenEmbe
         ref={hostRef}
         className="docs-codepen-embed"
         style={{ minHeight: state === "ready" ? height : 0 }}
-        aria-label={title}
+        role={state === "ready" ? "region" : undefined}
+        aria-label={state === "ready" ? title : undefined}
       />
       {state === "idle" && <p className="docs-codepen-note">{t("hint")}</p>}
     </div>

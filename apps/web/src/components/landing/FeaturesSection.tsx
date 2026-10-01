@@ -1,4 +1,5 @@
 import { getLocale, getTranslations } from "next-intl/server";
+import { abbreviate } from "@/components/brand/abbreviate";
 import { ChapterOpener } from "@/components/brand/ChapterOpener";
 import {
   JustificationGlyph,
@@ -28,6 +29,7 @@ export async function FeaturesSection() {
   const t = await getTranslations("Features");
   const tl = await getTranslations("Landing");
   const locale = await getLocale();
+  const seen = new Set<string>();
 
   return (
     <section aria-labelledby="features-heading">
@@ -61,7 +63,7 @@ export async function FeaturesSection() {
                     {t(`${key}Title`)}
                   </h3>
                   <p className="mt-2 font-body text-[0.92rem] leading-[1.65] text-foreground/75">
-                    {t(`${key}Description`)}
+                    {abbreviate(t(`${key}Description`), locale, ["svg", "epub"], seen)}
                   </p>
                   <span className="mt-auto pt-4 font-sans text-xs font-bold tracking-[0.12em] text-gilt uppercase dark:text-gold">
                     {t("docsLink")}{" "}

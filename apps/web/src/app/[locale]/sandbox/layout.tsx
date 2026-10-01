@@ -3,15 +3,14 @@ import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { buildMetadata } from "@/lib/seo";
 
-// The sandbox is an app with its own zoom controls: the page itself does
-// not zoom, so iOS does not zoom in on every field that takes focus (it
-// does below 16px text), a double tap reaches the preview instead of
-// zooming, and the height follows the visible area as the browser bars
-// come and go.
+// The sandbox follows the visible area as the browser bars come and go.
+// Pinch zoom stays available (WCAG 1.4.4): iOS does not zoom in on a
+// focused field because the sandbox sets its fields at 16px or more on
+// touch screens, and the preview takes double taps through
+// `touch-action: manipulation`.
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
   interactiveWidget: "resizes-content",
 };
 

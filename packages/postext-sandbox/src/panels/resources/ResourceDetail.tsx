@@ -24,18 +24,19 @@ import { slugify } from './slugify';
 import type { TableCellPos, TableModel } from 'postext';
 
 const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-2 py-1.5';
-const inputStyle = { borderColor: 'var(--rule)', color: 'var(--foreground)', fontFamily: 'inherit', fontSize: 13, lineHeight: '20px' } as const;
+const inputStyle = { borderColor: 'var(--pt-control-border)', color: 'var(--foreground)', fontFamily: 'inherit', fontSize: 13, lineHeight: '20px' } as const;
 const labelStyle = { color: 'var(--slate)', fontSize: 11, lineHeight: '14px' } as const;
 
 interface FieldProps {
   label: string;
+  tooltip?: string;
   children: React.ReactNode;
   hint?: string;
 }
 
-function Field({ label, children, hint }: FieldProps) {
+function Field({ label, tooltip, children, hint }: FieldProps) {
   return (
-    <FieldRow stacked label={label} hint={hint} className="mb-0">
+    <FieldRow stacked label={label} tooltip={tooltip} hint={hint} className="mb-0">
       {children}
     </FieldRow>
   );
@@ -254,7 +255,7 @@ export function ResourceDetail({
       <PanelBody padded>
       <div className="flex flex-col gap-4">
         <Field
-          label={labels.idLabel}
+          label={labels.idLabel} tooltip={labels.styleIdHelp}
           hint={
             idEmpty
               ? labels.resourceIdHintSuggested.replace('__id__', suggestedId)
@@ -441,9 +442,10 @@ export function ResourceDetail({
                 </select>
               </div>
               {placementPosition !== 'here' && placementSpan === 'column' && (
-                <label className="flex cursor-pointer items-center gap-2 text-xs" style={{ color: 'var(--foreground)' }} title={labels.resourceTypePlacementCaptionSideTooltip}>
+                <label className="flex min-h-11 cursor-pointer items-center gap-2 text-xs" style={{ color: 'var(--foreground)' }} title={labels.resourceTypePlacementCaptionSideTooltip}>
                   <input
                     type="checkbox"
+                    className="h-6 w-6 shrink-0 cursor-pointer accent-(--brand)"
                     checked={currentPlacement.captionSide ?? false}
                     onChange={(e) => setPlacementKey('captionSide', e.target.checked ? true : undefined)}
                     aria-label={labels.resourceTypePlacementCaptionSide}

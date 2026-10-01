@@ -7,7 +7,7 @@ import { ChapterSwitcher } from '../editor/ChapterSwitcher';
 import { useSandbox, useSandboxPresets, useSandboxProjects } from '../context/SandboxContext';
 import { exportMarkdownFile, importMarkdownFile } from '../storage/persistence';
 import { slugify } from '../panels/resources/slugify';
-import { ConfirmPopover, IconButton, PanelHeader } from '../ui';
+import { ConfirmPopover, IconButton, PanelHeader, announce } from '../ui';
 
 interface MarkdownPanelProps {
   isDark?: boolean;
@@ -31,8 +31,10 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
     try {
       const markdown = await importMarkdownFile(file);
       dispatch({ type: 'SET_MARKDOWN', payload: markdown });
+      announce(state.labels.importFileDone.replace('__file__', file.name));
     } catch {
-      // Silently ignore invalid files
+      // Said in words, with what to try instead (WCAG 3.3.1, 3.3.3).
+      announce(state.labels.importFileFailed.replace('__file__', file.name));
     }
     e.target.value = '';
   };
@@ -68,11 +70,21 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
               icon={<Download size={14} />}
               onClick={() => exportMarkdownFile(state.markdown, exportName())}
             />
-            <IconButton
-              label={multiChapter ? state.labels.importFileChapter : state.labels.importFile}
-              icon={<Upload size={14} />}
-              onClick={() => importRef.current?.click()}
-            />
+            {/* Replacing the text asks first (WCAG 3.3.6): the chapter's
+                current text is lost unless it was downloaded. */}
+            <ConfirmPopover
+              message={state.labels.importFileConfirm}
+              confirmLabel={state.labels.importFileConfirmAction}
+              onConfirm={() => importRef.current?.click()}
+            >
+              {({ open }) => (
+                <IconButton
+                  label={multiChapter ? state.labels.importFileChapter : state.labels.importFile}
+                  icon={<Upload size={14} />}
+                  onClick={open}
+                />
+              )}
+            </ConfirmPopover>
             <input
               ref={importRef}
               type="file"

@@ -188,10 +188,10 @@ function tokenStyle(token: PreviewToken): CSSProperties {
   }
 }
 
-const inputClass = 'block w-full min-w-0 rounded border bg-transparent px-2 py-1.5';
+const inputClass = 'block min-h-11 w-full min-w-0 rounded border bg-transparent px-2 py-1.5';
 // Explicit type: form controls do not inherit the panel's font, and the
 // lines of a multi-line value need real leading to stay legible.
-const inputStyle: CSSProperties = { borderColor: 'var(--rule)', color: 'var(--foreground)', fontFamily: 'inherit', fontSize: 13, lineHeight: '20px' };
+const inputStyle: CSSProperties = { borderColor: 'var(--pt-control-border)', color: 'var(--foreground)', fontFamily: 'inherit', fontSize: 13, lineHeight: '20px' };
 
 /** A request to focus the field with a given selection (offsets in `value`).
  *  `selectWord` expands a collapsed selection to the word around it. */

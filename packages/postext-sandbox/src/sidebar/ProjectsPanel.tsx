@@ -25,7 +25,7 @@ import { LocaleTag } from './LocaleTag';
 function GroupTitle({ children, actions }: { children: ReactNode; actions?: ReactNode }) {
   return (
     <div className="mt-4 mb-1.5 flex items-center justify-between gap-2 first:mt-0">
-      <h3 className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--slate)' }}>
+      <h3 className="text-[13px] font-semibold pt-caps tracking-wide" style={{ color: 'var(--slate)' }}>
         {children}
       </h3>
       {actions}
@@ -299,7 +299,7 @@ export function ProjectsPanel() {
         {hiddenPresets.length > 0 && (
           <Collapsible.Root open={hiddenOpen} onOpenChange={setHiddenOpen} className="mt-1">
             <Collapsible.Trigger
-              className="flex cursor-pointer items-center gap-1 rounded border-0 bg-transparent px-1 py-1 text-[11px] text-(--slate) hover:text-(--foreground) focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--brand-hover)"
+              className="flex cursor-pointer items-center gap-1 rounded border-0 bg-transparent px-1 py-1 text-[11px] text-(--slate) hover:text-(--foreground) focus-visible:outline-2 focus-visible:outline-offset-1 outline-(--brand-hover)"
             >
               <ChevronRight size={12} aria-hidden="true" style={{ transform: hiddenOpen ? 'rotate(90deg)' : undefined, transition: 'transform 200ms ease' }} />
               {labels.presetsHidden.replace('__count__', String(hiddenPresets.length))}
@@ -457,7 +457,7 @@ function ProjectRow({
         title={labels.projectThumbnailChange}
         onMouseDown={keepFocus}
         onClick={() => coverInputRef.current?.click()}
-        className="flex h-12 w-9 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-sm border bg-transparent p-0 text-(--slate) hover:text-(--foreground) focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--brand-hover)"
+        className="flex h-12 w-9 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-sm border bg-transparent p-0 text-(--slate) hover:text-(--foreground) focus-visible:outline-2 focus-visible:outline-offset-1 outline-(--brand-hover)"
         style={{ borderColor: 'var(--rule)' }}
       >
         {coverImage ?? <ImagePlus size={14} aria-hidden="true" />}
@@ -611,7 +611,7 @@ function PresetRow({
     <>
       {locales.map(localeTag)}
       {edited && <RowTag label={editedHint}>{labels.presetEdited}</RowTag>}
-      {preset.license && <RowTag>{preset.license}</RowTag>}
+      {preset.license && <RowTag>{licenseText(preset.license)}</RowTag>}
       {preset.source === 'private' && <RowTag>{labels.presetPrivate}</RowTag>}
       {preset.default && <RowTag>{labels.presetDefault}</RowTag>}
       {isActive && <RowTag accent>{labels.presetActive}</RowTag>}
@@ -684,5 +684,27 @@ function PresetRow({
         }
       />
     </li>
+  );
+}
+
+/** Full names of the abbreviations a licence tag carries (WCAG 3.1.4).
+ *  Licence and agency names are proper names, kept as published. */
+const LICENSE_ABBR: Record<string, string> = {
+  CC: 'Creative Commons',
+  BY: 'Attribution',
+  SA: 'ShareAlike',
+  NC: 'NonCommercial',
+  ND: 'NoDerivatives',
+  CC0: 'Creative Commons Zero (public domain dedication)',
+  MIT: 'MIT License',
+  OFL: 'SIL Open Font License',
+  EEA: 'European Environment Agency',
+};
+const LICENSE_ABBR_RE = /\b(CC0|CC|BY|SA|NC|ND|MIT|OFL|EEA)\b/;
+
+/** A licence tag's text with each abbreviation expanded by its title. */
+function licenseText(license: string): React.ReactNode {
+  return license.split(LICENSE_ABBR_RE).map((part, i) =>
+    LICENSE_ABBR[part] ? <abbr key={i} title={LICENSE_ABBR[part]} className="no-underline">{part}</abbr> : part,
   );
 }
