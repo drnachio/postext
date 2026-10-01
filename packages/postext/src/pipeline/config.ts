@@ -20,6 +20,7 @@ import {
   resolveTocConfig,
   resolveIndexConfig,
   resolveFootnotesConfig,
+  resolveCrossRefsConfig,
   resolveCjkConfig,
   resolvePdfGenerationConfig,
   applyPaletteToConfig,
@@ -85,6 +86,7 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
     toc: resolveTocConfig(config?.toc, bodyText),
     index: resolveIndexConfig(config?.index, bodyText),
     footnotes: resolveFootnotesConfig(config?.footnotes, documentLocale),
+    crossRefs: resolveCrossRefsConfig(config?.crossRefs, documentLocale),
     cjk: resolveCjkConfig(config?.cjk, documentLocale),
     ...(config?.locale ? { locale: config.locale } : {}),
     // Kept for per-resource-type caption overrides, which resolve their

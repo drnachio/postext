@@ -2796,6 +2796,32 @@ export interface ResolvedFootnoteSeparatorConfig {
  *  paragraph of its own anywhere in the chapter. The marker prints as a
  *  superscript number (or inline, see `markerPosition`); the note prints at the foot of the column (see
  *  {@link FootnotePlacement}), in citation order. */
+/** How a cross-reference to an anchor prints (#266): the words around a
+ *  number or a page label, and the style a `:ref` without `style=` takes.
+ *  Each template holds `{n}` where the number goes; one without it gets
+ *  the number after a no-break space. Unset templates follow the document
+ *  language ("section {n}", "sección {n}", "第{n}节"). */
+export interface CrossRefsConfig {
+  /** A level-1 heading: "chapter {n}". */
+  chapter?: string;
+  /** Any other heading: "section {n}". */
+  section?: string;
+  /** A page: "p. {n}". */
+  page?: string;
+  /** The style of a `:ref` to an anchor that sets none. Default
+   *  `'default'`: a numbered heading by its label and number, an
+   *  unnumbered one by its title, an anchor by its text. */
+  defaultStyle?: 'default' | 'number' | 'title' | 'page';
+}
+
+/** {@link CrossRefsConfig} with every value resolved. */
+export interface ResolvedCrossRefsConfig {
+  chapter: string;
+  section: string;
+  page: string;
+  defaultStyle: 'default' | 'number' | 'title' | 'page';
+}
+
 export interface FootnotesConfig {
   /** Default `'column'`. */
   placement?: FootnotePlacement;
@@ -4079,6 +4105,9 @@ export interface PostextConfig {
   math?: MathConfig;
   /** Footnotes (`[^id]` markers and `[^id]: …` definitions). */
   footnotes?: FootnotesConfig;
+  /** Cross-references to headings and anchors (`:ref{id="sec-intro"}`,
+   *  `@sec:intro`): their words and default style (#266). */
+  crossRefs?: CrossRefsConfig;
   /** East Asian typography: line breaking and justification of Chinese,
    *  Japanese and Korean text (see {@link CjkConfig}). */
   cjk?: CjkConfig;

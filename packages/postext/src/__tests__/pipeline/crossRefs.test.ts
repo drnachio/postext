@@ -155,3 +155,23 @@ describe('Chinese cross-references (#262)', () => {
     expect(label).toBe('第一章');
   });
 });
+
+describe('crossRefs configuration (#266)', () => {
+  const md = '# Opening {#a}\n\nSee :ref{id="b"}, :ref{id="a"} and :ref{id="b" style=number}.\n\n## Method {#b}\n\nText.';
+
+  it('sets the words of chapters and sections, a template without {n} taking the number after it', () => {
+    const doc = buildDocument({ markdown: md }, { ...config, crossRefs: { section: '§', chapter: 'Ch. {n}' } });
+    expect(refs(doc).map((r) => r.text)).toEqual(['§ 1.1', 'Ch. 1', '1.1']);
+  });
+
+  it('gives references without a style the configured one', () => {
+    const doc = buildDocument({ markdown: md }, { ...config, crossRefs: { defaultStyle: 'title' } });
+    expect(refs(doc).map((r) => r.text)).toEqual(['Method', 'Opening', '1.1']);
+  });
+
+  it('strips only what the config sets on purpose', async () => {
+    const { stripCrossRefsDefaults } = await import('../../defaults');
+    expect(stripCrossRefsDefaults({ chapter: ' ', defaultStyle: 'default' })).toBeUndefined();
+    expect(stripCrossRefsDefaults({ page: 'pp. {n}' })).toEqual({ page: 'pp. {n}' });
+  });
+});

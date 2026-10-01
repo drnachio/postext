@@ -92,6 +92,8 @@ export interface CrossRefStrings {
   section: string;
   /** A page: "p. 112". */
   page: string;
+  /** The style of a reference that sets none (`crossRefs.defaultStyle`). */
+  defaultStyle?: 'default' | 'number' | 'title' | 'page';
 }
 
 const CROSS_REF_STRINGS: Readonly<Record<string, CrossRefStrings>> = {
@@ -176,7 +178,7 @@ export function resolveAnchorRefLabel(
   const page = target.pageLabel !== undefined && target.pageLabel.length > 0 ? target.pageLabel : UNKNOWN_PAGE;
   const number = bareNumber(target.number);
   const title = target.title;
-  switch (ref.style) {
+  switch (ref.style ?? strings.defaultStyle) {
     case 'page':
       return fill(strings.page, page, ref.case);
     case 'pageNumber':
@@ -199,8 +201,13 @@ export function resolveAnchorRefLabel(
 
 /** Whether a reference prints its target's page, so its label moves with
  *  the layout (the document is laid out again until it settles, #263). */
-export function refPrintsPage(ref: NonNullable<InlineSpan['ref']>, target: AnchorTarget | undefined): boolean {
+export function refPrintsPage(
+  ref: NonNullable<InlineSpan['ref']>,
+  target: AnchorTarget | undefined,
+  defaultStyle?: CrossRefStrings['defaultStyle'],
+): boolean {
   if (ref.text !== undefined && ref.text.length > 0) return false;
+  if (ref.style === undefined && defaultStyle !== undefined && defaultStyle !== 'default') ref = { ...ref, style: defaultStyle };
   if (ref.style === 'page' || ref.style === 'pageNumber') return true;
   if (!target) return false;
   const titled = target.title.length > 0;
@@ -229,10 +236,14 @@ export function hasAnchorRefs(blocks: readonly ContentBlock[], resourceIds: Read
 
 /** Whether a reference of the parsed content prints the page of an anchor
  *  of `targets`: the document is then laid out until the pages settle. */
-export function printsAnchorPages(blocks: readonly ContentBlock[], targets: AnchorTargets): boolean {
+export function printsAnchorPages(
+  blocks: readonly ContentBlock[],
+  targets: AnchorTargets,
+  defaultStyle?: CrossRefStrings['defaultStyle'],
+): boolean {
   for (const ref of refsOf(blocks)) {
     const target = findAnchorTarget(targets, ref.resourceId);
-    if (target && refPrintsPage(ref, target)) return true;
+    if (target && refPrintsPage(ref, target, defaultStyle)) return true;
   }
   return false;
 }

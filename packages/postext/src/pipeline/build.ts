@@ -48,7 +48,7 @@ import {
   planHeadingSections,
 } from './headingStyles';
 import { locateAnchors } from './anchors';
-import { anchorTargetsOf, defaultCrossRefStrings, hasAnchorRefs, printsAnchorPages } from './crossRefs';
+import { anchorTargetsOf, hasAnchorRefs, printsAnchorPages } from './crossRefs';
 import type { AnchorRefContext } from './resourceLayout';
 import { anchorOutline, computeOutline, hasIndexDirective, hasTocDirective, headingNumberingOptions, headingTemplatesOf, outlineFromDoc, sameOutline } from './outline';
 import { expandTocDirectives } from './toc';
@@ -562,7 +562,7 @@ function placeDocumentPass(
   const outline = content.outline
     ?? (hasTocDirective(parsedBlocks) || hasIndexDirective(parsedBlocks) || anchorRefs ? computeOutline(parsedBlocks, resolved, headingStart) : undefined);
   const anchorRefContext: AnchorRefContext | undefined = anchorRefs
-    ? { targets: anchorTargetsOf(outline), strings: defaultCrossRefStrings(resolvedLocale(resolved)) }
+    ? { targets: anchorTargetsOf(outline), strings: resolved.crossRefs }
     : undefined;
   const indexExpanded = expandIndexDirectives(expandTocDirectives(parsedBlocks, outline, resolved), outline, resolved);
   const contentBlocks = indexExpanded.blocks;
@@ -5710,7 +5710,8 @@ function* buildDocumentRounds(
     // A reference printing an anchor's page (#263) settles the same way.
     const pageRefs = (): boolean => {
       if (!hasAnchorRefs(parsed, new Set((content.resources ?? []).map((r) => r.id)))) return false;
-      return printsAnchorPages(parsed, anchorTargetsOf(computeOutline(parsed, resolveAllConfig(config), content.continuation?.headings)));
+      const resolved = resolveAllConfig(config);
+      return printsAnchorPages(parsed, anchorTargetsOf(computeOutline(parsed, resolved, content.continuation?.headings)), resolved.crossRefs.defaultStyle);
     };
     if (hasTocDirective(parsed) || hasIndexDirective(parsed) || pageRefs()) {
       let outline = computeOutline(parsed, resolveAllConfig(config), content.continuation?.headings);

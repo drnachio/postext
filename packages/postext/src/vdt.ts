@@ -29,6 +29,7 @@ import type {
   ResolvedTocConfig,
   ResolvedIndexConfig,
   ResolvedFootnotesConfig,
+  ResolvedCrossRefsConfig,
   ResolvedCjkConfig,
   CjkRegion,
   PageRole,
@@ -83,6 +84,8 @@ export interface ResolvedConfig {
   index: ResolvedIndexConfig;
   /** Footnotes (`[^id]`): placement, numbering, style. */
   footnotes: ResolvedFootnotesConfig;
+  /** Cross-references to headings and anchors (#266). */
+  crossRefs: ResolvedCrossRefsConfig;
   /** East Asian typography (`cjk`), with `'auto'` resolved from the
    *  document language. */
   cjk: ResolvedCjkConfig;

@@ -38,6 +38,7 @@ export type SettingsSectionId =
   | 'ordered-lists'
   | 'math'
   | 'footnotes'
+  | 'crossRefs'
   | 'cjk'
   | 'resource-types'
   | 'captionStyle'
@@ -101,6 +102,7 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionEntry[] = [
   { id: 'headingStyles', group: 'headings', labelKey: 'headingStylesSection', configKeys: ['headingStyles'] },
   { id: 'toc', group: 'headings', labelKey: 'tocSection', configKeys: ['toc'] },
   { id: 'index', group: 'headings', labelKey: 'indexSection', configKeys: ['index'] },
+  { id: 'crossRefs', group: 'headings', labelKey: 'crossRefsSection', configKeys: ['crossRefs'] },
   { id: 'unordered-lists', group: 'lists', labelKey: 'unorderedLists', configKeys: ['unorderedLists'] },
   { id: 'ordered-lists', group: 'lists', labelKey: 'orderedLists', configKeys: ['orderedLists'] },
   { id: 'resource-types', group: 'figures', labelKey: 'resourceTypesSection', configKeys: ['resourceTypes'] },
