@@ -110,10 +110,13 @@ export interface InlineSpan {
   links?: InlineLink[];
   /** Present when this span is a footnote marker (`[^id]`): the `text` is a
    *  single placeholder char until the pipeline replaces it with the note's
-   *  number, set as a superscript. */
+   *  number, set as a superscript (`script: 'sup'`) or on the baseline. */
   footnote?: {
     /** The note's id as written between `[^` and `]`. */
     id: string;
+    /** An inline marker's size relative to the text around it
+     *  (`footnotes.markerSize`), set by the pipeline. Unset: full size. */
+    scale?: number;
   };
   /** Present when this span is an inline reference to a `Resource`. The
    *  `text` carries placeholder/fallback content; the pipeline resolves the

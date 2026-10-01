@@ -41,6 +41,7 @@ const ITEM_LABELS: Record<ChineseDefaultId, keyof SandboxLabels> = {
   captionLabel: 'chineseDefaultsCaptionLabel',
   chapterNumbering: 'chineseDefaultsChapterNumbers',
   listNumbers: 'chineseDefaultsListNumbers',
+  footnotes: 'footnotesSection',
 };
 
 /** The book on screen: the project, or the preset and its language, and
@@ -67,6 +68,14 @@ export function valueText(v: ChineseDefaultValue, labels: SandboxLabels, uiLocal
     case 'binding': {
       const name = v.value === 'right' ? labels.bindingRight : labels.bindingLeft;
       return v.auto ? labels.cjkAuto.replace('__value__', name) : name;
+    }
+    case 'footnotes': {
+      const position = v.position === 'inline' ? labels.footnotesMarkerPositionInline : labels.footnotesMarkerPositionSuperscript;
+      const numbering = v.numbering === 'page' ? labels.footnotesNumberingPage
+        : v.numbering === 'column' ? labels.footnotesNumberingColumn
+          : v.numbering === 'document' ? labels.footnotesNumberingDocument
+            : labels.footnotesNumberingChapter;
+      return `${v.marker} (${position}), ${numbering}`;
     }
     case 'none': return labels.chineseDefaultsNoNumber;
   }

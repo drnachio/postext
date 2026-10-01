@@ -204,6 +204,16 @@ Los tipos de figura y tabla integrados en chino numeran por capítulo con un gui
 
 El índice analítico de un libro chino agrupa las entradas por la inicial del pinyin (simplificado) o por el número de trazos (tradicional), con los datos de la ordenación de CLDR (`index.groupBy`, `'auto'` por defecto). Un carácter con varias lecturas se archiva por la lectura que le da esa ordenación; a una entrada así se le da una clave `sort` en caracteres que se lean como se quiere: `:index[重阳]{sort="崇阳"}`. Véase [Índice analítico](/es/docs/configuration#índice-analítico).
 
+### Notas al pie
+
+Un libro de China continental numera sus notas (页下注) con números en círculo que vuelven a empezar en cada página: ① es la primera nota de cada página, compuesta sobre la línea de base en el texto y al principio de la nota. La mayoría de los libros de Taiwán y Hong Kong hacen lo mismo.
+
+```ts
+footnotes: { numberFormat: 'circled-decimal', numbering: 'page' },
+```
+
+Con `circled-decimal` la llamada va en línea por defecto (`markerPosition: 'auto'`); `markerSize: { value: 0.75, unit: 'em' }` la compone más pequeña que el texto. Los números mayores que 50 no tienen forma en círculo y se escriben en decimal. El número de una nota depende de la página en que cae, así que un documento numerado por página se maqueta primero por capítulo, se numera según dónde cayeron sus notas y se maqueta otra vez; una llamada en círculo tiene el mismo ancho sea cual sea su número, así que la segunda maquetación no mueve ninguna línea. `numbering: 'column'` reinicia en cada columna, para los libros que componen las notas columna a columna. Como una volada, la llamada sigue al carácter que la precede y nunca abre una línea, y en texto vertical va derecha en una casilla propia. **Valores chinos por defecto** del Sandbox incluye estos ajustes en su lista de cambios. Consulta [Notas al pie](/es/docs/configuration#notas-al-pie).
+
 ## Escritura vertical
 
 `layout.writingMode: 'vertical-rl'` compone el libro de arriba abajo. Toda la composición anterior se aplica sin cambios, a lo largo de la línea vertical en vez de la horizontal; lo que cambia es la página que la rodea y la manera en que se coloca cada carácter.
@@ -311,7 +321,7 @@ Las voces tradicionales de un libro chino corresponden a familias: la song (宋�
 
 ### Una novela de China continental en horizontal
 
-Un libro en 大32开, de 28 × 28 caracteres en Noto Serif SC de 10,5 pt, con los capítulos numerados 第一章; la puntuación kaiming y el corte GB salen del `locale`:
+Un libro en 大32开, de 28 × 28 caracteres en Noto Serif SC de 10,5 pt, con los capítulos numerados 第一章 y las notas numeradas ① en cada página; la puntuación kaiming y el corte GB salen del `locale`:
 
 ```ts
 import type { PostextConfig } from 'postext';
@@ -340,6 +350,7 @@ const config: PostextConfig = {
     ],
   },
   captionStyle: { labelNumberGap: '', labelSeparator: '　' },
+  footnotes: { numberFormat: 'circled-decimal', numbering: 'page' },
   cjk: { grid: { enabled: true, charsPerLine: 28, linesPerPage: 28 } },
   header: { elements: [] },
   footer: { elements: [
