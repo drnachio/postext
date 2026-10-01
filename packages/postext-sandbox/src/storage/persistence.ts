@@ -21,6 +21,7 @@ const PANEL_KEY = 'postext-sandbox-panel';
 const PRESET_KEY = 'postext-sandbox-preset';
 const PRESET_APPLIED_KEY = 'postext-sandbox-preset-applied';
 const PROJECT_KEY = 'postext-sandbox-project';
+const VIEWER_LOCALE_KEY = 'postext-sandbox-viewer-locale';
 const SECTIONS_KEY = 'postext-sandbox-sections';
 const COLOR_MODES_KEY = 'postext-sandbox-color-modes';
 const CANVAS_VIEW_MODE_KEY = 'postext-sandbox-canvas-view-mode';
@@ -179,6 +180,17 @@ export function savePresetId(id: string): void {
 
 export function loadPresetId(): string | null {
   return getStorage()?.getItem(PRESET_KEY) ?? null;
+}
+
+/** Remember the interface language of this visit: the next visit tells an
+ *  untouched guide that was the interface's own (it follows the new
+ *  interface) from one opened on purpose (it stays). */
+export function saveViewerLocale(locale: string): void {
+  getStorage()?.setItem(VIEWER_LOCALE_KEY, locale);
+}
+
+export function loadViewerLocale(): string | null {
+  return getStorage()?.getItem(VIEWER_LOCALE_KEY) ?? null;
 }
 
 /** Remember the active local project (null when a read-only preset is
@@ -403,6 +415,7 @@ export function clearStorage(): void {
   storage?.removeItem(PRESET_KEY);
   storage?.removeItem(PRESET_APPLIED_KEY);
   storage?.removeItem(PROJECT_KEY);
+  storage?.removeItem(VIEWER_LOCALE_KEY);
   storage?.removeItem(SECTIONS_KEY);
   storage?.removeItem(COLOR_MODES_KEY);
   storage?.removeItem(CANVAS_VIEW_MODE_KEY);

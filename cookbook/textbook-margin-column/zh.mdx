@@ -1,0 +1,90 @@
+---
+title: "带边栏的教材"
+summary: "一栏半的页面，外侧栏只放浮动体：span 'side'的图和术语注在那里依次堆叠，captionSide把其余图的题注移进边栏。"
+description: "一章物理教材的Postext代码：外侧页边距中有一个只放浮动体的栏，用于光路图、术语注和图的题注。"
+question: "怎样把图、题注和术语注放在一个正文永远不进入的外侧边栏里？"
+aliases: ["边栏", "页边栏", "旁注", "边注", "侧注", "术语注", "侧边题注", "边栏插图", "一栏半", "Tufte版式", "物理教材", "margin column", "margin notes", "sidenotes", "side captions", "column and a half", "Tufte layout"]
+pageNotes: { "1": "第4章开篇：标题Light and Lenses在正文栏中，外侧页边距中有一个绿色的大号4，下方是学习目标；与4.1节平齐处，定义折射率的段落旁有一条术语注。正文栏底部是一幅深色底板上的聚光镜光路图，题注在旁边的边栏中。", "2": "左页上边栏在左侧：一幅折射图、临界角术语注和一幅半圆形玻璃砖光路图在其中依次堆叠；正文栏底部的光纤图，题注在边栏中。", "3": "右页顶部横跨两栏的是一块深色底板，一束白光穿过棱镜后展开成光谱；边栏中，色散术语注紧接在定义这个术语的句子下方开始，焦距术语注与4.3节平齐，底部是一幅排在浅色底板上的透镜光路图的题注。", "4": "发散透镜图排在最后一页边栏的顶部；Key ideas面板从本章最后一段下方开始，与Questions标题平齐，排在问题旁边；一行版本说明结束本章。" }
+---
+
+## 成品一览
+
+*Lever and Lens*是一本物理入门教材，页面为210 × 275 mm，这里排的是它的第4章。正文排在一个宽栏中，从不进入外侧页边距里一条53 mm宽的边栏。章号是一个绿色的4，在边栏中与标题平齐，学习目标排在它下方。光路图从边栏顶部开始依次堆叠，关键术语放在薄荷绿的术语注中，位于定义它们的段落旁边。留在正文栏中的图排在深色或浅色底板上，题注放在边栏中，与图的底边平齐。只有棱镜面板横跨两栏。页边距左右镜像，所以边栏总在切口一侧：右页在右，左页在左。
+
+## 做法
+
+### 1 · 把边栏交给浮动体
+
+这一步的代码见上文的[简短回答](#简短回答)。在[一栏半版式](/zh/docs/configuration#版式类型)中，`sideColumnPercent: 30`把176 mm内容宽度的30 %（52.8 mm）分给侧栏，正文栏得到减去7 mm栏间距后余下的部分（116 mm，约为9.3 pt Merriweather的75个字符）。`sideColumnRole: 'floats'`让正文不进入侧栏，`sideColumnSide: 'outer'`把侧栏放在外侧，镜像的页边距会让它逐页换边。图用`span: 'side'`放进边栏。围栏上带有`span="side"`的框会离开正文流，在正文排到的高度进入边栏，所以每条术语注都与其围栏后面的那一块平齐开始。
+
+### 2 · 让引用决定每幅图的位置
+
+<Excerpt region="figures" />
+
+对一幅图的第一次`:ref`给它编号，并按它的[放置方式](/zh/docs/document-format#位置)放置。`span: 'side'`的图在引用它的那一页从边栏顶部开始堆叠，不论引用在页面多靠下；如果边栏剩下的部分太短，它就移到下一页。图4.2和图4.3都在<PageRef page={2}>第88页</PageRef>被引用，在该页边栏中依次向下堆叠，临界角术语注夹在两者之间。棱镜是一个在第88页被引用的通栏`top`浮动体，而浮动体从不排在引用之前，所以它在第89页开头横跨两栏。图4.1、4.4和4.6留在正文栏中，从图类型的`defaultPlacement`取得`captionSide`。它们占据栏底的位置，所以每条题注都与图的底边平齐；如果放在栏顶位置，题注会与图的顶边对齐。
+
+### 3 · 在边栏中开启本章
+
+<Excerpt region="opener" />
+
+一级标题留在正文栏中，由一个[设计槽](/zh/docs/configuration#通栏与高级设计)依次排出标题文字、细线和导语；眉题挂在页面右上角，数字挂在眉题下，两者都与边栏同宽。`minHeight`把章首固定为九条网格线（42.9 mm），足够放一行标题、细线和四行导语，所以较短的导语也不会把正文往上拉。眉题和104 pt的数字结束在上页边距以下40.6 mm处，在这九行之内，所以也不会把正文往下推。只有在右页上边栏才在右侧，所以H1分页到奇数页。学习目标框排在第一段之后，而不是紧跟标题，并且在它之前不引用任何边栏图（见常见问题）。
+
+### 4 · 让页码留在边栏一侧
+
+<Excerpt region="heads" />
+
+每个元素都锚定在物理页面上，并用`parity`筛选，所以在跨页两侧，页码和书眉都与边栏在同一边。`pages: 'body'`让它们不出现在章首页上，章首页的页码改为印在边栏底部。
+
+### 5 · 从第4章开始这本书
+
+<Excerpt region="build" />
+
+这些页面是一本更长的书的第4章。续排设置把章计数器设为3，所以`{chapterNumber}`印出4，二级标题的`numberingTemplate: '{1}.{2}'`把各节编为4.1到4.3；图从4.1编到4.7。`## Questions {style="plain"}`使用一个带`numbered: false`的`headingStyles`条目，所以这个标题没有编号。页码从87开始，因为第一页是右页，而右页的页码是奇数。
+
+### 6 · 颜色只命名一次
+
+<Excerpt region="palette" />
+
+配置中的每种颜色都链接到一个调色板条目，同时带有它的十六进制值，由`col()`从同一个对象中复制。Postext 1.4.1用这个十六进制值绘制设计元素和参考颜色，而不是用调色板条目（见常见问题）。要给本章换色，编辑`palette`即可：光路图读取的是同一个对象，所以其中的玻璃、光线、深色底板和浅色底板会随数字、标签和术语注一起改变。`main-color`指向强调色，所以配置未设置的文本样式默认颜色都印成绿色，而不是引擎的蓝色。
+
+## 变化
+
+### 把题注留在图下方
+
+使用图类型的普通默认设置时，图4.1、4.4和4.6的题注会占用正文栏的行，边栏只放光路图和术语注。
+
+```diff
+-const resourceTypes = defaultResourceTypes(LANG).map((type) => (type.id !== 'figure' ? type
+-  : { ...type, defaultPlacement: { captionSide: true } })); // 易错点：resource-types-locale
++const resourceTypes = defaultResourceTypes(LANG); // 易错点：resource-types-locale
+```
+
+### 让边栏在每一页都位于右侧
+
+对于在屏幕上一次看一页的文档，可以取消页边距镜像，并把左页的页码和书眉移到右边缘；这样各章可以从任一页开始。
+
+```diff
+-  sideColumnSide: 'outer', // 右页在右，左页在左（页边距是镜像的）
++  sideColumnSide: 'right', // 页边距不再镜像后，'outer'本来也就是这个意思
+-    bottom: mm(BOTTOM), left: mm(INNER), right: mm(OUTER), mirror: true } }, // left：右页的内侧
++    bottom: mm(BOTTOM), left: mm(INNER), right: mm(OUTER), mirror: false } },
+-      { level: 1, breakBefore: { enabled: true, parity: 'odd' }, marginBottom: pt(LEAD),
++      { level: 1, breakBefore: { enabled: true, parity: 'any' }, marginBottom: pt(LEAD),
+-const verso = { parity: 'even', edge: 'top-left' }; // x从左边缘向内计算
++const verso = { parity: 'even', edge: 'top-right' };
+-  head({ id: 'verso-folio', ...verso, ...folio, x: OUTER }),
+-  head({ id: 'verso-title', ...verso, content: '{title}', x: OUTER + HEAD_GAP }),
++  head({ id: 'verso-folio', ...verso, ...folio, x: -OUTER }),
++  head({ id: 'verso-title', ...verso, content: '{title}', x: -(OUTER + HEAD_GAP) }),
+-  head({ id: 'drop-folio', ...recto, ...folio, pages: 'opener', edge: 'bottom-right', x: -OUTER,
++  head({ id: 'drop-folio', ...folio, pages: 'opener', edge: 'bottom-right', x: -OUTER,
+```
+
+### 在色带下开启本章
+
+<RecipeLink slug="chapter-opener-bleed-band">出血色带上的章首页</RecipeLink>让一条色带从页面顶部出血，并在上面排标题和168 pt的章号。
+
+## 常见问题
+
+- 图和术语注按正文排到它们的顺序在边栏中依次堆叠，从不并排。临界角术语注的围栏写在斯涅尔定律那一段之后、引用图4.3的那一段之前，所以在<PageRef page={2}>第88页</PageRef>上它堆叠在图4.2和图4.3之间，位于引入这个术语的段落旁边。如果它的围栏写在那次引用之后，就会落在图4.3下方。
+- 在一章的第一页，只在学习目标框之后引用边栏图。侧栏图从边栏顶部开始堆叠，不会给锚定在那里的眉题和数字让位，所以在第一段引用的图会盖在它们上面。

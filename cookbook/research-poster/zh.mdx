@@ -1,0 +1,67 @@
+---
+title: "一整张大页上的学术海报"
+summary: "600 × 800 mm的会议海报：标题色带下是一个通栏的框，里面三栏嵌套面板，热力图配色块图例，还有150 pt的−4.2 °C。"
+description: "用Postext排学术海报：用标题的版面设计做标题色带，一个通栏框里放三栏嵌套框，色块、行内标签和电子海报PNG。"
+question: "怎样像会议海报那样，在两栏页面上横排三栏面板？"
+aliases: ["会议海报", "学术海报", "科研海报", "电子海报", "A1海报", "三栏面板", "海报网格", "墙报", "conference poster", "academic poster", "scientific poster", "e-poster", "poster grid"]
+pageNotes: { "1": "顶部一条绿色色带，上面是会议名称、粗白字标题Street trees and sidewalk heat、作者及其单位、一个P-47标签，以及一个画着树和橙色太阳的圆形标志。两栏摘要下方，六块面板组成三栏，每块上方有一条彩色色条：Introduction和Methods，附一张街道平面图；橙色色条下的Results，有极大的橙色数字−4.2 °C、四色图例、16个街区逐时的热力图和一张柱状图；Conclusions、Planting plan和References。页脚一条浅绿色长条，里面是带圆角框的关键词。" }
+---
+
+## 成品一览
+
+一张会议海报，内容是一项虚构的研究：行道树与人行道温度。整张海报排在一个600 × 800 mm的页面上。绿色色带上是会议名称、110 pt Bitter标题、带单位标记的作者和地理学院的标志。两栏摘要下方，一个不带边框的框横跨两个正文栏，里面是六块面板组成的三栏网格，每块面板是自己的框，上方有一条6 pt的色条。中间一栏以150 pt的橙色−4.2 °C开头，接着是按街区和时段显示气温的热力图，配彩色色块图例，然后是一张路面材料柱状图。一条带底色的关键词标签长条位于下页边距上。同一文件还能排出西班牙语版本，CodePen示例还提供1,701 × 2,268 px的PNG页面。
+
+## 做法
+
+### 1 · 以72 dpi排整张海报
+
+<Excerpt region="sheet" />
+
+在默认的300 dpi下，海报的断行和72 dpi时完全一样，但页面尺寸是7,087 × 9,449 px，绘制出来是268 MB的像素（[页面尺寸预设](/zh/docs/configuration#页面尺寸预设)）。在72 dpi下一个点就是一个像素。查看器用`renderPageToCanvas`加`scale`绘制缩略图，`renderPage`输出会议线上展厅要求的1,701 × 2,268 px PNG（[把页面渲染成位图](/zh/docs/configuration#把页面渲染为位图)）。行距把上下页边距之间的750 mm分成56行，所以浮动到页脚的关键词长条正好结束在下页边距上。行距取整为38 pt时只能排55行，最后一行离页边距还差12.7 mm；关键词长条就放不进面板下方，移到了第二页。
+
+### 2 · 用标题画出标题色带
+
+<Excerpt region="band" />
+
+H1把会议名称、海报编号、作者和单位写成属性，它的版面设计把这些内容排在一个锚定在页面上、158 mm深的绿色框上（[通栏与高级版面设计](/zh/docs/configuration#通栏与高级设计)）。这个框在上页边距下方133 mm处结束。不设`minHeight`时，摘要会从绿色下方0.9 mm处开始；`minHeight`设为十一个网格行，留出14 mm。设计文字只印纯文本，所以单位标记用的是字符¹ ² ³，它们是Latin-1范围内仅有的上标数字。
+
+### 3 · 把面板嵌套在一个通栏框里
+
+<Excerpt region="answer" highlight="3-9,21" />
+
+正文最多两栏，所以网格是标注框里的一个`:::columns{count=3}`分栏组，`span="page"`让这个标注框在摘要下方横跨两个正文栏（[`:::columns`](/zh/docs/document-format#columns)）。每块面板是嵌套在分栏组里的标注框：它有自己的样式，宽度取栏宽175 mm，与上方面板之间有18 mm的`marginTop`（[`:::callout`容器](/zh/docs/configuration#callout容器)）。`breaks="3,4"`把第三块面板Results送到中间一栏顶部，把第四块Conclusions送到最后一栏顶部。不设它时，分栏组会自行齐底，在最接近总高三分之一处的面板切开。按现在的文字，切点正好落在这两块面板上；文字改动后，这个属性让切点保持不变。
+
+### 4 · 让每幅图留在自己的面板里
+
+<Excerpt region="figures" />
+
+placement为`'here'`的图留在`::resource`所在的面板里；用默认placement时，三幅图会离开各自的面板，海报排到第二页。`numberingTemplate: '{n}'`把它们编为1、2、3，而默认的`{h1}.{n}`会在H1标题下印出Figure 1.1（[资源类型](/zh/docs/configuration#资源类型)）。每条题注下的说明写明数据是合成的。
+
+### 5 · 热力图和图例共用颜色
+
+<Excerpt region="palette" />
+
+热力图的格子和图例的四个`:swatch{color="…"}`片段引用相同的调色板条目，所以给`cool`换一个值，热力图和图例会一起重新着色（[行内格式](/zh/docs/document-format#行内格式)）。图例是Results面板里的第二个`:::columns`分栏组，每栏两个条目。每种颜色同时写出十六进制值，1.4.1在色带的版面设计里绘制的就是这个值。
+
+### 6 · 用段落样式排核心数字
+
+<Excerpt region="type" />
+
+段落样式在框内同样生效，嵌套框也不例外，所以−4.2 °C是Results面板里的一个`:::paragraphs{style="stat"}`块，用150 pt的Bitter（[段落样式](/zh/docs/configuration#段落样式)）。1.4.1中段落样式不能设字重，所以数字写成粗体，以Bitter 700印出。另一个样式给参考文献设9 mm的悬挂缩进。关键词长条是一个带底色的框，`placement="bottom"`，浮动到网格下方的页脚。
+
+## 变化
+
+### 以150 dpi导出电子海报
+
+会议要求更大的文件时，得到一张3,543 × 4,724 px的PNG，断行不变。
+
+```diff
+-  dpi: 72, backgroundColor: col('paper'),
++  dpi: 150, backgroundColor: col('paper'),
+```
+
+## 常见问题
+
+- Rethink Sans在Canvas上会把括号里的单个数字画成带圈数字，例如11(3)里的期号，所以参考文献只给出卷号和页码。
+- 1.4.1中，位于文档末尾的通栏框下方若留不出两行正文的空间，就会移到新的一页。所以关键词长条用`placement="bottom"`浮动，排在下页边距上，位于网格下方剩下的50 mm里。
+- 1.4.1中，紧跟`:::paragraphs`组的段落与它之间只隔样式的`spaceBetween`，这里是最后一条参考文献下方2.8 mm。在致谢之前加一个`:::space{lines=0.75}`，空出10.8 mm，接近面板里其他段落之间的10.6 mm。

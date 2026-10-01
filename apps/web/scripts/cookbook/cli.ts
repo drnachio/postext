@@ -12,8 +12,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { captureDir } from "../../src/lib/cookbook/paths.ts";
 import { sourceHash } from "../../src/lib/cookbook/hash.ts";
-import type { CaptureManifest, Locale, RecipeMeta } from "../../src/lib/cookbook/types.ts";
-import { LOCALES } from "../../src/lib/cookbook/types.ts";
+import type { CaptureManifest, SampleLocale, RecipeMeta } from "../../src/lib/cookbook/types.ts";
+import { SAMPLE_LOCALES } from "../../src/lib/cookbook/types.ts";
 import type { RecipeEntry } from "./args.ts";
 import {
   UsageError, c, flag, int, list, loadRecipes, mark, parseArgs, plural, str, userPath,
@@ -84,7 +84,7 @@ async function runCaptureCommand(argv: readonly string[]): Promise<number> {
     argv,
     {
       all: { type: "boolean" },
-      lang: { type: "list", value: "en,es", choices: LOCALES },
+      lang: { type: "list", value: "en,es", choices: SAMPLE_LOCALES },
       check: { type: "boolean" },
       force: { type: "boolean" },
       sheet: { type: "string", value: "out.webp" },
@@ -145,7 +145,7 @@ async function runCaptureCommand(argv: readonly string[]): Promise<number> {
     return 0;
   }
 
-  const langs = list(args, "lang") as Locale[] | undefined;
+  const langs = list(args, "lang") as SampleLocale[] | undefined;
   const mode = (sandboxOnly ? " · Sandbox bundles only" : "") + (flag(args, "check") ? " · check only, nothing written" : "");
   const names = selected.map((entry) => {
     const reason = reasons.get(entry.slug);

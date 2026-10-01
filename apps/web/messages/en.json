@@ -410,6 +410,15 @@
       "openstax-fisica": "Physics (OpenStax)",
       "pintura-espanola": "Spanish Painting",
       "senales": "Signals 2020"
+    },
+    "descriptions": {
+      "bioquimica-feduchi": "A column-and-a-half biochemistry textbook, the main column at the spine and an outer column of figures, key concepts and activities",
+      "deep-sky": "A two-column astronomy magazine with full-bleed openers, boxes and pull quotes",
+      "don-quijote": "A column-and-a-half literary edition with margin glosses and Doré's plates",
+      "hongloumeng": "A classic Chinese novel in 120 chapters, with the 1884 plates: the 1792 text in Traditional Chinese, set vertically and bound on the right, the same text in Simplified Chinese, and Joly’s English translation of the first 56 chapters",
+      "openstax-fisica": "A column-and-a-half textbook with worked examples, checks, tables and formulas",
+      "pintura-espanola": "A single-column exhibition catalogue, entry and commentary facing the full-page plate",
+      "senales": "A two-column EEA magazine with photo openers, boxes, pull quotes and data panels"
     }
   },
   "ApiPreview": {

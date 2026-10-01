@@ -1,0 +1,92 @@
+---
+title: "随笔集中按奇偶页设置的书眉"
+summary: "按奇偶页和页面角色筛选页眉元素：左页排书名，右页排截短的随笔标题，页码标签挂在页边距里，章首页只在页脚排页码。"
+description: "用Postext排一部袖珍版蒙田随笔：书眉按奇偶页和页面角色选择，页码标签放在外侧页边距，过长的随笔标题以省略号截断。"
+question: "怎样把书名排在左页、章名排在右页、页码放在外侧？"
+aliases: ["书眉", "running head", "左右页书眉", "奇偶页", "奇数页 偶数页", "页码放外侧", "页码标签", "folio tab", "章名过长", "省略号截断标题", "truncate title", "章首页隐藏页眉", "空白页颜色", "页眉默认蓝色", "header", "parity"]
+pageNotes: { "3": "右页书眉用省略号截断这篇随笔长达81个字符的标题，其后是一条0.5 pt的深褐色分隔线和外侧页边距里的页码标签。", "4": "第32页是左页，书眉排书名；随笔在页面约三分之一处结束。" }
+---
+
+## 成品一览
+
+一部袖珍版蒙田《随笔集》（Charles Cotton英译本）的第29至33页：第IV章全文和第V章的开头。左页书眉排书名，用加宽字距的大写字母；右页书眉排随笔标题，用斜体，并以省略号截短，因为第IV章的标题长达81个字符。每个页码都放在外侧页边距里的一个深褐色标签中，与版心边缘的一条0.5 pt细线相距3 mm。章首页不排书眉，只在页脚排页码。正文用Baskervville，排在暖白色的页面上；标题用Libre Caslon Display，页码和书名用Alegreya SC。每一个书眉都在配置中定义，因此引擎内置的书眉（8 pt的蓝色Open Sans）永远不会印出来。
+
+## 做法
+
+### 1 · 替换内置的蓝色书眉
+
+<Excerpt region="palette" />
+
+配置中的每种颜色都链接到这些条目之一。如果不定义`header`，引擎会画出内置书眉：右页排`{title}`、左页排`{chapterTitle}`，下面一条1 pt的线，字体为Open Sans 600、8 pt、`#295AA3`蓝色（[页眉和页脚](/zh/docs/configuration#页眉与页脚)）。把`main-color`指向深褐色，会改变文字的默认颜色，但那个书眉仍是蓝色，因为设计槽位从不读取调色板。所以这里每个书眉都完整写出，颜色用十六进制值。粗体、斜体和引用默认也取`main-color`，`bodyText`把它们设回墨色。
+
+### 2 · 用同一个标签搭出所有书眉
+
+<Excerpt region="tab" />
+
+简短回答中把每个书眉的标签锚定到`'page'`，因此偏移量从成品边缘量起。从`top-right`角出发，正的`x`会跑出页面，所以右页的标签取负值。分隔线挂在标签上，标题挂在分隔线上（[元素定位](/zh/docs/configuration#元素定位)）。标签的尺寸写成具名常量，因为其他部件都以它们为基准。分隔线高`TAB_H`。页码和两种标题共用一个9 pt的行框，而设计文本的基线位于行框自上而下80%处，所以无论字号多大，三者都站在同一条基线上。
+
+<PageShot page={2} crop="0.04,0.045,0.6,0.05" caption="第30页，左页：从外侧页边距向内依次是标签、分隔线和书名。" />
+
+<PageShot page={3} crop="0.34,0.045,0.62,0.05" caption="第31页，右页：随笔标题在分隔线前被截断，标签位于外侧页边距。" />
+
+### 3 · 镜像页边距，按整行计算
+
+<Excerpt region="page" />
+
+设了`mirror: true`后，`right`页边距在右页是外侧，到左页就移到左边，所以`OUTER`始终是切口一侧的页边距，标签就挂在那里。下页边距由成品尺寸、上页边距和`LINES`推算，因此无论成品尺寸和上页边距怎么设，版心都正好是`LINES`行、每行`LEAD`（这里是31 × 14 pt）。每个排满的页面都在第31行结束，所以<PageRef page={2}>30和31</PageRef>这样的对页底部齐平。
+
+### 4 · 让章首页显示完整标题
+
+<Excerpt region="opener" />
+
+章首页用`overflow: 'wrap'`完整排出标题，并在标题行中每个`\\`处换行。只有通页的章首页才遵守这些换行，所以该级别设了`span: 'page'`（[标题中的换行](/zh/docs/document-format#标题中的换行)）。在书眉中，`{chapterTitle}`总是把标题放在一行里，省略号截断的就是这一行。序号来自标题的`{num="IV"}`属性，标牌旁的小型大写字母来自前置元数据中的`subtitle`。
+
+### 5 · 每篇随笔都从右页开始
+
+<Excerpt region="levels" />
+
+只要设了`headings`对象，H1前的分页就会关闭，所以这里重新声明。用`'odd'`时，在右页结束的随笔后面会跟一个空白左页。西班牙语版就有一个，因为它的第IV章在第31页结束；这里第IV章在第32页（左页）结束，第V章从第33页开始。书眉的`pages: 'body'`让它们不出现在空白页和章首页上（章首页即第一个块是该标题的页面）。页脚的`pages: 'opener'`只在章首页印出页脚页码（[文本元素](/zh/docs/configuration#文本元素)）。
+
+### 6 · 页码从29开始
+
+<Excerpt region="build" />
+
+`parity`按页面在书中的位置判断，不看它的页码。`pageIndexOffset: 28`给每页的序号加28，于是左右页、镜像页边距和奇偶书眉都跟随书中的页序。`pageNumbering.startAt`再把这些页编为29到33。没有这个偏移，本次排版的第一页无论印什么页码都是右页。这恰好适合第29页，但如果设`startAt: 30`，书名会落在第31页、随笔标题落在第32页，各自排错了跨页的一侧。
+
+## 变化
+
+### 给长标题一个短书眉
+
+在标题行中写上书眉用的短标题`{num="IV" short="Of false objects"}`，然后印这个属性而不是完整标题；没有`short`的章在那里什么也不印。
+
+```diff
+-  { kind: 'text', id: 'essay', content: '{chapterTitle}', parity: 'odd', pages: 'body',
++  { kind: 'text', id: 'essay', content: '{attr.short}', parity: 'odd', pages: 'body',
+```
+
+### 随笔可以从任一侧开始
+
+用`'any'`时，随笔从下一页开始，不论左右页，也不会添加空白页。标牌挂在版心的左上角，页脚页码居中排在它下方，所以两者在左页和右页上的位置相同。
+
+```diff
+-      { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
++      { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
+```
+
+### 把空白左页涂成强调色
+
+带`pages: 'blank'`的框只印在为右页分页而添加的页面上：在西班牙语版中，它把第32页填成深褐色；英语版没有空白页，版面不变。
+
+```diff
+ const footer = { elements: [folio({ id: 'drop-folio', parity: 'all', pages: 'opener',
+-  anchor: { to: 'container', edge: 'bottom' }, y: -HEAD })] };
++  anchor: { to: 'container', edge: 'bottom' }, y: -HEAD }),
++  { kind: 'box', id: 'blank-leaf', pages: 'blank', style: { backgroundColor: col('sepia') },
++    placement: { anchor: page('top-left'),
++      size: { width: mm(TRIM.width), height: mm(TRIM.height) } } }] };
+```
+
+## 常见问题
+
+- `CAP`是按每个版本中第IV篇随笔的标题调出来的，这里只有它出现在书眉中。第V篇的书眉仍会在单词中间截断（“Whether the governor of a place besieged ou…”），所以长标题多的书需要“变化”中的短书眉。
+- 在英语版中，把`minWordSpacing`从0.7提高到0.75，第V篇的第一行（“Quintus Marcius, the Roman legate…”）在允许范围内找不到断点，词间距会拉到正常宽度的2.4倍。西班牙语版没有这样的行。每次修改后，都要检查截图列出的最松的几行。

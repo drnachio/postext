@@ -5,6 +5,7 @@ import { Kicker } from "@/components/brand/Kicker";
 import { penDefineData } from "@/lib/codepen";
 import { GUIDE_BUNDLE_FILE, GUIDE_BUNDLE_PATH, guideBundleStats } from "@/lib/guideBundle";
 import { CodeBlock } from "./CodeBlock";
+import { htmlLang } from "@/i18n/locales";
 
 /** What the `.postext` carries, in the order the figure lists it, with the
  *  path each part lives at inside the archive. */
@@ -23,9 +24,11 @@ const PARTS = [
 export async function BundleSection() {
   const t = await getTranslations("Bundle");
   const tl = await getTranslations("Landing");
-  const locale = (await getLocale()).startsWith("es") ? "es" : "en";
+  const pageLocale = await getLocale();
+  // The edition the example opens: the bundle carries English and Spanish.
+  const locale = pageLocale.startsWith("es") ? "es" : "en";
   const stats = guideBundleStats();
-  const families = new Intl.ListFormat(locale, { type: "conjunction" }).format(stats.families);
+  const families = new Intl.ListFormat(htmlLang(pageLocale), { type: "conjunction" }).format(stats.families);
 
   const partText = {
     config: t("configText"),

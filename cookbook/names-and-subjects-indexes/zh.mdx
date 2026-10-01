@@ -1,0 +1,65 @@
+---
+title: "人名索引与主题索引"
+summary: "带index=\"names\"的标记进入人名索引，其余标记进入主题索引；:::index把每个索引排成两栏，构建过程自动确定页码。"
+description: "一本关于印刷字体的专著中的一章，末尾是人名索引和主题索引，两者都由同一个Markdown文档中的:index标记生成。"
+question: "怎样从同一份文本印出人名索引和主题索引？"
+aliases: ["人名索引", "人物索引", "主题索引", "名词索引", "专名索引", "index of names", "subject index", "índice onomástico", "índice de materias", "书后索引", "back-of-book index", ":index", ":::index"]
+pageNotes: { "6": "人名索引：姓氏在前的人名排在Bodoni字母标题下，主要页码为粗体。", "7": "主题索引：有子条目、See和See also互见，42-line Bible归在F下。" }
+---
+
+## 成品一览
+
+学术专著《Letters of Metal》的第四章，论述印刷字体，开本155 × 235 mm：正文单栏Crimson Pro，标题用Bodoni斜体，强调色为砖红。文章从古腾堡的textura哥特体讲起，经过Jenson、Aldus和Griffo、Garamond和Plantin、Caslon和Baskerville、Fournier的点制，以及Pradell和Gil刻制、Ibarra印刷的西班牙字体，一直到Bodoni的现代体。它像这类书一样以两个对页上的索引结束：左页是印刷商、刻字匠和赞助人，右页是字体、工具和书籍。两个索引都来自同一份带标记的文本，其中每个页码都是标记实际所在的页。
+
+## 做法
+
+### 1 · 人物标记进人名索引，主题标记进主索引
+
+代码见上面的[简短回答](#简短回答)，其余都在Markdown里。带`index="names"`的标记进入由`:::index{index="names"}`印出的索引，其他标记都进入由不带参数的`:::index`印出的主索引。所以`:index[Aldus Manutius]{term="Manutius, Aldus" index="names" main}`在正文中印出人名，并在人名索引的*Manutius*下登记一个粗体页码；两行之后的`:index[italic]{term="Italic" main}`则把同一页登记在主题索引的*Italic*下。如果某个人物本身也是本章的主题，可以同时带两种标记。
+
+### 2 · 人名倒装，并按读者会去查的字母排序
+
+人名按姓氏在前登记：`term="Garamond, Claude"`、`term="Dall’Aglio, Margherita"`。逗号是条目的一部分，所以排序器会像索引编制者那样把*Didot, Firmin*排在*Didot, François-Ambroise*之前。印出的形式会被归到错误字母下时，用`sort`指定排序键：英文版标记为`term="42-line Bible" sort="Forty-two-line Bible"`，这样这部圣经排在F下，而不是另开一个0–9组。子条目（`term="Foundries!Plantin-Moretus"`）、粗体的主要页码（`main`）、Bodoni一节首尾的`range="start"`和`range="end"`，以及互见（`see="Italic"`、`seealso="Matrices"`）完成其余工作；带层级的`see`目标印出时用冒号连接，如*Humanist type. See Roman type: Venetian*。
+
+### 3 · 构建一次，文档自己确定页码
+
+<Excerpt region="build" />
+
+索引印的页码要排版后才存在，而印索引本身又要占页。`buildDocument()`处理这个问题：它排出本章，读取每个标记所在的页，印出两个索引，只要有页码变了就重新排版。这里索引在正文之后，所以第二遍只是确认第一遍；如果索引排在正文之前，它会让后面的每一页都移动，排版会一遍遍进行，直到结果一致为止。在Bodoni一节加一段，人名索引会自动给出Whittingham的新页码。
+
+### 4 · 给每个索引一个两栏的首页
+
+<Excerpt region="opener" />
+
+简短回答中的标题样式为`# Index of Names {style="index"}`做三件事：开新页（`parity: 'any'`，所以两个索引紧接着排，中间没有空白页），把它后面的部分排成两栏、栏间距7 mm，并且通过`numbered: false`不计入章的编号。这个样式沿用章首页的设计，下沉六行，标题20 pt；字母标题重复它的Bodoni字体，使用强调色，高度为一行索引，使各栏保持行距节奏。
+
+### 5 · 在右页写出索引名
+
+<Excerpt region="running-heads" />
+
+右页书眉印`{chapterTitle}`，而索引标题和任何一章一样是一级标题，所以它之后的各页顶部印的是*Index of Subjects*。`pages: 'body'`让书眉不出现在两个索引的首页上，这两页改为在页脚印页码。
+
+## 变化
+
+### 印一个合并索引
+
+去掉人物标记和第二个标题上的`index="names"`：所有标记都进入主索引，人名和主题排在同一个字母序里。
+
+```diff
+-:index[Aldus Manutius]{term="Manutius, Aldus" index="names" main}
++:index[Aldus Manutius]{term="Manutius, Aldus" main}
+```
+
+### 去掉字母标题
+
+这么短的人名索引不用字母标题也好读。`groups.enabled: false`去掉字母标题，字母之间留一行空白；这项设置对两个索引都起作用。
+
+```diff
+-  groups: { fontFamily: 'Bodoni Moda', fontSize: pt(11), fontWeight: 600, color: col('brick') },
++  groups: { enabled: false },
+```
+
+## 常见问题
+
+- `index`配置是共用的：两个索引使用同样的字体、行距和字母标题。
+- 题注或表格单元格中的标记会原样印出。应在引用该图的段落里标记人物。

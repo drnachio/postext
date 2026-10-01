@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { HeroArt, HERO_ART_NIGHT } from "@/components/landing/HeroArt";
-import { loadOgFonts } from "./og-fonts";
+import { CJK_SANS, CJK_SERIF, loadCjkOgFonts, loadOgFonts } from "./og-fonts";
 import { svgMarkup } from "./og-svg";
 
 // The landing's hero in the dark theme, as a social card: night ground
@@ -47,15 +47,34 @@ function heroArtSrc() {
   return artSrc;
 }
 
-/** Words of a title, with those inside `<em>…</em>` flagged. */
+/** A Chinese character with the punctuation that may not start or end a
+ *  line on its side (（书眉）, 页面，), or a run of anything else. */
+const HAN_PIECE = /[（「『《“‘]*\p{Script=Han}[，。、：；！？）」』》”’]*|[^\p{Script=Han}]+/gu;
+const HAN = /\p{Script=Han}/u;
+
+/** Words of a title, with those inside `<em>…</em>` flagged. Chinese has
+ *  no spaces to wrap at, so each character is a piece of its own; a piece
+ *  is followed by a word space (`gap`) only where the title has one, so
+ *  an `<em>` inside a Chinese phrase (与<em>下沉</em>章首) stays tight. */
 function titleWords(title: string) {
-  return title
-    .split(/(<em>.*?<\/em>)/)
-    .flatMap((part) => {
-      const em = part.startsWith("<em>");
-      const text = em ? part.slice(4, -5) : part;
-      return text.split(/\s+/).filter(Boolean).map((word) => ({ word, em }));
+  const parts = title.split(/(<em>.*?<\/em>)/).map((part) => {
+    const em = part.startsWith("<em>");
+    return { em, text: em ? part.slice(4, -5) : part };
+  });
+  return parts.flatMap(({ em, text }, p) => {
+    const words = text.split(/\s+/).filter(Boolean);
+    const spaceAfter = /\s$/.test(text) || /^\s/.test(parts[p + 1]?.text ?? " ");
+    return words.flatMap((word, w) => {
+      const pieces = word.match(HAN_PIECE) ?? [word];
+      const last = w === words.length - 1;
+      return pieces.map((piece, i) => ({
+        word: piece,
+        em,
+        han: HAN.test(piece),
+        gap: i === pieces.length - 1 && (!last || spaceAfter),
+      }));
     });
+  });
 }
 
 export async function generateOgImage({
@@ -76,9 +95,15 @@ export async function generateOgImage({
    *  top of the card from x = 620. */
   art?: { src: string; width: number; height: number };
 }) {
-  const fonts = await loadOgFonts();
+  const plainTitle = title.replace(/<\/?em>/g, "");
+  const [latin, cjk] = await Promise.all([
+    loadOgFonts(),
+    loadCjkOgFonts({ display: plainTitle, lead: description, kicker }),
+  ]);
+  const fonts = [...latin, ...cjk];
   const words = titleWords(title);
-  const length = words.reduce((n, w) => n + w.word.length + 1, 0);
+  // In Latin letters: a Chinese character is about as wide as two.
+  const length = words.reduce((n, w) => n + (w.han ? 2 * [...w.word].length : w.word.length + 1), 0);
   const size = length <= 26 ? 66 : length <= 44 ? 58 : 48;
 
   return new ImageResponse(
@@ -105,20 +130,21 @@ export async function generateOgImage({
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", marginTop: "auto" }}>
-            <div style={{ fontFamily: "Geist", fontSize: 16, fontWeight: 600, color: accent, letterSpacing: 3, textTransform: "uppercase" }}>
+            <div style={{ fontFamily: `Geist, ${CJK_SANS}`, fontSize: 16, fontWeight: 600, color: accent, letterSpacing: 3, textTransform: "uppercase" }}>
               {kicker}
             </div>
-            <div style={{ display: "flex", flexWrap: "wrap", columnGap: size * 0.24, marginTop: 16, maxWidth: 540, lineHeight: 1.02 }}>
-              {words.map(({ word, em }, i) => (
+            <div style={{ display: "flex", flexWrap: "wrap", marginTop: 16, maxWidth: 540 + size * 0.24, lineHeight: 1.02 }}>
+              {words.map(({ word, em, han, gap }, i) => (
                 <div
                   key={i}
                   style={{
-                    fontFamily: "Fraunces",
+                    fontFamily: `Fraunces, ${CJK_SERIF}`,
                     fontSize: size,
                     fontWeight: em ? 600 : 800,
                     fontStyle: em ? "italic" : "normal",
                     color: em ? GILT : "#ffffff",
-                    letterSpacing: em ? 0 : -size * 0.02,
+                    letterSpacing: em || han ? 0 : -size * 0.02,
+                    marginRight: gap ? size * 0.24 : 0,
                   }}
                 >
                   {word}
@@ -127,7 +153,7 @@ export async function generateOgImage({
             </div>
             <div style={{ width: 56, height: 4, backgroundColor: GILT, marginTop: 26 }} />
             {description && (
-              <div style={{ fontFamily: "Lora", fontStyle: "italic", fontSize: 23, color: MIST, lineHeight: 1.42, marginTop: 20, maxWidth: 520 }}>
+              <div style={{ fontFamily: `Lora, ${CJK_SERIF}`, fontStyle: "italic", fontSize: 23, color: MIST, lineHeight: 1.42, marginTop: 20, maxWidth: 520 }}>
                 {description}
               </div>
             )}

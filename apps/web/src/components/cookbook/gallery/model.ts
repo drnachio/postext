@@ -8,6 +8,8 @@ import MiniSearch from "minisearch";
 import {
   MINISEARCH_OPTIONS,
   exactIdentifierBonus,
+  hanWords,
+  hasHan,
   matchReason,
   processTerm,
   recipeIdentifiers,
@@ -253,23 +255,36 @@ function facetCounts(pool: CatalogRecipe[], state: GalleryState): FacetCounts {
 export type GapEntry = NonNullable<Catalog["gaps"]>[number];
 
 /** Words of a text as the index sees them (folded, singular, no stop
- *  words), joined by single spaces. */
+ *  words), joined by single spaces. Chinese runs stay whole (cut only at
+ *  function words) after the Latin words: they have no word boundaries to
+ *  match on, so a gap term in Chinese is found as a substring. */
 function normalWords(text: string, locale: Locale): string {
-  return tokenize(text)
+  return tokenize(text.replace(/\p{Script=Han}+/gu, " "))
     .map((word) => processTerm(word, locale))
     .filter((word): word is string => Boolean(word))
+    .concat(hanWords(text))
     .join(" ");
 }
 
+/** A gap term's `normalWords` is long enough to be named on purpose. */
+function namable(words: string): boolean {
+  return words.length >= (hasHan(words) ? 2 : 3);
+}
+
+/** `query` (padded with spaces) names `words` whole. */
+function names(query: string, words: string): boolean {
+  return hasHan(words) ? query.includes(words) : query.includes(` ${words} `);
+}
+
 /** Gaps whose label or an alias the query names in full ("footnotes",
- *  "notas al pie", "how do I add footnotes"), word for word. */
+ *  "notas al pie", "how do I add footnotes", "怎么加脚注"), word for word. */
 export function matchedGaps(q: string, gaps: readonly GapEntry[], locale: Locale): GapEntry[] {
   const query = ` ${normalWords(q, locale)} `;
-  if (query.trim().length < 3) return [];
+  if (!namable(query.trim())) return [];
   return gaps.filter((gap) =>
     [gap.label, ...gap.aliases].some((term) => {
       const words = normalWords(term, locale);
-      return words.length >= 3 && query.includes(` ${words} `);
+      return namable(words) && names(query, words);
     }),
   );
 }
@@ -281,7 +296,7 @@ function gapRemainder(q: string, gaps: readonly GapEntry[], locale: Locale): str
   for (const gap of gaps) {
     for (const term of [gap.label, ...gap.aliases]) {
       const words = normalWords(term, locale);
-      if (words.length >= 3) rest = rest.split(` ${words} `).join(" ");
+      if (namable(words)) rest = rest.split(hasHan(words) ? words : ` ${words} `).join(" ");
     }
   }
   return rest.trim();

@@ -31,8 +31,8 @@ import { captureDir, recipeDir, WEB_DIR } from "../../src/lib/cookbook/paths.ts"
 import { loadRegistry } from "../../src/lib/cookbook/registry.ts";
 import { compareSemVer } from "../../src/lib/cookbook/validate.ts";
 import { listRecipeSlugs, readRecipeMeta, readRecipeSources } from "../../src/lib/cookbook/sources.ts";
-import type { CaptureManifest, CaptureVariant, Locale, RecipeMeta, Registry } from "../../src/lib/cookbook/types.ts";
-import { LOCALES } from "../../src/lib/cookbook/types.ts";
+import type { CaptureManifest, CaptureVariant, SampleLocale, RecipeMeta, Registry } from "../../src/lib/cookbook/types.ts";
+import { SAMPLE_LOCALES } from "../../src/lib/cookbook/types.ts";
 import { altText, sidesOf, spreadsOf } from "./cards.ts";
 import { detect, pdfPageCount, runChecks } from "./checks.ts";
 import type { Finding } from "./checks.ts";
@@ -46,7 +46,7 @@ import type { EngineSpec } from "./shim.ts";
 export interface CaptureOptions {
   slugs: string[];
   all?: boolean;
-  langs?: Locale[];
+  langs?: SampleLocale[];
   check?: boolean;
   force?: boolean;
   sheet?: string;
@@ -64,7 +64,7 @@ export interface CaptureOptions {
 
 export interface CaptureResult {
   slug: string;
-  variant: Locale;
+  variant: SampleLocale;
   ok: boolean;
   fails: { check: string; detail: string }[];
   warns: { check: string; severity: "warn" | "info"; detail: string }[];
@@ -87,7 +87,7 @@ interface Prepared {
   meta: RecipeMeta;
   sourceHash: string;
   previous: CaptureManifest | null;
-  variants: Locale[];
+  variants: SampleLocale[];
   assets: string[];
 }
 
@@ -117,9 +117,9 @@ export function readManifest(slug: string): CaptureManifest | null {
   }
 }
 
-function prepare(slug: string, langs: readonly Locale[]): Prepared {
+function prepare(slug: string, langs: readonly SampleLocale[]): Prepared {
   const meta = readRecipeMeta(slug);
-  const locales = (meta.sample?.locales ?? []).filter((l) => LOCALES.includes(l));
+  const locales = (meta.sample?.locales ?? []).filter((l) => SAMPLE_LOCALES.includes(l));
   return {
     slug,
     meta,
@@ -133,7 +133,7 @@ function prepare(slug: string, langs: readonly Locale[]): Prepared {
 /** The recipes to capture: the named ones, --all, or the stale ones. A
  *  recipe that needs a newer postext than the engine the run pins (a draft
  *  previewing the next release) is reported instead of run. */
-function selectRecipes(opts: CaptureOptions, langs: readonly Locale[], engine: EngineSpec): { prepared: Prepared[]; broken: CaptureResult[] } {
+function selectRecipes(opts: CaptureOptions, langs: readonly SampleLocale[], engine: EngineSpec): { prepared: Prepared[]; broken: CaptureResult[] } {
   const known = listRecipeSlugs();
   for (const slug of opts.slugs) {
     if (!known.includes(slug)) throw new Error(`no recipe "${slug}" in cookbook/`);
@@ -166,7 +166,7 @@ function selectRecipes(opts: CaptureOptions, langs: readonly Locale[], engine: E
   return { prepared, broken };
 }
 
-function failed(slug: string, variant: Locale, check: string, detail: string): CaptureResult {
+function failed(slug: string, variant: SampleLocale, check: string, detail: string): CaptureResult {
   return {
     slug, variant, ok: false, fails: [{ check, detail }], warns: [], pages: 0, totalMs: 0, written: false,
     outDir: path.join(captureDir(slug), variant),
@@ -180,7 +180,7 @@ export const sandboxFile = (slug: string) => `${slug}.postext`;
 
 /** The bundle's id and name: `recipe-<slug>` and the write-up's title in the
  *  edition's language (its summary as the description). */
-function sandboxMeta(slug: string, variant: Locale): SandboxMeta {
+function sandboxMeta(slug: string, variant: SampleLocale): SandboxMeta {
   const file = path.join(recipeDir(slug), `${variant}.mdx`);
   const data = fs.existsSync(file) ? (matter(fs.readFileSync(file, "utf-8"), {}).data as Record<string, unknown>) : {};
   const text = (value: unknown) => (typeof value === "string" ? value.trim() : "");
@@ -423,17 +423,17 @@ const manifestKey = (m: CaptureManifest | null) => (m ? JSON.stringify({ ...m, c
  *  capture.json changed, or null when nothing changed. */
 function writeRecipe(
   task: Prepared,
-  outputs: Map<Locale, Output>,
+  outputs: Map<SampleLocale, Output>,
   engine: EngineSpec,
   chrome: string,
   force: boolean,
-): { fresh: Set<Locale>; dropped: Locale[]; manifestOnly: boolean } | null {
+): { fresh: Set<SampleLocale>; dropped: SampleLocale[]; manifestOnly: boolean } | null {
   const finalDir = captureDir(task.slug);
   const prev = task.previous;
   const sameBase = !!prev && prev.sourceHash === task.sourceHash && prev.engine?.postext === engine.postext;
-  const variants: Partial<Record<Locale, CaptureVariant>> = {};
-  const fresh = new Set<Locale>();
-  const kept = new Set<Locale>();
+  const variants: Partial<Record<SampleLocale, CaptureVariant>> = {};
+  const fresh = new Set<SampleLocale>();
+  const kept = new Set<SampleLocale>();
   for (const [locale, output] of outputs) {
     const old = prev?.variants?.[locale];
     if (!output.variant) continue;
@@ -448,8 +448,8 @@ function writeRecipe(
   }
   // Editions not captured this run survive only when their inputs did not change.
   const sampled = new Set(task.meta.sample.locales);
-  const dropped: Locale[] = [];
-  for (const locale of LOCALES) {
+  const dropped: SampleLocale[] = [];
+  for (const locale of SAMPLE_LOCALES) {
     const old = prev?.variants?.[locale];
     if (!old || outputs.has(locale)) continue;
     if (sameBase && sampled.has(locale) && variantFilesExist(path.join(finalDir, locale), old)) {
@@ -466,7 +466,7 @@ function writeRecipe(
     engine: { postext: engine.postext as CaptureManifest["engine"]["postext"], ...(usesPdf ? { postextPdf: engine.postextPdf as CaptureManifest["engine"]["postext"] } : {}), source: "npm" },
     chrome,
     capturedAt: new Date().toISOString(),
-    variants: Object.fromEntries(LOCALES.filter((l) => variants[l]).map((l) => [l, variants[l]])),
+    variants: Object.fromEntries(SAMPLE_LOCALES.filter((l) => variants[l]).map((l) => [l, variants[l]])),
   };
 
   // No image changed: rewrite capture.json alone (keeping capturedAt, the
@@ -526,7 +526,7 @@ async function pool<T>(jobs: (() => Promise<T>)[], limit: number): Promise<T[]> 
 
 export async function runCapture(opts: CaptureOptions): Promise<CaptureResult[]> {
   const engine = resolveEngine(opts.engine ?? "npm");
-  const langs = opts.langs?.length ? opts.langs : LOCALES;
+  const langs = opts.langs?.length ? opts.langs : SAMPLE_LOCALES;
   const { prepared, broken } = selectRecipes(opts, langs, engine);
   const results: CaptureResult[] = [...broken];
   if (!prepared.length) {
@@ -561,7 +561,7 @@ export async function runCapture(opts: CaptureOptions): Promise<CaptureResult[]>
 
     for (const task of prepared) {
       const mine = done.filter((d) => d.task === task);
-      const outputs = new Map<Locale, Output>();
+      const outputs = new Map<SampleLocale, Output>();
       for (const d of mine) {
         if (d.output) sheetEntries.push(d.output.sheet);
         // Previews are written even for a failed edition: they show what failed.
@@ -620,10 +620,10 @@ export async function runCapture(opts: CaptureOptions): Promise<CaptureResult[]>
  * layout than the published pages shows up as a warning.
  */
 export async function runSandboxOnly(opts: CaptureOptions): Promise<CaptureResult[]> {
-  const langs = opts.langs?.length ? opts.langs : LOCALES;
+  const langs = opts.langs?.length ? opts.langs : SAMPLE_LOCALES;
   const slugs = opts.slugs.length ? opts.slugs : listRecipeSlugs();
   const results: CaptureResult[] = [];
-  const tasks: { slug: string; meta: RecipeMeta; manifest: CaptureManifest; variants: Locale[] }[] = [];
+  const tasks: { slug: string; meta: RecipeMeta; manifest: CaptureManifest; variants: SampleLocale[] }[] = [];
   for (const slug of slugs) {
     let meta: RecipeMeta;
     try {
@@ -642,7 +642,7 @@ export async function runSandboxOnly(opts: CaptureOptions): Promise<CaptureResul
       results.push(failed(slug, meta.sample.locales[0] ?? "en", "sandbox", "the recipe changed since its capture: capture it again, which writes the bundle too"));
       continue;
     }
-    const variants = LOCALES.filter((l) => manifest.variants[l] && langs.includes(l));
+    const variants = SAMPLE_LOCALES.filter((l) => manifest.variants[l] && langs.includes(l));
     if (variants.length) tasks.push({ slug, meta, manifest, variants });
   }
   if (!tasks.length) return results;

@@ -33,6 +33,23 @@ export function resolvePresetLocale(summary: Pick<PresetSummary, 'locale' | 'loc
   return locales.length === 1 ? locales[0]! : null;
 }
 
+/** The interface languages the showcase books are written for: a viewer in
+ *  any other language (Chinese) reads a book it has no edition for in
+ *  English, where the book has one. */
+const EDITION_LANGUAGES = ['en', 'es'];
+
+/** The language a viewer in `viewer` reads a preset in when nobody asks
+ *  for one: `viewer` itself, unless it is a language other than English or
+ *  Spanish that the book's locales lack and the book has an English
+ *  edition: then that edition's tag. A book that lists no locales (the
+ *  bundle decides on load) keeps `viewer`. */
+export function presetReaderLocale(summary: Pick<PresetSummary, 'locale' | 'locales'>, viewer: string): string {
+  if (EDITION_LANGUAGES.some((l) => sameContentLocale(l, viewer))) return viewer;
+  const locales = presetLocales(summary);
+  if (locales.length === 0 || matchContentLocale(locales, viewer)) return viewer;
+  return matchContentLocale(locales, 'en') ?? viewer;
+}
+
 /** The locale a preset opens in when nobody asks for one (its
  *  `openLocale`, as one of its locales), or null when it names none. */
 export function presetOpenLocale(summary: Pick<PresetSummary, 'locale' | 'locales' | 'openLocale'>): string | null {
@@ -101,7 +118,9 @@ export interface PresetOpenChoice {
  *    preset does not carry opens its `openLocale`, when it names one;
  *  - the preset already on screen keeps its locale (`current`);
  *  - otherwise the preset's `openLocale` (a book whose original is not in
- *    the viewer's language), else the viewer's locale — unless only other
+ *    the viewer's language), else the viewer's locale (a Chinese viewer
+ *    of a book without Chinese: its English edition, see
+ *    {@link presetReaderLocale}) — unless only other
  *    locales of it were edited: then the most recently edited one, so a
  *    row click brings the reader back to the book they were working on. */
 export function choosePresetOpen(input: {
@@ -123,7 +142,8 @@ export function choosePresetOpen(input: {
   } else if (input.current) {
     locale = input.current;
   } else {
-    const viewer = opening ?? resolvePresetLocale(input.summary, input.viewer) ?? input.viewer;
+    const reader = presetReaderLocale(input.summary, input.viewer);
+    const viewer = opening ?? resolvePresetLocale(input.summary, reader) ?? reader;
     if (draftFor(viewer) || drafts.length === 0) {
       locale = viewer;
     } else {

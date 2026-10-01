@@ -198,10 +198,92 @@ export function balancingSvg(lang: GuideLang): string {
 const BOOK_ANATOMY = byLang(
   { aria: 'anatomy of a book set with Postext', names: ['Cover', 'Contents', 'Part', 'Opener', 'Body', 'Body'] },
   { aria: 'anatomía de un libro compuesto con Postext', names: ['Cubierta', 'Índice', 'Parte', 'Apertura', 'Cuerpo', 'Cuerpo'] },
-  { aria: '用Postext排出的一本书的构成', names: ['封面', '目录', '篇章页', '章首页', '正文页', '正文页'] },
+  { aria: '用Postext排出的一本竖排书的构成，从右向左读', names: ['封面', '目录', '篇章页', '章首页', '正文页', '正文页'] },
 );
 
+/** Vertical text-line bars: columns from `right` leftward to `left`, each
+ *  running down from `top` to `bottom`, the last column of every
+ *  `every`-column paragraph ending short. */
+function columnsOf(right: number, left: number, top: number, bottom: number, pitch = 6, color = '#c8d3e0', every = 6, w = 2.6): string {
+  let out = '';
+  let i = 0;
+  for (let x = right - w; x >= left; x -= pitch, i++) {
+    const short = i % every === every - 1;
+    out += `<rect x="${x}" y="${top}" width="${w}" height="${(bottom - top) * (short ? 0.55 : 1)}" rx="${w / 2}" fill="${color}" />`;
+  }
+  return out;
+}
+
+/** The anatomy of the Chinese edition: the same six pages set vertically
+ *  and read from the right, as the book is bound — the cover's title strip,
+ *  a contents of columns with leaders down to the folios, a part divider,
+ *  an opener with its band down the right edge, and body pages in two
+ *  tiers with fore-edge heads. */
+function bookAnatomyVerticalSvg(): string {
+  const { aria, names } = BOOK_ANATOMY['zh-Hans'];
+  const roles = ['heading style', ':::toc', ':::part', 'opener', 'body', 'body'];
+  const W = 84;
+  const H = 112;
+  const y = 12;
+  const gap = 18;
+  const x0 = (PAGE_VW - (6 * W + 5 * gap)) / 2;
+  // Right to left: the cover is the rightmost card.
+  const xs = Array.from({ length: 6 }, (_, i) => x0 + (5 - i) * (W + gap));
+  const vbar = (x: number, top: number, len: number, color: string, w: number) =>
+    `<rect x="${x}" y="${top}" width="${w}" height="${len}" rx="${Math.min(w, len) / 2}" fill="${color}" />`;
+  const tiers = (x: number, right: number, left: number) =>
+    columnsOf(x + right, x + left, y + 10, y + 52) + columnsOf(x + right, x + left, y + 60, y + H - 10);
+  const out: string[] = [];
+  // Cover: the art on the left, the title strip on the right.
+  let x = xs[0]!;
+  out.push(card(x, y, W, H, NIGHT, NIGHT));
+  out.push(`<rect x="${x + 6}" y="${y + 22}" width="44" height="60" fill="#161920" stroke="#2c323d" stroke-width="0.8" />`, `<rect x="${x + 36}" y="${y + 22}" width="14" height="60" fill="#2b4acb" />`);
+  out.push(columnsOf(x + 34, x + 8, y + 30, y + 76, 4, '#2c323d', 5, 2));
+  out.push(vbar(x + 74, y + 18, 16, GILT, 2.4), vbar(x + 62, y + 18, 44, '#ffffff', 9), vbar(x + 57, y + 18, 18, GILT, 1.2), vbar(x + 52, y + 18, 30, '#9aa0aa', 3));
+  // Contents: a stripe down the right edge, the title, one column an entry.
+  x = xs[1]!;
+  out.push(card(x, y, W, H), `<rect x="${x + W - 3}" y="${y}" width="3" height="${H}" fill="${P.blue}" />`, vbar(x + W - 14, y + 10, 18, NIGHT, 6));
+  for (let c = 0; c < 9; c++) {
+    const cx = x + W - 24 - c * 7;
+    if (c === 0 || c === 4) { out.push(`<rect x="${cx - 0.5}" y="${y + 10}" width="4" height="4" fill="${c === 0 ? P.blue : GILT}" />`, vbar(cx, y + 17, 22, c === 0 ? P.blue : GILT, 3)); continue; }
+    out.push(vbar(cx, y + 10, 30, '#c8d3e0', 3), `<path d="M${cx + 1.5},${y + 44} L${cx + 1.5},${y + 94}" stroke="#c8d3e0" stroke-width="1" stroke-dasharray="1 2" />`, vbar(cx, y + 96, 7, '#9aa7b6', 3));
+  }
+  // Part divider: the label, a rule and the title from the right, the
+  // chapters further left, a band of ink down the left edge.
+  x = xs[2]!;
+  out.push(card(x, y, W, H, GILT, GILT), `<rect x="${x}" y="${y}" width="22" height="${H}" fill="${NIGHT}" />`);
+  out.push(vbar(x + W - 14, y + 20, 14, '#ffffff', 2.6), vbar(x + W - 20, y + 20, 22, '#ffffff', 1.2));
+  out.push(`<rect x="${x + W - 42}" y="${y + 20}" width="16" height="16" rx="1.5" fill="#ffffff" />`, `<rect x="${x + W - 42}" y="${y + 40}" width="16" height="16" rx="1.5" fill="#ffffff" />`);
+  out.push(vbar(x + 38, y + 20, 30, '#ffffff', 2.4), vbar(x + 32, y + 20, 24, '#ffffff', 2.4));
+  // Chapter opener: the band down the right edge, two tiers to its left.
+  x = xs[3]!;
+  out.push(card(x, y, W, H), `<rect x="${x + W - 34}" y="${y}" width="34" height="${H}" fill="${GILT}" />`);
+  out.push(vbar(x + W - 10, y + 9, 22, '#ffffff', 2.4), vbar(x + W - 18, y + 9, 44, '#ffffff', 6), vbar(x + W - 25, y + 9, 56, '#fbe9bd', 2.4), vbar(x + W - 30, y + 9, 40, '#fbe9bd', 2.4));
+  out.push(`<path d="M${x + W - 18},${y + 84} L${x + W - 10},${y + 84} L${x + W - 10},${y + 102} L${x + W - 18},${y + 102} Z" fill="#ffffff" />`);
+  out.push(tiers(x, W - 40, 8));
+  // Body with a figure standing at the head of the upper tier, the running
+  // head down the fore-edge.
+  x = xs[4]!;
+  out.push(card(x, y, W, H), vbar(x + 3, y + 14, 22, '#9aa7b6', 1.8));
+  out.push(`<rect x="${x + W - 34}" y="${y + 10}" width="26" height="42" rx="1.5" fill="${P.blueTint}" stroke="${P.blue}" stroke-width="0.9" />`);
+  out.push(columnsOf(x + W - 38, x + 8, y + 10, y + 52), columnsOf(x + W - 8, x + 8, y + 60, y + H - 10));
+  // Body with a panel across both tiers.
+  x = xs[5]!;
+  out.push(card(x, y, W, H), vbar(x + 3, y + 14, 22, '#9aa7b6', 1.8));
+  out.push(tiers(x, W - 8, W - 32), tiers(x, 32, 8));
+  out.push(`<rect x="${x + 36}" y="${y + 10}" width="${W - 72 + 4}" height="${H - 20}" rx="1" fill="${NIGHT}" />`, vbar(x + 44, y + 15, 18, GILT, 2.4), vbar(x + 40, y + 15, 24, '#9aa0aa', 2.4), vbar(x + 40, y + 45, 24, '#9aa0aa', 2.4), vbar(x + 40, y + 75, 20, '#9aa0aa', 2.4));
+  // Labels.
+  xs.forEach((px, i) => {
+    out.push(text(px + W / 2, y + H + 17, names[i]!, { size: FS.label, weight: 600 }));
+    out.push(text(px + W / 2, y + H + 31, roles[i]!, { size: FS.small, color: P.muted, italic: true }));
+  });
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PAGE_VW} 168" role="img" aria-label="${aria}">
+  ${out.join('')}
+</svg>`;
+}
+
 export function bookAnatomySvg(lang: GuideLang): string {
+  if (lang === 'zh-Hans') return bookAnatomyVerticalSvg();
   const { aria: ariaLabel, names } = BOOK_ANATOMY[lang];
   const roles = ['heading style', ':::toc', ':::part', 'opener', 'body', 'body'];
   const W = 84;

@@ -45,3 +45,84 @@ export function loadOgFonts() {
 export async function loadMarkFont() {
   return [{ name: "Fraunces", data: await load(FRAUNCES_800_URL), weight: 800 as const, style: "normal" as const }];
 }
+
+// ─── Chinese ────────────────────────────────────────────────────────────────
+// The brand cuts have no Chinese glyphs. A card with Chinese text gets
+// Noto Serif SC (with Fraunces and Lora) and Noto Sans SC (with Geist),
+// cut by Google Fonts' `text=` parameter to exactly the characters it
+// draws: a whole Simplified Chinese face is about 10 MB per weight, a
+// card's subset a few kilobytes.
+
+export const CJK_SERIF = "Noto Serif SC";
+export const CJK_SANS = "Noto Sans SC";
+
+type Weight = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900;
+export interface OgFont {
+  name: string;
+  data: ArrayBuffer;
+  weight: Weight;
+  style: "normal" | "italic";
+}
+
+/** Han characters, CJK punctuation and fullwidth forms (，：（）). */
+const CJK_CHAR = /[\p{Script=Han}⺀-⿟　-〿＀-￯]/gu;
+
+/** The distinct Chinese characters of a text, in code point order ("" when none). */
+export function cjkChars(text: string | undefined): string {
+  return [...new Set(text?.match(CJK_CHAR) ?? [])].sort().join("");
+}
+
+/** Google Fonts sends TTF to an old Safari and WOFF2 to anything newer,
+ *  which Satori cannot read. */
+const TTF_AGENT =
+  "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_8; de-at) AppleWebKit/533.21.1 (KHTML, like Gecko) Version/5.0.5 Safari/533.21.1";
+const FETCH_TIMEOUT_MS = 10_000;
+
+async function googleSubset(family: string, weight: Weight, text: string): Promise<ArrayBuffer> {
+  const url = `https://fonts.googleapis.com/css2?family=${family.replace(/ /g, "+")}:wght@${weight}&text=${encodeURIComponent(text)}`;
+  const css = await fetch(url, { headers: { "User-Agent": TTF_AGENT }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+  if (!css.ok) throw new Error(`${family} ${weight}: HTTP ${css.status}`);
+  const src = /src: url\((.+?)\) format\('(?:opentype|truetype)'\)/.exec(await css.text())?.[1];
+  if (!src) throw new Error(`${family} ${weight}: no TTF in the stylesheet`);
+  const res = await fetch(src, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+  if (!res.ok) throw new Error(`${family} ${weight}: HTTP ${res.status}`);
+  return res.arrayBuffer();
+}
+
+/** Subsets by family, weight and characters: a build renders the same
+ *  kicker and the same site titles on many cards. */
+const cjkCuts = new Map<string, Promise<OgFont | null>>();
+
+/** One subset, or null when it cannot be fetched: the card then renders
+ *  with the Latin cuts (and Satori's own fallback), never failing the
+ *  build. A failure is not cached, so the next card tries again. */
+function cjkCut(name: string, weight: Weight, text: string): Promise<OgFont | null> {
+  const key = `${name}|${weight}|${text}`;
+  let cut = cjkCuts.get(key);
+  if (!cut) {
+    cut = googleSubset(name, weight, text).then(
+      (data): OgFont => ({ name, data, weight, style: "normal" }),
+      (error: unknown) => {
+        cjkCuts.delete(key);
+        console.warn(`og: no Chinese face for this card (${(error as Error).message}); drawing it with the Latin fonts`);
+        return null;
+      },
+    );
+    cjkCuts.set(key, cut);
+  }
+  return cut;
+}
+
+/** The Chinese cuts a card needs, for the characters of each of its texts:
+ *  the title in Noto Serif SC 900 (by Fraunces 800), the lead in Noto
+ *  Serif SC 400 (by Lora) and the kicker in Noto Sans SC 600 (by Geist).
+ *  Empty when the card has no Chinese. */
+export async function loadCjkOgFonts(texts: { display?: string; lead?: string; kicker?: string }): Promise<OgFont[]> {
+  const wanted: [string, Weight, string][] = [
+    [CJK_SERIF, 900, cjkChars(texts.display)],
+    [CJK_SERIF, 400, cjkChars(texts.lead)],
+    [CJK_SANS, 600, cjkChars(texts.kicker)],
+  ];
+  const cuts = await Promise.all(wanted.filter(([, , text]) => text).map(([name, weight, text]) => cjkCut(name, weight, text)));
+  return cuts.filter((cut): cut is OgFont => cut !== null);
+}

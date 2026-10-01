@@ -1,5 +1,6 @@
 import type { PostextConfig, ResourceType } from 'postext';
-import { cloneDefaultColorPalette, defaultResourceTypes } from 'postext';
+import { chineseScriptOf, cloneDefaultColorPalette, defaultResourceTypes } from 'postext';
+import { chineseDefaults } from './chineseDefaults';
 
 /** The sandbox's pristine configuration: the default colour palette plus the
  *  built-in resource types localised to `locale`. Lives in its own module so
@@ -7,6 +8,17 @@ import { cloneDefaultColorPalette, defaultResourceTypes } from 'postext';
  *  import. */
 export function createDefaultConfig(locale = 'en'): PostextConfig {
   return { colorPalette: cloneDefaultColorPalette(), resourceTypes: defaultResourceTypes(locale) };
+}
+
+/** The configuration of a new blank book started from an interface in
+ *  `locale`: the pristine one, and for a Chinese interface the Chinese
+ *  defaults of its script too (the document language, Noto faces, 2 em
+ *  indents, 图/表 captions, 第一章 numbering: what "Apply Chinese
+ *  defaults" sets), so the book reads as Chinese from the first line. */
+export function createBlankBookConfig(locale = 'en'): PostextConfig {
+  const config = createDefaultConfig(locale);
+  if (!chineseScriptOf(locale)) return config;
+  return chineseDefaults(config, { locale, fallbackLocale: locale }).config;
 }
 
 /** Ensure `config.resourceTypes` is populated, falling back to the built-in

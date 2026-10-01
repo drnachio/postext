@@ -1,0 +1,74 @@
+---
+title: "双语.postext文件的往返"
+summary: "一份双面DL折页，用代码写入.postext文件，再从它的字节重新排版；每个版本都带着自己的字体、图和题注标签。"
+description: "createBundle把折页写入.postext文件，openBundle把它连同字体和图读回来，分英文和西班牙文两个版本。"
+question: "怎样用.postext文件自带的字体、图片和配置来排版它？"
+aliases: ["postext文件", "文件包", "createBundle", "openBundle", "loadBundleFonts", "往返", "双语折页", "交给沙盒", "导入沙盒", "DL折页", "潮汐磨坊", "bundle", "round trip", "postext file"]
+pageNotes: { "1": "DL折页的正面：沙色底上是眉题Arenal estuary · Visitor leaflet 3和蓝色斜体标题The Tide Mill，下方是一只磨坊水轮，下半部分在蓝色河口水面下显得很淡；上边缘一个蓝色标签写着EN。一段斜体导语和一行Open all year · Free on Sundays排在水中。", "2": "背面：页首是磨坊的剖面图，左边是蓄水池，右边是河口，上方一条虚线标出高潮位，题注为Figure 1；Two tides a day一节用两端对齐的DM Sans排；开放时间是表1，表头为蓝色；另有三行交通和门票信息、一段版权记录，以及一条印着出版方名称的蓝色色条。" }
+---
+
+## 成品一览
+
+一份DL游客折页的正反两面，99 × 210 mm，介绍一个虚构河口上的潮汐磨坊。正面是一整幅图：一只水轮立在水线上，上半部分在沙滩上，下半部分在蓝色水下显得很淡；标题用50 pt的DM Serif Display斜体，一个蓝色标签注明版本，EN或ES。背面先是磨坊剖面图，然后是两端对齐的DM Sans正文、表头为蓝色的开放时间表、用Instrument Sans排的题注、一段版权记录和一条印着出版方的蓝色色条。每个版本都写入一个`.postext`文件，这里的每一页都用该文件的字节排版，用的也是它自带的字体和图。
+
+## 做法
+
+### 1 · 写出这个版本，再只读回字节
+
+<Excerpt region="answer" highlight="14-17" />
+
+`createBundle`把章节、配置、资源以及它们引用的每个文件压缩成zip；`openBundle`拿到的只有这些字节。字体来自`loadBundleFonts`，图来自`registerBundleImages`，版面设计来自`bundle.config`。`files`里漏掉的字体会用浏览器的后备字体印出；漏掉的图会被丢弃并给出警告，引用它的地方印成(?)。在zip内部，每个`fileId`都变成一个路径（`mill.svg`变成`resources/mill.svg`），`openBundle`返回的资源和`customFonts`已经用上了新名称（[打开文件包](/zh/docs/configuration#打开文件包)）。
+
+### 2 · 把字体放进文件
+
+<Excerpt region="faces" />
+
+当`customFonts`列出某个字体、`files`又在该变体的`fileId`下存有它的字节时，文件包就会带上它；`createBundle`把DM Sans 400存为`fonts/dm-sans-400-normal.woff2`。示例从Fontsource下载七个woff2文件，但一个也不注册：`loadBundleFonts`在`buildBundle`测量第一行之前，把文件包里的副本加进`document.fonts`，PDF也从这七个文件取字体。
+
+### 3 · 每个文件都按fileId命名
+
+<Excerpt region="resources" />
+
+两幅图是示例生成的SVG代码，放在各自资源的`svg.fileId`下交给`files`；表是数据，所以连同题注一起放在`preset.json`里。剖面图和表都设为`position: 'here'`：剖面图在背面页首，开放时间表在引用它的段落下方。在1.4.1里，行内资源下方不留空，所以表后加一行`:::space{lines=0.5}`，在题注下留出3.7 mm；没有它，下一段会在题注下方1.4 mm处开始。
+
+### 4 · 把标签写进文件
+
+<Excerpt region="labels" />
+
+当文件里没有`resourceTypes`时，`openBundle`按读者要求的语言生成它们，而不是按文件的语言：用`{ locale: 'en' }`打开西班牙文折页，或者在/en/sandbox的沙盒里导入它，西班牙文正文上方就会印出Figure 1.1。写进配置的类型会取代这个默认值，所以西班牙文文件不管在哪里打开，都印成Figura 1和Tabla 1。`'{n}'`去掉章号，两页的折页用不着它（[资源类型](/zh/docs/configuration#资源类型)）。同一个`config()`还设置了`locale`，它决定使用西班牙文断词模式（背面的compuer-tas）以及PDF声明的语言。
+
+### 5 · 把同样的字节交出去
+
+<Excerpt region="handoff" />
+
+链接提供的就是排版所用的`bytes`，连字体共132 KB。在沙盒里导入（*书库 → 新建 → 打开.postext文件…*）后，这个文件变成一本西班牙文或英文的书，封面图是取自`thumbnail`的水轮。PDF从`bundleFontProvider`取字体，它返回文件包里字重最接近的字体，如果有同样风格的就优先用同样风格；图则来自`bundleResourceBytes`，所以不会再下载一遍字体或图片（[排版和渲染文件包](/zh/docs/configuration#排版和渲染文件包)）。
+
+### 6 · 用一个标题画出正面
+
+<Excerpt region="cover" />
+
+正面就是封面标题的版面设计：图按原尺寸锚定在页面上，标题文字通过`{titleText}`取得，眉题、导语和信息行来自标题的属性，语言标签是一个带方框的文本元素。H1这一级设为`span: 'page'`，所以图从纸边开始。如果标题设计留在栏内，就会在版心的上下边缘被截断：图会从下移12 mm处开始，到离下边缘13 mm处就停止，语言标签也会缩成一条看不到字母的细条。
+
+## 变化
+
+### 读取双语文件包
+
+Postext指南把英文和西班牙文的章节、配置和题注放在一个文件里；`{ locale }`选择版本，两种语言都会打开成十二章、48页。这时链接提供的仍是折页的文件，PDF按钮则生成指南。
+
+```diff
+-const bundle = await openBundle(bytes);
++const guide = await fetch('https://postext.dev/bundles/postext-guide.postext');
++const bundle = await openBundle(await guide.arrayBuffer(), { locale: LANG });
+```
+
+### 让读者决定标签
+
+不写类型时，标签跟随打开文件时所用的语言，图的编号也从封面标题起算：西班牙文版在这里印成Figura 1.1，在/en/sandbox的沙盒导入后则印成Figure 1.1。
+
+```diff
+-  resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, numberingTemplate: '{n}' })),
+```
+
+## 常见问题
+
+- postext 1.4.1里的`createBundle`每个文件只写一种语言。[双语文件包](/zh/docs/configuration#双语文件包)里介绍的`localized`输入不在这个版本中，不过`openBundle` 1.4.1能读取这类文件。

@@ -2,9 +2,10 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { ChapterOpener } from "@/components/brand/ChapterOpener";
 import { Kicker } from "@/components/brand/Kicker";
 import { PageMock } from "./PageMock";
+import { siteLocale, type SiteLocale } from "@/i18n/locales";
 
 /** The markdown the miniature page is set from, per language. */
-const SOURCE: Record<"en" | "es", string> = {
+const SOURCE: Record<SiteLocale, string> = {
   en: `:::part{number="I" title="Foundations"
   palette="band=#2b4acb"}
 :::
@@ -37,6 +38,20 @@ como muestra :ref{id="fig-flujo"}.
 Cambia una palabra: la página
 vuelve a componerse.
 :::`,
+  zh: `:::part{number="I" title="基础"
+  palette="band=#2b4acb"}
+:::
+
+# 为什么需要Postext {lead="印刷排版
+用了五个世纪……"}
+
+Postext是一个**开源排版引擎**，
+把印刷排版的手艺带到网页上，
+如:ref{id="fig-flow"}所示。
+
+:::callout{type="try"}
+改一个词，页面就会重新排版。
+:::`,
 };
 
 export async function AboutSection() {
@@ -44,7 +59,7 @@ export async function AboutSection() {
   const tl = await getTranslations("Landing");
   const pm = await getTranslations("PageMock");
   const body = [1, 2, 3, 4, 5, 6].map((i) => pm(`body${i}`));
-  const source = SOURCE[(await getLocale()).startsWith("es") ? "es" : "en"];
+  const source = SOURCE[siteLocale(await getLocale())];
 
   return (
     <section aria-labelledby="about-heading" className="relative">

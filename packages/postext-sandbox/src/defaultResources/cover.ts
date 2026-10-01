@@ -246,6 +246,167 @@ export function coverArtSvg(lang: GuideLang): string {
 </svg>`;
 }
 
+/** Size of the Chinese edition's cover art in SVG units: 148 × 286 mm (the
+ *  sheet's height with 3 mm of bleed at head and foot, from the left bleed
+ *  to the title strip) at 5 units per millimetre. */
+export const COVER_ZH_VW = 740;
+export const COVER_ZH_VH = 1430;
+
+const COVER_ZH_ARIA = '按引擎眼中的样子画出的一页竖排书页：上下两栏里由字格组成的竖行、页面右侧的章首色带、一幅浮动图，以及拆成盒子、粘连和惩罚值的一行';
+
+/** One vertical line of Chinese drawn in its flow frame: square cells, now
+ *  and then a Latin word turned sideways (a longer, thinner box), and a
+ *  paragraph's last line ending short. */
+function cellLine(rand: () => number, x: number, y: number, length: number, o: { indent: number; last: boolean; fill: string }): string {
+  const cell = 9;
+  const pitch = 10.5;
+  const end = x + (o.last ? length * (0.25 + rand() * 0.55) : length);
+  let out = '';
+  let cx = x + o.indent * pitch;
+  while (cx + cell <= end) {
+    if (rand() < 0.035 && cx + 40 < end) {
+      const w = 18 + Math.floor(rand() * 20);
+      out += rect(cx + 1, y + 1.5, w, cell - 3, o.fill, 1);
+      cx += w + 4;
+      continue;
+    }
+    out += rect(cx, y, cell, cell, o.fill, 1);
+    cx += pitch;
+  }
+  return out;
+}
+
+/** A tier of vertical lines, paragraph by paragraph, in the flow frame. */
+function tier(rand: () => number, x: number, length: number, top: number, bottom: number, fill: string): string {
+  let out = '';
+  let left = 2 + Math.floor(rand() * 6);
+  let first = true;
+  for (let y = top; y + 9 <= bottom; y += 16) {
+    out += cellLine(rand, x, y, length, { indent: first ? 2 : 0, last: left === 1, fill });
+    left--;
+    first = false;
+    if (left === 0) {
+      left = 2 + Math.floor(rand() * 7);
+      first = true;
+    }
+  }
+  return out;
+}
+
+/** The model line stood on end: a column of gilt character boxes with glue
+ *  springs between them and the flagged penalty at its foot, bracketed by
+ *  the measure it was justified to. */
+function modelColumn(x: number, y: number, length: number): string {
+  const w = 30;
+  const boxes = [44, 44, 44, 44, 44, 44];
+  const penalty = 24;
+  const natural = boxes.reduce((s, b) => s + b, 0);
+  const gap = (length - natural - penalty) / boxes.length;
+  let out = '';
+  let cy = y;
+  boxes.forEach((h, i) => {
+    out += rect(x, cy, w, h, C.gilt, 3);
+    const g0 = cy + h + 4;
+    const g1 = cy + h + gap - 4;
+    if (i < boxes.length) {
+      let d = `M${r1(x + w / 2)},${r1(g0)}`;
+      const steps = 6;
+      for (let s = 1; s <= steps; s++) {
+        const py = g0 + ((g1 - g0) * s) / steps;
+        const px = s === steps ? x + w / 2 : x + (s % 2 ? 4 : w - 4);
+        d += ` L${r1(px)},${r1(py)}`;
+      }
+      out += `<path d="${d}" stroke="${C.gilt}" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>`;
+    }
+    cy += h + gap;
+  });
+  // The penalty at the break, a flag beside it.
+  const py = y + length - penalty + 4;
+  out += rect(x + w / 2 - 2.5, py, 5, 16, C.gilt, 2);
+  out += `<path d="M${r1(x + w + 8)},${r1(py + 8)} L${r1(x + w + 42)},${r1(py + 8)} L${r1(x + w + 34)},${r1(py + 32)} L${r1(x + w + 26)},${r1(py + 8)} Z" fill="${C.gilt}" stroke="${C.gilt}" stroke-width="2" stroke-linejoin="round"/>`;
+  out += `<path d="M${r1(x - 12)},${r1(y)} L${r1(x - 20)},${r1(y)} L${r1(x - 20)},${r1(y + length)} L${r1(x - 12)},${r1(y + length)}" stroke="${C.giltSoft}" stroke-width="2" fill="none"/>`;
+  return out;
+}
+
+/** The Chinese edition's cover art: one vertical page of the book as the
+ *  engine lays it out — the flow drawn in its own frame and turned a
+ *  quarter turn clockwise onto the sheet, so its lines stand as columns
+ *  read from the right, the chapter band runs down the right edge and the
+ *  two tiers are stacked — with one column opened into Knuth-Plass boxes,
+ *  glue and a flagged penalty, and crop marks at the trim. */
+export function coverArtVerticalSvg(): string {
+  const rand = prng(1983);
+  const W = COVER_ZH_VW;
+  const H = COVER_ZH_VH;
+
+  let grid = '';
+  for (let x = W - 30; x > 0; x -= 11) grid += rect(x, 0, 0.8, H, C.grid);
+
+  // The page, 210 × 280 mm at 3 units per millimetre, drawn in its flow
+  // frame: 840 along the lines (down the sheet) by 630 across them.
+  const FW = 840;
+  const FH = 630;
+  const px = 55;
+  const py = 250;
+  const m = { head: 72, foot: 66, side: 60 };
+  let flow = rect(0, 0, FW, FH, C.page) + `<rect width="${FW}" height="${FH}" fill="none" stroke="${C.pageEdge}" stroke-width="1.2"/>`;
+  // The chapter band (the sheet's right edge), its kicker, rule, title
+  // cells and lead, and the numeral's seal at the foot of the band.
+  const band = 232;
+  flow += rect(0, 0, FW, band, C.blue);
+  flow += rect(m.head, m.side, 110, 9, C.white, 1);
+  flow += rect(m.head, m.side + 18, 60, 3, C.white, 1);
+  for (let i = 0; i < 9; i++) flow += rect(m.head + i * 28, m.side + 32, 24, 24, C.white, 2);
+  for (let i = 0; i < 5; i++) flow += rect(m.head + i * 28, m.side + 60, 24, 24, C.white, 2);
+  flow += cellLine(rand, m.head, m.side + 104, 440, { indent: 0, last: false, fill: C.blueSoft });
+  flow += cellLine(rand, m.head, m.side + 122, 440, { indent: 0, last: true, fill: C.blueSoft });
+  flow += rect(FW - m.foot - 96, m.side, 96, 96, C.white, 4);
+  flow += rect(FW - m.foot - 96 + 44, m.side + 20, 8, 56, C.blue, 2);
+  flow += rect(0, band, FW, 4, C.night);
+  // Two tiers of text; a figure floated to the head of the lower tier and
+  // a pull quote in the upper one.
+  const gutter = 38;
+  const tierLen = (FW - m.head - m.foot - gutter) / 2;
+  const t1 = m.head;
+  const t2 = m.head + tierLen + gutter;
+  const top = band + 24;
+  const bottom = FH - m.side;
+  flow += tier(rand, t1, tierLen, top, top + 150, C.word);
+  flow += rect(t1, top + 160, tierLen, 3, C.vermilion);
+  flow += rect(t1, top + 172, tierLen * 0.9, 12, C.vermilion, 2);
+  flow += rect(t1, top + 190, tierLen * 0.6, 12, C.vermilion, 2);
+  flow += tier(rand, t1, tierLen, top + 216, bottom, C.word);
+  const figW = 130;
+  flow += rect(t2, top, tierLen, figW, C.wordSoft, 2);
+  // Bars that stand upright on the sheet: they grow up the flow's x.
+  [0.35, 0.55, 0.42, 0.7, 0.95].forEach((v, i) => {
+    const bw = 16;
+    const len = (tierLen - 50) * v;
+    flow += rect(t2 + tierLen - 22 - len, top + 14 + i * (bw + 7), len, bw, i === 4 ? C.gilt : C.blueSoft, 1.5);
+  });
+  flow += rect(t2, top + figW + 8, tierLen * 0.7, 4, C.giltSoft, 1);
+  flow += tier(rand, t2, tierLen, top + figW + 26, bottom, C.word);
+
+  const pageW = FH;
+  const pageH = FW;
+  const turned = `<g transform="translate(${px + pageW},${py}) rotate(90)">${flow}</g>`;
+
+  // The model column, lifted out of the page at a larger scale, over its
+  // left edge.
+  const mx = 50;
+  const my = 740;
+  const ml = 520;
+  const model = `<rect x="${mx - 30}" y="${my - 26}" width="${30 + 30 + 72}" height="${ml + 52}" rx="8" fill="${C.night}" stroke="${C.gilt}" stroke-width="2.4"/>${modelColumn(mx + 6, my, ml)}`;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${COVER_ZH_ARIA}">
+  <rect width="${W}" height="${H}" fill="${C.night}"/>
+  ${grid}
+  ${turned}
+  ${cropMarks(px, py, pageW, pageH)}
+  ${model}
+</svg>`;
+}
+
 /** A preview of the guide's cover for the preset picker (the built-in preset
  *  has no bundle `thumbnail.jpg`): the artwork over the night ground with the
  *  title and its gilt rule, on a 210 × 280 page. System fonts only — an SVG

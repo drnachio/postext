@@ -1,0 +1,69 @@
+---
+title: "随正文变动的教科书索引"
+summary: "在正文讲解术语的地方做标记，由:::index分两栏印出，页码由buildBundle找出，支持页码范围和交叉引用。"
+description: "用Postext排出一本生理学教科书的两章及其书后索引：正文中的标记、主要页码、页码范围、“见”和“另见”，分两栏排。"
+question: "怎样编一份书后索引，让页码无论正文怎么移动都能跟上？"
+aliases: ["索引", "书后索引", "主题索引", "术语索引", "另见", "页码范围", "Chicago页码范围", "分析索引", "back-of-book index", "subject index", "see also", "page ranges", "índice analítico", ":::index"]
+pageNotes: { "9": "索引从第305页开始，页首是与各章相同的红色横带：字母标题用强调色，子条目缩进一个em，主要页码为粗体，交叉引用为斜体。", "10": "索引接排到第306页，第305页开始的一组子条目在第一栏栏首继续，版权说明浮动到页面底部。" }
+---
+
+## 成品一览
+
+这是*Principles of Human Physiology*的第四篇，一本210 × 277 mm开本的教科书：第14章*The heart as a pump*和第15章*Vessels and blood pressure*都从右页开始，页首有红色横带，临床提示和题注排在外侧的边栏里。这一篇以一份索引结束，约九十个条目、三十个子条目，按医学教科书的惯例分两栏排：条目用小写，字母标题用强调色，子条目缩进一个em，给出定义的页码用粗体，*see*和*see also*用斜体。索引里没有一个页码是手工输入的。每个术语都在正文讲解它的那一章里做了标记，索引读取这些标记落在的页码，即第297页到第304页。
+
+## 做法
+
+### 1 · 标记段落，而不是词
+
+<Excerpt region="answer" />
+
+编索引的人标记的是讲解术语的地方，而不是这个词出现的每一处。两章里*stroke volume*用了十二次，索引只把读者引向两处：给出定义的第298页，以及讲解其调节机制的299–300页。可见标记`:index[cardiac output]{main}`会印出它的文字并收入索引。不可见标记`mitral:index{term="heart!valves!mitral"}`什么也不印，只取它前面那个词所在的页码；讲四个瓣膜的那段文字就是这样把*mitral*、*tricuspid*、*aortic*和*pulmonary*归到*heart*之下，而不必改写句子。`!`用来分隔层级，所以*heart*下有三级：valves，再到各个瓣膜。标记也可以放在标题里（14.1和15.6的页码范围就从标题开始），或者放在标注框里（*heart failure*在第300页的旁注中定义）。
+
+### 2 · 主要页码、页码范围和交叉引用
+
+<Excerpt region="answer" />
+
+`main`让定义术语的那一页用粗体印出，学生查*preload*时会先翻到第299页。对同一术语使用`range="start"`和`range="end"`，可以框住一段跨过分页的论述：*stroke volume, regulation, 299–300*、*baroreceptor reflex, 303–4*。起点上加`main`，整个范围都用粗体。在范围内部再次标记的页码会并入这个范围，如果那里带`main`，范围也用粗体。`see`取代页码（*inotropy. See contractility*），`seealso`跟在页码之后（*heart failure, 300. See also ejection fraction*）。有层级的目标用`!`书写，印出时用冒号：*See blood pressure: mean arterial*。
+
+### 3 · 分两栏的索引章
+
+<Excerpt region="answer" />
+
+索引是全书最后一个Markdown文档，内容是`# Index {style="index"}`加上`:::index`。这个标题样式只在它自己的部分里把各章的一栏半换成两栏、栏间距6 mm，并给索引单独的章首页和书眉。索引用正文字体排，8.6/11.4 pt，每一级子条目缩进一个em，转行悬挂缩进两个em，这样转行永远不会和子条目对齐。`rangeFormat: 'chicago'`省去页码范围中重复的数字（*303–4*，但*299–300*保持不变）。西班牙语版按西班牙语图书的通常做法，用连字符写出完整的范围（*303-304*）。
+
+### 4 · 页码为什么能跟上正文
+
+<Excerpt region="build" />
+
+`buildBundle`按顺序排各章，发现第三个文档含有`:::index`。第一遍排完后，它收集每一章的每个标记及其所在页码，把这份列表作为大纲交给索引章。然后重新排整本书，最多三遍，直到没有页码再变动。改写第14章的一段、改变成品尺寸或正文字号，索引都会按新页码重新印出。在PDF里，每个页码都链接到对应的页面。
+
+### 5 · 章首页和书眉
+
+<Excerpt region="opener" />
+
+各章和索引共用一种章首页：一条从裁切边延伸到62 mm处的横带（索引为46 mm），标题由一个底部对齐的框排在横带底边上，所以两行标题和一行标题结束在同一条线上。眉题印出`{chapterNumber}`，由标题属性`{startAt=14}`设为14；`page.pageNumbering.startAt: 297`把这一篇放在它在整本书中应处的页码位置。索引样式设为`numbered: false`，所以它不会成为第16章。
+
+## 变化
+
+### 页码范围全部写全
+
+有些出版社的体例要求范围的两个页码都完整印出。
+
+```diff
+-  rangeFormat: t({ en: 'chicago', es: 'full' }), rangeSeparator: t({ en: '–', es: '-' }),
++  rangeFormat: 'full', rangeSeparator: t({ en: '–', es: '-' }),
+```
+
+### 不带字母标题的索引
+
+篇幅短的索引常把各组连排，只用一个空行隔开。
+
+```diff
+-  groups: { ...label, fontSize: pt(9.5), letterSpacing: pt(0), color: col('accent') },
++  groups: { enabled: false },
+```
+
+## 常见问题
+
+- 本食谱的截图不会报告`indexSeeUnknown`：交叉引用的目标拼写与条目不一致时（*Reynolds number*对*number, Reynolds*），照样印出，不会提示。要对照目标核对成品索引里的每一个*See*。
+- 跨栏断开的子条目列表不会以*heart (cont.)*这样的行重复主标题；没有自身页码的条目总是和它的第一个子条目排在一起，所以标题永远不会单独落在栏尾。
