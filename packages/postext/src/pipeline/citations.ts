@@ -155,7 +155,7 @@ export function processCitations(ctx: CitationContext, resolved: ResolvedConfig,
   if (!engine || ctx.items.length === 0) return null;
   const cfg = resolved.citations;
   const style = cfg.style === 'custom' && cfg.customStyle ? cfg.customStyle : cfg.style;
-  const key = JSON.stringify([ctx.items, ctx.nocite, ctx.clusters, style, locale, cfg.marker, cfg.collapseRanges, cfg.bibliography.doi, cfg.bibliography.includeUncited, cfg.bibliography.groupByLanguage]);
+  const key = JSON.stringify([ctx.items, ctx.nocite, ctx.clusters, style, locale, cfg.marker, cfg.collapseRanges, cfg.notes, cfg.bibliography.doi, cfg.bibliography.includeUncited, cfg.bibliography.groupByLanguage]);
   const hit = memo.find((m) => m.key === key);
   if (hit) return hit.value;
   let value: ProcessedCitations | null = null;
@@ -165,7 +165,7 @@ export function processCitations(ctx: CitationContext, resolved: ResolvedConfig,
       ? ctx.items.map(({ DOI: _d, URL: _u, ...rest }) => rest as CslItem)
       : ctx.items;
     const byId = new Map(items.map((i) => [i.id, i]));
-    const processor = engine.createProcessor({ style, locale, items });
+    const processor = engine.createProcessor({ style, locale, items, collapseRanges: cfg.collapseRanges, unnumberedNotes: cfg.notes === 'warichu' });
     const clusters = ctx.clusters.map((c) => ({ ...c, noteIndex: processor.kind === 'note' ? c.noteIndex ?? 0 : 0 }));
     const html = processor.cite(clusters);
     const numbers = processor.citationNumbers();
@@ -285,7 +285,7 @@ function linked(spans: InlineSpan[], href: string): InlineSpan[] {
 /** A block whose spans are `spans`, its plain text and source map rebuilt:
  *  each span replacing a citation placeholder takes the placeholder's
  *  source offset for every character. */
-function withSpans(block: ContentBlock, replace: Map<number, InlineSpan[]>): ContentBlock {
+function withSpans(block: ContentBlock, replace: Map<number, InlineSpan[]>, dropLead: ReadonlySet<number> = new Set()): ContentBlock {
   const spans: InlineSpan[] = [];
   const sourceMap: number[] = [];
   let at = 0;
@@ -293,6 +293,11 @@ function withSpans(block: ContentBlock, replace: Map<number, InlineSpan[]>): Con
     const repl = replace.get(i);
     const src = block.sourceMap.slice(at, at + span.text.length);
     at += span.text.length;
+    if (!repl && dropLead.has(i)) {
+      if (span.text.length > 1) spans.push({ ...span, text: span.text.slice(1) });
+      sourceMap.push(...src.slice(1));
+      return;
+    }
     if (!repl) {
       spans.push(span);
       sourceMap.push(...src);
@@ -353,6 +358,7 @@ export function applyCitations(
   let labelChars = 0;
   let containerSeq = 0;
   const listedIds = new Set(processed?.entries.map((e) => e.id) ?? []);
+  const itemsById = new Map(ctx.items.map((i) => [i.id, i]));
   const willList = (id: string | undefined): boolean => id !== undefined && listedIds.has(id) && (cfg.bibliography.auto || ctx.placed);
 
   const bibliographyBlocks = (at: number, scope: 'book' | 'chapter', title: string | undefined): ContentBlock[] => {
@@ -395,6 +401,7 @@ export function applyCitations(
       continue;
     }
     const replace = new Map<number, InlineSpan[]>();
+    const dropLead = new Set<number>();
     block.spans.forEach((span, i) => {
       if (!span.citation) return;
       const g = ctx.local[k++];
@@ -411,23 +418,33 @@ export function applyCitations(
       const styled = spans.map((s) => ({ ...s, bold: s.bold || span.bold, italic: s.italic !== span.italic, ...(span.smallCaps ? { smallCaps: true } : {}) }));
       const text = href ? linked(styled, href) : styled;
       if (note && block.footnoteDef === undefined) {
+        // "As @howse1980 says": the sentence keeps the author's name, the
+        // reference goes to the note.
+        const who = span.citation.cluster.mode === 'narrative'
+          ? span.citation.cluster.items.map((it) => narrativeName(itemsById.get(it.id))).filter(Boolean).join('; ')
+          : '';
+        const name: InlineSpan[] = who ? [{ text: who, bold: span.bold, italic: span.italic }] : [];
         if (warichu) {
           // 夹注: the citation set as a two-row note inside the line.
           const w = { id: WARICHU_ID_BASE + g };
-          replace.set(i, text.map((s) => ({ ...s, warichu: w })));
+          replace.set(i, [...name, ...text.map((s) => ({ ...s, warichu: w }))]);
           return;
         }
         // A note style: the citation goes into a note of its own.
         const id = `${CITATION_NOTE_PREFIX}${g}`;
-        replace.set(i, [{ text: FOOTNOTE_PLACEHOLDER, bold: span.bold, italic: span.italic, footnote: { id } }]);
+        replace.set(i, [...name, { text: FOOTNOTE_PLACEHOLDER, bold: span.bold, italic: span.italic, footnote: { id } }]);
         const noteText = text.map((s) => s.text).join('');
         const origin = block.sourceMap[0] ?? block.sourceStart;
         notes.push({ type: 'paragraph', text: noteText, spans: text, footnoteDef: id, sourceStart: block.sourceStart, sourceEnd: block.sourceEnd, sourceMap: new Array<number>(noteText.length).fill(origin) });
         return;
       }
       replace.set(i, text);
+      // A citation that ends a sentence brings its own full stop: the one
+      // written after it goes ("See [@k, chap. 3]." prints one period).
+      const next = block.spans[i + 1];
+      if (next && !next.citation && next.text.startsWith('.') && !next.text.startsWith('..') && /\.$/.test(text.map((t) => t.text).join(''))) dropLead.add(i + 1);
     });
-    out.push(withSpans(block, replace));
+    out.push(withSpans(block, replace, dropLead));
   }
   // Nothing places the list: it goes after the text (the book's last
   // document for a book-wide list).

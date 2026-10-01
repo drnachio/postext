@@ -59,8 +59,8 @@ describe('author-date (APA)', () => {
 
   it('formats parenthetical and narrative citations', () => {
     const text = lines(doc).join('\n');
-    expect(text).toContain('(see García, 2020, p. 33; López & Ruiz, 2019)');
-    expect(text).toContain('García (2020, p. 4) says it.');
+    expect(text).toContain('(see García, 2020, p.\u00a033; López & Ruiz, 2019)');
+    expect(text).toContain('García (2020, p.\u00a04) says it.');
   });
 
   it('appends the bibliography with its title, entries as anchors', () => {
@@ -83,7 +83,7 @@ describe('numbered styles', () => {
   it('IEEE as the style writes it, with a label column', () => {
     const doc = buildDocument({ markdown: md }, { ...config, citations: { style: 'ieee' } });
     const text = lines(doc).join('\n');
-    expect(text).toContain('First [1], then [1, p. 50], [2].');
+    expect(text).toContain('First [1], then [1, p.\u00a050], [2].');
     expect(lines(doc).filter((_, i) => doc.blocks[i]!.bibEntry)[0]).toMatch(/^\[1\] L\. López and E\. Ruiz/);
     expect(lines(doc)).not.toContain('References');
   });

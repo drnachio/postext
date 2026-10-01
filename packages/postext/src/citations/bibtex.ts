@@ -58,6 +58,7 @@ const SYMBOLS: Readonly<Record<string, string>> = {
   ss: 'ß', o: 'ø', O: 'Ø', aa: 'å', AA: 'Å', ae: 'æ', AE: 'Æ', oe: 'œ', OE: 'Œ', l: 'ł', L: 'Ł', i: 'ı', j: 'ȷ',
   textendash: '–', textemdash: '—', textquoteleft: '‘', textquoteright: '’', textquotedblleft: '“', textquotedblright: '”',
   dag: '†', ddag: '‡', S: '§', P: '¶', copyright: '©', textregistered: '®', texttrademark: '™', ldots: '…', dots: '…',
+  TeX: 'TeX', LaTeX: 'LaTeX', LaTeXe: 'LaTeX2ε', BibTeX: 'BibTeX', XeTeX: 'XeTeX', LuaTeX: 'LuaTeX', ConTeXt: 'ConTeXt',
 };
 
 /** LaTeX markup of a field value as plain text: accents composed,

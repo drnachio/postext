@@ -56,13 +56,66 @@ function numericStyle(xml: string): boolean {
   return /citation-format="numeric"/.test(xml) || /<citation[\s\S]*variable="citation-number"[\s\S]*<\/citation>/.test(xml);
 }
 
+/** The `<citation>` element of a style. */
+function citationElement(xml: string): string {
+  return /<citation\b[\s\S]*?<\/citation>/.exec(xml)?.[0] ?? '';
+}
+
+/** A style as the options ask for it: a numbered style's consecutive
+ *  numbers joined into a range or kept apart, and, for notes without
+ *  numbers, no "see note 3" for a work cited again. */
+export function adjustStyle(xml: string, options: { collapseRanges?: boolean; unnumberedNotes?: boolean }): string {
+  let out = xml;
+  if (options.collapseRanges !== undefined && numericStyle(xml)) {
+    const open = /<citation\b[^>]*>/.exec(out)?.[0];
+    if (open) {
+      const has = /\scollapse="citation-number"/.test(open);
+      if (options.collapseRanges && !/\scollapse=/.test(open)) out = out.replace(open, open.replace('<citation', '<citation collapse="citation-number"'));
+      else if (!options.collapseRanges && has) out = out.replace(open, open.replace(/\scollapse="citation-number"/, ''));
+    }
+  }
+  if (options.unnumberedNotes) {
+    // A branch for a later citation that points back to the first note
+    // never applies: the work is written out again.
+    out = out.replace(
+      /<(if|else-if) position="subsequent">((?:(?!<\/?\1[\s>])[\s\S])*?first-reference-note-number[\s\S]*?)<\/\1>/g,
+      (_m, tag: string, body: string) => `<${tag} variable="postext-unnumbered-note">${body}</${tag}>`,
+    );
+  }
+  return out;
+}
+
+/** Short locator labels, for a numbered style whose citation leaves the
+ *  locator out. */
+const LOCATOR_LABELS: Readonly<Record<string, string>> = {
+  page: 'p.', chapter: 'chap.', section: 'sec.', figure: 'fig.', volume: 'vol.', note: 'n.', line: 'l.', paragraph: 'para.', column: 'col.', verse: 'v.',
+};
+
+/** The locator a numbered style left out, added to its marker: GB/T 7714
+ *  sets the page after the number, raised like it ("[5]45"); a raised
+ *  marker takes the locator in parentheses ("¹(p. 33)"), a bracketed one
+ *  inside its brackets ("[1, p. 33]"). */
+function withLocator(html: string, locator: string, label: string | undefined, chinese: boolean): string {
+  const word = chinese && (label ?? 'page') === 'page' ? '' : LOCATOR_LABELS[label ?? 'page'] ?? '';
+  const loc = escapeHtml(word ? `${word}\u00a0${locator}` : locator);
+  if (/<\/sup>$/.test(html)) return chinese ? `${html}<sup>${loc}</sup>` : `${html}<sup>(${loc})</sup>`;
+  if (/[\])]$/.test(html)) return `${html.slice(0, -1)}, ${loc}${html.slice(-1)}`;
+  return `${html} ${loc}`;
+}
+
 /** A citation engine over citeproc-js and the given CSL sources. */
 export function createCiteprocEngine(sources: CslSources): CitationEngine {
   return {
     styles: (): readonly CitationStyleInfo[] => STYLE_CATALOG.filter((s) => sources.styles[s.id] !== undefined),
     parseBibtex: (source: string) => parseBibtex(source),
     createProcessor(options: CitationProcessorOptions): CitationProcessor {
-      const xml = options.style.trimStart().startsWith('<') ? options.style : (sources.styles[options.style] ?? sources.styles.apa!);
+      const xml = adjustStyle(
+        options.style.trimStart().startsWith('<') ? options.style : (sources.styles[options.style] ?? sources.styles.apa!),
+        options,
+      );
+      // A numbered style whose citation prints no locator (Vancouver,
+      // Nature, GB/T 7714): the wrapper adds it.
+      const dropsLocator = !/variable="locator"|macro="[^"]*locator[^"]*"/.test(citationElement(xml));
       const items = new Map(options.items.map((i) => [i.id, i]));
       const locale = pickLocale(sources.locales, options.locale);
       const sys = {
@@ -103,7 +156,13 @@ export function createCiteprocEngine(sources: CslSources): CitationEngine {
           const byId = new Map(out.map(([id, , html]) => [id, html]));
           cited = [...new Set(known.flatMap((c) => c.items.map((it) => it.id)))];
           return known.map((c, index) => {
-            const html = byId.get(`c${index}`) ?? '';
+            let html = byId.get(`c${index}`) ?? '';
+            const single = c.items.length === 1 ? c.items[0]! : undefined;
+            if (numeric && dropsLocator && kind === 'in-text' && single?.locator && html) {
+              html = withLocator(html, single.locator, single.label, locale.startsWith('zh') || /gb-t-7714|GB\/T 7714/i.test(xml.slice(0, 4000)));
+            }
+            // "p. 33" stays on one line.
+            html = html.replace(/(^|[\s(>])(\p{L}{1,6}\.) (?=[\dIVXLCivxlc])/gu, '$1$2\u00a0');
             if (c.mode === 'narrative' && kind === 'in-text' && numeric && c.items.length > 0) {
               const who = c.items.map((it) => narrativeAuthors(items.get(it.id), and, etAl)).filter(Boolean).join('; ');
               const glue = /^<sup>/.test(html) || CJK.test(who) ? '' : ' ';

@@ -30,7 +30,7 @@ describe('formatting', () => {
       { mode: 'narrative', items: [{ id: 'garcia2020' }] },
       { mode: 'parenthetical', items: [{ id: 'lopez2019', suppressAuthor: true }] },
     ]);
-    expect(out[0]).toBe('(García, 2020, p. 33; López &#38; Ruiz, 2019)');
+    expect(out[0]).toBe('(García, 2020, p.\u00a033; López &#38; Ruiz, 2019)');
     expect(out[1]).toBe('García (2020)');
     expect(out[2]).toBe('(2019)');
     const bib = p.bibliography();
@@ -118,5 +118,53 @@ describe('BibTeX', () => {
     expect(out[2]).toMatchObject({ type: 'paper-conference', issued: { 'date-parts': [[1981, 11]] }, URL: 'https://x.org/a_b' });
     expect(out[3]).toMatchObject({ type: 'thesis', publisher: 'UNED', genre: 'PhD thesis', issued: { 'date-parts': [[2021, 5, 3]] } });
     expect(out[3]!.author).toEqual([{ family: 'Ruiz', given: 'Eva', suffix: 'Jr.' }]);
+  });
+});
+
+describe('what the cookbook recipes turned up', () => {
+  const nums: CslItem[] = ['a', 'b', 'c', 'd'].map((id, i) => ({ id, type: 'book', title: `T${i}`, author: [{ family: `F${i}`, given: 'G' }], issued: { 'date-parts': [[2000 + i]] } }));
+  const western: CslItem = { id: 'rayner', type: 'article-journal', language: 'en', title: 'So much to read', 'container-title': 'PSPI', issued: { 'date-parts': [[2016]] }, author: [1, 2, 3, 4, 5].map((n) => ({ family: `Rayner${n}`, given: 'K' })) };
+
+  it('IEEE joins consecutive numbers into a range unless asked not to', () => {
+    const cluster = [{ mode: 'parenthetical' as const, items: [{ id: 'a' }] }, { mode: 'parenthetical' as const, items: [{ id: 'b' }, { id: 'c' }, { id: 'd' }] }];
+    expect(engine.createProcessor({ style: 'ieee', locale: 'en-US', items: nums, collapseRanges: true }).cite(cluster)[1]).toBe('[2]–[4]');
+    expect(engine.createProcessor({ style: 'ieee', locale: 'en-US', items: nums, collapseRanges: false }).cite(cluster)[1]).toBe('[2], [3], [4]');
+    expect(engine.createProcessor({ style: 'elsevier-vancouver', locale: 'en-US', items: nums, collapseRanges: false }).cite(cluster)[1]).toBe('[2,3,4]');
+  });
+
+  it('GB/T 7714 writes et al. for a Western work and 等 for a Chinese one', () => {
+    const p = engine.createProcessor({ style: 'china-national-standard-gb-t-7714-2015-numeric', locale: 'zh-CN', items: [western, items[2]!] });
+    p.cite([{ mode: 'parenthetical' as const, items: [{ id: 'rayner' }] }, { mode: 'parenthetical' as const, items: [{ id: 'zhang2018' }] }]);
+    const [en, zh] = p.bibliography().entries.map((e) => e.html);
+    expect(en).toContain('et al.');
+    expect(en).not.toContain('等');
+    expect(zh).toContain('等');
+  });
+
+  it('GB/T 7714 numeric sets the page after the raised number', () => {
+    const p = engine.createProcessor({ style: 'china-national-standard-gb-t-7714-2015-numeric', locale: 'zh-CN', items: [western] });
+    expect(p.cite([{ mode: 'parenthetical' as const, items: [{ id: 'rayner', locator: '45', label: 'page' }] }])[0]).toBe('<sup>[1]</sup><sup>45</sup>');
+  });
+
+  it('Vancouver keeps a locator inside its brackets', () => {
+    const p = engine.createProcessor({ style: 'elsevier-vancouver', locale: 'en-US', items: nums });
+    expect(p.cite([{ mode: 'parenthetical' as const, items: [{ id: 'a', locator: '33', label: 'page' }] }])[0]).toBe('[1, p. 33]');
+  });
+
+  it('notes without numbers write a repeated work out again', () => {
+    const style = 'china-national-standard-gb-t-7714-2015-note';
+    const clusters = [{ mode: 'parenthetical' as const, items: [{ id: 'zhang2018' }], noteIndex: 1 }, { mode: 'parenthetical' as const, items: [{ id: 'garcia2020' }], noteIndex: 2 }, { mode: 'parenthetical' as const, items: [{ id: 'zhang2018' }], noteIndex: 3 }];
+    const numbered = engine.createProcessor({ style, locale: 'zh-CN', items }).cite(clusters);
+    expect(numbered[2]).toContain('同1');
+    const inline = engine.createProcessor({ style, locale: 'zh-CN', items, unnumberedNotes: true }).cite(clusters);
+    expect(inline[2]).not.toContain('同');
+    expect(inline[2]).toBe(inline[0]);
+  });
+
+  it('ISO 690 in Spanish labels each locator', () => {
+    const p = engine.createProcessor({ style: 'iso690-author-date-es', locale: 'es-ES', items });
+    const [page, chapter] = p.cite([{ mode: 'parenthetical' as const, items: [{ id: 'garcia2020', locator: '33', label: 'page' }] }, { mode: 'parenthetical' as const, items: [{ id: 'garcia2020', locator: '2', label: 'chapter' }] }]);
+    expect(page).toMatch(/p\.\u00a033\)$/);
+    expect(chapter).toMatch(/cap\.\u00a02\)$/);
   });
 });

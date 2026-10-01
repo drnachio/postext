@@ -240,16 +240,14 @@ export const CitationsSection = memo(function CitationsSection() {
               isDefault={c.marker === D.marker}
               onReset={() => resetField('marker')}
             />
-            {c.marker !== 'style' && (
-              <ToggleSwitch
-                label={labels.citationsCollapseRanges}
-                checked={c.collapseRanges}
-                onChange={(v) => update({ collapseRanges: v })}
-                tooltip={labels.citationsCollapseRangesTooltip}
-                isDefault={c.collapseRanges === D.collapseRanges}
-                onReset={() => resetField('collapseRanges')}
-              />
-            )}
+            <ToggleSwitch
+              label={labels.citationsCollapseRanges}
+              checked={c.collapseRanges}
+              onChange={(v) => update({ collapseRanges: v })}
+              tooltip={labels.citationsCollapseRangesTooltip}
+              isDefault={c.collapseRanges === D.collapseRanges}
+              onReset={() => resetField('collapseRanges')}
+            />
           </>
         )}
         {noteStyle && (
