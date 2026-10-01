@@ -7,15 +7,10 @@ export const FOLIO_CSS = `
 .postext-folio {
   position: relative;
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
   width: 100%;
   height: 100%;
   min-height: 0;
-  padding: 1rem;
+  overflow: hidden;
   /* Horizontal swipes turn the spread. */
   touch-action: pan-y pinch-zoom;
   outline: none;
@@ -24,18 +19,10 @@ export const FOLIO_CSS = `
   outline: 2px solid var(--postext-folio-accent, #4f8cff);
   outline-offset: -4px;
 }
-.postext-folio-stage {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  max-width: 100%;
-}
 .postext-folio-spread {
-  position: relative;
+  position: absolute;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  flex: none;
   /* Page surfaces (z 1) and their spine shading (z 2) paint above every
      page's drop shadow, as the canvas draws them. */
   isolation: isolate;
@@ -43,9 +30,10 @@ export const FOLIO_CSS = `
 .postext-folio-spread.is-solo {
   grid-template-columns: 1fr;
 }
-/* While a leaf turns the canvas draws the spread. */
-.postext-folio-spread.is-turning > .postext-folio-page {
-  visibility: hidden;
+/* The canvas draws the book: the DOM pages stay (sources, text
+   alternatives, click targets) but are not seen. */
+.postext-folio-spread.is-gl > .postext-folio-page {
+  opacity: 0;
 }
 .postext-folio-spread.is-by-hand > .postext-folio-page:not(.is-empty) {
   cursor: grab;
@@ -59,14 +47,10 @@ export const FOLIO_CSS = `
   user-select: none;
   -webkit-user-select: none;
 }
-/* The page turn: drawn over the spread with room for the lifted leaf;
-   transparent at rest. */
+/* The book in WebGL: over the whole box, centred on the spread (sized by
+   the viewer), with room for a lifted leaf. */
 .postext-folio-flip {
   position: absolute;
-  top: -18%;
-  left: -6%;
-  width: 112%;
-  height: 136%;
   z-index: 3;
   pointer-events: none;
 }
@@ -115,8 +99,11 @@ export const FOLIO_CSS = `
   background: linear-gradient(to left, rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.05) 3%, transparent 9%);
 }
 .postext-folio-nav {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  transform: translateY(-50%);
   display: grid;
-  flex: none;
   place-items: center;
   width: 44px;
   height: 44px;
@@ -127,6 +114,20 @@ export const FOLIO_CSS = `
   color: inherit;
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s, opacity 0.15s;
+}
+.postext-folio-nav.is-prev {
+  left: 12px;
+}
+.postext-folio-nav.is-next {
+  right: 12px;
+}
+.postext-folio[dir="rtl"] .postext-folio-nav.is-prev {
+  left: auto;
+  right: 12px;
+}
+.postext-folio[dir="rtl"] .postext-folio-nav.is-next {
+  right: auto;
+  left: 12px;
 }
 .postext-folio-nav[hidden] {
   display: none;
@@ -144,6 +145,13 @@ export const FOLIO_CSS = `
   cursor: default;
 }
 .postext-folio-count {
+  position: absolute;
+  z-index: 4;
+  left: 0;
+  right: 0;
+  bottom: 12px;
+  text-align: center;
+  pointer-events: none;
   margin: 0;
   font: inherit;
   font-size: 0.875em;
@@ -164,7 +172,14 @@ const STYLE_ID = "postext-folio-styles";
 export function injectStyles(target: Node) {
   const root = target.getRootNode() as Document | ShadowRoot;
   const host = "head" in root ? root.head : root;
-  if (!host || ("getElementById" in root && root.getElementById(STYLE_ID))) return;
+  if (!host) return;
+  const existing = "getElementById" in root ? root.getElementById(STYLE_ID) : null;
+  if (existing) {
+    // Another version of the viewer on the page (a hot reload, two
+    // bundles): its styles give way to this one's.
+    if (existing.textContent !== FOLIO_CSS) existing.textContent = FOLIO_CSS;
+    return;
+  }
   const style = document.createElement("style");
   style.id = STYLE_ID;
   style.textContent = FOLIO_CSS;

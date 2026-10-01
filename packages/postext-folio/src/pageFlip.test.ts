@@ -38,6 +38,7 @@ const canvas = {
 const spread = {
   clientWidth: 2 * W,
   clientHeight: H,
+  getBoundingClientRect: () => ({ left: CX - W, top: CY - H / 2, width: 2 * W, height: H }),
   classList: { add() {}, remove() {} },
 } as unknown as HTMLElement;
 // Blank pages throughout: nothing to load.

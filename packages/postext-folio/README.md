@@ -2,7 +2,7 @@
 
 **A 3D book viewer for [postext](https://www.npmjs.com/package/postext) documents and page images.**
 
-`postext-folio` sets a book out on the screen in spreads and lets the reader turn its pages: with the ‹ › buttons, the arrow keys, a swipe, a click on a page, or by taking a page by its edge and dragging it over. Each leaf curls in [three.js](https://threejs.org/) and casts a real shadow on the pages under it. At rest the pages are plain DOM (images or canvases) and the WebGL canvas is transparent; it draws only while leaves are moving. A right-bound book (Chinese, Japanese, Arabic) lies mirrored and turns leftward. Without WebGL2, or when the reader asks for reduced motion, the spreads simply change.
+`postext-folio` sets a book out on the screen in spreads and lets the reader turn its pages: with the ‹ › buttons, the arrow keys, a swipe, a click on a page, or by taking a page by its edge and dragging it over. Each leaf curls in [three.js](https://threejs.org/) and casts a real shadow on the pages under it. The WebGL canvas draws the book still and turning alike, so a page never changes look when it lands; the DOM pages under it (images or canvases) are the textures' sources and the pages' text alternatives. A right-bound book (Chinese, Japanese, Arabic) lies mirrored and turns leftward. Without WebGL2, or when the reader asks for reduced motion, the spreads simply change.
 
 **Website:** [postext.dev](https://postext.dev/) · **Docs:** [A 3D book](https://postext.dev/en/docs/configuration#a-3d-book-postext-folio)
 
@@ -41,9 +41,9 @@ const book = createFolioFromDocument(document.getElementById('book')!, doc, {
 book.setDocument(buildDocument({ markdown: edited }, config));
 ```
 
-Pages are painted with `renderPageToCanvas` at the size they are shown (times the device pixel ratio), and only around the open spread (`window`, three spreads either side by default). Pages that fall out of that window are freed, so a book of a thousand pages costs the memory of a few. Turning to a far page paints that spread first. Pages a long turn sweeps past show as blank paper while they are in the air.
+Pages are painted with `renderPageToCanvas` at exactly the device pixels of a page slot, so WebGL shows them texel for pixel, as sharp as the canvas preview, and only around the open spread (`window`, three spreads either side by default). Pages that fall out of that window are freed, so a book of a thousand pages costs the memory of a few. Turning to a far page paints that spread first. Pages a long turn sweeps past show as blank paper while they are in the air.
 
-The container sets the size: the book fits inside it, leaving room above and below for a lifted leaf. Give it a height.
+The container sets the size: the book fills it, with the ‹ › buttons and the page count in the margins. Give it a height. A resize paints the pages again at the new size.
 
 ## Page images
 

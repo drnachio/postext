@@ -1,13 +1,9 @@
 import { renderPageToCanvas, type VDTDocument } from "postext";
-import { createFolio, SINGLE_BELOW, type FolioOptions, type FolioState, type FolioViewer } from "./viewer";
+import { createFolio, type FolioOptions, type FolioPageSize, type FolioState, type FolioViewer } from "./viewer";
 
-export interface FolioDocumentOptions extends Omit<FolioOptions, "pages" | "firstPageRecto" | "binding" | "at"> {
+export interface FolioDocumentOptions extends Omit<FolioOptions, "pages" | "firstPageRecto" | "binding" | "at" | "aspect"> {
   /** The page to open on (0-based). Default 0. */
   at?: number;
-  /** Bitmap pixels per page pixel. Default `'auto'`: the size the page is
-   *  shown at, times the device pixel ratio (never past the page's own
-   *  resolution). */
-  scale?: number | "auto";
   /** Spreads painted on either side of the open one; pages farther away
    *  are let go (drawn as blank paper should a long turn sweep past them).
    *  Default 3. */
@@ -31,10 +27,18 @@ export function firstPageIsRecto(doc: VDTDocument): boolean {
   return (doc.pageIndexOffset ?? 0) % 2 === 0;
 }
 
+/** How long a resize settles before the pages are painted at the new size. */
+const RESIZE_SETTLE_MS = 120;
+
 /**
  * A postext document as a book: `createFolio` over its pages, painted with
- * `renderPageToCanvas` at the size they are shown. Only the spreads around
- * the open one are painted, so a long book costs a few pages of memory.
+ * `renderPageToCanvas` at exactly the device pixels of a page slot, so the
+ * WebGL book shows every page texel for pixel, as sharp as a page on the
+ * canvas preview. Pages are painted only when needed: the open spread
+ * first, then the spreads around it when the browser is idle; pages that
+ * fall out of that window are freed, so a long book costs a few pages of
+ * memory. A resize paints them again at the new size.
+ *
  * The fonts and the resource images the document uses must be loaded
  * (`document.fonts`, `registerResourceImage`) before the pages are painted,
  * as for `renderPage`.
@@ -43,22 +47,14 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
   const reach = options.window ?? 3;
   let current = doc;
   let canvases: (HTMLCanvasElement | null)[] = [];
-  let painted = new Map<number, number>(); // page → the scale it was painted at
+  /** Page → the slot width (device px) it was painted for. */
+  let painted = new Map<number, number>();
   let focus: number[] = [options.at ?? 0];
   let idle = 0;
+  let resizeTimer = 0;
+  let ready = false;
 
-  const scaleOf = (d: VDTDocument) => {
-    if (typeof options.scale === "number") return options.scale;
-    const page = d.pages[0];
-    if (!page) return 1;
-    const dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
-    const box = container.getBoundingClientRect();
-    // One page across in single mode (set, or `auto` in a narrow box).
-    const mode = options.mode ?? "auto";
-    const across = mode === "single" || (mode === "auto" && box.width < SINGLE_BELOW) ? 1 : 2;
-    const fit = Math.min(box.width / (across * page.width), box.height > 0 ? box.height / page.height : Infinity);
-    return Math.min(1, Math.max(0.1, fit * dpr));
-  };
+  const slotWidth = () => viewer.pageSize.deviceWidth;
 
   const sources = () =>
     current.pages.map((_, i) => {
@@ -74,25 +70,33 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     return keep;
   }
 
-  function paint(i: number, scale: number) {
+  /** Paints page `i` on a fresh canvas (the leaves cache their texture by
+   *  element) exactly `width` device pixels wide. */
+  function paint(i: number, width: number) {
     const page = current.pages[i];
-    let canvas = canvases[i];
-    if (!canvas) canvas = canvases[i] = document.createElement("canvas");
-    renderPageToCanvas(page, current, canvas, { scale, singleInk: options.singleInk, pageNegative: options.pageNegative });
-    painted.set(i, scale);
+    if (!page) return;
+    const canvas = document.createElement("canvas");
+    renderPageToCanvas(page, current, canvas, {
+      scale: width / page.width,
+      singleInk: options.singleInk,
+      pageNegative: options.pageNegative,
+    });
+    const old = canvases[i];
+    if (old) old.width = old.height = 0;
+    canvases[i] = canvas;
+    painted.set(i, width);
   }
 
   /** Paints what the open spread needs now and lets go of the far pages;
    *  the rest of the window fills in when the browser is idle. */
   function refresh(urgent: number[]) {
-    const scale = scaleOf(current);
+    if (!ready) return;
+    const width = slotWidth();
     const keep = wanted();
     let changed = false;
     for (const i of urgent) {
-      if (i < 0 || i >= current.pages.length || painted.get(i) === scale) continue;
-      // A fresh canvas: the leaves cache their texture by element.
-      canvases[i] = null;
-      paint(i, scale);
+      if (i < 0 || i >= current.pages.length || painted.get(i) === width) continue;
+      paint(i, width);
       changed = true;
     }
     for (const i of [...painted.keys()]) {
@@ -110,14 +114,11 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
   function schedule() {
     cancelIdle(idle);
     idle = onIdle(() => {
-      const scale = scaleOf(current);
-      const keep = [...wanted()].sort((a, b) => Math.min(...focus.map((f) => Math.abs(a - f))) - Math.min(...focus.map((f) => Math.abs(b - f))));
-      const next = keep.filter((i) => painted.get(i) !== scale).slice(0, 4);
+      const width = slotWidth();
+      const distance = (i: number) => Math.min(...focus.map((f) => Math.abs(i - f)));
+      const next = [...wanted()].filter((i) => painted.get(i) !== width).sort((a, b) => distance(a) - distance(b)).slice(0, 4);
       if (!next.length) return;
-      for (const i of next) {
-        canvases[i] = null;
-        paint(i, scale);
-      }
+      for (const i of next) paint(i, width);
       viewer.setPages(sources());
       schedule();
     });
@@ -129,17 +130,11 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     return [...pages, pages[0] - 2, pages[0] - 1, pages[pages.length - 1] + 1, pages[pages.length - 1] + 2];
   };
 
-  const firstPages = () => {
-    const at = options.at ?? 0;
-    return [at - 2, at - 1, at, at + 1, at + 2];
-  };
-  // The open spread is painted before the viewer first shows it.
-  const opening = scaleOf(doc);
-  for (const i of firstPages()) if (i >= 0 && i < doc.pages.length) paint(i, opening);
-
+  const first = doc.pages[0];
   const viewer = createFolio(container, {
     ...options,
-    pages: sources(),
+    pages: doc.pages.map(() => ""),
+    aspect: first ? first.width / first.height : undefined,
     firstPageRecto: firstPageIsRecto(doc),
     binding: doc.binding === "right" ? "right" : "left",
     paper: options.paper ?? doc.config.page.backgroundColor.hex,
@@ -152,20 +147,18 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
       focus = state.pages;
       options.onChange?.(state);
     },
+    onLayout: (size: FolioPageSize) => {
+      options.onLayout?.(size);
+      if (!ready) return;
+      // Painted again once the box stops changing (a dragged divider).
+      clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => refresh(around(viewer.state)), RESIZE_SETTLE_MS);
+    },
   });
+  // The open spread, painted at the slot's size before the first frame.
+  ready = true;
   focus = viewer.state.pages;
-  schedule();
-
-  let lastScale = opening;
-  const observer = new ResizeObserver(() => {
-    const scale = scaleOf(current);
-    // Repaint only for a real change of size (a bitmap far too small or too big).
-    if (scale > lastScale * 1.25 || scale < lastScale * 0.5) {
-      lastScale = scale;
-      refresh(around(viewer.state));
-    }
-  });
-  observer.observe(container);
+  refresh(around(viewer.state));
 
   return {
     element: viewer.element,
@@ -175,30 +168,34 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     prev: viewer.prev,
     setPages: viewer.setPages,
     setLabels: viewer.setLabels,
+    get pageSize() {
+      return viewer.pageSize;
+    },
     get state() {
       return viewer.state;
     },
     setDocument(next: VDTDocument, opts: { at?: number } = {}) {
-      current = next;
+      const at = Math.max(0, Math.min(next.pages.length - 1, opts.at ?? viewer.state.pages[0] ?? 0));
       for (const canvas of canvases) if (canvas) canvas.width = canvas.height = 0;
+      current = next;
       canvases = [];
       painted = new Map();
-      const at = Math.min(next.pages.length - 1, opts.at ?? viewer.state.pages[0] ?? 0);
       focus = [at];
-      const scale = scaleOf(next);
-      for (const i of [at - 2, at - 1, at, at + 1, at + 2]) if (i >= 0 && i < next.pages.length) paint(i, scale);
-      viewer.setPages(sources(), {
-        firstPageRecto: firstPageIsRecto(next),
-        binding: next.binding === "right" ? "right" : "left",
-        paper: options.paper ?? next.config.page.backgroundColor.hex,
-        at: Math.max(0, at),
-      });
+      viewer.setPages(
+        next.pages.map(() => ""),
+        {
+          firstPageRecto: firstPageIsRecto(next),
+          binding: next.binding === "right" ? "right" : "left",
+          paper: options.paper ?? next.config.page.backgroundColor.hex,
+          at,
+        },
+      );
       focus = viewer.state.pages;
-      schedule();
+      refresh(around(viewer.state));
     },
     dispose() {
       cancelIdle(idle);
-      observer.disconnect();
+      clearTimeout(resizeTimer);
       viewer.dispose();
       for (const canvas of canvases) if (canvas) canvas.width = canvas.height = 0;
       canvases = [];

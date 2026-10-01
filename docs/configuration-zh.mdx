@@ -7223,7 +7223,7 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 
 ## 3D书本（`postext-folio`）
 
-`postext-folio`把排好的文档以书本的形式呈现在屏幕上：按右页规则成对展开，读者可以用‹ ›按钮、方向键、滑动、点击页面，或抓住页边拖过去来翻页。每一页都在three.js中卷曲，并在下方页面上投下真实的阴影。静止时页面是普通DOM，WebGL画布是透明的，只在翻页时绘制。它是食谱页面和沙盒**书页**标签页使用的查看器。
+`postext-folio`把排好的文档以书本的形式呈现在屏幕上：按右页规则成对展开，读者可以用‹ ›按钮、方向键、滑动、点击页面，或抓住页边拖过去来翻页。每一页都在three.js中卷曲，并在下方页面上投下真实的阴影。WebGL画布在静止和翻页时都绘制书本，所以页面落下时外观不会变化。它是食谱页面和沙盒**书页**标签页使用的查看器。
 
 ```bash
 npm install postext postext-folio three
@@ -7242,9 +7242,9 @@ const book = createFolioFromDocument(document.getElementById('book')!, doc, {
 book.setDocument(buildDocument({ markdown: edited }, config));
 ```
 
-- **页面按需绘制。** `createFolioFromDocument`用`renderPageToCanvas`按页面的显示尺寸（乘以设备像素比）绘制每一页，而且只绘制当前展开页附近的展开页（`window`，默认前后各三个）。移出这个范围的页面会被释放，所以一千页的书也只占几页的内存。跳到很远的页面时，先绘制那个展开页；长距离翻页途中掠过的页面在空中显示为空白纸张。
+- **页面按需绘制。** `createFolioFromDocument`用`renderPageToCanvas`按页面所在位置的设备像素精确绘制每一页（WebGL因此逐像素显示，与画布预览一样清晰），而且只绘制当前展开页附近的展开页（`window`，默认前后各三个）。移出这个范围的页面会被释放，所以一千页的书也只占几页的内存。跳到很远的页面时，先绘制那个展开页；长距离翻页途中掠过的页面在空中显示为空白纸张。
 - **书本由文档决定。** 第一页是右页（`pageIndexOffset`为偶数）时单独显示在右侧；右侧装订的书（`page.binding: 'right'`，或竖排文档）呈镜像，向左翻页；空白页使用页面的背景色。
-- **尺寸由容器决定。** 书本适应容器大小，并为翻起的书页留出空间，所以要给容器设定高度。宽度小于560像素时一次显示一页（`mode: 'auto'`；`'single'`和`'double'`可强制其中一种）。
+- **尺寸由容器决定。** 书本占满容器，按钮和页码位于边距中，所以要给容器设定高度；尺寸改变时会按新尺寸重新绘制页面。宽度小于560像素时一次显示一页（`mode: 'auto'`；`'single'`和`'double'`可强制其中一种）。
 - **先加载字体和图片。** 与`renderPage`一样，绘制页面之前，文档用到的字体必须已在`document.fonts`中加载，资源图片必须已通过`registerResourceImage`注册。
 - **无障碍。** 查看器是可获得焦点的组，响应←/→（右侧装订的书方向相反）、Page Up/Down、Home和End；按钮和页码都有标签（用`labels`翻译），每个页面画布都带有替代文本（`alt: (index) => …`）。
 - **没有WebGL2**，或读者要求减少动画时，展开页直接切换。

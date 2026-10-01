@@ -7228,7 +7228,7 @@ The sandbox's `PdfViewport` component (`packages/postext-sandbox/src/viewport/Pd
 
 ## A 3D book (`postext-folio`)
 
-`postext-folio` sets a laid-out document on the screen as a book: spreads by the recto rule, and leaves the reader turns with the ‹ › buttons, the arrow keys, a swipe, a click on a page, or by taking a page by its edge and dragging it over. Each leaf curls in three.js and casts a real shadow on the pages under it. At rest the pages are plain DOM and the WebGL canvas is transparent; it draws only while leaves move. It is the viewer of the Cookbook's recipes and of the sandbox's **Folio** tab.
+`postext-folio` sets a laid-out document on the screen as a book: spreads by the recto rule, and leaves the reader turns with the ‹ › buttons, the arrow keys, a swipe, a click on a page, or by taking a page by its edge and dragging it over. Each leaf curls in three.js and casts a real shadow on the pages under it. The WebGL canvas draws the book still and turning alike, so a page never changes look when it lands. It is the viewer of the Cookbook's recipes and of the sandbox's **Folio** tab.
 
 ```bash
 npm install postext postext-folio three
@@ -7247,9 +7247,9 @@ const book = createFolioFromDocument(document.getElementById('book')!, doc, {
 book.setDocument(buildDocument({ markdown: edited }, config));
 ```
 
-- **Pages are painted as they are needed.** `createFolioFromDocument` paints each page with `renderPageToCanvas` at the size it is shown, times the device pixel ratio, and only the spreads around the open one (`window`, three either side by default). Pages that fall out of that window are freed, so a book of a thousand pages costs the memory of a few. A jump to a far page paints that spread first; the leaves a long turn sweeps past show as blank paper while they are in the air.
+- **Pages are painted as they are needed.** `createFolioFromDocument` paints each page with `renderPageToCanvas` at exactly the device pixels of a page slot (WebGL then shows it texel for pixel, as sharp as the canvas preview), and only the spreads around the open one (`window`, three either side by default). Pages that fall out of that window are freed, so a book of a thousand pages costs the memory of a few. A jump to a far page paints that spread first; the leaves a long turn sweeps past show as blank paper while they are in the air.
 - **The document sets the book.** Its first page opens alone on the right when it is a recto (`pageIndexOffset` even), a right-bound book (`page.binding: 'right'`, or a vertical document) lies mirrored and turns leftward, and blank pages take the page's background colour.
-- **The container sets the size.** The book fits inside it, leaving room for a lifted leaf, so give the container a height. Below 560 px wide it shows one page at a time (`mode: 'auto'`; `'single'` and `'double'` force either).
+- **The container sets the size.** The book fills it, with the buttons and the page count in the margins, so give the container a height; a resize paints the pages again at the new size. Below 560 px wide it shows one page at a time (`mode: 'auto'`; `'single'` and `'double'` force either).
 - **Fonts and images first.** As for `renderPage`, the faces the document uses must be loaded in `document.fonts` and its resource images registered with `registerResourceImage` before pages are painted.
 - **Accessible.** The viewer is a focusable group that takes ←/→ (mirrored for a right-bound book), Page Up/Down, Home and End; its buttons and page count are labelled (`labels` translates them), and each page canvas carries `alt` text (`alt: (index) => …`).
 - **Without WebGL2**, or when the reader asks for reduced motion, the spreads simply change.

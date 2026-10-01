@@ -439,6 +439,9 @@ export class PageFlipper {
   private disposed = false;
   /** The spread last reported settled (the one the DOM shows). */
   private reported: number;
+  private persistent: boolean;
+  /** A redraw of the book at rest is queued. */
+  private still = 0;
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -450,7 +453,12 @@ export class PageFlipper {
     private onTarget: (index: number) => void,
     /** The edge the book is bound on. */
     binding: "left" | "right" = "left",
+    /** `persistent`: the canvas draws the book at rest too (the DOM pages
+     *  are hidden by the host and serve only as texture sources and text
+     *  alternatives), so a page looks the same lying still and turning. */
+    { persistent = false }: { persistent?: boolean } = {},
   ) {
+    this.persistent = persistent;
     this.sign = binding === "right" ? -1 : 1;
     this.light = new Vector3(this.sign * LIGHT.x, LIGHT.y, LIGHT.z);
     this.casterMaterial.uniforms.uLd.value = this.light;
@@ -496,22 +504,29 @@ export class PageFlipper {
     this.target = at;
     this.reported = at;
     this.turned = Array.from({ length: Math.max(0, book.length - 1) }, (_, k) => k < at);
+    this.redraw();
   }
 
-  /** Fits the camera so the z = 0 plane maps onto the DOM spread 1:1. */
+  /** Fits the camera so the z = 0 plane maps onto the DOM spread 1:1.
+   *  Sizes are read unrounded and the drawing buffer covers the canvas's
+   *  device pixels exactly, so a page lying flat is drawn texel for pixel,
+   *  as the DOM shows it. */
   private layout() {
-    const cw = this.canvas.clientWidth;
-    const ch = this.canvas.clientHeight;
+    const box = this.canvas.getBoundingClientRect();
+    const cw = box.width;
+    const ch = box.height;
     if (!cw || !ch) return;
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    this.renderer.setSize(cw, ch, false);
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    this.renderer.setPixelRatio(1);
+    this.renderer.setSize(Math.round(cw * dpr), Math.round(ch * dpr), false);
     this.camera.aspect = cw / ch;
     this.camera.position.set(0, 0, ch / 2 / Math.tan((FOV * Math.PI) / 360));
     this.camera.near = this.camera.position.z / 20;
     this.camera.far = this.camera.position.z * 4;
     this.camera.updateProjectionMatrix();
-    this.W = this.spread.clientWidth / 2;
-    this.H = this.spread.clientHeight;
+    const spread = this.spread.getBoundingClientRect();
+    this.W = spread.width / 2;
+    this.H = spread.height;
     this.flat(this.right.geometry, 1);
     this.flat(this.left.geometry, -1);
     // The desk plane fills the canvas (its vertices are world positions).
@@ -624,6 +639,7 @@ export class PageFlipper {
       this.ready.delete(src);
       this.textures.delete(src);
     }
+    this.redraw();
   }
 
   private assign(mesh: PageMesh, face: "Front" | "Back", src: PageSource) {
@@ -638,6 +654,7 @@ export class PageFlipper {
       if (!tex || mesh.userData[face] !== src) return;
       u[`u${face}`].value = tex;
       u[`uHas${face}`].value = 1;
+      this.redraw();
     };
     const tex = this.ready.get(src);
     if (tex) set(tex);
@@ -866,16 +883,31 @@ export class PageFlipper {
   }
 
   /** Back to a transparent canvas (the DOM spread shows), unless leaves
-   *  are moving again. */
+   *  are moving again. A persistent book is drawn at rest instead. */
   clear() {
     if (this.raf || this.starting) return;
+    if (this.persistent) return this.redraw();
     this.spread.classList.remove("is-turning");
     this.renderer.clear();
+  }
+
+  /** Draws the book at rest again (a page painted, the box resized) on the
+   *  next frame; leaves in the air are drawn by their own frames. Only for
+   *  a persistent book: the other one shows the DOM at rest. */
+  redraw() {
+    if (!this.persistent || this.disposed || this.still) return;
+    this.still = requestAnimationFrame(() => {
+      this.still = 0;
+      if (this.disposed || this.raf || this.starting) return;
+      this.layout();
+      this.draw();
+    });
   }
 
   dispose() {
     this.disposed = true;
     cancelAnimationFrame(this.raf);
+    cancelAnimationFrame(this.still);
     for (const tex of this.ready.values()) tex.dispose();
     this.shadowTarget?.dispose();
     this.casterMaterial.dispose();

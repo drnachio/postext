@@ -30,6 +30,28 @@ export interface FolioPreviewHandle {
   regenerate: () => void;
 }
 
+/** A laid-out document with what tells its pages apart across layouts:
+ *  the chapter (position in the book) of every page of a whole-book
+ *  document, or the one chapter of a chapter's. */
+interface ShownDoc {
+  doc: VDTDocument;
+  pageChapters: readonly number[] | null;
+  chapter: number;
+}
+
+/** Where page `index` of `from` lies in `to`: the page of the same chapter
+ *  carrying the same number (indexes differ between a chapter's document
+ *  and the whole book's, and shift with an edit); -1 when `to` has none. */
+function samePage(from: ShownDoc, index: number, to: ShownDoc): number {
+  const page = from.doc.pages[index];
+  if (!page) return -1;
+  const chapter = from.pageChapters?.[index] ?? from.chapter;
+  return to.doc.pages.findIndex((p, i) =>
+    (to.pageChapters?.[i] ?? to.chapter) === chapter
+    && p.pageNumberValue === page.pageNumberValue
+    && p.pageNumberFormat === page.pageNumberFormat);
+}
+
 const fill = (template: string, values: Record<string, string | number>) =>
   template.replace(/__(\w+)__/g, (m, key: string) => (key in values ? String(values[key]) : m));
 
@@ -52,6 +74,8 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   const locale = useSandboxSelector((s) => s.locale);
   const canvasScope = useSandboxSelector((s) => s.canvasScope);
   const chapters = useSandboxSelector((s) => s.chapters);
+  const chaptersRef = useRef(chapters);
+  chaptersRef.current = chapters;
   const compact = useCompactLayout();
   const plan = useBookPlan();
   const planRef = useRef(plan);
@@ -78,7 +102,8 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   }, [rawDeferredConfig, locale]);
   const layoutWorker = useLayoutWorker('preview');
   const [rebuildKey, setRebuildKey] = useState(0);
-  const [doc, setDoc] = useState<VDTDocument | null>(null);
+  const [shownDoc, setDoc] = useState<ShownDoc | null>(null);
+  const viewerDocRef = useRef<ShownDoc | null>(null);
   const [paintKey, setPaintKey] = useState(0);
   const heldDocsRef = useRef<Map<string, HeldChapterDoc>>(new Map());
   const stitchedRef = useRef<StitchedBook | null>(null);
@@ -150,7 +175,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         sharedDocSourceRef.current = composeBookMemo(snapshotChapters);
         for (const layout of result.records) dispatch({ type: 'SET_CHAPTER_LAYOUT', payload: layout });
         dispatch({ type: 'BUMP_DOC_VERSION' });
-        setDoc(stitched.doc);
+        setDoc({ doc: stitched.doc, pageChapters: stitched.pageChapters, chapter: -1 });
         counted?.(
           stitched.doc.pages.length,
           leadingBlankPageCount(stitched.doc),
@@ -183,7 +208,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
       const layout = chapterLayoutFromDoc(built, deferredSource.plan, { markdown: deferredSource.chapterMarkdown, config: rawDeferredConfig, resources: deferredResources });
       if (layout) dispatch({ type: 'SET_CHAPTER_LAYOUT', payload: layout });
       dispatch({ type: 'BUMP_DOC_VERSION' });
-      setDoc(built);
+      setDoc({ doc: built, pageChapters: null, chapter: Math.max(0, chaptersRef.current.findIndex((c) => c.id === deferredSource.chapterId)) });
       counted?.(built.pages.length, leadingBlankPageCount(built), built.pages.map((p) => p.pageNumberValue));
     };
     run()
@@ -240,7 +265,10 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   const mode = compact ? 'single' : 'auto';
   useEffect(() => {
     const host = hostRef.current;
-    if (!host || !doc) return;
+    if (!host || !shownDoc) return;
+    const doc = shownDoc.doc;
+    const before = viewerDocRef.current;
+    viewerDocRef.current = shownDoc;
     let viewer = viewerRef.current;
     if (!viewer) {
       const at = pendingJumpRef.current ?? leadingBlankPageCount(doc);
@@ -250,7 +278,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         mode,
         pageNegative,
         labels: folioLabelsRef.current,
-        alt: (i) => fill(pageAltRef.current, { page: doc.pages[i]?.pageNumberValue ?? i + 1 }),
+        alt: (i) => fill(pageAltRef.current, { page: viewerDocRef.current?.doc.pages[i]?.pageNumberValue ?? i + 1 }),
         onChange: (state) => {
           const page = state.pages[state.pages.length - 1];
           if (page !== undefined) callbacksRef.current.onCurrentPageChange?.(page);
@@ -259,12 +287,26 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
       viewerRef.current = viewer;
       return;
     }
-    viewer.setDocument(doc);
+    // The same page in the new layout (another scope, or an edit that
+    // moved the pages), else the same position.
+    // Either page of the open spread will do (the whole book's spread may
+    // straddle two chapters, a chapter's document holds one of them).
+    let same = -1;
+    if (before && before !== shownDoc) {
+      for (const open of viewer.state.pages) {
+        same = samePage(before, open, shownDoc);
+        if (same >= 0) break;
+      }
+    }
+    viewer.setDocument(doc, same >= 0 ? { at: same } : {});
     if (pendingJumpRef.current !== null) {
       viewer.goToPage(pendingJumpRef.current);
       pendingJumpRef.current = null;
     }
-  }, [doc, paintKey, mode, pageNegative]);
+    // The page on show, in the new document's numbering, to the URL.
+    const shown = viewer.state.pages[viewer.state.pages.length - 1];
+    if (shown !== undefined) callbacksRef.current.onCurrentPageChange?.(shown);
+  }, [shownDoc, paintKey, mode, pageNegative]);
 
   // A new reading mode or page negative: a new viewer, on the same page.
   const modeKey = `${mode}|${pageNegative}`;
