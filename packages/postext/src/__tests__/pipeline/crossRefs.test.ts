@@ -144,3 +144,14 @@ describe('cross-references in HTML (#264)', () => {
     expect([...ids].sort()).toEqual(['a:ch-open', 'a:claim', 'a:sec-method']);
   });
 });
+
+describe('Chinese cross-references (#262)', () => {
+  it('prints 第…章 / 第…节 around an Arabic number, and a worded number as is', () => {
+    const zh = { ...config, locale: 'zh-Hans' };
+    const md = '# 开篇 {#a}\n\n见:ref{id="b"}与:ref{id="a"}。\n\n## 方法 {#b}\n\n正文。';
+    expect(refs(buildDocument({ markdown: md }, zh)).map((r) => r.text)).toEqual(['第1.1节', '第1章']);
+    const worded = { ...zh, headings: { levels: [{ level: 1, numberingTemplate: '第{1:一}章' }] } } as PostextConfig;
+    const label = refs(buildDocument({ markdown: '# 开篇 {#a}\n\n见:ref{id="a"}。' }, worded))[0]!.text;
+    expect(label).toBe('第一章');
+  });
+});

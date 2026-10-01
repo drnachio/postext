@@ -136,6 +136,9 @@ export interface InlineSpan {
      *  anchor, a container) rather than a resource; `resourceId` then holds
      *  the anchor's identifier. */
     anchor?: true;
+    /** For an anchor: the book page index it landed on, once laid out —
+     *  what a host jumps to when the anchor lies in another chapter. */
+    pageIndex?: number;
     /** Optional override text to display instead of the computed label. */
     text?: string;
     /** Optional letter-case transform for the label part (`Fig.` /

@@ -8,10 +8,11 @@ import type { PanelId } from '../../types';
 import { getSvgTextIndex } from '../../controls/svgTextIndex';
 import {
   designImageFileIdAtPixel,
-  findResourceLocation,
+  findLinkLocation,
+  linkTargetAtPixel,
   pixelToSourceOffset,
   pageTargetAtPixel,
-  refResourceIdAtPixel,
+  type LinkTarget,
   type ResourceLocation,
 } from './geometry';
 import { resourceTextAtPixel, type ResourceTextHit } from './resourceHit';
@@ -159,12 +160,45 @@ export function attachSlotClickHandler(
     return pixelToSourceOffset(doc, pageIndex, pt.x, pt.y);
   };
 
-  const resolveRefId = (ev: MouseEvent): string | null => {
+  const resolveLink = (ev: MouseEvent): LinkTarget | null => {
     const doc = docRef.current;
     if (!doc) return null;
     const pt = resolvePagePoint(ev);
     if (!pt) return null;
-    return refResourceIdAtPixel(doc, pageIndex, pt.x, pt.y);
+    return linkTargetAtPixel(doc, pageIndex, pt.x, pt.y);
+  };
+
+  /** Whether a click here follows a link: an internal one always, a URL
+   *  with Cmd/Ctrl held. */
+  const isFollowable = (link: LinkTarget | null, ev: MouseEvent): boolean =>
+    link !== null && (link.kind !== 'url' || ev.metaKey || ev.ctrlKey);
+
+  /** Follow a link (#265): scroll to a target of this document, go to the
+   *  chapter of an anchor or a page outside it, open a URL in a new tab.
+   *  False when the link goes nowhere (a figure an earlier chapter set). */
+  const followLink = (link: LinkTarget): boolean => {
+    const doc = docRef.current;
+    if (!doc) return false;
+    if (link.kind === 'url') {
+      if (!/^(?:https?|mailto|tel|ftp):/i.test(link.href)) return false;
+      window.open(link.href, '_blank', 'noopener,noreferrer');
+      return true;
+    }
+    if (link.kind === 'page') {
+      if (!navigateRef?.current) return false;
+      navigateRef.current(link.pageIndex, doc);
+      return true;
+    }
+    const loc = findLinkLocation(doc, link);
+    if (loc) {
+      scrollToResourceLocation(slot, doc, loc);
+      return true;
+    }
+    if (link.kind === 'anchor' && link.pageIndex !== undefined && navigateRef?.current) {
+      navigateRef.current(link.pageIndex, doc);
+      return true;
+    }
+    return false;
   };
 
   const resolvePageTarget = (ev: MouseEvent): number | null => {
@@ -264,7 +298,7 @@ export function attachSlotClickHandler(
   slot.addEventListener('pointermove', (ev) => {
     if (dragPointerId === null) {
       // Hover feedback: refs, contents rows and design images read as links.
-      slot.style.cursor = resolveRefId(ev) !== null || resolvePageTarget(ev) !== null || resolveDesignImage(ev) !== null ? 'pointer' : 'text';
+      slot.style.cursor = isFollowable(resolveLink(ev), ev) || resolvePageTarget(ev) !== null || resolveDesignImage(ev) !== null ? 'pointer' : 'text';
       return;
     }
     if (ev.pointerId !== dragPointerId) return;
@@ -320,15 +354,15 @@ export function attachSlotClickHandler(
     if (ev.detail === 0) return;
     const sel = window.getSelection();
     if (sel && !sel.isCollapsed && sel.toString().length > 0) return;
-    // A click on a `:ref` segment navigates to the referenced resource. The
-    // preventDefault also stops the HTML preview's native <a href="#…"> from
-    // rewriting the app URL hash.
-    const refId = resolveRefId(ev);
-    if (refId !== null) {
+    // A click on a link — a `:ref` to a resource or an anchor, a footnote
+    // marker, an index page number, a Markdown link — follows it (#265).
+    // The preventDefault also stops the HTML preview's native <a href="#…">
+    // from rewriting the app URL hash. A Markdown link is followed with a
+    // modifier key only, so a plain click still places the caret in it.
+    const link = resolveLink(ev);
+    if (link !== null && isFollowable(link, ev)) {
       ev.preventDefault();
-      const doc = docRef.current;
-      const loc = doc ? findResourceLocation(doc, refId) : null;
-      if (doc && loc) scrollToResourceLocation(slot, doc, loc);
+      followLink(link);
       return;
     }
     const target = resolvePageTarget(ev);

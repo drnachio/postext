@@ -284,7 +284,7 @@ export function resolveRefSpans(
       const target = findAnchorTarget(refStyle?.anchors?.targets, ref.resourceId);
       const bare = unprefixedId(ref.resourceId);
       if (target && refStyle?.anchors) {
-        ref = { ...ref, resourceId: target.id, anchor: true };
+        ref = { ...ref, resourceId: target.id, anchor: true, ...(target.pageIndex !== undefined ? { pageIndex: target.pageIndex } : {}) };
         text = resolveAnchorRefLabel(ref, target, refStyle.anchors.strings);
       } else if (bare !== undefined && isResource(bare)) {
         ref = { ...ref, resourceId: bare };

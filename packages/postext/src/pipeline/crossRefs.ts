@@ -142,6 +142,19 @@ function fill(template: string, n: string, refCase: RefCase | undefined): string
   return `${before}${n}${before.trim().length > 0 ? after : applyCase(after, refCase)}`;
 }
 
+/** Whether a heading number already holds the words of the template it
+ *  would be set in: a space ("Chapter 3"), or the template's words around
+ *  `{n}` ("第三章" against "第{n}章", "Capítulo 2" against "capítulo {n}"). */
+function numberIsWorded(number: string, template: string): boolean {
+  if (/\s/u.test(number)) return true;
+  const at = template.indexOf('{n}');
+  if (at < 0) return false;
+  const before = template.slice(0, at).trim().toLocaleLowerCase();
+  const after = template.slice(at + 3).trim().toLocaleLowerCase();
+  const n = number.toLocaleLowerCase();
+  return (before.length > 0 && n.startsWith(before)) || (after.length > 0 && n.endsWith(after));
+}
+
 /** What a page reference prints before the target is laid out. */
 export const UNKNOWN_PAGE = '?';
 
@@ -173,10 +186,11 @@ export function resolveAnchorRefLabel(
     case 'number':
       return number.length > 0 ? number : title.length > 0 ? title : page;
     default: {
-      // A number its template already words ("Chapter 3") prints as is.
-      if (target.kind === 'heading' && /\s/u.test(number)) return number;
       if (target.kind === 'heading' && number.length > 0) {
-        return fill(target.level === 1 ? strings.chapter : strings.section, number, ref.case);
+        const template = target.level === 1 ? strings.chapter : strings.section;
+        // A number its template already words ("Chapter 3", "第三章")
+        // prints as is.
+        return numberIsWorded(number, template) ? number : fill(template, number, ref.case);
       }
       return title.length > 0 ? title : fill(strings.page, page, ref.case);
     }

@@ -192,6 +192,10 @@ export interface VDTLineSegment {
    *  anchor, a container, #262): `refResourceId` holds the anchor's id and
    *  a link jumps to {@link VDTDocument.anchors}' entry for it. */
   refAnchor?: true;
+  /** For a reference to an anchor: the book page index (the documents'
+   *  `pageIndexOffset` counted in) the anchor landed on, when known — a host
+   *  showing one chapter goes there when the anchor is in another. */
+  refPageIndex?: number;
   /** Physical book page index this segment links to: a page number of an
    *  expanded `:::index`. The PDF backend makes it a link to that page (when
    *  the page is in the document), as it does a contents row. */
