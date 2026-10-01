@@ -81,6 +81,8 @@ const indentVerse = (md) => md.replace(/^ {2}(?=\S)/gm, '\u2060\u2003\u2003');
 
 // #region notes: glosses at the foot of the recto, in the edition's language
 const footnotes = { placement: 'column', // the foot of the column, here the foot of the page
+  // Numbered as a Chinese book numbers them (页下注): ① ② on the baseline, from ① on every page.
+  numberFormat: 'circled-decimal', numbering: 'page', markerSize: { value: 0.6, unit: 'em' },
   fontSize: pt(8), lineHeight: pt(11), color: col('ink'), textAlign: 'left',
   spaceAbove: pt(LEAD), spaceBelowRule: pt(5), spaceBetween: pt(3),
   separator: { width: 0.12, lineWidth: pt(0.6), color: col('seal') } };
@@ -176,10 +178,11 @@ const FONTS = { // every face the pages use, loaded before the build (gotcha: fo
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 // #region voices: each Chinese face loads the files of the characters it sets
 const grab = (re) => (markdown.match(re) ?? []).join('');
-const poems = grab(/:::paragraphs\{style="shi"\}[\s\S]*?\n:::/g) + '0123456789'; // and note numbers
+const NOTES = '①②③④⑤⑥⑦⑧⑨⑩'; // the note numbers, set in the verse and at the head of each note
+const poems = grab(/:::paragraphs\{style="shi"\}[\s\S]*?\n:::/g) + NOTES;
 await loadFonts(FONTS, markdown);
 await Promise.all([
-  loadCjkFonts({ [SERIF]: ['400'] }, markdown), // the notes, and the heading blocks
+  loadCjkFonts({ [SERIF]: ['400'] }, markdown + NOTES), // the notes, and the heading blocks
   loadCjkFonts({ [SERIF]: ['700'] }, grab(/^# \S+(?= \{style="zh")|\*\*[^*]+\*\*/gm)),
   loadCjkFonts({ [SERIF]: ['900'] }, grab(/^# \S+(?= \{style="title")/gm)),
   loadCjkFonts({ [KAI]: ['400'] }, `${poems}明月`),
