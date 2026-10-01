@@ -3,9 +3,11 @@
 #
 # 1. Go to https://www.npmjs.com → Avatar → Access Tokens → Generate New Token
 #    Select type: "Automation" (bypasses 2FA for CI)
-#    A granular token must grant read/write on BOTH packages: postext and
-#    postext-pdf (E403 on publish = the token does not cover that package,
-#    E404 = the token expired).
+#    A granular token must grant read/write on EVERY package: postext,
+#    postext-pdf and postext-folio (E403 on publish = the token does not cover
+#    that package, E404 = the token expired). A package's first publish needs
+#    a token allowed to create packages: one scoped to existing packages only
+#    cannot publish a new name.
 # 2. Go to https://github.com/drnachio/postext/settings/secrets/actions
 #    Click "New repository secret"
 #    Name:  NPM_TOKEN
@@ -95,10 +97,16 @@ jobs:
           VERSION=$(.github/scripts/release-version.sh packages/postext-pdf postext-pdf ${{ steps.bump.outputs.type }} | tee /dev/stderr | tail -1)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-      # Build & test both packages (postext-pdf builds against the freshly
-      # bumped workspace postext)
-      - run: pnpm turbo run build --filter=postext --filter=postext-pdf
-      - run: pnpm turbo run test --filter=postext --filter=postext-pdf
+      - name: Bump postext-folio version
+        id: version_folio
+        run: |
+          VERSION=$(.github/scripts/release-version.sh packages/postext-folio postext-folio ${{ steps.bump.outputs.type }} | tee /dev/stderr | tail -1)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      # Build & test the packages (postext-pdf and postext-folio build against
+      # the freshly bumped workspace postext)
+      - run: pnpm turbo run build --filter=postext --filter=postext-pdf --filter=postext-folio
+      - run: pnpm turbo run test --filter=postext --filter=postext-pdf --filter=postext-folio
 
       # Publish to npm
       - name: Publish postext to npm
@@ -113,22 +121,29 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Publish postext-folio to npm
+        working-directory: packages/postext-folio
+        run: pnpm publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       # Commit version bump, tag, and push
       - name: Commit & tag release
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add packages/postext/package.json packages/postext-pdf/package.json
+          git add packages/postext/package.json packages/postext-pdf/package.json packages/postext-folio/package.json
           # Versions raised by hand are already committed: then only tag.
           # "chore: release" is the loop guard on this workflow's `if`
           if git diff --cached --quiet; then
             echo "Manifests already at the released versions — nothing to commit"
           else
-            git commit -m "chore: release v${{ steps.version.outputs.version }} (postext-pdf v${{ steps.version_pdf.outputs.version }})"
+            git commit -m "chore: release v${{ steps.version.outputs.version }} (postext-pdf v${{ steps.version_pdf.outputs.version }}, postext-folio v${{ steps.version_folio.outputs.version }})"
           fi
           # Annotated tags: --follow-tags only pushes annotated tags, not lightweight ones
           git tag -a "v${{ steps.version.outputs.version }}" -m "v${{ steps.version.outputs.version }}"
           git tag -a "postext-pdf-v${{ steps.version_pdf.outputs.version }}" -m "postext-pdf v${{ steps.version_pdf.outputs.version }}"
+          git tag -a "postext-folio-v${{ steps.version_folio.outputs.version }}" -m "postext-folio v${{ steps.version_folio.outputs.version }}"
           git push origin main --follow-tags
 
       # Keep develop in sync with the version bump
