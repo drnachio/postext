@@ -113,7 +113,6 @@
     "unavailableBook": "搜索不可用：显示全书。",
     "picks": "编辑推荐",
     "collections": "合集",
-    "shelfAll": "{chapter}的全部{count}道食谱",
     "emptyTitle": "空白页。",
     "emptyQuery": "搜索范围包括食谱标题、读者问题、功能、配置键、API、警告和字体。",
     "emptyFilters": "没有食谱同时满足这些筛选条件。",

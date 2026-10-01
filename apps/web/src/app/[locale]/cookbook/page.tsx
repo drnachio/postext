@@ -105,7 +105,7 @@ export default async function CookbookPage({ params }: { params: Promise<{ local
             </Suspense>
             <div id="cb-book" className="cb-book">
               <EditorsPicks data={data} labels={labels} locale={locale} />
-              <ChapterShelves data={data} labels={labels} locale={locale} />
+              <ChapterShelves data={data} labels={labels} />
             </div>
             <Suspense fallback={<ResultsSkeleton />}>
               <CookbookResults locale={locale} parts={parts} />

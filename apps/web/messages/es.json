@@ -113,7 +113,6 @@
     "unavailableBook": "La búsqueda no está disponible: se muestra el libro completo.",
     "picks": "Selección de la redacción",
     "collections": "Colecciones",
-    "shelfAll": "Las {count} recetas de {chapter}",
     "emptyTitle": "Página en blanco.",
     "emptyQuery": "La búsqueda abarca títulos, preguntas, funciones, claves de configuración, API, avisos y fuentes de las recetas.",
     "emptyFilters": "Ninguna receta cumple todos estos filtros.",

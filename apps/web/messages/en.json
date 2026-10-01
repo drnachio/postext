@@ -113,7 +113,6 @@
     "unavailableBook": "Search is unavailable: showing the whole book.",
     "picks": "Editor’s picks",
     "collections": "Collections",
-    "shelfAll": "All {count} recipes in {chapter}",
     "emptyTitle": "Blank page.",
     "emptyQuery": "Search covers recipe titles, reader questions, features, config keys, APIs, warnings and fonts.",
     "emptyFilters": "No recipe matches all of these filters.",
