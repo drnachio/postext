@@ -175,3 +175,14 @@ describe('crossRefs configuration (#266)', () => {
     expect(stripCrossRefsDefaults({ page: 'pp. {n}' })).toEqual({ page: 'pp. {n}' });
   });
 });
+
+describe('anchors of headings an opener design draws (#261)', () => {
+  it('locates a chapter heading whose block the design hides', () => {
+    const designed: PostextConfig = {
+      ...config,
+      headings: { levels: [{ level: 1, advancedDesign: { enabled: true, slot: { elements: [] } } }] },
+    } as PostextConfig;
+    const doc = buildDocument({ markdown: '# Opening {#open}\n\nSee :ref{id="open" style=page}.' }, designed);
+    expect(doc.anchors?.map((a) => a.id)).toContain('open');
+  });
+});

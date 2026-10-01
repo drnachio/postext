@@ -5,7 +5,7 @@
 // preceding chapter, recorded as a `ChapterLayout`). Page numbers thus run
 // on across chapters without ever laying out the whole book in a preview.
 
-import { configUsesPlaceholder, contentOutline, continuationAfter, extractFrontmatter, formatNumeral, indexOutline, outlineFromDoc, outlineKey, parseMarkdown, resolveHeadingsConfig, resolvePageConfig, DEFAULT_PARTS_CONFIG, tocOutline } from 'postext';
+import { anchorOutline, configUsesPlaceholder, contentOutline, continuationAfter, extractFrontmatter, formatNumeral, indexOutline, outlineFromDoc, outlineKey, parseMarkdown, resolveHeadingsConfig, resolvePageConfig, DEFAULT_PARTS_CONFIG, tocOutline } from 'postext';
 import type { LayoutContinuation, NumeralStyle, OutlineEntry, PostextConfig, Resource, VDTDocument } from 'postext';
 import type { BookPages, BookPlan, Chapter, ChapterLayout, ChapterPageNumber, ChapterPages, ChapterPart, ChapterPlan, OutlinePage } from './types';
 import { ENGINE_KEY, configKeyOf, resourcesKeyOf } from './layoutKeys';
@@ -85,6 +85,9 @@ interface CountersEntry {
   hasToc: boolean;
   /** Whether the chapter prints the index (`:::index`). */
   hasIndex: boolean;
+  /** Whether a reference of the chapter may name an anchor of the book
+   *  (#262): it reads the book's headings and anchors, with their pages. */
+  hasRefs: boolean;
   /** {@link opensOnEvenPage}, worked out the first time a plan asks. */
   opensEven?: boolean;
 }
@@ -276,7 +279,7 @@ export function createBookPlanner(): BookPlanner {
       return hit;
     }
     const after = continuationAfter({ markdown: chapter.markdown, resources }, config, before);
-    const { outline, hasToc, hasIndex } = contentOutline({ markdown: chapter.markdown }, config, before);
+    const { outline, hasToc, hasIndex, hasRefs } = contentOutline({ markdown: chapter.markdown, resources }, config, before);
     const entry: CountersEntry = {
       markdown: chapter.markdown,
       config,
@@ -288,6 +291,7 @@ export function createBookPlanner(): BookPlanner {
       outline,
       hasToc,
       hasIndex,
+      hasRefs,
     };
     cache.set(chapter.id, entry);
     return entry;
@@ -356,7 +360,7 @@ export function createBookPlanner(): BookPlanner {
       // A chapter printing the contents (`:::toc`) or the index
       // (`:::index`) is laid out with it; when what it prints changes, that
       // chapter's record goes stale — its pages hold, its rows do not.
-      const anyToc = entries.some((e) => e.hasToc || e.hasIndex);
+      const anyToc = entries.some((e) => e.hasToc || e.hasIndex || e.hasRefs);
       /** The first content page of the chapters from `index` on (an empty
        *  chapter holds none), while the chain places them. */
       const firstContentPageFrom = (index: number): { pageLabel: string; pageIndex: number } | null => {
@@ -393,14 +397,24 @@ export function createBookPlanner(): BookPlanner {
       // The contents read the headings and parts, the index the index
       // marks: a chapter printing one goes stale only when what it prints
       // moves.
+      // References read the headings with an identifier and the anchors.
       const outlines = anyToc
-        ? { toc: tocOutline(bookOutline), index: indexOutline(bookOutline) }
-        : { toc: [], index: [] };
-      const printedKeys = { toc: '', index: '' };
+        ? { toc: tocOutline(bookOutline), index: indexOutline(bookOutline), refs: anchorOutline(bookOutline) }
+        : { toc: [], index: [], refs: [] };
+      const printedKeys = { toc: '', index: '', refs: '' };
       if (entries.some((e) => e.hasToc)) printedKeys.toc = outlineKey(outlines.toc);
       if (entries.some((e) => e.hasIndex)) printedKeys.index = outlineKey(outlines.index);
+      if (entries.some((e) => e.hasRefs)) printedKeys.refs = outlineKey(outlines.refs);
       /** The outline a chapter is laid out with, and its key. */
       const chapterOutline = (entry: CountersEntry): { outline?: OutlineEntry[]; key: string } => {
+        if (entry.hasRefs) {
+          // The parts the chapter prints, in book order, with the anchors.
+          const outline = bookOutline.filter((e) => e.anchorId !== undefined
+            || (entry.hasToc && (e.kind === 'heading' || e.kind === 'part'))
+            || (entry.hasIndex && e.kind === 'indexMark'));
+          const key = [entry.hasToc ? printedKeys.toc : '', entry.hasIndex ? printedKeys.index : '', printedKeys.refs].join('\n\n');
+          return { outline, key };
+        }
         if (entry.hasToc && entry.hasIndex) return { outline: bookOutline, key: `${printedKeys.toc}\n\n${printedKeys.index}` };
         if (entry.hasToc) return { outline: outlines.toc, key: printedKeys.toc };
         if (entry.hasIndex) return { outline: outlines.index, key: printedKeys.index };

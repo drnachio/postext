@@ -31,7 +31,9 @@ export function locateAnchors(
   const out: VDTAnchor[] = [];
   const seenHeading = new Set<number>();
   for (const b of doc.blocks) {
-    if (b.type !== 'heading' || b.pageIndex < 0 || b.hidden) continue;
+    // A heading an opener design draws (its block hidden) is a target all
+    // the same: its block keeps its page and place.
+    if (b.type !== 'heading' || b.pageIndex < 0) continue;
     const id = b.attrs?.id;
     if (id === undefined || id.length === 0) continue;
     // A split heading keeps its attributes on its first part only; the
