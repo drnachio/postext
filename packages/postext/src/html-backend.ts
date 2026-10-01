@@ -5,6 +5,7 @@ import type {
   VDTBlock,
   VDTLine,
   VDTLineSegment,
+  VDTAnchor,
   VDTAnnotationRun,
   VDTChip,
   VDTChipRun,
@@ -146,6 +147,12 @@ interface HtmlPaint extends RenderHtmlOptions {
    *  rendered on its own — is set as plain text in its link colour, not as
    *  a link to nowhere (the PDF backend drops such a link the same way). */
   linkTargets?: ReadonlySet<string>;
+  /** The document's anchors (#264): each page sets an element with its id
+   *  where it landed. */
+  anchors?: readonly VDTAnchor[];
+  /** Physical pages before the document's first page: a page's element id
+   *  is its book index. */
+  pageIndexOffset?: number;
   /** Set while a vertical page's flow is rendered: its text lines are
    *  set down the column (see {@link renderVerticalLine}). */
   vertical?: VerticalHtml;
@@ -175,6 +182,8 @@ interface VerticalHtml {
  */
 export function anchoredResourceIds(doc: VDTDocument): Set<string> {
   const ids = new Set<string>();
+  // Anchors (#264) under a key no resource id takes the same way.
+  for (const a of doc.anchors ?? []) ids.add(`${ANCHOR_KEY}${a.id}`);
   for (const page of doc.pages) {
     for (const block of [...page.columns.flatMap((c) => c.blocks), ...(page.floats ?? [])]) {
       const rb = block.resourceBlock;
@@ -242,8 +251,35 @@ function resourceAnchorId(resourceId: string): string {
   return `pt-res-${resourceId}`;
 }
 
-function refAnchorHref(resourceId: string): string {
-  return `#${encodeURIComponent(resourceAnchorId(resourceId))}`;
+/** The link key of a `:ref` segment: its resource id, or `a:<id>` for a
+ *  reference to an anchor (`refAnchor`, #264) — the form
+ *  {@link anchoredResourceIds} lists anchors in. */
+function refKey(seg: Pick<VDTLineSegment, 'refResourceId' | 'refAnchor'>): string {
+  return seg.refAnchor ? `${ANCHOR_KEY}${seg.refResourceId}` : seg.refResourceId!;
+}
+
+const ANCHOR_KEY = 'a:';
+
+/** Element id of an anchor (a heading's `{#id}`, an inline anchor, a
+ *  container, #264). */
+function anchorElementId(id: string): string {
+  return `pt-a-${id}`;
+}
+
+/** Element id of a footnote's note: where its markers link to (#264). */
+function footnoteElementId(id: string): string {
+  return `pt-fn-${id}`;
+}
+
+/** Element id of a book page (`VDTDocument.pageIndexOffset` counted in):
+ *  where a contents row or an index page number links to (#264). */
+function pageElementId(bookIndex: number): string {
+  return `pt-p-${bookIndex}`;
+}
+
+function refAnchorHref(key: string): string {
+  if (key.startsWith(ANCHOR_KEY)) return `#${encodeURIComponent(anchorElementId(key.slice(ANCHOR_KEY.length)))}`;
+  return `#${encodeURIComponent(resourceAnchorId(key))}`;
 }
 
 function quoteFontString(fontString: string): string {
@@ -342,7 +378,7 @@ function renderTextSegment(
   const featuresDecl = !fontDecl ? '' : scaleDecl ? DASH_FEATURES_DECL : cjk ? CJK_FEATURES_DECL : '';
   if (seg.refResourceId !== undefined) {
     // Anchors carry an explicit color so the UA link blue never leaks in.
-    const inner = `<a href="${refAnchorHref(seg.refResourceId)}" style="text-decoration:none;${fontDecl}${featuresDecl}${fontDecl ? 'line-height:0;' : ''}color:${color};">${text}</a>`;
+    const inner = `<a href="${refAnchorHref(refKey(seg))}" style="text-decoration:none;${fontDecl}${featuresDecl}${fontDecl ? 'line-height:0;' : ''}color:${color};">${text}</a>`;
     return `<span style="${pos}">${inner}</span>`;
   }
   if (fontDecl) {
@@ -374,7 +410,7 @@ function renderWordTextSegment(
   const text = esc(seg.text);
   if (seg.refResourceId !== undefined) {
     // Anchors carry an explicit color so the UA link blue never leaks in.
-    const inner = `<a href="${refAnchorHref(seg.refResourceId)}" style="text-decoration:none;${fontDecl}${fontDecl ? 'line-height:0;' : ''}color:${color};">${text}</a>`;
+    const inner = `<a href="${refAnchorHref(refKey(seg))}" style="text-decoration:none;${fontDecl}${fontDecl ? 'line-height:0;' : ''}color:${color};">${text}</a>`;
     return `<span style="${pos}">${inner}</span>`;
   }
   if (fontDecl) {
@@ -401,7 +437,7 @@ function renderMarkedWordSegment(
   const featuresDecl = fontDecl && cjk ? CJK_FEATURES_DECL : '';
   if (seg.refResourceId !== undefined) {
     // Anchors carry an explicit color so the UA link blue never leaks in.
-    const inner = `<a href="${refAnchorHref(seg.refResourceId)}" style="text-decoration:none;${fontDecl}${featuresDecl}${fontDecl ? 'line-height:0;' : ''}color:${color};">${text}</a>`;
+    const inner = `<a href="${refAnchorHref(refKey(seg))}" style="text-decoration:none;${fontDecl}${featuresDecl}${fontDecl ? 'line-height:0;' : ''}color:${color};">${text}</a>`;
     return `<span style="${pos}">${inner}</span>`;
   }
   if (fontDecl) {
@@ -432,7 +468,7 @@ function renderRefRuns(
     i++;
   } while (segs[i]?.refContinues);
   if (!linked) return { html: runs.join(''), end: i, x };
-  const href = refAnchorHref(segs[start]!.refResourceId!);
+  const href = refAnchorHref(refKey(segs[start]!));
   return { html: `<a href="${href}" style="text-decoration:none;color:${color};">${runs.join('')}</a>`, end: i, x };
 }
 
@@ -460,9 +496,15 @@ function linkRuns(): { at: (href: string | undefined) => string; end: () => stri
   };
 }
 
-/** A segment's link, unless it is a `:ref` (which links to its resource). */
+/** A segment's link, unless it is a `:ref` (which links to its resource):
+ *  a Markdown link's URL, a footnote marker's note, an index page number's
+ *  page (#264). */
 function segmentHref(seg: VDTLineSegment): string | undefined {
-  return seg.refResourceId === undefined ? seg.href : undefined;
+  if (seg.refResourceId !== undefined) return undefined;
+  if (seg.href !== undefined) return seg.href;
+  if (seg.footnoteId !== undefined) return `#${encodeURIComponent(footnoteElementId(seg.footnoteId))}`;
+  if (seg.pageLink !== undefined) return `#${pageElementId(seg.pageLink)}`;
+  return undefined;
 }
 
 /**
@@ -557,13 +599,13 @@ function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<st
       continue;
     }
     if (seg.refResourceId !== undefined && segs[i + 1]?.refContinues) {
-      const group = renderRefRuns(segs, i, x, pickSegmentColor(seg, block), (run, at) => paintText(run, at, true), refLinks(seg.refResourceId, targets));
+      const group = renderRefRuns(segs, i, x, pickSegmentColor(seg, block), (run, at) => paintText(run, at, true), refLinks(refKey(seg), targets));
       parts.push(group.html);
       x = group.x;
       i = group.end - 1;
       continue;
     }
-    parts.push(paintText(seg, x, seg.refResourceId !== undefined && !refLinks(seg.refResourceId, targets)));
+    parts.push(paintText(seg, x, seg.refResourceId !== undefined && !refLinks(refKey(seg), targets)));
     x += seg.width;
   }
   parts.push(links.end());
@@ -665,13 +707,13 @@ function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: Readon
       continue;
     }
     if (seg.refResourceId !== undefined && segs[i + 1]?.refContinues) {
-      const group = renderRefRuns(segs, i, x, pickSegmentColor(seg, block), (run, at) => paintText(run, at, true), refLinks(seg.refResourceId, targets));
+      const group = renderRefRuns(segs, i, x, pickSegmentColor(seg, block), (run, at) => paintText(run, at, true), refLinks(refKey(seg), targets));
       parts.push(group.html);
       x = group.x;
       i = group.end - 1;
       continue;
     }
-    parts.push(paintText(seg, x, seg.refResourceId !== undefined && !refLinks(seg.refResourceId, targets)));
+    parts.push(paintText(seg, x, seg.refResourceId !== undefined && !refLinks(refKey(seg), targets)));
     // A ruby base's reading (#194).
     if (seg.ruby) parts.push(rubyHtml(seg.ruby, x, pickSegmentColor(seg, block), quoteFontString));
     x += seg.width;
@@ -1000,8 +1042,8 @@ function renderVerticalLine(line: VDTLine, block: VDTBlock, v: VerticalHtml, tar
     // line's marks.
     if (seg.cjkMarks?.dots) text = `<em style="font-style:inherit;">${text}</em>`;
     const href = seg.refResourceId !== undefined
-      ? (refLinks(seg.refResourceId, targets) ? refAnchorHref(seg.refResourceId) : undefined)
-      : seg.href;
+      ? (refLinks(refKey(seg), targets) ? refAnchorHref(refKey(seg)) : undefined)
+      : segmentHref(seg);
     if (href !== undefined) text = `<a href="${esc(href)}" style="color:inherit;text-decoration:none;"${seg.href !== undefined && seg.refResourceId === undefined ? ' rel="noopener noreferrer"' : ''}>${text}</a>`;
     inner.push(verticalSpan(x + (seg.inkOffset ?? 0), axisOf(fontString, seg.baselineShift ?? 0), text, decl));
     // A ruby base's reading, beside the base (#194).
@@ -1161,13 +1203,13 @@ function renderResourceLine(
         continue;
       }
       if (seg.refResourceId !== undefined && segs[i + 1]?.refContinues) {
-        const group = renderRefRuns(segs, i, x, linkColor, (run, at) => paintText(run, at, true), refLinks(seg.refResourceId, targets));
+        const group = renderRefRuns(segs, i, x, linkColor, (run, at) => paintText(run, at, true), refLinks(refKey(seg), targets));
         parts.push(group.html);
         x = group.x;
         i = group.end - 1;
         continue;
       }
-      parts.push(paintText(seg, x, seg.refResourceId !== undefined && !refLinks(seg.refResourceId, targets)));
+      parts.push(paintText(seg, x, seg.refResourceId !== undefined && !refLinks(refKey(seg), targets)));
       x += seg.width;
     }
     parts.push(links.end());
@@ -1625,11 +1667,22 @@ function renderBlockInner(block: VDTBlock, options: HtmlPaint): string {
  * without touching the rest of the page.
  */
 function renderBlock(block: VDTBlock, options: HtmlPaint): string {
+  // A note is where its markers link to (#264).
+  const note = block.footnoteNote !== undefined && !block.hidden
+    ? zeroSizeAnchor(footnoteElementId(block.footnoteNote), block.bbox.x, block.bbox.y)
+    : '';
   return (
     `<div class="pt-block" data-block-id="${esc(block.id)}" style="display:contents;">` +
+    note +
     renderBlockInner(block, options) +
     `</div>`
   );
+}
+
+/** An empty element with an id at a point of the page: the target of an
+ *  in-document link. */
+function zeroSizeAnchor(id: string, x: number, y: number): string {
+  return `<span id="${esc(id)}" style="position:absolute;left:${x}px;top:${y}px;width:0;height:0;"></span>`;
 }
 
 interface PageRenderResult {
@@ -1705,12 +1758,16 @@ function renderPageDetailed(
   const decorationHtml = defsHtml + gridHtml + openerHtml + footnoteRulesHtml + slotParts.join('');
   // A vertical page's flow: one box turned a quarter turn clockwise, its
   // text lines turned back and set vertically (see `renderVerticalLine`).
-  const flowHtml = gridHtml + openerHtml + blocksHtml + footnoteRulesHtml;
+  const anchorsHtml = (options.anchors ?? [])
+    .filter((a) => a.pageIndex === page.index)
+    .map((a) => zeroSizeAnchor(anchorElementId(a.id), a.x, a.y))
+    .join('');
+  const flowHtml = gridHtml + openerHtml + anchorsHtml + blocksHtml + footnoteRulesHtml;
   const innerHtml = defsHtml + (page.flow
     ? `<div class="pt-flow" style="position:absolute;left:0;top:0;width:${page.height}px;height:${page.width}px;transform:translate(${page.width}px,0) rotate(90deg);transform-origin:0 0;">${flowHtml}</div>`
     : flowHtml) + slotParts.join('');
   const outerHtml =
-    `<div class="pt-page" data-page="${page.index}" style="` +
+    `<div class="pt-page" id="${pageElementId((options.pageIndexOffset ?? 0) + page.index)}" data-page="${page.index}" style="` +
     `position:relative;` +
     `width:${page.width}px;` +
     `height:${page.height}px;` +
@@ -1810,6 +1867,10 @@ export function renderToHtmlIndexed(
   const reported = new Set<string>();
   const linkTargets = anchoredResourceIds(doc);
   for (const id of options.refTargets ?? []) linkTargets.add(id);
+  const anchorPaint: Pick<HtmlPaint, 'anchors' | 'pageIndexOffset'> = {
+    ...(doc.anchors ? { anchors: doc.anchors } : {}),
+    pageIndexOffset: doc.pageIndexOffset ?? 0,
+  };
   const bleedInset = doc.trimOffset > 0
     ? Math.max(0, doc.trimOffset - dimensionToPx(doc.config.page.cutLines.bleed, doc.config.page.dpi))
     : 0;
@@ -1818,13 +1879,14 @@ export function renderToHtmlIndexed(
       ? {
           ...options,
           linkTargets,
+          ...anchorPaint,
           missingImage: (fileId: string, resourceId?: string) => {
             if (reported.has(fileId)) return;
             reported.add(fileId);
             onWarning({ kind: 'missingImage', fileId, ...(resourceId !== undefined ? { resourceId } : {}), pageIndex: p.index });
           },
         }
-      : { ...options, linkTargets };
+      : { ...options, linkTargets, ...anchorPaint };
     const gridCells = doc.config.cjk?.grid?.show ? cjkGridCells(doc.config, p.contentArea, doc.baselineGrid, p.columns, p.flow) : undefined;
     const detail = renderPageDetailed(p, background, pageOptions, ink, bleedInset, gridCells, doc.config.cjk?.region, doc.config.cjk?.uprightDigits);
     pageHtmlParts.push(detail.outerHtml);

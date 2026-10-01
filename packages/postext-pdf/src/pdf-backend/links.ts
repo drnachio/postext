@@ -20,6 +20,7 @@ import {
   PDFHexString,
   PDFName,
   PDFArray,
+  PDFDict,
   PDFNumber,
   type PDFDocument,
   type PDFPage,
@@ -79,8 +80,26 @@ function asciiHex(text: string): PDFHexString {
   return PDFHexString.of(hex);
 }
 
+/** The link destination of an anchor (a heading's `{#id}`, an inline
+ *  anchor, a container, #264): book-wide, so a reference in one chapter
+ *  reaches an anchor of another. A key no resource id takes: it opens with
+ *  a NUL. */
+export function anchorDestination(id: string): string {
+  return `\u0000a:${id}`;
+}
+
+/** The destination a `:ref` segment links to: its resource, or the
+ *  anchor it names (`refAnchor`, #264). */
+export function refTarget(seg: { refResourceId?: string; refAnchor?: true }): string | undefined {
+  if (seg.refResourceId === undefined) return undefined;
+  return seg.refAnchor ? anchorDestination(seg.refResourceId) : seg.refResourceId;
+}
+
 export class LinkRegistry {
   private dests = new Map<string, DestRecord>();
+  /** Destinations also reachable by name from outside the file
+   *  (`file.pdf#nameddest=sec-intro`, #264): name → destination key. */
+  private names = new Map<string, string>();
   private pending: PendingLink[] = [];
   /** The document of a book being drawn (keys its footnote destinations). */
   documentIndex = 0;
@@ -90,9 +109,10 @@ export class LinkRegistry {
 
   /** Record the named destination for a resource embed (idempotent — the first
    *  embed of a given id wins, matching first-reference numbering). */
-  addDestination(resourceId: string, page: PDFPage, leftPt: number, topPt: number): void {
+  addDestination(resourceId: string, page: PDFPage, leftPt: number, topPt: number, name?: string): void {
     if (this.dests.has(resourceId)) return;
     this.dests.set(resourceId, { page, leftPt, topPt });
+    if (name !== undefined && !this.names.has(name)) this.names.set(name, resourceId);
   }
 
   /** Record a pending inline-ref link to be attached at finalize. */
@@ -178,7 +198,43 @@ export class LinkRegistry {
         page.node.set(PDFName.of('Annots'), context.obj(refs));
       }
     }
+    this.writeNamedDestinations(pdfDoc);
   }
+
+  /** The catalog's `/Names /Dests` name tree (ISO 32000-1 §7.9.6,
+   *  §12.3.2.3): one leaf with every named destination, keys sorted by
+   *  their bytes as the tree requires. */
+  private writeNamedDestinations(pdfDoc: PDFDocument): void {
+    if (this.names.size === 0) return;
+    const context = pdfDoc.context;
+    const entries = [...this.names].map(([name, key]) => ({ name: PDFHexString.fromText(name), bytes: utf16Bytes(name), dest: this.dests.get(key)! }));
+    entries.sort((a, b) => compareBytes(a.bytes, b.bytes));
+    const names: (PDFHexString | PDFArray)[] = [];
+    for (const e of entries) {
+      names.push(e.name, context.obj([e.dest.page.ref, PDFName.of('XYZ'), e.dest.leftPt, e.dest.topPt, null]));
+    }
+    const dests = context.obj({ Names: context.obj(names) });
+    const catalogNames = pdfDoc.catalog.get(PDFName.of('Names'));
+    const namesDict = catalogNames instanceof PDFDict ? catalogNames : context.obj({});
+    namesDict.set(PDFName.of('Dests'), context.register(dests));
+    if (!(catalogNames instanceof PDFDict)) pdfDoc.catalog.set(PDFName.of('Names'), context.register(namesDict));
+  }
+}
+
+/** A text string's bytes as `PDFHexString.fromText` writes them (UTF-16BE
+ *  with a byte-order mark): what a name tree sorts its keys by. */
+function utf16Bytes(text: string): number[] {
+  const out = [0xfe, 0xff];
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    out.push(c >> 8, c & 0xff);
+  }
+  return out;
+}
+
+function compareBytes(a: readonly number[], b: readonly number[]): number {
+  for (let i = 0; i < Math.min(a.length, b.length); i++) if (a[i] !== b[i]) return a[i]! - b[i]!;
+  return a.length - b.length;
 }
 
 /** The fields of a line segment that say which reference it paints. */

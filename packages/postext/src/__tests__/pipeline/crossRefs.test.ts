@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/build';
 import { buildBundle } from '../../bundle';
+import { anchoredResourceIds, renderToHtml } from '../../html-backend';
 import type { PostextConfig, VDTDocument } from '../../index';
 
 // Deterministic text measurement stub (no DOM in the node test env).
@@ -111,5 +112,35 @@ describe('page references (#263)', () => {
     const target = docs[1]!.anchors!.find((a) => a.id === 'later')!;
     const label = docs[1]!.pages[target.pageIndex]!.pageLabel;
     expect(refs(docs[0]!).map((r) => r.text)).toEqual(['section 2.1', `p. ${label}`]);
+  });
+});
+
+describe('cross-references in HTML (#264)', () => {
+  const markdown = [
+    '# Opening {#ch-open}',
+    'See :ref{id="sec-method"} and the [claim]{#claim}, with a note.[^n]',
+    '[^n]: The note.',
+    '## Method {#sec-method}',
+    'Text.',
+  ].join('\n\n');
+
+  it('links each reference to an element with the anchor’s id', () => {
+    const html = renderToHtml(buildDocument({ markdown }, config));
+    expect(html).toContain('href="#pt-a-sec-method"');
+    expect(html).toContain('id="pt-a-sec-method"');
+    expect(html).toContain('id="pt-a-claim"');
+    expect(html).toContain('id="pt-a-ch-open"');
+  });
+
+  it('links footnote markers to their notes and gives pages ids', () => {
+    const html = renderToHtml(buildDocument({ markdown }, config));
+    expect(html).toContain('href="#pt-fn-n"');
+    expect(html).toContain('id="pt-fn-n"');
+    expect(html).toContain('id="pt-p-0"');
+  });
+
+  it('lists anchors among the link targets a book passes between chapters', () => {
+    const ids = anchoredResourceIds(buildDocument({ markdown }, config));
+    expect([...ids].sort()).toEqual(['a:ch-open', 'a:claim', 'a:sec-method']);
   });
 });
