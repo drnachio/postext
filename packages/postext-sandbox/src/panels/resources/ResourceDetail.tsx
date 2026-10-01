@@ -442,7 +442,7 @@ export function ResourceDetail({
                 </select>
               </div>
               {placementPosition !== 'here' && placementSpan === 'column' && (
-                <label className="flex min-h-11 cursor-pointer items-center gap-2 text-xs" style={{ color: 'var(--foreground)' }} title={labels.resourceTypePlacementCaptionSideTooltip}>
+                <label className="flex pt-large:min-h-11 cursor-pointer items-center gap-2 text-xs" style={{ color: 'var(--foreground)' }} title={labels.resourceTypePlacementCaptionSideTooltip}>
                   <input
                     type="checkbox"
                     className="h-6 w-6 shrink-0 cursor-pointer accent-(--brand)"

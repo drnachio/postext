@@ -4,6 +4,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExtern
 import { BookOpenText, ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { useTheme } from "@/components/ThemeProvider";
 import {
   DEFAULT_READING,
   READING_EVENT,
@@ -47,14 +48,42 @@ const OPTION_LABEL: Record<ReadingKey, Record<string, string>> = {
   colors: { theme: "colorsTheme", contrast: "colorsContrast", sepia: "colorsSepia" },
 };
 
-/** The four choices and the reset button. */
+const OPTION_ROW =
+  "flex min-h-11 cursor-pointer items-center gap-3 rounded-md px-2 font-sans text-[0.8rem] text-foreground hover:bg-surface has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-[-2px] has-[:focus-visible]:outline-brand";
+const RADIO = "size-4 shrink-0 cursor-pointer accent-[var(--brand)] focus-visible:outline-none";
+
+/** Theme (light / dark, the same setting as the menu-bar switch), the four
+ *  reading choices and the "Default settings" button. */
 function ReadingForm({ idBase, showPageLink }: { idBase: string; showPageLink: boolean }) {
   const t = useTranslations("ReadingPrefs");
   const [prefs, save] = useReadingPrefs();
-  const isDefault = READING_KEYS.every((k) => prefs[k] === DEFAULT_READING[k]);
+  const { theme, chosen, setTheme, resetTheme } = useTheme();
+  const isDefault = !chosen && READING_KEYS.every((k) => prefs[k] === DEFAULT_READING[k]);
 
   return (
     <div className="flex flex-col gap-4">
+      <fieldset className="min-w-0">
+        <legend className="mb-1 font-sans text-[0.8rem] font-semibold text-foreground">{t("themeLegend")}</legend>
+        <div className="flex flex-col">
+          {(["light", "dark"] as const).map((value) => {
+            const id = `${idBase}-theme-${value}`;
+            return (
+              <label key={value} htmlFor={id} className={OPTION_ROW}>
+                <input
+                  id={id}
+                  type="radio"
+                  name={`${idBase}-theme`}
+                  value={value}
+                  checked={theme === value}
+                  onChange={() => setTheme(value)}
+                  className={RADIO}
+                />
+                <span>{t(value === "light" ? "themeLight" : "themeDark")}</span>
+              </label>
+            );
+          })}
+        </div>
+      </fieldset>
       {READING_KEYS.map((key) => (
         <fieldset key={key} className="min-w-0">
           <legend className="mb-1 font-sans text-[0.8rem] font-semibold text-foreground">{t(`${key}Legend`)}</legend>
@@ -62,11 +91,7 @@ function ReadingForm({ idBase, showPageLink }: { idBase: string; showPageLink: b
             {READING_OPTIONS[key].map((value) => {
               const id = `${idBase}-${key}-${value}`;
               return (
-                <label
-                  key={value}
-                  htmlFor={id}
-                  className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md px-2 font-sans text-[0.8rem] text-foreground hover:bg-surface has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-[-2px] has-[:focus-visible]:outline-brand"
-                >
+                <label key={value} htmlFor={id} className={OPTION_ROW}>
                   <input
                     id={id}
                     type="radio"
@@ -74,7 +99,7 @@ function ReadingForm({ idBase, showPageLink }: { idBase: string; showPageLink: b
                     value={value}
                     checked={prefs[key] === value}
                     onChange={() => save({ ...prefs, [key]: value })}
-                    className="size-4 shrink-0 accent-[var(--brand)] focus-visible:outline-none"
+                    className={RADIO}
                   />
                   <span>{t(OPTION_LABEL[key][value]!)}</span>
                 </label>
@@ -87,7 +112,10 @@ function ReadingForm({ idBase, showPageLink }: { idBase: string; showPageLink: b
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-rule pt-3">
         <button
           type="button"
-          onClick={() => save({ ...DEFAULT_READING })}
+          onClick={() => {
+            save({ ...DEFAULT_READING });
+            resetTheme();
+          }}
           disabled={isDefault}
           className="min-h-11 rounded-md border border-rule-strong px-3 font-sans text-[0.8rem] font-semibold text-foreground transition-colors hover:bg-surface disabled:cursor-not-allowed disabled:opacity-100 disabled:text-slate"
         >

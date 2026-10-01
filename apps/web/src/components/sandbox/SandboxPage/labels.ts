@@ -10,6 +10,7 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     previewMode: t("previewMode"),
     activityBar: t("activityBar"),
     panelsNav: t("panelsNav"),
+    largeTargets: t("largeTargets"),
     editorFormatting: t("editorFormatting"),
     colorAlpha: t("colorAlpha"),
     settingsSearchPlaceholder: t("settingsSearchPlaceholder"),

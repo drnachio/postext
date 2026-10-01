@@ -18,6 +18,7 @@ import { useSandbox } from '../context/SandboxContext';
 import { groupPagesIntoRows } from './CanvasPreview/layoutUtils';
 import { Tooltip } from '../ui';
 import { useCompactLayout } from '../hooks/useCompactLayout';
+import { useLargeTargets } from '../ui/largeTargets';
 
 type ViewMode = 'single' | 'spread';
 type FitMode = 'none' | 'width' | 'height';
@@ -150,8 +151,9 @@ export function ToolbarButton({
   // dimmed-clickable look. User asked for them to blend in instead of
   // shouting "this button doesn't work".
   const compact = useCompactLayout();
-  // 44×44 targets everywhere (WCAG 2.5.5, Target Size Enhanced).
-  const size = 44;
+  const { large } = useLargeTargets();
+  // 44×44 with large targets on (WCAG 2.5.5, Target Size Enhanced).
+  const size = large ? 44 : compact ? 32 : 28;
   return (
     <Tooltip content={label} side={compact ? 'top' : 'left'}>
       <button
@@ -247,6 +249,7 @@ function PageNumberInput({
   label: string;
 }) {
   const compact = useCompactLayout();
+  const { large } = useLargeTargets();
   const [draft, setDraft] = useState(String(pageNumber));
   const [focused, setFocused] = useState(false);
   useEffect(() => {
@@ -293,8 +296,8 @@ function PageNumberInput({
         }}
         className="shrink-0 rounded-md text-center focus-visible:outline-2 focus-visible:-outline-offset-2"
         style={{
-          width: 44,
-          height: 44,
+          width: large ? 44 : compact ? 34 : 28,
+          height: large ? 44 : compact ? 28 : 22,
           fontSize: compact ? 16 : 12,
           color: 'var(--foreground)',
           backgroundColor: 'var(--surface)',

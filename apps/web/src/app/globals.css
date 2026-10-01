@@ -7,6 +7,8 @@
 @source "../../../../packages/postext-sandbox/src/**/*.tsx";
 
 @custom-variant dark (&:is(.dark *));
+/* Sandbox "Large targets" (44×44, WCAG 2.5.5): set on the sandbox root. */
+@custom-variant pt-large (&:where([data-pt-targets="large"] *));
 
 /* ── Brand ─────────────────────────────────────────────────────────────
    The Postext identity is the one the built-in guide is set in: a night
@@ -1202,4 +1204,28 @@ html.light[data-rp-colors="sepia"] :is(.docs-content pre, .cb-excerpt) {
   justify-content: center;
   min-height: 2.75rem;
   min-width: 2.75rem;
+}
+
+/* Pointer cursor on everything clickable, site and Sandbox (Tailwind v4's
+   preflight leaves buttons with the arrow). In the base layer, so a
+   `cursor-*` utility still wins; disabled controls keep the arrow. */
+@layer base {
+  :is(
+      button,
+      [role="button"],
+      [role="tab"],
+      [role="switch"],
+      [role="option"],
+      [role="menuitem"],
+      [role="menuitemradio"],
+      [role="menuitemcheckbox"],
+      [role="radio"],
+      [role="checkbox"],
+      summary,
+      select,
+      label:has(> input:is([type="radio"], [type="checkbox"])),
+      input:is([type="radio"], [type="checkbox"], [type="color"], [type="file"], [type="range"])
+    ):not(:disabled, [aria-disabled="true"], [data-disabled]) {
+    cursor: pointer;
+  }
 }

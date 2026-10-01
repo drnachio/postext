@@ -113,7 +113,7 @@ export function ResourceList({ resources, types, selectedId, onSelect, onNew }: 
       <PanelHeader title={labels.navResources} count={resources.length > 0 ? resources.length : undefined} actions={<NewMenu onNew={onNew} />} />
       {resources.length > 6 && (
         <div className="shrink-0 border-b border-(--rule) px-3 py-2">
-          <div className="flex min-h-11 items-center gap-1.5 rounded-md border border-(--pt-control-border) bg-(--surface) pl-2 focus-within:border-(--brand) focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-(--brand)">
+          <div className="flex h-7 pt-large:min-h-11 items-center gap-1.5 rounded-md border border-(--pt-control-border) bg-(--surface) px-2 pt-large:pl-2 focus-within:border-(--brand) focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-(--brand)">
             <Search size={13} aria-hidden="true" className="shrink-0 text-(--slate)" />
             <input
               type="search"
@@ -124,7 +124,7 @@ export function ResourceList({ resources, types, selectedId, onSelect, onNew }: 
               aria-label={labels.resourcesSearchPlaceholder}
               autoComplete="off"
               spellCheck={false}
-              className="min-h-11 min-w-0 flex-1 bg-transparent text-xs text-(--foreground) outline-none placeholder:text-(--slate) [&::-webkit-search-cancel-button]:hidden"
+              className="min-w-0 pt-large:min-h-11 flex-1 bg-transparent text-xs text-(--foreground) outline-none placeholder:text-(--slate) [&::-webkit-search-cancel-button]:hidden"
             />
             {query && <IconButton size={18} label={labels.settingsSearchClear} icon={<X size={12} />} tooltip={false} onClick={() => setQuery('')} />}
           </div>

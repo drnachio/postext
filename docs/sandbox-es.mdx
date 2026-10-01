@@ -15,13 +15,13 @@ export const metadata = {
 
 **Un entorno interactivo para el motor de maquetación de Postext.**
 
-El Sandbox te ofrece una interfaz de editor donde escribes el texto, gestionas las figuras y las fuentes, ajustas el diseño y ves el resultado en tiempo real en tres modos de salida sincronizados: **canvas**, **HTML** y **PDF**. Está pensado para experimentar: puedes cambiar la tipografía o el número de columnas, probar distintas colocaciones de las figuras y observar cómo responde el motor. Los paneles usan palabras del oficio editorial (libros, figuras, recuadros, cabeceras) en lugar de términos del motor, de modo que quien viene del mundo del libro se orienta sin conocer el esquema de configuración. Todos los controles se pueden manejar con el teclado y con lectores de pantalla.
+El Sandbox te ofrece una interfaz de editor donde escribes el texto, gestionas los recursos y las fuentes, ajustas el diseño y ves el resultado en tiempo real en tres modos de salida sincronizados: **canvas**, **HTML** y **PDF**. Está pensado para experimentar: puedes cambiar la tipografía o el número de columnas, probar distintas colocaciones de las figuras y observar cómo responde el motor. Los paneles usan palabras del oficio editorial (libros, figuras, recuadros, cabeceras) en lugar de términos del motor, de modo que quien viene del mundo del libro se orienta sin conocer el esquema de configuración. Todos los controles se pueden manejar con el teclado y con lectores de pantalla.
 
 ## Disposición de la interfaz
 
 El Sandbox tiene tres áreas principales: una **barra de actividad** estrecha para cambiar de panel, una **barra lateral** redimensionable con el panel activo y un **viewport** a la derecha con las tres pestañas de salida. Las cabeceras de los paneles, la barra de pestañas del viewport y la celda del logo, arriba de la barra de actividad, comparten la misma altura, así que la franja superior se lee como una sola línea a lo ancho de la ventana.
 
-<Illustration name="SandboxLayout" data='{"title": "Interfaz del Sandbox", "desc": "Barra de actividad a la izquierda con seis paneles rotulados, barra lateral redimensionable en el centro y viewport a la derecha con las pestañas Canvas, HTML y PDF.", "caption": "Tres áreas: barra de actividad, barra lateral redimensionable y viewport con pestañas de salida.", "activityBar": "Actividad", "activityIcons": ["📚", "¶", "▣", "T", "⚙", "⚠"], "activityLabels": ["Libros", "Texto", "Figuras", "Fuentes", "Diseño", "Revisión"], "sidebarTitle": "Barra lateral", "sidebarSubtitle": "panel activo", "viewportTitle": "Viewport", "tabs": ["Canvas", "HTML", "PDF"], "resizeHint": "arrastra para redimensionar"}' />
+<Illustration name="SandboxLayout" data='{"title": "Interfaz del Sandbox", "desc": "Barra de actividad a la izquierda con seis paneles rotulados, barra lateral redimensionable en el centro y viewport a la derecha con las pestañas Canvas, HTML y PDF.", "caption": "Tres áreas: barra de actividad, barra lateral redimensionable y viewport con pestañas de salida.", "activityBar": "Actividad", "activityIcons": ["📚", "¶", "▣", "T", "⚙", "⚠"], "activityLabels": ["Libros", "Texto", "Recursos", "Fuentes", "Diseño", "Revisión"], "sidebarTitle": "Barra lateral", "sidebarSubtitle": "panel activo", "viewportTitle": "Viewport", "tabs": ["Canvas", "HTML", "PDF"], "resizeHint": "arrastra para redimensionar"}' />
 
 ### Barra de actividad
 
@@ -30,7 +30,7 @@ Una tira estrecha en el borde izquierdo tiene un botón por panel. Cada botón m
 - **Libros** (icono `Files`): tus libros y los libros de ejemplo
 - **Capítulos** (icono `BookOpen`): el libro abierto y sus capítulos
 - **Texto** (icono `FileCode`): escribe y corrige el texto del capítulo actual
-- **Figuras** (icono `FolderOpen`): imágenes, diagramas y tablas que usa el libro
+- **Recursos** (icono `FolderOpen`): imágenes, dibujos SVG y tablas que usa el libro
 - **Fuentes** (icono `Type`): los tipos de letra que usa el libro y tus propios archivos de fuente
 - **Diseño** (icono `Settings2`): ajustes de página, tipografía, títulos, figuras, recuadros y exportación
 - **Revisión** (icono `AlertTriangle`): problemas de composición encontrados en la maquetación. El icono lleva una insignia con el recuento de avisos actuales, limitada a `99+`.
@@ -154,11 +154,11 @@ El libro de ejemplo abierto determina además qué restauran los botones **Resta
 
 Un preset que estuvo abierto en una sesión anterior pero que ya no lista ninguna fuente (normalmente un preset privado en una compilación que no lo sirve) sigue apareciendo, atenuado como *No disponible en esta compilación*. El Sandbox conserva el contenido cargado en lugar de cambiarlo sin avisar por el ejemplo integrado. El id del preset abierto se guarda bajo la clave `postext-sandbox-preset` (consulta [Persistencia](#persistencia)). El formato del paquete se describe en el apéndice [Formato de paquete de preset](#formato-de-paquete-de-preset).
 
-#### Panel de figuras
+#### Panel de recursos
 
 Gestiona los recursos del libro: imágenes de mapa de bits, figuras SVG y tablas. El texto se refiere a ellos con bloques `::resource{id="…"}` y referencias en línea `:ref{id="…"}`. Para la sintaxis de referencia y el modelo de flotado, consulta [Formato de documento → Recursos](/es/docs/document-format#recursos).
 
-**Vista de lista.** La cabecera muestra el número de recursos. Los recursos se agrupan por el nombre de su tipo de recurso, y cada grupo es una lista con su recuento. Los recursos cuyo `typeId` ya no coincide con ningún tipo configurado caen en un grupo *Sin tipo* para que sigas pudiendo llegar a ellos. Cada elemento muestra una miniatura de 36 px junto a su leyenda y su id: una vista previa real para mapas de bits y SVG, y un glifo para las tablas. Cuando el libro tiene más de seis recursos, un campo de **búsqueda** (*Buscar figuras y tablas…*) filtra la lista por leyenda e id, sin distinguir acentos. Cuando el libro aún no tiene recursos, un estado vacío explica cómo añadirlos y colocarlos en el texto con `:ref{#id}`. Un desplegable **Nuevo** ofrece tres formas de añadir uno:
+**Vista de lista.** La cabecera muestra el número de recursos. Los recursos se agrupan por el nombre de su tipo de recurso, y cada grupo es una lista con su recuento. Los recursos cuyo `typeId` ya no coincide con ningún tipo configurado caen en un grupo *Sin tipo* para que sigas pudiendo llegar a ellos. Cada elemento muestra una miniatura de 36 px junto a su leyenda y su id: una vista previa real para mapas de bits y SVG, y un glifo para las tablas. Cuando el libro tiene más de seis recursos, un campo de **búsqueda** (*Buscar recursos…*) filtra la lista por leyenda e id, sin distinguir acentos. Cuando el libro aún no tiene recursos, un estado vacío explica cómo añadirlos y colocarlos en el texto con `:ref{#id}`. Un desplegable **Nuevo** ofrece tres formas de añadir uno:
 
 - **Subir imagen**: PNG, JPEG, WebP o GIF
 - **Subir SVG**
@@ -196,7 +196,7 @@ También puedes arrastrar archivos desde el disco y soltarlos sobre el panel. Se
 - **Pegar como tabla**: pegar TSV (o CSV simple con comillas) rellena la cuadrícula
 - **Deshacer/rehacer**: Cmd/Ctrl+Z y Mayús+Cmd/Ctrl+Z
 - **Navegación con teclado**: Tab / Mayús-Tab (con salto de fila) y las flechas mueven entre celdas
-- **Edición desde la vista previa**: haz clic en una celda de tabla, una leyenda, una nota o un fragmento de texto de una figura SVG en cualquiera de las dos pestañas de vista previa. El panel Figuras se abre en ese recurso y enfoca el campo correspondiente, con el cursor en el glifo pulsado. Arrastrar selecciona un rango dentro de la misma celda o campo, y el doble clic selecciona la palabra. Mientras el campo tiene el foco, su selección se refleja en la página como un resaltado (un cursor fino cuando está contraída), tanto en la pestaña Canvas como en la HTML.
+- **Edición desde la vista previa**: haz clic en una celda de tabla, una leyenda, una nota o un fragmento de texto de una figura SVG en cualquiera de las dos pestañas de vista previa. El panel Recursos se abre en ese recurso y enfoca el campo correspondiente, con el cursor en el glifo pulsado. Arrastrar selecciona un rango dentro de la misma celda o campo, y el doble clic selecciona la palabra. Mientras el campo tiene el foco, su selección se refleja en la página como un resaltado (un cursor fino cuando está contraída), tanto en la pestaña Canvas como en la HTML.
 
 Todas las ediciones pasan por funciones puras de modelo exportadas por el núcleo de postext (`addRow`, `addColumn`, `removeRow`, `removeColumn`, `mergeCells`, `unmergeCell`, `setCellContent`, `setAlignment` y `parseTSV`), de modo que el mismo modelo de tabla se comporta igual dentro y fuera del Sandbox.
 
@@ -300,7 +300,7 @@ Los grupos, en orden de navegación:
   - *Estilos de recuadro* (`calloutStyles`): estilos con nombre para `:::callout{type="…"}`. Puedes añadir, duplicar, eliminar y renombrar ids, y después fijar:
     - el título por defecto, la extensión, la colocación y la anchura;
     - el fondo, el borde, el radio de las esquinas y el relleno, y una **franja** lateral;
-    - un **icono**: un glifo de texto o un SVG/mapa de bits elegido del panel Figuras. Puede ir en línea o como distintivo de esquina, con el lado de la esquina y una anchura para iconos no cuadrados.
+    - un **icono**: un glifo de texto o un SVG/mapa de bits elegido del panel Recursos. Puede ir en línea o como distintivo de esquina, con el lado de la esquina y una anchura para iconos no cuadrados.
     - un grupo **Pestaña de etiqueta** (`calloutStyles[].label`): fuente, cuerpo, peso, color, relleno, esquina, altura, relleno interior, desplazamiento y retranqueo, un recurso de icono junto a la pestaña y un filete a lo largo del borde superior;
     - la tipografía del título, con espaciado entre letras, sangría e **Interlineado del título** (`titleStyle.lineHeight`);
     - sustituciones del cuerpo y de las listas que heredan el texto del documento. Incluyen los colores de la negrita y de la **cursiva** del cuerpo, sus pesos normal y negrita, los interruptores de **cursiva** y **versalitas**, y el tamaño y el peso de la viñeta.

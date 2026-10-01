@@ -91,7 +91,7 @@ export const PdfPreview = memo(function PdfPreview({ bytesUrl, openPage, generat
             href={bytesUrl!}
             target="_blank"
             rel="noopener"
-            className="inline-flex min-h-11 items-center gap-2 rounded-md px-4 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 outline-(--brand)"
+            className="inline-flex h-10 pt-large:min-h-11 items-center gap-2 rounded-md px-4 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 outline-(--brand)"
             style={{ backgroundColor: 'var(--brand)', color: 'var(--brand-contrast, var(--background))' }}
           >
             <ExternalLink size={16} aria-hidden="true" />

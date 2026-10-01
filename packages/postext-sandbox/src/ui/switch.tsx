@@ -29,8 +29,8 @@ export function Switch({ checked, onCheckedChange, id, ariaLabelledBy, ariaDescr
       aria-describedby={ariaDescribedBy}
       aria-label={ariaLabelledBy ? undefined : ariaLabel}
       className={cn(
-        // A 44×44 target (WCAG 2.5.5) around the 36×20 track.
-        'group relative inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-md',
+        // With large targets on, a 44×44 target (WCAG 2.5.5) around the 36×20 track.
+        'group relative inline-flex pt-large:h-11 pt-large:w-11 shrink-0 cursor-pointer items-center justify-center rounded-md',
         'focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
         'data-disabled:cursor-default data-disabled:opacity-50',
         className,

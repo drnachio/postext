@@ -500,7 +500,7 @@ function DocumentLocalePointer({ tag }: { tag: string }) {
       onClick={() => openGroup('writing')}
       aria-describedby={ids?.descriptionId}
       title={labels.settingsOpenGroup.replace('__group__', labels.settingsGroupWriting)}
-      className="inline-flex h-11 max-w-[10.5rem] cursor-pointer items-center gap-1 rounded-md px-1.5 text-[0.8rem] text-(--foreground) transition-colors hover:bg-(--surface) focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)"
+      className="inline-flex h-7 pt-large:h-11 max-w-[10.5rem] cursor-pointer items-center gap-1 rounded-md px-1.5 text-[0.8rem] text-(--foreground) transition-colors hover:bg-(--surface) focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)"
     >
       <span lang={tag} className="min-w-0 truncate">{name}</span>
       <span className="sr-only"> — {labels.settingsOpenGroup.replace('__group__', labels.settingsGroupWriting)}</span>

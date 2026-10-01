@@ -13,19 +13,25 @@ export interface IconButtonProps extends Omit<ComponentProps<'button'>, 'childre
   /** Pressed/selected look (gilt icon on surface). */
   active?: boolean;
   destructive?: boolean;
-  /** Former hit areas (18/24/28 px). Every icon button is now 44×44
-   *  (WCAG 2.5.5, Target Size Enhanced); the prop stays for callers. */
+  /** Hit area in px. With large targets on, every icon button is 44×44
+   *  (WCAG 2.5.5, Target Size Enhanced) whatever the size. */
   size?: 18 | 24 | 28 | 44;
   /** Set false to render without a tooltip (e.g. when a parent shows one). */
   tooltip?: boolean;
 }
 
-const SIZE = 'h-11 w-11';
+const SIZE: Record<NonNullable<IconButtonProps['size']>, string> = {
+  18: 'h-[18px] w-[18px]',
+  24: 'h-6 w-6',
+  28: 'h-7 w-7',
+  44: 'h-11 w-11',
+};
 
-/** The one icon button: a 44×44 hit area, slate at rest, foreground
+/** The one icon button: 24px hit area by default (44×44 with large
+ *  targets on), slate at rest, foreground
  *  on hover, gilt when active, faded when disabled. */
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
-  { label, icon, tooltipSide = 'bottom', active, destructive, size: _size, tooltip = true, className, type = 'button', ...rest },
+  { label, icon, tooltipSide = 'bottom', active, destructive, size = 24, tooltip = true, className, type = 'button', ...rest },
   ref,
 ) {
   const button = (
@@ -41,7 +47,8 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
         'text-(--slate) enabled:hover:text-(--foreground) enabled:hover:bg-(--surface)',
         active && 'text-(--brand) bg-(--surface) enabled:hover:text-(--brand)',
         destructive && 'text-(--destructive) enabled:hover:text-(--destructive)',
-        SIZE,
+        SIZE[size],
+        'pt-large:h-11 pt-large:w-11',
         className,
       )}
       {...rest}
