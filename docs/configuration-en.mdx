@@ -3092,7 +3092,7 @@ import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefault
 
 ## Cross-references
 
-The `crossRefs` property sets the words a [cross-reference](/en/docs/document-format#cross-references-and-anchors) prints around a number or a page, and the style a `:ref` takes when it sets none. Each template holds `{n}` where the number goes; one without it gets the number after a no-break space (`"§"` prints *§ 3.2*). An unset template follows the document language: *chapter / section / p.* in English, *capítulo / sección / pág.* in Spanish, *第{n}章 / 第{n}节 / 第{n}页* in Chinese, and so on for French, German, Italian, Portuguese, Catalan and Dutch.
+The `crossRefs` property sets the words a [cross-reference](/en/docs/document-format#cross-references-and-anchors) prints around a number or a page, and the style a `:ref` takes when it sets none. Each template holds `{n}` where the number goes; one without it gets the number after a no-break space (`"§"` prints *§ 3.2*). An unset template follows the document language: *chapter / section / p.* in English, *capítulo / sección / pág.* in Spanish, `第{n}章` / `第{n}节` / `第{n}页` in Chinese, and so on for French, German, Italian, Portuguese, Catalan and Dutch.
 
 ```ts
 interface CrossRefsConfig {
@@ -3117,19 +3117,19 @@ interface CrossRefsConfig {
       <td><code>chapter</code></td>
       <td><code>string</code></td>
       <td>by language</td>
-      <td>A reference to a level-1 heading: <code>"chapter {n}"</code>. A heading number whose template already spells the word (<code>Chapter {1}</code>, <code>第{1:一}章</code>) prints as it is.</td>
+      <td>A reference to a level-1 heading: <code>"chapter &#123;n&#125;"</code>. A heading number whose template already spells the word (<code>Chapter &#123;1&#125;</code>, <code>第&#123;1:一&#125;章</code>) prints as it is.</td>
     </tr>
     <tr>
       <td><code>section</code></td>
       <td><code>string</code></td>
       <td>by language</td>
-      <td>A reference to a heading of level 2 to 6: <code>"section {n}"</code>, <code>"§ {n}"</code>.</td>
+      <td>A reference to a heading of level 2 to 6: <code>"section &#123;n&#125;"</code>, <code>"§ &#123;n&#125;"</code>.</td>
     </tr>
     <tr>
       <td><code>page</code></td>
       <td><code>string</code></td>
       <td>by language</td>
-      <td>A page reference (<code>style=page</code>): <code>"p. {n}"</code>, <code>"page {n}"</code>.</td>
+      <td>A page reference (<code>style=page</code>): <code>"p. &#123;n&#125;"</code>, <code>"page &#123;n&#125;"</code>.</td>
     </tr>
     <tr>
       <td><code>defaultStyle</code></td>

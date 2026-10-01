@@ -3092,7 +3092,7 @@ import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefault
 
 ## Referencias cruzadas
 
-La propiedad `crossRefs` fija las palabras que una [referencia cruzada](/es/docs/document-format#referencias-cruzadas-y-anclas) imprime alrededor de un número o de una página, y el estilo que toma un `:ref` que no indica ninguno. Cada plantilla lleva `{n}` donde va el número; una que no lo lleva recibe el número detrás de un espacio de no separación (`"§"` imprime *§ 3.2*). Una plantilla sin definir sigue al idioma del documento: *capítulo / sección / pág.* en español, *chapter / section / p.* en inglés, *第{n}章 / 第{n}节 / 第{n}页* en chino, y lo mismo para francés, alemán, italiano, portugués, catalán y neerlandés.
+La propiedad `crossRefs` fija las palabras que una [referencia cruzada](/es/docs/document-format#referencias-cruzadas-y-anclas) imprime alrededor de un número o de una página, y el estilo que toma un `:ref` que no indica ninguno. Cada plantilla lleva `{n}` donde va el número; una que no lo lleva recibe el número detrás de un espacio de no separación (`"§"` imprime *§ 3.2*). Una plantilla sin definir sigue al idioma del documento: *capítulo / sección / pág.* en español, *chapter / section / p.* en inglés, `第{n}章` / `第{n}节` / `第{n}页` en chino, y lo mismo para francés, alemán, italiano, portugués, catalán y neerlandés.
 
 ```ts
 interface CrossRefsConfig {
@@ -3117,19 +3117,19 @@ interface CrossRefsConfig {
       <td><code>chapter</code></td>
       <td><code>string</code></td>
       <td>según el idioma</td>
-      <td>Una referencia a un título de nivel 1: <code>"capítulo {n}"</code>. Un número cuya plantilla ya escribe la palabra (<code>Capítulo {1}</code>, <code>第{1:一}章</code>) se imprime tal cual.</td>
+      <td>Una referencia a un título de nivel 1: <code>"capítulo &#123;n&#125;"</code>. Un número cuya plantilla ya escribe la palabra (<code>Capítulo &#123;1&#125;</code>, <code>第&#123;1:一&#125;章</code>) se imprime tal cual.</td>
     </tr>
     <tr>
       <td><code>section</code></td>
       <td><code>string</code></td>
       <td>según el idioma</td>
-      <td>Una referencia a un título de nivel 2 a 6: <code>"sección {n}"</code>, <code>"§ {n}"</code>.</td>
+      <td>Una referencia a un título de nivel 2 a 6: <code>"sección &#123;n&#125;"</code>, <code>"§ &#123;n&#125;"</code>.</td>
     </tr>
     <tr>
       <td><code>page</code></td>
       <td><code>string</code></td>
       <td>según el idioma</td>
-      <td>Una referencia de página (<code>style=page</code>): <code>"pág. {n}"</code>, <code>"página {n}"</code>.</td>
+      <td>Una referencia de página (<code>style=page</code>): <code>"pág. &#123;n&#125;"</code>, <code>"página &#123;n&#125;"</code>.</td>
     </tr>
     <tr>
       <td><code>defaultStyle</code></td>

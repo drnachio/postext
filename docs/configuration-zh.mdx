@@ -3089,7 +3089,7 @@ import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefault
 
 ## 交叉引用
 
-`crossRefs`属性设定[交叉引用](/zh/docs/document-format#交叉引用与锚点)在编号或页码前后印出的文字，以及未设`style`的`:ref`采用的样式。每个模板用`{n}`表示编号的位置；没有`{n}`的模板，编号放在文字之后，中间用不换行空格（`"§"`印为*§ 3.2*）。未设定的模板随文档语言：中文为*第{n}章 / 第{n}节 / 第{n}页*，英文为*chapter / section / p.*，西班牙文为*capítulo / sección / pág.*，法文、德文、意大利文、葡萄牙文、加泰罗尼亚文和荷兰文亦各有默认文字。
+`crossRefs`属性设定[交叉引用](/zh/docs/document-format#交叉引用与锚点)在编号或页码前后印出的文字，以及未设`style`的`:ref`采用的样式。每个模板用`{n}`表示编号的位置；没有`{n}`的模板，编号放在文字之后，中间用不换行空格（`"§"`印为*§ 3.2*）。未设定的模板随文档语言：中文为`第{n}章` / `第{n}节` / `第{n}页`，英文为*chapter / section / p.*，西班牙文为*capítulo / sección / pág.*，法文、德文、意大利文、葡萄牙文、加泰罗尼亚文和荷兰文亦各有默认文字。
 
 ```ts
 interface CrossRefsConfig {
@@ -3114,19 +3114,19 @@ interface CrossRefsConfig {
       <td><code>chapter</code></td>
       <td><code>string</code></td>
       <td>随语言</td>
-      <td>指向一级标题的引用：<code>"第{n}章"</code>。编号模板已含文字的标题（<code>第{1:一}章</code>、<code>Chapter {1}</code>）照原样印出。</td>
+      <td>指向一级标题的引用：<code>"第&#123;n&#125;章"</code>。编号模板已含文字的标题（<code>第&#123;1:一&#125;章</code>、<code>Chapter &#123;1&#125;</code>）照原样印出。</td>
     </tr>
     <tr>
       <td><code>section</code></td>
       <td><code>string</code></td>
       <td>随语言</td>
-      <td>指向二至六级标题的引用：<code>"第{n}节"</code>、<code>"§ {n}"</code>。</td>
+      <td>指向二至六级标题的引用：<code>"第&#123;n&#125;节"</code>、<code>"§ &#123;n&#125;"</code>。</td>
     </tr>
     <tr>
       <td><code>page</code></td>
       <td><code>string</code></td>
       <td>随语言</td>
-      <td>页码引用（<code>style=page</code>）：<code>"第{n}页"</code>、<code>"p. {n}"</code>。</td>
+      <td>页码引用（<code>style=page</code>）：<code>"第&#123;n&#125;页"</code>、<code>"p. &#123;n&#125;"</code>。</td>
     </tr>
     <tr>
       <td><code>defaultStyle</code></td>
