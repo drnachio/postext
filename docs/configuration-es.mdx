@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Configuración',
   description: 'Referencia completa de todas las opciones de configuración de composición de Postext',
   lang: 'es',
-  lastUpdated: '2026-09-29',
+  lastUpdated: '2026-10-01',
   readingTime: '30 min',
   order: 3,
   plainSummary: "Esta página reúne todos los ajustes que deciden el aspecto de tus páginas. Un solo grupo de ajustes guarda todas las decisiones: tamaño de página, número de columnas, tipografías, cuerpo del texto, títulos, recuadros, colores y mucho más. Solo escribes los ajustes que quieres cambiar, porque cada uno parte de un valor razonable. Es una página de consulta, así que puedes ir directamente a la parte que necesitas. Las últimas secciones enseñan a los programadores a crear páginas web y archivos PDF desde el código.",
@@ -7227,6 +7227,48 @@ Para flujos de trabajo de impresión en producción, ajusta estas opciones de co
 ### Implementación de referencia
 
 El componente `PdfViewport` del sandbox (`packages/postext-sandbox/src/viewport/PdfViewport.tsx`) conecta las piezas anteriores en una previsualización en vivo con botones de regenerar, descargar e imprimir, y es un buen punto de partida para cualquier integración PDF en el navegador. Construye el VDT a través del worker de layout compartido (consulta [Ejecutar la composición en un Web Worker](#ejecutar-la-composición-en-un-web-worker)) para que pulsar *Regenerar* no congele la UI mientras se ejecuta el pipeline — el hilo principal solo se encarga de `renderToPdf` (que ya es rápido una vez existe el VDT).
+
+## Un libro en 3D (`postext-folio`)
+
+`postext-folio` presenta en pantalla un documento compuesto como un libro: pliegos según la regla del recto y hojas que el lector pasa con los botones ‹ ›, las flechas del teclado, deslizando el dedo, con un clic en una página o tomando la página por su borde y arrastrándola. Cada hoja se curva en three.js y proyecta una sombra real sobre las páginas que tiene debajo. En reposo las páginas son DOM normal y el lienzo WebGL es transparente; solo dibuja mientras las hojas se mueven. Es el visor de las recetas del Recetario y de la pestaña **Folio** del sandbox.
+
+```bash
+npm install postext postext-folio three
+```
+
+```ts
+import { buildDocument } from 'postext';
+import { createFolioFromDocument } from 'postext-folio';
+
+const doc = buildDocument({ markdown }, config);
+const book = createFolioFromDocument(document.getElementById('book')!, doc, {
+  onChange: ({ pages }) => console.log('páginas a la vista', pages),
+});
+
+// Tras una edición: el mismo visor, en la misma página.
+book.setDocument(buildDocument({ markdown: edited }, config));
+```
+
+- **Las páginas se pintan a medida que hacen falta.** `createFolioFromDocument` pinta cada página con `renderPageToCanvas` al tamaño con que se muestra, por la densidad de píxeles del dispositivo, y solo los pliegos cercanos al abierto (`window`, tres a cada lado por defecto). Las páginas que salen de esa ventana se liberan, así que un libro de mil páginas ocupa la memoria de unas pocas. Un salto a una página lejana pinta primero ese pliego; las hojas que un pase largo atraviesa se ven como papel en blanco mientras están en el aire.
+- **El documento define el libro.** Su primera página abre sola a la derecha cuando es un recto (`pageIndexOffset` par), un libro encuadernado por la derecha (`page.binding: 'right'`, o un documento vertical) aparece en espejo y pasa las páginas hacia la izquierda, y las páginas en blanco toman el color de fondo de la página.
+- **El contenedor define el tamaño.** El libro cabe dentro de él, con margen para la hoja levantada, así que dale una altura. Por debajo de 560 px de ancho muestra una página cada vez (`mode: 'auto'`; `'single'` y `'double'` fuerzan una u otra).
+- **Antes, fuentes e imágenes.** Como con `renderPage`, las fuentes del documento deben estar cargadas en `document.fonts` y sus imágenes registradas con `registerResourceImage` antes de pintar las páginas.
+- **Accesible.** El visor es un grupo enfocable que responde a ←/→ (en espejo para un libro encuadernado por la derecha), Re Pág/Av Pág, Inicio y Fin; sus botones y el contador de páginas llevan etiqueta (`labels` las traduce), y cada lienzo de página lleva texto alternativo (`alt: (index) => …`).
+- **Sin WebGL2**, o cuando el lector pide menos movimiento, los pliegos simplemente cambian.
+
+`createFolio(container, { pages })` es el mismo visor con cualquier página: URL de imágenes, elementos `<img>` o `<canvas>`, y `""` para una página en blanco. `PageFlipper` es el motor de three.js por separado, para quien maqueta su propio DOM del pliego, como hace el Recetario.
+
+### Ejemplo en vivo: un libro en 3D
+
+El pen importa `postext` y `postext-folio` desde un CDN, compone un documento breve y lo abre como un libro. Toma la página derecha por su borde y arrástrala.
+
+<CodePenExample name="render-folio" title="Postext · un documento como libro en 3D" description="Compón un documento markdown con postext y pasa sus páginas en 3D con postext-folio." height={640} />
+
+### Ejemplo en vivo: imágenes de página
+
+`createFolio` con páginas dibujadas en lienzos, una última página en blanco y el color del papel.
+
+<CodePenExample name="folio-images" title="Postext · un libro de imágenes en 3D" description="Pasa en 3D cualquier página con postext-folio: URL de imágenes, elementos img o canvas." height={600} />
 
 ## Paquetes (archivos `.postext`)
 

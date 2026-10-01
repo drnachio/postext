@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Configuration',
   description: 'Complete reference for all Postext layout configuration options',
   lang: 'en',
-  lastUpdated: '2026-09-29',
+  lastUpdated: '2026-10-01',
   readingTime: '30 min',
   order: 3,
   plainSummary: "This page lists every setting that controls how your pages look. One group of settings holds all the choices: page size, number of columns, fonts, text size, headings, boxes, colours and more. You only write the settings you want to change, because each one starts with a sensible value. The page is a reference, so jump to the part you need. The last sections show programmers how to make web pages and PDF files from code.",
@@ -7225,6 +7225,48 @@ For production print workflows, tune these configuration options before renderin
 ### Reference implementation
 
 The sandbox's `PdfViewport` component (`packages/postext-sandbox/src/viewport/PdfViewport.tsx`) wires the pieces above into a live preview with regenerate, download, and print buttons, and is a good starting point for any in-browser PDF integration. It builds the VDT through the shared layout worker (see [Running layout in a Web Worker](#running-layout-in-a-web-worker)) so clicking *Regenerate* doesn't freeze the UI while the pipeline runs — the main thread only handles `renderToPdf` (which is already fast once the VDT exists).
+
+## A 3D book (`postext-folio`)
+
+`postext-folio` sets a laid-out document on the screen as a book: spreads by the recto rule, and leaves the reader turns with the ‹ › buttons, the arrow keys, a swipe, a click on a page, or by taking a page by its edge and dragging it over. Each leaf curls in three.js and casts a real shadow on the pages under it. At rest the pages are plain DOM and the WebGL canvas is transparent; it draws only while leaves move. It is the viewer of the Cookbook's recipes and of the sandbox's **Folio** tab.
+
+```bash
+npm install postext postext-folio three
+```
+
+```ts
+import { buildDocument } from 'postext';
+import { createFolioFromDocument } from 'postext-folio';
+
+const doc = buildDocument({ markdown }, config);
+const book = createFolioFromDocument(document.getElementById('book')!, doc, {
+  onChange: ({ pages }) => console.log('showing pages', pages),
+});
+
+// After an edit: the same viewer, on the same page.
+book.setDocument(buildDocument({ markdown: edited }, config));
+```
+
+- **Pages are painted as they are needed.** `createFolioFromDocument` paints each page with `renderPageToCanvas` at the size it is shown, times the device pixel ratio, and only the spreads around the open one (`window`, three either side by default). Pages that fall out of that window are freed, so a book of a thousand pages costs the memory of a few. A jump to a far page paints that spread first; the leaves a long turn sweeps past show as blank paper while they are in the air.
+- **The document sets the book.** Its first page opens alone on the right when it is a recto (`pageIndexOffset` even), a right-bound book (`page.binding: 'right'`, or a vertical document) lies mirrored and turns leftward, and blank pages take the page's background colour.
+- **The container sets the size.** The book fits inside it, leaving room for a lifted leaf, so give the container a height. Below 560 px wide it shows one page at a time (`mode: 'auto'`; `'single'` and `'double'` force either).
+- **Fonts and images first.** As for `renderPage`, the faces the document uses must be loaded in `document.fonts` and its resource images registered with `registerResourceImage` before pages are painted.
+- **Accessible.** The viewer is a focusable group that takes ←/→ (mirrored for a right-bound book), Page Up/Down, Home and End; its buttons and page count are labelled (`labels` translates them), and each page canvas carries `alt` text (`alt: (index) => …`).
+- **Without WebGL2**, or when the reader asks for reduced motion, the spreads simply change.
+
+`createFolio(container, { pages })` is the same viewer over any pages: image URLs, `<img>` or `<canvas>` elements, and `""` for a blank page. `PageFlipper` is the three.js engine alone, for a host that lays out its own spread DOM, as the Cookbook does.
+
+### Live example: a book in 3D
+
+The pen imports `postext` and `postext-folio` from a CDN, lays a short document out and opens it as a book. Take the right page by its edge and drag it over.
+
+<CodePenExample name="render-folio" title="Postext · a document as a 3D book" description="Lay out a markdown document with postext and turn its pages in 3D with postext-folio." height={640} />
+
+### Live example: page images
+
+`createFolio` with pages drawn on canvases, a blank last page and the paper colour.
+
+<CodePenExample name="folio-images" title="Postext · a 3D book of images" description="Turn any pages in 3D with postext-folio: image URLs, img or canvas elements." height={600} />
 
 ## Bundles (`.postext` files)
 

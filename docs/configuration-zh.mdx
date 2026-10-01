@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '配置',
   description: 'Postext所有版面配置选项的完整参考',
   lang: 'zh',
-  lastUpdated: '2026-09-29',
+  lastUpdated: '2026-10-01',
   readingTime: '30分钟',
   order: 3,
   plainSummary: "本页列出控制页面外观的所有设置。所有选择都放在一组设置里：页面大小、栏数、字体、字号、标题、框、颜色等等。每项设置都有合理的默认值，你只需写出想改的那几项。本页是参考资料，可以直接跳到需要的部分。最后几节告诉程序员怎样用代码生成网页和PDF文件。",
@@ -7220,6 +7220,48 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 ### 参考实现
 
 沙盒的`PdfViewport`组件（`packages/postext-sandbox/src/viewport/PdfViewport.tsx`）把上述各部分接成一个实时预览，带有重新生成、下载和打印按钮，是任何浏览器内PDF集成的良好起点。它通过共享的排版工作线程构建VDT（见[在Web Worker中运行排版](#在web-worker中运行排版)），所以点击*重新生成*时，流水线运行期间界面不会卡住；主线程只负责`renderToPdf`（VDT一旦存在，它已经很快）。
+
+## 3D书本（`postext-folio`）
+
+`postext-folio`把排好的文档以书本的形式呈现在屏幕上：按右页规则成对展开，读者可以用‹ ›按钮、方向键、滑动、点击页面，或抓住页边拖过去来翻页。每一页都在three.js中卷曲，并在下方页面上投下真实的阴影。静止时页面是普通DOM，WebGL画布是透明的，只在翻页时绘制。它是食谱页面和沙盒**书页**标签页使用的查看器。
+
+```bash
+npm install postext postext-folio three
+```
+
+```ts
+import { buildDocument } from 'postext';
+import { createFolioFromDocument } from 'postext-folio';
+
+const doc = buildDocument({ markdown }, config);
+const book = createFolioFromDocument(document.getElementById('book')!, doc, {
+  onChange: ({ pages }) => console.log('当前页面', pages),
+});
+
+// 编辑之后：同一个查看器，停留在同一页。
+book.setDocument(buildDocument({ markdown: edited }, config));
+```
+
+- **页面按需绘制。** `createFolioFromDocument`用`renderPageToCanvas`按页面的显示尺寸（乘以设备像素比）绘制每一页，而且只绘制当前展开页附近的展开页（`window`，默认前后各三个）。移出这个范围的页面会被释放，所以一千页的书也只占几页的内存。跳到很远的页面时，先绘制那个展开页；长距离翻页途中掠过的页面在空中显示为空白纸张。
+- **书本由文档决定。** 第一页是右页（`pageIndexOffset`为偶数）时单独显示在右侧；右侧装订的书（`page.binding: 'right'`，或竖排文档）呈镜像，向左翻页；空白页使用页面的背景色。
+- **尺寸由容器决定。** 书本适应容器大小，并为翻起的书页留出空间，所以要给容器设定高度。宽度小于560像素时一次显示一页（`mode: 'auto'`；`'single'`和`'double'`可强制其中一种）。
+- **先加载字体和图片。** 与`renderPage`一样，绘制页面之前，文档用到的字体必须已在`document.fonts`中加载，资源图片必须已通过`registerResourceImage`注册。
+- **无障碍。** 查看器是可获得焦点的组，响应←/→（右侧装订的书方向相反）、Page Up/Down、Home和End；按钮和页码都有标签（用`labels`翻译），每个页面画布都带有替代文本（`alt: (index) => …`）。
+- **没有WebGL2**，或读者要求减少动画时，展开页直接切换。
+
+`createFolio(container, { pages })`是同一个查看器，可用于任意页面：图片URL、`<img>`或`<canvas>`元素，以及表示空白页的`""`。`PageFlipper`是单独的three.js引擎，供自己排布展开页DOM的宿主使用，食谱页面就是这样做的。
+
+### 在线示例：3D书本
+
+这个pen从CDN导入`postext`和`postext-folio`，排一篇短文档并以书本形式打开。抓住右页的边缘拖过去。
+
+<CodePenExample name="render-folio" title="Postext · 文档变成3D书本" description="用postext排版一篇Markdown文档，并用postext-folio以3D方式翻页。" height={640} />
+
+### 在线示例：页面图片
+
+用`createFolio`显示画布上绘制的页面、最后一页空白页和纸张颜色。
+
+<CodePenExample name="folio-images" title="Postext · 图片组成的3D书本" description="用postext-folio以3D方式翻动任意页面：图片URL、img或canvas元素。" height={600} />
 
 ## 文件包（`.postext`文件）
 
