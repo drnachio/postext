@@ -915,6 +915,19 @@ Notes cited with `[^id]` (document-format.md §10.4).
   "hangingIndent": {"value": 0.8, "unit": "em"}, "separator": {"width": 0.25, "lineWidth": {"value": 0.4, "unit": "pt"}} }
 ```
 
+## 19a2. `crossRefs` — CrossRefsConfig (postext ≥ 1.12)
+
+What a cross-reference to a heading or an anchor prints (document-format.md §10.6). Templates hold `{n}`; one without it gets the number after a no-break space. Unset templates follow `locale` (en *chapter {n} / section {n} / p. {n}*, es *capítulo / sección / pág.*, zh *第{n}章 / 第{n}节 / 第{n}页*, plus fr, de, it, pt, ca, nl).
+
+```ts
+crossRefs: {
+  chapter?: string;   // level-1 heading: "chapter {n}"; a number its template already words (第{1:一}章) prints as is
+  section?: string;   // levels 2–6: "section {n}", "§ {n}"
+  page?: string;      // style=page: "p. {n}"
+  defaultStyle?: 'default' | 'number' | 'title' | 'page'; // a :ref to an anchor without style=
+}
+```
+
 ## 19b. `index` — IndexConfig (postext ≥ 1.7)
 
 What `:::index` prints from the `:index` marks (document-format.md §10.5). An entry = term +

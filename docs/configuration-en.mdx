@@ -3090,6 +3090,58 @@ import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefault
 ```
 
 
+## Cross-references
+
+The `crossRefs` property sets the words a [cross-reference](/en/docs/document-format#cross-references-and-anchors) prints around a number or a page, and the style a `:ref` takes when it sets none. Each template holds `{n}` where the number goes; one without it gets the number after a no-break space (`"§"` prints *§ 3.2*). An unset template follows the document language: *chapter / section / p.* in English, *capítulo / sección / pág.* in Spanish, *第{n}章 / 第{n}节 / 第{n}页* in Chinese, and so on for French, German, Italian, Portuguese, Catalan and Dutch.
+
+```ts
+interface CrossRefsConfig {
+  chapter?: string;  // Words around a level-1 heading's number: "chapter {n}".
+  section?: string;  // Around any other heading's number: "section {n}".
+  page?: string;     // Around a page number: "p. {n}".
+  defaultStyle?: 'default' | 'number' | 'title' | 'page'; // A :ref without style=.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>chapter</code></td>
+      <td><code>string</code></td>
+      <td>by language</td>
+      <td>A reference to a level-1 heading: <code>"chapter {n}"</code>. A heading number whose template already spells the word (<code>Chapter {1}</code>, <code>第{1:一}章</code>) prints as it is.</td>
+    </tr>
+    <tr>
+      <td><code>section</code></td>
+      <td><code>string</code></td>
+      <td>by language</td>
+      <td>A reference to a heading of level 2 to 6: <code>"section {n}"</code>, <code>"§ {n}"</code>.</td>
+    </tr>
+    <tr>
+      <td><code>page</code></td>
+      <td><code>string</code></td>
+      <td>by language</td>
+      <td>A page reference (<code>style=page</code>): <code>"p. {n}"</code>, <code>"page {n}"</code>.</td>
+    </tr>
+    <tr>
+      <td><code>defaultStyle</code></td>
+      <td><code>'default' | 'number' | 'title' | 'page'</code></td>
+      <td><code>'default'</code></td>
+      <td>What a <code>:ref</code> to a heading or an anchor prints without <code>style=</code>. <code>'default'</code>: a numbered heading by its word and number, an unnumbered one by its title, an anchor by its text. A reference that sets <code>style</code> keeps it, and references to figures and tables are not affected.</td>
+    </tr>
+  </tbody>
+</table>
+
+References take the colour, weight and slant of every reference (`bodyText.referenceColor`, `referenceBold`, `referenceItalic`).
+
 ## East Asian typography
 
 The `cjk` property sets how Chinese, Japanese and Korean text is composed: which regional conventions it follows, where its lines may break, how wide its punctuation is set and whether it hangs, the space between Han and Latin, the character grid of the type area, and how the Chinese marks, ruby readings and warichu notes of the text print. Every field is optional, and `'auto'` follows the region of the document language (`locale`), so a book with `locale: 'zh-Hant'` breaks its lines and sets its punctuation the Taiwan way without setting anything else. [Chinese layout](/en/docs/chinese-layout) explains the rules behind these settings, region by region, with two complete configurations.
