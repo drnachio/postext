@@ -21,6 +21,7 @@ import { stripHeadingStylesDefaults } from './headingStyles';
 import { stripTocDefaults } from './toc';
 import { stripFootnotesDefaults } from './footnotes';
 import { stripCrossRefsDefaults } from './crossRefs';
+import { stripCitationsDefaults } from './citations';
 import { stripIndexDefaults } from './indexConfig';
 import { stripCjkDefaults } from './cjk';
 
@@ -49,6 +50,7 @@ export { DEFAULT_HEADING_STYLES, resolveHeadingStylesConfig, stripHeadingStylesD
 export { DEFAULT_TOC_CONFIG, resolveTocConfig, stripTocDefaults } from './toc';
 export { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults } from './footnotes';
 export { resolveCrossRefsConfig, stripCrossRefsDefaults } from './crossRefs';
+export { DEFAULT_CITATIONS_CONFIG, resolveCitationsConfig, stripCitationsDefaults } from './citations';
 export { DEFAULT_INDEX_CONFIG, resolveIndexConfig, stripIndexDefaults } from './indexConfig';
 export { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, defaultCjkLineBreak, defaultCjkPunctuationWidth, defaultCjkCompression, defaultCjkEmphasis, defaultCjkBookTitleMark } from './cjk';
 
@@ -191,6 +193,12 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
     result.crossRefs = strippedCrossRefs;
   } else {
     delete result.crossRefs;
+  }
+  const strippedCitations = stripCitationsDefaults(config.citations);
+  if (strippedCitations) {
+    result.citations = strippedCitations;
+  } else {
+    delete result.citations;
   }
   const strippedCjk = stripCjkDefaults(config.cjk);
   if (strippedCjk) {

@@ -572,6 +572,84 @@
       }
     }
   },
+  "unknownCitationKey": {
+    "source": "engine",
+    "label": {
+      "en": "Unknown citation key",
+      "es": "Clave de cita desconocida",
+      "zh": "未知引用键"
+    },
+    "cause": {
+      "en": "A citation names a key that no reference of the book defines.",
+      "es": "Una cita nombra una clave que ninguna referencia del libro define.",
+      "zh": "某处引用的键在书中没有对应的参考文献。"
+    },
+    "fix": {
+      "en": "Add the reference (front matter references or a :::references block) or correct the key.",
+      "es": "Añade la referencia (references en el front matter o un bloque :::references) o corrige la clave.",
+      "zh": "添加该参考文献（front matter中的references或:::references块），或改正键名。"
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Citations and bibliography",
+        "es": "Citas y bibliografía",
+        "zh": "引用与参考文献"
+      }
+    }
+  },
+  "citationsUnavailable": {
+    "source": "engine",
+    "label": {
+      "en": "Citations not formatted",
+      "es": "Citas sin formato",
+      "zh": "引用未排版"
+    },
+    "cause": {
+      "en": "The text cites works but no citation engine is registered, so citations print as written.",
+      "es": "El texto cita obras pero no hay ningún motor de citas registrado, así que las citas se imprimen tal como se escribieron.",
+      "zh": "正文引用了文献，但没有注册引用引擎，因此引用按原文印出。"
+    },
+    "fix": {
+      "en": "Import postext-citeproc/register before laying the document out.",
+      "es": "Importa postext-citeproc/register antes de componer el documento.",
+      "zh": "排版前导入 postext-citeproc/register。"
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Citations and bibliography",
+        "es": "Citas y bibliografía",
+        "zh": "引用与参考文献"
+      }
+    }
+  },
+  "referencesUnreadable": {
+    "source": "engine",
+    "label": {
+      "en": "Unreadable references",
+      "es": "Referencias ilegibles",
+      "zh": "参考文献无法读取"
+    },
+    "cause": {
+      "en": "A :::references block holds JSON or YAML that does not parse, so its references are left out.",
+      "es": "Un bloque :::references contiene JSON o YAML que no se puede leer, así que sus referencias quedan fuera.",
+      "zh": ":::references块中的JSON或YAML无法解析，其中的参考文献被略去。"
+    },
+    "fix": {
+      "en": "Check the block's format attribute and its syntax.",
+      "es": "Revisa el atributo format del bloque y su sintaxis.",
+      "zh": "检查该块的format属性及其语法。"
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Citations and bibliography",
+        "es": "Citas y bibliografía",
+        "zh": "引用与参考文献"
+      }
+    }
+  },
   "undefinedFootnote": {
     "source": "engine",
     "label": {

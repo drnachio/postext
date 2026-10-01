@@ -451,7 +451,7 @@ export function injectRefSpans(spans: InlineSpan[], refs: RefMeta[]): InlineSpan
  *  the character itself instead of opening a marker — a footnote asterisk
  *  in a table note, a literal caret. Protected behind private-use
  *  placeholders while the marker regexes run, restored in the spans. */
-const ESCAPE_RE = /\\([*_^~`])/g;
+const ESCAPE_RE = /\\([*_^~`@])/g;
 const ESCAPE_BASE = 0xe100;
 const ESCAPED_RE = /[\ue100-\ue17f]/g;
 /** The faces `^_^` and `^o^` (#181) stay text, protected like escapes so
@@ -475,7 +475,7 @@ export function restoreEscapes(text: string): string {
  *  instead of resolving a reference. Length-preserving, so source offsets
  *  hold. Runs first, before any inline pre-pass. */
 const CODE_SPAN_RE = /(?<!\\)`([^`\n]+?)`/g;
-const CODE_LITERAL_RE = /[:$*_^~[\]{}\\]/g;
+const CODE_LITERAL_RE = /[:$*_^~[\]{}\\@]/g;
 export function protectCodeSpans(text: string): string {
   if (!text.includes('`')) return text;
   return text.replace(CODE_SPAN_RE, (_, inner: string) =>

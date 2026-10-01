@@ -10,6 +10,8 @@
  */
 
 import { resourceRefId, unprefixedId } from './crossRefs';
+import { citationIssues } from './citations';
+import { bookCitationContexts, needsCitationContext } from '../citations/context';
 import { duplicateAnchors } from './anchors';
 import type { ContentBlock } from '../parse';
 import { KNOWN_CONTAINERS, KNOWN_DIRECTIVES, parseInlineSnippetSpans, parseMarkdownMemo } from '../parse';
@@ -134,6 +136,9 @@ export function collectContentWarnings(
   /** The anchor ids of the whole book (#262), when the document is one of
    *  its chapters; its own anchors count either way. */
   bookAnchors?: ReadonlySet<string>,
+  /** The reference keys of the whole book (#268), when the document is one
+   *  of its chapters; its own references count either way. */
+  bookCitationKeys?: ReadonlySet<string>,
 ): ContentWarning[] {
   let body = markdown;
   let offset = 0;
@@ -387,6 +392,23 @@ export function collectContentWarnings(
     }
   }
 
+  // Citations (#268): keys no reference defines, data that cannot be read.
+  let metadata: Record<string, unknown> | undefined;
+  try {
+    metadata = extractFrontmatter(markdown).metadata as Record<string, unknown>;
+  } catch {
+    metadata = undefined;
+  }
+  if (needsCitationContext(blocks, metadata)) {
+    const ctx = bookCitationContexts([{ metadata, blocks }])[0]!;
+    const keys = bookCitationKeys ? new Set([...bookCitationKeys, ...ctx.items.map((i) => i.id)]) : undefined;
+    for (const issue of citationIssues(blocks, ctx, keys)) {
+      const range = abs({ start: issue.sourceStart, end: issue.sourceEnd });
+      if (issue.kind === 'unknownCitationKey') out.push({ kind: 'unknownCitationKey', key: issue.key ?? '', ...range });
+      else if (issue.kind === 'citationsUnavailable') out.push({ kind: 'citationsUnavailable', ...range });
+      else out.push({ kind: 'referencesUnreadable', message: issue.message ?? '', ...range });
+    }
+  }
   // Reading order: a resource's warnings sit at its first use.
   return out
     .map((w, i) => ({ w, i }))
@@ -496,6 +518,15 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
       break;
     case 'unknownDirective':
       text = `Unknown directive ":::${w.name}" — the line is set as text`;
+      break;
+    case 'unknownCitationKey':
+      text = `No reference defines "@${w.key}" — the citation prints without it`;
+      break;
+    case 'citationsUnavailable':
+      text = 'Citations need a citation engine (import "postext-citeproc/register") — they print as written';
+      break;
+    case 'referencesUnreadable':
+      text = `A :::references block cannot be read: ${w.message}`;
       break;
     case 'malformedEmbed':
       text = `The embed line "::${w.name}" is set as text — write ::resource{id="…"} alone on its line, after a blank line`;

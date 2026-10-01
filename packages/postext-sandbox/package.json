@@ -46,6 +46,7 @@
     "colorjs.io": "^0.7.1",
     "fflate": "^0.8.3",
     "lucide-react": "^1.42.0",
+    "postext-citeproc": "workspace:*",
     "postext-folio": "workspace:*",
     "postext-pdf": "workspace:*",
     "tailwind-merge": "^3.6.0",

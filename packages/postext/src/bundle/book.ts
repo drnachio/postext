@@ -5,6 +5,7 @@
 // the contents (`:::toc`) receives the whole book's outline, and
 // `{bookTotalPages}` counts the whole book.
 
+import { bookCitationContexts, citationSourceOf, needsCitationContext } from '../citations/context';
 import type { DocumentMetadata, LayoutContinuation, OutlineEntry, PostextConfig, Resource } from '../types';
 import type { VDTDocument } from '../vdt';
 import { buildDocument, continuationAfter, contentOutline, outlineFromDoc, outlineKey } from '../pipeline';
@@ -97,6 +98,21 @@ export function buildBundle(
     return toc || hasIndex || hasRefs;
   });
   const anyToc = hasToc.some(Boolean);
+  // Citations are numbered and listed across the book (#272): each chapter
+  // is formatted against the book's references and citations.
+  // Every chapter's front matter counts here (its references), not only
+  // the first's.
+  const citationSources = chapters.map((c, index) => {
+    try {
+      return citationSourceOf(c.markdown);
+    } catch {
+      // Front matter the YAML reader rejects counts for nothing.
+      return citationSourceOf(sources[index]!);
+    }
+  });
+  const citations = citationSources.some((s) => needsCitationContext(s.blocks, s.metadata))
+    ? bookCitationContexts(citationSources)
+    : undefined;
   // `{bookTotalPages}` needs the page count of the whole book, known once
   // every chapter is laid out: the book goes round once more with it. It
   // never moves a page break, so one more round settles it.
@@ -117,7 +133,7 @@ export function buildBundle(
         ? (bookPageCount !== undefined ? total : undefined)
         : { ...counters, pageIndexOffset: physical, ...(next ? { pageNumbering: next } : {}), ...total };
       const doc = buildDocument(
-        { markdown, metadata, resources, ...(continuation ? { continuation } : {}), ...(hasToc[index] && outline ? { outline } : {}) },
+        { markdown, metadata, resources, ...(continuation ? { continuation } : {}), ...(hasToc[index] && outline ? { outline } : {}), ...(citations ? { citations: citations[index] } : {}) },
         config,
         cache,
         buildOptions,

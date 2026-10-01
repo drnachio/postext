@@ -1,0 +1,71 @@
+{
+  "name": "postext-citeproc",
+  "version": "1.12.0",
+  "description": "Citation formatting for Postext: CSL styles (APA, Chicago, MLA, IEEE, Vancouver, ISO 690, GB/T 7714, OSCOLA…) through citeproc-js, CSL locales and a BibTeX reader.",
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://postext.dev/",
+  "keywords": [
+    "postext",
+    "citations",
+    "bibliography",
+    "csl",
+    "citeproc",
+    "bibtex",
+    "apa",
+    "gb7714",
+    "typesetting"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/drnachio/postext.git",
+    "directory": "packages/postext-citeproc"
+  },
+  "files": [
+    "dist",
+    "THIRD_PARTY_LICENSES.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./register": {
+      "types": "./dist/register.d.ts",
+      "default": "./dist/register.js"
+    },
+    "./catalog": {
+      "types": "./dist/catalog.d.ts",
+      "default": "./dist/catalog.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": [
+    "./dist/register.js"
+  ],
+  "scripts": {
+    "embed": "node scripts/embed-csl.mjs",
+    "build": "rm -rf dist && node scripts/embed-csl.mjs && tsc",
+    "dev": "node scripts/embed-csl.mjs && tsc --watch",
+    "check-types": "node scripts/embed-csl.mjs && tsc --noEmit",
+    "lint": "eslint .",
+    "pretest": "node scripts/embed-csl.mjs",
+    "test": "vitest run",
+    "prepublishOnly": "pnpm build"
+  },
+  "peerDependencies": {
+    "postext": "workspace:^"
+  },
+  "dependencies": {
+    "citeproc": "^2.4.63"
+  },
+  "devDependencies": {
+    "@postext/typescript-config": "workspace:*",
+    "@types/node": "^26.5.0",
+    "eslint": "^9.39.4",
+    "postext": "workspace:*",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.70.0",
+    "vitest": "^5.0.0"
+  }
+}

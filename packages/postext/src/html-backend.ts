@@ -277,6 +277,12 @@ function pageElementId(bookIndex: number): string {
   return `pt-p-${bookIndex}`;
 }
 
+/** A link inside the document (`#sec-intro`, a citation's `#ref-key`)
+ *  goes to the anchor of that id (#264, #269); any other link as written. */
+function internalHref(href: string): string {
+  return href.startsWith('#') && href.length > 1 && !href.startsWith('#pt-') ? `#${encodeURIComponent(anchorElementId(decodeURIComponent(href.slice(1))))}` : href;
+}
+
 function refAnchorHref(key: string): string {
   if (key.startsWith(ANCHOR_KEY)) return `#${encodeURIComponent(anchorElementId(key.slice(ANCHOR_KEY.length)))}`;
   return `#${encodeURIComponent(resourceAnchorId(key))}`;
@@ -501,7 +507,7 @@ function linkRuns(): { at: (href: string | undefined) => string; end: () => stri
  *  page (#264). */
 function segmentHref(seg: VDTLineSegment): string | undefined {
   if (seg.refResourceId !== undefined) return undefined;
-  if (seg.href !== undefined) return seg.href;
+  if (seg.href !== undefined) return internalHref(seg.href);
   if (seg.footnoteId !== undefined) return `#${encodeURIComponent(footnoteElementId(seg.footnoteId))}`;
   if (seg.pageLink !== undefined) return `#${pageElementId(seg.pageLink)}`;
   return undefined;

@@ -44,6 +44,13 @@ export function locateAnchors(
     }
     out.push({ id, kind: 'heading', pageIndex: b.pageIndex, x: b.bbox.x, y: b.bbox.y });
   }
+  // Bibliography entries: the anchors `ref-<key>` citations link to (#269).
+  const seenEntry = new Set<string>();
+  for (const b of doc.blocks) {
+    if (b.bibEntry === undefined || b.pageIndex < 0 || seenEntry.has(b.bibEntry)) continue;
+    seenEntry.add(b.bibEntry);
+    out.push({ id: `ref-${b.bibEntry}`, kind: 'anchor', pageIndex: b.pageIndex, x: b.bbox.x, y: b.bbox.y });
+  }
   if (marks.length === 0) return out.length > 0 ? out : undefined;
 
   const lines: { start: number; end: number; page: number; x: number; y: number }[] = [];

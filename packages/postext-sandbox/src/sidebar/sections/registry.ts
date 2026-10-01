@@ -39,6 +39,7 @@ export type SettingsSectionId =
   | 'math'
   | 'footnotes'
   | 'crossRefs'
+  | 'citations'
   | 'cjk'
   | 'resource-types'
   | 'captionStyle'
@@ -98,6 +99,7 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionEntry[] = [
   { id: 'chipStyles', group: 'text', labelKey: 'chipStylesSection', configKeys: ['chipStyles'] },
   { id: 'math', group: 'text', labelKey: 'mathSection', configKeys: ['math'] },
   { id: 'footnotes', group: 'text', labelKey: 'footnotesSection', configKeys: ['footnotes'] },
+  { id: 'citations', group: 'text', labelKey: 'citationsSection', configKeys: ['citations'] },
   { id: 'headings', group: 'headings', labelKey: 'headings', configKeys: ['headings'] },
   { id: 'headingStyles', group: 'headings', labelKey: 'headingStylesSection', configKeys: ['headingStyles'] },
   { id: 'toc', group: 'headings', labelKey: 'tocSection', configKeys: ['toc'] },

@@ -5,8 +5,8 @@
 // preceding chapter, recorded as a `ChapterLayout`). Page numbers thus run
 // on across chapters without ever laying out the whole book in a preview.
 
-import { anchorOutline, configUsesPlaceholder, contentOutline, continuationAfter, extractFrontmatter, formatNumeral, indexOutline, outlineFromDoc, outlineKey, parseMarkdown, resolveHeadingsConfig, resolvePageConfig, DEFAULT_PARTS_CONFIG, tocOutline } from 'postext';
-import type { LayoutContinuation, NumeralStyle, OutlineEntry, PostextConfig, Resource, VDTDocument } from 'postext';
+import { anchorOutline, bookCitationContexts, citationContextKey, citationSourceOf, mayNeedCitations, needsCitationContext, configUsesPlaceholder, contentOutline, continuationAfter, extractFrontmatter, formatNumeral, indexOutline, outlineFromDoc, outlineKey, parseMarkdown, resolveHeadingsConfig, resolvePageConfig, DEFAULT_PARTS_CONFIG, tocOutline } from 'postext';
+import type { CitationSource, LayoutContinuation, NumeralStyle, OutlineEntry, PostextConfig, Resource, VDTDocument } from 'postext';
 import type { BookPages, BookPlan, Chapter, ChapterLayout, ChapterPageNumber, ChapterPages, ChapterPart, ChapterPlan, OutlinePage } from './types';
 import { ENGINE_KEY, configKeyOf, resourcesKeyOf } from './layoutKeys';
 
@@ -260,6 +260,21 @@ function usesBookTotalPages(config: PostextConfig): boolean {
  *  and the chain stops at chapter 10). */
 export function createBookPlanner(): BookPlanner {
   const cache = new Map<string, CountersEntry>();
+  /** Each chapter's parsed form for the citations, by its text. */
+  const citationCache = new Map<string, { markdown: string; source: CitationSource }>();
+  const citationSource = (chapter: Chapter): CitationSource => {
+    const hit = citationCache.get(chapter.id);
+    if (hit && hit.markdown === chapter.markdown) return hit.source;
+    let source: CitationSource;
+    try {
+      // A chapter that cannot cite (no `@`, no references) counts as empty.
+      source = mayNeedCitations(chapter.markdown) ? citationSourceOf(chapter.markdown) : { blocks: [] };
+    } catch {
+      source = { blocks: [] };
+    }
+    citationCache.set(chapter.id, { markdown: chapter.markdown, source });
+    return source;
+  };
 
   const countersAfter = (
     chapter: Chapter,
@@ -427,6 +442,16 @@ export function createBookPlanner(): BookPlanner {
       let stalePendingId: string | null = null;
       // Counters inherited by the chapter being planned (undefined = first).
       let counters: LayoutContinuation | undefined;
+      // The book's citations (#272): numbered, disambiguated and listed
+      // across the chapters, each chapter formatted against its share.
+      const citationSources = chapters.map(citationSource);
+      const citationContexts = citationSources.some((src) => needsCitationContext(src.blocks, src.metadata))
+        ? bookCitationContexts(citationSources)
+        : undefined;
+      // The book-wide part of every chapter's key, written once.
+      const sharedCitationKey = citationContexts?.[0]
+        ? citationContextKey({ ...citationContexts[0], local: [], last: false })
+        : '';
       chapters.forEach((chapter, index) => {
         const first = index === 0;
         const pages = starts[index]!;
@@ -447,7 +472,9 @@ export function createBookPlanner(): BookPlanner {
             ...(pages ? { pageIndexOffset: pages.physical, pageNumbering: { format: pages.format, startAt: pages.number } } : provisional),
             ...total,
           };
-        const { outline: printedOutline, key: chapterOutlineKey } = chapterOutline(entries[index]!);
+        const { outline: printedOutline, key: printedKey } = chapterOutline(entries[index]!);
+        const citations = citationContexts?.[index];
+        const chapterOutlineKey = citations ? `${printedKey}\n\ncite:${sharedCitationKey}|${citations.local.join(',')}|${citations.last ? 1 : 0}` : printedKey;
         const layout = records[index]!;
         const outlineStale = layout !== null && layout.outlineKey !== chapterOutlineKey;
         if (outlineStale && stalePendingId === null) stalePendingId = chapter.id;
@@ -463,6 +490,7 @@ export function createBookPlanner(): BookPlanner {
           layout,
           outlineStale,
           ...(printedOutline ? { outline: printedOutline } : {}),
+          ...(citations ? { citations } : {}),
           outlineKey: chapterOutlineKey,
         };
         plans.push(plan);

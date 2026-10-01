@@ -98,7 +98,7 @@ export function ChapterPaginator() {
     const book = composeBookMemo(currentChapters, id);
     const effectiveConfig = withHyphenationLocale(currentConfig, currentLocale);
     layoutWorker.build(
-      { markdown: book.markdown, metadata: book.metadata, resources: currentResources, continuation: chapterPlan.continuation, outline: chapterPlan.outline },
+      { markdown: book.markdown, metadata: book.metadata, resources: currentResources, continuation: chapterPlan.continuation, outline: chapterPlan.outline, ...(chapterPlan.citations ? { citations: chapterPlan.citations } : {}) },
       effectiveConfig,
       {
         cacheKey: layoutCacheKey({
@@ -159,7 +159,7 @@ export function ChapterPaginator() {
         warmedRef.current.add(key);
         layoutWorker
           .warm(
-            { markdown: book.markdown, metadata: book.metadata, resources, continuation: chapterPlan.continuation, outline: chapterPlan.outline },
+            { markdown: book.markdown, metadata: book.metadata, resources, continuation: chapterPlan.continuation, outline: chapterPlan.outline, ...(chapterPlan.citations ? { citations: chapterPlan.citations } : {}) },
             effectiveConfig,
             key,
           )

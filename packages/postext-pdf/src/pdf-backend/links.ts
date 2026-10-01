@@ -289,6 +289,9 @@ export class RefRun {
   }
 }
 
+/** Marks a run of {@link UriRuns} that links inside the document. */
+const INTERNAL = '\u0000#';
+
 /** What a {@link UriRuns} needs of the page being drawn. */
 interface UriRunsCtx {
   page: PDFPage;
@@ -318,7 +321,9 @@ export class UriRuns {
    *  it is part of a link (`href` a PDF-openable URL), else undefined. A
    *  word without a link, or with another one, ends the open run. */
   word(href: string | undefined, x: number, width: number, text: string): StructElem | undefined {
-    const uri = href !== undefined ? pdfUri(href) : undefined;
+    // A link inside the document (`#sec-intro`, a citation's `#ref-key`)
+    // goes to its anchor's destination (#264, #269).
+    const uri = href !== undefined ? (href.startsWith('#') && href.length > 1 ? `${INTERNAL}${href.slice(1)}` : pdfUri(href)) : undefined;
     if (this.run && this.run.uri !== uri) this.flush();
     if (uri === undefined) return undefined;
     if (this.run) {
@@ -360,11 +365,9 @@ export class UriRuns {
       run.x2 * scale,
       pageHeightPt - this.line.bbox.y * scale,
     ];
-    this.registry.addUriLink(
-      this.ctx.page,
-      this.ctx.mapRectPt ? this.ctx.mapRectPt(rect) : rect,
-      run.uri,
-      run.elem ? { elem: run.elem, contents: run.text.trim() } : undefined,
-    );
+    const box = this.ctx.mapRectPt ? this.ctx.mapRectPt(rect) : rect;
+    const struct = run.elem ? { elem: run.elem, contents: run.text.trim() } : undefined;
+    if (run.uri.startsWith(INTERNAL)) this.registry.addLink(this.ctx.page, box, anchorDestination(decodeURIComponent(run.uri.slice(INTERNAL.length))), struct);
+    else this.registry.addUriLink(this.ctx.page, box, run.uri, struct);
   }
 }

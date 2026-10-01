@@ -721,6 +721,97 @@ so he learned to count the steps in the dark.
 
 指向不存在的id的引用印为*?*，并在检查面板中列出（`unknownResourceId`）。在Sandbox编辑器中输入`@`，会列出书中的图、表、带标识符的标题和锚点。
 
+## 引用与参考文献
+
+按Pandoc的写法书写引用，把参考文献保存在文档中，在设置里选择引用样式：从APA换成IEEE或芝加哥注释体，只需改设置中的样式，不必改正文。每条引用都链接到参考文献表中的对应条目。
+
+### 引用
+
+```md
+正如[@garcia2020, 页 33]所示，纸上阅读更快[参见 @lopez2019, 章 2; @bringhurst2004]。
+@garcia2020 [页 4]说得很清楚；2020年的研究[-@garcia2020]也同意。
+```
+
+- **`[@key]`**：括号引用；多个文献放在同一对方括号中，用`;`分隔。
+- **位置（locator）**：逗号之后写`页 33`、`p. 33`、`pp. 4–6`、`章 2`、`chap. 2`、`§ 4.2`等；只写数字表示页码。
+- **前缀与后缀**：`@`之前的文字（`参见`）和位置之后的文字。
+- **`[-@key]`**：省略著者，用于正文已提到著者的句子。
+- **`@key`**：叙述式引用（*García (2020)*）；`@key [页 4]`加上位置。
+- 紧贴在字母或数字后的`@`（电子邮件地址）、行内代码中的`@`以及`\@`都是普通文字。书中没有对应参考文献的引用按原文印出，所以没有参考文献的文档读起来与以前一样。
+
+### 参考文献数据
+
+参考文献以CSL格式（Zotero和Pandoc使用的数据模型）写在文档中：
+
+```md
+---
+references:
+  - id: zhang2018
+    type: book
+    language: zh-CN
+    author: [张三, 李四, 王五, 赵六]
+    title: 排版学
+    issued: 2018
+    publisher: 商务印书馆
+    publisher-place: 北京
+nocite: "@lopez2019"
+---
+```
+
+也可以写在`:::references`块中，格式为BibTeX（Zotero、JabRef、Google学术导出的格式）、CSL-JSON或CSL-YAML：
+
+```md
+:::references{format=bibtex}
+@book{zhang2018, author = {张三 and 李四}, title = {排版学}, publisher = {商务印书馆},
+  address = {北京}, year = {2018}, langid = {chinese}}
+:::
+```
+
+该块本身不印任何内容。`nocite`列出不引用但要收录的文献（`@*`表示全部）。在书中，任何一章里写的参考文献对全书有效。
+
+### 参考文献表
+
+`:::bibliography`在其所在位置排出所引文献的列表；没有它时，列表放在最后一章之后，标题采用文档语言（*参考文献*、*References*）。`:::bibliography{title="引用文献"}`修改标题，`title=""`不印标题；`scope=chapter`只列出本章引用的文献（适用于合集）。每个条目都是一个锚点（`ref-<key>`），因此指向`#ref-zhang2018`的Markdown链接可以跳到它，PDF中将其标记为`BibEntry`。
+
+### 样式
+
+样式决定引用和条目的内容。内置样式见下表；其他任何CSL样式（Zotero样式库中有一万多种）都可以在**设置 → 引用与参考文献**中从`.csl`文件加载。
+
+<table>
+  <thead>
+    <tr><th><code>citations.style</code></th><th>名称</th><th>体系</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>apa</code></td><td>APA 7</td><td>著者-出版年</td></tr>
+    <tr><td><code>chicago-author-date</code></td><td>Chicago (author-date)</td><td>著者-出版年</td></tr>
+    <tr><td><code>harvard-cite-them-right</code></td><td>Harvard</td><td>著者-出版年</td></tr>
+    <tr><td><code>iso690-author-date-en</code>, <code>iso690-author-date-es</code></td><td>ISO 690</td><td>著者-出版年</td></tr>
+    <tr><td><code>china-national-standard-gb-t-7714-2015-author-date</code></td><td>GB/T 7714 著者-出版年</td><td>著者-出版年</td></tr>
+    <tr><td><code>modern-language-association</code></td><td>MLA 9</td><td>著者-页码</td></tr>
+    <tr><td><code>ieee</code></td><td>IEEE</td><td>顺序编码</td></tr>
+    <tr><td><code>elsevier-vancouver</code></td><td>Vancouver</td><td>顺序编码</td></tr>
+    <tr><td><code>american-medical-association</code></td><td>AMA</td><td>顺序编码</td></tr>
+    <tr><td><code>nature</code></td><td>Nature</td><td>顺序编码</td></tr>
+    <tr><td><code>iso690-numeric-en</code></td><td>ISO 690</td><td>顺序编码</td></tr>
+    <tr><td><code>china-national-standard-gb-t-7714-2015-numeric</code></td><td>GB/T 7714 顺序编码</td><td>顺序编码</td></tr>
+    <tr><td><code>chicago-notes-bibliography</code></td><td>Chicago (notes)</td><td>注释</td></tr>
+    <tr><td><code>oscola</code></td><td>OSCOLA</td><td>注释</td></tr>
+    <tr><td><code>china-national-standard-gb-t-7714-2015-note</code></td><td>GB/T 7714 注释</td><td>注释</td></tr>
+  </tbody>
+</table>
+
+使用**注释体样式**时，每条引用成为一个脚注，按脚注设置放置和编号；同一文献的后续引用采用简略形式。在中文正文中，`citations.notes: 'warichu'`把引用排成行内双行夹注。
+
+**中文。** GB/T 7714-2015样式写出文献类型标识（`[M]`、`[J]`、`[D]`、`[EB/OL]`），中文姓名完整保留，三位以上著者时中文文献写`等`、西文文献写`et al.`，依据每条文献的`language`判断。竖排时，上标编号位于所注字的右侧；`citations.marker: 'corner'`写作`〔1〕`，在竖排中保持直立。
+
+**引擎。** 引用由`postext-citeproc`包（citeproc-js与CSL样式）排版。Sandbox会为有引用的文档加载它；在自己的代码中，排版前先注册：
+
+```ts
+import 'postext-citeproc/register';
+```
+
+检查面板会列出没有参考文献定义的键（`unknownCitationKey`）和无法读取的参考文献块（`referencesUnreadable`）。
+
 ## 索引
 
 书后索引列出书中的术语及其出现的页码。在正文讨论某个术语的地方标记它，再用`:::index`在需要的位置印出索引，通常放在书末单独的一章。排版完成后，引擎找出每个标记所在的页，因此页码随正文变化：增加一段、移动一章或改变成品尺寸，索引都会印出新的页码。

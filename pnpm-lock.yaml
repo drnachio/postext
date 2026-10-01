@@ -374,6 +374,34 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0(@types/node@26.5.0)(msw@2.13.0(@types/node@26.5.0)(typescript@6.0.3))(vite@8.0.6(@types/node@26.5.0)(jiti@2.7.0)(yaml@2.9.0))
 
+  packages/postext-citeproc:
+    dependencies:
+      citeproc:
+        specifier: ^2.4.63
+        version: 2.4.63
+    devDependencies:
+      '@postext/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: ^26.5.0
+        version: 26.5.0
+      eslint:
+        specifier: ^9.39.4
+        version: 9.39.5(jiti@2.7.0)(supports-color@7.2.0)
+      postext:
+        specifier: workspace:*
+        version: link:../postext
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      typescript-eslint:
+        specifier: ^8.70.0
+        version: 8.70.0(eslint@9.39.5(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@6.0.3)
+      vitest:
+        specifier: ^5.0.0
+        version: 5.0.0(@types/node@26.5.0)(msw@2.13.0(@types/node@26.5.0)(typescript@6.0.3))(vite@8.0.6(@types/node@26.5.0)(jiti@2.7.0)(yaml@2.9.0))
+
   packages/postext-folio:
     devDependencies:
       '@postext/typescript-config':
@@ -482,6 +510,9 @@ importers:
       lucide-react:
         specifier: ^1.42.0
         version: 1.42.0(react@19.2.8)
+      postext-citeproc:
+        specifier: workspace:*
+        version: link:../postext-citeproc
       postext-folio:
         specifier: workspace:*
         version: link:../postext-folio
@@ -2242,6 +2273,9 @@ packages:
     engines: {node: '>=20.19.0 <22.0.0 || >=22.12.0'}
     peerDependencies:
       devtools-protocol: '*'
+
+  citeproc@2.4.63:
+    resolution: {integrity: sha512-68F95Bp4UbgZU/DBUGQn0qV3HDZLCdI9+Bb2ByrTaNJDL5VEm9LqaiNaxljsvoaExSLEXe1/r6n2Z06SCzW3/Q==}
 
   class-variance-authority@0.7.1:
     resolution: {integrity: sha512-Ka+9Trutv7G8M6WT6SeiRWz792K5qEqIGEGzXKhAE6xOWAY6pPH8U+9IY3oCMv6kqTmLsv7Xh/2w2RigkePMsg==}
@@ -6626,6 +6660,8 @@ snapshots:
       devtools-protocol: 0.0.1687809
       mitt: 3.0.1
       zod: 3.25.76
+
+  citeproc@2.4.63: {}
 
   class-variance-authority@0.7.1:
     dependencies:

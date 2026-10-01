@@ -310,6 +310,11 @@ export interface PostextContent {
    *  document itself, laying it out again until the page labels the
    *  contents and the index print no longer change. */
   outline?: OutlineEntry[];
+  /** The document's share of its book's citations (#272): every reference
+   *  and citation of the book, and where this document's sit — what
+   *  `bookCitationContexts` gives a host for each chapter. When absent the
+   *  document is a book of its own. */
+  citations?: import('./citations/context').CitationContext;
 }
 
 /** An index mark as the book outline carries it (see
@@ -2796,6 +2801,96 @@ export interface ResolvedFootnoteSeparatorConfig {
  *  paragraph of its own anywhere in the chapter. The marker prints as a
  *  superscript number (or inline, see `markerPosition`); the note prints at the foot of the column (see
  *  {@link FootnotePlacement}), in citation order. */
+/** Citations and the bibliography (#267–#272): the CSL style they are
+ *  formatted in and how they look. The style decides the content (names,
+ *  dates, order, punctuation); these settings decide the presentation. */
+export interface CitationsConfig {
+  /** A bundled style id (`apa`, `chicago-author-date`, `ieee`,
+   *  `elsevier-vancouver`, `modern-language-association`,
+   *  `chicago-notes-bibliography`, `oscola`,
+   *  `china-national-standard-gb-t-7714-2015-numeric`…), or `'custom'` for
+   *  {@link customStyle}. Default `'apa'`. */
+  style?: string;
+  /** A whole CSL style (the XML of a `.csl` file), used when `style` is
+   *  `'custom'` (#273). */
+  customStyle?: string;
+  /** The CSL locale citations are written in (`en-US`, `es-ES`, `zh-CN`…).
+   *  Unset: the document language. */
+  locale?: string;
+  /** A citation links to its entry in the bibliography. Default true. */
+  link?: boolean;
+  /** How a numbered style marks a citation in the text: as the style does
+   *  (`'style'`, default), `[1]`, `(1)`, a superscript `¹`, or in Chinese
+   *  corner brackets `〔1〕`, which stand upright in vertical text. */
+  marker?: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner';
+  /** With a {@link marker} other than `'style'`: consecutive numbers are
+   *  joined into a range (`[1–3]`) rather than listed (`[1, 2, 3]`).
+   *  Default true. */
+  collapseRanges?: boolean;
+  /** How a note style (Chicago notes, OSCOLA, GB/T 7714 note) sets its
+   *  citations: as footnotes (`'footnote'`, default, placed as `footnotes`
+   *  says) or, in Chinese text, as an inline two-row note (`'warichu'`,
+   *  夹注). */
+  notes?: 'footnote' | 'warichu';
+  /** The list of works cited. */
+  bibliography?: {
+    /** Title printed above the list (a bold paragraph). Unset: the
+     *  document language's word ("References", "Referencias", "参考文献");
+     *  `''`: none. */
+    title?: string;
+    /** `'book'` (default): one list of every work the book cites, where
+     *  `:::bibliography` stands (else after the last chapter).
+     *  `'chapter'`: each document lists the works it cites. */
+    scope?: 'book' | 'chapter';
+    /** Set the list after the text when no `:::bibliography` places it.
+     *  Default true. */
+    auto?: boolean;
+    /** Size of the entries; em is the body size. Default 0.9 em. */
+    fontSize?: Dimension;
+    /** Leading of the entries; em is their size. Unset: the body's. */
+    lineHeight?: Dimension;
+    /** Indent of an entry's turnover lines (author-date lists). Default 2 em. */
+    hangingIndent?: Dimension;
+    /** Space between two entries. Default 0.3 em. */
+    entrySpacing?: Dimension;
+    /** Width of the label column of a numbered list (`[12]`). Unset: as
+     *  wide as the longest label. */
+    labelWidth?: Dimension;
+    /** DOIs and URLs: links (`'link'`, default), plain text, or left out. */
+    doi?: 'link' | 'text' | 'hide';
+    /** List the works of the references that no citation names (Pandoc's
+     *  `nocite: '@*'`). Default false. */
+    includeUncited?: boolean;
+    /** Set the works in Chinese, Japanese and Korean before the others
+     *  (common in mixed Chinese bibliographies, #277). Default false. */
+    groupByLanguage?: boolean;
+  };
+}
+
+/** {@link CitationsConfig} with every value resolved. */
+export interface ResolvedCitationsConfig {
+  style: string;
+  customStyle?: string;
+  locale?: string;
+  link: boolean;
+  marker: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner';
+  collapseRanges: boolean;
+  notes: 'footnote' | 'warichu';
+  bibliography: {
+    title?: string;
+    scope: 'book' | 'chapter';
+    auto: boolean;
+    fontSize: Dimension;
+    lineHeight?: Dimension;
+    hangingIndent: Dimension;
+    entrySpacing: Dimension;
+    labelWidth?: Dimension;
+    doi: 'link' | 'text' | 'hide';
+    includeUncited: boolean;
+    groupByLanguage: boolean;
+  };
+}
+
 /** How a cross-reference to an anchor prints (#266): the words around a
  *  number or a page label, and the style a `:ref` without `style=` takes.
  *  Each template holds `{n}` where the number goes; one without it gets
@@ -4108,6 +4203,9 @@ export interface PostextConfig {
   /** Cross-references to headings and anchors (`:ref{id="sec-intro"}`,
    *  `@sec:intro`): their words and default style (#266). */
   crossRefs?: CrossRefsConfig;
+  /** Citations (`[@key]`) and the bibliography: style, language and
+   *  presentation (#270). */
+  citations?: CitationsConfig;
   /** East Asian typography: line breaking and justification of Chinese,
    *  Japanese and Korean text (see {@link CjkConfig}). */
   cjk?: CjkConfig;

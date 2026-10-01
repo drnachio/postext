@@ -16,7 +16,7 @@ export type DirectiveAttrs = Record<string, string>;
 
 /** Recognized directive names. Unknown names are not parsed as directives —
  *  they fall through to the paragraph branch and surface via warnings. */
-export type DirectiveName = 'pagebreak' | 'numbering' | 'columnbreak' | 'space' | 'toc' | 'index';
+export type DirectiveName = 'pagebreak' | 'numbering' | 'columnbreak' | 'space' | 'toc' | 'index' | 'bibliography' | 'references';
 
 /** Recognized fenced-container names. A container opens with a
  *  `:::name{attrs}` line and closes with a bare `:::` line; the blocks in
@@ -110,6 +110,14 @@ export interface InlineSpan {
    *  (`VDTLineSegment.href`). Only safe targets are kept: `http:`,
    *  `https:`, `mailto:`, `tel:`, `ftp:` and relative URLs. */
   links?: InlineLink[];
+  /** Present when this span is a citation (`[@id, p. 3]`, `@id`, #268):
+   *  the `text` is a single placeholder char until the pipeline formats the
+   *  citation (or prints `raw` back when it cannot). */
+  citation?: {
+    cluster: import('../citations/types').CitationClusterInput;
+    /** The citation as written. */
+    raw: string;
+  };
   /** Present when this span is a footnote marker (`[^id]`): the `text` is a
    *  single placeholder char until the pipeline replaces it with the note's
    *  number, set as a superscript (`script: 'sup'`) or on the baseline. */
@@ -410,10 +418,17 @@ export interface ContentBlock {
   /** Set on the paragraphs the layout builds to set a note (`chapterEnd`
    *  placement): the id of the note. */
   footnoteNote?: string;
+  /** Set on a bibliography entry (#269): the key of the work it lists. The
+   *  entry is the anchor `ref-<key>` citations link to. */
+  bibEntry?: string;
   /** For `directive` blocks: the directive name (e.g. `'pagebreak'`). */
   directiveName?: DirectiveName;
   /** For `directive` blocks: parsed attributes. */
   directiveAttrs?: DirectiveAttrs;
+  /** For a `:::references` block (#268): its body as written — BibTeX,
+   *  CSL-JSON or CSL-YAML — up to the closing `:::`, not parsed as
+   *  Markdown. */
+  rawBody?: string;
   /** Present on the blocks a `:::toc` directive expands into (see
    *  `pipeline/toc.ts`): what the entry lists. The block's `type` is
    *  `'paragraph'` and its text the entry title, so it flows and maps back

@@ -327,6 +327,9 @@ export function linkTargetAtPixel(
   }
   if (seg.footnoteId !== undefined) return { kind: 'footnote', id: seg.footnoteId };
   if (seg.pageLink !== undefined) return { kind: 'page', pageIndex: seg.pageLink };
+  // A link inside the document (`[see](#sec-intro)`, a citation's
+  // `#ref-key`) goes to its anchor.
+  if (seg.href !== undefined && seg.href.startsWith('#') && seg.href.length > 1) return { kind: 'anchor', id: decodeURIComponent(seg.href.slice(1)) };
   if (seg.href !== undefined) return { kind: 'url', href: seg.href };
   return null;
 }

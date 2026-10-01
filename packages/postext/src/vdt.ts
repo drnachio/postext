@@ -30,6 +30,7 @@ import type {
   ResolvedIndexConfig,
   ResolvedFootnotesConfig,
   ResolvedCrossRefsConfig,
+  ResolvedCitationsConfig,
   ResolvedCjkConfig,
   CjkRegion,
   PageRole,
@@ -86,6 +87,8 @@ export interface ResolvedConfig {
   footnotes: ResolvedFootnotesConfig;
   /** Cross-references to headings and anchors (#266). */
   crossRefs: ResolvedCrossRefsConfig;
+  /** Citations and the bibliography (#270). */
+  citations: ResolvedCitationsConfig;
   /** East Asian typography (`cjk`), with `'auto'` resolved from the
    *  document language. */
   cjk: ResolvedCjkConfig;
@@ -1019,6 +1022,8 @@ export interface VDTBlock {
   /** Set on the paragraph a footnote is set as (at a column foot, or after
    *  the chapter's last block): the note's id. */
   footnoteNote?: string;
+  /** A bibliography entry (#269): the key of the work it lists. */
+  bibEntry?: string;
   /** Id of the heading style (`{style="…"}`) applied to this heading. */
   headingStyleId?: string;
   /** True for a heading whose style has `numbered: false`: it advances no
@@ -1614,6 +1619,15 @@ export type ContentWarning = ContentWarningBase & (
   /** An identifier (`{#id}`, `:anchor{#id}`) set more than once in the
    *  document: references reach its first setting only (#261). */
   | { kind: 'duplicateAnchor'; anchorId: string }
+  /** A citation (`[@key]`) names a work no reference of the book defines
+   *  (#268): it prints as written, or without that work. */
+  | { kind: 'unknownCitationKey'; key: string }
+  /** The text cites works but no citation engine is registered
+   *  (`postext-citeproc`): citations print as written. */
+  | { kind: 'citationsUnavailable' }
+  /** A `:::references` block could not be read (malformed JSON or YAML, or
+   *  BibTeX without an engine). */
+  | { kind: 'referencesUnreadable'; message: string }
   /** A `:::name` line whose name is neither a directive nor a container:
    *  it is set as text. */
   | { kind: 'unknownDirective'; name: string }

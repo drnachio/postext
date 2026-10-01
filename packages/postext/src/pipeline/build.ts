@@ -48,6 +48,8 @@ import {
   planHeadingSections,
 } from './headingStyles';
 import { locateAnchors } from './anchors';
+import { applyCitations, citationLocale, processCitations, withBibliographyStyle } from './citations';
+import { bookCitationContexts, needsCitationContext } from '../citations/context';
 import { anchorTargetsOf, hasAnchorRefs, printsAnchorPages } from './crossRefs';
 import type { AnchorRefContext } from './resourceLayout';
 import { anchorOutline, computeOutline, hasIndexDirective, hasTocDirective, headingNumberingOptions, headingTemplatesOf, outlineFromDoc, sameOutline } from './outline';
@@ -529,7 +531,22 @@ function placeDocumentPass(
   // Footnote definitions (`[^id]: …`) leave the flow; the markers are
   // numbered in citation order. With `placement: 'chapterEnd'` the notes
   // come back as paragraphs after each chapter's last block.
-  const footnoteSplit = splitFootnoteDefinitions(headingMarksFor(parseMarkdownMemo(markdownBody), resolved));
+  // Citations (#268): formatted against the book's references (or set as
+  // notes under a note style) before the notes leave the flow; the
+  // bibliography takes `:::bibliography`'s place or follows the text.
+  const parsedBody = headingMarksFor(parseMarkdownMemo(markdownBody), resolved);
+  const citationContext = content.citations
+    ?? (needsCitationContext(parsedBody, frontmatterMeta) ? bookCitationContexts([{ metadata: frontmatterMeta as Record<string, unknown>, blocks: parsedBody }])[0] : undefined);
+  const citationsApplied = citationContext
+    ? applyCitations(
+      parsedBody,
+      citationContext,
+      processCitations(citationContext, resolved, citationLocale(resolved, resolvedLocale(resolved))),
+      resolved,
+      resolvedLocale(resolved),
+    )
+    : undefined;
+  const footnoteSplit = splitFootnoteDefinitions(citationsApplied?.blocks ?? parsedBody);
   const footnoteDefs = footnoteSplit.defs;
   // Numbered by page or column (`numbering: 'page'`), a note takes the
   // number the previous build gave it where it landed; the first build
@@ -618,7 +635,9 @@ function placeDocumentPass(
     orderedMetrics.maxWidthByDepth,
   );
   // `:::paragraphs{style="…"}` containers, resolved per content-block index.
-  const paragraphContainers = planParagraphContainers(contentBlocks, chapterEndNotes ? withFootnoteStyle(resolved) : resolved);
+  let containerStyles = chapterEndNotes ? withFootnoteStyle(resolved) : resolved;
+  if (citationsApplied?.bibliography) containerStyles = withBibliographyStyle(containerStyles, citationsApplied.labelChars);
+  const paragraphContainers = planParagraphContainers(contentBlocks, containerStyles);
   // `:::callout` ranges keyed by their start marker index (same rationale).
   const calloutPlan = planCallouts(contentBlocks);
   // `:::part` ranges: start/end marker indices and the enclosed blocks.
@@ -2194,6 +2213,7 @@ function placeDocumentPass(
       }
     }
     if (raw.footnoteNote !== undefined) blk.footnoteNote = raw.footnoteNote;
+    if (raw.bibEntry !== undefined) blk.bibEntry = raw.bibEntry;
     if (raw.toc?.kind === 'entry') {
       blk.tocEntry = raw.toc.pageIndex !== undefined ? { pageIndex: raw.toc.pageIndex } : {};
     }
@@ -5658,7 +5678,8 @@ export function* buildDocumentGen(
   // once, located on the pages of the finished layout. Kept apart from
   // `doc.warnings`, whose entries keep their postext 1.4 shape.
   const bookAnchors = content.outline ? new Set(anchorOutline(content.outline).map((e) => e.anchorId!)) : undefined;
-  const found = [...collectContentWarnings(content.markdown, config, content.resources ?? [], bookAnchors), ...(indexWarnings.get(doc) ?? [])];
+  const bookCitationKeys = content.citations ? new Set(content.citations.items.map((i) => i.id)) : undefined;
+  const found = [...collectContentWarnings(content.markdown, config, content.resources ?? [], bookAnchors, bookCitationKeys), ...(indexWarnings.get(doc) ?? [])];
   const located = found.length > 0 ? locateContentWarnings(doc, found) : [];
   // Justified CJK lines the composer could not fill within its tracking cap.
   const loose = cjkLooseLineWarnings(doc);

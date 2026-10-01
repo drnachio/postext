@@ -3142,6 +3142,156 @@ interface CrossRefsConfig {
 
 Las referencias toman el color, el peso y la inclinación de todas las referencias (`bodyText.referenceColor`, `referenceBold`, `referenceItalic`).
 
+## Citas
+
+La propiedad `citations` elige el estilo de cita y cómo se ven las citas y la bibliografía. El marcado se describe en [Citas y bibliografía](/es/docs/document-format#citas-y-bibliografía); el estilo lo aplica el paquete `postext-citeproc`.
+
+```ts
+interface CitationsConfig {
+  style?: string;          // 'apa', 'ieee', 'chicago-notes-bibliography'… or 'custom'
+  customStyle?: string;    // a whole CSL style (.csl XML), used with style: 'custom'
+  locale?: string;         // CSL locale; the document language when unset
+  link?: boolean;          // citations link to their entries
+  marker?: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner';
+  collapseRanges?: boolean;
+  notes?: 'footnote' | 'warichu';
+  bibliography?: {
+    title?: string;        // unset: the document language's word; '' or ' ': none
+    scope?: 'book' | 'chapter';
+    auto?: boolean;
+    fontSize?: Dimension;
+    lineHeight?: Dimension;
+    hangingIndent?: Dimension;
+    entrySpacing?: Dimension;
+    labelWidth?: Dimension;
+    doi?: 'link' | 'text' | 'hide';
+    includeUncited?: boolean;
+    groupByLanguage?: boolean;
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '120px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>style</code></td>
+      <td><code>string</code></td>
+      <td><code>'apa'</code></td>
+      <td>El id de un estilo incluido (véase <a href="/es/docs/document-format#estilos">Estilos</a>) o <code>'custom'</code>. El estilo decide lo que dicen citas y entradas: nombres, fechas, orden, puntuación y si las citas son notas.</td>
+    </tr>
+    <tr>
+      <td><code>customStyle</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Un estilo CSL completo, el XML de un archivo <code>.csl</code>, que se usa cuando <code>style</code> es <code>'custom'</code>. El Sandbox lo carga desde un archivo.</td>
+    </tr>
+    <tr>
+      <td><code>locale</code></td>
+      <td><code>string</code></td>
+      <td>idioma del documento</td>
+      <td>La configuración regional CSL en la que el estilo escribe sus palabras (<code>es-ES</code>, <code>en-US</code>, <code>zh-CN</code>…).</td>
+    </tr>
+    <tr>
+      <td><code>link</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Una cita enlaza con su entrada en la bibliografía (enlace en el PDF, ancla en el HTML, clic en el Sandbox).</td>
+    </tr>
+    <tr>
+      <td><code>marker</code></td>
+      <td><code>'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner'</code></td>
+      <td><code>'style'</code></td>
+      <td>Cómo marca la cita un estilo numérico: como lo escribe el estilo, <code>[1]</code>, <code>(1)</code>, en superíndice o <code>〔1〕</code> (de pie en texto vertical). El localizador va tras el número.</td>
+    </tr>
+    <tr>
+      <td><code>collapseRanges</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Con una marca distinta de <code>'style'</code>: números seguidos como intervalo (<code>1–3</code>).</td>
+    </tr>
+    <tr>
+      <td><code>notes</code></td>
+      <td><code>'footnote' | 'warichu'</code></td>
+      <td><code>'footnote'</code></td>
+      <td>Dónde pone sus citas un estilo de notas: notas al pie (como dice <code>footnotes</code>) o notas de dos líneas dentro del renglón (夹注).</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.title</code></td>
+      <td><code>string</code></td>
+      <td>según el idioma</td>
+      <td>Título sobre la lista, un párrafo en negrita. En blanco: ninguno. Un título propio va sobre <code>:::bibliography</code>.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.scope</code></td>
+      <td><code>'book' | 'chapter'</code></td>
+      <td><code>'book'</code></td>
+      <td>Una lista con todas las obras que cita el libro, o una por capítulo con las que cita cada uno.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.auto</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Pone la lista tras el texto (tras el último capítulo, si abarca todo el libro) cuando ningún <code>:::bibliography</code> la sitúa.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.9em</code></td>
+      <td>Tamaño de las entradas; em es el tamaño del texto.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>interlineado del texto</td>
+      <td>Interlineado de las entradas.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.hangingIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code></td>
+      <td>Sangría de las líneas siguientes de una entrada sin número.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.entrySpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.3em</code></td>
+      <td>Espacio entre dos entradas.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.labelWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td>rótulo más largo</td>
+      <td>Ancho de la columna de los números de una lista numerada.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.doi</code></td>
+      <td><code>'link' | 'text' | 'hide'</code></td>
+      <td><code>'link'</code></td>
+      <td>DOI y URL como enlaces, como texto o fuera.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.includeUncited</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Lista todas las referencias, citadas o no (como <code>nocite: "@*"</code>).</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.groupByLanguage</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Primero las obras en chino, japonés y coreano; luego las demás.</td>
+    </tr>
+  </tbody>
+</table>
+
 ## Tipografía de Asia oriental
 
 La propiedad `cjk` fija cómo se compone el texto en chino, japonés y coreano: qué convenciones regionales sigue, dónde pueden cortarse sus líneas, qué ancho ocupa su puntuación y si cuelga, el espacio entre chino y latín, la retícula de caracteres de la caja de texto, y cómo se imprimen las marcas chinas, las lecturas ruby y las notas warichu del texto. Todos los campos son opcionales, y `'auto'` sigue la región del idioma del documento (`locale`), de modo que un libro con `locale: 'zh-Hant'` corta sus líneas y compone su puntuación a la manera de Taiwán sin fijar nada más. [Composición china](/es/docs/chinese-layout) explica las reglas que hay detrás de estos ajustes, región por región, con dos configuraciones completas.

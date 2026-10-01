@@ -15,13 +15,13 @@ import type { ComposedPen, Level } from "./types.ts";
 export const CONFIG_KEYS: readonly string[] = [
   "page", "layout", "bodyText", "headings", "tableStyle", "tableStyles", "captionStyle",
   "diagramStyle", "paragraphStyles", "calloutStyles", "chipStyles", "parts", "headingStyles", "toc",
-  "index", "unorderedLists", "orderedLists", "math", "footnotes", "crossRefs", "cjk", "header", "footer", "locale", "debug",
+  "index", "unorderedLists", "orderedLists", "math", "footnotes", "crossRefs", "citations", "cjk", "header", "footer", "locale", "debug",
   "htmlViewer", "pdfGeneration", "colorPalette", "customFonts", "resourceTypes",
 ];
 
 /** The parser's single-line directives and fenced containers
  *  (KNOWN_DIRECTIVES / KNOWN_CONTAINERS in packages/postext/src/parse). */
-export const KNOWN_DIRECTIVES: readonly string[] = ["pagebreak", "numbering", "columnbreak", "space", "toc", "index"];
+export const KNOWN_DIRECTIVES: readonly string[] = ["pagebreak", "numbering", "columnbreak", "space", "toc", "index", "bibliography", "references"];
 export const KNOWN_CONTAINERS: readonly string[] = ["callout", "paragraphs", "part", "columns"];
 
 /** The engine's fence line: `:::name` with an optional `{attrs}` block. */

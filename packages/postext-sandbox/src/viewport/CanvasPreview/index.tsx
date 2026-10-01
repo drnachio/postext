@@ -517,7 +517,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
       md: source.markdown.length,
     });
     layoutWorker.build(
-      { markdown: source.markdown, metadata: source.metadata, resources: deferredResources, continuation: deferredSource.continuation, outline: deferredSource.plan.outline },
+      { markdown: source.markdown, metadata: source.metadata, resources: deferredResources, continuation: deferredSource.continuation, outline: deferredSource.plan.outline, ...(deferredSource.plan.citations ? { citations: deferredSource.plan.citations } : {}) },
       deferredConfig,
       {
         cacheKey: layoutCacheKey({

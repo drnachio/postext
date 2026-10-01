@@ -42,7 +42,7 @@ import type { PageCtx } from './primitives';
 export type StructType =
   | 'Document' | 'Div' | 'P' | 'H1' | 'H2' | 'H3' | 'H4' | 'H5' | 'H6'
   | 'L' | 'LI' | 'Lbl' | 'LBody' | 'BlockQuote' | 'Figure' | 'Formula'
-  | 'Caption' | 'Table' | 'TR' | 'TH' | 'TD' | 'Link' | 'Note' | 'Span'
+  | 'Caption' | 'Table' | 'TR' | 'TH' | 'TD' | 'Link' | 'Note' | 'BibEntry' | 'Span'
   | 'TOC' | 'TOCI' | 'Reference'
   | 'Ruby' | 'RB' | 'RT' | 'Warichu' | 'WT';
 

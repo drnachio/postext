@@ -721,6 +721,95 @@ Los resultados de :ref{id="sec-metodo"} se cumplen en :ref{id="sec-metodo" style
 
 Una referencia a un id que nada define imprime *?* y aparece en el panel de Comprobaciones (`unknownResourceId`). En el editor del Sandbox, `@` ofrece las figuras, tablas, títulos con id y anclas del libro.
 
+## Citas y bibliografía
+
+Escribe las citas como las lee Pandoc, guarda las referencias en el documento y elige el estilo de cita en los ajustes: pasar de APA a IEEE, o a las notas de Chicago, es cambiar el estilo en los ajustes, no el texto. Cada cita enlaza con su entrada en la bibliografía.
+
+### Citar
+
+```md
+Como muestra [@garcia2020, pág. 33], se lee más rápido en papel [véase @lopez2019, cap. 2; @bringhurst2004].
+@garcia2020 [pág. 4] lo dice claramente; el estudio de 2020 [-@garcia2020] coincide.
+```
+
+- **`[@clave]`** cita entre paréntesis; varias obras van en un mismo par de corchetes, separadas por `;`.
+- **Localizador:** tras una coma, `p. 33`, `pp. 4–6`, `pág. 33`, `cap. 2`, `sec. IV`, `fig. 3`, `vol. 2`, `n. 12`, `§ 4.2`; un número solo es una página. También valen las palabras inglesas y chinas (`页`, `章`).
+- **Prefijo y sufijo:** texto antes de la `@` (`véase`) y tras el localizador (`, la cursiva es nuestra`).
+- **`[-@clave]`** omite el autor, para una frase que ya lo nombra.
+- **`@clave`** cita dentro de la frase (*García (2020)*); `@clave [pág. 4]` añade un localizador.
+- Una `@` pegada a una letra o a una cifra (una dirección de correo), una `@` en código y `\@` son texto. Una cita sin referencia en el libro se imprime tal como se escribió, así que un documento sin referencias se lee como antes.
+
+### Referencias
+
+Las referencias se escriben en el documento, en formato CSL (el modelo de datos de Zotero y Pandoc):
+
+```md
+---
+references:
+  - id: garcia2020
+    type: book
+    author: [{family: García, given: Ana}]
+    title: Tipografía y lectura
+    issued: 2020
+    publisher: Trea
+nocite: "@lopez2019"
+---
+```
+
+o en un bloque `:::references`, en BibTeX (lo que exportan Zotero, JabRef o Google Académico), CSL-JSON o CSL-YAML:
+
+```md
+:::references{format=bibtex}
+@article{lopez2019, author = {López, Luis and Ruiz, Eva}, title = {Leer en pantalla},
+  journal = {Revista de Letras}, year = 2019, volume = 12, pages = {45--67}, doi = {10.1000/xyz}}
+:::
+```
+
+El bloque no imprime nada. `nocite` lista obras sin citarlas (`@*`: todas). En un libro, las referencias escritas en cualquier capítulo valen para todo el libro.
+
+### La bibliografía
+
+`:::bibliography` pone la lista de obras citadas donde está; sin él, la lista va tras el último capítulo, con el título en el idioma del documento (*Referencias*, *References*, *参考文献*). `:::bibliography{title="Obras citadas"}` cambia el título y `title=""` lo quita; `scope=chapter` lista las obras que cita el capítulo (una obra colectiva). Cada entrada es un ancla (`ref-<clave>`), así que un enlace Markdown a `#ref-garcia2020` lleva a ella, y el PDF la etiqueta como `BibEntry`.
+
+### Estilos
+
+El estilo decide lo que dicen una cita y una entrada. Los estilos incluidos están en la tabla; cualquier otro estilo CSL (el repositorio de estilos de Zotero tiene más de diez mil) se carga desde su archivo `.csl` en **Ajustes → Citas**.
+
+<table>
+  <thead>
+    <tr><th><code>citations.style</code></th><th>Nombre</th><th>Sistema</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>apa</code></td><td>APA 7</td><td>autor-fecha</td></tr>
+    <tr><td><code>chicago-author-date</code></td><td>Chicago (author-date)</td><td>autor-fecha</td></tr>
+    <tr><td><code>harvard-cite-them-right</code></td><td>Harvard</td><td>autor-fecha</td></tr>
+    <tr><td><code>iso690-author-date-en</code>, <code>iso690-author-date-es</code></td><td>ISO 690</td><td>autor-fecha</td></tr>
+    <tr><td><code>china-national-standard-gb-t-7714-2015-author-date</code></td><td>GB/T 7714 著者-出版年</td><td>autor-fecha</td></tr>
+    <tr><td><code>modern-language-association</code></td><td>MLA 9</td><td>autor-página</td></tr>
+    <tr><td><code>ieee</code></td><td>IEEE</td><td>numérico</td></tr>
+    <tr><td><code>elsevier-vancouver</code></td><td>Vancouver</td><td>numérico</td></tr>
+    <tr><td><code>american-medical-association</code></td><td>AMA</td><td>numérico</td></tr>
+    <tr><td><code>nature</code></td><td>Nature</td><td>numérico</td></tr>
+    <tr><td><code>iso690-numeric-en</code></td><td>ISO 690</td><td>numérico</td></tr>
+    <tr><td><code>china-national-standard-gb-t-7714-2015-numeric</code></td><td>GB/T 7714 顺序编码</td><td>numérico</td></tr>
+    <tr><td><code>chicago-notes-bibliography</code></td><td>Chicago (notes)</td><td>notas</td></tr>
+    <tr><td><code>oscola</code></td><td>OSCOLA</td><td>notas</td></tr>
+    <tr><td><code>china-national-standard-gb-t-7714-2015-note</code></td><td>GB/T 7714 注释</td><td>notas</td></tr>
+  </tbody>
+</table>
+
+Con un **estilo de notas**, cada cita se convierte en una nota al pie, colocada y numerada como dicen los ajustes de notas; las citas siguientes de la misma obra toman una forma breve. En texto chino, `citations.notes: 'warichu'` las compone como notas de dos líneas dentro del renglón (夹注).
+
+**Chino.** Los estilos GB/T 7714-2015 escriben los códigos de tipo de documento (`[M]`, `[J]`, `[D]`, `[EB/OL]`), dejan enteros los nombres chinos y escriben `等` tras tres autores de una obra china y `et al.` tras los de una occidental, según el `language` de cada obra. En texto vertical, un número en superíndice queda a la derecha de su carácter; `citations.marker: 'corner'` escribe `〔1〕`, que se mantiene de pie.
+
+**Motor.** Las citas las formatea el paquete `postext-citeproc` (citeproc-js y los estilos CSL). El Sandbox lo carga para los documentos que citan; en tu propio código, regístralo antes de componer:
+
+```ts
+import 'postext-citeproc/register';
+```
+
+El panel de Comprobaciones avisa de una clave que ninguna referencia define (`unknownCitationKey`) y de un bloque de referencias que no se puede leer (`referencesUnreadable`).
+
 ## Índice analítico
 
 Un índice analítico recoge los términos de un libro con las páginas en que aparecen. Marca cada término donde el texto lo trata e imprime el índice con `:::index` donde corresponda, normalmente en un capítulo propio al final. El motor busca la página de cada marca después de componer, así que los números siguen al texto: añade un párrafo, mueve un capítulo o cambia el formato de página, y el índice imprime las páginas nuevas.

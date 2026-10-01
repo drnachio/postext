@@ -10,6 +10,7 @@
 // the candidates never loses a result (`sectionSearchIndex.test.ts` checks
 // that against rendered sections).
 
+import { LOCALE_TAGS, STYLE_CATALOG } from 'postext-citeproc/catalog';
 import type { PostextConfig, Resource } from 'postext';
 import {
   DEFAULT_BODY_TEXT_CONFIG,
@@ -132,6 +133,9 @@ function sourceWords(
     case 'resources':
       // Pickers name a resource by its caption and id.
       return resources.flatMap((r) => (r.caption ? [r.id, r.caption] : [r.id]));
+    case 'citationStyles':
+      // The style picker names each bundled style.
+      return [...STYLE_CATALOG.flatMap((s) => [s.title, s.short, s.fields ?? '']), ...LOCALE_TAGS];
   }
 }
 

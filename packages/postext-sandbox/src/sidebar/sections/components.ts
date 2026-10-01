@@ -15,6 +15,7 @@ import { OrderedListsSection } from './OrderedListsSection';
 import { MathSection } from './MathSection';
 import { FootnotesSection } from './FootnotesSection';
 import { CrossRefsSection } from './CrossRefsSection';
+import { CitationsSection } from './CitationsSection';
 import { CjkSection } from './CjkSection';
 import { WritingSection } from './WritingSection';
 import { TableStyleSection } from './TableStyleSection';
@@ -50,6 +51,7 @@ export const SECTION_COMPONENTS: Record<SettingsSectionId, ComponentType> = {
   'math': MathSection,
   'footnotes': FootnotesSection,
   'crossRefs': CrossRefsSection,
+  'citations': CitationsSection,
   'cjk': CjkSection,
   'resource-types': ResourceTypesSection,
   'captionStyle': CaptionStyleSection,

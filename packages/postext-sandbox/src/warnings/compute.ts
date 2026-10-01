@@ -983,7 +983,9 @@ function collectEngineContentWarnings(markdown: string, config: PostextConfig, r
   } catch {
     return [];
   }
-  return found.map((w, idx) => {
+  // The Sandbox's layout worker loads the citation engine itself: a page
+  // without it on the main thread is no reason to warn.
+  return found.filter((w) => w.kind !== 'citationsUnavailable').map((w, idx) => {
     const { sourceStart, sourceEnd } = w;
     // The payload is the warning without its location (no page: the
     // source may not have been laid out yet).

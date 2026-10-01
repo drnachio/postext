@@ -10,6 +10,7 @@ import { parseAttrBlobStrict, parseDirectiveAttrs } from './attrs';
 import { extractInlineMath, fixMathSourceMap, injectMathSpans } from './inlineMath';
 import { BREAK_PLACEHOLDER, TITLE_BREAK_RE, extractInlineChips, extractInlineFootnotes, extractInlineRefs, injectFootnoteSpans, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, protectCodeSpans, titleBreakIndices, trimSpans } from './inlineFormatting';
 import { buildBlockMapping } from './sourceMapping';
+import { extractInlineCitations, injectCitationSpans } from './citations';
 import { attachIndexMarks, extractIndexMarks, remapParseOffsets } from './indexMarks';
 import { joinEastAsianLines } from './softBreaks';
 
@@ -23,7 +24,7 @@ const DIRECTIVE_RE = /^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$/;
 const CONTAINER_CLOSE_RE = /^:::\s*$/;
 /** Set of directive names recognized today. Unknown names fall through to
  *  paragraph-parsing and downstream warnings flag them. */
-export const KNOWN_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'numbering', 'columnbreak', 'space', 'toc', 'index']);
+export const KNOWN_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'numbering', 'columnbreak', 'space', 'toc', 'index', 'bibliography', 'references']);
 /** Trailing `{key="value" …}` attribute block on a heading line, e.g.
  *  `# Title {author="I. Zango"}`. The braces must be balanced (no nested
  *  braces) and be the last thing on the line, after a space — or right
@@ -338,6 +339,32 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
       continue;
     }
 
+    // Reference data (#268): `:::references{format=bibtex}` … `:::`. The
+    // body is kept as written (BibTeX braces, YAML indentation) and never
+    // set; an unclosed block runs to the end of the text.
+    const refsMatch = trimmed.match(DIRECTIVE_RE);
+    if (refsMatch && refsMatch[1] === 'references') {
+      const startIdx = i;
+      const body: string[] = [];
+      i++;
+      while (i < rawLines.length && !CONTAINER_CLOSE_RE.test(rawLines[i]!.trim())) body.push(rawLines[i++]!);
+      const closed = i < rawLines.length;
+      const srcEnd = closed ? lineEndOffset(i) : lineEndOffset(rawLines.length - 1);
+      blocks.push({
+        type: 'directive',
+        text: '',
+        spans: [],
+        directiveName: 'references',
+        directiveAttrs: parseDirectiveAttrs(refsMatch[2] ?? ''),
+        rawBody: body.join('\n'),
+        sourceStart: lineOffsets[startIdx]!,
+        sourceEnd: srcEnd,
+        sourceMap: [],
+      });
+      if (closed) i++;
+      continue;
+    }
+
     // Container opening fence — `:::name` / `:::name{attrs}` whose name is a
     // known container. Emits a `containerStart` marker; the blocks that
     // follow are parsed as usual until the matching closing fence.
@@ -507,11 +534,12 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
           const chipExtract = extractInlineChips(protectCodeSpans(itemText), itemSrcStart);
           const fnExtract = extractInlineFootnotes(chipExtract.cleaned, itemSrcStart);
           const refExtract = extractInlineRefs(fnExtract.cleaned, itemSrcStart);
-          const swExtract = extractInlineSwatches(refExtract.cleaned, itemSrcStart);
+          const citeExtract = extractInlineCitations(refExtract.cleaned, itemSrcStart);
+          const swExtract = extractInlineSwatches(citeExtract.cleaned, itemSrcStart);
           const mathExtract = extractInlineMath(swExtract.cleaned, null, itemSrcStart, srcEnd);
           issues.push(...mathExtract.issues);
-          const rawSpans = injectChipSpans(injectFootnoteSpans(injectRefSpans(injectSwatchSpans(
-            injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches),
+          const rawSpans = injectChipSpans(injectFootnoteSpans(injectRefSpans(injectCitationSpans(injectSwatchSpans(
+            injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches), citeExtract.citations),
             refExtract.refs,
           ), fnExtract.markers), chipExtract.chips);
           const mapping = buildBlockMapping(markdown, itemSrcStart, srcEnd, rawSpans);
@@ -565,11 +593,12 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
       const chipExtract = extractInlineChips(protectCodeSpans(quoteLines.join(' ')), srcStart);
       const fnExtract = extractInlineFootnotes(chipExtract.cleaned, srcStart);
       const refExtract = extractInlineRefs(fnExtract.cleaned, srcStart);
-      const swExtract = extractInlineSwatches(refExtract.cleaned, srcStart);
+      const citeExtract = extractInlineCitations(refExtract.cleaned, srcStart);
+      const swExtract = extractInlineSwatches(citeExtract.cleaned, srcStart);
       const mathExtract = extractInlineMath(swExtract.cleaned, null, srcStart, srcEnd);
       issues.push(...mathExtract.issues);
-      const rawSpans = injectChipSpans(injectFootnoteSpans(injectRefSpans(injectSwatchSpans(
-        injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches),
+      const rawSpans = injectChipSpans(injectFootnoteSpans(injectRefSpans(injectCitationSpans(injectSwatchSpans(
+        injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches), citeExtract.citations),
         refExtract.refs,
       ), fnExtract.markers), chipExtract.chips);
       // Lines join with a space, except between Chinese or Japanese
@@ -629,11 +658,12 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
       const chipExtract = extractInlineChips(protectCodeSpans(paraLines.join(' ')), srcStart);
       const fnExtract = extractInlineFootnotes(chipExtract.cleaned, srcStart);
       const refExtract = extractInlineRefs(fnExtract.cleaned, srcStart);
-      const swExtract = extractInlineSwatches(refExtract.cleaned, srcStart);
+      const citeExtract = extractInlineCitations(refExtract.cleaned, srcStart);
+      const swExtract = extractInlineSwatches(citeExtract.cleaned, srcStart);
       const mathExtract = extractInlineMath(swExtract.cleaned, null, srcStart, srcEnd);
       issues.push(...mathExtract.issues);
-      const rawSpans = injectChipSpans(injectFootnoteSpans(injectRefSpans(injectSwatchSpans(
-        injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches),
+      const rawSpans = injectChipSpans(injectFootnoteSpans(injectRefSpans(injectCitationSpans(injectSwatchSpans(
+        injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches), citeExtract.citations),
         refExtract.refs,
       ), fnExtract.markers), chipExtract.chips);
       const mapping = joinedLines(markdown, buildBlockMapping(markdown, srcStart, srcEnd, rawSpans));

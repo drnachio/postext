@@ -71,7 +71,7 @@ export async function buildBookChapters({ chapters, plan, config, rawConfig, res
       doc = hit.doc;
     } else {
       doc = await build(
-        { markdown: source.markdown, metadata: source.metadata, resources, continuation, outline: chapterPlan.outline },
+        { markdown: source.markdown, metadata: source.metadata, resources, continuation, outline: chapterPlan.outline, ...(chapterPlan.citations ? { citations: chapterPlan.citations } : {}) },
         config,
         // Under the key the paginator and the PDF tab use, when the plan's
         // page chain agrees with the actual one, so the worker's cache is

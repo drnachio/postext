@@ -3139,6 +3139,156 @@ interface CrossRefsConfig {
 
 引用的颜色、粗细和斜体与所有引用相同（`bodyText.referenceColor`、`referenceBold`、`referenceItalic`）。
 
+## 引用
+
+`citations`属性选择引用样式，并决定引用和参考文献表的外观。标记语法见[引用与参考文献](/zh/docs/document-format#引用与参考文献)；样式由`postext-citeproc`包执行。
+
+```ts
+interface CitationsConfig {
+  style?: string;          // 'apa', 'ieee', 'chicago-notes-bibliography'… or 'custom'
+  customStyle?: string;    // a whole CSL style (.csl XML), used with style: 'custom'
+  locale?: string;         // CSL locale; the document language when unset
+  link?: boolean;          // citations link to their entries
+  marker?: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner';
+  collapseRanges?: boolean;
+  notes?: 'footnote' | 'warichu';
+  bibliography?: {
+    title?: string;        // unset: the document language's word; '' or ' ': none
+    scope?: 'book' | 'chapter';
+    auto?: boolean;
+    fontSize?: Dimension;
+    lineHeight?: Dimension;
+    hangingIndent?: Dimension;
+    entrySpacing?: Dimension;
+    labelWidth?: Dimension;
+    doi?: 'link' | 'text' | 'hide';
+    includeUncited?: boolean;
+    groupByLanguage?: boolean;
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>属性</th>
+      <th style={{ width: '160px' }}>类型</th>
+      <th style={{ width: '120px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>style</code></td>
+      <td><code>string</code></td>
+      <td><code>'apa'</code></td>
+      <td>内置样式的id（见<a href="/zh/docs/document-format#样式">样式</a>）或<code>'custom'</code>。样式决定引用和条目的内容：姓名、日期、顺序、标点，以及引用是否为注释。</td>
+    </tr>
+    <tr>
+      <td><code>customStyle</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>完整的CSL样式（<code>.csl</code>文件的XML），在<code>style</code>为<code>'custom'</code>时使用。Sandbox可从文件加载。</td>
+    </tr>
+    <tr>
+      <td><code>locale</code></td>
+      <td><code>string</code></td>
+      <td>文档语言</td>
+      <td>样式用词的CSL语言环境（<code>zh-CN</code>、<code>zh-TW</code>、<code>en-US</code>等）。</td>
+    </tr>
+    <tr>
+      <td><code>link</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>引用链接到参考文献表中的条目（PDF链接、HTML锚点、Sandbox点击）。</td>
+    </tr>
+    <tr>
+      <td><code>marker</code></td>
+      <td><code>'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner'</code></td>
+      <td><code>'style'</code></td>
+      <td>顺序编码样式的引用标记：按样式、<code>[1]</code>、<code>(1)</code>、上标，或<code>〔1〕</code>（竖排中直立）。位置写在编号之后。</td>
+    </tr>
+    <tr>
+      <td><code>collapseRanges</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>标记不为<code>'style'</code>时：连续编号合并为范围（<code>1–3</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>notes</code></td>
+      <td><code>'footnote' | 'warichu'</code></td>
+      <td><code>'footnote'</code></td>
+      <td>注释体样式放置引用的方式：脚注（按<code>footnotes</code>设置）或行内双行夹注。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.title</code></td>
+      <td><code>string</code></td>
+      <td>随语言</td>
+      <td>列表上方的标题（粗体段落）。留空则不印。自定义的标题写在<code>:::bibliography</code>之上。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.scope</code></td>
+      <td><code>'book' | 'chapter'</code></td>
+      <td><code>'book'</code></td>
+      <td>全书一份列表，或每章一份。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.auto</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>没有<code>:::bibliography</code>时，把列表放在正文之后（全书列表放在最后一章之后）。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.9em</code></td>
+      <td>条目字号；em为正文字号。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>正文行距</td>
+      <td>条目行距。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.hangingIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code></td>
+      <td>无编号条目续行的缩进。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.entrySpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.3em</code></td>
+      <td>条目之间的间距。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.labelWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td>最长编号</td>
+      <td>编号列表中编号栏的宽度。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.doi</code></td>
+      <td><code>'link' | 'text' | 'hide'</code></td>
+      <td><code>'link'</code></td>
+      <td>DOI和网址作为链接、作为文字或不显示。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.includeUncited</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>列出全部参考文献，无论是否被引用（相当于<code>nocite: "@*"</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.groupByLanguage</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>中、日、韩文文献在前，其他在后。</td>
+    </tr>
+  </tbody>
+</table>
+
 ## 东亚排版
 
 `cjk`属性决定中文、日文和韩文的排版方式：遵循哪个地区的规范，行在哪里可以断开，标点排多宽、是否悬挂，汉字与拉丁字母之间的间距，版心的字格，以及文中的着重号、专名线、注音和夹注怎样印出。每个字段都是可选的；`'auto'`跟随文档语言（`locale`）所属的地区，因此`locale: 'zh-Hant'`的书无须任何其他设置，就会按台湾的做法断行和排标点。[中文排版](/zh/docs/chinese-layout)按地区逐一说明这些设置背后的规则，并给出两套完整的配置。
