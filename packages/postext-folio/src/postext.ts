@@ -27,6 +27,12 @@ export function firstPageIsRecto(doc: VDTDocument): boolean {
   return (doc.pageIndexOffset ?? 0) % 2 === 0;
 }
 
+/** The page's colour, for blank pages: white when it has none. */
+function paperOf(doc: VDTDocument): string {
+  const hex = doc.config.page.backgroundColor.hex;
+  return hex && hex !== "transparent" ? hex : "#fff";
+}
+
 /** How long a resize settles before the pages are painted at the new size. */
 const RESIZE_SETTLE_MS = 120;
 
@@ -137,7 +143,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     aspect: first ? first.width / first.height : undefined,
     firstPageRecto: firstPageIsRecto(doc),
     binding: doc.binding === "right" ? "right" : "left",
-    paper: options.paper ?? doc.config.page.backgroundColor.hex,
+    paper: options.paper ?? paperOf(doc),
     onTarget: (state) => {
       focus = state.pages;
       refresh(around(state));
@@ -186,7 +192,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
         {
           firstPageRecto: firstPageIsRecto(next),
           binding: next.binding === "right" ? "right" : "left",
-          paper: options.paper ?? next.config.page.backgroundColor.hex,
+          paper: options.paper ?? paperOf(next),
           at,
         },
       );

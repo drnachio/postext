@@ -38,6 +38,9 @@ export interface FolioOptions {
   animate?: boolean;
   /** Draws the ‹ › buttons and the page count. Default true. */
   controls?: boolean;
+  /** Shows the page count under the book. Default true. When false it is
+   *  still announced to screen readers (a visually hidden live region). */
+  showCount?: boolean;
   labels?: Partial<FolioLabels>;
   /** Told of every spread that settles: its index and the pages on show. */
   onChange?: (state: FolioState) => void;
@@ -68,10 +71,11 @@ export interface FolioState {
 export interface FolioViewer {
   /** The viewer's root element. */
   readonly element: HTMLElement;
-  /** Turns to the spread that shows page `index`. */
-  goToPage(index: number): void;
-  /** Turns to spread `index`. */
-  goToSpread(index: number): void;
+  /** Turns to the spread that shows page `index`; `instant` opens it
+   *  there without turning the leaves (a link, a restored position). */
+  goToPage(index: number, options?: { instant?: boolean }): void;
+  /** Turns to spread `index` (`instant`: opens it there). */
+  goToSpread(index: number, options?: { instant?: boolean }): void;
   next(): void;
   prev(): void;
   /** Replaces the pages (a relayout, or more pages painted), staying on
@@ -123,7 +127,9 @@ function aspectOf(src: PageSource): number | null {
 function rgbOf(color: string): [number, number, number] | null {
   const ctx = document.createElement("canvas").getContext("2d");
   if (!ctx) return null;
+  // Over white: a transparent page is white paper.
   ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, 1, 1);
   ctx.fillStyle = color;
   ctx.fillRect(0, 0, 1, 1);
   const d = ctx.getImageData(0, 0, 1, 1).data;
@@ -150,6 +156,7 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
   let paper = options.paper ?? "#fff";
   const animate = options.animate ?? true;
   const controls = options.controls ?? true;
+  const showCount = controls && (options.showCount ?? true);
 
   const root = document.createElement("div");
   root.className = "postext-folio";
@@ -171,6 +178,7 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
   nextBtn.classList.add("is-next");
   root.append(spreadEl, prevBtn, nextBtn);
   if (controls) root.append(count);
+  if (!showCount) count.classList.add("is-unseen");
   else prevBtn.hidden = nextBtn.hidden = true;
   container.append(root);
 
@@ -188,7 +196,13 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
 
   const rtl = () => binding === "right";
   const pagesOf = (s: Spread | undefined) => (s ?? [null, null]).filter((i): i is number => i !== null);
-  const bookOf = (): SpreadSrc[] => spreads.map((s) => s.map((i) => (i === null ? null : sourceOf(pages[i]))) as SpreadSrc);
+  /** One page at a time on a WebGL book: the spine runs along the page's
+   *  inner edge, the leaf turns over it and out of the box. */
+  const singleGl = () => single && !!flipper;
+  // In single mode every sheet carries one page: its back is blank paper
+  // (the page after it lies under it, not on its back).
+  const bookOf = (): SpreadSrc[] =>
+    spreads.map((s, k) => (single ? [k === 0 ? null : "", sourceOf(pages[s[1]!])] : s.map((i) => (i === null ? null : sourceOf(pages[i])))) as SpreadSrc);
 
   function aspect() {
     if (options.aspect) return options.aspect;
@@ -210,19 +224,52 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
   function fit() {
     const dpr = window.devicePixelRatio || 1;
     const box = root.getBoundingClientRect();
-    const across = single ? 1 : 2;
-    const ar = aspect();
-    const marginX = controls ? prevBtn.offsetWidth + 2 * GAP : GAP;
-    const marginY = Math.max(MIN_MARGIN_Y, controls ? count.offsetHeight + 2 * GAP : GAP);
-    const availW = Math.max(0, box.width - 2 * marginX);
-    const availH = Math.max(0, box.height - 2 * marginY);
-    const slotCss = Math.min(availW / across, availH > 0 ? availH * ar : Infinity);
-    const deviceWidth = Math.max(1, Math.floor(slotCss * dpr));
-    const deviceHeight = Math.max(1, Math.round(deviceWidth / ar));
     const boxW = Math.floor(box.width * dpr);
     const boxH = Math.floor(box.height * dpr);
-    const left = Math.max(0, Math.floor((boxW - across * deviceWidth) / 2));
-    const top = Math.max(0, Math.floor((boxH - deviceHeight) / 2));
+    const ar = aspect();
+    const gap = Math.round(GAP * dpr);
+    // The widest page up to `max` device px whose width and height are
+    // even: the spread's centre and the spine (the camera's centre in one
+    // or the other mode) then lie on the pixel grid.
+    const fitWidth = (max: number) => {
+      let w = Math.max(2, Math.floor(max));
+      while (w > 2 && (w % 2 || Math.round(w / ar) % 2)) w--;
+      return w;
+    };
+    let deviceWidth: number;
+    let left: number;
+    let top: number;
+    let across: number;
+    if (single) {
+      // One page across the box, the buttons and the count in a bar below.
+      const bar = controls ? Math.round((prevBtn.offsetWidth + 2 * GAP) * dpr) : gap;
+      const availW = Math.max(0, boxW - 2 * gap);
+      const availH = Math.max(0, boxH - gap - bar);
+      deviceWidth = fitWidth(Math.min(availW, availH > 0 ? availH * ar : Infinity));
+      const deviceHeight = Math.round(deviceWidth / ar);
+      const pageLeft = gap + Math.floor((availW - deviceWidth) / 2);
+      top = gap + Math.max(0, Math.floor((availH - deviceHeight) / 2));
+      if (flipper) {
+        // The WebGL book is a spread whose other page lies off the box: the
+        // spine on the page's inner edge (its left, or its right when the
+        // book is bound on the right).
+        across = 2;
+        left = rtl() ? pageLeft : pageLeft - deviceWidth;
+      } else {
+        across = 1;
+        left = pageLeft;
+      }
+    } else {
+      across = 2;
+      const marginX = Math.round((controls ? prevBtn.offsetWidth + 2 * GAP : GAP) * dpr);
+      const marginY = Math.round(Math.max(MIN_MARGIN_Y, showCount ? count.offsetHeight + 2 * GAP : GAP) * dpr);
+      const availW = Math.max(0, boxW - 2 * marginX);
+      const availH = Math.max(0, boxH - 2 * marginY);
+      deviceWidth = fitWidth(Math.min(availW / 2, availH > 0 ? availH * ar : Infinity));
+      left = Math.floor((boxW - 2 * deviceWidth) / 2);
+      top = Math.max(0, Math.floor((boxH - Math.round(deviceWidth / ar)) / 2));
+    }
+    const deviceHeight = Math.max(1, Math.round(deviceWidth / ar));
     Object.assign(spreadEl.style, {
       left: `${left / dpr}px`,
       top: `${top / dpr}px`,
@@ -230,12 +277,18 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
       height: `${deviceHeight / dpr}px`,
     });
     if (flipCanvas) {
-      // Symmetric about the spread, so the canvas centre is the spread's.
+      // Centred on the spine (the camera maps the spread onto the canvas
+      // 1:1 about its centre) and reaching every edge of the box; what
+      // falls outside the box is clipped.
+      const cx = left + deviceWidth;
+      const cy = top + deviceHeight / 2;
+      const hw = Math.max(cx, boxW - cx);
+      const hh = Math.max(cy, boxH - cy);
       Object.assign(flipCanvas.style, {
-        left: "0px",
-        top: "0px",
-        width: `${(2 * left + across * deviceWidth) / dpr}px`,
-        height: `${(2 * top + deviceHeight) / dpr}px`,
+        left: `${(cx - hw) / dpr}px`,
+        top: `${(cy - hh) / dpr}px`,
+        width: `${(2 * hw) / dpr}px`,
+        height: `${(2 * hh) / dpr}px`,
       });
     }
     const next = { width: deviceWidth / dpr, height: deviceHeight / dpr, deviceWidth, deviceHeight };
@@ -249,7 +302,7 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
   function pageEl(i: number | null, slot: 0 | 1) {
     const el = document.createElement("div");
     el.className = "postext-folio-page";
-    if (!single) el.classList.add(slot === 0 ? "is-verso" : "is-recto");
+    if (!single || singleGl()) el.classList.add(slot === 0 ? "is-verso" : "is-recto");
     const src = i === null ? null : sourceOf(pages[i]);
     if (src === null) {
       el.classList.add("is-empty");
@@ -284,9 +337,9 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
 
   function render() {
     const s = spreads[shown] ?? [null, null];
-    const slots = single ? [s[0] ?? s[1]] : s;
+    const slots = single && !singleGl() ? [s[0] ?? s[1]] : s;
     spreadEl.replaceChildren(...slots.map((i, side) => pageEl(i, side as 0 | 1)));
-    spreadEl.classList.toggle("is-solo", single);
+    spreadEl.classList.toggle("is-solo", single && !singleGl());
     spreadEl.classList.toggle("is-by-hand", !!flipper);
     // The canvas draws the book, still or turning; the DOM pages stay as
     // the textures' sources and the pages' text alternatives.
@@ -319,12 +372,22 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     } else settle(to);
   }
 
+  /** Opens spread `index` at once, no leaf turning. */
+  function jump(index: number) {
+    const to = Math.max(0, Math.min(spreads.length - 1, index));
+    if (to === current && to === shown) return;
+    current = to;
+    options.onTarget?.({ spread: to, pages: pagesOf(spreads[to]) });
+    flipper?.setBook(bookOf(), to);
+    settle(to);
+  }
+
   function setUpFlipper() {
     flipper?.dispose();
     flipper = null;
     flipCanvas?.remove();
     flipCanvas = null;
-    if (single || !animate || spreads.length < 2 || !canFlip()) return;
+    if (!animate || spreads.length < 2 || !canFlip()) return;
     flipCanvas = document.createElement("canvas");
     flipCanvas.className = "postext-folio-flip";
     flipCanvas.setAttribute("aria-hidden", "true");
@@ -341,7 +404,9 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
         count.textContent = labels.count(pagesOf(spreads[i]), pages.length);
       },
       binding,
-      { persistent: true },
+      // One page at a time the spine is the box's edge: the leaf cannot be
+      // carried past halfway, so a shorter pull turns it.
+      { persistent: true, turnAt: single ? 0.2 : 0.5 },
     );
     const rgb = rgbOf(paper);
     if (rgb) flipper.setPaper(...rgb);
@@ -395,14 +460,65 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
   spreadEl.addEventListener("pointerdown", (event) => {
     if (event.button !== 0 || holding) return;
     press = { x: event.clientX, y: event.clientY };
+    if (singleGl()) return void decide(event);
     if (!flipper?.grab(event)) return;
     event.preventDefault();
     event.stopPropagation();
+    hold(event, press);
+  });
+
+  /**
+   * One page at a time, the page is taken only once the pointer shows
+   * which way it goes: towards the spine it is lifted and dragged over
+   * (from where it was pressed), away from it the book goes back a page (a
+   * swipe); a press that does not move is a tap and turns forward.
+   */
+  function decide(down: PointerEvent) {
+    down.stopPropagation();
+    swipe = null;
+    const id = down.pointerId;
+    const start = { x: down.clientX, y: down.clientY };
+    const toSpine = rtl() ? 1 : -1;
+    const done = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp, true);
+      window.removeEventListener("pointercancel", onCancel);
+    };
+    const onMove = (e: PointerEvent) => {
+      if (e.pointerId !== id) return;
+      const dx = e.clientX - start.x;
+      const dy = e.clientY - start.y;
+      if (Math.hypot(dx, dy) < CLICK_SLOP || Math.abs(dy) > Math.abs(dx)) return;
+      if (Math.sign(dx) !== toSpine) return; // a swipe back: settled on release
+      done();
+      if (!flipper?.grab(down)) return;
+      hold(down, start);
+      flipper.drag(e);
+    };
+    const onUp = (e: PointerEvent) => {
+      if (e.pointerId !== id) return;
+      done();
+      press = null;
+      const dx = e.clientX - start.x;
+      const dy = e.clientY - start.y;
+      if (Math.hypot(dx, dy) < CLICK_SLOP) go(current + 1);
+      else if (Math.abs(dx) > SWIPE && Math.abs(dx) > Math.abs(dy) && Math.sign(dx) === -toSpine) go(current - 1);
+      e.stopPropagation();
+    };
+    const onCancel = (e: PointerEvent) => {
+      if (e.pointerId === id) done();
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp, true);
+    window.addEventListener("pointercancel", onCancel);
+  }
+
+  /** Holds the page taken at `event` until the pointer lets go. */
+  function hold(event: PointerEvent, start: { x: number; y: number }) {
     // The hold follows the pointer anywhere: the window hears it even if
     // the capture is lost, and a move with the button up means the release
     // was missed.
     const id = event.pointerId;
-    const start = press;
     const onMove = (e: PointerEvent) => {
       if (e.pointerId !== id) return;
       if ((e.buttons & 1) === 0) end(false);
@@ -438,9 +554,9 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     } catch {
       // The window listeners carry the hold without it.
     }
-  });
+  }
   spreadEl.addEventListener("pointerup", (event) => {
-    if (holding) return;
+    if (holding || singleGl()) return;
     const start = press;
     press = null;
     const click = !!start && Math.hypot(event.clientX - start.x, event.clientY - start.y) < CLICK_SLOP;
@@ -470,8 +586,8 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
 
   return {
     element: root,
-    goToPage: (index) => go(spreadOfPage(spreads, index)),
-    goToSpread: go,
+    goToPage: (index, opts) => (opts?.instant ? jump : go)(spreadOfPage(spreads, index)),
+    goToSpread: (index, opts) => (opts?.instant ? jump : go)(index),
     next: () => go(current + 1),
     prev: () => go(current - 1),
     setLabels(next) {

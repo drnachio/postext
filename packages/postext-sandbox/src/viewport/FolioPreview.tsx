@@ -115,7 +115,8 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
 
   useImperativeHandle(ref, () => ({
     jumpToPage: (pageIndex) => {
-      if (viewerRef.current) viewerRef.current.goToPage(pageIndex);
+      // A restored or linked position opens there; the reader turns pages.
+      if (viewerRef.current) viewerRef.current.goToPage(pageIndex, { instant: true });
       else pendingJumpRef.current = pageIndex;
     },
     regenerate: () => setRebuildKey((k) => k + 1),
@@ -277,6 +278,8 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         at,
         mode,
         pageNegative,
+        // The page is in the URL; the count is only announced.
+        showCount: false,
         labels: folioLabelsRef.current,
         alt: (i) => fill(pageAltRef.current, { page: viewerDocRef.current?.doc.pages[i]?.pageNumberValue ?? i + 1 }),
         onChange: (state) => {
@@ -300,7 +303,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     }
     viewer.setDocument(doc, same >= 0 ? { at: same } : {});
     if (pendingJumpRef.current !== null) {
-      viewer.goToPage(pendingJumpRef.current);
+      viewer.goToPage(pendingJumpRef.current, { instant: true });
       pendingJumpRef.current = null;
     }
     // The page on show, in the new document's numbering, to the URL.

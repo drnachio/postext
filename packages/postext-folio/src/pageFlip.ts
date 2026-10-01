@@ -440,6 +440,7 @@ export class PageFlipper {
   /** The spread last reported settled (the one the DOM shows). */
   private reported: number;
   private persistent: boolean;
+  private turnAt: number;
   /** A redraw of the book at rest is queued. */
   private still = 0;
 
@@ -456,9 +457,12 @@ export class PageFlipper {
     /** `persistent`: the canvas draws the book at rest too (the DOM pages
      *  are hidden by the host and serve only as texture sources and text
      *  alternatives), so a page looks the same lying still and turning. */
-    { persistent = false }: { persistent?: boolean } = {},
+    /** `turnAt`: how far through its turn (0 … 1) a leaf let go of turns
+     *  over rather than falling back. Default 0.5. */
+    { persistent = false, turnAt = 0.5 }: { persistent?: boolean; turnAt?: number } = {},
   ) {
     this.persistent = persistent;
+    this.turnAt = turnAt;
     this.sign = binding === "right" ? -1 : 1;
     this.light = new Vector3(this.sign * LIGHT.x, LIGHT.y, LIGHT.z);
     this.casterMaterial.uniforms.uLd.value = this.light;
@@ -820,7 +824,7 @@ export class PageFlipper {
     const last = samples[samples.length - 1];
     const speed = first && last && last.t > first.t ? (last.q - first.q) / (last.t - first.t) : 0; // per ms
     const q = progressFrom(turn.G, turn.P);
-    const over = click || q + speed * 250 > 0.5;
+    const over = click || q + speed * 250 > this.turnAt;
     const to = over ? { u: -turn.G.u, v: turn.G.v } : { ...turn.G };
     turn.held = undefined;
     turn.anim = {
