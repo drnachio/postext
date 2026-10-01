@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Configuración',
   description: 'Referencia completa de todas las opciones de configuración de composición de Postext',
   lang: 'es',
-  lastUpdated: '2026-09-29',
+  lastUpdated: '2026-10-01',
   readingTime: '30 min',
   order: 3,
   plainSummary: "Esta página reúne todos los ajustes que deciden el aspecto de tus páginas. Un solo grupo de ajustes guarda todas las decisiones: tamaño de página, número de columnas, tipografías, cuerpo del texto, títulos, recuadros, colores y mucho más. Solo escribes los ajustes que quieres cambiar, porque cada uno parte de un valor razonable. Es una página de consulta, así que puedes ir directamente a la parte que necesitas. Las últimas secciones enseñan a los programadores a crear páginas web y archivos PDF desde el código.",
@@ -3089,6 +3089,208 @@ El resolutor y el depurador siguen el patrón de las demás secciones:
 import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults } from 'postext';
 ```
 
+
+## Referencias cruzadas
+
+La propiedad `crossRefs` fija las palabras que una [referencia cruzada](/es/docs/document-format#referencias-cruzadas-y-anclas) imprime alrededor de un número o de una página, y el estilo que toma un `:ref` que no indica ninguno. Cada plantilla lleva `{n}` donde va el número; una que no lo lleva recibe el número detrás de un espacio de no separación (`"§"` imprime *§ 3.2*). Una plantilla sin definir sigue al idioma del documento: *capítulo / sección / pág.* en español, *chapter / section / p.* en inglés, `第{n}章` / `第{n}节` / `第{n}页` en chino, y lo mismo para francés, alemán, italiano, portugués, catalán y neerlandés.
+
+```ts
+interface CrossRefsConfig {
+  chapter?: string;  // Words around a level-1 heading's number: "chapter {n}".
+  section?: string;  // Around any other heading's number: "section {n}".
+  page?: string;     // Around a page number: "p. {n}".
+  defaultStyle?: 'default' | 'number' | 'title' | 'page'; // A :ref without style=.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '160px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>chapter</code></td>
+      <td><code>string</code></td>
+      <td>según el idioma</td>
+      <td>Una referencia a un título de nivel 1: <code>"capítulo &#123;n&#125;"</code>. Un número cuya plantilla ya escribe la palabra (<code>Capítulo &#123;1&#125;</code>, <code>第&#123;1:一&#125;章</code>) se imprime tal cual.</td>
+    </tr>
+    <tr>
+      <td><code>section</code></td>
+      <td><code>string</code></td>
+      <td>según el idioma</td>
+      <td>Una referencia a un título de nivel 2 a 6: <code>"sección &#123;n&#125;"</code>, <code>"§ &#123;n&#125;"</code>.</td>
+    </tr>
+    <tr>
+      <td><code>page</code></td>
+      <td><code>string</code></td>
+      <td>según el idioma</td>
+      <td>Una referencia de página (<code>style=page</code>): <code>"pág. &#123;n&#125;"</code>, <code>"página &#123;n&#125;"</code>.</td>
+    </tr>
+    <tr>
+      <td><code>defaultStyle</code></td>
+      <td><code>'default' | 'number' | 'title' | 'page'</code></td>
+      <td><code>'default'</code></td>
+      <td>Lo que imprime un <code>:ref</code> a un título o a un ancla sin <code>style=</code>. <code>'default'</code>: un título numerado con su palabra y su número, uno sin número con su título, un ancla con su texto. Una referencia que indica <code>style</code> lo conserva, y las referencias a figuras y tablas no cambian.</td>
+    </tr>
+  </tbody>
+</table>
+
+Las referencias toman el color, el peso y la inclinación de todas las referencias (`bodyText.referenceColor`, `referenceBold`, `referenceItalic`).
+
+## Citas
+
+La propiedad `citations` elige el estilo de cita y cómo se ven las citas y la bibliografía. El marcado se describe en [Citas y bibliografía](/es/docs/document-format#citas-y-bibliografía); el estilo lo aplica el paquete `postext-citeproc`.
+
+```ts
+interface CitationsConfig {
+  style?: string;          // 'apa', 'ieee', 'chicago-notes-bibliography'… or 'custom'
+  customStyle?: string;    // a whole CSL style (.csl XML), used with style: 'custom'
+  locale?: string;         // CSL locale; the document language when unset
+  link?: boolean;          // citations link to their entries
+  marker?: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner';
+  collapseRanges?: boolean;
+  notes?: 'footnote' | 'warichu';
+  bibliography?: {
+    title?: string;        // unset: the document language's word; '' or ' ': none
+    scope?: 'book' | 'chapter';
+    auto?: boolean;
+    fontSize?: Dimension;
+    lineHeight?: Dimension;
+    hangingIndent?: Dimension;
+    entrySpacing?: Dimension;
+    labelWidth?: Dimension;
+    doi?: 'link' | 'text' | 'hide';
+    includeUncited?: boolean;
+    groupByLanguage?: boolean;
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '120px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>style</code></td>
+      <td><code>string</code></td>
+      <td><code>'apa'</code></td>
+      <td>El id de un estilo incluido (véase <a href="/es/docs/document-format#estilos">Estilos</a>) o <code>'custom'</code>. El estilo decide lo que dicen citas y entradas: nombres, fechas, orden, puntuación y si las citas son notas.</td>
+    </tr>
+    <tr>
+      <td><code>customStyle</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Un estilo CSL completo, el XML de un archivo <code>.csl</code>, que se usa cuando <code>style</code> es <code>'custom'</code>. El Sandbox lo carga desde un archivo.</td>
+    </tr>
+    <tr>
+      <td><code>locale</code></td>
+      <td><code>string</code></td>
+      <td>idioma del documento</td>
+      <td>La configuración regional CSL en la que el estilo escribe sus palabras (<code>es-ES</code>, <code>en-US</code>, <code>zh-CN</code>…).</td>
+    </tr>
+    <tr>
+      <td><code>link</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Una cita enlaza con su entrada en la bibliografía (enlace en el PDF, ancla en el HTML, clic en el Sandbox).</td>
+    </tr>
+    <tr>
+      <td><code>marker</code></td>
+      <td><code>'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner'</code></td>
+      <td><code>'style'</code></td>
+      <td>Cómo marca la cita un estilo numérico: como lo escribe el estilo, <code>[1]</code>, <code>(1)</code>, en superíndice o <code>〔1〕</code> (de pie en texto vertical). El localizador va tras el número.</td>
+    </tr>
+    <tr>
+      <td><code>collapseRanges</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Con una marca distinta de <code>'style'</code>: números seguidos como intervalo (<code>1–3</code>).</td>
+    </tr>
+    <tr>
+      <td><code>notes</code></td>
+      <td><code>'footnote' | 'warichu'</code></td>
+      <td><code>'footnote'</code></td>
+      <td>Dónde pone sus citas un estilo de notas: notas al pie (como dice <code>footnotes</code>) o notas de dos líneas dentro del renglón (夹注).</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.title</code></td>
+      <td><code>string</code></td>
+      <td>según el idioma</td>
+      <td>Título sobre la lista, un párrafo en negrita. En blanco: ninguno. Un título propio va sobre <code>:::bibliography</code>.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.scope</code></td>
+      <td><code>'book' | 'chapter'</code></td>
+      <td><code>'book'</code></td>
+      <td>Una lista con todas las obras que cita el libro, o una por capítulo con las que cita cada uno.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.auto</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Pone la lista tras el texto (tras el último capítulo, si abarca todo el libro) cuando ningún <code>:::bibliography</code> la sitúa.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.9em</code></td>
+      <td>Tamaño de las entradas; em es el tamaño del texto.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>interlineado del texto</td>
+      <td>Interlineado de las entradas.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.hangingIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code></td>
+      <td>Sangría de las líneas siguientes de una entrada sin número.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.entrySpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.3em</code></td>
+      <td>Espacio entre dos entradas.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.labelWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td>rótulo más largo</td>
+      <td>Ancho de la columna de los números de una lista numerada.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.doi</code></td>
+      <td><code>'link' | 'text' | 'hide'</code></td>
+      <td><code>'link'</code></td>
+      <td>DOI y URL como enlaces, como texto o fuera.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.includeUncited</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Lista todas las referencias, citadas o no (como <code>nocite: "@*"</code>).</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.groupByLanguage</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Primero las obras en chino, japonés y coreano; luego las demás.</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Tipografía de Asia oriental
 
@@ -7175,6 +7377,48 @@ Para flujos de trabajo de impresión en producción, ajusta estas opciones de co
 ### Implementación de referencia
 
 El componente `PdfViewport` del sandbox (`packages/postext-sandbox/src/viewport/PdfViewport.tsx`) conecta las piezas anteriores en una previsualización en vivo con botones de regenerar, descargar e imprimir, y es un buen punto de partida para cualquier integración PDF en el navegador. Construye el VDT a través del worker de layout compartido (consulta [Ejecutar la composición en un Web Worker](#ejecutar-la-composición-en-un-web-worker)) para que pulsar *Regenerar* no congele la UI mientras se ejecuta el pipeline — el hilo principal solo se encarga de `renderToPdf` (que ya es rápido una vez existe el VDT).
+
+## Un libro en 3D (`postext-folio`)
+
+`postext-folio` presenta en pantalla un documento compuesto como un libro: pliegos según la regla del recto y hojas que el lector pasa con los botones ‹ ›, las flechas del teclado, deslizando el dedo, con un clic en una página o tomando la página por su borde y arrastrándola. Cada hoja se curva en three.js y proyecta una sombra real sobre las páginas que tiene debajo. El lienzo WebGL dibuja el libro tanto quieto como al pasar la página, así que una página nunca cambia de aspecto al posarse. Es el visor de las recetas del Recetario y de la pestaña **Folio** del sandbox.
+
+```bash
+npm install postext postext-folio three
+```
+
+```ts
+import { buildDocument } from 'postext';
+import { createFolioFromDocument } from 'postext-folio';
+
+const doc = buildDocument({ markdown }, config);
+const book = createFolioFromDocument(document.getElementById('book')!, doc, {
+  onChange: ({ pages }) => console.log('páginas a la vista', pages),
+});
+
+// Tras una edición: el mismo visor, en la misma página.
+book.setDocument(buildDocument({ markdown: edited }, config));
+```
+
+- **Las páginas se pintan a medida que hacen falta.** `createFolioFromDocument` pinta cada página con `renderPageToCanvas` exactamente a los píxeles de dispositivo de su hueco (WebGL la muestra entonces téxel a píxel, tan nítida como en la vista de lienzo), y solo los pliegos cercanos al abierto (`window`, tres a cada lado por defecto). Las páginas que salen de esa ventana se liberan, así que un libro de mil páginas ocupa la memoria de unas pocas. Un salto a una página lejana pinta primero ese pliego; las hojas que un pase largo atraviesa se ven como papel en blanco mientras están en el aire.
+- **El documento define el libro.** Su primera página abre sola a la derecha cuando es un recto (`pageIndexOffset` par), un libro encuadernado por la derecha (`page.binding: 'right'`, o un documento vertical) aparece en espejo y pasa las páginas hacia la izquierda, y las páginas en blanco toman el color de fondo de la página.
+- **El contenedor define el tamaño.** El libro lo ocupa entero, con los botones y el contador de páginas en los márgenes, así que dale una altura; al cambiar de tamaño, las páginas se vuelven a pintar al nuevo. Por debajo de 560 px de ancho muestra una página cada vez (`mode: 'auto'`; `'single'` y `'double'` fuerzan una u otra).
+- **Antes, fuentes e imágenes.** Como con `renderPage`, las fuentes del documento deben estar cargadas en `document.fonts` y sus imágenes registradas con `registerResourceImage` antes de pintar las páginas.
+- **Accesible.** El visor es un grupo enfocable que responde a ←/→ (en espejo para un libro encuadernado por la derecha), Re Pág/Av Pág, Inicio y Fin; sus botones y el contador de páginas llevan etiqueta (`labels` las traduce), y cada lienzo de página lleva texto alternativo (`alt: (index) => …`).
+- **Sin WebGL2**, o cuando el lector pide menos movimiento, los pliegos simplemente cambian.
+
+`createFolio(container, { pages })` es el mismo visor con cualquier página: URL de imágenes, elementos `<img>` o `<canvas>`, y `""` para una página en blanco. `PageFlipper` es el motor de three.js por separado, para quien maqueta su propio DOM del pliego, como hace el Recetario.
+
+### Ejemplo en vivo: un libro en 3D
+
+El pen importa `postext` y `postext-folio` desde un CDN, compone un documento breve y lo abre como un libro. Toma la página derecha por su borde y arrástrala.
+
+<CodePenExample name="render-folio" title="Postext · un documento como libro en 3D" description="Compón un documento markdown con postext y pasa sus páginas en 3D con postext-folio." height={640} />
+
+### Ejemplo en vivo: imágenes de página
+
+`createFolio` con páginas dibujadas en lienzos, una última página en blanco y el color del papel.
+
+<CodePenExample name="folio-images" title="Postext · un libro de imágenes en 3D" description="Pasa en 3D cualquier página con postext-folio: URL de imágenes, elementos img o canvas." height={600} />
 
 ## Paquetes (archivos `.postext`)
 

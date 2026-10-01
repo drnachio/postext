@@ -50,6 +50,7 @@ describe('view hash', () => {
     expect(parseViewHash('#preset=x&lang=PT-br')).toEqual({ ...EMPTY_VIEW_HASH, preset: 'x', lang: 'pt-BR' });
     expect(parseViewHash('#preset=x&lang=e s&view=print')).toEqual({ ...EMPTY_VIEW_HASH, preset: 'x' });
     expect(parseViewHash('#preset=&view=html')).toEqual({ ...EMPTY_VIEW_HASH, view: 'html' });
+    expect(parseViewHash('#preset=don-quijote&view=folio')).toEqual({ ...EMPTY_VIEW_HASH, preset: 'don-quijote', view: 'folio' });
     // Encoded ids come back decoded.
     expect(parseViewHash('#preset=libro%2Funo')).toEqual({ ...EMPTY_VIEW_HASH, preset: 'libro/uno' });
   });

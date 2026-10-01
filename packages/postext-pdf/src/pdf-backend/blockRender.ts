@@ -12,7 +12,7 @@ import {
   renderResourceBlock,
   type ResourceImageMap,
 } from './renderResourceBlock';
-import { LinkRegistry, RefRun, UriRuns } from './links';
+import { LinkRegistry, RefRun, refTarget, UriRuns } from './links';
 import { tagArtifact, tagContent, type StructElem } from './tagging';
 import type { StructureFlow } from './structureFlow';
 import { paintLineMarks, paintRuby, paintWarichu } from './annotations';
@@ -233,8 +233,9 @@ function renderSegments(
     // A `:ref` links to its resource — one `Link` for all the runs of one
     // set in small capitals —, a Markdown link's words to its URL.
     const uriElem = uris.word(seg.refResourceId === undefined ? seg.href : undefined, x, seg.width, seg.text);
-    // A footnote marker links to its note, like a `:ref` to its resource.
-    const target = seg.refResourceId ?? (seg.footnoteId !== undefined ? footnoteDestination(linkRegistry, seg.footnoteId) : undefined);
+    // A footnote marker links to its note, like a `:ref` to its resource
+    // and a cross-reference to its anchor (#264).
+    const target = refTarget(seg) ?? (seg.footnoteId !== undefined ? footnoteDestination(linkRegistry, seg.footnoteId) : undefined);
     const link = refRun.enter(seg, x, elem, target);
     // A page number of the index links to its page.
     const pageElem = seg.pageLink !== undefined && elem && !link ? elem.child('Link') : undefined;

@@ -26,6 +26,10 @@ export type WarningKind =
   | 'unknownParagraphStyle'
   | 'unknownCalloutType'
   | 'unknownChipStyle'
+  | 'duplicateAnchor'
+  | 'unknownCitationKey'
+  | 'citationsUnavailable'
+  | 'referencesUnreadable'
   | 'undefinedFootnote'
   | 'unusedFootnote'
   | 'indexMarkInvalid'
@@ -143,6 +147,14 @@ export type WarningPayload =
    *  `config.chipStyles`; the chip takes the first style. `inResource`
    *  names the resource whose caption, note or cell holds the chip. */
   | { kind: 'unknownChipStyle'; style: string; inResource?: string }
+  /** An identifier (`{#id}`, `:anchor{#id}`) set twice (#261). */
+  | { kind: 'duplicateAnchor'; anchorId: string }
+  /** A citation names a key no reference defines (#268). */
+  | { kind: 'unknownCitationKey'; key: string }
+  /** Citations wait for the citation engine. */
+  | { kind: 'citationsUnavailable' }
+  /** A `:::references` block cannot be read. */
+  | { kind: 'referencesUnreadable'; message: string }
   /** A footnote marker `[^id]` no `[^id]: …` paragraph defines. */
   | { kind: 'undefinedFootnote'; id: string }
   /** A footnote definition `[^id]: …` no marker cites. */

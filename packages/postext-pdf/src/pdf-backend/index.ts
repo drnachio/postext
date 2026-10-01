@@ -41,7 +41,7 @@ import {
   preloadResourceImages,
   type ResourceBytesProvider,
 } from './renderResourceBlock';
-import { LinkRegistry } from './links';
+import { anchorDestination, LinkRegistry } from './links';
 import { StructTree, tagArtifact, type StructElem } from './tagging';
 import { StructureFlow } from './structureFlow';
 
@@ -437,6 +437,15 @@ function renderPage(
           }
         : undefined,
     );
+  }
+
+  // The anchors of the page (#264): where cross-references jump to, and
+  // named destinations (`file.pdf#nameddest=id`).
+  for (const anchor of doc.anchors ?? []) {
+    if (anchor.pageIndex !== vdtPage.index) continue;
+    const at: [number, number, number, number] = [anchor.x * scale, pageHeightPt - anchor.y * scale, anchor.x * scale, pageHeightPt - anchor.y * scale];
+    const [left, , , top] = ctx.mapRectPt ? ctx.mapRectPt(at) : at;
+    resourceCtx.linkRegistry.addDestination(anchorDestination(anchor.id), ctx.page, left, top, anchor.id);
   }
 
   // Clip to column bounds, widened for glyph ink and for design overlays

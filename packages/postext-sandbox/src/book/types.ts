@@ -2,6 +2,7 @@
 // resource set, plus one markdown document per chapter. These types are the
 // vocabulary shared by state, storage records and preset bundles.
 
+import type { CitationContext } from 'postext';
 import type { DocumentMetadata, LayoutContinuation, NumeralStyle, OutlineEntry } from 'postext';
 
 export interface Chapter {
@@ -181,7 +182,11 @@ export interface ChapterPlan {
    *  headings and pages of every chapter, or the index (`:::index`), which
    *  depends on the index marks and pages of every chapter. */
   outline?: OutlineEntry[];
-  /** Fingerprint of `outline` (`''` when the chapter prints no contents). */
+  /** The chapter's share of the book's citations (#272), handed to the
+   *  engine as `content.citations`; absent when the book cites nothing. */
+  citations?: CitationContext;
+  /** Fingerprint of `outline` (`''` when the chapter prints no contents),
+   *  and of `citations`. */
   outlineKey: string;
   /** The current layout record, when one matches every input its pages
    *  depend on (text, configuration, resources, engine, what it inherits). */

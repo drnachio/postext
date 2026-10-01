@@ -915,6 +915,36 @@ Notes cited with `[^id]` (document-format.md §10.4).
   "hangingIndent": {"value": 0.8, "unit": "em"}, "separator": {"width": 0.25, "lineWidth": {"value": 0.4, "unit": "pt"}} }
 ```
 
+## 19a2. `crossRefs` — CrossRefsConfig (postext ≥ 1.12)
+
+What a cross-reference to a heading or an anchor prints (document-format.md §10.6). Templates hold `{n}`; one without it gets the number after a no-break space. Unset templates follow `locale` (en *chapter {n} / section {n} / p. {n}*, es *capítulo / sección / pág.*, zh *第{n}章 / 第{n}节 / 第{n}页*, plus fr, de, it, pt, ca, nl).
+
+```ts
+crossRefs: {
+  chapter?: string;   // level-1 heading: "chapter {n}"; a number its template already words (第{1:一}章) prints as is
+  section?: string;   // levels 2–6: "section {n}", "§ {n}"
+  page?: string;      // style=page: "p. {n}"
+  defaultStyle?: 'default' | 'number' | 'title' | 'page'; // a :ref to an anchor without style=
+}
+```
+
+## 19a3. `citations` — CitationsConfig (postext ≥ 1.12)
+
+Citation style and presentation (document-format.md §10.7). Needs `postext-citeproc` registered.
+
+```ts
+citations: {
+  style?: string;            // 'apa' (default) | 'ieee' | 'chicago-notes-bibliography' | … | 'custom'
+  customStyle?: string;      // CSL XML when style: 'custom'
+  locale?: string;           // CSL locale; default: document language (es → es-ES, zh-Hant → zh-TW)
+  link?: boolean;            // citations link to their entries (default true)
+  marker?: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner'; // numbered styles; 'corner' = 〔1〕
+  collapseRanges?: boolean;  // 1–3 (default true)
+  notes?: 'footnote' | 'warichu'; // note styles
+  bibliography?: { title?, scope?: 'book' | 'chapter', auto?, fontSize?, lineHeight?, hangingIndent?, entrySpacing?, labelWidth?, doi?: 'link' | 'text' | 'hide', includeUncited?, groupByLanguage? };
+}
+```
+
 ## 19b. `index` — IndexConfig (postext ≥ 1.7)
 
 What `:::index` prints from the `:index` marks (document-format.md §10.5). An entry = term +

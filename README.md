@@ -174,13 +174,14 @@ Everything below ships today in `postext` and `postext-pdf` 1.4, except what is 
 - **Canvas renderer.** Rasterize any page for previews and thumbnails (`renderPage`, `renderPageToCanvas`).
 - **HTML renderer.** Precise absolutely-positioned markup; `renderToHtmlIndexed` returns a per-block index so viewers can patch only the DOM nodes that changed between builds.
 - **PDF renderer** (`postext-pdf`). Print-ready output with document outlines, clickable cross-reference links, embedded custom fonts (woff2/woff/ttf/otf) with GPOS kerning, vector SVG figures (with optional PDF print masters), RGB, CMYK, or grayscale color spaces, and **tagged, accessible PDF/UA-1** output validated with veraPDF.
+- **3D book viewer** (`postext-folio`). Spreads whose leaves curl in three.js, with real shadows, turned by hand or by key; a right-bound book lies mirrored. Pages are painted on demand, at the size they are shown, around the open spread only.
 - **Web Worker.** `postext/worker` runs the pipeline off the main thread with last-wins cancellation; **(1.5)** also straight from esm.sh.
 - **React.** **(1.5)** `postext/react` shows a document's pages in a component; the main entry never loads React.
 - **Format-agnostic core.** The engine computes geometry; renderers translate it.
 
 ### Sandbox
 
-- A hosted editor at [postext.dev](https://postext.dev/en/sandbox): books of chapters, a Design panel that browses every setting in editorial terms (accessible, keyboard-first), a Resources panel, live Canvas / HTML / PDF previews with source ↔ preview sync, a Checks panel, and permalinks to any page.
+- A hosted editor at [postext.dev](https://postext.dev/en/sandbox): books of chapters, a Design panel that browses every setting in editorial terms (accessible, keyboard-first), a Resources panel, live Canvas / HTML / Folio (3D) / PDF previews with source ↔ preview sync, a Checks panel, and permalinks to any page.
 - Books travel as `.postext` bundles that carry their pagination, so an imported book opens already paginated.
 - The same `.postext` files are created and opened from code with the `postext` package (`createBundle`, `openBundle`, `buildBundle`), so a book moves between the Sandbox, the agent skill and your own program.
 - Bilingual showcase bundles — a magazine, a literary edition, an atlas, an exhibition catalogue, a physics textbook, a column-and-a-half biochemistry manual — plus a built-in guide to Postext, itself set as a book.
@@ -212,6 +213,7 @@ postext/
 ├── packages/
 │   ├── postext/                  # Core layout engine library
 │   ├── postext-pdf/              # PDF rendering backend
+│   ├── postext-folio/            # 3D book viewer (three.js)
 │   ├── postext-sandbox/          # Interactive sandbox UI (controls + viewports)
 │   └── typescript-config/        # Shared TypeScript configurations
 ├── docs/                         # Bilingual MDX documentation (<topic>-en.mdx / <topic>-es.mdx)
@@ -227,7 +229,8 @@ postext/
 |---|---|
 | `packages/postext` | The core library. Semantic content in, layout geometry out. Zero DOM dependencies. Published to npm as `postext`. |
 | `packages/postext-pdf` | The PDF backend: renders the layout geometry to print-ready PDF (outlines, links, font embedding, color spaces). |
-| `packages/postext-sandbox` | The interactive sandbox UI — configuration controls and live HTML/canvas/PDF viewports — embedded by the web app. |
+| `packages/postext-folio` | The 3D book viewer: a laid-out document (or any page images) as spreads whose leaves turn in three.js. Published to npm as `postext-folio`. |
+| `packages/postext-sandbox` | The interactive sandbox UI — configuration controls and live canvas/HTML/Folio/PDF viewports — embedded by the web app. |
 | `apps/web` | Next.js 16 + Tailwind CSS 4 application: the documentation site, landing page, and hosted sandbox at [postext.dev](https://postext.dev). |
 | `packages/typescript-config` | Shared strict TypeScript configuration across all packages. |
 
@@ -297,6 +300,14 @@ const doc = buildDocument(
 const html = renderToHtml(doc);
 
 // …or rasterize to canvas — see renderPage / renderPageToCanvas.
+```
+
+To leaf through the result as a book in 3D, hand the same document to `postext-folio` (`npm install postext-folio three`):
+
+```ts
+import { createFolioFromDocument } from 'postext-folio';
+
+createFolioFromDocument(document.getElementById('book')!, doc);
 ```
 
 ### Asynchronous layout in a Web Worker (recommended for UIs)

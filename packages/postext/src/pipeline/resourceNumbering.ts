@@ -13,6 +13,7 @@
  * heading numbers in effect at the point of first reference.
  */
 
+import { resourceRefId } from './crossRefs';
 import type { ContentBlock } from '../parse';
 import type { HeadingCounters, Resource, ResourceNumberEntry, ResourceType, ResourceCounterFormat } from '../types';
 import {
@@ -252,7 +253,7 @@ export function computeResourceNumberingState(
       record(b.resourceId, i);
     }
     for (const span of b.spans) {
-      if (span.ref?.resourceId) record(span.ref.resourceId, i);
+      if (span.ref?.resourceId) record(resourceRefId(span.ref.resourceId, (id) => resourceById.has(id)), i);
     }
   }
 

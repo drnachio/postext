@@ -29,6 +29,8 @@ import type {
   ResolvedTocConfig,
   ResolvedIndexConfig,
   ResolvedFootnotesConfig,
+  ResolvedCrossRefsConfig,
+  ResolvedCitationsConfig,
   ResolvedCjkConfig,
   CjkRegion,
   PageRole,
@@ -83,6 +85,10 @@ export interface ResolvedConfig {
   index: ResolvedIndexConfig;
   /** Footnotes (`[^id]`): placement, numbering, style. */
   footnotes: ResolvedFootnotesConfig;
+  /** Cross-references to headings and anchors (#266). */
+  crossRefs: ResolvedCrossRefsConfig;
+  /** Citations and the bibliography (#270). */
+  citations: ResolvedCitationsConfig;
   /** East Asian typography (`cjk`), with `'auto'` resolved from the
    *  document language. */
   cjk: ResolvedCjkConfig;
@@ -188,6 +194,14 @@ export interface VDTLineSegment {
    *  Renderers recolour it (link colour) and the PDF backend emits a link
    *  annotation to the resource's named destination. */
   refResourceId?: string;
+  /** Set when the reference names an anchor (a heading's `{#id}`, an inline
+   *  anchor, a container, #262): `refResourceId` holds the anchor's id and
+   *  a link jumps to {@link VDTDocument.anchors}' entry for it. */
+  refAnchor?: true;
+  /** For a reference to an anchor: the book page index (the documents'
+   *  `pageIndexOffset` counted in) the anchor landed on, when known — a host
+   *  showing one chapter goes there when the anchor is in another. */
+  refPageIndex?: number;
   /** Physical book page index this segment links to: a page number of an
    *  expanded `:::index`. The PDF backend makes it a link to that page (when
    *  the page is in the document), as it does a contents row. */
@@ -402,6 +416,24 @@ export interface VDTLineMark {
   wavelength?: number;
   /** Colour (hex); unset: the colour of the block's text. */
   color?: string;
+}
+
+/** A located anchor (see {@link VDTDocument.anchors}). */
+export interface VDTAnchor {
+  /** The identifier (`{#id}`). */
+  id: string;
+  /** `'heading'`: a heading's `{#id}`; `'anchor'`: an anchor set in the
+   *  text or on a container. */
+  kind: 'heading' | 'anchor';
+  /** Index of its page in `pages`. */
+  pageIndex: number;
+  /** Top-left of the heading block, or of the line holding the anchor, in
+   *  page px. */
+  x: number;
+  y: number;
+  /** Source offset of an inline anchor's mark in the markdown body (front
+   *  matter excluded). */
+  sourceStart?: number;
 }
 
 export interface VDTLine {
@@ -990,6 +1022,8 @@ export interface VDTBlock {
   /** Set on the paragraph a footnote is set as (at a column foot, or after
    *  the chapter's last block): the note's id. */
   footnoteNote?: string;
+  /** A bibliography entry (#269): the key of the work it lists. */
+  bibEntry?: string;
   /** Id of the heading style (`{style="…"}`) applied to this heading. */
   headingStyleId?: string;
   /** True for a heading whose style has `numbered: false`: it advances no
@@ -1582,6 +1616,18 @@ export type ContentWarning = ContentWarningBase & (
    *  cell stays text-only. `inResource` names the
    *  resource whose caption, note or cell holds the reference. */
   | { kind: 'unknownResourceId'; resourceId: string; usage: 'embed' | 'ref' | 'cellImage'; inResource?: string }
+  /** An identifier (`{#id}`, `:anchor{#id}`) set more than once in the
+   *  document: references reach its first setting only (#261). */
+  | { kind: 'duplicateAnchor'; anchorId: string }
+  /** A citation (`[@key]`) names a work no reference of the book defines
+   *  (#268): it prints as written, or without that work. */
+  | { kind: 'unknownCitationKey'; key: string }
+  /** The text cites works but no citation engine is registered
+   *  (`postext-citeproc`): citations print as written. */
+  | { kind: 'citationsUnavailable' }
+  /** A `:::references` block could not be read (malformed JSON or YAML, or
+   *  BibTeX without an engine). */
+  | { kind: 'referencesUnreadable'; message: string }
   /** A `:::name` line whose name is neither a directive nor a container:
    *  it is set as text. */
   | { kind: 'unknownDirective'; name: string }
@@ -1718,6 +1764,10 @@ export interface VDTDocument {
    *  index of its page in `pages`. Marks whose text reached no page are
    *  left out. Absent when the document has no marks. */
   indexMarks?: { sourceStart: number; pageIndex: number }[];
+  /** Where each anchor of the document landed (#261): headings with an
+   *  identifier (`{#id}`), inline anchors and containers opened with one.
+   *  What a cross-reference links to. Absent when the document sets none. */
+  anchors?: VDTAnchor[];
   /** Configuration values the engine replaced (see {@link ConfigWarning});
    *  absent when the config is clean. */
   configWarnings?: ConfigWarning[];

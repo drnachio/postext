@@ -140,6 +140,7 @@ export function PdfViewport() {
     const snapshotChapter = scope === 'chapter' ? chapterSource : null;
     const snapshotContinuation = continuation;
     const snapshotOutline = scope === 'book' ? undefined : chapterSource.plan.outline;
+    const snapshotCitations = scope === 'book' ? undefined : chapterSource.plan.citations;
     const snapshotSig = continuationSig;
     const snapshotConfig = effectiveConfig;
     const snapshotStateConfig = config;
@@ -179,7 +180,7 @@ export function PdfViewport() {
             setProgress({ pass: chapterPlan.index + 1, blocks: chapterPlan.index, totalBlocks: count, pages: pagesBefore });
             const book = composeBookMemo(snapshotChapters, chapter.id);
             return layoutWorker.build(
-              { markdown: book.markdown, metadata: book.metadata, resources: snapshotResources, continuation, outline: chapterPlan.outline },
+              { markdown: book.markdown, metadata: book.metadata, resources: snapshotResources, continuation, outline: chapterPlan.outline, ...(chapterPlan.citations ? { citations: chapterPlan.citations } : {}) },
               snapshotConfig,
               {
                 cacheKey: layoutCacheKey({
@@ -199,7 +200,7 @@ export function PdfViewport() {
         docs.push(...chain);
       } else {
         const doc = await layoutWorker.build(
-          { markdown: snapshotSource.markdown, metadata: snapshotSource.metadata, resources: snapshotResources, continuation: snapshotContinuation, outline: snapshotOutline },
+          { markdown: snapshotSource.markdown, metadata: snapshotSource.metadata, resources: snapshotResources, continuation: snapshotContinuation, outline: snapshotOutline, ...(snapshotCitations ? { citations: snapshotCitations } : {}) },
           snapshotConfig,
           {
             onProgress: setProgress,

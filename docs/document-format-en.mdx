@@ -116,7 +116,7 @@ A heading line may end with an attribute block in braces — the same `key="valu
 # The Long Road {author="I. Zango Martín" year=1998}
 ```
 
-The braces and their content are removed from the heading text (the title above renders as *The Long Road*) and stored on the heading as `attrs`. They are exposed to design slots as `{attr.<key>}` placeholders: in the heading's own advanced-design slot, and in page headers and footers, where they resolve from the current chapter's H1. Only a balanced, brace-free block at the very end of the line is recognised, after a space or, since Chinese titles are written without one, right after a Chinese or Japanese character (`# 回目{style="x"}`). The block is taken only when the attribute syntax below reads all of it: `{x, y}`, `{紅樓|hóng lóu}` and a lone `{}` stay in the title, and so do flags alone glued to the title (`# 第一回{draft}`). Attributes are separated by spaces, so a block with commas (`{a="1", b="2"}`) and Pandoc's `{#id}` and `{.class}` stay in the title as well; up to postext 1.8 they were read and removed from it. A key written in another script is read and dropped with a warning (see below), so `# 回目{style="x" 作者=曹雪芹}` still takes `style`. See **Configuration → Headers & footers**.
+The braces and their content are removed from the heading text (the title above renders as *The Long Road*) and stored on the heading as `attrs`. They are exposed to design slots as `{attr.<key>}` placeholders: in the heading's own advanced-design slot, and in page headers and footers, where they resolve from the current chapter's H1. Only a balanced, brace-free block at the very end of the line is recognised, after a space or, since Chinese titles are written without one, right after a Chinese or Japanese character (`# 回目{style="x"}`). The block is taken only when the attribute syntax below reads all of it: `{x, y}`, `{紅樓|hóng lóu}` and a lone `{}` stay in the title, and so do flags alone glued to the title (`# 第一回{draft}`). Attributes are separated by spaces, so a block with commas (`{a="1", b="2"}`) and Pandoc's `{.class}` stay in the title as well. Pandoc's identifier `{#id}` is read: it is the same as `id="…"` and names the heading for [cross-references](#cross-references-and-anchors). A key written in another script is read and dropped with a warning (see below), so `# 回目{style="x" 作者=曹雪芹}` still takes `style`. See **Configuration → Headers & footers**.
 
 A value printed by a design text may span several lines: the two characters `\n` start a new line there, whatever the element's `overflow` (`to="Firma X\nStrasse 1\n10115 Berlin"` prints a three-line address). With `inlineMarks` on the element, inline marks in the value apply too: `authors="Ana Ruiz^1^, Luis Gil^2^"` sets the affiliation numbers as superscripts. The escape belongs to attribute values (and to the design's own templates): the characters `\n` in a heading's text, say in a code span, print as written.
 
@@ -681,6 +681,134 @@ so he learned to count the steps in the dark.
 - **Where the note goes.** By default at the foot of the column that holds the line citing it, under a short rule: the line and its note always share a column, and a line whose note does not fit moves on with it. In a one-column layout that is the foot of the page. `footnotes.placement: 'chapterEnd'` sets all the notes of a chapter after its last block instead, by default at the foot of the column they close. See [Footnotes](/en/docs/configuration#footnotes) in the configuration reference for the sizes, the rule and the spacing.
 - **Checks.** A marker with no definition (`undefinedFootnote`) prints its number over an empty note; a definition no marker cites (`unusedFootnote`) is not set. The Sandbox lists both in the Checks panel.
 
+
+## Cross-references and anchors
+
+A cross-reference names a place in the book and prints its number, its title or its page: *see section 3.2*, *as chapter 4 explains*, *on p. 112*. The words and numbers follow the text, so moving a section, renumbering the chapters or reflowing the book updates every reference. In the PDF, the HTML and the Sandbox previews each reference is a link: a click takes the reader to its target, in another chapter too.
+
+**Anchors.** A reference needs something to point at:
+
+- **A heading** with an identifier: `## Method {#sec-method}` (Pandoc's form; `id="sec-method"` works too).
+- **A box or other container** opened with one: `:::callout{#box-safety title="Safety"}`.
+- **A point in the text**: `:anchor{#key-idea}` sets an invisible anchor; `[the key idea]{#key-idea}` keeps its words and names them.
+
+An identifier takes letters, digits, `-`, `_`, `.` and `:`. It must be unique in the book: the Checks panel lists one set twice (`duplicateAnchor`), and references reach its first setting.
+
+**References.** `:ref{id="…"}` names an anchor the way it names a figure or a table:
+
+```md
+## Method {#sec-method}
+
+The results of :ref{id="sec-method"} hold on :ref{id="sec-method" style=page}.
+```
+
+<table>
+<thead><tr><th><code>style</code></th><th>prints</th></tr></thead>
+<tbody>
+<tr><td><em>(none)</em></td><td>a numbered heading by its word and number (<em>section 3.2</em>, <em>chapter 4</em>), an unnumbered heading by its title, an anchor by its text</td></tr>
+<tr><td><code>number</code></td><td>the number alone (<em>3.2</em>)</td></tr>
+<tr><td><code>title</code></td><td>the heading's title, the anchor's text or the box's <code>title</code></td></tr>
+<tr><td><code>page</code></td><td>the page it landed on (<em>p. 112</em>)</td></tr>
+<tr><td><code>pageNumber</code></td><td>the page number alone (<em>112</em>)</td></tr>
+</tbody>
+</table>
+
+`text="…"` prints your own words and still links; `case=capitalize` starts the label with a capital (*Section 3.2* at the start of a sentence). The words follow the document language (*sección 3.2*, *第3.2节*, *S. 112*) and can be changed in [Cross-references](/en/docs/configuration#cross-references) in the configuration; a heading number its template already spells out (*Chapter 4*, *第四章*) prints as it is.
+
+**Page references** are known only once the book is laid out. The engine lays the document out again with the pages of the previous pass until they hold, as it does for the contents; until then a page prints *?*.
+
+**pandoc-crossref.** Text written for pandoc-crossref reads the same: `@sec:method`, `[@fig:map]`, and `[-@tbl:data]` for the number alone. The prefix (`sec`, `fig`, `tbl`, `eq`, `lst`) may be part of the identifier (`{#sec:method}`) or left off it (`{#method}`). An `@` glued to a word, as in an e-mail address, stays text.
+
+A reference to an id nothing sets prints *?* and the Checks panel lists it (`unknownResourceId`). In the Sandbox editor, `@` offers the book's figures, tables, headings with an id and anchors.
+
+## Citations and bibliography
+
+Write citations the way Pandoc reads them, keep the references in the document, and choose the citation style in the settings: switching from APA to IEEE, or to Chicago notes, changes the style setting, not the text. Every citation links to its entry in the bibliography.
+
+### Citing
+
+```md
+As [@garcia2020, p. 33] shows, reading on paper is faster [see @lopez2019, chap. 2; @bringhurst2004].
+@garcia2020 [p. 4] says it plainly; the 2020 study [-@garcia2020] agrees.
+```
+
+- **`[@key]`** cites in parentheses; several works go in one pair of brackets, separated by `;`.
+- **Locator:** after a comma, `p. 33`, `pp. 4–6`, `chap. 2`, `sec. IV`, `fig. 3`, `vol. 2`, `n. 12`, `l. 4`, `§ 4.2`; a bare number is a page. Spanish (`pág.`, `cap.`) and Chinese (`页`, `章`) words work too.
+- **Prefix and suffix:** text before the `@` (`see`) and after the locator (`, emphasis added`).
+- **`[-@key]`** leaves the author out, for a sentence that names the author already.
+- **`@key`** cites in the sentence (*García (2020)*); `@key [p. 4]` adds a locator.
+- An `@` glued to a letter or a digit (an e-mail address), an `@` in inline code and `\@` are text. A citation the book has no reference for prints as written, so a document without references reads as before.
+
+### References
+
+References are written in the document, in CSL form (the data model of Zotero and Pandoc):
+
+```md
+---
+references:
+  - id: garcia2020
+    type: book
+    author: [{family: García, given: Ana}]
+    title: Tipografía y lectura
+    issued: 2020
+    publisher: Trea
+nocite: "@lopez2019"
+---
+```
+
+or in a `:::references` block, in BibTeX (a Zotero, JabRef or Google Scholar export), CSL-JSON or CSL-YAML:
+
+```md
+:::references{format=bibtex}
+@article{lopez2019, author = {López, Luis and Ruiz, Eva}, title = {Leer en pantalla},
+  journal = {Revista de Letras}, year = 2019, volume = 12, pages = {45--67}, doi = {10.1000/xyz}}
+:::
+```
+
+The block prints nothing. `nocite` lists works without citing them (`@*`: all of them). In a book, references written in any chapter count for the whole book.
+
+### The bibliography
+
+`:::bibliography` sets the list of works cited where it stands; without one, the list follows the last chapter, titled in the document language (*References*, *Referencias*, *参考文献*). `:::bibliography{title="Works cited"}` changes the title and `title=""` leaves it out; `scope=chapter` lists the works the chapter cites (an edited volume). Each entry is an anchor (`ref-<key>`), so a Markdown link to `#ref-garcia2020` reaches it, and the PDF tags it as a `BibEntry`.
+
+### Styles
+
+The style decides what a citation and an entry say. The bundled styles are listed below; any other CSL style (there are more than ten thousand in the Zotero style repository) can be loaded from its `.csl` file in **Settings → Citations**.
+
+<table>
+  <thead>
+    <tr><th><code>citations.style</code></th><th>Name</th><th>System</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>apa</code></td><td>APA 7</td><td>author-date</td></tr>
+    <tr><td><code>chicago-author-date</code></td><td>Chicago (author-date)</td><td>author-date</td></tr>
+    <tr><td><code>harvard-cite-them-right</code></td><td>Harvard</td><td>author-date</td></tr>
+    <tr><td><code>iso690-author-date-en</code>, <code>iso690-author-date-es</code></td><td>ISO 690</td><td>author-date</td></tr>
+    <tr><td><code>china-national-standard-gb-t-7714-2015-author-date</code></td><td>GB/T 7714 著者-出版年</td><td>author-date</td></tr>
+    <tr><td><code>modern-language-association</code></td><td>MLA 9</td><td>author-page</td></tr>
+    <tr><td><code>ieee</code></td><td>IEEE</td><td>numbered</td></tr>
+    <tr><td><code>elsevier-vancouver</code></td><td>Vancouver</td><td>numbered</td></tr>
+    <tr><td><code>american-medical-association</code></td><td>AMA</td><td>numbered</td></tr>
+    <tr><td><code>nature</code></td><td>Nature</td><td>numbered</td></tr>
+    <tr><td><code>iso690-numeric-en</code></td><td>ISO 690</td><td>numbered</td></tr>
+    <tr><td><code>china-national-standard-gb-t-7714-2015-numeric</code></td><td>GB/T 7714 顺序编码</td><td>numbered</td></tr>
+    <tr><td><code>chicago-notes-bibliography</code></td><td>Chicago (notes)</td><td>notes</td></tr>
+    <tr><td><code>oscola</code></td><td>OSCOLA</td><td>notes</td></tr>
+    <tr><td><code>china-national-standard-gb-t-7714-2015-note</code></td><td>GB/T 7714 注释</td><td>notes</td></tr>
+  </tbody>
+</table>
+
+With a **note style** each citation becomes a footnote, placed and numbered as the footnote settings say; later citations of the same work take a short form. In Chinese text, `citations.notes: 'warichu'` sets them as two-row notes inside the line (夹注).
+
+**Chinese.** The GB/T 7714-2015 styles write the document-type codes (`[M]`, `[J]`, `[D]`, `[EB/OL]`), keep Chinese names whole and write `等` after three authors of a Chinese work and `et al.` after those of a Western one, choosing by each work's `language`. In vertical text a superscript number stands to the right of its character; `citations.marker: 'corner'` writes `〔1〕`, which stays upright.
+
+**Engine.** Citations are formatted by the `postext-citeproc` package (citeproc-js and the CSL styles). The Sandbox loads it for documents that cite; in your own code, register it before laying out:
+
+```ts
+import 'postext-citeproc/register';
+```
+
+The Checks panel lists a key no reference defines (`unknownCitationKey`) and a references block that cannot be read (`referencesUnreadable`).
 
 ## Back-of-book index
 

@@ -46,13 +46,17 @@
     "colorjs.io": "^0.7.1",
     "fflate": "^0.8.3",
     "lucide-react": "^1.42.0",
+    "postext-citeproc": "workspace:*",
+    "postext-folio": "workspace:*",
     "postext-pdf": "workspace:*",
-    "tailwind-merge": "^3.6.0"
+    "tailwind-merge": "^3.6.0",
+    "three": "^0.186.1"
   },
   "devDependencies": {
     "@postext/typescript-config": "workspace:*",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
+    "@types/three": "^0.186.0",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.1.1",
     "postext": "workspace:*",

@@ -5,6 +5,7 @@
 // `pageNumbering`) is left to the caller, which knows how many pages the
 // preceding content produced and how its last page was numbered.
 
+import { hasAnchorRefs } from './crossRefs';
 import { extractFrontmatter } from '../frontmatter';
 import { parseMarkdownMemo } from '../parse';
 import type { ContentBlock } from '../parse';
@@ -95,10 +96,10 @@ function endsWithPart(blocks: readonly ContentBlock[], partEnds: Iterable<number
  *  `continuationAfter`, to assemble a book's outline before any page is
  *  laid out. */
 export function contentOutline(
-  content: Pick<PostextContent, 'markdown'>,
+  content: Pick<PostextContent, 'markdown'> & Partial<Pick<PostextContent, 'resources'>>,
   config?: PostextConfig,
   before?: LayoutContinuation,
-): { outline: OutlineEntry[]; hasToc: boolean; hasIndex: boolean } {
+): { outline: OutlineEntry[]; hasToc: boolean; hasIndex: boolean; hasRefs: boolean } {
   const body = extractFrontmatter(content.markdown).content;
   const blocks = parseMarkdownMemo(body);
   const resolved = resolveAllConfig(config);
@@ -106,5 +107,7 @@ export function contentOutline(
     outline: computeOutline(blocks, resolved, before?.headings),
     hasToc: hasTocDirective(blocks),
     hasIndex: hasIndexDirective(blocks),
+    // A reference naming no resource may name an anchor of the book (#262).
+    hasRefs: hasAnchorRefs(blocks, new Set((content.resources ?? []).map((r) => r.id))),
   };
 }

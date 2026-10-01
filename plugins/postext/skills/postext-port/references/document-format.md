@@ -79,7 +79,7 @@ A heading's inline content is read like a paragraph's while `headings.inlineMark
 The blob is parsed with the shared attribute grammar (§8). Since 1.9 it is taken only when the grammar reads **all** of it (tokens separated by spaces); otherwise it stays in the text.
 - `# Title {}` keeps `{}` in the title.
 - `# Chapter {1}` keeps `{1}`, because a key must start with a letter or `_`.
-- `# The set {a, b}`, Pandoc's `{#id}` / `{.class}` and `{a="1", b="2"}` stay in the title (1.8 and earlier ate them). Flags alone are read after a space (`# Title {draft}`) but not glued to a title (`# 第一回{draft}` stays text).
+- `# The set {a, b}`, Pandoc's `{.class}` and `{a="1", b="2"}` stay in the title (1.8 and earlier ate them). Pandoc's `{#id}` is read since 1.12: it is `id="…"`, the heading's anchor (§10.6). Flags alone are read after a space (`# Title {draft}`) but not glued to a title (`# 第一回{draft}` stays text).
 - A key in another script (`作者=曹雪芹`) is dropped with an `attributeKeyInvalid` warning; the block's other keys apply.
 - A title ending in a compact ruby (`# 紅樓夢 {紅樓|hóng|lóu}`) keeps it as a ruby.
 - **Gotcha:** `# Title {note="a}b"}` does not parse (a `}` inside the value). The whole blob stays in the text.
@@ -92,7 +92,7 @@ The blob is parsed with the shared attribute grammar (§8). Since 1.9 it is take
 | `toc` | `false`/`no`/`0` or `true`/`yes`/`1` | Overrides whether `:::toc` lists this heading. Default: the style's `toc`, else `true`. |  |
 
 - There is **no** `numbered` heading attribute. `{numbered=false}` is only stored as a free attr; use a heading style with `numbered: false` instead.
-- There is **no** `id` or anchor attribute. Headings have no ids and cannot be cross-referenced; `:ref` targets resources only.
+- `id` (or `{#id}`, postext ≥ 1.12) names the heading for cross-references: `:ref{id="…"}` prints *section 3.2* / its title / its page and links to it (§10.6). Before 1.12 headings had no ids.
 
 **Free attributes** (any key: `author`, `lead`, `kicker`, `standfirst`, `source`, `date`, …) are stored as strings and surface in design slots as `{attr.<key>}`:
 - In the heading's own advanced-design slot, the heading's attrs are used.
@@ -542,6 +542,23 @@ Heart failure:index{term="Heart!failure" range="start"} … :index{term="Heart!f
 ```
 
 ---
+
+### 10.6 Cross-references and anchors (postext ≥ 1.12)
+
+- **Anchors:** a heading `## Method {#sec-method}` (or `id="…"`), a container `:::callout{#box title="…"}`, an invisible `:anchor{#key}`, or `[words]{#key}` (the words stay). Like index marks, inline anchors are taken out before parsing and never change the layout. Ids: letters, digits, `-_.:`; unique in the book (`duplicateAnchor`).
+- **References:** `:ref{id="sec-method"}` → *section 1.1* (a level-1 heading: *chapter 1*; an unnumbered heading: its title; an anchor: its text). `style=number` (*1.1*), `title`, `page` (*p. 12*), `pageNumber` (*12*); `text=`, `case=` as for resources. Words follow `locale` (*sección*, *第1.1节*) and config `crossRefs` (configuration.md). Page references converge over layout rounds like `:::toc`; a chapter's references reach anchors in other chapters of the book.
+- **pandoc-crossref:** `@sec:id`, `[@fig:id]`, `[-@tbl:id]` (number only), `@Sec:id` (capitalised). The prefix may be part of the id or left off it. An `@` glued to a word stays text.
+- **Links:** PDF link annotations + named destinations (`file.pdf#nameddest=id`), HTML `<a href="#pt-a-id">`, clickable in the Sandbox.
+- **Porting:** turn LaTeX `\label{sec:x}` / `\ref{sec:x}` / `\pageref{x}` into `{#sec:x}` / `:ref{id="sec:x" style=number}` / `:ref{id="x" style=page}`; Word cross-reference fields and InDesign text anchors likewise. Keep the source's words ("see section", "véase el capítulo") outside the reference when the reference prints the number only.
+
+### 10.7 Citations and bibliography (postext ≥ 1.12)
+
+- **Syntax (Pandoc):** `[@key]`, `[@a, p. 33; @b]`, `[see @a, chap. 2, emphasis added]`, `[-@a]` (author left out), narrative `@a` and `@a [p. 33]`. Locator labels: p./pp./pág./页, chap./cap./章, sec./§, fig., vol., n., l., para.; a bare number is a page. An `@` after a letter/digit (e-mail), in code, or `\@` is text. A citation whose key the book does not define prints as written (`unknownCitationKey` warns for bracketed ones).
+- **References:** front matter `references:` (CSL-YAML list; `author: ["García, Ana"]` or `[{family, given}]`, `issued: 2020`) and/or `:::references{format=bibtex|csl-json|csl-yaml}` … `:::` (raw body, prints nothing). `nocite: "@a, @b"` / `"@*"`. References in any chapter count for the whole book.
+- **Bibliography:** `:::bibliography{title="…" scope=book|chapter}` where it goes; without it, after the last chapter (title in the document language; `title=""` none). Entries are anchors `ref-<key>`; `[text](#ref-key)` links to one.
+- **Style:** config `citations.style` (configuration.md §19a3): bundled `apa`, `chicago-author-date`, `chicago-notes-bibliography`, `modern-language-association`, `harvard-cite-them-right`, `ieee`, `elsevier-vancouver`, `american-medical-association`, `nature`, `iso690-*`, `oscola`, `china-national-standard-gb-t-7714-2015-{numeric,author-date,note}`; or `'custom'` + `customStyle` (CSL XML). Note styles turn each citation into a footnote (or 夹注 with `citations.notes: 'warichu'`).
+- **Engine:** `import 'postext-citeproc/register'` before building (render.mjs and Node scripts too); the Sandbox loads it itself. Without it citations print as written (`citationsUnavailable`).
+- **Porting:** LaTeX `\cite{a,b}` → `[@a; @b]`, `\cite[p.~33]{a}` → `[@a, p. 33]`, `\textcite{a}` → `@a`, `\parencite[see][12]{a}` → `[see @a, p. 12]`, `\nocite{*}` → `nocite: "@*"`; keep the `.bib` as a `:::references{format=bibtex}` block (or convert to front matter). Word/Zotero field citations: export the library as CSL-JSON or BibTeX and rewrite each field as `[@key]`. A printed book's hand-made bibliography can stay as text under `:::paragraphs{style=…}` when its sources are not worth re-keying.
 
 ## 11. Math (MathJax TeX, `AllPackages`, so amsmath, mhchem etc.; )
 

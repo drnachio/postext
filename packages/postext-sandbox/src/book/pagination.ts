@@ -5,8 +5,8 @@
 // preceding chapter, recorded as a `ChapterLayout`). Page numbers thus run
 // on across chapters without ever laying out the whole book in a preview.
 
-import { configUsesPlaceholder, contentOutline, continuationAfter, extractFrontmatter, formatNumeral, indexOutline, outlineFromDoc, outlineKey, parseMarkdown, resolveHeadingsConfig, resolvePageConfig, DEFAULT_PARTS_CONFIG, tocOutline } from 'postext';
-import type { LayoutContinuation, NumeralStyle, OutlineEntry, PostextConfig, Resource, VDTDocument } from 'postext';
+import { anchorOutline, bookCitationContexts, citationContextKey, citationSourceOf, mayNeedCitations, needsCitationContext, configUsesPlaceholder, contentOutline, continuationAfter, extractFrontmatter, formatNumeral, indexOutline, outlineFromDoc, outlineKey, parseMarkdown, resolveHeadingsConfig, resolvePageConfig, DEFAULT_PARTS_CONFIG, tocOutline } from 'postext';
+import type { CitationSource, LayoutContinuation, NumeralStyle, OutlineEntry, PostextConfig, Resource, VDTDocument } from 'postext';
 import type { BookPages, BookPlan, Chapter, ChapterLayout, ChapterPageNumber, ChapterPages, ChapterPart, ChapterPlan, OutlinePage } from './types';
 import { ENGINE_KEY, configKeyOf, resourcesKeyOf } from './layoutKeys';
 
@@ -85,6 +85,9 @@ interface CountersEntry {
   hasToc: boolean;
   /** Whether the chapter prints the index (`:::index`). */
   hasIndex: boolean;
+  /** Whether a reference of the chapter may name an anchor of the book
+   *  (#262): it reads the book's headings and anchors, with their pages. */
+  hasRefs: boolean;
   /** {@link opensOnEvenPage}, worked out the first time a plan asks. */
   opensEven?: boolean;
 }
@@ -257,6 +260,21 @@ function usesBookTotalPages(config: PostextConfig): boolean {
  *  and the chain stops at chapter 10). */
 export function createBookPlanner(): BookPlanner {
   const cache = new Map<string, CountersEntry>();
+  /** Each chapter's parsed form for the citations, by its text. */
+  const citationCache = new Map<string, { markdown: string; source: CitationSource }>();
+  const citationSource = (chapter: Chapter): CitationSource => {
+    const hit = citationCache.get(chapter.id);
+    if (hit && hit.markdown === chapter.markdown) return hit.source;
+    let source: CitationSource;
+    try {
+      // A chapter that cannot cite (no `@`, no references) counts as empty.
+      source = mayNeedCitations(chapter.markdown) ? citationSourceOf(chapter.markdown) : { blocks: [] };
+    } catch {
+      source = { blocks: [] };
+    }
+    citationCache.set(chapter.id, { markdown: chapter.markdown, source });
+    return source;
+  };
 
   const countersAfter = (
     chapter: Chapter,
@@ -276,7 +294,7 @@ export function createBookPlanner(): BookPlanner {
       return hit;
     }
     const after = continuationAfter({ markdown: chapter.markdown, resources }, config, before);
-    const { outline, hasToc, hasIndex } = contentOutline({ markdown: chapter.markdown }, config, before);
+    const { outline, hasToc, hasIndex, hasRefs } = contentOutline({ markdown: chapter.markdown, resources }, config, before);
     const entry: CountersEntry = {
       markdown: chapter.markdown,
       config,
@@ -288,6 +306,7 @@ export function createBookPlanner(): BookPlanner {
       outline,
       hasToc,
       hasIndex,
+      hasRefs,
     };
     cache.set(chapter.id, entry);
     return entry;
@@ -356,7 +375,7 @@ export function createBookPlanner(): BookPlanner {
       // A chapter printing the contents (`:::toc`) or the index
       // (`:::index`) is laid out with it; when what it prints changes, that
       // chapter's record goes stale — its pages hold, its rows do not.
-      const anyToc = entries.some((e) => e.hasToc || e.hasIndex);
+      const anyToc = entries.some((e) => e.hasToc || e.hasIndex || e.hasRefs);
       /** The first content page of the chapters from `index` on (an empty
        *  chapter holds none), while the chain places them. */
       const firstContentPageFrom = (index: number): { pageLabel: string; pageIndex: number } | null => {
@@ -393,14 +412,24 @@ export function createBookPlanner(): BookPlanner {
       // The contents read the headings and parts, the index the index
       // marks: a chapter printing one goes stale only when what it prints
       // moves.
+      // References read the headings with an identifier and the anchors.
       const outlines = anyToc
-        ? { toc: tocOutline(bookOutline), index: indexOutline(bookOutline) }
-        : { toc: [], index: [] };
-      const printedKeys = { toc: '', index: '' };
+        ? { toc: tocOutline(bookOutline), index: indexOutline(bookOutline), refs: anchorOutline(bookOutline) }
+        : { toc: [], index: [], refs: [] };
+      const printedKeys = { toc: '', index: '', refs: '' };
       if (entries.some((e) => e.hasToc)) printedKeys.toc = outlineKey(outlines.toc);
       if (entries.some((e) => e.hasIndex)) printedKeys.index = outlineKey(outlines.index);
+      if (entries.some((e) => e.hasRefs)) printedKeys.refs = outlineKey(outlines.refs);
       /** The outline a chapter is laid out with, and its key. */
       const chapterOutline = (entry: CountersEntry): { outline?: OutlineEntry[]; key: string } => {
+        if (entry.hasRefs) {
+          // The parts the chapter prints, in book order, with the anchors.
+          const outline = bookOutline.filter((e) => e.anchorId !== undefined
+            || (entry.hasToc && (e.kind === 'heading' || e.kind === 'part'))
+            || (entry.hasIndex && e.kind === 'indexMark'));
+          const key = [entry.hasToc ? printedKeys.toc : '', entry.hasIndex ? printedKeys.index : '', printedKeys.refs].join('\n\n');
+          return { outline, key };
+        }
         if (entry.hasToc && entry.hasIndex) return { outline: bookOutline, key: `${printedKeys.toc}\n\n${printedKeys.index}` };
         if (entry.hasToc) return { outline: outlines.toc, key: printedKeys.toc };
         if (entry.hasIndex) return { outline: outlines.index, key: printedKeys.index };
@@ -413,6 +442,16 @@ export function createBookPlanner(): BookPlanner {
       let stalePendingId: string | null = null;
       // Counters inherited by the chapter being planned (undefined = first).
       let counters: LayoutContinuation | undefined;
+      // The book's citations (#272): numbered, disambiguated and listed
+      // across the chapters, each chapter formatted against its share.
+      const citationSources = chapters.map(citationSource);
+      const citationContexts = citationSources.some((src) => needsCitationContext(src.blocks, src.metadata))
+        ? bookCitationContexts(citationSources)
+        : undefined;
+      // The book-wide part of every chapter's key, written once.
+      const sharedCitationKey = citationContexts?.[0]
+        ? citationContextKey({ ...citationContexts[0], local: [], last: false })
+        : '';
       chapters.forEach((chapter, index) => {
         const first = index === 0;
         const pages = starts[index]!;
@@ -433,7 +472,9 @@ export function createBookPlanner(): BookPlanner {
             ...(pages ? { pageIndexOffset: pages.physical, pageNumbering: { format: pages.format, startAt: pages.number } } : provisional),
             ...total,
           };
-        const { outline: printedOutline, key: chapterOutlineKey } = chapterOutline(entries[index]!);
+        const { outline: printedOutline, key: printedKey } = chapterOutline(entries[index]!);
+        const citations = citationContexts?.[index];
+        const chapterOutlineKey = citations ? `${printedKey}\n\ncite:${sharedCitationKey}|${citations.local.join(',')}|${citations.last ? 1 : 0}` : printedKey;
         const layout = records[index]!;
         const outlineStale = layout !== null && layout.outlineKey !== chapterOutlineKey;
         if (outlineStale && stalePendingId === null) stalePendingId = chapter.id;
@@ -449,6 +490,7 @@ export function createBookPlanner(): BookPlanner {
           layout,
           outlineStale,
           ...(printedOutline ? { outline: printedOutline } : {}),
+          ...(citations ? { citations } : {}),
           outlineKey: chapterOutlineKey,
         };
         plans.push(plan);

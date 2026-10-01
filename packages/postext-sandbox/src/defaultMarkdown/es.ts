@@ -516,6 +516,12 @@ Las referencias merecen una mirada más atenta, porque con ellas se escribe la m
 
 \`::resource{id="…"}\`, en una línea propia, inserta un recurso en ese punto exacto cuando su colocación dice _here_; en otro caso, cuenta simplemente como una mención. Este libro no lo usa en ninguna parte y deja flotar todas las figuras, que suele ser la mejor elección.
 
+## Referencias cruzadas y citas
+
+El mismo \`:ref\` nombra cualquier lugar del libro que lleve un identificador: un título escrito \`## Método {#metodo}\`, un recuadro abierto con \`{#id}\` o una frase marcada \`[estas palabras]{#clave}\`. Imprime _sección 3.2_ o _capítulo 4_, el título con \`style=title\` o la página con \`style=page\`, y la página es la correcta porque el motor vuelve a componer el libro hasta que no cambia. Cada una de estas referencias es un enlace en el PDF, en el HTML y en estas vistas previas.
+
+Las obras se citan como las escribe Pandoc, \`[@garcia2020, pág. 33]\` o \`@garcia2020\` dentro de la frase, con las referencias en el front matter o en un bloque \`:::references\` de BibTeX. El estilo de cita es un ajuste, no una propiedad del texto: APA, Chicago, MLA, IEEE, Vancouver, ISO 690, GB/T 7714 o un estilo propio, que se elige en Diseño › Citas, donde una vista previa muestra el resultado. La bibliografía va tras el último capítulo, o allí donde se escriba \`:::bibliography\`.
+
 ## Recuadros
 
 \`:::callout\` compone una caja con un título opcional, en uno de los estilos que define la configuración. Este libro define cuatro: los recuadros _Pruébalo_ que te mandan al Sandbox, las notas técnicas, las citas destacadas en cursiva de rótulo y un panel oscuro de página completa con cifras clave. Un estilo decide el fondo, el borde, la franja y el radio de las esquinas de la caja, un icono o marca opcional, la tipografía de su título, su cuerpo y sus listas, y dónde va: en el flujo, en la cabeza o al pie de una columna, a lo ancho de la página, en la columna lateral de una maquetación de columna y media o fijo en una posición de la página.

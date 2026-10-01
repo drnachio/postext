@@ -58,14 +58,16 @@ export function ChapterPaginator() {
     return () => clearTimeout(timer);
   }, [storeReady, settled]);
 
-  // The active chapter is left to the canvas when that is the tab shown:
+  // The active chapter is left to the canvas (or the folio, which lays out
+  // the same pages) when that is the tab shown:
   // it lays the chapter out at print geometry and records the layout on
   // every rebuild — and every chapter, when it shows the whole book. The
   // HTML tab lays out for the screen and the PDF tab only on request, so
   // under those the active chapter is handled here.
   const pending = plan.pendingChapterId ? plan.byId[plan.pendingChapterId] : undefined;
-  const wholeBookOnCanvas = activeViewport === 'canvas' && canvasScope === 'book';
-  const leftToPreview = wholeBookOnCanvas || (activeViewport === 'canvas' && pending?.chapterId === activeChapterId);
+  const printPreview = activeViewport === 'canvas' || activeViewport === 'folio';
+  const wholeBookOnCanvas = printPreview && canvasScope === 'book';
+  const leftToPreview = wholeBookOnCanvas || (printPreview && pending?.chapterId === activeChapterId);
   const pendingId = storeReady && settled && pending && pending.paginated && !leftToPreview ? pending.chapterId : null;
   const pendingKey = pendingId ? `${pendingId}|${plan.byId[pendingId]!.continuationKey}|${plan.byId[pendingId]!.outlineKey}` : null;
   const chapterMarkdown = pendingId ? chapters.find((c) => c.id === pendingId)?.markdown : undefined;
@@ -96,7 +98,7 @@ export function ChapterPaginator() {
     const book = composeBookMemo(currentChapters, id);
     const effectiveConfig = withHyphenationLocale(currentConfig, currentLocale);
     layoutWorker.build(
-      { markdown: book.markdown, metadata: book.metadata, resources: currentResources, continuation: chapterPlan.continuation, outline: chapterPlan.outline },
+      { markdown: book.markdown, metadata: book.metadata, resources: currentResources, continuation: chapterPlan.continuation, outline: chapterPlan.outline, ...(chapterPlan.citations ? { citations: chapterPlan.citations } : {}) },
       effectiveConfig,
       {
         cacheKey: layoutCacheKey({
@@ -157,7 +159,7 @@ export function ChapterPaginator() {
         warmedRef.current.add(key);
         layoutWorker
           .warm(
-            { markdown: book.markdown, metadata: book.metadata, resources, continuation: chapterPlan.continuation, outline: chapterPlan.outline },
+            { markdown: book.markdown, metadata: book.metadata, resources, continuation: chapterPlan.continuation, outline: chapterPlan.outline, ...(chapterPlan.citations ? { citations: chapterPlan.citations } : {}) },
             effectiveConfig,
             key,
           )

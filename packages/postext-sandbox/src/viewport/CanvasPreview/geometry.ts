@@ -176,18 +176,18 @@ export function findResourceLocation(
 
 /** Walk already-positioned resource lines (caption / table cells): segments
  *  paint sequentially from the line origin at natural widths. */
-function refInResourceLines(
+function segmentInResourceLines(
   lines: VDTLine[],
   xPage: number,
   yPage: number,
-): string | null {
+): VDTSegment | null {
   for (const line of lines) {
     if (yPage < line.bbox.y || yPage > line.bbox.y + line.bbox.height) continue;
     if (!line.segments) continue;
     let x = line.bbox.x;
     for (const seg of line.segments) {
       if (xPage >= x && xPage <= x + seg.width) {
-        return seg.refResourceId ?? null;
+        return seg;
       }
       x += seg.width;
     }
@@ -196,11 +196,11 @@ function refInResourceLines(
 }
 
 /** Walk a body-text line mirroring the renderers' justify-fill math. */
-function refInBlockLine(
+function segmentInBlockLine(
   block: VDTBlock,
   line: VDTLine,
   xPage: number,
-): string | null {
+): VDTSegment | null {
   const segs = line.segments;
   if (!segs || segs.length === 0) return null;
   const blockRight = block.bbox.x + block.bbox.width;
@@ -221,7 +221,7 @@ function refInBlockLine(
   for (const seg of segs) {
     const segRendered = seg.width + (seg.kind === 'space' ? extraPerSpace : 0);
     if (xPage >= x && xPage <= x + segRendered) {
-      return seg.refResourceId ?? null;
+      return seg;
     }
     x += segRendered;
   }
@@ -296,6 +296,67 @@ export function refResourceIdAtPixel(
   xPage: number,
   yPage: number,
 ): string | null {
+  const seg = segmentAtPixel(doc, pageIndex, xPage, yPage);
+  return seg && !seg.refAnchor ? seg.refResourceId ?? null : null;
+}
+
+/** What a click on a linked segment goes to (#265): a resource or an
+ *  anchor a `:ref` names (with the book page the anchor landed on, when
+ *  known), a footnote's note, a book page (an index page number) or a URL
+ *  (a Markdown link). */
+export type LinkTarget =
+  | { kind: 'resource'; id: string }
+  | { kind: 'anchor'; id: string; pageIndex?: number }
+  | { kind: 'footnote'; id: string }
+  | { kind: 'page'; pageIndex: number }
+  | { kind: 'url'; href: string };
+
+/** The link of the segment at page-space pixel coordinates, or null. */
+export function linkTargetAtPixel(
+  doc: VDTDocument,
+  pageIndex: number,
+  xPage: number,
+  yPage: number,
+): LinkTarget | null {
+  const seg = segmentAtPixel(doc, pageIndex, xPage, yPage);
+  if (!seg) return null;
+  if (seg.refResourceId !== undefined) {
+    return seg.refAnchor
+      ? { kind: 'anchor', id: seg.refResourceId, ...(seg.refPageIndex !== undefined ? { pageIndex: seg.refPageIndex } : {}) }
+      : { kind: 'resource', id: seg.refResourceId };
+  }
+  if (seg.footnoteId !== undefined) return { kind: 'footnote', id: seg.footnoteId };
+  if (seg.pageLink !== undefined) return { kind: 'page', pageIndex: seg.pageLink };
+  // A link inside the document (`[see](#sec-intro)`, a citation's
+  // `#ref-key`) goes to its anchor.
+  if (seg.href !== undefined && seg.href.startsWith('#') && seg.href.length > 1) return { kind: 'anchor', id: decodeURIComponent(seg.href.slice(1)) };
+  if (seg.href !== undefined) return { kind: 'url', href: seg.href };
+  return null;
+}
+
+/** Where an anchor or a footnote's note landed in `doc` (#265), or null
+ *  when it is not in this document. */
+export function findLinkLocation(doc: VDTDocument, target: LinkTarget): ResourceLocation | null {
+  if (target.kind === 'resource') return findResourceLocation(doc, target.id);
+  if (target.kind === 'anchor') {
+    const a = doc.anchors?.find((x) => x.id === target.id);
+    return a ? { pageIndex: a.pageIndex, x: a.x, y: a.y } : null;
+  }
+  if (target.kind === 'footnote') {
+    const note = doc.blocks.find((b) => b.footnoteNote === target.id && b.pageIndex >= 0 && !b.hidden);
+    return note ? { pageIndex: note.pageIndex, x: note.bbox.x, y: note.bbox.y } : null;
+  }
+  return null;
+}
+
+/** The segment under page-space pixel coordinates: body text, captions and
+ *  table cells (float bands included). */
+function segmentAtPixel(
+  doc: VDTDocument,
+  pageIndex: number,
+  xPage: number,
+  yPage: number,
+): VDTSegment | null {
   const candidates: VDTBlock[] = doc.blocks.filter((b) => b.pageIndex === pageIndex && !b.resourceBlock);
   for (const rb of resourceBlocksOnPage(doc, pageIndex)) candidates.push(rb);
 
@@ -307,19 +368,19 @@ export function refResourceIdAtPixel(
     if (rb) {
       // A rotated block keeps its lines in its upright frame.
       const p = resourceBlockToLocal(rb, xPage, yPage);
-      const inCaption = refInResourceLines(rb.captionLines, p.x, p.y);
-      if (inCaption !== null) return inCaption;
+      const inCaption = segmentInResourceLines(rb.captionLines, p.x, p.y);
+      if (inCaption?.refResourceId !== undefined) return inCaption;
       if (rb.table) {
         for (const cell of rb.table.cells) {
-          const inCell = refInResourceLines(cell.lines, p.x, p.y);
-          if (inCell !== null) return inCell;
+          const inCell = segmentInResourceLines(cell.lines, p.x, p.y);
+          if (inCell?.refResourceId !== undefined) return inCell;
         }
       }
       continue;
     }
     for (const line of b.lines) {
       if (yPage < line.bbox.y || yPage > line.bbox.y + line.bbox.height) continue;
-      const hit = refInBlockLine(b, line, xPage);
+      const hit = segmentInBlockLine(b, line, xPage);
       if (hit !== null) return hit;
     }
   }

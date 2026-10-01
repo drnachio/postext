@@ -62,7 +62,7 @@ import {
   popClip,
   strokeOutlinePx,
 } from './primitives';
-import { LinkRegistry, RefRun, UriRuns } from './links';
+import { LinkRegistry, RefRun, refTarget, UriRuns } from './links';
 import { paintChip } from './chip';
 import { tagArtifact, tagContent, type StructAttrs, type StructElem } from './tagging';
 import type { StructureFlow } from './structureFlow';
@@ -556,7 +556,7 @@ function paintLine(
   color: Color,
   linkColor: Color,
   linkRegistry: LinkRegistry | undefined,
-  resolveRefId: ((seg: { refResourceId?: string }) => string | undefined),
+  resolveRefId: ((seg: { refResourceId?: string; refAnchor?: true }) => string | undefined),
   labelColor: Color = color,
   elem?: StructElem,
 ): void {
@@ -574,7 +574,7 @@ function paintLineRuns(
   color: Color,
   linkColor: Color,
   linkRegistry: LinkRegistry | undefined,
-  resolveRefId: ((seg: { refResourceId?: string }) => string | undefined),
+  resolveRefId: ((seg: { refResourceId?: string; refAnchor?: true }) => string | undefined),
   labelColor: Color,
   elem: StructElem | undefined,
   tracking = 0,
@@ -854,7 +854,7 @@ function renderTable(
     const cellElem = cellElems?.get(cell);
     if (cellElems && !cellElem) tagArtifact(ctx, { type: 'Layout' });
     for (const line of cell.lines) {
-      paintLine(ctx, line, fonts, fontCache, color, linkColor, linkRegistry, (seg) => seg.refResourceId, color, cellElem);
+      paintLine(ctx, line, fonts, fontCache, color, linkColor, linkRegistry, refTarget, color, cellElem);
     }
   }
 }
@@ -964,7 +964,7 @@ export function renderResourceBlock(
     ? structure.captionElem(owner)
     : undefined;
   for (const line of rb.captionLines) {
-    paintLine(ctx, line, captionFonts, fontCache, captionColor, linkColor, linkRegistry, (seg) => seg.refResourceId, captionLabelColor, captionElem);
+    paintLine(ctx, line, captionFonts, fontCache, captionColor, linkColor, linkRegistry, refTarget, captionLabelColor, captionElem);
   }
 
   // Note.
@@ -977,7 +977,7 @@ export function renderResourceBlock(
   };
   const noteElem = structure && rb.noteLines.length > 0 ? structure.noteElem(block) : undefined;
   for (const line of rb.noteLines) {
-    paintLine(ctx, line, noteFonts, fontCache, noteColor, linkColor, linkRegistry, (seg) => seg.refResourceId, noteColor, noteElem);
+    paintLine(ctx, line, noteFonts, fontCache, noteColor, linkColor, linkRegistry, refTarget, noteColor, noteElem);
   }
   // The "continued" marker of a table slice that goes on is a layout cue.
   if (rb.continuesLines && rb.continuesLines.length > 0) {

@@ -415,7 +415,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
           resources: resourcesRef.current,
           ...(currentWholeBook
             ? {}
-            : { continuation: currentLayout.continuation, outline: currentLayout.plan.outline }),
+            : { continuation: currentLayout.continuation, outline: currentLayout.plan.outline, ...(currentLayout.plan.citations ? { citations: currentLayout.plan.citations } : {}) }),
         },
         configOverride,
       );

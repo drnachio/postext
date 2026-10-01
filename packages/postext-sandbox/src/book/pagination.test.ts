@@ -547,3 +547,24 @@ describe('chapter parts in the plan', () => {
     expect(plan.byId.c4!.part).toEqual({ number: 'III', title: 'Jade' });
   });
 });
+
+describe('createBookPlanner: cross-references (#262)', () => {
+  const book = (title: string) => [
+    newChapter('a', 'A', '# One\n\nAs :ref{id="later"} shows, and :ref{id=f1}.', 1),
+    newChapter('b', 'B', `# Two\n\n## ${title} {#later}\n\nText [here]{#spot}.`, 1),
+    newChapter('c', 'C', '# Three', 1),
+  ];
+
+  it('hands a chapter with references the book’s headings with ids and its anchors', () => {
+    const plan = createBookPlanner().plan(book('Later'), config, resources, {});
+    expect(plan.byId.a!.outline!.map((e) => e.anchorId)).toEqual(['later', 'spot']);
+    expect(plan.byId.c!.outline).toBeUndefined();
+  });
+
+  it('moves the referring chapter’s key when a target changes', () => {
+    const planner = createBookPlanner();
+    const first = planner.plan(book('Later'), config, resources, {});
+    const second = planner.plan(book('After'), config, resources, {});
+    expect(second.byId.a!.outlineKey).not.toBe(first.byId.a!.outlineKey);
+  });
+});

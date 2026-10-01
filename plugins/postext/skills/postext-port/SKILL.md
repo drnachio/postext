@@ -154,7 +154,7 @@ Full references (load the one you need):
 python3 -m pip install pymupdf pillow fonttools brotli     # PDF, images, fonts
 brew install pandoc poppler                                  # or apt: pandoc poppler-utils (DOCX/PPTX/EPUB/HTML, page images)
 mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools \
-  && npm init -y >/dev/null && npm i postext postext-pdf react @pdf-lib/fontkit   # headless render (Node >= 22.15)
+  && npm init -y >/dev/null && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit   # headless render (Node >= 22.15)
 ```
 
 Optional: `ocrmypdf` (scans), `magick` (SVG fallback rasters, contact sheets),

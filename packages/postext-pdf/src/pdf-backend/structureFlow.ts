@@ -164,9 +164,12 @@ export class StructureFlow {
           elem = this.calloutTitle(block, parent);
           break;
         default:
+          // A bibliography entry (#269): a paragraph holding a `BibEntry`.
           elem = block.footnoteNote !== undefined
             ? parent.child('Note', { id: `note-${block.footnoteNote}` })
-            : parent.child('P');
+            : block.bibEntry !== undefined
+              ? parent.child('P').child('BibEntry')
+              : parent.child('P');
       }
     }
     this.byId.set(key, elem);

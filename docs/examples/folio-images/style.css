@@ -1,0 +1,17 @@
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  color: #eee;
+  background: radial-gradient(ellipse 70% 75% at 50% 42%, #272b34 0%, #1a1d23 58%, #121418 100%);
+  min-height: 100vh;
+}
+#status {
+  margin: 12px 16px 0;
+  font-size: 14px;
+  opacity: 0.8;
+}
+/* The viewer fits the book into its container: give it a height. */
+#book {
+  height: calc(100vh - 48px);
+  --postext-folio-accent: #f0b35a;
+}

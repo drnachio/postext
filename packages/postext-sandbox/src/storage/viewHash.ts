@@ -42,7 +42,12 @@ export interface ViewHash {
 
 export const EMPTY_VIEW_HASH: ViewHash = { preset: null, project: null, lang: null, view: null, chapter: null, page: null };
 
-const VIEWS: readonly ViewportTab[] = ['canvas', 'html', 'pdf'];
+const VIEWS: readonly ViewportTab[] = ['canvas', 'html', 'folio', 'pdf'];
+
+/** Whether a stored or linked value names one of the viewers. */
+export function isViewportTab(value: unknown): value is ViewportTab {
+  return VIEWS.includes(value as ViewportTab);
+}
 /** A BCP 47-ish tag: `es`, `en-US`, `pt-BR`, `zh-Hant`. */
 const LANG_RE = /^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]{1,8})*$/;
 
@@ -97,7 +102,7 @@ export function parseViewHash(hash: string): ViewHash {
     preset,
     project,
     lang: preset !== null ? lang : null,
-    view: VIEWS.includes(view as ViewportTab) ? (view as ViewportTab) : null,
+    view: isViewportTab(view) ? view : null,
     chapter: chapter === null ? null : chapter - 1,
     page: readNumber(hash, 'page'),
   };

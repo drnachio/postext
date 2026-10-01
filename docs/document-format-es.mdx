@@ -116,7 +116,7 @@ Una línea de encabezado puede terminar con un bloque de atributos entre llaves 
 # El largo camino {author="I. Zango Martín" year=1998}
 ```
 
-Las llaves y su contenido se eliminan del texto del encabezado (el título anterior se renderiza como *El largo camino*) y se guardan en el encabezado como `attrs`. Se exponen a las ranuras de diseño como marcadores `{attr.<clave>}`: en la ranura de diseño avanzado del propio encabezado, y en los encabezados y pies de página, donde se resuelven a partir del H1 del capítulo actual. Solo se reconoce un bloque equilibrado y sin llaves anidadas al final de la línea, tras un espacio o, como los títulos chinos se escriben sin él, justo después de un carácter chino o japonés (`# 回目{style="x"}`). El bloque se toma solo si la sintaxis de atributos de más abajo lo lee entero: `{x, y}`, `{紅樓|hóng lóu}` y un `{}` suelto se quedan en el título, igual que unas banderas sueltas pegadas al título (`# 第一回{draft}`). Los atributos se separan con espacios, así que un bloque con comas (`{a="1", b="2"}`) y los `{#id}` y `{.clase}` de Pandoc también se quedan en el título; hasta postext 1.8 se leían y desaparecían de él. Una clave escrita en otra escritura se lee y se descarta con un aviso (ver más abajo), así que `# 回目{style="x" 作者=曹雪芹}` sigue tomando `style`. Ver **Configuración → Encabezados y pies**.
+Las llaves y su contenido se eliminan del texto del encabezado (el título anterior se renderiza como *El largo camino*) y se guardan en el encabezado como `attrs`. Se exponen a las ranuras de diseño como marcadores `{attr.<clave>}`: en la ranura de diseño avanzado del propio encabezado, y en los encabezados y pies de página, donde se resuelven a partir del H1 del capítulo actual. Solo se reconoce un bloque equilibrado y sin llaves anidadas al final de la línea, tras un espacio o, como los títulos chinos se escriben sin él, justo después de un carácter chino o japonés (`# 回目{style="x"}`). El bloque se toma solo si la sintaxis de atributos de más abajo lo lee entero: `{x, y}`, `{紅樓|hóng lóu}` y un `{}` suelto se quedan en el título, igual que unas banderas sueltas pegadas al título (`# 第一回{draft}`). Los atributos se separan con espacios, así que un bloque con comas (`{a="1", b="2"}`) y el `{.clase}` de Pandoc también se quedan en el título. El identificador de Pandoc `{#id}` sí se lee: equivale a `id="…"` y da nombre al título para las [referencias cruzadas](#referencias-cruzadas-y-anclas). Una clave escrita en otra escritura se lee y se descarta con un aviso (ver más abajo), así que `# 回目{style="x" 作者=曹雪芹}` sigue tomando `style`. Ver **Configuración → Encabezados y pies**.
 
 Un valor que imprime un texto de diseño puede ocupar varias líneas: los dos caracteres `\n` empiezan ahí una línea nueva, sea cual sea el `overflow` del elemento (`to="Firma X\nStrasse 1\n10115 Berlin"` imprime una dirección de tres líneas). Si el elemento tiene `inlineMarks`, las marcas en línea del valor también se aplican: `authors="Ana Ruiz^1^, Luis Gil^2^"` compone los números de filiación como superíndices. El escape es propio de los valores de atributo (y de las plantillas del propio diseño): los caracteres `\n` en el texto de un encabezado (dentro de código en línea, por ejemplo) se imprimen tal cual.
 
@@ -681,6 +681,134 @@ así que aprendió a contar los escalones a oscuras.
 - **Dónde va la nota.** Por defecto, al pie de la columna que contiene la línea que la cita, bajo un filete corto: la línea y su nota comparten siempre columna, y una línea cuya nota no cabe pasa con ella a la siguiente. En una maqueta de una columna es el pie de la página. `footnotes.placement: 'chapterEnd'` compone en cambio todas las notas de un capítulo tras su último bloque, por defecto al pie de la columna que cierran. Los cuerpos, el filete y los espacios están en [Notas al pie](/es/docs/configuration#notas-al-pie), en la referencia de configuración.
 - **Comprobaciones.** Una llamada sin definición (`undefinedFootnote`) imprime su número sobre una nota vacía; una definición que ninguna llamada cita (`unusedFootnote`) no se compone. El Sandbox muestra ambas en el panel Revisión.
 
+
+## Referencias cruzadas y anclas
+
+Una referencia cruzada nombra un lugar del libro e imprime su número, su título o su página: *véase la sección 3.2*, *como explica el capítulo 4*, *en la pág. 112*. Las palabras y los números siguen al texto: si una sección cambia de sitio, si los capítulos se renumeran o si el libro se recompone, todas las referencias se actualizan. En el PDF, en el HTML y en las vistas previas del Sandbox cada referencia es un enlace: un clic lleva al destino, también en otro capítulo.
+
+**Anclas.** Una referencia necesita algo a lo que apuntar:
+
+- **Un título** con identificador: `## Método {#sec-metodo}` (la forma de Pandoc; `id="sec-metodo"` también vale).
+- **Una caja u otro contenedor** abierto con uno: `:::callout{#caja-seguridad title="Seguridad"}`.
+- **Un punto del texto**: `:anchor{#idea-clave}` pone un ancla invisible; `[la idea clave]{#idea-clave}` conserva sus palabras y les da nombre.
+
+Un identificador admite letras, cifras, `-`, `_`, `.` y `:`. Debe ser único en el libro: el panel de Comprobaciones avisa del que se repite (`duplicateAnchor`), y las referencias llevan al primero.
+
+**Referencias.** `:ref{id="…"}` nombra un ancla igual que nombra una figura o una tabla:
+
+```md
+## Método {#sec-metodo}
+
+Los resultados de :ref{id="sec-metodo"} se cumplen en :ref{id="sec-metodo" style=page}.
+```
+
+<table>
+<thead><tr><th><code>style</code></th><th>imprime</th></tr></thead>
+<tbody>
+<tr><td><em>(ninguno)</em></td><td>un título numerado con su palabra y su número (<em>sección 3.2</em>, <em>capítulo 4</em>), uno sin número con su título, un ancla con su texto</td></tr>
+<tr><td><code>number</code></td><td>solo el número (<em>3.2</em>)</td></tr>
+<tr><td><code>title</code></td><td>el título, el texto del ancla o el <code>title</code> de la caja</td></tr>
+<tr><td><code>page</code></td><td>la página en la que quedó (<em>pág. 112</em>)</td></tr>
+<tr><td><code>pageNumber</code></td><td>solo el número de página (<em>112</em>)</td></tr>
+</tbody>
+</table>
+
+`text="…"` imprime tus propias palabras y sigue enlazando; `case=capitalize` empieza el rótulo con mayúscula (*Sección 3.2* a principio de frase). Las palabras siguen al idioma del documento (*section 3.2*, *第3.2节*, *S. 112*) y se cambian en [Referencias cruzadas](/es/docs/configuration#referencias-cruzadas) de la configuración; un número que su plantilla ya escribe con palabras (*Capítulo 4*, *第四章*) se imprime tal cual.
+
+**Las referencias de página** solo se conocen cuando el libro está compuesto. El motor vuelve a componer el documento con las páginas de la pasada anterior hasta que no cambian, como hace con el índice general; hasta entonces la página se imprime como *?*.
+
+**pandoc-crossref.** Un texto escrito para pandoc-crossref se lee igual: `@sec:metodo`, `[@fig:mapa]`, y `[-@tbl:datos]` para el número solo. El prefijo (`sec`, `fig`, `tbl`, `eq`, `lst`) puede formar parte del identificador (`{#sec:metodo}`) o quedar fuera (`{#metodo}`). Una `@` pegada a una palabra, como en una dirección de correo, sigue siendo texto.
+
+Una referencia a un id que nada define imprime *?* y aparece en el panel de Comprobaciones (`unknownResourceId`). En el editor del Sandbox, `@` ofrece las figuras, tablas, títulos con id y anclas del libro.
+
+## Citas y bibliografía
+
+Escribe las citas como las lee Pandoc, guarda las referencias en el documento y elige el estilo de cita en los ajustes: pasar de APA a IEEE, o a las notas de Chicago, es cambiar el estilo en los ajustes, no el texto. Cada cita enlaza con su entrada en la bibliografía.
+
+### Citar
+
+```md
+Como muestra [@garcia2020, pág. 33], se lee más rápido en papel [véase @lopez2019, cap. 2; @bringhurst2004].
+@garcia2020 [pág. 4] lo dice claramente; el estudio de 2020 [-@garcia2020] coincide.
+```
+
+- **`[@clave]`** cita entre paréntesis; varias obras van en un mismo par de corchetes, separadas por `;`.
+- **Localizador:** tras una coma, `p. 33`, `pp. 4–6`, `pág. 33`, `cap. 2`, `sec. IV`, `fig. 3`, `vol. 2`, `n. 12`, `§ 4.2`; un número solo es una página. También valen las palabras inglesas y chinas (`页`, `章`).
+- **Prefijo y sufijo:** texto antes de la `@` (`véase`) y tras el localizador (`, la cursiva es nuestra`).
+- **`[-@clave]`** omite el autor, para una frase que ya lo nombra.
+- **`@clave`** cita dentro de la frase (*García (2020)*); `@clave [pág. 4]` añade un localizador.
+- Una `@` pegada a una letra o a una cifra (una dirección de correo), una `@` en código y `\@` son texto. Una cita sin referencia en el libro se imprime tal como se escribió, así que un documento sin referencias se lee como antes.
+
+### Referencias
+
+Las referencias se escriben en el documento, en formato CSL (el modelo de datos de Zotero y Pandoc):
+
+```md
+---
+references:
+  - id: garcia2020
+    type: book
+    author: [{family: García, given: Ana}]
+    title: Tipografía y lectura
+    issued: 2020
+    publisher: Trea
+nocite: "@lopez2019"
+---
+```
+
+o en un bloque `:::references`, en BibTeX (lo que exportan Zotero, JabRef o Google Académico), CSL-JSON o CSL-YAML:
+
+```md
+:::references{format=bibtex}
+@article{lopez2019, author = {López, Luis and Ruiz, Eva}, title = {Leer en pantalla},
+  journal = {Revista de Letras}, year = 2019, volume = 12, pages = {45--67}, doi = {10.1000/xyz}}
+:::
+```
+
+El bloque no imprime nada. `nocite` lista obras sin citarlas (`@*`: todas). En un libro, las referencias escritas en cualquier capítulo valen para todo el libro.
+
+### La bibliografía
+
+`:::bibliography` pone la lista de obras citadas donde está; sin él, la lista va tras el último capítulo, con el título en el idioma del documento (*Referencias*, *References*, *参考文献*). `:::bibliography{title="Obras citadas"}` cambia el título y `title=""` lo quita; `scope=chapter` lista las obras que cita el capítulo (una obra colectiva). Cada entrada es un ancla (`ref-<clave>`), así que un enlace Markdown a `#ref-garcia2020` lleva a ella, y el PDF la etiqueta como `BibEntry`.
+
+### Estilos
+
+El estilo decide lo que dicen una cita y una entrada. Los estilos incluidos están en la tabla; cualquier otro estilo CSL (el repositorio de estilos de Zotero tiene más de diez mil) se carga desde su archivo `.csl` en **Ajustes → Citas**.
+
+<table>
+  <thead>
+    <tr><th><code>citations.style</code></th><th>Nombre</th><th>Sistema</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>apa</code></td><td>APA 7</td><td>autor-fecha</td></tr>
+    <tr><td><code>chicago-author-date</code></td><td>Chicago (author-date)</td><td>autor-fecha</td></tr>
+    <tr><td><code>harvard-cite-them-right</code></td><td>Harvard</td><td>autor-fecha</td></tr>
+    <tr><td><code>iso690-author-date-en</code>, <code>iso690-author-date-es</code></td><td>ISO 690</td><td>autor-fecha</td></tr>
+    <tr><td><code>china-national-standard-gb-t-7714-2015-author-date</code></td><td>GB/T 7714 著者-出版年</td><td>autor-fecha</td></tr>
+    <tr><td><code>modern-language-association</code></td><td>MLA 9</td><td>autor-página</td></tr>
+    <tr><td><code>ieee</code></td><td>IEEE</td><td>numérico</td></tr>
+    <tr><td><code>elsevier-vancouver</code></td><td>Vancouver</td><td>numérico</td></tr>
+    <tr><td><code>american-medical-association</code></td><td>AMA</td><td>numérico</td></tr>
+    <tr><td><code>nature</code></td><td>Nature</td><td>numérico</td></tr>
+    <tr><td><code>iso690-numeric-en</code></td><td>ISO 690</td><td>numérico</td></tr>
+    <tr><td><code>china-national-standard-gb-t-7714-2015-numeric</code></td><td>GB/T 7714 顺序编码</td><td>numérico</td></tr>
+    <tr><td><code>chicago-notes-bibliography</code></td><td>Chicago (notes)</td><td>notas</td></tr>
+    <tr><td><code>oscola</code></td><td>OSCOLA</td><td>notas</td></tr>
+    <tr><td><code>china-national-standard-gb-t-7714-2015-note</code></td><td>GB/T 7714 注释</td><td>notas</td></tr>
+  </tbody>
+</table>
+
+Con un **estilo de notas**, cada cita se convierte en una nota al pie, colocada y numerada como dicen los ajustes de notas; las citas siguientes de la misma obra toman una forma breve. En texto chino, `citations.notes: 'warichu'` las compone como notas de dos líneas dentro del renglón (夹注).
+
+**Chino.** Los estilos GB/T 7714-2015 escriben los códigos de tipo de documento (`[M]`, `[J]`, `[D]`, `[EB/OL]`), dejan enteros los nombres chinos y escriben `等` tras tres autores de una obra china y `et al.` tras los de una occidental, según el `language` de cada obra. En texto vertical, un número en superíndice queda a la derecha de su carácter; `citations.marker: 'corner'` escribe `〔1〕`, que se mantiene de pie.
+
+**Motor.** Las citas las formatea el paquete `postext-citeproc` (citeproc-js y los estilos CSL). El Sandbox lo carga para los documentos que citan; en tu propio código, regístralo antes de componer:
+
+```ts
+import 'postext-citeproc/register';
+```
+
+El panel de Comprobaciones avisa de una clave que ninguna referencia define (`unknownCitationKey`) y de un bloque de referencias que no se puede leer (`referencesUnreadable`).
 
 ## Índice analítico
 

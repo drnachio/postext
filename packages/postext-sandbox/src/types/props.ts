@@ -4,7 +4,7 @@ import type { SandboxLabels } from './labels';
 import type { PresetSourceSpec } from '../presets/types';
 
 export type PanelId = 'projects' | 'chapters' | 'markdown' | 'config' | 'resources' | 'fonts' | 'warnings';
-export type ViewportTab = 'canvas' | 'html' | 'pdf';
+export type ViewportTab = 'canvas' | 'html' | 'folio' | 'pdf';
 
 /** Resolves a book a link names by a host key (`#recipe=ID&lang=L`) to the
  *  same-origin URL of its `.postext` bundle — or to several, tried in order

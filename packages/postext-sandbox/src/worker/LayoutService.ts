@@ -71,7 +71,11 @@ export function createLayoutService(options?: { handle?: LayoutWorkerHandle }): 
   // state initialiser also runs while the page is rendered on the server
   // (Next.js prerender), where `Worker` does not exist.
   let handle: LayoutWorkerHandle | null = options?.handle ?? null;
-  const worker = (): LayoutWorkerHandle => (handle ??= createLayoutWorker());
+  // The Sandbox's own entry: Postext's worker with the citation engine
+  // loaded on demand (see ./layout.worker.ts).
+  const worker = (): LayoutWorkerHandle => (handle ??= createLayoutWorker({
+    worker: new Worker(new URL('./layout.worker.js', import.meta.url), { type: 'module' }),
+  }));
   const queue: Entry[] = [];
   let active: Entry | null = null;
   let disposed = false;

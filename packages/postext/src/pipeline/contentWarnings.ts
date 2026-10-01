@@ -9,6 +9,10 @@
  * landed on.
  */
 
+import { resourceRefId, unprefixedId } from './crossRefs';
+import { citationIssues } from './citations';
+import { bookCitationContexts, needsCitationContext } from '../citations/context';
+import { duplicateAnchors } from './anchors';
 import type { ContentBlock } from '../parse';
 import { KNOWN_CONTAINERS, KNOWN_DIRECTIVES, parseInlineSnippetSpans, parseMarkdownMemo } from '../parse';
 import { invalidAttributeKeys } from '../parse/attrs';
@@ -129,6 +133,12 @@ export function collectContentWarnings(
   markdown: string,
   config?: PostextConfig,
   resources: readonly Resource[] = [],
+  /** The anchor ids of the whole book (#262), when the document is one of
+   *  its chapters; its own anchors count either way. */
+  bookAnchors?: ReadonlySet<string>,
+  /** The reference keys of the whole book (#268), when the document is one
+   *  of its chapters; its own references count either way. */
+  bookCitationKeys?: ReadonlySet<string>,
 ): ContentWarning[] {
   let body = markdown;
   let offset = 0;
@@ -145,6 +155,14 @@ export function collectContentWarnings(
 
   const byId = new Map<string, Resource>();
   for (const r of resources) if (!byId.has(r.id)) byId.set(r.id, r);
+  const anchors = new Set(bookAnchors);
+  for (const b of blocks) {
+    if (b.type === 'heading' && b.attrs?.id) anchors.add(b.attrs.id);
+    for (const m of b.anchorMarks ?? []) anchors.add(m.anchorId);
+  }
+  const isAnchor = (id: string): boolean => anchors.has(id) || (unprefixedId(id) !== undefined && anchors.has(unprefixedId(id)!));
+  // An identifier set twice: a reference reaches the first one only.
+  for (const d of duplicateAnchors(blocks)) out.push({ kind: 'duplicateAnchor', anchorId: d.id, ...abs({ start: d.start, end: d.end }) });
   const paragraphStyles = new Set((config?.paragraphStyles ?? DEFAULT_PARAGRAPH_STYLES).map((s) => s.id));
   // With no callout style configured every type is the built-in plain box:
   // a type is only wrong once there are styles to pick from.
@@ -190,8 +208,11 @@ export function collectContentWarnings(
       }
       if (span.ref) {
         const range = inlineRange(body, at, b.sourceEnd);
-        use(span.ref.resourceId, range);
-        if (!byId.has(span.ref.resourceId)) {
+        const id = resourceRefId(span.ref.resourceId, (x) => byId.has(x));
+        use(id, range);
+        // A reference naming no resource may name an anchor (#262): of
+        // this document, or of the book (`knownAnchors`).
+        if (!byId.has(id) && !isAnchor(span.ref.resourceId)) {
           out.push({ kind: 'unknownResourceId', resourceId: span.ref.resourceId, usage: 'ref', ...abs(range) });
         }
       }
@@ -371,6 +392,23 @@ export function collectContentWarnings(
     }
   }
 
+  // Citations (#268): keys no reference defines, data that cannot be read.
+  let metadata: Record<string, unknown> | undefined;
+  try {
+    metadata = extractFrontmatter(markdown).metadata as Record<string, unknown>;
+  } catch {
+    metadata = undefined;
+  }
+  if (needsCitationContext(blocks, metadata)) {
+    const ctx = bookCitationContexts([{ metadata, blocks }])[0]!;
+    const keys = bookCitationKeys ? new Set([...bookCitationKeys, ...ctx.items.map((i) => i.id)]) : undefined;
+    for (const issue of citationIssues(blocks, ctx, keys)) {
+      const range = abs({ start: issue.sourceStart, end: issue.sourceEnd });
+      if (issue.kind === 'unknownCitationKey') out.push({ kind: 'unknownCitationKey', key: issue.key ?? '', ...range });
+      else if (issue.kind === 'citationsUnavailable') out.push({ kind: 'citationsUnavailable', ...range });
+      else out.push({ kind: 'referencesUnreadable', message: issue.message ?? '', ...range });
+    }
+  }
   // Reading order: a resource's warnings sit at its first use.
   return out
     .map((w, i) => ({ w, i }))
@@ -480,6 +518,15 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
       break;
     case 'unknownDirective':
       text = `Unknown directive ":::${w.name}" — the line is set as text`;
+      break;
+    case 'unknownCitationKey':
+      text = `No reference defines "@${w.key}" — the citation prints without it`;
+      break;
+    case 'citationsUnavailable':
+      text = 'Citations need a citation engine (import "postext-citeproc/register") — they print as written';
+      break;
+    case 'referencesUnreadable':
+      text = `A :::references block cannot be read: ${w.message}`;
       break;
     case 'malformedEmbed':
       text = `The embed line "::${w.name}" is set as text — write ::resource{id="…"} alone on its line, after a blank line`;

@@ -15,18 +15,23 @@ import {
   PlaneGeometry,
   Scene,
   ShaderMaterial,
+  Texture,
   TextureLoader,
   Vector2,
   Vector3,
   Vector4,
   WebGLRenderer,
   WebGLRenderTarget,
-  type Texture,
 } from "three";
 
-/** A spread as page image URLs: [verso, recto]; "" is a blank page (not
- *  captured, drawn as paper), null no page at all. */
-export type SpreadSrc = [string | null, string | null];
+/** A page: an image URL, or a canvas or a decoded image to draw; "" is a
+ *  blank page (drawn as paper), null no page at all. */
+export type PageSource = string | HTMLCanvasElement | HTMLImageElement | null;
+
+/** A spread: [verso, recto]. */
+export type SpreadSrc = [PageSource, PageSource];
+
+type Drawn = Exclude<PageSource, null | "">;
 
 /** Columns and rows of a leaf's mesh: fine enough for a tight roll. */
 const NX = 96;
@@ -421,8 +426,8 @@ export class PageFlipper {
   });
   private leaves = new Map<number, PageMesh>();
   private loader = new TextureLoader();
-  private textures = new Map<string, Promise<Texture | null>>();
-  private ready = new Map<string, Texture>();
+  private textures = new Map<Drawn, Promise<Texture | null>>();
+  private ready = new Map<Drawn, Texture>();
   private W = 1;
   private H = 1;
   /** Leaf k lies on the left. */
@@ -434,6 +439,9 @@ export class PageFlipper {
   private disposed = false;
   /** The spread last reported settled (the one the DOM shows). */
   private reported: number;
+  private persistent: boolean;
+  /** A redraw of the book at rest is queued. */
+  private still = 0;
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -445,7 +453,12 @@ export class PageFlipper {
     private onTarget: (index: number) => void,
     /** The edge the book is bound on. */
     binding: "left" | "right" = "left",
+    /** `persistent`: the canvas draws the book at rest too (the DOM pages
+     *  are hidden by the host and serve only as texture sources and text
+     *  alternatives), so a page looks the same lying still and turning. */
+    { persistent = false }: { persistent?: boolean } = {},
   ) {
+    this.persistent = persistent;
     this.sign = binding === "right" ? -1 : 1;
     this.light = new Vector3(this.sign * LIGHT.x, LIGHT.y, LIGHT.z);
     this.casterMaterial.uniforms.uLd.value = this.light;
@@ -491,22 +504,29 @@ export class PageFlipper {
     this.target = at;
     this.reported = at;
     this.turned = Array.from({ length: Math.max(0, book.length - 1) }, (_, k) => k < at);
+    this.redraw();
   }
 
-  /** Fits the camera so the z = 0 plane maps onto the DOM spread 1:1. */
+  /** Fits the camera so the z = 0 plane maps onto the DOM spread 1:1.
+   *  Sizes are read unrounded and the drawing buffer covers the canvas's
+   *  device pixels exactly, so a page lying flat is drawn texel for pixel,
+   *  as the DOM shows it. */
   private layout() {
-    const cw = this.canvas.clientWidth;
-    const ch = this.canvas.clientHeight;
+    const box = this.canvas.getBoundingClientRect();
+    const cw = box.width;
+    const ch = box.height;
     if (!cw || !ch) return;
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    this.renderer.setSize(cw, ch, false);
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    this.renderer.setPixelRatio(1);
+    this.renderer.setSize(Math.round(cw * dpr), Math.round(ch * dpr), false);
     this.camera.aspect = cw / ch;
     this.camera.position.set(0, 0, ch / 2 / Math.tan((FOV * Math.PI) / 360));
     this.camera.near = this.camera.position.z / 20;
     this.camera.far = this.camera.position.z * 4;
     this.camera.updateProjectionMatrix();
-    this.W = this.spread.clientWidth / 2;
-    this.H = this.spread.clientHeight;
+    const spread = this.spread.getBoundingClientRect();
+    this.W = spread.width / 2;
+    this.H = spread.height;
     this.flat(this.right.geometry, 1);
     this.flat(this.left.geometry, -1);
     // The desk plane fills the canvas (its vertices are world positions).
@@ -550,25 +570,79 @@ export class PageFlipper {
     for (const i of indexes) for (const src of this.book[i] ?? []) if (src) void this.texture(src);
   }
 
-  private texture(src: string): Promise<Texture | null> {
+  private texture(src: Drawn): Promise<Texture | null> {
     let hit = this.textures.get(src);
     if (!hit) {
-      hit = this.loader.loadAsync(src).then(
-        (tex) => {
-          tex.colorSpace = NoColorSpace;
-          tex.minFilter = LinearMipmapLinearFilter;
-          tex.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
-          this.ready.set(src, tex);
-          return tex;
-        },
-        () => null,
-      );
+      const prepare = (tex: Texture) => {
+        tex.colorSpace = NoColorSpace;
+        tex.minFilter = LinearMipmapLinearFilter;
+        tex.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
+        this.ready.set(src, tex);
+        return tex;
+      };
+      if (typeof src === "string") {
+        hit = this.loader.loadAsync(src).then(prepare, () => null);
+      } else {
+        // A canvas is drawn already; an image may still be decoding.
+        const tex = new Texture(src);
+        const decoded = src instanceof HTMLCanvasElement ? Promise.resolve() : src.decode();
+        hit = decoded.then(
+          () => {
+            tex.needsUpdate = true;
+            return prepare(tex);
+          },
+          () => null,
+        );
+      }
       this.textures.set(src, hit);
     }
     return hit;
   }
 
-  private assign(mesh: PageMesh, face: "Front" | "Back", src: string | null) {
+  /**
+   * Replaces the book's pages (after a relayout, or once more pages are
+   * painted), keeping the open spread when `at` is left out. Leaves at
+   * rest take their new pages at once; textures no page uses any more are
+   * freed. A book of another length starts afresh at `at`.
+   */
+  setBook(book: SpreadSrc[], at?: number) {
+    const resized = book.length !== this.book.length;
+    this.book = book;
+    if (resized || at !== undefined) {
+      const open = Math.max(0, Math.min(book.length - 1, at ?? this.settledAt()));
+      if (resized) {
+        cancelAnimationFrame(this.raf);
+        this.raf = 0;
+        this.turns.clear();
+        for (const mesh of this.leaves.values()) {
+          mesh.removeFromParent();
+          (mesh.userData.caster as Mesh).removeFromParent();
+          mesh.geometry.dispose();
+          mesh.material.dispose();
+        }
+        this.leaves.clear();
+      }
+      this.turned = Array.from({ length: Math.max(0, book.length - 1) }, (_, k) => k < open);
+      this.target = open;
+      this.reported = open;
+      if (!this.raf) this.clear();
+    }
+    for (const [k, mesh] of this.leaves) {
+      this.assign(mesh, "Front", book[k]?.[1] ?? null);
+      this.assign(mesh, "Back", book[k + 1]?.[0] ?? null);
+    }
+    const used = new Set<PageSource>(book.flat());
+    for (const mesh of [this.left, this.right]) used.add(mesh.userData.Front).add(mesh.userData.Back);
+    for (const [src, tex] of this.ready) {
+      if (used.has(src)) continue;
+      tex.dispose();
+      this.ready.delete(src);
+      this.textures.delete(src);
+    }
+    this.redraw();
+  }
+
+  private assign(mesh: PageMesh, face: "Front" | "Back", src: PageSource) {
     const u = mesh.material.uniforms;
     if (mesh.userData[face] === src) return;
     mesh.userData[face] = src;
@@ -580,6 +654,7 @@ export class PageFlipper {
       if (!tex || mesh.userData[face] !== src) return;
       u[`u${face}`].value = tex;
       u[`uHas${face}`].value = 1;
+      this.redraw();
     };
     const tex = this.ready.get(src);
     if (tex) set(tex);
@@ -610,7 +685,7 @@ export class PageFlipper {
     if (lo === hi) return this.onSettle(this.target);
     // The first leaves' pages are warm; wait a moment for cold ones.
     this.starting = true;
-    const wanted: string[] = [];
+    const wanted: Drawn[] = [];
     for (let i = lo; i <= Math.min(hi, lo + 2); i++) for (const src of this.book[i]) if (src) wanted.push(src);
     this.preload(Array.from({ length: hi - lo + 1 }, (_, i) => lo + i));
     void Promise.race([Promise.all(wanted.map((s) => this.texture(s))), new Promise((r) => setTimeout(r, 700))]).then(() => {
@@ -808,16 +883,31 @@ export class PageFlipper {
   }
 
   /** Back to a transparent canvas (the DOM spread shows), unless leaves
-   *  are moving again. */
+   *  are moving again. A persistent book is drawn at rest instead. */
   clear() {
     if (this.raf || this.starting) return;
+    if (this.persistent) return this.redraw();
     this.spread.classList.remove("is-turning");
     this.renderer.clear();
+  }
+
+  /** Draws the book at rest again (a page painted, the box resized) on the
+   *  next frame; leaves in the air are drawn by their own frames. Only for
+   *  a persistent book: the other one shows the DOM at rest. */
+  redraw() {
+    if (!this.persistent || this.disposed || this.still) return;
+    this.still = requestAnimationFrame(() => {
+      this.still = 0;
+      if (this.disposed || this.raf || this.starting) return;
+      this.layout();
+      this.draw();
+    });
   }
 
   dispose() {
     this.disposed = true;
     cancelAnimationFrame(this.raf);
+    cancelAnimationFrame(this.still);
     for (const tex of this.ready.values()) tex.dispose();
     this.shadowTarget?.dispose();
     this.casterMaterial.dispose();

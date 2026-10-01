@@ -50,9 +50,30 @@ function indexMarkEntries(b: ContentBlock): OutlineEntry[] {
   }));
 }
 
+/** The outline entries of a block's anchors. */
+function anchorEntries(b: ContentBlock): OutlineEntry[] {
+  if (!b.anchorMarks) return [];
+  return b.anchorMarks.map((m): OutlineEntry => ({
+    kind: 'anchor',
+    level: 0,
+    title: m.text ?? '',
+    number: '',
+    numbered: false,
+    listed: false,
+    anchorId: m.anchorId,
+    anchorSource: m.sourceStart,
+  }));
+}
+
 /** The entries `:::toc` reads (headings and parts). */
 export function tocOutline(entries: readonly OutlineEntry[]): OutlineEntry[] {
-  return entries.filter((e) => e.kind !== 'indexMark');
+  return entries.filter((e) => e.kind === 'heading' || e.kind === 'part');
+}
+
+/** The entries a cross-reference may name (#262): headings with an id and
+ *  anchors. */
+export function anchorOutline(entries: readonly OutlineEntry[]): OutlineEntry[] {
+  return entries.filter((e) => e.anchorId !== undefined);
 }
 
 /** The entries `:::index` reads (index marks). */
@@ -123,6 +144,7 @@ export function computeOutline(
     const b = blocks[i]!;
     const part = parts.byStart.get(i);
     if (b.type !== 'heading' && b.indexMarks) out.push(...indexMarkEntries(b));
+    if (b.type !== 'heading' && b.anchorMarks) out.push(...anchorEntries(b));
     if (part) {
       out.push({
         kind: 'part',
@@ -159,8 +181,10 @@ export function computeOutline(
       listed: headingIsListed(b, resolved),
       ...(style ? { styleId: style.id } : {}),
       ...(b.attrs ? { attrs: b.attrs } : {}),
+      ...(b.attrs?.id ? { anchorId: b.attrs.id } : {}),
     });
     if (b.indexMarks) out.push(...indexMarkEntries(b));
+    if (b.anchorMarks) out.push(...anchorEntries(b));
   }
   return out;
 }
@@ -206,6 +230,9 @@ export function outlineFromDoc(doc: VDTDocument, parsedOutline: readonly Outline
   // Index marks: the page the build found for each (`doc.indexMarks`).
   const markPage = new Map<number, number>();
   for (const m of doc.indexMarks ?? []) markPage.set(m.sourceStart, m.pageIndex);
+  // Anchors: the page the build found for each (`doc.anchors`).
+  const anchorPage = new Map<number, number>();
+  for (const a of doc.anchors ?? []) if (a.sourceStart !== undefined) anchorPage.set(a.sourceStart, a.pageIndex);
   let h = 0;
   let p = 0;
   return parsedOutline.map((entry) => {
@@ -215,6 +242,11 @@ export function outlineFromDoc(doc: VDTDocument, parsedOutline: readonly Outline
       return page
         ? { ...entry, pageLabel: page.pageLabel, pageIndex: offset + page.index, pageFormat: page.pageNumberFormat }
         : { ...entry };
+    }
+    if (entry.kind === 'anchor') {
+      const local = entry.anchorSource !== undefined ? anchorPage.get(entry.anchorSource) : undefined;
+      const page = local !== undefined ? doc.pages[local] : undefined;
+      return page ? { ...entry, pageLabel: page.pageLabel, pageIndex: offset + page.index } : { ...entry };
     }
     if (entry.kind === 'part') {
       const page = partPages[p++];
@@ -242,6 +274,8 @@ export function outlineKey(entries: readonly OutlineEntry[] | undefined): string
     e.spans ? e.spans.map((s) => `${s.bold ? 'b' : ''}${s.italic ? 'i' : ''}:${s.text}`).join(FIELD_SEP) : '',
     e.pageFormat ?? '',
     e.indexMark ? indexMarkKey(e.indexMark) : '',
+    e.anchorId ?? '',
+    e.anchorSource ?? '',
   ].join('|')).join('\n');
 }
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Resource, ResourceType } from 'postext';
-import { buildRefOptions, refMicroformat } from './refCompletion';
+import { anchorsOf, buildRefOptions, referencesOf, refMicroformat } from './refCompletion';
 
 const types: ResourceType[] = [
   { id: 'figure', name: 'Figura', shortLabel: 'Fig.', numberingTemplate: '{n}', resetOn: 'never', counterFormat: 'decimal', captionPrefix: 'Figura' },
@@ -51,5 +51,38 @@ describe('buildRefOptions', () => {
 describe('refMicroformat', () => {
   it('emits the inline :ref directive', () => {
     expect(refMicroformat('layout-pipeline')).toBe(':ref{id="layout-pipeline" style="full"}');
+  });
+});
+
+describe('headings and anchors in the @ picker (#262)', () => {
+  it('lists every heading id and anchor of the book, first setting kept', () => {
+    const anchors = anchorsOf(['# One {#one}\n\nThe [claim]{#claim} and :anchor{#spot}.', ':::callout{#box title="Box"}\nIn.\n:::\n\n## Two {#one}']);
+    expect(anchors).toEqual([
+      { id: 'one', kind: 'heading', title: 'One' },
+      { id: 'claim', kind: 'anchor', title: 'claim' },
+      { id: 'spot', kind: 'anchor', title: '' },
+      { id: 'box', kind: 'anchor', title: 'Box' },
+    ]);
+  });
+
+  it('offers them after the resources and inserts a :ref', () => {
+    const options = buildRefOptions({ resources: [], types: [], anchors: () => [{ id: 'sec-intro', kind: 'heading', title: 'Introduction' }] }, 'intro');
+    expect(options.map((o) => o.label)).toEqual(['sec-intro']);
+  });
+});
+
+describe('references in the @ picker (#268)', () => {
+  const md = '---\nreferences:\n  - {id: garcia2020, author: ["García, Ana"], title: Tipografía, issued: 2020}\n---\n# One\n\n:::references{format=bibtex}\n@book{knuth84, author={Knuth, Donald}, title={The TeXbook}, year=1984}\n:::\n';
+
+  it('lists the references of every chapter, labelled by author and year', () => {
+    expect(referencesOf([md])).toEqual([
+      { id: 'garcia2020', title: 'García 2020 — Tipografía' },
+      { id: 'knuth84', title: 'Knuth 1984 — The TeXbook' },
+    ]);
+  });
+
+  it('offers them before the resources and writes a citation', () => {
+    const options = buildRefOptions({ resources, types, references: () => referencesOf([md]) }, 'kn');
+    expect(options[0]!.label).toBe('knuth84');
   });
 });

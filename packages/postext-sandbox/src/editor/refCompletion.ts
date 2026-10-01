@@ -11,6 +11,7 @@ import { syntaxTree } from '@codemirror/language';
 import { EditorView, keymap } from '@codemirror/view';
 import { Prec, StateEffect, StateField, type EditorState, type Extension } from '@codemirror/state';
 import type { Resource, ResourceKind, ResourceType } from 'postext';
+import { bookCitationContexts, citationSourceOf, parseMarkdown } from 'postext';
 import { chipCompletionSource, type ChipStyleOption } from './chipSyntax';
 import { smallCapsCompletionSource } from './smallCapsSyntax';
 import { annotationCompletionSource } from './annotationSyntax';
@@ -27,6 +28,74 @@ export interface RefCompletionContext {
   chipStyles?: readonly ChipStyleOption[];
   /** The book's index terms, offered inside `:index{term="…"}`. */
   indexTerms?: () => readonly string[];
+  /** The book's headings with an identifier and its anchors (#262),
+   *  offered after the resources. */
+  anchors?: () => readonly AnchorOption[];
+  /** The kind names shown beside an anchor option. */
+  anchorKinds?: { heading: string; anchor: string };
+  /** The book's references (#268), offered first: choosing one writes a
+   *  citation `[@key]`. */
+  references?: () => readonly ReferenceOption[];
+  /** The kind name shown beside a reference option. */
+  referenceKind?: string;
+}
+
+/** A reference of the book, as the picker lists it. */
+export interface ReferenceOption {
+  id: string;
+  /** "García 2020 — Tipografía y lectura". */
+  title: string;
+}
+
+/** The references of a book's chapters (front matter `references` and
+ *  `:::references` blocks), first definition of a key kept. */
+export function referencesOf(markdowns: readonly string[]): ReferenceOption[] {
+  const sources = markdowns
+    .filter((md) => md.includes('references'))
+    .map((md) => {
+      try {
+        return citationSourceOf(md);
+      } catch {
+        return { blocks: [] };
+      }
+    });
+  if (sources.length === 0) return [];
+  const [ctx] = bookCitationContexts(sources);
+  return (ctx?.items ?? []).map((item) => {
+    const names = (item.author ?? item.editor ?? []) as { family?: string; literal?: string }[];
+    const who = names[0]?.family ?? names[0]?.literal ?? '';
+    const year = item.issued?.['date-parts']?.[0]?.[0] ?? '';
+    return { id: item.id, title: [`${who} ${year}`.trim(), typeof item.title === 'string' ? item.title : ''].filter(Boolean).join(' — ') };
+  });
+}
+
+/** A heading with an identifier (`{#id}`) or an anchor of the book. */
+export interface AnchorOption {
+  id: string;
+  kind: 'heading' | 'anchor';
+  /** The heading's title or the anchor's text. */
+  title: string;
+}
+
+/** Every heading identifier and anchor of a book's chapters, first
+ *  setting of each id kept. */
+export function anchorsOf(markdowns: readonly string[]): AnchorOption[] {
+  const out: AnchorOption[] = [];
+  const seen = new Set<string>();
+  const add = (id: string, kind: AnchorOption['kind'], title: string): void => {
+    if (seen.has(id)) return;
+    seen.add(id);
+    out.push({ id, kind, title });
+  };
+  for (const md of markdowns) {
+    if (!md.includes('{#') && !md.includes(':anchor') && !md.includes('id=')) continue;
+    for (const b of parseMarkdown(md)) {
+      for (const m of b.anchorMarks ?? []) if (m.sourceEnd <= b.sourceStart) add(m.anchorId, 'anchor', m.text ?? '');
+      if (b.type === 'heading' && b.attrs?.id) add(b.attrs.id, 'heading', b.text);
+      for (const m of b.anchorMarks ?? []) if (m.sourceEnd > b.sourceStart) add(m.anchorId, 'anchor', m.text ?? '');
+    }
+  }
+  return out;
 }
 
 /** `@` followed by an optional query, ending at the caret. Ids are slugs
@@ -121,8 +190,34 @@ function kindIcon(kind: ResourceKind): HTMLElement {
 }
 
 interface RefOption extends Completion {
-  resource: Resource;
+  resource?: Resource;
+  /** Set for a reference of the book (a citation). */
+  reference?: ReferenceOption;
+  /** Set for a heading or an anchor (#262). */
+  anchor?: AnchorOption;
   caption: string;
+}
+
+/** Lucide `hash`: the icon of a heading or an anchor option. */
+const ANCHOR_ICON = '<line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/>';
+
+/** Lucide `quote`: the icon of a reference option. */
+const QUOTE_ICON = '<path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/>';
+
+function quoteIcon(): HTMLElement {
+  const span = document.createElement('span');
+  span.className = 'cm-refOption-icon';
+  span.setAttribute('aria-hidden', 'true');
+  span.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${QUOTE_ICON}</svg>`;
+  return span;
+}
+
+function anchorIcon(): HTMLElement {
+  const span = document.createElement('span');
+  span.className = 'cm-refOption-icon';
+  span.setAttribute('aria-hidden', 'true');
+  span.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ANCHOR_ICON}</svg>`;
+  return span;
 }
 
 /** The inline reference microformat the engine resolves to a label. */
@@ -156,6 +251,46 @@ export function buildRefOptions(ctx: RefCompletionContext, query: string): RefOp
       },
     };
     scored.push({ option, rank: rank * 10_000 + index });
+  });
+  // References first: typing `@` in running text most often cites a work.
+  const references = ctx.references?.() ?? [];
+  references.forEach((reference, index) => {
+    const id = fold(reference.id);
+    let rank: number;
+    if (q.length === 0 || id.startsWith(q)) rank = 0;
+    else if (id.includes(q)) rank = 1;
+    else if (fold(reference.title).includes(q)) rank = 2;
+    else return;
+    const option: RefOption = {
+      label: reference.id,
+      detail: ctx.referenceKind,
+      reference,
+      caption: reference.title,
+      apply: (view, _completion, from, to) => {
+        view.dispatch(insertCompletionText(view.state, `[@${reference.id}]`, from, to));
+      },
+    };
+    scored.push({ option, rank: rank * 10_000 - 5_000 + index });
+  });
+  // Headings and anchors come after the resources of the same rank.
+  const anchors = ctx.anchors?.() ?? [];
+  anchors.forEach((anchor, index) => {
+    const id = fold(anchor.id);
+    let rank: number;
+    if (q.length === 0 || id.startsWith(q)) rank = 0;
+    else if (id.includes(q)) rank = 1;
+    else if (fold(anchor.title).includes(q)) rank = 2;
+    else return;
+    const option: RefOption = {
+      label: anchor.id,
+      detail: anchor.kind === 'heading' ? ctx.anchorKinds?.heading : ctx.anchorKinds?.anchor,
+      anchor,
+      caption: anchor.title,
+      apply: (view, _completion, from, to) => {
+        view.dispatch(insertCompletionText(view.state, `:ref{id="${anchor.id}"}`, from, to));
+      },
+    };
+    scored.push({ option, rank: rank * 10_000 + 5_000 + index });
   });
   scored.sort((a, b) => a.rank - b.rank);
   return scored.map((s) => s.option);
@@ -285,8 +420,8 @@ export function refCompletion(getContext: () => RefCompletionContext): Extension
         {
           position: 20,
           render: (completion) => {
-            const { resource } = completion as Partial<RefOption>;
-            return resource ? kindIcon(resource.kind) : null;
+            const { resource, anchor, reference } = completion as Partial<RefOption>;
+            return resource ? kindIcon(resource.kind) : anchor ? anchorIcon() : reference ? quoteIcon() : null;
           },
         },
         {

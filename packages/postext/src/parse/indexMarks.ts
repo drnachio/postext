@@ -9,7 +9,7 @@
  * holding that character.
  */
 
-import type { ContentBlock, IndexMark, ParseIssue } from './types';
+import type { AnchorMark, ContentBlock, IndexMark, ParseIssue } from './types';
 import { parseDirectiveAttrs } from './attrs';
 import { stripInlineFormatting } from './inlineFormatting';
 
@@ -17,6 +17,11 @@ import { stripInlineFormatting } from './inlineFormatting';
  *  colon (the `:::index` directive) or a backslash (an escaped mark). The
  *  text is one line and takes `\]` for a literal bracket. */
 const INDEX_MARK_RE = /(?<![:\\]):index(?:\[((?:\\.|[^\]\\\n])*)\])?(?:\{([^}\n]*)\})?/g;
+/** An inline anchor (#261): `:anchor{#id}` / `:anchor{id="…"}`, and
+ *  Pandoc's bracketed span `[text]{#id}` whose text stays. Not after a
+ *  colon, a backslash, or a `]`/`!` (a link or an image). */
+const ANCHOR_MARK_RE = /(?<![:\\]):anchor\{([^}\n]*)\}/g;
+const SPAN_ANCHOR_RE = /(?<![\]\\!])\[((?:\\.|[^\]\\\n^])(?:\\.|[^\]\\\n])*)\]\{#([\p{L}\p{N}_][\p{L}\p{N}_.:-]*)\}/gu;
 /** Inline code on one line: its marks stay literal. */
 const CODE_SPAN_RE = /`[^`\n]+`/g;
 
@@ -29,7 +34,7 @@ interface Removal {
 
 /** A mark as extracted, before it is attached to a block. */
 interface PendingMark {
-  mark: IndexMark;
+  mark: IndexMark | AnchorMark;
   /** Position in the stripped text where the mark was. */
   at: number;
 }
@@ -88,9 +93,65 @@ function markFrom(attrsRaw: string | undefined, visible: string | undefined, sou
  * A line left blank by its marks alone is removed with its line end, so a
  * mark on a line of its own never splits a paragraph.
  */
+/** One mark found on a line: where it is, its whole text, the text that
+ *  stays (a visible mark) and the mark it makes. */
+interface LineMatch {
+  index: number;
+  whole: string;
+  /** The text that stays, and where it starts in `whole`. */
+  visible?: { text: string; offset: number };
+  make: (start: number, end: number) => IndexMark | AnchorMark;
+}
+
+/** Whether a line may hold a mark. */
+const mayHoldMark = (line: string): boolean => line.includes(':index') || line.includes(':anchor') || line.includes(']{#');
+
+function anchorFrom(id: string, text: string | undefined, sourceStart: number, sourceEnd: number): AnchorMark {
+  const plain = text !== undefined ? plainText(text) : '';
+  return { anchorId: id, ...(plain ? { text: plain } : {}), sourceStart, sourceEnd, anchor: -1, attach: 'after' };
+}
+
+/** The marks of one line, in order, none overlapping. */
+function lineMatches(line: string): LineMatch[] {
+  const out: LineMatch[] = [];
+  INDEX_MARK_RE.lastIndex = 0;
+  for (let m = INDEX_MARK_RE.exec(line); m; m = INDEX_MARK_RE.exec(line)) {
+    const [whole, visible, attrs] = m;
+    if (visible === undefined && attrs === undefined) continue;
+    out.push({
+      index: m.index,
+      whole,
+      ...(visible !== undefined && visible.length > 0 ? { visible: { text: visible, offset: ':index['.length } } : {}),
+      make: (start, end) => markFrom(attrs, visible, start, end),
+    });
+  }
+  ANCHOR_MARK_RE.lastIndex = 0;
+  for (let m = ANCHOR_MARK_RE.exec(line); m; m = ANCHOR_MARK_RE.exec(line)) {
+    const id = parseDirectiveAttrs(m[1]!).id?.trim();
+    if (!id) continue;
+    out.push({ index: m.index, whole: m[0], make: (start, end) => anchorFrom(id, undefined, start, end) });
+  }
+  SPAN_ANCHOR_RE.lastIndex = 0;
+  for (let m = SPAN_ANCHOR_RE.exec(line); m; m = SPAN_ANCHOR_RE.exec(line)) {
+    const text = m[1]!;
+    const id = m[2]!;
+    out.push({ index: m.index, whole: m[0], visible: { text, offset: 1 }, make: (start, end) => anchorFrom(id, text, start, end) });
+  }
+  out.sort((a, b) => a.index - b.index);
+  // A mark inside another one (an anchor in an index mark's text) is text.
+  const kept: LineMatch[] = [];
+  let end = -1;
+  for (const m of out) {
+    if (m.index < end) continue;
+    kept.push(m);
+    end = m.index + m.whole.length;
+  }
+  return kept;
+}
+
 export function extractIndexMarks(markdown: string): IndexMarkExtraction | null {
-  if (!markdown.includes(':index')) return null;
-  const pending: { mark: IndexMark; at: number; textStart?: number }[] = [];
+  if (!mayHoldMark(markdown)) return null;
+  const pending: { mark: IndexMark | AnchorMark; at: number; textStart?: number }[] = [];
   const removals: Removal[] = [];
   let out = '';
   let lineStart = 0;
@@ -98,7 +159,7 @@ export function extractIndexMarks(markdown: string): IndexMarkExtraction | null 
     const nl = markdown.indexOf('\n', lineStart);
     const lineEnd = nl === -1 ? markdown.length : nl;
     const line = markdown.slice(lineStart, lineEnd);
-    if (!line.includes(':index')) {
+    if (!mayHoldMark(line)) {
       out += line;
       if (nl !== -1) out += '\n';
       lineStart = lineEnd + 1;
@@ -113,21 +174,18 @@ export function extractIndexMarks(markdown: string): IndexMarkExtraction | null 
     const linePending: typeof pending = [];
     let kept = '';
     let last = 0;
-    INDEX_MARK_RE.lastIndex = 0;
-    for (let m = INDEX_MARK_RE.exec(line); m; m = INDEX_MARK_RE.exec(line)) {
-      const [whole, visible, attrs] = m;
-      if (visible === undefined && attrs === undefined) continue;
-      if (code.some(([s, e]) => m!.index >= s && m!.index < e)) continue;
+    for (const m of lineMatches(line)) {
+      if (code.some(([s, e]) => m.index >= s && m.index < e)) continue;
+      const { whole, visible } = m;
       kept += line.slice(last, m.index);
       const start = lineStart + m.index;
-      const mark = markFrom(attrs, visible, start, start + whole.length);
-      if (visible !== undefined && visible.length > 0) {
-        // `:index[` goes, the text stays, `]{…}` goes.
-        const open = ':index['.length;
-        lineRemovals.push({ at: lineOut + kept.length, length: open });
+      const mark = m.make(start, start + whole.length);
+      if (visible) {
+        // `:index[` (or `[`) goes, the text stays, `]{…}` goes.
+        lineRemovals.push({ at: lineOut + kept.length, length: visible.offset });
         const textStart = lineOut + kept.length;
-        kept += visible;
-        lineRemovals.push({ at: lineOut + kept.length, length: whole.length - open - visible.length });
+        kept += visible.text;
+        lineRemovals.push({ at: lineOut + kept.length, length: whole.length - visible.offset - visible.text.length });
         linePending.push({ mark, at: textStart, textStart });
       } else {
         lineRemovals.push({ at: lineOut + kept.length, length: whole.length });
@@ -216,7 +274,8 @@ export function attachIndexMarks(blocks: ContentBlock[], marks: readonly Pending
   for (const { mark, at } of marks) {
     let owner = text.find((b) => at >= b.sourceStart && at <= b.sourceEnd);
     owner ??= text.find((b) => b.sourceStart > at) ?? text[text.length - 1]!;
-    (owner.indexMarks ??= []).push(mark);
+    if ('anchorId' in mark) (owner.anchorMarks ??= []).push(mark);
+    else (owner.indexMarks ??= []).push(mark);
   }
 }
 

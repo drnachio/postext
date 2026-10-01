@@ -207,8 +207,8 @@
 .cb-lt-spread.is-solo {
   grid-template-columns: 1fr;
 }
-/* The page turn (pageFlip.ts): drawn over the spread with room for the
-   lifted leaf; transparent at rest. */
+/* The page turn (postext-folio's PageFlipper): drawn over the spread
+   with room for the lifted leaf; transparent at rest. */
 .cb-lt-flip {
   position: absolute;
   top: -18%;

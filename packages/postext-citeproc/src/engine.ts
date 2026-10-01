@@ -1,0 +1,146 @@
+import CSL from 'citeproc';
+import type {
+  BibliographyOutput,
+  CitationClusterInput,
+  CitationEngine,
+  CitationProcessor,
+  CitationProcessorOptions,
+  CitationStyleInfo,
+  CslItem,
+  CslName,
+} from 'postext';
+import { parseBibtex } from 'postext';
+import { STYLE_CATALOG } from './catalog';
+
+/** The XML of the styles and locales an engine can use. */
+export interface CslSources {
+  /** Style id → CSL XML. */
+  styles: Readonly<Record<string, string>>;
+  /** Locale (`en-US`, `zh-CN`…) → CSL locale XML. */
+  locales: Readonly<Record<string, string>>;
+}
+
+/** The locale of `wanted` the sources hold: the tag itself, the first one
+ *  of its language (`es` → `es-ES`, `zh-Hant` → `zh-TW`), else `en-US`. */
+export function pickLocale(locales: Readonly<Record<string, string>>, wanted: string | undefined): string {
+  const tag = (wanted ?? 'en-US').replace(/_/g, '-');
+  if (locales[tag]) return tag;
+  const lower = tag.toLowerCase();
+  if (lower.startsWith('zh')) return /hant|tw|hk|mo/.test(lower) ? 'zh-TW' : 'zh-CN';
+  if (lower === 'pt-br') return 'pt-BR';
+  const lang = lower.split('-')[0]!;
+  const hit = Object.keys(locales).find((k) => k.toLowerCase().split('-')[0] === lang);
+  return hit ?? 'en-US';
+}
+
+const CJK = /[\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}\p{sc=Hangul}]/u;
+
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&#38;').replace(/</g, '&#60;').replace(/>/g, '&#62;');
+}
+
+/** The authors of a work as a sentence names them, for a numbered style
+ *  that prints none: "García", "García and Ruiz", "García et al.", "张三等". */
+function narrativeAuthors(item: CslItem | undefined, and: string, etAl: string): string {
+  const names: CslName[] = (item?.author ?? item?.editor ?? []) as CslName[];
+  if (names.length === 0) return '';
+  const nameOf = (n: CslName): string => n.literal ?? [n['non-dropping-particle'], n.family].filter(Boolean).join(' ');
+  const first = nameOf(names[0]!);
+  const cjk = CJK.test(first);
+  if (names.length === 1) return first;
+  if (names.length === 2) return cjk ? `${first}、${nameOf(names[1]!)}` : `${first} ${and} ${nameOf(names[1]!)}`;
+  return cjk ? `${first}等` : `${first} ${etAl}`;
+}
+
+function numericStyle(xml: string): boolean {
+  return /citation-format="numeric"/.test(xml) || /<citation[\s\S]*variable="citation-number"[\s\S]*<\/citation>/.test(xml);
+}
+
+/** A citation engine over citeproc-js and the given CSL sources. */
+export function createCiteprocEngine(sources: CslSources): CitationEngine {
+  return {
+    styles: (): readonly CitationStyleInfo[] => STYLE_CATALOG.filter((s) => sources.styles[s.id] !== undefined),
+    parseBibtex: (source: string) => parseBibtex(source),
+    createProcessor(options: CitationProcessorOptions): CitationProcessor {
+      const xml = options.style.trimStart().startsWith('<') ? options.style : (sources.styles[options.style] ?? sources.styles.apa!);
+      const items = new Map(options.items.map((i) => [i.id, i]));
+      const locale = pickLocale(sources.locales, options.locale);
+      const sys = {
+        retrieveLocale: (lang: string) => sources.locales[pickLocale(sources.locales, lang)] ?? sources.locales['en-US'],
+        retrieveItem: (id: string) => items.get(id),
+      };
+      const engine = new CSL.Engine(sys, xml, locale, true);
+      engine.opt.development_extensions.wrap_url_and_doi = true;
+      engine.setOutputFormat('html');
+      const kind: CitationProcessor['kind'] = engine.opt.class === 'note' ? 'note' : 'in-text';
+      const numeric = numericStyle(xml);
+      const and = engine.getTerm('and') || 'and';
+      const etAl = engine.getTerm('et-al') || 'et al.';
+      let cited: string[] = [];
+      return {
+        kind,
+        numeric,
+        cite(clusters: readonly CitationClusterInput[]): string[] {
+          const known = clusters.map((c) => ({ ...c, items: c.items.filter((it) => items.has(it.id)) }));
+          const citations = known.map((c, index) => ({
+            citationID: `c${index}`,
+            citationItems: c.items.map((it) => ({
+              id: it.id,
+              ...(it.locator ? { locator: it.locator, label: it.label ?? 'page' } : {}),
+              ...(it.prefix ? { prefix: escapeHtml(it.prefix) } : {}),
+              ...(it.suffix ? { suffix: escapeHtml(it.suffix) } : {}),
+              ...(it.suppressAuthor ? { 'suppress-author': true } : {}),
+            })),
+            properties: {
+              noteIndex: c.noteIndex ?? 0,
+              // An author-date or author-page style writes "García (2020)"
+              // itself; a numbered or a note style does not.
+              ...(c.mode === 'narrative' && kind === 'in-text' && !numeric ? { mode: 'composite' } : {}),
+            },
+          }));
+          const withItems = citations.filter((c) => c.citationItems.length > 0);
+          const out = withItems.length > 0 ? engine.rebuildProcessorState(withItems, 'html') : [];
+          const byId = new Map(out.map(([id, , html]) => [id, html]));
+          cited = [...new Set(known.flatMap((c) => c.items.map((it) => it.id)))];
+          return known.map((c, index) => {
+            const html = byId.get(`c${index}`) ?? '';
+            if (c.mode === 'narrative' && kind === 'in-text' && numeric && c.items.length > 0) {
+              const who = c.items.map((it) => narrativeAuthors(items.get(it.id), and, etAl)).filter(Boolean).join('; ');
+              const glue = /^<sup>/.test(html) || CJK.test(who) ? '' : ' ';
+              return who ? `${escapeHtml(who)}${glue}${html}` : html;
+            }
+            return html.replace(/\[?NO_PRINTED_FORM\]?\s*/g, '');
+          });
+        },
+        bibliography(ids?: readonly string[]): BibliographyOutput {
+          const uncited = (ids ?? []).filter((id) => items.has(id) && !cited.includes(id));
+          if (uncited.length > 0) engine.updateUncitedItems(uncited);
+          const result = engine.makeBibliography();
+          if (!result) return { entries: [], hangingIndent: false, labelColumn: false, entrySpacing: 0 };
+          const [meta, html] = result;
+          const wanted = ids ? new Set(ids) : undefined;
+          const entries: BibliographyOutput['entries'] = [];
+          meta.entry_ids.forEach((group, i) => {
+            const id = group[0]!;
+            if (wanted && !wanted.has(id)) return;
+            const raw = html[i] ?? '';
+            const label = /<div class="csl-left-margin">([\s\S]*?)<\/div>/.exec(raw)?.[1]?.trim();
+            const body = /<div class="csl-right-inline">([\s\S]*?)<\/div>\s*<\/div>\s*$/.exec(raw)?.[1]
+              ?? /<div class="csl-entry">([\s\S]*?)<\/div>\s*$/.exec(raw)?.[1]
+              ?? raw;
+            entries.push({ id, html: body.replace(/\s+/g, ' ').trim(), ...(label ? { label } : {}) });
+          });
+          return {
+            entries,
+            hangingIndent: Boolean(meta.hangingindent),
+            labelColumn: Boolean(meta['second-field-align']),
+            entrySpacing: meta.entryspacing ?? 0,
+          };
+        },
+        citationNumbers(): ReadonlyMap<string, number> {
+          return new Map(Object.values(engine.registry.registry).map((r) => [r.id, r.seq]));
+        },
+      };
+    },
+  };
+}

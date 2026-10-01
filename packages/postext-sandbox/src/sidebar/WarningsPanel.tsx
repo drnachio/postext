@@ -52,6 +52,10 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'unknownParagraphStyle':
     case 'unknownCalloutType':
     case 'unknownChipStyle':
+    case 'duplicateAnchor':
+    case 'unknownCitationKey':
+    case 'citationsUnavailable':
+    case 'referencesUnreadable':
     case 'undefinedFootnote':
     case 'unusedFootnote':
     case 'indexMarkInvalid':
@@ -154,6 +158,14 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsUnknownCalloutTypeTitle;
     case 'unknownChipStyle':
       return labels.warningsUnknownChipStyleTitle;
+    case 'duplicateAnchor':
+      return labels.warningsDuplicateAnchorTitle;
+    case 'unknownCitationKey':
+      return labels.warningsUnknownCitationKeyTitle;
+    case 'citationsUnavailable':
+      return labels.warningsCitationsUnavailableTitle;
+    case 'referencesUnreadable':
+      return labels.warningsReferencesUnreadableTitle;
     case 'undefinedFootnote':
       return labels.warningsUndefinedFootnoteTitle;
     case 'unusedFootnote':
@@ -325,6 +337,14 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `:::callout{type="${payload.type}"} — ${labels.warningsUnknownCalloutTypeDetail}`;
     case 'unknownChipStyle':
       return `${inResource(payload.inResource)}:chip[…]{style="${payload.style}"} — ${labels.warningsUnknownChipStyleDetail}`;
+    case 'duplicateAnchor':
+      return `{#${payload.anchorId}} — ${labels.warningsDuplicateAnchorDetail}`;
+    case 'unknownCitationKey':
+      return `@${payload.key} — ${labels.warningsUnknownCitationKeyDetail}`;
+    case 'citationsUnavailable':
+      return labels.warningsCitationsUnavailableDetail;
+    case 'referencesUnreadable':
+      return `:::references — ${payload.message} — ${labels.warningsReferencesUnreadableDetail}`;
     case 'undefinedFootnote':
       return `[^${payload.id}] — ${labels.warningsUndefinedFootnoteDetail}`;
     case 'unusedFootnote':
