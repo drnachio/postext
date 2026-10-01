@@ -1,0 +1,61 @@
+---
+title: "A thesis chapter cited in APA 7"
+summary: "A doctoral chapter whose [@key, p. 33] citations become APA 7 through citeproc-js, with the reference list built from a BibTeX block."
+plain: "A chapter of a doctoral thesis. The author writes a short code for each source; Postext prints the citations and the list of references at the end in APA style."
+description: "A thesis chapter in Postext: Pandoc citations formatted to APA 7 by citeproc-js, a BibTeX reference list with hanging indent and clickable section references."
+question: "How do I cite sources in APA 7 and get the reference list built from my BibTeX file?"
+aliases: ["APA", "APA 7", "thesis", "dissertation", "BibTeX", "Zotero", "reference list", "author-date", "citeproc"]
+pageNotes: { "1": "Page 1: a pale blue band across the top with the label CHAPTER, the title Reading on Paper and on Screens: The State of the Evidence, and a large light number 2 at the right; below, the opening paragraphs with author-date citations such as (Tinker, 1963) and bold blue links to Section 2.1, 2.2 and 2.3.", "2": "Page 2: sections 2.2 and 2.3 with narrative citations like Delgado et al. (2018), a locator citation (Ibáñez Roca, 2023, pp. 12–15), and the start of the unnumbered References list.", "3": "Page 3: the rest of the References list in APA 7, each entry with a hanging indent and its DOI printed in full." }
+---
+
+## What you'll build
+
+The second chapter of a doctoral thesis in education, the literature review: what twenty years of studies say about reading on paper and on screens. The chapter is set on an A4 page bound at the left, in Literata with a 16 pt lead, under a pale band in the university's blue. The author keeps the sources in Zotero and pastes the export as BibTeX; in the text, each source is a key. Postext formats every citation in APA 7, with the author, the year and the page where one is given, writes "Delgado et al. (2018)" when the name is part of the sentence, and builds the reference list in the order and form the style asks for. When the supervisor asks for Chicago, the style is the one line that changes.
+
+## Method
+
+### 1 · One engine, one style
+
+The code is [the short answer](#the-short-answer) above. Postext reads the citations and leaves their wording to a citation engine, registered once before the first build; `postext-citeproc` wraps citeproc-js, the engine Zotero and Mendeley use, with sixteen CSL styles and their locale files. `[@mangen2013]` gives "(Mangen et al., 2013)", `@delgado2018` without brackets puts the authors in the sentence, and `[@ibanez2023, pp. 12–15]` carries the page range into the parentheses. With the document in Spanish, the same keys take their connectives and abbreviations from the Spanish locale file, because the engine follows the document's locale.
+
+### 2 · The references come from a BibTeX block
+
+The last block of the chapter is `:::references{format=bibtex}` with the Zotero export pasted inside, accents written as `{\'a}`. `:::bibliography` above it places the list under the References heading; without it, Postext appends the list at the end. Only cited works appear, sorted as APA sorts them, and every citation in the text links to its entry.
+
+### 3 · A heading without a number, references in words
+
+<Excerpt region="refs" />
+
+The references heading takes the `references` style, which keeps it in the contents but outside the numbering, so the list does not become section 2.4. `:ref{id="sec-speed"}` prints "Section 2.2" from the `crossRefs` label and links to the heading; the numbers come from `startAt=2` on the chapter title, the same counter the headings use.
+
+### 4 · The opener sits in a band
+
+<Excerpt region="opener" />
+
+The band is a box anchored to the trim and the body starts 10 mm below it. The number is set in Literata Light at 96 pt to the right, where it reads as a shape and leaves the title its full measure.
+
+<Excerpt region="palette" />
+
+## Variations
+
+### Change the style
+
+The same chapter in Chicago author-date drops the comma after the name and lists the year after the authors.
+
+```diff
+-  style: 'apa', // 'chicago-author-date', 'ieee', 'vancouver'… change nothing else
++  style: 'chicago-author-date',
+```
+
+### Keep the list smaller than the text
+
+Many universities allow the reference list one size down and single-spaced.
+
+```diff
+-    fontSize: em(1), hangingIndent: mm(12.7), entrySpacing: pt(4),
++    fontSize: em(0.9), lineHeight: pt(13), hangingIndent: mm(12.7), entrySpacing: pt(3),
+```
+
+## Pitfalls
+
+- APA writes article and book titles in sentence case, and citeproc-js prints titles as the data gives them. Zotero stores most titles in title case, so correct them in Zotero or in the BibTeX before they reach the page.

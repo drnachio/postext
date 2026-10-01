@@ -158,6 +158,23 @@ export const FOLIO_CSS = `
   font-variant-numeric: tabular-nums;
   opacity: 0.8;
 }
+/* Announced, not shown. */
+.postext-folio-count.is-unseen {
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+/* One page at a time: the buttons and the count in a bar under the page. */
+.postext-folio.is-single .postext-folio-nav {
+  top: auto;
+  bottom: 12px;
+  transform: none;
+}
+.postext-folio.is-single .postext-folio-count {
+  bottom: 24px;
+}
 @media (prefers-reduced-motion: reduce) {
   .postext-folio-nav {
     transition: none;

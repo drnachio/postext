@@ -1,0 +1,636 @@
+{
+  "schemaVersion": 1,
+  "slug": "manual-see-page-references",
+  "sourceHash": "37b8dffd87fc6aefab7a48e2aff40409df4ad381b20fae20bc9f7722731d5f45",
+  "engine": {
+    "postext": "1.12.0",
+    "postextPdf": "1.12.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-01T15:28:04.717Z",
+  "variants": {
+    "en": {
+      "hash8": "191a53bf",
+      "vdtHash": "3ba854082e4fdcb3e7d5c0d43282cdfbf5948622",
+      "timings": {
+        "importMs": 504,
+        "fontsMs": 121,
+        "buildMs": 20,
+        "totalMs": 1421,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          148,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Archivo",
+          "sizePt": 9.3,
+          "leadingPt": 13
+        },
+        "families": [
+          "Archivo",
+          "Archivo Narrow"
+        ],
+        "pages": 4,
+        "ownLines": 132
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 46048,
+          "alt": "Opening page 1: Ardena T3."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 99396,
+          "alt": "Page 2: 1 Before your first ride."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 109926,
+          "alt": "Page 3: 2.2 Removing and fitting the front wheel."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 105110,
+          "alt": "Page 4: 3.3 Adjusting the cable."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "manual-see-page-references.pdf",
+        "bytes": 36579,
+        "pages": 4
+      },
+      "sandbox": {
+        "file": "manual-see-page-references.postext",
+        "bytes": 12392
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.paragraphSpacing",
+          "bodyText.referenceBold",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].title",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "crossRefs",
+          "crossRefs.page",
+          "crossRefs.section",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberSeparator",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "orderedLists",
+          "orderedLists.color",
+          "orderedLists.fontFamily",
+          "orderedLists.fontWeight",
+          "orderedLists.gap",
+          "orderedLists.itemSpacing",
+          "orderedLists.marginBottom",
+          "orderedLists.marginTop",
+          "orderedLists.numberFormat",
+          "orderedLists.separator",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "unorderedLists",
+          "unorderedLists.color",
+          "unorderedLists.gap",
+          "unorderedLists.marginBottom",
+          "unorderedLists.marginTop"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "colorPalette",
+          "crossRefs",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "orderedLists",
+          "page",
+          "paragraphStyles",
+          "unorderedLists"
+        ],
+        "configLeaves": 255,
+        "designElements": 10,
+        "directives": [
+          ":::callout",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Archivo Narrow",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Archivo",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Archivo",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "citations",
+          "cross-references",
+          "heading-attributes",
+          "heading-numbering",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "cbf4ee2d",
+      "vdtHash": "db847e4158e9c364fdb1c2fbd1427e13f081f2a7",
+      "timings": {
+        "importMs": 539,
+        "fontsMs": 65,
+        "buildMs": 20,
+        "totalMs": 1295,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          148,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Archivo",
+          "sizePt": 9.3,
+          "leadingPt": 13
+        },
+        "families": [
+          "Archivo",
+          "Archivo Narrow"
+        ],
+        "pages": 4,
+        "ownLines": 132
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 50734,
+          "alt": "Página de apertura 1: Ardena T3."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 107168,
+          "alt": "Página 2: 1 Antes de la primera salida."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 112060,
+          "alt": "Página 3: 2.2 Desmontar y montar la rueda delantera."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 112722,
+          "alt": "Página 4: 3.3 Ajuste del cable."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "manual-see-page-references.pdf",
+        "bytes": 36757,
+        "pages": 4
+      },
+      "sandbox": {
+        "file": "manual-see-page-references.postext",
+        "bytes": 12951
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.paragraphSpacing",
+          "bodyText.referenceBold",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].title",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "crossRefs",
+          "crossRefs.page",
+          "crossRefs.section",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberSeparator",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "orderedLists",
+          "orderedLists.color",
+          "orderedLists.fontFamily",
+          "orderedLists.fontWeight",
+          "orderedLists.gap",
+          "orderedLists.itemSpacing",
+          "orderedLists.marginBottom",
+          "orderedLists.marginTop",
+          "orderedLists.numberFormat",
+          "orderedLists.separator",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "unorderedLists",
+          "unorderedLists.color",
+          "unorderedLists.gap",
+          "unorderedLists.marginBottom",
+          "unorderedLists.marginTop"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "colorPalette",
+          "crossRefs",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "orderedLists",
+          "page",
+          "paragraphStyles",
+          "unorderedLists"
+        ],
+        "configLeaves": 255,
+        "designElements": 10,
+        "directives": [
+          ":::callout",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Archivo Narrow",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Archivo",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Archivo",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "citations",
+          "cross-references",
+          "heading-attributes",
+          "heading-numbering",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    }
+  }
+}

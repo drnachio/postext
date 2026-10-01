@@ -1,0 +1,60 @@
+---
+title: "One text in four citation styles"
+summary: "One short essay with six citations, built in APA 7, Chicago author-date, IEEE and ISO 690: the style setting is the only thing that changes."
+plain: "The same two paragraphs about typography, with the same sources, printed four times. Each page uses a different way of citing sources, and the citations and the list at the end change with it, though the text was written once."
+description: "One essay cited in APA 7, Chicago, IEEE and ISO 690 with Postext: citations and reference list follow one setting, and the text stays the same."
+question: "How do I switch a text from one citation style to another without touching it?"
+aliases: ["citation style", "switch style", "APA", "Chicago", "IEEE", "ISO 690", "author-date", "numbered citations", "CSL", "citeproc", "reference list"]
+pageNotes: { "1": "Page 1: a blue band with the label CITATION STYLE · 1 / 4 · AUTHOR-DATE and APA 7 in large white type; below, the essay The page that is not seen with citations such as Warde (1955), Bringhurst (2004, p. 17) and (Rayner, 1998; Tinker, 1963), and an APA reference list sorted by author.", "2": "Page 2: the same essay under a red band reading Chicago: (Tinker 1963; Rayner 1998) without commas and in the order written, and a list with full first names and the edition after the title.", "3": "Page 3: under a dark blue band reading IEEE, the same essay with numbers in brackets, Warde [1] to [6], and a list numbered in order of citation.", "4": "Page 4: under a green band reading ISO 690, the same essay with author-date citations and a list whose surnames are set in capitals." }
+---
+
+## What you'll build
+
+A two-paragraph essay on why good typography goes unnoticed, with six sources: a narrative citation, one with a page, one that leaves the author out because the sentence names him, and two works cited together. The text is set four times on a 155 × 235 mm page, and the only change between the four builds is `citations.style`: APA 7, Chicago author-date, IEEE and ISO 690. Each page carries the style's name in a band of its own colour, so laid side by side they read as a comparison chart. The citations change form, order and punctuation, the list changes its sorting and its names, and the essay itself is the same file.
+
+## Method
+
+### 1 · One setting
+
+The code is [the short answer](#the-short-answer) above. The citations are written once in the content, in Pandoc's syntax, and the references sit in a BibTeX block at the end. `citations.style` names a CSL style, and citeproc-js writes every citation and every entry from it: APA puts a comma before the year and sorts two works by author, Chicago keeps the order in which they were written, IEEE turns them into numbers in order of first citation, ISO 690 sets the surnames in the list in capitals. For a book in progress this is the whole change: one value in the config, and the text is not touched.
+
+### 2 · Four builds, two spreads
+
+<Excerpt region="build" />
+
+The style holds for the whole document, so the four versions are four builds of the same Markdown. Each gets a `pageIndexOffset` one higher than the last, which makes its page the next page of an imaginary book; the desk then pairs them as two spreads, the two author-date styles that differ least beside each other.
+
+### 3 · The style's name in a band
+
+<Excerpt region="band" />
+
+The heading's design draws the band from the trim, the kicker with the style's number and system, and the name at 54 pt. The name and the system come from the script, not from the Markdown, because the text is the same in all four documents.
+
+<Excerpt region="palette" />
+
+Each document points `main-color` at its own band, so the four colours are linked palette entries, and any default the config leaves unstated follows the band of its page.
+
+## Variations
+
+### Try a note style
+
+With Chicago notes and bibliography, each citation becomes a footnote and the list a bibliography; the text still does not change.
+
+```diff
+-  { style: 'apa', band: 'apa', name: 'APA 7', system: t({ en: 'author-date', es: 'autor-año' }) },
++  { style: 'chicago-notes-bibliography', band: 'apa', name: 'Chicago', system: 'notes' },
+```
+
+### Write the numbers as superscripts
+
+A numbered style can keep its list and print the citations as superscript numbers, as Nature and Vancouver do.
+
+```diff
+-  link: true,
++  link: true, marker: 'superscript',
+```
+
+## Pitfalls
+
+- A locator is written once and each style prints its own word for it: "p. 17" in all four here. The bundled ISO 690 Spanish style prints "p." for every kind of locator, a section or a chapter included, so this text cites a page.
+- Edition numbers belong in BibTeX as numbers (`edition = {3}`): each style then writes "3rd ed.", "3.ª ed." or "3." in its own way. Written as "3rd", the word is printed as it stands and the style's own form is lost.

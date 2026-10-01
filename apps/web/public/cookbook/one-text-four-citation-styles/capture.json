@@ -1,0 +1,521 @@
+{
+  "schemaVersion": 1,
+  "slug": "one-text-four-citation-styles",
+  "sourceHash": "390caceb5b9a1dfe9a252b72fc3b7c9697279fa527b80f7e6675a6e35fe66adb",
+  "engine": {
+    "postext": "1.12.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-01T15:27:55.075Z",
+  "variants": {
+    "en": {
+      "hash8": "10048327",
+      "vdtHash": "a2742cd03163f506406168139c43704d7fa5c11d",
+      "timings": {
+        "importMs": 1537,
+        "fontsMs": 197,
+        "buildMs": 298,
+        "totalMs": 3316,
+        "builds": 4
+      },
+      "specimen": {
+        "trimMm": [
+          155,
+          235
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": false,
+        "body": {
+          "family": "Source Serif 4",
+          "sizePt": 10,
+          "leadingPt": 14
+        },
+        "families": [
+          "Source Sans 3",
+          "Source Serif 4"
+        ],
+        "pages": 4,
+        "ownLines": 113
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1516,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 141048,
+          "alt": "Opening page 1: The page that is not seen."
+        },
+        {
+          "n": 2,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1516,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 145446,
+          "alt": "Opening page 1: The page that is not seen."
+        },
+        {
+          "n": 3,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1516,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 138496,
+          "alt": "Opening page 1: The page that is not seen."
+        },
+        {
+          "n": 4,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1516,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 145080,
+          "alt": "Opening page 1: The page that is not seen."
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "one-text-four-citation-styles.postext",
+        "bytes": 16982
+      },
+      "detected": {
+        "apis": [
+          "LOCALES",
+          "STYLES",
+          "buildDocument",
+          "clearMeasurementCache",
+          "createCiteprocEngine",
+          "registerCitationEngine",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "citations",
+          "citations.bibliography",
+          "citations.bibliography.doi",
+          "citations.bibliography.entrySpacing",
+          "citations.bibliography.fontSize",
+          "citations.bibliography.hangingIndent",
+          "citations.bibliography.labelWidth",
+          "citations.bibliography.lineHeight",
+          "citations.link",
+          "citations.style",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "citations",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 131,
+        "designElements": 5,
+        "directives": [
+          ":::references"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Source Sans 3",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Source Sans 3",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "citation-styles",
+          "generated-bibliography",
+          "opener-design"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.67
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 1: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "16b47d17",
+      "vdtHash": "b5aa9f85e1e0048cb99347aa04c370fcffa12123",
+      "timings": {
+        "importMs": 558,
+        "fontsMs": 169,
+        "buildMs": 304,
+        "totalMs": 2362,
+        "builds": 4
+      },
+      "specimen": {
+        "trimMm": [
+          155,
+          235
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": false,
+        "body": {
+          "family": "Source Serif 4",
+          "sizePt": 10,
+          "leadingPt": 14
+        },
+        "families": [
+          "Source Sans 3",
+          "Source Serif 4"
+        ],
+        "pages": 4,
+        "ownLines": 113
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1516,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 147046,
+          "alt": "Página de apertura 1: La página que no se ve."
+        },
+        {
+          "n": 2,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1516,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 151462,
+          "alt": "Página de apertura 1: La página que no se ve."
+        },
+        {
+          "n": 3,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1516,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 145496,
+          "alt": "Página de apertura 1: La página que no se ve."
+        },
+        {
+          "n": 4,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1516,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 150702,
+          "alt": "Página de apertura 1: La página que no se ve."
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "one-text-four-citation-styles.postext",
+        "bytes": 17709
+      },
+      "detected": {
+        "apis": [
+          "LOCALES",
+          "STYLES",
+          "buildDocument",
+          "clearMeasurementCache",
+          "createCiteprocEngine",
+          "registerCitationEngine",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "citations",
+          "citations.bibliography",
+          "citations.bibliography.doi",
+          "citations.bibliography.entrySpacing",
+          "citations.bibliography.fontSize",
+          "citations.bibliography.hangingIndent",
+          "citations.bibliography.labelWidth",
+          "citations.bibliography.lineHeight",
+          "citations.link",
+          "citations.style",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "citations",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 131,
+        "designElements": 5,
+        "directives": [
+          ":::references"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Source Sans 3",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Source Sans 3",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "citation-styles",
+          "generated-bibliography",
+          "opener-design"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.67
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 1: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
+      }
+    }
+  }
+}

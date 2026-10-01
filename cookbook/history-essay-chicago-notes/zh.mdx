@@ -1,0 +1,60 @@
+---
+title: "用芝加哥注释体排历史论文"
+summary: "一篇四页的历史论文：正文写[@key, 87]，引文按芝加哥注释体排成页脚注，首次完整、再次简略，文末附参考书目。"
+plain: "一篇讲英国各城镇如何改用伦敦时间的论文。作者引用的每一处文献都变成页脚的编号注释，书目列在文末。"
+description: "用Postext排历史论文：Pandoc式引文排成芝加哥注释体脚注，重复引用用简略形式，带前缀、页码定位和参考书目。"
+question: "怎样按芝加哥注释体把引用排成脚注，并让后续引用用简略形式？"
+aliases: ["芝加哥", "芝加哥格式", "CMOS", "注释-书目体", "脚注引用", "同上", "Ibid.", "简略注", "人文学科", "历史论文"]
+pageNotes: { "1": "第1页：上半页一条深绿色色带，有丛书名、大号细笔画的1840–1880、标题Railway Time: How British Towns Came to Keep London's Hour和作者名；下方是开头几段和第一条注释，完整引用Schivelbusch。", "2": "第2页：The companies decide和The wire carries the hour两节；页脚为注2至注6，Howse在注3中完整出现，在注4中简作Howse, Greenwich Time and the Discovery of the Longitude。", "3": "第3页：The towns hesitate和The courts decline两节，注7至注11为简略形式，其中一条作者注以see为前缀引用两部著作。", "4": "第4页：最后一节、按字母排序并悬挂缩进的Bibliography、一行小字版权说明，以及注12至注15。" }
+---
+
+## 成品一览
+
+一份期刊技术史丛书的抽印本：约1,100词的论文，讲1840至1880年间英国各城镇如何放弃本地正午、改用伦敦时间。页面156 × 234 mm，左右镜像，正文Crimson Pro 11/14 pt，首页上半部是一条铁路绿色带。作者把每条文献写成代号`[@howse1980, 87]`，Postext按芝加哥注释-书目体把每处引用排成页脚的编号注释。某部著作第一次出现时注出作者、书名和出版社，之后都用简略形式。作者自己的说明性注释与引文注释共用一套编号，参考书目放在全文最后。
+
+## 做法
+
+### 1 · 每处引用一条注
+
+代码就是上面的[简短回答](#简短回答)。`chicago-notes-bibliography`是注释体样式：正文里的引用只留下一个上标数字，内容进入页脚注释，与作者自己的`[^注]`统一编号；`notes: 'footnote'`把这一点写明。citeproc-js记录哪些著作已经引用过，所以注3是*Derek Howse, Greenwich Time and the Discovery of the Longitude (Oxford University Press, 1980), 87*，再次引用同一本书的注4是*Howse, Greenwich Time and the Discovery of the Longitude, 90–91*。内置样式是《芝加哥手册》第18版，它不再用*Ibid.*，而是重复简略形式，所以注11和注12都印简略形式。
+
+### 2 · 作者注里也能引用
+
+写在`[^注]`里的引用留在该注之内、随文排出；如果是该著作第一次出现，就排完整形式：注1是作者的一句话加上Schivelbusch的完整出处。每条引用都以样式自带的句点结尾，所以以引用收尾的注释在Markdown里不要再加句点。
+
+### 3 · 前缀、后缀与定位
+
+`[see @simmons1991, 346–47; and @bartky2000, chap. 9]`把*see*放在第一部著作前，两部之间用分号隔开，各自保留页码或章节。单独的数字表示页码；`chap.`和`cap.`在两种语言里都表示章。定位之后的文字是后缀：`[@howse1980, 82–84, on the mail-coach timepieces]`把这句话印在页码之后。
+
+### 4 · 章首放在色带里
+
+<Excerpt region="opener" />
+
+色带从裁切边向下122 mm，正文从它下方9 mm处开始。年份取自标题属性`years="1840–1880"`，用54 pt的Crimson Pro Light排出，卡片上的数字与标题一样醒目；署名属性同时供偶数页的书眉使用。
+
+<Excerpt region="palette" />
+
+## 变化
+
+### 把注释放到文末
+
+有些期刊把注释集中在论文之后；引文仍保留完整和简略两种形式。
+
+```diff
+-  placement: 'column', numbering: 'chapter',
++  placement: 'chapterEnd', numbering: 'chapter',
+```
+
+### 恢复Ibid.
+
+芝加哥格式第17版在重复上一条著作时印*Ibid.*。从Zotero样式库取来该样式的`.csl`文件，把内容放进一个字符串，作为自定义样式使用。
+
+```diff
+-  style: 'chicago-notes-bibliography', // CMOS 18th edition, notes and bibliography
++  style: 'custom', customStyle: CHICAGO_17TH_CSL, // the XML of the .csl file
+```
+
+## 常见问题
+
+- 以引用结尾的注释不要再加句点：样式已经加了一个，Postext不会把两个合并，注释末尾就会出现两个句点。
+- 在注释体样式里，不带方括号的`@howse1980`只在句中留下注号，变成*As ¹ says*，没有作者名。请自己写出作者名，再用方括号引用：`As Howse says,[@howse1980]`。

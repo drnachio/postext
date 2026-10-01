@@ -1,0 +1,72 @@
+---
+title: "A Chinese paper cited to GB/T 7714"
+summary: "A two-column Chinese journal article: [@key] citations print as superscript [1] and [2–4], the references carry [M], [J], [D] and [EB/OL]."
+plain: "A short research article from a Chinese journal. The author writes a code for each source; Postext numbers the sources in the order they are cited and prints the list of references the way Chinese journals require."
+description: "A Chinese journal article in Postext cited to GB/T 7714—2015: numbered superscript citations, ranges, type codes, 等 and et al. by language."
+question: "How do I cite to GB/T 7714 in a Chinese paper, with superscript numbers and type codes?"
+aliases: ["GB/T 7714", "GB/T 7714—2015", "参考文献著录规则", "顺序编码制", "Chinese references", "Chinese bibliography", "文献类型标识", "[M] [J] [D]", "et al. 等", "Chinese journal article", "学报", "superscript citations", "CSL-YAML", "citeproc"]
+pageNotes: { "1": "Page 1 of an article in a fictitious journal, 示例出版研究. An indigo band across the top carries the journal’s name in white and the volume and issue at the right. Under it a centred two-line title in bold Hei, the two authors’ names, their affiliations in small grey type, and the abstract across both columns with indigo labels 摘　要：, 关键词：, 文献标志码： and 文章编号：. Below, two columns of Chinese text on a character grid: the unnumbered 引言, with small superscript citations [1], [2–4], [5,6], [7], [4] and [8], then 1 实验方法 with sections 1.1 to 1.3.", "2": "Page 2: the running head 42 示例出版研究 2026年第3期 over a hairline; sections 2 结果, 3 讨论 and 4 结论 in the left column, then the heading 参考文献 and the numbered list [1] to [8] in a smaller size, running into the right column: three English entries in capitals with et al. and [M], [J/OL] codes, Chinese entries with 等 and [J], [M], [D], [EB/OL], [C]. At the foot of the list a grey note in Latin type says which works are fictitious." }
+---
+
+## What you'll build
+
+Two pages of a research article in an invented journal of publishing studies, 示例出版研究 (“Example Publishing Research”), set as a Chinese university journal sets its papers. The page is 16开, 184 × 260 mm, with two columns of 23 characters of 小五 on a 15 pt grid. A title block runs across the page: the journal’s name on an indigo band, the title in bold Hei, the authors, their affiliations and an abstract with its keywords. The citations follow GB/T 7714—2015, the national standard for references, in its numeric system (顺序编码制): each work takes a number in the order it is first cited, the number prints as a superscript in square brackets, and three or more consecutive numbers become a range. The reference list gives each entry its document-type code and writes 等 after three authors of a Chinese work and “et al.” after those of a Western one. <RecipeLink slug="apa-thesis-with-bibtex">A thesis chapter cited in APA 7</RecipeLink> uses the same citation markup in an author-date style.
+
+## Method
+
+### 1 · The style, and its layout for Western works
+
+The code is [the short answer](#the-short-answer) above. The citation engine is registered once, before the first build, and `postext-citeproc` ships the three GB/T 7714 styles: numeric, author-date and notes ([Citations](/en/docs/configuration#citations)). In the text a citation is a key in square brackets. `[@tinker1963]` prints a superscript [1], and `[@rayner2016; @dyson2001; @lin2023]` prints [2–4]. Two numbers in a row stay a list, [5,6]. A work cited again keeps its first number: [4] in the third paragraph, and [1] and [2] later in the article.
+
+The standard asks for “et al.” after the first three authors of a Western work and 等 after those of a Chinese one. The bundled CSL file holds two layouts for that, one for works in English, but the English one is commented out, so every entry gets 等. The answer takes the style’s XML from `STYLES`, uncomments that layout and passes the result as a custom style. Each entry then takes its layout from its own `language` field: Rayner and four co-authors become “RAYNER K, SCHOTTER E R, MASSON M E J, et al.”, and 林岚 and three co-authors become “林岚, 周明远, 陈思齐, 等”. `locale: 'zh-CN'` writes the rest of the list’s words in Chinese.
+
+### 2 · The references in a CSL-YAML block
+
+The works are listed in a `:::references{format=csl-yaml}` block at the end of the Markdown, in the format Zotero exports as CSL YAML ([References](/en/docs/document-format#references)). The CSL type decides the code: `book` prints [M], `article-journal` [J], `thesis` [D], `paper-conference` [C] after its `//` and the proceedings, and `webpage` [EB/OL] with the access date in square brackets. A journal article with a DOI becomes [J/OL] and keeps its DOI, as the standard asks. Chinese names go in `literal`, so the style does not split them into family and given names. `:::bibliography{title=""}` puts the list under the unnumbered heading 参考文献, and `labelWidth` sets the turnover lines under the text of the entry, not past it.
+
+<PageShot page={2} crop="0.5,0.08,0.45,0.5" caption="Page 2: Western entries in capitals with et al., Chinese entries with 等, each with its type code." />
+
+### 3 · The title block on a band
+
+<Excerpt region="masthead" />
+
+The title block is the design of the H1, a heading style that spans both columns. The band is a box anchored to the trim, and the journal’s name sits on it in white. The title, the authors and the affiliations come from the heading and its attributes, each placed below the one before (`#title`, `below`), so a three-line title pushes the rest down ([Span and advanced design](/en/docs/configuration#span-and-advanced-design)).
+
+### 4 · The abstract and its labels
+
+<Excerpt region="abstract" />
+
+The abstract is a callout across the page, indented two characters on each side. Its labels are chips: `:chip[摘　要：]{style="label"}` sets the word in bold Hei, in the journal’s indigo, with no box ([Chip styles](/en/docs/configuration#chip-styles)). Chinese journals often set the abstract in 楷体; this one stays in Song, for the reason in Pitfalls.
+
+<Excerpt region="palette" />
+
+## Variations
+
+### Corner brackets instead of superscripts
+
+Some journals print citation numbers on the line, at the text size. `marker` changes how the number is marked and leaves the style alone: `'brackets'` gives [1] on the line, `'corner'` gives 〔1〕.
+
+```diff
+   locale: 'zh-CN', // 等, 卷, 版 and the other terms of the list
++  marker: 'brackets',
+```
+
+### Chinese works first
+
+Mixed bibliographies are sometimes sorted with the Chinese works ahead of the Western ones. In a numeric style the numbers then no longer run in order down the list, so this suits the author-date style better.
+
+```diff
+-  customStyle: GBT.replace(/<!-- (<layout[^>]*locale="en">[\s\S]*?<\/layout>)\s*-->/, '$1'),
++  customStyle: STYLES['china-national-standard-gb-t-7714-2015-author-date']
++    .replace(/<!-- (<layout[^>]*locale="en">[\s\S]*?<\/layout>)\s*-->/g, '$1'),
+   locale: 'zh-CN', // 等, 卷, 版 and the other terms of the list
+-  bibliography: { fontSize: em(7.5 / BODY), lineHeight: pt(12), entrySpacing: pt(1.5),
++  bibliography: { groupByLanguage: true, fontSize: em(7.5 / BODY), lineHeight: pt(12),
+```
+
+## Pitfalls
+
+- A narrative citation, `@zhou2019` without brackets, names the authors and adds the number, but a key runs on through Chinese characters, so `@zhou2019认为` reads as a key that does not exist. Write the name in the text and the citation after it, `周明远[@zhou2019]认为`, as Chinese papers do anyway.
+- The bundled numeric style prints no locators: `[@zhou2019, 页 45]` gives [5] without the page. GB/T 7714 puts the page after the bracket in the superscript, [5]45; until the style does, write the page in the sentence.
+- LXGW WenKai TC, the only Kai on Fontsource, is a Taiwan face: it draws ，and 。 in the middle of the cell, and under `zh-Hans` the engine trims the right half of the cell, which cuts into the glyph. The abstract is set in Noto Serif SC, and the Kai is kept for the authors’ names, which have no punctuation.
+- On a character grid, column balancing would add lines above heads and spread the characters of a paragraph to fill a short column. `headings.balancing.enabled: false` keeps every line on the grid, and the second column of page 1 ends three lines short instead: the head 2 结果 needs its own two lines and two of text under it, so it opens page 2.

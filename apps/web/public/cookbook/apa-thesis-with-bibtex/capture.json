@@ -1,0 +1,566 @@
+{
+  "schemaVersion": 1,
+  "slug": "apa-thesis-with-bibtex",
+  "sourceHash": "e48400d66ed0809be47fd100cee127868ea455c3f87b926654301cdbd1115e17",
+  "engine": {
+    "postext": "1.12.0",
+    "postextPdf": "1.12.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-01T15:27:47.700Z",
+  "variants": {
+    "en": {
+      "hash8": "1828b492",
+      "vdtHash": "2cd2c8278e3f96d5a580aff1035e24e6f5dd5a6a",
+      "timings": {
+        "importMs": 4285,
+        "fontsMs": 71,
+        "buildMs": 19,
+        "totalMs": 5448,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          297
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": false,
+        "body": {
+          "family": "Literata",
+          "sizePt": 11,
+          "leadingPt": 16
+        },
+        "families": [
+          "Literata",
+          "Public Sans"
+        ],
+        "pages": 3,
+        "ownLines": 118
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 127874,
+          "alt": "Opening page 1: 2 Reading on Paper and on Screens: The State of the Evidence."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1414,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 142076,
+          "alt": "Page 2: 2.2 Speed and line length."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1414,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 68674,
+          "alt": "Page 3."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "apa-thesis-with-bibtex.pdf",
+        "bytes": 60513,
+        "pages": 3
+      },
+      "sandbox": {
+        "file": "apa-thesis-with-bibtex.postext",
+        "bytes": 18429
+      },
+      "detected": {
+        "apis": [
+          "LOCALES",
+          "STYLES",
+          "buildDocument",
+          "clearMeasurementCache",
+          "createCiteprocEngine",
+          "decompressWoff2",
+          "registerCitationEngine",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "citations",
+          "citations.bibliography",
+          "citations.bibliography.doi",
+          "citations.bibliography.entrySpacing",
+          "citations.bibliography.fontSize",
+          "citations.bibliography.hangingIndent",
+          "citations.link",
+          "citations.style",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "crossRefs",
+          "crossRefs.section",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberSeparator",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "citations",
+          "colorPalette",
+          "crossRefs",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 146,
+        "designElements": 6,
+        "directives": [
+          ":::bibliography",
+          ":::references"
+        ],
+        "inline": [
+          "{attrs}",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Literata",
+            "weight": 300,
+            "style": "normal"
+          },
+          {
+            "family": "Literata",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Literata",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Literata",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Literata",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Public Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Public Sans",
+            "weight": 600,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "citation-styles",
+          "citations",
+          "cross-references",
+          "generated-bibliography",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "opener-design",
+          "page-role-filters",
+          "pdf-export",
+          "pdf-fonts",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.98
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "a32c15bf",
+      "vdtHash": "f9c9bf022d0ead5eca0da1072385bb33e9eb055f",
+      "timings": {
+        "importMs": 1545,
+        "fontsMs": 101,
+        "buildMs": 26,
+        "totalMs": 2829,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          297
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": false,
+        "body": {
+          "family": "Literata",
+          "sizePt": 11,
+          "leadingPt": 16
+        },
+        "families": [
+          "Literata",
+          "Public Sans"
+        ],
+        "pages": 3,
+        "ownLines": 118
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 127216,
+          "alt": "Página de apertura 1: 2 Leer en papel y en pantalla: el estado de la cuestión."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1414,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 149356,
+          "alt": "Página 2: 2.2 Velocidad y longitud de línea."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1414,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 77012,
+          "alt": "Página 3."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "apa-thesis-with-bibtex.pdf",
+        "bytes": 66507,
+        "pages": 3
+      },
+      "sandbox": {
+        "file": "apa-thesis-with-bibtex.postext",
+        "bytes": 18383
+      },
+      "detected": {
+        "apis": [
+          "LOCALES",
+          "STYLES",
+          "buildDocument",
+          "clearMeasurementCache",
+          "createCiteprocEngine",
+          "decompressWoff2",
+          "registerCitationEngine",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "citations",
+          "citations.bibliography",
+          "citations.bibliography.doi",
+          "citations.bibliography.entrySpacing",
+          "citations.bibliography.fontSize",
+          "citations.bibliography.hangingIndent",
+          "citations.link",
+          "citations.style",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "crossRefs",
+          "crossRefs.section",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberSeparator",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "citations",
+          "colorPalette",
+          "crossRefs",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 146,
+        "designElements": 6,
+        "directives": [
+          ":::bibliography",
+          ":::references"
+        ],
+        "inline": [
+          "{attrs}",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Literata",
+            "weight": 300,
+            "style": "normal"
+          },
+          {
+            "family": "Literata",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Literata",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Literata",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Literata",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Public Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Public Sans",
+            "weight": 600,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "citation-styles",
+          "citations",
+          "cross-references",
+          "generated-bibliography",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "opener-design",
+          "page-role-filters",
+          "pdf-export",
+          "pdf-fonts",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.8
+        },
+        "findings": []
+      }
+    }
+  }
+}

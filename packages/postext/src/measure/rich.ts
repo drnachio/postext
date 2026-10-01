@@ -1001,6 +1001,13 @@ function tokenizeSpans(
       continue;
     }
     const font = spanFont(span);
+    // A fixed space is set as text: no break, no justification glue.
+    if (span.fixedSpace) {
+      if (span.text.length > 0) {
+        tokens.push({ text: span.text, bold: span.bold, italic: span.italic, kind: 'text', width: textWidth(span.text, font, false) + track(span.text) });
+      }
+      continue;
+    }
     // Chinese marks (#193) ride on the span's words like its script.
     const marks = spanMarks(span, getMeasureWritingMode() === 'vertical-rl');
     const scriptFields = {

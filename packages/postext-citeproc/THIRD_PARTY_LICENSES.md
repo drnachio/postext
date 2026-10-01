@@ -18,4 +18,9 @@ The files under `csl/` (embedded in `dist/generated/`) are from the Citation Sty
 - Locales: https://github.com/citation-style-language/locales
 - Licence: Creative Commons Attribution-ShareAlike 3.0 Unported (CC BY-SA 3.0), https://creativecommons.org/licenses/by-sa/3.0/
 
-Each style file names its authors and contributors in its `<info>` block. They are distributed unmodified.
+Each style file names its authors and contributors in its `<info>` block. They are distributed unmodified, except:
+
+- `china-national-standard-gb-t-7714-2015-*.csl`: the CSL-M `locale="en"` layouts the files ship commented out are enabled, so a work in a Western language takes "et al." and the English terms.
+- `iso690-author-date-es.csl`: a citation labels its locator ("cap. 2", "p. 33") instead of always writing "p.", and a chapter without pages ends its publisher with a full stop.
+
+At run time `postext-citeproc` also adds `collapse="citation-number"` to a numbered style's citation when ranges are to be joined, and, for notes without numbers, turns off the branches that point back to an earlier note.

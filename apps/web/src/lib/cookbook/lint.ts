@@ -14,6 +14,7 @@ import {
   CONFIG_KEYS,
   POSTEXT_BUNDLE_URL,
   POSTEXT_PDF_URL,
+  POSTEXT_CITEPROC_URL,
   POSTEXT_URL,
   POSTEXT_WORKER_URL,
   configKeys,
@@ -72,7 +73,7 @@ export const LIMITS = {
 } as const;
 
 /** The only module URLs a pen imports (unpinned: the capture pins them). */
-export const ALLOWED_IMPORTS: readonly string[] = [POSTEXT_URL, POSTEXT_BUNDLE_URL, POSTEXT_PDF_URL, POSTEXT_WORKER_URL];
+export const ALLOWED_IMPORTS: readonly string[] = [POSTEXT_URL, POSTEXT_BUNDLE_URL, POSTEXT_PDF_URL, POSTEXT_WORKER_URL, POSTEXT_CITEPROC_URL];
 
 /** Hosts (and path prefixes) a pen may fetch from. Nothing else: no hotlinking. */
 export const NETWORK_ALLOWLIST: readonly { host: string; path?: string }[] = [

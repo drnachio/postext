@@ -131,6 +131,12 @@ export interface CitationProcessorOptions {
   /** CSL locale (`en-US`, `es-ES`, `zh-CN`…). */
   locale: string;
   items: readonly CslItem[];
+  /** Join consecutive numbers into a range ("[2]–[4]") in a numbered style
+   *  that does not already; false keeps them apart. Unset: the style's way. */
+  collapseRanges?: boolean;
+  /** Notes without numbers (夹注): a later citation of a work cannot point
+   *  back to "note 3", so it is written as the first one is. */
+  unnumberedNotes?: boolean;
 }
 
 /** A citation engine: CSL styles, locales and a BibTeX reader. */

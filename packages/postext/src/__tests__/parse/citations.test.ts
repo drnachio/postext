@@ -107,3 +107,12 @@ describe('citeproc HTML (#269)', () => {
     ]);
   });
 });
+
+describe('citation keys next to Chinese text', () => {
+  it('ends a Latin key where Chinese text begins, and reads a key right after a Chinese word', () => {
+    expect(cites('周明远@zhou2019认为如此。').map((c) => [c.cluster.mode, c.cluster.items[0]!.id])).toEqual([['narrative', 'zhou2019']]);
+    expect(cites('见[@zhou2019]。').map((c) => c.cluster.items[0]!.id)).toEqual(['zhou2019']);
+    expect(cites('[@张三2020]').map((c) => c.cluster.items[0]!.id)).toEqual(['张三2020']);
+    expect(cites('Write to me@example.com.')).toEqual([]);
+  });
+});

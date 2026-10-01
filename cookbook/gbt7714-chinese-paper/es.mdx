@@ -1,0 +1,72 @@
+---
+title: "Un artículo chino citado según la GB/T 7714"
+summary: "Un artículo de revista china a dos columnas: las citas [@clave] salen como [1] y [2–4] volados, y las referencias llevan [M], [J], [D] y [EB/OL]."
+plain: "Un artículo breve de una revista científica china. El autor escribe un código para cada fuente; Postext numera las fuentes por orden de cita y compone la lista de referencias como la piden las revistas chinas."
+description: "Un artículo de revista china en Postext citado según la GB/T 7714—2015: citas numeradas voladas, rangos, códigos de tipo, 等 y et al. según la lengua."
+question: "¿Cómo cito según la GB/T 7714 en un artículo chino, con números volados y códigos de tipo?"
+aliases: ["GB/T 7714", "GB/T 7714—2015", "参考文献著录规则", "顺序编码制", "referencias en chino", "bibliografía china", "códigos de tipo de documento", "[M] [J] [D]", "et al. 等", "artículo de revista china", "citas voladas", "CSL-YAML", "citeproc"]
+pageNotes: { "1": "Página 1 de un artículo de una revista ficticia, 示例出版研究. Una banda añil cruza la cabeza con el nombre de la revista en blanco y el volumen y el número a la derecha. Debajo, el título centrado en dos líneas de Hei en negrita, los nombres de los dos autores, sus filiaciones en gris pequeño y el resumen a todo el ancho, con las etiquetas añiles 摘　要：, 关键词：, 文献标志码： y 文章编号：. Más abajo, dos columnas de texto chino sobre una retícula de caracteres: la 引言 sin número, con citas voladas pequeñas [1], [2–4], [5,6], [7], [4] y [8], y después 1 实验方法 con los apartados 1.1 a 1.3.", "2": "Página 2: la cabecera 42 示例出版研究 2026年第3期 sobre un filete fino; los apartados 2 结果, 3 讨论 y 4 结论 en la columna izquierda, después el título 参考文献 y la lista numerada [1] a [8] en un cuerpo menor, que sigue en la columna derecha: tres entradas inglesas con los apellidos en mayúsculas, et al. y los códigos [M] y [J/OL]; entradas chinas con 等 y [J], [M], [D], [EB/OL], [C]. Al pie de la lista, una nota gris en letra latina dice qué obras son ficticias." }
+---
+
+## Lo que vas a componer
+
+Dos páginas de un artículo de investigación en una revista inventada de estudios editoriales, 示例出版研究 («Investigación Editorial de Ejemplo»), compuesto como compone sus artículos una revista universitaria china. La página es un 16开 de 184 × 260 mm, con dos columnas de 23 caracteres de 小五 sobre una retícula de 15 pt. Un bloque de título cruza la página: el nombre de la revista sobre una banda añil, el título en Hei negrita, los autores, sus filiaciones y un resumen con sus palabras clave. Las citas siguen la GB/T 7714—2015, la norma nacional china de referencias, en su sistema numérico (顺序编码制): cada obra recibe un número por el orden en que se cita por primera vez, el número sale volado entre corchetes y tres o más números seguidos se unen en un rango. La lista de referencias da a cada entrada su código de tipo de documento y escribe 等 tras los tres primeros autores de una obra china y «et al.» tras los de una occidental. <RecipeLink slug="apa-thesis-with-bibtex">Un capítulo de tesis citado en APA 7</RecipeLink> usa el mismo marcado de citas en un estilo autor-fecha.
+
+## Elaboración
+
+### 1 · El estilo, y su plantilla para las obras occidentales
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. El motor de citas se registra una vez, antes de la primera composición, y `postext-citeproc` trae los tres estilos de la GB/T 7714: numérico, autor-fecha y de notas ([Citas](/es/docs/configuration#citas)). En el texto, una cita es una clave entre corchetes. `[@tinker1963]` imprime un [1] volado, y `[@rayner2016; @dyson2001; @lin2023]` imprime [2–4]. Dos números seguidos quedan como lista, [5,6]. Una obra citada de nuevo conserva su primer número: [4] en el tercer párrafo, y [1] y [2] más adelante.
+
+La norma pide «et al.» tras los tres primeros autores de una obra occidental y 等 tras los de una china. El archivo CSL incluido trae dos plantillas para eso, una para las obras en inglés, pero la inglesa está comentada, así que todas las entradas reciben 等. La respuesta toma el XML del estilo de `STYLES`, descomenta esa plantilla y pasa el resultado como estilo propio. Cada entrada toma entonces su plantilla de su propio campo `language`: Rayner y cuatro coautores quedan en «RAYNER K, SCHOTTER E R, MASSON M E J, et al.», y 林岚 y tres coautores en «林岚, 周明远, 陈思齐, 等». `locale: 'zh-CN'` escribe en chino el resto de las palabras de la lista.
+
+### 2 · Las referencias en un bloque CSL-YAML
+
+Las obras van en un bloque `:::references{format=csl-yaml}` al final del Markdown, en el formato que Zotero exporta como CSL YAML ([Citar](/es/docs/document-format#citar)). El tipo CSL decide el código: `book` imprime [M], `article-journal` [J], `thesis` [D], `paper-conference` [C] tras su `//` y las actas, y `webpage` [EB/OL] con la fecha de consulta entre corchetes. Un artículo con DOI pasa a [J/OL] y conserva el DOI, como pide la norma. Los nombres chinos van en `literal`, para que el estilo no los parta en apellido y nombre. `:::bibliography{title=""}` coloca la lista bajo el título sin número 参考文献, y `labelWidth` alinea las líneas siguientes de cada entrada con su texto, no más adentro.
+
+<PageShot page={2} crop="0.5,0.08,0.45,0.5" caption="Página 2: entradas occidentales en mayúsculas con et al., entradas chinas con 等, cada una con su código de tipo." />
+
+### 3 · El bloque de título sobre una banda
+
+<Excerpt region="masthead" />
+
+El bloque de título es el diseño del H1, con un estilo de título que ocupa las dos columnas. La banda es una caja anclada al corte, y el nombre de la revista va encima en blanco. El título, los autores y las filiaciones salen del título y sus atributos, cada uno colocado bajo el anterior (`#title`, `below`), de modo que un título de tres líneas empuja el resto hacia abajo ([Span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)).
+
+### 4 · El resumen y sus etiquetas
+
+<Excerpt region="abstract" />
+
+El resumen es un recuadro a todo el ancho, sangrado dos caracteres por cada lado. Sus etiquetas son chips: `:chip[摘　要：]{style="label"}` compone la palabra en Hei negrita, en el añil de la revista, sin caja ([Estilos de chip](/es/docs/configuration#estilos-de-chip)). Las revistas chinas suelen componer el resumen en 楷体; esta lo deja en Song, por lo que se explica en Errores frecuentes.
+
+<Excerpt region="palette" />
+
+## Variantes
+
+### Números en la línea en vez de volados
+
+Algunas revistas imprimen los números de cita en la línea, al cuerpo del texto. `marker` cambia cómo se marca el número y deja el estilo intacto: `'brackets'` da [1] en la línea; `'corner'`, 〔1〕.
+
+```diff
+   locale: 'zh-CN', // 等, 卷, 版 and the other terms of the list
++  marker: 'brackets',
+```
+
+### Las obras chinas primero
+
+Las bibliografías mixtas se ordenan a veces con las obras chinas delante de las occidentales. En un estilo numérico los números dejarían de correr en orden por la lista, así que conviene más el estilo autor-fecha.
+
+```diff
+-  customStyle: GBT.replace(/<!-- (<layout[^>]*locale="en">[\s\S]*?<\/layout>)\s*-->/, '$1'),
++  customStyle: STYLES['china-national-standard-gb-t-7714-2015-author-date']
++    .replace(/<!-- (<layout[^>]*locale="en">[\s\S]*?<\/layout>)\s*-->/g, '$1'),
+   locale: 'zh-CN', // 等, 卷, 版 and the other terms of the list
+-  bibliography: { fontSize: em(7.5 / BODY), lineHeight: pt(12), entrySpacing: pt(1.5),
++  bibliography: { groupByLanguage: true, fontSize: em(7.5 / BODY), lineHeight: pt(12),
+```
+
+## Errores frecuentes
+
+- Una cita narrativa, `@zhou2019` sin corchetes, nombra a los autores y añade el número, pero la clave sigue por los caracteres chinos que vengan detrás, así que `@zhou2019认为` se lee como una clave que no existe. Escribe el nombre en el texto y la cita detrás, `周明远[@zhou2019]认为`, como hacen de todos modos los artículos chinos.
+- El estilo numérico incluido no imprime localizadores: `[@zhou2019, 页 45]` da [5] sin la página. La GB/T 7714 pone la página tras el corchete, dentro del volado, [5]45; mientras el estilo no lo haga, escribe la página en la frase.
+- LXGW WenKai TC, la única Kai de Fontsource, es una fuente de Taiwán: dibuja ，y 。 en el centro de la casilla, y con `zh-Hans` el motor recorta la mitad derecha de la casilla, que corta el signo. El resumen va en Noto Serif SC, y la Kai se queda para los nombres de los autores, que no llevan puntuación.
+- En una retícula de caracteres, el equilibrado de columnas añadiría líneas sobre los títulos y espaciaría los caracteres de un párrafo para llenar una columna corta. `headings.balancing.enabled: false` mantiene cada línea en la retícula, y la segunda columna de la página 1 acaba tres líneas antes: el título 2 结果 necesita sus dos líneas y dos de texto debajo, así que abre la página 2.

@@ -1,0 +1,60 @@
+---
+title: "A history essay with Chicago notes"
+summary: "A four-page history essay whose [@key, 87] citations become Chicago notes at the foot of the page: full the first time, short after that, with a bibliography."
+plain: "An essay on how British towns came to keep London time. Each source the author cites becomes a numbered note at the foot of the page, and the list of works comes at the end."
+description: "A history essay in Postext: Pandoc citations set as Chicago footnotes, short forms for repeated works, prefixes, locators and a bibliography at the end."
+question: "How do I set citations as Chicago footnotes, with short forms for later citations?"
+aliases: ["Chicago", "Chicago Manual of Style", "CMOS", "notes and bibliography", "footnote citations", "Ibid.", "short notes", "humanities", "history essay", "Turabian"]
+pageNotes: { "1": "Page 1: a dark green band over the top half of the page with the series line, the dates 1840–1880 in large light figures, the title Railway Time: How British Towns Came to Keep London's Hour and the author's name; below it the opening paragraphs and a first note citing Schivelbusch in full.", "2": "Page 2: the sections The companies decide and The wire carries the hour; at the foot, notes 2 to 6, where Howse appears in full in note 3 and as Howse, Greenwich Time and the Discovery of the Longitude in note 4.", "3": "Page 3: The towns hesitate and The courts decline, with notes 7 to 11 in short form and an author's note that cites two works with the prefix see.", "4": "Page 4: the last section, the Bibliography in alphabetical order with hanging indents, a small colophon, and notes 12 to 15." }
+---
+
+## What you'll build
+
+An offprint from a journal's history-of-technology series: an essay of about 1,100 words on how British towns gave up their own noon for London's between 1840 and 1880. The page is 156 × 234 mm, mirrored, in Crimson Pro at 11/14 pt, with a railway-green band over the top half of the first page. The author writes every source as a key, `[@howse1980, 87]`, and Postext sets each one as a numbered note at the foot of the page in Chicago notes-and-bibliography style. The first note for a work gives author, title and publisher; every later one gives the short form. The author's own discursive notes take their numbers from the same sequence, and the bibliography closes the essay.
+
+## Method
+
+### 1 · A note for every citation
+
+The code is [the short answer](#the-short-answer) above. `chicago-notes-bibliography` is a note style, so a citation in the text leaves a superscript number and its words go to a footnote numbered with the author's own `[^notes]`; `notes: 'footnote'` says so explicitly. citeproc-js tracks which works it has already cited, so note 3 reads *Derek Howse, Greenwich Time and the Discovery of the Longitude (Oxford University Press, 1980), 87* and note 4, citing the same book again, reads *Howse, Greenwich Time and the Discovery of the Longitude, 90–91*. The bundled style is the 18th edition of the Chicago Manual, which drops *Ibid.* and repeats the short form, so notes 11 and 12 print the short form twice.
+
+### 2 · Notes the author writes cite too
+
+A citation inside a `[^note]` stays in that note and is set inline, in full if it is the work's first appearance: note 1 is the author's sentence followed by Schivelbusch's full reference. Every citation ends with the style's full stop, so a note that closes on a citation needs no full stop of its own in the Markdown.
+
+### 3 · Prefixes, suffixes and locators
+
+`[see @simmons1991, 346–47; and @bartky2000, chap. 9]` puts *see* before the first work, separates the two with a semicolon and keeps each work's locator. A bare number is a page; `chap.` and `cap.` name a chapter in either language. Text after the locator is a suffix: `[@howse1980, 82–84, on the mail-coach timepieces]` prints the phrase after the pages.
+
+### 4 · The opener sits in a band
+
+<Excerpt region="opener" />
+
+The band runs 122 mm down from the trim and the text starts 9 mm below it. The dates come from a heading attribute, `years="1840–1880"`, set in Crimson Pro Light at 54 pt, so the card shows a figure as large as a title; the byline attribute also feeds the running head on the versos.
+
+<Excerpt region="palette" />
+
+## Variations
+
+### Put the notes at the end
+
+Some journals collect the notes after the essay; the citations keep their full and short forms.
+
+```diff
+-  placement: 'column', numbering: 'chapter',
++  placement: 'chapterEnd', numbering: 'chapter',
+```
+
+### Write Ibid. again
+
+The 17th edition of the Chicago style prints *Ibid.* for a note that repeats the previous work. Paste that style's `.csl` file, from the Zotero style repository, into a string and use it as a custom style.
+
+```diff
+-  style: 'chicago-notes-bibliography', // CMOS 18th edition, notes and bibliography
++  style: 'custom', customStyle: CHICAGO_17TH_CSL, // the XML of the .csl file
+```
+
+## Pitfalls
+
+- Do not end a note with a full stop after a citation: the style already closes the citation with one, and Postext does not merge the two, so the note would end in two full stops.
+- In a note style, `@howse1980` without brackets leaves only the note number in the sentence, *As ¹ says*, with no author's name. Write the name yourself and cite in brackets: `As Howse says,[@howse1980]`.

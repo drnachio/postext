@@ -452,6 +452,17 @@ export function facts({ select = 'last', hero = [] } = {}) {
     });
     return { chapter, body, blocks: result.blocks ?? [] };
   });
+  // Anchors a :ref may name besides resources (postext >= 1.12): headings
+  // with an id and anchors set in the text, in any chapter.
+  const anchorIds = new Set();
+  for (const { blocks } of parsed) {
+    for (const block of blocks) {
+      if (block.type === 'heading' && block.attrs?.id) anchorIds.add(block.attrs.id);
+      for (const mark of block.anchorMarks ?? []) anchorIds.add(mark.anchorId);
+    }
+  }
+  const refTarget = (id) => resourceIds.has(id) || anchorIds.has(id)
+    || /^(sec|fig|tbl|eq|lst):/.test(id) && (resourceIds.has(id.slice(id.indexOf(':') + 1)) || anchorIds.has(id.slice(id.indexOf(':') + 1)));
   for (const { chapter, body, blocks } of parsed) {
     const at = (block) => `chapter ${chapter + 1}, line ${lineOf(body, block.sourceStart)}`;
     for (const block of blocks) {
@@ -480,7 +491,7 @@ export function facts({ select = 'last', hero = [] } = {}) {
     for (const { span, block } of spansOf(blocks)) {
       if (span.ref) {
         inline.add('ref');
-        if (!resourceIds.has(span.ref.resourceId)) unknownRefs.push({ usage: ':ref', id: span.ref.resourceId, at: at(block) });
+        if (!refTarget(span.ref.resourceId)) unknownRefs.push({ usage: ':ref', id: span.ref.resourceId, at: at(block) });
       }
       if (span.chip) {
         inline.add('chip');

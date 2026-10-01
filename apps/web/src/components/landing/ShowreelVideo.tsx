@@ -40,7 +40,7 @@ export function ShowreelVideo({
   exitFullscreenLabel,
 }: {
   video?: MediaVideo;
-  lang: "en" | "es";
+  lang: "en" | "es" | "zh";
   title: string;
   playLabel: string;
   watchLabel: string;
@@ -148,7 +148,7 @@ export function ShowreelVideo({
     const tracks = ref.current?.textTracks;
     if (!tracks) return;
     const subs = [...tracks].filter((t) => t.kind === "subtitles" || t.kind === "captions");
-    const pick = subs.find((t) => t.language === lang) ?? subs[0];
+    const pick = subs.find((t) => t.language.split("-")[0] === lang) ?? subs[0];
     for (const t of subs) t.mode = !subsOn && t === pick ? "showing" : "disabled";
   };
 

@@ -196,8 +196,10 @@ export function withFootnoteStyle(resolved: ResolvedConfig): ResolvedConfig {
   return { ...resolved, paragraphStyles: [...resolved.paragraphStyles, footnoteParagraphStyle(resolved)] };
 }
 
-/** Separator between a note's number and its text: an en space, which
- *  justification leaves alone (it is no word space). */
+/** Separator between a note's number and its text: an en space, set as a
+ *  fixed space (`InlineSpan.fixedSpace`) so that justification neither
+ *  stretches nor shrinks it and the line never breaks there: the gap is as
+ *  wide in a justified note as in a ragged one-line note. */
 const NUMBER_GAP = ' ';
 
 /** The paragraph a note is set as: its number (a superscript, or at the
@@ -219,7 +221,7 @@ export function noteContentBlock(
     text: prefix + text,
     spans: [
       { text: number, bold: false, italic: false, ...(markerPosition === 'superscript' ? { script: 'sup' as const } : {}) },
-      { text: NUMBER_GAP, bold: false, italic: false },
+      { text: NUMBER_GAP, bold: false, italic: false, fixedSpace: true },
       ...spans,
     ],
     sourceStart,

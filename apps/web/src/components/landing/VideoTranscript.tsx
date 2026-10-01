@@ -8,8 +8,8 @@ import {
 
 /** The text alternative under a narrated video (WCAG 1.2.3, 1.2.8): a
  *  disclosure, closed by default, with what is shown and what is said, block
- *  by block, timed against the cut. Chinese pages play the English cut and
- *  get its transcript in Chinese, which the note says. Server component. */
+ *  by block, timed against the cut each locale plays (English, Spanish or
+ *  Chinese, each with its own narration). Server component. */
 export async function VideoTranscript({
   video,
   locale,

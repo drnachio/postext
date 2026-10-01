@@ -1,0 +1,64 @@
+---
+title: "Una ponencia a dos columnas en estilo IEEE"
+summary: "Una ponencia a dos columnas: título a todo el ancho, citas IEEE con intervalos [2]–[4], remisiones a la sección II y una lista numerada compacta."
+plain: "Un artículo breve para un congreso, a dos columnas. El autor escribe un código para cada fuente; Postext numera las citas entre corchetes, remite a las secciones por número y página e imprime al final la lista numerada de referencias."
+description: "Una ponencia IEEE con Postext: dos columnas en carta US, citas numeradas con citeproc-js, intervalos agrupados y remisiones a sección y página."
+question: "¿Cómo compongo una ponencia con citas numeradas IEEE y lista de referencias?"
+aliases: ["IEEE", "IEEEtran", "ponencia", "comunicación", "actas de congreso", "citas numeradas", "dos columnas", "palabras clave", "resumen", "BibTeX", "citeproc"]
+pageNotes: { "1": "Página 1: una banda azul pálido en la cabeza con la línea del taller en versalitas azules, el título en dos líneas Corte óptimo de líneas en el navegador: cuánto cuesta y cuándo compensa, centrado, y tres bloques de autor uno junto a otro. Bajo la banda, el resumen y las palabras clave en negrita a todo el ancho, y después dos columnas justificadas bajo los títulos centrados I. INTRODUCCIÓN y II. TRABAJOS RELACIONADOS, con citas [1] y [2]–[4] y las remisiones la sección II, la sección III, la sección IV, en la pág. 2.", "2": "Página 2: las secciones III a VI, los agradecimientos y el título REFERENCIAS sobre siete entradas numeradas a 8 pt, cada [n] en su propia columna; las dos columnas acaban a la misma altura." }
+---
+
+## Lo que vas a componer
+
+Una ponencia de dos páginas para un pequeño taller de ingeniería documental, compuesta como componen las suyas las actas de los congresos del IEEE: carta US, dos columnas de tres pulgadas y media, una letra de tipo Times a 10 pt y secciones numeradas I, II, III en mayúsculas centradas. El título, los tres bloques de autor, el resumen y las palabras clave ocupan las dos columnas bajo una banda pálida en el azul del taller, el único color de las páginas. Los autores citan con claves de BibTeX; Postext imprime [1] en el orden en que se cita cada obra por primera vez, agrupa tres obras seguidas como [2]–[4], escribe «Knuth y Plass [1]» cuando los nombres forman parte de la frase y monta al final la lista numerada a 8 pt. Las remisiones a secciones dicen «la sección IV, en la pág. 2» y siguen siendo ciertas cuando el texto se mueve.
+
+## Elaboración
+
+### 1 · El estilo IEEE, con sus intervalos
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Registrado una vez, `postext-citeproc` compone cada `[@clave]` con citeproc-js y el estilo CSL de IEEE, y numera las obras en el orden en que se citan por primera vez. El archivo de estilo que trae el motor escribe tres obras seguidas como [2], [3], [4]; la guía editorial de IEEE las une como [2]–[4]. Basta añadir `collapse="citation-number"` al elemento `<citation>` del estilo y pasar el resultado como `customStyle` para que citeproc-js lo haga. `labelWidth` da a los números de la lista una columna propia, de modo que la segunda línea de cada entrada empieza bajo la primera palabra y no bajo el corchete.
+
+### 2 · Un bloque de título a dos columnas
+
+<Excerpt region="title" />
+
+El título es el único título de nivel 1 del documento, con el estilo `paper`. El estilo ocupa toda la página y dibuja el título con su diseño: la línea del taller, el título y tres bloques de autor de un tercio de la medida, cada uno leído de un atributo del título cuyo `\n` separa las líneas. La banda es una caja anclada al corte, así que llega hasta el borde superior del papel.
+
+### 3 · Resumen y palabras clave en negrita
+
+<Excerpt region="abstract" />
+
+Un recuadro a todo el ancho lleva el resumen y las palabras clave. Su cuerpo va a 9 pt en negrita, como lo compone IEEE, y `***Resumen*—**` en el texto da la etiqueta en cursiva con su raya. El filete de arriba es la franja del recuadro, y el relleno estrecha la medida a unos cien caracteres.
+
+### 4 · Secciones numeradas y remisiones a ellas
+
+<Excerpt region="sections" />
+
+`{2:I}.` numera las secciones I., II., III. Una remisión imprime el número sin el punto, así que `:ref{id="sec:results"}` da «sección IV» con la plantilla de `crossRefs`, y `:ref{id="sec:results" style=page}` da «pág. 2». Las dos se calculan sobre las páginas ya compuestas, de modo que siguen al texto si se añade un párrafo o una sección cambia de sitio. Los títulos de agradecimientos y referencias llevan el estilo `back` y quedan sin número.
+
+<Excerpt region="palette" />
+
+## Variantes
+
+### Deja el estilo como viene
+
+Sin el cambio, tres obras seguidas se imprimen una a una, como prefieren algunas revistas.
+
+```diff
+-  style: 'custom', customStyle: ieee, // or style: 'ieee' for the file as it ships
++  style: 'ieee',
+```
+
+### Escribe los intervalos dentro de un solo par de corchetes
+
+Otros estilos numéricos imprimen [2–4]. La marca `brackets` escribe los números por su cuenta y une los consecutivos.
+
+```diff
+-  style: 'custom', customStyle: ieee, // or style: 'ieee' for the file as it ships
++  style: 'ieee', marker: 'brackets', collapseRanges: true,
+```
+
+## Errores frecuentes
+
+- Si las dos columnas de la última página no acaban a la misma altura, mira qué queda donde se cortarían: el motor no deja un título de sección al pie de una columna, lejos de su texto, y renuncia al corte. Una frase más o menos en las últimas secciones lleva el corte más allá del título.
+- Las órdenes de BibTeX como `{\TeX}` no se expanden. Escribe `The {TeX}book`; las llaves mantienen las mayúsculas como están.

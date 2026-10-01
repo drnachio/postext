@@ -1,0 +1,636 @@
+{
+  "schemaVersion": 1,
+  "slug": "history-essay-chicago-notes",
+  "sourceHash": "5d105bc4042112624f65ec71d639a3a790a45532af23b8d086c5981cf05e5642",
+  "engine": {
+    "postext": "1.12.0",
+    "postextPdf": "1.12.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-01T15:28:04.704Z",
+  "variants": {
+    "en": {
+      "hash8": "588de022",
+      "vdtHash": "335f98aa4bb7cc89a97f1e0c44b8f89b7f8cc0ca",
+      "timings": {
+        "importMs": 2868,
+        "fontsMs": 3202,
+        "buildMs": 14,
+        "totalMs": 7370,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          156,
+          234
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Crimson Pro",
+          "sizePt": 11,
+          "leadingPt": 14
+        },
+        "families": [
+          "Crimson Pro",
+          "IBM Plex Sans Condensed"
+        ],
+        "pages": 4,
+        "ownLines": 132
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1500,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 90136,
+          "alt": "Opening page 1: Railway Time: How British Towns Came to Keep London's Hour."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 155756,
+          "alt": "Page 2: THE COMPANIES DECIDE."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 152314,
+          "alt": "Page 3: THE TOWNS HESITATE."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 126806,
+          "alt": "Page 4: A SETTLEMENT, NOT A CONQUEST."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "history-essay-chicago-notes.pdf",
+        "bytes": 86183,
+        "pages": 4
+      },
+      "sandbox": {
+        "file": "history-essay-chicago-notes.postext",
+        "bytes": 17262
+      },
+      "detected": {
+        "apis": [
+          "LOCALES",
+          "STYLES",
+          "buildDocument",
+          "clearMeasurementCache",
+          "createCiteprocEngine",
+          "decompressWoff2",
+          "registerCitationEngine",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "citations",
+          "citations.bibliography",
+          "citations.bibliography.entrySpacing",
+          "citations.bibliography.fontSize",
+          "citations.bibliography.hangingIndent",
+          "citations.bibliography.lineHeight",
+          "citations.link",
+          "citations.notes",
+          "citations.style",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footnotes",
+          "footnotes.fontSize",
+          "footnotes.lineHeight",
+          "footnotes.numbering",
+          "footnotes.placement",
+          "footnotes.separator",
+          "footnotes.separator.color",
+          "footnotes.separator.lineWidth",
+          "footnotes.separator.width",
+          "footnotes.spaceBetween",
+          "footnotes.textAlign",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].letterSpacing",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].textTransform",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "citations",
+          "colorPalette",
+          "footer",
+          "footnotes",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 221,
+        "designElements": 9,
+        "directives": [
+          ":::bibliography",
+          ":::paragraphs",
+          ":::references"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Crimson Pro",
+            "weight": 300,
+            "style": "normal"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 600,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "citation-styles",
+          "cross-references",
+          "footnotes",
+          "generated-bibliography",
+          "heading-attributes",
+          "note-citations",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.96
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "13d95f84",
+      "vdtHash": "9a927afa006421a4d75974cde6d54175e40e6472",
+      "timings": {
+        "importMs": 2827,
+        "fontsMs": 1316,
+        "buildMs": 25,
+        "totalMs": 5446,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          156,
+          234
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Crimson Pro",
+          "sizePt": 11,
+          "leadingPt": 14
+        },
+        "families": [
+          "Crimson Pro",
+          "IBM Plex Sans Condensed"
+        ],
+        "pages": 4,
+        "ownLines": 132
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1500,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 96556,
+          "alt": "Página de apertura 1: La hora del ferrocarril: cómo las ciudades británicas adoptaron la hora de Londres."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 152028,
+          "alt": "Página 2: LAS COMPAÑÍAS DECIDEN."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 144334,
+          "alt": "Página 3: LAS CIUDADES DUDAN."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 131654,
+          "alt": "Página 4: UN ACUERDO, NO UNA CONQUISTA."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "history-essay-chicago-notes.pdf",
+        "bytes": 90800,
+        "pages": 4
+      },
+      "sandbox": {
+        "file": "history-essay-chicago-notes.postext",
+        "bytes": 18003
+      },
+      "detected": {
+        "apis": [
+          "LOCALES",
+          "STYLES",
+          "buildDocument",
+          "clearMeasurementCache",
+          "createCiteprocEngine",
+          "decompressWoff2",
+          "registerCitationEngine",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "citations",
+          "citations.bibliography",
+          "citations.bibliography.entrySpacing",
+          "citations.bibliography.fontSize",
+          "citations.bibliography.hangingIndent",
+          "citations.bibliography.lineHeight",
+          "citations.link",
+          "citations.notes",
+          "citations.style",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footnotes",
+          "footnotes.fontSize",
+          "footnotes.lineHeight",
+          "footnotes.numbering",
+          "footnotes.placement",
+          "footnotes.separator",
+          "footnotes.separator.color",
+          "footnotes.separator.lineWidth",
+          "footnotes.separator.width",
+          "footnotes.spaceBetween",
+          "footnotes.textAlign",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].letterSpacing",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].textTransform",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "citations",
+          "colorPalette",
+          "footer",
+          "footnotes",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 221,
+        "designElements": 9,
+        "directives": [
+          ":::bibliography",
+          ":::paragraphs",
+          ":::references"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Crimson Pro",
+            "weight": 300,
+            "style": "normal"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 600,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "citation-styles",
+          "cross-references",
+          "footnotes",
+          "generated-bibliography",
+          "heading-attributes",
+          "note-citations",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.74
+        },
+        "findings": []
+      }
+    }
+  }
+}

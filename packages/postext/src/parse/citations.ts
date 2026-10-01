@@ -30,11 +30,19 @@ export interface CitationMeta {
   sourceEnd: number;
 }
 
+/** Chinese, Japanese and Korean script. */
+const CJK_CLASS = String.raw`\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}\p{sc=Hangul}`;
+/** A key character outside those scripts. */
+const LATIN_KEY_CHAR = String.raw`(?:(?![${CJK_CLASS}])[\p{L}\p{N}_])`;
 /** A citation key: a letter, a digit or `_`, then those and internal
- *  punctuation (`:.#$%&-+?<>~/`) — never punctuation at its end. */
-const KEY = String.raw`[\p{L}\p{N}_](?:[\p{L}\p{N}_]|[:.#$%&\-+?<>~/](?=[\p{L}\p{N}_]))*`;
+ *  punctuation (`:.#$%&-+?<>~/`) — never punctuation at its end. A key
+ *  that starts outside the CJK scripts ends where they begin, so Chinese
+ *  text runs on after it without a space (`@zhou2019认为`). */
+const KEY = String.raw`${LATIN_KEY_CHAR}(?:${LATIN_KEY_CHAR}|[:.#$%&\-+?<>~/](?=${LATIN_KEY_CHAR}))*|[\p{L}\p{N}_](?:[\p{L}\p{N}_]|[:.#$%&\-+?<>~/](?=[\p{L}\p{N}_]))*`;
 const ITEM_RE = new RegExp(String.raw`^([\s\S]*?)(?:^|(?<=[\s\[(]))(-?)@(${KEY})([\s\S]*)$`, 'u');
-const NARRATIVE_RE = new RegExp(String.raw`(?<![\p{L}\p{N}_\\@\]-])@(${KEY})`, 'gu');
+// Not after a letter (an e-mail address), unless the letter is Chinese:
+// "周明远@zhou2019认为" names the work in the sentence.
+const NARRATIVE_RE = new RegExp(String.raw`(?<!${LATIN_KEY_CHAR}|[\\@\]-])@(${KEY})`, 'gu');
 
 /** Locator terms → CSL labels (English, Spanish and a few more). */
 const LABELS: Readonly<Record<string, string>> = {

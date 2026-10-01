@@ -1,0 +1,87 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 93,
+  "status": "published",
+  "chapter": "structure",
+  "order": 150,
+  "level": 2,
+  "genres": [
+    "paper",
+    "report"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "citation-styles"
+    ],
+    "also": [
+      "generated-bibliography",
+      "opener-design",
+      "color-palette"
+    ]
+  },
+  "answers": [
+    "Q107",
+    "Q106"
+  ],
+  "gotchas": [
+    "headings-drop-h1-break",
+    "fonts-first",
+    "quote-frontmatter",
+    "config-cache-identity"
+  ],
+  "engine": {
+    "postext": "1.12.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "page",
+    "pages": "all",
+    "doc": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Source Serif 4",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Source Sans 3",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-01",
+  "updated": "2026-10-01"
+}

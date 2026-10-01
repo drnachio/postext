@@ -1,0 +1,60 @@
+---
+title: "Un mismo texto en cuatro estilos de cita"
+summary: "Un ensayo breve con seis citas, compuesto en APA 7, Chicago autor-año, IEEE e ISO 690: el ajuste del estilo es lo único que cambia."
+plain: "Los mismos dos párrafos sobre tipografía, con las mismas fuentes, impresos cuatro veces. Cada página usa una manera distinta de citar, y las citas y la lista final cambian con ella, aunque el texto se escribió una sola vez."
+description: "Un ensayo citado en APA 7, Chicago, IEEE e ISO 690 con Postext: las citas y la lista de referencias siguen un solo ajuste y el texto no cambia."
+question: "¿Cómo paso un texto de un estilo de cita a otro sin tocarlo?"
+aliases: ["estilo de cita", "cambiar de estilo", "APA", "Chicago", "IEEE", "ISO 690", "autor-año", "citas numeradas", "CSL", "citeproc", "lista de referencias"]
+pageNotes: { "1": "Página 1: una banda azul con la etiqueta ESTILO DE CITA · 1 / 4 · AUTOR-AÑO y APA 7 en grandes letras blancas; debajo, el ensayo La página que no se ve con citas como Warde (1955), Bringhurst (2004, p. 17) y (Rayner, 1998; Tinker, 1963), y una lista de referencias APA ordenada por autor.", "2": "Página 2: el mismo ensayo bajo una banda roja que dice Chicago: (Tinker 1963; Rayner 1998) sin comas y en el orden escrito, y una lista con los nombres completos y la edición tras el título.", "3": "Página 3: bajo una banda azul oscuro que dice IEEE, el mismo ensayo con números entre corchetes, de Warde [1] a [6], y una lista numerada por orden de cita.", "4": "Página 4: bajo una banda verde que dice ISO 690, el mismo ensayo con citas autor-año y una lista con los apellidos en mayúsculas." }
+---
+
+## Lo que vas a componer
+
+Un ensayo de dos párrafos sobre por qué la buena tipografía pasa inadvertida, con seis fuentes: una cita narrativa, una con página, una que omite el autor porque la frase ya lo nombra y dos obras citadas juntas. El texto se compone cuatro veces en una página de 155 × 235 mm, y lo único que cambia entre las cuatro composiciones es `citations.style`: APA 7, Chicago autor-año, IEEE e ISO 690. Cada página lleva el nombre del estilo en una banda de su propio color, de modo que, puestas una junto a otra, se leen como una tabla comparativa. Las citas cambian de forma, de orden y de puntuación, la lista cambia de orden y de nombres, y el ensayo es el mismo archivo.
+
+## Elaboración
+
+### 1 · Un solo ajuste
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Las citas se escriben una vez en el contenido, con la sintaxis de Pandoc, y las referencias van en un bloque BibTeX al final. `citations.style` nombra un estilo CSL, y citeproc-js escribe con él cada cita y cada entrada: APA pone coma antes del año y ordena dos obras por autor, Chicago respeta el orden en que se escribieron, IEEE las convierte en números por orden de primera cita, ISO 690 pone en mayúsculas los apellidos de la lista. En un libro en marcha, el cambio es este: un valor de la configuración, sin tocar el texto.
+
+### 2 · Cuatro composiciones, dos pliegos
+
+<Excerpt region="build" />
+
+El estilo vale para todo el documento, así que las cuatro versiones son cuatro composiciones del mismo Markdown. Cada una recibe un `pageIndexOffset` una unidad mayor que la anterior, que convierte su página en la siguiente de un libro imaginario; la mesa las empareja entonces en dos pliegos, con los dos estilos autor-año que menos se diferencian uno al lado del otro.
+
+### 3 · El nombre del estilo en una banda
+
+<Excerpt region="band" />
+
+El diseño del título dibuja la banda desde el corte, el antetítulo con el número y el sistema del estilo, y el nombre a 54 pt. El nombre y el sistema salen del script y no del Markdown, porque el texto es el mismo en los cuatro documentos.
+
+<Excerpt region="palette" />
+
+Cada documento apunta `main-color` a su propia banda, así que los cuatro colores son entradas enlazadas de la paleta, y cualquier valor por defecto que la configuración no fije sigue la banda de su página.
+
+## Variantes
+
+### Prueba un estilo de notas
+
+Con Chicago notas y bibliografía, cada cita se convierte en una nota al pie y la lista en una bibliografía; el texto sigue sin cambiar.
+
+```diff
+-  { style: 'apa', band: 'apa', name: 'APA 7', system: t({ en: 'author-date', es: 'autor-año' }) },
++  { style: 'chicago-notes-bibliography', band: 'apa', name: 'Chicago', system: 'notas' },
+```
+
+### Escribe los números volados
+
+Un estilo numérico puede conservar su lista e imprimir las citas como números volados, como hacen Nature y Vancouver.
+
+```diff
+-  link: true,
++  link: true, marker: 'superscript',
+```
+
+## Errores frecuentes
+
+- El localizador se escribe una vez y cada estilo imprime su propia palabra: aquí, «p. 17» en los cuatro. El estilo ISO 690 en español que trae el motor imprime «p.» para cualquier localizador, también para una sección o un capítulo, y por eso este texto cita una página.
+- El número de edición va en BibTeX como número (`edition = {3}`): así cada estilo escribe «3rd ed.», «3.ª ed.» o «3.» a su manera. Escrito como «3rd», se imprime tal cual y se pierde la forma propia del estilo.

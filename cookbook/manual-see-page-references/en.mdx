@@ -1,0 +1,66 @@
+---
+title: "A manual whose references point to pages"
+summary: "A bicycle owner's manual whose cross-references say \"see section 3.2 on page 3\", forward and back, with every number and page taken from the layout."
+plain: "A short owner's manual for a touring bicycle. When the text sends you to another section, it gives that section's number and the page it is on, and both are links."
+description: "A product manual in Postext: numbered sections, anchors on paragraphs and steps, and cross-references by number, title and page that update and link."
+question: "How do I refer to a section and the page it is on, and keep both right as the book changes?"
+aliases: ["cross-reference", "see page", "page reference", "pageref", "anchor", "label", "see section", "manual", "owner's manual", "internal links", "pandoc-crossref"]
+pageNotes: { "1": "Page 1: a navy band over the top half with OWNER'S MANUAL, the model name Ardena T3 in large white condensed type, a subtitle and the edition line, then an orange stripe; below it an introduction and a contents list whose section numbers, titles and page numbers are all cross-references in orange.", "2": "Page 2: section 1 with references such as section 3.2 on page 3 and the phrase close the lever so that it points backwards, which links to a step in section 2.2; numbered steps for the saddle height; section 2.1 on tyre pressure.", "3": "Page 3: removing and fitting the front wheel, section 3 on the brakes with a Wet weather box with an orange side stripe, and the start of 3.2.", "4": "Page 4: adjusting the cable, section 4 on the chain with a reference back to Wet weather on page 3, and the maintenance schedule, a list of intervals each pointing to a section and a page." }
+---
+
+## What you'll build
+
+The owner's manual of a fictional touring bicycle, the Ardena T3: four A5 pages set in Archivo, with the model name in a navy band over the first page. A manual is read out of order, so every instruction that depends on another one says where it is: *see section 3.2 on page 3*. The writer names a heading, a paragraph or a phrase in a step with an identifier and writes `:ref` wherever the text points to it; Postext prints the number, the title or the page and makes it a link. The contents list on the cover is written the same way, so moving a section, or translating the manual and letting it reflow, never leaves a stale number.
+
+## Method
+
+### 1 · Name what the text points to
+
+The code is [the short answer](#the-short-answer) above. Headings take a Pandoc identifier, `### Checking pad wear {#sec-pad-wear}`; the warning about tyre pressure starts with `:anchor{#warn-pressure}`, an invisible mark; the last step of fitting a wheel is `[close the lever so that it points backwards]{#step-close-lever}`, which keeps its words and names them; and the box opens with `:::callout{#box-wet type="note" title="Wet weather"}`. A reference to the step prints the step's words, a reference to the box its title.
+
+### 2 · One target, four ways to name it
+
+`:ref{id="sec-pad-wear"}` prints *section 3.2* with the word from `crossRefs.section`; `style=page` prints *page 3* with the word from `crossRefs.page`; `style=title` prints *Checking pad wear*; `style=pageNumber` prints the bare *3*. The cover's contents list combines the bare number, the title and the bare page, so it reads like a table of contents. In Spanish the same references print *apartado 3.2* and *página 3*, because the templates follow the edition's language.
+
+### 3 · The pages settle on their own
+
+A page number is only known once the manual is laid out. The engine lays it out, reads the page each target landed on and lays it out again until no reference changes, the same loop that fills a table of contents. Text that grows in translation, or a section moved to the front, changes the pages and the references follow them, forward and back.
+
+### 4 · The numbers come from the level-2 counter
+
+<Excerpt region="numbers" />
+
+The manual has one level-1 heading, the model name on the cover, so its sections number from level 2: `{2}` gives 1 to 5 and `{2}.{3}` gives 1.1, 1.2.
+
+### 5 · The cover is the opener of that heading
+
+<Excerpt region="cover" />
+
+The band is 104 mm deep, half the page, and an orange stripe closes it. The kicker, subtitle and edition line are attributes of the heading, so the Spanish edition changes them in its own text.
+
+<Excerpt region="palette" />
+
+## Variations
+
+### Say "p." in the references
+
+A reference book with many page references saves room with the abbreviation.
+
+```diff
+-  page: t({ en: 'page {n}', es: 'página {n}' }), // spelt out: a manual is read by anyone
++  page: t({ en: 'p. {n}', es: 'pág. {n}' }),
+```
+
+### Leave the references in ink
+
+When most of the page is references, keep them in the text colour and in bold; they are still links in the PDF and on screen.
+
+```diff
+-const references = { referenceColor: col('orange'), referenceBold: true };
++const references = { referenceColor: col('ink'), referenceBold: true };
+```
+
+## Pitfalls
+
+- A reference to an `:anchor` with no style prints the page, because an invisible anchor has no words of its own. Use `[words]{#id}` when the reference should quote the text.
+- An identifier must be unique in the book. References reach the first `{#sec-brakes}`, and the Sandbox's Checks panel lists a second one as `duplicateAnchor`.
